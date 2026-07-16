@@ -1,22 +1,16 @@
 import type { LegalDocument } from '../types';
 
 // During development the site is operated by Florian privately, not by the club.
-// [TODO: …] markers must be filled with real data before the site goes public.
 const impressumContent: LegalDocument = {
   title: 'Impressum',
   sections: [
     {
       heading: 'Angaben gemäß § 5 DDG',
-      paragraphs: [
-        'Florian Rätsch',
-        '[TODO: Straße und Hausnummer]',
-        '[TODO: PLZ und Ort]',
-        'Deutschland',
-      ],
+      paragraphs: ['Florian Rätsch', 'Martin-Herrmann-Str. 26', '04249 Leipzig', 'Deutschland'],
     },
     {
       heading: 'Kontakt',
-      paragraphs: ['E-Mail: [TODO: E-Mail-Adresse]'],
+      paragraphs: ['E-Mail: contact@florianrth.com'],
     },
     {
       heading: 'Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV',

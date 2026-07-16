@@ -8,7 +8,7 @@ const datenschutzContent: LegalDocument = {
       heading: '1. Verantwortlicher',
       paragraphs: [
         'Verantwortlicher im Sinne der Datenschutz-Grundverordnung (DSGVO) ist:',
-        'Florian Rätsch, [TODO: Straße und Hausnummer], [TODO: PLZ und Ort], E-Mail: [TODO: E-Mail-Adresse]',
+        'Florian Rätsch, Martin-Herrmann-Str. 26, 04249 Leipzig, E-Mail: contact@florianrth.com',
       ],
     },
     {

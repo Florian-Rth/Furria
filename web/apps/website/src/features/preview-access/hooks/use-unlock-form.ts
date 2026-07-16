@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import type { FormEvent } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
-import { useUnlockPreviewMutation, WrongPasswordError } from '../api';
+import { RequestBlockedError, useUnlockPreviewMutation, WrongPasswordError } from '../api';
 import { UnlockFormSchema } from '../schemas';
 import type { UnlockForm } from '../types';
 import { usePreviewAccess } from './use-preview-access';
@@ -21,6 +21,10 @@ export const toSubmitErrorMessage = (error: Error | null): string | null => {
 
   if (error instanceof WrongPasswordError) {
     return 'Falsches Passwort. Bitte versuch es noch einmal.';
+  }
+
+  if (error instanceof RequestBlockedError) {
+    return 'Die Anfrage hat den Server nicht erreicht. Falls du einen Werbeblocker oder Schutz-Add-on nutzt, erlaube diese Seite und versuch es erneut.';
   }
 
   return 'Das hat leider nicht geklappt. Bitte versuch es später noch einmal.';

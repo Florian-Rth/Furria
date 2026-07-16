@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { WrongPasswordError } from '../api';
+import { RequestBlockedError, WrongPasswordError } from '../api';
 import { toSubmitErrorMessage } from './use-unlock-form';
 
 describe('toSubmitErrorMessage', () => {
@@ -10,6 +10,12 @@ describe('toSubmitErrorMessage', () => {
   it('maps a rejected password to a German error message', () => {
     expect(toSubmitErrorMessage(new WrongPasswordError())).toBe(
       'Falsches Passwort. Bitte versuch es noch einmal.',
+    );
+  });
+
+  it('maps a blocked request to a German hint about blockers', () => {
+    expect(toSubmitErrorMessage(new RequestBlockedError())).toBe(
+      'Die Anfrage hat den Server nicht erreicht. Falls du einen Werbeblocker oder Schutz-Add-on nutzt, erlaube diese Seite und versuch es erneut.',
     );
   });
 

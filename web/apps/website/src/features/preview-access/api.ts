@@ -10,12 +10,29 @@ export class WrongPasswordError extends Error {
   }
 }
 
+export class RequestBlockedError extends Error {
+  constructor() {
+    super('The unlock request never reached the API - blocked or offline.');
+    this.name = 'RequestBlockedError';
+  }
+}
+
+const postUnlockRequest = async (password: string): Promise<Response> => {
+  try {
+    return await fetch('/api/preview/unlock', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password }),
+    });
+  } catch {
+    // fetch itself rejecting means the request never got a response:
+    // blocked by an extension/browser policy, offline, or DNS failure.
+    throw new RequestBlockedError();
+  }
+};
+
 const unlockPreview = async (password: string): Promise<UnlockPreviewResponse> => {
-  const response = await fetch('/api/preview/unlock', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ password }),
-  });
+  const response = await postUnlockRequest(password);
 
   if (response.status === 401) {
     throw new WrongPasswordError();
