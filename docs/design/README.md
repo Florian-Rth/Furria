@@ -232,6 +232,7 @@ nav + gating in `NAVCONFIG` (`fcc-ds-shell.jsx`).
 
 ## 12. Non-negotiable conventions (carry into the codebase)
 - **Compose the system, don't extend it.** Use the tokens + primitives. No new colors, fonts, radii, shadows.
+- **The Narrenruf is "Gross - Furria!"** — never "Helau" or "Alaaf" in any copy. This is local law.
 - **Routes/IDs/props = English. Visible text = German.**
 - Red is **accent/action only — never body text.**
 - Soft elevation is the default; the hard offset-shadow is a rare single-hero accent.

@@ -7,7 +7,7 @@
 **Die fünfte Jahreszeit, jetzt mit Continuous Integration.**
 
 [![CI](https://github.com/Florian-Rth/Furria/actions/workflows/ci.yml/badge.svg)](https://github.com/Florian-Rth/Furria/actions/workflows/ci.yml)
-![Helau](https://img.shields.io/badge/Helau!-approved-E11D2A)
+![Narrenruf](https://img.shields.io/badge/Narrenruf-Gross_--_Furria!-E11D2A)
 ![Gegründet](https://img.shields.io/badge/gegr.-1971-F4B400)
 ![Mocks](https://img.shields.io/badge/Mocks-verboten-1A1411)
 ![Eröffnung](https://img.shields.io/badge/Session-11.11%2C%2011%3A11%20Uhr-2E9E5B)
@@ -93,6 +93,6 @@ The full design handoff lives in [`docs/design/`](docs/design/README.md) — rea
 
 🧹 **FURRIA — Großbesenstadt** 🧹
 
-*Helau!*
+*Gross - Furria!*
 
 </div>

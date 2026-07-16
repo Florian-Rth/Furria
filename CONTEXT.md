@@ -52,6 +52,12 @@ _Avoid_: user (as a table/entity name)
 A one-time onboarding token (link or printed QR/code) that lets a Person create their Account.
 _Avoid_: signup, registration
 
+### Club culture
+
+**Narrenruf**:
+The club's carnival call: **"Gross - Furria!"** — always this, spoken and in UI copy.
+_Avoid_: Helau, Alaaf — using these will get you hated in Großfurra.
+
 ### Money
 
 **Beitrag** (`fee`):
