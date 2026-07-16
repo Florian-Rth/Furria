@@ -7,7 +7,7 @@ const landingContent: LandingContent = {
   headlineLine2: 'BEGINNT HIER.',
   tagline:
     'Der Furrsche Carnevals Club baut hier sein neues Zuhause. Bald findet ihr Programm, Tickets und Neuigkeiten an dieser Stelle.',
-  ctaLabel: 'Mitglied werden',
+  ctaLabel: 'Einlass',
 };
 
 export const useLandingContent = (): LandingContent => landingContent;

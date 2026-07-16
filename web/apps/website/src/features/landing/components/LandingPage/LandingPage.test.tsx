@@ -1,13 +1,14 @@
 import { kkTheme } from '@furria/ui';
 import { ThemeProvider } from '@mui/material/styles';
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import userEvent from '@testing-library/user-event';
+import { describe, expect, it, vi } from 'vitest';
 import { LandingPage } from './LandingPage';
 
-const renderLandingPage = (): void => {
+const renderLandingPage = (onCtaClick: () => void = () => {}): void => {
   render(
     <ThemeProvider theme={kkTheme}>
-      <LandingPage />
+      <LandingPage onCtaClick={onCtaClick} />
     </ThemeProvider>,
   );
 };
@@ -27,9 +28,13 @@ describe('LandingPage', () => {
     expect(headline).toHaveTextContent('BEGINNT HIER.');
   });
 
-  it('renders the pill call-to-action button', () => {
-    renderLandingPage();
+  it('notifies the caller when the access button is clicked', async () => {
+    const user = userEvent.setup();
+    const onCtaClick = vi.fn();
+    renderLandingPage(onCtaClick);
 
-    expect(screen.getByRole('button', { name: 'Mitglied werden' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Einlass' }));
+
+    expect(onCtaClick).toHaveBeenCalledTimes(1);
   });
 });

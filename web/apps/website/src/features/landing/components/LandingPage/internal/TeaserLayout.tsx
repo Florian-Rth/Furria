@@ -4,7 +4,7 @@ import type { FC, PropsWithChildren } from 'react';
 // Layout only — structural slots with no business logic.
 
 const TeaserLayoutRoot: FC<PropsWithChildren> = ({ children }) => (
-  <Stack sx={{ minHeight: '100dvh', bgcolor: 'background.default' }}>{children}</Stack>
+  <Stack sx={{ flex: 1 }}>{children}</Stack>
 );
 
 const Masthead: FC<PropsWithChildren> = ({ children }) => (
@@ -17,6 +17,8 @@ const Masthead: FC<PropsWithChildren> = ({ children }) => (
       px: 2,
       borderBottom: 1,
       borderColor: 'divider',
+      position: 'relative',
+      zIndex: 1,
     }}
   >
     {children}
@@ -34,6 +36,8 @@ const Hero: FC<PropsWithChildren> = ({ children }) => (
       gap: 4,
       px: 3,
       py: 10,
+      position: 'relative',
+      zIndex: 1,
     }}
   >
     {children}

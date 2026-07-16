@@ -12,6 +12,8 @@ namespace Furria.Tests.Common.Fixtures;
 
 public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifetime
 {
+    public const string PreviewPassword = "test-preview-password";
+
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder(
         "postgres:18-alpine"
     ).Build();
@@ -52,6 +54,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("ConnectionStrings:AppDb", _postgres.GetConnectionString());
+        builder.UseSetting("PreviewAccess:Password", PreviewPassword);
         builder.ConfigureServices(services =>
         {
             services.RemoveAll<TimeProvider>();

@@ -15,10 +15,12 @@
     "@emotion/styled": "catalog:",
     "@furria/ui": "workspace:*",
     "@mui/material": "catalog:",
+    "@hookform/resolvers": "catalog:",
     "@tanstack/react-query": "catalog:",
     "@tanstack/react-router": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
+    "react-hook-form": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

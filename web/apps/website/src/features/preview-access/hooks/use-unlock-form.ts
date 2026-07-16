@@ -1,0 +1,55 @@
+import { zodResolver } from '@hookform/resolvers/zod';
+import type { FormEvent } from 'react';
+import type { UseFormReturn } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
+import { useUnlockPreviewMutation, WrongPasswordError } from '../api';
+import { UnlockFormSchema } from '../schemas';
+import type { UnlockForm } from '../types';
+import { usePreviewAccess } from './use-preview-access';
+
+interface UnlockFormState {
+  form: UseFormReturn<UnlockForm>;
+  submit: (event: FormEvent<HTMLFormElement>) => void;
+  isSubmitting: boolean;
+  submitError: string | null;
+}
+
+export const toSubmitErrorMessage = (error: Error | null): string | null => {
+  if (error === null) {
+    return null;
+  }
+
+  if (error instanceof WrongPasswordError) {
+    return 'Falsches Passwort. Bitte versuch es noch einmal.';
+  }
+
+  return 'Das hat leider nicht geklappt. Bitte versuch es später noch einmal.';
+};
+
+export const useUnlockForm = (onGranted: () => void): UnlockFormState => {
+  const { grantAccess } = usePreviewAccess();
+  const mutation = useUnlockPreviewMutation();
+
+  const form = useForm<UnlockForm>({
+    resolver: zodResolver(UnlockFormSchema),
+    defaultValues: { password: '' },
+  });
+
+  const submit = form.handleSubmit((values) => {
+    mutation.mutate(values.password, {
+      onSuccess: () => {
+        grantAccess();
+        onGranted();
+      },
+    });
+  });
+
+  return {
+    form,
+    submit: (event) => {
+      void submit(event);
+    },
+    isSubmitting: mutation.isPending,
+    submitError: toSubmitErrorMessage(mutation.error),
+  };
+};

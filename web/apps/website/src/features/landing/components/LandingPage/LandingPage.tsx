@@ -1,3 +1,4 @@
+import { KkConfettiRain } from '@furria/ui';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
@@ -6,11 +7,16 @@ import { TeaserLayout } from './internal/TeaserLayout';
 import { TwoToneHeadline } from './internal/TwoToneHeadline';
 import { Wordmark } from './internal/Wordmark';
 
-export const LandingPage: FC = () => {
+interface LandingPageProps {
+  onCtaClick: () => void;
+}
+
+export const LandingPage: FC<LandingPageProps> = ({ onCtaClick }) => {
   const content = useLandingContent();
 
   return (
     <TeaserLayout>
+      <KkConfettiRain />
       <TeaserLayout.Masthead>
         <Wordmark text={content.wordmark} />
         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
@@ -22,7 +28,7 @@ export const LandingPage: FC = () => {
         <Typography variant="subtitle1" sx={{ color: 'text.secondary', maxWidth: 'sm' }}>
           {content.tagline}
         </Typography>
-        <Button variant="contained" color="primary" size="large">
+        <Button variant="contained" color="primary" size="large" onClick={onCtaClick}>
           {content.ctaLabel}
         </Button>
       </TeaserLayout.Hero>
