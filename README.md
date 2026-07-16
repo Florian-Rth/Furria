@@ -87,6 +87,12 @@ The full design handoff lives in [`docs/design/`](docs/design/README.md) — rea
 | [`docs/server/TESTING.md`](docs/server/TESTING.md) | The testing conventions the compiler enforces |
 | [`CLAUDE.md`](CLAUDE.md) | Full command reference and repo conventions |
 
+## License
+
+Source-available, **all rights reserved** — reading and learning is welcome and encouraged;
+any actual use (commercial or by other clubs) needs written permission. See
+[`LICENSE.md`](LICENSE.md).
+
 ---
 
 <div align="center">
