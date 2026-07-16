@@ -33,7 +33,7 @@ function DocFoundation() {
       <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: 36 }}>
         <div>
           <p style={{ fontSize: 15, lineHeight: 1.6, fontWeight: 500, color: 'rgba(26,20,17,0.78)', margin: '0 0 18px' }}>
-            <b>Konfetti Kinetik</b> ist die Designsprache des Furrscher Carnevals Club. Sie verbindet die <b>Zeitungs-Masthead-Geste</b> (Erbe der Großbesenstadt, „Besenbinder seit 1898") mit <b>plakativer Editorial-Typografie</b> und festlicher Energie — im modernen „Destillat“ durchgängig <b>ruhig &amp; wertig</b>: weiche Elevation, Haarlinien, dezente Akzente.
+            <b>Konfetti Kinetik</b> ist die Designsprache des Furrscher Carnevals Club. Sie verbindet die <b>Zeitungs-Masthead-Geste</b> (Erbe der Großbesenstadt) mit <b>plakativer Editorial-Typografie</b> und festlicher Energie — im modernen „Destillat“ durchgängig <b>ruhig &amp; wertig</b>: weiche Elevation, Haarlinien, dezente Akzente.
           </p>
           <DLabel>Eine Sprache, ein Ton</DLabel>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -153,7 +153,7 @@ function DocType() {
       {row(DDISP, 56, 400, 'Display L', 'GROSS FURRIA', 0.5)}
       {row(DDISP, 34, 400, 'Display M', 'DAS PROGRAMM', 0.5)}
       {row(DDISP, 20, 400, 'Heading', 'Übersicht', 0.5)}
-      {row(DFONT, 16, 600, 'Body', 'Die Großbesenstadt feiert seit 1898.', 0)}
+      {row(DFONT, 16, 600, 'Body', 'Die Großbesenstadt feiert seit 1971.', 0)}
       {row(DFONT, 13, 800, 'Label / Eyebrow', 'SESSION 2026 · 11.11.', 1.4)}
     </DPanel>
   );

@@ -15,8 +15,8 @@
 </div>
 
 The digital home of the **Furrscher Carnevals Club e.V.** — Großbesenstadt's finest (and, to be
-fair, only) carnival club. Binding brooms since 1898, organizing controlled chaos since 1971,
-writing integration tests since 2026.
+fair, only) carnival club. Organizing controlled chaos since 1971, writing integration tests
+since 2026.
 
 ## The plan
 
@@ -91,7 +91,7 @@ The full design handoff lives in [`docs/design/`](docs/design/README.md) — rea
 
 <div align="center">
 
-🧹 **Besenbinder seit 1898** 🧹
+🧹 **FURRIA — Großbesenstadt** 🧹
 
 *Helau!*
 

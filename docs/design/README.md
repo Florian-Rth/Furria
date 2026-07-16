@@ -111,7 +111,7 @@ Status semantics: **green = ok/paid**, **gold = warning**, **red = danger/action
 - **Hard offset-shadow** (`4–5px 4–5px 0 ink`, `2px` ink contour) is now only a **rare accent** for a single hero element (e.g. a red "Held-Banner") — **not** the default. In dark mode the offset uses gold/red instead of ink.
 
 ### Signature gestures
-- **Crossed-broom mark** (`KKBroom`) — the coat-of-arms ("Besenbinder seit 1898"). Used as the logo lockup with the **FURRIA** wordmark, and as a large **faint background watermark** (~5% opacity ink) to fill negative space.
+- **Crossed-broom mark** (`KKBroom`) — the coat-of-arms. Used as the logo lockup with the **FURRIA** wordmark, and as a large **faint background watermark** (~5% opacity ink) to fill negative space.
 - **Editorial section header:** red square + Anton label + hairline rule running to the edge.
 - **Masthead nav** (newspaper kopf): top meta strip → row of `nav-links —— FURRIA —— flanks` with Login + red **Tickets** pill.
 - **Ticker:** flat red bar, Anton text, gold `✶` separators, marquee scroll (no skew).
