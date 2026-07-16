@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Furria.Api/Furria.Api.csproj" />
+    <Project Path="src/Furria.Application/Furria.Application.csproj" />
+    <Project Path="src/Furria.Core/Furria.Core.csproj" />
+    <Project Path="src/Furria.Infrastructure/Furria.Infrastructure.csproj" />
+    <Project Path="src/Furria.Tests.Analyzers/Furria.Tests.Analyzers.csproj" />
+    <Project Path="src/Furria.Tests.Common/Furria.Tests.Common.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Furria.Api.Tests/Furria.Api.Tests.csproj" />
+    <Project Path="tests/Furria.Tests.Analyzers.Tests/Furria.Tests.Analyzers.Tests.csproj" />
+  </Folder>
+</Solution>

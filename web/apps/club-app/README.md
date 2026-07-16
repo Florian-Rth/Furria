@@ -1,0 +1,3 @@
+# @furria/club-app — Stub
+
+The internal member app of the Furrscher Carnevals Club e.V.: member master data, roles (Ämter), groups, fees and payments, event planning, live show control, drinks kitty, shop, gallery and key registry. Planned stack: React 19 + TypeScript + Vite + MUI + TanStack Router/Query, themed exclusively via `@furria/ui`, later wrapped in **Capacitor** for native push, iOS live activities and home-screen widgets. Design system, data model and per-feature specs live in [`docs/design/`](../../../docs/design/README.md). Not scaffolded yet — this directory intentionally contains no `package.json`.

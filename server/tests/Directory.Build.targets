@@ -1,0 +1,13 @@
+<Project>
+  <!--
+    Wires the test-infra analyzers (MET001-MET007) into every test project so the no-mocks /
+    no-InMemory / naming / collection-marker / no-DbContext rules are enforced at build time.
+    The analyzers' own test project is excluded (it references them as a plain library instead).
+  -->
+  <ItemGroup Condition="'$(MSBuildProjectName)' != 'Furria.Tests.Analyzers.Tests'">
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\src\Furria.Tests.Analyzers\Furria.Tests.Analyzers.csproj">
+      <OutputItemType>Analyzer</OutputItemType>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+</Project>

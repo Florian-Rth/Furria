@@ -69,7 +69,7 @@ description: Mandatory rules for all C#/.NET backend work. Invoke before writing
 - Endpoints never share Requests or Responses between each other
 - Endpoints never access DbContext directly — always go through a service
 - Use `EndpointWithoutRequest` for no-request endpoints, not `EmptyRequest`
-- Always pass cancellation explicitly: `await SendOkAsync(response, cancellation: ct)`
+- Always pass cancellation explicitly: `await Send.OkAsync(response, cancellation: ct)` — FastEndpoints 8 deprecated the old `SendOkAsync(...)` extension family; use the `Send.*Async(...)` API
 - Naming: `GetCameras`, `GetCameraById`, `PostCamera`, `PutCamera`, `DeleteCameraById`
 - Action endpoints drop the HTTP prefix when unambiguous: `TestConnection`, `Login`
 - Every endpoint with a request type must have a corresponding Validator class; endpoints with only route parameters still require a validator with at least a range check on the ID
