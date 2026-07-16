@@ -1,0 +1,19 @@
+<Project>
+  <!--
+    Place as the root Directory.Build.props (or merge into yours). Two things matter to the
+    test system:
+      1. TreatWarningsAsErrors makes every MET rule fatal (they ship as Warning).
+      2. CompilerVisibleProperty IsTestProject lets the MET006 analyzer tell production code
+         from test code at compile time — WITHOUT this line MET006 fires inside test projects too.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <CompilerVisibleProperty Include="IsTestProject" />
+  </ItemGroup>
+</Project>

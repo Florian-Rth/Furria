@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FCC · Design System — Konfetti Kinetik</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@500;600;700;800;900&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet" />
+<style>
+  html, body { margin: 0; padding: 0; background: #f0eee9; }
+  * { box-sizing: border-box; }
+  @keyframes fcc-mq { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  @keyframes fcc-float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -10px; } }
+  @media (prefers-reduced-motion: no-preference) {
+    .fcc-mq { animation: fcc-mq 26s linear infinite; }
+    .fcc-floaty { animation: fcc-float 6s ease-in-out infinite; }
+  }
+  @keyframes fcc-pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.3; transform: scale(0.6); } }
+  .fcc-live { animation: fcc-pulse 1.4s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce) { .fcc-live { animation: none; } }
+  .fcc-scroll { scrollbar-width: none; -ms-overflow-style: none; }
+  .fcc-scroll::-webkit-scrollbar { display: none; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="browser-window.jsx"></script>
+<script type="text/babel" src="fcc-logos.jsx"></script>
+<script type="text/babel" src="fcc-shared.jsx"></script>
+<script type="text/babel" src="fcc-theme.jsx"></script>
+<script type="text/babel" src="fcc-ds-landing.jsx"></script>
+<script type="text/babel" src="fcc-ds-shell.jsx"></script>
+<script type="text/babel" src="fcc-ds-pages.jsx"></script>
+<script type="text/babel" src="fcc-ds-members.jsx"></script>
+<script type="text/babel" src="fcc-ds-groups.jsx"></script>
+<script type="text/babel" src="fcc-ds-roles.jsx"></script>
+<script type="text/babel" src="fcc-ds-mobile.jsx"></script>
+<script type="text/babel" src="fcc-ds-docs.jsx"></script>
+<script type="text/babel">
+const { DesignCanvas, DCSection, DCArtboard, DCPostIt, ChromeWindow } = window;
+const { useState } = React;
+const W = 1300, MOBW = 400, MOBH = 858, MEM = 860;
+const H_BEST = 1947;
+const APP_VORSTAND = ['cockpit', 'mitglieder', 'veranstaltungen', 'statistik', 'einstellungen'];
+
+function Desk({ h, dark, url, children }) {
+  return <ChromeWindow width={W} height={h} url={url || ('furria-grossfurra.de' + (dark ? '/?theme=dark' : ''))} tabs={[{ title: 'FURRIA · Furrscher Carnevals Club' }]}>{children}</ChromeWindow>;
+}
+
+// interactive desktop Club-App (clickable nav + role switch)
+function DeskApp() {
+  const [page, setPage] = useState('uebersicht');
+  const [role, setRole] = useState('vorstand');
+  const meta = window.PAGEMETA[page] || { title: page };
+  const onRole = (r) => { setRole(r); if (r === 'mitglied' && APP_VORSTAND.includes(page)) setPage('uebersicht'); };
+  const showAction = meta.action && !(role === 'mitglied' && page === 'spielplan') && !(page === 'mitglieder' && role !== 'vorstand');
+  return (
+    <window.AppShell active={page} role={role} onNav={setPage} onRole={onRole} title={meta.title} sub={meta.sub} action={showAction ? meta.action : undefined} onAction={() => {}} height="100%">
+      {window.renderFccPage(page, { role, go: setPage })}
+    </window.AppShell>
+  );
+}
+
+// design-system cover
+function DSCover() {
+  return (
+    <div style={{ padding: '36px 40px', fontFamily: "'Archivo', sans-serif", color: '#1A1411', height: '100%', background: '#1A1411', color: '#FBF4E6' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+        <window.KKBroom size={34} color="#E11D2A" band="#FBF4E6" />
+        <span style={{ fontFamily: "'Anton', sans-serif", fontSize: 26, letterSpacing: 1 }}>FURRIA</span>
+      </div>
+      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 2, color: '#F4B400', marginTop: 26 }}>DESIGN SYSTEM · SOURCE OF TRUTH</div>
+      <h1 style={{ fontFamily: "'Anton', sans-serif", fontSize: 52, letterSpacing: 0.5, margin: '10px 0 14px', lineHeight: 0.92 }}>Konfetti Kinetik</h1>
+      <p style={{ fontSize: 15, lineHeight: 1.6, fontWeight: 500, color: 'rgba(251,244,230,0.72)', maxWidth: 560, margin: 0 }}>
+        Die verbindliche Designsprache des Furrscher Carnevals Club — Marke, Farbe, Typografie, Bausteine und Muster, plus ihre Anwendung auf Website und interner Club-App. <b style={{ color: '#FBF4E6', fontWeight: 700 }}>Modernes „Destillat“: dieselbe editoriale Zeitungs-DNA (Anton + Archivo, Cremeweiß/Rot/Gold), aber ruhige Elevation — Haarlinien &amp; weiche Schatten statt harter Plakat-Schlagschatten, Pill-Buttons, flacher Ticker, dezente Akzente.</b> Alles in dieser Datei.
+      </p>
+      <div style={{ display: 'flex', gap: 26, marginTop: 30, paddingTop: 22, borderTop: '1.5px solid rgba(251,244,230,0.18)' }}>
+        {[['01–07', 'Dokumentation'], ['Website', 'Hell · Dunkel · Mobile'], ['Club-App', 'Desktop · Mobile · Rollen']].map(([a, b], i) => (
+          <div key={i}><div style={{ fontFamily: "'Anton', sans-serif", fontSize: 22, color: '#E11D2A' }}>{a}</div><div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(251,244,230,0.6)', marginTop: 2 }}>{b}</div></div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <DesignCanvas>
+      <DCSection id="ds" title="Design-System · Dokumentation" subtitle="Die verbindlichen Bausteine — Marke, Farbe, Typografie, Form, Komponenten, Icons, Muster">
+        <DCArtboard id="cover" label="Übersicht" width={620} height={400}><DSCover /></DCArtboard>
+        <DCArtboard id="doc-foundation" label="01 · Fundament" width={940} height={400}><window.DocFoundation /></DCArtboard>
+        <DCArtboard id="doc-color" label="02 · Farbe" width={940} height={525}><window.DocColor /></DCArtboard>
+        <DCArtboard id="doc-type" label="03 · Typografie" width={940} height={620}><window.DocType /></DCArtboard>
+        <DCArtboard id="doc-spacing" label="04 · Form" width={940} height={382}><window.DocSpacing /></DCArtboard>
+        <DCArtboard id="doc-components" label="05 · Bausteine" width={980} height={532}><window.DocComponents /></DCArtboard>
+        <DCArtboard id="doc-icons" label="06 · Icons" width={720} height={556}><window.DocIcons /></DCArtboard>
+        <DCArtboard id="doc-patterns" label="07 · Muster" width={980} height={526}><window.DocPatterns /></DCArtboard>
+      </DCSection>
+      <DCSection id="web" title="Anwendung · Website" subtitle="Öffentliche Landing — modernes Destillat: Masthead-Nav · Editorial-Hero · ruhige Elevation (Haarlinie + weiche Schatten) · Pill-Buttons · flacher Ticker · Mitmachen-Band">
+        <DCArtboard id="best-dl" label="Landing · Hell" width={W} height={H_BEST}><Desk h={H_BEST}><window.BestV mode="light" device="desktop" /></Desk></DCArtboard>
+        <DCArtboard id="best-dd" label="Landing · Dunkel" width={W} height={H_BEST}><Desk h={H_BEST} dark><window.BestV mode="dark" device="desktop" /></Desk></DCArtboard>
+        <DCArtboard id="best-ml" label="Mobile · Hell" width={MOBW} height={MOBH}><window.BestV mode="light" device="mobile" /></DCArtboard>
+        <DCArtboard id="best-md" label="Mobile · Dunkel" width={MOBW} height={MOBH}><window.BestV mode="dark" device="mobile" /></DCArtboard>
+      </DCSection>
+      <DCSection id="app-desktop" title="Anwendung · Club-App Desktop" subtitle="Interner Mitgliederbereich · dunkle Sidebar, rollenbasiert · klickbar">
+        <DCArtboard id="app-d" label="Club-App (klickbar · Rolle umschaltbar)" width={W} height={MEM}>
+          <ChromeWindow width={W} height={MEM} url="app.furria-grossfurra.de" tabs={[{ title: 'FURRIA · Club-App' }]}><DeskApp /></ChromeWindow>
+        </DCArtboard>
+        <DCPostIt top={20} left={W + 52} rotate={-2} width={236}>Voll interaktiv: klick die Seitenleiste, und schalte unten links zwischen Mitglied &amp; Vorstand — die Vorstand-Gruppe blendet sich rollenbasiert aus.</DCPostIt>
+      </DCSection>
+      <DCSection id="app-mobile" title="Anwendung · Club-App Mobile" subtitle="Dunkle Tab-Leiste · kontextueller Live-Streifen · klickbar">
+        <DCArtboard id="app-m1" label="Übersicht" width={MOBW} height={MOBH}><window.MobileApp start="uebersicht" role="vorstand" /></DCArtboard>
+        <DCArtboard id="app-m2" label="Bierliste" width={MOBW} height={MOBH}><window.MobileApp start="bierliste" role="vorstand" /></DCArtboard>
+        <DCArtboard id="app-m3" label="Spielplan" width={MOBW} height={MOBH}><window.MobileApp start="spielplan" role="vorstand" /></DCArtboard>
+        <DCArtboard id="app-m4" label="Live-Cockpit" width={MOBW} height={MOBH}><window.MobileApp start="live" role="vorstand" /></DCArtboard>
+        <DCArtboard id="app-m5" label="Mehr · Profil & Rollen" width={MOBW} height={MOBH}><window.MobileApp start="mehr" role="vorstand" /></DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

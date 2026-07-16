@@ -1,0 +1,18 @@
+# Place as tests/.editorconfig. The test-infra analyzers are fatal across the whole test tree.
+#
+# The analyzers ship as Warning. With <TreatWarningsAsErrors>true</TreatWarningsAsErrors> in the
+# root Directory.Build.props, MET003/MET006/MET007 are already fatal everywhere; the explicit
+# entries below pin MET001/002/004/005 to error regardless of warning settings. In a greenfield
+# project keep all seven at error from day one. The only sanctioned escape hatches are inline
+# ([SuppressMessage]/[SeedsAliases]) where the DbContext access or cross-class alias is the
+# subject under test, not incidental.
+[*.cs]
+dotnet_diagnostic.MET001.severity = error
+dotnet_diagnostic.MET002.severity = error
+dotnet_diagnostic.MET003.severity = error
+dotnet_diagnostic.MET004.severity = error
+dotnet_diagnostic.MET005.severity = error
+dotnet_diagnostic.MET007.severity = error
+# MET006 targets production code and is skipped in test projects via build_property.IsTestProject;
+# set it to error in the root or src .editorconfig:
+# dotnet_diagnostic.MET006.severity = error

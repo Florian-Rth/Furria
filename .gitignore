@@ -1,0 +1,21 @@
+# .NET
+bin/
+obj/
+*.user
+.vs/
+artifacts/
+
+# Node
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+.vite/
+
+# IDE / OS
+.idea/
+.DS_Store
+
+# Env
+.env
+.env.local

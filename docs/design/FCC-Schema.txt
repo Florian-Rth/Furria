@@ -1,0 +1,152 @@
+// FCC / FURRIA — Club-App · Database schema (DBML)
+
+Enum membership_type {
+  active
+  passive
+  youth
+  honorary
+}
+
+Enum membership_status {
+  active
+  inactive
+  left
+}
+
+Enum account_status {
+  active
+  disabled
+}
+
+Table person {
+  id          integer   [pk, increment]
+  first_name  varchar   [not null]
+  last_name   varchar   [not null]
+  email       varchar
+  phone       varchar
+  street      varchar
+  zip         varchar
+  city        varchar
+  created_at  timestamp [not null, default: `now()`]
+  updated_at  timestamp [not null, default: `now()`]
+
+  indexes {
+    (last_name, first_name)
+  }
+}
+
+Table membership {
+  id          integer           [pk, increment]
+  person_id   integer           [not null, unique, ref: - person.id]
+  type        membership_type   [not null]
+  status      membership_status [not null, default: 'active']
+  started_at  date              [not null]
+  ended_at    date
+  created_at  timestamp         [not null, default: `now()`]
+  updated_at  timestamp         [not null, default: `now()`]
+
+  indexes {
+    status
+  }
+}
+
+Table account {
+  id             integer        [pk, increment]
+  person_id      integer        [not null, unique, ref: - person.id]
+  username       varchar        [not null, unique]
+  email          varchar        [unique]
+  password_hash  varchar        [not null]
+  status         account_status [not null, default: 'active']
+  last_login_at  timestamp
+  created_at     timestamp      [not null, default: `now()`]
+  updated_at     timestamp      [not null, default: `now()`]
+
+  indexes {
+    username
+  }
+}
+
+Table invitation {
+  id          integer   [pk, increment]
+  person_id   integer   [not null, ref: > person.id]
+  token       varchar   [not null, unique]
+  invited_by  integer   [not null, ref: > person.id]
+  expires_at  timestamp
+  accepted_at timestamp
+  created_at  timestamp [not null, default: `now()`]
+
+  indexes {
+    token
+    person_id
+  }
+}
+
+Table group_category {
+  id         integer   [pk, increment]
+  name       varchar   [not null, unique]
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+}
+
+Table group {
+  id           integer   [pk, increment]
+  name         varchar   [not null]
+  category_id  integer   [not null, ref: > group_category.id]
+  description  text
+  founded_year integer
+  archived_at  timestamp
+  created_at   timestamp [not null, default: `now()`]
+  updated_at   timestamp [not null, default: `now()`]
+}
+
+Table group_membership {
+  id         integer   [pk, increment]
+  person_id  integer   [not null, ref: > person.id]
+  group_id   integer   [not null, ref: > group.id]
+  is_trainer boolean   [not null, default: false]
+  created_at timestamp [not null, default: `now()`]
+
+  indexes {
+    (person_id, group_id) [unique]
+    group_id
+  }
+}
+
+Table permission {
+  id   integer [pk, increment]
+  key  varchar [not null, unique]
+  name varchar [not null]
+  area varchar
+}
+
+Table role {
+  id         integer   [pk, increment]
+  key        varchar   [not null, unique]
+  name       varchar   [not null]
+  parent_id  integer   [ref: > role.id]
+  is_unique  boolean   [not null, default: false]
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+}
+
+Table role_permission {
+  role_id       integer [not null, ref: > role.id]
+  permission_id integer [not null, ref: > permission.id]
+
+  indexes {
+    (role_id, permission_id) [pk]
+  }
+}
+
+Table role_assignment {
+  id          integer   [pk, increment]
+  person_id   integer   [not null, ref: > person.id]
+  role_id     integer   [not null, ref: > role.id]
+  assigned_by integer   [ref: > person.id]
+  assigned_at timestamp [not null, default: `now()`]
+
+  indexes {
+    (person_id, role_id) [unique]
+    role_id
+  }
+}

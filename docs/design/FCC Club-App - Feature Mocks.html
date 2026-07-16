@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FCC Club-App — Feature-Mocks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@500;600;700;800;900&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet" />
+<style>
+  html, body { margin: 0; padding: 0; background: #f0eee9; }
+  * { box-sizing: border-box; }
+  @keyframes fcc-mq { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  @keyframes fcc-float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -10px; } }
+  @media (prefers-reduced-motion: no-preference) {
+    .fcc-mq { animation: fcc-mq 26s linear infinite; }
+    .fcc-floaty { animation: fcc-float 6s ease-in-out infinite; }
+  }
+  @keyframes fcc-pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.3; transform: scale(0.6); } }
+  .fcc-live { animation: fcc-pulse 1.4s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce) { .fcc-live { animation: none; } }
+  .fcc-scroll { scrollbar-width: none; -ms-overflow-style: none; }
+  .fcc-scroll::-webkit-scrollbar { display: none; }
+  .fcc-mrow:hover { background: #FBF8F1; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="browser-window.jsx"></script>
+<script type="text/babel" src="fcc-logos.jsx"></script>
+<script type="text/babel" src="fcc-shared.jsx"></script>
+<script type="text/babel" src="fcc-theme.jsx"></script>
+<script type="text/babel" src="fcc-ds-shell.jsx"></script>
+<script type="text/babel" src="fcc-ds-pages.jsx"></script>
+<script type="text/babel" src="fcc-ds-members.jsx"></script>
+<script type="text/babel" src="fcc-ds-groups.jsx"></script>
+<script type="text/babel" src="fcc-ds-roles.jsx"></script>
+<script type="text/babel" src="fcc-ds-events.jsx"></script>
+<script type="text/babel" src="fcc-ds-seating.jsx"></script>
+<script type="text/babel" src="fcc-ds-program.jsx"></script>
+<script type="text/babel" src="fcc-ds-fees.jsx"></script>
+<script type="text/babel" src="fcc-ds-live.jsx"></script>
+<script type="text/babel" src="fcc-ds-drinks.jsx"></script>
+<script type="text/babel" src="fcc-ds-shop.jsx"></script>
+<script type="text/babel" src="fcc-ds-shop-manage.jsx"></script>
+<script type="text/babel" src="fcc-ds-mobile.jsx"></script>
+<script type="text/babel" src="fcc-app-mocks.jsx"></script>
+<script type="text/babel">
+const { DesignCanvas, DCSection, DCArtboard, DCPostIt, ChromeWindow } = window;
+const { useState } = React;
+const W = 1300, MOBW = 400, MOBH = 858, MEM = 860;
+const APP_VORSTAND = ['cockpit', 'mitglieder', 'veranstaltungen', 'statistik', 'einstellungen'];
+
+// interactive desktop Club-App — the working surface
+function DeskApp({ start }) {
+  const [page, setPage] = useState(start || 'uebersicht');
+  const [role, setRole] = useState('vorstand');
+  const meta = window.PAGEMETA[page] || { title: page };
+  const onRole = (r) => { setRole(r); if (r === 'mitglied' && APP_VORSTAND.includes(page)) setPage('uebersicht'); };
+  const showAction = meta.action && !(role === 'mitglied' && page === 'spielplan') && !(page === 'mitglieder' && role !== 'vorstand');
+  return (
+    <window.AppShell active={page} role={role} onNav={setPage} onRole={onRole} title={meta.title} sub={meta.sub} action={showAction ? meta.action : undefined} onAction={() => {}} height="100%">
+      {window.renderFccPage(page, { role, go: setPage })}
+    </window.AppShell>
+  );
+}
+
+// frame that forces the members page into a given state (for showcase artboards)
+function MembersFrame({ member }) {
+  const meta = window.PAGEMETA['mitglieder'];
+  return (
+    <window.AppShell active="mitglieder" role="vorstand" onNav={() => {}} onRole={() => {}} title={meta.title} sub={meta.sub} height="100%">
+      <window.PageMembersManage start={member} />
+    </window.AppShell>
+  );
+}
+
+// frame for the groups page (its own tab/detail state lives inside PageGroups)
+function GroupsFrame() {
+  const meta = window.PAGEMETA['gruppen'];
+  return (
+    <window.AppShell active="gruppen" role="vorstand" onNav={() => {}} onRole={() => {}} title={meta.title} sub={meta.sub} height="100%">
+      <window.PageGroups />
+    </window.AppShell>
+  );
+}
+
+// frame for the roles page (Admin-only config)
+function RolesFrame() {
+  const meta = window.PAGEMETA['roles'];
+  return (
+    <window.AppShell active="roles" role="vorstand" onNav={() => {}} onRole={() => {}} title={meta.title} sub={meta.sub} height="100%">
+      <window.PageRoles />
+    </window.AppShell>
+  );
+}
+
+// frame for the Veranstaltungsplaner (forces a given inner view)
+function EventsFrame({ start, action }) {
+  const meta = window.PAGEMETA['veranstaltungen'];
+  return (
+    <window.AppShell active="veranstaltungen" role="vorstand" onNav={() => {}} onRole={() => {}} title={meta.title} sub={meta.sub} action={action} onAction={() => {}} height="100%">
+      <window.PageEvents start={start} />
+    </window.AppShell>
+  );
+}
+
+// frame for the Programm / Auto-Reihenfolge task (force draft vs optimised)
+function ProgramFrame({ programStart }) {
+  const meta = window.PAGEMETA['veranstaltungen'];
+  return (
+    <window.AppShell active="veranstaltungen" role="vorstand" onNav={() => {}} onRole={() => {}} title={meta.title} sub={meta.sub} height="100%">
+      <window.PageEvents start="programm" programStart={programStart} />
+    </window.AppShell>
+  );
+}
+
+// frame for the Finanzen controlling dashboard (Amt Finanzen)
+function FeesFrame() {
+  const meta = window.PAGEMETA['fees'];
+  return (
+    <window.AppShell active="fees" role="vorstand" onNav={() => {}} onRole={() => {}} title={meta.title} sub={meta.sub} height="100%">
+      <window.PageFees />
+    </window.AppShell>
+  );
+}
+
+// frame forcing the Ausgaben & Belege tab
+function FeesExpensesFrame() {
+  const meta = window.PAGEMETA['fees'];
+  return (
+    <window.AppShell active="fees" role="vorstand" onNav={() => {}} onRole={() => {}} title={meta.title} sub={meta.sub} height="100%">
+      <window.PageFees tab="expenses" />
+    </window.AppShell>
+  );
+}
+
+// focused member pay flow inside a phone (no bottom nav — it's a modal flow)
+function MPayPhone({ start }) {
+  const T = window.T;
+  return (
+    <window.PhoneFrame screenBg={T.bg}>
+      <window.StatusBar color={T.ink} />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 18px 8px', flexShrink: 0 }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 9 }}><window.KKBroom size={22} color={T.red} band={T.cream} /><span style={{ fontFamily: T.display, fontSize: 16, letterSpacing: 0.5 }}>Bezahlen</span></span>
+        <span style={{ width: 30, height: 30, borderRadius: 16, background: T.panel2, border: `1px solid ${T.line}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, color: T.sub }}>✕</span>
+      </div>
+      <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}><window.MPay initial={start} /></div>
+      <window.HomeIndicator />
+    </window.PhoneFrame>
+  );
+}
+
+// focused member receipt-submit flow inside a phone
+function MBelegPhone({ start }) {
+  const T = window.T;
+  return (
+    <window.PhoneFrame screenBg={T.bg}>
+      <window.StatusBar color={T.ink} />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 18px 8px', flexShrink: 0 }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 9 }}><window.KKBroom size={22} color={T.red} band={T.cream} /><span style={{ fontFamily: T.display, fontSize: 16, letterSpacing: 0.5 }}>Auslage</span></span>
+        <span style={{ width: 30, height: 30, borderRadius: 16, background: T.panel2, border: `1px solid ${T.line}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, color: T.sub }}>✕</span>
+      </div>
+      <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}><window.MBeleg initial={start} /></div>
+      <window.HomeIndicator />
+    </window.PhoneFrame>
+  );
+}
+
+// frame for the Live-Regie operator cockpit
+function LiveFrame() {
+  const meta = window.PAGEMETA['live'];
+  return (
+    <window.AppShell active="live" role="vorstand" onNav={() => {}} onRole={() => {}} title={meta.title} sub={meta.sub} height="100%">
+      <window.PageLive />
+    </window.AppShell>
+  );
+}
+
+// performer phone (Live-Regie member view)
+function LivePhone({ state }) {
+  const T = window.T;
+  const onRed = state === 'now';
+  return (
+    <window.PhoneFrame screenBg={onRed ? T.red : T.bg}>
+      <window.StatusBar color={onRed ? '#fff' : T.ink} />
+      <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', position: 'relative' }}><window.MLive state={state} /></div>
+      <window.HomeIndicator color={onRed ? 'rgba(255,255,255,0.85)' : 'rgba(20,20,20,0.85)'} />
+    </window.PhoneFrame>
+  );
+}
+
+// lock-screen push mock
+function LockPhone() {
+  return (
+    <window.PhoneFrame screenBg="#1A1411">
+      <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}><window.LockPush /></div>
+    </window.PhoneFrame>
+  );
+}
+
+// member Bierliste phone (Biertrinker) — force a sheet state
+function DrinksPhone({ initial }) {
+  const T = window.T;
+  return (
+    <window.PhoneFrame screenBg={T.bg}>
+      <window.StatusBar color={T.ink} />
+      <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}><window.MDrinks initial={initial} /></div>
+      <window.HomeIndicator />
+    </window.PhoneFrame>
+  );
+}
+
+// Getränkewart "Geld erhalten" phone — force a step
+function ReceivePhone({ start }) {
+  const T = window.T;
+  return (
+    <window.PhoneFrame screenBg={T.bg}>
+      <window.StatusBar color={T.ink} />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 18px 8px', flexShrink: 0 }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 9 }}><window.KKBroom size={22} color={T.red} band={T.cream} /><span style={{ fontFamily: T.display, fontSize: 16, letterSpacing: 0.5 }}>Getränkekasse</span></span>
+        <span style={{ width: 30, height: 30, borderRadius: 16, background: T.panel2, border: `1px solid ${T.line}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, color: T.sub }}>✕</span>
+      </div>
+      <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}><window.MDrinksReceive initial={start} /></div>
+      <window.HomeIndicator />
+    </window.PhoneFrame>
+  );
+}
+
+// Getränkewart desktop dashboard
+function DrinksAdminFrame() {
+  const meta = window.PAGEMETA['getraenke'];
+  return (
+    <window.AppShell active="getraenke" role="vorstand" onNav={() => {}} onRole={() => {}} title={meta.title} sub={meta.sub} height="100%">
+      <window.PageDrinksAdmin />
+    </window.AppShell>
+  );
+}
+
+// Klamotten-Shop · member desktop
+function ShopFrame({ openProduct }) {
+  const meta = window.PAGEMETA['shop'];
+  return (
+    <window.AppShell active="shop" role="vorstand" onNav={() => {}} onRole={() => {}} title={meta.title} sub={meta.sub} height="100%">
+      <window.PageShop openProduct={openProduct} />
+    </window.AppShell>
+  );
+}
+// Klamotten-Shop · Amt desktop (force a tab)
+function ShopManageFrame({ tab }) {
+  const meta = window.PAGEMETA['shop_manage'];
+  return (
+    <window.AppShell active="shop_manage" role="vorstand" onNav={() => {}} onRole={() => {}} title={meta.title} sub={meta.sub} height="100%">
+      <window.PageShopManage tab={tab} />
+    </window.AppShell>
+  );
+}
+// member shop phone (force a sheet/tab)
+function ShopPhone({ tab, openProduct }) {
+  const T = window.T;
+  return (
+    <window.PhoneFrame screenBg={T.bg}>
+      <window.StatusBar color={T.ink} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '6px 18px 6px', flexShrink: 0 }}>
+        <window.KKBroom size={20} color={T.red} band={T.cream} /><span style={{ fontFamily: T.display, fontSize: 16, letterSpacing: 0.5 }}>Shop</span>
+      </div>
+      <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}><window.MShop initial={tab} openProduct={openProduct} /></div>
+      <window.HomeIndicator />
+    </window.PhoneFrame>
+  );
+}
+
+function App() {
+  return (
+    <DesignCanvas>
+      <DCSection id="start" title="Club-App · Feature-Mocks" subtitle="Festgelegte Identität, Rechte & Routen — baut auf dem FCC Design System auf">
+        <DCArtboard id="briefing" label="① Agent-Briefing — hier starten" width={1180} height={500}><window.AgentBriefing /></DCArtboard>
+        <DCArtboard id="roadmap" label="② Bau-Status — was wir jetzt bauen" width={1180} height={824}><window.BuildBoard /></DCArtboard>
+        <DCArtboard id="pitch-args" label="③ Pitch-Argumente — für die Vorstandssitzung" width={1300} height={1720}><window.PitchArguments /></DCArtboard>
+        <DCArtboard id="cover" label="Über diese Datei" width={620} height={400}><window.MockCover /></DCArtboard>
+        <DCArtboard id="ia-model" label="Identität & Rechte" width={940} height={664}><window.IAModel /></DCArtboard>
+        <DCArtboard id="ia-routes" label="Routen & Seiten" width={1180} height={760}><window.IARoutes /></DCArtboard>
+      </DCSection>
+      <DCSection id="f-members" title="Feature · Mitglieder-Management" subtitle="/members/manage · Wurzel des Datenmodells — Liste & Detail/Bearbeiten">
+        <DCArtboard id="mm-list" label="Liste · Suche, Filter, Status" width={W} height={MEM}>
+          <ChromeWindow width={W} height={MEM} url="app.furria-grossfurra.de/members/manage" tabs={[{ title: 'FURRIA · Club-App' }]}><MembersFrame /></ChromeWindow>
+        </DCArtboard>
+        <DCArtboard id="mm-detail" label="Mitglied-Detail · Stammdaten, Gruppen, Ämter, Account" width={W} height={MEM}>
+          <ChromeWindow width={W} height={MEM} url="app.furria-grossfurra.de/members/m1" tabs={[{ title: 'FURRIA · Club-App' }]}><MembersFrame member="m1" /></ChromeWindow>
+        </DCArtboard>
+        <DCArtboard id="mm-mlist" label="Mobile · Liste" width={MOBW} height={MOBH}><window.MobileApp start="mitglieder" role="vorstand" /></DCArtboard>
+        <DCArtboard id="mm-mdetail" label="Mobile · Detail" width={MOBW} height={MOBH}><window.MobileApp start="mitglieder" role="vorstand" memberStart="m1" /></DCArtboard>
+        <DCPostIt top={20} left={2 * W + 84} rotate={2} width={244}>Klickbar: in der Liste eine Zeile öffnen → Detail. „Bearbeiten" schaltet Inline-Bearbeitung frei (Gruppen, Ämter, Flags, Schlüssel). Detail hier zeigt die Präsidentin (Amt, Schlüssel, Account aktiv).</DCPostIt>
+      </DCSection>
+      <DCSection id="f-groups" title="Feature · Gruppen" subtitle="/groups · Gruppen-CRUD, Mitglieder, Trainer — Ämter-Vergabe läuft über die Mitglieder-Verwaltung">
+        <DCArtboard id="gr-list" label="Gruppen · Karten, Kategorie, Archiv" width={W} height={MEM}>
+          <ChromeWindow width={W} height={MEM} url="app.furria-grossfurra.de/groups" tabs={[{ title: 'FURRIA · Club-App' }]}><GroupsFrame /></ChromeWindow>
+        </DCArtboard>
+        <DCArtboard id="gr-mobile" label="Mobile · Gruppen" width={MOBW} height={MOBH}><window.MobileApp start="gruppen" role="vorstand" /></DCArtboard>
+        <DCPostIt top={20} left={W + 52} rotate={-2} width={248}>Gruppen anlegen/bearbeiten dürfen nur Berechtigte (GF/Präsident/in/Admin); alle anderen sehen nur. Wer als <b>Trainer/in</b> gesetzt wird, verwaltet automatisch <b>seine</b> Gruppe. Ämter werden NICHT hier vergeben — das läuft über die Mitglieder-Verwaltung.</DCPostIt>
+      </DCSection>
+      <DCSection id="f-roles" title="Feature · Ämter & Rechte (Admin)" subtitle="/roles · RBAC — Rechte → Rollen → Ämter · nur für Admins">
+        <DCArtboard id="ro-list" label="Rollen · Rechte-Matrix" width={W} height={MEM}>
+          <ChromeWindow width={W} height={MEM} url="app.furria-grossfurra.de/roles" tabs={[{ title: 'FURRIA · Club-App' }]}><RolesFrame /></ChromeWindow>
+        </DCArtboard>
+        <DCArtboard id="ro-mobile" label="Mobile · Rollen + Ämter" width={MOBW} height={MOBH}><window.MobileApp start="roles" role="vorstand" /></DCArtboard>
+        <DCPostIt top={20} left={W + 52} rotate={2} width={248}>Zwei Tabs: <b>Rollen</b> (Rechte-Bündel — CRUD je Bereich) und <b>Ämter → Rollen</b> (welches Amt welche Rollen trägt). Mitglieder erben Rechte über ihr Amt. „Gruppen-Leitung" ist scoped (nur die eigene Gruppe).</DCPostIt>
+      </DCSection>
+      <DCSection id="f-events" title="Feature · Veranstaltungsplaner" subtitle="/events · Eine Veranstaltung = Status-Hub mit Aufgaben in beliebiger Reihenfolge — kein Stepper">
+        <DCArtboard id="ev-list" label="Saison-Liste · alle Events, nach Typ" width={W} height={1400}>
+          <ChromeWindow width={W} height={1400} url="app.furria-grossfurra.de/events" tabs={[{ title: 'FURRIA · Club-App' }]}><EventsFrame start="list" action="Veranstaltung anlegen" /></ChromeWindow>
+{/* topbar carries the primary action on desktop; toolbar button is mobile-only */}
+        </DCArtboard>
+        <DCArtboard id="ev-hub" label="Event-Hub · Status-Board (Prunksitzung)" width={W} height={1360}>
+          <ChromeWindow width={W} height={1360} url="app.furria-grossfurra.de/events/prunksitzung" tabs={[{ title: 'FURRIA · Club-App' }]}><EventsFrame start="hub" /></ChromeWindow>
+        </DCArtboard>
+        <DCArtboard id="ev-basics" label="Aufgabe · Eckdaten → Website" width={W} height={840}>
+          <ChromeWindow width={W} height={840} url="app.furria-grossfurra.de/events/prunksitzung/basics" tabs={[{ title: 'FURRIA · Club-App' }]}><EventsFrame start="basics" /></ChromeWindow>
+        </DCArtboard>
+        <DCArtboard id="ev-werbung" label="Aufgabe · Werbung (auto-Werbematerial)" width={W} height={850}>
+          <ChromeWindow width={W} height={850} url="app.furria-grossfurra.de/events/prunksitzung/werbung" tabs={[{ title: 'FURRIA · Club-App' }]}><EventsFrame start="werbung" /></ChromeWindow>
+        </DCArtboard>
+        <DCArtboard id="ev-vvk" label="Aufgabe · Vorverkauf (Ticketing + Schnell-Erfassung)" width={W} height={1140}>
+          <ChromeWindow width={W} height={1140} url="app.furria-grossfurra.de/events/prunksitzung/vorverkauf" tabs={[{ title: 'FURRIA · Club-App' }]}><EventsFrame start="vorverkauf" /></ChromeWindow>
+        </DCArtboard>
+        <DCArtboard id="ev-mwerbung" label="Mobile · Werbung" width={MOBW} height={MOBH}><window.MobileApp start="veranstaltungen" role="vorstand" eventStart="werbung" /></DCArtboard>
+        <DCArtboard id="ev-mvvk" label="Mobile · Vorverkauf" width={MOBW} height={MOBH}><window.MobileApp start="veranstaltungen" role="vorstand" eventStart="vorverkauf" /></DCArtboard>
+        <DCArtboard id="ev-saal" label="Aufgabe · Saalplan-Editor (Drag&Drop)" width={W} height={1180}>
+          <ChromeWindow width={W} height={1180} url="app.furria-grossfurra.de/events/prunksitzung/saalplan" tabs={[{ title: 'FURRIA · Club-App' }]}><EventsFrame start="saalplan" /></ChromeWindow>
+        </DCArtboard>
+        <DCArtboard id="ev-msaal" label="Mobile/iPad · Saalplan (Touch)" width={MOBW} height={MOBH}><window.MobileApp start="veranstaltungen" role="vorstand" eventStart="saalplan" /></DCArtboard>
+        <DCArtboard id="ev-mlist" label="Mobile · Saison" width={MOBW} height={MOBH}><window.MobileApp start="veranstaltungen" role="vorstand" eventStart="list" /></DCArtboard>
+        <DCArtboard id="ev-mhub" label="Mobile · Event-Hub" width={MOBW} height={MOBH}><window.MobileApp start="veranstaltungen" role="vorstand" eventStart="hub" /></DCArtboard>
+      </DCSection>
+      <DCSection id="f-program" title="Feature · Auto-Reihenfolge" subtitle="/events · Programm — der Algorithmus baut die beste Reihenfolge, der Planer behält die Kontrolle">
+        <DCArtboard id="pg-draft" label="① Vorher · manueller Entwurf (2 Konflikte)" width={W} height={1690}>
+          <ChromeWindow width={W} height={1690} url="app.furria-grossfurra.de/events/prunksitzung/programm" tabs={[{ title: 'FURRIA · Club-App' }]}><ProgramFrame programStart="draft" /></ChromeWindow>
+        </DCArtboard>
+        <DCArtboard id="pg-opt" label="② Nachher · automatisch berechnet" width={W} height={1690}>
+          <ChromeWindow width={W} height={1690} url="app.furria-grossfurra.de/events/prunksitzung/programm" tabs={[{ title: 'FURRIA · Club-App' }]}><ProgramFrame programStart="opt" /></ChromeWindow>
+        </DCArtboard>
+        <DCArtboard id="pg-mobile" label="Mobile · Programm (Mitglieder-Ansicht)" width={MOBW} height={MOBH}><window.MobileApp start="veranstaltungen" role="vorstand" eventStart="programm" /></DCArtboard>
+      </DCSection>
+      <DCSection id="f-fees" title="Feature · Zahlungen & Kasse" subtitle="/fees · Ein Zahlsystem für Beitrag, Klamotten, Getränkekasse & Tickets — leichter zahlen, automatische e.V.-Buchhaltung">
+        <DCArtboard id="fee-pay1" label="① Mitglied · offene Posten" width={MOBW} height={MOBH}><MPayPhone start="open" /></DCArtboard>
+        <DCArtboard id="fee-pay2" label="② Bezahlmethode (Stripe / PayPal)" width={MOBW} height={MOBH}><MPayPhone start="method" /></DCArtboard>
+        <DCArtboard id="fee-pay3" label="③ Bezahlt" width={MOBW} height={MOBH}><MPayPhone start="done" /></DCArtboard>
+        <DCArtboard id="fee-dash" label="Finanzen · Beiträge & Kasse (Amt Finanzen)" width={W} height={1310}>
+          <ChromeWindow width={W} height={1310} url="app.furria-grossfurra.de/fees" tabs={[{ title: 'FURRIA · Club-App' }]}><FeesFrame /></ChromeWindow>
+        </DCArtboard>
+      </DCSection>
+      <DCSection id="f-belege" title="Feature · Ausgaben & Belege" subtitle="Die Ausgaben-Seite der Kasse — Mitglied legt aus, reicht den Beleg ein, Finanzwart erstattet bar & verbucht automatisch">
+        <DCArtboard id="bl-submit" label="① Mitglied · Auslage einreichen" width={MOBW} height={MOBH}><MBelegPhone start="form" /></DCArtboard>
+        <DCArtboard id="bl-sent" label="② Eingereicht · Status & Erstattung" width={MOBW} height={MOBH}><MBelegPhone start="sent" /></DCArtboard>
+        <DCArtboard id="bl-finanz" label="Finanzen · Ausgaben & Belege genehmigen" width={W} height={1130}>
+          <ChromeWindow width={W} height={1130} url="app.furria-grossfurra.de/fees#ausgaben" tabs={[{ title: 'FURRIA · Club-App' }]}><FeesExpensesFrame /></ChromeWindow>
+        </DCArtboard>
+      </DCSection>
+      <DCSection id="f-live" title="Feature · Live-Regie" subtitle="Der geplante Ablauf läuft live am Abend — die Regie schaltet weiter, alle Aktiven sehen es sofort & bekommen ihren Einsatz-Push">
+        <DCArtboard id="lv-cockpit" label="Regie · Live-Cockpit (Operator)" width={W} height={1264}>
+          <ChromeWindow width={W} height={1264} url="app.furria-grossfurra.de/live" tabs={[{ title: 'FURRIA · Club-App' }]}><LiveFrame /></ChromeWindow>
+        </DCArtboard>
+        <DCArtboard id="lv-push" label="① Push aufs Handy (Sperrbildschirm)" width={MOBW} height={MOBH}><LockPhone /></DCArtboard>
+        <DCArtboard id="lv-soon" label="② In der App · macht euch bereit" width={MOBW} height={MOBH}><LivePhone state="soon" /></DCArtboard>
+        <DCArtboard id="lv-now" label="③ Ihr seid dran!" width={MOBW} height={MOBH}><LivePhone state="now" /></DCArtboard>
+      </DCSection>
+      <DCSection id="f-drinks" title="Feature · Bierliste & Getränkekasse" subtitle="Die Männer-Seite: Kisten für die Runde sponsern, offen per PayPal zahlen — der Getränkewart bestätigt, gleicht ab & weiß, wie viele Kisten auf der Palette zu rücken sind">
+        <DCArtboard id="dr-over" label="Biertrinker · Übersicht" width={MOBW} height={MOBH}><DrinksPhone initial={null} /></DCArtboard>
+        <DCArtboard id="dr-buy" label="① Kiste kaufen (Dialog)" width={MOBW} height={MOBH}><DrinksPhone initial="buy" /></DCArtboard>
+        <DCArtboard id="dr-pay" label="② Offen → PayPal des Getränkewarts" width={MOBW} height={MOBH}><DrinksPhone initial="pay" /></DCArtboard>
+        <DCArtboard id="dr-sent" label="③ Gemeldet · wartet auf Bestätigung" width={MOBW} height={MOBH}><DrinksPhone initial="sent" /></DCArtboard>
+        <DCArtboard id="dr-admin" label="Getränkewart · Kasse, Bestand & Palettenabgleich" width={W} height={1290}>
+          <ChromeWindow width={W} height={1290} url="app.furria-grossfurra.de/drinks/inventory" tabs={[{ title: 'FURRIA · Club-App' }]}><DrinksAdminFrame /></ChromeWindow>
+        </DCArtboard>
+        <DCArtboard id="dr-rec1" label="Getränkewart · Geld erhalten (wer + Kisten)" width={MOBW} height={MOBH}><ReceivePhone start="who" /></DCArtboard>
+        <DCArtboard id="dr-rec2" label="… automatisch abgeglichen + Nachrück-Hinweis" width={MOBW} height={MOBH}><ReceivePhone start="done" /></DCArtboard>
+        <DCArtboard id="dr-madmin" label="Getränkewart · Mobile (am Tresen)" width={MOBW} height={MOBH}><window.MobileApp start="getraenke" role="vorstand" /></DCArtboard>
+      </DCSection>
+      <DCSection id="f-shop" title="Feature · Klamotten-Shop" subtitle="Vereinskleidung als Sammelbestellung: Mitglied bestellt & zahlt (direkt oder bar), das Amt bekommt EINE fertige Lieferanten-Liste + Ausgabe-Tracking">
+        <DCArtboard id="shop-cat" label="Mitglied · Sortiment + Meine Bestellungen" width={W} height={920}>
+          <ChromeWindow width={W} height={920} url="app.furria-grossfurra.de/shop" tabs={[{ title: 'FURRIA · Club-App' }]}><ShopFrame /></ChromeWindow>
+        </DCArtboard>
+        <DCArtboard id="shop-modal" label="Mitglied · Bestellen (Größe + zahlen)" width={W} height={920}>
+          <ChromeWindow width={W} height={920} url="app.furria-grossfurra.de/shop" tabs={[{ title: 'FURRIA · Club-App' }]}><ShopFrame openProduct="softshell" /></ChromeWindow>
+        </DCArtboard>
+        <DCArtboard id="shop-mcat" label="Mobile · Shop" width={MOBW} height={MOBH}><ShopPhone tab="shop" /></DCArtboard>
+        <DCArtboard id="shop-msheet" label="Mobile · Bestellen (Sheet)" width={MOBW} height={MOBH}><ShopPhone tab="shop" openProduct="softshell" /></DCArtboard>
+        <DCArtboard id="shop-morders" label="Mobile · Meine Bestellungen" width={MOBW} height={MOBH}><ShopPhone tab="orders" /></DCArtboard>
+        <DCArtboard id="shop-cons" label="Amt · Sammelbestellung → Lieferanten-Liste" width={W} height={1000}>
+          <ChromeWindow width={W} height={1000} url="app.furria-grossfurra.de/shop/manage" tabs={[{ title: 'FURRIA · Club-App' }]}><ShopManageFrame tab="bestellung" /></ChromeWindow>
+        </DCArtboard>
+        <DCArtboard id="shop-ausgabe" label="Amt · Ausgabe & Zahlung (abhaken)" width={W} height={840}>
+          <ChromeWindow width={W} height={840} url="app.furria-grossfurra.de/shop/manage" tabs={[{ title: 'FURRIA · Club-App' }]}><ShopManageFrame tab="ausgabe" /></ChromeWindow>
+        </DCArtboard>
+        <DCArtboard id="shop-madmin" label="Amt · Mobile (Sammelbestellung)" width={MOBW} height={MOBH}><window.MobileApp start="shop_manage" role="vorstand" /></DCArtboard>
+      </DCSection>
+      <DCSection id="desktop" title="Arbeitsfläche · Desktop" subtitle="Klickbar · Sidebar navigieren, Rolle unten links umschalten">
+        <DCArtboard id="app-d" label="Club-App (Desktop)" width={W} height={MEM}>
+          <ChromeWindow width={W} height={MEM} url="app.furria-grossfurra.de" tabs={[{ title: 'FURRIA · Club-App' }]}><DeskApp start="mitglieder" /></ChromeWindow>
+        </DCArtboard>
+        <DCPostIt top={20} left={W + 52} rotate={-2} width={240}>Hier bauen wir Seite für Seite aus. Neue Feature-Seiten kommen in die System-Seitenbibliothek und erscheinen automatisch in dieser Shell.</DCPostIt>
+      </DCSection>
+      <DCSection id="mobile" title="Arbeitsfläche · Mobile" subtitle="Dieselben Seiten, mobil — dunkle Tab-Leiste & Live-Streifen">
+        <DCArtboard id="app-m1" label="Übersicht" width={MOBW} height={MOBH}><window.MobileApp start="uebersicht" role="vorstand" /></DCArtboard>
+        <DCArtboard id="app-m2" label="Bierliste" width={MOBW} height={MOBH}><window.MobileApp start="bierliste" role="vorstand" /></DCArtboard>
+        <DCArtboard id="app-m3" label="Spielplan" width={MOBW} height={MOBH}><window.MobileApp start="spielplan" role="vorstand" /></DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
