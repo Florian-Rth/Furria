@@ -1,0 +1,43 @@
+<svg width="300" height="320" viewBox="0 0 300 320" xmlns="http://www.w3.org/2000/svg">
+  <!-- FURRIA modern emblem: red shield, crossed white brooms (from docs/design/fcc-logos.jsx, LogoModern) -->
+  <path d="M40,28 H260 Q268,28 268,38 V150 C268,224 196,266 150,286 C104,266 32,224 32,150 V38 Q32,28 40,28 Z" fill="#C8102E"/>
+  <path d="M40,28 H260 Q268,28 268,38 V150 C268,224 196,266 150,286 C104,266 32,224 32,150 V38 Q32,28 40,28 Z"
+        fill="none" stroke="#FFFFFF" stroke-opacity="0.85" stroke-width="3"
+        transform="translate(150 157) scale(0.955) translate(-150 -157)"/>
+  <g transform="translate(150 132)">
+    <g transform="rotate(-122) scale(1.62)">
+      <rect x="-2.6" y="-72" width="5.2" height="72" rx="2.6" fill="#FFFFFF"/>
+      <circle cx="0" cy="-72" r="4.1" fill="#FFFFFF"/>
+      <path d="M-8.5,6 L-21,48 Q0,53 21,48 L8.5,6 Z" fill="#FFFFFF"/>
+      <g stroke="#9C0B22" stroke-opacity="0.28" stroke-width="1.1">
+        <line x1="-8" y1="7" x2="-21" y2="47"/>
+        <line x1="-5.71" y1="7" x2="-15" y2="47"/>
+        <line x1="-3.43" y1="7" x2="-9" y2="47"/>
+        <line x1="-1.14" y1="7" x2="-3" y2="47"/>
+        <line x1="1.14" y1="7" x2="3" y2="47"/>
+        <line x1="3.43" y1="7" x2="9" y2="47"/>
+        <line x1="5.71" y1="7" x2="15" y2="47"/>
+        <line x1="8" y1="7" x2="21" y2="47"/>
+      </g>
+      <rect x="-9.5" y="-5" width="19" height="12" rx="3" fill="#9C0B22"/>
+      <rect x="-9.5" y="-5" width="19" height="4" rx="2" fill="#FFFFFF" fill-opacity="0.18"/>
+    </g>
+    <g transform="rotate(122) scale(1.62)">
+      <rect x="-2.6" y="-72" width="5.2" height="72" rx="2.6" fill="#FFFFFF"/>
+      <circle cx="0" cy="-72" r="4.1" fill="#FFFFFF"/>
+      <path d="M-8.5,6 L-21,48 Q0,53 21,48 L8.5,6 Z" fill="#FFFFFF"/>
+      <g stroke="#9C0B22" stroke-opacity="0.28" stroke-width="1.1">
+        <line x1="-8" y1="7" x2="-21" y2="47"/>
+        <line x1="-5.71" y1="7" x2="-15" y2="47"/>
+        <line x1="-3.43" y1="7" x2="-9" y2="47"/>
+        <line x1="-1.14" y1="7" x2="-3" y2="47"/>
+        <line x1="1.14" y1="7" x2="3" y2="47"/>
+        <line x1="3.43" y1="7" x2="9" y2="47"/>
+        <line x1="5.71" y1="7" x2="15" y2="47"/>
+        <line x1="8" y1="7" x2="21" y2="47"/>
+      </g>
+      <rect x="-9.5" y="-5" width="19" height="12" rx="3" fill="#9C0B22"/>
+      <rect x="-9.5" y="-5" width="19" height="4" rx="2" fill="#FFFFFF" fill-opacity="0.18"/>
+    </g>
+  </g>
+</svg>
