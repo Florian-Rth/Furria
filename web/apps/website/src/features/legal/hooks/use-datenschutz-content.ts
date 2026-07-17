@@ -1,6 +1,5 @@
 import type { LegalDocument } from '../types';
 
-// [TODO: …] markers must be filled with real data before the site goes public.
 const datenschutzContent: LegalDocument = {
   title: 'Datenschutzerklärung',
   sections: [
@@ -14,8 +13,9 @@ const datenschutzContent: LegalDocument = {
     {
       heading: '2. Hosting und Server-Logfiles',
       paragraphs: [
-        'Diese Website wird bei [TODO: Hosting-Anbieter, Anschrift] gehostet. Beim Aufruf der Website verarbeitet der Hoster automatisch technisch notwendige Daten in sogenannten Server-Logfiles: IP-Adresse, Datum und Uhrzeit des Zugriffs, aufgerufene Seite, übertragene Datenmenge sowie Browser- und Betriebssystem-Informationen (User-Agent).',
-        'Die Verarbeitung erfolgt auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO. Unser berechtigtes Interesse ist der technisch fehlerfreie und sichere Betrieb der Website. Die Logfiles werden vom Hoster nach dessen Aufbewahrungsfristen gelöscht.',
+        'Diese Website wird auf einem eigenen, angemieteten Server betrieben. Anbieter der Server-Infrastruktur ist die Hetzner Online GmbH, Industriestr. 25, 91710 Gunzenhausen, Deutschland (Rechenzentren innerhalb der EU). Mit Hetzner wurde ein Vertrag über Auftragsverarbeitung nach Art. 28 DSGVO geschlossen.',
+        'Beim Aufruf der Website verarbeiten wir automatisch technisch notwendige Daten in sogenannten Server-Logfiles: IP-Adresse, Datum und Uhrzeit des Zugriffs, aufgerufene Seite, übertragene Datenmenge sowie Browser- und Betriebssystem-Informationen (User-Agent).',
+        'Die Verarbeitung erfolgt auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO. Unser berechtigtes Interesse ist der technisch fehlerfreie und sichere Betrieb der Website. Die Logfiles werden spätestens nach 14 Tagen gelöscht oder anonymisiert.',
       ],
     },
     {
