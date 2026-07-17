@@ -1,3 +1,4 @@
+import Stack from '@mui/material/Stack';
 import { createFileRoute } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { useState } from 'react';
@@ -17,7 +18,16 @@ const HomeComponent: FC = () => {
 
   return (
     <>
-      <LandingPage onCtaClick={() => setDialogOpen(true)} confettiPaused={dialogOpen} />
+      <Stack
+        sx={{
+          flex: 1,
+          // Blurring the (static) content subtree is cheap and cached; the
+          // dialog renders in a portal outside it, so typing never re-blurs.
+          filter: dialogOpen ? 'blur(9px)' : 'none',
+        }}
+      >
+        <LandingPage onCtaClick={() => setDialogOpen(true)} confettiPaused={dialogOpen} />
+      </Stack>
       <PreviewAccessDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />
     </>
   );

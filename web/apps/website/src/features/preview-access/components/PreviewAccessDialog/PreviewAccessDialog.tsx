@@ -24,10 +24,12 @@ export const PreviewAccessDialog: FC<PreviewAccessDialogProps> = ({ open, onClos
       maxWidth="xs"
       fullWidth
       slotProps={{
+        // No backdrop-filter here: a viewport-sized backdrop blur re-filters on
+        // nearly every frame in Chromium and lags badly. The page content behind
+        // the dialog is blurred via a plain `filter` where it is cheap (route).
         backdrop: {
           sx: {
-            backdropFilter: 'blur(9px)',
-            backgroundColor: 'rgba(26, 20, 17, 0.35)',
+            backgroundColor: 'rgba(26, 20, 17, 0.45)',
           },
         },
       }}
