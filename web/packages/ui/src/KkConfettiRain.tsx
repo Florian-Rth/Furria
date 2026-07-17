@@ -24,9 +24,12 @@ interface KkConfettiRainProps {
   paused?: boolean;
 }
 
-// Decorative full-viewport confetti rain (Konfetti Kinetik signature gesture).
-// Purely visual: hidden from assistive tech, ignores pointer events, and
-// disabled entirely for users who prefer reduced motion.
+// Decorative confetti rain (Konfetti Kinetik signature gesture). Fills its
+// nearest positioned ancestor and paints behind that container's content —
+// give the container `position: relative` and `overflow: hidden` to scope
+// the rain to it (per the design language it never covers reading columns
+// or app chrome). Purely visual: hidden from assistive tech, ignores pointer
+// events, and disabled entirely for users who prefer reduced motion.
 // Pause the rain while a backdrop-filter surface (e.g. a blurred dialog
 // backdrop) covers it — animated content beneath a backdrop filter forces a
 // full-viewport re-blur on every frame.
@@ -41,11 +44,11 @@ export const KkConfettiRain: FC<KkConfettiRainProps> = ({
     <Box
       aria-hidden
       sx={{
-        position: 'fixed',
+        position: 'absolute',
         inset: 0,
         overflow: 'hidden',
         pointerEvents: 'none',
-        zIndex: 0,
+        zIndex: -1,
         '@media (prefers-reduced-motion: reduce)': { display: 'none' },
       }}
     >

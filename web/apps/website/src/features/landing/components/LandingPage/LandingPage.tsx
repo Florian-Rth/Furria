@@ -17,7 +17,6 @@ export const LandingPage: FC<LandingPageProps> = ({ onCtaClick, confettiPaused =
 
   return (
     <TeaserLayout>
-      <KkConfettiRain paused={confettiPaused} />
       <TeaserLayout.Masthead>
         <Wordmark text={content.wordmark} />
         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
@@ -25,6 +24,7 @@ export const LandingPage: FC<LandingPageProps> = ({ onCtaClick, confettiPaused =
         </Typography>
       </TeaserLayout.Masthead>
       <TeaserLayout.Hero>
+        <KkConfettiRain paused={confettiPaused} />
         <TwoToneHeadline line1={content.headlineLine1} line2={content.headlineLine2} />
         <Typography variant="subtitle1" sx={{ color: 'text.secondary', maxWidth: 'sm' }}>
           {content.tagline}

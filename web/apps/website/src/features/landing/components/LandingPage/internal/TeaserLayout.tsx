@@ -17,14 +17,15 @@ const Masthead: FC<PropsWithChildren> = ({ children }) => (
       px: 2,
       borderBottom: 1,
       borderColor: 'divider',
-      position: 'relative',
-      zIndex: 1,
     }}
   >
     {children}
   </Stack>
 );
 
+// position/zIndex/overflow scope the confetti rain to the hero: the rain
+// layer fills this container, paints behind its content (zIndex -1 within
+// this stacking context) and is clipped at its edges.
 const Hero: FC<PropsWithChildren> = ({ children }) => (
   <Stack
     component="main"
@@ -38,6 +39,7 @@ const Hero: FC<PropsWithChildren> = ({ children }) => (
       py: 10,
       position: 'relative',
       zIndex: 1,
+      overflow: 'hidden',
     }}
   >
     {children}
