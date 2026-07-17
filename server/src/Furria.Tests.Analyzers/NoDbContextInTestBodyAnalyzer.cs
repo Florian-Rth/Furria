@@ -8,8 +8,8 @@ namespace Furria.Tests.Analyzers;
 
 // MET005 — a `[Fact]`/`[Theory]` body must not touch a DbContext directly. Both forms are
 // flagged: resolving one from the host (`GetRequiredService<XxxDbContext>()`) and declaring a
-// local whose type is a DbContext. Seed via TestContextBuilder and assert via Expected instead;
-// those live in Tests.Common, which is never wired with this analyzer.
+// local whose type is a DbContext. Seed and assert through the Tests.Common harness instead,
+// which is never wired with this analyzer.
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class NoDbContextInTestBodyAnalyzer : DiagnosticAnalyzer
 {

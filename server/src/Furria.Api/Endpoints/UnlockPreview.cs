@@ -6,9 +6,9 @@ namespace Furria.Api.Endpoints;
 
 public sealed class UnlockPreview : Endpoint<UnlockPreviewRequest, UnlockPreviewResponse>
 {
-    private readonly IPreviewAccessService _previewAccessService;
+    private readonly PreviewAccessService _previewAccessService;
 
-    public UnlockPreview(IPreviewAccessService previewAccessService)
+    public UnlockPreview(PreviewAccessService previewAccessService)
     {
         _previewAccessService = previewAccessService;
     }
@@ -31,7 +31,7 @@ public sealed class UnlockPreview : Endpoint<UnlockPreviewRequest, UnlockPreview
     }
 }
 
-public sealed class UnlockPreviewRequest
+public sealed record UnlockPreviewRequest
 {
     public required string Password { get; init; }
 }

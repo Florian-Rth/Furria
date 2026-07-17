@@ -2,7 +2,8 @@
   <!--
     Wires the analyzers into every production project so MET006 (no ambient clock - inject
     TimeProvider) covers production code. The analyzer project itself and Tests.Common are
-    excluded (Tests.Common legitimately reads the real clock in Polling).
+    excluded (Tests.Common legitimately reads the real clock, e.g. to anchor the
+    FakeTimeProvider at real "now").
   -->
   <ItemGroup Condition="'$(MSBuildProjectName)' != 'Furria.Tests.Analyzers' AND '$(MSBuildProjectName)' != 'Furria.Tests.Common'">
     <ProjectReference Include="$(MSBuildThisFileDirectory)Furria.Tests.Analyzers\Furria.Tests.Analyzers.csproj">

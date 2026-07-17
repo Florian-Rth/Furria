@@ -4,7 +4,7 @@ using Microsoft.Extensions.Options;
 
 namespace Furria.Application.PreviewAccess;
 
-public sealed class PreviewAccessService : IPreviewAccessService
+public sealed class PreviewAccessService
 {
     private readonly string _configuredPassword;
 

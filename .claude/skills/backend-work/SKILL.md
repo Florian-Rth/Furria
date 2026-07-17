@@ -80,7 +80,7 @@ description: Mandatory rules for all C#/.NET backend work. Invoke before writing
 - Delete endpoints return 204 with no response
 
 ### Services
-- Interface naming: `I<Entity>Service` / `<Entity>Service` (singular)
+- Services are sealed concrete classes named `<Entity>Service` (singular), injected directly — no interface until a genuine second implementation exists; never add one for mocking (ADR-0001 bans mocks)
 - 0-2 args + CancellationToken: use primitives
 - 3+ args: use Command or Query object
 - Return types: `...Details` (single), `...Summary` (list item)

@@ -11,4 +11,3 @@ MET003 | TestInfrastructure | Warning | TestMethodNamingAnalyzer
 MET004 | TestInfrastructure | Warning | IntegrationCollectionMarkerAnalyzer
 MET005 | TestInfrastructure | Warning | NoDbContextInTestBodyAnalyzer
 MET006 | TestInfrastructure | Warning | NoAmbientClockAnalyzer
-MET007 | TestInfrastructure | Warning | DanglingAliasAnalyzer

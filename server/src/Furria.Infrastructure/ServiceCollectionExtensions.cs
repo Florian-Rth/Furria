@@ -13,7 +13,7 @@ public static class ServiceCollectionExtensions
     )
     {
         services.AddDbContext<AppDbContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("AppDb"))
+            options.UseNpgsql(configuration.GetConnectionString(AppDbContext.ConnectionName))
         );
         services.AddSingleton(TimeProvider.System);
         return services;

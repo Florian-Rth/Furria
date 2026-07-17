@@ -1,3 +1,4 @@
+using Furria.Application.PreviewAccess;
 using Furria.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -22,6 +23,23 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
 
     // Parameterless FakeTimeProvider would start at 2000-01-01 - anchor it at real "now".
     public FakeTimeProvider TimeProvider { get; } = new(DateTimeOffset.UtcNow);
+
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    {
+        builder.UseSetting(
+            $"ConnectionStrings:{AppDbContext.ConnectionName}",
+            _postgres.GetConnectionString()
+        );
+        builder.UseSetting(
+            $"{PreviewAccessOptions.SectionName}:{nameof(PreviewAccessOptions.Password)}",
+            PreviewPassword
+        );
+        builder.ConfigureServices(services =>
+        {
+            services.RemoveAll<TimeProvider>();
+            services.AddSingleton<TimeProvider>(TimeProvider);
+        });
+    }
 
     public async ValueTask InitializeAsync()
     {
@@ -49,16 +67,5 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
     {
         await base.DisposeAsync();
         await _postgres.DisposeAsync();
-    }
-
-    protected override void ConfigureWebHost(IWebHostBuilder builder)
-    {
-        builder.UseSetting("ConnectionStrings:AppDb", _postgres.GetConnectionString());
-        builder.UseSetting("PreviewAccess:Password", PreviewPassword);
-        builder.ConfigureServices(services =>
-        {
-            services.RemoveAll<TimeProvider>();
-            services.AddSingleton<TimeProvider>(TimeProvider);
-        });
     }
 }

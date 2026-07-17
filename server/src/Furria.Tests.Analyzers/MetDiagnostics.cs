@@ -2,7 +2,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Furria.Tests.Analyzers;
 
-// Diagnostic descriptors for the test-infrastructure rules (MET001-MET007). All ship as
+// Diagnostic descriptors for the test-infrastructure rules (MET001-MET006). All ship as
 // Warning; severity is raised to Error via .editorconfig / TreatWarningsAsErrors.
 internal static class MetDiagnostics
 {
@@ -35,19 +35,13 @@ internal static class MetDiagnostics
     public static readonly DiagnosticDescriptor NoDbContextInTestBody = Create(
         "MET005",
         "No DbContext access in test body",
-        "Test method '{0}' accesses a DbContext directly; seed via TestContextBuilder and assert via Expected instead"
+        "Test method '{0}' accesses a DbContext directly; seed and assert through the Tests.Common harness instead"
     );
 
     public static readonly DiagnosticDescriptor NoAmbientClock = Create(
         "MET006",
         "No ambient clock in production code",
         "'{0}' is banned in production code; read the current time from an injected TimeProvider"
-    );
-
-    public static readonly DiagnosticDescriptor DanglingAlias = Create(
-        "MET007",
-        "Dangling builder alias",
-        "Alias \"{0}\" is referenced via {1} but never declared by an Add* builder call in the test class"
     );
 
     private static DiagnosticDescriptor Create(string id, string title, string messageFormat) =>
