@@ -16,6 +16,9 @@ interface PreviewAccessDialogProps {
 
 export const PreviewAccessDialog: FC<PreviewAccessDialogProps> = ({ open, onClose }) => {
   const { form, submit, isSubmitting, submitError } = useUnlockForm(onClose);
+  // MUI TextField forwards `ref` to its root div - react-hook-form's element
+  // ref must go through `inputRef` or focus-on-error targets the wrong node.
+  const { ref: passwordRef, ...passwordField } = form.register('password');
 
   return (
     <Dialog
@@ -43,7 +46,8 @@ export const PreviewAccessDialog: FC<PreviewAccessDialogProps> = ({ open, onClos
           </DialogContentText>
           {submitError !== null && <Alert severity="error">{submitError}</Alert>}
           <TextField
-            {...form.register('password')}
+            {...passwordField}
+            inputRef={passwordRef}
             type="password"
             label="Passwort"
             autoComplete="current-password"
