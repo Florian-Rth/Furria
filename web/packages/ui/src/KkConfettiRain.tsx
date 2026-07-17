@@ -21,12 +21,20 @@ const PIECE_COLOR = {
 interface KkConfettiRainProps {
   count?: number;
   seed?: number;
+  paused?: boolean;
 }
 
 // Decorative full-viewport confetti rain (Konfetti Kinetik signature gesture).
 // Purely visual: hidden from assistive tech, ignores pointer events, and
 // disabled entirely for users who prefer reduced motion.
-export const KkConfettiRain: FC<KkConfettiRainProps> = ({ count = 18, seed = 11 }) => {
+// Pause the rain while a backdrop-filter surface (e.g. a blurred dialog
+// backdrop) covers it — animated content beneath a backdrop filter forces a
+// full-viewport re-blur on every frame.
+export const KkConfettiRain: FC<KkConfettiRainProps> = ({
+  count = 18,
+  seed = 11,
+  paused = false,
+}) => {
   const pieces = buildConfettiPieces(count, seed);
 
   return (
@@ -56,6 +64,7 @@ export const KkConfettiRain: FC<KkConfettiRainProps> = ({ count = 18, seed = 11 
             opacity: 0.85,
             animation: `${fall} ${piece.durationSeconds}s linear infinite`,
             animationDelay: `${piece.delaySeconds}s`,
+            animationPlayState: paused ? 'paused' : 'running',
             '--kk-confetti-drift': `${piece.driftVw}vw`,
             '--kk-confetti-spin': `${piece.spinDegrees}deg`,
           }}

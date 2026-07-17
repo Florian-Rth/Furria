@@ -9,14 +9,15 @@ import { Wordmark } from './internal/Wordmark';
 
 interface LandingPageProps {
   onCtaClick: () => void;
+  confettiPaused?: boolean;
 }
 
-export const LandingPage: FC<LandingPageProps> = ({ onCtaClick }) => {
+export const LandingPage: FC<LandingPageProps> = ({ onCtaClick, confettiPaused = false }) => {
   const content = useLandingContent();
 
   return (
     <TeaserLayout>
-      <KkConfettiRain />
+      <KkConfettiRain paused={confettiPaused} />
       <TeaserLayout.Masthead>
         <Wordmark text={content.wordmark} />
         <Typography variant="body2" sx={{ color: 'text.secondary' }}>

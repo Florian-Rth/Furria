@@ -17,7 +17,7 @@ const HomeComponent: FC = () => {
 
   return (
     <>
-      <LandingPage onCtaClick={() => setDialogOpen(true)} />
+      <LandingPage onCtaClick={() => setDialogOpen(true)} confettiPaused={dialogOpen} />
       <PreviewAccessDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />
     </>
   );

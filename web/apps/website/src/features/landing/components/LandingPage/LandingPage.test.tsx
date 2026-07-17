@@ -5,12 +5,22 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { LandingPage } from './LandingPage';
 
-const renderLandingPage = (onCtaClick: () => void = () => {}): void => {
-  render(
+interface RenderOptions {
+  onCtaClick?: () => void;
+  confettiPaused?: boolean;
+}
+
+const renderLandingPage = ({
+  onCtaClick = () => {},
+  confettiPaused = false,
+}: RenderOptions = {}): HTMLElement => {
+  const { container } = render(
     <ThemeProvider theme={kkTheme}>
-      <LandingPage onCtaClick={onCtaClick} />
+      <LandingPage onCtaClick={onCtaClick} confettiPaused={confettiPaused} />
     </ThemeProvider>,
   );
+
+  return container;
 };
 
 describe('LandingPage', () => {
@@ -31,10 +41,17 @@ describe('LandingPage', () => {
   it('notifies the caller when the access button is clicked', async () => {
     const user = userEvent.setup();
     const onCtaClick = vi.fn();
-    renderLandingPage(onCtaClick);
+    renderLandingPage({ onCtaClick });
 
     await user.click(screen.getByRole('button', { name: 'Einlass' }));
 
     expect(onCtaClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('pauses the confetti rain when requested', () => {
+    const container = renderLandingPage({ confettiPaused: true });
+
+    const piece = container.querySelector('[aria-hidden="true"] > span');
+    expect(piece).toHaveStyle({ animationPlayState: 'paused' });
   });
 });
