@@ -1,5 +1,5 @@
-import { buildConfettiPieces } from '@furria/ui';
 import { describe, expect, it } from 'vitest';
+import { buildConfettiPieces } from './confetti-pieces';
 
 describe('buildConfettiPieces', () => {
   it('is deterministic for the same seed', () => {

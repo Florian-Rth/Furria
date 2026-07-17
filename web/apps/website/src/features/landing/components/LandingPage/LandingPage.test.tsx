@@ -1,8 +1,7 @@
-import { kkTheme } from '@furria/ui';
-import { ThemeProvider } from '@mui/material/styles';
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import { renderWithProviders } from '@/test/render';
 import { LandingPage } from './LandingPage';
 
 interface RenderOptions {
@@ -14,10 +13,8 @@ const renderLandingPage = ({
   onCtaClick = () => {},
   confettiPaused = false,
 }: RenderOptions = {}): HTMLElement => {
-  const { container } = render(
-    <ThemeProvider theme={kkTheme}>
-      <LandingPage onCtaClick={onCtaClick} confettiPaused={confettiPaused} />
-    </ThemeProvider>,
+  const { container } = renderWithProviders(
+    <LandingPage onCtaClick={onCtaClick} confettiPaused={confettiPaused} />,
   );
 
   return container;

@@ -1,6 +1,6 @@
-import type { LegalDocument } from '../types';
+import type { LegalDocument } from './types';
 
-const datenschutzContent: LegalDocument = {
+export const datenschutzContent: LegalDocument = {
   title: 'Datenschutzerklärung',
   sections: [
     {
@@ -44,5 +44,3 @@ const datenschutzContent: LegalDocument = {
     },
   ],
 };
-
-export const useDatenschutzContent = (): LegalDocument => datenschutzContent;

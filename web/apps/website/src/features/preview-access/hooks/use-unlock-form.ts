@@ -3,8 +3,8 @@ import type { FormEvent } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 import { RequestBlockedError, useUnlockPreviewMutation, WrongPasswordError } from '../api';
+import type { UnlockForm } from '../schemas';
 import { UnlockFormSchema } from '../schemas';
-import type { UnlockForm } from '../types';
 import { usePreviewAccess } from './use-preview-access';
 
 interface UnlockFormState {

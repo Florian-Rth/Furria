@@ -4,6 +4,10 @@ export const UnlockPreviewResponseSchema = z.object({
   granted: z.boolean(),
 });
 
+export type UnlockPreviewResponse = z.infer<typeof UnlockPreviewResponseSchema>;
+
 export const UnlockFormSchema = z.object({
   password: z.string().min(1, 'Bitte gib das Passwort ein.'),
 });
+
+export type UnlockForm = z.infer<typeof UnlockFormSchema>;

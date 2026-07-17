@@ -1,1 +1,1 @@
-export { DevHomePage } from './components/DevHomePage';
+export { DevHomePage } from './components/DevHomePage/DevHomePage';

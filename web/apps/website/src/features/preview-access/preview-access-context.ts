@@ -1,4 +1,8 @@
 import { createContext } from 'react';
-import type { PreviewAccessValue } from './types';
+
+export interface PreviewAccessValue {
+  granted: boolean;
+  grantAccess: () => void;
+}
 
 export const PreviewAccessContext = createContext<PreviewAccessValue | null>(null);

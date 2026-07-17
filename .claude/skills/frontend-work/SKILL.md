@@ -12,7 +12,8 @@ description: Mandatory rules for all React/TypeScript frontend work. Invoke befo
 - Never use default exports
 - Never hardcode layout sx props (margin, padding) inside components — parent controls positioning via `sx` prop
 - Extract all business logic into custom hooks — component bodies contain only hook composition and JSX rendering, never data fetching, transformations, or complex state management inline
-- Never call apiClient directly in components — all data fetching must go through React Query hooks in api.ts
+- Static copy is a plain module constant or inline JSX text, never a hook — a hook that only returns a frozen constant is banned
+- Never fetch in components — all data fetching goes through React Query hooks in the feature's `api.ts`
 
 ### Composition
 - Compound composition is mandatory — every component is built with it, not just considered
@@ -49,7 +50,7 @@ description: Mandatory rules for all React/TypeScript frontend work. Invoke befo
 ### Validation
 - Validate all API responses at the boundary with Zod `.parse()`
 - Types are inferred from Zod schemas via `z.infer<>`, never manually defined
-- Schemas live in feature `schemas.ts`, types in `types.ts`
+- Schemas live in feature `schemas.ts` with their `z.infer<>` types exported right beside them; a separate `types.ts` exists only for shared types that have no schema
 - Form schemas end with `...FormSchema`, form types end with `...Form`
 
 ### Code Style
@@ -61,6 +62,7 @@ description: Mandatory rules for all React/TypeScript frontend work. Invoke befo
 ### Testing
 - Vitest + Testing Library
 - Main components must have unit tests — skip only when tests would just validate mocks
+- Render components through `renderWithProviders` from `@/test/render` — never hand-roll provider wrappers in test files
 - Co-locate test files with source
 - Extract logic from hooks into pure functions and test those directly — never test by rendering mocked data through the UI and asserting the mock's values come back out
 
@@ -71,6 +73,7 @@ description: Mandatory rules for all React/TypeScript frontend work. Invoke befo
 - Shared packages (e.g. `@furria/ui`) are consumed as raw TypeScript source via `workspace:*` — no per-package build step
 - The theme and shared primitives live in `packages/ui` — apps never define their own tokens
 - ONE theme for all apps (Corporate Identity) — no per-app theme variants; base radius is 14 everywhere
+- The theme is mounted only via `KkThemeProvider` from `@furria/ui` — app roots and `renderWithProviders` both use it
 - Feature-based modules in `src/features/<name>/` with barrel exports via `index.ts`
 - Dependency flow is unidirectional: `src/{lib,components,styles}` → `features` → `routes`
 - Features never import from other features
@@ -78,7 +81,7 @@ description: Mandatory rules for all React/TypeScript frontend work. Invoke befo
 - All imports use `@/` path alias
 
 ### Feature Module Structure
-- Each feature contains: `index.ts` (barrel), `schemas.ts`, `types.ts`, `api.ts`, `components/`, `hooks/`
+- Each feature contains `index.ts` (barrel) plus only the parts it actually needs: `schemas.ts`, `api.ts`, `components/`, `hooks/` — never empty ceremony files
 - External code imports only through the barrel file
 - Internal files within a feature import freely from each other
 
@@ -89,7 +92,7 @@ description: Mandatory rules for all React/TypeScript frontend work. Invoke befo
 - React Hook Form + Zod resolver for forms
 
 ### Component Structure
-- Main components: own folder with barrel file (`index.tsx`) and tests
+- Main components: a single `ComponentName.tsx`; give it a folder only when it has `internal/` parts — never a per-component `index.tsx` barrel (the feature `index.ts` is the only barrel)
 - Internal components: in `internal/` subfolder, scoped to main component
 - Tests only for main components, not internal ones
 - Co-located: `ComponentName.test.tsx`
@@ -106,6 +109,5 @@ description: Mandatory rules for all React/TypeScript frontend work. Invoke befo
 - Never use internal domain terminology in user-facing copy — write self-explanatory German copy from terms the UI already teaches the user; internal terms stay in code and schema fields
 
 ### Layout & Dialogs
-- Use `PageLayout` composition: `PageLayout` + `PageLayout.Header` + `PageLayout.Content`
-- Dialogs via `dialogManager.showDialog()` / `dialogManager.showFormDialog()`
-- Snackbars via `snackbarManager.showAlert()`
+- Content pages use `PageLayout` from `@furria/ui`: `PageLayout` + `PageLayout.Header` + `PageLayout.Content`; full-bleed pages (hero/teaser) own their layout instead
+- `dialogManager` / `snackbarManager` do not exist yet — build them when the second dialog/snackbar appears; until then use MUI `Dialog` directly

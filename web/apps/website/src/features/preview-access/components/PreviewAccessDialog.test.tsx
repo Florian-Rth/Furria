@@ -1,27 +1,15 @@
-import { kkTheme } from '@furria/ui';
-import { ThemeProvider } from '@mui/material/styles';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { PreviewAccessProvider } from '../PreviewAccessProvider';
+import { renderWithProviders } from '@/test/render';
+import { readGrantedFromSession } from '../session-storage';
 import { PreviewAccessDialog } from './PreviewAccessDialog';
 
 const renderDialog = (onClose: () => void = () => {}): void => {
-  const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
-
-  render(
-    <ThemeProvider theme={kkTheme}>
-      <QueryClientProvider client={queryClient}>
-        <PreviewAccessProvider>
-          <PreviewAccessDialog open onClose={onClose} />
-        </PreviewAccessProvider>
-      </QueryClientProvider>
-    </ThemeProvider>,
-  );
+  renderWithProviders(<PreviewAccessDialog open onClose={onClose} />);
 };
 
-const stubUnlockEndpoint = (status: number, body: unknown): void => {
+const stubUnlockEndpoint = (status: number, body: { granted?: boolean }): void => {
   vi.stubGlobal(
     'fetch',
     vi.fn(async () => new Response(JSON.stringify(body), { status })),
@@ -69,6 +57,6 @@ describe('PreviewAccessDialog', () => {
     await vi.waitFor(() => {
       expect(onClose).toHaveBeenCalledTimes(1);
     });
-    expect(window.sessionStorage.getItem('furria.preview.granted')).toBe('granted');
+    expect(readGrantedFromSession(window.sessionStorage)).toBe(true);
   });
 });

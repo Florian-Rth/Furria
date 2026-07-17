@@ -1,16 +1,11 @@
-import { kkTheme } from '@furria/ui';
-import { ThemeProvider } from '@mui/material/styles';
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import { renderWithProviders } from '@/test/render';
 import { DevHomePage } from './DevHomePage';
 
 describe('DevHomePage', () => {
   it('renders the internal test area with all three apps', () => {
-    render(
-      <ThemeProvider theme={kkTheme}>
-        <DevHomePage />
-      </ThemeProvider>,
-    );
+    renderWithProviders(<DevHomePage />);
 
     expect(screen.getByRole('heading', { name: 'Interner Testbereich' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Website' })).toBeInTheDocument();

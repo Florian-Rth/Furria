@@ -7,7 +7,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import TextField from '@mui/material/TextField';
 import type { FC } from 'react';
-import { useUnlockForm } from '../../hooks/use-unlock-form';
+import { useUnlockForm } from '../hooks/use-unlock-form';
 
 interface PreviewAccessDialogProps {
   open: boolean;
@@ -26,6 +26,8 @@ export const PreviewAccessDialog: FC<PreviewAccessDialogProps> = ({ open, onClos
       onClose={onClose}
       maxWidth="xs"
       fullWidth
+      aria-labelledby="unlock-dialog-title"
+      aria-describedby="unlock-dialog-description"
       slotProps={{
         // No backdrop-filter here: a viewport-sized backdrop blur re-filters on
         // nearly every frame in Chromium and lags badly. The page content behind
@@ -38,9 +40,9 @@ export const PreviewAccessDialog: FC<PreviewAccessDialogProps> = ({ open, onClos
       }}
     >
       <form onSubmit={submit} noValidate>
-        <DialogTitle>Einlass für Tester</DialogTitle>
+        <DialogTitle id="unlock-dialog-title">Einlass für Tester</DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <DialogContentText>
+          <DialogContentText id="unlock-dialog-description">
             Dieser Bereich ist noch nicht öffentlich. Wenn du zum Testen eingeladen bist, gib hier
             das Passwort ein.
           </DialogContentText>

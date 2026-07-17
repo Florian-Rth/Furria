@@ -1,7 +1,6 @@
-import { kkTheme } from '@furria/ui';
-import { ThemeProvider } from '@mui/material/styles';
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import { renderWithProviders } from '@/test/render';
 import type { LegalDocument } from '../../types';
 import { LegalPage } from './LegalPage';
 
@@ -12,11 +11,7 @@ const legalDocument: LegalDocument = {
 
 describe('LegalPage', () => {
   it('renders the document title and its sections', () => {
-    render(
-      <ThemeProvider theme={kkTheme}>
-        <LegalPage legalDocument={legalDocument} />
-      </ThemeProvider>,
-    );
+    renderWithProviders(<LegalPage legalDocument={legalDocument} />);
 
     expect(screen.getByRole('heading', { level: 1, name: 'Impressum' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: 'Kontakt' })).toBeInTheDocument();

@@ -1,7 +1,7 @@
+import { PageLayout } from '@furria/ui';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import type { LegalDocument } from '../../types';
-import { LegalPageLayout } from './internal/LegalPageLayout';
 import { LegalSectionBlock } from './internal/LegalSectionBlock';
 
 interface LegalPageProps {
@@ -9,14 +9,16 @@ interface LegalPageProps {
 }
 
 export const LegalPage: FC<LegalPageProps> = ({ legalDocument }) => (
-  <LegalPageLayout>
-    <Typography variant="h3" component="h1">
-      {legalDocument.title}
-    </Typography>
-    <LegalPageLayout.Sections>
+  <PageLayout>
+    <PageLayout.Header>
+      <Typography variant="h3" component="h1">
+        {legalDocument.title}
+      </Typography>
+    </PageLayout.Header>
+    <PageLayout.Content>
       {legalDocument.sections.map((section) => (
         <LegalSectionBlock key={section.heading} section={section} />
       ))}
-    </LegalPageLayout.Sections>
-  </LegalPageLayout>
+    </PageLayout.Content>
+  </PageLayout>
 );

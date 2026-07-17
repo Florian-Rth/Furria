@@ -7,8 +7,13 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   plugins: [
-    // Must run before the react plugin.
-    tanstackRouter({ target: 'react', autoCodeSplitting: true }),
+    // Must run before the react plugin. Tests co-located in src/routes/ must
+    // not be picked up as route files.
+    tanstackRouter({
+      target: 'react',
+      autoCodeSplitting: true,
+      routeFileIgnorePattern: '\\.test\\.',
+    }),
     react(),
     // React Compiler ON (plugin-react 6 wires Babel via @rolldown/plugin-babel).
     babel({ presets: [reactCompilerPreset()] }),

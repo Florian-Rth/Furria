@@ -1,7 +1,7 @@
-import type { LegalDocument } from '../types';
+import type { LegalDocument } from './types';
 
 // During development the site is operated by Florian privately, not by the club.
-const impressumContent: LegalDocument = {
+export const impressumContent: LegalDocument = {
   title: 'Impressum',
   sections: [
     {
@@ -30,5 +30,3 @@ const impressumContent: LegalDocument = {
     },
   ],
 };
-
-export const useImpressumContent = (): LegalDocument => impressumContent;

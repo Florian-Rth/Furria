@@ -1,7 +1,7 @@
 import type { UseMutationResult } from '@tanstack/react-query';
 import { useMutation } from '@tanstack/react-query';
+import type { UnlockPreviewResponse } from './schemas';
 import { UnlockPreviewResponseSchema } from './schemas';
-import type { UnlockPreviewResponse } from './types';
 
 export class WrongPasswordError extends Error {
   constructor() {
