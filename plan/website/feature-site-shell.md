@@ -2,49 +2,84 @@
 title: Site-Shell
 slug: site-shell
 type: foundation
-status: idea
+status: ready
 mock: docs/design/fcc-ds-landing.jsx
 adrs: [docs/adr/0003-website-rendering-strategy.md]
 ---
 
 ## What & Why
 
-The persistent chrome and layout every page renders inside: the newspaper **masthead nav**
-(meta strip → `nav-links —— FURRIA —— flanks` with Login + red **Tickets** pill), the
-**footer** (broom lockup, social, Impressum/Datenschutz), light/dark theming, the page layout
-grid, and client-side routing. This is the frame all capabilities hang in — built first so
-everything else has a home.
+The persistent chrome and layout every real page renders inside: the newspaper **masthead nav**
+(`nav-links —— FURRIA —— Tickets` pill), the **footer** (Impressum/Datenschutz, social), the
+theme (light/dark), the page layout grid, and client-side routing. The frame all capabilities
+hang in — built first so everything else has a home.
 
 ## Scope / Slices
 
-- Masthead nav (desktop) + mobile bar (hamburger, centered FURRIA wordmark, Tickets pill).
-- Footer (desktop `KKFooter` + mobile variant).
-- Light/dark theme provider + toggle, driven by the shared theme.
-- Layout shell (max-width reading column, section rhythm) + routing skeleton.
+- Masthead nav (desktop) + mobile bar (hamburger drawer, centered FURRIA wordmark, Tickets pill).
+- Footer (`SiteFooter`, already exists) — extend toward the mock (broom lockup, social).
+- Light/dark: OS default + persisted manual toggle (masthead + drawer).
+- Layout shell + routing skeleton; every nav destination resolves (real page or placeholder).
 - `@furria/ui` integration: consume tokens/primitives, no local re-definition.
 
 ## Decisions
 
-- Consumes the **ONE** shared theme from `@furria/ui` (Corporate Identity) — no website-only
-  colors/fonts/radii/shadows. Base radius 14 (design README supersedes the old "cards 18px").
-- Ticker is **not** part of the shell — it is its own foundation ([Ticker](feature-ticker.md)).
-- Routes are English, labels German.
+**Stack** (already in code — supersedes the earlier "React Router v7 vs. vite-react-ssg" question):
+
+- **Router: TanStack Router** — file-based (`routeTree.gen.ts`), autoCodeSplitting, React Compiler on.
+- **Data: TanStack Query** — see [API-Client](feature-api-client.md).
+- Chrome is **website-local** (like `SiteFooter`): a `Masthead` component beside it. `@furria/ui`
+  stays theme/primitives only — the three apps have different navs, so no shared app chrome.
+
+**Composition — layout routes, no conditional-chrome:**
+
+- A pathless layout route (`_site`) renders `Masthead → Outlet → SiteFooter`; the real marketing
+  pages are its children. `__root` drops back to **providers + `<HeadContent/>` + `<Outlet/>`** only.
+
+**Gate zones** (owned by [Preview-Gate](feature-preview-gate.md)):
+
+- **Always-public legal** — `/imprint`, `/privacy` sit outside the gate (legally required reachable).
+- **Gated marketing** — `/`, `/program`, `/club`, `/news`, `/gallery`, `/join`, `/tickets` —
+  granted-only pre-launch, public at launch.
+- **Gated portal** — `/apps`, the tester launcher.
+- Real pages live at their **final URLs** from day one; launch is just flipping the gate off.
+
+**URLs & labels:**
+
+- **URLs and code English; visible text German** (CLAUDE.md, as written). P0 fix: rename
+  `/impressum` → `/imprint`, `/datenschutz` → `/privacy` (labels stay "Impressum"/"Datenschutz").
+- IA: `/program` · `/club` (Verein) · `/news` · `/gallery` · `/join` · `/tickets` (+ `/apps`).
+- **No Login** in the public masthead — the website is public-only; member login lives in the
+  Club-App (invite-only). A link out to Club-App is the only future option.
+
+**Nav & placeholders:**
+
+- Nav items are **data**, rendered in the desktop bar + mobile drawer; the masthead shows the
+  **full IA** from P0 so it never visually churns.
+- Unbuilt routes resolve to one shared **`PlaceholderPage`** ("Diese Seite entsteht gerade") in the
+  branded shell; each phase swaps its stub for the real page.
+
+**Theme:**
+
+- Consumes the **ONE** shared theme from `@furria/ui` — no website-only colors/fonts/radii/shadows.
+  Base radius 14.
+- Light/dark via MUI CSS-vars `colorSchemes`; **`useColorScheme()`** toggle, default `system`,
+  persisted; **`InitColorSchemeScript`** to prevent first-paint flash; respect
+  `prefers-reduced-motion`.
+- Ticker is **not** part of the shell — its own foundation ([Ticker](feature-ticker.md)).
 
 ## Open Questions
 
-- Rendering is **decided**: static-first SPA + prerender, no SSR
-  ([ADR 0003](../../docs/adr/0003-website-rendering-strategy.md)). Remaining: the concrete
-  prerender mechanism (React Router v7 framework-mode vs. `vite-react-ssg`) + routing lib —
-  a build-time detail for this phase.
-- Does dark mode follow OS preference, a manual toggle, or both?
-- Nav information architecture — final top-level routes (Programm, Verein, Aktuelles,
-  Galerie, Mitglied werden, Tickets).
+- Footer build-out: how far toward the mock (broom lockup, social links, which socials) in P0 vs. later.
+- Prerender mechanism — deferred out of P0 (see [SEO & Meta](feature-seo-meta.md)); the routing
+  skeleton is prerender-ready via the `head` API.
 
 ## Done When
 
-- Any page renders inside a branded masthead + footer, in light and dark.
-- The app builds and deploys as an empty shell.
-- No hard-coded design values — everything comes from `@furria/ui`.
+- Any real page renders inside a branded masthead + footer, light and dark, phone → desktop.
+- Every nav link resolves; unbuilt pages show the branded placeholder.
+- Legal pages reachable without the gate; marketing + portal behind it.
+- The app builds and deploys. No hard-coded design values — everything comes from `@furria/ui`.
 
 ## References
 

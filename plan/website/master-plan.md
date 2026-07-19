@@ -53,9 +53,10 @@ Guiding constraints (all binding):
 
 | Feature | Type | Status | Purpose |
 |---|---|---|---|
-| [Site-Shell](feature-site-shell.md) | foundation | idea | Masthead nav, footer, theming, layout, `@furria/ui` wiring |
-| [API-Client](feature-api-client.md) | foundation | idea | Data layer to the backend public read endpoints |
-| [SEO & Meta](feature-seo-meta.md) | foundation | idea | Meta tags, Open Graph / social-share cards |
+| [Site-Shell](feature-site-shell.md) | foundation | ready | Masthead nav, footer, theming, layout, `@furria/ui` wiring |
+| [Preview-Gate](feature-preview-gate.md) | foundation | ready | Pre-launch access gate + tester portal (`/apps`) |
+| [API-Client](feature-api-client.md) | foundation | ready | Data layer to the backend public read endpoints |
+| [SEO & Meta](feature-seo-meta.md) | foundation | ready | Meta tags, Open Graph / social-share cards |
 | [Ticker](feature-ticker.md) | foundation | idea | Flat red/gold marquee signature chrome |
 | [Landing](feature-landing.md) | capability | idea | Home page — composes the blocks below |
 | [Landing-Hero](feature-landing-hero.md) | capability | idea | Identity centerpiece: headline, CTAs, stats, hero photo |
@@ -74,12 +75,18 @@ Guiding constraints (all binding):
 
 ### P0 — Shell & theme
 **Status:** planned
-Deployable, branded empty shell: nav + footer + light/dark, `@furria/ui` wired, the app
-builds and deploys.
+Deployable branded shell behind the preview gate: masthead + footer + light/dark, real pages at
+their final English URLs, tester portal at `/apps`, `@furria/ui` wired, the app builds and deploys.
 
-- [ ] [Site-Shell](feature-site-shell.md) — masthead nav, footer, theming, layout, routing
-- [ ] [API-Client](feature-api-client.md) — scaffold + config (no endpoints yet)
-- [ ] [SEO & Meta](feature-seo-meta.md) — base document head, favicon, defaults
+- [ ] [Site-Shell](feature-site-shell.md) — `_site` layout route (masthead + footer), TanStack
+      Router skeleton, full data-driven nav + shared `PlaceholderPage`, theme toggle; rename
+      `/impressum`→`/imprint` & `/datenschutz`→`/privacy`
+- [ ] [Preview-Gate](feature-preview-gate.md) — three-zone gate (legal public / marketing gated /
+      portal gated); portal → `/apps`, app-launch cards
+- [ ] [API-Client](feature-api-client.md) — `apiFetch` helper + env + query-client defaults +
+      Zod-at-boundary rule (no domain endpoints/mocks)
+- [ ] [SEO & Meta](feature-seo-meta.md) — TanStack Router `head` base, defaults, favicon links,
+      `robots.txt` disallow-while-gated
 
 ### P1 — Landing hero
 **Status:** planned
@@ -98,21 +105,24 @@ The full landing page reads end-to-end (still static/placeholder data).
 
 ### P3 — Verein
 **Status:** planned
-`/verein` live.
+`/club` live.
 
 - [ ] [Verein](feature-about-verein.md) — story, Ämter, Gruppen showcase (static content)
 
 ### P4 — News
 **Status:** planned
-`/aktuelles` live — the marketing site is content-complete.
+`/news` live — the marketing site is content-complete. Before launch: stand up the **prerender
+mechanism** (deferred from P0) + **bot OG-meta injection** for the first dynamic detail page.
 
 - [ ] [Aktuelles](feature-news.md) — list + detail
+- [ ] [SEO & Meta](feature-seo-meta.md) — prerender mechanism spike + news-detail OG injection
 
 ### P5 — Events (real data)
 **Status:** planned
 Public calendar live; the home page shows real upcoming events + live ticket scarcity.
 
-- [ ] [API-Client](feature-api-client.md) — real public event endpoints
+- [ ] [API-Client](feature-api-client.md) — real public event endpoints; **OpenAPI codegen
+      decision** (types vs. types+Zod, likely an ADR)
 - [ ] [Veranstaltungskalender](feature-event-calendar.md) — list/calendar + detail
 - [ ] [Programm-Teaser](feature-program-teaser.md) — wire to live API + scarcity badge
 - [ ] [Landing-Hero](feature-landing-hero.md) — wire stats to live API

@@ -25,6 +25,8 @@ the marketing bridge that turns the home page into a reason to buy tickets — a
 
 - Reads the same event data as the full calendar — a **teaser view**, not a separate source.
 - Card visuals from the mock (`LProgramCard` desktop / `LEventCard` mobile).
+- P2 uses **static placeholder content**, not a mock API — event data shapes are undefined until
+  P5 and will change (see [API-Client](feature-api-client.md)). Wiring to the live API is P5.
 
 ## Open Questions
 
