@@ -39,19 +39,36 @@ describe('Masthead', () => {
     }
   });
 
-  it('opens the drawer from the hamburger and navigates from it (mobile)', async () => {
+  it('opens the chip nav from the menu button and navigates from it (mobile)', async () => {
+    setViewportWidth(MOBILE_VIEWPORT_WIDTH);
+    const user = userEvent.setup();
+    renderAtRoute('/program');
+    await screen.findByRole('heading', { level: 1, name: 'Programm' });
+
+    const menuButton = screen.getByRole('button', { name: 'Menü öffnen' });
+    await user.click(menuButton);
+    expect(menuButton).toHaveAccessibleName('Menü schließen');
+    expect(menuButton).toHaveAttribute('aria-expanded', 'true');
+
+    const chipNav = screen.getByRole('navigation', { name: 'Hauptnavigation' });
+    await user.click(within(chipNav).getByRole('link', { name: 'Verein' }));
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Verein' })).toBeInTheDocument();
+    expect(menuButton).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('leads with the emphasized Tickets chip in the chip nav (mobile)', async () => {
     setViewportWidth(MOBILE_VIEWPORT_WIDTH);
     const user = userEvent.setup();
     renderAtRoute('/program');
     await screen.findByRole('heading', { level: 1, name: 'Programm' });
 
     await user.click(screen.getByRole('button', { name: 'Menü öffnen' }));
-    await screen.findByRole('button', { name: 'Menü schließen' });
 
-    const drawerNav = screen.getByRole('navigation', { name: 'Hauptnavigation' });
-    await user.click(within(drawerNav).getByRole('link', { name: 'Verein' }));
-
-    expect(await screen.findByRole('heading', { level: 1, name: 'Verein' })).toBeInTheDocument();
+    const chipNav = screen.getByRole('navigation', { name: 'Hauptnavigation' });
+    const links = within(chipNav).getAllByRole('link');
+    expect(links[0]).toHaveAccessibleName('Tickets');
+    expect(links[0]).toHaveAttribute('href', '/tickets');
   });
 
   it('toggles to dark mode and persists the choice', async () => {

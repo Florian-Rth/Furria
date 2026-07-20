@@ -16,7 +16,12 @@ hang in — built first so everything else has a home.
 
 ## Scope / Slices
 
-- Masthead nav (desktop) + mobile bar (hamburger drawer, centered FURRIA wordmark, Tickets pill).
+- Masthead nav (desktop) + mobile bar (menu button, centered FURRIA wordmark, theme toggle).
+- Mobile nav (reworked 2026-07-20, replaces the P0 drawer): the menu button opens an **inline
+  chip row** under the masthead — animated in (blur→clear, slide from top, reduced-motion aware),
+  horizontally scrollable with gradient fade masks on overflowing edges (no backdrop-filter on
+  scrolling surfaces), closes on navigation. **Tickets is the first chip, filled red** — its pill left the
+  mobile bar as too bulky, and the theme toggle took that slot.
 - Footer (`SiteFooter`, already exists) — extend toward the mock (broom lockup, social).
 - Light/dark: OS default + persisted manual toggle (masthead + drawer).
 - Layout shell + routing skeleton; every nav destination resolves (real page or placeholder).
