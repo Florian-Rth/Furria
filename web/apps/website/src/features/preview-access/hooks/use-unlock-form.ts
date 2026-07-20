@@ -31,7 +31,7 @@ export const toSubmitErrorMessage = (error: Error | null): string | null => {
   return 'Das hat leider nicht geklappt. Bitte versuch es später noch einmal.';
 };
 
-export const useUnlockForm = (onGranted: () => void): UnlockFormState => {
+export const useUnlockForm = (): UnlockFormState => {
   const { grantAccess } = usePreviewAccess();
   const mutation = useUnlockPreviewMutation();
 
@@ -44,7 +44,6 @@ export const useUnlockForm = (onGranted: () => void): UnlockFormState => {
     mutation.mutate(values.password, {
       onSuccess: () => {
         grantAccess();
-        onGranted();
       },
     });
   });

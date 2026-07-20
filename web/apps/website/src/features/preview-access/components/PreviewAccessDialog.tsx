@@ -13,11 +13,10 @@ import { useUnlockForm } from '../hooks/use-unlock-form';
 interface PreviewAccessDialogProps {
   open: boolean;
   onClose: () => void;
-  onGranted: () => void;
 }
 
-export const PreviewAccessDialog: FC<PreviewAccessDialogProps> = ({ open, onClose, onGranted }) => {
-  const { form, submit, isSubmitting, submitError } = useUnlockForm(onGranted);
+export const PreviewAccessDialog: FC<PreviewAccessDialogProps> = ({ open, onClose }) => {
+  const { form, submit, isSubmitting, submitError } = useUnlockForm();
   const { ref: passwordRef, ...passwordField } = form.register('password');
 
   return (

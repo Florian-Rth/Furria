@@ -18,12 +18,15 @@ at its final URLs. Already partly in code (`preview-access`, `dev-home`).
 
 - Password unlock dialog → `POST /api/preview/unlock`; grant persisted (session).
 - Coming-soon teaser for ungated visitors (`LandingPage` teaser today).
-- Tester portal at `/apps` (`DevHomePage`): cards for Website / Club-App / Event-App as launch
-  links — Website live (→ `/`), the other two disabled ("Geplant") until those deployments exist.
+- ~~Tester portal at `/apps` (`DevHomePage`)~~ — **removed 2026-07-20**, see Decisions.
 
 ## Decisions
 
-- **Three zones** (see [Site-Shell](feature-site-shell.md)):
+- **Portal removed (2026-07-20, post-P0):** the `/apps` tester portal shipped in P0 and was
+  dropped right after — with the site living at its final URLs behind the gate, a separate
+  launcher added nothing. Unlock now simply reveals the gated site at `/`; the `dev-home`
+  feature was deleted. Two zones remain: always-public legal, gated marketing.
+- **Three zones** (see [Site-Shell](feature-site-shell.md)) — *portal zone since removed, see above*:
   - **Always-public legal** — `/imprint`, `/privacy` bypass the gate (legally required reachable).
   - **Gated marketing** — `/` and the real pages; ungated `/` shows the coming-soon teaser.
   - **Gated portal** — `/apps`, granted-only; gate-unlock redirects here.

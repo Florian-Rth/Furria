@@ -19,7 +19,7 @@ describe('home route', () => {
     expect(await screen.findByText('Einlass für Tester')).toBeInTheDocument();
   });
 
-  it('lands on the tester portal at /apps after a successful unlock', async () => {
+  it('shows the home page inside the chrome after a successful unlock', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn(async () => new Response(JSON.stringify({ granted: true }), { status: 200 })),
@@ -33,7 +33,7 @@ describe('home route', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Einlass' }));
 
     expect(
-      await screen.findByRole('heading', { name: 'Interner Testbereich' }),
+      await screen.findByRole('heading', { level: 1, name: 'Willkommen' }),
     ).toBeInTheDocument();
   });
 

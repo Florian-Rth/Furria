@@ -5,8 +5,8 @@ import { renderWithProviders } from '@/test/render';
 import { readGrantedFromSession } from '../session-storage';
 import { PreviewAccessDialog } from './PreviewAccessDialog';
 
-const renderDialog = (onGranted: () => void = () => {}): void => {
-  renderWithProviders(<PreviewAccessDialog open onClose={() => {}} onGranted={onGranted} />);
+const renderDialog = (): void => {
+  renderWithProviders(<PreviewAccessDialog open onClose={() => {}} />);
 };
 
 const stubUnlockEndpoint = (status: number, body: { granted?: boolean }): void => {
@@ -44,18 +44,16 @@ describe('PreviewAccessDialog', () => {
     ).toBeInTheDocument();
   });
 
-  it('reports the grant and persists access when the password is accepted', async () => {
+  it('persists access when the password is accepted', async () => {
     stubUnlockEndpoint(200, { granted: true });
-    const onGranted = vi.fn();
     const user = userEvent.setup();
-    renderDialog(onGranted);
+    renderDialog();
 
     await user.type(screen.getByLabelText('Passwort'), 'correct');
     await user.click(screen.getByRole('button', { name: 'Einlass' }));
 
     await vi.waitFor(() => {
-      expect(onGranted).toHaveBeenCalledTimes(1);
+      expect(readGrantedFromSession(window.sessionStorage)).toBe(true);
     });
-    expect(readGrantedFromSession(window.sessionStorage)).toBe(true);
   });
 });

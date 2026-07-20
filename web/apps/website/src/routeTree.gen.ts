@@ -20,7 +20,6 @@ import { Route as SiteGatedNewsRouteImport } from './routes/_site/_gated/news'
 import { Route as SiteGatedJoinRouteImport } from './routes/_site/_gated/join'
 import { Route as SiteGatedGalleryRouteImport } from './routes/_site/_gated/gallery'
 import { Route as SiteGatedClubRouteImport } from './routes/_site/_gated/club'
-import { Route as SiteGatedAppsRouteImport } from './routes/_site/_gated/apps'
 
 const SiteRoute = SiteRouteImport.update({
   id: '/_site',
@@ -75,17 +74,11 @@ const SiteGatedClubRoute = SiteGatedClubRouteImport.update({
   path: '/club',
   getParentRoute: () => SiteGatedRoute,
 } as any)
-const SiteGatedAppsRoute = SiteGatedAppsRouteImport.update({
-  id: '/apps',
-  path: '/apps',
-  getParentRoute: () => SiteGatedRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/imprint': typeof SiteImprintRoute
   '/privacy': typeof SitePrivacyRoute
-  '/apps': typeof SiteGatedAppsRoute
   '/club': typeof SiteGatedClubRoute
   '/gallery': typeof SiteGatedGalleryRoute
   '/join': typeof SiteGatedJoinRoute
@@ -97,7 +90,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/imprint': typeof SiteImprintRoute
   '/privacy': typeof SitePrivacyRoute
-  '/apps': typeof SiteGatedAppsRoute
   '/club': typeof SiteGatedClubRoute
   '/gallery': typeof SiteGatedGalleryRoute
   '/join': typeof SiteGatedJoinRoute
@@ -112,7 +104,6 @@ export interface FileRoutesById {
   '/_site/_gated': typeof SiteGatedRouteWithChildren
   '/_site/imprint': typeof SiteImprintRoute
   '/_site/privacy': typeof SitePrivacyRoute
-  '/_site/_gated/apps': typeof SiteGatedAppsRoute
   '/_site/_gated/club': typeof SiteGatedClubRoute
   '/_site/_gated/gallery': typeof SiteGatedGalleryRoute
   '/_site/_gated/join': typeof SiteGatedJoinRoute
@@ -126,7 +117,6 @@ export interface FileRouteTypes {
     | '/'
     | '/imprint'
     | '/privacy'
-    | '/apps'
     | '/club'
     | '/gallery'
     | '/join'
@@ -138,7 +128,6 @@ export interface FileRouteTypes {
     | '/'
     | '/imprint'
     | '/privacy'
-    | '/apps'
     | '/club'
     | '/gallery'
     | '/join'
@@ -152,7 +141,6 @@ export interface FileRouteTypes {
     | '/_site/_gated'
     | '/_site/imprint'
     | '/_site/privacy'
-    | '/_site/_gated/apps'
     | '/_site/_gated/club'
     | '/_site/_gated/gallery'
     | '/_site/_gated/join'
@@ -245,18 +233,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SiteGatedClubRouteImport
       parentRoute: typeof SiteGatedRoute
     }
-    '/_site/_gated/apps': {
-      id: '/_site/_gated/apps'
-      path: '/apps'
-      fullPath: '/apps'
-      preLoaderRoute: typeof SiteGatedAppsRouteImport
-      parentRoute: typeof SiteGatedRoute
-    }
   }
 }
 
 interface SiteGatedRouteChildren {
-  SiteGatedAppsRoute: typeof SiteGatedAppsRoute
   SiteGatedClubRoute: typeof SiteGatedClubRoute
   SiteGatedGalleryRoute: typeof SiteGatedGalleryRoute
   SiteGatedJoinRoute: typeof SiteGatedJoinRoute
@@ -266,7 +246,6 @@ interface SiteGatedRouteChildren {
 }
 
 const SiteGatedRouteChildren: SiteGatedRouteChildren = {
-  SiteGatedAppsRoute: SiteGatedAppsRoute,
   SiteGatedClubRoute: SiteGatedClubRoute,
   SiteGatedGalleryRoute: SiteGatedGalleryRoute,
   SiteGatedJoinRoute: SiteGatedJoinRoute,

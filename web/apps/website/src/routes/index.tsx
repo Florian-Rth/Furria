@@ -1,5 +1,5 @@
 import Stack from '@mui/material/Stack';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { LegalLinks } from '@/components/LegalLinks';
@@ -10,7 +10,6 @@ import { PreviewAccessDialog, usePreviewAccess } from '@/features/preview-access
 
 const HomeComponent: FC = () => {
   const { granted } = usePreviewAccess();
-  const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
 
   if (granted) {
@@ -45,11 +44,7 @@ const HomeComponent: FC = () => {
           <LegalLinks />
         </Stack>
       </Stack>
-      <PreviewAccessDialog
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-        onGranted={() => void navigate({ to: '/apps' })}
-      />
+      <PreviewAccessDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />
     </>
   );
 };

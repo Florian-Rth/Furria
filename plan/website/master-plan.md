@@ -54,7 +54,7 @@ Guiding constraints (all binding):
 | Feature | Type | Status | Purpose |
 |---|---|---|---|
 | [Site-Shell](feature-site-shell.md) | foundation | shipped | Masthead nav, footer, theming, layout, `@furria/ui` wiring |
-| [Preview-Gate](feature-preview-gate.md) | foundation | shipped | Pre-launch access gate + tester portal (`/apps`) |
+| [Preview-Gate](feature-preview-gate.md) | foundation | shipped | Pre-launch access gate (tester portal removed 2026-07-20) |
 | [API-Client](feature-api-client.md) | foundation | building | Data layer to the backend public read endpoints |
 | [SEO & Meta](feature-seo-meta.md) | foundation | building | Meta tags, Open Graph / social-share cards |
 | [Ticker](feature-ticker.md) | foundation | idea | Flat red/gold marquee signature chrome |
@@ -84,7 +84,8 @@ SEO & Meta: share-image URL deferral).
       Router skeleton, full data-driven nav + shared `PlaceholderPage`, theme toggle; rename
       `/impressum`→`/imprint` & `/datenschutz`→`/privacy`
 - [x] [Preview-Gate](feature-preview-gate.md) — three-zone gate (legal public / marketing gated /
-      portal gated); portal → `/apps`, app-launch cards
+      portal gated); portal → `/apps`, app-launch cards *(portal removed again right after P0 —
+      see feature file)*
 - [x] [API-Client](feature-api-client.md) — `apiFetch` helper + env + query-client defaults +
       Zod-at-boundary rule (no domain endpoints/mocks)
 - [x] [SEO & Meta](feature-seo-meta.md) — TanStack Router `head` base, defaults, favicon links,

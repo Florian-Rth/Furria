@@ -8,7 +8,7 @@ afterEach(() => {
 });
 
 describe('preview gate', () => {
-  it.each(['/program', '/tickets', '/apps'])(
+  it.each(['/program', '/tickets'])(
     'redirects ungated visitors from %s to the teaser',
     async (path) => {
       renderAtRoute(path);
@@ -18,15 +18,11 @@ describe('preview gate', () => {
     },
   );
 
-  it('shows the tester portal at /apps inside the chrome once granted', async () => {
+  it('lets granted visitors through to the gated pages', async () => {
     writeGrantedToSession(window.sessionStorage);
-    renderAtRoute('/apps');
+    renderAtRoute('/program');
 
-    expect(
-      await screen.findByRole('heading', { name: 'Interner Testbereich' }),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Programm' })).toBeInTheDocument();
     expect(screen.getByRole('navigation', { name: 'Hauptnavigation' })).toBeInTheDocument();
-    expect(screen.getByRole('contentinfo')).toBeInTheDocument();
-    expect(document.title).toBe('Interner Testbereich · FURRIA');
   });
 });
