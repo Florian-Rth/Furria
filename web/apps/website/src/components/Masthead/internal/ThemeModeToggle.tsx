@@ -2,8 +2,7 @@ import IconButton from '@mui/material/IconButton';
 import { useColorScheme } from '@mui/material/styles';
 import type { FC } from 'react';
 import { resolveColorMode } from '@/lib/color-mode';
-import { MoonIcon } from './MoonIcon';
-import { SunIcon } from './SunIcon';
+import { SunMoonMorphIcon } from './SunMoonMorphIcon';
 
 export const ThemeModeToggle: FC = () => {
   const { mode, systemMode, setMode } = useColorScheme();
@@ -17,7 +16,7 @@ export const ThemeModeToggle: FC = () => {
       onClick={() => setMode(resolved === 'dark' ? 'light' : 'dark')}
       sx={{ color: 'text.primary' }}
     >
-      {resolved === 'dark' ? <SunIcon /> : <MoonIcon />}
+      <SunMoonMorphIcon dark={resolved === 'dark'} />
     </IconButton>
   );
 };

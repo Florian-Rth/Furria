@@ -16,6 +16,7 @@
     "@furria/ui": "workspace:*",
     "@mui/material": "catalog:",
     "@hookform/resolvers": "catalog:",
+    "motion": "catalog:",
     "@tanstack/react-query": "catalog:",
     "@tanstack/react-router": "catalog:",
     "react": "catalog:",
