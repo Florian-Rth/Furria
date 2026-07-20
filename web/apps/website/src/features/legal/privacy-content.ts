@@ -1,6 +1,6 @@
 import type { LegalDocument } from './types';
 
-export const datenschutzContent: LegalDocument = {
+export const privacyContent: LegalDocument = {
   title: 'Datenschutzerklärung',
   sections: [
     {

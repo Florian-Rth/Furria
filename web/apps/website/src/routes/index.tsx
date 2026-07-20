@@ -20,7 +20,9 @@ const HomeComponent: FC = () => {
     <>
       <Stack
         sx={{
-          flex: 1,
+          // Full viewport height: __root no longer wraps pages in a flex
+          // column, so the teaser sizes itself.
+          minHeight: '100dvh',
           // Blurring the (static) content subtree is cheap and cached; the
           // dialog renders in a portal outside it, so typing never re-blurs.
           filter: dialogOpen ? 'blur(9px)' : 'none',

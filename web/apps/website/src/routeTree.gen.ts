@@ -9,18 +9,19 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as ImpressumRouteImport } from './routes/impressum'
-import { Route as DatenschutzRouteImport } from './routes/datenschutz'
+import { Route as SiteRouteImport } from './routes/_site'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SiteTicketsRouteImport } from './routes/_site/tickets'
+import { Route as SiteProgramRouteImport } from './routes/_site/program'
+import { Route as SitePrivacyRouteImport } from './routes/_site/privacy'
+import { Route as SiteNewsRouteImport } from './routes/_site/news'
+import { Route as SiteJoinRouteImport } from './routes/_site/join'
+import { Route as SiteImprintRouteImport } from './routes/_site/imprint'
+import { Route as SiteGalleryRouteImport } from './routes/_site/gallery'
+import { Route as SiteClubRouteImport } from './routes/_site/club'
 
-const ImpressumRoute = ImpressumRouteImport.update({
-  id: '/impressum',
-  path: '/impressum',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DatenschutzRoute = DatenschutzRouteImport.update({
-  id: '/datenschutz',
-  path: '/datenschutz',
+const SiteRoute = SiteRouteImport.update({
+  id: '/_site',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -28,51 +29,131 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SiteTicketsRoute = SiteTicketsRouteImport.update({
+  id: '/tickets',
+  path: '/tickets',
+  getParentRoute: () => SiteRoute,
+} as any)
+const SiteProgramRoute = SiteProgramRouteImport.update({
+  id: '/program',
+  path: '/program',
+  getParentRoute: () => SiteRoute,
+} as any)
+const SitePrivacyRoute = SitePrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => SiteRoute,
+} as any)
+const SiteNewsRoute = SiteNewsRouteImport.update({
+  id: '/news',
+  path: '/news',
+  getParentRoute: () => SiteRoute,
+} as any)
+const SiteJoinRoute = SiteJoinRouteImport.update({
+  id: '/join',
+  path: '/join',
+  getParentRoute: () => SiteRoute,
+} as any)
+const SiteImprintRoute = SiteImprintRouteImport.update({
+  id: '/imprint',
+  path: '/imprint',
+  getParentRoute: () => SiteRoute,
+} as any)
+const SiteGalleryRoute = SiteGalleryRouteImport.update({
+  id: '/gallery',
+  path: '/gallery',
+  getParentRoute: () => SiteRoute,
+} as any)
+const SiteClubRoute = SiteClubRouteImport.update({
+  id: '/club',
+  path: '/club',
+  getParentRoute: () => SiteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/datenschutz': typeof DatenschutzRoute
-  '/impressum': typeof ImpressumRoute
+  '/club': typeof SiteClubRoute
+  '/gallery': typeof SiteGalleryRoute
+  '/imprint': typeof SiteImprintRoute
+  '/join': typeof SiteJoinRoute
+  '/news': typeof SiteNewsRoute
+  '/privacy': typeof SitePrivacyRoute
+  '/program': typeof SiteProgramRoute
+  '/tickets': typeof SiteTicketsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/datenschutz': typeof DatenschutzRoute
-  '/impressum': typeof ImpressumRoute
+  '/club': typeof SiteClubRoute
+  '/gallery': typeof SiteGalleryRoute
+  '/imprint': typeof SiteImprintRoute
+  '/join': typeof SiteJoinRoute
+  '/news': typeof SiteNewsRoute
+  '/privacy': typeof SitePrivacyRoute
+  '/program': typeof SiteProgramRoute
+  '/tickets': typeof SiteTicketsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/datenschutz': typeof DatenschutzRoute
-  '/impressum': typeof ImpressumRoute
+  '/_site': typeof SiteRouteWithChildren
+  '/_site/club': typeof SiteClubRoute
+  '/_site/gallery': typeof SiteGalleryRoute
+  '/_site/imprint': typeof SiteImprintRoute
+  '/_site/join': typeof SiteJoinRoute
+  '/_site/news': typeof SiteNewsRoute
+  '/_site/privacy': typeof SitePrivacyRoute
+  '/_site/program': typeof SiteProgramRoute
+  '/_site/tickets': typeof SiteTicketsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/datenschutz' | '/impressum'
+  fullPaths:
+    | '/'
+    | '/club'
+    | '/gallery'
+    | '/imprint'
+    | '/join'
+    | '/news'
+    | '/privacy'
+    | '/program'
+    | '/tickets'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/datenschutz' | '/impressum'
-  id: '__root__' | '/' | '/datenschutz' | '/impressum'
+  to:
+    | '/'
+    | '/club'
+    | '/gallery'
+    | '/imprint'
+    | '/join'
+    | '/news'
+    | '/privacy'
+    | '/program'
+    | '/tickets'
+  id:
+    | '__root__'
+    | '/'
+    | '/_site'
+    | '/_site/club'
+    | '/_site/gallery'
+    | '/_site/imprint'
+    | '/_site/join'
+    | '/_site/news'
+    | '/_site/privacy'
+    | '/_site/program'
+    | '/_site/tickets'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  DatenschutzRoute: typeof DatenschutzRoute
-  ImpressumRoute: typeof ImpressumRoute
+  SiteRoute: typeof SiteRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/impressum': {
-      id: '/impressum'
-      path: '/impressum'
-      fullPath: '/impressum'
-      preLoaderRoute: typeof ImpressumRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/datenschutz': {
-      id: '/datenschutz'
-      path: '/datenschutz'
-      fullPath: '/datenschutz'
-      preLoaderRoute: typeof DatenschutzRouteImport
+    '/_site': {
+      id: '/_site'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof SiteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -82,13 +163,92 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_site/tickets': {
+      id: '/_site/tickets'
+      path: '/tickets'
+      fullPath: '/tickets'
+      preLoaderRoute: typeof SiteTicketsRouteImport
+      parentRoute: typeof SiteRoute
+    }
+    '/_site/program': {
+      id: '/_site/program'
+      path: '/program'
+      fullPath: '/program'
+      preLoaderRoute: typeof SiteProgramRouteImport
+      parentRoute: typeof SiteRoute
+    }
+    '/_site/privacy': {
+      id: '/_site/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof SitePrivacyRouteImport
+      parentRoute: typeof SiteRoute
+    }
+    '/_site/news': {
+      id: '/_site/news'
+      path: '/news'
+      fullPath: '/news'
+      preLoaderRoute: typeof SiteNewsRouteImport
+      parentRoute: typeof SiteRoute
+    }
+    '/_site/join': {
+      id: '/_site/join'
+      path: '/join'
+      fullPath: '/join'
+      preLoaderRoute: typeof SiteJoinRouteImport
+      parentRoute: typeof SiteRoute
+    }
+    '/_site/imprint': {
+      id: '/_site/imprint'
+      path: '/imprint'
+      fullPath: '/imprint'
+      preLoaderRoute: typeof SiteImprintRouteImport
+      parentRoute: typeof SiteRoute
+    }
+    '/_site/gallery': {
+      id: '/_site/gallery'
+      path: '/gallery'
+      fullPath: '/gallery'
+      preLoaderRoute: typeof SiteGalleryRouteImport
+      parentRoute: typeof SiteRoute
+    }
+    '/_site/club': {
+      id: '/_site/club'
+      path: '/club'
+      fullPath: '/club'
+      preLoaderRoute: typeof SiteClubRouteImport
+      parentRoute: typeof SiteRoute
+    }
   }
 }
 
+interface SiteRouteChildren {
+  SiteClubRoute: typeof SiteClubRoute
+  SiteGalleryRoute: typeof SiteGalleryRoute
+  SiteImprintRoute: typeof SiteImprintRoute
+  SiteJoinRoute: typeof SiteJoinRoute
+  SiteNewsRoute: typeof SiteNewsRoute
+  SitePrivacyRoute: typeof SitePrivacyRoute
+  SiteProgramRoute: typeof SiteProgramRoute
+  SiteTicketsRoute: typeof SiteTicketsRoute
+}
+
+const SiteRouteChildren: SiteRouteChildren = {
+  SiteClubRoute: SiteClubRoute,
+  SiteGalleryRoute: SiteGalleryRoute,
+  SiteImprintRoute: SiteImprintRoute,
+  SiteJoinRoute: SiteJoinRoute,
+  SiteNewsRoute: SiteNewsRoute,
+  SitePrivacyRoute: SitePrivacyRoute,
+  SiteProgramRoute: SiteProgramRoute,
+  SiteTicketsRoute: SiteTicketsRoute,
+}
+
+const SiteRouteWithChildren = SiteRoute._addFileChildren(SiteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  DatenschutzRoute: DatenschutzRoute,
-  ImpressumRoute: ImpressumRoute,
+  SiteRoute: SiteRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

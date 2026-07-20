@@ -25,7 +25,10 @@ const displayHeading = {
  * Light + dark via MUI CSS-vars color schemes; base radius 14 everywhere.
  */
 export const kkTheme = createTheme({
-  cssVariables: true,
+  // The `data-light`/`data-dark` attribute selector (instead of the `media`
+  // default) is what makes a manual light/dark toggle via useColorScheme()
+  // possible — media queries cannot be overridden from JS.
+  cssVariables: { colorSchemeSelector: 'data' },
   colorSchemes: {
     light: { palette: buildPalette(kkTokens.color.light) },
     dark: { palette: buildPalette(kkTokens.color.dark) },
@@ -48,6 +51,20 @@ export const kkTheme = createTheme({
     button: { fontWeight: 800, textTransform: 'none' },
   },
   components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        // Respect prefers-reduced-motion for every animation/transition,
+        // including MUI's built-in ones (drawer slide, fades, ripple).
+        '@media (prefers-reduced-motion: reduce)': {
+          '*, *::before, *::after': {
+            animationDuration: '0.01ms !important',
+            animationIterationCount: '1 !important',
+            transitionDuration: '0.01ms !important',
+            scrollBehavior: 'auto !important',
+          },
+        },
+      },
+    },
     MuiButton: {
       defaultProps: { disableElevation: true },
       styleOverrides: {

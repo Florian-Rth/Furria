@@ -3,7 +3,28 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
     <title>FURRIA — Furrscher Carnevals Club e.V.</title>
+    <script>
+      // Inlined MUI InitColorSchemeScript (attribute="data"): applies the
+      // persisted or system color scheme before first paint so there is no
+      // light-mode flash. Storage keys and attribute names must match what
+      // MUI's ThemeProvider uses at runtime ('mui-mode', 'mui-color-scheme',
+      // colorSchemeSelector: 'data' in @furria/ui).
+      (() => {
+        try {
+          const mode = localStorage.getItem('mui-mode') || 'system';
+          const dark = localStorage.getItem('mui-color-scheme-dark') || 'dark';
+          const light = localStorage.getItem('mui-color-scheme-light') || 'light';
+          const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          const scheme = mode === 'dark' || (mode === 'system' && systemDark) ? dark : light;
+          const root = document.documentElement;
+          root.removeAttribute(`data-${light}`);
+          root.removeAttribute(`data-${dark}`);
+          root.setAttribute(`data-${scheme}`, '');
+        } catch {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
