@@ -1,3 +1,4 @@
+import { kkTokens } from '@furria/ui';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
@@ -35,9 +36,10 @@ export const PreviewAccessDialog: FC<PreviewAccessDialogProps> = ({ open, onClos
         // nearly every frame in Chromium and lags badly. The page content behind
         // the dialog is blurred via a plain `filter` where it is cheap (route).
         backdrop: {
-          // 45% ink scrim, derived from the scheme-aware text token.
+          // A scrim always darkens — deliberately NOT scheme-aware: deriving it
+          // from text.primary turns it into a cream veil in dark mode.
           sx: (theme) => ({
-            backgroundColor: theme.alpha((theme.vars ?? theme).palette.text.primary, 0.45),
+            backgroundColor: theme.alpha(kkTokens.color.light.ink, 0.45),
           }),
         },
       }}
