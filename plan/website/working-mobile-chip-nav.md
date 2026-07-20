@@ -19,10 +19,13 @@ The mobile drawer nav is deleted. In its place: the top-left menu button opens a
 - **Inline, closes on navigation:** the row pushes page content down (no overlay,
   no scrim). Menu button morphs hamburger → X (`aria-expanded`); tapping a chip
   navigates and closes; X closes. No outside-tap dismissal.
-- **Overflow = horizontal scroll + gradient fade mask:** chips scroll with momentum,
-  scrollbar hidden. Edges dissolve to transparent via `mask-image` gradient
-  (~40px), shown **only on the side that has hidden content**. No backdrop-filter
-  (banned on scrolling surfaces for mobile jank — same reasoning as the dialog).
+- **Overflow = horizontal scroll + gradient fade:** chips scroll with momentum,
+  scrollbar hidden. Edges fade (~40px), shown **only on the side that has hidden
+  content**. No backdrop-filter (banned on scrolling surfaces for mobile jank —
+  same reasoning as the dialog). *As built:* overlay gradients (page background →
+  transparent) with an animated `opacity`, not a `mask-image` — mask gradients
+  don't transition, which made the fade pop in jumpily; the overlay reads
+  identically on the flat chrome background and animates in and out.
 - **Appear animation:** height via MUI `Collapse` (~250ms) + inner content
   `blur(8px) → 0`, `translateY(-10px) → 0`, `opacity 0 → 1`, ease-out. Gated behind
   `prefers-reduced-motion: no-preference` (reduced motion: instant). *As built:*
