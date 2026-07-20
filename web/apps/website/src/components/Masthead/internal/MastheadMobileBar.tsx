@@ -14,29 +14,6 @@ interface MastheadMobileBarProps {
 
 export const MastheadMobileBar: FC<MastheadMobileBarProps> = ({ onMenuOpen }) => (
   <Stack sx={{ display: { xs: 'flex', md: 'none' } }}>
-    <Stack
-      direction="row"
-      sx={{
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: 1,
-        px: 2,
-        py: 0.5,
-        borderBottom: 1,
-        borderColor: 'divider',
-        color: 'text.secondary',
-      }}
-    >
-      <Typography variant="caption" sx={{ fontWeight: 800, letterSpacing: '0.14em' }}>
-        GROSSBESENSTADT · EST. 1971
-      </Typography>
-      <Typography
-        variant="caption"
-        sx={{ fontWeight: 800, letterSpacing: '0.14em', color: 'primary.main' }}
-      >
-        GROSS - FURRIA!
-      </Typography>
-    </Stack>
     <Box
       sx={{
         display: 'grid',
