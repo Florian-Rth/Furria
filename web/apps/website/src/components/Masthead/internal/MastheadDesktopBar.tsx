@@ -53,38 +53,23 @@ export const MastheadDesktopBar: FC = () => (
           ))}
         </Stack>
         <Box sx={{ flex: 1, borderBottom: 2, borderColor: 'text.primary' }} />
-      </Stack>
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: '1fr auto 1fr',
-          alignItems: 'center',
-          gap: 1.5,
-        }}
-      >
-        <Typography
-          variant="caption"
-          sx={{ ...metaLabelSx, color: 'text.secondary', justifySelf: 'end' }}
-        >
+        <Typography variant="caption" sx={{ ...metaLabelSx, color: 'text.secondary' }}>
           Nº 128
         </Typography>
-        <Link component={RouterLink} to="/" underline="none">
-          <Typography
-            variant="h3"
-            component="span"
-            sx={{ color: 'text.primary', letterSpacing: '0.06em', lineHeight: 1 }}
-          >
-            FURRIA
-          </Typography>
-        </Link>
+      </Stack>
+      <Link component={RouterLink} to="/" underline="none">
         <Typography
-          variant="caption"
-          sx={{ ...metaLabelSx, color: 'text.secondary', justifySelf: 'start' }}
+          variant="h3"
+          component="span"
+          sx={{ color: 'text.primary', letterSpacing: '0.06em', lineHeight: 1 }}
         >
+          FURRIA
+        </Typography>
+      </Link>
+      <Stack direction="row" sx={{ alignItems: 'center', gap: 2.5 }}>
+        <Typography variant="caption" sx={{ ...metaLabelSx, color: 'text.secondary' }}>
           SESSION 2026
         </Typography>
-      </Box>
-      <Stack direction="row" sx={{ alignItems: 'center', gap: 2.5 }}>
         <Box sx={{ flex: 1, borderBottom: 2, borderColor: 'text.primary' }} />
         <Stack direction="row" sx={{ alignItems: 'center', gap: 1.5 }}>
           <ThemeModeToggle />
