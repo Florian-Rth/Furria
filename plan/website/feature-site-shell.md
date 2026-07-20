@@ -2,7 +2,7 @@
 title: Site-Shell
 slug: site-shell
 type: foundation
-status: ready
+status: shipped
 mock: docs/design/fcc-ds-landing.jsx
 adrs: [docs/adr/0003-website-rendering-strategy.md]
 ---
@@ -66,11 +66,16 @@ hang in — built first so everything else has a home.
 - Light/dark via MUI CSS-vars `colorSchemes`; **`useColorScheme()`** toggle, default `system`,
   persisted; **`InitColorSchemeScript`** to prevent first-paint flash; respect
   `prefers-reduced-motion`.
+- *As built (P0):* MUI's `InitColorSchemeScript` component only emits during SSR, so its logic is
+  **inlined as a script in `index.html`** (same storage keys/attribute contract) and the shared
+  theme uses `colorSchemeSelector: 'data'`; the reduced-motion guard lives in the shared theme.
 - Ticker is **not** part of the shell — its own foundation ([Ticker](feature-ticker.md)).
 
 ## Open Questions
 
-- Footer build-out: how far toward the mock (broom lockup, social links, which socials) in P0 vs. later.
+- Footer build-out — *resolved in P0:* built lean — broom lockup, tagline with the Narrenruf,
+  legal links, FB/IG/YT socials as `#` placeholders — on light token-pure chrome instead of the
+  mock's fixed dark band. Real social URLs + further build-out are a later polish task.
 - Prerender mechanism — deferred out of P0 (see [SEO & Meta](feature-seo-meta.md)); the routing
   skeleton is prerender-ready via the `head` API.
 

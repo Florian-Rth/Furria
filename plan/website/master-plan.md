@@ -53,10 +53,10 @@ Guiding constraints (all binding):
 
 | Feature | Type | Status | Purpose |
 |---|---|---|---|
-| [Site-Shell](feature-site-shell.md) | foundation | ready | Masthead nav, footer, theming, layout, `@furria/ui` wiring |
-| [Preview-Gate](feature-preview-gate.md) | foundation | ready | Pre-launch access gate + tester portal (`/apps`) |
-| [API-Client](feature-api-client.md) | foundation | ready | Data layer to the backend public read endpoints |
-| [SEO & Meta](feature-seo-meta.md) | foundation | ready | Meta tags, Open Graph / social-share cards |
+| [Site-Shell](feature-site-shell.md) | foundation | shipped | Masthead nav, footer, theming, layout, `@furria/ui` wiring |
+| [Preview-Gate](feature-preview-gate.md) | foundation | shipped | Pre-launch access gate + tester portal (`/apps`) |
+| [API-Client](feature-api-client.md) | foundation | building | Data layer to the backend public read endpoints |
+| [SEO & Meta](feature-seo-meta.md) | foundation | building | Meta tags, Open Graph / social-share cards |
 | [Ticker](feature-ticker.md) | foundation | idea | Flat red/gold marquee signature chrome |
 | [Landing](feature-landing.md) | capability | idea | Home page — composes the blocks below |
 | [Landing-Hero](feature-landing-hero.md) | capability | idea | Identity centerpiece: headline, CTAs, stats, hero photo |
@@ -74,18 +74,20 @@ Guiding constraints (all binding):
 ## Phases
 
 ### P0 — Shell & theme
-**Status:** planned
+**Status:** done (2026-07-20, branch `feat/website-p0-frontend`, 4 commits `61b7e51`…`5f94be6`)
 Deployable branded shell behind the preview gate: masthead + footer + light/dark, real pages at
 their final English URLs, tester portal at `/apps`, `@furria/ui` wired, the app builds and deploys.
+Deviations from plan are recorded in the feature files (Site-Shell: color-scheme init script;
+SEO & Meta: share-image URL deferral).
 
-- [ ] [Site-Shell](feature-site-shell.md) — `_site` layout route (masthead + footer), TanStack
+- [x] [Site-Shell](feature-site-shell.md) — `_site` layout route (masthead + footer), TanStack
       Router skeleton, full data-driven nav + shared `PlaceholderPage`, theme toggle; rename
       `/impressum`→`/imprint` & `/datenschutz`→`/privacy`
-- [ ] [Preview-Gate](feature-preview-gate.md) — three-zone gate (legal public / marketing gated /
+- [x] [Preview-Gate](feature-preview-gate.md) — three-zone gate (legal public / marketing gated /
       portal gated); portal → `/apps`, app-launch cards
-- [ ] [API-Client](feature-api-client.md) — `apiFetch` helper + env + query-client defaults +
+- [x] [API-Client](feature-api-client.md) — `apiFetch` helper + env + query-client defaults +
       Zod-at-boundary rule (no domain endpoints/mocks)
-- [ ] [SEO & Meta](feature-seo-meta.md) — TanStack Router `head` base, defaults, favicon links,
+- [x] [SEO & Meta](feature-seo-meta.md) — TanStack Router `head` base, defaults, favicon links,
       `robots.txt` disallow-while-gated
 
 ### P1 — Landing hero

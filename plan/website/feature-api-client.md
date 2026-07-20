@@ -2,7 +2,7 @@
 title: API-Client
 slug: api-client
 type: foundation
-status: ready
+status: building
 mock: -
 adrs: [docs/adr/0003-website-rendering-strategy.md]
 ---
@@ -40,7 +40,9 @@ and error/loading states consistent across features.
 - **Query-client defaults:** real `staleTime` / `retry` / `refetchOnWindowFocus: false` (marketing
   site) instead of a bare `new QueryClient()`.
 - **Boundary validation:** every response **Zod-parsed at the edge** (the convention `preview-access`
-  already sets). This is the standing rule.
+  already sets). This is the standing rule. *As built (P0):* `apiFetch` takes a **mandatory Zod
+  schema parameter**, so boundary parsing is enforced by construction; HTTP failures surface as
+  `ApiError` (with status), unreachable-API as `RequestBlockedError`.
 - **No domain data in P0:** event/news/etc. shapes are undefined and will change — build **no**
   event-specific types, schemas, or mock endpoints yet. Pre-P5 sections use **static placeholder
   content**, not a fake API.

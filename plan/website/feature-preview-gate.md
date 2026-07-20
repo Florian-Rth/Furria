@@ -2,7 +2,7 @@
 title: Preview-Gate
 slug: preview-gate
 type: foundation
-status: ready
+status: shipped
 mock: -
 adrs: []
 ---
