@@ -2,6 +2,7 @@ import Stack from '@mui/material/Stack';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { useState } from 'react';
+import { LegalLinks } from '@/components/LegalLinks';
 import { PlaceholderPage } from '@/components/PlaceholderPage';
 import { SiteChrome } from '@/components/SiteChrome';
 import { LandingPage } from '@/features/landing';
@@ -37,6 +38,20 @@ const HomeComponent: FC = () => {
         }}
       >
         <LandingPage onCtaClick={() => setDialogOpen(true)} confettiPaused={dialogOpen} />
+        <Stack
+          component="footer"
+          direction="row"
+          sx={{
+            justifyContent: 'center',
+            py: 2.5,
+            px: 2,
+            borderTop: 1,
+            borderColor: 'divider',
+            color: 'text.secondary',
+          }}
+        >
+          <LegalLinks />
+        </Stack>
       </Stack>
       <PreviewAccessDialog
         open={dialogOpen}

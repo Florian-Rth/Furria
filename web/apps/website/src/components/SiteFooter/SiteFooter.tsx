@@ -1,8 +1,7 @@
-import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { Link as RouterLink } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { LegalLinks } from '@/components/LegalLinks';
 import { BroomMarkIcon } from './internal/BroomMarkIcon';
 import { SocialLinks } from './internal/SocialLinks';
 
@@ -47,14 +46,7 @@ export const SiteFooter: FC = () => (
       <Typography variant="body2" sx={{ color: 'text.secondary' }}>
         © 2026 Furrscher Carnevals Club e.V.
       </Typography>
-      <Stack direction="row" sx={{ gap: 3 }}>
-        <Link component={RouterLink} to="/imprint" color="inherit" variant="body2">
-          Impressum
-        </Link>
-        <Link component={RouterLink} to="/privacy" color="inherit" variant="body2">
-          Datenschutz
-        </Link>
-      </Stack>
+      <LegalLinks />
     </Stack>
   </Stack>
 );

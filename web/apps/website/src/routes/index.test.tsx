@@ -37,6 +37,20 @@ describe('home route', () => {
     ).toBeInTheDocument();
   });
 
+  it('keeps the legal pages reachable from the ungated teaser', async () => {
+    renderAtRoute('/');
+    const footer = await screen.findByRole('contentinfo');
+
+    expect(within(footer).getByRole('link', { name: 'Impressum' })).toHaveAttribute(
+      'href',
+      '/imprint',
+    );
+    expect(within(footer).getByRole('link', { name: 'Datenschutz' })).toHaveAttribute(
+      'href',
+      '/privacy',
+    );
+  });
+
   it('applies the site-wide head defaults on the teaser', async () => {
     renderAtRoute('/');
     await screen.findByRole('button', { name: 'Einlass' });
