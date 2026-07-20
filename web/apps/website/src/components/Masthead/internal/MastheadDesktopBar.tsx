@@ -13,11 +13,11 @@ const metaLabelSx = { fontWeight: 800, letterSpacing: '0.18em', whiteSpace: 'now
 
 export const MastheadDesktopBar: FC = () => (
   <Stack sx={{ display: { xs: 'none', md: 'flex' } }}>
-    <Stack
-      direction="row"
+    <Box
       sx={{
+        display: 'grid',
+        gridTemplateColumns: '1fr auto 1fr',
         alignItems: 'center',
-        justifyContent: 'space-between',
         gap: 2,
         px: 7,
         py: 0.75,
@@ -32,10 +32,10 @@ export const MastheadDesktopBar: FC = () => (
       <Typography variant="caption" sx={{ ...metaLabelSx, color: 'primary.main' }}>
         ★ DIE FÜNFTE JAHRESZEIT ★
       </Typography>
-      <Typography variant="caption" sx={metaLabelSx}>
+      <Typography variant="caption" sx={{ ...metaLabelSx, justifySelf: 'end' }}>
         GROSS - FURRIA!
       </Typography>
-    </Stack>
+    </Box>
     <Box
       sx={{
         display: 'grid',
