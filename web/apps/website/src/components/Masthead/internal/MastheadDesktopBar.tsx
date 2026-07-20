@@ -54,8 +54,18 @@ export const MastheadDesktopBar: FC = () => (
         </Stack>
         <Box sx={{ flex: 1, borderBottom: 2, borderColor: 'text.primary' }} />
       </Stack>
-      <Stack direction="row" sx={{ alignItems: 'center', gap: 1.5 }}>
-        <Typography variant="caption" sx={{ ...metaLabelSx, color: 'text.secondary' }}>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: '1fr auto 1fr',
+          alignItems: 'center',
+          gap: 1.5,
+        }}
+      >
+        <Typography
+          variant="caption"
+          sx={{ ...metaLabelSx, color: 'text.secondary', justifySelf: 'end' }}
+        >
           Nº 128
         </Typography>
         <Link component={RouterLink} to="/" underline="none">
@@ -67,10 +77,13 @@ export const MastheadDesktopBar: FC = () => (
             FURRIA
           </Typography>
         </Link>
-        <Typography variant="caption" sx={{ ...metaLabelSx, color: 'text.secondary' }}>
+        <Typography
+          variant="caption"
+          sx={{ ...metaLabelSx, color: 'text.secondary', justifySelf: 'start' }}
+        >
           SESSION 2026
         </Typography>
-      </Stack>
+      </Box>
       <Stack direction="row" sx={{ alignItems: 'center', gap: 2.5 }}>
         <Box sx={{ flex: 1, borderBottom: 2, borderColor: 'text.primary' }} />
         <Stack direction="row" sx={{ alignItems: 'center', gap: 1.5 }}>
