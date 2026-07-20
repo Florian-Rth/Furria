@@ -13,7 +13,7 @@ export interface ConfettiPiece {
 
 const COLORS: ConfettiPiece['color'][] = ['red', 'gold', 'ink'];
 
-const pseudoRandom = (seed: number, k: number): number => {
+export const pseudoRandom = (seed: number, k: number): number => {
   const value = Math.sin(seed * 53.3 + k * 12.9) * 10_000;
   return value - Math.floor(value);
 };

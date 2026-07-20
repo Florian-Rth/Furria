@@ -1,5 +1,8 @@
+export type { BurstPiece } from './burst-pieces';
+export { buildBurstPieces } from './burst-pieces';
 export type { ConfettiPiece } from './confetti-pieces';
 export { buildConfettiPieces } from './confetti-pieces';
+export { KkConfettiBurst } from './KkConfettiBurst';
 export { KkConfettiRain } from './KkConfettiRain';
 export { KkThemeProvider } from './KkThemeProvider';
 export { PageLayout } from './PageLayout';
