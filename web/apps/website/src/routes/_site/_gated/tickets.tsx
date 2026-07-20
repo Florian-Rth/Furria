@@ -4,4 +4,4 @@ import { PlaceholderPage } from '@/components/PlaceholderPage';
 
 const TicketsComponent: FC = () => <PlaceholderPage title="Tickets" />;
 
-export const Route = createFileRoute('/_site/tickets')({ component: TicketsComponent });
+export const Route = createFileRoute('/_site/_gated/tickets')({ component: TicketsComponent });

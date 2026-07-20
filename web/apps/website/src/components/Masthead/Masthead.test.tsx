@@ -1,13 +1,20 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { writeGrantedToSession } from '@/features/preview-access';
 import { renderAtRoute } from '@/test/render';
 import { DESKTOP_VIEWPORT_WIDTH, MOBILE_VIEWPORT_WIDTH, setViewportWidth } from '@/test/viewport';
 import { navItems } from './nav-items';
 
+// These tests render at gated routes, so grant preview access up front.
+beforeEach(() => {
+  writeGrantedToSession(window.sessionStorage);
+});
+
 afterEach(() => {
   setViewportWidth(DESKTOP_VIEWPORT_WIDTH);
   window.localStorage.clear();
+  window.sessionStorage.clear();
   document.documentElement.removeAttribute('data-light');
   document.documentElement.removeAttribute('data-dark');
 });

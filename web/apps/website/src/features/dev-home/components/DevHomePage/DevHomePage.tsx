@@ -3,33 +3,10 @@ import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
-import type { DevHomeApp } from './internal/AppStatusCard';
-import { AppStatusCard } from './internal/AppStatusCard';
+import { AppLaunchCard } from './internal/AppLaunchCard';
+import { AppPlannedCard } from './internal/AppPlannedCard';
 
-const apps: DevHomeApp[] = [
-  {
-    name: 'Website',
-    description:
-      'Der öffentliche Auftritt: Programm, Tickets, Neuigkeiten und der Weg in den Verein.',
-    statusLabel: 'In Arbeit',
-    statusColor: 'warning',
-  },
-  {
-    name: 'Club-App',
-    description:
-      'Die interne App für Mitglieder: Mitgliederverwaltung, Beiträge, Veranstaltungsplanung, Live-Regie und Getränkekasse.',
-    statusLabel: 'Geplant',
-    statusColor: 'default',
-  },
-  {
-    name: 'Event-App',
-    description:
-      'Für Gäste bei Veranstaltungen: Fotos vom Tisch hochladen, Live-Fotowand und das digitale Programmheft.',
-    statusLabel: 'Geplant',
-    statusColor: 'default',
-  },
-];
-
+// The tester portal: launches into the live apps, announces the planned ones.
 export const DevHomePage: FC = () => (
   <PageLayout>
     <PageLayout.Header>
@@ -45,9 +22,19 @@ export const DevHomePage: FC = () => (
       </Typography>
     </PageLayout.Header>
     <PageLayout.Content gap={2}>
-      {apps.map((app) => (
-        <AppStatusCard key={app.name} app={app} />
-      ))}
+      <AppLaunchCard
+        name="Website"
+        description="Der öffentliche Auftritt: Programm, Tickets, Neuigkeiten und der Weg in den Verein."
+        to="/"
+      />
+      <AppPlannedCard
+        name="Club-App"
+        description="Die interne App für Mitglieder: Mitgliederverwaltung, Beiträge, Veranstaltungsplanung, Live-Regie und Getränkekasse."
+      />
+      <AppPlannedCard
+        name="Event-App"
+        description="Für Gäste bei Veranstaltungen: Fotos vom Tisch hochladen, Live-Fotowand und das digitale Programmheft."
+      />
     </PageLayout.Content>
   </PageLayout>
 );

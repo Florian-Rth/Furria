@@ -1,41 +1,50 @@
-import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router';
-import { render, screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { writeGrantedToSession } from '@/features/preview-access';
-import { routeTree } from '@/routeTree.gen';
-
-// Boots the real route tree with the real root providers — the closest thing
-// to starting the app: teaser vs. dev-home branching and dialog wiring.
-const renderHomeRoute = (): void => {
-  const router = createRouter({
-    routeTree,
-    history: createMemoryHistory({ initialEntries: ['/'] }),
-  });
-
-  render(<RouterProvider router={router} />);
-};
+import { renderAtRoute } from '@/test/render';
 
 afterEach(() => {
+  vi.unstubAllGlobals();
   window.sessionStorage.clear();
 });
 
 describe('home route', () => {
   it('shows the teaser and opens the unlock dialog from the CTA', async () => {
     const user = userEvent.setup();
-    renderHomeRoute();
+    renderAtRoute('/');
 
     await user.click(await screen.findByRole('button', { name: 'Einlass' }));
 
     expect(await screen.findByText('Einlass für Tester')).toBeInTheDocument();
   });
 
-  it('shows the internal test area when access is already granted', async () => {
-    writeGrantedToSession(window.sessionStorage);
-    renderHomeRoute();
+  it('lands on the tester portal at /apps after a successful unlock', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(JSON.stringify({ granted: true }), { status: 200 })),
+    );
+    const user = userEvent.setup();
+    renderAtRoute('/');
+
+    await user.click(await screen.findByRole('button', { name: 'Einlass' }));
+    const dialog = await screen.findByRole('dialog');
+    await user.type(within(dialog).getByLabelText('Passwort'), 'correct');
+    await user.click(within(dialog).getByRole('button', { name: 'Einlass' }));
 
     expect(
       await screen.findByRole('heading', { name: 'Interner Testbereich' }),
     ).toBeInTheDocument();
+  });
+
+  it('shows the home placeholder inside the chrome when access is granted', async () => {
+    writeGrantedToSession(window.sessionStorage);
+    renderAtRoute('/');
+
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Willkommen' }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('navigation', { name: 'Hauptnavigation' })).toBeInTheDocument();
+    expect(screen.getByRole('contentinfo')).toBeInTheDocument();
   });
 });

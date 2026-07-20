@@ -4,4 +4,4 @@ import { PlaceholderPage } from '@/components/PlaceholderPage';
 
 const ClubComponent: FC = () => <PlaceholderPage title="Verein" />;
 
-export const Route = createFileRoute('/_site/club')({ component: ClubComponent });
+export const Route = createFileRoute('/_site/_gated/club')({ component: ClubComponent });

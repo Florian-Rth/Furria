@@ -4,4 +4,4 @@ import { PlaceholderPage } from '@/components/PlaceholderPage';
 
 const GalleryComponent: FC = () => <PlaceholderPage title="Galerie" />;
 
-export const Route = createFileRoute('/_site/gallery')({ component: GalleryComponent });
+export const Route = createFileRoute('/_site/_gated/gallery')({ component: GalleryComponent });

@@ -11,14 +11,16 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SiteRouteImport } from './routes/_site'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as SiteTicketsRouteImport } from './routes/_site/tickets'
-import { Route as SiteProgramRouteImport } from './routes/_site/program'
 import { Route as SitePrivacyRouteImport } from './routes/_site/privacy'
-import { Route as SiteNewsRouteImport } from './routes/_site/news'
-import { Route as SiteJoinRouteImport } from './routes/_site/join'
 import { Route as SiteImprintRouteImport } from './routes/_site/imprint'
-import { Route as SiteGalleryRouteImport } from './routes/_site/gallery'
-import { Route as SiteClubRouteImport } from './routes/_site/club'
+import { Route as SiteGatedRouteImport } from './routes/_site/_gated'
+import { Route as SiteGatedTicketsRouteImport } from './routes/_site/_gated/tickets'
+import { Route as SiteGatedProgramRouteImport } from './routes/_site/_gated/program'
+import { Route as SiteGatedNewsRouteImport } from './routes/_site/_gated/news'
+import { Route as SiteGatedJoinRouteImport } from './routes/_site/_gated/join'
+import { Route as SiteGatedGalleryRouteImport } from './routes/_site/_gated/gallery'
+import { Route as SiteGatedClubRouteImport } from './routes/_site/_gated/club'
+import { Route as SiteGatedAppsRouteImport } from './routes/_site/_gated/apps'
 
 const SiteRoute = SiteRouteImport.update({
   id: '/_site',
@@ -29,29 +31,9 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SiteTicketsRoute = SiteTicketsRouteImport.update({
-  id: '/tickets',
-  path: '/tickets',
-  getParentRoute: () => SiteRoute,
-} as any)
-const SiteProgramRoute = SiteProgramRouteImport.update({
-  id: '/program',
-  path: '/program',
-  getParentRoute: () => SiteRoute,
-} as any)
 const SitePrivacyRoute = SitePrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
-  getParentRoute: () => SiteRoute,
-} as any)
-const SiteNewsRoute = SiteNewsRouteImport.update({
-  id: '/news',
-  path: '/news',
-  getParentRoute: () => SiteRoute,
-} as any)
-const SiteJoinRoute = SiteJoinRouteImport.update({
-  id: '/join',
-  path: '/join',
   getParentRoute: () => SiteRoute,
 } as any)
 const SiteImprintRoute = SiteImprintRouteImport.update({
@@ -59,87 +41,124 @@ const SiteImprintRoute = SiteImprintRouteImport.update({
   path: '/imprint',
   getParentRoute: () => SiteRoute,
 } as any)
-const SiteGalleryRoute = SiteGalleryRouteImport.update({
-  id: '/gallery',
-  path: '/gallery',
+const SiteGatedRoute = SiteGatedRouteImport.update({
+  id: '/_gated',
   getParentRoute: () => SiteRoute,
 } as any)
-const SiteClubRoute = SiteClubRouteImport.update({
+const SiteGatedTicketsRoute = SiteGatedTicketsRouteImport.update({
+  id: '/tickets',
+  path: '/tickets',
+  getParentRoute: () => SiteGatedRoute,
+} as any)
+const SiteGatedProgramRoute = SiteGatedProgramRouteImport.update({
+  id: '/program',
+  path: '/program',
+  getParentRoute: () => SiteGatedRoute,
+} as any)
+const SiteGatedNewsRoute = SiteGatedNewsRouteImport.update({
+  id: '/news',
+  path: '/news',
+  getParentRoute: () => SiteGatedRoute,
+} as any)
+const SiteGatedJoinRoute = SiteGatedJoinRouteImport.update({
+  id: '/join',
+  path: '/join',
+  getParentRoute: () => SiteGatedRoute,
+} as any)
+const SiteGatedGalleryRoute = SiteGatedGalleryRouteImport.update({
+  id: '/gallery',
+  path: '/gallery',
+  getParentRoute: () => SiteGatedRoute,
+} as any)
+const SiteGatedClubRoute = SiteGatedClubRouteImport.update({
   id: '/club',
   path: '/club',
-  getParentRoute: () => SiteRoute,
+  getParentRoute: () => SiteGatedRoute,
+} as any)
+const SiteGatedAppsRoute = SiteGatedAppsRouteImport.update({
+  id: '/apps',
+  path: '/apps',
+  getParentRoute: () => SiteGatedRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/club': typeof SiteClubRoute
-  '/gallery': typeof SiteGalleryRoute
   '/imprint': typeof SiteImprintRoute
-  '/join': typeof SiteJoinRoute
-  '/news': typeof SiteNewsRoute
   '/privacy': typeof SitePrivacyRoute
-  '/program': typeof SiteProgramRoute
-  '/tickets': typeof SiteTicketsRoute
+  '/apps': typeof SiteGatedAppsRoute
+  '/club': typeof SiteGatedClubRoute
+  '/gallery': typeof SiteGatedGalleryRoute
+  '/join': typeof SiteGatedJoinRoute
+  '/news': typeof SiteGatedNewsRoute
+  '/program': typeof SiteGatedProgramRoute
+  '/tickets': typeof SiteGatedTicketsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/club': typeof SiteClubRoute
-  '/gallery': typeof SiteGalleryRoute
   '/imprint': typeof SiteImprintRoute
-  '/join': typeof SiteJoinRoute
-  '/news': typeof SiteNewsRoute
   '/privacy': typeof SitePrivacyRoute
-  '/program': typeof SiteProgramRoute
-  '/tickets': typeof SiteTicketsRoute
+  '/apps': typeof SiteGatedAppsRoute
+  '/club': typeof SiteGatedClubRoute
+  '/gallery': typeof SiteGatedGalleryRoute
+  '/join': typeof SiteGatedJoinRoute
+  '/news': typeof SiteGatedNewsRoute
+  '/program': typeof SiteGatedProgramRoute
+  '/tickets': typeof SiteGatedTicketsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_site': typeof SiteRouteWithChildren
-  '/_site/club': typeof SiteClubRoute
-  '/_site/gallery': typeof SiteGalleryRoute
+  '/_site/_gated': typeof SiteGatedRouteWithChildren
   '/_site/imprint': typeof SiteImprintRoute
-  '/_site/join': typeof SiteJoinRoute
-  '/_site/news': typeof SiteNewsRoute
   '/_site/privacy': typeof SitePrivacyRoute
-  '/_site/program': typeof SiteProgramRoute
-  '/_site/tickets': typeof SiteTicketsRoute
+  '/_site/_gated/apps': typeof SiteGatedAppsRoute
+  '/_site/_gated/club': typeof SiteGatedClubRoute
+  '/_site/_gated/gallery': typeof SiteGatedGalleryRoute
+  '/_site/_gated/join': typeof SiteGatedJoinRoute
+  '/_site/_gated/news': typeof SiteGatedNewsRoute
+  '/_site/_gated/program': typeof SiteGatedProgramRoute
+  '/_site/_gated/tickets': typeof SiteGatedTicketsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/imprint'
+    | '/privacy'
+    | '/apps'
     | '/club'
     | '/gallery'
-    | '/imprint'
     | '/join'
     | '/news'
-    | '/privacy'
     | '/program'
     | '/tickets'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/imprint'
+    | '/privacy'
+    | '/apps'
     | '/club'
     | '/gallery'
-    | '/imprint'
     | '/join'
     | '/news'
-    | '/privacy'
     | '/program'
     | '/tickets'
   id:
     | '__root__'
     | '/'
     | '/_site'
-    | '/_site/club'
-    | '/_site/gallery'
+    | '/_site/_gated'
     | '/_site/imprint'
-    | '/_site/join'
-    | '/_site/news'
     | '/_site/privacy'
-    | '/_site/program'
-    | '/_site/tickets'
+    | '/_site/_gated/apps'
+    | '/_site/_gated/club'
+    | '/_site/_gated/gallery'
+    | '/_site/_gated/join'
+    | '/_site/_gated/news'
+    | '/_site/_gated/program'
+    | '/_site/_gated/tickets'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -163,39 +182,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_site/tickets': {
-      id: '/_site/tickets'
-      path: '/tickets'
-      fullPath: '/tickets'
-      preLoaderRoute: typeof SiteTicketsRouteImport
-      parentRoute: typeof SiteRoute
-    }
-    '/_site/program': {
-      id: '/_site/program'
-      path: '/program'
-      fullPath: '/program'
-      preLoaderRoute: typeof SiteProgramRouteImport
-      parentRoute: typeof SiteRoute
-    }
     '/_site/privacy': {
       id: '/_site/privacy'
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof SitePrivacyRouteImport
-      parentRoute: typeof SiteRoute
-    }
-    '/_site/news': {
-      id: '/_site/news'
-      path: '/news'
-      fullPath: '/news'
-      preLoaderRoute: typeof SiteNewsRouteImport
-      parentRoute: typeof SiteRoute
-    }
-    '/_site/join': {
-      id: '/_site/join'
-      path: '/join'
-      fullPath: '/join'
-      preLoaderRoute: typeof SiteJoinRouteImport
       parentRoute: typeof SiteRoute
     }
     '/_site/imprint': {
@@ -205,43 +196,99 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SiteImprintRouteImport
       parentRoute: typeof SiteRoute
     }
-    '/_site/gallery': {
-      id: '/_site/gallery'
-      path: '/gallery'
-      fullPath: '/gallery'
-      preLoaderRoute: typeof SiteGalleryRouteImport
+    '/_site/_gated': {
+      id: '/_site/_gated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof SiteGatedRouteImport
       parentRoute: typeof SiteRoute
     }
-    '/_site/club': {
-      id: '/_site/club'
+    '/_site/_gated/tickets': {
+      id: '/_site/_gated/tickets'
+      path: '/tickets'
+      fullPath: '/tickets'
+      preLoaderRoute: typeof SiteGatedTicketsRouteImport
+      parentRoute: typeof SiteGatedRoute
+    }
+    '/_site/_gated/program': {
+      id: '/_site/_gated/program'
+      path: '/program'
+      fullPath: '/program'
+      preLoaderRoute: typeof SiteGatedProgramRouteImport
+      parentRoute: typeof SiteGatedRoute
+    }
+    '/_site/_gated/news': {
+      id: '/_site/_gated/news'
+      path: '/news'
+      fullPath: '/news'
+      preLoaderRoute: typeof SiteGatedNewsRouteImport
+      parentRoute: typeof SiteGatedRoute
+    }
+    '/_site/_gated/join': {
+      id: '/_site/_gated/join'
+      path: '/join'
+      fullPath: '/join'
+      preLoaderRoute: typeof SiteGatedJoinRouteImport
+      parentRoute: typeof SiteGatedRoute
+    }
+    '/_site/_gated/gallery': {
+      id: '/_site/_gated/gallery'
+      path: '/gallery'
+      fullPath: '/gallery'
+      preLoaderRoute: typeof SiteGatedGalleryRouteImport
+      parentRoute: typeof SiteGatedRoute
+    }
+    '/_site/_gated/club': {
+      id: '/_site/_gated/club'
       path: '/club'
       fullPath: '/club'
-      preLoaderRoute: typeof SiteClubRouteImport
-      parentRoute: typeof SiteRoute
+      preLoaderRoute: typeof SiteGatedClubRouteImport
+      parentRoute: typeof SiteGatedRoute
+    }
+    '/_site/_gated/apps': {
+      id: '/_site/_gated/apps'
+      path: '/apps'
+      fullPath: '/apps'
+      preLoaderRoute: typeof SiteGatedAppsRouteImport
+      parentRoute: typeof SiteGatedRoute
     }
   }
 }
 
+interface SiteGatedRouteChildren {
+  SiteGatedAppsRoute: typeof SiteGatedAppsRoute
+  SiteGatedClubRoute: typeof SiteGatedClubRoute
+  SiteGatedGalleryRoute: typeof SiteGatedGalleryRoute
+  SiteGatedJoinRoute: typeof SiteGatedJoinRoute
+  SiteGatedNewsRoute: typeof SiteGatedNewsRoute
+  SiteGatedProgramRoute: typeof SiteGatedProgramRoute
+  SiteGatedTicketsRoute: typeof SiteGatedTicketsRoute
+}
+
+const SiteGatedRouteChildren: SiteGatedRouteChildren = {
+  SiteGatedAppsRoute: SiteGatedAppsRoute,
+  SiteGatedClubRoute: SiteGatedClubRoute,
+  SiteGatedGalleryRoute: SiteGatedGalleryRoute,
+  SiteGatedJoinRoute: SiteGatedJoinRoute,
+  SiteGatedNewsRoute: SiteGatedNewsRoute,
+  SiteGatedProgramRoute: SiteGatedProgramRoute,
+  SiteGatedTicketsRoute: SiteGatedTicketsRoute,
+}
+
+const SiteGatedRouteWithChildren = SiteGatedRoute._addFileChildren(
+  SiteGatedRouteChildren,
+)
+
 interface SiteRouteChildren {
-  SiteClubRoute: typeof SiteClubRoute
-  SiteGalleryRoute: typeof SiteGalleryRoute
+  SiteGatedRoute: typeof SiteGatedRouteWithChildren
   SiteImprintRoute: typeof SiteImprintRoute
-  SiteJoinRoute: typeof SiteJoinRoute
-  SiteNewsRoute: typeof SiteNewsRoute
   SitePrivacyRoute: typeof SitePrivacyRoute
-  SiteProgramRoute: typeof SiteProgramRoute
-  SiteTicketsRoute: typeof SiteTicketsRoute
 }
 
 const SiteRouteChildren: SiteRouteChildren = {
-  SiteClubRoute: SiteClubRoute,
-  SiteGalleryRoute: SiteGalleryRoute,
+  SiteGatedRoute: SiteGatedRouteWithChildren,
   SiteImprintRoute: SiteImprintRoute,
-  SiteJoinRoute: SiteJoinRoute,
-  SiteNewsRoute: SiteNewsRoute,
   SitePrivacyRoute: SitePrivacyRoute,
-  SiteProgramRoute: SiteProgramRoute,
-  SiteTicketsRoute: SiteTicketsRoute,
 }
 
 const SiteRouteWithChildren = SiteRoute._addFileChildren(SiteRouteChildren)

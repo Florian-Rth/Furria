@@ -4,4 +4,4 @@ import { PlaceholderPage } from '@/components/PlaceholderPage';
 
 const NewsComponent: FC = () => <PlaceholderPage title="Aktuelles" />;
 
-export const Route = createFileRoute('/_site/news')({ component: NewsComponent });
+export const Route = createFileRoute('/_site/_gated/news')({ component: NewsComponent });

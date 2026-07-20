@@ -1,19 +1,27 @@
 import Stack from '@mui/material/Stack';
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { useState } from 'react';
-import { DevHomePage } from '@/features/dev-home';
+import { PlaceholderPage } from '@/components/PlaceholderPage';
+import { SiteChrome } from '@/components/SiteChrome';
 import { LandingPage } from '@/features/landing';
 import { PreviewAccessDialog, usePreviewAccess } from '@/features/preview-access';
 
-// The route composes the two features: the public teaser with its unlock
-// dialog, and the dev-home testers see once access is granted.
+// '/' branches on the preview grant: ungated visitors get the full-bleed
+// coming-soon teaser with the unlock dialog (unlock lands on /apps); granted
+// visitors see the home placeholder inside the branded chrome — the real
+// landing page replaces it in P1.
 const HomeComponent: FC = () => {
   const { granted } = usePreviewAccess();
+  const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
 
   if (granted) {
-    return <DevHomePage />;
+    return (
+      <SiteChrome>
+        <PlaceholderPage title="Willkommen" />
+      </SiteChrome>
+    );
   }
 
   return (
@@ -30,7 +38,11 @@ const HomeComponent: FC = () => {
       >
         <LandingPage onCtaClick={() => setDialogOpen(true)} confettiPaused={dialogOpen} />
       </Stack>
-      <PreviewAccessDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />
+      <PreviewAccessDialog
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        onGranted={() => void navigate({ to: '/apps' })}
+      />
     </>
   );
 };
