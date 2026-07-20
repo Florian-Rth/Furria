@@ -2,6 +2,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import { LegalLinks } from '@/components/LegalLinks';
+import { currentYear, FOUNDING_YEAR } from '@/lib/club';
 import { BroomMarkIcon } from './internal/BroomMarkIcon';
 import { SocialLinks } from './internal/SocialLinks';
 
@@ -25,7 +26,8 @@ export const SiteFooter: FC = () => (
           </Typography>
         </Stack>
         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-          Furrscher Carnevals Club e.V. · Die Großbesenstadt feiert seit 1971. Gross - Furria!
+          Furrscher Carnevals Club e.V. · Die Großbesenstadt feiert seit {FOUNDING_YEAR}. Gross -
+          Furria!
         </Typography>
       </Stack>
       <SocialLinks />
@@ -42,7 +44,7 @@ export const SiteFooter: FC = () => (
       }}
     >
       <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-        © 2026 Furrscher Carnevals Club e.V.
+        © {currentYear} Furrscher Carnevals Club e.V.
       </Typography>
       <LegalLinks />
     </Stack>

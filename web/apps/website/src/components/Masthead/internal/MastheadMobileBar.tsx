@@ -5,6 +5,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { Link as RouterLink } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { currentSession } from '@/lib/club';
 import { CloseIcon } from './CloseIcon';
 import { MASTHEAD_CHIP_NAV_ID } from './MastheadChipNav';
 import { MenuIcon } from './MenuIcon';
@@ -48,7 +49,7 @@ export const MastheadMobileBar: FC<MastheadMobileBarProps> = ({ menuOpen, onMenu
           variant="caption"
           sx={{ color: 'text.secondary', fontWeight: 800, letterSpacing: '0.18em' }}
         >
-          Nº 128 · SESSION 2026
+          Nº {currentSession.number} · SESSION {currentSession.yearsLabel}
         </Typography>
       </Stack>
     </Link>

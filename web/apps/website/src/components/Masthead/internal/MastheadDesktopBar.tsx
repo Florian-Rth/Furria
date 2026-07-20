@@ -5,6 +5,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { Link as RouterLink } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { currentSession, FOUNDING_YEAR } from '@/lib/club';
 import { navItems } from '../nav-items';
 import { MastheadNavLink } from './MastheadNavLink';
 import { ThemeModeToggle } from './ThemeModeToggle';
@@ -27,7 +28,7 @@ export const MastheadDesktopBar: FC = () => (
       }}
     >
       <Typography variant="caption" sx={metaLabelSx}>
-        GROSSBESENSTADT · EST. 1971
+        GROSSBESENSTADT · EST. {FOUNDING_YEAR}
       </Typography>
       <Typography variant="caption" sx={{ ...metaLabelSx, color: 'primary.main' }}>
         ★ DIE FÜNFTE JAHRESZEIT ★
@@ -54,7 +55,7 @@ export const MastheadDesktopBar: FC = () => (
         </Stack>
         <Box sx={{ flex: 1, borderBottom: 2, borderColor: 'text.primary' }} />
         <Typography variant="caption" sx={{ ...metaLabelSx, color: 'text.secondary' }}>
-          Nº 128
+          NUMBER {currentSession.number}
         </Typography>
       </Stack>
       <Link component={RouterLink} to="/" underline="none">
@@ -68,7 +69,7 @@ export const MastheadDesktopBar: FC = () => (
       </Link>
       <Stack direction="row" sx={{ alignItems: 'center', gap: 2.5 }}>
         <Typography variant="caption" sx={{ ...metaLabelSx, color: 'text.secondary' }}>
-          SESSION 2026
+          SESSION {currentSession.yearsLabel}
         </Typography>
         <Box sx={{ flex: 1, borderBottom: 2, borderColor: 'text.primary' }} />
         <Stack direction="row" sx={{ alignItems: 'center', gap: 1.5 }}>
