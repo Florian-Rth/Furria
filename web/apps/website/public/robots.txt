@@ -1,0 +1,3 @@
+# Site is gated pre-launch — nothing may be indexed. Flip to allow at launch.
+User-agent: *
+Disallow: /

@@ -28,5 +28,6 @@ describe('preview gate', () => {
     ).toBeInTheDocument();
     expect(screen.getByRole('navigation', { name: 'Hauptnavigation' })).toBeInTheDocument();
     expect(screen.getByRole('contentinfo')).toBeInTheDocument();
+    expect(document.title).toBe('Interner Testbereich · FURRIA');
   });
 });

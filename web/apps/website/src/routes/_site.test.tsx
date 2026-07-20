@@ -28,6 +28,8 @@ describe('site shell', () => {
       // Chrome around the page: masthead nav + footer.
       expect(screen.getByRole('navigation', { name: 'Hauptnavigation' })).toBeInTheDocument();
       expect(screen.getByRole('contentinfo')).toBeInTheDocument();
+      // The route's head() sets the document title.
+      expect(document.title).toBe(`${title} · FURRIA`);
     },
   );
 
@@ -36,6 +38,7 @@ describe('site shell', () => {
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Impressum' })).toBeInTheDocument();
     expect(screen.getByRole('contentinfo')).toBeInTheDocument();
+    expect(document.title).toBe('Impressum · FURRIA');
   });
 
   it('/privacy renders the Datenschutzerklärung inside the chrome without the preview grant', async () => {
@@ -45,5 +48,6 @@ describe('site shell', () => {
       await screen.findByRole('heading', { level: 1, name: 'Datenschutzerklärung' }),
     ).toBeInTheDocument();
     expect(screen.getByRole('contentinfo')).toBeInTheDocument();
+    expect(document.title).toBe('Datenschutz · FURRIA');
   });
 });

@@ -37,6 +37,23 @@ describe('home route', () => {
     ).toBeInTheDocument();
   });
 
+  it('applies the site-wide head defaults on the teaser', async () => {
+    renderAtRoute('/');
+    await screen.findByRole('button', { name: 'Einlass' });
+
+    // Root-route head(): default title + shared meta, hoisted by React 19.
+    expect(document.title).toBe('FURRIA');
+    expect(document.querySelector('meta[name="description"]')?.getAttribute('content')).toContain(
+      'Gross - Furria!',
+    );
+    expect(document.querySelector('meta[property="og:site_name"]')?.getAttribute('content')).toBe(
+      'FURRIA',
+    );
+    expect(document.querySelector('meta[name="twitter:card"]')?.getAttribute('content')).toBe(
+      'summary_large_image',
+    );
+  });
+
   it('shows the home placeholder inside the chrome when access is granted', async () => {
     writeGrantedToSession(window.sessionStorage);
     renderAtRoute('/');
