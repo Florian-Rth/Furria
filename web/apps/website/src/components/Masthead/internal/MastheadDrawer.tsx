@@ -17,7 +17,6 @@ interface MastheadDrawerProps {
   onClose: () => void;
 }
 
-// Mobile nav drawer — same nav data as the desktop bar, plus the theme toggle.
 export const MastheadDrawer: FC<MastheadDrawerProps> = ({ open, onClose }) => (
   <Drawer anchor="left" open={open} onClose={onClose}>
     <Stack sx={{ width: (theme) => theme.spacing(34), maxWidth: '80vw', flex: 1, py: 1 }}>

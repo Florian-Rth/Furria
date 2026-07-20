@@ -7,7 +7,6 @@ interface TwoToneHeadlineProps {
   line2: string;
 }
 
-// Signature two-tone headline pattern: line 1 ink, line 2 red.
 export const TwoToneHeadline: FC<TwoToneHeadlineProps> = ({ line1, line2 }) => (
   <Typography variant="h1" component="h1">
     <Box component="span" sx={{ display: 'block', color: 'text.primary' }}>

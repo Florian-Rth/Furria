@@ -5,8 +5,6 @@ import { MastheadDesktopBar } from './internal/MastheadDesktopBar';
 import { MastheadDrawer } from './internal/MastheadDrawer';
 import { MastheadMobileBar } from './internal/MastheadMobileBar';
 
-// The site chrome header: newspaper masthead on desktop, hamburger bar +
-// drawer on mobile. Both render the same nav data (see nav-items.ts).
 export const Masthead: FC = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
 

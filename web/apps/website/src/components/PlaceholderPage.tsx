@@ -7,8 +7,6 @@ interface PlaceholderPageProps {
   title: string;
 }
 
-// The one branded stub every unbuilt nav destination renders — each phase
-// swaps its stub for the real page (site-shell plan).
 export const PlaceholderPage: FC<PlaceholderPageProps> = ({ title }) => (
   <PageLayout>
     <PageLayout.Header>

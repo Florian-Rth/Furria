@@ -1,13 +1,3 @@
-/**
- * "Konfetti Kinetik" design tokens — the FURRIA Corporate Identity.
- *
- * Values are taken verbatim from the design handoff:
- * - light: `T` in docs/design/fcc-ds-shell.jsx (= handoff README §5 table)
- * - dark:  `KK.dark` in docs/design/fcc-theme.jsx
- *
- * Dark values not specified by the handoff (panel2, faint, green, blue, line2)
- * are derived: cream-alpha for text/lines, light-mode status colors reused.
- */
 export const kkTokens = {
   color: {
     light: {

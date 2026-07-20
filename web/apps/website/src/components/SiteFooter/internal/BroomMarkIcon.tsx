@@ -1,9 +1,6 @@
 import SvgIcon from '@mui/material/SvgIcon';
 import type { FC } from 'react';
 
-// The crossed-broom coat-of-arms mark (KKBroom in the design handoff),
-// simplified to a single-color silhouette: small gaps between handle, binding
-// band and bristle fan keep the shape readable in one color.
 const broomParts = (
   <>
     <rect x={-2.6} y={-44} width={5.2} height={36.5} rx={2.6} />

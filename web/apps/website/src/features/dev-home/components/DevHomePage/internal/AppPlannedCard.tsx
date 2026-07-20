@@ -7,7 +7,6 @@ interface AppPlannedCardProps {
   description: string;
 }
 
-// An app that does not exist yet: no link, just the announcement.
 export const AppPlannedCard: FC<AppPlannedCardProps> = ({ name, description }) => (
   <Card>
     <AppCardContent

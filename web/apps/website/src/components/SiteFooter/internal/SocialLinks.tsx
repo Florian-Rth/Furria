@@ -11,7 +11,6 @@ interface SocialLink {
   icon: ReactNode;
 }
 
-// Profiles are not public yet — '#' placeholders until the club hands over URLs.
 const socialLinks: SocialLink[] = [
   { label: 'FURRIA auf Facebook', href: '#', icon: <FacebookIcon /> },
   { label: 'FURRIA auf Instagram', href: '#', icon: <InstagramIcon /> },

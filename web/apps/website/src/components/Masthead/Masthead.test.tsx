@@ -6,7 +6,6 @@ import { renderAtRoute } from '@/test/render';
 import { DESKTOP_VIEWPORT_WIDTH, MOBILE_VIEWPORT_WIDTH, setViewportWidth } from '@/test/viewport';
 import { navItems } from './nav-items';
 
-// These tests render at gated routes, so grant preview access up front.
 beforeEach(() => {
   writeGrantedToSession(window.sessionStorage);
 });
@@ -49,8 +48,6 @@ describe('Masthead', () => {
     await user.click(screen.getByRole('button', { name: 'Menü öffnen' }));
     await screen.findByRole('button', { name: 'Menü schließen' });
 
-    // On mobile the drawer renders the ONE shared nav data — the desktop bar
-    // is display:none, so this is the drawer's nav.
     const drawerNav = screen.getByRole('navigation', { name: 'Hauptnavigation' });
     await user.click(within(drawerNav).getByRole('link', { name: 'Verein' }));
 

@@ -55,7 +55,6 @@ describe('home route', () => {
     renderAtRoute('/');
     await screen.findByRole('button', { name: 'Einlass' });
 
-    // Root-route head(): default title + shared meta, hoisted by React 19.
     expect(document.title).toBe('FURRIA');
     expect(document.querySelector('meta[name="description"]')?.getAttribute('content')).toContain(
       'Gross - Furria!',

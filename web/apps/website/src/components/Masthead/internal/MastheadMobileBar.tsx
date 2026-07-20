@@ -12,7 +12,6 @@ interface MastheadMobileBarProps {
   onMenuOpen: () => void;
 }
 
-// Mobile masthead: hamburger — centered FURRIA wordmark — red Tickets pill.
 export const MastheadMobileBar: FC<MastheadMobileBarProps> = ({ onMenuOpen }) => (
   <Stack sx={{ display: { xs: 'flex', md: 'none' } }}>
     <Stack

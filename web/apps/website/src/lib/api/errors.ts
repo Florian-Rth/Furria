@@ -1,5 +1,3 @@
-// Errors any API request can surface — feature APIs compose on these.
-
 export class RequestBlockedError extends Error {
   constructor() {
     super('The request never reached the API - blocked or offline.');

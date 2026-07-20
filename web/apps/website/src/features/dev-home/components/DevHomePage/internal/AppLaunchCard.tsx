@@ -11,7 +11,6 @@ interface AppLaunchCardProps {
   to: LinkProps['to'];
 }
 
-// A live app: the whole card is a launch link into it.
 export const AppLaunchCard: FC<AppLaunchCardProps> = ({ name, description, to }) => (
   <Card>
     <CardActionArea component={RouterLink} to={to}>

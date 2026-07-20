@@ -11,7 +11,7 @@ description: Mandatory rules for all C#/.NET backend work. Invoke before writing
 - Cache immutable, deterministic property values as `static readonly` fields — never re-allocate them on every property access
 - No primary constructors — use traditional constructor with `private readonly` fields
 - No XML doc comments — write self-documenting code with speaking names
-- Add comments only to explain non-obvious "why", never "what"
+- Never write code comments — express every "what" and "why" through naming and extraction; the only allowed comment-syntax lines are functional directives (pragmas, suppressions)
 - Zero compiler warnings — `TreatWarningsAsErrors` is enabled
 - Nullable reference types are enabled — respect nullability in all code
 

@@ -20,14 +20,7 @@ const displayHeading = {
   letterSpacing: '0.01em',
 } as const;
 
-/**
- * The ONE FURRIA theme (Corporate Identity) — shared by every app, no variants.
- * Light + dark via MUI CSS-vars color schemes; base radius 14 everywhere.
- */
 export const kkTheme = createTheme({
-  // The `data-light`/`data-dark` attribute selector (instead of the `media`
-  // default) is what makes a manual light/dark toggle via useColorScheme()
-  // possible — media queries cannot be overridden from JS.
   cssVariables: { colorSchemeSelector: 'data' },
   colorSchemes: {
     light: { palette: buildPalette(kkTokens.color.light) },
@@ -53,8 +46,6 @@ export const kkTheme = createTheme({
   components: {
     MuiCssBaseline: {
       styleOverrides: {
-        // Respect prefers-reduced-motion for every animation/transition,
-        // including MUI's built-in ones (drawer slide, fades, ripple).
         '@media (prefers-reduced-motion: reduce)': {
           '*, *::before, *::after': {
             animationDuration: '0.01ms !important',
@@ -69,7 +60,6 @@ export const kkTheme = createTheme({
       defaultProps: { disableElevation: true },
       styleOverrides: {
         root: {
-          // Buttons are pills — signature gesture of the design language.
           borderRadius: kkTokens.radius.pill,
           fontWeight: 800,
         },
@@ -78,7 +68,6 @@ export const kkTheme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: ({ theme }) => ({
-          // Hairline border + soft resting shadow on every surface.
           border: `1.5px solid ${(theme.vars ?? theme).palette.divider}`,
           boxShadow: kkTokens.shadow.rest,
           backgroundImage: 'none',

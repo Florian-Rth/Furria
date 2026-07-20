@@ -25,10 +25,8 @@ describe('site shell', () => {
 
       expect(await screen.findByRole('heading', { level: 1, name: title })).toBeInTheDocument();
       expect(screen.getByText('Diese Seite entsteht gerade.')).toBeInTheDocument();
-      // Chrome around the page: masthead nav + footer.
       expect(screen.getByRole('navigation', { name: 'Hauptnavigation' })).toBeInTheDocument();
       expect(screen.getByRole('contentinfo')).toBeInTheDocument();
-      // The route's head() sets the document title.
       expect(document.title).toBe(`${title} · FURRIA`);
     },
   );

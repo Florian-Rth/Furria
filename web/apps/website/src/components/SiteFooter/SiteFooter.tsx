@@ -5,8 +5,6 @@ import { LegalLinks } from '@/components/LegalLinks';
 import { BroomMarkIcon } from './internal/BroomMarkIcon';
 import { SocialLinks } from './internal/SocialLinks';
 
-// Site chrome footer: brand/broom lockup, socials, legal links — a lean take
-// on the mock's KKFooter.
 export const SiteFooter: FC = () => (
   <Stack
     component="footer"

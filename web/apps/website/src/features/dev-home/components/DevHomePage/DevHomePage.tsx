@@ -6,7 +6,6 @@ import type { FC } from 'react';
 import { AppLaunchCard } from './internal/AppLaunchCard';
 import { AppPlannedCard } from './internal/AppPlannedCard';
 
-// The tester portal: launches into the live apps, announces the planned ones.
 export const DevHomePage: FC = () => (
   <PageLayout>
     <PageLayout.Header>

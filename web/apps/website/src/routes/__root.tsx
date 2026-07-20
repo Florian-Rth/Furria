@@ -7,7 +7,6 @@ import { PreviewAccessProvider } from '@/features/preview-access';
 import { queryClient } from '@/lib/query-client';
 import type { RouteHead } from '@/lib/seo';
 
-// Providers + head + outlet only — page chrome lives in the _site layout route.
 const RootComponent: FC = () => (
   <KkThemeProvider>
     <QueryClientProvider client={queryClient}>
@@ -19,10 +18,6 @@ const RootComponent: FC = () => (
   </KkThemeProvider>
 );
 
-// Site-wide head defaults. Child routes override per entry (deduped by
-// name/property, deepest match wins) — today only the title, via head().
-// og:image stays root-relative until the production domain exists; making it
-// absolute is part of the prerender/launch work (see feature-seo-meta.md).
 export const Route = createRootRoute({
   head: (): RouteHead => ({
     meta: [

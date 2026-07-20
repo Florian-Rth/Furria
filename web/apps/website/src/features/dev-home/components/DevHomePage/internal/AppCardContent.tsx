@@ -11,7 +11,6 @@ interface AppCardContentProps {
   statusColor: 'success' | 'default';
 }
 
-// Presentational body shared by the launch and planned cards.
 export const AppCardContent: FC<AppCardContentProps> = ({
   name,
   description,

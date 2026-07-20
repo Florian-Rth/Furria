@@ -3,7 +3,6 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { writeGrantedToSession } from '@/features/preview-access';
 import { renderAtRoute } from '@/test/render';
 
-// The page renders router links, so it boots at its real (gated) route.
 const renderPortal = (): void => {
   writeGrantedToSession(window.sessionStorage);
   renderAtRoute('/apps');

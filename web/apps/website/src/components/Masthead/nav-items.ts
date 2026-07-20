@@ -5,8 +5,6 @@ export interface NavItem {
   label: string;
 }
 
-// The ONE nav source — rendered by the desktop bar and the mobile drawer alike.
-// Full IA from day one so the masthead never visually churns (site-shell plan).
 export const navItems: NavItem[] = [
   { to: '/program', label: 'Programm' },
   { to: '/club', label: 'Verein' },

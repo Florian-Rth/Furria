@@ -13,7 +13,6 @@ describe('preview gate', () => {
     async (path) => {
       renderAtRoute(path);
 
-      // The teaser home, not the requested page: its CTA is there, the chrome is not.
       expect(await screen.findByRole('button', { name: 'Einlass' })).toBeInTheDocument();
       expect(screen.queryByRole('navigation', { name: 'Hauptnavigation' })).not.toBeInTheDocument();
     },

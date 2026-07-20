@@ -13,14 +13,11 @@ import { useUnlockForm } from '../hooks/use-unlock-form';
 interface PreviewAccessDialogProps {
   open: boolean;
   onClose: () => void;
-  /** Called after a successful unlock — the caller decides where to go next. */
   onGranted: () => void;
 }
 
 export const PreviewAccessDialog: FC<PreviewAccessDialogProps> = ({ open, onClose, onGranted }) => {
   const { form, submit, isSubmitting, submitError } = useUnlockForm(onGranted);
-  // MUI TextField forwards `ref` to its root div - react-hook-form's element
-  // ref must go through `inputRef` or focus-on-error targets the wrong node.
   const { ref: passwordRef, ...passwordField } = form.register('password');
 
   return (
@@ -32,12 +29,7 @@ export const PreviewAccessDialog: FC<PreviewAccessDialogProps> = ({ open, onClos
       aria-labelledby="unlock-dialog-title"
       aria-describedby="unlock-dialog-description"
       slotProps={{
-        // No backdrop-filter here: a viewport-sized backdrop blur re-filters on
-        // nearly every frame in Chromium and lags badly. The page content behind
-        // the dialog is blurred via a plain `filter` where it is cheap (route).
         backdrop: {
-          // A scrim always darkens — deliberately NOT scheme-aware: deriving it
-          // from text.primary turns it into a cream veil in dark mode.
           sx: (theme) => ({
             backgroundColor: theme.alpha(kkTokens.color.light.ink, 0.45),
           }),

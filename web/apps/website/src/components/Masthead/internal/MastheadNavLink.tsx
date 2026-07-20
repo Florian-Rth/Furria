@@ -13,8 +13,6 @@ export const MastheadNavLink: FC<{ item: NavItem }> = ({ item }) => (
       color: 'text.primary',
       fontWeight: 700,
       whiteSpace: 'nowrap',
-      // TanStack Router marks the active link — red is the accent for the
-      // current section, per the KK "accent/action only" rule.
       '&.active': { color: 'primary.main' },
     }}
   >

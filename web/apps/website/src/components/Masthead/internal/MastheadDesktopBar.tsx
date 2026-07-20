@@ -11,8 +11,6 @@ import { ThemeModeToggle } from './ThemeModeToggle';
 
 const metaLabelSx = { fontWeight: 800, letterSpacing: '0.18em', whiteSpace: 'nowrap' } as const;
 
-// Newspaper masthead (desktop): meta strip on top, then
-// nav-links —— FURRIA wordmark —— theme toggle + red Tickets pill.
 export const MastheadDesktopBar: FC = () => (
   <Stack sx={{ display: { xs: 'none', md: 'flex' } }}>
     <Stack

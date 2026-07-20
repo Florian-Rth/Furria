@@ -8,10 +8,6 @@ import { SiteChrome } from '@/components/SiteChrome';
 import { LandingPage } from '@/features/landing';
 import { PreviewAccessDialog, usePreviewAccess } from '@/features/preview-access';
 
-// '/' branches on the preview grant: ungated visitors get the full-bleed
-// coming-soon teaser with the unlock dialog (unlock lands on /apps); granted
-// visitors see the home placeholder inside the branded chrome — the real
-// landing page replaces it in P1.
 const HomeComponent: FC = () => {
   const { granted } = usePreviewAccess();
   const navigate = useNavigate();
@@ -29,11 +25,7 @@ const HomeComponent: FC = () => {
     <>
       <Stack
         sx={{
-          // Full viewport height: __root no longer wraps pages in a flex
-          // column, so the teaser sizes itself.
           minHeight: '100dvh',
-          // Blurring the (static) content subtree is cheap and cached; the
-          // dialog renders in a portal outside it, so typing never re-blurs.
           filter: dialogOpen ? 'blur(9px)' : 'none',
         }}
       >
