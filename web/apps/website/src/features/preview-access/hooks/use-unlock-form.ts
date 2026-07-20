@@ -2,7 +2,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import type { FormEvent } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
-import { RequestBlockedError, useUnlockPreviewMutation, WrongPasswordError } from '../api';
+import { RequestBlockedError } from '@/lib/api/errors';
+import { useUnlockPreviewMutation, WrongPasswordError } from '../api';
 import type { UnlockForm } from '../schemas';
 import { UnlockFormSchema } from '../schemas';
 import { usePreviewAccess } from './use-preview-access';
@@ -39,7 +40,7 @@ export const useUnlockForm = (onGranted: () => void): UnlockFormState => {
     defaultValues: { password: '' },
   });
 
-  const submit = form.handleSubmit((values) => {
+  const handleFormSubmit = form.handleSubmit((values) => {
     mutation.mutate(values.password, {
       onSuccess: () => {
         grantAccess();
@@ -51,7 +52,7 @@ export const useUnlockForm = (onGranted: () => void): UnlockFormState => {
   return {
     form,
     submit: (event) => {
-      void submit(event);
+      void handleFormSubmit(event);
     },
     isSubmitting: mutation.isPending,
     submitError: toSubmitErrorMessage(mutation.error),

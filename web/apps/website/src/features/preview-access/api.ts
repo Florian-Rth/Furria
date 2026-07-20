@@ -1,5 +1,7 @@
 import type { UseMutationResult } from '@tanstack/react-query';
 import { useMutation } from '@tanstack/react-query';
+import { apiFetch } from '@/lib/api/api-fetch';
+import { ApiError } from '@/lib/api/errors';
 import type { UnlockPreviewResponse } from './schemas';
 import { UnlockPreviewResponseSchema } from './schemas';
 
@@ -10,39 +12,19 @@ export class WrongPasswordError extends Error {
   }
 }
 
-export class RequestBlockedError extends Error {
-  constructor() {
-    super('The unlock request never reached the API - blocked or offline.');
-    this.name = 'RequestBlockedError';
-  }
-}
-
-const postUnlockRequest = async (password: string): Promise<Response> => {
-  try {
-    return await fetch('/api/preview/unlock', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password }),
-    });
-  } catch {
-    // fetch itself rejecting means the request never got a response:
-    // blocked by an extension/browser policy, offline, or DNS failure.
-    throw new RequestBlockedError();
-  }
-};
-
 const unlockPreview = async (password: string): Promise<UnlockPreviewResponse> => {
-  const response = await postUnlockRequest(password);
-
-  if (response.status === 401) {
-    throw new WrongPasswordError();
+  try {
+    return await apiFetch('/api/preview/unlock', {
+      method: 'POST',
+      body: { password },
+      schema: UnlockPreviewResponseSchema,
+    });
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) {
+      throw new WrongPasswordError();
+    }
+    throw error;
   }
-
-  if (!response.ok) {
-    throw new Error(`Unlocking the preview failed with status ${response.status}.`);
-  }
-
-  return UnlockPreviewResponseSchema.parse(await response.json());
 };
 
 export const useUnlockPreviewMutation = (): UseMutationResult<
