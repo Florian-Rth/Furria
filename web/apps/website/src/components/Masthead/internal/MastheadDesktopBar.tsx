@@ -36,13 +36,24 @@ export const MastheadDesktopBar: FC = () => (
         GROSS - FURRIA!
       </Typography>
     </Stack>
-    <Stack direction="row" sx={{ alignItems: 'center', gap: 2.5, px: 7, py: 1.5 }}>
-      <Stack component="nav" aria-label="Hauptnavigation" direction="row" sx={{ gap: 2.5 }}>
-        {navItems.map((item) => (
-          <MastheadNavLink key={item.to} item={item} />
-        ))}
+    <Box
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: '1fr auto 1fr',
+        alignItems: 'center',
+        gap: 2.5,
+        px: 7,
+        py: 1.5,
+      }}
+    >
+      <Stack direction="row" sx={{ alignItems: 'center', gap: 2.5 }}>
+        <Stack component="nav" aria-label="Hauptnavigation" direction="row" sx={{ gap: 2.5 }}>
+          {navItems.map((item) => (
+            <MastheadNavLink key={item.to} item={item} />
+          ))}
+        </Stack>
+        <Box sx={{ flex: 1, borderBottom: 2, borderColor: 'text.primary' }} />
       </Stack>
-      <Box sx={{ flex: 1, borderBottom: 2, borderColor: 'text.primary' }} />
       <Stack direction="row" sx={{ alignItems: 'center', gap: 1.5 }}>
         <Typography variant="caption" sx={{ ...metaLabelSx, color: 'text.secondary' }}>
           Nº 128
@@ -60,13 +71,15 @@ export const MastheadDesktopBar: FC = () => (
           SESSION 2026
         </Typography>
       </Stack>
-      <Box sx={{ flex: 1, borderBottom: 2, borderColor: 'text.primary' }} />
-      <Stack direction="row" sx={{ alignItems: 'center', gap: 1.5 }}>
-        <ThemeModeToggle />
-        <Button component={RouterLink} to="/tickets" variant="contained" color="primary">
-          Tickets
-        </Button>
+      <Stack direction="row" sx={{ alignItems: 'center', gap: 2.5 }}>
+        <Box sx={{ flex: 1, borderBottom: 2, borderColor: 'text.primary' }} />
+        <Stack direction="row" sx={{ alignItems: 'center', gap: 1.5 }}>
+          <ThemeModeToggle />
+          <Button component={RouterLink} to="/tickets" variant="contained" color="primary">
+            Tickets
+          </Button>
+        </Stack>
       </Stack>
-    </Stack>
+    </Box>
   </Stack>
 );

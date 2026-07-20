@@ -18,7 +18,7 @@ const socialLinks: SocialLink[] = [
 ];
 
 export const SocialLinks: FC = () => (
-  <Stack direction="row" sx={{ gap: 1 }}>
+  <Stack direction="row" sx={{ gap: 1, alignItems: 'center' }}>
     {socialLinks.map((social) => (
       <IconButton
         key={social.label}
