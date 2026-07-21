@@ -1,3 +1,4 @@
+import { kkTokens } from '@furria/ui';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import Link from '@mui/material/Link';
@@ -5,7 +6,6 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { Link as RouterLink } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { currentSession } from '@/lib/club';
 import { CloseIcon } from './CloseIcon';
 import { MASTHEAD_CHIP_NAV_ID } from './MastheadChipNav';
 import { MenuIcon } from './MenuIcon';
@@ -17,12 +17,13 @@ interface MastheadMobileBarProps {
 }
 
 export const MastheadMobileBar: FC<MastheadMobileBarProps> = ({ menuOpen, onMenuToggle }) => (
-  <Box
+  <Stack
+    direction="row"
     sx={{
-      display: { xs: 'grid', md: 'none' },
-      gridTemplateColumns: '1fr auto 1fr',
+      display: { xs: 'flex', md: 'none' },
       alignItems: 'center',
-      px: 2,
+      gap: 1.5,
+      px: kkTokens.layout.gutterX,
       py: 1,
     }}
   >
@@ -30,31 +31,22 @@ export const MastheadMobileBar: FC<MastheadMobileBarProps> = ({ menuOpen, onMenu
       aria-label={menuOpen ? 'Menü schließen' : 'Menü öffnen'}
       aria-expanded={menuOpen}
       aria-controls={menuOpen ? MASTHEAD_CHIP_NAV_ID : undefined}
-      edge="start"
       onClick={onMenuToggle}
-      sx={{ justifySelf: 'start', color: 'text.primary' }}
+      sx={{ color: 'text.primary' }}
     >
       {menuOpen ? <CloseIcon /> : <MenuIcon />}
     </IconButton>
+    <Box sx={{ flex: 1, mx: 1.5, borderBottom: 2, borderColor: 'text.primary' }} />
     <Link component={RouterLink} to="/" underline="none">
-      <Stack sx={{ alignItems: 'center' }}>
-        <Typography
-          variant="h4"
-          component="span"
-          sx={{ color: 'text.primary', letterSpacing: '0.06em', lineHeight: 1 }}
-        >
-          FURRIA
-        </Typography>
-        <Typography
-          variant="caption"
-          sx={{ color: 'text.secondary', fontWeight: 800, letterSpacing: '0.18em' }}
-        >
-          Nº {currentSession.number} · SESSION {currentSession.yearsLabel}
-        </Typography>
-      </Stack>
+      <Typography
+        variant="h4"
+        component="span"
+        sx={{ color: 'text.primary', letterSpacing: '0.06em', lineHeight: 1 }}
+      >
+        FURRIA
+      </Typography>
     </Link>
-    <Box sx={{ justifySelf: 'end' }}>
-      <ThemeModeToggle />
-    </Box>
-  </Box>
+    <Box sx={{ flex: 1, mx: 1.5, borderBottom: 2, borderColor: 'text.primary' }} />
+    <ThemeModeToggle />
+  </Stack>
 );
