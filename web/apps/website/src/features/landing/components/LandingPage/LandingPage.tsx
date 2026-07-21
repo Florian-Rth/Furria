@@ -2,6 +2,7 @@ import { KkConfettiRain } from '@furria/ui';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
+import { FOUNDING_YEAR } from '@/lib/club';
 import { TeaserLayout } from './internal/TeaserLayout';
 import { TwoToneHeadline } from './internal/TwoToneHeadline';
 import { Wordmark } from './internal/Wordmark';
@@ -16,7 +17,7 @@ export const LandingPage: FC<LandingPageProps> = ({ onCtaClick, confettiPaused =
     <TeaserLayout.Masthead>
       <Wordmark text="FURRIA" />
       <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-        Furrscher Carnevals Club e.V. · Großbesenstadt · seit 1971
+        Furrscher Carnevals Club e.V. · Großbesenstadt · seit {FOUNDING_YEAR}
       </Typography>
     </TeaserLayout.Masthead>
     <TeaserLayout.Hero>

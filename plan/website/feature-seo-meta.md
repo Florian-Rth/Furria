@@ -2,7 +2,7 @@
 title: SEO & Meta
 slug: seo-meta
 type: foundation
-status: ready
+status: building
 mock: -
 adrs: [docs/adr/0003-website-rendering-strategy.md]
 ---
@@ -47,6 +47,9 @@ shareable material" ambition on the public side.
 - **Bot OG-meta injection mechanism** (edge middleware vs. a `<meta>`-serving endpoint on the API) →
   when the first dynamic detail page ships (news P4 / event P5).
 - Per-event OG images generated (matching the planner's Werbung feature) vs. static.
+- **Absolute share-image URL** — P0 ships `og:image` as root-relative `/og-default.png`
+  (placeholder art); scrapers need an absolute URL, but none exists until a production domain
+  is fixed → resolve with the prerender/launch task.
 
 ## Done When
 

@@ -1,8 +1,6 @@
 import Stack from '@mui/material/Stack';
 import type { FC, PropsWithChildren } from 'react';
 
-// Layout only — structural slots with no business logic.
-
 const TeaserLayoutRoot: FC<PropsWithChildren> = ({ children }) => (
   <Stack sx={{ flex: 1 }}>{children}</Stack>
 );
@@ -23,9 +21,6 @@ const Masthead: FC<PropsWithChildren> = ({ children }) => (
   </Stack>
 );
 
-// position/zIndex/overflow scope the confetti rain to the hero: the rain
-// layer fills this container, paints behind its content (zIndex -1 within
-// this stacking context) and is clipped at its edges.
 const Hero: FC<PropsWithChildren> = ({ children }) => (
   <Stack
     component="main"

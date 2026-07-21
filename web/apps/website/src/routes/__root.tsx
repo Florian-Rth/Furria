@@ -1,26 +1,39 @@
 import '@furria/ui/fonts';
-import { KkThemeProvider } from '@furria/ui';
-import Stack from '@mui/material/Stack';
+import { KkThemeProvider, kkTokens } from '@furria/ui';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { createRootRoute, Outlet } from '@tanstack/react-router';
+import { createRootRoute, HeadContent, Outlet } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { SiteFooter } from '@/components/SiteFooter';
 import { PreviewAccessProvider } from '@/features/preview-access';
 import { queryClient } from '@/lib/query-client';
+import type { RouteHead } from '@/lib/seo';
 
 const RootComponent: FC = () => (
   <KkThemeProvider>
     <QueryClientProvider client={queryClient}>
       <PreviewAccessProvider>
-        <Stack sx={{ minHeight: '100dvh', bgcolor: 'background.default' }}>
-          <Stack sx={{ flex: 1 }}>
-            <Outlet />
-          </Stack>
-          <SiteFooter />
-        </Stack>
+        <HeadContent />
+        <Outlet />
       </PreviewAccessProvider>
     </QueryClientProvider>
   </KkThemeProvider>
 );
 
-export const Route = createRootRoute({ component: RootComponent });
+export const Route = createRootRoute({
+  head: (): RouteHead => ({
+    meta: [
+      { title: 'FURRIA' },
+      {
+        name: 'description',
+        content:
+          'FURRIA — Furrscher Carnevals Club e.V. Programm, Tickets, Neuigkeiten und der Weg in den Verein. Gross - Furria!',
+      },
+      { name: 'theme-color', content: kkTokens.color.light.bg },
+      { property: 'og:locale', content: 'de_DE' },
+      { property: 'og:site_name', content: 'FURRIA' },
+      { property: 'og:type', content: 'website' },
+      { property: 'og:image', content: '/og-default.png' },
+      { name: 'twitter:card', content: 'summary_large_image' },
+    ],
+  }),
+  component: RootComponent,
+});

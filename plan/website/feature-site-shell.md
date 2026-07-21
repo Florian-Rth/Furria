@@ -2,7 +2,7 @@
 title: Site-Shell
 slug: site-shell
 type: foundation
-status: ready
+status: shipped
 mock: docs/design/fcc-ds-landing.jsx
 adrs: [docs/adr/0003-website-rendering-strategy.md]
 ---
@@ -16,7 +16,12 @@ hang in — built first so everything else has a home.
 
 ## Scope / Slices
 
-- Masthead nav (desktop) + mobile bar (hamburger drawer, centered FURRIA wordmark, Tickets pill).
+- Masthead nav (desktop) + mobile bar (menu button, centered FURRIA wordmark, theme toggle).
+- Mobile nav (reworked 2026-07-20, replaces the P0 drawer): the menu button opens an **inline
+  chip row** under the masthead — animated in (blur→clear, slide from top, reduced-motion aware),
+  horizontally scrollable with gradient fade masks on overflowing edges (no backdrop-filter on
+  scrolling surfaces), closes on navigation. **Tickets is the first chip, filled red** — its pill left the
+  mobile bar as too bulky, and the theme toggle took that slot.
 - Footer (`SiteFooter`, already exists) — extend toward the mock (broom lockup, social).
 - Light/dark: OS default + persisted manual toggle (masthead + drawer).
 - Layout shell + routing skeleton; every nav destination resolves (real page or placeholder).
@@ -66,11 +71,16 @@ hang in — built first so everything else has a home.
 - Light/dark via MUI CSS-vars `colorSchemes`; **`useColorScheme()`** toggle, default `system`,
   persisted; **`InitColorSchemeScript`** to prevent first-paint flash; respect
   `prefers-reduced-motion`.
+- *As built (P0):* MUI's `InitColorSchemeScript` component only emits during SSR, so its logic is
+  **inlined as a script in `index.html`** (same storage keys/attribute contract) and the shared
+  theme uses `colorSchemeSelector: 'data'`; the reduced-motion guard lives in the shared theme.
 - Ticker is **not** part of the shell — its own foundation ([Ticker](feature-ticker.md)).
 
 ## Open Questions
 
-- Footer build-out: how far toward the mock (broom lockup, social links, which socials) in P0 vs. later.
+- Footer build-out — *resolved in P0:* built lean — broom lockup, tagline with the Narrenruf,
+  legal links, FB/IG/YT socials as `#` placeholders — on light token-pure chrome instead of the
+  mock's fixed dark band. Real social URLs + further build-out are a later polish task.
 - Prerender mechanism — deferred out of P0 (see [SEO & Meta](feature-seo-meta.md)); the routing
   skeleton is prerender-ready via the `head` API.
 

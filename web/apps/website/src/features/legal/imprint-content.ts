@@ -1,7 +1,6 @@
 import type { LegalDocument } from './types';
 
-// During development the site is operated by Florian privately, not by the club.
-export const impressumContent: LegalDocument = {
+export const imprintContent: LegalDocument = {
   title: 'Impressum',
   sections: [
     {

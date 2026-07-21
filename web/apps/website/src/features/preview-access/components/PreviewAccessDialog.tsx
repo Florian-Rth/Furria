@@ -1,3 +1,4 @@
+import { kkTokens } from '@furria/ui';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
@@ -15,9 +16,7 @@ interface PreviewAccessDialogProps {
 }
 
 export const PreviewAccessDialog: FC<PreviewAccessDialogProps> = ({ open, onClose }) => {
-  const { form, submit, isSubmitting, submitError } = useUnlockForm(onClose);
-  // MUI TextField forwards `ref` to its root div - react-hook-form's element
-  // ref must go through `inputRef` or focus-on-error targets the wrong node.
+  const { form, submit, isSubmitting, submitError } = useUnlockForm();
   const { ref: passwordRef, ...passwordField } = form.register('password');
 
   return (
@@ -29,13 +28,10 @@ export const PreviewAccessDialog: FC<PreviewAccessDialogProps> = ({ open, onClos
       aria-labelledby="unlock-dialog-title"
       aria-describedby="unlock-dialog-description"
       slotProps={{
-        // No backdrop-filter here: a viewport-sized backdrop blur re-filters on
-        // nearly every frame in Chromium and lags badly. The page content behind
-        // the dialog is blurred via a plain `filter` where it is cheap (route).
         backdrop: {
-          sx: {
-            backgroundColor: 'rgba(26, 20, 17, 0.45)',
-          },
+          sx: (theme) => ({
+            backgroundColor: theme.alpha(kkTokens.color.light.ink, 0.45),
+          }),
         },
       }}
     >

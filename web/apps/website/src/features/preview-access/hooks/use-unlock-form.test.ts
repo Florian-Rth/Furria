@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { RequestBlockedError, WrongPasswordError } from '../api';
+import { RequestBlockedError } from '@/lib/api/errors';
+import { WrongPasswordError } from '../api';
 import { toSubmitErrorMessage } from './use-unlock-form';
 
 describe('toSubmitErrorMessage', () => {

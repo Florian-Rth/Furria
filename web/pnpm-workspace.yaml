@@ -26,6 +26,7 @@ catalog:
   babel-plugin-react-compiler: 1.0.0
   happy-dom: 20.10.6
   '@hookform/resolvers': 5.4.0
+  motion: 12.42.2
   react: 19.2.7
   react-dom: 19.2.7
   react-hook-form: 7.81.0

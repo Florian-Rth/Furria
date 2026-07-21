@@ -2,31 +2,47 @@ import Stack from '@mui/material/Stack';
 import { createFileRoute } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { useState } from 'react';
-import { DevHomePage } from '@/features/dev-home';
+import { LegalLinks } from '@/components/LegalLinks';
+import { PlaceholderPage } from '@/components/PlaceholderPage';
+import { SiteChrome } from '@/components/SiteChrome';
 import { LandingPage } from '@/features/landing';
 import { PreviewAccessDialog, usePreviewAccess } from '@/features/preview-access';
 
-// The route composes the two features: the public teaser with its unlock
-// dialog, and the dev-home testers see once access is granted.
 const HomeComponent: FC = () => {
   const { granted } = usePreviewAccess();
   const [dialogOpen, setDialogOpen] = useState(false);
 
   if (granted) {
-    return <DevHomePage />;
+    return (
+      <SiteChrome>
+        <PlaceholderPage title="Willkommen" />
+      </SiteChrome>
+    );
   }
 
   return (
     <>
       <Stack
         sx={{
-          flex: 1,
-          // Blurring the (static) content subtree is cheap and cached; the
-          // dialog renders in a portal outside it, so typing never re-blurs.
+          minHeight: '100dvh',
           filter: dialogOpen ? 'blur(9px)' : 'none',
         }}
       >
         <LandingPage onCtaClick={() => setDialogOpen(true)} confettiPaused={dialogOpen} />
+        <Stack
+          component="footer"
+          direction="row"
+          sx={{
+            justifyContent: 'center',
+            py: 2.5,
+            px: 2,
+            borderTop: 1,
+            borderColor: 'divider',
+            color: 'text.secondary',
+          }}
+        >
+          <LegalLinks />
+        </Stack>
       </Stack>
       <PreviewAccessDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />
     </>

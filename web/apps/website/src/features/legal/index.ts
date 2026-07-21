@@ -1,4 +1,4 @@
 export { LegalPage } from './components/LegalPage/LegalPage';
-export { datenschutzContent } from './datenschutz-content';
-export { impressumContent } from './impressum-content';
+export { imprintContent } from './imprint-content';
+export { privacyContent } from './privacy-content';
 export type { LegalDocument, LegalSection } from './types';

@@ -57,7 +57,7 @@ description: Mandatory rules for all React/TypeScript frontend work. Invoke befo
 - Biome for linting and formatting — not Prettier, not ESLint
 - Zero warnings policy — treat all lint and TypeScript warnings as errors
 - Never use deprecated APIs from any library — migrate to replacements immediately
-- Add comments only when code is truly complex or explains a non-obvious "why"
+- Never write code comments — make the code itself read like the comment through naming and extraction; the only allowed comment-syntax lines are functional directives (triple-slash references, biome-ignore, @ts-expect-error)
 
 ### Testing
 - Vitest + Testing Library

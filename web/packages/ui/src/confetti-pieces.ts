@@ -13,9 +13,7 @@ export interface ConfettiPiece {
 
 const COLORS: ConfettiPiece['color'][] = ['red', 'gold', 'ink'];
 
-// Deterministic pseudo-random in [0, 1) — same trick as the design mocks' KKConfetti:
-// render-stable output for a given seed, no Math.random() during render.
-const pseudoRandom = (seed: number, k: number): number => {
+export const pseudoRandom = (seed: number, k: number): number => {
   const value = Math.sin(seed * 53.3 + k * 12.9) * 10_000;
   return value - Math.floor(value);
 };
@@ -34,8 +32,6 @@ export const buildConfettiPieces = (count: number, seed: number): ConfettiPiece[
       isSlim: index % 2 === 1,
       color,
       durationSeconds,
-      // Negative delay starts every piece mid-fall, so the rain is already
-      // filling the viewport on first paint instead of dropping in a batch.
       delaySeconds: -(rng(3) * durationSeconds),
       driftVw: (rng(4) - 0.5) * 12,
       spinDegrees: (rng(5) > 0.5 ? 1 : -1) * (360 + rng(6) * 720),
