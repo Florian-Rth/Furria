@@ -2,7 +2,7 @@
 title: Ticker
 slug: ticker
 type: foundation
-status: ready
+status: building
 mock: docs/design/fcc-ds-landing.jsx
 adrs: []
 ---

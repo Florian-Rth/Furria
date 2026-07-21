@@ -2,7 +2,7 @@
 title: Landing-Hero
 slug: landing-hero
 type: capability
-status: ready
+status: building
 mock: docs/design/fcc-ds-landing.jsx
 adrs: []
 ---

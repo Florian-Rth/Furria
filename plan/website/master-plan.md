@@ -57,9 +57,9 @@ Guiding constraints (all binding):
 | [Preview-Gate](feature-preview-gate.md) | foundation | shipped | Pre-launch access gate (tester portal removed 2026-07-20) |
 | [API-Client](feature-api-client.md) | foundation | building | Data layer to the backend public read endpoints |
 | [SEO & Meta](feature-seo-meta.md) | foundation | building | Meta tags, Open Graph / social-share cards |
-| [Ticker](feature-ticker.md) | foundation | ready | Flat red/gold marquee signature chrome |
-| [Landing](feature-landing.md) | capability | ready | Home page — composes the blocks below |
-| [Landing-Hero](feature-landing-hero.md) | capability | ready | Identity centerpiece: headline, CTAs, stats, hero photo |
+| [Ticker](feature-ticker.md) | foundation | building | Flat red/gold marquee signature chrome |
+| [Landing](feature-landing.md) | capability | building | Home page — composes the blocks below |
+| [Landing-Hero](feature-landing-hero.md) | capability | building | Identity centerpiece: headline, CTAs, stats, hero photo |
 | [Programm-Teaser](feature-program-teaser.md) | capability | idea | Home "DAS PROGRAMM" upcoming-events section |
 | [Mitmachen-Band](feature-mitmachen-band.md) | capability | idea | Home recruit CTA → membership funnel |
 | [Verein](feature-about-verein.md) | capability | idea | Verein story, Ämter, Gruppen showcase |
@@ -92,16 +92,21 @@ SEO & Meta: share-image URL deferral).
       `robots.txt` disallow-while-gated
 
 ### P1 — Landing hero
-**Status:** shaped 2026-07-21, ready to build (branch `feat/website-p1-landing-hero`)
-The home page's identity centerpiece is live (static content). Full build breakdown (6 vertical
-slices) lives in the [Landing](feature-landing.md) Implementation plan.
+**Status:** done (2026-07-21, branch `feat/website-p1-landing-hero-fe`, 7 commits `cf18d47`…`578fc4e`)
+The home page's identity centerpiece is live (static content). Built as the 6 vertical slices in the
+[Landing](feature-landing.md) Implementation plan. Followed the plan closely; minor build-level
+choices worth knowing: the relocated teaser is named `PreviewTeaser`
+(`features/preview-access/components/PreviewTeaser/`); `LandingPage` was flattened out of its
+per-component folder (no `internal/` parts left); the hero poster-shadow offset is tokenised as
+`kkTokens.shadow.posterOffset` (colour still theme-driven `ink`→cream). All six new `@furria/ui`
+primitives shipped as planned.
 
-- [ ] [Landing](feature-landing.md) — real home page owns `/`; teaser relocated to preview-access;
+- [x] [Landing](feature-landing.md) — real home page owns `/`; teaser relocated to preview-access;
       block composition/order locked (Hero → Ticker → [P2 blocks]); `/` granted-branch renders the
       real landing in `SiteChrome`; branded home `head`
-- [ ] [Landing-Hero](feature-landing-hero.md) — full hero block (static copy/stats derived from
+- [x] [Landing-Hero](feature-landing-hero.md) — full hero block (static copy/stats derived from
       `lib/club.ts`; CTAs → `/tickets` · `/program`; placeholder photo)
-- [ ] [Ticker](feature-ticker.md) — marquee under the hero (static, session label derived)
+- [x] [Ticker](feature-ticker.md) — marquee under the hero (static, session label derived)
 
 **Cross-cutting (decided in P1 shaping):**
 

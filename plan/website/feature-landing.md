@@ -2,7 +2,7 @@
 title: Landing
 slug: landing
 type: capability
-status: ready
+status: building
 mock: docs/design/fcc-ds-landing.jsx
 adrs: []
 ---
