@@ -6,6 +6,11 @@ import { LegalLinks } from '@/components/LegalLinks';
 import { SiteChrome } from '@/components/SiteChrome';
 import { LandingPage } from '@/features/landing';
 import { PreviewAccessDialog, PreviewTeaser, usePreviewAccess } from '@/features/preview-access';
+import type { RouteHead } from '@/lib/seo';
+
+const HOME_TITLE = 'FURRIA · Gross - Furria!';
+const HOME_DESCRIPTION =
+  'Der Furrsche Carnevals Club e.V. feiert die fünfte Jahreszeit in Großfurra: Programm, Tickets, Neuigkeiten und der Weg in den Verein. Gross - Furria!';
 
 const HomeComponent: FC = () => {
   const { granted } = usePreviewAccess();
@@ -48,4 +53,14 @@ const HomeComponent: FC = () => {
   );
 };
 
-export const Route = createFileRoute('/')({ component: HomeComponent });
+export const Route = createFileRoute('/')({
+  head: (): RouteHead => ({
+    meta: [
+      { title: HOME_TITLE },
+      { name: 'description', content: HOME_DESCRIPTION },
+      { property: 'og:title', content: HOME_TITLE },
+      { property: 'og:description', content: HOME_DESCRIPTION },
+    ],
+  }),
+  component: HomeComponent,
+});
