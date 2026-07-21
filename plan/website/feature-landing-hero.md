@@ -2,7 +2,7 @@
 title: Landing-Hero
 slug: landing-hero
 type: capability
-status: idea
+status: ready
 mock: docs/design/fcc-ds-landing.jsx
 adrs: []
 ---
@@ -27,14 +27,37 @@ CTAs, a stat row, and the anchor photo.
 ## Decisions
 
 - The two-tone headline + poster head-shadow is the single sanctioned hard-shadow moment.
-- Confetti is decorative, deterministic, boxed — never over text.
+  Rendered via the shared **`KkTwoToneHeadline`** (`@furria/ui`) with its poster-shadow prop **on**
+  (the shadow uses the `ink` token, which auto-flips to cream in dark mode).
+- Confetti is decorative, deterministic, boxed — never over text. Uses a new **static**
+  `@furria/ui` primitive **`KkConfettiScatter`** (≤13 chips, seeded, positioned behind the reading
+  column via z-index) — distinct from the existing `KkConfettiRain`/`KkConfettiBurst`.
 - Narrenruf headline is **GROSS FURRIA!** (local law).
+- **Stats are static in P1** (live wiring is P5). Single-sourced from `lib/club.ts`: `1971` from
+  `FOUNDING_YEAR`; `180+ Mitglieder` and `12 Garden & Gruppen` are **clearly-marked placeholder
+  constants** pending real figures / live data. (See [Session](../../CONTEXT.md) term.)
+- **Eyebrow badge derives from `lib/club.ts`** — same source as the masthead, so nothing hardcodes
+  a year and they never drift: `SESSION {currentSession.yearsLabel}` + the `11.11.` opening
+  (from exported opening day/month constants) + `ERÖFFNUNG`.
+- **CTAs link to real routes:** primary **Tickets sichern →** `/tickets` (matches the masthead
+  Tickets button), secondary **Programm ansehen** → `/program`. Both resolve to the branded
+  `PlaceholderPage` until their features ship (Tickets = P6, Program = P5). No same-page anchor
+  (the Programm-Teaser block is P2) and no dead buttons.
+- **Hero photo is a branded placeholder for launch:** new shared `@furria/ui` primitive
+  **`KkPhotoPlaceholder`** (hatched box + label + tint), reused later by Programm-Teaser (P2) and
+  Gallery (P7). The "Seit {year}" tag derives from `FOUNDING_YEAR`.
+- The broom watermark uses the shared **`KkBroomMark`** (`@furria/ui`); the 11.11 seal uses
+  **`KkSeal`** (`@furria/ui`). All hero motion (seal float, confetti, headline) honours
+  reduced-motion.
+- **Build sequence:** delivered across P1 slices 2–4 — see the Implementation plan in
+  [Landing](feature-landing.md).
 
 ## Open Questions
 
-- Are the stats (180+, 12) **static** brand copy or **live** from the API? (P5 wires live.)
-- Where does "Tickets sichern" link before the shop exists (P6)? Anchor to Programm-Teaser?
-- Real hero photo vs. placeholder for launch.
+- **Real hero photo** — deferred: no club asset yet; `KkPhotoPlaceholder` ships for launch and the
+  real photo is a one-line swap later (asset task, not P1).
+- **Real member / group counts** — deferred: `180+` / `12` are placeholders until the club confirms
+  figures (or P5 wires live data).
 
 ## Done When
 

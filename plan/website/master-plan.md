@@ -57,9 +57,9 @@ Guiding constraints (all binding):
 | [Preview-Gate](feature-preview-gate.md) | foundation | shipped | Pre-launch access gate (tester portal removed 2026-07-20) |
 | [API-Client](feature-api-client.md) | foundation | building | Data layer to the backend public read endpoints |
 | [SEO & Meta](feature-seo-meta.md) | foundation | building | Meta tags, Open Graph / social-share cards |
-| [Ticker](feature-ticker.md) | foundation | idea | Flat red/gold marquee signature chrome |
-| [Landing](feature-landing.md) | capability | idea | Home page — composes the blocks below |
-| [Landing-Hero](feature-landing-hero.md) | capability | idea | Identity centerpiece: headline, CTAs, stats, hero photo |
+| [Ticker](feature-ticker.md) | foundation | ready | Flat red/gold marquee signature chrome |
+| [Landing](feature-landing.md) | capability | ready | Home page — composes the blocks below |
+| [Landing-Hero](feature-landing-hero.md) | capability | ready | Identity centerpiece: headline, CTAs, stats, hero photo |
 | [Programm-Teaser](feature-program-teaser.md) | capability | idea | Home "DAS PROGRAMM" upcoming-events section |
 | [Mitmachen-Band](feature-mitmachen-band.md) | capability | idea | Home recruit CTA → membership funnel |
 | [Verein](feature-about-verein.md) | capability | idea | Verein story, Ämter, Gruppen showcase |
@@ -92,12 +92,31 @@ SEO & Meta: share-image URL deferral).
       `robots.txt` disallow-while-gated
 
 ### P1 — Landing hero
-**Status:** planned
-The home page's identity centerpiece is live (static content).
+**Status:** shaped 2026-07-21, ready to build (branch `feat/website-p1-landing-hero`)
+The home page's identity centerpiece is live (static content). Full build breakdown (6 vertical
+slices) lives in the [Landing](feature-landing.md) Implementation plan.
 
-- [ ] [Landing](feature-landing.md) — page skeleton + block composition/order
-- [ ] [Landing-Hero](feature-landing-hero.md) — full hero block (static copy/stats)
-- [ ] [Ticker](feature-ticker.md) — marquee under the hero
+- [ ] [Landing](feature-landing.md) — real home page owns `/`; teaser relocated to preview-access;
+      block composition/order locked (Hero → Ticker → [P2 blocks]); `/` granted-branch renders the
+      real landing in `SiteChrome`; branded home `head`
+- [ ] [Landing-Hero](feature-landing-hero.md) — full hero block (static copy/stats derived from
+      `lib/club.ts`; CTAs → `/tickets` · `/program`; placeholder photo)
+- [ ] [Ticker](feature-ticker.md) — marquee under the hero (static, session label derived)
+
+**Cross-cutting (decided in P1 shaping):**
+
+- **`@furria/ui` gains the shared brand gestures/primitives** the hero + ticker need: `KkSeal`,
+  `KkBroomMark`, `KkConfettiScatter` (static, distinct from `KkConfettiRain`/`Burst`),
+  `KkPhotoPlaceholder`, `KkTwoToneHeadline`, `KkTicker`. This **sharpens the Site-Shell boundary**:
+  `@furria/ui` = theme + token-pure brand primitives/gestures (reusable by all apps); website-local
+  = chrome (masthead/footer) + composed sections (hero, blocks). The footer's local `BroomMarkIcon`
+  is refactored to consume the shared `KkBroomMark` (de-dupe).
+- **Teaser ownership moved** `features/landing` → `features/preview-access` (see
+  [Preview-Gate](feature-preview-gate.md)); `KkTwoToneHeadline` is promoted to `@furria/ui` and
+  consumed by both the teaser (no shadow) and the hero (poster shadow).
+- **Glossary:** added **Session** to [`CONTEXT.md`](../../CONTEXT.md).
+- **Deferred (not P1):** real hero photo, real member/group counts (→ placeholders), live stats +
+  data-driven ticker (→ P5), absolute OG image URL (→ launch).
 
 ### P2 — Landing complete
 **Status:** planned

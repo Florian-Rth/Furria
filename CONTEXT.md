@@ -58,6 +58,12 @@ _Avoid_: signup, registration
 The club's carnival call: **"Gross - Furria!"** — always this, spoken and in UI copy.
 _Avoid_: Helau, Alaaf — using these will get you hated in Großfurra.
 
+**Session** (`session`):
+A carnival season: opens **11.11.** (the **Eröffnung**) and runs to Aschermittwoch. Numbered from
+the founding year (Session Nº 1 = 1971) and labelled by its span (e.g. `2025/26`). The unit the
+public site advertises ("SESSION …", "die fünfte Jahreszeit").
+_Avoid_: Kampagne, campaign, season (as a table name)
+
 ### Money
 
 **Beitrag** (`fee`):

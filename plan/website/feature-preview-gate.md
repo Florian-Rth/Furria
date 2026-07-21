@@ -17,7 +17,8 @@ at its final URLs. Already partly in code (`preview-access`, `dev-home`).
 ## Scope / Slices
 
 - Password unlock dialog → `POST /api/preview/unlock`; grant persisted (session).
-- Coming-soon teaser for ungated visitors (`LandingPage` teaser today).
+- Coming-soon teaser for ungated visitors (the gate's face — **owned here** since P1, moved out
+  of `features/landing`; see Decisions).
 - ~~Tester portal at `/apps` (`DevHomePage`)~~ — **removed 2026-07-20**, see Decisions.
 
 ## Decisions
@@ -26,6 +27,10 @@ at its final URLs. Already partly in code (`preview-access`, `dev-home`).
   dropped right after — with the site living at its final URLs behind the gate, a separate
   launcher added nothing. Unlock now simply reveals the gated site at `/`; the `dev-home`
   feature was deleted. Two zones remain: always-public legal, gated marketing.
+- **Teaser owned by the gate (P1):** the coming-soon teaser moved from `features/landing` into
+  `features/preview-access` — it is the gate's ungated face, not the real front door. This freed
+  `features/landing` for the real home page (see [Landing](feature-landing.md)). `/` still branches
+  inline: ungated → teaser, granted → the real landing in `SiteChrome`.
 - **Three zones** (see [Site-Shell](feature-site-shell.md)) — *portal zone since removed, see above*:
   - **Always-public legal** — `/imprint`, `/privacy` bypass the gate (legally required reachable).
   - **Gated marketing** — `/` and the real pages; ungated `/` shows the coming-soon teaser.
@@ -49,4 +54,4 @@ at its final URLs. Already partly in code (`preview-access`, `dev-home`).
 
 ## References
 
-- Code: `features/preview-access`, `features/dev-home`, `features/landing` (teaser).
+- Code: `features/preview-access` (unlock + teaser), `features/dev-home` (deleted).
