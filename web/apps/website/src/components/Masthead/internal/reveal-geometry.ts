@@ -6,9 +6,8 @@ export interface OriginRect {
 }
 
 export interface RevealGeometry {
-  centerX: number;
-  centerY: number;
-  radius: number;
+  centerXPercent: number;
+  centerYPercent: number;
 }
 
 export const computeRevealGeometry = (
@@ -18,9 +17,8 @@ export const computeRevealGeometry = (
 ): RevealGeometry => {
   const centerX = origin.left + origin.width / 2;
   const centerY = origin.top + origin.height / 2;
-  const radius = Math.hypot(
-    Math.max(centerX, viewportWidth - centerX),
-    Math.max(centerY, viewportHeight - centerY),
-  );
-  return { centerX, centerY, radius };
+  return {
+    centerXPercent: (centerX / viewportWidth) * 100,
+    centerYPercent: (centerY / viewportHeight) * 100,
+  };
 };
