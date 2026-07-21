@@ -1,8 +1,15 @@
-import { screen } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { writeGrantedToSession } from '@/features/preview-access';
-import { currentSession, FOUNDING_YEAR, MEMBER_COUNT_PLACEHOLDER } from '@/lib/club';
+import { currentSession, MEMBER_COUNT_PLACEHOLDER } from '@/lib/club';
 import { renderAtRoute } from '@/test/render';
+import { DESKTOP_VIEWPORT_WIDTH, MOBILE_VIEWPORT_WIDTH, setViewportWidth } from '@/test/viewport';
+
+const getDesktopHero = (): HTMLElement =>
+  document.querySelector('[data-kk-landing-desktop-hero]') as HTMLElement;
+
+const getMobileHero = (): HTMLElement =>
+  document.querySelector('[data-kk-landing-mobile-hero]') as HTMLElement;
 
 beforeEach(() => {
   writeGrantedToSession(window.sessionStorage);
@@ -13,11 +20,20 @@ afterEach(() => {
 });
 
 describe('LandingPage hero', () => {
+  beforeEach(() => {
+    setViewportWidth(DESKTOP_VIEWPORT_WIDTH);
+  });
+
+  afterEach(() => {
+    setViewportWidth(DESKTOP_VIEWPORT_WIDTH);
+  });
+
   it('renders the GROSS FURRIA! poster headline as the page h1', async () => {
     renderAtRoute('/');
 
+    await waitFor(() => expect(getDesktopHero()).not.toBeNull());
     expect(
-      await screen.findByRole('heading', { level: 1, name: 'GROSS FURRIA!' }),
+      within(getDesktopHero()).getByRole('heading', { level: 1, name: 'GROSS FURRIA!' }),
     ).toBeInTheDocument();
   });
 
@@ -25,27 +41,29 @@ describe('LandingPage hero', () => {
     renderAtRoute('/');
 
     await screen.findByRole('heading', { level: 1, name: 'GROSS FURRIA!' });
-    expect(screen.getByText('Großbesenstadt')).toBeInTheDocument();
+    expect(within(getDesktopHero()).getByText('Großbesenstadt')).toBeInTheDocument();
   });
 
   it('links the two CTAs to the tickets and program routes', async () => {
     renderAtRoute('/');
 
-    expect(await screen.findByRole('link', { name: 'Tickets sichern →' })).toHaveAttribute(
-      'href',
-      '/tickets',
-    );
-    expect(screen.getByRole('link', { name: 'Programm ansehen' })).toHaveAttribute(
-      'href',
-      '/program',
-    );
+    await waitFor(() => expect(getDesktopHero()).not.toBeNull());
+    expect(
+      within(getDesktopHero()).getByRole('link', { name: 'Tickets sichern →' }),
+    ).toHaveAttribute('href', '/tickets');
+    expect(
+      within(getDesktopHero()).getByRole('link', { name: 'Programm ansehen' }),
+    ).toHaveAttribute('href', '/program');
   });
 
   it('derives the eyebrow badge from the current session', async () => {
     renderAtRoute('/');
 
+    await screen.findByRole('heading', { level: 1, name: 'GROSS FURRIA!' });
     expect(
-      await screen.findByText(`★ SESSION ${currentSession.yearsLabel} · 11.11. ERÖFFNUNG`),
+      within(getDesktopHero()).getByText(
+        `★ SESSION ${currentSession.yearsLabel} · 11.11. ERÖFFNUNG`,
+      ),
     ).toBeInTheDocument();
   });
 
@@ -53,23 +71,16 @@ describe('LandingPage hero', () => {
     renderAtRoute('/');
 
     await screen.findByRole('heading', { level: 1, name: 'GROSS FURRIA!' });
-    expect(screen.getByText(MEMBER_COUNT_PLACEHOLDER)).toBeInTheDocument();
-    expect(screen.getByText('Mitglieder')).toBeInTheDocument();
-    expect(screen.getByText('gegründet')).toBeInTheDocument();
+    expect(within(getDesktopHero()).getByText(MEMBER_COUNT_PLACEHOLDER)).toBeInTheDocument();
+    expect(within(getDesktopHero()).getByText('Mitglieder')).toBeInTheDocument();
+    expect(within(getDesktopHero()).getByText('gegründet')).toBeInTheDocument();
   });
 
   it('renders the tilted garde photo placeholder in the photo column', async () => {
     renderAtRoute('/');
 
     await screen.findByRole('heading', { level: 1, name: 'GROSS FURRIA!' });
-    expect(screen.getByText('garde-auf-der-buehne')).toBeInTheDocument();
-  });
-
-  it('tags the photo with the founding year', async () => {
-    renderAtRoute('/');
-
-    await screen.findByRole('heading', { level: 1, name: 'GROSS FURRIA!' });
-    expect(screen.getByText(`Seit ${FOUNDING_YEAR}`)).toBeInTheDocument();
+    expect(within(getDesktopHero()).getByText('garde-auf-der-buehne')).toBeInTheDocument();
   });
 
   it('floats the 11.11 opening seal over the photo', async () => {
@@ -111,5 +122,75 @@ describe('LandingPage hero', () => {
     ).toBeTruthy();
     expect(screen.getAllByText(`SESSION ${currentSession.yearsLabel}`).length).toBeGreaterThan(0);
     expect(screen.getAllByText('GROSSBESENSTADT').length).toBeGreaterThan(0);
+  });
+});
+
+describe('LandingPage mobile hero', () => {
+  beforeEach(() => {
+    setViewportWidth(MOBILE_VIEWPORT_WIDTH);
+  });
+
+  afterEach(() => {
+    setViewportWidth(DESKTOP_VIEWPORT_WIDTH);
+  });
+
+  it('renders the GROSS FURRIA! poster headline as the page h1', async () => {
+    renderAtRoute('/');
+
+    await waitFor(() => expect(getMobileHero()).not.toBeNull());
+    expect(
+      within(getMobileHero()).getByRole('heading', { level: 1, name: 'GROSS FURRIA!' }),
+    ).toBeInTheDocument();
+  });
+
+  it('derives the eyebrow badge from the current session', async () => {
+    renderAtRoute('/');
+
+    await waitFor(() => expect(getMobileHero()).not.toBeNull());
+    expect(
+      within(getMobileHero()).getByText(
+        `★ SESSION ${currentSession.yearsLabel} · 11.11. ERÖFFNUNG`,
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('renders the full-bleed garde photo placeholder', async () => {
+    renderAtRoute('/');
+
+    await screen.findByRole('heading', { level: 1, name: 'GROSS FURRIA!' });
+    expect(within(getMobileHero()).getByText('garde-auf-der-buehne')).toBeInTheDocument();
+  });
+
+  it('links the two CTAs to the tickets and program routes', async () => {
+    renderAtRoute('/');
+
+    await waitFor(() => expect(getMobileHero()).not.toBeNull());
+    expect(
+      within(getMobileHero()).getByRole('link', { name: 'Tickets sichern →' }),
+    ).toHaveAttribute('href', '/tickets');
+    expect(within(getMobileHero()).getByRole('link', { name: 'Programm ansehen' })).toHaveAttribute(
+      'href',
+      '/program',
+    );
+  });
+
+  it('shows the placeholder stat figures from the club globals', async () => {
+    renderAtRoute('/');
+
+    await screen.findByRole('heading', { level: 1, name: 'GROSS FURRIA!' });
+    expect(within(getMobileHero()).getByText(MEMBER_COUNT_PLACEHOLDER)).toBeInTheDocument();
+    expect(within(getMobileHero()).getByText('Mitglieder')).toBeInTheDocument();
+    expect(within(getMobileHero()).getByText('gegründet')).toBeInTheDocument();
+  });
+
+  it('runs the brand ticker below the mobile hero', async () => {
+    renderAtRoute('/');
+
+    const heading = await screen.findByRole('heading', { level: 1, name: 'GROSS FURRIA!' });
+    const ticker = document.querySelector('[data-kk-ticker]');
+    expect(ticker).not.toBeNull();
+    expect(
+      heading.compareDocumentPosition(ticker as Node) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
   });
 });

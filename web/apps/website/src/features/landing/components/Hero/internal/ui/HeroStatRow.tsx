@@ -12,7 +12,6 @@ export const HeroStatRow: FC = () => (
     sx={{
       gap: 4,
       flexWrap: 'wrap',
-      width: '100%',
       borderTop: 1,
       borderColor: 'divider',
       pt: 3,

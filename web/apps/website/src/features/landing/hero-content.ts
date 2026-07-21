@@ -1,3 +1,5 @@
+import { currentSession, SESSION_OPENING_DAY, SESSION_OPENING_MONTH } from '@/lib/club';
+
 export interface HeroStat {
   value: string;
   label: string;
@@ -5,6 +7,12 @@ export interface HeroStat {
 
 export const buildEyebrowLabel = (yearsLabel: string, day: number, month: number): string =>
   `★ SESSION ${yearsLabel} · ${day}.${month}. ERÖFFNUNG`;
+
+export const eyebrowLabel = buildEyebrowLabel(
+  currentSession.yearsLabel,
+  SESSION_OPENING_DAY,
+  SESSION_OPENING_MONTH,
+);
 
 export const buildHeroStats = (
   memberCount: string,

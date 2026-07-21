@@ -1,9 +1,7 @@
 import { KkPhotoPlaceholder, KkSeal, kkTokens } from '@furria/ui';
 import Box from '@mui/material/Box';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
-import { FOUNDING_YEAR, SESSION_OPENING_DAY, SESSION_OPENING_MONTH } from '@/lib/club';
+import { SESSION_OPENING_DAY, SESSION_OPENING_MONTH } from '@/lib/club';
 
 export const HeroPhoto: FC = () => (
   <Box sx={{ position: 'relative' }}>
@@ -17,27 +15,18 @@ export const HeroPhoto: FC = () => (
         boxShadow: kkTokens.shadow.raised,
       }}
     >
-      <KkPhotoPlaceholder label="garde-auf-der-buehne" aspectRatio="7 / 5" />
+      <KkPhotoPlaceholder
+        label="garde-auf-der-buehne"
+        aspectRatio={kkTokens.aspectRatio.landscape}
+      />
     </Box>
-    <Stack
-      sx={{
+    <Box
+      sx={(theme) => ({
         position: 'absolute',
-        bottom: 16,
-        left: 16,
-        bgcolor: 'background.paper',
-        color: 'text.primary',
-        borderRadius: `${kkTokens.radius.pill}px`,
-        boxShadow: kkTokens.shadow.rest,
-        px: 1.75,
-        py: 1,
-        transform: 'rotate(2deg)',
-      }}
+        top: theme.spacing(-3),
+        right: theme.spacing(-2.25),
+      })}
     >
-      <Typography variant="caption" sx={{ fontWeight: 800, letterSpacing: '0.04em' }}>
-        Seit {FOUNDING_YEAR}
-      </Typography>
-    </Stack>
-    <Box sx={{ position: 'absolute', top: -24, right: -18 }}>
       <KkSeal
         dateLabel={`${SESSION_OPENING_DAY}.${SESSION_OPENING_MONTH}`}
         caption="ERÖFFNUNG"
