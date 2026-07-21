@@ -1,3 +1,4 @@
+import { KkConfettiScatter } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { HeroLayout } from './Hero/HeroLayout';
@@ -11,6 +12,7 @@ export const LandingPage: FC = () => (
         <HeroTextColumn />
       </HeroLayout.TextColumn>
       <HeroLayout.PhotoColumn>
+        <KkConfettiScatter count={7} seed={5} />
         <HeroPhoto />
       </HeroLayout.PhotoColumn>
     </HeroLayout>

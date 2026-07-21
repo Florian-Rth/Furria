@@ -22,6 +22,7 @@ describe('SiteFooter', () => {
     const footer = await screen.findByRole('contentinfo');
 
     expect(within(footer).getByText('FURRIA')).toBeInTheDocument();
+    expect(footer.querySelector('svg')).not.toBeNull();
     expect(within(footer).getByRole('link', { name: 'FURRIA auf Facebook' })).toBeInTheDocument();
     expect(within(footer).getByRole('link', { name: 'FURRIA auf Instagram' })).toBeInTheDocument();
     expect(within(footer).getByRole('link', { name: 'FURRIA auf YouTube' })).toBeInTheDocument();

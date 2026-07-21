@@ -78,4 +78,25 @@ describe('LandingPage hero', () => {
     await screen.findByRole('heading', { level: 1, name: 'GROSS FURRIA!' });
     expect(screen.getByText('11.11')).toBeInTheDocument();
   });
+
+  it('paints a faint broom watermark behind the hero as a non-interactive decoration', async () => {
+    renderAtRoute('/');
+
+    await screen.findByRole('heading', { level: 1, name: 'GROSS FURRIA!' });
+    const watermark = document.querySelector('[data-kk-hero-watermark]');
+    expect(watermark).not.toBeNull();
+    expect(watermark).toHaveAttribute('aria-hidden', 'true');
+    expect(watermark).toHaveStyle({ pointerEvents: 'none' });
+  });
+
+  it('contains the confetti scatter to the photo column, never over the reading column', async () => {
+    renderAtRoute('/');
+
+    await screen.findByRole('heading', { level: 1, name: 'GROSS FURRIA!' });
+    const textColumn = document.querySelector('[data-kk-hero-text]');
+    const photoColumn = document.querySelector('[data-kk-hero-photo]');
+
+    expect(textColumn?.querySelector('[data-kk-confetti-scatter]')).toBeNull();
+    expect(photoColumn?.querySelector('[data-kk-confetti-scatter]')).not.toBeNull();
+  });
 });
