@@ -3,10 +3,9 @@ import { createFileRoute } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { LegalLinks } from '@/components/LegalLinks';
-import { PlaceholderPage } from '@/components/PlaceholderPage';
 import { SiteChrome } from '@/components/SiteChrome';
 import { LandingPage } from '@/features/landing';
-import { PreviewAccessDialog, usePreviewAccess } from '@/features/preview-access';
+import { PreviewAccessDialog, PreviewTeaser, usePreviewAccess } from '@/features/preview-access';
 
 const HomeComponent: FC = () => {
   const { granted } = usePreviewAccess();
@@ -15,7 +14,7 @@ const HomeComponent: FC = () => {
   if (granted) {
     return (
       <SiteChrome>
-        <PlaceholderPage title="Willkommen" />
+        <LandingPage />
       </SiteChrome>
     );
   }
@@ -28,7 +27,7 @@ const HomeComponent: FC = () => {
           filter: dialogOpen ? 'blur(9px)' : 'none',
         }}
       >
-        <LandingPage onCtaClick={() => setDialogOpen(true)} confettiPaused={dialogOpen} />
+        <PreviewTeaser onCtaClick={() => setDialogOpen(true)} confettiPaused={dialogOpen} />
         <Stack
           component="footer"
           direction="row"

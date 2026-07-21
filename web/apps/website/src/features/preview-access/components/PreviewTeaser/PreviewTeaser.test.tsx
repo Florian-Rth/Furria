@@ -2,33 +2,33 @@ import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { renderWithProviders } from '@/test/render';
-import { LandingPage } from './LandingPage';
+import { PreviewTeaser } from './PreviewTeaser';
 
 interface RenderOptions {
   onCtaClick?: () => void;
   confettiPaused?: boolean;
 }
 
-const renderLandingPage = ({
+const renderPreviewTeaser = ({
   onCtaClick = () => {},
   confettiPaused = false,
 }: RenderOptions = {}): HTMLElement => {
   const { container } = renderWithProviders(
-    <LandingPage onCtaClick={onCtaClick} confettiPaused={confettiPaused} />,
+    <PreviewTeaser onCtaClick={onCtaClick} confettiPaused={confettiPaused} />,
   );
 
   return container;
 };
 
-describe('LandingPage', () => {
+describe('PreviewTeaser', () => {
   it('renders the FURRIA wordmark in the masthead', () => {
-    renderLandingPage();
+    renderPreviewTeaser();
 
     expect(screen.getByText('FURRIA')).toBeInTheDocument();
   });
 
   it('renders the two-tone German teaser headline', () => {
-    renderLandingPage();
+    renderPreviewTeaser();
 
     const headline = screen.getByRole('heading', { level: 1 });
     expect(headline).toHaveTextContent('DIE FÜNFTE JAHRESZEIT');
@@ -38,7 +38,7 @@ describe('LandingPage', () => {
   it('notifies the caller when the access button is clicked', async () => {
     const user = userEvent.setup();
     const onCtaClick = vi.fn();
-    renderLandingPage({ onCtaClick });
+    renderPreviewTeaser({ onCtaClick });
 
     await user.click(screen.getByRole('button', { name: 'Einlass' }));
 
@@ -46,7 +46,7 @@ describe('LandingPage', () => {
   });
 
   it('pauses the confetti rain when requested', () => {
-    const container = renderLandingPage({ confettiPaused: true });
+    const container = renderPreviewTeaser({ confettiPaused: true });
 
     const piece = container.querySelector('[aria-hidden="true"] > span');
     expect(piece).toHaveStyle({ animationPlayState: 'paused' });

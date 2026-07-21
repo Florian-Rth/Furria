@@ -45,6 +45,7 @@ export const kkTokens = {
   shadow: {
     rest: '0 1px 2px rgba(26,20,17,0.05)',
     raised: '0 12px 32px rgba(26,20,17,0.12)',
+    posterOffset: '3px 3px 0',
   },
 } as const;
 

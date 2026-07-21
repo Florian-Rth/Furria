@@ -5,6 +5,7 @@ export { buildConfettiPieces } from './confetti-pieces';
 export { KkConfettiBurst } from './KkConfettiBurst';
 export { KkConfettiRain } from './KkConfettiRain';
 export { KkThemeProvider } from './KkThemeProvider';
+export { KkTwoToneHeadline } from './KkTwoToneHeadline';
 export { PageLayout } from './PageLayout';
 export { kkTheme } from './theme';
 export type { KkColorTokens } from './tokens';

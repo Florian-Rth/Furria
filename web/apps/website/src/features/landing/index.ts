@@ -1,1 +1,1 @@
-export { LandingPage } from './components/LandingPage/LandingPage';
+export { LandingPage } from './components/LandingPage';

@@ -33,7 +33,7 @@ describe('home route', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Einlass' }));
 
     expect(
-      await screen.findByRole('heading', { level: 1, name: 'Willkommen' }),
+      await screen.findByRole('heading', { level: 1, name: 'GROSS FURRIA!' }),
     ).toBeInTheDocument();
   });
 
@@ -67,12 +67,12 @@ describe('home route', () => {
     );
   });
 
-  it('shows the home placeholder inside the chrome when access is granted', async () => {
+  it('shows the real landing inside the chrome when access is granted', async () => {
     writeGrantedToSession(window.sessionStorage);
     renderAtRoute('/');
 
     expect(
-      await screen.findByRole('heading', { level: 1, name: 'Willkommen' }),
+      await screen.findByRole('heading', { level: 1, name: 'GROSS FURRIA!' }),
     ).toBeInTheDocument();
     expect(screen.getByRole('navigation', { name: 'Hauptnavigation' })).toBeInTheDocument();
     expect(screen.getByRole('contentinfo')).toBeInTheDocument();
