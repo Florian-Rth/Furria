@@ -1,3 +1,4 @@
+import { kkTokens } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import { createFileRoute } from '@tanstack/react-router';
 import type { FC } from 'react';
@@ -39,7 +40,7 @@ const HomeComponent: FC = () => {
           sx={{
             justifyContent: 'center',
             py: 2.5,
-            px: 2,
+            px: kkTokens.layout.gutterX,
             borderTop: 1,
             borderColor: 'divider',
             color: 'text.secondary',
