@@ -105,6 +105,36 @@ Block-specific requirements live in [Landing-Hero](feature-landing-hero.md) and 
    *Delivers (FE):* correct home document head.
    *Verify:* head/meta assertions in the `/` route test.
 
+### P1.1 — Mobile hero slices
+
+Added 2026-07-22 from a dedicated mobile-hero mock, reconciled against the P1 decisions above in a
+grilling session. Details in [Landing-Hero](feature-landing-hero.md) Decisions ("Mobile hero").
+
+7. **Token foundations.** `@furria/ui`: add `kkTokens.aspectRatio` (`portrait: '4 / 5'`,
+   `landscape: '7 / 5'`); add `kkTokens.overlay.photoScrim` (mode-invariant legibility gradient);
+   give `KkPhotoPlaceholder` a `fill` variant (full-bleed, no aspect-ratio/radius). Migrate the
+   desktop `HeroPhoto`'s inline `"7 / 5"` to `kkTokens.aspectRatio.landscape`.
+   *Delivers (FE):* no visible change; desktop hero photo now token-sourced.
+   *Verify:* `KkPhotoPlaceholder` unit test covers the `fill` variant; desktop hero regression
+   (still renders identically); `pnpm typecheck`/`pnpm test` pass.
+8. **`MobileHero`.** New `features/landing/components/MobileHero/` — full-bleed photo
+   (`KkPhotoPlaceholder fill`, `aspectRatio.portrait`) + `kkTokens.overlay.photoScrim` + pinned
+   `KkTwoToneHeadline`, absolutely stacked inside an aspect-ratio-sized band. No status bar, no nav
+   — the real `Masthead` stays untouched above it.
+   *Delivers (FE):* immersive mobile-only hero photo band, light + dark (scrim invariant, photo
+   placeholder theme-tinted).
+   *Verify:* renders only at `xs`; both themes; component test.
+9. **`HeroFollow`.** New `features/landing/components/HeroFollow/` wrapping the existing
+   `Hero.Intro`/`Hero.Actions`/`Hero.StatRow` in mobile-appropriate spacing — no forked copy, no
+   card.
+   *Delivers (FE):* tagline/CTAs/stats directly beneath the mobile hero photo.
+   *Verify:* same CTAs/stats/copy as desktop (shared source); component test.
+10. **Wire into `LandingPage`.** Mount `Hero` (existing) at `md`+ and `MobileHero` + `HeroFollow`
+    at `xs`, both breakpoint-toggled via `sx` (same pattern as `MastheadDesktopBar`/
+    `MastheadMobileBar`); `LandingTicker` stays a single shared instance beneath either.
+    *Delivers (FE):* complete mobile landing hero, end to end.
+    *Verify:* `LandingPage.test.tsx` covers both breakpoints; `pnpm build`/`typecheck` pass.
+
 ## References
 
 - Mock: `fcc-ds-landing.jsx` (`BestV`, `BestDesktop`, `BestMobile`).

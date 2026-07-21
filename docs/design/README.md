@@ -222,7 +222,7 @@ nav + gating in `NAVCONFIG` (`fcc-ds-shell.jsx`).
 
 **App design system:** `fcc-ds-shell.jsx` (**tokens `T`, icons `Ic`, primitives `Card/Chip/Btn/Avatar/Eyebrow/Title/Progress`, `NAVCONFIG`, `AppShell`**), `fcc-ds-docs.jsx` (the documentation panels), `fcc-ds-pages.jsx` (`renderFccPage` + `PAGEMETA` dispatcher), `fcc-ds-mobile.jsx` (mobile app + bottom-nav).
 
-**Public website:** `fcc-ds-landing.jsx` (`BestV({mode, device})` — the current "Destillat" landing, light/dark, desktop/mobile).
+**Public website:** `fcc-ds-landing.jsx` (`BestV({mode, device})` — the current "Destillat" landing, light/dark, desktop/mobile). `mobile-hero.html` + `mobile-hero-handoff.md` — dedicated **mobile** hero redesign handoff (see that file's own READ FIRST); source of record `fcc-ds-landing.jsx` → `BestMobileHero`/`BestMobile`.
 
 **Feature pages:** `fcc-ds-members.jsx`, `fcc-ds-groups.jsx`, `fcc-ds-roles.jsx`, `fcc-ds-events.jsx`, `fcc-ds-seating.jsx`, `fcc-ds-program.jsx`, `fcc-ds-fees.jsx`, `fcc-ds-live.jsx`, `fcc-ds-drinks.jsx`, `fcc-ds-shop.jsx`, `fcc-ds-shop-manage.jsx`.
 

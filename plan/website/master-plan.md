@@ -123,6 +123,27 @@ primitives shipped as planned.
 - **Deferred (not P1):** real hero photo, real member/group counts (→ placeholders), live stats +
   data-driven ticker (→ P5), absolute OG image URL (→ launch).
 
+### P1.1 — Mobile hero
+**Status:** planned (added 2026-07-22, branch `feat/website-p1-landing-hero-fe`)
+A dedicated mobile-only hero treatment (immersive full-bleed photo + pinned headline), replacing
+the current mobile behaviour of just stacking the desktop split hero. Sourced from a new mock
+(`docs/design/mobile-hero.html` + `docs/design/mobile-hero-handoff.md`), reconciled against the
+shipped P1 decisions in a grilling session — see [Landing-Hero](feature-landing-hero.md) Decisions
+and the new slices in the [Landing](feature-landing.md) Implementation plan.
+
+- [ ] [Landing-Hero](feature-landing-hero.md) — new `MobileHero` (full-bleed photo + mode-invariant
+      scrim + pinned two-tone headline) + `HeroFollow` (reuses `Hero.Intro`/`Hero.Actions`/
+      `Hero.StatRow`), mounted alongside the existing `Hero` in `LandingPage`, toggled by
+      breakpoint (`xs` vs. `md+`) — same pattern as `MastheadDesktopBar`/`MastheadMobileBar`
+- [ ] `@furria/ui` — `kkTokens.aspectRatio` (`portrait: '4 / 5'`, `landscape: '7 / 5'`) replacing
+      inline ratio strings; `kkTokens.overlay.photoScrim` (mode-invariant legibility gradient,
+      sibling to `kkTokens.color` rather than part of it); `KkPhotoPlaceholder` gains a `fill`
+      variant for full-bleed (no aspect-ratio, no radius) use
+
+**Explicitly out of scope (per the mock's READ FIRST — layout/functionality is inspiration, not
+spec):** the mock's status bar + transparent overlay nav baked into the hero — the real, shipped
+`Masthead` stays untouched, in normal opaque flow, on every route including mobile `/`.
+
 ### P2 — Landing complete
 **Status:** planned
 The full landing page reads end-to-end (still static/placeholder data).
