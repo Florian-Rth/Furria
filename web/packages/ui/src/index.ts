@@ -9,6 +9,7 @@ export { KkConfettiScatter } from './KkConfettiScatter';
 export { KkPhotoPlaceholder } from './KkPhotoPlaceholder';
 export { KkSeal } from './KkSeal';
 export { KkThemeProvider } from './KkThemeProvider';
+export { KkTicker } from './KkTicker';
 export { KkTwoToneHeadline } from './KkTwoToneHeadline';
 export { PageLayout } from './PageLayout';
 export type { ScatterPiece } from './scatter-pieces';

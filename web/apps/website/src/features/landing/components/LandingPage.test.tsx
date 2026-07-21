@@ -99,4 +99,17 @@ describe('LandingPage hero', () => {
     expect(textColumn?.querySelector('[data-kk-confetti-scatter]')).toBeNull();
     expect(photoColumn?.querySelector('[data-kk-confetti-scatter]')).not.toBeNull();
   });
+
+  it('runs the brand ticker under the hero with the session label from the club globals', async () => {
+    renderAtRoute('/');
+
+    const heading = await screen.findByRole('heading', { level: 1, name: 'GROSS FURRIA!' });
+    const ticker = document.querySelector('[data-kk-ticker]');
+    expect(ticker).not.toBeNull();
+    expect(
+      heading.compareDocumentPosition(ticker as Node) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(screen.getAllByText(`SESSION ${currentSession.yearsLabel}`).length).toBeGreaterThan(0);
+    expect(screen.getAllByText('GROSSBESENSTADT').length).toBeGreaterThan(0);
+  });
 });
