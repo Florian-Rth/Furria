@@ -1,9 +1,18 @@
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
+import { HeroLayout } from './Hero/HeroLayout';
+import { HeroPhoto } from './Hero/HeroPhoto';
 import { HeroTextColumn } from './Hero/HeroTextColumn';
 
 export const LandingPage: FC = () => (
   <Stack component="main" sx={{ flex: 1, justifyContent: 'center', px: { xs: 3, md: 7 }, py: 8 }}>
-    <HeroTextColumn />
+    <HeroLayout>
+      <HeroLayout.TextColumn>
+        <HeroTextColumn />
+      </HeroLayout.TextColumn>
+      <HeroLayout.PhotoColumn>
+        <HeroPhoto />
+      </HeroLayout.PhotoColumn>
+    </HeroLayout>
   </Stack>
 );

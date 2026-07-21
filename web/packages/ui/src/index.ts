@@ -4,6 +4,8 @@ export type { ConfettiPiece } from './confetti-pieces';
 export { buildConfettiPieces } from './confetti-pieces';
 export { KkConfettiBurst } from './KkConfettiBurst';
 export { KkConfettiRain } from './KkConfettiRain';
+export { KkPhotoPlaceholder } from './KkPhotoPlaceholder';
+export { KkSeal } from './KkSeal';
 export { KkThemeProvider } from './KkThemeProvider';
 export { KkTwoToneHeadline } from './KkTwoToneHeadline';
 export { PageLayout } from './PageLayout';

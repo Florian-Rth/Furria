@@ -1,7 +1,7 @@
 import { screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { writeGrantedToSession } from '@/features/preview-access';
-import { currentSession, MEMBER_COUNT_PLACEHOLDER } from '@/lib/club';
+import { currentSession, FOUNDING_YEAR, MEMBER_COUNT_PLACEHOLDER } from '@/lib/club';
 import { renderAtRoute } from '@/test/render';
 
 beforeEach(() => {
@@ -56,5 +56,26 @@ describe('LandingPage hero', () => {
     expect(screen.getByText(MEMBER_COUNT_PLACEHOLDER)).toBeInTheDocument();
     expect(screen.getByText('Mitglieder')).toBeInTheDocument();
     expect(screen.getByText('gegründet')).toBeInTheDocument();
+  });
+
+  it('renders the tilted garde photo placeholder in the photo column', async () => {
+    renderAtRoute('/');
+
+    await screen.findByRole('heading', { level: 1, name: 'GROSS FURRIA!' });
+    expect(screen.getByText('garde-auf-der-buehne')).toBeInTheDocument();
+  });
+
+  it('tags the photo with the founding year', async () => {
+    renderAtRoute('/');
+
+    await screen.findByRole('heading', { level: 1, name: 'GROSS FURRIA!' });
+    expect(screen.getByText(`Seit ${FOUNDING_YEAR}`)).toBeInTheDocument();
+  });
+
+  it('floats the 11.11 opening seal over the photo', async () => {
+    renderAtRoute('/');
+
+    await screen.findByRole('heading', { level: 1, name: 'GROSS FURRIA!' });
+    expect(screen.getByText('11.11')).toBeInTheDocument();
   });
 });
