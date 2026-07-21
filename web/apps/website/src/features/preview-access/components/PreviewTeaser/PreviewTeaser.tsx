@@ -3,8 +3,7 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import { FOUNDING_YEAR } from '@/lib/club';
-import { TeaserLayout } from './internal/TeaserLayout';
-import { Wordmark } from './internal/Wordmark';
+import { Teaser } from './Teaser';
 
 interface PreviewTeaserProps {
   onCtaClick: () => void;
@@ -12,14 +11,14 @@ interface PreviewTeaserProps {
 }
 
 export const PreviewTeaser: FC<PreviewTeaserProps> = ({ onCtaClick, confettiPaused = false }) => (
-  <TeaserLayout>
-    <TeaserLayout.Masthead>
-      <Wordmark text="FURRIA" />
+  <Teaser>
+    <Teaser.Masthead>
+      <Teaser.Wordmark text="FURRIA" />
       <Typography variant="body2" sx={{ color: 'text.secondary' }}>
         Furrscher Carnevals Club e.V. · Großbesenstadt · seit {FOUNDING_YEAR}
       </Typography>
-    </TeaserLayout.Masthead>
-    <TeaserLayout.Hero>
+    </Teaser.Masthead>
+    <Teaser.Stage>
       <KkConfettiRain paused={confettiPaused} />
       <KkTwoToneHeadline line1="DIE FÜNFTE JAHRESZEIT" line2="BEGINNT HIER." />
       <Typography variant="subtitle1" sx={{ color: 'text.secondary', maxWidth: 'sm' }}>
@@ -29,6 +28,6 @@ export const PreviewTeaser: FC<PreviewTeaserProps> = ({ onCtaClick, confettiPaus
       <Button variant="contained" color="primary" size="large" onClick={onCtaClick}>
         Einlass
       </Button>
-    </TeaserLayout.Hero>
-  </TeaserLayout>
+    </Teaser.Stage>
+  </Teaser>
 );

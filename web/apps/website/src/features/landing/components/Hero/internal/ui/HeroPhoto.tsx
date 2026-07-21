@@ -17,7 +17,7 @@ export const HeroPhoto: FC = () => (
         boxShadow: kkTokens.shadow.raised,
       }}
     >
-      <KkPhotoPlaceholder label="garde-auf-der-buehne" />
+      <KkPhotoPlaceholder label="garde-auf-der-buehne" aspectRatio="7 / 5" />
     </Box>
     <Stack
       sx={{

@@ -1,24 +1,36 @@
-import { KkConfettiScatter } from '@furria/ui';
+import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { HeroLayout } from './Hero/HeroLayout';
-import { HeroPhoto } from './Hero/HeroPhoto';
-import { HeroTextColumn } from './Hero/HeroTextColumn';
+import { Hero } from './Hero/Hero';
 import { LandingTicker } from './LandingTicker';
 
 export const LandingPage: FC = () => (
   <Stack component="main" sx={{ flex: 1 }}>
-    <Stack sx={{ flex: 1, justifyContent: 'center', px: { xs: 3, md: 7 }, py: 8 }}>
-      <HeroLayout>
-        <HeroLayout.TextColumn>
-          <HeroTextColumn />
-        </HeroLayout.TextColumn>
-        <HeroLayout.PhotoColumn>
-          <KkConfettiScatter count={7} seed={5} />
-          <HeroPhoto />
-        </HeroLayout.PhotoColumn>
-      </HeroLayout>
-    </Stack>
+    <Container
+      maxWidth="xl"
+      sx={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        px: { xs: 3, md: 7 },
+        py: 8,
+      }}
+    >
+      <Hero>
+        <Hero.TextColumn>
+          <Hero.Eyebrow />
+          <Hero.Headline />
+          <Hero.Intro />
+          <Hero.Actions />
+          <Hero.StatRow />
+        </Hero.TextColumn>
+        <Hero.PhotoColumn>
+          <Hero.Confetti />
+          <Hero.Photo />
+        </Hero.PhotoColumn>
+      </Hero>
+    </Container>
     <LandingTicker />
   </Stack>
 );

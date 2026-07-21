@@ -23,7 +23,6 @@ export const KkPhotoPlaceholder: FC<KkPhotoPlaceholderProps> = ({
         aspectRatio,
         alignItems: 'center',
         justifyContent: 'center',
-        overflow: 'hidden',
         borderRadius: `${kkTokens.radius.base}px`,
         background: `repeating-linear-gradient(135deg, ${alpha(tintColor, 0.15)} 0 11px, ${alpha(
           tintColor,
