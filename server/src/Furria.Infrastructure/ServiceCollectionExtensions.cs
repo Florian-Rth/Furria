@@ -15,6 +15,7 @@ public static class ServiceCollectionExtensions
         services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString(AppDbContext.ConnectionName))
         );
+        services.AddHostedService<DatabaseMigrator>();
         services.AddSingleton(TimeProvider.System);
         return services;
     }

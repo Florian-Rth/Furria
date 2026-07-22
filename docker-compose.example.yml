@@ -1,0 +1,69 @@
+# Example full-stack deployment: PostgreSQL + API + website, kept up to date by Watchtower.
+#
+# Usage on the host that runs the app:
+#   cp docker-compose.example.yml docker-compose.yml
+#   cp .env.example .env         # then fill in the values
+#   docker compose up -d
+#
+# The API auto-applies EF Core migrations on startup, so a fresh database is provisioned
+# automatically. Watchtower polls Docker Hub every 5 minutes and redeploys the api/website
+# containers whenever the CD pipeline pushes a new :latest image.
+
+name: furria
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-furria}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-furria}
+      POSTGRES_DB: ${POSTGRES_DB:-furria}
+    volumes:
+      # postgres:18 keeps PGDATA in a versioned subdir - mount the parent.
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-furria} -d ${POSTGRES_DB:-furria}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    image: ${DOCKERHUB_USERNAME}/furria-api:latest
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__AppDb: Host=postgres;Port=5432;Database=${POSTGRES_DB:-furria};Username=${POSTGRES_USER:-furria};Password=${POSTGRES_PASSWORD:-furria}
+      PreviewAccess__Password: ${PREVIEW_ACCESS_PASSWORD:-}
+      ASPNETCORE_ENVIRONMENT: Production
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
+
+  website:
+    image: ${DOCKERHUB_USERNAME}/furria-website:latest
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      # Empty = same-origin: the browser calls /api on this host and nginx proxies it to the
+      # api service (API_UPSTREAM below). Set an absolute URL only for a cross-origin backend.
+      API_BASE_URL: ${WEBSITE_API_BASE_URL:-}
+      API_UPSTREAM: api:8080
+    ports:
+      - "${WEBSITE_PORT:-80}:80"
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
+
+  watchtower:
+    image: containrrr/watchtower:latest
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Uncomment to let Watchtower pull PRIVATE Docker Hub repos:
+      # - ${HOME}/.docker/config.json:/config.json:ro
+    command: --interval 300 --label-enable --cleanup
+
+volumes:
+  postgres-data:

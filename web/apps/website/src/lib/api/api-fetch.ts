@@ -1,4 +1,5 @@
 import type { ZodType } from 'zod';
+import { readApiBaseUrl } from '@/lib/runtime-config';
 import { ApiError, RequestBlockedError } from './errors';
 
 export type JsonBody = string | number | boolean | null | JsonBody[] | { [key: string]: JsonBody };
@@ -27,7 +28,7 @@ export const apiFetch = async <TResponse>(
   path: string,
   { schema, method = 'GET', body }: ApiFetchOptions<TResponse>,
 ): Promise<TResponse> => {
-  const url = buildApiUrl(import.meta.env.VITE_API_BASE_URL ?? '', path);
+  const url = buildApiUrl(readApiBaseUrl(), path);
 
   const init: RequestInit = { method };
   if (body !== undefined) {
