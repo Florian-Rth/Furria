@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { sessionAt } from './club';
+import {
+  GROUP_COUNT_PLACEHOLDER,
+  MEMBER_COUNT_PLACEHOLDER,
+  SESSION_OPENING_DAY,
+  SESSION_OPENING_MONTH,
+  sessionAt,
+} from './club';
 
 describe('sessionAt', () => {
   it('stays in the running session while the opening is still ahead', () => {
@@ -32,5 +38,17 @@ describe('sessionAt', () => {
 
   it('pads the label across a century boundary', () => {
     expect(sessionAt(new Date(2099, 11, 31)).yearsLabel).toBe('2099/00');
+  });
+});
+
+describe('club globals', () => {
+  it('opens the session on the eleventh of the eleventh', () => {
+    expect(SESSION_OPENING_DAY).toBe(11);
+    expect(SESSION_OPENING_MONTH).toBe(11);
+  });
+
+  it('exposes placeholder counts pending real figures', () => {
+    expect(MEMBER_COUNT_PLACEHOLDER).toBe('180+');
+    expect(GROUP_COUNT_PLACEHOLDER).toBe(12);
   });
 });

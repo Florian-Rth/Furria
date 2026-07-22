@@ -27,8 +27,8 @@ export const SunMoonMorphIcon: FC<SunMoonMorphIconProps> = ({ dark }) => {
 
   return (
     <motion.svg
-      width={20}
-      height={20}
+      width={24}
+      height={24}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"

@@ -26,15 +26,14 @@ export const useModeTransition = (): ModeTransition => {
       return;
     }
 
-    const { centerX, centerY, radius } = computeRevealGeometry(
+    const { centerXPercent, centerYPercent } = computeRevealGeometry(
       origin,
       window.innerWidth,
       window.innerHeight,
     );
     const root = document.documentElement;
-    root.style.setProperty('--mode-reveal-x', `${centerX}px`);
-    root.style.setProperty('--mode-reveal-y', `${centerY}px`);
-    root.style.setProperty('--mode-reveal-radius', `${radius}px`);
+    root.style.setProperty('--mode-reveal-x', `${centerXPercent}%`);
+    root.style.setProperty('--mode-reveal-y', `${centerYPercent}%`);
 
     document.startViewTransition(() => {
       flushSync(() => {

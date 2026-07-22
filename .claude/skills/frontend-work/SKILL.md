@@ -8,24 +8,27 @@ description: Mandatory rules for all React/TypeScript frontend work. Invoke befo
 ### Components
 - Declare all components as `FC<Props>` with named exports
 - Use arrow functions exclusively — never use `function` keyword
-- One component per file
+- Define exactly one component per file — no exceptions (compound parts each get their own file)
 - Never use default exports
 - Never hardcode layout sx props (margin, padding) inside components — parent controls positioning via `sx` prop
 - Extract all business logic into custom hooks — component bodies contain only hook composition and JSX rendering, never data fetching, transformations, or complex state management inline
 - Static copy is a plain module constant or inline JSX text, never a hook — a hook that only returns a frozen constant is banned
 - Never fetch in components — all data fetching goes through React Query hooks in the feature's `api.ts`
 
-### Composition
-- Compound composition is mandatory — every component is built with it, not just considered
-- Strict separation into three kinds of parts, never mixed in one component: **logic** (hooks/context), **layout** (structural components with slots, no business logic), **UI** (presentational pieces that consume context/props)
-- Build compound components in three layers in this order: (1) layout components with slots, (2) dedicated hooks or context for logic, (3) UI pieces that consume the context
-- Use Context to eliminate prop drilling when 3+ props are threaded through children
-- Use `Object.assign()` for compound component namespaces
-- One context per component group, co-located in `*-context.ts`
-- Context hook always throws if used outside provider
+### Composition (the Compound Kit)
+- Build every multi-part component as a compound kit, never a monolith
+- Split parts one-per-file into three never-mixed kinds: logic (context + hooks), layout (slots: children + positional sx only), UI (presentational)
+- Place parts under `internal/{layout,ui,logic}`; create `logic/` only when 3+ parts share runtime state
+- Assemble the compound in one `ComponentName.tsx` of only imports plus one `Object.assign` attaching parts as dot-members off the layout root; define no component there
+- Let only the root mount fixed decoration; never let a layout slot render its own UI — compose UI into slots at the call site
+- Split a kit-consuming, fixed-props component into its own file; never put it in the assembly file
+- Add a compound context only at 3+ shared consumers; a lone live consumer uses its React Query hook directly
+- Keep one context per compound in `*-context.ts` with a hook that throws outside its provider
 - Extract complex operations into `use-*-operations.ts` hooks, pass result via context
 
 ### MUI
+- Use an existing MUI component before hand-rolling with `Box` + `sx`
+- Use MUI `Grid` (12-column `container`/`size`) for multi-column layouts; approximate ratios with spans, never a custom `columns` base or magic spans
 - Use `Stack` instead of `Box` with `display: flex`
 - Exception: use `sx={{ display: 'flex' }}` on MUI containers (DialogContent, etc.) to avoid extra wrapper divs
 - Put Stack layout props (`alignItems`, `justifyContent`, `spacing`) in `sx`, not as component props — only `direction` is allowed as a prop
@@ -94,6 +97,7 @@ description: Mandatory rules for all React/TypeScript frontend work. Invoke befo
 ### Component Structure
 - Main components: a single `ComponentName.tsx`; give it a folder only when it has `internal/` parts — never a per-component `index.tsx` barrel (the feature `index.ts` is the only barrel)
 - Internal components: in `internal/` subfolder, scoped to main component
+- Give a compound component a folder: `ComponentName.tsx` (assembly) plus `internal/{layout,ui,logic}/` for its parts
 - Tests only for main components, not internal ones
 - Co-located: `ComponentName.test.tsx`
 

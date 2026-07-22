@@ -1,7 +1,10 @@
 export const FOUNDING_YEAR = 1971;
 
-const SESSION_OPENING_MONTH = 11;
-const SESSION_OPENING_DAY = 11;
+export const SESSION_OPENING_MONTH = 11;
+export const SESSION_OPENING_DAY = 11;
+
+export const MEMBER_COUNT_PLACEHOLDER = '180+';
+export const GROUP_COUNT_PLACEHOLDER = 12;
 
 export interface Session {
   number: number;

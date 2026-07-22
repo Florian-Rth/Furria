@@ -1,3 +1,4 @@
+import { kkTokens } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
@@ -11,7 +12,7 @@ export const SiteFooter: FC = () => (
     component="footer"
     sx={{
       gap: 3,
-      px: { xs: 2.5, md: 7 },
+      px: kkTokens.layout.gutterX,
       py: 4,
       borderTop: 1,
       borderColor: 'divider',

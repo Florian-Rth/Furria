@@ -33,7 +33,7 @@ export const kkTheme = createTheme({
     fontWeightRegular: 500,
     fontWeightMedium: 700,
     fontWeightBold: 800,
-    h1: { ...displayHeading, fontSize: 'clamp(2.75rem, 6vw, 4.5rem)', lineHeight: 1.02 },
+    h1: { ...displayHeading, fontSize: 'clamp(3.75rem, 8vw, 6.5rem)', lineHeight: 1.02 },
     h2: { ...displayHeading, fontSize: 'clamp(2.25rem, 5vw, 3.25rem)', lineHeight: 1.05 },
     h3: { ...displayHeading, fontSize: '2.25rem', lineHeight: 1.1 },
     h4: { ...displayHeading, fontSize: '1.75rem', lineHeight: 1.15 },
@@ -46,6 +46,9 @@ export const kkTheme = createTheme({
   components: {
     MuiCssBaseline: {
       styleOverrides: {
+        html: {
+          overflowX: 'hidden',
+        },
         '@media (prefers-reduced-motion: reduce)': {
           '*, *::before, *::after': {
             animationDuration: '0.01ms !important',

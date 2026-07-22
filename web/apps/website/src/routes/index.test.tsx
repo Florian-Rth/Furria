@@ -33,7 +33,7 @@ describe('home route', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Einlass' }));
 
     expect(
-      await screen.findByRole('heading', { level: 1, name: 'Willkommen' }),
+      await screen.findByRole('heading', { level: 1, name: 'GROSS FURRIA!' }),
     ).toBeInTheDocument();
   });
 
@@ -51,28 +51,40 @@ describe('home route', () => {
     );
   });
 
-  it('applies the site-wide head defaults on the teaser', async () => {
+  it('sets the branded landing title and meta while keeping the site-wide OG defaults', async () => {
     renderAtRoute('/');
     await screen.findByRole('button', { name: 'Einlass' });
 
-    expect(document.title).toBe('FURRIA');
-    expect(document.querySelector('meta[name="description"]')?.getAttribute('content')).toContain(
-      'Gross - Furria!',
+    expect(document.title).toBe('FURRIA · Gross - Furria!');
+
+    const description = document.querySelector('meta[name="description"]')?.getAttribute('content');
+    expect(description).toContain('fünfte Jahreszeit');
+    expect(description).toContain('Gross - Furria!');
+
+    expect(document.querySelector('meta[property="og:title"]')?.getAttribute('content')).toBe(
+      'FURRIA · Gross - Furria!',
     );
+    expect(
+      document.querySelector('meta[property="og:description"]')?.getAttribute('content'),
+    ).toContain('fünfte Jahreszeit');
+
     expect(document.querySelector('meta[property="og:site_name"]')?.getAttribute('content')).toBe(
       'FURRIA',
     );
     expect(document.querySelector('meta[name="twitter:card"]')?.getAttribute('content')).toBe(
       'summary_large_image',
     );
+    expect(document.querySelector('meta[property="og:image"]')?.getAttribute('content')).toBe(
+      '/og-default.png',
+    );
   });
 
-  it('shows the home placeholder inside the chrome when access is granted', async () => {
+  it('shows the real landing inside the chrome when access is granted', async () => {
     writeGrantedToSession(window.sessionStorage);
     renderAtRoute('/');
 
     expect(
-      await screen.findByRole('heading', { level: 1, name: 'Willkommen' }),
+      await screen.findByRole('heading', { level: 1, name: 'GROSS FURRIA!' }),
     ).toBeInTheDocument();
     expect(screen.getByRole('navigation', { name: 'Hauptnavigation' })).toBeInTheDocument();
     expect(screen.getByRole('contentinfo')).toBeInTheDocument();

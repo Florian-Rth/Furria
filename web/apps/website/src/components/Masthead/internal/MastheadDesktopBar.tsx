@@ -1,3 +1,4 @@
+import { kkTokens } from '@furria/ui';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Link from '@mui/material/Link';
@@ -20,7 +21,7 @@ export const MastheadDesktopBar: FC = () => (
         gridTemplateColumns: '1fr auto 1fr',
         alignItems: 'center',
         gap: 2,
-        px: 7,
+        px: kkTokens.layout.gutterX,
         py: 0.75,
         borderBottom: 1,
         borderColor: 'divider',
@@ -43,7 +44,7 @@ export const MastheadDesktopBar: FC = () => (
         gridTemplateColumns: '1fr auto 1fr',
         alignItems: 'center',
         gap: 2.5,
-        px: 7,
+        px: kkTokens.layout.gutterX,
         py: 1.5,
       }}
     >

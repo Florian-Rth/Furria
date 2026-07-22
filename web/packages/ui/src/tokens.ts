@@ -15,6 +15,8 @@ export const kkTokens = {
       line: 'rgba(26,20,17,0.12)',
       line2: 'rgba(26,20,17,0.07)',
       onRed: '#FFFFFF',
+      photoScrim:
+        'linear-gradient(to bottom, rgba(20,15,12,0.58) 0%, rgba(20,15,12,0.12) 19%, rgba(20,15,12,0.12) 42%, rgba(20,15,12,0.72) 76%, rgba(20,15,12,0.94) 100%)',
     },
     dark: {
       bg: '#15110E',
@@ -31,12 +33,18 @@ export const kkTokens = {
       line: 'rgba(251,244,230,0.16)',
       line2: 'rgba(251,244,230,0.09)',
       onRed: '#FFFFFF',
+      photoScrim:
+        'linear-gradient(to bottom, rgba(20,15,12,0.72) 0%, rgba(20,15,12,0.24) 19%, rgba(20,15,12,0.24) 42%, rgba(20,15,12,0.82) 76%, rgba(20,15,12,0.97) 100%)',
     },
   },
   radius: {
     base: 14,
     chip: 20,
     pill: 50,
+  },
+  layout: {
+    gutterX: { xs: 3, md: 7 },
+    gutterY: { xs: 4, md: 8 },
   },
   font: {
     display: "'Anton', sans-serif",
@@ -45,6 +53,22 @@ export const kkTokens = {
   shadow: {
     rest: '0 1px 2px rgba(26,20,17,0.05)',
     raised: '0 12px 32px rgba(26,20,17,0.12)',
+    posterOffset: '3px 3px 0',
+  },
+  aspectRatio: {
+    portrait: '4 / 5',
+    landscape: '7 / 5',
+  },
+  overlay: {
+    onPhotoText: '#FFFFFF',
+    textShadow: '0 4px 34px rgba(0,0,0,0.5)',
+  },
+  glass: {
+    tintOpacity: 0.72,
+    blur: '16px',
+  },
+  photo: {
+    placeholderSurface: '#CFCBC4',
   },
 } as const;
 

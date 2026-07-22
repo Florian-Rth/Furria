@@ -20,8 +20,7 @@ export const ThemeTransitionStyles: FC = () => (
           clipPath: 'circle(0 at var(--mode-reveal-x) var(--mode-reveal-y))',
         },
         to: {
-          clipPath:
-            'circle(var(--mode-reveal-radius) at var(--mode-reveal-x) var(--mode-reveal-y))',
+          clipPath: 'circle(140% at var(--mode-reveal-x) var(--mode-reveal-y))',
         },
       },
     }}

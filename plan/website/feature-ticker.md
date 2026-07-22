@@ -2,7 +2,7 @@
 title: Ticker
 slug: ticker
 type: foundation
-status: idea
+status: building
 mock: docs/design/fcc-ds-landing.jsx
 adrs: []
 ---
@@ -23,11 +23,21 @@ its own foundation because it is chrome that can appear on more than the landing
 
 - **Flat, un-skewed** red/gold (supersedes the old skewed `KKTicker`).
 - Uses shared tokens (`red`, `gold`, `onRed`, Anton).
+- **Lives in `@furria/ui` as `KkTicker`** — a pure, **content-agnostic** marquee (README §5 lists
+  the Ticker alongside the seal/broom/confetti signature gestures; it is token-pure with no app
+  coupling, so it belongs with the other shared gestures rather than in website chrome). The
+  consumer passes the content; no website copy is baked into the shared component.
+- **Content is static in P1**, passed by the website and built from `lib/club.ts`:
+  `GROSS FURRIA ✶ GROSSBESENSTADT ✶ SESSION {currentSession.yearsLabel} ✶` (session label derived,
+  never hardcoded).
+- **Mounted landing-only in P1** — under the hero. Reusable, but no speculative placements (YAGNI).
+- **Build sequence:** delivered in P1 slice 5 — see the Implementation plan in [Landing](feature-landing.md).
 
 ## Open Questions
 
-- Is the content static brand copy, or ever data-driven (e.g. next event, scarcity)?
-- Where else besides the landing does it appear, if anywhere?
+- **Data-driven content** (next event / live ticket scarcity) — deferred to P5, when the event
+  and scarcity feeds exist; the `content` prop is the seam.
+- Additional placements beyond the landing — none planned; add a consumer when a page needs it.
 
 ## Done When
 

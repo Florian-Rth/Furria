@@ -16,6 +16,7 @@ afterEach(() => {
   window.sessionStorage.clear();
   document.documentElement.removeAttribute('data-light');
   document.documentElement.removeAttribute('data-dark');
+  window.scrollTo(0, 0);
 });
 
 describe('Masthead', () => {
@@ -69,6 +70,21 @@ describe('Masthead', () => {
     const links = within(chipNav).getAllByRole('link');
     expect(links[0]).toHaveAccessibleName('Tickets');
     expect(links[0]).toHaveAttribute('href', '/tickets');
+  });
+
+  it('starts transparent at the top of the page and turns glass once scrolled', async () => {
+    renderAtRoute('/program');
+    await screen.findByRole('heading', { level: 1, name: 'Programm' });
+
+    const header = document.querySelector('header');
+    expect(header).toHaveAttribute('data-kk-masthead-scrolled', 'false');
+
+    window.scrollTo(0, 200);
+    window.dispatchEvent(new Event('scroll'));
+
+    await waitFor(() => {
+      expect(header).toHaveAttribute('data-kk-masthead-scrolled', 'true');
+    });
   });
 
   it('toggles to dark mode and persists the choice', async () => {

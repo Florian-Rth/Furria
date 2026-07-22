@@ -57,9 +57,9 @@ Guiding constraints (all binding):
 | [Preview-Gate](feature-preview-gate.md) | foundation | shipped | Pre-launch access gate (tester portal removed 2026-07-20) |
 | [API-Client](feature-api-client.md) | foundation | building | Data layer to the backend public read endpoints |
 | [SEO & Meta](feature-seo-meta.md) | foundation | building | Meta tags, Open Graph / social-share cards |
-| [Ticker](feature-ticker.md) | foundation | idea | Flat red/gold marquee signature chrome |
-| [Landing](feature-landing.md) | capability | idea | Home page — composes the blocks below |
-| [Landing-Hero](feature-landing-hero.md) | capability | idea | Identity centerpiece: headline, CTAs, stats, hero photo |
+| [Ticker](feature-ticker.md) | foundation | building | Flat red/gold marquee signature chrome |
+| [Landing](feature-landing.md) | capability | building | Home page — composes the blocks below |
+| [Landing-Hero](feature-landing-hero.md) | capability | building | Identity centerpiece: headline, CTAs, stats, hero photo |
 | [Programm-Teaser](feature-program-teaser.md) | capability | idea | Home "DAS PROGRAMM" upcoming-events section |
 | [Mitmachen-Band](feature-mitmachen-band.md) | capability | idea | Home recruit CTA → membership funnel |
 | [Verein](feature-about-verein.md) | capability | idea | Verein story, Ämter, Gruppen showcase |
@@ -92,12 +92,57 @@ SEO & Meta: share-image URL deferral).
       `robots.txt` disallow-while-gated
 
 ### P1 — Landing hero
-**Status:** planned
-The home page's identity centerpiece is live (static content).
+**Status:** done (2026-07-21, branch `feat/website-p1-landing-hero-fe`, 7 commits `cf18d47`…`578fc4e`)
+The home page's identity centerpiece is live (static content). Built as the 6 vertical slices in the
+[Landing](feature-landing.md) Implementation plan. Followed the plan closely; minor build-level
+choices worth knowing: the relocated teaser is named `PreviewTeaser`
+(`features/preview-access/components/PreviewTeaser/`); `LandingPage` was flattened out of its
+per-component folder (no `internal/` parts left); the hero poster-shadow offset is tokenised as
+`kkTokens.shadow.posterOffset` (colour still theme-driven `ink`→cream). All six new `@furria/ui`
+primitives shipped as planned.
 
-- [ ] [Landing](feature-landing.md) — page skeleton + block composition/order
-- [ ] [Landing-Hero](feature-landing-hero.md) — full hero block (static copy/stats)
-- [ ] [Ticker](feature-ticker.md) — marquee under the hero
+- [x] [Landing](feature-landing.md) — real home page owns `/`; teaser relocated to preview-access;
+      block composition/order locked (Hero → Ticker → [P2 blocks]); `/` granted-branch renders the
+      real landing in `SiteChrome`; branded home `head`
+- [x] [Landing-Hero](feature-landing-hero.md) — full hero block (static copy/stats derived from
+      `lib/club.ts`; CTAs → `/tickets` · `/program`; placeholder photo)
+- [x] [Ticker](feature-ticker.md) — marquee under the hero (static, session label derived)
+
+**Cross-cutting (decided in P1 shaping):**
+
+- **`@furria/ui` gains the shared brand gestures/primitives** the hero + ticker need: `KkSeal`,
+  `KkBroomMark`, `KkConfettiScatter` (static, distinct from `KkConfettiRain`/`Burst`),
+  `KkPhotoPlaceholder`, `KkTwoToneHeadline`, `KkTicker`. This **sharpens the Site-Shell boundary**:
+  `@furria/ui` = theme + token-pure brand primitives/gestures (reusable by all apps); website-local
+  = chrome (masthead/footer) + composed sections (hero, blocks). The footer's local `BroomMarkIcon`
+  is refactored to consume the shared `KkBroomMark` (de-dupe).
+- **Teaser ownership moved** `features/landing` → `features/preview-access` (see
+  [Preview-Gate](feature-preview-gate.md)); `KkTwoToneHeadline` is promoted to `@furria/ui` and
+  consumed by both the teaser (no shadow) and the hero (poster shadow).
+- **Glossary:** added **Session** to [`CONTEXT.md`](../../CONTEXT.md).
+- **Deferred (not P1):** real hero photo, real member/group counts (→ placeholders), live stats +
+  data-driven ticker (→ P5), absolute OG image URL (→ launch).
+
+### P1.1 — Mobile hero
+**Status:** planned (added 2026-07-22, branch `feat/website-p1-landing-hero-fe`)
+A dedicated mobile-only hero treatment (immersive full-bleed photo + pinned headline), replacing
+the current mobile behaviour of just stacking the desktop split hero. Sourced from a new mock
+(`docs/design/mobile-hero.html` + `docs/design/mobile-hero-handoff.md`), reconciled against the
+shipped P1 decisions in a grilling session — see [Landing-Hero](feature-landing-hero.md) Decisions
+and the new slices in the [Landing](feature-landing.md) Implementation plan.
+
+- [ ] [Landing-Hero](feature-landing-hero.md) — new `MobileHero` (full-bleed photo + mode-invariant
+      scrim + pinned two-tone headline) + `HeroFollow` (reuses `Hero.Intro`/`Hero.Actions`/
+      `Hero.StatRow`), mounted alongside the existing `Hero` in `LandingPage`, toggled by
+      breakpoint (`xs` vs. `md+`) — same pattern as `MastheadDesktopBar`/`MastheadMobileBar`
+- [ ] `@furria/ui` — `kkTokens.aspectRatio` (`portrait: '4 / 5'`, `landscape: '7 / 5'`) replacing
+      inline ratio strings; `kkTokens.overlay.photoScrim` (mode-invariant legibility gradient,
+      sibling to `kkTokens.color` rather than part of it); `KkPhotoPlaceholder` gains a `fill`
+      variant for full-bleed (no aspect-ratio, no radius) use
+
+**Explicitly out of scope (per the mock's READ FIRST — layout/functionality is inspiration, not
+spec):** the mock's status bar + transparent overlay nav baked into the hero — the real, shipped
+`Masthead` stays untouched, in normal opaque flow, on every route including mobile `/`.
 
 ### P2 — Landing complete
 **Status:** planned
