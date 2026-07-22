@@ -39,12 +39,18 @@ Block order (top → bottom), from the "Destillat" mock:
   → Footer (shell). **No** news-teaser or gallery-strip block in v1 (news = P4, gallery = P5; a
   landing teaser for either can be reconsidered then). P1 delivers **Hero → Ticker** only, laid out
   so the P2 blocks slot in below the ticker with no restructuring.
-- **`/` routing:** the standalone `/` route branches on preview access —
+- **`/` routing:** the `/` route branches on preview access —
   **ungated** → the coming-soon teaser (preview-access) + unlock dialog (unchanged);
   **granted** → the real `LandingPage` inside `SiteChrome` (masthead + footer), **replacing** the
   P0 "Willkommen" placeholder. At launch the gate flips off and the granted view becomes public.
-  `/` keeps its own gate-branching (it is the only route that shows the teaser when ungated), so it
-  stays a standalone route, not a `_site` child.
+  **Revised (2026-07-23, post-P2 bugfix):** `/` is now the **`_site` index** (`routes/_site/index.tsx`),
+  **not** a standalone route. It originally stood alone and rendered its *own* `SiteChrome`; that mounted
+  a second masthead/footer separate from the `_site` layout's, so navigating `/` ↔ inner pages fully
+  remounted the chrome (visible flash + the nav-link confetti burst never animated, since the landing's
+  masthead unmounted on click). Moving `/` under `_site` makes one `SiteChrome` instance persist across
+  the landing and every inner page. The teaser stays chrome-less: the `_site` layout renders a bare
+  `Outlet` only for the ungated home (`!granted && pathname === '/'`) and `SiteChrome` otherwise (so
+  ungated `/imprint` + `/privacy` keep their chrome). See [Preview-Gate](feature-preview-gate.md).
 - **Page-level meta:** `/` sets its own document head via the TanStack Router `head` API — a
   **branded German title** (brand + tagline, *not* the `%s · FURRIA` name-suffix template),
   a landing meta description, and OG title/description. The OG **image** stays the P0

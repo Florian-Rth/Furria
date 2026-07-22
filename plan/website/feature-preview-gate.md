@@ -31,6 +31,13 @@ at its final URLs. Already partly in code (`preview-access`, `dev-home`).
   `features/preview-access` — it is the gate's ungated face, not the real front door. This freed
   `features/landing` for the real home page (see [Landing](feature-landing.md)). `/` still branches
   inline: ungated → teaser, granted → the real landing in `SiteChrome`.
+- **`/` moved under the `_site` layout (2026-07-23, post-P2 bugfix):** `/` was originally a standalone
+  route rendering its own `SiteChrome`, which double-mounted the chrome and remounted the whole
+  masthead/footer whenever the user crossed between `/` and any inner page. `/` is now the `_site`
+  index (`routes/_site/index.tsx`) so a single `SiteChrome` persists across the landing and all inner
+  pages. The gate branching is unchanged in spirit; the teaser stays chrome-less because the `_site`
+  layout renders a bare `Outlet` only for the ungated home (`!granted && pathname === '/'`) and
+  `SiteChrome` for everything else. See [Landing](feature-landing.md) `/`-routing decision.
 - **Three zones** (see [Site-Shell](feature-site-shell.md)) — *portal zone since removed, see above*:
   - **Always-public legal** — `/imprint`, `/privacy` bypass the gate (legally required reachable).
   - **Gated marketing** — `/` and the real pages; ungated `/` shows the coming-soon teaser.
