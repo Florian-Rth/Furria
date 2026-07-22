@@ -14,6 +14,12 @@ const getMobileHero = (): HTMLElement =>
 const getProgramTeaser = (): HTMLElement =>
   document.querySelector('[data-kk-program-teaser]') as HTMLElement;
 
+const getProgramGrid = (): HTMLElement =>
+  document.querySelector('[data-kk-program-grid]') as HTMLElement;
+
+const getProgramList = (): HTMLElement =>
+  document.querySelector('[data-kk-program-list]') as HTMLElement;
+
 beforeEach(() => {
   writeGrantedToSession(window.sessionStorage);
 });
@@ -155,21 +161,21 @@ describe('LandingPage program teaser', () => {
     ).toHaveAttribute('href', '/program');
   });
 
-  it('renders all three upcoming event titles', async () => {
+  it('renders all three upcoming event titles in the grid', async () => {
     renderAtRoute('/');
 
-    await waitFor(() => expect(getProgramTeaser()).not.toBeNull());
-    const teaser = within(getProgramTeaser());
-    expect(teaser.getByText('Große Prunksitzung')).toBeInTheDocument();
-    expect(teaser.getByText('Kinderfasching')).toBeInTheDocument();
-    expect(teaser.getByText('Rosenmontagsumzug')).toBeInTheDocument();
+    await waitFor(() => expect(getProgramGrid()).not.toBeNull());
+    const grid = within(getProgramGrid());
+    expect(grid.getByText('Große Prunksitzung')).toBeInTheDocument();
+    expect(grid.getByText('Kinderfasching')).toBeInTheDocument();
+    expect(grid.getByText('Rosenmontagsumzug')).toBeInTheDocument();
   });
 
   it('renders a photo placeholder for each upcoming event', async () => {
     renderAtRoute('/');
 
-    await waitFor(() => expect(getProgramTeaser()).not.toBeNull());
-    expect(within(getProgramTeaser()).getAllByText('event-foto')).toHaveLength(3);
+    await waitFor(() => expect(getProgramGrid()).not.toBeNull());
+    expect(within(getProgramGrid()).getAllByText('event-foto')).toHaveLength(3);
   });
 
   it('places the teaser after the brand ticker in document order', async () => {
@@ -252,5 +258,53 @@ describe('LandingPage mobile hero', () => {
     expect(
       heading.compareDocumentPosition(ticker as Node) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
+  });
+});
+
+describe('LandingPage mobile program teaser', () => {
+  beforeEach(() => {
+    setViewportWidth(MOBILE_VIEWPORT_WIDTH);
+  });
+
+  afterEach(() => {
+    setViewportWidth(DESKTOP_VIEWPORT_WIDTH);
+  });
+
+  it('shows the shared DAS PROGRAMM section header', async () => {
+    renderAtRoute('/');
+
+    await waitFor(() => expect(getProgramTeaser()).not.toBeNull());
+    expect(
+      within(getProgramTeaser()).getByRole('heading', { level: 2, name: 'DAS PROGRAMM' }),
+    ).toBeInTheDocument();
+  });
+
+  it('links Alle Termine → to the program route', async () => {
+    renderAtRoute('/');
+
+    await waitFor(() => expect(getProgramTeaser()).not.toBeNull());
+    expect(
+      within(getProgramTeaser()).getByRole('link', { name: 'Alle Termine →' }),
+    ).toHaveAttribute('href', '/program');
+  });
+
+  it('renders all three upcoming event titles as rows', async () => {
+    renderAtRoute('/');
+
+    await waitFor(() => expect(getProgramList()).not.toBeNull());
+    const list = within(getProgramList());
+    expect(list.getByText('Große Prunksitzung')).toBeInTheDocument();
+    expect(list.getByText('Kinderfasching')).toBeInTheDocument();
+    expect(list.getByText('Rosenmontagsumzug')).toBeInTheDocument();
+  });
+
+  it('shows the rows variant with tint dots and no photos, not the desktop grid', async () => {
+    renderAtRoute('/');
+
+    await waitFor(() => expect(getProgramList()).not.toBeNull());
+    const list = getProgramList();
+    expect(list.querySelectorAll('[data-kk-event-dot]')).toHaveLength(3);
+    expect(within(list).queryByText('event-foto')).toBeNull();
+    expect(within(getProgramGrid()).getAllByText('event-foto')).toHaveLength(3);
   });
 });

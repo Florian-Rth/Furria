@@ -1,3 +1,5 @@
+import type { Palette } from '@mui/material/styles';
+
 export interface ProgramEvent {
   startsAt: string;
   title: string;
@@ -30,6 +32,16 @@ export interface EventDisplay {
   month: string;
   time: string;
 }
+
+export const resolveEventTint = (palette: Palette, index: number): string => {
+  if (index === 0) {
+    return palette.primary.main;
+  }
+  if (index === 1) {
+    return palette.warning.main;
+  }
+  return palette.text.primary;
+};
 
 export const deriveEventDisplay = (startsAt: string): EventDisplay => {
   const [datePart = '', timePart = ''] = startsAt.split('T');
