@@ -33,6 +33,14 @@ served by the single backend (`server/`); this plan covers **only** the public w
 
 ## Overview
 
+> **Scope banner — Website v1 ships fully static; no backend integration.** All live data
+> (events, tickets, scarcity, member/group counts, news) originates in the **Club-App**, which
+> is **not built yet**. Until it exists, the website is a fully static marketing site: every
+> "block" is fed by hand-curated, editable content constants behind clean typed interfaces, so
+> real data can be dropped in later as a **data-source change, not a rewrite**. All live-data
+> capabilities live in **[Deferred — needs Club-App backend](#deferred--needs-club-app-backend)**
+> below, not in the numbered roadmap.
+
 A responsive, German-language marketing + ticketing site in the "Konfetti Kinetik" brand.
 Guiding constraints (all binding):
 
@@ -42,7 +50,8 @@ Guiding constraints (all binding):
   colors, fonts, radii, shadows. Light + dark.
 - **Routes/IDs/props = English. Visible text = German.**
 - **Narrenruf is "Gross - Furria!"** — never Helau/Alaaf.
-- One backend API serves all apps; the website consumes **public read endpoints** only.
+- One backend API serves all apps — but **Website v1 consumes no backend; it is fully static**.
+  Public read endpoints are a deferred, post-Club-App capability (see the scope banner).
 
 **References:** [`CONTEXT.md`](../../CONTEXT.md) · [design handoff](../../docs/design/README.md)
 (READ FIRST governs mock usage) · [`docs/adr/`](../../docs/adr/).
@@ -58,10 +67,10 @@ Guiding constraints (all binding):
 | [API-Client](feature-api-client.md) | foundation | building | Data layer to the backend public read endpoints |
 | [SEO & Meta](feature-seo-meta.md) | foundation | building | Meta tags, Open Graph / social-share cards |
 | [Ticker](feature-ticker.md) | foundation | building | Flat red/gold marquee signature chrome |
-| [Landing](feature-landing.md) | capability | building | Home page — composes the blocks below |
+| [Landing](feature-landing.md) | capability | shipped | Home page — composes the blocks below |
 | [Landing-Hero](feature-landing-hero.md) | capability | building | Identity centerpiece: headline, CTAs, stats, hero photo |
-| [Programm-Teaser](feature-program-teaser.md) | capability | idea | Home "DAS PROGRAMM" upcoming-events section |
-| [Mitmachen-Band](feature-mitmachen-band.md) | capability | idea | Home recruit CTA → membership funnel |
+| [Programm-Teaser](feature-program-teaser.md) | capability | shipped | Home "DAS PROGRAMM" upcoming-events section |
+| [Mitmachen-Band](feature-mitmachen-band.md) | capability | shipped | Home recruit CTA → membership funnel |
 | [Verein](feature-about-verein.md) | capability | idea | Verein story, Ämter, Gruppen showcase |
 | [Veranstaltungskalender](feature-event-calendar.md) | capability | idea | Public event list/calendar + detail |
 | [Ticket-Shop](feature-ticket-shop.md) | capability | idea | Browse ticketed events, checkout, payment |
@@ -121,7 +130,7 @@ primitives shipped as planned.
   consumed by both the teaser (no shadow) and the hero (poster shadow).
 - **Glossary:** added **Session** to [`CONTEXT.md`](../../CONTEXT.md).
 - **Deferred (not P1):** real hero photo, real member/group counts (→ placeholders), live stats +
-  data-driven ticker (→ P5), absolute OG image URL (→ launch).
+  data-driven ticker (→ Deferred — needs Club-App backend), absolute OG image URL (→ launch).
 
 ### P1.1 — Mobile hero
 **Status:** planned (added 2026-07-22, branch `feat/website-p1-landing-hero-fe`)
@@ -131,11 +140,11 @@ the current mobile behaviour of just stacking the desktop split hero. Sourced fr
 shipped P1 decisions in a grilling session — see [Landing-Hero](feature-landing-hero.md) Decisions
 and the new slices in the [Landing](feature-landing.md) Implementation plan.
 
-- [ ] [Landing-Hero](feature-landing-hero.md) — new `MobileHero` (full-bleed photo + mode-invariant
+- [x] [Landing-Hero](feature-landing-hero.md) — new `MobileHero` (full-bleed photo + mode-invariant
       scrim + pinned two-tone headline) + `HeroFollow` (reuses `Hero.Intro`/`Hero.Actions`/
       `Hero.StatRow`), mounted alongside the existing `Hero` in `LandingPage`, toggled by
       breakpoint (`xs` vs. `md+`) — same pattern as `MastheadDesktopBar`/`MastheadMobileBar`
-- [ ] `@furria/ui` — `kkTokens.aspectRatio` (`portrait: '4 / 5'`, `landscape: '7 / 5'`) replacing
+- [x] `@furria/ui` — `kkTokens.aspectRatio` (`portrait: '4 / 5'`, `landscape: '7 / 5'`) replacing
       inline ratio strings; `kkTokens.overlay.photoScrim` (mode-invariant legibility gradient,
       sibling to `kkTokens.color` rather than part of it); `KkPhotoPlaceholder` gains a `fill`
       variant for full-bleed (no aspect-ratio, no radius) use
@@ -145,11 +154,43 @@ spec):** the mock's status bar + transparent overlay nav baked into the hero —
 `Masthead` stays untouched, in normal opaque flow, on every route including mobile `/`.
 
 ### P2 — Landing complete
-**Status:** planned
-The full landing page reads end-to-end (still static/placeholder data).
+**Status:** done (2026-07-23, branch `feat/website-p2-landing-complete-fe`, 3 commits `7a0e9f1`…`9abaaed`)
+The full landing page reads end-to-end — **static-final** (this build has no backend). Added the two
+remaining blocks below the shipped Hero → Ticker; final block order Hero → Ticker → Programm-Teaser
+→ Mitmachen-Band → Footer, no restructuring of P1. Both blocks live under
+`features/landing/components/` and are composed by `LandingPage` inside a gutter-constrained
+`Container` (below the full-bleed ticker). Followed the plan closely; build-level choices worth
+knowing: `kkTokens.aspectRatio.banner` shipped as **`'2 / 1'`**; the position tint mapping is a
+shared `resolveEventTint(palette, index)` helper in `program-content.ts` (red = `primary.main`,
+gold = `warning.main`, ink = `text.primary`) consumed by both the desktop grid and the mobile list,
+with the event `.map` done in the `ProgramTeaser` assembly so the layout slots (`ProgramGrid`,
+`ProgramList`) stay pure children-only slots; the Mitmachen watermark sits at 0.1 opacity (vs the
+hero's 0.05) as it is white-on-red, not ink-on-cream. Final copy shipped exactly as planned.
 
-- [ ] [Programm-Teaser](feature-program-teaser.md) — 3 upcoming cards, placeholder data
-- [ ] [Mitmachen-Band](feature-mitmachen-band.md) — recruit CTA band
+- [x] [Programm-Teaser](feature-program-teaser.md) — "DAS PROGRAMM": section header + "Alle Termine
+      →" (→ `/program`) + 3 event cards. **Desktop** photo-topped `ProgramCard` (3-col grid),
+      **mobile** compact photo-less `EventRow` (two presentational components). **Data-driven via a
+      typed `{ startsAt, title, venue }` interface + editable placeholder constant** (card derives
+      day / month / time; tint assigned by position) — swapping to real data is a data-source change
+      only. New token `kkTokens.aspectRatio.banner` for the card photo.
+- [x] [Mitmachen-Band](feature-mitmachen-band.md) — one **responsive** recruit band (desktop row /
+      clean mobile stack — the mock's mobile is broken and is *not* the target), reworked final copy,
+      `KkBroomMark` watermark, CTA "Mitglied werden →" → `/join`.
+
+**Cross-cutting (decided in P2 grilling, 2026-07-23):**
+
+- **Website v1 is fully static — no backend.** All live-data slices (real events, scarcity, live
+  hero stats, real endpoints, ticketing) moved to **[Deferred — needs Club-App
+  backend](#deferred--needs-club-app-backend)**. See the scope banner.
+- **Blocks are data-driven behind clean typed interfaces** fed by editable content constants, so
+  the later real-data swap is a data-source change, not a rewrite.
+- **`@furria/ui` gains `kkTokens.aspectRatio.banner`** (token-pure) for the event-card photo.
+- **Glossary:** added **Programm** (public event-lineup sense vs. Club-App running-order sense) to
+  [`CONTEXT.md`](../../CONTEXT.md).
+- **Domain fact:** the club's real Gruppen are Tanzgarde, Männerballett, Elferrat, **Büttenrede** —
+  **not** Spielmannszug (a mock error), recorded in [Mitmachen-Band](feature-mitmachen-band.md).
+- **Deferred (not P2):** event-selection logic, scarcity badge, empty state (all need live data);
+  the full Veranstaltungskalender at `/program` (stays a placeholder this build).
 
 ### P3 — Verein
 **Status:** planned
@@ -165,29 +206,32 @@ mechanism** (deferred from P0) + **bot OG-meta injection** for the first dynamic
 - [ ] [Aktuelles](feature-news.md) — list + detail
 - [ ] [SEO & Meta](feature-seo-meta.md) — prerender mechanism spike + news-detail OG injection
 
-### P5 — Events (real data)
+### P5 — Gallery
 **Status:** planned
-Public calendar live; the home page shows real upcoming events + live ticket scarcity.
+Static-implementable: public event photos shipped as **curated static assets** (no backend).
 
-- [ ] [API-Client](feature-api-client.md) — real public event endpoints; **OpenAPI codegen
-      decision** (types vs. types+Zod, likely an ADR)
-- [ ] [Veranstaltungskalender](feature-event-calendar.md) — list/calendar + detail
-- [ ] [Programm-Teaser](feature-program-teaser.md) — wire to live API + scarcity badge
-- [ ] [Landing-Hero](feature-landing-hero.md) — wire stats to live API
+- [ ] [Bildergalerie](feature-gallery.md) — public event photos (static assets)
 
-### P6 — Ticketing
+### P6 — Membership funnel
 **Status:** planned
-Buy a ticket online. *Depends on backend ticketing domain (not yet schema'd — see design §7).*
+Static-implementable: the info page is static; the application **form submits via email / a static
+form service** (no backend). Any backend-backed provisional-Person creation is deferred.
 
-- [ ] [Ticket-Shop](feature-ticket-shop.md) — browse, checkout, Stripe/PayPal, confirmation
+- [ ] [Mitglied werden](feature-membership-funnel.md) — info + application (email/static submission)
+- [ ] [Mitmachen-Band](feature-mitmachen-band.md) — point CTA at the funnel (already → `/join`)
 
-### P7 — Gallery
-**Status:** planned
+---
 
-- [ ] [Bildergalerie](feature-gallery.md) — public event photos
+## Deferred — needs Club-App backend
 
-### P8 — Membership funnel
-**Status:** planned
+Everything below requires the internal **Club-App** (the system of record for events, tickets,
+members) to exist. **Not scheduled** in this website build; kept here for intent. When the backend
+lands, these become real phases.
 
-- [ ] [Mitglied werden](feature-membership-funnel.md) — info + application
-- [ ] [Mitmachen-Band](feature-mitmachen-band.md) — wire CTA to the funnel
+- **Events (real data)** — real public event endpoints (+ an **OpenAPI codegen decision**: types
+  vs. types+Zod, likely an ADR); the full [Veranstaltungskalender](feature-event-calendar.md)
+  (list/calendar + detail) at `/program`; wire the [Programm-Teaser](feature-program-teaser.md) to
+  live data + add the **scarcity badge**, event-selection logic, and empty state; wire the
+  [Landing-Hero](feature-landing-hero.md) **stats** and the data-driven ticker to live data.
+- **Ticketing** — [Ticket-Shop](feature-ticket-shop.md): browse, checkout, Stripe/PayPal,
+  confirmation. Depends on the backend ticketing domain (not yet schema'd — see design §7).

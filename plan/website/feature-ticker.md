@@ -35,8 +35,8 @@ its own foundation because it is chrome that can appear on more than the landing
 
 ## Open Questions
 
-- **Data-driven content** (next event / live ticket scarcity) — deferred to P5, when the event
-  and scarcity feeds exist; the `content` prop is the seam.
+- **Data-driven content** (next event / live ticket scarcity) — deferred (needs the Club-App
+  backend), when the event and scarcity feeds exist; the `content` prop is the seam.
 - Additional placements beyond the landing — none planned; add a consumer when a page needs it.
 
 ## Done When

@@ -17,7 +17,8 @@ and error/loading states consistent across features.
 ## Scope / Slices
 
 - P0 scaffold: base fetch helper + env config + query-client defaults + the boundary-validation rule.
-- Public **read** endpoints: events, news, gallery, scarcity — added as their features land (P5+).
+- Public **read** endpoints: events, news, gallery, scarcity — **deferred (need the Club-App
+  backend)**; added when those live-data features land.
 - **Write** paths: ticket checkout, membership application.
 - Shared loading / error / empty conventions.
 
@@ -44,15 +45,16 @@ and error/loading states consistent across features.
   schema parameter**, so boundary parsing is enforced by construction; HTTP failures surface as
   `ApiError` (with status), unreachable-API as `RequestBlockedError`.
 - **No domain data in P0:** event/news/etc. shapes are undefined and will change — build **no**
-  event-specific types, schemas, or mock endpoints yet. Pre-P5 sections use **static placeholder
-  content**, not a fake API.
+  event-specific types, schemas, or mock endpoints yet. Static (pre-backend) sections use
+  **static placeholder content**, not a fake API.
 
 **Deferred:**
 
-- **OpenAPI codegen decision → P5** (first real public endpoint): generate types — or types+Zod via
+- **OpenAPI codegen decision → deferred** (first real public endpoint; needs the Club-App backend):
+  generate types — or types+Zod via
   `@hey-api/openapi-ts` / `orval` — vs. hand-written Zod. Cross-cutting and likely an **ADR** then;
   premature to choose with zero real endpoints.
-- Caching / revalidation for live scarcity (needs to feel live) — P5/P6.
+- Caching / revalidation for live scarcity (needs to feel live) — deferred (needs the Club-App backend).
 
 ## Done When
 

@@ -45,7 +45,7 @@ shareable material" ambition on the public side.
 - **Prerender mechanism → around content-completion / launch** (P4): nothing to prerender while the
   site is gated. The `head` API is prerender-ready; the concrete SSG choice is its own spike.
 - **Bot OG-meta injection mechanism** (edge middleware vs. a `<meta>`-serving endpoint on the API) →
-  when the first dynamic detail page ships (news P4 / event P5).
+  when the first dynamic detail page ships (news P4 / event detail — deferred, needs the Club-App backend).
 - Per-event OG images generated (matching the planner's Werbung feature) vs. static.
 - **Absolute share-image URL** — P0 ships `og:image` as root-relative `/og-default.png`
   (placeholder art); scrapers need an absolute URL, but none exists until a production domain
