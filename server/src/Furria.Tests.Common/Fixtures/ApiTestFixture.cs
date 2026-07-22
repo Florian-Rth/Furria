@@ -50,9 +50,18 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
 
         await using var scope = Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        await db.Database.MigrateAsync();
 
         _resetService = await DatabaseResetService.CreateAsync([db], [], CancellationToken.None);
+    }
+
+    public async Task<IReadOnlyList<string>> GetAppliedMigrationsAsync(
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var applied = await db.Database.GetAppliedMigrationsAsync(ct);
+        return applied.ToList();
     }
 
     public async Task ResetDatabaseAsync(CancellationToken ct = default)
