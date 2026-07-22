@@ -18,17 +18,13 @@ export const ProgramTeaser: FC = () => {
       <ProgramGrid>
         {PROGRAM_EVENTS.map((event, index) => (
           <Grid key={event.startsAt} size={{ xs: 12, md: 4 }}>
-            <ProgramCard event={event} tint={resolveEventTint(theme.palette, index)} />
+            <ProgramCard event={event} tint={resolveEventTint(theme, index)} />
           </Grid>
         ))}
       </ProgramGrid>
       <ProgramList>
         {PROGRAM_EVENTS.map((event, index) => (
-          <EventRow
-            key={event.startsAt}
-            event={event}
-            tint={resolveEventTint(theme.palette, index)}
-          />
+          <EventRow key={event.startsAt} event={event} tint={resolveEventTint(theme, index)} />
         ))}
       </ProgramList>
     </Stack>

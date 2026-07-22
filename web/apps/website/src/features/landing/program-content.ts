@@ -1,4 +1,4 @@
-import type { Palette } from '@mui/material/styles';
+import type { Theme } from '@mui/material/styles';
 
 export interface ProgramEvent {
   startsAt: string;
@@ -33,7 +33,8 @@ export interface EventDisplay {
   time: string;
 }
 
-export const resolveEventTint = (palette: Palette, index: number): string => {
+export const resolveEventTint = (theme: Theme, index: number): string => {
+  const palette = (theme.vars ?? theme).palette;
   if (index === 0) {
     return palette.primary.main;
   }
