@@ -11,6 +11,9 @@ const getDesktopHero = (): HTMLElement =>
 const getMobileHero = (): HTMLElement =>
   document.querySelector('[data-kk-landing-mobile-hero]') as HTMLElement;
 
+const getProgramTeaser = (): HTMLElement =>
+  document.querySelector('[data-kk-program-teaser]') as HTMLElement;
+
 beforeEach(() => {
   writeGrantedToSession(window.sessionStorage);
 });
@@ -122,6 +125,63 @@ describe('LandingPage hero', () => {
     ).toBeTruthy();
     expect(screen.getAllByText(`SESSION ${currentSession.yearsLabel}`).length).toBeGreaterThan(0);
     expect(screen.getAllByText('GROSSBESENSTADT').length).toBeGreaterThan(0);
+  });
+});
+
+describe('LandingPage program teaser', () => {
+  beforeEach(() => {
+    setViewportWidth(DESKTOP_VIEWPORT_WIDTH);
+  });
+
+  afterEach(() => {
+    setViewportWidth(DESKTOP_VIEWPORT_WIDTH);
+  });
+
+  it('shows the DAS PROGRAMM section header', async () => {
+    renderAtRoute('/');
+
+    await waitFor(() => expect(getProgramTeaser()).not.toBeNull());
+    expect(
+      within(getProgramTeaser()).getByRole('heading', { level: 2, name: 'DAS PROGRAMM' }),
+    ).toBeInTheDocument();
+  });
+
+  it('links Alle Termine → to the program route', async () => {
+    renderAtRoute('/');
+
+    await waitFor(() => expect(getProgramTeaser()).not.toBeNull());
+    expect(
+      within(getProgramTeaser()).getByRole('link', { name: 'Alle Termine →' }),
+    ).toHaveAttribute('href', '/program');
+  });
+
+  it('renders all three upcoming event titles', async () => {
+    renderAtRoute('/');
+
+    await waitFor(() => expect(getProgramTeaser()).not.toBeNull());
+    const teaser = within(getProgramTeaser());
+    expect(teaser.getByText('Große Prunksitzung')).toBeInTheDocument();
+    expect(teaser.getByText('Kinderfasching')).toBeInTheDocument();
+    expect(teaser.getByText('Rosenmontagsumzug')).toBeInTheDocument();
+  });
+
+  it('renders a photo placeholder for each upcoming event', async () => {
+    renderAtRoute('/');
+
+    await waitFor(() => expect(getProgramTeaser()).not.toBeNull());
+    expect(within(getProgramTeaser()).getAllByText('event-foto')).toHaveLength(3);
+  });
+
+  it('places the teaser after the brand ticker in document order', async () => {
+    renderAtRoute('/');
+
+    await waitFor(() => expect(getProgramTeaser()).not.toBeNull());
+    const ticker = document.querySelector('[data-kk-ticker]');
+    expect(ticker).not.toBeNull();
+    expect(
+      (ticker as Node).compareDocumentPosition(getProgramTeaser()) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
   });
 });
 

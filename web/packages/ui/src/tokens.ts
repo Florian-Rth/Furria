@@ -58,6 +58,7 @@ export const kkTokens = {
   aspectRatio: {
     portrait: '4 / 5',
     landscape: '7 / 5',
+    banner: '2 / 1',
   },
   overlay: {
     onPhotoText: '#FFFFFF',

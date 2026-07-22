@@ -6,6 +6,7 @@ import { Hero } from './Hero/Hero';
 import { HeroFollow } from './HeroFollow';
 import { LandingTicker } from './LandingTicker';
 import { MobileHero } from './MobileHero/MobileHero';
+import { ProgramTeaser } from './ProgramTeaser/ProgramTeaser';
 
 export const LandingPage: FC = () => (
   <Stack component="main" sx={{ flex: 1 }}>
@@ -50,5 +51,8 @@ export const LandingPage: FC = () => (
       </HeroFollow>
     </Stack>
     <LandingTicker />
+    <Container maxWidth="xl" sx={{ px: kkTokens.layout.gutterX, py: kkTokens.layout.gutterY }}>
+      <ProgramTeaser />
+    </Container>
   </Stack>
 );
