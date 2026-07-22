@@ -65,8 +65,8 @@ export const kkTokens = {
     textShadow: '0 4px 34px rgba(0,0,0,0.5)',
   },
   glass: {
-    tintOpacity: 0.72,
-    blur: '16px',
+    tintOpacity: 0.7,
+    blur: '6px',
   },
   photo: {
     placeholderSurface: '#CFCBC4',

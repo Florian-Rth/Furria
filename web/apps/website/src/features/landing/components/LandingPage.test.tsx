@@ -115,15 +115,17 @@ describe('LandingPage hero', () => {
     expect(watermark).toHaveStyle({ pointerEvents: 'none' });
   });
 
-  it('contains the confetti scatter to the photo column, never over the reading column', async () => {
+  it('lays a full-bleed confetti backdrop behind the hero as a non-interactive decoration', async () => {
     renderAtRoute('/');
 
     await screen.findByRole('heading', { level: 1, name: 'GROSS FURRIA!' });
-    const textColumn = document.querySelector('[data-kk-hero-text]');
-    const photoColumn = document.querySelector('[data-kk-hero-photo]');
+    const backdrop = document.querySelector('[data-kk-hero-backdrop]');
+    expect(backdrop).not.toBeNull();
+    expect(backdrop).toHaveAttribute('aria-hidden');
+    expect(backdrop).toHaveStyle({ pointerEvents: 'none' });
 
-    expect(textColumn?.querySelector('[data-kk-confetti-scatter]')).toBeNull();
-    expect(photoColumn?.querySelector('[data-kk-confetti-scatter]')).not.toBeNull();
+    const textColumn = document.querySelector('[data-kk-hero-text]');
+    expect(textColumn?.querySelector('[data-kk-hero-backdrop]')).toBeNull();
   });
 
   it('runs the brand ticker under the hero with the session label from the club globals', async () => {

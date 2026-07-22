@@ -13,8 +13,8 @@ describe('buildConfettiPieces', () => {
     for (const piece of pieces) {
       expect(piece.leftPercent).toBeGreaterThanOrEqual(0);
       expect(piece.leftPercent).toBeLessThan(100);
-      expect(piece.durationSeconds).toBeGreaterThanOrEqual(8);
-      expect(piece.durationSeconds).toBeLessThanOrEqual(16);
+      expect(piece.durationSeconds).toBeGreaterThanOrEqual(6);
+      expect(piece.durationSeconds).toBeLessThanOrEqual(12);
       expect(piece.delaySeconds).toBeLessThanOrEqual(0);
     }
   });

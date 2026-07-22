@@ -1,9 +1,11 @@
 import { kkTokens } from '@furria/ui';
+import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { Hero } from './Hero/Hero';
 import { HeroFollow } from './HeroFollow';
+import { LandingHeroBackdrop } from './LandingHeroBackdrop';
 import { LandingTicker } from './LandingTicker';
 import { MitmachenBand } from './MitmachenBand/MitmachenBand';
 import { MobileHero } from './MobileHero/MobileHero';
@@ -11,46 +13,56 @@ import { ProgramTeaser } from './ProgramTeaser/ProgramTeaser';
 
 export const LandingPage: FC = () => (
   <Stack component="main" sx={{ flex: 1 }}>
-    <Container
-      data-kk-landing-desktop-hero
-      maxWidth="xl"
+    <Box
       sx={{
-        display: { xs: 'none', md: 'flex' },
+        position: 'relative',
+        isolation: 'isolate',
         flex: 1,
+        display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'center',
-        px: kkTokens.layout.gutterX,
-        py: kkTokens.layout.gutterY,
       }}
     >
-      <Hero>
-        <Hero.TextColumn>
-          <Hero.Eyebrow />
-          <Hero.Headline />
+      <LandingHeroBackdrop />
+      <Container
+        data-kk-landing-desktop-hero
+        maxWidth="xl"
+        sx={{
+          display: { xs: 'none', md: 'flex' },
+          flex: 1,
+          flexDirection: 'column',
+          justifyContent: 'center',
+          px: kkTokens.layout.gutterX,
+          py: kkTokens.layout.gutterY,
+        }}
+      >
+        <Hero>
+          <Hero.TextColumn>
+            <Hero.Eyebrow />
+            <Hero.Headline />
+            <Hero.Intro />
+            <Hero.Actions />
+            <Hero.StatRow />
+          </Hero.TextColumn>
+          <Hero.PhotoColumn>
+            <Hero.Photo />
+          </Hero.PhotoColumn>
+        </Hero>
+      </Container>
+      <Stack data-kk-landing-mobile-hero sx={{ display: { xs: 'flex', md: 'none' } }}>
+        <MobileHero>
+          <MobileHero.Photo />
+          <MobileHero.Content>
+            <MobileHero.Eyebrow />
+            <MobileHero.Headline />
+          </MobileHero.Content>
+        </MobileHero>
+        <HeroFollow>
           <Hero.Intro />
           <Hero.Actions />
           <Hero.StatRow />
-        </Hero.TextColumn>
-        <Hero.PhotoColumn>
-          <Hero.Confetti />
-          <Hero.Photo />
-        </Hero.PhotoColumn>
-      </Hero>
-    </Container>
-    <Stack data-kk-landing-mobile-hero sx={{ display: { xs: 'flex', md: 'none' } }}>
-      <MobileHero>
-        <MobileHero.Photo />
-        <MobileHero.Content>
-          <MobileHero.Eyebrow />
-          <MobileHero.Headline />
-        </MobileHero.Content>
-      </MobileHero>
-      <HeroFollow>
-        <Hero.Intro />
-        <Hero.Actions />
-        <Hero.StatRow />
-      </HeroFollow>
-    </Stack>
+        </HeroFollow>
+      </Stack>
+    </Box>
     <LandingTicker />
     <Container maxWidth="xl" sx={{ px: kkTokens.layout.gutterX, py: kkTokens.layout.gutterY }}>
       <Stack sx={{ gap: { xs: 6, md: 8 } }}>

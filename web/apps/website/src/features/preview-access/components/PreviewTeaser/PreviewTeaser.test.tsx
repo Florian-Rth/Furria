@@ -48,7 +48,7 @@ describe('PreviewTeaser', () => {
   it('pauses the confetti rain when requested', () => {
     const container = renderPreviewTeaser({ confettiPaused: true });
 
-    const piece = container.querySelector('[aria-hidden="true"] > span');
+    const piece = container.querySelector('[aria-hidden="true"] > div');
     expect(piece).toHaveStyle({ animationPlayState: 'paused' });
   });
 });
