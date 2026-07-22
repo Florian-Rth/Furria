@@ -5,6 +5,7 @@ import type { FC } from 'react';
 import { Hero } from './Hero/Hero';
 import { HeroFollow } from './HeroFollow';
 import { LandingTicker } from './LandingTicker';
+import { MitmachenBand } from './MitmachenBand/MitmachenBand';
 import { MobileHero } from './MobileHero/MobileHero';
 import { ProgramTeaser } from './ProgramTeaser/ProgramTeaser';
 
@@ -52,7 +53,10 @@ export const LandingPage: FC = () => (
     </Stack>
     <LandingTicker />
     <Container maxWidth="xl" sx={{ px: kkTokens.layout.gutterX, py: kkTokens.layout.gutterY }}>
-      <ProgramTeaser />
+      <Stack sx={{ gap: { xs: 6, md: 8 } }}>
+        <ProgramTeaser />
+        <MitmachenBand />
+      </Stack>
     </Container>
   </Stack>
 );

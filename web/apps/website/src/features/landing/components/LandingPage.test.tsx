@@ -20,6 +20,12 @@ const getProgramGrid = (): HTMLElement =>
 const getProgramList = (): HTMLElement =>
   document.querySelector('[data-kk-program-list]') as HTMLElement;
 
+const getMitmachenBand = (): HTMLElement =>
+  document.querySelector('[data-kk-mitmachen-band]') as HTMLElement;
+
+const isFollowedBy = (earlier: Element, later: Element): boolean =>
+  Boolean(earlier.compareDocumentPosition(later) & Node.DOCUMENT_POSITION_FOLLOWING);
+
 beforeEach(() => {
   writeGrantedToSession(window.sessionStorage);
 });
@@ -189,6 +195,15 @@ describe('LandingPage program teaser', () => {
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
   });
+
+  it('mounts the recruit band after the ticker, below the program teaser', async () => {
+    renderAtRoute('/');
+
+    await waitFor(() => expect(getMitmachenBand()).not.toBeNull());
+    const ticker = document.querySelector('[data-kk-ticker]') as HTMLElement;
+    expect(isFollowedBy(ticker, getMitmachenBand())).toBe(true);
+    expect(isFollowedBy(getProgramTeaser(), getMitmachenBand())).toBe(true);
+  });
 });
 
 describe('LandingPage mobile hero', () => {
@@ -306,5 +321,12 @@ describe('LandingPage mobile program teaser', () => {
     expect(list.querySelectorAll('[data-kk-event-dot]')).toHaveLength(3);
     expect(within(list).queryByText('event-foto')).toBeNull();
     expect(within(getProgramGrid()).getAllByText('event-foto')).toHaveLength(3);
+  });
+
+  it('mounts the recruit band below the program teaser', async () => {
+    renderAtRoute('/');
+
+    await waitFor(() => expect(getMitmachenBand()).not.toBeNull());
+    expect(isFollowedBy(getProgramTeaser(), getMitmachenBand())).toBe(true);
   });
 });
