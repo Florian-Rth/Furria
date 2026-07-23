@@ -17,7 +17,6 @@ export const ClubPage: FC = () => (
       <Stack sx={{ gap: { xs: 8, md: 12 } }}>
         <ClubHero>
           <ClubHero.TextColumn>
-            <ClubHero.Eyebrow />
             <ClubHero.Headline />
             <ClubHero.Intro />
             <ClubHero.Actions />

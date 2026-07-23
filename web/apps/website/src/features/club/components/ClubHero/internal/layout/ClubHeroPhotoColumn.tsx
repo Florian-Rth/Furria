@@ -9,7 +9,7 @@ export const ClubHeroPhotoColumn: FC<PropsWithChildren> = ({ children }) => (
       display: { xs: 'none', md: 'block' },
       position: 'relative',
       zIndex: 1,
-      pt: { md: 4 },
+      pt: { md: 14 },
     }}
   >
     {children}

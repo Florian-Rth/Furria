@@ -11,8 +11,8 @@ export const clubHeroRibbon = buildClubHeroRibbon(FOUNDING_YEAR);
 export const clubHeroNumeral: number = currentSession.number;
 
 export const clubHeroHeadline = {
-  line1: 'DIE FÜNFTE JAHRESZEIT',
-  line2: 'HAT EIN ZUHAUSE.',
+  line1: 'WIR NEHMEN SPASS',
+  line2: 'SEHR ERNST.',
 } as const;
 
 export const clubHeroIntro =

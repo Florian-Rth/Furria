@@ -6,11 +6,7 @@ import { ClubHeroNumeral } from '../ui/ClubHeroNumeral';
 import { ClubHeroRibbon } from '../ui/ClubHeroRibbon';
 
 export const ClubHeroRoot: FC<PropsWithChildren> = ({ children }) => (
-  <Box
-    component="section"
-    data-kk-club-hero
-    sx={{ position: 'relative', overflow: 'hidden', isolation: 'isolate' }}
-  >
+  <Box component="section" data-kk-club-hero sx={{ position: 'relative' }}>
     <ClubHeroNumeral />
     <ClubHeroConfetti />
     <ClubHeroRibbon />

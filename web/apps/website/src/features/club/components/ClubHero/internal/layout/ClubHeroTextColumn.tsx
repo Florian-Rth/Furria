@@ -10,7 +10,7 @@ export const ClubHeroTextColumn: FC<PropsWithChildren> = ({ children }) => (
       flexDirection: 'column',
       alignItems: 'flex-start',
       gap: 3,
-      pt: { md: 6 },
+      pt: { md: 10 },
     }}
   >
     {children}
