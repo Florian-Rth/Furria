@@ -2,7 +2,6 @@ import { HeroPhotoColumn } from './internal/layout/HeroPhotoColumn';
 import { HeroRoot } from './internal/layout/HeroRoot';
 import { HeroTextColumn } from './internal/layout/HeroTextColumn';
 import { HeroActions } from './internal/ui/HeroActions';
-import { HeroConfetti } from './internal/ui/HeroConfetti';
 import { HeroEyebrow } from './internal/ui/HeroEyebrow';
 import { HeroHeadline } from './internal/ui/HeroHeadline';
 import { HeroIntro } from './internal/ui/HeroIntro';
@@ -18,5 +17,4 @@ export const Hero = Object.assign(HeroRoot, {
   Actions: HeroActions,
   StatRow: HeroStatRow,
   Photo: HeroPhoto,
-  Confetti: HeroConfetti,
 });

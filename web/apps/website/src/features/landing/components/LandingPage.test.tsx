@@ -11,6 +11,21 @@ const getDesktopHero = (): HTMLElement =>
 const getMobileHero = (): HTMLElement =>
   document.querySelector('[data-kk-landing-mobile-hero]') as HTMLElement;
 
+const getProgramTeaser = (): HTMLElement =>
+  document.querySelector('[data-kk-program-teaser]') as HTMLElement;
+
+const getProgramGrid = (): HTMLElement =>
+  document.querySelector('[data-kk-program-grid]') as HTMLElement;
+
+const getProgramList = (): HTMLElement =>
+  document.querySelector('[data-kk-program-list]') as HTMLElement;
+
+const getMitmachenBand = (): HTMLElement =>
+  document.querySelector('[data-kk-mitmachen-band]') as HTMLElement;
+
+const isFollowedBy = (earlier: Element, later: Element): boolean =>
+  Boolean(earlier.compareDocumentPosition(later) & Node.DOCUMENT_POSITION_FOLLOWING);
+
 beforeEach(() => {
   writeGrantedToSession(window.sessionStorage);
 });
@@ -100,15 +115,17 @@ describe('LandingPage hero', () => {
     expect(watermark).toHaveStyle({ pointerEvents: 'none' });
   });
 
-  it('contains the confetti scatter to the photo column, never over the reading column', async () => {
+  it('lays a full-bleed confetti backdrop behind the hero as a non-interactive decoration', async () => {
     renderAtRoute('/');
 
     await screen.findByRole('heading', { level: 1, name: 'GROSS FURRIA!' });
-    const textColumn = document.querySelector('[data-kk-hero-text]');
-    const photoColumn = document.querySelector('[data-kk-hero-photo]');
+    const backdrop = document.querySelector('[data-kk-hero-backdrop]');
+    expect(backdrop).not.toBeNull();
+    expect(backdrop).toHaveAttribute('aria-hidden');
+    expect(backdrop).toHaveStyle({ pointerEvents: 'none' });
 
-    expect(textColumn?.querySelector('[data-kk-confetti-scatter]')).toBeNull();
-    expect(photoColumn?.querySelector('[data-kk-confetti-scatter]')).not.toBeNull();
+    const textColumn = document.querySelector('[data-kk-hero-text]');
+    expect(textColumn?.querySelector('[data-kk-hero-backdrop]')).toBeNull();
   });
 
   it('runs the brand ticker under the hero with the session label from the club globals', async () => {
@@ -122,6 +139,72 @@ describe('LandingPage hero', () => {
     ).toBeTruthy();
     expect(screen.getAllByText(`SESSION ${currentSession.yearsLabel}`).length).toBeGreaterThan(0);
     expect(screen.getAllByText('GROSSBESENSTADT').length).toBeGreaterThan(0);
+  });
+});
+
+describe('LandingPage program teaser', () => {
+  beforeEach(() => {
+    setViewportWidth(DESKTOP_VIEWPORT_WIDTH);
+  });
+
+  afterEach(() => {
+    setViewportWidth(DESKTOP_VIEWPORT_WIDTH);
+  });
+
+  it('shows the DAS PROGRAMM section header', async () => {
+    renderAtRoute('/');
+
+    await waitFor(() => expect(getProgramTeaser()).not.toBeNull());
+    expect(
+      within(getProgramTeaser()).getByRole('heading', { level: 2, name: 'DAS PROGRAMM' }),
+    ).toBeInTheDocument();
+  });
+
+  it('links Alle Termine → to the program route', async () => {
+    renderAtRoute('/');
+
+    await waitFor(() => expect(getProgramTeaser()).not.toBeNull());
+    expect(
+      within(getProgramTeaser()).getByRole('link', { name: 'Alle Termine →' }),
+    ).toHaveAttribute('href', '/program');
+  });
+
+  it('renders all three upcoming event titles in the grid', async () => {
+    renderAtRoute('/');
+
+    await waitFor(() => expect(getProgramGrid()).not.toBeNull());
+    const grid = within(getProgramGrid());
+    expect(grid.getByText('Große Prunksitzung')).toBeInTheDocument();
+    expect(grid.getByText('Kinderfasching')).toBeInTheDocument();
+    expect(grid.getByText('Rosenmontagsumzug')).toBeInTheDocument();
+  });
+
+  it('renders a photo placeholder for each upcoming event', async () => {
+    renderAtRoute('/');
+
+    await waitFor(() => expect(getProgramGrid()).not.toBeNull());
+    expect(within(getProgramGrid()).getAllByText('event-foto')).toHaveLength(3);
+  });
+
+  it('places the teaser after the brand ticker in document order', async () => {
+    renderAtRoute('/');
+
+    await waitFor(() => expect(getProgramTeaser()).not.toBeNull());
+    const ticker = document.querySelector('[data-kk-ticker]');
+    expect(ticker).not.toBeNull();
+    expect(
+      (ticker as Node).compareDocumentPosition(getProgramTeaser()) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it('mounts the recruit band after the ticker, below the program teaser', async () => {
+    renderAtRoute('/');
+
+    await waitFor(() => expect(getMitmachenBand()).not.toBeNull());
+    const ticker = document.querySelector('[data-kk-ticker]') as HTMLElement;
+    expect(isFollowedBy(ticker, getMitmachenBand())).toBe(true);
+    expect(isFollowedBy(getProgramTeaser(), getMitmachenBand())).toBe(true);
   });
 });
 
@@ -192,5 +275,60 @@ describe('LandingPage mobile hero', () => {
     expect(
       heading.compareDocumentPosition(ticker as Node) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
+  });
+});
+
+describe('LandingPage mobile program teaser', () => {
+  beforeEach(() => {
+    setViewportWidth(MOBILE_VIEWPORT_WIDTH);
+  });
+
+  afterEach(() => {
+    setViewportWidth(DESKTOP_VIEWPORT_WIDTH);
+  });
+
+  it('shows the shared DAS PROGRAMM section header', async () => {
+    renderAtRoute('/');
+
+    await waitFor(() => expect(getProgramTeaser()).not.toBeNull());
+    expect(
+      within(getProgramTeaser()).getByRole('heading', { level: 2, name: 'DAS PROGRAMM' }),
+    ).toBeInTheDocument();
+  });
+
+  it('links Alle Termine → to the program route', async () => {
+    renderAtRoute('/');
+
+    await waitFor(() => expect(getProgramTeaser()).not.toBeNull());
+    expect(
+      within(getProgramTeaser()).getByRole('link', { name: 'Alle Termine →' }),
+    ).toHaveAttribute('href', '/program');
+  });
+
+  it('renders all three upcoming event titles as rows', async () => {
+    renderAtRoute('/');
+
+    await waitFor(() => expect(getProgramList()).not.toBeNull());
+    const list = within(getProgramList());
+    expect(list.getByText('Große Prunksitzung')).toBeInTheDocument();
+    expect(list.getByText('Kinderfasching')).toBeInTheDocument();
+    expect(list.getByText('Rosenmontagsumzug')).toBeInTheDocument();
+  });
+
+  it('shows the rows variant with tint dots and no photos, not the desktop grid', async () => {
+    renderAtRoute('/');
+
+    await waitFor(() => expect(getProgramList()).not.toBeNull());
+    const list = getProgramList();
+    expect(list.querySelectorAll('[data-kk-event-dot]')).toHaveLength(3);
+    expect(within(list).queryByText('event-foto')).toBeNull();
+    expect(within(getProgramGrid()).getAllByText('event-foto')).toHaveLength(3);
+  });
+
+  it('mounts the recruit band below the program teaser', async () => {
+    renderAtRoute('/');
+
+    await waitFor(() => expect(getMitmachenBand()).not.toBeNull());
+    expect(isFollowedBy(getProgramTeaser(), getMitmachenBand())).toBe(true);
   });
 });

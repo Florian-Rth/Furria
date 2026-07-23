@@ -4,7 +4,6 @@ import { createFileRoute } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { LegalLinks } from '@/components/LegalLinks';
-import { SiteChrome } from '@/components/SiteChrome';
 import { LandingPage } from '@/features/landing';
 import { PreviewAccessDialog, PreviewTeaser, usePreviewAccess } from '@/features/preview-access';
 import type { RouteHead } from '@/lib/seo';
@@ -18,11 +17,7 @@ const HomeComponent: FC = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   if (granted) {
-    return (
-      <SiteChrome>
-        <LandingPage />
-      </SiteChrome>
-    );
+    return <LandingPage />;
   }
 
   return (
@@ -54,7 +49,7 @@ const HomeComponent: FC = () => {
   );
 };
 
-export const Route = createFileRoute('/')({
+export const Route = createFileRoute('/_site/')({
   head: (): RouteHead => ({
     meta: [
       { title: HOME_TITLE },

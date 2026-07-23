@@ -10,7 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SiteRouteImport } from './routes/_site'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as SiteIndexRouteImport } from './routes/_site/index'
 import { Route as SitePrivacyRouteImport } from './routes/_site/privacy'
 import { Route as SiteImprintRouteImport } from './routes/_site/imprint'
 import { Route as SiteGatedRouteImport } from './routes/_site/_gated'
@@ -25,10 +25,10 @@ const SiteRoute = SiteRouteImport.update({
   id: '/_site',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
+const SiteIndexRoute = SiteIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => SiteRoute,
 } as any)
 const SitePrivacyRoute = SitePrivacyRouteImport.update({
   id: '/privacy',
@@ -76,7 +76,7 @@ const SiteGatedClubRoute = SiteGatedClubRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof SiteIndexRoute
   '/imprint': typeof SiteImprintRoute
   '/privacy': typeof SitePrivacyRoute
   '/club': typeof SiteGatedClubRoute
@@ -87,7 +87,7 @@ export interface FileRoutesByFullPath {
   '/tickets': typeof SiteGatedTicketsRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/': typeof SiteIndexRoute
   '/imprint': typeof SiteImprintRoute
   '/privacy': typeof SitePrivacyRoute
   '/club': typeof SiteGatedClubRoute
@@ -99,11 +99,11 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
   '/_site': typeof SiteRouteWithChildren
   '/_site/_gated': typeof SiteGatedRouteWithChildren
   '/_site/imprint': typeof SiteImprintRoute
   '/_site/privacy': typeof SitePrivacyRoute
+  '/_site/': typeof SiteIndexRoute
   '/_site/_gated/club': typeof SiteGatedClubRoute
   '/_site/_gated/gallery': typeof SiteGatedGalleryRoute
   '/_site/_gated/join': typeof SiteGatedJoinRoute
@@ -136,11 +136,11 @@ export interface FileRouteTypes {
     | '/tickets'
   id:
     | '__root__'
-    | '/'
     | '/_site'
     | '/_site/_gated'
     | '/_site/imprint'
     | '/_site/privacy'
+    | '/_site/'
     | '/_site/_gated/club'
     | '/_site/_gated/gallery'
     | '/_site/_gated/join'
@@ -150,7 +150,6 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
   SiteRoute: typeof SiteRouteWithChildren
 }
 
@@ -163,12 +162,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SiteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
+    '/_site/': {
+      id: '/_site/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof SiteIndexRouteImport
+      parentRoute: typeof SiteRoute
     }
     '/_site/privacy': {
       id: '/_site/privacy'
@@ -262,18 +261,19 @@ interface SiteRouteChildren {
   SiteGatedRoute: typeof SiteGatedRouteWithChildren
   SiteImprintRoute: typeof SiteImprintRoute
   SitePrivacyRoute: typeof SitePrivacyRoute
+  SiteIndexRoute: typeof SiteIndexRoute
 }
 
 const SiteRouteChildren: SiteRouteChildren = {
   SiteGatedRoute: SiteGatedRouteWithChildren,
   SiteImprintRoute: SiteImprintRoute,
   SitePrivacyRoute: SitePrivacyRoute,
+  SiteIndexRoute: SiteIndexRoute,
 }
 
 const SiteRouteWithChildren = SiteRoute._addFileChildren(SiteRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
   SiteRoute: SiteRouteWithChildren,
 }
 export const routeTree = rootRouteImport

@@ -2,7 +2,7 @@
 title: Landing
 slug: landing
 type: capability
-status: building
+status: shipped
 mock: docs/design/fcc-ds-landing.jsx
 adrs: []
 ---
@@ -36,15 +36,21 @@ Block order (top → bottom), from the "Destillat" mock:
   real landing.
 - **Final block order (locked, mock order, no extras):** Masthead (shell) → [Landing-Hero](feature-landing-hero.md)
   → [Ticker](feature-ticker.md) → [Programm-Teaser](feature-program-teaser.md) → [Mitmachen-Band](feature-mitmachen-band.md)
-  → Footer (shell). **No** news-teaser or gallery-strip block in v1 (news = P4, gallery = P7; a
+  → Footer (shell). **No** news-teaser or gallery-strip block in v1 (news = P4, gallery = P5; a
   landing teaser for either can be reconsidered then). P1 delivers **Hero → Ticker** only, laid out
   so the P2 blocks slot in below the ticker with no restructuring.
-- **`/` routing:** the standalone `/` route branches on preview access —
+- **`/` routing:** the `/` route branches on preview access —
   **ungated** → the coming-soon teaser (preview-access) + unlock dialog (unchanged);
   **granted** → the real `LandingPage` inside `SiteChrome` (masthead + footer), **replacing** the
   P0 "Willkommen" placeholder. At launch the gate flips off and the granted view becomes public.
-  `/` keeps its own gate-branching (it is the only route that shows the teaser when ungated), so it
-  stays a standalone route, not a `_site` child.
+  **Revised (2026-07-23, post-P2 bugfix):** `/` is now the **`_site` index** (`routes/_site/index.tsx`),
+  **not** a standalone route. It originally stood alone and rendered its *own* `SiteChrome`; that mounted
+  a second masthead/footer separate from the `_site` layout's, so navigating `/` ↔ inner pages fully
+  remounted the chrome (visible flash + the nav-link confetti burst never animated, since the landing's
+  masthead unmounted on click). Moving `/` under `_site` makes one `SiteChrome` instance persist across
+  the landing and every inner page. The teaser stays chrome-less: the `_site` layout renders a bare
+  `Outlet` only for the ungated home (`!granted && pathname === '/'`) and `SiteChrome` otherwise (so
+  ungated `/imprint` + `/privacy` keep their chrome). See [Preview-Gate](feature-preview-gate.md).
 - **Page-level meta:** `/` sets its own document head via the TanStack Router `head` API — a
   **branded German title** (brand + tagline, *not* the `%s · FURRIA` name-suffix template),
   a landing meta description, and OG title/description. The OG **image** stays the P0
@@ -67,8 +73,9 @@ Small, ordered, independently testable vertical slices; each leaves the app buil
 Block-specific requirements live in [Landing-Hero](feature-landing-hero.md) and [Ticker](feature-ticker.md).
 
 - **Frontend requirements:** everything below (`web/apps/website` + `@furria/ui`).
-- **Backend requirements: none in P1.** The page is fully static; the website's live public read
-  endpoints (stats, events, scarcity) are P5 — see [API-Client](feature-api-client.md).
+- **Backend requirements: none.** The page is fully static; the website's live public read
+  endpoints (stats, events, scarcity) are **deferred — need the Club-App backend** (see the master
+  plan's Deferred section and [API-Client](feature-api-client.md)).
 
 1. **Real landing reachable (tracer bullet).** Move the teaser + its parts (`TeaserLayout`,
    `Wordmark`) into `features/preview-access`; promote the two-tone headline to `@furria/ui`
@@ -134,6 +141,19 @@ grilling session. Details in [Landing-Hero](feature-landing-hero.md) Decisions (
     `MastheadMobileBar`); `LandingTicker` stays a single shared instance beneath either.
     *Delivers (FE):* complete mobile landing hero, end to end.
     *Verify:* `LandingPage.test.tsx` covers both breakpoints; `pnpm build`/`typecheck` pass.
+
+### P2 — Landing complete (composition)
+
+The page gains its final two blocks below the ticker — **still fully static, no backend**. Block
+detail + build slices live in each block's own feature file; the landing only owns the composition.
+
+11. **[done]** **Compose the P2 blocks.** Mount [Programm-Teaser](feature-program-teaser.md) then
+    [Mitmachen-Band](feature-mitmachen-band.md) in `LandingPage` below `LandingTicker`, inside a
+    gutter-constrained container (`kkTokens.layout` gutters), for both breakpoints. Final order:
+    Hero → Ticker → Programm-Teaser → Mitmachen-Band → Footer. No restructuring of the P1 layout.
+    *Delivers (FE):* the full landing reads end-to-end at `/`, responsive, light + dark.
+    *Verify:* `LandingPage.test.tsx` asserts all blocks present in order at both breakpoints;
+    `pnpm build`/`typecheck` pass.
 
 ## References
 

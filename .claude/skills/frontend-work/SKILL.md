@@ -34,6 +34,7 @@ description: Mandatory rules for all React/TypeScript frontend work. Invoke befo
 - Put Stack layout props (`alignItems`, `justifyContent`, `spacing`) in `sx`, not as component props — only `direction` is allowed as a prop
 - Always use default imports from MUI, never named imports
 - Use theme tokens exclusively — never hardcode px values, colors, or spacing
+- Always source colors so they switch with the color scheme; never read a bare palette value that bakes one mode
 - When a MUI X TreeItem label needs an offset outline, box-shadow, or any overflowing visual (e.g. a drag-over highlight), render it via the TreeItem `slots.label` slot — never the `label` prop: the default label slot is `overflow: hidden` and clips anything drawn outside the box
 
 ### TypeScript

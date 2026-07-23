@@ -33,7 +33,7 @@ the same one payment system as Beitrag/Shop/Getränkekasse.
   later (the Club-App Saalplan-Editor is "built generic … reused as the public seat map", but
   it is **out of scope for this website plan for now**).
 - Depends on a backend **ticketing domain that is not yet schema'd** (design §7 lists it as an
-  extension) — this gates P6.
+  extension) — this gates Ticketing (**deferred — needs the Club-App backend**).
 - Stripe vs. PayPal integration boundary; where the payment session is created (backend).
 - Delivery: e-ticket / QR / email — format and validation at the door.
 

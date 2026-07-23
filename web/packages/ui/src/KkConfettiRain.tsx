@@ -4,11 +4,21 @@ import type { FC } from 'react';
 import { buildConfettiPieces } from './confetti-pieces';
 
 const fall = keyframes`
+  from { transform: translateY(-10vh); }
+  to { transform: translateY(110vh); }
+`;
+
+const sway = keyframes`
+  from { transform: translateX(calc(var(--kk-confetti-sway) * -1)); }
+  to { transform: translateX(var(--kk-confetti-sway)); }
+`;
+
+const tumble = keyframes`
   from {
-    transform: translate3d(0, -10vh, 0) rotate(0deg);
+    transform: perspective(700px) rotateX(0deg) rotateY(0deg) rotateZ(0deg);
   }
   to {
-    transform: translate3d(var(--kk-confetti-drift), 110vh, 0) rotate(var(--kk-confetti-spin));
+    transform: perspective(700px) rotateX(var(--kk-confetti-flip-x)) rotateY(var(--kk-confetti-flip-y)) rotateZ(var(--kk-confetti-spin));
   }
 `;
 
@@ -30,6 +40,7 @@ export const KkConfettiRain: FC<KkConfettiRainProps> = ({
   paused = false,
 }) => {
   const pieces = buildConfettiPieces(count, seed);
+  const playState = paused ? 'paused' : 'running';
 
   return (
     <Box
@@ -46,23 +57,42 @@ export const KkConfettiRain: FC<KkConfettiRainProps> = ({
       {pieces.map((piece) => (
         <Box
           key={piece.id}
-          component="span"
           sx={{
             position: 'absolute',
             top: 0,
             left: `${piece.leftPercent}%`,
-            width: piece.size,
-            height: piece.isSlim ? piece.size * 0.45 : piece.size,
-            borderRadius: piece.isRound ? '50%' : '2px',
-            bgcolor: PIECE_COLOR[piece.color],
-            opacity: 0.85,
             animation: `${fall} ${piece.durationSeconds}s linear infinite`,
             animationDelay: `${piece.delaySeconds}s`,
-            animationPlayState: paused ? 'paused' : 'running',
-            '--kk-confetti-drift': `${piece.driftVw}vw`,
-            '--kk-confetti-spin': `${piece.spinDegrees}deg`,
+            animationPlayState: playState,
           }}
-        />
+        >
+          <Box
+            sx={{
+              animation: `${sway} ${piece.swayDurationSeconds}s ease-in-out infinite alternate`,
+              animationDelay: `${piece.swayDelaySeconds}s`,
+              animationPlayState: playState,
+              '--kk-confetti-sway': `${piece.swayVw}vw`,
+            }}
+          >
+            <Box
+              component="span"
+              sx={{
+                display: 'block',
+                width: piece.size,
+                height: piece.isSlim ? piece.size * 0.45 : piece.size,
+                borderRadius: piece.isRound ? '50%' : '2px',
+                bgcolor: PIECE_COLOR[piece.color],
+                opacity: 0.85,
+                animation: `${tumble} ${piece.durationSeconds}s linear infinite`,
+                animationDelay: `${piece.delaySeconds}s`,
+                animationPlayState: playState,
+                '--kk-confetti-spin': `${piece.spinDegrees}deg`,
+                '--kk-confetti-flip-x': `${piece.flipXDegrees}deg`,
+                '--kk-confetti-flip-y': `${piece.flipYDegrees}deg`,
+              }}
+            />
+          </Box>
+        </Box>
       ))}
     </Box>
   );

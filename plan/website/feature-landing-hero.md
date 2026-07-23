@@ -36,7 +36,7 @@ CTAs, a stat row, and the anchor photo.
   `@furria/ui` primitive **`KkConfettiScatter`** (≤13 chips, seeded, positioned behind the reading
   column via z-index) — distinct from the existing `KkConfettiRain`/`KkConfettiBurst`.
 - Narrenruf headline is **GROSS FURRIA!** (local law).
-- **Stats are static in P1** (live wiring is P5). Single-sourced from `lib/club.ts`: `1971` from
+- **Stats are static in P1** (live wiring is deferred — needs the Club-App backend). Single-sourced from `lib/club.ts`: `1971` from
   `FOUNDING_YEAR`; `180+ Mitglieder` and `12 Garden & Gruppen` are **clearly-marked placeholder
   constants** pending real figures / live data. (See [Session](../../CONTEXT.md) term.)
 - **Eyebrow badge derives from `lib/club.ts`** — same source as the masthead, so nothing hardcodes
@@ -44,11 +44,12 @@ CTAs, a stat row, and the anchor photo.
   (from exported opening day/month constants) + `ERÖFFNUNG`.
 - **CTAs link to real routes:** primary **Tickets sichern →** `/tickets` (matches the masthead
   Tickets button), secondary **Programm ansehen** → `/program`. Both resolve to the branded
-  `PlaceholderPage` until their features ship (Tickets = P6, Program = P5). No same-page anchor
+  `PlaceholderPage` until their features ship (Ticket-Shop and Veranstaltungskalender are both
+  **deferred — need the Club-App backend**). No same-page anchor
   (the Programm-Teaser block is P2) and no dead buttons.
 - **Hero photo is a branded placeholder for launch:** new shared `@furria/ui` primitive
   **`KkPhotoPlaceholder`** (hatched box + label + tint), reused later by Programm-Teaser (P2) and
-  Gallery (P7). The "Seit {year}" tag derives from `FOUNDING_YEAR`.
+  Gallery (P5). The "Seit {year}" tag derives from `FOUNDING_YEAR`.
 - The broom watermark uses the shared **`KkBroomMark`** (`@furria/ui`); the 11.11 seal uses
   **`KkSeal`** (`@furria/ui`). All hero motion (seal float, confetti, headline) honours
   reduced-motion.
@@ -102,7 +103,7 @@ CTAs, a stat row, and the anchor photo.
 - **Real hero photo** — deferred: no club asset yet; `KkPhotoPlaceholder` ships for launch and the
   real photo is a one-line swap later (asset task, not P1).
 - **Real member / group counts** — deferred: `180+` / `12` are placeholders until the club confirms
-  figures (or P5 wires live data).
+  figures (or live data, once the Club-App backend exists).
 
 ## Done When
 

@@ -64,6 +64,17 @@ the founding year (Session Nº 1 = 1971) and labelled by its span (e.g. `2025/26
 public site advertises ("SESSION …", "die fünfte Jahreszeit").
 _Avoid_: Kampagne, campaign, season (as a table name)
 
+### Events
+
+**Programm**:
+Overloaded across the two apps — **do not collapse the two senses**:
+- **Public website:** the **season's public event lineup** — the events the club presents,
+  the same set the Veranstaltungskalender lists. This is what "DAS PROGRAMM", the `/program`
+  route and the "Programm" nav label mean on the website.
+- **Club-App:** the **running order of acts within a single event** (the Auto-Reihenfolge /
+  Reihenfolge). A per-event ordering, not a list of events.
+_Avoid_: using "Programm" without knowing which app you are in.
+
 ### Money
 
 **Beitrag** (`fee`):
