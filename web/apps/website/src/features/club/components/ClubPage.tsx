@@ -4,6 +4,7 @@ import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { ClubHero } from './ClubHero/ClubHero';
 import { ClubStory } from './ClubStory/ClubStory';
+import { NarrenrufBand } from './NarrenrufBand/NarrenrufBand';
 
 export const ClubPage: FC = () => (
   <Stack component="main" sx={{ flex: 1 }}>
@@ -23,5 +24,6 @@ export const ClubPage: FC = () => (
         <ClubStory />
       </Stack>
     </Container>
+    <NarrenrufBand />
   </Stack>
 );
