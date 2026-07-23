@@ -5,7 +5,6 @@ import { renderAtRoute } from '@/test/render';
 
 const placeholderRoutes = [
   ['/program', 'Programm'],
-  ['/club', 'Verein'],
   ['/news', 'Aktuelles'],
   ['/gallery', 'Galerie'],
   ['/join', 'Mitglied werden'],
