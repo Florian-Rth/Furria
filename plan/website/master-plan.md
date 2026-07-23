@@ -71,7 +71,7 @@ Guiding constraints (all binding):
 | [Landing-Hero](feature-landing-hero.md) | capability | building | Identity centerpiece: headline, CTAs, stats, hero photo |
 | [Programm-Teaser](feature-program-teaser.md) | capability | shipped | Home "DAS PROGRAMM" upcoming-events section |
 | [Mitmachen-Band](feature-mitmachen-band.md) | capability | shipped | Home recruit CTA → membership funnel |
-| [Verein](feature-about-verein.md) | capability | ready | Verein story, Ämter, Gruppen showcase |
+| [Verein](feature-about-verein.md) | capability | shipped | Verein story, Ämter, Gruppen showcase |
 | [Veranstaltungskalender](feature-event-calendar.md) | capability | idea | Public event list/calendar + detail |
 | [Ticket-Shop](feature-ticket-shop.md) | capability | idea | Browse ticketed events, checkout, payment |
 | [Aktuelles](feature-news.md) | capability | idea | News posts (list + detail) |
@@ -193,12 +193,33 @@ hero's 0.05) as it is white-on-red, not ink-on-cream. Final copy shipped exactly
   the full Veranstaltungskalender at `/program` (stays a placeholder this build).
 
 ### P3 — Verein
-**Status:** ready (worked out 2026-07-24; grilling session against the new mock
-`docs/design/verein-page/`). `/club` live — a single scrolling editorial page, **static-final**
-(no backend). Broken into 9 per-section vertical slices in the [Verein](feature-about-verein.md)
-Implementation plan (tracer bullet: route + hero first, then a slice per section).
+**Status:** done (2026-07-24, branch `feat/website-p3-verein-fe`, 9 commits `013401c`…`6994ba9`)
+`/club` live — a single scrolling editorial page, **static-final** (no backend), rendered by
+`features/club/ClubPage`. Shipped as the 9 per-section vertical slices in the
+[Verein](feature-about-verein.md) Implementation plan. Followed the plan closely; build-level
+choices worth knowing:
+- **`ClubPage` composition:** hero + story share a gutter `Container`; the two red bands
+  (`NarrenrufBand`, `RecruitBand`) are full-bleed **siblings** rendered outside the Container (not
+  negative-margin); chronik/season/gruppen/people sit in a second Container. Section order exactly
+  as planned.
+- **`Group` interface uses English field names** `lead`/`schedule` (not the plan's `leitung`/
+  `treffen` — code = English rule); the German visible labels ("Leitung"/"Treffen") live in a
+  `groupsModalLabels` const. Fields: `{ title, blurb, memberMeta, fullText, lead, schedule }`.
+- **Gruppen = 6** (Tanzgarde, Männerballett, Elferrat, **Büttenrede**, Kindergarde, Organisation —
+  no Spielmannszug); the group-count stat derives from `GROUPS.length`, matching the grid.
+- **Modal (slice 7)** lives under `GruppenGrid/internal/{logic,ui}`, not a separate section folder.
+  Two logic hooks: `use-group-modal` (the `openGroupId | null` state) + `use-modal-presence` (the
+  exit-animation latch, extracted from the panel during review-fix). MUI `Modal` base + `motion.div`
+  panel, `useReducedMotion`-aware.
+- **Hero mobile** is distilled via `sx` toggles — the framed photo column (incl. the `KkSeal`
+  opening-date) is hidden at `xs`; the giant numeral is the single mobile anchor; ribbon
+  desktop-only. `ChapterHeader` numeral + kicker/title reused by story/chronik/season/gruppen/people.
+- **Reviews** ran per slice (`react-code-reviewer` + `react-composition-guru` on hero/grid/modal);
+  fixes applied: ChapterHeader `xs` title overflow, English field rename, the mode-baked color read
+  in the recruit band (→ `primary.contrastText`), and the modal-presence hook extraction. All
+  gates green each slice (267 tests total: 30 ui + 237 website; typecheck/build/lint clean).
 
-- [ ] [Verein](feature-about-verein.md) — hero (derived numeral + ribbon) → story+stats → narrenruf
+- [x] [Verein](feature-about-verein.md) — hero (derived numeral + ribbon) → story+stats → narrenruf
       → chronik → season → gruppen (grid + motion detail modal) → people (Ämter) → recruit; static
       content behind typed constants
 

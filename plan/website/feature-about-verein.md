@@ -2,7 +2,7 @@
 title: Verein
 slug: about-verein
 type: capability
-status: ready
+status: shipped
 mock: docs/design/verein-page/
 adrs: []
 ---
@@ -119,11 +119,13 @@ One scrolling page, sections top → bottom:
   `KkPhotoPlaceholder` topper badge (01, 02…), Anton title, short blurb, meta line + "Mehr →". Tint
   per tile via a position-based **`resolveGroupTint(theme, index)`** (red/gold/ink cycle — same
   idiom as the shipped `resolveEventTint`).
-- Typed `Group` interface + editable `GROUPS` const (`title, blurb, memberMeta, fullText, leitung,
-  treffen`). Seeded with the **P2-locked names** (Tanzgarde, Männerballett, Elferrat, **Büttenrede**
-  — *not* the mock's Spielmannszug error) + extras; count is array-derived and doesn't matter.
-  "Leitung"/"Treffen" are public-facing labels only; the domain's Trainer-Amt / Trainingsplaner live
-  in the Club-App.
+- Typed `Group` interface + editable `GROUPS` const. **Shipped field names are English**
+  (`title, blurb, memberMeta, fullText, lead, schedule`) — the plan's `leitung`/`treffen` were
+  renamed to `lead`/`schedule` to honour the code-is-English rule; the German visible labels
+  ("Leitung"/"Treffen") live in a `groupsModalLabels` const. Seeded with the **P2-locked names**
+  (Tanzgarde, Männerballett, Elferrat, **Büttenrede**, Kindergarde, Organisation — *not* the mock's
+  Spielmannszug error); count (6) is array-derived and doesn't matter. `lead`/`schedule` are
+  public-facing labels only; the domain's Trainer-Amt / Trainingsplaner live in the Club-App.
 - **Detail modal (the page's one interaction):** clicking a tile opens a **MUI `Modal`** (base —
   focus trap, Esc, portal, backdrop, `aria-labelledby`, tinted `slotProps.backdrop`) wrapping a
   **`motion.div`** panel with `AnimatePresence` for a **spring scale-fade** enter/exit;
