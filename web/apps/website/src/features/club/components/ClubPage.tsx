@@ -5,6 +5,7 @@ import type { FC } from 'react';
 import { ChronikTimeline } from './ChronikTimeline/ChronikTimeline';
 import { ClubHero } from './ClubHero/ClubHero';
 import { ClubStory } from './ClubStory/ClubStory';
+import { GruppenGrid } from './GruppenGrid/GruppenGrid';
 import { NarrenrufBand } from './NarrenrufBand/NarrenrufBand';
 import { SeasonArc } from './SeasonArc/SeasonArc';
 
@@ -31,6 +32,7 @@ export const ClubPage: FC = () => (
       <Stack sx={{ gap: { xs: 8, md: 12 } }}>
         <ChronikTimeline />
         <SeasonArc />
+        <GruppenGrid />
       </Stack>
     </Container>
   </Stack>

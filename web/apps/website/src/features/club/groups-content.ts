@@ -1,3 +1,11 @@
+import type { Theme } from '@mui/material/styles';
+
+export const groupsChapter = {
+  numeral: '04',
+  kicker: 'WER BEI FURRIA AUFTRITT',
+  title: 'UNSERE GRUPPEN',
+} as const;
+
 export interface Group {
   title: string;
   blurb: string;
@@ -63,3 +71,11 @@ export const GROUPS: Group[] = [
     schedule: 'Nach Bedarf',
   },
 ];
+
+export const groupsIntro = `Aktuell ${GROUPS.length} Gruppen — die Liste wächst.`;
+
+export const resolveGroupTint = (theme: Theme, index: number): string => {
+  const palette = (theme.vars ?? theme).palette;
+  const tints = [palette.primary.main, palette.warning.main, palette.text.primary];
+  return tints[index % tints.length] ?? palette.primary.main;
+};
