@@ -6,6 +6,7 @@ import { ChronikTimeline } from './ChronikTimeline/ChronikTimeline';
 import { ClubHero } from './ClubHero/ClubHero';
 import { ClubStory } from './ClubStory/ClubStory';
 import { NarrenrufBand } from './NarrenrufBand/NarrenrufBand';
+import { SeasonArc } from './SeasonArc/SeasonArc';
 
 export const ClubPage: FC = () => (
   <Stack component="main" sx={{ flex: 1 }}>
@@ -29,6 +30,7 @@ export const ClubPage: FC = () => (
     <Container maxWidth="xl" sx={{ px: kkTokens.layout.gutterX, py: kkTokens.layout.gutterY }}>
       <Stack sx={{ gap: { xs: 8, md: 12 } }}>
         <ChronikTimeline />
+        <SeasonArc />
       </Stack>
     </Container>
   </Stack>
