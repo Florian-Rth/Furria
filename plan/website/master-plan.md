@@ -71,7 +71,7 @@ Guiding constraints (all binding):
 | [Landing-Hero](feature-landing-hero.md) | capability | building | Identity centerpiece: headline, CTAs, stats, hero photo |
 | [Programm-Teaser](feature-program-teaser.md) | capability | shipped | Home "DAS PROGRAMM" upcoming-events section |
 | [Mitmachen-Band](feature-mitmachen-band.md) | capability | shipped | Home recruit CTA → membership funnel |
-| [Verein](feature-about-verein.md) | capability | idea | Verein story, Ämter, Gruppen showcase |
+| [Verein](feature-about-verein.md) | capability | ready | Verein story, Ämter, Gruppen showcase |
 | [Veranstaltungskalender](feature-event-calendar.md) | capability | idea | Public event list/calendar + detail |
 | [Ticket-Shop](feature-ticket-shop.md) | capability | idea | Browse ticketed events, checkout, payment |
 | [Aktuelles](feature-news.md) | capability | idea | News posts (list + detail) |
@@ -193,10 +193,39 @@ hero's 0.05) as it is white-on-red, not ink-on-cream. Final copy shipped exactly
   the full Veranstaltungskalender at `/program` (stays a placeholder this build).
 
 ### P3 — Verein
-**Status:** planned
-`/club` live.
+**Status:** ready (worked out 2026-07-24; grilling session against the new mock
+`docs/design/verein-page/`). `/club` live — a single scrolling editorial page, **static-final**
+(no backend). Broken into 9 per-section vertical slices in the [Verein](feature-about-verein.md)
+Implementation plan (tracer bullet: route + hero first, then a slice per section).
 
-- [ ] [Verein](feature-about-verein.md) — story, Ämter, Gruppen showcase (static content)
+- [ ] [Verein](feature-about-verein.md) — hero (derived numeral + ribbon) → story+stats → narrenruf
+      → chronik → season → gruppen (grid + motion detail modal) → people (Ämter) → recruit; static
+      content behind typed constants
+
+**Cross-cutting (decided in P3 grilling, 2026-07-24):**
+
+- **Mock moved** to `docs/design/verein-page/`. Its "Plakat-Kapitel" direction (hard offset-shadows
+  as the leading elevation, square corners, 2px ink borders everywhere) is **rejected as the
+  system** per the design README's READ FIRST — our shipped **Destillat** language wins (MUI cards,
+  `radius.base` 14, hairline borders, soft elevation). Only the **hero** keeps bold gestures
+  (two-tone poster shadow + ribbon + giant *derived* session numeral).
+- **No dark ink-panels.** All sections on the normal theme background; red appears only as **two
+  full-bleed strips** (Narrenruf + Recruit). Rhythm comes from the numbered `ChapterHeader`.
+- **The Gruppen detail modal is the page's one interaction** — MUI `Modal` base (a11y) + a
+  `motion.div` panel (`AnimatePresence` spring scale-fade, `useReducedMotion`-aware, `motion` already
+  a dep). Uses `PreviewAccessDialog`'s a11y pattern.
+- **People wall is keyed on Ämter, never "Vorstand"** (glossary law); code field `amt`; placeholder
+  faces for v1.
+- **Single responsive components throughout** (no Desktop/Mobile forks) — every section reflows;
+  the hero's mobile branch is a *distilled* variant (numeral as the single anchor, ribbon
+  desktop-only). Unlike the landing hero's two-tree split.
+- **New feature folder** `features/club/`; the giant numeral + ribbon are club-hero-local (not
+  promoted to `@furria/ui`, YAGNI).
+- **Glossary:** no new/sharpened term — the page reuses **Amt / Gruppe / Session / Beitrag /
+  Narrenruf** as already defined in [`CONTEXT.md`](../../CONTEXT.md).
+- **Deferred (not P3):** real Vereinsgeschichte + Chronik milestones, real Gruppen/Ämter/photos,
+  live member & group counts, and the backend **per-Amt "show on public page" flag** (seam noted,
+  not scaffolded) — all need the Club-App backend.
 
 ### P4 — News
 **Status:** planned
