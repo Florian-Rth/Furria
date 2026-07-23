@@ -2,6 +2,7 @@ import { kkTokens } from '@furria/ui';
 import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
+import { ChronikTimeline } from './ChronikTimeline/ChronikTimeline';
 import { ClubHero } from './ClubHero/ClubHero';
 import { ClubStory } from './ClubStory/ClubStory';
 import { NarrenrufBand } from './NarrenrufBand/NarrenrufBand';
@@ -25,5 +26,10 @@ export const ClubPage: FC = () => (
       </Stack>
     </Container>
     <NarrenrufBand />
+    <Container maxWidth="xl" sx={{ px: kkTokens.layout.gutterX, py: kkTokens.layout.gutterY }}>
+      <Stack sx={{ gap: { xs: 8, md: 12 } }}>
+        <ChronikTimeline />
+      </Stack>
+    </Container>
   </Stack>
 );
