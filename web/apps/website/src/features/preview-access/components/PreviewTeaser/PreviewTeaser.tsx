@@ -2,7 +2,6 @@ import { KkConfettiRain, KkTwoToneHeadline } from '@furria/ui';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
-import { FOUNDING_YEAR } from '@/lib/club';
 import { Teaser } from './Teaser';
 
 interface PreviewTeaserProps {
@@ -15,7 +14,7 @@ export const PreviewTeaser: FC<PreviewTeaserProps> = ({ onCtaClick, confettiPaus
     <Teaser.Masthead>
       <Teaser.Wordmark text="FURRIA" />
       <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-        Furrscher Carnevals Club e.V. · Großbesenstadt · seit {FOUNDING_YEAR}
+        Furrscher Carnevals Club e.V.
       </Typography>
     </Teaser.Masthead>
     <Teaser.Stage>
