@@ -74,6 +74,13 @@ export const GROUPS: Group[] = [
 
 export const groupsIntro = `Aktuell ${GROUPS.length} Gruppen — die Liste wächst.`;
 
+export const groupsModalLabels = {
+  lead: 'Leitung',
+  schedule: 'Treffen',
+  cta: 'Mitglied werden →',
+  close: 'Schließen',
+} as const;
+
 export const resolveGroupTint = (theme: Theme, index: number): string => {
   const palette = (theme.vars ?? theme).palette;
   const tints = [palette.primary.main, palette.warning.main, palette.text.primary];

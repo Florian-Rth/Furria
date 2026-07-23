@@ -10,10 +10,13 @@ import {
 } from '@/features/club/groups-content';
 import { ChapterHeader } from '../ChapterHeader/ChapterHeader';
 import { GruppenTileGrid } from './internal/layout/GruppenTileGrid';
+import { useGroupModal } from './internal/logic/use-group-modal';
+import { GruppenModal } from './internal/ui/GruppenModal';
 import { GruppenTile } from './internal/ui/GruppenTile';
 
 export const GruppenGrid: FC = () => {
   const theme = useTheme();
+  const { activeGroup, openGroup, close } = useGroupModal(GROUPS);
 
   return (
     <Stack component="section" data-kk-gruppen sx={{ gap: { xs: 4, md: 6 } }}>
@@ -35,9 +38,11 @@ export const GruppenGrid: FC = () => {
             group={group}
             tint={resolveGroupTint(theme, index)}
             badge={String(index + 1).padStart(2, '0')}
+            onOpen={() => openGroup(group.title)}
           />
         ))}
       </GruppenTileGrid>
+      <GruppenModal active={activeGroup} onClose={close} />
     </Stack>
   );
 };
