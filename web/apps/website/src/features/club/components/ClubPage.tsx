@@ -8,6 +8,7 @@ import { ClubStory } from './ClubStory/ClubStory';
 import { GruppenGrid } from './GruppenGrid/GruppenGrid';
 import { NarrenrufBand } from './NarrenrufBand/NarrenrufBand';
 import { PeopleWall } from './PeopleWall/PeopleWall';
+import { RecruitBand } from './RecruitBand/RecruitBand';
 import { SeasonArc } from './SeasonArc/SeasonArc';
 
 export const ClubPage: FC = () => (
@@ -37,5 +38,6 @@ export const ClubPage: FC = () => (
         <PeopleWall />
       </Stack>
     </Container>
+    <RecruitBand />
   </Stack>
 );

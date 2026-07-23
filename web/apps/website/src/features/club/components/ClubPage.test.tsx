@@ -95,3 +95,46 @@ describe('ClubPage hero on mobile', () => {
     expect(window.getComputedStyle(ribbon).display).toBe('none');
   });
 });
+
+const SECTION_ORDER = [
+  '[data-kk-club-hero]',
+  '[data-kk-club-story]',
+  '[data-kk-narrenruf-band]',
+  '[data-kk-chronik]',
+  '[data-kk-season]',
+  '[data-kk-gruppen]',
+  '[data-kk-people]',
+  '[data-kk-recruit-band]',
+];
+
+const readSectionOrder = (): string[] => {
+  const nodes = Array.from(document.querySelectorAll(SECTION_ORDER.join(',')));
+  return SECTION_ORDER.filter((selector) => nodes.some((node) => node.matches(selector))).sort(
+    (a, b) => {
+      const nodeA = document.querySelector(a) as Node;
+      const nodeB = document.querySelector(b) as Node;
+      const relation = nodeA.compareDocumentPosition(nodeB);
+      return relation & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
+    },
+  );
+};
+
+describe('ClubPage section order', () => {
+  it('renders every editorial section top to bottom at desktop', async () => {
+    setViewportWidth(DESKTOP_VIEWPORT_WIDTH);
+    renderAtRoute('/club');
+
+    await waitFor(() => expect(getHero()).not.toBeNull());
+    await waitFor(() => expect(document.querySelector('[data-kk-recruit-band]')).not.toBeNull());
+    expect(readSectionOrder()).toEqual(SECTION_ORDER);
+  });
+
+  it('renders every editorial section top to bottom at mobile', async () => {
+    setViewportWidth(MOBILE_VIEWPORT_WIDTH);
+    renderAtRoute('/club');
+
+    await waitFor(() => expect(getHero()).not.toBeNull());
+    await waitFor(() => expect(document.querySelector('[data-kk-recruit-band]')).not.toBeNull());
+    expect(readSectionOrder()).toEqual(SECTION_ORDER);
+  });
+});
