@@ -54,7 +54,12 @@ describe('Masthead', () => {
     const chipNav = screen.getByRole('navigation', { name: 'Hauptnavigation' });
     await user.click(within(chipNav).getByRole('link', { name: 'Verein' }));
 
-    expect(await screen.findByRole('heading', { level: 1, name: 'Verein' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', {
+        level: 1,
+        name: 'DIE FÜNFTE JAHRESZEIT HAT EIN ZUHAUSE.',
+      }),
+    ).toBeInTheDocument();
     expect(menuButton).toHaveAttribute('aria-expanded', 'false');
   });
 
