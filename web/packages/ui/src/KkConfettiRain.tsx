@@ -28,16 +28,21 @@ const PIECE_COLOR = {
   ink: 'text.primary',
 } as const;
 
+const FADE_MASK = 'linear-gradient(to bottom, #000 0%, #000 50%, transparent 100%)';
+const BLUR_MASK = 'linear-gradient(to bottom, transparent 0%, #000 100%)';
+
 interface KkConfettiRainProps {
   count?: number;
   seed?: number;
   paused?: boolean;
+  fadeOut?: boolean;
 }
 
 export const KkConfettiRain: FC<KkConfettiRainProps> = ({
   count = 18,
   seed = 11,
   paused = false,
+  fadeOut = false,
 }) => {
   const pieces = buildConfettiPieces(count, seed);
   const playState = paused ? 'paused' : 'running';
@@ -54,46 +59,69 @@ export const KkConfettiRain: FC<KkConfettiRainProps> = ({
         '@media (prefers-reduced-motion: reduce)': { display: 'none' },
       }}
     >
-      {pieces.map((piece) => (
-        <Box
-          key={piece.id}
-          sx={{
-            position: 'absolute',
-            top: 0,
-            left: `${piece.leftPercent}%`,
-            animation: `${fall} ${piece.durationSeconds}s linear infinite`,
-            animationDelay: `${piece.delaySeconds}s`,
-            animationPlayState: playState,
-          }}
-        >
+      <Box
+        sx={{
+          position: 'absolute',
+          inset: 0,
+          maskImage: fadeOut ? FADE_MASK : undefined,
+          WebkitMaskImage: fadeOut ? FADE_MASK : undefined,
+        }}
+      >
+        {pieces.map((piece) => (
           <Box
+            key={piece.id}
             sx={{
-              animation: `${sway} ${piece.swayDurationSeconds}s ease-in-out infinite alternate`,
-              animationDelay: `${piece.swayDelaySeconds}s`,
+              position: 'absolute',
+              top: 0,
+              left: `${piece.leftPercent}%`,
+              animation: `${fall} ${piece.durationSeconds}s linear infinite`,
+              animationDelay: `${piece.delaySeconds}s`,
               animationPlayState: playState,
-              '--kk-confetti-sway': `${piece.swayVw}vw`,
             }}
           >
             <Box
-              component="span"
               sx={{
-                display: 'block',
-                width: piece.size,
-                height: piece.isSlim ? piece.size * 0.45 : piece.size,
-                borderRadius: piece.isRound ? '50%' : '2px',
-                bgcolor: PIECE_COLOR[piece.color],
-                opacity: 0.85,
-                animation: `${tumble} ${piece.durationSeconds}s linear infinite`,
-                animationDelay: `${piece.delaySeconds}s`,
+                animation: `${sway} ${piece.swayDurationSeconds}s ease-in-out infinite alternate`,
+                animationDelay: `${piece.swayDelaySeconds}s`,
                 animationPlayState: playState,
-                '--kk-confetti-spin': `${piece.spinDegrees}deg`,
-                '--kk-confetti-flip-x': `${piece.flipXDegrees}deg`,
-                '--kk-confetti-flip-y': `${piece.flipYDegrees}deg`,
+                '--kk-confetti-sway': `${piece.swayVw}vw`,
               }}
-            />
+            >
+              <Box
+                component="span"
+                sx={{
+                  display: 'block',
+                  width: piece.size,
+                  height: piece.isSlim ? piece.size * 0.45 : piece.size,
+                  borderRadius: piece.isRound ? '50%' : '2px',
+                  bgcolor: PIECE_COLOR[piece.color],
+                  opacity: 0.85,
+                  animation: `${tumble} ${piece.durationSeconds}s linear infinite`,
+                  animationDelay: `${piece.delaySeconds}s`,
+                  animationPlayState: playState,
+                  '--kk-confetti-spin': `${piece.spinDegrees}deg`,
+                  '--kk-confetti-flip-x': `${piece.flipXDegrees}deg`,
+                  '--kk-confetti-flip-y': `${piece.flipYDegrees}deg`,
+                }}
+              />
+            </Box>
           </Box>
-        </Box>
-      ))}
+        ))}
+      </Box>
+      {fadeOut ? (
+        <Box
+          sx={{
+            position: 'absolute',
+            insetInline: 0,
+            bottom: 0,
+            height: '50%',
+            backdropFilter: 'blur(5px)',
+            WebkitBackdropFilter: 'blur(5px)',
+            maskImage: BLUR_MASK,
+            WebkitMaskImage: BLUR_MASK,
+          }}
+        />
+      ) : null}
     </Box>
   );
 };
