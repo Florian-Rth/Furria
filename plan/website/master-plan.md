@@ -64,6 +64,7 @@ Guiding constraints (all binding):
 |---|---|---|---|
 | [Site-Shell](feature-site-shell.md) | foundation | shipped | Masthead nav, footer, theming, layout, `@furria/ui` wiring |
 | [Preview-Gate](feature-preview-gate.md) | foundation | shipped | Pre-launch access gate (tester portal removed 2026-07-20) |
+| [Tester-Changelog](feature-tester-changelog.md) | foundation | ready | Per-branch changelog modal for testers *(scaffolding — removed at launch)* |
 | [API-Client](feature-api-client.md) | foundation | building | Data layer to the backend public read endpoints |
 | [SEO & Meta](feature-seo-meta.md) | foundation | building | Meta tags, Open Graph / social-share cards |
 | [Ticker](feature-ticker.md) | foundation | building | Flat red/gold marquee signature chrome |
@@ -74,7 +75,7 @@ Guiding constraints (all binding):
 | [Verein](feature-about-verein.md) | capability | shipped | Verein story, Ämter, Gruppen showcase |
 | [Veranstaltungskalender](feature-event-calendar.md) | capability | idea | Public event list/calendar + detail |
 | [Ticket-Shop](feature-ticket-shop.md) | capability | idea | Browse ticketed events, checkout, payment |
-| [Aktuelles](feature-news.md) | capability | idea | News posts (list + detail) |
+| [Aktuelles](feature-news.md) | capability | ready | Meldungen (list + detail) + landing teaser |
 | [Bildergalerie](feature-gallery.md) | capability | idea | Public event photo gallery |
 | [Mitglied werden](feature-membership-funnel.md) | capability | idea | Membership info + application funnel |
 
@@ -249,12 +250,83 @@ choices worth knowing:
   not scaffolded) — all need the Club-App backend.
 
 ### P4 — News
-**Status:** planned
-`/news` live — the marketing site is content-complete. Before launch: stand up the **prerender
-mechanism** (deferred from P0) + **bot OG-meta injection** for the first dynamic detail page.
+**Status:** ready (planned 2026-07-25, branch `feat/website-p4-news-fe`)
+`/news` + `/news/:slug` + a landing teaser live — the marketing site is **content-complete**.
+Static-final (no backend). Shipped as the 10 vertical slices in the [Aktuelles](feature-news.md)
+Implementation plan.
 
-- [ ] [Aktuelles](feature-news.md) — list + detail
-- [ ] [SEO & Meta](feature-seo-meta.md) — prerender mechanism spike + news-detail OG injection
+- [ ] [Aktuelles](feature-news.md) — list (Aufmacher + Meldungen rows + `/program` band) + detail
+      (article + share row + Weitere Meldungen) + the landing `NewsTeaser`; 4 fixed Kategorien with
+      derived tints; typographic Plakat fallback for photo-less Meldungen; static content behind
+      typed constants
+- [ ] [Site-Shell](feature-site-shell.md) — the site's **first 404**: a branded, humorous
+      `NotFoundPage` on `__root`'s `notFoundComponent`, plus the shared `src/components/CtaBand/`
+      full-bleed red-band compound (migrating `NarrenrufBand` + `RecruitBand`)
+- [ ] [Landing](feature-landing.md) — one optional node slot on `LandingPage` for the news teaser,
+      wired by the `/` route; final block order Hero → Ticker → Programm-Teaser → **News-Teaser** →
+      Mitmachen-Band
+- [ ] [SEO & Meta](feature-seo-meta.md) — per-post document head only (`og:type: article`,
+      published time, canonical). **No prerender, no bot injection** — moved to P7 / Deferred
+- [ ] [Tester-Changelog](feature-tester-changelog.md) — per-branch changelog modal for testers
+      (build-time `changelog.json` + Zod, vertical `Tabs` master/detail, per-entry read status in
+      `localStorage`, reopen pill). **Tester scaffolding — deleted at launch.** Added to P4 by
+      request, unrelated to news
+
+**Cross-cutting (decided in P4 grilling, 2026-07-25):**
+
+- **Standing design ruling, beyond this mock: our current design always wins; mocks are inspiration
+  only.** The news mock is the most aggressively **"Plakat"** handoff yet (radius 0 everywhere, 2px
+  ink borders, `12px 12px 0 red` offsets) — rejected as the system, exactly as in P3. **Destillat**
+  wins; `shadow.posterOffset` stays reserved for hero headlines, so the **Aufmacher earns emphasis
+  through scale + layout + `shadow.raised`**, not a hard shadow. The mock's genuinely good editorial
+  *structure* (red date rail, Aufmacher hierarchy, section rule) is adopted.
+- **P4's SEO slice was wrong and is restructured.** Two findings: (a) **prerendering gated routes
+  publishes the content the gate withholds** — the gate is client-side (`sessionStorage` +
+  `beforeLoad`), so prerendered HTML is `curl`-readable; (b) because news content is **compile-time
+  TS constants**, every slug is known at build time, so these pages are **prerenderable and need no
+  bot OG-injection at all** — injection is only ever required for *backend-driven* detail pages.
+  Plus `robots.txt` is still `Disallow: /`, so prerender's crawl payoff is currently zero. Prerender
+  + robots-flip + absolute OG URL + sitemap become the new **[P7 — Launch](#p7--launch)**;
+  bot-injection moves to Deferred. **[ADR-0003](../../docs/adr/0003-website-rendering-strategy.md)
+  amended** — it had explicitly named news as needing injection.
+- **Content stays static typed constants** (no repo markdown, no CMS): the board never authors in
+  the repo — publishing moves to the Club-App — so a content pipeline would be throwaway, and a CMS
+  contradicts the scope banner. `body` is a paragraph array with a `**bold**` convention; no
+  sanitiser needed while content is compile-time (seam noted for when the backend lands).
+- **Rule-of-three fired on the red band → shared `src/components/CtaBand/`** (slotted compound;
+  layout variation by slot choice, never a flag). **`MitmachenBand` is excluded** — the code shows
+  it is a rounded red *card* inside a Container, not a full-bleed band, so folding it in would force
+  the boolean-flag API the frontend rules ban. `features/landing` is not reopened for it.
+- **Two mock defects fixed:** the per-post `tint` field is dropped (it was redundant with
+  `category` *and* self-contradictory — `Verein` shipped as both `ink` and `red`) in favour of a
+  derived tint map; and the band CTA's target **`/schedule` does not exist on this site** — it is
+  the Club-App's Trainingsplaner, leaked into the public mock. Corrected to `/program`.
+- **Two glossary violations fixed:** the mock's *"Ganzen **Beitrag** lesen →"* collides with
+  **Beitrag** = membership fee (advertised on the same site) → **"Ganze Meldung lesen →"**; and the
+  author fallback **"Vorstand"** is banned in code and copy → the byline is **omitted** when no
+  author is set, rather than inventing an institutional one.
+- **Glossary:** added **Aktuelles**, **Meldung**, **Kategorie** to [`CONTEXT.md`](../../CONTEXT.md),
+  with `Beitrag` explicitly on Meldung's avoid-list. Heading chain locked to one word
+  (nav *Aktuelles* → block **AKTUELLES** → H1 **AKTUELLES** → **WEITERE MELDUNGEN** on both pages);
+  "Neuigkeiten"/"Alle News" dropped, *"Aus dem Verein"* demoted to flavour eyebrow.
+- **Scope trims (YAGNI):** **no archive route** (no older Session exists; the button is *derived*
+  and appears by itself when it first becomes true); **no recruit band on article pages** (it is
+  already the closing CTA on `/` and `/club`, and the footer sits right below — articles end on
+  *Weitere Meldungen* instead); **no `navigator.share`** (a "WhatsApp" button opening a generic
+  sheet lies, and the fallback path doubles the surface to verify).
+- **Accepted limitation:** while the gate is up, a shared link redirects non-granted visitors to
+  `/`. The gate is a temporary launch switch — designing around it would mean re-opening a finished
+  page later.
+- **Tester-Changelog added to P4 by request** (unrelated to news, so it has its own feature file).
+  Two notes worth carrying forward: it is the **first deliberate deviation from design README §5's
+  "no icon font, no icon library"** — `@mui/icons-material` is admitted, but **scoped to tester
+  scaffolding only** (never public UI) and removed again in P7, and it is consumed via a small
+  **explicit allow-map of path default-imports** because a dynamic name lookup would bundle all
+  ~2000 icons. And its content is **JSON, deliberately unlike** the site's typed-constant content —
+  justified by the mechanical append-per-branch workflow, with Zod parsing at module load buying
+  back the compile-time safety TS would have given.
+- **Deferred (not P4):** real Meldungen + photos, the archive route, board publishing UI, and
+  body-sanitisation once content stops being compile-time.
 
 ### P5 — Gallery
 **Status:** planned
@@ -269,6 +341,26 @@ form service** (no backend). Any backend-backed provisional-Person creation is d
 
 - [ ] [Mitglied werden](feature-membership-funnel.md) — info + application (email/static submission)
 - [ ] [Mitmachen-Band](feature-mitmachen-band.md) — point CTA at the funnel (already → `/join`)
+
+### P7 — Launch
+**Status:** planned (created 2026-07-25, split out of P4)
+Flipping the site public. Everything here was **blocked by the preview gate**, not by content — see
+the P4 cross-cutting notes: prerendering gated routes would publish the content the gate withholds,
+and `robots.txt` is `Disallow: /` until this phase.
+
+- [ ] [SEO & Meta](feature-seo-meta.md) — **prerender mechanism** (its own spike: emotion/MUI style
+      extraction + a TanStack Router static entry + no light/dark hydration flash). With static
+      content every route, **including `/news/:slug`**, is prerenderable — no bot injection needed
+- [ ] [SEO & Meta](feature-seo-meta.md) — flip `robots.txt` to allow; resolve the **absolute
+      `og:image` URL** (blocked on a production domain since P0); add a sitemap
+- [ ] [Preview-Gate](feature-preview-gate.md) — remove the gate; gated marketing routes become
+      public and shared news links start resolving for everyone
+- [ ] [Tester-Changelog](feature-tester-changelog.md) — **delete it** along with the gate: the
+      feature folder, `changelog.json`, the `_site.tsx` mount and the `@mui/icons-material`
+      dependency. Release notes are not public-site content, and dropping the dep restores design
+      README §5 ("no icon library") for shipped UI
+- [ ] [Site-Shell](feature-site-shell.md) — real social URLs (P0 shipped `#` placeholders); real
+      favicon/app-icon art (tracked asset task, placeholder since P0); `noindex` on the 404
 
 ---
 
@@ -285,3 +377,13 @@ lands, these become real phases.
   [Landing-Hero](feature-landing-hero.md) **stats** and the data-driven ticker to live data.
 - **Ticketing** — [Ticket-Shop](feature-ticket-shop.md): browse, checkout, Stripe/PayPal,
   confirmation. Depends on the backend ticketing domain (not yet schema'd — see design §7).
+- **Bot OG-meta injection** (edge middleware vs. a `<meta>`-serving endpoint on the API) — **only
+  ever needed for backend-driven detail pages**, whose content is not known at build time and so
+  cannot be prerendered. Re-scoped out of P4 in the P4 grilling: static-in-repo pages like
+  `/news/:slug` are prerenderable and need nothing. See the
+  [ADR-0003](../../docs/adr/0003-website-rendering-strategy.md) amendment.
+- **News (real data)** — the Club-App becomes the publishing surface for **Meldungen** and serves
+  them over a public read endpoint; the typed `NewsPost` interface is the swap point
+  ([Aktuelles](feature-news.md)). Brings with it body **sanitisation** (content stops being
+  compile-time), real photos, board publishing UI, and the **archive route** once an older Session
+  exists.

@@ -22,8 +22,9 @@ Block order (top → bottom), from the "Destillat" mock:
 2. [Landing-Hero](feature-landing-hero.md) — asymmetric editorial hero
 3. [Ticker](feature-ticker.md)
 4. [Programm-Teaser](feature-program-teaser.md) — "DAS PROGRAMM"
-5. [Mitmachen-Band](feature-mitmachen-band.md) — recruit CTA
-6. Footer — [Site-Shell](feature-site-shell.md)
+5. [Aktuelles](feature-news.md) — "AKTUELLES" news teaser, 3 newest Meldungen *(added P4)*
+6. [Mitmachen-Band](feature-mitmachen-band.md) — recruit CTA
+7. Footer — [Site-Shell](feature-site-shell.md)
 
 ## Decisions
 
@@ -39,6 +40,22 @@ Block order (top → bottom), from the "Destillat" mock:
   → Footer (shell). **No** news-teaser or gallery-strip block in v1 (news = P4, gallery = P5; a
   landing teaser for either can be reconsidered then). P1 delivers **Hero → Ticker** only, laid out
   so the P2 blocks slot in below the ticker with no restructuring.
+- **Revised (2026-07-25, P4): the news teaser is in.** The reconsideration the line above reserved
+  for P4 happened, and the answer is yes — a news section the home page never links to is dead
+  weight. **New block order:** Hero → Ticker → Programm-Teaser → **News-Teaser** → Mitmachen-Band →
+  Footer. News sits *after* Programm (events/tickets remain the primary draw) and *before* the
+  recruit band, so the page still closes on the CTA.
+- **How the teaser is wired (P4) — `LandingPage` gains one node slot.** The teaser needs news
+  content, and **features must never import each other**, so `NewsTeaser` lives in `features/news`
+  (keeping all news concerns cohesive: content, list, detail, teaser) and `LandingPage` takes one
+  **optional node slot** rendered between `ProgramTeaser` and `MitmachenBand`. `routes/_site/index.tsx`
+  composes the two features — which is exactly what routes are for. The slot is optional, so
+  `LandingPage` still renders correctly without it.
+  *Alternatives rejected:* moving news content down to `src/lib/` so a landing-local teaser could
+  read it (editorial content does not belong in `lib/`, which holds infrastructure — and it would
+  split news presentation across two features); and refactoring `LandingPage` down to hero+ticker so
+  the route composes every block (leaks `Container`/gutter/gap layout values into the route and
+  dissolves "the landing page" as a component, for the largest diff on a shipped page).
 - **`/` routing:** the `/` route branches on preview access —
   **ungated** → the coming-soon teaser (preview-access) + unlock dialog (unchanged);
   **granted** → the real `LandingPage` inside `SiteChrome` (masthead + footer), **replacing** the
@@ -153,6 +170,18 @@ detail + build slices live in each block's own feature file; the landing only ow
     Hero → Ticker → Programm-Teaser → Mitmachen-Band → Footer. No restructuring of the P1 layout.
     *Delivers (FE):* the full landing reads end-to-end at `/`, responsive, light + dark.
     *Verify:* `LandingPage.test.tsx` asserts all blocks present in order at both breakpoints;
+    `pnpm build`/`typecheck` pass.
+
+### P4 — News teaser slot
+
+The landing's only P4 change; the teaser itself is built in [Aktuelles](feature-news.md) slice 10.
+
+12. **Add the news slot.** Give `LandingPage` one optional node slot rendered between
+    `ProgramTeaser` and `MitmachenBand`, and have `routes/_site/index.tsx` pass `<NewsTeaser/>` from
+    the news barrel. No other change to the shipped landing.
+    *Delivers (FE):* the home page surfaces the 3 newest Meldungen and links to `/news`.
+    *Verify:* no `features/landing` ↔ `features/news` import in either direction; `LandingPage`
+    renders correctly with the slot omitted; block order asserted at both breakpoints;
     `pnpm build`/`typecheck` pass.
 
 ## References

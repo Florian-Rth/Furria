@@ -40,16 +40,42 @@ shareable material" ambition on the public side.
 - **`robots.txt` disallows indexing while gated** (only the teaser is public pre-launch); flip to
   allow at launch. **Sitemap deferred** — no real public routes to list yet.
 
+**P4 (news) — per-post head only:**
+
+- The news detail route sets its own head from the resolved post: title, description from the
+  teaser, OG title/description, **`og:type: article`** (overriding the root's `website`), published
+  time, canonical. No new mechanism — the existing `head` API, correct SPA-injected today and
+  exactly what a prerender bakes in later.
+
+**Revised in P4 grilling (2026-07-25) — prerender and injection both moved out of P4:**
+
+- **Prerendering gated routes would defeat the preview gate.** The gate is client-side
+  (`sessionStorage` + a `beforeLoad` redirect), so prerendered HTML for `/news/:slug` is readable
+  with a plain `curl` — no JS, no session. Prerender and the gate are mutually exclusive while the
+  site is gated, which makes prerender a **launch** task, not a content-phase task. It is also
+  currently payoff-free: `robots.txt` is `Disallow: /`.
+- **Static-in-repo content removes the need for bot injection entirely.** ADR-0003 justified
+  injection because social scrapers don't run JS and *dynamic* pages would otherwise share blank.
+  But news content is **compile-time TS constants**, so every slug is known at build time and the
+  pages **prerender** with correct per-post OG meta baked in. **Injection is only ever needed for
+  backend-driven detail pages** (real events, backend-served Meldungen) → Deferred with the
+  Club-App. See the [ADR-0003](../../docs/adr/0003-website-rendering-strategy.md) amendment.
+- Both, plus the robots flip, the absolute `og:image` URL and the sitemap, now live in the
+  master plan's **P7 — Launch**.
+
 **Deferred:**
 
-- **Prerender mechanism → around content-completion / launch** (P4): nothing to prerender while the
-  site is gated. The `head` API is prerender-ready; the concrete SSG choice is its own spike.
+- **Prerender mechanism → P7 (Launch).** Its own spike: emotion/MUI style extraction to static HTML,
+  a TanStack Router static entry, and no light/dark hydration flash. The `head` API is already
+  prerender-ready.
 - **Bot OG-meta injection mechanism** (edge middleware vs. a `<meta>`-serving endpoint on the API) →
-  when the first dynamic detail page ships (news P4 / event detail — deferred, needs the Club-App backend).
+  **only for backend-driven detail pages**; deferred with the Club-App backend.
 - Per-event OG images generated (matching the planner's Werbung feature) vs. static.
 - **Absolute share-image URL** — P0 ships `og:image` as root-relative `/og-default.png`
   (placeholder art); scrapers need an absolute URL, but none exists until a production domain
-  is fixed → resolve with the prerender/launch task.
+  is fixed → resolve in P7 (Launch).
+- **`noindex` on the 404** — the site-wide `NotFoundPage` ships in P4, but a not-found is not a
+  route, so it carries the root head; moot while `robots.txt` disallows everything → P7.
 
 ## Done When
 

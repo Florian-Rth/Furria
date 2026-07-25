@@ -148,6 +148,16 @@ One scrolling page, sections top → bottom:
   flex-grow **hairline rule to the edge** (2px `text.primary`, the masthead rule idiom). Typography +
   a rule — no hard-shadow, fully in-theme.
 
+### Red bands — migrated to the shared `CtaBand` (P4, 2026-07-25)
+- Both of this page's red strips were **re-parented onto `src/components/CtaBand/`** when the news
+  page made the idiom's third call site and rule-of-three fired: `NarrenrufBand` composes
+  `CtaBand.Row`, `RecruitBand` composes `CtaBand.Column`. The shared root owns the red surface,
+  broom watermark slot, overflow and inner container; **padding stays with the parent** and the
+  layout is chosen by slot, never by a flag. Copy, content and appearance are unchanged — this was a
+  de-duplication, not a redesign. See [Site-Shell](feature-site-shell.md).
+- `features/landing`'s `MitmachenBand` was deliberately **left alone**: it is a rounded red *card*
+  inside a `Container`, not a full-bleed band.
+
 ### Recruit band (closing red strip)
 - Full-bleed red band sharing the red-surface + `KkBroomMark` idiom with `MitmachenBand` (visual CI)
   but **club-local** (own copy + two buttons vs. the landing band's single CTA). Kicker **MITMACHEN ·

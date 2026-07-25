@@ -64,6 +64,35 @@ hang in — built first so everything else has a home.
 - Unbuilt routes resolve to one shared **`PlaceholderPage`** ("Diese Seite entsteht gerade") in the
   branded shell; each phase swaps its stub for the real page.
 
+**Not-found (added P4 — the site's first 404):**
+
+- **One site-wide 404**, not per-feature: a `notFoundComponent` on `__root` rendering a shared
+  `NotFoundPage` wrapped in the existing `SiteChrome`, so masthead + footer stay intact. Unknown
+  news slugs bubble up to it rather than getting their own surface.
+- It renders **outside `_gated`**, so it stays publicly reachable — which a 404 must be — and it
+  leaks no gated content. (A 404 *inside* `_gated` could never render: `beforeLoad` would redirect
+  first.)
+- Copy is deliberately funny and on-brand rather than a generic error: eyebrow *FEHLER 404*, Anton
+  **HIER WAR MAL / EINE SEITE.**, *"Jetzt ist hier nur Konfetti. Passiert den Besten von uns."*,
+  exits to `/` and `/program`. Built from shipped primitives only (confetti + `KkBroomMark`),
+  reduced-motion aware.
+- **`noindex` is deferred to P7 (Launch)** — a not-found is not a route, so it carries the root
+  head, and the point is moot while `robots.txt` disallows everything.
+
+**Shared `CtaBand` (added P4):**
+
+- The full-bleed red band idiom reached **three** call sites (`NarrenrufBand`, `RecruitBand`, the
+  news list's `/program` band), so it is extracted to `src/components/CtaBand/` as a **slotted
+  compound**: the root mounts the fixed decoration (red surface, watermark slot, overflow, inner
+  container, z-index) and accepts `sx` so the **parent owns padding**; layout variation is a
+  **choice of slot** (`Row` vs `Column`), never a variant flag.
+- It lives in `src/components/`, **not `@furria/ui`** — a CTA/recruit band is website chrome, not a
+  token-pure cross-app primitive (the Club-App will never mount one), and P1 deliberately sharpened
+  that boundary. Same reasoning that keeps `Masthead`/`SiteFooter` local.
+- **`MitmachenBand` is excluded on purpose.** The code shows it is a rounded (`radius.base`) red
+  *card* inside the landing's `Container`, not a full-bleed band; folding it in would require a
+  `fullBleed`-style prop, i.e. the boolean-flag API the frontend rules ban.
+
 **Theme:**
 
 - Consumes the **ONE** shared theme from `@furria/ui` — no website-only colors/fonts/radii/shadows.

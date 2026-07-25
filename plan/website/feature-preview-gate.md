@@ -48,6 +48,13 @@ at its final URLs. Already partly in code (`preview-access`, `dev-home`).
   disabled).
 - Everything but the legal pages sits behind the gate until launch.
 
+- **The gate now gates a second thing (P4, 2026-07-25):** the
+  [Tester-Changelog](feature-tester-changelog.md) mounts behind `granted`, so unlocking reveals both
+  the site *and* what changed since the tester's last visit. The coupling is resolved in
+  `routes/_site.tsx` — the route reads `usePreviewAccess()` and conditionally renders the changelog,
+  so **neither feature imports the other**. Removing the gate at launch removes the changelog too
+  (master plan **P7**).
+
 ## Open Questions
 
 - Launch mechanism: how the gate is flipped off (build flag, backend toggle, env).
