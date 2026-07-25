@@ -15,8 +15,11 @@ export const ClubHeroNumeral: FC = () => (
       fontSize: { xs: '15rem', md: '24rem' },
       lineHeight: 0.74,
       color: 'transparent',
-      WebkitTextStroke: `2px ${(theme.vars ?? theme).palette.primary.main}`,
-      opacity: { xs: 0.08, md: 0.12 },
+      WebkitTextStroke: {
+        xs: `3px ${(theme.vars ?? theme).palette.primary.main}`,
+        md: `5px ${(theme.vars ?? theme).palette.primary.main}`,
+      },
+      opacity: { xs: 0.12, md: 0.18 },
       pointerEvents: 'none',
       userSelect: 'none',
       zIndex: 0,

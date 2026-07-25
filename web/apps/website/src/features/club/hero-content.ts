@@ -1,12 +1,8 @@
 import { currentSession, FOUNDING_YEAR } from '@/lib/club';
 
-export const buildClubHeroEyebrow = (sessionNumber: number): string =>
-  `FURRSCHER CARNEVALS CLUB e.V. · ${sessionNumber}. SESSION`;
-
 export const buildClubHeroRibbon = (foundingYear: number): string =>
   `SEIT ${foundingYear} · GROSSBESENSTADT`;
 
-export const clubHeroEyebrow = buildClubHeroEyebrow(currentSession.number);
 export const clubHeroRibbon = buildClubHeroRibbon(FOUNDING_YEAR);
 export const clubHeroNumeral: number = currentSession.number;
 
