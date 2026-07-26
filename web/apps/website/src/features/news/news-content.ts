@@ -1,5 +1,7 @@
 import type { Theme } from '@mui/material/styles';
-import { currentSession } from '@/lib/club';
+import type { LinkProps } from '@tanstack/react-router';
+import type { Session } from '@/lib/club';
+import { currentSession, sessionAt } from '@/lib/club';
 
 export type NewsCategory = 'Session' | 'Erfolge' | 'Verein' | 'Gruppen';
 
@@ -29,6 +31,28 @@ export const newsEyebrow = buildNewsEyebrow(currentSession.yearsLabel);
 
 export const newsIntro =
   'Was im Verein passiert, steht hier. Kein Blog, keine tägliche Kolumne — nur das, was die Großbesenstadt wissen sollte.';
+
+const sessionClosingSentence = 'Das war alles aus dieser Session.';
+
+const archiveHintSentence = 'Ältere Meldungen liegen im Archiv.';
+
+export const newsArchiveHref = '/news/archive';
+
+export const newsEmptyNote = 'Noch keine Meldungen in dieser Session.';
+
+export interface NewsProgramBandContent {
+  kicker: string;
+  headline: string;
+  ctaLabel: string;
+  ctaTo: LinkProps['to'];
+}
+
+export const newsProgramBandContent: NewsProgramBandContent = {
+  kicker: 'NICHTS VERPASSEN',
+  headline: 'ALLE TERMINE DER SESSION',
+  ctaLabel: 'Zum Programm →',
+  ctaTo: '/program',
+};
 
 export const NEWS_POSTS: NewsPost[] = [
   {
@@ -156,6 +180,28 @@ export const resolveCategoryContrastText = (theme: Theme, category: NewsCategory
   }
   return palette.background.default;
 };
+
+export const resolveArchiveSession = (posts: NewsPost[], reference: Date): Session | null => {
+  const openSession = sessionAt(reference);
+  const olderSessions = posts
+    .map((post) => sessionAt(new Date(post.publishedAt)))
+    .filter((session) => session.startYear < openSession.startYear);
+
+  if (olderSessions.length === 0) {
+    return null;
+  }
+
+  return olderSessions.reduce((newest, session) =>
+    session.startYear > newest.startYear ? session : newest,
+  );
+};
+
+export const buildArchiveLabel = (session: Session): string => `Archiv ${session.yearsLabel}`;
+
+export const buildNewsListFooterNote = (archiveSession: Session | null): string =>
+  archiveSession === null
+    ? sessionClosingSentence
+    : `${sessionClosingSentence} ${archiveHintSentence}`;
 
 const WORDS_PER_MINUTE = 180;
 

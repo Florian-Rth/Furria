@@ -4,11 +4,14 @@ import { describe, expect, it } from 'vitest';
 import { currentSession } from '@/lib/club';
 import type { NewsPost } from './news-content';
 import {
+  buildArchiveLabel,
   buildNewsEyebrow,
+  buildNewsListFooterNote,
   deriveReadingTime,
   findPostBySlug,
   NEWS_POSTS,
   newsEyebrow,
+  resolveArchiveSession,
   resolveCategoryContrastText,
   resolveCategoryTint,
   selectFollowingPosts,
@@ -179,6 +182,62 @@ describe('deriveReadingTime', () => {
   it('counts across all paragraphs of the body', () => {
     const paragraph = Array.from({ length: 100 }, () => 'Wort').join(' ');
     expect(deriveReadingTime([paragraph, paragraph, paragraph])).toBe('2 Min. Lesezeit');
+  });
+});
+
+describe('resolveArchiveSession', () => {
+  const duringSeededSession = new Date('2026-07-26T12:00:00');
+
+  it('has no archive while every Meldung belongs to the open Session', () => {
+    expect(
+      resolveArchiveSession(
+        [post('sommer', '2026-07-18'), post('winter', '2026-01-20')],
+        duringSeededSession,
+      ),
+    ).toBeNull();
+  });
+
+  it('keeps a Meldung published after the Session opening in the open Session', () => {
+    expect(
+      resolveArchiveSession([post('nach-elften', '2025-12-01')], duringSeededSession),
+    ).toBeNull();
+  });
+
+  it('names the newest Session that has older Meldungen', () => {
+    expect(
+      resolveArchiveSession(
+        [post('uralt', '2024-02-05'), post('alt', '2025-03-10'), post('aktuell', '2026-07-18')],
+        duringSeededSession,
+      )?.yearsLabel,
+    ).toBe('2024/25');
+  });
+
+  it('has no archive without Meldungen', () => {
+    expect(resolveArchiveSession([], duringSeededSession)).toBeNull();
+  });
+
+  it('leaves the seeded Meldungen without an archive, so the button stays absent', () => {
+    expect(resolveArchiveSession(NEWS_POSTS, duringSeededSession)).toBeNull();
+  });
+});
+
+describe('buildArchiveLabel', () => {
+  it('names the archived Session by its span', () => {
+    expect(buildArchiveLabel({ number: 55, startYear: 2024, yearsLabel: '2024/25' })).toBe(
+      'Archiv 2024/25',
+    );
+  });
+});
+
+describe('buildNewsListFooterNote', () => {
+  it('closes the Session without promising an archive that does not exist', () => {
+    expect(buildNewsListFooterNote(null)).toBe('Das war alles aus dieser Session.');
+  });
+
+  it('points to the archive once older Meldungen exist', () => {
+    expect(buildNewsListFooterNote({ number: 55, startYear: 2024, yearsLabel: '2024/25' })).toBe(
+      'Das war alles aus dieser Session. Ältere Meldungen liegen im Archiv.',
+    );
   });
 });
 

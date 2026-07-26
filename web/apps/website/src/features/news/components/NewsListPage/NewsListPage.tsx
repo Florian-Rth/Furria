@@ -5,24 +5,27 @@ import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { NewsMedia } from '@/features/news/components/NewsMedia';
 import { NewsSectionRule } from '@/features/news/components/NewsSectionRule';
-import {
-  moreNewsLabel,
-  NEWS_POSTS,
-  selectFollowingPosts,
-  selectLeadPost,
-} from '@/features/news/news-content';
+import type { NewsPost } from '@/features/news/news-content';
+import { moreNewsLabel, selectFollowingPosts, selectLeadPost } from '@/features/news/news-content';
 import { NewsAufmacher } from '../NewsAufmacher/NewsAufmacher';
+import { NewsProgramBand } from '../NewsProgramBand/NewsProgramBand';
 import { NewsPageHead } from './internal/layout/NewsPageHead';
 import { NewsPageTitleColumn } from './internal/layout/NewsPageTitleColumn';
 import { NewsRowList } from './internal/layout/NewsRowList';
+import { NewsEmptyPanel } from './internal/ui/NewsEmptyPanel';
+import { NewsListFooter } from './internal/ui/NewsListFooter';
 import { NewsPageEyebrow } from './internal/ui/NewsPageEyebrow';
 import { NewsPageHeadline } from './internal/ui/NewsPageHeadline';
 import { NewsPageIntro } from './internal/ui/NewsPageIntro';
 import { NewsRow } from './internal/ui/NewsRow';
 
-export const NewsListPage: FC = () => {
-  const leadPost = selectLeadPost(NEWS_POSTS);
-  const followingPosts = selectFollowingPosts(NEWS_POSTS);
+interface NewsListPageProps {
+  posts: NewsPost[];
+}
+
+export const NewsListPage: FC<NewsListPageProps> = ({ posts }) => {
+  const leadPost = selectLeadPost(posts);
+  const followingPosts = selectFollowingPosts(posts);
 
   return (
     <Stack component="main" sx={{ flex: 1 }}>
@@ -36,35 +39,43 @@ export const NewsListPage: FC = () => {
             <NewsPageIntro />
           </NewsPageHead>
           <Divider sx={{ borderBottomWidth: 3, borderColor: 'text.primary' }} />
-          {leadPost !== undefined && (
-            <NewsAufmacher>
-              <NewsAufmacher.MediaColumn>
-                <NewsMedia
-                  post={leadPost}
-                  sx={{
-                    aspectRatio: kkTokens.aspectRatio.banner,
-                    fontSize: { xs: '1.75rem', md: '3.375rem' },
-                  }}
-                />
-              </NewsAufmacher.MediaColumn>
-              <NewsAufmacher.TextColumn>
-                <NewsAufmacher.Meta post={leadPost} />
-                <NewsAufmacher.Headline post={leadPost} />
-                <NewsAufmacher.Teaser post={leadPost} />
-                <NewsAufmacher.Footer post={leadPost} />
-              </NewsAufmacher.TextColumn>
-            </NewsAufmacher>
+          {leadPost === undefined ? (
+            <NewsEmptyPanel />
+          ) : (
+            <>
+              <NewsAufmacher>
+                <NewsAufmacher.MediaColumn>
+                  <NewsMedia
+                    post={leadPost}
+                    sx={{
+                      aspectRatio: kkTokens.aspectRatio.banner,
+                      fontSize: { xs: '1.75rem', md: '3.375rem' },
+                    }}
+                  />
+                </NewsAufmacher.MediaColumn>
+                <NewsAufmacher.TextColumn>
+                  <NewsAufmacher.Meta post={leadPost} />
+                  <NewsAufmacher.Headline post={leadPost} />
+                  <NewsAufmacher.Teaser post={leadPost} />
+                  <NewsAufmacher.Footer post={leadPost} />
+                </NewsAufmacher.TextColumn>
+              </NewsAufmacher>
+              {followingPosts.length > 0 && (
+                <Stack component="section" data-kk-news-list sx={{ gap: { xs: 3, md: 4 } }}>
+                  <NewsSectionRule label={moreNewsLabel} />
+                  <NewsRowList>
+                    {followingPosts.map((post) => (
+                      <NewsRow key={post.slug} post={post} />
+                    ))}
+                  </NewsRowList>
+                </Stack>
+              )}
+              <NewsListFooter posts={posts} reference={new Date()} />
+            </>
           )}
-          <Stack component="section" data-kk-news-list sx={{ gap: { xs: 3, md: 4 } }}>
-            <NewsSectionRule label={moreNewsLabel} />
-            <NewsRowList>
-              {followingPosts.map((post) => (
-                <NewsRow key={post.slug} post={post} />
-              ))}
-            </NewsRowList>
-          </Stack>
         </Stack>
       </Container>
+      <NewsProgramBand />
     </Stack>
   );
 };
