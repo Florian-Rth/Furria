@@ -242,13 +242,64 @@ does not "fix" them back:
   were authored for the other five from facts already stated in their own teasers plus names already
   in `groups-content.ts` (`body: [teaser]` would have printed the article's lead twice). The JHV
   teaser's "Der **Vorstand** wurde bestätigt" is now "Alle **Ämter** wurden bestätigt"; "der Beitrag
-  bleibt bei 30 Euro" stays — the membership-fee sense is the glossary-correct one. `motto-56` derives
-  **1 Min. Lesezeit** (~134 words at 180 wpm), not the mock's decorative "2 Min.".
+  bleibt bei 30 Euro" stays — the membership-fee sense is the glossary-correct one.
 - **The canonical is root-relative** (`/news/{slug}`) — no production origin is configured anywhere in
   the app, and inventing a domain was out of scope. `lib/seo.ts`'s `RouteHead` gained an optional
   `links` field to carry it through the existing `head` API.
 - **`useCopyLink` awaits the clipboard write** (a review catch): the first cut discarded the promise
   and reported "Link kopiert ✓" even when the write was denied, and threw in an insecure context.
+
+### UI/UX review pass (2026-07-27, commit `5ee1f12`)
+
+A critical design/a11y review of the shipped page produced 11 findings, all fixed in one pass. Where
+they change decisions recorded above:
+
+- **Small red text now uses a new scheme-aware `redInk` token**, not `primary.main`. Brand red
+  `#E11D2A` on cream is **4.35:1** — below the 4.5:1 AA floor — and `primary.dark` was *not* the answer:
+  in the dark scheme it is `#E11D2A` on `#15110E` = **3.94:1**, i.e. it would have broken dark mode.
+  `kkTokens.color.*.redInk` is light `#B3101C` (6.38:1) / dark `#FF3B47` (5.34:1) and is exposed as
+  `palette.redInk.main` via a module augmentation. **No new colour was introduced** — both values are
+  already in the palette (`redDk` in light, `red` in dark); the token is a new *semantic*, which is what
+  keeps the CI "no new colors" rule intact. Applied to the page eyebrow, the Aufmacher CTA, the article
+  back link, the copy-link hover and the teaser link. Large display red (the `12.07.` rail, hover
+  headlines) stays `primary.main` — it clears the 3:1 large-text bar.
+- **Reading time is now derived with a 3-minute minimum.** `deriveReadingTime` returns `string | null`
+  and the Aufmacher footer renders nothing below the threshold — a one-minute estimate is noise. Every
+  seeded Meldung is 50–140 words, so **the label is invisible on the shipped page by design** and
+  self-reveals for a longer Meldung, the same idiom as the archive button. A unit case documents this.
+- **The `AUFMACHER` flag is gone** (jargon, redundant with scale/position, and the one element fighting
+  `radius.base`), along with `aufmacherFlagLabel` and the flag component.
+- **The eyebrow is the plain constant `AUS DEM VEREIN`** — the masthead already states the Session twice,
+  and the old eyebrow claimed 2025/26 while the lead announces the 56. Session. `buildNewsEyebrow` and
+  its tests were deleted rather than left as an identity function. Consequence: at `xs` the running
+  Session is no longer named on this page (the masthead meta rails are `md+` only) — accepted.
+- **The Aufmacher is content-driven, not ratio-driven.** The media slot is `aspectRatio: { xs: banner,
+  md: 'auto' }` + `minHeight: { md: '16rem' }`, so the text column sets the card height and the media
+  stretches into it — this removed ~145px of dead space between the teaser and the footer.
+- **The photo placeholder is tinted neutrally** (`text.primary`), because a red-tinted stripe box read as
+  an error state *and* pre-empted `NewsPlakat`'s meaning. `resolveCategoryTint` is now used only by the
+  Plakat and the category chip; `KkPhotoPlaceholder`'s shared default is untouched.
+- **Exactly one date per row per breakpoint** — the meta-line long date is now the complement of the rail
+  (`xs` only). Accepted trade-off: at `md+` the year is absent from the reading order; a `<time
+  dateTime>` element would be the proper fix.
+- **Every card link carries `aria-label={post.title}`** (Aufmacher, rows, cards) — the accessible name
+  was previously the whole card, ~40 words. `NewsAufmacherRoot` takes `post` instead of `slug`.
+- **The hover lift moved to the `Card`** — on the `CardActionArea` it was clipped by the card's own
+  `overflow: hidden` (2px cut off the media top, a paper sliver at the bottom).
+- **The intro is a `subtitle1`-weight standfirst** and lost its defensive middle clause; the tester
+  changelog pill was demoted from brand-red CTA styling to a neutral utility control.
+
+**Still owed, no gate covers it:** a visual pass at `xs`/`md`/`xl` in both schemes. Two known judgement
+calls: in dark mode the neutral placeholder hatch may read as near-flat grey (the lever is the tint, never
+a prop on `KkPhotoPlaceholder`), and the demoted pill is white-on-white over `paper` rows in light mode
+(the lever is a stronger `borderColor`, never restoring `color="primary"`).
+
+**Out of scope, found during the pass — needs its own commit:** white on **dark-mode** red `#FF3B47` is
+**3.52:1**, so red *fills* fail AA in dark mode app-wide (`NewsWhatsAppShareButton`, `NewsCategoryChip`,
+`MitmachenBand`, `CtaBand`, `KkTicker`) — that is an `onRed`/fill-token decision, not a per-component
+patch. And the small-red-text failure still exists outside news at `components/NotFoundPage.tsx:45`,
+`components/SiteTextLink.tsx:51`/`:58`, `Masthead/internal/MastheadDesktopBar.tsx:34`, landing
+`ProgramSectionHeader.tsx:19` and club `PersonPortrait.tsx:34`; `redInk.main` is the ready-made lever.
 
 ## Open Questions
 
