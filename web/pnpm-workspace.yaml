@@ -10,6 +10,7 @@ catalog:
   '@emotion/styled': 11.14.1
   '@fontsource/anton': 5.2.7
   '@fontsource/archivo': 5.2.8
+  '@mui/icons-material': 9.2.0
   '@mui/material': 9.2.0
   '@rolldown/plugin-babel': 0.2.3
   '@tanstack/react-query': 5.101.2

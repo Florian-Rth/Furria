@@ -1,0 +1,62 @@
+[
+  {
+    "id": "website-p0-frontend",
+    "date": "2026-07-20",
+    "title": "Grundgerüst & Design",
+    "icon": "palette",
+    "description": [
+      "Die Seite hat ihr Gerüst: Kopfzeile mit Navigation, Fußzeile mit den rechtlichen Links und alle Seiten unter ihren endgültigen Adressen. Noch leere Seiten zeigen einen Platzhalter.",
+      "Neu ist außerdem die Umschaltung zwischen hellem und dunklem Erscheinungsbild — sie merkt sich deine Wahl. Bitte schau, ob in beiden Varianten alles gut lesbar ist."
+    ]
+  },
+  {
+    "id": "website-p1-landing-hero-fe",
+    "date": "2026-07-21",
+    "title": "Startseite: Aufmacher",
+    "icon": "campaign",
+    "description": [
+      "Die Startseite hat ihren großen Aufmacher mit Vereinsname, Session und den ersten beiden Schaltflächen. Darunter läuft ein Laufband mit den wichtigsten Terminen.",
+      "Das Foto ist noch ein Platzhalter, die Zahlen sind vorläufig."
+    ]
+  },
+  {
+    "id": "website-p1-1-mobile-hero",
+    "date": "2026-07-22",
+    "title": "Aufmacher am Handy",
+    "icon": "smartphone",
+    "description": [
+      "Am Handy bekommt der Aufmacher eine eigene Fassung: Foto über die ganze Breite, Überschrift darüber gesetzt, Text und Schaltflächen folgen darunter.",
+      "Bitte prüfe das vor allem auf einem echten Telefon — quer und hoch."
+    ]
+  },
+  {
+    "id": "website-p2-landing-complete-fe",
+    "date": "2026-07-23",
+    "title": "Startseite komplett",
+    "icon": "home",
+    "description": [
+      "Die Startseite ist durchgehend lesbar: unter dem Laufband kommen jetzt die nächsten drei Veranstaltungen und der rote Aufruf zum Mitmachen.",
+      "Termine und Fotos sind noch Platzhalter — geprüft wird die Anordnung, nicht der Inhalt."
+    ]
+  },
+  {
+    "id": "website-p3-verein-fe",
+    "date": "2026-07-24",
+    "title": "Vereinsseite",
+    "icon": "groups",
+    "description": [
+      "Die Seite „Verein“ ist da: Geschichte, Chronik, die laufende Session, alle Gruppen und die Ämter — eine durchlaufende Seite mit nummerierten Kapiteln.",
+      "Ein Klick auf eine Gruppe öffnet ihre Details in einem Fenster. Texte, Zahlen und Gesichter sind noch Platzhalter."
+    ]
+  },
+  {
+    "id": "website-p4-news-fe",
+    "date": "2026-07-26",
+    "title": "Aktuelles",
+    "icon": "newspaper",
+    "description": [
+      "„Aktuelles“ ist online: die Übersicht mit Aufmacher und weiteren Meldungen, dazu jede Meldung als eigene Seite mit Teilen-Funktion. Auf der Startseite gibt es einen kurzen Anriss.",
+      "Außerdem neu: eine eigene Seite für nicht gefundene Adressen — und dieses Änderungsprotokoll hier, das dir bei jedem Besuch zeigt, was seit dem letzten Mal dazugekommen ist."
+    ]
+  }
+]
