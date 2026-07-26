@@ -20,6 +20,8 @@ import {
   resolveCategoryTint,
   selectFollowingPosts,
   selectLeadPost,
+  selectRelatedPosts,
+  selectTeaserPosts,
   sortPostsByDateDesc,
 } from './news-content';
 
@@ -132,6 +134,58 @@ describe('findPostBySlug', () => {
 
   it('returns undefined for an unknown slug so the route can throw not-found', () => {
     expect(findPostBySlug(NEWS_POSTS, 'gibt-es-nicht')).toBeUndefined();
+  });
+});
+
+describe('selectRelatedPosts', () => {
+  it('excludes the open Meldung and keeps the newest first', () => {
+    const related = selectRelatedPosts(
+      [
+        post('older', '2026-05-30'),
+        post('open', '2026-07-18'),
+        post('middle', '2026-06-14'),
+        post('newer', '2026-07-04'),
+      ],
+      'open',
+    );
+
+    expect(related.map((newsPost) => newsPost.slug)).toEqual(['newer', 'middle', 'older']);
+  });
+
+  it('caps the Meldungen at three', () => {
+    const related = selectRelatedPosts(NEWS_POSTS, 'motto-56');
+
+    expect(related).toHaveLength(3);
+    expect(related.map((newsPost) => newsPost.slug)).not.toContain('motto-56');
+  });
+
+  it('has nothing to offer beside the only Meldung', () => {
+    expect(selectRelatedPosts([post('only', '2026-07-18')], 'only')).toEqual([]);
+  });
+
+  it('keeps three Meldungen when the slug matches none of them', () => {
+    expect(selectRelatedPosts(NEWS_POSTS, 'gibt-es-nicht')).toHaveLength(3);
+  });
+});
+
+describe('selectTeaserPosts', () => {
+  it('takes the three newest Meldungen for the landing block', () => {
+    const teaser = selectTeaserPosts([
+      post('older', '2026-05-30'),
+      post('newest', '2026-07-18'),
+      post('middle', '2026-06-14'),
+      post('second', '2026-07-04'),
+    ]);
+
+    expect(teaser.map((newsPost) => newsPost.slug)).toEqual(['newest', 'second', 'middle']);
+  });
+
+  it('leads the landing block with the same Meldung as the Aufmacher', () => {
+    expect(selectTeaserPosts(NEWS_POSTS)[0]?.slug).toBe(selectLeadPost(NEWS_POSTS)?.slug);
+  });
+
+  it('shows fewer Meldungen instead of padding', () => {
+    expect(selectTeaserPosts([post('only', '2026-07-18')])).toHaveLength(1);
   });
 });
 

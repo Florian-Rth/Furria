@@ -3,6 +3,7 @@ import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { NewsPost } from '@/features/news/news-content';
+import { NewsRelated } from '../NewsRelated/NewsRelated';
 import { NewsPostBody } from './internal/layout/NewsPostBody';
 import { NewsPostColumn } from './internal/layout/NewsPostColumn';
 import { NewsPostHeader } from './internal/layout/NewsPostHeader';
@@ -42,6 +43,7 @@ export const NewsPostPage: FC<NewsPostPageProps> = ({ post }) => (
           <NewsWhatsAppShareButton post={post} />
           <NewsCopyLinkButton />
         </NewsShareRow>
+        <NewsRelated currentSlug={post.slug} />
       </NewsPostColumn>
     </Container>
   </Stack>

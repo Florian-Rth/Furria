@@ -27,6 +27,8 @@ export const readMoreLabel = 'Ganze Meldung lesen →';
 
 export const backToListLabel = '← Alle Meldungen';
 
+export const allNewsLabel = 'Alle Meldungen →';
+
 export const heroCaptionNote = 'Foto: Vereinsarchiv · Platzhalter';
 
 export const shareLabel = 'TEILEN';
@@ -173,6 +175,18 @@ export const selectFollowingPosts = (posts: NewsPost[]): NewsPost[] =>
 
 export const findPostBySlug = (posts: NewsPost[], slug: string): NewsPost | undefined =>
   posts.find((post) => post.slug === slug);
+
+const RELATED_POSTS_LIMIT = 3;
+
+export const selectRelatedPosts = (posts: NewsPost[], currentSlug: string): NewsPost[] =>
+  sortPostsByDateDesc(posts)
+    .filter((post) => post.slug !== currentSlug)
+    .slice(0, RELATED_POSTS_LIMIT);
+
+const TEASER_POSTS_LIMIT = 3;
+
+export const selectTeaserPosts = (posts: NewsPost[]): NewsPost[] =>
+  sortPostsByDateDesc(posts).slice(0, TEASER_POSTS_LIMIT);
 
 export const resolveCategoryTint = (theme: Theme, category: NewsCategory): string => {
   const palette = (theme.vars ?? theme).palette;
