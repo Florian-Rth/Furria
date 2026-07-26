@@ -39,9 +39,6 @@ export const copiedLinkLabel = 'Link kopiert ✓';
 
 export const newsEyebrow = 'AUS DEM VEREIN';
 
-export const newsIntro =
-  'Was im Verein passiert, steht hier — alles, was die Großbesenstadt wissen sollte.';
-
 const sessionClosingSentence = 'Das war alles aus dieser Session.';
 
 const archiveHintSentence = 'Ältere Meldungen liegen im Archiv.';

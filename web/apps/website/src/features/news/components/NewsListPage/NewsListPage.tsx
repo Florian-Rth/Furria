@@ -16,7 +16,7 @@ import { NewsEmptyPanel } from './internal/ui/NewsEmptyPanel';
 import { NewsListFooter } from './internal/ui/NewsListFooter';
 import { NewsPageEyebrow } from './internal/ui/NewsPageEyebrow';
 import { NewsPageHeadline } from './internal/ui/NewsPageHeadline';
-import { NewsPageIntro } from './internal/ui/NewsPageIntro';
+import { NewsPageWatermark } from './internal/ui/NewsPageWatermark';
 import { NewsRow } from './internal/ui/NewsRow';
 
 interface NewsListPageProps {
@@ -32,11 +32,11 @@ export const NewsListPage: FC<NewsListPageProps> = ({ posts }) => {
       <Container maxWidth="xl" sx={{ px: kkTokens.layout.gutterX, py: kkTokens.layout.gutterY }}>
         <Stack sx={{ gap: { xs: 4, md: 6 } }}>
           <NewsPageHead>
+            <NewsPageWatermark />
             <NewsPageTitleColumn>
               <NewsPageEyebrow />
               <NewsPageHeadline />
             </NewsPageTitleColumn>
-            <NewsPageIntro />
           </NewsPageHead>
           <Divider sx={{ borderBottomWidth: 3, borderColor: 'text.primary' }} />
           {leadPost === undefined ? (
