@@ -69,7 +69,7 @@ export const LandingPage: FC<LandingPageProps> = ({ newsTeaser }) => (
     </Box>
     <LandingTicker />
     <Container maxWidth="xl" sx={{ px: kkTokens.layout.gutterX, py: kkTokens.layout.gutterY }}>
-      <Stack sx={{ gap: { xs: 6, md: 8 } }}>
+      <Stack sx={{ gap: kkTokens.layout.sectionGap }}>
         <ProgramTeaser />
         {newsTeaser}
         <MitmachenBand />

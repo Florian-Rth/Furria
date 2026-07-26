@@ -1,5 +1,5 @@
+import { KkCard, kkTokens } from '@furria/ui';
 import Box from '@mui/material/Box';
-import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
@@ -31,23 +31,18 @@ export const ChronikMilestone: FC<ChronikMilestoneProps> = ({ milestone, tint, a
         zIndex: 1,
       }}
     />
-    <Card
+    <KkCard
       sx={{
         flexGrow: 1,
-        p: { xs: 2.5, md: 3 },
-        ...(accented && { borderColor: 'primary.main', borderWidth: 2 }),
+        ...(accented && { borderColor: 'primary.main', borderWidth: kkTokens.line.section }),
       }}
     >
-      <Stack sx={{ gap: 1, alignItems: 'flex-start' }}>
-        <Typography variant="h3" component="span" sx={{ color: tint, lineHeight: 0.9 }}>
+      <KkCard.Body>
+        <Typography variant="h3" component="span" sx={{ color: 'primary.main', lineHeight: 0.9 }}>
           {milestone.year}
         </Typography>
-        <Typography variant="subtitle1" component="h3" sx={{ fontWeight: 800 }}>
-          {milestone.title}
-        </Typography>
-        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-          {milestone.description}
-        </Typography>
+        <KkCard.Title>{milestone.title}</KkCard.Title>
+        <KkCard.Text>{milestone.description}</KkCard.Text>
         {milestone.isPlaceholder ? (
           <Typography
             variant="caption"
@@ -56,9 +51,9 @@ export const ChronikMilestone: FC<ChronikMilestoneProps> = ({ milestone, tint, a
               fontWeight: 800,
               letterSpacing: '0.12em',
               color: 'warning.main',
-              border: 1,
+              border: kkTokens.line.hair,
               borderColor: 'warning.main',
-              borderRadius: (theme) => `${theme.shape.borderRadius}px`,
+              borderRadius: `${kkTokens.radius.base}px`,
               px: 1,
               py: 0.25,
             }}
@@ -66,7 +61,7 @@ export const ChronikMilestone: FC<ChronikMilestoneProps> = ({ milestone, tint, a
             PLATZHALTER
           </Typography>
         ) : null}
-      </Stack>
-    </Card>
+      </KkCard.Body>
+    </KkCard>
   </Stack>
 );

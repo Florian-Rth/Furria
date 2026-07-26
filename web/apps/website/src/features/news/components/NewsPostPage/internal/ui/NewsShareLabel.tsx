@@ -1,13 +1,5 @@
-import Typography from '@mui/material/Typography';
+import { KkEyebrow } from '@furria/ui';
 import type { FC } from 'react';
 import { shareLabel } from '@/features/news/news-content';
 
-export const NewsShareLabel: FC = () => (
-  <Typography
-    component="span"
-    variant="overline"
-    sx={{ fontWeight: 900, letterSpacing: '0.18em', color: 'text.secondary', lineHeight: 1 }}
-  >
-    {shareLabel}
-  </Typography>
-);
+export const NewsShareLabel: FC = () => <KkEyebrow tone="muted">{shareLabel}</KkEyebrow>;

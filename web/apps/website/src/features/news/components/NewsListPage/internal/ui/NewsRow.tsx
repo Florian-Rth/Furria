@@ -27,7 +27,7 @@ export const NewsRow: FC<NewsRowProps> = ({ post }) => (
         duration: theme.transitions.duration.shortest,
       }),
       '&:hover': {
-        bgcolor: 'background.paper',
+        bgcolor: 'action.hover',
         '& [data-kk-news-row-title]': { color: 'primary.main' },
       },
       '&.Mui-focusVisible': {

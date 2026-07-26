@@ -19,6 +19,9 @@ export interface NewsPost {
 
 export const newsHeading = 'AKTUELLES';
 
+export const newsDescription =
+  'Was bei uns passiert: Neues von der Bühne, aus dem Wagenbau und den Gruppen — dazu Termine, Erfolge und alles, was die Session sonst noch bringt.';
+
 export const moreNewsLabel = 'WEITERE MELDUNGEN';
 
 export const readMoreLabel = 'Ganze Meldung lesen →';

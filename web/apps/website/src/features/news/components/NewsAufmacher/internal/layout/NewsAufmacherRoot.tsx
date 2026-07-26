@@ -1,5 +1,4 @@
 import { kkTokens } from '@furria/ui';
-import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
 import Grid from '@mui/material/Grid';
 import { Link } from '@tanstack/react-router';
@@ -12,18 +11,22 @@ interface NewsAufmacherRootProps extends PropsWithChildren {
 }
 
 export const NewsAufmacherRoot: FC<NewsAufmacherRootProps> = ({ post, children }) => (
-  <Card
+  <CardActionArea
     data-kk-news-aufmacher
+    component={Link}
+    to={buildPostHref(post.slug)}
+    aria-label={post.title}
     sx={(theme) => ({
-      boxShadow: kkTokens.shadow.raised,
-      transition: theme.transitions.create(['transform'], {
+      borderRadius: `${kkTokens.radius.base}px`,
+      p: { xs: 2, md: 2.5 },
+      transition: theme.transitions.create(['background-color'], {
         duration: theme.transitions.duration.shortest,
       }),
       '&:hover': {
-        transform: 'translateY(-2px)',
+        bgcolor: 'action.hover',
         '& [data-kk-news-aufmacher-title]': { color: 'primary.main' },
       },
-      '&:has(.Mui-focusVisible)': {
+      '&.Mui-focusVisible': {
         outlineWidth: 2,
         outlineStyle: 'solid',
         outlineColor: (theme.vars ?? theme).palette.primary.main,
@@ -31,8 +34,8 @@ export const NewsAufmacherRoot: FC<NewsAufmacherRootProps> = ({ post, children }
       },
     })}
   >
-    <CardActionArea component={Link} to={buildPostHref(post.slug)} aria-label={post.title}>
-      <Grid container>{children}</Grid>
-    </CardActionArea>
-  </Card>
+    <Grid container spacing={{ xs: 3, md: 6 }} sx={{ width: '100%', alignItems: 'center' }}>
+      {children}
+    </Grid>
+  </CardActionArea>
 );

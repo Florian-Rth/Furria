@@ -8,6 +8,8 @@ interface KkTwoToneHeadlineProps {
   line2: string;
   posterShadow?: boolean;
   line1Color?: string;
+  variant?: 'h1' | 'h2';
+  component?: 'h1' | 'h2' | 'p';
 }
 
 export const KkTwoToneHeadline: FC<KkTwoToneHeadlineProps> = ({
@@ -15,8 +17,10 @@ export const KkTwoToneHeadline: FC<KkTwoToneHeadlineProps> = ({
   line2,
   posterShadow = false,
   line1Color,
+  variant = 'h1',
+  component = 'h1',
 }) => (
-  <Typography variant="h1" component="h1">
+  <Typography variant={variant} component={component}>
     <Box component="span" sx={{ display: 'block', color: line1Color ?? 'text.primary' }}>
       {line1}
     </Box>

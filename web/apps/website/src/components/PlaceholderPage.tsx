@@ -1,27 +1,32 @@
-import { PageLayout } from '@furria/ui';
-import Chip from '@mui/material/Chip';
-import Typography from '@mui/material/Typography';
+import { KkHeroSection, KkRule, PageLayout } from '@furria/ui';
+import Button from '@mui/material/Button';
+import { Link as RouterLink } from '@tanstack/react-router';
 import type { FC } from 'react';
 
 interface PlaceholderPageProps {
+  eyebrow: string;
   title: string;
 }
 
-export const PlaceholderPage: FC<PlaceholderPageProps> = ({ title }) => (
+export const PlaceholderPage: FC<PlaceholderPageProps> = ({ eyebrow, title }) => (
   <PageLayout>
-    <PageLayout.Header>
-      <Chip label="In Arbeit" color="warning" size="small" />
-      <Typography variant="h2" component="h1">
-        {title}
-      </Typography>
-    </PageLayout.Header>
-    <PageLayout.Content gap={1.5}>
-      <Typography variant="h5" component="p">
-        Diese Seite entsteht gerade.
-      </Typography>
-      <Typography variant="body1" sx={{ color: 'text.secondary', maxWidth: 'sm' }}>
-        Wir arbeiten hinter den Kulissen daran. Schau bald wieder vorbei — Gross - Furria!
-      </Typography>
-    </PageLayout.Content>
+    <PageLayout.Body>
+      <KkHeroSection>
+        <KkHeroSection.Main>
+          <KkHeroSection.Eyebrow>{eyebrow}</KkHeroSection.Eyebrow>
+          <KkHeroSection.Title>{title}</KkHeroSection.Title>
+          <KkHeroSection.Description>
+            Diese Seite entsteht gerade. Wir arbeiten hinter den Kulissen daran — schau bald wieder
+            vorbei, Gross - Furria!
+          </KkHeroSection.Description>
+          <KkHeroSection.Actions>
+            <Button component={RouterLink} to="/news" variant="contained" size="large">
+              Zu den Meldungen →
+            </Button>
+          </KkHeroSection.Actions>
+        </KkHeroSection.Main>
+      </KkHeroSection>
+      <KkRule />
+    </PageLayout.Body>
   </PageLayout>
 );

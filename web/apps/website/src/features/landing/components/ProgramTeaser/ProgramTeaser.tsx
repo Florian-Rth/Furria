@@ -1,20 +1,28 @@
+import { KkSection } from '@furria/ui';
 import Grid from '@mui/material/Grid';
-import Stack from '@mui/material/Stack';
 import { useTheme } from '@mui/material/styles';
 import type { FC } from 'react';
-import { PROGRAM_EVENTS, resolveEventTint } from '@/features/landing/program-content';
+import { SectionActionLink } from '@/components/SectionActionLink';
+import {
+  PROGRAM_EVENTS,
+  programAllLabel,
+  programHeading,
+  resolveEventTint,
+} from '@/features/landing/program-content';
 import { ProgramGrid } from './internal/layout/ProgramGrid';
 import { ProgramList } from './internal/layout/ProgramList';
 import { EventRow } from './internal/ui/EventRow';
 import { ProgramCard } from './internal/ui/ProgramCard';
-import { ProgramSectionHeader } from './internal/ui/ProgramSectionHeader';
 
 export const ProgramTeaser: FC = () => {
   const theme = useTheme();
 
   return (
-    <Stack component="section" data-kk-program-teaser sx={{ gap: 4 }}>
-      <ProgramSectionHeader />
+    <KkSection>
+      <KkSection.Header
+        title={programHeading}
+        action={<SectionActionLink to="/program">{programAllLabel}</SectionActionLink>}
+      />
       <ProgramGrid>
         {PROGRAM_EVENTS.map((event, index) => (
           <Grid key={event.startsAt} size={{ xs: 12, md: 4 }}>
@@ -27,6 +35,6 @@ export const ProgramTeaser: FC = () => {
           <EventRow key={event.startsAt} event={event} tint={resolveEventTint(theme, index)} />
         ))}
       </ProgramList>
-    </Stack>
+    </KkSection>
   );
 };

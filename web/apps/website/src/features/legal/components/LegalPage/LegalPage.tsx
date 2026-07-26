@@ -10,15 +10,13 @@ interface LegalPageProps {
 
 export const LegalPage: FC<LegalPageProps> = ({ legalDocument }) => (
   <PageLayout>
-    <PageLayout.Header>
+    <PageLayout.Prose>
       <Typography variant="h3" component="h1">
         {legalDocument.title}
       </Typography>
-    </PageLayout.Header>
-    <PageLayout.Content>
       {legalDocument.sections.map((section) => (
         <LegalSectionBlock key={section.heading} section={section} />
       ))}
-    </PageLayout.Content>
+    </PageLayout.Prose>
   </PageLayout>
 );

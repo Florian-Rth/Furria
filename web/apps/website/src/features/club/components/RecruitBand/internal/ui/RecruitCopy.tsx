@@ -1,3 +1,4 @@
+import { KkEyebrow } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
@@ -14,9 +15,7 @@ export const RecruitCopy: FC = () => (
       maxWidth: 640,
     }}
   >
-    <Typography variant="overline" sx={{ fontWeight: 800, letterSpacing: '0.16em', opacity: 0.85 }}>
-      {recruitBandContent.kicker}
-    </Typography>
+    <KkEyebrow tone="onAccent">{recruitBandContent.kicker}</KkEyebrow>
     <Typography variant="h2" component="h2">
       {recruitBandContent.headline}
     </Typography>

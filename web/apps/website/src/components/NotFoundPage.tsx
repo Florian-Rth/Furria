@@ -1,4 +1,4 @@
-import { KkBroomMark, KkConfettiRain, KkTwoToneHeadline, kkTokens } from '@furria/ui';
+import { KkBroomMark, KkConfettiRain, KkEyebrow, KkTwoToneHeadline, kkTokens } from '@furria/ui';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
@@ -39,12 +39,7 @@ export const NotFoundPage: FC = () => (
     </Box>
     <Container maxWidth="md" disableGutters sx={{ position: 'relative', zIndex: 1 }}>
       <Stack sx={{ gap: { xs: 3, md: 4 }, alignItems: 'flex-start' }}>
-        <Typography
-          variant="overline"
-          sx={{ fontWeight: 900, letterSpacing: '0.24em', color: 'primary.main', lineHeight: 1.4 }}
-        >
-          FEHLER 404
-        </Typography>
+        <KkEyebrow>FEHLER 404</KkEyebrow>
         <KkTwoToneHeadline line1="HIER WAR MAL" line2="EINE SEITE." />
         <Typography
           variant="subtitle1"

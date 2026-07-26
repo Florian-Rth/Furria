@@ -10,7 +10,6 @@ export const NewsAufmacherTextColumn: FC<PropsWithChildren> = ({ children }) => 
       flexDirection: 'column',
       alignItems: 'flex-start',
       gap: { xs: 1.5, md: 2 },
-      p: { xs: 2.5, md: 4 },
     }}
   >
     {children}

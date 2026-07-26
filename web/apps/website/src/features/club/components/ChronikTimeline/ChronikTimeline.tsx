@@ -1,8 +1,7 @@
-import Stack from '@mui/material/Stack';
+import { KkSection } from '@furria/ui';
 import { useTheme } from '@mui/material/styles';
 import type { FC } from 'react';
 import { chronikChapter, MILESTONES, resolveMilestoneTint } from '@/features/club/chronik-content';
-import { ChapterHeader } from '../ChapterHeader/ChapterHeader';
 import { ChronikSpine } from './internal/layout/ChronikSpine';
 import { ChronikMilestone } from './internal/ui/ChronikMilestone';
 
@@ -10,12 +9,8 @@ export const ChronikTimeline: FC = () => {
   const theme = useTheme();
 
   return (
-    <Stack component="section" data-kk-chronik sx={{ gap: { xs: 4, md: 6 } }}>
-      <ChapterHeader
-        numeral={chronikChapter.numeral}
-        kicker={chronikChapter.kicker}
-        title={chronikChapter.title}
-      />
+    <KkSection>
+      <KkSection.Header {...chronikChapter} />
       <ChronikSpine>
         {MILESTONES.map((milestone, index) => (
           <ChronikMilestone
@@ -26,6 +21,6 @@ export const ChronikTimeline: FC = () => {
           />
         ))}
       </ChronikSpine>
-    </Stack>
+    </KkSection>
   );
 };

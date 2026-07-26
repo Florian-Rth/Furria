@@ -1,8 +1,7 @@
+import { KkSection } from '@furria/ui';
 import Grid from '@mui/material/Grid';
-import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { NewsCard } from '@/features/news/components/NewsCard';
-import { NewsSectionRule } from '@/features/news/components/NewsSectionRule';
 import { moreNewsLabel, NEWS_POSTS, selectRelatedPosts } from '@/features/news/news-content';
 import { NewsRelatedGrid } from './internal/layout/NewsRelatedGrid';
 
@@ -20,8 +19,8 @@ export const NewsRelated: FC<NewsRelatedProps> = ({ currentSlug }) => {
   }
 
   return (
-    <Stack component="section" data-kk-news-related sx={{ gap: { xs: 3, md: 4 } }}>
-      <NewsSectionRule label={moreNewsLabel} />
+    <KkSection>
+      <KkSection.Header title={moreNewsLabel} />
       <NewsRelatedGrid>
         {relatedPosts.map((post, index) => (
           <Grid
@@ -35,6 +34,6 @@ export const NewsRelated: FC<NewsRelatedProps> = ({ currentSlug }) => {
           </Grid>
         ))}
       </NewsRelatedGrid>
-    </Stack>
+    </KkSection>
   );
 };
