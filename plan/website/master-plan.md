@@ -64,7 +64,7 @@ Guiding constraints (all binding):
 |---|---|---|---|
 | [Site-Shell](feature-site-shell.md) | foundation | shipped | Masthead nav, footer, theming, layout, `@furria/ui` wiring |
 | [Preview-Gate](feature-preview-gate.md) | foundation | shipped | Pre-launch access gate (tester portal removed 2026-07-20) |
-| [Tester-Changelog](feature-tester-changelog.md) | foundation | ready | Per-branch changelog modal for testers *(scaffolding — removed at launch)* |
+| [Tester-Changelog](feature-tester-changelog.md) | foundation | shipped | Per-branch changelog modal for testers *(scaffolding — removed at launch)* |
 | [API-Client](feature-api-client.md) | foundation | building | Data layer to the backend public read endpoints |
 | [SEO & Meta](feature-seo-meta.md) | foundation | building | Meta tags, Open Graph / social-share cards |
 | [Ticker](feature-ticker.md) | foundation | building | Flat red/gold marquee signature chrome |
@@ -75,7 +75,7 @@ Guiding constraints (all binding):
 | [Verein](feature-about-verein.md) | capability | shipped | Verein story, Ämter, Gruppen showcase |
 | [Veranstaltungskalender](feature-event-calendar.md) | capability | idea | Public event list/calendar + detail |
 | [Ticket-Shop](feature-ticket-shop.md) | capability | idea | Browse ticketed events, checkout, payment |
-| [Aktuelles](feature-news.md) | capability | ready | Meldungen (list + detail) + landing teaser |
+| [Aktuelles](feature-news.md) | capability | shipped | Meldungen (list + detail) + landing teaser |
 | [Bildergalerie](feature-gallery.md) | capability | idea | Public event photo gallery |
 | [Mitglied werden](feature-membership-funnel.md) | capability | idea | Membership info + application funnel |
 
@@ -250,24 +250,71 @@ choices worth knowing:
   not scaffolded) — all need the Club-App backend.
 
 ### P4 — News
-**Status:** ready (planned 2026-07-25, branch `feat/website-p4-news-fe`)
+**Status:** done (2026-07-26, branch `feat/website-p4-news-fe`, 8 commits `46e8899`…`eeff7af`)
 `/news` + `/news/:slug` + a landing teaser live — the marketing site is **content-complete**.
-Static-final (no backend). Shipped as the 10 vertical slices in the [Aktuelles](feature-news.md)
-Implementation plan.
+Static-final (no backend). Shipped as the 10 [Aktuelles](feature-news.md) slices plus the 2
+[Tester-Changelog](feature-tester-changelog.md) slices, grouped into 8 commits. Final gates:
+typecheck clean, 214 tests (6 ui + 208 website), lint clean, build clean.
 
-- [ ] [Aktuelles](feature-news.md) — list (Aufmacher + Meldungen rows + `/program` band) + detail
+Followed the plan closely; build-level choices worth knowing:
+- **Router realities forced two shapes.** The article route file is **`news_.$slug.tsx`** (trailing
+  underscore), not `news.$slug.tsx`: with the dotted name TanStack nests the article *under*
+  `news.tsx`, which renders `NewsListPage` and no `<Outlet/>`, so the article never rendered. The URL
+  is unchanged. And card links use **`to={buildPostHref(slug)}`** (a plain string href) rather than
+  `to="/news/$slug" params={{ slug }}` — MUI's polymorphic `component={Link}` collapses TanStack's
+  `to`-driven param generics to `string`, so the typed form fails overload resolution (TS2769).
+- **The 404 does not bubble.** `notFoundComponent` had to be registered on `__root` **and**
+  `_site.tsx` **and** `_gated.tsx`: TanStack raises the not-found on the *matched* route, so
+  `/news/<unknown>` otherwise rendered the router's generic `<p>Not Found</p>`. Still ONE shared
+  page, and still publicly reachable. It ships as two files — `NotFoundPage` (chrome-less) +
+  `NotFoundScreen` (`SiteChrome` wrapper) — because the one-component-per-file rule forbids declaring
+  the wrapper inside `__root.tsx`. It uses **`KkConfettiRain`**: `KkConfettiScatter` no longer exists
+  (dropped in `b34da0e`), and `KkConfettiBurst` is a click-fired one-shot.
+- **The archive button ships wired, with an accepted dead target** (decided during the build, see
+  [Aktuelles](feature-news.md)): `NewsListFooter` derives it from `resolveArchiveSession(posts, …)`
+  and renders a plain `Button href="/news/archive"` — an untyped anchor, since a typed `Link` cannot
+  compile against a route the plan forbids building. It is absent in every P4 content state and would
+  degrade to the branded 404. The derivation is also load-bearing today: the footer sentence drops its
+  "Ältere Meldungen liegen im Archiv." clause while no archive exists.
+- **`kkTokens` needed no additions**, but `resolveCategoryContrastText` joins `resolveCategoryTint`:
+  "ink on gold" cannot be `text.primary` (cream in the dark scheme), so contrast is read from
+  `primary/warning.contrastText` + `background.default`, scheme-aware.
+- **`CtaBand` keeps the watermark call-site-owned.** The two shipped watermarks genuinely differ
+  (Narrenruf: left, −12°, 0.12, 320; Recruit: centred, −8°, 0.08, 360), so per the no-flag ruling the
+  root exposes a `watermark` **node slot** instead of reconciling them. Band-level dev hooks were
+  renamed into the compound (`data-kk-cta-band`, `…-row`, `…-column`); call-site hooks are untouched.
+- **Seed content is fuller than the mock**, which ships a `body` for only 1 of 6 Meldungen: bodies
+  were authored for the other 5 from facts already in their own teasers (`body: [teaser]` would print
+  the lead twice on the article page). The mock's JHV teaser "Der **Vorstand** wurde bestätigt" became
+  "Alle **Ämter** wurden bestätigt"; "der Beitrag bleibt bei 30 Euro" stays — that is the
+  membership-fee sense, which is the glossary-correct use.
+- **Two responsive calls:** the red date rail is hidden at `xs` (rail + thumb left ~176px for the
+  headline at 360px, and the long date is already in the row's meta line — the mock's own responsive
+  notes ask for this); and the landing teaser's header **restates** the section-rule idiom at `h2`
+  scale rather than reusing `NewsSectionRule` (an `h5` component), because adding a size prop would be
+  the dual-mode API the rules ban. The article page reuses the shipped component unchanged.
+- **Reviews** ran per slice (`react-code-reviewer` + `react-composition-guru` on the compound-heavy
+  ones). Real fixes applied: an invisible Aufmacher focus ring (the `Card`'s `overflow: hidden`
+  clipped the action area's outline → moved to `&:has(.Mui-focusVisible)`), a lying "Link kopiert"
+  (the clipboard promise was discarded, so a denied write still reported success → now awaited), a
+  `lib/` layering leak (`CLUB_TIME_ZONE` → `APP_TIME_ZONE`), and a missing `aria-describedby` on the
+  changelog dialog. The rest were over-flags, each rejected against the real diff.
+
+- [x] [Aktuelles](feature-news.md) — list (Aufmacher + Meldungen rows + `/program` band) + detail
       (article + share row + Weitere Meldungen) + the landing `NewsTeaser`; 4 fixed Kategorien with
       derived tints; typographic Plakat fallback for photo-less Meldungen; static content behind
       typed constants
-- [ ] [Site-Shell](feature-site-shell.md) — the site's **first 404**: a branded, humorous
-      `NotFoundPage` on `__root`'s `notFoundComponent`, plus the shared `src/components/CtaBand/`
-      full-bleed red-band compound (migrating `NarrenrufBand` + `RecruitBand`)
-- [ ] [Landing](feature-landing.md) — one optional node slot on `LandingPage` for the news teaser,
-      wired by the `/` route; final block order Hero → Ticker → Programm-Teaser → **News-Teaser** →
-      Mitmachen-Band
-- [ ] [SEO & Meta](feature-seo-meta.md) — per-post document head only (`og:type: article`,
-      published time, canonical). **No prerender, no bot injection** — moved to P7 / Deferred
-- [ ] [Tester-Changelog](feature-tester-changelog.md) — per-branch changelog modal for testers
+- [x] [Site-Shell](feature-site-shell.md) — the site's **first 404**: a branded, humorous
+      `NotFoundPage` on `__root`'s `notFoundComponent` *(plus `_site` + `_gated` — it does not
+      bubble)*, plus the shared `src/components/CtaBand/` full-bleed red-band compound (migrating
+      `NarrenrufBand` + `RecruitBand`)
+- [x] [Landing](feature-landing.md) — one optional node slot (`newsTeaser`) on `LandingPage` for the
+      news teaser, wired by the `/` route; final block order Hero → Ticker → Programm-Teaser →
+      **News-Teaser** → Mitmachen-Band
+- [x] [SEO & Meta](feature-seo-meta.md) — per-post document head only (`og:type: article`,
+      published time, canonical — root-relative; `RouteHead` gained an optional `links` field).
+      **No prerender, no bot injection** — moved to P7 / Deferred
+- [x] [Tester-Changelog](feature-tester-changelog.md) — per-branch changelog modal for testers
       (build-time `changelog.json` + Zod, vertical `Tabs` master/detail, per-entry read status in
       `localStorage`, reopen pill). **Tester scaffolding — deleted at launch.** Added to P4 by
       request, unrelated to news

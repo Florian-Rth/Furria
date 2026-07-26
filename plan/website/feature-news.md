@@ -2,7 +2,7 @@
 title: Aktuelles
 slug: news
 type: capability
-status: ready
+status: shipped
 mock: docs/design/news-page/
 adrs: [docs/adr/0003-website-rendering-strategy.md]
 ---
@@ -192,6 +192,63 @@ Two routes plus one reusable block:
   formatting, inline-bold parsing, WhatsApp URL. No tests that render a mock and assert its own
   values back out, and no trivial-UI assertions (standing rule; cf. the `test(web): remove
   implementation and UI-only tests` commit).
+
+### As built (P4, 2026-07-26) — where the code differs from the plan above
+
+Everything above shipped as decided, except these build-level realities. Recorded so a future agent
+does not "fix" them back:
+
+- **Article link mechanism.** Cards link with `to={buildPostHref(slug)}` (a plain string href), not
+  `to="/news/$slug" params={{ slug }}`: MUI's polymorphic `component={Link}` collapses TanStack's
+  `to`-driven param generics to `string`, so the typed form fails overload resolution (TS2769).
+  `buildPostHref` is a pure exported helper, also used for the canonical link.
+- **Route file name** is `routes/_site/_gated/news_.$slug.tsx` (trailing underscore, route id
+  `/_site/_gated/news_/$slug`), not `news.$slug.tsx`. The dotted name makes TanStack nest the article
+  *under* `news.tsx`, which renders `NewsListPage` and no `<Outlet/>` — the article never rendered.
+  Public path, gate and 404 behaviour are unchanged and `news.tsx` was not touched.
+- **The archive button is wired, with an accepted dead target.** The plan wanted a *derived* button
+  and no archive route, which leaves it no valid typed destination — resolved by decision during the
+  build: `NewsListFooter` takes `{ posts, reference }`, derives via `resolveArchiveSession`, and
+  renders a plain `Button href={newsArchiveHref}` (`/news/archive`, an untyped anchor). It is absent
+  in every P4 content state and would degrade to the branded 404; swap it to a typed `Link` the day
+  the route lands. The derivation is load-bearing today too: `buildNewsListFooterNote` drops the
+  "Ältere Meldungen liegen im Archiv." clause while no archive exists (it was otherwise a factual
+  lie), and restores it alongside the button.
+- **`resolveCategoryContrastText` joins `resolveCategoryTint`.** "Ink text on gold" cannot be
+  `text.primary` — that token is cream in the dark scheme, i.e. cream on gold. Contrast is read from
+  `primary/warning.contrastText` and `background.default`, so all three tints stay legible in both
+  schemes without baking a mode value.
+- **`categoryLabels` was not built** — all four `NewsCategory` keys already *are* their German labels,
+  so the map would be a pure identity map. The chip renders the value and uppercases via CSS.
+- **`NewsMedia`** is the single place that resolves the `image` branch (`KkPhotoPlaceholder` vs.
+  `NewsPlakat`), shared by Aufmacher, rows, cards and the article hero. Feature-internal, not
+  exported from the barrel.
+- **The date rail is hidden at `xs`.** Rail + gaps + thumbnail left ~176px for the headline at 360px,
+  and the long date already sits in the row's meta line — which is also what the mock's documented
+  responsive behaviour asks for ("<700px: drop the date rail into the meta line"). Unchanged at `md+`.
+- **The landing teaser's header restates the section-rule idiom rather than reusing
+  `NewsSectionRule`.** That component renders its label at `h5`, correct for an in-page rule but
+  broken next to the landing's sibling `DAS PROGRAMM` at `h2`; adding a size prop would be the
+  dual-mode API the rules ban, so `NewsTeaserHeading` restates the three elements (~10 lines) at `h2`.
+  The article page reuses the shipped component and the shared `moreNewsLabel` const exactly.
+- **The teaser's lead card is emphasised by `shadow.raised` alone**, not a wider grid span — a 6/3/3
+  split letterboxed the lead card's media and shrank the other two. All three keep `md: 4`.
+- **`NewsRelated` reads `NEWS_POSTS` internally** and takes only `currentSlug`, matching
+  `NewsTeaser`/`ProgramTeaser`, so `NewsPostPage`'s prop shape stays `post`.
+- **Section guards:** both the list's *WEITERE MELDUNGEN* rule and the related/teaser blocks are
+  guarded on a non-empty result, so a Session with exactly one Meldung never renders a rule over an
+  empty list. Not in the plan, but the same derived-data state the empty branch handles.
+- **Seed content is fuller than the mock.** The mock ships a `body` for only `motto-56`, so bodies
+  were authored for the other five from facts already stated in their own teasers plus names already
+  in `groups-content.ts` (`body: [teaser]` would have printed the article's lead twice). The JHV
+  teaser's "Der **Vorstand** wurde bestätigt" is now "Alle **Ämter** wurden bestätigt"; "der Beitrag
+  bleibt bei 30 Euro" stays — the membership-fee sense is the glossary-correct one. `motto-56` derives
+  **1 Min. Lesezeit** (~134 words at 180 wpm), not the mock's decorative "2 Min.".
+- **The canonical is root-relative** (`/news/{slug}`) — no production origin is configured anywhere in
+  the app, and inventing a domain was out of scope. `lib/seo.ts`'s `RouteHead` gained an optional
+  `links` field to carry it through the existing `head` API.
+- **`useCopyLink` awaits the clipboard write** (a review catch): the first cut discarded the promise
+  and reported "Link kopiert ✓" even when the write was denied, and threw in an insecure context.
 
 ## Open Questions
 

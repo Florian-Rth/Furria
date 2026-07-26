@@ -46,6 +46,11 @@ shareable material" ambition on the public side.
   teaser, OG title/description, **`og:type: article`** (overriding the root's `website`), published
   time, canonical. No new mechanism — the existing `head` API, correct SPA-injected today and
   exactly what a prerender bakes in later.
+- *As built (2026-07-26):* `lib/seo.ts`'s `RouteHead` type gained an optional **`links`** field (it
+  previously typed `meta` only) so the canonical goes through the same `head` API. The canonical is
+  **root-relative** (`/news/{slug}`, built by the pure `buildPostHref`): no production origin is
+  configured anywhere in the app, and a relative canonical is spec-valid — it resolves with the
+  absolute `og:image` URL in P7.
 
 **Revised in P4 grilling (2026-07-25) — prerender and injection both moved out of P4:**
 

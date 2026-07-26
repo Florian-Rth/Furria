@@ -78,6 +78,18 @@ hang in — built first so everything else has a home.
   reduced-motion aware.
 - **`noindex` is deferred to P7 (Launch)** — a not-found is not a route, so it carries the root
   head, and the point is moot while `robots.txt` disallows everything.
+- *As built (P4):* **it does not bubble.** TanStack Router raises a not-found on the *matched* route,
+  so `notFoundComponent` is registered on `__root`, `_site.tsx` **and** `_gated.tsx` — otherwise
+  `/news/<unknown>` rendered the router's generic `<p>Not Found</p>`. Still one shared page, still
+  publicly reachable; any future route that throws `notFound()` must register it too. Route-tree
+  registration was chosen over a router-level `defaultNotFoundComponent` because the router is created
+  twice (`main.tsx` + `test/render.tsx`) and that config would have to be duplicated to stay honest in
+  tests.
+- *As built (P4):* **two files, not one** — `NotFoundPage` (chrome-less) + `NotFoundScreen`
+  (`SiteChrome` + page, what the routes register): one-component-per-file forbids declaring the wrapper
+  inside `__root.tsx`, and the page must be chrome-less below a layout that already mounts
+  `SiteChrome`. Decoration is **`KkConfettiRain`** — `KkConfettiScatter` no longer exists (dropped in
+  `b34da0e`) and `KkConfettiBurst` is a click-fired one-shot, wrong for standing page decoration.
 
 **Shared `CtaBand` (added P4):**
 
@@ -92,6 +104,17 @@ hang in — built first so everything else has a home.
 - **`MitmachenBand` is excluded on purpose.** The code shows it is a rounded (`radius.base`) red
   *card* inside the landing's `Container`, not a full-bleed band; folding it in would require a
   `fullBleed`-style prop, i.e. the boolean-flag API the frontend rules ban.
+- *As built (P4):* **the watermark stayed call-site-owned.** The two shipped watermarks genuinely
+  differ (Narrenruf: left, −12°, opacity 0.12, size 320; Recruit: centred, −8°, 0.08, 360), so rather
+  than reconcile them behind a flag the root exposes a `watermark` **node slot** each band fills with
+  its own component. Migration parity was verified by rendering inline copies of the shipped originals
+  beside the migrated ones and diffing the emitted Emotion declarations per breakpoint.
+- *As built (P4):* band-level dev hooks were **renamed into the compound** —
+  `data-kk-narrenruf-band`/`data-kk-recruit-band` → `data-kk-cta-band`, `…-row` →
+  `data-kk-cta-band-row`, `…-recruit-row` → `data-kk-cta-band-column`. Preserving per-feature names
+  would have required the root to forward arbitrary DOM props, widening the API for no consumer.
+  Call-site-owned hooks (`data-kk-narrenruf-watermark`, `…-shout`, `data-kk-recruit-watermark`) are
+  untouched.
 
 **Theme:**
 

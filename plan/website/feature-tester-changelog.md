@@ -2,7 +2,7 @@
 title: Tester-Changelog
 slug: tester-changelog
 type: foundation
-status: ready
+status: shipped
 mock: -
 adrs: []
 ---
@@ -125,13 +125,41 @@ Karnevalsverein's visitors do not want release notes.
   newest-is-unread predicate, read-id add, and storage read/write with an injected `Storage`
   (including the malformed-data path). No render-and-assert-the-fixture tests.
 
+### As built (P4, 2026-07-26) — where the code differs from the plan above
+
+- **`resolveJsonModule` was not needed.** TypeScript 7.0.2 with `moduleResolution: bundler` resolves
+  and typechecks `import … from '@/content/changelog.json'` cleanly, so `apps/website/tsconfig.json` is
+  unchanged (verified by removing/restoring the flag and comparing `tsc --noEmit`).
+- **Six icon keys**, all in use: `palette`, `campaign`, `smartphone`, `home`, `groups`, `newspaper`,
+  each a path default import typed as `Record<ChangelogIconKey, typeof SvgIcon>` so a missing or extra
+  key is a compile error.
+- **P1.1's entry id is `website-p1-1-mobile-hero`, not a branch slug.** P1.1 shipped on P1's branch, and
+  ids double as localStorage read keys, so reusing the slug would have collided. A test asserts id
+  uniqueness.
+- **Existing route tests needed a seam.** Mounting an auto-opening MUI `Dialog` makes `ModalManager`
+  mark the app root `aria-hidden`, so every granted-visit route test (index, `_gated`, 404, news slug)
+  timed out looking for its heading. Added `src/test/changelog.ts` with `markChangelogSeen()`, called
+  from `beforeEach`, so those tests exercise the page as a tester who has already seen the log. This
+  required exporting `writeReadEntryIds` from the barrel (so the helper does not reach past `index.ts`);
+  `useChangelogReadStatus` left the barrel, being internal to the dialog hook.
+- **Tab activation is MUI's default manual mode** (arrows move focus, Enter/Space selects), *not*
+  `selectionFollowsFocus`: selection marks an entry read, so automatic activation would silently mark
+  every entry read while arrowing past it.
+- **The trigger pill sits bottom-right with a `spacing(12)` (`xs`) / `spacing(8)` (`sm+`) bottom
+  offset** — anything tighter overlaps the footer's legal links when scrolled to the bottom.
+- **`changelog-copy.ts`** holds the German dialog/trigger strings; `buildTriggerLabel` composes the
+  accessible name from them so it contains the visible label text (WCAG 2.5.3).
+- **`aria-describedby`** was added alongside `aria-labelledby` (review catch — `PreviewAccessDialog`
+  sets both).
+
 ## Open Questions
 
 - **Who writes entries, and when** — the intended workflow is that the agent appends one entry at
   the end of a branch/phase on request. Worth a line in `CLAUDE.md` once the shape is proven, so it
-  becomes routine rather than something to remember.
-- **Backfill** — do P0–P3 get retroactive entries so testers see the full history, or does the log
-  start at P4? Cheap either way; not blocking.
+  becomes routine rather than something to remember. *Still open after P4.*
+- **Backfill** — *resolved in the P4 build:* the log **backfills P0–P3** (P0 shell & theme, P1 + P1.1
+  landing hero, P2 landing complete, P3 Verein) plus a P4 entry, so testers see the full history rather
+  than a log that starts mid-project.
 
 ## Done When
 

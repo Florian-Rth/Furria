@@ -176,13 +176,22 @@ detail + build slices live in each block's own feature file; the landing only ow
 
 The landing's only P4 change; the teaser itself is built in [Aktuelles](feature-news.md) slice 10.
 
-12. **Add the news slot.** Give `LandingPage` one optional node slot rendered between
+12. **[done]** **Add the news slot.** Give `LandingPage` one optional node slot rendered between
     `ProgramTeaser` and `MitmachenBand`, and have `routes/_site/index.tsx` pass `<NewsTeaser/>` from
     the news barrel. No other change to the shipped landing.
     *Delivers (FE):* the home page surfaces the 3 newest Meldungen and links to `/news`.
     *Verify:* no `features/landing` ↔ `features/news` import in either direction; `LandingPage`
     renders correctly with the slot omitted; block order asserted at both breakpoints;
     `pnpm build`/`typecheck` pass.
+    *As built (2026-07-26):* the slot prop is `newsTeaser?: ReactNode`, rendered between
+    `ProgramTeaser` and `MitmachenBand`; `routes/_site/index.tsx` passes `<NewsTeaser />` from the news
+    barrel. **The block-order assertion was not written:** there is no `LandingPage.test.tsx` (contrary
+    to what P1.1/P2 imply), and one cannot easily exist — `renderWithProviders` supplies no router while
+    `LandingPage` contains TanStack `Link`s, so a scratch render crashes with
+    `Cannot read properties of null (reading 'isServer')`; a router-backed order assertion would also be
+    exactly the trivial-UI test class the `test(web): remove implementation and UI-only tests` commit
+    deleted. Verified instead by reading the final order and by re-running `routes/_site/index.test.tsx`
+    against a temporarily slot-less `<LandingPage />`.
 
 ## References
 
