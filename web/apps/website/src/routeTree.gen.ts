@@ -20,6 +20,7 @@ import { Route as SiteGatedNewsRouteImport } from './routes/_site/_gated/news'
 import { Route as SiteGatedJoinRouteImport } from './routes/_site/_gated/join'
 import { Route as SiteGatedGalleryRouteImport } from './routes/_site/_gated/gallery'
 import { Route as SiteGatedClubRouteImport } from './routes/_site/_gated/club'
+import { Route as SiteGatedNewsSlugRouteImport } from './routes/_site/_gated/news_.$slug'
 
 const SiteRoute = SiteRouteImport.update({
   id: '/_site',
@@ -74,6 +75,11 @@ const SiteGatedClubRoute = SiteGatedClubRouteImport.update({
   path: '/club',
   getParentRoute: () => SiteGatedRoute,
 } as any)
+const SiteGatedNewsSlugRoute = SiteGatedNewsSlugRouteImport.update({
+  id: '/news_/$slug',
+  path: '/news/$slug',
+  getParentRoute: () => SiteGatedRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof SiteIndexRoute
@@ -85,6 +91,7 @@ export interface FileRoutesByFullPath {
   '/news': typeof SiteGatedNewsRoute
   '/program': typeof SiteGatedProgramRoute
   '/tickets': typeof SiteGatedTicketsRoute
+  '/news/$slug': typeof SiteGatedNewsSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof SiteIndexRoute
@@ -96,6 +103,7 @@ export interface FileRoutesByTo {
   '/news': typeof SiteGatedNewsRoute
   '/program': typeof SiteGatedProgramRoute
   '/tickets': typeof SiteGatedTicketsRoute
+  '/news/$slug': typeof SiteGatedNewsSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -110,6 +118,7 @@ export interface FileRoutesById {
   '/_site/_gated/news': typeof SiteGatedNewsRoute
   '/_site/_gated/program': typeof SiteGatedProgramRoute
   '/_site/_gated/tickets': typeof SiteGatedTicketsRoute
+  '/_site/_gated/news_/$slug': typeof SiteGatedNewsSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -123,6 +132,7 @@ export interface FileRouteTypes {
     | '/news'
     | '/program'
     | '/tickets'
+    | '/news/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -134,6 +144,7 @@ export interface FileRouteTypes {
     | '/news'
     | '/program'
     | '/tickets'
+    | '/news/$slug'
   id:
     | '__root__'
     | '/_site'
@@ -147,6 +158,7 @@ export interface FileRouteTypes {
     | '/_site/_gated/news'
     | '/_site/_gated/program'
     | '/_site/_gated/tickets'
+    | '/_site/_gated/news_/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -232,6 +244,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SiteGatedClubRouteImport
       parentRoute: typeof SiteGatedRoute
     }
+    '/_site/_gated/news_/$slug': {
+      id: '/_site/_gated/news_/$slug'
+      path: '/news/$slug'
+      fullPath: '/news/$slug'
+      preLoaderRoute: typeof SiteGatedNewsSlugRouteImport
+      parentRoute: typeof SiteGatedRoute
+    }
   }
 }
 
@@ -242,6 +261,7 @@ interface SiteGatedRouteChildren {
   SiteGatedNewsRoute: typeof SiteGatedNewsRoute
   SiteGatedProgramRoute: typeof SiteGatedProgramRoute
   SiteGatedTicketsRoute: typeof SiteGatedTicketsRoute
+  SiteGatedNewsSlugRoute: typeof SiteGatedNewsSlugRoute
 }
 
 const SiteGatedRouteChildren: SiteGatedRouteChildren = {
@@ -251,6 +271,7 @@ const SiteGatedRouteChildren: SiteGatedRouteChildren = {
   SiteGatedNewsRoute: SiteGatedNewsRoute,
   SiteGatedProgramRoute: SiteGatedProgramRoute,
   SiteGatedTicketsRoute: SiteGatedTicketsRoute,
+  SiteGatedNewsSlugRoute: SiteGatedNewsSlugRoute,
 }
 
 const SiteGatedRouteWithChildren = SiteGatedRoute._addFileChildren(

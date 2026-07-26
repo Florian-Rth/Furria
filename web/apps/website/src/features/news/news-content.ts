@@ -2,6 +2,7 @@ import type { Theme } from '@mui/material/styles';
 import type { LinkProps } from '@tanstack/react-router';
 import type { Session } from '@/lib/club';
 import { currentSession, sessionAt } from '@/lib/club';
+import { formatLongDate } from '@/lib/date';
 
 export type NewsCategory = 'Session' | 'Erfolge' | 'Verein' | 'Gruppen';
 
@@ -24,6 +25,18 @@ export const aufmacherFlagLabel = 'AUFMACHER';
 
 export const readMoreLabel = 'Ganze Meldung lesen →';
 
+export const backToListLabel = '← Alle Meldungen';
+
+export const heroCaptionNote = 'Foto: Vereinsarchiv · Platzhalter';
+
+export const shareLabel = 'TEILEN';
+
+export const whatsAppShareLabel = 'WhatsApp';
+
+export const copyLinkLabel = 'Link kopieren';
+
+export const copiedLinkLabel = 'Link kopiert ✓';
+
 export const buildNewsEyebrow = (yearsLabel: string): string =>
   `AUS DEM VEREIN · SESSION ${yearsLabel}`;
 
@@ -37,6 +50,8 @@ const sessionClosingSentence = 'Das war alles aus dieser Session.';
 const archiveHintSentence = 'Ältere Meldungen liegen im Archiv.';
 
 export const newsArchiveHref = '/news/archive';
+
+export const buildPostHref = (slug: string): string => `/news/${slug}`;
 
 export const newsEmptyNote = 'Noch keine Meldungen in dieser Session.';
 
@@ -212,3 +227,34 @@ export const deriveReadingTime = (body: string[]): string => {
     .filter((word) => word !== '').length;
   return `${Math.max(1, Math.ceil(wordCount / WORDS_PER_MINUTE))} Min. Lesezeit`;
 };
+
+export const buildPostByline = (post: NewsPost): string =>
+  post.author === null
+    ? formatLongDate(post.publishedAt)
+    : `${formatLongDate(post.publishedAt)} · von ${post.author}`;
+
+export interface InlineSegment {
+  text: string;
+  bold: boolean;
+}
+
+const BOLD_MARKER = '**';
+
+export const parseInlineBold = (paragraph: string): InlineSegment[] => {
+  const parts = paragraph.split(BOLD_MARKER);
+  const hasUnmatchedMarker = parts.length % 2 === 0;
+
+  return parts.flatMap((part, index) => {
+    const isTrailingRemainder = hasUnmatchedMarker && index === parts.length - 1;
+    const text = isTrailingRemainder ? `${BOLD_MARKER}${part}` : part;
+    if (text === '') {
+      return [];
+    }
+    return [{ text, bold: index % 2 === 1 && !isTrailingRemainder }];
+  });
+};
+
+const WHATSAPP_SHARE_BASE = 'https://wa.me/?text=';
+
+export const buildWhatsAppShareUrl = (title: string, url: string): string =>
+  `${WHATSAPP_SHARE_BASE}${encodeURIComponent(`${title}\n${url}`)}`;

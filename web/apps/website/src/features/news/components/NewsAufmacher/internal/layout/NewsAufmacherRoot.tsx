@@ -4,9 +4,14 @@ import CardActionArea from '@mui/material/CardActionArea';
 import Grid from '@mui/material/Grid';
 import { Link } from '@tanstack/react-router';
 import type { FC, PropsWithChildren } from 'react';
+import { buildPostHref } from '@/features/news/news-content';
 import { NewsAufmacherFlag } from '../ui/NewsAufmacherFlag';
 
-export const NewsAufmacherRoot: FC<PropsWithChildren> = ({ children }) => (
+interface NewsAufmacherRootProps extends PropsWithChildren {
+  slug: string;
+}
+
+export const NewsAufmacherRoot: FC<NewsAufmacherRootProps> = ({ slug, children }) => (
   <Card
     data-kk-news-aufmacher
     sx={(theme) => ({
@@ -22,7 +27,7 @@ export const NewsAufmacherRoot: FC<PropsWithChildren> = ({ children }) => (
   >
     <CardActionArea
       component={Link}
-      to="/news"
+      to={buildPostHref(slug)}
       sx={(theme) => ({
         position: 'relative',
         transition: theme.transitions.create(['transform'], {

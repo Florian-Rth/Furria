@@ -7,6 +7,7 @@ import type { FC } from 'react';
 import { NewsCategoryChip } from '@/features/news/components/NewsCategoryChip';
 import { NewsMedia } from '@/features/news/components/NewsMedia';
 import type { NewsPost } from '@/features/news/news-content';
+import { buildPostHref } from '@/features/news/news-content';
 import { formatLongDate, formatShortDate } from '@/lib/date';
 
 interface NewsRowProps {
@@ -17,7 +18,7 @@ export const NewsRow: FC<NewsRowProps> = ({ post }) => (
   <CardActionArea
     data-kk-news-row
     component={Link}
-    to="/news"
+    to={buildPostHref(post.slug)}
     sx={(theme) => ({
       borderRadius: `${kkTokens.radius.base}px`,
       p: { xs: 2, md: 2.5 },

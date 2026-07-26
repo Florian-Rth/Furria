@@ -43,7 +43,7 @@ export const NewsListPage: FC<NewsListPageProps> = ({ posts }) => {
             <NewsEmptyPanel />
           ) : (
             <>
-              <NewsAufmacher>
+              <NewsAufmacher slug={leadPost.slug}>
                 <NewsAufmacher.MediaColumn>
                   <NewsMedia
                     post={leadPost}

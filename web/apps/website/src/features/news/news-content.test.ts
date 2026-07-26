@@ -7,10 +7,14 @@ import {
   buildArchiveLabel,
   buildNewsEyebrow,
   buildNewsListFooterNote,
+  buildPostByline,
+  buildPostHref,
+  buildWhatsAppShareUrl,
   deriveReadingTime,
   findPostBySlug,
   NEWS_POSTS,
   newsEyebrow,
+  parseInlineBold,
   resolveArchiveSession,
   resolveCategoryContrastText,
   resolveCategoryTint,
@@ -248,5 +252,83 @@ describe('buildNewsEyebrow', () => {
 
   it('derives the shipped eyebrow from the current Session', () => {
     expect(newsEyebrow).toContain(currentSession.yearsLabel);
+  });
+});
+
+describe('buildPostHref', () => {
+  it('gives every Meldung its own URL below the list route', () => {
+    expect(buildPostHref('motto-56')).toBe('/news/motto-56');
+  });
+});
+
+describe('buildPostByline', () => {
+  it('names the author behind the date when the Meldung has one', () => {
+    expect(buildPostByline({ ...post('motto', '2026-07-18'), author: 'Franz-Josef Besen' })).toBe(
+      '18. Juli 2026 · von Franz-Josef Besen',
+    );
+  });
+
+  it('omits the byline instead of inventing an institutional author', () => {
+    expect(buildPostByline(post('motto', '2026-07-18'))).toBe('18. Juli 2026');
+  });
+});
+
+describe('parseInlineBold', () => {
+  it('keeps a paragraph without emphasis in one plain segment', () => {
+    expect(parseInlineBold('Ganz ohne Auszeichnung.')).toEqual([
+      { text: 'Ganz ohne Auszeichnung.', bold: false },
+    ]);
+  });
+
+  it('splits an emphasised phrase out of its surrounding text', () => {
+    expect(parseInlineBold('Motto: **Groß Furria hebt ab**, ab November.')).toEqual([
+      { text: 'Motto: ', bold: false },
+      { text: 'Groß Furria hebt ab', bold: true },
+      { text: ', ab November.', bold: false },
+    ]);
+  });
+
+  it('handles several emphasised phrases in order', () => {
+    expect(parseInlineBold('**5. August**, immer **20:00 Uhr**')).toEqual([
+      { text: '5. August', bold: true },
+      { text: ', immer ', bold: false },
+      { text: '20:00 Uhr', bold: true },
+    ]);
+  });
+
+  it('keeps an unmatched marker as literal text', () => {
+    expect(parseInlineBold('Zwei Sterne **ohne Ende')).toEqual([
+      { text: 'Zwei Sterne ', bold: false },
+      { text: '**ohne Ende', bold: false },
+    ]);
+  });
+
+  it('keeps the trailing marker literal after a closed pair', () => {
+    expect(parseInlineBold('**fett** und **offen')).toEqual([
+      { text: 'fett', bold: true },
+      { text: ' und ', bold: false },
+      { text: '**offen', bold: false },
+    ]);
+  });
+
+  it('drops empty segments', () => {
+    expect(parseInlineBold('')).toEqual([]);
+    expect(parseInlineBold('****')).toEqual([]);
+  });
+});
+
+describe('buildWhatsAppShareUrl', () => {
+  it('percent-encodes title and URL into the wa.me text parameter', () => {
+    expect(
+      buildWhatsAppShareUrl('Das Motto der 56. Session steht', 'https://furria.de/news/motto-56'),
+    ).toBe(
+      'https://wa.me/?text=Das%20Motto%20der%2056.%20Session%20steht%0Ahttps%3A%2F%2Ffurria.de%2Fnews%2Fmotto-56',
+    );
+  });
+
+  it('encodes German umlauts and ampersands so the link survives WhatsApp', () => {
+    expect(buildWhatsAppShareUrl('Größer & lauter', 'https://furria.de/news/a?b=c')).toBe(
+      'https://wa.me/?text=Gr%C3%B6%C3%9Fer%20%26%20lauter%0Ahttps%3A%2F%2Ffurria.de%2Fnews%2Fa%3Fb%3Dc',
+    );
   });
 });
