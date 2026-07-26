@@ -13,7 +13,6 @@ export const LandingHeroBackdrop: FC = () => (
       left: 0,
       right: 0,
       bottom: 0,
-      overflow: 'hidden',
       pointerEvents: 'none',
       zIndex: -1,
     }}

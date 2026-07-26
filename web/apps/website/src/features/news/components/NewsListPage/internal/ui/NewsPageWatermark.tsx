@@ -17,6 +17,6 @@ export const NewsPageWatermark: FC = () => (
       pointerEvents: 'none',
     }}
   >
-    <KkBroomMark size={320} />
+    <KkBroomMark size={220} />
   </Box>
 );

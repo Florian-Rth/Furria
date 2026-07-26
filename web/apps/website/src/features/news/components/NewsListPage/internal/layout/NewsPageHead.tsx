@@ -7,7 +7,6 @@ export const NewsPageHead: FC<PropsWithChildren> = ({ children }) => (
     direction={{ xs: 'column', md: 'row' }}
     sx={{
       position: 'relative',
-      overflow: 'hidden',
       alignItems: { md: 'flex-end' },
       justifyContent: 'space-between',
       gap: { xs: 3, md: 5 },

@@ -11,7 +11,6 @@ export const HeroPhoto: FC = () => (
         border: 2,
         borderColor: 'text.primary',
         borderRadius: `${kkTokens.radius.base}px`,
-        overflow: 'hidden',
         boxShadow: kkTokens.shadow.raised,
       }}
     >

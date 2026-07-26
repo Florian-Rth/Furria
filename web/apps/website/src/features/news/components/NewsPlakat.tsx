@@ -12,7 +12,6 @@ interface NewsPlakatProps {
 
 const plakatSurface: SxProps<Theme> = {
   position: 'relative',
-  overflow: 'hidden',
   width: '100%',
   height: '100%',
   display: 'flex',

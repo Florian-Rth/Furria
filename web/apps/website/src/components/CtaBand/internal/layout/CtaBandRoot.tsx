@@ -16,7 +16,6 @@ export const CtaBandRoot: FC<CtaBandRootProps> = ({ watermark, sx, children }) =
     sx={[
       {
         position: 'relative',
-        overflow: 'hidden',
         bgcolor: 'primary.main',
         color: 'primary.contrastText',
         px: kkTokens.layout.gutterX,

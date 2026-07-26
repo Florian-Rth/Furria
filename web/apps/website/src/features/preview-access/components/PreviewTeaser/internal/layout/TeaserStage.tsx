@@ -15,7 +15,6 @@ export const TeaserStage: FC<PropsWithChildren> = ({ children }) => (
       py: 10,
       position: 'relative',
       zIndex: 1,
-      overflow: 'hidden',
     }}
   >
     {children}

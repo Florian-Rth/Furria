@@ -15,7 +15,6 @@ export const NewsAufmacherRoot: FC<NewsAufmacherRootProps> = ({ post, children }
   <Card
     data-kk-news-aufmacher
     sx={(theme) => ({
-      overflow: 'hidden',
       boxShadow: kkTokens.shadow.raised,
       transition: theme.transitions.create(['transform'], {
         duration: theme.transitions.duration.shortest,

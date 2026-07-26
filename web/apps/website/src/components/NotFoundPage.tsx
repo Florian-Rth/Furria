@@ -14,7 +14,6 @@ export const NotFoundPage: FC = () => (
     sx={{
       flex: 1,
       position: 'relative',
-      overflow: 'hidden',
       justifyContent: 'center',
       px: kkTokens.layout.gutterX,
       py: kkTokens.layout.gutterY,
@@ -28,7 +27,7 @@ export const NotFoundPage: FC = () => (
       sx={{
         position: 'absolute',
         top: '50%',
-        right: { xs: -96, md: '4%' },
+        right: { xs: 0, md: '4%' },
         transform: 'translateY(-50%) rotate(14deg)',
         color: 'text.primary',
         opacity: 0.05,

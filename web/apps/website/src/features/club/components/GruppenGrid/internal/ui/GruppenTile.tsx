@@ -15,10 +15,7 @@ interface GruppenTileProps {
 }
 
 export const GruppenTile: FC<GruppenTileProps> = ({ group, tint, badge, onOpen }) => (
-  <Card
-    data-kk-gruppen-tile
-    sx={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
-  >
+  <Card data-kk-gruppen-tile sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
     <CardActionArea
       onClick={onOpen}
       aria-label={`${group.title} — mehr erfahren`}
@@ -46,6 +43,7 @@ export const GruppenTile: FC<GruppenTileProps> = ({ group, tint, badge, onOpen }
             borderRight: 1,
             borderBottom: 1,
             borderColor: 'divider',
+            borderTopLeftRadius: `${kkTokens.radius.base}px`,
             borderBottomRightRadius: `${kkTokens.radius.base}px`,
           }}
         >

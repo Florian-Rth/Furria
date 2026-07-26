@@ -15,10 +15,7 @@ export const NewsMedia: FC<NewsMediaProps> = ({ post, sx }) => {
   const theme = useTheme();
 
   return (
-    <Box
-      data-kk-news-media
-      sx={[{ width: '100%', overflow: 'hidden' }, ...(Array.isArray(sx) ? sx : [sx])]}
-    >
+    <Box data-kk-news-media sx={[{ width: '100%' }, ...(Array.isArray(sx) ? sx : [sx])]}>
       {post.image === null ? (
         <NewsPlakat category={post.category} />
       ) : (

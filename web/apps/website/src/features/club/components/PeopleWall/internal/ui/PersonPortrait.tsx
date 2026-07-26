@@ -18,7 +18,6 @@ export const PersonPortrait: FC<PersonPortraitProps> = ({ person, tint }) => (
         border: 1,
         borderColor: 'divider',
         borderRadius: `${kkTokens.radius.base}px`,
-        overflow: 'hidden',
         boxShadow: kkTokens.shadow.raised,
       }}
     >

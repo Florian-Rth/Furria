@@ -23,7 +23,6 @@ export const NewsCard: FC<NewsCardProps> = ({ post, sx }) => (
     sx={[
       (theme) => ({
         height: '100%',
-        overflow: 'hidden',
         transition: theme.transitions.create(['transform', 'box-shadow'], {
           duration: theme.transitions.duration.shortest,
         }),
@@ -58,6 +57,9 @@ export const NewsCard: FC<NewsCardProps> = ({ post, sx }) => (
             height: { xs: 'auto', md: '8.25rem' },
             minHeight: '5.5rem',
             fontSize: { xs: '0.9375rem', md: '1.5rem' },
+            borderStartStartRadius: `${kkTokens.radius.base}px`,
+            borderStartEndRadius: { xs: 0, md: `${kkTokens.radius.base}px` },
+            borderEndStartRadius: { xs: `${kkTokens.radius.base}px`, md: 0 },
           }}
         />
         <Stack

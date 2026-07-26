@@ -51,6 +51,9 @@ export const NewsListPage: FC<NewsListPageProps> = ({ posts }) => {
                       aspectRatio: { xs: kkTokens.aspectRatio.banner, md: 'auto' },
                       minHeight: { md: '16rem' },
                       fontSize: { xs: '1.75rem', md: '3.375rem' },
+                      borderStartStartRadius: `${kkTokens.radius.base}px`,
+                      borderStartEndRadius: { xs: `${kkTokens.radius.base}px`, md: 0 },
+                      borderEndStartRadius: { xs: 0, md: `${kkTokens.radius.base}px` },
                     }}
                   />
                 </NewsAufmacher.MediaColumn>

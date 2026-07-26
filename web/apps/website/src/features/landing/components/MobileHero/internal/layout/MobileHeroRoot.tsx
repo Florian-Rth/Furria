@@ -9,7 +9,6 @@ export const MobileHeroRoot: FC<PropsWithChildren> = ({ children }) => (
     sx={{
       position: 'relative',
       aspectRatio: kkTokens.aspectRatio.portrait,
-      overflow: 'hidden',
       marginTop: `calc(-1 * var(${MASTHEAD_HEIGHT_CSS_VAR}, 0px))`,
     }}
   >

@@ -11,7 +11,6 @@ export const MitmachenBand: FC = () => (
     data-kk-mitmachen-band
     sx={{
       position: 'relative',
-      overflow: 'hidden',
       borderRadius: `${kkTokens.radius.base}px`,
       bgcolor: 'primary.main',
       color: 'primary.contrastText',

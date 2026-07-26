@@ -14,7 +14,7 @@ export const ProgramCard: FC<ProgramCardProps> = ({ event, tint }) => {
   const { day, month, time } = deriveEventDisplay(event.startsAt);
 
   return (
-    <Card sx={{ overflow: 'hidden' }}>
+    <Card>
       <KkPhotoPlaceholder
         label="event-foto"
         tint={tint}
