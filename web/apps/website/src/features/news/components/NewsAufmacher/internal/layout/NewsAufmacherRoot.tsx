@@ -4,19 +4,26 @@ import CardActionArea from '@mui/material/CardActionArea';
 import Grid from '@mui/material/Grid';
 import { Link } from '@tanstack/react-router';
 import type { FC, PropsWithChildren } from 'react';
+import type { NewsPost } from '@/features/news/news-content';
 import { buildPostHref } from '@/features/news/news-content';
-import { NewsAufmacherFlag } from '../ui/NewsAufmacherFlag';
 
 interface NewsAufmacherRootProps extends PropsWithChildren {
-  slug: string;
+  post: NewsPost;
 }
 
-export const NewsAufmacherRoot: FC<NewsAufmacherRootProps> = ({ slug, children }) => (
+export const NewsAufmacherRoot: FC<NewsAufmacherRootProps> = ({ post, children }) => (
   <Card
     data-kk-news-aufmacher
     sx={(theme) => ({
       overflow: 'hidden',
       boxShadow: kkTokens.shadow.raised,
+      transition: theme.transitions.create(['transform'], {
+        duration: theme.transitions.duration.shortest,
+      }),
+      '&:hover': {
+        transform: 'translateY(-2px)',
+        '& [data-kk-news-aufmacher-title]': { color: 'primary.main' },
+      },
       '&:has(.Mui-focusVisible)': {
         outlineWidth: 2,
         outlineStyle: 'solid',
@@ -25,21 +32,7 @@ export const NewsAufmacherRoot: FC<NewsAufmacherRootProps> = ({ slug, children }
       },
     })}
   >
-    <CardActionArea
-      component={Link}
-      to={buildPostHref(slug)}
-      sx={(theme) => ({
-        position: 'relative',
-        transition: theme.transitions.create(['transform'], {
-          duration: theme.transitions.duration.shortest,
-        }),
-        '&:hover': {
-          transform: 'translateY(-2px)',
-          '& [data-kk-news-aufmacher-title]': { color: 'primary.main' },
-        },
-      })}
-    >
-      <NewsAufmacherFlag />
+    <CardActionArea component={Link} to={buildPostHref(post.slug)} aria-label={post.title}>
       <Grid container>{children}</Grid>
     </CardActionArea>
   </Card>

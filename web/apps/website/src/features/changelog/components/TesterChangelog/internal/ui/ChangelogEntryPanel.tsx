@@ -24,7 +24,7 @@ export const ChangelogEntryPanel: FC<ChangelogEntryPanelProps> = ({ entry }) => 
           fontWeight: 900,
           letterSpacing: '0.14em',
           textTransform: 'uppercase',
-          color: 'primary.main',
+          color: 'text.secondary',
         }}
       >
         {formatLongDate(entry.date)}

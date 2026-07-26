@@ -1,11 +1,9 @@
 import { kkTokens } from '@furria/ui';
 import { createTheme } from '@mui/material/styles';
 import { describe, expect, it } from 'vitest';
-import { currentSession } from '@/lib/club';
 import type { NewsPost } from './news-content';
 import {
   buildArchiveLabel,
-  buildNewsEyebrow,
   buildNewsListFooterNote,
   buildPostByline,
   buildPostHref,
@@ -13,7 +11,6 @@ import {
   deriveReadingTime,
   findPostBySlug,
   NEWS_POSTS,
-  newsEyebrow,
   parseInlineBold,
   resolveArchiveSession,
   resolveCategoryContrastText,
@@ -227,19 +224,29 @@ describe('resolveCategoryContrastText', () => {
 });
 
 describe('deriveReadingTime', () => {
-  it('never drops below one minute', () => {
-    expect(deriveReadingTime(['Kurz.'])).toBe('1 Min. Lesezeit');
+  const words = (count: number): string => Array.from({ length: count }, () => 'Wort').join(' ');
+
+  it('stays silent for a Meldung that is over in a moment', () => {
+    expect(deriveReadingTime(['Kurz.'])).toBeNull();
   });
 
-  it('rounds a long Meldung up to whole minutes', () => {
-    expect(deriveReadingTime([Array.from({ length: 200 }, () => 'Wort').join(' ')])).toBe(
-      '2 Min. Lesezeit',
-    );
+  it('stays silent just below three minutes', () => {
+    expect(deriveReadingTime([words(360)])).toBeNull();
+  });
+
+  it('names the reading time from three minutes on', () => {
+    expect(deriveReadingTime([words(361)])).toBe('3 Min. Lesezeit');
   });
 
   it('counts across all paragraphs of the body', () => {
-    const paragraph = Array.from({ length: 100 }, () => 'Wort').join(' ');
-    expect(deriveReadingTime([paragraph, paragraph, paragraph])).toBe('2 Min. Lesezeit');
+    const paragraph = words(200);
+    expect(deriveReadingTime([paragraph, paragraph, paragraph])).toBe('4 Min. Lesezeit');
+  });
+
+  it('leaves every seeded Meldung without a reading time, so the label stays absent', () => {
+    expect(NEWS_POSTS.map((seeded) => deriveReadingTime(seeded.body))).toEqual(
+      NEWS_POSTS.map(() => null),
+    );
   });
 });
 
@@ -296,16 +303,6 @@ describe('buildNewsListFooterNote', () => {
     expect(buildNewsListFooterNote({ number: 55, startYear: 2024, yearsLabel: '2024/25' })).toBe(
       'Das war alles aus dieser Session. Ältere Meldungen liegen im Archiv.',
     );
-  });
-});
-
-describe('buildNewsEyebrow', () => {
-  it('names the Session by its span', () => {
-    expect(buildNewsEyebrow('2026/27')).toBe('AUS DEM VEREIN · SESSION 2026/27');
-  });
-
-  it('derives the shipped eyebrow from the current Session', () => {
-    expect(newsEyebrow).toContain(currentSession.yearsLabel);
   });
 });
 

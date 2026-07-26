@@ -42,7 +42,12 @@ export const NewsCard: FC<NewsCardProps> = ({ post, sx }) => (
       ...(Array.isArray(sx) ? sx : [sx]),
     ]}
   >
-    <CardActionArea component={Link} to={buildPostHref(post.slug)} sx={{ height: '100%' }}>
+    <CardActionArea
+      component={Link}
+      to={buildPostHref(post.slug)}
+      aria-label={post.title}
+      sx={{ height: '100%' }}
+    >
       <Stack direction={{ xs: 'row', md: 'column' }} sx={{ height: '100%' }}>
         <NewsMedia
           post={post}

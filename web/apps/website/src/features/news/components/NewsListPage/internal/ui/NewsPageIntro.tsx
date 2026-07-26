@@ -4,12 +4,14 @@ import { newsIntro } from '@/features/news/news-content';
 
 export const NewsPageIntro: FC = () => (
   <Typography
-    variant="body1"
+    variant="subtitle1"
+    component="p"
     sx={{
       color: 'text.secondary',
-      fontWeight: 500,
+      fontSize: { xs: '1.125rem', md: '1.375rem' },
+      lineHeight: 1.45,
       textWrap: 'pretty',
-      maxWidth: '24rem',
+      maxWidth: 'sm',
     }}
   >
     {newsIntro}

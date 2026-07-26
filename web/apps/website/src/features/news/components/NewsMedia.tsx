@@ -5,7 +5,6 @@ import { useTheme } from '@mui/material/styles';
 import type { FC } from 'react';
 import { NewsPlakat } from '@/features/news/components/NewsPlakat';
 import type { NewsPost } from '@/features/news/news-content';
-import { resolveCategoryTint } from '@/features/news/news-content';
 
 interface NewsMediaProps {
   post: NewsPost;
@@ -25,7 +24,7 @@ export const NewsMedia: FC<NewsMediaProps> = ({ post, sx }) => {
       ) : (
         <KkPhotoPlaceholder
           label={post.image}
-          tint={resolveCategoryTint(theme, post.category)}
+          tint={(theme.vars ?? theme).palette.text.primary}
           fill
         />
       )}

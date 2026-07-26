@@ -18,18 +18,26 @@ export const ChangelogTriggerPill: FC<ChangelogTriggerPillProps> = ({ unreadCoun
   >
     <Button
       variant="outlined"
-      color="primary"
+      color="inherit"
+      size="small"
       onClick={onOpen}
       aria-label={buildTriggerLabel(unreadCount)}
       sx={(theme) => ({
         minHeight: '2.75rem',
-        px: 2.5,
+        px: 2,
+        fontWeight: 700,
+        color: 'text.secondary',
+        borderColor: 'divider',
         bgcolor: 'background.paper',
-        boxShadow: kkTokens.shadow.raised,
-        transition: theme.transitions.create(['background-color', 'border-color'], {
+        boxShadow: kkTokens.shadow.rest,
+        transition: theme.transitions.create(['color', 'border-color'], {
           duration: theme.transitions.duration.shortest,
         }),
-        '&:hover': { bgcolor: 'background.paper' },
+        '&:hover': {
+          bgcolor: 'background.paper',
+          borderColor: 'text.secondary',
+          color: 'text.primary',
+        },
         '&.Mui-focusVisible': {
           outlineWidth: 2,
           outlineStyle: 'solid',

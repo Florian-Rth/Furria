@@ -1,7 +1,7 @@
 import type { Theme } from '@mui/material/styles';
 import type { LinkProps } from '@tanstack/react-router';
 import type { Session } from '@/lib/club';
-import { currentSession, sessionAt } from '@/lib/club';
+import { sessionAt } from '@/lib/club';
 import { formatLongDate } from '@/lib/date';
 
 export type NewsCategory = 'Session' | 'Erfolge' | 'Verein' | 'Gruppen';
@@ -21,8 +21,6 @@ export const newsHeading = 'AKTUELLES';
 
 export const moreNewsLabel = 'WEITERE MELDUNGEN';
 
-export const aufmacherFlagLabel = 'AUFMACHER';
-
 export const readMoreLabel = 'Ganze Meldung lesen →';
 
 export const backToListLabel = '← Alle Meldungen';
@@ -39,13 +37,10 @@ export const copyLinkLabel = 'Link kopieren';
 
 export const copiedLinkLabel = 'Link kopiert ✓';
 
-export const buildNewsEyebrow = (yearsLabel: string): string =>
-  `AUS DEM VEREIN · SESSION ${yearsLabel}`;
-
-export const newsEyebrow = buildNewsEyebrow(currentSession.yearsLabel);
+export const newsEyebrow = 'AUS DEM VEREIN';
 
 export const newsIntro =
-  'Was im Verein passiert, steht hier. Kein Blog, keine tägliche Kolumne — nur das, was die Großbesenstadt wissen sollte.';
+  'Was im Verein passiert, steht hier — alles, was die Großbesenstadt wissen sollte.';
 
 const sessionClosingSentence = 'Das war alles aus dieser Session.';
 
@@ -234,12 +229,20 @@ export const buildNewsListFooterNote = (archiveSession: Session | null): string 
 
 const WORDS_PER_MINUTE = 180;
 
-export const deriveReadingTime = (body: string[]): string => {
+const READING_TIME_MINIMUM_MINUTES = 3;
+
+export const deriveReadingTime = (body: string[]): string | null => {
   const wordCount = body
     .join(' ')
     .split(/\s+/)
     .filter((word) => word !== '').length;
-  return `${Math.max(1, Math.ceil(wordCount / WORDS_PER_MINUTE))} Min. Lesezeit`;
+  const minutes = Math.ceil(wordCount / WORDS_PER_MINUTE);
+
+  if (minutes < READING_TIME_MINIMUM_MINUTES) {
+    return null;
+  }
+
+  return `${minutes} Min. Lesezeit`;
 };
 
 export const buildPostByline = (post: NewsPost): string =>

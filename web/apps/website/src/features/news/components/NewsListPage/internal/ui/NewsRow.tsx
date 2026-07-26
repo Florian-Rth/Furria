@@ -19,6 +19,7 @@ export const NewsRow: FC<NewsRowProps> = ({ post }) => (
     data-kk-news-row
     component={Link}
     to={buildPostHref(post.slug)}
+    aria-label={post.title}
     sx={(theme) => ({
       borderRadius: `${kkTokens.radius.base}px`,
       p: { xs: 2, md: 2.5 },
@@ -55,7 +56,10 @@ export const NewsRow: FC<NewsRowProps> = ({ post }) => (
       <Stack sx={{ gap: { xs: 0.75, md: 1 }, minWidth: 0, flexGrow: 1 }}>
         <Stack direction="row" sx={{ gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
           <NewsCategoryChip category={post.category} />
-          <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary' }}>
+          <Typography
+            variant="caption"
+            sx={{ display: { xs: 'block', md: 'none' }, fontWeight: 700, color: 'text.secondary' }}
+          >
             {formatLongDate(post.publishedAt)}
           </Typography>
         </Stack>

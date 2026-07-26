@@ -43,12 +43,13 @@ export const NewsListPage: FC<NewsListPageProps> = ({ posts }) => {
             <NewsEmptyPanel />
           ) : (
             <>
-              <NewsAufmacher slug={leadPost.slug}>
+              <NewsAufmacher post={leadPost}>
                 <NewsAufmacher.MediaColumn>
                   <NewsMedia
                     post={leadPost}
                     sx={{
-                      aspectRatio: kkTokens.aspectRatio.banner,
+                      aspectRatio: { xs: kkTokens.aspectRatio.banner, md: 'auto' },
+                      minHeight: { md: '16rem' },
                       fontSize: { xs: '1.75rem', md: '3.375rem' },
                     }}
                   />
