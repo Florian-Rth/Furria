@@ -1,10 +1,16 @@
 import { screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { writeGrantedToSession } from '@/features/preview-access';
+import { markChangelogSeen } from '@/test/changelog';
 import { renderAtRoute } from '@/test/render';
+
+beforeEach(() => {
+  markChangelogSeen();
+});
 
 afterEach(() => {
   window.sessionStorage.clear();
+  window.localStorage.clear();
 });
 
 describe('not-found route', () => {

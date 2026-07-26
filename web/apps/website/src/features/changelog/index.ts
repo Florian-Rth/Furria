@@ -1,3 +1,4 @@
 export { CHANGELOG_ENTRIES } from './changelog-content';
-export { useChangelogReadStatus } from './hooks/use-changelog-read-status';
+export { writeReadEntryIds } from './changelog-storage';
+export { TesterChangelog } from './components/TesterChangelog/TesterChangelog';
 export type { ChangelogEntry } from './schemas';
