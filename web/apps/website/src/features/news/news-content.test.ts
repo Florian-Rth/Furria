@@ -11,6 +11,8 @@ import {
   newsEyebrow,
   resolveCategoryContrastText,
   resolveCategoryTint,
+  selectFollowingPosts,
+  selectLeadPost,
   sortPostsByDateDesc,
 } from './news-content';
 
@@ -70,6 +72,49 @@ describe('sortPostsByDateDesc', () => {
 
   it('leads the seeded Meldungen with the Motto-Verkündung', () => {
     expect(sortPostsByDateDesc(NEWS_POSTS)[0]?.slug).toBe('motto-56');
+  });
+});
+
+describe('selectLeadPost', () => {
+  it('derives the Aufmacher from the date instead of a flag', () => {
+    const lead = selectLeadPost([
+      post('older', '2026-05-30'),
+      post('newest', '2026-07-18'),
+      post('middle', '2026-06-14'),
+    ]);
+
+    expect(lead?.slug).toBe('newest');
+  });
+
+  it('has no Aufmacher without Meldungen', () => {
+    expect(selectLeadPost([])).toBeUndefined();
+  });
+});
+
+describe('selectFollowingPosts', () => {
+  it('leaves the Aufmacher out of the rows below', () => {
+    const following = selectFollowingPosts([
+      post('older', '2026-05-30'),
+      post('newest', '2026-07-18'),
+      post('middle', '2026-06-14'),
+    ]);
+
+    expect(following.map((newsPost) => newsPost.slug)).toEqual(['middle', 'older']);
+  });
+
+  it('shows every seeded Meldung exactly once across Aufmacher and rows', () => {
+    const lead = selectLeadPost(NEWS_POSTS);
+    const following = selectFollowingPosts(NEWS_POSTS);
+    const shown = [...(lead === undefined ? [] : [lead]), ...following].map(
+      (newsPost) => newsPost.slug,
+    );
+
+    expect(new Set(shown).size).toBe(NEWS_POSTS.length);
+    expect(following).not.toContain(lead);
+  });
+
+  it('has no rows for a single Meldung', () => {
+    expect(selectFollowingPosts([post('only', '2026-07-18')])).toEqual([]);
   });
 });
 

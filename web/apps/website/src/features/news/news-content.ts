@@ -18,6 +18,10 @@ export const newsHeading = 'AKTUELLES';
 
 export const moreNewsLabel = 'WEITERE MELDUNGEN';
 
+export const aufmacherFlagLabel = 'AUFMACHER';
+
+export const readMoreLabel = 'Ganze Meldung lesen →';
+
 export const buildNewsEyebrow = (yearsLabel: string): string =>
   `AUS DEM VEREIN · SESSION ${yearsLabel}`;
 
@@ -121,6 +125,12 @@ export const NEWS_POSTS: NewsPost[] = [
 
 export const sortPostsByDateDesc = (posts: NewsPost[]): NewsPost[] =>
   [...posts].sort((first, second) => second.publishedAt.localeCompare(first.publishedAt));
+
+export const selectLeadPost = (posts: NewsPost[]): NewsPost | undefined =>
+  sortPostsByDateDesc(posts)[0];
+
+export const selectFollowingPosts = (posts: NewsPost[]): NewsPost[] =>
+  sortPostsByDateDesc(posts).slice(1);
 
 export const findPostBySlug = (posts: NewsPost[], slug: string): NewsPost | undefined =>
   posts.find((post) => post.slug === slug);

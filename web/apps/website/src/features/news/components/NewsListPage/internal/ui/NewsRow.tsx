@@ -5,6 +5,7 @@ import Typography from '@mui/material/Typography';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { NewsCategoryChip } from '@/features/news/components/NewsCategoryChip';
+import { NewsMedia } from '@/features/news/components/NewsMedia';
 import type { NewsPost } from '@/features/news/news-content';
 import { formatLongDate, formatShortDate } from '@/lib/date';
 
@@ -39,17 +40,18 @@ export const NewsRow: FC<NewsRowProps> = ({ post }) => (
       <Typography
         component="span"
         sx={{
+          display: { xs: 'none', md: 'block' },
           fontFamily: kkTokens.font.display,
           color: 'primary.main',
-          fontSize: { xs: '1.375rem', md: '1.875rem' },
+          fontSize: '1.875rem',
           lineHeight: 1,
           flexShrink: 0,
-          minWidth: { md: '4.5rem' },
+          minWidth: '4.5rem',
         }}
       >
         {formatShortDate(post.publishedAt)}
       </Typography>
-      <Stack sx={{ gap: { xs: 0.75, md: 1 }, minWidth: 0 }}>
+      <Stack sx={{ gap: { xs: 0.75, md: 1 }, minWidth: 0, flexGrow: 1 }}>
         <Stack direction="row" sx={{ gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
           <NewsCategoryChip category={post.category} />
           <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary' }}>
@@ -85,6 +87,18 @@ export const NewsRow: FC<NewsRowProps> = ({ post }) => (
           {post.teaser}
         </Typography>
       </Stack>
+      <NewsMedia
+        post={post}
+        sx={{
+          flexShrink: 0,
+          width: { xs: '4.5rem', md: '10.5rem' },
+          height: { xs: '4.5rem', md: '6.5rem' },
+          fontSize: { xs: '0.8125rem', md: '1.375rem' },
+          border: 1,
+          borderColor: 'divider',
+          borderRadius: `${kkTokens.radius.base}px`,
+        }}
+      />
     </Stack>
   </CardActionArea>
 );
