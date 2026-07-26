@@ -13,7 +13,7 @@ export const NewsPostBackLink: FC = () => (
       display: 'inline-flex',
       alignItems: 'center',
       minHeight: '2.75rem',
-      color: 'redInk.main',
+      color: 'primary.main',
       fontWeight: 800,
       fontSize: '0.875rem',
       '&:focus-visible': {

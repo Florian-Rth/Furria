@@ -19,7 +19,7 @@ export const NewsCopyLinkButton: FC = () => {
         alignSelf: { xs: 'stretch', sm: 'auto' },
         color: 'text.primary',
         borderColor: 'divider',
-        '&:hover': { borderColor: 'redInk.main', color: 'redInk.main' },
+        '&:hover': { borderColor: 'primary.main', color: 'primary.main' },
         '&:focus-visible': {
           outlineWidth: 2,
           outlineStyle: 'solid',

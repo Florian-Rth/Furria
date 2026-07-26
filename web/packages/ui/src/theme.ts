@@ -3,20 +3,9 @@ import { createTheme } from '@mui/material/styles';
 import type { KkColorTokens } from './tokens';
 import { kkTokens } from './tokens';
 
-declare module '@mui/material/styles' {
-  interface Palette {
-    redInk: { main: string };
-  }
-
-  interface PaletteOptions {
-    redInk?: { main: string };
-  }
-}
-
 const buildPalette = (color: KkColorTokens): PaletteOptions => ({
   primary: { main: color.red, dark: color.redDk, contrastText: color.onRed },
   error: { main: color.red, dark: color.redDk, contrastText: color.onRed },
-  redInk: { main: color.redInk },
   warning: { main: color.gold },
   success: { main: color.green },
   info: { main: color.blue },

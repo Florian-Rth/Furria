@@ -26,7 +26,7 @@ export const NewsAufmacherFooter: FC<NewsAufmacherFooterProps> = ({ post }) => {
     >
       <Typography
         component="span"
-        sx={{ fontWeight: 900, fontSize: '0.9375rem', color: 'redInk.main' }}
+        sx={{ fontWeight: 900, fontSize: '0.9375rem', color: 'primary.main' }}
       >
         {readMoreLabel}
       </Typography>

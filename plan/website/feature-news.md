@@ -254,15 +254,17 @@ does not "fix" them back:
 A critical design/a11y review of the shipped page produced 11 findings, all fixed in one pass. Where
 they change decisions recorded above:
 
-- **Small red text now uses a new scheme-aware `redInk` token**, not `primary.main`. Brand red
-  `#E11D2A` on cream is **4.35:1** — below the 4.5:1 AA floor — and `primary.dark` was *not* the answer:
-  in the dark scheme it is `#E11D2A` on `#15110E` = **3.94:1**, i.e. it would have broken dark mode.
-  `kkTokens.color.*.redInk` is light `#B3101C` (6.38:1) / dark `#FF3B47` (5.34:1) and is exposed as
-  `palette.redInk.main` via a module augmentation. **No new colour was introduced** — both values are
-  already in the palette (`redDk` in light, `red` in dark); the token is a new *semantic*, which is what
-  keeps the CI "no new colors" rule intact. Applied to the page eyebrow, the Aufmacher CTA, the article
-  back link, the copy-link hover and the teaser link. Large display red (the `12.07.` rail, hover
-  headlines) stays `primary.main` — it clears the 3:1 large-text bar.
+- **Red text stays `primary.main` — the contrast finding is NOT fixed, deliberately.** The review
+  measured brand red `#E11D2A` on cream at **4.35:1**, below the 4.5:1 AA floor for normal-size text
+  (the page eyebrow, the Aufmacher CTA, the article back link, the teaser link, the copy-link hover).
+  The first attempt introduced a second, darker red as a `redInk` palette token; that was **reverted on
+  2026-07-27** — ONE THEME means one red, and a second red is a new colour no matter which slot it
+  hides in. `primary.dark` is not an escape either: it is a visibly different red in light mode, and in
+  the dark scheme it drops to **3.94:1**, worse than what it replaces.
+  **Open, needs a design decision:** the only fixes inside one theme are (a) stop using red for
+  small text — the design README itself says "red is accent and action only, never body text" — or
+  (b) raise those texts to the WCAG large-text threshold (18.66px bold) so 4.35:1 passes at 3:1.
+  Large display red (the `12.07.` rail, hover headlines) already clears that bar and is fine.
 - **Reading time is now derived with a 3-minute minimum.** `deriveReadingTime` returns `string | null`
   and the Aufmacher footer renders nothing below the threshold — a one-minute estimate is noise. Every
   seeded Meldung is 50–140 words, so **the label is invisible on the shipped page by design** and
@@ -299,7 +301,8 @@ a prop on `KkPhotoPlaceholder`), and the demoted pill is white-on-white over `pa
 `MitmachenBand`, `CtaBand`, `KkTicker`) — that is an `onRed`/fill-token decision, not a per-component
 patch. And the small-red-text failure still exists outside news at `components/NotFoundPage.tsx:45`,
 `components/SiteTextLink.tsx:51`/`:58`, `Masthead/internal/MastheadDesktopBar.tsx:34`, landing
-`ProgramSectionHeader.tsx:19` and club `PersonPortrait.tsx:34`; `redInk.main` is the ready-made lever.
+`ProgramSectionHeader.tsx:19` and club `PersonPortrait.tsx:34` — whatever resolves the news sites
+resolves those too.
 
 ## Open Questions
 

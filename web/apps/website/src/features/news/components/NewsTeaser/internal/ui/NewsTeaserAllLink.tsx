@@ -12,7 +12,7 @@ export const NewsTeaserAllLink: FC = () => (
       display: 'inline-flex',
       alignItems: 'center',
       minHeight: '2.75rem',
-      color: 'redInk.main',
+      color: 'primary.main',
       fontWeight: 800,
       whiteSpace: 'nowrap',
       flexShrink: 0,
