@@ -1,4 +1,4 @@
-import Stack from '@mui/material/Stack';
+import { KkSection } from '@furria/ui';
 import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
@@ -8,7 +8,6 @@ import {
   groupsIntro,
   resolveGroupTint,
 } from '@/features/club/groups-content';
-import { ChapterHeader } from '../ChapterHeader/ChapterHeader';
 import { GruppenTileGrid } from './internal/layout/GruppenTileGrid';
 import { useGroupModal } from './internal/logic/use-group-modal';
 import { GruppenModal } from './internal/ui/GruppenModal';
@@ -19,12 +18,8 @@ export const GruppenGrid: FC = () => {
   const { activeGroup, openGroup, close } = useGroupModal(GROUPS);
 
   return (
-    <Stack component="section" data-kk-gruppen sx={{ gap: { xs: 4, md: 6 } }}>
-      <ChapterHeader
-        numeral={groupsChapter.numeral}
-        kicker={groupsChapter.kicker}
-        title={groupsChapter.title}
-      />
+    <KkSection>
+      <KkSection.Header {...groupsChapter} />
       <Typography
         variant="body1"
         sx={{ color: 'text.secondary', fontWeight: 500, maxWidth: '48rem' }}
@@ -43,6 +38,6 @@ export const GruppenGrid: FC = () => {
         ))}
       </GruppenTileGrid>
       <GruppenModal active={activeGroup} onClose={close} />
-    </Stack>
+    </KkSection>
   );
 };

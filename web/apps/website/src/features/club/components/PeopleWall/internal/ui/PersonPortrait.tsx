@@ -1,4 +1,4 @@
-import { KkPhotoPlaceholder, kkTokens } from '@furria/ui';
+import { KkEyebrow, KkPhotoPlaceholder, kkTokens } from '@furria/ui';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
@@ -18,7 +18,6 @@ export const PersonPortrait: FC<PersonPortraitProps> = ({ person, tint }) => (
         border: 1,
         borderColor: 'divider',
         borderRadius: `${kkTokens.radius.base}px`,
-        overflow: 'hidden',
         boxShadow: kkTokens.shadow.raised,
       }}
     >
@@ -29,12 +28,7 @@ export const PersonPortrait: FC<PersonPortraitProps> = ({ person, tint }) => (
       />
     </Box>
     <Stack sx={{ gap: 0.25, alignItems: 'flex-start' }}>
-      <Typography
-        variant="overline"
-        sx={{ fontWeight: 900, letterSpacing: '0.12em', color: 'primary.main', lineHeight: 1.3 }}
-      >
-        {person.amt}
-      </Typography>
+      <KkEyebrow>{person.amt}</KkEyebrow>
       <Typography variant="h5" component="h3" sx={{ lineHeight: 1 }}>
         {person.name}
       </Typography>

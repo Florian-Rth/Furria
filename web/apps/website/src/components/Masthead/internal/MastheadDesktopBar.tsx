@@ -14,7 +14,7 @@ import { ThemeModeToggle } from './ThemeModeToggle';
 const metaLabelSx = { fontWeight: 800, letterSpacing: '0.18em', whiteSpace: 'nowrap' } as const;
 
 export const MastheadDesktopBar: FC = () => (
-  <Stack sx={{ display: { xs: 'none', md: 'flex' } }}>
+  <Stack sx={{ display: { xs: 'none', desktop: 'flex' } }}>
     <Box
       sx={{
         display: 'grid',

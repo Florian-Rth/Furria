@@ -5,6 +5,7 @@ import type { FC } from 'react';
 import { useState } from 'react';
 import { LegalLinks } from '@/components/LegalLinks';
 import { LandingPage } from '@/features/landing';
+import { NewsTeaser } from '@/features/news';
 import { PreviewAccessDialog, PreviewTeaser, usePreviewAccess } from '@/features/preview-access';
 import type { RouteHead } from '@/lib/seo';
 
@@ -17,7 +18,7 @@ const HomeComponent: FC = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   if (granted) {
-    return <LandingPage />;
+    return <LandingPage newsTeaser={<NewsTeaser />} />;
   }
 
   return (

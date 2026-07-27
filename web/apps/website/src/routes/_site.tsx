@@ -1,6 +1,8 @@
 import { createFileRoute, Outlet, useLocation } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { NotFoundPage } from '@/components/NotFoundPage';
 import { SiteChrome } from '@/components/SiteChrome';
+import { TesterChangelog } from '@/features/changelog';
 import { usePreviewAccess } from '@/features/preview-access';
 
 const SiteLayout: FC = () => {
@@ -13,10 +15,16 @@ const SiteLayout: FC = () => {
   }
 
   return (
-    <SiteChrome>
-      <Outlet />
-    </SiteChrome>
+    <>
+      <SiteChrome>
+        <Outlet />
+      </SiteChrome>
+      {granted && <TesterChangelog />}
+    </>
   );
 };
 
-export const Route = createFileRoute('/_site')({ component: SiteLayout });
+export const Route = createFileRoute('/_site')({
+  component: SiteLayout,
+  notFoundComponent: NotFoundPage,
+});

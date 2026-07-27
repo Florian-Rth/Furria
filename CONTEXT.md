@@ -75,6 +75,23 @@ Overloaded across the two apps — **do not collapse the two senses**:
   Reihenfolge). A per-event ordering, not a list of events.
 _Avoid_: using "Programm" without knowing which app you are in.
 
+### Öffentliche Kommunikation
+
+**Aktuelles** (`news`):
+The public website's news section — the chronological stream of **Meldungen**. Deliberately not
+a blog: no tags, comments, author pages or search.
+_Avoid_: Neuigkeiten, News, Blog
+
+**Meldung** (`news post`):
+One dated announcement in **Aktuelles** — a short notice or report (Motto-Verkündung, a result,
+a call for helpers). Carries exactly one **Kategorie**.
+_Avoid_: **Beitrag** (that word is the membership fee — never a news item), Artikel, Post
+
+**Kategorie** (`news category`):
+The one label a **Meldung** carries, from a fixed set. Label only — the public site offers no
+filtering by it.
+_Avoid_: Tag, Rubrik
+
 ### Money
 
 **Beitrag** (`fee`):

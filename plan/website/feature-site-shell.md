@@ -64,6 +64,58 @@ hang in — built first so everything else has a home.
 - Unbuilt routes resolve to one shared **`PlaceholderPage`** ("Diese Seite entsteht gerade") in the
   branded shell; each phase swaps its stub for the real page.
 
+**Not-found (added P4 — the site's first 404):**
+
+- **One site-wide 404**, not per-feature: a `notFoundComponent` on `__root` rendering a shared
+  `NotFoundPage` wrapped in the existing `SiteChrome`, so masthead + footer stay intact. Unknown
+  news slugs bubble up to it rather than getting their own surface.
+- It renders **outside `_gated`**, so it stays publicly reachable — which a 404 must be — and it
+  leaks no gated content. (A 404 *inside* `_gated` could never render: `beforeLoad` would redirect
+  first.)
+- Copy is deliberately funny and on-brand rather than a generic error: eyebrow *FEHLER 404*, Anton
+  **HIER WAR MAL / EINE SEITE.**, *"Jetzt ist hier nur Konfetti. Passiert den Besten von uns."*,
+  exits to `/` and `/program`. Built from shipped primitives only (confetti + `KkBroomMark`),
+  reduced-motion aware.
+- **`noindex` is deferred to P7 (Launch)** — a not-found is not a route, so it carries the root
+  head, and the point is moot while `robots.txt` disallows everything.
+- *As built (P4):* **it does not bubble.** TanStack Router raises a not-found on the *matched* route,
+  so `notFoundComponent` is registered on `__root`, `_site.tsx` **and** `_gated.tsx` — otherwise
+  `/news/<unknown>` rendered the router's generic `<p>Not Found</p>`. Still one shared page, still
+  publicly reachable; any future route that throws `notFound()` must register it too. Route-tree
+  registration was chosen over a router-level `defaultNotFoundComponent` because the router is created
+  twice (`main.tsx` + `test/render.tsx`) and that config would have to be duplicated to stay honest in
+  tests.
+- *As built (P4):* **two files, not one** — `NotFoundPage` (chrome-less) + `NotFoundScreen`
+  (`SiteChrome` + page, what the routes register): one-component-per-file forbids declaring the wrapper
+  inside `__root.tsx`, and the page must be chrome-less below a layout that already mounts
+  `SiteChrome`. Decoration is **`KkConfettiRain`** — `KkConfettiScatter` no longer exists (dropped in
+  `b34da0e`) and `KkConfettiBurst` is a click-fired one-shot, wrong for standing page decoration.
+
+**Shared `CtaBand` (added P4):**
+
+- The full-bleed red band idiom reached **three** call sites (`NarrenrufBand`, `RecruitBand`, the
+  news list's `/program` band), so it is extracted to `src/components/CtaBand/` as a **slotted
+  compound**: the root mounts the fixed decoration (red surface, watermark slot, overflow, inner
+  container, z-index) and accepts `sx` so the **parent owns padding**; layout variation is a
+  **choice of slot** (`Row` vs `Column`), never a variant flag.
+- It lives in `src/components/`, **not `@furria/ui`** — a CTA/recruit band is website chrome, not a
+  token-pure cross-app primitive (the Club-App will never mount one), and P1 deliberately sharpened
+  that boundary. Same reasoning that keeps `Masthead`/`SiteFooter` local.
+- **`MitmachenBand` is excluded on purpose.** The code shows it is a rounded (`radius.base`) red
+  *card* inside the landing's `Container`, not a full-bleed band; folding it in would require a
+  `fullBleed`-style prop, i.e. the boolean-flag API the frontend rules ban.
+- *As built (P4):* **the watermark stayed call-site-owned.** The two shipped watermarks genuinely
+  differ (Narrenruf: left, −12°, opacity 0.12, size 320; Recruit: centred, −8°, 0.08, 360), so rather
+  than reconcile them behind a flag the root exposes a `watermark` **node slot** each band fills with
+  its own component. Migration parity was verified by rendering inline copies of the shipped originals
+  beside the migrated ones and diffing the emitted Emotion declarations per breakpoint.
+- *As built (P4):* band-level dev hooks were **renamed into the compound** —
+  `data-kk-narrenruf-band`/`data-kk-recruit-band` → `data-kk-cta-band`, `…-row` →
+  `data-kk-cta-band-row`, `…-recruit-row` → `data-kk-cta-band-column`. Preserving per-feature names
+  would have required the root to forward arbitrary DOM props, widening the API for no consumer.
+  Call-site-owned hooks (`data-kk-narrenruf-watermark`, `…-shout`, `data-kk-recruit-watermark`) are
+  untouched.
+
 **Theme:**
 
 - Consumes the **ONE** shared theme from `@furria/ui` — no website-only colors/fonts/radii/shadows.

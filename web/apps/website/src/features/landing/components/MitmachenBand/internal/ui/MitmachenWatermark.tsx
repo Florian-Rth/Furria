@@ -9,7 +9,7 @@ export const MitmachenWatermark: FC = () => (
     sx={{
       position: 'absolute',
       top: '50%',
-      right: { xs: -24, md: 32 },
+      right: { xs: 0, md: 32 },
       transform: 'translateY(-50%)',
       color: 'primary.contrastText',
       opacity: 0.1,

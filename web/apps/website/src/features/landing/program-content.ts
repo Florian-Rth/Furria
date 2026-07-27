@@ -6,6 +6,10 @@ export interface ProgramEvent {
   venue: string;
 }
 
+export const programHeading = 'DAS PROGRAMM';
+
+export const programAllLabel = 'Alle Termine →';
+
 export const PROGRAM_EVENTS: ProgramEvent[] = [
   { startsAt: '2026-02-14T19:11', title: 'Große Prunksitzung', venue: 'Festhalle' },
   { startsAt: '2026-02-08T14:30', title: 'Kinderfasching', venue: 'Sporthalle' },

@@ -1,9 +1,7 @@
-import { kkTokens } from '@furria/ui';
-import Container from '@mui/material/Container';
-import Stack from '@mui/material/Stack';
+import { PageLayout } from '@furria/ui';
 import type { FC } from 'react';
 import { ChronikTimeline } from './ChronikTimeline/ChronikTimeline';
-import { ClubHero } from './ClubHero/ClubHero';
+import { ClubHeader } from './ClubHeader/ClubHeader';
 import { ClubStory } from './ClubStory/ClubStory';
 import { GruppenGrid } from './GruppenGrid/GruppenGrid';
 import { NarrenrufBand } from './NarrenrufBand/NarrenrufBand';
@@ -12,31 +10,18 @@ import { RecruitBand } from './RecruitBand/RecruitBand';
 import { SeasonArc } from './SeasonArc/SeasonArc';
 
 export const ClubPage: FC = () => (
-  <Stack component="main" sx={{ flex: 1 }}>
-    <Container maxWidth="xl" sx={{ px: kkTokens.layout.gutterX, py: kkTokens.layout.gutterY }}>
-      <Stack sx={{ gap: { xs: 8, md: 12 } }}>
-        <ClubHero>
-          <ClubHero.TextColumn>
-            <ClubHero.Headline />
-            <ClubHero.Intro />
-            <ClubHero.Actions />
-          </ClubHero.TextColumn>
-          <ClubHero.PhotoColumn>
-            <ClubHero.Photo />
-          </ClubHero.PhotoColumn>
-        </ClubHero>
-        <ClubStory />
-      </Stack>
-    </Container>
+  <PageLayout>
+    <PageLayout.Body>
+      <ClubHeader />
+      <ClubStory />
+    </PageLayout.Body>
     <NarrenrufBand />
-    <Container maxWidth="xl" sx={{ px: kkTokens.layout.gutterX, py: kkTokens.layout.gutterY }}>
-      <Stack sx={{ gap: { xs: 8, md: 12 } }}>
-        <ChronikTimeline />
-        <SeasonArc />
-        <GruppenGrid />
-        <PeopleWall />
-      </Stack>
-    </Container>
+    <PageLayout.Body>
+      <ChronikTimeline />
+      <SeasonArc />
+      <GruppenGrid />
+      <PeopleWall />
+    </PageLayout.Body>
     <RecruitBand />
-  </Stack>
+  </PageLayout>
 );

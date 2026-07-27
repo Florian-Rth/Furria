@@ -1,0 +1,72 @@
+[
+  {
+    "id": "website-p0-frontend",
+    "date": "2026-07-10",
+    "title": "Grundgerüst & Design",
+    "icon": "palette",
+    "description": [
+      "Kopfzeile mit Navigation, Fußzeile mit den rechtlichen Links",
+      "Alle Seiten liegen unter ihren endgültigen Adressen",
+      "Noch leere Seiten zeigen einen Platzhalter",
+      "Umschalter für helles und dunkles Erscheinungsbild — merkt sich deine Wahl"
+    ]
+  },
+  {
+    "id": "website-p1-landing-hero-fe",
+    "date": "2026-07-13",
+    "title": "Startseite",
+    "icon": "campaign",
+    "description": [
+      "Startseite mit Vereinsname, Session und zwei Schaltflächen",
+      "Laufband mit den wichtigsten Terminen darunter",
+      "Foto und Zahlen sind noch Platzhalter"
+    ]
+  },
+  {
+    "id": "website-p1-1-mobile-hero",
+    "date": "2026-07-15",
+    "title": "Startseite am Handy",
+    "icon": "smartphone",
+    "description": [
+      "Eigene Fassung der Startseite für kleine Bildschirme",
+      "Foto über die ganze Breite, Überschrift darüber gesetzt",
+      "Text und Schaltflächen folgen darunter"
+    ]
+  },
+  {
+    "id": "website-p2-landing-complete-fe",
+    "date": "2026-07-18",
+    "title": "Startseite komplett",
+    "icon": "home",
+    "description": [
+      "Die nächsten drei Veranstaltungen unter dem Laufband",
+      "Roter Aufruf zum Mitmachen am Seitenende",
+      "Termine und Fotos sind noch Platzhalter"
+    ]
+  },
+  {
+    "id": "website-p3-verein-fe",
+    "date": "2026-07-22",
+    "title": "Vereinsseite",
+    "icon": "groups",
+    "description": [
+      "Neue Seite „Verein“ mit nummerierten Kapiteln",
+      "Geschichte, Chronik, laufende Session, Gruppen und Ämter",
+      "Klick auf eine Gruppe öffnet ihre Details in einem Fenster",
+      "Texte, Zahlen und Gesichter sind noch Platzhalter"
+    ]
+  },
+  {
+    "id": "website-p4-news-fe",
+    "date": "2026-07-26",
+    "title": "Aktuelles",
+    "icon": "newspaper",
+    "description": [
+      "Übersicht „Aktuelles“ mit Hauptmeldung und weiteren Meldungen",
+      "Jede Meldung als eigene Seite mit Teilen-Funktion",
+      "Kurzer Anriss auf der Startseite",
+      "Eigene Seite für nicht gefundene Adressen",
+      "Dieses Änderungsprotokoll"
+    ]
+  }
+]

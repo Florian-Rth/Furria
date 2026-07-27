@@ -45,6 +45,19 @@ export const kkTokens = {
   layout: {
     gutterX: { xs: 3, md: 7 },
     gutterY: { xs: 4, md: 8 },
+    sectionGap: { xs: 8, md: 12 },
+    blockGap: { xs: 4, md: 6 },
+    bandY: { xs: 6, md: 10 },
+  },
+  line: {
+    hair: 1,
+    section: 2,
+    page: 3,
+  },
+  eyebrow: {
+    fontWeight: 900,
+    letterSpacing: '0.2em',
+    lineHeight: 1.4,
   },
   font: {
     display: "'Anton', sans-serif",

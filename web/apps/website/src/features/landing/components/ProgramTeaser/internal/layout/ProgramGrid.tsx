@@ -2,7 +2,12 @@ import Grid from '@mui/material/Grid';
 import type { FC, PropsWithChildren } from 'react';
 
 export const ProgramGrid: FC<PropsWithChildren> = ({ children }) => (
-  <Grid data-kk-program-grid container spacing={3} sx={{ display: { xs: 'none', md: 'flex' } }}>
+  <Grid
+    data-kk-program-grid
+    container
+    spacing={3}
+    sx={{ display: { xs: 'none', desktop: 'flex' } }}
+  >
     {children}
   </Grid>
 );

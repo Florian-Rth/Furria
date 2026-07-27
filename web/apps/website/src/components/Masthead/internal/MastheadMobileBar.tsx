@@ -20,7 +20,7 @@ export const MastheadMobileBar: FC<MastheadMobileBarProps> = ({ menuOpen, onMenu
   <Stack
     direction="row"
     sx={{
-      display: { xs: 'flex', md: 'none' },
+      display: { xs: 'flex', desktop: 'none' },
       alignItems: 'center',
       gap: 1.5,
       px: kkTokens.layout.gutterX,

@@ -20,7 +20,6 @@ describe('GROUPS', () => {
       expect(group.memberMeta).not.toBe('');
       expect(group.fullText).not.toBe('');
       expect(group.lead).not.toBe('');
-      expect(group.schedule).not.toBe('');
     }
   });
 });

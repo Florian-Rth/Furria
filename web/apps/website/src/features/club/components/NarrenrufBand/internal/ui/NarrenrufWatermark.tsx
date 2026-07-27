@@ -9,7 +9,7 @@ export const NarrenrufWatermark: FC = () => (
     sx={{
       position: 'absolute',
       top: '50%',
-      left: { xs: -48, md: '6%' },
+      left: { xs: 0, md: '6%' },
       transform: 'translateY(-50%) rotate(-12deg)',
       color: 'primary.contrastText',
       opacity: 0.12,

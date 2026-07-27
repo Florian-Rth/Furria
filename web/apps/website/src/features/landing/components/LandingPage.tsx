@@ -2,7 +2,7 @@ import { kkTokens } from '@furria/ui';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
-import type { FC } from 'react';
+import type { FC, ReactNode } from 'react';
 import { Hero } from './Hero/Hero';
 import { HeroFollow } from './HeroFollow';
 import { LandingHeroBackdrop } from './LandingHeroBackdrop';
@@ -11,7 +11,11 @@ import { MitmachenBand } from './MitmachenBand/MitmachenBand';
 import { MobileHero } from './MobileHero/MobileHero';
 import { ProgramTeaser } from './ProgramTeaser/ProgramTeaser';
 
-export const LandingPage: FC = () => (
+interface LandingPageProps {
+  newsTeaser?: ReactNode;
+}
+
+export const LandingPage: FC<LandingPageProps> = ({ newsTeaser }) => (
   <Stack component="main" sx={{ flex: 1 }}>
     <Box
       sx={{
@@ -27,7 +31,7 @@ export const LandingPage: FC = () => (
         data-kk-landing-desktop-hero
         maxWidth="xl"
         sx={{
-          display: { xs: 'none', md: 'flex' },
+          display: { xs: 'none', desktop: 'flex' },
           flex: 1,
           flexDirection: 'column',
           justifyContent: 'center',
@@ -48,7 +52,7 @@ export const LandingPage: FC = () => (
           </Hero.PhotoColumn>
         </Hero>
       </Container>
-      <Stack data-kk-landing-mobile-hero sx={{ display: { xs: 'flex', md: 'none' } }}>
+      <Stack data-kk-landing-mobile-hero sx={{ display: { xs: 'flex', desktop: 'none' } }}>
         <MobileHero>
           <MobileHero.Photo />
           <MobileHero.Content>
@@ -65,8 +69,9 @@ export const LandingPage: FC = () => (
     </Box>
     <LandingTicker />
     <Container maxWidth="xl" sx={{ px: kkTokens.layout.gutterX, py: kkTokens.layout.gutterY }}>
-      <Stack sx={{ gap: { xs: 6, md: 8 } }}>
+      <Stack sx={{ gap: kkTokens.layout.sectionGap }}>
         <ProgramTeaser />
+        {newsTeaser}
         <MitmachenBand />
       </Stack>
     </Container>
