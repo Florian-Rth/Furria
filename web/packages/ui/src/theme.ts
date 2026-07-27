@@ -3,6 +3,14 @@ import { createTheme } from '@mui/material/styles';
 import type { KkColorTokens } from './tokens';
 import { kkTokens } from './tokens';
 
+declare module '@mui/material/styles' {
+  interface BreakpointOverrides {
+    desktop: true;
+  }
+}
+
+export const KK_DESKTOP_BREAKPOINT = 900;
+
 const buildPalette = (color: KkColorTokens): PaletteOptions => ({
   primary: { main: color.red, dark: color.redDk, contrastText: color.onRed },
   error: { main: color.red, dark: color.redDk, contrastText: color.onRed },
@@ -26,6 +34,16 @@ export const kkTheme = createTheme({
     light: { palette: buildPalette(kkTokens.color.light) },
     dark: { palette: buildPalette(kkTokens.color.dark) },
   },
+  breakpoints: {
+    values: {
+      xs: 0,
+      sm: 600,
+      md: 900,
+      desktop: KK_DESKTOP_BREAKPOINT,
+      lg: 1200,
+      xl: 1536,
+    },
+  },
   shape: { borderRadius: kkTokens.radius.base },
   typography: {
     fontFamily: kkTokens.font.body,
@@ -46,8 +64,8 @@ export const kkTheme = createTheme({
   components: {
     MuiCssBaseline: {
       styleOverrides: {
-        html: {
-          overflowX: 'hidden',
+        '#root': {
+          overflowX: 'clip',
         },
         '@media (prefers-reduced-motion: reduce)': {
           '*, *::before, *::after': {

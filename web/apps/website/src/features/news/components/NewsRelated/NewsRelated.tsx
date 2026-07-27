@@ -27,7 +27,7 @@ export const NewsRelated: FC<NewsRelatedProps> = ({ currentSlug }) => {
             key={post.slug}
             size={{ xs: 12, md: 4 }}
             sx={{
-              display: index < COMPACT_VISIBLE_COUNT ? 'block' : { xs: 'none', md: 'block' },
+              display: index < COMPACT_VISIBLE_COUNT ? 'block' : { xs: 'none', desktop: 'block' },
             }}
           >
             <NewsCard post={post} />

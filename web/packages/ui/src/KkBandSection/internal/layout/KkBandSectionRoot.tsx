@@ -29,6 +29,7 @@ export const KkBandSectionRoot: FC<KkBandSectionRootProps> = ({
     sx={[
       {
         position: 'relative',
+        overflow: 'hidden',
         px: kkTokens.layout.gutterX,
         py: kkTokens.layout.bandY,
         ...toneStyles[tone],

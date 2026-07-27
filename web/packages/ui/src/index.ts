@@ -18,6 +18,7 @@ export { KkThemeProvider } from './KkThemeProvider';
 export { KkTicker } from './KkTicker';
 export { KkTwoToneHeadline } from './KkTwoToneHeadline';
 export { PageLayout } from './PageLayout/PageLayout';
-export { kkTheme } from './theme';
+export { KK_DESKTOP_BREAKPOINT, kkTheme } from './theme';
 export type { KkColorTokens } from './tokens';
 export { kkTokens } from './tokens';
+export { useIsMobile } from './use-is-mobile';

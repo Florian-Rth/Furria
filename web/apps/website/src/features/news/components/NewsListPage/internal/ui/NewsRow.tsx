@@ -42,7 +42,7 @@ export const NewsRow: FC<NewsRowProps> = ({ post }) => (
       <Typography
         component="span"
         sx={{
-          display: { xs: 'none', md: 'block' },
+          display: { xs: 'none', desktop: 'block' },
           fontFamily: kkTokens.font.display,
           color: 'primary.main',
           fontSize: '1.875rem',
@@ -58,7 +58,11 @@ export const NewsRow: FC<NewsRowProps> = ({ post }) => (
           <NewsCategoryChip category={post.category} />
           <Typography
             variant="caption"
-            sx={{ display: { xs: 'block', md: 'none' }, fontWeight: 700, color: 'text.secondary' }}
+            sx={{
+              display: { xs: 'block', desktop: 'none' },
+              fontWeight: 700,
+              color: 'text.secondary',
+            }}
           >
             {formatLongDate(post.publishedAt)}
           </Typography>

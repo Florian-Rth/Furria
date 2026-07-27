@@ -33,7 +33,7 @@ export const KkSectionHeader: FC<KkSectionHeaderProps> = ({ title, kicker, numer
         borderBottom: kkTokens.line.section,
         borderColor: 'text.primary',
         mb: { xs: 1, md: 2 },
-        display: { xs: 'none', md: 'block' },
+        display: { xs: 'none', desktop: 'block' },
       }}
     />
     {action !== undefined && <Box sx={{ flexShrink: 0, mb: { md: 1 } }}>{action}</Box>}

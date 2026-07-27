@@ -31,7 +31,7 @@ export const LandingPage: FC<LandingPageProps> = ({ newsTeaser }) => (
         data-kk-landing-desktop-hero
         maxWidth="xl"
         sx={{
-          display: { xs: 'none', md: 'flex' },
+          display: { xs: 'none', desktop: 'flex' },
           flex: 1,
           flexDirection: 'column',
           justifyContent: 'center',
@@ -52,7 +52,7 @@ export const LandingPage: FC<LandingPageProps> = ({ newsTeaser }) => (
           </Hero.PhotoColumn>
         </Hero>
       </Container>
-      <Stack data-kk-landing-mobile-hero sx={{ display: { xs: 'flex', md: 'none' } }}>
+      <Stack data-kk-landing-mobile-hero sx={{ display: { xs: 'flex', desktop: 'none' } }}>
         <MobileHero>
           <MobileHero.Photo />
           <MobileHero.Content>

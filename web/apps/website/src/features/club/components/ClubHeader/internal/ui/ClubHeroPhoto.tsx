@@ -6,7 +6,7 @@ import { clubHeroPhotoCaption } from '@/features/club/header-content';
 export const ClubHeroPhoto: FC = () => (
   <Box
     sx={{
-      display: { xs: 'none', md: 'block' },
+      display: { xs: 'none', desktop: 'block' },
       position: 'relative',
       zIndex: 1,
       border: kkTokens.line.hair,
