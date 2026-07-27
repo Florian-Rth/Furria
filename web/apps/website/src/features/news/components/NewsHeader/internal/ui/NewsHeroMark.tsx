@@ -8,12 +8,9 @@ export const NewsHeroMark: FC = () => (
     aria-hidden
     sx={{
       position: 'absolute',
-      top: '50%',
-      right: { xs: '-24%', md: '-10%' },
-      transform: {
-        xs: 'translateY(-50%) rotate(-8deg)',
-        md: 'translateY(calc(-50% + 4.5rem)) rotate(-8deg)',
-      },
+      right: { xs: 0, desktop: 'auto' },
+      transform: 'translate(0, -25%)',
+      rotate: '-8deg',
       color: 'text.primary',
       opacity: 0.07,
       pointerEvents: 'none',
@@ -21,6 +18,6 @@ export const NewsHeroMark: FC = () => (
       zIndex: 0,
     }}
   >
-    <NewspaperIcon sx={{ display: 'block', fontSize: { xs: 260, md: 480 } }} />
+    <NewspaperIcon sx={{ display: 'block', fontSize: { xs: 260, desktop: 440 } }} />
   </Box>
 );
