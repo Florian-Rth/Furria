@@ -29,18 +29,21 @@ const headContent = (selector: string, attribute: string): string | null =>
 describe('news post route', () => {
   it('renders the Meldung behind a known slug', async () => {
     writeGrantedToSession(window.sessionStorage);
-    renderAtRoute('/news/motto-56');
+    renderAtRoute('/news/konfetti-kritische-masse');
 
     expect(
-      await screen.findByRole('heading', { level: 1, name: seededPost('motto-56').title }),
+      await screen.findByRole('heading', {
+        level: 1,
+        name: seededPost('konfetti-kritische-masse').title,
+      }),
     ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '← Alle Meldungen' })).toHaveAttribute('href', '/news');
   });
 
   it('publishes a per-post document head that overrides the site defaults', async () => {
-    const post = seededPost('motto-56');
+    const post = seededPost('konfetti-kritische-masse');
     writeGrantedToSession(window.sessionStorage);
-    renderAtRoute('/news/motto-56');
+    renderAtRoute('/news/konfetti-kritische-masse');
 
     await screen.findByRole('heading', { level: 1, name: post.title });
 
@@ -52,6 +55,6 @@ describe('news post route', () => {
     expect(headContent('meta[property="article:published_time"]', 'content')).toBe(
       post.publishedAt,
     );
-    expect(headContent('link[rel="canonical"]', 'href')).toBe('/news/motto-56');
+    expect(headContent('link[rel="canonical"]', 'href')).toBe('/news/konfetti-kritische-masse');
   });
 });

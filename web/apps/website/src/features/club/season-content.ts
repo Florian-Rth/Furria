@@ -5,7 +5,7 @@ export const seasonChapter = {
 } as const;
 
 export const seasonIntro =
-  'Eine Session ist unsere fünfte Jahreszeit: Sie beginnt am 11.11. mit der Eröffnung und läuft bis Aschermittwoch. Fünf Etappen zwischen erstem Narrenruf und Kehraus.';
+  'Eine Session ist unsere fünfte Jahreszeit: Sie beginnt am 11.11. und endet an Aschermittwoch — nach Vereinszeitrechnung dauert sie trotzdem vierzehn Monate. Fünf Etappen zwischen erstem Narrenruf und Kehraus.';
 
 export interface SeasonStep {
   tag: string;
@@ -18,30 +18,30 @@ export const SEASON_STEPS: SeasonStep[] = [
     tag: '11.11.',
     title: 'Die Eröffnung',
     description:
-      'Punkt 11:11 Uhr rufen wir die neue Session aus — mit Ordensfest, Narrenruf und dem ersten Groß — Furria der Saison.',
+      'Punkt 11:11 Uhr rufen wir die neue Session aus. Seit Einführung der Vereinszeitzone UTC+11:11 ist das genau genommen jeder Zeitpunkt.',
   },
   {
     tag: 'Advent',
-    title: 'Proben & Aufbau',
+    title: 'Proben & Statik',
     description:
-      'In der stillen Zeit wird umso lauter geübt: Garden, Ballett und Elferrat feilen an Tänzen, Reden und Kostümen.',
+      'In der stillen Zeit wird umso lauter geübt. Parallel wird das Konfettilager im Keller neu vermessen und die Turnhalle für die Tanzgarde gedämmt.',
   },
   {
     tag: 'Februar',
     title: 'Prunksitzungen',
     description:
-      'Der Höhepunkt im Saal: Bütt, Tanz und Showprogramm vor vollem Haus — die Wochen, auf die alles hinarbeitet.',
+      'Bütt, Tanz und Showprogramm vor vollem Haus. Reden über elf Minuten kürzt die Reimprüfung, Küren unter elf Sekunden zeigen wir in Zeitlupe.',
   },
   {
     tag: 'Rosenmontag',
     title: 'Der Umzug',
     description:
-      'Wir ziehen durch Großbesenstadt — mit Wagen, Fußgruppen und Kamelle für die ganze Stadt am Straßenrand.',
+      'Wir ziehen durch Großbesenstadt — sofern der Wagen bis dahin eine Halle gefunden hat, in die er liegend passt. Kamelle fliegt bis ins Nachbardorf.',
   },
   {
     tag: 'Aschermittwoch',
     title: 'Der Ausklang',
     description:
-      'Mit dem Kehraus endet die Session. Wir lassen es gemeinsam ausklingen — und freuen uns schon aufs nächste 11.11.',
+      'Mit dem Kehraus endet die Session offiziell. Nach Vereinszeitrechnung ist bis zum nächsten 11.11. allerdings noch reichlich Luft.',
   },
 ];

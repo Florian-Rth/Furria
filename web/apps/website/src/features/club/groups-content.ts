@@ -12,63 +12,56 @@ export interface Group {
   memberMeta: string;
   fullText: string;
   lead: string;
-  schedule: string;
 }
 
 export const GROUPS: Group[] = [
   {
     title: 'Tanzgarde',
-    blurb: 'Funkenmariechen & Gardetanz',
-    memberMeta: '18 Aktive',
+    blurb: 'Funkenmariechen jenseits der Schallmauer',
+    memberMeta: '18 Aktive · 1 Schallmauer',
     fullText:
-      'Von Funkenmariechen bis Schautanz: Die Tanzgarde ist das tänzerische Herz von FURRIA und steht in jeder Session mehrfach auf der Bühne.',
-    lead: 'Sabine Wirbel',
-    schedule: 'Dienstags 19:00 · Turnhalle',
+      'Die Kür der Tanzgarde ist inzwischen so schnell, dass die Jury sie nur noch in Zeitlupe bewerten kann. Zweimal wurde die Halle vorsorglich geräumt.',
+    lead: 'Hildegard von Bingen',
   },
   {
     title: 'Männerballett',
-    blurb: 'Zwölf Männer, ein Tutu-Traum',
-    memberMeta: '12 Aktive',
+    blurb: 'Zwölf Männer, ein Tutu, eine Weltbühne',
+    memberMeta: '12 Aktive · 3 Zugaben',
     fullText:
-      'Zwölf Männer, ein Tutu-Traum: Das Männerballett bringt mit viel Selbstironie und überraschender Präzision den ganzen Saal zum Kochen.',
-    lead: 'Uwe Fass',
-    schedule: 'Mittwochs 20:00 · Vereinsheim',
+      'Seit dem versehentlichen Gastspiel an der Mailänder Scala probt das Männerballett ausschließlich in Spitzenschuhen. Tschaikowski liegt in Marschtakt vor.',
+    lead: 'Ludwig van Beethoven',
   },
   {
     title: 'Elferrat',
-    blurb: 'Der närrische Rat auf der Bühne',
-    memberMeta: '11 Räte',
+    blurb: 'Elf Räte, zwölf Meinungen',
+    memberMeta: '11 Räte · 1 Zeitzone',
     fullText:
-      'Elf Närrinnen und Narren führen als Elferrat durch die Prunksitzung und wachen über den guten Ton und den Humor der Session.',
-    lead: 'Franz-Josef Besen',
-    schedule: 'Nach Bedarf · Vereinsheim',
+      'Der Elferrat wacht über Humor und Zeitrechnung. Auf seinen Beschluss gilt im Vereinsheim die Zeitzone UTC+11:11 — Sitzungen beginnen daher immer um 11:11 Uhr.',
+    lead: 'Otto von Bismarck',
   },
   {
     title: 'Büttenrede',
-    blurb: 'Spitze Zunge, spitzer Reim',
-    memberMeta: '8 Aktive',
+    blurb: 'Spitze Zunge, geprüfter Reim',
+    memberMeta: '8 Aktive · 1 Reimprüfung',
     fullText:
-      'Am Rednerpult wird gereimt, gespöttelt und aufgespießt: Die Büttenredner nehmen Großbesenstadt und die große weite Welt liebevoll aufs Korn.',
-    lead: 'Marlies Furrmann',
-    schedule: 'Nach Absprache · Vereinsheim',
+      'Jede Rede muss vor dem Vortrag die Reimprüfung bestehen. „Faust“ wurde zugelassen — gekürzt auf elf Minuten und mit Tusch.',
+    lead: 'Clara Schumann',
   },
   {
     title: 'Kindergarde',
-    blurb: 'Die Kleinsten ganz groß',
-    memberMeta: '24 Kinder',
+    blurb: 'Die Kleinsten, ganz groß',
+    memberMeta: '24 Kinder · 12 Bühnenplätze',
     fullText:
-      'Die Kleinsten ganz groß: In der Kindergarde lernen die jüngsten Narren das Tanzen, den Takt und vor allem die Freude am Karneval.',
-    lead: 'Lena Kehr',
-    schedule: 'Freitags 17:00 · Turnhalle',
+      'Die Kindergarde tanzt traditionell auf einer Bühne, die für die Hälfte von ihnen gebaut wurde. Vergessen wurde dabei noch kein einziger Schritt.',
+    lead: 'Alexander von Humboldt',
   },
   {
     title: 'Organisation',
-    blurb: 'Getränke, Kasse & Küche',
-    memberMeta: 'Alle Hände',
+    blurb: 'Getränke, Kasse & Konfettistatik',
+    memberMeta: 'Alle Hände · 4,2 Tonnen',
     fullText:
-      'Ohne sie läuft nichts: Das Orga-Team kümmert sich um Getränke, Kasse, Küche und Aufbau — der Maschinenraum hinter jeder Veranstaltung.',
-    lead: 'Uwe Fass',
-    schedule: 'Nach Bedarf',
+      'Das Orga-Team verwaltet Getränke, Kasse und Küche — und seit 1998 das Konfettilager im Keller, dessen Statik jedes Jahr neu berechnet wird.',
+    lead: 'Carl Friedrich Gauß',
   },
 ];
 
@@ -76,7 +69,6 @@ export const groupsIntro = `Aktuell ${GROUPS.length} Gruppen — die Liste wäch
 
 export const groupsModalLabels = {
   lead: 'Leitung',
-  schedule: 'Treffen',
   cta: 'Mitglied werden →',
   close: 'Schließen',
 } as const;

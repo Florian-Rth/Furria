@@ -76,8 +76,8 @@ describe('sortPostsByDateDesc', () => {
     expect(posts.map((newsPost) => newsPost.slug)).toEqual(['older', 'newest']);
   });
 
-  it('leads the seeded Meldungen with the Motto-Verkündung', () => {
-    expect(sortPostsByDateDesc(NEWS_POSTS)[0]?.slug).toBe('motto-56');
+  it('leads the seeded Meldungen with the newest one', () => {
+    expect(sortPostsByDateDesc(NEWS_POSTS)[0]?.slug).toBe('konfetti-kritische-masse');
   });
 });
 
@@ -126,7 +126,7 @@ describe('selectFollowingPosts', () => {
 
 describe('findPostBySlug', () => {
   it('finds a seeded Meldung', () => {
-    expect(findPostBySlug(NEWS_POSTS, 'jhv')?.title).toContain('Jahreshauptversammlung');
+    expect(findPostBySlug(NEWS_POSTS, 'vereinsheim-zeitzone')?.title).toContain('Zeitzone');
   });
 
   it('returns undefined for an unknown slug so the route can throw not-found', () => {
@@ -150,10 +150,10 @@ describe('selectRelatedPosts', () => {
   });
 
   it('caps the Meldungen at three', () => {
-    const related = selectRelatedPosts(NEWS_POSTS, 'motto-56');
+    const related = selectRelatedPosts(NEWS_POSTS, 'konfetti-kritische-masse');
 
     expect(related).toHaveLength(3);
-    expect(related.map((newsPost) => newsPost.slug)).not.toContain('motto-56');
+    expect(related.map((newsPost) => newsPost.slug)).not.toContain('konfetti-kritische-masse');
   });
 
   it('has nothing to offer beside the only Meldung', () => {

@@ -16,23 +16,23 @@ describe('peopleChapter', () => {
 describe('PEOPLE', () => {
   it('seeds the placeholder faces keyed on their Amt', () => {
     expect(PEOPLE.map((person) => person.amt)).toEqual([
-      'Präsident',
-      'Präsidentin',
-      'Kinderpräsidentin',
-      'Geschäftsführer',
-      'Getränkewart',
-      'Trainerin',
+      'Präsident auf Lebenszeit',
+      'Hofkomponist',
+      'Oberste Reimprüferin',
+      'Beauftragter für Höhenflüge',
+      'Kamelle-Statistiker',
+      'Äbtissin für gute Laune',
     ]);
   });
 
   it('carries the placeholder names from the handoff', () => {
     expect(PEOPLE.map((person) => person.name)).toEqual([
-      'Franz-Josef Besen',
-      'Marlies Furrmann',
-      'Lena Kehr',
-      'Bernd Groß',
-      'Uwe Fass',
-      'Sabine Wirbel',
+      'Otto von Bismarck',
+      'Ludwig van Beethoven',
+      'Clara Schumann',
+      'Alexander von Humboldt',
+      'Carl Friedrich Gauß',
+      'Hildegard von Bingen',
     ]);
   });
 

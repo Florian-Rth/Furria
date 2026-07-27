@@ -70,32 +70,16 @@ export const GruppenModalPanel: FC<GruppenModalPanelProps> = ({
       <Typography variant="body1" sx={{ color: 'text.secondary' }}>
         {group.fullText}
       </Typography>
-      <Stack
-        direction={{ xs: 'column', sm: 'row' }}
-        sx={{ gap: { xs: 2, sm: 5 }, pt: 2.5, borderTop: 1, borderColor: 'divider' }}
-      >
-        <Stack sx={{ gap: 0.5 }}>
-          <Typography
-            variant="caption"
-            sx={{ fontWeight: 800, letterSpacing: '0.08em', color: 'text.secondary' }}
-          >
-            {groupsModalLabels.lead}
-          </Typography>
-          <Typography variant="body2" sx={{ fontWeight: 700 }}>
-            {group.lead}
-          </Typography>
-        </Stack>
-        <Stack sx={{ gap: 0.5 }}>
-          <Typography
-            variant="caption"
-            sx={{ fontWeight: 800, letterSpacing: '0.08em', color: 'text.secondary' }}
-          >
-            {groupsModalLabels.schedule}
-          </Typography>
-          <Typography variant="body2" sx={{ fontWeight: 700 }}>
-            {group.schedule}
-          </Typography>
-        </Stack>
+      <Stack sx={{ gap: 0.5, pt: 2.5, borderTop: 1, borderColor: 'divider' }}>
+        <Typography
+          variant="caption"
+          sx={{ fontWeight: 800, letterSpacing: '0.08em', color: 'text.secondary' }}
+        >
+          {groupsModalLabels.lead}
+        </Typography>
+        <Typography variant="body2" sx={{ fontWeight: 700 }}>
+          {group.lead}
+        </Typography>
       </Stack>
       <Button
         component={RouterLink}

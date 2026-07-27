@@ -12,12 +12,12 @@ export interface Person {
 }
 
 export const PEOPLE: Person[] = [
-  { amt: 'Präsident', name: 'Franz-Josef Besen' },
-  { amt: 'Präsidentin', name: 'Marlies Furrmann' },
-  { amt: 'Kinderpräsidentin', name: 'Lena Kehr' },
-  { amt: 'Geschäftsführer', name: 'Bernd Groß' },
-  { amt: 'Getränkewart', name: 'Uwe Fass' },
-  { amt: 'Trainerin', name: 'Sabine Wirbel' },
+  { amt: 'Präsident auf Lebenszeit', name: 'Otto von Bismarck' },
+  { amt: 'Hofkomponist', name: 'Ludwig van Beethoven' },
+  { amt: 'Oberste Reimprüferin', name: 'Clara Schumann' },
+  { amt: 'Beauftragter für Höhenflüge', name: 'Alexander von Humboldt' },
+  { amt: 'Kamelle-Statistiker', name: 'Carl Friedrich Gauß' },
+  { amt: 'Äbtissin für gute Laune', name: 'Hildegard von Bingen' },
 ];
 
 export const personPhotoCaption = 'portrait';
