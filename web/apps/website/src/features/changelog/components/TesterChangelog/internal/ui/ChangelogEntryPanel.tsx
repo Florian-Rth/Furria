@@ -3,7 +3,7 @@ import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import type { ChangelogEntry } from '@/features/changelog/schemas';
 import { formatLongDate } from '@/lib/date';
-import { buildPanelId, buildTabId } from '../logic/changelog-dialog-a11y';
+import { buildEntryHeadingId, buildPanelId } from '../logic/changelog-dialog-a11y';
 
 interface ChangelogEntryPanelProps {
   entry: ChangelogEntry;
@@ -14,8 +14,8 @@ export const ChangelogEntryPanel: FC<ChangelogEntryPanelProps> = ({ entry }) => 
     role="tabpanel"
     tabIndex={0}
     id={buildPanelId(entry.id)}
-    aria-labelledby={buildTabId(entry.id)}
-    sx={{ gap: { xs: 1.5, md: 2 } }}
+    aria-labelledby={buildEntryHeadingId(entry.id)}
+    sx={{ width: '100%', gap: { xs: 1.5, desktop: 2 } }}
   >
     <Stack sx={{ gap: 0.75 }}>
       <Typography
@@ -29,18 +29,21 @@ export const ChangelogEntryPanel: FC<ChangelogEntryPanelProps> = ({ entry }) => 
       >
         {formatLongDate(entry.date)}
       </Typography>
-      <Typography variant="h5" component="h3">
+      <Typography variant="h5" component="h3" id={buildEntryHeadingId(entry.id)}>
         {entry.title}
       </Typography>
     </Stack>
-    {entry.description.map((paragraph) => (
-      <Typography
-        key={paragraph}
-        variant="body1"
-        sx={{ color: 'text.secondary', textWrap: 'pretty' }}
-      >
-        {paragraph}
-      </Typography>
-    ))}
+    <Stack component="ul" sx={{ gap: 1, m: 0, pl: 3, listStyleType: 'disc' }}>
+      {entry.description.map((point) => (
+        <Typography
+          key={point}
+          component="li"
+          variant="body1"
+          sx={{ color: 'text.secondary', textWrap: 'pretty' }}
+        >
+          {point}
+        </Typography>
+      ))}
+    </Stack>
   </Stack>
 );

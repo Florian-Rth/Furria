@@ -1,20 +1,29 @@
 import { useEffect, useState } from 'react';
 import { useChangelogReadStatus } from '@/features/changelog/hooks/use-changelog-read-status';
 import type { ChangelogEntry } from '@/features/changelog/schemas';
-import { resolveDialogInit } from './dialog-open-state';
+import type { ChangelogMobileView } from './dialog-open-state';
+import {
+  resolveDialogInit,
+  withDialogClosed,
+  withDialogOpened,
+  withEntryListRestored,
+  withEntrySelected,
+} from './dialog-open-state';
 
-interface ChangelogDialogState {
+interface ChangelogDialogControls {
   entries: ChangelogEntry[];
   unreadCount: number;
   open: boolean;
   selectedEntry: ChangelogEntry | undefined;
+  mobileView: ChangelogMobileView;
   isUnread: (entryId: string) => boolean;
   selectEntry: (entryId: string) => void;
+  showEntryList: () => void;
   openDialog: () => void;
   closeDialog: () => void;
 }
 
-export const useChangelogDialog = (): ChangelogDialogState => {
+export const useChangelogDialog = (): ChangelogDialogControls => {
   const { entries, unreadCount, hasUnreadNewestEntry, isUnread, markRead } =
     useChangelogReadStatus();
   const [dialog, setDialog] = useState(() => resolveDialogInit(entries, hasUnreadNewestEntry));
@@ -30,9 +39,11 @@ export const useChangelogDialog = (): ChangelogDialogState => {
     unreadCount,
     open: dialog.open,
     selectedEntry: entries.find((entry) => entry.id === dialog.selectedEntryId),
+    mobileView: dialog.mobileView,
     isUnread,
-    selectEntry: (entryId) => setDialog({ open: true, selectedEntryId: entryId }),
-    openDialog: () => setDialog((current) => ({ ...current, open: true })),
-    closeDialog: () => setDialog((current) => ({ ...current, open: false })),
+    selectEntry: (entryId) => setDialog((current) => withEntrySelected(current, entryId)),
+    showEntryList: () => setDialog(withEntryListRestored),
+    openDialog: () => setDialog(withDialogOpened),
+    closeDialog: () => setDialog(withDialogClosed),
   };
 };

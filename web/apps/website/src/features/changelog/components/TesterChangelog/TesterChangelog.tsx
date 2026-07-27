@@ -4,6 +4,7 @@ import { ChangelogPanelColumn } from './internal/layout/ChangelogPanelColumn';
 import { ChangelogTabColumn } from './internal/layout/ChangelogTabColumn';
 import { ChangelogTriggerAnchor } from './internal/layout/ChangelogTriggerAnchor';
 import { useChangelogDialog } from './internal/logic/use-changelog-dialog';
+import { ChangelogBackButton } from './internal/ui/ChangelogBackButton';
 import { ChangelogDialog } from './internal/ui/ChangelogDialog';
 import { ChangelogEntryPanel } from './internal/ui/ChangelogEntryPanel';
 import { ChangelogEntryTabs } from './internal/ui/ChangelogEntryTabs';
@@ -15,8 +16,10 @@ export const TesterChangelog: FC = () => {
     unreadCount,
     open,
     selectedEntry,
+    mobileView,
     isUnread,
     selectEntry,
+    showEntryList,
     openDialog,
     closeDialog,
   } = useChangelogDialog();
@@ -25,6 +28,8 @@ export const TesterChangelog: FC = () => {
     return null;
   }
 
+  const showingEntryList = mobileView === 'list';
+
   return (
     <>
       <ChangelogTriggerAnchor>
@@ -32,7 +37,9 @@ export const TesterChangelog: FC = () => {
       </ChangelogTriggerAnchor>
       <ChangelogDialog open={open} onClose={closeDialog}>
         <ChangelogDialogBody>
-          <ChangelogTabColumn>
+          <ChangelogTabColumn
+            sx={{ display: { xs: showingEntryList ? 'block' : 'none', desktop: 'block' } }}
+          >
             <ChangelogEntryTabs
               entries={entries}
               selectedEntryId={selectedEntry.id}
@@ -40,7 +47,10 @@ export const TesterChangelog: FC = () => {
               onSelect={selectEntry}
             />
           </ChangelogTabColumn>
-          <ChangelogPanelColumn>
+          <ChangelogPanelColumn
+            sx={{ display: { xs: showingEntryList ? 'none' : 'flex', desktop: 'flex' } }}
+          >
+            <ChangelogBackButton onBack={showEntryList} />
             <ChangelogEntryPanel entry={selectedEntry} />
           </ChangelogPanelColumn>
         </ChangelogDialogBody>

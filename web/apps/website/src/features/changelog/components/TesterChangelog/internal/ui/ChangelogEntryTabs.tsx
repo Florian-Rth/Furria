@@ -1,7 +1,7 @@
 import { kkTokens } from '@furria/ui';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
-import type { FC, SyntheticEvent } from 'react';
+import type { FC } from 'react';
 import { changelogCopy } from '@/features/changelog/changelog-copy';
 import type { ChangelogEntry } from '@/features/changelog/schemas';
 import { buildPanelId, buildTabId } from '../logic/changelog-dialog-a11y';
@@ -24,10 +24,9 @@ export const ChangelogEntryTabs: FC<ChangelogEntryTabsProps> = ({
     orientation="vertical"
     variant="scrollable"
     value={selectedEntryId}
-    onChange={(_event: SyntheticEvent, entryId: string) => onSelect(entryId)}
     aria-label={changelogCopy.tabsLabel}
     sx={{
-      maxHeight: { xs: '11.5rem', md: '26rem' },
+      maxHeight: { desktop: '26rem' },
       '& .MuiTabs-indicator': { left: 0, right: 'auto', width: '0.1875rem' },
     }}
   >
@@ -37,6 +36,7 @@ export const ChangelogEntryTabs: FC<ChangelogEntryTabsProps> = ({
         value={entry.id}
         id={buildTabId(entry.id)}
         aria-controls={buildPanelId(entry.id)}
+        onClick={() => onSelect(entry.id)}
         label={<ChangelogTabLabel entry={entry} unread={isUnread(entry.id)} />}
         sx={(theme) => ({
           minHeight: '2.75rem',
