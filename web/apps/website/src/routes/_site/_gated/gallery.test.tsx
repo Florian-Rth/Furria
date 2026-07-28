@@ -25,4 +25,16 @@ describe('gallery route', () => {
       '/gallery/prunksitzung-2026',
     );
   });
+
+  it('features the newest Album once, without repeating it in the Session grid', async () => {
+    writeGrantedToSession(window.sessionStorage);
+    renderAtRoute('/gallery');
+
+    expect(await screen.findByText('NEUESTES ALBUM')).toBeInTheDocument();
+    expect(screen.getAllByRole('link', { name: 'Rosenmontagsumzug' })).toHaveLength(1);
+    expect(screen.getByRole('link', { name: 'Rosenmontagsumzug' })).toHaveAttribute(
+      'href',
+      '/gallery/rosenmontagsumzug-2026',
+    );
+  });
 });

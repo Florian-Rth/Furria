@@ -31,6 +31,8 @@ export const currentSessionHeading = 'DIESE SESSION';
 
 export const albumLinkLabel = 'Album ansehen →';
 
+export const featuredAlbumFlag = 'NEUESTES ALBUM';
+
 export const ALBUMS: Album[] = [
   {
     slug: 'prunksitzung-2026',
@@ -178,6 +180,15 @@ export const buildPhotoCountLabel = (count: number): string =>
 
 export const buildAlbumMeta = (album: Album): string =>
   `${formatLongDate(album.date)} · ${album.venue}`;
+
+export const buildFeaturedAlbumMeta = (album: Album): string =>
+  `${buildAlbumMeta(album)} · ${buildPhotoCountLabel(album.photos.length)}`;
+
+export const selectFeaturedAlbum = (albums: Album[]): Album | undefined =>
+  sortAlbumsByDateDesc(albums)[0];
+
+export const excludeAlbum = (albums: Album[], excluded: Album | undefined): Album[] =>
+  excluded === undefined ? albums : albums.filter((album) => album.slug !== excluded.slug);
 
 export const albumCoverOrientation: PhotoOrientation = 'landscape';
 

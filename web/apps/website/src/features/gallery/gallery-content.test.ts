@@ -5,11 +5,14 @@ import {
   albumSession,
   buildAlbumHref,
   buildAlbumMeta,
+  buildFeaturedAlbumMeta,
   buildGalleryStats,
   buildPhotoCountLabel,
   countPhotos,
+  excludeAlbum,
   findAlbumBySlug,
   selectCurrentSessionAlbums,
+  selectFeaturedAlbum,
   selectOlderSessionGroups,
   sortAlbumsByDateDesc,
 } from './gallery-content';
@@ -153,6 +156,61 @@ describe('buildPhotoCountLabel', () => {
 describe('buildAlbumMeta', () => {
   it('joins the long German date and the venue', () => {
     expect(buildAlbumMeta(album('sitzung', '2026-02-14', 8))).toBe('14. Februar 2026 · Festhalle');
+  });
+});
+
+describe('buildFeaturedAlbumMeta', () => {
+  it('joins date, venue and the derived photo count', () => {
+    expect(buildFeaturedAlbumMeta(album('umzug', '2026-02-16', 11))).toBe(
+      '16. Februar 2026 · Festhalle · 11 Fotos',
+    );
+  });
+});
+
+describe('selectFeaturedAlbum', () => {
+  it('features the newest Album by date', () => {
+    const albums = [
+      album('sitzung', '2026-02-14', 12),
+      album('umzug', '2026-02-16', 11),
+      album('eroeffnung', '2025-11-11', 8),
+    ];
+
+    expect(selectFeaturedAlbum(albums)?.slug).toBe('umzug');
+  });
+
+  it('features the newest seeded Album', () => {
+    expect(selectFeaturedAlbum(ALBUMS)?.slug).toBe('rosenmontagsumzug-2026');
+  });
+
+  it('features nothing without Alben', () => {
+    expect(selectFeaturedAlbum([])).toBeUndefined();
+  });
+});
+
+describe('excludeAlbum', () => {
+  it('drops the featured Album from the list it would repeat in', () => {
+    const albums = [album('umzug', '2026-02-16', 11), album('sitzung', '2026-02-14', 12)];
+
+    expect(excludeAlbum(albums, selectFeaturedAlbum(albums)).map((rest) => rest.slug)).toEqual([
+      'sitzung',
+    ]);
+  });
+
+  it('keeps every Album when nothing is excluded', () => {
+    const albums = [album('umzug', '2026-02-16', 11)];
+
+    expect(excludeAlbum(albums, undefined)).toEqual(albums);
+  });
+
+  it('keeps the Alben of the running Session apart from the featured one', () => {
+    const currentSessionAlbums = selectCurrentSessionAlbums(ALBUMS, INSIDE_CURRENT_SESSION);
+    const rest = excludeAlbum(currentSessionAlbums, selectFeaturedAlbum(ALBUMS));
+
+    expect(rest.map((remaining) => remaining.slug)).toEqual([
+      'prunksitzung-2026',
+      'kinderfasching-2026',
+      'sessionseroeffnung-2025',
+    ]);
   });
 });
 
