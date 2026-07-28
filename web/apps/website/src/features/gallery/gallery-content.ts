@@ -1,8 +1,9 @@
+import type { KkPhotoOrientation } from '@furria/ui';
 import type { Session } from '@/lib/club';
 import { sessionAt } from '@/lib/club';
 import { formatLongDate } from '@/lib/date';
 
-export type PhotoOrientation = 'landscape' | 'portrait';
+export type PhotoOrientation = KkPhotoOrientation;
 
 export interface Photo {
   orientation: PhotoOrientation;
@@ -177,6 +178,10 @@ export const buildPhotoCountLabel = (count: number): string =>
 
 export const buildAlbumMeta = (album: Album): string =>
   `${formatLongDate(album.date)} · ${album.venue}`;
+
+export const albumCoverOrientation: PhotoOrientation = 'landscape';
+
+export const buildAlbumCoverAlt = (album: Album): string => `Titelbild vom Album ${album.title}`;
 
 export const selectCurrentSessionAlbums = (albums: Album[], reference: Date): Album[] => {
   const openSession = sessionAt(reference);

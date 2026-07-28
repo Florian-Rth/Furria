@@ -1,10 +1,12 @@
-import { KkCard, KkPhotoPlaceholder, kkTokens } from '@furria/ui';
+import { KkCard, KkPhoto, kkTokens } from '@furria/ui';
 import Typography from '@mui/material/Typography';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import type { Album } from '@/features/gallery/gallery-content';
 import {
+  albumCoverOrientation,
   albumLinkLabel,
+  buildAlbumCoverAlt,
   buildAlbumHref,
   buildAlbumMeta,
   buildPhotoCountLabel,
@@ -17,8 +19,13 @@ interface AlbumCardProps {
 export const AlbumCard: FC<AlbumCardProps> = ({ album }) => (
   <KkCard>
     <KkCard.Action component={Link} to={buildAlbumHref(album.slug)} aria-label={album.title}>
-      <KkCard.Media aspectRatio={kkTokens.aspectRatio.landscape}>
-        <KkPhotoPlaceholder label={album.slug} fill />
+      <KkCard.Media aspectRatio={kkTokens.aspectRatio[albumCoverOrientation]}>
+        <KkPhoto
+          alt={buildAlbumCoverAlt(album)}
+          orientation={albumCoverOrientation}
+          placeholderLabel={album.slug}
+          sx={{ height: '100%', borderRadius: 0 }}
+        />
       </KkCard.Media>
       <KkCard.Body>
         <KkCard.Meta>
