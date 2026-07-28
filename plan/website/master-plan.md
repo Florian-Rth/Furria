@@ -76,7 +76,7 @@ Guiding constraints (all binding):
 | [Veranstaltungskalender](feature-event-calendar.md) | capability | idea | Public event list/calendar + detail |
 | [Ticket-Shop](feature-ticket-shop.md) | capability | idea | Browse ticketed events, checkout, payment |
 | [Aktuelles](feature-news.md) | capability | shipped | Meldungen (list + detail) + landing teaser |
-| [Bildergalerie](feature-gallery.md) | capability | idea | Public event photo gallery |
+| [Galerie](feature-gallery.md) | capability | ready | Public Album index + Album pages + photo viewer |
 | [Mitglied werden](feature-membership-funnel.md) | capability | idea | Membership info + application funnel |
 
 ---
@@ -375,11 +375,102 @@ Followed the plan closely; build-level choices worth knowing:
 - **Deferred (not P4):** real Meldungen + photos, the archive route, board publishing UI, and
   body-sanitisation once content stops being compile-time.
 
-### P5 — Gallery
-**Status:** planned
-Static-implementable: public event photos shipped as **curated static assets** (no backend).
+### P4.1 — Design-system unification
+**Status:** done (2026-07-27, `14c07d3` + follow-ups `e811e9d`…`8f5a643`)
+**Recorded retroactively during P5 grilling (2026-07-28) — it was built but never written down**,
+and P5 is built entirely on its output, so it cannot stay undocumented.
 
-- [ ] [Bildergalerie](feature-gallery.md) — public event photos (static assets)
+`/club` and `/news` had drifted into reading like two different sites: each page hand-rolled its own
+shell, page header and section header, so type scale, rhythm, rules and surfaces diverged. The fix
+was to add the missing primitives to `@furria/ui` and rebuild **every** page on them:
+
+- **`PageLayout`** is now the one page shell (`Body` wide / `Prose` reading column) — no component
+  outside it renders `<main>` or its own `Container`.
+- **`KkHeroSection`** replaces every per-page hero: eyebrow / h1 / description / actions in a left
+  column plus a free **`Aside`** slot that lays *behind* the main column at `xs`. Confetti is part of
+  every hero.
+- **`KkSection`** owns section spacing; **`KkSectionHeader`** replaced `ChapterHeader`,
+  `NewsSectionRule`, `NewsTeaserHeading` and `ProgramSectionHeader`.
+- **`KkCard`** replaced five card dialects (program, news, Gruppen, Chronik, Season) with
+  `Media`/`Badge`/`Body`/`Meta`/`Title`/`Text`/`Footer`.
+- **`KkRule`**, **`KkEyebrow`** (replacing nine hand-styled overlines); tokens gained `sectionGap`,
+  `blockGap`, `bandY` and the `line` weights.
+- **`KkBandSection` replaced `CtaBand`** — see the correction in
+  [Site-Shell](feature-site-shell.md).
+- **A real a11y fix:** rotating tints no longer colour text. Gold-on-paper was **1.85:1** in badges,
+  card links, milestone years and event dates — all now `primary.main` at **4.76:1**.
+
+**Lesson for future phases:** a cross-cutting refactor of this size is exactly what the feature files
+exist to carry. Shipping it without recording it left two documents lying about the codebase for a
+phase and a half.
+
+### P5 — Galerie
+**Status:** planned (shaped 2026-07-28 in a grilling session; mock moved to
+`docs/design/gallery-page/`)
+Static-implementable, **no backend**: `/gallery` (Album index) + `/gallery/:albumSlug` (Album) + a
+full-screen photo viewer addressed by `?photo=<n>`. Photos remain placeholders — the point of the
+phase is that dropping real files in later is a **content change, not a rewrite**. Shipped as the 9
+vertical slices in the [Galerie](feature-gallery.md) Implementation plan.
+
+- [ ] [Galerie](feature-gallery.md) — Album index (hero + featured newest + current Session grid +
+      derived older Sessions + rights note + `/program` band), Album page (own lighter header +
+      orientation-aware photo grid + next Album), and the full-screen viewer
+- [ ] `@furria/ui` — new **`KkPhoto`** primitive: the real-`<img>` seam (lazy, async decoding,
+      intrinsic size, **required `alt`**) with `KkPhotoPlaceholder` as the no-source fallback
+- [ ] [Site-Shell](feature-site-shell.md) — promote the club contact address to
+      **`CLUB_CONTACT_EMAIL`** in `lib/club.ts` (today a hardcoded literal inside
+      `imprint-content.ts` prose) and refactor the imprint to read it
+- [ ] [SEO & Meta](feature-seo-meta.md) — per-Album document head (title/description/canonical),
+      no new mechanism
+- [ ] [Landing-Hero](feature-landing-hero.md) — **drive-by defect fix** found in P5 grilling: the
+      hero says **12 Gruppen** while `/club` derives **6** from `GROUPS.length`. Two shipped pages
+      contradicting one fact → `GROUP_COUNT_PLACEHOLDER = 6`, in the same slice that already opens
+      `lib/club.ts`
+
+**Cross-cutting (decided in P5 grilling, 2026-07-28):**
+
+- **The viewer's state lives in the URL** (`?photo=<n>`, open pushes / stepping replaces), so Back
+  closes it and a photo is linkable — the first time this site puts UI state in a search param.
+  Validated with Zod via `validateSearch`; a bad param renders **closed**, only a bad *album slug* is
+  a 404.
+- **`Album` is one occasion; its Session is derived** from its date via `sessionAt()`, never stored.
+  The index's older-Session block is derived too, and **absent while no older Album exists** — the
+  P4 archive precedent, but with no dead targets this time.
+- **`@furria/ui` gains `KkPhoto`** because this is the first feature where images *are* the content.
+  **No build-time image pipeline yet** (AVIF/WebP srcset, blur-up) — a spike worth doing when there
+  are input files; deferred. `alt` is required and never empty.
+- **The mock's masonry is rejected on a defect, not on taste:** CSS multi-column fills
+  top-to-bottom per column, so tab and screen-reader order stop matching the chronology of an
+  evening. Replaced by orientation-aware tiles at uniform height (portrait 1 / landscape 2 MUI Grid
+  columns), where DOM order equals visual order.
+- **Hard offset-shadows stay rejected as the system** (third phase running). The mock leads with
+  `12px 12px 0 red`; the featured Album earns emphasis through scale + layout + `shadow.raised`.
+- **The hero aside stays decorative** — a fanned Fotostapel, `aria-hidden`, not a link. Making it
+  the newest-Album link would have duplicated that Album's cover 200px above itself and turned a
+  rotated frame into a tap target.
+- **Copy rule, beyond this phase: Großbesenstadt and the broom mark are established brand furniture,
+  not a joke well.** The town name ships in masthead, footer, ticker, hero and Chronik and stays —
+  but copy must not be *built on* broom gags. Humour comes from the situations, as in `/news`.
+  (Raised by the user against a proposed caption; recorded here because it governs all future copy.)
+- **Photographer credits must be unmistakably fake**, extending P4's refusal to invent a "Vorstand"
+  byline — the mock's *"Foto: Anja Weber"* names a plausible real person in the **Fotograf** Amt.
+  Album *titles* stay honest; they are real event types the site already advertises.
+- **No Instagram band** while every social href is `#` (P7 owns them): a headline CTA whose whole
+  purpose is a dead link is worse than the footer's gracefully-degrading icon row.
+- **Glossary:** added **Galerie**, **Bildergalerie** (the Club-App's, *not* this page — the same
+  overload trap already documented for **Programm**) and **Album** to
+  [`CONTEXT.md`](../../CONTEXT.md).
+- **Deliberately no ADR.** The two-gate photo-publication idea was drafted and then **withdrawn on
+  the user's correction**: no Fotoerlaubnis rules exist, none are planned, and it is unclear the
+  area will ever be built. It sits in `CONTEXT.md` → *Flagged ambiguities* instead, since an ADR
+  records a decision that was made. The website needs none of it — it renders what the club put in,
+  and the printed takedown contact is the remedy.
+- **Scope trims (YAGNI):** no landing teaser (landing is static-final; P4 spent its one slot on
+  news); no per-photo share button (the `?photo` URL *is* the share mechanism, and P4 dropped
+  `navigator.share`); no download, videos, pagination, filters or per-photo pages.
+- **Deferred (not P5):** real photo assets + curation, the image transform pipeline and delivery
+  decision (repo vs. CDN — likely an ADR then), the Club-App `eventId` link on an Album, and the
+  Instagram band.
 
 ### P6 — Membership funnel
 **Status:** planned
@@ -397,7 +488,8 @@ and `robots.txt` is `Disallow: /` until this phase.
 
 - [ ] [SEO & Meta](feature-seo-meta.md) — **prerender mechanism** (its own spike: emotion/MUI style
       extraction + a TanStack Router static entry + no light/dark hydration flash). With static
-      content every route, **including `/news/:slug`**, is prerenderable — no bot injection needed
+      content every route, **including `/news/:slug` and `/gallery/:albumSlug`**, is prerenderable —
+      no bot injection needed
 - [ ] [SEO & Meta](feature-seo-meta.md) — flip `robots.txt` to allow; resolve the **absolute
       `og:image` URL** (blocked on a production domain since P0); add a sitemap
 - [ ] [Preview-Gate](feature-preview-gate.md) — remove the gate; gated marketing routes become
@@ -408,6 +500,8 @@ and `robots.txt` is `Disallow: /` until this phase.
       README §5 ("no icon library") for shipped UI
 - [ ] [Site-Shell](feature-site-shell.md) — real social URLs (P0 shipped `#` placeholders); real
       favicon/app-icon art (tracked asset task, placeholder since P0); `noindex` on the 404
+- [ ] [Galerie](feature-gallery.md) — the mock's **Instagram band** becomes buildable once the real
+      social URLs land here (held out of P5 precisely because it would have been a dead link)
 
 ---
 

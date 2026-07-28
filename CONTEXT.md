@@ -92,6 +92,25 @@ The one label a **Meldung** carries, from a fixed set. Label only — the public
 filtering by it.
 _Avoid_: Tag, Rubrik
 
+### Fotos
+
+**Galerie** (`gallery`):
+The public website's photo section — a handful of curated **Alben**, view-only. Deliberately not
+an archive: no uploads, no downloads, no endless feed; each Album shows a hand-picked selection,
+not everything that was shot.
+_Avoid_: **Bildergalerie** (that is the Club-App's surface — see below), Fotoarchiv, Mediathek
+
+**Bildergalerie**:
+The **Club-App's** planned member-facing photo surface (upload + browse). Not built, and not the
+name of the public page.
+_Avoid_: using it for the public **Galerie**
+
+**Album** (`album`):
+The curated photo set of exactly **one** occasion (Prunksitzung, Umzug, Sessionseröffnung) — the
+same kind of occasion the **Programm** lists. Carries its own date; its **Session** is *derived*
+from that date, never stored.
+_Avoid_: Galerie (for a single album), Ordner, Sammlung
+
 ### Money
 
 **Beitrag** (`fee`):
@@ -105,6 +124,15 @@ parallel truth.
 _Avoid_: balance table, payments table (as source of truth)
 
 ## Flagged ambiguities
+
+- **Who decides a photo is public** — **open, 2026-07-28.** No rules exist yet, and it is not
+  settled whether any of this gets built. The public **Galerie** needs none of it today: it shows
+  the pictures the club put into it, and the only real-world remedy is the takedown contact printed
+  on the page. Two *candidate* senses have surfaced, from the Club-App handoff, and they are not
+  the same thing — if this is ever modelled, do not collapse them into one `is_public` flag:
+  a **per-photo** release ("für Website freigeben") is about *photos*, while a **Person**-level
+  consent to being photographed at all is about *people*. Neither implies the other. Until someone
+  actually decides, neither term is canonical language.
 
 - **Mitgliedschaftsart `Passiv`** — resolved 2026-07-16: the handoff's four types
   (Aktiv / Passiv / Jugend / Ehren) are authoritative. The DBML enum was missing `passive`

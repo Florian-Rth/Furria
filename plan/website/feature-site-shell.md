@@ -91,7 +91,22 @@ hang in — built first so everything else has a home.
   `SiteChrome`. Decoration is **`KkConfettiRain`** — `KkConfettiScatter` no longer exists (dropped in
   `b34da0e`) and `KkConfettiBurst` is a click-fired one-shot, wrong for standing page decoration.
 
-**Shared `CtaBand` (added P4):**
+**Shared band — `CtaBand` (P4) → `KkBandSection` (P4.1). Superseded; read the correction first:**
+
+- ⚠️ **`src/components/CtaBand/` no longer exists.** P4 extracted it (`b4aaa64`); the P4.1
+  design-system unification (`14c07d3`) **deleted it and promoted the idiom into `@furria/ui` as
+  `KkBandSection`** (`tone: 'accent' | 'plain'`, `.Row`/`.Column` slots, a `decoration` node slot,
+  `px`/`py` from `kkTokens.layout`). `NarrenrufBand`, `RecruitBand` and `NewsProgramBand` all consume
+  it today. The P4 text below is kept because its *reasoning* still governs the API — but its
+  location claim was stale for a phase and a half and is corrected here.
+- **The "website chrome, not `@furria/ui`" argument was overturned, on purpose.** P4 argued a
+  *CTA/recruit band* is website chrome the Club-App will never mount. P4.1 kept that boundary and
+  still moved it, because what got promoted is not a CTA band: **`KkBandSection` is a token-pure
+  full-bleed band *section*** — tone + slots + rhythm, no CTA semantics, no copy, no targets. The
+  bands themselves (`NarrenrufBand`, `RecruitBand`, `NewsProgramBand`) remain website-local. The
+  boundary is unchanged; only the thing being classified changed.
+
+*Original P4 reasoning (API rules still binding):*
 
 - The full-bleed red band idiom reached **three** call sites (`NarrenrufBand`, `RecruitBand`, the
   news list's `/program` band), so it is extracted to `src/components/CtaBand/` as a **slotted
@@ -115,6 +130,16 @@ hang in — built first so everything else has a home.
   would have required the root to forward arbitrary DOM props, widening the API for no consumer.
   Call-site-owned hooks (`data-kk-narrenruf-watermark`, `…-shout`, `data-kk-recruit-watermark`) are
   untouched.
+
+**Club contact address (added P5):**
+
+- The club's e-mail address becomes **`CLUB_CONTACT_EMAIL` in `lib/club.ts`**, beside the other club
+  facts. It is currently a hardcoded literal buried in `imprint-content.ts` **prose**
+  (`'E-Mail: …'`), and the [Galerie](feature-gallery.md)'s takedown `mailto:` would have been a second
+  copy — an address that can drift between two pages, one of which is legally required to be correct.
+- The imprint is refactored to read the constant. Both are features importing from `lib`, so the
+  unidirectional dependency rule is respected (no feature→feature import).
+- The value shipped today is still a **placeholder**; real contact data is a launch task.
 
 **Theme:**
 

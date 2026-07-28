@@ -52,6 +52,18 @@ shareable material" ambition on the public side.
   configured anywhere in the app, and a relative canonical is spec-valid — it resolves with the
   absolute `og:image` URL in P7.
 
+**P5 (Galerie) — per-Album head only:**
+
+- The Album route sets its own head from the resolved Album: title, description from its intro,
+  OG title/description, root-relative canonical (`/gallery/{albumSlug}`). **No new mechanism** —
+  the same `head` API and the same root-relative-canonical decision as the news post route.
+- **`og:type` stays the root's `website`** — an Album is not an `article`, and there is no published
+  time to declare.
+- **`?photo` is not reflected in the head.** A search param must not change the canonical, or every
+  photo of an Album would compete with the Album page for the same content.
+- Prerenderable in P7 like everything else: Album content is compile-time TS constants, so every
+  `albumSlug` is known at build time.
+
 **Revised in P4 grilling (2026-07-25) — prerender and injection both moved out of P4:**
 
 - **Prerendering gated routes would defeat the preview gate.** The gate is client-side
