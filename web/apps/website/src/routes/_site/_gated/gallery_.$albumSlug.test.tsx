@@ -66,7 +66,7 @@ describe('album route', () => {
     writeGrantedToSession(window.sessionStorage);
     renderAtRoute(`/gallery/${KNOWN_SLUG}?photo=3`);
 
-    await screen.findByRole('heading', { level: 1, name: album.title });
+    await screen.findByRole('dialog');
 
     expect(document.title).toBe(title);
     expect(headContent('meta[name="description"]', 'content')).toBe(album.intro);

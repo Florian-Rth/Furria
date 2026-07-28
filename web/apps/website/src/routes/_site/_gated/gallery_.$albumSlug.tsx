@@ -4,6 +4,7 @@ import type { Album } from '@/features/gallery';
 import {
   ALBUMS,
   AlbumPage,
+  AlbumSearchSchema,
   buildAlbumDocumentTitle,
   buildAlbumHref,
   findAlbumBySlug,
@@ -28,6 +29,7 @@ const buildAlbumHead = (album: Album): RouteHead => {
 };
 
 export const Route = createFileRoute('/_site/_gated/gallery_/$albumSlug')({
+  validateSearch: AlbumSearchSchema,
   loader: ({ params }): Album => {
     const album = findAlbumBySlug(ALBUMS, params.albumSlug);
     if (album === undefined) {

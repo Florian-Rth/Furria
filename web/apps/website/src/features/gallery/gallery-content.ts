@@ -41,6 +41,13 @@ export const albumViewerHint = 'Bild antippen für die große Ansicht';
 
 export const featuredAlbumFlag = 'NEUESTES ALBUM';
 
+export const photoViewerLabels = {
+  close: 'Große Ansicht schließen',
+  previous: 'Vorheriges Foto',
+  next: 'Nächstes Foto',
+  counterJoin: 'von',
+} as const;
+
 export const rightsNoteCopyright = 'Alle Bilder © Furrscher Carnevals Club e.V.';
 
 export const rightsNoteQuestion = 'Du bist auf einem Foto und möchtest es hier nicht sehen?';
@@ -223,6 +230,11 @@ export const excludeAlbum = (albums: Album[], excluded: Album | undefined): Albu
   excluded === undefined ? albums : albums.filter((album) => album.slug !== excluded.slug);
 
 export const buildAlbumCreditLabel = (album: Album): string => `Fotos: ${album.photoCredit}`;
+
+export const buildPhotoViewerMetaLabel = (album: Album): string =>
+  `${buildAlbumCreditLabel(album)} · ${album.venue}`;
+
+export const buildPhotoOpenLabel = (photo: Photo): string => `${photo.alt} — groß ansehen`;
 
 export const buildPhotoPlaceholderLabel = (album: Album, index: number): string =>
   `${album.slug}-${String(index + 1).padStart(2, '0')}`;
