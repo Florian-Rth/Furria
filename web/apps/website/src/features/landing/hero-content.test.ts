@@ -13,9 +13,9 @@ describe('buildEyebrowLabel', () => {
 
 describe('buildHeroStats', () => {
   it('pairs each club figure with its German label in order', () => {
-    expect(buildHeroStats('180+', 12, 1971)).toEqual([
+    expect(buildHeroStats('180+', 6, 1971)).toEqual([
       { value: '180+', label: 'Mitglieder' },
-      { value: '12', label: 'Garden & Gruppen' },
+      { value: '6', label: 'Garden & Gruppen' },
       { value: '1971', label: 'gegründet' },
     ]);
   });

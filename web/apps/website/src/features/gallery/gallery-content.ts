@@ -1,6 +1,6 @@
 import type { KkPhotoOrientation } from '@furria/ui';
 import type { Session } from '@/lib/club';
-import { sessionAt } from '@/lib/club';
+import { CLUB_CONTACT_EMAIL, sessionAt } from '@/lib/club';
 import { formatLongDate } from '@/lib/date';
 
 export type PhotoOrientation = KkPhotoOrientation;
@@ -34,6 +34,30 @@ export const olderSessionsHeading = 'FRÜHERE SESSIONEN';
 export const albumLinkLabel = 'Album ansehen →';
 
 export const featuredAlbumFlag = 'NEUESTES ALBUM';
+
+export const rightsNoteCopyright = 'Alle Bilder © Furrscher Carnevals Club e.V.';
+
+export const rightsNoteQuestion = 'Du bist auf einem Foto und möchtest es hier nicht sehen?';
+
+export const rightsNoteHint = 'Eine kurze Mail genügt, dann nehmen wir es raus:';
+
+export const rightsNoteContactHref = `mailto:${CLUB_CONTACT_EMAIL}`;
+
+export const rightsNoteContactLabel = CLUB_CONTACT_EMAIL;
+
+export interface GalleryProgramBandContent {
+  kicker: string;
+  headline: string;
+  ctaLabel: string;
+  ctaTo: string;
+}
+
+export const galleryProgramBandContent: GalleryProgramBandContent = {
+  kicker: 'NICHT NUR ZUSCHAUEN',
+  headline: 'BEIM NÄCHSTEN MAL SELBST DABEI',
+  ctaLabel: 'Zum Programm →',
+  ctaTo: '/program',
+};
 
 export const ALBUMS: Album[] = [
   {

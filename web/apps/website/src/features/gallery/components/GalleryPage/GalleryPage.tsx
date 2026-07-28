@@ -4,6 +4,8 @@ import type { FC } from 'react';
 import { AlbumCard } from '@/features/gallery/components/AlbumCard';
 import { FeaturedAlbum } from '@/features/gallery/components/FeaturedAlbum/FeaturedAlbum';
 import { GalleryHeader } from '@/features/gallery/components/GalleryHeader/GalleryHeader';
+import { GalleryProgramBand } from '@/features/gallery/components/GalleryProgramBand/GalleryProgramBand';
+import { GalleryRightsNote } from '@/features/gallery/components/GalleryRightsNote';
 import { OlderSessions } from '@/features/gallery/components/OlderSessions/OlderSessions';
 import type { Album } from '@/features/gallery/gallery-content';
 import {
@@ -57,7 +59,9 @@ export const GalleryPage: FC<GalleryPageProps> = ({ albums }) => {
           </KkSection>
         )}
         {olderSessionGroups.length > 0 && <OlderSessions groups={olderSessionGroups} />}
+        <GalleryRightsNote />
       </PageLayout.Body>
+      <GalleryProgramBand />
     </PageLayout>
   );
 };

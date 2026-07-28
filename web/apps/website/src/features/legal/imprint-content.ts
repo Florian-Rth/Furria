@@ -1,3 +1,4 @@
+import { CLUB_CONTACT_EMAIL } from '@/lib/club';
 import type { LegalDocument } from './types';
 
 export const imprintContent: LegalDocument = {
@@ -9,7 +10,7 @@ export const imprintContent: LegalDocument = {
     },
     {
       heading: 'Kontakt',
-      paragraphs: ['E-Mail: contact@florianrth.com'],
+      paragraphs: [`E-Mail: ${CLUB_CONTACT_EMAIL}`],
     },
     {
       heading: 'Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV',
