@@ -1,12 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import type { Album } from './gallery-content';
+import type { Album, AlbumSessionGroup } from './gallery-content';
 import {
   ALBUMS,
   albumSession,
+  buildAlbumCountLabel,
   buildAlbumHref,
   buildAlbumMeta,
+  buildAlbumRowMeta,
   buildFeaturedAlbumMeta,
   buildGalleryStats,
+  buildOlderSessionSummary,
   buildPhotoCountLabel,
   countPhotos,
   excludeAlbum,
@@ -129,6 +132,53 @@ describe('selectOlderSessionGroups', () => {
     expect(
       selectOlderSessionGroups([album('sitzung', '2026-02-14', 8)], INSIDE_CURRENT_SESSION),
     ).toEqual([]);
+  });
+
+  it('has nothing left to group once the older Alben are taken out of the array', () => {
+    const withoutOlderAlbums = selectCurrentSessionAlbums(ALBUMS, INSIDE_CURRENT_SESSION);
+
+    expect(selectOlderSessionGroups(withoutOlderAlbums, INSIDE_CURRENT_SESSION)).toEqual([]);
+  });
+
+  it('never repeats the featured Album, even once its Session has passed', () => {
+    const AFTER_NEXT_SESSION_OPENED = new Date(2026, 10, 11);
+    const rest = excludeAlbum(ALBUMS, selectFeaturedAlbum(ALBUMS));
+    const groupedSlugs = selectOlderSessionGroups(rest, AFTER_NEXT_SESSION_OPENED).flatMap(
+      (group) => group.albums.map((grouped) => grouped.slug),
+    );
+
+    expect(groupedSlugs).not.toContain('rosenmontagsumzug-2026');
+    expect(groupedSlugs).toContain('prunksitzung-2026');
+  });
+});
+
+describe('buildAlbumCountLabel', () => {
+  it('keeps the German singular for a lone Album', () => {
+    expect(buildAlbumCountLabel(1)).toBe('1 Album');
+  });
+
+  it('uses the plural for everything else', () => {
+    expect(buildAlbumCountLabel(3)).toBe('3 Alben');
+  });
+});
+
+describe('buildOlderSessionSummary', () => {
+  it('joins the Album count and the derived photo count of a Session group', () => {
+    const umzug = album('umzug', '2025-03-03', 8);
+    const group: AlbumSessionGroup = {
+      session: albumSession(umzug),
+      albums: [umzug, album('sitzung', '2025-02-22', 10)],
+    };
+
+    expect(buildOlderSessionSummary(group)).toBe('2 Alben · 18 Fotos');
+  });
+});
+
+describe('buildAlbumRowMeta', () => {
+  it('joins the long German date and the derived photo count', () => {
+    expect(buildAlbumRowMeta(album('sitzung', '2025-02-22', 10))).toBe(
+      '22. Februar 2025 · 10 Fotos',
+    );
   });
 });
 

@@ -29,6 +29,8 @@ export const galleryDescription =
 
 export const currentSessionHeading = 'DIESE SESSION';
 
+export const olderSessionsHeading = 'FRÜHERE SESSIONEN';
+
 export const albumLinkLabel = 'Album ansehen →';
 
 export const featuredAlbumFlag = 'NEUESTES ALBUM';
@@ -229,6 +231,15 @@ export const selectOlderSessionGroups = (albums: Album[], reference: Date): Albu
     (first, second) => second.session.startYear - first.session.startYear,
   );
 };
+
+export const buildAlbumCountLabel = (count: number): string =>
+  count === 1 ? '1 Album' : `${count} Alben`;
+
+export const buildOlderSessionSummary = (group: AlbumSessionGroup): string =>
+  `${buildAlbumCountLabel(group.albums.length)} · ${buildPhotoCountLabel(countPhotos(group.albums))}`;
+
+export const buildAlbumRowMeta = (album: Album): string =>
+  `${formatLongDate(album.date)} · ${buildPhotoCountLabel(album.photos.length)}`;
 
 export interface GalleryStat {
   value: string;

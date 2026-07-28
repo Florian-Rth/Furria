@@ -4,12 +4,14 @@ import type { FC } from 'react';
 import { AlbumCard } from '@/features/gallery/components/AlbumCard';
 import { FeaturedAlbum } from '@/features/gallery/components/FeaturedAlbum/FeaturedAlbum';
 import { GalleryHeader } from '@/features/gallery/components/GalleryHeader/GalleryHeader';
+import { OlderSessions } from '@/features/gallery/components/OlderSessions/OlderSessions';
 import type { Album } from '@/features/gallery/gallery-content';
 import {
   currentSessionHeading,
   excludeAlbum,
   selectCurrentSessionAlbums,
   selectFeaturedAlbum,
+  selectOlderSessionGroups,
 } from '@/features/gallery/gallery-content';
 import { AlbumGrid } from './internal/layout/AlbumGrid';
 
@@ -20,10 +22,9 @@ interface GalleryPageProps {
 export const GalleryPage: FC<GalleryPageProps> = ({ albums }) => {
   const reference = new Date();
   const featuredAlbum = selectFeaturedAlbum(albums);
-  const currentSessionAlbums = excludeAlbum(
-    selectCurrentSessionAlbums(albums, reference),
-    featuredAlbum,
-  );
+  const restOfAlbums = excludeAlbum(albums, featuredAlbum);
+  const currentSessionAlbums = selectCurrentSessionAlbums(restOfAlbums, reference);
+  const olderSessionGroups = selectOlderSessionGroups(restOfAlbums, reference);
 
   return (
     <PageLayout>
@@ -55,6 +56,7 @@ export const GalleryPage: FC<GalleryPageProps> = ({ albums }) => {
             </AlbumGrid>
           </KkSection>
         )}
+        {olderSessionGroups.length > 0 && <OlderSessions groups={olderSessionGroups} />}
       </PageLayout.Body>
     </PageLayout>
   );
