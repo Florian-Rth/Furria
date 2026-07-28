@@ -4,6 +4,8 @@ import {
   ALBUMS,
   albumSession,
   buildAlbumCountLabel,
+  buildAlbumCreditLabel,
+  buildAlbumDocumentTitle,
   buildAlbumHref,
   buildAlbumMeta,
   buildAlbumRowMeta,
@@ -11,6 +13,7 @@ import {
   buildGalleryStats,
   buildOlderSessionSummary,
   buildPhotoCountLabel,
+  buildPhotoPlaceholderLabel,
   countPhotos,
   excludeAlbum,
   findAlbumBySlug,
@@ -267,6 +270,34 @@ describe('excludeAlbum', () => {
 describe('buildAlbumHref', () => {
   it('addresses an Album below the Galerie', () => {
     expect(buildAlbumHref('prunksitzung-2026')).toBe('/gallery/prunksitzung-2026');
+  });
+});
+
+describe('buildAlbumDocumentTitle', () => {
+  it('tells two Alben of the same occasion apart by their derived Session', () => {
+    expect(buildAlbumDocumentTitle(album('prunksitzung-2026', '2026-02-14', 12))).toBe(
+      'prunksitzung-2026 2025/26',
+    );
+    expect(buildAlbumDocumentTitle(album('prunksitzung-2025', '2025-02-22', 10))).toBe(
+      'prunksitzung-2025 2024/25',
+    );
+  });
+});
+
+describe('buildAlbumCreditLabel', () => {
+  it('names the credit without inventing a photographer', () => {
+    expect(buildAlbumCreditLabel(album('a', '2026-02-14', 12))).toBe(
+      'Fotos: Wegwerfkamera vom Kiosk',
+    );
+  });
+});
+
+describe('buildPhotoPlaceholderLabel', () => {
+  it('numbers a photo within its Album from one, zero-padded', () => {
+    const seeded = album('prunksitzung-2026', '2026-02-14', 12);
+
+    expect(buildPhotoPlaceholderLabel(seeded, 0)).toBe('prunksitzung-2026-01');
+    expect(buildPhotoPlaceholderLabel(seeded, 11)).toBe('prunksitzung-2026-12');
   });
 });
 

@@ -33,6 +33,12 @@ export const olderSessionsHeading = 'FRÜHERE SESSIONEN';
 
 export const albumLinkLabel = 'Album ansehen →';
 
+export const albumBackLinkLabel = '← Alle Alben';
+
+export const albumPhotoCountCaption = 'AUSGEWÄHLTE FOTOS';
+
+export const albumViewerHint = 'Bild antippen für die große Ansicht';
+
 export const featuredAlbumFlag = 'NEUESTES ALBUM';
 
 export const rightsNoteCopyright = 'Alle Bilder © Furrscher Carnevals Club e.V.';
@@ -215,6 +221,14 @@ export const selectFeaturedAlbum = (albums: Album[]): Album | undefined =>
 
 export const excludeAlbum = (albums: Album[], excluded: Album | undefined): Album[] =>
   excluded === undefined ? albums : albums.filter((album) => album.slug !== excluded.slug);
+
+export const buildAlbumCreditLabel = (album: Album): string => `Fotos: ${album.photoCredit}`;
+
+export const buildPhotoPlaceholderLabel = (album: Album, index: number): string =>
+  `${album.slug}-${String(index + 1).padStart(2, '0')}`;
+
+export const buildAlbumDocumentTitle = (album: Album): string =>
+  `${album.title} ${albumSession(album).yearsLabel}`;
 
 export const albumCoverOrientation: PhotoOrientation = 'landscape';
 
