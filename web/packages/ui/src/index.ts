@@ -15,6 +15,7 @@ export { KkRule } from './KkRule';
 export { KkSeal } from './KkSeal';
 export { KkSection } from './KkSection/KkSection';
 export { KkSectionHeader } from './KkSectionHeader/KkSectionHeader';
+export { KkStatRow } from './KkStatRow/KkStatRow';
 export { KkThemeProvider } from './KkThemeProvider';
 export { KkTicker } from './KkTicker';
 export { KkTwoToneHeadline } from './KkTwoToneHeadline';
