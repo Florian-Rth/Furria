@@ -3,6 +3,7 @@ import Groups from '@mui/icons-material/Groups';
 import Home from '@mui/icons-material/Home';
 import Newspaper from '@mui/icons-material/Newspaper';
 import Palette from '@mui/icons-material/Palette';
+import PhotoLibrary from '@mui/icons-material/PhotoLibrary';
 import Smartphone from '@mui/icons-material/Smartphone';
 import type SvgIcon from '@mui/material/SvgIcon';
 
@@ -13,6 +14,7 @@ export const CHANGELOG_ICON_KEYS = [
   'home',
   'groups',
   'newspaper',
+  'photos',
 ] as const;
 
 export type ChangelogIconKey = (typeof CHANGELOG_ICON_KEYS)[number];
@@ -24,4 +26,5 @@ export const CHANGELOG_ICONS: Record<ChangelogIconKey, typeof SvgIcon> = {
   home: Home,
   groups: Groups,
   newspaper: Newspaper,
+  photos: PhotoLibrary,
 };

@@ -4,6 +4,7 @@ import type { FC } from 'react';
 import { navItems } from '../nav-items';
 import { ChipNavScroller } from './ChipNavScroller';
 import { NavChip } from './NavChip';
+import type { OriginRect } from './reveal-geometry';
 import { TicketsChip } from './TicketsChip';
 
 export const MASTHEAD_CHIP_NAV_ID = 'masthead-chip-nav';
@@ -19,7 +20,7 @@ const closeAnimation = `masthead-chip-nav-out ${fadeOutDurationMs}ms ease-in for
 
 interface MastheadChipNavProps {
   open: boolean;
-  onNavigate: () => void;
+  onNavigate: (chip: OriginRect) => void;
 }
 
 export const MastheadChipNav: FC<MastheadChipNavProps> = ({ open, onNavigate }) => (

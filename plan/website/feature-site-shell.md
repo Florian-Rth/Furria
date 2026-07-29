@@ -91,7 +91,22 @@ hang in — built first so everything else has a home.
   `SiteChrome`. Decoration is **`KkConfettiRain`** — `KkConfettiScatter` no longer exists (dropped in
   `b34da0e`) and `KkConfettiBurst` is a click-fired one-shot, wrong for standing page decoration.
 
-**Shared `CtaBand` (added P4):**
+**Shared band — `CtaBand` (P4) → `KkBandSection` (P4.1). Superseded; read the correction first:**
+
+- ⚠️ **`src/components/CtaBand/` no longer exists.** P4 extracted it (`b4aaa64`); the P4.1
+  design-system unification (`14c07d3`) **deleted it and promoted the idiom into `@furria/ui` as
+  `KkBandSection`** (`tone: 'accent' | 'plain'`, `.Row`/`.Column` slots, a `decoration` node slot,
+  `px`/`py` from `kkTokens.layout`). `NarrenrufBand`, `RecruitBand` and `NewsProgramBand` all consume
+  it today. The P4 text below is kept because its *reasoning* still governs the API — but its
+  location claim was stale for a phase and a half and is corrected here.
+- **The "website chrome, not `@furria/ui`" argument was overturned, on purpose.** P4 argued a
+  *CTA/recruit band* is website chrome the Club-App will never mount. P4.1 kept that boundary and
+  still moved it, because what got promoted is not a CTA band: **`KkBandSection` is a token-pure
+  full-bleed band *section*** — tone + slots + rhythm, no CTA semantics, no copy, no targets. The
+  bands themselves (`NarrenrufBand`, `RecruitBand`, `NewsProgramBand`) remain website-local. The
+  boundary is unchanged; only the thing being classified changed.
+
+*Original P4 reasoning (API rules still binding):*
 
 - The full-bleed red band idiom reached **three** call sites (`NarrenrufBand`, `RecruitBand`, the
   news list's `/program` band), so it is extracted to `src/components/CtaBand/` as a **slotted
@@ -115,6 +130,32 @@ hang in — built first so everything else has a home.
   would have required the root to forward arbitrary DOM props, widening the API for no consumer.
   Call-site-owned hooks (`data-kk-narrenruf-watermark`, `…-shout`, `data-kk-recruit-watermark`) are
   untouched.
+
+**Club contact address (added and shipped P5):**
+
+- The club's e-mail address is **`CLUB_CONTACT_EMAIL` in `lib/club.ts`**, beside the other club
+  facts. It was a hardcoded literal buried in `imprint-content.ts` **prose** (`'E-Mail: …'`), and the
+  [Galerie](feature-gallery.md)'s takedown `mailto:` would have been a second copy — an address that
+  can drift between two pages, one of which is legally required to be correct.
+- **`privacy-content.ts` held a third copy**, which the P5 slice brief had not spotted — its §1
+  *Verantwortlicher* sentence carried the same literal. Both legal documents now interpolate the
+  constant and render byte-identical prose; **no second literal of the address exists in `web/`**.
+- All three are features importing from `lib`, so the unidirectional dependency rule is respected (no
+  feature→feature import).
+- The value shipped today is still a **placeholder**; real contact data is a launch task.
+
+**`KK_DARK_SCHEME_ATTRIBUTE` (added P5):**
+
+- `@furria/ui` exports the colour-scheme attribute name (`data-dark`) beside the
+  `cssVariables: { colorSchemeSelector: 'data' }` config that defines it. Setting it on a subtree is
+  the sanctioned way to **pin a surface to one scheme** while its parts keep reading ordinary palette
+  values — which is what the [Galerie](feature-gallery.md)'s photo viewer needs ("the dark surface *is*
+  the backdrop"). Do not hand-roll `kkTokens.color.dark.*` reads for this; they bake the mode into
+  every leaf, which is exactly what review rejected in P5.
+- The attribute is **not inert** because it is an attribute selector, not a root selector: MUI
+  generates `[data-dark] &`, so it re-declares the palette vars for any subtree. A P5 cleanup deleted
+  it on the assumption that only the root could carry it, and silently turned the viewer cream in the
+  light scheme.
 
 **Theme:**
 

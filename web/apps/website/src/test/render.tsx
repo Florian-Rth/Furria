@@ -1,5 +1,6 @@
 import { KkThemeProvider } from '@furria/ui';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import type { RouterHistory } from '@tanstack/react-router';
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router';
 import type { RenderResult } from '@testing-library/react';
 import { render } from '@testing-library/react';
@@ -19,11 +20,13 @@ export const renderWithProviders = (ui: ReactElement): RenderResult => {
   );
 };
 
-export const renderAtRoute = (path: string): RenderResult => {
-  const router = createRouter({
-    routeTree,
-    history: createMemoryHistory({ initialEntries: [path] }),
-  });
+export interface RouteRenderResult extends RenderResult {
+  history: RouterHistory;
+}
 
-  return render(<RouterProvider router={router} />);
+export const renderAtRoute = (path: string): RouteRenderResult => {
+  const history = createMemoryHistory({ initialEntries: [path] });
+  const router = createRouter({ routeTree, history });
+
+  return { ...render(<RouterProvider router={router} />), history };
 };

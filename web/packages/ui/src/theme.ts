@@ -28,6 +28,8 @@ const displayHeading = {
   letterSpacing: '0.01em',
 } as const;
 
+export const KK_DARK_SCHEME_ATTRIBUTE = 'data-dark';
+
 export const kkTheme = createTheme({
   cssVariables: { colorSchemeSelector: 'data' },
   colorSchemes: {

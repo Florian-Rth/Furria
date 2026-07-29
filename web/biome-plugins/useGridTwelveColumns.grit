@@ -1,0 +1,9 @@
+language js
+
+or {
+  `<Grid $props />`,
+  `<Grid $props>$_</Grid>`
+} where {
+  $props <: contains `columns={$columns}` as $prop,
+  register_diagnostic(span=$prop, message="Keep the 12-column Grid base — approximate ratios with `size` spans.")
+}

@@ -1,3 +1,4 @@
+import { CLUB_CONTACT_EMAIL } from '@/lib/club';
 import type { LegalDocument } from './types';
 
 export const privacyContent: LegalDocument = {
@@ -7,7 +8,7 @@ export const privacyContent: LegalDocument = {
       heading: '1. Verantwortlicher',
       paragraphs: [
         'Verantwortlicher im Sinne der Datenschutz-Grundverordnung (DSGVO) ist:',
-        'Florian Rätsch, Martin-Herrmann-Str. 26, 04249 Leipzig, E-Mail: contact@florianrth.com',
+        `Florian Rätsch, Martin-Herrmann-Str. 26, 04249 Leipzig, E-Mail: ${CLUB_CONTACT_EMAIL}`,
       ],
     },
     {

@@ -17,9 +17,117 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "preset": "recommended"
+      "preset": "recommended",
+      "correctness": {
+        "noNestedComponentDefinitions": "error"
+      },
+      "nursery": {
+        "noFloatingPromises": "error"
+      },
+      "style": {
+        "noNonNullAssertion": "error",
+        "noDefaultExport": "error",
+        "useImportType": "error",
+        "useBlockStatements": "error",
+        "noRestrictedGlobals": {
+          "level": "error",
+          "options": {
+            "deniedGlobals": {
+              "crypto": "Never use `crypto.randomUUID()` — use an incrementing counter or `Date.now() + Math.random()`."
+            }
+          }
+        },
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "paths": {
+              "@mui/material": "Import defaults from `@mui/material/<Component>`, never the barrel.",
+              "@mui/material/styles": {
+                "importNames": ["Box", "Stack", "Grid", "Typography"],
+                "message": "Import components from `@mui/material/<Component>`."
+              },
+              "@mui/icons-material": "Import defaults from `@mui/icons-material/<Icon>`, never the barrel."
+            }
+          }
+        }
+      },
+      "suspicious": {
+        "noExplicitAny": "error"
+      }
     }
   },
+  "plugins": [
+    "./biome-plugins/useStackOverFlexBox.grit",
+    "./biome-plugins/useGridTwelveColumns.grit",
+    "./biome-plugins/noManualMemoization.grit",
+    "./biome-plugins/noUnknownType.grit"
+  ],
+  "overrides": [
+    {
+      "includes": ["**/*.config.ts", "**/*.config.js"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noDefaultExport": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/*/src/features/**", "!**/*.test.ts", "!**/*.test.tsx"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "@mui/material": "Import defaults from `@mui/material/<Component>`, never the barrel.",
+                  "@mui/icons-material": "Import defaults from `@mui/icons-material/<Icon>`, never the barrel."
+                },
+                "patterns": [
+                  {
+                    "group": ["@/routes/**"],
+                    "message": "Dependency flow is lib/components → features → routes: a feature never imports a route."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "apps/*/src/lib/**",
+        "apps/*/src/components/**",
+        "apps/*/src/styles/**",
+        "!**/*.test.ts",
+        "!**/*.test.tsx"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "@mui/material": "Import defaults from `@mui/material/<Component>`, never the barrel.",
+                  "@mui/icons-material": "Import defaults from `@mui/icons-material/<Icon>`, never the barrel."
+                },
+                "patterns": [
+                  {
+                    "group": ["@/features/**", "@/routes/**"],
+                    "message": "Dependency flow is lib/components → features → routes: shared code never imports a feature or route."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
   "assist": {
     "actions": {
       "source": {

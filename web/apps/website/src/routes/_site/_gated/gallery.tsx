@@ -1,12 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { PlaceholderPage } from '@/components/PlaceholderPage';
+import { ALBUMS, GalleryPage } from '@/features/gallery';
 import type { RouteHead } from '@/lib/seo';
 import { pageTitle } from '@/lib/seo';
 
-const GalleryComponent: FC = () => (
-  <PlaceholderPage eyebrow="BILDER AUS DER SESSION" title="Galerie" />
-);
+const GalleryComponent: FC = () => <GalleryPage albums={ALBUMS} />;
 
 export const Route = createFileRoute('/_site/_gated/gallery')({
   head: (): RouteHead => ({ meta: [{ title: pageTitle('Galerie') }] }),

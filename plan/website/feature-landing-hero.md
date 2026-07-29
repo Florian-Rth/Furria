@@ -102,8 +102,21 @@ CTAs, a stat row, and the anchor photo.
 
 - **Real hero photo** — deferred: no club asset yet; `KkPhotoPlaceholder` ships for launch and the
   real photo is a one-line swap later (asset task, not P1).
-- **Real member / group counts** — deferred: `180+` / `12` are placeholders until the club confirms
+- **Real member / group counts** — deferred: `180+` / `6` are placeholders until the club confirms
   figures (or live data, once the Club-App backend exists).
+- ✅ **Defect fixed in P5 (2026-07-29):** `GROUP_COUNT_PLACEHOLDER = 6` in `lib/club.ts`, so the hero
+  stat and `/club`'s derived `GROUPS.length` agree. The seam below still stands for when live data
+  lands. Original record kept for the reasoning:
+- ⚠️ **Defect — the group count contradicted `/club` (found in P5 grilling, 2026-07-28).** This hero
+  prints `GROUP_COUNT_PLACEHOLDER` = **12 Gruppen**, while [Verein](feature-about-verein.md) derives
+  from `GROUPS.length` = **6** ("Aktuell 6 Gruppen" *and* the story stat). Two shipped pages state
+  different values for one fact — a visitor can see both in one session.
+  **Immediate fix:** `GROUP_COUNT_PLACEHOLDER = 6` in `lib/club.ts`, so the two agree.
+  **Why not derive it here:** `features/landing` may not import `features/club` (features never
+  import features). The structurally correct fix is for **`routes/_site/index.tsx` to pass the count
+  in** — routes compose features — which is the shape this takes anyway once the count comes from the
+  backend. Prop-drilling a placeholder from the route down to `HeroStatRow` is not worth it today;
+  the constant fix is, and the seam is named here for when live data lands.
 
 ## Done When
 

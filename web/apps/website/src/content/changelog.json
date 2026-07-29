@@ -68,5 +68,20 @@
       "Eigene Seite für nicht gefundene Adressen",
       "Dieses Änderungsprotokoll"
     ]
+  },
+  {
+    "id": "website-p5-gallery-fe",
+    "date": "2026-07-29",
+    "title": "Galerie",
+    "icon": "photos",
+    "description": [
+      "Neue Seite „Galerie“ — ein Album je Anlass mit rund einem Dutzend Bildern",
+      "Das neueste Album steht groß oben, darunter die Alben dieser Session",
+      "Frühere Sessionen klappen sich an ihrer Stelle auf",
+      "Jedes Album zeigt seine Bilder im Raster, am Ende geht es zum nächsten Album",
+      "Klick auf ein Bild öffnet es bildschirmfüllend; Pfeiltasten blättern weiter, die Zurück-Taste schließt es",
+      "Ein einzelnes Bild lässt sich direkt verlinken",
+      "Alle Bilder sind noch Platzhalter"
+    ]
   }
 ]

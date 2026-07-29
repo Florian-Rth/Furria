@@ -10,13 +10,23 @@ export interface BurstPiece {
   color: 'red' | 'gold' | 'ink';
   durationSeconds: number;
   spinDegrees: number;
+  flipXDegrees: number;
+  flipYDegrees: number;
 }
 
 const COLORS: BurstPiece['color'][] = ['red', 'gold', 'ink'];
 
+const resolveTurnDirection = (value: number): number => (value > 0.5 ? 1 : -1);
+
+const resolveSpinDegrees = (direction: number, extra: number): number =>
+  resolveTurnDirection(direction) * (180 + extra * 360);
+
+const resolveFlipDegrees = (direction: number, extra: number): number =>
+  resolveTurnDirection(direction) * (60 + extra * 120);
+
 export const buildBurstPieces = (count: number, seed: number): BurstPiece[] =>
   Array.from({ length: count }, (_, index) => {
-    const rng = (offset: number): number => pseudoRandom(seed, index * 7 + offset);
+    const rng = (offset: number): number => pseudoRandom(seed, index * 11 + offset);
     const angle = rng(0) * Math.PI * 2;
     const distance = 26 + rng(1) * 46;
 
@@ -29,6 +39,8 @@ export const buildBurstPieces = (count: number, seed: number): BurstPiece[] =>
       isSlim: index % 2 === 1,
       color: COLORS[index % COLORS.length] ?? 'red',
       durationSeconds: 0.6 + rng(3) * 0.3,
-      spinDegrees: (rng(4) > 0.5 ? 1 : -1) * (180 + rng(5) * 360),
+      spinDegrees: resolveSpinDegrees(rng(4), rng(5)),
+      flipXDegrees: resolveFlipDegrees(rng(6), rng(7)),
+      flipYDegrees: resolveFlipDegrees(rng(8), rng(9)),
     };
   });

@@ -1,6 +1,6 @@
 import { kkTokens } from '@furria/ui';
-import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
+import Stack from '@mui/material/Stack';
 import { useTheme } from '@mui/material/styles';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import type { FC } from 'react';
@@ -41,12 +41,13 @@ export const GruppenModal: FC<GruppenModalProps> = ({ active, onClose }) => {
         p: { xs: 0, sm: 3 },
       }}
     >
-      <Box
+      <Stack
+        direction="row"
         role="dialog"
         aria-modal="true"
         aria-labelledby={MODAL_TITLE_ID}
         tabIndex={-1}
-        sx={{ display: 'flex', width: '100%', maxWidth: '34rem', outline: 'none' }}
+        sx={{ width: '100%', maxWidth: '34rem', outline: 'none' }}
       >
         <AnimatePresence onExitComplete={clear}>
           {isOpen && shown !== null && (
@@ -67,7 +68,7 @@ export const GruppenModal: FC<GruppenModalProps> = ({ active, onClose }) => {
             </motion.div>
           )}
         </AnimatePresence>
-      </Box>
+      </Stack>
     </Modal>
   );
 };

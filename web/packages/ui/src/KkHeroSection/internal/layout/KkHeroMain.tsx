@@ -10,9 +10,7 @@ export const KkHeroMain: FC<PropsWithChildren> = ({ children }) => (
       zIndex: 1,
       display: 'flex',
       flexDirection: 'column',
-      alignItems: 'flex-start',
       gap: { xs: 2, md: 3 },
-      minWidth: 0,
     }}
   >
     {children}

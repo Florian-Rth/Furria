@@ -224,6 +224,11 @@ nav + gating in `NAVCONFIG` (`fcc-ds-shell.jsx`).
 
 **Public website:** `fcc-ds-landing.jsx` (`BestV({mode, device})` — the current "Destillat" landing, light/dark, desktop/mobile). `mobile-hero.html` + `mobile-hero-handoff.md` — dedicated **mobile** hero redesign handoff (see that file's own READ FIRST); source of record `fcc-ds-landing.jsx` → `BestMobileHero`/`BestMobile`.
 
+**Per-page website bundles** (each a self-contained folder with its own `preview.html`, `src/` and **README — read that README first**, it records what was adopted and what was rejected for that page):
+- `verein-page/` — the Verein page (`/club`), built in P3.
+- `news-page/` — Aktuelles list + article + landing teaser (`/news`), built in P4.
+- `gallery-page/` — the Galerie: album index + album + lightbox (`/gallery`), P5. Its README was written by the team; the bundle arrived without one.
+
 **Feature pages:** `fcc-ds-members.jsx`, `fcc-ds-groups.jsx`, `fcc-ds-roles.jsx`, `fcc-ds-events.jsx`, `fcc-ds-seating.jsx`, `fcc-ds-program.jsx`, `fcc-ds-fees.jsx`, `fcc-ds-live.jsx`, `fcc-ds-drinks.jsx`, `fcc-ds-shop.jsx`, `fcc-ds-shop-manage.jsx`.
 
 **Canvas scaffolding (presentation only — do not port):** `design-canvas.jsx`, `browser-window.jsx`, `fcc-app-mocks.jsx`.
