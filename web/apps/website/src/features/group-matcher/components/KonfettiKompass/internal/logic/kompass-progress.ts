@@ -5,6 +5,7 @@ export const SKIPPED_ANSWER = 'skipped';
 export interface KompassProgress {
   index: number;
   answers: MatcherAnswers;
+  finished: boolean;
 }
 
 const keepKnownAnswers = (questionIds: string[], answers: MatcherAnswers): MatcherAnswers =>
@@ -16,7 +17,11 @@ const keepKnownAnswers = (questionIds: string[], answers: MatcherAnswers): Match
     }),
   );
 
-export const emptyKompassProgress = (): KompassProgress => ({ index: 0, answers: {} });
+export const emptyKompassProgress = (): KompassProgress => ({
+  index: 0,
+  answers: {},
+  finished: false,
+});
 
 export const startKompassProgress = (
   questionIds: string[],
@@ -25,7 +30,11 @@ export const startKompassProgress = (
   const known = keepKnownAnswers(questionIds, answers);
   const unanswered = questionIds.findIndex((questionId) => known[questionId] === undefined);
 
-  return { index: unanswered === -1 ? questionIds.length : unanswered, answers: known };
+  return {
+    index: unanswered === -1 ? questionIds.length : unanswered,
+    answers: known,
+    finished: false,
+  };
 };
 
 export const withAnswer = (
@@ -40,6 +49,7 @@ export const withAnswer = (
   }
 
   return {
+    ...progress,
     index: progress.index + 1,
     answers: { ...progress.answers, [questionId]: answer },
   };
@@ -50,10 +60,18 @@ export const withSkippedQuestion = (
   questionIds: string[],
 ): KompassProgress => withAnswer(progress, questionIds, SKIPPED_ANSWER);
 
-export const withPreviousQuestion = (progress: KompassProgress): KompassProgress => ({
+export const withFinishedQuestions = (progress: KompassProgress): KompassProgress => ({
   ...progress,
-  index: Math.max(progress.index - 1, 0),
+  finished: true,
 });
+
+export const withPreviousQuestion = (progress: KompassProgress): KompassProgress => {
+  if (progress.finished) {
+    return { ...progress, finished: false };
+  }
+
+  return { ...progress, index: Math.max(progress.index - 1, 0) };
+};
 
 export const countAnsweredQuestions = (answers: MatcherAnswers): number =>
   Object.values(answers).filter((answer) => answer !== SKIPPED_ANSWER).length;

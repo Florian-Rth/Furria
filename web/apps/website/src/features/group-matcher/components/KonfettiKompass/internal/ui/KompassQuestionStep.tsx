@@ -3,6 +3,7 @@ import type { FC } from 'react';
 import { kompassLabels } from '@/features/group-matcher/kompass-content';
 import type { MatcherQuestion } from '@/lib/seed/group-matcher';
 import { KompassChoiceRow } from '../layout/KompassChoiceRow';
+import { KompassFooterGroup } from '../layout/KompassFooterGroup';
 import { KompassStepBody } from '../layout/KompassStepBody';
 import { KompassStepFooter } from '../layout/KompassStepFooter';
 import { KompassOptionChoices } from './KompassOptionChoices';
@@ -13,17 +14,21 @@ import { KompassStepReveal } from './KompassStepReveal';
 interface KompassQuestionStepProps {
   question: MatcherQuestion;
   backDisabled: boolean;
+  finishDisabled: boolean;
   onAnswer: (answer: string) => void;
   onSkip: () => void;
   onBack: () => void;
+  onFinish: () => void;
 }
 
 export const KompassQuestionStep: FC<KompassQuestionStepProps> = ({
   question,
   backDisabled,
+  finishDisabled,
   onAnswer,
   onSkip,
   onBack,
+  onFinish,
 }) => {
   const choices =
     question.role === 'weighted' ? (
@@ -49,9 +54,14 @@ export const KompassQuestionStep: FC<KompassQuestionStepProps> = ({
         >
           {kompassLabels.back}
         </Button>
-        <Button variant="text" onClick={onSkip} sx={{ color: 'text.secondary' }}>
-          {kompassLabels.skip}
-        </Button>
+        <KompassFooterGroup>
+          <Button variant="text" onClick={onSkip} sx={{ color: 'text.secondary' }}>
+            {kompassLabels.skip}
+          </Button>
+          <Button variant="outlined" onClick={onFinish} disabled={finishDisabled}>
+            {kompassLabels.finish}
+          </Button>
+        </KompassFooterGroup>
       </KompassStepFooter>
     </>
   );

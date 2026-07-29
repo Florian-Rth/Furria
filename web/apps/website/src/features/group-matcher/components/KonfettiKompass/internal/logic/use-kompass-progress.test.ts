@@ -16,42 +16,86 @@ describe('selectQuestionIds', () => {
 });
 
 describe('selectKompassStepView', () => {
-  it('shows the first question with no way back', () => {
-    const view = selectKompassStepView(SEEDED_GROUP_MATCHER, { index: 0, answers: {} });
+  it('shows the first question with no way back and no result to ask for', () => {
+    const view = selectKompassStepView(SEEDED_GROUP_MATCHER, {
+      index: 0,
+      answers: {},
+      finished: false,
+    });
 
     expect(view).toMatchObject({
-      step: { kind: 'question', question: SEEDED_GROUP_MATCHER.questions[0], backDisabled: true },
+      step: {
+        kind: 'question',
+        question: SEEDED_GROUP_MATCHER.questions[0],
+        backDisabled: true,
+        finishDisabled: true,
+      },
       progressLabel: `Frage 1 von ${total}`,
       percent: 0,
     });
   });
 
-  it('lets the visitor step back once past the first question', () => {
-    const view = selectKompassStepView(SEEDED_GROUP_MATCHER, { index: 1, answers: {} });
+  it('lets the visitor step back and ask for the result once an answer is in', () => {
+    const view = selectKompassStepView(SEEDED_GROUP_MATCHER, {
+      index: 1,
+      answers: answersFor(1, '18-plus'),
+      finished: false,
+    });
 
-    expect(view.step).toMatchObject({ kind: 'question', backDisabled: false });
+    expect(view.step).toMatchObject({
+      kind: 'question',
+      backDisabled: false,
+      finishDisabled: false,
+    });
     expect(view.progressLabel).toBe(`Frage 2 von ${total}`);
   });
 
-  it('closes with a full bar and counts the answers it got', () => {
+  it('keeps the result out of reach while every question so far was skipped', () => {
+    const view = selectKompassStepView(SEEDED_GROUP_MATCHER, {
+      index: 1,
+      answers: answersFor(1, SKIPPED_ANSWER),
+      finished: false,
+    });
+
+    expect(view.step).toMatchObject({ kind: 'question', finishDisabled: true });
+  });
+
+  it('closes on the result with a full bar and counts the answers it got', () => {
     const view = selectKompassStepView(SEEDED_GROUP_MATCHER, {
       index: total,
       answers: answersFor(total, 'yes'),
+      finished: false,
     });
 
-    expect(view).toEqual({
-      step: { kind: 'done', summary: `Du hast ${total} von ${total} Fragen beantwortet.` },
-      progressLabel: 'Alle Fragen durch',
-      percent: 100,
+    expect(view.step).toMatchObject({
+      kind: 'result',
+      summary: `Du hast ${total} von ${total} Fragen beantwortet.`,
     });
+    expect(view.progressLabel).toBe('Alle Fragen durch');
+    expect(view.percent).toBe(100);
   });
 
-  it('says so plainly when every question was skipped', () => {
+  it('shows the result the moment the visitor asks for it, mid-quiz', () => {
+    const view = selectKompassStepView(SEEDED_GROUP_MATCHER, {
+      index: 2,
+      answers: answersFor(2, 'yes'),
+      finished: true,
+    });
+
+    expect(view.step.kind).toBe('result');
+  });
+
+  it('asks for an answer when every question was skipped', () => {
     const view = selectKompassStepView(SEEDED_GROUP_MATCHER, {
       index: total,
       answers: answersFor(total, SKIPPED_ANSWER),
+      finished: false,
     });
 
-    expect(view.step).toEqual({ kind: 'done', summary: 'Du hast jede Frage übersprungen.' });
+    expect(view.step).toMatchObject({
+      kind: 'result',
+      summary: 'Du hast jede Frage übersprungen.',
+      view: { kind: 'unanswered' },
+    });
   });
 });

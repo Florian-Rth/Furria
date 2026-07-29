@@ -13,13 +13,16 @@ import {
   resolveProgressPercent,
   startKompassProgress,
   withAnswer,
+  withFinishedQuestions,
   withPreviousQuestion,
   withSkippedQuestion,
 } from './kompass-progress';
+import type { KompassResultView } from './kompass-result';
+import { selectKompassResult } from './kompass-result';
 
 export type KompassStep =
-  | { kind: 'question'; question: MatcherQuestion; backDisabled: boolean }
-  | { kind: 'done'; summary: string };
+  | { kind: 'question'; question: MatcherQuestion; backDisabled: boolean; finishDisabled: boolean }
+  | { kind: 'result'; view: KompassResultView; summary: string };
 
 export interface KompassStepView {
   step: KompassStep;
@@ -31,6 +34,7 @@ export interface KompassProgressControls extends KompassStepView {
   answerQuestion: (answer: string) => void;
   skipQuestion: () => void;
   goToPreviousQuestion: () => void;
+  finishQuestions: () => void;
   restart: () => void;
 }
 
@@ -43,15 +47,22 @@ const resolveStep = (
   total: number,
 ): KompassStep => {
   const question = matcher.questions[progress.index];
+  const answered = countAnsweredQuestions(progress.answers);
 
-  if (question === undefined) {
+  if (progress.finished || question === undefined) {
     return {
-      kind: 'done',
-      summary: buildAnsweredSummary(countAnsweredQuestions(progress.answers), total),
+      kind: 'result',
+      view: selectKompassResult(matcher, progress.answers),
+      summary: buildAnsweredSummary(answered, total),
     };
   }
 
-  return { kind: 'question', question, backDisabled: progress.index === 0 };
+  return {
+    kind: 'question',
+    question,
+    backDisabled: progress.index === 0,
+    finishDisabled: answered === 0,
+  };
 };
 
 export const selectKompassStepView = (
@@ -83,6 +94,7 @@ export const useKompassProgress = (matcher: GroupMatcher): KompassProgressContro
     answerQuestion: (answer: string): void => commit(withAnswer(progress, questionIds, answer)),
     skipQuestion: (): void => commit(withSkippedQuestion(progress, questionIds)),
     goToPreviousQuestion: (): void => setProgress(withPreviousQuestion(progress)),
+    finishQuestions: (): void => setProgress(withFinishedQuestions(progress)),
     restart: (): void => {
       clearAnswersInSession(window.sessionStorage);
       setProgress(emptyKompassProgress());

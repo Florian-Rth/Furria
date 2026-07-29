@@ -1,9 +1,9 @@
 import type { FC } from 'react';
 import type { GroupMatcher } from '@/lib/seed/group-matcher';
 import { useKompassProgress } from '../logic/use-kompass-progress';
-import { KompassDoneStep } from './KompassDoneStep';
 import { KompassProgress } from './KompassProgress';
 import { KompassQuestionStep } from './KompassQuestionStep';
+import { KompassResultStep } from './KompassResultStep';
 
 interface KompassStepperProps {
   matcher: GroupMatcher;
@@ -17,26 +17,33 @@ export const KompassStepper: FC<KompassStepperProps> = ({ matcher }) => {
     answerQuestion,
     skipQuestion,
     goToPreviousQuestion,
+    finishQuestions,
     restart,
   } = useKompassProgress(matcher);
 
-  const currentStep =
-    step.kind === 'done' ? (
-      <KompassDoneStep summary={step.summary} onBack={goToPreviousQuestion} onRestart={restart} />
-    ) : (
-      <KompassQuestionStep
-        question={step.question}
-        backDisabled={step.backDisabled}
-        onAnswer={answerQuestion}
-        onSkip={skipQuestion}
-        onBack={goToPreviousQuestion}
+  if (step.kind === 'result') {
+    return (
+      <KompassResultStep
+        view={step.view}
+        summary={step.summary}
+        onChangeAnswers={goToPreviousQuestion}
+        onRestart={restart}
       />
     );
+  }
 
   return (
     <>
       <KompassProgress label={progressLabel} percent={percent} />
-      {currentStep}
+      <KompassQuestionStep
+        question={step.question}
+        backDisabled={step.backDisabled}
+        finishDisabled={step.finishDisabled}
+        onAnswer={answerQuestion}
+        onSkip={skipQuestion}
+        onBack={goToPreviousQuestion}
+        onFinish={finishQuestions}
+      />
     </>
   );
 };
