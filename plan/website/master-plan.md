@@ -76,7 +76,7 @@ Guiding constraints (all binding):
 | [Veranstaltungskalender](feature-event-calendar.md) | capability | idea | Public event list/calendar + detail |
 | [Ticket-Shop](feature-ticket-shop.md) | capability | idea | Browse ticketed events, checkout, payment |
 | [Aktuelles](feature-news.md) | capability | shipped | Meldungen (list + detail) + landing teaser |
-| [Galerie](feature-gallery.md) | capability | ready | Public Album index + Album pages + photo viewer |
+| [Galerie](feature-gallery.md) | capability | shipped | Public Album index + Album pages + photo viewer |
 | [Mitglied werden](feature-membership-funnel.md) | capability | idea | Membership info + application funnel |
 
 ---
@@ -405,25 +405,86 @@ exist to carry. Shipping it without recording it left two documents lying about 
 phase and a half.
 
 ### P5 — Galerie
-**Status:** planned (shaped 2026-07-28 in a grilling session; mock moved to
-`docs/design/gallery-page/`)
+**Status:** done (2026-07-29, branch `feat/website-p5-gallery-fe`, 11 commits `4560845`…`7945270`)
 Static-implementable, **no backend**: `/gallery` (Album index) + `/gallery/:albumSlug` (Album) + a
 full-screen photo viewer addressed by `?photo=<n>`. Photos remain placeholders — the point of the
 phase is that dropping real files in later is a **content change, not a rewrite**. Shipped as the 9
-vertical slices in the [Galerie](feature-gallery.md) Implementation plan.
+vertical slices in the [Galerie](feature-gallery.md) Implementation plan, one commit each. Final
+gates: typecheck clean, **325 tests** (11 ui + 314 website), lint clean, build clean.
 
-- [ ] [Galerie](feature-gallery.md) — Album index (hero + featured newest + current Session grid +
+Followed the plan closely; build-level choices worth knowing:
+- **Date-only strings must be parsed on the local calendar.** `albumSession` parses via
+  `` new Date(`${album.date}T00:00`) ``, because `new Date('YYYY-MM-DD')` is **UTC** midnight while
+  `sessionAt` reads `getMonth()`/`getDate()` in **local** time. The seeded Sessionseröffnung sits
+  exactly on 11.11, so in any UTC-behind timezone it fell into the *older* Session and the required
+  4-current/2-older split broke. Any future date-derived content faces the same trap.
+- **`KkPhoto` ships flat** (`packages/ui/src/KkPhoto.tsx` + the pure `photo-frame.ts`), not in a
+  folder — it has no `internal/` parts, and the precedent for a component plus a co-located pure
+  helper is `KkConfettiRain` + `confetti-pieces.ts`. `resolvePhotoFrame` derives whole intrinsic
+  pixel dimensions from `kkTokens.aspectRatio` (portrait 960×1200, landscape 1680×1200); **no token
+  was added**.
+- **Seed content is reconciled with `PROGRAM_EVENTS`** — same dates, venues and names for the same
+  occasions (the mock's "Kindersitzung" is the Programm's **Kinderfasching**; its Prunksitzung date
+  fell after Aschermittwoch 2026). No cross-feature import, just consistent content.
+- **Photo credits are devices, not people** (`Wegwerfkamera vom Kiosk`, `Vereinshandy mit acht
+  Prozent Akku`) and the field is `photoCredit`, not `photographer` — the "unmistakably fake" ruling
+  without six repetitions of one gag.
+- **The featured Album is excluded from the grid *and* from the older-Session groups**, and DIESE
+  SESSION only renders when a non-featured Album remains — after 11.11.2026 every seeded Album
+  becomes "older", and without that the banner Album would appear twice.
+- **Uniform photo-grid height without a pixel value:** `PhotoGrid.Cell` carries `aspectRatio` =
+  units × `4 / 5` alongside its span, so a 2-unit landscape's natural height equals a 1-unit
+  portrait's and the Grid row stretches every cell. Fluid at every breakpoint, and the equal-height
+  invariant is one of the unit-tested properties.
+- **One set of viewer controls, re-placed by `grid-template-areas`** (`"prev stage next"` on desktop,
+  a thumb-reachable bottom row at `xs`) — the shipped `display: { xs, desktop }` mobile switch would
+  have meant two copies of every button in the DOM.
+- **The Album head title appends the derived Session** (`Prunksitzung 2025/26 · FURRIA`): two seeded
+  Alben are titled "Prunksitzung" and two "Rosenmontagsumzug", so a bare title would publish
+  duplicate `<title>`/`og:title` for distinct canonical URLs. The visible H1 stays the bare title.
+- **No `notFoundComponent` on the Album route.** P4's "it does not bubble" note applies to the
+  *layout* routes: `_gated` already registers it, and `news_.$slug.tsx` registers none either — a
+  test proves `/gallery/<unknown>` renders the branded 404 exactly once. A fourth registration would
+  have been dead code.
+- **`Photo.source` was added in slice 9**, beyond the slice text. The "Done When" bullet *"swapping
+  in real photo files is a content change: no component touched"* was **not true**: `KkPhoto` had the
+  seam but the `Photo` model had no field for it, so real files would have meant editing four
+  components. Album covers derive from the album's first photo.
+- **`privacy-content.ts` carried a second copy of the contact address**, which the slice brief did
+  not mention — "no second literal anywhere" required refactoring it too. Both legal documents render
+  byte-identical prose.
+- **Reviews** ran per slice (`react-code-reviewer`, plus `react-composition-guru` on the
+  compound-heavy slices 5/7/8/9). Real fixes applied: the local-vs-UTC date defect above, the
+  Galerie/Programm naming mismatch, a `KkPhoto` folder that violated the component-structure rule, a
+  hand-synced duplicate of the landscape ratio at the card call site, a dead hover transition on the
+  older-Session toggle, `kkTokens.color.dark.*` baked into every viewer leaf, and the Zod schema
+  moved to the conventional `schemas.ts`. The rest were over-flags, each rejected against the diff.
+- **Visual verification is uneven and owes a pass.** Only the viewer (slice 8) was checked in a real
+  browser (Playwright, 360/390/900/1280px, light + dark). Every other slice rests on token reuse and
+  CSS reasoning, so **the index and Album page have not been eyeballed at 360px or in the dark
+  scheme**. Nothing suspicious was found by review; the check is simply still owed.
+- ⚠️ **One defect the review loop *introduced* and a later slice hid** (fixed in `7945270`, worth
+  carrying forward): slice 8's reviewer correctly objected to `kkTokens.color.dark.*` reads, and the
+  fix moved every viewer part onto scheme-agnostic palette values scoped by a `data-dark` attribute
+  — the theme's own selector (`cssVariables: { colorSchemeSelector: 'data' }` →
+  `[data-dark] &`). Slice 9's closing sweep then removed that attribute as "inert", which silently
+  reverted the decision that **the dark surface *is* the backdrop**: the viewer rendered cream in the
+  light scheme. The attribute is now named `KK_DARK_SCHEME_ATTRIBUTE` in `@furria/ui` beside the
+  config that defines it, and a route test asserts the dialog is inside that scope. **Lesson:** a
+  "remove this dead attribute" cleanup needs the same verification as a feature change.
+
+- [x] [Galerie](feature-gallery.md) — Album index (hero + featured newest + current Session grid +
       derived older Sessions + rights note + `/program` band), Album page (own lighter header +
       orientation-aware photo grid + next Album), and the full-screen viewer
-- [ ] `@furria/ui` — new **`KkPhoto`** primitive: the real-`<img>` seam (lazy, async decoding,
+- [x] `@furria/ui` — new **`KkPhoto`** primitive: the real-`<img>` seam (lazy, async decoding,
       intrinsic size, **required `alt`**) with `KkPhotoPlaceholder` as the no-source fallback
-- [ ] [Site-Shell](feature-site-shell.md) — promote the club contact address to
-      **`CLUB_CONTACT_EMAIL`** in `lib/club.ts` (today a hardcoded literal inside
-      `imprint-content.ts` prose) and refactor the imprint to read it
-- [ ] [SEO & Meta](feature-seo-meta.md) — per-Album document head (title/description/canonical),
-      no new mechanism
-- [ ] [Landing-Hero](feature-landing-hero.md) — **drive-by defect fix** found in P5 grilling: the
-      hero says **12 Gruppen** while `/club` derives **6** from `GROUPS.length`. Two shipped pages
+- [x] [Site-Shell](feature-site-shell.md) — promoted the club contact address to
+      **`CLUB_CONTACT_EMAIL`** in `lib/club.ts`; **both** `imprint-content.ts` and
+      `privacy-content.ts` now read it. Also `KK_DARK_SCHEME_ATTRIBUTE` in `@furria/ui`
+- [x] [SEO & Meta](feature-seo-meta.md) — per-Album document head (title/description/canonical),
+      no new mechanism; the title carries the **derived Session** to keep it unique
+- [x] [Landing-Hero](feature-landing-hero.md) — **drive-by defect fix** found in P5 grilling: the
+      hero said **12 Gruppen** while `/club` derives **6** from `GROUPS.length`. Two shipped pages
       contradicting one fact → `GROUP_COUNT_PLACEHOLDER = 6`, in the same slice that already opens
       `lib/club.ts`
 

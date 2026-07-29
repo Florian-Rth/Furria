@@ -2,7 +2,7 @@
 title: Galerie
 slug: gallery
 type: capability
-status: ready
+status: shipped
 mock: docs/design/gallery-page/
 adrs: []
 ---
@@ -156,10 +156,71 @@ Not a dump of everything that was shot. That restraint is the feature, not a lim
   **derived** — no hand-maintained duplicates.
 - Swapping in real photo files is a content change: no component touched.
 
+## As built (P5, 2026-07-29)
+
+All nine slices shipped on `feat/website-p5-gallery-fe`, one commit each. What differs from the
+decisions above, and why — the rest was built as written:
+
+- **`Photo` carries an optional `source`.** The decisions section said `KkPhoto` is the swap seam, but
+  the primitive alone did not make *"swapping in real photo files is a content change"* true: the
+  feature's own `Photo` had no field to thread, so real files would have meant editing `PhotoTile`,
+  `PhotoViewerPhoto`, `AlbumCard` and `FeaturedAlbumCover`. Added in slice 9 with one
+  `buildAlbumCoverSource` derivation; **an Album's cover is its first photo**. A dedicated cover per
+  Album is a curation decision for the phase that ships real files.
+- **Sessions derive from date-only strings parsed at local midnight.** `albumSession` uses
+  `` new Date(`${album.date}T00:00`) ``: bare `new Date('YYYY-MM-DD')` is UTC while `sessionAt` reads
+  local calendar fields, so the 11.11 Album flipped Session in UTC-behind timezones. Any future
+  date-derived content hits this.
+- **`photoCredit`, and the credits are devices** (`Wegwerfkamera vom Kiosk`) rather than one repeated
+  fake person — the unmistakably-fake rule without the gag wearing thin. No caption names anyone.
+- **Seed content is reconciled with the Programm's** dates, venues and names (the mock's
+  "Kindersitzung" is **Kinderfasching** on `/`). Consistent content, no cross-feature import.
+- **The featured Album is excluded from the older-Session groups too**, and DIESE SESSION renders only
+  when a non-featured Album remains: after 11.11.2026 every seeded Album becomes "older" and the
+  banner Album would otherwise appear twice.
+- **The NEUESTES ALBUM flag sits in the bottom overlay stack**, not the mock's top-left corner —
+  contrast is guaranteed inside the scrim's dark band and nothing rides the photo's top edge at
+  360px. Banner scale comes from a responsive `minHeight`, so wrapping copy grows it instead of
+  overflowing.
+- **Older-Session rows stack** (label + derived "2 Alben · 18 Fotos" summary, marker right) instead of
+  the mock's three-column row — no breakpoint branch needed to survive 360px. The `Collapse` stays
+  mounted so `aria-controls` always resolves; MUI's `visibility: hidden` keeps the collapsed links out
+  of the tab order and the a11y tree. Marker is the typographic `+`/`–` (no icon library).
+- **Uniform grid height is a scaled aspect ratio, not a pixel height**: `PhotoGrid.Cell` carries
+  `aspectRatio` = units × `4 / 5` beside its span, so a 2-unit landscape matches a 1-unit portrait and
+  the Grid row stretches every cell.
+- **Tiles became interactive in slice 8, not 7.** A `ButtonBase` with no `onClick` would have shipped
+  a focusable no-op for one slice, so `PhotoGrid` gained an `Action` slot filled at the `AlbumPage`
+  call site — variation by which slot is filled, no flag on `PhotoTile`.
+- **One set of ‹ › controls, re-placed by `grid-template-areas`** rather than two DOM sets behind the
+  `display: { xs, desktop }` switch. Viewer DOM order is header → stage → footer → controls, so a
+  screen reader hears the caption before the step buttons.
+- **The ✕ closes with `replace`** (the plan fixed push-on-open and replace-on-step but was silent on
+  close), so Back can never re-open the viewer and a deep-linked visitor is not thrown off the site.
+- **The viewer is the dark room in both schemes**, implemented as the theme's own colour-scheme
+  attribute — `KK_DARK_SCHEME_ATTRIBUTE` in `@furria/ui`, beside the `colorSchemeSelector: 'data'`
+  config that defines it — with every part reading ordinary palette values. It regressed once mid-phase
+  (a review fix scoped it correctly, the next slice's sweep deleted the attribute as "inert" and the
+  viewer went cream in light mode) and is now pinned by a route test.
+- **No `notFoundComponent` on the Album route.** P4's "it does not bubble" applies to the *layout*
+  routes; `_gated` already registers it and `news_.$slug.tsx` registers none either. A test proves
+  `/gallery/<unknown>` renders the branded 404 exactly once.
+- **The Album head title appends the derived Session** — two seeded Alben share the title
+  "Prunksitzung" and two "Rosenmontagsumzug", so a bare title would publish duplicate
+  `<title>`/`og:title` across distinct canonical URLs. The visible H1 stays bare.
+- **Nächstes Album reuses the shipped `AlbumCard`** in a width-capped frame under a
+  `KkSection.Header`, instead of the mock's bespoke wide row — one card definition, one `KkCard`
+  language. `NextAlbum` reads `ALBUMS` itself, like `NewsRelated`.
+- **`privacy-content.ts` also held the contact address** (the plan named only the imprint) and was
+  refactored too; both legal documents render byte-identical prose.
+- **Still owed:** the index and Album page have not been eyeballed at 360px or in the dark scheme —
+  only the viewer was browser-verified. `kkTokens.photo.placeholderSurface` remains a
+  scheme-independent hex, but it predates P5 and is shared with `/club` and `/news`.
+
 ## Implementation plan (phases)
 
 Ordered, independently testable **vertical slices**; each leaves the app building. **Frontend only.
-Backend: none** for every slice.
+Backend: none** for every slice. *(All nine shipped — see "As built" above.)*
 
 1. **Tracer bullet — content model + index skeleton.** `features/gallery/` with
    `gallery-content.ts` (typed `Album`, `Photo`, `PhotoOrientation`; 6 seeded Albums — 4 current

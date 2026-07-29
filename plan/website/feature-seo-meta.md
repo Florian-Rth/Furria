@@ -52,11 +52,17 @@ shareable material" ambition on the public side.
   configured anywhere in the app, and a relative canonical is spec-valid — it resolves with the
   absolute `og:image` URL in P7.
 
-**P5 (Galerie) — per-Album head only:**
+**P5 (Galerie) — per-Album head only (shipped 2026-07-29):**
 
 - The Album route sets its own head from the resolved Album: title, description from its intro,
   OG title/description, root-relative canonical (`/gallery/{albumSlug}`). **No new mechanism** —
   the same `head` API and the same root-relative-canonical decision as the news post route.
+- **The title carries the derived Session** (`Prunksitzung 2025/26 · FURRIA`), unlike the news post
+  route's bare title. Album titles are honest event types and therefore **repeat across Sessions** —
+  two seeded Alben are "Prunksitzung", two "Rosenmontagsumzug" — so a bare title would publish
+  duplicate `<title>`/`og:title` for distinct canonical URLs. `buildAlbumDocumentTitle` appends
+  `albumSession(album).yearsLabel`, so nothing new is stored ("Session is derived, never stored"), and
+  the visible H1 stays the bare title.
 - **`og:type` stays the root's `website`** — an Album is not an `article`, and there is no published
   time to declare.
 - **`?photo` is not reflected in the head.** A search param must not change the canonical, or every
