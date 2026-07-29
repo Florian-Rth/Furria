@@ -20,7 +20,7 @@ export { KkTicker } from './KkTicker';
 export { KkTwoToneHeadline } from './KkTwoToneHeadline';
 export { PageLayout } from './PageLayout/PageLayout';
 export type { KkPhotoOrientation } from './photo-frame';
-export { KK_DESKTOP_BREAKPOINT, kkTheme } from './theme';
+export { KK_DARK_SCHEME_ATTRIBUTE, KK_DESKTOP_BREAKPOINT, kkTheme } from './theme';
 export type { KkColorTokens } from './tokens';
 export { kkTokens } from './tokens';
 export { useIsMobile } from './use-is-mobile';

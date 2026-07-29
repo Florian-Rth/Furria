@@ -1,3 +1,4 @@
+import { KK_DARK_SCHEME_ATTRIBUTE } from '@furria/ui';
 import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -33,6 +34,8 @@ const photoAt = (album: Album, index: number): Photo => {
   }
   return photo;
 };
+
+const darkSchemeSelector = `[${KK_DARK_SCHEME_ATTRIBUTE}]`;
 
 const openAlbum = (search = ''): void => {
   writeGrantedToSession(window.sessionStorage);
@@ -170,5 +173,13 @@ describe('photo viewer', () => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
     await awaitAlbumPage(album);
+  });
+
+  it('scopes the dark colour scheme to the viewer, whatever the ambient scheme is', async () => {
+    openAlbum('?photo=1');
+
+    const dialog = await screen.findByRole('dialog');
+
+    expect(dialog.closest(darkSchemeSelector)).not.toBeNull();
   });
 });

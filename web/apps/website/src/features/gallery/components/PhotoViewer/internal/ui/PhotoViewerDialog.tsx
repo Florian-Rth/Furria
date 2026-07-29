@@ -1,3 +1,4 @@
+import { KK_DARK_SCHEME_ATTRIBUTE } from '@furria/ui';
 import Dialog from '@mui/material/Dialog';
 import { useReducedMotion } from 'motion/react';
 import type { FC, KeyboardEventHandler, PropsWithChildren } from 'react';
@@ -26,6 +27,7 @@ export const PhotoViewerDialog: FC<PhotoViewerDialogProps> = ({
       fullScreen
       aria-labelledby={titleId}
       transitionDuration={reducedMotion === true ? 0 : undefined}
+      {...{ [KK_DARK_SCHEME_ATTRIBUTE]: '' }}
       data-kk-photo-viewer
       slotProps={{
         paper: {
