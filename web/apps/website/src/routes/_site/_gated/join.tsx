@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { KonfettiKompass } from '@/features/group-matcher';
-import { JoinPage } from '@/features/membership';
+import { JoinPage, MembershipTicketSection } from '@/features/membership';
 import type { RouteHead } from '@/lib/seo';
 import { pageTitle } from '@/lib/seo';
 
@@ -12,6 +12,7 @@ const JOIN_DESCRIPTION =
 const JoinComponent: FC = () => (
   <JoinPage>
     <KonfettiKompass />
+    <MembershipTicketSection />
   </JoinPage>
 );
 

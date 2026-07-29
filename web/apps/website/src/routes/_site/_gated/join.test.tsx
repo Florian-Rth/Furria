@@ -51,6 +51,18 @@ describe('join route', () => {
     );
   });
 
+  it('lays the Ticket on the page as a second way into the Antrag', async () => {
+    renderAtRoute('/join');
+
+    expect(await screen.findByRole('link', { name: 'Antrag stellen' })).toHaveAttribute(
+      'href',
+      '/join/apply',
+    );
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'ALLES AUF EINER KARTE.' }),
+    ).toBeInTheDocument();
+  });
+
   it('shows three derived stats and no invented fourth one', async () => {
     renderAtRoute('/join');
 
