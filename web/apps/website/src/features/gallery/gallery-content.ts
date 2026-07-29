@@ -8,6 +8,7 @@ export type PhotoOrientation = KkPhotoOrientation;
 export interface Photo {
   orientation: PhotoOrientation;
   alt: string;
+  source?: string;
 }
 
 export interface Album {
@@ -30,6 +31,8 @@ export const galleryDescription =
 export const currentSessionHeading = 'DIESE SESSION';
 
 export const olderSessionsHeading = 'FRÜHERE SESSIONEN';
+
+export const nextAlbumHeading = 'NÄCHSTES ALBUM';
 
 export const albumLinkLabel = 'Album ansehen →';
 
@@ -229,6 +232,17 @@ export const selectFeaturedAlbum = (albums: Album[]): Album | undefined =>
 export const excludeAlbum = (albums: Album[], excluded: Album | undefined): Album[] =>
   excluded === undefined ? albums : albums.filter((album) => album.slug !== excluded.slug);
 
+export const selectNextAlbum = (albums: Album[], currentSlug: string): Album | undefined => {
+  const ordered = sortAlbumsByDateDesc(albums);
+  const currentIndex = ordered.findIndex((album) => album.slug === currentSlug);
+
+  if (currentIndex === -1 || ordered.length < 2) {
+    return undefined;
+  }
+
+  return ordered[(currentIndex + 1) % ordered.length];
+};
+
 export const buildAlbumCreditLabel = (album: Album): string => `Fotos: ${album.photoCredit}`;
 
 export const buildPhotoViewerMetaLabel = (album: Album): string =>
@@ -245,6 +259,8 @@ export const buildAlbumDocumentTitle = (album: Album): string =>
 export const albumCoverOrientation: PhotoOrientation = 'landscape';
 
 export const buildAlbumCoverAlt = (album: Album): string => `Titelbild vom Album ${album.title}`;
+
+export const buildAlbumCoverSource = (album: Album): string | undefined => album.photos[0]?.source;
 
 export const selectCurrentSessionAlbums = (albums: Album[], reference: Date): Album[] => {
   const openSession = sessionAt(reference);

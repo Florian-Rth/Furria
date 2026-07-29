@@ -60,6 +60,20 @@ describe('album route', () => {
     );
   });
 
+  it('closes on the next Album, wrapping from the oldest one to the newest', async () => {
+    writeGrantedToSession(window.sessionStorage);
+    renderAtRoute('/gallery/prunksitzung-2025');
+
+    expect(
+      await screen.findByRole('heading', { level: 2, name: 'NÄCHSTES ALBUM' }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Rosenmontagsumzug' })).toHaveAttribute(
+      'href',
+      '/gallery/rosenmontagsumzug-2026',
+    );
+    expect(screen.queryByRole('link', { name: 'Zum Programm →' })).not.toBeInTheDocument();
+  });
+
   it('publishes a per-Album document head that ignores the viewer search param', async () => {
     const album = seededAlbum(KNOWN_SLUG);
     const title = pageTitle(buildAlbumDocumentTitle(album));

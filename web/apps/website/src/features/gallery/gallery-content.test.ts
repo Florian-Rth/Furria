@@ -4,6 +4,7 @@ import {
   ALBUMS,
   albumSession,
   buildAlbumCountLabel,
+  buildAlbumCoverSource,
   buildAlbumCreditLabel,
   buildAlbumDocumentTitle,
   buildAlbumHref,
@@ -19,6 +20,7 @@ import {
   findAlbumBySlug,
   selectCurrentSessionAlbums,
   selectFeaturedAlbum,
+  selectNextAlbum,
   selectOlderSessionGroups,
   sortAlbumsByDateDesc,
 } from './gallery-content';
@@ -264,6 +266,70 @@ describe('excludeAlbum', () => {
       'kinderfasching-2026',
       'sessionseroeffnung-2025',
     ]);
+  });
+});
+
+describe('selectNextAlbum', () => {
+  const albums = [
+    album('sitzung', '2026-02-14', 12),
+    album('umzug', '2026-02-16', 11),
+    album('eroeffnung', '2025-11-11', 8),
+  ];
+
+  it('follows the derived newest-first order', () => {
+    expect(selectNextAlbum(albums, 'umzug')?.slug).toBe('sitzung');
+    expect(selectNextAlbum(albums, 'sitzung')?.slug).toBe('eroeffnung');
+  });
+
+  it('wraps from the oldest Album back to the newest', () => {
+    expect(selectNextAlbum(albums, 'eroeffnung')?.slug).toBe('umzug');
+  });
+
+  it('never points at the Album it starts from', () => {
+    for (const current of albums) {
+      expect(selectNextAlbum(albums, current.slug)?.slug).not.toBe(current.slug);
+    }
+  });
+
+  it('points nowhere while the Galerie holds a single Album', () => {
+    expect(selectNextAlbum([album('sitzung', '2026-02-14', 12)], 'sitzung')).toBeUndefined();
+  });
+
+  it('points nowhere for a slug the Galerie does not hold', () => {
+    expect(selectNextAlbum(albums, 'gibt-es-nicht')).toBeUndefined();
+  });
+
+  it('walks every seeded Album exactly once before coming back', () => {
+    const visited: string[] = [];
+    let current = sortAlbumsByDateDesc(ALBUMS)[0];
+
+    while (current !== undefined && !visited.includes(current.slug)) {
+      visited.push(current.slug);
+      current = selectNextAlbum(ALBUMS, current.slug);
+    }
+
+    expect(visited).toEqual(sortAlbumsByDateDesc(ALBUMS).map((seeded) => seeded.slug));
+    expect(current?.slug).toBe(visited[0]);
+  });
+});
+
+describe('buildAlbumCoverSource', () => {
+  it('covers an Album with its first photo file', () => {
+    const seeded = album('sitzung', '2026-02-14', 12);
+
+    expect(
+      buildAlbumCoverSource({
+        ...seeded,
+        photos: [
+          { orientation: 'landscape', alt: 'Titelbild', source: '/fotos/titel.jpg' },
+          ...seeded.photos,
+        ],
+      }),
+    ).toBe('/fotos/titel.jpg');
+  });
+
+  it('has no cover file while the photos are placeholders', () => {
+    expect(buildAlbumCoverSource(album('sitzung', '2026-02-14', 12))).toBeUndefined();
   });
 });
 

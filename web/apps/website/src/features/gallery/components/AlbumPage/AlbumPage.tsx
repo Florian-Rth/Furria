@@ -1,5 +1,6 @@
 import { KkSection, PageLayout } from '@furria/ui';
 import type { FC } from 'react';
+import { NextAlbum } from '@/features/gallery/components/NextAlbum/NextAlbum';
 import { PhotoGrid } from '@/features/gallery/components/PhotoGrid/PhotoGrid';
 import { PhotoViewer } from '@/features/gallery/components/PhotoViewer/PhotoViewer';
 import type { Album } from '@/features/gallery/gallery-content';
@@ -57,6 +58,7 @@ export const AlbumPage: FC<AlbumPageProps> = ({ album }) => {
             })}
           </PhotoGrid>
         </KkSection>
+        <NextAlbum currentSlug={album.slug} />
         <PhotoViewer
           album={album}
           index={viewer.index}

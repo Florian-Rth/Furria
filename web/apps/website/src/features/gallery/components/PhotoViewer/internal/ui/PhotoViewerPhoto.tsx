@@ -55,6 +55,7 @@ export const PhotoViewerPhoto: FC<PhotoViewerPhotoProps> = ({
         alt={photo.alt}
         orientation={photo.orientation}
         placeholderLabel={placeholderLabel}
+        source={photo.source}
         sx={{
           width: { xs: '100%', desktop: 'auto' },
           height: { xs: 'auto', desktop: '100%' },

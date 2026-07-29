@@ -12,7 +12,7 @@ export const PhotoStackPhoto: FC<PhotoStackPhotoProps> = ({ label, orientation }
   <Box
     sx={{
       bgcolor: 'background.paper',
-      border: kkTokens.line.hair,
+      border: `${kkTokens.line.hair}px solid`,
       borderColor: 'divider',
       borderRadius: `${kkTokens.radius.base}px`,
       boxShadow: kkTokens.shadow.raised,

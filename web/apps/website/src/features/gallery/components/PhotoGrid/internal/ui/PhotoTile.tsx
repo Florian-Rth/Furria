@@ -12,6 +12,7 @@ export const PhotoTile: FC<PhotoTileProps> = ({ photo, placeholderLabel }) => (
     alt={photo.alt}
     orientation={photo.orientation}
     placeholderLabel={placeholderLabel}
+    source={photo.source}
     sx={{
       height: '100%',
       border: `${kkTokens.line.hair}px solid`,

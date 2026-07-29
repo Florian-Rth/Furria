@@ -7,6 +7,7 @@ import {
   albumCoverOrientation,
   albumLinkLabel,
   buildAlbumCoverAlt,
+  buildAlbumCoverSource,
   buildAlbumHref,
   buildAlbumMeta,
   buildPhotoCountLabel,
@@ -24,6 +25,7 @@ export const AlbumCard: FC<AlbumCardProps> = ({ album }) => (
           alt={buildAlbumCoverAlt(album)}
           orientation={albumCoverOrientation}
           placeholderLabel={album.slug}
+          source={buildAlbumCoverSource(album)}
           sx={{ height: '100%', borderRadius: 0 }}
         />
       </KkCard.Media>

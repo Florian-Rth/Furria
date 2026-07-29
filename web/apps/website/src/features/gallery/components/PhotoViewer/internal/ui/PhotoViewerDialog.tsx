@@ -27,7 +27,6 @@ export const PhotoViewerDialog: FC<PhotoViewerDialogProps> = ({
       aria-labelledby={titleId}
       transitionDuration={reducedMotion === true ? 0 : undefined}
       data-kk-photo-viewer
-      data-dark=""
       slotProps={{
         paper: {
           sx: {
