@@ -48,6 +48,26 @@ and error/loading states consistent across features.
   event-specific types, schemas, or mock endpoints yet. Static (pre-backend) sections use
   **static placeholder content**, not a fake API.
 
+**P6 (2026-07-29) — the first write, and the "build as if it already fetched" pattern:**
+
+- **First write endpoint from the public site:** `POST /api/membership-applications`
+  ([ADR-0004](../../docs/adr/0004-website-writes-membership-applications.md)). `apiFetch` needs no
+  change — it already takes a method, a JSON body and a mandatory schema.
+- **Standing pattern for backend-bound features.** A feature whose data is *destined* for the API is
+  built as if it already fetched it: Zod schemas, React Query hooks in the feature's `api.ts`, and
+  **real loading/error paths from day one**. Only the `queryFn` differs — it resolves from a
+  **deletable seed module** (`src/lib/seed/`, shaped byte-for-byte like the future payload and
+  Zod-parsed at that boundary) instead of calling `apiFetch`. The swap is one line per query.
+  Precedent for parsing local content: P4's `changelog.json`.
+- **This does not overturn P0's "no fake API".** The seed is not a mock endpoint or a fixture pile:
+  it is the payload contract, in one deletable place, consumed through the same hooks the real
+  endpoint will feed. A feature whose data will *never* come from the backend (page copy) still uses
+  plain typed constants.
+- **Async has an SEO cost.** Fetched content is not prerenderable
+  ([ADR-0003](../../docs/adr/0003-website-rendering-strategy.md)), so choose per surface:
+  interactive, non-indexable UI may fetch; indexable body content stays synchronous. P6 splits
+  exactly there — the Kompass fetches, `/club`'s Gruppen list reads the same seed synchronously.
+
 **Deferred:**
 
 - **OpenAPI codegen decision → deferred** (first real public endpoint; needs the Club-App backend):

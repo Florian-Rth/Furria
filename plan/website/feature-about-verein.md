@@ -133,6 +133,23 @@ One scrolling page, sections top → bottom:
   photo, full description, LEITUNG / TREFFEN footer, **Mitglied werden →** button. State = single
   `openGroupId | null`.
 
+**P6 amendment (2026-07-29) — the roster moves, the section does not:**
+
+- `/join` needs the same Gruppen and features may never import each other, so the **roster moves to
+  the shared seed module** (`src/lib/seed/groups.ts`, shaped like the future `GET /api/groups`:
+  `id`, `name`, `ageRange`, **`isRecruiting`**). `/club` keeps its own editorial copy (`blurb`,
+  `fullText`, `lead`, `memberMeta`) keyed by that id, so this is a **data-source change, not a
+  rewrite** — exactly what P2 promised the typed interfaces would allow.
+- **`/club` keeps reading it synchronously and is deliberately *not* migrated to React Query.** Its
+  Gruppen list is indexable content and P7 prerenders every route — fetching would blank the section
+  for crawlers ([ADR-0003](../../docs/adr/0003-website-rendering-strategy.md)). The matcher on
+  `/join` is interactive and non-indexable, so it fetches. One source, two access paths.
+- `schedule` stays a `/club`-local label. It is **not** a public training time: P6 established that
+  the club has **no open, drop-in trainings** and no published recurring slots, so nothing on either
+  page may invite someone to simply turn up.
+- `ClubStoryStats` is replaced by the new shared **`KkStatRow`** — see
+  [Site-Shell](feature-site-shell.md).
+
 ### People wall (Kapitel 05) — Ämter, not "Vorstand"
 - The section presents the people who hold the club's public **Ämter** ("die Gesichter"). Title
   *"MENSCHEN, DIE FURRIA SIND"* (people-focused; cleanly avoids the forbidden "Vorstand" framing —

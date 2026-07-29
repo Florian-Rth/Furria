@@ -169,6 +169,23 @@ hang in — built first so everything else has a home.
   theme uses `colorSchemeSelector: 'data'`; the reduced-motion guard lives in the shared theme.
 - Ticker is **not** part of the shell — its own foundation ([Ticker](feature-ticker.md)).
 
+**`@furria/ui` additions (P6, 2026-07-29):**
+
+- **`KkStatRow`** — a slotted compound (`KkStatRow` · `.Item` · `.Value` · `.Label`) owning the row,
+  the top hairline, the gap and the wrap. The **rule of three** fired: `HeroStatRow` (landing) and
+  `ClubStoryStats` (`/club`) were near-identical — same `Stack`, same `borderTop`, same `pt: 3` —
+  differing only in type scale and colour, and `/join`'s hero would have been the third dialect.
+  Both migrate. **Scale and colour stay at the call site** via `sx` and Typography's own `variant`:
+  a `size` prop would be the dual-mode API the frontend rules ban, which is exactly why P4 refused
+  to reuse `NewsSectionRule` at `h2` scale. Follows P4.1's five-card-dialects lesson.
+
+**Legal pages (P6 → P7):**
+
+- A third legal page **`/satzung`** is owed. P6's Antrag links it from inside the Einwilligung while
+  the route does not exist yet (accepting the branded 404, P4's archive-button precedent), so it
+  ships as a **plain anchor** — a typed `Link` cannot compile against a missing route. Because the
+  link sits inside a legal consent, shipping the page is a **P7 launch blocker**, not a polish task.
+
 ## Open Questions
 
 - Footer build-out — *resolved in P0:* built lean — broom lockup, tagline with the Narrenruf,

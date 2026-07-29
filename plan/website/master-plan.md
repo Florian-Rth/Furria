@@ -33,13 +33,20 @@ served by the single backend (`server/`); this plan covers **only** the public w
 
 ## Overview
 
-> **Scope banner — Website v1 ships fully static; no backend integration.** All live data
+> **Scope banner — Website v1 ships fully static; no *Club-App* backend integration.** All live data
 > (events, tickets, scarcity, member/group counts, news) originates in the **Club-App**, which
 > is **not built yet**. Until it exists, the website is a fully static marketing site: every
 > "block" is fed by hand-curated, editable content constants behind clean typed interfaces, so
 > real data can be dropped in later as a **data-source change, not a rewrite**. All live-data
 > capabilities live in **[Deferred — needs Club-App backend](#deferred--needs-club-app-backend)**
 > below, not in the numbered roadmap.
+>
+> **Amended in P6 shaping (2026-07-29):** this banner was always about *Club-App* data, never about
+> our own infrastructure — the site has called `POST /api/preview/unlock` since P0, and
+> `docker-compose.example.yml` deploys PostgreSQL, the API and the website **together**. The
+> membership funnel therefore writes to **our own API** — though **P6 ships the frontend only** and
+> the endpoint itself is deferred, not scheduled. See
+> [ADR-0004](../../docs/adr/0004-website-writes-membership-applications.md).
 
 A responsive, German-language marketing + ticketing site in the "Konfetti Kinetik" brand.
 Guiding constraints (all binding):
@@ -77,7 +84,8 @@ Guiding constraints (all binding):
 | [Ticket-Shop](feature-ticket-shop.md) | capability | idea | Browse ticketed events, checkout, payment |
 | [Aktuelles](feature-news.md) | capability | shipped | Meldungen (list + detail) + landing teaser |
 | [Galerie](feature-gallery.md) | capability | shipped | Public Album index + Album pages + photo viewer |
-| [Mitglied werden](feature-membership-funnel.md) | capability | idea | Membership info + application funnel |
+| [Mitglied werden](feature-membership-funnel.md) | capability | shaping | Membership info + Beitrittsantrag funnel |
+| [Konfetti-Kompass](feature-group-matcher.md) | capability | shaping | Wahl-O-Mat-style Gruppen matcher on `/join` |
 
 ---
 
@@ -534,12 +542,89 @@ Followed the plan closely; build-level choices worth knowing:
   Instagram band.
 
 ### P6 — Membership funnel
-**Status:** planned
-Static-implementable: the info page is static; the application **form submits via email / a static
-form service** (no backend). Any backend-backed provisional-Person creation is deferred.
+**Status:** planned (shaped 2026-07-29 in a grilling session against the new
+[join mock](../../docs/design/join-page/README.md))
+`/join` + `/join/apply` — the club's growth hook. **Frontend only.** The API contract is designed
+here but the backend is **deferred and not scheduled**
+([Deferred → Antrag- und Gruppen-Backend](#antrag--und-gruppen-backend-not-scheduled)), so a
+submission fails honestly into the form's error state, which always offers the human fallback —
+nothing faked, nothing disabled, and zero frontend change when the endpoint eventually lands. Only
+testers see it (gate is up until P7).
 
-- [ ] [Mitglied werden](feature-membership-funnel.md) — info + application (email/static submission)
-- [ ] [Mitmachen-Band](feature-mitmachen-band.md) — point CTA at the funnel (already → `/join`)
+> The old P6 line said the form *"submits via email / a static form service (no backend)"*. That
+> premise was wrong — see the amended scope banner and
+> [ADR-0004](../../docs/adr/0004-website-writes-membership-applications.md).
+
+- [ ] [Mitglied werden](feature-membership-funnel.md) — `/join` info page (hero · Kompass · Ticket ·
+      vier Schritte · FAQ · Kontakt · Band) and `/join/apply` (Antrag + in-place confirmation),
+      wired to `POST /api/membership-applications`
+- [ ] [Konfetti-Kompass](feature-group-matcher.md) — eleven questions, Gruppe-owned positions and
+      weights, `weighted` + `filter` question roles, normalised scoring as a tested pure function,
+      ranked result with derived «warum» and recruiting badges
+- [ ] `@furria/ui` — promote **`KkStatRow`** (slotted compound) and migrate `HeroStatRow` +
+      `ClubStoryStats` onto it; `/join`'s hero is the third call site
+- [ ] [Verein](feature-about-verein.md) — drive-by: `/club`'s Gruppen content reads the shared seed
+      (stays **synchronous**, so it stays prerenderable) instead of its own roster
+- [ ] [SEO & Meta](feature-seo-meta.md) — per-route `head` for `/join` and `/join/apply`, no new
+      mechanism
+- [x] [Mitmachen-Band](feature-mitmachen-band.md) — CTA already points at `/join`; nothing to do
+
+**Cross-cutting (decided in P6 grilling, 2026-07-29):**
+
+- **The website writes to its own API for the first time** —
+  [ADR-0004](../../docs/adr/0004-website-writes-membership-applications.md). A third-party form
+  service would have put a (usually US) processor in the path of applicants' addresses, birth dates
+  and, for under-18s, a guardian's contact details.
+- **New pattern, governing every future backend-bound feature: build as if it already fetched.**
+  Zod schemas + React Query hooks in the feature's `api.ts`, real loading/error paths, and only the
+  `queryFn` differs — it resolves from a **deletable seed module** (`src/lib/seed/`, shaped exactly
+  like the future payload) instead of `apiFetch`. The later swap is one line per query.
+- **Async is not prerenderable, so the split is deliberate:** the interactive matcher fetches;
+  `/club`'s indexable Gruppen list keeps reading the same seed **synchronously**. One source of
+  truth, two access paths ([ADR-0003](../../docs/adr/0003-website-rendering-strategy.md)).
+  A compile-time `GroupId` union was considered and rejected — ids come from the DB at runtime.
+- **Glossary corrections, one of them a retraction.** **`Passiv` is not a Mitgliedschaftsart** — it
+  was the word for a membership that *pauses for a Session*, i.e. a **status**. The 2026-07-16
+  "resolved" note is retracted in [`CONTEXT.md`](../../CONTEXT.md); Art is **Aktiv / Jugend /
+  Ehren**, status is **aktiv / paused / beendet**, and `docs/design/FCC-Schema.txt` is corrected
+  (`passive` removed, `inactive` → `paused`). Added **Ruhende Mitgliedschaft** and
+  **Beitrittsantrag**; extended **Gruppe** with per-Gruppe recruiting openness and the fact that
+  **no drop-in trainings exist**. *Lesson: the old note resolved the ambiguity from the handoff
+  rather than from the club.*
+- **Two domain facts killed large parts of the mock.** There are **no open, drop-in trainings** and
+  no recurring public training times — so *"erst vorbeikommen, dann entscheiden"*, the dated
+  open-training list, the free-spot counts and the "Turnschuhe reichen" copy are all gone; the
+  low-commitment step is the Kompass plus an Anfrage. And **Kostüme are not (all) club-funded**, so
+  that benefit claim is removed everywhere.
+- **Mitgliedschaftsart is derived from the Geburtsdatum, never asked** — the mock's form allows
+  "Aktiv" with a 2015 birth date. Only **Aktiv** and **Jugend** are joinable; **Ehren** is not
+  published publicly. The mock's invented "Kind" tier does not exist.
+- **The Ticket stays, as an info flyer in the shape of a ticket** — the page's one signature object
+  (gold, real perforation notches, vertical stub, slight tilt, blank `MITGLIED NR. ____`). Its
+  content was rewritten from scratch; the mock's rows were partly false. **Hard offset-shadows stay
+  rejected as the system — fifth phase running.**
+- **Three mock features cut:** the three named contacts with private mobile numbers (P5's
+  invented-people ban plus a real spam/DSGVO problem), the **Helfer-Liste** (dead target, P5's
+  dead-link precedent), and a **Gruppen showcase** on `/join` (the Kompass result plus `/club`
+  already cover it — no third roster surface).
+- **Two form defects fixed:** the consent checkbox **defaults to checked** (legally invalid) and it
+  **bundles photo consent** into the same box (Kopplungsverbot) — on a topic `CONTEXT.md` flags as
+  unresolved. Photo consent is absent by design. Under-18s get a **guardian block** and the consent
+  is worded as the guardian's (§107 BGB); the mock's promised SMS confirmation flow is not built.
+- **`Vorstand` scrubbed from copy for the third phase running** (P4 fixed it twice already): copy
+  says *der Verein* / *wir* and never names a body it cannot name correctly.
+- **Rule of three fired on the stat row** → `KkStatRow` in `@furria/ui`, following P4.1's
+  five-card-dialects lesson. Scale and colour stay at the call site — no size flag, which is what
+  P4 refused for `NewsSectionRule`.
+- **Accepted, against the recommendation (user's call):** the **Club-App is advertised** as a
+  membership benefit although it is unbuilt and unscheduled → P7 re-check; and the **Satzung is
+  linked** with no `/satzung` route, accepting the branded 404 → it must be a plain anchor (a typed
+  `Link` cannot compile against a missing route, per P4) and shipping `/satzung` becomes a **P7
+  launch blocker**, since this link sits inside a legal consent.
+- **Deferred (not P6):** the **entire backend** — see
+  [Deferred → Antrag- und Gruppen-Backend](#antrag--und-gruppen-backend-not-scheduled) — a
+  privacy-preserving captcha, real Gruppen content and recruiting flags, verified Satzung facts,
+  and a real club contact address/phone.
 
 ### P7 — Launch
 **Status:** planned (created 2026-07-25, split out of P4)
@@ -563,14 +648,50 @@ and `robots.txt` is `Disallow: /` until this phase.
       favicon/app-icon art (tracked asset task, placeholder since P0); `noindex` on the 404
 - [ ] [Galerie](feature-gallery.md) — the mock's **Instagram band** becomes buildable once the real
       social URLs land here (held out of P5 precisely because it would have been a dead link)
+- [ ] [Site-Shell](feature-site-shell.md) — **ship `/satzung`** as a third legal page. **Launch
+      blocker:** P6 links it from inside the Antrag's legal consent, accepting a 404 in the interim
+- [ ] [Mitglied werden](feature-membership-funnel.md) — **verify every membership fact against the
+      Satzung** before the gate comes down: Beitrag 30 €/15 €, keine Aufnahmegebühr, Kündigung zum
+      Sessionende, Ruhen der Mitgliedschaft, and who decides an Aufnahme. Also **re-check the
+      Club-App promise** on the Ticket and the confirmation if the app still does not exist, and
+      replace the placeholder `CLUB_CONTACT_EMAIL` with a real address (plus a phone, if there is
+      one)
 
 ---
 
-## Deferred — needs Club-App backend
+## Deferred — backend work
 
-Everything below requires the internal **Club-App** (the system of record for events, tickets,
-members) to exist. **Not scheduled** in this website build; kept here for intent. When the backend
-lands, these become real phases.
+Everything below is **not scheduled** in this website build; kept here for intent. Most of it
+requires the internal **Club-App** (the system of record for events, tickets, members) to exist.
+When the backend lands, these become real phases.
+
+### Antrag- und Gruppen-Backend *(not scheduled)*
+
+The one exception that does **not** need the Club-App: it serves `/join` alone, on the API we
+already deploy. **P6 ships the frontend only** and the contract is fully designed in
+[Mitglied werden](feature-membership-funnel.md) and
+[Konfetti-Kompass](feature-group-matcher.md) — recorded here so nothing is re-litigated later.
+Until it exists, a submitted Antrag fails honestly into the form's error state, which always offers
+the human fallback.
+
+- `POST /api/membership-applications` — validate, persist, notify. Per
+  [ADR-0004](../../docs/adr/0004-website-writes-membership-applications.md): the row is the source of
+  truth, the mail is the notification, and a mail failure is not a lost Antrag.
+- `GET /api/groups` — id, name, age range, **`isRecruiting`**, result-card line.
+- `GET /api/group-matcher` — the eleven questions and every Gruppe's stance + weight.
+- Outbound mail: SMTP credentials, a real sender domain with SPF/DKIM, a real recipient.
+- Per-IP rate limiting; decide on a privacy-preserving challenge (self-hosted **Altcha** or
+  **Friendly Captcha**) — never a third-party captcha on the page where a child's data is typed.
+- Retention/deletion rule for applicant data — incl. minors and guardians — plus the matching
+  Datenschutzerklärung text.
+- **Delete `src/lib/seed/`** and point the query hooks at `apiFetch` (one line each).
+- Follows `/backend-work` and `docs/server/TESTING.md` (integration tests, Testcontainers, no
+  mocks — [ADR-0001](../../docs/adr/0001-no-mocks-integration-testing.md)).
+
+**Sequencing caveat:** `/join` is only half-useful until this lands, so it should not be the last
+thing done before P7 flips the site public — a live funnel that cannot submit is worse than none.
+
+### Club-App-dependent
 
 - **Events (real data)** — real public event endpoints (+ an **OpenAPI codegen decision**: types
   vs. types+Zod, likely an ADR); the full [Veranstaltungskalender](feature-event-calendar.md)
