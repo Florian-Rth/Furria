@@ -1,8 +1,8 @@
 import type { FC, KeyboardEvent } from 'react';
 import type { Album } from '@/features/gallery/gallery-content';
-import { buildPhotoPlaceholderLabel } from '@/features/gallery/gallery-content';
+import { resolvePhotoViewerFrame } from '@/features/gallery/photo-viewer-frame';
 import type { PhotoStepDirection } from '@/features/gallery/photo-viewer-steps';
-import { canStepPhoto, resolveArrowStep } from '@/features/gallery/photo-viewer-steps';
+import { resolveArrowStep } from '@/features/gallery/photo-viewer-steps';
 import { PhotoViewerFooter } from './internal/layout/PhotoViewerFooter';
 import { PhotoViewerHeader } from './internal/layout/PhotoViewerHeader';
 import { PhotoViewerHeaderActions } from './internal/layout/PhotoViewerHeaderActions';
@@ -29,13 +29,13 @@ interface PhotoViewerProps {
 
 export const PhotoViewer: FC<PhotoViewerProps> = ({ album, index, onStep, onClose }) => {
   const shownIndex = useShownPhotoIndex(index);
-  const shownPhoto = shownIndex === null ? undefined : album.photos[shownIndex];
+  const frame = resolvePhotoViewerFrame(album, shownIndex);
 
-  if (shownIndex === null || shownPhoto === undefined) {
+  if (frame === null) {
     return null;
   }
 
-  const photoCount = album.photos.length;
+  const open = index !== null;
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>): void => {
     const direction = resolveArrowStep(event.key);
@@ -48,7 +48,7 @@ export const PhotoViewer: FC<PhotoViewerProps> = ({ album, index, onStep, onClos
 
   return (
     <PhotoViewerDialog
-      open={index !== null}
+      open={open}
       titleId={PHOTO_VIEWER_TITLE_ID}
       onClose={onClose}
       onKeyDown={handleKeyDown}
@@ -57,30 +57,30 @@ export const PhotoViewer: FC<PhotoViewerProps> = ({ album, index, onStep, onClos
         <PhotoViewerHeader>
           <PhotoViewerAlbumTitle album={album} titleId={PHOTO_VIEWER_TITLE_ID} />
           <PhotoViewerHeaderActions>
-            <PhotoViewerCounter position={shownIndex + 1} photoCount={photoCount} />
+            <PhotoViewerCounter position={frame.position} countSuffix={frame.countSuffix} />
             <PhotoViewerCloseButton onClose={onClose} />
           </PhotoViewerHeaderActions>
         </PhotoViewerHeader>
         <PhotoViewerStage>
           <PhotoViewerPhoto
-            photo={shownPhoto}
-            placeholderLabel={buildPhotoPlaceholderLabel(album, shownIndex)}
+            photo={frame.photo}
+            placeholderLabel={frame.placeholderLabel}
             onStep={onStep}
           />
         </PhotoViewerStage>
         <PhotoViewerFooter>
-          <PhotoViewerCaption photo={shownPhoto} />
+          <PhotoViewerCaption photo={frame.photo} />
           <PhotoViewerMeta album={album} />
         </PhotoViewerFooter>
         <PhotoViewerStepButton
           direction={-1}
-          disabled={!canStepPhoto(shownIndex, -1, photoCount)}
+          disabled={frame.previousDisabled}
           onStep={onStep}
           sx={{ gridArea: 'prev', alignSelf: 'center', justifySelf: 'center' }}
         />
         <PhotoViewerStepButton
           direction={1}
-          disabled={!canStepPhoto(shownIndex, 1, photoCount)}
+          disabled={frame.nextDisabled}
           onStep={onStep}
           sx={{ gridArea: 'next', alignSelf: 'center', justifySelf: 'center' }}
         />

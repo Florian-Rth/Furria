@@ -1,3 +1,5 @@
+import { photoViewerLabels } from '@/features/gallery/gallery-content';
+
 export type PhotoStepDirection = -1 | 1;
 
 export const clampPhotoIndex = (index: number, photoCount: number): number =>
@@ -26,6 +28,12 @@ export const resolveSwipeStep = (offsetX: number): PhotoStepDirection | null => 
   }
   return null;
 };
+
+export const resolvePhotoStepLabel = (direction: PhotoStepDirection): string =>
+  direction === -1 ? photoViewerLabels.previous : photoViewerLabels.next;
+
+export const resolvePhotoStepGlyph = (direction: PhotoStepDirection): string =>
+  direction === -1 ? '‹' : '›';
 
 export const resolveArrowStep = (key: string): PhotoStepDirection | null => {
   if (key === 'ArrowLeft') {

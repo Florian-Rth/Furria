@@ -1,0 +1,5 @@
+language js
+
+TsUnknownType() as $type where {
+  register_diagnostic(span=$type, message="Strict typing only — no `unknown`. Validate at the boundary with a Zod schema.")
+}

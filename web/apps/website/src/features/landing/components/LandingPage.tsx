@@ -1,5 +1,4 @@
 import { kkTokens } from '@furria/ui';
-import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 import type { FC, ReactNode } from 'react';
@@ -17,13 +16,11 @@ interface LandingPageProps {
 
 export const LandingPage: FC<LandingPageProps> = ({ newsTeaser }) => (
   <Stack component="main" sx={{ flex: 1 }}>
-    <Box
+    <Stack
       sx={{
         position: 'relative',
         isolation: 'isolate',
         flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
       }}
     >
       <LandingHeroBackdrop />
@@ -66,7 +63,7 @@ export const LandingPage: FC<LandingPageProps> = ({ newsTeaser }) => (
           <Hero.StatRow />
         </HeroFollow>
       </Stack>
-    </Box>
+    </Stack>
     <LandingTicker />
     <Container maxWidth="xl" sx={{ px: kkTokens.layout.gutterX, py: kkTokens.layout.gutterY }}>
       <Stack sx={{ gap: kkTokens.layout.sectionGap }}>

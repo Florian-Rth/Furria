@@ -8,10 +8,11 @@ description: Mandatory rules for all React/TypeScript frontend work. Invoke befo
 ### Components
 - Declare all components as `FC<Props>` with named exports
 - Use arrow functions exclusively — never use `function` keyword
-- Define exactly one component per file — no exceptions (compound parts each get their own file)
-- Never use default exports
+- Define exactly one component per file — no exceptions (compound parts each get their own file); nested definitions are lint-enforced
+- Never use default exports — lint-enforced
 - Never hardcode layout sx props (margin, padding) inside components — parent controls positioning via `sx` prop
 - Extract all business logic into custom hooks — component bodies contain only hook composition and JSX rendering, never data fetching, transformations, or complex state management inline
+- Never put logic in JSX — no calls, conditionals, string building or inline handlers; hoist them into named consts in the component body, a pure function, or a hook
 - Static copy is a plain module constant or inline JSX text, never a hook — a hook that only returns a frozen constant is banned
 - Never fetch in components — all data fetching goes through React Query hooks in the feature's `api.ts`
 
@@ -28,28 +29,29 @@ description: Mandatory rules for all React/TypeScript frontend work. Invoke befo
 
 ### MUI
 - Use an existing MUI component before hand-rolling with `Box` + `sx`
-- Use MUI `Grid` (12-column `container`/`size`) for multi-column layouts; approximate ratios with spans, never a custom `columns` base or magic spans
-- Use `Stack` instead of `Box` with `display: flex`
+- Use MUI `Grid` (12-column `container`/`size`) for multi-column layouts; approximate ratios with spans, never a custom `columns` base or magic spans — the `columns` prop is lint-enforced
+- Use `Stack` instead of `Box` with `display: flex` — enforced by the Biome plugin `web/biome-plugins/useStackOverFlexBox.grit`
 - Exception: use `sx={{ display: 'flex' }}` on MUI containers (DialogContent, etc.) to avoid extra wrapper divs
 - Put Stack layout props (`alignItems`, `justifyContent`, `spacing`) in `sx`, not as component props — only `direction` is allowed as a prop
-- Always use default imports from MUI, never named imports
+- Always use default imports from MUI, never named imports — lint-enforced
 - Never set `overflow: hidden` unless explicitly told to
 - Use theme tokens exclusively — never hardcode px values, colors, or spacing
 - Always source colors so they switch with the color scheme; never read a bare palette value that bakes one mode
 - When a MUI X TreeItem label needs an offset outline, box-shadow, or any overflowing visual (e.g. a drag-over highlight), render it via the TreeItem `slots.label` slot — never the `label` prop: the default label slot is `overflow: hidden` and clips anything drawn outside the box
 
 ### TypeScript
-- Zero `any` and `unknown` tolerance — everything must be strictly typed
+- Zero `any` and `unknown` tolerance — everything must be strictly typed; lint-enforced, including `as any` / `as unknown as`
 - All function parameters and return types must be explicitly typed
 - Exception: return types on React components are implicit
 - Never cast API responses with `as unknown as` or raw type assertions — always validate with Zod schemas
-- Use `import type` for type-only imports
+- Never use non-null assertions (`!`) — narrow the type or handle the absent case; lint-enforced
+- Use `import type` for type-only imports — lint-enforced
 
 ### React
-- React Compiler is enabled — `useMemo`, `useCallback`, `React.memo` are banned
-- Always use curly braces on all if/else branches, even single-line
-- Never use `crypto.randomUUID()` — use incrementing counter or `Date.now() + Math.random()`
-- Prefix fire-and-forget promises with `void`
+- React Compiler is enabled — `useMemo`, `useCallback`, `React.memo` are banned — lint-enforced
+- Always use curly braces on all if/else branches, even single-line — lint-enforced
+- Never use `crypto.randomUUID()` — use incrementing counter or `Date.now() + Math.random()`; lint-enforced
+- Prefix fire-and-forget promises with `void` — lint-enforced
 - When state must reset in response to a prop change, use a render-phase update: track the previous prop value with useState, compare during render, and call setState synchronously — never use useEffect for this, as it causes an extra commit-phase render and a visible flicker
 
 ### Validation
@@ -61,8 +63,9 @@ description: Mandatory rules for all React/TypeScript frontend work. Invoke befo
 ### Code Style
 - Biome for linting and formatting — not Prettier, not ESLint
 - Zero warnings policy — treat all lint and TypeScript warnings as errors
+- Several rules below are machine-enforced by Biome — built-in rules plus GritQL plugins in `web/biome-plugins/` (see its README); suppression is NEVER allowed — never add a `biome-ignore`, never weaken or disable a rule to make code pass; fix the code instead
 - Never use deprecated APIs from any library — migrate to replacements immediately
-- Never write code comments — make the code itself read like the comment through naming and extraction; the only allowed comment-syntax lines are functional directives (triple-slash references, biome-ignore, @ts-expect-error)
+- Never write code comments — make the code itself read like the comment through naming and extraction; the only allowed comment-syntax lines are functional directives (triple-slash references, @ts-expect-error) — never `biome-ignore`
 
 ### Testing
 - Vitest + Testing Library
@@ -80,7 +83,7 @@ description: Mandatory rules for all React/TypeScript frontend work. Invoke befo
 - ONE theme for all apps (Corporate Identity) — no per-app theme variants; base radius is 14 everywhere
 - The theme is mounted only via `KkThemeProvider` from `@furria/ui` — app roots and `renderWithProviders` both use it
 - Feature-based modules in `src/features/<name>/` with barrel exports via `index.ts`
-- Dependency flow is unidirectional: `src/{lib,components,styles}` → `features` → `routes`
+- Dependency flow is unidirectional: `src/{lib,components,styles}` → `features` → `routes` — lint-enforced outside test files
 - Features never import from other features
 - Routes compose features together
 - All imports use `@/` path alias

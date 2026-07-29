@@ -1,0 +1,12 @@
+language js
+
+or {
+  `<Box $props />`,
+  `<Box $props>$_</Box>`
+} where {
+  $props <: or {
+    contains `display: 'flex'` as $flex,
+    contains `display="flex"` as $flex
+  },
+  register_diagnostic(span=$flex, message="Use `Stack` instead of `Box` with `display: 'flex'`.")
+}

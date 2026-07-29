@@ -7,12 +7,16 @@ interface PhotoViewerMetaProps {
   album: Album;
 }
 
-export const PhotoViewerMeta: FC<PhotoViewerMetaProps> = ({ album }) => (
-  <Typography
-    variant="caption"
-    data-kk-photo-viewer-meta
-    sx={{ fontWeight: 600, color: 'text.secondary', textWrap: 'pretty' }}
-  >
-    {buildPhotoViewerMetaLabel(album)}
-  </Typography>
-);
+export const PhotoViewerMeta: FC<PhotoViewerMetaProps> = ({ album }) => {
+  const metaLabel = buildPhotoViewerMetaLabel(album);
+
+  return (
+    <Typography
+      variant="caption"
+      data-kk-photo-viewer-meta
+      sx={{ fontWeight: 600, color: 'text.secondary', textWrap: 'pretty' }}
+    >
+      {metaLabel}
+    </Typography>
+  );
+};

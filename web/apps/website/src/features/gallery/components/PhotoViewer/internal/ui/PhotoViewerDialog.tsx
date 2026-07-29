@@ -18,6 +18,8 @@ export const PhotoViewerDialog: FC<PhotoViewerDialogProps> = ({
   children,
 }) => {
   const reducedMotion = useReducedMotion();
+  const transitionDuration = reducedMotion === true ? 0 : undefined;
+  const darkSchemeAttribute = { [KK_DARK_SCHEME_ATTRIBUTE]: '' };
 
   return (
     <Dialog
@@ -26,8 +28,8 @@ export const PhotoViewerDialog: FC<PhotoViewerDialogProps> = ({
       onKeyDown={onKeyDown}
       fullScreen
       aria-labelledby={titleId}
-      transitionDuration={reducedMotion === true ? 0 : undefined}
-      {...{ [KK_DARK_SCHEME_ATTRIBUTE]: '' }}
+      transitionDuration={transitionDuration}
+      {...darkSchemeAttribute}
       data-kk-photo-viewer
       slotProps={{
         paper: {

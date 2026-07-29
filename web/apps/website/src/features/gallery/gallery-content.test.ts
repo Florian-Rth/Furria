@@ -9,11 +9,12 @@ import {
   buildAlbumDocumentTitle,
   buildAlbumHref,
   buildAlbumMeta,
+  buildAlbumPhotoEntries,
   buildAlbumRowMeta,
   buildFeaturedAlbumMeta,
-  buildGalleryStats,
   buildOlderSessionSummary,
   buildPhotoCountLabel,
+  buildPhotoCountSuffix,
   buildPhotoPlaceholderLabel,
   countPhotos,
   excludeAlbum,
@@ -374,14 +375,25 @@ describe('findAlbumBySlug', () => {
   });
 });
 
-describe('buildGalleryStats', () => {
-  it('derives Album count, photo count and the running Session', () => {
-    const albums = [album('a', '2026-02-14', 12), album('b', '2025-03-03', 8)];
+describe('buildPhotoCountSuffix', () => {
+  it('reads as the tail of the viewer counter', () => {
+    expect(buildPhotoCountSuffix(12)).toBe(' von 12');
+  });
+});
 
-    expect(buildGalleryStats(albums, INSIDE_CURRENT_SESSION)).toEqual([
-      { value: '2', label: 'Alben' },
-      { value: '20', label: 'Fotos' },
-      { value: '2025/26', label: 'Session' },
+describe('buildAlbumPhotoEntries', () => {
+  it('numbers every photo and carries its placeholder label', () => {
+    expect(buildAlbumPhotoEntries(album('prunksitzung', '2026-02-14', 2))).toEqual([
+      {
+        photo: { orientation: 'landscape', alt: 'Bild 1' },
+        index: 0,
+        placeholderLabel: 'prunksitzung-01',
+      },
+      {
+        photo: { orientation: 'portrait', alt: 'Bild 2' },
+        index: 1,
+        placeholderLabel: 'prunksitzung-02',
+      },
     ]);
   });
 });

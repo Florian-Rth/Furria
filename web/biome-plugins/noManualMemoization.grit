@@ -1,0 +1,10 @@
+language js
+
+or {
+  `useMemo($_, $_)`,
+  `useCallback($_, $_)`,
+  `memo($_)`,
+  `React.memo($_)`
+} as $call where {
+  register_diagnostic(span=$call, message="React Compiler handles memoization — drop `useMemo`, `useCallback` and `memo`.")
+}

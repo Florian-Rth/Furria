@@ -8,18 +8,22 @@ interface FeaturedAlbumMetaProps {
   album: Album;
 }
 
-export const FeaturedAlbumMeta: FC<FeaturedAlbumMetaProps> = ({ album }) => (
-  <Typography
-    data-kk-featured-album-meta
-    sx={{
-      fontWeight: 700,
-      fontSize: { xs: '0.8125rem', desktop: '0.9375rem' },
-      letterSpacing: '0.02em',
-      color: kkTokens.overlay.onPhotoText,
-      opacity: 0.88,
-      textWrap: 'pretty',
-    }}
-  >
-    {buildFeaturedAlbumMeta(album)}
-  </Typography>
-);
+export const FeaturedAlbumMeta: FC<FeaturedAlbumMetaProps> = ({ album }) => {
+  const meta = buildFeaturedAlbumMeta(album);
+
+  return (
+    <Typography
+      data-kk-featured-album-meta
+      sx={{
+        fontWeight: 700,
+        fontSize: { xs: '0.8125rem', desktop: '0.9375rem' },
+        letterSpacing: '0.02em',
+        color: kkTokens.overlay.onPhotoText,
+        opacity: 0.88,
+        textWrap: 'pretty',
+      }}
+    >
+      {meta}
+    </Typography>
+  );
+};

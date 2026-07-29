@@ -7,6 +7,8 @@ interface AlbumCreditProps {
   album: Album;
 }
 
-export const AlbumCredit: FC<AlbumCreditProps> = ({ album }) => (
-  <KkEyebrow tone="muted">{buildAlbumCreditLabel(album)}</KkEyebrow>
-);
+export const AlbumCredit: FC<AlbumCreditProps> = ({ album }) => {
+  const creditLabel = buildAlbumCreditLabel(album);
+
+  return <KkEyebrow tone="muted">{creditLabel}</KkEyebrow>;
+};

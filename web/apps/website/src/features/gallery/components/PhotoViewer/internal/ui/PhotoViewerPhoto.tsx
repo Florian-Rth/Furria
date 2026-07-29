@@ -1,5 +1,5 @@
 import { KkPhoto, kkTokens } from '@furria/ui';
-import type { PanInfo, Transition } from 'motion/react';
+import type { PanInfo, TargetAndTransition, Transition } from 'motion/react';
 import { motion, useReducedMotion } from 'motion/react';
 import type { CSSProperties, FC } from 'react';
 import type { Photo } from '@/features/gallery/gallery-content';
@@ -8,6 +8,20 @@ import { resolveSwipeStep } from '@/features/gallery/photo-viewer-steps';
 
 const FADE_TRANSITION: Transition = { duration: 0.22, ease: 'easeOut' };
 const NO_TRANSITION: Transition = { duration: 0 };
+
+const DRAG_CONSTRAINTS = { left: 0, right: 0 };
+const SETTLED_OPACITY: TargetAndTransition = { opacity: 1 };
+
+interface PhotoSwipeMotion {
+  initial: false | TargetAndTransition;
+  transition: Transition;
+  dragElastic: number;
+}
+
+const resolvePhotoSwipeMotion = (reducedMotion: boolean | null): PhotoSwipeMotion =>
+  reducedMotion === true
+    ? { initial: false, transition: NO_TRANSITION, dragElastic: 0 }
+    : { initial: { opacity: 0 }, transition: FADE_TRANSITION, dragElastic: 0.16 };
 
 const AREA_STYLE: CSSProperties = {
   width: '100%',
@@ -30,6 +44,7 @@ export const PhotoViewerPhoto: FC<PhotoViewerPhotoProps> = ({
   onStep,
 }) => {
   const reducedMotion = useReducedMotion();
+  const swipeMotion = resolvePhotoSwipeMotion(reducedMotion);
 
   const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo): void => {
     const direction = resolveSwipeStep(info.offset.x);
@@ -42,13 +57,13 @@ export const PhotoViewerPhoto: FC<PhotoViewerPhotoProps> = ({
     <motion.div
       key={placeholderLabel}
       drag="x"
-      dragConstraints={{ left: 0, right: 0 }}
-      dragElastic={reducedMotion === true ? 0 : 0.16}
+      dragConstraints={DRAG_CONSTRAINTS}
+      dragElastic={swipeMotion.dragElastic}
       dragMomentum={false}
       onDragEnd={handleDragEnd}
-      initial={reducedMotion === true ? false : { opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={reducedMotion === true ? NO_TRANSITION : FADE_TRANSITION}
+      initial={swipeMotion.initial}
+      animate={SETTLED_OPACITY}
+      transition={swipeMotion.transition}
       style={AREA_STYLE}
     >
       <KkPhoto

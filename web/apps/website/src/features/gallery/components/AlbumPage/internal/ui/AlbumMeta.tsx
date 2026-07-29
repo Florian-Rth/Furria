@@ -7,6 +7,8 @@ interface AlbumMetaProps {
   album: Album;
 }
 
-export const AlbumMeta: FC<AlbumMetaProps> = ({ album }) => (
-  <KkEyebrow>{buildAlbumMeta(album)}</KkEyebrow>
-);
+export const AlbumMeta: FC<AlbumMetaProps> = ({ album }) => {
+  const meta = buildAlbumMeta(album);
+
+  return <KkEyebrow>{meta}</KkEyebrow>;
+};

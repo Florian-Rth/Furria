@@ -17,38 +17,47 @@ interface AlbumCardProps {
   album: Album;
 }
 
-export const AlbumCard: FC<AlbumCardProps> = ({ album }) => (
-  <KkCard>
-    <KkCard.Action component={Link} to={buildAlbumHref(album.slug)} aria-label={album.title}>
-      <KkCard.Media aspectRatio={kkTokens.aspectRatio[albumCoverOrientation]}>
-        <KkPhoto
-          alt={buildAlbumCoverAlt(album)}
-          orientation={albumCoverOrientation}
-          placeholderLabel={album.slug}
-          source={buildAlbumCoverSource(album)}
-          sx={{ height: '100%', borderRadius: 0 }}
-        />
-      </KkCard.Media>
-      <KkCard.Body>
-        <KkCard.Meta>
-          <Typography
-            variant="caption"
-            sx={{ fontWeight: 700, letterSpacing: '0.04em', color: 'text.secondary' }}
-          >
-            {buildAlbumMeta(album)}
-          </Typography>
-        </KkCard.Meta>
-        <KkCard.Title clamp={2}>{album.title}</KkCard.Title>
-        <KkCard.Text clamp={3}>{album.intro}</KkCard.Text>
-        <KkCard.Footer>
-          <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary' }}>
-            {buildPhotoCountLabel(album.photos.length)}
-          </Typography>
-          <Typography variant="caption" sx={{ fontWeight: 900, color: 'primary.main' }}>
-            {albumLinkLabel}
-          </Typography>
-        </KkCard.Footer>
-      </KkCard.Body>
-    </KkCard.Action>
-  </KkCard>
-);
+export const AlbumCard: FC<AlbumCardProps> = ({ album }) => {
+  const albumHref = buildAlbumHref(album.slug);
+  const coverAspectRatio = kkTokens.aspectRatio[albumCoverOrientation];
+  const coverAlt = buildAlbumCoverAlt(album);
+  const coverSource = buildAlbumCoverSource(album);
+  const albumMeta = buildAlbumMeta(album);
+  const photoCountLabel = buildPhotoCountLabel(album.photos.length);
+
+  return (
+    <KkCard>
+      <KkCard.Action component={Link} to={albumHref} aria-label={album.title}>
+        <KkCard.Media aspectRatio={coverAspectRatio}>
+          <KkPhoto
+            alt={coverAlt}
+            orientation={albumCoverOrientation}
+            placeholderLabel={album.slug}
+            source={coverSource}
+            sx={{ height: '100%', borderRadius: 0 }}
+          />
+        </KkCard.Media>
+        <KkCard.Body>
+          <KkCard.Meta>
+            <Typography
+              variant="caption"
+              sx={{ fontWeight: 700, letterSpacing: '0.04em', color: 'text.secondary' }}
+            >
+              {albumMeta}
+            </Typography>
+          </KkCard.Meta>
+          <KkCard.Title clamp={2}>{album.title}</KkCard.Title>
+          <KkCard.Text clamp={3}>{album.intro}</KkCard.Text>
+          <KkCard.Footer>
+            <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary' }}>
+              {photoCountLabel}
+            </Typography>
+            <Typography variant="caption" sx={{ fontWeight: 900, color: 'primary.main' }}>
+              {albumLinkLabel}
+            </Typography>
+          </KkCard.Footer>
+        </KkCard.Body>
+      </KkCard.Action>
+    </KkCard>
+  );
+};

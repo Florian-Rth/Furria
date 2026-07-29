@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { AlbumSearchSchema } from './schemas';
 
-const parsePhoto = (search: Record<string, unknown>): number | undefined =>
-  AlbumSearchSchema.parse(search).photo;
+type UrlSearch = Record<string, string | string[] | null>;
+
+const parsePhoto = (search: UrlSearch): number | undefined => AlbumSearchSchema.parse(search).photo;
 
 describe('AlbumSearchSchema', () => {
   it('reads a positive integer from the URL string', () => {

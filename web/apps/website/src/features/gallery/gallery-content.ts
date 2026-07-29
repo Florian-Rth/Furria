@@ -307,13 +307,18 @@ export const buildOlderSessionSummary = (group: AlbumSessionGroup): string =>
 export const buildAlbumRowMeta = (album: Album): string =>
   `${formatLongDate(album.date)} · ${buildPhotoCountLabel(album.photos.length)}`;
 
-export interface GalleryStat {
-  value: string;
-  label: string;
+export const buildPhotoCountSuffix = (photoCount: number): string =>
+  ` ${photoViewerLabels.counterJoin} ${photoCount}`;
+
+export interface AlbumPhotoEntry {
+  photo: Photo;
+  index: number;
+  placeholderLabel: string;
 }
 
-export const buildGalleryStats = (albums: Album[], reference: Date): GalleryStat[] => [
-  { value: String(albums.length), label: 'Alben' },
-  { value: String(countPhotos(albums)), label: 'Fotos' },
-  { value: sessionAt(reference).yearsLabel, label: 'Session' },
-];
+export const buildAlbumPhotoEntries = (album: Album): AlbumPhotoEntry[] =>
+  album.photos.map((photo, index) => ({
+    photo,
+    index,
+    placeholderLabel: buildPhotoPlaceholderLabel(album, index),
+  }));

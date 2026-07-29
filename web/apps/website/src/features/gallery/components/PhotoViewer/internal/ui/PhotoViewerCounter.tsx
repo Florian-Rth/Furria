@@ -1,14 +1,13 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
-import { photoViewerLabels } from '@/features/gallery/gallery-content';
 
 interface PhotoViewerCounterProps {
   position: number;
-  photoCount: number;
+  countSuffix: string;
 }
 
-export const PhotoViewerCounter: FC<PhotoViewerCounterProps> = ({ position, photoCount }) => (
+export const PhotoViewerCounter: FC<PhotoViewerCounterProps> = ({ position, countSuffix }) => (
   <Typography
     variant="h3"
     component="p"
@@ -23,7 +22,7 @@ export const PhotoViewerCounter: FC<PhotoViewerCounterProps> = ({ position, phot
   >
     {position}
     <Box component="span" sx={{ color: 'text.secondary' }}>
-      {` ${photoViewerLabels.counterJoin} ${photoCount}`}
+      {countSuffix}
     </Box>
   </Typography>
 );

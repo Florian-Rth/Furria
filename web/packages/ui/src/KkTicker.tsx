@@ -1,4 +1,5 @@
 import Box from '@mui/material/Box';
+import Stack from '@mui/material/Stack';
 import { keyframes } from '@mui/material/styles';
 import type { FC, ReactNode } from 'react';
 import { kkTokens } from './tokens';
@@ -19,10 +20,10 @@ interface KkTickerProps {
 
 export const KkTicker: FC<KkTickerProps> = ({ content, speedSeconds = 30 }) => (
   <Box data-kk-ticker sx={{ overflow: 'hidden', bgcolor: 'primary.main', py: 1.5 }}>
-    <Box
+    <Stack
+      direction="row"
       data-kk-ticker-track
       sx={{
-        display: 'flex',
         width: 'max-content',
         animation: `${scroll} ${speedSeconds}s linear infinite`,
         '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
@@ -48,6 +49,6 @@ export const KkTicker: FC<KkTickerProps> = ({ content, speedSeconds = 30 }) => (
           {content}
         </Box>
       ))}
-    </Box>
+    </Stack>
   </Box>
 );
