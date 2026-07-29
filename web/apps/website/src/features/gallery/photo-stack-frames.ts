@@ -1,3 +1,4 @@
+import { kkTokens } from '@furria/ui';
 import type { TargetAndTransition, Transition } from 'motion/react';
 import type { PhotoOrientation } from '@/features/gallery/gallery-content';
 
@@ -42,6 +43,26 @@ export const fannedPhotoStackFrames: PhotoStackFrameSpec[] = [
   },
 ];
 
+const allPhotoStackFrames = [leadPhotoStackFrame, ...fannedPhotoStackFrames];
+
+const resolveHeightPerWidth = (orientation: PhotoOrientation): number => {
+  const [width, height] = kkTokens.aspectRatio[orientation].split('/');
+
+  return Number(height) / Number(width);
+};
+
+export const resolveFrameHeightPercent = (spec: PhotoStackFrameSpec): number =>
+  spec.widthPercent * resolveHeightPerWidth(spec.orientation);
+
+export const resolveFrameBottomPercent = (spec: PhotoStackFrameSpec): number =>
+  spec.topPercent + resolveFrameHeightPercent(spec);
+
+export const photoStackHeightPercent = Math.max(
+  ...allPhotoStackFrames.map(resolveFrameBottomPercent),
+);
+
+export const photoStackAspectRatio = `100 / ${photoStackHeightPercent}`;
+
 export interface PhotoStackEntrance {
   initial: TargetAndTransition;
   animate: TargetAndTransition;
@@ -49,6 +70,11 @@ export interface PhotoStackEntrance {
 }
 
 const ENTRANCE_STEP_SECONDS = 0.09;
+
+export interface AnimatedPhotoStackFrame {
+  spec: PhotoStackFrameSpec;
+  entrance: PhotoStackEntrance;
+}
 
 export const resolvePhotoStackEntrance = (
   spec: PhotoStackFrameSpec,
@@ -70,3 +96,11 @@ export const resolvePhotoStackEntrance = (
     },
   };
 };
+
+export const resolveFannedPhotoStackFrames = (
+  reducedMotion: boolean | null,
+): AnimatedPhotoStackFrame[] =>
+  fannedPhotoStackFrames.map((spec) => ({
+    spec,
+    entrance: resolvePhotoStackEntrance(spec, reducedMotion),
+  }));

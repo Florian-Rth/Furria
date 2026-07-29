@@ -17,8 +17,9 @@ export const PhotoStackFrame: FC<PhotoStackFrameProps> = ({ spec, entrance, chil
     transition={entrance.transition}
     style={{
       position: 'absolute',
+      top: 0,
       left: `${spec.leftPercent}%`,
-      top: `${spec.topPercent}%`,
+      marginTop: `${spec.topPercent}%`,
       width: `${spec.widthPercent}%`,
       zIndex: spec.depth,
     }}

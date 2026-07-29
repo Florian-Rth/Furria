@@ -1,24 +1,20 @@
-import { kkTokens } from '@furria/ui';
 import { describe, expect, it } from 'vitest';
 import type { PhotoStackFrameSpec } from './photo-stack-frames';
 import {
   fannedPhotoStackFrames,
   leadPhotoStackFrame,
+  photoStackHeightPercent,
+  resolveFrameBottomPercent,
+  resolveFrameHeightPercent,
   resolvePhotoStackEntrance,
 } from './photo-stack-frames';
 
 const allFrames = [leadPhotoStackFrame, ...fannedPhotoStackFrames];
 
-const heightPercentOf = (spec: PhotoStackFrameSpec): number => {
-  const [width, height] = kkTokens.aspectRatio[spec.orientation].split('/');
-
-  return (spec.widthPercent * Number(height)) / Number(width);
-};
-
 const rotatedHorizontalSpan = (spec: PhotoStackFrameSpec): { left: number; right: number } => {
   const radians = (Math.abs(spec.rotation) * Math.PI) / 180;
   const halfWidth = spec.widthPercent / 2;
-  const halfHeight = heightPercentOf(spec) / 2;
+  const halfHeight = resolveFrameHeightPercent(spec) / 2;
   const rotatedHalfWidth = halfWidth * Math.cos(radians) + halfHeight * Math.sin(radians);
   const centre = spec.leftPercent + halfWidth;
 
@@ -59,8 +55,14 @@ describe('photo stack frames', () => {
 
   it('keeps every tilted frame inside the stack height', () => {
     for (const spec of allFrames) {
-      expect(spec.topPercent + heightPercentOf(spec)).toBeLessThanOrEqual(100);
+      expect(resolveFrameBottomPercent(spec)).toBeLessThanOrEqual(photoStackHeightPercent);
     }
+  });
+
+  it('leaves no empty band under the lowest frame', () => {
+    const lowestBottom = Math.max(...allFrames.map(resolveFrameBottomPercent));
+
+    expect(photoStackHeightPercent).toBe(lowestBottom);
   });
 });
 
