@@ -40,6 +40,17 @@ describe('join route', () => {
     );
   });
 
+  it('carries the Kompass section the hero points at', async () => {
+    renderAtRoute('/join');
+
+    const kompassLink = await screen.findByRole('link', { name: 'Wo passe ich hin? ↓' });
+    const target = kompassLink.getAttribute('href')?.replace('#', '') ?? '';
+
+    expect(await screen.findByRole('heading', { level: 2, name: 'WO PASSE ICH HIN?' })).toBe(
+      document.getElementById(target)?.querySelector('h2'),
+    );
+  });
+
   it('shows three derived stats and no invented fourth one', async () => {
     renderAtRoute('/join');
 
