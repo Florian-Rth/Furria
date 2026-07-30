@@ -5,11 +5,14 @@ import type { UseFormReturn } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 import { RequestBlockedError } from '@/lib/api/errors';
 import { useSubmitMembershipApplicationMutation } from '../api';
+import { buildFallbackMailHref } from '../apply-fallback';
 import { buildMembershipApplicationPayload } from '../apply-payload';
+import { selectGroupLabels } from '../group-interests';
 import type { DerivedMembership } from '../membership-derivation';
 import { deriveMembership } from '../membership-derivation';
 import type { MembershipApplicationForm } from '../schemas';
 import { buildMembershipApplicationFormSchema, EMPTY_MEMBERSHIP_APPLICATION } from '../schemas';
+import { selectLoadedGroups, useGroupsSource } from './use-groups-source';
 
 export interface ApplyFormState {
   form: UseFormReturn<MembershipApplicationForm>;
@@ -18,6 +21,7 @@ export interface ApplyFormState {
   submit: (event: FormEvent<HTMLFormElement>) => void;
   isSubmitting: boolean;
   submitError: string | null;
+  fallbackMailHref: string;
   submittedFirstName: string | null;
 }
 
@@ -37,6 +41,7 @@ export const useApplyForm = (): ApplyFormState => {
   const [today] = useState(() => new Date());
   const [submittedFirstName, setSubmittedFirstName] = useState<string | null>(null);
   const mutation = useSubmitMembershipApplicationMutation();
+  const groupsSource = useGroupsSource();
 
   const form = useForm<MembershipApplicationForm>({
     resolver: zodResolver(buildMembershipApplicationFormSchema(today)),
@@ -59,6 +64,16 @@ export const useApplyForm = (): ApplyFormState => {
     });
   });
 
+  const submitError = toApplyErrorMessage(mutation.error);
+  const values = form.getValues();
+  const fallbackMailHref =
+    submitError === null
+      ? ''
+      : buildFallbackMailHref(
+          values,
+          selectGroupLabels(selectLoadedGroups(groupsSource), values.groupInterests),
+        );
+
   return {
     form,
     derived,
@@ -67,7 +82,8 @@ export const useApplyForm = (): ApplyFormState => {
       void handleFormSubmit(event);
     },
     isSubmitting: mutation.isPending,
-    submitError: toApplyErrorMessage(mutation.error),
+    submitError,
+    fallbackMailHref,
     submittedFirstName,
   };
 };
