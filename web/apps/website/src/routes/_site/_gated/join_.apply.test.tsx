@@ -37,6 +37,37 @@ describe('join apply route', () => {
     );
   });
 
+  it('ticks the Gruppen the Kompass handed over', async () => {
+    renderAtRoute('/join/apply?groups=buettenrede,elferrat');
+
+    expect(await screen.findByRole('checkbox', { name: 'Büttenrede' })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: 'Elferrat' })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: 'Tanzgarde' })).not.toBeChecked();
+  });
+
+  it('drops a Gruppe the roster does not know instead of showing the 404', async () => {
+    renderAtRoute('/join/apply?groups=elferrat,showtanz,werkstatt');
+
+    expect(await screen.findByRole('checkbox', { name: 'Elferrat' })).toBeChecked();
+    expect(screen.getByRole('heading', { level: 1, name: applyTitle })).toBeInTheDocument();
+    expect(
+      screen.queryByRole('heading', { name: 'HIER WAR MAL EINE SEITE.' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('renders the Antrag normally when the handover is malformed', async () => {
+    renderAtRoute('/join/apply?groups=42&photo=[');
+
+    expect(await screen.findByRole('checkbox', { name: 'Elferrat' })).not.toBeChecked();
+    expect(screen.getByRole('heading', { level: 1, name: applyTitle })).toBeInTheDocument();
+  });
+
+  it('ticks no Gruppe when nobody handed anything over', async () => {
+    renderAtRoute('/join/apply');
+
+    expect(await screen.findByRole('checkbox', { name: 'Elferrat' })).not.toBeChecked();
+  });
+
   it('keeps the Antrag behind the preview gate', async () => {
     window.sessionStorage.clear();
     renderAtRoute('/join/apply');

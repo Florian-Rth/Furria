@@ -1,3 +1,4 @@
+export { ApplySearchSchema, parseGroupInterestsParam } from './apply-search';
 export { ApplyPage } from './components/ApplyPage';
 export { JoinContact } from './components/JoinContact';
 export { JoinFaq } from './components/JoinFaq/JoinFaq';

@@ -7,7 +7,7 @@ import { RequestBlockedError } from '@/lib/api/errors';
 import { useSubmitMembershipApplicationMutation } from '../api';
 import { buildFallbackMailHref } from '../apply-fallback';
 import { buildMembershipApplicationPayload } from '../apply-payload';
-import { selectGroupLabels } from '../group-interests';
+import { selectGroupLabels, selectKnownGroupIds } from '../group-interests';
 import type { DerivedMembership } from '../membership-derivation';
 import { deriveMembership } from '../membership-derivation';
 import type { MembershipApplicationForm } from '../schemas';
@@ -37,15 +37,16 @@ export const toApplyErrorMessage = (error: Error | null): string | null => {
   return 'Wir konnten den Antrag gerade nicht entgegennehmen.';
 };
 
-export const useApplyForm = (): ApplyFormState => {
+export const useApplyForm = (prefilledGroupInterests: string[]): ApplyFormState => {
   const [today] = useState(() => new Date());
   const [submittedFirstName, setSubmittedFirstName] = useState<string | null>(null);
   const mutation = useSubmitMembershipApplicationMutation();
   const groupsSource = useGroupsSource();
+  const loadedGroups = selectLoadedGroups(groupsSource);
 
   const form = useForm<MembershipApplicationForm>({
     resolver: zodResolver(buildMembershipApplicationFormSchema(today)),
-    defaultValues: EMPTY_MEMBERSHIP_APPLICATION,
+    defaultValues: { ...EMPTY_MEMBERSHIP_APPLICATION, groupInterests: prefilledGroupInterests },
   });
 
   const derived = deriveMembership(form.watch('birthDate'), today);
@@ -57,11 +58,16 @@ export const useApplyForm = (): ApplyFormState => {
       return;
     }
 
-    mutation.mutate(buildMembershipApplicationPayload(values, requiresGuardian), {
-      onSuccess: () => {
-        setSubmittedFirstName(values.firstName);
+    const groupInterests = selectKnownGroupIds(loadedGroups, values.groupInterests);
+
+    mutation.mutate(
+      buildMembershipApplicationPayload({ ...values, groupInterests }, requiresGuardian),
+      {
+        onSuccess: () => {
+          setSubmittedFirstName(values.firstName);
+        },
       },
-    });
+    );
   });
 
   const submitError = toApplyErrorMessage(mutation.error);
@@ -69,10 +75,7 @@ export const useApplyForm = (): ApplyFormState => {
   const fallbackMailHref =
     submitError === null
       ? ''
-      : buildFallbackMailHref(
-          values,
-          selectGroupLabels(selectLoadedGroups(groupsSource), values.groupInterests),
-        );
+      : buildFallbackMailHref(values, selectGroupLabels(loadedGroups, values.groupInterests));
 
   return {
     form,

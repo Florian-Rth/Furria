@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SEEDED_GROUPS } from '@/lib/seed/groups';
-import { selectGroupLabels, toggleGroupInterest } from './group-interests';
+import { selectGroupLabels, selectKnownGroupIds, toggleGroupInterest } from './group-interests';
 
 describe('toggleGroupInterest', () => {
   it('adds a Gruppe that was not picked yet', () => {
@@ -30,6 +30,42 @@ describe('toggleGroupInterest', () => {
     toggleGroupInterest(selected, 'organisation');
 
     expect(selected).toEqual(['tanzgarde']);
+  });
+});
+
+describe('selectKnownGroupIds', () => {
+  it('keeps the ids the roster answers to', () => {
+    expect(selectKnownGroupIds(SEEDED_GROUPS, ['tanzgarde', 'organisation'])).toEqual([
+      'tanzgarde',
+      'organisation',
+    ]);
+  });
+
+  it('drops an id no Gruppe answers to instead of passing it on', () => {
+    expect(selectKnownGroupIds(SEEDED_GROUPS, ['tanzgarde', 'showtanz'])).toEqual(['tanzgarde']);
+  });
+
+  it('drops every id when none of them is a Gruppe', () => {
+    expect(selectKnownGroupIds(SEEDED_GROUPS, ['showtanz', 'werkstatt'])).toEqual([]);
+  });
+
+  it('keeps the order the ids arrived in', () => {
+    expect(selectKnownGroupIds(SEEDED_GROUPS, ['organisation', 'tanzgarde'])).toEqual([
+      'organisation',
+      'tanzgarde',
+    ]);
+  });
+
+  it('drops everything while no roster is loaded', () => {
+    expect(selectKnownGroupIds([], ['tanzgarde'])).toEqual([]);
+  });
+
+  it('never mutates the selection it was given', () => {
+    const selected = ['tanzgarde', 'showtanz'];
+
+    selectKnownGroupIds(SEEDED_GROUPS, selected);
+
+    expect(selected).toEqual(['tanzgarde', 'showtanz']);
   });
 });
 

@@ -1,6 +1,7 @@
 import { currentSession } from '@/lib/club';
 import { joinHref } from './join-content';
 import type { DerivedMembership, MembershipTypeId } from './membership-derivation';
+import type { JoinStep } from './steps-content';
 
 export interface ApplySummaryRow {
   label: string;
@@ -107,7 +108,37 @@ export const applyThanksEyebrow = 'ANTRAG IST DA';
 export const buildApplyThanksHeadline = (firstName: string): string => `DANKE, ${firstName}.`;
 
 export const applyThanksText =
-  'Dein Antrag liegt bei uns. Wir sehen ihn uns in der nächsten Sitzung an und melden uns bei dir — bis dahin ist nichts zu tun und nichts zu zahlen.';
+  'Angekommen. Ab hier sind wir dran — du musst nichts tun und nichts zahlen. Bis wir über die Aufnahme entschieden haben, bist du noch kein Mitglied, sondern jemand, auf den wir uns freuen.';
+
+export const applyThanksSealLabel = 'OK';
+
+export const applyThanksSealCaption = 'EINGEGANGEN';
+
+export const APPLY_THANKS_STEPS: JoinStep[] = [
+  {
+    title: 'Bestätigung',
+    description:
+      'Zuerst bestätigen wir dir per Mail, dass der Antrag bei uns angekommen ist — an die Adresse, die du eingetragen hast. Falls nichts ankommt, schau kurz in den Spam-Ordner.',
+  },
+  {
+    title: 'Aufnahme',
+    description:
+      'Danach sehen wir uns den Antrag in der nächsten Sitzung an und entscheiden über die Aufnahme. Wir melden uns danach bei dir, so oder so.',
+  },
+  {
+    title: 'Willkommen',
+    description:
+      'Sagen wir ja, sagen wir dir gleich mit, wann und wo dein erstes Training ist — und du bekommst deinen Zugang zur Club-App.',
+  },
+];
+
+export const applyThanksProgramLabel = 'Programm ansehen';
+
+export const applyThanksProgramHref = '/program';
+
+export const applyThanksHomeLabel = 'Zur Startseite';
+
+export const applyThanksHomeHref = '/';
 
 export const MEMBERSHIP_TYPE_LABELS: Record<MembershipTypeId, string> = {
   active: 'Aktiv',

@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { ApplyPage } from '@/features/membership';
+import { ApplyPage, ApplySearchSchema, parseGroupInterestsParam } from '@/features/membership';
 import type { RouteHead } from '@/lib/seo';
 import { pageTitle } from '@/lib/seo';
 
@@ -8,9 +8,15 @@ const APPLY_TITLE = pageTitle('Beitrittsantrag');
 const APPLY_DESCRIPTION =
   'Beitrittsantrag für den Furrschen Carnevals Club e.V.: ein Formular, zwei Minuten. Mitgliedschaft und Beitrag ergeben sich aus dem Geburtsdatum, jetzt wird nichts abgebucht.';
 
-const ApplyComponent: FC = () => <ApplyPage />;
+const ApplyComponent: FC = () => {
+  const { groups } = Route.useSearch();
+  const prefilledGroupInterests = parseGroupInterestsParam(groups);
+
+  return <ApplyPage prefilledGroupInterests={prefilledGroupInterests} />;
+};
 
 export const Route = createFileRoute('/_site/_gated/join_/apply')({
+  validateSearch: ApplySearchSchema,
   head: (): RouteHead => ({
     meta: [
       { title: APPLY_TITLE },

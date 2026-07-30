@@ -1,6 +1,6 @@
 import type { FC } from 'react';
 import type { ApplyFormState } from '@/features/membership/hooks/use-apply-form';
-import { ApplyConfirmation } from './ApplyConfirmation';
+import { ApplyConfirmation } from './ApplyConfirmation/ApplyConfirmation';
 import { ApplyFormSection } from './ApplyFormSection';
 
 interface ApplyBodyProps {

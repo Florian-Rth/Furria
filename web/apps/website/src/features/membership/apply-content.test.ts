@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  APPLY_THANKS_STEPS,
   applyAddressNote,
   applyConsentLeadGuardian,
   applyConsentLeadSelf,
@@ -16,6 +17,8 @@ import {
   applySatzungHref,
   applySubmitNote,
   applySummaryNote,
+  applyThanksHomeHref,
+  applyThanksProgramHref,
   applyThanksText,
   buildApplyEyebrow,
   buildApplySummaryRows,
@@ -23,7 +26,18 @@ import {
 } from './apply-content';
 import type { DerivedMembership } from './membership-derivation';
 
+const allThanksCopy = [
+  applyThanksText,
+  ...APPLY_THANKS_STEPS.map((step) => `${step.title} ${step.description}`),
+].join(' ');
+
+const WRITTEN_DATE =
+  /\d{1,2}\.\s*(Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember)/;
+
+const NUMERIC_DATE = /\d{1,2}\.\d{1,2}\./;
+
 const allApplyCopy = [
+  allThanksCopy,
   applyLead,
   applyAddressNote,
   applyContactNote,
@@ -36,7 +50,6 @@ const allApplyCopy = [
   applySummaryNote,
   applySubmitNote,
   applyFallbackLead,
-  applyThanksText,
   ...Object.values(applyFieldLabels),
 ].join(' ');
 
@@ -105,6 +118,46 @@ describe('buildApplyThanksHeadline', () => {
   it('thanks the applicant by first name and never welcomes a Mitglied', () => {
     expect(buildApplyThanksHeadline('LENA')).toBe('DANKE, LENA.');
     expect(buildApplyThanksHeadline('LENA').toLowerCase()).not.toContain('willkommen');
+  });
+});
+
+describe('the confirmation copy', () => {
+  it('walks the applicant through Bestätigung, Aufnahme und Willkommen', () => {
+    expect(APPLY_THANKS_STEPS.map((step) => step.title)).toEqual([
+      'Bestätigung',
+      'Aufnahme',
+      'Willkommen',
+    ]);
+  });
+
+  it('never calls the applicant a Mitglied yet', () => {
+    expect(allThanksCopy).toContain('noch kein Mitglied');
+    expect(allThanksCopy.toLowerCase()).not.toContain('du bist mitglied');
+    expect(allThanksCopy.toLowerCase()).not.toContain('bist du mitglied');
+  });
+
+  it('names no date for the Sitzung, because there is none to name', () => {
+    expect(allThanksCopy).not.toMatch(WRITTEN_DATE);
+    expect(allThanksCopy).not.toMatch(NUMERIC_DATE);
+  });
+
+  it('keeps the Aufnahme open in both directions', () => {
+    expect(APPLY_THANKS_STEPS[1]?.description).toContain('so oder so');
+  });
+
+  it('promises the Club-App only once the Aufnahme is through', () => {
+    expect(APPLY_THANKS_STEPS[2]?.description).toContain('Sagen wir ja');
+    expect(APPLY_THANKS_STEPS[2]?.description).toContain('Club-App');
+  });
+
+  it('says that there is nothing left to do and nothing to pay', () => {
+    expect(applyThanksText).toContain('nichts tun');
+    expect(applyThanksText).toContain('nichts zahlen');
+  });
+
+  it('leads out to the Programm and to the Startseite', () => {
+    expect(applyThanksProgramHref).toBe('/program');
+    expect(applyThanksHomeHref).toBe('/');
   });
 });
 

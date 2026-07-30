@@ -1,8 +1,8 @@
 import { KkHeroSection } from '@furria/ui';
 import Button from '@mui/material/Button';
+import { Link as RouterLink } from '@tanstack/react-router';
 import type { FC } from 'react';
 import {
-  joinApplyHref,
   joinDescription,
   joinEyebrow,
   joinPageTitle,
@@ -20,7 +20,13 @@ export const JoinHero: FC = () => (
       <KkHeroSection.Title>{joinPageTitle}</KkHeroSection.Title>
       <KkHeroSection.Description>{joinDescription}</KkHeroSection.Description>
       <KkHeroSection.Actions>
-        <Button href={joinApplyHref} variant="contained" color="primary" size="large">
+        <Button
+          component={RouterLink}
+          to="/join/apply"
+          variant="contained"
+          color="primary"
+          size="large"
+        >
           {joinPrimaryCtaLabel}
         </Button>
         <Button href={kompassSectionHref} variant="outlined" size="large">
