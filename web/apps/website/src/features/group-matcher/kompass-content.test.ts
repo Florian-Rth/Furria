@@ -52,6 +52,10 @@ describe('the Kompass copy', () => {
     expect(kompassIntro).toContain('Elf Fragen');
     expect(SEEDED_GROUP_MATCHER.questions).toHaveLength(11);
   });
+
+  it('says outright that the seeded questions are placeholders', () => {
+    expect(kompassIntro).toContain('Platzhalter');
+  });
 });
 
 describe('joinGroupNames', () => {

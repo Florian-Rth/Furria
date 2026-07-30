@@ -84,9 +84,9 @@ const questionsPayload = [
     ],
   },
   {
-    id: 'stage',
+    id: 'confetti-hearing',
     role: 'weighted',
-    prompt: 'Wenn das Licht angeht und der Saal kurz still wird, will ich da oben stehen.',
+    prompt: 'Ich erkenne Konfetti mit verbundenen Augen am Geräusch.',
     positions: [
       { groupId: 'tanzgarde', stance: 'yes', importance: 3 },
       { groupId: 'maennerballett', stance: 'yes', importance: 3 },
@@ -97,9 +97,9 @@ const questionsPayload = [
     ],
   },
   {
-    id: 'choreography',
+    id: 'legs-versus-head',
     role: 'weighted',
-    prompt: 'Eine Schrittfolge so lange üben, bis der Körper sie allein kann: genau mein Ding.',
+    prompt: 'Meine Beine merken sich Schrittfolgen schneller als mein Kopf Telefonnummern.',
     positions: [
       { groupId: 'tanzgarde', stance: 'yes', importance: 3 },
       { groupId: 'maennerballett', stance: 'yes', importance: 2 },
@@ -110,9 +110,9 @@ const questionsPayload = [
     ],
   },
   {
-    id: 'laughter',
+    id: 'unexplained-laughter',
     role: 'weighted',
-    prompt: 'Wenn der ganze Saal über mich lacht, habe ich alles richtig gemacht.',
+    prompt: 'Ich lache am liebsten über Witze, die ich nicht verstanden habe.',
     positions: [
       { groupId: 'tanzgarde', stance: 'no', importance: 2 },
       { groupId: 'maennerballett', stance: 'yes', importance: 3 },
@@ -123,10 +123,9 @@ const questionsPayload = [
     ],
   },
   {
-    id: 'microphone',
+    id: 'elf-minutes-breath',
     role: 'weighted',
-    prompt:
-      'Elf Minuten Redezeit, ein Mikrofon und ein voller Saal: klingt nach einem guten Abend.',
+    prompt: 'Elf Minuten reden, ohne Luft zu holen — rein organisatorisch machbar.',
     positions: [
       { groupId: 'tanzgarde', stance: 'no', importance: 2 },
       { groupId: 'maennerballett', stance: 'no', importance: 1 },
@@ -137,10 +136,9 @@ const questionsPayload = [
     ],
   },
   {
-    id: 'solo',
+    id: 'curtain-conversation',
     role: 'weighted',
-    prompt:
-      'Lieber allein oben stehen als in einer Reihe, in der alle gleichzeitig das Bein heben.',
+    prompt: 'Steh ich allein auf der Bühne, fängt der Vorhang ein Gespräch an.',
     positions: [
       { groupId: 'tanzgarde', stance: 'no', importance: 3 },
       { groupId: 'maennerballett', stance: 'no', importance: 2 },
@@ -151,9 +149,9 @@ const questionsPayload = [
     ],
   },
   {
-    id: 'uniform',
+    id: 'humming-uniform',
     role: 'weighted',
-    prompt: 'Uniform, blank geputzte Stiefel, gerader Rücken — das hat für mich Stil.',
+    prompt: 'Eine Uniform sitzt richtig, wenn sie beim Gehen leise Marschmusik macht.',
     positions: [
       { groupId: 'tanzgarde', stance: 'yes', importance: 3 },
       { groupId: 'maennerballett', stance: 'no', importance: 2 },
@@ -164,9 +162,9 @@ const questionsPayload = [
     ],
   },
   {
-    id: 'ritual',
+    id: 'orden-gravity',
     role: 'weighted',
-    prompt: 'Orden verleihen, „Gross - Furria!“ rufen, feste Abläufe: das ist der Kern der Sache.',
+    prompt: 'Ein Orden wird schwerer, je länger man ihn trägt. Physik interessiert mich da nicht.',
     positions: [
       { groupId: 'tanzgarde', stance: 'neutral', importance: 1 },
       { groupId: 'maennerballett', stance: 'no', importance: 2 },
@@ -177,10 +175,9 @@ const questionsPayload = [
     ],
   },
   {
-    id: 'bursts',
+    id: 'reverse-planning',
     role: 'weighted',
-    prompt:
-      'Jede Woche verlässlich da sein schaffe ich nicht — dafür vor der Sitzung ein ganzes Wochenende.',
+    prompt: 'Feste plane ich rückwärts: erst das Aufräumen, dann die Musik.',
     positions: [
       { groupId: 'tanzgarde', stance: 'no', importance: 3 },
       { groupId: 'maennerballett', stance: 'no', importance: 1 },
@@ -191,9 +188,9 @@ const questionsPayload = [
     ],
   },
   {
-    id: 'build-day',
+    id: 'bench-taxonomy',
     role: 'weighted',
-    prompt: 'Bierbänke schleppen, Kabel verlegen, Kaffee aus der Kanne: guter Samstag.',
+    prompt: 'Ich kann eine Bierbank auf elf Arten falsch aufstellen — alle elf kenne ich.',
     positions: [
       { groupId: 'tanzgarde', stance: 'neutral', importance: 1 },
       { groupId: 'maennerballett', stance: 'yes', importance: 1 },
@@ -204,9 +201,9 @@ const questionsPayload = [
     ],
   },
   {
-    id: 'costume',
+    id: 'mirror-test',
     role: 'weighted',
-    prompt: 'Je alberner das Kostüm, desto besser.',
+    prompt: 'Ein Kostüm ist gelungen, wenn mich mein eigener Spiegel nicht wiedererkennt.',
     positions: [
       { groupId: 'tanzgarde', stance: 'no', importance: 2 },
       { groupId: 'maennerballett', stance: 'yes', importance: 3 },

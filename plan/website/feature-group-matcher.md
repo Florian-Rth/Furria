@@ -131,6 +131,19 @@ exactly as decided above. What differs from this file, and why:
   unit-tested as properties of the authored seed**, not just of the algorithm: every thesis splits the
   roster, no age band comes back empty, no adult ever matches Kindergarde, a child matches only
   Kindergarde, and an all-yes/all-no run spreads the ranking by ≥ 20 points.
+- **The ten theses are deliberate nonsense** (*"Ich erkenne Konfetti mit verbundenen Augen am
+  Geräusch."*, *"Eine Uniform sitzt richtig, wenn sie beim Gehen leise Marschmusik macht."*), and the
+  section's intro **says outright that they are Platzhalter** — asserted by a test. Changed on the
+  user's call after the first cut shipped plausible-sounding theses: a matcher that reads like the real
+  thing while the club never answered a single question is a lie in exactly the register P5 banned for
+  photo credits and P4 banned for the "Vorstand" byline. The mechanism is real, the content is
+  unmistakably fake. **The `filter` question stays honest** — the age band is load-bearing (it is what
+  guarantees no adult matches Kindergarde) and its answer is printed back as an exclusion reason, so it
+  is the one question a visitor must be able to answer truthfully.
+- **The stances were left untouched when the prompts were swapped**, so every scoring, roster-split and
+  spread property still holds and the ranking still separates a performing profile from a hands-on one.
+  Two behaviour tests had to be rekeyed to the new question ids, and one lost its persona name (it now
+  says what it actually pins: two opposing answer profiles put a different Gruppe on top).
 - **A skip is persisted as the marker `"skipped"`** in `sessionStorage` (`furria.kompass.answers`,
   Zod-parsed on read), which is what makes returning from the Antrag land on the *result* rather than
   question 1 — scoring already treats an unreadable stance as skipped and filters ignore unknown option
@@ -161,10 +174,10 @@ exactly as decided above. What differs from this file, and why:
 
 ## Open Questions
 
-- The eleven questions and the 66 Gruppe positions are **authored and shipped**, but they are
-  placeholder content in the same sense as the rest of the site: they are the team's guesses at each
-  Gruppe's stance, not answers the Gruppen gave. Real positions have to come from the Gruppen
-  themselves (and then from the backend).
+- **The eleven questions and the 66 positions are placeholders and say so on the page.** The ten theses
+  are deliberate nonsense and the 66 stances behind them are invented; only the age filter is real.
+  Authoring the real ones means asking the six Gruppen the questions — content work that has to happen
+  before the gate comes down, and the binding content rules for it are in **Content rules** above.
 - Whether the matcher also earns a place on `/club` next to the Gruppen grid (not P6).
 
 ## Done When

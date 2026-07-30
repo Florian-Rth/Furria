@@ -576,6 +576,14 @@ Followed the plan closely; build-level choices worth knowing:
   seeded Gruppe with `isRecruiting: false`, so both badge states are real code paths. The
   roster-splitting content rule, the age-band coverage rule and "no adult ever matches Kindergarde"
   are all **unit-tested properties of the authored content**, not just of the algorithm.
+- **The ten theses are deliberate nonsense and the page says so** (added on the user's call right after
+  the phase closed): the first cut shipped plausible-sounding theses, which makes a matcher look real
+  while no Gruppe has answered anything — the same lie P5 banned for photo credits and P4 for the
+  "Vorstand" byline. The prompts are now openly absurd, the Kompass intro names them **Platzhalter**
+  (asserted by a test), and only the **age filter stays honest**, because it is load-bearing for the
+  exclusion guarantee and its answer is printed back as a reason. The stances were left untouched, so
+  every scoring and spread property still holds. Copy rule that follows from it: **placeholder content
+  must be recognisable as placeholder** — invent visibly, never plausibly.
 - **Zod placement follows the dependency rule:** the payload schemas live in `lib/seed/*.ts` (where
   the payload shape lives) because `lib` may not import `features`; each feature's `schemas.ts` holds
   only its own schemas (the answer map, the form schema). The `to >= from` age invariant is a **test

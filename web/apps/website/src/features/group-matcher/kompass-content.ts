@@ -7,7 +7,7 @@ export const kompassKicker = 'KONFETTI-KOMPASS';
 export const kompassTitle = 'WO PASSE ICH HIN?';
 
 export const kompassIntro =
-  'Elf Fragen, keine Anmeldung, kein Name, keine E-Mail-Adresse. Antworte, wie es wirklich ist — und überspring, was dir nichts sagt.';
+  'Elf Fragen, keine Anmeldung, kein Name, keine E-Mail-Adresse. Die Fragen sind noch Platzhalter — frei erfunden, damit der Kompass sich ausprobieren lässt. Die echten kommen von den Gruppen selbst. Überspring, was dir nichts sagt.';
 
 export interface KompassStanceChoice {
   value: Stance;

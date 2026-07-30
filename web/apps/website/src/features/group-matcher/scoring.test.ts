@@ -211,24 +211,24 @@ describe('the seeded questions', () => {
     expect(spreadOf(answerAll('no'))).toBeGreaterThanOrEqual(20);
   });
 
-  it('sends a Bühnen-Mensch and an Anpacker to different Gruppen', () => {
+  it('puts a different Gruppe on top for two opposing answer profiles', () => {
     const onStage = rankGroups(SEEDED_GROUP_MATCHER, {
       'age-band': '18-plus',
-      stage: 'yes',
-      choreography: 'yes',
-      solo: 'no',
-      uniform: 'yes',
-      bursts: 'no',
-      'build-day': 'no',
+      'confetti-hearing': 'yes',
+      'legs-versus-head': 'yes',
+      'curtain-conversation': 'no',
+      'humming-uniform': 'yes',
+      'reverse-planning': 'no',
+      'bench-taxonomy': 'no',
     });
     const backstage = rankGroups(SEEDED_GROUP_MATCHER, {
       'age-band': '18-plus',
-      stage: 'no',
-      choreography: 'no',
-      solo: 'no',
-      uniform: 'no',
-      bursts: 'yes',
-      'build-day': 'yes',
+      'confetti-hearing': 'no',
+      'legs-versus-head': 'no',
+      'curtain-conversation': 'no',
+      'humming-uniform': 'no',
+      'reverse-planning': 'yes',
+      'bench-taxonomy': 'yes',
     });
 
     expect(onStage.status).toBe('ranked');
@@ -240,7 +240,10 @@ describe('the seeded questions', () => {
   });
 
   it('never matches an adult to the Kindergarde', () => {
-    const outcome = rankGroups(SEEDED_GROUP_MATCHER, { 'age-band': '18-plus', stage: 'yes' });
+    const outcome = rankGroups(SEEDED_GROUP_MATCHER, {
+      'age-band': '18-plus',
+      'confetti-hearing': 'yes',
+    });
 
     expect(outcome.status).toBe('ranked');
     if (outcome.status === 'ranked') {
@@ -250,7 +253,10 @@ describe('the seeded questions', () => {
   });
 
   it('leaves a child with the Kindergarde and nothing else', () => {
-    const outcome = rankGroups(SEEDED_GROUP_MATCHER, { 'age-band': 'under-12', stage: 'yes' });
+    const outcome = rankGroups(SEEDED_GROUP_MATCHER, {
+      'age-band': 'under-12',
+      'confetti-hearing': 'yes',
+    });
 
     expect(outcome.status).toBe('ranked');
     if (outcome.status === 'ranked') {
