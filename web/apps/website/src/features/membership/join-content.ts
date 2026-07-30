@@ -32,6 +32,7 @@ export const joinPageTitle = 'DU MUSST NICHT TANZEN KÖNNEN.';
 export const joinDescription =
   'Was Menschen vom Verein fernhält, ist selten der Beitrag. Es ist der Gedanke, hier seien alle seit der Grundschule im Takt — und man selbst guckt beim ersten Aufstellen in die falsche Richtung. Passiert. Jede Session. Geblieben sind sie trotzdem alle.';
 
+export const joinHref = '/join';
 export const joinApplyHref = '/join/apply';
 export const joinPrimaryCtaLabel = 'Antrag stellen →';
 

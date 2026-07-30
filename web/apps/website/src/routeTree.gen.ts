@@ -21,6 +21,7 @@ import { Route as SiteGatedJoinRouteImport } from './routes/_site/_gated/join'
 import { Route as SiteGatedGalleryRouteImport } from './routes/_site/_gated/gallery'
 import { Route as SiteGatedClubRouteImport } from './routes/_site/_gated/club'
 import { Route as SiteGatedNewsSlugRouteImport } from './routes/_site/_gated/news_.$slug'
+import { Route as SiteGatedJoinApplyRouteImport } from './routes/_site/_gated/join_.apply'
 import { Route as SiteGatedGalleryAlbumSlugRouteImport } from './routes/_site/_gated/gallery_.$albumSlug'
 
 const SiteRoute = SiteRouteImport.update({
@@ -81,6 +82,11 @@ const SiteGatedNewsSlugRoute = SiteGatedNewsSlugRouteImport.update({
   path: '/news/$slug',
   getParentRoute: () => SiteGatedRoute,
 } as any)
+const SiteGatedJoinApplyRoute = SiteGatedJoinApplyRouteImport.update({
+  id: '/join_/apply',
+  path: '/join/apply',
+  getParentRoute: () => SiteGatedRoute,
+} as any)
 const SiteGatedGalleryAlbumSlugRoute =
   SiteGatedGalleryAlbumSlugRouteImport.update({
     id: '/gallery_/$albumSlug',
@@ -99,6 +105,7 @@ export interface FileRoutesByFullPath {
   '/program': typeof SiteGatedProgramRoute
   '/tickets': typeof SiteGatedTicketsRoute
   '/gallery/$albumSlug': typeof SiteGatedGalleryAlbumSlugRoute
+  '/join/apply': typeof SiteGatedJoinApplyRoute
   '/news/$slug': typeof SiteGatedNewsSlugRoute
 }
 export interface FileRoutesByTo {
@@ -112,6 +119,7 @@ export interface FileRoutesByTo {
   '/program': typeof SiteGatedProgramRoute
   '/tickets': typeof SiteGatedTicketsRoute
   '/gallery/$albumSlug': typeof SiteGatedGalleryAlbumSlugRoute
+  '/join/apply': typeof SiteGatedJoinApplyRoute
   '/news/$slug': typeof SiteGatedNewsSlugRoute
 }
 export interface FileRoutesById {
@@ -128,6 +136,7 @@ export interface FileRoutesById {
   '/_site/_gated/program': typeof SiteGatedProgramRoute
   '/_site/_gated/tickets': typeof SiteGatedTicketsRoute
   '/_site/_gated/gallery_/$albumSlug': typeof SiteGatedGalleryAlbumSlugRoute
+  '/_site/_gated/join_/apply': typeof SiteGatedJoinApplyRoute
   '/_site/_gated/news_/$slug': typeof SiteGatedNewsSlugRoute
 }
 export interface FileRouteTypes {
@@ -143,6 +152,7 @@ export interface FileRouteTypes {
     | '/program'
     | '/tickets'
     | '/gallery/$albumSlug'
+    | '/join/apply'
     | '/news/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -156,6 +166,7 @@ export interface FileRouteTypes {
     | '/program'
     | '/tickets'
     | '/gallery/$albumSlug'
+    | '/join/apply'
     | '/news/$slug'
   id:
     | '__root__'
@@ -171,6 +182,7 @@ export interface FileRouteTypes {
     | '/_site/_gated/program'
     | '/_site/_gated/tickets'
     | '/_site/_gated/gallery_/$albumSlug'
+    | '/_site/_gated/join_/apply'
     | '/_site/_gated/news_/$slug'
   fileRoutesById: FileRoutesById
 }
@@ -264,6 +276,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SiteGatedNewsSlugRouteImport
       parentRoute: typeof SiteGatedRoute
     }
+    '/_site/_gated/join_/apply': {
+      id: '/_site/_gated/join_/apply'
+      path: '/join/apply'
+      fullPath: '/join/apply'
+      preLoaderRoute: typeof SiteGatedJoinApplyRouteImport
+      parentRoute: typeof SiteGatedRoute
+    }
     '/_site/_gated/gallery_/$albumSlug': {
       id: '/_site/_gated/gallery_/$albumSlug'
       path: '/gallery/$albumSlug'
@@ -282,6 +301,7 @@ interface SiteGatedRouteChildren {
   SiteGatedProgramRoute: typeof SiteGatedProgramRoute
   SiteGatedTicketsRoute: typeof SiteGatedTicketsRoute
   SiteGatedGalleryAlbumSlugRoute: typeof SiteGatedGalleryAlbumSlugRoute
+  SiteGatedJoinApplyRoute: typeof SiteGatedJoinApplyRoute
   SiteGatedNewsSlugRoute: typeof SiteGatedNewsSlugRoute
 }
 
@@ -293,6 +313,7 @@ const SiteGatedRouteChildren: SiteGatedRouteChildren = {
   SiteGatedProgramRoute: SiteGatedProgramRoute,
   SiteGatedTicketsRoute: SiteGatedTicketsRoute,
   SiteGatedGalleryAlbumSlugRoute: SiteGatedGalleryAlbumSlugRoute,
+  SiteGatedJoinApplyRoute: SiteGatedJoinApplyRoute,
   SiteGatedNewsSlugRoute: SiteGatedNewsSlugRoute,
 }
 
