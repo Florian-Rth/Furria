@@ -26,6 +26,13 @@ hang in — built first so everything else has a home.
 - Light/dark: OS default + persisted manual toggle (masthead + drawer).
 - Layout shell + routing skeleton; every nav destination resolves (real page or placeholder).
 - `@furria/ui` integration: consume tokens/primitives, no local re-definition.
+- **P6 additions to `@furria/ui` (2026-07-30):** **`KkStatRow`** — the rule of three fired on the
+  divider-topped value/label row (landing hero, `/club` story, and now `/join`'s hero), promoted as a
+  slotted compound (root + `.Item`/`.Value`/`.Label`). Scale and colour stay **at the call site**, so
+  there is no size or colour flag — the same refusal P4 made for `NewsSectionRule`, and the lesson P4.1
+  drew from five card dialects. Its dev hook is `data-kk-stat-row`; the old `data-kk-story-stats` hook
+  was dropped after grepping (nothing referenced it). Also **`KkSectionRoot` gained an optional `id`**
+  so a section can own an in-page anchor — one prop, no behaviour change.
 
 ## Decisions
 

@@ -2,7 +2,7 @@
 title: Mitglied werden
 slug: membership-funnel
 type: capability
-status: shaping
+status: shipped
 mock: docs/design/join-page/
 adrs: [docs/adr/0004-website-writes-membership-applications.md]
 ---
@@ -187,6 +187,60 @@ Pure functions, unit-tested directly, never through rendered mock data: age → 
 → Beitrag derivation (incl. the birthday-today boundary), the search-param parser, and the form
 schema. Beware the P5 date trap: `new Date('YYYY-MM-DD')` is **UTC** midnight — parse date-only
 strings on the local calendar.
+
+## What shipped (P6, 2026-07-30)
+
+All ten slices, frontend only, on `feat/website-p6-join-fe` (`86018a5`…`b581d3c`). Every decision
+above shipped as written. The deviations, so nobody reads this file as a lie about the code:
+
+- **Structure.** `features/membership/` owns `/join` (`JoinPage` + `JoinHero` + `MembershipTicket` +
+  `JoinSteps` + `JoinFaq` + `JoinContact` + `JoinClosingBand`) and `/join/apply`
+  (`ApplyPage` → `ApplyForm` compound + `ApplyConfirmation`). `JoinPage` **takes children** and the
+  route composes it with the Kompass — the matcher is a separate feature and features never import each
+  other, so the route is the only place that can join them.
+- **The Antrag route file is `join_.apply.tsx`** — the trailing underscore, exactly P4's finding: the
+  dotted name nests the form inside `JoinPage`, which renders no `<Outlet/>`. A route test pins it.
+- **Form state is RHF's own `FormProvider`/`useFormContext`**, not a hand-rolled compound context — the
+  library already provides the context this kit would have duplicated. The interest chips go through
+  **`useController`** (`hooks/use-group-interests-field.ts`): the first cut read the form with `watch`
+  from a child, and react-hook-form only re-renders at the `useForm` component, so **the chips could
+  not be ticked or unticked at all**. A prefill test in slice 10 caught it. *Lesson: `watch` in a child
+  of `FormProvider` silently does nothing.*
+- **The POST body carries no Mitgliedschaftsart and no Beitrag.** Both stay derived on the server from
+  `birthDate` — shipping a client-asserted tier would have reintroduced the mock defect this feature
+  exists to fix. The response schema is `z.object({})`; nothing is read back, so no contract was
+  invented.
+- **The Gruppen come from a `useGroupsQuery`** in the feature's `api.ts` resolving from
+  `lib/seed/groups` — build-as-if-fetched, with real loading and error paths, and the swap is one line.
+- **`?groups=` is filtered twice:** unknown ids are dropped when prefilling the chips *and* again from
+  the submitted payload (`selectKnownGroupIds`). `validateSearch` + Zod `.catch(undefined)`; a
+  malformed param renders the normal form and never 404s.
+- **Only the hero's Antrag CTA is a typed `Link`.** The Kompass result CTA stays a plain href:
+  `renderWithProviders` mounts no router (a TanStack `Link` throws), and a typed `search={{ groups }}`
+  serialises through `URLSearchParams`, turning the documented `?groups=a,b` into `?groups=a%2Cb`.
+- **The Ticket's stub does not stack at `xs`** — it stays a narrow vertical column at every breakpoint,
+  because stacking loses both the silhouette and the perforation at 360px. Gold `warning.main`, ink
+  `warning.contrastText`, notches `background.default`, stub `warning.dark`.
+- **Two MUI/layout realities:** `Checkbox.inputRef` is gone in MUI v9 (the consent ref goes through
+  `slotProps={{ input: { ref } }}`), and the summary aside **cannot be sticky** because `PageLayout`'s
+  root sets `overflow: hidden`.
+- **Copy deltas.** The closing band CTA is *"Jetzt Antrag stellen →"* — the hero already owns
+  *"Antrag stellen →"* and the duplicate accessible name made three `findByRole` queries ambiguous. The
+  hero's secondary CTA is *"Wo passe ich hin? ↓"* rather than naming the Kompass (one line at 360px,
+  and the arrow reads as an in-page jump). The third hero stat is the **Session ordinal**, so it does
+  not repeat the eyebrow's `yearsLabel`. The FAQ shipped **eight** questions; answer 1 says *"der
+  Elferrat trägt die Prunksitzung"* because step 03 uses "Sitzung" in the meeting sense on the same
+  page, and the child question became *"Mein Kind möchte mitmachen."* since the mock's version rested
+  on drop-in trainings. The Kontakt section states outright that there is no phone number.
+- **Slice 9's review found real defects** and they were fixed: an inline `setValue` handler in JSX (→ a
+  per-item `ApplyInterestChoice` part), a fetch plus fallback-link derivation living in a presentational
+  assembly (→ `fallbackMailHref` moved onto the hook's state), a drilled `GroupsSource` prop with one
+  live consumer (→ the consumer calls the hook), and a 165-line section mixing altitudes (→
+  Person/Address/Contact fieldsets extracted; 67 lines of pure composition left).
+- **Verification debt, carried forward:** only the Ticket was checked in a real browser (headless
+  Chrome, 360px dark + 1280px light). The four steps, the FAQ, the Kontakt block and the band rest on
+  token reuse and CSS reasoning — **not eyeballed at 360px or in the dark scheme.** Same debt P5
+  recorded; it is still owed.
 
 ## Open Questions
 

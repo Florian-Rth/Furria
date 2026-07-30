@@ -2,7 +2,7 @@
 title: Konfetti-Kompass (Gruppenfinder)
 slug: group-matcher
 type: capability
-status: shaping
+status: shipped
 mock: docs/design/join-page/src/fcc-ds-join.jsx
 adrs: []
 ---
@@ -113,10 +113,58 @@ tested function, and the result is a ranking the visitor can interrogate.
   Zod, unknown ids dropped rather than 404. This is what keeps the two features decoupled with no
   shared context.
 
+## What shipped (P6, 2026-07-30)
+
+`features/group-matcher/` with the `KonfettiKompass` section on `/join`: stepper → result, both inside
+one `KompassPanel`. The model, the scoring scale, the recruiting rule and every edge case shipped
+exactly as decided above. What differs from this file, and why:
+
+- **The payload embeds the Gruppen.** `SEEDED_GROUP_MATCHER` is `{ groups, questions }`, so the whole
+  feature reads **one** query with one loading/error path instead of a matcher query plus a groups
+  query. This changes the deferred contract — `GET /api/group-matcher` must return the Gruppen too, and
+  the master plan's Deferred section records it.
+- **Zod placement follows the dependency rule.** The payload schemas live in `lib/seed/group-matcher.ts`
+  (where the payload shape lives; `lib` may not import `features`), and the feature's `schemas.ts`
+  holds only `MatcherAnswersSchema` — the answer map the stepper persists.
+- **The eleven are 1 `filter` + 10 `weighted`.** The age band is the filter. Elferrat is the one seeded
+  Gruppe with `isRecruiting: false`, so the badge has two real states. The **content rules are
+  unit-tested as properties of the authored seed**, not just of the algorithm: every thesis splits the
+  roster, no age band comes back empty, no adult ever matches Kindergarde, a child matches only
+  Kindergarde, and an all-yes/all-no run spreads the ranking by ≥ 20 points.
+- **A skip is persisted as the marker `"skipped"`** in `sessionStorage` (`furria.kompass.answers`,
+  Zod-parsed on read), which is what makes returning from the Antrag land on the *result* rather than
+  question 1 — scoring already treats an unreadable stance as skipped and filters ignore unknown option
+  ids. The result itself is still only ever derived.
+- **Exclusions are returned structured** (`questionId`, `questionPrompt`, `answerLabel`) so the German
+  sentence is written in the UI layer, not baked into the pure function.
+- **The «warum» derives from weighted stances only**, sorted by importance × agreement and stable by
+  question order. Filter questions contribute exclusions, never reasons.
+- **An early-finish control was needed and added:** a disabled-until-one-answer *"Ergebnis ansehen →"*
+  in the question footer, plus a `finished` flag on the progress part so *"Antworten ändern"* returns to
+  the question the visitor left rather than to question 11. The separate done-panel from the first cut
+  is deleted — the result replaces it.
+- **`KkSectionRoot` gained an optional `id`** in `@furria/ui` so this section owns the
+  `#konfetti-kompass` anchor the hero's secondary CTA jumps to. The anchor id lives in the membership
+  feature's `join-content.ts` and is deliberately **not** barrel-exported (features never import each
+  other; the route wires it).
+- **The step animation fades only the prompt** (keyed remount) while the answer buttons stay mounted
+  inside an `aria-live` region, so keyboard focus survives most steps; reduced motion collapses it to 0s.
+- **The all-excluded state is verified through the pure selector** with a synthetic matcher, because the
+  content rule above means the real seed can never produce it. The result CTA keeps a **plain href**
+  (not a typed `Link`) — see [Mitglied werden](feature-membership-funnel.md) → What shipped.
+- **The stepper's own review fix:** the step machine was first derived inline inside a presentational
+  part; it moved into `use-kompass-progress`, with the derivation extracted as pure selectors
+  (`selectQuestionIds`, `selectKompassStepView`) and tested directly.
+- **Not verified in a browser:** the stepper and result rest on token reuse and CSS reasoning — no
+  layout engine in happy-dom and no automation was run for this section. 360px and the dark scheme are
+  still owed.
+
 ## Open Questions
 
-- The eleven questions themselves, and all 6 × 11 Gruppe positions — content authoring, not yet
-  written.
+- The eleven questions and the 66 Gruppe positions are **authored and shipped**, but they are
+  placeholder content in the same sense as the rest of the site: they are the team's guesses at each
+  Gruppe's stance, not answers the Gruppen gave. Real positions have to come from the Gruppen
+  themselves (and then from the backend).
 - Whether the matcher also earns a place on `/club` next to the Gruppen grid (not P6).
 
 ## Done When

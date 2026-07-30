@@ -84,8 +84,8 @@ Guiding constraints (all binding):
 | [Ticket-Shop](feature-ticket-shop.md) | capability | idea | Browse ticketed events, checkout, payment |
 | [Aktuelles](feature-news.md) | capability | shipped | Meldungen (list + detail) + landing teaser |
 | [Galerie](feature-gallery.md) | capability | shipped | Public Album index + Album pages + photo viewer |
-| [Mitglied werden](feature-membership-funnel.md) | capability | shaping | Membership info + Beitrittsantrag funnel |
-| [Konfetti-Kompass](feature-group-matcher.md) | capability | shaping | Wahl-O-Mat-style Gruppen matcher on `/join` |
+| [Mitglied werden](feature-membership-funnel.md) | capability | shipped | Membership info + Beitrittsantrag funnel |
+| [Konfetti-Kompass](feature-group-matcher.md) | capability | shipped | Wahl-O-Mat-style Gruppen matcher on `/join` |
 
 ---
 
@@ -542,30 +542,110 @@ Followed the plan closely; build-level choices worth knowing:
   Instagram band.
 
 ### P6 — Membership funnel
-**Status:** planned (shaped 2026-07-29 in a grilling session against the new
-[join mock](../../docs/design/join-page/README.md))
-`/join` + `/join/apply` — the club's growth hook. **Frontend only.** The API contract is designed
-here but the backend is **deferred and not scheduled**
-([Deferred → Antrag- und Gruppen-Backend](#antrag--und-gruppen-backend-not-scheduled)), so a
-submission fails honestly into the form's error state, which always offers the human fallback —
-nothing faked, nothing disabled, and zero frontend change when the endpoint eventually lands. Only
-testers see it (gate is up until P7).
+**Status:** done (2026-07-30, branch `feat/website-p6-join-fe`, 12 commits `86018a5`…`b581d3c`)
+`/join` + `/join/apply` live — the club's growth hook. **Frontend only**; the backend stays
+[deferred and not scheduled](#antrag--und-gruppen-backend-not-scheduled), so a submission calls the
+real URL, gets a 404 and fails honestly into the form's error state, which always offers the human
+fallback. Nothing faked, nothing disabled, and zero frontend change when the endpoint lands. Only
+testers see it (gate is up until P7). Shipped as the 10 vertical slices in the
+[Mitglied werden](feature-membership-funnel.md) Implementation plan, one commit each plus two
+review-fix commits. Final gates: typecheck clean, **708 tests** (14 ui + 694 website), lint clean,
+build clean.
 
 > The old P6 line said the form *"submits via email / a static form service (no backend)"*. That
 > premise was wrong — see the amended scope banner and
 > [ADR-0004](../../docs/adr/0004-website-writes-membership-applications.md).
 
-- [ ] [Mitglied werden](feature-membership-funnel.md) — `/join` info page (hero · Kompass · Ticket ·
+Followed the plan closely; build-level choices worth knowing:
+- **The seed's Gruppen ids are German-transliterated kebab-case** (`tanzgarde`, `maennerballett`,
+  `buettenrede`, …), not translated English words. The Gruppen names are proper nouns, the shipped
+  slug convention already does this (`sessionseroeffnung-2025`), and translating them would put
+  unrecognisable ids in the public `/join/apply?groups=` URL. The **English-code rule still holds** —
+  these are content ids, like a slug, not identifiers.
+- **`/club`'s local `Group` interface was renamed `GroupProfile`** so the seed can own the plain
+  `Group` name for the future `GET /api/groups` payload. `GROUPS` stays a **synchronous module
+  constant** built by a pure `buildGroupProfiles(roster, editorial)` — no React Query on `/club`,
+  exactly as ADR-0003 requires. The editorial copy (`blurb`/`memberMeta`/`fullText`/`lead`) is keyed
+  by id in `GROUP_EDITORIAL`, and key completeness is asserted in **both** directions by tests.
+- **The matcher payload embeds the Gruppen.** `SEEDED_GROUP_MATCHER` carries
+  `{ groups, questions }`, so slices 5/6 get **one** query with one loading/error path instead of a
+  second groups query. This changes the deferred contract: `GET /api/group-matcher` must return the
+  Gruppen too — recorded in [Deferred](#antrag--und-gruppen-backend-not-scheduled).
+  `GET /api/groups` is still needed separately, for the Antrag's interest chips.
+- **The eleven questions are 1 `filter` (age band) + 10 `weighted` theses.** Elferrat is the one
+  seeded Gruppe with `isRecruiting: false`, so both badge states are real code paths. The
+  roster-splitting content rule, the age-band coverage rule and "no adult ever matches Kindergarde"
+  are all **unit-tested properties of the authored content**, not just of the algorithm.
+- **Zod placement follows the dependency rule:** the payload schemas live in `lib/seed/*.ts` (where
+  the payload shape lives) because `lib` may not import `features`; each feature's `schemas.ts` holds
+  only its own schemas (the answer map, the form schema). The `to >= from` age invariant is a **test
+  assertion, not a Zod refine** — there is no refine/superRefine precedent in this codebase.
+- **`KkSectionRoot` gained an optional `id`** so a section can own its anchor and the hero's
+  secondary CTA can jump to the Kompass. One prop, no behaviour change.
+- **`JoinPage` takes children and the route composes it with `KonfettiKompass`** — the two are
+  separate features and features never import each other, so the composition has to happen in the
+  route. The Kompass anchor id lives in `join-content.ts` and is deliberately **not** barrel-exported.
+- **`join_.apply.tsx` needs the trailing underscore** — P4's router finding again: the dotted name
+  would nest the form inside `JoinPage`, which renders no `<Outlet/>`. A route test proves it renders
+  standalone.
+- **The POST payload deliberately omits the derived Mitgliedschaftsart and Beitrag.** The server
+  derives them from `birthDate`; a client-asserted tier is exactly the mock defect being fixed. The
+  response schema is `z.object({})` because nothing is read back — no contract was invented.
+- **RHF's own `FormProvider`/`useFormContext` replaced a hand-rolled compound context** for the form
+  parts, and the interest chips go through **`useController`**. That was a real bug found in slice 10
+  by a prefill test: slice 9 read the form with `watch` from a child, and react-hook-form only
+  re-renders at the `useForm` component — the chips could not be ticked or unticked **at all**.
+  **Lesson:** `watch` in a child of `FormProvider` silently does nothing; only a subscribing hook
+  (`useController`/`useWatch`) works.
+- **Two environment realities:** MUI v9 dropped `Checkbox.inputRef`, so the consent box passes the ref
+  via `slotProps={{ input: { ref } }}`; and a sticky summary aside is impossible because
+  `PageLayout`'s root sets `overflow: hidden`, which kills `position: sticky`.
+- **Only the hero's Antrag CTA became a typed `Link`.** The Kompass result CTA keeps a plain href for
+  two concrete reasons: `renderWithProviders` mounts no router, so a TanStack `Link` throws and would
+  force 20+ component tests onto `renderAtRoute`; and a typed `search={{ groups }}` serialises through
+  `URLSearchParams`, turning the documented `?groups=a,b` into `?groups=a%2Cb`.
+- **`?groups=` is defensive twice over:** `validateSearch` + Zod `.catch(undefined)`, and unknown ids
+  are dropped both when prefilling the chips **and** again from the submitted payload via
+  `selectKnownGroupIds`. A malformed param renders the normal form; nothing 404s.
+- **The Ticket's stub stays a vertical column at every breakpoint** (it does not stack to a bottom
+  band at `xs`) — stacking would lose both the ticket silhouette and the perforation at 360px. Gold is
+  `warning.main`, ink `warning.contrastText`, notches `background.default`, stub `warning.dark`, so
+  every colour switches with the scheme.
+- **Copy adjustments forced by the page itself:** the band CTA reads *"Jetzt Antrag stellen →"*, not
+  *"Antrag stellen →"*, because the hero already owns that accessible name and three `findByRole`
+  queries went ambiguous. The hero's secondary CTA reads *"Wo passe ich hin? ↓"* rather than naming the
+  Kompass (fits one line at 360px, and the arrow signals an in-page jump). The third hero stat is the
+  **Session ordinal**, so it does not repeat the eyebrow's `yearsLabel`. The FAQ shipped **eight**
+  questions.
+- **Reviews** ran per slice (`react-code-reviewer`, plus `react-composition-guru` on slices 2/3/5/6/7/9).
+  Two slices needed fixes: slice 5 had the whole step machine derived inline in a presentational part
+  (→ moved into `use-kompass-progress`, with the derivation extracted as pure selectors), and slice 9
+  had an inline `setValue` handler in JSX, a fetch + fallback-link derivation inside a presentational
+  assembly, a drilled `GroupsSource` prop with a single live consumer, and a 165-line section mixing
+  altitudes (→ per-item `ApplyInterestChoice`, `fallbackMailHref` moved into the hook, the prop deleted
+  in favour of the hook, and Person/Address/Contact fieldsets extracted, shrinking the section to 67
+  lines). One duplicate finding was rejected against the diff; every other slice reviewed clean.
+- **Visual verification is uneven again, and owes a pass** (same debt P5 recorded). Only the Ticket
+  was checked in a real headless browser (360px dark, 1280px light, via a temporary local grant file
+  that was deleted, not committed). Every other section rests on token reuse and CSS reasoning — the
+  Kompass stepper/result, the four steps, the FAQ and the band have **not** been eyeballed at 360px or
+  in the dark scheme.
+- **The all-excluded Kompass state is verified through the pure selector**, with a synthetic matcher,
+  because the plan's own content rule ("no age band may come back empty") means the real seed can never
+  produce it. The plan's testing rule prefers that level anyway.
+
+- [x] [Mitglied werden](feature-membership-funnel.md) — `/join` info page (hero · Kompass · Ticket ·
       vier Schritte · FAQ · Kontakt · Band) and `/join/apply` (Antrag + in-place confirmation),
       wired to `POST /api/membership-applications`
-- [ ] [Konfetti-Kompass](feature-group-matcher.md) — eleven questions, Gruppe-owned positions and
+- [x] [Konfetti-Kompass](feature-group-matcher.md) — eleven questions, Gruppe-owned positions and
       weights, `weighted` + `filter` question roles, normalised scoring as a tested pure function,
       ranked result with derived «warum» and recruiting badges
-- [ ] `@furria/ui` — promote **`KkStatRow`** (slotted compound) and migrate `HeroStatRow` +
-      `ClubStoryStats` onto it; `/join`'s hero is the third call site
-- [ ] [Verein](feature-about-verein.md) — drive-by: `/club`'s Gruppen content reads the shared seed
+- [x] `@furria/ui` — promoted **`KkStatRow`** (slotted compound: root + `.Item`/`.Value`/`.Label`) and
+      migrated `HeroStatRow` + `ClubStoryStats` onto it; `/join`'s hero is the third call site. Scale
+      and colour stay at the call site — no size flag. Also **`KkSectionRoot` gained an optional `id`**
+- [x] [Verein](feature-about-verein.md) — drive-by: `/club`'s Gruppen content reads the shared seed
       (stays **synchronous**, so it stays prerenderable) instead of its own roster
-- [ ] [SEO & Meta](feature-seo-meta.md) — per-route `head` for `/join` and `/join/apply`, no new
+- [x] [SEO & Meta](feature-seo-meta.md) — per-route `head` for `/join` and `/join/apply`, no new
       mechanism
 - [x] [Mitmachen-Band](feature-mitmachen-band.md) — CTA already points at `/join`; nothing to do
 
@@ -668,17 +748,29 @@ When the backend lands, these become real phases.
 ### Antrag- und Gruppen-Backend *(not scheduled)*
 
 The one exception that does **not** need the Club-App: it serves `/join` alone, on the API we
-already deploy. **P6 ships the frontend only** and the contract is fully designed in
-[Mitglied werden](feature-membership-funnel.md) and
+already deploy. **P6 shipped the frontend only** (done 2026-07-30) and the contract is fully designed
+in [Mitglied werden](feature-membership-funnel.md) and
 [Konfetti-Kompass](feature-group-matcher.md) — recorded here so nothing is re-litigated later.
 Until it exists, a submitted Antrag fails honestly into the form's error state, which always offers
 the human fallback.
 
+**The shipped frontend pins these shapes** — `web/apps/website/src/lib/seed/{groups,group-matcher}.ts`
+holds the Zod schemas the endpoints must satisfy, and they are the executable version of this list.
+
 - `POST /api/membership-applications` — validate, persist, notify. Per
   [ADR-0004](../../docs/adr/0004-website-writes-membership-applications.md): the row is the source of
-  truth, the mail is the notification, and a mail failure is not a lost Antrag.
-- `GET /api/groups` — id, name, age range, **`isRecruiting`**, result-card line.
-- `GET /api/group-matcher` — the eleven questions and every Gruppe's stance + weight.
+  truth, the mail is the notification, and a mail failure is not a lost Antrag. **The request body
+  carries no Mitgliedschaftsart and no Beitrag** — the API derives both from `birthDate`, because a
+  client-asserted tier is the very mock defect P6 fixed. Nothing is read back from the response.
+- `GET /api/groups` — `id` (kebab-case content slug, German-transliterated), `name`, `ageRange`
+  (`from` plus `to`, where `to: null` means an open upper bound), **`isRecruiting`**, and `tagline`
+  (the result-card line). Consumed by the Antrag's interest chips.
+- `GET /api/group-matcher` — `{ groups, questions }`: the eleven questions with every Gruppe's stance
+  + weight, **plus the same Gruppen payload embedded**. The embedding is deliberate (P6 build decision)
+  so the matcher needs one query with one loading/error path — do not split it back apart without
+  reopening the matcher's data layer. Questions are a discriminated union on `role`: `weighted`
+  (`positions[]` of `{ groupId, stance, importance }`) and `filter` (`options[]` plus `positions[]` of
+  `{ groupId, accepts[] }`).
 - Outbound mail: SMTP credentials, a real sender domain with SPF/DKIM, a real recipient.
 - Per-IP rate limiting; decide on a privacy-preserving challenge (self-hosted **Altcha** or
   **Friendly Captcha**) — never a third-party captcha on the page where a child's data is typed.

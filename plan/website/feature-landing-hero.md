@@ -20,7 +20,10 @@ CTAs, a stat row, and the anchor photo.
   head-shadow (`3px 3px 0 ink`) — the one allowed hard shadow.
 - Intro paragraph (Großbesenstadt / fünfte Jahreszeit copy).
 - Two CTAs: primary **Tickets sichern →**, secondary **Programm ansehen**.
-- Stat row: `180+ Mitglieder · 12 Garden & Gruppen · 1971 gegründet`.
+- Stat row: `180+ Mitglieder · 6 Garden & Gruppen · 1971 gegründet` (the count was corrected from 12 to
+  the derived 6 in P5). **P6 (2026-07-30):** `HeroStatRow` no longer hand-rolls the row — it composes
+  `KkStatRow` from `@furria/ui`, keeping its own `h4` scale and `primary.main` colour at the call site.
+  Unchanged visually.
 - Hero photo: subtle tilt, ink keyline, soft shadow, "Seit 1971" tag, floating **11.11 seal**.
 - Contained **confetti** (≤13 chips, never over the reading column).
 - **Mobile (P1.1):** a dedicated, from-scratch mobile treatment — immersive full-bleed photo band

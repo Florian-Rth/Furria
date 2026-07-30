@@ -119,6 +119,16 @@ One scrolling page, sections top → bottom:
   `KkPhotoPlaceholder` topper badge (01, 02…), Anton title, short blurb, meta line + "Mehr →". Tint
   per tile via a position-based **`resolveGroupTint(theme, index)`** (red/gold/ink cycle — same
   idiom as the shipped `resolveEventTint`).
+- **Amended in P6 (2026-07-30):** the roster is no longer owned here. `GROUPS` is now built from the
+  shared seed `lib/seed/groups.ts` (the future `GET /api/groups` payload) by a pure
+  `buildGroupProfiles(roster, editorial)`, with this page's editorial copy
+  (`blurb`/`memberMeta`/`fullText`/`lead`) keyed by Gruppe id in `GROUP_EDITORIAL`; key completeness is
+  asserted in both directions by tests. It stays a **synchronous module constant** — no React Query on
+  `/club`, because this content is indexable and P7 prerenders it
+  ([ADR-0003](../../docs/adr/0003-website-rendering-strategy.md)). The local interface was renamed
+  `Group` → **`GroupProfile`** so the seed can own the plain `Group` name for the API payload, and
+  `schedule` is gone (the seed carries `ageRange`, `isRecruiting` and `tagline` instead). Rendering is
+  unchanged.
 - Typed `Group` interface + editable `GROUPS` const. **Shipped field names are English**
   (`title, blurb, memberMeta, fullText, lead, schedule`) — the plan's `leitung`/`treffen` were
   renamed to `lead`/`schedule` to honour the code-is-English rule; the German visible labels

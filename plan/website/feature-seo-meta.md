@@ -17,7 +17,9 @@ shareable material" ambition on the public side.
 ## Scope / Slices
 
 - P0: base document head + defaults + favicon/app icons + `robots.txt`.
-- Per-page title/description/canonical (with each page).
+- Per-page title/description/canonical (with each page). Shipped for `/join` and `/join/apply` in P6
+  (2026-07-30) through the existing `RouteHead`/`pageTitle` mechanism — no new mechanism, nothing new
+  decided.
 - Open Graph / social-share cards, especially for events and news detail.
 - Sitemap (once real public routes exist).
 
