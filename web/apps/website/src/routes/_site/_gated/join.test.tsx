@@ -1,7 +1,14 @@
 import { screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { kompassTitle } from '@/features/group-matcher/kompass-content';
+import { joinClosingBandContent } from '@/features/membership/closing-content';
+import { joinContactTitle } from '@/features/membership/contact-content';
+import { joinFaqTitle } from '@/features/membership/faq-content';
+import { joinPageTitle } from '@/features/membership/join-content';
+import { JOIN_STEPS, joinStepsTitle } from '@/features/membership/steps-content';
+import { membershipTicketTitle } from '@/features/membership/ticket-content';
 import { writeGrantedToSession } from '@/features/preview-access';
-import { currentSession } from '@/lib/club';
+import { CLUB_CONTACT_EMAIL, currentSession } from '@/lib/club';
 import { markChangelogSeen } from '@/test/changelog';
 import { renderAtRoute } from '@/test/render';
 
@@ -70,5 +77,54 @@ describe('join route', () => {
     expect(screen.getByText('Garden & Gruppen')).toBeInTheDocument();
     expect(screen.getByText(`${currentSession.number}.`)).toBeInTheDocument();
     expect(document.querySelectorAll('[data-kk-stat-row-item]')).toHaveLength(3);
+  });
+
+  it('reads end to end in the order the funnel was shaped in', async () => {
+    renderAtRoute('/join');
+
+    await screen.findByRole('heading', { level: 1, name: joinPageTitle });
+
+    const sectionTitles = screen
+      .getAllByRole('heading', { level: 2 })
+      .map((heading) => heading.textContent);
+
+    expect(sectionTitles).toEqual([
+      kompassTitle,
+      membershipTicketTitle,
+      joinStepsTitle,
+      joinFaqTitle,
+      joinContactTitle,
+      joinClosingBandContent.headline,
+    ]);
+  });
+
+  it('walks the four steps and opens the FAQ collapsed', async () => {
+    renderAtRoute('/join');
+
+    for (const step of JOIN_STEPS) {
+      expect(
+        await screen.findByRole('heading', { level: 3, name: step.title }),
+      ).toBeInTheDocument();
+    }
+
+    expect(screen.getByRole('button', { name: 'Muss ich tanzen können?' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+    expect(screen.getByRole('button', { name: 'Muss ich in eine Gruppe?' })).toBeInTheDocument();
+  });
+
+  it('closes with one contact channel, no phone number and the Antrag', async () => {
+    renderAtRoute('/join');
+
+    expect(await screen.findByRole('link', { name: CLUB_CONTACT_EMAIL })).toHaveAttribute(
+      'href',
+      `mailto:${CLUB_CONTACT_EMAIL}`,
+    );
+    expect(document.body.textContent).not.toContain('0170');
+    expect(screen.getByRole('link', { name: joinClosingBandContent.ctaLabel })).toHaveAttribute(
+      'href',
+      '/join/apply',
+    );
   });
 });
