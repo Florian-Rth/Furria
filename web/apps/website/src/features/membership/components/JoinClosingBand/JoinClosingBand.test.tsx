@@ -1,12 +1,12 @@
 import { screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { joinClosingBandContent } from '@/features/membership/closing-content';
-import { renderWithProviders } from '@/test/render';
+import { renderWithRouter } from '@/test/render';
 import { JoinClosingBand } from './JoinClosingBand';
 
 describe('JoinClosingBand', () => {
   it('closes the page with one CTA into the Antrag', () => {
-    renderWithProviders(<JoinClosingBand />);
+    renderWithRouter(<JoinClosingBand />);
 
     expect(
       screen.getByRole('heading', { level: 2, name: joinClosingBandContent.headline }),
@@ -18,7 +18,7 @@ describe('JoinClosingBand', () => {
   });
 
   it('repeats that nothing is charged yet', () => {
-    renderWithProviders(<JoinClosingBand />);
+    renderWithRouter(<JoinClosingBand />);
 
     expect(screen.getByText(joinClosingBandContent.lead)).toBeInTheDocument();
   });

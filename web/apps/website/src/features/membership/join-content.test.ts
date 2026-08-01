@@ -1,18 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { Session } from '@/lib/club';
-import { buildJoinEyebrow, buildJoinStats } from './join-content';
+import { buildJoinStats } from './join-content';
 
 const session: Session = { number: 56, startYear: 2026, yearsLabel: '2026/27' };
-
-describe('buildJoinEyebrow', () => {
-  it('names the funnel and the running Session', () => {
-    expect(buildJoinEyebrow('2026/27')).toBe('MITGLIED WERDEN · SESSION 2026/27');
-  });
-
-  it('tracks whichever Session it is given', () => {
-    expect(buildJoinEyebrow('2027/28')).toBe('MITGLIED WERDEN · SESSION 2027/28');
-  });
-});
 
 describe('buildJoinStats', () => {
   it('derives exactly three stats from the club figures and the running Session', () => {

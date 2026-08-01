@@ -85,7 +85,7 @@ Guiding constraints (all binding):
 | [Aktuelles](feature-news.md) | capability | shipped | Meldungen (list + detail) + landing teaser |
 | [Galerie](feature-gallery.md) | capability | shipped | Public Album index + Album pages + photo viewer |
 | [Mitglied werden](feature-membership-funnel.md) | capability | shipped | Membership info + Beitrittsantrag funnel |
-| [Konfetti-Kompass](feature-group-matcher.md) | capability | shipped | Wahl-O-Mat-style Gruppen matcher on `/join` |
+| [Jeck-Check](feature-group-matcher.md) | capability | shipped | Wahl-O-Mat-style Gruppen matcher on `/join` |
 
 ---
 
@@ -579,7 +579,7 @@ Followed the plan closely; build-level choices worth knowing:
 - **The ten theses are deliberate nonsense and the page says so** (added on the user's call right after
   the phase closed): the first cut shipped plausible-sounding theses, which makes a matcher look real
   while no Gruppe has answered anything — the same lie P5 banned for photo credits and P4 for the
-  "Vorstand" byline. The prompts are now openly absurd, the Kompass intro names them **Platzhalter**
+  "Vorstand" byline. The prompts are now openly absurd, the Jeck-Check intro names them **Platzhalter**
   (asserted by a test), and only the **age filter stays honest**, because it is load-bearing for the
   exclusion guarantee and its answer is printed back as a reason. The stances were left untouched, so
   every scoring and spread property still holds. Copy rule that follows from it: **placeholder content
@@ -589,10 +589,10 @@ Followed the plan closely; build-level choices worth knowing:
   only its own schemas (the answer map, the form schema). The `to >= from` age invariant is a **test
   assertion, not a Zod refine** — there is no refine/superRefine precedent in this codebase.
 - **`KkSectionRoot` gained an optional `id`** so a section can own its anchor and the hero's
-  secondary CTA can jump to the Kompass. One prop, no behaviour change.
-- **`JoinPage` takes children and the route composes it with `KonfettiKompass`** — the two are
+  secondary CTA can jump to the Jeck-Check. One prop, no behaviour change.
+- **`JoinPage` takes children and the route composes it with `GroupMatcherSection`** — the two are
   separate features and features never import each other, so the composition has to happen in the
-  route. The Kompass anchor id lives in `join-content.ts` and is deliberately **not** barrel-exported.
+  route. The Jeck-Check anchor id lives in `join-content.ts` and is deliberately **not** barrel-exported.
 - **`join_.apply.tsx` needs the trailing underscore** — P4's router finding again: the dotted name
   would nest the form inside `JoinPage`, which renders no `<Outlet/>`. A route test proves it renders
   standalone.
@@ -608,7 +608,7 @@ Followed the plan closely; build-level choices worth knowing:
 - **Two environment realities:** MUI v9 dropped `Checkbox.inputRef`, so the consent box passes the ref
   via `slotProps={{ input: { ref } }}`; and a sticky summary aside is impossible because
   `PageLayout`'s root sets `overflow: hidden`, which kills `position: sticky`.
-- **Only the hero's Antrag CTA became a typed `Link`.** The Kompass result CTA keeps a plain href for
+- **Only the hero's Antrag CTA became a typed `Link`.** The Jeck-Check result CTA keeps a plain href for
   two concrete reasons: `renderWithProviders` mounts no router, so a TanStack `Link` throws and would
   force 20+ component tests onto `renderAtRoute`; and a typed `search={{ groups }}` serialises through
   `URLSearchParams`, turning the documented `?groups=a,b` into `?groups=a%2Cb`.
@@ -622,7 +622,7 @@ Followed the plan closely; build-level choices worth knowing:
 - **Copy adjustments forced by the page itself:** the band CTA reads *"Jetzt Antrag stellen →"*, not
   *"Antrag stellen →"*, because the hero already owns that accessible name and three `findByRole`
   queries went ambiguous. The hero's secondary CTA reads *"Wo passe ich hin? ↓"* rather than naming the
-  Kompass (fits one line at 360px, and the arrow signals an in-page jump). The third hero stat is the
+  Jeck-Check (fits one line at 360px, and the arrow signals an in-page jump). The third hero stat is the
   **Session ordinal**, so it does not repeat the eyebrow's `yearsLabel`. The FAQ shipped **eight**
   questions.
 - **Reviews** ran per slice (`react-code-reviewer`, plus `react-composition-guru` on slices 2/3/5/6/7/9).
@@ -636,16 +636,16 @@ Followed the plan closely; build-level choices worth knowing:
 - **Visual verification is uneven again, and owes a pass** (same debt P5 recorded). Only the Ticket
   was checked in a real headless browser (360px dark, 1280px light, via a temporary local grant file
   that was deleted, not committed). Every other section rests on token reuse and CSS reasoning — the
-  Kompass stepper/result, the four steps, the FAQ and the band have **not** been eyeballed at 360px or
+  Jeck-Check stepper/result, the four steps, the FAQ and the band have **not** been eyeballed at 360px or
   in the dark scheme.
-- **The all-excluded Kompass state is verified through the pure selector**, with a synthetic matcher,
+- **The all-excluded Jeck-Check state is verified through the pure selector**, with a synthetic matcher,
   because the plan's own content rule ("no age band may come back empty") means the real seed can never
   produce it. The plan's testing rule prefers that level anyway.
 
-- [x] [Mitglied werden](feature-membership-funnel.md) — `/join` info page (hero · Kompass · Ticket ·
+- [x] [Mitglied werden](feature-membership-funnel.md) — `/join` info page (hero · Jeck-Check · Ticket ·
       vier Schritte · FAQ · Kontakt · Band) and `/join/apply` (Antrag + in-place confirmation),
       wired to `POST /api/membership-applications`
-- [x] [Konfetti-Kompass](feature-group-matcher.md) — eleven questions, Gruppe-owned positions and
+- [x] [Jeck-Check](feature-group-matcher.md) — eleven questions, Gruppe-owned positions and
       weights, `weighted` + `filter` question roles, normalised scoring as a tested pure function,
       ranked result with derived «warum» and recruiting badges
 - [x] `@furria/ui` — promoted **`KkStatRow`** (slotted compound: root + `.Item`/`.Value`/`.Label`) and
@@ -682,7 +682,7 @@ Followed the plan closely; build-level choices worth knowing:
 - **Two domain facts killed large parts of the mock.** There are **no open, drop-in trainings** and
   no recurring public training times — so *"erst vorbeikommen, dann entscheiden"*, the dated
   open-training list, the free-spot counts and the "Turnschuhe reichen" copy are all gone; the
-  low-commitment step is the Kompass plus an Anfrage. And **Kostüme are not (all) club-funded**, so
+  low-commitment step is the Jeck-Check plus an Anfrage. And **Kostüme are not (all) club-funded**, so
   that benefit claim is removed everywhere.
 - **Mitgliedschaftsart is derived from the Geburtsdatum, never asked** — the mock's form allows
   "Aktiv" with a 2015 birth date. Only **Aktiv** and **Jugend** are joinable; **Ehren** is not
@@ -693,7 +693,7 @@ Followed the plan closely; build-level choices worth knowing:
   rejected as the system — fifth phase running.**
 - **Three mock features cut:** the three named contacts with private mobile numbers (P5's
   invented-people ban plus a real spam/DSGVO problem), the **Helfer-Liste** (dead target, P5's
-  dead-link precedent), and a **Gruppen showcase** on `/join` (the Kompass result plus `/club`
+  dead-link precedent), and a **Gruppen showcase** on `/join` (the Jeck-Check result plus `/club`
   already cover it — no third roster surface).
 - **Two form defects fixed:** the consent checkbox **defaults to checked** (legally invalid) and it
   **bundles photo consent** into the same box (Kopplungsverbot) — on a topic `CONTEXT.md` flags as
@@ -758,7 +758,7 @@ When the backend lands, these become real phases.
 The one exception that does **not** need the Club-App: it serves `/join` alone, on the API we
 already deploy. **P6 shipped the frontend only** (done 2026-07-30) and the contract is fully designed
 in [Mitglied werden](feature-membership-funnel.md) and
-[Konfetti-Kompass](feature-group-matcher.md) — recorded here so nothing is re-litigated later.
+[Jeck-Check](feature-group-matcher.md) — recorded here so nothing is re-litigated later.
 Until it exists, a submitted Antrag fails honestly into the form's error state, which always offers
 the human fallback.
 

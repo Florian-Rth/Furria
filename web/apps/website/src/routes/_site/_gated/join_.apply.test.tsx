@@ -37,7 +37,7 @@ describe('join apply route', () => {
     );
   });
 
-  it('ticks the Gruppen the Kompass handed over', async () => {
+  it('ticks the Gruppen the Matcher handed over', async () => {
     renderAtRoute('/join/apply?groups=buettenrede,elferrat');
 
     expect(await screen.findByRole('checkbox', { name: 'Büttenrede' })).toBeChecked();

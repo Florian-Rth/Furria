@@ -8,7 +8,7 @@ import {
   joinPageTitle,
   joinPrimaryCtaLabel,
   joinSecondaryCtaLabel,
-  kompassSectionHref,
+  matcherSectionHref,
 } from '@/features/membership/join-content';
 import { JoinHeroPhoto } from './internal/ui/JoinHeroPhoto';
 import { JoinHeroStats } from './internal/ui/JoinHeroStats';
@@ -29,7 +29,7 @@ export const JoinHero: FC = () => (
         >
           {joinPrimaryCtaLabel}
         </Button>
-        <Button href={kompassSectionHref} variant="outlined" size="large">
+        <Button href={matcherSectionHref} variant="outlined" size="large">
           {joinSecondaryCtaLabel}
         </Button>
       </KkHeroSection.Actions>

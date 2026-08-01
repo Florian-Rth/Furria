@@ -1,5 +1,5 @@
 ---
-title: Konfetti-Kompass (Gruppenfinder)
+title: Jeck-Check (Gruppenfinder)
 slug: group-matcher
 type: capability
 status: shipped
@@ -89,10 +89,18 @@ tested function, and the result is a ranking the visitor can interrogate.
 - **Gruppe data the matcher needs** (all part of the same seed/future `GET /api/groups` payload):
   `id`, `name`, `ageRange`, `isRecruiting`, plus a short line for the result card. Deliberately
   **not** `trainingSlot`/`location` — see Recruiting status above.
-- **Name: «KONFETTI-KOMPASS»** (eyebrow), headline **WO PASSE ICH HIN?**. Code name stays
+- **Name: «JECK-CHECK»** (eyebrow), headline **WO PASSE ICH HIN?**. Code name stays
   `group-matcher`. **Deliberately not an "-O-Mat"**: the Bundeszentrale für politische Bildung
   holds the *Wahl-O-Mat* word mark and has objected to derivative names — so the mock's "Findomat"
-  is out on legal exposure, not taste.
+  is out on legal exposure, not taste. Two tests guard the rule (`matcher-content.test.ts`,
+  `GroupMatcherSection.test.tsx`): kicker plus headline may never contain `-mat`.
+- **«Konfetti-Kompass» was the shipped name until it was replaced by «Jeck-Check».** The Kompass
+  said nothing about what the section does; visitors read it as decoration, not as a tool. «Check»
+  states the mechanic — a short, non-binding test — and «Jeck» keeps the carnival register.
+  `-O-Mat` candidates were weighed again and dropped again, for the word-mark reason above.
+- **German brand names never enter the code.** The section is `GroupMatcherSection`, its parts are
+  `Matcher*`, its copy lives in `matcher-content.ts`, the anchor is `#group-matcher`. The display
+  name exists exactly once, as the value of `matcherKicker` — renaming it again is a one-line change.
 
 ### Architecture
 
@@ -115,8 +123,8 @@ tested function, and the result is a ranking the visitor can interrogate.
 
 ## What shipped (P6, 2026-07-30)
 
-`features/group-matcher/` with the `KonfettiKompass` section on `/join`: stepper → result, both inside
-one `KompassPanel`. The model, the scoring scale, the recruiting rule and every edge case shipped
+`features/group-matcher/` with the `GroupMatcherSection` section on `/join`: stepper → result, both inside
+one `MatcherPanel`. The model, the scoring scale, the recruiting rule and every edge case shipped
 exactly as decided above. What differs from this file, and why:
 
 - **The payload embeds the Gruppen.** `SEEDED_GROUP_MATCHER` is `{ groups, questions }`, so the whole
@@ -167,7 +175,7 @@ exactly as decided above. What differs from this file, and why:
   (not a typed `Link`) — see [Mitglied werden](feature-membership-funnel.md) → What shipped.
 - **The stepper's own review fix:** the step machine was first derived inline inside a presentational
   part; it moved into `use-kompass-progress`, with the derivation extracted as pure selectors
-  (`selectQuestionIds`, `selectKompassStepView`) and tested directly.
+  (`selectQuestionIds`, `selectMatcherStepView`) and tested directly.
 - **Not verified in a browser:** the stepper and result rest on token reuse and CSS reasoning — no
   layout engine in happy-dom and no automation was run for this section. 360px and the dark scheme are
   still owed.

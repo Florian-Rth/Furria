@@ -1,12 +1,11 @@
 import { screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { kompassTitle } from '@/features/group-matcher/kompass-content';
+import { matcherTitle } from '@/features/group-matcher/matcher-content';
 import { joinClosingBandContent } from '@/features/membership/closing-content';
 import { joinContactTitle } from '@/features/membership/contact-content';
 import { joinFaqTitle } from '@/features/membership/faq-content';
 import { joinPageTitle } from '@/features/membership/join-content';
 import { JOIN_STEPS, joinStepsTitle } from '@/features/membership/steps-content';
-import { membershipTicketTitle } from '@/features/membership/ticket-content';
 import { writeGrantedToSession } from '@/features/preview-access';
 import { CLUB_CONTACT_EMAIL, currentSession } from '@/lib/club';
 import { markChangelogSeen } from '@/test/changelog';
@@ -23,18 +22,16 @@ afterEach(() => {
 });
 
 describe('join route', () => {
-  it('leads with the thesis headline and the running Session', async () => {
+  it('leads with the page name and invites the visitor in', async () => {
     renderAtRoute('/join');
 
     expect(
-      await screen.findByRole('heading', { level: 1, name: 'DU MUSST NICHT TANZEN KÖNNEN.' }),
+      await screen.findByRole('heading', { level: 1, name: 'MITGLIED WERDEN' }),
     ).toBeInTheDocument();
-    expect(
-      screen.getByText(`MITGLIED WERDEN · SESSION ${currentSession.yearsLabel}`),
-    ).toBeInTheDocument();
+    expect(screen.getByText('DU MÖCHTEST MITMACHEN?')).toBeInTheDocument();
   });
 
-  it('offers the Antrag first and the Kompass as the low-commitment second step', async () => {
+  it('offers the Antrag first and the Matcher as the low-commitment second step', async () => {
     renderAtRoute('/join');
 
     expect(await screen.findByRole('link', { name: 'Antrag stellen →' })).toHaveAttribute(
@@ -43,31 +40,19 @@ describe('join route', () => {
     );
     expect(screen.getByRole('link', { name: 'Wo passe ich hin? ↓' })).toHaveAttribute(
       'href',
-      '#konfetti-kompass',
+      '#group-matcher',
     );
   });
 
-  it('carries the Kompass section the hero points at', async () => {
+  it('carries the Matcher section the hero points at', async () => {
     renderAtRoute('/join');
 
-    const kompassLink = await screen.findByRole('link', { name: 'Wo passe ich hin? ↓' });
-    const target = kompassLink.getAttribute('href')?.replace('#', '') ?? '';
+    const matcherLink = await screen.findByRole('link', { name: 'Wo passe ich hin? ↓' });
+    const target = matcherLink.getAttribute('href')?.replace('#', '') ?? '';
 
     expect(await screen.findByRole('heading', { level: 2, name: 'WO PASSE ICH HIN?' })).toBe(
       document.getElementById(target)?.querySelector('h2'),
     );
-  });
-
-  it('lays the Ticket on the page as a second way into the Antrag', async () => {
-    renderAtRoute('/join');
-
-    expect(await screen.findByRole('link', { name: 'Antrag stellen' })).toHaveAttribute(
-      'href',
-      '/join/apply',
-    );
-    expect(
-      screen.getByRole('heading', { level: 2, name: 'ALLES AUF EINER KARTE.' }),
-    ).toBeInTheDocument();
   });
 
   it('shows three derived stats and no invented fourth one', async () => {
@@ -89,8 +74,7 @@ describe('join route', () => {
       .map((heading) => heading.textContent);
 
     expect(sectionTitles).toEqual([
-      kompassTitle,
-      membershipTicketTitle,
+      matcherTitle,
       joinStepsTitle,
       joinFaqTitle,
       joinContactTitle,

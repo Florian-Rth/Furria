@@ -1,7 +1,7 @@
 import type { MatcherAnswers } from './schemas';
 import { MatcherAnswersSchema } from './schemas';
 
-const STORAGE_KEY = 'furria.kompass.answers';
+const STORAGE_KEY = 'furria.matcher.answers';
 
 type SessionReader = Pick<Storage, 'getItem'>;
 type SessionWriter = Pick<Storage, 'setItem'>;

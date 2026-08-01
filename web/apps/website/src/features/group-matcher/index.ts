@@ -1,5 +1,5 @@
 export { groupMatcherKeys, useGroupMatcherQuery } from './api';
-export { KonfettiKompass } from './components/KonfettiKompass/KonfettiKompass';
+export { GroupMatcherSection } from './components/GroupMatcherSection/GroupMatcherSection';
 export type { MatchAgreement, MatchReason } from './match-reasons';
 export { buildMatchReasons, classifyAgreement } from './match-reasons';
 export type { MatcherAnswers } from './schemas';

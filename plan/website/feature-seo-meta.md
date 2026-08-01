@@ -106,7 +106,7 @@ shareable material" ambition on the public side.
 
 - Per-route `head` for **`/join`** and **`/join/apply`**, no new mechanism. Both are **indexed** —
   "beitrittsantrag" is a real search intent and the form page is not thin content.
-- **Both stay prerenderable**, because their body copy is static constants. The Konfetti-Kompass
+- **Both stay prerenderable**, because their body copy is static constants. The Jeck-Check
   fetches, but it is interactive UI with no indexable content — the deliberate split recorded in
   [API-Client](feature-api-client.md). The rule to carry forward: **anything that must be indexed
   must not be async.**

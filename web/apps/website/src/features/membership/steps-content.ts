@@ -16,7 +16,7 @@ export const JOIN_STEPS: JoinStep[] = [
   {
     title: 'Gruppe finden',
     description:
-      'Der Konfetti-Kompass zeigt dir, wo du hinpassen könntest. Und wenn dir nichts davon zusagt: ohne Gruppe zu starten ist genauso normal, dazustoßen kannst du später jederzeit.',
+      'Der Jeck-Check zeigt dir, wo du hinpassen könntest. Und wenn dir nichts davon zusagt: ohne Gruppe zu starten ist genauso normal, dazustoßen kannst du später jederzeit.',
   },
   {
     title: 'Antrag stellen',

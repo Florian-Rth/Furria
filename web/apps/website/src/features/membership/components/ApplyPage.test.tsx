@@ -11,7 +11,7 @@ import {
   applySatzungLabel,
   applySubmitLabel,
 } from '@/features/membership/apply-content';
-import { renderWithProviders } from '@/test/render';
+import { renderWithRouter } from '@/test/render';
 import { ApplyPage } from './ApplyPage';
 
 const labelPattern = (label: string): RegExp => new RegExp(`^${label}( \\*)?$`);
@@ -50,7 +50,7 @@ afterEach(() => {
 
 describe('ApplyPage', () => {
   it('asks for the full postal address, not just the Wohnort', () => {
-    renderWithProviders(<ApplyPage prefilledGroupInterests={[]} />);
+    renderWithRouter(<ApplyPage prefilledGroupInterests={[]} />);
 
     expect(fieldByLabel(applyFieldLabels.street)).toBeInTheDocument();
     expect(fieldByLabel(applyFieldLabels.postalCode)).toBeInTheDocument();
@@ -58,7 +58,7 @@ describe('ApplyPage', () => {
   });
 
   it('never lets the applicant pick a Mitgliedschaftsart', () => {
-    renderWithProviders(<ApplyPage prefilledGroupInterests={[]} />);
+    renderWithRouter(<ApplyPage prefilledGroupInterests={[]} />);
 
     expect(screen.queryAllByRole('radio')).toHaveLength(0);
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
@@ -66,14 +66,14 @@ describe('ApplyPage', () => {
   });
 
   it('waits for the Geburtsdatum before naming a Mitgliedschaft', () => {
-    renderWithProviders(<ApplyPage prefilledGroupInterests={[]} />);
+    renderWithRouter(<ApplyPage prefilledGroupInterests={[]} />);
 
     expect(screen.getAllByText('steht mit dem Geburtsdatum')).toHaveLength(2);
     expect(screen.getByText('0 €')).toBeInTheDocument();
   });
 
   it('derives Aktiv and 30 € from an adult Geburtsdatum', async () => {
-    renderWithProviders(<ApplyPage prefilledGroupInterests={[]} />);
+    renderWithRouter(<ApplyPage prefilledGroupInterests={[]} />);
 
     setBirthDate('1994-03-14');
 
@@ -83,7 +83,7 @@ describe('ApplyPage', () => {
   });
 
   it('derives Jugend and 15 € under 18 and opens the guardian block', async () => {
-    renderWithProviders(<ApplyPage prefilledGroupInterests={[]} />);
+    renderWithRouter(<ApplyPage prefilledGroupInterests={[]} />);
 
     setBirthDate('2015-05-04');
 
@@ -94,7 +94,7 @@ describe('ApplyPage', () => {
   });
 
   it('words the Einwilligung as the guardian’s once one is needed', async () => {
-    renderWithProviders(<ApplyPage prefilledGroupInterests={[]} />);
+    renderWithRouter(<ApplyPage prefilledGroupInterests={[]} />);
 
     setBirthDate('2015-05-04');
 
@@ -102,7 +102,7 @@ describe('ApplyPage', () => {
   });
 
   it('starts with one unchecked Einwilligung that carries no photo consent', () => {
-    renderWithProviders(<ApplyPage prefilledGroupInterests={[]} />);
+    renderWithRouter(<ApplyPage prefilledGroupInterests={[]} />);
 
     expect(screen.getAllByRole('checkbox', { name: /Satzung/ })).toHaveLength(1);
     expect(consentCheckbox()).not.toBeChecked();
@@ -111,7 +111,7 @@ describe('ApplyPage', () => {
   });
 
   it('links the Satzung as a plain anchor, next to the Datenschutzhinweise', () => {
-    renderWithProviders(<ApplyPage prefilledGroupInterests={[]} />);
+    renderWithRouter(<ApplyPage prefilledGroupInterests={[]} />);
 
     expect(screen.getByRole('link', { name: applySatzungLabel })).toHaveAttribute(
       'href',
@@ -126,7 +126,7 @@ describe('ApplyPage', () => {
   it('refuses to send the Antrag while the Einwilligung is missing', async () => {
     const user = userEvent.setup();
     const fetchMock = stubFetch(404);
-    renderWithProviders(<ApplyPage prefilledGroupInterests={[]} />);
+    renderWithRouter(<ApplyPage prefilledGroupInterests={[]} />);
 
     await fillRequiredFields(user, '1994-03-14');
     await submit(user);
@@ -140,7 +140,7 @@ describe('ApplyPage', () => {
   it('insists on a guardian contact for someone under 18', async () => {
     const user = userEvent.setup();
     const fetchMock = stubFetch(404);
-    renderWithProviders(<ApplyPage prefilledGroupInterests={[]} />);
+    renderWithRouter(<ApplyPage prefilledGroupInterests={[]} />);
 
     await fillRequiredFields(user, '2015-05-04');
     await user.click(consentCheckbox());
@@ -162,7 +162,7 @@ describe('ApplyPage', () => {
   it('posts the Antrag to the real endpoint and falls back to a human when it is not there', async () => {
     const user = userEvent.setup();
     const fetchMock = stubFetch(404);
-    renderWithProviders(<ApplyPage prefilledGroupInterests={[]} />);
+    renderWithRouter(<ApplyPage prefilledGroupInterests={[]} />);
 
     await fillRequiredFields(user, '1994-03-14');
     await user.click(consentCheckbox());
@@ -189,7 +189,7 @@ describe('ApplyPage', () => {
   it('reports success and drops the Antrag silently when the honeypot was filled', async () => {
     const user = userEvent.setup();
     const fetchMock = stubFetch(404);
-    renderWithProviders(<ApplyPage prefilledGroupInterests={[]} />);
+    renderWithRouter(<ApplyPage prefilledGroupInterests={[]} />);
 
     await fillRequiredFields(user, '1994-03-14');
     await user.click(consentCheckbox());
@@ -207,7 +207,7 @@ describe('ApplyPage', () => {
   it('confirms in place without calling the applicant a Mitglied', async () => {
     const user = userEvent.setup();
     stubFetch(201);
-    renderWithProviders(<ApplyPage prefilledGroupInterests={[]} />);
+    renderWithRouter(<ApplyPage prefilledGroupInterests={[]} />);
 
     await fillRequiredFields(user, '1994-03-14');
     await user.click(consentCheckbox());
@@ -223,16 +223,16 @@ describe('ApplyPage', () => {
     expect(screen.getByText(/noch kein Mitglied/)).toBeInTheDocument();
   });
 
-  it('ticks the Gruppen the Kompass handed over', async () => {
-    renderWithProviders(<ApplyPage prefilledGroupInterests={['organisation']} />);
+  it('ticks the Gruppen the Matcher handed over', async () => {
+    renderWithRouter(<ApplyPage prefilledGroupInterests={['organisation']} />);
 
     expect(await screen.findByRole('checkbox', { name: 'Organisation' })).toBeChecked();
     expect(screen.getByRole('checkbox', { name: 'Tanzgarde' })).not.toBeChecked();
   });
 
-  it('lets the applicant untick a Gruppe the Kompass suggested', async () => {
+  it('lets the applicant untick a Gruppe the Matcher suggested', async () => {
     const user = userEvent.setup();
-    renderWithProviders(<ApplyPage prefilledGroupInterests={['organisation']} />);
+    renderWithRouter(<ApplyPage prefilledGroupInterests={['organisation']} />);
 
     await user.click(await screen.findByRole('checkbox', { name: 'Organisation' }));
 
@@ -242,7 +242,7 @@ describe('ApplyPage', () => {
   it('sends no Gruppe the roster does not know, however it got into the url', async () => {
     const user = userEvent.setup();
     const fetchMock = stubFetch(201);
-    renderWithProviders(
+    renderWithRouter(
       <ApplyPage prefilledGroupInterests={['organisation', 'showtanz', 'werkstatt']} />,
     );
 

@@ -6,9 +6,6 @@ export interface JoinStat {
   label: string;
 }
 
-export const buildJoinEyebrow = (yearsLabel: string): string =>
-  `MITGLIED WERDEN · SESSION ${yearsLabel}`;
-
 export const buildJoinStats = (
   memberCount: string,
   groupCount: number,
@@ -19,7 +16,7 @@ export const buildJoinStats = (
   { value: `${session.number}.`, label: 'Session' },
 ];
 
-export const joinEyebrow: string = buildJoinEyebrow(currentSession.yearsLabel);
+export const joinEyebrow = 'DU MÖCHTEST MITMACHEN?';
 
 export const joinStats: JoinStat[] = buildJoinStats(
   MEMBER_COUNT_PLACEHOLDER,
@@ -27,17 +24,17 @@ export const joinStats: JoinStat[] = buildJoinStats(
   currentSession,
 );
 
-export const joinPageTitle = 'DU MUSST NICHT TANZEN KÖNNEN.';
+export const joinPageTitle = 'MITGLIED WERDEN';
 
 export const joinDescription =
-  'Was Menschen vom Verein fernhält, ist selten der Beitrag. Es ist der Gedanke, hier seien alle seit der Grundschule im Takt — und man selbst guckt beim ersten Aufstellen in die falsche Richtung. Passiert. Jede Session. Geblieben sind sie trotzdem alle.';
+  'Auf dieser Seite steht alles, was du für den Schritt in den Verein brauchst: was eine Mitgliedschaft kostet, was du dafür bekommst, wie der Antrag abläuft — und welche Gruppe zu dir passt. Vorkenntnisse im Tanzen, Reimen oder Kassenführen sind ausdrücklich keine Bedingung.';
 
 export const joinHref = '/join';
 export const joinApplyHref = '/join/apply';
 export const joinPrimaryCtaLabel = 'Antrag stellen →';
 
-export const kompassSectionId = 'konfetti-kompass';
-export const kompassSectionHref = `#${kompassSectionId}`;
+export const matcherSectionId = 'group-matcher';
+export const matcherSectionHref = `#${matcherSectionId}`;
 export const joinSecondaryCtaLabel = 'Wo passe ich hin? ↓';
 
 export const joinHeroPhotoCaption = 'erste-session';

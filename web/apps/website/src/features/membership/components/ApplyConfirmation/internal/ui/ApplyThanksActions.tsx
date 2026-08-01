@@ -1,5 +1,6 @@
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
+import { Link as RouterLink } from '@tanstack/react-router';
 import type { FC } from 'react';
 import {
   applyThanksHomeHref,
@@ -14,10 +15,16 @@ export const ApplyThanksActions: FC = () => (
     data-kk-apply-thanks-actions
     sx={{ gap: { xs: 1.5, md: 2 }, flexWrap: 'wrap' }}
   >
-    <Button href={applyThanksProgramHref} variant="contained" color="primary" size="large">
+    <Button
+      component={RouterLink}
+      to={applyThanksProgramHref}
+      variant="contained"
+      color="primary"
+      size="large"
+    >
       {applyThanksProgramLabel}
     </Button>
-    <Button href={applyThanksHomeHref} variant="outlined" size="large">
+    <Button component={RouterLink} to={applyThanksHomeHref} variant="outlined" size="large">
       {applyThanksHomeLabel}
     </Button>
   </Stack>

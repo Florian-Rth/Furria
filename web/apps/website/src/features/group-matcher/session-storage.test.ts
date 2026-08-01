@@ -44,7 +44,7 @@ describe('group-matcher session storage', () => {
   it('ignores a session entry that is not readable as answers', () => {
     const storage = createFakeStorage();
 
-    storage.setItem('furria.kompass.answers', 'nicht mal JSON');
+    storage.setItem('furria.matcher.answers', 'nicht mal JSON');
 
     expect(readAnswersFromSession(storage)).toEqual({});
   });
@@ -52,7 +52,7 @@ describe('group-matcher session storage', () => {
   it('ignores a session entry of the wrong shape', () => {
     const storage = createFakeStorage();
 
-    storage.setItem('furria.kompass.answers', JSON.stringify({ stage: 3 }));
+    storage.setItem('furria.matcher.answers', JSON.stringify({ stage: 3 }));
 
     expect(readAnswersFromSession(storage)).toEqual({});
   });

@@ -16,11 +16,11 @@ band on `/club`. It explains what membership costs and means, and it captures th
 The page's thesis — taken from the mock and kept, because it is right — is that what keeps people
 out of a Karnevalsverein is **not** the Beitrag but the fear of not fitting in and of not being
 good enough. Hence the headline **"DU MUSST NICHT TANZEN KÖNNEN."** and hence the
-[Konfetti-Kompass](feature-group-matcher.md), which is its own feature.
+[Jeck-Check](feature-group-matcher.md), which is its own feature.
 
 ## Scope / Slices
 
-- `/join` — info page: hero, Konfetti-Kompass, the Ticket, the four steps, FAQ, contact, closing band.
+- `/join` — info page: hero, Jeck-Check, the Ticket, the four steps, FAQ, contact, closing band.
 - `/join/apply` — the Antrag form, and the confirmation rendered in its place on success.
 - `@furria/ui` — promote **`KkStatRow`** (rule of three).
 - `lib/seed/` — the deletable stand-in for the future backend payloads.
@@ -51,7 +51,7 @@ good enough. Hence the headline **"DU MUSST NICHT TANZEN KÖNNEN."** and hence t
 - **Two routes**: `/join` (persuade) and `/join/apply` (a focused, distraction-free form). The
   confirmation **replaces the form in place** on `/join/apply` — no `/join/done` orphan to guard
   against direct visits and no route to `noindex`.
-- The Kompass hands over via search param: `/join/apply?groups=a,b`, `validateSearch` + Zod,
+- The Jeck-Check hands over via search param: `/join/apply?groups=a,b`, `validateSearch` + Zod,
   **unknown ids dropped rather than 404**. This is also what keeps the two features decoupled.
 
 ### Seed data — the pattern for every future backend-bound feature
@@ -87,7 +87,7 @@ good enough. Hence the headline **"DU MUSST NICHT TANZEN KÖNNEN."** and hence t
 - **There are no open, drop-in trainings.** Nobody can simply turn up. This kills the mock's entire
   *"ERST VORBEIKOMMEN, DANN ENTSCHEIDEN"* premise, its dated open-training list, and the
   "Turnschuhe reichen / ohne Anmeldung" copy everywhere it appears. The low-commitment first step
-  is now the Kompass (costs nothing, asks for nothing) and an **Anfrage**, which is always welcome.
+  is now the Jeck-Check (costs nothing, asks for nothing) and an **Anfrage**, which is always welcome.
 - **Gruppen are independent of the Mitgliedschaft.** Person↔Gruppe is many-to-many and a Mitglied in
   no Gruppe is normal — hence the Antrag's group field is **optional and multi-select**, framed as
   interest, never as a commitment. An empty answer is a normal answer.
@@ -102,12 +102,12 @@ good enough. Hence the headline **"DU MUSST NICHT TANZEN KÖNNEN."** and hence t
 
 ### `/join` — the info page
 
-Order: **Hero → Konfetti-Kompass → Ticket → Die vier Schritte → FAQ → Kontakt → Band**.
+Order: **Hero → Jeck-Check → Ticket → Die vier Schritte → FAQ → Kontakt → Band**.
 `PageLayout` + `KkHeroSection` + `KkSection`/`KkSectionHeader` + `KkBandSection`, per P4.1 — no
 page shell, `<main>` or `Container` of its own.
 
 - **Hero.** Eyebrow `MITGLIED WERDEN · SESSION 2026/27`, H1 **DU MUSST NICHT TANZEN KÖNNEN.**,
-  lead, and **Antrag primary / Kompass secondary** — the page has one job, and the visitor who
+  lead, and **Antrag primary / Jeck-Check secondary** — the page has one job, and the visitor who
   arrived ready should not hunt for the form. Stats: **three, derived** from `lib/club.ts`
   (`MEMBER_COUNT_PLACEHOLDER`, `GROUP_COUNT_PLACEHOLDER`, `currentSession`). The mock's fourth
   stat, *"14 Neue 2026/27"*, is invented and unverifiable — dropped. The `Aside` slot stays
@@ -145,7 +145,7 @@ page shell, `<main>` or `Container` of its own.
   publishing private mobiles is a spam and DSGVO problem even when the people are real.
 - **No Helfer-Liste.** Its target does not exist (P5's dead-link precedent), and the need it served
   — *unterstützen, ohne mitzumachen* — has no separate home in the model.
-- **No Gruppen showcase section.** The Kompass result lists them; `/club` owns the showcase. One
+- **No Gruppen showcase section.** The Jeck-Check result lists them; `/club` owns the showcase. One
   link, no third roster surface.
 - **No landing teaser.** `/` is static-final and P4 spent its one slot on news; the
   Mitmachen-Band already points here.
@@ -196,7 +196,7 @@ above shipped as written. The deviations, so nobody reads this file as a lie abo
 - **Structure.** `features/membership/` owns `/join` (`JoinPage` + `JoinHero` + `MembershipTicket` +
   `JoinSteps` + `JoinFaq` + `JoinContact` + `JoinClosingBand`) and `/join/apply`
   (`ApplyPage` → `ApplyForm` compound + `ApplyConfirmation`). `JoinPage` **takes children** and the
-  route composes it with the Kompass — the matcher is a separate feature and features never import each
+  route composes it with the Jeck-Check — the matcher is a separate feature and features never import each
   other, so the route is the only place that can join them.
 - **The Antrag route file is `join_.apply.tsx`** — the trailing underscore, exactly P4's finding: the
   dotted name nests the form inside `JoinPage`, which renders no `<Outlet/>`. A route test pins it.
@@ -215,7 +215,7 @@ above shipped as written. The deviations, so nobody reads this file as a lie abo
 - **`?groups=` is filtered twice:** unknown ids are dropped when prefilling the chips *and* again from
   the submitted payload (`selectKnownGroupIds`). `validateSearch` + Zod `.catch(undefined)`; a
   malformed param renders the normal form and never 404s.
-- **Only the hero's Antrag CTA is a typed `Link`.** The Kompass result CTA stays a plain href:
+- **Only the hero's Antrag CTA is a typed `Link`.** The Jeck-Check result CTA stays a plain href:
   `renderWithProviders` mounts no router (a TanStack `Link` throws), and a typed `search={{ groups }}`
   serialises through `URLSearchParams`, turning the documented `?groups=a,b` into `?groups=a%2Cb`.
 - **The Ticket's stub does not stack at `xs`** — it stays a narrow vertical column at every breakpoint,
@@ -226,7 +226,7 @@ above shipped as written. The deviations, so nobody reads this file as a lie abo
   root sets `overflow: hidden`.
 - **Copy deltas.** The closing band CTA is *"Jetzt Antrag stellen →"* — the hero already owns
   *"Antrag stellen →"* and the duplicate accessible name made three `findByRole` queries ambiguous. The
-  hero's secondary CTA is *"Wo passe ich hin? ↓"* rather than naming the Kompass (one line at 360px,
+  hero's secondary CTA is *"Wo passe ich hin? ↓"* rather than naming the Jeck-Check (one line at 360px,
   and the arrow reads as an in-page jump). The third hero stat is the **Session ordinal**, so it does
   not repeat the eyebrow's `yearsLabel`. The FAQ shipped **eight** questions; answer 1 says *"der
   Elferrat trägt die Prunksitzung"* because step 03 uses "Sitzung" in the meeting sense on the same
@@ -272,14 +272,14 @@ Ten vertical slices, each leaving the app building and working. **Frontend only*
 2. **`KkStatRow` in `@furria/ui`.** Slotted compound; migrate `HeroStatRow` and `ClubStoryStats`.
    *Verify:* both pages unchanged visually, light + dark; `packages/ui` tests.
 3. **`/join` page shell + hero.** `PageLayout` + `KkHeroSection`, replacing `PlaceholderPage`;
-   headline, lead, Antrag-primary/Kompass-secondary CTAs, three derived stats via `KkStatRow`,
+   headline, lead, Antrag-primary/Jeck-Check-secondary CTAs, three derived stats via `KkStatRow`,
    decorative `Aside`, per-route `head`. *Verify:* route test, 360/390/900/1280px, light + dark.
-4. **Kompass logic, no UI.** `features/group-matcher/`: schemas, seed for the eleven questions and
+4. **Jeck-Check logic, no UI.** `features/group-matcher/`: schemas, seed for the eleven questions and
    all 6 × 11 positions, `api.ts` query hooks, and the pure scoring module. *Verify:* unit tests for
    normalisation, skips, filter exclusion, zero-answers, all-excluded, and tie stability.
-5. **Kompass stepper.** One question per step, progress, `zurück`, `überspringen`, `sessionStorage`.
+5. **Jeck-Check stepper.** One question per step, progress, `zurück`, `überspringen`, `sessionStorage`.
    *Verify:* interaction tests; refresh keeps answers.
-6. **Kompass result.** Ranking with bars, derived «warum», recruiting badges, excluded-with-reason
+6. **Jeck-Check result.** Ranking with bars, derived «warum», recruiting badges, excluded-with-reason
    list, CTAs, and the `?groups=` handoff. *Verify:* the empty/all-excluded states render honestly.
 7. **The Ticket.** `MembershipTicket` compound: gold surface, perforation notches, vertical stub,
    tilt, blank `MITGLIED NR. ____`, stub CTA, `useReducedMotion`. *Verify:* contrast in both schemes;
@@ -302,5 +302,5 @@ Ten vertical slices, each leaving the app building and working. **Frontend only*
 - [ADR-0004](../../docs/adr/0004-website-writes-membership-applications.md) ·
   [ADR-0003](../../docs/adr/0003-website-rendering-strategy.md) (prerender vs. fetched content).
 - Mock: [`docs/design/join-page/`](../../docs/design/join-page/README.md) — adopted/rejected there.
-- Sibling: [Konfetti-Kompass](feature-group-matcher.md). Entry point:
+- Sibling: [Jeck-Check](feature-group-matcher.md). Entry point:
   [Mitmachen-Band](feature-mitmachen-band.md).

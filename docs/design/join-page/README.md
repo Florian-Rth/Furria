@@ -29,7 +29,7 @@ mock-only phone frame (`fcc-shared.jsx` — **do not port**).
   in any handoff so far: what keeps people out of a Karnevalsverein is not the Beitrag, it is the
   fear of not fitting in. The whole page is organised around removing that fear, and we keep that.
 - **The idea of a matcher** — "wo passe ich hin?" answered without asking for a name or an e-mail.
-  Rebuilt from scratch as the [Konfetti-Kompass](../../../plan/website/feature-group-matcher.md);
+  Rebuilt from scratch as the [Jeck-Check](../../../plan/website/feature-group-matcher.md);
   see Rejected.
 - **A ticket as the page's signature object.** Kept and pushed further (gold, real perforation
   notches, vertical stub, slight tilt) — with entirely rewritten content.
@@ -53,7 +53,7 @@ and [`feature-group-matcher.md`](../../../plan/website/feature-group-matcher.md)
 - **"ERST VORBEIKOMMEN, DANN ENTSCHEIDEN"** — the mock's entire low-commitment premise. **There are
   no open, drop-in trainings**; nobody can simply turn up. With it go the dated open-training list
   (`Di 04. AUG`), the free-spot counts, *"Anmeldung ist nett, aber nicht nötig"* and *"Turnschuhe
-  reichen"*. The zero-commitment step is now the Kompass plus an Anfrage.
+  reichen"*. The zero-commitment step is now the Jeck-Check plus an Anfrage.
 - **"Kostüme gestellt oder bezuschusst"** — not (all) true. Removed everywhere.
 - **Eight invented Gruppen** (Jugendgarde, Showtanz, Kostüm- & Wagenbau, Technik & Foto …) with
   invented ages, times, venues and free-spot counts. The club has **six**, already shipped on

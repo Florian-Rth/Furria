@@ -66,7 +66,7 @@ and error/loading states consistent across features.
 - **Async has an SEO cost.** Fetched content is not prerenderable
   ([ADR-0003](../../docs/adr/0003-website-rendering-strategy.md)), so choose per surface:
   interactive, non-indexable UI may fetch; indexable body content stays synchronous. P6 splits
-  exactly there — the Kompass fetches, `/club`'s Gruppen list reads the same seed synchronously.
+  exactly there — the Jeck-Check fetches, `/club`'s Gruppen list reads the same seed synchronously.
 
 **Deferred:**
 

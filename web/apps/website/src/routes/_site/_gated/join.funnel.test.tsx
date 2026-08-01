@@ -2,7 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import type { UserEvent } from '@testing-library/user-event';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { kompassResultLabels } from '@/features/group-matcher/kompass-content';
+import { matcherResultLabels } from '@/features/group-matcher/matcher-content';
 import {
   applyErrorTitle,
   applyFallbackLabel,
@@ -30,12 +30,14 @@ const fieldByLabel = (label: string): HTMLElement =>
 
 const answerEveryQuestion = async (user: UserEvent): Promise<void> => {
   for (let step = 0; step < SEEDED_GROUP_MATCHER.questions.length; step += 1) {
-    await user.click(screen.getByRole('button', { name: step === 0 ? '18 oder älter' : 'Ja' }));
+    await user.click(
+      await screen.findByRole('button', { name: step === 0 ? '18 oder älter' : 'Ja' }),
+    );
   }
 };
 
 const readHandoffHref = (): string => {
-  const links = screen.getAllByRole('link', { name: kompassResultLabels.applyCta });
+  const links = screen.getAllByRole('link', { name: matcherResultLabels.applyCta });
   const hrefs = links.map((link) => link.getAttribute('href') ?? '');
 
   return hrefs.find((href) => href.includes('?groups=')) ?? '';
@@ -65,7 +67,7 @@ afterEach(() => {
 
 describe('the membership funnel', () => {
   it(
-    'carries the visitor from the Kompass into the Antrag and on to the confirmation',
+    'carries the visitor from the Matcher into the Antrag and on to the confirmation',
     async () => {
       const user = userEvent.setup();
       const failingFetch = stubFetch(404);
@@ -76,7 +78,7 @@ describe('the membership funnel', () => {
       ).toBeInTheDocument();
 
       await answerEveryQuestion(user);
-      await screen.findByText(kompassResultLabels.rankingTitle);
+      await screen.findByText(matcherResultLabels.rankingTitle);
 
       const handoffHref = readHandoffHref();
 

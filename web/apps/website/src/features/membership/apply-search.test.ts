@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ApplySearchSchema, parseGroupInterestsParam } from './apply-search';
 
 describe('ApplySearchSchema', () => {
-  it('takes the Gruppen the Kompass handed over', () => {
+  it('takes the Gruppen the Matcher handed over', () => {
     expect(ApplySearchSchema.parse({ groups: 'tanzgarde,organisation' })).toEqual({
       groups: 'tanzgarde,organisation',
     });
@@ -26,7 +26,7 @@ describe('ApplySearchSchema', () => {
 });
 
 describe('parseGroupInterestsParam', () => {
-  it('reads the comma-separated ids the Kompass wrote', () => {
+  it('reads the comma-separated ids the Matcher wrote', () => {
     expect(parseGroupInterestsParam('tanzgarde,organisation')).toEqual([
       'tanzgarde',
       'organisation',
@@ -57,7 +57,7 @@ describe('parseGroupInterestsParam', () => {
     expect(parseGroupInterestsParam('tanzgarde,tanzgarde')).toEqual(['tanzgarde']);
   });
 
-  it('keeps the order the Kompass ranked them in', () => {
+  it('keeps the order the Matcher ranked them in', () => {
     expect(parseGroupInterestsParam('organisation,tanzgarde')).toEqual([
       'organisation',
       'tanzgarde',

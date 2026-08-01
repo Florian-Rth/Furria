@@ -16,6 +16,6 @@ export const JoinHeroPhoto: FC = () => (
       boxShadow: kkTokens.shadow.raised,
     }}
   >
-    <KkPhotoPlaceholder label={joinHeroPhotoCaption} aspectRatio={kkTokens.aspectRatio.portrait} />
+    <KkPhotoPlaceholder label={joinHeroPhotoCaption} aspectRatio={kkTokens.aspectRatio.landscape} />
   </Box>
 );

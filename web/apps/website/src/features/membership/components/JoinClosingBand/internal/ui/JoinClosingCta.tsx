@@ -1,10 +1,12 @@
 import Button from '@mui/material/Button';
+import { Link as RouterLink } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { joinClosingBandContent } from '@/features/membership/closing-content';
 
 export const JoinClosingCta: FC = () => (
   <Button
-    href={joinClosingBandContent.ctaHref}
+    component={RouterLink}
+    to={joinClosingBandContent.ctaHref}
     variant="contained"
     size="large"
     sx={{

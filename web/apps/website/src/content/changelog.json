@@ -91,14 +91,11 @@
     "icon": "membership",
     "description": [
       "Neue Seite „Mitglied werden“ mit allem, was eine Mitgliedschaft kostet und bedeutet",
-      "Der Konfetti-Kompass: elf Fragen, danach eine Rangliste, welche Gruppe zu dir passt",
-      "Die Antworten bleiben im Tab erhalten — neu laden verliert sie nicht",
-      "Das goldene Ticket fasst Beitrag, Laufzeit und Pause auf einen Blick zusammen",
+      "Interaktiver Fragebogen mit Auswertung welche Gruppe zu dir passt",
+      "Zusammenfassung über Beitrag, Laufzeit etc",
       "Vier Schritte zur Aufnahme, dazu häufige Fragen und eine Kontaktadresse",
       "Eigene Seite für den Beitrittsantrag; Art und Beitrag ergeben sich aus dem Geburtsdatum",
-      "Unter 18 kommt ein Feld für einen Erziehungsberechtigten dazu",
-      "Interessen aus dem Kompass sind im Antrag schon angekreuzt",
-      "Abschicken schlägt noch fehl — das Formular nennt dann die Mailadresse als Ausweg"
+      "Unter 18 kommt ein Feld für einen Erziehungsberechtigten dazu"
     ]
   }
 ]
