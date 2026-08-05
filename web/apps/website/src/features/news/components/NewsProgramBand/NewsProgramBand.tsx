@@ -1,11 +1,10 @@
-import { KkBandSection } from '@furria/ui';
+import { KkBandSection, KkBandWatermark } from '@furria/ui';
 import type { FC } from 'react';
 import { NewsProgramCopy } from './internal/ui/NewsProgramCopy';
 import { NewsProgramCta } from './internal/ui/NewsProgramCta';
-import { NewsProgramWatermark } from './internal/ui/NewsProgramWatermark';
 
 export const NewsProgramBand: FC = () => (
-  <KkBandSection decoration={<NewsProgramWatermark />}>
+  <KkBandSection decoration={<KkBandWatermark />}>
     <KkBandSection.Row>
       <NewsProgramCopy />
       <NewsProgramCta />

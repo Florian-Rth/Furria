@@ -11,7 +11,7 @@ export const storyPullQuote =
   'Wir leben die fünfte Jahreszeit — und arbeiten daran, sie auf eine sechste zu erweitern.';
 
 export const storyBodyPlaceholder =
-  'Vom ersten Besen bis zur eigenen Zeitzone: Der Furrsche Carnevals Club bringt Menschen aus Großbesenstadt zusammen, die den Karneval lieben — und die sich einig sind, dass eine Session grundsätzlich zu kurz ist.';
+  'Vom ersten Besen bis zur eigenen Zeitzone: Der Furrsche Carnevals Club bringt Menschen aus Großfurra zusammen, die den Karneval lieben — und die sich einig sind, dass eine Session grundsätzlich zu kurz ist.';
 
 export const storyBodyPlaceholderNote =
   'Hier steht bald die echte Vereinsgeschichte — dieser Text ist noch ein Platzhalter.';

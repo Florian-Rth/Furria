@@ -1,6 +1,5 @@
-import { KkSection } from '@furria/ui';
+import { KkLead, KkSection } from '@furria/ui';
 import { useTheme } from '@mui/material/styles';
-import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import {
   GROUPS,
@@ -20,12 +19,7 @@ export const GruppenGrid: FC = () => {
   return (
     <KkSection>
       <KkSection.Header {...groupsChapter} />
-      <Typography
-        variant="body1"
-        sx={{ color: 'text.secondary', fontWeight: 500, maxWidth: '48rem' }}
-      >
-        {groupsIntro}
-      </Typography>
+      <KkLead>{groupsIntro}</KkLead>
       <GruppenTileGrid>
         {GROUPS.map((group, index) => (
           <GruppenTile

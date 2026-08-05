@@ -119,7 +119,7 @@ Not a dump of everything that was shot. That restraint is the feature, not a lim
 - **Photographer credits must be unmistakably fake.** The mock credits *"Foto: Anja Weber"* /
   *"Uwe Krämer"* — plausible-sounding real people in what is effectively the **Fotograf** Amt. P4
   banned exactly this when it refused to invent a "Vorstand" byline.
-- **Großbesenstadt and the broom mark are established brand furniture, not a joke well.** The town
+- **The broom mark is brand furniture, not a joke well.** The village name (Großfurra) and the mark
   name ships in the masthead, footer, ticker, hero and Chronik and stays. But captions must **not**
   be built on broom gags — humour comes from the situations, as in `/news`.
 - **The takedown promise gets a working address.** *"Du bist auf einem Foto und möchtest es hier

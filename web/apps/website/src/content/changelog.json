@@ -83,5 +83,19 @@
       "Ein einzelnes Bild lässt sich direkt verlinken",
       "Alle Bilder sind noch Platzhalter"
     ]
+  },
+  {
+    "id": "website-p6-join-fe",
+    "date": "2026-07-30",
+    "title": "Mitglied werden",
+    "icon": "membership",
+    "description": [
+      "Neue Seite „Mitglied werden“ mit allem, was eine Mitgliedschaft kostet und bedeutet",
+      "Interaktiver Fragebogen mit Auswertung welche Gruppe zu dir passt",
+      "Zusammenfassung über Beitrag, Laufzeit etc",
+      "Vier Schritte zur Aufnahme, dazu häufige Fragen und eine Kontaktadresse",
+      "Eigene Seite für den Beitrittsantrag; Art und Beitrag ergeben sich aus dem Geburtsdatum",
+      "Unter 18 kommt ein Feld für einen Erziehungsberechtigten dazu"
+    ]
   }
 ]

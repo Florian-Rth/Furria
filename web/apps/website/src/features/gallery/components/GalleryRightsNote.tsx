@@ -1,3 +1,4 @@
+import { KkNote } from '@furria/ui';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
@@ -24,14 +25,11 @@ export const GalleryRightsNote: FC = () => (
     <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 600 }}>
       {rightsNoteCopyright}
     </Typography>
-    <Typography
-      variant="body2"
-      sx={{ color: 'text.secondary', fontWeight: 500, textWrap: 'pretty' }}
-    >
+    <KkNote>
       {rightsNoteQuestion} {rightsNoteHint}{' '}
       <Link href={rightsNoteContactHref} sx={{ fontWeight: 700, wordBreak: 'break-word' }}>
         {rightsNoteContactLabel}
       </Link>
-    </Typography>
+    </KkNote>
   </Stack>
 );

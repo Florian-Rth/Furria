@@ -7,11 +7,11 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { Link as RouterLink } from '@tanstack/react-router';
 import type { FC } from 'react';
-import type { Group } from '@/features/club/groups-content';
+import type { GroupProfile } from '@/features/club/groups-content';
 import { groupsModalLabels } from '@/features/club/groups-content';
 
 interface GruppenModalPanelProps {
-  group: Group;
+  group: GroupProfile;
   tint?: string;
   titleId: string;
   onClose: () => void;

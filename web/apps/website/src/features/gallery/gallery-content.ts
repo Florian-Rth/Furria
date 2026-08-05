@@ -1,4 +1,5 @@
 import type { KkPhotoOrientation } from '@furria/ui';
+import type { LinkProps } from '@tanstack/react-router';
 import type { Session } from '@/lib/club';
 import { CLUB_CONTACT_EMAIL, sessionAt } from '@/lib/club';
 import { formatLongDate } from '@/lib/date';
@@ -65,7 +66,7 @@ export interface GalleryProgramBandContent {
   kicker: string;
   headline: string;
   ctaLabel: string;
-  ctaTo: string;
+  ctaTo: LinkProps['to'];
 }
 
 export const galleryProgramBandContent: GalleryProgramBandContent = {
@@ -105,7 +106,7 @@ export const ALBUMS: Album[] = [
     date: '2026-02-16',
     venue: 'Dorfplatz',
     intro:
-      'Der Wagen hat gehalten, das Wetter auch. Elf Bilder vom Zug durch Großbesenstadt, inklusive der Kurve, die zweimal genommen werden musste.',
+      'Der Wagen hat gehalten, das Wetter auch. Elf Bilder vom Zug durch Großfurra, inklusive der Kurve, die zweimal genommen werden musste.',
     photoCredit: 'Kamera, auf dem Wagen festgeklebt',
     photos: [
       { orientation: 'landscape', alt: 'Der Wagen verlässt die Bauhalle' },

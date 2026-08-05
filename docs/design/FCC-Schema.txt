@@ -2,14 +2,13 @@
 
 Enum membership_type {
   active
-  passive
   youth
   honorary
 }
 
 Enum membership_status {
   active
-  inactive
+  paused
   left
 }
 

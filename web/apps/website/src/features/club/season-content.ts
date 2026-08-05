@@ -36,7 +36,7 @@ export const SEASON_STEPS: SeasonStep[] = [
     tag: 'Rosenmontag',
     title: 'Der Umzug',
     description:
-      'Wir ziehen durch Großbesenstadt — sofern der Wagen bis dahin eine Halle gefunden hat, in die er liegend passt. Kamelle fliegt bis ins Nachbardorf.',
+      'Wir ziehen durch Großfurra — sofern der Wagen bis dahin eine Halle gefunden hat, in die er liegend passt. Kamelle fliegt bis ins Nachbardorf.',
   },
   {
     tag: 'Aschermittwoch',

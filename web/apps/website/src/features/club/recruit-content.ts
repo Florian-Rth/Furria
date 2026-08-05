@@ -1,11 +1,12 @@
+import type { LinkProps } from '@tanstack/react-router';
 export interface RecruitBandContent {
   kicker: string;
   headline: string;
   intro: string;
   primaryLabel: string;
-  primaryTo: string;
+  primaryTo: LinkProps['to'];
   secondaryLabel: string;
-  secondaryTo: string;
+  secondaryTo: LinkProps['to'];
 }
 
 export const recruitBandContent: RecruitBandContent = {

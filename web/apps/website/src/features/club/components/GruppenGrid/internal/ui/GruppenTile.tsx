@@ -1,10 +1,10 @@
 import { KkCard, KkPhotoPlaceholder } from '@furria/ui';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
-import type { Group } from '@/features/club/groups-content';
+import type { GroupProfile } from '@/features/club/groups-content';
 
 interface GruppenTileProps {
-  group: Group;
+  group: GroupProfile;
   tint: string;
   badge: string;
   onOpen: () => void;

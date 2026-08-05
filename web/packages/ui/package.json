@@ -21,7 +21,9 @@
     "@emotion/styled": "catalog:",
     "@fontsource/anton": "catalog:",
     "@fontsource/archivo": "catalog:",
-    "@mui/material": "catalog:"
+    "@mui/material": "catalog:",
+    "@mui/x-date-pickers": "catalog:",
+    "date-fns": "catalog:"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "catalog:",

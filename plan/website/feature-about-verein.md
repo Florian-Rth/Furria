@@ -78,7 +78,7 @@ One scrolling page, sections top → bottom:
   pill idiom — **not** by importing `features/landing` internals. The giant numeral + ribbon are
   club-hero-local (used once → not promoted to `@furria/ui`, YAGNI).
 - **Derived, never hardcoded:** the giant numeral renders `currentSession.number` (today 55,
-  auto-flips to 56 after 11.11.2026); ribbon = `SEIT {FOUNDING_YEAR} · GROSSBESENSTADT`; eyebrow =
+  auto-flips to 56 after 11.11.2026); ribbon = `SEIT {FOUNDING_YEAR} · GROSSFURRA`; eyebrow =
   `FURRSCHER CARNEVALS CLUB e.V. · {currentSession.number}. SESSION`. All from `lib/club.ts`.
 - Headline (`KkTwoToneHeadline`, poster shadow **on**): line 1 ink **DIE FÜNFTE JAHRESZEIT**, line 2
   red **HAT EIN ZUHAUSE.** CTAs: primary **Mitglied werden →** → `/join`, secondary **Zum Programm**
@@ -119,6 +119,16 @@ One scrolling page, sections top → bottom:
   `KkPhotoPlaceholder` topper badge (01, 02…), Anton title, short blurb, meta line + "Mehr →". Tint
   per tile via a position-based **`resolveGroupTint(theme, index)`** (red/gold/ink cycle — same
   idiom as the shipped `resolveEventTint`).
+- **Amended in P6 (2026-07-30):** the roster is no longer owned here. `GROUPS` is now built from the
+  shared seed `lib/seed/groups.ts` (the future `GET /api/groups` payload) by a pure
+  `buildGroupProfiles(roster, editorial)`, with this page's editorial copy
+  (`blurb`/`memberMeta`/`fullText`/`lead`) keyed by Gruppe id in `GROUP_EDITORIAL`; key completeness is
+  asserted in both directions by tests. It stays a **synchronous module constant** — no React Query on
+  `/club`, because this content is indexable and P7 prerenders it
+  ([ADR-0003](../../docs/adr/0003-website-rendering-strategy.md)). The local interface was renamed
+  `Group` → **`GroupProfile`** so the seed can own the plain `Group` name for the API payload, and
+  `schedule` is gone (the seed carries `ageRange`, `isRecruiting` and `tagline` instead). Rendering is
+  unchanged.
 - Typed `Group` interface + editable `GROUPS` const. **Shipped field names are English**
   (`title, blurb, memberMeta, fullText, lead, schedule`) — the plan's `leitung`/`treffen` were
   renamed to `lead`/`schedule` to honour the code-is-English rule; the German visible labels
@@ -132,6 +142,23 @@ One scrolling page, sections top → bottom:
   `useReducedMotion()` (from `motion/react`, already a dep) collapses it to instant. Content: header
   photo, full description, LEITUNG / TREFFEN footer, **Mitglied werden →** button. State = single
   `openGroupId | null`.
+
+**P6 amendment (2026-07-29) — the roster moves, the section does not:**
+
+- `/join` needs the same Gruppen and features may never import each other, so the **roster moves to
+  the shared seed module** (`src/lib/seed/groups.ts`, shaped like the future `GET /api/groups`:
+  `id`, `name`, `ageRange`, **`isRecruiting`**). `/club` keeps its own editorial copy (`blurb`,
+  `fullText`, `lead`, `memberMeta`) keyed by that id, so this is a **data-source change, not a
+  rewrite** — exactly what P2 promised the typed interfaces would allow.
+- **`/club` keeps reading it synchronously and is deliberately *not* migrated to React Query.** Its
+  Gruppen list is indexable content and P7 prerenders every route — fetching would blank the section
+  for crawlers ([ADR-0003](../../docs/adr/0003-website-rendering-strategy.md)). The matcher on
+  `/join` is interactive and non-indexable, so it fetches. One source, two access paths.
+- `schedule` stays a `/club`-local label. It is **not** a public training time: P6 established that
+  the club has **no open, drop-in trainings** and no published recurring slots, so nothing on either
+  page may invite someone to simply turn up.
+- `ClubStoryStats` is replaced by the new shared **`KkStatRow`** — see
+  [Site-Shell](feature-site-shell.md).
 
 ### People wall (Kapitel 05) — Ämter, not "Vorstand"
 - The section presents the people who hold the club's public **Ämter** ("die Gesichter"). Title

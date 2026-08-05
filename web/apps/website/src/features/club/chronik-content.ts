@@ -19,7 +19,7 @@ export const MILESTONES: Milestone[] = [
     year: String(FOUNDING_YEAR),
     title: 'Der erste Besen',
     description:
-      'In Großbesenstadt gründen elf Narren den Furrschen Carnevals Club. Überliefert ist der Beschluss — nicht, wer den Besen mitgebracht hat.',
+      'In Großfurra gründen elf Narren den Furrschen Carnevals Club. Überliefert ist der Beschluss — nicht, wer den Besen mitgebracht hat.',
     isPlaceholder: false,
   },
   {

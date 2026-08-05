@@ -1,3 +1,4 @@
+import { kkTokens } from '@furria/ui';
 import Button from '@mui/material/Button';
 import type { FC } from 'react';
 import { copiedLinkLabel, copyLinkLabel } from '@/features/news/news-content';
@@ -15,7 +16,7 @@ export const NewsCopyLinkButton: FC = () => {
       variant="outlined"
       size="large"
       sx={{
-        minHeight: '2.75rem',
+        minHeight: kkTokens.tapTarget,
         alignSelf: { xs: 'stretch', sm: 'auto' },
         color: 'text.primary',
         borderColor: 'divider',

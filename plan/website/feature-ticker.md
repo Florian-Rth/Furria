@@ -16,7 +16,7 @@ its own foundation because it is chrome that can appear on more than the landing
 ## Scope / Slices
 
 - Reusable marquee component: red bar, Anton text, gold star separators, seamless loop.
-- Configurable content (default: "GROSS FURRIA ✶ GROSSBESENSTADT ✶ SESSION 2026 ✶").
+- Configurable content (default: "GROSS FURRIA ✶ GROSSFURRA ✶ SESSION 2026 ✶").
 - Respects reduced-motion.
 
 ## Decisions
@@ -28,7 +28,7 @@ its own foundation because it is chrome that can appear on more than the landing
   coupling, so it belongs with the other shared gestures rather than in website chrome). The
   consumer passes the content; no website copy is baked into the shared component.
 - **Content is static in P1**, passed by the website and built from `lib/club.ts`:
-  `GROSS FURRIA ✶ GROSSBESENSTADT ✶ SESSION {currentSession.yearsLabel} ✶` (session label derived,
+  `GROSS FURRIA ✶ GROSSFURRA ✶ SESSION {currentSession.yearsLabel} ✶` (session label derived,
   never hardcoded).
 - **Mounted landing-only in P1** — under the hero. Reusable, but no speculative placements (YAGNI).
 - **Build sequence:** delivered in P1 slice 5 — see the Implementation plan in [Landing](feature-landing.md).

@@ -5,7 +5,7 @@ describe('buildTickerPhrases', () => {
   it('announces the club, the town and the derived session label', () => {
     expect(buildTickerPhrases('2026/27')).toEqual([
       'GROSS FURRIA',
-      'GROSSBESENSTADT',
+      'GROSSFURRA',
       'SESSION 2026/27',
     ]);
   });

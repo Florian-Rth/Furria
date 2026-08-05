@@ -14,18 +14,37 @@ hangs off. Every Mitglied is a Person; not every Person has an Account.
 _Avoid_: user, contact, profile
 
 **Mitgliedschaft** (`membership`):
-The one-per-Person record of club membership: its Art, status, and period.
+The one-per-Person record of club membership: its Art, status, and period. **Art and status are
+different axes** and never share a field — the Art is the tier, the status is the current state.
 _Avoid_: subscription
 
 **Mitgliedschaftsart** (`membership type`):
-Layer A of identity — exactly one per Mitglied: Aktiv / Passiv / Jugend / Ehren. Drives the
-yearly Beitrag tier.
-_Avoid_: role, member level
+Layer A of identity — exactly one per Mitglied: **Aktiv / Jugend / Ehren**. Drives the yearly
+Beitrag tier. Only **Aktiv** and **Jugend** can be applied for; **Ehren** is conferred and is
+**not published on the public website**.
+_Avoid_: **Passiv** (never an Art — see Ruhende Mitgliedschaft), role, member level
+
+**Ruhende Mitgliedschaft** (`paused`):
+A **status** of a Mitgliedschaft, not an Art: a Mitglied takes a Session off. The Art is untouched,
+no Kündigung happens, and it resumes without a new Beitrittsantrag. In German UI copy the
+membership *ruht*.
+_Avoid_: **Passiv** (the word previously used for this — it wrongly implied a fourth
+Mitgliedschaftsart), inactive, Kündigung
 
 **Gruppe** (`group`):
 Layer B — a performing or organisational unit (Tanzgarde, Elferrat, …). Person↔Gruppe is
-many-to-many, groups are freely created and archivable.
+many-to-many, groups are freely created and archivable. A Mitglied in **no** Gruppe is normal —
+Art and Gruppe are independent axes. Each Gruppe decides for itself whether it is **currently
+looking for new members**; that openness is the Gruppe's own setting and the public website shows
+it. **There are no open, drop-in trainings** — nobody can simply turn up; an Anfrage always comes
+first.
 _Avoid_: team, squad
+
+**Beitrittsantrag** (`membership application`):
+A visitor's request to become a Mitglied, submitted on the public website. It is **not** a
+Mitgliedschaft and its sender is **not** a Mitglied — the club still decides on the Aufnahme.
+Carries no Account and no Einladung (see **Account**: Mitglied ≠ Account).
+_Avoid_: Anmeldung, Registrierung, Bewerbung, calling the sender a Mitglied
 
 **Amt** (`role`):
 Layer C — an office from a **fixed, rights-bearing set** (Präsident, Finanzen, Getränkewart,
@@ -134,9 +153,14 @@ _Avoid_: balance table, payments table (as source of truth)
   consent to being photographed at all is about *people*. Neither implies the other. Until someone
   actually decides, neither term is canonical language.
 
-- **Mitgliedschaftsart `Passiv`** — resolved 2026-07-16: the handoff's four types
-  (Aktiv / Passiv / Jugend / Ehren) are authoritative. The DBML enum was missing `passive`
-  and has been corrected in `docs/design/FCC-Schema.txt`.
+- **Mitgliedschaftsart `Passiv`** — **retracted 2026-07-29.** The 2026-07-16 note declared the
+  handoff's four types (Aktiv / Passiv / Jugend / Ehren) authoritative and added `passive` to the
+  DBML enum. The domain expert overturned that during P6 shaping: **`Passiv` was never an Art** —
+  it was the word for a membership that *pauses for a Session*, which is a **status**. `Art` is now
+  Aktiv / Jugend / Ehren and `status` is aktiv / **paused** / beendet;
+  `docs/design/FCC-Schema.txt` has been corrected accordingly (`passive` removed from
+  `membership_type`, `inactive` → `paused` in `membership_status`). **Lesson:** the earlier note
+  resolved the ambiguity from the *handoff* rather than from the club.
 
 ## Example dialogue
 

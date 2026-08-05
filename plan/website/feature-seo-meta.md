@@ -17,7 +17,9 @@ shareable material" ambition on the public side.
 ## Scope / Slices
 
 - P0: base document head + defaults + favicon/app icons + `robots.txt`.
-- Per-page title/description/canonical (with each page).
+- Per-page title/description/canonical (with each page). Shipped for `/join` and `/join/apply` in P6
+  (2026-07-30) through the existing `RouteHead`/`pageTitle` mechanism — no new mechanism, nothing new
+  decided.
 - Open Graph / social-share cards, especially for events and news detail.
 - Sitemap (once real public routes exist).
 
@@ -99,6 +101,15 @@ shareable material" ambition on the public side.
   is fixed → resolve in P7 (Launch).
 - **`noindex` on the 404** — the site-wide `NotFoundPage` ships in P4, but a not-found is not a
   route, so it carries the root head; moot while `robots.txt` disallows everything → P7.
+
+**P6 (2026-07-29):**
+
+- Per-route `head` for **`/join`** and **`/join/apply`**, no new mechanism. Both are **indexed** —
+  "beitrittsantrag" is a real search intent and the form page is not thin content.
+- **Both stay prerenderable**, because their body copy is static constants. The Jeck-Check
+  fetches, but it is interactive UI with no indexable content — the deliberate split recorded in
+  [API-Client](feature-api-client.md). The rule to carry forward: **anything that must be indexed
+  must not be async.**
 
 ## Done When
 
