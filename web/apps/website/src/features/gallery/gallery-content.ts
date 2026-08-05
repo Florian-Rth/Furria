@@ -105,7 +105,7 @@ export const ALBUMS: Album[] = [
     date: '2026-02-16',
     venue: 'Dorfplatz',
     intro:
-      'Der Wagen hat gehalten, das Wetter auch. Elf Bilder vom Zug durch Großbesenstadt, inklusive der Kurve, die zweimal genommen werden musste.',
+      'Der Wagen hat gehalten, das Wetter auch. Elf Bilder vom Zug durch Großfurra, inklusive der Kurve, die zweimal genommen werden musste.',
     photoCredit: 'Kamera, auf dem Wagen festgeklebt',
     photos: [
       { orientation: 'landscape', alt: 'Der Wagen verlässt die Bauhalle' },

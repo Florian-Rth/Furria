@@ -27,8 +27,7 @@ export const SiteFooter: FC = () => (
           </Typography>
         </Stack>
         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-          Furrscher Carnevals Club e.V. · Die Großbesenstadt feiert seit {FOUNDING_YEAR}. Gross -
-          Furria!
+          Furrscher Carnevals Club e.V. · Großfurra feiert seit {FOUNDING_YEAR}. Gross - Furria!
         </Typography>
       </Stack>
       <SocialLinks />

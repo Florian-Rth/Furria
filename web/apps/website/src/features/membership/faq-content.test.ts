@@ -53,10 +53,6 @@ describe('JOIN_FAQ', () => {
     expect(answerOf('cost')).toContain('Keine Aufnahmegebühr');
   });
 
-  it('keeps the hardship answer warm and points at a Mail', () => {
-    expect(answerOf('cost')).toContain('schreib uns');
-  });
-
   it('lets a Session be paused instead of cancelled', () => {
     expect(answerOf('pause')).toMatch(/^Nein/);
     expect(answerOf('pause')).toContain('ruht');

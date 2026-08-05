@@ -18,7 +18,7 @@ CTAs, a stat row, and the anchor photo.
 - Eyebrow badge: `★ SESSION 2026 · 11.11. ERÖFFNUNG`.
 - Two-tone headline: line 1 ink **GROSS**, line 2 red **FURRIA!** with the whisper poster
   head-shadow (`3px 3px 0 ink`) — the one allowed hard shadow.
-- Intro paragraph (Großbesenstadt / fünfte Jahreszeit copy).
+- Intro paragraph (Großfurra / fünfte Jahreszeit copy).
 - Two CTAs: primary **Tickets sichern →**, secondary **Programm ansehen**.
 - Stat row: `180+ Mitglieder · 6 Garden & Gruppen · 1971 gegründet` (the count was corrected from 12 to
   the derived 6 in P5). **P6 (2026-07-30):** `HeroStatRow` no longer hand-rolls the row — it composes

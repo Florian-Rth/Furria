@@ -29,7 +29,7 @@ export const MastheadDesktopBar: FC = () => (
       }}
     >
       <Typography variant="caption" sx={metaLabelSx}>
-        GROSSBESENSTADT · EST. {FOUNDING_YEAR}
+        GROSSFURRA · EST. {FOUNDING_YEAR}
       </Typography>
       <Typography variant="caption" sx={{ ...metaLabelSx, color: 'primary.main' }}>
         ★ DIE FÜNFTE JAHRESZEIT ★

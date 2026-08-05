@@ -32,7 +32,7 @@ export const JOIN_FAQ: JoinFaqEntry[] = [
     id: 'cost',
     question: 'Was kostet mich das wirklich?',
     answer:
-      '30 € im Jahr, bis 17 Jahre 15 €. Keine Aufnahmegebühr, keine Umlage. Beim Antrag wird nichts abgebucht — der Beitrag wird erst fällig, wenn wir dich aufgenommen haben. Und wenn das Geld gerade nicht da ist: schreib uns, wir finden eine Lösung, und das bleibt unter uns.',
+      '30 € im Jahr, bis 17 Jahre 15 €. Keine Aufnahmegebühr, keine Umlage. Beim Antrag wird nichts abgebucht — der Beitrag wird erst fällig, wenn wir dich aufgenommen haben.',
   },
   {
     id: 'time',
@@ -44,7 +44,7 @@ export const JOIN_FAQ: JoinFaqEntry[] = [
     id: 'local',
     question: 'Ich bin nicht von hier.',
     answer:
-      'Dein Wohnort spielt für die Mitgliedschaft keine Rolle, und niemand fragt dich nach einer Postleitzahl. Ein Teil von uns fährt aus den Nachbardörfern nach Großbesenstadt zur Probe — das ist der Normalfall, kein Sonderfall.',
+      'Dein Wohnort spielt für die Mitgliedschaft keine Rolle. Es gibt Mitglieder, die aus den Nachbardörfern nach Großfurra zur Probe fahren — die Anfahrt ist das Einzige, was du dabei selbst regeln musst.',
   },
   {
     id: 'pause',
@@ -56,7 +56,7 @@ export const JOIN_FAQ: JoinFaqEntry[] = [
     id: 'child',
     question: 'Mein Kind möchte mitmachen.',
     answer:
-      'Ab sechs Jahren geht das: Die Kindergarde ist die Gruppe für die Kleinsten, ab zwölf tanzt man in der Tanzgarde. Den Antrag füllt ihr gemeinsam aus — bei unter 18-Jährigen fragen wir im Formular nach den Kontaktdaten und der Einwilligung eines Elternteils. Alles Weitere, von Proben bis Auftritten, klärt ihr direkt mit der Gruppe.',
+      'Kinder können mitmachen: Die Kindergarde ist die Gruppe für die Kleinsten, später wechselt man in die Tanzgarde. Ab welchem Alter das jeweils geht, steht hier noch nicht — schreib uns, dann bekommt ihr eine verbindliche Antwort. Den Antrag füllt ihr gemeinsam aus; bei unter 18-Jährigen fragen wir im Formular nach den Kontaktdaten und der Einwilligung eines Elternteils. Alles Weitere, von Proben bis Auftritten, klärt ihr direkt mit der Gruppe.',
   },
   {
     id: 'fit',

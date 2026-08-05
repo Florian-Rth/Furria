@@ -122,7 +122,7 @@ Block-specific requirements live in [Landing-Hero](feature-landing-hero.md) and 
    renders the mark (regression test).
 5. **Ticker.** New `@furria/ui` `KkTicker` (content-agnostic red/gold Anton marquee, seamless loop,
    reduced-motion aware); mount it under the hero with content built from club globals
-   (`GROSS FURRIA ✶ GROSSBESENSTADT ✶ SESSION {yearsLabel} ✶`).
+   (`GROSS FURRIA ✶ GROSSFURRA ✶ SESSION {yearsLabel} ✶`).
    *Delivers (FE):* marquee under the hero on the landing.
    *Verify:* seamless scroll; static under reduced-motion; tokens-only; component test.
 6. **Home meta.** Set the `/` route `head` (branded title, description, OG title/description).

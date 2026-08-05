@@ -517,10 +517,11 @@ Followed the plan closely; build-level choices worth knowing:
 - **The hero aside stays decorative** — a fanned Fotostapel, `aria-hidden`, not a link. Making it
   the newest-Album link would have duplicated that Album's cover 200px above itself and turned a
   rotated frame into a tap target.
-- **Copy rule, beyond this phase: Großbesenstadt and the broom mark are established brand furniture,
-  not a joke well.** The town name ships in masthead, footer, ticker, hero and Chronik and stays —
-  but copy must not be *built on* broom gags. Humour comes from the situations, as in `/news`.
-  (Raised by the user against a proposed caption; recorded here because it governs all future copy.)
+- **Copy rule, beyond this phase: the village is called Großfurra, and the broom mark is brand
+  furniture, not a joke well.** The nickname „Großbesenstadt" shipped in masthead, footer, ticker,
+  hero, Chronik and body copy until the user struck it — it is a nickname almost nobody knows, and
+  the SEO description had been naming the real village all along. Copy must not be *built on* broom
+  gags either. Humour comes from the situations, as in `/news`.
 - **Photographer credits must be unmistakably fake**, extending P4's refusal to invent a "Vorstand"
   byline — the mock's *"Foto: Anja Weber"* names a plausible real person in the **Fotograf** Amt.
   Album *titles* stay honest; they are real event types the site already advertises.

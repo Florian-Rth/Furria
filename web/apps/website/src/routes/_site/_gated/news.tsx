@@ -6,7 +6,7 @@ import { pageTitle } from '@/lib/seo';
 
 const NEWS_TITLE = pageTitle('Aktuelles');
 const NEWS_DESCRIPTION =
-  'Aktuelles vom Furrschen Carnevals Club e.V. — Motto-Verkündung, Erfolge der Garden, Aufrufe zum Mitmachen und alles, was die Großbesenstadt zwischen den Veranstaltungen wissen sollte.';
+  'Aktuelles vom Furrschen Carnevals Club e.V. — Motto-Verkündung, Erfolge der Garden, Aufrufe zum Mitmachen und alles, was Großfurra zwischen den Veranstaltungen wissen sollte.';
 
 const NewsComponent: FC = () => <NewsListPage posts={NEWS_POSTS} />;
 

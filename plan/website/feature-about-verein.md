@@ -78,7 +78,7 @@ One scrolling page, sections top → bottom:
   pill idiom — **not** by importing `features/landing` internals. The giant numeral + ribbon are
   club-hero-local (used once → not promoted to `@furria/ui`, YAGNI).
 - **Derived, never hardcoded:** the giant numeral renders `currentSession.number` (today 55,
-  auto-flips to 56 after 11.11.2026); ribbon = `SEIT {FOUNDING_YEAR} · GROSSBESENSTADT`; eyebrow =
+  auto-flips to 56 after 11.11.2026); ribbon = `SEIT {FOUNDING_YEAR} · GROSSFURRA`; eyebrow =
   `FURRSCHER CARNEVALS CLUB e.V. · {currentSession.number}. SESSION`. All from `lib/club.ts`.
 - Headline (`KkTwoToneHeadline`, poster shadow **on**): line 1 ink **DIE FÜNFTE JAHRESZEIT**, line 2
   red **HAT EIN ZUHAUSE.** CTAs: primary **Mitglied werden →** → `/join`, secondary **Zum Programm**
