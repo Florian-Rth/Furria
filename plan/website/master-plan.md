@@ -607,8 +607,10 @@ Followed the plan closely; build-level choices worth knowing:
   **Lesson:** `watch` in a child of `FormProvider` silently does nothing; only a subscribing hook
   (`useController`/`useWatch`) works.
 - **Two environment realities:** MUI v9 dropped `Checkbox.inputRef`, so the consent box passes the ref
-  via `slotProps={{ input: { ref } }}`; and a sticky summary aside is impossible because
-  `PageLayout`'s root sets `overflow: hidden`, which kills `position: sticky`.
+  via `slotProps={{ input: { ref } }}`; and a sticky summary aside first looked impossible because
+  `PageLayout`'s root set `overflow: hidden`, which kills `position: sticky`. It is `overflowX: clip`
+  now — same bleed containment, no scroll container — so the aside sticks under the masthead on
+  desktop, as `#root` had already been doing for the sticky masthead itself.
 - **Only the hero's Antrag CTA became a typed `Link`.** The Jeck-Check result CTA keeps a plain href for
   two concrete reasons: `renderWithProviders` mounts no router, so a TanStack `Link` throws and would
   force 20+ component tests onto `renderAtRoute`; and a typed `search={{ groups }}` serialises through

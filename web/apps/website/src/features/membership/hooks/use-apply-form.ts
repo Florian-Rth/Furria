@@ -16,6 +16,7 @@ import { selectLoadedGroups, useGroupsSource } from './use-groups-source';
 
 export interface ApplyFormState {
   form: UseFormReturn<MembershipApplicationForm>;
+  today: Date;
   derived: DerivedMembership | null;
   requiresGuardian: boolean;
   submit: (event: FormEvent<HTMLFormElement>) => void;
@@ -45,6 +46,7 @@ export const useApplyForm = (prefilledGroupInterests: string[]): ApplyFormState 
   const loadedGroups = selectLoadedGroups(groupsSource);
 
   const form = useForm<MembershipApplicationForm>({
+    mode: 'onTouched',
     resolver: zodResolver(buildMembershipApplicationFormSchema(today)),
     defaultValues: { ...EMPTY_MEMBERSHIP_APPLICATION, groupInterests: prefilledGroupInterests },
   });
@@ -79,6 +81,7 @@ export const useApplyForm = (prefilledGroupInterests: string[]): ApplyFormState 
 
   return {
     form,
+    today,
     derived,
     requiresGuardian,
     submit: (event) => {

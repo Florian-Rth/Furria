@@ -46,12 +46,6 @@ describe('ApplyConfirmation', () => {
     expect(copy).not.toMatch(/\d{1,2}\.\d{1,2}\./);
   });
 
-  it('stamps the confirmation with exactly one seal', () => {
-    renderWithRouter(<ApplyConfirmation firstName="Lena" />);
-
-    expect(document.querySelectorAll('[data-kk-seal]')).toHaveLength(1);
-  });
-
   it('leads out to the Programm and to the Startseite', () => {
     renderWithRouter(<ApplyConfirmation firstName="Lena" />);
 

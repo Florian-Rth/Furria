@@ -15,6 +15,7 @@ export const ApplyConsentCheckbox: FC<PropsWithChildren> = ({ children }) => {
     <FormControl error={error !== undefined} data-kk-apply-consent>
       <FormControlLabel
         label={children}
+        required={false}
         sx={{ alignItems: 'flex-start', gap: 1, m: 0 }}
         control={<Checkbox {...field} slotProps={{ input: { ref } }} required sx={{ mt: -1 }} />}
       />

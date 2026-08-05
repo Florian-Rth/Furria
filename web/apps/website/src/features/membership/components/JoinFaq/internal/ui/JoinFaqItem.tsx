@@ -1,4 +1,4 @@
-import { kkTokens } from '@furria/ui';
+import { KkLead, kkTokens } from '@furria/ui';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -40,12 +40,7 @@ export const JoinFaqItem: FC<JoinFaqItemProps> = ({ entry }) => {
         </Typography>
       </AccordionSummary>
       <AccordionDetails>
-        <Typography
-          variant="body1"
-          sx={{ color: 'text.secondary', fontWeight: 500, maxWidth: '40rem', textWrap: 'pretty' }}
-        >
-          {entry.answer}
-        </Typography>
+        <KkLead>{entry.answer}</KkLead>
       </AccordionDetails>
     </Accordion>
   );

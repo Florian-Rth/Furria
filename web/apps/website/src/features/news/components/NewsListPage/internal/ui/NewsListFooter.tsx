@@ -1,6 +1,6 @@
+import { KkNote } from '@furria/ui';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import type { NewsPost } from '@/features/news/news-content';
 import {
@@ -31,12 +31,7 @@ export const NewsListFooter: FC<NewsListFooterProps> = ({ posts, reference }) =>
         justifyContent: 'space-between',
       }}
     >
-      <Typography
-        variant="body2"
-        sx={{ color: 'text.secondary', fontWeight: 500, textWrap: 'pretty', maxWidth: '34rem' }}
-      >
-        {buildNewsListFooterNote(archiveSession)}
-      </Typography>
+      <KkNote>{buildNewsListFooterNote(archiveSession)}</KkNote>
       {archiveSession !== null && (
         <Button
           href={newsArchiveHref}

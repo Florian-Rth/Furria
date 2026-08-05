@@ -48,7 +48,20 @@ export const kkTokens = {
     sectionGap: { xs: 8, md: 12 },
     blockGap: { xs: 4, md: 6 },
     bandY: { xs: 6, md: 10 },
+    fieldGap: 3,
+    mastheadClearance: 2,
   },
+  measure: {
+    lead: '48rem',
+    note: '34rem',
+  },
+  opacity: {
+    onAccent: 0.92,
+    onAccentMuted: 0.85,
+    watermark: 0.1,
+    onAccentWash: 0.12,
+  },
+  tapTarget: '2.75rem',
   line: {
     hair: 1,
     section: 2,

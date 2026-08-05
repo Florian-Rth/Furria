@@ -1,28 +1,65 @@
 import { z } from 'zod';
 import { deriveMembership } from './membership-derivation';
 
+export const NAME_MAX_LENGTH = 80;
+
+export const STREET_MAX_LENGTH = 120;
+
+export const EMAIL_MAX_LENGTH = 254;
+
+export const PHONE_PATTERN = /^[+0][\d\s()/.-]{5,30}$/;
+
+export const GERMAN_POSTAL_CODE_PATTERN = /^(?:0[1-9]|[1-9]\d)\d{3}$/;
+
+const optionalPhone = (message: string) =>
+  z.union([z.literal(''), z.string().trim().regex(PHONE_PATTERN, message)]);
+
 export const MembershipApplicationFormSchema = z.object({
-  firstName: z.string().trim().min(1, 'Bitte trag deinen Vornamen ein.'),
-  lastName: z.string().trim().min(1, 'Bitte trag deinen Nachnamen ein.'),
+  firstName: z
+    .string()
+    .trim()
+    .min(1, 'Bitte trag deinen Vornamen ein.')
+    .max(NAME_MAX_LENGTH, 'Das sind mehr Zeichen, als wir speichern können.'),
+  lastName: z
+    .string()
+    .trim()
+    .min(1, 'Bitte trag deinen Nachnamen ein.')
+    .max(NAME_MAX_LENGTH, 'Das sind mehr Zeichen, als wir speichern können.'),
   birthDate: z.string().trim().min(1, 'Bitte trag dein Geburtsdatum ein.'),
-  street: z.string().trim().min(1, 'Bitte trag Straße und Hausnummer ein.'),
+  street: z
+    .string()
+    .trim()
+    .min(1, 'Bitte trag Straße und Hausnummer ein.')
+    .max(STREET_MAX_LENGTH, 'Das sind mehr Zeichen, als wir speichern können.'),
   postalCode: z
     .string()
     .trim()
-    .regex(/^\d{5}$/, 'Bitte trag eine fünfstellige Postleitzahl ein.'),
-  city: z.string().trim().min(1, 'Bitte trag deinen Ort ein.'),
+    .regex(GERMAN_POSTAL_CODE_PATTERN, 'Bitte trag eine fünfstellige Postleitzahl ein.'),
+  city: z
+    .string()
+    .trim()
+    .min(1, 'Bitte trag deinen Ort ein.')
+    .max(NAME_MAX_LENGTH, 'Das sind mehr Zeichen, als wir speichern können.'),
   email: z
     .string()
     .trim()
+    .max(EMAIL_MAX_LENGTH, 'Das sind mehr Zeichen, als eine E-Mail-Adresse haben darf.')
     .pipe(z.email('Bitte trag eine E-Mail-Adresse ein, unter der wir dich erreichen.')),
-  phone: z.string().trim(),
+  phone: optionalPhone('Bitte trag eine Telefonnummer ein, unter der wir dich erreichen.'),
   groupInterests: z.array(z.string().min(1)),
-  guardianName: z.string().trim(),
+  guardianName: z
+    .string()
+    .trim()
+    .max(NAME_MAX_LENGTH, 'Das sind mehr Zeichen, als wir speichern können.'),
   guardianEmail: z.union([
     z.literal(''),
-    z.string().trim().pipe(z.email('Bitte prüf die E-Mail-Adresse.')),
+    z
+      .string()
+      .trim()
+      .max(EMAIL_MAX_LENGTH, 'Das sind mehr Zeichen, als eine E-Mail-Adresse haben darf.')
+      .pipe(z.email('Bitte prüf die E-Mail-Adresse.')),
   ]),
-  guardianPhone: z.string().trim(),
+  guardianPhone: optionalPhone('Bitte prüf die Telefonnummer.'),
   consent: z
     .boolean()
     .refine((given) => given, 'Ohne diese Einwilligung dürfen wir den Antrag nicht annehmen.'),

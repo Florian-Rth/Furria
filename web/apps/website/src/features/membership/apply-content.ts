@@ -1,3 +1,4 @@
+import type { LinkProps } from '@tanstack/react-router';
 import { currentSession } from '@/lib/club';
 import { joinHref } from './join-content';
 import type { DerivedMembership, MembershipTypeId } from './membership-derivation';
@@ -20,7 +21,7 @@ export const applyLead =
 
 export const applyBackLabel = '← Mitglied werden';
 
-export const applyBackHref: string = joinHref;
+export const applyBackHref: LinkProps['to'] = joinHref;
 
 export const applyFieldLabels = {
   firstName: 'Vorname',
@@ -93,6 +94,9 @@ export const applySummaryNote =
 
 export const applySubmitLabel = 'Antrag absenden →';
 
+export const applySubmitDisabledHint =
+  'Der Knopf wird aktiv, sobald alle Pflichtfelder ausgefüllt sind.';
+
 export const applySubmitNote =
   'Der Antrag geht an den Verein. Mitglied bist du, sobald wir dir das bestätigen.';
 
@@ -109,10 +113,6 @@ export const buildApplyThanksHeadline = (firstName: string): string => `DANKE, $
 
 export const applyThanksText =
   'Angekommen. Ab hier sind wir dran — du musst nichts tun und nichts zahlen. Bis wir über die Aufnahme entschieden haben, bist du noch kein Mitglied, sondern jemand, auf den wir uns freuen.';
-
-export const applyThanksSealLabel = 'OK';
-
-export const applyThanksSealCaption = 'EINGEGANGEN';
 
 export const APPLY_THANKS_STEPS: JoinStep[] = [
   {

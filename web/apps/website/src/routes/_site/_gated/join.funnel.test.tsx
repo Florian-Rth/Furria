@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import type { UserEvent } from '@testing-library/user-event';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -12,6 +12,7 @@ import {
 import { joinPageTitle } from '@/features/membership/join-content';
 import { writeGrantedToSession } from '@/features/preview-access';
 import { SEEDED_GROUP_MATCHER } from '@/lib/seed/group-matcher';
+import { fieldByLabel, pickBirthDate } from '@/test/apply-form';
 import { markChangelogSeen } from '@/test/changelog';
 import { renderAtRoute } from '@/test/render';
 
@@ -24,9 +25,6 @@ const stubFetch = (status: number): ReturnType<typeof vi.fn> => {
   vi.stubGlobal('fetch', fetchMock);
   return fetchMock;
 };
-
-const fieldByLabel = (label: string): HTMLElement =>
-  screen.getByLabelText(new RegExp(`^${label}( \\*)?$`));
 
 const answerEveryQuestion = async (user: UserEvent): Promise<void> => {
   for (let step = 0; step < SEEDED_GROUP_MATCHER.questions.length; step += 1) {
@@ -50,7 +48,7 @@ const fillRequiredFields = async (user: UserEvent): Promise<void> => {
   await user.type(fieldByLabel(applyFieldLabels.postalCode), '99713');
   await user.type(fieldByLabel(applyFieldLabels.city), 'Großfurra');
   await user.type(fieldByLabel(applyFieldLabels.email), 'lena.brandt@example.de');
-  fireEvent.change(fieldByLabel(applyFieldLabels.birthDate), { target: { value: '1994-03-14' } });
+  await pickBirthDate(user, '1994-03-14');
   await user.click(screen.getByRole('checkbox', { name: /Satzung/ }));
 };
 

@@ -33,17 +33,19 @@ export const ApplyFormSection: FC<ApplyFormSectionProps> = ({ state }) => {
       <ApplyForm form={state.form} onSubmit={state.submit}>
         <ApplyForm.Columns>
           <ApplyForm.Main>
-            <ApplyPersonFieldset />
+            <ApplyPersonFieldset today={state.today} />
             <ApplyAddressFieldset />
             <ApplyContactFieldset />
             <ApplyInterestsFieldset />
             {state.requiresGuardian && <ApplyGuardianFieldset />}
             <ApplyForm.Block>
-              <ApplyForm.Legend>{applyConsentLegend}</ApplyForm.Legend>
-              <ApplyForm.Consent>
-                <ApplyForm.ConsentLabel lead={consentLead} />
-              </ApplyForm.Consent>
-              <ApplyForm.Note>{applyConsentNote}</ApplyForm.Note>
+              <ApplyForm.Legend required>{applyConsentLegend}</ApplyForm.Legend>
+              <ApplyForm.BlockBody>
+                <ApplyForm.Consent>
+                  <ApplyForm.ConsentLabel lead={consentLead} />
+                </ApplyForm.Consent>
+                <ApplyForm.Note>{applyConsentNote}</ApplyForm.Note>
+              </ApplyForm.BlockBody>
             </ApplyForm.Block>
             <ApplyForm.Honeypot />
           </ApplyForm.Main>
@@ -55,6 +57,7 @@ export const ApplyFormSection: FC<ApplyFormSectionProps> = ({ state }) => {
               ))}
               <ApplyForm.Note>{applySummaryNote}</ApplyForm.Note>
               <ApplyForm.Submit loading={state.isSubmitting} />
+              <ApplyForm.SubmitHint />
               <ApplyForm.Note>{applySubmitNote}</ApplyForm.Note>
             </ApplyForm.Summary>
             {state.submitError !== null && (

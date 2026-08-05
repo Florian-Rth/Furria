@@ -16,6 +16,7 @@
     "@furria/ui": "workspace:*",
     "@mui/icons-material": "catalog:",
     "@mui/material": "catalog:",
+    "@mui/x-date-pickers": "catalog:",
     "@hookform/resolvers": "catalog:",
     "motion": "catalog:",
     "@tanstack/react-query": "catalog:",

@@ -1,3 +1,4 @@
+import { kkTokens } from '@furria/ui';
 import Button from '@mui/material/Button';
 import type { FC } from 'react';
 import type { NewsPost } from '@/features/news/news-content';
@@ -16,7 +17,7 @@ export const NewsWhatsAppShareButton: FC<NewsWhatsAppShareButtonProps> = ({ post
     variant="contained"
     size="large"
     sx={{
-      minHeight: '2.75rem',
+      minHeight: kkTokens.tapTarget,
       alignSelf: { xs: 'stretch', sm: 'auto' },
       '&:focus-visible': {
         outlineWidth: 2,

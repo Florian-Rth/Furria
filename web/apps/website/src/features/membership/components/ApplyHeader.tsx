@@ -1,9 +1,8 @@
-import { KkEyebrow } from '@furria/ui';
-import Link from '@mui/material/Link';
+import { KkEyebrow, KkLead } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { Link as RouterLink } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { BackLink } from '@/components/BackLink';
 import {
   applyBackHref,
   applyBackLabel,
@@ -14,33 +13,15 @@ import {
 
 export const ApplyHeader: FC = () => (
   <Stack sx={{ gap: { xs: 2, md: 3 } }}>
-    <Link
-      component={RouterLink}
-      to={applyBackHref}
-      underline="none"
-      sx={{
-        alignSelf: 'flex-start',
-        color: 'primary.main',
-        fontWeight: 800,
-        fontSize: '0.875rem',
-        minHeight: '2.75rem',
-        display: 'inline-flex',
-        alignItems: 'center',
-      }}
-    >
+    <BackLink to={applyBackHref} sx={{ alignSelf: 'flex-start' }}>
       {applyBackLabel}
-    </Link>
+    </BackLink>
     <Stack sx={{ gap: 1 }}>
       <KkEyebrow>{applyEyebrow}</KkEyebrow>
       <Typography variant="h2" component="h1" sx={{ textTransform: 'uppercase' }}>
         {applyTitle}
       </Typography>
     </Stack>
-    <Typography
-      variant="body1"
-      sx={{ color: 'text.secondary', fontWeight: 500, maxWidth: '44rem', textWrap: 'pretty' }}
-    >
-      {applyLead}
-    </Typography>
+    <KkLead>{applyLead}</KkLead>
   </Stack>
 );

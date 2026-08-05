@@ -6,7 +6,9 @@ import { ApplyInterestsBody } from './ApplyInterestsBody';
 export const ApplyInterestsFieldset: FC = () => (
   <ApplyForm.Block>
     <ApplyForm.Legend>{applyInterestsLegend}</ApplyForm.Legend>
-    <ApplyForm.Note>{applyInterestsNote}</ApplyForm.Note>
-    <ApplyInterestsBody />
+    <ApplyForm.BlockBody>
+      <ApplyForm.Note>{applyInterestsNote}</ApplyForm.Note>
+      <ApplyInterestsBody />
+    </ApplyForm.BlockBody>
   </ApplyForm.Block>
 );

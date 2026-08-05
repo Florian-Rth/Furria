@@ -23,7 +23,7 @@ export const ChangelogTriggerPill: FC<ChangelogTriggerPillProps> = ({ unreadCoun
       onClick={onOpen}
       aria-label={buildTriggerLabel(unreadCount)}
       sx={(theme) => ({
-        minHeight: '2.75rem',
+        minHeight: kkTokens.tapTarget,
         px: 2,
         fontWeight: 700,
         color: 'text.secondary',

@@ -1,3 +1,4 @@
+import type { LinkProps } from '@tanstack/react-router';
 import { joinApplyHref } from './join-content';
 
 export interface JoinClosingBandContent {
@@ -5,7 +6,7 @@ export interface JoinClosingBandContent {
   headline: string;
   lead: string;
   ctaLabel: string;
-  ctaHref: string;
+  ctaHref: LinkProps['to'];
 }
 
 export const joinClosingBandContent: JoinClosingBandContent = {

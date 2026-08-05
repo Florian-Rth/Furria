@@ -1,4 +1,5 @@
 import type { KkPhotoOrientation } from '@furria/ui';
+import type { LinkProps } from '@tanstack/react-router';
 import type { Session } from '@/lib/club';
 import { CLUB_CONTACT_EMAIL, sessionAt } from '@/lib/club';
 import { formatLongDate } from '@/lib/date';
@@ -65,7 +66,7 @@ export interface GalleryProgramBandContent {
   kicker: string;
   headline: string;
   ctaLabel: string;
-  ctaTo: string;
+  ctaTo: LinkProps['to'];
 }
 
 export const galleryProgramBandContent: GalleryProgramBandContent = {

@@ -39,7 +39,7 @@ export const ChangelogEntryTabs: FC<ChangelogEntryTabsProps> = ({
         onClick={() => onSelect(entry.id)}
         label={<ChangelogTabLabel entry={entry} unread={isUnread(entry.id)} />}
         sx={(theme) => ({
-          minHeight: '2.75rem',
+          minHeight: kkTokens.tapTarget,
           maxWidth: 'none',
           alignItems: 'flex-start',
           textAlign: 'left',

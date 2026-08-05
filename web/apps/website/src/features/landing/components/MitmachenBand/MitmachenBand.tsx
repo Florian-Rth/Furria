@@ -1,9 +1,8 @@
-import { kkTokens } from '@furria/ui';
+import { KkBandWatermark, kkTokens } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { MitmachenCopy } from './internal/ui/MitmachenCopy';
 import { MitmachenCta } from './internal/ui/MitmachenCta';
-import { MitmachenWatermark } from './internal/ui/MitmachenWatermark';
 
 export const MitmachenBand: FC = () => (
   <Stack
@@ -18,7 +17,7 @@ export const MitmachenBand: FC = () => (
       py: { xs: 5, md: 7 },
     }}
   >
-    <MitmachenWatermark />
+    <KkBandWatermark />
     <Stack
       direction={{ xs: 'column', md: 'row' }}
       sx={{

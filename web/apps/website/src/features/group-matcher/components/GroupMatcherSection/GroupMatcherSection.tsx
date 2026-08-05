@@ -1,5 +1,4 @@
-import { KkSection } from '@furria/ui';
-import Typography from '@mui/material/Typography';
+import { KkLead, KkSection, kkTokens } from '@furria/ui';
 import type { FC } from 'react';
 import { MASTHEAD_HEIGHT_CSS_VAR } from '@/components/Masthead/masthead-height';
 import {
@@ -18,15 +17,12 @@ export const GroupMatcherSection: FC = () => {
   return (
     <KkSection
       id={matcherSectionId}
-      sx={{ scrollMarginTop: `calc(var(${MASTHEAD_HEIGHT_CSS_VAR}, 0px) + 1rem)` }}
+      sx={(theme) => ({
+        scrollMarginTop: `calc(var(${MASTHEAD_HEIGHT_CSS_VAR}, 0px) + ${theme.spacing(kkTokens.layout.mastheadClearance)})`,
+      })}
     >
       <KkSection.Header kicker={matcherKicker} title={matcherTitle} />
-      <Typography
-        variant="body1"
-        sx={{ color: 'text.secondary', fontWeight: 500, maxWidth: '48rem' }}
-      >
-        {matcherIntro}
-      </Typography>
+      <KkLead>{matcherIntro}</KkLead>
       <MatcherPanel>
         <MatcherBody source={source} />
       </MatcherPanel>

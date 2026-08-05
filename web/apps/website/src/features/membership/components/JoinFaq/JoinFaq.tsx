@@ -1,5 +1,4 @@
-import { KkSection } from '@furria/ui';
-import Typography from '@mui/material/Typography';
+import { KkLead, KkSection } from '@furria/ui';
 import type { FC } from 'react';
 import {
   JOIN_FAQ,
@@ -13,12 +12,7 @@ import { JoinFaqItem } from './internal/ui/JoinFaqItem';
 export const JoinFaq: FC = () => (
   <KkSection>
     <KkSection.Header kicker={joinFaqKicker} title={joinFaqTitle} />
-    <Typography
-      variant="body1"
-      sx={{ color: 'text.secondary', fontWeight: 500, maxWidth: '48rem' }}
-    >
-      {joinFaqIntro}
-    </Typography>
+    <KkLead>{joinFaqIntro}</KkLead>
     <JoinFaqList>
       {JOIN_FAQ.map((entry) => (
         <JoinFaqItem key={entry.id} entry={entry} />

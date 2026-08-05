@@ -11,12 +11,9 @@ import {
   applySatzungLabel,
   applySubmitLabel,
 } from '@/features/membership/apply-content';
+import { fieldByLabel, pickBirthDate } from '@/test/apply-form';
 import { renderWithRouter } from '@/test/render';
 import { ApplyPage } from './ApplyPage';
-
-const labelPattern = (label: string): RegExp => new RegExp(`^${label}( \\*)?$`);
-
-const fieldByLabel = (label: string): HTMLElement => screen.getByLabelText(labelPattern(label));
 
 const stubFetch = (status: number): ReturnType<typeof vi.fn> => {
   const fetchMock = vi.fn(async () => new Response('{}', { status }));
@@ -24,9 +21,7 @@ const stubFetch = (status: number): ReturnType<typeof vi.fn> => {
   return fetchMock;
 };
 
-const setBirthDate = (value: string): void => {
-  fireEvent.change(fieldByLabel(applyFieldLabels.birthDate), { target: { value } });
-};
+const submitButton = (): HTMLElement => screen.getByRole('button', { name: applySubmitLabel });
 
 const fillRequiredFields = async (user: UserEvent, birthDate: string): Promise<void> => {
   await user.type(fieldByLabel(applyFieldLabels.firstName), 'Lena');
@@ -35,7 +30,7 @@ const fillRequiredFields = async (user: UserEvent, birthDate: string): Promise<v
   await user.type(fieldByLabel(applyFieldLabels.postalCode), '99713');
   await user.type(fieldByLabel(applyFieldLabels.city), 'Großfurra');
   await user.type(fieldByLabel(applyFieldLabels.email), 'lena.brandt@example.de');
-  setBirthDate(birthDate);
+  await pickBirthDate(user, birthDate);
 };
 
 const submit = async (user: UserEvent): Promise<void> => {
@@ -73,9 +68,11 @@ describe('ApplyPage', () => {
   });
 
   it('derives Aktiv and 30 € from an adult Geburtsdatum', async () => {
+    const user = userEvent.setup();
+
     renderWithRouter(<ApplyPage prefilledGroupInterests={[]} />);
 
-    setBirthDate('1994-03-14');
+    await pickBirthDate(user, '1994-03-14');
 
     expect(await screen.findByText('Aktiv')).toBeInTheDocument();
     expect(screen.getByText('30 € im Jahr')).toBeInTheDocument();
@@ -83,9 +80,11 @@ describe('ApplyPage', () => {
   });
 
   it('derives Jugend and 15 € under 18 and opens the guardian block', async () => {
+    const user = userEvent.setup();
+
     renderWithRouter(<ApplyPage prefilledGroupInterests={[]} />);
 
-    setBirthDate('2015-05-04');
+    await pickBirthDate(user, '2015-05-04');
 
     expect(await screen.findByText('Jugend')).toBeInTheDocument();
     expect(screen.getByText('15 € im Jahr')).toBeInTheDocument();
@@ -94,9 +93,11 @@ describe('ApplyPage', () => {
   });
 
   it('words the Einwilligung as the guardian’s once one is needed', async () => {
+    const user = userEvent.setup();
+
     renderWithRouter(<ApplyPage prefilledGroupInterests={[]} />);
 
-    setBirthDate('2015-05-04');
+    await pickBirthDate(user, '2015-05-04');
 
     expect(await screen.findByText(/Als gesetzliche Vertretung/)).toBeInTheDocument();
   });
@@ -123,17 +124,22 @@ describe('ApplyPage', () => {
     );
   });
 
-  it('refuses to send the Antrag while the Einwilligung is missing', async () => {
+  it('keeps the Antrag unsendable while the Einwilligung is missing', async () => {
     const user = userEvent.setup();
     const fetchMock = stubFetch(404);
     renderWithRouter(<ApplyPage prefilledGroupInterests={[]} />);
 
     await fillRequiredFields(user, '1994-03-14');
-    await submit(user);
 
-    expect(
-      await screen.findByText('Ohne diese Einwilligung dürfen wir den Antrag nicht annehmen.'),
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(submitButton()).toBeDisabled();
+    });
+
+    await user.click(consentCheckbox());
+
+    await waitFor(() => {
+      expect(submitButton()).toBeEnabled();
+    });
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
@@ -144,18 +150,22 @@ describe('ApplyPage', () => {
 
     await fillRequiredFields(user, '2015-05-04');
     await user.click(consentCheckbox());
-    await submit(user);
 
-    expect(
-      await screen.findByText('Bitte trag den Namen einer erwachsenen Person ein, die zustimmt.'),
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(submitButton()).toBeDisabled();
+    });
 
     await user.type(fieldByLabel(applyFieldLabels.guardianName), 'Katrin Brandt');
-    await submit(user);
 
-    expect(
-      await screen.findByText('Bitte trag E-Mail oder Telefon der erwachsenen Person ein.'),
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(submitButton()).toBeDisabled();
+    });
+
+    await user.type(fieldByLabel(applyFieldLabels.guardianEmail), 'katrin.brandt@example.de');
+
+    await waitFor(() => {
+      expect(submitButton()).toBeEnabled();
+    });
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
