@@ -80,8 +80,7 @@ Guiding constraints (all binding):
 | [Programm-Teaser](feature-program-teaser.md) | capability | shipped | Home "DAS PROGRAMM" upcoming-events section |
 | [Mitmachen-Band](feature-mitmachen-band.md) | capability | shipped | Home recruit CTA → membership funnel |
 | [Verein](feature-about-verein.md) | capability | shipped | Verein story, Ämter, Gruppen showcase |
-| [Veranstaltungskalender](feature-event-calendar.md) | capability | idea | Public event list/calendar + detail |
-| [Ticket-Shop](feature-ticket-shop.md) | capability | idea | Browse ticketed events, checkout, payment |
+| [Events & Tickets](events/master-plan.md) | area | shaping | Programm, event detail, Platzwahl, Kauf/Karte, Kartenbörse — own area plan (absorbed the Veranstaltungskalender + Ticket-Shop stubs, 2026-08-12) |
 | [Aktuelles](feature-news.md) | capability | shipped | Meldungen (list + detail) + landing teaser |
 | [Galerie](feature-gallery.md) | capability | shipped | Public Album index + Album pages + photo viewer |
 | [Mitglied werden](feature-membership-funnel.md) | capability | shipped | Membership info + Beitrittsantrag funnel |
@@ -796,13 +795,15 @@ thing done before P7 flips the site public — a live funnel that cannot submit 
 
 ### Club-App-dependent
 
-- **Events (real data)** — real public event endpoints (+ an **OpenAPI codegen decision**: types
-  vs. types+Zod, likely an ADR); the full [Veranstaltungskalender](feature-event-calendar.md)
-  (list/calendar + detail) at `/program`; wire the [Programm-Teaser](feature-program-teaser.md) to
-  live data + add the **scarcity badge**, event-selection logic, and empty state; wire the
-  [Landing-Hero](feature-landing-hero.md) **stats** and the data-driven ticker to live data.
-- **Ticketing** — [Ticket-Shop](feature-ticket-shop.md): browse, checkout, Stripe/PayPal,
-  confirmation. Depends on the backend ticketing domain (not yet schema'd — see design §7).
+- **Events & Ticketing (real data + transactions)** — the frontend is now planned
+  frontend-first with seeds in the [Events & Tickets area plan](events/master-plan.md)
+  (2026-08-12, absorbing the Veranstaltungskalender + Ticket-Shop stubs); its
+  [Deferred — backend](events/master-plan.md#deferred--backend) section is the contract
+  list the eventual backend must satisfy (+ an **OpenAPI codegen decision**: types vs.
+  types+Zod, likely an ADR). Still Club-App-dependent beyond that: wire the
+  [Programm-Teaser](feature-program-teaser.md) to live data + add the **scarcity badge**,
+  event-selection logic, and empty state; wire the [Landing-Hero](feature-landing-hero.md)
+  **stats** and the data-driven ticker to live data.
 - **Bot OG-meta injection** (edge middleware vs. a `<meta>`-serving endpoint on the API) — **only
   ever needed for backend-driven detail pages**, whose content is not known at build time and so
   cannot be prerendered. Re-scoped out of P4 in the P4 grilling: static-in-repo pages like
