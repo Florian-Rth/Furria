@@ -115,6 +115,7 @@ description: Mandatory rules for all React/TypeScript frontend work. Invoke befo
 ### Language
 - German-only UI, no i18n framework (ADR-0002) — visible text is German, written directly in components
 - Code identifiers, routes, IDs, props: English — always
+- Treat plan files, doc file names, slugs and frontmatter identifiers as code identifiers — always English, even when the page's visible German title differs
 - Never use internal domain terminology in user-facing copy — write self-explanatory German copy from terms the UI already teaches the user; internal terms stay in code and schema fields
 
 ### Layout & Dialogs
