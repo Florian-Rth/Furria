@@ -72,7 +72,7 @@ Frontmatter `status`: `skeleton → shaping → ready → building → shipped`.
 
 | # | Plan | Route | Status |
 |---|---|---|---|
-| 1 | [Events data foundation](foundation-events-data.md) | — | ready |
+| 1 | [Events data foundation](foundation-events-data.md) | — | shipped |
 | 2 | [Programm](page-program.md) | `/program` | skeleton |
 | 3 | [Event detail](page-event-detail.md) | decided in shaping | skeleton |
 | 4 | [Seat picker](page-seat-picker.md) | decided in shaping | skeleton |
@@ -90,7 +90,7 @@ They are created as pages reach `ready`, logged here in full, and mirrored as on
 pointers in the website master plan.
 
 ### E1 — Events data foundation
-**Status:** ready (shaped 2026-08-13)
+**Status:** shipped (built 2026-08-13)
 The shared data layer per [foundation-events-data.md](foundation-events-data.md): the
 seeded event model (`lib/seed/events.ts` — 7-state `salesStatus` schema + self-consistent
 seed builder + six-evening mid-VVK snapshot), the `events` feature scaffold (`api.ts`

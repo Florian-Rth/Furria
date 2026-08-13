@@ -751,7 +751,7 @@ and `robots.txt` is `Disallow: /` until this phase.
 
 Detail lives in the [Events area plan](events/master-plan.md#e-phases); one line per phase here.
 
-- **E1 — Events data foundation** — ready (2026-08-13): seeded event model + `events`
+- **E1 — Events data foundation** — shipped (2026-08-13): seeded event model + `events`
   feature scaffold + teaser rewire
 
 ---

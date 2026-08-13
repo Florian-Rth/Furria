@@ -3,7 +3,7 @@ title: Events-Datenfundament
 slug: events-data
 route: —
 type: foundation
-status: ready
+status: shipped
 mock: docs/design/events-page/ (EV_EVENTS, evStatus, EvBar, EvTag, date block, EvCountdown)
 depends-on: []
 adrs: []
@@ -137,6 +137,36 @@ unit (euro cents vs decimal euros — check what the Ledger design assumes) and 
 
 - **E1 — Events data foundation** (this file, all three slices): seed module → feature
   scaffold → teaser rewire. One phase; per-slice reviews and full gates as in P0–P6.
+
+## As built (E1, 2026-08-13)
+
+All three slices shipped as planned. The two flagged implementation details were resolved:
+
+- **Price travels as `priceCents` (integer euro cents).** The Ledger design docs pin no
+  unit; cents match the Stripe/PayPal settle paths and avoid float math in JS. The field
+  name carries the unit.
+- **Seed-builder `almostSoldOut` threshold:** `freeCount ≤ ceil(10 % of capacity)` —
+  a placeholder constant inside the builder; the backend will own the real rule.
+
+Deviations and decisions made during the build, none silent:
+
+- **`salesClosed` derives from a builder-only `presaleEndsAt` fact** that is not part of
+  the public `EventSchema` (the pinned contract stays enum + `capacity`/`freeCount`), so
+  every non-cancelled state derives from counts + dates. `cancelled` has its own
+  `buildCancelledEvent` and appears in tests only.
+- **Snapshot moment** is an exported `SEED_SNAPSHOT_AT` (2026-12-01 12:00); the seed mix
+  is 2× presaleScheduled (Rentner-, Kinderfasching), 2× onSale, 1× almostSoldOut,
+  1× soldOut. Rentnerfasching exercises progressive publishing (null Einlass, age hint,
+  price, capacity).
+- **Teaser rewire:** landing owns `useLandingEventsQuery` (own key, Gruppen pattern) plus
+  a thin `useTeaserEvents` hook that selects the three earliest evenings and **excludes
+  `cancelled`** — the teaser renders no status, so a cancelled evening would otherwise
+  look bookable. Loading/error deliberately collapse to an empty teaser (decorative
+  section, seed resolves instantly) — thinner than membership's source-union pattern.
+- **`formatNumericDate` was added to `lib/date.ts`** (review finding): the status-label
+  derivations reuse the shared German date formatters instead of hand-splitting strings.
+- Full gates pass; the only failing suite is the pre-existing ApplyPage flake
+  (5 s timeouts under load, fails on a clean tree too — unrelated to E1).
 
 ## References
 
