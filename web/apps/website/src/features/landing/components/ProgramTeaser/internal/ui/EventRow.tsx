@@ -2,11 +2,12 @@ import { KkCard } from '@furria/ui';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { deriveEventDisplay, type ProgramEvent } from '@/features/landing/program-content';
+import { deriveEventDisplay } from '@/features/landing/program-content';
+import type { Event } from '@/lib/seed/events';
 import { EventDateBlock } from './EventDateBlock';
 
 interface EventRowProps {
-  event: ProgramEvent;
+  event: Event;
   tint: string;
 }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatLongDate, formatShortDate } from './date';
+import { formatLongDate, formatNumericDate, formatShortDate } from './date';
 
 describe('formatLongDate', () => {
   it('spells the month out in German', () => {
@@ -26,5 +26,15 @@ describe('formatShortDate', () => {
 
   it('stays on the club time zone for a New Year date', () => {
     expect(formatShortDate('2027-01-01')).toBe('01.01.');
+  });
+});
+
+describe('formatNumericDate', () => {
+  it('renders zero-padded day, month and full year', () => {
+    expect(formatNumericDate('2027-01-10')).toBe('10.01.2027');
+  });
+
+  it('pads single-digit days', () => {
+    expect(formatNumericDate('2026-06-04')).toBe('04.06.2026');
   });
 });

@@ -14,7 +14,17 @@ const shortDateFormat = new Intl.DateTimeFormat(GERMAN_LOCALE, {
   timeZone: APP_TIME_ZONE,
 });
 
+const numericDateFormat = new Intl.DateTimeFormat(GERMAN_LOCALE, {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+  timeZone: APP_TIME_ZONE,
+});
+
 export const formatLongDate = (isoDate: string): string => longDateFormat.format(new Date(isoDate));
 
 export const formatShortDate = (isoDate: string): string =>
   shortDateFormat.format(new Date(isoDate));
+
+export const formatNumericDate = (isoDate: string): string =>
+  numericDateFormat.format(new Date(isoDate));

@@ -1,11 +1,12 @@
 import { KkCard, KkPhotoPlaceholder } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { deriveEventDisplay, type ProgramEvent } from '@/features/landing/program-content';
+import { deriveEventDisplay } from '@/features/landing/program-content';
+import type { Event } from '@/lib/seed/events';
 import { EventDateBlock } from './EventDateBlock';
 
 interface ProgramCardProps {
-  event: ProgramEvent;
+  event: Event;
   tint: string;
 }
 

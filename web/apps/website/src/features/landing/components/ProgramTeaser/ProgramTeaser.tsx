@@ -3,8 +3,8 @@ import Grid from '@mui/material/Grid';
 import { useTheme } from '@mui/material/styles';
 import type { FC } from 'react';
 import { SectionActionLink } from '@/components/SectionActionLink';
+import { useTeaserEvents } from '@/features/landing/hooks/use-teaser-events';
 import {
-  PROGRAM_EVENTS,
   programAllLabel,
   programHeading,
   resolveEventTint,
@@ -16,6 +16,7 @@ import { ProgramCard } from './internal/ui/ProgramCard';
 
 export const ProgramTeaser: FC = () => {
   const theme = useTheme();
+  const events = useTeaserEvents();
 
   return (
     <KkSection>
@@ -24,15 +25,15 @@ export const ProgramTeaser: FC = () => {
         action={<SectionActionLink to="/program">{programAllLabel}</SectionActionLink>}
       />
       <ProgramGrid>
-        {PROGRAM_EVENTS.map((event, index) => (
-          <Grid key={event.startsAt} size={{ xs: 12, md: 4 }}>
+        {events.map((event, index) => (
+          <Grid key={event.id} size={{ xs: 12, md: 4 }}>
             <ProgramCard event={event} tint={resolveEventTint(theme, index)} />
           </Grid>
         ))}
       </ProgramGrid>
       <ProgramList>
-        {PROGRAM_EVENTS.map((event, index) => (
-          <EventRow key={event.startsAt} event={event} tint={resolveEventTint(theme, index)} />
+        {events.map((event, index) => (
+          <EventRow key={event.id} event={event} tint={resolveEventTint(theme, index)} />
         ))}
       </ProgramList>
     </KkSection>
