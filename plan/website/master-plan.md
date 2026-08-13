@@ -747,6 +747,13 @@ and `robots.txt` is `Disallow: /` until this phase.
       replace the placeholder `CLUB_CONTACT_EMAIL` with a real address (plus a phone, if there is
       one)
 
+### E-phases — Events area (mirror)
+
+Detail lives in the [Events area plan](events/master-plan.md#e-phases); one line per phase here.
+
+- **E1 — Events data foundation** — ready (2026-08-13): seeded event model + `events`
+  feature scaffold + teaser rewire
+
 ---
 
 ## Deferred — backend work

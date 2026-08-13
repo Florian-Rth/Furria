@@ -72,7 +72,7 @@ Frontmatter `status`: `skeleton → shaping → ready → building → shipped`.
 
 | # | Plan | Route | Status |
 |---|---|---|---|
-| 1 | [Events data foundation](foundation-events-data.md) | — | skeleton |
+| 1 | [Events data foundation](foundation-events-data.md) | — | ready |
 | 2 | [Programm](page-program.md) | `/program` | skeleton |
 | 3 | [Event detail](page-event-detail.md) | decided in shaping | skeleton |
 | 4 | [Seat picker](page-seat-picker.md) | decided in shaping | skeleton |
@@ -87,7 +87,16 @@ deleted. The website master plan's feature index now points here.
 
 Build phases are numbered **E1, E2, …** so they never collide with the website's P-phases.
 They are created as pages reach `ready`, logged here in full, and mirrored as one-line
-pointers in the website master plan. None exist yet.
+pointers in the website master plan.
+
+### E1 — Events data foundation
+**Status:** ready (shaped 2026-08-13)
+The shared data layer per [foundation-events-data.md](foundation-events-data.md): the
+seeded event model (`lib/seed/events.ts` — 7-state `salesStatus` schema + self-consistent
+seed builder + six-evening mid-VVK snapshot), the `events` feature scaffold (`api.ts`
+hook + German status-label derivations), and the landing Programm-Teaser rewired onto the
+seed (Rosenmontagsumzug dropped — Programm is ticketed-only now). Shared UI primitives are
+deliberately deferred to page-program's phase.
 
 ## Deferred — backend
 
@@ -106,6 +115,18 @@ Carried from the absorbed stubs:
 - Sales respect **Kontingent** (quota) and the VVK-Fenster (sale window).
 - The backend ticketing domain is **not yet schema'd** (design §7 lists it as an
   extension).
+
+Pinned by shaping sessions:
+
+- **Event `salesStatus` enum** (foundation shaping, 2026-08-13): the public read endpoint
+  publishes a backend-owned lifecycle enum — `announced` · `presaleScheduled` · `onSale` ·
+  `almostSoldOut` · `soldOut` · `salesClosed` · `cancelled` — plus `capacity`/`freeCount`.
+  The backend owns the `almostSoldOut` threshold and keeps enum and counts consistent.
+  `NotPublished` never leaves the backend. Details in
+  [foundation-events-data.md](foundation-events-data.md).
+- **Capacity, seating plan and price are per event** (foundation shaping, 2026-08-13):
+  the hall is set up differently per event; price is flat within one event but differs
+  between events. Seating-plan templates (save/load) are a future Club-App idea.
 
 ## References
 

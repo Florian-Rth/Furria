@@ -87,12 +87,15 @@ _Avoid_: Kampagne, campaign, season (as a table name)
 
 **Programm**:
 Overloaded across the two apps — **do not collapse the two senses**:
-- **Public website:** the **season's public event lineup** — the events the club presents,
-  the same set the Veranstaltungskalender lists. This is what "DAS PROGRAMM", the `/program`
-  route and the "Programm" nav label mean on the website.
+- **Public website:** the **season's ticketed events** — the hall evenings the club sells
+  Karten for. This is what "DAS PROGRAMM", the `/program` route and the "Programm" nav label
+  mean on the website. Unticketed happenings (e.g. the Rosenmontagsumzug) are **not** part
+  of the Programm and are not listed on the website (narrowed 2026-08-13; before that it
+  meant the full lineup).
 - **Club-App:** the **running order of acts within a single event** (the Auto-Reihenfolge /
   Reihenfolge). A per-event ordering, not a list of events.
-_Avoid_: using "Programm" without knowing which app you are in.
+_Avoid_: using "Programm" without knowing which app you are in, listing unticketed events
+under it.
 
 ### Öffentliche Kommunikation
 
@@ -125,9 +128,9 @@ name of the public page.
 _Avoid_: using it for the public **Galerie**
 
 **Album** (`album`):
-The curated photo set of exactly **one** occasion (Prunksitzung, Umzug, Sessionseröffnung) — the
-same kind of occasion the **Programm** lists. Carries its own date; its **Session** is *derived*
-from that date, never stored.
+The curated photo set of exactly **one** club occasion (Prunksitzung, Umzug, Sessionseröffnung).
+Not bound to the **Programm** — an Album may cover an unticketed occasion the Programm doesn't
+list. Carries its own date; its **Session** is *derived* from that date, never stored.
 _Avoid_: Galerie (for a single album), Ordner, Sammlung
 
 ### Money

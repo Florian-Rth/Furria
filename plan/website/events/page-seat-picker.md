@@ -35,7 +35,12 @@ Filled in shaping.
 
 ## Decisions
 
-None yet — filled in shaping.
+Carried from the foundation shaping (2026-08-13):
+
+- **The seating plan is per-event data, never a baked layout.** Capacity is selectable per
+  event and the hall is set up differently each time — the mock's fixed 3×8×12 geometry is
+  invention. A save/load template system for seating plans is a future Club-App idea
+  (Veranstaltungsplaner side); the public data shape must not contradict it.
 
 ## Open Questions
 

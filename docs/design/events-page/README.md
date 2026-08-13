@@ -30,8 +30,43 @@ prototype has no router: `index` (Spielplan, plus a `kalender` toggle), `detail`
 The area is planned in [`plan/website/events/`](../../../plan/website/events/master-plan.md)
 — one plan file per page, each shaped in its own grilling session. **Rulings (Adopted /
 Rejected / Added by us) are recorded here, per page, during those sessions** — the
-[join-page README](../join-page/README.md) is the model. None have been made yet; nothing
-in this bundle is adopted by default.
+[join-page README](../join-page/README.md) is the model. Nothing in this bundle is adopted
+by default.
+
+## Rulings — Events data foundation (shaped 2026-08-13)
+
+**Adopted**
+
+- **One venue for everything** — confirmed real: every ticketed evening is in the
+  Dorfgemeindehaus Großfurra (`EV_ORT` verified, exception to the invented-facts list).
+- **The six event types** (1. + 2. Prunksitzung, Weiberfasching, Jugendfasching,
+  Rentnerfasching, Kinderfasching) with their calendar-correct 2026/27 dates — the club's
+  real usual season. Teasers/times/prices stay placeholder.
+- **`evStatus`'s one-phrasing idea** — one label formula for all states ("N von M frei"),
+  color carries the urgency.
+- **Eckdaten fields**: Einlass + Beginn, age hint (as free text), teaser sentence + event
+  type.
+
+**Rejected**
+
+- **The four-state stored `status`** (`offen · knapp · ausverkauft · bald`, stored
+  redundantly next to `frei`/`kap`/`vvk`) — replaced by a backend-owned 7-state
+  `salesStatus` lifecycle enum (adds `salesClosed`, `cancelled`, splits `bald` into
+  `announced`/`presaleScheduled`); a seed builder derives it from counts so seed data can
+  never contradict itself.
+- **Flat 12 € price** (`EV_PREIS`) and the "für jeden Abend gleich, für jeden Platz
+  gleich" copy — price varies per event (flat within one evening).
+- **Fixed 288-seat capacity** (`kap: 288`) — capacity and the seating plan are per event;
+  the hall is set up differently each time.
+- **The rough end time** ("Ende ca. 2:00") — the club doesn't promise an end publicly;
+  field dropped.
+
+**Added by us**
+
+- **Progressive publishing** — events go public at `announced` with only the core known;
+  Einlass, age hint, price, capacity, VVK start may arrive later (nullable).
+- **Programm narrowed to ticketed evenings only** (`CONTEXT.md`, 2026-08-13) — unticketed
+  happenings (Rosenmontagsumzug) leave the website's Programm entirely.
 
 ## ⚠️ Known invented facts (unverified until a shaping session confirms them)
 
