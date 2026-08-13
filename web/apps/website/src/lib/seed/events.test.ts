@@ -18,7 +18,7 @@ const baseFacts: EventFacts = {
   venue: 'Dorfgemeindehaus Großfurra',
   startsAt: '2027-01-23T19:11',
   doorsOpenAt: '2027-01-23T18:11',
-  teaser: 'Ein Abend volles Programm.',
+  teaser: 'Ein voller Abend.',
   ageHint: 'ab 12 Jahren empfohlen',
   priceCents: 1400,
   capacity: 260,
@@ -205,7 +205,7 @@ describe('SEEDED_EVENTS', () => {
     expect(new Set(prices).size).toBeGreaterThan(1);
   });
 
-  it('never lists the Rosenmontagsumzug — the Programm is ticketed evenings only', () => {
+  it('never lists the Rosenmontagsumzug — Veranstaltungen are ticketed evenings only', () => {
     for (const event of SEEDED_EVENTS) {
       expect(event.title).not.toMatch(/umzug/i);
     }

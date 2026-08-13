@@ -51,8 +51,8 @@ export const NotFoundPage: FC = () => (
           <Button component={RouterLink} to="/" variant="contained" color="primary" size="large">
             Zur Startseite
           </Button>
-          <Button component={RouterLink} to="/program" variant="outlined" size="large">
-            Zum Programm →
+          <Button component={RouterLink} to="/events" variant="outlined" size="large">
+            Zu den Veranstaltungen →
           </Button>
         </Stack>
       </Stack>

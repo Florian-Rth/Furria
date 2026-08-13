@@ -62,18 +62,18 @@ export const rightsNoteContactHref = `mailto:${CLUB_CONTACT_EMAIL}`;
 
 export const rightsNoteContactLabel = CLUB_CONTACT_EMAIL;
 
-export interface GalleryProgramBandContent {
+export interface GalleryEventsBandContent {
   kicker: string;
   headline: string;
   ctaLabel: string;
   ctaTo: LinkProps['to'];
 }
 
-export const galleryProgramBandContent: GalleryProgramBandContent = {
+export const galleryEventsBandContent: GalleryEventsBandContent = {
   kicker: 'NICHT NUR ZUSCHAUEN',
   headline: 'BEIM NÄCHSTEN MAL SELBST DABEI',
-  ctaLabel: 'Zum Programm →',
-  ctaTo: '/program',
+  ctaLabel: 'Zu den Veranstaltungen →',
+  ctaTo: '/events',
 };
 
 export const ALBUMS: Album[] = [
@@ -83,7 +83,7 @@ export const ALBUMS: Album[] = [
     date: '2026-02-14',
     venue: 'Festhalle',
     intro:
-      'Vier Stunden Programm, vierzehn Auftritte, ein Saal bis in die letzte Reihe. Die Technik fiel dreimal aus — gemerkt hat es niemand.',
+      'Vier Stunden Bühne, vierzehn Auftritte, ein Saal bis in die letzte Reihe. Die Technik fiel dreimal aus — gemerkt hat es niemand.',
     photoCredit: 'Wegwerfkamera vom Kiosk',
     photos: [
       { orientation: 'landscape', alt: 'Der Elferrat marschiert in die vollbesetzte Halle ein' },

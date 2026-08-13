@@ -27,10 +27,10 @@ const renderProviders = (ui: ReactElement): ReactElement => {
 
 export const renderWithProviders = (ui: ReactElement): RenderResult => render(renderProviders(ui));
 
-export const renderWithRouter = (ui: ReactElement): RenderResult => {
+export const renderWithRouter = (ui: ReactElement, initialPath = '/'): RenderResult => {
   const router = createRouter({
     routeTree,
-    history: createMemoryHistory({ initialEntries: ['/'] }),
+    history: createMemoryHistory({ initialEntries: [initialPath] }),
   });
 
   return render(

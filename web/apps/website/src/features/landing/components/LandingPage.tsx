@@ -2,13 +2,13 @@ import { kkTokens } from '@furria/ui';
 import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 import type { FC, ReactNode } from 'react';
+import { EventsTeaser } from './EventsTeaser/EventsTeaser';
 import { Hero } from './Hero/Hero';
 import { HeroFollow } from './HeroFollow';
 import { LandingHeroBackdrop } from './LandingHeroBackdrop';
 import { LandingTicker } from './LandingTicker';
 import { MitmachenBand } from './MitmachenBand/MitmachenBand';
 import { MobileHero } from './MobileHero/MobileHero';
-import { ProgramTeaser } from './ProgramTeaser/ProgramTeaser';
 
 interface LandingPageProps {
   newsTeaser?: ReactNode;
@@ -67,7 +67,7 @@ export const LandingPage: FC<LandingPageProps> = ({ newsTeaser }) => (
     <LandingTicker />
     <Container maxWidth="xl" sx={{ px: kkTokens.layout.gutterX, py: kkTokens.layout.gutterY }}>
       <Stack sx={{ gap: kkTokens.layout.sectionGap }}>
-        <ProgramTeaser />
+        <EventsTeaser />
         {newsTeaser}
         <MitmachenBand />
       </Stack>

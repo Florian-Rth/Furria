@@ -6,7 +6,7 @@ export interface NavItem {
 }
 
 export const navItems: NavItem[] = [
-  { to: '/program', label: 'Programm' },
+  { to: '/events', label: 'Veranstaltungen' },
   { to: '/club', label: 'Verein' },
   { to: '/news', label: 'Aktuelles' },
   { to: '/gallery', label: 'Galerie' },

@@ -24,8 +24,8 @@ describe('recruitBandContent', () => {
     expect(recruitBandContent.primaryTo).toBe('/join');
   });
 
-  it('points the secondary button at the season programme', () => {
-    expect(recruitBandContent.secondaryLabel).toBe('Programm ansehen');
-    expect(recruitBandContent.secondaryTo).toBe('/program');
+  it('points the secondary button at the Veranstaltungen', () => {
+    expect(recruitBandContent.secondaryLabel).toBe('Veranstaltungen ansehen');
+    expect(recruitBandContent.secondaryTo).toBe('/events');
   });
 });

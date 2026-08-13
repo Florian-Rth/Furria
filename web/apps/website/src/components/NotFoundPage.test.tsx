@@ -23,9 +23,9 @@ describe('not-found route', () => {
     expect(screen.getByRole('navigation', { name: 'Hauptnavigation' })).toBeInTheDocument();
     expect(screen.getByRole('contentinfo')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Zur Startseite' })).toHaveAttribute('href', '/');
-    expect(screen.getByRole('link', { name: 'Zum Programm →' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Zu den Veranstaltungen →' })).toHaveAttribute(
       'href',
-      '/program',
+      '/events',
     );
   });
 

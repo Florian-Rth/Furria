@@ -17,8 +17,8 @@ import {
   applySatzungHref,
   applySubmitNote,
   applySummaryNote,
+  applyThanksEventsHref,
   applyThanksHomeHref,
-  applyThanksProgramHref,
   applyThanksText,
   buildApplyEyebrow,
   buildApplySummaryRows,
@@ -155,8 +155,8 @@ describe('the confirmation copy', () => {
     expect(applyThanksText).toContain('nichts zahlen');
   });
 
-  it('leads out to the Programm and to the Startseite', () => {
-    expect(applyThanksProgramHref).toBe('/program');
+  it('leads out to the Veranstaltungen and to the Startseite', () => {
+    expect(applyThanksEventsHref).toBe('/events');
     expect(applyThanksHomeHref).toBe('/');
   });
 });

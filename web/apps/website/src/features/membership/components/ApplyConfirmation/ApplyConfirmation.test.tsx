@@ -2,9 +2,9 @@ import { screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import {
   APPLY_THANKS_STEPS,
+  applyThanksEventsLabel,
   applyThanksEyebrow,
   applyThanksHomeLabel,
-  applyThanksProgramLabel,
 } from '@/features/membership/apply-content';
 import { renderWithRouter } from '@/test/render';
 import { ApplyConfirmation } from './ApplyConfirmation';
@@ -46,12 +46,12 @@ describe('ApplyConfirmation', () => {
     expect(copy).not.toMatch(/\d{1,2}\.\d{1,2}\./);
   });
 
-  it('leads out to the Programm and to the Startseite', () => {
+  it('leads out to the Veranstaltungen and to the Startseite', () => {
     renderWithRouter(<ApplyConfirmation firstName="Lena" />);
 
-    expect(screen.getByRole('link', { name: applyThanksProgramLabel })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: applyThanksEventsLabel })).toHaveAttribute(
       'href',
-      '/program',
+      '/events',
     );
     expect(screen.getByRole('link', { name: applyThanksHomeLabel })).toHaveAttribute('href', '/');
   });

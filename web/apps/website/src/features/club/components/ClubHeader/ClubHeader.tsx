@@ -23,7 +23,7 @@ export const ClubHeader: FC = () => (
         <Button component={RouterLink} to="/join" variant="contained" color="primary" size="large">
           {clubPrimaryCtaLabel}
         </Button>
-        <Button component={RouterLink} to="/program" variant="outlined" size="large">
+        <Button component={RouterLink} to="/events" variant="outlined" size="large">
           {clubSecondaryCtaLabel}
         </Button>
       </KkHeroSection.Actions>

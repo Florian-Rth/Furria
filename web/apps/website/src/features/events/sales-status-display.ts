@@ -15,6 +15,27 @@ const URGENCY_BY_STATUS: Record<SalesStatus, SalesUrgency> = {
 
 export const deriveSalesUrgency = (status: SalesStatus): SalesUrgency => URGENCY_BY_STATUS[status];
 
+export type SalesUrgencyColor = 'default' | 'error' | 'info' | 'success' | 'warning';
+
+const COLOR_BY_URGENCY: Record<SalesUrgency, SalesUrgencyColor> = {
+  upcoming: 'info',
+  open: 'success',
+  scarce: 'warning',
+  exhausted: 'default',
+  cancelled: 'error',
+};
+
+export const deriveSalesUrgencyColor = (status: SalesStatus): SalesUrgencyColor =>
+  COLOR_BY_URGENCY[deriveSalesUrgency(status)];
+
+export type CapacityBarColor = 'success' | 'warning';
+
+export const isLiveSaleStatus = (status: SalesStatus): boolean =>
+  status === 'onSale' || status === 'almostSoldOut';
+
+export const deriveCapacityBarColor = (status: SalesStatus): CapacityBarColor =>
+  status === 'almostSoldOut' ? 'warning' : 'success';
+
 const presaleStartLong = (presaleStartsAt: string): string =>
   `Vorverkauf ab ${formatNumericDate(presaleStartsAt)}`;
 

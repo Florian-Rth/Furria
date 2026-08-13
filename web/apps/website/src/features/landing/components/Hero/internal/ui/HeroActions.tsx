@@ -8,8 +8,8 @@ export const HeroActions: FC = () => (
     <Button component={RouterLink} to="/tickets" variant="contained" color="primary" size="large">
       Tickets sichern →
     </Button>
-    <Button component={RouterLink} to="/program" variant="outlined" size="large">
-      Programm ansehen
+    <Button component={RouterLink} to="/events" variant="outlined" size="large">
+      Veranstaltungen ansehen
     </Button>
   </Stack>
 );

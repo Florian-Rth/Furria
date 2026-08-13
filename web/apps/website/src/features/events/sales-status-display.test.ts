@@ -2,9 +2,12 @@ import { describe, expect, it } from 'vitest';
 import type { EventFacts } from '@/lib/seed/events';
 import { buildCancelledEvent, buildEvent } from '@/lib/seed/events';
 import {
+  deriveCapacityBarColor,
   deriveSalesShortLabel,
   deriveSalesStatusLabel,
   deriveSalesUrgency,
+  deriveSalesUrgencyColor,
+  isLiveSaleStatus,
 } from './sales-status-display';
 
 const midPresale = new Date('2026-12-01T12:00');
@@ -16,7 +19,7 @@ const baseFacts: EventFacts = {
   venue: 'Dorfgemeindehaus Großfurra',
   startsAt: '2027-01-23T19:11',
   doorsOpenAt: '2027-01-23T18:11',
-  teaser: 'Ein Abend volles Programm.',
+  teaser: 'Ein voller Abend.',
   ageHint: 'ab 12 Jahren empfohlen',
   priceCents: 1400,
   capacity: 260,
@@ -77,5 +80,36 @@ describe('deriveSalesUrgency', () => {
     expect(deriveSalesUrgency('soldOut')).toBe('exhausted');
     expect(deriveSalesUrgency('salesClosed')).toBe('exhausted');
     expect(deriveSalesUrgency('cancelled')).toBe('cancelled');
+  });
+});
+
+describe('deriveSalesUrgencyColor', () => {
+  it('maps every lifecycle state onto a badge color', () => {
+    expect(deriveSalesUrgencyColor('announced')).toBe('info');
+    expect(deriveSalesUrgencyColor('presaleScheduled')).toBe('info');
+    expect(deriveSalesUrgencyColor('onSale')).toBe('success');
+    expect(deriveSalesUrgencyColor('almostSoldOut')).toBe('warning');
+    expect(deriveSalesUrgencyColor('soldOut')).toBe('default');
+    expect(deriveSalesUrgencyColor('salesClosed')).toBe('default');
+    expect(deriveSalesUrgencyColor('cancelled')).toBe('error');
+  });
+});
+
+describe('isLiveSaleStatus', () => {
+  it('treats only running sales as live', () => {
+    expect(isLiveSaleStatus('onSale')).toBe(true);
+    expect(isLiveSaleStatus('almostSoldOut')).toBe(true);
+    expect(isLiveSaleStatus('announced')).toBe(false);
+    expect(isLiveSaleStatus('presaleScheduled')).toBe(false);
+    expect(isLiveSaleStatus('soldOut')).toBe(false);
+    expect(isLiveSaleStatus('salesClosed')).toBe(false);
+    expect(isLiveSaleStatus('cancelled')).toBe(false);
+  });
+});
+
+describe('deriveCapacityBarColor', () => {
+  it('turns the bar warning-colored only when seats get scarce', () => {
+    expect(deriveCapacityBarColor('onSale')).toBe('success');
+    expect(deriveCapacityBarColor('almostSoldOut')).toBe('warning');
   });
 });

@@ -14,7 +14,7 @@ afterEach(() => {
 });
 
 describe('preview gate', () => {
-  it.each(['/program', '/tickets'])(
+  it.each(['/events', '/tickets'])(
     'redirects ungated visitors from %s to the teaser',
     async (path) => {
       renderAtRoute(path);
@@ -26,9 +26,11 @@ describe('preview gate', () => {
 
   it('lets granted visitors through to the gated pages', async () => {
     writeGrantedToSession(window.sessionStorage);
-    renderAtRoute('/program');
+    renderAtRoute('/events');
 
-    expect(await screen.findByRole('heading', { level: 1, name: 'Programm' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'VERANSTALTUNGEN' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('navigation', { name: 'Hauptnavigation' })).toBeInTheDocument();
   });
 });

@@ -71,7 +71,9 @@ describe('album route', () => {
       'href',
       '/gallery/rosenmontagsumzug-2026',
     );
-    expect(screen.queryByRole('link', { name: 'Zum Programm →' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('link', { name: 'Zu den Veranstaltungen →' }),
+    ).not.toBeInTheDocument();
   });
 
   it('publishes a per-Album document head that ignores the viewer search param', async () => {
