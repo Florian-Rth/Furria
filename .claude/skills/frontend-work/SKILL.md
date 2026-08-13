@@ -117,6 +117,7 @@ description: Mandatory rules for all React/TypeScript frontend work. Invoke befo
 - Code identifiers, routes, IDs, props: English — always
 - Treat plan files, doc file names, slugs and frontmatter identifiers as code identifiers — always English, even when the page's visible German title differs
 - Never use internal domain terminology in user-facing copy — write self-explanatory German copy from terms the UI already teaches the user; internal terms stay in code and schema fields
+- Always format German dates through the shared formatters in `src/lib/date.ts` (extend that module when a new format is needed); never hand-split date strings in feature files
 
 ### Layout & Dialogs
 - Content pages use `PageLayout` from `@furria/ui`: `PageLayout` + `PageLayout.Header` + `PageLayout.Content`; full-bleed pages (hero/teaser) own their layout instead
