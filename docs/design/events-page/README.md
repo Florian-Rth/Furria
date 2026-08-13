@@ -85,6 +85,8 @@ by default.
   wrong → recognisable placeholders; unverified venue facts → recognisable placeholders.
 - **The filmstrip** as decorative rhythm (placeholder imagery, reduced-motion aware).
 - **Börse band placement** — but only as a concept teaser, see Rejected.
+- **The split-hero hierarchy** (identity left, card right, list below) and `EvCountdown`'s
+  adaptive granularity (seconds only when they mean something) — second grilling round.
 
 **Rejected**
 
@@ -114,6 +116,11 @@ by default.
 - **Honest FAQ price item** — "Was eine Karte kostet" answered from the model: differs
   per evening, shown on each Termin.
 - **No archive** — current Session only, pinned into the deferred-backend contract.
+- **Second round (product):** the hero card's four-face state ladder (incl. a
+  VVK-start countdown for `presaleScheduled`), a designed end-of-season empty state,
+  quiet per-type tint accents on the date block (mock's monochrome rows rejected),
+  anchor deep links per row, a derived proximity badge ("Diesen Samstag"), and
+  schema.org/Event JSON-LD (guarded by an "Eckdaten real?" ungating check).
 
 ## ⚠️ Known invented facts (unverified until a shaping session confirms them)
 

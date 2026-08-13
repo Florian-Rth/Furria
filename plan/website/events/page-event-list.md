@@ -124,6 +124,44 @@ Shaping session 2026-08-13 — all questions resolved with the user:
   occasions live in the Galerie. Pinned in the area's deferred-backend contract: the
   public read endpoint returns the current Session only — history never crosses the API.
 
+### Product & architecture (second grilling, 2026-08-13)
+
+- **Hierarchy: the mock's split hero.** Identity (eyebrow · H1 · intro · stats) left, the
+  card right, list directly below. Mobile: intro → card → list.
+- **The hero card is a four-face ladder,** truthful under every seed mix:
+  `onSale`/`almostSoldOut` → kicker "NÄCHSTER ABEND MIT KARTEN", countdown to Beginn,
+  capacity bar; **`presaleScheduled` → kicker "VORVERKAUF STARTET", countdown to
+  `presaleStartsAt`**, no bar; `announced` → "Vorverkauf wird noch angekündigt", no
+  countdown; only `soldOut`/`salesClosed` left → earliest upcoming evening with its honest
+  status label (Börse cross-link arrives with page #6). Countdown granularity adapts —
+  seconds only when they mean something (mock idea adopted).
+- **Designed "end of season" empty state.** No upcoming events means the Session is over:
+  hero keeps the identity, card + stats hide, the list area becomes a farewell moment
+  ("die Session ist gefeiert") pointing to the Galerie (relive it) and Aktuelles (where
+  the next season shows up first). Tested with an empty seed array. No loading/error
+  theater — site-wide precedent, seeds resolve instantly.
+- **Quiet type tints.** The boxed date block carries a per-event-type tint accent; status
+  color stays exclusively on the status column (urgency never competes with identity).
+  The tint derivation becomes a **type-based shared helper in `lib/`** (landing can't
+  import the events feature); the teaser's index-based `resolveEventTint` rewires onto it.
+- **Anchor deep links:** each row gets `id` = event slug; `/events#weiberfasching-2027`
+  scrolls to and briefly highlights the row — Meldungen can link a specific evening.
+- **Proximity badge:** rows within 7 days show a derived "Diesen Samstag" / "Heute" —
+  honest urgency the status enum can't express.
+- **JSON-LD (schema.org/Event) ships in E2** — user decision over the defer
+  recommendation. Guard: the **ungating checklist must include "Eckdaten confirmed
+  real"** so placeholder times never reach search-engine rich results (the preview gate
+  keeps crawlers out until then).
+- **Audience filter chips rejected** — overkill for six rows on one screen.
+- **Architecture:** the route renders one **`EventListPage`** (NewsListPage precedent;
+  route owns title/description/JSON-LD head). Three tested main components —
+  `EventListPage` (assembly, full-bleed layout), `NextEventCard` (the four faces),
+  `EventList` (rows, anchors, badges, end-of-season face). Feature-shared primitives per
+  the E1 mandate: `EventDateBlock`, `CapacityBar`, `SalesStatusBadge` (detail page reuses
+  them). Hero, venue band, Börse teaser, filmstrip and FAQ stay internal to the page.
+  Logic lives in pure tested functions (next-event selection, stats, proximity, countdown
+  formatting) plus one `use-countdown` hook for the tick.
+
 ## Awaiting facts (non-blocking — placeholders until the club supplies them)
 
 - Venue: real Adresse, Parken, Barrierefreiheit for the Dorfgemeindehaus Großfurra.
@@ -148,6 +186,9 @@ under "Awaiting facts" and block nothing.
 - The shared primitives (date block, capacity bar, status badge) live in
   `features/events` with tests; all 7 `salesStatus` states render correctly in a row
   (`cancelled` exercised in tests only).
+- `NextEventCard`'s four faces each have a test; the empty seed array renders the
+  end-of-season state; row anchors scroll-and-highlight; the route emits schema.org/Event
+  JSON-LD.
 - Full gates pass: typecheck, tests, lint, build.
 
 ## Implementation plan (E-phases)
@@ -158,12 +199,14 @@ under "Awaiting facts" and block nothing.
      nav/teaser/gallery copy + identifiers, tests, `feature-program-teaser.md` →
      `feature-events-teaser.md`.
   2. **List + primitives** — date block, capacity bar, status badge born in
-     `features/events`; the row; `ALLE TERMINE` header with derived date range; rows link
-     to detail placeholders. All 7 states tested.
+     `features/events`; the row with quiet type tints (shared type-based tint helper in
+     `lib/`, teaser rewired), anchor deep links, proximity badge; `ALLE TERMINE` header
+     with derived date range; rows link to detail placeholders; end-of-season empty
+     state. All 7 states tested.
   3. **Hero + hero card** — eyebrow (derived Session), H1, derived intro, three honest
-     stats; the trimmed card with countdown.
-  4. **Lower bands + assembly** — venue block, FAQ, Börse concept teaser, filmstrip, page
-     assembly, page tests, full gates.
+     stats; `NextEventCard` with the four-face ladder and adaptive countdown.
+  4. **Lower bands + assembly** — venue block, FAQ, Börse concept teaser, filmstrip,
+     `EventListPage` assembly, route head with JSON-LD, page tests, full gates.
 
 ## References
 
