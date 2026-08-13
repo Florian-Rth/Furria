@@ -47,7 +47,8 @@ truth (the move P6 made for `/club`'s Gruppen).
 
 Deliberately **not** in this foundation: the shared UI primitives (date block, capacity
 bar, status badge). They are mandated to live as `events`-feature shared components with
-one home, but they are built when the first page consumes them (page-program's E-phase) —
+one home, but they are built when the first page consumes them (page-event-list's E-phase,
+the pre-rename "page-program") —
 the foundation ships no unconsumed UI.
 
 ## Decisions

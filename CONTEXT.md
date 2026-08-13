@@ -85,17 +85,19 @@ _Avoid_: Kampagne, campaign, season (as a table name)
 
 ### Events
 
-**Programm**:
-Overloaded across the two apps — **do not collapse the two senses**:
-- **Public website:** the **season's ticketed events** — the hall evenings the club sells
-  Karten for. This is what "DAS PROGRAMM", the `/program` route and the "Programm" nav label
-  mean on the website. Unticketed happenings (e.g. the Rosenmontagsumzug) are **not** part
-  of the Programm and are not listed on the website (narrowed 2026-08-13; before that it
-  meant the full lineup).
-- **Club-App:** the **running order of acts within a single event** (the Auto-Reihenfolge /
-  Reihenfolge). A per-event ordering, not a list of events.
-_Avoid_: using "Programm" without knowing which app you are in, listing unticketed events
-under it.
+**Veranstaltung** (`event`):
+A ticketed hall evening of the Session — the unit the club sells Karten for, and the only
+thing the public website's Veranstaltungen list shows. In everyday German the word is
+broader; here it is **narrow**: unticketed happenings (e.g. the Rosenmontagsumzug) are not
+Veranstaltungen in this sense and are not listed on the website (the 2026-08-13 narrowing,
+carried over from the retired "Programm").
+_Avoid_: **Programm** (retired — see flagged note), Termin (as the entity name), Event
+(in German copy)
+
+**Ablauf**:
+The running order of acts within a single Veranstaltung (the Auto-Reihenfolge) — a
+per-event ordering the Club-App manages. Not a list of events.
+_Avoid_: **Programm** (retired), Setlist
 
 ### Öffentliche Kommunikation
 
@@ -146,6 +148,13 @@ parallel truth.
 _Avoid_: balance table, payments table (as source of truth)
 
 ## Flagged ambiguities
+
+- **"Programm"** — **retired 2026-08-13.** The word was overloaded across the two apps
+  (website: the season's ticketed events; Club-App: a per-event running order) and is now
+  banned in both senses: the website's list of ticketed evenings is **Veranstaltungen**,
+  the Club-App's per-event running order is the **Ablauf**. Shipped copy and identifiers
+  still carrying the old word are renamed as part of the events-list page build, never
+  left to drift.
 
 - **Who decides a photo is public** — **open, 2026-07-28.** No rules exist yet, and it is not
   settled whether any of this gets built. The public **Galerie** needs none of it today: it shows

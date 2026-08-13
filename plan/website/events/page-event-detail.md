@@ -1,7 +1,7 @@
 ---
 title: Veranstaltungsseite
 slug: event-detail
-route: decided in shaping (child of /program)
+route: /events/$eventSlug (pinned by events-list shaping, 2026-08-13)
 type: page
 status: skeleton
 mock: docs/design/events-page/ (fcc-web-events.jsx — EvDetailDesktop / EvDetailMobile)
@@ -34,16 +34,22 @@ Filled in shaping.
 
 ## Decisions
 
-None yet — filled in shaping.
+Carried from the events-list shaping (2026-08-13):
+
+- **Route is `/events/$eventSlug`, slug = the seed's event id** (Galerie precedent,
+  `prunksitzung-1-2027` — German domain words + year solve the recurring-event
+  uniqueness). E2 slice 1 creates this route as a `PlaceholderPage`; this page's own
+  E-phase replaces the placeholder and turns the `/events` rows' links real.
+- **This page's phase retrofits its entry CTAs into `/events`** (area pattern: each page
+  owns wiring its own entry links into the list page).
 
 ## Open Questions
 
-- Route + slug scheme: events recur every Session ("Prunksitzung" ×2 per year) — the
-  Galerie solved uniqueness by deriving the Session; same trick here?
 - Which fields are published Eckdaten vs. invention (Ablauf with computed times? age
   recommendations? Einlass?).
-- The **Ablauf/live running order is Club-App territory** (glossary: Programm, Club-App
-  sense) — how much of it can this page honestly promise in a frontend-only build?
+- The **Ablauf/live running order is Club-App territory** (glossary: **Ablauf** — the
+  retired "Programm", Club-App sense) — how much of it can this page honestly promise in
+  a frontend-only build?
 - Photos "automatically from the Galerie": features never import each other — composition
   happens in the route, or the link lives in shared `lib`. Also: does a matching Album
   even exist per event type?
@@ -62,5 +68,5 @@ Filled in shaping.
 ## References
 
 - [Area plan](master-plan.md) · [Foundation](foundation-events-data.md) ·
-  [Programm](page-program.md)
+  [Veranstaltungen list](page-event-list.md)
 - [Galerie](../feature-gallery.md) — Session derivation + photo source precedent

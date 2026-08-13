@@ -1,6 +1,6 @@
 # Events & Tickets — Area Plan
 
-The public **Events area** of the website: the Programm (event list), event detail pages,
+The public **Events area** of the website: the Veranstaltungen list, event detail pages,
 the ticket purchase flow (seat picker → checkout → digitale Karte) and the Kartenbörse.
 Expected to become the most-visited part of the site. This file is the area's dashboard;
 it lives under the [website master plan](../master-plan.md), which carries only a pointer
@@ -73,8 +73,8 @@ Frontmatter `status`: `skeleton → shaping → ready → building → shipped`.
 | # | Plan | Route | Status |
 |---|---|---|---|
 | 1 | [Events data foundation](foundation-events-data.md) | — | shipped |
-| 2 | [Programm](page-program.md) | `/program` | skeleton |
-| 3 | [Event detail](page-event-detail.md) | decided in shaping | skeleton |
+| 2 | [Veranstaltungen list](page-event-list.md) | `/events` | ready |
+| 3 | [Event detail](page-event-detail.md) | `/events/$eventSlug` (pinned 2026-08-13) | skeleton |
 | 4 | [Seat picker](page-seat-picker.md) | decided in shaping | skeleton |
 | 5 | [Purchase](page-purchase.md) | decided in shaping | skeleton |
 | 6 | [Kartenbörse](page-ticket-exchange.md) | decided in shaping | skeleton |
@@ -96,7 +96,17 @@ seeded event model (`lib/seed/events.ts` — 7-state `salesStatus` schema + self
 seed builder + six-evening mid-VVK snapshot), the `events` feature scaffold (`api.ts`
 hook + German status-label derivations), and the landing Programm-Teaser rewired onto the
 seed (Rosenmontagsumzug dropped — Programm is ticketed-only now). Shared UI primitives are
-deliberately deferred to page-program's phase.
+deliberately deferred to page-event-list's phase (pre-rename: "page-program").
+
+### E2 — Veranstaltungen list
+**Status:** ready (shaped 2026-08-13)
+The `/events` page per [page-event-list.md](page-event-list.md), four slices: the
+"Programm"-retirement rename sweep (route `/program` → `/events`, nav/teaser/gallery copy,
+`/events/$eventSlug` placeholder route) → list + the E1-deferred shared primitives → hero +
+trimmed hero card → venue/FAQ/Börse-teaser/filmstrip + assembly. The shaping session
+retired the term **Programm** repo-wide (see `CONTEXT.md`); detail-page route pinned as
+`/events/$eventSlug`, purchase/Börse CTAs excluded until their pages exist (each page's
+phase retrofits its entry links here).
 
 ## Deferred — backend
 
@@ -124,6 +134,8 @@ Pinned by shaping sessions:
   The backend owns the `almostSoldOut` threshold and keeps enum and counts consistent.
   `NotPublished` never leaves the backend. Details in
   [foundation-events-data.md](foundation-events-data.md).
+- **The public read endpoint serves the current Session only** (events-list shaping,
+  2026-08-13): no past events, no history — past occasions are the Galerie's territory.
 - **Capacity, seating plan and price are per event** (foundation shaping, 2026-08-13):
   the hall is set up differently per event; price is flat within one event but differs
   between events. Seating-plan templates (save/load) are a future Club-App idea.
@@ -131,7 +143,7 @@ Pinned by shaping sessions:
 ## References
 
 - Mock bundle: [`docs/design/events-page/`](../../../docs/design/events-page/README.md)
-- [`CONTEXT.md`](../../../CONTEXT.md) — Programm (website sense), Session, Ledger
+- [`CONTEXT.md`](../../../CONTEXT.md) — Veranstaltung, Ablauf, Session, Ledger
 - Website master plan: [scope banner](../master-plan.md#overview) ·
   [Deferred — Club-App-dependent](../master-plan.md#club-app-dependent)
 - Seed pattern precedent: website master plan → P6 cross-cutting notes ·

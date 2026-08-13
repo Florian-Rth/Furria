@@ -27,7 +27,7 @@ Vorkaufsrecht windows, notifications) is a server-side process.
   to another evening)
 - Stats row (returns this Session, free now, waitlist length, "0 € Aufpreis, immer")
 - "Warum nicht privat verkaufen" panel: named tickets, old QR invalidated on transfer
-- 4-step how-it-works · integration points elsewhere: Börse band on `/program`, waitlist
+- 4-step how-it-works · integration points elsewhere: Börse band on `/events`, waitlist
   panel on sold-out detail pages, freed (gold) seats in the Saalplan
 - Mock flows that P6 precedent flags: SMS notifications with 6-hour Vorkaufsrecht — an
   unbuilt flow like the one P6 cut from the Antrag
@@ -38,7 +38,14 @@ Filled in shaping.
 
 ## Decisions
 
-None yet — filled in shaping.
+Carried from the events-list shaping (2026-08-13):
+
+- **This page owns the Börse mechanics shaping.** The user confirmed the mock's
+  return → waitlist → SMS/Vorkaufsrecht flow is *not* settled club intent — "how the
+  Börse works must be well planned by us". Until then, `/events` ships only a concept
+  teaser band ("Ausverkauft ist nicht das Ende" + one sentence, zero mechanics claims);
+  **this page's E-phase replaces that teaser with the real band + link** once the
+  mechanics are decided here.
 
 ## Open Questions
 

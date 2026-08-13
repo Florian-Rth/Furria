@@ -10,7 +10,7 @@ adrs: []
 ## What & Why
 
 The home page's "DAS PROGRAMM" section: a short teaser of upcoming events (3 cards) with an
-"Alle Termine →" link into the full [Programm page](events/page-program.md). It is
+"Alle Termine →" link into the full [Veranstaltungen page](events/page-event-list.md). It is
 the marketing bridge that turns the home page into a reason to buy tickets — and later carries
 **live ticket-scarcity** as a scarcity/marketing signal.
 

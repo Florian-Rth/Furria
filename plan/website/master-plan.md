@@ -80,7 +80,7 @@ Guiding constraints (all binding):
 | [Programm-Teaser](feature-program-teaser.md) | capability | shipped | Home "DAS PROGRAMM" upcoming-events section |
 | [Mitmachen-Band](feature-mitmachen-band.md) | capability | shipped | Home recruit CTA → membership funnel |
 | [Verein](feature-about-verein.md) | capability | shipped | Verein story, Ämter, Gruppen showcase |
-| [Events & Tickets](events/master-plan.md) | area | shaping | Programm, event detail, Platzwahl, Kauf/Karte, Kartenbörse — own area plan (absorbed the Veranstaltungskalender + Ticket-Shop stubs, 2026-08-12) |
+| [Events & Tickets](events/master-plan.md) | area | shaping | Veranstaltungen list, event detail, Platzwahl, Kauf/Karte, Kartenbörse — own area plan (absorbed the Veranstaltungskalender + Ticket-Shop stubs, 2026-08-12) |
 | [Aktuelles](feature-news.md) | capability | shipped | Meldungen (list + detail) + landing teaser |
 | [Galerie](feature-gallery.md) | capability | shipped | Public Album index + Album pages + photo viewer |
 | [Mitglied werden](feature-membership-funnel.md) | capability | shipped | Membership info + Beitrittsantrag funnel |
@@ -753,6 +753,8 @@ Detail lives in the [Events area plan](events/master-plan.md#e-phases); one line
 
 - **E1 — Events data foundation** — shipped (2026-08-13): seeded event model + `events`
   feature scaffold + teaser rewire
+- **E2 — Veranstaltungen list** — ready (shaped 2026-08-13): `/events` page + the
+  repo-wide "Programm" → Veranstaltungen rename (term retired, see `CONTEXT.md`)
 
 ---
 
