@@ -21,7 +21,7 @@ Block order (top → bottom), from the "Destillat" mock:
 1. Masthead nav — [Site-Shell](feature-site-shell.md)
 2. [Landing-Hero](feature-landing-hero.md) — asymmetric editorial hero
 3. [Ticker](feature-ticker.md)
-4. [Programm-Teaser](feature-program-teaser.md) — "DAS PROGRAMM"
+4. [Programm-Teaser](feature-events-teaser.md) — "DAS PROGRAMM"
 5. [Aktuelles](feature-news.md) — "AKTUELLES" news teaser, 3 newest Meldungen *(added P4)*
 6. [Mitmachen-Band](feature-mitmachen-band.md) — recruit CTA
 7. Footer — [Site-Shell](feature-site-shell.md)
@@ -36,7 +36,7 @@ Block order (top → bottom), from the "Destillat" mock:
   door — see [Preview-Gate](feature-preview-gate.md)). `features/landing/LandingPage` is now the
   real landing.
 - **Final block order (locked, mock order, no extras):** Masthead (shell) → [Landing-Hero](feature-landing-hero.md)
-  → [Ticker](feature-ticker.md) → [Programm-Teaser](feature-program-teaser.md) → [Mitmachen-Band](feature-mitmachen-band.md)
+  → [Ticker](feature-ticker.md) → [Programm-Teaser](feature-events-teaser.md) → [Mitmachen-Band](feature-mitmachen-band.md)
   → Footer (shell). **No** news-teaser or gallery-strip block in v1 (news = P4, gallery = P5; a
   landing teaser for either can be reconsidered then). P1 delivers **Hero → Ticker** only, laid out
   so the P2 blocks slot in below the ticker with no restructuring.
@@ -164,7 +164,7 @@ grilling session. Details in [Landing-Hero](feature-landing-hero.md) Decisions (
 The page gains its final two blocks below the ticker — **still fully static, no backend**. Block
 detail + build slices live in each block's own feature file; the landing only owns the composition.
 
-11. **[done]** **Compose the P2 blocks.** Mount [Programm-Teaser](feature-program-teaser.md) then
+11. **[done]** **Compose the P2 blocks.** Mount [Programm-Teaser](feature-events-teaser.md) then
     [Mitmachen-Band](feature-mitmachen-band.md) in `LandingPage` below `LandingTicker`, inside a
     gutter-constrained container (`kkTokens.layout` gutters), for both breakpoints. Final order:
     Hero → Ticker → Programm-Teaser → Mitmachen-Band → Footer. No restructuring of the P1 layout.

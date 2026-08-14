@@ -3,7 +3,7 @@ title: Veranstaltungen
 slug: event-list
 route: /events
 type: page
-status: ready
+status: shipped
 mock: docs/design/events-page/ (fcc-web-events.jsx — EvIndexDesktop / EvIndexMobile)
 depends-on: [foundation-events-data]
 adrs: []
@@ -208,10 +208,67 @@ under "Awaiting facts" and block nothing.
   4. **Lower bands + assembly** — venue block, FAQ, Börse concept teaser, filmstrip,
      `EventListPage` assembly, route head with JSON-LD, page tests, full gates.
 
+## As-built (E2, 2026-08-14)
+
+Built in the four planned slices, each with its own review pass and full gates
+(typecheck · tests · lint · build); 803 website tests green at ship.
+
+### Where things live
+
+- **Shared primitives** — `features/events/components/{EventDateBlock,CapacityBar,SalesStatusBadge}.tsx`,
+  each with a test. The date block takes `startsAt` + `tint` and formats through `lib/date`.
+- **List** — `features/events/components/EventList/` (main + `internal/{layout,ui,logic}`):
+  rows as `CardActionArea` links (NewsRow idiom), `use-anchor-highlight` hook (TanStack
+  `location.hash` → scroll + timed highlight, reduced-motion aware), end-of-season farewell
+  (`EventEndOfSeason`, links to Galerie + Meldungen).
+- **Hero card** — `features/events/components/NextEventCard/` with one internal ui file per
+  face; face selection is a discriminated union in `next-event-display.ts`.
+- **Page** — `features/events/components/EventListPage/` assembles hero (KkHeroSection,
+  card as Aside), list, filmstrip, venue, FAQ inside `PageLayout.Body` and the Börse band
+  as the closing full-bleed band. Route `routes/_site/_gated/events.tsx` wires
+  `useEventsQuery` and emits schema.org/Event JSON-LD (offset-stamped datetimes) from its
+  head; `RouteHead` gained an optional `scripts` field.
+- **Pure logic** — `event-display.ts` (href, ordering, proximity, times label),
+  `hero-display.ts` (eyebrow/intro/stats), `next-event-display.ts`, `countdown.ts`,
+  `events-json-ld.ts`; copy in `list-content.ts`, `next-event-content.ts`,
+  `venue-content.ts`, `faq-content.ts`, `exchange-content.ts`.
+- **New shared libs** — `lib/event-tint.ts` (type-based tint: Prunksitzung red,
+  Weiberfasching gold, Jugendfasching blue, Kinderfasching green, fallback ink; the landing
+  teaser rewired onto it), `lib/money.ts` (`formatEuros`).
+
+### Recorded deviations & side effects
+
+- **Section order deviates from the shaped list** (`… venue · Börse teaser · filmstrip · FAQ`):
+  shipped as list → **filmstrip** (rhythm break) → venue → FAQ → **Börse band last**,
+  matching the site-wide closing-band idiom (News/Gallery end on a full-bleed band). The
+  section set itself is exactly as shaped.
+- **Timezone correctness (slice-2/3 review finding):** all `lib/date` formatters previously
+  re-interpreted the seeds' naive Berlin wall-clock strings in the host timezone. They now
+  render wall-clock verbatim (parse as UTC, format in UTC), and *arithmetic* (countdown,
+  upcoming filter, session derivation, proximity days) goes through the DST-aware
+  `parseBerlinDateTime` / `berlinDayNumber`. JSON-LD datetimes carry explicit `+01:00`/`+02:00`
+  offsets via `formatBerlinIsoWithOffset`.
+- **Landing teaser** `deriveEventDisplay` no longer hand-splits date strings — it composes
+  `lib/date` formatters (per the shared-formatter rule); its tint switched from index-based
+  to type-based, so both Prunksitzungen now share the red tint by design.
+- **Honesty guards from reviews:** proximity badge suppressed for `cancelled`; capacity bar
+  renders only for live-sale states (`onSale`/`almostSoldOut`); row `aria-label` carries
+  title · date · status so assistive tech hears the decision-critical info.
+- **Countdown ticks adaptively** (60 s, dropping to 1 s inside the last hour — seconds are
+  also only *displayed* under an hour).
+- The route head builds JSON-LD from `SEEDED_EVENTS` directly (head runs outside React and
+  cannot use the query hook). **When the real API replaces the seeds, the head must move to
+  a loader-shared data source** — noted here so the backend swap doesn't leave stale seed
+  JSON-LD behind.
+- Known repo-wide pattern gap left untouched (out of scope): `JoinFaqItem` has the same
+  dangling `aria-controls` the review found here; the events FAQ fixed it locally
+  (`AccordionDetails` gets `id` + `role="region"`).
+- `renderWithRouter` (test helper) gained an optional `initialPath` for hash-anchor tests.
+
 ## References
 
 - [Area plan](master-plan.md) · [Foundation](foundation-events-data.md)
-- [Programm-Teaser](../feature-program-teaser.md) — the shipped teaser of this page's
+- [Programm-Teaser](../feature-events-teaser.md) — the shipped teaser of this page's
   data (renamed in slice 1)
 - Design README §9 (Veranstaltungsplaner → Eckdaten published; scarcity feeds public site)
 - Mock rulings: [`docs/design/events-page/README.md`](../../../docs/design/events-page/README.md)

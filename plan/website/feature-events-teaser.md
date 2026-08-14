@@ -1,11 +1,17 @@
 ---
-title: Programm-Teaser
-slug: program-teaser
+title: Events-Teaser
+slug: events-teaser
 type: capability
 status: shipped
 mock: docs/design/fcc-ds-landing.jsx
 adrs: []
 ---
+
+> **Renamed from `feature-program-teaser.md` (2026-08-14, E2 slice 1):** the term "Programm"
+> was retired repo-wide (see [page-event-list](events/page-event-list.md)). The shipped
+> section is now the Events-Teaser — heading `DIE VERANSTALTUNGEN`, link target `/events`,
+> component `EventsTeaser`, content module `events-teaser-content.ts`. The historical
+> wording below is preserved as built.
 
 ## What & Why
 

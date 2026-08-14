@@ -173,4 +173,4 @@ Deviations and decisions made during the build, none silent:
 
 - [Area plan](master-plan.md) · [`CONTEXT.md`](../../../CONTEXT.md) (Programm, Session)
 - P6 seed pattern: [website master plan](../master-plan.md) → P6 cross-cutting
-- [Programm-Teaser](../feature-program-teaser.md) (the existing consumer to rewire)
+- [Programm-Teaser](../feature-events-teaser.md) (the existing consumer to rewire)

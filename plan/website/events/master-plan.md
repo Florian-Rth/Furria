@@ -73,7 +73,7 @@ Frontmatter `status`: `skeleton → shaping → ready → building → shipped`.
 | # | Plan | Route | Status |
 |---|---|---|---|
 | 1 | [Events data foundation](foundation-events-data.md) | — | shipped |
-| 2 | [Veranstaltungen list](page-event-list.md) | `/events` | ready |
+| 2 | [Veranstaltungen list](page-event-list.md) | `/events` | shipped |
 | 3 | [Event detail](page-event-detail.md) | `/events/$eventSlug` (pinned 2026-08-13) | skeleton |
 | 4 | [Seat picker](page-seat-picker.md) | decided in shaping | skeleton |
 | 5 | [Purchase](page-purchase.md) | decided in shaping | skeleton |
@@ -99,14 +99,18 @@ seed (Rosenmontagsumzug dropped — Programm is ticketed-only now). Shared UI pr
 deliberately deferred to page-event-list's phase (pre-rename: "page-program").
 
 ### E2 — Veranstaltungen list
-**Status:** ready (shaped 2026-08-13)
+**Status:** shipped (built 2026-08-14)
 The `/events` page per [page-event-list.md](page-event-list.md), four slices: the
 "Programm"-retirement rename sweep (route `/program` → `/events`, nav/teaser/gallery copy,
 `/events/$eventSlug` placeholder route) → list + the E1-deferred shared primitives → hero +
 trimmed hero card → venue/FAQ/Börse-teaser/filmstrip + assembly. The shaping session
 retired the term **Programm** repo-wide (see `CONTEXT.md`); detail-page route pinned as
 `/events/$eventSlug`, purchase/Börse CTAs excluded until their pages exist (each page's
-phase retrofits its entry links here).
+phase retrofits its entry links here). As-built notes and recorded deviations live in the
+[page plan](page-event-list.md#as-built-e2-2026-08-14); notable side effects: `lib/date.ts`
+now parses the seeds' Berlin wall-clock strings host-TZ-independently (display verbatim,
+arithmetic via `parseBerlinDateTime`), and `lib/money.ts` + `lib/event-tint.ts` were born
+as shared helpers.
 
 ## Deferred — backend
 
