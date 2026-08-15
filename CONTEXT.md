@@ -96,8 +96,35 @@ _Avoid_: **Programm** (retired — see flagged note), Termin (as the entity name
 
 **Ablauf**:
 The running order of acts within a single Veranstaltung (the Auto-Reihenfolge) — a
-per-event ordering the Club-App manages. Not a list of events.
+per-event ordering the Club-App manages. Not a list of events. It is planned late: the
+responsible person assembles it roughly **two to three weeks before** the evening, so for
+most of a Veranstaltung's public life there is no Ablauf at all. What the public website
+shows of it is the **order only, never times** — the sequence is stable enough to
+publish, the clock is not.
 _Avoid_: **Programm** (retired), Setlist
+
+**Karte** (`ticket`):
+The unit the club sells for a Veranstaltung — one admission for one person. Price is flat
+within an evening and differs between evenings. The word in every UI surface is **Karte**;
+the English "Ticket" is banned in copy and labels (the masthead's "Tickets" chip was retired
+in E3 — the club sells Karten, but the way in is the Veranstaltungen list, so that is what the
+masthead names).
+_Avoid_: Ticket (in German copy), Eintrittskarte (in labels — too long), Platz (that is
+the seat, not the entitlement)
+
+**Vorverkauf** (`presale`, short **VVK**):
+The window in which Karten for a Veranstaltung can be bought, before the evening itself.
+An event's public sales lifecycle is announced → Vorverkauf angekündigt → Vorverkauf läuft
+→ ausverkauft / Vorverkauf beendet. Not every Veranstaltung has a VVK date from the
+start — it is announced when the club sets it.
+_Avoid_: Ticketverkauf, Presale (in German copy)
+
+**Kartenbörse** (`ticket exchange`):
+The planned place where a Karte for a sold-out evening can change hands — the club's answer
+to "ausverkauft ist nicht das Ende". **Its mechanics are undecided** (return flow, waitlist,
+who gets first refusal): until they are, no surface may state how it works, only that it
+exists.
+_Avoid_: Börse (alone — ambiguous), Weiterverkauf, Resale, Zweitmarkt
 
 ### Öffentliche Kommunikation
 

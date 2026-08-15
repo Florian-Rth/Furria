@@ -755,6 +755,10 @@ Detail lives in the [Events area plan](events/master-plan.md#e-phases); one line
   feature scaffold + teaser rewire
 - **E2 — Veranstaltungen list** — shipped (built 2026-08-14): `/events` page + the
   repo-wide "Programm" → Veranstaltungen rename (term retired, see `CONTEXT.md`)
+- **E3 — Veranstaltungsseite** — shipped (built 2026-08-15): `/events/$eventSlug` page,
+  `/tickets` retired (masthead CTA is now the single **Veranstaltungen** entry), seat-picker
+  + Kartenbörse routes live as placeholders, model grew `performers` (order-only Ablauf) +
+  `description`
 
 ---
 

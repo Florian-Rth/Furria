@@ -1,7 +1,7 @@
 ---
 title: Kartenbörse
 slug: ticket-exchange
-route: decided in shaping
+route: /events/exchange (pinned by event-detail shaping, 2026-08-15)
 type: page
 status: skeleton
 mock: docs/design/events-page/ (fcc-web-boerse.jsx — EvBoerseDesktop / EvBoerseMobile, EvWaitPanel, EvSwap)
@@ -46,6 +46,19 @@ Carried from the events-list shaping (2026-08-13):
   teaser band ("Ausverkauft ist nicht das Ende" + one sentence, zero mechanics claims);
   **this page's E-phase replaces that teaser with the real band + link** once the
   mechanics are decided here.
+
+Pinned by the event-detail shaping (2026-08-15):
+
+- **Route is `/events/exchange`** — the Börse serves the whole Session, not one evening, so
+  it is a static sibling inside the area (it beats `$eventSlug` in TanStack's matching);
+  English per the standing rule. **E3 creates it as a `PlaceholderPage`.**
+- **E3 links into it from two places** under the revised "planned end state" rule: the
+  event page's `soldOut` panel face and — for one truth site-wide — the `/events` Börse
+  band, which gains a "Zur Kartenbörse →" link while staying claim-free. The mechanics
+  embargo is unchanged: **no surface may state how the Börse works until this page decides
+  it**, and this phase still replaces the band's copy with the real one.
+- **Glossary:** `CONTEXT.md` now carries **Kartenbörse** (mechanics explicitly undecided),
+  **Karte** and **Vorverkauf** — use them, don't redefine them.
 
 ## Open Questions
 

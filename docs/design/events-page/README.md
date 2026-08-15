@@ -122,6 +122,54 @@ by default.
   anchor deep links per row, a derived proximity badge ("Diesen Samstag"), and
   schema.org/Event JSON-LD (guarded by an "Eckdaten real?" ungating check).
 
+## Rulings — Veranstaltungsseite / `page-event-detail` (shaped 2026-08-15)
+
+**Adopted**
+
+- **The whole page skeleton**: back link · tag row (Typ · Session · Altershinweis · Ort) ·
+  H1 · derived stat row · ticket panel in the right rail · "Auch noch in dieser Session"
+  cards · closing band with countdown and the state CTA.
+- **The ticket panel's state-dependent CTA** — and further than the mock: E3 ships the real
+  "Platz wählen →" / "Zur Kartenbörse →" links into placeholder routes, because the site
+  goes live only when the platform behind it is ready ("planned end state" ruling).
+- **"So war es letztes Jahr"** as an idea — see Rejected for the mechanics.
+- **A mobile sticky CTA bar** (mock's mobile shell idea; user overruled the recommendation
+  to defer it).
+
+**Rejected**
+
+- **The timed Ablauf, the "Reihenfolge kommt später" copy and the "AM ABEND SELBST /
+  WELCHE NUMMER GERADE LÄUFT" live card** — the club assembles the Ablauf only 2–3 weeks
+  out and shifts acts on the night; a public clock is a promise the evening breaks, and a
+  live Ablauf is Club-App fiction here. Only the **order** is published.
+- **The auto-advancing Foto-Theater** (pause + dots) — motion for its own sake that
+  duplicates the Galerie's own viewer; replaced by a static 3–4 photo preview linking into
+  the Album.
+- **"SO SITZT DER SAAL — 24 TISCHREIHEN, 288 STÜHLE"** — fixed geometry again contradicts
+  per-event capacity (E1 ruling); the shared placeholder venue block is used instead.
+- **"LIVE-KARTENSTAND"** (E2 precedent), the payment hints ("Kreditkarte, PayPal — oder bar
+  im Vereinsraum") and the **Gruppenbestellung** note ("X sammelt für Reihe 4") — all
+  unconfirmed practice or freshness claims on seeded data.
+- **The `EvWaitPanel` waitlist and the VVK-"Erinnerung" subscribe** — actions that would
+  store nothing; the Börse mechanics stay embargoed until `page-ticket-exchange`.
+- **"Ende, etwa"** — still dropped (E1).
+
+**Added by us**
+
+- **`performers`** (ordered act names, Gruppen *and* guests, nullable) and an optional
+  per-event **`description`**, so a page without an Ablauf or an Album still reads complete.
+- **Album ↔ event matched by `eventType`**, never by id — an Album covers an occasion, not
+  a Veranstaltung (glossary).
+- **`/tickets` retired**: the orphan placeholder behind the masthead chip, the desktop button
+  and the landing hero CTA now points at `/events` (ADR-0002 kills the English "Tickets"
+  label). Built differently than shaped: the masthead ended up with **one** entry labelled
+  **Veranstaltungen** — promoted out of the nav list into the CTA — rather than a "Karten"
+  chip beside a "Veranstaltungen" link; the landing hero dropped its second CTA and keeps
+  **"Karten sichern →"**.
+- **Routes pinned** for the two unbuilt pages: `/events/$eventSlug/seats`, `/events/exchange`.
+- **Glossary grew**: Karte · Vorverkauf · Kartenbörse, plus the Ablauf's late, order-only
+  public face.
+
 ## ⚠️ Known invented facts (unverified until a shaping session confirms them)
 
 - **288 seats** in 24 table rows × 12, 62 Stehplätze, the whole hall geometry

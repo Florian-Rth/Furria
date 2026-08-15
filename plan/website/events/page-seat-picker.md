@@ -1,7 +1,7 @@
 ---
 title: Platzwahl
 slug: seat-picker
-route: decided in shaping
+route: /events/$eventSlug/seats (pinned by event-detail shaping, 2026-08-15)
 type: page
 status: skeleton
 mock: docs/design/events-page/ (fcc-web-tickets.jsx — EvSaal / EvSeatsDesktop / EvSeatsMobile)
@@ -41,6 +41,15 @@ Carried from the foundation shaping (2026-08-13):
   event and the hall is set up differently each time — the mock's fixed 3×8×12 geometry is
   invention. A save/load template system for seating plans is a future Club-App idea
   (Veranstaltungsplaner side); the public data shape must not contradict it.
+
+Pinned by the event-detail shaping (2026-08-15):
+
+- **Route is `/events/$eventSlug/seats`** — the seat picker is meaningless without an
+  event, so it nests under one; English per the area's standing rule. **E3 creates it as a
+  `PlaceholderPage`** and the event page's ticket panel links into it for the live-sale
+  states; this page's own E-phase replaces the placeholder.
+- **E3 already carries the buy CTA** ("Platz wählen →") under the area's revised
+  "planned end state" rule — this page inherits an entry point instead of retrofitting one.
 
 ## Open Questions
 

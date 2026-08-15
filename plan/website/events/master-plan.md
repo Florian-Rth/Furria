@@ -52,6 +52,13 @@ Frontmatter `status`: `skeleton → shaping → ready → building → shipped`.
   Transactional actions (pay, return, waitlist) must **fail or disable honestly** —
   nothing fake, nothing that pretends money moved. What "honest" means per page is a core
   shaping question.
+- **Pages are built in their planned end state** (user ruling, event-detail shaping
+  2026-08-15): the website goes live only when the platform behind it is ready, so a CTA
+  may point at a **placeholder route for a page not yet built** — the move E2 already made
+  when list rows linked into the detail placeholder. This **revises** E2's stricter
+  "no purchase or Börse navigation until those pages exist" rule, which applied to
+  `/events` alone. It changes navigation only: the **actions** behind a CTA still fail or
+  disable honestly, and no surface may state mechanics that are undecided.
 - **The mocks are inspiration, not spec.** The design README's "READ FIRST" governs; the
   shipped Destillat design system always wins (hard offset-shadows are rejected — sixth
   phase running). Layouts, flows, features and copy may and should be improved; deviations
@@ -74,10 +81,10 @@ Frontmatter `status`: `skeleton → shaping → ready → building → shipped`.
 |---|---|---|---|
 | 1 | [Events data foundation](foundation-events-data.md) | — | shipped |
 | 2 | [Veranstaltungen list](page-event-list.md) | `/events` | shipped |
-| 3 | [Event detail](page-event-detail.md) | `/events/$eventSlug` (pinned 2026-08-13) | skeleton |
-| 4 | [Seat picker](page-seat-picker.md) | decided in shaping | skeleton |
+| 3 | [Event detail](page-event-detail.md) | `/events/$eventSlug` (pinned 2026-08-13) | shipped |
+| 4 | [Seat picker](page-seat-picker.md) | `/events/$eventSlug/seats` (placeholder route live) | skeleton |
 | 5 | [Purchase](page-purchase.md) | decided in shaping | skeleton |
-| 6 | [Kartenbörse](page-ticket-exchange.md) | decided in shaping | skeleton |
+| 6 | [Kartenbörse](page-ticket-exchange.md) | `/events/exchange` (placeholder route live) | skeleton |
 
 **Absorbed 2026-08-12:** `feature-event-calendar.md` and `feature-ticket-shop.md` (both
 `idea` stubs) — their decisions were carried into the page plans above and the files
@@ -112,6 +119,21 @@ now parses the seeds' Berlin wall-clock strings host-TZ-independently (display v
 arithmetic via `parseBerlinDateTime`), and `lib/money.ts` + `lib/event-tint.ts` were born
 as shared helpers.
 
+### E3 — Veranstaltungsseite
+**Status:** shipped (built 2026-08-15)
+The `/events/$eventSlug` page per [page-event-detail.md](page-event-detail.md), four
+slices: model + entry sweep → identity + ticket panel → secondary blocks → closing +
+assembly. The shaping session changed the area's honesty rule (pages are built in their
+planned end state — see Standing rules), retired the orphan **`/tickets`** placeholder
+that carried the site's loudest CTA (masthead chip "Tickets" → **"Karten"** → `/events`),
+pinned the seat-picker and Kartenbörse routes, and established that the **Ablauf is
+assembled only 2–3 weeks before an evening** and is published **order-only, never timed**
+(`CONTEXT.md`). Model grows by `performers` + `description`; Album gains `eventType` so
+"So war es letztes Jahr" matches by type instead of guessing. As-built notes and recorded
+deviations live in the [page plan](page-event-detail.md#as-built-e3-2026-08-15); the loudest
+one: the masthead now carries **one** Veranstaltungen entry (promoted out of `navItems` into
+the CTA), not a "Karten" chip beside a "Veranstaltungen" link.
+
 ## Deferred — backend
 
 The backend for this area is **not scheduled**. Each shaping session records the API
@@ -140,6 +162,15 @@ Pinned by shaping sessions:
   [foundation-events-data.md](foundation-events-data.md).
 - **The public read endpoint serves the current Session only** (events-list shaping,
   2026-08-13): no past events, no history — past occasions are the Galerie's territory.
+- **The Ablauf's public face** (event-detail shaping, 2026-08-15): the public read endpoint
+  carries **`performers`** — an ordered list of act *names* (Gruppen and guests mixed),
+  nullable until the Ablauf is assembled ~2–3 weeks before the evening. **Order only, never
+  times.** A per-act Gruppe reference is reserved for later; nothing links today.
+- **`description`** (event-detail shaping, 2026-08-15): an optional longer per-event text
+  alongside the one-sentence teaser, progressive publishing like every other soft field.
+- **Album ↔ event linking is by *type*, never by event id** (event-detail shaping,
+  2026-08-15): an Album covers an occasion, not necessarily a Veranstaltung (glossary), so
+  the Album payload carries an optional `eventType` matching the event model's `type`.
 - **Capacity, seating plan and price are per event** (foundation shaping, 2026-08-13):
   the hall is set up differently per event; price is flat within one event but differs
   between events. Seating-plan templates (save/load) are a future Club-App idea.
