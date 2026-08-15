@@ -5,8 +5,9 @@ export interface NavItem {
   label: string;
 }
 
+export const eventsNavLabel = 'Veranstaltungen';
+
 export const navItems: NavItem[] = [
-  { to: '/events', label: 'Veranstaltungen' },
   { to: '/club', label: 'Verein' },
   { to: '/news', label: 'Aktuelles' },
   { to: '/gallery', label: 'Galerie' },

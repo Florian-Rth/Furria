@@ -19,6 +19,8 @@ const baseFacts: EventFacts = {
   startsAt: '2027-01-23T19:11',
   doorsOpenAt: '2027-01-23T18:11',
   teaser: 'Ein voller Abend.',
+  description: ['Ein voller Abend mit allen Gruppen.'],
+  performers: ['Tanzgarde', 'Männerballett'],
   ageHint: 'ab 12 Jahren empfohlen',
   priceCents: 1400,
   capacity: 260,
@@ -134,6 +136,11 @@ describe('EventSchema', () => {
     expect(() => EventSchema.parse({ ...payload, startsAt: '2027-01-23' })).toThrow();
   });
 
+  it('rejects an empty description or performer list', () => {
+    expect(() => EventSchema.parse({ ...payload, description: [] })).toThrow();
+    expect(() => EventSchema.parse({ ...payload, performers: [] })).toThrow();
+  });
+
   it('rejects a negative free count and a zero price', () => {
     expect(() => EventSchema.parse({ ...payload, freeCount: -1 })).toThrow();
     expect(() => EventSchema.parse({ ...payload, priceCents: 0 })).toThrow();
@@ -203,6 +210,27 @@ describe('SEEDED_EVENTS', () => {
     const prices = SEEDED_EVENTS.map((event) => event.priceCents).filter((price) => price !== null);
 
     expect(new Set(prices).size).toBeGreaterThan(1);
+  });
+
+  it('leaves one evening entirely without an Ablauf and without a longer text', () => {
+    const bare = SEEDED_EVENTS.filter(
+      (event) => event.performers === null && event.description === null,
+    );
+
+    expect(bare.length).toBeGreaterThan(0);
+  });
+
+  it('publishes an Ablauf as an ordered list of act names, never as times', () => {
+    const lineups = SEEDED_EVENTS.map((event) => event.performers).filter(
+      (performers) => performers !== null,
+    );
+
+    expect(lineups.length).toBeGreaterThan(0);
+    for (const lineup of lineups) {
+      for (const act of lineup) {
+        expect(act).not.toMatch(/\d/);
+      }
+    }
   });
 
   it('never lists the Rosenmontagsumzug — Veranstaltungen are ticketed evenings only', () => {

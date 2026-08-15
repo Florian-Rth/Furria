@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Album, AlbumSessionGroup } from './gallery-content';
 import {
   ALBUMS,
+  albumPreviewPhotoCount,
   albumSession,
   buildAlbumCountLabel,
   buildAlbumCoverSource,
@@ -10,6 +11,7 @@ import {
   buildAlbumHref,
   buildAlbumMeta,
   buildAlbumPhotoEntries,
+  buildAlbumPreviewEntries,
   buildAlbumRowMeta,
   buildFeaturedAlbumMeta,
   buildOlderSessionSummary,
@@ -21,6 +23,7 @@ import {
   findAlbumBySlug,
   selectCurrentSessionAlbums,
   selectFeaturedAlbum,
+  selectNewestAlbumForEventType,
   selectNextAlbum,
   selectOlderSessionGroups,
   sortAlbumsByDateDesc,
@@ -395,5 +398,43 @@ describe('buildAlbumPhotoEntries', () => {
         placeholderLabel: 'prunksitzung-02',
       },
     ]);
+  });
+});
+
+describe('selectNewestAlbumForEventType', () => {
+  const typed = (slug: string, date: string, eventType?: string): Album => ({
+    ...album(slug, date, 4),
+    eventType,
+  });
+
+  const albums = [
+    typed('prunksitzung-2026', '2026-02-14', 'Prunksitzung'),
+    typed('prunksitzung-2025', '2025-02-22', 'Prunksitzung'),
+    typed('rosenmontagsumzug-2026', '2026-02-16'),
+  ];
+
+  it('picks the newest Album that covers this kind of evening', () => {
+    expect(selectNewestAlbumForEventType(albums, 'Prunksitzung')?.slug).toBe('prunksitzung-2026');
+  });
+
+  it('matches by type, never by title or slug', () => {
+    expect(selectNewestAlbumForEventType(albums, 'Rosenmontagsumzug')).toBeUndefined();
+  });
+
+  it('finds nothing for an evening the Galerie has never covered', () => {
+    expect(selectNewestAlbumForEventType(albums, 'Weiberfasching')).toBeUndefined();
+  });
+});
+
+describe('buildAlbumPreviewEntries', () => {
+  it('shows a handful of photos, not the whole Album', () => {
+    const entries = buildAlbumPreviewEntries(album('prunksitzung', '2026-02-14', 12));
+
+    expect(entries).toHaveLength(albumPreviewPhotoCount);
+    expect(entries.map((entry) => entry.index)).toEqual([0, 1, 2, 3]);
+  });
+
+  it('never invents photos an Album does not have', () => {
+    expect(buildAlbumPreviewEntries(album('kurz', '2026-02-14', 2))).toHaveLength(2);
   });
 });

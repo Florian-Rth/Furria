@@ -10,6 +10,8 @@ const cancelledFirstEvening = buildCancelledEvent({
   startsAt: '2027-01-09T19:11',
   doorsOpenAt: null,
   teaser: 'Ein abgesagter Abend.',
+  description: null,
+  performers: null,
   ageHint: null,
   priceCents: null,
   capacity: null,

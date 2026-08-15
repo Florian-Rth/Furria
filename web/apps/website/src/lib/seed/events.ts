@@ -22,6 +22,8 @@ export const EventSchema = z.object({
   startsAt: LocalDateTimeSchema,
   doorsOpenAt: LocalDateTimeSchema.nullable(),
   teaser: z.string().min(1),
+  description: z.array(z.string().min(1)).min(1).nullable(),
+  performers: z.array(z.string().min(1)).min(1).nullable(),
   ageHint: z.string().min(1).nullable(),
   priceCents: z.number().int().positive().nullable(),
   capacity: z.number().int().positive().nullable(),
@@ -42,6 +44,8 @@ export interface EventFacts {
   startsAt: string;
   doorsOpenAt: string | null;
   teaser: string;
+  description: string[] | null;
+  performers: string[] | null;
   ageHint: string | null;
   priceCents: number | null;
   capacity: number | null;
@@ -104,6 +108,8 @@ const toEventPayload = (
     startsAt: facts.startsAt,
     doorsOpenAt: facts.doorsOpenAt,
     teaser: facts.teaser,
+    description: facts.description,
+    performers: facts.performers,
     ageHint: facts.ageHint,
     priceCents: facts.priceCents,
     capacity: facts.capacity,
@@ -133,6 +139,11 @@ export const SEEDED_EVENTS: Event[] = [
       doorsOpenAt: '2027-01-23T18:11',
       teaser:
         'Der große Auftakt: ein voller Abend mit allen Gruppen des Vereins. Traditionell zuerst ausverkauft.',
+      description: [
+        'Die erste Prunksitzung ist der Abend, auf den der Verein die ganze Session hinarbeitet: Tanz, Büttenrede und alles, was die Gruppen dafür einstudiert haben.',
+        'Gefeiert wird im Saal, mit Getränken und Bratwurst vom Verein. Wer kostümiert kommt, ist in bester Gesellschaft.',
+      ],
+      performers: ['Elferrat', 'Kindergarde', 'Büttenrede', 'Tanzgarde', 'Männerballett'],
       ageHint: 'ab 12 Jahren empfohlen',
       priceCents: 1400,
       capacity: 260,
@@ -151,6 +162,11 @@ export const SEEDED_EVENTS: Event[] = [
       startsAt: '2027-01-30T19:11',
       doorsOpenAt: '2027-01-30T18:11',
       teaser: 'Derselbe Abend in zweiter Auflage — und meist die letzte Chance auf Karten.',
+      description: [
+        'Dasselbe Bühnenprogramm wie eine Woche zuvor, dieselbe Besetzung — nur ist der Saal an diesem Abend erfahrungsgemäß der vollere.',
+        'Wer die erste Prunksitzung verpasst hat, bekommt hier die zweite Gelegenheit. Danach ist für diese Session Schluss mit den großen Sitzungen.',
+      ],
+      performers: ['Elferrat', 'Kindergarde', 'Büttenrede', 'Tanzgarde', 'Männerballett'],
       ageHint: 'ab 12 Jahren empfohlen',
       priceCents: 1400,
       capacity: 260,
@@ -169,6 +185,8 @@ export const SEEDED_EVENTS: Event[] = [
       startsAt: '2027-02-04T19:11',
       doorsOpenAt: '2027-02-04T18:30',
       teaser: 'Der Abend der Frauen: kurze Bühne, lange Tanzfläche.',
+      description: null,
+      performers: null,
       ageHint: 'ab 16 Jahren',
       priceCents: 1000,
       capacity: 220,
@@ -187,6 +205,11 @@ export const SEEDED_EVENTS: Event[] = [
       startsAt: '2027-02-05T18:11',
       doorsOpenAt: '2027-02-05T17:30',
       teaser: 'Eigene Musik, eigene Bühne, alkoholfreie Theke — für alle zwischen 14 und 18.',
+      description: [
+        'Der Abend gehört den Jugendlichen: eigene Musik, eigene Bühne, eine Theke ohne Alkohol — und ein Saal, in dem sonst die Erwachsenen feiern.',
+        'Gefeiert wird früher als an den anderen Abenden, damit der Heimweg nicht mitten in der Nacht liegt.',
+      ],
+      performers: null,
       ageHint: '14 bis 18 Jahre',
       priceCents: 500,
       capacity: 200,
@@ -205,6 +228,11 @@ export const SEEDED_EVENTS: Event[] = [
       startsAt: '2027-02-06T14:11',
       doorsOpenAt: null,
       teaser: 'Kaffee, Kuchen und Bühne bei Tageslicht — ruhiger, gemütlicher, genauso lustig.',
+      description: [
+        'Karneval bei Tageslicht: Kaffee und Kuchen an den Tischen, dazu ein kürzeres Bühnenprogramm der Gruppen.',
+        'Ruhiger als die Prunksitzungen, mit mehr Platz zwischen den Reihen — und genauso viel Gelächter.',
+      ],
+      performers: ['Kindergarde', 'Tanzgarde', 'Büttenrede'],
       ageHint: null,
       priceCents: null,
       capacity: null,
@@ -223,6 +251,11 @@ export const SEEDED_EVENTS: Event[] = [
       startsAt: '2027-02-07T14:11',
       doorsOpenAt: '2027-02-07T13:45',
       teaser: 'Kinderdisco, Krapfen und Konfetti — halbe Länge, doppelt so laut.',
+      description: [
+        'Der Nachmittag für die Kleinen: Kinderdisco, Spiele und ein kurzes Bühnenprogramm, das niemanden überfordert.',
+        'Kinder kommen in Begleitung eines Erwachsenen; für die Begleitung gibt es Kaffee, für alle anderen Krapfen.',
+      ],
+      performers: null,
       ageHint: 'ab 3 Jahren in Begleitung',
       priceCents: 300,
       capacity: 240,

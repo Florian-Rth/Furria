@@ -2,6 +2,7 @@ import { KkBandSection, KkBandWatermark, KkEyebrow, kkTokens } from '@furria/ui'
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
+import { BandCta } from '@/components/BandCta';
 import { exchangeBandContent } from '@/features/events/exchange-content';
 
 export const ExchangeTeaserBand: FC = () => (
@@ -16,6 +17,9 @@ export const ExchangeTeaserBand: FC = () => (
           {exchangeBandContent.note}
         </Typography>
       </Stack>
+      <BandCta to={exchangeBandContent.ctaTo} emphasis="outlined">
+        {exchangeBandContent.ctaLabel}
+      </BandCta>
     </KkBandSection.Row>
   </KkBandSection>
 );

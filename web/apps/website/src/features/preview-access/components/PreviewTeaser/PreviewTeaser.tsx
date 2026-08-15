@@ -22,7 +22,7 @@ export const PreviewTeaser: FC<PreviewTeaserProps> = ({ onCtaClick, confettiPaus
       <KkTwoToneHeadline line1="DIE FÜNFTE JAHRESZEIT" line2="BEGINNT HIER." />
       <Typography variant="subtitle1" sx={{ color: 'text.secondary', maxWidth: 'sm' }}>
         Der Furrsche Carnevals Club baut hier sein neues Zuhause. Bald findet ihr Veranstaltungen,
-        Tickets und Neuigkeiten an dieser Stelle.
+        Karten und Neuigkeiten an dieser Stelle.
       </Typography>
       <Button variant="contained" color="primary" size="large" onClick={onCtaClick}>
         Einlass

@@ -5,7 +5,7 @@ import { Link as RouterLink } from '@tanstack/react-router';
 import type { FC, ReactNode } from 'react';
 
 interface SectionActionLinkProps {
-  to: LinkProps['to'];
+  to: LinkProps['to'] | string;
   children: ReactNode;
 }
 

@@ -1,0 +1,168 @@
+import { describe, expect, it } from 'vitest';
+import { formatEuros } from '@/lib/money';
+import type { EventFacts } from '@/lib/seed/events';
+import { buildCancelledEvent, buildEvent } from '@/lib/seed/events';
+import {
+  buildEventDocumentTitle,
+  deriveEventIntroParagraphs,
+  deriveEventLineup,
+  deriveEventStats,
+  deriveEventTags,
+  selectOtherEventsInSession,
+} from './event-detail-display';
+
+const midPresale = new Date('2026-12-01T12:00');
+
+const baseFacts: EventFacts = {
+  id: 'prunksitzung-1-2027',
+  title: '1. Prunksitzung',
+  type: 'Prunksitzung',
+  venue: 'Dorfgemeindehaus Großfurra',
+  startsAt: '2027-01-23T19:11',
+  doorsOpenAt: '2027-01-23T18:11',
+  teaser: 'Ein voller Abend.',
+  description: ['Erster Absatz.', 'Zweiter Absatz.'],
+  performers: null,
+  ageHint: 'ab 12 Jahren empfohlen',
+  priceCents: 1400,
+  capacity: 260,
+  presaleStartsAt: '2026-11-11T11:11',
+  presaleEndsAt: null,
+  freeCount: 100,
+};
+
+const event = buildEvent(baseFacts, midPresale);
+
+describe('buildEventDocumentTitle', () => {
+  it('carries the Session so recurring evenings keep distinct titles', () => {
+    expect(buildEventDocumentTitle(event)).toBe('1. Prunksitzung 2026/27');
+  });
+});
+
+describe('deriveEventTags', () => {
+  it('names type, Session, age hint and venue', () => {
+    expect(deriveEventTags(event)).toEqual([
+      'Prunksitzung',
+      'Session 2026/27',
+      'ab 12 Jahren empfohlen',
+      'Dorfgemeindehaus Großfurra',
+    ]);
+  });
+
+  it('drops the age hint when the evening states none', () => {
+    const withoutAgeHint = buildEvent({ ...baseFacts, ageHint: null }, midPresale);
+
+    expect(deriveEventTags(withoutAgeHint)).not.toContain('ab 12 Jahren empfohlen');
+  });
+});
+
+describe('deriveEventStats', () => {
+  it('states Termin, Einlass, Beginn and price — never an end time', () => {
+    expect(deriveEventStats(event)).toEqual([
+      { value: '23. Januar 2027', label: 'Termin' },
+      { value: '18:11 Uhr', label: 'Einlass' },
+      { value: '19:11 Uhr', label: 'Beginn' },
+      { value: formatEuros(1400), label: 'pro Karte' },
+    ]);
+  });
+
+  it('omits Einlass and price while they are unknown', () => {
+    const sparse = buildEvent(
+      {
+        ...baseFacts,
+        doorsOpenAt: null,
+        priceCents: null,
+        capacity: null,
+        presaleStartsAt: null,
+        freeCount: null,
+      },
+      midPresale,
+    );
+
+    expect(deriveEventStats(sparse).map((stat) => stat.label)).toEqual(['Termin', 'Beginn']);
+  });
+});
+
+describe('deriveEventIntroParagraphs', () => {
+  it('prints the longer description when one exists', () => {
+    expect(deriveEventIntroParagraphs(event)).toEqual(['Erster Absatz.', 'Zweiter Absatz.']);
+  });
+
+  it('falls back to the teaser so the page still reads complete', () => {
+    const withoutDescription = buildEvent({ ...baseFacts, description: null }, midPresale);
+
+    expect(deriveEventIntroParagraphs(withoutDescription)).toEqual(['Ein voller Abend.']);
+  });
+});
+
+describe('selectOtherEventsInSession', () => {
+  const evening = (id: string, startsAt: string): EventFacts => ({
+    ...baseFacts,
+    id,
+    title: id,
+    startsAt,
+    doorsOpenAt: null,
+  });
+
+  const erste = buildEvent(evening('erste', '2027-01-23T19:11'), midPresale);
+  const zweite = buildEvent(evening('zweite', '2027-01-30T19:11'), midPresale);
+  const dritte = buildEvent(evening('dritte', '2027-02-04T19:11'), midPresale);
+  const vierte = buildEvent(evening('vierte', '2027-02-05T19:11'), midPresale);
+  const fuenfte = buildEvent(evening('fuenfte', '2027-02-06T19:11'), midPresale);
+  const eveningsAhead = [erste, zweite, dritte, vierte, fuenfte];
+
+  it('names at most three other evenings, in date order', () => {
+    const others = selectOtherEventsInSession(eveningsAhead, erste, midPresale);
+
+    expect(others.map((other) => other.id)).toEqual(['zweite', 'dritte', 'vierte']);
+  });
+
+  it('never points back at the evening being read', () => {
+    for (const current of eveningsAhead) {
+      const others = selectOtherEventsInSession(eveningsAhead, current, midPresale);
+
+      expect(others.map((other) => other.id)).not.toContain(current.id);
+    }
+  });
+
+  it('drops evenings that have already happened', () => {
+    const afterTheSecond = new Date('2027-02-01T12:00');
+    const others = selectOtherEventsInSession(eveningsAhead, erste, afterTheSecond);
+
+    expect(others.map((other) => other.id)).toEqual(['dritte', 'vierte', 'fuenfte']);
+  });
+
+  it('drops a cancelled evening instead of advertising it', () => {
+    const abgesagt = buildCancelledEvent(evening('abgesagt', '2027-01-25T19:11'));
+    const others = selectOtherEventsInSession([erste, abgesagt, zweite], erste, midPresale);
+
+    expect(others.map((other) => other.id)).toEqual(['zweite']);
+  });
+
+  it('finds nothing while this is the last evening of the Session', () => {
+    expect(
+      selectOtherEventsInSession(eveningsAhead, fuenfte, new Date('2027-02-06T12:00')),
+    ).toEqual([]);
+  });
+});
+
+describe('deriveEventLineup', () => {
+  it('numbers the acts in the order the Ablauf states them', () => {
+    const withLineup = buildEvent(
+      { ...baseFacts, performers: ['Elferrat', 'Tanzgarde', 'Büttenrede'] },
+      midPresale,
+    );
+
+    expect(deriveEventLineup(withLineup)).toEqual([
+      { position: '1', act: 'Elferrat' },
+      { position: '2', act: 'Tanzgarde' },
+      { position: '3', act: 'Büttenrede' },
+    ]);
+  });
+
+  it('stays absent while no Ablauf has been assembled', () => {
+    expect(
+      deriveEventLineup(buildEvent({ ...baseFacts, performers: null }, midPresale)),
+    ).toBeNull();
+  });
+});

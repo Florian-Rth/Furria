@@ -14,7 +14,7 @@ afterEach(() => {
 });
 
 describe('preview gate', () => {
-  it.each(['/events', '/tickets'])(
+  it.each(['/events', '/events/exchange'])(
     'redirects ungated visitors from %s to the teaser',
     async (path) => {
       renderAtRoute(path);

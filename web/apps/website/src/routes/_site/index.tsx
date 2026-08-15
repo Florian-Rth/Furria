@@ -11,7 +11,7 @@ import type { RouteHead } from '@/lib/seo';
 
 const HOME_TITLE = 'FURRIA · Gross - Furria!';
 const HOME_DESCRIPTION =
-  'Der Furrsche Carnevals Club e.V. feiert die fünfte Jahreszeit in Großfurra: Veranstaltungen, Tickets, Neuigkeiten und der Weg in den Verein. Gross - Furria!';
+  'Der Furrsche Carnevals Club e.V. feiert die fünfte Jahreszeit in Großfurra: Veranstaltungen, Karten, Neuigkeiten und der Weg in den Verein. Gross - Furria!';
 
 const HomeComponent: FC = () => {
   const { granted } = usePreviewAccess();

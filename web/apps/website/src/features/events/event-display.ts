@@ -8,6 +8,13 @@ import type { Event } from '@/lib/seed/events';
 
 export const buildEventHref = (eventId: string): string => `/events/${eventId}`;
 
+export const buildSeatPickerHref = (eventId: string): string => `${buildEventHref(eventId)}/seats`;
+
+export const buildExchangeHref = (): string => '/events/exchange';
+
+export const findEventBySlug = (events: Event[], slug: string): Event | undefined =>
+  events.find((event) => event.id === slug);
+
 export const selectEventsByDate = (events: Event[]): Event[] =>
   [...events].sort((first, second) => first.startsAt.localeCompare(second.startsAt));
 

@@ -2,12 +2,12 @@ import { KkRule, PageLayout } from '@furria/ui';
 import type { FC } from 'react';
 import { EventList } from '@/features/events/components/EventList/EventList';
 import { NextEventCard } from '@/features/events/components/NextEventCard/NextEventCard';
+import { VenueBlock } from '@/features/events/components/VenueBlock';
 import type { Event } from '@/lib/seed/events';
 import { EventsFaq } from './internal/ui/EventsFaq';
 import { EventsFilmstrip } from './internal/ui/EventsFilmstrip';
 import { EventsHero } from './internal/ui/EventsHero';
 import { ExchangeTeaserBand } from './internal/ui/ExchangeTeaserBand';
-import { VenueBlock } from './internal/ui/VenueBlock';
 
 interface EventListPageProps {
   events: Event[];

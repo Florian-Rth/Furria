@@ -53,7 +53,7 @@ const deriveOffer = (event: Event): EventJsonLdOffer | undefined => {
   };
 };
 
-const toEventJsonLd = (event: Event): EventJsonLd => {
+export const buildEventJsonLd = (event: Event): EventJsonLd => {
   const offer = deriveOffer(event);
   return {
     '@context': SCHEMA_ORG,
@@ -72,4 +72,4 @@ const toEventJsonLd = (event: Event): EventJsonLd => {
   };
 };
 
-export const buildEventsJsonLd = (events: Event[]): EventJsonLd[] => events.map(toEventJsonLd);
+export const buildEventsJsonLd = (events: Event[]): EventJsonLd[] => events.map(buildEventJsonLd);

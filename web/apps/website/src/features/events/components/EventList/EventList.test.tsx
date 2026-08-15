@@ -16,6 +16,8 @@ const baseFacts: EventFacts = {
   startsAt: '2027-01-23T19:11',
   doorsOpenAt: '2027-01-23T18:11',
   teaser: 'Ein voller Abend.',
+  description: null,
+  performers: null,
   ageHint: 'ab 12 Jahren empfohlen',
   priceCents: 1400,
   capacity: 260,
