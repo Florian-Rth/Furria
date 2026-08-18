@@ -3,7 +3,7 @@ title: Karten-Bestellflow
 slug: order-flow
 route: /events/$eventSlug/order (one flow route, internal steps) · /orders/$orderCode (confirmation)
 type: page
-status: ready
+status: shipped
 mock: docs/design/events-page/ (fcc-web-tickets.jsx — EvSaal / EvSeatsDesktop / EvSeatsMobile / EvPick)
 depends-on: [foundation-events-data, page-event-detail]
 adrs: []
@@ -125,6 +125,62 @@ Three slices, per-slice review + full gates:
 3. **S3 — Step 1 frame**: state guard + notices, kicker/H1 ladder/stat line with the shared
    capacity bar, placeholder core panel; tests for the guard and display derivations;
    assembly + as-built notes.
+
+## As-built (E4, 2026-08-18)
+
+Built as the three planned slices; final gates green (typecheck, **911 tests** — 14 ui + 897
+website —, lint, build). The plan held; the decisions and deviations worth carrying forward:
+
+- **The flow is a page orchestrator, not a compound kit.** `EventOrderFlowPage` is a plain
+  `FC<Props>` with parts under `internal/{layout,ui,logic}` — the shipped page idiom
+  (`EventDetailPage`, `EventListPage`, `AlbumPage`). `Object.assign` stays reserved for
+  reusable multi-slot kits (`PageLayout`, `KkHeroSection`, `ApplyForm`). No flow context: the
+  3+-shared-consumer bar is not met, `useOrderFlowStep` is the single logic part.
+- **The flow lives in the `events` feature**, not a feature of its own — it needs `Event`,
+  `CapacityBar`, `TicketCtaButton` and the `deriveTicketPanelFace` ladder, and features never
+  import from other features.
+- **The blocked states hide the stepper *and* the bottom bar.** A persistent "Weiter zum Kauf →"
+  under a sold-out notice would be dishonest; the exit CTA lives with the notice instead. The
+  kicker's lead falls back from the step label to `KARTEN` in those states, so it never claims
+  a Kartenwahl that cannot happen.
+- **The state sentence has one home.** `deriveOrderFlowNotice` reuses `deriveTicketPanelNote`
+  and appends a flow-owned suffix; `soldOut`'s suffix literally *is* `exchangeBandContent.note`,
+  so no German is duplicated between the panel, the band and the flow.
+- **`EventStickyBar` was promoted to `StickyActionBar`** (feature level, `sx`-driven, marker
+  `data-kk-sticky-action-bar`) and is now shared by the detail page's mobile CTA and the flow's
+  persistent bar. The detail page re-supplies `display: { desktop: 'none' }` +
+  `justifyContent: 'space-between'` at its call site — its shipped behaviour is unchanged.
+- **The bar stacks on phones.** Two `size="large"` buttons plus the step summary do not fit
+  360px in one row, so the action row claims its own line below `sm`; one exported
+  `STICKY_ACTION_BAR_STACKED_HEIGHT` feeds both the spacer and the bar's `minHeight`, so they
+  cannot drift apart.
+- **`?step=1` is never written to the URL.** `buildOrderFlowStepParam` maps step 1 to
+  `undefined`, so the flow's entry URL stays clean and a garbage `?step` silently resolves to
+  step 1 (`z.coerce…optional().catch(undefined)`) — no crash, no redirect, matching the
+  gallery's `?photo` precedent.
+- **Back is history-first**: `useCanGoBack` → `router.history.back()` when there is an entry to
+  pop (so the browser button and the in-page "← Zurück" agree), and a `replace` navigation to
+  the previous step when the user deep-linked straight onto step 2 or 3.
+- **The stepper's numerals were a contrast failure** and were fixed during review: inactive
+  circles now sit at 5.06:1 (light) / 6.02:1 (dark), active at 4.76:1 / 4.83:1 — dark-mode
+  active was 3.52:1 before.
+- **`BackLink`'s `to` widened to `LinkProps['to'] | string`** — the same trade-off E3 recorded
+  for `SectionActionLink` and `BandCta`, and P4 for `buildPostHref`. The type-preserving route
+  (`params={{ eventSlug }}`) was tried twice and rejected: MUI's `Link component={RouterLink}`
+  drops `component` from its props type as soon as `params` is present (TS2769). Cost: the four
+  literal call sites lose union checking on `to`.
+- **`BlockedFaceKind` lives in `ticket-panel-display.ts`**, beside the `TicketPanelFace` it is
+  derived from; `order-flow-content.ts` imports it with `import type`, so the cycle is erased at
+  compile time.
+- **An honesty guard ships as a test**: `order-flow-content.test.ts` ranges over every flow copy
+  constant and fails on "Platzwahl" / "Platz wählen", so the Karten language cannot regress.
+- **`CapacityBar`'s `aria-label` became "Vergebene Karten"** — the last Platz-for-entitlement
+  string on a shipped surface.
+- **No `robots: noindex`** on `/events/$eventSlug/order` or `/orders/$orderCode` (no route in
+  the repo sets one, and the site sits behind the preview gate). Revisit with `page-purchase`,
+  where a real confirmation URL makes the question sharper.
+- **Outstanding**: no headless-browser pass was run for this phase (E3 set that precedent) —
+  the bar's stacking and the stepper contrast were verified by measurement, not by screenshot.
 
 ## References
 

@@ -84,7 +84,7 @@ Frontmatter `status`: `skeleton → shaping → ready → building → shipped`.
 | 1 | [Events data foundation](foundation-events-data.md) | — | shipped |
 | 2 | [Veranstaltungen list](page-event-list.md) | `/events` | shipped |
 | 3 | [Event detail](page-event-detail.md) | `/events/$eventSlug` (pinned 2026-08-13) | shipped |
-| 4 | [Karten-Bestellflow](page-order-flow.md) | `/events/$eventSlug/order` + `/orders/$orderCode` (pinned 2026-08-18; `…/seats` retired) | ready |
+| 4 | [Karten-Bestellflow](page-order-flow.md) | `/events/$eventSlug/order` + `/orders/$orderCode` (pinned 2026-08-18; `…/seats` retired) | shipped |
 | 5 | [Purchase](page-purchase.md) | steps inside the Bestellflow + `/orders/$orderCode` | skeleton |
 | 6 | [Kartenbörse](page-ticket-exchange.md) | `/events/exchange` (placeholder route live) | skeleton |
 
@@ -137,7 +137,7 @@ one: the masthead now carries **one** Veranstaltungen entry (promoted out of `na
 the CTA), not a "Karten" chip beside a "Veranstaltungen" link.
 
 ### E4 — Karten-Bestellflow (shell)
-**Status:** ready (shaped 2026-08-18)
+**Status:** shipped (built 2026-08-18)
 The order flow per [page-order-flow.md](page-order-flow.md), three slices: routes + Karten
 rename sweep + entry links → flow shell (stepper, persistent bottom CTA bar, step 2/3
 placeholders, `/orders/demo` chain) → step-1 Kartenwahl frame (state guard, H1 ladder,
@@ -147,6 +147,13 @@ checkout pages into one continuous flow at `/events/$eventSlug/order` (`?step`),
 step's surface to Karten language (Platzwahl → Kartenwahl, "Platz wählen →" → "Karten
 wählen →"), extended **Account** to public self-registration (`CONTEXT.md`), and flagged
 **Sitzplatzvergabe** as the blocked club decision that keeps step 1's core a placeholder.
+As-built notes and recorded deviations live in the
+[page plan](page-order-flow.md#as-built-e4-2026-08-18); the ones that travel: the flow is a plain
+page orchestrator (no compound kit, no context) inside the **events** feature; blocked states hide
+the stepper *and* the bottom bar so no CTA promises a purchase that cannot happen; `EventStickyBar`
+was promoted to the shared **`StickyActionBar`**; `?step=1` is never written to the URL and back is
+history-first (`useCanGoBack`); and an honesty test over the flow's copy constants makes the Karten
+language non-regressable.
 
 ## Deferred — backend
 
