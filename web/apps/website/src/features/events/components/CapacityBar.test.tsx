@@ -4,10 +4,10 @@ import { renderWithProviders } from '@/test/render';
 import { CapacityBar } from './CapacityBar';
 
 describe('CapacityBar', () => {
-  it('fills with the share of seats already taken', () => {
+  it('fills with the share of Karten already gone', () => {
     renderWithProviders(<CapacityBar freeCount={65} capacity={260} color="success" />);
 
-    expect(screen.getByRole('progressbar', { name: 'Vergebene Plätze' })).toHaveAttribute(
+    expect(screen.getByRole('progressbar', { name: 'Vergebene Karten' })).toHaveAttribute(
       'aria-valuenow',
       '75',
     );

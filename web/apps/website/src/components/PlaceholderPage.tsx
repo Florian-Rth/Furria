@@ -1,14 +1,22 @@
 import { KkHeroSection, KkRule, PageLayout } from '@furria/ui';
 import Button from '@mui/material/Button';
+import type { LinkProps } from '@tanstack/react-router';
 import { Link as RouterLink } from '@tanstack/react-router';
 import type { FC } from 'react';
 
 interface PlaceholderPageProps {
   eyebrow: string;
   title: string;
+  ctaLabel?: string;
+  ctaTo?: LinkProps['to'];
 }
 
-export const PlaceholderPage: FC<PlaceholderPageProps> = ({ eyebrow, title }) => (
+export const PlaceholderPage: FC<PlaceholderPageProps> = ({
+  eyebrow,
+  title,
+  ctaLabel = 'Zu den Meldungen →',
+  ctaTo = '/news',
+}) => (
   <PageLayout>
     <PageLayout.Body>
       <KkHeroSection>
@@ -20,8 +28,8 @@ export const PlaceholderPage: FC<PlaceholderPageProps> = ({ eyebrow, title }) =>
             vorbei, Gross - Furria!
           </KkHeroSection.Description>
           <KkHeroSection.Actions>
-            <Button component={RouterLink} to="/news" variant="contained" size="large">
-              Zu den Meldungen →
+            <Button component={RouterLink} to={ctaTo} variant="contained" size="large">
+              {ctaLabel}
             </Button>
           </KkHeroSection.Actions>
         </KkHeroSection.Main>

@@ -68,13 +68,13 @@ describe('deriveTicketPanelFace', () => {
 });
 
 describe('deriveTicketPanelCta', () => {
-  it('leads into the seat picker of this event while Karten are sold', () => {
+  it('leads into the Bestellflow of this event while Karten are sold', () => {
     expect(deriveTicketPanelCta(onSale)).toEqual({
-      label: 'Platz wählen →',
-      to: '/events/prunksitzung-1-2027/seats',
+      label: 'Karten wählen →',
+      to: '/events/prunksitzung-1-2027/order',
       emphasis: 'contained',
     });
-    expect(deriveTicketPanelCta(almostSoldOut)?.to).toBe('/events/prunksitzung-1-2027/seats');
+    expect(deriveTicketPanelCta(almostSoldOut)?.to).toBe('/events/prunksitzung-1-2027/order');
   });
 
   it('leads into the Kartenbörse once the evening is sold out', () => {

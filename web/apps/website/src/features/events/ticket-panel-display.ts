@@ -1,7 +1,8 @@
 import { formatClockTime, formatNumericDate } from '@/lib/date';
 import type { Event } from '@/lib/seed/events';
 import { ticketPanelCtaLabels, ticketPanelNotes } from './event-detail-content';
-import { buildExchangeHref, buildSeatPickerHref } from './event-display';
+import { buildExchangeHref, buildOrderFlowHref } from './event-display';
+import { orderEntryCtaLabel } from './order-flow-content';
 
 export type TicketPanelFace =
   | { kind: 'announced' }
@@ -10,6 +11,8 @@ export type TicketPanelFace =
   | { kind: 'soldOut' }
   | { kind: 'closed' }
   | { kind: 'cancelled' };
+
+export type BlockedFaceKind = Exclude<TicketPanelFace['kind'], 'onSale'>;
 
 export const deriveTicketPanelFace = (event: Event): TicketPanelFace => {
   switch (event.salesStatus) {
@@ -44,8 +47,8 @@ export const deriveTicketPanelCta = (event: Event): TicketPanelCta | null => {
   const face = deriveTicketPanelFace(event);
   if (face.kind === 'onSale') {
     return {
-      label: ticketPanelCtaLabels.seatPicker,
-      to: buildSeatPickerHref(event.id),
+      label: orderEntryCtaLabel,
+      to: buildOrderFlowHref(event.id),
       emphasis: 'contained',
     };
   }

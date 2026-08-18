@@ -17,7 +17,6 @@ export const ticketPanelKicker = 'KARTEN';
 export const ticketPanelPriceLabel = 'pro Karte';
 
 export const ticketPanelCtaLabels = {
-  seatPicker: 'Platz wählen →',
   exchange: 'Zur Kartenbörse →',
 } as const;
 

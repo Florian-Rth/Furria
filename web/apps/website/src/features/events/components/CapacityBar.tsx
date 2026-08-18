@@ -17,7 +17,7 @@ export const CapacityBar: FC<CapacityBarProps> = ({ freeCount, capacity, color }
       variant="determinate"
       value={occupiedPercent}
       color={color}
-      aria-label="Vergebene Plätze"
+      aria-label="Vergebene Karten"
       sx={{ width: '100%', height: '0.375rem', borderRadius: `${kkTokens.radius.pill}px` }}
     />
   );

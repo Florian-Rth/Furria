@@ -8,7 +8,9 @@ import type { Event } from '@/lib/seed/events';
 
 export const buildEventHref = (eventId: string): string => `/events/${eventId}`;
 
-export const buildSeatPickerHref = (eventId: string): string => `${buildEventHref(eventId)}/seats`;
+export const buildOrderFlowHref = (eventId: string): string => `${buildEventHref(eventId)}/order`;
+
+export const buildOrderConfirmationHref = (orderCode: string): string => `/orders/${orderCode}`;
 
 export const buildExchangeHref = (): string => '/events/exchange';
 

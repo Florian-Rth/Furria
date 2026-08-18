@@ -9,6 +9,7 @@ import {
   formatMonthAbbreviation,
   formatNumericDate,
   formatShortDate,
+  formatWeekdayAndDate,
   formatWeekdayLong,
   parseBerlinDateTime,
 } from './date';
@@ -82,6 +83,16 @@ describe('formatClockTime', () => {
 
   it('renders evening times unchanged', () => {
     expect(formatClockTime('2027-01-23T19:11')).toBe('19:11');
+  });
+});
+
+describe('formatWeekdayAndDate', () => {
+  it('abbreviates the weekday and spells the month out', () => {
+    expect(formatWeekdayAndDate('2027-01-23T19:11')).toBe('Sa., 23. Januar');
+  });
+
+  it('keeps the wall-clock day regardless of the host time zone', () => {
+    expect(formatWeekdayAndDate('2027-02-06T14:11')).toBe('Sa., 6. Februar');
   });
 });
 

@@ -79,12 +79,17 @@ describe('EventListPage', () => {
     expect(screen.queryByText('Karten noch frei')).not.toBeInTheDocument();
   });
 
-  it('offers no purchase or Börse navigation anywhere', () => {
+  it('opens the Bestellflow of the next evening and keeps every link inside the events area', () => {
     renderWithRouter(<EventListPage events={seasonEvents()} now={NOW} />);
+
+    expect(screen.getByRole('link', { name: 'Karten wählen →' })).toHaveAttribute(
+      'href',
+      '/events/prunksitzung-1-2027/order',
+    );
 
     const linkTargets = screen.getAllByRole('link').map((link) => link.getAttribute('href'));
     for (const target of linkTargets) {
-      expect(target).toMatch(/^\/events\/[a-z0-9-]+$/);
+      expect(target).toMatch(/^\/events\/[a-z0-9-]+(\/order)?$/);
     }
   });
 });

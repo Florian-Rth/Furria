@@ -17,6 +17,7 @@ import type { Event } from '@/lib/seed/events';
 import { NextEventShell } from '../layout/NextEventShell';
 import { NextEventDetailLink } from './NextEventDetailLink';
 import { NextEventIntro } from './NextEventIntro';
+import { NextEventOrderLink } from './NextEventOrderLink';
 
 interface NextEventTicketsFaceProps {
   event: Event;
@@ -60,7 +61,10 @@ export const NextEventTicketsFace: FC<NextEventTicketsFaceProps> = ({ event }) =
           {almostSoldOutTag}
         </Stack>
       </Stack>
-      <NextEventDetailLink eventId={event.id} emphasis="contained" />
+      <Stack direction="row" sx={{ gap: 1.5, flexWrap: 'wrap' }}>
+        <NextEventOrderLink eventId={event.id} />
+        <NextEventDetailLink eventId={event.id} emphasis="outlined" />
+      </Stack>
     </NextEventShell>
   );
 };

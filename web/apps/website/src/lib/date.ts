@@ -46,6 +46,13 @@ const weekdayLongFormat = new Intl.DateTimeFormat(GERMAN_LOCALE, {
   timeZone: WALL_CLOCK_TIME_ZONE,
 });
 
+const weekdayAndDateFormat = new Intl.DateTimeFormat(GERMAN_LOCALE, {
+  weekday: 'short',
+  day: 'numeric',
+  month: 'long',
+  timeZone: WALL_CLOCK_TIME_ZONE,
+});
+
 const longDateRangeFormat = new Intl.DateTimeFormat(GERMAN_LOCALE, {
   day: 'numeric',
   month: 'long',
@@ -99,6 +106,9 @@ export const formatClockTime = (isoDate: string): string =>
 
 export const formatWeekdayLong = (isoDate: string): string =>
   weekdayLongFormat.format(toWallClockDate(isoDate));
+
+export const formatWeekdayAndDate = (isoDate: string): string =>
+  weekdayAndDateFormat.format(toWallClockDate(isoDate));
 
 export const formatLongDateRange = (fromIsoDate: string, toIsoDate: string): string =>
   longDateRangeFormat

@@ -46,6 +46,10 @@ describe('NextEventCard', () => {
     expect(screen.getByText('NÄCHSTER ABEND MIT KARTEN')).toBeInTheDocument();
     expect(screen.getByText('Beginn in 39 Tagen 7 Std.')).toBeInTheDocument();
     expect(screen.getByText('74 von 260 frei')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Karten wählen →' })).toHaveAttribute(
+      'href',
+      '/events/prunksitzung-1-2027/order',
+    );
     expect(screen.getByRole('link', { name: 'Zum Abend →' })).toHaveAttribute(
       'href',
       '/events/prunksitzung-1-2027',

@@ -3,6 +3,8 @@ import type { Event, EventFacts } from '@/lib/seed/events';
 import { buildEvent } from '@/lib/seed/events';
 import {
   buildEventHref,
+  buildOrderConfirmationHref,
+  buildOrderFlowHref,
   deriveProximityLabel,
   deriveScheduleRangeLabel,
   deriveTimesLabel,
@@ -35,6 +37,18 @@ const eventStartingAt = (id: string, startsAt: string, doorsOpenAt: string | nul
 describe('buildEventHref', () => {
   it('links the event id under /events', () => {
     expect(buildEventHref('weiberfasching-2027')).toBe('/events/weiberfasching-2027');
+  });
+});
+
+describe('buildOrderFlowHref', () => {
+  it('links the Bestellflow under the event', () => {
+    expect(buildOrderFlowHref('weiberfasching-2027')).toBe('/events/weiberfasching-2027/order');
+  });
+});
+
+describe('buildOrderConfirmationHref', () => {
+  it('links a Bestellung by its own code', () => {
+    expect(buildOrderConfirmationHref('demo')).toBe('/orders/demo');
   });
 });
 
