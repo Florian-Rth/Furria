@@ -759,6 +759,11 @@ Detail lives in the [Events area plan](events/master-plan.md#e-phases); one line
   `/tickets` retired (masthead CTA is now the single **Veranstaltungen** entry), seat-picker
   + Kartenbörse routes live as placeholders, model grew `performers` (order-only Ablauf) +
   `description`
+- **E4 — Karten-Bestellflow (shell)** — ready (shaped 2026-08-18): one continuous order
+  flow at `/events/$eventSlug/order` (`…/seats` retired), `/orders/$orderCode` capability
+  URL, Karten-language sweep; step 1's core stays a recognisable placeholder — blocked on
+  the club's Sitzplatzvergabe decision. Detail in the
+  [area plan](events/master-plan.md#e4--karten-bestellflow-shell).
 
 ---
 

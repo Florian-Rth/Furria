@@ -71,7 +71,7 @@ Shaping session 2026-08-13:
 - **Capacity and seating plan are per event** — the mock's fixed 288/24×12 is rejected as
   a constant. `capacity` is a per-event field; the hall is set up differently per event,
   so the seat picker must treat the seating plan as event data, never a baked layout
-  (detail lives in [page-seat-picker.md](page-seat-picker.md)). A save/load templating
+  (detail lives in [page-order-flow.md](page-order-flow.md)). A save/load templating
   system for seating plans is a future Club-App idea, noted, not scheduled.
 - **Price varies per event** — `price` is a per-event field with genuinely different seed
   values; flat within one event (every seat costs the same that evening). The mock's flat

@@ -10,7 +10,9 @@ Domain language is German; code identifiers are English — this glossary maps b
 
 **Person** (`person`):
 A human in the club's master-data registry — name, contact, address. The root everything
-hangs off. Every Mitglied is a Person; not every Person has an Account.
+hangs off. Every Mitglied is a Person; not every Person has an Account — and since
+2026-08-18 not every Person is club-affiliated: public self-registration (see Account)
+creates Persons with no Mitgliedschaft.
 _Avoid_: user, contact, profile
 
 **Mitgliedschaft** (`membership`):
@@ -64,8 +66,11 @@ _Avoid_: coach
 
 **Account** (`account`):
 An optional, 1:1-linked login for a Person. **Mitglied ≠ Account** — membership exists
-without a login; onboarding is invite-only.
-_Avoid_: user (as a table/entity name)
+without a login. Two ways in (decided 2026-08-18, order-flow shaping): member onboarding
+stays **invite-only** via Einladung; additionally the public may **self-register** an
+Account to buy and keep Karten (mail, Kartenübersicht, history, payment methods) — this
+creates a Person with **no Mitgliedschaft**. Buying itself never requires an Account.
+_Avoid_: user (as a table/entity name), Gast-Konto (it is the same Account concept)
 
 **Einladung** (`invitation`):
 A one-time onboarding token (link or printed QR/code) that lets a Person create their Account.
@@ -111,6 +116,14 @@ in E3 — the club sells Karten, but the way in is the Veranstaltungen list, so 
 masthead names).
 _Avoid_: Ticket (in German copy), Eintrittskarte (in labels — too long), Platz (that is
 the seat, not the entitlement)
+
+**Bestellung** (`order`):
+One purchase of one or more Karten by one buyer — the unit the checkout produces and the
+confirmation mail refers to. A public buyer needs no Account (guest checkout); a Bestellung
+is retrieved via an unguessable token link (`orderCode`) sent by mail, never by a guessable
+number; self-registering an Account to keep Bestellungen is optional. Pinned 2026-08-18
+(order-flow shaping).
+_Avoid_: Order (in German copy), Warenkorb (there is no persistent cart), Buchung
 
 **Vorverkauf** (`presale`, short **VVK**):
 The window in which Karten for a Veranstaltung can be bought, before the evening itself.
@@ -182,6 +195,19 @@ _Avoid_: balance table, payments table (as source of truth)
   the Club-App's per-event running order is the **Ablauf**. Shipped copy and identifiers
   still carrying the old word are renamed as part of the events-list page build, never
   left to drift.
+
+- **Sitzplatzvergabe** — **open, 2026-08-18.** The club has not decided how online sales
+  assign seats: a fixed numbered seat per Karte (Saalplan/seat picker) or general admission
+  against a total count. Until decided, no public surface may claim either mechanic — the
+  Kartenwahl step ships as a recognisable placeholder, and copy says **Karten**, never
+  Plätze, for the entitlement. The decision unblocks `page-seat-picker` and shapes
+  `page-purchase`.
+
+- **Gast-Registrierung & Dubletten** — **open, 2026-08-18.** Self-registration can create a
+  second Person for a human already in the registry (a Mitglied without Account buys Karten
+  online). The merge/claim mechanism (e.g. an Einladung claiming an existing self-registered
+  Account by mail match, or an admin merge) is undecided — to be resolved when accounts are
+  actually built (Club-App/backend territory).
 
 - **Who decides a photo is public** — **open, 2026-07-28.** No rules exist yet, and it is not
   settled whether any of this gets built. The public **Galerie** needs none of it today: it shows

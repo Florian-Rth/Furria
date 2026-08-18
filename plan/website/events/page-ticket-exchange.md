@@ -5,7 +5,7 @@ route: /events/exchange (pinned by event-detail shaping, 2026-08-15)
 type: page
 status: skeleton
 mock: docs/design/events-page/ (fcc-web-boerse.jsx — EvBoerseDesktop / EvBoerseMobile, EvWaitPanel, EvSwap)
-depends-on: [foundation-events-data, page-seat-picker]
+depends-on: [foundation-events-data, page-order-flow]
 adrs: []
 ---
 
@@ -85,5 +85,5 @@ Filled in shaping.
 ## References
 
 - [Area plan](master-plan.md) · [Purchase](page-purchase.md) ·
-  [Seat picker](page-seat-picker.md) · [Event detail](page-event-detail.md)
+  [Karten-Bestellflow](page-order-flow.md) · [Event detail](page-event-detail.md)
 - [`CONTEXT.md`](../../../CONTEXT.md) — Ledger

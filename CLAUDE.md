@@ -22,6 +22,14 @@ furria/
         └── ui/        # @furria/ui — shared KK theme + primitives (source-consumed)
 ```
 
+## Build the End State — No Temp Versions
+
+Nothing ships publicly until the whole platform (website, backend, internal apps) is done.
+Therefore: **always build features directly in their final intended form — never temporary,
+reduced or interim versions.** Incomplete is fine; interim is not. A button may call an
+endpoint that doesn't exist yet; components may rely on data that can't be fetched yet.
+Never scale a feature down so it "works today".
+
 ## Skills — Mandatory
 
 - Before writing, planning or modifying code in `server/`, invoke `/backend-work`

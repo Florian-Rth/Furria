@@ -170,6 +170,58 @@ by default.
 - **Glossary grew**: Karte · Vorverkauf · Kartenbörse, plus the Ablauf's late, order-only
   public face.
 
+## Rulings — Karten-Bestellflow / `page-order-flow` (shaped 2026-08-18)
+
+The session that was meant to shape the Platzwahl discovered its core is an **undecided
+club fact** (numbered seats vs. general admission — `CONTEXT.md` → Sitzplatzvergabe) and
+merged the mock's page-per-view purchase (seats → jump to "karte") into **one continuous
+Bestellflow** at `/events/$eventSlug/order`.
+
+**Adopted**
+
+- **The step-page concept**: event-context header (back link, kicker, state H1, capacity
+  bar) around the choice — Karten-ified: "DIE LETZTEN N KARTEN.", never "PLÄTZE".
+- **The selection→payment sequence** — upgraded beyond the mock: a guided wizard with a
+  persistent bottom CTA bar, instead of separate pages (the mock's seats page even skips
+  checkout entirely).
+- **The `EvPick` sum idea** (n × Preis = Summe) — as the future bottom-bar content, once a
+  selection mechanism exists.
+
+**Embargoed until the Sitzplatzvergabe decision** (not rejected — undecidable today)
+
+- `EvSaal` itself: the seat grid, legend, sold-out returns-only mode
+- Selection cap (10), the hold timer, Lage-Hinweise ("Nah an der Bühne")
+- Gruppenbestellung gold seats and in-plan Börse returns (doubly embargoed — Börse
+  mechanics are page 6's)
+
+**Rejected**
+
+- **"LIVE-KARTENSTAND"** — third time (E2/E3 precedent); nothing is live on seeds.
+- **"12 € pro Platz · Kinder gleich · 62 Stehplätze"** — flat price died in E1; Stehplätze
+  and Kinder-pricing are invented facts.
+- **The hall-truth copy** ("Das ist der echte Saal: 24 Biertisch-Reihen…") and the fixed
+  3×8×12 geometry — contradicts per-event capacity (E1).
+- **Rollstuhl "kurz anrufen" link** — unverified practice and there is no publishable
+  number (P5/P6 precedent).
+- **Platz language for the entitlement** ("Platzwahl", "SETZ DICH, WOHIN DU WILLST.") — the
+  glossary sells **Karten**; Platz is the seat. Step is **KARTENWAHL**, entry CTA "Karten
+  wählen →".
+- **Payment hints** ("Kreditkarte · PayPal · bar im Vereinsraum") — still unconfirmed
+  practice (E3 precedent).
+- **9px mobile seat targets** — rejected regardless of the seat-model outcome.
+
+**Added by us**
+
+- **The recognisable placeholder core** for step 1 — states *that* the mechanics are
+  undecided, claims nothing about *how*.
+- **State guard in the frame**: every `salesStatus` lands honestly (VVK-Termin, "Zur
+  Kartenbörse →", cancelled notice) — the mock only knows onSale/knapp/ausverkauft.
+- **`/orders/$orderCode` capability URL** for the confirmation/digitale Karte —
+  unguessable token, mail-linkable, guest-checkout-safe.
+- **Optional self-registered buyer Accounts** (Person without Mitgliedschaft; duplicates
+  flagged open) — the mock has no identity at all.
+- **Direct flow entry from the list** in purchasable states, alongside the detail panel.
+
 ## ⚠️ Known invented facts (unverified until a shaping session confirms them)
 
 - **288 seats** in 24 table rows × 12, 62 Stehplätze, the whole hall geometry

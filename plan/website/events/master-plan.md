@@ -53,12 +53,14 @@ Frontmatter `status`: `skeleton → shaping → ready → building → shipped`.
   nothing fake, nothing that pretends money moved. What "honest" means per page is a core
   shaping question.
 - **Pages are built in their planned end state** (user ruling, event-detail shaping
-  2026-08-15): the website goes live only when the platform behind it is ready, so a CTA
-  may point at a **placeholder route for a page not yet built** — the move E2 already made
-  when list rows linked into the detail placeholder. This **revises** E2's stricter
-  "no purchase or Börse navigation until those pages exist" rule, which applied to
-  `/events` alone. It changes navigation only: the **actions** behind a CTA still fail or
-  disable honestly, and no surface may state mechanics that are undecided.
+  2026-08-15; **generalised repo-wide 2026-08-18**, see CLAUDE.md "Build the End State"):
+  the website goes live only when the whole platform behind it is ready, so **never build
+  temporary, reduced or interim versions** — a CTA may point at a placeholder route, a
+  button may call an endpoint that doesn't exist yet, a component may rely on data that
+  can't be fetched yet. Incomplete is fine; interim is not. Two limits survive from the
+  earlier honesty rule: **nothing may pretend money moved** (a call to a nonexistent
+  endpoint genuinely fails — that is the honest failure), and **no surface may state
+  mechanics that are undecided** (copy claims only what shaping confirmed).
 - **The mocks are inspiration, not spec.** The design README's "READ FIRST" governs; the
   shipped Destillat design system always wins (hard offset-shadows are rejected — sixth
   phase running). Layouts, flows, features and copy may and should be improved; deviations
@@ -82,8 +84,8 @@ Frontmatter `status`: `skeleton → shaping → ready → building → shipped`.
 | 1 | [Events data foundation](foundation-events-data.md) | — | shipped |
 | 2 | [Veranstaltungen list](page-event-list.md) | `/events` | shipped |
 | 3 | [Event detail](page-event-detail.md) | `/events/$eventSlug` (pinned 2026-08-13) | shipped |
-| 4 | [Seat picker](page-seat-picker.md) | `/events/$eventSlug/seats` (placeholder route live) | skeleton |
-| 5 | [Purchase](page-purchase.md) | decided in shaping | skeleton |
+| 4 | [Karten-Bestellflow](page-order-flow.md) | `/events/$eventSlug/order` + `/orders/$orderCode` (pinned 2026-08-18; `…/seats` retired) | ready |
+| 5 | [Purchase](page-purchase.md) | steps inside the Bestellflow + `/orders/$orderCode` | skeleton |
 | 6 | [Kartenbörse](page-ticket-exchange.md) | `/events/exchange` (placeholder route live) | skeleton |
 
 **Absorbed 2026-08-12:** `feature-event-calendar.md` and `feature-ticket-shop.md` (both
@@ -134,6 +136,18 @@ deviations live in the [page plan](page-event-detail.md#as-built-e3-2026-08-15);
 one: the masthead now carries **one** Veranstaltungen entry (promoted out of `navItems` into
 the CTA), not a "Karten" chip beside a "Veranstaltungen" link.
 
+### E4 — Karten-Bestellflow (shell)
+**Status:** ready (shaped 2026-08-18)
+The order flow per [page-order-flow.md](page-order-flow.md), three slices: routes + Karten
+rename sweep + entry links → flow shell (stepper, persistent bottom CTA bar, step 2/3
+placeholders, `/orders/demo` chain) → step-1 Kartenwahl frame (state guard, H1 ladder,
+stat line, recognisable placeholder core, tests). The shaping session merged the seats +
+checkout pages into one continuous flow at `/events/$eventSlug/order` (`?step`), retired
+`…/seats`, pinned `/orders/$orderCode` as an unguessable capability URL, converted the
+step's surface to Karten language (Platzwahl → Kartenwahl, "Platz wählen →" → "Karten
+wählen →"), extended **Account** to public self-registration (`CONTEXT.md`), and flagged
+**Sitzplatzvergabe** as the blocked club decision that keeps step 1's core a placeholder.
+
 ## Deferred — backend
 
 The backend for this area is **not scheduled**. Each shaping session records the API
@@ -171,6 +185,17 @@ Pinned by shaping sessions:
 - **Album ↔ event linking is by *type*, never by event id** (event-detail shaping,
   2026-08-15): an Album covers an occasion, not necessarily a Veranstaltung (glossary), so
   the Album payload carries an optional `eventType` matching the event model's `type`.
+- **`orderCode` is a capability URL token** (order-flow shaping, 2026-08-18): the backend
+  generates an unguessable random token (≥128 bit entropy) per Bestellung; the confirmation
+  mail links `/orders/$orderCode` — access by knowledge of the link, equivalent in trust to
+  the mail itself. Never a guessable/sequential number.
+- **Public self-registered Accounts** (order-flow shaping, 2026-08-18): buyers may
+  optionally self-register a real Account (creates a Person with no Mitgliedschaft) to keep
+  mail, Kartenübersicht, history and payment methods; buying never requires one. Member
+  onboarding stays invite-only. Duplicate-Person merge is flagged open in `CONTEXT.md`.
+- **Sitzplatzvergabe is an undecided club decision** (order-flow shaping, 2026-08-18):
+  numbered seats vs. general admission is blocked on the club; whatever it becomes, seat
+  data is per-event (E1 ruling). The order flow ships a placeholder core until then.
 - **Capacity, seating plan and price are per event** (foundation shaping, 2026-08-13):
   the hall is set up differently per event; price is flat within one event but differs
   between events. Seating-plan templates (save/load) are a future Club-App idea.

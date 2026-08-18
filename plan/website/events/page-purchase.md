@@ -1,11 +1,11 @@
 ---
 title: Kauf & Karte
 slug: purchase
-route: decided in shaping
+route: steps 2–3 inside /events/$eventSlug/order (?step) + /orders/$orderCode (pinned 2026-08-18)
 type: page
 status: skeleton
 mock: docs/design/events-page/ (fcc-web-tickets.jsx — EvKarteDesktop / EvKarteMobile, EvTicket)
-depends-on: [foundation-events-data, page-seat-picker]
+depends-on: [foundation-events-data, page-order-flow]
 adrs: []
 ---
 
@@ -64,7 +64,7 @@ Filled in shaping.
 
 ## References
 
-- [Area plan](master-plan.md) · [Seat picker](page-seat-picker.md) ·
+- [Area plan](master-plan.md) · [Karten-Bestellflow](page-order-flow.md) ·
   [Kartenbörse](page-ticket-exchange.md)
 - [`CONTEXT.md`](../../../CONTEXT.md) — Ledger ·
   [ADR-0004](../../../docs/adr/0004-website-writes-membership-applications.md) (honest-failure precedent)

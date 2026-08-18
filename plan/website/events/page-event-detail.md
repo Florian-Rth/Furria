@@ -54,7 +54,7 @@ Carried from the events-list shaping (2026-08-13):
   meaningless without an event, so it nests under one) and **`/events/exchange`**
   (Kartenbörse — its own destination, kept inside the area; static route beats
   `$eventSlug` in TanStack). English per the area's standing rule. Recorded in
-  [page-seat-picker](page-seat-picker.md) and [page-ticket-exchange](page-ticket-exchange.md).
+  [page-order-flow](page-order-flow.md) and [page-ticket-exchange](page-ticket-exchange.md).
 - **`/tickets` is retired in E3.** It was a live `PlaceholderPage` no page plan owned, and
   the site's loudest CTA pointed at it: the masthead chip (labelled **"Tickets"** —
   English, against ADR-0002), the masthead desktop button and the landing hero's primary
