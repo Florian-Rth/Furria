@@ -12,8 +12,9 @@ import {
 import { joinPageTitle } from '@/features/membership/join-content';
 import { writeGrantedToSession } from '@/features/preview-access';
 import { SEEDED_GROUP_MATCHER } from '@/lib/seed/group-matcher';
-import { fieldByLabel, pickBirthDate } from '@/test/apply-form';
+import { pickBirthDate } from '@/test/apply-form';
 import { markChangelogSeen } from '@/test/changelog';
+import { fieldByLabel } from '@/test/form';
 import { renderAtRoute } from '@/test/render';
 
 const HANDOFF_HREF = '/join/apply?groups=buettenrede,maennerballett,elferrat';

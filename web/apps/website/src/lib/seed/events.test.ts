@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { EMBARGOED_MECHANICS, PLATZ_LANGUAGE } from '@/test/embargo';
 import type { EventFacts } from './events';
 import {
   buildCancelledEvent,
@@ -236,6 +237,22 @@ describe('SEEDED_EVENTS', () => {
   it('never lists the Rosenmontagsumzug — Veranstaltungen are ticketed evenings only', () => {
     for (const event of SEEDED_EVENTS) {
       expect(event.title).not.toMatch(/umzug/i);
+    }
+  });
+
+  it('describes the evenings without claiming a mechanic the club has not decided', () => {
+    const prose = SEEDED_EVENTS.flatMap((event) => [
+      event.title,
+      event.teaser,
+      event.venue,
+      ...(event.description ?? []),
+      ...(event.performers ?? []),
+    ]);
+
+    expect(prose.length).toBeGreaterThan(0);
+    for (const text of prose) {
+      expect(text).not.toMatch(EMBARGOED_MECHANICS);
+      expect(text).not.toMatch(PLATZ_LANGUAGE);
     }
   });
 });

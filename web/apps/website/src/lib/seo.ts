@@ -7,3 +7,5 @@ export type RouteHead = {
 };
 
 export const pageTitle = (name: string): string => `${name} · FURRIA`;
+
+export const NO_INDEX_META: RouteHead['meta'][number] = { name: 'robots', content: 'noindex' };

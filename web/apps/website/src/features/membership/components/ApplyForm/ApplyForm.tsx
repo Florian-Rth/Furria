@@ -1,3 +1,4 @@
+import { SummaryRow } from '@/components/SummaryRow';
 import { ApplyFormAside } from './internal/layout/ApplyFormAside';
 import { ApplyFormBlock } from './internal/layout/ApplyFormBlock';
 import { ApplyFormBlockBody } from './internal/layout/ApplyFormBlockBody';
@@ -18,7 +19,6 @@ import { ApplyHoneypotField } from './internal/ui/ApplyHoneypotField';
 import { ApplyInterestChoices } from './internal/ui/ApplyInterestChoices';
 import { ApplySubmitButton } from './internal/ui/ApplySubmitButton';
 import { ApplySubmitHint } from './internal/ui/ApplySubmitHint';
-import { ApplySummaryRow } from './internal/ui/ApplySummaryRow';
 
 export const ApplyForm = Object.assign(ApplyFormRoot, {
   Columns: ApplyFormColumns,
@@ -37,7 +37,7 @@ export const ApplyForm = Object.assign(ApplyFormRoot, {
   ConsentLabel: ApplyConsentLabel,
   Honeypot: ApplyHoneypotField,
   Summary: ApplySummaryPanel,
-  SummaryRow: ApplySummaryRow,
+  SummaryRow,
   Submit: ApplySubmitButton,
   SubmitHint: ApplySubmitHint,
   Error: ApplyErrorFallback,

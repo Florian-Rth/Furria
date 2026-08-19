@@ -12,7 +12,7 @@ export const SalesStatusSchema = z.enum([
 
 export type SalesStatus = z.infer<typeof SalesStatusSchema>;
 
-const LocalDateTimeSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
+export const LocalDateTimeSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
 
 export const EventSchema = z.object({
   id: z.string().min(1),
@@ -230,7 +230,7 @@ export const SEEDED_EVENTS: Event[] = [
       teaser: 'Kaffee, Kuchen und Bühne bei Tageslicht — ruhiger, gemütlicher, genauso lustig.',
       description: [
         'Karneval bei Tageslicht: Kaffee und Kuchen an den Tischen, dazu ein kürzeres Bühnenprogramm der Gruppen.',
-        'Ruhiger als die Prunksitzungen, mit mehr Platz zwischen den Reihen — und genauso viel Gelächter.',
+        'Ruhiger als die Prunksitzungen, mit mehr Zeit für ein Gespräch — und genauso viel Gelächter.',
       ],
       performers: ['Kindergarde', 'Tanzgarde', 'Büttenrede'],
       ageHint: null,

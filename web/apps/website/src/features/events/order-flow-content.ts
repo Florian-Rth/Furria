@@ -25,27 +25,52 @@ export const orderFlowActionLabels: Record<OrderFlowStep, string> = {
 
 export const orderFlowBackActionLabel = '← Zurück';
 
+export const orderFlowMissingBuyerActionLabel = 'Zu deinen Daten →';
+
 export const orderFlowPlaceholderKicker = 'PLATZHALTER';
+
+type OrderFlowPlaceholderKind = 'selection' | 'tickets' | 'payment';
 
 export interface OrderFlowPlaceholder {
   headline: string;
   body: string;
 }
 
-export const orderFlowStepPlaceholders: Record<OrderFlowStep, OrderFlowPlaceholder> = {
-  1: {
+export const orderFlowPlaceholders: Record<OrderFlowPlaceholderKind, OrderFlowPlaceholder> = {
+  selection: {
     headline: 'HIER WÄHLST DU DEINE KARTEN',
     body: 'Wie genau du sie wählst — fester Platz oder freie Wahl — entscheidet der Verein gerade. Sobald das feststeht, steht an dieser Stelle die echte Auswahl.',
   },
-  2: {
-    headline: 'HIER KOMMEN DEINE DATEN HIN',
-    body: 'Name und E-Mail-Adresse, damit deine Bestellung bei dir ankommt. Das Formular entsteht, sobald die Kartenwahl steht.',
+  tickets: {
+    headline: 'HIER STEHEN DEINE KARTEN',
+    body: 'Wie viele Karten es werden, steht hier, sobald die Kartenwahl im ersten Schritt fertig ist. Solange fehlt auch die Summe.',
   },
-  3: {
+  payment: {
     headline: 'HIER WIRD BEZAHLT',
-    body: 'Womit du bezahlen kannst, legt der Verein noch fest. Bis dahin bewegt sich an dieser Stelle kein Geld.',
+    body: 'Bezahlt wird direkt hier auf dieser Seite, ohne Umleitung auf eine fremde Seite. Der Teil dahinter wird gerade gebaut — bis er fertig ist, bewegt sich hier kein Geld.',
   },
 };
+
+export const orderBuyerHeadline = 'WER BESTELLT?';
+
+export const orderBuyerNote =
+  'Wir brauchen nur deinen Namen und deine E-Mail-Adresse — an diese Adresse geht deine Bestellung. Mehr wollen wir nicht von dir wissen.';
+
+export const orderBuyerFieldLabels = {
+  firstName: 'Vorname',
+  lastName: 'Nachname',
+  email: 'E-Mail-Adresse',
+} as const;
+
+export const orderWithdrawalNotice = {
+  title: 'KEIN WIDERRUFSRECHT',
+  body: 'Karten für einen Abend mit festem Termin sind vom Widerrufsrecht ausgenommen — so sieht es das Gesetz vor (§ 312g Abs. 2 Nr. 9 BGB). Eine bestellte Karte lässt sich also nicht widerrufen.',
+} as const;
+
+export const orderFlowMissingBuyerNotice = {
+  headline: 'DEINE DATEN FEHLEN NOCH',
+  body: 'Bevor es ans Bezahlen geht, brauchen wir deinen Namen und deine E-Mail-Adresse. Ein Schritt zurück, dann geht es hier weiter.',
+} as const;
 
 export const orderFlowHeadlines = {
   onSale: 'KARTEN FÜR DIESEN ABEND.',

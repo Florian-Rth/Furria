@@ -3,41 +3,48 @@ import { formatEuros } from '@/lib/money';
 import type { Event } from '@/lib/seed/events';
 import { ticketPanelCtaLabels, ticketPanelPriceLabel } from './event-detail-content';
 import { buildEventDocumentTitle } from './event-detail-display';
-import { buildEventHref, buildExchangeHref, buildOrderConfirmationHref } from './event-display';
+import { buildEventHref, buildExchangeHref } from './event-display';
 import { nextEventDetailLabel } from './next-event-content';
 import {
   orderFlowActionLabels,
   orderFlowDocumentTitlePrefix,
   orderFlowHeadlines,
+  orderFlowMissingBuyerActionLabel,
   orderFlowNoticeSuffixes,
   orderFlowStepLabels,
   orderFlowStepSummaryLabels,
 } from './order-flow-content';
 import type { OrderFlowStep } from './order-flow-steps';
-import { deriveNextOrderFlowStep, ORDER_FLOW_STEP_COUNT } from './order-flow-steps';
+import {
+  BUYER_ORDER_FLOW_STEP,
+  FIRST_ORDER_FLOW_STEP,
+  ORDER_FLOW_STEP_COUNT,
+  PAYMENT_ORDER_FLOW_STEP,
+} from './order-flow-steps';
 import { deriveSalesStatusLabel, isLiveSaleStatus } from './sales-status-display';
 import type { BlockedFaceKind, TicketPanelCta } from './ticket-panel-display';
 import { deriveTicketPanelFace, deriveTicketPanelNote } from './ticket-panel-display';
 
-export const DEMO_ORDER_CODE = 'demo';
-
 export type OrderFlowAction =
   | { kind: 'step'; label: string; step: OrderFlowStep }
-  | { kind: 'link'; cta: TicketPanelCta };
+  | { kind: 'submit'; label: string }
+  | { kind: 'pending'; label: string };
 
 export const buildOrderFlowDocumentTitle = (event: Event): string =>
   `${orderFlowDocumentTitlePrefix} ${buildEventDocumentTitle(event)}`;
 
-export const deriveOrderFlowAction = (step: OrderFlowStep): OrderFlowAction => {
+export const deriveOrderFlowAction = (step: OrderFlowStep, hasBuyer: boolean): OrderFlowAction => {
   const label = orderFlowActionLabels[step];
-  const nextStep = deriveNextOrderFlowStep(step);
-  if (nextStep === null) {
-    return {
-      kind: 'link',
-      cta: { label, to: buildOrderConfirmationHref(DEMO_ORDER_CODE), emphasis: 'contained' },
-    };
+  switch (step) {
+    case FIRST_ORDER_FLOW_STEP:
+      return { kind: 'step', label, step: BUYER_ORDER_FLOW_STEP };
+    case BUYER_ORDER_FLOW_STEP:
+      return { kind: 'submit', label };
+    case PAYMENT_ORDER_FLOW_STEP:
+      return hasBuyer
+        ? { kind: 'pending', label }
+        : { kind: 'step', label: orderFlowMissingBuyerActionLabel, step: BUYER_ORDER_FLOW_STEP };
   }
-  return { kind: 'step', label, step: nextStep };
 };
 
 export const deriveOrderFlowStepSummary = (step: OrderFlowStep): string =>

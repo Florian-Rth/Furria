@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Event, EventFacts } from '@/lib/seed/events';
 import { buildCancelledEvent, buildEvent } from '@/lib/seed/events';
+import { EMBARGOED_MECHANICS } from '@/test/embargo';
 import {
   buildOrderFlowDocumentTitle,
   deriveOrderFlowAction,
@@ -45,23 +46,33 @@ describe('buildOrderFlowDocumentTitle', () => {
 });
 
 describe('deriveOrderFlowAction', () => {
-  it('walks the first two steps forward inside the flow', () => {
-    expect(deriveOrderFlowAction(1)).toEqual({
+  it('walks from the Kartenwahl into the buyer step', () => {
+    expect(deriveOrderFlowAction(1, false)).toEqual({
       kind: 'step',
       label: 'Weiter zum Kauf →',
       step: 2,
     });
-    expect(deriveOrderFlowAction(2)).toEqual({
-      kind: 'step',
+  });
+
+  it('submits the buyer form instead of stepping past it', () => {
+    expect(deriveOrderFlowAction(2, false)).toEqual({
+      kind: 'submit',
       label: 'Weiter zur Zahlung →',
-      step: 3,
     });
   });
 
-  it('leaves the flow towards the confirmation on the last step', () => {
-    expect(deriveOrderFlowAction(3)).toEqual({
-      kind: 'link',
-      cta: { label: 'Zur Bestätigung →', to: '/orders/demo', emphasis: 'contained' },
+  it('waits on the payment build instead of linking to a Bestellung that cannot exist', () => {
+    expect(deriveOrderFlowAction(3, true)).toEqual({
+      kind: 'pending',
+      label: 'Zur Bestätigung →',
+    });
+  });
+
+  it('sends a deep link without buyer data back to the buyer step', () => {
+    expect(deriveOrderFlowAction(3, false)).toEqual({
+      kind: 'step',
+      label: 'Zu deinen Daten →',
+      step: 2,
     });
   });
 });
@@ -100,9 +111,6 @@ const soldOut = buildEvent({ ...baseFacts, freeCount: 0 }, midPresale);
 const salesClosed = buildEvent({ ...baseFacts, presaleEndsAt: '2026-11-20T18:00' }, midPresale);
 
 const cancelled = buildCancelledEvent(baseFacts);
-
-const embargoedMechanics =
-  /Saalplan|Sitzplan|\bSitzplätze?\b|\bPlätze\b|Reihe|reserviert|Warteliste|Stehplätz|Gruppenbestellung|Rollstuhl|PayPal|Kreditkarte|Lastschrift|Abendkasse|\blive\b/i;
 
 describe('deriveOrderFlowBackLabel', () => {
   it('points back to the evening by name', () => {
@@ -223,7 +231,7 @@ describe('deriveOrderFlowNotice', () => {
       if (notice === null) {
         throw new Error(`${event.id} left a blocked evening without a notice`);
       }
-      expect(notice.body).not.toMatch(embargoedMechanics);
+      expect(notice.body).not.toMatch(EMBARGOED_MECHANICS);
     }
   });
 });

@@ -16,11 +16,6 @@ const GERMAN_MONTHS = [
   'Dezember',
 ];
 
-export const labelPattern = (label: string): RegExp => new RegExp(`^${label}( \\*)?$`);
-
-export const fieldByLabel = (label: string): HTMLElement =>
-  screen.getByLabelText(labelPattern(label));
-
 export const pickBirthDate = async (user: UserEvent, isoValue: string): Promise<void> => {
   const [year, month, day] = isoValue.split('-');
 

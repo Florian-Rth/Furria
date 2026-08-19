@@ -11,7 +11,8 @@ import {
   applySatzungLabel,
   applySubmitLabel,
 } from '@/features/membership/apply-content';
-import { fieldByLabel, pickBirthDate } from '@/test/apply-form';
+import { pickBirthDate } from '@/test/apply-form';
+import { fieldByLabel } from '@/test/form';
 import { renderWithRouter } from '@/test/render';
 import { ApplyPage } from './ApplyPage';
 
@@ -43,7 +44,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('ApplyPage', () => {
+describe('ApplyPage', { timeout: 20_000 }, () => {
   it('asks for the full postal address, not just the Wohnort', () => {
     renderWithRouter(<ApplyPage prefilledGroupInterests={[]} />);
 

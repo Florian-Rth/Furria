@@ -1,3 +1,4 @@
+import { kkTokens } from '@furria/ui';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import { deriveOrderFlowHeadline } from '@/features/events/order-flow-display';
@@ -14,7 +15,7 @@ export const OrderFlowHeadline: FC<OrderFlowHeadlineProps> = ({ event }) => {
     <Typography
       variant="h1"
       component="h1"
-      sx={{ textTransform: 'uppercase', fontSize: 'clamp(2.25rem, 5vw, 3.75rem)' }}
+      sx={{ textTransform: 'uppercase', fontSize: kkTokens.headline.compact }}
     >
       {headline}
     </Typography>

@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+  BUYER_ORDER_FLOW_STEP,
   buildOrderFlowStepParam,
-  deriveNextOrderFlowStep,
   derivePreviousOrderFlowStep,
+  FIRST_ORDER_FLOW_STEP,
   ORDER_FLOW_STEPS,
+  PAYMENT_ORDER_FLOW_STEP,
   resolveOrderFlowStep,
 } from './order-flow-steps';
 
@@ -40,11 +42,17 @@ describe('buildOrderFlowStepParam', () => {
   });
 });
 
-describe('deriveNextOrderFlowStep', () => {
-  it('walks forward and stops at the last step', () => {
-    expect(deriveNextOrderFlowStep(1)).toBe(2);
-    expect(deriveNextOrderFlowStep(2)).toBe(3);
-    expect(deriveNextOrderFlowStep(3)).toBeNull();
+describe('named steps of the flow', () => {
+  it('names the step each part of the flow belongs to', () => {
+    expect(FIRST_ORDER_FLOW_STEP).toBe(1);
+    expect(BUYER_ORDER_FLOW_STEP).toBe(2);
+    expect(PAYMENT_ORDER_FLOW_STEP).toBe(3);
+  });
+
+  it('names only steps the flow can actually walk', () => {
+    for (const step of [FIRST_ORDER_FLOW_STEP, BUYER_ORDER_FLOW_STEP, PAYMENT_ORDER_FLOW_STEP]) {
+      expect(resolveOrderFlowStep(step)).toBe(step);
+    }
   });
 });
 

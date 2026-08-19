@@ -10,6 +10,7 @@ import {
   formatNumericDate,
   formatShortDate,
   formatWeekdayAndDate,
+  formatWeekdayAndFullDate,
   formatWeekdayLong,
   parseBerlinDateTime,
 } from './date';
@@ -83,6 +84,16 @@ describe('formatClockTime', () => {
 
   it('renders evening times unchanged', () => {
     expect(formatClockTime('2027-01-23T19:11')).toBe('19:11');
+  });
+});
+
+describe('formatWeekdayAndFullDate', () => {
+  it('names the weekday, the day and the year of the evening', () => {
+    expect(formatWeekdayAndFullDate('2027-01-23T19:11')).toBe('Sa., 23. Januar 2027');
+  });
+
+  it('keeps the year a Bestellung is kept for', () => {
+    expect(formatWeekdayAndFullDate('2028-02-06T14:11')).toBe('So., 6. Februar 2028');
   });
 });
 

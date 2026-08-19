@@ -10,6 +10,7 @@ import {
 import { writeGrantedToSession } from '@/features/preview-access';
 import { pageTitle } from '@/lib/seo';
 import { markChangelogSeen } from '@/test/changelog';
+import { headContent } from '@/test/head';
 import { renderAtRoute } from '@/test/render';
 
 beforeEach(() => {
@@ -30,9 +31,6 @@ const seededAlbum = (slug: string): Album => {
   }
   return album;
 };
-
-const headContent = (selector: string, attribute: string): string | null =>
-  document.querySelector(selector)?.getAttribute(attribute) ?? null;
 
 describe('album route', () => {
   it('renders the Album behind a known slug', async () => {

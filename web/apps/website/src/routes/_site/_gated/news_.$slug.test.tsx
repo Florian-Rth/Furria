@@ -4,6 +4,7 @@ import { findPostBySlug, NEWS_POSTS } from '@/features/news';
 import { writeGrantedToSession } from '@/features/preview-access';
 import { pageTitle } from '@/lib/seo';
 import { markChangelogSeen } from '@/test/changelog';
+import { headContent } from '@/test/head';
 import { renderAtRoute } from '@/test/render';
 
 beforeEach(() => {
@@ -22,9 +23,6 @@ const seededPost = (slug: string): { title: string; teaser: string; publishedAt:
   }
   return post;
 };
-
-const headContent = (selector: string, attribute: string): string | null =>
-  document.querySelector(selector)?.getAttribute(attribute) ?? null;
 
 describe('news post route', () => {
   it('renders the Meldung behind a known slug', async () => {

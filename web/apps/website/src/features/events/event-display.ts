@@ -10,8 +10,6 @@ export const buildEventHref = (eventId: string): string => `/events/${eventId}`;
 
 export const buildOrderFlowHref = (eventId: string): string => `${buildEventHref(eventId)}/order`;
 
-export const buildOrderConfirmationHref = (orderCode: string): string => `/orders/${orderCode}`;
-
 export const buildExchangeHref = (): string => '/events/exchange';
 
 export const findEventBySlug = (events: Event[], slug: string): Event | undefined =>

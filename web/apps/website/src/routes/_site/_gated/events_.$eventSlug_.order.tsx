@@ -2,7 +2,6 @@ import { createFileRoute, notFound } from '@tanstack/react-router';
 import type { FC } from 'react';
 import {
   buildOrderFlowDocumentTitle,
-  buildOrderFlowHref,
   EventOrderFlowPage,
   findEventBySlug,
   OrderFlowSearchSchema,
@@ -10,17 +9,14 @@ import {
 import type { Event } from '@/lib/seed/events';
 import { SEEDED_EVENTS } from '@/lib/seed/events';
 import type { RouteHead } from '@/lib/seo';
-import { pageTitle } from '@/lib/seo';
+import { NO_INDEX_META, pageTitle } from '@/lib/seo';
 
 const EventOrderFlowComponent: FC = () => <EventOrderFlowPage event={Route.useLoaderData()} />;
 
 const buildOrderFlowHead = (event: Event): RouteHead => {
   const title = pageTitle(buildOrderFlowDocumentTitle(event));
 
-  return {
-    meta: [{ title }, { property: 'og:title', content: title }],
-    links: [{ rel: 'canonical', href: buildOrderFlowHref(event.id) }],
-  };
+  return { meta: [{ title }, { property: 'og:title', content: title }, NO_INDEX_META] };
 };
 
 export const Route = createFileRoute('/_site/_gated/events_/$eventSlug_/order')({
@@ -33,6 +29,6 @@ export const Route = createFileRoute('/_site/_gated/events_/$eventSlug_/order')(
     return event;
   },
   head: ({ loaderData }): RouteHead =>
-    loaderData === undefined ? { meta: [] } : buildOrderFlowHead(loaderData),
+    loaderData === undefined ? { meta: [NO_INDEX_META] } : buildOrderFlowHead(loaderData),
   component: EventOrderFlowComponent,
 });
