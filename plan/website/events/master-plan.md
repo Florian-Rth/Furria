@@ -1,10 +1,10 @@
 # Events & Tickets — Area Plan
 
 The public **Events area** of the website: the Veranstaltungen list, event detail pages,
-the ticket purchase flow (seat picker → checkout → digitale Karte) and the Kartenbörse.
-Expected to become the most-visited part of the site. This file is the area's dashboard;
-it lives under the [website master plan](../master-plan.md), which carries only a pointer
-row and one-line phase entries — **detail lives here, in exactly one place**.
+the Karten-Bestellflow (Kartenwahl → Deine Daten → Zahlung → digitale Karte) and the
+Kartenbörse. Expected to become the most-visited part of the site. This file is the area's
+dashboard; it lives under the [website master plan](../master-plan.md), which carries only
+a pointer row and one-line phase entries — **detail lives here, in exactly one place**.
 
 ---
 
@@ -85,7 +85,7 @@ Frontmatter `status`: `skeleton → shaping → ready → building → shipped`.
 | 2 | [Veranstaltungen list](page-event-list.md) | `/events` | shipped |
 | 3 | [Event detail](page-event-detail.md) | `/events/$eventSlug` (pinned 2026-08-13) | shipped |
 | 4 | [Karten-Bestellflow](page-order-flow.md) | `/events/$eventSlug/order` + `/orders/$orderCode` (pinned 2026-08-18; `…/seats` retired) | shipped |
-| 5 | [Purchase](page-purchase.md) | steps inside the Bestellflow + `/orders/$orderCode` | skeleton |
+| 5 | [Kauf & Karte](page-purchase.md) | steps 2–3 inside the Bestellflow + `/orders/$orderCode` | shipped |
 | 6 | [Kartenbörse](page-ticket-exchange.md) | `/events/exchange` (placeholder route live) | skeleton |
 
 **Absorbed 2026-08-12:** `feature-event-calendar.md` and `feature-ticket-shop.md` (both
@@ -155,6 +155,26 @@ was promoted to the shared **`StickyActionBar`**; `?step=1` is never written to 
 history-first (`useCanGoBack`); and an honesty test over the flow's copy constants makes the Karten
 language non-regressable.
 
+### E5 — Kauf & Karte
+**Status:** shipped (built 2026-08-20)
+Steps 2–3 of the Bestellflow plus the confirmation page per
+[page-purchase.md](page-purchase.md), four slices: Bestellung model + seed + order query hook +
+`noindex` → step 2 "Deine Daten" (final RHF + Zod buyer form) → step 3 "Zahlung"
+(Bestellübersicht + Widerruf notice + placeholder payment region) → the confirmation page at
+`/orders/$orderCode`. The shaping session made **Stripe the single provider, embedded on our
+page** (so §312j is the website's duty), pinned `POST /api/orders` + `GET /api/orders/$orderCode`,
+and flagged **Einlasskontrolle** as the second blocked club decision (`CONTEXT.md`) — it embargoes
+the Karte's whole face, so the confirmation shows the Bestellung without any code. As-built notes
+and recorded deviations live in the [page plan](page-purchase.md#as-built-e5-2026-08-20); the ones
+that travel: **step 3's CTA is now disabled and the E4 walk into `/orders/demo` ends there**
+(a real form's terminal action may not hand the reader a stranger's BEZAHLT page — this reverses
+an explicit E4 instruction); the **§312j information set is deliberately incomplete** (no
+Gesamtpreis while Sitzplatzvergabe blocks the count, so "Zahlungspflichtig bestellen" stays
+test-guarded against shipping); **three** placeholder regions ship, not two; `OrderPanel`'s
+`tone="placeholder"` makes "recognisably placeholder" a named token; a fourth step-3 face
+(missing buyer) keeps `?step=3` deep links honest without a redirect; and `src/test/embargo.ts`
+is now shared honesty infrastructure swept over copy constants, rendered pages and the seed prose.
+
 ## Deferred — backend
 
 The backend for this area is **not scheduled**. Each shaping session records the API
@@ -203,6 +223,35 @@ Pinned by shaping sessions:
 - **Sitzplatzvergabe is an undecided club decision** (order-flow shaping, 2026-08-18):
   numbered seats vs. general admission is blocked on the club; whatever it becomes, seat
   data is per-event (E1 ruling). The order flow ships a placeholder core until then.
+- **Stripe is the single payment provider for Karten sales, embedded** (purchase shaping,
+  2026-08-19): this *amends* the carried "Stripe (card) + PayPal" line — PayPal and every
+  other method are club-enabled **Stripe** methods, never a hand-maintained list. Payment
+  renders via the embedded Payment Element on our page (user decision over hosted
+  Checkout), so **§312j BGB (Button-Lösung) is the website's duty**: "Zahlungspflichtig
+  bestellen" + summary + total on the final step. Scope is Karten only; other money flows
+  stay open. Ledger remains the source of truth; Stripe settles ledger entries.
+- **`POST /api/orders`** (purchase shaping, 2026-08-19): creates the Bestellung **and** the
+  Stripe PaymentIntent from `{ event, selection, buyer { firstName, lastName, email } }`
+  (the selection shape is blocked on Sitzplatzvergabe); returns
+  `{ orderCode, clientSecret }`. ADR-0004 pattern: the row is the truth, the confirmation
+  mail (carrying the `/orders/$orderCode` link) is the notification. One buyer per
+  Bestellung — no phone, no address, no per-Karte names.
+  **E5 shipped no Zod schema for this request** (2026-08-20): the seed is the executable
+  contract for the GET only, because the POST is inseparable from the `clientSecret` and the
+  embedded Payment Element — deferred with the payment region, not overlooked.
+- **`GET /api/orders/$orderCode`** (purchase shaping, 2026-08-19; payload amended by the E5
+  as-built, 2026-08-20): the Bestellung payload — `orderCode`, event identity (**`id`** — the
+  cross-sell excludes the ordered evening by it — plus title, date, venue), Karten count + unit
+  price + total, buyer name + email, and **`paymentStatus: paid | processing`** (embedded Stripe pays asynchronously
+  for some methods). A failed or abandoned payment never yields a mail or a retrievable
+  Bestellung. No reminder mail is promised anywhere.
+- **Karten-AGB are an open club/legal fact** (purchase shaping, 2026-08-19): no AGB exist,
+  so the checkout ships no consent checkbox; writing them (plus an `/agb` page) is a
+  **blocker for real online sales**. The Widerruf-exemption notice (§312g Abs. 2 Nr. 9
+  BGB) is frontend-shipped already.
+- **Einlasskontrolle is undecided** (purchase shaping, 2026-08-19 — `CONTEXT.md`): the
+  digitale Karte's face (QR per Karte, PDF, Wallet, name list) is blocked with it; the
+  confirmation shows the Bestellung without codes until the club decides.
 - **Capacity, seating plan and price are per event** (foundation shaping, 2026-08-13):
   the hall is set up differently per event; price is flat within one event but differs
   between events. Seating-plan templates (save/load) are a future Club-App idea.

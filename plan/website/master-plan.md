@@ -80,7 +80,7 @@ Guiding constraints (all binding):
 | [Programm-Teaser](feature-events-teaser.md) | capability | shipped | Home "DAS PROGRAMM" upcoming-events section |
 | [Mitmachen-Band](feature-mitmachen-band.md) | capability | shipped | Home recruit CTA → membership funnel |
 | [Verein](feature-about-verein.md) | capability | shipped | Verein story, Ämter, Gruppen showcase |
-| [Events & Tickets](events/master-plan.md) | area | shaping | Veranstaltungen list, event detail, Platzwahl, Kauf/Karte, Kartenbörse — own area plan (absorbed the Veranstaltungskalender + Ticket-Shop stubs, 2026-08-12) |
+| [Events & Tickets](events/master-plan.md) | area | building | Veranstaltungen list, event detail, Kartenwahl, Kauf/Karte, Kartenbörse — own area plan (absorbed the Veranstaltungskalender + Ticket-Shop stubs, 2026-08-12) |
 | [Aktuelles](feature-news.md) | capability | shipped | Meldungen (list + detail) + landing teaser |
 | [Galerie](feature-gallery.md) | capability | shipped | Public Album index + Album pages + photo viewer |
 | [Mitglied werden](feature-membership-funnel.md) | capability | shipped | Membership info + Beitrittsantrag funnel |
@@ -764,6 +764,12 @@ Detail lives in the [Events area plan](events/master-plan.md#e-phases); one line
   URL, Karten-language sweep; step 1's core stays a recognisable placeholder — blocked on
   the club's Sitzplatzvergabe decision. Detail in the
   [area plan](events/master-plan.md#e4--karten-bestellflow-shell).
+- **E5 — Kauf & Karte** — shipped (built 2026-08-20): steps 2–3 of the Bestellflow (final
+  buyer form, Bestellübersicht + Widerruf-Hinweis + placeholder payment region) and the
+  confirmation page at `/orders/$orderCode`; Stripe pinned as the single provider, embedded
+  (so §312j is ours), both routes `noindex`. Step 3's CTA is disabled — the E4 walk into
+  `/orders/demo` deliberately ends there. Detail in the
+  [area plan](events/master-plan.md#e5--kauf--karte).
 
 ---
 

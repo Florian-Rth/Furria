@@ -222,6 +222,51 @@ Bestellflow** at `/events/$eventSlug/order`.
   flagged open) — the mock has no identity at all.
 - **Direct flow entry from the list** in purchasable states, alongside the detail panel.
 
+## Rulings — Kauf & Karte / `page-purchase` (shaped 2026-08-19)
+
+The session re-litigated every prior decision touching the purchase (user instruction:
+question everything). Guest checkout, the `/orders/$orderCode` capability URL and the
+single-flow route were challenged and **upheld**; the payment model changed.
+
+**Adopted**
+
+- **The confirmation-page concept** ("BEZAHLT" hero → order → what's next → onward
+  teasers) — as four blocks: state hero, Bestellung summary, cross-sell to another
+  purchasable evening, Kartenbörse existence teaser.
+- **The cross-sell card** — honest and seed-derivable.
+- **The Börse return/swap teaser** — reduced to *that it exists* (glossary rule: its
+  mechanics are undecided).
+
+**Embargoed until the Einlasskontrolle decision** (new flagged ambiguity, `CONTEXT.md`)
+
+- The whole `EvTicket` QR face: QR stub, "Handy oder Ausdruck — beides geht", scanning
+  at the door. Not rejected — the door practice is simply undecided.
+- PDF download and calendar actions (delivery artifacts of the same undecided practice).
+
+**Rejected**
+
+- **"MAIL IST UNTERWEGS" as the mock means it** is kept, but the mock's *mail contents*
+  (QR attached) are not promised — the mail carries the `/orders/$orderCode` link.
+- **Wallet passes** — unbuilt software, P6 rule against advertising it.
+- **Reminder mail two days before** — unverified club practice, unbuilt.
+- **Live Ablauf on the evening** — event-app territory, unbuilt.
+- **The skipped checkout** — the mock jumps seats → "BEZAHLT"; the real flow gets the
+  step the mock omitted (step 2 buyer form, step 3 Bestellübersicht + Zahlung).
+- **"Kreditkarte · PayPal · bar im Vereinsraum"** — resolved, not confirmed: **Stripe is
+  the single provider** (embedded Payment Element); methods are Stripe config, never a
+  hand-maintained list; bar reservation is not practice.
+
+**Added by us**
+
+- **The buyer form the mock never drew**: one buyer per Bestellung — Vorname, Nachname,
+  E-Mail, nothing else.
+- **§312j/§312g legal framing**: "Zahlungspflichtig bestellen" wording (final form) and
+  the Widerruf-exemption notice; no AGB checkbox while no Karten-AGB exist.
+- **`paymentStatus: paid | processing`** — the "Zahlung in Bearbeitung" face for
+  async Stripe methods; no failed face (failure produces no mail).
+- **A seeded, visibly fake demo Bestellung** at `/orders/demo`; unknown codes fail
+  honestly. `robots: noindex` on flow + confirmation.
+
 ## ⚠️ Known invented facts (unverified until a shaping session confirms them)
 
 - **288 seats** in 24 table rows × 12, 62 Stehplätze, the whole hall geometry

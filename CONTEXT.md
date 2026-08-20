@@ -203,6 +203,13 @@ _Avoid_: balance table, payments table (as source of truth)
   Plätze, for the entitlement. The decision unblocks `page-seat-picker` and shapes
   `page-purchase`.
 
+- **Einlasskontrolle** — **open, 2026-08-19.** The club has not decided how entry is checked
+  at the door (QR scanning per Karte, a name list, no check at all). Until decided, no public
+  surface may show or promise a scannable code, a PDF ticket or a Wallet pass — the digitale
+  Karte's face is exactly as undecided as the door practice it would serve. The Bestellung
+  confirmation shows the purchase honestly without codes. The decision shapes `page-purchase`'s
+  Karten display and the eventual event-app scanner.
+
 - **Gast-Registrierung & Dubletten** — **open, 2026-08-18.** Self-registration can create a
   second Person for a human already in the registry (a Mitglied without Account buys Karten
   online). The merge/claim mechanism (e.g. an Einladung claiming an existing self-registered
