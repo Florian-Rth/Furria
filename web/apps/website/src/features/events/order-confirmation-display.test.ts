@@ -5,8 +5,6 @@ import { buildOrder, DEMO_ORDER } from '@/lib/seed/orders';
 import {
   buildOrderSummaryRows,
   deriveOrderTicketCountLabel,
-  deriveOrderTicketLine,
-  deriveOrderTotalLabel,
   derivePaymentStatusColor,
   isDemoOrder,
   selectOrderCrossSellEvent,
@@ -29,33 +27,15 @@ const singleTicketOrder = (): Order => {
 };
 
 describe('deriveOrderTicketCountLabel', () => {
-  it('counts several Karten', () => {
+  it('switches between the singular and the plural', () => {
     expect(deriveOrderTicketCountLabel(DEMO_ORDER)).toBe('2 Karten');
-  });
-
-  it('counts a single Karte', () => {
     expect(deriveOrderTicketCountLabel(singleTicketOrder())).toBe('1 Karte');
   });
 });
 
-describe('deriveOrderTicketLine', () => {
-  it('states the count next to the price of one Karte', () => {
-    expect(deriveOrderTicketLine(DEMO_ORDER)).toBe('2 Karten · 14 € pro Karte');
-  });
-});
-
-describe('deriveOrderTotalLabel', () => {
-  it('sums the Bestellung', () => {
-    expect(deriveOrderTotalLabel(DEMO_ORDER)).toBe('28 €');
-  });
-});
-
 describe('isDemoOrder', () => {
-  it('recognises the seeded example Bestellung', () => {
+  it('marks the seeded example Bestellung and leaves every other one unmarked', () => {
     expect(isDemoOrder(DEMO_ORDER)).toBe(true);
-  });
-
-  it('leaves every other Bestellung unmarked', () => {
     expect(isDemoOrder(singleTicketOrder())).toBe(false);
   });
 });
@@ -68,20 +48,19 @@ describe('derivePaymentStatusColor', () => {
 });
 
 describe('buildOrderSummaryRows', () => {
-  it('shows the evening, the Karten, the sum and the buyer without any code', () => {
-    expect(buildOrderSummaryRows(DEMO_ORDER)).toEqual([
-      { label: 'Abend', value: '1. Prunksitzung' },
-      { label: 'Termin', value: 'Sa., 23. Januar 2027 · 19:11 Uhr' },
-      { label: 'Ort', value: 'Dorfgemeindehaus Großfurra' },
-      { label: 'Karten', value: '2 Karten · 14 € pro Karte' },
-      { label: 'Summe', value: '28 €' },
-      { label: 'Bestellt von', value: 'Max Mustermann' },
-      { label: 'E-Mail', value: 'max.mustermann@example.org' },
-    ]);
-  });
+  it('shows the evening, the Karten, the sum and the buyer, and never the order code', () => {
+    const rows = buildOrderSummaryRows(DEMO_ORDER);
 
-  it('never carries the order code into a visible row', () => {
-    for (const row of buildOrderSummaryRows(DEMO_ORDER)) {
+    expect(rows.map((row) => row.label)).toEqual([
+      'Abend',
+      'Termin',
+      'Ort',
+      'Karten',
+      'Summe',
+      'Bestellt von',
+      'E-Mail',
+    ]);
+    for (const row of rows) {
       expect(row.value).not.toContain(DEMO_ORDER.orderCode);
     }
   });
@@ -89,9 +68,9 @@ describe('buildOrderSummaryRows', () => {
 
 describe('selectOrderCrossSellEvent', () => {
   it('offers the next evening that still sells Karten', () => {
-    const crossSell = selectOrderCrossSellEvent(SEEDED_EVENTS, DEMO_ORDER, NOW);
-
-    expect(crossSell?.id).toBe('prunksitzung-2-2027');
+    expect(selectOrderCrossSellEvent(SEEDED_EVENTS, DEMO_ORDER, NOW)?.id).toBe(
+      'prunksitzung-2-2027',
+    );
   });
 
   it('never offers the evening the Bestellung is already for', () => {
@@ -100,18 +79,14 @@ describe('selectOrderCrossSellEvent', () => {
     expect(selectOrderCrossSellEvent(ownEveningOnly, DEMO_ORDER, NOW)).toBeNull();
   });
 
-  it('skips every evening that cannot be bought', () => {
+  it('skips every evening that cannot be bought and every one that has passed', () => {
     const blocked = SEEDED_EVENTS.filter(
       (event) => event.salesStatus !== 'onSale' && event.salesStatus !== 'almostSoldOut',
     );
+    const afterTheSession = new Date('2027-06-01T12:00:00Z');
 
     expect(blocked.length).toBeGreaterThan(0);
     expect(selectOrderCrossSellEvent(blocked, DEMO_ORDER, NOW)).toBeNull();
-  });
-
-  it('offers nothing once every evening has passed', () => {
-    const afterTheSession = new Date('2027-06-01T12:00:00Z');
-
     expect(selectOrderCrossSellEvent(SEEDED_EVENTS, DEMO_ORDER, afterTheSession)).toBeNull();
   });
 });

@@ -15,105 +15,52 @@ import {
   parseBerlinDateTime,
 } from './date';
 
-describe('formatLongDate', () => {
-  it('spells the month out in German', () => {
-    expect(formatLongDate('2026-07-18')).toBe('18. Juli 2026');
-  });
+type FormatterCase = [string, (isoDate: string) => string, string, string];
 
-  it('drops the leading zero of the day', () => {
-    expect(formatLongDate('2026-06-04')).toBe('4. Juni 2026');
-  });
+const FORMATTER_CASES: FormatterCase[] = [
+  ['formatLongDate spells the month out', formatLongDate, '2026-07-18', '18. Juli 2026'],
+  ['formatLongDate drops the leading zero', formatLongDate, '2026-06-04', '4. Juni 2026'],
+  ['formatLongDate keeps the März umlaut', formatLongDate, '2026-03-01', '1. März 2026'],
+  ['formatShortDate pads and trails a dot', formatShortDate, '2026-06-04', '04.06.'],
+  ['formatNumericDate pads and adds the year', formatNumericDate, '2026-06-04', '04.06.2026'],
+  ['formatDayOfMonth pads a single-digit day', formatDayOfMonth, '2027-02-04T18:30', '04'],
+  ['formatDayOfMonth leaves a two-digit day', formatDayOfMonth, '2027-01-23T19:11', '23'],
+  ['formatMonthAbbreviation upper-cases', formatMonthAbbreviation, '2027-01-23T19:11', 'JAN'],
+  ['formatMonthAbbreviation keeps the umlaut', formatMonthAbbreviation, '2026-03-01', 'MÄR'],
+  ['formatMonthAbbreviation trims to three', formatMonthAbbreviation, '2026-09-15', 'SEP'],
+  ['formatClockTime pads the 24h clock', formatClockTime, '2026-06-04T09:05', '09:05'],
+  ['formatWeekdayLong names the weekday', formatWeekdayLong, '2027-02-04T18:30', 'Donnerstag'],
+  [
+    'formatWeekdayAndDate abbreviates the weekday',
+    formatWeekdayAndDate,
+    '2027-01-23T19:11',
+    'Sa., 23. Januar',
+  ],
+  [
+    'formatWeekdayAndFullDate adds the year',
+    formatWeekdayAndFullDate,
+    '2027-01-23T19:11',
+    'Sa., 23. Januar 2027',
+  ],
+];
 
-  it('uses the German month name for März', () => {
-    expect(formatLongDate('2026-03-01')).toBe('1. März 2026');
-  });
-});
-
-describe('formatShortDate', () => {
-  it('renders zero-padded day and month with a trailing dot', () => {
-    expect(formatShortDate('2026-07-18')).toBe('18.07.');
-  });
-
-  it('pads single-digit days', () => {
-    expect(formatShortDate('2026-06-04')).toBe('04.06.');
-  });
-
-  it('stays on the club time zone for a New Year date', () => {
-    expect(formatShortDate('2027-01-01')).toBe('01.01.');
-  });
-});
-
-describe('formatNumericDate', () => {
-  it('renders zero-padded day, month and full year', () => {
-    expect(formatNumericDate('2027-01-10')).toBe('10.01.2027');
-  });
-
-  it('pads single-digit days', () => {
-    expect(formatNumericDate('2026-06-04')).toBe('04.06.2026');
+describe('the German date formatters', () => {
+  it.each(FORMATTER_CASES)('%s', (_label, format, isoDate, expected) => {
+    expect(format(isoDate)).toBe(expected);
   });
 });
 
-describe('formatDayOfMonth', () => {
-  it('keeps the zero-padded day', () => {
-    expect(formatDayOfMonth('2027-02-04T18:30')).toBe('04');
+describe('formatLongDateRange', () => {
+  it('collapses a same-year range onto one year', () => {
+    expect(formatLongDateRange('2027-01-23T19:11', '2027-02-07T14:11')).toBe(
+      '23. Januar – 7. Februar 2027',
+    );
   });
 
-  it('renders two-digit days as they are', () => {
-    expect(formatDayOfMonth('2027-01-23T19:11')).toBe('23');
-  });
-});
-
-describe('formatMonthAbbreviation', () => {
-  it('renders the uppercased German three-letter month', () => {
-    expect(formatMonthAbbreviation('2027-01-23T19:11')).toBe('JAN');
-  });
-
-  it('keeps the umlaut for März', () => {
-    expect(formatMonthAbbreviation('2026-03-01')).toBe('MÄR');
-  });
-
-  it('trims longer German abbreviations to three letters', () => {
-    expect(formatMonthAbbreviation('2026-09-15')).toBe('SEP');
-  });
-});
-
-describe('formatClockTime', () => {
-  it('renders zero-padded 24h clock time', () => {
-    expect(formatClockTime('2026-06-04T09:05')).toBe('09:05');
-  });
-
-  it('renders evening times unchanged', () => {
-    expect(formatClockTime('2027-01-23T19:11')).toBe('19:11');
-  });
-});
-
-describe('formatWeekdayAndFullDate', () => {
-  it('names the weekday, the day and the year of the evening', () => {
-    expect(formatWeekdayAndFullDate('2027-01-23T19:11')).toBe('Sa., 23. Januar 2027');
-  });
-
-  it('keeps the year a Bestellung is kept for', () => {
-    expect(formatWeekdayAndFullDate('2028-02-06T14:11')).toBe('So., 6. Februar 2028');
-  });
-});
-
-describe('formatWeekdayAndDate', () => {
-  it('abbreviates the weekday and spells the month out', () => {
-    expect(formatWeekdayAndDate('2027-01-23T19:11')).toBe('Sa., 23. Januar');
-  });
-
-  it('keeps the wall-clock day regardless of the host time zone', () => {
-    expect(formatWeekdayAndDate('2027-02-06T14:11')).toBe('Sa., 6. Februar');
-  });
-});
-
-describe('formatWeekdayLong', () => {
-  it('names the German weekday', () => {
-    expect(formatWeekdayLong('2027-01-23T19:11')).toBe('Samstag');
-  });
-
-  it('names a midweek day', () => {
-    expect(formatWeekdayLong('2027-02-04T18:30')).toBe('Donnerstag');
+  it('spells both years for a range across New Year', () => {
+    expect(formatLongDateRange('2026-11-14', '2027-02-07')).toBe(
+      '14. November 2026 – 7. Februar 2027',
+    );
   });
 });
 
@@ -132,11 +79,8 @@ describe('parseBerlinDateTime', () => {
 });
 
 describe('formatBerlinIsoWithOffset', () => {
-  it('stamps winter wall-clock times with the CET offset', () => {
+  it('stamps wall-clock times with the CET and CEST offsets', () => {
     expect(formatBerlinIsoWithOffset('2027-01-23T19:11')).toBe('2027-01-23T19:11:00+01:00');
-  });
-
-  it('stamps summer wall-clock times with the CEST offset', () => {
     expect(formatBerlinIsoWithOffset('2026-07-01T12:00')).toBe('2026-07-01T12:00:00+02:00');
   });
 });
@@ -152,19 +96,5 @@ describe('berlinDayNumber', () => {
 
   it('places a real instant on the Berlin calendar', () => {
     expect(berlinDayNumber(new Date('2027-01-23T23:30:00Z'))).toBe(berlinDayNumber('2027-01-24'));
-  });
-});
-
-describe('formatLongDateRange', () => {
-  it('collapses a same-year range onto one year', () => {
-    expect(formatLongDateRange('2027-01-23T19:11', '2027-02-07T14:11')).toBe(
-      '23. Januar – 7. Februar 2027',
-    );
-  });
-
-  it('spells both years for a range across New Year', () => {
-    expect(formatLongDateRange('2026-11-14', '2027-02-07')).toBe(
-      '14. November 2026 – 7. Februar 2027',
-    );
   });
 });

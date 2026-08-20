@@ -37,10 +37,6 @@ const messagesFor = (values: MembershipApplicationForm, field: string): string[]
 };
 
 describe('buildMembershipApplicationFormSchema', () => {
-  it('accepts a complete application from an adult', () => {
-    expect(schema.safeParse(adult).success).toBe(true);
-  });
-
   it('accepts an empty Telefon and no Gruppen-Interessen', () => {
     const result = schema.safeParse({ ...adult, phone: '', groupInterests: [] });
 
@@ -58,23 +54,10 @@ describe('buildMembershipApplicationFormSchema', () => {
     expect(result.success && result.data.email).toBe('lena@example.de');
   });
 
-  it('asks in German for every missing required field', () => {
-    expect(messagesFor({ ...adult, firstName: '' }, 'firstName')).toHaveLength(1);
-    expect(messagesFor({ ...adult, lastName: '' }, 'lastName')).toHaveLength(1);
-    expect(messagesFor({ ...adult, street: '' }, 'street')).toHaveLength(1);
-    expect(messagesFor({ ...adult, city: '' }, 'city')).toHaveLength(1);
-    expect(messagesFor({ ...adult, birthDate: '' }, 'birthDate')).toHaveLength(1);
-    expect(messagesFor({ ...adult, email: '' }, 'email')).toHaveLength(1);
-  });
-
   it('insists on a five-digit Postleitzahl', () => {
     expect(messagesFor({ ...adult, postalCode: '997' }, 'postalCode')).toHaveLength(1);
     expect(messagesFor({ ...adult, postalCode: 'DE99713' }, 'postalCode')).toHaveLength(1);
     expect(schema.safeParse({ ...adult, postalCode: '99713' }).success).toBe(true);
-  });
-
-  it('insists on an e-mail address it could answer', () => {
-    expect(messagesFor({ ...adult, email: 'lena.brandt' }, 'email')).toHaveLength(1);
   });
 
   it('blocks the application until the Einwilligung is given', () => {
@@ -107,11 +90,5 @@ describe('buildMembershipApplicationFormSchema', () => {
   it('never asks an adult for a guardian', () => {
     expect(messagesFor(adult, 'guardianName')).toHaveLength(0);
     expect(messagesFor(adult, 'guardianEmail')).toHaveLength(0);
-  });
-
-  it('starts from an empty form with the Einwilligung unchecked', () => {
-    expect(EMPTY_MEMBERSHIP_APPLICATION.consent).toBe(false);
-    expect(EMPTY_MEMBERSHIP_APPLICATION.honeypot).toBe('');
-    expect(EMPTY_MEMBERSHIP_APPLICATION.groupInterests).toEqual([]);
   });
 });

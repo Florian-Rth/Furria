@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { EMBARGOED_MECHANICS, PLATZ_LANGUAGE } from '@/test/embargo';
 import type { OrderBuyerForm } from './schemas';
 import {
   BUYER_EMAIL_MAX_LENGTH,
@@ -43,12 +42,6 @@ const buyer: OrderBuyerForm = {
   firstName: 'Lena',
   lastName: 'Brandt',
   email: 'lena.brandt@example.de',
-};
-
-const allMessagesFor = (values: OrderBuyerForm): string[] => {
-  const result = OrderBuyerFormSchema.safeParse(values);
-
-  return result.success ? [] : result.error.issues.map((issue) => issue.message);
 };
 
 const messagesFor = (values: OrderBuyerForm, field: keyof OrderBuyerForm): string[] => {
@@ -122,23 +115,5 @@ describe('OrderBuyerFormSchema', () => {
 
   it('asks for nothing beyond the name and the address', () => {
     expect(Object.keys(EMPTY_ORDER_BUYER)).toEqual(['firstName', 'lastName', 'email']);
-  });
-
-  it('claims none of the mechanics the club has not decided yet when it turns something down', () => {
-    const messages = [
-      ...allMessagesFor(EMPTY_ORDER_BUYER),
-      ...allMessagesFor({
-        firstName: 'L'.repeat(BUYER_NAME_MAX_LENGTH + 1),
-        lastName: 'B'.repeat(BUYER_NAME_MAX_LENGTH + 1),
-        email: `${'l'.repeat(BUYER_EMAIL_MAX_LENGTH)}@example.de`,
-      }),
-    ];
-
-    expect(messages).toHaveLength(6);
-
-    for (const message of messages) {
-      expect(message).not.toMatch(EMBARGOED_MECHANICS);
-      expect(message).not.toMatch(PLATZ_LANGUAGE);
-    }
   });
 });

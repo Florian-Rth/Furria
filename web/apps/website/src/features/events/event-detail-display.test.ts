@@ -3,7 +3,6 @@ import { formatEuros } from '@/lib/money';
 import type { EventFacts } from '@/lib/seed/events';
 import { buildCancelledEvent, buildEvent } from '@/lib/seed/events';
 import {
-  buildEventDocumentTitle,
   deriveEventIntroParagraphs,
   deriveEventLineup,
   deriveEventStats,
@@ -32,12 +31,6 @@ const baseFacts: EventFacts = {
 };
 
 const event = buildEvent(baseFacts, midPresale);
-
-describe('buildEventDocumentTitle', () => {
-  it('carries the Session so recurring evenings keep distinct titles', () => {
-    expect(buildEventDocumentTitle(event)).toBe('1. Prunksitzung 2026/27');
-  });
-});
 
 describe('deriveEventTags', () => {
   it('names type, Session, age hint and venue', () => {

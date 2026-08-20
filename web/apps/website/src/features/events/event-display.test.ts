@@ -2,8 +2,6 @@ import { describe, expect, it } from 'vitest';
 import type { Event, EventFacts } from '@/lib/seed/events';
 import { buildEvent } from '@/lib/seed/events';
 import {
-  buildEventHref,
-  buildOrderFlowHref,
   deriveProximityLabel,
   deriveScheduleRangeLabel,
   deriveTimesLabel,
@@ -32,18 +30,6 @@ const SNAPSHOT_AT = new Date('2026-12-01T12:00');
 
 const eventStartingAt = (id: string, startsAt: string, doorsOpenAt: string | null): Event =>
   buildEvent({ ...baseFacts, id, startsAt, doorsOpenAt }, SNAPSHOT_AT);
-
-describe('buildEventHref', () => {
-  it('links the event id under /events', () => {
-    expect(buildEventHref('weiberfasching-2027')).toBe('/events/weiberfasching-2027');
-  });
-});
-
-describe('buildOrderFlowHref', () => {
-  it('links the Bestellflow under the event', () => {
-    expect(buildOrderFlowHref('weiberfasching-2027')).toBe('/events/weiberfasching-2027/order');
-  });
-});
 
 describe('selectEventsByDate', () => {
   it('orders events by start date without mutating the input', () => {

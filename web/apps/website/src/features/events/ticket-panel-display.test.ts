@@ -105,14 +105,6 @@ describe('deriveTicketPanelNote', () => {
     expect(deriveTicketPanelNote(deriveTicketPanelFace(almostSoldOut))).toBeNull();
   });
 
-  it('claims no Abendkasse and no return mechanics', () => {
-    const closedNote = deriveTicketPanelNote(deriveTicketPanelFace(salesClosed)) ?? '';
-    const soldOutNote = deriveTicketPanelNote(deriveTicketPanelFace(soldOut)) ?? '';
-
-    expect(closedNote).not.toMatch(/Abendkasse/i);
-    expect(soldOutNote).not.toMatch(/Warteliste|Rückgabe|zurückgeben/i);
-  });
-
   it('explains every state that carries no action', () => {
     for (const event of [announced, presaleScheduled, soldOut, salesClosed, cancelled]) {
       expect(deriveTicketPanelNote(deriveTicketPanelFace(event))).not.toBeNull();

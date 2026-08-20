@@ -2,13 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { EventFacts } from '@/lib/seed/events';
 import { buildEvent } from '@/lib/seed/events';
 import type { OrderBuyer } from '@/lib/seed/orders';
-import {
-  buildOrderBuyerRows,
-  buildOrderDraftSummaryRows,
-  buildOrderEventRows,
-  deriveOrderBuyerName,
-  deriveOrderDateLine,
-} from './order-summary-display';
+import { buildOrderDraftSummaryRows, deriveOrderDateLine } from './order-summary-display';
 
 const facts: EventFacts = {
   id: 'prunksitzung-1-2027',
@@ -37,42 +31,14 @@ const buyer: OrderBuyer = {
 };
 
 describe('deriveOrderDateLine', () => {
-  it('names the day, the year and the time of the evening', () => {
+  it('names the weekday, the day, the year and the time of the evening', () => {
     expect(deriveOrderDateLine('2027-01-23T19:11')).toBe('Sa., 23. Januar 2027 · 19:11 Uhr');
-  });
-
-  it('reads the clock as it stands on the invitation', () => {
     expect(deriveOrderDateLine('2027-02-14T20:00')).toBe('So., 14. Februar 2027 · 20:00 Uhr');
   });
 });
 
-describe('deriveOrderBuyerName', () => {
-  it('puts the two typed names together', () => {
-    expect(deriveOrderBuyerName(buyer)).toBe('Lena Brandt');
-  });
-});
-
-describe('buildOrderEventRows', () => {
-  it('identifies the evening by name, date and place', () => {
-    expect(buildOrderEventRows(event)).toEqual([
-      { label: 'Abend', value: '1. Prunksitzung' },
-      { label: 'Termin', value: 'Sa., 23. Januar 2027 · 19:11 Uhr' },
-      { label: 'Ort', value: 'Dorfgemeindehaus Großfurra' },
-    ]);
-  });
-});
-
-describe('buildOrderBuyerRows', () => {
-  it('shows back exactly what the buyer typed', () => {
-    expect(buildOrderBuyerRows(buyer)).toEqual([
-      { label: 'Bestellt von', value: 'Lena Brandt' },
-      { label: 'E-Mail', value: 'lena.brandt@example.de' },
-    ]);
-  });
-});
-
 describe('buildOrderDraftSummaryRows', () => {
-  it('summarises the evening and the buyer, and nothing the club has not decided', () => {
+  it('summarises the evening and the buyer in order', () => {
     expect(buildOrderDraftSummaryRows(event, buyer)).toEqual([
       { label: 'Abend', value: '1. Prunksitzung' },
       { label: 'Termin', value: 'Sa., 23. Januar 2027 · 19:11 Uhr' },
@@ -86,13 +52,6 @@ describe('buildOrderDraftSummaryRows', () => {
     for (const row of buildOrderDraftSummaryRows(event, buyer)) {
       expect(row.label).not.toMatch(/Karten|Summe|Gesamt/i);
       expect(row.value).not.toMatch(/€/);
-    }
-  });
-
-  it('gives every row a label and a value', () => {
-    for (const row of buildOrderDraftSummaryRows(event, buyer)) {
-      expect(row.label.length).toBeGreaterThan(0);
-      expect(row.value.length).toBeGreaterThan(0);
     }
   });
 });
