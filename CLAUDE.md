@@ -9,7 +9,7 @@ furria/
 │   ├── adr/           # Architecture decision records
 │   ├── design/        # Design handoff + mocks — its "READ FIRST" section rules how to use them
 │   ├── server/        # Backend docs (TESTING.md = test conventions, analyzer-enforced)
-│   └── web/           # Web frontend docs (reference, examples)
+│   └── web/           # Web frontend docs (TESTING.md = test rules; reference, examples)
 ├── server/            # .NET 10 backend — ONE API for all apps (Furria.slnx)
 │   ├── src/           # Furria.Core → Application → Infrastructure ← Api (+ Tests.Analyzers, Tests.Common)
 │   └── tests/         # Furria.Api.Tests (integration), Furria.Tests.Analyzers.Tests
