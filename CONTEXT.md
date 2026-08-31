@@ -135,8 +135,12 @@ _Avoid_: Ticketverkauf, Presale (in German copy)
 **Kartenbörse** (`ticket exchange`):
 The planned place where a Karte for a sold-out evening can change hands — the club's answer
 to "ausverkauft ist nicht das Ende". **Its mechanics are undecided** (return flow, waitlist,
-who gets first refusal): until they are, no surface may state how it works, only that it
-exists.
+who gets first refusal), **and so are its values** (fixed price, club-run instead of
+private resale) — assumptions, not club decisions (exchange shaping, 2026-09-01). The only
+confirmed fact is that a Kartenbörse is planned. The Kartenbörse page itself may present
+values and mechanics as **clearly-framed plans in the making** — visibly labeled as in
+planning, nothing stated as existing, decided or guaranteed (amended 2026-09-01); every
+other surface states only that it exists.
 _Avoid_: Börse (alone — ambiguous), Weiterverkauf, Resale, Zweitmarkt
 
 ### Öffentliche Kommunikation

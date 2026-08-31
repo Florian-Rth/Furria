@@ -1,14 +1,19 @@
 import { createFileRoute } from '@tanstack/react-router';
-import type { FC } from 'react';
-import { PlaceholderPage } from '@/components/PlaceholderPage';
+import { TicketExchangePage } from '@/features/events';
 import type { RouteHead } from '@/lib/seo';
 import { pageTitle } from '@/lib/seo';
 
-const TicketExchangeComponent: FC = () => (
-  <PlaceholderPage eyebrow="AUSVERKAUFT IST NICHT DAS ENDE" title="Kartenbörse" />
-);
+const exchangeDescription =
+  'So stellen wir uns die Kartenbörse des Furrschen Carnevals Club e.V. vor: Karten für ausverkaufte Abende zurückgeben, ohne Aufpreis — in Planung.';
 
 export const Route = createFileRoute('/_site/_gated/events_/exchange')({
-  head: (): RouteHead => ({ meta: [{ title: pageTitle('Kartenbörse') }] }),
-  component: TicketExchangeComponent,
+  head: (): RouteHead => ({
+    meta: [
+      { title: pageTitle('Kartenbörse') },
+      { name: 'description', content: exchangeDescription },
+      { property: 'og:title', content: pageTitle('Kartenbörse') },
+      { property: 'og:description', content: exchangeDescription },
+    ],
+  }),
+  component: TicketExchangePage,
 });

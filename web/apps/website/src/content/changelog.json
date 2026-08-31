@@ -97,5 +97,28 @@
       "Eigene Seite für den Beitrittsantrag; Art und Beitrag ergeben sich aus dem Geburtsdatum",
       "Unter 18 kommt ein Feld für einen Erziehungsberechtigten dazu"
     ]
+  },
+  {
+    "id": "website-events-tickets-fe",
+    "date": "2026-08-30",
+    "title": "Veranstaltungen & Karten",
+    "icon": "tickets",
+    "description": [
+      "Neue Seite „Veranstaltungen“ mit allen Terminen und Karten der Session",
+      "Jede Veranstaltung hat eine eigene Seite mit allen Infos zum Abend",
+      "Kartenbestellung in drei Schritten, danach eine eigene Seite mit der Bestellung",
+      "Termine sind noch Platzhalter; Kartenwahl und Bezahlung folgen noch"
+    ]
+  },
+  {
+    "id": "website-e6-ticket-exchange-fe",
+    "date": "2026-09-01",
+    "title": "Kartenbörse",
+    "icon": "exchange",
+    "description": [
+      "Neue Seite „Kartenbörse“ — bewusst als Konzept und sichtbar „in Planung“",
+      "Zeigt, wie wir uns Rückgabe, Warteliste und Abend-Tausch vorstellen",
+      "Was noch offen ist, steht ehrlich mit dabei"
+    ]
   }
 ]

@@ -80,7 +80,7 @@ Guiding constraints (all binding):
 | [Programm-Teaser](feature-events-teaser.md) | capability | shipped | Home "DAS PROGRAMM" upcoming-events section |
 | [Mitmachen-Band](feature-mitmachen-band.md) | capability | shipped | Home recruit CTA → membership funnel |
 | [Verein](feature-about-verein.md) | capability | shipped | Verein story, Ämter, Gruppen showcase |
-| [Events & Tickets](events/master-plan.md) | area | building | Veranstaltungen list, event detail, Kartenwahl, Kauf/Karte, Kartenbörse — own area plan (absorbed the Veranstaltungskalender + Ticket-Shop stubs, 2026-08-12) |
+| [Events & Tickets](events/master-plan.md) | area | shipped | Veranstaltungen list, event detail, Kartenwahl, Kauf/Karte, Kartenbörse (as concept — real mechanics round later) — own area plan (absorbed the Veranstaltungskalender + Ticket-Shop stubs, 2026-08-12) |
 | [Aktuelles](feature-news.md) | capability | shipped | Meldungen (list + detail) + landing teaser |
 | [Galerie](feature-gallery.md) | capability | shipped | Public Album index + Album pages + photo viewer |
 | [Mitglied werden](feature-membership-funnel.md) | capability | shipped | Membership info + Beitrittsantrag funnel |
@@ -770,6 +770,12 @@ Detail lives in the [Events area plan](events/master-plan.md#e-phases); one line
   (so §312j is ours), both routes `noindex`. Step 3's CTA is disabled — the E4 walk into
   `/orders/demo` deliberately ends there. Detail in the
   [area plan](events/master-plan.md#e5--kauf--karte).
+- **E6 — Kartenbörse (Konzeptseite)** — shipped (concept) (built 2026-09-01):
+  `/events/exchange` is a zero-interaction **concept page** presenting the Börse as
+  clearly-framed plans in the making (glossary embargo amended); mechanics *and* values
+  stay undecided club facts — a future real shaping round inherits the idea inventory and
+  the teaser-band obligation. Detail in the
+  [area plan](events/master-plan.md#e6--kartenbörse-konzeptseite).
 
 ---
 

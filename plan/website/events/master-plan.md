@@ -86,7 +86,7 @@ Frontmatter `status`: `skeleton → shaping → ready → building → shipped`.
 | 3 | [Event detail](page-event-detail.md) | `/events/$eventSlug` (pinned 2026-08-13) | shipped |
 | 4 | [Karten-Bestellflow](page-order-flow.md) | `/events/$eventSlug/order` + `/orders/$orderCode` (pinned 2026-08-18; `…/seats` retired) | shipped |
 | 5 | [Kauf & Karte](page-purchase.md) | steps 2–3 inside the Bestellflow + `/orders/$orderCode` | shipped |
-| 6 | [Kartenbörse](page-ticket-exchange.md) | `/events/exchange` (placeholder route live) | skeleton |
+| 6 | [Kartenbörse](page-ticket-exchange.md) | `/events/exchange` | shipped (concept) |
 
 **Absorbed 2026-08-12:** `feature-event-calendar.md` and `feature-ticket-shop.md` (both
 `idea` stubs) — their decisions were carried into the page plans above and the files
@@ -175,6 +175,26 @@ test-guarded against shipping); **three** placeholder regions ship, not two; `Or
 (missing buyer) keeps `?step=3` deep links honest without a redirect; and `src/test/embargo.ts`
 is now shared honesty infrastructure swept over copy constants, rendered pages and the seed prose.
 
+### E6 — Kartenbörse (Konzeptseite)
+**Status:** shipped (concept) (built 2026-09-01)
+The `/events/exchange` page per [page-ticket-exchange.md](page-ticket-exchange.md), one
+slice: replace the `PlaceholderPage` with a **concept page** — a "future view" presenting
+the Börse's values and mechanics as clearly-framed plans in the making (glossary embargo
+amended accordingly), because the real mechanics depend on data structures and club rules
+that come later. The shaping session confirmed **everything is assumptions** (even the
+fixed-price/club-run values), ruled **zero interaction** (no forms, no data, no seed, no
+API — the only CTA links to `/events`), pinned a six-section structure (hero with visible
+"in Planung" marker → core loop with refund-only-on-actual-resale → principles → ideas
+incl. Abend tauschen → "Was wir noch klären" → closing), and left the band + sold-out
+panel untouched. The E2 replace-the-band obligation and the idea inventory transfer to a
+**future real mechanics shaping round**. As-built notes live in the
+[page plan](page-ticket-exchange.md#as-built-e6-2026-09-01); the ones that travel: dashed
+is now the "recognisably future" style (hero "in Planung" chip + idea cards, sibling of
+E5's dashed `tone="placeholder"`), and the copy guard splits the exchange module — the
+teaser band stays under the strict Karten sweep while the concept copy is swept by its own
+rejected-specifics regex (Zweitmarkt/Resale, SMS, Vorkaufsrecht, hour-count deadlines, QR,
+live claims, standalone "Börse").
+
 ## Deferred — backend
 
 The backend for this area is **not scheduled**. Each shaping session records the API
@@ -252,6 +272,13 @@ Pinned by shaping sessions:
 - **Einlasskontrolle is undecided** (purchase shaping, 2026-08-19 — `CONTEXT.md`): the
   digitale Karte's face (QR per Karte, PDF, Wallet, name list) is blocked with it; the
   confirmation shows the Bestellung without codes until the club decides.
+- **The Kartenbörse pins no contract** (exchange shaping, 2026-09-01): mechanics *and*
+  values are undecided club facts, so the concept page ships API-free — no endpoint, no
+  seed, no Zod schema. Deliberate, not an oversight. The idea inventory for the future
+  round (refund only on actual resale — Ledger territory; Warteliste without prepayment,
+  mail as the realistic channel; free evening swap ~1 week before; enforcement blocked on
+  Einlasskontrolle) lives in
+  [page-ticket-exchange.md](page-ticket-exchange.md#idea-inventory--input-for-the-future-mechanics-shaping).
 - **Capacity, seating plan and price are per event** (foundation shaping, 2026-08-13):
   the hall is set up differently per event; price is flat within one event but differs
   between events. Seating-plan templates (save/load) are a future Club-App idea.

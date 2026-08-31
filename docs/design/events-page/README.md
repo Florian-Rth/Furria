@@ -267,6 +267,63 @@ single-flow route were challenged and **upheld**; the payment model changed.
 - **A seeded, visibly fake demo Bestellung** at `/orders/demo`; unknown codes fail
   honestly. `robots: noindex` on flow + confirmation.
 
+## Rulings — Kartenbörse / `page-ticket-exchange` (shaped 2026-09-01)
+
+The session confirmed the Börse mechanics **cannot** be decided yet — they depend on data
+structures and club rules that come later. The page ships as a **concept page** ("future
+view"): a starting point presenting ideas, not a working Börse. The glossary embargo was
+amended for exactly this: the Kartenbörse page may present values and mechanics as
+**clearly-framed plans in the making**; every other surface still states only that it
+exists. **Even the mock's value story is assumptions, not club intent** — the user
+confirmed nothing is decided, so the page frames everything as in planning; the only
+confident statement is *that* a Kartenbörse is planned.
+
+**Adopted — as clearly-framed ideas, never as claims**
+
+- **The core loop** (Karte zurückgeben → jemand anderes kauft sie → Geld zurück, die
+  Warteliste rückt nach) — the page's centerpiece idea, sharpened by the user: **the
+  refund happens only when the Karte is actually re-bought; until then it stays yours**
+  (no risk — if nobody takes it, you go as planned).
+- **The Warteliste idea** — join for a sold-out evening, no prepayment. As idea only; the
+  mock's position/"chance" meter UI is rejected below.
+- **The "warum nicht privat" value story** — Preis bleibt Preis (kein Aufpreis), läuft
+  über den Verein — reduced to *guiding principles of the planning*, explicitly not club
+  decisions.
+- **Abend tauschen** (`EvSwap`'s free-swap idea) — as a secondary "wir denken auch über …
+  nach" idea with an example-flavored deadline ("z. B. bis eine Woche vor dem Abend",
+  user's tweak), not as the mock's functional tabs.
+- **The how-it-works step strip** — as the 3-step presentation of the core loop.
+
+**Rejected**
+
+- **The stats row** (returns this Session, free now, waitlist length) — fake live numbers,
+  fourth LIVE-claim precedent (E2/E3/E4).
+- **The returned-seat rows with claim CTAs** (`EvBoerseDesktop`/`EvBoerseMobile` lists)
+  — functional UI pretending live data; a concept page has none.
+- **`EvWaitPanel` as a real signup** (form, position, chance meter) — a form *asserts the
+  mechanic as real*; the page ships **zero interaction** (the only CTA links to
+  `/events`). Even an honest-failing P6-Antrag-style form was rejected for this reason.
+- **SMS notifications + the 6-hour Vorkaufsrecht window** — P6 killed a promised SMS flow
+  once already; this specificity reads like spec. The page stays channel- and
+  deadline-silent; "wer zuerst dran ist" is *named as an open question*, not answered.
+- **Named tickets / QR invalidated on transfer** — enforcement mechanics, doubly embargoed
+  (Börse mechanics + the undecided Einlasskontrolle). The intent ("über den Verein") is
+  stated without the mechanism.
+
+**Added by us**
+
+- **The concept-page frame**: a visible "in Planung" marker in the hero — the
+  "recognisably future" device (E5's `tone="placeholder"` made "recognisably placeholder"
+  a token; this is its sibling), seen before any idea is read.
+- **A "Was wir noch klären" section** — the open questions stated honestly (wer zuerst
+  dran ist, wie die Rückgabe genau abläuft, Fristen), which makes "in Planung" credible
+  instead of evasive.
+- **The glossary amendment** (`CONTEXT.md` → Kartenbörse): values are as undecided as
+  mechanics; the page may present both as clearly-framed plans.
+- **No backend contract pinned** — deliberately nothing: no API, no seed, no Zod schema.
+  The idea inventory lives in the page plan for the future real shaping round, which also
+  inherits the E2 replace-the-teaser-band obligation.
+
 ## ⚠️ Known invented facts (unverified until a shaping session confirms them)
 
 - **288 seats** in 24 table rows × 12, 62 Stehplätze, the whole hall geometry

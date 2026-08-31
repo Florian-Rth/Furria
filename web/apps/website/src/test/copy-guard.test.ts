@@ -28,13 +28,16 @@ const PLATZ_LANGUAGE = /Platzwahl|Platz wählen/i;
 const UNDECIDED_MEMBERSHIP_FRAMING =
   /Vorstand|passiv|vorbeikommen|vorbeischauen|ohne Anmeldung|Turnschuhe|Instagram|\bSMS\b/i;
 
+const REJECTED_EXCHANGE_SPECIFICS =
+  /Zweitmarkt|Weiterverkauf|Resale|\bSMS\b|Vorkaufsrecht|\d+\s*Stunden|\bQR\b|\blive\b|(?<!Karten)börse/i;
+
 const GROUP_THE_CLUB_DOES_NOT_HAVE = /Spielmannszug/i;
 
 const KARTEN_COPY = {
   'order-flow-content': orderFlowContent,
   'order-confirmation-content': orderConfirmationContent,
   'order-summary-content': orderSummaryContent,
-  'exchange-content': exchangeContent,
+  'exchange-content (band)': { exchangeBandContent: exchangeContent.exchangeBandContent },
   'events/faq-content': eventsFaqContent,
 };
 
@@ -117,6 +120,12 @@ describe('the Karten copy', () => {
       expect(message).not.toMatch(UNDECIDED_SALE_MECHANICS);
       expect(message).not.toMatch(PLATZ_LANGUAGE);
     }
+  });
+});
+
+describe('the Kartenbörse concept copy', () => {
+  it('frames its plans without any rejected mechanic or banned market term', () => {
+    expect(JSON.stringify(exchangeContent)).not.toMatch(REJECTED_EXCHANGE_SPECIFICS);
   });
 });
 

@@ -3,6 +3,7 @@ export { EventDetailPage } from './components/EventDetailPage/EventDetailPage';
 export { EventListPage } from './components/EventListPage/EventListPage';
 export { EventOrderFlowPage } from './components/EventOrderFlowPage/EventOrderFlowPage';
 export { OrderConfirmationPage } from './components/OrderConfirmationPage/OrderConfirmationPage';
+export { TicketExchangePage } from './components/TicketExchangePage/TicketExchangePage';
 export { buildEventDocumentTitle } from './event-detail-display';
 export { buildEventHref, buildOrderFlowHref, findEventBySlug } from './event-display';
 export type { EventJsonLd } from './events-json-ld';
