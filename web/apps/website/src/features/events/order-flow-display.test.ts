@@ -5,8 +5,6 @@ import {
   deriveOrderFlowAction,
   deriveOrderFlowAvailabilityLabel,
   deriveOrderFlowCapacity,
-  deriveOrderFlowHeadline,
-  deriveOrderFlowKicker,
   deriveOrderFlowNotice,
   deriveOrderFlowPriceLine,
 } from './order-flow-display';
@@ -65,30 +63,6 @@ describe('deriveOrderFlowPriceLine', () => {
   it('prices a Karte, and stays silent for an evening without a price', () => {
     expect(deriveOrderFlowPriceLine(onSale)).toBe('14 € pro Karte');
     expect(deriveOrderFlowPriceLine(withoutPrice)).toBeNull();
-  });
-});
-
-describe('deriveOrderFlowKicker', () => {
-  it('upper-cases the lead, the day, the time and the venue into one line', () => {
-    expect(deriveOrderFlowKicker(onSale, 'Kartenwahl')).toBe(
-      'KARTENWAHL · SA., 23. JANUAR · 19:11 UHR · DORFGEMEINDEHAUS GROSSFURRA',
-    );
-  });
-});
-
-describe('deriveOrderFlowHeadline', () => {
-  it('counts the last Karten down only when the evening reports a scarce count', () => {
-    expect(deriveOrderFlowHeadline(onSale)).toBe('DIE LETZTEN 18 KARTEN.');
-    expect(deriveOrderFlowHeadline(notScarce)).toBe('KARTEN FÜR DIESEN ABEND.');
-    expect(deriveOrderFlowHeadline(scarceWithoutFreeCount)).toBe('KARTEN FÜR DIESEN ABEND.');
-  });
-
-  it('gives every blocked state its own headline', () => {
-    const blocked = [announced, presaleScheduled, soldOut, salesClosed, cancelled];
-    const headlines = blocked.map(deriveOrderFlowHeadline);
-
-    expect(new Set(headlines).size).toBe(blocked.length);
-    expect(headlines).not.toContain(deriveOrderFlowHeadline(onSale));
   });
 });
 

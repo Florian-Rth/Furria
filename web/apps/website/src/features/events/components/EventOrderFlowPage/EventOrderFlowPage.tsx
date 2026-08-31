@@ -1,12 +1,11 @@
 import { KkSection, PageLayout } from '@furria/ui';
-import Box from '@mui/material/Box';
+import type { SxProps, Theme } from '@mui/material/styles';
 import type { FC, ReactNode } from 'react';
+import { MASTHEAD_HEIGHT_CSS_VAR } from '@/components/Masthead/masthead-height';
 import {
   STICKY_ACTION_BAR_STACKED_HEIGHT,
   StickyActionBar,
 } from '@/features/events/components/StickyActionBar';
-import { ticketPanelKicker } from '@/features/events/event-detail-content';
-import { orderFlowStepLabels } from '@/features/events/order-flow-content';
 import { deriveOrderFlowAction, deriveOrderFlowNotice } from '@/features/events/order-flow-display';
 import type { OrderFlowStep } from '@/features/events/order-flow-steps';
 import {
@@ -24,7 +23,6 @@ import { OrderFlowBackAction } from './internal/ui/OrderFlowBackAction';
 import { OrderFlowBackLink } from './internal/ui/OrderFlowBackLink';
 import { OrderFlowBuyerStep } from './internal/ui/OrderFlowBuyerStep';
 import { OrderFlowHeadline } from './internal/ui/OrderFlowHeadline';
-import { OrderFlowKicker } from './internal/ui/OrderFlowKicker';
 import { OrderFlowPaymentStep } from './internal/ui/OrderFlowPaymentStep';
 import { OrderFlowPrimaryAction } from './internal/ui/OrderFlowPrimaryAction';
 import { OrderFlowSelectionStep } from './internal/ui/OrderFlowSelectionStep';
@@ -36,6 +34,10 @@ interface EventOrderFlowPageProps {
   event: Event;
 }
 
+const fillsViewportBelowMasthead: SxProps<Theme> = {
+  minHeight: `calc(100dvh - var(${MASTHEAD_HEIGHT_CSS_VAR}, 0px))`,
+};
+
 export const EventOrderFlowPage: FC<EventOrderFlowPageProps> = ({ event }) => {
   const { step, goToStep, goToPreviousStep } = useOrderFlowStep();
   const buyerForm = useOrderBuyerForm(() => {
@@ -46,7 +48,6 @@ export const EventOrderFlowPage: FC<EventOrderFlowPageProps> = ({ event }) => {
   const backAction =
     step === FIRST_ORDER_FLOW_STEP ? null : <OrderFlowBackAction onBack={goToPreviousStep} />;
 
-  const kickerLead = notice === null ? orderFlowStepLabels[step] : ticketPanelKicker;
   const availability = notice === null ? <OrderFlowAvailability event={event} /> : null;
   const stepper = notice === null ? <OrderFlowStepper step={step} /> : null;
 
@@ -62,36 +63,32 @@ export const EventOrderFlowPage: FC<EventOrderFlowPageProps> = ({ event }) => {
 
   const bottomBar =
     notice === null ? (
-      <>
-        <Box aria-hidden sx={{ height: STICKY_ACTION_BAR_STACKED_HEIGHT }} />
-        <StickyActionBar
-          sx={{
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            minHeight: STICKY_ACTION_BAR_STACKED_HEIGHT,
-          }}
-        >
-          <OrderFlowStepSummary event={event} step={step} />
-          <OrderFlowBarActions>
-            {backAction}
-            <OrderFlowPrimaryAction
-              action={action}
-              onAdvance={goToStep}
-              onSubmit={buyerForm.submit}
-            />
-          </OrderFlowBarActions>
-        </StickyActionBar>
-      </>
+      <StickyActionBar
+        sx={{
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          minHeight: STICKY_ACTION_BAR_STACKED_HEIGHT,
+        }}
+      >
+        <OrderFlowStepSummary event={event} step={step} />
+        <OrderFlowBarActions>
+          {backAction}
+          <OrderFlowPrimaryAction
+            action={action}
+            onAdvance={goToStep}
+            onSubmit={buyerForm.submit}
+          />
+        </OrderFlowBarActions>
+      </StickyActionBar>
     ) : null;
 
   return (
-    <PageLayout>
+    <PageLayout sx={fillsViewportBelowMasthead}>
       <PageLayout.Body>
         <KkSection>
           <OrderFlowHeader>
             <OrderFlowBackLink event={event} />
-            <OrderFlowKicker event={event} lead={kickerLead} />
-            <OrderFlowHeadline event={event} />
+            <OrderFlowHeadline />
             {availability}
             {stepper}
           </OrderFlowHeader>

@@ -1,10 +1,6 @@
-import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
-import {
-  STICKY_ACTION_BAR_HEIGHT,
-  StickyActionBar,
-} from '@/features/events/components/StickyActionBar';
+import { StickyActionBar } from '@/features/events/components/StickyActionBar';
 import { TicketCtaButton } from '@/features/events/components/TicketCtaButton';
 import { ticketPanelPriceLabel } from '@/features/events/event-detail-content';
 import { deriveTicketPanelCta } from '@/features/events/ticket-panel-display';
@@ -32,12 +28,9 @@ export const EventStickyCta: FC<EventStickyCtaProps> = ({ event }) => {
     );
 
   return (
-    <>
-      <Box aria-hidden sx={{ display: { desktop: 'none' }, height: STICKY_ACTION_BAR_HEIGHT }} />
-      <StickyActionBar sx={{ display: { desktop: 'none' }, justifyContent: 'space-between' }}>
-        {priceLine}
-        <TicketCtaButton cta={cta} sx={{ flexGrow: 1, maxWidth: '14rem' }} />
-      </StickyActionBar>
-    </>
+    <StickyActionBar sx={{ display: { desktop: 'none' }, justifyContent: 'space-between' }}>
+      {priceLine}
+      <TicketCtaButton cta={cta} sx={{ flexGrow: 1, maxWidth: '14rem' }} />
+    </StickyActionBar>
   );
 };

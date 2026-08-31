@@ -72,16 +72,7 @@ export const orderFlowMissingBuyerNotice = {
   body: 'Bevor es ans Bezahlen geht, brauchen wir deinen Namen und deine E-Mail-Adresse. Ein Schritt zurück, dann geht es hier weiter.',
 } as const;
 
-export const orderFlowHeadlines = {
-  onSale: 'KARTEN FÜR DIESEN ABEND.',
-  scarcePrefix: 'DIE LETZTEN',
-  scarceSuffix: 'KARTEN.',
-  announced: 'DER VORVERKAUF WIRD NOCH ANGEKÜNDIGT.',
-  presale: 'DER VORVERKAUF HAT NOCH NICHT BEGONNEN.',
-  soldOut: 'DIESER ABEND IST AUSVERKAUFT.',
-  closed: 'DER VORVERKAUF IST BEENDET.',
-  cancelled: 'DIESER ABEND FÄLLT AUS.',
-} as const;
+export const orderFlowHeadline = 'KARTEN BESTELLEN';
 
 export const orderFlowNoticeSuffixes: Record<BlockedFaceKind, string> = {
   announced: 'Sobald der Termin steht, findest du ihn auf der Seite des Abends.',

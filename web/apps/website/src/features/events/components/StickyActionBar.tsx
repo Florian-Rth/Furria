@@ -20,10 +20,9 @@ export const StickyActionBar: FC<StickyActionBarProps> = ({ sx, children }) => (
     data-kk-sticky-action-bar
     sx={[
       (theme) => ({
-        position: 'fixed',
-        left: 0,
-        right: 0,
+        position: 'sticky',
         bottom: 0,
+        marginTop: 'auto',
         zIndex: theme.zIndex.appBar,
         alignItems: 'center',
         gap: 2,

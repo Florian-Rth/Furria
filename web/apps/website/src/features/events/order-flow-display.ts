@@ -1,4 +1,3 @@
-import { formatClockTime, formatWeekdayAndDate } from '@/lib/date';
 import { formatEuros } from '@/lib/money';
 import type { Event } from '@/lib/seed/events';
 import { ticketPanelCtaLabels, ticketPanelPriceLabel } from './event-detail-content';
@@ -8,7 +7,6 @@ import { nextEventDetailLabel } from './next-event-content';
 import {
   orderFlowActionLabels,
   orderFlowDocumentTitlePrefix,
-  orderFlowHeadlines,
   orderFlowMissingBuyerActionLabel,
   orderFlowNoticeSuffixes,
   orderFlowStepLabels,
@@ -54,39 +52,6 @@ export const deriveOrderFlowPriceLine = (event: Event): string | null =>
   event.priceCents === null ? null : `${formatEuros(event.priceCents)} ${ticketPanelPriceLabel}`;
 
 export const deriveOrderFlowBackLabel = (event: Event): string => `← ${event.title}`;
-
-export const deriveOrderFlowKicker = (event: Event, lead: string): string =>
-  [
-    lead,
-    formatWeekdayAndDate(event.startsAt),
-    `${formatClockTime(event.startsAt)} Uhr`,
-    event.venue,
-  ]
-    .join(' · ')
-    .toUpperCase();
-
-const deriveScarceHeadline = (freeCount: number): string =>
-  `${orderFlowHeadlines.scarcePrefix} ${freeCount} ${orderFlowHeadlines.scarceSuffix}`;
-
-export const deriveOrderFlowHeadline = (event: Event): string => {
-  const face = deriveTicketPanelFace(event);
-  switch (face.kind) {
-    case 'onSale':
-      return face.scarce && event.freeCount !== null
-        ? deriveScarceHeadline(event.freeCount)
-        : orderFlowHeadlines.onSale;
-    case 'announced':
-      return orderFlowHeadlines.announced;
-    case 'presale':
-      return orderFlowHeadlines.presale;
-    case 'soldOut':
-      return orderFlowHeadlines.soldOut;
-    case 'closed':
-      return orderFlowHeadlines.closed;
-    case 'cancelled':
-      return orderFlowHeadlines.cancelled;
-  }
-};
 
 export const deriveOrderFlowAvailabilityLabel = (event: Event): string => {
   const priceLine = deriveOrderFlowPriceLine(event);

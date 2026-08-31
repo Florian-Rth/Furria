@@ -18,14 +18,7 @@ const EventDetailComponent: FC = () => {
   const album = selectNewestAlbumForEventType(ALBUMS, event.type);
   const albumPreview = album === undefined ? null : <AlbumPreview album={album} />;
 
-  return (
-    <EventDetailPage
-      event={event}
-      events={SEEDED_EVENTS}
-      now={new Date()}
-      albumPreview={albumPreview}
-    />
-  );
+  return <EventDetailPage event={event} albumPreview={albumPreview} />;
 };
 
 const buildEventDetailHead = (event: Event): RouteHead => {

@@ -4,10 +4,6 @@ export const performersKicker = 'DIE REIHENFOLGE DES ABENDS';
 
 export const performersTitle = 'WER AUFTRITT';
 
-export const otherEventsKicker = 'DIE ANDEREN ABENDE';
-
-export const otherEventsTitle = 'AUCH NOCH IN DIESER SESSION';
-
 export const closingBandKicker = 'DER ABEND IN KÜRZE';
 
 export const closingBandBeginsPrefix = 'Beginn';

@@ -1,4 +1,5 @@
 import { KkHeroSection } from '@furria/ui';
+import Box from '@mui/material/Box';
 import type { FC, ReactNode } from 'react';
 import { deriveHeroIntro, deriveSessionEyebrow } from '@/features/events/hero-display';
 import type { Event } from '@/lib/seed/events';
@@ -17,7 +18,12 @@ export const EventsHero: FC<EventsHeroProps> = ({ events, now, aside }) => {
   const introLine =
     intro === null ? null : <KkHeroSection.Description>{intro}</KkHeroSection.Description>;
 
-  const asideSlot = aside === undefined ? null : <KkHeroSection.Aside>{aside}</KkHeroSection.Aside>;
+  const asideSlot =
+    aside === undefined ? null : (
+      <KkHeroSection.Aside>
+        <Box sx={{ display: { xs: 'none', md: 'block' } }}>{aside}</Box>
+      </KkHeroSection.Aside>
+    );
 
   return (
     <KkHeroSection>

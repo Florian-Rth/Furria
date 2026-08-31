@@ -1,4 +1,5 @@
 import { kkTokens } from '@furria/ui';
+import Box from '@mui/material/Box';
 import CardActionArea from '@mui/material/CardActionArea';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
@@ -43,20 +44,29 @@ export const EventListRow: FC<EventListRowProps> = ({ event, now, highlighted })
         size="small"
         variant="outlined"
         label={event.ageHint}
-        sx={{ color: 'text.secondary' }}
+        sx={{ display: { xs: 'none', md: 'inline-flex' }, color: 'text.secondary' }}
       />
     );
 
   const proximityChip =
-    proximityLabel === null ? null : <Chip size="small" color="primary" label={proximityLabel} />;
+    proximityLabel === null ? null : (
+      <Chip
+        size="small"
+        color="primary"
+        label={proximityLabel}
+        sx={{ display: { xs: 'none', md: 'inline-flex' } }}
+      />
+    );
 
   const capacityBar =
     isLiveSaleStatus(event.salesStatus) && event.freeCount !== null && event.capacity !== null ? (
-      <CapacityBar
-        freeCount={event.freeCount}
-        capacity={event.capacity}
-        color={deriveCapacityBarColor(event.salesStatus)}
-      />
+      <Box sx={{ display: { xs: 'none', md: 'block' }, width: '100%' }}>
+        <CapacityBar
+          freeCount={event.freeCount}
+          capacity={event.capacity}
+          color={deriveCapacityBarColor(event.salesStatus)}
+        />
+      </Box>
     ) : null;
 
   return (
@@ -118,7 +128,12 @@ export const EventListRow: FC<EventListRowProps> = ({ event, now, highlighted })
           </Typography>
           <Typography
             variant="body2"
-            sx={{ color: 'text.secondary', textWrap: 'pretty', maxWidth: '40rem' }}
+            sx={{
+              display: { xs: 'none', md: 'block' },
+              color: 'text.secondary',
+              textWrap: 'pretty',
+              maxWidth: '40rem',
+            }}
           >
             {event.teaser}
           </Typography>

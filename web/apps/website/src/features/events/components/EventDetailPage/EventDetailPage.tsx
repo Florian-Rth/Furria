@@ -12,25 +12,20 @@ import { EventDetailHeadline } from './internal/ui/EventDetailHeadline';
 import { EventDetailIntro } from './internal/ui/EventDetailIntro';
 import { EventDetailStats } from './internal/ui/EventDetailStats';
 import { EventPerformers } from './internal/ui/EventPerformers';
-import { EventSiblings } from './internal/ui/EventSiblings';
 import { EventStickyCta } from './internal/ui/EventStickyCta';
-import { EventTagRow } from './internal/ui/EventTagRow';
 
 interface EventDetailPageProps {
   event: Event;
-  events: Event[];
-  now: Date;
   albumPreview?: ReactNode;
 }
 
-export const EventDetailPage: FC<EventDetailPageProps> = ({ event, events, now, albumPreview }) => (
+export const EventDetailPage: FC<EventDetailPageProps> = ({ event, albumPreview }) => (
   <PageLayout>
     <PageLayout.Body>
       <KkSection>
         <EventDetailBackLink />
         <EventIdentityLayout>
           <EventIdentityMain>
-            <EventTagRow event={event} />
             <EventDetailHeadline event={event} />
             <EventDetailIntro event={event} />
             <EventDetailStats event={event} />
@@ -43,7 +38,6 @@ export const EventDetailPage: FC<EventDetailPageProps> = ({ event, events, now, 
       <EventPerformers event={event} />
       {albumPreview}
       <VenueBlock />
-      <EventSiblings event={event} events={events} now={now} />
     </PageLayout.Body>
     <EventClosingBand event={event} />
     <EventStickyCta event={event} />
