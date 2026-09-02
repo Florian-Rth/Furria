@@ -5,7 +5,7 @@ import { NewsMedia } from '@/features/news/components/NewsMedia';
 import type { NewsPost } from '@/features/news/news-content';
 import { moreNewsLabel, selectFollowingPosts, selectLeadPost } from '@/features/news/news-content';
 import { NewsAufmacher } from '../NewsAufmacher/NewsAufmacher';
-import { NewsProgramBand } from '../NewsProgramBand/NewsProgramBand';
+import { NewsEventsBand } from '../NewsEventsBand/NewsEventsBand';
 import { NewsRowList } from './internal/layout/NewsRowList';
 import { NewsEmptyPanel } from './internal/ui/NewsEmptyPanel';
 import { NewsListFooter } from './internal/ui/NewsListFooter';
@@ -64,7 +64,7 @@ export const NewsListPage: FC<NewsListPageProps> = ({ posts }) => {
           </>
         )}
       </PageLayout.Body>
-      <NewsProgramBand />
+      <NewsEventsBand />
     </PageLayout>
   );
 };

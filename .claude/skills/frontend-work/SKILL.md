@@ -1,6 +1,6 @@
 ---
 name: frontend-work
-description: Mandatory rules for all React/TypeScript frontend work. Invoke before writing, planning or modifying any code in the web/ directory.
+description: Mandatory rules for all React/TypeScript frontend work. Invoke before writing, planning or modifying any React or TypeScript frontend code.
 ---
 
 ## Rules
@@ -14,7 +14,7 @@ description: Mandatory rules for all React/TypeScript frontend work. Invoke befo
 - Extract all business logic into custom hooks — component bodies contain only hook composition and JSX rendering, never data fetching, transformations, or complex state management inline
 - Never put logic in JSX — no calls, conditionals, string building or inline handlers; hoist them into named consts in the component body, a pure function, or a hook
 - Static copy is a plain module constant or inline JSX text, never a hook — a hook that only returns a frozen constant is banned
-- Never fetch in components — all data fetching goes through React Query hooks in the feature's `api.ts`
+- Never fetch in components — all data fetching goes through React Query hooks
 
 ### Composition (the Compound Kit)
 - Build every multi-part component as a compound kit, never a monolith
@@ -30,7 +30,7 @@ description: Mandatory rules for all React/TypeScript frontend work. Invoke befo
 ### MUI
 - Use an existing MUI component before hand-rolling with `Box` + `sx`
 - Use MUI `Grid` (12-column `container`/`size`) for multi-column layouts; approximate ratios with spans, never a custom `columns` base or magic spans — the `columns` prop is lint-enforced
-- Use `Stack` instead of `Box` with `display: flex` — enforced by the Biome plugin `web/biome-plugins/useStackOverFlexBox.grit`
+- Use `Stack` instead of `Box` with `display: flex` — lint-enforced
 - Exception: use `sx={{ display: 'flex' }}` on MUI containers (DialogContent, etc.) to avoid extra wrapper divs
 - Put Stack layout props (`alignItems`, `justifyContent`, `spacing`) in `sx`, not as component props — only `direction` is allowed as a prop
 - Always use default imports from MUI, never named imports — lint-enforced
@@ -57,66 +57,27 @@ description: Mandatory rules for all React/TypeScript frontend work. Invoke befo
 ### Validation
 - Validate all API responses at the boundary with Zod `.parse()`
 - Types are inferred from Zod schemas via `z.infer<>`, never manually defined
-- Schemas live in feature `schemas.ts` with their `z.infer<>` types exported right beside them; a separate `types.ts` exists only for shared types that have no schema
+- Schemas live in a `schemas.ts` with their `z.infer<>` types exported right beside them; a separate `types.ts` exists only for shared types that have no schema
 - Form schemas end with `...FormSchema`, form types end with `...Form`
 
 ### Code Style
 - Biome for linting and formatting — not Prettier, not ESLint
 - Zero warnings policy — treat all lint and TypeScript warnings as errors
-- Several rules below are machine-enforced by Biome — built-in rules plus GritQL plugins in `web/biome-plugins/` (see its README); suppression is NEVER allowed — never add a `biome-ignore`, never weaken or disable a rule to make code pass; fix the code instead
+- Many rules here are machine-enforced by Biome — suppression is NEVER allowed; never add a `biome-ignore`, never weaken or disable a rule to make code pass; fix the code instead
 - Never use deprecated APIs from any library — migrate to replacements immediately
 - Never write code comments — make the code itself read like the comment through naming and extraction; the only allowed comment-syntax lines are functional directives (triple-slash references, @ts-expect-error) — never `biome-ignore`
 
 ### Testing
-- Vitest + Testing Library
-- Main components must have unit tests — skip only when tests would just validate mocks
-- Render components through `renderWithProviders` from `@/test/render` — never hand-roll provider wrappers in test files
-- Co-locate test files with source
-- Extract logic from hooks into pure functions and test those directly — never test by rendering mocked data through the UI and asserting the mock's values come back out
-
-## Project Patterns
-
-### Architecture
-- `web/` is a pnpm workspace: deployable apps in `apps/*`, shared code in `packages/*`
-- Shared packages (e.g. `@furria/ui`) are consumed as raw TypeScript source via `workspace:*` — no per-package build step
-- The theme and shared primitives live in `packages/ui` — apps never define their own tokens
-- ONE theme for all apps (Corporate Identity) — no per-app theme variants; base radius is 14 everywhere
-- The theme is mounted only via `KkThemeProvider` from `@furria/ui` — app roots and `renderWithProviders` both use it
-- Feature-based modules in `src/features/<name>/` with barrel exports via `index.ts`
-- Dependency flow is unidirectional: `src/{lib,components,styles}` → `features` → `routes` — lint-enforced outside test files
-- Features never import from other features
-- Routes compose features together
-- All imports use `@/` path alias
-
-### Feature Module Structure
-- Each feature contains `index.ts` (barrel) plus only the parts it actually needs: `schemas.ts`, `api.ts`, `components/`, `hooks/` — never empty ceremony files
-- External code imports only through the barrel file
-- Internal files within a feature import freely from each other
-
-### Data Fetching
-- TanStack Query for all server state
-- Each feature has `api.ts` with query hooks and query key objects
-- React Context for UI state only, never for server data
-- React Hook Form + Zod resolver for forms
-
-### Component Structure
-- Main components: a single `ComponentName.tsx`; give it a folder only when it has `internal/` parts — never a per-component `index.tsx` barrel (the feature `index.ts` is the only barrel)
-- Internal components: in `internal/` subfolder, scoped to main component
-- Give a compound component a folder: `ComponentName.tsx` (assembly) plus `internal/{layout,ui,logic}/` for its parts
-- Tests only for main components, not internal ones
-- Co-located: `ComponentName.test.tsx`
-
-### Naming
-- Component files: PascalCase — Hook files: kebab-case with `use-` prefix
-- Zod schemas: PascalCase with `Schema` suffix
-- Query keys: camelCase object
-- Backend `...Dto` maps to frontend type without suffix
-
-### Language
-- German-only UI, no i18n framework (ADR-0002) — visible text is German, written directly in components
-- Code identifiers, routes, IDs, props: English — always
-- Never use internal domain terminology in user-facing copy — write self-explanatory German copy from terms the UI already teaches the user; internal terms stay in code and schema fields
-
-### Layout & Dialogs
-- Content pages use `PageLayout` from `@furria/ui`: `PageLayout` + `PageLayout.Header` + `PageLayout.Content`; full-bleed pages (hero/teaser) own their layout instead
-- `dialogManager` / `snackbarManager` do not exist yet — build them when the second dialog/snackbar appears; until then use MUI `Dialog` directly
+- Never test the UI — no component tests, no route tests, no rendering, no DOM
+- Never write a `*.test.tsx`; never use `renderHook`
+- Never add a rendering or DOM test library
+- Assert only the return value of a pure function for explicit inputs
+- Never assert a module constant
+- Never assert user-facing copy; assert the decision behind it
+- Assert a formatter's output
+- Never test a function without a conditional, loop, arithmetic or date math
+- Never test a rule another layer owns
+- Test schema coercion and normalisation only, never that a required field is required
+- Build every fixture as a literal inside the test
+- Extract logic into pure functions and test those directly
+- One test file per module, co-located; `it.each` over branches

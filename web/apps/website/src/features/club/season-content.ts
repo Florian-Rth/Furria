@@ -30,7 +30,7 @@ export const SEASON_STEPS: SeasonStep[] = [
     tag: 'Februar',
     title: 'Prunksitzungen',
     description:
-      'Bütt, Tanz und Showprogramm vor vollem Haus. Reden über elf Minuten kürzt die Reimprüfung, Küren unter elf Sekunden zeigen wir in Zeitlupe.',
+      'Bütt, Tanz und Show vor vollem Haus. Reden über elf Minuten kürzt die Reimprüfung, Küren unter elf Sekunden zeigen wir in Zeitlupe.',
   },
   {
     tag: 'Rosenmontag',

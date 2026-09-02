@@ -52,18 +52,18 @@ export const buildPostHref = (slug: string): string => `/news/${slug}`;
 
 export const newsEmptyNote = 'Noch keine Meldungen in dieser Session.';
 
-export interface NewsProgramBandContent {
+export interface NewsEventsBandContent {
   kicker: string;
   headline: string;
   ctaLabel: string;
   ctaTo: LinkProps['to'];
 }
 
-export const newsProgramBandContent: NewsProgramBandContent = {
+export const newsEventsBandContent: NewsEventsBandContent = {
   kicker: 'NICHTS VERPASSEN',
   headline: 'ALLE TERMINE DER SESSION',
-  ctaLabel: 'Zum Programm →',
-  ctaTo: '/program',
+  ctaLabel: 'Zu den Veranstaltungen →',
+  ctaTo: '/events',
 };
 
 export const NEWS_POSTS: NewsPost[] = [

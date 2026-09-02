@@ -1,7 +1,7 @@
 import { KkRule, PageLayout } from '@furria/ui';
 import type { FC } from 'react';
+import { GalleryEventsBand } from '@/features/gallery/components/GalleryEventsBand/GalleryEventsBand';
 import { GalleryHeader } from '@/features/gallery/components/GalleryHeader/GalleryHeader';
-import { GalleryProgramBand } from '@/features/gallery/components/GalleryProgramBand/GalleryProgramBand';
 import { GalleryRightsNote } from '@/features/gallery/components/GalleryRightsNote';
 import { OlderSessions } from '@/features/gallery/components/OlderSessions/OlderSessions';
 import type { Album } from '@/features/gallery/gallery-content';
@@ -26,7 +26,7 @@ export const GalleryPage: FC<GalleryPageProps> = ({ albums }) => {
         <OlderSessions groups={olderSessionGroups} />
         <GalleryRightsNote />
       </PageLayout.Body>
-      <GalleryProgramBand />
+      <GalleryEventsBand />
     </PageLayout>
   );
 };

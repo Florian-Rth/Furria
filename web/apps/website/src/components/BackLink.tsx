@@ -6,7 +6,7 @@ import { Link as RouterLink } from '@tanstack/react-router';
 import type { FC, ReactNode } from 'react';
 
 interface BackLinkProps {
-  to: LinkProps['to'];
+  to: LinkProps['to'] | string;
   children: ReactNode;
   sx?: SxProps<Theme>;
 }

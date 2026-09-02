@@ -77,11 +77,10 @@ Guiding constraints (all binding):
 | [Ticker](feature-ticker.md) | foundation | building | Flat red/gold marquee signature chrome |
 | [Landing](feature-landing.md) | capability | shipped | Home page — composes the blocks below |
 | [Landing-Hero](feature-landing-hero.md) | capability | building | Identity centerpiece: headline, CTAs, stats, hero photo |
-| [Programm-Teaser](feature-program-teaser.md) | capability | shipped | Home "DAS PROGRAMM" upcoming-events section |
+| [Programm-Teaser](feature-events-teaser.md) | capability | shipped | Home "DAS PROGRAMM" upcoming-events section |
 | [Mitmachen-Band](feature-mitmachen-band.md) | capability | shipped | Home recruit CTA → membership funnel |
 | [Verein](feature-about-verein.md) | capability | shipped | Verein story, Ämter, Gruppen showcase |
-| [Veranstaltungskalender](feature-event-calendar.md) | capability | idea | Public event list/calendar + detail |
-| [Ticket-Shop](feature-ticket-shop.md) | capability | idea | Browse ticketed events, checkout, payment |
+| [Events & Tickets](events/master-plan.md) | area | shipped | Veranstaltungen list, event detail, Kartenwahl, Kauf/Karte, Kartenbörse (as concept — real mechanics round later) — own area plan (absorbed the Veranstaltungskalender + Ticket-Shop stubs, 2026-08-12) |
 | [Aktuelles](feature-news.md) | capability | shipped | Meldungen (list + detail) + landing teaser |
 | [Galerie](feature-gallery.md) | capability | shipped | Public Album index + Album pages + photo viewer |
 | [Mitglied werden](feature-membership-funnel.md) | capability | shipped | Membership info + Beitrittsantrag funnel |
@@ -176,7 +175,7 @@ with the event `.map` done in the `ProgramTeaser` assembly so the layout slots (
 `ProgramList`) stay pure children-only slots; the Mitmachen watermark sits at 0.1 opacity (vs the
 hero's 0.05) as it is white-on-red, not ink-on-cream. Final copy shipped exactly as planned.
 
-- [x] [Programm-Teaser](feature-program-teaser.md) — "DAS PROGRAMM": section header + "Alle Termine
+- [x] [Programm-Teaser](feature-events-teaser.md) — "DAS PROGRAMM": section header + "Alle Termine
       →" (→ `/program`) + 3 event cards. **Desktop** photo-topped `ProgramCard` (3-col grid),
       **mobile** compact photo-less `EventRow` (two presentational components). **Data-driven via a
       typed `{ startsAt, title, venue }` interface + editable placeholder constant** (card derives
@@ -748,6 +747,36 @@ and `robots.txt` is `Disallow: /` until this phase.
       replace the placeholder `CLUB_CONTACT_EMAIL` with a real address (plus a phone, if there is
       one)
 
+### E-phases — Events area (mirror)
+
+Detail lives in the [Events area plan](events/master-plan.md#e-phases); one line per phase here.
+
+- **E1 — Events data foundation** — shipped (2026-08-13): seeded event model + `events`
+  feature scaffold + teaser rewire
+- **E2 — Veranstaltungen list** — shipped (built 2026-08-14): `/events` page + the
+  repo-wide "Programm" → Veranstaltungen rename (term retired, see `CONTEXT.md`)
+- **E3 — Veranstaltungsseite** — shipped (built 2026-08-15): `/events/$eventSlug` page,
+  `/tickets` retired (masthead CTA is now the single **Veranstaltungen** entry), seat-picker
+  + Kartenbörse routes live as placeholders, model grew `performers` (order-only Ablauf) +
+  `description`
+- **E4 — Karten-Bestellflow (shell)** — shipped (built 2026-08-18): one continuous order
+  flow at `/events/$eventSlug/order` (`…/seats` retired), `/orders/$orderCode` capability
+  URL, Karten-language sweep; step 1's core stays a recognisable placeholder — blocked on
+  the club's Sitzplatzvergabe decision. Detail in the
+  [area plan](events/master-plan.md#e4--karten-bestellflow-shell).
+- **E5 — Kauf & Karte** — shipped (built 2026-08-20): steps 2–3 of the Bestellflow (final
+  buyer form, Bestellübersicht + Widerruf-Hinweis + placeholder payment region) and the
+  confirmation page at `/orders/$orderCode`; Stripe pinned as the single provider, embedded
+  (so §312j is ours), both routes `noindex`. Step 3's CTA is disabled — the E4 walk into
+  `/orders/demo` deliberately ends there. Detail in the
+  [area plan](events/master-plan.md#e5--kauf--karte).
+- **E6 — Kartenbörse (Konzeptseite)** — shipped (concept) (built 2026-09-01):
+  `/events/exchange` is a zero-interaction **concept page** presenting the Börse as
+  clearly-framed plans in the making (glossary embargo amended); mechanics *and* values
+  stay undecided club facts — a future real shaping round inherits the idea inventory and
+  the teaser-band obligation. Detail in the
+  [area plan](events/master-plan.md#e6--kartenbörse-konzeptseite).
+
 ---
 
 ## Deferred — backend work
@@ -796,13 +825,15 @@ thing done before P7 flips the site public — a live funnel that cannot submit 
 
 ### Club-App-dependent
 
-- **Events (real data)** — real public event endpoints (+ an **OpenAPI codegen decision**: types
-  vs. types+Zod, likely an ADR); the full [Veranstaltungskalender](feature-event-calendar.md)
-  (list/calendar + detail) at `/program`; wire the [Programm-Teaser](feature-program-teaser.md) to
-  live data + add the **scarcity badge**, event-selection logic, and empty state; wire the
-  [Landing-Hero](feature-landing-hero.md) **stats** and the data-driven ticker to live data.
-- **Ticketing** — [Ticket-Shop](feature-ticket-shop.md): browse, checkout, Stripe/PayPal,
-  confirmation. Depends on the backend ticketing domain (not yet schema'd — see design §7).
+- **Events & Ticketing (real data + transactions)** — the frontend is now planned
+  frontend-first with seeds in the [Events & Tickets area plan](events/master-plan.md)
+  (2026-08-12, absorbing the Veranstaltungskalender + Ticket-Shop stubs); its
+  [Deferred — backend](events/master-plan.md#deferred--backend) section is the contract
+  list the eventual backend must satisfy (+ an **OpenAPI codegen decision**: types vs.
+  types+Zod, likely an ADR). Still Club-App-dependent beyond that: wire the
+  [Programm-Teaser](feature-events-teaser.md) to live data + add the **scarcity badge**,
+  event-selection logic, and empty state; wire the [Landing-Hero](feature-landing-hero.md)
+  **stats** and the data-driven ticker to live data.
 - **Bot OG-meta injection** (edge middleware vs. a `<meta>`-serving endpoint on the API) — **only
   ever needed for backend-driven detail pages**, whose content is not known at build time and so
   cannot be prerendered. Re-scoped out of P4 in the P4 grilling: static-in-repo pages like

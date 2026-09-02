@@ -5,11 +5,8 @@ import type { FC } from 'react';
 
 export const HeroActions: FC = () => (
   <Stack direction="row" sx={{ alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
-    <Button component={RouterLink} to="/tickets" variant="contained" color="primary" size="large">
-      Tickets sichern →
-    </Button>
-    <Button component={RouterLink} to="/program" variant="outlined" size="large">
-      Programm ansehen
+    <Button component={RouterLink} to="/events" variant="contained" color="primary" size="large">
+      Karten sichern →
     </Button>
   </Stack>
 );

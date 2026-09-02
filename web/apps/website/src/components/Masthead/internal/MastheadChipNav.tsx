@@ -3,9 +3,9 @@ import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { navItems } from '../nav-items';
 import { ChipNavScroller } from './ChipNavScroller';
+import { EventsChip } from './EventsChip';
 import { NavChip } from './NavChip';
 import type { OriginRect } from './reveal-geometry';
-import { TicketsChip } from './TicketsChip';
 
 export const MASTHEAD_CHIP_NAV_ID = 'masthead-chip-nav';
 
@@ -43,7 +43,7 @@ export const MastheadChipNav: FC<MastheadChipNavProps> = ({ open, onNavigate }) 
       }}
     >
       <ChipNavScroller>
-        <TicketsChip onNavigate={onNavigate} />
+        <EventsChip onNavigate={onNavigate} />
         {navItems.map((item) => (
           <NavChip key={item.to} item={item} onNavigate={onNavigate} />
         ))}

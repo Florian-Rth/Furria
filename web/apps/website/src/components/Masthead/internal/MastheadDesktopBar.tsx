@@ -7,11 +7,15 @@ import Typography from '@mui/material/Typography';
 import { Link as RouterLink } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { currentSession, FOUNDING_YEAR } from '@/lib/club';
-import { navItems } from '../nav-items';
+import { eventsNavLabel, navItems } from '../nav-items';
 import { MastheadNavLink } from './MastheadNavLink';
 import { ThemeModeToggle } from './ThemeModeToggle';
 
 const metaLabelSx = { fontWeight: 800, letterSpacing: '0.18em', whiteSpace: 'nowrap' } as const;
+
+const metaHideSx = { display: { desktop: 'none', lg: 'block' } } as const;
+
+const metaRuleSx = { flex: 1, display: { desktop: 'none', lg: 'block' } } as const;
 
 export const MastheadDesktopBar: FC = () => (
   <Stack sx={{ display: { xs: 'none', desktop: 'flex' } }}>
@@ -48,14 +52,17 @@ export const MastheadDesktopBar: FC = () => (
         py: 1.5,
       }}
     >
-      <Stack direction="row" sx={{ alignItems: 'center', gap: 2.5 }}>
+      <Stack direction="row" sx={{ alignItems: 'center', gap: 2.5, minWidth: 0 }}>
         <Stack component="nav" aria-label="Hauptnavigation" direction="row" sx={{ gap: 2.5 }}>
           {navItems.map((item) => (
             <MastheadNavLink key={item.to} item={item} />
           ))}
         </Stack>
-        <Box sx={{ flex: 1, borderBottom: 2, borderColor: 'text.primary' }} />
-        <Typography variant="caption" sx={{ ...metaLabelSx, color: 'text.secondary' }}>
+        <Box sx={{ ...metaRuleSx, borderBottom: 2, borderColor: 'text.primary' }} />
+        <Typography
+          variant="caption"
+          sx={{ ...metaLabelSx, ...metaHideSx, color: 'text.secondary' }}
+        >
           NUMBER {currentSession.number}
         </Typography>
       </Stack>
@@ -68,15 +75,18 @@ export const MastheadDesktopBar: FC = () => (
           FURRIA
         </Typography>
       </Link>
-      <Stack direction="row" sx={{ alignItems: 'center', gap: 2.5 }}>
-        <Typography variant="caption" sx={{ ...metaLabelSx, color: 'text.secondary' }}>
+      <Stack direction="row" sx={{ alignItems: 'center', gap: 2.5, minWidth: 0 }}>
+        <Typography
+          variant="caption"
+          sx={{ ...metaLabelSx, ...metaHideSx, color: 'text.secondary' }}
+        >
           SESSION {currentSession.yearsLabel}
         </Typography>
-        <Box sx={{ flex: 1, borderBottom: 2, borderColor: 'text.primary' }} />
-        <Stack direction="row" sx={{ alignItems: 'center', gap: 1.5 }}>
+        <Box sx={{ ...metaRuleSx, borderBottom: 2, borderColor: 'text.primary' }} />
+        <Stack direction="row" sx={{ alignItems: 'center', gap: 1.5, flexShrink: 0 }}>
           <ThemeModeToggle />
-          <Button component={RouterLink} to="/tickets" variant="contained" color="primary">
-            Tickets
+          <Button component={RouterLink} to="/events" variant="contained" color="primary">
+            {eventsNavLabel}
           </Button>
         </Stack>
       </Stack>

@@ -132,9 +132,9 @@ export const APPLY_THANKS_STEPS: JoinStep[] = [
   },
 ];
 
-export const applyThanksProgramLabel = 'Programm ansehen';
+export const applyThanksEventsLabel = 'Veranstaltungen ansehen';
 
-export const applyThanksProgramHref = '/program';
+export const applyThanksEventsHref = '/events';
 
 export const applyThanksHomeLabel = 'Zur Startseite';
 

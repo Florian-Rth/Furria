@@ -1,0 +1,98 @@
+import { formatEuros } from '@/lib/money';
+import type { Event } from '@/lib/seed/events';
+import { ticketPanelCtaLabels, ticketPanelPriceLabel } from './event-detail-content';
+import { buildEventDocumentTitle } from './event-detail-display';
+import { buildEventHref, buildExchangeHref } from './event-display';
+import { nextEventDetailLabel } from './next-event-content';
+import {
+  orderFlowActionLabels,
+  orderFlowDocumentTitlePrefix,
+  orderFlowMissingBuyerActionLabel,
+  orderFlowNoticeSuffixes,
+  orderFlowStepLabels,
+  orderFlowStepSummaryLabels,
+} from './order-flow-content';
+import type { OrderFlowStep } from './order-flow-steps';
+import {
+  BUYER_ORDER_FLOW_STEP,
+  FIRST_ORDER_FLOW_STEP,
+  ORDER_FLOW_STEP_COUNT,
+  PAYMENT_ORDER_FLOW_STEP,
+} from './order-flow-steps';
+import { deriveSalesStatusLabel, isLiveSaleStatus } from './sales-status-display';
+import type { BlockedFaceKind, TicketPanelCta } from './ticket-panel-display';
+import { deriveTicketPanelFace, deriveTicketPanelNote } from './ticket-panel-display';
+
+export type OrderFlowAction =
+  | { kind: 'step'; label: string; step: OrderFlowStep }
+  | { kind: 'submit'; label: string }
+  | { kind: 'pending'; label: string };
+
+export const buildOrderFlowDocumentTitle = (event: Event): string =>
+  `${orderFlowDocumentTitlePrefix} ${buildEventDocumentTitle(event)}`;
+
+export const deriveOrderFlowAction = (step: OrderFlowStep, hasBuyer: boolean): OrderFlowAction => {
+  const label = orderFlowActionLabels[step];
+  switch (step) {
+    case FIRST_ORDER_FLOW_STEP:
+      return { kind: 'step', label, step: BUYER_ORDER_FLOW_STEP };
+    case BUYER_ORDER_FLOW_STEP:
+      return { kind: 'submit', label };
+    case PAYMENT_ORDER_FLOW_STEP:
+      return hasBuyer
+        ? { kind: 'pending', label }
+        : { kind: 'step', label: orderFlowMissingBuyerActionLabel, step: BUYER_ORDER_FLOW_STEP };
+  }
+};
+
+export const deriveOrderFlowStepSummary = (step: OrderFlowStep): string =>
+  `${orderFlowStepSummaryLabels.prefix} ${step} ${orderFlowStepSummaryLabels.connector} ${ORDER_FLOW_STEP_COUNT} · ${orderFlowStepLabels[step]}`;
+
+export const deriveOrderFlowPriceLine = (event: Event): string | null =>
+  event.priceCents === null ? null : `${formatEuros(event.priceCents)} ${ticketPanelPriceLabel}`;
+
+export const deriveOrderFlowBackLabel = (event: Event): string => `← ${event.title}`;
+
+export const deriveOrderFlowAvailabilityLabel = (event: Event): string => {
+  const priceLine = deriveOrderFlowPriceLine(event);
+  const statusLabel = deriveSalesStatusLabel(event);
+  return priceLine === null ? statusLabel : `${priceLine} · ${statusLabel}`;
+};
+
+export interface OrderFlowCapacity {
+  freeCount: number;
+  capacity: number;
+}
+
+export const deriveOrderFlowCapacity = (event: Event): OrderFlowCapacity | null => {
+  const { freeCount, capacity } = event;
+  if (!isLiveSaleStatus(event.salesStatus) || freeCount === null || capacity === null) {
+    return null;
+  }
+  return { freeCount, capacity };
+};
+
+export interface OrderFlowNotice {
+  body: string;
+  cta: TicketPanelCta;
+}
+
+const deriveOrderFlowExit = (event: Event, kind: BlockedFaceKind): TicketPanelCta =>
+  kind === 'soldOut'
+    ? { label: ticketPanelCtaLabels.exchange, to: buildExchangeHref(), emphasis: 'contained' }
+    : { label: nextEventDetailLabel, to: buildEventHref(event.id), emphasis: 'contained' };
+
+export const deriveOrderFlowNotice = (event: Event): OrderFlowNotice | null => {
+  const face = deriveTicketPanelFace(event);
+  if (face.kind === 'onSale') {
+    return null;
+  }
+  const stateSentence = deriveTicketPanelNote(face);
+  if (stateSentence === null) {
+    return null;
+  }
+  return {
+    body: `${stateSentence} ${orderFlowNoticeSuffixes[face.kind]}`,
+    cta: deriveOrderFlowExit(event, face.kind),
+  };
+};

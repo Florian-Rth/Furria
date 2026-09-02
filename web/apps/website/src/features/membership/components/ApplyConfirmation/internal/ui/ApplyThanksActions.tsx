@@ -3,10 +3,10 @@ import Stack from '@mui/material/Stack';
 import { Link as RouterLink } from '@tanstack/react-router';
 import type { FC } from 'react';
 import {
+  applyThanksEventsHref,
+  applyThanksEventsLabel,
   applyThanksHomeHref,
   applyThanksHomeLabel,
-  applyThanksProgramHref,
-  applyThanksProgramLabel,
 } from '@/features/membership/apply-content';
 
 export const ApplyThanksActions: FC = () => (
@@ -17,12 +17,12 @@ export const ApplyThanksActions: FC = () => (
   >
     <Button
       component={RouterLink}
-      to={applyThanksProgramHref}
+      to={applyThanksEventsHref}
       variant="contained"
       color="primary"
       size="large"
     >
-      {applyThanksProgramLabel}
+      {applyThanksEventsLabel}
     </Button>
     <Button component={RouterLink} to={applyThanksHomeHref} variant="outlined" size="large">
       {applyThanksHomeLabel}

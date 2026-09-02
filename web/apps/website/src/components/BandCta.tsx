@@ -7,7 +7,7 @@ import type { FC, ReactNode } from 'react';
 type BandCtaEmphasis = 'solid' | 'outlined';
 
 interface BandCtaProps {
-  to: LinkProps['to'];
+  to: LinkProps['to'] | string;
   emphasis?: BandCtaEmphasis;
   children: ReactNode;
 }

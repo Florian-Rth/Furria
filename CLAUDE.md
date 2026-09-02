@@ -9,7 +9,7 @@ furria/
 │   ├── adr/           # Architecture decision records
 │   ├── design/        # Design handoff + mocks — its "READ FIRST" section rules how to use them
 │   ├── server/        # Backend docs (TESTING.md = test conventions, analyzer-enforced)
-│   └── web/           # Web frontend docs (reference, examples)
+│   └── web/           # Web frontend docs (TESTING.md = test rules; reference, examples)
 ├── server/            # .NET 10 backend — ONE API for all apps (Furria.slnx)
 │   ├── src/           # Furria.Core → Application → Infrastructure ← Api (+ Tests.Analyzers, Tests.Common)
 │   └── tests/         # Furria.Api.Tests (integration), Furria.Tests.Analyzers.Tests
@@ -21,6 +21,14 @@ furria/
     └── packages/
         └── ui/        # @furria/ui — shared KK theme + primitives (source-consumed)
 ```
+
+## Build the End State — No Temp Versions
+
+Nothing ships publicly until the whole platform (website, backend, internal apps) is done.
+Therefore: **always build features directly in their final intended form — never temporary,
+reduced or interim versions.** Incomplete is fine; interim is not. A button may call an
+endpoint that doesn't exist yet; components may rely on data that can't be fetched yet.
+Never scale a feature down so it "works today".
 
 ## Skills — Mandatory
 

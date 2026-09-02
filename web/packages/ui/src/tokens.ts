@@ -67,6 +67,10 @@ export const kkTokens = {
     section: 2,
     page: 3,
   },
+  headline: {
+    page: 'clamp(2.75rem, 6vw, 4.75rem)',
+    compact: 'clamp(2.25rem, 5vw, 3.75rem)',
+  },
   eyebrow: {
     fontWeight: 900,
     letterSpacing: '0.2em',

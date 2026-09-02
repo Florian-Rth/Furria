@@ -28,7 +28,7 @@ export const Route = createRootRoute({
       {
         name: 'description',
         content:
-          'FURRIA — Furrscher Carnevals Club e.V. Programm, Tickets, Neuigkeiten und der Weg in den Verein. Gross - Furria!',
+          'FURRIA — Furrscher Carnevals Club e.V. Veranstaltungen, Karten, Neuigkeiten und der Weg in den Verein. Gross - Furria!',
       },
       { property: 'og:locale', content: 'de_DE' },
       { property: 'og:site_name', content: 'FURRIA' },

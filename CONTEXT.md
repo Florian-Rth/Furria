@@ -10,7 +10,9 @@ Domain language is German; code identifiers are English — this glossary maps b
 
 **Person** (`person`):
 A human in the club's master-data registry — name, contact, address. The root everything
-hangs off. Every Mitglied is a Person; not every Person has an Account.
+hangs off. Every Mitglied is a Person; not every Person has an Account — and since
+2026-08-18 not every Person is club-affiliated: public self-registration (see Account)
+creates Persons with no Mitgliedschaft.
 _Avoid_: user, contact, profile
 
 **Mitgliedschaft** (`membership`):
@@ -64,8 +66,11 @@ _Avoid_: coach
 
 **Account** (`account`):
 An optional, 1:1-linked login for a Person. **Mitglied ≠ Account** — membership exists
-without a login; onboarding is invite-only.
-_Avoid_: user (as a table/entity name)
+without a login. Two ways in (decided 2026-08-18, order-flow shaping): member onboarding
+stays **invite-only** via Einladung; additionally the public may **self-register** an
+Account to buy and keep Karten (mail, Kartenübersicht, history, payment methods) — this
+creates a Person with **no Mitgliedschaft**. Buying itself never requires an Account.
+_Avoid_: user (as a table/entity name), Gast-Konto (it is the same Account concept)
 
 **Einladung** (`invitation`):
 A one-time onboarding token (link or printed QR/code) that lets a Person create their Account.
@@ -85,14 +90,58 @@ _Avoid_: Kampagne, campaign, season (as a table name)
 
 ### Events
 
-**Programm**:
-Overloaded across the two apps — **do not collapse the two senses**:
-- **Public website:** the **season's public event lineup** — the events the club presents,
-  the same set the Veranstaltungskalender lists. This is what "DAS PROGRAMM", the `/program`
-  route and the "Programm" nav label mean on the website.
-- **Club-App:** the **running order of acts within a single event** (the Auto-Reihenfolge /
-  Reihenfolge). A per-event ordering, not a list of events.
-_Avoid_: using "Programm" without knowing which app you are in.
+**Veranstaltung** (`event`):
+A ticketed hall evening of the Session — the unit the club sells Karten for, and the only
+thing the public website's Veranstaltungen list shows. In everyday German the word is
+broader; here it is **narrow**: unticketed happenings (e.g. the Rosenmontagsumzug) are not
+Veranstaltungen in this sense and are not listed on the website (the 2026-08-13 narrowing,
+carried over from the retired "Programm").
+_Avoid_: **Programm** (retired — see flagged note), Termin (as the entity name), Event
+(in German copy)
+
+**Ablauf**:
+The running order of acts within a single Veranstaltung (the Auto-Reihenfolge) — a
+per-event ordering the Club-App manages. Not a list of events. It is planned late: the
+responsible person assembles it roughly **two to three weeks before** the evening, so for
+most of a Veranstaltung's public life there is no Ablauf at all. What the public website
+shows of it is the **order only, never times** — the sequence is stable enough to
+publish, the clock is not.
+_Avoid_: **Programm** (retired), Setlist
+
+**Karte** (`ticket`):
+The unit the club sells for a Veranstaltung — one admission for one person. Price is flat
+within an evening and differs between evenings. The word in every UI surface is **Karte**;
+the English "Ticket" is banned in copy and labels (the masthead's "Tickets" chip was retired
+in E3 — the club sells Karten, but the way in is the Veranstaltungen list, so that is what the
+masthead names).
+_Avoid_: Ticket (in German copy), Eintrittskarte (in labels — too long), Platz (that is
+the seat, not the entitlement)
+
+**Bestellung** (`order`):
+One purchase of one or more Karten by one buyer — the unit the checkout produces and the
+confirmation mail refers to. A public buyer needs no Account (guest checkout); a Bestellung
+is retrieved via an unguessable token link (`orderCode`) sent by mail, never by a guessable
+number; self-registering an Account to keep Bestellungen is optional. Pinned 2026-08-18
+(order-flow shaping).
+_Avoid_: Order (in German copy), Warenkorb (there is no persistent cart), Buchung
+
+**Vorverkauf** (`presale`, short **VVK**):
+The window in which Karten for a Veranstaltung can be bought, before the evening itself.
+An event's public sales lifecycle is announced → Vorverkauf angekündigt → Vorverkauf läuft
+→ ausverkauft / Vorverkauf beendet. Not every Veranstaltung has a VVK date from the
+start — it is announced when the club sets it.
+_Avoid_: Ticketverkauf, Presale (in German copy)
+
+**Kartenbörse** (`ticket exchange`):
+The planned place where a Karte for a sold-out evening can change hands — the club's answer
+to "ausverkauft ist nicht das Ende". **Its mechanics are undecided** (return flow, waitlist,
+who gets first refusal), **and so are its values** (fixed price, club-run instead of
+private resale) — assumptions, not club decisions (exchange shaping, 2026-09-01). The only
+confirmed fact is that a Kartenbörse is planned. The Kartenbörse page itself may present
+values and mechanics as **clearly-framed plans in the making** — visibly labeled as in
+planning, nothing stated as existing, decided or guaranteed (amended 2026-09-01); every
+other surface states only that it exists.
+_Avoid_: Börse (alone — ambiguous), Weiterverkauf, Resale, Zweitmarkt
 
 ### Öffentliche Kommunikation
 
@@ -125,9 +174,9 @@ name of the public page.
 _Avoid_: using it for the public **Galerie**
 
 **Album** (`album`):
-The curated photo set of exactly **one** occasion (Prunksitzung, Umzug, Sessionseröffnung) — the
-same kind of occasion the **Programm** lists. Carries its own date; its **Session** is *derived*
-from that date, never stored.
+The curated photo set of exactly **one** club occasion (Prunksitzung, Umzug, Sessionseröffnung).
+Not bound to the **Programm** — an Album may cover an unticketed occasion the Programm doesn't
+list. Carries its own date; its **Session** is *derived* from that date, never stored.
 _Avoid_: Galerie (for a single album), Ordner, Sammlung
 
 ### Money
@@ -143,6 +192,33 @@ parallel truth.
 _Avoid_: balance table, payments table (as source of truth)
 
 ## Flagged ambiguities
+
+- **"Programm"** — **retired 2026-08-13.** The word was overloaded across the two apps
+  (website: the season's ticketed events; Club-App: a per-event running order) and is now
+  banned in both senses: the website's list of ticketed evenings is **Veranstaltungen**,
+  the Club-App's per-event running order is the **Ablauf**. Shipped copy and identifiers
+  still carrying the old word are renamed as part of the events-list page build, never
+  left to drift.
+
+- **Sitzplatzvergabe** — **open, 2026-08-18.** The club has not decided how online sales
+  assign seats: a fixed numbered seat per Karte (Saalplan/seat picker) or general admission
+  against a total count. Until decided, no public surface may claim either mechanic — the
+  Kartenwahl step ships as a recognisable placeholder, and copy says **Karten**, never
+  Plätze, for the entitlement. The decision unblocks `page-seat-picker` and shapes
+  `page-purchase`.
+
+- **Einlasskontrolle** — **open, 2026-08-19.** The club has not decided how entry is checked
+  at the door (QR scanning per Karte, a name list, no check at all). Until decided, no public
+  surface may show or promise a scannable code, a PDF ticket or a Wallet pass — the digitale
+  Karte's face is exactly as undecided as the door practice it would serve. The Bestellung
+  confirmation shows the purchase honestly without codes. The decision shapes `page-purchase`'s
+  Karten display and the eventual event-app scanner.
+
+- **Gast-Registrierung & Dubletten** — **open, 2026-08-18.** Self-registration can create a
+  second Person for a human already in the registry (a Mitglied without Account buys Karten
+  online). The merge/claim mechanism (e.g. an Einladung claiming an existing self-registered
+  Account by mail match, or an admin merge) is undecided — to be resolved when accounts are
+  actually built (Club-App/backend territory).
 
 - **Who decides a photo is public** — **open, 2026-07-28.** No rules exist yet, and it is not
   settled whether any of this gets built. The public **Galerie** needs none of it today: it shows
