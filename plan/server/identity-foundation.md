@@ -41,6 +41,12 @@ seeded admin and know who you are.
    table.
 4. **Bootstrap admin seeding** — a configured admin Account (+ Person) created on startup
    only when no Account exists; without it, invite-only onboarding can never start.
+5. **Endpoint authorization pattern** (added 2026-09-03, master-plan grilling) — the
+   mechanism by which an endpoint declares its required Berechtigung (permission-key
+   constants + the FastEndpoints enforcement shape), shipped with "authenticated" as the
+   only rule that exists yet. The rights-matrix data and management stay in the inventory
+   (B4) — this slice exists so no endpoint ever ships with a check shape we would have to
+   rebuild.
 
 ## Decisions
 
@@ -83,7 +89,9 @@ Pinned in the 2026-09-03 backend kickoff session:
 
 ## Implementation plan
 
-- **B1 — Identity foundation** (this file, slices 1–4 in order). Per-slice review, full
+- **B1 — Identity foundation** (this file, slices 1–5 in order). Per-slice review, full
   gates after each slice, as established in the website phases.
-- Next plans, in order, each its own file: Club-App shell (login screen + authenticated
-  skeleton), Personenverwaltung vertical, Einladung + onboarding, Gruppen, rights matrix.
+- B1 is the **only** backend-first work: the backend is demand-driven — everything after
+  B1 is pulled by a Club-App or website feature when it needs it. The inventory and its
+  expected pull order live in the [backend master plan](master-plan.md); work moves to the
+  Club-App when B1 closes.
