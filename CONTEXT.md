@@ -39,8 +39,12 @@ many-to-many, groups are freely created and archivable. A Mitglied in **no** Gru
 Art and Gruppe are independent axes. Each Gruppe decides for itself whether it is **currently
 looking for new members**; that openness is the Gruppe's own setting and the public website shows
 it. **There are no open, drop-in trainings** — nobody can simply turn up; an Anfrage always comes
-first.
-_Avoid_: team, squad
+first. **Gruppen-Zugehörigkeit requires no Mitgliedschaft** (decided 2026-09-03, backend
+kickoff): a Person can belong to a Gruppe — and hold a scoped Amt like Trainer — without being
+a Mitglied. Consequence for every Club-App surface: access is gated on **Account + Gruppen +
+Ämter, never on "is Mitglied"**; member-only surfaces (Mitgliederversammlung, Beitrag) are
+explicit, deliberate exceptions, not the default.
+_Avoid_: team, squad, gating anything on Mitgliedschaft by default
 
 **Beitrittsantrag** (`membership application`):
 A visitor's request to become a Mitglied, submitted on the public website. It is **not** a
@@ -70,7 +74,10 @@ without a login. Two ways in (decided 2026-08-18, order-flow shaping): member on
 stays **invite-only** via Einladung; additionally the public may **self-register** an
 Account to buy and keep Karten (mail, Kartenübersicht, history, payment methods) — this
 creates a Person with **no Mitgliedschaft**. Buying itself never requires an Account.
-_Avoid_: user (as a table/entity name), Gast-Konto (it is the same Account concept)
+The login identifier is the **email address** — there are no usernames
+([ADR-0005](docs/adr/0005-auth-aspnet-identity-bearer-tokens.md)).
+_Avoid_: user (as a table/entity name), Gast-Konto (it is the same Account concept),
+username / Benutzername
 
 **Einladung** (`invitation`):
 A one-time onboarding token (link or printed QR/code) that lets a Person create their Account.
@@ -219,6 +226,13 @@ _Avoid_: balance table, payments table (as source of truth)
   online). The merge/claim mechanism (e.g. an Einladung claiming an existing self-registered
   Account by mail match, or an admin merge) is undecided — to be resolved when accounts are
   actually built (Club-App/backend territory).
+
+- **Non-member Gruppen people have no name** — **open, 2026-09-03.** People in a Gruppe
+  without Mitgliedschaft are now a supported, first-class case (see **Gruppe**), but the club
+  has no canonical word for them yet ("Externe"? "Gruppenmitglied ohne Vereinsmitgliedschaft"?).
+  Until the club names them, UI copy avoids inventing a term. Club-side to-do carried with this:
+  confirm the Verein's insurance covers non-member group participants — if it only covers
+  Mitglieder, that gap is a club decision, not a software one.
 
 - **Who decides a photo is public** — **open, 2026-07-28.** No rules exist yet, and it is not
   settled whether any of this gets built. The public **Galerie** needs none of it today: it shows
