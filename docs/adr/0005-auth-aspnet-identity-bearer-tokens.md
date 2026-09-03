@@ -55,3 +55,15 @@ be put in front of the same Identity store; nothing in this decision blocks that
   self-registration (Karten buyers) — create users through the same Identity store; the open
   **Gast-Registrierung & Dubletten** question (`CONTEXT.md`) is unaffected by this ADR and
   must be decided before self-registration ships.
+
+## Amendment (2026-09-04, CA-P0 shaping)
+
+The decision above stands unchanged: bearer tokens, not cookies. One **consequence** was stated
+too narrowly. "In the browser, tokens live in memory with the refresh flow recovering the
+session" cannot hold for both tokens — if the refresh token is also in memory, a reload destroys
+the token the recovery depends on, and every page refresh becomes a login. The access token
+lives in memory; the refresh token is persisted behind a storage port whose Capacitor
+implementation is the native secure storage this ADR already anticipated. See
+[ADR-0006](0006-browser-session-storage-and-401-handling.md) for the full browser session model,
+including why a 401 is terminal and how cross-tab refreshes avoid tripping this ADR's own reuse
+detection.
