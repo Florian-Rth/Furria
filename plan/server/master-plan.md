@@ -37,7 +37,7 @@ The only work that precedes frontend demand. When it closes, work moves to the C
 everything further is pulled from there.
 
 ### B1 — Identity foundation
-**Status:** planned — [identity-foundation.md](identity-foundation.md) ·
+**Status:** built — [identity-foundation.md](identity-foundation.md) ·
 [ADR-0005](../../docs/adr/0005-auth-aspnet-identity-bearer-tokens.md)
 Person + Mitgliedschaft model, ASP.NET Identity as the Account store, login/refresh/logout/me,
 bootstrap admin seed — **plus the endpoint authorization pattern** (added in the 2026-09-03

@@ -12,6 +12,10 @@ Enum membership_status {
   left
 }
 
+// SUPERSEDED by ADR-0005 (docs/adr/0005-auth-aspnet-identity-bearer-tokens.md): the Account is
+// the ASP.NET Identity user, which brings its own lockout columns. What remains of this enum is a
+// single `is_disabled` flag on `account` - the club's manual switch, distinct from Identity's
+// automatic lockout.
 Enum account_status {
   active
   disabled
@@ -49,6 +53,14 @@ Table membership {
   }
 }
 
+// SUPERSEDED by ADR-0005 (docs/adr/0005-auth-aspnet-identity-bearer-tokens.md). The Account is
+// now the ASP.NET Identity user entity, so Identity owns the credential columns and this hand-
+// designed table is not built. Differences from what shipped in B1:
+//   - `username` is dropped entirely - the email address is the only login identifier.
+//   - `password_hash` and `status` are replaced by Identity's own columns plus `is_disabled`.
+//   - `last_login_at` is not kept; sessions live in the `refresh_token` table instead.
+//   - Identity adds `account_claim`, `account_login`, `account_token`; no role tables exist.
+// The domain rules are unchanged: Account is optional, 1:1 to Person, and Mitglied != Account.
 Table account {
   id             integer        [pk, increment]
   person_id      integer        [not null, unique, ref: - person.id]

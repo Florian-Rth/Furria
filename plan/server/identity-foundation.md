@@ -3,7 +3,7 @@ title: Identity-Fundament (Backend)
 slug: server-identity-foundation
 route: —
 type: foundation
-status: planned
+status: built
 mock: docs/design/FCC-Schema.txt (person, membership, account, invitation — account superseded by ADR-0005)
 depends-on: []
 adrs: [0005]
@@ -66,15 +66,68 @@ Pinned in the 2026-09-03 backend kickoff session:
   onboarding here is seed-only, and the flag's resolution is owed before
   self-registration ships, not before login exists.
 
-## Open Questions
+## Resolved at implementation (2026-09-03)
 
-- **Token lifetimes** — proposed: 15 min access / 30 days refresh (sliding via rotation);
-  to be confirmed at implementation, config-driven either way.
-- **Refresh token mechanics** — own table + own rotation logic vs
-  FastEndpoints.Security's `RefreshTokenService`; decide at implementation after checking
-  what the library's model allows for reuse detection and revoke-all.
-- **`GetMe` payload shape** — Person basics + membership state now; whether Gruppen/Ämter
-  ride along is decided when the rights-matrix plan lands.
+- **Token lifetimes** — confirmed as proposed: **15 min access / 30 days refresh**, sliding via
+  rotation, both config-driven (`Auth:AccessToken:Lifetime`, `Auth:RefreshToken:Lifetime`). The
+  15 minutes bound the irrevocable window: an access token carries no per-request security-stamp
+  check, so a disabled Account stays usable for at most one access-token lifetime.
+- **Refresh token mechanics** — **own table + own rotation**, `FastEndpoints.Security`'s
+  `RefreshTokenService` rejected. Its `PersistTokenAsync(TResponse)` never sees the *consumed*
+  token, it has no family concept and no unit of work, and it hardcodes
+  `Guid.NewGuid().ToString("N")` as the token — so hashed-at-rest storage, an atomic
+  consume-or-fail and family revocation would all have been written by hand anyway, against
+  sealed methods. `AddAuthenticationJwtBearer` and the `Permissions()` surface are still used.
+  A `ReuseGraceWindow` (30 s, configurable) keeps a client's own in-flight retry from tripping
+  reuse detection and logging the honest user out.
+- **`GetMe` payload shape** — Account id + email, Person basics, and the Membership state or
+  `null`. Gruppen/Ämter are decided when the rights-matrix plan (B4) lands.
+- **Where the entities live** — `Person` and `Membership` in `Furria.Core` as the plan says;
+  `Account` and `RefreshToken` in `Furria.Infrastructure/Identity` instead, because the
+  `/backend-work` rule "Core has zero external dependencies" and `IdentityUser<int>` is one.
+  For the same reason the **service classes** (`AccountService`, `RefreshTokenService`,
+  `AccessTokenService`) live in Infrastructure, with their boundary types (`…Command`,
+  `…Details`, `Result<T>`, the options classes) in `Furria.Application` — Application references
+  Core only and so cannot see `AppDbContext`. Adding an `IAppDbContext` port to satisfy the
+  diagram was rejected: it is an interface with exactly one implementation forever, and
+  ADR-0001 bans the mocking it would enable.
+- **Snake-case schema** — `EFCore.NamingConventions` plus an explicit
+  `MigrationsHistoryTable("__ef_migrations_history")`, so the whole schema matches
+  `docs/design/FCC-Schema.txt`. Identity's tables are renamed to the domain: `account`,
+  `account_claim`, `account_login`, `account_token`. **Any pre-existing local database must be
+  recreated** (`docker compose down -v`) — the convention also renames the history table's
+  columns.
+- **Permission-key constants** — the *shape* ships (metadata + `Definition.RequirePermission`
+  + the enforcer); the `Permissions` constants file itself is created by its first caller in B2.
+  B1 has no endpoint that needs a Berechtigung, so shipping the class empty or with invented
+  keys would have been dead code. The frozen key format is `"{area}:{action}"`.
+
+## Traps the code cannot state itself
+
+Code carries no comments (`/backend-work`), so the non-obvious reasons behind five decisions live
+here. Each is a place where the "obvious simplification" is wrong.
+
+- **`RefreshTokenSecret.HashOf` guards with `Base64Url.IsValid` before decoding.** It looks
+  redundant next to `TryDecodeFromChars` and is not: that method **throws** on malformed input
+  instead of returning `false`, and `POST /auth/refresh` is anonymous — so removing the guard
+  turns any garbled token into an unauthenticated 500. Applies to every future token decode
+  (Einladung, `orderCode`).
+- **JWT lifetime validation is wired to the injected `TimeProvider`** (`AccessTokenLifetime`,
+  wired in `Program.cs`). The framework default reads the machine clock, which would make token
+  validation the one part of the API ignoring the clock MET006 exists to enforce — and would
+  make every token-expiry test impossible.
+  `GetMeTests.Should_ReturnUnauthorized_When_TheAccessTokenHasExpired` is the guard.
+- **`Login` spends exactly one password-hash verification on every path** — unknown email,
+  disabled Account and locked-out Account included. Identity short-circuits before hashing on
+  each of those, and an unequalized path is a ~600x user-enumeration timing oracle. Rate
+  limiting is *not* in this foundation and is still owed before the API is exposed.
+- **`Result<T>` overrides `ToString`.** The generated record `ToString` evaluates both `Value`
+  and `Error`, exactly one of which always throws; and printing the value verbatim would put a
+  live access and refresh token in the first log line about a successful login. It names the
+  type, never the value.
+- **`PermissionAuthorizer` returning `false` is the correct answer, not a stub.** No Amt can be
+  held until the rights matrix exists (B4), so no Berechtigung is granted — and it is
+  fail-closed, so an endpoint that declares a key is refused rather than waved through.
 
 ## Done When
 
