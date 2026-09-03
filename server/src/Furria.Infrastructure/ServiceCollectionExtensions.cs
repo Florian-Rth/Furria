@@ -1,4 +1,6 @@
+using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,9 +15,34 @@ public static class ServiceCollectionExtensions
     )
     {
         services.AddDbContext<AppDbContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString(AppDbContext.ConnectionName))
+            options
+                .UseNpgsql(
+                    configuration.GetConnectionString(AppDbContext.ConnectionName),
+                    npgsql => npgsql.MigrationsHistoryTable("__ef_migrations_history")
+                )
+                .UseSnakeCaseNamingConvention()
         );
+
+        services
+            .AddIdentityCore<Account>(options =>
+            {
+                options.User.RequireUniqueEmail = true;
+                options.Password.RequiredLength = 12;
+                options.Lockout.AllowedForNewUsers = true;
+                options.Lockout.MaxFailedAccessAttempts = 5;
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+            })
+            .AddEntityFrameworkStores<AppDbContext>()
+            .AddSignInManager();
+
+        services.AddAuthentication();
+
+        services.AddScoped<AccessTokenService>();
+        services.AddScoped<RefreshTokenService>();
+        services.AddScoped<AccountService>();
+
         services.AddHostedService<DatabaseMigrator>();
+        services.AddHostedService<BootstrapAdminSeeder>();
         services.AddSingleton(TimeProvider.System);
         return services;
     }

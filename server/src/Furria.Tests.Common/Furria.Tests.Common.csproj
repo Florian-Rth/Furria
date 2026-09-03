@@ -5,6 +5,7 @@
     <PackageReference Include="Npgsql" />
     <PackageReference Include="Testcontainers.PostgreSql" />
     <!-- NOT the xunit.v3 metapackage: that would turn this classlib into a test host. -->
+    <PackageReference Include="xunit.v3.assert" />
     <PackageReference Include="xunit.v3.extensibility.core" />
   </ItemGroup>
 

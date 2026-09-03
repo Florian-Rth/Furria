@@ -1,10 +1,16 @@
+using Furria.Application.Identity;
 using Furria.Application.PreviewAccess;
+using Furria.Core.Identity;
+using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Persistence;
+using Furria.Tests.Common.Builder;
+using Furria.Tests.Common.Expectations;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Time.Testing;
 using Testcontainers.PostgreSql;
 using Xunit;
@@ -13,16 +19,27 @@ namespace Furria.Tests.Common.Fixtures;
 
 public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifetime
 {
+    private const string SigningKey = "furria-test-signing-key-of-at-least-32-bytes";
+    private const string Issuer = "furria-api-tests";
+    private const string Audience = "furria-clients";
+    private const string NotInitialized = "ApiTestFixture has not been initialized yet.";
+
     public const string PreviewPassword = "test-preview-password";
+    public const string BootstrapAdminEmail = "bootstrap-admin@test.local";
+    public const string BootstrapAdminPassword = "Bootstrap-Admin-Pw-1!";
+    public const string SeededAccountPassword = "Seeded-Account-Pw-1!";
 
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder(
         "postgres:18-alpine"
     ).Build();
 
     private DatabaseResetService? _resetService;
+    private SeededAccount? _bootstrapAdmin;
 
-    // Parameterless FakeTimeProvider would start at 2000-01-01 - anchor it at real "now".
     public FakeTimeProvider TimeProvider { get; } = new(DateTimeOffset.UtcNow);
+
+    public SeededAccount BootstrapAdmin =>
+        _bootstrapAdmin ?? throw new InvalidOperationException(NotInitialized);
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -34,6 +51,34 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             $"{PreviewAccessOptions.SectionName}:{nameof(PreviewAccessOptions.Password)}",
             PreviewPassword
         );
+        builder.UseSetting(
+            $"{AccessTokenOptions.SectionName}:{nameof(AccessTokenOptions.SigningKey)}",
+            SigningKey
+        );
+        builder.UseSetting(
+            $"{AccessTokenOptions.SectionName}:{nameof(AccessTokenOptions.Issuer)}",
+            Issuer
+        );
+        builder.UseSetting(
+            $"{AccessTokenOptions.SectionName}:{nameof(AccessTokenOptions.Audience)}",
+            Audience
+        );
+        builder.UseSetting(
+            $"{BootstrapAdminOptions.SectionName}:{nameof(BootstrapAdminOptions.Email)}",
+            BootstrapAdminEmail
+        );
+        builder.UseSetting(
+            $"{BootstrapAdminOptions.SectionName}:{nameof(BootstrapAdminOptions.Password)}",
+            BootstrapAdminPassword
+        );
+        builder.UseSetting(
+            $"{BootstrapAdminOptions.SectionName}:{nameof(BootstrapAdminOptions.FirstName)}",
+            "Bootstrap"
+        );
+        builder.UseSetting(
+            $"{BootstrapAdminOptions.SectionName}:{nameof(BootstrapAdminOptions.LastName)}",
+            "Admin"
+        );
         builder.ConfigureServices(services =>
         {
             services.RemoveAll<TimeProvider>();
@@ -43,15 +88,90 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
 
     public async ValueTask InitializeAsync()
     {
-        // The container must be running before Services is touched for the first time:
-        // building the host triggers ConfigureWebHost, which reads the container's
-        // connection string.
         await _postgres.StartAsync();
 
         await using var scope = Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        _resetService = await DatabaseResetService.CreateAsync([db], [], CancellationToken.None);
+        var admin = await db
+            .Users.AsNoTracking()
+            .Where(account => account.Email == BootstrapAdminEmail)
+            .Select(account => new { account.Id, account.PersonId })
+            .SingleAsync();
+
+        _bootstrapAdmin = new SeededAccount(
+            admin.Id,
+            admin.PersonId,
+            BootstrapAdminEmail,
+            BootstrapAdminPassword
+        );
+
+        _resetService = await DatabaseResetService.CreateAsync(
+            [db],
+            [typeof(Person), typeof(Account)],
+            CancellationToken.None
+        );
+    }
+
+    public Task<SeededContext> BuildAsync(CancellationToken ct = default) =>
+        BuildAsync(_ => { }, ct);
+
+    public async Task<SeededContext> BuildAsync(
+        Action<SeedContextBuilder> configure,
+        CancellationToken ct = default
+    )
+    {
+        await ResetDatabaseAsync(ct);
+
+        var recorded = new SeedContextBuilder();
+        configure(recorded);
+
+        var scopeFactory = Services.GetRequiredService<IServiceScopeFactory>();
+        var seeded = await IdentitySeedMaterializer.MaterializeAsync(
+            scopeFactory,
+            recorded.RecordedIdentity,
+            SeededAccountPassword,
+            ct
+        );
+
+        var identity = new TestIdentity(
+            CreateClient,
+            seeded,
+            BootstrapAdmin,
+            SeededAccountPassword
+        );
+        return new SeededContext(identity, new Expected(scopeFactory));
+    }
+
+    public async Task RunBootstrapSeederAsync(CancellationToken ct = default)
+    {
+        var seeder = Services.GetServices<IHostedService>().OfType<BootstrapAdminSeeder>().Single();
+        await seeder.StartAsync(ct);
+    }
+
+    public async Task InsertMembershipDirectlyAsync(int personId, CancellationToken ct = default)
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        await db.Database.ExecuteSqlAsync(
+            $"""
+            INSERT INTO membership (person_id, type, status, started_at)
+            VALUES ({personId}, 'Active', 'Active', DATE '2020-11-11')
+            """,
+            ct
+        );
+    }
+
+    public async Task DisableAccountDirectlyAsync(int accountId, CancellationToken ct = default)
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        await db.Database.ExecuteSqlAsync(
+            $"UPDATE account SET is_disabled = TRUE WHERE id = {accountId}",
+            ct
+        );
     }
 
     public async Task<IReadOnlyList<string>> GetAppliedMigrationsAsync(
@@ -67,7 +187,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
     public async Task ResetDatabaseAsync(CancellationToken ct = default)
     {
         if (_resetService is null)
-            throw new InvalidOperationException("ApiTestFixture has not been initialized yet.");
+            throw new InvalidOperationException(NotInitialized);
 
         await _resetService.ResetAsync(ct);
     }
