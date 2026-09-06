@@ -1,12 +1,13 @@
 # Backend Testing Conventions
 
-This file defines how every backend test in `server/` is written. The MET001–MET006 analyzers
+This file defines how every backend test in `server/` is written. The MET001–MET007 analyzers
 (`server/src/Furria.Tests.Analyzers`) enforce most of it at build time — a violation is a
 compile error, not a review comment. See `docs/adr/0001-no-mocks-integration-testing.md` for
 why this policy exists.
 
-It has two parts: **what is built today** and **what gets built with the first real entity**.
-Everything in the repo has a caller; target designs live here, not as dead code.
+It has three parts: **the base harness**, **the arrange/assert layer that landed with the first
+real entity**, and **what is still owed**. Everything in the repo has a caller; target designs
+live here, not as dead code.
 
 ## Principles
 
@@ -17,11 +18,11 @@ Everything in the repo has a caller; target designs live here, not as dead code.
   published messages) — never that "method X was called".
 - **Only write tests for real scenarios.** No tests that merely validate implementation details.
 - **YAGNI applies to test infra too.** A helper exists only once a test needs it; until then its
-  contract is specced below under *Planned*.
+  contract is specced below under *Still planned*.
 
-## Built today
+## The base harness
 
-### The shape of a test (current)
+### The shape of a test
 
 ```csharp
 [Collection("Api")]                       // shares the one Postgres container per assembly
@@ -61,8 +62,8 @@ public sealed class UnlockPreviewTests
    anchored at real "now".
 2. **`DatabaseResetService`** — owned reset instead of Respawn: one `TRUNCATE … CASCADE` over
    the EF-model table list, **without** `RESTART IDENTITY`, then re-inserts snapshotted
-   singleton rows in the same transaction. Milliseconds per reset. Wired in the fixture; a
-   guarded no-op until the first entity lands.
+   singleton rows in the same transaction. Milliseconds per reset. Wired in the fixture; it
+   snapshot-restores the bootstrap admin (`Person`, then `Account`) after every truncate.
 
 ### The rules (analyzer-enforced)
 
@@ -74,6 +75,7 @@ public sealed class UnlockPreviewTests
 | MET004 | A class injecting `ApiTestFixture` carries `[Collection("Api")]`. |
 | MET005 | No `DbContext` in a test body — seed and assert through the harness. |
 | MET006 | Production code never reads `DateTime.Now/UtcNow` — inject `TimeProvider`. |
+| MET007 | Every builder alias resolved by `IdOf`/`EmailOf`/`ClientFor`/`ClientForAsync`/`NameOf` is declared by an `Add*` call in the same class. |
 
 ### Rules the compiler can't check
 
@@ -86,74 +88,110 @@ public sealed class UnlockPreviewTests
 - **Use the typed test client** (e.g. FastEndpoints' `PUTAsync<TEndpoint,TReq,TRes>`), not raw
   `HttpClient` string URLs.
 
-## Planned — build with the first real entity
+## Built with the first real entity (B1, identity foundation)
 
-The target arrange/assert layer. Build these pieces **in this order, each with its first
-consuming test**; contracts below are the design commitment. Reference implementations for
-`Polling`, `AliasRegistry` and the MET007 dangling-alias analyzer existed at repo setup and
-live in git history (`git log -- '**/Polling.cs'`).
+The arrange/assert layer landed with `Person`, `Membership`, `Account` and `RefreshToken`. Three
+deviations from the design this section previously committed to, each deliberate:
 
-### The shape of a test (target)
+- **`SeededContext`, not `TestContext`** — xunit v3 ships `Xunit.TestContext`, which every test
+  already uses for `TestContext.Current.CancellationToken`. The builder is `SeedContextBuilder`.
+- **`ClientForAsync`, not `ClientFor`** — there is no `JwtMinter`. An authenticated client is
+  produced by logging in over the real HTTP pipeline, so the call is async. A minter that mirrors
+  production is a copy that drifts: mis-wire the signing key, issuer or claim shape and every
+  minted-token test still passes while every real client gets a 401. Build one only when a test
+  needs a token real login cannot mint (an expired one, a foreign-signed one).
+- **`Polling` and the `Doubles/` folder stay deferred** — this slice has no asynchronous side
+  effect and no in-house seam that real infrastructure cannot serve. Both return with the first
+  background worker / message bus, from git history (`git log -- '**/Polling.cs'`).
+
+### The shape of a test
 
 ```csharp
 [Collection("Api")]
-public sealed class PutWidgetStatusTests
+public sealed class GetMeTests
 {
     private readonly ApiTestFixture _fixture;
-    public PutWidgetStatusTests(ApiTestFixture fixture) => _fixture = fixture;
+
+    public GetMeTests(ApiTestFixture fixture) => _fixture = fixture;
 
     [Fact]
-    public async Task Should_SetClosedAt_When_ResolvingWidget()
+    public async Task Should_ReturnNoMembership_When_ThePersonIsNotAMitglied()
     {
+        var ct = TestContext.Current.CancellationToken;
+
         // Arrange — declarative seeding against string aliases, committed before Act
-        var ctx = await _fixture.BuildAsync(b => b
-            .Identity(i => i.AddUser("operator", Permissions.Widgets.Write))
-            .Widgets(w => w.AddOpen("widget-1", assignee: "operator")));
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => identity.AddAccount("alice")), ct);
 
-        var widgetId = ctx.Widgets.IdOf("widget-1");
+        // Act — the typed test client, carrying a token from a real login
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        var (response, result) = await client.GETAsync<GetMe, GetMeResponse>();
 
-        // Act — one raw, explicit HTTP call; the client carries a locally minted JWT
-        var (response, _) = await ctx.Identity.ClientFor("operator")
-            .PUTAsync<PutWidgetStatus, PutWidgetStatusRequest, PutWidgetStatusResponse>(
-                new() { Id = widgetId, Status = WidgetStatus.Resolved });
-
-        // Assert — status code on the response, everything else via DB-level Expected reads
+        // Assert — status code from the response, state through deferred DB reads
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Null(result.Membership);
         await ctx.Expected
-            .Widget(widgetId).ToHaveStatus(WidgetStatus.Resolved)
-            .Outbox().ToHaveNoMessages<WidgetResolved>()
-            .AssertAsync();
+            .MembershipOf(ctx.Identity.People.IdOf("alice")).ToNotExist()
+            .AssertAsync(ct);
     }
 }
 ```
 
-### The pieces and their contracts
+### The pieces
 
-1. **Seed builder** — `ApiTestFixture.BuildAsync(Action<TestContextBuilder>)` becomes the
-   single seed entry point (reset → record → materialize → return a `TestContext`).
-   `TestContextBuilder` is a pure accumulator: one fluent section per bounded context,
-   sub-builders record `Add*("alias", …)` intent, and a materializer inserts everything in
-   dependency order (one `SaveChanges` per layer) before Act. The materializer uniquifies
-   names behind aliases (`$"{alias}-{guid}"`) so unique indexes never collide. Add a
-   sub-builder **per bounded context, not per entity**, and only when a test needs to seed it;
-   no multi-entity convenience methods until 3+ tests would benefit. Alias resolution goes
-   through an `AliasRegistry` that throws on unknown aliases, listing the declared ones.
-2. **Identity shortcut** — `AddUser("alice", …permissions)` inserts the user row directly (no
-   UserManager, no password hashing); a `JwtMinter` signs tokens locally, mirroring the
-   production token service exactly (same signer, key, claim shape), so
-   `ctx.Identity.ClientFor("alice")` returns an `HttpClient` that clears the real auth pipeline.
-3. **`Expected` DSL** — `ctx.Expected.Widget(id).ToHaveStatus(…)` enqueues deferred reads; one
-   `AssertAsync()` runs the chain. Every read uses a fresh DI scope + `AsNoTracking`, filtered by
-   the id from Act. `Outbox()` asserts against `FakeMessageBus`, not the DB.
-4. **Owned doubles** — a `Doubles/` folder is the only home for test doubles, each one reviewed:
+1. **`ApiTestFixture.BuildAsync(Action<SeedContextBuilder>)`** — the single seed entry point:
+   reset → record → materialize → `SeededContext`. Touching `Services` starts the host, so the
+   migrator and the bootstrap-admin seeder have both run before the reset snapshot is captured;
+   the snapshot is therefore exactly `[typeof(Person), typeof(Account)]`, in that FK-safe order,
+   and the admin survives every reset. Two constraints this imposes on production code: those two
+   tables must keep Npgsql's default `GENERATED BY DEFAULT AS IDENTITY` keys, and neither may gain
+   a computed column — the restore re-inserts every column it read.
+2. **`SeedContextBuilder` / `IdentitySeedBuilder`** — pure accumulators. One sub-builder per
+   bounded context, not per entity: `AddPerson`, `AddMembership`, `AddAccount`. `AddAccount`
+   creates the Person under the same alias unless `AddPerson` already declared it. The
+   materializer inserts Person → Membership → Account, one `SaveChanges` per layer, and
+   uniquifies emails behind the alias so unique indexes never collide.
+3. **`AliasRegistry`** — `ctx.Identity.People.IdOf("alice")`; an unknown alias throws listing the
+   declared ones. `EmailOf` resolves the materialized unique email.
+4. **Identity shortcut** — Account rows are inserted directly, not through `UserManager`: the
+   harness owns normalization and the password hash, and the hash is computed once per run and
+   cached (Identity's PBKDF2 would otherwise dominate the suite). `ctx.Identity.BootstrapAdmin`
+   is aliasless, because production code seeds it.
+5. **`Expected` DSL** — `ctx.Expected.Account(id).ToHaveEmail(…)` enqueues deferred reads; one
+   `AssertAsync(ct)` runs the chain in a fresh scope with `AsNoTracking`. Every `ToHave*` returns
+   `Expected`, so chaining two assertions about one entity re-selects it. This is the only legal
+   way to assert database state — MET005 bans a `DbContext` in a test body.
+6. **`ApiTestFixture.RunBootstrapSeederAsync`** — a host start is exactly the seeder running
+   against whatever the database already holds, so this is the honest "second start".
+   **`InsertMembershipDirectlyAsync`** goes around the change tracker on purpose: EF's one-to-one
+   fixup drops a second Mitgliedschaft before it reaches the database, so the rule can only be
+   proven against the constraint that enforces it.
+7. **MET007 (dangling-alias analyzer)** — every alias passed to `IdOf`/`EmailOf`/`ClientFor`/
+   `ClientForAsync`/`NameOf` must be declared by an `Add*("alias")` call in the same class;
+   `[SeedsAliases]` opts out when a helper in another class seeds.
+
+### Traps worth knowing
+
+- **The `FakeTimeProvider` only moves forward** and is shared by the whole collection. It is safe
+  to advance because JWT lifetime validation was wired to the same injected clock
+  (`AccessTokenLifetime`); remove that wiring and every test which advances time starts poisoning
+  the ones after it. `GetMeTests.Should_ReturnUnauthorized_When_TheAccessTokenHasExpired` is the
+  guard — it goes red the moment the wiring does.
+- **Seeding two Mitgliedschaften for one alias silently yields one** — EF's one-to-one fixup. Use
+  `InsertMembershipDirectlyAsync` to test the constraint.
+
+## Still planned — build with their first consumer
+
+The pieces below have no consumer yet. Contracts stay the design commitment.
+
+1. **`Polling.WaitUntilAsync(predicate, timeout)`** — the sanctioned alternative to `Task.Delay`
+   once the first asynchronous side effect (background consumer, relay broadcast) needs waiting
+   on. Reads the real wall clock deliberately — the deadline must advance even when the host
+   injects a frozen `FakeTimeProvider`.
+2. **Owned doubles** — a `Doubles/` folder is the only home for test doubles, each one reviewed:
    - Real infra exists → use real infra (never fake a `DbContext`).
    - In-house seam → an owned double is fine (e.g. `FakeMessageBus` for your own `IMessageBus`).
    - A fault the real dependency can't produce on demand → a small curated fake.
    - Doubles are behavioural, not interaction-recording.
-5. **`Polling.WaitUntilAsync(predicate, timeout)`** — the sanctioned alternative to `Task.Delay`
-   once the first asynchronous side effect (background consumer, relay broadcast) needs waiting
-   on. Reads the real wall clock deliberately — the deadline must advance even when the host
-   injects a frozen `FakeTimeProvider`.
-6. **MET007 (dangling-alias analyzer)** — returns together with the builder: every alias passed
-   to `IdOf`/`ClientFor`/`NameOf` must be declared by an `Add*("alias")` call in the same class;
-   `[SeedsAliases]` opts out when a helper in another class seeds.
+3. **`Expected.Outbox()`** — asserts against `FakeMessageBus`, not the DB, once messaging exists.
+4. **`JwtMinter`** — only when a test needs a token real login cannot produce.
