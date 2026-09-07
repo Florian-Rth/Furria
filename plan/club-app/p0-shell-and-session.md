@@ -279,6 +279,19 @@ decisions, deviations and traps worth carrying forward:
   in a pure function precisely so the four branches (suspend, backward correction, forward jump,
   both clocks agreeing) are covered by literal fixtures in `session-lifetime.test.ts`; the store
   wiring around it is not testable under the repo's rules.
+- **Two clock hazards survive the maximum, both accepted deliberately.** A suspend and a
+  backward wall-clock correction landing in the *same* wake window make both readings
+  under-report at once, and a maximum of two sources has no third to fall back on: the store
+  then sends a dead token, takes the terminal 401 and destroys a refresh token still valid for
+  weeks. Closing it needs a time source neither suspend nor an NTP step can move, which the
+  platform does not offer, so the residue is one forced re-login in a compound scenario, never
+  data loss. Separately, `MIN_REFRESH_INTERVAL_MS` is measured on the same maximum, so a wall
+  clock stepping repeatedly forward satisfies the 60 s floor immediately and the client rotates
+  more often than intended. Measuring the floor on the monotonic clock alone would fix that and
+  reintroduce the worse bug, because a suspended host freezes that clock and the floor would
+  then block the very post-wake refresh this accounting exists to trigger. The extra rotations
+  are harmless: each presents the newest stored token, so server-side reuse detection never
+  fires.
 - **The refresh lock may decline to refresh at all, and degrades where `navigator.locks` is
   absent.** Inside the lock the store re-reads the token; if it changed while waiting **and** the
   in-memory access token is still fresh, it returns that token and performs no request. If no
