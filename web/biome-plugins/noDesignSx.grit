@@ -1,0 +1,16 @@
+language js
+
+or {
+  `sx={$sx}`,
+  `style={$sx}`
+} where {
+  $sx <: contains or {
+    `$key: $_` where {
+      $key <: r"^(?:color|backgroundColor|bgcolor|borderRadius|boxShadow|font.*|border.*)$"
+    },
+    JsStringLiteralExpression() as $literal where {
+      $literal <: r"^['\"](?:#[0-9a-fA-F]{3,8}|[0-9.]+px)['\"]$"
+    }
+  } as $hit,
+  register_diagnostic(span=$hit, message="No design in `sx`: colors, fonts, borders, radii and shadows live in `@furria/ui`. Layout `sx` only.")
+}
