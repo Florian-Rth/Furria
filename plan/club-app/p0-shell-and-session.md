@@ -1,5 +1,5 @@
 ---
-status: ready
+status: shipped
 phase: CA-P0
 pulls: B1 (identity foundation)
 ---
@@ -69,11 +69,13 @@ locally, so a constant skew cancels on both sides of the subtraction.
 
 **Cross-tab refresh uses `navigator.locks` and always re-reads storage inside the lock.** B1
 rotates refresh tokens with family-based reuse detection: presenting an already-rotated token
-within `ReuseGraceWindow` (30 s) is a plain 401, but **after** it revokes every session for the
-Account, on every device. Simultaneous refreshes are absorbed by the grace window; the real
-hazard is a **stale tab** waking later with a cached token. Reading the token from storage
-inside the lock — never from a captured variable — removes it: the losing tab finds the fresh
-token and skips its own refresh entirely.
+within `ReuseGraceWindow` (30 s) is a plain 401, but **after** it revokes every live token in the
+presented token's **family** (`RefreshTokenService.RevokeLiveFamilyAsync`). A family is the chain
+one login started, so in practice that is one browser profile, not the Account's other devices.
+Simultaneous refreshes are absorbed by the grace window; the real hazard is a **stale tab**
+waking later with a cached token. Reading the token from storage inside the lock — never from a
+captured variable — removes it: the losing tab finds the fresh token and skips its own refresh
+entirely.
 
 ### Code boundaries
 
@@ -165,6 +167,135 @@ Each is a commit; each leaves the app working.
   **fails lint**, and so does `sx={{ color: '#E11D2A' }}`.
 - The club-app image builds and serves behind nginx with the `/api` proxy working.
 - A club-app commit does not redeploy the website.
+
+---
+
+## As-built (CA-P0, 2026-09-07)
+
+Built as the seven planned slices plus five follow-up commits (three fixes and one refactor
+from review, one adding the helper tests review found missing). Final gates green from `web/`:
+lint, typecheck, **666 tests** (19 ui + 145 club-app + 502 website), build. The plan held. The
+decisions, deviations and traps worth carrying forward:
+
+- **The plan and ADR-0006 were wrong about reuse detection, and both are corrected.** They said
+  presenting a rotated refresh token after the grace window "revokes every session for the
+  Account, on every device". `RefreshTokenService.RotateAsync` calls
+  `RevokeLiveFamilyAsync(presented.FamilyId, …)`, which updates only rows with that `FamilyId`,
+  and `IssueAsync` mints a **new** family per login. A family is therefore the rotation chain one
+  login started: in practice one browser profile. Every other device keeps its own family and
+  stays signed in. No UI copy ever claimed otherwise, so nothing user-facing changed. The
+  Session section above and ADR-0006 now describe the code. (The plan's "**ADR-0005 needs an
+  amendment**" line is also stale: the amendment landed in `06e2444`, before slice 1.)
+- **The session store is a module-level singleton, and its first snapshot is computed
+  synchronously at module evaluation.** `lib/api/session/session-store.ts` keeps `accessToken`,
+  `accessTokenReceivedAtTicks`, `accessTokenLifetimeMs` and the storage port outside React, and
+  publishes an immutable `SessionSnapshot { status, expired }` through `getSessionSnapshot` /
+  `subscribeToSession` (`useSyncExternalStore`). The initial snapshot comes from
+  `resolveStoredStatus()`, which reads the port at import time, because both route guards run in
+  `beforeLoad`, before anything mounts: a snapshot that started `anonymous` and only became
+  `restoring` in an effect would bounce every reload of a signed-in member through `/login`
+  first. `subscribeToSessionEnd` is a second, separate channel for teardown that must not
+  re-render.
+- **A fourth session status shipped: `unavailable`, with its own `BootFailure` screen.**
+  `decisions.md` pinned three. A boot refresh that fails **without** a 401 (server down,
+  `RequestBlockedError`, the 15 s timeout) is not evidence that the session is over, and treating
+  it as `anonymous` would clear a refresh token still valid for up to 30 days and demand a
+  password over a transient outage. `restoreSession` therefore keeps the stored token and
+  publishes `unavailable`; `SessionBoot` renders `BootFailure` (`KkBrandStage` + `KkAlert` +
+  `Erneut versuchen`, copy `Die Verbindung zum Server ist fehlgeschlagen. Deine Anmeldung bleibt
+  erhalten.`) whose retry calls `restoreSession` again. At boot, only a 401 ends the session.
+  **This deviates from `decisions.md` deliberately, recorded here, not silent.**
+- **A 401 is terminal in three places, not one.** `apiFetch` maps status 401 to
+  `UnauthorizedError`; `withFreshAccessToken` and `refreshThroughLock` end the session when they
+  see it; and `shouldRetryRequest` (`lib/api/retry-policy.ts`), wired as React Query's `retry`,
+  returns `false` for it while retrying `RequestBlockedError` and 5xx exactly once. Without the
+  third, Query's default policy would fire three more authenticated requests after the session
+  had already been declared dead, each one a fresh 401.
+- **Every session end clears the React Query cache.** `lib/query-client.ts` subscribes to
+  `subscribeToSessionEnd` and calls `queryClient.clear()`. Without it the `['auth', 'me']` entry
+  outlives sign-out, and on a shared machine the next person sees the previous member's name and
+  e-mail rendered from cache before their own request returns. The clear used to sit in
+  `useSignOut`, which meant a terminal 401 left the cache standing; on the store's end channel it
+  covers every way a session dies. `finishSession` fires those listeners only when a session
+  actually existed, so a repeated end is silent.
+- **Cross-tab propagation is a `BroadcastChannel`, with a `storage` listener only as a
+  fallback.** `session-broadcast.ts` posts `{ expired }` on `furria-club-app-session` whenever a
+  session ends, and every tab's store adopts it through `finishSession` (never `endSession`, so
+  the message cannot echo). The trap: **a `storage` event never fires in the tab that wrote it**,
+  so `localStorage` alone can be a receive path but never a send path, and it carries no reason
+  for the end. It is used only where `BroadcastChannel` is missing, and then only for the key
+  being removed. The message body is parsed with `SessionEndMessageSchema` (a Zod
+  `.catch({ expired: false })`) rather than trusted, because anything on the origin can post to
+  a named channel.
+- **The storage port writes and reads back, and a failed write ends the session on the spot.**
+  `writeRefreshToken` returns a boolean (`writeStoredToken` re-reads the key it just set), and
+  `adoptTokens` ends the session and throws `SessionPersistenceError` when it is `false`. A
+  swallowed write was the one client bug that could revoke a token family **server-side**: the
+  rotated token would be lost while the superseded one stayed in storage, and the next boot would
+  present an already-rotated token well past the 30 s grace window, which is precisely what reuse
+  detection revokes a family for. Failing loudly costs one re-login; failing quietly costs the
+  family. Safari private mode and a full quota make this a real path, not a theoretical one.
+- **The login route's search schema must round-trip through itself, and the first one did not.**
+  Review found *every* visit to `/login` landing in the error boundary: `expired` was parsed by a
+  `.transform()` into a boolean, so an absent parameter produced `false`, TanStack Router
+  re-serialised the validated object and fed it back to `validateSearch`, and `false` matched
+  none of the input union's members. The rule now is that the schema's output is always valid
+  input: `expired` is the literal `1` (`EXPIRED_FLAG`) or absent, `returnTo` is normalised
+  through `toReturnToParam`, and both end in `.catch(undefined).optional()` so an unparseable
+  parameter degrades to absent instead of throwing. `buildLoginSearch` is the only writer and
+  produces exactly what the schema accepts.
+- **`returnTo` drops any target pointing at `/login`, and sign-out no longer navigates itself.**
+  The guard builds its search from `location.href`, so before the fix each bounce off `/login`
+  embedded the previous URL and the parameter grew without bound. `toReturnToParam` returns
+  `undefined` when the sanitised path's pathname is `LOGIN_PATH`. `useSignOut` now only ends the
+  session and lets `_app`'s guard perform the single redirect; its own `navigate` used to race
+  the guard and produce the same nesting from the other side.
+- **The access-token countdown runs on the monotonic clock and is capped.**
+  `captureRemainingLifetime` clamps the captured lifetime to `MAX_TRUSTED_LIFETIME_MS` (15 min,
+  the server's own access-token lifetime), so a device clock hours fast degrades to an early
+  refresh instead of a token believed valid forever. Elapsed time comes from `performance.now()`
+  ticks, which no clock change moves. `isAccessTokenStale` additionally requires
+  `MIN_REFRESH_INTERVAL_MS` (60 s) of elapsed time, which stops a permanently-stale token from
+  refreshing on every single request.
+- **The refresh lock may decline to refresh at all, and degrades where `navigator.locks` is
+  absent.** Inside the lock the store re-reads the token; if it changed while waiting **and** the
+  in-memory access token is still fresh, it returns that token and performs no request. If no
+  token is stored any more, it ends the session as expired. Where `navigator.locks` is missing
+  (`withRefreshLock`) the call falls back to an in-tab promise dedupe rather than refreshing
+  unguarded, which is weaker than the lock but never worse than no serialisation at all.
+- **The guardrail plugin is a floor, not a proof, and its largest hole is the hoisted style
+  object.** `web/biome-plugins/noDesignSx.grit` matches syntax, never values, so
+  `const styles = { color: 'red' }` plus `sx={styles}` passes: catching it needs the scope or
+  type resolution a GritQL matcher does not have. Same for a value behind a variable or a call,
+  colour spellings outside the plugin's list (`lab()`, `var(--brand)`), and any design prop on a
+  `Kk*` component other than `color`/`bgcolor`. The full list is in
+  `web/biome-plugins/README.md` → "Known bypasses"; the real guarantee is that `@furria/ui`
+  exposes no raw design prop. Review hardened what *is* syntactic: an object property literally
+  named `sx` anywhere (so `slotProps={{ root: { sx: … } }}` is reached), template literals and
+  colour functions and bare colour names in the value regex, and a rule on the `color` and
+  `bgcolor` JSX attributes, which `pnpm typecheck` does not reject because `color` is a legacy
+  HTML attribute.
+- **Homes a later phase needs:** `apiFetch` / `buildApiUrl` (`lib/api/api-fetch.ts`);
+  `RequestBlockedError` / `UnauthorizedError` / `ServerFailureError` (`lib/api/api-error.ts`);
+  `shouldRetryRequest` (`lib/api/retry-policy.ts`); `getSessionSnapshot`, `subscribeToSession`,
+  `subscribeToSessionEnd`, `setSessionStoragePort`, `hasStoredSession`, `ensureFreshAccessToken`,
+  `withFreshAccessToken`, `signIn`, `signOut`, `restoreSession`
+  (`lib/api/session/session-store.ts`); `SessionStoragePort` +
+  `createLocalStorageSessionStoragePort` (`lib/api/session/session-storage-port.ts`, the
+  Capacitor swap point); `sanitizeReturnTo`, `toReturnToParam`, `LOGIN_PATH`
+  (`lib/return-to.ts`); `sessionAt` (`lib/club.ts`, duplicated from the website); `useMeQuery`,
+  `AppShell`, `SessionBoot`, `useSessionSnapshot` (`features/session`); `buildLoginSearch`,
+  `LoginSearchSchema`, `EXPIRED_FLAG` (`features/login`). In `@furria/ui`: `KkText`,
+  `KkHeading`, `KkButton`, `KkTextField`, `KkAlert`, `KkIcon`, `KkIconButton`, `KkAvatar`,
+  `KkBrandLockup`, `KkThemeColorMeta`, the `KkSx` type, and the `KkBrandStage`, `KkSplitLayout`
+  and `KkAppShell` kits.
+- **Outstanding:** the session layer's wiring carries no automated test by rule
+  ([docs/web/TESTING.md](../../docs/web/TESTING.md) allows pure functions only), so the Web Locks
+  orchestration, the boot states, the route guards, the cross-tab channel and the login form are
+  covered only by the pure helpers underneath them. Nothing in CI exercises the deploy chain
+  either: the club-app image, the nginx `/api` proxy and the split CD paths-filter are verified
+  by the first real deploy, not by `pnpm build`. And until B5 there is still exactly one Account,
+  so the shared-machine and multi-device paths were reasoned about rather than walked.
 
 ---
 

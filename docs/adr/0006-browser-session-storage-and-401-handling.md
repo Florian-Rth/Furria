@@ -37,11 +37,13 @@ locally, so a constant skew cancels out on both sides of the subtraction.
 **Refreshes are serialised with `navigator.locks`, and the token is re-read from storage inside
 the lock.** B1 rotates refresh tokens with family-based reuse detection: presenting an
 already-rotated token within `Auth:RefreshToken:ReuseGraceWindow` (30 s) is a plain 401, but
-after that window it revokes **every** session for that Account, on every device. Simultaneous
-refreshes in two tabs are absorbed by the grace window; the real hazard is a stale tab waking up
-later and presenting a token another tab rotated hours ago. Reading the token from storage
-inside the lock — never from a variable captured before it — removes that: the losing tab finds
-the current token and skips its own refresh entirely.
+after that window it revokes every live token in the presented token's **family**
+(`RefreshTokenService.RevokeLiveFamilyAsync`). A family is the rotation chain one login started
+and every login mints a new one, so the blast radius is that browser profile, not the Account's
+other devices. Simultaneous refreshes in two tabs are absorbed by the grace window; the real
+hazard is a stale tab waking up later and presenting a token another tab rotated hours ago.
+Reading the token from storage inside the lock — never from a variable captured before it —
+removes that: the losing tab finds the current token and skips its own refresh entirely.
 
 ## Consequences
 

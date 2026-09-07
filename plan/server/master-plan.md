@@ -44,6 +44,10 @@ bootstrap admin seed — **plus the endpoint authorization pattern** (added in t
 grilling): the mechanism by which an endpoint declares its required Berechtigung, shipped with
 "authenticated" as the only rule that exists yet. The rights-matrix *data and management* stay
 in the inventory (B4) — but no endpoint ever ships with a check shape we would have to rebuild.
+**Pulled by:** [CA-P0](../club-app/p0-shell-and-session.md) (Club-App shell & session, shipped
+2026-09-07), the first real client of `login`/`refresh`/`logout`/`me`. What that client may
+assume about the browser session, and what reuse detection actually revokes, is
+[ADR-0006](../../docs/adr/0006-browser-session-storage-and-401-handling.md).
 
 ---
 

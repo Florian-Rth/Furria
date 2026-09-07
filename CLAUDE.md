@@ -16,7 +16,7 @@ furria/
 └── web/               # pnpm workspace (versions via catalog in pnpm-workspace.yaml)
     ├── apps/
     │   ├── website/   # Public website (React 19 + Vite + TS + MUI)
-    │   ├── club-app/  # Internal member app (placeholder)
+    │   ├── club-app/  # Internal member app (React 19 + Vite + TS, visuals via @furria/ui only)
     │   └── event-app/ # Guest event app (placeholder)
     └── packages/
         └── ui/        # @furria/ui — shared KK theme + primitives (source-consumed)
@@ -64,6 +64,7 @@ dotnet csharpier format .
 cd web
 pnpm install
 pnpm dev                              # Website dev server on port 3000
+pnpm dev:club-app                     # Club-App dev server on port 3001 (/api proxied to :5100)
 pnpm build
 pnpm test
 pnpm lint                             # Biome check (no writes)
