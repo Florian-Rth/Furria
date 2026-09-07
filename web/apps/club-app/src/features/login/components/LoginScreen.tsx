@@ -34,7 +34,10 @@ export const LoginScreen: FC<LoginScreenProps> = ({ expired }) => {
         <KkBrandStage>
           <KkBrandStage.Meta>
             <KkEyebrow tone="muted">{stageMeta.place}</KkEyebrow>
-            <KkEyebrow tone="muted">{stageMeta.session}</KkEyebrow>
+            <Stack sx={{ alignItems: 'flex-end', gap: 0.5 }}>
+              <KkEyebrow tone="muted">{stageMeta.number}</KkEyebrow>
+              <KkEyebrow tone="muted">{stageMeta.session}</KkEyebrow>
+            </Stack>
           </KkBrandStage.Meta>
         </KkBrandStage>
       </KkSplitLayout.Stage>

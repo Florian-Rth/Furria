@@ -29,12 +29,12 @@ const runGuarded = <TResult>(
   }
 };
 
-const readStoredToken = (storage: Storage): string | null => {
+export const readStoredToken = (storage: Storage): string | null => {
   const stored = storage.getItem(REFRESH_TOKEN_KEY);
   return stored === null || stored === '' ? null : stored;
 };
 
-const writeStoredToken = (storage: Storage, token: string): boolean => {
+export const writeStoredToken = (storage: Storage, token: string): boolean => {
   storage.setItem(REFRESH_TOKEN_KEY, token);
   return readStoredToken(storage) === token;
 };

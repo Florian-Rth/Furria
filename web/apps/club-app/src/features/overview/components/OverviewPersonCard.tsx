@@ -4,7 +4,7 @@ import { OverviewCard } from './OverviewCard';
 import { OverviewField } from './OverviewField';
 import { OverviewFields } from './OverviewFields';
 
-const EMPTY_VALUE = '—';
+const EMPTY_VALUE = 'Nicht hinterlegt';
 
 interface OverviewPersonCardProps {
   person: Person;

@@ -5,6 +5,7 @@ const TOWN_LABEL = 'GROSSFURRA';
 
 export interface LoginStageMeta {
   place: string;
+  number: string;
   session: string;
 }
 
@@ -13,6 +14,7 @@ export const buildLoginStageMeta = (now: Date): LoginStageMeta => {
 
   return {
     place: `${AREA_LABEL} · ${TOWN_LABEL}`,
-    session: `SESSION ${session.yearsLabel} · NUMBER ${session.number}`,
+    number: `NUMBER ${session.number}`,
+    session: `SESSION ${session.yearsLabel}`,
   };
 };
