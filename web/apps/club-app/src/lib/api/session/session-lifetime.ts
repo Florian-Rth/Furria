@@ -1,0 +1,15 @@
+export const REFRESH_MARGIN_MS = 60_000;
+
+export const captureRemainingLifetime = (expiresAtIso: string, receivedAtMs: number): number => {
+  const expiresAtMs = Date.parse(expiresAtIso);
+  if (Number.isNaN(expiresAtMs)) {
+    return 0;
+  }
+  return Math.max(0, expiresAtMs - receivedAtMs);
+};
+
+export const isWithinRefreshMargin = (
+  remainingMs: number,
+  elapsedMs: number,
+  marginMs: number,
+): boolean => remainingMs - elapsedMs <= marginMs;
