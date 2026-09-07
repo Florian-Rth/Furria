@@ -2,12 +2,18 @@ export const REFRESH_MARGIN_MS = 60_000;
 
 export const MIN_REFRESH_INTERVAL_MS = 60_000;
 
-export const captureRemainingLifetime = (expiresAtIso: string, receivedAtMs: number): number => {
+export const MAX_TRUSTED_LIFETIME_MS = 900_000;
+
+export const captureRemainingLifetime = (
+  expiresAtIso: string,
+  receivedAtMs: number,
+  maxTrustedMs: number,
+): number => {
   const expiresAtMs = Date.parse(expiresAtIso);
   if (Number.isNaN(expiresAtMs)) {
     return 0;
   }
-  return Math.max(0, expiresAtMs - receivedAtMs);
+  return Math.min(Math.max(0, expiresAtMs - receivedAtMs), maxTrustedMs);
 };
 
 export const isWithinRefreshMargin = (

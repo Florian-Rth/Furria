@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { toReturnToParam } from '@/lib/return-to';
 
 const EMAIL_MESSAGE = 'Bitte gib eine gültige E-Mail-Adresse ein.';
 const PASSWORD_MESSAGE = 'Bitte gib dein Passwort ein.';
@@ -9,13 +10,14 @@ export const LoginFormSchema = z.object({
 });
 export type LoginForm = z.infer<typeof LoginFormSchema>;
 
-const ExpiredMarkerSchema = z
-  .union([z.literal(1), z.literal('1'), z.literal(true)])
-  .optional()
-  .transform((marker) => marker !== undefined);
+export const EXPIRED_FLAG = 1;
+
+const ReturnToSchema = z.string().transform(toReturnToParam).catch(undefined).optional();
+
+const ExpiredFlagSchema = z.literal(EXPIRED_FLAG).optional().catch(undefined);
 
 export const LoginSearchSchema = z.object({
-  returnTo: z.string().optional(),
-  expired: ExpiredMarkerSchema,
+  returnTo: ReturnToSchema,
+  expired: ExpiredFlagSchema,
 });
 export type LoginSearch = z.infer<typeof LoginSearchSchema>;

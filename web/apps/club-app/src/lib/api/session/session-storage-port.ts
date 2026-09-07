@@ -4,7 +4,7 @@ export interface SessionStoragePort {
   clearRefreshToken(): void;
 }
 
-const REFRESH_TOKEN_KEY = 'furria.club-app.refresh-token';
+export const REFRESH_TOKEN_KEY = 'furria.club-app.refresh-token';
 
 const resolveLocalStorage = (): Storage | null => {
   try {

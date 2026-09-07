@@ -9,7 +9,7 @@ export const useAuthenticatedRedirect = (target: string): boolean => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.history.replace(target);
+      void router.navigate({ href: target, replace: true });
     }
   }, [isAuthenticated, router, target]);
 

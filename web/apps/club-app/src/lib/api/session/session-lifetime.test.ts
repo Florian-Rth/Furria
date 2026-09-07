@@ -7,15 +7,20 @@ import {
 
 describe('captureRemainingLifetime', () => {
   it.each([
-    ['2026-09-07T16:28:39+00:00', Date.UTC(2026, 8, 7, 16, 13, 39), 900_000],
-    ['2026-09-07T18:28:39+02:00', Date.UTC(2026, 8, 7, 16, 13, 39), 900_000],
-    ['2026-09-07T16:28:39.034611+00:00', Date.UTC(2026, 8, 7, 16, 28, 39), 34],
-    ['2026-09-07T16:28:39+00:00', Date.UTC(2026, 8, 7, 16, 28, 39), 0],
-    ['2026-09-07T16:28:39+00:00', Date.UTC(2026, 8, 7, 17, 0, 0), 0],
-    ['not-a-timestamp', Date.UTC(2026, 8, 7, 16, 13, 39), 0],
-  ])('turns %s received at %d into %d ms of lifetime', (expiresAtIso, receivedAtMs, expected) => {
-    expect(captureRemainingLifetime(expiresAtIso, receivedAtMs)).toBe(expected);
-  });
+    ['2026-09-07T16:28:39+00:00', Date.UTC(2026, 8, 7, 16, 13, 39), 900_000, 900_000],
+    ['2026-09-07T18:28:39+02:00', Date.UTC(2026, 8, 7, 16, 13, 39), 900_000, 900_000],
+    ['2026-09-07T16:28:39.034611+00:00', Date.UTC(2026, 8, 7, 16, 28, 39), 900_000, 34],
+    ['2026-09-07T16:28:39+00:00', Date.UTC(2026, 8, 7, 16, 28, 39), 900_000, 0],
+    ['2026-09-07T16:28:39+00:00', Date.UTC(2026, 8, 7, 17, 0, 0), 900_000, 0],
+    ['2026-09-07T16:28:39+00:00', Date.UTC(2026, 8, 7, 16, 8, 39), 900_000, 900_000],
+    ['2026-09-07T16:28:39+00:00', Date.UTC(2026, 8, 6, 16, 13, 39), 900_000, 900_000],
+    ['not-a-timestamp', Date.UTC(2026, 8, 7, 16, 13, 39), 900_000, 0],
+  ])(
+    'turns %s received at %d with a %d ms ceiling into %d ms of lifetime',
+    (expiresAtIso, receivedAtMs, maxTrustedMs, expected) => {
+      expect(captureRemainingLifetime(expiresAtIso, receivedAtMs, maxTrustedMs)).toBe(expected);
+    },
+  );
 });
 
 describe('isWithinRefreshMargin', () => {

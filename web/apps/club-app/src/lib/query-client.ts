@@ -1,5 +1,6 @@
 import { QueryClient } from '@tanstack/react-query';
 import { shouldRetryRequest } from '@/lib/api/retry-policy';
+import { subscribeToSessionEnd } from '@/lib/api/session/session-store';
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -9,4 +10,8 @@ export const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
     },
   },
+});
+
+subscribeToSessionEnd(() => {
+  queryClient.clear();
 });

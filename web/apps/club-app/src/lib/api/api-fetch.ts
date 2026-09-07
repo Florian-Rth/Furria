@@ -13,6 +13,7 @@ interface ApiFetchOptions<TResponse> {
 
 const UNAUTHORIZED_STATUS = 401;
 const NO_CONTENT_STATUS = 204;
+const REQUEST_TIMEOUT_MS = 15_000;
 
 export const buildApiUrl = (baseUrl: string, path: string): string => {
   const base = baseUrl.replace(/\/+$/, '');
@@ -35,7 +36,7 @@ export const apiFetch = async <TResponse>(
   const url = buildApiUrl(readApiBaseUrl(), path);
 
   const headers: Record<string, string> = {};
-  const init: RequestInit = { method };
+  const init: RequestInit = { method, signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) };
 
   if (body !== undefined) {
     headers['Content-Type'] = 'application/json';
