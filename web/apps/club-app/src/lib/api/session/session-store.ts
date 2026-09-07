@@ -1,9 +1,11 @@
 import { UnauthorizedError } from '@/lib/api/api-error';
 import type { LoginRequest, SessionTokens } from '@/lib/api/schemas';
 import { requestLogin, requestLogout, requestRefresh } from './auth-api';
+import { SessionPersistenceError } from './session-error';
 import {
   captureRemainingLifetime,
-  isWithinRefreshMargin,
+  isAccessTokenStale,
+  MIN_REFRESH_INTERVAL_MS,
   REFRESH_MARGIN_MS,
 } from './session-lifetime';
 import type { SessionStoragePort } from './session-storage-port';
@@ -22,10 +24,13 @@ let storagePort: SessionStoragePort = createLocalStorageSessionStoragePort();
 let accessToken: string | null = null;
 let accessTokenReceivedAtMs = 0;
 let accessTokenLifetimeMs = 0;
-let snapshot: SessionSnapshot = {
-  status: storagePort.readRefreshToken() === null ? 'anonymous' : 'restoring',
-  expired: false,
-};
+let pendingInTabRefresh: Promise<string> | null = null;
+let expiryPublicationSuppressed = false;
+
+const resolveStoredStatus = (): SessionStatus =>
+  storagePort.readRefreshToken() === null ? 'anonymous' : 'restoring';
+
+let snapshot: SessionSnapshot = { status: resolveStoredStatus(), expired: false };
 
 const listeners = new Set<() => void>();
 
@@ -39,31 +44,53 @@ const publish = (status: SessionStatus, expired: boolean): void => {
   }
 };
 
-const adoptTokens = (tokens: SessionTokens): string => {
-  const receivedAtMs = Date.now();
-  accessToken = tokens.accessToken;
-  accessTokenReceivedAtMs = receivedAtMs;
-  accessTokenLifetimeMs = captureRemainingLifetime(tokens.accessTokenExpiresAt, receivedAtMs);
-  storagePort.writeRefreshToken(tokens.refreshToken);
-  publish('authenticated', false);
-  return tokens.accessToken;
-};
-
 const clearSession = (expired: boolean): void => {
   accessToken = null;
   accessTokenReceivedAtMs = 0;
   accessTokenLifetimeMs = 0;
   storagePort.clearRefreshToken();
-  publish('anonymous', expired);
+  publish('anonymous', expired && !expiryPublicationSuppressed);
 };
 
-const isAccessTokenStale = (nowMs: number): boolean =>
-  isWithinRefreshMargin(accessTokenLifetimeMs, nowMs - accessTokenReceivedAtMs, REFRESH_MARGIN_MS);
+const adoptTokens = (tokens: SessionTokens): string => {
+  const receivedAtMs = Date.now();
+  if (!storagePort.writeRefreshToken(tokens.refreshToken)) {
+    clearSession(false);
+    throw new SessionPersistenceError();
+  }
+  accessToken = tokens.accessToken;
+  accessTokenReceivedAtMs = receivedAtMs;
+  accessTokenLifetimeMs = captureRemainingLifetime(tokens.accessTokenExpiresAt, receivedAtMs);
+  publish('authenticated', false);
+  return tokens.accessToken;
+};
 
-const withRefreshLock = async <TResult>(run: () => Promise<TResult>): Promise<TResult> => {
+const isCurrentAccessTokenStale = (nowMs: number): boolean =>
+  isAccessTokenStale(
+    accessTokenLifetimeMs,
+    nowMs - accessTokenReceivedAtMs,
+    REFRESH_MARGIN_MS,
+    MIN_REFRESH_INTERVAL_MS,
+  );
+
+const dedupedInTab = async (run: () => Promise<string>): Promise<string> => {
+  const alreadyRunning = pendingInTabRefresh;
+  if (alreadyRunning !== null) {
+    return await alreadyRunning;
+  }
+  const started = run();
+  pendingInTabRefresh = started;
+  try {
+    return await started;
+  } finally {
+    pendingInTabRefresh = null;
+  }
+};
+
+const withRefreshLock = async (run: () => Promise<string>): Promise<string> => {
   const lockManager = typeof navigator === 'undefined' ? undefined : navigator.locks;
   if (lockManager === undefined) {
-    return await run();
+    return await dedupedInTab(run);
   }
   return await lockManager.request(REFRESH_LOCK_NAME, run);
 };
@@ -78,7 +105,7 @@ const refreshThroughLock = async (): Promise<string> => {
     if (
       storedToken !== tokenSeenBeforeLock &&
       currentAccessToken !== null &&
-      !isAccessTokenStale(Date.now())
+      !isCurrentAccessTokenStale(Date.now())
     ) {
       return currentAccessToken;
     }
@@ -109,13 +136,17 @@ export const subscribeToSession = (listener: () => void): (() => void) => {
 
 export const setSessionStoragePort = (port: SessionStoragePort): void => {
   storagePort = port;
+  if (accessToken !== null) {
+    return;
+  }
+  publish(resolveStoredStatus(), snapshot.expired);
 };
 
 export const hasStoredSession = (): boolean => storagePort.readRefreshToken() !== null;
 
 export const ensureFreshAccessToken = async (): Promise<string> => {
   const currentAccessToken = accessToken;
-  if (currentAccessToken !== null && !isAccessTokenStale(Date.now())) {
+  if (currentAccessToken !== null && !isCurrentAccessTokenStale(Date.now())) {
     return currentAccessToken;
   }
   return await refreshThroughLock();
@@ -149,16 +180,26 @@ const revokeQuietly = async (refreshToken: string): Promise<void> => {
 
 export const signOut = async (): Promise<void> => {
   const refreshToken = storagePort.readRefreshToken();
-  if (refreshToken !== null) {
-    await revokeQuietly(refreshToken);
+  expiryPublicationSuppressed = true;
+  try {
+    if (refreshToken !== null) {
+      await revokeQuietly(refreshToken);
+    }
+    clearSession(false);
+  } finally {
+    expiryPublicationSuppressed = false;
   }
-  clearSession(false);
 };
 
 export const restoreSession = async (): Promise<void> => {
-  if (snapshot.status !== 'restoring') {
+  if (snapshot.status === 'authenticated') {
     return;
   }
+  if (storagePort.readRefreshToken() === null) {
+    publish('anonymous', snapshot.expired);
+    return;
+  }
+  publish('restoring', false);
   try {
     await ensureFreshAccessToken();
   } catch (error) {

@@ -1,6 +1,6 @@
 export interface SessionStoragePort {
   readRefreshToken(): string | null;
-  writeRefreshToken(token: string): void;
+  writeRefreshToken(token: string): boolean;
   clearRefreshToken(): void;
 }
 
@@ -34,12 +34,15 @@ const readStoredToken = (storage: Storage): string | null => {
   return stored === null || stored === '' ? null : stored;
 };
 
+const writeStoredToken = (storage: Storage, token: string): boolean => {
+  storage.setItem(REFRESH_TOKEN_KEY, token);
+  return readStoredToken(storage) === token;
+};
+
 export const createLocalStorageSessionStoragePort = (): SessionStoragePort => ({
   readRefreshToken: (): string | null => runGuarded(readStoredToken, null),
-  writeRefreshToken: (token: string): void =>
-    runGuarded<void>((storage) => {
-      storage.setItem(REFRESH_TOKEN_KEY, token);
-    }, undefined),
+  writeRefreshToken: (token: string): boolean =>
+    runGuarded((storage) => writeStoredToken(storage, token), false),
   clearRefreshToken: (): void =>
     runGuarded<void>((storage) => {
       storage.removeItem(REFRESH_TOKEN_KEY);

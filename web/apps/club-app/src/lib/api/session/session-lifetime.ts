@@ -1,5 +1,7 @@
 export const REFRESH_MARGIN_MS = 60_000;
 
+export const MIN_REFRESH_INTERVAL_MS = 60_000;
+
 export const captureRemainingLifetime = (expiresAtIso: string, receivedAtMs: number): number => {
   const expiresAtMs = Date.parse(expiresAtIso);
   if (Number.isNaN(expiresAtMs)) {
@@ -13,3 +15,10 @@ export const isWithinRefreshMargin = (
   elapsedMs: number,
   marginMs: number,
 ): boolean => remainingMs - elapsedMs <= marginMs;
+
+export const isAccessTokenStale = (
+  remainingMs: number,
+  elapsedMs: number,
+  marginMs: number,
+  minIntervalMs: number,
+): boolean => elapsedMs >= minIntervalMs && isWithinRefreshMargin(remainingMs, elapsedMs, marginMs);

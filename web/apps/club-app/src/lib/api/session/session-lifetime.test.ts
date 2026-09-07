@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { captureRemainingLifetime, isWithinRefreshMargin } from './session-lifetime';
+import {
+  captureRemainingLifetime,
+  isAccessTokenStale,
+  isWithinRefreshMargin,
+} from './session-lifetime';
 
 describe('captureRemainingLifetime', () => {
   it.each([
@@ -26,6 +30,24 @@ describe('isWithinRefreshMargin', () => {
     'reports %d ms of lifetime after %d ms with a %d ms margin as %s',
     (remainingMs, elapsedMs, marginMs, expected) => {
       expect(isWithinRefreshMargin(remainingMs, elapsedMs, marginMs)).toBe(expected);
+    },
+  );
+});
+
+describe('isAccessTokenStale', () => {
+  it.each([
+    [900_000, 0, 60_000, 60_000, false],
+    [900_000, 840_000, 60_000, 60_000, true],
+    [0, 0, 60_000, 60_000, false],
+    [0, 59_999, 60_000, 60_000, false],
+    [0, 60_000, 60_000, 60_000, true],
+    [0, 600_000, 60_000, 60_000, true],
+    [900_000, 30_000, 60_000, 0, false],
+    [0, 0, 60_000, 0, true],
+  ])(
+    'reports %d ms of lifetime after %d ms with a %d ms margin and a %d ms floor as %s',
+    (remainingMs, elapsedMs, marginMs, minIntervalMs, expected) => {
+      expect(isAccessTokenStale(remainingMs, elapsedMs, marginMs, minIntervalMs)).toBe(expected);
     },
   );
 });

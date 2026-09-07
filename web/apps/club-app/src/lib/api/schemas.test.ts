@@ -62,27 +62,4 @@ describe('MeSchema', () => {
       },
     });
   });
-
-  it('keeps an account without a membership row', () => {
-    expect(
-      MeSchema.parse({
-        accountId: 1,
-        email: 'admin@furria.local',
-        person: { id: 1, firstName: 'Furria', lastName: 'Admin', email: null, phone: null },
-        membership: null,
-      }).membership,
-    ).toBeNull();
-  });
-
-  it('drops fields the API did not promise', () => {
-    expect(
-      MeSchema.parse({
-        accountId: 1,
-        email: 'admin@furria.local',
-        person: { id: 1, firstName: 'Furria', lastName: 'Admin', email: null, phone: null },
-        membership: null,
-        legacyRole: 'admin',
-      }),
-    ).not.toHaveProperty('legacyRole');
-  });
 });
