@@ -172,9 +172,9 @@ Each is a commit; each leaves the app working.
 
 ## As-built (CA-P0, 2026-09-07)
 
-Built as the seven planned slices plus five follow-up commits (three fixes and one refactor
+Built as the seven planned slices plus six follow-up commits (four fixes and one refactor
 from review, one adding the helper tests review found missing). Final gates green from `web/`:
-lint, typecheck, **666 tests** (19 ui + 145 club-app + 502 website), build. The plan held. The
+lint, typecheck, **674 tests** (19 ui + 153 club-app + 502 website), build. The plan held. The
 decisions, deviations and traps worth carrying forward:
 
 - **The plan and ADR-0006 were wrong about reuse detection, and both are corrected.** They said
@@ -250,13 +250,35 @@ decisions, deviations and traps worth carrying forward:
   `undefined` when the sanitised path's pathname is `LOGIN_PATH`. `useSignOut` now only ends the
   session and lets `_app`'s guard perform the single redirect; its own `navigate` used to race
   the guard and produce the same nesting from the other side.
-- **The access-token countdown runs on the monotonic clock and is capped.**
-  `captureRemainingLifetime` clamps the captured lifetime to `MAX_TRUSTED_LIFETIME_MS` (15 min,
-  the server's own access-token lifetime), so a device clock hours fast degrades to an early
-  refresh instead of a token believed valid forever. Elapsed time comes from `performance.now()`
-  ticks, which no clock change moves. `isAccessTokenStale` additionally requires
-  `MIN_REFRESH_INTERVAL_MS` (60 s) of elapsed time, which stops a permanently-stale token from
-  refreshing on every single request.
+- **The access-token countdown reads both clocks and counts the LARGER elapsed time, because
+  either clock alone silently loses the session.** `adoptTokens` stamps the receipt twice, on
+  `Date.now()` (`accessTokenReceivedAtMs`) and on `performance.now()`
+  (`accessTokenReceivedAtTicks`), and the pure `resolveElapsedLifetime`
+  (`lib/api/session/session-lifetime.ts`) returns `Math.max(0, wallClockElapsed,
+  monotonicElapsed)`. Both hazards end identically: the store believes a dead token is fresh,
+  sends it, takes a 401, and since **a 401 is terminal** it deletes a refresh token still valid
+  for up to 30 days and demands a password. The monotonic hazard is the one that actually
+  shipped and was caught in the CA-P0 regression audit: **`performance.now()` does not advance
+  while a macOS or iOS host is suspended.** Chromium and WebKit base it on `mach_absolute_time`,
+  and 783 hours of suspend measured as invisible to it on the build machine. A lid closed longer
+  than the 15 min access-token lifetime therefore leaves a monotonic-only countdown at a few
+  seconds. Worse, no user action is needed to trigger it: React Query's `refetchOnReconnect`
+  defaults to `true`, so waking the machine fires the request itself, and the resulting session
+  end broadcasts a sign-out to every other tab. `Date.now()` alone carries the mirrored hazard:
+  a backward clock correction makes the elapsed time look *smaller* than it was, with the same
+  ending. A suspended host inflates the wall-clock reading, a backward correction leaves the
+  monotonic reading intact, so the maximum catches both, and the error stays one-sided by
+  design: too large an elapsed time refreshes early and costs one request, too small forces a
+  re-login. Both readings remain differences taken on **one** clock against **its own** earlier
+  stamp, so the standing ban on comparing the server's `accessTokenExpiresAt` to the device
+  clock is untouched. The cap and the floor stay: `captureRemainingLifetime` clamps the captured
+  lifetime to `MAX_TRUSTED_LIFETIME_MS` (15 min, the server's own access-token lifetime) so a
+  device clock hours fast degrades to an early refresh rather than a token believed valid
+  forever, and `isAccessTokenStale` still requires `MIN_REFRESH_INTERVAL_MS` (60 s) of elapsed
+  time so a permanently-stale token cannot refresh on every single request. The decision lives
+  in a pure function precisely so the four branches (suspend, backward correction, forward jump,
+  both clocks agreeing) are covered by literal fixtures in `session-lifetime.test.ts`; the store
+  wiring around it is not testable under the repo's rules.
 - **The refresh lock may decline to refresh at all, and degrades where `navigator.locks` is
   absent.** Inside the lock the store re-reads the token; if it changed while waiting **and** the
   in-memory access token is still fresh, it returns that token and performs no request. If no

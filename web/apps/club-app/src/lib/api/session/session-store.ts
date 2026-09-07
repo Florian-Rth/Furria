@@ -9,6 +9,7 @@ import {
   MAX_TRUSTED_LIFETIME_MS,
   MIN_REFRESH_INTERVAL_MS,
   REFRESH_MARGIN_MS,
+  resolveElapsedLifetime,
 } from './session-lifetime';
 import type { SessionStoragePort } from './session-storage-port';
 import { createLocalStorageSessionStoragePort } from './session-storage-port';
@@ -24,6 +25,7 @@ const REFRESH_LOCK_NAME = 'furria-club-app-refresh';
 
 let storagePort: SessionStoragePort = createLocalStorageSessionStoragePort();
 let accessToken: string | null = null;
+let accessTokenReceivedAtMs = 0;
 let accessTokenReceivedAtTicks = 0;
 let accessTokenLifetimeMs = 0;
 let pendingInTabRefresh: Promise<string> | null = null;
@@ -49,6 +51,7 @@ const publish = (status: SessionStatus, expired: boolean): void => {
 
 const forgetTokens = (): void => {
   accessToken = null;
+  accessTokenReceivedAtMs = 0;
   accessTokenReceivedAtTicks = 0;
   accessTokenLifetimeMs = 0;
   storagePort.clearRefreshToken();
@@ -90,6 +93,7 @@ const adoptTokens = (tokens: SessionTokens): string => {
     throw new SessionPersistenceError();
   }
   accessToken = tokens.accessToken;
+  accessTokenReceivedAtMs = receivedAtMs;
   accessTokenReceivedAtTicks = receivedAtTicks;
   accessTokenLifetimeMs = captureRemainingLifetime(
     tokens.accessTokenExpiresAt,
@@ -103,7 +107,10 @@ const adoptTokens = (tokens: SessionTokens): string => {
 const isCurrentAccessTokenStale = (): boolean =>
   isAccessTokenStale(
     accessTokenLifetimeMs,
-    performance.now() - accessTokenReceivedAtTicks,
+    resolveElapsedLifetime(
+      Date.now() - accessTokenReceivedAtMs,
+      performance.now() - accessTokenReceivedAtTicks,
+    ),
     REFRESH_MARGIN_MS,
     MIN_REFRESH_INTERVAL_MS,
   );

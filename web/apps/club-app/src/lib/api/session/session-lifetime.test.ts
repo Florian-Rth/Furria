@@ -3,6 +3,7 @@ import {
   captureRemainingLifetime,
   isAccessTokenStale,
   isWithinRefreshMargin,
+  resolveElapsedLifetime,
 } from './session-lifetime';
 
 describe('captureRemainingLifetime', () => {
@@ -19,6 +20,24 @@ describe('captureRemainingLifetime', () => {
     'turns %s received at %d with a %d ms ceiling into %d ms of lifetime',
     (expiresAtIso, receivedAtMs, maxTrustedMs, expected) => {
       expect(captureRemainingLifetime(expiresAtIso, receivedAtMs, maxTrustedMs)).toBe(expected);
+    },
+  );
+});
+
+describe('resolveElapsedLifetime', () => {
+  it.each([
+    [300_000, 300_000, 300_000],
+    [300_050, 300_000, 300_050],
+    [2_819_000_000, 12_000, 2_819_000_000],
+    [960_000, 4_000, 960_000],
+    [-3_600_000, 870_000, 870_000],
+    [-3_600_000, 30_000, 30_000],
+    [7_200_000, 120_000, 7_200_000],
+    [-500, 0, 0],
+  ])(
+    'resolves %d ms of wall-clock and %d ms of monotonic time to %d ms elapsed',
+    (wallClockElapsedMs, monotonicElapsedMs, expected) => {
+      expect(resolveElapsedLifetime(wallClockElapsedMs, monotonicElapsedMs)).toBe(expected);
     },
   );
 });

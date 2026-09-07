@@ -16,6 +16,11 @@ export const captureRemainingLifetime = (
   return Math.min(Math.max(0, expiresAtMs - receivedAtMs), maxTrustedMs);
 };
 
+export const resolveElapsedLifetime = (
+  wallClockElapsedMs: number,
+  monotonicElapsedMs: number,
+): number => Math.max(0, wallClockElapsedMs, monotonicElapsedMs);
+
 export const isWithinRefreshMargin = (
   remainingMs: number,
   elapsedMs: number,
