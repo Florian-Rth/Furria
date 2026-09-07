@@ -105,5 +105,54 @@ export const kkTheme = createTheme({
         },
       },
     },
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          borderRadius: kkTokens.radius.base,
+          backgroundColor: (theme.vars ?? theme).palette.background.paper,
+          '& .MuiOutlinedInput-notchedOutline': {
+            borderWidth: 1.5,
+            borderColor: (theme.vars ?? theme).palette.divider,
+          },
+          '&:hover .MuiOutlinedInput-notchedOutline': {
+            borderColor: (theme.vars ?? theme).palette.text.secondary,
+          },
+          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+            borderWidth: 1.5,
+            borderColor: (theme.vars ?? theme).palette.primary.main,
+          },
+        }),
+      },
+    },
+    MuiInputLabel: {
+      styleOverrides: {
+        root: {
+          fontWeight: 700,
+        },
+      },
+    },
+    MuiAlert: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          borderRadius: kkTokens.radius.base,
+          border: `1.5px solid ${(theme.vars ?? theme).palette.divider}`,
+          fontWeight: 600,
+        }),
+      },
+    },
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          backgroundImage: 'none',
+        },
+      },
+    },
+    MuiListItemButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: kkTokens.radius.base,
+        },
+      },
+    },
   },
 });
