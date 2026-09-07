@@ -20,7 +20,7 @@ same-origin and no CORS exists.
 Every visible component comes from `@furria/ui` as a `Kk*` part, never from MUI directly
 ([ADR-0007](../../../docs/adr/0007-furria-ui-owns-every-visible-component.md)); the boundary is
 lint-enforced by `apps/club-app/**` overrides in [`web/biome.json`](../../biome.json). The session
-model — bearer tokens, refresh token in `localStorage` behind a port, a 401 as terminal — is
+model (bearer tokens, refresh token in `localStorage` behind a port, a 401 as terminal) is
 [ADR-0006](../../../docs/adr/0006-browser-session-storage-and-401-handling.md).
 
 ## Scope

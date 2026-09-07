@@ -33,6 +33,7 @@ jobs:
               - 'web/pnpm-lock.yaml'
               - 'web/biome.json'
               - 'web/tsconfig.base.json'
+              - 'web/.dockerignore'
               - '.github/workflows/cd.yml'
             club-app:
               - 'web/apps/club-app/**'
@@ -43,6 +44,7 @@ jobs:
               - 'web/pnpm-lock.yaml'
               - 'web/biome.json'
               - 'web/tsconfig.base.json'
+              - 'web/.dockerignore'
               - '.github/workflows/cd.yml'
 
   api:

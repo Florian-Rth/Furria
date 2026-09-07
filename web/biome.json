@@ -153,6 +153,10 @@
                   {
                     "group": ["@mui/icons-material/**"],
                     "message": "Club-App icons come from `@furria/ui` (`KkIcon`), never from `@mui/icons-material`."
+                  },
+                  {
+                    "group": ["@emotion/**"],
+                    "message": "Styling lives in `@furria/ui` (ADR-0007): the Club-App never authors CSS with Emotion."
                   }
                 ]
               }
@@ -186,6 +190,10 @@
                   {
                     "group": ["@mui/icons-material/**"],
                     "message": "Club-App icons come from `@furria/ui` (`KkIcon`), never from `@mui/icons-material`."
+                  },
+                  {
+                    "group": ["@emotion/**"],
+                    "message": "Styling lives in `@furria/ui` (ADR-0007): the Club-App never authors CSS with Emotion."
                   },
                   {
                     "group": ["@/routes/**"],
@@ -229,6 +237,10 @@
                   {
                     "group": ["@mui/icons-material/**"],
                     "message": "Club-App icons come from `@furria/ui` (`KkIcon`), never from `@mui/icons-material`."
+                  },
+                  {
+                    "group": ["@emotion/**"],
+                    "message": "Styling lives in `@furria/ui` (ADR-0007): the Club-App never authors CSS with Emotion."
                   },
                   {
                     "group": ["@/features/**", "@/routes/**"],

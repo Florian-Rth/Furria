@@ -2,10 +2,12 @@
 FROM node:24-alpine AS build
 RUN corepack enable
 WORKDIR /repo
+ENV CI=true
 
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
-COPY apps/club-app/package.json apps/club-app/
 COPY packages/ui/package.json packages/ui/
+COPY apps/website/package.json apps/website/
+COPY apps/club-app/package.json apps/club-app/
 RUN pnpm install --frozen-lockfile
 
 COPY . .

@@ -66,7 +66,7 @@ pnpm install
 pnpm dev                              # Website dev server on port 3000
 pnpm build
 pnpm test
-pnpm lint                             # Biome check + fix
+pnpm lint                             # Biome check (no writes)
 pnpm typecheck
 ```
 
