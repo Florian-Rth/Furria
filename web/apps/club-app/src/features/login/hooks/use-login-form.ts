@@ -14,7 +14,7 @@ interface LoginFormState {
   submitError: string | null;
 }
 
-export const useLoginForm = (onSignedIn: () => void): LoginFormState => {
+export const useLoginForm = (): LoginFormState => {
   const mutation = useSignInMutation();
 
   const form = useForm<LoginForm>({
@@ -23,7 +23,7 @@ export const useLoginForm = (onSignedIn: () => void): LoginFormState => {
   });
 
   const handleFormSubmit = form.handleSubmit((values) => {
-    mutation.mutate(values, { onSuccess: onSignedIn });
+    mutation.mutate(values);
   });
 
   return {

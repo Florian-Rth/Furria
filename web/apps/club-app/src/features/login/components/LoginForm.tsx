@@ -4,12 +4,8 @@ import type { FC } from 'react';
 import { useLoginForm } from '../hooks/use-login-form';
 import { usePasswordVisibility } from '../hooks/use-password-visibility';
 
-interface LoginFormProps {
-  onSignedIn: () => void;
-}
-
-export const LoginForm: FC<LoginFormProps> = ({ onSignedIn }) => {
-  const { form, submit, isSubmitting, submitError } = useLoginForm(onSignedIn);
+export const LoginForm: FC = () => {
+  const { form, submit, isSubmitting, submitError } = useLoginForm();
   const password = usePasswordVisibility();
 
   const emailField = form.register('email');

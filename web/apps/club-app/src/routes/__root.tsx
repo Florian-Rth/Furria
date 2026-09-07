@@ -1,14 +1,18 @@
 import '@furria/ui/fonts';
-import { KkThemeProvider } from '@furria/ui';
+import { KkThemeColorMeta, KkThemeProvider } from '@furria/ui';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { createRootRoute, Outlet } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { SessionBoot } from '@/features/session';
 import { queryClient } from '@/lib/query-client';
 
 const RootComponent: FC = () => (
   <KkThemeProvider>
+    <KkThemeColorMeta />
     <QueryClientProvider client={queryClient}>
-      <Outlet />
+      <SessionBoot>
+        <Outlet />
+      </SessionBoot>
     </QueryClientProvider>
   </KkThemeProvider>
 );

@@ -18,10 +18,9 @@ const HEADING_LEVEL = { mobile: 4, desktop: 3 } as const;
 
 interface LoginScreenProps {
   expired: boolean;
-  onSignedIn: () => void;
 }
 
-export const LoginScreen: FC<LoginScreenProps> = ({ expired, onSignedIn }) => {
+export const LoginScreen: FC<LoginScreenProps> = ({ expired }) => {
   const isMobile = useIsMobile();
   const stageMeta = buildLoginStageMeta(new Date());
   const headingLevel = isMobile ? HEADING_LEVEL.mobile : HEADING_LEVEL.desktop;
@@ -47,7 +46,7 @@ export const LoginScreen: FC<LoginScreenProps> = ({ expired, onSignedIn }) => {
           <KkNote>Der Mitgliederbereich des Furrscher Carnevals Club.</KkNote>
         </Stack>
         {expiredNotice}
-        <LoginForm onSignedIn={onSignedIn} />
+        <LoginForm />
         <LoginPendingEntries />
         <KkNote>Kein Zugang? Der Verein lädt dich ein, per Link oder gedrucktem Code.</KkNote>
       </KkSplitLayout.Pane>
