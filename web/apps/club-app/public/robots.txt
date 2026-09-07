@@ -1,0 +1,3 @@
+# Internal member app. Nothing here may ever be indexed.
+User-agent: *
+Disallow: /
