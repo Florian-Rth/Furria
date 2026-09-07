@@ -40,6 +40,8 @@ export type { KkSx } from './kk-sx';
 export { PageLayout } from './PageLayout/PageLayout';
 export type { KkPhotoOrientation } from './photo-frame';
 export { KK_DARK_SCHEME_ATTRIBUTE, KK_DESKTOP_BREAKPOINT, kkTheme } from './theme';
+export type { KkColorSchemeMode, KkResolvedColorScheme } from './theme-color';
+export { kkThemeColorForScheme, resolveKkColorScheme } from './theme-color';
 export type { KkColorTokens } from './tokens';
 export { kkTokens } from './tokens';
 export { useIsMobile } from './use-is-mobile';

@@ -114,8 +114,10 @@ export const kkTheme = createTheme({
             borderWidth: 1.5,
             borderColor: (theme.vars ?? theme).palette.divider,
           },
-          '&:hover .MuiOutlinedInput-notchedOutline': {
-            borderColor: (theme.vars ?? theme).palette.text.secondary,
+          '@media (hover: hover)': {
+            '&:hover:not(.Mui-error, .Mui-disabled) .MuiOutlinedInput-notchedOutline': {
+              borderColor: (theme.vars ?? theme).palette.text.secondary,
+            },
           },
           '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
             borderWidth: 1.5,
@@ -133,10 +135,12 @@ export const kkTheme = createTheme({
     },
     MuiAlert: {
       styleOverrides: {
-        root: ({ theme }) => ({
+        root: {
           borderRadius: kkTokens.radius.base,
-          border: `1.5px solid ${(theme.vars ?? theme).palette.divider}`,
           fontWeight: 600,
+        },
+        standard: ({ theme }) => ({
+          border: `1.5px solid ${(theme.vars ?? theme).palette.divider}`,
         }),
       },
     },

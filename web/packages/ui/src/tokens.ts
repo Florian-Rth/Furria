@@ -1,3 +1,9 @@
+const radius = {
+  base: 14,
+  chip: 20,
+  pill: 50,
+} as const;
+
 export const kkTokens = {
   color: {
     light: {
@@ -37,11 +43,7 @@ export const kkTokens = {
         'linear-gradient(to bottom, rgba(20,15,12,0.72) 0%, rgba(20,15,12,0.24) 19%, rgba(20,15,12,0.24) 42%, rgba(20,15,12,0.82) 76%, rgba(20,15,12,0.97) 100%)',
     },
   },
-  radius: {
-    base: 14,
-    chip: 20,
-    pill: 50,
-  },
+  radius,
   layout: {
     gutterX: { xs: 3, md: 7 },
     gutterY: { xs: 4, md: 8 },
@@ -50,6 +52,7 @@ export const kkTokens = {
     bandY: { xs: 6, md: 10 },
     fieldGap: 3,
     mastheadClearance: 2,
+    sheetLift: `-${radius.base}px`,
   },
   measure: {
     lead: '48rem',
