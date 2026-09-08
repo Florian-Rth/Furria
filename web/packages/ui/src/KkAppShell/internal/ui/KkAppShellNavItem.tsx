@@ -1,14 +1,20 @@
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 import type { ElementType, FC } from 'react';
 import type { KkIconName } from '../../../KkIcon';
 import { KkIcon } from '../../../KkIcon';
+import { kkTokens } from '../../../tokens';
+import { useAppShellCurtain } from '../logic/app-shell-curtain-context';
+
+const LABEL_SIZE = { xs: '1.4375rem', desktop: '1.25rem' };
+const ROW_PADDING = { xs: 1, desktop: 0.75 };
+const DISABLED_OPACITY = 0.6;
 
 interface KkAppShellNavItemProps {
   label: string;
   icon: KkIconName;
   active?: boolean;
+  disabled?: boolean;
   component?: ElementType;
   to?: string;
   onClick?: () => void;
@@ -17,38 +23,72 @@ interface KkAppShellNavItemProps {
 export const KkAppShellNavItem: FC<KkAppShellNavItemProps> = ({
   label,
   icon,
-  active,
-  component,
+  active = false,
+  disabled = false,
+  component = 'button',
   to,
   onClick,
 }) => {
-  const linkProps = to === undefined ? {} : { to };
-  const componentProps = component === undefined ? {} : { component };
+  const curtain = useAppShellCurtain();
+  const iconColor = active ? 'primary.main' : 'text.secondary';
+  const labelColor = active || disabled ? 'text.primary' : 'text.secondary';
+  const rowComponent = disabled ? 'span' : component;
+
+  const activate = (): void => {
+    curtain.close();
+    onClick?.();
+  };
 
   return (
-    <ListItemButton
-      selected={active}
-      {...componentProps}
-      {...linkProps}
-      onClick={onClick}
+    <Stack
+      component="li"
       data-kk-app-shell-nav-item
       sx={{
-        gap: 1.5,
-        px: 1.5,
-        py: 1,
-        minHeight: 'auto',
-        color: 'text.primary',
-        '&.Mui-selected, &.active': {
-          bgcolor: 'primary.main',
-          color: 'primary.contrastText',
-          '&:hover': { bgcolor: 'primary.dark' },
-        },
+        minWidth: 0,
+        borderBottom: kkTokens.line.hair,
+        borderColor: 'divider',
+        '&:last-of-type': { borderBottom: 'none' },
       }}
     >
-      <ListItemIcon sx={{ minWidth: 0, color: 'inherit' }}>
-        <KkIcon name={icon} size="small" />
-      </ListItemIcon>
-      <ListItemText primary={label} slotProps={{ primary: { variant: 'subtitle2' } }} />
-    </ListItemButton>
+      <Stack
+        component={rowComponent}
+        to={to}
+        onClick={activate}
+        aria-current={active ? 'page' : undefined}
+        aria-disabled={disabled || undefined}
+        direction="row"
+        sx={{
+          alignItems: 'center',
+          gap: 1.5,
+          width: '100%',
+          minWidth: 0,
+          textAlign: 'left',
+          textDecoration: 'none',
+          border: 'none',
+          background: 'none',
+          py: ROW_PADDING,
+          px: 0,
+          cursor: disabled ? 'default' : 'pointer',
+          opacity: disabled ? DISABLED_OPACITY : 1,
+          '&:hover': { '& [data-kk-app-shell-nav-label]': { color: 'text.primary' } },
+        }}
+      >
+        <KkIcon name={icon} size="small" sx={{ color: iconColor, flexShrink: 0 }} />
+        <Typography
+          data-kk-app-shell-nav-label
+          sx={{
+            fontFamily: kkTokens.font.display,
+            fontSize: LABEL_SIZE,
+            letterSpacing: '0.03em',
+            lineHeight: 1.15,
+            color: labelColor,
+            textTransform: 'uppercase',
+            minWidth: 0,
+          }}
+        >
+          {label}
+        </Typography>
+      </Stack>
+    </Stack>
   );
 };

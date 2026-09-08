@@ -1,6 +1,7 @@
 import Stack from '@mui/material/Stack';
 import type { FC, PropsWithChildren } from 'react';
 import type { KkSx } from '../../../kk-sx';
+import { AppShellCurtainProvider } from '../logic/AppShellCurtainProvider';
 
 interface KkAppShellRootProps extends PropsWithChildren {
   sx?: KkSx;
@@ -15,6 +16,6 @@ export const KkAppShellRoot: FC<KkAppShellRootProps> = ({ sx, children }) => (
       ...(Array.isArray(sx) ? sx : [sx]),
     ]}
   >
-    {children}
+    <AppShellCurtainProvider>{children}</AppShellCurtainProvider>
   </Stack>
 );

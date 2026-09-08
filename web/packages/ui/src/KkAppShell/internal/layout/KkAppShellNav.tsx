@@ -8,10 +8,19 @@ interface KkAppShellNavProps extends PropsWithChildren {
 
 export const KkAppShellNav: FC<KkAppShellNavProps> = ({ sx, children }) => (
   <Stack
-    component="nav"
-    aria-label="Hauptnavigation"
+    component="ul"
     data-kk-app-shell-nav
-    sx={[{ flexGrow: 1, gap: 0.5, minWidth: 0 }, ...(Array.isArray(sx) ? sx : [sx])]}
+    sx={[
+      {
+        flex: 1,
+        justifyContent: { xs: 'center', desktop: 'flex-start' },
+        listStyle: 'none',
+        m: 0,
+        p: 0,
+        minWidth: 0,
+      },
+      ...(Array.isArray(sx) ? sx : [sx]),
+    ]}
   >
     {children}
   </Stack>
