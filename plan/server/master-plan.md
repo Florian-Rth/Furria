@@ -66,6 +66,15 @@ assume about the browser session, and what reuse detection actually revokes, is
 | B10 | **Bestellungen & Karten** — order flow, Stripe (embedded, pinned in E5), guest checkout via `orderCode`, Kartenbörse mechanics. Writes the Ledger from day one | Website order flow + Club-App sales admin | B7, B9, mail (B6) — **and the open club decisions below** |
 | B11 | **Media & Alben** — the first infrastructure beyond Postgres: object storage, thumbnail pipeline; Club-App Bildergalerie (upload) + website Galerie (curated read) | Club-App Bildergalerie + website Galerie | B4 — **and the photo-consent decision below** |
 | B12 | **Event-App backend** — guest photo upload/download per Veranstaltung, moderation before visibility, retention/deletion; possibly the Einlass scanner | Event app | B7, B11 — **and both decisions below** |
+| B13 | **Live-Regie** — running a Veranstaltung's Ablauf live on the night: one operator advances the pointer, everyone else follows. Needs more than REST (SSE or WebSockets) — the first real-time surface in the platform | Club-App Live-Regie | B7 |
+| B14 | **Klamotten** — Vereinskleidung: what exists, who ordered what, who holds it. Ordering writes the Ledger | Club-App Klamotten | B2, B9 |
+
+**Added 2026-09-08 from the app-shell design handoff.** The Club-App shell's navigation named ten
+destinations; the club confirmed **Live-Regie** and **Klamotten** as real domains (now B13/B14
+above, and terms in [`CONTEXT.md`](../../CONTEXT.md)). Three of the mock's other names are **not**
+new areas: *Spielplan* and *Meine Auftritte* are member-facing views over **B7**, and *Bierliste*
+and *Schlüssel* were the designer's invention and are not planned. The shell's nav carries only
+the confirmed set, each entry inert until its area ships.
 
 Further Club-App domains (ideas exist — e.g. the Ledger's Shop/Getränkekasse mentions, a
 Trainingsplaner) are **deliberately not specified yet** (2026-09-03 ruling): they join the
