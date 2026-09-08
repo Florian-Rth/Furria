@@ -1,6 +1,7 @@
 import Stack from '@mui/material/Stack';
 import type { FC, PropsWithChildren } from 'react';
 import type { KkSx } from '../../../kk-sx';
+import { SplitLayoutSheetProvider } from '../logic/SplitLayoutSheetProvider';
 
 interface KkSplitLayoutRootProps extends PropsWithChildren {
   sx?: KkSx;
@@ -15,6 +16,6 @@ export const KkSplitLayoutRoot: FC<KkSplitLayoutRootProps> = ({ sx, children }) 
       ...(Array.isArray(sx) ? sx : [sx]),
     ]}
   >
-    {children}
+    <SplitLayoutSheetProvider>{children}</SplitLayoutSheetProvider>
   </Stack>
 );
