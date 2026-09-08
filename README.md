@@ -26,7 +26,7 @@ one API can serve three frontends.
 | App | What it's for | Status |
 |-----|---------------|--------|
 | 🌐 **Website** (`web/apps/website`) | The public face: events, tickets with a cinema-style seat picker, news, and the "Mitglied werden" funnel | v0 teaser is live — the fifth season starts here |
-| 🎭 **Club-App** (`web/apps/club-app`) | The engine room for members: Mitglieder, Ämter, Beiträge, event planning, Live-Regie, the legendary Bierliste | Waiting in der Bütt |
+| 🎭 **Club-App** (`web/apps/club-app`) | The engine room for members: Mitglieder, Ämter, Beiträge, event planning, Live-Regie, the legendary Bierliste | CA-P0 shipped: login, session, Übersicht. Domain features next |
 | 📸 **Event-App** (`web/apps/event-app`) | For guests at the party: per-table photo upload, live photo wall, digital programme — no install, no excuses | Kommt nach dem Umzug |
 
 ## The serious part
@@ -54,6 +54,7 @@ dotnet run --project src/Furria.Api   # API on http://localhost:5100/api
 cd web
 pnpm install
 pnpm dev                              # website on http://localhost:3000 (proxies /api → :5100)
+pnpm dev:club-app                     # club-app on http://localhost:3001 (proxies /api → :5100)
 ```
 
 ## Testing: no mocks, no mercy

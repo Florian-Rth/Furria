@@ -115,6 +115,19 @@ shows of it is the **order only, never times** — the sequence is stable enough
 publish, the clock is not.
 _Avoid_: **Programm** (retired), Setlist
 
+**Live-Regie** (`live direction`):
+Running a Veranstaltung's Ablauf on the night itself: one operator advances the running order
+and everyone else sees what is on stage now and who is next. It is the Ablauf in its live
+state, not a second ordering — the Ablauf stays the one truth, Live-Regie moves a pointer
+through it. Confirmed as a real club domain 2026-09-08 (app-shell design handoff).
+_Avoid_: Regie (alone — too broad), Show-Control, Moderation
+
+**Klamotten** (`wardrobe`):
+Vereinskleidung the club orders and hands out — Garde-Uniformen, Softshell-Jacken, and the
+like: what exists, who ordered what, and who currently holds it. Confirmed as a real club
+domain 2026-09-08 (app-shell design handoff).
+_Avoid_: Kleidung (too broad), Merch (that is sold, this is issued), Uniform (only one kind)
+
 **Karte** (`ticket`):
 The unit the club sells for a Veranstaltung — one admission for one person. Price is flat
 within an evening and differs between evenings. The word in every UI surface is **Karte**;

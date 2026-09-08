@@ -1,0 +1,26 @@
+language js
+
+or {
+  or {
+    `sx={$sx}`,
+    `style={$sx}`,
+    `sx: $sx`
+  } where {
+    $sx <: contains or {
+      `$key: $_` where {
+        $key <: r"^(?:color|backgroundColor|bgcolor|boxShadow|textShadow|letterSpacing|textTransform|lineHeight|opacity|filter|backdropFilter|fill|stroke|background.*|font.*|border.*|outline.*|textDecoration.*)$"
+      },
+      or {
+        JsStringLiteralExpression(),
+        JsTemplateExpression()
+      } as $literal where {
+        $literal <: r"[\s\S]*(?:#[0-9a-fA-F]{3,8}|[0-9.}](?i:px|rem|em)|(?i:rgba?|hsla?|oklch|oklab|color-mix)\(|['\"`](?i:red|blue|green|black|white|gray|grey|yellow|orange|purple|pink|brown|cyan|magenta|silver|gold|beige|navy|teal|lime|maroon|olive|aqua|fuchsia|indigo|violet|salmon|coral|crimson|khaki|lavender|plum|turquoise|transparent|currentcolor)['\"`])[\s\S]*"
+      }
+    } as $hit,
+    register_diagnostic(span=$hit, message="No design in `sx`: colors, fonts, borders, radii and shadows live in `@furria/ui`. Layout `sx` only.")
+  },
+  JsxAttribute() as $attr where {
+    $attr <: r"^(?:color|bgcolor)(?:\s*=[\s\S]*)?$",
+    register_diagnostic(span=$attr, message="No design prop on a Club-App element: `color` and `bgcolor` live in `@furria/ui`.")
+  }
+}

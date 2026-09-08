@@ -5,6 +5,7 @@
   "packageManager": "pnpm@11.13.1",
   "scripts": {
     "dev": "pnpm --filter @furria/website dev",
+    "dev:club-app": "pnpm --filter @furria/club-app dev",
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "lint": "biome check .",

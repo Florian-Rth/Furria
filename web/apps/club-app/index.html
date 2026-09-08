@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#FBF4E6" />
+    <title>FURRIA Club-App</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <script src="/config.js"></script>
+    <script>
+      (() => {
+        try {
+          const mode = localStorage.getItem('mui-mode') || 'system';
+          const dark = localStorage.getItem('mui-color-scheme-dark') || 'dark';
+          const light = localStorage.getItem('mui-color-scheme-light') || 'light';
+          const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          const scheme = mode === 'dark' || (mode === 'system' && systemDark) ? dark : light;
+          const root = document.documentElement;
+          root.removeAttribute(`data-${light}`);
+          root.removeAttribute(`data-${dark}`);
+          root.setAttribute(`data-${scheme}`, '');
+          const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+          if (themeColorMeta) {
+            themeColorMeta.setAttribute('content', scheme === dark ? '#15110E' : '#FBF4E6');
+          }
+        } catch {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

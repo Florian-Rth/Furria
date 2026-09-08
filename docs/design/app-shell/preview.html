@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FCC Club-App — App-Shell (Design-Referenz)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@500;600;700;800;900&display=swap" rel="stylesheet" />
+<style>
+  html, body { margin: 0; background: #e8e6e1; font-family: 'Archivo', sans-serif; }
+  * { box-sizing: border-box; }
+  .wrap { padding: 32px; display: flex; flex-direction: column; gap: 34px; }
+  h2 { font-family: 'Anton', sans-serif; font-size: 16px; letter-spacing: 1.4px; color: #1A1411; margin: 0 0 14px; text-transform: uppercase; }
+  .row { display: flex; gap: 22px; align-items: flex-start; flex-wrap: wrap; }
+  .cap { font-size: 11px; font-weight: 800; letter-spacing: 1.2px; color: rgba(26,20,17,0.5); margin-bottom: 8px; }
+  .desk { width: 1400px; height: 900px; border: 1.5px solid rgba(26,20,17,0.14); border-radius: 12px; overflow: hidden; }
+  @keyframes fcc-float { 0%, 100% { translate: 0 0; rotate: 0deg; } 50% { translate: 6px -12px; rotate: 18deg; } }
+  .fcc-floaty { animation: fcc-float 6s ease-in-out infinite; }
+  .fcc-scroll::-webkit-scrollbar { display: none; }
+</style>
+</head>
+<body>
+<div id="root" class="wrap"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="src/fcc-logos.jsx"></script>
+<script type="text/babel" src="src/fcc-shared.jsx"></script>
+<script type="text/babel" src="src/fcc-theme.jsx"></script>
+<script type="text/babel" src="src/fcc-ds-shell.jsx"></script>
+<script type="text/babel" src="src/fcc-app-shell-d.jsx"></script>
+<script type="text/babel">
+function Cap({ children }) { return <div className="cap">{children}</div>; }
+function App() {
+  return (
+    <>
+      <section>
+        <h2>Mobile · hell</h2>
+        <div className="row">
+          <div><Cap>Übersicht · 3 Aufgaben offen</Cap><window.LayoutD /></div>
+          <div><Cap>Übersicht · Ruhezustand</Cap><window.LayoutD quiet /></div>
+          <div><Cap>Vorhang (Navigation) offen</Cap><window.LayoutD open /></div>
+        </div>
+      </section>
+      <section>
+        <h2>Mobile · dunkel</h2>
+        <div className="row">
+          <div><Cap>Übersicht · 3 Aufgaben offen</Cap><window.LayoutD dark /></div>
+          <div><Cap>Übersicht · Ruhezustand</Cap><window.LayoutD dark quiet /></div>
+          <div><Cap>Vorhang offen</Cap><window.LayoutD dark open /></div>
+        </div>
+      </section>
+      <section>
+        <h2>Desktop · hell</h2>
+        <div className="desk"><window.LayoutDDesk /></div>
+      </section>
+      <section>
+        <h2>Desktop · dunkel</h2>
+        <div className="desk"><window.LayoutDDesk dark /></div>
+      </section>
+    </>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

@@ -1,4 +1,5 @@
-# Example full-stack deployment: PostgreSQL + API + website, kept up to date by Watchtower.
+# Example full-stack deployment: PostgreSQL + API + website + club-app, kept up to date by
+# Watchtower.
 #
 # Usage on the host that runs the app:
 #   cp docker-compose.example.yml docker-compose.yml
@@ -6,8 +7,8 @@
 #   docker compose up -d
 #
 # The API auto-applies EF Core migrations on startup, so a fresh database is provisioned
-# automatically. Watchtower polls Docker Hub every 5 minutes and redeploys the api/website
-# containers whenever the CD pipeline pushes a new :latest image.
+# automatically. Watchtower polls Docker Hub every 5 minutes and redeploys the api/website/
+# club-app containers whenever the CD pipeline pushes a new :latest image.
 
 name: furria
 
@@ -38,6 +39,11 @@ services:
       ConnectionStrings__AppDb: Host=postgres;Port=5432;Database=${POSTGRES_DB:-furria};Username=${POSTGRES_USER:-furria};Password=${POSTGRES_PASSWORD:-furria}
       PreviewAccess__Password: ${PREVIEW_ACCESS_PASSWORD:-}
       ASPNETCORE_ENVIRONMENT: Production
+      Auth__AccessToken__SigningKey: ${AUTH_SIGNING_KEY:?set AUTH_SIGNING_KEY (>= 32 chars) in .env}
+      Auth__BootstrapAdmin__Email: ${BOOTSTRAP_ADMIN_EMAIL:-}
+      Auth__BootstrapAdmin__Password: ${BOOTSTRAP_ADMIN_PASSWORD:-}
+      Auth__BootstrapAdmin__FirstName: ${BOOTSTRAP_ADMIN_FIRST_NAME:-}
+      Auth__BootstrapAdmin__LastName: ${BOOTSTRAP_ADMIN_LAST_NAME:-}
     labels:
       com.centurylinklabs.watchtower.enable: "true"
 
@@ -53,6 +59,21 @@ services:
       API_UPSTREAM: api:8080
     ports:
       - "${WEBSITE_PORT:-80}:80"
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
+
+  club-app:
+    image: ${DOCKERHUB_USERNAME}/furria-club-app:latest
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      # Empty = same-origin: the browser calls /api on app.furria.de and nginx proxies it to the
+      # api service (API_UPSTREAM below). Set an absolute URL only for a cross-origin backend.
+      API_BASE_URL: ${CLUB_APP_API_BASE_URL:-}
+      API_UPSTREAM: api:8080
+    ports:
+      - "${CLUB_APP_PORT:-8081}:80"
     labels:
       com.centurylinklabs.watchtower.enable: "true"
 

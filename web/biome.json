@@ -126,6 +126,132 @@
           }
         }
       }
+    },
+    {
+      "includes": ["apps/club-app/**"],
+      "plugins": ["./biome-plugins/noDesignSx.grit"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "@mui/material": "Import defaults from `@mui/material/<Component>`, never the barrel.",
+                  "@mui/icons-material": "Import defaults from `@mui/icons-material/<Icon>`, never the barrel."
+                },
+                "patterns": [
+                  {
+                    "group": [
+                      "@mui/material/**",
+                      "!@mui/material/Stack",
+                      "!@mui/material/Grid",
+                      "!@mui/material/Box"
+                    ],
+                    "message": "Club-App pages carry no Furria pixels: only `Stack`, `Grid` and `Box` come from MUI. Anything styled is a `Kk*` component in `@furria/ui` (ADR-0007)."
+                  },
+                  {
+                    "group": ["@mui/icons-material/**"],
+                    "message": "Club-App icons come from `@furria/ui` (`KkIcon`), never from `@mui/icons-material`."
+                  },
+                  {
+                    "group": ["@emotion/**"],
+                    "message": "Styling lives in `@furria/ui` (ADR-0007): the Club-App never authors CSS with Emotion."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/club-app/src/features/**", "!**/*.test.ts", "!**/*.test.tsx"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "@mui/material": "Import defaults from `@mui/material/<Component>`, never the barrel.",
+                  "@mui/icons-material": "Import defaults from `@mui/icons-material/<Icon>`, never the barrel."
+                },
+                "patterns": [
+                  {
+                    "group": [
+                      "@mui/material/**",
+                      "!@mui/material/Stack",
+                      "!@mui/material/Grid",
+                      "!@mui/material/Box"
+                    ],
+                    "message": "Club-App pages carry no Furria pixels: only `Stack`, `Grid` and `Box` come from MUI. Anything styled is a `Kk*` component in `@furria/ui` (ADR-0007)."
+                  },
+                  {
+                    "group": ["@mui/icons-material/**"],
+                    "message": "Club-App icons come from `@furria/ui` (`KkIcon`), never from `@mui/icons-material`."
+                  },
+                  {
+                    "group": ["@emotion/**"],
+                    "message": "Styling lives in `@furria/ui` (ADR-0007): the Club-App never authors CSS with Emotion."
+                  },
+                  {
+                    "group": ["@/routes/**"],
+                    "message": "Dependency flow is lib/components → features → routes: a feature never imports a route."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "apps/club-app/src/lib/**",
+        "apps/club-app/src/components/**",
+        "apps/club-app/src/styles/**",
+        "!**/*.test.ts",
+        "!**/*.test.tsx"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "@mui/material": "Import defaults from `@mui/material/<Component>`, never the barrel.",
+                  "@mui/icons-material": "Import defaults from `@mui/icons-material/<Icon>`, never the barrel."
+                },
+                "patterns": [
+                  {
+                    "group": [
+                      "@mui/material/**",
+                      "!@mui/material/Stack",
+                      "!@mui/material/Grid",
+                      "!@mui/material/Box"
+                    ],
+                    "message": "Club-App pages carry no Furria pixels: only `Stack`, `Grid` and `Box` come from MUI. Anything styled is a `Kk*` component in `@furria/ui` (ADR-0007)."
+                  },
+                  {
+                    "group": ["@mui/icons-material/**"],
+                    "message": "Club-App icons come from `@furria/ui` (`KkIcon`), never from `@mui/icons-material`."
+                  },
+                  {
+                    "group": ["@emotion/**"],
+                    "message": "Styling lives in `@furria/ui` (ADR-0007): the Club-App never authors CSS with Emotion."
+                  },
+                  {
+                    "group": ["@/features/**", "@/routes/**"],
+                    "message": "Dependency flow is lib/components → features → routes: shared code never imports a feature or route."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
     }
   ],
   "assist": {
