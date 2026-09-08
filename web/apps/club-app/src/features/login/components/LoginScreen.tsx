@@ -13,6 +13,7 @@ import { SESSION_EXPIRED_MESSAGE } from '../login-messages';
 import { buildLoginStageMeta } from '../stage-meta';
 import { LoginForm } from './LoginForm';
 import { LoginPendingEntries } from './LoginPendingEntries';
+import { LoginTestCredentials } from './LoginTestCredentials';
 
 const HEADING_LEVEL = { mobile: 4, desktop: 3 } as const;
 
@@ -51,7 +52,7 @@ export const LoginScreen: FC<LoginScreenProps> = ({ expired }) => {
         {expiredNotice}
         <LoginForm />
         <LoginPendingEntries />
-        <KkNote>Kein Zugang? Der Verein lädt dich ein, per Link oder gedrucktem Code.</KkNote>
+        <LoginTestCredentials />
       </KkSplitLayout.Pane>
     </KkSplitLayout>
   );
