@@ -1,1 +1,1 @@
-export { OverviewPage } from './components/OverviewPage';
+export { ProfilePage } from './components/ProfilePage';

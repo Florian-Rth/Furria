@@ -17,6 +17,7 @@
     "@mui/material": "catalog:",
     "@hookform/resolvers": "catalog:",
     "@tanstack/react-query": "catalog:",
+    "date-fns": "catalog:",
     "@tanstack/react-router": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
