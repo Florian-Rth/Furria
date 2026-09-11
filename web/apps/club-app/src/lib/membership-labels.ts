@@ -1,4 +1,5 @@
 import type { MembershipState } from '@/lib/api/schemas';
+import { sessionAt } from '@/lib/club';
 
 const MEMBERSHIP_STATE_LABELS: Record<MembershipState, string> = {
   none: 'kein Mitglied',
@@ -12,8 +13,36 @@ const OPEN_END = 'offen';
 const SPAN_SEPARATOR = ' – ';
 const ADDRESS_SEPARATOR = ', ';
 
+const RUNNING_SINCE_LABEL = 'Mitglied seit';
+const STARTING_SINCE_LABEL = 'Mitglied ab';
+
 export const toMembershipStateLabel = (state: MembershipState): string =>
   MEMBERSHIP_STATE_LABELS[state];
+
+export const toMemberSinceLabel = (state: MembershipState): string =>
+  state === 'active' || state === 'paused' ? RUNNING_SINCE_LABEL : STARTING_SINCE_LABEL;
+
+const toCalendarDay = (isoDay: string): Date | null => {
+  if (!ISO_DAY_PATTERN.test(isoDay)) {
+    return null;
+  }
+
+  return new Date(
+    Number(isoDay.slice(0, 4)),
+    Number(isoDay.slice(5, 7)) - 1,
+    Number(isoDay.slice(8, 10)),
+  );
+};
+
+export const formatSinceSession = (isoDay: string): string => {
+  const day = toCalendarDay(isoDay);
+
+  if (day === null) {
+    return isoDay;
+  }
+
+  return sessionAt(day).yearsLabel;
+};
 
 export const formatIsoDay = (isoDay: string): string => {
   if (!ISO_DAY_PATTERN.test(isoDay)) {

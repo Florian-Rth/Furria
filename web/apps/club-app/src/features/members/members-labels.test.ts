@@ -1,12 +1,36 @@
 import { describe, expect, it } from 'vitest';
-import type { GroupRef, RoleRef } from '@/lib/api/schemas';
+import type { GroupRef, MembershipState, RoleRef } from '@/lib/api/schemas';
 import {
   toConnectedSentence,
   toEmptyDescription,
   toLetterAnchorId,
+  toMemberHeadline,
+  toMembershipLine,
+  toMembershipNote,
+  toPersonId,
   toPersonRowAffiliation,
   toWithoutMembershipSentence,
 } from './members-labels';
+import type { MemberDetails } from './schemas';
+
+const member = (overrides: Partial<MemberDetails>): MemberDetails => ({
+  personId: 12,
+  firstName: 'Paula',
+  lastName: 'Brendel',
+  membershipState: 'active',
+  memberSince: '2017-09-01',
+  groups: [],
+  roles: [],
+  contact: {
+    visibility: 'hidden',
+    phone: null,
+    email: null,
+    street: null,
+    zip: null,
+    city: null,
+  },
+  ...overrides,
+});
 
 const group = (name: string): GroupRef => ({ groupId: 1, name });
 const role = (name: string): RoleRef => ({ roleId: 1, name });
@@ -89,4 +113,73 @@ describe('toEmptyDescription', () => {
   it('never quotes an empty query', () => {
     expect(toEmptyDescription('   ')).not.toContain('„“');
   });
+});
+
+describe('toPersonId', () => {
+  it.each<[string, number | null]>([
+    ['12', 12],
+    ['1', 1],
+    ['0', null],
+    ['-3', null],
+    ['012', null],
+    ['3.5', null],
+    ['abc', null],
+    ['', null],
+    [' 7 ', null],
+  ])('reads the route parameter %o as %o', (raw, expected) => {
+    expect(toPersonId(raw)).toBe(expected);
+  });
+});
+
+describe('toMembershipLine', () => {
+  it.each<[MembershipState, string | null, string | null]>([
+    ['active', '2017-09-01', 'Mitglied seit 01.09.2017'],
+    ['paused', '2017-09-01', 'Mitglied seit 01.09.2017'],
+    ['ended', '2017-09-01', 'Mitglied ab 01.09.2017'],
+    ['none', '2027-09-01', 'Mitglied ab 01.09.2027'],
+    ['none', null, null],
+  ])('writes the %s chain beginning %o as %o', (state, memberSince, expected) => {
+    expect(toMembershipLine(state, memberSince)).toBe(expected);
+  });
+});
+
+describe('toMemberHeadline', () => {
+  it('titles the stage before the card is known', () => {
+    expect(toMemberHeadline(undefined)).toEqual({
+      title: 'Person',
+      initials: '',
+      state: null,
+      line: null,
+    });
+  });
+
+  it('carries name, initials and the state chip once the card is known', () => {
+    const headline = toMemberHeadline(member({ membershipState: 'paused' }));
+
+    expect(headline.title).toBe('Paula Brendel');
+    expect(headline.initials).toBe('PB');
+    expect(headline.state?.tone).toBe('gold');
+    expect(headline.line).toBe('Mitglied seit 01.09.2017');
+  });
+});
+
+describe('toMembershipNote', () => {
+  it('says nothing about a running membership', () => {
+    expect(toMembershipNote('active', 'Paula')).toBeNull();
+  });
+
+  it.each<[MembershipState, string]>([
+    ['paused', 'Ruhezeit'],
+    ['ended', 'beendet'],
+    ['none', 'ohne Mitglied zu sein'],
+  ])('explains a %s chain by naming %s', (state, fragment) => {
+    expect(toMembershipNote(state, 'Paula')).toContain(fragment);
+  });
+
+  it.each<MembershipState>(['paused', 'ended', 'none'])(
+    'addresses the person by first name in the %s case',
+    (state) => {
+      expect(toMembershipNote(state, 'Paula')).toContain('Paula');
+    },
+  );
 });

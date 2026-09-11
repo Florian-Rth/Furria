@@ -8,6 +8,10 @@ import {
 export type QueryErrorKind = 'unreachable' | 'unexpected' | 'rejected';
 
 const FORBIDDEN_STATUS = 403;
+const NOT_FOUND_STATUS = 404;
+
+export const isNotFoundError = (error: Error | null): boolean =>
+  error instanceof ServerFailureError && error.status === NOT_FOUND_STATUS;
 
 export const toQueryErrorKind = (error: Error | null): QueryErrorKind | null => {
   if (error === null) {

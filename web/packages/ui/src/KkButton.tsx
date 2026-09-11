@@ -74,6 +74,8 @@ interface KkButtonProps extends PropsWithChildren {
   startIcon?: ReactNode;
   onClick?: () => void;
   component?: ElementType;
+  to?: string;
+  params?: Record<string, string>;
   href?: string;
   sx?: KkSx;
 }
@@ -89,12 +91,15 @@ export const KkButton: FC<KkButtonProps> = ({
   startIcon,
   onClick,
   component,
+  to,
+  params,
   href,
   sx,
   children,
 }) => {
   const ariaDisabled = disabled === true ? true : undefined;
   const componentProps = component === undefined ? {} : { component };
+  const routeProps = component === undefined ? {} : { to, params };
   const variantStyle = toneVariantStyles[tone][variant];
 
   return (
@@ -110,6 +115,7 @@ export const KkButton: FC<KkButtonProps> = ({
       startIcon={startIcon}
       onClick={onClick}
       {...componentProps}
+      {...routeProps}
       href={href}
       data-kk-button
       sx={[
