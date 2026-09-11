@@ -44,7 +44,7 @@ Binding coding rules, enforced by analyzers and lint, not by review:
 
 ## 2. Where the work stands
 
-28 commits on `feat/club-app-p1` since `07dd7a0`. Every commit left the tree green.
+33 commits on `feat/club-app-p1` since `07dd7a0`. Every commit left the tree green.
 
 ### Done
 
@@ -84,8 +84,10 @@ Binding coding rules, enforced by analyzers and lint, not by review:
 
 ```
 server:  dotnet build  → 0 warnings, 0 errors
-         dotnet test   → 19 analyzer + 244 API tests passing   (117 before the phase)
-web:     pnpm typecheck / test / lint / build → all clean, 945 files, zero suppressions
+         dotnet test   → 19 analyzer + 491 API tests passing   (117 before the phase)
+web:     pnpm typecheck / test / lint / build → all clean, 1073 files, zero suppressions
+
+Verified at the pause, with the tree clean. Both are reproducible from a fresh checkout.
 ```
 
 **Anything uncommitted in the working tree when you arrive is an interrupted agent's work.**
