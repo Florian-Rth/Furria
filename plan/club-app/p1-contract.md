@@ -2987,6 +2987,10 @@ The existing 15 names are untouched. **No key/Schlüssel icon for the deferred S
 
 Each entry: file · props · tokens · light/dark · consumers.
 
+**§7.6 amends this section.** Four signatures below changed in the review pass (required German
+labels, a modal close affordance) and two primitives were added. Read §7.6 before writing a call
+site.
+
 ---
 
 **`KkChip`** — `packages/ui/src/KkChip.tsx`
@@ -3428,6 +3432,134 @@ part** (`internal/KkFieldChoices`, not exported), and **8 extended** (`KkPanelHe
 Three of the new ones (`KkSessionField`, `KkTextArea`, `KkToast`) and one of the extensions
 (`KkHeading tone`) exist because without them a specified surface is physically unbuildable under
 `noDesignSx` — not because they are nice to have.
+
+---
+
+### 7.6 Review amendments (design-system + a11y pass, 2026-09-11)
+
+Two reviews audited the committed primitive layer. What they changed is binding; §7.3 above is read
+**through** this section.
+
+#### 7.6a Signature changes to primitives already specified
+
+| Primitive | Change | Why |
+|---|---|---|
+| `KkSearchField` | **new required** `clearLabel: string` | the clear button's accessible name was a German literal (`'Suche leeren'`) baked into a package the public website also ships — rule 8, with no override path. The screenshot tool drives it by name. |
+| `KkSinceRow` | `sinceLabel` is now **required**, no default | §7.3's `// default 'seit'` contradicted rule 8. Resolved in rule 8's favour: the app supplies the word. |
+| `KkConfirmDialog` | `cancelLabel` is now **required**; **new required** `closeLabel: string` | same contradiction (`// default 'Abbrechen'`), same resolution. |
+| `KkModalFrame` root | **new required** `closeLabel: string` | the frame had no dismissal of its own: on a phone the only exit was the scrim. It now renders a top-right close button, and the footer is **sticky** so the submit button of an eight-field `size="full"` form never scrolls out of reach. |
+| `KkToastProvider` | **new required** `dismissLabel: string` | the toast's close button carried a German literal (`'Schließen'`). |
+| `KkChip` | `size="small"` is now **10px** (was 11); new `live?: boolean` | §1.4 pins the person-row state chip at 10/800 and the primitive could not draw it. `live` opts a **single, focal** chip into a 2.4 s dot breath — never a list row (see 7.6d). |
+| `KkLetterIndex` | **new required** `label: string` | it rendered `role="group"` with no accessible name. |
+| `KkEyebrow` | new `size?: 'small' \| 'medium'` (`small` = 9px) | `KkSinceRow` and `KkRedactedValue` were reaching 9px through `sx={{ fontSize }}`, which a page cannot do. |
+| `KkPanel` | new tone **`editing`** = `raised` + `1.5px solid primary.main` + lift | §1.12's in-place editor. Person bearbeiten (§5.8) is built entirely on "the editor replaces the card in place"; without it the editor is indistinguishable from a reading panel. |
+| `KkPanelHeader` | new `size?: 'small' \| 'medium'`, new `sx` | `medium` is §1.12's Anton-19 editor head; `small` (default) stays the Anton-13 section label. |
+| `KkPersonRow`, `KkSinceRow`, `KkFactRow`, `KkSelectRow` | new `dimmed?: boolean` | §1.2(e) / §5.9: an archived row must be dimmable, and `opacity` is a `noDesignSx` error in a page. |
+| `KkSelectField` | new `presentation?: 'auto' \| 'choices' \| 'select'` (default `auto`) | `auto` keeps the `options.length <= 4` rule; the explicit values stop a five-option field silently becoming a different widget. The chip branch now carries a real `aria-labelledby`, a hidden input bearing `name`/`value`, and an error treatment on the chips. |
+| `KkRedactedValue` | new `width?: 'short' \| 'medium' \| 'long'`, new `sx` | three identical bars read as one asset pasted three times; a phone, an e-mail and an address are three different withheld facts. |
+| `KkAvatarStack` | new `ringOn?: 'paper' \| 'raised'` | the ring was hard-wired to `background.paper` and would have been a cream halo on a raised host. |
+| `KkStatRow.Value` | new `tone?: 'default' \| 'accent' \| 'muted'` | §7.1 claimed `KkHeading tone` "unblocks the stat values"; it does not — `KkStatRow.Value` takes only a `variant`. Now it does. |
+| `KkPanelHeader`, `KkFieldRow`, `KkRedactedValue`, `KkLetterDivider`, `KkSkeletonRow` | all now take `sx` | rule 3 said every primitive merges a caller `sx`; these five did not, so a parent could not position them. |
+
+#### 7.6b Two new primitives
+
+**`KkMeta`** — `packages/ui/src/KkMeta.tsx`
+```ts
+export type KkMetaTone = 'muted' | 'faint' | 'accent';
+
+interface KkMetaProps extends PropsWithChildren {
+  tone?: KkMetaTone;        // default 'muted'
+  italic?: boolean;         // the honest empty — a real Archivo 600-italic face is now loaded
+  component?: ElementType;  // default 'p'; pass 'span' inside an interactive row
+  sx?: KkSx;
+}
+```
+Archivo 11.5px / 600, line-height 1.35, `textWrap: pretty`. `muted` = `text.secondary` (4.62:1 on
+cream), `faint` = `text.disabled` for genuinely inert text only, `accent` = `primary.main`.
+**This was the single most-repeated un-primitived thing in the bundle.** `KkNote` is `body2`/14px
+at a 34rem measure and `KkEyebrow` is a 900-weight overline at 0.2em tracking; neither is a small
+faint meta line, and a page cannot make one.
+Consumers: the Gruppen card's „18 Personen" and its italic „keine Mitglieder" (§1.11), the Rollen
+master row's „unbesetzt" (§1.14), the photo-grid explanation line (§1.19), the stat caption
+(§1.10), the Gruppenverwaltung compact line, `KkFieldRow`'s „nicht hinterlegt" value (§5.3), every
+right-aligned hint.
+
+**`KkSummaryRow`** — `packages/ui/src/KkSummaryRow.tsx`
+```ts
+export interface KkSummaryFact { label: string; value: string }
+
+interface KkSummaryRowProps {
+  title: string;
+  meta?: string;                            // the compact second line, below `desktop` only
+  facts?: readonly KkSummaryFact[];         // labelled cells, ≥ `desktop` only
+  trailing?: ReactNode;                     // the chips, ≥ `desktop` only
+  compactTrailing?: ReactNode;              // the ONE chip below `desktop`
+  selected?: boolean; dimmed?: boolean;
+  component?: ElementType; to?: string; params?: Record<string, string>;
+  onClick?: () => void;
+  sx?: KkSx;
+}
+```
+The multi-column registry row that collapses to two lines plus one chip — §5.9's `ManagedGroupRow`
+is „name · Personen · Admins · Offenheit · Status" on desktop and „name / N Personen · N Admins"
+plus the most urgent chip below it. `@mui/material/Table` is banned in the app and no `Kk*` drew
+this; the row is the mobile-first form and the desktop cells are the wide form (§1.19's
+"table → row-list collapse"). `selected` draws the raised fill (the Gruppe is a `?group=` search
+param, §5.9).
+Consumer: Gruppenverwaltung.
+
+#### 7.6c New internal shared parts (not exported)
+
+§7.0 rule 1 allowed exactly one shared part in P1 (`KkFieldChoices`). The pass added five more,
+each because the same declaration had been copy-pasted across four or more primitives:
+`internal/scheme-paint.ts` (the light/dark pair and `applyScheme`, which **merges** several pairs —
+two raw `theme.applyStyles('dark', …)` spreads in one object silently overwrite each other, which
+is a bug class this closes and the only new unit test guards), `internal/tone.ts` (the six chip
+tones), `internal/focus-ring.ts`, `internal/row-divider.ts`, `internal/person-row-metrics.ts`
+(shared by `KkPersonRow` and `KkSkeletonRow`, whose only job is to match it), and
+`internal/display-title.ts`.
+
+#### 7.6d Token additions that pages inherit
+
+`kkTokens.line.hair` is now **1.5**, matching §7.0 rule 6 and the theme's own `MuiCard` /
+`MuiOutlinedInput` borders; six local `const HAIRLINE = 1.5` declarations are gone and the three
+primitives that were drawing a 1px divider next to a 1.5px one now agree.
+New: `kkTokens.type` (`rowTitle` 14 · `rowMeta` 11.5 · `rowValue` 17 · `span` 15 · `chip` 11 ·
+`chipSmall` 10 · `eyebrowSmall` 9 · `sectionTitle` 13 · `blockTitle` 19) replaces ten one-off
+`fontSize` constants at half-pixel sizes; `kkTokens.color.*.{redInk, goldInk, greenInk, blueInk}`
+(the **readable** foreground of each accent — `warning.main` as chip text was 1.70:1 on cream);
+`kkTokens.color.*.avatar` (§1.4's cream disc — every member was getting a saturated gold one);
+`kkTokens.layout.curtainClearance` (84, read by `KkFab` **and** the toast viewport, which had
+reached the same number independently); `kkTokens.overlay.scrimInk` (deliberately
+scheme-invariant, replacing a `kkTokens.color.light.ink` read inside a dark branch);
+`kkTokens.radius.bar`, `kkTokens.measure.empty`, `kkTokens.opacity.dimmed`,
+`kkTokens.shadow.sheetSoft`, `kkTokens.motion.*`, `kkTokens.font.displayWeight` (Anton ships one
+face at 400; six files were asking for 500 and getting a faux bold).
+
+#### 7.6e Rejected, with reasons
+
+| Asked for | Rejected because |
+|---|---|
+| `KkListFooter` („11 von 168 Personen" + „Weitere laden") | decision Z and §10.6 **drop** paging and that footer: the list shows all of its data. |
+| A permission-group header (radius-9 icon tile + „3 von 5") | §5.10 cuts `kind` groups **and** the rights counter outright: "one row per key, plain German, a switch". |
+| An accent/faint count in `KkSelectRow.trailing` | same ruling — no red count per Rolle. The archived Gruppe's faint count is `KkPanel dimmed` on the whole card (§5.4). |
+| A `tiny` (9.5px) chip size | its only consumer is §1.5's desktop **table** contact cell, and §5.7 builds a `KkPersonRow`, not a table. `small` (10px) is the size §1.4 actually pins. |
+| Merging `KkSkeletonRow` into `KkSkeletonBlock` | two different contracts (`count` of person-shaped rows vs `lines` of bars), both named in §5.0's `PageSkeleton`; a `variant` prop is the same anti-pattern the review criticises in `KkSelectField`. |
+| `disabled={disabled \|\| busy}` on `KkSwitchRow` | §5.0 pins the optimistic idiom: the row is **`busy`, never `disabled`**, while in flight. The a11y half of the finding (error `id`, `role="alert"`, `aria-describedby`) was taken. |
+| An index-driven cascade on first list paint | the row keys change on every search keystroke, so a mount-driven cascade replays per character — against §5.0's "while a search box is being typed the previous results stay". |
+| `KkChip` green dot pulsing by default | `/members` renders that chip ~150 times; a permanent synchronised breath across a viewport is motion WCAG 2.2.2 wants pausable. Shipped as an **opt-in `live`** for a single focal chip instead. |
+| The `KkConfirmDialog` facts table in Anton | §1.16 pins it at Archivo 12.5/800, and §10.3 gives Anton to Sessions and spans only — half the confirmation's values are sentences („die Zugehörigkeiten bleiben bestehen"), which Anton caps would wreck. |
+| `KkToast.tsx` rebuilt as an `Object.assign` | the kit has no public dot-members: `KkToastViewport` / `KkToastItem` are internal and must stay so. `Object.assign(KkToastProvider, {})` is theatre. **The file stays a re-export; this is the documented exception to §7.0 rule 1's assembly rule.** |
+
+#### 7.6f Follow-up that belongs to slice 1, not to the package
+
+`KkToastProvider` is still **unmounted**. §7.3 names the site — `features/session/components/AppShell.tsx` — and the app layer was out of this pass's scope, so the first `useKkToast()` call will throw until slice 1 wraps the shell:
+`<KkToastProvider dismissLabel="Schließen">`. Nothing else in §5's mutation idiom works before that.
+
+#### 7.6g Count, corrected
+
+**28 new components** (§7.5's 26 plus `KkMeta` and `KkSummaryRow`), **seven internal shared parts**
+(`KkFieldChoices` + §7.6c's six modules), and **9 extended** (§7.1's eight plus `KkStatRow.Value`).
 
 ---
 
