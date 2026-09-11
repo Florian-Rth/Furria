@@ -41,10 +41,12 @@ public sealed class RoleExpectations
                     .RolePermissions.AsNoTracking()
                     .Where(row => row.RoleId == _roleId)
                     .Select(row => row.PermissionKey)
-                    .OrderBy(key => key)
                     .ToListAsync(ct);
 
-                Assert.Equal(permissionKeys.OrderBy(key => key, StringComparer.Ordinal), granted);
+                Assert.Equal(
+                    permissionKeys.Order(StringComparer.Ordinal),
+                    granted.Order(StringComparer.Ordinal)
+                );
             }
         );
 
