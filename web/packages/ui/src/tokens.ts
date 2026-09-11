@@ -38,7 +38,7 @@ export const kkTokens = {
       redDk: '#E11D2A',
       gold: '#FFC42E',
       green: '#2E9E5B',
-      blue: '#2F6DA8',
+      blue: '#5896D0',
       line: 'rgba(251,244,230,0.16)',
       line2: 'rgba(251,244,230,0.09)',
       onRed: '#FFFFFF',
