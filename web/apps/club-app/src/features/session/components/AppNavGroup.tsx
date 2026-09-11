@@ -26,7 +26,7 @@ export const AppNavGroup: FC<AppNavGroupProps> = ({ group }) => {
         component={Link}
         to={section.to}
         params={section.params}
-        active={matchRoute({ to: section.to }) !== false}
+        active={matchRoute({ to: section.to, params: section.params }) !== false}
       />
     );
   });

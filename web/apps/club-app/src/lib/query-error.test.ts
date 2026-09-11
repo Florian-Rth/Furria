@@ -6,6 +6,7 @@ import {
   UnauthorizedError,
 } from '@/lib/api/api-error';
 import {
+  isForbiddenError,
   isNotFoundError,
   type QueryErrorKind,
   toQueryErrorKind,
@@ -68,5 +69,16 @@ describe('isNotFoundError', () => {
     ['nothing at all', null, false],
   ])('answers %s with %s', (_case, error, expected) => {
     expect(isNotFoundError(error)).toBe(expected);
+  });
+});
+
+describe('isForbiddenError', () => {
+  it.each<[string, Error | null, boolean]>([
+    ['a Gruppe that is not the caller own', new ServerFailureError(403), true],
+    ['a detail route whose id is gone', new ServerFailureError(404), false],
+    ['a terminal 401', new UnauthorizedError(), false],
+    ['nothing at all', null, false],
+  ])('answers %s with %s', (_case, error, expected) => {
+    expect(isForbiddenError(error)).toBe(expected);
   });
 });
