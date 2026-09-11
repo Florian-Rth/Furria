@@ -1,5 +1,6 @@
 using Furria.Application.Identity;
 using Furria.Application.PreviewAccess;
+using Furria.Core.Club;
 using Furria.Core.Identity;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Persistence;
@@ -36,13 +37,30 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
     private DatabaseResetService? _resetService;
     private SeededAccount? _bootstrapAdmin;
 
-    public FakeTimeProvider TimeProvider { get; } = new(DateTimeOffset.UtcNow);
+    public FakeTimeProvider TimeProvider { get; } = new(WholeSecondNow());
+
+    public DateOnly Today { get; }
+
+    public int CurrentSessionYear { get; }
 
     public SeededAccount BootstrapAdmin =>
         _bootstrapAdmin ?? throw new InvalidOperationException(NotInitialized);
 
+    public ApiTestFixture()
+    {
+        Today = ClubClock.Today(TimeProvider);
+        CurrentSessionYear = ClubSession.YearOf(Today);
+    }
+
+    private static DateTimeOffset WholeSecondNow()
+    {
+        var now = DateTimeOffset.UtcNow;
+        return now.AddTicks(-(now.Ticks % TimeSpan.TicksPerSecond));
+    }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseEnvironment("Testing");
         builder.UseSetting(
             $"ConnectionStrings:{AppDbContext.ConnectionName}",
             _postgres.GetConnectionString()
@@ -149,18 +167,20 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         await seeder.StartAsync(ct);
     }
 
-    public async Task InsertMembershipDirectlyAsync(int personId, CancellationToken ct = default)
+    public async Task EditPersonNameDirectlyAsync(
+        int personId,
+        string firstName,
+        string lastName,
+        CancellationToken ct = default
+    )
     {
         await using var scope = Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        await db.Database.ExecuteSqlAsync(
-            $"""
-            INSERT INTO membership (person_id, type, status, started_at)
-            VALUES ({personId}, 'Active', 'Active', DATE '2020-11-11')
-            """,
-            ct
-        );
+        var person = await db.People.SingleAsync(row => row.Id == personId, ct);
+        person.FirstName = firstName;
+        person.LastName = lastName;
+        await db.SaveChangesAsync(ct);
     }
 
     public async Task DisableAccountDirectlyAsync(int accountId, CancellationToken ct = default)

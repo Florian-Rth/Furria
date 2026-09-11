@@ -8,12 +8,12 @@ namespace Furria.Tests.Common.Expectations;
 public sealed class MembershipExpectations
 {
     private readonly Expected _expected;
-    private readonly int _personId;
+    private readonly int _membershipId;
 
-    internal MembershipExpectations(Expected expected, int personId)
+    internal MembershipExpectations(Expected expected, int membershipId)
     {
         _expected = expected;
-        _personId = personId;
+        _membershipId = membershipId;
     }
 
     public Expected ToNotExist() =>
@@ -22,31 +22,30 @@ public sealed class MembershipExpectations
                 Assert.False(
                     await dbContext
                         .Memberships.AsNoTracking()
-                        .AnyAsync(row => row.PersonId == _personId, ct),
-                    $"Expected no Mitgliedschaft for the Person with id {_personId}."
+                        .AnyAsync(row => row.Id == _membershipId, ct),
+                    $"Expected no Mitgliedschaft with id {_membershipId}."
                 )
         );
 
-    public Expected ToHave(MembershipType type, MembershipStatus status) =>
+    public Expected ToHavePeriod(DateOnly startedOn, DateOnly? endedOn) =>
         _expected.Enqueue(
             async (dbContext, ct) =>
             {
                 var membership = await SingleAsync(dbContext, ct);
-                Assert.Equal(type, membership.Type);
-                Assert.Equal(status, membership.Status);
+                Assert.Equal(startedOn, membership.StartedOn);
+                Assert.Equal(endedOn, membership.EndedOn);
             }
         );
 
-    public Expected ToHavePeriod(DateOnly startedAt, DateOnly? endedAt) =>
+    public Expected ToBeOpen() =>
         _expected.Enqueue(
             async (dbContext, ct) =>
             {
                 var membership = await SingleAsync(dbContext, ct);
-                Assert.Equal(startedAt, membership.StartedAt);
-                Assert.Equal(endedAt, membership.EndedAt);
+                Assert.Null(membership.EndedOn);
             }
         );
 
     private Task<Membership> SingleAsync(AppDbContext dbContext, CancellationToken ct) =>
-        dbContext.Memberships.AsNoTracking().SingleAsync(row => row.PersonId == _personId, ct);
+        dbContext.Memberships.AsNoTracking().SingleAsync(row => row.Id == _membershipId, ct);
 }

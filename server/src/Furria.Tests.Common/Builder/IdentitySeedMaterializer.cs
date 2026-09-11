@@ -30,10 +30,19 @@ internal static class IdentitySeedMaterializer
         );
 
         var personIds = await InsertPeopleAsync(dbContext, recorded, ct);
-        await InsertMembershipsAsync(dbContext, recorded, personIds, ct);
+        var membershipIds = await InsertMembershipsAsync(dbContext, recorded, personIds, ct);
+        var pauseIds = await InsertPausesAsync(dbContext, recorded, membershipIds, ct);
+        var feeReductionIds = await InsertFeeReductionsAsync(dbContext, recorded, personIds, ct);
         var accounts = await InsertAccountsAsync(dbContext, recorded, personIds, credentials, ct);
 
-        return new SeededIdentity(personIds, accounts.Ids, accounts.Emails);
+        return new SeededIdentity(
+            personIds,
+            membershipIds,
+            pauseIds,
+            feeReductionIds,
+            accounts.Ids,
+            accounts.Emails
+        );
     }
 
     private static async Task<Dictionary<string, int>> InsertPeopleAsync(
@@ -42,21 +51,22 @@ internal static class IdentitySeedMaterializer
         CancellationToken ct
     )
     {
-        var declared = recorded.People.ToDictionary(intent => intent.Alias);
+        var declared = recorded.People.ToDictionary(intent => intent.Alias, StringComparer.Ordinal);
+        var contacts = recorded.Contacts.ToDictionary(
+            intent => intent.Alias,
+            StringComparer.Ordinal
+        );
         var aliases = recorded
             .People.Select(intent => intent.Alias)
+            .Concat(recorded.Contacts.Select(intent => intent.Alias))
             .Concat(recorded.Accounts.Select(intent => intent.Alias))
             .Distinct(StringComparer.Ordinal)
             .ToList();
 
         var people = aliases.ToDictionary(
             alias => alias,
-            alias => new Person
-            {
-                FirstName = declared.TryGetValue(alias, out var intent) ? intent.FirstName : "Test",
-                LastName = declared.TryGetValue(alias, out var named) ? named.LastName : "Person",
-                Email = $"{alias}-{Guid.NewGuid():N}@test.local",
-            },
+            alias =>
+                Build(alias, declared.GetValueOrDefault(alias), contacts.GetValueOrDefault(alias)),
             StringComparer.Ordinal
         );
 
@@ -70,28 +80,116 @@ internal static class IdentitySeedMaterializer
         );
     }
 
-    private static async Task InsertMembershipsAsync(
+    private static Person Build(
+        string alias,
+        IdentitySeedBuilder.PersonIntent? named,
+        IdentitySeedBuilder.PersonContactIntent? contact
+    ) =>
+        new()
+        {
+            FirstName = named?.FirstName ?? "Test",
+            LastName = named?.LastName ?? "Person",
+            Email = contact?.Email ?? $"{alias}-{Guid.NewGuid():N}@test.local",
+            Phone = contact?.Phone,
+            Street = contact?.Street,
+            Zip = contact?.Zip,
+            City = contact?.City,
+            BirthDate = contact?.BirthDate,
+            ContactVisibleToMembers = contact?.ContactVisibleToMembers ?? false,
+        };
+
+    private static async Task<Dictionary<string, int>> InsertMembershipsAsync(
         AppDbContext dbContext,
         IdentitySeedBuilder recorded,
         IReadOnlyDictionary<string, int> personIds,
         CancellationToken ct
     )
     {
-        if (recorded.Memberships.Count == 0)
-            return;
-
-        dbContext.Memberships.AddRange(
-            recorded.Memberships.Select(intent => new Membership
+        var memberships = recorded.Memberships.ToDictionary(
+            intent => intent.Alias,
+            intent => new Membership
             {
-                PersonId = RequirePerson(personIds, intent.Alias),
-                Type = intent.Type,
-                Status = intent.Status,
-                StartedAt = intent.StartedAt,
-                EndedAt = intent.EndedAt,
-            })
+                PersonId = RequireId(personIds, intent.PersonAlias, "Person"),
+                StartedOn = intent.StartedOn,
+                EndedOn = intent.EndedOn,
+            },
+            StringComparer.Ordinal
         );
 
-        await dbContext.SaveChangesAsync(ct);
+        if (memberships.Count > 0)
+        {
+            dbContext.Memberships.AddRange(memberships.Values);
+            await dbContext.SaveChangesAsync(ct);
+        }
+
+        return memberships.ToDictionary(
+            entry => entry.Key,
+            entry => entry.Value.Id,
+            StringComparer.Ordinal
+        );
+    }
+
+    private static async Task<Dictionary<string, int>> InsertPausesAsync(
+        AppDbContext dbContext,
+        IdentitySeedBuilder recorded,
+        IReadOnlyDictionary<string, int> membershipIds,
+        CancellationToken ct
+    )
+    {
+        var pauses = recorded.Pauses.ToDictionary(
+            intent => intent.Alias,
+            intent => new MembershipPause
+            {
+                MembershipId = RequireId(membershipIds, intent.MembershipAlias, "Mitgliedschaft"),
+                FirstSessionYear = intent.FirstSessionYear,
+                LastSessionYear = intent.LastSessionYear,
+            },
+            StringComparer.Ordinal
+        );
+
+        if (pauses.Count > 0)
+        {
+            dbContext.MembershipPauses.AddRange(pauses.Values);
+            await dbContext.SaveChangesAsync(ct);
+        }
+
+        return pauses.ToDictionary(
+            entry => entry.Key,
+            entry => entry.Value.Id,
+            StringComparer.Ordinal
+        );
+    }
+
+    private static async Task<Dictionary<string, int>> InsertFeeReductionsAsync(
+        AppDbContext dbContext,
+        IdentitySeedBuilder recorded,
+        IReadOnlyDictionary<string, int> personIds,
+        CancellationToken ct
+    )
+    {
+        var reductions = recorded.FeeReductions.ToDictionary(
+            intent => intent.Alias,
+            intent => new FeeReduction
+            {
+                PersonId = RequireId(personIds, intent.PersonAlias, "Person"),
+                Basis = intent.Basis,
+                FirstSessionYear = intent.FirstSessionYear,
+                LastSessionYear = intent.LastSessionYear,
+            },
+            StringComparer.Ordinal
+        );
+
+        if (reductions.Count > 0)
+        {
+            dbContext.FeeReductions.AddRange(reductions.Values);
+            await dbContext.SaveChangesAsync(ct);
+        }
+
+        return reductions.ToDictionary(
+            entry => entry.Key,
+            entry => entry.Value.Id,
+            StringComparer.Ordinal
+        );
     }
 
     private static async Task<SeededAccounts> InsertAccountsAsync(
@@ -161,7 +259,7 @@ internal static class IdentitySeedMaterializer
     ) =>
         new()
         {
-            PersonId = RequirePerson(personIds, intent.Alias),
+            PersonId = RequireId(personIds, intent.Alias, "Person"),
             IsDisabled = intent.Disabled,
             UserName = credential.Email,
             NormalizedUserName = credential.NormalizedUserName,
@@ -177,12 +275,12 @@ internal static class IdentitySeedMaterializer
     private static string PasswordHash(IPasswordHasher<Account> hasher, string password) =>
         _cachedPasswordHash ??= hasher.HashPassword(new Account(), password);
 
-    private static int RequirePerson(IReadOnlyDictionary<string, int> personIds, string alias) =>
-        personIds.TryGetValue(alias, out var id)
+    private static int RequireId(IReadOnlyDictionary<string, int> ids, string alias, string kind) =>
+        ids.TryGetValue(alias, out var id)
             ? id
             : throw new KeyNotFoundException(
-                $"No Person was seeded for alias \"{alias}\". Declared aliases: "
-                    + $"{string.Join(", ", personIds.Keys)}."
+                $"No {kind} was seeded for alias \"{alias}\". Declared aliases: "
+                    + $"{string.Join(", ", ids.Keys)}."
             );
 
     private sealed record AccountCredential(

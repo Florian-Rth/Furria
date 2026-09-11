@@ -1,5 +1,6 @@
 using Furria.Application.Identity;
 using Furria.Application.Results;
+using Furria.Core.Club;
 using Furria.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -21,13 +22,15 @@ public sealed class AccountService
     private readonly SignInManager<Account> _signInManager;
     private readonly RefreshTokenService _refreshTokenService;
     private readonly AccessTokenService _accessTokenService;
+    private readonly TimeProvider _timeProvider;
 
     public AccountService(
         AppDbContext dbContext,
         UserManager<Account> userManager,
         SignInManager<Account> signInManager,
         RefreshTokenService refreshTokenService,
-        AccessTokenService accessTokenService
+        AccessTokenService accessTokenService,
+        TimeProvider timeProvider
     )
     {
         _dbContext = dbContext;
@@ -35,6 +38,7 @@ public sealed class AccountService
         _signInManager = signInManager;
         _refreshTokenService = refreshTokenService;
         _accessTokenService = accessTokenService;
+        _timeProvider = timeProvider;
     }
 
     public async Task<Result<SessionTokensDetails>> LoginAsync(
@@ -99,37 +103,46 @@ public sealed class AccountService
 
     public async Task<Result<AccountDetails>> GetDetailsAsync(int accountId, CancellationToken ct)
     {
-        var details = await _dbContext
+        var row = await _dbContext
             .Users.AsNoTracking()
             .Where(account => account.Id == accountId)
-            .Select(account => new AccountDetails
-            {
-                Id = account.Id,
-                Email = account.Email ?? "",
-                Person = new PersonDetails
+            .Select(account => new AccountRow(
+                account.Id,
+                account.Email ?? "",
+                new PersonDetails
                 {
                     Id = account.Person!.Id,
                     FirstName = account.Person.FirstName,
                     LastName = account.Person.LastName,
                     Email = account.Person.Email,
                     Phone = account.Person.Phone,
+                    Street = account.Person.Street,
+                    Zip = account.Person.Zip,
+                    City = account.Person.City,
+                    BirthDate = account.Person.BirthDate,
+                    ContactVisibleToMembers = account.Person.ContactVisibleToMembers,
                 },
-                Membership =
-                    account.Person.Membership == null
-                        ? null
-                        : new MembershipDetails
-                        {
-                            Type = account.Person.Membership.Type,
-                            Status = account.Person.Membership.Status,
-                            StartedAt = account.Person.Membership.StartedAt,
-                            EndedAt = account.Person.Membership.EndedAt,
-                        },
-            })
+                account
+                    .Person.Memberships.Select(membership => new MembershipRow(
+                        membership.Id,
+                        membership.StartedOn,
+                        membership.EndedOn,
+                        membership
+                            .Pauses.Select(pause => new MembershipPauseDetails
+                            {
+                                PauseId = pause.Id,
+                                FirstSessionYear = pause.FirstSessionYear,
+                                LastSessionYear = pause.LastSessionYear,
+                            })
+                            .ToList()
+                    ))
+                    .ToList()
+            ))
             .SingleOrDefaultAsync(ct);
 
-        return details is null
+        return row is null
             ? Result<AccountDetails>.NotFound("The account no longer exists.")
-            : Result<AccountDetails>.Success(details);
+            : Result<AccountDetails>.Success(ToDetails(row, ClubClock.Today(_timeProvider)));
     }
 
     private void BurnAPasswordCheck(string password)
@@ -138,6 +151,24 @@ public sealed class AccountService
         _decoyPasswordHash ??= hasher.HashPassword(DecoyAccount, DecoyPassword);
         hasher.VerifyHashedPassword(DecoyAccount, _decoyPasswordHash, password);
     }
+
+    private static AccountDetails ToDetails(AccountRow row, DateOnly today) =>
+        new()
+        {
+            Id = row.Id,
+            Email = row.Email,
+            Person = row.Person,
+            Membership = MembershipChainDetails.Of(ToPeriods(row.Memberships, today), today),
+        };
+
+    private static IReadOnlyList<MembershipDetails> ToPeriods(
+        IReadOnlyList<MembershipRow> rows,
+        DateOnly today
+    ) =>
+        rows.Select(row =>
+                MembershipDetails.Of(row.Id, row.StartedOn, row.EndedOn, row.Pauses, today)
+            )
+            .ToList();
 
     private static SessionTokensDetails Combine(
         AccessTokenDetails access,
@@ -180,4 +211,18 @@ public sealed class AccountService
         var access = _accessTokenService.Issue(account.Id, account.PersonId);
         return Combine(access, refresh);
     }
+
+    private sealed record AccountRow(
+        int Id,
+        string Email,
+        PersonDetails Person,
+        IReadOnlyList<MembershipRow> Memberships
+    );
+
+    private sealed record MembershipRow(
+        int Id,
+        DateOnly StartedOn,
+        DateOnly? EndedOn,
+        IReadOnlyList<MembershipPauseDetails> Pauses
+    );
 }

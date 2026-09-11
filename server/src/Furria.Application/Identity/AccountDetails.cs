@@ -8,5 +8,5 @@ public sealed record AccountDetails
 
     public required PersonDetails Person { get; init; }
 
-    public required MembershipDetails? Membership { get; init; }
+    public required MembershipChainDetails Membership { get; init; }
 }

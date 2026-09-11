@@ -15,6 +15,12 @@ public sealed class TestIdentity
 
     public AliasRegistry<int> People { get; }
 
+    public AliasRegistry<int> Memberships { get; }
+
+    public AliasRegistry<int> Pauses { get; }
+
+    public AliasRegistry<int> FeeReductions { get; }
+
     public AliasRegistry<int> Accounts { get; }
 
     public SeededAccount BootstrapAdmin { get; }
@@ -31,6 +37,9 @@ public sealed class TestIdentity
         _password = password;
         BootstrapAdmin = bootstrapAdmin;
         People = new AliasRegistry<int>("Person", seeded.PersonIds);
+        Memberships = new AliasRegistry<int>("Mitgliedschaft", seeded.MembershipIds);
+        Pauses = new AliasRegistry<int>("Ruhezeit", seeded.PauseIds);
+        FeeReductions = new AliasRegistry<int>("Beitragsermaessigung", seeded.FeeReductionIds);
         Accounts = new AliasRegistry<int>("Account", seeded.AccountIds);
     }
 

@@ -34,8 +34,8 @@ public sealed class BootstrapAdminSeederTests
         var ctx = await _fixture.BuildAsync(ct);
 
         await ctx
-            .Expected.MembershipOf(_fixture.BootstrapAdmin.PersonId)
-            .ToNotExist()
+            .Expected.MembershipsOfPerson(_fixture.BootstrapAdmin.PersonId)
+            .ToHaveCount(0)
             .AssertAsync(ct);
     }
 

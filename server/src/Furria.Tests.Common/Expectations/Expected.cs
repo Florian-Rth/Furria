@@ -15,7 +15,13 @@ public sealed class Expected
 
     public PersonExpectations Person(int personId) => new(this, personId);
 
-    public MembershipExpectations MembershipOf(int personId) => new(this, personId);
+    public MembershipExpectations Membership(int membershipId) => new(this, membershipId);
+
+    public MembershipSetExpectations MembershipsOfPerson(int personId) => new(this, personId);
+
+    public MembershipPauseExpectations MembershipPause(int pauseId) => new(this, pauseId);
+
+    public FeeReductionExpectations FeeReduction(int feeReductionId) => new(this, feeReductionId);
 
     public AccountExpectations Account(int accountId) => new(this, accountId);
 

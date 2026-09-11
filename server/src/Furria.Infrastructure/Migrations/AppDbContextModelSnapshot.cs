@@ -22,6 +22,59 @@ namespace Furria.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Furria.Core.Identity.FeeReduction", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Basis")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("basis");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int>("FirstSessionYear")
+                        .HasColumnType("integer")
+                        .HasColumnName("first_session_year");
+
+                    b.Property<int>("LastSessionYear")
+                        .HasColumnType("integer")
+                        .HasColumnName("last_session_year");
+
+                    b.Property<int>("PersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("person_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_fee_reduction");
+
+                    b.HasIndex("PersonId")
+                        .HasDatabaseName("ix_fee_reduction_person_id");
+
+                    b.ToTable("fee_reduction", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_fee_reduction_founding", "first_session_year >= 1971");
+
+                            t.HasCheckConstraint("ck_fee_reduction_span", "last_session_year >= first_session_year");
+                        });
+                });
+
             modelBuilder.Entity("Furria.Core.Identity.Membership", b =>
                 {
                     b.Property<int>("Id")
@@ -37,29 +90,17 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("now()");
 
-                    b.Property<DateOnly?>("EndedAt")
+                    b.Property<DateOnly?>("EndedOn")
                         .HasColumnType("date")
-                        .HasColumnName("ended_at");
+                        .HasColumnName("ended_on");
 
                     b.Property<int>("PersonId")
                         .HasColumnType("integer")
                         .HasColumnName("person_id");
 
-                    b.Property<DateOnly>("StartedAt")
+                    b.Property<DateOnly>("StartedOn")
                         .HasColumnType("date")
-                        .HasColumnName("started_at");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("status");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("type");
+                        .HasColumnName("started_on");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .ValueGeneratedOnAdd()
@@ -71,13 +112,64 @@ namespace Furria.Infrastructure.Migrations
                         .HasName("pk_membership");
 
                     b.HasIndex("PersonId")
-                        .IsUnique()
                         .HasDatabaseName("ix_membership_person_id");
 
-                    b.HasIndex("Status")
-                        .HasDatabaseName("ix_membership_status");
+                    b.HasIndex(new[] { "PersonId" }, "ix_membership_person_id_open")
+                        .IsUnique()
+                        .HasDatabaseName("ix_membership_person_id_open")
+                        .HasFilter("ended_on IS NULL");
 
-                    b.ToTable("membership", (string)null);
+                    b.ToTable("membership", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_membership_period", "ended_on IS NULL OR ended_on >= started_on");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.Identity.MembershipPause", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int>("FirstSessionYear")
+                        .HasColumnType("integer")
+                        .HasColumnName("first_session_year");
+
+                    b.Property<int?>("LastSessionYear")
+                        .HasColumnType("integer")
+                        .HasColumnName("last_session_year");
+
+                    b.Property<int>("MembershipId")
+                        .HasColumnType("integer")
+                        .HasColumnName("membership_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_membership_pause");
+
+                    b.HasIndex("MembershipId")
+                        .HasDatabaseName("ix_membership_pause_membership_id");
+
+                    b.ToTable("membership_pause", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_membership_pause_founding", "first_session_year >= 1971");
+
+                            t.HasCheckConstraint("ck_membership_pause_span", "last_session_year IS NULL OR last_session_year >= first_session_year");
+                        });
                 });
 
             modelBuilder.Entity("Furria.Core.Identity.Person", b =>
@@ -89,10 +181,20 @@ namespace Furria.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<DateOnly?>("BirthDate")
+                        .HasColumnType("date")
+                        .HasColumnName("birth_date");
+
                     b.Property<string>("City")
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)")
                         .HasColumnName("city");
+
+                    b.Property<bool>("ContactVisibleToMembers")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("contact_visible_to_members");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -395,16 +497,40 @@ namespace Furria.Infrastructure.Migrations
                     b.ToTable("account_token", (string)null);
                 });
 
+            modelBuilder.Entity("Furria.Core.Identity.FeeReduction", b =>
+                {
+                    b.HasOne("Furria.Core.Identity.Person", "Person")
+                        .WithMany("FeeReductions")
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_fee_reduction_person_person_id");
+
+                    b.Navigation("Person");
+                });
+
             modelBuilder.Entity("Furria.Core.Identity.Membership", b =>
                 {
                     b.HasOne("Furria.Core.Identity.Person", "Person")
-                        .WithOne("Membership")
-                        .HasForeignKey("Furria.Core.Identity.Membership", "PersonId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .WithMany("Memberships")
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_membership_person_person_id");
 
                     b.Navigation("Person");
+                });
+
+            modelBuilder.Entity("Furria.Core.Identity.MembershipPause", b =>
+                {
+                    b.HasOne("Furria.Core.Identity.Membership", "Membership")
+                        .WithMany("Pauses")
+                        .HasForeignKey("MembershipId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_membership_pause_membership_membership_id");
+
+                    b.Navigation("Membership");
                 });
 
             modelBuilder.Entity("Furria.Infrastructure.Identity.Account", b =>
@@ -461,9 +587,16 @@ namespace Furria.Infrastructure.Migrations
                         .HasConstraintName("fk_account_token_account_user_id");
                 });
 
+            modelBuilder.Entity("Furria.Core.Identity.Membership", b =>
+                {
+                    b.Navigation("Pauses");
+                });
+
             modelBuilder.Entity("Furria.Core.Identity.Person", b =>
                 {
-                    b.Navigation("Membership");
+                    b.Navigation("FeeReductions");
+
+                    b.Navigation("Memberships");
                 });
 #pragma warning restore 612, 618
         }

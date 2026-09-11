@@ -14,6 +14,10 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>
 
     public DbSet<Membership> Memberships => Set<Membership>();
 
+    public DbSet<MembershipPause> MembershipPauses => Set<MembershipPause>();
+
+    public DbSet<FeeReduction> FeeReductions => Set<FeeReduction>();
+
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options)

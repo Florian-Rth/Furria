@@ -1,7 +1,7 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Auth;
-using Furria.Core.Identity;
+using Furria.Core.Club;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -10,6 +10,8 @@ namespace Furria.Api.Tests.Auth;
 [Collection("Api")]
 public sealed class GetMeTests
 {
+    private static readonly DateOnly BirthDate = new(1996, 4, 3);
+
     private readonly ApiTestFixture _fixture;
 
     public GetMeTests(ApiTestFixture fixture)
@@ -18,16 +20,17 @@ public sealed class GetMeTests
     }
 
     [Fact]
-    public async Task Should_ReturnPersonAndMembership_When_ThePersonIsAMitglied()
+    public async Task Should_ReportAktiv_When_ThePersonHoldsARunningMitgliedschaft()
     {
         var ct = TestContext.Current.CancellationToken;
+        var joinedOn = _fixture.Today.AddYears(-5);
         var ctx = await _fixture.BuildAsync(
             builder =>
                 builder.Identity(identity =>
                     identity
                         .AddPerson("alice", "Alice", "Muster")
                         .AddAccount("alice")
-                        .AddMembership("alice", MembershipType.Youth, MembershipStatus.Paused)
+                        .AddMembership("alice-first", "alice", joinedOn)
                 ),
             ct
         );
@@ -38,13 +41,14 @@ public sealed class GetMeTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal(ctx.Identity.Accounts.IdOf("alice"), result.AccountId);
         Assert.Equal("Alice", result.Person.FirstName);
-        Assert.Equal("Muster", result.Person.LastName);
-        Assert.Equal(MembershipType.Youth, result.Membership?.Type);
-        Assert.Equal(MembershipStatus.Paused, result.Membership?.Status);
+        Assert.Equal(MembershipState.Active, result.Membership.State);
+        Assert.Equal(joinedOn, result.Membership.MemberSince);
+        Assert.Equal(joinedOn, result.Membership.CurrentStartedOn);
+        Assert.Null(result.Membership.CurrentEndedOn);
     }
 
     [Fact]
-    public async Task Should_ReturnNoMembership_When_ThePersonIsNotAMitglied()
+    public async Task Should_ReportKeinMitglied_When_ThePersonNeverHeldAMitgliedschaft()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -56,8 +60,179 @@ public sealed class GetMeTests
         var (response, result) = await client.GETAsync<GetMe, GetMeResponse>();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Null(result.Membership);
+        Assert.Equal(MembershipState.None, result.Membership.State);
+        Assert.Null(result.Membership.MemberSince);
+        Assert.Null(result.Membership.CurrentStartedOn);
         Assert.Equal(ctx.Identity.People.IdOf("alice"), result.Person.Id);
+        await ctx
+            .Expected.MembershipsOfPerson(ctx.Identity.People.IdOf("alice"))
+            .ToHaveCount(0)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ReportKeinMitglied_When_TheOnlyMitgliedschaftStartsTomorrow()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddAccount("alice")
+                        .AddMembership("alice-first", "alice", _fixture.Today.AddDays(1))
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        var (response, result) = await client.GETAsync<GetMe, GetMeResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(MembershipState.None, result.Membership.State);
+        Assert.Null(result.Membership.MemberSince);
+    }
+
+    [Fact]
+    public async Task Should_ReportBeendet_When_EveryMitgliedschaftHasEnded()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddAccount("alice")
+                        .AddMembership(
+                            "alice-first",
+                            "alice",
+                            _fixture.Today.AddYears(-5),
+                            _fixture.Today.AddYears(-1)
+                        )
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        var (response, result) = await client.GETAsync<GetMe, GetMeResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(MembershipState.Ended, result.Membership.State);
+        Assert.Equal(_fixture.Today.AddYears(-5), result.Membership.MemberSince);
+        Assert.Null(result.Membership.CurrentStartedOn);
+    }
+
+    [Fact]
+    public async Task Should_ReportRuht_When_ARuhezeitCoversTheRunningSession()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddAccount("alice")
+                        .AddMembership("alice-first", "alice", _fixture.Today.AddYears(-5))
+                        .AddMembershipPause(
+                            "alice-ruhezeit",
+                            "alice-first",
+                            _fixture.CurrentSessionYear
+                        )
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        var (response, result) = await client.GETAsync<GetMe, GetMeResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(MembershipState.Paused, result.Membership.State);
+    }
+
+    [Fact]
+    public async Task Should_IgnoreARuhezeit_When_ItBelongsToAnEndedMitgliedschaft()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddAccount("alice")
+                        .AddMembership(
+                            "alice-first",
+                            "alice",
+                            _fixture.Today.AddYears(-9),
+                            _fixture.Today.AddYears(-5)
+                        )
+                        .AddMembership("alice-second", "alice", _fixture.Today.AddYears(-2))
+                        .AddMembershipPause(
+                            "alice-ruhezeit",
+                            "alice-first",
+                            _fixture.CurrentSessionYear
+                        )
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        var (response, result) = await client.GETAsync<GetMe, GetMeResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(MembershipState.Active, result.Membership.State);
+        Assert.Equal(_fixture.Today.AddYears(-9), result.Membership.MemberSince);
+        Assert.Equal(_fixture.Today.AddYears(-2), result.Membership.CurrentStartedOn);
+    }
+
+    [Fact]
+    public async Task Should_ReturnTheOwnStammdaten_When_ThePersonHasThem()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddAccount("alice")
+                        .AddPersonContact(
+                            "alice",
+                            phone: "0171 1234567",
+                            street: "Marktplatz 1",
+                            zip: "04680",
+                            city: "Colditz",
+                            contactVisibleToMembers: true,
+                            birthDate: BirthDate
+                        )
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        var (response, result) = await client.GETAsync<GetMe, GetMeResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("0171 1234567", result.Person.Phone);
+        Assert.Equal("Marktplatz 1", result.Person.Street);
+        Assert.Equal("04680", result.Person.Zip);
+        Assert.Equal("Colditz", result.Person.City);
+        Assert.Equal(BirthDate, result.Person.BirthDate);
+        Assert.True(result.Person.ContactVisibleToMembers);
+    }
+
+    [Fact]
+    public async Task Should_WriteCamelCaseStringsAndIsoDates_When_TheChainReachesTheWire()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var joinedOn = new DateOnly(2017, 9, 1);
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity.AddAccount("alice").AddMembership("alice-first", "alice", joinedOn)
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        var (response, _) = await client.GETAsync<GetMe, GetMeResponse>();
+        var payload = await response.Content.ReadAsStringAsync(ct);
+
+        Assert.Contains("\"state\":\"active\"", payload, StringComparison.Ordinal);
+        Assert.Contains("\"memberSince\":\"2017-09-01\"", payload, StringComparison.Ordinal);
     }
 
     [Fact]

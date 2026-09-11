@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using FastEndpoints;
 using FastEndpoints.Security;
 using FastEndpoints.Swagger;
@@ -53,6 +55,7 @@ app.UseAuthorization();
 app.UseFastEndpoints(c =>
 {
     c.Endpoints.RoutePrefix = "api";
+    c.Serializer.Options.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
     c.Endpoints.Configurator = endpoint => endpoint.PreProcessor<PermissionEnforcer>(Order.Before);
 });
 app.UseSwaggerGen();
