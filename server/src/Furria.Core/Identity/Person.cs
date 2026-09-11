@@ -1,6 +1,8 @@
+using Furria.Core.Club;
+
 namespace Furria.Core.Identity;
 
-public sealed class Person
+public sealed class Person : ITimestamped
 {
     public int Id { get; set; }
 
@@ -18,9 +20,15 @@ public sealed class Person
 
     public string? City { get; set; }
 
+    public DateOnly? BirthDate { get; set; }
+
+    public bool ContactVisibleToMembers { get; set; }
+
     public DateTimeOffset CreatedAt { get; set; }
 
     public DateTimeOffset UpdatedAt { get; set; }
 
-    public Membership? Membership { get; set; }
+    public ICollection<Membership> Memberships { get; set; } = [];
+
+    public ICollection<FeeReduction> FeeReductions { get; set; } = [];
 }

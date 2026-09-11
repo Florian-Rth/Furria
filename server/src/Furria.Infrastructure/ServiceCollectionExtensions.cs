@@ -14,13 +14,18 @@ public static class ServiceCollectionExtensions
         IConfiguration configuration
     )
     {
-        services.AddDbContext<AppDbContext>(options =>
-            options
-                .UseNpgsql(
-                    configuration.GetConnectionString(AppDbContext.ConnectionName),
-                    npgsql => npgsql.MigrationsHistoryTable("__ef_migrations_history")
-                )
-                .UseSnakeCaseNamingConvention()
+        services.AddSingleton<AuditTimestampInterceptor>();
+        services.AddDbContext<AppDbContext>(
+            (serviceProvider, options) =>
+                options
+                    .UseNpgsql(
+                        configuration.GetConnectionString(AppDbContext.ConnectionName),
+                        npgsql => npgsql.MigrationsHistoryTable("__ef_migrations_history")
+                    )
+                    .UseSnakeCaseNamingConvention()
+                    .AddInterceptors(
+                        serviceProvider.GetRequiredService<AuditTimestampInterceptor>()
+                    )
         );
 
         services
