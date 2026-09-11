@@ -12,6 +12,7 @@ public sealed class AccountService
 {
     private const string RejectedCredentialsMessage = "Email or password is not valid.";
     private const string RejectedSessionMessage = "The session could not be refreshed.";
+    private const string EndedSessionMessage = "The session is no longer valid.";
     private const string DecoyPassword = "decoy-password-that-no-account-ever-uses";
 
     private static readonly Account DecoyAccount = new();
@@ -113,6 +114,7 @@ public sealed class AccountService
             .Select(account => new AccountRow(
                 account.Id,
                 account.Email ?? "",
+                account.IsDisabled,
                 new PersonDetails
                 {
                     Id = account.Person!.Id,
@@ -146,6 +148,9 @@ public sealed class AccountService
 
         if (row is null)
             return Result<AccountDetails>.NotFound("The account no longer exists.");
+
+        if (row.IsDisabled)
+            return Result<AccountDetails>.Unauthorized(EndedSessionMessage);
 
         var isAffiliated = await _permissionAuthorizer.IsAffiliatedAsync(accountId, ct);
         var permissionKeys = await _permissionAuthorizer.GrantedKeysAsync(accountId, ct);
@@ -235,6 +240,7 @@ public sealed class AccountService
     private sealed record AccountRow(
         int Id,
         string Email,
+        bool IsDisabled,
         PersonDetails Person,
         IReadOnlyList<MembershipRow> Memberships
     );

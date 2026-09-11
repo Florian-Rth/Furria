@@ -33,6 +33,7 @@ public sealed class RoleHoldingConfiguration : IEntityTypeConfiguration<RoleHold
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(holding => holding.PersonId);
+        builder.HasIndex(holding => new { holding.RoleId, holding.PersonId });
         builder
             .HasIndex(
                 holding => new { holding.RoleId, holding.PersonId },

@@ -6,12 +6,18 @@ namespace Furria.Infrastructure.Persistence.Configurations;
 
 public sealed class GroupConfiguration : IEntityTypeConfiguration<Group>
 {
+    private const string GermanCollation = "de-DE-x-icu";
+
     public void Configure(EntityTypeBuilder<Group> builder)
     {
         builder.ToTable("group");
         builder.HasKey(group => group.Id);
 
-        builder.Property(group => group.Name).HasMaxLength(80).IsRequired();
+        builder
+            .Property(group => group.Name)
+            .HasMaxLength(80)
+            .IsRequired()
+            .UseCollation(GermanCollation);
         builder.Property(group => group.Description).HasMaxLength(400).IsRequired();
         builder.Property(group => group.IsRecruiting).HasDefaultValue(false);
 

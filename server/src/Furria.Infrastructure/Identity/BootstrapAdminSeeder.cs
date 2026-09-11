@@ -6,6 +6,7 @@ using Furria.Core.Roles;
 using Furria.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -37,19 +38,16 @@ public sealed class BootstrapAdminSeeder : IHostedService
 
         await using var scope = _scopeFactory.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<Account>>();
 
         await using var transaction = await dbContext.Database.BeginTransactionAsync(
             cancellationToken
         );
 
-        await EnsureBootstrapAccountAsync(
-            dbContext,
-            scope.ServiceProvider.GetRequiredService<UserManager<Account>>(),
-            transaction,
-            cancellationToken
-        );
+        await EnsureBootstrapAccountAsync(dbContext, userManager, transaction, cancellationToken);
         await EnsureAdminRoleAsync(
             dbContext,
+            userManager,
             scope.ServiceProvider.GetRequiredService<TimeProvider>(),
             cancellationToken
         );
@@ -62,11 +60,11 @@ public sealed class BootstrapAdminSeeder : IHostedService
     private async Task EnsureBootstrapAccountAsync(
         AppDbContext dbContext,
         UserManager<Account> userManager,
-        Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction transaction,
+        IDbContextTransaction transaction,
         CancellationToken ct
     )
     {
-        if (await dbContext.Users.AnyAsync(account => account.Email == _options.Email, ct))
+        if (await userManager.FindByEmailAsync(_options.Email) is not null)
             return;
 
         var person = new Person
@@ -99,6 +97,7 @@ public sealed class BootstrapAdminSeeder : IHostedService
 
     private async Task EnsureAdminRoleAsync(
         AppDbContext dbContext,
+        UserManager<Account> userManager,
         TimeProvider timeProvider,
         CancellationToken ct
     )
@@ -120,7 +119,7 @@ public sealed class BootstrapAdminSeeder : IHostedService
             [
                 new RoleHolding
                 {
-                    PersonId = await RequireBootstrapPersonIdAsync(dbContext, ct),
+                    PersonId = await RequireBootstrapPersonIdAsync(userManager),
                     SinceOn = ClubClock.Today(timeProvider),
                 },
             ],
@@ -130,17 +129,11 @@ public sealed class BootstrapAdminSeeder : IHostedService
         await dbContext.SaveChangesAsync(ct);
     }
 
-    private async Task<int> RequireBootstrapPersonIdAsync(
-        AppDbContext dbContext,
-        CancellationToken ct
-    )
+    private async Task<int> RequireBootstrapPersonIdAsync(UserManager<Account> userManager)
     {
-        var personId = await dbContext
-            .Users.Where(account => account.Email == _options.Email)
-            .Select(account => (int?)account.PersonId)
-            .SingleOrDefaultAsync(ct);
+        var account = await userManager.FindByEmailAsync(_options.Email);
 
-        return personId
+        return account?.PersonId
             ?? throw new InvalidOperationException(
                 $"The Admin Rolle cannot be seeded: no Account exists for {_options.Email}."
             );

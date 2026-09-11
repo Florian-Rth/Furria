@@ -11,44 +11,41 @@ public sealed class PermissionEnforcer : IGlobalPreProcessor
         var http = context.HttpContext;
         var metadata = http.GetEndpoint()?.Metadata;
 
-        if (metadata?.GetMetadata<AffiliationRequirement>() is not null)
-        {
-            await EnforceAsync(
+        if (
+            metadata?.GetMetadata<AffiliationRequirement>() is not null
+            && !await SatisfiesAsync(
                 http,
-                (authorizer, accountId) => authorizer.IsAffiliatedAsync(accountId, ct),
-                ct
-            );
-            return;
-        }
-
-        if (metadata?.GetMetadata<PermissionRequirement>() is { } requirement)
-        {
-            await EnforceAsync(
-                http,
-                (authorizer, accountId) =>
-                    authorizer.IsGrantedAsync(accountId, requirement.PermissionKey, ct),
-                ct
-            );
-        }
-    }
-
-    private static async Task EnforceAsync(
-        HttpContext http,
-        Func<PermissionAuthorizer, int, Task<bool>> isSatisfied,
-        CancellationToken ct
-    )
-    {
-        var accountId = http.User.AccountId();
-        if (accountId is null)
+                (authorizer, accountId) => authorizer.IsAffiliatedAsync(accountId, ct)
+            )
+        )
         {
             await http.Response.SendForbiddenAsync(ct);
             return;
         }
 
-        var authorizer = http.RequestServices.GetRequiredService<PermissionAuthorizer>();
-        if (await isSatisfied(authorizer, accountId.Value))
-            return;
+        if (
+            metadata?.GetMetadata<PermissionRequirement>() is { } requirement
+            && !await SatisfiesAsync(
+                http,
+                (authorizer, accountId) =>
+                    authorizer.IsGrantedAsync(accountId, requirement.PermissionKey, ct)
+            )
+        )
+        {
+            await http.Response.SendForbiddenAsync(ct);
+        }
+    }
 
-        await http.Response.SendForbiddenAsync(ct);
+    private static async Task<bool> SatisfiesAsync(
+        HttpContext http,
+        Func<PermissionAuthorizer, int, Task<bool>> isSatisfied
+    )
+    {
+        var accountId = http.User.AccountId();
+        if (accountId is null)
+            return false;
+
+        var authorizer = http.RequestServices.GetRequiredService<PermissionAuthorizer>();
+        return await isSatisfied(authorizer, accountId.Value);
     }
 }

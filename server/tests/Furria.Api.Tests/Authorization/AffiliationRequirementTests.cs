@@ -234,6 +234,119 @@ public sealed class AffiliationRequirementTests
     }
 
     [Fact]
+    public async Task Should_Allow_When_TheMitgliedschaftEndsToday()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddAccount("alice")
+                        .AddMembership("alice-first", "alice", JoinedIn2017, _fixture.Today)
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        var (response, _) = await client.GETAsync<AffiliationProbe, EmptyResponse>();
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_Refuse_When_TheOnlyMitgliedschaftStartsTomorrow()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddAccount("alice")
+                        .AddMembership("alice-first", "alice", _fixture.Today.AddDays(1))
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        var (response, _) = await client.GETAsync<AffiliationProbe, EmptyResponse>();
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_Allow_When_TheZugehoerigkeitEndsToday()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddAccount("paula"))
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("tanzgarde", "Tanzgarde")
+                            .AddGroupMembership(
+                                "paula-tanzgarde",
+                                "tanzgarde",
+                                "paula",
+                                JoinedIn2017,
+                                _fixture.Today
+                            )
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("paula", ct);
+        var (response, _) = await client.GETAsync<AffiliationProbe, EmptyResponse>();
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_Allow_When_TheRunningMitgliedschaftRuht()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddAccount("alice")
+                        .AddMembership("alice-first", "alice", JoinedIn2017)
+                        .AddMembershipPause(
+                            "alice-ruhezeit",
+                            "alice-first",
+                            _fixture.CurrentSessionYear
+                        )
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        var (response, _) = await client.GETAsync<AffiliationProbe, EmptyResponse>();
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_Refuse_When_TheAccountWasDisabledAfterItsTokenWasIssued()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity.AddAccount("alice").AddMembership("alice-first", "alice", JoinedIn2017)
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        await _fixture.DisableAccountDirectlyAsync(ctx.Identity.Accounts.IdOf("alice"), ct);
+
+        var (response, _) = await client.GETAsync<AffiliationProbe, EmptyResponse>();
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Should_Allow_When_TheBootstrapAdminCalls()
     {
         var ct = TestContext.Current.CancellationToken;

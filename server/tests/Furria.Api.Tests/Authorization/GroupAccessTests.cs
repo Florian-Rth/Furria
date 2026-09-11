@@ -381,6 +381,39 @@ public sealed class GroupAccessTests
     }
 
     [Fact]
+    public async Task Should_Refuse_When_TheAccountWasDisabledAfterItsTokenWasIssued()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddAccount("paula"))
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("tanzgarde", "Tanzgarde")
+                            .AddGroupMembership(
+                                "paula-tanzgarde",
+                                "tanzgarde",
+                                "paula",
+                                JoinedIn2017
+                            )
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("paula", ct);
+        await _fixture.DisableAccountDirectlyAsync(ctx.Identity.Accounts.IdOf("paula"), ct);
+
+        var (response, _) = await client.GETAsync<
+            GroupAccessProbe,
+            GroupAccessProbeRequest,
+            GroupAccessProbeResponse
+        >(new() { GroupId = ctx.Groups.Groups.IdOf("tanzgarde") });
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
     {
         var ct = TestContext.Current.CancellationToken;

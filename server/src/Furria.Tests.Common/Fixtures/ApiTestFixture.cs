@@ -13,7 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Time.Testing;
+using Microsoft.Extensions.Options;
 using Testcontainers.PostgreSql;
 using Xunit;
 
@@ -39,7 +39,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
     private SeededAccount? _bootstrapAdmin;
     private int? _adminRoleId;
 
-    public FakeTimeProvider TimeProvider { get; } = new(WholeSecondNow());
+    public TestClock TimeProvider { get; } = new(WholeSecondNow());
 
     public DateOnly Today => ClubClock.Today(TimeProvider);
 
@@ -141,6 +141,23 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         );
     }
 
+    public Task AtLaterTimeAsync(TimeSpan ahead, Func<Task> body) =>
+        AtInstantAsync(TimeProvider.GetUtcNow().Add(ahead), body);
+
+    public async Task AtInstantAsync(DateTimeOffset instant, Func<Task> body)
+    {
+        var before = TimeProvider.GetUtcNow();
+        TimeProvider.SetUtcNow(instant);
+        try
+        {
+            await body();
+        }
+        finally
+        {
+            TimeProvider.SetUtcNow(before);
+        }
+    }
+
     public Task<SeededContext> BuildAsync(CancellationToken ct = default) =>
         BuildAsync(_ => { }, ct);
 
@@ -180,6 +197,53 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
     {
         var seeder = Services.GetServices<IHostedService>().OfType<BootstrapAdminSeeder>().Single();
         await seeder.StartAsync(ct);
+    }
+
+    public Task RunBootstrapSeederAsync(
+        BootstrapAdminOptions options,
+        CancellationToken ct = default
+    ) =>
+        new BootstrapAdminSeeder(
+            Services.GetRequiredService<IServiceScopeFactory>(),
+            Options.Create(options)
+        ).StartAsync(ct);
+
+    public async Task DeleteAccountDirectlyAsync(int accountId, CancellationToken ct = default)
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        await db.Database.ExecuteSqlAsync($"DELETE FROM account WHERE id = {accountId}", ct);
+    }
+
+    public async Task AddRolePermissionDirectlyAsync(
+        int roleId,
+        string permissionKey,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        db.RolePermissions.Add(
+            new RolePermission { RoleId = roleId, PermissionKey = permissionKey }
+        );
+        await db.SaveChangesAsync(ct);
+    }
+
+    public async Task RemoveRolePermissionDirectlyAsync(
+        int roleId,
+        string permissionKey,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        await db.Database.ExecuteSqlAsync(
+            $"DELETE FROM role_permission WHERE role_id = {roleId} AND permission_key = {permissionKey}",
+            ct
+        );
     }
 
     public async Task EditPersonNameDirectlyAsync(

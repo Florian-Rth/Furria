@@ -121,23 +121,29 @@ public sealed class PersonPersistenceTests
         );
 
         var createdAt = _fixture.TimeProvider.GetUtcNow();
-        _fixture.TimeProvider.Advance(TimeSpan.FromMinutes(1));
-        var editedAt = _fixture.TimeProvider.GetUtcNow();
 
-        await _fixture.EditPersonNameDirectlyAsync(
-            ctx.Identity.People.IdOf("alice"),
-            "Alice",
-            "Kaiser",
-            ct
+        await _fixture.AtLaterTimeAsync(
+            TimeSpan.FromMinutes(1),
+            async () =>
+            {
+                var editedAt = _fixture.TimeProvider.GetUtcNow();
+
+                await _fixture.EditPersonNameDirectlyAsync(
+                    ctx.Identity.People.IdOf("alice"),
+                    "Alice",
+                    "Kaiser",
+                    ct
+                );
+
+                await ctx
+                    .Expected.Person(ctx.Identity.People.IdOf("alice"))
+                    .ToHaveName("Alice", "Kaiser")
+                    .Person(ctx.Identity.People.IdOf("alice"))
+                    .ToHaveBeenCreatedAt(createdAt)
+                    .Person(ctx.Identity.People.IdOf("alice"))
+                    .ToHaveBeenTouchedAt(editedAt)
+                    .AssertAsync(ct);
+            }
         );
-
-        await ctx
-            .Expected.Person(ctx.Identity.People.IdOf("alice"))
-            .ToHaveName("Alice", "Kaiser")
-            .Person(ctx.Identity.People.IdOf("alice"))
-            .ToHaveBeenCreatedAt(createdAt)
-            .Person(ctx.Identity.People.IdOf("alice"))
-            .ToHaveBeenTouchedAt(editedAt)
-            .AssertAsync(ct);
     }
 }
