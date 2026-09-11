@@ -19,3 +19,6 @@ coverage/
 # Env
 .env
 .env.local
+
+# Screenshot tool output
+web/tools/screenshot/out/
