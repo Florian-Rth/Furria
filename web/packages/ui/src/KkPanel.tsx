@@ -1,6 +1,7 @@
 import Stack from '@mui/material/Stack';
 import type { CSSObject, Theme } from '@mui/material/styles';
 import type { FC, PropsWithChildren } from 'react';
+import { raisedSurface } from './internal/raised-surface';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
@@ -14,11 +15,6 @@ const panelPadding: Record<KkPanelVariant, { px: number; py: number }> = {
   list: { px: 2, py: 0.5 },
   block: { px: 2, py: 1.75 },
 };
-
-const raisedSurface = (theme: Theme): CSSObject => ({
-  backgroundColor: kkTokens.color.light.panel2,
-  ...theme.applyStyles('dark', { backgroundColor: kkTokens.color.dark.panel2 }),
-});
 
 const toneStyles: Record<KkPanelTone, (theme: Theme) => CSSObject> = {
   cream: () => ({ backgroundColor: 'background.paper', borderStyle: 'solid' }),
