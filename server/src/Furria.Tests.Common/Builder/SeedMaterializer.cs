@@ -22,6 +22,12 @@ internal static class SeedMaterializer
             password,
             ct
         );
+        var groups = await GroupSeedMaterializer.InsertAsync(
+            dbContext,
+            recorded.RecordedGroups,
+            identity.PersonIds,
+            ct
+        );
         var roles = await RoleSeedMaterializer.InsertAsync(
             dbContext,
             recorded.RecordedRoles,
@@ -29,6 +35,6 @@ internal static class SeedMaterializer
             ct
         );
 
-        return new SeededRegistry(identity, roles);
+        return new SeededRegistry(identity, groups, roles);
     }
 }

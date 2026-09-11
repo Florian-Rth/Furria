@@ -47,6 +47,7 @@ public sealed class GetMe : EndpointWithoutRequest<GetMeResponse>
             Email = account.Email,
             Person = ToDto(account.Person),
             Membership = ToDto(account.Membership),
+            IsAffiliated = account.IsAffiliated,
             PermissionKeys = account.PermissionKeys,
         };
 
@@ -84,6 +85,8 @@ public sealed record GetMeResponse
     public required MePersonDto Person { get; init; }
 
     public required MeMembershipDto Membership { get; init; }
+
+    public required bool IsAffiliated { get; init; }
 
     public required IReadOnlyList<string> PermissionKeys { get; init; }
 }

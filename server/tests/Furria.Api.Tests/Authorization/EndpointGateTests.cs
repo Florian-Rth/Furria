@@ -29,6 +29,13 @@ public sealed class EndpointGateTests
         "/api/groups/{groupId}/admins/{groupAdminId}/end",
     ];
 
+    private static readonly string[] InHandlerGatedProbes =
+    [
+        "/api/tests/group-access-probe/{groupId}",
+        "/api/tests/group-administration-probe/{groupId}",
+        "/api/tests/person-search-probe",
+    ];
+
     private readonly ApiTestFixture _fixture;
 
     public EndpointGateTests(ApiTestFixture fixture)
@@ -56,7 +63,8 @@ public sealed class EndpointGateTests
         endpoint.Metadata.GetMetadata<PermissionRequirement>() is not null
         || endpoint.Metadata.GetMetadata<AffiliationRequirement>() is not null
         || endpoint.Metadata.GetMetadata<IAllowAnonymous>() is not null
-        || InHandlerGated.Contains(RouteOf(endpoint), StringComparer.Ordinal);
+        || InHandlerGated.Contains(RouteOf(endpoint), StringComparer.Ordinal)
+        || InHandlerGatedProbes.Contains(RouteOf(endpoint), StringComparer.Ordinal);
 
     private static string RouteOf(RouteEndpoint endpoint) => endpoint.RoutePattern.RawText ?? "";
 }

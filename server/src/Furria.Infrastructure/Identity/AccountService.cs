@@ -147,10 +147,11 @@ public sealed class AccountService
         if (row is null)
             return Result<AccountDetails>.NotFound("The account no longer exists.");
 
+        var isAffiliated = await _permissionAuthorizer.IsAffiliatedAsync(accountId, ct);
         var permissionKeys = await _permissionAuthorizer.GrantedKeysAsync(accountId, ct);
 
         return Result<AccountDetails>.Success(
-            ToDetails(row, ClubClock.Today(_timeProvider), Ordered(permissionKeys))
+            ToDetails(row, ClubClock.Today(_timeProvider), isAffiliated, Ordered(permissionKeys))
         );
     }
 
@@ -164,6 +165,7 @@ public sealed class AccountService
     private static AccountDetails ToDetails(
         AccountRow row,
         DateOnly today,
+        bool isAffiliated,
         IReadOnlyList<string> permissionKeys
     ) =>
         new()
@@ -172,6 +174,7 @@ public sealed class AccountService
             Email = row.Email,
             Person = row.Person,
             Membership = MembershipChainDetails.Of(ToPeriods(row.Memberships, today), today),
+            IsAffiliated = isAffiliated,
             PermissionKeys = permissionKeys,
         };
 

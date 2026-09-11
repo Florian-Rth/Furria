@@ -65,6 +65,33 @@ public sealed class AffiliationRequirementTests
     }
 
     [Fact]
+    public async Task Should_Allow_When_TheCallerOnlyHoldsAnOpenZugehoerigkeit()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddAccount("paula"))
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("tanzgarde", "Tanzgarde")
+                            .AddGroupMembership(
+                                "paula-tanzgarde",
+                                "tanzgarde",
+                                "paula",
+                                JoinedIn2017
+                            )
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("paula", ct);
+        var (response, _) = await client.GETAsync<AffiliationProbe, EmptyResponse>();
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Should_Refuse_When_TheOnlyMitgliedschaftHasEnded()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -79,6 +106,67 @@ public sealed class AffiliationRequirementTests
         );
 
         var client = await ctx.Identity.ClientForAsync("alice", ct);
+        var (response, _) = await client.GETAsync<AffiliationProbe, EmptyResponse>();
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_Refuse_When_TheOnlyZugehoerigkeitHasEnded()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddAccount("paula"))
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("tanzgarde", "Tanzgarde")
+                            .AddGroupMembership(
+                                "paula-tanzgarde",
+                                "tanzgarde",
+                                "paula",
+                                JoinedIn2017,
+                                LeftIn2020
+                            )
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("paula", ct);
+        var (response, _) = await client.GETAsync<AffiliationProbe, EmptyResponse>();
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_Refuse_When_TheOnlyZugehoerigkeitIsInAnArchivedGruppe()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddAccount("paula"))
+                    .Groups(groups =>
+                        groups
+                            .AddGroup(
+                                "tanzgarde",
+                                "Tanzgarde",
+                                "Aufgeloest.",
+                                isRecruiting: false,
+                                ArchivedIn2021
+                            )
+                            .AddGroupMembership(
+                                "paula-tanzgarde",
+                                "tanzgarde",
+                                "paula",
+                                JoinedIn2017
+                            )
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("paula", ct);
         var (response, _) = await client.GETAsync<AffiliationProbe, EmptyResponse>();
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -112,6 +200,34 @@ public sealed class AffiliationRequirementTests
         );
 
         var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, _) = await client.GETAsync<AffiliationProbe, EmptyResponse>();
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_Refuse_When_TheCallerIsOnlyTheAdminOfAGruppeSheDoesNotBelongTo()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddAccount("nadine"))
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("kindergarde", "Kindergarde")
+                            .AddGroupAdmin(
+                                "nadine-kindergarde",
+                                "kindergarde",
+                                "nadine",
+                                "Trainerin",
+                                JoinedIn2017
+                            )
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("nadine", ct);
         var (response, _) = await client.GETAsync<AffiliationProbe, EmptyResponse>();
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);

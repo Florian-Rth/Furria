@@ -10,5 +10,7 @@ public sealed record AccountDetails
 
     public required MembershipChainDetails Membership { get; init; }
 
+    public required bool IsAffiliated { get; init; }
+
     public required IReadOnlyList<string> PermissionKeys { get; init; }
 }
