@@ -69,6 +69,7 @@ pnpm build
 pnpm test
 pnpm lint                             # Biome check (no writes)
 pnpm typecheck
+pnpm shot /members                    # Screenshots phone/desktop × light/dark → web/tools/screenshot/out (needs dev server + API)
 ```
 
 ## Versioning

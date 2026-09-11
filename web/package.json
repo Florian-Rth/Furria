@@ -9,7 +9,8 @@
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "lint": "biome check .",
-    "typecheck": "pnpm -r typecheck"
+    "typecheck": "pnpm -r typecheck",
+    "shot": "pnpm --filter @furria/screenshot shot"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:"

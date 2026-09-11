@@ -1,6 +1,7 @@
 packages:
   - apps/*
   - packages/*
+  - tools/*
 
 # Single source of truth for all shared dependency versions (plan decision #18).
 catalog:
@@ -26,6 +27,7 @@ catalog:
   date-fns: 4.4.0
   '@hookform/resolvers': 5.4.0
   motion: 12.42.2
+  playwright: 1.63.0
   react: 19.2.7
   react-dom: 19.2.7
   react-hook-form: 7.81.0
