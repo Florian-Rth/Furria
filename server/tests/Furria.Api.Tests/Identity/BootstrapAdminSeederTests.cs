@@ -1,4 +1,5 @@
 using Furria.Application.Authorization;
+using Furria.Application.Identity;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -124,6 +125,77 @@ public sealed class BootstrapAdminSeederTests
             .ToHaveCount(1)
             .RoleHoldingsOfPerson(_fixture.BootstrapAdmin.PersonId)
             .ToHaveOpenCount(1)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_CreateNothing_When_TheBootstrapAdminIsNotConfigured()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(ct);
+        await _fixture.DeleteAccountDirectlyAsync(_fixture.BootstrapAdmin.AccountId, ct);
+
+        await _fixture.RunBootstrapSeederAsync(new BootstrapAdminOptions(), ct);
+
+        await ctx.Expected.Accounts().ToHaveCount(0).AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_CreateTheBootstrapAccountAgain_When_OnlyOtherAccountsRemain()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => identity.AddAccount("alice")),
+            ct
+        );
+        await _fixture.DeleteAccountDirectlyAsync(_fixture.BootstrapAdmin.AccountId, ct);
+
+        await _fixture.RunBootstrapSeederAsync(ct);
+
+        await ctx
+            .Expected.Accounts()
+            .ToContainEmail(ApiTestFixture.BootstrapAdminEmail)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_CreateNoSecondAccount_When_TheConfiguredEmailDiffersOnlyInCase()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(ct);
+
+        await _fixture.RunBootstrapSeederAsync(
+            new BootstrapAdminOptions
+            {
+                Email = ApiTestFixture.BootstrapAdminEmail.ToUpperInvariant(),
+                Password = ApiTestFixture.BootstrapAdminPassword,
+                FirstName = "Bootstrap",
+                LastName = "Admin",
+            },
+            ct
+        );
+
+        await ctx.Expected.Accounts().ToHaveCount(1).AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_LeaveTheKeysAlone_When_TheClubRemovedOneFromTheAdminRolle()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(ct);
+        await _fixture.RemoveRolePermissionDirectlyAsync(
+            _fixture.AdminRoleId,
+            FurriaPermissions.RolesManage,
+            ct
+        );
+
+        await _fixture.RunBootstrapSeederAsync(ct);
+
+        await ctx
+            .Expected.Role(_fixture.AdminRoleId)
+            .ToGrantExactly([
+                .. FurriaPermissions.All.Where(key => key != FurriaPermissions.RolesManage),
+            ])
             .AssertAsync(ct);
     }
 

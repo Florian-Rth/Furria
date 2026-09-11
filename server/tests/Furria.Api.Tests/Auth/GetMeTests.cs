@@ -12,6 +12,7 @@ namespace Furria.Api.Tests.Auth;
 public sealed class GetMeTests
 {
     private static readonly DateOnly BirthDate = new(1996, 4, 3);
+    private static readonly TimeSpan PastTheAccessTokenLifetime = TimeSpan.FromMinutes(16);
 
     private readonly ApiTestFixture _fixture;
 
@@ -280,6 +281,45 @@ public sealed class GetMeTests
     }
 
     [Fact]
+    public async Task Should_ReportOneEntry_When_TwoRollenGrantTheSameBerechtigung()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddAccount("ilka"))
+                    .Roles(roles =>
+                        roles
+                            .AddRoleWithHolder(
+                                "gruppenpflege",
+                                "ilka-gruppenpflege",
+                                "Gruppenpflege",
+                                "ilka",
+                                FurriaPermissions.GroupsManage
+                            )
+                            .AddRoleWithHolder(
+                                "vorstand",
+                                "ilka-vorstand",
+                                "Vorstand",
+                                "ilka",
+                                FurriaPermissions.GroupsManage,
+                                FurriaPermissions.PersonsManage
+                            )
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, result) = await client.GETAsync<GetMe, GetMeResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(
+            [FurriaPermissions.GroupsManage, FurriaPermissions.PersonsManage],
+            result.PermissionKeys
+        );
+    }
+
+    [Fact]
     public async Task Should_ReportNoKeys_When_TheOnlyInhaberschaftHasExpired()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -358,6 +398,40 @@ public sealed class GetMeTests
     }
 
     [Fact]
+    public async Task Should_ReturnUnauthorized_When_TheAccountWasDisabledAfterItsTokenWasIssued()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => identity.AddAccount("alice")),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        await _fixture.DisableAccountDirectlyAsync(ctx.Identity.Accounts.IdOf("alice"), ct);
+
+        var (response, _) = await client.GETAsync<GetMe, GetMeResponse>();
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_ReturnNotFound_When_TheAccountBehindTheTokenNoLongerExists()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => identity.AddAccount("alice")),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        await _fixture.ResetDatabaseAsync(ct);
+
+        var (response, _) = await client.GETAsync<GetMe, GetMeResponse>();
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Should_ReturnUnauthorized_When_NoAccessTokenIsSent()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -378,11 +452,16 @@ public sealed class GetMeTests
         );
 
         var client = await ctx.Identity.ClientForAsync("alice", ct);
-        _fixture.TimeProvider.Advance(TimeSpan.FromMinutes(16));
 
-        var (response, _) = await client.GETAsync<GetMe, GetMeResponse>();
+        await _fixture.AtLaterTimeAsync(
+            PastTheAccessTokenLifetime,
+            async () =>
+            {
+                var (response, _) = await client.GETAsync<GetMe, GetMeResponse>();
 
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+                Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+            }
+        );
     }
 
     [Fact]

@@ -112,6 +112,31 @@ public sealed class RolePersistenceTests
     }
 
     [Fact]
+    public async Task Should_RejectASecondBerechtigung_When_TheRolleAlreadyCarriesThatKey()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Roles(roles =>
+                    roles.AddRole("gruppenpflege", "Gruppenpflege", FurriaPermissions.GroupsManage)
+                ),
+            ct
+        );
+
+        var rejection = await Assert.ThrowsAsync<DbUpdateException>(() =>
+            _fixture.AddRolePermissionDirectlyAsync(
+                ctx.Roles.Roles.IdOf("gruppenpflege"),
+                FurriaPermissions.GroupsManage,
+                ct
+            )
+        );
+
+        var violation = Assert.IsType<PostgresException>(rejection.InnerException);
+        Assert.Equal(PostgresErrorCodes.UniqueViolation, violation.SqlState);
+        Assert.Equal("ix_role_permission_role_id_permission_key", violation.ConstraintName);
+    }
+
+    [Fact]
     public async Task Should_RejectAnInhaberschaft_When_TheEndPrecedesTheStart()
     {
         var ct = TestContext.Current.CancellationToken;

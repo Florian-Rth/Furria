@@ -8,10 +8,14 @@ namespace Furria.Infrastructure.Authorization;
 
 public sealed class PermissionAuthorizer
 {
+    private const string SecondAccountMessage =
+        "PermissionAuthorizer answers for one Account per scope; ask about a second Account through its own scope.";
+
     private readonly AppDbContext _dbContext;
     private readonly TimeProvider _timeProvider;
     private readonly Dictionary<int, GroupTies> _groupTiesCache = [];
 
+    private int? _boundAccountId;
     private int? _personId;
     private bool _personResolved;
     private HashSet<string>? _grantedKeys;
@@ -28,13 +32,18 @@ public sealed class PermissionAuthorizer
         int accountId,
         string permissionKey,
         CancellationToken ct
-    ) => (await GrantedKeysAsync(accountId, ct)).Contains(permissionKey);
+    )
+    {
+        BindTo(accountId);
+        return (await GrantedKeysAsync(accountId, ct)).Contains(permissionKey);
+    }
 
     public async Task<IReadOnlyCollection<string>> GrantedKeysAsync(
         int accountId,
         CancellationToken ct
     )
     {
+        BindTo(accountId);
         if (_grantedKeys is not null)
             return _grantedKeys;
 
@@ -60,6 +69,7 @@ public sealed class PermissionAuthorizer
 
     public async Task<bool> IsAffiliatedAsync(int accountId, CancellationToken ct)
     {
+        BindTo(accountId);
         if (_isAffiliated is not null)
             return _isAffiliated.Value;
 
@@ -76,8 +86,11 @@ public sealed class PermissionAuthorizer
         ).Value;
     }
 
-    public async Task<bool> IsGroupAdminAsync(int accountId, int groupId, CancellationToken ct) =>
-        (await GroupTiesAsync(accountId, groupId, ct)).IsAdmin;
+    public async Task<bool> IsGroupAdminAsync(int accountId, int groupId, CancellationToken ct)
+    {
+        BindTo(accountId);
+        return (await GroupTiesAsync(accountId, groupId, ct)).IsAdmin;
+    }
 
     public async Task<bool> IsGroupMemberOrAdminAsync(
         int accountId,
@@ -85,6 +98,7 @@ public sealed class PermissionAuthorizer
         CancellationToken ct
     )
     {
+        BindTo(accountId);
         var ties = await GroupTiesAsync(accountId, groupId, ct);
         return ties.IsAdmin || ties.IsMember;
     }
@@ -93,12 +107,16 @@ public sealed class PermissionAuthorizer
         int accountId,
         int groupId,
         CancellationToken ct
-    ) =>
-        await IsGroupAdminAsync(accountId, groupId, ct)
-        || await IsGrantedAsync(accountId, FurriaPermissions.GroupsManage, ct);
+    )
+    {
+        BindTo(accountId);
+        return await IsGroupAdminAsync(accountId, groupId, ct)
+            || await IsGrantedAsync(accountId, FurriaPermissions.GroupsManage, ct);
+    }
 
     public async Task<bool> CanSearchPersonsAsync(int accountId, CancellationToken ct)
     {
+        BindTo(accountId);
         if (_canSearchPersons is not null)
             return _canSearchPersons.Value;
 
@@ -110,6 +128,14 @@ public sealed class PermissionAuthorizer
         return (
             _canSearchPersons = managesAnything || await AdministersAnyGroupAsync(accountId, ct)
         ).Value;
+    }
+
+    private void BindTo(int accountId)
+    {
+        if (_boundAccountId is { } bound && bound != accountId)
+            throw new InvalidOperationException(SecondAccountMessage);
+
+        _boundAccountId = accountId;
     }
 
     private async Task<bool> AdministersAnyGroupAsync(int accountId, CancellationToken ct)

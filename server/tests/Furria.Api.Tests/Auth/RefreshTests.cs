@@ -12,6 +12,7 @@ namespace Furria.Api.Tests.Auth;
 public sealed class RefreshTests
 {
     private static readonly TimeSpan PastTheGraceWindow = TimeSpan.FromMinutes(1);
+    private static readonly TimeSpan PastTheRefreshTokenLifetime = TimeSpan.FromDays(31);
 
     private readonly ApiTestFixture _fixture;
 
@@ -56,16 +57,21 @@ public sealed class RefreshTests
         var (ctx, session) = await LoggedInAsync(ct);
         await Post(session.RefreshToken);
 
-        _fixture.TimeProvider.Advance(PastTheGraceWindow);
-        var (response, _) = await Post(session.RefreshToken);
+        await _fixture.AtLaterTimeAsync(
+            PastTheGraceWindow,
+            async () =>
+            {
+                var (response, _) = await Post(session.RefreshToken);
 
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-        await ctx
-            .Expected.RefreshTokensOf(ctx.Identity.Accounts.IdOf("alice"))
-            .ToHaveActiveCount(0)
-            .RefreshTokensOf(ctx.Identity.Accounts.IdOf("alice"))
-            .ToHaveRevocationCount(RefreshTokenRevocationReason.ReuseDetected, 1)
-            .AssertAsync(ct);
+                Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+                await ctx
+                    .Expected.RefreshTokensOf(ctx.Identity.Accounts.IdOf("alice"))
+                    .ToHaveActiveCount(0)
+                    .RefreshTokensOf(ctx.Identity.Accounts.IdOf("alice"))
+                    .ToHaveRevocationCount(RefreshTokenRevocationReason.ReuseDetected, 1)
+                    .AssertAsync(ct);
+            }
+        );
     }
 
     [Fact]
@@ -98,13 +104,18 @@ public sealed class RefreshTests
         );
         await Post(session.RefreshToken);
 
-        _fixture.TimeProvider.Advance(PastTheGraceWindow);
-        await Post(session.RefreshToken);
+        await _fixture.AtLaterTimeAsync(
+            PastTheGraceWindow,
+            async () =>
+            {
+                await Post(session.RefreshToken);
 
-        await ctx
-            .Expected.RefreshTokensOf(ctx.Identity.Accounts.IdOf("alice"))
-            .ToHaveActiveCount(1)
-            .AssertAsync(ct);
+                await ctx
+                    .Expected.RefreshTokensOf(ctx.Identity.Accounts.IdOf("alice"))
+                    .ToHaveActiveCount(1)
+                    .AssertAsync(ct);
+            }
+        );
     }
 
     [Fact]
@@ -124,14 +135,19 @@ public sealed class RefreshTests
         var ct = TestContext.Current.CancellationToken;
         var (ctx, session) = await LoggedInAsync(ct);
 
-        _fixture.TimeProvider.Advance(TimeSpan.FromDays(31));
-        var (response, _) = await Post(session.RefreshToken);
+        await _fixture.AtLaterTimeAsync(
+            PastTheRefreshTokenLifetime,
+            async () =>
+            {
+                var (response, _) = await Post(session.RefreshToken);
 
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-        await ctx
-            .Expected.RefreshTokensOf(ctx.Identity.Accounts.IdOf("alice"))
-            .ToHaveRevokedCount(0)
-            .AssertAsync(ct);
+                Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+                await ctx
+                    .Expected.RefreshTokensOf(ctx.Identity.Accounts.IdOf("alice"))
+                    .ToHaveRevokedCount(0)
+                    .AssertAsync(ct);
+            }
+        );
     }
 
     [Fact]

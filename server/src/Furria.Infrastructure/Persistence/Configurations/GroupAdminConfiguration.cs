@@ -34,6 +34,7 @@ public sealed class GroupAdminConfiguration : IEntityTypeConfiguration<GroupAdmi
             .HasConstraintName("fk_group_admin_person_person_id")
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.HasIndex(admin => new { admin.GroupId, admin.PersonId });
         builder
             .HasIndex(
                 admin => new { admin.GroupId, admin.PersonId },
