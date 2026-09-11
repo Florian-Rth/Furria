@@ -25,6 +25,12 @@ export const toMembershipStateChip = (state: MembershipState): StateChip => ({
   ...STATE_CHIP_PAINT[state],
 });
 
+const RECRUITING_CHIP: StateChip = { label: 'sucht Verstärkung', tone: 'gold', dot: true };
+const SETTLED_CHIP: StateChip = { label: 'sucht gerade niemanden', tone: 'neutral', dot: false };
+
+export const toRecruitingChip = (isRecruiting: boolean): StateChip =>
+  isRecruiting ? RECRUITING_CHIP : SETTLED_CHIP;
+
 export const ALL_STATES_FILTER_ID = 'all';
 
 const ALL_STATES_LABEL = 'Alle';
