@@ -200,6 +200,63 @@ public sealed class BootstrapAdminSeederTests
     }
 
     [Fact]
+    public async Task Should_CreateNoSecondAdminRolle_When_TheClubRenamedItToAnotherCase()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(ct);
+        await _fixture.EditRoleNameDirectlyAsync(_fixture.AdminRoleId, "ADMIN", ct);
+
+        await _fixture.RunBootstrapSeederAsync(ct);
+
+        await ctx.Expected.Roles().ToHaveCount(1).AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_OpenAnInhaberschaft_When_TheAdminRolleLostEveryInhaber()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(ct);
+        await _fixture.RemoveRoleHoldingsDirectlyAsync(_fixture.AdminRoleId, ct);
+
+        await _fixture.RunBootstrapSeederAsync(ct);
+
+        await ctx
+            .Expected.Roles()
+            .ToHaveCount(1)
+            .RoleHoldingsOfPerson(_fixture.BootstrapAdmin.PersonId)
+            .ToHaveOpenCount(1)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_OpenAFurtherInhaberschaft_When_TheLastOneOnTheAdminRolleHasEnded()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(ct);
+
+        await _fixture.AtLaterTimeAsync(
+            TimeSpan.FromDays(2),
+            async () =>
+            {
+                await _fixture.EndRoleHoldingsDirectlyAsync(
+                    _fixture.AdminRoleId,
+                    _fixture.Today.AddDays(-1),
+                    ct
+                );
+
+                await _fixture.RunBootstrapSeederAsync(ct);
+
+                await ctx
+                    .Expected.RoleHoldingsOfPerson(_fixture.BootstrapAdmin.PersonId)
+                    .ToHaveCount(2)
+                    .RoleHoldingsOfPerson(_fixture.BootstrapAdmin.PersonId)
+                    .ToHaveOpenCount(1)
+                    .AssertAsync(ct);
+            }
+        );
+    }
+
+    [Fact]
     public async Task Should_RestoreTheAdminRolle_When_TheDatabaseIsReset()
     {
         var ct = TestContext.Current.CancellationToken;

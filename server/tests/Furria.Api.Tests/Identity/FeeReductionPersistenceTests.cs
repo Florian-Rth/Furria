@@ -45,6 +45,34 @@ public sealed class FeeReductionPersistenceTests
     }
 
     [Fact]
+    public async Task Should_RejectTheBasis_When_ItNamesNoKnownGrund()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        var rejection = await Assert.ThrowsAsync<DbUpdateException>(() =>
+            _fixture.BuildAsync(
+                builder =>
+                    builder.Identity(identity =>
+                        identity
+                            .AddPerson("alice")
+                            .AddFeeReduction(
+                                "alice-unbekannt",
+                                "alice",
+                                (FeeReductionBasis)99,
+                                _fixture.CurrentSessionYear,
+                                _fixture.CurrentSessionYear
+                            )
+                    ),
+                ct
+            )
+        );
+
+        var violation = Assert.IsType<PostgresException>(rejection.InnerException);
+        Assert.Equal(PostgresErrorCodes.CheckViolation, violation.SqlState);
+        Assert.Equal("ck_fee_reduction_basis", violation.ConstraintName);
+    }
+
+    [Fact]
     public async Task Should_RejectTheSpan_When_TheLastSessionPrecedesTheFirst()
     {
         var ct = TestContext.Current.CancellationToken;

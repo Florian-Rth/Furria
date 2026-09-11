@@ -231,6 +231,29 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         await db.SaveChangesAsync(ct);
     }
 
+    public async Task RemoveRoleHoldingsDirectlyAsync(int roleId, CancellationToken ct = default)
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        await db.Database.ExecuteSqlAsync($"DELETE FROM role_holding WHERE role_id = {roleId}", ct);
+    }
+
+    public async Task EndRoleHoldingsDirectlyAsync(
+        int roleId,
+        DateOnly untilOn,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        await db.Database.ExecuteSqlAsync(
+            $"UPDATE role_holding SET until_on = {untilOn} WHERE role_id = {roleId}",
+            ct
+        );
+    }
+
     public async Task RemoveRolePermissionDirectlyAsync(
         int roleId,
         string permissionKey,
@@ -259,6 +282,34 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         var person = await db.People.SingleAsync(row => row.Id == personId, ct);
         person.FirstName = firstName;
         person.LastName = lastName;
+        await db.SaveChangesAsync(ct);
+    }
+
+    public async Task EditRoleNameDirectlyAsync(
+        int roleId,
+        string name,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var role = await db.Roles.SingleAsync(row => row.Id == roleId, ct);
+        role.Name = name;
+        await db.SaveChangesAsync(ct);
+    }
+
+    public async Task EditGroupNameDirectlyAsync(
+        int groupId,
+        string name,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var group = await db.Groups.SingleAsync(row => row.Id == groupId, ct);
+        group.Name = name;
         await db.SaveChangesAsync(ct);
     }
 

@@ -9,6 +9,18 @@ namespace Furria.Api.Tests.Authorization;
 [Collection("Api")]
 public sealed class AffiliationRequirementTests
 {
+    private static readonly DateTimeOffset HalfPastMidnightInBerlin = new(
+        2026,
+        6,
+        30,
+        22,
+        30,
+        0,
+        TimeSpan.Zero
+    );
+
+    private static readonly DateOnly TheBerlinDayBefore = new(2026, 6, 30);
+
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
     private static readonly DateOnly LeftIn2020 = new(2020, 3, 1);
     private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
@@ -324,6 +336,38 @@ public sealed class AffiliationRequirementTests
         var (response, _) = await client.GETAsync<AffiliationProbe, EmptyResponse>();
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_Refuse_When_TheMitgliedschaftEndedOnTheUtcDateButBerlinIsPastIt()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            HalfPastMidnightInBerlin,
+            async () =>
+            {
+                var ctx = await _fixture.BuildAsync(
+                    builder =>
+                        builder.Identity(identity =>
+                            identity
+                                .AddAccount("alice")
+                                .AddMembership(
+                                    "alice-first",
+                                    "alice",
+                                    JoinedIn2017,
+                                    TheBerlinDayBefore
+                                )
+                        ),
+                    ct
+                );
+
+                var client = await ctx.Identity.ClientForAsync("alice", ct);
+                var (response, _) = await client.GETAsync<AffiliationProbe, EmptyResponse>();
+
+                Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+            }
+        );
     }
 
     [Fact]
