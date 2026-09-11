@@ -13,6 +13,9 @@ const NOT_FOUND_STATUS = 404;
 export const isNotFoundError = (error: Error | null): boolean =>
   error instanceof ServerFailureError && error.status === NOT_FOUND_STATUS;
 
+export const isForbiddenError = (error: Error | null): boolean =>
+  error instanceof ServerFailureError && error.status === FORBIDDEN_STATUS;
+
 export const toQueryErrorKind = (error: Error | null): QueryErrorKind | null => {
   if (error === null) {
     return null;
