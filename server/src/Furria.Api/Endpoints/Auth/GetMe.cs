@@ -47,6 +47,7 @@ public sealed class GetMe : EndpointWithoutRequest<GetMeResponse>
             Email = account.Email,
             Person = ToDto(account.Person),
             Membership = ToDto(account.Membership),
+            PermissionKeys = account.PermissionKeys,
         };
 
     private static MePersonDto ToDto(PersonDetails person) =>
@@ -83,6 +84,8 @@ public sealed record GetMeResponse
     public required MePersonDto Person { get; init; }
 
     public required MeMembershipDto Membership { get; init; }
+
+    public required IReadOnlyList<string> PermissionKeys { get; init; }
 }
 
 public sealed record MePersonDto

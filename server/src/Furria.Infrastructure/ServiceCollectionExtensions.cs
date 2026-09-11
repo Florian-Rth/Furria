@@ -1,3 +1,4 @@
+using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
@@ -45,6 +46,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<AccessTokenService>();
         services.AddScoped<RefreshTokenService>();
         services.AddScoped<AccountService>();
+        services.AddScoped<PermissionAuthorizer>();
 
         services.AddHostedService<DatabaseMigrator>();
         services.AddHostedService<BootstrapAdminSeeder>();

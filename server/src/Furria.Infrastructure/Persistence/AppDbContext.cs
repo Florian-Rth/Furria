@@ -1,4 +1,5 @@
 using Furria.Core.Identity;
+using Furria.Core.Roles;
 using Furria.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -17,6 +18,12 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>
     public DbSet<MembershipPause> MembershipPauses => Set<MembershipPause>();
 
     public DbSet<FeeReduction> FeeReductions => Set<FeeReduction>();
+
+    public DbSet<Role> Roles => Set<Role>();
+
+    public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
+
+    public DbSet<RoleHolding> RoleHoldings => Set<RoleHolding>();
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 

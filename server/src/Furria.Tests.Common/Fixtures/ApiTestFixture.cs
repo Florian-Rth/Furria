@@ -2,6 +2,7 @@ using Furria.Application.Identity;
 using Furria.Application.PreviewAccess;
 using Furria.Core.Club;
 using Furria.Core.Identity;
+using Furria.Core.Roles;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Persistence;
 using Furria.Tests.Common.Builder;
@@ -36,6 +37,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
 
     private DatabaseResetService? _resetService;
     private SeededAccount? _bootstrapAdmin;
+    private int? _adminRoleId;
 
     public FakeTimeProvider TimeProvider { get; } = new(WholeSecondNow());
 
@@ -45,6 +47,8 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
 
     public SeededAccount BootstrapAdmin =>
         _bootstrapAdmin ?? throw new InvalidOperationException(NotInitialized);
+
+    public int AdminRoleId => _adminRoleId ?? throw new InvalidOperationException(NotInitialized);
 
     private static DateTimeOffset WholeSecondNow()
     {
@@ -118,9 +122,21 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             BootstrapAdminPassword
         );
 
+        _adminRoleId = await db
+            .Roles.AsNoTracking()
+            .Where(role => role.Holdings.Any(holding => holding.PersonId == admin.PersonId))
+            .Select(role => role.Id)
+            .SingleAsync();
+
         _resetService = await DatabaseResetService.CreateAsync(
             [db],
-            [typeof(Person), typeof(Account)],
+            [
+                typeof(Person),
+                typeof(Account),
+                typeof(Role),
+                typeof(RolePermission),
+                typeof(RoleHolding),
+            ],
             CancellationToken.None
         );
     }
@@ -139,20 +155,20 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         configure(recorded);
 
         var scopeFactory = Services.GetRequiredService<IServiceScopeFactory>();
-        var seeded = await IdentitySeedMaterializer.MaterializeAsync(
+        var seeded = await SeedMaterializer.MaterializeAsync(
             scopeFactory,
-            recorded.RecordedIdentity,
+            recorded,
             SeededAccountPassword,
             ct
         );
 
         var identity = new TestIdentity(
             CreateClient,
-            seeded,
+            seeded.Identity,
             BootstrapAdmin,
             SeededAccountPassword
         );
-        return new SeededContext(identity, new Expected(scopeFactory));
+        return new SeededContext(identity, new TestRoles(seeded.Roles), new Expected(scopeFactory));
     }
 
     public async Task RunBootstrapSeederAsync(CancellationToken ct = default)

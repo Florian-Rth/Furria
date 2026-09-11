@@ -1,5 +1,8 @@
+using Furria.Application.Authorization;
 using Furria.Application.Identity;
+using Furria.Core.Club;
 using Furria.Core.Identity;
+using Furria.Core.Roles;
 using Furria.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +14,10 @@ namespace Furria.Infrastructure.Identity;
 
 public sealed class BootstrapAdminSeeder : IHostedService
 {
+    private const string AdminRoleName = "Admin";
+    private const string AdminRoleDescription =
+        "Vollzugriff. Vom System angelegt, danach ganz normale Vereinsdaten.";
+
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly BootstrapAdminOptions _options;
 
@@ -31,22 +38,36 @@ public sealed class BootstrapAdminSeeder : IHostedService
         await using var scope = _scopeFactory.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        if (await dbContext.Users.AnyAsync(cancellationToken))
-            return;
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(
+            cancellationToken
+        );
 
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<Account>>();
-        await SeedAsync(dbContext, userManager, cancellationToken);
+        await EnsureBootstrapAccountAsync(
+            dbContext,
+            scope.ServiceProvider.GetRequiredService<UserManager<Account>>(),
+            transaction,
+            cancellationToken
+        );
+        await EnsureAdminRoleAsync(
+            dbContext,
+            scope.ServiceProvider.GetRequiredService<TimeProvider>(),
+            cancellationToken
+        );
+
+        await transaction.CommitAsync(cancellationToken);
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
-    private async Task SeedAsync(
+    private async Task EnsureBootstrapAccountAsync(
         AppDbContext dbContext,
         UserManager<Account> userManager,
+        Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction transaction,
         CancellationToken ct
     )
     {
-        await using var transaction = await dbContext.Database.BeginTransactionAsync(ct);
+        if (await dbContext.Users.AnyAsync(account => account.Email == _options.Email, ct))
+            return;
 
         var person = new Person
         {
@@ -67,15 +88,62 @@ public sealed class BootstrapAdminSeeder : IHostedService
         };
 
         var created = await userManager.CreateAsync(account, _options.Password);
-        if (!created.Succeeded)
-        {
-            await transaction.RollbackAsync(ct);
-            throw new InvalidOperationException(
-                $"The bootstrap admin could not be created: {Describe(created)}"
-            );
-        }
+        if (created.Succeeded)
+            return;
 
-        await transaction.CommitAsync(ct);
+        await transaction.RollbackAsync(ct);
+        throw new InvalidOperationException(
+            $"The bootstrap admin could not be created: {Describe(created)}"
+        );
+    }
+
+    private async Task EnsureAdminRoleAsync(
+        AppDbContext dbContext,
+        TimeProvider timeProvider,
+        CancellationToken ct
+    )
+    {
+        if (
+            await dbContext.Roles.AnyAsync(role => EF.Functions.ILike(role.Name, AdminRoleName), ct)
+        )
+            return;
+
+        var role = new Role
+        {
+            Name = AdminRoleName,
+            Description = AdminRoleDescription,
+            Permissions =
+            [
+                .. FurriaPermissions.All.Select(key => new RolePermission { PermissionKey = key }),
+            ],
+            Holdings =
+            [
+                new RoleHolding
+                {
+                    PersonId = await RequireBootstrapPersonIdAsync(dbContext, ct),
+                    SinceOn = ClubClock.Today(timeProvider),
+                },
+            ],
+        };
+
+        dbContext.Roles.Add(role);
+        await dbContext.SaveChangesAsync(ct);
+    }
+
+    private async Task<int> RequireBootstrapPersonIdAsync(
+        AppDbContext dbContext,
+        CancellationToken ct
+    )
+    {
+        var personId = await dbContext
+            .Users.Where(account => account.Email == _options.Email)
+            .Select(account => (int?)account.PersonId)
+            .SingleOrDefaultAsync(ct);
+
+        return personId
+            ?? throw new InvalidOperationException(
+                $"The Admin Rolle cannot be seeded: no Account exists for {_options.Email}."
+            );
     }
 
     private static string Describe(IdentityResult result) =>
