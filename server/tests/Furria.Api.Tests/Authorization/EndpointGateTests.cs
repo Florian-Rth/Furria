@@ -12,7 +12,12 @@ public sealed class EndpointGateTests
 {
     private const string HarnessUrlCacheRoute = "_test_url_cache_";
 
-    private static readonly string[] InHandlerGated = ["/api/auth/me", "/api/auth/logout"];
+    private static readonly string[] InHandlerGated =
+    [
+        "/api/auth/me",
+        "/api/auth/me/contact-visibility",
+        "/api/auth/logout",
+    ];
 
     private static readonly string[] InHandlerGatedProbes =
     [

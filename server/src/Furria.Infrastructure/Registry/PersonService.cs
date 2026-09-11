@@ -15,6 +15,7 @@ public sealed class PersonService
 {
     private const string GermanCollation = "de-DE-x-icu";
     private const string UnknownMemberMessage = "Diese Person steht nicht im Verzeichnis.";
+    private const string MissingOwnPersonMessage = "Zu diesem Konto gibt es keine Person mehr.";
 
     private static readonly Expression<Func<Person, MemberCardRow>> MemberCardProjection =
         person => new MemberCardRow(
@@ -181,6 +182,23 @@ public sealed class PersonService
         var visibility = await VisibilityForAsync(row.Contact, viewerAccountId, ct);
 
         return Result<MemberDetails>.Success(ToDetails(row, visibility, today));
+    }
+
+    public async Task<Result> SetContactVisibilityAsync(
+        int personId,
+        bool visibleToMembers,
+        CancellationToken ct
+    )
+    {
+        var person = await _dbContext.People.SingleOrDefaultAsync(row => row.Id == personId, ct);
+
+        if (person is null)
+            return Result.NotFound(MissingOwnPersonMessage);
+
+        person.ContactVisibleToMembers = visibleToMembers;
+        await _dbContext.SaveChangesAsync(ct);
+
+        return Result.Success();
     }
 
     private async Task<ContactVisibility> VisibilityForAsync(
