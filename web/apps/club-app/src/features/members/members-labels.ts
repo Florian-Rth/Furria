@@ -1,4 +1,9 @@
-import type { GroupRef, RoleRef } from '@/lib/api/schemas';
+import type { GroupRef, MembershipState, RoleRef } from '@/lib/api/schemas';
+import { toInitials } from '@/lib/initials';
+import { formatIsoDay, toMemberSinceLabel } from '@/lib/membership-labels';
+import type { StateChip } from '@/lib/state-chips';
+import { toMembershipStateChip } from '@/lib/state-chips';
+import type { MemberDetails } from './schemas';
 
 export interface PersonRowAffiliation {
   accent?: string;
@@ -67,3 +72,70 @@ export const toEmptyDescription = (query: string): string => {
 
   return `Kein Name, keine Gruppe und keine Rolle passt zu „${needle}“. Vielleicht anders geschrieben?`;
 };
+
+export interface MemberHeadline {
+  title: string;
+  initials: string;
+  state: StateChip | null;
+  line: string | null;
+}
+
+export const MEMBER_SECTION_TITLES = {
+  groups: 'Gruppen',
+  roles: 'Rollen',
+  club: 'Im Verein',
+  contact: 'Kontakt',
+} as const;
+
+const MEMBER_TITLE_FALLBACK = 'Person';
+const PERSON_ID_PATTERN = /^[1-9]\d*$/;
+
+export const toPersonId = (raw: string): number | null =>
+  PERSON_ID_PATTERN.test(raw) ? Number(raw) : null;
+
+export const toMembershipLine = (
+  state: MembershipState,
+  memberSince: string | null,
+): string | null => {
+  if (memberSince === null) {
+    return null;
+  }
+
+  return `${toMemberSinceLabel(state)} ${formatIsoDay(memberSince)}`;
+};
+
+export const toMemberHeadline = (member: MemberDetails | undefined): MemberHeadline => {
+  if (member === undefined) {
+    return { title: MEMBER_TITLE_FALLBACK, initials: '', state: null, line: null };
+  }
+
+  return {
+    title: `${member.firstName} ${member.lastName}`,
+    initials: toInitials(member.firstName, member.lastName),
+    state: toMembershipStateChip(member.membershipState),
+    line: toMembershipLine(member.membershipState, member.memberSince),
+  };
+};
+
+export const toMembershipNote = (state: MembershipState, firstName: string): string | null => {
+  if (state === 'active') {
+    return null;
+  }
+  if (state === 'paused') {
+    return `In einer Ruhezeit zählt ${firstName} nicht als aktiv. Die Gruppen bleiben bestehen.`;
+  }
+  if (state === 'ended') {
+    return `Die Mitgliedschaft ist beendet. ${firstName} ist weiter mit dem FCC verbunden.`;
+  }
+
+  return `${firstName} tanzt oder hilft mit, ohne Mitglied zu sein.`;
+};
+
+export const toContactHiddenExplanation = (firstName: string): string =>
+  `${firstName} hat die Anzeige für Mitglieder ausgeschaltet. Das ist eine Einstellung, keine Lücke — frag im Zweifel eine Gruppen-Admin.`;
+
+export const toNoGroupsDescription = (firstName: string): string =>
+  `${firstName} tanzt und spielt gerade in keiner Gruppe mit.`;
+
+export const toNoRolesDescription = (firstName: string): string =>
+  `${firstName} trägt gerade keine Rolle im Verein.`;

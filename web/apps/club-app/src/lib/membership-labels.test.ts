@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { formatAddress, formatIsoDay, formatPeriod } from './membership-labels';
+import type { MembershipState } from '@/lib/api/schemas';
+import {
+  formatAddress,
+  formatIsoDay,
+  formatPeriod,
+  formatSinceSession,
+  toMemberSinceLabel,
+} from './membership-labels';
 
 describe('formatIsoDay', () => {
   it.each([
@@ -33,5 +40,30 @@ describe('formatAddress', () => {
     ['  ', '', '   ', null],
   ])('joins %o / %o / %o into %o', (street, zip, city, expected) => {
     expect(formatAddress(street, zip, city)).toBe(expected);
+  });
+});
+
+describe('formatSinceSession', () => {
+  it.each([
+    ['2018-09-01', '2017/18'],
+    ['2018-11-10', '2017/18'],
+    ['2018-11-11', '2018/19'],
+    ['2019-02-28', '2018/19'],
+    ['2000-11-11', '2000/01'],
+    ['2026-09-11', '2025/26'],
+    ['nicht hinterlegt', 'nicht hinterlegt'],
+  ])('reads %s as the session %s', (isoDay, expected) => {
+    expect(formatSinceSession(isoDay)).toBe(expected);
+  });
+});
+
+describe('toMemberSinceLabel', () => {
+  it.each<[MembershipState, string]>([
+    ['active', 'Mitglied seit'],
+    ['paused', 'Mitglied seit'],
+    ['ended', 'Mitglied ab'],
+    ['none', 'Mitglied ab'],
+  ])('labels a %s chain with %s', (state, expected) => {
+    expect(toMemberSinceLabel(state)).toBe(expected);
   });
 });

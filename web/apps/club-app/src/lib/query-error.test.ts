@@ -5,7 +5,12 @@ import {
   ServerFailureError,
   UnauthorizedError,
 } from '@/lib/api/api-error';
-import { type QueryErrorKind, toQueryErrorKind, toQueryErrorMessage } from './query-error';
+import {
+  isNotFoundError,
+  type QueryErrorKind,
+  toQueryErrorKind,
+  toQueryErrorMessage,
+} from './query-error';
 
 const MESSAGES: Record<QueryErrorKind, string> = {
   unreachable: 'unreachable',
@@ -52,5 +57,16 @@ describe('toQueryErrorMessage', () => {
     ['an unexpected failure', new ServerFailureError(500), 'unexpected'],
   ])('answers %s with %o', (_case, error, expected) => {
     expect(toQueryErrorMessage(error, MESSAGES)).toBe(expected);
+  });
+});
+
+describe('isNotFoundError', () => {
+  it.each<[string, Error | null, boolean]>([
+    ['a detail route whose id is gone', new ServerFailureError(404), true],
+    ['any other server failure', new ServerFailureError(500), false],
+    ['a refusal carrying field messages', new RequestFailedError(422, []), false],
+    ['nothing at all', null, false],
+  ])('answers %s with %s', (_case, error, expected) => {
+    expect(isNotFoundError(error)).toBe(expected);
   });
 });
