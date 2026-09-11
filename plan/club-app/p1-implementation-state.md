@@ -59,11 +59,11 @@ Binding coding rules, enforced by analyzers and lint, not by review:
 | 5 Person-Karte | ✅ `6b10ef3` | ✅ `c8bd45a` |
 | 6 Gruppen | ✅ `af71735` | ✅ `e4c9304` |
 | 7 Profil-Sichtbarkeit | ✅ `b2b7716` | ✅ `172834b` |
-| 8 Hub lesen | ✅ `d40060a` | 🔄 in flight when paused |
-| 9 Hub verwalten I | ✅ `94d6600` | ❌ |
+| 8 Hub lesen | ✅ `d40060a` | ✅ `98aaf98` |
+| 9 Hub verwalten I | ✅ `94d6600` | ⚠️ `5a7b3e1` **partial, unverified — see below** |
 | 10 Hub verwalten II | ✅ `aedfcf3` | ❌ |
 | 11 Personenverwaltung | ✅ `0b03990` | ❌ |
-| 12 Person bearbeiten I | 🔄 in flight when paused | ❌ |
+| 12 Person bearbeiten I | ✅ `e548b70` | ❌ |
 | 13 Person bearbeiten II | ❌ | ❌ |
 | 14 Gruppenverwaltung I | ❌ | ❌ |
 | 15 Gruppenverwaltung II | ❌ | ❌ |
@@ -72,6 +72,13 @@ Binding coding rules, enforced by analyzers and lint, not by review:
 | 18 Website re-pointing | ❌ | ❌ |
 
 **Backend is ~4 slices ahead of the frontend** by design (see §4).
+
+> **⚠ Slice 9's frontend (`5a7b3e1`) is committed but NOT finished.** Its agent was stopped
+> mid-slice. All four web gates are green and it typechecks, lints, tests and builds — but it was
+> never screenshotted and its write flows were never exercised against a running API. The
+> „Mitglied aufnehmen" and „Zugehörigkeit beenden" dialogs, the `PersonPicker` and the
+> „Gruppe pflegen" panel are all present but unproven. **Finish and verify slice 9 before
+> starting slice 10.**
 
 ### Gate state at the pause
 

@@ -1,9 +1,15 @@
 ---
-status: shaped — ready for implementation
+status: in progress — see p1-implementation-state.md
 phase: CA-P1
 pulls: Personen & Mitgliedschaften, Gruppen, Rollen & Rechte (backend, built with this phase)
 shaped: 2026-09-10/11 (fresh start — earlier same-day draft discarded on request)
 ---
+
+> **⚠ Implementation is under way and paused mid-phase. Resuming on a new machine? Read
+> [`p1-implementation-state.md`](p1-implementation-state.md) FIRST** — it holds the slice-by-slice
+> progress, the environment runbook, the workflow design, what is owed, and two incidents whose
+> damage is still in the tree (notably: `CONTEXT.md` is partly reconstructed and needs review).
+> The implementation contract every agent builds from is [`p1-contract.md`](p1-contract.md).
 
 > **Start here (fresh implementation context).** Read, in this order: `CONTEXT.md` (glossary,
 > amended 2026-09-10/11), this file, `docs/design/persons-groups/README.md` (tokens and
