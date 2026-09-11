@@ -27,6 +27,17 @@ public sealed class GroupService
         "Dieser Zeitraum überschneidet sich mit einer bestehenden Zugehörigkeit. "
         + "Ein Wiedereintritt beginnt frühestens am Tag nach dem Ende der vorigen Zugehörigkeit.";
 
+    private const string OpenErnennungMessage =
+        "Diese Person ist bereits Gruppen-Admin dieser Gruppe.";
+    private const string EndedErnennungMessage = "Diese Ernennung ist bereits beendet.";
+    private const string EndBeforeErnennungMessage =
+        "Eine Ernennung kann nicht vor ihrem Beginn enden.";
+    private const string UnknownErnennungMessage =
+        "Diese Ernennung gibt es in dieser Gruppe nicht.";
+    private const string OverlappingErnennungMessage =
+        "Dieser Zeitraum überschneidet sich mit einer bestehenden Ernennung. "
+        + "Eine erneute Ernennung beginnt frühestens am Tag nach dem Ende der vorigen.";
+
     private static readonly Expression<Func<Group, GroupPageRow>> GroupPageProjection =
         group => new GroupPageRow(
             group.Id,
@@ -223,11 +234,7 @@ public sealed class GroupService
         CancellationToken ct
     )
     {
-        var group = await _dbContext
-            .Groups.AsNoTracking()
-            .Where(row => row.Id == command.GroupId)
-            .Select(row => new { row.ArchivedOn })
-            .SingleOrDefaultAsync(ct);
+        var group = await GroupStateAsync(command.GroupId, ct);
 
         if (group is null)
             return Result<int>.NotFound(UnknownGroupMessage);
@@ -235,11 +242,7 @@ public sealed class GroupService
         if (group.ArchivedOn is not null)
             return Result<int>.Conflict(ArchivedGroupMessage);
 
-        var personExists = await _dbContext
-            .People.AsNoTracking()
-            .AnyAsync(row => row.Id == command.PersonId, ct);
-
-        if (!personExists)
+        if (!await PersonExistsAsync(command.PersonId, ct))
             return Result<int>.NotFound(UnknownPersonMessage);
 
         var chain = await ChainOfAsync(command.GroupId, command.PersonId, ct);
@@ -292,6 +295,89 @@ public sealed class GroupService
 
         return Result.Success();
     }
+
+    public async Task<Result<int>> AddAdminAsync(AddGroupAdminCommand command, CancellationToken ct)
+    {
+        var group = await GroupStateAsync(command.GroupId, ct);
+
+        if (group is null)
+            return Result<int>.NotFound(UnknownGroupMessage);
+
+        if (group.ArchivedOn is not null)
+            return Result<int>.Conflict(ArchivedGroupMessage);
+
+        if (!await PersonExistsAsync(command.PersonId, ct))
+            return Result<int>.NotFound(UnknownPersonMessage);
+
+        var chain = await AdminChainOfAsync(command.GroupId, command.PersonId, ct);
+
+        if (HasOpenRow(chain))
+            return Result<int>.Conflict(OpenErnennungMessage);
+
+        if (OverlapsChain(chain, command.SinceOn))
+            return Result<int>.Conflict(OverlappingErnennungMessage);
+
+        var admin = new GroupAdmin
+        {
+            GroupId = command.GroupId,
+            PersonId = command.PersonId,
+            Function = command.Function,
+            SinceOn = command.SinceOn,
+        };
+
+        _dbContext.GroupAdmins.Add(admin);
+        await _dbContext.SaveChangesAsync(ct);
+
+        return Result<int>.Success(admin.Id);
+    }
+
+    public async Task<Result> EndAdminAsync(EndGroupAdminCommand command, CancellationToken ct)
+    {
+        var admin = await _dbContext
+            .GroupAdmins.Include(row => row.Group)
+            .SingleOrDefaultAsync(
+                row => row.Id == command.GroupAdminId && row.GroupId == command.GroupId,
+                ct
+            );
+
+        if (admin is null)
+            return Result.NotFound(UnknownErnennungMessage);
+
+        if (admin.Group!.ArchivedOn is not null)
+            return Result.Conflict(ArchivedGroupMessage);
+
+        if (admin.UntilOn is not null)
+            return Result.Conflict(EndedErnennungMessage);
+
+        if (command.EndedOn < admin.SinceOn)
+            return Result.Validation(EndBeforeErnennungMessage);
+
+        admin.UntilOn = command.EndedOn;
+        await _dbContext.SaveChangesAsync(ct);
+
+        return Result.Success();
+    }
+
+    private Task<GroupState?> GroupStateAsync(int groupId, CancellationToken ct) =>
+        _dbContext
+            .Groups.AsNoTracking()
+            .Where(row => row.Id == groupId)
+            .Select(row => new GroupState(row.ArchivedOn))
+            .SingleOrDefaultAsync(ct);
+
+    private Task<bool> PersonExistsAsync(int personId, CancellationToken ct) =>
+        _dbContext.People.AsNoTracking().AnyAsync(row => row.Id == personId, ct);
+
+    private Task<List<PeriodRow>> AdminChainOfAsync(
+        int groupId,
+        int personId,
+        CancellationToken ct
+    ) =>
+        _dbContext
+            .GroupAdmins.AsNoTracking()
+            .Where(row => row.GroupId == groupId && row.PersonId == personId)
+            .Select(row => new PeriodRow(row.SinceOn, row.UntilOn))
+            .ToListAsync(ct);
 
     private Task<List<PeriodRow>> ChainOfAsync(int groupId, int personId, CancellationToken ct) =>
         _dbContext
@@ -483,6 +569,8 @@ public sealed class GroupService
         DateOnly StartedOn,
         DateOnly? EndedOn
     );
+
+    private sealed record GroupState(DateOnly? ArchivedOn);
 
     private sealed record PeriodRow(DateOnly StartedOn, DateOnly? EndedOn)
     {

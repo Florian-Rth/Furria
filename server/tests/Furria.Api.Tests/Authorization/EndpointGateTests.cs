@@ -22,6 +22,8 @@ public sealed class EndpointGateTests
         "/api/groups/{groupId}/info",
         "/api/groups/{groupId}/memberships",
         "/api/groups/{groupId}/memberships/{groupMembershipId}/end",
+        "/api/groups/{groupId}/admins",
+        "/api/groups/{groupId}/admins/{groupAdminId}/end",
         "/api/person-search",
     ];
 
