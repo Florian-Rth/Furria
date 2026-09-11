@@ -1,6 +1,11 @@
+using System.Linq.Expressions;
+using Furria.Application.Authorization;
 using Furria.Application.Identity;
 using Furria.Application.Registry;
+using Furria.Application.Results;
 using Furria.Core.Club;
+using Furria.Core.Identity;
+using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,13 +14,84 @@ namespace Furria.Infrastructure.Registry;
 public sealed class PersonService
 {
     private const string GermanCollation = "de-DE-x-icu";
+    private const string UnknownMemberMessage = "Diese Person steht nicht im Verzeichnis.";
+
+    private static readonly Expression<Func<Person, MemberCardRow>> MemberCardProjection =
+        person => new MemberCardRow(
+            person.Id,
+            person.FirstName,
+            person.LastName,
+            new ContactRow(
+                person.ContactVisibleToMembers,
+                person.Phone,
+                person.Email,
+                person.Street,
+                person.Zip,
+                person.City
+            ),
+            person
+                .Memberships.Select(membership => new MembershipRow(
+                    membership.Id,
+                    membership.StartedOn,
+                    membership.EndedOn,
+                    membership
+                        .Pauses.Select(pause => new MembershipPauseDetails
+                        {
+                            PauseId = pause.Id,
+                            FirstSessionYear = pause.FirstSessionYear,
+                            LastSessionYear = pause.LastSessionYear,
+                        })
+                        .ToList()
+                ))
+                .ToList(),
+            person
+                .GroupMemberships.Where(membership => membership.Group!.ArchivedOn == null)
+                .OrderBy(membership =>
+                    EF.Functions.Collate(membership.Group!.Name, GermanCollation)
+                )
+                .ThenBy(membership => membership.GroupId)
+                .Select(membership => new TieRow(
+                    membership.GroupId,
+                    membership.Group!.Name,
+                    membership.JoinedOn,
+                    membership.LeftOn
+                ))
+                .ToList(),
+            person
+                .RoleHoldings.Where(holding => holding.Role!.ArchivedOn == null)
+                .OrderBy(holding => EF.Functions.Collate(holding.Role!.Name, GermanCollation))
+                .ThenBy(holding => holding.RoleId)
+                .Select(holding => new TieRow(
+                    holding.RoleId,
+                    holding.Role!.Name,
+                    holding.SinceOn,
+                    holding.UntilOn
+                ))
+                .ToList()
+        );
+
+    private static readonly MemberContact WithheldContact = new()
+    {
+        Visibility = ContactVisibility.Hidden,
+        Phone = null,
+        Email = null,
+        Street = null,
+        Zip = null,
+        City = null,
+    };
 
     private readonly AppDbContext _dbContext;
+    private readonly PermissionAuthorizer _authorizer;
     private readonly TimeProvider _timeProvider;
 
-    public PersonService(AppDbContext dbContext, TimeProvider timeProvider)
+    public PersonService(
+        AppDbContext dbContext,
+        PermissionAuthorizer authorizer,
+        TimeProvider timeProvider
+    )
     {
         _dbContext = dbContext;
+        _authorizer = authorizer;
         _timeProvider = timeProvider;
     }
 
@@ -84,6 +160,116 @@ public sealed class PersonService
         return [.. rows.Select(row => ToSummary(row, today))];
     }
 
+    public async Task<Result<MemberDetails>> GetMemberAsync(
+        int personId,
+        int viewerAccountId,
+        CancellationToken ct
+    )
+    {
+        var today = ClubClock.Today(_timeProvider);
+
+        var row = await _dbContext
+            .People.AsNoTracking()
+            .Where(person => person.Id == personId)
+            .Where(AffiliationQuery.IsAffiliatedOn(today))
+            .Select(MemberCardProjection)
+            .SingleOrDefaultAsync(ct);
+
+        if (row is null)
+            return Result<MemberDetails>.NotFound(UnknownMemberMessage);
+
+        var visibility = await VisibilityForAsync(row.Contact, viewerAccountId, ct);
+
+        return Result<MemberDetails>.Success(ToDetails(row, visibility, today));
+    }
+
+    private async Task<ContactVisibility> VisibilityForAsync(
+        ContactRow contact,
+        int viewerAccountId,
+        CancellationToken ct
+    )
+    {
+        if (contact.VisibleToMembers)
+            return ContactVisibility.Shared;
+
+        var revealed = await _authorizer.IsGrantedAsync(
+            viewerAccountId,
+            FurriaPermissions.PersonsReadDetails,
+            ct
+        );
+
+        return revealed ? ContactVisibility.RevealedByPermission : ContactVisibility.Hidden;
+    }
+
+    private static MemberDetails ToDetails(
+        MemberCardRow row,
+        ContactVisibility visibility,
+        DateOnly today
+    )
+    {
+        var chain = MembershipChainDetails.Of(ToPeriods(row.Memberships, today), today);
+
+        return new MemberDetails
+        {
+            PersonId = row.Id,
+            FirstName = row.FirstName,
+            LastName = row.LastName,
+            MembershipState = chain.State,
+            MemberSince = chain.MemberSince,
+            Groups =
+            [
+                .. RunningTies(row.Groups, today)
+                    .Select(tie => new MemberGroup
+                    {
+                        GroupId = tie.Id,
+                        Name = tie.Name,
+                        Since = tie.Since,
+                    }),
+            ],
+            Roles =
+            [
+                .. RunningTies(row.Roles, today)
+                    .Select(tie => new MemberRole
+                    {
+                        RoleId = tie.Id,
+                        Name = tie.Name,
+                        Since = tie.Since,
+                    }),
+            ],
+            Contact = ToContact(row.Contact, visibility),
+        };
+    }
+
+    private static MemberContact ToContact(ContactRow row, ContactVisibility visibility) =>
+        visibility == ContactVisibility.Hidden
+            ? WithheldContact
+            : new MemberContact
+            {
+                Visibility = visibility,
+                Phone = row.Phone,
+                Email = row.Email,
+                Street = row.Street,
+                Zip = row.Zip,
+                City = row.City,
+            };
+
+    private static IReadOnlyList<TieSince> RunningTies(
+        IReadOnlyList<TieRow> rows,
+        DateOnly today
+    ) =>
+        [
+            .. rows.GroupBy(row => row.Id)
+                .Where(tie => tie.Any(row => IsRunningOn(row, today)))
+                .Select(tie => new TieSince(
+                    tie.Key,
+                    tie.First().Name,
+                    tie.Min(row => row.StartedOn)
+                )),
+        ];
+
+    private static bool IsRunningOn(TieRow row, DateOnly today) =>
+        new DatePeriod { Start = row.StartedOn, End = row.EndedOn }.IsRunningOn(today);
+
     private static MemberSummary ToSummary(MemberRow row, DateOnly today) =>
         new()
         {
@@ -122,4 +308,27 @@ public sealed class PersonService
         DateOnly? EndedOn,
         IReadOnlyList<MembershipPauseDetails> Pauses
     );
+
+    private sealed record MemberCardRow(
+        int Id,
+        string FirstName,
+        string LastName,
+        ContactRow Contact,
+        IReadOnlyList<MembershipRow> Memberships,
+        IReadOnlyList<TieRow> Groups,
+        IReadOnlyList<TieRow> Roles
+    );
+
+    private sealed record ContactRow(
+        bool VisibleToMembers,
+        string? Phone,
+        string? Email,
+        string? Street,
+        string? Zip,
+        string? City
+    );
+
+    private sealed record TieRow(int Id, string Name, DateOnly StartedOn, DateOnly? EndedOn);
+
+    private sealed record TieSince(int Id, string Name, DateOnly Since);
 }
