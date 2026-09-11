@@ -1,6 +1,7 @@
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Persistence;
+using Furria.Infrastructure.Registry;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -47,6 +48,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<RefreshTokenService>();
         services.AddScoped<AccountService>();
         services.AddScoped<PermissionAuthorizer>();
+        services.AddScoped<PersonService>();
 
         services.AddHostedService<DatabaseMigrator>();
         services.AddHostedService<BootstrapAdminSeeder>();
