@@ -1,10 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import {
   toAdminCountLabel,
+  toEndConsequence,
+  toEndFacts,
+  toEndQuickChoices,
   toHistoryEntries,
   toHubHeadline,
   toHubId,
+  toJoinConsequence,
+  toJoinQuickChoices,
+  toMemberAddedMessage,
+  toMembershipEndedMessage,
   toPeopleCountLabel,
+  toSearchCapLine,
+  toSearchTerm,
 } from './group-hub-labels';
 import type { HubAdmin, HubDetails, HubMember } from './schemas';
 
@@ -177,5 +186,148 @@ describe('toHistoryEntries', () => {
 
   it('has nothing to show when no row has ended', () => {
     expect(toHistoryEntries([], [])).toEqual([]);
+  });
+});
+
+describe('toSearchTerm', () => {
+  it.each([
+    { raw: '', expected: null },
+    { raw: ' b ', expected: null },
+    { raw: 'br', expected: 'br' },
+    { raw: '  Brendel  ', expected: 'Brendel' },
+    { raw: 'müller', expected: 'müller' },
+  ])('turns $raw into the term the server accepts', ({ raw, expected }) => {
+    expect(toSearchTerm(raw)).toBe(expected);
+  });
+
+  it('never sends more than the 64 characters the endpoint takes', () => {
+    expect(toSearchTerm('x'.repeat(200))).toBe('x'.repeat(64));
+  });
+});
+
+describe('toSearchCapLine', () => {
+  it.each([
+    { count: 0, capped: false },
+    { count: 24, capped: false },
+    { count: 25, capped: true },
+  ])('says the result may be cut at $count rows: $capped', ({ count, capped }) => {
+    expect(toSearchCapLine(count) !== null).toBe(capped);
+  });
+});
+
+describe('toJoinQuickChoices', () => {
+  it('offers today and the start of the running Session', () => {
+    expect(toJoinQuickChoices(new Date(2026, 1, 20))).toEqual([
+      { label: 'Heute', value: '2026-02-20' },
+      { label: 'Sessionbeginn', value: '2025-11-11' },
+    ]);
+  });
+
+  it('reads the Session that opened this year once the 11.11. has passed', () => {
+    expect(toJoinQuickChoices(new Date(2026, 10, 12))[1]).toEqual({
+      label: 'Sessionbeginn',
+      value: '2026-11-11',
+    });
+  });
+
+  it('offers one choice when today is the Sessionbeginn', () => {
+    expect(toJoinQuickChoices(new Date(2025, 10, 11))).toEqual([
+      { label: 'Heute', value: '2025-11-11' },
+    ]);
+  });
+});
+
+describe('toEndQuickChoices', () => {
+  it('offers today and the last day of the running Session', () => {
+    expect(toEndQuickChoices(new Date(2026, 1, 20))).toEqual([
+      { label: 'Heute', value: '2026-02-20' },
+      { label: 'Sessionende', value: '2026-11-10' },
+    ]);
+  });
+
+  it('offers one choice when today is the last day of the Session', () => {
+    expect(toEndQuickChoices(new Date(2026, 10, 10))).toEqual([
+      { label: 'Heute', value: '2026-11-10' },
+    ]);
+  });
+});
+
+describe('toMemberAddedMessage', () => {
+  it('announces a future start with its date', () => {
+    expect(toMemberAddedMessage('Paula Brendel', '2026-09-01', '2026-03-01')).toBe(
+      'Paula Brendel ist ab dem 01.09.2026 dabei.',
+    );
+  });
+
+  it.each(['2026-03-01', '2017-09-01'])('reports a start on %s as done', (joinedOn) => {
+    expect(toMemberAddedMessage('Paula Brendel', joinedOn, '2026-03-01')).toBe(
+      'Paula Brendel ist aufgenommen.',
+    );
+  });
+});
+
+describe('toMembershipEndedMessage', () => {
+  it('announces a future end with its date', () => {
+    expect(toMembershipEndedMessage('Paula Brendel', '2026-09-01', '2026-03-01')).toBe(
+      'Die Zugehörigkeit von Paula Brendel endet am 01.09.2026.',
+    );
+  });
+
+  it('reports an end today as done', () => {
+    expect(toMembershipEndedMessage('Paula Brendel', '2026-03-01', '2026-03-01')).toBe(
+      'Die Zugehörigkeit von Paula Brendel ist beendet.',
+    );
+  });
+});
+
+describe('toJoinConsequence', () => {
+  it('warns that a future row stays out of the list until its day', () => {
+    expect(toJoinConsequence('Paula Brendel', '2026-09-01', '2026-03-01')).toContain(
+      'vorher nicht in der Liste',
+    );
+  });
+
+  it('states the day a running row begins', () => {
+    expect(toJoinConsequence('Paula Brendel', '2026-03-01', '2026-03-01')).toBe(
+      'Paula Brendel gehört ab dem 01.03.2026 zur Gruppe.',
+    );
+  });
+});
+
+describe('toEndConsequence', () => {
+  it('speaks of a future last day in the future tense', () => {
+    expect(toEndConsequence('Paula Brendel', '2026-09-01', '2026-03-01')).toBe(
+      'Der 01.09.2026 wird der letzte Tag von Paula Brendel in der Gruppe. Die Zugehörigkeit bleibt in der Geschichte stehen.',
+    );
+  });
+
+  it('speaks of today as the last day in the present tense', () => {
+    expect(toEndConsequence('Paula Brendel', '2026-03-01', '2026-03-01')).toBe(
+      'Der 01.03.2026 ist der letzte Tag von Paula Brendel in der Gruppe. Die Zugehörigkeit bleibt in der Geschichte stehen.',
+    );
+  });
+});
+
+describe('toEndFacts', () => {
+  it('answers who, in which Gruppe, since when and until when', () => {
+    const facts = toEndFacts(
+      hubMember({ firstName: 'Paula', lastName: 'Brendel', joinedOn: '2019-09-01' }),
+      'Tanzgarde',
+      '2026-02-28',
+    );
+
+    expect(facts).toEqual([
+      { label: 'Person', value: 'Paula Brendel' },
+      { label: 'Gruppe', value: 'Tanzgarde' },
+      { label: 'Dabei seit', value: '01.09.2019' },
+      { label: 'Letzter Tag', value: '28.02.2026' },
+    ]);
+  });
+
+  it('says the last day is still open while none is chosen', () => {
+    expect(toEndFacts(hubMember({}), 'Tanzgarde', null)[3]).toEqual({
+      label: 'Letzter Tag',
+      value: 'noch offen',
+    });
   });
 });

@@ -41,3 +41,27 @@ export const HubDetailsSchema = z.object({
   pastAdmins: z.array(HubAdminSchema),
 });
 export type HubDetails = z.infer<typeof HubDetailsSchema>;
+
+export const PersonSearchResponseSchema = z.object({ persons: z.array(PersonRefSchema) });
+export type PersonSearchResponse = z.infer<typeof PersonSearchResponseSchema>;
+
+export const AddedGroupMembershipSchema = z.object({ groupMembershipId: z.number().int() });
+export type AddedGroupMembership = z.infer<typeof AddedGroupMembershipSchema>;
+
+export const GroupInfoFormSchema = z.object({
+  description: z.string().max(400),
+  isRecruiting: z.boolean(),
+});
+export type GroupInfoForm = z.infer<typeof GroupInfoFormSchema>;
+
+export const AddGroupMembershipFormSchema = z.object({
+  personId: z.number().int().positive(),
+  joinedOn: z.iso.date(),
+});
+export type AddGroupMembershipForm = z.infer<typeof AddGroupMembershipFormSchema>;
+
+export const EndGroupMembershipFormSchema = z.object({
+  groupMembershipId: z.number().int().positive(),
+  endedOn: z.iso.date(),
+});
+export type EndGroupMembershipForm = z.infer<typeof EndGroupMembershipFormSchema>;

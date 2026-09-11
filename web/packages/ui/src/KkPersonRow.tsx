@@ -1,5 +1,6 @@
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
+import type { CSSObject } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import type { ElementType, FC, ReactNode } from 'react';
 import { focusRing } from './internal/focus-ring';
@@ -33,6 +34,15 @@ interface KkPersonRowProps {
   onClick?: () => void;
   sx?: KkSx;
 }
+
+const hoverPaint: CSSObject = {
+  '@media (hover: hover)': {
+    '&:hover': {
+      '& [data-kk-person-row-name]': { color: 'primary.main' },
+      '& [data-kk-person-row-chevron]': { color: 'text.primary' },
+    },
+  },
+};
 
 export const KkPersonRow: FC<KkPersonRowProps> = ({
   initials,
@@ -152,12 +162,7 @@ export const KkPersonRow: FC<KkPersonRowProps> = ({
           cursor: interactive ? 'pointer' : 'default',
           ...rowDividerTop,
           ...focusRing(theme),
-          '@media (hover: hover)': {
-            '&:hover': {
-              '& [data-kk-person-row-name]': { color: 'primary.main' },
-              '& [data-kk-person-row-chevron]': { color: 'text.primary' },
-            },
-          },
+          ...(interactive ? hoverPaint : {}),
         }),
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}

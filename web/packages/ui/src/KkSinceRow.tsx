@@ -15,6 +15,7 @@ import { kkTokens } from './tokens';
 type KkSinceRowTone = 'neutral' | 'accent';
 
 const TILE_SIZE = 30;
+const TILE_GUTTER = 5.25;
 const TILE_WASH_LIGHT = '8%';
 const TILE_WASH_DARK = '14%';
 
@@ -54,6 +55,24 @@ export const KkSinceRow: FC<KkSinceRowProps> = ({
 }) => {
   const metaLine = meta === undefined ? null : <KkMeta>{meta}</KkMeta>;
 
+  const trailingRow =
+    trailing === undefined || trailing === null ? null : (
+      <Stack
+        direction="row"
+        data-kk-since-row-trailing
+        sx={{
+          alignItems: 'center',
+          justifyContent: { xs: 'flex-end', desktop: 'flex-start' },
+          gap: 0.75,
+          flexShrink: 0,
+          width: { xs: '100%', desktop: 'auto' },
+          pl: { xs: TILE_GUTTER, desktop: 0 },
+        }}
+      >
+        {trailing}
+      </Stack>
+    );
+
   return (
     <Stack
       direction="row"
@@ -63,6 +82,7 @@ export const KkSinceRow: FC<KkSinceRowProps> = ({
           alignItems: 'center',
           gap: 1.5,
           minWidth: 0,
+          flexWrap: { xs: 'wrap', desktop: 'nowrap' },
           py: 1.5,
           opacity: dimmed ? kkTokens.opacity.dimmed : 1,
           ...rowDividerTop,
@@ -117,7 +137,7 @@ export const KkSinceRow: FC<KkSinceRowProps> = ({
           {sinceValue}
         </Typography>
       </Stack>
-      {trailing}
+      {trailingRow}
     </Stack>
   );
 };
