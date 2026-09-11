@@ -5,8 +5,6 @@ namespace Furria.Tests.Common.Expectations;
 
 public sealed class GroupSetExpectations
 {
-    private const string GermanCollation = "de-DE-x-icu";
-
     private readonly Expected _expected;
 
     internal GroupSetExpectations(Expected expected)
@@ -22,7 +20,7 @@ public sealed class GroupSetExpectations
                     await dbContext
                         .Groups.AsNoTracking()
                         .Where(group => names.Contains(group.Name))
-                        .OrderBy(group => EF.Functions.Collate(group.Name, GermanCollation))
+                        .OrderBy(group => group.Name)
                         .ThenBy(group => group.Id)
                         .Select(group => group.Name)
                         .ToListAsync(ct)

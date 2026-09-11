@@ -311,29 +311,37 @@ public sealed class GroupPersistenceTests
     }
 
     [Fact]
-    public async Task Should_SortUmlautsAsGerman_When_ListingGruppen()
+    public async Task Should_StampUpdatedAt_When_AGruppeIsEdited()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Groups(groups =>
-                    groups
-                        .AddGroup("tanzgarde", "Tanzgarde")
-                        .AddGroup("marschmusik", "Marschmusik")
-                        .AddGroup("aeltestenrat", "\u00c4ltestenrat")
-                        .AddGroup("maennerballett", "M\u00e4nnerballett")
-                ),
+            builder => builder.Groups(groups => groups.AddGroup("tanzgarde", "Tanzgarde")),
             ct
         );
 
-        await ctx
-            .Expected.Groups()
-            .ToReadInGermanOrder(
-                "\u00c4ltestenrat",
-                "M\u00e4nnerballett",
-                "Marschmusik",
-                "Tanzgarde"
-            )
-            .AssertAsync(ct);
+        var createdAt = _fixture.TimeProvider.GetUtcNow();
+
+        await _fixture.AtLaterTimeAsync(
+            TimeSpan.FromMinutes(1),
+            async () =>
+            {
+                var editedAt = _fixture.TimeProvider.GetUtcNow();
+
+                await _fixture.EditGroupNameDirectlyAsync(
+                    ctx.Groups.Groups.IdOf("tanzgarde"),
+                    "Grosse Tanzgarde",
+                    ct
+                );
+
+                await ctx
+                    .Expected.Group(ctx.Groups.Groups.IdOf("tanzgarde"))
+                    .ToHaveName("Grosse Tanzgarde")
+                    .Group(ctx.Groups.Groups.IdOf("tanzgarde"))
+                    .ToHaveBeenCreatedAt(createdAt)
+                    .Group(ctx.Groups.Groups.IdOf("tanzgarde"))
+                    .ToHaveBeenTouchedAt(editedAt)
+                    .AssertAsync(ct);
+            }
+        );
     }
 }

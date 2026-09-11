@@ -39,14 +39,17 @@ builder
     );
 builder.Services.AddAuthorization();
 builder.Services.AddFastEndpoints();
-builder.Services.SwaggerDocument(o =>
+if (builder.Environment.IsDevelopment())
 {
-    o.DocumentSettings = s =>
+    builder.Services.SwaggerDocument(o =>
     {
-        s.Title = "Furria API";
-        s.Version = "v1";
-    };
-});
+        o.DocumentSettings = s =>
+        {
+            s.Title = "Furria API";
+            s.Version = "v1";
+        };
+    });
+}
 
 var app = builder.Build();
 
@@ -58,7 +61,8 @@ app.UseFastEndpoints(c =>
     c.Serializer.Options.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
     c.Endpoints.Configurator = endpoint => endpoint.PreProcessor<PermissionEnforcer>(Order.Before);
 });
-app.UseSwaggerGen();
+if (app.Environment.IsDevelopment())
+    app.UseSwaggerGen();
 
 app.Run();
 

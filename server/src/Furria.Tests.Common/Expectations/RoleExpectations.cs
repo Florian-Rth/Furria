@@ -50,6 +50,18 @@ public sealed class RoleExpectations
             }
         );
 
+    public Expected ToHaveBeenCreatedAt(DateTimeOffset createdAt) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(createdAt, (await SingleAsync(dbContext, ct)).CreatedAt)
+        );
+
+    public Expected ToHaveBeenTouchedAt(DateTimeOffset updatedAt) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(updatedAt, (await SingleAsync(dbContext, ct)).UpdatedAt)
+        );
+
     private Task<Role> SingleAsync(AppDbContext dbContext, CancellationToken ct) =>
         dbContext.Roles.AsNoTracking().SingleAsync(row => row.Id == _roleId, ct);
 }

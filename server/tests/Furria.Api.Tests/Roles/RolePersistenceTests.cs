@@ -214,4 +214,42 @@ public sealed class RolePersistenceTests
             .ToBeArchivedOn(null)
             .AssertAsync(ct);
     }
+
+    [Fact]
+    public async Task Should_StampUpdatedAt_When_ARolleIsEdited()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Roles(roles =>
+                    roles.AddRole("gruppenpflege", "Gruppenpflege", FurriaPermissions.GroupsManage)
+                ),
+            ct
+        );
+
+        var createdAt = _fixture.TimeProvider.GetUtcNow();
+
+        await _fixture.AtLaterTimeAsync(
+            TimeSpan.FromMinutes(1),
+            async () =>
+            {
+                var editedAt = _fixture.TimeProvider.GetUtcNow();
+
+                await _fixture.EditRoleNameDirectlyAsync(
+                    ctx.Roles.Roles.IdOf("gruppenpflege"),
+                    "Gruppenbetreuung",
+                    ct
+                );
+
+                await ctx
+                    .Expected.Role(ctx.Roles.Roles.IdOf("gruppenpflege"))
+                    .ToHaveName("Gruppenbetreuung")
+                    .Role(ctx.Roles.Roles.IdOf("gruppenpflege"))
+                    .ToHaveBeenCreatedAt(createdAt)
+                    .Role(ctx.Roles.Roles.IdOf("gruppenpflege"))
+                    .ToHaveBeenTouchedAt(editedAt)
+                    .AssertAsync(ct);
+            }
+        );
+    }
 }

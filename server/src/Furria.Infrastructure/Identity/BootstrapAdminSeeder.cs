@@ -19,6 +19,8 @@ public sealed class BootstrapAdminSeeder : IHostedService
     private const string AdminRoleDescription =
         "Vollzugriff. Vom System angelegt, danach ganz normale Vereinsdaten.";
 
+    private static readonly string AdminRoleNameLowered = AdminRoleName.ToLowerInvariant();
+
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly BootstrapAdminOptions _options;
 
@@ -102,10 +104,17 @@ public sealed class BootstrapAdminSeeder : IHostedService
         CancellationToken ct
     )
     {
-        if (
-            await dbContext.Roles.AnyAsync(role => EF.Functions.ILike(role.Name, AdminRoleName), ct)
-        )
+        var today = ClubClock.Today(timeProvider);
+        var adminRoleId = await dbContext
+            .Roles.Where(role => role.Name.ToLower() == AdminRoleNameLowered)
+            .Select(role => (int?)role.Id)
+            .FirstOrDefaultAsync(ct);
+
+        if (adminRoleId is not null)
+        {
+            await EnsureAdminRoleIsHeldAsync(dbContext, userManager, adminRoleId.Value, today, ct);
             return;
+        }
 
         var role = new Role
         {
@@ -120,12 +129,41 @@ public sealed class BootstrapAdminSeeder : IHostedService
                 new RoleHolding
                 {
                     PersonId = await RequireBootstrapPersonIdAsync(userManager),
-                    SinceOn = ClubClock.Today(timeProvider),
+                    SinceOn = today,
                 },
             ],
         };
 
         dbContext.Roles.Add(role);
+        await dbContext.SaveChangesAsync(ct);
+    }
+
+    private async Task EnsureAdminRoleIsHeldAsync(
+        AppDbContext dbContext,
+        UserManager<Account> userManager,
+        int adminRoleId,
+        DateOnly today,
+        CancellationToken ct
+    )
+    {
+        var stillHeld = await dbContext.RoleHoldings.AnyAsync(
+            holding =>
+                holding.RoleId == adminRoleId
+                && (holding.UntilOn == null || holding.UntilOn >= today),
+            ct
+        );
+
+        if (stillHeld)
+            return;
+
+        dbContext.RoleHoldings.Add(
+            new RoleHolding
+            {
+                RoleId = adminRoleId,
+                PersonId = await RequireBootstrapPersonIdAsync(userManager),
+                SinceOn = today,
+            }
+        );
         await dbContext.SaveChangesAsync(ct);
     }
 

@@ -39,6 +39,18 @@ public sealed class GroupExpectations
                 Assert.Equal(archivedOn, (await SingleAsync(dbContext, ct)).ArchivedOn)
         );
 
+    public Expected ToHaveBeenCreatedAt(DateTimeOffset createdAt) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(createdAt, (await SingleAsync(dbContext, ct)).CreatedAt)
+        );
+
+    public Expected ToHaveBeenTouchedAt(DateTimeOffset updatedAt) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(updatedAt, (await SingleAsync(dbContext, ct)).UpdatedAt)
+        );
+
     private Task<Group> SingleAsync(AppDbContext dbContext, CancellationToken ct) =>
         dbContext.Groups.AsNoTracking().SingleAsync(row => row.Id == _groupId, ct);
 }

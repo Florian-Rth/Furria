@@ -58,8 +58,9 @@ public sealed class UnlockPreviewTests
    container per assembly, shared via `[CollectionDefinition("Api")]`. On init: start container,
    run EF migrations, create the reset service. Repoints the connection string and preview
    password via the constants the production code itself uses (`AppDbContext.ConnectionName`,
-   `PreviewAccessOptions.SectionName`), and swaps `TimeProvider` for a `FakeTimeProvider`
-   anchored at real "now".
+   `PreviewAccessOptions.SectionName`), and swaps `TimeProvider` for the project-owned
+   `TestClock`, anchored at real "now" truncated to the whole second and reporting UTC as its
+   local zone — so nothing in the suite depends on the developer's machine time zone.
 2. **`DatabaseResetService`** — owned reset instead of Respawn: one `TRUNCATE … CASCADE` over
    the EF-model table list, **without** `RESTART IDENTITY`, then re-inserts snapshotted
    singleton rows in the same transaction. Milliseconds per reset. Wired in the fixture; it
@@ -83,7 +84,9 @@ public sealed class UnlockPreviewTests
 - **Never hardcode ids.** The reset keeps identity sequences climbing, so the first row in a
   class is *not* id 1 — by design. Resolve ids from seeded context or the Act response.
 - **Never wait wall-clock time.** No `Task.Delay` pacing, no fixed sleeps. Poll the expected
-  condition with a timeout; control time by advancing the injected `FakeTimeProvider`.
+  condition with a timeout; control time through `_fixture.AtLaterTimeAsync(span, body)` or
+  `_fixture.AtInstantAsync(instant, body)`, never by moving the shared clock by hand — both put
+  it back in a `finally`.
 - **Status code from the response; state from the database.** Don't assert state by making more
   HTTP calls.
 - **Use the typed test client** (e.g. FastEndpoints' `PUTAsync<TEndpoint,TReq,TRes>`), not raw
@@ -198,15 +201,23 @@ public sealed class GetMeTests
    `ToBeArchivedOn`), `Expected.GroupMembership(id)` (`ToHavePeriod`, `ToBeOpen`),
    `Expected.GroupMembershipsOf(groupId)` (`ToHaveCount`, `ToHaveOpenCount`) and
    `Expected.GroupAdmin(id)` (`ToHaveFunction`, `ToHavePeriod`).
-   `Expected.Groups().ToReadInGermanOrder(names…)` reads the seeded Gruppen through
-   `EF.Functions.Collate(name, "de-DE-x-icu")` — it is how the suite proves the German ICU
-   collation every name sort depends on actually exists in `postgres:18-alpine`, whose default
-   musl collation sorts every umlaut after `Z`.
+   `Expected.Groups().ToReadInGermanOrder(names…)` orders by the **column**, with no
+   `EF.Functions.Collate` anywhere — the German ICU collation lives on `group.name` itself
+   (ADR-0008), so the assertion reads what production reads. `CollationTests` owns the proof in
+   both directions: the umlaut sort order, and the umlaut half of `ix_group_name_active`'s
+   case-insensitive uniqueness. Both go red the moment `UseCollation` leaves the model, which is
+   the whole point — the older, collate-in-the-assertion form passed against an unconfigured
+   schema.
 6. **`ApiTestFixture.RunBootstrapSeederAsync`** — a host start is exactly the seeder running
-   against whatever the database already holds, so this is the honest "second start".
-   **`EditPersonNameDirectlyAsync`** edits one Person *through EF*, which is what makes
-   `AuditTimestampInterceptor` assertable before any endpoint edits a Person.
-7. **`ApiTestFixture.Today` / `.CurrentSessionYear`** — both read the fixture's `FakeTimeProvider`
+   against whatever the database already holds, so this is the honest "second start"; its
+   overload taking a `BootstrapAdminOptions` is how a test runs the seeder under *different*
+   configuration (an unconfigured environment, a re-cased e-mail). **`EditPersonNameDirectlyAsync`**,
+   **`EditGroupNameDirectlyAsync`** and **`EditRoleNameDirectlyAsync`** edit one row *through EF*,
+   which is what makes `AuditTimestampInterceptor` assertable over `person`, `group` and `role`
+   before any endpoint edits them. **`RemoveRoleHoldingsDirectlyAsync`** and
+   **`EndRoleHoldingsDirectlyAsync`** produce the two shapes of an `Admin` Rolle nobody holds —
+   the lockout the seeder repairs on its next start.
+7. **`ApiTestFixture.Today` / `.CurrentSessionYear`** — both read the fixture's `TestClock`
    **live**, through `ClubClock`/`ClubSession`, so they always name the day the server itself is
    reading. They are deliberately *not* frozen at construction: the clock is shared by the whole
    collection and earlier classes advance it (`RefreshTests` by 31 days), so a value captured in
@@ -223,11 +234,14 @@ public sealed class GetMeTests
 
 ### Traps worth knowing
 
-- **The `FakeTimeProvider` only moves forward** and is shared by the whole collection. It is safe
-  to advance because JWT lifetime validation was wired to the same injected clock
-  (`AccessTokenLifetime`); remove that wiring and every test which advances time starts poisoning
-  the ones after it. `GetMeTests.Should_ReturnUnauthorized_When_TheAccessTokenHasExpired` is the
-  guard — it goes red the moment the wiring does.
+- **The `TestClock` is one singleton shared by the whole collection.** Moving it is safe because
+  JWT lifetime validation was wired to the same injected clock (`AccessTokenLifetime`); remove
+  that wiring and every test which moves time starts poisoning the ones after it.
+  `GetMeTests.Should_ReturnUnauthorized_When_TheAccessTokenHasExpired` is the guard — it goes red
+  the moment the wiring does. Move it **only** inside `AtLaterTimeAsync` / `AtInstantAsync`: a
+  raw `Advance` or `SetUtcNow` in a test body leaks into every class that runs after it, which is
+  what makes a suite order-dependent. `AtInstantAsync` also moves *backwards*, which is how the
+  Berlin-vs-UTC midnight tests seed a literal instant.
 - **A Mitgliedschaft is a period, and a Person may hold several.** Two `AddMembership` calls for
   one Person just work; two *open* ones are rejected by the partial unique index
   `ix_membership_person_id_open`, which surfaces out of `BuildAsync` as a `DbUpdateException`
@@ -244,6 +258,16 @@ public sealed class GetMeTests
 - **Only `person`, `account`, `role`, `role_permission` and `role_holding` survive a reset.**
   Everything else, the three Gruppen tables included, is truncated before every `BuildAsync`, so a
   test seeds every Gruppe it needs and may never assume one from a neighbour.
+- **`EndpointGateTests` proves less than its name suggests, by construction.** It enumerates
+  `RouteEndpoint`s and reads their metadata; `PermissionEnforcer` is wired through FastEndpoints'
+  `Endpoints.Configurator`, which reaches **FastEndpoints endpoints only**. A hand-mapped
+  minimal-API route carrying `PermissionRequirement` would therefore satisfy the guard and run
+  **unenforced** — map endpoints through FastEndpoints, or the guard is lying. Anything served by
+  middleware is not a route at all and the guard cannot see it: that is why the OpenAPI document
+  is registered only when `IsDevelopment()`, pinned by `OpenApiExposureTests`, which is also the
+  one test in the suite that may use a raw URL instead of the typed client — there is no endpoint
+  type to name.
+
 - **The audit timestamps come from the injected clock, not from `now()`.**
   `AuditTimestampInterceptor` stamps `created_at` + `updated_at` on insert and `updated_at` on
   update, reading `TimeProvider` once per `SaveChanges`. The `HasDefaultValueSql("now()")` on both
@@ -257,7 +281,7 @@ The pieces below have no consumer yet. Contracts stay the design commitment.
 1. **`Polling.WaitUntilAsync(predicate, timeout)`** — the sanctioned alternative to `Task.Delay`
    once the first asynchronous side effect (background consumer, relay broadcast) needs waiting
    on. Reads the real wall clock deliberately — the deadline must advance even when the host
-   injects a frozen `FakeTimeProvider`.
+   injects the frozen `TestClock`.
 2. **Owned doubles** — a `Doubles/` folder is the only home for test doubles, each one reviewed:
    - Real infra exists → use real infra (never fake a `DbContext`).
    - In-house seam → an owned double is fine (e.g. `FakeMessageBus` for your own `IMessageBus`).

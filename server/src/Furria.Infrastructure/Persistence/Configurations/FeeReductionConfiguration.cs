@@ -7,6 +7,11 @@ namespace Furria.Infrastructure.Persistence.Configurations;
 
 public sealed class FeeReductionConfiguration : IEntityTypeConfiguration<FeeReduction>
 {
+    private static readonly string KnownBases = string.Join(
+        ", ",
+        Enum.GetNames<FeeReductionBasis>().Select(name => $"'{name}'")
+    );
+
     public void Configure(EntityTypeBuilder<FeeReduction> builder)
     {
         builder.ToTable(
@@ -21,6 +26,7 @@ public sealed class FeeReductionConfiguration : IEntityTypeConfiguration<FeeRedu
                     "ck_fee_reduction_founding",
                     $"first_session_year >= {ClubSession.FoundingYear}"
                 );
+                table.HasCheckConstraint("ck_fee_reduction_basis", $"basis IN ({KnownBases})");
             }
         );
         builder.HasKey(reduction => reduction.Id);
