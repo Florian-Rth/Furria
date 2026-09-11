@@ -1,0 +1,12 @@
+namespace Furria.Application.Registry;
+
+public sealed record UpdateMembershipCommand
+{
+    public required int PersonId { get; init; }
+
+    public required int MembershipId { get; init; }
+
+    public required DateOnly StartedOn { get; init; }
+
+    public required DateOnly? EndedOn { get; init; }
+}

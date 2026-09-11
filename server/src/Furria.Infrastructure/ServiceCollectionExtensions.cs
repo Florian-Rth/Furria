@@ -50,6 +50,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<AccountService>();
         services.AddScoped<PermissionAuthorizer>();
         services.AddScoped<PersonService>();
+        services.AddScoped<MembershipService>();
         services.AddScoped<GroupService>();
 
         services.AddHostedService<DatabaseMigrator>();
