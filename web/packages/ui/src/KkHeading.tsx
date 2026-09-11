@@ -4,9 +4,11 @@ import type { KkSx } from './kk-sx';
 
 type KkHeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 type KkHeadingVariant = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+type KkHeadingTone = 'default' | 'accent';
 
 interface KkHeadingProps extends PropsWithChildren {
   level: KkHeadingLevel;
+  tone?: KkHeadingTone;
   component?: ElementType;
   sx?: KkSx;
 }
@@ -20,7 +22,18 @@ const levelVariants: Record<KkHeadingLevel, KkHeadingVariant> = {
   6: 'h6',
 };
 
-export const KkHeading: FC<KkHeadingProps> = ({ level, component, sx, children }) => {
+const toneStyles: Record<KkHeadingTone, { color?: string }> = {
+  default: {},
+  accent: { color: 'primary.main' },
+};
+
+export const KkHeading: FC<KkHeadingProps> = ({
+  level,
+  tone = 'default',
+  component,
+  sx,
+  children,
+}) => {
   const variant = levelVariants[level];
   const componentProps = component === undefined ? {} : { component };
 
@@ -29,7 +42,7 @@ export const KkHeading: FC<KkHeadingProps> = ({ level, component, sx, children }
       variant={variant}
       {...componentProps}
       data-kk-heading
-      sx={[{ textWrap: 'balance' }, ...(Array.isArray(sx) ? sx : [sx])]}
+      sx={[{ textWrap: 'balance', ...toneStyles[tone] }, ...(Array.isArray(sx) ? sx : [sx])]}
     >
       {children}
     </Typography>
