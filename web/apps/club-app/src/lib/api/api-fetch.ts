@@ -1,12 +1,18 @@
 import type { ZodType } from 'zod';
 import { readApiBaseUrl } from '@/lib/runtime-config';
-import { RequestBlockedError, ServerFailureError, UnauthorizedError } from './api-error';
+import {
+  RequestBlockedError,
+  RequestFailedError,
+  ServerFailureError,
+  UnauthorizedError,
+} from './api-error';
+import { isRequestFailedStatus, readFailurePayload, toFieldFailures } from './api-failures';
 
 export type JsonBody = string | number | boolean | null | JsonBody[] | { [key: string]: JsonBody };
 
 interface ApiFetchOptions<TResponse> {
   schema: ZodType<TResponse>;
-  method?: 'GET' | 'POST';
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
   body?: JsonBody;
   accessToken?: string;
 }
@@ -27,6 +33,20 @@ const fetchOrBlocked = async (url: string, init: RequestInit): Promise<Response>
   } catch {
     throw new RequestBlockedError();
   }
+};
+
+const toFailure = async (response: Response): Promise<Error> => {
+  if (!isRequestFailedStatus(response.status)) {
+    return new ServerFailureError(response.status);
+  }
+
+  const payload = await readFailurePayload(response);
+
+  if (payload === null) {
+    return new ServerFailureError(response.status);
+  }
+
+  return new RequestFailedError(response.status, toFieldFailures(payload));
 };
 
 export const apiFetch = async <TResponse>(
@@ -55,7 +75,7 @@ export const apiFetch = async <TResponse>(
     throw new UnauthorizedError();
   }
   if (!response.ok) {
-    throw new ServerFailureError(response.status);
+    throw await toFailure(response);
   }
   if (response.status === NO_CONTENT_STATUS) {
     return schema.parse(undefined);

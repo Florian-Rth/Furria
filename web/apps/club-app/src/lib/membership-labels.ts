@@ -1,23 +1,19 @@
-import type { MembershipStatus, MembershipType } from '@/lib/api/schemas';
+import type { MembershipState } from '@/lib/api/schemas';
 
-const MEMBERSHIP_TYPE_LABELS: Record<MembershipType, string> = {
-  active: 'Aktiv',
-  youth: 'Jugend',
-  honorary: 'Ehren',
-};
-
-const MEMBERSHIP_STATUS_LABELS: Record<MembershipStatus, string> = {
-  active: 'aktiv',
+const MEMBERSHIP_STATE_LABELS: Record<MembershipState, string> = {
+  none: 'kein Mitglied',
+  ended: 'beendet',
   paused: 'ruht',
-  left: 'beendet',
+  active: 'aktiv',
 };
 
 const ISO_DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+const OPEN_END = 'offen';
+const SPAN_SEPARATOR = ' – ';
+const ADDRESS_SEPARATOR = ', ';
 
-export const toMembershipTypeLabel = (type: MembershipType): string => MEMBERSHIP_TYPE_LABELS[type];
-
-export const toMembershipStatusLabel = (status: MembershipStatus): string =>
-  MEMBERSHIP_STATUS_LABELS[status];
+export const toMembershipStateLabel = (state: MembershipState): string =>
+  MEMBERSHIP_STATE_LABELS[state];
 
 export const formatIsoDay = (isoDay: string): string => {
   if (!ISO_DAY_PATTERN.test(isoDay)) {
@@ -26,10 +22,39 @@ export const formatIsoDay = (isoDay: string): string => {
   return `${isoDay.slice(8, 10)}.${isoDay.slice(5, 7)}.${isoDay.slice(0, 4)}`;
 };
 
-export const formatMembershipPeriod = (startedAt: string, endedAt: string | null): string => {
-  const since = `seit ${formatIsoDay(startedAt)}`;
-  if (endedAt === null) {
-    return since;
+export const formatPeriod = (startedOn: string, endedOn: string | null): string => {
+  const start = formatIsoDay(startedOn);
+
+  if (endedOn === null) {
+    return `${start}${SPAN_SEPARATOR}${OPEN_END}`;
   }
-  return `${since} bis ${formatIsoDay(endedAt)}`;
+
+  return `${start}${SPAN_SEPARATOR}${formatIsoDay(endedOn)}`;
+};
+
+const toTrimmed = (value: string | null): string | null => {
+  if (value === null) {
+    return null;
+  }
+
+  const trimmed = value.trim();
+
+  return trimmed === '' ? null : trimmed;
+};
+
+const isPresent = (value: string | null): value is string => value !== null;
+
+export const formatAddress = (
+  street: string | null,
+  zip: string | null,
+  city: string | null,
+): string | null => {
+  const place = [toTrimmed(zip), toTrimmed(city)].filter(isPresent).join(' ');
+  const lines = [toTrimmed(street), toTrimmed(place)].filter(isPresent);
+
+  if (lines.length === 0) {
+    return null;
+  }
+
+  return lines.join(ADDRESS_SEPARATOR);
 };

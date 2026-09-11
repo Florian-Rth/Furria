@@ -17,6 +17,7 @@ interface KkAppShellNavItemProps {
   disabled?: boolean;
   component?: ElementType;
   to?: string;
+  params?: Record<string, string>;
   onClick?: () => void;
 }
 
@@ -27,12 +28,14 @@ export const KkAppShellNavItem: FC<KkAppShellNavItemProps> = ({
   disabled = false,
   component = 'button',
   to,
+  params,
   onClick,
 }) => {
   const curtain = useAppShellCurtain();
   const iconColor = active ? 'primary.main' : 'text.secondary';
   const labelColor = active || disabled ? 'text.primary' : 'text.secondary';
   const rowComponent = disabled ? 'span' : component;
+  const routeProps = disabled ? {} : { to, params };
 
   const activate = (): void => {
     curtain.close();
@@ -52,7 +55,7 @@ export const KkAppShellNavItem: FC<KkAppShellNavItemProps> = ({
     >
       <Stack
         component={rowComponent}
-        to={to}
+        {...routeProps}
         onClick={activate}
         aria-current={active ? 'page' : undefined}
         aria-disabled={disabled || undefined}

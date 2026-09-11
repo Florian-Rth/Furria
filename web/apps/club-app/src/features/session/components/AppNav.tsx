@@ -1,29 +1,22 @@
-import { KkAppShell } from '@furria/ui';
-import { Link, useMatchRoute } from '@tanstack/react-router';
+import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { APP_SECTIONS } from '../app-sections';
+import { useNavGroups } from '../hooks/use-nav-groups';
+import { AppNavGroup } from './AppNavGroup';
 
 export const AppNav: FC = () => {
-  const matchRoute = useMatchRoute();
+  const groups = useNavGroups();
+  const renderedGroups = groups.map((group) => <AppNavGroup key={group.id} group={group} />);
 
-  const items = APP_SECTIONS.map((section) => {
-    if (section.to === null) {
-      return (
-        <KkAppShell.NavItem key={section.id} label={section.label} icon={section.icon} disabled />
-      );
-    }
-
-    return (
-      <KkAppShell.NavItem
-        key={section.id}
-        label={section.label}
-        icon={section.icon}
-        component={Link}
-        to={section.to}
-        active={matchRoute({ to: section.to }) !== false}
-      />
-    );
-  });
-
-  return <KkAppShell.Nav>{items}</KkAppShell.Nav>;
+  return (
+    <Stack
+      sx={{
+        flex: 1,
+        minWidth: 0,
+        gap: 2.5,
+        justifyContent: { xs: 'center', desktop: 'flex-start' },
+      }}
+    >
+      {renderedGroups}
+    </Stack>
+  );
 };

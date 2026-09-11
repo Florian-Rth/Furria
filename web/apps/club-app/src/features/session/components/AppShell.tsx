@@ -1,4 +1,4 @@
-import { KkAppShell, KkEyebrow } from '@furria/ui';
+import { KkAppShell, KkEyebrow, KkToastProvider } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import { useLocation } from '@tanstack/react-router';
 import type { FC, PropsWithChildren } from 'react';
@@ -10,6 +10,8 @@ import { AppNav } from './AppNav';
 import { AppSignOutButton } from './AppSignOutButton';
 import { AppUserLink } from './AppUserLink';
 
+const TOAST_DISMISS_LABEL = 'Schließen';
+
 export const AppShell: FC<PropsWithChildren> = ({ children }) => {
   const location = useLocation();
   const [headerContainer, setHeaderContainer] = useState<HTMLElement | null>(null);
@@ -19,44 +21,46 @@ export const AppShell: FC<PropsWithChildren> = ({ children }) => {
   const railKicker = `Club-App · ${sessionLabel}`;
 
   return (
-    <PageHeaderContext.Provider value={headerContainer}>
-      <KkAppShell>
-        <KkAppShell.Rail>
-          <KkAppShell.RailHead>
-            <KkAppShell.Wordmark placement="rail" />
-            <KkEyebrow tone="muted">{railKicker}</KkEyebrow>
-          </KkAppShell.RailHead>
-          <AppNav />
-          <KkAppShell.UserRow>
-            <AppUserLink />
-            <AppSignOutButton />
-          </KkAppShell.UserRow>
-        </KkAppShell.Rail>
+    <KkToastProvider dismissLabel={TOAST_DISMISS_LABEL}>
+      <PageHeaderContext.Provider value={headerContainer}>
+        <KkAppShell>
+          <KkAppShell.Rail>
+            <KkAppShell.RailHead>
+              <KkAppShell.Wordmark placement="rail" />
+              <KkEyebrow tone="muted">{railKicker}</KkEyebrow>
+            </KkAppShell.RailHead>
+            <AppNav />
+            <KkAppShell.UserRow>
+              <AppUserLink />
+              <AppSignOutButton />
+            </KkAppShell.UserRow>
+          </KkAppShell.Rail>
 
-        <KkAppShell.Main>
-          <KkAppShell.Stage>
-            <KkAppShell.Masthead>
-              <KkAppShell.Wordmark placement="stage" />
-              <KkEyebrow tone="muted">{sessionLabel}</KkEyebrow>
-            </KkAppShell.Masthead>
-            <Stack ref={setHeaderContainer} sx={{ minWidth: 0 }} />
-          </KkAppShell.Stage>
-          <KkAppShell.Sheet>{children}</KkAppShell.Sheet>
-        </KkAppShell.Main>
+          <KkAppShell.Main>
+            <KkAppShell.Stage>
+              <KkAppShell.Masthead>
+                <KkAppShell.Wordmark placement="stage" />
+                <KkEyebrow tone="muted">{sessionLabel}</KkEyebrow>
+              </KkAppShell.Masthead>
+              <Stack ref={setHeaderContainer} sx={{ minWidth: 0 }} />
+            </KkAppShell.Stage>
+            <KkAppShell.Sheet>{children}</KkAppShell.Sheet>
+          </KkAppShell.Main>
 
-        <KkAppShell.MenuButton label={sectionTitle} />
-        <KkAppShell.Curtain>
-          <KkAppShell.CurtainHead>
-            <AppUserLink />
-            <KkAppShell.CurtainClose />
-          </KkAppShell.CurtainHead>
-          <AppNav />
-          <KkAppShell.CurtainFooter>
-            <KkAppShell.CurtainAction icon="settings" label="Einstellungen" disabled />
-            <AppSignOutButton />
-          </KkAppShell.CurtainFooter>
-        </KkAppShell.Curtain>
-      </KkAppShell>
-    </PageHeaderContext.Provider>
+          <KkAppShell.MenuButton label={sectionTitle} />
+          <KkAppShell.Curtain>
+            <KkAppShell.CurtainHead>
+              <AppUserLink />
+              <KkAppShell.CurtainClose />
+            </KkAppShell.CurtainHead>
+            <AppNav />
+            <KkAppShell.CurtainFooter>
+              <KkAppShell.CurtainAction icon="settings" label="Einstellungen" disabled />
+              <AppSignOutButton />
+            </KkAppShell.CurtainFooter>
+          </KkAppShell.Curtain>
+        </KkAppShell>
+      </PageHeaderContext.Provider>
+    </KkToastProvider>
   );
 };
