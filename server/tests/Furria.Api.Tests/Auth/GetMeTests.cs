@@ -1,6 +1,7 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Auth;
+using Furria.Application.Authorization;
 using Furria.Core.Club;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -233,6 +234,82 @@ public sealed class GetMeTests
 
         Assert.Contains("\"state\":\"active\"", payload, StringComparison.Ordinal);
         Assert.Contains("\"memberSince\":\"2017-09-01\"", payload, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Should_ReportTheHeldKeys_When_ThePersonHoldsTwoRollen()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddAccount("ilka"))
+                    .Roles(roles =>
+                        roles
+                            .AddRoleWithHolder(
+                                "gruppenpflege",
+                                "ilka-gruppenpflege",
+                                "Gruppenpflege",
+                                "ilka",
+                                FurriaPermissions.GroupsManage
+                            )
+                            .AddRoleWithHolder(
+                                "personenpflege",
+                                "ilka-personenpflege",
+                                "Personenpflege",
+                                "ilka",
+                                FurriaPermissions.PersonsManage,
+                                FurriaPermissions.PersonsReadDetails
+                            )
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, result) = await client.GETAsync<GetMe, GetMeResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(
+            [
+                FurriaPermissions.GroupsManage,
+                FurriaPermissions.PersonsManage,
+                FurriaPermissions.PersonsReadDetails,
+            ],
+            result.PermissionKeys
+        );
+    }
+
+    [Fact]
+    public async Task Should_ReportNoKeys_When_TheOnlyInhaberschaftHasExpired()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddAccount("ilka"))
+                    .Roles(roles =>
+                        roles
+                            .AddRole(
+                                "personenpflege",
+                                "Personenpflege",
+                                FurriaPermissions.PersonsManage
+                            )
+                            .AddRoleHolding(
+                                "ilka-personenpflege",
+                                "personenpflege",
+                                "ilka",
+                                _fixture.Today.AddYears(-2),
+                                _fixture.Today.AddDays(-1)
+                            )
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, result) = await client.GETAsync<GetMe, GetMeResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Empty(result.PermissionKeys);
     }
 
     [Fact]

@@ -23,6 +23,14 @@ public sealed class Expected
 
     public FeeReductionExpectations FeeReduction(int feeReductionId) => new(this, feeReductionId);
 
+    public RoleExpectations Role(int roleId) => new(this, roleId);
+
+    public RoleSetExpectations Roles() => new(this);
+
+    public RoleHoldingExpectations RoleHolding(int roleHoldingId) => new(this, roleHoldingId);
+
+    public RoleHoldingSetExpectations RoleHoldingsOfPerson(int personId) => new(this, personId);
+
     public AccountExpectations Account(int accountId) => new(this, accountId);
 
     public AccountSetExpectations Accounts() => new(this);

@@ -1,3 +1,4 @@
+using Furria.Application.Authorization;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -81,6 +82,72 @@ public sealed class BootstrapAdminSeederTests
             .ToHaveCount(1)
             .Account(_fixture.BootstrapAdmin.AccountId)
             .ToExist()
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_GrantTheAdminRolleEveryBerechtigung_When_ItIsSeeded()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(ct);
+
+        await ctx
+            .Expected.Role(_fixture.AdminRoleId)
+            .ToHaveName("Admin")
+            .Role(_fixture.AdminRoleId)
+            .ToGrantExactly([.. FurriaPermissions.All])
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_GiveTheAdminAnOpenInhaberschaft_When_TheRolleIsSeeded()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(ct);
+
+        await ctx
+            .Expected.RoleHoldingsOfPerson(_fixture.BootstrapAdmin.PersonId)
+            .ToHaveOpenCount(1)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_CreateNoSecondAdminRolle_When_TheSeederRunsAgain()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(ct);
+
+        await _fixture.RunBootstrapSeederAsync(ct);
+
+        await ctx
+            .Expected.Roles()
+            .ToHaveCount(1)
+            .RoleHoldingsOfPerson(_fixture.BootstrapAdmin.PersonId)
+            .ToHaveOpenCount(1)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RestoreTheAdminRolle_When_TheDatabaseIsReset()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Roles(roles =>
+                    roles.AddRole("gruppenpflege", "Gruppenpflege", FurriaPermissions.GroupsManage)
+                ),
+            ct
+        );
+
+        await _fixture.ResetDatabaseAsync(ct);
+
+        await ctx
+            .Expected.Roles()
+            .ToHaveCount(1)
+            .Role(_fixture.AdminRoleId)
+            .ToGrantExactly([.. FurriaPermissions.All])
+            .RoleHoldingsOfPerson(_fixture.BootstrapAdmin.PersonId)
+            .ToHaveOpenCount(1)
             .AssertAsync(ct);
     }
 }

@@ -10,23 +10,18 @@ internal static class IdentitySeedMaterializer
 {
     private static string? _cachedPasswordHash;
 
-    internal static async Task<SeededIdentity> MaterializeAsync(
-        IServiceScopeFactory scopeFactory,
+    internal static async Task<SeededIdentity> InsertAsync(
+        IServiceProvider services,
+        AppDbContext dbContext,
         IdentitySeedBuilder recorded,
         string password,
         CancellationToken ct
     )
     {
-        await using var scope = scopeFactory.CreateAsyncScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
         var credentials = Credentials(
             recorded,
-            scope.ServiceProvider.GetRequiredService<ILookupNormalizer>(),
-            PasswordHash(
-                scope.ServiceProvider.GetRequiredService<IPasswordHasher<Account>>(),
-                password
-            )
+            services.GetRequiredService<ILookupNormalizer>(),
+            PasswordHash(services.GetRequiredService<IPasswordHasher<Account>>(), password)
         );
 
         var personIds = await InsertPeopleAsync(dbContext, recorded, ct);
@@ -109,7 +104,7 @@ internal static class IdentitySeedMaterializer
             intent => intent.Alias,
             intent => new Membership
             {
-                PersonId = RequireId(personIds, intent.PersonAlias, "Person"),
+                PersonId = SeedAliases.RequireId(personIds, intent.PersonAlias, "Person"),
                 StartedOn = intent.StartedOn,
                 EndedOn = intent.EndedOn,
             },
@@ -140,7 +135,11 @@ internal static class IdentitySeedMaterializer
             intent => intent.Alias,
             intent => new MembershipPause
             {
-                MembershipId = RequireId(membershipIds, intent.MembershipAlias, "Mitgliedschaft"),
+                MembershipId = SeedAliases.RequireId(
+                    membershipIds,
+                    intent.MembershipAlias,
+                    "Mitgliedschaft"
+                ),
                 FirstSessionYear = intent.FirstSessionYear,
                 LastSessionYear = intent.LastSessionYear,
             },
@@ -171,7 +170,7 @@ internal static class IdentitySeedMaterializer
             intent => intent.Alias,
             intent => new FeeReduction
             {
-                PersonId = RequireId(personIds, intent.PersonAlias, "Person"),
+                PersonId = SeedAliases.RequireId(personIds, intent.PersonAlias, "Person"),
                 Basis = intent.Basis,
                 FirstSessionYear = intent.FirstSessionYear,
                 LastSessionYear = intent.LastSessionYear,
@@ -259,7 +258,7 @@ internal static class IdentitySeedMaterializer
     ) =>
         new()
         {
-            PersonId = RequireId(personIds, intent.Alias, "Person"),
+            PersonId = SeedAliases.RequireId(personIds, intent.Alias, "Person"),
             IsDisabled = intent.Disabled,
             UserName = credential.Email,
             NormalizedUserName = credential.NormalizedUserName,
@@ -274,14 +273,6 @@ internal static class IdentitySeedMaterializer
 
     private static string PasswordHash(IPasswordHasher<Account> hasher, string password) =>
         _cachedPasswordHash ??= hasher.HashPassword(new Account(), password);
-
-    private static int RequireId(IReadOnlyDictionary<string, int> ids, string alias, string kind) =>
-        ids.TryGetValue(alias, out var id)
-            ? id
-            : throw new KeyNotFoundException(
-                $"No {kind} was seeded for alias \"{alias}\". Declared aliases: "
-                    + $"{string.Join(", ", ids.Keys)}."
-            );
 
     private sealed record AccountCredential(
         string Email,

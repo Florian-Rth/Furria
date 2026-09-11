@@ -6,11 +6,14 @@ public sealed class SeededContext
 {
     public TestIdentity Identity { get; }
 
+    public TestRoles Roles { get; }
+
     public Expected Expected { get; }
 
-    internal SeededContext(TestIdentity identity, Expected expected)
+    internal SeededContext(TestIdentity identity, TestRoles roles, Expected expected)
     {
         Identity = identity;
+        Roles = roles;
         Expected = expected;
     }
 }

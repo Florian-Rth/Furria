@@ -1,6 +1,7 @@
 using Furria.Application.Identity;
 using Furria.Application.Results;
 using Furria.Core.Club;
+using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +23,7 @@ public sealed class AccountService
     private readonly SignInManager<Account> _signInManager;
     private readonly RefreshTokenService _refreshTokenService;
     private readonly AccessTokenService _accessTokenService;
+    private readonly PermissionAuthorizer _permissionAuthorizer;
     private readonly TimeProvider _timeProvider;
 
     public AccountService(
@@ -30,6 +32,7 @@ public sealed class AccountService
         SignInManager<Account> signInManager,
         RefreshTokenService refreshTokenService,
         AccessTokenService accessTokenService,
+        PermissionAuthorizer permissionAuthorizer,
         TimeProvider timeProvider
     )
     {
@@ -38,6 +41,7 @@ public sealed class AccountService
         _signInManager = signInManager;
         _refreshTokenService = refreshTokenService;
         _accessTokenService = accessTokenService;
+        _permissionAuthorizer = permissionAuthorizer;
         _timeProvider = timeProvider;
     }
 
@@ -140,9 +144,14 @@ public sealed class AccountService
             ))
             .SingleOrDefaultAsync(ct);
 
-        return row is null
-            ? Result<AccountDetails>.NotFound("The account no longer exists.")
-            : Result<AccountDetails>.Success(ToDetails(row, ClubClock.Today(_timeProvider)));
+        if (row is null)
+            return Result<AccountDetails>.NotFound("The account no longer exists.");
+
+        var permissionKeys = await _permissionAuthorizer.GrantedKeysAsync(accountId, ct);
+
+        return Result<AccountDetails>.Success(
+            ToDetails(row, ClubClock.Today(_timeProvider), Ordered(permissionKeys))
+        );
     }
 
     private void BurnAPasswordCheck(string password)
@@ -152,14 +161,22 @@ public sealed class AccountService
         hasher.VerifyHashedPassword(DecoyAccount, _decoyPasswordHash, password);
     }
 
-    private static AccountDetails ToDetails(AccountRow row, DateOnly today) =>
+    private static AccountDetails ToDetails(
+        AccountRow row,
+        DateOnly today,
+        IReadOnlyList<string> permissionKeys
+    ) =>
         new()
         {
             Id = row.Id,
             Email = row.Email,
             Person = row.Person,
             Membership = MembershipChainDetails.Of(ToPeriods(row.Memberships, today), today),
+            PermissionKeys = permissionKeys,
         };
+
+    private static IReadOnlyList<string> Ordered(IReadOnlyCollection<string> permissionKeys) =>
+        [.. permissionKeys.Order(StringComparer.Ordinal)];
 
     private static IReadOnlyList<MembershipDetails> ToPeriods(
         IReadOnlyList<MembershipRow> rows,
