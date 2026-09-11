@@ -216,6 +216,14 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         await db.Database.ExecuteSqlAsync($"DELETE FROM account WHERE id = {accountId}", ct);
     }
 
+    public async Task DeletePersonDirectlyAsync(int personId, CancellationToken ct = default)
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        await db.Database.ExecuteSqlAsync($"DELETE FROM person WHERE id = {personId}", ct);
+    }
+
     public async Task AddRolePermissionDirectlyAsync(
         int roleId,
         string permissionKey,
