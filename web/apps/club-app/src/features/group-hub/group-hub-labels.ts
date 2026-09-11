@@ -1,4 +1,7 @@
-import { formatPeriod } from '@/lib/membership-labels';
+import type { KkConfirmFact, KkDateQuickChoice } from '@furria/ui';
+import { SESSION_OPENING_DAY, SESSION_OPENING_MONTH, sessionAt } from '@/lib/club';
+import { isFutureDay, toIsoDay } from '@/lib/day';
+import { formatIsoDay, formatPeriod } from '@/lib/membership-labels';
 import type { HubAdmin, HubDetails, HubMember } from './schemas';
 
 const GROUP_ID_PATTERN = /^[1-9]\d*$/;
@@ -122,3 +125,112 @@ export const toNoDescriptionLine = (name: string): string =>
   `Zu ${name} steht noch nichts geschrieben.`;
 
 export const NO_ADMINS_LINE = 'Für diese Gruppe ist gerade niemand als Gruppen-Admin eingetragen.';
+
+const SEARCH_TERM_MIN_LENGTH = 2;
+const SEARCH_TERM_MAX_LENGTH = 64;
+const SEARCH_RESULT_CAP = 25;
+
+export const GROUP_INFO_SAVED_MESSAGE = 'Die Angaben zur Gruppe sind gespeichert.';
+
+export const toSearchTerm = (raw: string): string | null => {
+  const trimmed = raw.trim();
+
+  if (trimmed.length < SEARCH_TERM_MIN_LENGTH) {
+    return null;
+  }
+
+  return trimmed.slice(0, SEARCH_TERM_MAX_LENGTH);
+};
+
+export const toSearchCapLine = (count: number): string | null =>
+  count < SEARCH_RESULT_CAP
+    ? null
+    : `Es werden höchstens ${SEARCH_RESULT_CAP} Treffer gezeigt. Tipp den Namen genauer.`;
+
+export const toNoSearchResultLine = (term: string): string =>
+  `Zu „${term}“ steht niemand im Register.`;
+
+export const toJoinQuickChoices = (today: Date): KkDateQuickChoice[] => {
+  const todayValue = toIsoDay(today);
+  const session = sessionAt(today);
+  const openingValue = toIsoDay(
+    new Date(session.startYear, SESSION_OPENING_MONTH - 1, SESSION_OPENING_DAY),
+  );
+
+  const choices: KkDateQuickChoice[] = [{ label: 'Heute', value: todayValue }];
+
+  if (openingValue !== todayValue) {
+    choices.push({ label: 'Sessionbeginn', value: openingValue });
+  }
+
+  return choices;
+};
+
+export const toEndQuickChoices = (today: Date): KkDateQuickChoice[] => {
+  const todayValue = toIsoDay(today);
+  const session = sessionAt(today);
+  const closingValue = toIsoDay(
+    new Date(session.startYear + 1, SESSION_OPENING_MONTH - 1, SESSION_OPENING_DAY - 1),
+  );
+
+  const choices: KkDateQuickChoice[] = [{ label: 'Heute', value: todayValue }];
+
+  if (closingValue !== todayValue) {
+    choices.push({ label: 'Sessionende', value: closingValue });
+  }
+
+  return choices;
+};
+
+export const toMemberAddedMessage = (
+  personName: string,
+  joinedOn: string,
+  todayIsoDay: string,
+): string =>
+  isFutureDay(joinedOn, todayIsoDay)
+    ? `${personName} ist ab dem ${formatIsoDay(joinedOn)} dabei.`
+    : `${personName} ist aufgenommen.`;
+
+export const toMembershipEndedMessage = (
+  personName: string,
+  endedOn: string,
+  todayIsoDay: string,
+): string =>
+  isFutureDay(endedOn, todayIsoDay)
+    ? `Die Zugehörigkeit von ${personName} endet am ${formatIsoDay(endedOn)}.`
+    : `Die Zugehörigkeit von ${personName} ist beendet.`;
+
+export const toJoinConsequence = (
+  personName: string,
+  joinedOn: string,
+  todayIsoDay: string,
+): string =>
+  isFutureDay(joinedOn, todayIsoDay)
+    ? `Ab dem ${formatIsoDay(joinedOn)} steht ${personName} in der Gruppe — vorher nicht in der Liste.`
+    : `${personName} gehört ab dem ${formatIsoDay(joinedOn)} zur Gruppe.`;
+
+export const toEndConsequence = (
+  personName: string,
+  endedOn: string,
+  todayIsoDay: string,
+): string =>
+  isFutureDay(endedOn, todayIsoDay)
+    ? `Der ${formatIsoDay(endedOn)} wird der letzte Tag von ${personName} in der Gruppe. Die Zugehörigkeit bleibt in der Geschichte stehen.`
+    : `Der ${formatIsoDay(endedOn)} ist der letzte Tag von ${personName} in der Gruppe. Die Zugehörigkeit bleibt in der Geschichte stehen.`;
+
+export const toEndQuestion = (firstName: string, groupName: string): string =>
+  `${firstName} aus der Gruppe ${groupName}?`;
+
+export const toEndExplanation = (firstName: string): string =>
+  `Die Zugehörigkeit endet am gewählten Tag und wandert in die Geschichte der Gruppe. Gelöscht wird nichts: ${firstName} kann jederzeit wieder aufgenommen werden.`;
+
+export const toEndFacts = (
+  member: HubMember,
+  groupName: string,
+  endedOn: string | null,
+): KkConfirmFact[] => [
+  { label: 'Person', value: `${member.firstName} ${member.lastName}` },
+  { label: 'Gruppe', value: groupName },
+  { label: 'Dabei seit', value: formatIsoDay(member.joinedOn) },
+  { label: 'Letzter Tag', value: endedOn === null ? 'noch offen' : formatIsoDay(endedOn) },
+];

@@ -60,6 +60,7 @@ interface KkConfirmDialogProps {
   eyebrow: string;
   question: string;
   explanation: string;
+  fields?: ReactNode;
   facts: readonly KkConfirmFact[];
   consequence?: ReactNode;
   error?: string;
@@ -77,6 +78,7 @@ export const KkConfirmDialog: FC<KkConfirmDialogProps> = ({
   eyebrow,
   question,
   explanation,
+  fields,
   facts,
   consequence,
   error,
@@ -88,6 +90,9 @@ export const KkConfirmDialog: FC<KkConfirmDialogProps> = ({
   const titleId = useId();
   const mark = toneMarks[tone];
   const factRows = facts.map((fact, index) => ({ ...fact, key: `${index}-${fact.label}` }));
+
+  const fieldBlock =
+    fields === undefined ? null : <KkModalFrame.Fields>{fields}</KkModalFrame.Fields>;
 
   const factsTable =
     factRows.length === 0 ? null : (
@@ -134,6 +139,7 @@ export const KkConfirmDialog: FC<KkConfirmDialogProps> = ({
       <KkModalFrame.Body>
         <KkNote>{explanation}</KkNote>
       </KkModalFrame.Body>
+      {fieldBlock}
       {factsTable}
       {consequenceNote}
       <KkModalFrame.Footer>
