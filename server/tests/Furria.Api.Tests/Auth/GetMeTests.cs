@@ -313,6 +313,51 @@ public sealed class GetMeTests
     }
 
     [Fact]
+    public async Task Should_ReportAffiliated_When_ThePersonOnlyHoldsAnOpenZugehoerigkeit()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddAccount("paula"))
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("tanzgarde", "Tanzgarde")
+                            .AddGroupMembership(
+                                "paula-tanzgarde",
+                                "tanzgarde",
+                                "paula",
+                                _fixture.Today.AddYears(-3)
+                            )
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("paula", ct);
+        var (response, result) = await client.GETAsync<GetMe, GetMeResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(result.IsAffiliated);
+        Assert.Equal(MembershipState.None, result.Membership.State);
+    }
+
+    [Fact]
+    public async Task Should_ReportNotAffiliated_When_ThePersonHoldsNoTieAtAll()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => identity.AddAccount("gast")),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("gast", ct);
+        var (response, result) = await client.GETAsync<GetMe, GetMeResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.False(result.IsAffiliated);
+    }
+
+    [Fact]
     public async Task Should_ReturnUnauthorized_When_NoAccessTokenIsSent()
     {
         var ct = TestContext.Current.CancellationToken;

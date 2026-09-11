@@ -168,7 +168,12 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             BootstrapAdmin,
             SeededAccountPassword
         );
-        return new SeededContext(identity, new TestRoles(seeded.Roles), new Expected(scopeFactory));
+        return new SeededContext(
+            identity,
+            new TestGroups(seeded.Groups),
+            new TestRoles(seeded.Roles),
+            new Expected(scopeFactory)
+        );
     }
 
     public async Task RunBootstrapSeederAsync(CancellationToken ct = default)

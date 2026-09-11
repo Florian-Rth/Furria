@@ -1,3 +1,4 @@
+using Furria.Core.Groups;
 using Furria.Core.Identity;
 using Furria.Core.Roles;
 using Furria.Infrastructure.Identity;
@@ -18,6 +19,12 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>
     public DbSet<MembershipPause> MembershipPauses => Set<MembershipPause>();
 
     public DbSet<FeeReduction> FeeReductions => Set<FeeReduction>();
+
+    public DbSet<Group> Groups => Set<Group>();
+
+    public DbSet<GroupMembership> GroupMemberships => Set<GroupMembership>();
+
+    public DbSet<GroupAdmin> GroupAdmins => Set<GroupAdmin>();
 
     public DbSet<Role> Roles => Set<Role>();
 

@@ -1,4 +1,5 @@
 using Furria.Core.Club;
+using Furria.Core.Groups;
 using Furria.Core.Roles;
 
 namespace Furria.Core.Identity;
@@ -32,6 +33,10 @@ public sealed class Person : ITimestamped
     public ICollection<Membership> Memberships { get; set; } = [];
 
     public ICollection<FeeReduction> FeeReductions { get; set; } = [];
+
+    public ICollection<GroupMembership> GroupMemberships { get; set; } = [];
+
+    public ICollection<GroupAdmin> GroupAdminships { get; set; } = [];
 
     public ICollection<RoleHolding> RoleHoldings { get; set; } = [];
 }

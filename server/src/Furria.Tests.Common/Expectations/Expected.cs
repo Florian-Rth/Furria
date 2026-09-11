@@ -23,6 +23,17 @@ public sealed class Expected
 
     public FeeReductionExpectations FeeReduction(int feeReductionId) => new(this, feeReductionId);
 
+    public GroupExpectations Group(int groupId) => new(this, groupId);
+
+    public GroupSetExpectations Groups() => new(this);
+
+    public GroupMembershipExpectations GroupMembership(int groupMembershipId) =>
+        new(this, groupMembershipId);
+
+    public GroupMembershipSetExpectations GroupMembershipsOf(int groupId) => new(this, groupId);
+
+    public GroupAdminExpectations GroupAdmin(int groupAdminId) => new(this, groupAdminId);
+
     public RoleExpectations Role(int roleId) => new(this, roleId);
 
     public RoleSetExpectations Roles() => new(this);
