@@ -1,7 +1,10 @@
-export { useMeQuery } from './api';
+export { ME_QUERY_KEY, useMeQuery } from './api';
+export { AccessDenied } from './components/AccessDenied';
 export { AppPageHeader } from './components/AppPageHeader';
 export { AppShell } from './components/AppShell';
 export { AppStageGreeting } from './components/AppStageGreeting';
+export { RequireAffiliation } from './components/RequireAffiliation';
 export { SessionBoot } from './components/SessionBoot';
 export { useAuthenticatedRedirect } from './hooks/use-authenticated-redirect';
+export { usePermissions } from './hooks/use-permissions';
 export { useSessionSnapshot } from './hooks/use-session-snapshot';

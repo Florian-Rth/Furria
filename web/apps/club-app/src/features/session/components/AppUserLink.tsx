@@ -3,12 +3,11 @@ import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { toInitials } from '@/lib/initials';
-import { toMembershipTypeLabel } from '@/lib/membership-labels';
+import { toMembershipStateLabel } from '@/lib/membership-labels';
 import { useMeQuery } from '../api';
 import { PROFILE_PATH } from '../app-sections';
 
 const PROFILE_LABEL = 'Profil öffnen';
-const NO_MEMBERSHIP = 'Ohne Mitgliedschaft';
 
 export const AppUserLink: FC = () => {
   const me = useMeQuery();
@@ -18,7 +17,7 @@ export const AppUserLink: FC = () => {
   }
 
   const { person, membership } = me.data;
-  const meta = membership === null ? NO_MEMBERSHIP : toMembershipTypeLabel(membership.type);
+  const meta = toMembershipStateLabel(membership.state);
 
   return (
     <KkAppShell.Identity

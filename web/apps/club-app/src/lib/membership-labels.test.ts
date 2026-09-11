@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatIsoDay, formatMembershipPeriod } from './membership-labels';
+import { formatAddress, formatIsoDay, formatPeriod } from './membership-labels';
 
 describe('formatIsoDay', () => {
   it.each([
@@ -13,11 +13,25 @@ describe('formatIsoDay', () => {
   });
 });
 
-describe('formatMembershipPeriod', () => {
+describe('formatPeriod', () => {
   it.each([
-    ['2020-11-11', null, 'seit 11.11.2020'],
-    ['2020-11-11', '2025-01-31', 'seit 11.11.2020 bis 31.01.2025'],
-  ])('formats the period from %s to %s', (startedAt, endedAt, expected) => {
-    expect(formatMembershipPeriod(startedAt, endedAt)).toBe(expected);
+    ['2017-09-01', null, '01.09.2017 – offen'],
+    ['2017-09-01', '2026-02-28', '01.09.2017 – 28.02.2026'],
+  ])('formats the period from %s to %s', (startedOn, endedOn, expected) => {
+    expect(formatPeriod(startedOn, endedOn)).toBe(expected);
+  });
+});
+
+describe('formatAddress', () => {
+  it.each<[string | null, string | null, string | null, string | null]>([
+    ['Hauptstraße 12', '99713 ', 'Großfurra', 'Hauptstraße 12, 99713 Großfurra'],
+    [null, '99713', 'Großfurra', '99713 Großfurra'],
+    ['Hauptstraße 12', null, null, 'Hauptstraße 12'],
+    [null, null, 'Großfurra', 'Großfurra'],
+    ['Hauptstraße 12', null, 'Großfurra', 'Hauptstraße 12, Großfurra'],
+    [null, null, null, null],
+    ['  ', '', '   ', null],
+  ])('joins %o / %o / %o into %o', (street, zip, city, expected) => {
+    expect(formatAddress(street, zip, city)).toBe(expected);
   });
 });

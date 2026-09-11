@@ -13,6 +13,8 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppProfileRouteImport } from './routes/_app/profile'
+import { Route as AppAffiliatedRouteImport } from './routes/_app/_affiliated'
+import { Route as AppAffiliatedMembersRouteImport } from './routes/_app/_affiliated.members'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -33,30 +35,50 @@ const AppProfileRoute = AppProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAffiliatedRoute = AppAffiliatedRouteImport.update({
+  id: '/_affiliated',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAffiliatedMembersRoute = AppAffiliatedMembersRouteImport.update({
+  id: '/members',
+  path: '/members',
+  getParentRoute: () => AppAffiliatedRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/login': typeof LoginRoute
   '/profile': typeof AppProfileRoute
+  '/members': typeof AppAffiliatedMembersRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
-  '/profile': typeof AppProfileRoute
   '/': typeof AppIndexRoute
+  '/profile': typeof AppProfileRoute
+  '/members': typeof AppAffiliatedMembersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
+  '/_app/_affiliated': typeof AppAffiliatedRouteWithChildren
   '/_app/profile': typeof AppProfileRoute
   '/_app/': typeof AppIndexRoute
+  '/_app/_affiliated/members': typeof AppAffiliatedMembersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/profile'
+  fullPaths: '/' | '/login' | '/profile' | '/members'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/profile' | '/'
-  id: '__root__' | '/_app' | '/login' | '/_app/profile' | '/_app/'
+  to: '/login' | '/' | '/profile' | '/members'
+  id:
+    | '__root__'
+    | '/_app'
+    | '/login'
+    | '/_app/_affiliated'
+    | '/_app/profile'
+    | '/_app/'
+    | '/_app/_affiliated/members'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -94,15 +116,43 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProfileRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/_affiliated': {
+      id: '/_app/_affiliated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppAffiliatedRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/_affiliated/members': {
+      id: '/_app/_affiliated/members'
+      path: '/members'
+      fullPath: '/members'
+      preLoaderRoute: typeof AppAffiliatedMembersRouteImport
+      parentRoute: typeof AppAffiliatedRoute
+    }
   }
 }
 
+interface AppAffiliatedRouteChildren {
+  AppAffiliatedMembersRoute: typeof AppAffiliatedMembersRoute
+}
+
+const AppAffiliatedRouteChildren: AppAffiliatedRouteChildren = {
+  AppAffiliatedMembersRoute: AppAffiliatedMembersRoute,
+}
+
+const AppAffiliatedRouteWithChildren = AppAffiliatedRoute._addFileChildren(
+  AppAffiliatedRouteChildren,
+)
+
 interface AppRouteChildren {
+  AppAffiliatedRoute: typeof AppAffiliatedRouteWithChildren
   AppProfileRoute: typeof AppProfileRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAffiliatedRoute: AppAffiliatedRouteWithChildren,
   AppProfileRoute: AppProfileRoute,
   AppIndexRoute: AppIndexRoute,
 }

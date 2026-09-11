@@ -1,36 +1,31 @@
 import { KkFieldRow } from '@furria/ui';
 import type { FC } from 'react';
-import type { Membership } from '@/lib/api/schemas';
-import {
-  formatMembershipPeriod,
-  toMembershipStatusLabel,
-  toMembershipTypeLabel,
-} from '@/lib/membership-labels';
+import type { MeMembership } from '@/lib/api/schemas';
+import { formatIsoDay, formatPeriod, toMembershipStateLabel } from '@/lib/membership-labels';
 import { ProfilePanel } from './ProfilePanel';
 
-const NO_MEMBERSHIP = 'Keine Mitgliedschaft hinterlegt';
-
 interface ProfileMembershipPanelProps {
-  membership: Membership | null;
+  membership: MeMembership;
 }
 
 export const ProfileMembershipPanel: FC<ProfileMembershipPanelProps> = ({ membership }) => {
-  if (membership === null) {
-    return (
-      <ProfilePanel title="Mitgliedschaft">
-        <KkFieldRow label="Status" value={NO_MEMBERSHIP} />
-      </ProfilePanel>
+  const { memberSince, currentStartedOn, currentEndedOn } = membership;
+
+  const memberSinceRow =
+    memberSince === null ? null : (
+      <KkFieldRow label="Mitglied seit" value={formatIsoDay(memberSince)} />
     );
-  }
+
+  const periodRow =
+    currentStartedOn === null ? null : (
+      <KkFieldRow label="Zeitraum" value={formatPeriod(currentStartedOn, currentEndedOn)} />
+    );
 
   return (
     <ProfilePanel title="Mitgliedschaft">
-      <KkFieldRow label="Art" value={toMembershipTypeLabel(membership.type)} />
-      <KkFieldRow label="Status" value={toMembershipStatusLabel(membership.status)} />
-      <KkFieldRow
-        label="Zeitraum"
-        value={formatMembershipPeriod(membership.startedAt, membership.endedAt)}
-      />
+      <KkFieldRow label="Status" value={toMembershipStateLabel(membership.state)} />
+      {memberSinceRow}
+      {periodRow}
     </ProfilePanel>
   );
 };
