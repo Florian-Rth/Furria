@@ -1,4 +1,5 @@
 using Furria.Infrastructure.Authorization;
+using Furria.Infrastructure.Groups;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Registry;
@@ -49,6 +50,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<AccountService>();
         services.AddScoped<PermissionAuthorizer>();
         services.AddScoped<PersonService>();
+        services.AddScoped<GroupService>();
 
         services.AddHostedService<DatabaseMigrator>();
         services.AddHostedService<BootstrapAdminSeeder>();
