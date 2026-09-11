@@ -10,7 +10,7 @@ namespace Furria.Api.Tests.Authorization;
 [Collection("Api")]
 public sealed class EndpointGateTests
 {
-    private const string RoutePrefix = "/api/";
+    private const string HarnessUrlCacheRoute = "_test_url_cache_";
 
     private static readonly string[] InHandlerGated =
     [
@@ -42,15 +42,15 @@ public sealed class EndpointGateTests
         var source = _fixture.Services.GetRequiredService<EndpointDataSource>();
         var ungated = source
             .Endpoints.OfType<RouteEndpoint>()
-            .Where(endpoint => IsApiRoute(endpoint) && !IsGated(endpoint))
+            .Where(endpoint => !IsHarnessPlumbing(endpoint) && !IsGated(endpoint))
             .Select(RouteOf)
             .ToArray();
 
         Assert.Empty(ungated);
     }
 
-    private static bool IsApiRoute(RouteEndpoint endpoint) =>
-        RouteOf(endpoint).StartsWith(RoutePrefix, StringComparison.Ordinal);
+    private static bool IsHarnessPlumbing(RouteEndpoint endpoint) =>
+        RouteOf(endpoint).Equals(HarnessUrlCacheRoute, StringComparison.Ordinal);
 
     private static bool IsGated(RouteEndpoint endpoint) =>
         endpoint.Metadata.GetMetadata<PermissionRequirement>() is not null
