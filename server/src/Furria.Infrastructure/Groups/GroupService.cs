@@ -31,6 +31,7 @@ public sealed class GroupService
                 .ThenBy(membership => membership.JoinedOn)
                 .ThenBy(membership => membership.Id)
                 .Select(membership => new TieRow(
+                    membership.Id,
                     membership.PersonId,
                     membership.Person!.FirstName,
                     membership.Person!.LastName,
@@ -48,6 +49,7 @@ public sealed class GroupService
                 .ThenBy(admin => admin.SinceOn)
                 .ThenBy(admin => admin.Id)
                 .Select(admin => new TieRow(
+                    admin.Id,
                     admin.PersonId,
                     admin.Person!.FirstName,
                     admin.Person!.LastName,
@@ -120,6 +122,53 @@ public sealed class GroupService
         return [.. rows.Select(ToSummary)];
     }
 
+    public async Task<IReadOnlyList<MyGroupSummary>> GetMyGroupsAsync(
+        int personId,
+        CancellationToken ct
+    )
+    {
+        var today = ClubClock.Today(_timeProvider);
+
+        return await _dbContext
+            .Groups.AsNoTracking()
+            .Where(group => group.ArchivedOn == null)
+            .OrderBy(group => EF.Functions.Collate(group.Name, GermanCollation))
+            .ThenBy(group => group.Id)
+            .Select(group => new MyGroupSummary
+            {
+                GroupId = group.Id,
+                Name = group.Name,
+                IsMember = group.Memberships.Any(membership =>
+                    membership.PersonId == personId
+                    && membership.JoinedOn <= today
+                    && (membership.LeftOn == null || membership.LeftOn >= today)
+                ),
+                IsAdmin = group.Admins.Any(admin =>
+                    admin.PersonId == personId
+                    && admin.SinceOn <= today
+                    && (admin.UntilOn == null || admin.UntilOn >= today)
+                ),
+            })
+            .Where(group => group.IsMember || group.IsAdmin)
+            .ToListAsync(ct);
+    }
+
+    public async Task<Result<MyGroupDetails>> GetMyGroupAsync(int groupId, CancellationToken ct)
+    {
+        var today = ClubClock.Today(_timeProvider);
+
+        var row = await _dbContext
+            .Groups.AsNoTracking()
+            .Where(group => group.Id == groupId && group.ArchivedOn == null)
+            .Select(GroupPageProjection)
+            .SingleOrDefaultAsync(ct);
+
+        if (row is null)
+            return Result<MyGroupDetails>.NotFound(UnknownGroupMessage);
+
+        return Result<MyGroupDetails>.Success(ToHubDetails(row, today));
+    }
+
     public async Task<Result<GroupDetails>> GetGroupAsync(int groupId, CancellationToken ct)
     {
         var today = ClubClock.Today(_timeProvider);
@@ -135,6 +184,77 @@ public sealed class GroupService
 
         return Result<GroupDetails>.Success(ToDetails(row, today));
     }
+
+    private static MyGroupDetails ToHubDetails(GroupPageRow row, DateOnly today)
+    {
+        var memberChains = ChainStarts(row.Members);
+        var adminChains = ChainStarts(row.Admins);
+
+        return new MyGroupDetails
+        {
+            GroupId = row.Id,
+            Name = row.Name,
+            Description = row.Description,
+            IsRecruiting = row.IsRecruiting,
+            Members =
+            [
+                .. RunningRows(row.Members, today)
+                    .Select(tie => ToHubMember(tie, memberChains[tie.PersonId])),
+            ],
+            Admins =
+            [
+                .. RunningRows(row.Admins, today)
+                    .Select(tie => ToHubAdministrator(tie, adminChains[tie.PersonId])),
+            ],
+            PastMembers =
+            [
+                .. EndedRows(row.Members, today)
+                    .Select(tie => ToHubMember(tie, memberChains[tie.PersonId])),
+            ],
+            PastAdmins =
+            [
+                .. EndedRows(row.Admins, today)
+                    .Select(tie => ToHubAdministrator(tie, adminChains[tie.PersonId])),
+            ],
+        };
+    }
+
+    private static HubMember ToHubMember(TieRow tie, DateOnly since) =>
+        new()
+        {
+            GroupMembershipId = tie.RowId,
+            PersonId = tie.PersonId,
+            FirstName = tie.FirstName,
+            LastName = tie.LastName,
+            JoinedOn = tie.StartedOn,
+            LeftOn = tie.EndedOn,
+            Since = since,
+        };
+
+    private static HubAdministrator ToHubAdministrator(TieRow tie, DateOnly since) =>
+        new()
+        {
+            GroupAdminId = tie.RowId,
+            PersonId = tie.PersonId,
+            FirstName = tie.FirstName,
+            LastName = tie.LastName,
+            Function = tie.Function,
+            SinceOn = tie.StartedOn,
+            UntilOn = tie.EndedOn,
+            Since = since,
+        };
+
+    private static IEnumerable<TieRow> RunningRows(IReadOnlyList<TieRow> rows, DateOnly today) =>
+        rows.Where(row => IsRunningOn(row, today));
+
+    private static IEnumerable<TieRow> EndedRows(IReadOnlyList<TieRow> rows, DateOnly today) =>
+        rows.Where(row => row.EndedOn is { } endedOn && endedOn < today)
+            .OrderByDescending(row => row.StartedOn)
+            .ThenByDescending(row => row.RowId);
+
+    private static IReadOnlyDictionary<int, DateOnly> ChainStarts(IReadOnlyList<TieRow> rows) =>
+        rows.GroupBy(row => row.PersonId)
+            .ToDictionary(chain => chain.Key, chain => chain.Min(row => row.StartedOn));
 
     private static GroupDetails ToDetails(GroupPageRow row, DateOnly today) =>
         new()
@@ -229,6 +349,7 @@ public sealed class GroupService
     );
 
     private sealed record TieRow(
+        int RowId,
         int PersonId,
         string FirstName,
         string LastName,
