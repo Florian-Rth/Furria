@@ -174,8 +174,13 @@ public sealed class GetMeTests
    against whatever the database already holds, so this is the honest "second start".
    **`EditPersonNameDirectlyAsync`** edits one Person *through EF*, which is what makes
    `AuditTimestampInterceptor` assertable before any endpoint edits a Person.
-7. **`ApiTestFixture.Today` / `.CurrentSessionYear`** — both derived **once** from the anchored
-   clock at construction. Seed every Ruhezeit and Beitragsermäßigung span relative to
+7. **`ApiTestFixture.Today` / `.CurrentSessionYear`** — both read the fixture's `FakeTimeProvider`
+   **live**, through `ClubClock`/`ClubSession`, so they always name the day the server itself is
+   reading. They are deliberately *not* frozen at construction: the clock is shared by the whole
+   collection and earlier classes advance it (`RefreshTests` by 31 days), so a value captured in
+   the constructor would drift a month behind the running host and
+   `Should_ReportKeinMitglied_When_TheOnlyMitgliedschaftStartsTomorrow` would seed a date that is
+   already in the past. Seed every Ruhezeit and Beitragsermäßigung span relative to
    `_fixture.CurrentSessionYear`, and every period relative to `_fixture.Today`; never call
    `ClubSession.YearOf` in an integration test, which would assert the implementation with the
    implementation. `ClubSession` and `ClubClock` are verified independently by the pure

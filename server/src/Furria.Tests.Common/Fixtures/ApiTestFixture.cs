@@ -39,18 +39,12 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
 
     public FakeTimeProvider TimeProvider { get; } = new(WholeSecondNow());
 
-    public DateOnly Today { get; }
+    public DateOnly Today => ClubClock.Today(TimeProvider);
 
-    public int CurrentSessionYear { get; }
+    public int CurrentSessionYear => ClubSession.YearOf(Today);
 
     public SeededAccount BootstrapAdmin =>
         _bootstrapAdmin ?? throw new InvalidOperationException(NotInitialized);
-
-    public ApiTestFixture()
-    {
-        Today = ClubClock.Today(TimeProvider);
-        CurrentSessionYear = ClubSession.YearOf(Today);
-    }
 
     private static DateTimeOffset WholeSecondNow()
     {
