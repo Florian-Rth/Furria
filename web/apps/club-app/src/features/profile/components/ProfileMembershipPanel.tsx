@@ -2,6 +2,7 @@ import { KkFieldRow } from '@furria/ui';
 import type { FC } from 'react';
 import type { MeMembership } from '@/lib/api/schemas';
 import { formatIsoDay, formatPeriod, toMembershipStateLabel } from '@/lib/membership-labels';
+import { PROFILE_SECTION_TITLES } from '../profile-labels';
 import { ProfilePanel } from './ProfilePanel';
 
 interface ProfileMembershipPanelProps {
@@ -22,7 +23,7 @@ export const ProfileMembershipPanel: FC<ProfileMembershipPanelProps> = ({ member
     );
 
   return (
-    <ProfilePanel title="Mitgliedschaft">
+    <ProfilePanel title={PROFILE_SECTION_TITLES.membership}>
       <KkFieldRow label="Status" value={toMembershipStateLabel(membership.state)} />
       {memberSinceRow}
       {periodRow}
