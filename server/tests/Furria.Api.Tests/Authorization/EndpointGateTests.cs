@@ -19,6 +19,10 @@ public sealed class EndpointGateTests
         "/api/auth/logout",
         "/api/my-groups",
         "/api/my-groups/{groupId}",
+        "/api/groups/{groupId}/info",
+        "/api/groups/{groupId}/memberships",
+        "/api/groups/{groupId}/memberships/{groupMembershipId}/end",
+        "/api/person-search",
     ];
 
     private static readonly string[] InHandlerGatedProbes =

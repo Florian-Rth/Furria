@@ -5,6 +5,7 @@ using Furria.Application.Registry;
 using Furria.Application.Results;
 using Furria.Core.Club;
 using Furria.Core.Identity;
+using Furria.Core.Text;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +17,7 @@ public sealed class PersonService
     private const string GermanCollation = "de-DE-x-icu";
     private const string UnknownMemberMessage = "Diese Person steht nicht im Verzeichnis.";
     private const string MissingOwnPersonMessage = "Zu diesem Konto gibt es keine Person mehr.";
+    private const int SearchResultLimit = 25;
 
     private static readonly Expression<Func<Person, MemberCardRow>> MemberCardProjection =
         person => new MemberCardRow(
@@ -184,6 +186,49 @@ public sealed class PersonService
         return Result<MemberDetails>.Success(ToDetails(row, visibility, today));
     }
 
+    public async Task<IReadOnlyList<PersonSearchSummary>> SearchPersonsAsync(
+        string query,
+        CancellationToken ct
+    )
+    {
+        var expanded = ToContainsPattern(GermanFold.Expand(query));
+        var stripped = ToContainsPattern(GermanFold.Strip(query));
+
+        return await _dbContext
+            .People.AsNoTracking()
+            .Where(person =>
+                EF.Functions.ILike(
+                    (person.FirstName + " " + person.LastName)
+                        .ToLower()
+                        .Replace("ä", "ae")
+                        .Replace("ö", "oe")
+                        .Replace("ü", "ue")
+                        .Replace("ß", "ss"),
+                    expanded
+                )
+                || EF.Functions.ILike(
+                    (person.FirstName + " " + person.LastName)
+                        .ToLower()
+                        .Replace("ä", "a")
+                        .Replace("ö", "o")
+                        .Replace("ü", "u")
+                        .Replace("ß", "ss"),
+                    stripped
+                )
+            )
+            .OrderBy(person => EF.Functions.Collate(person.LastName, GermanCollation))
+            .ThenBy(person => EF.Functions.Collate(person.FirstName, GermanCollation))
+            .ThenBy(person => person.Id)
+            .Take(SearchResultLimit)
+            .Select(person => new PersonSearchSummary
+            {
+                PersonId = person.Id,
+                FirstName = person.FirstName,
+                LastName = person.LastName,
+            })
+            .ToListAsync(ct);
+    }
+
     public async Task<Result> SetContactVisibilityAsync(
         int personId,
         bool visibleToMembers,
@@ -300,6 +345,14 @@ public sealed class PersonService
             Groups = [.. row.Groups.DistinctBy(group => group.GroupId)],
             Roles = [.. row.Roles.DistinctBy(role => role.RoleId)],
         };
+
+    private static string ToContainsPattern(string folded) =>
+        "%"
+        + folded
+            .Replace("\\", "\\\\", StringComparison.Ordinal)
+            .Replace("%", "\\%", StringComparison.Ordinal)
+            .Replace("_", "\\_", StringComparison.Ordinal)
+        + "%";
 
     private static IReadOnlyList<MembershipDetails> ToPeriods(
         IReadOnlyList<MembershipRow> rows,

@@ -1,3 +1,4 @@
+using System.Diagnostics.Contracts;
 using System.Linq.Expressions;
 using Furria.Application.Groups;
 using Furria.Application.Results;
@@ -13,6 +14,18 @@ public sealed class GroupService
     private const string GermanCollation = "de-DE-x-icu";
     private const int MemberPreviewSize = 5;
     private const string UnknownGroupMessage = "Diese Gruppe gibt es nicht mehr im Verzeichnis.";
+    private const string ArchivedGroupMessage =
+        "Eine archivierte Gruppe kann nicht bearbeitet werden.";
+    private const string UnknownPersonMessage = "Diese Person steht nicht im Register.";
+    private const string UnknownZugehoerigkeitMessage =
+        "Diese Zugehörigkeit gibt es in dieser Gruppe nicht.";
+    private const string EndedZugehoerigkeitMessage = "Diese Zugehörigkeit ist bereits beendet.";
+    private const string EndBeforeStartMessage =
+        "Eine Zugehörigkeit kann nicht vor ihrem Beginn enden.";
+    private const string OpenZugehoerigkeitMessage = "Diese Person gehört der Gruppe bereits an.";
+    private const string OverlappingZugehoerigkeitMessage =
+        "Dieser Zeitraum überschneidet sich mit einer bestehenden Zugehörigkeit. "
+        + "Ein Wiedereintritt beginnt frühestens am Tag nach dem Ende der vorigen Zugehörigkeit.";
 
     private static readonly Expression<Func<Group, GroupPageRow>> GroupPageProjection =
         group => new GroupPageRow(
@@ -183,6 +196,119 @@ public sealed class GroupService
             return Result<GroupDetails>.NotFound(UnknownGroupMessage);
 
         return Result<GroupDetails>.Success(ToDetails(row, today));
+    }
+
+    public async Task<Result> UpdateInfoAsync(UpdateGroupInfoCommand command, CancellationToken ct)
+    {
+        var group = await _dbContext.Groups.SingleOrDefaultAsync(
+            row => row.Id == command.GroupId,
+            ct
+        );
+
+        if (group is null)
+            return Result.NotFound(UnknownGroupMessage);
+
+        if (group.ArchivedOn is not null)
+            return Result.Conflict(ArchivedGroupMessage);
+
+        group.Description = command.Description;
+        group.IsRecruiting = command.IsRecruiting;
+        await _dbContext.SaveChangesAsync(ct);
+
+        return Result.Success();
+    }
+
+    public async Task<Result<int>> AddMembershipAsync(
+        AddGroupMembershipCommand command,
+        CancellationToken ct
+    )
+    {
+        var group = await _dbContext
+            .Groups.AsNoTracking()
+            .Where(row => row.Id == command.GroupId)
+            .Select(row => new { row.ArchivedOn })
+            .SingleOrDefaultAsync(ct);
+
+        if (group is null)
+            return Result<int>.NotFound(UnknownGroupMessage);
+
+        if (group.ArchivedOn is not null)
+            return Result<int>.Conflict(ArchivedGroupMessage);
+
+        var personExists = await _dbContext
+            .People.AsNoTracking()
+            .AnyAsync(row => row.Id == command.PersonId, ct);
+
+        if (!personExists)
+            return Result<int>.NotFound(UnknownPersonMessage);
+
+        var chain = await ChainOfAsync(command.GroupId, command.PersonId, ct);
+
+        if (HasOpenRow(chain))
+            return Result<int>.Conflict(OpenZugehoerigkeitMessage);
+
+        if (OverlapsChain(chain, command.JoinedOn))
+            return Result<int>.Conflict(OverlappingZugehoerigkeitMessage);
+
+        var membership = new GroupMembership
+        {
+            GroupId = command.GroupId,
+            PersonId = command.PersonId,
+            JoinedOn = command.JoinedOn,
+        };
+
+        _dbContext.GroupMemberships.Add(membership);
+        await _dbContext.SaveChangesAsync(ct);
+
+        return Result<int>.Success(membership.Id);
+    }
+
+    public async Task<Result> EndMembershipAsync(
+        EndGroupMembershipCommand command,
+        CancellationToken ct
+    )
+    {
+        var membership = await _dbContext
+            .GroupMemberships.Include(row => row.Group)
+            .SingleOrDefaultAsync(
+                row => row.Id == command.GroupMembershipId && row.GroupId == command.GroupId,
+                ct
+            );
+
+        if (membership is null)
+            return Result.NotFound(UnknownZugehoerigkeitMessage);
+
+        if (membership.Group!.ArchivedOn is not null)
+            return Result.Conflict(ArchivedGroupMessage);
+
+        if (membership.LeftOn is not null)
+            return Result.Conflict(EndedZugehoerigkeitMessage);
+
+        if (command.EndedOn < membership.JoinedOn)
+            return Result.Validation(EndBeforeStartMessage);
+
+        membership.LeftOn = command.EndedOn;
+        await _dbContext.SaveChangesAsync(ct);
+
+        return Result.Success();
+    }
+
+    private Task<List<PeriodRow>> ChainOfAsync(int groupId, int personId, CancellationToken ct) =>
+        _dbContext
+            .GroupMemberships.AsNoTracking()
+            .Where(row => row.GroupId == groupId && row.PersonId == personId)
+            .Select(row => new PeriodRow(row.JoinedOn, row.LeftOn))
+            .ToListAsync(ct);
+
+    [Pure]
+    private static bool HasOpenRow(IReadOnlyList<PeriodRow> chain) =>
+        chain.Any(row => row.EndedOn is null);
+
+    [Pure]
+    private static bool OverlapsChain(IReadOnlyList<PeriodRow> chain, DateOnly joinedOn)
+    {
+        var joined = new DatePeriod { Start = joinedOn, End = null };
+        return chain.Any(row => joined.Overlaps(row.AsPeriod));
     }
 
     private static MyGroupDetails ToHubDetails(GroupPageRow row, DateOnly today)
@@ -357,6 +483,11 @@ public sealed class GroupService
         DateOnly StartedOn,
         DateOnly? EndedOn
     );
+
+    private sealed record PeriodRow(DateOnly StartedOn, DateOnly? EndedOn)
+    {
+        public DatePeriod AsPeriod => new() { Start = StartedOn, End = EndedOn };
+    }
 
     private sealed record PersonTie(
         int PersonId,
