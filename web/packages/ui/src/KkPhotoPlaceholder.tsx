@@ -1,7 +1,13 @@
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
+import { applyScheme, schemeFill } from './internal/scheme-paint';
 import { kkTokens } from './tokens';
+
+const placeholderSurface = schemeFill(
+  kkTokens.photo.placeholderSurface,
+  kkTokens.photo.placeholderSurfaceDark,
+);
 
 interface KkPhotoPlaceholderProps {
   label: string;
@@ -25,7 +31,8 @@ export const KkPhotoPlaceholder: FC<KkPhotoPlaceholderProps> = ({
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: fill ? 0 : `${kkTokens.radius.base}px`,
-        background: `repeating-linear-gradient(135deg, color-mix(in srgb, ${tintColor} 15%, transparent) 0 11px, color-mix(in srgb, ${tintColor} 6%, transparent) 11px 22px), ${kkTokens.photo.placeholderSurface}`,
+        backgroundImage: `repeating-linear-gradient(135deg, color-mix(in srgb, ${tintColor} 15%, transparent) 0 11px, color-mix(in srgb, ${tintColor} 6%, transparent) 11px 22px)`,
+        ...applyScheme(theme, placeholderSurface),
       };
     }}
   >

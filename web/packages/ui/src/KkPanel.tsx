@@ -1,6 +1,7 @@
 import Stack from '@mui/material/Stack';
 import type { CSSObject, Theme } from '@mui/material/styles';
-import type { FC, PropsWithChildren } from 'react';
+import type { ElementType, FC, PropsWithChildren } from 'react';
+import { focusRing } from './internal/focus-ring';
 import { inkWash } from './internal/ink-wash';
 import { raisedSurfaceScheme } from './internal/raised-surface';
 import type { KkScheme } from './internal/scheme-paint';
@@ -41,10 +42,29 @@ const toneStyles: Record<KkPanelTone, (theme: Theme) => CSSObject> = {
   }),
 };
 
+const interactivePaint = (theme: Theme): CSSObject => ({
+  appearance: 'none',
+  textAlign: 'left',
+  textDecoration: 'none',
+  color: 'inherit',
+  cursor: 'pointer',
+  ...focusRing(theme),
+  '@media (hover: hover)': {
+    '&:hover': {
+      borderColor: 'primary.main',
+      '& [data-kk-heading]': { color: 'primary.main' },
+    },
+  },
+});
+
 interface KkPanelProps extends PropsWithChildren {
   variant?: KkPanelVariant;
   tone?: KkPanelTone;
   dimmed?: boolean;
+  component?: ElementType;
+  to?: string;
+  params?: Record<string, string>;
+  onClick?: () => void;
   sx?: KkSx;
 }
 
@@ -52,24 +72,40 @@ export const KkPanel: FC<KkPanelProps> = ({
   variant = 'list',
   tone = 'cream',
   dimmed = false,
+  component,
+  to,
+  params,
+  onClick,
   sx,
   children,
-}) => (
-  <Stack
-    data-kk-panel
-    sx={[
-      (theme) => ({
-        minWidth: 0,
-        borderWidth: kkTokens.line.hair,
-        borderColor: 'divider',
-        borderRadius: `${kkTokens.radius.base}px`,
-        opacity: dimmed ? kkTokens.opacity.dimmed : 1,
-        ...toneStyles[tone](theme),
-        ...panelPadding[variant],
-      }),
-      ...(Array.isArray(sx) ? sx : [sx]),
-    ]}
-  >
-    {children}
-  </Stack>
-);
+}) => {
+  const interactive = component !== undefined || onClick !== undefined;
+  const panelComponent = component ?? (onClick === undefined ? 'div' : 'button');
+  const routeProps = component === undefined ? {} : { to, params };
+  const nativeProps = panelComponent === 'button' ? { type: 'button' as const } : {};
+
+  return (
+    <Stack
+      component={panelComponent}
+      {...routeProps}
+      {...nativeProps}
+      onClick={onClick}
+      data-kk-panel
+      sx={[
+        (theme) => ({
+          minWidth: 0,
+          borderWidth: kkTokens.line.hair,
+          borderColor: 'divider',
+          borderRadius: `${kkTokens.radius.base}px`,
+          opacity: dimmed ? kkTokens.opacity.dimmed : 1,
+          ...toneStyles[tone](theme),
+          ...panelPadding[variant],
+          ...(interactive ? interactivePaint(theme) : {}),
+        }),
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
+    >
+      {children}
+    </Stack>
+  );
+};

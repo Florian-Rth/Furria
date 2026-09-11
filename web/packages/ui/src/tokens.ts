@@ -157,6 +157,7 @@ export const kkTokens = {
   },
   photo: {
     placeholderSurface: '#CFCBC4',
+    placeholderSurfaceDark: '#2A2321',
   },
 } as const;
 
