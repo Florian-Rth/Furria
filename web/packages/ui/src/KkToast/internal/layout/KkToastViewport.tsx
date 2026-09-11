@@ -3,18 +3,20 @@ import type { SnackbarCloseReason } from '@mui/material/Snackbar';
 import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
 import type { FC, SyntheticEvent } from 'react';
+import { kkTokens } from '../../../tokens';
 import type { KkToastEntry } from '../logic/toast-queue';
 import { toastDurationMs } from '../logic/toast-queue';
 import { KkToastItem } from '../ui/KkToastItem';
 
 const ANCHOR = { vertical: 'bottom', horizontal: 'right' } as const;
 const GUTTER = 8;
-const CURTAIN_CLEARANCE = 84;
 const DESKTOP_INSET = 24;
+const RISE_ORIGIN = { transformOrigin: 'bottom center' } as const;
 
 interface KkToastViewportProps {
   entry: KkToastEntry | null;
   isOpen: boolean;
+  dismissLabel: string;
   onDismiss: () => void;
   onExited: () => void;
 }
@@ -22,6 +24,7 @@ interface KkToastViewportProps {
 export const KkToastViewport: FC<KkToastViewportProps> = ({
   entry,
   isOpen,
+  dismissLabel,
   onDismiss,
   onExited,
 }) => {
@@ -41,11 +44,11 @@ export const KkToastViewport: FC<KkToastViewportProps> = ({
         anchorOrigin={ANCHOR}
         autoHideDuration={toastDurationMs(entry.tone)}
         onClose={close}
-        slotProps={{ transition: { onExited } }}
+        slotProps={{ transition: { onExited, style: RISE_ORIGIN } }}
         sx={{
           left: { xs: GUTTER, desktop: 'auto' },
           right: { xs: GUTTER, desktop: DESKTOP_INSET },
-          bottom: { xs: CURTAIN_CLEARANCE, desktop: DESKTOP_INSET },
+          bottom: { xs: kkTokens.layout.curtainClearance, desktop: DESKTOP_INSET },
           justifyContent: { xs: 'center', desktop: 'flex-end' },
         }}
       >
@@ -56,6 +59,7 @@ export const KkToastViewport: FC<KkToastViewportProps> = ({
           <KkToastItem
             tone={entry.tone}
             message={entry.message}
+            dismissLabel={dismissLabel}
             icon={entry.icon}
             onDismiss={onDismiss}
           />

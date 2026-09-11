@@ -1,15 +1,18 @@
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { FC, ReactNode } from 'react';
-import { inkWash } from './internal/ink-wash';
+import { displayTitle } from './internal/display-title';
+import { inkWashSurface } from './internal/ink-wash';
+import { KkBroomMark } from './KkBroomMark';
 import type { KkIconName } from './KkIcon';
 import { KkIcon } from './KkIcon';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
 const TILE_SIZE = 52;
-const TILE_WASH = '5%';
-const DESCRIPTION_MAX_WIDTH = 300;
+const TILE_WASH_LIGHT = '8%';
+const TILE_WASH_DARK = '14%';
+const WATERMARK_SIZE = 116;
 
 interface KkEmptyStateProps {
   icon: KkIconName;
@@ -36,34 +39,37 @@ export const KkEmptyState: FC<KkEmptyStateProps> = ({ icon, title, description, 
   >
     <Stack
       aria-hidden
-      sx={(theme) => ({
-        width: TILE_SIZE,
-        height: TILE_SIZE,
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderRadius: '50%',
-        backgroundColor: inkWash(theme, TILE_WASH),
-      })}
+      sx={{ position: 'relative', alignItems: 'center', justifyContent: 'center' }}
     >
-      <KkIcon name={icon} size="large" sx={{ color: 'text.disabled' }} />
+      <KkBroomMark
+        size={WATERMARK_SIZE}
+        sx={{
+          position: 'absolute',
+          color: 'text.primary',
+          opacity: kkTokens.opacity.watermark,
+          pointerEvents: 'none',
+        }}
+      />
+      <Stack
+        sx={(theme) => ({
+          position: 'relative',
+          width: TILE_SIZE,
+          height: TILE_SIZE,
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: '50%',
+          ...inkWashSurface(theme, TILE_WASH_LIGHT, TILE_WASH_DARK),
+        })}
+      >
+        <KkIcon name={icon} size="large" sx={{ color: 'text.secondary' }} />
+      </Stack>
     </Stack>
-    <Typography
-      component="p"
-      sx={{
-        fontFamily: kkTokens.font.display,
-        fontSize: '1.1875rem',
-        letterSpacing: '0.03em',
-        lineHeight: 1.15,
-        color: 'text.primary',
-        textTransform: 'uppercase',
-        textWrap: 'balance',
-      }}
-    >
+    <Typography component="p" sx={{ ...displayTitle, textWrap: 'balance' }}>
       {title}
     </Typography>
     <Typography
       variant="body2"
-      sx={{ color: 'text.secondary', maxWidth: DESCRIPTION_MAX_WIDTH, textWrap: 'pretty' }}
+      sx={{ color: 'text.secondary', maxWidth: kkTokens.measure.empty, textWrap: 'pretty' }}
     >
       {description}
     </Typography>

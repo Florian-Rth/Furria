@@ -3,27 +3,24 @@ import type { CSSObject, Theme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import type { FC, ReactNode } from 'react';
 import { accentWash } from './internal/accent-wash';
-import { inkWash } from './internal/ink-wash';
+import { inkWashSurface } from './internal/ink-wash';
+import { rowDividerTop } from './internal/row-divider';
 import { KkEyebrow } from './KkEyebrow';
 import type { KkIconName } from './KkIcon';
 import { KkIcon } from './KkIcon';
+import { KkMeta } from './KkMeta';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
 type KkSinceRowTone = 'neutral' | 'accent';
 
-const HAIRLINE = 1.5;
 const TILE_SIZE = 30;
-const TILE_WASH = '5%';
-const DEFAULT_SINCE_LABEL = 'seit';
-const TITLE_SIZE = '0.875rem';
-const META_SIZE = '0.71875rem';
-const SINCE_LABEL_SIZE = '0.5625rem';
-const SINCE_VALUE_SIZE = '1.0625rem';
+const TILE_WASH_LIGHT = '8%';
+const TILE_WASH_DARK = '14%';
 
 const toneTile: Record<KkSinceRowTone, (theme: Theme) => CSSObject> = {
   neutral: (theme) => ({
-    backgroundColor: inkWash(theme, TILE_WASH),
+    ...inkWashSurface(theme, TILE_WASH_LIGHT, TILE_WASH_DARK),
     color: (theme.vars ?? theme).palette.text.secondary,
   }),
   accent: (theme) => ({
@@ -36,10 +33,11 @@ interface KkSinceRowProps {
   icon: KkIconName;
   title: string;
   meta?: string;
-  sinceLabel?: string;
+  sinceLabel: string;
   sinceValue: string;
   tone?: KkSinceRowTone;
   trailing?: ReactNode;
+  dimmed?: boolean;
   sx?: KkSx;
 }
 
@@ -47,21 +45,14 @@ export const KkSinceRow: FC<KkSinceRowProps> = ({
   icon,
   title,
   meta,
-  sinceLabel = DEFAULT_SINCE_LABEL,
+  sinceLabel,
   sinceValue,
   tone = 'neutral',
   trailing,
+  dimmed = false,
   sx,
 }) => {
-  const metaLine =
-    meta === undefined ? null : (
-      <Typography
-        component="p"
-        sx={{ fontSize: META_SIZE, fontWeight: 600, lineHeight: 1.3, color: 'text.disabled' }}
-      >
-        {meta}
-      </Typography>
-    );
+  const metaLine = meta === undefined ? null : <KkMeta>{meta}</KkMeta>;
 
   return (
     <Stack
@@ -73,10 +64,8 @@ export const KkSinceRow: FC<KkSinceRowProps> = ({
           gap: 1.5,
           minWidth: 0,
           py: 1.5,
-          borderTopWidth: HAIRLINE,
-          borderTopStyle: 'solid',
-          borderColor: 'divider',
-          '&:first-of-type': { borderTopWidth: 0 },
+          opacity: dimmed ? kkTokens.opacity.dimmed : 1,
+          ...rowDividerTop,
         },
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
@@ -98,21 +87,27 @@ export const KkSinceRow: FC<KkSinceRowProps> = ({
       <Stack sx={{ flexGrow: 1, minWidth: 0, gap: 0.25 }}>
         <Typography
           component="p"
-          sx={{ fontSize: TITLE_SIZE, fontWeight: 800, lineHeight: 1.25, color: 'text.primary' }}
+          sx={{
+            fontSize: kkTokens.type.rowTitle,
+            fontWeight: 800,
+            lineHeight: 1.25,
+            color: 'text.primary',
+          }}
         >
           {title}
         </Typography>
         {metaLine}
       </Stack>
       <Stack sx={{ alignItems: 'flex-end', gap: 0.25, flexShrink: 0 }}>
-        <KkEyebrow tone="muted" sx={{ fontSize: SINCE_LABEL_SIZE, lineHeight: 1 }}>
+        <KkEyebrow tone="muted" size="small" sx={{ lineHeight: 1 }}>
           {sinceLabel}
         </KkEyebrow>
         <Typography
           component="p"
           sx={{
             fontFamily: kkTokens.font.display,
-            fontSize: SINCE_VALUE_SIZE,
+            fontWeight: kkTokens.font.displayWeight,
+            fontSize: kkTokens.type.rowValue,
             letterSpacing: '0.02em',
             lineHeight: 1,
             color: 'text.primary',

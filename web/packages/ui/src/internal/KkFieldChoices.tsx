@@ -4,18 +4,22 @@ import type { KkFieldChoice } from './field-choice';
 import { KkFieldChoiceChip } from './KkFieldChoiceChip';
 
 interface KkFieldChoicesProps {
-  label: string;
+  label?: string;
+  labelledBy?: string;
   choices: readonly KkFieldChoice[];
   selectedId?: string;
   disabled?: boolean;
+  invalid?: boolean;
   onSelect: (id: string) => void;
 }
 
 export const KkFieldChoices: FC<KkFieldChoicesProps> = ({
   label,
+  labelledBy,
   choices,
   selectedId,
   disabled = false,
+  invalid = false,
   onSelect,
 }) => {
   const chips = choices.map((choice) => {
@@ -27,6 +31,7 @@ export const KkFieldChoices: FC<KkFieldChoicesProps> = ({
         choice={choice}
         selected={selected}
         disabled={disabled}
+        invalid={invalid}
         onSelect={onSelect}
       />
     );
@@ -37,6 +42,7 @@ export const KkFieldChoices: FC<KkFieldChoicesProps> = ({
       direction="row"
       role="group"
       aria-label={label}
+      aria-labelledby={labelledBy}
       data-kk-field-choices
       sx={{ flexWrap: 'wrap', alignItems: 'center', gap: 0.75, minWidth: 0 }}
     >

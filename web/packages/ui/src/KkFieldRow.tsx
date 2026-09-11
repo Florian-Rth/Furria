@@ -1,37 +1,36 @@
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { FC, ReactNode } from 'react';
+import { rowDividerBottom } from './internal/row-divider';
 import { KkEyebrow } from './KkEyebrow';
-import { kkTokens } from './tokens';
+import { KkMeta } from './KkMeta';
+import type { KkSx } from './kk-sx';
 
 interface KkFieldRowProps {
   label: string;
   value: ReactNode;
   hint?: string;
+  sx?: KkSx;
 }
 
-export const KkFieldRow: FC<KkFieldRowProps> = ({ label, value, hint }) => {
-  const hintLine =
-    hint === undefined ? null : (
-      <Typography variant="caption" sx={{ color: 'text.disabled', textAlign: 'right' }}>
-        {hint}
-      </Typography>
-    );
+export const KkFieldRow: FC<KkFieldRowProps> = ({ label, value, hint, sx }) => {
+  const hintLine = hint === undefined ? null : <KkMeta sx={{ textAlign: 'right' }}>{hint}</KkMeta>;
 
   return (
     <Stack
       direction="row"
       data-kk-field-row
-      sx={{
-        alignItems: 'baseline',
-        justifyContent: 'space-between',
-        gap: 2,
-        minWidth: 0,
-        py: 1.5,
-        borderBottom: kkTokens.line.hair,
-        borderColor: 'divider',
-        '&:last-of-type': { borderBottom: 'none' },
-      }}
+      sx={[
+        {
+          alignItems: 'baseline',
+          justifyContent: 'space-between',
+          gap: 2,
+          minWidth: 0,
+          py: 1.5,
+          ...rowDividerBottom,
+        },
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
     >
       <KkEyebrow tone="muted">{label}</KkEyebrow>
       <Stack sx={{ minWidth: 0, alignItems: 'flex-end', gap: 0.25 }}>

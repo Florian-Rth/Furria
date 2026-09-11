@@ -2,21 +2,20 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { FC, ReactNode } from 'react';
+import { focusRing } from './internal/focus-ring';
 import { raisedSurface } from './internal/raised-surface';
+import { KkMeta } from './KkMeta';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
-const ROW_BORDER = 1.5;
 const BAR_WIDTH = 3;
-const BAR_RADIUS = '3px';
-const TITLE_SIZE = '1.0625rem';
-const META_SIZE = '0.6875rem';
 
 interface KkSelectRowProps {
   title: string;
   meta?: string;
   trailing?: ReactNode;
   selected?: boolean;
+  dimmed?: boolean;
   onClick: () => void;
   sx?: KkSx;
 }
@@ -26,31 +25,28 @@ export const KkSelectRow: FC<KkSelectRowProps> = ({
   meta,
   trailing,
   selected = false,
+  dimmed = false,
   onClick,
   sx,
 }) => {
   const current = selected ? true : undefined;
   const titleColor = selected ? 'text.primary' : 'text.secondary';
-  const barColor = selected ? 'primary.main' : 'transparent';
   const borderColor = selected ? 'text.primary' : 'transparent';
+  const barScale = selected ? 1 : 0;
 
   const metaLine =
     meta === undefined ? null : (
-      <Typography
-        component="p"
+      <KkMeta
+        component="span"
         sx={{
-          fontSize: META_SIZE,
-          fontWeight: 600,
-          lineHeight: 1.3,
-          color: 'text.disabled',
-          minWidth: 0,
+          display: 'block',
           whiteSpace: 'nowrap',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
         }}
       >
         {meta}
-      </Typography>
+      </KkMeta>
     );
 
   return (
@@ -76,12 +72,14 @@ export const KkSelectRow: FC<KkSelectRowProps> = ({
           cursor: 'pointer',
           textAlign: 'left',
           color: 'inherit',
+          opacity: dimmed ? kkTokens.opacity.dimmed : 1,
           backgroundColor: 'transparent',
-          borderWidth: ROW_BORDER,
+          borderWidth: kkTokens.line.hair,
           borderStyle: 'solid',
           borderColor,
           borderRadius: `${kkTokens.radius.base}px`,
           ...(selected ? raisedSurface(theme) : {}),
+          ...focusRing(theme),
           '@media (hover: hover)': {
             '&:hover': { '& [data-kk-select-row-title]': { color: 'text.primary' } },
           },
@@ -91,21 +89,28 @@ export const KkSelectRow: FC<KkSelectRowProps> = ({
     >
       <Box
         aria-hidden
+        component="span"
         sx={{
+          display: 'block',
           width: BAR_WIDTH,
           alignSelf: 'stretch',
-          borderRadius: BAR_RADIUS,
-          backgroundColor: barColor,
+          borderRadius: `${kkTokens.radius.bar}px`,
+          backgroundColor: 'primary.main',
+          transform: `scaleY(${barScale})`,
+          transformOrigin: 'center',
+          transition: kkTokens.motion.bar,
           flexShrink: 0,
         }}
       />
-      <Stack sx={{ flexGrow: 1, minWidth: 0, gap: 0.375 }}>
+      <Stack component="span" sx={{ flexGrow: 1, minWidth: 0, gap: 0.375 }}>
         <Typography
-          component="p"
+          component="span"
           data-kk-select-row-title
           sx={{
+            display: 'block',
             fontFamily: kkTokens.font.display,
-            fontSize: TITLE_SIZE,
+            fontWeight: kkTokens.font.displayWeight,
+            fontSize: kkTokens.type.rowValue,
             letterSpacing: '0.025em',
             lineHeight: 1.1,
             color: titleColor,

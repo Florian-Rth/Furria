@@ -11,7 +11,11 @@ import {
 } from './toast-queue';
 import { KkToastContext } from './toast-store';
 
-export const KkToastProvider: FC<PropsWithChildren> = ({ children }) => {
+interface KkToastProviderProps extends PropsWithChildren {
+  dismissLabel: string;
+}
+
+export const KkToastProvider: FC<KkToastProviderProps> = ({ dismissLabel, children }) => {
   const [queue, setQueue] = useState(EMPTY_TOAST_QUEUE);
   const lastIdRef = useRef(0);
 
@@ -36,6 +40,7 @@ export const KkToastProvider: FC<PropsWithChildren> = ({ children }) => {
       <KkToastViewport
         entry={currentToast(queue)}
         isOpen={queue.isOpen}
+        dismissLabel={dismissLabel}
         onDismiss={dismiss}
         onExited={finishExit}
       />

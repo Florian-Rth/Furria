@@ -1,16 +1,38 @@
 import Button from '@mui/material/Button';
 import type { CSSObject, Theme } from '@mui/material/styles';
 import type { ElementType, FC, PropsWithChildren, ReactNode } from 'react';
+import { focusRing } from './internal/focus-ring';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
 type KkButtonVariant = 'contained' | 'outlined' | 'text';
 type KkButtonTone = 'default' | 'danger';
+type KkButtonSize = 'small' | 'medium' | 'large';
 
 const DANGER_BORDER_MIX = '35%';
+const SMALL_FONT_SIZE = '0.75rem';
 
 const dangerBorderColor = (theme: Theme): string =>
   `color-mix(in srgb, ${(theme.vars ?? theme).palette.error.main} ${DANGER_BORDER_MIX}, transparent)`;
+
+const hitArea: CSSObject = {
+  position: 'relative',
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: '50%',
+    height: kkTokens.tapTarget,
+    transform: 'translateY(-50%)',
+  },
+};
+
+const sizeStyles: Record<KkButtonSize, CSSObject> = {
+  small: { minHeight: 0, px: 1.5, py: 0.625, fontSize: SMALL_FONT_SIZE, ...hitArea },
+  medium: { minHeight: kkTokens.tapTarget, px: 2.5 },
+  large: { minHeight: kkTokens.tapTarget, px: 3 },
+};
 
 const toneVariantStyles: Record<
   KkButtonTone,
@@ -45,7 +67,7 @@ interface KkButtonProps extends PropsWithChildren {
   variant?: KkButtonVariant;
   tone?: KkButtonTone;
   type?: 'button' | 'submit';
-  size?: 'small' | 'medium' | 'large';
+  size?: KkButtonSize;
   fullWidth?: boolean;
   disabled?: boolean;
   loading?: boolean;
@@ -91,7 +113,11 @@ export const KkButton: FC<KkButtonProps> = ({
       href={href}
       data-kk-button
       sx={[
-        (theme) => ({ minHeight: kkTokens.tapTarget, px: 2.5, ...variantStyle(theme) }),
+        (theme) => ({
+          ...sizeStyles[size],
+          ...variantStyle(theme),
+          ...focusRing(theme),
+        }),
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >

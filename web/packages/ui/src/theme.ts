@@ -24,7 +24,7 @@ const buildPalette = (color: KkColorTokens): PaletteOptions => ({
 
 const displayHeading = {
   fontFamily: kkTokens.font.display,
-  fontWeight: 400,
+  fontWeight: kkTokens.font.displayWeight,
   letterSpacing: '0.01em',
 } as const;
 
@@ -68,6 +68,14 @@ export const kkTheme = createTheme({
       styleOverrides: {
         '#root': {
           overflowX: 'clip',
+        },
+        '@keyframes kk-skeleton-shimmer': {
+          from: { backgroundPosition: '100% 0' },
+          to: { backgroundPosition: '-100% 0' },
+        },
+        '@keyframes kk-breath': {
+          '0%, 100%': { opacity: 0.5 },
+          '50%': { opacity: 1 },
         },
         '@media (prefers-reduced-motion: reduce)': {
           '*, *::before, *::after': {

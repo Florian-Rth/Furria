@@ -3,6 +3,8 @@ import Switch from '@mui/material/Switch';
 import Typography from '@mui/material/Typography';
 import type { ChangeEvent, FC } from 'react';
 import { useId } from 'react';
+import { inkWash, inkWashSurface } from './internal/ink-wash';
+import { rowDividerBottom } from './internal/row-divider';
 import type { KkChipTone } from './KkChip';
 import { KkChip } from './KkChip';
 import type { KkSx } from './kk-sx';
@@ -16,7 +18,9 @@ const KNOB_TRAVEL = TRACK_WIDTH - KNOB_SIZE - KNOB_INSET * 2;
 const SWITCH_BASE_SIZE = KNOB_SIZE + KNOB_INSET * 2;
 const HIT_OFFSET = `calc((${kkTokens.tapTarget} - ${SWITCH_BASE_SIZE}px) / -2)`;
 const TRACK_TRANSITION = 'background-color 0.2s';
-const TITLE_FONT_SIZE = '0.875rem';
+const TRACK_WASH_LIGHT = '16%';
+const TRACK_WASH_DARK = '18%';
+const KNOB_RING = '42%';
 const BUSY_OPACITY = 0.6;
 const DISABLED_OPACITY = 0.45;
 
@@ -51,7 +55,12 @@ export const KkSwitchRow: FC<KkSwitchRowProps> = ({
   const rowId = useId();
   const titleId = `${rowId}-title`;
   const descriptionId = `${rowId}-description`;
-  const describedBy = description === undefined ? undefined : descriptionId;
+  const errorId = `${rowId}-error`;
+  const describedIds = [
+    description === undefined ? null : descriptionId,
+    error === undefined ? null : errorId,
+  ].filter((id): id is string => id !== null);
+  const describedBy = describedIds.length === 0 ? undefined : describedIds.join(' ');
   const stateKey: keyof KkSwitchRowStateLabel = checked ? 'on' : 'off';
   const stateTone: KkChipTone = checked ? 'green' : 'neutral';
   const switchOpacity = busy ? BUSY_OPACITY : 1;
@@ -80,7 +89,12 @@ export const KkSwitchRow: FC<KkSwitchRowProps> = ({
 
   const errorLine =
     error === undefined ? null : (
-      <Typography variant="caption" sx={{ color: 'error.main', fontWeight: 700 }}>
+      <Typography
+        id={errorId}
+        role="alert"
+        variant="caption"
+        sx={{ color: 'error.main', fontWeight: 700 }}
+      >
         {error}
       </Typography>
     );
@@ -97,9 +111,7 @@ export const KkSwitchRow: FC<KkSwitchRowProps> = ({
           gap: 2,
           minWidth: 0,
           py: 1.375,
-          borderBottom: kkTokens.line.hair,
-          borderColor: 'divider',
-          '&:last-of-type': { borderBottom: 'none' },
+          ...rowDividerBottom,
         },
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
@@ -108,7 +120,12 @@ export const KkSwitchRow: FC<KkSwitchRowProps> = ({
         <Stack direction="row" sx={{ alignItems: 'center', flexWrap: 'wrap', gap: 1, minWidth: 0 }}>
           <Typography
             id={titleId}
-            sx={{ color: 'text.primary', fontSize: TITLE_FONT_SIZE, fontWeight: 800, minWidth: 0 }}
+            sx={{
+              color: 'text.primary',
+              fontSize: kkTokens.type.rowTitle,
+              fontWeight: 800,
+              minWidth: 0,
+            }}
           >
             {label}
           </Typography>
@@ -153,17 +170,20 @@ export const KkSwitchRow: FC<KkSwitchRowProps> = ({
           '& .MuiSwitch-thumb': {
             width: KNOB_SIZE,
             height: KNOB_SIZE,
-            boxShadow: 'none',
             backgroundColor: (theme.vars ?? theme).palette.common.white,
+            boxShadow: `0 0 0 ${kkTokens.line.hair}px ${inkWash(theme, KNOB_RING)}, ${kkTokens.shadow.rest}`,
           },
           '& .MuiSwitch-track': {
             borderRadius: `${kkTokens.radius.pill}px`,
-            backgroundColor: (theme.vars ?? theme).palette.divider,
             opacity: 1,
             transition: TRACK_TRANSITION,
+            ...inkWashSurface(theme, TRACK_WASH_LIGHT, TRACK_WASH_DARK),
           },
           ...theme.applyStyles('dark', {
-            '& .MuiSwitch-thumb': { backgroundColor: kkTokens.color.dark.ink },
+            '& .MuiSwitch-thumb': {
+              backgroundColor: kkTokens.color.dark.ink,
+              boxShadow: 'none',
+            },
           }),
         })}
       />

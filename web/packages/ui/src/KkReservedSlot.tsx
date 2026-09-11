@@ -1,16 +1,17 @@
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
-import { inkWash } from './internal/ink-wash';
+import { displayTitle } from './internal/display-title';
+import { inkWashSurface } from './internal/ink-wash';
 import { KkChip } from './KkChip';
 import type { KkIconName } from './KkIcon';
 import { KkIcon } from './KkIcon';
 import { KkPanel } from './KkPanel';
 import type { KkSx } from './kk-sx';
-import { kkTokens } from './tokens';
 
 const TILE_SIZE = 30;
-const TILE_WASH = '6%';
+const TILE_WASH_LIGHT = '8%';
+const TILE_WASH_DARK = '14%';
 
 interface KkReservedSlotProps {
   icon: KkIconName;
@@ -50,23 +51,13 @@ export const KkReservedSlot: FC<KkReservedSlotProps> = ({
             justifyContent: 'center',
             flexShrink: 0,
             borderRadius: '50%',
-            backgroundColor: inkWash(theme, TILE_WASH),
+            ...inkWashSurface(theme, TILE_WASH_LIGHT, TILE_WASH_DARK),
           })}
         >
           <KkIcon name={icon} size="small" sx={{ color: 'text.secondary' }} />
         </Stack>
         <Stack sx={{ flexGrow: 1, minWidth: 0, gap: 0.625 }}>
-          <Typography
-            component="p"
-            sx={{
-              fontFamily: kkTokens.font.display,
-              fontSize: '1.1875rem',
-              letterSpacing: '0.03em',
-              lineHeight: 1.15,
-              color: 'text.primary',
-              textTransform: 'uppercase',
-            }}
-          >
+          <Typography component="p" sx={displayTitle}>
             {title}
           </Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary', textWrap: 'pretty' }}>

@@ -1,11 +1,15 @@
+import Box from '@mui/material/Box';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import type { ChangeEvent, FC } from 'react';
+import { useId } from 'react';
 import { KkFieldChoices } from './internal/KkFieldChoices';
 import { KkEyebrow } from './KkEyebrow';
 import type { KkSx } from './kk-sx';
+
+type KkSelectPresentation = 'auto' | 'choices' | 'select';
 
 const INLINE_CHOICE_LIMIT = 4;
 
@@ -20,6 +24,7 @@ interface KkSelectFieldProps {
   value: string;
   options: readonly KkSelectOption[];
   onChange: (value: string) => void;
+  presentation?: KkSelectPresentation;
   placeholder?: string;
   hint?: string;
   disabled?: boolean;
@@ -34,6 +39,7 @@ export const KkSelectField: FC<KkSelectFieldProps> = ({
   value,
   options,
   onChange,
+  presentation = 'auto',
   placeholder,
   hint,
   disabled = false,
@@ -41,9 +47,14 @@ export const KkSelectField: FC<KkSelectFieldProps> = ({
   helperText,
   sx,
 }) => {
+  const fieldId = useId();
+  const labelId = `${fieldId}-label`;
+  const helperId = `${fieldId}-helper`;
   const helper = helperText ?? hint;
   const helperColor = error === true ? 'error.main' : 'text.secondary';
   const callerSx = Array.isArray(sx) ? sx : [sx];
+  const fitsInline = options.length <= INLINE_CHOICE_LIMIT;
+  const rendersChoices = presentation === 'choices' || (presentation === 'auto' && fitsInline);
 
   const change = (event: ChangeEvent<HTMLInputElement>): void => {
     onChange(event.target.value);
@@ -51,24 +62,28 @@ export const KkSelectField: FC<KkSelectFieldProps> = ({
 
   const helperLine =
     helper === undefined ? null : (
-      <Typography variant="caption" sx={{ color: helperColor, textWrap: 'pretty' }}>
+      <Typography id={helperId} variant="caption" sx={{ color: helperColor, textWrap: 'pretty' }}>
         {helper}
       </Typography>
     );
 
-  if (options.length <= INLINE_CHOICE_LIMIT) {
+  if (rendersChoices) {
     const choices = options.map((option) => ({ id: option.value, label: option.label }));
 
     return (
       <Stack data-kk-select-field sx={[{ minWidth: 0, gap: 1 }, ...callerSx]}>
-        <KkEyebrow tone="muted">{label}</KkEyebrow>
+        <Box component="span" id={labelId}>
+          <KkEyebrow tone="muted">{label}</KkEyebrow>
+        </Box>
         <KkFieldChoices
-          label={label}
+          labelledBy={labelId}
           choices={choices}
           selectedId={value}
           disabled={disabled}
+          invalid={error === true}
           onSelect={onChange}
         />
+        <Box component="input" type="hidden" name={name} value={value} readOnly />
         {helperLine}
       </Stack>
     );
