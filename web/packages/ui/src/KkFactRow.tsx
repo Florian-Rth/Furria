@@ -1,28 +1,50 @@
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
-import type { Theme } from '@mui/material/styles';
+import type { CSSObject, Theme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import type { FC, PropsWithChildren, ReactNode } from 'react';
-import { inkWash } from './internal/ink-wash';
+import { inkWashSurface } from './internal/ink-wash';
+import { rowDividerTop } from './internal/row-divider';
+import { applyScheme, schemeFill } from './internal/scheme-paint';
+import { KkMeta } from './KkMeta';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
 type KkFactRowTone = 'neutral' | 'gold' | 'accent';
 
-const HAIRLINE = 1.5;
 const BAR_WIDTH = 3;
-const BAR_RADIUS = '3px';
 const BAR_GUTTER = 1.875;
-const NEUTRAL_BAR_WASH = '18%';
-const NESTED_RAIL_OPACITY = 0.5;
-const TITLE_SIZE = '0.84375rem';
-const META_SIZE = '0.71875rem';
-const SPAN_SIZE = '0.9375rem';
+const RAIL_MIX = '55%';
 
-const toneBar: Record<KkFactRowTone, (theme: Theme) => string> = {
-  neutral: (theme) => inkWash(theme, NEUTRAL_BAR_WASH),
-  gold: (theme) => (theme.vars ?? theme).palette.warning.main,
-  accent: (theme) => (theme.vars ?? theme).palette.primary.main,
+const softer = (color: string): string => `color-mix(in srgb, ${color} ${RAIL_MIX}, transparent)`;
+
+const toneBar: Record<KkFactRowTone, (theme: Theme) => CSSObject> = {
+  neutral: (theme) => inkWashSurface(theme, '22%', '30%'),
+  gold: (theme) =>
+    applyScheme(theme, schemeFill(kkTokens.color.light.goldInk, kkTokens.color.dark.goldInk)),
+  accent: (theme) =>
+    applyScheme(theme, schemeFill(kkTokens.color.light.redInk, kkTokens.color.dark.redInk)),
+};
+
+const toneRail: Record<KkFactRowTone, (theme: Theme) => CSSObject> = {
+  neutral: (theme) => inkWashSurface(theme, '14%', '20%'),
+  gold: (theme) =>
+    applyScheme(
+      theme,
+      schemeFill(softer(kkTokens.color.light.goldInk), softer(kkTokens.color.dark.goldInk)),
+    ),
+  accent: (theme) =>
+    applyScheme(
+      theme,
+      schemeFill(softer(kkTokens.color.light.redInk), softer(kkTokens.color.dark.redInk)),
+    ),
+};
+
+const barShape: CSSObject = {
+  width: BAR_WIDTH,
+  alignSelf: 'stretch',
+  borderRadius: `${kkTokens.radius.bar}px`,
+  flexShrink: 0,
 };
 
 interface KkFactRowProps extends PropsWithChildren {
@@ -32,6 +54,7 @@ interface KkFactRowProps extends PropsWithChildren {
   tone?: KkFactRowTone;
   chip?: ReactNode;
   actions?: ReactNode;
+  dimmed?: boolean;
   sx?: KkSx;
 }
 
@@ -42,18 +65,11 @@ export const KkFactRow: FC<KkFactRowProps> = ({
   tone = 'neutral',
   chip,
   actions,
+  dimmed = false,
   sx,
   children,
 }) => {
-  const metaLine =
-    meta === undefined ? null : (
-      <Typography
-        component="p"
-        sx={{ fontSize: META_SIZE, fontWeight: 600, lineHeight: 1.3, color: 'text.disabled' }}
-      >
-        {meta}
-      </Typography>
-    );
+  const metaLine = meta === undefined ? null : <KkMeta>{meta}</KkMeta>;
 
   const actionsRow =
     actions === undefined ? null : (
@@ -80,17 +96,7 @@ export const KkFactRow: FC<KkFactRowProps> = ({
         data-kk-fact-row-nested
         sx={{ gap: 1.5, minWidth: 0, mt: 1, pl: BAR_GUTTER }}
       >
-        <Box
-          aria-hidden
-          sx={(theme) => ({
-            width: BAR_WIDTH,
-            alignSelf: 'stretch',
-            borderRadius: BAR_RADIUS,
-            backgroundColor: toneBar[tone](theme),
-            opacity: NESTED_RAIL_OPACITY,
-            flexShrink: 0,
-          })}
-        />
+        <Box aria-hidden sx={(theme) => ({ ...barShape, ...toneRail[tone](theme) })} />
         <Stack sx={{ flexGrow: 1, minWidth: 0 }}>{children}</Stack>
       </Stack>
     );
@@ -102,10 +108,8 @@ export const KkFactRow: FC<KkFactRowProps> = ({
         {
           minWidth: 0,
           py: 1.5,
-          borderTopWidth: HAIRLINE,
-          borderTopStyle: 'solid',
-          borderColor: 'divider',
-          '&:first-of-type': { borderTopWidth: 0 },
+          opacity: dimmed ? kkTokens.opacity.dimmed : 1,
+          ...rowDividerTop,
         },
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
@@ -119,16 +123,7 @@ export const KkFactRow: FC<KkFactRowProps> = ({
           flexWrap: { xs: 'wrap', desktop: 'nowrap' },
         }}
       >
-        <Box
-          aria-hidden
-          sx={(theme) => ({
-            width: BAR_WIDTH,
-            alignSelf: 'stretch',
-            borderRadius: BAR_RADIUS,
-            backgroundColor: toneBar[tone](theme),
-            flexShrink: 0,
-          })}
-        />
+        <Box aria-hidden sx={(theme) => ({ ...barShape, ...toneBar[tone](theme) })} />
         <Stack sx={{ flexGrow: 1, minWidth: 0, alignSelf: 'center', gap: 0.375 }}>
           <Stack
             direction="row"
@@ -137,10 +132,13 @@ export const KkFactRow: FC<KkFactRowProps> = ({
             <Typography
               component="p"
               sx={{
-                fontSize: TITLE_SIZE,
+                fontSize: kkTokens.type.rowTitle,
                 fontWeight: 800,
                 lineHeight: 1.25,
                 color: 'text.primary',
+                minWidth: 0,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
               }}
             >
               {title}
@@ -153,7 +151,8 @@ export const KkFactRow: FC<KkFactRowProps> = ({
           component="p"
           sx={{
             fontFamily: kkTokens.font.display,
-            fontSize: SPAN_SIZE,
+            fontWeight: kkTokens.font.displayWeight,
+            fontSize: kkTokens.type.span,
             letterSpacing: '0.03em',
             lineHeight: 1.2,
             color: 'text.primary',

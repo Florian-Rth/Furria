@@ -2,16 +2,17 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { ElementType, FC, ReactNode } from 'react';
+import { focusRing } from './internal/focus-ring';
+import { personRowMetrics } from './internal/person-row-metrics';
+import { rowDividerTop } from './internal/row-divider';
 import { KkAvatar } from './KkAvatar';
 import { KkIcon } from './KkIcon';
 import type { KkSx } from './kk-sx';
 import { resolvePersonRowAffiliation } from './person-row-affiliation';
-
-const HAIRLINE = 1.5;
-const NAME_SIZE = '0.90625rem';
-const AFFILIATION_SIZE = '0.75rem';
+import { kkTokens } from './tokens';
 
 const clampedLine = {
+  display: 'block',
   minWidth: 0,
   whiteSpace: 'nowrap',
   overflow: 'hidden',
@@ -25,6 +26,7 @@ interface KkPersonRowProps {
   meta?: string;
   emptyMeta?: string;
   trailing?: ReactNode;
+  dimmed?: boolean;
   component?: ElementType;
   to?: string;
   params?: Record<string, string>;
@@ -39,6 +41,7 @@ export const KkPersonRow: FC<KkPersonRowProps> = ({
   meta,
   emptyMeta,
   trailing,
+  dimmed = false,
   component,
   to,
   params,
@@ -61,26 +64,26 @@ export const KkPersonRow: FC<KkPersonRowProps> = ({
 
   const metaPart =
     affiliation.meta === null ? null : (
-      <Box component="span" sx={{ color: 'text.disabled' }}>
+      <Box component="span" sx={{ color: 'text.secondary' }}>
         {affiliation.meta}
       </Box>
     );
 
   const emptyPart =
     affiliation.empty === null ? null : (
-      <Box component="span" sx={{ color: 'text.disabled', fontStyle: 'italic', fontWeight: 600 }}>
+      <Box component="span" sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
         {affiliation.empty}
       </Box>
     );
 
   const affiliationLine = affiliation.present ? (
     <Typography
-      component="p"
+      component="span"
       sx={{
-        fontSize: AFFILIATION_SIZE,
+        fontSize: kkTokens.type.rowMeta,
         fontWeight: 700,
         lineHeight: 1.3,
-        color: 'text.disabled',
+        color: 'text.secondary',
         ...clampedLine,
       }}
     >
@@ -105,7 +108,7 @@ export const KkPersonRow: FC<KkPersonRowProps> = ({
     );
 
   const secondLine = hasSecondLine ? (
-    <Stack direction="row" sx={{ alignItems: 'center', gap: 0.875, minWidth: 0 }}>
+    <Stack component="span" direction="row" sx={{ alignItems: 'center', gap: 0.875, minWidth: 0 }}>
       {inlineTrailing}
       {affiliationLine}
     </Stack>
@@ -115,7 +118,7 @@ export const KkPersonRow: FC<KkPersonRowProps> = ({
     <Box
       component="span"
       data-kk-person-row-chevron
-      sx={{ display: 'inline-flex', color: 'text.disabled', flexShrink: 0 }}
+      sx={{ display: 'inline-flex', color: 'text.secondary', flexShrink: 0 }}
     >
       <KkIcon name="chevron" size="small" />
     </Box>
@@ -130,42 +133,42 @@ export const KkPersonRow: FC<KkPersonRowProps> = ({
       direction="row"
       data-kk-person-row
       sx={[
-        {
+        (theme) => ({
           width: '100%',
           minWidth: 0,
           alignItems: 'center',
-          gap: 1.5,
+          gap: personRowMetrics.gap,
           m: 0,
           px: 0,
-          py: 1.375,
+          py: personRowMetrics.paddingY,
           appearance: 'none',
           backgroundColor: 'transparent',
           color: 'inherit',
           textAlign: 'left',
           textDecoration: 'none',
           borderWidth: 0,
-          borderTopWidth: HAIRLINE,
           borderStyle: 'solid',
-          borderColor: 'divider',
+          opacity: dimmed ? kkTokens.opacity.dimmed : 1,
           cursor: interactive ? 'pointer' : 'default',
-          '&:first-of-type': { borderTopWidth: 0 },
+          ...rowDividerTop,
+          ...focusRing(theme),
           '@media (hover: hover)': {
             '&:hover': {
               '& [data-kk-person-row-name]': { color: 'primary.main' },
               '& [data-kk-person-row-chevron]': { color: 'text.primary' },
             },
           },
-        },
+        }),
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >
-      <KkAvatar initials={initials} sx={{ flexShrink: 0 }} />
-      <Stack sx={{ flexGrow: 1, minWidth: 0, gap: 0.375 }}>
+      <KkAvatar initials={initials} component="span" sx={{ flexShrink: 0 }} />
+      <Stack component="span" sx={{ flexGrow: 1, minWidth: 0, gap: personRowMetrics.lineGap }}>
         <Typography
-          component="p"
+          component="span"
           data-kk-person-row-name
           sx={{
-            fontSize: NAME_SIZE,
+            fontSize: kkTokens.type.rowTitle,
             fontWeight: 800,
             lineHeight: 1.25,
             color: 'text.primary',

@@ -1,5 +1,6 @@
 import Avatar from '@mui/material/Avatar';
-import type { FC } from 'react';
+import type { ElementType, FC } from 'react';
+import { applyScheme, schemeFill } from './internal/scheme-paint';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
@@ -19,25 +20,35 @@ const avatarMetrics: Record<KkAvatarSize, KkAvatarMetrics> = {
 interface KkAvatarProps {
   initials: string;
   size?: KkAvatarSize;
+  component?: ElementType;
   sx?: KkSx;
 }
 
-export const KkAvatar: FC<KkAvatarProps> = ({ initials, size = 'medium', sx }) => {
+export const KkAvatar: FC<KkAvatarProps> = ({ initials, size = 'medium', component, sx }) => {
   const metrics = avatarMetrics[size];
+  const componentProps = component === undefined ? {} : { component };
 
   return (
     <Avatar
+      {...componentProps}
       data-kk-avatar
       sx={[
-        {
+        (theme) => ({
           width: metrics.size,
           height: metrics.size,
-          bgcolor: 'warning.main',
-          color: 'warning.contrastText',
+          ...applyScheme(
+            theme,
+            schemeFill(kkTokens.color.light.avatar, kkTokens.color.dark.avatar),
+          ),
+          color: 'text.primary',
+          borderWidth: kkTokens.line.hair,
+          borderStyle: 'solid',
+          borderColor: 'divider',
           fontFamily: kkTokens.font.display,
+          fontWeight: kkTokens.font.displayWeight,
           fontSize: metrics.fontSize,
           letterSpacing: '0.04em',
-        },
+        }),
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >

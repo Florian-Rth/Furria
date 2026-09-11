@@ -3,9 +3,9 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import type { ChangeEvent, FC } from 'react';
 import type { KkSx } from './kk-sx';
+import { kkTokens } from './tokens';
 
 const DEFAULT_ROWS = 4;
-const COUNT_FONT_SIZE = '0.6875rem';
 const HELPER_INSET = 1.75;
 
 const defaultCountLabel = (used: number, max: number): string => `${used} / ${max}`;
@@ -54,8 +54,8 @@ export const KkTextArea: FC<KkTextAreaProps> = ({
       <Typography
         sx={{
           alignSelf: 'flex-end',
-          color: 'text.disabled',
-          fontSize: COUNT_FONT_SIZE,
+          color: 'text.secondary',
+          fontSize: kkTokens.type.chip,
           fontWeight: 700,
           letterSpacing: '0.02em',
           px: HELPER_INSET,

@@ -1,57 +1,73 @@
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
+import { personRowMetrics } from './internal/person-row-metrics';
+import { rowDividerTop } from './internal/row-divider';
 import { skeletonSurface } from './internal/skeleton-shimmer';
+import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
 const DEFAULT_COUNT = 6;
-const AVATAR_SIZE = 38;
-const TITLE_BAR_HEIGHT = 13;
-const META_BAR_HEIGHT = 10;
-const CHIP_BAR_WIDTH = 54;
-const CHIP_BAR_HEIGHT = 20;
 const BAR_RADIUS = `${kkTokens.radius.pill}px`;
+const TITLE_BAR_WIDTH = '52%';
+const META_BAR_WIDTH = '34%';
 
 interface KkSkeletonRowProps {
   count?: number;
+  sx?: KkSx;
 }
 
-export const KkSkeletonRow: FC<KkSkeletonRowProps> = ({ count = DEFAULT_COUNT }) => {
+export const KkSkeletonRow: FC<KkSkeletonRowProps> = ({ count = DEFAULT_COUNT, sx }) => {
   const rowKeys = Array.from({ length: count }, (_, index) => `kk-skeleton-row-${index}`);
 
   return (
-    <Stack aria-hidden data-kk-skeleton-row sx={{ minWidth: 0 }}>
+    <Stack
+      aria-hidden
+      data-kk-skeleton-row
+      sx={[{ minWidth: 0 }, ...(Array.isArray(sx) ? sx : [sx])]}
+    >
       {rowKeys.map((rowKey) => (
         <Stack
           key={rowKey}
           direction="row"
           sx={{
             alignItems: 'center',
-            gap: 1.5,
+            gap: personRowMetrics.gap,
             minWidth: 0,
-            py: 1.625,
-            borderTop: kkTokens.line.hair,
-            borderColor: 'divider',
-            '&:first-of-type': { borderTop: 'none' },
+            py: personRowMetrics.paddingY,
+            ...rowDividerTop,
           }}
         >
           <Box
             sx={[
               skeletonSurface,
-              { width: AVATAR_SIZE, height: AVATAR_SIZE, borderRadius: '50%', flexShrink: 0 },
+              {
+                width: personRowMetrics.avatarSize,
+                height: personRowMetrics.avatarSize,
+                borderRadius: '50%',
+                flexShrink: 0,
+              },
             ]}
           />
-          <Stack sx={{ flexGrow: 1, minWidth: 0, gap: 1 }}>
+          <Stack sx={{ flexGrow: 1, minWidth: 0, gap: personRowMetrics.lineGap }}>
             <Box
               sx={[
                 skeletonSurface,
-                { width: '52%', height: TITLE_BAR_HEIGHT, borderRadius: BAR_RADIUS },
+                {
+                  width: TITLE_BAR_WIDTH,
+                  height: personRowMetrics.titleHeight,
+                  borderRadius: BAR_RADIUS,
+                },
               ]}
             />
             <Box
               sx={[
                 skeletonSurface,
-                { width: '34%', height: META_BAR_HEIGHT, borderRadius: BAR_RADIUS },
+                {
+                  width: META_BAR_WIDTH,
+                  height: personRowMetrics.metaHeight,
+                  borderRadius: BAR_RADIUS,
+                },
               ]}
             />
           </Stack>
@@ -59,8 +75,8 @@ export const KkSkeletonRow: FC<KkSkeletonRowProps> = ({ count = DEFAULT_COUNT })
             sx={[
               skeletonSurface,
               {
-                width: CHIP_BAR_WIDTH,
-                height: CHIP_BAR_HEIGHT,
+                width: personRowMetrics.chipWidth,
+                height: personRowMetrics.chipHeight,
                 borderRadius: BAR_RADIUS,
                 flexShrink: 0,
               },

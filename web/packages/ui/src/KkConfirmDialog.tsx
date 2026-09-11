@@ -2,8 +2,8 @@ import Stack from '@mui/material/Stack';
 import type { CSSObject, Theme } from '@mui/material/styles';
 import type { FC, ReactNode } from 'react';
 import { useId } from 'react';
-import { accentWash } from './internal/accent-wash';
-import { inkWash } from './internal/ink-wash';
+import { inkWashSurface } from './internal/ink-wash';
+import { applyScheme, schemeFill } from './internal/scheme-paint';
 import { KkAlert } from './KkAlert';
 import { KkButton } from './KkButton';
 import { KkConsequenceNote } from './KkConsequenceNote';
@@ -28,16 +28,23 @@ interface KkConfirmMark {
 }
 
 const MARK_SIZE = 34;
-const DEFAULT_CANCEL_LABEL = 'Abbrechen';
-const NEUTRAL_WASH = '6%';
+const DANGER_WASH_LIGHT = '10%';
+const DANGER_WASH_DARK = '18%';
+
+const dangerWash = (theme: Theme): CSSObject => {
+  const source = (theme.vars ?? theme).palette.error.main;
+  const mix = (amount: string): string => `color-mix(in srgb, ${source} ${amount}, transparent)`;
+
+  return applyScheme(theme, schemeFill(mix(DANGER_WASH_LIGHT), mix(DANGER_WASH_DARK)));
+};
 
 const toneMarks: Record<KkConfirmTone, KkConfirmMark> = {
   neutral: {
     icon: 'info',
     color: 'text.secondary',
-    wash: (theme) => ({ backgroundColor: inkWash(theme, NEUTRAL_WASH) }),
+    wash: (theme) => inkWashSurface(theme, '8%', '14%'),
   },
-  danger: { icon: 'bolt', color: 'primary.main', wash: accentWash },
+  danger: { icon: 'bolt', color: 'error.main', wash: dangerWash },
 };
 
 const confirmButtonTones: Record<KkConfirmTone, 'default' | 'danger'> = {
@@ -57,7 +64,8 @@ interface KkConfirmDialogProps {
   consequence?: ReactNode;
   error?: string;
   confirmLabel: string;
-  cancelLabel?: string;
+  cancelLabel: string;
+  closeLabel: string;
   busy?: boolean;
 }
 
@@ -73,7 +81,8 @@ export const KkConfirmDialog: FC<KkConfirmDialogProps> = ({
   consequence,
   error,
   confirmLabel,
-  cancelLabel = DEFAULT_CANCEL_LABEL,
+  cancelLabel,
+  closeLabel,
   busy,
 }) => {
   const titleId = useId();
@@ -97,7 +106,7 @@ export const KkConfirmDialog: FC<KkConfirmDialogProps> = ({
   const errorAlert = error === undefined ? null : <KkAlert severity="error">{error}</KkAlert>;
 
   return (
-    <KkModalFrame open={open} onClose={onClose} labelledBy={titleId}>
+    <KkModalFrame open={open} onClose={onClose} labelledBy={titleId} closeLabel={closeLabel}>
       <Stack direction="row" sx={{ minWidth: 0, gap: 1.375, alignItems: 'flex-start' }}>
         <Stack
           aria-hidden

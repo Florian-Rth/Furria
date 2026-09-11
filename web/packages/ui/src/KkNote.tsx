@@ -1,6 +1,8 @@
 import Stack from '@mui/material/Stack';
+import type { CSSObject, Theme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import type { FC, PropsWithChildren } from 'react';
+import { applyScheme, schemeInk } from './internal/scheme-paint';
 import type { KkIconName } from './KkIcon';
 import { KkIcon } from './KkIcon';
 import type { KkSx } from './kk-sx';
@@ -9,14 +11,22 @@ import { kkTokens } from './tokens';
 type KkNoteTone = 'muted' | 'info' | 'warning';
 
 interface KkNoteToneStyle {
-  color: string;
+  paint: (theme: Theme) => CSSObject;
   fontWeight?: number;
 }
 
 const toneStyles: Record<KkNoteTone, KkNoteToneStyle> = {
-  muted: { color: 'text.secondary' },
-  info: { color: 'info.main', fontWeight: 700 },
-  warning: { color: 'warning.main', fontWeight: 700 },
+  muted: { paint: () => ({ color: 'text.secondary' }) },
+  info: {
+    paint: (theme) =>
+      applyScheme(theme, schemeInk(kkTokens.color.light.blueInk, kkTokens.color.dark.blueInk)),
+    fontWeight: 700,
+  },
+  warning: {
+    paint: (theme) =>
+      applyScheme(theme, schemeInk(kkTokens.color.light.goldInk, kkTokens.color.dark.goldInk)),
+    fontWeight: 700,
+  },
 };
 
 interface KkNoteProps extends PropsWithChildren {
@@ -34,7 +44,15 @@ export const KkNote: FC<KkNoteProps> = ({ tone = 'muted', icon, sx, children }) 
       <Typography
         variant="body2"
         data-kk-note
-        sx={[{ ...toneStyle, maxWidth: kkTokens.measure.note, textWrap: 'pretty' }, ...callerSx]}
+        sx={[
+          (theme) => ({
+            ...toneStyle.paint(theme),
+            fontWeight: toneStyle.fontWeight,
+            maxWidth: kkTokens.measure.note,
+            textWrap: 'pretty',
+          }),
+          ...callerSx,
+        ]}
       >
         {children}
       </Typography>
@@ -46,12 +64,12 @@ export const KkNote: FC<KkNoteProps> = ({ tone = 'muted', icon, sx, children }) 
       direction="row"
       data-kk-note
       sx={[
-        {
-          color: toneStyle.color,
+        (theme) => ({
+          ...toneStyle.paint(theme),
           alignItems: 'flex-start',
           gap: 0.875,
           maxWidth: kkTokens.measure.note,
-        },
+        }),
         ...callerSx,
       ]}
     >

@@ -3,13 +3,14 @@ import type { CSSObject, Theme } from '@mui/material/styles';
 import ToggleButton from '@mui/material/ToggleButton';
 import type { FC, MouseEvent } from 'react';
 import { accentWash } from './internal/accent-wash';
+import { focusRing } from './internal/focus-ring';
 import type { KkSx } from './kk-sx';
 import type { KkLetterIndexEntry } from './letter-index-cells';
 import { toLetterIndexCells } from './letter-index-cells';
 import { kkTokens } from './tokens';
 
 const CELL_SIZE = 25;
-const CELL_SIZE_FONT = '0.8125rem';
+const CELL_FONT_SIZE = '0.8125rem';
 
 const cellStyles = (theme: Theme): CSSObject => ({
   width: CELL_SIZE,
@@ -20,12 +21,13 @@ const cellStyles = (theme: Theme): CSSObject => ({
   borderWidth: 0,
   borderRadius: '50%',
   fontFamily: kkTokens.font.display,
-  fontSize: CELL_SIZE_FONT,
-  fontWeight: 400,
+  fontSize: CELL_FONT_SIZE,
+  fontWeight: kkTokens.font.displayWeight,
   letterSpacing: '0.02em',
   lineHeight: 1,
   color: (theme.vars ?? theme).palette.text.primary,
   backgroundColor: 'transparent',
+  ...focusRing(theme),
   '&.Mui-disabled': {
     borderWidth: 0,
     color: (theme.vars ?? theme).palette.text.disabled,
@@ -38,13 +40,20 @@ const cellStyles = (theme: Theme): CSSObject => ({
 });
 
 interface KkLetterIndexProps {
+  label: string;
   letters: readonly KkLetterIndexEntry[];
   current?: string;
   onSelect: (letter: string) => void;
   sx?: KkSx;
 }
 
-export const KkLetterIndex: FC<KkLetterIndexProps> = ({ letters, current, onSelect, sx }) => {
+export const KkLetterIndex: FC<KkLetterIndexProps> = ({
+  label,
+  letters,
+  current,
+  onSelect,
+  sx,
+}) => {
   const cells = toLetterIndexCells(letters, current);
 
   const selectLetter = (_event: MouseEvent<HTMLElement>, letter: string): void => {
@@ -55,6 +64,7 @@ export const KkLetterIndex: FC<KkLetterIndexProps> = ({ letters, current, onSele
     <Stack
       direction="row"
       role="group"
+      aria-label={label}
       data-kk-letter-index
       sx={[{ flexWrap: 'wrap', gap: 0.5, minWidth: 0 }, ...(Array.isArray(sx) ? sx : [sx])]}
     >

@@ -5,11 +5,10 @@ import { KkIcon } from './KkIcon';
 import { KkIconButton } from './KkIconButton';
 import type { KkSx } from './kk-sx';
 
-const CLEAR_LABEL = 'Suche leeren';
-
 interface KkSearchFieldProps {
   name: string;
   label: string;
+  clearLabel: string;
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
@@ -20,6 +19,7 @@ interface KkSearchFieldProps {
 export const KkSearchField: FC<KkSearchFieldProps> = ({
   name,
   label,
+  clearLabel,
   value,
   onChange,
   placeholder,
@@ -44,7 +44,7 @@ export const KkSearchField: FC<KkSearchFieldProps> = ({
     value === '' ? undefined : (
       <InputAdornment position="end">
         <KkIconButton
-          label={CLEAR_LABEL}
+          label={clearLabel}
           icon="close"
           size="small"
           onClick={clear}

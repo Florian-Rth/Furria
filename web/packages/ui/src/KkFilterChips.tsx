@@ -1,25 +1,25 @@
 import Stack from '@mui/material/Stack';
+import type { CSSObject, Theme } from '@mui/material/styles';
 import ToggleButton from '@mui/material/ToggleButton';
 import type { FC, MouseEvent } from 'react';
 import type { KkFilterOption } from './filter-chip-entries';
 import { toFilterChipEntries } from './filter-chip-entries';
+import { focusRing } from './internal/focus-ring';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
-const CHIP_BORDER = 1.5;
-const CHIP_SIZE = '0.75rem';
+const CHIP_FONT_SIZE = '0.75rem';
 
-const chipStyles: KkSx = {
+const chipStyles = (theme: Theme): CSSObject => ({
   flexShrink: 0,
-  minHeight: kkTokens.tapTarget,
   px: 1.75,
   py: 0.75,
-  borderWidth: CHIP_BORDER,
+  borderWidth: kkTokens.line.hair,
   borderStyle: 'solid',
   borderColor: 'divider',
   borderRadius: `${kkTokens.radius.pill}px`,
   fontFamily: kkTokens.font.body,
-  fontSize: CHIP_SIZE,
+  fontSize: CHIP_FONT_SIZE,
   fontWeight: 800,
   letterSpacing: '0.01em',
   lineHeight: 1.2,
@@ -27,13 +27,14 @@ const chipStyles: KkSx = {
   whiteSpace: 'nowrap',
   color: 'text.secondary',
   backgroundColor: 'transparent',
+  ...focusRing(theme),
   '&.Mui-selected': {
     color: 'background.paper',
     backgroundColor: 'text.primary',
     borderColor: 'text.primary',
     '&:hover': { backgroundColor: 'text.primary' },
   },
-};
+});
 
 interface KkFilterChipsProps {
   label: string;
