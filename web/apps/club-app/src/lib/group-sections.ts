@@ -8,6 +8,9 @@ export const GROUP_SECTION_TITLES = {
   photos: 'Bilder',
 } as const;
 
+export const GROUP_ADMINS_NOTE =
+  'Gruppen-Admins pflegen die Gruppe. Sie müssen nicht selbst in der Gruppe tanzen.';
+
 const SUBLINE_SEPARATOR = ' · ';
 
 export const toGroupMembersLabel = (count: number): string => {

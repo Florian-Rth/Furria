@@ -118,7 +118,7 @@ describe('toHubHeadline', () => {
       title: 'Tanzgarde',
       eyebrow: 'deine Gruppe',
       openness: { label: 'sucht Verstärkung', tone: 'gold', dot: true },
-      subline: 'du pflegst sie · 1 Person · 1 Gruppen-Admin',
+      subline: 'Du pflegst sie · 1 Person · 1 Gruppen-Admin',
     });
   });
 

@@ -1,12 +1,11 @@
 import { KkButton, KkEmptyState, KkIcon, KkPanel, KkPanelSection } from '@furria/ui';
 import type { FC } from 'react';
 import { GROUP_SECTION_TITLES } from '@/lib/group-sections';
-import { toNoMembersLine } from '../group-hub-labels';
+import { ADD_MEMBER_ACTION_LABEL, ADD_MEMBER_LABEL, toNoMembersLine } from '../group-hub-labels';
 import type { HubMember } from '../schemas';
 import { HubMemberRow } from './HubMemberRow';
 
 const NO_MEMBERS_TITLE = 'NOCH NIEMAND DABEI';
-const ADD_LABEL = 'Mitglied';
 
 interface HubMembersPanelProps {
   members: readonly HubMember[];
@@ -39,8 +38,13 @@ export const HubMembersPanel: FC<HubMembersPanelProps> = ({
   const variant = isEmpty ? 'block' : 'list';
 
   const action = canManage ? (
-    <KkButton size="small" startIcon={<KkIcon name="add" size="small" />} onClick={onAdd}>
-      {ADD_LABEL}
+    <KkButton
+      size="small"
+      startIcon={<KkIcon name="add" size="small" />}
+      ariaLabel={ADD_MEMBER_ACTION_LABEL}
+      onClick={onAdd}
+    >
+      {ADD_MEMBER_LABEL}
     </KkButton>
   ) : null;
 
