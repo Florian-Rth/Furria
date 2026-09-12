@@ -1,11 +1,10 @@
 import { KkAppShell, KkBrandLockup, KkEyebrow, KkToastProvider } from '@furria/ui';
 import Stack from '@mui/material/Stack';
-import { useLocation } from '@tanstack/react-router';
 import type { FC, PropsWithChildren } from 'react';
 import { useState } from 'react';
 import { sessionAt } from '@/lib/club';
 import { formatSessionNumber } from '@/lib/membership-labels';
-import { resolveSectionTitle } from '../app-sections';
+import { useSectionTitle } from '../hooks/use-section-title';
 import { PageHeaderContext } from '../page-header-context';
 import { AppNav } from './AppNav';
 import { AppSignOutButton } from './AppSignOutButton';
@@ -14,10 +13,9 @@ import { AppUserLink } from './AppUserLink';
 const TOAST_DISMISS_LABEL = 'Schließen';
 
 export const AppShell: FC<PropsWithChildren> = ({ children }) => {
-  const location = useLocation();
   const [headerContainer, setHeaderContainer] = useState<HTMLElement | null>(null);
   const session = sessionAt(new Date());
-  const sectionTitle = resolveSectionTitle(location.pathname);
+  const sectionTitle = useSectionTitle();
   const sessionLabel = `Session ${session.yearsLabel} · ${formatSessionNumber(session.number)}`;
   const railKicker = `Club-App · ${sessionLabel}`;
 
