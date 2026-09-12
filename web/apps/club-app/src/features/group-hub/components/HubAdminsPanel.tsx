@@ -1,14 +1,11 @@
 import { KkButton, KkEmptyState, KkIcon, KkPanel, KkPanelSection } from '@furria/ui';
 import type { FC } from 'react';
-import { GROUP_SECTION_TITLES } from '@/lib/group-sections';
-import { NO_ADMINS_LINE } from '../group-hub-labels';
+import { GROUP_ADMINS_NOTE, GROUP_SECTION_TITLES } from '@/lib/group-sections';
+import { ADD_ADMIN_ACTION_LABEL, ADD_ADMIN_LABEL, NO_ADMINS_LINE } from '../group-hub-labels';
 import type { HubAdmin } from '../schemas';
 import { HubAdminRow } from './HubAdminRow';
 
 const NO_ADMINS_TITLE = 'KEIN GRUPPEN-ADMIN';
-const ADD_LABEL = 'Admin';
-const ADMIN_NOTE =
-  'Gruppen-Admins pflegen die Gruppe. Sie müssen nicht selbst in der Gruppe tanzen.';
 
 interface HubAdminsPanelProps {
   admins: readonly HubAdmin[];
@@ -43,9 +40,10 @@ export const HubAdminsPanel: FC<HubAdminsPanelProps> = ({
       size="small"
       variant="outlined"
       startIcon={<KkIcon name="add" size="small" />}
+      ariaLabel={ADD_ADMIN_ACTION_LABEL}
       onClick={onAdd}
     >
-      {ADD_LABEL}
+      {ADD_ADMIN_LABEL}
     </KkButton>
   ) : null;
 
@@ -56,7 +54,11 @@ export const HubAdminsPanel: FC<HubAdminsPanelProps> = ({
   );
 
   return (
-    <KkPanelSection title={GROUP_SECTION_TITLES.admins} action={action} description={ADMIN_NOTE}>
+    <KkPanelSection
+      title={GROUP_SECTION_TITLES.admins}
+      action={action}
+      description={GROUP_ADMINS_NOTE}
+    >
       <KkPanel variant={variant}>{body}</KkPanel>
     </KkPanelSection>
   );

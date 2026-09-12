@@ -12,7 +12,7 @@ const HUB_TITLE_FALLBACK = 'Meine Gruppe';
 const SUBLINE_SEPARATOR = ' · ';
 
 const MY_GROUP_EYEBROW = 'deine Gruppe';
-const CARE_LINE = 'du pflegst sie';
+const CARE_LINE = 'Du pflegst sie';
 
 export const toHubId = (raw: string): number | null =>
   GROUP_ID_PATTERN.test(raw) ? Number(raw) : null;
@@ -109,6 +109,28 @@ export const toNoDescriptionLine = (name: string): string =>
   `Zu ${name} steht noch nichts geschrieben.`;
 
 export const NO_ADMINS_LINE = 'Für diese Gruppe ist gerade niemand als Gruppen-Admin eingetragen.';
+
+export const ADD_MEMBER_LABEL = 'Mitglied';
+export const ADD_MEMBER_ACTION_LABEL = 'Mitglied aufnehmen';
+export const ADD_ADMIN_LABEL = 'Admin';
+export const ADD_ADMIN_ACTION_LABEL = 'Admin eintragen';
+export const END_LABEL = 'Beenden';
+
+export const toEndMembershipActionLabel = (personName: string): string =>
+  `Zugehörigkeit von ${personName} beenden`;
+
+export const toEndAdminActionLabel = (personName: string): string =>
+  `Gruppen-Admin ${personName} beenden`;
+
+export const RESERVED_BADGE = 'bald';
+
+export const EVENTS_SLOT_TITLE = 'Noch nicht da';
+export const EVENTS_SLOT_DESCRIPTION =
+  'Training, Proben und Auftritte der Gruppe an einem Ort. Kommt in einer späteren Phase.';
+
+export const PHOTOS_SLOT_TITLE = 'Noch keine Bilder';
+export const PHOTOS_SLOT_DESCRIPTION =
+  'Platz für Bilder aus euren Sessions. Die Bildergalerie liefert sie später automatisch — hier wird nichts hochgeladen.';
 
 const SEARCH_TERM_MIN_LENGTH = 2;
 const SEARCH_TERM_MAX_LENGTH = 64;
