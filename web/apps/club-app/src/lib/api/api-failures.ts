@@ -23,3 +23,6 @@ export const toFieldFailures = (payload: FailurePayload): ApiFieldFailure[] =>
   Object.entries(payload.errors).flatMap(([field, messages]) =>
     messages.map((message) => ({ field, message })),
   );
+
+export const toCamelCaseField = (field: string): string =>
+  field.length === 0 ? field : `${field.charAt(0).toLowerCase()}${field.slice(1)}`;
