@@ -19,7 +19,7 @@ export const ProfileSkeleton: FC = () => (
         <Stack sx={{ gap: 3.5, minWidth: 0 }}>
           <Stack sx={{ gap: 1.5, minWidth: 0 }}>
             <KkPanelHeader title={PROFILE_SECTION_TITLES.visibility} />
-            <KkPanel variant="block" tone="raised">
+            <KkPanel variant="block">
               <KkSkeletonBlock lines={VISIBILITY_LINES} />
             </KkPanel>
           </Stack>
