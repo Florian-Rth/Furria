@@ -25,5 +25,5 @@ export const MembersBody: FC = () => {
     return <MembersError message={errorMessage} onRetry={reload} />;
   }
 
-  return <MembersSkeleton search={search} />;
+  return <MembersSkeleton />;
 };
