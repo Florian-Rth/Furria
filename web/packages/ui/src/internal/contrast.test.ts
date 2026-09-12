@@ -1,12 +1,35 @@
 import { describe, expect, it } from 'vitest';
 import { kkTokens } from '../tokens';
-import { contrastRatio, washOver } from './contrast';
+import { contrastRatio, parseColor, relativeLuminance, washOver } from './contrast';
 import { toneRecipes } from './tone';
 
 const AA_SMALL_TEXT = 4.5;
 
 const light = kkTokens.color.light;
 const dark = kkTokens.color.dark;
+
+const luminanceOf = (value: string): number => {
+  const color = parseColor(value);
+
+  return color === null ? Number.NaN : relativeLuminance(color);
+};
+
+describe('the elevation axis', () => {
+  it.each([
+    { scheme: 'light', tokens: light },
+    { scheme: 'dark', tokens: dark },
+  ])('lifts a raised surface above both the page and a cream panel in $scheme', ({ tokens }) => {
+    const raised = luminanceOf(tokens.panel2);
+
+    expect(raised).toBeGreaterThan(luminanceOf(tokens.bg));
+    expect(raised).toBeGreaterThan(luminanceOf(tokens.panel));
+  });
+
+  it('never reuses the dark chrome ground as a content surface', () => {
+    expect(dark.panel2).not.toBe(kkTokens.chrome.dark.base);
+    expect(dark.panel2).not.toBe(kkTokens.chrome.dark.sideBg);
+  });
+});
 
 describe('contrastRatio', () => {
   it.each([

@@ -1,8 +1,9 @@
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
+import { applyScheme } from './internal/scheme-paint';
+import { watermarkOpacityScheme } from './internal/watermark-paint';
 import { KkBroomMark } from './KkBroomMark';
 import type { KkSx } from './kk-sx';
-import { kkTokens } from './tokens';
 
 type KkBandWatermarkSide = 'left' | 'right' | 'center';
 type KkBandWatermarkTone = 'onAccent' | 'ink';
@@ -44,10 +45,9 @@ export const KkBandWatermark: FC<KkBandWatermarkProps> = ({
         position: 'absolute',
         top: '50%',
         color: toneColors[tone],
-        opacity: kkTokens.opacity.watermark,
         pointerEvents: 'none',
         zIndex: 0,
-        ...theme.applyStyles('dark', { opacity: kkTokens.opacity.watermarkDark }),
+        ...applyScheme(theme, watermarkOpacityScheme),
       }),
       ...(Array.isArray(sx) ? sx : [sx]),
     ]}

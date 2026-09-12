@@ -19,7 +19,7 @@ export const KkAppShellPageTitle: FC<KkAppShellPageTitleProps> = ({
       fontFamily: kkTokens.font.display,
       fontSize: { xs: '1.75rem', desktop: '2.25rem' },
       lineHeight: 1.15,
-      letterSpacing: '0.02em',
+      letterSpacing: kkTokens.type.tracking.display,
       color: 'text.primary',
       textTransform: transform,
     }}

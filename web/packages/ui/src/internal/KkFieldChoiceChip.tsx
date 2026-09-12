@@ -51,7 +51,7 @@ export const KkFieldChoiceChip: FC<KkFieldChoiceChipProps> = ({
         fontFamily: kkTokens.font.body,
         fontSize: kkTokens.type.rowMeta,
         fontWeight: 800,
-        letterSpacing: '0.02em',
+        letterSpacing: kkTokens.type.tracking.tight,
         lineHeight: 1.2,
         whiteSpace: 'nowrap',
         cursor: 'pointer',

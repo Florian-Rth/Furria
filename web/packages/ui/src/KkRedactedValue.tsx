@@ -60,7 +60,7 @@ export const KkRedactedValue: FC<KkRedactedValueProps> = ({
           fontFamily: kkTokens.font.body,
           fontSize: kkTokens.type.chip,
           fontWeight: 800,
-          letterSpacing: '0.02em',
+          letterSpacing: kkTokens.type.tracking.tight,
           lineHeight: 1.2,
           color: 'text.secondary',
           whiteSpace: 'nowrap',

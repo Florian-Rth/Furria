@@ -9,6 +9,7 @@ import { KkAppShellMenuMark } from './KkAppShellMenuMark';
 
 const FADE = 'linear-gradient(to top, var(--mui-palette-background-default) 46%, transparent)';
 const OPEN_LABEL = 'Menü öffnen';
+const LABEL_SEPARATOR = ' – ';
 
 const darkSchemeAttribute = { [KK_DARK_SCHEME_ATTRIBUTE]: '' };
 
@@ -18,6 +19,7 @@ interface KkAppShellMenuButtonProps {
 
 export const KkAppShellMenuButton: FC<KkAppShellMenuButtonProps> = ({ label }) => {
   const curtain = useAppShellCurtain();
+  const accessibleName = `${label}${LABEL_SEPARATOR}${OPEN_LABEL}`;
 
   return (
     <Stack
@@ -39,7 +41,7 @@ export const KkAppShellMenuButton: FC<KkAppShellMenuButtonProps> = ({ label }) =
         component="button"
         type="button"
         {...darkSchemeAttribute}
-        aria-label={OPEN_LABEL}
+        aria-label={accessibleName}
         aria-expanded={curtain.isOpen}
         onClick={curtain.open}
         direction="row"
@@ -53,7 +55,7 @@ export const KkAppShellMenuButton: FC<KkAppShellMenuButtonProps> = ({ label }) =
           border: kkTokens.line.hair,
           borderStyle: 'solid',
           borderColor: 'divider',
-          borderRadius: `${kkTokens.radius.action}px`,
+          borderRadius: `${kkTokens.radius.pill}px`,
           boxShadow: kkTokens.shadow.floating,
           cursor: 'pointer',
           pl: 2.125,
@@ -67,7 +69,7 @@ export const KkAppShellMenuButton: FC<KkAppShellMenuButtonProps> = ({ label }) =
           sx={{
             fontFamily: kkTokens.font.display,
             fontSize: '0.9375rem',
-            letterSpacing: '0.09em',
+            letterSpacing: kkTokens.type.tracking.label,
             lineHeight: 1,
             textTransform: 'uppercase',
             whiteSpace: 'nowrap',

@@ -11,7 +11,7 @@ type KkModalFrameSize = 'default' | 'full';
 
 const DIALOG_MARGIN = '32px';
 const DIALOG_INSET = 'calc(100% - 64px)';
-const SHEET_RADIUS = `${kkTokens.radius.sheet}px ${kkTokens.radius.sheet}px 0 0`;
+const SHEET_RADIUS = `${kkTokens.radius.base}px ${kkTokens.radius.base}px 0 0`;
 const SCRIM_BLUR = 'blur(1.5px)';
 const SHEET_FOOT = 2.5;
 const DIALOG_FOOT = 2.75;

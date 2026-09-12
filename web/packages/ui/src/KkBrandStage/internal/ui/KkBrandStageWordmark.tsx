@@ -20,7 +20,7 @@ export const KkBrandStageWordmark: FC<KkBrandStageWordmarkProps> = ({ variant = 
     sx={{
       color: 'text.primary',
       fontSize: wordmarkSize[variant],
-      letterSpacing: '0.06em',
+      letterSpacing: kkTokens.type.tracking.label,
       lineHeight: 1,
     }}
   >

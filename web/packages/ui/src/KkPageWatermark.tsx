@@ -1,8 +1,9 @@
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
+import { applyScheme } from './internal/scheme-paint';
+import { watermarkOpacityScheme } from './internal/watermark-paint';
 import { KkBroomMark } from './KkBroomMark';
 import type { KkSx } from './kk-sx';
-import { kkTokens } from './tokens';
 
 const MARK_SIZE = { xs: 150, desktop: 230 };
 
@@ -15,14 +16,14 @@ export const KkPageWatermark: FC<KkPageWatermarkProps> = ({ sx }) => (
     aria-hidden
     data-kk-page-watermark
     sx={[
-      {
+      (theme) => ({
         alignItems: 'center',
         justifyContent: 'center',
         color: 'text.primary',
-        opacity: kkTokens.opacity.watermark,
         pointerEvents: 'none',
         py: { xs: 4, desktop: 8 },
-      },
+        ...applyScheme(theme, watermarkOpacityScheme),
+      }),
       ...(Array.isArray(sx) ? sx : [sx]),
     ]}
   >

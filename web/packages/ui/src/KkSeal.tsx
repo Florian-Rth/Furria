@@ -90,7 +90,7 @@ export const KkSeal: FC<KkSealProps> = ({ dateLabel, caption, size = 168, rotati
           sx={{
             fontWeight: 900,
             fontSize: size * 0.08,
-            letterSpacing: '0.16em',
+            letterSpacing: kkTokens.type.tracking.section,
             mt: `${size * 0.02}px`,
           }}
         >

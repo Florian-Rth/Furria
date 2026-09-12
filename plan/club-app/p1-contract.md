@@ -3051,6 +3051,43 @@ Live-Regie, Beitrag, Galerie, Klamotten — leave `APP_SECTIONS` for their own t
 „Verwaltung". Five of the eight front-row entries were dead ends rendered pixel-identical to the
 live ones.
 
+#### 7.1d Further primitive changes (UX pass, round 4)
+
+| Primitive | Change | Finding |
+|---|---|---|
+| `kkTokens.color.dark.panel2` | `#0E0B0A` → **`#272120`**. The dark raised surface was *darker* than the dark page ground (`bg #161110`) and byte-identical to `chrome.dark.base` — a chrome ground reused as a content surface — so every dialog, `/profile`'s Sichtbarkeit card and the Hub's reserved slots read as holes punched in the page and the 7.6a `editing` tone was distinguishable only by being one. `bg < panel < panel2` now holds in dark as it always did in light. `chrome.dark.base`/`sideBg` stay `#0E0B0A`: chrome darker than the page is deliberate. `internal/contrast.test.ts` gained the invariant (raised is lighter than both the page and a cream panel, in both schemes) and the „never reuse a chrome ground as a content surface" check. | R1 |
+| `KkLetterIndex` | the selected cell spread `redInk(theme)` and `accentWash(theme)` into one object literal, so the second `applyStyles('dark', …)` key silently discarded the first and the cell shipped light `#B3101C` on the dark wash at **2.04:1**. `internal/accent-wash.ts` now exports `accentWashScheme(theme)` beside `redInkScheme`, and the pair is merged through the one `applyScheme` 7.6c created for exactly this bug class. The composed paint moved to `letter-index-cell-paint.ts` so a unit test can assert it carries **one** dark block containing **both** the ink and the wash. Every other call site in the package was audited: no second occurrence. | R2 |
+| `KkFilterChips` | U12 is now actually implemented. The shipped component did the **inverse** — `nowrap`/`overflow-x: auto` at `xs`, `wrap` at desktop, plus an unconditional 36px fade — so the fifth chip on `/members` (`kein Mitglied 11`, the cohort the page's own lead explains) was off-screen at 390px. `filterChipsWrap(optionCount)` pins the rule: **≤ 5 options wrap at every width**, `overflowX: visible`, no mask; the scroll-with-fade branch survives only for a longer set, and the `scrollIntoView` effect runs only in that branch. | R3 |
+| `KkLetterIndex` | new **`variant="rail"`**: a fixed, vertically centred, right-gutter column of 26×26 cells (clears SC 2.5.8), `aria-orientation="vertical"`, `zIndex: kkTokens.layout.letterRailZ` — above the list, below the sticky bar. Roving tabindex, `aria-current="location"` and the required `label` are unchanged. At 390px the phone toolbars pinned search + filter chips + a three-row alphabet (~250 CSS px) for the whole scroll of a deliberately unpaged 151-row list; the rail costs zero vertical space. Mounting it at `xs` is the app's call. | R4 |
+| `KkButton` | `variant="text"`'s rest signifier (7.1a's round-3 amendment) and `KkSinceRow`'s title-link underline (U1) had become typographic twins: 19–21× per surface a row carried two underlined targets of identical weight, „Beenden" and the person's name, separated only by hue (WCAG 1.4.1). The **marks** split, not the hues: the button label rests on `textDecorationStyle: 'dotted'` at `line.hair` and goes **solid** at `line.section` on `:hover, :focus-visible`. `titleLinkPaint` keeps its solid underline. Neither underline is removed. | R5 |
+| `KkPageWatermark`, `KkBandWatermark` | both now read one exported `watermarkOpacityScheme` (`internal/watermark-paint.ts`) through `applyScheme`. The page mark had no dark delta at all and painted at 2.5× the band mark directly above it. | R6 |
+| `KkPanelHeader` | the editorial rule gets `minWidth: RULE_BLEED * 2` and `flexShrink: 0`, so it can never render as pure accent bleed. With a selection the Verwaltung master column narrows to ~5/12 and the rule was squeezed to ~30px — entirely inside the 26px bleed — so §5's signature gesture became a red dash hanging off the word, in the selected state only. The create action stays in the `action` slot (round-1 amendment 3 to 7.1a.3). | R7 |
+| `KkSinceRow` | the desktop `KkEyebrow`(„SEIT") + value pair is gone; both breakpoints now render the single phrase `compactSince` („seit 2016/17"), right-aligned, `nowrap`, `text.secondary`. §10.3 pins one spelling for a running relationship and 7.1c's deviation note governs only its typographic **rank** (Archivo `type.rowTitle` at `text.secondary`) — which is kept. | R8 |
+| `KkPersonRow` | at `xs` the second line wraps: the affiliation takes `flexGrow: 1` / `flexBasis: 100%` and the trailing chips fall to a third line instead of truncating the identity. The Personenverwaltung hangs two pinned chips (§5.7) there, ~200 of 390px, so the management view showed **less** about a Person than `/members` did. The chip order fixed in round 1 is unchanged. | R9 |
+| `KkInlineLink`, `KkCard` | both hover rules paint `redInk(theme)` instead of `primary.main`. 7.1a.4 pins `.main` as the fill and `*Ink` as the readable foreground; these two were the last sites still dropping to 4.35:1 in exactly the state the reader puts them in. | R10 |
+| `KkAppShell.MenuButton` | `aria-label` is `` `${label} – Menü öffnen` `` instead of the bare constant, which replaced the visible section title outright (WCAG 2.5.3 Label in Name, Level A) on the only navigation control a phone has. | R11 |
+| `KkConfirmDialog` | `disabled={busy}` is off the cancel button. Escape, the backdrop and the frame's close ✕ all dismissed during the same request anyway, so the dialog disabled its one *labelled* exit and left three unlabelled ones open — and with the confirm button loading, a keyboard user in a slow write had no focusable control left inside the dialog. `loading={busy}` on the confirming button is unchanged; `onClose` is **not** gated. | R12 |
+| `KkErrorState` | `role="alert"` on the root, so the German failure sentence and its retry button are announced when they replace the skeleton (SC 4.1.3). | R13 |
+| `KkSelectRow` | optional `component`/`to`/`params`/`search`, rendering a real anchor when they are passed and keeping the `<button>` branch for callers with no URL. The card grid reached `?group=5` through an anchor while the master list — the only way to reach another detail once a selection exists — reached the identical destination through `navigate()`. 7.1b's rules for this primitive are untouched. | R14 |
+| `KkPanelHeader`, `KkPanelSection` | new `titleRef?: Ref<HTMLHeadingElement>`; the title carries `tabIndex={-1}` and `outline: 'none'`. Every „… beenden" flow unmounts the row MUI would restore focus to, dropping focus to `<body>` (SC 2.4.3); a caller can now move it to MITGLIEDER / INHABER with the list underneath. | R15 |
+
+**Token hygiene from the same finding (R16), read as an amendment to 7.6d.**
+`radius.card` (16, zero consumers) is **deleted**; `radius.action` (40) folds into `radius.pill` —
+a 46px-tall dock button is a pill; `radius.sheet` (22) folds into `radius.base`, so the corner on
+the `/login` sheet and every `xs` `KkModalFrame` matches the cards behind it. Design handoff §12
+(„no new radii") therefore holds again: 14 · 20 · 50 plus `radius.bar`.
+`kkTokens.shadow.sheet` and `kkTokens.shadow.floating` are **kept and hereby written into 7.6d**:
+`sheet` is the dark-scheme half of the `sheetSoft` sheet elevation (an upward shadow the
+`shadow.*` scale had no entry for), and `floating` is the tighter, darker lift the mobile dock
+button and the skip link need over live content, where `shadow.raised`'s 0.12 alpha disappears.
+New `kkTokens.type.tracking` — `tight 0.01em · display 0.03em · label 0.09em · section 0.12em ·
+eyebrow 0.2em` — replaces **twelve** distinct `letterSpacing` literals across 28 files (0.02/0.025
+collapse into one decision, 0.06–0.09 into one, 0.12/0.16 into one);
+`kkTokens.eyebrow.letterSpacing` now reads `tracking.eyebrow` and keeps its name, because the
+website spreads `kkTokens.eyebrow` wholesale. The orphan `kkTokens.layout.stickyLetterZ` is gone —
+`KkLetterDivider` stopped being sticky in round 3 — replaced by `kkTokens.layout.letterRailZ`,
+which the new rail variant actually reads.
+
 ### 7.2 `KkIconName` additions
 
 ```

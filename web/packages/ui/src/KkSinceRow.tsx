@@ -8,7 +8,6 @@ import { focusRing } from './internal/focus-ring';
 import { inkWashSurface } from './internal/ink-wash';
 import { redInk } from './internal/red-ink';
 import { rowDividerTop } from './internal/row-divider';
-import { KkEyebrow } from './KkEyebrow';
 import type { KkIconName } from './KkIcon';
 import { KkIcon } from './KkIcon';
 import { KkMeta } from './KkMeta';
@@ -271,33 +270,23 @@ export const KkSinceRow: FC<KkSinceRowProps> = ({
         {wideMetaLine}
         {compactMetaLine}
       </Stack>
-      <Stack
+      <Typography
         component="span"
+        data-kk-since-row-since
         sx={{
-          display: { xs: 'none', desktop: 'flex' },
-          alignItems: 'flex-end',
-          gap: 0.25,
+          display: { xs: 'none', desktop: 'block' },
           flexShrink: 0,
+          fontSize: kkTokens.type.rowTitle,
+          fontWeight: 800,
+          letterSpacing: kkTokens.type.tracking.tight,
+          lineHeight: 1.2,
+          color: 'text.secondary',
+          textAlign: 'right',
+          whiteSpace: 'nowrap',
         }}
       >
-        <KkEyebrow tone="muted" size="small" sx={{ lineHeight: 1 }}>
-          {sinceLabel}
-        </KkEyebrow>
-        <Typography
-          component="span"
-          sx={{
-            display: 'block',
-            fontSize: kkTokens.type.rowTitle,
-            fontWeight: 800,
-            letterSpacing: '0.01em',
-            lineHeight: 1.2,
-            color: 'text.secondary',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {sinceValue}
-        </Typography>
-      </Stack>
+        {compactSince}
+      </Typography>
       {trailingSlot}
       {chevron}
       {overlay}

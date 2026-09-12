@@ -86,7 +86,7 @@ export const KkSessionField: FC<KkSessionFieldProps> = ({
             color: 'text.secondary',
             fontFamily: kkTokens.font.display,
             fontSize: SESSION_LABEL_FONT_SIZE,
-            letterSpacing: '0.04em',
+            letterSpacing: kkTokens.type.tracking.display,
             whiteSpace: 'nowrap',
           }}
         >

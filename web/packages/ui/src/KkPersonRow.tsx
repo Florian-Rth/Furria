@@ -13,6 +13,8 @@ import type { KkSx } from './kk-sx';
 import { resolvePersonRowAffiliation } from './person-row-affiliation';
 import { kkTokens } from './tokens';
 
+const AFFILIATION_FLOOR = '50%';
+
 const clampedLine = {
   display: 'block',
   minWidth: 0,
@@ -96,7 +98,9 @@ export const KkPersonRow: FC<KkPersonRowProps> = ({
         fontWeight: 700,
         lineHeight: 1.3,
         color: 'text.secondary',
+        flexGrow: 1,
         ...clampedLine,
+        minWidth: { xs: AFFILIATION_FLOOR, desktop: 0 },
       }}
     >
       {accentPart}
@@ -123,7 +127,17 @@ export const KkPersonRow: FC<KkPersonRowProps> = ({
     );
 
   const secondLine = hasSecondLine ? (
-    <Stack component="span" direction="row" sx={{ alignItems: 'center', gap: 0.875, minWidth: 0 }}>
+    <Stack
+      component="span"
+      direction="row"
+      sx={{
+        alignItems: 'center',
+        gap: 0.875,
+        minWidth: 0,
+        flexWrap: { xs: 'wrap', desktop: 'nowrap' },
+        rowGap: 0.5,
+      }}
+    >
       {affiliationLine}
       {inlineTrailing}
     </Stack>

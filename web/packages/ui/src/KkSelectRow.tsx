@@ -1,7 +1,7 @@
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import type { FC, ReactNode } from 'react';
+import type { ElementType, FC, ReactNode } from 'react';
 import { focusRing } from './internal/focus-ring';
 import { lineClamp } from './internal/line-clamp';
 import { raisedSurface } from './internal/raised-surface';
@@ -24,7 +24,11 @@ interface KkSelectRowProps {
   trailing?: ReactNode;
   selected?: boolean;
   dimmed?: boolean;
-  onClick: () => void;
+  component?: ElementType;
+  to?: string;
+  params?: Record<string, string>;
+  search?: Record<string, string | number>;
+  onClick?: () => void;
   sx?: KkSx;
 }
 
@@ -34,6 +38,10 @@ export const KkSelectRow: FC<KkSelectRowProps> = ({
   trailing,
   selected = false,
   dimmed = false,
+  component,
+  to,
+  params,
+  search,
   onClick,
   sx,
 }) => {
@@ -41,6 +49,9 @@ export const KkSelectRow: FC<KkSelectRowProps> = ({
   const titleColor = dimmed ? 'text.secondary' : 'text.primary';
   const borderColor = selected ? 'text.primary' : 'transparent';
   const barScale = selected ? 1 : 0;
+  const rowComponent = component ?? 'button';
+  const routeProps = component === undefined ? {} : { to, params, search };
+  const nativeProps = component === undefined ? { type: 'button' as const } : {};
 
   const metaLine =
     meta === undefined ? null : (
@@ -51,8 +62,9 @@ export const KkSelectRow: FC<KkSelectRowProps> = ({
 
   return (
     <Stack
-      component="button"
-      type="button"
+      component={rowComponent}
+      {...routeProps}
+      {...nativeProps}
       direction="row"
       aria-current={current}
       onClick={onClick}
@@ -71,6 +83,7 @@ export const KkSelectRow: FC<KkSelectRowProps> = ({
           appearance: 'none',
           cursor: 'pointer',
           textAlign: 'left',
+          textDecoration: 'none',
           color: 'inherit',
           backgroundColor: 'transparent',
           borderWidth: kkTokens.line.hair,
@@ -112,7 +125,7 @@ export const KkSelectRow: FC<KkSelectRowProps> = ({
             fontFamily: kkTokens.font.display,
             fontWeight: kkTokens.font.displayWeight,
             fontSize: kkTokens.type.rowValue,
-            letterSpacing: '0.025em',
+            letterSpacing: kkTokens.type.tracking.display,
             lineHeight: 1.3,
             color: titleColor,
             minWidth: 0,

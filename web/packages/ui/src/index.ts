@@ -87,6 +87,7 @@ export { KkToastProvider, useKkToast } from './KkToast/KkToast';
 export { KkTwoToneHeadline } from './KkTwoToneHeadline';
 export type { KkSx } from './kk-sx';
 export type { KkLetterIndexEntry } from './letter-index-cells';
+export type { KkLetterIndexVariant } from './letter-index-variant';
 export { PageLayout } from './PageLayout/PageLayout';
 export type { KkPhotoOrientation } from './photo-frame';
 export { KK_DARK_SCHEME_ATTRIBUTE, KK_DESKTOP_BREAKPOINT, kkTheme } from './theme';

@@ -19,8 +19,8 @@ export const KkAppShellSheet: FC<KkAppShellSheetProps> = ({ sx, children }) => (
         bgcolor: 'background.default',
         ...theme.applyStyles('dark', {
           [theme.breakpoints.down('desktop')]: {
-            borderTopLeftRadius: kkTokens.radius.sheet,
-            borderTopRightRadius: kkTokens.radius.sheet,
+            borderTopLeftRadius: kkTokens.radius.base,
+            borderTopRightRadius: kkTokens.radius.base,
             boxShadow: kkTokens.shadow.sheet,
           },
         }),

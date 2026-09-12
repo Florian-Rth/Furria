@@ -5,7 +5,7 @@ export const displayTitle: CSSObject = {
   fontFamily: kkTokens.font.display,
   fontWeight: kkTokens.font.displayWeight,
   fontSize: kkTokens.type.blockTitle,
-  letterSpacing: '0.03em',
+  letterSpacing: kkTokens.type.tracking.display,
   lineHeight: 1.15,
   color: 'text.primary',
   textTransform: 'uppercase',

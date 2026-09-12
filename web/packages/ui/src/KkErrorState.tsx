@@ -17,6 +17,7 @@ interface KkErrorStateProps {
 
 export const KkErrorState: FC<KkErrorStateProps> = ({ title, description, action, sx }) => (
   <Stack
+    role="alert"
     data-kk-error-state
     sx={[
       {

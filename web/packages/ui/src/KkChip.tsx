@@ -71,7 +71,7 @@ export const KkChip: FC<KkChipProps> = ({
           borderRadius: `${kkTokens.radius.pill}px`,
           fontFamily: kkTokens.font.body,
           fontWeight: 800,
-          letterSpacing: '0.02em',
+          letterSpacing: kkTokens.type.tracking.tight,
           lineHeight: 1.2,
           whiteSpace: 'nowrap',
           ...sizeMetrics[size],

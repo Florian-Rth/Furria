@@ -70,7 +70,7 @@ export const KkAppShellBackLink: FC<KkAppShellBackLinkProps> = ({
           fontFamily: kkTokens.font.body,
           fontSize: kkTokens.type.chip,
           fontWeight: 700,
-          letterSpacing: '0.08em',
+          letterSpacing: kkTokens.type.tracking.label,
           lineHeight: 1,
           textTransform: 'uppercase',
           color: 'inherit',
