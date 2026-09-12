@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
-import { buildNavGroups, resolveSectionTitle } from './app-sections';
+import { APP_SECTIONS, buildNavGroups, LATER_SECTIONS, resolveSectionTitle } from './app-sections';
 
 describe('resolveSectionTitle', () => {
   it.each([
@@ -24,11 +24,31 @@ describe('resolveSectionTitle', () => {
 
 describe('buildNavGroups', () => {
   it('always opens with the unlabelled main group', () => {
-    const [main, ...rest] = buildNavGroups({ permissionKeys: [], myGroups: [] });
+    const [main] = buildNavGroups({ permissionKeys: [], myGroups: [] });
 
     expect(main?.id).toBe('main');
     expect(main?.label).toBeNull();
-    expect(rest).toEqual([]);
+    expect(main?.sections).toEqual(APP_SECTIONS);
+  });
+
+  it('keeps every routeless entry out of the front row and in its own trailing group', () => {
+    const groups = buildNavGroups({ permissionKeys: [], myGroups: [] });
+    const last = groups.at(-1);
+
+    expect(
+      groups.flatMap((group) => group.sections).filter((section) => section.to === null),
+    ).toEqual(LATER_SECTIONS);
+    expect(last?.id).toBe('later');
+    expect(last?.sections.every((section) => section.hint !== undefined)).toBe(true);
+  });
+
+  it('hangs the later group after Meine Gruppen and Verwaltung', () => {
+    const groups = buildNavGroups({
+      permissionKeys: [PERMISSION_KEYS.groupsManage],
+      myGroups: [{ groupId: 3, name: 'Tanzgarde' }],
+    });
+
+    expect(groups.map((group) => group.id)).toEqual(['main', 'my-groups', 'manage', 'later']);
   });
 
   it('names one entry per Gruppe, sorted German, with its route params', () => {

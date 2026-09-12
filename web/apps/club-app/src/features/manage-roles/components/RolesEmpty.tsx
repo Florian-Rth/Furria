@@ -12,7 +12,6 @@ interface RolesEmptyProps {
 
 export const RolesEmpty: FC<RolesEmptyProps> = ({ onCreate }) => (
   <KkEmptyState
-    icon="permissions"
     title={EMPTY_TITLE}
     description={EMPTY_DESCRIPTION}
     action={

@@ -70,6 +70,8 @@ export const KkFactRow: FC<KkFactRowProps> = ({
   children,
 }) => {
   const metaLine = meta === undefined ? null : <KkMeta>{meta}</KkMeta>;
+  const titleColor = dimmed ? 'text.secondary' : 'text.primary';
+  const barOpacity = dimmed ? kkTokens.opacity.dimmed : 1;
 
   const actionsRow =
     actions === undefined ? null : (
@@ -108,7 +110,6 @@ export const KkFactRow: FC<KkFactRowProps> = ({
         {
           minWidth: 0,
           py: 1.5,
-          opacity: dimmed ? kkTokens.opacity.dimmed : 1,
           ...rowDividerTop,
         },
         ...(Array.isArray(sx) ? sx : [sx]),
@@ -123,7 +124,10 @@ export const KkFactRow: FC<KkFactRowProps> = ({
           flexWrap: { xs: 'wrap', desktop: 'nowrap' },
         }}
       >
-        <Box aria-hidden sx={(theme) => ({ ...barShape, ...toneBar[tone](theme) })} />
+        <Box
+          aria-hidden
+          sx={(theme) => ({ ...barShape, opacity: barOpacity, ...toneBar[tone](theme) })}
+        />
         <Stack sx={{ flexGrow: 1, minWidth: 0, alignSelf: 'center', gap: 0.375 }}>
           <Stack
             direction="row"
@@ -135,7 +139,7 @@ export const KkFactRow: FC<KkFactRowProps> = ({
                 fontSize: kkTokens.type.rowTitle,
                 fontWeight: 800,
                 lineHeight: 1.25,
-                color: 'text.primary',
+                color: titleColor,
                 minWidth: 0,
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',

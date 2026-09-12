@@ -9,9 +9,10 @@ export interface AppSection {
   to: string | null;
   params?: Record<string, string>;
   permissionKey?: PermissionKey;
+  hint?: string;
 }
 
-export type AppSectionGroupId = 'main' | 'my-groups' | 'manage';
+export type AppSectionGroupId = 'main' | 'my-groups' | 'manage' | 'later';
 
 export interface AppSectionGroup {
   id: AppSectionGroupId;
@@ -25,15 +26,20 @@ export const MEMBERS_PATH = '/members';
 export const GROUPS_PATH = '/groups';
 export const MY_GROUP_PATH = '/my-groups/$groupId';
 
+const LATER_HINT = 'bald';
+
 export const APP_SECTIONS: AppSection[] = [
   { id: 'overview', label: 'Übersicht', icon: 'overview', to: OVERVIEW_PATH },
-  { id: 'events', label: 'Veranstaltungen', icon: 'events', to: null },
-  { id: 'live', label: 'Live-Regie', icon: 'live', to: null },
   { id: 'members', label: 'Mitglieder', icon: 'members', to: MEMBERS_PATH },
   { id: 'groups', label: 'Gruppen', icon: 'group', to: GROUPS_PATH },
-  { id: 'fees', label: 'Beitrag', icon: 'fees', to: null },
-  { id: 'gallery', label: 'Galerie', icon: 'gallery', to: null },
-  { id: 'wardrobe', label: 'Klamotten', icon: 'wardrobe', to: null },
+];
+
+export const LATER_SECTIONS: AppSection[] = [
+  { id: 'events', label: 'Veranstaltungen', icon: 'events', to: null, hint: LATER_HINT },
+  { id: 'live', label: 'Live-Regie', icon: 'live', to: null, hint: LATER_HINT },
+  { id: 'fees', label: 'Beitrag', icon: 'fees', to: null, hint: LATER_HINT },
+  { id: 'gallery', label: 'Galerie', icon: 'gallery', to: null, hint: LATER_HINT },
+  { id: 'wardrobe', label: 'Klamotten', icon: 'wardrobe', to: null, hint: LATER_HINT },
 ];
 
 export const MANAGE_SECTIONS: AppSection[] = [
@@ -72,6 +78,7 @@ export interface NavGroupInput {
 
 const MY_GROUPS_LABEL = 'Meine Gruppen';
 const MANAGE_LABEL = 'Verwaltung';
+const LATER_LABEL = 'Kommt später';
 
 const toMyGroupSection = (group: NavGroupRef): AppSection => ({
   id: `my-group-${group.groupId}`,
@@ -103,6 +110,8 @@ export const buildNavGroups = ({ permissionKeys, myGroups }: NavGroupInput): App
   if (managed.length > 0) {
     groups.push({ id: 'manage', label: MANAGE_LABEL, sections: managed });
   }
+
+  groups.push({ id: 'later', label: LATER_LABEL, sections: LATER_SECTIONS });
 
   return groups;
 };

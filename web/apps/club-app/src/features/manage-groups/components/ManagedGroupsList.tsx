@@ -28,7 +28,7 @@ export const ManagedGroupsList: FC<ManagedGroupsListProps> = ({
 
     return (
       <KkPanel variant="block">
-        <KkEmptyState icon="group" title={title} description={description} />
+        <KkEmptyState title={title} description={description} />
       </KkPanel>
     );
   }

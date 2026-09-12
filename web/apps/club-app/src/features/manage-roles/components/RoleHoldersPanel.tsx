@@ -34,7 +34,7 @@ export const RoleHoldersPanel: FC<RoleHoldersPanelProps> = ({ holders, pending, 
   const isEmpty = rows.length === 0;
 
   const body = isEmpty ? (
-    <KkEmptyState icon="person" title={EMPTY_TITLE} description={EMPTY_DESCRIPTION} />
+    <KkEmptyState title={EMPTY_TITLE} description={EMPTY_DESCRIPTION} />
   ) : (
     rows
   );

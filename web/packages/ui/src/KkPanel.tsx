@@ -48,6 +48,8 @@ const interactivePaint = (theme: Theme): CSSObject => ({
   textDecoration: 'none',
   color: 'inherit',
   cursor: 'pointer',
+  borderColor: 'divider',
+  ...applyScheme(theme, liftScheme),
   ...focusRing(theme),
   '@media (hover: hover)': {
     '&:hover': {
@@ -56,6 +58,11 @@ const interactivePaint = (theme: Theme): CSSObject => ({
     },
   },
 });
+
+const dimmedPaint: CSSObject = {
+  '& [data-kk-heading]': { color: 'text.secondary' },
+  '& [data-kk-avatar-stack]': { opacity: kkTokens.opacity.dimmed },
+};
 
 interface KkPanelProps extends PropsWithChildren {
   variant?: KkPanelVariant;
@@ -97,10 +104,10 @@ export const KkPanel: FC<KkPanelProps> = ({
           borderWidth: kkTokens.line.hair,
           borderColor: 'divider',
           borderRadius: `${kkTokens.radius.base}px`,
-          opacity: dimmed ? kkTokens.opacity.dimmed : 1,
           ...toneStyles[tone](theme),
           ...panelPadding[variant],
           ...(interactive ? interactivePaint(theme) : {}),
+          ...(dimmed ? dimmedPaint : {}),
         }),
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}

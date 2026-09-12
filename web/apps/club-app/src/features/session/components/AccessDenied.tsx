@@ -20,12 +20,7 @@ export const AccessDenied: FC<AccessDeniedProps> = ({ message, action }) => {
       <AppPageHeader>
         <KkAppShell.PageTitle>{sectionTitle}</KkAppShell.PageTitle>
       </AppPageHeader>
-      <KkEmptyState
-        icon="permissions"
-        title={ACCESS_DENIED_TITLE}
-        description={message}
-        action={action}
-      />
+      <KkEmptyState title={ACCESS_DENIED_TITLE} description={message} action={action} />
     </>
   );
 };

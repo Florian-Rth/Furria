@@ -9,5 +9,5 @@ interface PersonsEmptyProps {
 }
 
 export const PersonsEmpty: FC<PersonsEmptyProps> = ({ query }) => (
-  <KkEmptyState icon="search" title={EMPTY_TITLE} description={toPersonsEmptyDescription(query)} />
+  <KkEmptyState title={EMPTY_TITLE} description={toPersonsEmptyDescription(query)} />
 );

@@ -443,27 +443,46 @@ decision written back into `p1-contract.md`, not re-litigating by the next imple
 Things the families saw, judged and **deliberately did not change**, because changing them would
 have been a contract amendment or a unilateral reshape of a primitive three siblings were using.
 
-1. **Twenty red `Beenden` ghosts form a red column** that outshouts the single neutral
-   „+ Mitglied" — the destructive action is the loudest thing on a busy Gruppen-Hub and on the
-   Gruppenverwaltung override panel. §7.1 pins `tone="danger"` + `variant="outlined"` as exactly
-   „the `Beenden` ghost", and both surfaces render the identical row, so quieting one would desync
-   the two. **Needs a §7.1 decision.**
-2. **On a phone every row with a `Beenden` becomes two lines**, because `KkSinceRow` pins its
-   `trailing` slot to `width: 100%` at `xs`. A 20-member Hub is ~8 600 px tall. It is legible and
-   the tap targets are generous, and it is the primitive's specified mobile behaviour from W3
-   (§7.6-reviewed).
+1. ~~**Twenty red `Beenden` ghosts form a red column**~~ — **resolved.** The UX pass (round 1,
+   finding U2) took the §7.1 decision and wrote it into the contract as **§7.1a**: a repeated row
+   action is `tone="danger" variant="text" size="small"`; the loud destructive treatment belongs to
+   the confirming button inside `KkConfirmDialog` alone; each surface gets exactly one
+   `variant="contained"` primary, in its section header's `action` slot. `KkButton`'s red *label*
+   branches now paint through `kkTokens.color.*.redInk` (`error.main` at `size="small"` measured
+   4.35:1 on cream). The call-site re-ranking belongs to the hub, groups and persons buckets.
+2. ~~**On a phone every row with a `Beenden` becomes two lines**~~ — **resolved.** The
+   `width: 100%` at `xs` is gone from `data-kk-since-row-trailing`; the slot sits inline at every
+   width and the row keeps `flexWrap` so an unusually wide trailing still wraps rather than
+   overflows (finding U1). The same rewrite gave `KkSinceRow` the link affordance it never had —
+   eighteen named Personen on `/groups/1` were unclickable — an `avatar` slot, and the emphasis
+   swap that stops the Session year outranking the person's name.
 3. **`/manage/roles` is the one Verwaltung surface with no intro lead and no
    `KkPanelHeader` rule over its master column**, while `/manage/persons` and `/manage/groups` both
    open with a `KkLead` and an accent-square section head. Side by side the roles page reads as a
    different generation of the same app. Cosmetic, cross-page, exactly W5's remit.
-4. **The avatar stack on `/groups` clips its initials** — each circle cuts the second letter
-   („FA KE PE EF VG" render with the right edge shaved). Pre-existing, not from this wave.
-5. **The app shell's fixed mobile dock button floats over content on every phone route**, including
-   `/members`. Pre-existing and app-wide, not a Verwaltung defect.
+4. ~~**The avatar stack on `/groups` clips its initials**~~ — **resolved.** `buildAvatarStack`
+   emits a one-letter monogram for stacked circles (finding U6); the −10px overlap stays. The
+   standalone `KkAvatar` at `medium`/`large` keeps both letters.
+5. ~~**The app shell's fixed mobile dock button floats over content on every phone route**~~ —
+   **resolved.** `KkAppShellMain` carries `pb: curtainClearance + 24` below `desktop` (finding U3),
+   so all four consumers of `kkTokens.layout.curtainClearance` finally agree. Not on
+   `KkAppShellStage` — the Stage's `pb` sits inside the masthead, not at the page bottom.
 6. **Decision B's inclusive end is genuinely surprising in the UI**: a Zugehörigkeit, Gruppen-Admin
    row or Inhaberschaft ended **today stays in the running list until tomorrow**, with `untilOn`
    set. Confirmed on the wire. Do not add a client-side filter and do not read it as a broken end
    flow — the server is right and §2 owns the rule.
+
+### Round 1 of the UX pass — the `ui` bucket
+
+Items 1, 2, 4 and 5 above are resolved; item 3 (the `/manage/roles` intro) and item 6 (decision B's
+inclusive end) are not this bucket's and stand. Findings U1–U13 landed in `@furria/ui`, with two
+rulings written back into the contract as **§7.1a** (the action hierarchy) and **§7.1b**
+(uppercase is chrome, a club name is data); §7.1c lists every other primitive change. Two new
+primitives exist and are unconsumed on purpose: `KkStickyRail` (the shared bucket needs it — a
+page cannot write `position: sticky` with a px `top` under `noDesignSx`) and `KkPageWatermark`
+(mounted on `/`, whose sheet was a blank cream field). **`KkEmptyState` lost its `icon` prop** —
+all 28 call sites were updated in the same commit, so a bucket rebasing onto this must not
+re-add it.
 
 ### Three implementation idioms worth copying, found the hard way
 

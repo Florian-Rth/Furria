@@ -7,6 +7,6 @@ const DESCRIPTION =
 
 export const GroupOverrideEmpty: FC = () => (
   <KkPanel variant="block" tone="reserved">
-    <KkEmptyState icon="group" title={TITLE} description={DESCRIPTION} />
+    <KkEmptyState title={TITLE} description={DESCRIPTION} />
   </KkPanel>
 );

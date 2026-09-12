@@ -14,7 +14,13 @@ export const AppNavGroup: FC<AppNavGroupProps> = ({ group }) => {
   const items = group.sections.map((section) => {
     if (section.to === null) {
       return (
-        <KkAppShell.NavItem key={section.id} label={section.label} icon={section.icon} disabled />
+        <KkAppShell.NavItem
+          key={section.id}
+          label={section.label}
+          icon={section.icon}
+          hint={section.hint}
+          disabled
+        />
       );
     }
 

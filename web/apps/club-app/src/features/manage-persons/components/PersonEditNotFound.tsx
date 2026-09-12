@@ -9,7 +9,6 @@ const PERSONS_PATH = '/manage/persons';
 
 export const PersonEditNotFound: FC = () => (
   <KkEmptyState
-    icon="person"
     title={NOT_FOUND_TITLE}
     description={NOT_FOUND_DESCRIPTION}
     action={

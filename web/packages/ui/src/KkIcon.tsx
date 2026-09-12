@@ -8,6 +8,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import CloseIcon from '@mui/icons-material/Close';
 import Diversity3OutlinedIcon from '@mui/icons-material/Diversity3Outlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 import EuroOutlinedIcon from '@mui/icons-material/EuroOutlined';
 import EventOutlinedIcon from '@mui/icons-material/EventOutlined';
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
@@ -65,6 +66,7 @@ export type KkIconName =
   | 'back'
   | 'bolt'
   | 'info'
+  | 'alert'
   | 'archive';
 type KkIconSize = 'small' | 'medium' | 'large';
 
@@ -106,6 +108,7 @@ const icons: Record<KkIconName, typeof HomeIcon> = {
   back: ChevronLeftIcon,
   bolt: BoltOutlinedIcon,
   info: InfoOutlinedIcon,
+  alert: ErrorOutlineOutlinedIcon,
   archive: Inventory2OutlinedIcon,
 };
 

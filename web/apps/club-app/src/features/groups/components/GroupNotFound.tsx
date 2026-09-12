@@ -9,7 +9,6 @@ const GROUPS_PATH = '/groups';
 
 export const GroupNotFound: FC = () => (
   <KkEmptyState
-    icon="group"
     title={NOT_FOUND_TITLE}
     description={NOT_FOUND_DESCRIPTION}
     action={
