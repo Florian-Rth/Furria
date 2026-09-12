@@ -86,10 +86,10 @@ export const RoleHeaderCard: FC<RoleHeaderCardProps> = ({
     <KkPanel variant="block">
       <Stack sx={{ gap: 1.5, minWidth: 0 }}>
         <Stack direction="row" sx={{ gap: 1, minWidth: 0, alignItems: 'center', flexWrap: 'wrap' }}>
-          <KkEyebrow>{EYEBROW}</KkEyebrow>
+          <KkEyebrow tone="accent">{EYEBROW}</KkEyebrow>
           {chip}
         </Stack>
-        <KkHeading level={2}>{role.name}</KkHeading>
+        <KkHeading level={3}>{role.name}</KkHeading>
         {metaLine}
         {description}
         {archivedNote}
