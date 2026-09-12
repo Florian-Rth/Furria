@@ -1,10 +1,11 @@
 import type { KkSx } from '@furria/ui';
-import { KkChip, KkMeta } from '@furria/ui';
+import { KkChip } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { GroupCardBody } from '@/features/groups';
+import { GroupCardBody, toPersonUnitLabel } from '@/features/groups';
+import { GROUP_SECTION_TITLES } from '@/lib/group-sections';
 import { toInitials } from '@/lib/initials';
-import { toGroupCountLine, toManagedGroupChips } from '../manage-groups-labels';
+import { toManagedGroupChips } from '../manage-groups-labels';
 import type { ManagedGroupSummary } from '../schemas';
 
 const MANAGE_GROUPS_PATH = '/manage/groups';
@@ -18,7 +19,7 @@ export const ManagedGroupCard: FC<ManagedGroupCardProps> = ({ group, sx }) => {
   const { status, openness } = toManagedGroupChips(group);
   const isArchived = group.archivedOn !== null;
   const adminInitials = group.admins.map((person) => toInitials(person.firstName, person.lastName));
-  const countLine = toGroupCountLine(group);
+  const unitLabel = toPersonUnitLabel(group.memberCount);
 
   const statusChip =
     status === null ? null : (
@@ -39,12 +40,13 @@ export const ManagedGroupCard: FC<ManagedGroupCardProps> = ({ group, sx }) => {
   return (
     <GroupCardBody
       name={group.name}
-      memberCount={group.memberCount}
+      count={group.memberCount}
+      unitLabel={unitLabel}
       description={group.description}
       initials={adminInitials}
       total={group.admins.length}
+      footNote={GROUP_SECTION_TITLES.admins}
       chips={chips}
-      footer={<KkMeta>{countLine}</KkMeta>}
       dimmed={isArchived}
       to={MANAGE_GROUPS_PATH}
       search={{ group: group.groupId }}
