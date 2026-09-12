@@ -3,6 +3,7 @@ using Furria.Infrastructure.Groups;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Registry;
+using Furria.Infrastructure.Roles;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -53,6 +54,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<MembershipService>();
         services.AddScoped<FeeReductionService>();
         services.AddScoped<GroupService>();
+        services.AddScoped<RoleService>();
 
         services.AddHostedService<DatabaseMigrator>();
         services.AddHostedService<BootstrapAdminSeeder>();
