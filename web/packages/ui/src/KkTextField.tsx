@@ -4,8 +4,8 @@ import TextField from '@mui/material/TextField';
 import type { FC, ReactNode } from 'react';
 import type { KkSx } from './kk-sx';
 
-type KkTextFieldType = 'text' | 'email' | 'password';
-type KkTextFieldInputMode = 'text' | 'email';
+type KkTextFieldType = 'text' | 'email' | 'password' | 'tel';
+type KkTextFieldInputMode = 'text' | 'email' | 'tel' | 'numeric';
 
 interface KkTextFieldProps {
   name: string;

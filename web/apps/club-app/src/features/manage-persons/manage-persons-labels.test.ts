@@ -1,0 +1,275 @@
+import { describe, expect, it } from 'vitest';
+import {
+  isContactWithheld,
+  splitPersonGroups,
+  toEndMembershipConsequence,
+  toEndMembershipFacts,
+  toFeeReductionConsequence,
+  toMembershipConsequence,
+  toOpenPause,
+  toPauseConsequence,
+  toPersonHeadline,
+  toPersonId,
+  toPersonRowAffiliation,
+  toPersonsEmptyDescription,
+  toRegisterSentence,
+} from './manage-persons-labels';
+import type { PersonMembership, PersonSummary } from './schemas';
+
+const person = (overrides: Partial<PersonSummary> & { personId: number }): PersonSummary => ({
+  firstName: 'Anna',
+  lastName: 'Adam',
+  email: null,
+  phone: null,
+  street: null,
+  zip: null,
+  city: null,
+  birthDate: null,
+  contactVisibleToMembers: false,
+  membershipState: 'active',
+  memberSince: null,
+  groups: [],
+  roles: [],
+  ...overrides,
+});
+
+const membership = (overrides: Partial<PersonMembership>): PersonMembership => ({
+  membershipId: 1,
+  startedOn: '2018-03-01',
+  endedOn: null,
+  isRunning: true,
+  isFuture: false,
+  pauses: [],
+  ...overrides,
+});
+
+describe('toPersonId', () => {
+  it.each([
+    { raw: '7', expected: 7 },
+    { raw: '0', expected: null },
+    { raw: '07', expected: null },
+    { raw: '-3', expected: null },
+    { raw: 'sieben', expected: null },
+    { raw: '', expected: null },
+  ])('reads $raw as $expected', ({ raw, expected }) => {
+    expect(toPersonId(raw)).toBe(expected);
+  });
+});
+
+describe('isContactWithheld', () => {
+  it.each([
+    { label: 'nothing on record', row: {}, expected: false },
+    { label: 'a phone kept private', row: { phone: '0170 1234' }, expected: true },
+    {
+      label: 'a phone opted in',
+      row: { phone: '0170 1234', contactVisibleToMembers: true },
+      expected: false,
+    },
+    { label: 'an address kept private', row: { zip: '99713', city: 'Großfurra' }, expected: true },
+    { label: 'a blank address', row: { street: '   ' }, expected: false },
+  ])('answers $expected for $label', ({ row, expected }) => {
+    expect(isContactWithheld(person({ personId: 1, ...row }))).toBe(expected);
+  });
+});
+
+describe('toPersonRowAffiliation', () => {
+  it('names one Rolle in full and counts the rest', () => {
+    const affiliation = toPersonRowAffiliation(
+      person({
+        personId: 1,
+        roles: [
+          { roleId: 1, name: 'Präsidentin' },
+          { roleId: 2, name: 'Chronistin' },
+        ],
+        groups: [
+          { groupId: 1, name: 'Große Garde' },
+          { groupId: 2, name: 'Elferrat' },
+        ],
+      }),
+    );
+
+    expect(affiliation).toEqual({
+      accent: 'Präsidentin +1',
+      meta: 'Große Garde · Elferrat',
+    });
+  });
+
+  it('leaves both slots undefined for an unaffiliated Person', () => {
+    expect(toPersonRowAffiliation(person({ personId: 1 }))).toEqual({
+      accent: undefined,
+      meta: undefined,
+    });
+  });
+});
+
+describe('toRegisterSentence', () => {
+  it.each([
+    { count: 0, expected: '0 Personen stehen im Register.' },
+    { count: 1, expected: '1 Person steht im Register.' },
+    { count: 151, expected: '151 Personen stehen im Register.' },
+  ])('counts $count', ({ count, expected }) => {
+    expect(toRegisterSentence(count)).toBe(expected);
+  });
+});
+
+describe('toPersonsEmptyDescription', () => {
+  it('points at the filter when nothing was typed', () => {
+    expect(toPersonsEmptyDescription('   ')).toContain('Filter');
+  });
+
+  it('quotes the query that found nobody', () => {
+    expect(toPersonsEmptyDescription('  Kühn ')).toContain('„Kühn“');
+  });
+});
+
+describe('toPersonHeadline', () => {
+  it('falls back while the payload is still loading', () => {
+    expect(toPersonHeadline(undefined)).toEqual({
+      title: 'Person',
+      initials: '',
+      state: null,
+      line: null,
+    });
+  });
+
+  it('says ab for a membership that has not begun', () => {
+    const headline = toPersonHeadline({
+      personId: 5,
+      firstName: 'Dorothea',
+      lastName: 'Oehler',
+      email: null,
+      phone: null,
+      street: null,
+      zip: null,
+      city: null,
+      birthDate: null,
+      contactVisibleToMembers: false,
+      membershipState: 'none',
+      memberSince: null,
+      memberships: [],
+      feeReductions: [],
+      groups: [],
+      roles: [],
+    });
+
+    expect(headline).toEqual({
+      title: 'Dorothea Oehler',
+      initials: 'DO',
+      state: { label: 'kein Mitglied', tone: 'neutral', dot: false },
+      line: null,
+    });
+  });
+});
+
+describe('toOpenPause', () => {
+  it('finds the one pause without an end', () => {
+    const open = toOpenPause(
+      membership({
+        pauses: [
+          { pauseId: 1, firstSessionYear: 2012, lastSessionYear: 2013 },
+          { pauseId: 2, firstSessionYear: 2024, lastSessionYear: null },
+        ],
+      }),
+    );
+
+    expect(open?.pauseId).toBe(2);
+  });
+
+  it('answers null when every pause is closed', () => {
+    expect(
+      toOpenPause(
+        membership({ pauses: [{ pauseId: 1, firstSessionYear: 2012, lastSessionYear: 2013 }] }),
+      ),
+    ).toBeNull();
+  });
+});
+
+describe('toMembershipConsequence', () => {
+  it.each([
+    {
+      label: 'a closed period',
+      startedOn: '2009-01-11',
+      endedOn: '2016-02-10',
+      expected: 'Der Zeitraum steht vom 11.01.2009 bis zum 10.02.2016 im Register.',
+    },
+    {
+      label: 'a future start',
+      startedOn: '2026-10-27',
+      endedOn: null,
+      expected: 'Die Mitgliedschaft beginnt am 27.10.2026.',
+    },
+    {
+      label: 'a running period',
+      startedOn: '2018-03-01',
+      endedOn: null,
+      expected: 'Die Mitgliedschaft läuft seit dem 01.03.2018 und bleibt offen.',
+    },
+  ])('describes $label', ({ startedOn, endedOn, expected }) => {
+    expect(toMembershipConsequence(startedOn, endedOn, '2026-09-12')).toContain(expected);
+  });
+});
+
+describe('toPauseConsequence', () => {
+  it('says the pause has no end yet when it is open', () => {
+    expect(toPauseConsequence('Nicole', 2025, null)).toContain('Ab Session 2025/26');
+  });
+
+  it('names the span when both ends are known', () => {
+    expect(toPauseConsequence('Anna', 2012, 2013)).toContain('In 2012/13 – 2013/14');
+  });
+});
+
+describe('toFeeReductionConsequence', () => {
+  it('names the German basis and the Session span', () => {
+    expect(toFeeReductionConsequence('studies', 2024, 2026)).toContain(
+      'Studium steht für 2024/25 – 2026/27',
+    );
+  });
+
+  it('collapses a one-Session span', () => {
+    expect(toFeeReductionConsequence('school', 2025, 2025)).toContain('Schule steht für 2025/26 ');
+  });
+});
+
+describe('toEndMembershipConsequence', () => {
+  it('adds the clamp sentence only when a pause is open', () => {
+    expect(toEndMembershipConsequence('Nicole', '2026-02-18', true)).toContain(
+      'Eine offene Ruhezeit endet mit der Mitgliedschaft.',
+    );
+    expect(toEndMembershipConsequence('Anna', '2026-02-18', false)).not.toContain('Ruhezeit');
+  });
+});
+
+describe('toEndMembershipFacts', () => {
+  it('states the open end while no day is chosen', () => {
+    const facts = toEndMembershipFacts(membership({}), 'Anna Adam', null);
+
+    expect(facts).toEqual([
+      { label: 'Person', value: 'Anna Adam' },
+      { label: 'Mitglied seit', value: '01.03.2018' },
+      { label: 'Letzter Tag', value: 'noch offen' },
+    ]);
+  });
+
+  it('adds the clamped Ruhezeit row once a day is chosen', () => {
+    const facts = toEndMembershipFacts(
+      membership({ pauses: [{ pauseId: 2, firstSessionYear: 2024, lastSessionYear: null }] }),
+      'Nicole Oehler',
+      '2026-02-18',
+    );
+
+    expect(facts.at(-1)).toEqual({ label: 'Offene Ruhezeit', value: 'endet mit 2025/26' });
+  });
+});
+
+describe('splitPersonGroups', () => {
+  it('keeps the running rows apart from the closed ones', () => {
+    const split = splitPersonGroups([
+      { groupId: 1, name: 'Große Garde', joinedOn: '2018-03-01', leftOn: null },
+      { groupId: 2, name: 'Elferrat', joinedOn: '2012-01-01', leftOn: '2014-02-01' },
+    ]);
+
+    expect(split.running.map((row) => row.groupId)).toEqual([1]);
+    expect(split.past.map((row) => row.groupId)).toEqual([2]);
+  });
+});

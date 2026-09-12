@@ -1,0 +1,34 @@
+import type { KkLetterIndexEntry } from '@furria/ui';
+import { KkLetterIndex, KkPanel } from '@furria/ui';
+import Stack from '@mui/material/Stack';
+import type { FC } from 'react';
+import type { MembershipState } from '@/lib/api/schemas';
+import { PersonsStats } from './PersonsStats';
+
+const LETTER_INDEX_LABEL = 'Zu einem Buchstaben springen';
+
+interface PersonsAsideProps {
+  letters: readonly KkLetterIndexEntry[];
+  letter: string | undefined;
+  onLetterSelect: (letter: string) => void;
+  totals: Record<MembershipState, number>;
+}
+
+export const PersonsAside: FC<PersonsAsideProps> = ({
+  letters,
+  letter,
+  onLetterSelect,
+  totals,
+}) => (
+  <Stack sx={{ gap: 3.5, minWidth: 0 }}>
+    <KkPanel variant="block">
+      <KkLetterIndex
+        label={LETTER_INDEX_LABEL}
+        letters={letters}
+        current={letter}
+        onSelect={onLetterSelect}
+      />
+    </KkPanel>
+    <PersonsStats totals={totals} />
+  </Stack>
+);
