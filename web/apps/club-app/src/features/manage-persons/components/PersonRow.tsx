@@ -1,5 +1,4 @@
 import { KkChip, KkPersonRow } from '@furria/ui';
-import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
@@ -25,11 +24,9 @@ export const PersonRow: FC<PersonRowProps> = ({ person }) => {
   const params = { personId: String(person.personId) };
 
   const withheldChip = isContactWithheld(person) ? (
-    <Box component="span" sx={{ display: { xs: 'none', desktop: 'inline-flex' }, flexShrink: 0 }}>
-      <KkChip tone={WITHHELD_CHIP.tone} dot={WITHHELD_CHIP.dot} size="small">
-        {WITHHELD_CHIP.label}
-      </KkChip>
-    </Box>
+    <KkChip tone={WITHHELD_CHIP.tone} dot={WITHHELD_CHIP.dot} size="small">
+      {WITHHELD_CHIP.label}
+    </KkChip>
   ) : null;
 
   const trailing = (
