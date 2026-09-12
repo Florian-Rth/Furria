@@ -53,6 +53,7 @@ interface KkSinceRowProps {
   component?: ElementType;
   to?: string;
   params?: Record<string, string>;
+  search?: Record<string, string | number>;
   sx?: KkSx;
 }
 
@@ -69,11 +70,12 @@ export const KkSinceRow: FC<KkSinceRowProps> = ({
   component,
   to,
   params,
+  search,
   sx,
 }) => {
   const interactive = component !== undefined;
   const rowComponent = component ?? 'div';
-  const routeProps = component === undefined ? {} : { to, params };
+  const routeProps = component === undefined ? {} : { to, params, search };
   const titleColor = dimmed ? 'text.secondary' : 'text.primary';
   const leadingOpacity = dimmed ? kkTokens.opacity.dimmed : 1;
 
