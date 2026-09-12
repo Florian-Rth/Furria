@@ -4,13 +4,13 @@ import { isNotFoundError, toQueryErrorMessage } from '@/lib/query-error';
 const LIST_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
   unreachable:
     'Die Gruppen haben den Server nicht erreicht. Prüfe deine Verbindung und versuch es noch einmal.',
-  unexpected: 'Da ist etwas schiefgelaufen. Bitte versuch es gleich noch einmal.',
+  unexpected: 'Die Gruppenverwaltung konnte nicht geladen werden.',
   rejected: 'Der Server hat diese Anfrage nicht angenommen.',
 };
 
 const DETAILS_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
   unreachable: 'Diese Gruppe hat den Server nicht erreicht. Prüfe deine Verbindung.',
-  unexpected: 'Diese Gruppe lässt sich gerade nicht laden. Versuch es gleich noch einmal.',
+  unexpected: 'Diese Gruppe konnte nicht geladen werden.',
   rejected: 'Der Server hat diese Anfrage nicht angenommen.',
 };
 

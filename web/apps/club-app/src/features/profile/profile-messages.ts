@@ -4,7 +4,7 @@ import { toQueryErrorMessage } from '@/lib/query-error';
 const PROFILE_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
   unreachable:
     'Dein Profil hat den Server nicht erreicht. Prüfe deine Verbindung und versuch es noch einmal.',
-  unexpected: 'Da ist etwas schiefgelaufen. Bitte versuch es gleich noch einmal.',
+  unexpected: 'Dein Profil konnte nicht geladen werden.',
   rejected: 'Diese Änderung hat der Server nicht angenommen.',
 };
 
