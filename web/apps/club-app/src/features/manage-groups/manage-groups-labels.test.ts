@@ -10,7 +10,6 @@ import {
   toGroupStatusFilterId,
   toGroupStatusFilterOptions,
   toManagedGroupChips,
-  toManagedGroupRowChip,
   toManagedGroupsIntro,
   toRestoreConsequence,
 } from './manage-groups-labels';
@@ -105,20 +104,6 @@ describe('toManagedGroupChips', () => {
 
   it('always reports the openness', () => {
     expect(toManagedGroupChips(MUSIKZUG).openness.dot).toBe(false);
-  });
-});
-
-describe('toManagedGroupRowChip', () => {
-  it('shows the archived status over everything else', () => {
-    expect(toManagedGroupRowChip(WIRBELWIND).label).toBe('archiviert');
-  });
-
-  it('shows the missing admin warning over the openness', () => {
-    expect(toManagedGroupRowChip(CHRONIK).tone).toBe('gold');
-  });
-
-  it('falls back to the openness when nothing is urgent', () => {
-    expect(toManagedGroupRowChip(MUSIKZUG).label).toBe('sucht gerade niemanden');
   });
 });
 

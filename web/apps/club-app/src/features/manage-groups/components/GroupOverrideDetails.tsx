@@ -6,6 +6,7 @@ import {
   EndAdminDialog,
   EndMembershipDialog,
 } from '@/features/group-hub';
+import { usePermissions } from '@/features/session';
 import { useOverrideDialogs } from '../hooks/use-override-dialogs';
 import { useOverrideRefresh } from '../hooks/use-override-refresh';
 import type { ManagedGroupDetails } from '../schemas';
@@ -20,6 +21,7 @@ interface GroupOverrideDetailsProps {
 export const GroupOverrideDetails: FC<GroupOverrideDetailsProps> = ({ group }) => {
   const dialogs = useOverrideDialogs(group.members, group.admins);
   const refresh = useOverrideRefresh(group.groupId);
+  const { isAffiliated } = usePermissions();
   const canManage = group.archivedOn === null;
 
   const settle = (): void => {
@@ -65,12 +67,14 @@ export const GroupOverrideDetails: FC<GroupOverrideDetailsProps> = ({ group }) =
         <OverrideMembersPanel
           members={group.members}
           canManage={canManage}
+          canOpenPerson={isAffiliated}
           onAdd={dialogs.openAddMember}
           onEnd={dialogs.openEndMembership}
         />
         <OverrideAdminsPanel
           admins={group.admins}
           canManage={canManage}
+          canOpenPerson={isAffiliated}
           onAdd={dialogs.openAddAdmin}
           onEnd={dialogs.openEndAdmin}
         />

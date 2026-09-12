@@ -1,22 +1,21 @@
-import { KkChip, KkHeading, KkMeta, KkPanel } from '@furria/ui';
+import type { KkSx } from '@furria/ui';
+import { KkChip } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { toGroupCountLine, toManagedGroupChips } from '../manage-groups-labels';
+import { GroupCardBody } from '@/features/groups';
+import { toManagedGroupChips } from '../manage-groups-labels';
 import type { ManagedGroupSummary } from '../schemas';
+
+const MANAGE_GROUPS_PATH = '/manage/groups';
 
 interface ManagedGroupCardProps {
   group: ManagedGroupSummary;
-  onSelect: (groupId: number) => void;
+  sx?: KkSx;
 }
 
-export const ManagedGroupCard: FC<ManagedGroupCardProps> = ({ group, onSelect }) => {
+export const ManagedGroupCard: FC<ManagedGroupCardProps> = ({ group, sx }) => {
   const chips = toManagedGroupChips(group);
   const isArchived = group.archivedOn !== null;
-  const countLine = toGroupCountLine(group);
-
-  const select = (): void => {
-    onSelect(group.groupId);
-  };
 
   const statusChip =
     chips.status === null ? null : (
@@ -25,18 +24,25 @@ export const ManagedGroupCard: FC<ManagedGroupCardProps> = ({ group, onSelect })
       </KkChip>
     );
 
+  const footer = (
+    <Stack direction="row" sx={{ gap: 0.75, flexWrap: 'wrap', minWidth: 0 }}>
+      {statusChip}
+      <KkChip tone={chips.openness.tone} dot={chips.openness.dot} size="small">
+        {chips.openness.label}
+      </KkChip>
+    </Stack>
+  );
+
   return (
-    <KkPanel variant="block" dimmed={isArchived} onClick={select} sx={{ height: '100%' }}>
-      <Stack sx={{ gap: 1, minWidth: 0 }}>
-        <KkHeading level={3}>{group.name}</KkHeading>
-        <KkMeta>{countLine}</KkMeta>
-        <Stack direction="row" sx={{ gap: 0.75, flexWrap: 'wrap', minWidth: 0, pt: 0.25 }}>
-          {statusChip}
-          <KkChip tone={chips.openness.tone} dot={chips.openness.dot} size="small">
-            {chips.openness.label}
-          </KkChip>
-        </Stack>
-      </Stack>
-    </KkPanel>
+    <GroupCardBody
+      name={group.name}
+      memberCount={group.memberCount}
+      description={group.description}
+      footer={footer}
+      dimmed={isArchived}
+      to={MANAGE_GROUPS_PATH}
+      search={{ group: group.groupId }}
+      sx={sx}
+    />
   );
 };

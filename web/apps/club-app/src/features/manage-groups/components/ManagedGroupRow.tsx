@@ -1,6 +1,6 @@
 import { KkChip, KkSelectRow } from '@furria/ui';
 import type { FC } from 'react';
-import { toGroupCountLine, toManagedGroupRowChip } from '../manage-groups-labels';
+import { toGroupCountLine, toManagedGroupChips } from '../manage-groups-labels';
 import type { ManagedGroupSummary } from '../schemas';
 
 interface ManagedGroupRowProps {
@@ -10,17 +10,18 @@ interface ManagedGroupRowProps {
 }
 
 export const ManagedGroupRow: FC<ManagedGroupRowProps> = ({ group, selected, onSelect }) => {
-  const chip = toManagedGroupRowChip(group);
+  const status = toManagedGroupChips(group).status;
 
   const select = (): void => {
     onSelect(group.groupId);
   };
 
-  const trailing = (
-    <KkChip tone={chip.tone} dot={chip.dot} size="small">
-      {chip.label}
-    </KkChip>
-  );
+  const trailing =
+    status === null ? null : (
+      <KkChip tone={status.tone} dot={status.dot} size="small">
+        {status.label}
+      </KkChip>
+    );
 
   return (
     <KkSelectRow
