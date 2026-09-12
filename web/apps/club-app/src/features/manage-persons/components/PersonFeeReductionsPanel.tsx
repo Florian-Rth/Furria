@@ -1,11 +1,10 @@
-import { KkButton, KkEmptyState, KkIcon, KkPanel } from '@furria/ui';
+import { KkButton, KkEmptyState, KkIcon, KkPanel, KkPanelSection } from '@furria/ui';
 import type { FC } from 'react';
 import type { FactEditor } from '../hooks/use-fact-editor';
 import { PERSON_SECTION_TITLES } from '../manage-persons-labels';
 import type { PersonDetails } from '../schemas';
 import { FeeReductionEditor } from './FeeReductionEditor';
 import { PersonFeeReductionRow } from './PersonFeeReductionRow';
-import { PersonSection } from './PersonSection';
 
 const ADD_LABEL = 'Ermäßigung';
 const EMPTY_TITLE = 'KEINE ERMÄSSIGUNG';
@@ -65,8 +64,8 @@ export const PersonFeeReductionsPanel: FC<PersonFeeReductionsPanelProps> = ({ pe
   );
 
   return (
-    <PersonSection title={PERSON_SECTION_TITLES.feeReductions} action={action}>
+    <KkPanelSection title={PERSON_SECTION_TITLES.feeReductions} action={action}>
       <KkPanel variant={isEmpty ? 'block' : 'list'}>{body}</KkPanel>
-    </PersonSection>
+    </KkPanelSection>
   );
 };

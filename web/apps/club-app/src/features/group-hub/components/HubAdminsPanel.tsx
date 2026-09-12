@@ -1,11 +1,9 @@
-import { KkButton, KkEmptyState, KkIcon, KkNote, KkPanel } from '@furria/ui';
-import Stack from '@mui/material/Stack';
+import { KkButton, KkEmptyState, KkIcon, KkPanel, KkPanelSection } from '@furria/ui';
 import type { FC } from 'react';
 import { GROUP_SECTION_TITLES } from '@/lib/group-sections';
 import { NO_ADMINS_LINE } from '../group-hub-labels';
 import type { HubAdmin } from '../schemas';
 import { HubAdminRow } from './HubAdminRow';
-import { HubSection } from './HubSection';
 
 const NO_ADMINS_TITLE = 'KEIN GRUPPEN-ADMIN';
 const ADD_LABEL = 'Admin';
@@ -58,11 +56,8 @@ export const HubAdminsPanel: FC<HubAdminsPanelProps> = ({
   );
 
   return (
-    <HubSection title={GROUP_SECTION_TITLES.admins} action={action}>
-      <Stack sx={{ gap: 2, minWidth: 0 }}>
-        <KkPanel variant={variant}>{body}</KkPanel>
-        <KkNote>{ADMIN_NOTE}</KkNote>
-      </Stack>
-    </HubSection>
+    <KkPanelSection title={GROUP_SECTION_TITLES.admins} action={action} description={ADMIN_NOTE}>
+      <KkPanel variant={variant}>{body}</KkPanel>
+    </KkPanelSection>
   );
 };

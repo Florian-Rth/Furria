@@ -11,6 +11,7 @@ interface ProfileMembershipPanelProps {
 
 export const ProfileMembershipPanel: FC<ProfileMembershipPanelProps> = ({ membership }) => {
   const { memberSince, currentStartedOn, currentEndedOn } = membership;
+  const periodRestatesChain = currentStartedOn === memberSince && currentEndedOn === null;
 
   const memberSinceRow =
     memberSince === null ? null : (
@@ -18,7 +19,7 @@ export const ProfileMembershipPanel: FC<ProfileMembershipPanelProps> = ({ member
     );
 
   const periodRow =
-    currentStartedOn === null ? null : (
+    currentStartedOn === null || periodRestatesChain ? null : (
       <KkFieldRow label="Zeitraum" value={formatPeriod(currentStartedOn, currentEndedOn)} />
     );
 

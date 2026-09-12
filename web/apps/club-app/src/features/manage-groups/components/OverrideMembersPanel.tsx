@@ -1,8 +1,7 @@
-import { KkButton, KkEmptyState, KkIcon, KkPanel } from '@furria/ui';
+import { KkButton, KkEmptyState, KkIcon, KkPanel, KkPanelSection } from '@furria/ui';
 import type { FC } from 'react';
 import { MANAGE_GROUPS_SECTION_TITLES } from '../manage-groups-labels';
 import type { ManagedMember } from '../schemas';
-import { ManagedGroupsSection } from './ManagedGroupsSection';
 import { OverrideMemberRow } from './OverrideMemberRow';
 
 const ADD_LABEL = 'Mitglied';
@@ -48,8 +47,8 @@ export const OverrideMembersPanel: FC<OverrideMembersPanelProps> = ({
   );
 
   return (
-    <ManagedGroupsSection title={MANAGE_GROUPS_SECTION_TITLES.members} action={action}>
+    <KkPanelSection title={MANAGE_GROUPS_SECTION_TITLES.members} action={action}>
       <KkPanel variant={variant}>{body}</KkPanel>
-    </ManagedGroupsSection>
+    </KkPanelSection>
   );
 };

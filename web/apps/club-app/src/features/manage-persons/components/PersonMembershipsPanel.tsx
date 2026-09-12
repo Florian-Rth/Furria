@@ -1,11 +1,10 @@
-import { KkButton, KkEmptyState, KkIcon, KkPanel } from '@furria/ui';
+import { KkButton, KkEmptyState, KkIcon, KkPanel, KkPanelSection } from '@furria/ui';
 import type { FC } from 'react';
 import type { FactEditor } from '../hooks/use-fact-editor';
 import { PERSON_SECTION_TITLES } from '../manage-persons-labels';
 import type { PersonDetails } from '../schemas';
 import { MembershipEditor } from './MembershipEditor';
 import { PersonMembershipRow } from './PersonMembershipRow';
-import { PersonSection } from './PersonSection';
 
 const ADD_LABEL = 'Zeitraum';
 const EMPTY_TITLE = 'NOCH KEINE MITGLIEDSCHAFT';
@@ -66,8 +65,8 @@ export const PersonMembershipsPanel: FC<PersonMembershipsPanelProps> = ({ person
   );
 
   return (
-    <PersonSection title={PERSON_SECTION_TITLES.memberships} action={action}>
+    <KkPanelSection title={PERSON_SECTION_TITLES.memberships} action={action}>
       <KkPanel variant={isEmpty ? 'block' : 'list'}>{body}</KkPanel>
-    </PersonSection>
+    </KkPanelSection>
   );
 };

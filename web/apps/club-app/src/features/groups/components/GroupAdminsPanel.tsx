@@ -1,4 +1,12 @@
-import { KkAvatar, KkInlineLink, KkMeta, KkNote, KkPanel, KkSinceRow } from '@furria/ui';
+import {
+  KkAvatar,
+  KkInlineLink,
+  KkMeta,
+  KkNote,
+  KkPanel,
+  KkPanelSection,
+  KkSinceRow,
+} from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
@@ -11,7 +19,6 @@ import {
   toRecruitingContactSegments,
 } from '../groups-labels';
 import type { GroupAdmin } from '../schemas';
-import { GroupSection } from './GroupSection';
 
 const SINCE_LABEL = 'seit';
 const MEMBER_PATH = '/members/$personId';
@@ -76,12 +83,11 @@ export const GroupAdminsPanel: FC<GroupAdminsPanelProps> = ({ admins, isRecruiti
   ) : null;
 
   return (
-    <GroupSection title={GROUP_SECTION_TITLES.admins}>
+    <KkPanelSection title={GROUP_SECTION_TITLES.admins} description={ADMIN_NOTE}>
       <Stack sx={{ gap: 2, minWidth: 0 }}>
         <KkPanel variant={variant}>{body}</KkPanel>
         {contactNote}
-        <KkNote>{ADMIN_NOTE}</KkNote>
       </Stack>
-    </GroupSection>
+    </KkPanelSection>
   );
 };

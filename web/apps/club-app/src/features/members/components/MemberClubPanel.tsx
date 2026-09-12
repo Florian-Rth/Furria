@@ -1,10 +1,9 @@
-import { KkChip, KkFieldRow, KkNote, KkPanel } from '@furria/ui';
+import { KkChip, KkFieldRow, KkNote, KkPanel, KkPanelSection } from '@furria/ui';
 import type { FC } from 'react';
 import { formatIsoDay, toMemberSinceLabel } from '@/lib/membership-labels';
 import { toMembershipStateChip } from '@/lib/state-chips';
 import { MEMBER_SECTION_TITLES, toMembershipNote } from '../members-labels';
 import type { MemberDetails } from '../schemas';
-import { MemberSection } from './MemberSection';
 
 const MEMBERSHIP_LABEL = 'Mitgliedschaft';
 
@@ -34,12 +33,12 @@ export const MemberClubPanel: FC<MemberClubPanelProps> = ({ member }) => {
   const noteLine = note === null ? null : <KkNote sx={{ py: 1.75 }}>{note}</KkNote>;
 
   return (
-    <MemberSection title={MEMBER_SECTION_TITLES.club}>
+    <KkPanelSection title={MEMBER_SECTION_TITLES.club}>
       <KkPanel>
         <KkFieldRow label={MEMBERSHIP_LABEL} value={stateChip} />
         {sinceRow}
         {noteLine}
       </KkPanel>
-    </MemberSection>
+    </KkPanelSection>
   );
 };

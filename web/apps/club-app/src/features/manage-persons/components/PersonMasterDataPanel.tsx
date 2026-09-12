@@ -1,4 +1,4 @@
-import { KkButton, KkChip, KkFieldRow, KkIcon, KkPanel } from '@furria/ui';
+import { KkButton, KkChip, KkFieldRow, KkIcon, KkPanel, KkPanelSection } from '@furria/ui';
 import type { FC } from 'react';
 import { formatAddress, formatIsoDay } from '@/lib/membership-labels';
 import { toSwitchStateChip } from '@/lib/state-chips';
@@ -6,7 +6,6 @@ import { usePersonFormDialog } from '../hooks/use-person-form-dialog';
 import { PERSON_SECTION_TITLES } from '../manage-persons-labels';
 import type { PersonDetails } from '../schemas';
 import { PersonFormDialog } from './PersonFormDialog';
-import { PersonSection } from './PersonSection';
 
 const EDIT_LABEL = 'Bearbeiten';
 const NAME_LABEL = 'Name';
@@ -45,7 +44,7 @@ export const PersonMasterDataPanel: FC<PersonMasterDataPanelProps> = ({ person }
   );
 
   return (
-    <PersonSection title={PERSON_SECTION_TITLES.masterData} action={action}>
+    <KkPanelSection title={PERSON_SECTION_TITLES.masterData} action={action}>
       <KkPanel>
         <KkFieldRow label={NAME_LABEL} value={`${person.firstName} ${person.lastName}`} />
         <KkFieldRow label={EMAIL_LABEL} value={person.email ?? MISSING_VALUE} />
@@ -63,6 +62,6 @@ export const PersonMasterDataPanel: FC<PersonMasterDataPanelProps> = ({ person }
         onClose={dialog.close}
         onSaved={dialog.close}
       />
-    </PersonSection>
+    </KkPanelSection>
   );
 };

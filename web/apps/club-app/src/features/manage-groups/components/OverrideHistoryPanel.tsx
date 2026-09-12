@@ -1,9 +1,8 @@
-import { KkChip, KkEmptyState, KkFactRow, KkPanel } from '@furria/ui';
+import { KkChip, KkEmptyState, KkFactRow, KkPanel, KkPanelSection } from '@furria/ui';
 import type { FC } from 'react';
 import type { GroupHistoryKind } from '../manage-groups-labels';
 import { MANAGE_GROUPS_SECTION_TITLES, toGroupHistoryEntries } from '../manage-groups-labels';
 import type { ManagedAdmin, ManagedMember } from '../schemas';
-import { ManagedGroupsSection } from './ManagedGroupsSection';
 
 const EMPTY_TITLE = 'NOCH KEINE GESCHICHTE';
 const EMPTY_DESCRIPTION = 'Beendete Zugehörigkeiten und frühere Gruppen-Admins stehen hier.';
@@ -52,8 +51,8 @@ export const OverrideHistoryPanel: FC<OverrideHistoryPanelProps> = ({
   );
 
   return (
-    <ManagedGroupsSection title={MANAGE_GROUPS_SECTION_TITLES.history}>
+    <KkPanelSection title={MANAGE_GROUPS_SECTION_TITLES.history}>
       <KkPanel variant={variant}>{body}</KkPanel>
-    </ManagedGroupsSection>
+    </KkPanelSection>
   );
 };

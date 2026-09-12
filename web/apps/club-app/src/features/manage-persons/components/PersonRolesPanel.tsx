@@ -1,4 +1,12 @@
-import { KkChip, KkEmptyState, KkFactRow, KkNote, KkPanel, KkSinceRow } from '@furria/ui';
+import {
+  KkChip,
+  KkEmptyState,
+  KkFactRow,
+  KkNote,
+  KkPanel,
+  KkPanelSection,
+  KkSinceRow,
+} from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
@@ -8,7 +16,6 @@ import { formatPeriod, formatSinceSession } from '@/lib/membership-labels';
 import { READ_ONLY_CHIP } from '@/lib/state-chips';
 import { PERSON_SECTION_TITLES, ROLES_POINTER, splitPersonRoles } from '../manage-persons-labels';
 import type { PersonRole } from '../schemas';
-import { PersonSection } from './PersonSection';
 
 const EMPTY_TITLE = 'KEINE ROLLE';
 const SINCE_LABEL = 'Inhaberin seit';
@@ -79,12 +86,11 @@ export const PersonRolesPanel: FC<PersonRolesPanelProps> = ({ roles, firstName }
   );
 
   return (
-    <PersonSection title={PERSON_SECTION_TITLES.roles} action={chip}>
+    <KkPanelSection title={PERSON_SECTION_TITLES.roles} meta={chip} description={ROLES_POINTER}>
       <Stack sx={{ gap: 1.25, minWidth: 0 }}>
         {runningPanel}
         {pastPanel}
-        <KkNote>{ROLES_POINTER}</KkNote>
       </Stack>
-    </PersonSection>
+    </KkPanelSection>
   );
 };

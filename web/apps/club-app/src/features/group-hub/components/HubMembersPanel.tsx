@@ -1,10 +1,9 @@
-import { KkButton, KkEmptyState, KkIcon, KkPanel } from '@furria/ui';
+import { KkButton, KkEmptyState, KkIcon, KkPanel, KkPanelSection } from '@furria/ui';
 import type { FC } from 'react';
 import { GROUP_SECTION_TITLES } from '@/lib/group-sections';
 import { toNoMembersLine } from '../group-hub-labels';
 import type { HubMember } from '../schemas';
 import { HubMemberRow } from './HubMemberRow';
-import { HubSection } from './HubSection';
 
 const NO_MEMBERS_TITLE = 'NOCH NIEMAND DABEI';
 const ADD_LABEL = 'Mitglied';
@@ -52,8 +51,8 @@ export const HubMembersPanel: FC<HubMembersPanelProps> = ({
   );
 
   return (
-    <HubSection title={GROUP_SECTION_TITLES.members} action={action}>
+    <KkPanelSection title={GROUP_SECTION_TITLES.members} action={action}>
       <KkPanel variant={variant}>{body}</KkPanel>
-    </HubSection>
+    </KkPanelSection>
   );
 };
