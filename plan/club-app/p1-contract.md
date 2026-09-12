@@ -3095,6 +3095,20 @@ to 20%. Fully round, Archivo 800, `medium` 11px / `small` 11px with tighter padd
 Consumers: Mitglieder, Person, Gruppen, Gruppe, Hub, Personenverwaltung, Gruppenverwaltung,
 Rollen & Rechte, `KkFactRow`.
 
+**Placement and size — one rule, binding on every surface** (UX pass, round 1, finding G3). One
+fact about one object had four positions and two type sizes across the four Gruppen surfaces, so
+the reader re-learned where to look on every one of them.
+
+- **Position.** A chip that states the object's own condition — openness, `archiviert`,
+  `kein Admin`, a Person's Mitgliedschaft state — belongs to the **header** of the thing it
+  describes: the page-title band on a detail route, the detail header card on a master/detail
+  surface, the card's own title block on a card, the trailing slot on a list row. It never sits in
+  the body, and it is never repeated in two places on one surface.
+- **Size.** **Default (`medium`) in a header** — page title band, detail header card, card title
+  block. **`size="small"` in a list row** — the `trailing` slot of `KkPersonRow`, `KkSelectRow`,
+  `KkSummaryRow`, `KkSinceRow`, `KkFactRow`, and `KkReservedSlot`'s badge. There is no third case:
+  if a chip is neither in a header nor in a row, it is in the wrong place.
+
 **`KkSearchField`** — `packages/ui/src/KkSearchField.tsx`
 ```ts
 interface KkSearchFieldProps {

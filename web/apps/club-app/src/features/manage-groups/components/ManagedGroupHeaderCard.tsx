@@ -1,11 +1,7 @@
 import { KkButton, KkChip, KkHeading, KkIcon, KkMeta, KkNote, KkPanel, KkText } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import {
-  toArchivedSinceLine,
-  toGroupCountLine,
-  toManagedGroupChips,
-} from '../manage-groups-labels';
+import { toArchivedSinceLine, toManagedGroupChips } from '../manage-groups-labels';
 import type { ManagedGroupSummary } from '../schemas';
 
 const EDIT_LABEL = 'Bearbeiten';
@@ -31,7 +27,7 @@ export const ManagedGroupHeaderCard: FC<ManagedGroupHeaderCardProps> = ({
 
   const statusChip =
     chips.status === null ? null : (
-      <KkChip tone={chips.status.tone} dot={chips.status.dot} size="small">
+      <KkChip tone={chips.status.tone} dot={chips.status.dot}>
         {chips.status.label}
       </KkChip>
     );
@@ -75,15 +71,14 @@ export const ManagedGroupHeaderCard: FC<ManagedGroupHeaderCardProps> = ({
   return (
     <KkPanel variant="block" dimmed={isArchived}>
       <Stack sx={{ gap: 1.75, minWidth: 0 }}>
-        <Stack sx={{ gap: 0.5, minWidth: 0 }}>
+        <Stack sx={{ gap: 1, minWidth: 0 }}>
           <KkHeading level={2}>{group.name}</KkHeading>
-          <KkMeta>{toGroupCountLine(group)}</KkMeta>
-        </Stack>
-        <Stack direction="row" sx={{ gap: 0.75, alignItems: 'center', flexWrap: 'wrap' }}>
-          {statusChip}
-          <KkChip tone={chips.openness.tone} dot={chips.openness.dot} size="small">
-            {chips.openness.label}
-          </KkChip>
+          <Stack direction="row" sx={{ gap: 0.75, alignItems: 'center', flexWrap: 'wrap' }}>
+            {statusChip}
+            <KkChip tone={chips.openness.tone} dot={chips.openness.dot}>
+              {chips.openness.label}
+            </KkChip>
+          </Stack>
         </Stack>
         {description}
         {archivedNote}
