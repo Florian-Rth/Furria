@@ -18,7 +18,7 @@ export const GroupOverrideNotFound: FC<GroupOverrideNotFoundProps> = ({ onClear 
   );
 
   return (
-    <KkPanel variant="block" tone="reserved">
+    <KkPanel variant="block">
       <KkEmptyState title={TITLE} description={DESCRIPTION} action={clearAction} />
     </KkPanel>
   );
