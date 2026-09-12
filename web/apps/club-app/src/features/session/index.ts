@@ -1,5 +1,6 @@
 export { ME_QUERY_KEY, useMeQuery } from './api';
 export { AccessDenied } from './components/AccessDenied';
+export { AppBackLink } from './components/AppBackLink';
 export { AppPageHeader } from './components/AppPageHeader';
 export { AppShell } from './components/AppShell';
 export { AppStageGreeting } from './components/AppStageGreeting';

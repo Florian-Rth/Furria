@@ -66,6 +66,22 @@ export const MANAGE_SECTIONS: AppSection[] = [
   },
 ];
 
+export interface NavMatch {
+  to: string;
+  params: Record<string, string> | undefined;
+  fuzzy: boolean;
+}
+
+export const toNavMatch = (section: AppSection): NavMatch | null => {
+  if (section.to === null) {
+    return null;
+  }
+
+  const ownsDetailRoutes = section.params === undefined && section.to !== OVERVIEW_PATH;
+
+  return { to: section.to, params: section.params, fuzzy: ownsDetailRoutes };
+};
+
 export interface NavGroupRef {
   groupId: number;
   name: string;
