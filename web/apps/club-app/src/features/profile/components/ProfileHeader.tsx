@@ -20,6 +20,7 @@ export const ProfileHeader: FC<ProfileHeaderProps> = ({ me }) => {
   return (
     <KkPageHeader
       title={headline.title}
+      titleTransform="none"
       eyebrow={
         <KkEyebrow tone="accent" size="small">
           {PROFILE_EYEBROW}
