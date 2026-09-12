@@ -21,8 +21,8 @@ export const MemberView: FC<MemberViewProps> = ({ member }) => (
     </Grid>
     <Grid size={{ xs: 12, desktop: 5 }} sx={{ minWidth: 0 }}>
       <Stack sx={{ gap: 3.5, minWidth: 0 }}>
-        <MemberClubPanel member={member} />
         <MemberContactPanel contact={member.contact} firstName={member.firstName} />
+        <MemberClubPanel member={member} />
       </Stack>
     </Grid>
   </Grid>

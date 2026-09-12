@@ -5,7 +5,6 @@ import {
   toEmptyDescription,
   toLetterAnchorId,
   toMemberHeadline,
-  toMembershipLine,
   toMembershipNote,
   toPersonId,
   toPersonRowAffiliation,
@@ -131,25 +130,12 @@ describe('toPersonId', () => {
   });
 });
 
-describe('toMembershipLine', () => {
-  it.each<[MembershipState, string | null, string | null]>([
-    ['active', '2017-09-01', 'Mitglied seit 01.09.2017'],
-    ['paused', '2017-09-01', 'Mitglied seit 01.09.2017'],
-    ['ended', '2017-09-01', 'Mitglied ab 01.09.2017'],
-    ['none', '2027-09-01', 'Mitglied ab 01.09.2027'],
-    ['none', null, null],
-  ])('writes the %s chain beginning %o as %o', (state, memberSince, expected) => {
-    expect(toMembershipLine(state, memberSince)).toBe(expected);
-  });
-});
-
 describe('toMemberHeadline', () => {
   it('titles the stage before the card is known', () => {
     expect(toMemberHeadline(undefined)).toEqual({
       title: 'Person',
       initials: '',
       state: null,
-      line: null,
     });
   });
 
@@ -159,7 +145,6 @@ describe('toMemberHeadline', () => {
     expect(headline.title).toBe('Paula Brendel');
     expect(headline.initials).toBe('PB');
     expect(headline.state?.tone).toBe('gold');
-    expect(headline.line).toBe('Mitglied seit 01.09.2017');
   });
 });
 
