@@ -54,6 +54,8 @@ export const toLetterAnchors = (sections: readonly { letter: string }[]): Letter
 
 export const MEMBERS_SECTION_TITLE = 'Alle Mitglieder';
 
+export const LETTER_INDEX_LABEL = 'Zu einem Buchstaben springen';
+
 export const toConnectedSentence = (count: number): string => {
   const people = count === 1 ? '1 Person ist' : `${count} Personen sind`;
 
@@ -140,6 +142,11 @@ export const toMembershipNote = (state: MembershipState, firstName: string): str
 
 export const toContactHiddenExplanation = (firstName: string): string =>
   `${firstName} hat die Anzeige für Mitglieder ausgeschaltet. Das ist eine Einstellung, keine Lücke — frag im Zweifel eine Gruppen-Admin.`;
+
+export const SELF_CONTACT_HIDDEN_EXPLANATION =
+  'Du hast deine Kontaktdaten für Mitglieder ausgeblendet. So sieht dich der Verein.';
+
+export const SELF_CONTACT_HIDDEN_LINK = 'In Mein Profil ändern';
 
 export const toNoGroupsDescription = (firstName: string): string =>
   `${firstName} tanzt und spielt gerade in keiner Gruppe mit.`;

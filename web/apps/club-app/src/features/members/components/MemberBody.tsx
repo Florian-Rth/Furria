@@ -1,6 +1,7 @@
 import type { FC } from 'react';
 import { isNotFoundError } from '@/lib/query-error';
 import { useMemberQuery } from '../api';
+import { useIsSelf } from '../hooks/use-is-self';
 import { toMemberErrorMessage } from '../members-messages';
 import { MemberError } from './MemberError';
 import { MemberNotFound } from './MemberNotFound';
@@ -13,6 +14,7 @@ interface MemberBodyProps {
 
 export const MemberBody: FC<MemberBodyProps> = ({ personId }) => {
   const member = useMemberQuery(personId);
+  const isSelf = useIsSelf(personId);
   const errorMessage = toMemberErrorMessage(member.error);
   const missing = personId === null || isNotFoundError(member.error);
 
@@ -21,7 +23,7 @@ export const MemberBody: FC<MemberBodyProps> = ({ personId }) => {
   };
 
   if (member.data !== undefined) {
-    return <MemberView member={member.data} />;
+    return <MemberView member={member.data} isSelf={isSelf} />;
   }
   if (missing) {
     return <MemberNotFound />;

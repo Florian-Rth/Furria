@@ -4,13 +4,16 @@ import { toMemberHeadline } from '../members-labels';
 import type { MemberDetails } from '../schemas';
 
 const EYEBROW = 'Person';
+const SELF_EYEBROW = 'Deine Karte';
 
 interface MemberHeaderProps {
   member: MemberDetails | undefined;
+  isSelf: boolean;
 }
 
-export const MemberHeader: FC<MemberHeaderProps> = ({ member }) => {
+export const MemberHeader: FC<MemberHeaderProps> = ({ member, isSelf }) => {
   const headline = toMemberHeadline(member);
+  const eyebrow = isSelf ? SELF_EYEBROW : EYEBROW;
 
   const stateChip =
     headline.state === null ? null : (
@@ -22,9 +25,10 @@ export const MemberHeader: FC<MemberHeaderProps> = ({ member }) => {
   return (
     <KkPageHeader
       title={headline.title}
+      titleTransform="none"
       eyebrow={
         <KkEyebrow tone="accent" size="small">
-          {EYEBROW}
+          {eyebrow}
         </KkEyebrow>
       }
       avatar={<KkAvatar initials={headline.initials} size="large" />}

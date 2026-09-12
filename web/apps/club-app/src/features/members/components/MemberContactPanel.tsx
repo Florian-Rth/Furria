@@ -11,12 +11,14 @@ const REVEALED_NOTE = 'Du siehst das über deine Rolle — für andere Mitgliede
 interface MemberContactPanelProps {
   contact: MemberContact;
   firstName: string;
+  isSelf?: boolean;
   nested?: boolean;
 }
 
 export const MemberContactPanel: FC<MemberContactPanelProps> = ({
   contact,
   firstName,
+  isSelf = false,
   nested = false,
 }) => {
   const address = formatAddress(contact.street, contact.zip, contact.city);
@@ -34,7 +36,7 @@ export const MemberContactPanel: FC<MemberContactPanelProps> = ({
 
   const body =
     contact.visibility === 'hidden' ? (
-      <MemberContactHidden firstName={firstName} />
+      <MemberContactHidden firstName={firstName} isSelf={isSelf} />
     ) : (
       <KkPanel>
         {revealedStrip}
