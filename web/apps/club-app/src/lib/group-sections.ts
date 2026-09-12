@@ -1,7 +1,11 @@
 export const GROUP_SECTION_TITLES = {
+  about: 'Die Gruppe',
   members: 'Mitglieder',
   managedMembers: 'Zugehörigkeiten',
   admins: 'Gruppen-Admins',
+  history: 'Geschichte',
+  events: 'Termine',
+  photos: 'Bilder',
 } as const;
 
 const SUBLINE_SEPARATOR = ' · ';
