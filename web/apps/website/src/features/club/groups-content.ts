@@ -1,6 +1,7 @@
+import type { KkChipTone } from '@furria/ui';
 import type { Theme } from '@mui/material/styles';
-import type { Group } from '@/lib/seed/groups';
-import { SEEDED_GROUPS } from '@/lib/seed/groups';
+import { CLUB_CONTACT_EMAIL } from '@/lib/club';
+import type { PublicGroup } from './schemas';
 
 export const groupsChapter = {
   numeral: '04',
@@ -8,84 +9,92 @@ export const groupsChapter = {
   title: 'UNSERE GRUPPEN',
 } as const;
 
-export interface GroupEditorial {
-  blurb: string;
-  memberMeta: string;
-  fullText: string;
-  lead: string;
+export const groupsLabels = {
+  more: 'Mehr →',
+  photo: 'gruppen-foto',
+  close: 'Schließen',
+  joinCta: 'Mitglied werden →',
+  askCta: 'Schreib uns',
+  loading: 'Die Gruppen kommen gleich.',
+  errorTitle: 'DIE GRUPPEN KOMMEN NICHT DURCH.',
+  errorText:
+    'Das liegt an uns, nicht an dir. Versuch es gleich noch einmal — oder schreib uns, dann antwortet ein Mensch.',
+  errorRetry: 'Nochmal versuchen',
+  emptyTitle: 'HIER STEHT GLEICH MEHR.',
+  emptyText:
+    'Gerade ist keine Gruppe eingetragen. Das heißt nicht, dass nichts los ist — schreib uns, dann erzählen wir dir, was diese Session läuft.',
+  noDescription:
+    'Zu dieser Gruppe steht hier noch nichts. Frag uns einfach, dann erzählen wir dir mehr.',
+} as const;
+
+export const groupsMailHref = `mailto:${CLUB_CONTACT_EMAIL}`;
+
+export interface GroupOpenness {
+  label: string;
+  note: string;
+  tone: KkChipTone;
+  dot: boolean;
 }
 
-export interface GroupProfile extends GroupEditorial {
-  id: string;
-  title: string;
-}
-
-export const GROUP_EDITORIAL: Record<string, GroupEditorial> = {
-  tanzgarde: {
-    blurb: 'Funkenmariechen jenseits der Schallmauer',
-    memberMeta: '18 Aktive · 1 Schallmauer',
-    fullText:
-      'Die Kür der Tanzgarde ist inzwischen so schnell, dass die Jury sie nur noch in Zeitlupe bewerten kann. Zweimal wurde die Halle vorsorglich geräumt.',
-    lead: 'Hildegard von Bingen',
-  },
-  maennerballett: {
-    blurb: 'Zwölf Männer, ein Tutu, eine Weltbühne',
-    memberMeta: '12 Aktive · 3 Zugaben',
-    fullText:
-      'Seit dem versehentlichen Gastspiel an der Mailänder Scala probt das Männerballett ausschließlich in Spitzenschuhen. Tschaikowski liegt in Marschtakt vor.',
-    lead: 'Ludwig van Beethoven',
-  },
-  elferrat: {
-    blurb: 'Elf Räte, zwölf Meinungen',
-    memberMeta: '11 Räte · 1 Zeitzone',
-    fullText:
-      'Der Elferrat wacht über Humor und Zeitrechnung. Auf seinen Beschluss gilt im Vereinsheim die Zeitzone UTC+11:11 — Sitzungen beginnen daher immer um 11:11 Uhr.',
-    lead: 'Otto von Bismarck',
-  },
-  buettenrede: {
-    blurb: 'Spitze Zunge, geprüfter Reim',
-    memberMeta: '8 Aktive · 1 Reimprüfung',
-    fullText:
-      'Jede Rede muss vor dem Vortrag die Reimprüfung bestehen. „Faust“ wurde zugelassen — gekürzt auf elf Minuten und mit Tusch.',
-    lead: 'Clara Schumann',
-  },
-  kindergarde: {
-    blurb: 'Die Kleinsten, ganz groß',
-    memberMeta: '24 Kinder · 12 Bühnenplätze',
-    fullText:
-      'Die Kindergarde tanzt traditionell auf einer Bühne, die für die Hälfte von ihnen gebaut wurde. Vergessen wurde dabei noch kein einziger Schritt.',
-    lead: 'Alexander von Humboldt',
-  },
-  organisation: {
-    blurb: 'Getränke, Kasse & Konfettistatik',
-    memberMeta: 'Alle Hände · 4,2 Tonnen',
-    fullText:
-      'Das Orga-Team verwaltet Getränke, Kasse und Küche — und seit 1998 das Konfettilager im Keller, dessen Statik jedes Jahr neu berechnet wird.',
-    lead: 'Carl Friedrich Gauß',
-  },
+const RECRUITING_OPENNESS: GroupOpenness = {
+  label: 'sucht Verstärkung',
+  note: 'Diese Gruppe nimmt gerade neue Leute auf — meld dich, dann verabreden wir einen ersten Termin.',
+  tone: 'gold',
+  dot: true,
 };
 
-export const buildGroupProfiles = (
-  roster: Group[],
-  editorial: Record<string, GroupEditorial>,
-): GroupProfile[] =>
-  roster.flatMap((group) => {
-    const copy = editorial[group.id];
-    return copy === undefined ? [] : [{ id: group.id, title: group.name, ...copy }];
-  });
+const SETTLED_OPENNESS: GroupOpenness = {
+  label: 'sucht gerade niemanden',
+  note: 'Frag trotzdem nach — was eine Gruppe braucht, ändert sich jede Session.',
+  tone: 'neutral',
+  dot: false,
+};
 
-export const GROUPS: GroupProfile[] = buildGroupProfiles(SEEDED_GROUPS, GROUP_EDITORIAL);
+export const resolveGroupOpenness = (isRecruiting: boolean): GroupOpenness =>
+  isRecruiting ? RECRUITING_OPENNESS : SETTLED_OPENNESS;
 
-export const groupsIntro = `Aktuell ${GROUPS.length} Gruppen — die Liste wächst.`;
+export const countRecruitingGroups = (groups: PublicGroup[]): number =>
+  groups.filter((group) => group.isRecruiting).length;
 
-export const groupsModalLabels = {
-  lead: 'Leitung',
-  cta: 'Mitglied werden →',
-  close: 'Schließen',
-} as const;
+export type GroupsIntroKind = 'none' | 'sole' | 'all' | 'some';
+
+export const resolveGroupsIntroKind = (total: number, recruiting: number): GroupsIntroKind => {
+  if (recruiting === 0) {
+    return 'none';
+  }
+
+  if (total === 1) {
+    return 'sole';
+  }
+
+  return recruiting >= total ? 'all' : 'some';
+};
+
+export const formatGroupCount = (total: number): string =>
+  total === 1 ? 'eine Gruppe' : `${total} Gruppen`;
+
+export const formatRecruitingCount = (recruiting: number): string =>
+  recruiting === 1 ? 'Eine davon sucht' : `${recruiting} davon suchen`;
+
+const introTails: Record<GroupsIntroKind, (recruiting: number) => string> = {
+  none: () => 'Gerade sucht keine davon aktiv Verstärkung — fragen kannst du trotzdem jederzeit.',
+  sole: () => 'Sie sucht gerade Verstärkung.',
+  all: () => 'Alle suchen gerade Verstärkung.',
+  some: (recruiting) => `${formatRecruitingCount(recruiting)} gerade Verstärkung.`,
+};
+
+export const buildGroupsIntro = (total: number, recruiting: number): string => {
+  const tail = introTails[resolveGroupsIntroKind(total, recruiting)](recruiting);
+
+  return `Aktuell ${formatGroupCount(total)}. ${tail}`;
+};
+
+export const buildGroupOpenLabel = (groupName: string): string => `${groupName} — mehr erfahren`;
 
 export const resolveGroupTint = (theme: Theme, index: number): string => {
   const palette = (theme.vars ?? theme).palette;
   const tints = [palette.primary.main, palette.warning.main, palette.text.primary];
   return tints[index % tints.length] ?? palette.primary.main;
 };
+
+export const buildGroupBadge = (index: number): string => String(index + 1).padStart(2, '0');
