@@ -1,4 +1,5 @@
 import { KkChip, KkEyebrow, KkMeta, KkPageHeader } from '@furria/ui';
+import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { useMeQuery } from '@/features/session';
 import { toHubHeadline } from '../group-hub-labels';
@@ -19,11 +20,15 @@ export const HubHeader: FC<HubHeaderProps> = ({ hub }) => {
       </KkEyebrow>
     );
 
-  const opennessChip =
-    headline.openness === null ? null : (
-      <KkChip tone={headline.openness.tone} dot={headline.openness.dot}>
-        {headline.openness.label}
-      </KkChip>
+  const chipRow =
+    headline.chips.length === 0 ? null : (
+      <Stack direction="row" sx={{ alignItems: 'center', gap: 1, flexWrap: 'wrap', minWidth: 0 }}>
+        {headline.chips.map((chip) => (
+          <KkChip key={chip.label} tone={chip.tone} dot={chip.dot}>
+            {chip.label}
+          </KkChip>
+        ))}
+      </Stack>
     );
 
   const subline = headline.subline === null ? null : <KkMeta>{headline.subline}</KkMeta>;
@@ -33,7 +38,7 @@ export const HubHeader: FC<HubHeaderProps> = ({ hub }) => {
       title={headline.title}
       titleTransform="none"
       eyebrow={eyebrow}
-      chip={opennessChip}
+      chip={chipRow}
       subline={subline}
     />
   );
