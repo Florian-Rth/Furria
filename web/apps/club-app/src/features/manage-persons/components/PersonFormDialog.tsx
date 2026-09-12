@@ -4,6 +4,7 @@ import type { FC } from 'react';
 import { useId } from 'react';
 import type { PersonFormSource } from '../hooks/use-person-form';
 import { usePersonForm } from '../hooks/use-person-form';
+import type { CreatedPerson } from '../schemas';
 import { PersonFormFields } from './PersonFormFields';
 
 const CREATE_TITLE = 'Person anlegen';
@@ -28,7 +29,7 @@ interface PersonFormDialogProps {
   person: PersonFormSource | null;
   open: boolean;
   onClose: () => void;
-  onSaved: () => void;
+  onSaved: (saved: CreatedPerson) => void;
 }
 
 export const PersonFormDialog: FC<PersonFormDialogProps> = ({ person, open, onClose, onSaved }) => {

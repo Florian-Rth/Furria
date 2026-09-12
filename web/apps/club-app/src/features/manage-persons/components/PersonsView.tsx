@@ -2,7 +2,7 @@ import { KkButton, KkIcon } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { AppListLayout } from '@/features/session';
-import { usePersonFormDialog } from '../hooks/use-person-form-dialog';
+import { usePersonCreateDialog } from '../hooks/use-person-create-dialog';
 import type { PersonsSearch } from '../hooks/use-persons-search';
 import {
   MANAGE_PERSONS_SECTION_TITLE,
@@ -27,14 +27,14 @@ interface PersonsViewProps {
 }
 
 export const PersonsView: FC<PersonsViewProps> = ({ persons, search }) => {
-  const dialog = usePersonFormDialog();
+  const dialog = usePersonCreateDialog();
 
   const formDialog = (
     <PersonFormDialog
       person={null}
       open={dialog.isOpen}
       onClose={dialog.close}
-      onSaved={dialog.close}
+      onSaved={dialog.goToCreated}
     />
   );
 
