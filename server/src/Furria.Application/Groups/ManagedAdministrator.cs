@@ -17,4 +17,6 @@ public sealed record ManagedAdministrator
     public required DateOnly? UntilOn { get; init; }
 
     public required DateOnly Since { get; init; }
+
+    public required bool IsAffiliated { get; init; }
 }

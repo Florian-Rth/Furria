@@ -52,6 +52,7 @@ public sealed class GetGroupById : Endpoint<GetGroupByIdRequest, GetGroupByIdRes
             FirstName = member.FirstName,
             LastName = member.LastName,
             Since = member.Since,
+            IsAffiliated = member.IsAffiliated,
         };
 
     private static GroupAdminDto ToDto(GroupAdministrator admin) =>
@@ -62,6 +63,7 @@ public sealed class GetGroupById : Endpoint<GetGroupByIdRequest, GetGroupByIdRes
             LastName = admin.LastName,
             Function = admin.Function,
             Since = admin.Since,
+            IsAffiliated = admin.IsAffiliated,
         };
 }
 
@@ -103,6 +105,8 @@ public sealed record SincePersonDto
     public required string LastName { get; init; }
 
     public required DateOnly Since { get; init; }
+
+    public required bool IsAffiliated { get; init; }
 }
 
 public sealed record GroupAdminDto
@@ -116,4 +120,6 @@ public sealed record GroupAdminDto
     public required string? Function { get; init; }
 
     public required DateOnly Since { get; init; }
+
+    public required bool IsAffiliated { get; init; }
 }

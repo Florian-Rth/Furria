@@ -5,6 +5,7 @@ using Furria.Application.Roles;
 using Furria.Core.Club;
 using Furria.Core.Roles;
 using Furria.Infrastructure.Persistence;
+using Furria.Infrastructure.Registry;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Roles;
@@ -59,11 +60,17 @@ public sealed class RoleService
         );
 
     private readonly AppDbContext _dbContext;
+    private readonly AffiliationLookup _affiliationLookup;
     private readonly TimeProvider _timeProvider;
 
-    public RoleService(AppDbContext dbContext, TimeProvider timeProvider)
+    public RoleService(
+        AppDbContext dbContext,
+        AffiliationLookup affiliationLookup,
+        TimeProvider timeProvider
+    )
     {
         _dbContext = dbContext;
+        _affiliationLookup = affiliationLookup;
         _timeProvider = timeProvider;
     }
 
@@ -94,7 +101,13 @@ public sealed class RoleService
         if (row is null)
             return Result<RoleDetails>.NotFound(UnknownRoleMessage);
 
-        return Result<RoleDetails>.Success(ToDetails(row, today));
+        var affiliated = await _affiliationLookup.AffiliatedAmongAsync(
+            [.. row.Holdings.Select(holding => holding.PersonId)],
+            today,
+            ct
+        );
+
+        return Result<RoleDetails>.Success(ToDetails(row, today, affiliated));
     }
 
     public async Task<Result<int>> CreateAsync(CreateRoleCommand command, CancellationToken ct)
@@ -338,7 +351,11 @@ public sealed class RoleService
             ],
         };
 
-    private static RoleDetails ToDetails(RolePageRow row, DateOnly today)
+    private static RoleDetails ToDetails(
+        RolePageRow row,
+        DateOnly today,
+        IReadOnlySet<int> affiliated
+    )
     {
         var chainStarts = ChainStarts(row.Holdings);
 
@@ -352,17 +369,25 @@ public sealed class RoleService
             Holders =
             [
                 .. RunningRows(row.Holdings, today)
-                    .Select(holding => ToHolder(holding, chainStarts[holding.PersonId])),
+                    .Select(holding =>
+                        ToHolder(holding, chainStarts[holding.PersonId], affiliated)
+                    ),
             ],
             PastHolders =
             [
                 .. EndedRows(row.Holdings, today)
-                    .Select(holding => ToHolder(holding, chainStarts[holding.PersonId])),
+                    .Select(holding =>
+                        ToHolder(holding, chainStarts[holding.PersonId], affiliated)
+                    ),
             ],
         };
     }
 
-    private static RoleHolder ToHolder(HoldingRow holding, DateOnly since) =>
+    private static RoleHolder ToHolder(
+        HoldingRow holding,
+        DateOnly since,
+        IReadOnlySet<int> affiliated
+    ) =>
         new()
         {
             RoleHoldingId = holding.RowId,
@@ -372,6 +397,7 @@ public sealed class RoleService
             SinceOn = holding.SinceOn,
             UntilOn = holding.UntilOn,
             Since = since,
+            IsAffiliated = affiliated.Contains(holding.PersonId),
         };
 
     private static IEnumerable<HoldingRow> RunningRows(

@@ -488,15 +488,57 @@ public sealed class GetGroupByIdTests
         );
         var paula = document.RootElement.GetProperty("members").EnumerateArray().Single();
         Assert.Equal(
-            ["personId", "firstName", "lastName", "since"],
+            ["personId", "firstName", "lastName", "since", "isAffiliated"],
             paula.EnumerateObject().Select(field => field.Name)
         );
         Assert.Equal("2017-09-01", paula.GetProperty("since").GetString());
         var anna = document.RootElement.GetProperty("admins").EnumerateArray().Single();
         Assert.Equal(
-            ["personId", "firstName", "lastName", "function", "since"],
+            ["personId", "firstName", "lastName", "function", "since", "isAffiliated"],
             anna.EnumerateObject().Select(field => field.Name)
         );
+    }
+
+    [Fact]
+    public async Task Should_SayTheRowHasNoKarte_When_ThePersonIsAffiliatedByNothingElse()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddPerson("paula", "Paula", "Brendel")
+                            .AddPerson("anna", "Anna", "Kaiser")
+                            .AddAccount("alice")
+                            .AddMembership("alice-first", "alice", JoinedIn2017)
+                    )
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("tanzgarde", "Tanzgarde")
+                            .AddGroupMembership(
+                                "paula-tanzgarde",
+                                "tanzgarde",
+                                "paula",
+                                JoinedIn2017
+                            )
+                            .AddGroupAdmin(
+                                "anna-tanzgarde",
+                                "tanzgarde",
+                                "anna",
+                                "Trainerin",
+                                AdminSince2019
+                            )
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        var (response, result) = await ReadGroupAsync(client, ctx.Groups.Groups.IdOf("tanzgarde"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(Assert.Single(result.Members).IsAffiliated);
+        Assert.False(Assert.Single(result.Admins).IsAffiliated);
     }
 
     [Fact]

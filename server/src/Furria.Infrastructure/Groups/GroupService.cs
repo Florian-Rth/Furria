@@ -5,6 +5,7 @@ using Furria.Application.Results;
 using Furria.Core.Club;
 using Furria.Core.Groups;
 using Furria.Infrastructure.Persistence;
+using Furria.Infrastructure.Registry;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Groups;
@@ -89,11 +90,17 @@ public sealed class GroupService
         );
 
     private readonly AppDbContext _dbContext;
+    private readonly AffiliationLookup _affiliationLookup;
     private readonly TimeProvider _timeProvider;
 
-    public GroupService(AppDbContext dbContext, TimeProvider timeProvider)
+    public GroupService(
+        AppDbContext dbContext,
+        AffiliationLookup affiliationLookup,
+        TimeProvider timeProvider
+    )
     {
         _dbContext = dbContext;
+        _affiliationLookup = affiliationLookup;
         _timeProvider = timeProvider;
     }
 
@@ -215,7 +222,9 @@ public sealed class GroupService
         if (row is null)
             return Result<MyGroupDetails>.NotFound(UnknownGroupMessage);
 
-        return Result<MyGroupDetails>.Success(ToHubDetails(row, today));
+        var affiliated = await AffiliatedAmongAsync(row, today, ct);
+
+        return Result<MyGroupDetails>.Success(ToHubDetails(row, today, affiliated));
     }
 
     public async Task<Result<GroupDetails>> GetGroupAsync(int groupId, CancellationToken ct)
@@ -231,7 +240,9 @@ public sealed class GroupService
         if (row is null)
             return Result<GroupDetails>.NotFound(UnknownGroupMessage);
 
-        return Result<GroupDetails>.Success(ToDetails(row, today));
+        var affiliated = await AffiliatedAmongAsync(row, today, ct);
+
+        return Result<GroupDetails>.Success(ToDetails(row, today, affiliated));
     }
 
     public async Task<IReadOnlyList<ManagedGroupSummary>> GetManagedGroupsAsync(
@@ -302,7 +313,9 @@ public sealed class GroupService
         if (row is null)
             return Result<ManagedGroupDetails>.NotFound(UnknownGroupMessage);
 
-        return Result<ManagedGroupDetails>.Success(ToManagedDetails(row, today));
+        var affiliated = await AffiliatedAmongAsync(row, today, ct);
+
+        return Result<ManagedGroupDetails>.Success(ToManagedDetails(row, today, affiliated));
     }
 
     public async Task<Result<int>> CreateAsync(CreateGroupCommand command, CancellationToken ct)
@@ -538,6 +551,17 @@ public sealed class GroupService
         return Result.Success();
     }
 
+    private Task<IReadOnlySet<int>> AffiliatedAmongAsync(
+        GroupPageRow row,
+        DateOnly today,
+        CancellationToken ct
+    ) =>
+        _affiliationLookup.AffiliatedAmongAsync(
+            [.. row.Members.Select(tie => tie.PersonId), .. row.Admins.Select(tie => tie.PersonId)],
+            today,
+            ct
+        );
+
     private Task<GroupState?> GroupStateAsync(int groupId, CancellationToken ct) =>
         _dbContext
             .Groups.AsNoTracking()
@@ -592,7 +616,11 @@ public sealed class GroupService
         return chain.Any(row => joined.Overlaps(row.AsPeriod));
     }
 
-    private static MyGroupDetails ToHubDetails(GroupPageRow row, DateOnly today)
+    private static MyGroupDetails ToHubDetails(
+        GroupPageRow row,
+        DateOnly today,
+        IReadOnlySet<int> affiliated
+    )
     {
         var memberChains = ChainStarts(row.Members);
         var adminChains = ChainStarts(row.Admins);
@@ -606,27 +634,31 @@ public sealed class GroupService
             Members =
             [
                 .. RunningRows(row.Members, today)
-                    .Select(tie => ToHubMember(tie, memberChains[tie.PersonId])),
+                    .Select(tie => ToHubMember(tie, memberChains[tie.PersonId], affiliated)),
             ],
             Admins =
             [
                 .. RunningRows(row.Admins, today)
-                    .Select(tie => ToHubAdministrator(tie, adminChains[tie.PersonId])),
+                    .Select(tie => ToHubAdministrator(tie, adminChains[tie.PersonId], affiliated)),
             ],
             PastMembers =
             [
                 .. EndedRows(row.Members, today)
-                    .Select(tie => ToHubMember(tie, memberChains[tie.PersonId])),
+                    .Select(tie => ToHubMember(tie, memberChains[tie.PersonId], affiliated)),
             ],
             PastAdmins =
             [
                 .. EndedRows(row.Admins, today)
-                    .Select(tie => ToHubAdministrator(tie, adminChains[tie.PersonId])),
+                    .Select(tie => ToHubAdministrator(tie, adminChains[tie.PersonId], affiliated)),
             ],
         };
     }
 
-    private static ManagedGroupDetails ToManagedDetails(GroupPageRow row, DateOnly today)
+    private static ManagedGroupDetails ToManagedDetails(
+        GroupPageRow row,
+        DateOnly today,
+        IReadOnlySet<int> affiliated
+    )
     {
         var memberChains = ChainStarts(row.Members);
         var adminChains = ChainStarts(row.Admins);
@@ -641,27 +673,35 @@ public sealed class GroupService
             Members =
             [
                 .. RunningRows(row.Members, today)
-                    .Select(tie => ToManagedMember(tie, memberChains[tie.PersonId])),
+                    .Select(tie => ToManagedMember(tie, memberChains[tie.PersonId], affiliated)),
             ],
             Admins =
             [
                 .. RunningRows(row.Admins, today)
-                    .Select(tie => ToManagedAdministrator(tie, adminChains[tie.PersonId])),
+                    .Select(tie =>
+                        ToManagedAdministrator(tie, adminChains[tie.PersonId], affiliated)
+                    ),
             ],
             PastMembers =
             [
                 .. EndedRows(row.Members, today)
-                    .Select(tie => ToManagedMember(tie, memberChains[tie.PersonId])),
+                    .Select(tie => ToManagedMember(tie, memberChains[tie.PersonId], affiliated)),
             ],
             PastAdmins =
             [
                 .. EndedRows(row.Admins, today)
-                    .Select(tie => ToManagedAdministrator(tie, adminChains[tie.PersonId])),
+                    .Select(tie =>
+                        ToManagedAdministrator(tie, adminChains[tie.PersonId], affiliated)
+                    ),
             ],
         };
     }
 
-    private static ManagedMember ToManagedMember(TieRow tie, DateOnly since) =>
+    private static ManagedMember ToManagedMember(
+        TieRow tie,
+        DateOnly since,
+        IReadOnlySet<int> affiliated
+    ) =>
         new()
         {
             GroupMembershipId = tie.RowId,
@@ -671,9 +711,14 @@ public sealed class GroupService
             JoinedOn = tie.StartedOn,
             LeftOn = tie.EndedOn,
             Since = since,
+            IsAffiliated = affiliated.Contains(tie.PersonId),
         };
 
-    private static ManagedAdministrator ToManagedAdministrator(TieRow tie, DateOnly since) =>
+    private static ManagedAdministrator ToManagedAdministrator(
+        TieRow tie,
+        DateOnly since,
+        IReadOnlySet<int> affiliated
+    ) =>
         new()
         {
             GroupAdminId = tie.RowId,
@@ -684,6 +729,7 @@ public sealed class GroupService
             SinceOn = tie.StartedOn,
             UntilOn = tie.EndedOn,
             Since = since,
+            IsAffiliated = affiliated.Contains(tie.PersonId),
         };
 
     private static ManagedGroupSummary ToManagedSummary(ManagedGroupRow row) =>
@@ -698,7 +744,11 @@ public sealed class GroupService
             Admins = OnePerPerson(row.Admins),
         };
 
-    private static HubMember ToHubMember(TieRow tie, DateOnly since) =>
+    private static HubMember ToHubMember(
+        TieRow tie,
+        DateOnly since,
+        IReadOnlySet<int> affiliated
+    ) =>
         new()
         {
             GroupMembershipId = tie.RowId,
@@ -708,9 +758,14 @@ public sealed class GroupService
             JoinedOn = tie.StartedOn,
             LeftOn = tie.EndedOn,
             Since = since,
+            IsAffiliated = affiliated.Contains(tie.PersonId),
         };
 
-    private static HubAdministrator ToHubAdministrator(TieRow tie, DateOnly since) =>
+    private static HubAdministrator ToHubAdministrator(
+        TieRow tie,
+        DateOnly since,
+        IReadOnlySet<int> affiliated
+    ) =>
         new()
         {
             GroupAdminId = tie.RowId,
@@ -721,6 +776,7 @@ public sealed class GroupService
             SinceOn = tie.StartedOn,
             UntilOn = tie.EndedOn,
             Since = since,
+            IsAffiliated = affiliated.Contains(tie.PersonId),
         };
 
     private static IEnumerable<TieRow> RunningRows(IReadOnlyList<TieRow> rows, DateOnly today) =>
@@ -735,7 +791,11 @@ public sealed class GroupService
         rows.GroupBy(row => row.PersonId)
             .ToDictionary(chain => chain.Key, chain => chain.Min(row => row.StartedOn));
 
-    private static GroupDetails ToDetails(GroupPageRow row, DateOnly today) =>
+    private static GroupDetails ToDetails(
+        GroupPageRow row,
+        DateOnly today,
+        IReadOnlySet<int> affiliated
+    ) =>
         new()
         {
             GroupId = row.Id,
@@ -751,6 +811,7 @@ public sealed class GroupService
                         FirstName = tie.FirstName,
                         LastName = tie.LastName,
                         Since = tie.Since,
+                        IsAffiliated = affiliated.Contains(tie.PersonId),
                     }),
             ],
             Admins =
@@ -763,6 +824,7 @@ public sealed class GroupService
                         LastName = tie.LastName,
                         Function = tie.Function,
                         Since = tie.Since,
+                        IsAffiliated = affiliated.Contains(tie.PersonId),
                     }),
             ],
         };

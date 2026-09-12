@@ -11,4 +11,6 @@ public sealed record GroupAdministrator
     public required string? Function { get; init; }
 
     public required DateOnly Since { get; init; }
+
+    public required bool IsAffiliated { get; init; }
 }

@@ -57,6 +57,7 @@ public sealed class GetRoleById : Endpoint<GetRoleByIdRequest, GetRoleByIdRespon
             SinceOn = holder.SinceOn,
             UntilOn = holder.UntilOn,
             Since = holder.Since,
+            IsAffiliated = holder.IsAffiliated,
         };
 }
 
@@ -106,4 +107,6 @@ public sealed record RoleHolderDto
     public required DateOnly? UntilOn { get; init; }
 
     public required DateOnly Since { get; init; }
+
+    public required bool IsAffiliated { get; init; }
 }

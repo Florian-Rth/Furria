@@ -75,6 +75,7 @@ public sealed class GetMyGroupById : Endpoint<GetMyGroupByIdRequest, GetMyGroupB
             JoinedOn = member.JoinedOn,
             LeftOn = member.LeftOn,
             Since = member.Since,
+            IsAffiliated = member.IsAffiliated,
         };
 
     private static HubAdminDto ToDto(HubAdministrator admin) =>
@@ -88,6 +89,7 @@ public sealed class GetMyGroupById : Endpoint<GetMyGroupByIdRequest, GetMyGroupB
             SinceOn = admin.SinceOn,
             UntilOn = admin.UntilOn,
             Since = admin.Since,
+            IsAffiliated = admin.IsAffiliated,
         };
 }
 
@@ -141,6 +143,8 @@ public sealed record HubMemberDto
     public required DateOnly? LeftOn { get; init; }
 
     public required DateOnly Since { get; init; }
+
+    public required bool IsAffiliated { get; init; }
 }
 
 public sealed record HubAdminDto
@@ -160,4 +164,6 @@ public sealed record HubAdminDto
     public required DateOnly? UntilOn { get; init; }
 
     public required DateOnly Since { get; init; }
+
+    public required bool IsAffiliated { get; init; }
 }
