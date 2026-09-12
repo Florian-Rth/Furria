@@ -1,7 +1,7 @@
-import { KkAppShell, KkAvatar, KkChip, KkMeta } from '@furria/ui';
+import { KkAppShell, KkAvatar, KkChip, KkEyebrow, KkMeta } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { toPersonHeadline } from '../manage-persons-labels';
+import { PERSONS_TITLE, toPersonHeadline } from '../manage-persons-labels';
 import type { PersonDetails } from '../schemas';
 
 interface PersonEditHeaderProps {
@@ -27,6 +27,7 @@ export const PersonEditHeader: FC<PersonEditHeaderProps> = ({ person }) => {
     >
       <KkAvatar initials={headline.initials} size="large" />
       <Stack sx={{ gap: 0.5, minWidth: 0 }}>
+        <KkEyebrow size="small">{PERSONS_TITLE}</KkEyebrow>
         <Stack
           direction="row"
           sx={{ alignItems: 'center', gap: 1.25, flexWrap: 'wrap', minWidth: 0 }}
