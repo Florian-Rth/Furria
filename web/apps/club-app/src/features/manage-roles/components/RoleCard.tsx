@@ -2,7 +2,11 @@ import { KkMeta } from '@furria/ui';
 import type { FC } from 'react';
 import { GroupCardBody } from '@/features/groups';
 import type { RoleMasterEntry } from '../manage-roles-labels';
-import { toHolderUnitLabel, toNoDescriptionLine } from '../manage-roles-labels';
+import {
+  ROLE_SECTION_TITLES,
+  toHolderUnitLabel,
+  toNoDescriptionLine,
+} from '../manage-roles-labels';
 import { RoleStateChips } from './RoleStateChips';
 
 const ROLES_PATH = '/manage/roles';
@@ -25,6 +29,9 @@ export const RoleCard: FC<RoleCardProps> = ({ entry }) => {
       unitLabel={unitLabel}
       description={entry.description}
       emptyDescription={emptyDescription}
+      initials={entry.holderInitials}
+      total={entry.holderCount}
+      footNote={ROLE_SECTION_TITLES.holders}
       chips={chips}
       footer={holderLine}
       dimmed={entry.isArchived}
