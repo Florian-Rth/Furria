@@ -17,6 +17,9 @@ public sealed class GroupService
     private const string ArchivedGroupMessage =
         "Eine archivierte Gruppe kann nicht bearbeitet werden.";
     private const string UnknownPersonMessage = "Diese Person steht nicht im Register.";
+    private const string DuplicateNameMessage = "Eine Gruppe mit diesem Namen gibt es schon.";
+    private const string AlreadyArchivedMessage = "Diese Gruppe ist bereits archiviert.";
+    private const string NotArchivedMessage = "Diese Gruppe ist nicht archiviert.";
     private const string UnknownZugehoerigkeitMessage =
         "Diese Zugehörigkeit gibt es in dieser Gruppe nicht.";
     private const string EndedZugehoerigkeitMessage = "Diese Zugehörigkeit ist bereits beendet.";
@@ -209,6 +212,131 @@ public sealed class GroupService
         return Result<GroupDetails>.Success(ToDetails(row, today));
     }
 
+    public async Task<IReadOnlyList<ManagedGroupSummary>> GetManagedGroupsAsync(
+        CancellationToken ct
+    )
+    {
+        var today = ClubClock.Today(_timeProvider);
+
+        var rows = await _dbContext
+            .Groups.AsNoTracking()
+            .OrderBy(group => EF.Functions.Collate(group.Name, GermanCollation))
+            .ThenBy(group => group.Id)
+            .Select(group => new ManagedGroupRow(
+                group.Id,
+                group.Name,
+                group.Description,
+                group.IsRecruiting,
+                group.ArchivedOn,
+                group
+                    .Memberships.Where(membership =>
+                        membership.JoinedOn <= today
+                        && (membership.LeftOn == null || membership.LeftOn >= today)
+                    )
+                    .Select(membership => new PersonReference
+                    {
+                        PersonId = membership.PersonId,
+                        FirstName = membership.Person!.FirstName,
+                        LastName = membership.Person!.LastName,
+                    })
+                    .ToList(),
+                group
+                    .Admins.Where(admin =>
+                        admin.SinceOn <= today && (admin.UntilOn == null || admin.UntilOn >= today)
+                    )
+                    .OrderBy(admin => EF.Functions.Collate(admin.Person!.LastName, GermanCollation))
+                    .ThenBy(admin => EF.Functions.Collate(admin.Person!.FirstName, GermanCollation))
+                    .ThenBy(admin => admin.PersonId)
+                    .Select(admin => new PersonReference
+                    {
+                        PersonId = admin.PersonId,
+                        FirstName = admin.Person!.FirstName,
+                        LastName = admin.Person!.LastName,
+                    })
+                    .ToList()
+            ))
+            .ToListAsync(ct);
+
+        return [.. rows.Select(ToManagedSummary)];
+    }
+
+    public async Task<Result<int>> CreateAsync(CreateGroupCommand command, CancellationToken ct)
+    {
+        if (await NameIsTakenAsync(command.Name, null, ct))
+            return Result<int>.Conflict(DuplicateNameMessage);
+
+        var group = new Group
+        {
+            Name = command.Name,
+            Description = command.Description,
+            IsRecruiting = command.IsRecruiting,
+        };
+
+        _dbContext.Groups.Add(group);
+        await _dbContext.SaveChangesAsync(ct);
+
+        return Result<int>.Success(group.Id);
+    }
+
+    public async Task<Result> UpdateAsync(UpdateGroupCommand command, CancellationToken ct)
+    {
+        var group = await _dbContext.Groups.SingleOrDefaultAsync(
+            row => row.Id == command.GroupId,
+            ct
+        );
+
+        if (group is null)
+            return Result.NotFound(UnknownGroupMessage);
+
+        if (group.ArchivedOn is not null)
+            return Result.Conflict(ArchivedGroupMessage);
+
+        if (await NameIsTakenAsync(command.Name, command.GroupId, ct))
+            return Result.Conflict(DuplicateNameMessage);
+
+        group.Name = command.Name;
+        group.Description = command.Description;
+        group.IsRecruiting = command.IsRecruiting;
+        await _dbContext.SaveChangesAsync(ct);
+
+        return Result.Success();
+    }
+
+    public async Task<Result> ArchiveAsync(int groupId, CancellationToken ct)
+    {
+        var group = await _dbContext.Groups.SingleOrDefaultAsync(row => row.Id == groupId, ct);
+
+        if (group is null)
+            return Result.NotFound(UnknownGroupMessage);
+
+        if (group.ArchivedOn is not null)
+            return Result.Conflict(AlreadyArchivedMessage);
+
+        group.ArchivedOn = ClubClock.Today(_timeProvider);
+        await _dbContext.SaveChangesAsync(ct);
+
+        return Result.Success();
+    }
+
+    public async Task<Result> RestoreAsync(int groupId, CancellationToken ct)
+    {
+        var group = await _dbContext.Groups.SingleOrDefaultAsync(row => row.Id == groupId, ct);
+
+        if (group is null)
+            return Result.NotFound(UnknownGroupMessage);
+
+        if (group.ArchivedOn is null)
+            return Result.Conflict(NotArchivedMessage);
+
+        if (await NameIsTakenAsync(group.Name, groupId, ct))
+            return Result.Conflict(DuplicateNameMessage);
+
+        group.ArchivedOn = null;
+        await _dbContext.SaveChangesAsync(ct);
+
+        return Result.Success();
+    }
+
     public async Task<Result> UpdateInfoAsync(UpdateGroupInfoCommand command, CancellationToken ct)
     {
         var group = await _dbContext.Groups.SingleOrDefaultAsync(
@@ -365,6 +493,17 @@ public sealed class GroupService
             .Select(row => new GroupState(row.ArchivedOn))
             .SingleOrDefaultAsync(ct);
 
+    private Task<bool> NameIsTakenAsync(string name, int? exceptGroupId, CancellationToken ct) =>
+        _dbContext
+            .Groups.AsNoTracking()
+            .AnyAsync(
+                row =>
+                    row.ArchivedOn == null
+                    && row.Id != exceptGroupId
+                    && row.Name.ToLower() == name.ToLower(),
+                ct
+            );
+
     private Task<bool> PersonExistsAsync(int personId, CancellationToken ct) =>
         _dbContext.People.AsNoTracking().AnyAsync(row => row.Id == personId, ct);
 
@@ -430,6 +569,18 @@ public sealed class GroupService
             ],
         };
     }
+
+    private static ManagedGroupSummary ToManagedSummary(ManagedGroupRow row) =>
+        new()
+        {
+            GroupId = row.Id,
+            Name = row.Name,
+            Description = row.Description,
+            IsRecruiting = row.IsRecruiting,
+            ArchivedOn = row.ArchivedOn,
+            MemberCount = OnePerPerson(row.Members).Count,
+            Admins = OnePerPerson(row.Admins),
+        };
 
     private static HubMember ToHubMember(TieRow tie, DateOnly since) =>
         new()
@@ -558,6 +709,16 @@ public sealed class GroupService
         bool IsRecruiting,
         IReadOnlyList<TieRow> Members,
         IReadOnlyList<TieRow> Admins
+    );
+
+    private sealed record ManagedGroupRow(
+        int Id,
+        string Name,
+        string Description,
+        bool IsRecruiting,
+        DateOnly? ArchivedOn,
+        IReadOnlyList<PersonReference> Members,
+        IReadOnlyList<PersonReference> Admins
     );
 
     private sealed record TieRow(
