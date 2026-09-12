@@ -8,15 +8,21 @@ import { KkIcon } from './KkIcon';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
-type KkNoteTone = 'muted' | 'info' | 'warning';
+type KkNoteTone = 'muted' | 'hint' | 'info' | 'warning';
 
 interface KkNoteToneStyle {
   paint: (theme: Theme) => CSSObject;
+  iconPaint?: (theme: Theme) => CSSObject;
   fontWeight?: number;
 }
 
 const toneStyles: Record<KkNoteTone, KkNoteToneStyle> = {
   muted: { paint: () => ({ color: 'text.secondary' }) },
+  hint: {
+    paint: () => ({ color: 'text.secondary' }),
+    iconPaint: (theme) =>
+      applyScheme(theme, schemeInk(kkTokens.color.light.blueInk, kkTokens.color.dark.blueInk)),
+  },
   info: {
     paint: (theme) =>
       applyScheme(theme, schemeInk(kkTokens.color.light.blueInk, kkTokens.color.dark.blueInk)),
@@ -38,6 +44,7 @@ interface KkNoteProps extends PropsWithChildren {
 export const KkNote: FC<KkNoteProps> = ({ tone = 'muted', icon, sx, children }) => {
   const callerSx = Array.isArray(sx) ? sx : [sx];
   const toneStyle = toneStyles[tone];
+  const iconStyle = (theme: Theme): CSSObject => toneStyle.iconPaint?.(theme) ?? {};
 
   if (icon === undefined) {
     return (
@@ -73,7 +80,7 @@ export const KkNote: FC<KkNoteProps> = ({ tone = 'muted', icon, sx, children }) 
         ...callerSx,
       ]}
     >
-      <KkIcon name={icon} size="small" sx={{ flexShrink: 0, mt: 0.125 }} />
+      <KkIcon name={icon} size="small" sx={[iconStyle, { flexShrink: 0, mt: 0.125 }]} />
       <Typography
         variant="body2"
         sx={{
