@@ -12,15 +12,14 @@ namespace Furria.Infrastructure.Roles;
 public sealed class RoleService
 {
     private const int NoRoleId = 0;
-    private const string GermanCollation = "de-DE-x-icu";
     private const string UnknownRoleMessage = "Diese Rolle gibt es nicht.";
-    private const string DuplicateNameMessage = "Eine Rolle mit diesem Namen gibt es schon.";
+    private const string DuplicateNameMessage = WriteConflictMessages.DuplicateRollenName;
     private const string ArchivedRoleMessage =
         "Eine archivierte Rolle kann nicht bearbeitet werden.";
     private const string AlreadyArchivedMessage = "Diese Rolle ist bereits archiviert.";
     private const string NotArchivedMessage = "Diese Rolle ist nicht archiviert.";
     private const string UnknownPersonMessage = "Diese Person steht nicht im Register.";
-    private const string OpenHoldingMessage = "Diese Person hat diese Rolle bereits inne.";
+    private const string OpenHoldingMessage = WriteConflictMessages.OpenInhaberschaft;
     private const string OverlappingHoldingMessage =
         "Dieser Zeitraum überschneidet sich mit einer bestehenden Inhaberschaft. "
         + "Eine erneute Inhaberschaft beginnt frühestens am Tag nach dem Ende der vorigen.";
@@ -40,9 +39,11 @@ public sealed class RoleService
                 .Select(permission => permission.PermissionKey)
                 .ToList(),
             role.Holdings.OrderBy(holding =>
-                    EF.Functions.Collate(holding.Person!.LastName, GermanCollation)
+                    EF.Functions.Collate(holding.Person!.LastName, GermanCollation.Name)
                 )
-                .ThenBy(holding => EF.Functions.Collate(holding.Person!.FirstName, GermanCollation))
+                .ThenBy(holding =>
+                    EF.Functions.Collate(holding.Person!.FirstName, GermanCollation.Name)
+                )
                 .ThenBy(holding => holding.PersonId)
                 .ThenBy(holding => holding.SinceOn)
                 .ThenBy(holding => holding.Id)
@@ -72,7 +73,7 @@ public sealed class RoleService
 
         var rows = await _dbContext
             .Roles.AsNoTracking()
-            .OrderBy(role => EF.Functions.Collate(role.Name, GermanCollation))
+            .OrderBy(role => EF.Functions.Collate(role.Name, GermanCollation.Name))
             .ThenBy(role => role.Id)
             .Select(RolePageProjection)
             .ToListAsync(ct);
@@ -104,7 +105,10 @@ public sealed class RoleService
         var role = new Role { Name = command.Name, Description = command.Description };
 
         _dbContext.Roles.Add(role);
-        await _dbContext.SaveChangesAsync(ct);
+
+        var saved = await _dbContext.SaveOrConflictAsync(ct);
+        if (!saved.IsSuccess)
+            return Result<int>.Conflict(saved.Error.Message);
 
         return Result<int>.Success(role.Id);
     }
@@ -124,9 +128,8 @@ public sealed class RoleService
 
         role.Name = command.Name;
         role.Description = command.Description;
-        await _dbContext.SaveChangesAsync(ct);
 
-        return Result.Success();
+        return await _dbContext.SaveOrConflictAsync(ct);
     }
 
     public async Task<Result> ArchiveAsync(int roleId, CancellationToken ct)
@@ -159,9 +162,8 @@ public sealed class RoleService
             return Result.Conflict(DuplicateNameMessage);
 
         role.ArchivedOn = null;
-        await _dbContext.SaveChangesAsync(ct);
 
-        return Result.Success();
+        return await _dbContext.SaveOrConflictAsync(ct);
     }
 
     public async Task<Result> SetPermissionsAsync(
@@ -217,7 +219,10 @@ public sealed class RoleService
         };
 
         _dbContext.RoleHoldings.Add(holding);
-        await _dbContext.SaveChangesAsync(ct);
+
+        var saved = await _dbContext.SaveOrConflictAsync(ct);
+        if (!saved.IsSuccess)
+            return Result<int>.Conflict(saved.Error.Message);
 
         return Result<int>.Success(holding.Id);
     }

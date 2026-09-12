@@ -18,7 +18,7 @@ public sealed class MembershipService
         "Diese Mitgliedschaft gibt es bei dieser Person nicht.";
     private const string UnknownPauseMessage =
         "Diese Ruhezeit gibt es in dieser Mitgliedschaft nicht.";
-    private const string OpenMembershipMessage = "Es läuft bereits eine Mitgliedschaft.";
+    private const string OpenMembershipMessage = WriteConflictMessages.OpenMitgliedschaft;
     private const string EndedMembershipMessage = "Diese Mitgliedschaft ist bereits beendet.";
     private const string EndBeforeStartMessage =
         "Eine Mitgliedschaft kann nicht vor ihrem Beginn enden.";
@@ -67,7 +67,10 @@ public sealed class MembershipService
         };
 
         _dbContext.Memberships.Add(membership);
-        await _dbContext.SaveChangesAsync(ct);
+
+        var saved = await _dbContext.SaveOrConflictAsync(ct);
+        if (!saved.IsSuccess)
+            return Result<int>.Conflict(saved.Error.Message);
 
         return Result<int>.Success(membership.Id);
     }
@@ -101,9 +104,7 @@ public sealed class MembershipService
         if (command.EndedOn is { } endedOn)
             ClampOpenPauses(membership, endedOn);
 
-        await _dbContext.SaveChangesAsync(ct);
-
-        return Result.Success();
+        return await _dbContext.SaveOrConflictAsync(ct);
     }
 
     public async Task<Result> EndAsync(EndMembershipCommand command, CancellationToken ct)
