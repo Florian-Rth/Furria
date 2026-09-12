@@ -1,15 +1,17 @@
-import { KkAppShell } from '@furria/ui';
 import type { FC } from 'react';
-import { AppPageHeader } from '@/features/session';
+import { AppPageHeader, useMeQuery } from '@/features/session';
 import { ProfileBody } from './ProfileBody';
+import { ProfileHeader } from './ProfileHeader';
 
-const PROFILE_TITLE = 'Profil';
+export const ProfilePage: FC = () => {
+  const me = useMeQuery();
 
-export const ProfilePage: FC = () => (
-  <>
-    <AppPageHeader>
-      <KkAppShell.PageTitle>{PROFILE_TITLE}</KkAppShell.PageTitle>
-    </AppPageHeader>
-    <ProfileBody />
-  </>
-);
+  return (
+    <>
+      <AppPageHeader>
+        <ProfileHeader me={me.data} />
+      </AppPageHeader>
+      <ProfileBody />
+    </>
+  );
+};

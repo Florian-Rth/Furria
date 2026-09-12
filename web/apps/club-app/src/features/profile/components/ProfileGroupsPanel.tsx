@@ -1,11 +1,13 @@
-import { KkMeta } from '@furria/ui';
+import { KkEmptyState } from '@furria/ui';
 import type { FC } from 'react';
 import { useMyGroupsQuery } from '@/features/group-hub';
 import { PROFILE_SECTION_TITLES } from '../profile-labels';
 import { ProfileGroupRow } from './ProfileGroupRow';
 import { ProfilePanel } from './ProfilePanel';
 
-const NO_GROUPS_LINE = 'Du bist gerade in keiner Gruppe dabei.';
+const EMPTY_TITLE = 'IN KEINER GRUPPE';
+const EMPTY_DESCRIPTION =
+  'Du bist gerade in keiner Gruppe dabei. Unter „Gruppen“ steht, wer gerade Verstärkung sucht.';
 
 export const ProfileGroupsPanel: FC = () => {
   const myGroups = useMyGroupsQuery();
@@ -17,7 +19,7 @@ export const ProfileGroupsPanel: FC = () => {
 
   const body =
     groups.length === 0 ? (
-      <KkMeta italic>{NO_GROUPS_LINE}</KkMeta>
+      <KkEmptyState size="panel" title={EMPTY_TITLE} description={EMPTY_DESCRIPTION} />
     ) : (
       groups.map((group) => <ProfileGroupRow key={group.groupId} group={group} />)
     );

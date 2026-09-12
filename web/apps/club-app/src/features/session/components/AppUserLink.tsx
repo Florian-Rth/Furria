@@ -1,9 +1,9 @@
-import { KkAppShell } from '@furria/ui';
+import { KkAppShell, KkChip } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { toInitials } from '@/lib/initials';
-import { toMembershipStateLabel } from '@/lib/membership-labels';
+import { toMembershipStateChip } from '@/lib/state-chips';
 import { useMeQuery } from '../api';
 import { PROFILE_PATH } from '../app-sections';
 
@@ -17,7 +17,13 @@ export const AppUserLink: FC = () => {
   }
 
   const { person, membership } = me.data;
-  const meta = toMembershipStateLabel(membership.state);
+  const stateChip = toMembershipStateChip(membership.state);
+
+  const meta = (
+    <KkChip tone={stateChip.tone} dot={stateChip.dot} size="small">
+      {stateChip.label}
+    </KkChip>
+  );
 
   return (
     <KkAppShell.Identity

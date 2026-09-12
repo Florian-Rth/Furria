@@ -1,9 +1,8 @@
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import type { ElementType, FC } from 'react';
+import type { ElementType, FC, ReactNode } from 'react';
 import { focusRing } from '../../../internal/focus-ring';
 import { KkAvatar } from '../../../KkAvatar';
-import { KkNote } from '../../../KkNote';
 import { useAppShellCurtain } from '../logic/app-shell-curtain-context';
 
 const AVATAR_SIZE = 34;
@@ -11,7 +10,7 @@ const AVATAR_SIZE = 34;
 interface KkAppShellIdentityProps {
   initials: string;
   name: string;
-  meta: string;
+  meta: ReactNode;
   label?: string;
   component?: ElementType;
   to?: string;
@@ -46,11 +45,11 @@ export const KkAppShellIdentity: FC<KkAppShellIdentityProps> = ({
       })}
     >
       <KkAvatar initials={initials} sx={{ width: AVATAR_SIZE, height: AVATAR_SIZE }} />
-      <Stack sx={{ minWidth: 0, gap: 0.125 }}>
+      <Stack sx={{ minWidth: 0, gap: 0.375, alignItems: 'flex-start' }}>
         <Typography variant="body2" sx={{ fontWeight: 800, color: 'text.primary' }}>
           {name}
         </Typography>
-        <KkNote>{meta}</KkNote>
+        {meta}
       </Stack>
     </Stack>
   );
