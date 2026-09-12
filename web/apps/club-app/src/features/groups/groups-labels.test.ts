@@ -4,7 +4,6 @@ import {
   toGroupHeadline,
   toGroupId,
   toGroupsIntroSentence,
-  toMemberCountLabel,
   toPersonUnitLabel,
   toRecruitingContactLine,
   toRecruitingContactSegments,
@@ -45,16 +44,6 @@ describe('toGroupId', () => {
     { case: 'nothing', raw: '', expected: null },
   ])('reads $case', ({ raw, expected }) => {
     expect(toGroupId(raw)).toBe(expected);
-  });
-});
-
-describe('toMemberCountLabel', () => {
-  it.each([
-    { count: 0, expected: 'keine Mitglieder' },
-    { count: 1, expected: '1 Person' },
-    { count: 18, expected: '18 Personen' },
-  ])('names $count member(s)', ({ count, expected }) => {
-    expect(toMemberCountLabel(count)).toBe(expected);
   });
 });
 

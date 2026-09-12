@@ -11,25 +11,14 @@ const GROUP_ID_PATTERN = /^[1-9]\d*$/;
 const GROUP_TITLE_FALLBACK = 'Gruppe';
 
 export const GROUP_SECTION_TITLES = {
-  about: 'Die Gruppe',
+  about: SHARED_GROUP_SECTION_TITLES.about,
   members: SHARED_GROUP_SECTION_TITLES.members,
   admins: SHARED_GROUP_SECTION_TITLES.admins,
-  photos: 'Bilder',
+  photos: SHARED_GROUP_SECTION_TITLES.photos,
 } as const;
 
 export const toGroupId = (raw: string): number | null =>
   GROUP_ID_PATTERN.test(raw) ? Number(raw) : null;
-
-export const toMemberCountLabel = (count: number): string => {
-  if (count === 0) {
-    return 'keine Mitglieder';
-  }
-  if (count === 1) {
-    return '1 Person';
-  }
-
-  return `${count} Personen`;
-};
 
 export const toPersonUnitLabel = (count: number): string => (count === 1 ? 'Person' : 'Personen');
 
