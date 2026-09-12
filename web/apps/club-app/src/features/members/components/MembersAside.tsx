@@ -12,6 +12,7 @@ interface MembersAsideProps {
   letter: string | undefined;
   onLetterSelect: (letter: string) => void;
   totals: Record<MembershipState, number>;
+  note: string;
 }
 
 export const MembersAside: FC<MembersAsideProps> = ({
@@ -19,6 +20,7 @@ export const MembersAside: FC<MembersAsideProps> = ({
   letter,
   onLetterSelect,
   totals,
+  note,
 }) => (
   <Stack sx={{ gap: 3.5, minWidth: 0 }}>
     <KkPanel variant="block">
@@ -29,6 +31,6 @@ export const MembersAside: FC<MembersAsideProps> = ({
         onSelect={onLetterSelect}
       />
     </KkPanel>
-    <MembersStats totals={totals} />
+    <MembersStats totals={totals} note={note} />
   </Stack>
 );

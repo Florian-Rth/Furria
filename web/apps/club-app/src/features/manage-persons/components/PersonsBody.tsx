@@ -1,13 +1,17 @@
 import type { FC } from 'react';
+import { AppListAsideSkeleton, AppListSkeleton } from '@/features/session';
 import { usePersonsQuery } from '../api';
 import { usePersonsSearch } from '../hooks/use-persons-search';
+import { MANAGE_PERSONS_SECTION_TITLE } from '../manage-persons-labels';
 import { toPersonsErrorMessage } from '../manage-persons-messages';
 import type { PersonSummary } from '../schemas';
 import { PersonsError } from './PersonsError';
-import { PersonsSkeleton } from './PersonsSkeleton';
 import { PersonsView } from './PersonsView';
 
 const NO_PERSONS: readonly PersonSummary[] = [];
+const LOADING_LABEL = 'Personenregister wird geladen';
+const TOOLBAR_CHIPS = 5;
+const ASIDE_SIZE = 4;
 
 export const PersonsBody: FC = () => {
   const persons = usePersonsQuery();
@@ -26,5 +30,17 @@ export const PersonsBody: FC = () => {
     return <PersonsError message={errorMessage} onRetry={reload} />;
   }
 
-  return <PersonsSkeleton />;
+  return (
+    <AppListSkeleton
+      label={LOADING_LABEL}
+      sectionTitle={MANAGE_PERSONS_SECTION_TITLE}
+      toolbarChips={TOOLBAR_CHIPS}
+      listShape="rows"
+      aside={<AppListAsideSkeleton />}
+      asideSize={ASIDE_SIZE}
+      asideDesktopOnly
+      stickyAside
+      asideLeadsFocus
+    />
+  );
 };

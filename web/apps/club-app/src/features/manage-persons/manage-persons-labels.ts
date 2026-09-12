@@ -37,6 +37,9 @@ export const PERSONS_INTRO =
 
 export const MANAGE_PERSONS_SECTION_TITLE = 'Alle Personen';
 
+export const PERSONS_STATS_NOTE =
+  'Gezählt wird jede Person im Register — auch ohne Mitgliedschaft und ohne Gruppe.';
+
 export const PERSON_SECTION_TITLES = {
   masterData: 'Stammdaten',
   memberships: 'Mitgliedschaft',

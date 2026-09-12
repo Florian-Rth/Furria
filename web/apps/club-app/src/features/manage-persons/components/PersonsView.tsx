@@ -4,7 +4,11 @@ import type { FC } from 'react';
 import { AppListLayout } from '@/features/session';
 import { usePersonFormDialog } from '../hooks/use-person-form-dialog';
 import type { PersonsSearch } from '../hooks/use-persons-search';
-import { MANAGE_PERSONS_SECTION_TITLE, toPersonsLead } from '../manage-persons-labels';
+import {
+  MANAGE_PERSONS_SECTION_TITLE,
+  PERSONS_STATS_NOTE,
+  toPersonsLead,
+} from '../manage-persons-labels';
 import type { PersonSummary } from '../schemas';
 import { PersonFormDialog } from './PersonFormDialog';
 import { PersonsAside } from './PersonsAside';
@@ -75,6 +79,7 @@ export const PersonsView: FC<PersonsViewProps> = ({ persons, search }) => {
       letter={search.letter}
       onLetterSelect={search.jumpTo}
       totals={search.totals}
+      note={PERSONS_STATS_NOTE}
     />
   );
 
@@ -82,6 +87,7 @@ export const PersonsView: FC<PersonsViewProps> = ({ persons, search }) => {
     <>
       <AppListLayout
         lead={toPersonsLead(search.total)}
+        asideNote={PERSONS_STATS_NOTE}
         sectionTitle={MANAGE_PERSONS_SECTION_TITLE}
         createAction={createButton}
         toolbar={toolbar}

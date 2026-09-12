@@ -1,13 +1,17 @@
 import type { FC } from 'react';
+import { AppListAsideSkeleton, AppListSkeleton } from '@/features/session';
 import { useMembersQuery } from '../api';
 import { useMemberSearch } from '../hooks/use-member-search';
+import { MEMBERS_SECTION_TITLE } from '../members-labels';
 import { toMembersErrorMessage } from '../members-messages';
 import type { MemberSummary } from '../schemas';
 import { MembersError } from './MembersError';
-import { MembersSkeleton } from './MembersSkeleton';
 import { MembersView } from './MembersView';
 
 const NO_MEMBERS: readonly MemberSummary[] = [];
+const LOADING_LABEL = 'Mitgliederliste wird geladen';
+const TOOLBAR_CHIPS = 5;
+const ASIDE_SIZE = 4;
 
 export const MembersBody: FC = () => {
   const members = useMembersQuery();
@@ -25,5 +29,17 @@ export const MembersBody: FC = () => {
     return <MembersError message={errorMessage} onRetry={reload} />;
   }
 
-  return <MembersSkeleton />;
+  return (
+    <AppListSkeleton
+      label={LOADING_LABEL}
+      sectionTitle={MEMBERS_SECTION_TITLE}
+      toolbarChips={TOOLBAR_CHIPS}
+      listShape="rows"
+      aside={<AppListAsideSkeleton />}
+      asideSize={ASIDE_SIZE}
+      asideDesktopOnly
+      stickyAside
+      asideLeadsFocus
+    />
+  );
 };

@@ -1,10 +1,9 @@
 import type { FC } from 'react';
 import { AppListLayout } from '@/features/session';
 import type { MemberSearch } from '../hooks/use-member-search';
-import { MEMBERS_SECTION_TITLE, toConnectedSentence } from '../members-labels';
+import { MEMBERS_SECTION_TITLE, toConnectedSentence, toStatsFootnote } from '../members-labels';
 import { MembersAside } from './MembersAside';
 import { MembersEmpty } from './MembersEmpty';
-import { MembersIntro } from './MembersIntro';
 import { MembersList } from './MembersList';
 import { MembersToolbar } from './MembersToolbar';
 
@@ -15,6 +14,8 @@ interface MembersViewProps {
 }
 
 export const MembersView: FC<MembersViewProps> = ({ search }) => {
+  const footnote = toStatsFootnote(search.totals.none);
+
   const list =
     search.visibleCount === 0 ? (
       <MembersEmpty query={search.query} state={search.state} />
@@ -41,13 +42,14 @@ export const MembersView: FC<MembersViewProps> = ({ search }) => {
       letter={search.letter}
       onLetterSelect={search.jumpTo}
       totals={search.totals}
+      note={footnote}
     />
   );
 
   return (
     <AppListLayout
       lead={toConnectedSentence(search.total)}
-      subLead={<MembersIntro withoutMembership={search.totals.none} />}
+      asideNote={footnote}
       sectionTitle={MEMBERS_SECTION_TITLE}
       toolbar={toolbar}
       list={list}
