@@ -35,6 +35,8 @@ export const PERSONS_TITLE = 'Personenverwaltung';
 export const PERSONS_INTRO =
   'Alle Personen im Register — auch ausgetretene und Leute ohne Vereinsbindung.';
 
+export const MANAGE_PERSONS_SECTION_TITLE = 'Alle Personen';
+
 export const PERSON_SECTION_TITLES = {
   masterData: 'Stammdaten',
   memberships: 'Mitgliedschaft',
@@ -119,6 +121,9 @@ export const toRegisterSentence = (count: number): string => {
 
   return `${count} Personen stehen im Register.`;
 };
+
+export const toPersonsLead = (count: number): string =>
+  `${toRegisterSentence(count)} ${PERSONS_INTRO}`;
 
 export interface PersonHeadline {
   title: string;

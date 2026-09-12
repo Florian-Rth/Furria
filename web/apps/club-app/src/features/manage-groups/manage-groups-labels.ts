@@ -17,6 +17,23 @@ export const MANAGE_GROUPS_SECTION_TITLES = {
   history: 'Geschichte',
 } as const;
 
+export interface ManagedGroupsEmptyCopy {
+  title: string;
+  description: string;
+}
+
+export const MANAGED_GROUPS_EMPTY: Record<'filtered' | 'cold', ManagedGroupsEmptyCopy> = {
+  filtered: {
+    title: 'KEINE GRUPPE PASST',
+    description: 'Anderer Suchbegriff oder ein anderer Filter bringt sie zurück.',
+  },
+  cold: {
+    title: 'NOCH KEINE GRUPPE',
+    description:
+      'Leg die erste Gruppe an. Danach kannst du Personen dazu eintragen und Gruppen-Admins ernennen.',
+  },
+};
+
 export const MANAGE_GROUPS_FOOTNOTE =
   'Archivieren löscht nichts: Die Gruppe verschwindet aus dem Verzeichnis, ihre Geschichte bleibt in den Profilen stehen.';
 
