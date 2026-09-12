@@ -8,10 +8,14 @@ const PRIVATE_PLACEHOLDER = 'privat';
 
 interface MemberContactHiddenProps {
   firstName: string;
+  nested?: boolean;
 }
 
-export const MemberContactHidden: FC<MemberContactHiddenProps> = ({ firstName }) => (
-  <KkPanel variant="block" tone="reserved" sx={{ gap: 1.25 }}>
+export const MemberContactHidden: FC<MemberContactHiddenProps> = ({
+  firstName,
+  nested = false,
+}) => (
+  <KkPanel variant="block" tone={nested ? 'cream' : 'reserved'} sx={{ gap: 1.25 }}>
     <KkText variant="subtitle2" component="p">
       {HIDDEN_TITLE}
     </KkText>

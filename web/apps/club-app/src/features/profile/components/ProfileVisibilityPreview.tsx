@@ -1,4 +1,4 @@
-import { KkMeta, KkPanelHeader } from '@furria/ui';
+import { KkMeta, KkPanel, KkPanelHeader } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { MemberContactPanel } from '@/features/members';
@@ -16,12 +16,12 @@ export const ProfileVisibilityPreview: FC<ProfileVisibilityPreviewProps> = ({ pe
   const contact = toPreviewContact(person, person.contactVisibleToMembers);
 
   return (
-    <Stack sx={{ gap: 2, minWidth: 0 }}>
-      <Stack sx={{ gap: 1.25, minWidth: 0 }}>
-        <KkPanelHeader title={PROFILE_SECTION_TITLES.preview} />
-        <KkMeta>{PREVIEW_CAPTION}</KkMeta>
-      </Stack>
-      <MemberContactPanel contact={contact} firstName={person.firstName} />
+    <Stack sx={{ gap: 1.25, minWidth: 0 }}>
+      <KkPanelHeader title={PROFILE_SECTION_TITLES.preview} />
+      <KkMeta>{PREVIEW_CAPTION}</KkMeta>
+      <KkPanel variant="block" tone="reserved" sx={{ mt: 0.75 }}>
+        <MemberContactPanel contact={contact} firstName={person.firstName} nested />
+      </KkPanel>
     </Stack>
   );
 };

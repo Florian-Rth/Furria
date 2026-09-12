@@ -49,6 +49,8 @@ export const ARCHIVED_CHIP: StateChip = { label: 'archiviert', tone: 'neutral', 
 
 export const NO_ADMIN_CHIP: StateChip = { label: 'kein Admin', tone: 'gold', dot: false };
 
+export const GROUP_ADMIN_CHIP: StateChip = { label: 'Gruppen-Admin', tone: 'accent', dot: false };
+
 export const READ_ONLY_CHIP: StateChip = { label: 'nur Ansicht', tone: 'neutral', dot: false };
 
 export const WITHHELD_CHIP: StateChip = {

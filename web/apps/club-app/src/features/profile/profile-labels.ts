@@ -4,7 +4,7 @@ import type { MePerson } from '@/lib/api/schemas';
 export const PROFILE_SECTION_TITLES = {
   data: 'Deine Daten',
   membership: 'Mitgliedschaft',
-  access: 'Zugang',
+  groups: 'Deine Gruppen',
   visibility: 'Sichtbarkeit',
   preview: 'Was andere von dir sehen',
 } as const;

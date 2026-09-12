@@ -6,9 +6,9 @@ import { PROFILE_SECTION_TITLES } from '../profile-labels';
 
 const VISIBILITY_LINES = 6;
 const PREVIEW_LINES = 5;
-const DATA_LINES = 5;
+const DATA_LINES = 3;
 const MEMBERSHIP_LINES = 3;
-const ACCESS_LINES = 2;
+const GROUPS_LINES = 3;
 const LOADING_LABEL = 'Profil wird geladen';
 
 export const ProfileSkeleton: FC = () => (
@@ -51,9 +51,9 @@ export const ProfileSkeleton: FC = () => (
           </KkPanel>
         </Stack>
         <Stack sx={{ gap: 1.5, minWidth: 0 }}>
-          <KkPanelHeader title={PROFILE_SECTION_TITLES.access} />
+          <KkPanelHeader title={PROFILE_SECTION_TITLES.groups} />
           <KkPanel variant="block">
-            <KkSkeletonBlock lines={ACCESS_LINES} />
+            <KkSkeletonBlock lines={GROUPS_LINES} />
           </KkPanel>
         </Stack>
       </Stack>
