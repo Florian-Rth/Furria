@@ -2,12 +2,12 @@ import { KkNote, KkPanel, KkPanelSection } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { RolePermissionsControl } from '../hooks/use-role-permissions';
+import { ROLE_SECTION_TITLES } from '../manage-roles-labels';
 import type { RoleHolder } from '../schemas';
 import { KeyHandoverDialog } from './KeyHandoverDialog';
 import { RolePermissionRow } from './RolePermissionRow';
 import { SelfLockoutDialog } from './SelfLockoutDialog';
 
-const SECTION_TITLE = 'Rechte';
 const GUIDANCE =
   'Jede Zeile ist eine Sache, die man tun darf. Umschalten wirkt sofort für alle Inhaber dieser Rolle.';
 const ARCHIVED_GUIDANCE =
@@ -44,7 +44,7 @@ export const RolePermissionList: FC<RolePermissionListProps> = ({
   ) : null;
 
   return (
-    <KkPanelSection title={SECTION_TITLE} description={GUIDANCE}>
+    <KkPanelSection title={ROLE_SECTION_TITLES.permissions} description={GUIDANCE}>
       <KkPanel variant="block">
         <Stack sx={{ gap: 2, minWidth: 0 }}>
           {archivedNote}

@@ -1,9 +1,9 @@
 import { KkButton, KkEmptyState, KkIcon, KkPanel, KkPanelSection, KkSkeletonRow } from '@furria/ui';
-import type { FC } from 'react';
+import type { FC, Ref } from 'react';
+import { ROLE_SECTION_TITLES } from '../manage-roles-labels';
 import type { RoleHolder } from '../schemas';
 import { RoleHolderRow } from './RoleHolderRow';
 
-const SECTION_TITLE = 'Inhaber';
 const ADD_HOLDER_LABEL = 'Inhaber eintragen';
 const ADD_TEXT = 'Inhaber';
 const SKELETON_ROWS = 2;
@@ -16,6 +16,7 @@ interface RoleHoldersPanelProps {
   canOpenPerson: boolean;
   canAdd: boolean;
   pending: boolean;
+  titleRef: Ref<HTMLHeadingElement>;
   onAdd: () => void;
   onEnd: (roleHoldingId: number) => void;
 }
@@ -25,6 +26,7 @@ export const RoleHoldersPanel: FC<RoleHoldersPanelProps> = ({
   canOpenPerson,
   canAdd,
   pending,
+  titleRef,
   onAdd,
   onEnd,
 }) => {
@@ -42,7 +44,7 @@ export const RoleHoldersPanel: FC<RoleHoldersPanelProps> = ({
 
   if (pending) {
     return (
-      <KkPanelSection title={SECTION_TITLE} action={action}>
+      <KkPanelSection title={ROLE_SECTION_TITLES.holders} titleRef={titleRef} action={action}>
         <KkPanel variant="list">
           <KkSkeletonRow count={SKELETON_ROWS} />
         </KkPanel>
@@ -68,7 +70,7 @@ export const RoleHoldersPanel: FC<RoleHoldersPanelProps> = ({
   );
 
   return (
-    <KkPanelSection title={SECTION_TITLE} action={action}>
+    <KkPanelSection title={ROLE_SECTION_TITLES.holders} titleRef={titleRef} action={action}>
       <KkPanel variant={isEmpty ? 'block' : 'list'}>{body}</KkPanel>
     </KkPanelSection>
   );
