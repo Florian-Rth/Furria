@@ -572,6 +572,43 @@ page cannot write `position: sticky` with a px `top` under `noDesignSx`) and `Kk
 all 28 call sites were updated in the same commit, so a bucket rebasing onto this must not
 re-add it.
 
+### Round 1 of the UX pass — the integration
+
+All four bucket series (`shared` → `hub` → `persons` → `groups`) are replayed onto
+`feat/club-app-p1` on top of the `ui` bucket's `c93c3f0`. **Item 3 above is now resolved too** —
+`shared`'s S3 put `/manage/roles` on `ManagePageLayout`, so it opens with a `KkLead` and an accent
+`KkPanelHeader` over its master column like its two siblings. Item 6 (decision B's inclusive end)
+is the only one of the six still standing, and it is correct behaviour, not a defect.
+
+Four conflicts, all of them two buckets adding to the same list, all resolved by keeping both
+sides:
+
+| Conflict | Resolution |
+|---|---|
+| `lib/group-sections.ts` + its test, add/add | `shared` and `hub` both created the module. Kept the **union** of the title keys and `shared`'s shorter count labels (`18 Personen`, not `18 Personen dabei`) — `shared`'s call sites had already landed, and `shared` had flagged that the longer admin half already truncates a master row. |
+| `group-hub-labels.ts` | `HUB_SECTION_TITLES` dropped; the hub reads the shared module, which now carries `about`/`history`/`events`/`photos`. |
+| `state-chips.test.ts` | `shared`'s `toStateStats`/`toSwitchStateChip` blocks and `persons`' `toSessionPeriodChip` block both kept. |
+| `MemberHeader.tsx`, `PersonRow.tsx`, `GroupOverrideEmpty.tsx` | `persons`' eyebrow over `shared`'s removed subline (its `KkMeta` import dropped with the subline it served); `persons`' de-wrapped withheld chip using `shared`'s `WITHHELD_CHIP` object; `GroupOverrideEmpty` stays **deleted** — `shared`'s S3 removed the empty detail column that `groups` had merely de-dashed. |
+
+Three integration commits followed, each a disagreement the gates could not catch:
+
+1. `2b1d752` — **two buckets answered §7.1a.3 differently.** `hub` made both „+ Mitglied" and
+   „+ Admin" contained; `groups`, on the structurally identical Gruppenverwaltung panels, made one
+   contained and one outlined. The contract says exactly one contained primary per surface, so the
+   Hub now matches its sibling, at the `size="small"` every other `KkPanelHeader` action uses.
+2. `e55a851` — the union merge left „Die Gruppe", „Geschichte" and „Bilder" spelled both in the
+   shared module and again in the two feature label modules. Folded. `toMemberCountLabel` lost its
+   last call site to G2 and survived only because its own test still imported it; deleted with it.
+3. `9226b1d` — **`features/members` was nobody's bucket**, so `/members/$personId` ended up the one
+   surface whose Gruppen and Rollen panels are dead ends while the identical panels on
+   `/manage/persons/$personId` link. Both now link on the established pattern.
+
+Gate state after integration: `pnpm lint` 1240 files, zero warnings, zero suppressions ·
+`pnpm typecheck` all four projects clean · `pnpm test` **1223 passing**, 0 failed
+(club-app 579 · website 502 · ui 130 · shot 12) · `pnpm build` both Done · `git status --short`
+empty. A Playwright walk of all thirteen routes logged **no `pageerror` and no `/api/` response
+≥ 400**. No server file was touched, so no `dotnet` gate was run.
+
 ### Three implementation idioms worth copying, found the hard way
 
 - **React Compiler eats react-hook-form errors across a component boundary.** If `useForm` lives in
