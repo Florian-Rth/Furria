@@ -2,7 +2,7 @@ import { KkButton, KkEmptyState } from '@furria/ui';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 
-const NOT_FOUND_TITLE = 'NICHT IM VERZEICHNIS';
+const NOT_FOUND_TITLE = 'DIESE GRUPPE GIBT ES NICHT';
 const NOT_FOUND_DESCRIPTION = 'Diese Gruppe gibt es nicht mehr im Verzeichnis.';
 const BACK_LABEL = 'Zu den Gruppen';
 const GROUPS_PATH = '/groups';
