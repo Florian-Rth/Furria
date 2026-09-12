@@ -78,11 +78,11 @@ export const RolesView: FC<RolesViewProps> = ({ roles, catalogue }) => {
         entries={search.entries}
         emptyDescription={search.emptyDescription}
         selectedRoleId={roleId}
-        onSelect={select}
       />
     );
 
-  const detail = roleId === null ? undefined : <RoleColumn roleId={roleId} catalogue={catalogue} />;
+  const hasSelection = roleId !== null;
+  const detail = hasSelection ? <RoleColumn roleId={roleId} catalogue={catalogue} /> : undefined;
 
   return (
     <>
@@ -103,6 +103,7 @@ export const RolesView: FC<RolesViewProps> = ({ roles, catalogue }) => {
         aside={detail}
         asideSize={DETAIL_SIZE}
         asideRef={detailRef}
+        stickyList={hasSelection}
       />
       <RolesCreateFab onCreate={openCreate} />
       {createDialog}

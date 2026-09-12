@@ -27,13 +27,16 @@ export const RolesBody: FC = () => {
     return <RolesError message={errorMessage} onRetry={reload} />;
   }
 
+  const hasSelection = roleId !== null;
+
   return (
     <AppListSkeleton
       label={LOADING_LABEL}
       sectionTitle={MANAGE_ROLES_SECTION_TITLE}
       toolbarChips={TOOLBAR_CHIPS}
       listShape="cards"
-      hasSelection={roleId !== null}
+      hasSelection={hasSelection}
+      stickyList={hasSelection}
       asideSize={DETAIL_SIZE}
     />
   );
