@@ -6,6 +6,7 @@ import type { FC, PropsWithChildren, ReactNode } from 'react';
 import { inkWashSurface } from './internal/ink-wash';
 import { rowDividerTop } from './internal/row-divider';
 import { applyScheme, schemeFill } from './internal/scheme-paint';
+import { KkEyebrow } from './KkEyebrow';
 import { KkMeta } from './KkMeta';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
@@ -50,6 +51,7 @@ const barShape: CSSObject = {
 interface KkFactRowProps extends PropsWithChildren {
   title: string;
   span: string;
+  spanLabel?: string;
   meta?: string;
   tone?: KkFactRowTone;
   chip?: ReactNode;
@@ -61,6 +63,7 @@ interface KkFactRowProps extends PropsWithChildren {
 export const KkFactRow: FC<KkFactRowProps> = ({
   title,
   span,
+  spanLabel,
   meta,
   tone = 'neutral',
   chip,
@@ -90,6 +93,33 @@ export const KkFactRow: FC<KkFactRowProps> = ({
         {actions}
       </Stack>
     );
+
+  const spanUnit =
+    spanLabel === undefined ? null : (
+      <KkEyebrow tone="muted" size="small" sx={{ lineHeight: 1 }}>
+        {spanLabel}
+      </KkEyebrow>
+    );
+
+  const spanBlock = (
+    <Stack sx={{ alignItems: 'flex-end', gap: 0.25, alignSelf: 'center', flexShrink: 0 }}>
+      {spanUnit}
+      <Typography
+        component="p"
+        sx={{
+          fontFamily: kkTokens.font.display,
+          fontWeight: kkTokens.font.displayWeight,
+          fontSize: kkTokens.type.span,
+          letterSpacing: '0.03em',
+          lineHeight: 1.2,
+          color: 'text.primary',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {span}
+      </Typography>
+    </Stack>
+  );
 
   const nestedRows =
     children === undefined ? null : (
@@ -151,22 +181,7 @@ export const KkFactRow: FC<KkFactRowProps> = ({
           </Stack>
           {metaLine}
         </Stack>
-        <Typography
-          component="p"
-          sx={{
-            fontFamily: kkTokens.font.display,
-            fontWeight: kkTokens.font.displayWeight,
-            fontSize: kkTokens.type.span,
-            letterSpacing: '0.03em',
-            lineHeight: 1.2,
-            color: 'text.primary',
-            whiteSpace: 'nowrap',
-            alignSelf: 'center',
-            flexShrink: 0,
-          }}
-        >
-          {span}
-        </Typography>
+        {spanBlock}
         {actionsRow}
       </Stack>
       {nestedRows}
