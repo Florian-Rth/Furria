@@ -1,9 +1,10 @@
-import { KkNote, KkPanel } from '@furria/ui';
+import { KkNote, KkPanel, KkPanelSection } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { RolePermissionsControl } from '../hooks/use-role-permissions';
+import type { RoleHolder } from '../schemas';
+import { KeyHandoverDialog } from './KeyHandoverDialog';
 import { RolePermissionRow } from './RolePermissionRow';
-import { RoleSection } from './RoleSection';
 import { SelfLockoutDialog } from './SelfLockoutDialog';
 
 const SECTION_TITLE = 'Rechte';
@@ -15,12 +16,14 @@ const ARCHIVED_GUIDANCE =
 interface RolePermissionListProps {
   permissions: RolePermissionsControl;
   roleName: string;
+  holders: readonly RoleHolder[];
   isArchived: boolean;
 }
 
 export const RolePermissionList: FC<RolePermissionListProps> = ({
   permissions,
   roleName,
+  holders,
   isArchived,
 }) => {
   const rows = permissions.entries.map((entry) => (
@@ -33,16 +36,17 @@ export const RolePermissionList: FC<RolePermissionListProps> = ({
     />
   ));
 
-  const guidanceTone = isArchived ? 'warning' : 'info';
-  const guidance = isArchived ? ARCHIVED_GUIDANCE : GUIDANCE;
+  const archivedNote = isArchived ? (
+    <KkNote icon="info" tone="warning">
+      {ARCHIVED_GUIDANCE}
+    </KkNote>
+  ) : null;
 
   return (
-    <RoleSection title={SECTION_TITLE}>
+    <KkPanelSection title={SECTION_TITLE} description={GUIDANCE}>
       <KkPanel variant="block">
         <Stack sx={{ gap: 2, minWidth: 0 }}>
-          <KkNote icon="info" tone={guidanceTone}>
-            {guidance}
-          </KkNote>
+          {archivedNote}
           <Stack sx={{ gap: 1.75, minWidth: 0 }}>{rows}</Stack>
         </Stack>
       </KkPanel>
@@ -52,6 +56,13 @@ export const RolePermissionList: FC<RolePermissionListProps> = ({
         onConfirm={permissions.confirmSelfLockout}
         onClose={permissions.cancelSelfLockout}
       />
-    </RoleSection>
+      <KeyHandoverDialog
+        roleName={roleName}
+        holders={holders}
+        entry={permissions.keyHandover}
+        onConfirm={permissions.confirmKeyHandover}
+        onClose={permissions.cancelKeyHandover}
+      />
+    </KkPanelSection>
   );
 };

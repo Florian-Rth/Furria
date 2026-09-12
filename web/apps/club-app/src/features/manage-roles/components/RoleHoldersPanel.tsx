@@ -1,8 +1,7 @@
-import { KkEmptyState, KkPanel, KkSkeletonRow } from '@furria/ui';
+import { KkEmptyState, KkPanel, KkPanelSection, KkSkeletonRow } from '@furria/ui';
 import type { FC } from 'react';
 import type { RoleHolder } from '../schemas';
 import { RoleHolderRow } from './RoleHolderRow';
-import { RoleSection } from './RoleSection';
 
 const SECTION_TITLE = 'Inhaber';
 const SKELETON_ROWS = 2;
@@ -19,11 +18,11 @@ interface RoleHoldersPanelProps {
 export const RoleHoldersPanel: FC<RoleHoldersPanelProps> = ({ holders, pending, onEnd }) => {
   if (pending) {
     return (
-      <RoleSection title={SECTION_TITLE}>
+      <KkPanelSection title={SECTION_TITLE}>
         <KkPanel variant="list">
           <KkSkeletonRow count={SKELETON_ROWS} />
         </KkPanel>
-      </RoleSection>
+      </KkPanelSection>
     );
   }
 
@@ -40,8 +39,8 @@ export const RoleHoldersPanel: FC<RoleHoldersPanelProps> = ({ holders, pending, 
   );
 
   return (
-    <RoleSection title={SECTION_TITLE}>
+    <KkPanelSection title={SECTION_TITLE}>
       <KkPanel variant={isEmpty ? 'block' : 'list'}>{body}</KkPanel>
-    </RoleSection>
+    </KkPanelSection>
   );
 };

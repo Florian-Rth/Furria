@@ -64,6 +64,7 @@ export const RoleHeaderCard: FC<RoleHeaderCardProps> = ({
   ) : (
     <>
       <KkButton
+        variant="outlined"
         startIcon={<KkIcon name="add" size="small" />}
         onClick={onAddHolder}
         sx={{ flexShrink: 0 }}

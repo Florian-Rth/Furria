@@ -6,10 +6,9 @@ import { RoleDetail } from './RoleDetail';
 import { RoleDetailSkeleton } from './RoleDetailSkeleton';
 import { RoleNotFound } from './RoleNotFound';
 import { RolesError } from './RolesError';
-import { RoleUnselected } from './RoleUnselected';
 
 interface RoleColumnProps {
-  roleId: number | null;
+  roleId: number;
   catalogue: readonly string[];
 }
 
@@ -21,9 +20,6 @@ export const RoleColumn: FC<RoleColumnProps> = ({ roleId, catalogue }) => {
     void role.refetch();
   };
 
-  if (roleId === null) {
-    return <RoleUnselected />;
-  }
   if (role.data !== undefined) {
     return (
       <RoleDetail role={role.data} catalogue={catalogue} holdersPending={role.isPlaceholderData} />
