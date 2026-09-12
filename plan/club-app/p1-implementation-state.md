@@ -1,7 +1,7 @@
 ---
 status: paused — W4 complete, W5 round 1 complete, W5 round 2 and W6 owed
 phase: CA-P1
-updated: 2026-09-12
+updated: 2026-09-13
 purpose: everything needed to continue CA-P1 on a different machine with no access to the
          session that started it
 ---
@@ -279,8 +279,8 @@ web suite plus four real browser logins. Two lanes → roughly 45 min of wall cl
    containing `_`, `%` or `\` returned nothing. Now the three-argument overload with an explicit
    `\`, and the query is trimmed server-side rather than trusting the client's `toSearchTerm`.
    The still-open half is §8's pinned divergence: the client's `normalizeForSearch` is NFD-strip
-   only, so `kuehnel` finds nothing on `/members` while the server finds Kühnel. Somebody should
-   ratify which one is meant.
+   only, so `kuehnel` finds nothing on `/members` while the server finds Kühnel. **Ratifying which
+   one is meant is §5's Q6 — do not settle it in an implementation.**
 6. ~~**The `Since` chain-minimum** N+1 risk~~ — **closed.** It is computed in memory from one
    projection, never per row. What the same pass found instead: **`/manage/persons` and
    `/manage/roles` load every historic tie and throw it away.** `PersonRegistryProjection`
@@ -300,6 +300,26 @@ web suite plus four real browser logins. Two lanes → roughly 45 min of wall cl
    observable change, at the cost of a full Testcontainer suite). Belongs in **W6 hardening** as
    `MembershipQuery` / `GroupMembershipQuery` / `GroupAdminQuery` `[Pure] Expression` factories
    with boundary tests for `start == today` and `end == today` (decision B).
+
+### Decisions owed to Florian — an implementer may not take these
+
+Eight questions that implementation raised and implementation must not answer. Each says what
+ships **today**, the question, and the options. **None blocks anything**: every one of them has a
+shipped behaviour that is defensible and written down. What they must not get is a second
+implementer's reading — that is how a contract grows two spellings of the same thing.
+
+Contract §12 points here; answers to Q7 and Q8 become §12 rows.
+
+| # | Question | Ships today | The options |
+|---|---|---|---|
+| Q1 | **Is a 404 from a *write* meant to be silent?** Contract §5.0a scopes its 404 rule to detail *routes* and says nothing about a write. Slice 9 read that silence as intended and returned `null`, which made **every** Hub write fail mutely — a Gruppen-Admin whose Person had just been removed would click „Aufnehmen" forever with no feedback. | `lib/write-error.ts` answers a write 404 with one shared line: „Das gibt es so nicht mehr — jemand anderes war schneller. Lade die Seite neu." All four write surfaces use it (the four byte-identical copies were folded into one module). | **(a)** Pin `WRITE_MISSING_MESSAGE` into §5.0a as the write-path rule. **(b)** Silence really was the intent → revert it, and **say so in §5.0a** so the next implementer does not re-add it. |
+| Q2 | **`RequirePermission` takes a four-member union and §5.0 pins three messages.** `persons.read_details` guards no page (decision T), so a total `Record<PermissionKey, string>` cannot be written from the contract. | `Partial<Record<PermissionKey, string>>` plus a neutral fallback („Diese Seite ist an eine Rolle gebunden. Du hast sie gerade nicht.") that is **unreachable in P1**. | **(a)** Narrow the prop to the three keys that guard a page (a `GuardedPermissionKey` type), making the map total and the fallback unnecessary. **(b)** Pin a fourth message for `persons.read_details` and keep the prop wide. |
+| Q3 | **Copy that nothing pins.** Four texts were written to satisfy „build the end state" and are **not** in §10. | `/manage/roles` with no `?role=` (the `RolesGrid` / `RoleCard` column); the restore-a-Rolle dialog — §10.5's restore row says „Gruppe aktivieren" and no Rollen twin exists; the `pastHolders` panel; `toRolesLead`. Plus the new `GroupHistoryPanel` heads on `/manage/groups`. | **(a)** Ratify the shipped strings into §10 as they stand. **(b)** Rewrite them and pin the result. Either way the UX pass may still overrule — but then it overrules something pinned. |
+| Q4 | **`PageSkeleton` is pinned and cannot be mounted.** §5.0 and §11's slice-3 row list it; decision AP makes a guard render its children while `me` is pending, so the branch that would have shown it does not exist, and every page owns a skeleton already. | Not built. Nothing imports it. | **(a)** Strike it from §5.0 and the ledger — dead code is not the end state, it is a second spelling of each page's own skeleton. **(b)** Give it a real consumer and say which. |
+| Q5 | **§10.7 and §10.8 name `persons.read_details` two different ways**, and both strings ship, 800 px apart, on two surfaces. | §10.7 verbatim: „… wer das Recht „**Personendetails sehen**" hat …". §10.8's key title: „**Kontaktdaten aller Personen sehen**". | **(a)** §10.7 gives — but it is pinned *verbatim* copy and that is the point of §10.7. **(b)** §10.8 gives — the key title becomes „Personendetails sehen", and §10.8's one-liner carries the „Telefon, E-Mail und Adresse" detail. **Not an option:** a third spelling. |
+| Q6 | **Client and server fold German names differently, and the contract pins both.** §4.41's `GermanFold` maps `ue → ü`, so `/api/person-search?q=kuehn` finds Kühnel; §5.1's `normalizeForSearch` is NFD-strip only, so typing `kuehnel` into `/members` or `/manage/persons` finds nothing while `kuhnel` and `KÜHNEL` both work. Both were implemented exactly as written, and `person-filters.test.ts` **pins the divergence**. | The divergence, deliberately. | **(a)** Client follows the server: `normalizeForSearch` gains the two-way German fold; one test changes. **(b)** Server follows the client: §4.41 drops `Expand`; a German club's register stops finding „kuehnel", which is how half the members type their own name on a phone. **(c)** Ratify the split and write down *why* a local list search and a server search differ. |
+| Q7 | **The `BootstrapAdminSeeder` Admin-holding failsafe, against decision W.** `EnsureAdminRoleIsHeldAsync` runs on **every** `StartAsync`: if no `RoleHolding` on the Admin Rolle is running, it silently opens a fresh one for the bootstrap account. Decision W says the Rolle is „created once … afterwards it is ordinary data", which reads as forbidding this. **It is not an oversight** — three tests pin the split deliberately: the permission keys are never re-granted (decision W's actual stated rationale), while a lost Inhaberschaft is repaired. It is also not freely removable: `roles.manage` can only be granted by someone who holds it and there is no delete endpoint (decision U), so what it prevents is a **permanent lockout**. | The failsafe, with a comment naming it. No behaviour was changed. | **(a)** W-literal: drop the failsafe and accept that a club can lock itself out of its own rights matrix for good. **(b)** Pin the failsafe as its own §12 decision. Two things belong in the same decision either way: the predicate **ignores `SinceOn`**, so a purely *future* holding counts as „still held"; and the **lost-update policy** for `PutRolePermissions` and `PutGroupInfo` — there are no `xmin` concurrency tokens, none were added, and `PutRolePermissions` is a *declared* full replacement. |
+| Q8 | **A row lying entirely in the future can be created on a surface that cannot show it.** On `/manage/groups` such a Zugehörigkeit appears in neither `members`/`admins` nor `pastMembers`/`pastAdmins`, while Person bearbeiten shows it with a `geplant` chip (decision AF). Decision C makes the row legal, `PostGroupMembership` accepts it, and `AddMemberDialog`'s own date hint **invites** it („Darf in der Zukunft liegen"). | The row is created and then invisible on the surface that created it. | **(a)** §4.30 gains a third pair (`futureMembers`/`futureAdmins`) and §5.9 a place to render them. **(b)** The running lists include future rows, carrying the `geplant` chip, as Person bearbeiten does. **(c)** The dialogs stop inviting a future date on this surface. **Not an option:** leaving a write flow whose result vanishes. |
 
 ---
 
@@ -380,11 +400,60 @@ The commit message of `4ba5a8e` lists all of this per entry.
 
 ---
 
-## 8. Contract bugs reported by the frontend wave — all still open
+## 8. Contract bugs reported by the frontend wave — dispatched 2026-09-13
 
 Every one of these was reported rather than worked around, and every implementer's reading is
-recorded so nobody writes a second spelling. **None of them blocked a slice.** They need a
-decision written back into `p1-contract.md`, not re-litigating by the next implementer.
+recorded so nobody writes a second spelling. **None of them blocked a slice.**
+
+**They have now been dispatched, and the findings below are kept as the evidence, not as the
+to-do.** Each was sorted into one of two kinds:
+
+- **the contract was simply wrong and the code is right** → `p1-contract.md` is amended to say what
+  ships, each amendment marked „Corrected 2026-09-13" with the reason. These are corrections of
+  fact. Leaving them guaranteed the next implementer would build from a document that contradicts
+  the codebase;
+- **a decision nobody has taken** → written into §5's **„Decisions owed to Florian"** as a question
+  with its options, and *not* decided. An implementer who meets one reports it and moves on.
+
+| Finding below | Kind | Where it went |
+|---|---|---|
+| Deliverables — `RequirePermission` | contract wrong | §11 ledger row 2 + a note in §5.0: booked in slice 2, actually built during slices 9–17 |
+| Deliverables — `PageSkeleton` | **decision owed** | **Q4** — drop it or give it a consumer. §5.0 and ledger row 3 now say so |
+| Deliverables — `formatSessionLabel` / `formatSessionSpan` / `toPeriodChip` | contract wrong | §11 ledger row 1: missed in slice 1, landed with slices 12–13, pinned signatures unchanged |
+| 1 — the detail route filename | contract wrong | §5.0 (the trailing-underscore rule, stated once), §5.3, §5.4, §5.8, ledger rows 5, 6, 12 |
+| 2 — `AccessDenied`'s fourth key | **decision owed** | **Q2**. §5.0's table notes it |
+| 3 — a 404 from a *write* | **decision owed** | **Q1**. §5.0a notes it and forbids a second spelling of the message |
+| 4 — the 400 rule assumes RHF | contract wrong | §5.0a: the field mapping is conditional on the form actually being a react-hook-form |
+| 5 — §5.9's desktop row | contract wrong | §5.9: one row form at every width; `Offenheit` moves to the card and the header card |
+| 6 — §5.9's chip priority | contract wrong | §5.9: `archiviert` → `kein Admin` → none. §5.10 records that the Rollen row can show two chips, and that unifying them is UX work |
+| 7 — §5.10's `placeholderData` | contract wrong | §5.0 and §5.10: **both** holder lists arrive late, because the two `Holders` are different DTOs |
+| 8 — §5.10's three unowned things | **decision owed** | **Q3**. §5.10 names them and says the copy is not pinned |
+| 9 — no history panel for Gruppenverwaltung | contract wrong | §5.9: §4.30's past rows render in the shared `GroupHistoryPanel`; its copy joins Q3 |
+| 10 — `KkTextField`'s unions | contract wrong | §7.1 gains a `KkTextField` row: `+ 'tel'`, `+ 'numeric'` |
+| 11 — two 409s with no German | contract wrong | §4.26 and §4.29 (and their Rollen twins) now carry the strings the server already sends |
+| 12 — §5.7's two halves | contract wrong | §5.7 and §4.14: the row is the link; the editor opens from §5.8's `PersonMasterDataPanel` |
+| `shared` bucket amendments 1–5 | contract wrong | folded: §5.3 (header vs „Im Verein"), §5.9 (5/7 only when selected), §7.1a.3 (the FAB breakpoint), §5.7 (the chip order is the primitive's), §5.10 (the master list split) |
+| `shared` bucket bug 1 — §10.7 vs §10.8 | **decision owed** | **Q5**. §10.8 notes it; neither string was touched |
+| `shared` bucket bug 2 — no password endpoint | contract wrong | §5.5: the „ZUGANG" card is folded away and why; it returns when §4 pins the endpoint |
+| server review 1 — `isAffiliated` | contract wrong | §4.0 (the rule + the reason), and the field added to §4.5, §4.8, §4.30, §4.32's DTOs |
+| server review 2 — the seeder failsafe | **decision owed** | **Q7**, with the `SinceOn` predicate and the lost-update policy folded into the same question |
+| „will be mistaken for bugs" — the folding divergence | **decision owed** | **Q6** |
+| „will be mistaken for bugs" — the invisible future row | **decision owed** | **Q8** |
+
+Two things were **not** contract bugs and stay where they are: the „in Zahlen" cards that
+hard-coded three of four states (a defect, fixed, and the lesson is below), and the three German
+names for one list of people (the contract never pinned those titles; `lib/group-sections.ts` owns
+them now).
+
+One correction was made in passing while re-reading a paragraph that had to change anyway:
+§5.0 pinned `usePermissions().isPending` and the code has said `isUndecided` since `eaa97c4`.
+
+**§5 of the contract has drifted further than these findings.** UX rounds 2–4 reshaped surfaces
+whose §5 file lists were never re-derived — `/manage/roles` most of all (`RolesGrid`, `RoleCard`,
+`RoleColumn`, `KeyHandoverDialog`, `SelfLockoutDialog`, `RoleNotFound`), and `features/group-detail`
+exists in no §5 paragraph at all. §5.10 now says so out loud. **The rules in §5 were re-verified
+against the code and bind; the file lists are slice-era snapshots.** Re-deriving them is a job for
+after W5 settles the surfaces, alongside §11's consolidation slice.
 
 ### Deliverables the contract pins that were never built
 
@@ -458,8 +527,8 @@ decision written back into `p1-contract.md`, not re-litigating by the next imple
 ### Amendments and bugs from the UX pass, round 1 — the `shared` bucket
 
 **Contract amendments taken by this bucket.** Each is a paragraph of `p1-contract.md` that could
-not be implemented as written; the resolution is recorded here and belongs folded back into the
-contract when that file is next touched.
+not be implemented as written. **All five were folded into the contract on 2026-09-13** and are
+kept here as the record of why.
 
 1. **§5.3 contradicts itself and is amended.** It pins `MemberHeader` as
    „KkAvatar + name + state chip + „Mitglied seit …"" **and** pins `MemberClubPanel` as
@@ -504,7 +573,7 @@ contract when that file is next touched.
    §10.8 pins the same key's title as **„Kontaktdaten aller Personen sehen"**. Both strings ship
    today, 800 px apart on two surfaces, for `persons.read_details`. The §10.7 sentence was **not**
    changed — it is pinned verbatim and shipping a third spelling would be worse than shipping two.
-   **A decision is owed: one of the two paragraphs has to give.**
+   **A decision is owed: one of the two paragraphs has to give — §5, Q5.**
 
 2. **There is no password-change endpoint and §5.5 does not pin one.** The „ZUGANG" card was named
    after access, contained one read-only line and managed no access. „Build the end state" allows
@@ -564,8 +633,9 @@ contract when that file is next touched.
    Inhaberschaft is repaired. It is not removable either: `roles.manage` can only be granted by
    someone who holds it and there is no delete endpoint (decision U), so the failure it prevents
    is a permanent lockout. Landed as a comment naming it, no behaviour change.
-   **Florian decides:** either W-literal (drop the failsafe, accept a possible permanent lockout)
-   or pin the failsafe as its own decision. Two things belong in the same decision:
+   **Florian decides — written up as §5's Q7:** either W-literal (drop the failsafe, accept a
+   possible permanent lockout) or pin the failsafe as its own decision. Two things belong in the
+   same decision:
    - the predicate ignores `SinceOn`, so a purely **future** holding counts as „still held";
    - the **lost-update policy** for `PutRolePermissions` and `PutGroupInfo`. There are no `xmin`
      concurrency tokens and none were added: a lost-update policy is a decision nobody has taken,
@@ -577,12 +647,13 @@ contract when that file is next touched.
   server-side `GermanFold` maps `ue → ü`, so `GET /api/person-search?q=kuehn` finds Kühnel; §5.1's
   `normalizeForSearch` is NFD-strip only, so typing `kuehnel` into `/members` or `/manage/persons`
   finds nothing while `kuhnel` and `KÜHNEL` both work. Both were implemented exactly as written and
-  the divergence is pinned in `person-filters.test.ts`. Somebody should ratify which one is meant.
+  the divergence is pinned in `person-filters.test.ts`. **Ratification is Q6.**
 - **A row lying entirely in the future appears in no list on `/manage/groups`** — neither in
   `members`/`admins` nor in `pastMembers`/`pastAdmins` — while Person bearbeiten shows it with a
   `geplant` chip (decision AF). Decision C makes such rows legal and `PostGroupMembership` accepts
   them, and `AddMemberDialog`'s own date hint invites one („Darf in der Zukunft liegen"), **so this
-  surface can create a row it then cannot display.** That needs a contract decision, not a third list.
+  surface can create a row it then cannot display.** That needs a contract decision, not a third
+  list — **Q8**.
 
 ---
 
@@ -764,8 +835,9 @@ commit. They are the natural first work of round 2:
    `/manage/roles`' no-selection column). G1's ruling is unambiguous; this is mechanical.
 2. `KkBroomMark`'s size and colour — a primitive-level decision affecting 28 empty states, and the
    `ui` bucket's own open question.
-3. Whether §7.1a item 3 should read „exactly one" or „at most one" contained primary — three
-   surfaces currently have none.
+3. ~~Whether §7.1a item 3 should read „exactly one" or „at most one" contained primary~~ —
+   **closed.** Round 4 amended it to **„at most one"** in the contract, and named the reason: a
+   surface with no route-level create correctly carries no contained primary.
 
 ### On disk, and **volatile**
 
