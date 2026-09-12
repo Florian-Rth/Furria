@@ -29,9 +29,12 @@ export const toHubErrorMessage = (error: Error | null): string | null => {
   return toQueryErrorMessage(error, HUB_ERROR_MESSAGES);
 };
 
+const WRITE_MISSING_MESSAGE =
+  'Das gibt es so nicht mehr — jemand anderes war schneller. Lade die Seite neu.';
+
 export const toWriteErrorMessage = (error: Error | null): string | null => {
   if (isNotFoundError(error)) {
-    return null;
+    return WRITE_MISSING_MESSAGE;
   }
 
   return toQueryErrorMessage(error, WRITE_ERROR_MESSAGES);
