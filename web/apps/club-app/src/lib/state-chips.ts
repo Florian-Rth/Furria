@@ -80,9 +80,12 @@ export const ALL_STATES_FILTER_ID = 'all';
 const ALL_STATES_LABEL = 'Alle';
 const STATE_FILTER_ORDER: readonly MembershipState[] = ['active', 'paused', 'ended', 'none'];
 
+const occurringStates = (counts: Record<MembershipState, number>): MembershipState[] =>
+  STATE_FILTER_ORDER.filter((state) => counts[state] > 0);
+
 export const toStateFilterOptions = (counts: Record<MembershipState, number>): KkFilterOption[] => {
   const total = STATE_FILTER_ORDER.reduce((sum, state) => sum + counts[state], 0);
-  const offered = STATE_FILTER_ORDER.filter((state) => counts[state] > 0).map((state) => ({
+  const offered = occurringStates(counts).map((state) => ({
     id: state,
     label: toMembershipStateLabel(state),
     count: counts[state],
@@ -90,3 +93,20 @@ export const toStateFilterOptions = (counts: Record<MembershipState, number>): K
 
   return [{ id: ALL_STATES_FILTER_ID, label: ALL_STATES_LABEL, count: total }, ...offered];
 };
+
+export type StateStatTone = 'default' | 'accent';
+
+export interface StateStat {
+  state: MembershipState;
+  label: string;
+  count: number;
+  tone: StateStatTone;
+}
+
+export const toStateStats = (counts: Record<MembershipState, number>): StateStat[] =>
+  occurringStates(counts).map((state) => ({
+    state,
+    label: toMembershipStateLabel(state),
+    count: counts[state],
+    tone: state === 'active' ? 'accent' : 'default',
+  }));
