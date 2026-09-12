@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { toPeriodChip, toStateFilterOptions, toStateStats, toSwitchStateChip } from './state-chips';
+import {
+  toPeriodChip,
+  toSessionPeriodChip,
+  toStateFilterOptions,
+  toStateStats,
+  toSwitchStateChip,
+} from './state-chips';
 
 describe('toStateFilterOptions', () => {
   it('offers every occurring state in the club order, with the total first', () => {
@@ -70,5 +76,46 @@ describe('toSwitchStateChip', () => {
     { checked: false, label: 'aus', tone: 'neutral' },
   ])('paints the $label state without a dot', ({ checked, label, tone }) => {
     expect(toSwitchStateChip(checked)).toEqual({ label, tone, dot: false });
+  });
+});
+
+describe('toSessionPeriodChip', () => {
+  const currentSessionYear = 2025;
+
+  it.each([
+    { label: 'an open-ended span that has begun', first: 2020, last: null, expected: 'läuft' },
+    {
+      label: 'an open-ended span that has not begun',
+      first: 2026,
+      last: null,
+      expected: 'geplant',
+    },
+    { label: 'a span ending this Session', first: 2020, last: 2025, expected: 'läuft' },
+    { label: 'a span starting this Session', first: 2025, last: 2027, expected: 'läuft' },
+    {
+      label: 'a single Session that is the current one',
+      first: 2025,
+      last: 2025,
+      expected: 'läuft',
+    },
+    { label: 'a single Session one before', first: 2024, last: 2024, expected: null },
+    { label: 'a single Session one ahead', first: 2026, last: 2026, expected: 'geplant' },
+    { label: 'a span that ended last Session', first: 2020, last: 2024, expected: null },
+    { label: 'a span wholly in the future', first: 2027, last: 2029, expected: 'geplant' },
+  ])('marks $label', ({ first, last, expected }) => {
+    expect(toSessionPeriodChip(first, last, currentSessionYear)?.label ?? null).toBe(expected);
+  });
+
+  it('paints the running span green with a dot and the planned span neutral without one', () => {
+    expect(toSessionPeriodChip(2024, 2026, currentSessionYear)).toEqual({
+      label: 'läuft',
+      tone: 'green',
+      dot: true,
+    });
+    expect(toSessionPeriodChip(2030, null, currentSessionYear)).toEqual({
+      label: 'geplant',
+      tone: 'neutral',
+      dot: false,
+    });
   });
 });

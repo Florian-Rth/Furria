@@ -1,7 +1,9 @@
-import { KkButton, KkFactRow } from '@furria/ui';
+import { KkButton, KkChip, KkFactRow } from '@furria/ui';
 import type { FC } from 'react';
+import { currentSessionYear } from '@/lib/club';
+import { toSessionPeriodChip } from '@/lib/state-chips';
 import type { FactEditor } from '../hooks/use-fact-editor';
-import { PAUSE_ROW_TITLE, toPauseSpan } from '../manage-persons-labels';
+import { PAUSE_ROW_TITLE, SESSION_SPAN_LABEL, toPauseSpan } from '../manage-persons-labels';
 import type { PersonPause } from '../schemas';
 import { PauseEditor } from './PauseEditor';
 
@@ -48,6 +50,19 @@ export const PersonPauseRow: FC<PersonPauseRowProps> = ({
     return null;
   }
 
+  const periodChip = toSessionPeriodChip(
+    pause.firstSessionYear,
+    pause.lastSessionYear,
+    currentSessionYear(),
+  );
+
+  const chip =
+    periodChip === null ? undefined : (
+      <KkChip tone={periodChip.tone} dot={periodChip.dot} size="small">
+        {periodChip.label}
+      </KkChip>
+    );
+
   const actions = (
     <KkButton size="small" variant="outlined" onClick={startEdit}>
       {EDIT_LABEL}
@@ -55,6 +70,13 @@ export const PersonPauseRow: FC<PersonPauseRowProps> = ({
   );
 
   return (
-    <KkFactRow title={PAUSE_ROW_TITLE} span={toPauseSpan(pause)} tone="gold" actions={actions} />
+    <KkFactRow
+      title={PAUSE_ROW_TITLE}
+      span={toPauseSpan(pause)}
+      spanLabel={SESSION_SPAN_LABEL}
+      chip={chip}
+      tone="gold"
+      actions={actions}
+    />
   );
 };

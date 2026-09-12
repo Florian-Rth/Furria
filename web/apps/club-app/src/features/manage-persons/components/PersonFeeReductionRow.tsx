@@ -1,7 +1,13 @@
-import { KkButton, KkFactRow } from '@furria/ui';
+import { KkButton, KkChip, KkFactRow } from '@furria/ui';
 import type { FC } from 'react';
+import { currentSessionYear } from '@/lib/club';
+import { toSessionPeriodChip } from '@/lib/state-chips';
 import type { FactEditor } from '../hooks/use-fact-editor';
-import { toFeeReductionBasisLabel, toFeeReductionSpan } from '../manage-persons-labels';
+import {
+  SESSION_SPAN_LABEL,
+  toFeeReductionBasisLabel,
+  toFeeReductionSpan,
+} from '../manage-persons-labels';
 import type { PersonFeeReduction } from '../schemas';
 import { FeeReductionEditor } from './FeeReductionEditor';
 
@@ -35,6 +41,19 @@ export const PersonFeeReductionRow: FC<PersonFeeReductionRowProps> = ({
     );
   }
 
+  const periodChip = toSessionPeriodChip(
+    reduction.firstSessionYear,
+    reduction.lastSessionYear,
+    currentSessionYear(),
+  );
+
+  const chip =
+    periodChip === null ? undefined : (
+      <KkChip tone={periodChip.tone} dot={periodChip.dot} size="small">
+        {periodChip.label}
+      </KkChip>
+    );
+
   const actions = (
     <KkButton size="small" variant="outlined" onClick={startEdit}>
       {EDIT_LABEL}
@@ -45,6 +64,8 @@ export const PersonFeeReductionRow: FC<PersonFeeReductionRowProps> = ({
     <KkFactRow
       title={toFeeReductionBasisLabel(reduction.basis)}
       span={toFeeReductionSpan(reduction)}
+      spanLabel={SESSION_SPAN_LABEL}
+      chip={chip}
       actions={actions}
     />
   );

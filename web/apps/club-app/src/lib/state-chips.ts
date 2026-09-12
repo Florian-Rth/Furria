@@ -39,6 +39,21 @@ export const toPeriodChip = (isRunning: boolean, isFuture: boolean): StateChip |
   return null;
 };
 
+export const toSessionPeriodChip = (
+  firstSessionYear: number,
+  lastSessionYear: number | null,
+  currentSessionYear: number,
+): StateChip | null => {
+  if (currentSessionYear < firstSessionYear) {
+    return PLANNED_PERIOD_CHIP;
+  }
+  if (lastSessionYear === null || currentSessionYear <= lastSessionYear) {
+    return RUNNING_PERIOD_CHIP;
+  }
+
+  return null;
+};
+
 const RECRUITING_CHIP: StateChip = { label: 'sucht Verstärkung', tone: 'gold', dot: true };
 const SETTLED_CHIP: StateChip = { label: 'sucht gerade niemanden', tone: 'neutral', dot: false };
 
