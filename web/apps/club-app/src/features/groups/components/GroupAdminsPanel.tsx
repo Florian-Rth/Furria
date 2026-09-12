@@ -10,6 +10,7 @@ import {
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { GROUP_ADMINS_NOTE } from '@/lib/group-sections';
 import { toInitials } from '@/lib/initials';
 import { formatSinceSession } from '@/lib/membership-labels';
 import type { RecruitingContactSegment } from '../groups-labels';
@@ -22,8 +23,6 @@ import type { GroupAdmin } from '../schemas';
 
 const SINCE_LABEL = 'seit';
 const MEMBER_PATH = '/members/$personId';
-const ADMIN_NOTE =
-  'Gruppen-Admins pflegen die Gruppe. Sie müssen nicht selbst in der Gruppe tanzen.';
 
 const toSegmentKey = (segment: RecruitingContactSegment, index: number): string =>
   segment.kind === 'person' ? `person-${segment.personId}` : `text-${index}`;
@@ -76,14 +75,10 @@ export const GroupAdminsPanel: FC<GroupAdminsPanelProps> = ({ admins, isRecruiti
     );
   });
 
-  const contactNote = isRecruiting ? (
-    <KkNote tone="warning" icon="group">
-      {contactSegments}
-    </KkNote>
-  ) : null;
+  const contactNote = isRecruiting ? <KkNote icon="group">{contactSegments}</KkNote> : null;
 
   return (
-    <KkPanelSection title={GROUP_SECTION_TITLES.admins} description={ADMIN_NOTE}>
+    <KkPanelSection title={GROUP_SECTION_TITLES.admins} description={GROUP_ADMINS_NOTE}>
       <Stack sx={{ gap: 2, minWidth: 0 }}>
         <KkPanel variant={variant}>{body}</KkPanel>
         {contactNote}

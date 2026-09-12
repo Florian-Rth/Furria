@@ -1,10 +1,11 @@
+import type { MyGroupSummary } from '@/features/group-hub';
 import type { PersonRef } from '@/lib/api/schemas';
 import {
   GROUP_SECTION_TITLES as SHARED_GROUP_SECTION_TITLES,
   toGroupSubline,
 } from '@/lib/group-sections';
 import type { StateChip } from '@/lib/state-chips';
-import { toRecruitingChip } from '@/lib/state-chips';
+import { GROUP_ADMIN_CHIP, MY_GROUP_CHIP, toRecruitingChip } from '@/lib/state-chips';
 import type { GroupDetails } from './schemas';
 
 const GROUP_ID_PATTERN = /^[1-9]\d*$/;
@@ -14,8 +15,50 @@ export const GROUP_SECTION_TITLES = {
   about: SHARED_GROUP_SECTION_TITLES.about,
   members: SHARED_GROUP_SECTION_TITLES.members,
   admins: SHARED_GROUP_SECTION_TITLES.admins,
+  events: SHARED_GROUP_SECTION_TITLES.events,
   photos: SHARED_GROUP_SECTION_TITLES.photos,
 } as const;
+
+export const RESERVED_BADGE = 'bald';
+
+export const EVENTS_RESERVED = {
+  title: 'Noch nicht da',
+  description:
+    'Training, Proben und Auftritte der Gruppe an einem Ort. Kommt in einer späteren Phase.',
+} as const;
+
+export const PHOTOS_RESERVED = {
+  title: 'Noch keine Bilder',
+  description:
+    'Platz für ein paar Bilder aus vergangenen Sessions. Die Bildergalerie liefert sie später automatisch — hier wird nichts hochgeladen.',
+} as const;
+
+export interface GroupStanding {
+  isMember: boolean;
+  isAdmin: boolean;
+}
+
+export const toGroupStandings = (groups: readonly MyGroupSummary[]): Map<number, GroupStanding> =>
+  new Map(
+    groups.map((group) => [group.groupId, { isMember: group.isMember, isAdmin: group.isAdmin }]),
+  );
+
+export const toGroupStandingChips = (standing: GroupStanding | undefined): StateChip[] => {
+  if (standing === undefined) {
+    return [];
+  }
+
+  const chips: StateChip[] = [];
+
+  if (standing.isMember) {
+    chips.push(MY_GROUP_CHIP);
+  }
+  if (standing.isAdmin) {
+    chips.push(GROUP_ADMIN_CHIP);
+  }
+
+  return chips;
+};
 
 export const toGroupId = (raw: string): number | null =>
   GROUP_ID_PATTERN.test(raw) ? Number(raw) : null;
