@@ -1,9 +1,8 @@
 import { KkSwitchRow } from '@furria/ui';
 import type { FC } from 'react';
 import type { PermissionKey } from '@/lib/api/schemas';
+import { SWITCH_STATE_LABELS } from '@/lib/state-chips';
 import type { RolePermissionEntry } from '../manage-roles-labels';
-
-const STATE_LABELS = { on: 'an', off: 'aus' } as const;
 
 interface RolePermissionRowProps {
   entry: RolePermissionEntry;
@@ -28,7 +27,7 @@ export const RolePermissionRow: FC<RolePermissionRowProps> = ({
       description={entry.line}
       checked={entry.enabled}
       onChange={change}
-      stateLabel={STATE_LABELS}
+      stateLabel={SWITCH_STATE_LABELS}
       busy={busy}
       disabled={disabled}
     />

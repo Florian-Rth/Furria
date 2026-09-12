@@ -49,6 +49,32 @@ export const ARCHIVED_CHIP: StateChip = { label: 'archiviert', tone: 'neutral', 
 
 export const NO_ADMIN_CHIP: StateChip = { label: 'kein Admin', tone: 'gold', dot: false };
 
+export const READ_ONLY_CHIP: StateChip = { label: 'nur Ansicht', tone: 'neutral', dot: false };
+
+export const WITHHELD_CHIP: StateChip = {
+  label: 'nicht freigegeben',
+  tone: 'neutral',
+  dot: false,
+};
+
+export interface SwitchStateChips {
+  on: StateChip;
+  off: StateChip;
+}
+
+export const SWITCH_STATE_CHIP: SwitchStateChips = {
+  on: { label: 'an', tone: 'green', dot: false },
+  off: { label: 'aus', tone: 'neutral', dot: false },
+};
+
+export const SWITCH_STATE_LABELS = {
+  on: SWITCH_STATE_CHIP.on.label,
+  off: SWITCH_STATE_CHIP.off.label,
+};
+
+export const toSwitchStateChip = (checked: boolean): StateChip =>
+  checked ? SWITCH_STATE_CHIP.on : SWITCH_STATE_CHIP.off;
+
 export const ALL_STATES_FILTER_ID = 'all';
 
 const ALL_STATES_LABEL = 'Alle';

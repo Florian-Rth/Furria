@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { toPeriodChip, toStateFilterOptions } from './state-chips';
+import { toPeriodChip, toStateFilterOptions, toSwitchStateChip } from './state-chips';
 
 describe('toStateFilterOptions', () => {
   it('offers every occurring state in the club order, with the total first', () => {
@@ -37,5 +37,14 @@ describe('toPeriodChip', () => {
   it('gives the running chip a live dot and the planned chip none', () => {
     expect(toPeriodChip(true, false)).toEqual({ label: 'läuft', tone: 'green', dot: true });
     expect(toPeriodChip(false, true)).toEqual({ label: 'geplant', tone: 'neutral', dot: false });
+  });
+});
+
+describe('toSwitchStateChip', () => {
+  it.each([
+    { checked: true, label: 'an', tone: 'green' },
+    { checked: false, label: 'aus', tone: 'neutral' },
+  ])('paints the $label state without a dot', ({ checked, label, tone }) => {
+    expect(toSwitchStateChip(checked)).toEqual({ label, tone, dot: false });
   });
 });

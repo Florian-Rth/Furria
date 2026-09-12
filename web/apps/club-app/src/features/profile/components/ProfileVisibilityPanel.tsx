@@ -2,11 +2,11 @@ import { KkNote, KkPanel, KkPanelHeader, KkSwitchRow } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { MePerson } from '@/lib/api/schemas';
+import { SWITCH_STATE_LABELS } from '@/lib/state-chips';
 import { useContactVisibility } from '../hooks/use-contact-visibility';
 import { PROFILE_SECTION_TITLES } from '../profile-labels';
 
 const SWITCH_LABEL = 'Meine Kontaktdaten für Mitglieder sichtbar';
-const SWITCH_STATE_LABEL = { on: 'an', off: 'aus' };
 const EXPLANATION =
   'Ist das an, sehen alle eingeloggten Mitglieder in deinem Profil Telefonnummer, E-Mail und Adresse. Ist es aus, steht dort nur der Hinweis, dass du sie nicht freigegeben hast — deine Daten bleiben im Verein hinterlegt.';
 const KEY_HOLDER_NOTE =
@@ -36,7 +36,7 @@ export const ProfileVisibilityPanel: FC<ProfileVisibilityPanelProps> = ({ person
           checked={visibility.isVisible}
           onChange={visibility.toggle}
           description={EXPLANATION}
-          stateLabel={SWITCH_STATE_LABEL}
+          stateLabel={SWITCH_STATE_LABELS}
           error={visibility.error}
           busy={visibility.isSaving}
         />
