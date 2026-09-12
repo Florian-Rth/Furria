@@ -12,16 +12,25 @@ type KkButtonSize = 'small' | 'medium' | 'large';
 
 const DANGER_BORDER_MIX = '35%';
 const SMALL_FONT_SIZE = '0.75rem';
+const UNDERLINE_OFFSET = '0.25em';
 
 const dangerBorderColor = (theme: Theme): string =>
   `color-mix(in srgb, ${(theme.vars ?? theme).palette.error.main} ${DANGER_BORDER_MIX}, transparent)`;
 
+const labelSignifier: CSSObject = {
+  textDecoration: 'underline',
+  textUnderlineOffset: UNDERLINE_OFFSET,
+  textDecorationThickness: kkTokens.line.hair,
+};
+
 const restingDangerLabel = (theme: Theme): CSSObject => ({
-  color: 'text.secondary',
-  '&:hover, &:focus-visible': redInk(theme),
+  ...labelSignifier,
+  ...redInk(theme),
+  '&:hover, &:focus-visible': { textDecorationThickness: kkTokens.line.section },
 });
 
 const restingQuietLabel: CSSObject = {
+  ...labelSignifier,
   color: 'text.secondary',
   '&:hover, &:focus-visible': { color: 'text.primary' },
 };

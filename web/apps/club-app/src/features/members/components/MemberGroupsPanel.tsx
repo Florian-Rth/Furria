@@ -30,7 +30,11 @@ export const MemberGroupsPanel: FC<MemberGroupsPanelProps> = ({ groups, firstNam
 
   const body =
     rows.length === 0 ? (
-      <KkEmptyState title={EMPTY_TITLE} description={toNoGroupsDescription(firstName)} />
+      <KkEmptyState
+        size="panel"
+        title={EMPTY_TITLE}
+        description={toNoGroupsDescription(firstName)}
+      />
     ) : (
       rows
     );

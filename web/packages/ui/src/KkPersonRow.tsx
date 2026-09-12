@@ -107,7 +107,10 @@ export const KkPersonRow: FC<KkPersonRowProps> = ({
 
   const inlineTrailing =
     trailing === undefined ? null : (
-      <Box component="span" sx={{ display: { xs: 'inline-flex', desktop: 'none' }, flexShrink: 0 }}>
+      <Box
+        component="span"
+        sx={{ display: { xs: 'inline-flex', desktop: 'none' }, flexShrink: 0, ml: 'auto' }}
+      >
         {trailing}
       </Box>
     );

@@ -550,6 +550,25 @@ have been a contract amendment or a unilateral reshape of a primitive three sibl
    set. Confirmed on the wire. Do not add a client-side filter and do not read it as a broken end
    flow — the server is right and §2 owns the rule.
 
+### Round 3 of the UX pass — the `ui` bucket, amendment to §7.1a
+
+**§7.1a.1's „a red verb, never a pill" is about the *shape*, not the colour — `tone="danger"
+variant="text"` is red at REST again.** Round 2 implemented the amendment as
+`restingDangerLabel = { color: 'text.secondary', '&:hover, &:focus-visible': redInk(theme) }`,
+which put the whole affordance behind a hover query. On a touch device the red never appeared, so
+„Beenden" and „Ändern" rendered as the same `text.secondary` grey at 0.75rem — on
+`PersonMembershipRow` the benign edit and the act that ends a Mitgliedschaft became two adjacent
+identical words. §7.1a.4 pins that the red *label* branches paint through `kkTokens.color.*.redInk`
+(6.38:1 on cream, 6.55:1 on the dark panel); the grey rest state was a regression against the
+amendment, not an implementation of it.
+
+`KkButton` now paints `redInk` at rest for `tone="danger" variant="text"`, and **every**
+`variant="text"` button carries a rest-state signifier that survives a device with no hover:
+`textDecoration: 'underline'` at `kkTokens.line.hair`, offset `0.25em`, thickening to
+`kkTokens.line.section` on hover/focus (MUI's own text-button hover ground keeps the two states
+apart as well). Do not re-flatten either half: the loudness §7.1a took away is the *pill*, and the
+rest state has to say „control" without one.
+
 ### Round 1 of the UX pass — the `shared` bucket
 
 Item 3 above (the `/manage/roles` intro) is **resolved**: all three Verwaltung surfaces now share

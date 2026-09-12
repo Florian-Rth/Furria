@@ -74,9 +74,8 @@ export const KkAppShellNavItem: FC<KkAppShellNavItemProps> = ({
       <Stack
         component={rowComponent}
         {...routeProps}
-        onClick={activate}
+        onClick={disabled ? undefined : activate}
         aria-current={active ? 'page' : undefined}
-        aria-disabled={disabled || undefined}
         direction="row"
         sx={(theme) => ({
           alignItems: 'center',

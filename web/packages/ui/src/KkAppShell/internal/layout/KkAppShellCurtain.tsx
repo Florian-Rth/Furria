@@ -1,66 +1,50 @@
+import Modal from '@mui/material/Modal';
 import Stack from '@mui/material/Stack';
-import { AnimatePresence, motion } from 'motion/react';
-import type { CSSProperties, FC, PropsWithChildren } from 'react';
+import type { FC, PropsWithChildren } from 'react';
+import { KK_DARK_SCHEME_ATTRIBUTE } from '../../../theme';
 import { kkTokens } from '../../../tokens';
+import { useIsMobile } from '../../../use-is-mobile';
 import { useAppShellCurtain } from '../logic/app-shell-curtain-context';
-import { useCurtainDismiss } from '../logic/use-curtain-dismiss';
 import { KkAppShellGlow } from '../ui/KkAppShellGlow';
+import { KkAppShellCurtainTransition } from './KkAppShellCurtainTransition';
 
-const CURTAIN_Z_INDEX = 1300;
 const GLOW = { width: 460, height: 400, top: -80 } as const;
-const EASING = [0.2, 0.8, 0.25, 1] as const;
-const DURATION_SECONDS = 0.26;
+const PANEL_LABEL = 'Navigation';
 
-const HIDDEN = { opacity: 0, y: '4%' };
-const SHOWN = { opacity: 1, y: '0%' };
-const TRANSITION = { duration: DURATION_SECONDS, ease: EASING };
-
-const CURTAIN_STYLE: CSSProperties = {
-  position: 'fixed',
-  inset: 0,
-  zIndex: CURTAIN_Z_INDEX,
-};
+const darkSchemeAttribute = { [KK_DARK_SCHEME_ATTRIBUTE]: '' };
 
 export const KkAppShellCurtain: FC<PropsWithChildren> = ({ children }) => {
   const curtain = useAppShellCurtain();
-  useCurtainDismiss(curtain.isOpen, curtain.close);
+  const isMobile = useIsMobile();
+  const isOpen = curtain.isOpen && isMobile;
 
   return (
-    <AnimatePresence>
-      {curtain.isOpen ? (
-        <motion.div
-          key="curtain"
-          initial={HIDDEN}
-          animate={SHOWN}
-          exit={HIDDEN}
-          transition={TRANSITION}
-          style={CURTAIN_STYLE}
+    <Modal open={isOpen} onClose={curtain.close} hideBackdrop closeAfterTransition>
+      <KkAppShellCurtainTransition in={isOpen}>
+        <Stack
+          role="dialog"
+          aria-modal
+          aria-label={PANEL_LABEL}
+          {...darkSchemeAttribute}
+          data-kk-app-shell-curtain
+          sx={(theme) => ({
+            position: 'relative',
+            isolation: 'isolate',
+            overflow: 'hidden',
+            height: '100%',
+            backgroundColor: kkTokens.chrome.light.sideBg,
+            ...theme.applyStyles('dark', { backgroundColor: kkTokens.chrome.dark.sideBg }),
+            color: 'text.primary',
+            px: 2.75,
+            pt: 6.25,
+            pb: 2.75,
+            gap: 2,
+          })}
         >
-          <Stack
-            role="dialog"
-            aria-modal
-            aria-label="Navigation"
-            data-kk-app-shell-curtain
-            sx={(theme) => ({
-              display: { xs: 'flex', desktop: 'none' },
-              position: 'relative',
-              isolation: 'isolate',
-              overflow: 'hidden',
-              height: '100%',
-              backgroundColor: 'background.default',
-              ...theme.applyStyles('dark', { backgroundColor: kkTokens.chrome.dark.base }),
-              color: 'text.primary',
-              px: 2.75,
-              pt: 6.25,
-              pb: 2.75,
-              gap: 2,
-            })}
-          >
-            <KkAppShellGlow tone="gold" {...GLOW} centred />
-            {children}
-          </Stack>
-        </motion.div>
-      ) : null}
-    </AnimatePresence>
+          <KkAppShellGlow tone="gold" {...GLOW} centred />
+          {children}
+        </Stack>
+      </KkAppShellCurtainTransition>
+    </Modal>
   );
 };

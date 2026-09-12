@@ -40,7 +40,11 @@ export const MemberRolesPanel: FC<MemberRolesPanelProps> = ({ roles, firstName }
 
   const body =
     rows.length === 0 ? (
-      <KkEmptyState title={EMPTY_TITLE} description={toNoRolesDescription(firstName)} />
+      <KkEmptyState
+        size="panel"
+        title={EMPTY_TITLE}
+        description={toNoRolesDescription(firstName)}
+      />
     ) : (
       rows
     );

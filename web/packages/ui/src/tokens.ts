@@ -65,6 +65,7 @@ export const kkTokens = {
   chrome: {
     light: {
       base: '#FFFFFF',
+      sideBg: '#171210',
       gradient: 'linear-gradient(168deg, #FFFFFF 0%, #FFFDF8 46%, #FDF6E9 100%)',
       lift: '0 10px 26px rgba(26,20,17,0.07)',
       glowRed: 'rgba(225,29,42,0.10)',
@@ -72,10 +73,11 @@ export const kkTokens = {
     },
     dark: {
       base: '#0E0B0A',
+      sideBg: '#0E0B0A',
       gradient: 'linear-gradient(168deg, #17100E 0%, #0E0B0A 58%)',
       lift: '0 12px 30px rgba(0,0,0,0.45)',
-      glowRed: 'rgba(225,29,42,0.14)',
-      glowGold: 'rgba(244,180,0,0.14)',
+      glowRed: 'rgba(255,59,71,0.14)',
+      glowGold: 'rgba(255,196,46,0.14)',
     },
   },
   layout: {
@@ -140,6 +142,7 @@ export const kkTokens = {
     breath: 'kk-breath 2.4s ease-in-out infinite',
     shimmer: 'kk-skeleton-shimmer 1.4s linear infinite',
     bar: 'transform 180ms ease-out',
+    rowHighlight: 'kk-row-highlight 2s ease-out forwards',
   },
   font: {
     display: "'Anton', sans-serif",

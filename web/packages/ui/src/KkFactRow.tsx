@@ -74,6 +74,10 @@ export const KkFactRow: FC<KkFactRowProps> = ({
   children,
 }) => {
   const metaLine = meta === undefined ? null : <KkMeta>{meta}</KkMeta>;
+  const chipSlot =
+    chip === undefined || chip === null ? null : (
+      <Box sx={{ display: 'inline-flex', flexShrink: 0 }}>{chip}</Box>
+    );
   const titleColor = dimmed ? 'text.secondary' : 'text.primary';
   const barOpacity = dimmed ? kkTokens.opacity.dimmed : 1;
 
@@ -87,7 +91,7 @@ export const KkFactRow: FC<KkFactRowProps> = ({
         display: { xs: compactActionsDisplay, desktop: 'flex' },
         alignItems: 'center',
         alignSelf: 'center',
-        justifyContent: 'flex-end',
+        justifyContent: { xs: 'flex-start', desktop: 'flex-end' },
         gap: 0.75,
         flexShrink: 0,
         width: { xs: '100%', desktop: ACTIONS_WIDTH },
@@ -144,7 +148,7 @@ export const KkFactRow: FC<KkFactRowProps> = ({
       sx={[
         {
           minWidth: 0,
-          py: 1.5,
+          py: { xs: 1, desktop: 1.5 },
           ...rowDividerTop,
         },
         ...(Array.isArray(sx) ? sx : [sx]),
@@ -166,7 +170,12 @@ export const KkFactRow: FC<KkFactRowProps> = ({
         <Stack sx={{ flexGrow: 1, minWidth: 0, alignSelf: 'center', gap: 0.375 }}>
           <Stack
             direction="row"
-            sx={{ alignItems: 'center', gap: 1, minWidth: 0, flexWrap: 'wrap' }}
+            sx={{
+              alignItems: 'center',
+              gap: 1,
+              minWidth: 0,
+              flexWrap: { xs: 'wrap', desktop: 'nowrap' },
+            }}
           >
             <Typography
               component="p"
@@ -176,13 +185,14 @@ export const KkFactRow: FC<KkFactRowProps> = ({
                 lineHeight: 1.25,
                 color: titleColor,
                 minWidth: 0,
+                whiteSpace: { xs: 'normal', desktop: 'nowrap' },
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
               }}
             >
               {title}
             </Typography>
-            {chip}
+            {chipSlot}
           </Stack>
           {metaLine}
         </Stack>

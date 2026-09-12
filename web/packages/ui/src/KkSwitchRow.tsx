@@ -4,6 +4,7 @@ import Typography from '@mui/material/Typography';
 import type { ChangeEvent, FC } from 'react';
 import { useId } from 'react';
 import { inkWash, inkWashSurface } from './internal/ink-wash';
+import { redInk } from './internal/red-ink';
 import { rowDividerBottom } from './internal/row-divider';
 import type { KkChipTone } from './KkChip';
 import { KkChip } from './KkChip';
@@ -95,7 +96,7 @@ export const KkSwitchRow: FC<KkSwitchRowProps> = ({
         id={errorId}
         role="alert"
         variant="caption"
-        sx={{ color: 'error.main', fontWeight: 700 }}
+        sx={[(theme) => ({ ...redInk(theme), fontWeight: 700 })]}
       >
         {error}
       </Typography>
