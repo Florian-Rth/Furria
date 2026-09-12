@@ -47,7 +47,7 @@ export const KkLetterDivider: FC<KkLetterDividerProps> = ({ letter, id, ground =
         fontFamily: kkTokens.font.display,
         fontWeight: kkTokens.font.displayWeight,
         fontSize: kkTokens.type.span,
-        letterSpacing: '0.07em',
+        letterSpacing: kkTokens.type.tracking.label,
         lineHeight: 1,
         ...redInk(theme),
         flexShrink: 0,

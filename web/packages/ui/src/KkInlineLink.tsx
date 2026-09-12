@@ -1,6 +1,7 @@
 import Link from '@mui/material/Link';
 import type { ElementType, FC, PropsWithChildren } from 'react';
 import { focusRing } from './internal/focus-ring';
+import { redInk } from './internal/red-ink';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
@@ -29,7 +30,7 @@ export const KkInlineLink: FC<KkInlineLinkProps> = ({ component, to, params, sx,
           textUnderlineOffset: UNDERLINE_OFFSET,
           borderRadius: kkTokens.radius.bar,
           '@media (hover: hover)': {
-            '&:hover': { color: (theme.vars ?? theme).palette.primary.main },
+            '&:hover': redInk(theme),
           },
           ...focusRing(theme),
         }),

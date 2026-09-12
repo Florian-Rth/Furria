@@ -1,6 +1,7 @@
 import Card from '@mui/material/Card';
 import type { SxProps, Theme } from '@mui/material/styles';
 import type { FC, PropsWithChildren } from 'react';
+import { redInk } from '../../../internal/red-ink';
 import { kkTokens } from '../../../tokens';
 
 interface KkCardRootProps extends PropsWithChildren {
@@ -21,7 +22,7 @@ export const KkCardRoot: FC<KkCardRootProps> = ({ sx, children }) => (
         '&:has(.MuiCardActionArea-root:hover)': {
           transform: 'translateY(-2px)',
           boxShadow: kkTokens.shadow.raised,
-          '& [data-kk-card-title]': { color: 'primary.main' },
+          '& [data-kk-card-title]': redInk(theme),
         },
         '&:has(.Mui-focusVisible)': {
           outlineWidth: 2,

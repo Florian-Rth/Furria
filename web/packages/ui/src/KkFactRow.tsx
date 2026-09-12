@@ -118,7 +118,7 @@ export const KkFactRow: FC<KkFactRowProps> = ({
           fontFamily: kkTokens.font.display,
           fontWeight: kkTokens.font.displayWeight,
           fontSize: kkTokens.type.span,
-          letterSpacing: '0.03em',
+          letterSpacing: kkTokens.type.tracking.display,
           lineHeight: 1.2,
           color: 'text.primary',
           whiteSpace: 'nowrap',

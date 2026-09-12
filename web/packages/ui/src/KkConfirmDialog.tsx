@@ -144,7 +144,7 @@ export const KkConfirmDialog: FC<KkConfirmDialogProps> = ({
       {consequenceNote}
       <KkModalFrame.Footer>
         {errorAlert}
-        <KkButton variant="outlined" onClick={onClose} disabled={busy}>
+        <KkButton variant="outlined" onClick={onClose}>
           {cancelLabel}
         </KkButton>
         <KkButton tone={confirmButtonTones[tone]} loading={busy} onClick={onConfirm}>

@@ -26,7 +26,7 @@ const buildPalette = (color: KkColorTokens): PaletteOptions => ({
 const displayHeading = {
   fontFamily: kkTokens.font.display,
   fontWeight: kkTokens.font.displayWeight,
-  letterSpacing: '0.01em',
+  letterSpacing: kkTokens.type.tracking.tight,
 } as const;
 
 export const KK_DARK_SCHEME_ATTRIBUTE = 'data-dark';

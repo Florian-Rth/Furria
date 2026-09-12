@@ -17,7 +17,7 @@ export const KkAppShellGreeting: FC<KkAppShellGreetingProps> = ({ greeting, date
         fontFamily: kkTokens.font.display,
         fontSize: { xs: '2.0625rem', desktop: '2.875rem' },
         lineHeight: 1,
-        letterSpacing: '0.01em',
+        letterSpacing: kkTokens.type.tracking.tight,
         color: 'text.primary',
       }}
     >

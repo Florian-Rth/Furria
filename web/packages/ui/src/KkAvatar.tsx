@@ -47,7 +47,7 @@ export const KkAvatar: FC<KkAvatarProps> = ({ initials, size = 'medium', compone
           fontFamily: kkTokens.font.display,
           fontWeight: kkTokens.font.displayWeight,
           fontSize: metrics.fontSize,
-          letterSpacing: '0.04em',
+          letterSpacing: kkTokens.type.tracking.display,
         }),
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}

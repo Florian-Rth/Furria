@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { toFilterChipEntries } from './filter-chip-entries';
+import { filterChipsWrap, toFilterChipEntries } from './filter-chip-entries';
 
 const options = [
   { id: 'all', label: 'Alle', count: 152 },
@@ -32,5 +32,16 @@ describe('toFilterChipEntries', () => {
       'active',
       'ended',
     ]);
+  });
+});
+
+describe('filterChipsWrap', () => {
+  it.each([
+    { optionCount: 1, wraps: true },
+    { optionCount: 5, wraps: true },
+    { optionCount: 6, wraps: false },
+    { optionCount: 9, wraps: false },
+  ])('wraps a $optionCount-option set: $wraps', ({ optionCount, wraps }) => {
+    expect(filterChipsWrap(optionCount)).toBe(wraps);
   });
 });

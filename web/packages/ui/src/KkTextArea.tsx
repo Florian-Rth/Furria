@@ -57,7 +57,7 @@ export const KkTextArea: FC<KkTextAreaProps> = ({
           color: 'text.secondary',
           fontSize: kkTokens.type.chip,
           fontWeight: 700,
-          letterSpacing: '0.02em',
+          letterSpacing: kkTokens.type.tracking.tight,
           px: HELPER_INSET,
         }}
       >

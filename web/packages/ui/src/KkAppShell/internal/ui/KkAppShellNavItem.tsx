@@ -99,7 +99,7 @@ export const KkAppShellNavItem: FC<KkAppShellNavItemProps> = ({
           sx={{
             fontFamily: kkTokens.font.display,
             fontSize: LABEL_SIZE,
-            letterSpacing: '0.03em',
+            letterSpacing: kkTokens.type.tracking.display,
             lineHeight: 1.15,
             color: labelColor,
             textTransform: transform,

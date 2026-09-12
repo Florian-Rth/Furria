@@ -2,10 +2,15 @@ const radius = {
   base: 14,
   chip: 20,
   pill: 50,
-  card: 16,
-  sheet: 22,
-  action: 40,
   bar: 3,
+} as const;
+
+const tracking = {
+  tight: '0.01em',
+  display: '0.03em',
+  label: '0.09em',
+  section: '0.12em',
+  eyebrow: '0.2em',
 } as const;
 
 export const kkTokens = {
@@ -38,7 +43,7 @@ export const kkTokens = {
     dark: {
       bg: '#161110',
       panel: '#1E1817',
-      panel2: '#0E0B0A',
+      panel2: '#272120',
       ink: '#FBF4E6',
       sub: 'rgba(251,244,230,0.6)',
       faint: 'rgba(251,244,230,0.4)',
@@ -94,7 +99,7 @@ export const kkTokens = {
     stickyBarPadY: 1.5,
     stickyBarHeight: 196,
     stickyBarZ: 2,
-    stickyLetterZ: 1,
+    letterRailZ: 1,
     railFade: 32,
     sheetLift: `-${radius.base}px`,
   },
@@ -124,10 +129,11 @@ export const kkTokens = {
   },
   eyebrow: {
     fontWeight: 900,
-    letterSpacing: '0.2em',
+    letterSpacing: tracking.eyebrow,
     lineHeight: 1.4,
   },
   type: {
+    tracking,
     rowTitle: '0.875rem',
     rowMeta: '0.71875rem',
     rowValue: '1.0625rem',

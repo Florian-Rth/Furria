@@ -42,7 +42,7 @@ export const KkTicker: FC<KkTickerProps> = ({ content, speedSeconds = 30 }) => (
             whiteSpace: 'nowrap',
             fontFamily: kkTokens.font.display,
             fontSize: { xs: '0.9375rem', md: '1.25rem' },
-            letterSpacing: '0.09em',
+            letterSpacing: kkTokens.type.tracking.label,
             color: 'primary.contrastText',
           }}
         >

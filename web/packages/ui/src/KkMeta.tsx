@@ -37,7 +37,7 @@ export const KkMeta: FC<KkMetaProps> = ({
         fontSize: kkTokens.type.rowMeta,
         fontWeight: 600,
         fontStyle: italic ? 'italic' : 'normal',
-        letterSpacing: '0.01em',
+        letterSpacing: kkTokens.type.tracking.tight,
         lineHeight: 1.35,
         minWidth: 0,
         textWrap: 'pretty',

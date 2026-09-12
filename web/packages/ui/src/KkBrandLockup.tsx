@@ -4,6 +4,7 @@ import type { FC } from 'react';
 import { KkBroomMark } from './KkBroomMark';
 import { KkEyebrow } from './KkEyebrow';
 import type { KkSx } from './kk-sx';
+import { kkTokens } from './tokens';
 
 type KkBrandLockupSize = 'sm' | 'lg';
 type KkBrandLockupVariant = 'h5' | 'h3';
@@ -40,7 +41,7 @@ export const KkBrandLockup: FC<KkBrandLockupProps> = ({ size = 'sm', eyebrow, sx
         <Typography
           variant={variant}
           component="span"
-          sx={{ color: 'text.primary', letterSpacing: '0.06em', lineHeight: 1 }}
+          sx={{ color: 'text.primary', letterSpacing: kkTokens.type.tracking.label, lineHeight: 1 }}
         >
           FURRIA
         </Typography>
