@@ -26,5 +26,5 @@ export const PersonsBody: FC = () => {
     return <PersonsError message={errorMessage} onRetry={reload} />;
   }
 
-  return <PersonsSkeleton search={search} />;
+  return <PersonsSkeleton />;
 };
