@@ -1,21 +1,37 @@
 import { describe, expect, it } from 'vitest';
 import type { PersonRef } from '@/lib/api/schemas';
 import {
+  ALL_GROUPS_FILTER_ID,
+  filterGroups,
+  RECRUITING_FILTER_ID,
+  SETTLED_FILTER_ID,
   toGroupHeadline,
   toGroupId,
   toGroupStandingChips,
   toGroupStandings,
   toGroupsIntroSentence,
+  toNoGroupMatchLine,
   toPersonUnitLabel,
   toRecruitingContactLine,
   toRecruitingContactSegments,
+  toRecruitingFilterOptions,
 } from './groups-labels';
-import type { GroupDetails } from './schemas';
+import type { GroupDetails, GroupSummary } from './schemas';
 
-const person = (personId: number, firstName: string): PersonRef => ({
+const person = (personId: number, firstName: string, lastName = 'Kaiser'): PersonRef => ({
   personId,
   firstName,
-  lastName: 'Kaiser',
+  lastName,
+});
+
+const summary = (overrides: Partial<GroupSummary> & { groupId: number }): GroupSummary => ({
+  name: 'Große Garde',
+  description: '',
+  isRecruiting: false,
+  memberCount: 0,
+  memberPreview: [],
+  admins: [],
+  ...overrides,
 });
 
 const details = (overrides: Partial<GroupDetails>): GroupDetails => ({
@@ -69,7 +85,7 @@ describe('toRecruitingContactSegments', () => {
   it('carries the one admin as a person segment', () => {
     expect(toRecruitingContactSegments([person(18, 'Anna')])).toEqual([
       { kind: 'text', text: 'Melde dich bei ' },
-      { kind: 'person', personId: 18, firstName: 'Anna' },
+      { kind: 'person', personId: 18, firstName: 'Anna', lastName: 'Kaiser' },
       { kind: 'text', text: '.' },
     ]);
   });
@@ -77,9 +93,9 @@ describe('toRecruitingContactSegments', () => {
   it('carries both admins as person segments', () => {
     expect(toRecruitingContactSegments([person(18, 'Anna'), person(19, 'Katrin')])).toEqual([
       { kind: 'text', text: 'Melde dich bei ' },
-      { kind: 'person', personId: 18, firstName: 'Anna' },
+      { kind: 'person', personId: 18, firstName: 'Anna', lastName: 'Kaiser' },
       { kind: 'text', text: ' oder ' },
-      { kind: 'person', personId: 19, firstName: 'Katrin' },
+      { kind: 'person', personId: 19, firstName: 'Katrin', lastName: 'Kaiser' },
       { kind: 'text', text: '.' },
     ]);
   });
@@ -89,9 +105,9 @@ describe('toRecruitingContactSegments', () => {
       toRecruitingContactSegments([person(18, 'Anna'), person(19, 'Katrin'), person(20, 'Jens')]),
     ).toEqual([
       { kind: 'text', text: 'Melde dich bei ' },
-      { kind: 'person', personId: 18, firstName: 'Anna' },
+      { kind: 'person', personId: 18, firstName: 'Anna', lastName: 'Kaiser' },
       { kind: 'text', text: ', ' },
-      { kind: 'person', personId: 19, firstName: 'Katrin' },
+      { kind: 'person', personId: 19, firstName: 'Katrin', lastName: 'Kaiser' },
       { kind: 'text', text: ' oder einer der anderen Gruppen-Admins.' },
     ]);
   });
@@ -102,20 +118,88 @@ describe('toRecruitingContactLine', () => {
     expect(toRecruitingContactLine([])).toBe('Diese Gruppe sucht noch eine Ansprechperson.');
   });
 
-  it('names the one admin', () => {
-    expect(toRecruitingContactLine([person(18, 'Anna')])).toBe('Melde dich bei Anna.');
+  it('names the one admin in full — the club holds four Jörgs', () => {
+    expect(toRecruitingContactLine([person(18, 'Jörg', 'Hoffmann')])).toBe(
+      'Melde dich bei Jörg Hoffmann.',
+    );
   });
 
-  it('offers both admins', () => {
-    expect(toRecruitingContactLine([person(18, 'Anna'), person(19, 'Katrin')])).toBe(
-      'Melde dich bei Anna oder Katrin.',
-    );
+  it('tells two admins of the same first name apart', () => {
+    expect(
+      toRecruitingContactLine([person(18, 'Jörg', 'Hoffmann'), person(19, 'Jörg', 'Krüger')]),
+    ).toBe('Melde dich bei Jörg Hoffmann oder Jörg Krüger.');
   });
 
   it('names two of three and points at the rest', () => {
     expect(
       toRecruitingContactLine([person(18, 'Anna'), person(19, 'Katrin'), person(20, 'Jens')]),
-    ).toBe('Melde dich bei Anna, Katrin oder einer der anderen Gruppen-Admins.');
+    ).toBe('Melde dich bei Anna Kaiser, Katrin Kaiser oder einer der anderen Gruppen-Admins.');
+  });
+});
+
+describe('filterGroups', () => {
+  const groups: readonly GroupSummary[] = [
+    summary({ groupId: 1, name: 'Große Garde', isRecruiting: true }),
+    summary({ groupId: 2, name: 'Elferrat' }),
+    summary({ groupId: 3, name: 'Küche und Theke', isRecruiting: true }),
+  ];
+
+  const ids = (query: string, status: string): number[] =>
+    filterGroups(groups, { query, status }).map((group) => group.groupId);
+
+  it('keeps every Gruppe under Alle', () => {
+    expect(ids('', ALL_GROUPS_FILTER_ID)).toEqual([1, 2, 3]);
+  });
+
+  it('keeps only the recruiting Gruppen', () => {
+    expect(ids('', RECRUITING_FILTER_ID)).toEqual([1, 3]);
+  });
+
+  it('keeps only the settled Gruppen', () => {
+    expect(ids('', SETTLED_FILTER_ID)).toEqual([2]);
+  });
+
+  it('folds the ß and the umlaut when matching a name', () => {
+    expect(ids('grosse', ALL_GROUPS_FILTER_ID)).toEqual([1]);
+    expect(ids('kuche', ALL_GROUPS_FILTER_ID)).toEqual([3]);
+  });
+
+  it('applies the query inside the chosen chip', () => {
+    expect(ids('elferrat', RECRUITING_FILTER_ID)).toEqual([]);
+  });
+});
+
+describe('toRecruitingFilterOptions', () => {
+  it('counts all, recruiting and settled from the same list', () => {
+    const groups: readonly GroupSummary[] = [
+      summary({ groupId: 1, isRecruiting: true }),
+      summary({ groupId: 2 }),
+      summary({ groupId: 3 }),
+    ];
+
+    expect(toRecruitingFilterOptions(groups).map((option) => [option.id, option.count])).toEqual([
+      [ALL_GROUPS_FILTER_ID, 3],
+      [RECRUITING_FILTER_ID, 1],
+      [SETTLED_FILTER_ID, 2],
+    ]);
+  });
+});
+
+describe('toNoGroupMatchLine', () => {
+  it('names the query when there is one', () => {
+    expect(toNoGroupMatchLine('  Garde ', ALL_GROUPS_FILTER_ID)).toContain('Garde');
+  });
+
+  it('explains the chip when only a chip narrows the list', () => {
+    expect(toNoGroupMatchLine('', RECRUITING_FILTER_ID)).toBe(
+      'Gerade sucht keine Gruppe Verstärkung. Wähle „Alle“, um wieder alle zu sehen.',
+    );
+  });
+
+  it('falls back to the cold case under Alle', () => {
+    expect(toNoGroupMatchLine('', ALL_GROUPS_FILTER_ID)).toBe(
+      'Im Verzeichnis steht gerade keine Gruppe.',
+    );
   });
 });
 
