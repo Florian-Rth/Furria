@@ -1,8 +1,7 @@
 import { RequestFailedError } from '@/lib/api/api-error';
+import { toCamelCaseField } from '@/lib/api/api-failures';
 
 const FIELD_FAILURE_STATUS = 400;
-
-const toCamelCase = (field: string): string => `${field.charAt(0).toLowerCase()}${field.slice(1)}`;
 
 export interface FormFieldFailure<TName extends string> {
   name: TName;
@@ -29,7 +28,7 @@ export const toFormFailures = <TName extends string>(
   const unmatched: string[] = [];
 
   for (const failure of error.failures) {
-    const candidate = toCamelCase(failure.field);
+    const candidate = toCamelCaseField(failure.field);
     const name = names.find((known) => known === candidate);
 
     if (name === undefined) {
