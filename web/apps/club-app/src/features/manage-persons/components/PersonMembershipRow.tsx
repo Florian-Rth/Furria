@@ -61,7 +61,7 @@ export const PersonMembershipRow: FC<PersonMembershipRowProps> = ({
     );
 
   const endButton = membership.isRunning ? (
-    <KkButton size="small" variant="outlined" tone="danger" onClick={startEnd}>
+    <KkButton size="small" variant="text" tone="danger" onClick={startEnd}>
       {END_LABEL}
     </KkButton>
   ) : null;
@@ -103,7 +103,7 @@ export const PersonMembershipRow: FC<PersonMembershipRowProps> = ({
     <Stack direction="row" sx={{ minWidth: 0, pt: 0.75 }}>
       <KkButton
         size="small"
-        variant="text"
+        variant="outlined"
         startIcon={<KkIcon name="add" size="small" />}
         onClick={startAddPause}
       >
