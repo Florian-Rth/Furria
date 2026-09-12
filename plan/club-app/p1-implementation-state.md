@@ -62,16 +62,21 @@ Binding coding rules, enforced by analyzers and lint, not by review:
 | 8 Hub lesen | ✅ `d40060a` | ✅ `98aaf98` |
 | 9 Hub verwalten I | ✅ `94d6600` | ⚠️ `5a7b3e1` **partial, unverified — see below** |
 | 10 Hub verwalten II | ✅ `aedfcf3` | ❌ |
-| 11 Personenverwaltung | ✅ `0b03990` | ❌ |
+| 11 Personenverwaltung | ✅ `0b03990` + `3ab1533` (§4.15, late) | ❌ |
 | 12 Person bearbeiten I | ✅ `e548b70` | ❌ |
-| 13 Person bearbeiten II | ❌ | ❌ |
-| 14 Gruppenverwaltung I | ❌ | ❌ |
-| 15 Gruppenverwaltung II | ❌ | ❌ |
-| 16 Rollen & Rechte I | ❌ | ❌ |
-| 17 Rollen & Rechte II | ❌ | ❌ |
+| 13 Person bearbeiten II | ✅ `130a6fe` | ❌ |
+| 14 Gruppenverwaltung I | ✅ `4e1a95f` | ❌ |
+| 15 Gruppenverwaltung II | ✅ `515ab18` | ❌ |
+| 16 Rollen & Rechte I | ✅ `5799e5d` | ❌ |
+| 17 Rollen & Rechte II | ✅ `c1b28e9` | ❌ |
 | 18 Website re-pointing | ❌ | ❌ |
 
-**Backend is ~4 slices ahead of the frontend** by design (see §4).
+**Backend is done through slice 17**; the frontend owes slices 8–17 (see §4).
+
+> **Slice 11 shipped without `GetPersonById` (§4.15).** `GET /api/manage/persons/{personId}`
+> answered **405** — only `PutPerson` bound that route — so `/manage/persons/$personId` had no
+> read at all. Built in `3ab1533` while integrating slices 13–17. If another §4.x endpoint is
+> missing, this is how it looks: a route that answers 405 rather than 404.
 
 > **⚠ Slice 9's frontend (`5a7b3e1`) is committed but NOT finished.** Its agent was stopped
 > mid-slice. All four web gates are green and it typechecks, lints, tests and builds — but it was
@@ -84,10 +89,13 @@ Binding coding rules, enforced by analyzers and lint, not by review:
 
 ```
 server:  dotnet build  → 0 warnings, 0 errors
-         dotnet test   → 19 analyzer + 491 API tests passing   (117 before the phase)
+         dotnet test   → 19 analyzer + 643 API tests passing   (117 before the phase)
+         dotnet csharpier check . → clean, 339 files
 web:     pnpm typecheck / test / lint / build → all clean, 1073 files, zero suppressions
+         (web unchanged since the pause; the server numbers are after slices 13-17 landed)
 
-Verified at the pause, with the tree clean. Both are reproducible from a fresh checkout.
+Verified with the tree clean. Both are reproducible from a fresh checkout — the server suite
+needs DOCKER_API_VERSION=1.41 on this machine, see the pitfall table.
 ```
 
 **Anything uncommitted in the working tree when you arrive is an interrupted agent's work.**
@@ -116,7 +124,8 @@ cd server
 dotnet build src/Furria.Api --artifacts-path <scratch>/api-artifacts
 cd <scratch>/api-artifacts/bin/Furria.Api/debug
 ASPNETCORE_ENVIRONMENT=Development ASPNETCORE_URLS=http://localhost:5100 \
-  setsid nohup dotnet ./Furria.Api.dll > <scratch>/api.log 2>&1 < /dev/null &
+  nohup dotnet ./Furria.Api.dll > <scratch>/api.log 2>&1 < /dev/null & disown
+                                           # NO setsid — macOS has none, see the pitfall table
 
 cd web && pnpm dev:club-app                # dev server on :3001, HMR
 ```
@@ -147,6 +156,9 @@ Read tool and actually judge them.
 | two agents running `dotnet build`/`test` at once | MSBuild and Testcontainer collisions | **one backend agent at a time**; give the dev API its own `--artifacts-path` |
 | `git commit <pathspec>` | silently does **not** include untracked files | `git add <new files>` first, always |
 | `git reset --hard` | destroys uncommitted work in the whole tree, not just commits | see §7 — it already cost real files |
+| `dotnet test` with no env var | **every** integration test dies in its collection fixture in <1 s with `DockerUnavailableException: client version 1.44 is too new. Maximum supported API version is 1.41` — reads as a catastrophic regression, is not one. Docker Desktop 4.11.0 caps the engine API at 1.41; Testcontainers asks for 1.44 | `DOCKER_API_VERSION=1.41 dotnet test`. `DOCKER_HOST` does not help; the `docker` CLI is unaffected because it negotiates down. All three backend families of slices 13–17 lost a gate pass to this |
+| `setsid` in the dev-API launch line | **macOS has no `setsid`** — the command dies with `command not found` and no API starts, while a stale one may still answer `/api/health` and fool the check | `nohup … & disown`. Then confirm with `pgrep -fl 'Furria[.]Api[.]dll'`, not with `/api/health` |
+| `pkill -f 'Furria[.]Api[.]dll'` against an API started by `dotnet run` | matches nothing: `dotnet run --project src/Furria.Api` execs the **apphost** (`…/bin/Debug/net10.0/Furria.Api`), whose command line has no `.dll`. The stale API keeps the port and keeps serving the old route table | check `lsof -nP -iTCP:5100 -sTCP:LISTEN` and kill that pid. Always start the dev API as `dotnet ./Furria.Api.dll` from its own `--artifacts-path` so the documented pkill works |
 
 ### Machine limits that shaped the design
 
