@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { GroupDetailAdmin, GroupDetailMember } from '@/features/group-detail';
 import {
   toAdminAppointedMessage,
   toAdminEndConsequence,
@@ -10,7 +11,6 @@ import {
   toEndConsequence,
   toEndFacts,
   toEndQuickChoices,
-  toHistoryEntries,
   toHubHeadline,
   toHubId,
   toJoinConsequence,
@@ -22,9 +22,9 @@ import {
   toSearchTerm,
   toSelfAdminEndedMessage,
 } from './group-hub-labels';
-import type { HubAdmin, HubDetails, HubMember } from './schemas';
+import type { HubDetails } from './schemas';
 
-const hubMember = (overrides: Partial<HubMember>): HubMember => ({
+const hubMember = (overrides: Partial<GroupDetailMember>): GroupDetailMember => ({
   groupMembershipId: 7,
   personId: 12,
   firstName: 'Mara',
@@ -35,7 +35,7 @@ const hubMember = (overrides: Partial<HubMember>): HubMember => ({
   ...overrides,
 });
 
-const hubAdmin = (overrides: Partial<HubAdmin>): HubAdmin => ({
+const hubAdmin = (overrides: Partial<GroupDetailAdmin>): GroupDetailAdmin => ({
   groupAdminId: 4,
   personId: 9,
   firstName: 'Anna',
@@ -79,7 +79,7 @@ describe('toHubHeadline', () => {
     expect(toHubHeadline(undefined, 12)).toEqual({
       title: 'Meine Gruppe',
       eyebrow: null,
-      openness: null,
+      chips: [],
       subline: null,
     });
   });
@@ -98,7 +98,7 @@ describe('toHubHeadline', () => {
     expect(headline).toEqual({
       title: 'Tanzgarde',
       eyebrow: 'deine Gruppe seit 2016/17',
-      openness: { label: 'sucht gerade niemanden', tone: 'neutral', dot: false },
+      chips: [{ label: 'sucht gerade niemanden', tone: 'neutral', dot: false }],
       subline: '2 Personen · kein Gruppen-Admin',
     });
   });
@@ -117,85 +117,21 @@ describe('toHubHeadline', () => {
     expect(headline).toEqual({
       title: 'Tanzgarde',
       eyebrow: 'deine Gruppe',
-      openness: { label: 'sucht Verstärkung', tone: 'gold', dot: true },
-      subline: 'Du pflegst sie · 1 Person · 1 Gruppen-Admin',
+      chips: [
+        { label: 'sucht Verstärkung', tone: 'gold', dot: true },
+        { label: 'Gruppen-Admin', tone: 'accent', dot: false },
+      ],
+      subline: '1 Person · 1 Gruppen-Admin',
     });
   });
 
-  it('says nothing about pflegen to a member who is not a Gruppen-Admin', () => {
+  it('leaves the accent Gruppen-Admin chip off a member who only belongs to the Gruppe', () => {
     const headline = toHubHeadline(
       hubDetails({ members: [hubMember({ personId: 12, since: '2020-11-11' })] }),
       12,
     );
 
-    expect(headline.subline).toBe('1 Person · kein Gruppen-Admin');
-  });
-});
-
-describe('toHistoryEntries', () => {
-  it('merges both kinds of closed row into one chronology, newest start first', () => {
-    const entries = toHistoryEntries(
-      [
-        hubMember({ groupMembershipId: 11, joinedOn: '2019-09-01', leftOn: '2022-02-28' }),
-        hubMember({ groupMembershipId: 12, joinedOn: '2014-09-01', leftOn: '2016-03-01' }),
-      ],
-      [hubAdmin({ groupAdminId: 21, sinceOn: '2016-09-01', untilOn: '2018-06-30' })],
-    );
-
-    expect(entries.map((entry) => entry.key)).toEqual([
-      'membership-11',
-      'admin-21',
-      'membership-12',
-    ]);
-  });
-
-  it('renders a closed Zugehörigkeit as its span, never as a seit', () => {
-    const [entry] = toHistoryEntries(
-      [hubMember({ groupMembershipId: 11, joinedOn: '2019-09-01', leftOn: '2022-02-28' })],
-      [],
-    );
-
-    expect(entry).toEqual({
-      key: 'membership-11',
-      title: 'Mara Lenz',
-      span: '01.09.2019 – 28.02.2022',
-      kind: 'membership',
-      meta: undefined,
-    });
-  });
-
-  it.each([
-    { case: 'no Funktion', adminFunction: null, expected: undefined },
-    { case: 'a Funktion', adminFunction: 'Trainerin', expected: 'Trainerin' },
-  ])('carries $case on a closed admin row', ({ adminFunction, expected }) => {
-    const [entry] = toHistoryEntries(
-      [],
-      [
-        hubAdmin({
-          groupAdminId: 21,
-          function: adminFunction,
-          sinceOn: '2016-09-01',
-          untilOn: '2018-06-30',
-        }),
-      ],
-    );
-
-    expect(entry?.kind).toBe('admin');
-    expect(entry?.meta).toBe(expected);
-    expect(entry?.span).toBe('01.09.2016 – 30.06.2018');
-  });
-
-  it('orders two rows that started on the same day by their own identity', () => {
-    const entries = toHistoryEntries(
-      [hubMember({ groupMembershipId: 11, joinedOn: '2019-09-01', leftOn: '2022-02-28' })],
-      [hubAdmin({ groupAdminId: 21, sinceOn: '2019-09-01', untilOn: '2021-06-30' })],
-    );
-
-    expect(entries.map((entry) => entry.key)).toEqual(['admin-21', 'membership-11']);
-  });
-
-  it('has nothing to show when no row has ended', () => {
-    expect(toHistoryEntries([], [])).toEqual([]);
+    expect(headline.chips.map((chip) => chip.label)).toEqual(['sucht gerade niemanden']);
   });
 });
 

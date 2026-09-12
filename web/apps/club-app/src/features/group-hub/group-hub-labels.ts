@@ -1,18 +1,17 @@
 import type { KkConfirmFact, KkDateQuickChoice } from '@furria/ui';
+import type { GroupDetailAdmin, GroupDetailMember } from '@/features/group-detail';
 import { SESSION_OPENING_DAY, SESSION_OPENING_MONTH, sessionAt } from '@/lib/club';
 import { isFutureDay, toIsoDay } from '@/lib/day';
 import { toGroupSubline } from '@/lib/group-sections';
-import { formatIsoDay, formatPeriod, formatSinceSession } from '@/lib/membership-labels';
+import { formatIsoDay, formatSinceSession } from '@/lib/membership-labels';
 import type { StateChip } from '@/lib/state-chips';
-import { toRecruitingChip } from '@/lib/state-chips';
-import type { HubAdmin, HubDetails, HubMember } from './schemas';
+import { GROUP_ADMIN_CHIP, toRecruitingChip } from '@/lib/state-chips';
+import type { HubDetails } from './schemas';
 
 const GROUP_ID_PATTERN = /^[1-9]\d*$/;
 const HUB_TITLE_FALLBACK = 'Meine Gruppe';
-const SUBLINE_SEPARATOR = ' · ';
 
 const MY_GROUP_EYEBROW = 'deine Gruppe';
-const CARE_LINE = 'Du pflegst sie';
 
 export const toHubId = (raw: string): number | null =>
   GROUP_ID_PATTERN.test(raw) ? Number(raw) : null;
@@ -20,7 +19,7 @@ export const toHubId = (raw: string): number | null =>
 export interface HubHeadline {
   title: string;
   eyebrow: string | null;
-  openness: StateChip | null;
+  chips: StateChip[];
   subline: string | null;
 }
 
@@ -34,103 +33,19 @@ export const toHubHeadline = (
   viewerPersonId: number | null,
 ): HubHeadline => {
   if (hub === undefined) {
-    return { title: HUB_TITLE_FALLBACK, eyebrow: null, openness: null, subline: null };
+    return { title: HUB_TITLE_FALLBACK, eyebrow: null, chips: [], subline: null };
   }
 
   const ownRow = hub.members.find((member) => member.personId === viewerPersonId);
-  const counts = toGroupSubline(hub.members.length, hub.admins.length);
-  const sublineParts = hub.viewerIsAdmin ? [CARE_LINE, counts] : [counts];
+  const openness = toRecruitingChip(hub.isRecruiting);
 
   return {
     title: hub.name,
     eyebrow: toStandingEyebrow(ownRow?.since),
-    openness: toRecruitingChip(hub.isRecruiting),
-    subline: sublineParts.join(SUBLINE_SEPARATOR),
+    chips: hub.viewerIsAdmin ? [openness, GROUP_ADMIN_CHIP] : [openness],
+    subline: toGroupSubline(hub.members.length, hub.admins.length),
   };
 };
-
-export type HubHistoryKind = 'membership' | 'admin';
-
-export interface HubHistoryEntry {
-  key: string;
-  title: string;
-  span: string;
-  kind: HubHistoryKind;
-  meta?: string;
-}
-
-interface DatedHistoryEntry extends HubHistoryEntry {
-  startedOn: string;
-}
-
-const toPersonName = (person: { firstName: string; lastName: string }): string =>
-  `${person.firstName} ${person.lastName}`;
-
-const toPastMemberEntry = (member: HubMember): DatedHistoryEntry => ({
-  key: `membership-${member.groupMembershipId}`,
-  title: toPersonName(member),
-  span: formatPeriod(member.joinedOn, member.leftOn),
-  kind: 'membership',
-  startedOn: member.joinedOn,
-});
-
-const toPastAdminEntry = (admin: HubAdmin): DatedHistoryEntry => ({
-  key: `admin-${admin.groupAdminId}`,
-  title: toPersonName(admin),
-  span: formatPeriod(admin.sinceOn, admin.untilOn),
-  kind: 'admin',
-  meta: admin.function ?? undefined,
-  startedOn: admin.sinceOn,
-});
-
-const byNewestStart = (left: DatedHistoryEntry, right: DatedHistoryEntry): number => {
-  if (left.startedOn !== right.startedOn) {
-    return left.startedOn < right.startedOn ? 1 : -1;
-  }
-
-  return left.key.localeCompare(right.key);
-};
-
-export const toHistoryEntries = (
-  pastMembers: readonly HubMember[],
-  pastAdmins: readonly HubAdmin[],
-): HubHistoryEntry[] => {
-  const dated = [...pastMembers.map(toPastMemberEntry), ...pastAdmins.map(toPastAdminEntry)];
-
-  return dated
-    .sort(byNewestStart)
-    .map(({ key, title, span, kind, meta }) => ({ key, title, span, kind, meta }));
-};
-
-export const toNoMembersLine = (name: string): string =>
-  `In ${name} ist gerade niemand eingetragen.`;
-
-export const toNoDescriptionLine = (name: string): string =>
-  `Zu ${name} steht noch nichts geschrieben.`;
-
-export const NO_ADMINS_LINE = 'Für diese Gruppe ist gerade niemand als Gruppen-Admin eingetragen.';
-
-export const ADD_MEMBER_LABEL = 'Mitglied';
-export const ADD_MEMBER_ACTION_LABEL = 'Mitglied aufnehmen';
-export const ADD_ADMIN_LABEL = 'Admin';
-export const ADD_ADMIN_ACTION_LABEL = 'Admin eintragen';
-export const END_LABEL = 'Beenden';
-
-export const toEndMembershipActionLabel = (personName: string): string =>
-  `Zugehörigkeit von ${personName} beenden`;
-
-export const toEndAdminActionLabel = (personName: string): string =>
-  `Gruppen-Admin ${personName} beenden`;
-
-export const RESERVED_BADGE = 'bald';
-
-export const EVENTS_SLOT_TITLE = 'Noch nicht da';
-export const EVENTS_SLOT_DESCRIPTION =
-  'Training, Proben und Auftritte der Gruppe an einem Ort. Kommt in einer späteren Phase.';
-
-export const PHOTOS_SLOT_TITLE = 'Noch keine Bilder';
-export const PHOTOS_SLOT_DESCRIPTION =
-  'Platz für Bilder aus euren Sessions. Die Bildergalerie liefert sie später automatisch — hier wird nichts hochgeladen.';
 
 const SEARCH_TERM_MIN_LENGTH = 2;
 const SEARCH_TERM_MAX_LENGTH = 64;
@@ -231,7 +146,7 @@ export const toEndExplanation = (firstName: string): string =>
   `Die Zugehörigkeit endet am gewählten Tag und wandert in die Geschichte der Gruppe. Gelöscht wird nichts: ${firstName} kann jederzeit wieder aufgenommen werden.`;
 
 export const toEndFacts = (
-  member: HubMember,
+  member: GroupDetailMember,
   groupName: string,
   endedOn: string | null,
 ): KkConfirmFact[] => [
@@ -297,7 +212,7 @@ export const toAdminEndExplanation = (firstName: string, groupName: string): str
   `Die Ernennung endet am gewählten Tag und wandert in die Geschichte der Gruppe. Gelöscht wird nichts: ${firstName} behält jede Zugehörigkeit zu ${groupName} und kann jederzeit wieder ernannt werden.`;
 
 export const toAdminEndFacts = (
-  admin: HubAdmin,
+  admin: GroupDetailAdmin,
   groupName: string,
   endedOn: string | null,
 ): KkConfirmFact[] => [
