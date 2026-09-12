@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { useMeQuery, usePermissions } from '@/features/session';
+import { useMeQuery } from '@/features/session';
 import type { PermissionKey } from '@/lib/api/schemas';
 import { ROLES_QUERY_KEY, roleQueryKey, useSetRolePermissionsMutation } from '../api';
 import type { RolePermissionEntry } from '../manage-roles-labels';
@@ -12,7 +12,9 @@ import {
   toRoleSeed,
 } from '../manage-roles-labels';
 import { toWriteErrorMessage } from '../manage-roles-messages';
-import type { RoleDetails, RolesResponse } from '../schemas';
+import type { RoleDetails, RoleSummary, RolesResponse } from '../schemas';
+
+const NO_ROLES: readonly RoleSummary[] = [];
 
 const dropOnce = (keys: readonly PermissionKey[], key: PermissionKey): PermissionKey[] => {
   const index = keys.indexOf(key);
@@ -49,7 +51,6 @@ export const useRolePermissions = (
 ): RolePermissionsControl => {
   const queryClient = useQueryClient();
   const me = useMeQuery();
-  const permissions = usePermissions();
   const [busyKeys, setBusyKeys] = useState<readonly PermissionKey[]>([]);
   const [rejections, setRejections] = useState<readonly PermissionRejection[]>([]);
   const [lockoutKey, setLockoutKey] = useState<PermissionKey | null>(null);
@@ -58,9 +59,9 @@ export const useRolePermissions = (
 
   const entries = toPermissionEntries(catalogue, role.permissionKeys);
   const viewerPersonId = me.data?.person.id;
-  const viewerIsHolder =
-    viewerPersonId !== undefined &&
-    role.holders.some((holder) => holder.personId === viewerPersonId);
+
+  const readRoles = (): readonly RoleSummary[] =>
+    queryClient.getQueryData<RolesResponse>(ROLES_QUERY_KEY)?.roles ?? NO_ROLES;
 
   const readCurrentKeys = (): readonly string[] => {
     const cached = queryClient.getQueryData<RoleDetails>(roleQueryKey(role.roleId));
@@ -97,7 +98,15 @@ export const useRolePermissions = (
   };
 
   const toggle = (key: PermissionKey, enabled: boolean): void => {
-    if (isSelfLockout({ enabled, viewerIsHolder, viewerHasKey: permissions.has(key) })) {
+    if (
+      isSelfLockout({
+        key,
+        enabled,
+        roleId: role.roleId,
+        viewerPersonId,
+        roles: readRoles(),
+      })
+    ) {
       setLockoutKey(key);
       return;
     }
