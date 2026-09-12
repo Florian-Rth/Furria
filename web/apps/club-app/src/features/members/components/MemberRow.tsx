@@ -2,12 +2,12 @@ import { KkChip, KkPersonRow } from '@furria/ui';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { toInitials } from '@/lib/initials';
+import { NO_AFFILIATION_META } from '@/lib/person-rows';
 import { toMembershipStateChip } from '@/lib/state-chips';
 import { toPersonRowAffiliation } from '../members-labels';
 import type { MemberSummary } from '../schemas';
 
 const MEMBER_PATH = '/members/$personId';
-const NO_AFFILIATION = 'keine Gruppe';
 
 interface MemberRowProps {
   member: MemberSummary;
@@ -31,7 +31,7 @@ export const MemberRow: FC<MemberRowProps> = ({ member }) => {
       name={name}
       accent={accent}
       meta={meta}
-      emptyMeta={NO_AFFILIATION}
+      emptyMeta={NO_AFFILIATION_META}
       trailing={stateChip}
       component={Link}
       to={MEMBER_PATH}
