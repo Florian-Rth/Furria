@@ -1,7 +1,7 @@
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 
-const GREETING = 'MOIN';
+const GREETING = 'Hallo';
 
 export const buildGreeting = (firstName: string): string => {
   const name = firstName.trim();
@@ -10,7 +10,7 @@ export const buildGreeting = (firstName: string): string => {
     return `${GREETING}.`;
   }
 
-  return `${GREETING}, ${name.toUpperCase()}.`;
+  return `${GREETING}, ${name}.`;
 };
 
 export const formatStageDate = (date: Date): string =>
