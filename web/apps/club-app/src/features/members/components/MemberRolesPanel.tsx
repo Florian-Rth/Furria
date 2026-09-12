@@ -1,4 +1,4 @@
-import { KkEmptyState, KkPanel, KkSinceRow } from '@furria/ui';
+import { KkEmptyState, KkPanel, KkPanelSection, KkSinceRow } from '@furria/ui';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { usePermissions } from '@/features/session';
@@ -6,7 +6,6 @@ import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { formatSinceSession } from '@/lib/membership-labels';
 import { MEMBER_SECTION_TITLES, toNoRolesDescription } from '../members-labels';
 import type { MemberRole } from '../schemas';
-import { MemberSection } from './MemberSection';
 
 const SINCE_LABEL = 'seit';
 const EMPTY_TITLE = 'KEINE ROLLE';
@@ -47,8 +46,8 @@ export const MemberRolesPanel: FC<MemberRolesPanelProps> = ({ roles, firstName }
     );
 
   return (
-    <MemberSection title={MEMBER_SECTION_TITLES.roles}>
+    <KkPanelSection title={MEMBER_SECTION_TITLES.roles}>
       <KkPanel>{body}</KkPanel>
-    </MemberSection>
+    </KkPanelSection>
   );
 };

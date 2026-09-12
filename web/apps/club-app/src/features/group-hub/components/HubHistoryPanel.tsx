@@ -1,10 +1,9 @@
-import { KkChip, KkEmptyState, KkFactRow, KkPanel } from '@furria/ui';
+import { KkChip, KkEmptyState, KkFactRow, KkPanel, KkPanelSection } from '@furria/ui';
 import type { FC } from 'react';
 import { GROUP_SECTION_TITLES } from '@/lib/group-sections';
 import type { HubHistoryKind } from '../group-hub-labels';
 import { toHistoryEntries } from '../group-hub-labels';
 import type { HubAdmin, HubMember } from '../schemas';
-import { HubSection } from './HubSection';
 
 const NO_HISTORY_TITLE = 'NOCH KEINE GESCHICHTE';
 const NO_HISTORY_DESCRIPTION = 'Beendete Zugehörigkeiten und frühere Gruppen-Admins stehen hier.';
@@ -51,8 +50,8 @@ export const HubHistoryPanel: FC<HubHistoryPanelProps> = ({ pastMembers, pastAdm
   );
 
   return (
-    <HubSection title={GROUP_SECTION_TITLES.history} meta={HISTORY_META}>
+    <KkPanelSection title={GROUP_SECTION_TITLES.history} meta={HISTORY_META}>
       <KkPanel variant={variant}>{body}</KkPanel>
-    </HubSection>
+    </KkPanelSection>
   );
 };

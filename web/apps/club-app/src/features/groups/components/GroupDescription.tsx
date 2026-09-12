@@ -1,7 +1,6 @@
-import { KkMeta, KkPanel, KkText } from '@furria/ui';
+import { KkMeta, KkPanel, KkPanelSection, KkText } from '@furria/ui';
 import type { FC } from 'react';
 import { GROUP_SECTION_TITLES, toNoDescriptionLine } from '../groups-labels';
-import { GroupSection } from './GroupSection';
 
 interface GroupDescriptionProps {
   groupName: string;
@@ -19,8 +18,8 @@ export const GroupDescription: FC<GroupDescriptionProps> = ({ groupName, descrip
     );
 
   return (
-    <GroupSection title={GROUP_SECTION_TITLES.about}>
+    <KkPanelSection title={GROUP_SECTION_TITLES.about}>
       <KkPanel variant="block">{body}</KkPanel>
-    </GroupSection>
+    </KkPanelSection>
   );
 };

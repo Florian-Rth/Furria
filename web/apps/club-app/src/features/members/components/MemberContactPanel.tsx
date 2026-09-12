@@ -1,11 +1,10 @@
-import { KkFieldRow, KkNote, KkPanel, KkRule } from '@furria/ui';
+import { KkFieldRow, KkNote, KkPanel, KkPanelSection, KkRule } from '@furria/ui';
 import type { FC } from 'react';
 import { formatAddress } from '@/lib/membership-labels';
 import { MEMBER_SECTION_TITLES } from '../members-labels';
 import type { MemberContact } from '../schemas';
 import { MemberContactHidden } from './MemberContactHidden';
 import { MemberContactValue } from './MemberContactValue';
-import { MemberSection } from './MemberSection';
 
 const REVEALED_NOTE = 'Du siehst das über deine Rolle — für andere Mitglieder ist es verborgen.';
 
@@ -21,9 +20,10 @@ export const MemberContactPanel: FC<MemberContactPanelProps> = ({
   nested = false,
 }) => {
   const address = formatAddress(contact.street, contact.zip, contact.city);
+  const hasValue = contact.phone !== null || contact.email !== null || address !== null;
 
   const revealedStrip =
-    contact.visibility === 'revealedByPermission' ? (
+    contact.visibility === 'revealedByPermission' && hasValue ? (
       <>
         <KkNote tone="info" icon="permissions" sx={{ py: 1.75 }}>
           {REVEALED_NOTE}
@@ -34,7 +34,7 @@ export const MemberContactPanel: FC<MemberContactPanelProps> = ({
 
   const body =
     contact.visibility === 'hidden' ? (
-      <MemberContactHidden firstName={firstName} nested={nested} />
+      <MemberContactHidden firstName={firstName} />
     ) : (
       <KkPanel>
         {revealedStrip}
@@ -48,5 +48,5 @@ export const MemberContactPanel: FC<MemberContactPanelProps> = ({
     return body;
   }
 
-  return <MemberSection title={MEMBER_SECTION_TITLES.contact}>{body}</MemberSection>;
+  return <KkPanelSection title={MEMBER_SECTION_TITLES.contact}>{body}</KkPanelSection>;
 };

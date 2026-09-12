@@ -1,9 +1,8 @@
-import { KkButton, KkEmptyState, KkIcon, KkNote, KkPanel } from '@furria/ui';
+import { KkButton, KkEmptyState, KkIcon, KkNote, KkPanel, KkPanelSection } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { MANAGE_GROUPS_SECTION_TITLES } from '../manage-groups-labels';
 import type { ManagedAdmin } from '../schemas';
-import { ManagedGroupsSection } from './ManagedGroupsSection';
 import { OverrideAdminRow } from './OverrideAdminRow';
 
 const ADD_LABEL = 'Admin';
@@ -51,11 +50,11 @@ export const OverrideAdminsPanel: FC<OverrideAdminsPanelProps> = ({
   );
 
   return (
-    <ManagedGroupsSection title={MANAGE_GROUPS_SECTION_TITLES.admins} action={action}>
+    <KkPanelSection title={MANAGE_GROUPS_SECTION_TITLES.admins} action={action}>
       <Stack sx={{ gap: 2, minWidth: 0 }}>
         <KkPanel variant={variant}>{body}</KkPanel>
         <KkNote>{ADMIN_NOTE}</KkNote>
       </Stack>
-    </ManagedGroupsSection>
+    </KkPanelSection>
   );
 };

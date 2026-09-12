@@ -1,11 +1,10 @@
-import { KkAvatar, KkMeta, KkPanel, KkSinceRow } from '@furria/ui';
+import { KkAvatar, KkMeta, KkPanel, KkPanelSection, KkSinceRow } from '@furria/ui';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { toInitials } from '@/lib/initials';
 import { formatSinceSession } from '@/lib/membership-labels';
 import { GROUP_SECTION_TITLES, toNoMembersLine } from '../groups-labels';
 import type { GroupMember } from '../schemas';
-import { GroupSection } from './GroupSection';
 
 const SINCE_LABEL = 'seit';
 const MEMBER_PATH = '/members/$personId';
@@ -41,8 +40,8 @@ export const GroupMembersPanel: FC<GroupMembersPanelProps> = ({ members, groupNa
   const variant = isEmpty ? 'block' : 'list';
 
   return (
-    <GroupSection title={GROUP_SECTION_TITLES.members}>
+    <KkPanelSection title={GROUP_SECTION_TITLES.members}>
       <KkPanel variant={variant}>{body}</KkPanel>
-    </GroupSection>
+    </KkPanelSection>
   );
 };

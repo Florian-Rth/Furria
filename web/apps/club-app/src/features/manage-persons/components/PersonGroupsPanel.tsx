@@ -1,4 +1,12 @@
-import { KkChip, KkEmptyState, KkFactRow, KkNote, KkPanel, KkSinceRow } from '@furria/ui';
+import {
+  KkChip,
+  KkEmptyState,
+  KkFactRow,
+  KkNote,
+  KkPanel,
+  KkPanelSection,
+  KkSinceRow,
+} from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
@@ -7,7 +15,6 @@ import { formatPeriod, formatSinceSession } from '@/lib/membership-labels';
 import { READ_ONLY_CHIP } from '@/lib/state-chips';
 import { GROUPS_POINTER, PERSON_SECTION_TITLES, splitPersonGroups } from '../manage-persons-labels';
 import type { PersonGroup } from '../schemas';
-import { PersonSection } from './PersonSection';
 
 const EMPTY_TITLE = 'IN KEINER GRUPPE';
 const SINCE_LABEL = 'seit';
@@ -76,12 +83,11 @@ export const PersonGroupsPanel: FC<PersonGroupsPanelProps> = ({ groups, firstNam
   );
 
   return (
-    <PersonSection title={PERSON_SECTION_TITLES.groups} action={chip}>
+    <KkPanelSection title={PERSON_SECTION_TITLES.groups} meta={chip} description={GROUPS_POINTER}>
       <Stack sx={{ gap: 1.25, minWidth: 0 }}>
         {runningPanel}
         {pastPanel}
-        <KkNote>{GROUPS_POINTER}</KkNote>
       </Stack>
-    </PersonSection>
+    </KkPanelSection>
   );
 };

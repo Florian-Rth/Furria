@@ -1,10 +1,9 @@
-import { KkEmptyState, KkPanel, KkSinceRow } from '@furria/ui';
+import { KkEmptyState, KkPanel, KkPanelSection, KkSinceRow } from '@furria/ui';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { formatSinceSession } from '@/lib/membership-labels';
 import { MEMBER_SECTION_TITLES, toNoGroupsDescription } from '../members-labels';
 import type { MemberGroup } from '../schemas';
-import { MemberSection } from './MemberSection';
 
 const SINCE_LABEL = 'seit';
 const EMPTY_TITLE = 'IN KEINER GRUPPE';
@@ -37,8 +36,8 @@ export const MemberGroupsPanel: FC<MemberGroupsPanelProps> = ({ groups, firstNam
     );
 
   return (
-    <MemberSection title={MEMBER_SECTION_TITLES.groups}>
+    <KkPanelSection title={MEMBER_SECTION_TITLES.groups}>
       <KkPanel>{body}</KkPanel>
-    </MemberSection>
+    </KkPanelSection>
   );
 };
