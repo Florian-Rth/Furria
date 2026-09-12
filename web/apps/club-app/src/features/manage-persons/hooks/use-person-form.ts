@@ -7,7 +7,7 @@ import { RequestFailedError } from '@/lib/api/api-error';
 import { toCamelCaseField } from '@/lib/api/api-failures';
 import { useCreatePersonMutation, useUpdatePersonMutation } from '../api';
 import { toWriteErrorMessage } from '../manage-persons-messages';
-import type { PersonForm } from '../schemas';
+import type { CreatedPerson, PersonForm } from '../schemas';
 import { PersonFormSchema } from '../schemas';
 
 export interface PersonFormSource {
@@ -74,7 +74,7 @@ export const toPersonFormValues = (person: PersonFormSource | null): PersonForm 
 interface PersonFormInput {
   person: PersonFormSource | null;
   open: boolean;
-  onSaved: () => void;
+  onSaved: (saved: CreatedPerson) => void;
 }
 
 export interface PersonFormControl {
@@ -140,7 +140,12 @@ export const usePersonForm = ({ person, open, onSaved }: PersonFormInput): Perso
       return;
     }
 
-    update.mutate(values, { onSuccess: onSaved, onError: reject });
+    update.mutate(values, {
+      onSuccess: () => {
+        onSaved({ personId: person.personId });
+      },
+      onError: reject,
+    });
   });
 
   const birthDate = form.watch('birthDate');
