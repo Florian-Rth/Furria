@@ -6,7 +6,7 @@ import {
   EndAdminDialog,
   EndMembershipDialog,
 } from '@/features/group-hub';
-import { usePermissions } from '@/features/session';
+import { usePermissions, useReturnFocus } from '@/features/session';
 import { useOverrideDialogs } from '../hooks/use-override-dialogs';
 import { useOverrideRefresh } from '../hooks/use-override-refresh';
 import type { ManagedGroupDetails } from '../schemas';
@@ -23,9 +23,22 @@ export const GroupOverrideDetails: FC<GroupOverrideDetailsProps> = ({ group }) =
   const { isAffiliated } = usePermissions();
   const canManage = group.archivedOn === null;
 
+  const membersFocus = useReturnFocus();
+  const adminsFocus = useReturnFocus();
+
   const settle = (): void => {
     dialogs.close();
     refresh();
+  };
+
+  const settleAfterMemberEnded = (): void => {
+    settle();
+    membersFocus.returnFocus();
+  };
+
+  const settleAfterAdminEnded = (): void => {
+    settle();
+    adminsFocus.returnFocus();
   };
 
   const tools = canManage ? (
@@ -41,7 +54,8 @@ export const GroupOverrideDetails: FC<GroupOverrideDetailsProps> = ({ group }) =
         groupId={group.groupId}
         groupName={group.name}
         member={dialogs.endMember}
-        onClose={settle}
+        onClose={dialogs.close}
+        onEnded={settleAfterMemberEnded}
       />
       <AddAdminDialog
         groupId={group.groupId}
@@ -55,7 +69,8 @@ export const GroupOverrideDetails: FC<GroupOverrideDetailsProps> = ({ group }) =
         groupName={group.name}
         admin={dialogs.endAdmin}
         runningAdmins={group.admins.length}
-        onClose={settle}
+        onClose={dialogs.close}
+        onEnded={settleAfterAdminEnded}
       />
     </>
   ) : null;
@@ -66,6 +81,7 @@ export const GroupOverrideDetails: FC<GroupOverrideDetailsProps> = ({ group }) =
       groupName={group.name}
       canManage={canManage}
       canOpenPerson={isAffiliated}
+      titleRef={membersFocus.targetRef}
       onAdd={dialogs.openAddMember}
       onEnd={dialogs.openEndMembership}
     />
@@ -76,6 +92,7 @@ export const GroupOverrideDetails: FC<GroupOverrideDetailsProps> = ({ group }) =
       admins={group.admins}
       canManage={canManage}
       canOpenPerson={isAffiliated}
+      titleRef={adminsFocus.targetRef}
       onAdd={dialogs.openAddAdmin}
       onEnd={dialogs.openEndAdmin}
     />

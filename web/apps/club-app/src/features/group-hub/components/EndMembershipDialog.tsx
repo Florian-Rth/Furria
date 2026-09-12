@@ -21,6 +21,7 @@ interface EndMembershipDialogProps {
   groupName: string;
   member: GroupDetailMember | null;
   onClose: () => void;
+  onEnded: () => void;
 }
 
 export const EndMembershipDialog: FC<EndMembershipDialogProps> = ({
@@ -28,9 +29,10 @@ export const EndMembershipDialog: FC<EndMembershipDialogProps> = ({
   groupName,
   member,
   onClose,
+  onEnded,
 }) => {
   const open = member !== null;
-  const form = useEndMembershipForm({ groupId, member, open, onEnded: onClose });
+  const form = useEndMembershipForm({ groupId, member, open, onEnded });
   const target = form.member;
 
   if (target === null) {

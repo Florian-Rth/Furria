@@ -1,5 +1,5 @@
 import { KkButton, KkEmptyState, KkIcon, KkPanel, KkPanelSection } from '@furria/ui';
-import type { FC } from 'react';
+import type { FC, Ref } from 'react';
 import type { GroupDetailAdmin } from '@/features/group-detail';
 import {
   ADD_ADMIN_ACTION_LABEL,
@@ -13,6 +13,7 @@ interface OverrideAdminsPanelProps {
   admins: readonly GroupDetailAdmin[];
   canManage: boolean;
   canOpenPerson: boolean;
+  titleRef: Ref<HTMLHeadingElement>;
   onAdd: () => void;
   onEnd: (groupAdminId: number) => void;
 }
@@ -21,6 +22,7 @@ export const OverrideAdminsPanel: FC<OverrideAdminsPanelProps> = ({
   admins,
   canManage,
   canOpenPerson,
+  titleRef,
   onAdd,
   onEnd,
 }) => {
@@ -64,6 +66,7 @@ export const OverrideAdminsPanel: FC<OverrideAdminsPanelProps> = ({
   return (
     <KkPanelSection
       title={GROUP_SECTION_TITLES.admins}
+      titleRef={titleRef}
       action={action}
       description={GROUP_ADMINS_NOTE}
     >
