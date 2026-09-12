@@ -8,6 +8,7 @@ interface RolePermissionRowProps {
   entry: RolePermissionEntry;
   busy: boolean;
   disabled: boolean;
+  error?: string;
   onToggle: (key: PermissionKey, enabled: boolean) => void;
 }
 
@@ -15,6 +16,7 @@ export const RolePermissionRow: FC<RolePermissionRowProps> = ({
   entry,
   busy,
   disabled,
+  error,
   onToggle,
 }) => {
   const change = (enabled: boolean): void => {
@@ -31,6 +33,7 @@ export const RolePermissionRow: FC<RolePermissionRowProps> = ({
       stateChip={false}
       busy={busy}
       disabled={disabled}
+      error={error}
     />
   );
 };

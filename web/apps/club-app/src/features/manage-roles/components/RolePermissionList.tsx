@@ -32,6 +32,7 @@ export const RolePermissionList: FC<RolePermissionListProps> = ({
       entry={entry}
       busy={permissions.isBusy(entry.key)}
       disabled={isArchived}
+      error={permissions.errorOf(entry.key)}
       onToggle={permissions.toggle}
     />
   ));

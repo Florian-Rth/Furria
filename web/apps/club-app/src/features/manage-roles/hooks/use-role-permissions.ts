@@ -11,6 +11,7 @@ import {
   toPermissionEntries,
   toRoleSeed,
 } from '../manage-roles-labels';
+import { toWriteErrorMessage } from '../manage-roles-messages';
 import type { RoleDetails, RolesResponse } from '../schemas';
 
 const dropOnce = (keys: readonly PermissionKey[], key: PermissionKey): PermissionKey[] => {
@@ -19,10 +20,21 @@ const dropOnce = (keys: readonly PermissionKey[], key: PermissionKey): Permissio
   return index === -1 ? [...keys] : [...keys.slice(0, index), ...keys.slice(index + 1)];
 };
 
+interface PermissionRejection {
+  key: PermissionKey;
+  message: string;
+}
+
+const without = (
+  rejections: readonly PermissionRejection[],
+  key: PermissionKey,
+): PermissionRejection[] => rejections.filter((rejection) => rejection.key !== key);
+
 export interface RolePermissionsControl {
   entries: readonly RolePermissionEntry[];
   toggle: (key: PermissionKey, enabled: boolean) => void;
   isBusy: (key: PermissionKey) => boolean;
+  errorOf: (key: PermissionKey) => string | undefined;
   selfLockout: RolePermissionEntry | null;
   confirmSelfLockout: () => void;
   cancelSelfLockout: () => void;
@@ -39,6 +51,7 @@ export const useRolePermissions = (
   const me = useMeQuery();
   const permissions = usePermissions();
   const [busyKeys, setBusyKeys] = useState<readonly PermissionKey[]>([]);
+  const [rejections, setRejections] = useState<readonly PermissionRejection[]>([]);
   const [lockoutKey, setLockoutKey] = useState<PermissionKey | null>(null);
   const [handoverKey, setHandoverKey] = useState<PermissionKey | null>(null);
   const mutation = useSetRolePermissionsMutation(role.roleId);
@@ -65,9 +78,17 @@ export const useRolePermissions = (
     const permissionKeys = toNextPermissionKeys(readCurrentKeys(), key, enabled);
 
     setBusyKeys((keys) => [...keys, key]);
+    setRejections((current) => without(current, key));
     mutation.mutate(
       { key, enabled, permissionKeys },
       {
+        onError: (error) => {
+          const message = toWriteErrorMessage(error);
+
+          if (message !== null) {
+            setRejections((current) => [...without(current, key), { key, message }]);
+          }
+        },
         onSettled: () => {
           setBusyKeys((keys) => dropOnce(keys, key));
         },
@@ -118,6 +139,7 @@ export const useRolePermissions = (
     entries,
     toggle,
     isBusy: (key) => busyKeys.includes(key),
+    errorOf: (key) => rejections.find((rejection) => rejection.key === key)?.message,
     selfLockout: entries.find((entry) => entry.key === lockoutKey) ?? null,
     confirmSelfLockout,
     cancelSelfLockout,
