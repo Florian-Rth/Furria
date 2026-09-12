@@ -9,14 +9,12 @@ interface RolesMasterListProps {
   entries: readonly RoleMasterEntry[];
   emptyDescription: string;
   selectedRoleId: number | null;
-  onSelect: (roleId: number) => void;
 }
 
 export const RolesMasterList: FC<RolesMasterListProps> = ({
   entries,
   emptyDescription,
   selectedRoleId,
-  onSelect,
 }) => {
   if (entries.length === 0) {
     return (
@@ -31,12 +29,7 @@ export const RolesMasterList: FC<RolesMasterListProps> = ({
   }
 
   const rows = entries.map((entry) => (
-    <RolesMasterRow
-      key={entry.roleId}
-      entry={entry}
-      selected={entry.roleId === selectedRoleId}
-      onSelect={onSelect}
-    />
+    <RolesMasterRow key={entry.roleId} entry={entry} selected={entry.roleId === selectedRoleId} />
   ));
 
   return (
