@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import {
+  isKeyHandover,
   isSelfLockout,
   toArchivedMeta,
   toEndHoldingConsequence,
@@ -38,31 +39,31 @@ describe('toRoleSearchTerm', () => {
 });
 
 describe('toHoldersMeta', () => {
-  it('reports an unheld role', () => {
-    expect(toHoldersMeta([])).toBe('unbesetzt');
+  it('says nothing about an unheld role — the chip carries that', () => {
+    expect(toHoldersMeta([])).toBeNull();
   });
 
   it('names the single holder', () => {
     expect(toHoldersMeta([{ firstName: 'Heike', lastName: 'Krämer' }])).toBe('Heike Krämer');
   });
 
-  it('names the second holder as one further Person, not as a bare number', () => {
+  it('names the noun for a single further holder', () => {
     expect(
       toHoldersMeta([
         { firstName: 'Jörg', lastName: 'Krüger' },
         { firstName: 'Heike', lastName: 'Krämer' },
       ]),
-    ).toBe('Jörg Krüger und 1 weitere Person');
+    ).toBe('Jörg Krüger und eine weitere Person');
   });
 
-  it('counts the remaining holders after the first', () => {
+  it('names the noun for several further holders too', () => {
     expect(
       toHoldersMeta([
         { firstName: 'Heike', lastName: 'Krämer' },
         { firstName: 'Jörg', lastName: 'Krüger' },
         { firstName: 'Lukas', lastName: 'Schmitt' },
       ]),
-    ).toBe('Heike Krämer und 2 weitere');
+    ).toBe('Heike Krämer und 2 weitere Personen');
   });
 });
 
@@ -104,6 +105,12 @@ describe('toMasterEntries', () => {
     const archived = toMasterEntries(roles, '').find((entry) => entry.roleId === 9);
 
     expect(archived?.isArchived).toBe(true);
+  });
+
+  it('marks a row nobody holds', () => {
+    const unheld = toMasterEntries(roles, '').find((entry) => entry.roleId === 1);
+
+    expect(unheld?.isUnheld).toBe(true);
   });
 
   it('folds umlauts when matching the name', () => {
@@ -237,6 +244,28 @@ describe('isSelfLockout', () => {
     },
   ])('is $expected when $case', ({ input, expected }) => {
     expect(isSelfLockout(input)).toBe(expected);
+  });
+});
+
+describe('isKeyHandover', () => {
+  it.each([
+    {
+      case: 'switching the rights key on',
+      input: { key: PERMISSION_KEYS.rolesManage, enabled: true },
+      expected: true,
+    },
+    {
+      case: 'switching the rights key off',
+      input: { key: PERMISSION_KEYS.rolesManage, enabled: false },
+      expected: false,
+    },
+    {
+      case: 'switching another key on',
+      input: { key: PERMISSION_KEYS.groupsManage, enabled: true },
+      expected: false,
+    },
+  ])('is $expected when $case', ({ input, expected }) => {
+    expect(isKeyHandover(input)).toBe(expected);
   });
 });
 

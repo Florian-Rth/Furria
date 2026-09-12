@@ -2,7 +2,7 @@ import { KkButton, KkIcon } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { useState } from 'react';
-import { ManagePageLayout } from '@/features/session';
+import { AppListLayout } from '@/features/session';
 import { useDetailScroll } from '../hooks/use-detail-scroll';
 import { useRoleSearch } from '../hooks/use-role-search';
 import { useSelectedRole } from '../hooks/use-selected-role';
@@ -12,6 +12,7 @@ import { RoleColumn } from './RoleColumn';
 import { RoleFormDialog } from './RoleFormDialog';
 import { RolesCreateFab } from './RolesCreateFab';
 import { RolesEmpty } from './RolesEmpty';
+import { RolesGrid } from './RolesGrid';
 import { RolesMasterList } from './RolesMasterList';
 import { RolesToolbar } from './RolesToolbar';
 
@@ -69,24 +70,29 @@ export const RolesView: FC<RolesViewProps> = ({ roles, catalogue }) => {
     </KkButton>
   );
 
-  const list = (
-    <RolesMasterList
-      entries={search.entries}
-      term={search.term}
-      selectedRoleId={roleId}
-      onSelect={select}
-    />
-  );
+  const list =
+    roleId === null ? (
+      <RolesGrid entries={search.entries} term={search.term} />
+    ) : (
+      <RolesMasterList
+        entries={search.entries}
+        term={search.term}
+        selectedRoleId={roleId}
+        onSelect={select}
+      />
+    );
+
+  const detail = roleId === null ? undefined : <RoleColumn roleId={roleId} catalogue={catalogue} />;
 
   return (
     <>
-      <ManagePageLayout
+      <AppListLayout
         lead={toRolesLead(roles)}
         sectionTitle={MANAGE_ROLES_SECTION_TITLE}
         createAction={createButton}
         toolbar={<RolesToolbar query={search.query} onQueryChange={search.setQuery} />}
         list={list}
-        aside={<RoleColumn roleId={roleId} catalogue={catalogue} />}
+        aside={detail}
         asideSize={DETAIL_SIZE}
         asideRef={detailRef}
       />

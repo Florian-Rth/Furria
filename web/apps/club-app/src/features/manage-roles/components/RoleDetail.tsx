@@ -55,7 +55,12 @@ export const RoleDetail: FC<RoleDetailProps> = ({ role, catalogue, holdersPendin
         pending={holdersPending}
         onEnd={dialogs.openEndHolding}
       />
-      <RolePermissionList permissions={permissions} roleName={role.name} isArchived={isArchived} />
+      <RolePermissionList
+        permissions={permissions}
+        roleName={role.name}
+        holders={role.holders}
+        isArchived={isArchived}
+      />
       <RolePastHoldersPanel holders={role.pastHolders} />
       <RoleFormDialog
         open={dialogs.openDialog === 'rename'}

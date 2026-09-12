@@ -1,5 +1,6 @@
 import type { FC } from 'react';
 import { useRolesQuery } from '../api';
+import { useSelectedRole } from '../hooks/use-selected-role';
 import { toRolesErrorMessage } from '../manage-roles-messages';
 import { RolesError } from './RolesError';
 import { RolesSkeleton } from './RolesSkeleton';
@@ -7,6 +8,7 @@ import { RolesView } from './RolesView';
 
 export const RolesBody: FC = () => {
   const roles = useRolesQuery();
+  const { roleId } = useSelectedRole();
   const errorMessage = toRolesErrorMessage(roles.error);
 
   const reload = (): void => {
@@ -20,5 +22,5 @@ export const RolesBody: FC = () => {
     return <RolesError message={errorMessage} onRetry={reload} />;
   }
 
-  return <RolesSkeleton />;
+  return <RolesSkeleton hasSelection={roleId !== null} />;
 };

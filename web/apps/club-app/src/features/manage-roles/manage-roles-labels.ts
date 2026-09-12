@@ -1,24 +1,24 @@
 import type { KkConfirmFact, KkDateQuickChoice } from '@furria/ui';
 import type { PermissionKey } from '@/lib/api/schemas';
+import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { SESSION_OPENING_DAY, SESSION_OPENING_MONTH, sessionAt } from '@/lib/club';
 import { isFutureDay, toIsoDay } from '@/lib/day';
 import { formatIsoDay, formatSinceSession } from '@/lib/membership-labels';
+import { UNHELD_CHIP } from '@/lib/state-chips';
 import { normalizeForSearch } from '@/lib/text';
 import { isPermissionKey, toPermissionCopy } from './role-permission-copy';
 import type { RoleDetails, RoleHolder, RoleSummary, RolesResponse } from './schemas';
-
-const UNHELD_LABEL = 'unbesetzt';
 
 export const toPersonName = (person: { firstName: string; lastName: string }): string =>
   `${person.firstName} ${person.lastName}`;
 
 export const toHoldersMeta = (
   holders: readonly { firstName: string; lastName: string }[],
-): string => {
+): string | null => {
   const [first] = holders;
 
   if (first === undefined) {
-    return UNHELD_LABEL;
+    return null;
   }
   if (holders.length === 1) {
     return toPersonName(first);
@@ -27,10 +27,10 @@ export const toHoldersMeta = (
   const further = holders.length - 1;
 
   if (further === 1) {
-    return `${toPersonName(first)} und 1 weitere Person`;
+    return `${toPersonName(first)} und eine weitere Person`;
   }
 
-  return `${toPersonName(first)} und ${further} weitere`;
+  return `${toPersonName(first)} und ${further} weitere Personen`;
 };
 
 export const MANAGE_ROLES_SECTION_TITLE = 'Alle Rollen';
@@ -70,15 +70,19 @@ const matchesRole = (role: RoleSummary, term: string): boolean => {
 export interface RoleMasterEntry {
   roleId: number;
   name: string;
-  meta: string;
+  description: string;
+  meta: string | null;
   isArchived: boolean;
+  isUnheld: boolean;
 }
 
 const toMasterEntry = (role: RoleSummary): RoleMasterEntry => ({
   roleId: role.roleId,
   name: role.name,
+  description: role.description,
   meta: toHoldersMeta(role.holders),
   isArchived: role.archivedOn !== null,
+  isUnheld: role.holders.length === 0,
 });
 
 const archivedLast = (left: RoleMasterEntry, right: RoleMasterEntry): number => {
@@ -156,7 +160,7 @@ export const toArchivedMeta = (archivedOn: string | null): string | undefined =>
 
 export const toHolderCountLabel = (count: number): string => {
   if (count === 0) {
-    return UNHELD_LABEL;
+    return UNHELD_CHIP.label;
   }
   if (count === 1) {
     return '1 Inhaberschaft';
@@ -167,8 +171,10 @@ export const toHolderCountLabel = (count: number): string => {
 
 export const toHolderSinceValue = (holder: RoleHolder): string => formatSinceSession(holder.since);
 
+export const NO_ROLE_SEARCH_RESULT_TITLE = 'KEINE ROLLE GEFUNDEN';
+
 export const toNoRoleSearchResultLine = (term: string): string =>
-  `Zu „${term}“ gibt es keine Rolle.`;
+  `Zu „${term}“ gibt es keine Rolle. Vielleicht anders geschrieben?`;
 
 export const toNoDescriptionLine = (name: string): string =>
   `Zu ${name} steht noch nichts geschrieben.`;
@@ -252,6 +258,31 @@ export const isSelfLockout = ({
   viewerIsHolder,
   viewerHasKey,
 }: SelfLockoutInput): boolean => !enabled && viewerIsHolder && viewerHasKey;
+
+export interface KeyHandoverInput {
+  key: PermissionKey;
+  enabled: boolean;
+}
+
+export const isKeyHandover = ({ key, enabled }: KeyHandoverInput): boolean =>
+  enabled && key === PERMISSION_KEYS.rolesManage;
+
+export const KEY_HANDOVER_EYEBROW = 'Recht vergeben';
+export const KEY_HANDOVER_CONFIRM_LABEL = 'Recht vergeben';
+
+export const toKeyHandoverQuestion = (roleName: string): string =>
+  `Rollen und Rechte an ${roleName} vergeben?`;
+
+export const toKeyHandoverFacts = (
+  roleName: string,
+  holders: readonly { firstName: string; lastName: string }[],
+): KkConfirmFact[] => [
+  { label: 'Rolle', value: roleName },
+  {
+    label: 'Wer sie innehat',
+    value: holders.length === 0 ? 'noch niemand' : holders.map(toPersonName).join(', '),
+  },
+];
 
 export const SELF_LOCKOUT_EYEBROW = 'Recht abgeben';
 export const SELF_LOCKOUT_EXPLANATION =

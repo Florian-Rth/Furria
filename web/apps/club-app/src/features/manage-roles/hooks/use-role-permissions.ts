@@ -5,6 +5,7 @@ import type { PermissionKey } from '@/lib/api/schemas';
 import { ROLES_QUERY_KEY, roleQueryKey, useSetRolePermissionsMutation } from '../api';
 import type { RolePermissionEntry } from '../manage-roles-labels';
 import {
+  isKeyHandover,
   isSelfLockout,
   toNextPermissionKeys,
   toPermissionEntries,
@@ -25,6 +26,9 @@ export interface RolePermissionsControl {
   selfLockout: RolePermissionEntry | null;
   confirmSelfLockout: () => void;
   cancelSelfLockout: () => void;
+  keyHandover: RolePermissionEntry | null;
+  confirmKeyHandover: () => void;
+  cancelKeyHandover: () => void;
 }
 
 export const useRolePermissions = (
@@ -36,6 +40,7 @@ export const useRolePermissions = (
   const permissions = usePermissions();
   const [busyKeys, setBusyKeys] = useState<readonly PermissionKey[]>([]);
   const [lockoutKey, setLockoutKey] = useState<PermissionKey | null>(null);
+  const [handoverKey, setHandoverKey] = useState<PermissionKey | null>(null);
   const mutation = useSetRolePermissionsMutation(role.roleId);
 
   const entries = toPermissionEntries(catalogue, role.permissionKeys);
@@ -75,6 +80,10 @@ export const useRolePermissions = (
       setLockoutKey(key);
       return;
     }
+    if (isKeyHandover({ key, enabled })) {
+      setHandoverKey(key);
+      return;
+    }
 
     apply(key, enabled);
   };
@@ -92,6 +101,19 @@ export const useRolePermissions = (
     setLockoutKey(null);
   };
 
+  const cancelKeyHandover = (): void => {
+    setHandoverKey(null);
+  };
+
+  const confirmKeyHandover = (): void => {
+    if (handoverKey === null) {
+      return;
+    }
+
+    apply(handoverKey, true);
+    setHandoverKey(null);
+  };
+
   return {
     entries,
     toggle,
@@ -99,5 +121,8 @@ export const useRolePermissions = (
     selfLockout: entries.find((entry) => entry.key === lockoutKey) ?? null,
     confirmSelfLockout,
     cancelSelfLockout,
+    keyHandover: entries.find((entry) => entry.key === handoverKey) ?? null,
+    confirmKeyHandover,
+    cancelKeyHandover,
   };
 };
