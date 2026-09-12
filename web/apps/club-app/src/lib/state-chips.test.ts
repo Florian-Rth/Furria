@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { toPeriodChip, toStateFilterOptions, toSwitchStateChip } from './state-chips';
+import { toPeriodChip, toStateFilterOptions, toStateStats, toSwitchStateChip } from './state-chips';
 
 describe('toStateFilterOptions', () => {
   it('offers every occurring state in the club order, with the total first', () => {
@@ -37,6 +37,30 @@ describe('toPeriodChip', () => {
   it('gives the running chip a live dot and the planned chip none', () => {
     expect(toPeriodChip(true, false)).toEqual({ label: 'läuft', tone: 'green', dot: true });
     expect(toPeriodChip(false, true)).toEqual({ label: 'geplant', tone: 'neutral', dot: false });
+  });
+});
+
+describe('toStateStats', () => {
+  it('counts every state that occurs, in the club order, accenting only aktiv', () => {
+    expect(toStateStats({ active: 113, paused: 6, ended: 2, none: 11 })).toEqual([
+      { state: 'active', label: 'aktiv', count: 113, tone: 'accent' },
+      { state: 'paused', label: 'ruht', count: 6, tone: 'default' },
+      { state: 'ended', label: 'beendet', count: 2, tone: 'default' },
+      { state: 'none', label: 'kein Mitglied', count: 11, tone: 'default' },
+    ]);
+  });
+
+  it('drops the states nobody is in, so three values remain when three occur', () => {
+    expect(
+      toStateStats({ active: 113, paused: 0, ended: 14, none: 18 }).map((s) => s.state),
+    ).toEqual(['active', 'ended', 'none']);
+  });
+
+  it('sums to the same total the filter chips offer', () => {
+    const counts = { active: 113, paused: 6, ended: 2, none: 11 };
+    const statsTotal = toStateStats(counts).reduce((sum, stat) => sum + stat.count, 0);
+
+    expect(statsTotal).toBe(toStateFilterOptions(counts)[0]?.count);
   });
 });
 
