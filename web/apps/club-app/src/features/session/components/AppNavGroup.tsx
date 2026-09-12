@@ -11,6 +11,7 @@ interface AppNavGroupProps {
 
 export const AppNavGroup: FC<AppNavGroupProps> = ({ group }) => {
   const matchRoute = useMatchRoute();
+  const labelTransform = group.id === 'my-groups' ? 'none' : 'uppercase';
 
   const items = group.sections.map((section) => {
     const navMatch = toNavMatch(section);
@@ -22,6 +23,7 @@ export const AppNavGroup: FC<AppNavGroupProps> = ({ group }) => {
           label={section.label}
           icon={section.icon}
           hint={section.hint}
+          transform={labelTransform}
           disabled
         />
       );
@@ -35,6 +37,7 @@ export const AppNavGroup: FC<AppNavGroupProps> = ({ group }) => {
         component={Link}
         to={navMatch.to}
         params={navMatch.params}
+        transform={labelTransform}
         active={matchRoute(navMatch) !== false}
       />
     );
