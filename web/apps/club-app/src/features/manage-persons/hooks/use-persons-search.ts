@@ -2,7 +2,8 @@ import type { KkFilterOption, KkLetterIndexEntry } from '@furria/ui';
 import { useState } from 'react';
 import type { MembershipState } from '@/lib/api/schemas';
 import { ALL_STATES_FILTER_ID, toStateFilterOptions } from '@/lib/state-chips';
-import { toLetterAnchorId } from '../letter-anchors';
+import { useLetterPosition } from '@/lib/use-letter-position';
+import { toLetterAnchorId, toLetterAnchors } from '../letter-anchors';
 import type { PersonLetterSection } from '../person-filters';
 import {
   availablePersonLetters,
@@ -30,13 +31,14 @@ export interface PersonsSearch {
 export const usePersonsSearch = (persons: readonly PersonSummary[]): PersonsSearch => {
   const [query, setQuery] = useState('');
   const [state, setState] = useState<string>(ALL_STATES_FILTER_ID);
-  const [letter, setLetter] = useState<string | undefined>(undefined);
 
   const searched = filterPersons(persons, { query, state: ALL_STATES_FILTER_ID });
   const visible = filterPersons(persons, { query, state });
+  const sections = groupPersonsByLetter(visible);
+  const position = useLetterPosition(toLetterAnchors(sections));
 
   const jumpTo = (target: string): void => {
-    setLetter(target);
+    position.markLetter(target);
     document
       .getElementById(toLetterAnchorId(target))
       ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -47,9 +49,9 @@ export const usePersonsSearch = (persons: readonly PersonSummary[]): PersonsSear
     setQuery,
     state,
     selectState: setState,
-    letter,
+    letter: position.letter,
     jumpTo,
-    sections: groupPersonsByLetter(visible),
+    sections,
     visibleCount: visible.length,
     total: persons.length,
     totals: countPersonsByState(persons),

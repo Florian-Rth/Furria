@@ -1,6 +1,6 @@
 import { KkButton, KkIcon } from '@furria/ui';
 import type { FC } from 'react';
-import { ManagePageLayout } from '@/features/session';
+import { AppListLayout } from '@/features/session';
 import { useGroupDialogs } from '../hooks/use-group-dialogs';
 import { useGroupSelection } from '../hooks/use-group-selection';
 import { useManagedGroupsView } from '../hooks/use-managed-groups-view';
@@ -94,7 +94,7 @@ export const ManagedGroupsView: FC<ManagedGroupsViewProps> = ({ groups }) => {
 
   return (
     <>
-      <ManagePageLayout
+      <AppListLayout
         lead={view.intro}
         sectionTitle={MANAGE_GROUPS_SECTION_TITLES.list}
         createAction={createButton}

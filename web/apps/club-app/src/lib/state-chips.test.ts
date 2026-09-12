@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+  ALL_STATES_FILTER_ID,
+  toNoStateMatchLine,
   toPeriodChip,
   toSessionPeriodChip,
   toStateFilterOptions,
@@ -117,5 +119,19 @@ describe('toSessionPeriodChip', () => {
       tone: 'neutral',
       dot: false,
     });
+  });
+});
+
+describe('toNoStateMatchLine', () => {
+  it.each(['active', 'paused', 'ended', 'none'])('answers for the %s filter', (state) => {
+    expect(toNoStateMatchLine(state)).not.toBeNull();
+  });
+
+  it('answers nothing for the Alle filter, which hides nobody', () => {
+    expect(toNoStateMatchLine(ALL_STATES_FILTER_ID)).toBeNull();
+  });
+
+  it('answers nothing for an id that is not a state', () => {
+    expect(toNoStateMatchLine('gruppen-admin')).toBeNull();
   });
 });

@@ -1,7 +1,8 @@
 import type { GroupRef, MembershipState, RoleRef } from '@/lib/api/schemas';
 import { toInitials } from '@/lib/initials';
 import type { StateChip } from '@/lib/state-chips';
-import { toMembershipStateChip } from '@/lib/state-chips';
+import { toMembershipStateChip, toNoStateMatchLine } from '@/lib/state-chips';
+import type { LetterAnchor } from '@/lib/use-letter-position';
 import type { MemberDetails } from './schemas';
 
 export interface PersonRowAffiliation {
@@ -45,6 +46,14 @@ export const toLetterAnchorId = (letter: string): string =>
     ? `${LETTER_ANCHOR_PREFIX}${letter.toLowerCase()}`
     : OTHER_LETTER_ANCHOR;
 
+export const toLetterAnchors = (sections: readonly { letter: string }[]): LetterAnchor[] =>
+  sections.map((section) => ({
+    letter: section.letter,
+    anchorId: toLetterAnchorId(section.letter),
+  }));
+
+export const MEMBERS_SECTION_TITLE = 'Alle Mitglieder';
+
 export const toConnectedSentence = (count: number): string => {
   const people = count === 1 ? '1 Person ist' : `${count} Personen sind`;
 
@@ -62,14 +71,26 @@ export const toWithoutMembershipSentence = (count: number): string | null => {
   return `${count} Personen tanzen oder helfen mit, ohne Mitglied zu sein. Sie stehen mit in der Liste.`;
 };
 
-export const toEmptyDescription = (query: string): string => {
+const COUNTING_FOOTNOTE = 'Gezählt wird, wer heute mit dem FCC verbunden ist.';
+const ALL_FILTER_SUGGESTION = 'Wähle „Alle“, um wieder alle zu sehen.';
+
+export const toStatsFootnote = (withoutMembership: number): string =>
+  toWithoutMembershipSentence(withoutMembership) ?? COUNTING_FOOTNOTE;
+
+export const toEmptyDescription = (query: string, state: string): string => {
   const needle = query.trim();
 
-  if (needle === '') {
-    return 'Zu diesem Filter passt gerade niemand. Wähle „Alle“, um wieder alle zu sehen.';
+  if (needle !== '') {
+    return `Kein Name, keine Gruppe und keine Rolle passt zu „${needle}“. Vielleicht anders geschrieben?`;
   }
 
-  return `Kein Name, keine Gruppe und keine Rolle passt zu „${needle}“. Vielleicht anders geschrieben?`;
+  const stateLine = toNoStateMatchLine(state);
+
+  if (stateLine === null) {
+    return 'Hier steht gerade niemand.';
+  }
+
+  return `${stateLine} ${ALL_FILTER_SUGGESTION}`;
 };
 
 export interface MemberHeadline {

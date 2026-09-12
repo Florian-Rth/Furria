@@ -2,9 +2,10 @@ import type { KkFilterOption, KkLetterIndexEntry } from '@furria/ui';
 import { useState } from 'react';
 import type { MembershipState } from '@/lib/api/schemas';
 import { ALL_STATES_FILTER_ID, toStateFilterOptions } from '@/lib/state-chips';
+import { useLetterPosition } from '@/lib/use-letter-position';
 import type { MemberLetterSection } from '../member-filters';
 import { availableLetters, countByState, filterMembers, groupByLetter } from '../member-filters';
-import { toLetterAnchorId } from '../members-labels';
+import { toLetterAnchorId, toLetterAnchors } from '../members-labels';
 import type { MemberSummary } from '../schemas';
 
 export interface MemberSearch {
@@ -25,13 +26,14 @@ export interface MemberSearch {
 export const useMemberSearch = (members: readonly MemberSummary[]): MemberSearch => {
   const [query, setQuery] = useState('');
   const [state, setState] = useState<string>(ALL_STATES_FILTER_ID);
-  const [letter, setLetter] = useState<string | undefined>(undefined);
 
   const searched = filterMembers(members, { query, state: ALL_STATES_FILTER_ID });
   const visible = filterMembers(members, { query, state });
+  const sections = groupByLetter(visible);
+  const position = useLetterPosition(toLetterAnchors(sections));
 
   const jumpTo = (target: string): void => {
-    setLetter(target);
+    position.markLetter(target);
     document
       .getElementById(toLetterAnchorId(target))
       ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -42,9 +44,9 @@ export const useMemberSearch = (members: readonly MemberSummary[]): MemberSearch
     setQuery,
     state,
     selectState: setState,
-    letter,
+    letter: position.letter,
     jumpTo,
-    sections: groupByLetter(visible),
+    sections,
     visibleCount: visible.length,
     total: members.length,
     totals: countByState(members),

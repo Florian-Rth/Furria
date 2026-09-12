@@ -64,6 +64,8 @@ export const ARCHIVED_CHIP: StateChip = { label: 'archiviert', tone: 'neutral', 
 
 export const NO_ADMIN_CHIP: StateChip = { label: 'kein Admin', tone: 'gold', dot: false };
 
+export const UNHELD_CHIP: StateChip = { label: 'unbesetzt', tone: 'gold', dot: false };
+
 export const GROUP_ADMIN_CHIP: StateChip = { label: 'Gruppen-Admin', tone: 'accent', dot: false };
 
 export const READ_ONLY_CHIP: StateChip = { label: 'nur Ansicht', tone: 'neutral', dot: false };
@@ -96,6 +98,19 @@ export const ALL_STATES_FILTER_ID = 'all';
 
 const ALL_STATES_LABEL = 'Alle';
 const STATE_FILTER_ORDER: readonly MembershipState[] = ['active', 'paused', 'ended', 'none'];
+
+const NO_STATE_MATCH_LINES: Record<MembershipState, string> = {
+  active: 'Gerade ist niemand aktives Mitglied.',
+  paused: 'Gerade ruht keine Mitgliedschaft.',
+  ended: 'Gerade hat niemand eine beendete Mitgliedschaft.',
+  none: 'Gerade steht niemand ohne Mitgliedschaft in der Liste.',
+};
+
+export const toNoStateMatchLine = (state: string): string | null => {
+  const known = STATE_FILTER_ORDER.find((entry) => entry === state);
+
+  return known === undefined ? null : NO_STATE_MATCH_LINES[known];
+};
 
 const occurringStates = (counts: Record<MembershipState, number>): MembershipState[] =>
   STATE_FILTER_ORDER.filter((state) => counts[state] > 0);

@@ -106,11 +106,23 @@ describe('toWithoutMembershipSentence', () => {
 
 describe('toEmptyDescription', () => {
   it('names the query the member typed', () => {
-    expect(toEmptyDescription('  Schmidtke ')).toContain('„Schmidtke“');
+    expect(toEmptyDescription('  Schmidtke ', 'active')).toContain('„Schmidtke“');
   });
 
   it('never quotes an empty query', () => {
-    expect(toEmptyDescription('   ')).not.toContain('„“');
+    expect(toEmptyDescription('   ', 'all')).not.toContain('„“');
+  });
+
+  it('leaves the filter out of it while a query is running', () => {
+    expect(toEmptyDescription('Schmidtke', 'ended')).not.toContain('Alle');
+  });
+
+  it('offers the Alle filter when a state filter hides everyone', () => {
+    expect(toEmptyDescription('', 'ended')).toContain('Alle');
+  });
+
+  it('suggests nothing when Alle is already the chosen filter', () => {
+    expect(toEmptyDescription('', 'all')).not.toContain('Alle');
   });
 });
 

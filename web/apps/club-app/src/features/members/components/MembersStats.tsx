@@ -3,9 +3,9 @@ import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { MembershipState } from '@/lib/api/schemas';
 import { toStateStats } from '@/lib/state-chips';
+import { toStatsFootnote } from '../members-labels';
 
 const STATS_TITLE = 'Der Verein in Zahlen';
-const STATS_NOTE = 'Gezählt wird, wer heute mit dem FCC verbunden ist.';
 
 interface MembersStatsProps {
   totals: Record<MembershipState, number>;
@@ -13,6 +13,7 @@ interface MembersStatsProps {
 
 export const MembersStats: FC<MembersStatsProps> = ({ totals }) => {
   const stats = toStateStats(totals);
+  const footnote = toStatsFootnote(totals.none);
 
   return (
     <Stack sx={{ gap: 2, minWidth: 0 }}>
@@ -28,7 +29,7 @@ export const MembersStats: FC<MembersStatsProps> = ({ totals }) => {
         ))}
       </KkStatRow>
       <KkRule weight="hair" />
-      <KkNote>{STATS_NOTE}</KkNote>
+      <KkNote>{footnote}</KkNote>
     </Stack>
   );
 };

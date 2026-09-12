@@ -1,7 +1,7 @@
 import { KkButton, KkIcon } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { ManagePageLayout } from '@/features/session';
+import { AppListLayout } from '@/features/session';
 import { usePersonFormDialog } from '../hooks/use-person-form-dialog';
 import type { PersonsSearch } from '../hooks/use-persons-search';
 import { MANAGE_PERSONS_SECTION_TITLE, toPersonsLead } from '../manage-persons-labels';
@@ -45,7 +45,7 @@ export const PersonsView: FC<PersonsViewProps> = ({ persons, search }) => {
 
   const list =
     search.visibleCount === 0 ? (
-      <PersonsEmpty query={search.query} />
+      <PersonsEmpty query={search.query} state={search.state} />
     ) : (
       <PersonsList sections={search.sections} />
     );
@@ -80,7 +80,7 @@ export const PersonsView: FC<PersonsViewProps> = ({ persons, search }) => {
 
   return (
     <>
-      <ManagePageLayout
+      <AppListLayout
         lead={toPersonsLead(search.total)}
         sectionTitle={MANAGE_PERSONS_SECTION_TITLE}
         createAction={createButton}
@@ -89,7 +89,8 @@ export const PersonsView: FC<PersonsViewProps> = ({ persons, search }) => {
         aside={aside}
         asideSize={ASIDE_SIZE}
         asideDesktopOnly
-        stickyColumn="aside"
+        stickyAside
+        asideLeadsFocus
       />
       <PersonsCreateFab label={CREATE_LABEL} onClick={dialog.open} />
       {formDialog}
