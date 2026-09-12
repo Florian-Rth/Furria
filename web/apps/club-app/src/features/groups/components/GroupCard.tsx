@@ -48,6 +48,7 @@ export const GroupCard: FC<GroupCardProps> = ({ group, standing, sx }) => {
       memberCount={group.memberCount}
       description={group.description}
       initials={initials}
+      total={group.memberCount}
       chips={chips}
       footer={contactLine}
       to={GROUP_PATH}

@@ -13,6 +13,7 @@ interface GroupCardBodyProps {
   memberCount: number;
   description: string;
   initials?: readonly string[];
+  total?: number;
   chips?: ReactNode;
   footer?: ReactNode;
   dimmed?: boolean;
@@ -27,6 +28,7 @@ export const GroupCardBody: FC<GroupCardBodyProps> = ({
   memberCount,
   description,
   initials,
+  total,
   chips,
   footer,
   dimmed,
@@ -47,7 +49,7 @@ export const GroupCardBody: FC<GroupCardBodyProps> = ({
 
   const avatars =
     initials === undefined || initials.length === 0 ? null : (
-      <KkAvatarStack initials={initials} max={PREVIEW_MAX} total={memberCount} />
+      <KkAvatarStack initials={initials} max={PREVIEW_MAX} total={total} />
     );
 
   const foot =
