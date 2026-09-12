@@ -7,7 +7,9 @@ import type { HubAdmin } from '../schemas';
 
 interface EndAdminFormInput {
   groupId: number;
+  groupName: string;
   admin: HubAdmin | null;
+  isSelf: boolean;
   open: boolean;
   onEnded: () => void;
 }
@@ -24,7 +26,9 @@ export interface EndAdminFormControl {
 
 export const useEndAdminForm = ({
   groupId,
+  groupName,
   admin,
+  isSelf,
   open,
   onEnded,
 }: EndAdminFormInput): EndAdminFormControl => {
@@ -58,7 +62,7 @@ export const useEndAdminForm = ({
 
     setRejection(null);
     mutation.mutate(
-      { groupAdminId: shown.groupAdminId, personName, endedOn },
+      { groupAdminId: shown.groupAdminId, personName, groupName, isSelf, endedOn },
       {
         onSuccess: onEnded,
         onError: (error) => {
