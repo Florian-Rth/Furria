@@ -1,15 +1,7 @@
-import {
-  KkButton,
-  KkChip,
-  KkEyebrow,
-  KkHeading,
-  KkMeta,
-  KkNote,
-  KkPanel,
-  KkText,
-} from '@furria/ui';
+import { KkButton, KkChip, KkIcon, KkMeta, KkNote, KkText } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
+import { AppRecordHeaderCard } from '@/features/session';
 import { ARCHIVED_CHIP } from '@/lib/state-chips';
 import { toArchivedMeta, toNoDescriptionLine } from '../manage-roles-labels';
 import type { RoleDetails } from '../schemas';
@@ -39,8 +31,6 @@ export const RoleHeaderCard: FC<RoleHeaderCardProps> = ({
   const isArchived = role.archivedOn !== null;
   const archivedMeta = toArchivedMeta(role.archivedOn);
 
-  const metaLine = archivedMeta === undefined ? null : <KkMeta>{archivedMeta}</KkMeta>;
-
   const description =
     role.description === '' ? (
       <KkMeta italic>{toNoDescriptionLine(role.name)}</KkMeta>
@@ -48,44 +38,54 @@ export const RoleHeaderCard: FC<RoleHeaderCardProps> = ({
       <KkText variant="body2">{role.description}</KkText>
     );
 
-  const chip = isArchived ? (
+  const chips = isArchived ? (
     <KkChip tone={ARCHIVED_CHIP.tone} dot={ARCHIVED_CHIP.dot} size="small">
       {ARCHIVED_CHIP.label}
     </KkChip>
-  ) : null;
+  ) : undefined;
+
+  const note =
+    archivedMeta === undefined ? undefined : (
+      <Stack sx={{ gap: 0.5, minWidth: 0 }}>
+        <KkMeta>{archivedMeta}</KkMeta>
+        <KkNote>{ARCHIVED_NOTE}</KkNote>
+      </Stack>
+    );
 
   const actions = isArchived ? (
-    <KkButton variant="outlined" onClick={onRestore} loading={isRestoring}>
+    <KkButton size="small" variant="outlined" onClick={onRestore} loading={isRestoring}>
       {RESTORE_LABEL}
     </KkButton>
   ) : (
     <>
-      <KkButton variant="outlined" onClick={onRename}>
+      <KkButton
+        size="small"
+        variant="outlined"
+        startIcon={<KkIcon name="edit" size="small" />}
+        onClick={onRename}
+      >
         {RENAME_LABEL}
       </KkButton>
-      <KkButton variant="outlined" onClick={onArchive}>
+      <KkButton
+        size="small"
+        variant="outlined"
+        startIcon={<KkIcon name="archive" size="small" />}
+        onClick={onArchive}
+      >
         {ARCHIVE_LABEL}
       </KkButton>
     </>
   );
 
-  const archivedNote = isArchived ? <KkNote tone="warning">{ARCHIVED_NOTE}</KkNote> : null;
-
   return (
-    <KkPanel variant="block">
-      <Stack sx={{ gap: 1.5, minWidth: 0 }}>
-        <Stack direction="row" sx={{ gap: 1, minWidth: 0, alignItems: 'center', flexWrap: 'wrap' }}>
-          <KkEyebrow tone="accent">{EYEBROW}</KkEyebrow>
-          {chip}
-        </Stack>
-        <KkHeading level={3}>{role.name}</KkHeading>
-        {metaLine}
-        {description}
-        {archivedNote}
-        <Stack direction="row" sx={{ gap: 1.25, minWidth: 0, flexWrap: 'wrap', pt: 0.5 }}>
-          {actions}
-        </Stack>
-      </Stack>
-    </KkPanel>
+    <AppRecordHeaderCard
+      eyebrow={EYEBROW}
+      title={role.name}
+      chips={chips}
+      description={description}
+      note={note}
+      actions={actions}
+      dimmed={isArchived}
+    />
   );
 };
