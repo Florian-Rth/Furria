@@ -19,8 +19,8 @@ export const OverrideAdminRow: FC<OverrideAdminRowProps> = ({ admin, canManage, 
     onEnd(admin.groupAdminId);
   };
 
-  const action = canManage ? (
-    <KkButton size="small" variant="outlined" tone="danger" onClick={end}>
+  const trailing = canManage ? (
+    <KkButton size="small" variant="text" tone="danger" onClick={end}>
       {END_LABEL}
     </KkButton>
   ) : null;
@@ -33,7 +33,7 @@ export const OverrideAdminRow: FC<OverrideAdminRowProps> = ({ admin, canManage, 
       meta={admin.function ?? undefined}
       sinceLabel={SINCE_LABEL}
       sinceValue={formatSinceSession(admin.since)}
-      trailing={action}
+      trailing={trailing}
     />
   );
 };

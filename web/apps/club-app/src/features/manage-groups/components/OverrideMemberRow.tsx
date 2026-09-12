@@ -19,8 +19,8 @@ export const OverrideMemberRow: FC<OverrideMemberRowProps> = ({ member, canManag
     onEnd(member.groupMembershipId);
   };
 
-  const action = canManage ? (
-    <KkButton size="small" variant="outlined" tone="danger" onClick={end}>
+  const trailing = canManage ? (
+    <KkButton size="small" variant="text" tone="danger" onClick={end}>
       {END_LABEL}
     </KkButton>
   ) : null;
@@ -31,7 +31,7 @@ export const OverrideMemberRow: FC<OverrideMemberRowProps> = ({ member, canManag
       title={name}
       sinceLabel={SINCE_LABEL}
       sinceValue={formatSinceSession(member.since)}
-      trailing={action}
+      trailing={trailing}
     />
   );
 };

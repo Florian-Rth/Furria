@@ -36,12 +36,7 @@ export const OverrideMembersPanel: FC<OverrideMembersPanelProps> = ({
   const variant = isEmpty ? 'block' : 'list';
 
   const action = canManage ? (
-    <KkButton
-      size="small"
-      variant="outlined"
-      startIcon={<KkIcon name="add" size="small" />}
-      onClick={onAdd}
-    >
+    <KkButton size="small" startIcon={<KkIcon name="add" size="small" />} onClick={onAdd}>
       {ADD_LABEL}
     </KkButton>
   ) : null;
