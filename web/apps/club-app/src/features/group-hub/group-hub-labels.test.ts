@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
+  toAdminAppointedMessage,
   toAdminCountLabel,
+  toAdminEndConsequence,
+  toAdminEndedMessage,
+  toAdminEndFacts,
+  toAdminFunction,
+  toAppointConsequence,
   toEndConsequence,
   toEndFacts,
   toEndQuickChoices,
@@ -9,6 +15,7 @@ import {
   toHubId,
   toJoinConsequence,
   toJoinQuickChoices,
+  toLastAdminWarning,
   toMemberAddedMessage,
   toMembershipEndedMessage,
   toPeopleCountLabel,
@@ -329,5 +336,113 @@ describe('toEndFacts', () => {
       label: 'Letzter Tag',
       value: 'noch offen',
     });
+  });
+});
+
+describe('toAdminFunction', () => {
+  it.each([
+    { case: 'nothing typed', raw: '', expected: null },
+    { case: 'only spaces', raw: '   ', expected: null },
+    { case: 'a padded label', raw: '  Trainerin  ', expected: 'Trainerin' },
+    { case: 'a plain label', raw: 'Kommandantin', expected: 'Kommandantin' },
+  ])('turns $case into what the endpoint takes', ({ raw, expected }) => {
+    expect(toAdminFunction(raw)).toBe(expected);
+  });
+});
+
+describe('toAdminAppointedMessage', () => {
+  it('announces a future appointment with its date', () => {
+    expect(toAdminAppointedMessage('Anna Kaiser', '2026-09-01', '2026-03-01')).toBe(
+      'Anna Kaiser ist ab dem 01.09.2026 Gruppen-Admin.',
+    );
+  });
+
+  it('reports an appointment that starts today as done', () => {
+    expect(toAdminAppointedMessage('Anna Kaiser', '2026-03-01', '2026-03-01')).toBe(
+      'Anna Kaiser ist jetzt Gruppen-Admin.',
+    );
+  });
+});
+
+describe('toAdminEndedMessage', () => {
+  it('says a future end has not happened yet', () => {
+    expect(toAdminEndedMessage('Anna Kaiser', '2026-09-01', '2026-03-01')).toBe(
+      'Anna Kaiser ist noch bis zum 01.09.2026 Gruppen-Admin.',
+    );
+  });
+
+  it('reports an end today as done', () => {
+    expect(toAdminEndedMessage('Anna Kaiser', '2026-03-01', '2026-03-01')).toBe(
+      'Anna Kaiser ist nicht mehr Gruppen-Admin.',
+    );
+  });
+});
+
+describe('toAppointConsequence', () => {
+  it('warns that a future appointment grants nothing yet', () => {
+    expect(toAppointConsequence('Anna Kaiser', '2026-09-01', '2026-03-01')).toContain(
+      'vorher nicht',
+    );
+  });
+
+  it('spells out what a running Gruppen-Admin may do', () => {
+    expect(toAppointConsequence('Anna Kaiser', '2026-03-01', '2026-03-01')).toContain(
+      'Leute aufnehmen und beenden',
+    );
+  });
+});
+
+describe('toAdminEndConsequence', () => {
+  it('dates a future end and keeps the Zugehörigkeit out of it', () => {
+    const consequence = toAdminEndConsequence('Anna Kaiser', '2026-09-01', '2026-03-01');
+
+    expect(consequence).toContain('Ab dem 01.09.2026');
+    expect(consequence).toContain('Zugehörigkeit zur Gruppe bleibt davon unberührt');
+  });
+
+  it('speaks of an end today in the present tense', () => {
+    expect(toAdminEndConsequence('Anna Kaiser', '2026-03-01', '2026-03-01')).toContain('ab sofort');
+  });
+});
+
+describe('toAdminEndFacts', () => {
+  it('answers who, where, with which Funktion and until when', () => {
+    const facts = toAdminEndFacts(
+      hubAdmin({ firstName: 'Anna', lastName: 'Kaiser', function: 'Trainerin' }),
+      'Tanzgarde',
+      '2026-02-28',
+    );
+
+    expect(facts).toEqual([
+      { label: 'Person', value: 'Anna Kaiser' },
+      { label: 'Gruppe', value: 'Tanzgarde' },
+      { label: 'Funktion', value: 'Trainerin' },
+      { label: 'Admin seit', value: '01.01.2019' },
+      { label: 'Letzter Tag', value: '28.02.2026' },
+    ]);
+  });
+
+  it('names the missing Funktion instead of leaving the row blank', () => {
+    expect(toAdminEndFacts(hubAdmin({ function: null }), 'Tanzgarde', null)[2]).toEqual({
+      label: 'Funktion',
+      value: 'ohne Funktion',
+    });
+  });
+
+  it('says the last day is still open while none is chosen', () => {
+    expect(toAdminEndFacts(hubAdmin({}), 'Tanzgarde', null)[4]).toEqual({
+      label: 'Letzter Tag',
+      value: 'noch offen',
+    });
+  });
+});
+
+describe('toLastAdminWarning', () => {
+  it.each([
+    { case: 'the last running admin', runningAdmins: 1, warned: true },
+    { case: 'a Gruppe already without one', runningAdmins: 0, warned: true },
+    { case: 'one of several', runningAdmins: 2, warned: false },
+  ])('warns about $case: $warned', ({ runningAdmins, warned }) => {
+    expect(toLastAdminWarning(runningAdmins) !== null).toBe(warned);
   });
 });

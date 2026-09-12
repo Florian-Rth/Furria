@@ -234,3 +234,75 @@ export const toEndFacts = (
   { label: 'Dabei seit', value: formatIsoDay(member.joinedOn) },
   { label: 'Letzter Tag', value: endedOn === null ? 'noch offen' : formatIsoDay(endedOn) },
 ];
+
+export const ADMIN_FUNCTION_SUGGESTIONS: readonly string[] = [
+  'Trainerin',
+  'Sprecher',
+  'Kommandantin',
+  'Betreuerin',
+];
+
+export const toAdminFunction = (raw: string): string | null => {
+  const trimmed = raw.trim();
+
+  return trimmed === '' ? null : trimmed;
+};
+
+export const toAdminAppointedMessage = (
+  personName: string,
+  sinceOn: string,
+  todayIsoDay: string,
+): string =>
+  isFutureDay(sinceOn, todayIsoDay)
+    ? `${personName} ist ab dem ${formatIsoDay(sinceOn)} Gruppen-Admin.`
+    : `${personName} ist jetzt Gruppen-Admin.`;
+
+export const toAdminEndedMessage = (
+  personName: string,
+  endedOn: string,
+  todayIsoDay: string,
+): string =>
+  isFutureDay(endedOn, todayIsoDay)
+    ? `${personName} ist noch bis zum ${formatIsoDay(endedOn)} Gruppen-Admin.`
+    : `${personName} ist nicht mehr Gruppen-Admin.`;
+
+export const toAppointConsequence = (
+  personName: string,
+  sinceOn: string,
+  todayIsoDay: string,
+): string =>
+  isFutureDay(sinceOn, todayIsoDay)
+    ? `Ab dem ${formatIsoDay(sinceOn)} darf ${personName} die Gruppe pflegen — vorher nicht.`
+    : `${personName} darf die Gruppe ab dem ${formatIsoDay(sinceOn)} pflegen: Beschreibung ändern, Leute aufnehmen und beenden.`;
+
+export const toAdminEndConsequence = (
+  personName: string,
+  endedOn: string,
+  todayIsoDay: string,
+): string =>
+  isFutureDay(endedOn, todayIsoDay)
+    ? `Ab dem ${formatIsoDay(endedOn)} kann ${personName} die Gruppe nicht mehr pflegen. Die Zugehörigkeit zur Gruppe bleibt davon unberührt.`
+    : `${personName} kann die Gruppe ab sofort nicht mehr pflegen. Die Zugehörigkeit zur Gruppe bleibt davon unberührt.`;
+
+export const toAdminEndQuestion = (firstName: string): string =>
+  `${firstName} als Gruppen-Admin beenden?`;
+
+export const toAdminEndExplanation = (firstName: string, groupName: string): string =>
+  `Die Ernennung endet am gewählten Tag und wandert in die Geschichte der Gruppe. Gelöscht wird nichts: ${firstName} behält jede Zugehörigkeit zu ${groupName} und kann jederzeit wieder ernannt werden.`;
+
+export const toAdminEndFacts = (
+  admin: HubAdmin,
+  groupName: string,
+  endedOn: string | null,
+): KkConfirmFact[] => [
+  { label: 'Person', value: `${admin.firstName} ${admin.lastName}` },
+  { label: 'Gruppe', value: groupName },
+  { label: 'Funktion', value: admin.function ?? 'ohne Funktion' },
+  { label: 'Admin seit', value: formatIsoDay(admin.sinceOn) },
+  { label: 'Letzter Tag', value: endedOn === null ? 'noch offen' : formatIsoDay(endedOn) },
+];
+
+export const toLastAdminWarning = (runningAdmins: number): string | null =>
+  runningAdmins > 1
+    ? null
+    : 'Danach hat diese Gruppe keinen Gruppen-Admin mehr. Die Gruppenverwaltung kann jederzeit eine neue ernennen.';
