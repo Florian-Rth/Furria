@@ -21,6 +21,7 @@ interface EndHoldingDialogProps {
   roleName: string;
   holder: RoleHolder | null;
   onClose: () => void;
+  onEnded: () => void;
 }
 
 export const EndHoldingDialog: FC<EndHoldingDialogProps> = ({
@@ -28,9 +29,10 @@ export const EndHoldingDialog: FC<EndHoldingDialogProps> = ({
   roleName,
   holder,
   onClose,
+  onEnded,
 }) => {
   const open = holder !== null;
-  const form = useEndHoldingForm({ roleId, roleName, holder, onEnded: onClose });
+  const form = useEndHoldingForm({ roleId, roleName, holder, onEnded });
   const target = form.holder;
 
   if (target === null) {

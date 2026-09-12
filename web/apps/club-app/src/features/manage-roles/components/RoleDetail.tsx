@@ -1,6 +1,6 @@
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { usePermissions } from '@/features/session';
+import { usePermissions, useReturnFocus } from '@/features/session';
 import { useRoleDialogs } from '../hooks/use-role-dialogs';
 import { useRoleLifecycle } from '../hooks/use-role-lifecycle';
 import { useRolePermissions } from '../hooks/use-role-permissions';
@@ -22,6 +22,7 @@ interface RoleDetailProps {
 
 export const RoleDetail: FC<RoleDetailProps> = ({ role, catalogue, holdersPending }) => {
   const { isAffiliated } = usePermissions();
+  const holdersFocus = useReturnFocus();
   const dialogs = useRoleDialogs(role.holders);
   const permissions = useRolePermissions(role, catalogue);
   const lifecycle = useRoleLifecycle({ role, onArchived: dialogs.close });
@@ -42,6 +43,11 @@ export const RoleDetail: FC<RoleDetailProps> = ({ role, catalogue, holdersPendin
 
   const renamedRole = dialogs.openDialog === 'rename' ? role : null;
 
+  const closeAfterEnding = (): void => {
+    dialogs.close();
+    holdersFocus.returnFocus();
+  };
+
   return (
     <Stack sx={{ gap: 3.5, minWidth: 0 }}>
       <RoleHeaderCard
@@ -56,6 +62,7 @@ export const RoleDetail: FC<RoleDetailProps> = ({ role, catalogue, holdersPendin
         canOpenPerson={isAffiliated}
         canAdd={!isArchived}
         pending={holdersPending}
+        titleRef={holdersFocus.targetRef}
         onAdd={openAddHolder}
         onEnd={dialogs.openEndHolding}
       />
@@ -89,6 +96,7 @@ export const RoleDetail: FC<RoleDetailProps> = ({ role, catalogue, holdersPendin
         roleName={role.name}
         holder={dialogs.endHolder}
         onClose={dialogs.close}
+        onEnded={closeAfterEnding}
       />
     </Stack>
   );
