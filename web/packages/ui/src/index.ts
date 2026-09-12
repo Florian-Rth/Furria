@@ -63,6 +63,7 @@ export { KkSinceRow } from './KkSinceRow';
 export { KkSkeletonBlock } from './KkSkeletonBlock';
 export { KkSkeletonRow } from './KkSkeletonRow';
 export { KkSplitLayout } from './KkSplitLayout/KkSplitLayout';
+export { useKkPaneOpen } from './KkSplitLayout/internal/logic/split-layout-sheet-context';
 export { KkStatRow } from './KkStatRow/KkStatRow';
 export { KkStickyRail } from './KkStickyRail';
 export type { KkSummaryFact } from './KkSummaryRow';
