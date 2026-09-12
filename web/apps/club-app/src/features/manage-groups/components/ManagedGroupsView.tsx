@@ -99,6 +99,7 @@ export const ManagedGroupsView: FC<ManagedGroupsViewProps> = ({ groups }) => {
         aside={detail}
         asideSize={DETAIL_SIZE}
         asideRef={detailRef}
+        stickyList={hasSelection}
       />
       <ManagedGroupsCreateFab onCreate={dialogs.openCreate} />
       <GroupFormDialog

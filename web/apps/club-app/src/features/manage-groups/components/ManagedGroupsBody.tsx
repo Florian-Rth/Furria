@@ -20,6 +20,8 @@ export const ManagedGroupsBody: FC = () => {
     void groups.refetch();
   };
 
+  const hasSelection = selection.groupId !== null;
+
   if (groups.data !== undefined) {
     return <ManagedGroupsView groups={groups.data.groups} />;
   }
@@ -33,7 +35,8 @@ export const ManagedGroupsBody: FC = () => {
       sectionTitle={MANAGE_GROUPS_SECTION_TITLES.list}
       toolbarChips={TOOLBAR_CHIPS}
       listShape="cards"
-      hasSelection={selection.groupId !== null}
+      hasSelection={hasSelection}
+      stickyList={hasSelection}
       asideSize={DETAIL_SIZE}
     />
   );
