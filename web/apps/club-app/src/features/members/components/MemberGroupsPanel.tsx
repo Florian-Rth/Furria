@@ -1,4 +1,5 @@
 import { KkEmptyState, KkPanel, KkSinceRow } from '@furria/ui';
+import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { formatSinceSession } from '@/lib/membership-labels';
 import { MEMBER_SECTION_TITLES, toNoGroupsDescription } from '../members-labels';
@@ -7,6 +8,7 @@ import { MemberSection } from './MemberSection';
 
 const SINCE_LABEL = 'seit';
 const EMPTY_TITLE = 'IN KEINER GRUPPE';
+const GROUP_PATH = '/groups/$groupId';
 
 interface MemberGroupsPanelProps {
   groups: readonly MemberGroup[];
@@ -21,6 +23,9 @@ export const MemberGroupsPanel: FC<MemberGroupsPanelProps> = ({ groups, firstNam
       title={group.name}
       sinceLabel={SINCE_LABEL}
       sinceValue={formatSinceSession(group.since)}
+      component={Link}
+      to={GROUP_PATH}
+      params={{ groupId: String(group.groupId) }}
     />
   ));
 
