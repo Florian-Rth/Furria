@@ -1,16 +1,6 @@
-import {
-  KkButton,
-  KkChip,
-  KkEyebrow,
-  KkHeading,
-  KkIcon,
-  KkMeta,
-  KkNote,
-  KkPanel,
-  KkText,
-} from '@furria/ui';
-import Stack from '@mui/material/Stack';
+import { KkButton, KkChip, KkIcon, KkMeta, KkNote, KkText } from '@furria/ui';
 import type { FC } from 'react';
+import { AppRecordHeaderCard } from '@/features/session';
 import { toArchivedSinceLine, toManagedGroupChips } from '../manage-groups-labels';
 import type { ManagedGroupSummary } from '../schemas';
 
@@ -33,15 +23,24 @@ export const ManagedGroupHeaderCard: FC<ManagedGroupHeaderCardProps> = ({
   onArchive,
   onRestore,
 }) => {
-  const chips = toManagedGroupChips(group);
+  const chipSet = toManagedGroupChips(group);
   const isArchived = group.archivedOn !== null;
 
   const statusChip =
-    chips.status === null ? null : (
-      <KkChip tone={chips.status.tone} dot={chips.status.dot}>
-        {chips.status.label}
+    chipSet.status === null ? null : (
+      <KkChip tone={chipSet.status.tone} dot={chipSet.status.dot} size="small">
+        {chipSet.status.label}
       </KkChip>
     );
+
+  const chips = (
+    <>
+      {statusChip}
+      <KkChip tone={chipSet.openness.tone} dot={chipSet.openness.dot} size="small">
+        {chipSet.openness.label}
+      </KkChip>
+    </>
+  );
 
   const description =
     group.description.trim() === '' ? (
@@ -50,55 +49,45 @@ export const ManagedGroupHeaderCard: FC<ManagedGroupHeaderCardProps> = ({
       <KkText>{group.description}</KkText>
     );
 
-  const archivedNote =
-    group.archivedOn === null ? null : <KkNote>{toArchivedSinceLine(group.archivedOn)}</KkNote>;
+  const note =
+    group.archivedOn === null ? undefined : (
+      <KkNote>{toArchivedSinceLine(group.archivedOn)}</KkNote>
+    );
 
-  const editAction = isArchived ? null : (
-    <KkButton
-      size="small"
-      variant="outlined"
-      startIcon={<KkIcon name="edit" size="small" />}
-      onClick={onEdit}
-    >
-      {EDIT_LABEL}
-    </KkButton>
-  );
-
-  const statusAction = isArchived ? (
+  const actions = isArchived ? (
     <KkButton size="small" variant="outlined" onClick={onRestore}>
       {RESTORE_LABEL}
     </KkButton>
   ) : (
-    <KkButton
-      size="small"
-      variant="outlined"
-      startIcon={<KkIcon name="archive" size="small" />}
-      onClick={onArchive}
-    >
-      {ARCHIVE_LABEL}
-    </KkButton>
+    <>
+      <KkButton
+        size="small"
+        variant="outlined"
+        startIcon={<KkIcon name="edit" size="small" />}
+        onClick={onEdit}
+      >
+        {EDIT_LABEL}
+      </KkButton>
+      <KkButton
+        size="small"
+        variant="outlined"
+        startIcon={<KkIcon name="archive" size="small" />}
+        onClick={onArchive}
+      >
+        {ARCHIVE_LABEL}
+      </KkButton>
+    </>
   );
 
   return (
-    <KkPanel variant="block" dimmed={isArchived}>
-      <Stack sx={{ gap: 1.75, minWidth: 0 }}>
-        <Stack sx={{ gap: 1, minWidth: 0 }}>
-          <KkEyebrow tone="accent">{EYEBROW}</KkEyebrow>
-          <KkHeading level={3}>{group.name}</KkHeading>
-          <Stack direction="row" sx={{ gap: 0.75, alignItems: 'center', flexWrap: 'wrap' }}>
-            {statusChip}
-            <KkChip tone={chips.openness.tone} dot={chips.openness.dot}>
-              {chips.openness.label}
-            </KkChip>
-          </Stack>
-        </Stack>
-        {description}
-        {archivedNote}
-        <Stack direction="row" sx={{ gap: 1, flexWrap: 'wrap', minWidth: 0 }}>
-          {editAction}
-          {statusAction}
-        </Stack>
-      </Stack>
-    </KkPanel>
+    <AppRecordHeaderCard
+      eyebrow={EYEBROW}
+      title={group.name}
+      chips={chips}
+      description={description}
+      note={note}
+      actions={actions}
+      dimmed={isArchived}
+    />
   );
 };
