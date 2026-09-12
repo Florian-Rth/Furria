@@ -5,7 +5,7 @@ import type { FC } from 'react';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
-const SCROLL_MARGIN = 80;
+const SCROLL_MARGIN = 148;
 const STICKY_LAYER = 1;
 
 type KkLetterDividerGround = 'paper' | 'page';

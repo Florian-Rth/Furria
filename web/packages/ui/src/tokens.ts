@@ -86,6 +86,8 @@ export const kkTokens = {
     mastheadClearance: 2,
     curtainClearance: 84,
     stickyTop: 24,
+    stickyBarGap: 1.75,
+    stickyBarPadY: 1.5,
     sheetLift: `-${radius.base}px`,
   },
   measure: {

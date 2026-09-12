@@ -65,6 +65,7 @@ export { KkSkeletonRow } from './KkSkeletonRow';
 export { useKkPaneOpen } from './KkSplitLayout/internal/logic/split-layout-sheet-context';
 export { KkSplitLayout } from './KkSplitLayout/KkSplitLayout';
 export { KkStatRow } from './KkStatRow/KkStatRow';
+export { KkStickyBar } from './KkStickyBar';
 export { KkStickyRail } from './KkStickyRail';
 export type { KkSummaryFact } from './KkSummaryRow';
 export { KkSummaryRow } from './KkSummaryRow';
