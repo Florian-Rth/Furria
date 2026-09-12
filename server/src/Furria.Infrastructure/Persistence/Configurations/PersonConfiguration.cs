@@ -6,8 +6,6 @@ namespace Furria.Infrastructure.Persistence.Configurations;
 
 public sealed class PersonConfiguration : IEntityTypeConfiguration<Person>
 {
-    private const string GermanCollation = "de-DE-x-icu";
-
     public void Configure(EntityTypeBuilder<Person> builder)
     {
         builder.ToTable("person");
@@ -17,12 +15,12 @@ public sealed class PersonConfiguration : IEntityTypeConfiguration<Person>
             .Property(person => person.FirstName)
             .HasMaxLength(128)
             .IsRequired()
-            .UseCollation(GermanCollation);
+            .UseCollation(GermanCollation.Name);
         builder
             .Property(person => person.LastName)
             .HasMaxLength(128)
             .IsRequired()
-            .UseCollation(GermanCollation);
+            .UseCollation(GermanCollation.Name);
         builder.Property(person => person.Email).HasMaxLength(256);
         builder.Property(person => person.Phone).HasMaxLength(64);
         builder.Property(person => person.Street).HasMaxLength(256);
