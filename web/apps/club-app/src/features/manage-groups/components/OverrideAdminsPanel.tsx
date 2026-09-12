@@ -1,17 +1,16 @@
 import { KkButton, KkEmptyState, KkIcon, KkPanel, KkPanelSection } from '@furria/ui';
 import type { FC } from 'react';
-import { GROUP_ADMINS_NOTE } from '@/lib/group-sections';
-import { ADD_ADMIN_LABEL, MANAGE_GROUPS_SECTION_TITLES } from '../manage-groups-labels';
-import type { ManagedAdmin } from '../schemas';
-import { OverrideAdminRow } from './OverrideAdminRow';
-
-const ADD_TEXT = 'Admin';
-const EMPTY_TITLE = 'KEIN GRUPPEN-ADMIN';
-const EMPTY_DESCRIPTION =
-  'Für diese Gruppe ist gerade niemand als Gruppen-Admin eingetragen. Ohne Admin pflegt die Gruppenverwaltung sie allein.';
+import type { GroupDetailAdmin } from '@/features/group-detail';
+import {
+  ADD_ADMIN_ACTION_LABEL,
+  ADD_ADMIN_LABEL,
+  GroupAdminRow,
+  NO_ADMINS_TITLE,
+} from '@/features/group-detail';
+import { GROUP_ADMINS_NOTE, GROUP_SECTION_TITLES, NO_ADMINS_LINE } from '@/lib/group-sections';
 
 interface OverrideAdminsPanelProps {
-  admins: readonly ManagedAdmin[];
+  admins: readonly GroupDetailAdmin[];
   canManage: boolean;
   canOpenPerson: boolean;
   onAdd: () => void;
@@ -25,15 +24,21 @@ export const OverrideAdminsPanel: FC<OverrideAdminsPanelProps> = ({
   onAdd,
   onEnd,
 }) => {
-  const rows = admins.map((admin) => (
-    <OverrideAdminRow
-      key={admin.groupAdminId}
-      admin={admin}
-      canManage={canManage}
-      canOpenPerson={canOpenPerson}
-      onEnd={onEnd}
-    />
-  ));
+  const rows = admins.map((admin) => {
+    const end = (): void => {
+      onEnd(admin.groupAdminId);
+    };
+
+    return (
+      <GroupAdminRow
+        key={admin.groupAdminId}
+        admin={admin}
+        canManage={canManage}
+        canOpenPerson={canOpenPerson}
+        onEnd={end}
+      />
+    );
+  });
 
   const isEmpty = rows.length === 0;
   const variant = isEmpty ? 'block' : 'list';
@@ -43,22 +48,22 @@ export const OverrideAdminsPanel: FC<OverrideAdminsPanelProps> = ({
       size="small"
       variant="outlined"
       startIcon={<KkIcon name="add" size="small" />}
-      ariaLabel={ADD_ADMIN_LABEL}
+      ariaLabel={ADD_ADMIN_ACTION_LABEL}
       onClick={onAdd}
     >
-      {ADD_TEXT}
+      {ADD_ADMIN_LABEL}
     </KkButton>
   ) : null;
 
   const body = isEmpty ? (
-    <KkEmptyState title={EMPTY_TITLE} description={EMPTY_DESCRIPTION} />
+    <KkEmptyState title={NO_ADMINS_TITLE} description={NO_ADMINS_LINE} />
   ) : (
     rows
   );
 
   return (
     <KkPanelSection
-      title={MANAGE_GROUPS_SECTION_TITLES.admins}
+      title={GROUP_SECTION_TITLES.admins}
       action={action}
       description={GROUP_ADMINS_NOTE}
     >

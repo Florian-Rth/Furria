@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { GroupDetailAdminSchema, GroupDetailMemberSchema } from '@/features/group-detail';
 import { PersonRefSchema } from '@/lib/api/schemas';
 
 export const GROUP_NAME_MAX_LENGTH = 80;
@@ -25,33 +26,16 @@ export const ManagedGroupsResponseSchema = z.object({
 });
 export type ManagedGroupsResponse = z.infer<typeof ManagedGroupsResponseSchema>;
 
-export const ManagedMemberSchema = PersonRefSchema.extend({
-  groupMembershipId: z.number().int(),
-  joinedOn: z.iso.date(),
-  leftOn: z.iso.date().nullable(),
-  since: z.iso.date(),
-});
-export type ManagedMember = z.infer<typeof ManagedMemberSchema>;
-
-export const ManagedAdminSchema = PersonRefSchema.extend({
-  groupAdminId: z.number().int(),
-  function: z.string().nullable(),
-  sinceOn: z.iso.date(),
-  untilOn: z.iso.date().nullable(),
-  since: z.iso.date(),
-});
-export type ManagedAdmin = z.infer<typeof ManagedAdminSchema>;
-
 export const ManagedGroupDetailsSchema = z.object({
   groupId: z.number().int(),
   name: z.string(),
   description: z.string(),
   isRecruiting: z.boolean(),
   archivedOn: z.iso.date().nullable(),
-  members: z.array(ManagedMemberSchema),
-  admins: z.array(ManagedAdminSchema),
-  pastMembers: z.array(ManagedMemberSchema),
-  pastAdmins: z.array(ManagedAdminSchema),
+  members: z.array(GroupDetailMemberSchema),
+  admins: z.array(GroupDetailAdminSchema),
+  pastMembers: z.array(GroupDetailMemberSchema),
+  pastAdmins: z.array(GroupDetailAdminSchema),
 });
 export type ManagedGroupDetails = z.infer<typeof ManagedGroupDetailsSchema>;
 

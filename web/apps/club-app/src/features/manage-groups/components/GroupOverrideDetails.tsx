@@ -1,5 +1,6 @@
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
+import { GroupHistoryPanel } from '@/features/group-detail';
 import {
   AddAdminDialog,
   AddMemberDialog,
@@ -11,7 +12,6 @@ import { useOverrideDialogs } from '../hooks/use-override-dialogs';
 import { useOverrideRefresh } from '../hooks/use-override-refresh';
 import type { ManagedGroupDetails } from '../schemas';
 import { OverrideAdminsPanel } from './OverrideAdminsPanel';
-import { OverrideHistoryPanel } from './OverrideHistoryPanel';
 import { OverrideMembersPanel } from './OverrideMembersPanel';
 
 interface GroupOverrideDetailsProps {
@@ -66,6 +66,7 @@ export const GroupOverrideDetails: FC<GroupOverrideDetailsProps> = ({ group }) =
       <Stack sx={{ gap: 3.5, minWidth: 0 }}>
         <OverrideMembersPanel
           members={group.members}
+          groupName={group.name}
           canManage={canManage}
           canOpenPerson={isAffiliated}
           onAdd={dialogs.openAddMember}
@@ -78,7 +79,7 @@ export const GroupOverrideDetails: FC<GroupOverrideDetailsProps> = ({ group }) =
           onAdd={dialogs.openAddAdmin}
           onEnd={dialogs.openEndAdmin}
         />
-        <OverrideHistoryPanel pastMembers={group.pastMembers} pastAdmins={group.pastAdmins} />
+        <GroupHistoryPanel pastMembers={group.pastMembers} pastAdmins={group.pastAdmins} />
       </Stack>
       {tools}
     </>

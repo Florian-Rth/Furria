@@ -1,28 +1,13 @@
-import {
-  KkAvatar,
-  KkInlineLink,
-  KkMeta,
-  KkNote,
-  KkPanel,
-  KkPanelSection,
-  KkSinceRow,
-} from '@furria/ui';
+import { KkEmptyState, KkInlineLink, KkNote, KkPanel, KkPanelSection } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { GROUP_ADMINS_NOTE } from '@/lib/group-sections';
-import { toInitials } from '@/lib/initials';
-import { formatSinceSession } from '@/lib/membership-labels';
+import { GroupAdminRow, NO_ADMINS_TITLE } from '@/features/group-detail';
+import { GROUP_ADMINS_NOTE, GROUP_SECTION_TITLES, NO_ADMINS_LINE } from '@/lib/group-sections';
 import type { RecruitingContactSegment } from '../groups-labels';
-import {
-  GROUP_SECTION_TITLES,
-  NO_ADMINS_LINE,
-  toContactPersonName,
-  toRecruitingContactSegments,
-} from '../groups-labels';
+import { toContactPersonName, toRecruitingContactSegments } from '../groups-labels';
 import type { GroupAdmin } from '../schemas';
 
-const SINCE_LABEL = 'seit';
 const MEMBER_PATH = '/members/$personId';
 
 const toSegmentKey = (segment: RecruitingContactSegment, index: number): string =>
@@ -34,34 +19,18 @@ interface GroupAdminsPanelProps {
 }
 
 export const GroupAdminsPanel: FC<GroupAdminsPanelProps> = ({ admins, isRecruiting }) => {
-  const rows = admins.map((admin) => {
-    const meta = admin.function ?? undefined;
-    const adminName = `${admin.firstName} ${admin.lastName}`;
-    const avatar = (
-      <KkAvatar
-        initials={toInitials(admin.firstName, admin.lastName)}
-        size="small"
-        component="span"
-      />
-    );
+  const rows = admins.map((admin) => (
+    <GroupAdminRow key={admin.personId} admin={admin} canManage={false} canOpenPerson />
+  ));
 
-    return (
-      <KkSinceRow
-        key={admin.personId}
-        avatar={avatar}
-        title={adminName}
-        meta={meta}
-        sinceLabel={SINCE_LABEL}
-        sinceValue={formatSinceSession(admin.since)}
-        component={Link}
-        to={MEMBER_PATH}
-        params={{ personId: String(admin.personId) }}
-      />
-    );
-  });
+  const isEmpty = rows.length === 0;
+  const variant = isEmpty ? 'block' : 'list';
 
-  const body = rows.length === 0 ? <KkMeta italic>{NO_ADMINS_LINE}</KkMeta> : rows;
-  const variant = rows.length === 0 ? 'block' : 'list';
+  const body = isEmpty ? (
+    <KkEmptyState title={NO_ADMINS_TITLE} description={NO_ADMINS_LINE} />
+  ) : (
+    rows
+  );
 
   const contactSegments = toRecruitingContactSegments(admins).map((segment, index) => {
     const key = toSegmentKey(segment, index);

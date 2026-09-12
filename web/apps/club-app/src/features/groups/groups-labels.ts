@@ -1,10 +1,7 @@
 import type { KkFilterOption } from '@furria/ui';
 import type { MyGroupSummary } from '@/features/group-hub';
 import type { PersonRef } from '@/lib/api/schemas';
-import {
-  GROUP_SECTION_TITLES as SHARED_GROUP_SECTION_TITLES,
-  toGroupSubline,
-} from '@/lib/group-sections';
+import { toGroupSubline } from '@/lib/group-sections';
 import type { StateChip } from '@/lib/state-chips';
 import { GROUP_ADMIN_CHIP, MY_GROUP_CHIP, toRecruitingChip } from '@/lib/state-chips';
 import { normalizeForSearch } from '@/lib/text';
@@ -12,28 +9,6 @@ import type { GroupDetails, GroupSummary } from './schemas';
 
 const GROUP_ID_PATTERN = /^[1-9]\d*$/;
 const GROUP_TITLE_FALLBACK = 'Gruppe';
-
-export const GROUP_SECTION_TITLES = {
-  about: SHARED_GROUP_SECTION_TITLES.about,
-  members: SHARED_GROUP_SECTION_TITLES.members,
-  admins: SHARED_GROUP_SECTION_TITLES.admins,
-  events: SHARED_GROUP_SECTION_TITLES.events,
-  photos: SHARED_GROUP_SECTION_TITLES.photos,
-} as const;
-
-export const RESERVED_BADGE = 'bald';
-
-export const EVENTS_RESERVED = {
-  title: 'Noch nicht da',
-  description:
-    'Training, Proben und Auftritte der Gruppe an einem Ort. Kommt in einer späteren Phase.',
-} as const;
-
-export const PHOTOS_RESERVED = {
-  title: 'Noch keine Bilder',
-  description:
-    'Platz für ein paar Bilder aus vergangenen Sessions. Die Bildergalerie liefert sie später automatisch — hier wird nichts hochgeladen.',
-} as const;
 
 export interface GroupStanding {
   isMember: boolean;
@@ -238,11 +213,3 @@ export const toGroupHeadline = (group: GroupDetails | undefined): GroupHeadline 
     memberCount: toGroupSubline(group.members.length, group.admins.length),
   };
 };
-
-export const toNoMembersLine = (name: string): string =>
-  `In ${name} tanzt und hilft gerade niemand mit.`;
-
-export const NO_ADMINS_LINE = 'Für diese Gruppe ist gerade niemand als Gruppen-Admin eingetragen.';
-
-export const toNoDescriptionLine = (name: string): string =>
-  `Zu ${name} steht noch nichts geschrieben.`;

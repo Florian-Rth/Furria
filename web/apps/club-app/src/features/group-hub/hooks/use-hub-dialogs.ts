@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import type { HubAdmin, HubMember } from '../schemas';
+import type { GroupDetailAdmin, GroupDetailMember } from '@/features/group-detail';
 
 type HubDialogKind = 'none' | 'addMember' | 'addAdmin';
 
 export interface HubDialogs {
   isAddMemberOpen: boolean;
   isAddAdminOpen: boolean;
-  endMember: HubMember | null;
-  endAdmin: HubAdmin | null;
+  endMember: GroupDetailMember | null;
+  endAdmin: GroupDetailAdmin | null;
   openAddMember: () => void;
   openAddAdmin: () => void;
   openEndMembership: (groupMembershipId: number) => void;
@@ -16,8 +16,8 @@ export interface HubDialogs {
 }
 
 export const useHubDialogs = (
-  members: readonly HubMember[],
-  admins: readonly HubAdmin[],
+  members: readonly GroupDetailMember[],
+  admins: readonly GroupDetailAdmin[],
 ): HubDialogs => {
   const [kind, setKind] = useState<HubDialogKind>('none');
   const [endMembershipId, setEndMembershipId] = useState<number | null>(null);

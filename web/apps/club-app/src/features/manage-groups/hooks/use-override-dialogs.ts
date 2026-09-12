@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import type { ManagedAdmin, ManagedMember } from '../schemas';
+import type { GroupDetailAdmin, GroupDetailMember } from '@/features/group-detail';
 
 export interface OverrideDialogs {
   isAddMemberOpen: boolean;
   isAddAdminOpen: boolean;
-  endMember: ManagedMember | null;
-  endAdmin: ManagedAdmin | null;
+  endMember: GroupDetailMember | null;
+  endAdmin: GroupDetailAdmin | null;
   openAddMember: () => void;
   openAddAdmin: () => void;
   openEndMembership: (groupMembershipId: number) => void;
@@ -14,8 +14,8 @@ export interface OverrideDialogs {
 }
 
 export const useOverrideDialogs = (
-  members: readonly ManagedMember[],
-  admins: readonly ManagedAdmin[],
+  members: readonly GroupDetailMember[],
+  admins: readonly GroupDetailAdmin[],
 ): OverrideDialogs => {
   const [isAddMemberOpen, setAddMemberOpen] = useState(false);
   const [isAddAdminOpen, setAddAdminOpen] = useState(false);

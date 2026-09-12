@@ -11,4 +11,4 @@ export { EndAdminDialog } from './components/EndAdminDialog';
 export { EndMembershipDialog } from './components/EndMembershipDialog';
 export { HubPage } from './components/HubPage';
 export { PersonPicker } from './components/PersonPicker';
-export type { HubAdmin, HubMember, MyGroupSummary } from './schemas';
+export type { MyGroupSummary } from './schemas';
