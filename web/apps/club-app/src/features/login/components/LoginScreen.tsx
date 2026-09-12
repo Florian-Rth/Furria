@@ -15,7 +15,7 @@ import { LoginForm } from './LoginForm';
 import { LoginHelpNote } from './LoginHelpNote';
 
 const HEADING_LEVEL = { mobile: 4, desktop: 3 } as const;
-const INTRO = 'Der Mitgliederbereich des Furrscher Carnevals Club.';
+const INTRO = 'Der Mitgliederbereich des FCC.';
 
 interface LoginScreenProps {
   expired: boolean;

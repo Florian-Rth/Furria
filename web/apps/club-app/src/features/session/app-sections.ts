@@ -38,7 +38,7 @@ export const LATER_SECTIONS: AppSection[] = [
   { id: 'events', label: 'Veranstaltungen', icon: 'events', to: null, hint: LATER_HINT },
   { id: 'live', label: 'Live-Regie', icon: 'live', to: null, hint: LATER_HINT },
   { id: 'fees', label: 'Beitrag', icon: 'fees', to: null, hint: LATER_HINT },
-  { id: 'gallery', label: 'Galerie', icon: 'gallery', to: null, hint: LATER_HINT },
+  { id: 'gallery', label: 'Bildergalerie', icon: 'gallery', to: null, hint: LATER_HINT },
   { id: 'wardrobe', label: 'Klamotten', icon: 'wardrobe', to: null, hint: LATER_HINT },
 ];
 
