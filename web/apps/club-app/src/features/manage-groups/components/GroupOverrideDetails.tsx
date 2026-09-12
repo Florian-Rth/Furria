@@ -80,7 +80,7 @@ export const GroupOverrideDetails: FC<GroupOverrideDetailsProps> = ({ group }) =
       members={group.members}
       groupName={group.name}
       canManage={canManage}
-      canOpenPerson={isAffiliated}
+      viewerIsAffiliated={isAffiliated}
       titleRef={membersFocus.targetRef}
       onAdd={dialogs.openAddMember}
       onEnd={dialogs.openEndMembership}
@@ -91,7 +91,7 @@ export const GroupOverrideDetails: FC<GroupOverrideDetailsProps> = ({ group }) =
     <OverrideAdminsPanel
       admins={group.admins}
       canManage={canManage}
-      canOpenPerson={isAffiliated}
+      viewerIsAffiliated={isAffiliated}
       titleRef={adminsFocus.targetRef}
       onAdd={dialogs.openAddAdmin}
       onEnd={dialogs.openEndAdmin}

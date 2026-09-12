@@ -5,7 +5,7 @@ import { toGroupSubline } from '@/lib/group-sections';
 import type { StateChip } from '@/lib/state-chips';
 import { GROUP_ADMIN_CHIP, MY_GROUP_CHIP, toRecruitingChip } from '@/lib/state-chips';
 import { normalizeForSearch } from '@/lib/text';
-import type { GroupDetails, GroupSummary } from './schemas';
+import type { GroupAdmin, GroupDetails, GroupSummary } from './schemas';
 
 const GROUP_ID_PATTERN = /^[1-9]\d*$/;
 const GROUP_TITLE_FALLBACK = 'Gruppe';
@@ -116,6 +116,17 @@ export const toRecruitingContactSegments = (
     name(second),
     text(' oder einer der anderen Gruppen-Admins.'),
   ];
+};
+
+export const toOpenableAdminIds = (
+  admins: readonly GroupAdmin[],
+  viewerIsAffiliated: boolean,
+): ReadonlySet<number> => {
+  if (!viewerIsAffiliated) {
+    return new Set<number>();
+  }
+
+  return new Set(admins.filter((admin) => admin.isAffiliated).map((admin) => admin.personId));
 };
 
 const toSegmentText = (segment: RecruitingContactSegment): string =>

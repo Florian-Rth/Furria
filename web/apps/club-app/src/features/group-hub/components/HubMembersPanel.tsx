@@ -15,7 +15,7 @@ interface HubMembersPanelProps {
   members: readonly GroupDetailMember[];
   groupName: string;
   canManage: boolean;
-  canOpenPerson: boolean;
+  viewerIsAffiliated: boolean;
   newPersonId: number | null;
   fireKey: number;
   titleRef: Ref<HTMLHeadingElement>;
@@ -27,7 +27,7 @@ export const HubMembersPanel: FC<HubMembersPanelProps> = ({
   members,
   groupName,
   canManage,
-  canOpenPerson,
+  viewerIsAffiliated,
   newPersonId,
   fireKey,
   titleRef,
@@ -48,7 +48,7 @@ export const HubMembersPanel: FC<HubMembersPanelProps> = ({
         key={member.groupMembershipId}
         member={member}
         canManage={canManage}
-        canOpenPerson={canOpenPerson}
+        viewerIsAffiliated={viewerIsAffiliated}
         onEnd={end}
         isNew={isNew}
         overlay={burst}

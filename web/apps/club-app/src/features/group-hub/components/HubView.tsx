@@ -106,7 +106,7 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
     <HubAdminsPanel
       admins={hub.admins}
       canManage={hub.viewerIsAdmin}
-      canOpenPerson={isAffiliated}
+      viewerIsAffiliated={isAffiliated}
       newPersonId={celebration.newAdminId}
       titleRef={adminsFocus.targetRef}
       onAdd={dialogs.openAddAdmin}
@@ -119,7 +119,7 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
       members={hub.members}
       groupName={hub.name}
       canManage={hub.viewerIsAdmin}
-      canOpenPerson={isAffiliated}
+      viewerIsAffiliated={isAffiliated}
       newPersonId={celebration.newMemberId}
       fireKey={celebration.fireKey}
       titleRef={membersFocus.targetRef}

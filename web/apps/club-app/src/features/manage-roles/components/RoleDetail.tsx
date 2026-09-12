@@ -59,7 +59,7 @@ export const RoleDetail: FC<RoleDetailProps> = ({ role, catalogue, holdersPendin
       />
       <RoleHoldersPanel
         holders={role.holders}
-        canOpenPerson={isAffiliated}
+        viewerIsAffiliated={isAffiliated}
         canAdd={!isArchived}
         pending={holdersPending}
         titleRef={holdersFocus.targetRef}

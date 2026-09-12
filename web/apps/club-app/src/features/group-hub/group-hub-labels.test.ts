@@ -32,6 +32,7 @@ const hubMember = (overrides: Partial<GroupDetailMember>): GroupDetailMember => 
   joinedOn: '2017-09-01',
   leftOn: null,
   since: '2017-09-01',
+  isAffiliated: true,
   ...overrides,
 });
 
@@ -44,6 +45,7 @@ const hubAdmin = (overrides: Partial<GroupDetailAdmin>): GroupDetailAdmin => ({
   sinceOn: '2019-01-01',
   untilOn: null,
   since: '2019-01-01',
+  isAffiliated: true,
   ...overrides,
 });
 

@@ -11,11 +11,11 @@ const MEMBER_PATH = '/members/$personId';
 
 interface RoleHolderRowProps {
   holder: RoleHolder;
-  canOpenPerson: boolean;
+  viewerIsAffiliated: boolean;
   onEnd: (roleHoldingId: number) => void;
 }
 
-export const RoleHolderRow: FC<RoleHolderRowProps> = ({ holder, canOpenPerson, onEnd }) => {
+export const RoleHolderRow: FC<RoleHolderRowProps> = ({ holder, viewerIsAffiliated, onEnd }) => {
   const name = toPersonName(holder);
 
   const avatar = (
@@ -42,7 +42,9 @@ export const RoleHolderRow: FC<RoleHolderRowProps> = ({ holder, canOpenPerson, o
     </KkButton>
   );
 
-  const titleLink = canOpenPerson
+  const canOpen = viewerIsAffiliated && holder.isAffiliated;
+
+  const titleLink = canOpen
     ? {
         titleComponent: Link,
         titleTo: MEMBER_PATH,

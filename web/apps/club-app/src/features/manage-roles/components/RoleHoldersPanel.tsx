@@ -13,7 +13,7 @@ const EMPTY_DESCRIPTION =
 
 interface RoleHoldersPanelProps {
   holders: readonly RoleHolder[];
-  canOpenPerson: boolean;
+  viewerIsAffiliated: boolean;
   canAdd: boolean;
   pending: boolean;
   titleRef: Ref<HTMLHeadingElement>;
@@ -23,7 +23,7 @@ interface RoleHoldersPanelProps {
 
 export const RoleHoldersPanel: FC<RoleHoldersPanelProps> = ({
   holders,
-  canOpenPerson,
+  viewerIsAffiliated,
   canAdd,
   pending,
   titleRef,
@@ -56,7 +56,7 @@ export const RoleHoldersPanel: FC<RoleHoldersPanelProps> = ({
     <RoleHolderRow
       key={holder.roleHoldingId}
       holder={holder}
-      canOpenPerson={canOpenPerson}
+      viewerIsAffiliated={viewerIsAffiliated}
       onEnd={onEnd}
     />
   ));
