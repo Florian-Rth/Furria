@@ -4,7 +4,7 @@ import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { SESSION_OPENING_DAY, SESSION_OPENING_MONTH, sessionAt } from '@/lib/club';
 import { isFutureDay, toIsoDay } from '@/lib/day';
 import { formatIsoDay, formatSinceSession } from '@/lib/membership-labels';
-import { UNHELD_CHIP } from '@/lib/state-chips';
+import { UNARCHIVED_LABEL, UNHELD_CHIP } from '@/lib/state-chips';
 import { normalizeForSearch } from '@/lib/text';
 import { isPermissionKey, toPermissionCopy } from './role-permission-copy';
 import type { RoleDetails, RoleHolder, RoleSummary, RolesResponse } from './schemas';
@@ -30,13 +30,19 @@ export const toHoldersMeta = (
   const further = holders.length - 1;
 
   if (further === 1) {
-    return `${toPersonName(first)} und eine weitere Person`;
+    return `${toPersonName(first)} und 1 weitere Person`;
   }
 
   return `${toPersonName(first)} und ${further} weitere Personen`;
 };
 
 export const MANAGE_ROLES_SECTION_TITLE = 'Alle Rollen';
+
+export const ROLE_SECTION_TITLES = {
+  holders: 'Inhaber',
+  permissions: 'Rechte',
+  history: 'Geschichte',
+} as const;
 
 export const toRolesLead = (roles: readonly RoleSummary[]): string => {
   const archived = roles.filter((role) => role.archivedOn !== null).length;
@@ -103,7 +109,7 @@ export const ACTIVE_ROLES_FILTER_ID = 'active';
 export const ARCHIVED_ROLES_FILTER_ID = 'archived';
 
 const ALL_ROLES_LABEL = 'Alle';
-const ACTIVE_ROLES_LABEL = 'im Einsatz';
+const ACTIVE_ROLES_LABEL = UNARCHIVED_LABEL;
 const ARCHIVED_ROLES_LABEL = 'archiviert';
 const ALL_ROLES_SUGGESTION = 'Wähle „Alle“, um wieder alle zu sehen.';
 
@@ -217,7 +223,7 @@ export const toHolderUnitLabel = (count: number): string =>
 export const NO_ROLE_SEARCH_RESULT_TITLE = 'KEINE ROLLE GEFUNDEN';
 
 const NO_ROLE_MATCH_LINES: Record<string, string> = {
-  [ACTIVE_ROLES_FILTER_ID]: 'Gerade ist keine Rolle im Einsatz.',
+  [ACTIVE_ROLES_FILTER_ID]: `Gerade steht keine Rolle ${UNARCHIVED_LABEL}.`,
   [ARCHIVED_ROLES_FILTER_ID]: 'Gerade ist keine Rolle archiviert.',
 };
 
@@ -309,16 +315,43 @@ export const toEndHoldingFacts = (
 ];
 
 export interface SelfLockoutInput {
+  key: PermissionKey;
   enabled: boolean;
-  viewerIsHolder: boolean;
-  viewerHasKey: boolean;
+  roleId: number;
+  viewerPersonId: number | undefined;
+  roles: readonly RoleSummary[];
 }
 
+const grantsKeyToViewer = (
+  role: RoleSummary,
+  key: PermissionKey,
+  viewerPersonId: number,
+): boolean =>
+  role.archivedOn === null &&
+  role.permissionKeys.includes(key) &&
+  role.holders.some((holder) => holder.personId === viewerPersonId);
+
 export const isSelfLockout = ({
+  key,
   enabled,
-  viewerIsHolder,
-  viewerHasKey,
-}: SelfLockoutInput): boolean => !enabled && viewerIsHolder && viewerHasKey;
+  roleId,
+  viewerPersonId,
+  roles,
+}: SelfLockoutInput): boolean => {
+  if (enabled || viewerPersonId === undefined) {
+    return false;
+  }
+
+  const edited = roles.find((role) => role.roleId === roleId);
+
+  if (edited === undefined || !grantsKeyToViewer(edited, key, viewerPersonId)) {
+    return false;
+  }
+
+  return !roles.some(
+    (role) => role.roleId !== roleId && grantsKeyToViewer(role, key, viewerPersonId),
+  );
+};
 
 export interface KeyHandoverInput {
   key: PermissionKey;

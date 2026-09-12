@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import type { PersonRef } from '@/lib/api/schemas';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
+import { UNARCHIVED_LABEL } from '@/lib/state-chips';
+import type { SelfLockoutInput } from './manage-roles-labels';
 import {
   ACTIVE_ROLES_FILTER_ID,
   ALL_ROLES_FILTER_ID,
@@ -53,16 +56,16 @@ describe('toHoldersMeta', () => {
     expect(toHoldersMeta([{ firstName: 'Heike', lastName: 'Krämer' }])).toBe('Heike Krämer');
   });
 
-  it('names the noun for a single further holder', () => {
+  it('counts a single further holder with the same numeral as several', () => {
     expect(
       toHoldersMeta([
         { firstName: 'Jörg', lastName: 'Krüger' },
         { firstName: 'Heike', lastName: 'Krämer' },
       ]),
-    ).toBe('Jörg Krüger und eine weitere Person');
+    ).toBe('Jörg Krüger und 1 weitere Person');
   });
 
-  it('names the noun for several further holders too', () => {
+  it('reads the plural noun for several further holders', () => {
     expect(
       toHoldersMeta([
         { firstName: 'Heike', lastName: 'Krämer' },
@@ -172,7 +175,7 @@ describe('toRoleStatusFilterOptions', () => {
     role({ roleId: 3, name: 'Finanzen' }),
   ];
 
-  it('counts every role, the ones in use and the archived ones', () => {
+  it('counts every role, the ones in the club and the archived ones', () => {
     expect(toRoleStatusFilterOptions(roles).map((option) => [option.id, option.count])).toEqual([
       [ALL_ROLES_FILTER_ID, 3],
       [ACTIVE_ROLES_FILTER_ID, 2],
@@ -182,6 +185,14 @@ describe('toRoleStatusFilterOptions', () => {
 
   it('offers the axis even when nothing is archived', () => {
     expect(toRoleStatusFilterOptions([role({ roleId: 1, name: 'Admin' })])).toHaveLength(3);
+  });
+
+  it('counts an unbesetzte Rolle on the non-archived side, so its word may not claim service', () => {
+    const unheld = [role({ roleId: 4, name: 'Chronistin' })];
+    const [, nonArchived] = toRoleStatusFilterOptions(unheld);
+
+    expect(nonArchived?.count).toBe(1);
+    expect(nonArchived?.label).toBe(UNARCHIVED_LABEL);
   });
 });
 
@@ -194,6 +205,10 @@ describe('toNoRoleMatchLine', () => {
     expect(toNoRoleMatchLine('', ARCHIVED_ROLES_FILTER_ID)).toBe(
       'Gerade ist keine Rolle archiviert. Wähle „Alle“, um wieder alle zu sehen.',
     );
+  });
+
+  it('explains the non-archived chip with the same axis word the chip carries', () => {
+    expect(toNoRoleMatchLine('', ACTIVE_ROLES_FILTER_ID)).toContain(UNARCHIVED_LABEL);
   });
 
   it('falls back to the cold case under Alle', () => {
@@ -305,29 +320,107 @@ describe('count labels', () => {
 });
 
 describe('isSelfLockout', () => {
-  it.each([
-    {
-      case: 'taking a held key off a Rolle the viewer holds',
-      input: { enabled: false, viewerIsHolder: true, viewerHasKey: true },
-      expected: true,
-    },
-    {
-      case: 'switching a key on',
-      input: { enabled: true, viewerIsHolder: true, viewerHasKey: true },
-      expected: false,
-    },
-    {
-      case: 'taking a key off a Rolle the viewer does not hold',
-      input: { enabled: false, viewerIsHolder: false, viewerHasKey: true },
-      expected: false,
-    },
-    {
-      case: 'taking off a key the viewer never had',
-      input: { enabled: false, viewerIsHolder: true, viewerHasKey: false },
-      expected: false,
-    },
-  ])('is $expected when $case', ({ input, expected }) => {
-    expect(isSelfLockout(input)).toBe(expected);
+  const VIEWER = 7;
+  const KEY = PERMISSION_KEYS.rolesManage;
+
+  const holder = (personId: number): PersonRef => ({
+    personId,
+    firstName: 'Heike',
+    lastName: 'Krämer',
+  });
+
+  const president = role({
+    roleId: 1,
+    name: 'Präsidentin',
+    permissionKeys: [KEY],
+    holders: [holder(VIEWER)],
+  });
+
+  const input = (overrides: Partial<SelfLockoutInput> = {}): SelfLockoutInput => ({
+    key: KEY,
+    enabled: false,
+    roleId: 1,
+    viewerPersonId: VIEWER,
+    roles: [president],
+    ...overrides,
+  });
+
+  it('warns when the only Rolle that grants her the key is losing it', () => {
+    expect(isSelfLockout(input())).toBe(true);
+  });
+
+  it('stays quiet when a second Rolle she holds still grants the key', () => {
+    const admin = role({
+      roleId: 2,
+      name: 'Admin',
+      permissionKeys: [KEY],
+      holders: [holder(VIEWER)],
+    });
+
+    expect(isSelfLockout(input({ roles: [president, admin] }))).toBe(false);
+  });
+
+  it('warns when the second Rolle that grants the key is archived', () => {
+    const archivedAdmin = role({
+      roleId: 2,
+      name: 'Admin',
+      archivedOn: '2026-09-12',
+      permissionKeys: [KEY],
+      holders: [holder(VIEWER)],
+    });
+
+    expect(isSelfLockout(input({ roles: [president, archivedAdmin] }))).toBe(true);
+  });
+
+  it('warns when the second Rolle grants the key to somebody else', () => {
+    const admin = role({
+      roleId: 2,
+      name: 'Admin',
+      permissionKeys: [KEY],
+      holders: [holder(99)],
+    });
+
+    expect(isSelfLockout(input({ roles: [president, admin] }))).toBe(true);
+  });
+
+  it('warns when the second Rolle she holds grants another key', () => {
+    const treasurer = role({
+      roleId: 2,
+      name: 'Finanzen',
+      permissionKeys: [PERMISSION_KEYS.groupsManage],
+      holders: [holder(VIEWER)],
+    });
+
+    expect(isSelfLockout(input({ roles: [president, treasurer] }))).toBe(true);
+  });
+
+  it('stays quiet when the switch is going on', () => {
+    expect(isSelfLockout(input({ enabled: true }))).toBe(false);
+  });
+
+  it('stays quiet when the viewer does not hold the edited Rolle', () => {
+    const heldByAnother = role({
+      roleId: 1,
+      name: 'Präsidentin',
+      permissionKeys: [KEY],
+      holders: [holder(99)],
+    });
+
+    expect(isSelfLockout(input({ roles: [heldByAnother] }))).toBe(false);
+  });
+
+  it('stays quiet when the edited Rolle never granted the key', () => {
+    const withoutTheKey = role({
+      roleId: 1,
+      name: 'Präsidentin',
+      holders: [holder(VIEWER)],
+    });
+
+    expect(isSelfLockout(input({ roles: [withoutTheKey] }))).toBe(false);
+  });
+
+  it('stays quiet while the viewer is still unknown', () => {
+    expect(isSelfLockout(input({ viewerPersonId: undefined }))).toBe(false);
   });
 });
 
