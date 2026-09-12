@@ -1,8 +1,7 @@
 import { KkChip, KkSelectRow } from '@furria/ui';
 import type { FC } from 'react';
+import { ARCHIVED_CHIP } from '@/lib/state-chips';
 import type { RoleMasterEntry } from '../manage-roles-labels';
-
-const ARCHIVED_LABEL = 'archiviert';
 
 interface RolesMasterRowProps {
   entry: RoleMasterEntry;
@@ -15,7 +14,11 @@ export const RolesMasterRow: FC<RolesMasterRowProps> = ({ entry, selected, onSel
     onSelect(entry.roleId);
   };
 
-  const trailing = entry.isArchived ? <KkChip size="small">{ARCHIVED_LABEL}</KkChip> : null;
+  const trailing = entry.isArchived ? (
+    <KkChip tone={ARCHIVED_CHIP.tone} dot={ARCHIVED_CHIP.dot} size="small">
+      {ARCHIVED_CHIP.label}
+    </KkChip>
+  ) : null;
 
   return (
     <KkSelectRow

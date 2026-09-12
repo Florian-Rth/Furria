@@ -10,11 +10,11 @@ import {
 } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
+import { ARCHIVED_CHIP } from '@/lib/state-chips';
 import { toArchivedMeta, toNoDescriptionLine, toRightsCountLabel } from '../manage-roles-labels';
 import type { RoleDetails } from '../schemas';
 
 const EYEBROW = 'Rolle';
-const ARCHIVED_LABEL = 'archiviert';
 const RENAME_LABEL = 'Umbenennen';
 const ADD_HOLDER_LABEL = 'Inhaber eintragen';
 const ARCHIVE_LABEL = 'Archivieren';
@@ -50,7 +50,11 @@ export const RoleHeaderCard: FC<RoleHeaderCardProps> = ({
       <KkNote>{role.description}</KkNote>
     );
 
-  const chip = isArchived ? <KkChip size="small">{ARCHIVED_LABEL}</KkChip> : null;
+  const chip = isArchived ? (
+    <KkChip tone={ARCHIVED_CHIP.tone} dot={ARCHIVED_CHIP.dot} size="small">
+      {ARCHIVED_CHIP.label}
+    </KkChip>
+  ) : null;
   const metaLine = archivedMeta === undefined ? rightsLine : `${rightsLine} · ${archivedMeta}`;
 
   const actions = isArchived ? (
