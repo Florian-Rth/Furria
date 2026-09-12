@@ -8,7 +8,7 @@ import { toWriteErrorMessage } from '../group-hub-messages';
 interface AddAdminFormInput {
   groupId: number;
   open: boolean;
-  onAppointed: () => void;
+  onAppointed: (personId: number) => void;
 }
 
 export interface AddAdminFormControl {
@@ -58,6 +58,10 @@ export const useAddAdminForm = ({
       return;
     }
 
+    const appointed = (): void => {
+      onAppointed(person.personId);
+    };
+
     setRejection(null);
     mutation.mutate(
       {
@@ -67,7 +71,7 @@ export const useAddAdminForm = ({
         sinceOn,
       },
       {
-        onSuccess: onAppointed,
+        onSuccess: appointed,
         onError: (error) => {
           setRejection(toWriteErrorMessage(error));
         },

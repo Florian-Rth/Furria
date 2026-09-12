@@ -27,7 +27,7 @@ interface AddMemberDialogProps {
   groupName: string;
   open: boolean;
   onClose: () => void;
-  onAdded: () => void;
+  onAdded: (personId: number) => void;
 }
 
 export const AddMemberDialog: FC<AddMemberDialogProps> = ({
