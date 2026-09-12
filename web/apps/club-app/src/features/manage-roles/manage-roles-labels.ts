@@ -1,0 +1,283 @@
+import type { KkConfirmFact, KkDateQuickChoice } from '@furria/ui';
+import type { PermissionKey } from '@/lib/api/schemas';
+import { SESSION_OPENING_DAY, SESSION_OPENING_MONTH, sessionAt } from '@/lib/club';
+import { isFutureDay, toIsoDay } from '@/lib/day';
+import { formatIsoDay, formatSinceSession } from '@/lib/membership-labels';
+import { normalizeForSearch } from '@/lib/text';
+import { isPermissionKey, toPermissionCopy } from './role-permission-copy';
+import type { RoleDetails, RoleHolder, RoleSummary, RolesResponse } from './schemas';
+
+const UNHELD_LABEL = 'unbesetzt';
+const MORE_HOLDERS_SUFFIX = 'weitere';
+
+export const toPersonName = (person: { firstName: string; lastName: string }): string =>
+  `${person.firstName} ${person.lastName}`;
+
+export const toHoldersMeta = (
+  holders: readonly { firstName: string; lastName: string }[],
+): string => {
+  const [first] = holders;
+
+  if (first === undefined) {
+    return UNHELD_LABEL;
+  }
+  if (holders.length === 1) {
+    return toPersonName(first);
+  }
+
+  return `${toPersonName(first)} und ${holders.length - 1} ${MORE_HOLDERS_SUFFIX}`;
+};
+
+export const toRoleSearchTerm = (raw: string): string | null => {
+  const trimmed = raw.trim();
+
+  return trimmed === '' ? null : trimmed;
+};
+
+const matchesRole = (role: RoleSummary, term: string): boolean => {
+  const haystack = normalizeForSearch(`${role.name} ${role.description}`);
+
+  return normalizeForSearch(term)
+    .split(/\s+/)
+    .every((part) => haystack.includes(part));
+};
+
+export interface RoleMasterEntry {
+  roleId: number;
+  name: string;
+  meta: string;
+  isArchived: boolean;
+}
+
+const toMasterEntry = (role: RoleSummary): RoleMasterEntry => ({
+  roleId: role.roleId,
+  name: role.name,
+  meta: toHoldersMeta(role.holders),
+  isArchived: role.archivedOn !== null,
+});
+
+const archivedLast = (left: RoleMasterEntry, right: RoleMasterEntry): number => {
+  if (left.isArchived === right.isArchived) {
+    return 0;
+  }
+
+  return left.isArchived ? 1 : -1;
+};
+
+export const toMasterEntries = (
+  roles: readonly RoleSummary[],
+  query: string,
+): RoleMasterEntry[] => {
+  const term = toRoleSearchTerm(query);
+  const matching = term === null ? roles : roles.filter((role) => matchesRole(role, term));
+
+  return matching.map(toMasterEntry).sort(archivedLast);
+};
+
+export interface RolePermissionEntry {
+  key: PermissionKey;
+  title: string;
+  line: string;
+  enabled: boolean;
+}
+
+export const toPermissionEntries = (
+  catalogue: readonly string[],
+  granted: readonly string[],
+): RolePermissionEntry[] =>
+  catalogue.filter(isPermissionKey).map((key) => ({
+    key,
+    ...toPermissionCopy(key),
+    enabled: granted.includes(key),
+  }));
+
+export const toNextPermissionKeys = (
+  current: readonly string[],
+  key: PermissionKey,
+  enabled: boolean,
+): string[] => {
+  const without = [...new Set(current)].filter((entry) => entry !== key);
+
+  return enabled ? [...without, key] : without;
+};
+
+export const toRoleSeed = (
+  roles: RolesResponse | undefined,
+  roleId: number | null,
+): RoleDetails | undefined => {
+  if (roles === undefined || roleId === null) {
+    return undefined;
+  }
+
+  const match = roles.roles.find((role) => role.roleId === roleId);
+
+  if (match === undefined) {
+    return undefined;
+  }
+
+  return {
+    roleId: match.roleId,
+    name: match.name,
+    description: match.description,
+    archivedOn: match.archivedOn,
+    permissionKeys: match.permissionKeys,
+    holders: [],
+    pastHolders: [],
+  };
+};
+
+export const toArchivedMeta = (archivedOn: string | null): string | undefined =>
+  archivedOn === null ? undefined : `Archiviert am ${formatIsoDay(archivedOn)}`;
+
+export const toHolderCountLabel = (count: number): string => {
+  if (count === 0) {
+    return UNHELD_LABEL;
+  }
+  if (count === 1) {
+    return '1 Inhaberschaft';
+  }
+
+  return `${count} Inhaberschaften`;
+};
+
+export const toRightsCountLabel = (count: number): string => {
+  if (count === 0) {
+    return 'keine Rechte';
+  }
+  if (count === 1) {
+    return '1 Recht';
+  }
+
+  return `${count} Rechte`;
+};
+
+export const toHolderSinceValue = (holder: RoleHolder): string => formatSinceSession(holder.since);
+
+export const toNoRoleSearchResultLine = (term: string): string =>
+  `Zu „${term}“ gibt es keine Rolle.`;
+
+export const toNoDescriptionLine = (name: string): string =>
+  `Zu ${name} steht noch nichts geschrieben.`;
+
+export const toRoleCreatedMessage = (name: string): string => `Die Rolle ${name} ist angelegt.`;
+
+export const toRoleSavedMessage = (name: string): string =>
+  `Die Angaben zu ${name} sind gespeichert.`;
+
+export const toRoleArchivedMessage = (name: string): string => `${name} ist archiviert.`;
+
+export const toRoleRestoredMessage = (name: string): string => `${name} ist wieder aktiv.`;
+
+export const toPermissionSavedMessage = (title: string, enabled: boolean): string =>
+  enabled ? `„${title}“ ist eingeschaltet.` : `„${title}“ ist ausgeschaltet.`;
+
+export const toHolderAddedMessage = (
+  personName: string,
+  roleName: string,
+  sinceOn: string,
+  todayIsoDay: string,
+): string =>
+  isFutureDay(sinceOn, todayIsoDay)
+    ? `${personName} hat ${roleName} ab dem ${formatIsoDay(sinceOn)} inne.`
+    : `${personName} hat ${roleName} inne.`;
+
+export const toHoldingEndedMessage = (
+  personName: string,
+  endedOn: string,
+  todayIsoDay: string,
+): string =>
+  isFutureDay(endedOn, todayIsoDay)
+    ? `Die Inhaberschaft von ${personName} endet am ${formatIsoDay(endedOn)}.`
+    : `Die Inhaberschaft von ${personName} ist beendet.`;
+
+export const toHoldingConsequence = (
+  personName: string,
+  roleName: string,
+  sinceOn: string,
+  todayIsoDay: string,
+): string =>
+  isFutureDay(sinceOn, todayIsoDay)
+    ? `Ab dem ${formatIsoDay(sinceOn)} hat ${personName} die Rechte von ${roleName} — vorher nicht.`
+    : `${personName} hat die Rechte von ${roleName} ab dem ${formatIsoDay(sinceOn)}.`;
+
+export const toEndHoldingQuestion = (firstName: string, roleName: string): string =>
+  `${firstName} als ${roleName} beenden?`;
+
+export const toEndHoldingExplanation = (firstName: string): string =>
+  `Die Inhaberschaft endet am gewählten Tag und wandert in die Geschichte der Rolle. Gelöscht wird nichts: ${firstName} kann jederzeit wieder eingetragen werden.`;
+
+export const toEndHoldingConsequence = (
+  firstName: string,
+  roleName: string,
+  endedOn: string,
+  todayIsoDay: string,
+): string =>
+  isFutureDay(endedOn, todayIsoDay)
+    ? `Der ${formatIsoDay(endedOn)} wird der letzte Tag, an dem ${firstName} ${roleName} innehat. Danach greifen die Rechte der Rolle für ${firstName} nicht mehr.`
+    : `Der ${formatIsoDay(endedOn)} ist der letzte Tag, an dem ${firstName} ${roleName} innehat. Danach greifen die Rechte der Rolle für ${firstName} nicht mehr.`;
+
+export const toEndHoldingFacts = (
+  holder: RoleHolder,
+  roleName: string,
+  endedOn: string | null,
+): KkConfirmFact[] => [
+  { label: 'Person', value: toPersonName(holder) },
+  { label: 'Rolle', value: roleName },
+  { label: 'Inhaberin seit', value: formatIsoDay(holder.sinceOn) },
+  { label: 'Letzter Tag', value: endedOn === null ? 'noch offen' : formatIsoDay(endedOn) },
+];
+
+export const toArchiveRoleQuestion = (name: string): string => `${name} archivieren?`;
+
+export const ARCHIVE_ROLE_EXPLANATION =
+  'Archivieren löscht nichts: Die Rolle verschwindet aus der Auswahl, ihre Inhaberschaften bleiben in den Profilen stehen.';
+
+export const toArchiveRoleConsequence = (
+  name: string,
+  holderCount: number,
+  todayIsoDay: string,
+): string =>
+  `Ab heute, dem ${formatIsoDay(todayIsoDay)}, greifen die Rechte von ${name} nicht mehr. Die ${toHolderCountLabel(holderCount)} bleiben bestehen.`;
+
+export const toArchiveRoleFacts = (role: RoleDetails, todayIsoDay: string): KkConfirmFact[] => [
+  { label: 'Rolle', value: role.name },
+  { label: 'Archiviert am', value: formatIsoDay(todayIsoDay) },
+  { label: 'Inhaberschaften', value: toHolderCountLabel(role.holders.length) },
+  { label: 'Rechte', value: toRightsCountLabel(role.permissionKeys.length) },
+];
+
+const TODAY_LABEL = 'Heute';
+const SESSION_START_LABEL = 'Sessionbeginn';
+const SESSION_END_LABEL = 'Sessionende';
+
+export const toStartQuickChoices = (today: Date): KkDateQuickChoice[] => {
+  const todayValue = toIsoDay(today);
+  const session = sessionAt(today);
+  const openingValue = toIsoDay(
+    new Date(session.startYear, SESSION_OPENING_MONTH - 1, SESSION_OPENING_DAY),
+  );
+
+  const choices: KkDateQuickChoice[] = [{ label: TODAY_LABEL, value: todayValue }];
+
+  if (openingValue !== todayValue) {
+    choices.push({ label: SESSION_START_LABEL, value: openingValue });
+  }
+
+  return choices;
+};
+
+export const toEndQuickChoices = (today: Date): KkDateQuickChoice[] => {
+  const todayValue = toIsoDay(today);
+  const session = sessionAt(today);
+  const closingValue = toIsoDay(
+    new Date(session.startYear + 1, SESSION_OPENING_MONTH - 1, SESSION_OPENING_DAY - 1),
+  );
+
+  const choices: KkDateQuickChoice[] = [{ label: TODAY_LABEL, value: todayValue }];
+
+  if (closingValue !== todayValue) {
+    choices.push({ label: SESSION_END_LABEL, value: closingValue });
+  }
+
+  return choices;
+};
