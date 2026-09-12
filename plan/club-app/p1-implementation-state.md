@@ -270,13 +270,36 @@ web suite plus four real browser logins. Two lanes → roughly 45 min of wall cl
    `features/session/components/AppShell.tsx`; toasts were observed firing on real writes.
 4. **Commit timestamps** — every commit of this phase falls in the weekday 04:00–17:00 window that
    the repo's convention avoids. Sweep with the global `fix-commit-times` skill before the PR.
-5. **Umlaut folding in `GetPersonSearch`** (contract §4.41) is the least-pinned piece of the
-   contract; if `ILike` + `GermanFold` proves insufficient it needs a migration decision nobody
-   has taken.
-6. **The `Since` chain-minimum** appears in six DTOs and is computed per row — watch for an N+1 on
-   `/members/$personId`, `/groups/$groupId`, the hub and `/manage/roles`.
+5. ~~**Umlaut folding in `GetPersonSearch`**~~ — **judged sufficient.** The two-way fold
+   (`GermanFold.Expand` + `GermanFold.Strip`, both sides ILIKE'd) covers every German spelling the
+   register can hold; it needs **no** migration, no `unaccent`, no `pg_trgm`. What was actually
+   broken there was the wildcard escaping, fixed separately: both calls used the two-argument
+   `EF.Functions.ILike`, which emits `ESCAPE ''` — Postgres reads that as *no* escape character,
+   so the backslashes the service inserted became literal pattern characters and any query
+   containing `_`, `%` or `\` returned nothing. Now the three-argument overload with an explicit
+   `\`, and the query is trimmed server-side rather than trusting the client's `toSearchTerm`.
+   The still-open half is §8's pinned divergence: the client's `normalizeForSearch` is NFD-strip
+   only, so `kuehnel` finds nothing on `/members` while the server finds Kühnel. Somebody should
+   ratify which one is meant.
+6. ~~**The `Since` chain-minimum** N+1 risk~~ — **closed.** It is computed in memory from one
+   projection, never per row. What the same pass found instead: **`/manage/persons` and
+   `/manage/roles` load every historic tie and throw it away.** `PersonRegistryProjection`
+   (`PersonService.cs`) filters only on `Group.ArchivedOn == null`, never on the period;
+   `RunningTies` computes `tie.Min(StartedOn)` and `ToSummary` drops it, because
+   `GroupReference`/`RoleReference` carry two properties each. `RoleService.RolePageProjection`
+   has the same shape and is shared between detail and list. Measured at 249 wire rows for 152
+   Personen — no user-visible defect, so it was **not** fixed on this branch: it reshapes two hot
+   projections. Trigger to watch: list cost grows with history, and decision Z pins these lists
+   unpaged. `MembershipChainDetails` genuinely needs the full Mitgliedschaft chain — only the
+   Gruppen/Rollen collections can be narrowed.
 7. `de-DE-x-icu` **is** present in `postgres:18-alpine` and sorts correctly
    (`Adam < Ärger < Bach < Oehler < Öhler < Zöller`) — verified, not assumed. ADR-0008 records it.
+8. **`IsRunningOn` is hand-copied ~15 times** — `PersonService`, `GroupService`,
+   `PermissionAuthorizer`, `BootstrapAdminSeeder` — while `AffiliationQuery` already shows the
+   right shape. Declined for this push (it rewrites the predicate in every hot read path for no
+   observable change, at the cost of a full Testcontainer suite). Belongs in **W6 hardening** as
+   `MembershipQuery` / `GroupMembershipQuery` / `GroupAdminQuery` `[Pure] Expression` factories
+   with boundary tests for `start == today` and `end == today` (decision B).
 
 ---
 
@@ -500,6 +523,38 @@ contract when that file is next touched.
    always names the admins, so „kein Gruppen-Admin" is said out loud everywhere. **Consequence to
    watch:** the longer subline truncates in `/manage/groups`' 5-column master row
    („18 Personen · 1 Gruppe…"); the row's primary facts (name, size, status chip) survive.
+
+### Contract bugs the final server review found and did not work around
+
+1. **Decisions L and AG together produce a reachable dead link, and no payload could answer it.**
+   Rows on the Gruppen surfaces link to `/members/$personId`, which decision L makes **404** for a
+   Person who is not herself affiliated — and decision AG pins exactly such a Person as real (a
+   Person who is only a Gruppen-Admin is not affiliated; an archived Gruppe/Rolle confers nothing,
+   decision D). The client cannot compute the fact, so the server now carries it: a per-row
+   **`isAffiliated` (bool)** on the running-row DTOs of `GetGroupById`, `GetMyGroupById`,
+   `GetManagedGroupById` and `GetRoleById`. Because the past-row lists reuse the same DTO types,
+   the field is on those rows too and is computed honestly there rather than defaulted.
+   **This is a contract amendment: four §4 DTOs gain a field.** It is computed by one extra
+   translatable query per detail request through the new `AffiliationLookup`, which calls
+   `AffiliationQuery.IsAffiliatedOn(today)` — the predicate itself is untouched, because decision
+   AG reserves widening it for Florian.
+
+2. **A new §12 decision is owed on the Admin-Rolle holding failsafe.** `BootstrapAdminSeeder`
+   calls `EnsureAdminRoleIsHeldAsync` unconditionally on every `StartAsync`: once the Admin Rolle
+   exists, every start checks whether any `RoleHolding` on it is still running and, if not,
+   silently opens a fresh one for the bootstrap account. Decision W's text says the Rolle is
+   „created once … afterwards it is ordinary data", which reads as forbidding this. It is **not**
+   an oversight: three tests in `BootstrapAdminSeederTests` pin the split deliberately — the
+   permission keys are never re-granted (which *is* decision W's stated rationale), while a lost
+   Inhaberschaft is repaired. It is not removable either: `roles.manage` can only be granted by
+   someone who holds it and there is no delete endpoint (decision U), so the failure it prevents
+   is a permanent lockout. Landed as a comment naming it, no behaviour change.
+   **Florian decides:** either W-literal (drop the failsafe, accept a possible permanent lockout)
+   or pin the failsafe as its own decision. Two things belong in the same decision:
+   - the predicate ignores `SinceOn`, so a purely **future** holding counts as „still held";
+   - the **lost-update policy** for `PutRolePermissions` and `PutGroupInfo`. There are no `xmin`
+     concurrency tokens and none were added: a lost-update policy is a decision nobody has taken,
+     and `PutRolePermissions` is a *declared* full replacement.
 
 ### Two behaviours that are correct and will be mistaken for bugs
 

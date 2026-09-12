@@ -138,6 +138,12 @@ public sealed class BootstrapAdminSeeder : IHostedService
         await dbContext.SaveChangesAsync(ct);
     }
 
+    // Anti-lockout failsafe, not an oversight: roles.manage can only be granted by someone who
+    // holds it and there is no delete endpoint (decision U), so an Admin Rolle nobody holds locks
+    // the club out of Rollen & Rechte for good. Decision W's scope is the permission keys — those
+    // are never re-granted, which Should_LeaveTheKeysAlone_When_TheClubRemovedOneFromTheAdminRolle
+    // pins; Should_OpenAnInhaberschaft_When_TheAdminRolleLostEveryInhaber and
+    // Should_OpenAFurtherInhaberschaft_When_TheLastOneOnTheAdminRolleHasEnded pin this half.
     private async Task EnsureAdminRoleIsHeldAsync(
         AppDbContext dbContext,
         UserManager<Account> userManager,
