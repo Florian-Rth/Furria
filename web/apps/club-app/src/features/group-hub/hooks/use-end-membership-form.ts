@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import type { GroupDetailMember } from '@/features/group-detail';
 import { toIsoDay } from '@/lib/day';
+import { toWriteErrorMessage } from '@/lib/write-error';
 import { useEndGroupMembershipMutation } from '../api';
 import { toEndConsequence } from '../group-hub-labels';
-import { toWriteErrorMessage } from '../group-hub-messages';
 
 interface EndMembershipFormInput {
   groupId: number;

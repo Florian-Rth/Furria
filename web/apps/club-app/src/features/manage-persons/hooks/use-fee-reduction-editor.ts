@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { sessionAt } from '@/lib/club';
+import { toWriteErrorMessage } from '@/lib/write-error';
 import { useCreateFeeReductionMutation, useUpdateFeeReductionMutation } from '../api';
 import { toFeeReductionConsequence } from '../manage-persons-labels';
-import { toWriteErrorMessage } from '../manage-persons-messages';
 import type { FeeReductionBasis, PersonFeeReduction } from '../schemas';
 import { FeeReductionBasisSchema } from '../schemas';
 

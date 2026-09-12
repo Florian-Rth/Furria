@@ -1,6 +1,6 @@
 import { useState } from 'react';
+import { toWriteErrorMessage } from '@/lib/write-error';
 import { useArchiveRoleMutation, useRestoreRoleMutation } from '../api';
-import { toWriteErrorMessage } from '../manage-roles-messages';
 import type { RoleDetails } from '../schemas';
 
 interface RoleLifecycleInput {

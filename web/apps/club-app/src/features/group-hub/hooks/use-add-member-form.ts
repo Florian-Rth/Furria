@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import type { PersonRef } from '@/lib/api/schemas';
 import { toIsoDay } from '@/lib/day';
+import { toWriteErrorMessage } from '@/lib/write-error';
 import { useAddGroupMembershipMutation } from '../api';
 import { toJoinConsequence } from '../group-hub-labels';
-import { toWriteErrorMessage } from '../group-hub-messages';
 
 interface AddMemberFormInput {
   groupId: number;

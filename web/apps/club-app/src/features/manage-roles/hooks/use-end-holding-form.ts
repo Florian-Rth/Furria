@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { toIsoDay } from '@/lib/day';
+import { toWriteErrorMessage } from '@/lib/write-error';
 import { useEndRoleHoldingMutation } from '../api';
 import { toEndHoldingConsequence, toPersonName } from '../manage-roles-labels';
-import { toWriteErrorMessage } from '../manage-roles-messages';
 import type { RoleHolder } from '../schemas';
 
 interface EndHoldingFormInput {

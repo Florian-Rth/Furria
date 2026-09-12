@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { sessionAt } from '@/lib/club';
+import { toWriteErrorMessage } from '@/lib/write-error';
 import { useCreatePauseMutation, useUpdatePauseMutation } from '../api';
 import { toPauseConsequence } from '../manage-persons-labels';
-import { toWriteErrorMessage } from '../manage-persons-messages';
 import type { PersonPause } from '../schemas';
 
 interface PauseEditorInput {

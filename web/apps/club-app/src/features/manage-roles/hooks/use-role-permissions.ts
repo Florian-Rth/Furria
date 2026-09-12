@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useMeQuery } from '@/features/session';
 import type { PermissionKey } from '@/lib/api/schemas';
+import { toWriteErrorMessage } from '@/lib/write-error';
 import { ROLES_QUERY_KEY, roleQueryKey, useSetRolePermissionsMutation } from '../api';
 import type { RolePermissionEntry } from '../manage-roles-labels';
 import {
@@ -11,7 +12,6 @@ import {
   toPermissionEntries,
   toRoleSeed,
 } from '../manage-roles-labels';
-import { toWriteErrorMessage } from '../manage-roles-messages';
 import type { RoleDetails, RoleSummary, RolesResponse } from '../schemas';
 
 const NO_ROLES: readonly RoleSummary[] = [];
