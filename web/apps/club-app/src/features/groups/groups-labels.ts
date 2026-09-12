@@ -1,4 +1,8 @@
 import type { PersonRef } from '@/lib/api/schemas';
+import {
+  GROUP_SECTION_TITLES as SHARED_GROUP_SECTION_TITLES,
+  toGroupSubline,
+} from '@/lib/group-sections';
 import type { StateChip } from '@/lib/state-chips';
 import { toRecruitingChip } from '@/lib/state-chips';
 import type { GroupDetails } from './schemas';
@@ -8,8 +12,8 @@ const GROUP_TITLE_FALLBACK = 'Gruppe';
 
 export const GROUP_SECTION_TITLES = {
   about: 'Die Gruppe',
-  members: 'Mitglieder',
-  admins: 'Gruppen-Admins',
+  members: SHARED_GROUP_SECTION_TITLES.members,
+  admins: SHARED_GROUP_SECTION_TITLES.admins,
   photos: 'Bilder',
 } as const;
 
@@ -71,7 +75,7 @@ export const toGroupHeadline = (group: GroupDetails | undefined): GroupHeadline 
   return {
     title: group.name,
     openness: toRecruitingChip(group.isRecruiting),
-    memberCount: toMemberCountLabel(group.members.length),
+    memberCount: toGroupSubline(group.members.length, group.admins.length),
   };
 };
 

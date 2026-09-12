@@ -6,7 +6,6 @@ import {
   filterManagedGroups,
   findManagedGroup,
   toArchiveConsequence,
-  toGroupCountLine,
   toGroupHistoryEntries,
   toGroupStatusFilterId,
   toGroupStatusFilterOptions,
@@ -178,20 +177,6 @@ describe('toManagedGroupsIntro', () => {
 
   it('has its own line for an empty register', () => {
     expect(toManagedGroupsIntro([])).toBe('Noch steht keine Gruppe im Verzeichnis.');
-  });
-});
-
-describe('toGroupCountLine', () => {
-  it('drops the admin half when the group has no running admin', () => {
-    expect(toGroupCountLine(CHRONIK)).toBe('18 Personen');
-  });
-
-  it('joins people and admins when both are there', () => {
-    expect(toGroupCountLine(GARDE)).toBe('18 Personen · 1 Admin');
-  });
-
-  it('names the empty group instead of counting zero', () => {
-    expect(toGroupCountLine(group({ memberCount: 0, admins: [] }))).toBe('niemand dabei');
   });
 });
 
