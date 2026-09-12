@@ -1,5 +1,6 @@
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
+import { focusRing } from '../../../internal/focus-ring';
 import { KkIcon } from '../../../KkIcon';
 import { kkTokens } from '../../../tokens';
 import { useAppShellCurtain } from '../logic/app-shell-curtain-context';
@@ -17,7 +18,7 @@ export const KkAppShellCurtainClose: FC = () => {
       aria-label={CLOSE_LABEL}
       onClick={curtain.close}
       data-kk-app-shell-curtain-close
-      sx={{
+      sx={(theme) => ({
         width: CLOSE_SIZE,
         height: CLOSE_SIZE,
         flexShrink: 0,
@@ -31,7 +32,8 @@ export const KkAppShellCurtainClose: FC = () => {
         background: 'none',
         color: 'text.primary',
         cursor: 'pointer',
-      }}
+        ...focusRing(theme),
+      })}
     >
       <KkIcon name="close" size="small" />
     </Stack>

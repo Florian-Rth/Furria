@@ -1,6 +1,7 @@
-import type { SxProps, Theme } from '@mui/material/styles';
+import type { CSSObject, SxProps, Theme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import type { FC, PropsWithChildren } from 'react';
+import { redInk } from './internal/red-ink';
 import { kkTokens } from './tokens';
 
 type KkEyebrowTone = 'accent' | 'muted' | 'onAccent';
@@ -12,10 +13,10 @@ interface KkEyebrowProps extends PropsWithChildren {
   sx?: SxProps<Theme>;
 }
 
-const toneStyles: Record<KkEyebrowTone, { color: string; opacity?: number }> = {
-  accent: { color: 'primary.main' },
-  muted: { color: 'text.secondary' },
-  onAccent: { color: 'inherit', opacity: 0.85 },
+const toneStyles: Record<KkEyebrowTone, (theme: Theme) => CSSObject> = {
+  accent: (theme) => redInk(theme),
+  muted: () => ({ color: 'text.secondary' }),
+  onAccent: () => ({ color: 'inherit', opacity: 0.85 }),
 };
 
 const sizeStyles: Record<KkEyebrowSize, { fontSize?: string }> = {
@@ -33,7 +34,7 @@ export const KkEyebrow: FC<KkEyebrowProps> = ({
     variant="overline"
     data-kk-eyebrow
     sx={[
-      { ...kkTokens.eyebrow, ...toneStyles[tone], ...sizeStyles[size] },
+      (theme) => ({ ...kkTokens.eyebrow, ...toneStyles[tone](theme), ...sizeStyles[size] }),
       ...(Array.isArray(sx) ? sx : [sx]),
     ]}
   >

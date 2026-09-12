@@ -19,15 +19,13 @@ interface KkBroomMarkProps {
 export const KkBroomMark: FC<KkBroomMarkProps> = ({ size = 34, sx }) => (
   <Box
     component="svg"
-    viewBox="0 0 60 60"
+    viewBox="-52 -59 104 104"
     width={size}
     height={size}
     aria-hidden
     sx={[{ display: 'block', fill: 'currentColor' }, ...(Array.isArray(sx) ? sx : [sx])]}
   >
-    <g transform="translate(30 33)">
-      <g transform="rotate(-122) scale(0.92)">{broomParts}</g>
-      <g transform="rotate(122) scale(0.92)">{broomParts}</g>
-    </g>
+    <g transform="rotate(-122) scale(0.92)">{broomParts}</g>
+    <g transform="rotate(122) scale(0.92)">{broomParts}</g>
   </Box>
 );

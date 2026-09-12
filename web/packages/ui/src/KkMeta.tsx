@@ -1,14 +1,16 @@
+import type { CSSObject, Theme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import type { ElementType, FC, PropsWithChildren } from 'react';
+import { redInk } from './internal/red-ink';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
 export type KkMetaTone = 'muted' | 'faint' | 'accent';
 
-const toneColors: Record<KkMetaTone, string> = {
-  muted: 'text.secondary',
-  faint: 'text.disabled',
-  accent: 'primary.main',
+const tonePaint: Record<KkMetaTone, (theme: Theme) => CSSObject> = {
+  muted: () => ({ color: 'text.secondary' }),
+  faint: () => ({ color: 'text.disabled' }),
+  accent: (theme) => redInk(theme),
 };
 
 interface KkMetaProps extends PropsWithChildren {
@@ -29,8 +31,8 @@ export const KkMeta: FC<KkMetaProps> = ({
     component={component}
     data-kk-meta
     sx={[
-      {
-        color: toneColors[tone],
+      (theme) => ({
+        ...tonePaint[tone](theme),
         fontFamily: kkTokens.font.body,
         fontSize: kkTokens.type.rowMeta,
         fontWeight: 600,
@@ -39,7 +41,7 @@ export const KkMeta: FC<KkMetaProps> = ({
         lineHeight: 1.35,
         minWidth: 0,
         textWrap: 'pretty',
-      },
+      }),
       ...(Array.isArray(sx) ? sx : [sx]),
     ]}
   >

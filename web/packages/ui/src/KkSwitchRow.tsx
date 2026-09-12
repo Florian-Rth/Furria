@@ -35,6 +35,7 @@ interface KkSwitchRowProps {
   onChange: (checked: boolean) => void;
   description?: string;
   stateLabel?: KkSwitchRowStateLabel;
+  stateChip?: boolean;
   error?: string;
   disabled?: boolean;
   busy?: boolean;
@@ -47,6 +48,7 @@ export const KkSwitchRow: FC<KkSwitchRowProps> = ({
   onChange,
   description,
   stateLabel,
+  stateChip: showStateChip = true,
   error,
   disabled = false,
   busy = false,
@@ -70,7 +72,7 @@ export const KkSwitchRow: FC<KkSwitchRowProps> = ({
   };
 
   const stateChip =
-    stateLabel === undefined ? null : (
+    stateLabel === undefined || !showStateChip ? null : (
       <KkChip tone={stateTone} size="small">
         {stateLabel[stateKey]}
       </KkChip>
@@ -107,7 +109,7 @@ export const KkSwitchRow: FC<KkSwitchRowProps> = ({
       sx={[
         {
           alignItems: 'flex-start',
-          justifyContent: 'space-between',
+          justifyContent: 'flex-start',
           gap: 2,
           minWidth: 0,
           py: 1.375,
@@ -116,7 +118,7 @@ export const KkSwitchRow: FC<KkSwitchRowProps> = ({
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >
-      <Stack sx={{ flexGrow: 1, minWidth: 0, gap: 0.625 }}>
+      <Stack sx={{ flexGrow: 1, minWidth: 0, maxWidth: kkTokens.measure.text, gap: 0.625 }}>
         <Stack direction="row" sx={{ alignItems: 'center', flexWrap: 'wrap', gap: 1, minWidth: 0 }}>
           <Typography
             id={titleId}

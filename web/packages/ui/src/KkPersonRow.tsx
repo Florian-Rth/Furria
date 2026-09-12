@@ -1,10 +1,11 @@
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
-import type { CSSObject } from '@mui/material/styles';
+import type { CSSObject, Theme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import type { ElementType, FC, ReactNode } from 'react';
 import { focusRing } from './internal/focus-ring';
 import { personRowMetrics } from './internal/person-row-metrics';
+import { redInk } from './internal/red-ink';
 import { rowDividerTop } from './internal/row-divider';
 import { KkAvatar } from './KkAvatar';
 import { KkIcon } from './KkIcon';
@@ -35,14 +36,14 @@ interface KkPersonRowProps {
   sx?: KkSx;
 }
 
-const hoverPaint: CSSObject = {
+const hoverPaint = (theme: Theme): CSSObject => ({
   '@media (hover: hover)': {
     '&:hover': {
-      '& [data-kk-person-row-name]': { color: 'primary.main' },
+      '& [data-kk-person-row-name]': redInk(theme),
       '& [data-kk-person-row-chevron]': { color: 'text.primary' },
     },
   },
-};
+});
 
 export const KkPersonRow: FC<KkPersonRowProps> = ({
   initials,
@@ -68,7 +69,7 @@ export const KkPersonRow: FC<KkPersonRowProps> = ({
 
   const accentPart =
     affiliation.accent === null ? null : (
-      <Box component="span" sx={{ color: 'primary.main' }}>
+      <Box component="span" sx={redInk}>
         {affiliation.accent}
       </Box>
     );
@@ -162,7 +163,7 @@ export const KkPersonRow: FC<KkPersonRowProps> = ({
           cursor: interactive ? 'pointer' : 'default',
           ...rowDividerTop,
           ...focusRing(theme),
-          ...(interactive ? hoverPaint : {}),
+          ...(interactive ? hoverPaint(theme) : {}),
         }),
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}

@@ -13,7 +13,7 @@ export const KK_DESKTOP_BREAKPOINT = 900;
 
 const buildPalette = (color: KkColorTokens): PaletteOptions => ({
   primary: { main: color.red, dark: color.redDk, contrastText: color.onRed },
-  error: { main: color.redDk, dark: color.redDk, contrastText: color.onRed },
+  error: { main: color.redDk, dark: color.redDk, contrastText: color.onRedDk },
   warning: { main: color.gold },
   success: { main: color.green },
   info: { main: color.blue },

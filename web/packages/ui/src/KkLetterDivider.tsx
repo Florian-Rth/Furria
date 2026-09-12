@@ -4,9 +4,9 @@ import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
+import { STICKY_BAR_HEIGHT_VARIABLE } from './use-sticky-bar-height';
 
-const SCROLL_MARGIN = 148;
-const STICKY_LAYER = 1;
+const BAR_CLEARANCE = `var(${STICKY_BAR_HEIGHT_VARIABLE}, ${kkTokens.layout.stickyBarHeight}px)`;
 
 type KkLetterDividerGround = 'paper' | 'page';
 
@@ -33,12 +33,12 @@ export const KkLetterDivider: FC<KkLetterDividerProps> = ({ letter, id, ground =
         gap: 1,
         minWidth: 0,
         position: 'sticky',
-        top: 0,
-        zIndex: STICKY_LAYER,
+        top: BAR_CLEARANCE,
+        zIndex: kkTokens.layout.stickyLetterZ,
         bgcolor: grounds[ground],
         pt: 1.75,
         pb: 0.5,
-        scrollMarginTop: SCROLL_MARGIN,
+        scrollMarginTop: BAR_CLEARANCE,
       },
       ...(Array.isArray(sx) ? sx : [sx]),
     ]}

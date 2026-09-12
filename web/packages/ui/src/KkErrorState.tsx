@@ -2,22 +2,22 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { FC, ReactNode } from 'react';
 import { displayTitle } from './internal/display-title';
-import { KkBroomMark } from './KkBroomMark';
+import { KkIcon } from './KkIcon';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
-const MARK_SIZE = 56;
+const MARK_SIZE = 40;
 
-interface KkEmptyStateProps {
+interface KkErrorStateProps {
   title: string;
   description: string;
-  action?: ReactNode;
+  action: ReactNode;
   sx?: KkSx;
 }
 
-export const KkEmptyState: FC<KkEmptyStateProps> = ({ title, description, action, sx }) => (
+export const KkErrorState: FC<KkErrorStateProps> = ({ title, description, action, sx }) => (
   <Stack
-    data-kk-empty-state
+    data-kk-error-state
     sx={[
       {
         alignItems: 'center',
@@ -30,7 +30,7 @@ export const KkEmptyState: FC<KkEmptyStateProps> = ({ title, description, action
       ...(Array.isArray(sx) ? sx : [sx]),
     ]}
   >
-    <KkBroomMark size={MARK_SIZE} sx={{ color: 'text.disabled' }} />
+    <KkIcon name="alert" sx={{ color: 'error.main', fontSize: MARK_SIZE }} />
     <Typography component="p" sx={{ ...displayTitle, textWrap: 'balance' }}>
       {title}
     </Typography>

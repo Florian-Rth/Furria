@@ -4,6 +4,7 @@ import Typography from '@mui/material/Typography';
 import type { FC, ReactNode } from 'react';
 import { focusRing } from './internal/focus-ring';
 import { raisedSurface } from './internal/raised-surface';
+import { redInk } from './internal/red-ink';
 import { KkIcon } from './KkIcon';
 import { KkMeta } from './KkMeta';
 import type { KkSx } from './kk-sx';
@@ -82,7 +83,7 @@ export const KkSelectRow: FC<KkSelectRowProps> = ({
           ...focusRing(theme),
           '@media (hover: hover)': {
             '&:hover': {
-              '& [data-kk-select-row-title]': { color: 'primary.main' },
+              '& [data-kk-select-row-title]': redInk(theme),
               '& [data-kk-select-row-chevron]': { color: 'text.primary' },
             },
           },

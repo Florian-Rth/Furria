@@ -37,6 +37,7 @@ const ringSchemes: Record<KkAvatarStackRing, (theme: Theme) => KkScheme> = {
 interface KkAvatarStackProps {
   initials: readonly string[];
   max?: number;
+  total?: number;
   ringOn?: KkAvatarStackRing;
   sx?: KkSx;
 }
@@ -44,10 +45,11 @@ interface KkAvatarStackProps {
 export const KkAvatarStack: FC<KkAvatarStackProps> = ({
   initials,
   max = DEFAULT_MAX,
+  total,
   ringOn = 'paper',
   sx,
 }) => {
-  const plan = buildAvatarStack(initials, max);
+  const plan = buildAvatarStack(initials, max, total);
 
   const overflowBubble =
     plan.overflowLabel === null ? null : (

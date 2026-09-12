@@ -1,5 +1,6 @@
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
+import { focusRing } from '../../../internal/focus-ring';
 import { kkTokens } from '../../../tokens';
 
 type KkAppShellWordmarkPlacement = 'rail' | 'stage';
@@ -20,12 +21,13 @@ export const KkAppShellWordmark: FC<KkAppShellWordmarkProps> = ({ placement }) =
   <Typography
     component="p"
     data-kk-app-shell-wordmark
-    sx={{
+    sx={(theme) => ({
       fontFamily: kkTokens.font.display,
       lineHeight: 0.9,
       color: 'text.primary',
       ...placements[placement],
-    }}
+      ...focusRing(theme),
+    })}
   >
     {WORDMARK}
   </Typography>

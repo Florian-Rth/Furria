@@ -3,10 +3,8 @@ import { motion } from 'motion/react';
 import type { CSSProperties, FC, PropsWithChildren } from 'react';
 import type { KkSx } from '../../../kk-sx';
 import { kkTokens } from '../../../tokens';
-import { useSheetDrawer } from '../logic/use-sheet-drawer';
-import { KkSplitLayoutSheetHandle } from '../ui/KkSplitLayoutSheetHandle';
+import { useSheetReveal } from '../logic/use-sheet-reveal';
 
-const DRAG_ELASTIC = 0.04;
 const MAX_SHEET_HEIGHT = '92dvh';
 const SHEET_Z_INDEX = 1200;
 
@@ -23,21 +21,10 @@ interface KkSplitLayoutSheetProps extends PropsWithChildren {
 }
 
 export const KkSplitLayoutSheet: FC<KkSplitLayoutSheetProps> = ({ sx, children }) => {
-  const drawer = useSheetDrawer();
-  const dragConstraints = { top: 0, bottom: drawer.travel };
+  const reveal = useSheetReveal();
 
   return (
-    <motion.div
-      ref={drawer.sheetRef}
-      drag="y"
-      dragListener={false}
-      dragControls={drawer.dragControls}
-      dragConstraints={dragConstraints}
-      dragElastic={DRAG_ELASTIC}
-      dragMomentum={false}
-      onDragEnd={drawer.endDrag}
-      style={{ ...SHEET_STYLE, y: drawer.y }}
-    >
+    <motion.div ref={reveal.sheetRef} style={{ ...SHEET_STYLE, y: reveal.y }}>
       <Stack
         component="section"
         sx={{
@@ -48,15 +35,10 @@ export const KkSplitLayoutSheet: FC<KkSplitLayoutSheetProps> = ({ sx, children }
           boxShadow: kkTokens.shadow.raised,
         }}
       >
-        <KkSplitLayoutSheetHandle
-          isOpen={drawer.isOpen}
-          onToggle={drawer.toggle}
-          onDragStart={drawer.startDrag}
-        />
         <Stack
           data-kk-split-layout-pane
           sx={[
-            { gap: kkTokens.layout.fieldGap, px: 3, pb: 4, overflowY: 'auto' },
+            { gap: kkTokens.layout.fieldGap, px: 3, pt: 3, pb: 4, overflowY: 'auto' },
             ...(Array.isArray(sx) ? sx : [sx]),
           ]}
         >
