@@ -315,6 +315,54 @@ public sealed class GetPersonSearchTests
         Assert.Empty(result.Persons);
     }
 
+    [Fact]
+    public async Task Should_FindOnlyTheLiteralName_When_TheQueryCarriesAnUnderscore()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddPerson("anna", "Anna", "Kaiser")
+                            .AddPerson("kunstname", "Kim", "Meier_Schulz")
+                            .AddPerson("buergerlich", "Kim", "MeierzSchulz")
+                            .AddAccount("anna")
+                    )
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("tanzgarde", "Tanzgarde")
+                            .AddGroupAdmin("anna-tanzgarde", "tanzgarde", "anna")
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("anna", ct);
+        var (response, result) = await SearchAsync(client, "meier_schulz");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(
+            [ctx.Identity.People.IdOf("kunstname")],
+            result.Persons.Select(person => person.PersonId)
+        );
+    }
+
+    [Fact]
+    public async Task Should_FindThePerson_When_TheQueryCarriesATrailingSpace()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildSearchableRegistryAsync(ct);
+
+        var client = await ctx.Identity.ClientForAsync("anna", ct);
+        var (response, result) = await SearchAsync(client, "Brendel ");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(
+            [ctx.Identity.People.IdOf("paula")],
+            result.Persons.Select(person => person.PersonId)
+        );
+    }
+
     private Task<SeededContext> BuildSearchableRegistryAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder =>
