@@ -4,13 +4,12 @@ import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { toInitials } from '@/lib/initials';
-import { toMembershipStateChip } from '@/lib/state-chips';
+import { toMembershipStateChip, WITHHELD_CHIP } from '@/lib/state-chips';
 import {
   isContactWithheld,
   NO_AFFILIATION_META,
   toPersonName,
   toPersonRowAffiliation,
-  WITHHELD_CHIP_LABEL,
 } from '../manage-persons-labels';
 import type { PersonSummary } from '../schemas';
 
@@ -27,8 +26,8 @@ export const PersonRow: FC<PersonRowProps> = ({ person }) => {
 
   const withheldChip = isContactWithheld(person) ? (
     <Box component="span" sx={{ display: { xs: 'none', desktop: 'inline-flex' }, flexShrink: 0 }}>
-      <KkChip tone="neutral" size="small">
-        {WITHHELD_CHIP_LABEL}
+      <KkChip tone={WITHHELD_CHIP.tone} dot={WITHHELD_CHIP.dot} size="small">
+        {WITHHELD_CHIP.label}
       </KkChip>
     </Box>
   ) : null;

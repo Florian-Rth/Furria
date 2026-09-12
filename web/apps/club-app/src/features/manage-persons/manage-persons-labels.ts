@@ -43,9 +43,6 @@ export const PERSON_SECTION_TITLES = {
   roles: 'Rollen',
 } as const;
 
-export const READ_ONLY_CHIP_LABEL = 'nur Ansicht';
-export const WITHHELD_CHIP_LABEL = 'nicht freigegeben';
-
 export const GROUPS_POINTER =
   'Gruppen pflegen die Gruppen-Admins. Überschreiben geht in der Gruppenverwaltung.';
 export const ROLES_POINTER = 'Rollen werden unter „Rollen & Rechte“ vergeben.';

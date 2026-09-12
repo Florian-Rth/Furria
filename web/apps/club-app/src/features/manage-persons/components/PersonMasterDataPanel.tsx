@@ -1,6 +1,7 @@
 import { KkButton, KkChip, KkFieldRow, KkIcon, KkPanel } from '@furria/ui';
 import type { FC } from 'react';
 import { formatAddress, formatIsoDay } from '@/lib/membership-labels';
+import { toSwitchStateChip } from '@/lib/state-chips';
 import { usePersonFormDialog } from '../hooks/use-person-form-dialog';
 import { PERSON_SECTION_TITLES } from '../manage-persons-labels';
 import type { PersonDetails } from '../schemas';
@@ -15,8 +16,6 @@ const ADDRESS_LABEL = 'Adresse';
 const BIRTH_DATE_LABEL = 'Geburtsdatum';
 const VISIBILITY_LABEL = 'Für Mitglieder sichtbar';
 const MISSING_VALUE = 'nicht hinterlegt';
-const VISIBLE_LABEL = 'an';
-const HIDDEN_LABEL = 'aus';
 const VISIBILITY_HINT = 'Wird auf das Wort der Person hin gesetzt.';
 
 interface PersonMasterDataPanelProps {
@@ -38,10 +37,11 @@ export const PersonMasterDataPanel: FC<PersonMasterDataPanelProps> = ({ person }
     </KkButton>
   );
 
-  const visibilityChip = person.contactVisibleToMembers ? (
-    <KkChip tone="green">{VISIBLE_LABEL}</KkChip>
-  ) : (
-    <KkChip tone="neutral">{HIDDEN_LABEL}</KkChip>
+  const visibility = toSwitchStateChip(person.contactVisibleToMembers);
+  const visibilityChip = (
+    <KkChip tone={visibility.tone} dot={visibility.dot}>
+      {visibility.label}
+    </KkChip>
   );
 
   return (

@@ -2,12 +2,8 @@ import { KkChip, KkEmptyState, KkFactRow, KkNote, KkPanel, KkSinceRow } from '@f
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { formatPeriod, formatSinceSession } from '@/lib/membership-labels';
-import {
-  GROUPS_POINTER,
-  PERSON_SECTION_TITLES,
-  READ_ONLY_CHIP_LABEL,
-  splitPersonGroups,
-} from '../manage-persons-labels';
+import { READ_ONLY_CHIP } from '@/lib/state-chips';
+import { GROUPS_POINTER, PERSON_SECTION_TITLES, splitPersonGroups } from '../manage-persons-labels';
 import type { PersonGroup } from '../schemas';
 import { PersonSection } from './PersonSection';
 
@@ -62,7 +58,11 @@ export const PersonGroupsPanel: FC<PersonGroupsPanelProps> = ({ groups, firstNam
       </Stack>
     );
 
-  const chip = <KkChip tone="neutral">{READ_ONLY_CHIP_LABEL}</KkChip>;
+  const chip = (
+    <KkChip tone={READ_ONLY_CHIP.tone} dot={READ_ONLY_CHIP.dot}>
+      {READ_ONLY_CHIP.label}
+    </KkChip>
+  );
 
   return (
     <PersonSection title={PERSON_SECTION_TITLES.groups} action={chip}>
