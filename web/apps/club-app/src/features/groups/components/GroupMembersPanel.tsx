@@ -1,11 +1,14 @@
-import { KkMeta, KkPanel, KkSinceRow } from '@furria/ui';
+import { KkAvatar, KkMeta, KkPanel, KkSinceRow } from '@furria/ui';
+import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { toInitials } from '@/lib/initials';
 import { formatSinceSession } from '@/lib/membership-labels';
-import { GROUP_SECTION_TITLES, toMemberCountLabel, toNoMembersLine } from '../groups-labels';
+import { GROUP_SECTION_TITLES, toNoMembersLine } from '../groups-labels';
 import type { GroupMember } from '../schemas';
 import { GroupSection } from './GroupSection';
 
 const SINCE_LABEL = 'seit';
+const MEMBER_PATH = '/members/$personId';
 
 interface GroupMembersPanelProps {
   members: readonly GroupMember[];
@@ -15,14 +18,20 @@ interface GroupMembersPanelProps {
 export const GroupMembersPanel: FC<GroupMembersPanelProps> = ({ members, groupName }) => {
   const rows = members.map((member) => {
     const memberName = `${member.firstName} ${member.lastName}`;
+    const avatar = (
+      <KkAvatar initials={toInitials(member.firstName, member.lastName)} size="small" />
+    );
 
     return (
       <KkSinceRow
         key={member.personId}
-        icon="person"
+        avatar={avatar}
         title={memberName}
         sinceLabel={SINCE_LABEL}
         sinceValue={formatSinceSession(member.since)}
+        component={Link}
+        to={MEMBER_PATH}
+        params={{ personId: String(member.personId) }}
       />
     );
   });
@@ -30,10 +39,9 @@ export const GroupMembersPanel: FC<GroupMembersPanelProps> = ({ members, groupNa
   const isEmpty = rows.length === 0;
   const body = isEmpty ? <KkMeta italic>{toNoMembersLine(groupName)}</KkMeta> : rows;
   const variant = isEmpty ? 'block' : 'list';
-  const countMeta = isEmpty ? undefined : toMemberCountLabel(members.length);
 
   return (
-    <GroupSection title={GROUP_SECTION_TITLES.members} meta={countMeta}>
+    <GroupSection title={GROUP_SECTION_TITLES.members}>
       <KkPanel variant={variant}>{body}</KkPanel>
     </GroupSection>
   );

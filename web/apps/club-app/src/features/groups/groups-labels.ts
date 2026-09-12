@@ -31,21 +31,63 @@ export const toMemberCountLabel = (count: number): string => {
   return `${count} Personen`;
 };
 
-export const toRecruitingContactLine = (admins: readonly PersonRef[]): string => {
+export const toPersonUnitLabel = (count: number): string => (count === 1 ? 'Person' : 'Personen');
+
+export interface RecruitingContactTextSegment {
+  kind: 'text';
+  text: string;
+}
+
+export interface RecruitingContactPersonSegment {
+  kind: 'person';
+  personId: number;
+  firstName: string;
+}
+
+export type RecruitingContactSegment =
+  | RecruitingContactTextSegment
+  | RecruitingContactPersonSegment;
+
+const text = (value: string): RecruitingContactTextSegment => ({ kind: 'text', text: value });
+
+const name = (person: PersonRef): RecruitingContactPersonSegment => ({
+  kind: 'person',
+  personId: person.personId,
+  firstName: person.firstName,
+});
+
+const CONTACT_OPENING = 'Melde dich bei ';
+const NO_CONTACT_LINE = 'Diese Gruppe sucht noch eine Ansprechperson.';
+
+export const toRecruitingContactSegments = (
+  admins: readonly PersonRef[],
+): RecruitingContactSegment[] => {
   const [first, second, ...further] = admins;
 
   if (first === undefined) {
-    return 'Diese Gruppe sucht noch eine Ansprechperson.';
+    return [text(NO_CONTACT_LINE)];
   }
   if (second === undefined) {
-    return `Melde dich bei ${first.firstName}.`;
+    return [text(CONTACT_OPENING), name(first), text('.')];
   }
   if (further.length === 0) {
-    return `Melde dich bei ${first.firstName} oder ${second.firstName}.`;
+    return [text(CONTACT_OPENING), name(first), text(' oder '), name(second), text('.')];
   }
 
-  return `Melde dich bei ${first.firstName}, ${second.firstName} oder einer der anderen Gruppen-Admins.`;
+  return [
+    text(CONTACT_OPENING),
+    name(first),
+    text(', '),
+    name(second),
+    text(' oder einer der anderen Gruppen-Admins.'),
+  ];
 };
+
+const toSegmentText = (segment: RecruitingContactSegment): string =>
+  segment.kind === 'text' ? segment.text : segment.firstName;
+
+export const toRecruitingContactLine = (admins: readonly PersonRef[]): string =>
+  toRecruitingContactSegments(admins).map(toSegmentText).join('');
 
 export const toGroupsIntroSentence = (total: number, recruiting: number): string => {
   const groups =
