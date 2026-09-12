@@ -12,10 +12,10 @@ import type { FC } from 'react';
 import { SESSION_EXPIRED_MESSAGE } from '../login-messages';
 import { buildLoginStageMeta } from '../stage-meta';
 import { LoginForm } from './LoginForm';
-import { LoginPendingEntries } from './LoginPendingEntries';
-import { LoginTestCredentials } from './LoginTestCredentials';
+import { LoginHelpNote } from './LoginHelpNote';
 
 const HEADING_LEVEL = { mobile: 4, desktop: 3 } as const;
+const INTRO = 'Der Mitgliederbereich des Furrscher Carnevals Club.';
 
 interface LoginScreenProps {
   expired: boolean;
@@ -32,13 +32,10 @@ export const LoginScreen: FC<LoginScreenProps> = ({ expired }) => {
   return (
     <KkSplitLayout>
       <KkSplitLayout.Stage>
-        <KkBrandStage>
+        <KkBrandStage variant="band">
           <KkBrandStage.Meta>
             <KkEyebrow tone="muted">{stageMeta.place}</KkEyebrow>
-            <Stack sx={{ alignItems: 'flex-end', gap: 0.5 }}>
-              <KkEyebrow tone="muted">{stageMeta.number}</KkEyebrow>
-              <KkEyebrow tone="muted">{stageMeta.session}</KkEyebrow>
-            </Stack>
+            <KkEyebrow tone="muted">{stageMeta.session}</KkEyebrow>
           </KkBrandStage.Meta>
         </KkBrandStage>
       </KkSplitLayout.Stage>
@@ -47,12 +44,11 @@ export const LoginScreen: FC<LoginScreenProps> = ({ expired }) => {
           <KkHeading level={headingLevel} component="h1">
             ANMELDEN
           </KkHeading>
-          <KkNote>Der Mitgliederbereich des Furrscher Carnevals Club.</KkNote>
+          <KkNote>{INTRO}</KkNote>
         </Stack>
         {expiredNotice}
         <LoginForm />
-        <LoginPendingEntries />
-        <LoginTestCredentials />
+        <LoginHelpNote />
       </KkSplitLayout.Pane>
     </KkSplitLayout>
   );

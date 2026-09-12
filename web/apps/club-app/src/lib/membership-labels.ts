@@ -50,6 +50,8 @@ export const formatSessionLabel = (sessionYear: number): string => {
   return `${sessionYear}/${endYearShort}`;
 };
 
+export const formatSessionNumber = (sessionNumber: number): string => `Nº ${sessionNumber}`;
+
 export const formatSessionSpan = (first: number, last: number | null): string => {
   const start = formatSessionLabel(first);
 
