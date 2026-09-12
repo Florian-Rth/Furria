@@ -1,18 +1,21 @@
 ---
-status: paused — W4 complete, W5 round 1 complete, W5 round 2 and W6 owed
+status: complete — slices 1–18 built, both stacks green, branch pushed. The PR and a commit-time
+        sweep are owed; nothing else blocks it.
 phase: CA-P1
 updated: 2026-09-13
-purpose: everything needed to continue CA-P1 on a different machine with no access to the
-         session that started it
+purpose: everything needed to open the CA-P1 pull request, and to start the next phase, with no
+         access to the sessions that built it
 ---
 
 # CA-P1 — implementation state and handoff
 
-> **To continue: read this file, then `p1-contract.md`, then resume at [§6 Next actions](#6-next-actions).**
+> **CA-P1 is built.** All eighteen slices ship, both stacks are green, and `feat/club-app-p1` is
+> pushed. What is left is in [§5 What is owed](#5-what-is-owed-and-known-risks) and
+> [§6 Next actions](#6-next-actions) — read those two first.
 > Everything the work depends on is committed. No session state is required.
 
-The phase is being built by orchestrated subagent workflows. This file records what is done, what
-is owed, how to run the machinery, and the mistakes already paid for so they are not repeated.
+The phase was built by orchestrated subagent workflows. This file records what is done, what is
+owed, how to run the machinery, and the mistakes already paid for so they are not repeated.
 
 ---
 
@@ -32,7 +35,8 @@ Binding coding rules, enforced by analyzers and lint, not by review:
 
 - **Nothing from plan §4's "Ignored" table** may enter the code, not even as a nullable column
   "for later": no Ehrenmitgliedschaft, no Mitgliedschaftsart, no Ruhezeit-Grund, no Schlüssel,
-  no founding year, no audit author, no Beitrag amounts.
+  no founding year, no audit author, no Beitrag amounts. The same table's extension bans the words
+  **Amt / Ämter** and **Team** anywhere in code or copy (contract §0 and §10.6).
 - **The app seeds nothing** beyond the bootstrap Account and the Admin Rolle
   (contract §9, Florian's ruling 2026-09-11). No `DevelopmentDataSeeder`, no seed flag in any
   `appsettings`, no fixture data in the repository. There is **no slice 3a**.
@@ -44,7 +48,9 @@ Binding coding rules, enforced by analyzers and lint, not by review:
 
 ## 2. Where the work stands
 
-52 commits on `feat/club-app-p1` since `07dd7a0`. Head is `332e439`.
+**CA-P1 is complete.** 183 commits on `feat/club-app-p1` since `07dd7a0`, plus the `docs:` commit
+that carries this file. All eighteen slices ship on both stacks, five rounds of the UX pass have
+run, both stacks are green, and the branch is on `origin`.
 
 ### Done
 
@@ -69,14 +75,15 @@ Binding coding rules, enforced by analyzers and lint, not by review:
 | 15 Gruppenverwaltung II | ✅ `515ab18` | ✅ `4328ea1` |
 | 16 Rollen & Rechte I | ✅ `5799e5d` | ✅ `3ea966c` |
 | 17 Rollen & Rechte II | ✅ `c1b28e9` | ✅ `3ea966c` (one commit, see below) |
-| 18 Website re-pointing | ❌ | ❌ |
+| 18 Website re-pointing | ✅ `7d0bdc3` | ✅ `644180a` |
 
-**Slices 1–17 are complete on both ends.** Only slice 18 is unbuilt.
+**Slice 18 followed decision S**: a separate anonymous `GET /api/public/groups`, never a widened
+`/api/groups`. The website's `/club` reads the club's Gruppen from that endpoint.
 
 Slices 9–17's frontend was built by four families in parallel worktrees and replayed onto the
 branch in the order hub → persons → groups → roles. Three integration commits followed:
 `40a4cd6` (route tree regenerated for all three `/manage/*` routes — each family had regenerated
-it with only its own route), `7f39a28` and `332e439` (two second spellings, below).
+it with only its own route), `7f39a28` and `332e439` (two second spellings).
 
 Slices 16 and 17 share one commit. `RoleDetail.tsx` is a slice-16 deliverable that imports all
 three slice-17 components, so a separately-compiling slice-16 commit would have required shipping
@@ -88,47 +95,69 @@ likewise only gate-verified at its tip; its two intermediate commits do not type
 > read at all. Built in `3ab1533` while integrating slices 13–17. If another §4.x endpoint is
 > missing, this is how it looks: a route that answers 405 rather than 404.
 
-> **Slice 9's frontend is now finished.** The audit that closed it found three real defects in
+> **Slice 9's frontend needed a second pass.** The audit that closed it found three real defects in
 > `5a7b3e1`, all fixed in `b60f351`: a 404 on any Hub write was completely silent
 > (`toWriteErrorMessage` returned `null`, so the dialog footer stayed empty and nothing toasted);
 > the confetti burst fired ~950 px below the fold because `HubCelebration` centred it on the whole
 > members panel; and the phone reading order put the admin-only Geschichte panel between Mitglieder
 > and Gruppen-Admins.
 
+Everything on the branch after slice 18 is review and repair: five rounds of the UX pass (§9), a
+final server review (§8), a composition review (§11) and a contract reconciliation (`d4a86c6`).
+
 ### Gate state
 
-```
-server:  dotnet build  → 0 warnings, 0 errors
-         dotnet test   → 19 analyzer + 643 API tests passing   (117 before the phase)
-         dotnet csharpier check . → clean, 339 files
-         (unchanged since slices 13-17 landed; no server file was touched by the frontend wave)
-web:     pnpm lint      → 1224 files checked, zero warnings, zero suppressions
-         pnpm typecheck → all four projects clean
-         pnpm test      → 1161 passing, 0 failed, 0 skipped
-                          club-app 545 (30 files) · website 502 (72) · ui 102 (13) · shot 12 (1)
-         pnpm build     → club-app and website both Done
+Measured on the integrated tree at `d4a86c6` with `git status --short` empty — not inherited from
+an earlier report. Re-run them before trusting this after any break in which the machine changed.
 
-Verified on the integrated tree with `git status --short` empty at 332e439. The server suite
-needs DOCKER_API_VERSION=1.41 on this machine, see the pitfall table.
+```
+server:  dotnet build             → 0 Warnung(en), 0 Fehler
+         dotnet test              → 673 passing, 0 failed, 0 skipped
+                                    Furria.Tests.Analyzers.Tests 19 (0.9 s)
+                                    Furria.Api.Tests            654 (52.8 s)
+                                    One warning is emitted, MTP0001 from the test SDK itself
+                                    („VSTest-specific properties are set but will be ignored"):
+                                    not ours, not on the restore path, absent from dotnet build
+         dotnet csharpier check . → clean, 347 files
+web:     pnpm install --frozen-lockfile → already up to date, 5 workspace projects
+         pnpm lint                → biome checked 1283 files, no fixes applied,
+                                    zero warnings, zero suppressions
+         pnpm typecheck           → all four projects Done (club-app, website, ui, shot)
+         pnpm test                → 1377 passing, 0 failed, 0 skipped, in 125 files
+                                    club-app 661 (34) · website 525 (74) · ui 179 (16) · shot 12 (1)
+         pnpm build               → club-app and website both Done
+                                    2874 and 3197 modules transformed
+                                    One rolldown note: a club-app chunk exceeds 500 kB. Splitting
+                                    the club-app bundle is not CA-P1 work and is not a defect
 ```
 
-Every route of the phase was screenshotted after integration at phone/desktop × light/dark and
-read: `/members`, `/groups`, `/profile`, `/my-groups/1`, `/manage/persons`,
-`/manage/persons/2`, `/manage/groups`, `/manage/roles`. A Playwright walk of all eight routes
-logged **no `pageerror` and no `/api/` response ≥ 400**. The nav rail carries all three
-Verwaltung entries, `resolveSectionTitle` resolves every new prefix (the phone dock reads
-„ROLLEN & RECHTE" on `/manage/roles`), and the §5.2 `/profile` regression is confirmed gone.
+**The server suite needs `DOCKER_API_VERSION=1.41` on this machine.** Without it every integration
+test dies in its collection fixture in under a second and reads as a catastrophic regression that
+is not one — see the pitfall table.
+
+Every route of the phase was screenshotted at phone/desktop × light/dark in every UX round, and a
+Playwright walk of all thirteen routes logged **no `pageerror` and no `/api/` response ≥ 400**:
+`/`, `/login`, `/members`, `/members/$id`, `/groups`, `/groups/$id`, `/my-groups/$id`, `/profile`,
+`/manage/persons`, `/manage/persons/$id`, `/manage/groups`, `/manage/roles` and the website's
+`/club`.
 
 **Anything uncommitted in the working tree when you arrive is an interrupted agent's work.**
 Judge it, do not assume it is good: run the gates, finish or discard it, then continue.
 
 ### Primitive layer
 
-28 new `Kk*` components, 7 shared internal parts, 9 extended, all in `@furria/ui`
+W3 left 28 new `Kk*` components, 7 shared internal parts and 9 extended, all in `@furria/ui`
 (contract §7 + §7.6). A design review fixed real contrast defects in the **existing** palette
 while building them — gold chip text was 1.70:1, dark-mode `blue` 2.7:1. The rule that came out of
 it and that all later work depends on: **`.main` is the fill, the new `*Ink` token is the readable
 foreground.**
+
+The five UX rounds added more and rewrote the rules two of them obey. New since W3:
+`KkStickyBar`, `KkStickyRail`, `KkAppShell.BackLink`, `KkPageWatermark`, `KkPanelSection`,
+`KkErrorState`, `KkReservedSlot`, `KkInlineLink`, and `KkLetterIndex`'s `strip` and `rail`
+variants. The rules are **§7.1a** (the action hierarchy — at most one contained primary per
+surface, a repeated row action is `tone="danger" variant="text" size="small"`) and **§7.1b**
+(uppercase is chrome, a club name is data); §7.1c lists every other primitive change.
 
 ---
 
@@ -186,28 +215,22 @@ Read tool and actually judge them.
 | a throwaway Playwright driver inside `web/` | biome lints it and it can land in a commit | keep it in the scratchpad; `<scratch>/node_modules` is symlinked to `web/tools/screenshot/node_modules`, so `node <scratch>/drive.mjs` resolves `playwright`. Always give it `finally { await browser.close() }` and `context.setDefaultTimeout(...)` — without them a timed-out locator leaves node hanging with the browser open |
 | `pnpm shot` for reading a long page | it always captures `fullPage`; `/manage/persons` is ~21 000 px tall and unreadable once downscaled, and macOS has neither ImageMagick nor PIL to crop it | shoot the same route with a viewport-sized `page.screenshot()` from a scratchpad driver when you need to *read* a page; use `pnpm shot` for the four-variant light/dark sweep |
 
-### Machine limits that shaped the design
-
-4 CPUs → the workflow concurrency cap is `min(16, cpus−2)` = **2 agents**. Wide fan-out buys
-nothing here. On a bigger machine the lane design in §4 can widen; the *ordering* constraints
-(backend before its frontend, one backend agent at a time) still hold.
-
 ---
 
-## 4. How the work is being run
+## 4. How the work was run
 
-Six workflows, of which 1–3 are complete:
+Six workflows. **All six are complete.**
 
 | # | Workflow | State |
 |---|---|---|
 | W1 | Contract & design: 4 readers → architect → 3 adversarial critics → revision | ✅ done |
 | W2 | Backend foundation, slices 1–3, TDD, then 3 reviews + fix | ✅ done (+ a rescue, see §7) |
 | W3 | `@furria/ui` primitive layer, then design + React review + fix | ✅ done |
-| W4 | Slices 4–17, two lanes | ✅ done — backend and frontend both through 17 |
-| W5 | UX roast: screenshot everything, critique, fix, re-shoot, loop until dry | ❌ not started |
-| W6 | Slice 18 + hardening | ❌ not started |
+| W4 | Slices 4–17, two lanes, then four parallel families | ✅ done |
+| W5 | UX roast: screenshot everything, critique, fix, re-shoot, five rounds | ✅ done — §9 |
+| W6 | Slice 18, the final server review, the composition review, the contract reconciliation | ✅ done |
 
-### The W4 lane design (reproduce this)
+### W4, first half — the two-lane design (slices 4–8)
 
 Two promise chains, so exactly two agents are ever live and the ordering is guaranteed:
 
@@ -228,78 +251,180 @@ for (const slice of SLICES) {
 - frontend slice N waits for backend slice N,
 - each agent is handed its predecessor's report, so knowledge carries forward without a barrier.
 
-Each agent: reads its contract sections → implements → runs **all** gates → (frontend) screenshots
-its routes and fixes what it sees → commits its own pathspec only.
+It worked, and it was slow: **25–45 minutes per agent**, roughly 45 minutes of wall clock per
+slice pair. That is the gates, not the model — every `dotnet test` starts a Postgres Testcontainer
+(~35 s) and a TDD slice runs it 8–15 times; a frontend slice runs the full web suite plus four real
+browser logins.
 
-**Slices 9–17's frontend was finished differently, and it worked better.** Four families (hub 9–10,
-persons 11–13, groups 14–15, roles 16–17) built concurrently in isolated worktrees, exported
-`git format-patch` series, and one integration agent replayed them in the order
-hub → persons → groups → roles, then ran a single gate pass and a single screenshot pass over the
-merged tree. Two things make that reproducible:
+### W4 second half, W5 and W6 — worktree families and a replayed patch series
 
-- **Gate discipline.** Each family wrote its entire assignment before executing anything expensive,
-  then ran `dotnet test` / `pnpm test` / `pnpm build` / `pnpm shot` **once**. Earlier agents burned
-  25–45 minutes per slice on repeated Testcontainer boots and browser logins.
+**This is the shape to reuse.** Slices 9–17's frontend, and then every round of the UX pass, were
+built by **four concurrent families, each in its own `git worktree` under `.claude/worktrees/`**,
+each exporting a `git format-patch` series that one integration agent replayed onto
+`feat/club-app-p1` in a fixed order, followed by **one** gate pass and **one** screenshot pass over
+the merged tree. The families were the same four every time — `shared`, `hub`, `persons`,
+`groups`/`roles` — so each owned a stable set of files across rounds.
+
+What that bought, measured against the two-lane half:
+
+- **Wall clock.** Four agents write at once instead of two, and the expensive part — the gates —
+  runs once for the wave instead of once per agent. A UX round of 4 families plus integration took
+  roughly the time one slice pair took in the two-lane design.
+- **Fewer second spellings, not more.** The risk was that four agents would invent four versions of
+  the same thing. In practice the conflicts were small, legible and nearly all *add/add on the same
+  list* — the round-1 integration had four conflicts, every one resolved by keeping both sides.
+  What the gates could **not** catch were three disagreements of judgement (`2b1d752`, `e55a851`,
+  `9226b1d` — §9), and those are the real cost: **budget an integration agent that reads for
+  disagreement, not just for conflict markers.**
+
+What it cost, and how to avoid paying it again:
+
+- **Gate discipline is the whole saving.** Each family must write its entire assignment before
+  executing anything expensive, then run `dotnet test` / `pnpm test` / `pnpm build` / `pnpm shot`
+  **once**. Earlier agents burned 25–45 minutes per slice on repeated Testcontainer boots and
+  browser logins. (This is also Florian's standing rule: subagent gates only at the end.)
 - **Replay order is load-bearing.** `groups` and `roles` both import the hub's dialogs and
   `PersonPicker`, so `hub` must land first; when `groups` duplicated slice 10's files (it was
   building against a base where they did not exist) the conflict resolved cleanly toward the hub
-  family's versions, leaving only the two prop names to adapt in `GroupOverrideDetails.tsx`.
+  family's versions, leaving only two prop names to adapt in `GroupOverrideDetails.tsx`.
+- **Check the worktree's base before reading a line.** The slice 9–17 worktrees were provisioned at
+  `main` (`07dd7a0`), not at the branch head. All four families caught it with `git rev-parse HEAD`
+  as their first command and fast-forwarded. A family that misses this writes against a tree with no
+  contract file and no slice 4+ frontend, and its patch will look plausible and will not apply.
+- **Stop the club-app dev server for the replay.** The TanStack router plugin rewrites
+  `routeTree.gen.ts` the moment a route file appears, and the next patch then aborts with „local
+  changes would be overwritten". `routeTree.gen.ts` is **generated**: never hand-merge it, take
+  either side, finish the series, run `pnpm build` once and commit the regenerated file.
+- **Clean the worktrees up at the end.** They are not in the working tree's history and they are
+  gitignored (`.gitignore`: `.claude/worktrees/`), but a stale one holds a branch ref and confuses
+  `git worktree list`. `git worktree prune`, then `git worktree remove` each one whose commits are
+  on the branch — verify by **commit subject**, because the replay gives every commit a new sha.
 
-**The worktrees were provisioned at `main` (`07dd7a0`), not at the branch head.** All four families
-caught it with `git rev-parse HEAD` as their first command and fast-forwarded. Any future worktree
-wave must check this before reading a line — a family that misses it writes against a tree with no
-contract file and no slice 4+ frontend, and its patch will look plausible and will not apply.
+### What is deliberately kept
 
-**Expect 25–45 min per agent.** That is the gates, not the model: every `dotnet test` starts a
-Postgres Testcontainer (~35 s) and a TDD slice runs it 8–15 times; a frontend slice runs the full
-web suite plus four real browser logins. Two lanes → roughly 45 min of wall clock per slice pair.
+**The `worktree-wf_*` branches.** Their worktrees are removed and their work is on the branch
+(replayed as patches, so the shas differ), but the branches are the only record of the pre-replay
+originals. Delete them with `git branch -D $(git branch --list 'worktree-wf_*')` once the merges
+are trusted.
+
+### Machine limits that shaped the design
+
+4 CPUs → the workflow tool's concurrency cap is `min(16, cpus−2)` = **2 agents**. The four-family
+waves still ran four worktrees at once, which on four cores is oversubscribed: the saving came from
+running the gates **once per wave** rather than from raw parallelism, and a fifth family would
+probably have bought nothing. On a bigger machine the lane design can widen; the *ordering*
+constraints (backend before its frontend, one backend agent at a time) still hold.
 
 ---
 
 ## 5. What is owed, and known risks
 
-1. **The UX pass has no data to look at.** Nothing is seeded (§1), and the create endpoints only
-   arrive in slices 11/14/16. Contract §9.2 pins the answer: a **throwaway script in the
-   scratchpad, never committed**, that logs in as the bootstrap admin and creates data through the
-   real write endpoints. §9.3 lists the cases it must produce — the `beendet`-but-affiliated
-   Person, the Gruppen-Admin affiliated by nothing else, the archived Gruppe with open
-   Zugehörigkeiten, the Gruppe with no admin, the unbesetzte Rolle. Write it before W5.
-2. ~~**`/profile` regression**~~ — **fixed and verified.** All four `/profile` PNGs render the full
-   page with no error state.
-3. ~~**`KkToastProvider` mounting**~~ — **confirmed mounted** in
-   `features/session/components/AppShell.tsx`; toasts were observed firing on real writes.
-4. **Commit timestamps** — every commit of this phase falls in the weekday 04:00–17:00 window that
-   the repo's convention avoids. Sweep with the global `fix-commit-times` skill before the PR.
-5. ~~**Umlaut folding in `GetPersonSearch`**~~ — **judged sufficient.** The two-way fold
-   (`GermanFold.Expand` + `GermanFold.Strip`, both sides ILIKE'd) covers every German spelling the
-   register can hold; it needs **no** migration, no `unaccent`, no `pg_trgm`. What was actually
-   broken there was the wildcard escaping, fixed separately: both calls used the two-argument
-   `EF.Functions.ILike`, which emits `ESCAPE ''` — Postgres reads that as *no* escape character,
-   so the backslashes the service inserted became literal pattern characters and any query
-   containing `_`, `%` or `\` returned nothing. Now the three-argument overload with an explicit
-   `\`, and the query is trimmed server-side rather than trusting the client's `toSearchTerm`.
-   The still-open half is §8's pinned divergence: the client's `normalizeForSearch` is NFD-strip
-   only, so `kuehnel` finds nothing on `/members` while the server finds Kühnel. **Ratifying which
-   one is meant is §5's Q6 — do not settle it in an implementation.**
-6. ~~**The `Since` chain-minimum** N+1 risk~~ — **closed.** It is computed in memory from one
-   projection, never per row. What the same pass found instead: **`/manage/persons` and
-   `/manage/roles` load every historic tie and throw it away.** `PersonRegistryProjection`
-   (`PersonService.cs`) filters only on `Group.ArchivedOn == null`, never on the period;
-   `RunningTies` computes `tie.Min(StartedOn)` and `ToSummary` drops it, because
-   `GroupReference`/`RoleReference` carry two properties each. `RoleService.RolePageProjection`
-   has the same shape and is shared between detail and list. Measured at 249 wire rows for 152
-   Personen — no user-visible defect, so it was **not** fixed on this branch: it reshapes two hot
-   projections. Trigger to watch: list cost grows with history, and decision Z pins these lists
-   unpaged. `MembershipChainDetails` genuinely needs the full Mitgliedschaft chain — only the
-   Gruppen/Rollen collections can be narrowed.
-7. `de-DE-x-icu` **is** present in `postgres:18-alpine` and sorts correctly
-   (`Adam < Ärger < Bach < Oehler < Öhler < Zöller`) — verified, not assumed. ADR-0008 records it.
+Nothing here blocks the branch — it is green and pushed. Everything below is owed **before or
+around the pull request**, and none of it may be quietly dropped.
+
+### Owed before the PR
+
+1. **The commit-time sweep.** **15 commits of this phase fall in the weekday 04:00–17:00 window the
+   repo's convention avoids** — the phase's first fifteen commits, contiguous, `6d9ba2a` …
+   `efa5f6f`: the contract, the first primitive commits and the slice 1–3 backend. Counted on the
+   log, not estimated:
+   `6d9ba2a`, `527bc3c`, `0345d20`, `505b9ee`, `abf1ce9`, `9d15358`, `0ab10e5`, `af21fee`,
+   `951058f`, `d077b6a`, `c27c75a`, `523f6b1`, `38a0716`, `2465819`, `efa5f6f`.
+   **All fifteen are already on `origin`.** Fixing them means rewriting published history, which
+   **Florian declined for now** — so the sweep was not run and the branch was pushed as a plain
+   fast-forward. It stays owed. When it is taken (the global `fix-commit-times` skill), it is a
+   force-push of a published branch and needs his explicit word, not an implementer's judgement.
+
+2. **`CONTEXT.md` needs Florian's review.** It was **reconstructed, not recovered**, after the
+   `git reset --hard` in §7: **~6 lines are provably missing**, several entries are
+   substance-sourced rather than his words, and the position of one entry is inferred. §7 has the
+   per-entry detail and the commit message of `4ba5a8e` has the rest. Until he reads it, **where
+   `CONTEXT.md` is thin the contract wins**.
+
+3. **`plan/club-app/p0-shell-and-session.md` and `plan/server/identity-foundation.md` were
+   destroyed** by the same `git reset --hard`, and **Florian's edits to both must be redone**. The
+   files exist at their pre-edit content; what is gone is his revision of them. Nobody else can
+   reconstruct it.
+
+4. **Decisions A, T and AA are reinterpretations declared in the contract and deliberately not
+   folded back into `p1-registry-and-groups.md`** — that file is pinned and it is his.
+   - **A** — the dot form (`persons.manage`) is the pinned spelling of a permission key; the plan
+     and `identity-foundation.md` still carry the retired `persons:manage` colon form.
+   - **T** — the Verwaltung nav group appears when at least one of the **three keys that have a
+     surface** is held; plan §4's navigation paragraph says „one entry per held key", and
+     `persons.read_details` has no page.
+   - **AA** — `beendet` appears **wherever it occurs**, Mitglieder included; the plan's surface
+     table and its derived-facts list each named only half of that axis.
+   Each is written into contract §12 with its reason. **Writing them back into the plan is his
+   call, not an implementer's.**
+
+5. **Decision AG is flagged for him.** A Person who is only a Gruppen-Admin **is not affiliated**:
+   her Gruppen-Hub works, and `/members` answers her **403**. The predicate was deliberately left
+   untouched — the client now carries a per-row `isAffiliated` instead, so no surface links to a
+   Karte that will 404 (§8). **If the club wants her in the register, that is a club act — give her
+   a Mitgliedschaft — not a change to the affiliation predicate.** Only Florian widens it.
+
+6. **The final review's two triage verdicts, both already taken, both worth re-reading before
+   anyone reopens them.**
+   - **The `Since` chain-minimum N+1 is closed** — it is computed in memory from one projection,
+     never per row. What the same pass found **instead** is still open: **`/manage/persons` and
+     `/manage/roles` load every historic tie and throw it away.** `PersonRegistryProjection`
+     (`PersonService.cs`) filters only on `Group.ArchivedOn == null`, never on the period;
+     `RunningTies` computes `tie.Min(StartedOn)` and `ToSummary` drops it, because
+     `GroupReference`/`RoleReference` carry two properties each. `RoleService.RolePageProjection`
+     has the same shape and is shared between detail and list. Measured at **249 wire rows for 152
+     Personen** — no user-visible defect, so it was **not** fixed on this branch: it reshapes two
+     hot projections. Trigger to watch: list cost grows with history, and decision Z pins these
+     lists unpaged. `MembershipChainDetails` genuinely needs the full Mitgliedschaft chain — only
+     the Gruppen/Rollen collections can be narrowed.
+   - **The umlaut folding is judged sufficient on the server.** The two-way fold
+     (`GermanFold.Expand` + `GermanFold.Strip`, both sides ILIKE'd) covers every German spelling
+     the register can hold; it needs **no** migration, no `unaccent`, no `pg_trgm`. What was
+     actually broken there was the wildcard escaping, fixed in `e668b2e`: both calls used the
+     two-argument `EF.Functions.ILike`, which emits `ESCAPE ''` — Postgres reads that as *no*
+     escape character, so the backslashes the service inserted became literal pattern characters
+     and any query containing `_`, `%` or `\` returned nothing. Now the three-argument overload
+     with an explicit `\`, and the query is trimmed server-side rather than trusting the client's
+     `toSearchTerm`. **The still-open half is the client/server divergence, and it is a decision,
+     not an implementation: Q6 below. Do not settle it in code.**
+
+7. **Eight decisions are owed to Florian and are written below as questions, not verdicts.** They
+   are the §8 findings the reconciliation classed as *a decision nobody has taken* rather than *the
+   contract was simply wrong*. Every one has a defensible shipped behaviour, so **none of them
+   blocks the PR**; what they must not get is a second implementer's reading.
+
+### Known risks that are not owed to anyone yet
+
 8. **`IsRunningOn` is hand-copied ~15 times** — `PersonService`, `GroupService`,
    `PermissionAuthorizer`, `BootstrapAdminSeeder` — while `AffiliationQuery` already shows the
-   right shape. Declined for this push (it rewrites the predicate in every hot read path for no
-   observable change, at the cost of a full Testcontainer suite). Belongs in **W6 hardening** as
+   right shape. Declined for this branch: it rewrites the predicate in every hot read path for no
+   observable change, at the cost of a full Testcontainer suite. It belongs in a hardening slice as
    `MembershipQuery` / `GroupMembershipQuery` / `GroupAdminQuery` `[Pure] Expression` factories
    with boundary tests for `start == today` and `end == today` (decision B).
+
+9. **The consolidation slice — nine composition findings, eight of them still open.** All nine were
+   spot-verified and all nine are real. They were declined together while W5 was still reshaping
+   surfaces; **that reason has now expired**, so this is the natural first work of the next phase.
+   §11 lists them. **Re-deriving contract §5's file lists belongs to the same slice** — §5's *rules*
+   were re-verified and bind, but its file lists are slice-era snapshots and the UX rounds moved
+   the files (§8's closing note).
+
+10. **The UX pass's last round left no written findings list.** Rounds 1–4 each produced a triage
+    that was landed and recorded (§9); **round 5 was the closing sweep and its findings went
+    straight into commits** — `bcdeae4` … `d4a86c6` — with no surviving document. Two consequences:
+    a reader who wants to know what round 5 judged has to read those commit messages, and
+    **nothing is known to be left unfixed by it**. The only UX item still deliberately standing is
+    §9's inclusive period end, which is correct behaviour and not a defect.
+
+11. **`de-DE-x-icu` is present in `postgres:18-alpine` and sorts correctly**
+    (`Adam < Ärger < Bach < Oehler < Öhler < Zöller`) — verified, not assumed. ADR-0008 records it.
+
+12. **The shared dev database carries write-flow residue** from the families' live probes, and
+    **there is no delete endpoint (decision U)**, so the extra records never go away by themselves:
+    persons **152 and 153** („Testine Überprüfung…"), **Gruppe 14 „Testgruppe Zwei"** (archived),
+    **Rolle 10 „Materialwart"**, and a changed description on Gruppe 1. `docker compose down -v`
+    plus a re-run of the scratchpad seeder is the only way back to the documented state. **Match
+    fixtures by name, never by count.**
 
 ### Decisions owed to Florian — an implementer may not take these
 
@@ -325,36 +450,38 @@ Contract §12 points here; answers to Q7 and Q8 become §12 rows.
 
 ## 6. Next actions
 
-1. **Triage the working tree.** Anything uncommitted is an interrupted agent's. Run the gates,
-   finish or discard.
-2. ~~**Finish W4**~~ — done. Slices 1–17 are complete on both ends.
-3. **Re-seed the dev database before W5.** The seed script exists (`seed.py`, scratchpad only,
-   never committed) and its ids are deterministic, but the four families' live write-flow probes
-   left residue in the shared database that makes several documented handles wrong today:
-   persons **152 and 153** („Testine Überprüfung…", each with a Mitgliedschaft, an open Ruhezeit
-   and a Beitragsermäßigung) so the register is **153 rows, not 151**; **Gruppe 14 „Testgruppe
-   Zwei"**, archived, so `/manage/groups` counts 14 / aktiv 12 / archiviert 2; **Rolle 10
-   „Materialwart"**, so there are ten Rollen; Gruppe 1 „Große Garde" has a changed description and
-   `isRecruiting = false`, plus same-day-ended rows that make it read **22 Personen · 4
-   Gruppen-Admins** instead of 18 · 2; and **Rolle 8 „Chronistin" is not unbesetzt today** (two
-   holdings created and ended on 2026-09-12). Because period ends are **inclusive** (decision B) a
-   row ended today still counts today, so most of that heals by itself on 2026-09-13 — but
-   `docker compose down -v` + re-seed is the only way to get the documented state exactly.
-   **There is no delete endpoint (decision U); the three created records never go away by
-   themselves.** Match fixtures by name, never by count.
-4. **W5 — the UX pass. Round 1 is complete; resume at round 2.** See §10 for exactly where the
-   pause is and what is already on disk. Round 2's 56 screenshots were already taken at `7d4bc04`
-   and are in the scratchpad — if that scratchpad is gone, re-shoot before critiquing. The loop as
-   specified: screenshot every route (`/members`, `/members/$id`, `/groups`,
-   `/groups/$id`, `/my-groups/$id`, `/profile`, `/manage/persons`, `/manage/persons/$id`,
-   `/manage/groups`, `/manage/roles`) at phone/desktop × light/dark. Then a deliberately hostile
-   critic: what is bad UX, where do pages drift from each other, where is the corporate design
-   inconsistent, where is a wow moment missing, what fails on detail. **Full-page rewrites are
-   allowed and wanted.** Fix → re-shoot → re-critique, and loop until a round finds nothing
-   structural (minimum two rounds).
-5. **W6**: slice 18 (website re-pointing — and note contract decision S: a separate anonymous
-   `GET /api/public/groups`, not a widened `/api/groups`), full gates, final review, commit-time
-   sweep, PR.
+CA-P1 is finished. The next actions are the pull request and the next phase — **not this one**.
+
+### Florian's, and nobody else's
+
+1. **Open the pull request** for `feat/club-app-p1` → `main`. The branch is pushed and green; no
+   agent opens it.
+2. **Decide the commit-time sweep** (§5.1). Fifteen commits sit in the avoided window and are
+   already published, so the fix is a history rewrite of a pushed branch. It is owed; it needs his
+   word before anyone runs it.
+3. **Answer Q1–Q8** above, at whatever pace suits. Two of them become new contract §12 rows.
+4. **Read `CONTEXT.md`** (§5.2) and **redo the lost edits to `p0-shell-and-session.md` and
+   `identity-foundation.md`** (§5.3).
+5. **Rule on decisions A, T and AA** — whether they are written back into
+   `p1-registry-and-groups.md`, which is pinned and his (§5.4) — and on **AG** (§5.5).
+
+### The next phase's first work
+
+6. **The consolidation slice (§11).** Eight composition findings, all verified, declined only
+   because W5 was still reshaping the surfaces. That reason has expired. Run them as one slice.
+7. **The hardening items**: the `IsRunningOn` expression factories (§5.8) and the two
+   over-fetching projections (§5.6).
+8. **Delete the `worktree-wf_*` branches** once the replayed merges are trusted:
+   `git branch -D $(git branch --list 'worktree-wf_*')`. Their worktrees are already removed; the
+   branches are the only record of the pre-replay originals, which is why they are still here.
+
+### Before touching the running app again
+
+9. **Re-seed the dev database** (§5.12). The residue from the families' live write probes is still
+   in it, so several documented fixtures read wrong. `docker compose down -v`, then re-run the
+   scratchpad seeder — it is deterministic, drives the real write endpoints and is **never
+   committed** (contract §9.4). Rebuildable from contract §9.2 and §9.3 at the cost of about an
+   agent-hour.
 
 ---
 
@@ -452,8 +579,9 @@ One correction was made in passing while re-reading a paragraph that had to chan
 whose §5 file lists were never re-derived — `/manage/roles` most of all (`RolesGrid`, `RoleCard`,
 `RoleColumn`, `KeyHandoverDialog`, `SelfLockoutDialog`, `RoleNotFound`), and `features/group-detail`
 exists in no §5 paragraph at all. §5.10 now says so out loud. **The rules in §5 were re-verified
-against the code and bind; the file lists are slice-era snapshots.** Re-deriving them is a job for
-after W5 settles the surfaces, alongside §11's consolidation slice.
+against the code and bind; the file lists are slice-era snapshots.** W5 has since settled the
+surfaces, so **re-deriving those lists is open work now** — it belongs with §11's consolidation
+slice, which reshapes the same files.
 
 ### Deliverables the contract pins that were never built
 
@@ -657,39 +785,49 @@ kept here as the record of why.
 
 ---
 
-## 9. On the UX pass's desk already (W5)
+## 9. The UX pass (W5) — five rounds
 
-Things the families saw, judged and **deliberately did not change**, because changing them would
-have been a contract amendment or a unilateral reshape of a primitive three siblings were using.
+The loop as specified: screenshot every route at phone/desktop × light/dark, set a deliberately
+hostile critic on the set (what is bad UX, where do pages drift from each other, where is the
+corporate design inconsistent, where is a wow moment missing, what fails on detail), fix, re-shoot,
+re-critique — **full-page rewrites allowed and wanted** — until a round finds nothing structural.
 
-1. ~~**Twenty red `Beenden` ghosts form a red column**~~ — **resolved.** The UX pass (round 1,
-   finding U2) took the §7.1 decision and wrote it into the contract as **§7.1a**: a repeated row
-   action is `tone="danger" variant="text" size="small"`; the loud destructive treatment belongs to
-   the confirming button inside `KkConfirmDialog` alone; each surface gets exactly one
-   `variant="contained"` primary, in its section header's `action` slot. `KkButton`'s red *label*
-   branches now paint through `kkTokens.color.*.redInk` (`error.main` at `size="small"` measured
-   4.35:1 on cream). The call-site re-ranking belongs to the hub, groups and persons buckets.
-2. ~~**On a phone every row with a `Beenden` becomes two lines**~~ — **resolved.** The
-   `width: 100%` at `xs` is gone from `data-kk-since-row-trailing`; the slot sits inline at every
-   width and the row keeps `flexWrap` so an unusually wide trailing still wraps rather than
-   overflows (finding U1). The same rewrite gave `KkSinceRow` the link affordance it never had —
-   eighteen named Personen on `/groups/1` were unclickable — an `avatar` slot, and the emphasis
-   swap that stops the Session year outranking the person's name.
-3. **`/manage/roles` is the one Verwaltung surface with no intro lead and no
-   `KkPanelHeader` rule over its master column**, while `/manage/persons` and `/manage/groups` both
-   open with a `KkLead` and an accent-square section head. Side by side the roles page reads as a
-   different generation of the same app. Cosmetic, cross-page, exactly W5's remit.
-4. ~~**The avatar stack on `/groups` clips its initials**~~ — **resolved.** `buildAvatarStack`
-   emits a one-letter monogram for stacked circles (finding U6); the −10px overlap stays. The
-   standalone `KkAvatar` at `medium`/`large` keeps both letters.
-5. ~~**The app shell's fixed mobile dock button floats over content on every phone route**~~ —
-   **resolved.** `KkAppShellMain` carries `pb: curtainClearance + 24` below `desktop` (finding U3),
-   so all four consumers of `kkTokens.layout.curtainClearance` finally agree. Not on
-   `KkAppShellStage` — the Stage's `pb` sits inside the masthead, not at the page bottom.
-6. **Decision B's inclusive end is genuinely surprising in the UI**: a Zugehörigkeit, Gruppen-Admin
-   row or Inhaberschaft ended **today stays in the running list until tomorrow**, with `untilOn`
-   set. Confirmed on the wire. Do not add a client-side filter and do not read it as a broken end
-   flow — the server is right and §2 owns the rule.
+**It ran five rounds.** Rounds 1–4 each ran as a four-family worktree wave (`shared`, `hub`,
+`persons`, `groups`/`roles`) with an integration agent replaying the patch series; **round 5 was the
+closing sweep and landed directly** (`bcdeae4` … `e133b68`), alongside the final server review. The
+rounds got quieter, which is the stop condition the loop wanted.
+
+### One behaviour that is correct and will be read as a defect
+
+Everything the families and the early rounds flagged and deliberately left alone has since been
+resolved — the red `Beenden` wall (§7.1a), the two-line phone rows, the clipped avatar stack, the
+floating mobile dock, the missing `/manage/roles` intro, the two dashed `tone="reserved"` panels
+and `KkBroomMark`. **One item stands, and it stands because it is right:**
+
+**Decision B's inclusive end is genuinely surprising in the UI.** A Zugehörigkeit, Gruppen-Admin
+row or Inhaberschaft ended **today stays in the running list until tomorrow**, with `untilOn` set.
+Confirmed on the wire. Do not add a client-side filter and do not read it as a broken end flow —
+the server is right and contract §2 owns the rule.
+
+### Round 1 — what a round actually costs
+
+Five hostile critics (corporate design · cross-surface drift · interaction and accessibility ·
+density and German copy · *where is it merely correct*) read all 52 screenshots and produced **79
+raw findings**. Triage merged ~45 duplicates, **dropped 5 as contract contradictions** (each named
+with its §12 decision letter) and verified every load-bearing claim against the code before keeping
+it — several critic diagnoses were wrong in their file, their count or their fix. What survived was
+**34 work items, 16 structural and 18 detail**, across five buckets, landed in **38 commits**
+(`c93c3f0` … `7d4bc04`).
+
+Two findings are worth knowing about even if you read nothing else:
+
+- **The login page was printing the bootstrap admin's e-mail and password** as unguarded module
+  constants, next to two permanently-disabled entrances and a form that did not submit. Rebuilt in
+  `0309d98`. It was development convenience that would have shipped.
+- **The „Beenden" wall**: `tone="danger" variant="outlined"` fired ~20× per surface as the only
+  colour-ranked control in the product, with its label measured at **4.35:1 — below AA** — while
+  `kkTokens.color.*.redInk` (6.38:1) existed for exactly that. Four of five lenses hit it
+  independently. The resolution is written into the contract as **§7.1a**.
 
 ### Round 3 of the UX pass — the `ui` bucket, amendment to §7.1a
 
@@ -766,7 +904,8 @@ Three integration commits followed, each a disagreement the gates could not catc
    surface whose Gruppen and Rollen panels are dead ends while the identical panels on
    `/manage/persons/$personId` link. Both now link on the established pattern.
 
-Gate state after integration: `pnpm lint` 1240 files, zero warnings, zero suppressions ·
+Gate state after that round-1 integration — **historical; §2 carries the current numbers**:
+`pnpm lint` 1240 files, zero warnings, zero suppressions ·
 `pnpm typecheck` all four projects clean · `pnpm test` **1223 passing**, 0 failed
 (club-app 579 · website 502 · ui 130 · shot 12) · `pnpm build` both Done · `git status --short`
 empty. A Playwright walk of all thirteen routes logged **no `pageerror` and no `/api/` response
@@ -790,100 +929,42 @@ empty. A Playwright walk of all thirteen routes logged **no `pageerror` and no `
 
 ---
 
-## 10. Where the pause is (2026-09-12)
+## 10. On disk, and **volatile**
 
-Florian stopped the W5/W6 workflow mid-run. **Nothing is lost and nothing is half-written** — the
-working tree is clean, every agent that had started had already committed, and the run was killed
-between rounds rather than inside one.
+The evidence of the phase that is **not** in the repository lives in the session scratchpad
+`/private/tmp/claude-501/-Users-florian-sources-Furria/<session-id>/scratchpad/`, which is
+session-scoped and will not survive a reboot or a new session. **None of it may be committed**
+(contract §9.4), so if it matters, copy it out of the temp directory before the session ends.
 
-### The exact state
-
-| | |
+| Path | What it is |
 |---|---|
-| Branch head | `7d4bc04` on `feat/club-app-p1`, tree clean |
-| `origin` | **19 commits behind.** Nothing of W4 or W5 has been pushed |
-| Slices | 1–17 complete on both ends. **Slice 18 not started** (that is W6) |
-| W5 | **Round 1 complete and landed.** Round 2 stopped at its shooter, before any critic ran |
-| Gates | Green at `7d4bc04`, verified by the round-1 integration agent. Nothing has touched the working tree since, so that verdict still stands — but re-run them before trusting it after any break in which the machine changed |
+| `dev-seed/seed.py` | the throwaway seeder. Deterministic ids, drives the real write endpoints. Rebuildable from contract §9.2 and §9.3, but rebuilding costs an agent-hour |
+| `ux/round-2/` … `ux/round-5/` | the full-page PNGs of each round, 14 surfaces × phone/desktop × light/dark, plus per-bucket before/after sets and viewport-sized reads in `vp/` and `crops/`. **For a tall surface read the viewport file, never the full-page one** |
+| `ux/website/` | slice 18's shots of the re-pointed `/club` |
+| `patches/` | every family's `git format-patch` series from every wave. Already replayed; kept only as evidence if a conflict resolution turns out wrong |
+| `wf/w5-w6.js` | the W5+W6 workflow script |
+| `verify-*.mjs`, `probe-*.mjs`, `vp-*.mjs` | the throwaway Playwright drivers the rounds used. **Keep them in the scratchpad** — biome lints anything under `web/`, and one of these can land in a commit |
 
-### What round 1 of the UX pass actually did
-
-Five hostile critics (corporate design · cross-surface drift · interaction and accessibility ·
-density and German copy · *where is it merely correct*) read all 52 screenshots and produced **79
-raw findings**. Triage merged ~45 duplicates, **dropped 5 as contract contradictions** (each named
-with its §12 decision letter) and verified every load-bearing claim against the code before keeping
-it — several critic diagnoses were wrong in their file, their count or their fix. What survived was
-**34 work items, 16 structural and 18 detail**, across five buckets, landed in **38 commits**
-(`c93c3f0`…`7d4bc04`).
-
-Two findings are worth knowing about even if you read nothing else:
-
-- **The login page was printing the bootstrap admin's e-mail and password** as unguarded module
-  constants, next to two permanently-disabled entrances and a form that did not submit. Rebuilt in
-  `0309d98`. It was development convenience that would have shipped.
-- **The „Beenden" wall**: `tone="danger" variant="outlined"` fired ~20× per surface as the only
-  colour-ranked control in the product, with its label measured at **4.35:1 — below AA** — while
-  `kkTokens.color.*.redInk` (6.38:1) existed for exactly that. Four of five lenses hit it
-  independently. The resolution is written into the contract as **§7.1a**.
-
-### Deliberately left for round 2
-
-The round-1 integration agent declined three things rather than land a ruling in an integration
-commit. They are the natural first work of round 2:
-
-1. The two remaining dashed `tone="reserved"` panels (`/profile`'s contact preview,
-   `/manage/roles`' no-selection column). G1's ruling is unambiguous; this is mechanical.
-2. `KkBroomMark`'s size and colour — a primitive-level decision affecting 28 empty states, and the
-   `ui` bucket's own open question.
-3. ~~Whether §7.1a item 3 should read „exactly one" or „at most one" contained primary~~ —
-   **closed.** Round 4 amended it to **„at most one"** in the contract, and named the reason: a
-   surface with no route-level create correctly carries no contained primary.
-
-### On disk, and **volatile**
-
-Everything below lives in the session scratchpad
-`/private/tmp/claude-501/-Users-florian-sources-Furria/1a16a9b7-9d1b-4532-85e4-740322ee09c8/scratchpad/`,
-which is session-scoped and will not survive a reboot or a new session. **None of it may be
-committed** (contract §9.4), so if it matters, copy it somewhere outside the repo before the break
-ends:
-
-- `dev-seed/seed.py` — the throwaway seeder. Deterministic ids, drives the real write endpoints.
-  Rebuildable from contract §9.2 and §9.3, but rebuilding costs an agent-hour.
-- `ux/round-2/` — 56 full-page PNGs (14 surfaces × phone/desktop × light/dark) plus 13
-  viewport-sized reads in `ux/round-2/viewport/`, all taken at `7d4bc04`. **For a tall surface read
-  the `vp-*` file, never the full-page one.**
-- `ux/round-1*/` — round 1's before and after shots, per bucket.
-- `patches/` — every family's `git format-patch` series from both waves. Already replayed; kept
-  only as evidence if a conflict resolution turns out wrong.
-- `wf/w5-w6.js` — the W5+W6 workflow script, ready to re-run.
-
-### Also kept, on purpose
-
-Eleven `worktree-wf_*` branches. Their worktrees are removed and their work is on the branch
-(replayed as patches, so the shas differ), but the branches are the only record of the pre-replay
-originals. Delete them with
-`git branch -D $(git branch --list 'worktree-wf_*')` once you trust the merges.
-
-### To resume
-
-Re-run the W5/W6 workflow. It re-enters at round 1 by design, so either edit `w5-w6.js` to start at
-round 2, or let round 1's critics re-read the round-2 shots — they will find less, which is exactly
-the signal the loop's stop condition wants. **Re-seed the dev database first** (§6 item 3): the
-residue described there is still present.
+`<scratch>/node_modules` must be a symlink to `web/tools/screenshot/node_modules` — that is how
+`node <scratch>/drive.mjs` resolves `playwright`. During the waves it pointed at a *worktree's*
+copy instead, and removing the worktrees left it dangling; it has been re-pointed at the main
+checkout. Point it there from the start.
 
 ---
 
-## 11. The consolidation slice — run it after W5 settles the surfaces
+## 11. The consolidation slice — the next phase's first slice
 
 A composition review of the branch filed nine findings. All nine were spot-verified against the
 source and **all nine are real**; one of them (the four-way fork of `toWriteErrorMessage`) was taken
 immediately because it was user-visible copy, and is recorded in §8. The other eight were
-**declined for this push, together, for one reason: W5 round 2 and W6 are still owed, and W5
-explicitly allows and wants full-page rewrites.** Consolidating surfaces the UX pass is about to
-reshape means doing the work twice and re-taking every screenshot.
+**declined for that push, together, for one reason: W5 was still running, and W5 explicitly allows
+and wants full-page rewrites.** Consolidating surfaces the UX pass is about to reshape means doing
+the work twice and re-taking every screenshot.
 
-They are recorded here so they are not rediscovered a fourth time. Run them as one slice once W5's
-last round has settled the surfaces.
+**That reason has expired.** W5's five rounds are done and the surfaces have settled, so the eight
+are simply open. They are recorded here so they are not rediscovered a fourth time. **Run them as
+one slice, as the next phase's first work** — before any new feature lands on top of the
+duplication.
 
 1. **`/members` and `/manage/persons` are the same register built twice** — seven component pairs
    plus `member-filters.ts`/`person-filters.ts` and `use-member-search`/`use-persons-search`,
