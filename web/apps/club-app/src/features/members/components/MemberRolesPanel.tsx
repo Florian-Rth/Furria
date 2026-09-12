@@ -1,5 +1,8 @@
 import { KkEmptyState, KkPanel, KkSinceRow } from '@furria/ui';
+import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { usePermissions } from '@/features/session';
+import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { formatSinceSession } from '@/lib/membership-labels';
 import { MEMBER_SECTION_TITLES, toNoRolesDescription } from '../members-labels';
 import type { MemberRole } from '../schemas';
@@ -7,6 +10,7 @@ import { MemberSection } from './MemberSection';
 
 const SINCE_LABEL = 'seit';
 const EMPTY_TITLE = 'KEINE ROLLE';
+const ROLES_PATH = '/manage/roles';
 
 interface MemberRolesPanelProps {
   roles: readonly MemberRole[];
@@ -14,16 +18,26 @@ interface MemberRolesPanelProps {
 }
 
 export const MemberRolesPanel: FC<MemberRolesPanelProps> = ({ roles, firstName }) => {
-  const rows = roles.map((role) => (
-    <KkSinceRow
-      key={role.roleId}
-      icon="role"
-      tone="accent"
-      title={role.name}
-      sinceLabel={SINCE_LABEL}
-      sinceValue={formatSinceSession(role.since)}
-    />
-  ));
+  const { has } = usePermissions();
+  const mayOpenRole = has(PERMISSION_KEYS.rolesManage);
+
+  const rows = roles.map((role) => {
+    const linkProps = mayOpenRole
+      ? { component: Link, to: ROLES_PATH, search: { role: role.roleId } }
+      : {};
+
+    return (
+      <KkSinceRow
+        key={role.roleId}
+        icon="role"
+        tone="accent"
+        title={role.name}
+        sinceLabel={SINCE_LABEL}
+        sinceValue={formatSinceSession(role.since)}
+        {...linkProps}
+      />
+    );
+  });
 
   const body =
     rows.length === 0 ? (
