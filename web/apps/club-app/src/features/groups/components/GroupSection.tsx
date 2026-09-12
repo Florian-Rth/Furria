@@ -4,12 +4,11 @@ import type { FC, PropsWithChildren } from 'react';
 
 interface GroupSectionProps extends PropsWithChildren {
   title: string;
-  meta?: string;
 }
 
-export const GroupSection: FC<GroupSectionProps> = ({ title, meta, children }) => (
+export const GroupSection: FC<GroupSectionProps> = ({ title, children }) => (
   <Stack sx={{ gap: 1.5, minWidth: 0 }}>
-    <KkPanelHeader title={title} meta={meta} />
+    <KkPanelHeader title={title} />
     {children}
   </Stack>
 );
