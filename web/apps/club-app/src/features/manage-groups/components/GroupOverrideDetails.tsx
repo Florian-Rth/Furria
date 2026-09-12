@@ -1,6 +1,5 @@
-import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { GroupHistoryPanel } from '@/features/group-detail';
+import { GroupDetailLayout, GroupHistoryPanel } from '@/features/group-detail';
 import {
   AddAdminDialog,
   AddMemberDialog,
@@ -61,26 +60,34 @@ export const GroupOverrideDetails: FC<GroupOverrideDetailsProps> = ({ group }) =
     </>
   ) : null;
 
+  const members = (
+    <OverrideMembersPanel
+      members={group.members}
+      groupName={group.name}
+      canManage={canManage}
+      canOpenPerson={isAffiliated}
+      onAdd={dialogs.openAddMember}
+      onEnd={dialogs.openEndMembership}
+    />
+  );
+
+  const admins = (
+    <OverrideAdminsPanel
+      admins={group.admins}
+      canManage={canManage}
+      canOpenPerson={isAffiliated}
+      onAdd={dialogs.openAddAdmin}
+      onEnd={dialogs.openEndAdmin}
+    />
+  );
+
+  const history = (
+    <GroupHistoryPanel pastMembers={group.pastMembers} pastAdmins={group.pastAdmins} />
+  );
+
   return (
     <>
-      <Stack sx={{ gap: 3.5, minWidth: 0 }}>
-        <OverrideMembersPanel
-          members={group.members}
-          groupName={group.name}
-          canManage={canManage}
-          canOpenPerson={isAffiliated}
-          onAdd={dialogs.openAddMember}
-          onEnd={dialogs.openEndMembership}
-        />
-        <OverrideAdminsPanel
-          admins={group.admins}
-          canManage={canManage}
-          canOpenPerson={isAffiliated}
-          onAdd={dialogs.openAddAdmin}
-          onEnd={dialogs.openEndAdmin}
-        />
-        <GroupHistoryPanel pastMembers={group.pastMembers} pastAdmins={group.pastAdmins} />
-      </Stack>
+      <GroupDetailLayout stacked admins={admins} members={members} history={history} />
       {tools}
     </>
   );
