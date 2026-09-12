@@ -68,6 +68,8 @@ export const UNHELD_CHIP: StateChip = { label: 'unbesetzt', tone: 'gold', dot: f
 
 export const GROUP_ADMIN_CHIP: StateChip = { label: 'Gruppen-Admin', tone: 'accent', dot: false };
 
+export const MY_GROUP_CHIP: StateChip = { label: 'deine Gruppe', tone: 'accent', dot: false };
+
 export const READ_ONLY_CHIP: StateChip = { label: 'nur Ansicht', tone: 'neutral', dot: false };
 
 export const WITHHELD_CHIP: StateChip = {

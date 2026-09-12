@@ -3,6 +3,8 @@ import type { PersonRef } from '@/lib/api/schemas';
 import {
   toGroupHeadline,
   toGroupId,
+  toGroupStandingChips,
+  toGroupStandings,
   toGroupsIntroSentence,
   toPersonUnitLabel,
   toRecruitingContactLine,
@@ -172,5 +174,39 @@ describe('toGroupHeadline', () => {
       tone: 'neutral',
       dot: false,
     });
+  });
+});
+
+describe('toGroupStandings', () => {
+  it('keys every standing by its Gruppe', () => {
+    const standings = toGroupStandings([
+      { groupId: 4, name: 'Elferrat', isMember: true, isAdmin: false },
+      { groupId: 9, name: 'Musikzug', isMember: false, isAdmin: true },
+    ]);
+
+    expect(standings.get(4)).toEqual({ isMember: true, isAdmin: false });
+    expect(standings.get(9)).toEqual({ isMember: false, isAdmin: true });
+    expect(standings.get(11)).toBeUndefined();
+  });
+});
+
+describe('toGroupStandingChips', () => {
+  it('marks nothing for a Gruppe the viewer has no standing in', () => {
+    expect(toGroupStandingChips(undefined)).toEqual([]);
+  });
+
+  it('marks a Gruppe the viewer belongs to', () => {
+    expect(toGroupStandingChips({ isMember: true, isAdmin: false })).toHaveLength(1);
+  });
+
+  it('marks both facts when the viewer belongs to a Gruppe she also administers', () => {
+    expect(toGroupStandingChips({ isMember: true, isAdmin: true })).toHaveLength(2);
+  });
+
+  it('marks the Gruppen-Admin who is not a member', () => {
+    const chips = toGroupStandingChips({ isMember: false, isAdmin: true });
+
+    expect(chips).toHaveLength(1);
+    expect(chips[0]?.label).toBe('Gruppen-Admin');
   });
 });

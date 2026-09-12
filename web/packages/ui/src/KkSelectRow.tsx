@@ -3,6 +3,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { FC, ReactNode } from 'react';
 import { focusRing } from './internal/focus-ring';
+import { lineClamp } from './internal/line-clamp';
 import { raisedSurface } from './internal/raised-surface';
 import { redInk } from './internal/red-ink';
 import { KkIcon } from './KkIcon';
@@ -11,14 +12,11 @@ import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
 const BAR_WIDTH = 3;
+const TITLE_LINES = 2;
+const META_LINES = 2;
 
-const clampedLine = {
-  display: 'block',
-  minWidth: 0,
-  whiteSpace: 'nowrap',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-} as const;
+const clampedTitle = lineClamp(TITLE_LINES);
+const clampedMeta = lineClamp(META_LINES);
 
 interface KkSelectRowProps {
   title: string;
@@ -46,7 +44,7 @@ export const KkSelectRow: FC<KkSelectRowProps> = ({
 
   const metaLine =
     meta === undefined ? null : (
-      <KkMeta component="span" sx={clampedLine}>
+      <KkMeta component="span" sx={clampedMeta}>
         {meta}
       </KkMeta>
     );
@@ -120,7 +118,7 @@ export const KkSelectRow: FC<KkSelectRowProps> = ({
             minWidth: 0,
           }}
         >
-          <Box component="span" sx={clampedLine}>
+          <Box component="span" sx={clampedTitle}>
             {title}
           </Box>
         </Typography>

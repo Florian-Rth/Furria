@@ -1,19 +1,14 @@
 import { KkPanelSection, KkReservedSlot } from '@furria/ui';
 import type { FC } from 'react';
-import { GROUP_SECTION_TITLES } from '../groups-labels';
-
-const PHOTOS_TITLE = 'NOCH KEINE BILDER';
-const PHOTOS_BADGE = 'bald';
-const PHOTOS_NOTE =
-  'Platz für ein paar Bilder aus vergangenen Sessions. Die Bildergalerie liefert sie später automatisch — hier wird nichts hochgeladen.';
+import { GROUP_SECTION_TITLES, PHOTOS_RESERVED, RESERVED_BADGE } from '../groups-labels';
 
 export const GroupPhotosSlot: FC = () => (
   <KkPanelSection title={GROUP_SECTION_TITLES.photos}>
     <KkReservedSlot
       icon="gallery"
-      title={PHOTOS_TITLE}
-      description={PHOTOS_NOTE}
-      badge={PHOTOS_BADGE}
+      title={PHOTOS_RESERVED.title}
+      description={PHOTOS_RESERVED.description}
+      badge={RESERVED_BADGE}
     />
   </KkPanelSection>
 );
