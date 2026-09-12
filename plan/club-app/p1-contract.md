@@ -2981,9 +2981,17 @@ one is used*, plus one contrast fix.
 2. **The loud destructive treatment is reserved for the single confirming button inside
    `KkConfirmDialog`**, which carries the consequence sentence (§10.5). That is
    `tone="danger" variant="contained"`.
-3. **Each surface gets exactly one `variant="contained"` primary**, in the `action` slot of its
-   section `KkPanelHeader`. `/manage/roles` already does this correctly — „+ Inhaber eintragen"
-   filled, „Umbenennen"/„Archivieren" outlined.
+3. **Each surface gets at most one `variant="contained"` primary**, in the `action` slot of its
+   section `KkPanelHeader`. „exactly one" was the round-1 wording and it is **amended to „at most
+   one" here** (UX pass, round 4, hub finding: „+ Mitglied" was the Gruppen-Hub's only contained
+   primary while the structurally identical „+ Mitglied" on `/manage/groups` was outlined, so one
+   act on one object was ranked two ways one nav row apart). The contained treatment belongs to a
+   **route-level create** — „Person anlegen", „Gruppe anlegen", „Rolle anlegen" — and a surface
+   that has no such act, the Gruppen-Hub and the Gruppenverwaltung's override column among them,
+   correctly carries none. Every repeated panel action („+ Mitglied", „+ Admin", „+ Inhaber",
+   „+ Zeitraum", „+ Ermäßigung", „Pflegen") is `variant="outlined" size="small"`. `/manage/roles`
+   already does this correctly — „Rolle anlegen" filled, „+ Inhaber"/„Umbenennen"/„Archivieren"
+   outlined.
 4. **Contrast.** Both red *label* branches of `KkButton` (`default/text` and
    `danger/outlined` · `danger/text`) paint through `kkTokens.color.*.redInk`, not `error.main`:
    `.main` is the fill, the `*Ink` token is the readable foreground. `error.main` at
