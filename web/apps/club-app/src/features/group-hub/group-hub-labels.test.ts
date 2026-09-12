@@ -84,7 +84,7 @@ describe('toHubHeadline', () => {
     });
   });
 
-  it('dates the viewer own standing from her own row', () => {
+  it('dates the viewer own Zugehörigkeit from her own row', () => {
     const headline = toHubHeadline(
       hubDetails({
         members: [
@@ -97,13 +97,13 @@ describe('toHubHeadline', () => {
 
     expect(headline).toEqual({
       title: 'Tanzgarde',
-      eyebrow: 'deine Gruppe seit 2016/17',
+      eyebrow: 'du bist hier dabei seit 2016/17',
       chips: [{ label: 'sucht gerade niemanden', tone: 'neutral', dot: false }],
       subline: '2 Personen · kein Gruppen-Admin',
     });
   });
 
-  it('claims the Gruppe without a date for an admin who is in no row of it', () => {
+  it('names the responsibility of an admin who dances in no row of the Gruppe', () => {
     const headline = toHubHeadline(
       hubDetails({
         isRecruiting: true,
@@ -116,13 +116,32 @@ describe('toHubHeadline', () => {
 
     expect(headline).toEqual({
       title: 'Tanzgarde',
-      eyebrow: 'deine Gruppe',
+      eyebrow: 'du bist Gruppen-Admin',
       chips: [
         { label: 'sucht Verstärkung', tone: 'gold', dot: true },
         { label: 'Gruppen-Admin', tone: 'accent', dot: false },
       ],
       subline: '1 Person · 1 Gruppen-Admin',
     });
+  });
+
+  it('lets the Zugehörigkeit speak for an admin who is in the Gruppe herself', () => {
+    const headline = toHubHeadline(
+      hubDetails({
+        viewerIsAdmin: true,
+        members: [hubMember({ personId: 12, since: '2020-11-11' })],
+        admins: [hubAdmin({ personId: 12 })],
+      }),
+      12,
+    );
+
+    expect(headline.eyebrow).toBe('du bist hier dabei seit 2020/21');
+  });
+
+  it('falls back to the member phrase when neither standing is known yet', () => {
+    const headline = toHubHeadline(hubDetails({ members: [hubMember({ personId: 44 })] }), 12);
+
+    expect(headline.eyebrow).toBe('du bist hier dabei');
   });
 
   it('leaves the accent Gruppen-Admin chip off a member who only belongs to the Gruppe', () => {

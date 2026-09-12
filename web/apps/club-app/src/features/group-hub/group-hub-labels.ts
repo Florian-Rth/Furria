@@ -11,7 +11,8 @@ import type { HubDetails } from './schemas';
 const GROUP_ID_PATTERN = /^[1-9]\d*$/;
 const HUB_TITLE_FALLBACK = 'Meine Gruppe';
 
-const MY_GROUP_EYEBROW = 'deine Gruppe';
+const MEMBER_EYEBROW = 'du bist hier dabei';
+const GROUP_ADMIN_EYEBROW = 'du bist Gruppen-Admin';
 
 export const toHubId = (raw: string): number | null =>
   GROUP_ID_PATTERN.test(raw) ? Number(raw) : null;
@@ -23,10 +24,16 @@ export interface HubHeadline {
   subline: string | null;
 }
 
-const toStandingEyebrow = (ownSince: string | undefined): string =>
-  ownSince === undefined
-    ? MY_GROUP_EYEBROW
-    : `${MY_GROUP_EYEBROW} seit ${formatSinceSession(ownSince)}`;
+const toStandingEyebrow = (
+  ownRow: GroupDetailMember | undefined,
+  viewerIsAdmin: boolean,
+): string => {
+  if (ownRow !== undefined) {
+    return `${MEMBER_EYEBROW} seit ${formatSinceSession(ownRow.since)}`;
+  }
+
+  return viewerIsAdmin ? GROUP_ADMIN_EYEBROW : MEMBER_EYEBROW;
+};
 
 export const toHubHeadline = (
   hub: HubDetails | undefined,
@@ -41,7 +48,7 @@ export const toHubHeadline = (
 
   return {
     title: hub.name,
-    eyebrow: toStandingEyebrow(ownRow?.since),
+    eyebrow: toStandingEyebrow(ownRow, hub.viewerIsAdmin),
     chips: hub.viewerIsAdmin ? [openness, GROUP_ADMIN_CHIP] : [openness],
     subline: toGroupSubline(hub.members.length, hub.admins.length),
   };
