@@ -5,14 +5,13 @@ import type { MembershipState } from '@/lib/api/schemas';
 import { toStateStats } from '@/lib/state-chips';
 
 const STATS_TITLE = 'Das Register in Zahlen';
-const STATS_NOTE =
-  'Gezählt wird jede Person im Register — auch ohne Mitgliedschaft und ohne Gruppe.';
 
 interface PersonsStatsProps {
   totals: Record<MembershipState, number>;
+  note: string;
 }
 
-export const PersonsStats: FC<PersonsStatsProps> = ({ totals }) => {
+export const PersonsStats: FC<PersonsStatsProps> = ({ totals, note }) => {
   const stats = toStateStats(totals);
 
   return (
@@ -29,7 +28,7 @@ export const PersonsStats: FC<PersonsStatsProps> = ({ totals }) => {
         ))}
       </KkStatRow>
       <KkRule weight="hair" />
-      <KkNote>{STATS_NOTE}</KkNote>
+      <KkNote>{note}</KkNote>
     </Stack>
   );
 };

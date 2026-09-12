@@ -1,9 +1,13 @@
 import type { FC } from 'react';
+import { AppListSkeleton } from '@/features/session';
 import { useGroupsQuery } from '../api';
+import { GROUPS_SECTION_TITLE } from '../groups-labels';
 import { toGroupsErrorMessage } from '../groups-messages';
 import { GroupsError } from './GroupsError';
-import { GroupsSkeleton } from './GroupsSkeleton';
 import { GroupsView } from './GroupsView';
+
+const LOADING_LABEL = 'Gruppen werden geladen';
+const TOOLBAR_CHIPS = 3;
 
 export const GroupsBody: FC = () => {
   const groups = useGroupsQuery();
@@ -20,5 +24,12 @@ export const GroupsBody: FC = () => {
     return <GroupsError message={errorMessage} onRetry={reload} />;
   }
 
-  return <GroupsSkeleton />;
+  return (
+    <AppListSkeleton
+      label={LOADING_LABEL}
+      sectionTitle={GROUPS_SECTION_TITLE}
+      toolbarChips={TOOLBAR_CHIPS}
+      listShape="cards"
+    />
+  );
 };
