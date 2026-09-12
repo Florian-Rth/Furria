@@ -4,6 +4,8 @@ import {
   formatAddress,
   formatIsoDay,
   formatPeriod,
+  formatSessionLabel,
+  formatSessionSpan,
   formatSinceSession,
   toMemberSinceLabel,
 } from './membership-labels';
@@ -65,5 +67,28 @@ describe('toMemberSinceLabel', () => {
     ['none', 'Mitglied ab'],
   ])('labels a %s chain with %s', (state, expected) => {
     expect(toMemberSinceLabel(state)).toBe(expected);
+  });
+});
+
+describe('formatSessionLabel', () => {
+  it.each([
+    [1971, '1971/72'],
+    [1999, '1999/00'],
+    [2000, '2000/01'],
+    [2025, '2025/26'],
+    [2099, '2099/00'],
+  ])('labels the session starting %i as %s', (sessionYear, expected) => {
+    expect(formatSessionLabel(sessionYear)).toBe(expected);
+  });
+});
+
+describe('formatSessionSpan', () => {
+  it.each<[number, number | null, string]>([
+    [2025, null, '2025/26 – offen'],
+    [2025, 2025, '2025/26'],
+    [2025, 2027, '2025/26 – 2027/28'],
+    [1999, 2000, '1999/00 – 2000/01'],
+  ])('spans %i to %s as %s', (first, last, expected) => {
+    expect(formatSessionSpan(first, last)).toBe(expected);
   });
 });

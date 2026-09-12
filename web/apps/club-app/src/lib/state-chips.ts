@@ -25,6 +25,20 @@ export const toMembershipStateChip = (state: MembershipState): StateChip => ({
   ...STATE_CHIP_PAINT[state],
 });
 
+const RUNNING_PERIOD_CHIP: StateChip = { label: 'läuft', tone: 'green', dot: true };
+const PLANNED_PERIOD_CHIP: StateChip = { label: 'geplant', tone: 'neutral', dot: false };
+
+export const toPeriodChip = (isRunning: boolean, isFuture: boolean): StateChip | null => {
+  if (isRunning) {
+    return RUNNING_PERIOD_CHIP;
+  }
+  if (isFuture) {
+    return PLANNED_PERIOD_CHIP;
+  }
+
+  return null;
+};
+
 const RECRUITING_CHIP: StateChip = { label: 'sucht Verstärkung', tone: 'gold', dot: true };
 const SETTLED_CHIP: StateChip = { label: 'sucht gerade niemanden', tone: 'neutral', dot: false };
 
