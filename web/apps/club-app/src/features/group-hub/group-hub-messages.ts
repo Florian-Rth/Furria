@@ -4,7 +4,7 @@ import { isNotFoundError, toQueryErrorMessage } from '@/lib/query-error';
 const HUB_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
   unreachable:
     'Diese Gruppe hat den Server nicht erreicht. Prüfe deine Verbindung und versuch es noch einmal.',
-  unexpected: 'Da ist etwas schiefgelaufen. Bitte versuch es gleich noch einmal.',
+  unexpected: 'Diese Gruppe konnte nicht geladen werden.',
   rejected: 'Der Server hat diese Anfrage nicht angenommen.',
 };
 
