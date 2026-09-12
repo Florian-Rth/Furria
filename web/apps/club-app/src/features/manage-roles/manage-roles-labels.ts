@@ -3,6 +3,7 @@ import type { PermissionKey } from '@/lib/api/schemas';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { SESSION_OPENING_DAY, SESSION_OPENING_MONTH, sessionAt } from '@/lib/club';
 import { isFutureDay, toIsoDay } from '@/lib/day';
+import { toInitials } from '@/lib/initials';
 import { formatIsoDay, formatSinceSession } from '@/lib/membership-labels';
 import { UNARCHIVED_LABEL, UNHELD_CHIP } from '@/lib/state-chips';
 import { normalizeForSearch } from '@/lib/text';
@@ -81,6 +82,7 @@ export interface RoleMasterEntry {
   name: string;
   description: string;
   meta: string | null;
+  holderInitials: string[];
   holderCount: number;
   isArchived: boolean;
   isUnheld: boolean;
@@ -91,6 +93,7 @@ const toMasterEntry = (role: RoleSummary): RoleMasterEntry => ({
   name: role.name,
   description: role.description,
   meta: toHoldersMeta(role.holders),
+  holderInitials: role.holders.map((holder) => toInitials(holder.firstName, holder.lastName)),
   holderCount: role.holders.length,
   isArchived: role.archivedOn !== null,
   isUnheld: role.holders.length === 0,
