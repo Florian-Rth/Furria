@@ -47,7 +47,6 @@ export const RoleDetail: FC<RoleDetailProps> = ({ role, catalogue, holdersPendin
       <RoleHeaderCard
         role={role}
         onRename={openRename}
-        onAddHolder={openAddHolder}
         onArchive={openArchive}
         onRestore={lifecycle.restore}
         isRestoring={lifecycle.isRestoring}
@@ -55,7 +54,9 @@ export const RoleDetail: FC<RoleDetailProps> = ({ role, catalogue, holdersPendin
       <RoleHoldersPanel
         holders={role.holders}
         canOpenPerson={isAffiliated}
+        canAdd={!isArchived}
         pending={holdersPending}
+        onAdd={openAddHolder}
         onEnd={dialogs.openEndHolding}
       />
       <RolePermissionList

@@ -2,24 +2,21 @@ import { KkEmptyState, KkPanel } from '@furria/ui';
 import Grid from '@mui/material/Grid';
 import type { FC } from 'react';
 import type { RoleMasterEntry } from '../manage-roles-labels';
-import { NO_ROLE_SEARCH_RESULT_TITLE, toNoRoleSearchResultLine } from '../manage-roles-labels';
+import { NO_ROLE_SEARCH_RESULT_TITLE } from '../manage-roles-labels';
 import { RoleCard } from './RoleCard';
 
-const CARD_SIZE = { xs: 12, desktop: 4 };
+const CARD_SIZE = { xs: 12, sm: 6, desktop: 4 };
 
 interface RolesGridProps {
   entries: readonly RoleMasterEntry[];
-  term: string | null;
+  emptyDescription: string;
 }
 
-export const RolesGrid: FC<RolesGridProps> = ({ entries, term }) => {
+export const RolesGrid: FC<RolesGridProps> = ({ entries, emptyDescription }) => {
   if (entries.length === 0) {
     return (
       <KkPanel variant="block">
-        <KkEmptyState
-          title={NO_ROLE_SEARCH_RESULT_TITLE}
-          description={toNoRoleSearchResultLine(term ?? '')}
-        />
+        <KkEmptyState title={NO_ROLE_SEARCH_RESULT_TITLE} description={emptyDescription} />
       </KkPanel>
     );
   }

@@ -1,25 +1,33 @@
-import { KkMeta, KkPanel } from '@furria/ui';
+import { KkEmptyState, KkPanel } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { RoleMasterEntry } from '../manage-roles-labels';
-import { toNoRoleSearchResultLine } from '../manage-roles-labels';
+import { NO_ROLE_SEARCH_RESULT_TITLE } from '../manage-roles-labels';
 import { RolesMasterRow } from './RolesMasterRow';
 
 interface RolesMasterListProps {
   entries: readonly RoleMasterEntry[];
-  term: string | null;
+  emptyDescription: string;
   selectedRoleId: number | null;
   onSelect: (roleId: number) => void;
 }
 
 export const RolesMasterList: FC<RolesMasterListProps> = ({
   entries,
-  term,
+  emptyDescription,
   selectedRoleId,
   onSelect,
 }) => {
   if (entries.length === 0) {
-    return <KkMeta italic>{toNoRoleSearchResultLine(term ?? '')}</KkMeta>;
+    return (
+      <KkPanel variant="block">
+        <KkEmptyState
+          size="panel"
+          title={NO_ROLE_SEARCH_RESULT_TITLE}
+          description={emptyDescription}
+        />
+      </KkPanel>
+    );
   }
 
   const rows = entries.map((entry) => (
