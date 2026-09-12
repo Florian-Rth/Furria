@@ -45,6 +45,10 @@ const SETTLED_CHIP: StateChip = { label: 'sucht gerade niemanden', tone: 'neutra
 export const toRecruitingChip = (isRecruiting: boolean): StateChip =>
   isRecruiting ? RECRUITING_CHIP : SETTLED_CHIP;
 
+export const ARCHIVED_CHIP: StateChip = { label: 'archiviert', tone: 'neutral', dot: false };
+
+export const NO_ADMIN_CHIP: StateChip = { label: 'kein Admin', tone: 'gold', dot: false };
+
 export const ALL_STATES_FILTER_ID = 'all';
 
 const ALL_STATES_LABEL = 'Alle';
