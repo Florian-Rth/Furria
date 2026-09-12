@@ -1,10 +1,8 @@
 import { KkFactRow, KkPanel, KkPanelSection } from '@furria/ui';
 import type { FC } from 'react';
 import { formatPeriod } from '@/lib/membership-labels';
-import { toPersonName } from '../manage-roles-labels';
+import { ROLE_SECTION_TITLES, toPersonName } from '../manage-roles-labels';
 import type { RoleHolder } from '../schemas';
-
-const SECTION_TITLE = 'Geschichte';
 
 interface RolePastHoldersPanelProps {
   holders: readonly RoleHolder[];
@@ -25,7 +23,7 @@ export const RolePastHoldersPanel: FC<RolePastHoldersPanelProps> = ({ holders })
   ));
 
   return (
-    <KkPanelSection title={SECTION_TITLE}>
+    <KkPanelSection title={ROLE_SECTION_TITLES.history}>
       <KkPanel variant="list">{rows}</KkPanel>
     </KkPanelSection>
   );
