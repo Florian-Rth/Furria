@@ -23,7 +23,7 @@ const ruleImage = (theme: Theme): string =>
 interface KkPanelHeaderProps {
   title: string;
   action?: ReactNode;
-  meta?: string;
+  meta?: ReactNode;
   size?: KkPanelHeaderSize;
   sx?: KkSx;
 }
@@ -35,11 +35,13 @@ export const KkPanelHeader: FC<KkPanelHeaderProps> = ({
   size = 'small',
   sx,
 }) => {
-  const metaLine =
-    meta === undefined ? null : (
+  const metaSlot =
+    typeof meta === 'string' ? (
       <KkEyebrow tone="muted" sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
         {meta}
       </KkEyebrow>
+    ) : (
+      meta
     );
 
   return (
@@ -67,6 +69,7 @@ export const KkPanelHeader: FC<KkPanelHeaderProps> = ({
       >
         {title}
       </Typography>
+      {metaSlot}
       <Box
         aria-hidden
         sx={(theme) => ({
@@ -76,7 +79,6 @@ export const KkPanelHeader: FC<KkPanelHeaderProps> = ({
           backgroundImage: ruleImage(theme),
         })}
       />
-      {metaLine}
       {action}
     </Stack>
   );
