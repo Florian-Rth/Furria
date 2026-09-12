@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { toStateFilterOptions } from './state-chips';
+import { toPeriodChip, toStateFilterOptions } from './state-chips';
 
 describe('toStateFilterOptions', () => {
   it('offers every occurring state in the club order, with the total first', () => {
@@ -22,5 +22,20 @@ describe('toStateFilterOptions', () => {
     expect(toStateFilterOptions({ active: 0, paused: 0, ended: 0, none: 0 })).toEqual([
       { id: 'all', label: 'Alle', count: 0 },
     ]);
+  });
+});
+
+describe('toPeriodChip', () => {
+  it.each([
+    { label: 'a running period', isRunning: true, isFuture: false, expected: 'läuft' },
+    { label: 'a period that has not begun', isRunning: false, isFuture: true, expected: 'geplant' },
+    { label: 'a closed period', isRunning: false, isFuture: false, expected: null },
+  ])('marks $label', ({ isRunning, isFuture, expected }) => {
+    expect(toPeriodChip(isRunning, isFuture)?.label ?? null).toBe(expected);
+  });
+
+  it('gives the running chip a live dot and the planned chip none', () => {
+    expect(toPeriodChip(true, false)).toEqual({ label: 'läuft', tone: 'green', dot: true });
+    expect(toPeriodChip(false, true)).toEqual({ label: 'geplant', tone: 'neutral', dot: false });
   });
 });

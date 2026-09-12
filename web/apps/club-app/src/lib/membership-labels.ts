@@ -44,6 +44,25 @@ export const formatSinceSession = (isoDay: string): string => {
   return sessionAt(day).yearsLabel;
 };
 
+export const formatSessionLabel = (sessionYear: number): string => {
+  const endYearShort = String((sessionYear + 1) % 100).padStart(2, '0');
+
+  return `${sessionYear}/${endYearShort}`;
+};
+
+export const formatSessionSpan = (first: number, last: number | null): string => {
+  const start = formatSessionLabel(first);
+
+  if (last === null) {
+    return `${start}${SPAN_SEPARATOR}${OPEN_END}`;
+  }
+  if (last === first) {
+    return start;
+  }
+
+  return `${start}${SPAN_SEPARATOR}${formatSessionLabel(last)}`;
+};
+
 export const formatIsoDay = (isoDay: string): string => {
   if (!ISO_DAY_PATTERN.test(isoDay)) {
     return isoDay;
