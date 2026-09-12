@@ -12,6 +12,9 @@ import type { RoleDetails, RoleHolder, RoleSummary, RolesResponse } from './sche
 export const toPersonName = (person: { firstName: string; lastName: string }): string =>
   `${person.firstName} ${person.lastName}`;
 
+export const toEndHolderLabel = (personName: string): string =>
+  `Inhaberschaft von ${personName} beenden`;
+
 export const toHoldersMeta = (
   holders: readonly { firstName: string; lastName: string }[],
 ): string | null => {

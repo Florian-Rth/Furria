@@ -11,11 +11,17 @@ const EMPTY_DESCRIPTION =
 
 interface RoleHoldersPanelProps {
   holders: readonly RoleHolder[];
+  canOpenPerson: boolean;
   pending: boolean;
   onEnd: (roleHoldingId: number) => void;
 }
 
-export const RoleHoldersPanel: FC<RoleHoldersPanelProps> = ({ holders, pending, onEnd }) => {
+export const RoleHoldersPanel: FC<RoleHoldersPanelProps> = ({
+  holders,
+  canOpenPerson,
+  pending,
+  onEnd,
+}) => {
   if (pending) {
     return (
       <KkPanelSection title={SECTION_TITLE}>
@@ -27,7 +33,12 @@ export const RoleHoldersPanel: FC<RoleHoldersPanelProps> = ({ holders, pending, 
   }
 
   const rows = holders.map((holder) => (
-    <RoleHolderRow key={holder.roleHoldingId} holder={holder} onEnd={onEnd} />
+    <RoleHolderRow
+      key={holder.roleHoldingId}
+      holder={holder}
+      canOpenPerson={canOpenPerson}
+      onEnd={onEnd}
+    />
   ));
 
   const isEmpty = rows.length === 0;

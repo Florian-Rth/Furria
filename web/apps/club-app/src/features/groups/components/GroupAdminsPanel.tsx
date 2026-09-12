@@ -36,7 +36,13 @@ export const GroupAdminsPanel: FC<GroupAdminsPanelProps> = ({ admins, isRecruiti
   const rows = admins.map((admin) => {
     const meta = admin.function ?? undefined;
     const adminName = `${admin.firstName} ${admin.lastName}`;
-    const avatar = <KkAvatar initials={toInitials(admin.firstName, admin.lastName)} size="small" />;
+    const avatar = (
+      <KkAvatar
+        initials={toInitials(admin.firstName, admin.lastName)}
+        size="small"
+        component="span"
+      />
+    );
 
     return (
       <KkSinceRow

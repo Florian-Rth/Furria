@@ -1,5 +1,6 @@
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
+import { usePermissions } from '@/features/session';
 import { useRoleDialogs } from '../hooks/use-role-dialogs';
 import { useRoleLifecycle } from '../hooks/use-role-lifecycle';
 import { useRolePermissions } from '../hooks/use-role-permissions';
@@ -20,6 +21,7 @@ interface RoleDetailProps {
 }
 
 export const RoleDetail: FC<RoleDetailProps> = ({ role, catalogue, holdersPending }) => {
+  const { isAffiliated } = usePermissions();
   const dialogs = useRoleDialogs(role.holders);
   const permissions = useRolePermissions(role, catalogue);
   const lifecycle = useRoleLifecycle({ role, onArchived: dialogs.close });
@@ -52,6 +54,7 @@ export const RoleDetail: FC<RoleDetailProps> = ({ role, catalogue, holdersPendin
       />
       <RoleHoldersPanel
         holders={role.holders}
+        canOpenPerson={isAffiliated}
         pending={holdersPending}
         onEnd={dialogs.openEndHolding}
       />
