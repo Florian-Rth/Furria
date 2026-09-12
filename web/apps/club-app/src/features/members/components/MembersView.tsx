@@ -4,6 +4,7 @@ import type { MemberSearch } from '../hooks/use-member-search';
 import { MEMBERS_SECTION_TITLE, toConnectedSentence, toStatsFootnote } from '../members-labels';
 import { MembersAside } from './MembersAside';
 import { MembersEmpty } from './MembersEmpty';
+import { MembersLetterRail } from './MembersLetterRail';
 import { MembersList } from './MembersList';
 import { MembersToolbar } from './MembersToolbar';
 
@@ -30,6 +31,11 @@ export const MembersView: FC<MembersViewProps> = ({ search }) => {
       state={search.state}
       options={search.filterOptions}
       onStateChange={search.selectState}
+    />
+  );
+
+  const letterRail = (
+    <MembersLetterRail
       letters={search.letters}
       letter={search.letter}
       onLetterSelect={search.jumpTo}
@@ -52,6 +58,7 @@ export const MembersView: FC<MembersViewProps> = ({ search }) => {
       asideNote={footnote}
       sectionTitle={MEMBERS_SECTION_TITLE}
       toolbar={toolbar}
+      letterRail={letterRail}
       list={list}
       aside={aside}
       asideSize={ASIDE_SIZE}
