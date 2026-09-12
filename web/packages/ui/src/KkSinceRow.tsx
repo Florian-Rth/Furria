@@ -2,7 +2,7 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import type { CSSObject, Theme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import type { ElementType, FC, ReactNode } from 'react';
+import type { ElementType, FC, ReactNode, Ref } from 'react';
 import { accentWash } from './internal/accent-wash';
 import { focusRing } from './internal/focus-ring';
 import { inkWashSurface } from './internal/ink-wash';
@@ -81,6 +81,8 @@ const highlightPaint = (theme: Theme): CSSObject => ({
   },
 });
 
+const overlayAnchor: CSSObject = { position: 'relative' };
+
 const META_SEPARATOR = ' · ';
 const WIDE_ONLY = { display: { xs: 'none', desktop: 'block' } } as const;
 const COMPACT_ONLY = { display: { xs: 'block', desktop: 'none' } } as const;
@@ -94,8 +96,10 @@ interface KkSinceRowProps {
   sinceValue: string;
   tone?: KkSinceRowTone;
   trailing?: ReactNode;
+  overlay?: ReactNode;
   dimmed?: boolean;
   highlight?: boolean;
+  ref?: Ref<HTMLElement>;
   component?: ElementType;
   to?: string;
   params?: Record<string, string>;
@@ -115,8 +119,10 @@ export const KkSinceRow: FC<KkSinceRowProps> = ({
   sinceValue,
   tone = 'neutral',
   trailing,
+  overlay,
   dimmed = false,
   highlight = false,
+  ref,
   component,
   to,
   params,
@@ -206,6 +212,7 @@ export const KkSinceRow: FC<KkSinceRowProps> = ({
 
   return (
     <Stack
+      ref={ref}
       component={rowComponent}
       {...routeProps}
       direction="row"
@@ -231,6 +238,7 @@ export const KkSinceRow: FC<KkSinceRowProps> = ({
           ...rowDividerTop,
           ...focusRing(theme),
           ...(interactive ? hoverPaint(theme) : {}),
+          ...(overlay === undefined ? {} : overlayAnchor),
           ...(highlight ? highlightPaint(theme) : {}),
         }),
         ...(Array.isArray(sx) ? sx : [sx]),
@@ -292,6 +300,7 @@ export const KkSinceRow: FC<KkSinceRowProps> = ({
       </Stack>
       {trailingSlot}
       {chevron}
+      {overlay}
     </Stack>
   );
 };

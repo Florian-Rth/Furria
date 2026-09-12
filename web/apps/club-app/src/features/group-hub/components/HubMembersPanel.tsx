@@ -1,17 +1,23 @@
 import { KkButton, KkEmptyState, KkIcon, KkPanel, KkPanelSection } from '@furria/ui';
 import type { FC } from 'react';
+import type { GroupDetailMember } from '@/features/group-detail';
+import {
+  ADD_MEMBER_ACTION_LABEL,
+  ADD_MEMBER_LABEL,
+  GroupMemberRow,
+  NO_MEMBERS_TITLE,
+  toNoMembersLine,
+} from '@/features/group-detail';
 import { GROUP_SECTION_TITLES } from '@/lib/group-sections';
-import { ADD_MEMBER_ACTION_LABEL, ADD_MEMBER_LABEL, toNoMembersLine } from '../group-hub-labels';
-import type { HubMember } from '../schemas';
-import { HubMemberRow } from './HubMemberRow';
-
-const NO_MEMBERS_TITLE = 'NOCH NIEMAND DABEI';
+import { HubCelebration } from './HubCelebration';
 
 interface HubMembersPanelProps {
-  members: readonly HubMember[];
+  members: readonly GroupDetailMember[];
   groupName: string;
   canManage: boolean;
   canOpenPerson: boolean;
+  newPersonId: number | null;
+  fireKey: number;
   onAdd: () => void;
   onEnd: (groupMembershipId: number) => void;
 }
@@ -21,18 +27,32 @@ export const HubMembersPanel: FC<HubMembersPanelProps> = ({
   groupName,
   canManage,
   canOpenPerson,
+  newPersonId,
+  fireKey,
   onAdd,
   onEnd,
 }) => {
-  const rows = members.map((member) => (
-    <HubMemberRow
-      key={member.groupMembershipId}
-      member={member}
-      canManage={canManage}
-      canOpenPerson={canOpenPerson}
-      onEnd={onEnd}
-    />
-  ));
+  const rows = members.map((member) => {
+    const isNew = member.personId === newPersonId;
+
+    const burst = isNew ? <HubCelebration fireKey={fireKey} /> : undefined;
+
+    const end = (): void => {
+      onEnd(member.groupMembershipId);
+    };
+
+    return (
+      <GroupMemberRow
+        key={member.groupMembershipId}
+        member={member}
+        canManage={canManage}
+        canOpenPerson={canOpenPerson}
+        onEnd={end}
+        isNew={isNew}
+        overlay={burst}
+      />
+    );
+  });
 
   const isEmpty = rows.length === 0;
   const variant = isEmpty ? 'block' : 'list';
@@ -49,7 +69,7 @@ export const HubMembersPanel: FC<HubMembersPanelProps> = ({
   ) : null;
 
   const body = isEmpty ? (
-    <KkEmptyState title={NO_MEMBERS_TITLE} description={toNoMembersLine(groupName)} />
+    <KkEmptyState title={NO_MEMBERS_TITLE} description={toNoMembersLine(groupName, canManage)} />
   ) : (
     rows
   );

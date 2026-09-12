@@ -1,16 +1,32 @@
 import { useState } from 'react';
 
-export interface HubCelebration {
+interface HubCelebrationState {
   fireKey: number;
-  celebrate: () => void;
+  newMemberId: number | null;
+  newAdminId: number | null;
 }
 
-export const useHubCelebration = (): HubCelebration => {
-  const [fireKey, setFireKey] = useState(0);
+export interface HubCelebration extends HubCelebrationState {
+  celebrateMember: (personId: number) => void;
+  markAdmin: (personId: number) => void;
+}
 
-  const celebrate = (): void => {
-    setFireKey((current) => current + 1);
+const NOTHING_NEW: HubCelebrationState = { fireKey: 0, newMemberId: null, newAdminId: null };
+
+export const useHubCelebration = (): HubCelebration => {
+  const [state, setState] = useState<HubCelebrationState>(NOTHING_NEW);
+
+  const celebrateMember = (personId: number): void => {
+    setState((current) => ({
+      fireKey: current.fireKey + 1,
+      newMemberId: personId,
+      newAdminId: null,
+    }));
   };
 
-  return { fireKey, celebrate };
+  const markAdmin = (personId: number): void => {
+    setState((current) => ({ ...current, newMemberId: null, newAdminId: personId }));
+  };
+
+  return { ...state, celebrateMember, markAdmin };
 };

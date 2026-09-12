@@ -8,7 +8,7 @@ import { toWriteErrorMessage } from '../group-hub-messages';
 interface AddMemberFormInput {
   groupId: number;
   open: boolean;
-  onAdded: () => void;
+  onAdded: (personId: number) => void;
 }
 
 export interface AddMemberFormControl {
@@ -54,11 +54,15 @@ export const useAddMemberForm = ({
       return;
     }
 
+    const added = (): void => {
+      onAdded(person.personId);
+    };
+
     setRejection(null);
     mutation.mutate(
       { personId: person.personId, personName, joinedOn },
       {
-        onSuccess: onAdded,
+        onSuccess: added,
         onError: (error) => {
           setRejection(toWriteErrorMessage(error));
         },

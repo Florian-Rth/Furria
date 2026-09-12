@@ -1,28 +1,24 @@
 import { KkConfettiBurst } from '@furria/ui';
-import Stack from '@mui/material/Stack';
-import type { FC, PropsWithChildren } from 'react';
+import Box from '@mui/material/Box';
+import type { FC } from 'react';
 
-const BURST_BAND_RATIO = '3 / 1';
+const PERSON_MARK_LANE = 26;
 
-interface HubCelebrationProps extends PropsWithChildren {
+interface HubCelebrationProps {
   fireKey: number;
 }
 
-export const HubCelebration: FC<HubCelebrationProps> = ({ fireKey, children }) => (
-  <Stack sx={{ position: 'relative', minWidth: 0 }}>
-    {children}
-    <Stack
-      aria-hidden
-      sx={{
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        top: 0,
-        aspectRatio: BURST_BAND_RATIO,
-        pointerEvents: 'none',
-      }}
-    >
-      <KkConfettiBurst fireKey={fireKey} />
-    </Stack>
-  </Stack>
+export const HubCelebration: FC<HubCelebrationProps> = ({ fireKey }) => (
+  <Box
+    aria-hidden
+    sx={{
+      position: 'absolute',
+      insetBlock: 0,
+      insetInlineStart: 0,
+      width: PERSON_MARK_LANE,
+      pointerEvents: 'none',
+    }}
+  >
+    <KkConfettiBurst fireKey={fireKey} />
+  </Box>
 );

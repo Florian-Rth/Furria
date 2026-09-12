@@ -33,7 +33,7 @@ interface AddAdminDialogProps {
   groupName: string;
   open: boolean;
   onClose: () => void;
-  onAppointed: () => void;
+  onAppointed: (personId: number) => void;
 }
 
 export const AddAdminDialog: FC<AddAdminDialogProps> = ({
