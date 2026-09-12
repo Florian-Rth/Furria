@@ -37,6 +37,27 @@ export const toGroupStandingChips = (standing: GroupStanding | undefined): State
   return chips;
 };
 
+export type GroupCareIntent = 'care' | 'visit';
+
+export const GROUP_CARE_LABELS: Record<GroupCareIntent, string> = {
+  care: 'Gruppe pflegen',
+  visit: 'Zur Gruppe',
+};
+
+export const toGroupCareIntent = (standing: GroupStanding | undefined): GroupCareIntent | null => {
+  if (standing === undefined) {
+    return null;
+  }
+  if (standing.isAdmin) {
+    return 'care';
+  }
+  if (standing.isMember) {
+    return 'visit';
+  }
+
+  return null;
+};
+
 export const toGroupId = (raw: string): number | null =>
   GROUP_ID_PATTERN.test(raw) ? Number(raw) : null;
 

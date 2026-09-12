@@ -11,7 +11,13 @@ interface GroupViewProps {
 
 export const GroupView: FC<GroupViewProps> = ({ group }) => (
   <GroupDetailLayout
-    about={<GroupDescription groupName={group.name} description={group.description} />}
+    about={
+      <GroupDescription
+        groupId={group.groupId}
+        groupName={group.name}
+        description={group.description}
+      />
+    }
     admins={<GroupAdminsPanel admins={group.admins} isRecruiting={group.isRecruiting} />}
     members={<GroupMembersPanel members={group.members} groupName={group.name} />}
     events={<GroupEventsSlot />}

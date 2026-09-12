@@ -5,6 +5,7 @@ import {
   filterGroups,
   RECRUITING_FILTER_ID,
   SETTLED_FILTER_ID,
+  toGroupCareIntent,
   toGroupHeadline,
   toGroupId,
   toGroupStandingChips,
@@ -292,5 +293,27 @@ describe('toGroupStandingChips', () => {
 
     expect(chips).toHaveLength(1);
     expect(chips[0]?.label).toBe('Gruppen-Admin');
+  });
+});
+
+describe('toGroupCareIntent', () => {
+  it('offers no way into the Hub without a standing', () => {
+    expect(toGroupCareIntent(undefined)).toBeNull();
+  });
+
+  it('offers no way into the Hub to a viewer who neither belongs nor administers', () => {
+    expect(toGroupCareIntent({ isMember: false, isAdmin: false })).toBeNull();
+  });
+
+  it('sends a Gruppen-Admin who is not a member to her tools', () => {
+    expect(toGroupCareIntent({ isMember: false, isAdmin: true })).toBe('care');
+  });
+
+  it('lets the Gruppen-Admin standing outrank the membership', () => {
+    expect(toGroupCareIntent({ isMember: true, isAdmin: true })).toBe('care');
+  });
+
+  it('sends a member who does not administer to the plain Hub', () => {
+    expect(toGroupCareIntent({ isMember: true, isAdmin: false })).toBe('visit');
   });
 });
