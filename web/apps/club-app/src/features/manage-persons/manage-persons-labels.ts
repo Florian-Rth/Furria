@@ -32,13 +32,11 @@ export const toPersonId = (raw: string): number | null =>
   PERSON_ID_PATTERN.test(raw) ? Number(raw) : null;
 
 export const PERSONS_TITLE = 'Personenverwaltung';
-export const PERSONS_INTRO =
-  'Alle Personen im Register — auch ausgetretene und Leute ohne Vereinsbindung.';
 
 export const MANAGE_PERSONS_SECTION_TITLE = 'Alle Personen';
 
 export const PERSONS_STATS_NOTE =
-  'Gezählt wird jede Person im Register — auch ohne Mitgliedschaft und ohne Gruppe.';
+  'Gezählt wird jede Person — auch ohne Mitgliedschaft und ohne Gruppe.';
 
 export const PERSON_SECTION_TITLES = {
   masterData: 'Stammdaten',
@@ -51,7 +49,9 @@ export const PERSON_SECTION_TITLES = {
 export const GROUPS_POINTER =
   'Gruppen pflegen die Gruppen-Admins. Überschreiben geht in der Gruppenverwaltung.';
 export const ROLES_POINTER = 'Rollen werden unter „Rollen & Rechte“ vergeben.';
-export const VISIBILITY_POINTER = 'Nur die Person selbst ändert das — in ihrem Profil.';
+
+export const toVisibilityPointer = (firstName: string): string =>
+  `Das ändert nur ${firstName} selbst — im eigenen Profil.`;
 
 const FEE_REDUCTION_BASIS_LABELS: Record<FeeReductionBasis, string> = {
   minor: 'Minderjährig',
@@ -126,16 +126,13 @@ export const toPersonsEmptyDescription = (query: string, state: string): string 
   return `${stateLine} ${ALL_FILTER_SUGGESTION}`;
 };
 
-export const toRegisterSentence = (count: number): string => {
-  if (count === 1) {
-    return '1 Person steht im Register.';
-  }
+const REGISTER_SCOPE = 'auch ausgetretene und Leute ohne Vereinsbindung';
 
-  return `${count} Personen stehen im Register.`;
+export const toPersonsLead = (count: number): string => {
+  const counted = count === 1 ? '1 Person steht' : `${count} Personen stehen`;
+
+  return `${counted} im Register — ${REGISTER_SCOPE}.`;
 };
-
-export const toPersonsLead = (count: number): string =>
-  `${toRegisterSentence(count)} ${PERSONS_INTRO}`;
 
 export const PERSON_EYEBROW = 'Person';
 

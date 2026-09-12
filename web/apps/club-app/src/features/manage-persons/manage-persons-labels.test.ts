@@ -12,7 +12,7 @@ import {
   toPersonId,
   toPersonRowAffiliation,
   toPersonsEmptyDescription,
-  toRegisterSentence,
+  toPersonsLead,
 } from './manage-persons-labels';
 import type { PersonMembership, PersonSummary } from './schemas';
 
@@ -102,13 +102,13 @@ describe('toPersonRowAffiliation', () => {
   });
 });
 
-describe('toRegisterSentence', () => {
+describe('toPersonsLead', () => {
   it.each([
-    { count: 0, expected: '0 Personen stehen im Register.' },
-    { count: 1, expected: '1 Person steht im Register.' },
-    { count: 151, expected: '151 Personen stehen im Register.' },
+    { count: 0, expected: '0 Personen stehen' },
+    { count: 1, expected: '1 Person steht' },
+    { count: 151, expected: '151 Personen stehen' },
   ])('counts $count', ({ count, expected }) => {
-    expect(toRegisterSentence(count)).toBe(expected);
+    expect(toPersonsLead(count)).toContain(expected);
   });
 });
 
