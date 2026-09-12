@@ -93,6 +93,34 @@ public sealed class GetRoleByIdTests
     }
 
     [Fact]
+    public async Task Should_SayTheInhaberinHasNoKarte_When_TheRolleIsArchived()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddPerson("ilka", "Ilka", "Reineke"))
+                    .Roles(roles =>
+                        roles
+                            .AddRoleWithDetails(
+                                "chronistin",
+                                "Chronistin",
+                                "Schreibt die Chronik.",
+                                ArchivedIn2021
+                            )
+                            .AddRoleHolding("ilka-chronistin", "chronistin", "ilka", HeldSince2017)
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var (response, result) = await ReadRoleAsync(client, ctx.Roles.Roles.IdOf("chronistin"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.False(Assert.Single(result.Holders).IsAffiliated);
+    }
+
+    [Fact]
     public async Task Should_ReportTheChainMinimum_When_AnInhaberinHeldTheRolleTwice()
     {
         var ct = TestContext.Current.CancellationToken;

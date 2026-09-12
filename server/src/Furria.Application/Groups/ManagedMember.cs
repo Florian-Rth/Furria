@@ -15,4 +15,6 @@ public sealed record ManagedMember
     public required DateOnly? LeftOn { get; init; }
 
     public required DateOnly Since { get; init; }
+
+    public required bool IsAffiliated { get; init; }
 }

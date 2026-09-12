@@ -647,6 +647,7 @@ public sealed class GetMyGroupByIdTests
                 "joinedOn",
                 "leftOn",
                 "since",
+                "isAffiliated",
             ],
             mara.EnumerateObject().Select(field => field.Name)
         );
@@ -663,6 +664,7 @@ public sealed class GetMyGroupByIdTests
                 "sinceOn",
                 "untilOn",
                 "since",
+                "isAffiliated",
             ],
             anna.EnumerateObject().Select(field => field.Name)
         );

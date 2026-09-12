@@ -60,6 +60,7 @@ public sealed class GetManagedGroupById
             JoinedOn = member.JoinedOn,
             LeftOn = member.LeftOn,
             Since = member.Since,
+            IsAffiliated = member.IsAffiliated,
         };
 
     private static ManagedAdminDto ToDto(ManagedAdministrator admin) =>
@@ -73,6 +74,7 @@ public sealed class GetManagedGroupById
             SinceOn = admin.SinceOn,
             UntilOn = admin.UntilOn,
             Since = admin.Since,
+            IsAffiliated = admin.IsAffiliated,
         };
 }
 
@@ -126,6 +128,8 @@ public sealed record ManagedMemberDto
     public required DateOnly? LeftOn { get; init; }
 
     public required DateOnly Since { get; init; }
+
+    public required bool IsAffiliated { get; init; }
 }
 
 public sealed record ManagedAdminDto
@@ -145,4 +149,6 @@ public sealed record ManagedAdminDto
     public required DateOnly? UntilOn { get; init; }
 
     public required DateOnly Since { get; init; }
+
+    public required bool IsAffiliated { get; init; }
 }

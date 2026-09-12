@@ -9,4 +9,6 @@ public sealed record GroupMember
     public required string LastName { get; init; }
 
     public required DateOnly Since { get; init; }
+
+    public required bool IsAffiliated { get; init; }
 }
