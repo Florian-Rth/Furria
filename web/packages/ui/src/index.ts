@@ -35,6 +35,7 @@ export { KkHeroSection } from './KkHeroSection/KkHeroSection';
 export type { KkIconName } from './KkIcon';
 export { KkIcon } from './KkIcon';
 export { KkIconButton } from './KkIconButton';
+export { KkInlineLink } from './KkInlineLink';
 export { KkLead } from './KkLead';
 export { KkLetterDivider } from './KkLetterDivider';
 export { KkLetterIndex } from './KkLetterIndex';
