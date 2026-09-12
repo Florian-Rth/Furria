@@ -39,11 +39,24 @@ const cellStyles = (theme: Theme): CSSObject => ({
   },
 });
 
+type KkLetterIndexVariant = 'grid' | 'strip';
+
+const variantLayout: Record<KkLetterIndexVariant, CSSObject> = {
+  grid: { flexWrap: 'wrap' },
+  strip: {
+    flexWrap: 'nowrap',
+    overflowX: 'auto',
+    scrollbarWidth: 'none',
+    '&::-webkit-scrollbar': { display: 'none' },
+  },
+};
+
 interface KkLetterIndexProps {
   label: string;
   letters: readonly KkLetterIndexEntry[];
   current?: string;
   onSelect: (letter: string) => void;
+  variant?: KkLetterIndexVariant;
   sx?: KkSx;
 }
 
@@ -52,6 +65,7 @@ export const KkLetterIndex: FC<KkLetterIndexProps> = ({
   letters,
   current,
   onSelect,
+  variant = 'grid',
   sx,
 }) => {
   const cells = toLetterIndexCells(letters, current);
@@ -66,7 +80,7 @@ export const KkLetterIndex: FC<KkLetterIndexProps> = ({
       role="group"
       aria-label={label}
       data-kk-letter-index
-      sx={[{ flexWrap: 'wrap', gap: 0.5, minWidth: 0 }, ...(Array.isArray(sx) ? sx : [sx])]}
+      sx={[{ gap: 0.5, minWidth: 0 }, variantLayout[variant], ...(Array.isArray(sx) ? sx : [sx])]}
     >
       {cells.map((cell) => (
         <ToggleButton
