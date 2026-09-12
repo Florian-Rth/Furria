@@ -56,7 +56,7 @@ export const OverrideAdminsPanel: FC<OverrideAdminsPanelProps> = ({
   ) : null;
 
   const body = isEmpty ? (
-    <KkEmptyState title={NO_ADMINS_TITLE} description={NO_ADMINS_LINE} />
+    <KkEmptyState size="panel" title={NO_ADMINS_TITLE} description={NO_ADMINS_LINE} />
   ) : (
     rows
   );

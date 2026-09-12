@@ -60,6 +60,7 @@ export const PersonGroupsPanel: FC<PersonGroupsPanelProps> = ({ groups, firstNam
   const runningPanel = isEmpty ? (
     <KkPanel variant="block">
       <KkEmptyState
+        size="panel"
         title={EMPTY_TITLE}
         description={`${firstName} tanzt und spielt gerade in keiner Gruppe mit.`}
       />

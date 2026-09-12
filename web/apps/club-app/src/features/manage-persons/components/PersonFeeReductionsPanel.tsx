@@ -56,7 +56,7 @@ export const PersonFeeReductionsPanel: FC<PersonFeeReductionsPanelProps> = ({ pe
   const isEmpty = rows.length === 0 && !isAdding;
 
   const body = isEmpty ? (
-    <KkEmptyState title={EMPTY_TITLE} description={EMPTY_DESCRIPTION} />
+    <KkEmptyState size="panel" title={EMPTY_TITLE} description={EMPTY_DESCRIPTION} />
   ) : (
     <>
       {addEditor}
