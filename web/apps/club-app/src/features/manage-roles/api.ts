@@ -1,6 +1,7 @@
 import { useKkToast } from '@furria/ui';
 import type { QueryClient, UseMutationResult, UseQueryResult } from '@tanstack/react-query';
 import { skipToken, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { ME_QUERY_KEY } from '@/features/session';
 import type { PermissionKey } from '@/lib/api/schemas';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { toIsoDay } from '@/lib/day';
@@ -72,6 +73,7 @@ interface RolePermissionsRollback {
 
 const refreshRoles = (queryClient: QueryClient): void => {
   void queryClient.invalidateQueries({ queryKey: ROLES_QUERY_KEY });
+  void queryClient.invalidateQueries({ queryKey: ME_QUERY_KEY });
 };
 
 const applyRolePermissions = (
@@ -165,9 +167,8 @@ export const useArchiveRoleMutation = (
       withFreshAccessToken((accessToken) => requestArchiveRole(roleId, accessToken)),
     onSuccess: (_result, input) => {
       showToast({ tone: 'success', message: toRoleArchivedMessage(input.roleName) });
-      refreshRoles(queryClient);
     },
-    onError: () => {
+    onSettled: () => {
       refreshRoles(queryClient);
     },
   });
@@ -184,9 +185,8 @@ export const useRestoreRoleMutation = (
       withFreshAccessToken((accessToken) => requestRestoreRole(roleId, accessToken)),
     onSuccess: (_result, input) => {
       showToast({ tone: 'success', message: toRoleRestoredMessage(input.roleName) });
-      refreshRoles(queryClient);
     },
-    onError: () => {
+    onSettled: () => {
       refreshRoles(queryClient);
     },
   });
@@ -262,9 +262,8 @@ export const useAddRoleHoldingMutation = (
       );
 
       showToast({ tone: 'success', message });
-      refreshRoles(queryClient);
     },
-    onError: () => {
+    onSettled: () => {
       refreshRoles(queryClient);
     },
   });
@@ -289,9 +288,8 @@ export const useEndRoleHoldingMutation = (
       const message = toHoldingEndedMessage(input.personName, input.endedOn, toIsoDay(new Date()));
 
       showToast({ tone: 'success', message });
-      refreshRoles(queryClient);
     },
-    onError: () => {
+    onSettled: () => {
       refreshRoles(queryClient);
     },
   });
