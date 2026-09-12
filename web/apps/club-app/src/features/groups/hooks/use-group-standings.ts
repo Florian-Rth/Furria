@@ -10,3 +10,9 @@ export const useGroupStandings = (): Map<number, GroupStanding> => {
 
   return toGroupStandings(myGroups.data?.groups ?? NO_GROUPS);
 };
+
+export const useGroupStanding = (groupId: number | undefined): GroupStanding | undefined => {
+  const standings = useGroupStandings();
+
+  return groupId === undefined ? undefined : standings.get(groupId);
+};
