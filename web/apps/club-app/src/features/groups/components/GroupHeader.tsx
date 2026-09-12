@@ -1,7 +1,6 @@
-import { KkAppShell, KkChip, KkMeta } from '@furria/ui';
-import Stack from '@mui/material/Stack';
+import { KkChip, KkEyebrow, KkMeta, KkPageHeader } from '@furria/ui';
 import type { FC } from 'react';
-import { toGroupHeadline } from '../groups-labels';
+import { GROUP_EYEBROW, toGroupHeadline } from '../groups-labels';
 import type { GroupDetails } from '../schemas';
 
 interface GroupHeaderProps {
@@ -22,15 +21,16 @@ export const GroupHeader: FC<GroupHeaderProps> = ({ group }) => {
     headline.memberCount === null ? null : <KkMeta>{headline.memberCount}</KkMeta>;
 
   return (
-    <Stack sx={{ gap: 0.5, minWidth: 0 }}>
-      <Stack
-        direction="row"
-        sx={{ alignItems: 'center', gap: 1.25, flexWrap: 'wrap', minWidth: 0 }}
-      >
-        <KkAppShell.PageTitle>{headline.title}</KkAppShell.PageTitle>
-        {opennessChip}
-      </Stack>
-      {memberCountLine}
-    </Stack>
+    <KkPageHeader
+      title={headline.title}
+      titleTransform="none"
+      eyebrow={
+        <KkEyebrow tone="accent" size="small">
+          {GROUP_EYEBROW}
+        </KkEyebrow>
+      }
+      chip={opennessChip}
+      subline={memberCountLine}
+    />
   );
 };
