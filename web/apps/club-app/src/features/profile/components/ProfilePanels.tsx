@@ -12,7 +12,6 @@ import { ProfileVisibilityPanel } from './ProfileVisibilityPanel';
 import { ProfileVisibilityPreview } from './ProfileVisibilityPreview';
 
 const EMPTY_VALUE = 'Nicht hinterlegt';
-const NAME_LABEL = 'Name';
 const BIRTH_DATE_LABEL = 'Geburtsdatum';
 const SIGN_IN_LABEL = 'Anmeldung';
 
@@ -22,7 +21,6 @@ interface ProfilePanelsProps {
 
 export const ProfilePanels: FC<ProfilePanelsProps> = ({ me }) => {
   const { person } = me;
-  const fullName = `${person.firstName} ${person.lastName}`;
   const birthDate = person.birthDate === null ? EMPTY_VALUE : formatIsoDay(person.birthDate);
 
   return (
@@ -36,7 +34,6 @@ export const ProfilePanels: FC<ProfilePanelsProps> = ({ me }) => {
       <Grid size={{ xs: 12, desktop: 5 }} sx={{ minWidth: 0 }}>
         <Stack sx={{ gap: 3.5, minWidth: 0 }}>
           <ProfilePanel title={PROFILE_SECTION_TITLES.data}>
-            <KkFieldRow label={NAME_LABEL} value={fullName} />
             <KkFieldRow label={BIRTH_DATE_LABEL} value={birthDate} />
             <KkFieldRow label={SIGN_IN_LABEL} value={me.email} />
           </ProfilePanel>

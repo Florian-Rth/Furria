@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { MePerson } from '@/lib/api/schemas';
-import { toPreviewContact } from './profile-labels';
+import type { Me, MePerson } from '@/lib/api/schemas';
+import { toPreviewContact, toProfileHeadline } from './profile-labels';
 
 const person = (overrides: Partial<MePerson> = {}): MePerson => ({
   id: 7,
@@ -14,6 +14,29 @@ const person = (overrides: Partial<MePerson> = {}): MePerson => ({
   birthDate: '1996-03-12',
   contactVisibleToMembers: true,
   ...overrides,
+});
+
+const me = (state: Me['membership']['state']): Me => ({
+  accountId: 3,
+  email: 'paula@example.org',
+  person: person(),
+  membership: { state, memberSince: null, currentStartedOn: null, currentEndedOn: null },
+  isAffiliated: true,
+  permissionKeys: [],
+});
+
+describe('toProfileHeadline', () => {
+  it('falls back to the route noun while the query is pending', () => {
+    expect(toProfileHeadline(undefined)).toEqual({ title: 'Profil', initials: '', state: null });
+  });
+
+  it('names the viewer and paints her own state chip', () => {
+    expect(toProfileHeadline(me('paused'))).toEqual({
+      title: 'Paula Brendel',
+      initials: 'PB',
+      state: { label: 'ruht', tone: 'gold', dot: true },
+    });
+  });
 });
 
 describe('toPreviewContact', () => {

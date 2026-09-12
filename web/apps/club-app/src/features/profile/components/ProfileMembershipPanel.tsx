@@ -1,9 +1,12 @@
-import { KkFieldRow } from '@furria/ui';
+import { KkChip, KkFieldRow } from '@furria/ui';
 import type { FC } from 'react';
 import type { MeMembership } from '@/lib/api/schemas';
-import { formatIsoDay, formatPeriod, toMembershipStateLabel } from '@/lib/membership-labels';
+import { formatIsoDay, formatPeriod } from '@/lib/membership-labels';
+import { toMembershipStateChip } from '@/lib/state-chips';
 import { PROFILE_SECTION_TITLES } from '../profile-labels';
 import { ProfilePanel } from './ProfilePanel';
+
+const STATE_LABEL = 'Mitgliedschaft';
 
 interface ProfileMembershipPanelProps {
   membership: MeMembership;
@@ -12,6 +15,7 @@ interface ProfileMembershipPanelProps {
 export const ProfileMembershipPanel: FC<ProfileMembershipPanelProps> = ({ membership }) => {
   const { memberSince, currentStartedOn, currentEndedOn } = membership;
   const periodRestatesChain = currentStartedOn === memberSince && currentEndedOn === null;
+  const stateChip = toMembershipStateChip(membership.state);
 
   const memberSinceRow =
     memberSince === null ? null : (
@@ -25,7 +29,14 @@ export const ProfileMembershipPanel: FC<ProfileMembershipPanelProps> = ({ member
 
   return (
     <ProfilePanel title={PROFILE_SECTION_TITLES.membership}>
-      <KkFieldRow label="Status" value={toMembershipStateLabel(membership.state)} />
+      <KkFieldRow
+        label={STATE_LABEL}
+        value={
+          <KkChip tone={stateChip.tone} dot={stateChip.dot}>
+            {stateChip.label}
+          </KkChip>
+        }
+      />
       {memberSinceRow}
       {periodRow}
     </ProfilePanel>
