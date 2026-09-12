@@ -1,6 +1,3 @@
-import { currentSession, FOUNDING_YEAR, MEMBER_COUNT_PLACEHOLDER } from '@/lib/club';
-import { GROUPS } from './groups-content';
-
 export const storyChapter = {
   numeral: '01',
   kicker: 'WER WIR SIND',
@@ -23,21 +20,19 @@ export interface StoryStat {
   label: string;
 }
 
+export const UNKNOWN_STAT_VALUE = '—';
+
+export const formatGroupStat = (groupCount: number | null): string =>
+  groupCount === null ? UNKNOWN_STAT_VALUE : String(groupCount);
+
 export const buildStoryStats = (
   foundingYear: number,
   memberCount: string,
-  groupCount: number,
+  groupCount: number | null,
   sessionNumber: number,
 ): StoryStat[] => [
   { value: String(foundingYear), label: 'gegründet' },
   { value: memberCount, label: 'Mitglieder' },
-  { value: String(groupCount), label: 'Gruppen' },
+  { value: formatGroupStat(groupCount), label: 'Gruppen' },
   { value: `${sessionNumber}.`, label: 'Session' },
 ];
-
-export const storyStats = buildStoryStats(
-  FOUNDING_YEAR,
-  MEMBER_COUNT_PLACEHOLDER,
-  GROUPS.length,
-  currentSession.number,
-);

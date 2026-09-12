@@ -1,15 +1,15 @@
 import type { Transition } from 'motion/react';
 import { useState } from 'react';
-import type { GroupProfile } from '@/features/club/groups-content';
+import type { PublicGroup } from '@/features/club/schemas';
 
 export interface ActiveGroup {
-  group: GroupProfile;
+  group: PublicGroup;
   index: number;
 }
 
 export interface GroupModalState {
   activeGroup: ActiveGroup | null;
-  openGroup: (id: string) => void;
+  openGroup: (groupId: number) => void;
   close: () => void;
 }
 
@@ -18,15 +18,15 @@ export const resolveModalTransition = (reducedMotion: boolean | null): Transitio
     ? { duration: 0 }
     : { type: 'spring', stiffness: 360, damping: 30, mass: 0.8 };
 
-export const useGroupModal = (groups: GroupProfile[]): GroupModalState => {
-  const [openGroupId, setOpenGroupId] = useState<string | null>(null);
-  const index = groups.findIndex((group) => group.title === openGroupId);
+export const useGroupModal = (groups: PublicGroup[]): GroupModalState => {
+  const [openGroupId, setOpenGroupId] = useState<number | null>(null);
+  const index = groups.findIndex((group) => group.groupId === openGroupId);
   const active = groups[index];
   const activeGroup = active === undefined ? null : { group: active, index };
 
   return {
     activeGroup,
-    openGroup: (id: string): void => setOpenGroupId(id),
+    openGroup: (groupId: number): void => setOpenGroupId(groupId),
     close: (): void => setOpenGroupId(null),
   };
 };

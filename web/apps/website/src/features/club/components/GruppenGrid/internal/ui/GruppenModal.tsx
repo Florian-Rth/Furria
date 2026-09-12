@@ -52,7 +52,7 @@ export const GruppenModal: FC<GruppenModalProps> = ({ active, onClose }) => {
         <AnimatePresence onExitComplete={clear}>
           {isOpen && shown !== null && (
             <motion.div
-              key={shown.group.title}
+              key={shown.group.groupId}
               initial={{ opacity: 0, scale: 0.94 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.94 }}
