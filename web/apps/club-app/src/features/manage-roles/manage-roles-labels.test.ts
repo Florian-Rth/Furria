@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import {
+  isSelfLockout,
   toArchivedMeta,
   toEndHoldingConsequence,
   toEndQuickChoices,
@@ -185,6 +186,33 @@ describe('count labels', () => {
     [4, '4 Inhaberschaften'],
   ])('renders %i holdings', (count, expected) => {
     expect(toHolderCountLabel(count)).toBe(expected);
+  });
+});
+
+describe('isSelfLockout', () => {
+  it.each([
+    {
+      case: 'taking a held key off a Rolle the viewer holds',
+      input: { enabled: false, viewerIsHolder: true, viewerHasKey: true },
+      expected: true,
+    },
+    {
+      case: 'switching a key on',
+      input: { enabled: true, viewerIsHolder: true, viewerHasKey: true },
+      expected: false,
+    },
+    {
+      case: 'taking a key off a Rolle the viewer does not hold',
+      input: { enabled: false, viewerIsHolder: false, viewerHasKey: true },
+      expected: false,
+    },
+    {
+      case: 'taking off a key the viewer never had',
+      input: { enabled: false, viewerIsHolder: true, viewerHasKey: false },
+      expected: false,
+    },
+  ])('is $expected when $case', ({ input, expected }) => {
+    expect(isSelfLockout(input)).toBe(expected);
   });
 });
 

@@ -4,6 +4,7 @@ import type { FC } from 'react';
 import type { RolePermissionsControl } from '../hooks/use-role-permissions';
 import { RolePermissionRow } from './RolePermissionRow';
 import { RoleSection } from './RoleSection';
+import { SelfLockoutDialog } from './SelfLockoutDialog';
 
 const SECTION_TITLE = 'Rechte';
 const GUIDANCE =
@@ -13,10 +14,15 @@ const ARCHIVED_GUIDANCE =
 
 interface RolePermissionListProps {
   permissions: RolePermissionsControl;
+  roleName: string;
   isArchived: boolean;
 }
 
-export const RolePermissionList: FC<RolePermissionListProps> = ({ permissions, isArchived }) => {
+export const RolePermissionList: FC<RolePermissionListProps> = ({
+  permissions,
+  roleName,
+  isArchived,
+}) => {
   const rows = permissions.entries.map((entry) => (
     <RolePermissionRow
       key={entry.key}
@@ -40,6 +46,12 @@ export const RolePermissionList: FC<RolePermissionListProps> = ({ permissions, i
           <Stack sx={{ gap: 1.75, minWidth: 0 }}>{rows}</Stack>
         </Stack>
       </KkPanel>
+      <SelfLockoutDialog
+        roleName={roleName}
+        entry={permissions.selfLockout}
+        onConfirm={permissions.confirmSelfLockout}
+        onClose={permissions.cancelSelfLockout}
+      />
     </RoleSection>
   );
 };

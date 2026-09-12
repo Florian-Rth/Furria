@@ -221,6 +221,31 @@ export const toEndHoldingFacts = (
   { label: 'Letzter Tag', value: endedOn === null ? 'noch offen' : formatIsoDay(endedOn) },
 ];
 
+export interface SelfLockoutInput {
+  enabled: boolean;
+  viewerIsHolder: boolean;
+  viewerHasKey: boolean;
+}
+
+export const isSelfLockout = ({
+  enabled,
+  viewerIsHolder,
+  viewerHasKey,
+}: SelfLockoutInput): boolean => !enabled && viewerIsHolder && viewerHasKey;
+
+export const SELF_LOCKOUT_EYEBROW = 'Recht abgeben';
+export const SELF_LOCKOUT_EXPLANATION =
+  'Du nimmst dir dieses Recht selbst weg. Danach kommst du hier nicht mehr rein.';
+export const SELF_LOCKOUT_CONFIRM_LABEL = 'Recht abgeben';
+
+export const toSelfLockoutQuestion = (permissionTitle: string): string =>
+  `Dir selbst „${permissionTitle}“ wegnehmen?`;
+
+export const toSelfLockoutFacts = (roleName: string, permissionTitle: string): KkConfirmFact[] => [
+  { label: 'Rolle', value: roleName },
+  { label: 'Recht', value: permissionTitle },
+];
+
 export const toArchiveRoleQuestion = (name: string): string => `${name} archivieren?`;
 
 export const ARCHIVE_ROLE_EXPLANATION =
