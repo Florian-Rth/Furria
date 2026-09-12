@@ -14,6 +14,7 @@ import {
   toPermissionEntries,
   toRoleSearchTerm,
   toRoleSeed,
+  toRolesLead,
   toStartQuickChoices,
 } from './manage-roles-labels';
 import type { RoleSummary } from './schemas';
@@ -62,6 +63,29 @@ describe('toHoldersMeta', () => {
         { firstName: 'Lukas', lastName: 'Schmitt' },
       ]),
     ).toBe('Heike Krämer und 2 weitere');
+  });
+});
+
+describe('toRolesLead', () => {
+  it('counts the live Rollen', () => {
+    expect(
+      toRolesLead([role({ roleId: 1, name: 'Admin' }), role({ roleId: 2, name: 'Kasse' })]),
+    ).toBe('2 Rollen sagen, wer im Verein was darf.');
+  });
+
+  it('reads a single Rolle in the singular', () => {
+    expect(toRolesLead([role({ roleId: 1, name: 'Admin' })])).toBe(
+      'Eine Rolle sagt, wer im Verein was darf.',
+    );
+  });
+
+  it('counts the archived Rollen separately', () => {
+    expect(
+      toRolesLead([
+        role({ roleId: 1, name: 'Admin' }),
+        role({ roleId: 9, name: 'Chronistin', archivedOn: '2026-09-12' }),
+      ]),
+    ).toBe('Eine Rolle sagt, wer im Verein was darf. Eine weitere ist archiviert.');
   });
 });
 

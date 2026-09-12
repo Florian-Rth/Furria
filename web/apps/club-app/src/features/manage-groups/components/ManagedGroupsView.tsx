@@ -1,7 +1,6 @@
-import { KkButton, KkIcon, KkLead, KkNote } from '@furria/ui';
-import Grid from '@mui/material/Grid';
-import Stack from '@mui/material/Stack';
+import { KkButton, KkIcon } from '@furria/ui';
 import type { FC } from 'react';
+import { ManagePageLayout } from '@/features/session';
 import { useGroupDialogs } from '../hooks/use-group-dialogs';
 import { useGroupSelection } from '../hooks/use-group-selection';
 import { useManagedGroupsView } from '../hooks/use-managed-groups-view';
@@ -14,16 +13,16 @@ import {
 import type { ManagedGroupSummary } from '../schemas';
 import { ArchiveGroupDialog } from './ArchiveGroupDialog';
 import { GroupFormDialog } from './GroupFormDialog';
-import { GroupOverrideEmpty } from './GroupOverrideEmpty';
 import { GroupOverrideNotFound } from './GroupOverrideNotFound';
 import { GroupOverridePanel } from './GroupOverridePanel';
 import { ManagedGroupsCreateFab } from './ManagedGroupsCreateFab';
+import { ManagedGroupsGrid } from './ManagedGroupsGrid';
 import { ManagedGroupsList } from './ManagedGroupsList';
-import { ManagedGroupsSection } from './ManagedGroupsSection';
 import { ManagedGroupsToolbar } from './ManagedGroupsToolbar';
 import { RestoreGroupDialog } from './RestoreGroupDialog';
 
 const CREATE_LABEL = 'Gruppe anlegen';
+const DETAIL_SIZE = 7;
 
 interface ManagedGroupsViewProps {
   groups: readonly ManagedGroupSummary[];
@@ -37,6 +36,7 @@ export const ManagedGroupsView: FC<ManagedGroupsViewProps> = ({ groups }) => {
 
   const selected = findManagedGroup(groups, selection.groupId);
   const isMissing = selection.groupId !== null && selected === null;
+  const hasSelection = selection.groupId !== null;
   const isFormOpen = dialogs.open === 'create' || dialogs.open === 'edit';
   const isArchiveOpen = dialogs.open === 'archive';
   const isRestoreOpen = dialogs.open === 'restore';
@@ -47,19 +47,26 @@ export const ManagedGroupsView: FC<ManagedGroupsViewProps> = ({ groups }) => {
     selection.select(groupId);
   };
 
-  const createAction = (
-    <KkButton
-      size="small"
-      variant="outlined"
-      startIcon={<KkIcon name="add" size="small" />}
-      onClick={dialogs.openCreate}
-    >
+  const createButton = (
+    <KkButton startIcon={<KkIcon name="add" size="small" />} onClick={dialogs.openCreate}>
       {CREATE_LABEL}
     </KkButton>
   );
 
-  const detail =
-    selected === null ? null : (
+  const toolbar = (
+    <ManagedGroupsToolbar
+      query={view.query}
+      onQueryChange={view.setQuery}
+      status={view.status}
+      options={view.filterOptions}
+      onStatusChange={view.selectStatus}
+    />
+  );
+
+  const selectedDetail =
+    selected === null ? (
+      <GroupOverrideNotFound onClear={selection.clear} />
+    ) : (
       <GroupOverridePanel
         group={selected}
         onEdit={dialogs.openEdit}
@@ -68,43 +75,36 @@ export const ManagedGroupsView: FC<ManagedGroupsViewProps> = ({ groups }) => {
       />
     );
 
-  const missingDetail = isMissing ? <GroupOverrideNotFound onClear={selection.clear} /> : null;
-  const emptyDetail = selection.groupId === null ? <GroupOverrideEmpty /> : null;
+  const detail = isMissing || selected !== null ? selectedDetail : undefined;
+
+  const list = hasSelection ? (
+    <ManagedGroupsList
+      groups={view.visible}
+      selectedId={selection.groupId}
+      onSelect={selection.select}
+      isFiltered={view.isFiltered}
+    />
+  ) : (
+    <ManagedGroupsGrid
+      groups={view.visible}
+      onSelect={selection.select}
+      isFiltered={view.isFiltered}
+    />
+  );
 
   return (
     <>
-      <Stack sx={{ gap: 3, minWidth: 0 }}>
-        <KkLead>{view.intro}</KkLead>
-        <Grid container spacing={{ xs: 3.5, desktop: 5 }} sx={{ minWidth: 0 }}>
-          <Grid size={{ xs: 12, desktop: 5 }} sx={{ minWidth: 0 }}>
-            <Stack sx={{ gap: 2.5, minWidth: 0 }}>
-              <ManagedGroupsSection title={MANAGE_GROUPS_SECTION_TITLES.list} action={createAction}>
-                <Stack sx={{ gap: 2, minWidth: 0 }}>
-                  <ManagedGroupsToolbar
-                    query={view.query}
-                    onQueryChange={view.setQuery}
-                    status={view.status}
-                    options={view.filterOptions}
-                    onStatusChange={view.selectStatus}
-                  />
-                  <ManagedGroupsList
-                    groups={view.visible}
-                    selectedId={selection.groupId}
-                    onSelect={selection.select}
-                    isFiltered={view.isFiltered}
-                  />
-                </Stack>
-              </ManagedGroupsSection>
-              <KkNote>{MANAGE_GROUPS_FOOTNOTE}</KkNote>
-            </Stack>
-          </Grid>
-          <Grid size={{ xs: 12, desktop: 7 }} sx={{ minWidth: 0 }} ref={detailRef}>
-            {emptyDetail}
-            {missingDetail}
-            {detail}
-          </Grid>
-        </Grid>
-      </Stack>
+      <ManagePageLayout
+        lead={view.intro}
+        sectionTitle={MANAGE_GROUPS_SECTION_TITLES.list}
+        createAction={createButton}
+        toolbar={toolbar}
+        list={list}
+        footnote={MANAGE_GROUPS_FOOTNOTE}
+        aside={detail}
+        asideSize={DETAIL_SIZE}
+        asideRef={detailRef}
+      />
       <ManagedGroupsCreateFab onCreate={dialogs.openCreate} />
       <GroupFormDialog
         group={formGroup}

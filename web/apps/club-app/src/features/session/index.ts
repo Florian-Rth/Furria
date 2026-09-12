@@ -4,6 +4,7 @@ export { AppBackLink } from './components/AppBackLink';
 export { AppPageHeader } from './components/AppPageHeader';
 export { AppShell } from './components/AppShell';
 export { AppStageGreeting } from './components/AppStageGreeting';
+export { ManagePageLayout } from './components/ManagePageLayout';
 export { RequireAffiliation } from './components/RequireAffiliation';
 export { RequirePermission } from './components/RequirePermission';
 export { SessionBoot } from './components/SessionBoot';

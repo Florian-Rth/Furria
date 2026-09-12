@@ -33,6 +33,26 @@ export const toHoldersMeta = (
   return `${toPersonName(first)} und ${further} weitere`;
 };
 
+export const MANAGE_ROLES_SECTION_TITLE = 'Alle Rollen';
+
+export const toRolesLead = (roles: readonly RoleSummary[]): string => {
+  const archived = roles.filter((role) => role.archivedOn !== null).length;
+  const active = roles.length - archived;
+  const head =
+    active === 1
+      ? 'Eine Rolle sagt, wer im Verein was darf.'
+      : `${active} Rollen sagen, wer im Verein was darf.`;
+
+  if (archived === 0) {
+    return head;
+  }
+
+  const tail =
+    archived === 1 ? 'Eine weitere ist archiviert.' : `${archived} weitere sind archiviert.`;
+
+  return `${head} ${tail}`;
+};
+
 export const toRoleSearchTerm = (raw: string): string | null => {
   const trimmed = raw.trim();
 

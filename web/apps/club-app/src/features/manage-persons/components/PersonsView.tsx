@@ -1,27 +1,28 @@
 import { KkButton, KkIcon } from '@furria/ui';
-import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
+import { ManagePageLayout } from '@/features/session';
 import { usePersonFormDialog } from '../hooks/use-person-form-dialog';
-import { usePersonsSearch } from '../hooks/use-persons-search';
+import type { PersonsSearch } from '../hooks/use-persons-search';
+import { MANAGE_PERSONS_SECTION_TITLE, toPersonsLead } from '../manage-persons-labels';
 import type { PersonSummary } from '../schemas';
 import { PersonFormDialog } from './PersonFormDialog';
 import { PersonsAside } from './PersonsAside';
 import { PersonsColdEmpty } from './PersonsColdEmpty';
 import { PersonsCreateFab } from './PersonsCreateFab';
 import { PersonsEmpty } from './PersonsEmpty';
-import { PersonsIntro } from './PersonsIntro';
 import { PersonsList } from './PersonsList';
 import { PersonsToolbar } from './PersonsToolbar';
 
 const CREATE_LABEL = 'Person anlegen';
+const ASIDE_SIZE = 4;
 
 interface PersonsViewProps {
   persons: readonly PersonSummary[];
+  search: PersonsSearch;
 }
 
-export const PersonsView: FC<PersonsViewProps> = ({ persons }) => {
-  const search = usePersonsSearch(persons);
+export const PersonsView: FC<PersonsViewProps> = ({ persons, search }) => {
   const dialog = usePersonFormDialog();
 
   const formDialog = (
@@ -50,42 +51,48 @@ export const PersonsView: FC<PersonsViewProps> = ({ persons }) => {
     );
 
   const createButton = (
-    <KkButton
-      variant="outlined"
-      startIcon={<KkIcon name="add" size="small" />}
-      onClick={dialog.open}
-    >
+    <KkButton startIcon={<KkIcon name="add" size="small" />} onClick={dialog.open}>
       {CREATE_LABEL}
     </KkButton>
   );
 
+  const toolbar = (
+    <PersonsToolbar
+      query={search.query}
+      onQueryChange={search.setQuery}
+      state={search.state}
+      options={search.filterOptions}
+      onStateChange={search.selectState}
+      letters={search.letters}
+      letter={search.letter}
+      onLetterSelect={search.jumpTo}
+    />
+  );
+
+  const aside = (
+    <PersonsAside
+      letters={search.letters}
+      letter={search.letter}
+      onLetterSelect={search.jumpTo}
+      totals={search.totals}
+    />
+  );
+
   return (
-    <Stack sx={{ gap: 3, minWidth: 0 }}>
-      <PersonsIntro total={search.total} action={createButton} />
-      <Grid container spacing={{ xs: 3, desktop: 5 }} sx={{ minWidth: 0 }}>
-        <Grid size={{ xs: 12, desktop: 8 }} sx={{ minWidth: 0 }}>
-          <Stack sx={{ gap: 2.5, minWidth: 0 }}>
-            <PersonsToolbar
-              query={search.query}
-              onQueryChange={search.setQuery}
-              state={search.state}
-              options={search.filterOptions}
-              onStateChange={search.selectState}
-            />
-            {list}
-          </Stack>
-        </Grid>
-        <Grid size={{ xs: 12, desktop: 4 }} sx={{ display: { xs: 'none', desktop: 'block' } }}>
-          <PersonsAside
-            letters={search.letters}
-            letter={search.letter}
-            onLetterSelect={search.jumpTo}
-            totals={search.totals}
-          />
-        </Grid>
-      </Grid>
+    <>
+      <ManagePageLayout
+        lead={toPersonsLead(search.total)}
+        sectionTitle={MANAGE_PERSONS_SECTION_TITLE}
+        createAction={createButton}
+        toolbar={toolbar}
+        list={list}
+        aside={aside}
+        asideSize={ASIDE_SIZE}
+        asideDesktopOnly
+        stickyColumn="aside"
+      />
       <PersonsCreateFab label={CREATE_LABEL} onClick={dialog.open} />
       {formDialog}
-    </Stack>
+    </>
   );
 };

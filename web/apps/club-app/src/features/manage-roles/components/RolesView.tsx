@@ -1,14 +1,22 @@
-import Grid from '@mui/material/Grid';
+import { KkButton, KkIcon } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { useState } from 'react';
+import { ManagePageLayout } from '@/features/session';
 import { useDetailScroll } from '../hooks/use-detail-scroll';
+import { useRoleSearch } from '../hooks/use-role-search';
 import { useSelectedRole } from '../hooks/use-selected-role';
+import { MANAGE_ROLES_SECTION_TITLE, toRolesLead } from '../manage-roles-labels';
 import type { RoleSummary } from '../schemas';
 import { RoleColumn } from './RoleColumn';
 import { RoleFormDialog } from './RoleFormDialog';
+import { RolesCreateFab } from './RolesCreateFab';
 import { RolesEmpty } from './RolesEmpty';
 import { RolesMasterList } from './RolesMasterList';
+import { RolesToolbar } from './RolesToolbar';
+
+const CREATE_LABEL = 'Rolle anlegen';
+const DETAIL_SIZE = 8;
 
 interface RolesViewProps {
   roles: readonly RoleSummary[];
@@ -17,6 +25,7 @@ interface RolesViewProps {
 
 export const RolesView: FC<RolesViewProps> = ({ roles, catalogue }) => {
   const { roleId, select } = useSelectedRole();
+  const search = useRoleSearch(roles);
   const [isCreateOpen, setCreateOpen] = useState(false);
   const detailRef = useDetailScroll(roleId);
 
@@ -54,26 +63,35 @@ export const RolesView: FC<RolesViewProps> = ({ roles, catalogue }) => {
     );
   }
 
+  const createButton = (
+    <KkButton startIcon={<KkIcon name="add" size="small" />} onClick={openCreate}>
+      {CREATE_LABEL}
+    </KkButton>
+  );
+
+  const list = (
+    <RolesMasterList
+      entries={search.entries}
+      term={search.term}
+      selectedRoleId={roleId}
+      onSelect={select}
+    />
+  );
+
   return (
-    <Stack sx={{ minWidth: 0 }}>
-      <Grid container spacing={{ xs: 3, desktop: 5 }} sx={{ minWidth: 0 }}>
-        <Grid size={{ xs: 12, desktop: 4 }} sx={{ minWidth: 0 }}>
-          <RolesMasterList
-            roles={roles}
-            selectedRoleId={roleId}
-            onSelect={select}
-            onCreate={openCreate}
-          />
-        </Grid>
-        <Grid
-          ref={detailRef}
-          size={{ xs: 12, desktop: 8 }}
-          sx={{ minWidth: 0, scrollMarginTop: 2 }}
-        >
-          <RoleColumn roleId={roleId} catalogue={catalogue} />
-        </Grid>
-      </Grid>
+    <>
+      <ManagePageLayout
+        lead={toRolesLead(roles)}
+        sectionTitle={MANAGE_ROLES_SECTION_TITLE}
+        createAction={createButton}
+        toolbar={<RolesToolbar query={search.query} onQueryChange={search.setQuery} />}
+        list={list}
+        aside={<RoleColumn roleId={roleId} catalogue={catalogue} />}
+        asideSize={DETAIL_SIZE}
+        asideRef={detailRef}
+      />
+      <RolesCreateFab onCreate={openCreate} />
       {createDialog}
-    </Stack>
+    </>
   );
 };
