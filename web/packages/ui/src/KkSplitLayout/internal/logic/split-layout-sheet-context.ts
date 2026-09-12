@@ -1,14 +1,27 @@
 import type { MotionValue } from 'motion/react';
 import { createContext, useContext } from 'react';
 
-export const SplitLayoutSheetContext = createContext<MotionValue<string> | null>(null);
+export interface SplitLayoutSheetState {
+  lift: MotionValue<string>;
+  isSheetOpen: boolean;
+  setSheetOpen: (open: boolean) => void;
+  isPaneOpen: boolean;
+}
 
-export const useSheetLift = (): MotionValue<string> => {
-  const sheetLift = useContext(SplitLayoutSheetContext);
+export const SplitLayoutSheetContext = createContext<SplitLayoutSheetState | null>(null);
 
-  if (sheetLift === null) {
-    throw new Error('useSheetLift must be used inside KkSplitLayout.');
+export const useSheetState = (): SplitLayoutSheetState => {
+  const state = useContext(SplitLayoutSheetContext);
+
+  if (state === null) {
+    throw new Error('useSheetState must be used inside KkSplitLayout.');
   }
 
-  return sheetLift;
+  return state;
+};
+
+export const useKkPaneOpen = (): boolean => {
+  const state = useContext(SplitLayoutSheetContext);
+
+  return state === null || state.isPaneOpen;
 };
