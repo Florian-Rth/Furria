@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import {
+  ACTIVE_ROLES_FILTER_ID,
+  ALL_ROLES_FILTER_ID,
+  ARCHIVED_ROLES_FILTER_ID,
   isKeyHandover,
   isSelfLockout,
   toArchivedMeta,
@@ -9,12 +12,15 @@ import {
   toHolderAddedMessage,
   toHolderCountLabel,
   toHoldersMeta,
+  toHolderUnitLabel,
   toHoldingEndedMessage,
   toMasterEntries,
   toNextPermissionKeys,
+  toNoRoleMatchLine,
   toPermissionEntries,
   toRoleSearchTerm,
   toRoleSeed,
+  toRoleStatusFilterOptions,
   toRolesLead,
   toStartQuickChoices,
 } from './manage-roles-labels';
@@ -94,36 +100,114 @@ describe('toMasterEntries', () => {
   const roles: readonly RoleSummary[] = [
     role({ roleId: 1, name: 'Admin' }),
     role({ roleId: 9, name: 'Pressewartin', archivedOn: '2026-09-12' }),
-    role({ roleId: 3, name: 'Finanzen', description: 'Führt die Kasse und die Beiträge.' }),
+    role({
+      roleId: 3,
+      name: 'Finanzen',
+      description: 'Führt die Kasse und die Beiträge.',
+      holders: [{ personId: 4, firstName: 'Lukas', lastName: 'Schmitt' }],
+    }),
   ];
 
+  const ids = (query: string, status: string): number[] =>
+    toMasterEntries(roles, query, status).map((entry) => entry.roleId);
+
   it('keeps the server order but moves archived roles last', () => {
-    expect(toMasterEntries(roles, '').map((entry) => entry.roleId)).toEqual([1, 3, 9]);
+    expect(ids('', ALL_ROLES_FILTER_ID)).toEqual([1, 3, 9]);
   });
 
   it('marks the archived row', () => {
-    const archived = toMasterEntries(roles, '').find((entry) => entry.roleId === 9);
+    const archived = toMasterEntries(roles, '', ALL_ROLES_FILTER_ID).find(
+      (entry) => entry.roleId === 9,
+    );
 
     expect(archived?.isArchived).toBe(true);
   });
 
   it('marks a row nobody holds', () => {
-    const unheld = toMasterEntries(roles, '').find((entry) => entry.roleId === 1);
+    const unheld = toMasterEntries(roles, '', ALL_ROLES_FILTER_ID).find(
+      (entry) => entry.roleId === 1,
+    );
 
     expect(unheld?.isUnheld).toBe(true);
   });
 
+  it('carries the holder count the card paints as its numeral', () => {
+    const held = toMasterEntries(roles, '', ALL_ROLES_FILTER_ID).find(
+      (entry) => entry.roleId === 3,
+    );
+
+    expect(held?.holderCount).toBe(1);
+  });
+
   it('folds umlauts when matching the name', () => {
-    expect(toMasterEntries(roles, 'pressewartin').map((entry) => entry.roleId)).toEqual([9]);
+    expect(ids('pressewartin', ALL_ROLES_FILTER_ID)).toEqual([9]);
   });
 
   it('matches the description as well as the name', () => {
-    expect(toMasterEntries(roles, 'kasse').map((entry) => entry.roleId)).toEqual([3]);
+    expect(ids('kasse', ALL_ROLES_FILTER_ID)).toEqual([3]);
   });
 
   it('requires every word of the query to match', () => {
-    expect(toMasterEntries(roles, 'kasse beitraege')).toEqual([]);
-    expect(toMasterEntries(roles, 'kasse beitrage').map((entry) => entry.roleId)).toEqual([3]);
+    expect(toMasterEntries(roles, 'kasse beitraege', ALL_ROLES_FILTER_ID)).toEqual([]);
+    expect(ids('kasse beitrage', ALL_ROLES_FILTER_ID)).toEqual([3]);
+  });
+
+  it('drops the archived role under the in-use filter', () => {
+    expect(ids('', ACTIVE_ROLES_FILTER_ID)).toEqual([1, 3]);
+  });
+
+  it('keeps only the archived role under the archived filter', () => {
+    expect(ids('', ARCHIVED_ROLES_FILTER_ID)).toEqual([9]);
+  });
+
+  it('applies the query inside the chosen status', () => {
+    expect(ids('pressewartin', ACTIVE_ROLES_FILTER_ID)).toEqual([]);
+  });
+});
+
+describe('toRoleStatusFilterOptions', () => {
+  const roles: readonly RoleSummary[] = [
+    role({ roleId: 1, name: 'Admin' }),
+    role({ roleId: 9, name: 'Pressewartin', archivedOn: '2026-09-12' }),
+    role({ roleId: 3, name: 'Finanzen' }),
+  ];
+
+  it('counts every role, the ones in use and the archived ones', () => {
+    expect(toRoleStatusFilterOptions(roles).map((option) => [option.id, option.count])).toEqual([
+      [ALL_ROLES_FILTER_ID, 3],
+      [ACTIVE_ROLES_FILTER_ID, 2],
+      [ARCHIVED_ROLES_FILTER_ID, 1],
+    ]);
+  });
+
+  it('offers the axis even when nothing is archived', () => {
+    expect(toRoleStatusFilterOptions([role({ roleId: 1, name: 'Admin' })])).toHaveLength(3);
+  });
+});
+
+describe('toNoRoleMatchLine', () => {
+  it('names the query when there is one', () => {
+    expect(toNoRoleMatchLine('  Kasse ', ALL_ROLES_FILTER_ID)).toContain('Kasse');
+  });
+
+  it('explains the status when only a chip narrows the list', () => {
+    expect(toNoRoleMatchLine('', ARCHIVED_ROLES_FILTER_ID)).toBe(
+      'Gerade ist keine Rolle archiviert. Wähle „Alle“, um wieder alle zu sehen.',
+    );
+  });
+
+  it('falls back to the cold case under Alle', () => {
+    expect(toNoRoleMatchLine('', ALL_ROLES_FILTER_ID)).toBe('Es gibt noch keine Rolle.');
+  });
+});
+
+describe('toHolderUnitLabel', () => {
+  it.each([
+    { count: 0, expected: 'Inhaberschaften' },
+    { count: 1, expected: 'Inhaberschaft' },
+    { count: 4, expected: 'Inhaberschaften' },
+  ])('names the unit for $count', ({ count, expected }) => {
+    expect(toHolderUnitLabel(count)).toBe(expected);
   });
 });
 

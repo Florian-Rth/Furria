@@ -1,4 +1,4 @@
-import type { KkConfirmFact, KkDateQuickChoice } from '@furria/ui';
+import type { KkConfirmFact, KkDateQuickChoice, KkFilterOption } from '@furria/ui';
 import type { PermissionKey } from '@/lib/api/schemas';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { SESSION_OPENING_DAY, SESSION_OPENING_MONTH, sessionAt } from '@/lib/club';
@@ -75,6 +75,7 @@ export interface RoleMasterEntry {
   name: string;
   description: string;
   meta: string | null;
+  holderCount: number;
   isArchived: boolean;
   isUnheld: boolean;
 }
@@ -84,6 +85,7 @@ const toMasterEntry = (role: RoleSummary): RoleMasterEntry => ({
   name: role.name,
   description: role.description,
   meta: toHoldersMeta(role.holders),
+  holderCount: role.holders.length,
   isArchived: role.archivedOn !== null,
   isUnheld: role.holders.length === 0,
 });
@@ -96,12 +98,47 @@ const archivedLast = (left: RoleMasterEntry, right: RoleMasterEntry): number => 
   return left.isArchived ? 1 : -1;
 };
 
+export const ALL_ROLES_FILTER_ID = 'all';
+export const ACTIVE_ROLES_FILTER_ID = 'active';
+export const ARCHIVED_ROLES_FILTER_ID = 'archived';
+
+const ALL_ROLES_LABEL = 'Alle';
+const ACTIVE_ROLES_LABEL = 'im Einsatz';
+const ARCHIVED_ROLES_LABEL = 'archiviert';
+const ALL_ROLES_SUGGESTION = 'Wähle „Alle“, um wieder alle zu sehen.';
+
+const isArchivedRole = (role: RoleSummary): boolean => role.archivedOn !== null;
+
+export const toRoleStatusFilterOptions = (roles: readonly RoleSummary[]): KkFilterOption[] => {
+  const archived = roles.filter(isArchivedRole).length;
+
+  return [
+    { id: ALL_ROLES_FILTER_ID, label: ALL_ROLES_LABEL, count: roles.length },
+    { id: ACTIVE_ROLES_FILTER_ID, label: ACTIVE_ROLES_LABEL, count: roles.length - archived },
+    { id: ARCHIVED_ROLES_FILTER_ID, label: ARCHIVED_ROLES_LABEL, count: archived },
+  ];
+};
+
+const matchesRoleStatus = (role: RoleSummary, status: string): boolean => {
+  if (status === ACTIVE_ROLES_FILTER_ID) {
+    return !isArchivedRole(role);
+  }
+  if (status === ARCHIVED_ROLES_FILTER_ID) {
+    return isArchivedRole(role);
+  }
+
+  return true;
+};
+
 export const toMasterEntries = (
   roles: readonly RoleSummary[],
   query: string,
+  status: string,
 ): RoleMasterEntry[] => {
   const term = toRoleSearchTerm(query);
-  const matching = term === null ? roles : roles.filter((role) => matchesRole(role, term));
+  const matching = roles.filter(
+    (role) => matchesRoleStatus(role, status) && (term === null || matchesRole(role, term)),
+  );
 
   return matching.map(toMasterEntry).sort(archivedLast);
 };
@@ -174,10 +211,31 @@ export const toHolderCountLabel = (count: number): string => {
 
 export const toHolderSinceValue = (holder: RoleHolder): string => formatSinceSession(holder.since);
 
+export const toHolderUnitLabel = (count: number): string =>
+  count === 1 ? 'Inhaberschaft' : 'Inhaberschaften';
+
 export const NO_ROLE_SEARCH_RESULT_TITLE = 'KEINE ROLLE GEFUNDEN';
 
-export const toNoRoleSearchResultLine = (term: string): string =>
-  `Zu „${term}“ gibt es keine Rolle. Vielleicht anders geschrieben?`;
+const NO_ROLE_MATCH_LINES: Record<string, string> = {
+  [ACTIVE_ROLES_FILTER_ID]: 'Gerade ist keine Rolle im Einsatz.',
+  [ARCHIVED_ROLES_FILTER_ID]: 'Gerade ist keine Rolle archiviert.',
+};
+
+export const toNoRoleMatchLine = (query: string, status: string): string => {
+  const term = toRoleSearchTerm(query);
+
+  if (term !== null) {
+    return `Zu „${term}“ gibt es keine Rolle. Vielleicht anders geschrieben?`;
+  }
+
+  const statusLine = NO_ROLE_MATCH_LINES[status];
+
+  if (statusLine === undefined) {
+    return 'Es gibt noch keine Rolle.';
+  }
+
+  return `${statusLine} ${ALL_ROLES_SUGGESTION}`;
+};
 
 export const toNoDescriptionLine = (name: string): string =>
   `Zu ${name} steht noch nichts geschrieben.`;

@@ -72,11 +72,11 @@ export const RolesView: FC<RolesViewProps> = ({ roles, catalogue }) => {
 
   const list =
     roleId === null ? (
-      <RolesGrid entries={search.entries} term={search.term} />
+      <RolesGrid entries={search.entries} emptyDescription={search.emptyDescription} />
     ) : (
       <RolesMasterList
         entries={search.entries}
-        term={search.term}
+        emptyDescription={search.emptyDescription}
         selectedRoleId={roleId}
         onSelect={select}
       />
@@ -90,7 +90,15 @@ export const RolesView: FC<RolesViewProps> = ({ roles, catalogue }) => {
         lead={toRolesLead(roles)}
         sectionTitle={MANAGE_ROLES_SECTION_TITLE}
         createAction={createButton}
-        toolbar={<RolesToolbar query={search.query} onQueryChange={search.setQuery} />}
+        toolbar={
+          <RolesToolbar
+            query={search.query}
+            onQueryChange={search.setQuery}
+            status={search.status}
+            options={search.filterOptions}
+            onStatusChange={search.selectStatus}
+          />
+        }
         list={list}
         aside={detail}
         asideSize={DETAIL_SIZE}
