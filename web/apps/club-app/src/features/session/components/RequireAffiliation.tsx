@@ -6,9 +6,9 @@ const NOT_AFFILIATED_MESSAGE =
   'Das Verzeichnis ist für Mitglieder, Gruppen und Rollen des FCC. Dein Konto hat noch keine Verbindung zum Verein — melde dich bei der Personenverwaltung.';
 
 export const RequireAffiliation: FC<PropsWithChildren> = ({ children }) => {
-  const { isAffiliated, isPending } = usePermissions();
+  const { isAffiliated, isUndecided } = usePermissions();
 
-  if (isPending || isAffiliated) {
+  if (isUndecided || isAffiliated) {
     return children;
   }
 

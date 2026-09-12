@@ -20,9 +20,9 @@ interface RequirePermissionProps extends PropsWithChildren {
 }
 
 export const RequirePermission: FC<RequirePermissionProps> = ({ permissionKey, children }) => {
-  const { has, isPending } = usePermissions();
+  const { has, isUndecided } = usePermissions();
 
-  if (isPending || has(permissionKey)) {
+  if (isUndecided || has(permissionKey)) {
     return children;
   }
 
