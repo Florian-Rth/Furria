@@ -65,3 +65,19 @@ export const EndGroupMembershipFormSchema = z.object({
   endedOn: z.iso.date(),
 });
 export type EndGroupMembershipForm = z.infer<typeof EndGroupMembershipFormSchema>;
+
+export const AddedGroupAdminSchema = z.object({ groupAdminId: z.number().int() });
+export type AddedGroupAdmin = z.infer<typeof AddedGroupAdminSchema>;
+
+export const AddGroupAdminFormSchema = z.object({
+  personId: z.number().int().positive(),
+  function: z.string().max(64).nullable(),
+  sinceOn: z.iso.date(),
+});
+export type AddGroupAdminForm = z.infer<typeof AddGroupAdminFormSchema>;
+
+export const EndGroupAdminFormSchema = z.object({
+  groupAdminId: z.number().int().positive(),
+  endedOn: z.iso.date(),
+});
+export type EndGroupAdminForm = z.infer<typeof EndGroupAdminFormSchema>;

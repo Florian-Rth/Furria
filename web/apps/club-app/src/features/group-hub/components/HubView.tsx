@@ -4,7 +4,9 @@ import type { FC } from 'react';
 import { useHubCelebration } from '../hooks/use-hub-celebration';
 import { useHubDialogs } from '../hooks/use-hub-dialogs';
 import type { HubDetails } from '../schemas';
+import { AddAdminDialog } from './AddAdminDialog';
 import { AddMemberDialog } from './AddMemberDialog';
+import { EndAdminDialog } from './EndAdminDialog';
 import { EndMembershipDialog } from './EndMembershipDialog';
 import { HubAdminsPanel } from './HubAdminsPanel';
 import { HubCelebration } from './HubCelebration';
@@ -19,7 +21,7 @@ interface HubViewProps {
 }
 
 export const HubView: FC<HubViewProps> = ({ hub }) => {
-  const dialogs = useHubDialogs(hub.members);
+  const dialogs = useHubDialogs(hub.members, hub.admins);
   const celebration = useHubCelebration();
 
   const onAdded = (): void => {
@@ -28,7 +30,9 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
   };
 
   const history = hub.viewerIsAdmin ? (
-    <HubHistoryPanel pastMembers={hub.pastMembers} pastAdmins={hub.pastAdmins} />
+    <Grid size={{ xs: 12, desktop: 7 }} sx={{ minWidth: 0 }}>
+      <HubHistoryPanel pastMembers={hub.pastMembers} pastAdmins={hub.pastAdmins} />
+    </Grid>
   ) : null;
 
   const tools = hub.viewerIsAdmin ? (
@@ -44,6 +48,20 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
         groupId={hub.groupId}
         groupName={hub.name}
         member={dialogs.endMember}
+        onClose={dialogs.close}
+      />
+      <AddAdminDialog
+        groupId={hub.groupId}
+        groupName={hub.name}
+        open={dialogs.isAddAdminOpen}
+        onClose={dialogs.close}
+        onAppointed={dialogs.close}
+      />
+      <EndAdminDialog
+        groupId={hub.groupId}
+        groupName={hub.name}
+        admin={dialogs.endAdmin}
+        runningAdmins={hub.admins.length}
         onClose={dialogs.close}
       />
     </>
@@ -70,16 +88,21 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
                 onEnd={dialogs.openEndMembership}
               />
             </HubCelebration>
-            {history}
           </Stack>
         </Grid>
         <Grid size={{ xs: 12, desktop: 5 }} sx={{ minWidth: 0 }}>
           <Stack sx={{ gap: 3.5, minWidth: 0 }}>
-            <HubAdminsPanel admins={hub.admins} />
+            <HubAdminsPanel
+              admins={hub.admins}
+              canManage={hub.viewerIsAdmin}
+              onAdd={dialogs.openAddAdmin}
+              onEnd={dialogs.openEndAdmin}
+            />
             <HubEventsSlot />
             <HubPhotosSlot />
           </Stack>
         </Grid>
+        {history}
       </Grid>
       {tools}
     </>

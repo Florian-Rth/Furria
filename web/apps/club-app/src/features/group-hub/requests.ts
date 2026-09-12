@@ -1,8 +1,11 @@
 import { apiFetch } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
 import type {
+  AddedGroupAdmin,
   AddedGroupMembership,
+  AddGroupAdminForm,
   AddGroupMembershipForm,
+  EndGroupAdminForm,
   EndGroupMembershipForm,
   GroupInfoForm,
   HubDetails,
@@ -10,6 +13,7 @@ import type {
   PersonSearchResponse,
 } from './schemas';
 import {
+  AddedGroupAdminSchema,
   AddedGroupMembershipSchema,
   HubDetailsSchema,
   MyGroupsResponseSchema,
@@ -61,6 +65,30 @@ export const requestEndGroupMembership = (
   accessToken: string,
 ): Promise<void> =>
   apiFetch(`/api/groups/${groupId}/memberships/${form.groupMembershipId}/end`, {
+    method: 'POST',
+    body: { endedOn: form.endedOn },
+    schema: NoContentSchema,
+    accessToken,
+  });
+
+export const requestAddGroupAdmin = (
+  groupId: number,
+  form: AddGroupAdminForm,
+  accessToken: string,
+): Promise<AddedGroupAdmin> =>
+  apiFetch(`/api/groups/${groupId}/admins`, {
+    method: 'POST',
+    body: { personId: form.personId, function: form.function, sinceOn: form.sinceOn },
+    schema: AddedGroupAdminSchema,
+    accessToken,
+  });
+
+export const requestEndGroupAdmin = (
+  groupId: number,
+  form: EndGroupAdminForm,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`/api/groups/${groupId}/admins/${form.groupAdminId}/end`, {
     method: 'POST',
     body: { endedOn: form.endedOn },
     schema: NoContentSchema,

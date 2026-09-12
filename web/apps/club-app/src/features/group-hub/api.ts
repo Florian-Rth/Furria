@@ -11,12 +11,16 @@ import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { toIsoDay } from '@/lib/day';
 import {
   GROUP_INFO_SAVED_MESSAGE,
+  toAdminAppointedMessage,
+  toAdminEndedMessage,
   toMemberAddedMessage,
   toMembershipEndedMessage,
 } from './group-hub-labels';
 import { toWriteErrorMessage } from './group-hub-messages';
 import {
+  requestAddGroupAdmin,
   requestAddGroupMembership,
+  requestEndGroupAdmin,
   requestEndGroupMembership,
   requestGroupInfoUpdate,
   requestMyGroup,
@@ -24,6 +28,7 @@ import {
   requestPersonSearch,
 } from './requests';
 import type {
+  AddedGroupAdmin,
   AddedGroupMembership,
   GroupInfoForm,
   HubDetails,
@@ -51,6 +56,19 @@ export interface AddMemberInput {
 
 export interface EndMembershipInput {
   groupMembershipId: number;
+  personName: string;
+  endedOn: string;
+}
+
+export interface AddAdminInput {
+  personId: number;
+  personName: string;
+  function: string | null;
+  sinceOn: string;
+}
+
+export interface EndAdminInput {
+  groupAdminId: number;
   personName: string;
   endedOn: string;
 }
@@ -164,6 +182,64 @@ export const useEndGroupMembershipMutation = (
         input.endedOn,
         toIsoDay(new Date()),
       );
+
+      showToast({ tone: 'success', message });
+      refreshHub(queryClient, groupId);
+    },
+    onError: () => {
+      refreshHub(queryClient, groupId);
+    },
+  });
+};
+
+export const useAddGroupAdminMutation = (
+  groupId: number,
+): UseMutationResult<AddedGroupAdmin, Error, AddAdminInput> => {
+  const queryClient = useQueryClient();
+  const showToast = useKkToast();
+
+  return useMutation({
+    mutationFn: (input: AddAdminInput) =>
+      withFreshAccessToken((accessToken) =>
+        requestAddGroupAdmin(
+          groupId,
+          { personId: input.personId, function: input.function, sinceOn: input.sinceOn },
+          accessToken,
+        ),
+      ),
+    onSuccess: (_added, input) => {
+      const message = toAdminAppointedMessage(
+        input.personName,
+        input.sinceOn,
+        toIsoDay(new Date()),
+      );
+
+      showToast({ tone: 'success', message });
+      refreshHub(queryClient, groupId);
+    },
+    onError: () => {
+      refreshHub(queryClient, groupId);
+    },
+  });
+};
+
+export const useEndGroupAdminMutation = (
+  groupId: number,
+): UseMutationResult<void, Error, EndAdminInput> => {
+  const queryClient = useQueryClient();
+  const showToast = useKkToast();
+
+  return useMutation({
+    mutationFn: (input: EndAdminInput) =>
+      withFreshAccessToken((accessToken) =>
+        requestEndGroupAdmin(
+          groupId,
+          { groupAdminId: input.groupAdminId, endedOn: input.endedOn },
+          accessToken,
+        ),
+      ),
+    onSuccess: (_result, input) => {
+      const message = toAdminEndedMessage(input.personName, input.endedOn, toIsoDay(new Date()));
 
       showToast({ tone: 'success', message });
       refreshHub(queryClient, groupId);
