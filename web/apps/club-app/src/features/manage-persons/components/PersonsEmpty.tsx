@@ -1,4 +1,4 @@
-import { KkEmptyState } from '@furria/ui';
+import { KkEmptyState, KkPanel } from '@furria/ui';
 import type { FC } from 'react';
 import { toPersonsEmptyDescription } from '../manage-persons-labels';
 
@@ -10,5 +10,7 @@ interface PersonsEmptyProps {
 }
 
 export const PersonsEmpty: FC<PersonsEmptyProps> = ({ query, state }) => (
-  <KkEmptyState title={EMPTY_TITLE} description={toPersonsEmptyDescription(query, state)} />
+  <KkPanel variant="block">
+    <KkEmptyState title={EMPTY_TITLE} description={toPersonsEmptyDescription(query, state)} />
+  </KkPanel>
 );

@@ -20,6 +20,7 @@ export const PersonEditHeader: FC<PersonEditHeaderProps> = ({ person }) => {
   return (
     <KkPageHeader
       title={headline.title}
+      titleTransform="none"
       eyebrow={
         <KkEyebrow tone="accent" size="small">
           {PERSON_EYEBROW}
