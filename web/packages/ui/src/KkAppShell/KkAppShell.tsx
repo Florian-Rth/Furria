@@ -18,7 +18,6 @@ import { KkAppShellIdentity } from './internal/ui/KkAppShellIdentity';
 import { KkAppShellMenuButton } from './internal/ui/KkAppShellMenuButton';
 import { KkAppShellNavItem } from './internal/ui/KkAppShellNavItem';
 import { KkAppShellPageTitle } from './internal/ui/KkAppShellPageTitle';
-import { KkAppShellWordmark } from './internal/ui/KkAppShellWordmark';
 
 export const KkAppShell = Object.assign(KkAppShellRoot, {
   Rail: KkAppShellRail,
@@ -36,7 +35,6 @@ export const KkAppShell = Object.assign(KkAppShellRoot, {
   CurtainClose: KkAppShellCurtainClose,
   CurtainFooter: KkAppShellCurtainFooter,
   CurtainAction: KkAppShellCurtainAction,
-  Wordmark: KkAppShellWordmark,
   Greeting: KkAppShellGreeting,
   PageTitle: KkAppShellPageTitle,
   BackLink: KkAppShellBackLink,

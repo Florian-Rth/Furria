@@ -3,7 +3,7 @@ import type { FC } from 'react';
 import { toMemberHeadline } from '../members-labels';
 import type { MemberDetails } from '../schemas';
 
-const EYEBROW = 'Mitglied';
+const EYEBROW = 'Person';
 
 interface MemberHeaderProps {
   member: MemberDetails | undefined;
