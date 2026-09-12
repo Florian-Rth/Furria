@@ -1,20 +1,23 @@
 import type { KkConfirmFact, KkDateQuickChoice } from '@furria/ui';
 import { SESSION_OPENING_DAY, SESSION_OPENING_MONTH, sessionAt } from '@/lib/club';
 import { isFutureDay, toIsoDay } from '@/lib/day';
+import {
+  GROUP_SECTION_TITLES as SHARED_GROUP_SECTION_TITLES,
+  toGroupSubline,
+} from '@/lib/group-sections';
 import { formatIsoDay, formatPeriod } from '@/lib/membership-labels';
 import type { HubAdmin, HubDetails, HubMember } from './schemas';
 
 const GROUP_ID_PATTERN = /^[1-9]\d*$/;
 const HUB_TITLE_FALLBACK = 'Meine Gruppe';
-const COUNT_SEPARATOR = ' · ';
 
 const MEMBER_EYEBROW = 'du bist hier dabei';
 const ADMIN_EYEBROW = 'du bist Gruppen-Admin';
 
 export const HUB_SECTION_TITLES = {
   about: 'Die Gruppe',
-  members: 'Wer ist dabei',
-  admins: 'Gruppen-Admins',
+  members: SHARED_GROUP_SECTION_TITLES.members,
+  admins: SHARED_GROUP_SECTION_TITLES.admins,
   history: 'Geschichte',
   events: 'Termine',
   photos: 'Bilder',
@@ -22,28 +25,6 @@ export const HUB_SECTION_TITLES = {
 
 export const toHubId = (raw: string): number | null =>
   GROUP_ID_PATTERN.test(raw) ? Number(raw) : null;
-
-export const toPeopleCountLabel = (count: number): string => {
-  if (count === 0) {
-    return 'niemand dabei';
-  }
-  if (count === 1) {
-    return '1 Person dabei';
-  }
-
-  return `${count} Personen dabei`;
-};
-
-export const toAdminCountLabel = (count: number): string => {
-  if (count === 0) {
-    return 'kein Gruppen-Admin';
-  }
-  if (count === 1) {
-    return '1 Gruppen-Admin';
-  }
-
-  return `${count} Gruppen-Admins`;
-};
 
 export interface HubHeadline {
   title: string;
@@ -56,12 +37,10 @@ export const toHubHeadline = (hub: HubDetails | undefined): HubHeadline => {
     return { title: HUB_TITLE_FALLBACK, eyebrow: null, countLine: null };
   }
 
-  const counts = [toPeopleCountLabel(hub.members.length), toAdminCountLabel(hub.admins.length)];
-
   return {
     title: hub.name,
     eyebrow: hub.viewerIsAdmin ? ADMIN_EYEBROW : MEMBER_EYEBROW,
-    countLine: counts.join(COUNT_SEPARATOR),
+    countLine: toGroupSubline(hub.members.length, hub.admins.length),
   };
 };
 

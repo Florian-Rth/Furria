@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
   toAdminAppointedMessage,
-  toAdminCountLabel,
   toAdminEndConsequence,
   toAdminEndedMessage,
   toAdminEndFacts,
@@ -18,7 +17,6 @@ import {
   toLastAdminWarning,
   toMemberAddedMessage,
   toMembershipEndedMessage,
-  toPeopleCountLabel,
   toSearchCapLine,
   toSearchTerm,
 } from './group-hub-labels';
@@ -74,27 +72,6 @@ describe('toHubId', () => {
   });
 });
 
-describe('toPeopleCountLabel', () => {
-  it.each([
-    { count: 0, expected: 'niemand dabei' },
-    { count: 1, expected: '1 Person dabei' },
-    { count: 2, expected: '2 Personen dabei' },
-    { count: 18, expected: '18 Personen dabei' },
-  ])('counts $count as $expected', ({ count, expected }) => {
-    expect(toPeopleCountLabel(count)).toBe(expected);
-  });
-});
-
-describe('toAdminCountLabel', () => {
-  it.each([
-    { count: 0, expected: 'kein Gruppen-Admin' },
-    { count: 1, expected: '1 Gruppen-Admin' },
-    { count: 3, expected: '3 Gruppen-Admins' },
-  ])('counts $count as $expected', ({ count, expected }) => {
-    expect(toAdminCountLabel(count)).toBe(expected);
-  });
-});
-
 describe('toHubHeadline', () => {
   it('falls back to the section title while the hub is still loading', () => {
     expect(toHubHeadline(undefined)).toEqual({
@@ -112,7 +89,7 @@ describe('toHubHeadline', () => {
     expect(headline).toEqual({
       title: 'Tanzgarde',
       eyebrow: 'du bist hier dabei',
-      countLine: '2 Personen dabei · kein Gruppen-Admin',
+      countLine: '2 Personen · kein Gruppen-Admin',
     });
   });
 
@@ -124,7 +101,7 @@ describe('toHubHeadline', () => {
     expect(headline).toEqual({
       title: 'Tanzgarde',
       eyebrow: 'du bist Gruppen-Admin',
-      countLine: '1 Person dabei · 1 Gruppen-Admin',
+      countLine: '1 Person · 1 Gruppen-Admin',
     });
   });
 });

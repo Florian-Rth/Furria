@@ -1,4 +1,8 @@
 import type { KkConfirmFact, KkFilterOption } from '@furria/ui';
+import {
+  GROUP_SECTION_TITLES as SHARED_GROUP_SECTION_TITLES,
+  toGroupSubline,
+} from '@/lib/group-sections';
 import { formatIsoDay, formatPeriod } from '@/lib/membership-labels';
 import type { StateChip } from '@/lib/state-chips';
 import { ARCHIVED_CHIP, NO_ADMIN_CHIP, toRecruitingChip } from '@/lib/state-chips';
@@ -8,39 +12,16 @@ import type { ManagedAdmin, ManagedGroupSummary, ManagedMember } from './schemas
 export const MANAGE_GROUPS_SECTION_TITLES = {
   list: 'Alle Gruppen',
   group: 'Die Gruppe',
-  members: 'Zugehörigkeiten',
-  admins: 'Gruppen-Admins',
+  members: SHARED_GROUP_SECTION_TITLES.managedMembers,
+  admins: SHARED_GROUP_SECTION_TITLES.admins,
   history: 'Geschichte',
 } as const;
-
-const COUNT_SEPARATOR = ' · ';
 
 export const MANAGE_GROUPS_FOOTNOTE =
   'Archivieren löscht nichts: Die Gruppe verschwindet aus dem Verzeichnis, ihre Geschichte bleibt in den Profilen stehen.';
 
-export const toMemberCountLabel = (count: number): string => {
-  if (count === 0) {
-    return 'niemand dabei';
-  }
-  if (count === 1) {
-    return '1 Person';
-  }
-
-  return `${count} Personen`;
-};
-
-export const toAdminCountLabel = (count: number): string =>
-  count === 1 ? '1 Admin' : `${count} Admins`;
-
-export const toGroupCountLine = (group: ManagedGroupSummary): string => {
-  const parts = [toMemberCountLabel(group.memberCount)];
-
-  if (group.admins.length > 0) {
-    parts.push(toAdminCountLabel(group.admins.length));
-  }
-
-  return parts.join(COUNT_SEPARATOR);
-};
+export const toGroupCountLine = (group: ManagedGroupSummary): string =>
+  toGroupSubline(group.memberCount, group.admins.length);
 
 export interface ManagedGroupChips {
   status: StateChip | null;

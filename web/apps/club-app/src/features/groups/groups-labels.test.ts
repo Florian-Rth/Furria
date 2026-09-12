@@ -123,7 +123,7 @@ describe('toGroupHeadline', () => {
     ).toEqual({
       title: 'Tanzgarde',
       openness: { label: 'sucht Verstärkung', tone: 'gold', dot: true },
-      memberCount: '2 Personen',
+      memberCount: '2 Personen · kein Gruppen-Admin',
     });
   });
 
