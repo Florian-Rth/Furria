@@ -3,10 +3,10 @@ import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { toInitials } from '@/lib/initials';
 import { formatSinceSession } from '@/lib/membership-labels';
+import { END_LABEL, toEndAdminActionLabel } from '../group-hub-labels';
 import type { HubAdmin } from '../schemas';
 
 const SINCE_LABEL = 'seit';
-const END_LABEL = 'Beenden';
 const MEMBER_PATH = '/members/$personId';
 
 interface HubAdminRowProps {
@@ -26,21 +26,30 @@ export const HubAdminRow: FC<HubAdminRowProps> = ({ admin, canManage, canOpenPer
   };
 
   const trailing = canManage ? (
-    <KkButton size="small" variant="text" tone="danger" onClick={end}>
+    <KkButton
+      size="small"
+      variant="text"
+      tone="danger"
+      ariaLabel={toEndAdminActionLabel(name)}
+      onClick={end}
+    >
       {END_LABEL}
     </KkButton>
   ) : null;
 
-  const opensPerson = canOpenPerson && !canManage;
-  const linkProps = opensPerson
-    ? { component: Link, to: MEMBER_PATH, params: { personId: String(admin.personId) } }
+  const titleLinkProps = canOpenPerson
+    ? {
+        titleComponent: Link,
+        titleTo: MEMBER_PATH,
+        titleParams: { personId: String(admin.personId) },
+      }
     : {};
 
   const avatar = <KkAvatar initials={initials} size="small" component="span" />;
 
   return (
     <KkSinceRow
-      {...linkProps}
+      {...titleLinkProps}
       avatar={avatar}
       title={name}
       meta={meta}
