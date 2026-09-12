@@ -47,6 +47,7 @@ public sealed class GroupService
             group.Name,
             group.Description,
             group.IsRecruiting,
+            group.ArchivedOn,
             group
                 .Memberships.OrderBy(membership =>
                     EF.Functions.Collate(membership.Person!.LastName, GermanCollation)
@@ -258,6 +259,25 @@ public sealed class GroupService
             .ToListAsync(ct);
 
         return [.. rows.Select(ToManagedSummary)];
+    }
+
+    public async Task<Result<ManagedGroupDetails>> GetManagedGroupAsync(
+        int groupId,
+        CancellationToken ct
+    )
+    {
+        var today = ClubClock.Today(_timeProvider);
+
+        var row = await _dbContext
+            .Groups.AsNoTracking()
+            .Where(group => group.Id == groupId)
+            .Select(GroupPageProjection)
+            .SingleOrDefaultAsync(ct);
+
+        if (row is null)
+            return Result<ManagedGroupDetails>.NotFound(UnknownGroupMessage);
+
+        return Result<ManagedGroupDetails>.Success(ToManagedDetails(row, today));
     }
 
     public async Task<Result<int>> CreateAsync(CreateGroupCommand command, CancellationToken ct)
@@ -570,6 +590,66 @@ public sealed class GroupService
         };
     }
 
+    private static ManagedGroupDetails ToManagedDetails(GroupPageRow row, DateOnly today)
+    {
+        var memberChains = ChainStarts(row.Members);
+        var adminChains = ChainStarts(row.Admins);
+
+        return new ManagedGroupDetails
+        {
+            GroupId = row.Id,
+            Name = row.Name,
+            Description = row.Description,
+            IsRecruiting = row.IsRecruiting,
+            ArchivedOn = row.ArchivedOn,
+            Members =
+            [
+                .. RunningRows(row.Members, today)
+                    .Select(tie => ToManagedMember(tie, memberChains[tie.PersonId])),
+            ],
+            Admins =
+            [
+                .. RunningRows(row.Admins, today)
+                    .Select(tie => ToManagedAdministrator(tie, adminChains[tie.PersonId])),
+            ],
+            PastMembers =
+            [
+                .. EndedRows(row.Members, today)
+                    .Select(tie => ToManagedMember(tie, memberChains[tie.PersonId])),
+            ],
+            PastAdmins =
+            [
+                .. EndedRows(row.Admins, today)
+                    .Select(tie => ToManagedAdministrator(tie, adminChains[tie.PersonId])),
+            ],
+        };
+    }
+
+    private static ManagedMember ToManagedMember(TieRow tie, DateOnly since) =>
+        new()
+        {
+            GroupMembershipId = tie.RowId,
+            PersonId = tie.PersonId,
+            FirstName = tie.FirstName,
+            LastName = tie.LastName,
+            JoinedOn = tie.StartedOn,
+            LeftOn = tie.EndedOn,
+            Since = since,
+        };
+
+    private static ManagedAdministrator ToManagedAdministrator(TieRow tie, DateOnly since) =>
+        new()
+        {
+            GroupAdminId = tie.RowId,
+            PersonId = tie.PersonId,
+            FirstName = tie.FirstName,
+            LastName = tie.LastName,
+            Function = tie.Function,
+            SinceOn = tie.StartedOn,
+            UntilOn = tie.EndedOn,
+            Since = since,
+        };
+
     private static ManagedGroupSummary ToManagedSummary(ManagedGroupRow row) =>
         new()
         {
@@ -707,6 +787,7 @@ public sealed class GroupService
         string Name,
         string Description,
         bool IsRecruiting,
+        DateOnly? ArchivedOn,
         IReadOnlyList<TieRow> Members,
         IReadOnlyList<TieRow> Admins
     );
