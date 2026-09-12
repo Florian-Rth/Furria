@@ -150,6 +150,23 @@ public sealed class GroupService
         return [.. rows.Select(ToSummary)];
     }
 
+    public async Task<IReadOnlyList<PublicGroupSummary>> GetPublicGroupsAsync(
+        CancellationToken ct
+    ) =>
+        await _dbContext
+            .Groups.AsNoTracking()
+            .Where(group => group.ArchivedOn == null)
+            .OrderBy(group => EF.Functions.Collate(group.Name, GermanCollation))
+            .ThenBy(group => group.Id)
+            .Select(group => new PublicGroupSummary
+            {
+                GroupId = group.Id,
+                Name = group.Name,
+                Description = group.Description,
+                IsRecruiting = group.IsRecruiting,
+            })
+            .ToListAsync(ct);
+
     public async Task<IReadOnlyList<MyGroupSummary>> GetMyGroupsAsync(
         int personId,
         CancellationToken ct
