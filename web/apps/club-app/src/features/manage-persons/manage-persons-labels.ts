@@ -106,7 +106,7 @@ export const toPersonRowAffiliation = (person: PersonSummary): PersonRowAffiliat
   return { accent, meta };
 };
 
-export const NO_AFFILIATION_META = 'keine Gruppe, keine Rolle';
+export const LETTER_INDEX_LABEL = 'Zu einem Buchstaben springen';
 
 const ALL_FILTER_SUGGESTION = 'Wähle „Alle“, um wieder alle zu sehen.';
 

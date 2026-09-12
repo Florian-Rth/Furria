@@ -3,9 +3,8 @@ import { KkLetterIndex, KkPanel } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { MembershipState } from '@/lib/api/schemas';
+import { LETTER_INDEX_LABEL } from '../manage-persons-labels';
 import { PersonsStats } from './PersonsStats';
-
-const LETTER_INDEX_LABEL = 'Zu einem Buchstaben springen';
 
 interface PersonsAsideProps {
   letters: readonly KkLetterIndexEntry[];
