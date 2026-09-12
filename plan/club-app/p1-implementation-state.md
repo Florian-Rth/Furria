@@ -1,5 +1,5 @@
 ---
-status: in progress — W4 complete, W5 (UX pass) and W6 (slice 18) owed
+status: paused — W4 complete, W5 round 1 complete, W5 round 2 and W6 owed
 phase: CA-P1
 updated: 2026-09-12
 purpose: everything needed to continue CA-P1 on a different machine with no access to the
@@ -299,7 +299,10 @@ web suite plus four real browser logins. Two lanes → roughly 45 min of wall cl
    `docker compose down -v` + re-seed is the only way to get the documented state exactly.
    **There is no delete endpoint (decision U); the three created records never go away by
    themselves.** Match fixtures by name, never by count.
-4. **W5 — the UX pass.** Screenshot every route (`/members`, `/members/$id`, `/groups`,
+4. **W5 — the UX pass. Round 1 is complete; resume at round 2.** See §10 for exactly where the
+   pause is and what is already on disk. Round 2's 56 screenshots were already taken at `7d4bc04`
+   and are in the scratchpad — if that scratchpad is gone, re-shoot before critiquing. The loop as
+   specified: screenshot every route (`/members`, `/members/$id`, `/groups`,
    `/groups/$id`, `/my-groups/$id`, `/profile`, `/manage/persons`, `/manage/persons/$id`,
    `/manage/groups`, `/manage/roles`) at phone/desktop × light/dark. Then a deliberately hostile
    critic: what is bad UX, where do pages drift from each other, where is the corporate design
@@ -624,3 +627,85 @@ empty. A Playwright walk of all thirteen routes logged **no `pageerror` and no `
   never `{}`. See `features/manage-groups/hooks/use-group-selection.ts`.
 - **Reset a dialog's fields with a render-phase update** (a `wasOpen` state compared during render),
   never a `useEffect` — an effect flickers the previous record's values into a freshly opened dialog.
+
+---
+
+## 10. Where the pause is (2026-09-12)
+
+Florian stopped the W5/W6 workflow mid-run. **Nothing is lost and nothing is half-written** — the
+working tree is clean, every agent that had started had already committed, and the run was killed
+between rounds rather than inside one.
+
+### The exact state
+
+| | |
+|---|---|
+| Branch head | `7d4bc04` on `feat/club-app-p1`, tree clean |
+| `origin` | **19 commits behind.** Nothing of W4 or W5 has been pushed |
+| Slices | 1–17 complete on both ends. **Slice 18 not started** (that is W6) |
+| W5 | **Round 1 complete and landed.** Round 2 stopped at its shooter, before any critic ran |
+| Gates | Green at `7d4bc04`, verified by the round-1 integration agent. Nothing has touched the working tree since, so that verdict still stands — but re-run them before trusting it after any break in which the machine changed |
+
+### What round 1 of the UX pass actually did
+
+Five hostile critics (corporate design · cross-surface drift · interaction and accessibility ·
+density and German copy · *where is it merely correct*) read all 52 screenshots and produced **79
+raw findings**. Triage merged ~45 duplicates, **dropped 5 as contract contradictions** (each named
+with its §12 decision letter) and verified every load-bearing claim against the code before keeping
+it — several critic diagnoses were wrong in their file, their count or their fix. What survived was
+**34 work items, 16 structural and 18 detail**, across five buckets, landed in **38 commits**
+(`c93c3f0`…`7d4bc04`).
+
+Two findings are worth knowing about even if you read nothing else:
+
+- **The login page was printing the bootstrap admin's e-mail and password** as unguarded module
+  constants, next to two permanently-disabled entrances and a form that did not submit. Rebuilt in
+  `0309d98`. It was development convenience that would have shipped.
+- **The „Beenden" wall**: `tone="danger" variant="outlined"` fired ~20× per surface as the only
+  colour-ranked control in the product, with its label measured at **4.35:1 — below AA** — while
+  `kkTokens.color.*.redInk` (6.38:1) existed for exactly that. Four of five lenses hit it
+  independently. The resolution is written into the contract as **§7.1a**.
+
+### Deliberately left for round 2
+
+The round-1 integration agent declined three things rather than land a ruling in an integration
+commit. They are the natural first work of round 2:
+
+1. The two remaining dashed `tone="reserved"` panels (`/profile`'s contact preview,
+   `/manage/roles`' no-selection column). G1's ruling is unambiguous; this is mechanical.
+2. `KkBroomMark`'s size and colour — a primitive-level decision affecting 28 empty states, and the
+   `ui` bucket's own open question.
+3. Whether §7.1a item 3 should read „exactly one" or „at most one" contained primary — three
+   surfaces currently have none.
+
+### On disk, and **volatile**
+
+Everything below lives in the session scratchpad
+`/private/tmp/claude-501/-Users-florian-sources-Furria/1a16a9b7-9d1b-4532-85e4-740322ee09c8/scratchpad/`,
+which is session-scoped and will not survive a reboot or a new session. **None of it may be
+committed** (contract §9.4), so if it matters, copy it somewhere outside the repo before the break
+ends:
+
+- `dev-seed/seed.py` — the throwaway seeder. Deterministic ids, drives the real write endpoints.
+  Rebuildable from contract §9.2 and §9.3, but rebuilding costs an agent-hour.
+- `ux/round-2/` — 56 full-page PNGs (14 surfaces × phone/desktop × light/dark) plus 13
+  viewport-sized reads in `ux/round-2/viewport/`, all taken at `7d4bc04`. **For a tall surface read
+  the `vp-*` file, never the full-page one.**
+- `ux/round-1*/` — round 1's before and after shots, per bucket.
+- `patches/` — every family's `git format-patch` series from both waves. Already replayed; kept
+  only as evidence if a conflict resolution turns out wrong.
+- `wf/w5-w6.js` — the W5+W6 workflow script, ready to re-run.
+
+### Also kept, on purpose
+
+Eleven `worktree-wf_*` branches. Their worktrees are removed and their work is on the branch
+(replayed as patches, so the shas differ), but the branches are the only record of the pre-replay
+originals. Delete them with
+`git branch -D $(git branch --list 'worktree-wf_*')` once you trust the merges.
+
+### To resume
+
+Re-run the W5/W6 workflow. It re-enters at round 1 by design, so either edit `w5-w6.js` to start at
+round 2, or let round 1's critics re-read the round-2 shots — they will find less, which is exactly
+the signal the loop's stop condition wants. **Re-seed the dev database first** (§6 item 3): the
+residue described there is still present.
