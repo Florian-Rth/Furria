@@ -1,6 +1,7 @@
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
+import { usePermissions } from '@/features/session';
 import { useHubCelebration } from '../hooks/use-hub-celebration';
 import { useHubDialogs } from '../hooks/use-hub-dialogs';
 import type { HubDetails } from '../schemas';
@@ -23,11 +24,47 @@ interface HubViewProps {
 export const HubView: FC<HubViewProps> = ({ hub }) => {
   const dialogs = useHubDialogs(hub.members, hub.admins);
   const celebration = useHubCelebration();
+  const { isAffiliated } = usePermissions();
 
   const onAdded = (): void => {
     dialogs.close();
     celebration.celebrate();
   };
+
+  const groupSection = (
+    <HubGroupSection
+      groupId={hub.groupId}
+      name={hub.name}
+      description={hub.description}
+      isRecruiting={hub.isRecruiting}
+      canManage={hub.viewerIsAdmin}
+    />
+  );
+
+  const membersSection = (
+    <HubCelebration fireKey={celebration.fireKey}>
+      <HubMembersPanel
+        members={hub.members}
+        groupName={hub.name}
+        canManage={hub.viewerIsAdmin}
+        canOpenPerson={isAffiliated}
+        onAdd={dialogs.openAddMember}
+        onEnd={dialogs.openEndMembership}
+      />
+    </HubCelebration>
+  );
+
+  const readingColumn = hub.viewerIsAdmin ? (
+    <>
+      {membersSection}
+      {groupSection}
+    </>
+  ) : (
+    <>
+      {groupSection}
+      {membersSection}
+    </>
+  );
 
   const history = hub.viewerIsAdmin ? (
     <Grid size={{ xs: 12, desktop: 7 }} sx={{ minWidth: 0 }}>
@@ -71,30 +108,14 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
     <>
       <Grid container spacing={{ xs: 3.5, desktop: 5 }} sx={{ minWidth: 0 }}>
         <Grid size={{ xs: 12, desktop: 7 }} sx={{ minWidth: 0 }}>
-          <Stack sx={{ gap: 3.5, minWidth: 0 }}>
-            <HubGroupSection
-              groupId={hub.groupId}
-              name={hub.name}
-              description={hub.description}
-              isRecruiting={hub.isRecruiting}
-              canManage={hub.viewerIsAdmin}
-            />
-            <HubCelebration fireKey={celebration.fireKey}>
-              <HubMembersPanel
-                members={hub.members}
-                groupName={hub.name}
-                canManage={hub.viewerIsAdmin}
-                onAdd={dialogs.openAddMember}
-                onEnd={dialogs.openEndMembership}
-              />
-            </HubCelebration>
-          </Stack>
+          <Stack sx={{ gap: 3.5, minWidth: 0 }}>{readingColumn}</Stack>
         </Grid>
         <Grid size={{ xs: 12, desktop: 5 }} sx={{ minWidth: 0 }}>
           <Stack sx={{ gap: 3.5, minWidth: 0 }}>
             <HubAdminsPanel
               admins={hub.admins}
               canManage={hub.viewerIsAdmin}
+              canOpenPerson={isAffiliated}
               onAdd={dialogs.openAddAdmin}
               onEnd={dialogs.openEndAdmin}
             />

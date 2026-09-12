@@ -1,7 +1,8 @@
 import { KkButton, KkEmptyState, KkIcon, KkNote, KkPanel } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { HUB_SECTION_TITLES, NO_ADMINS_LINE } from '../group-hub-labels';
+import { GROUP_SECTION_TITLES } from '@/lib/group-sections';
+import { NO_ADMINS_LINE } from '../group-hub-labels';
 import type { HubAdmin } from '../schemas';
 import { HubAdminRow } from './HubAdminRow';
 import { HubSection } from './HubSection';
@@ -14,25 +15,33 @@ const ADMIN_NOTE =
 interface HubAdminsPanelProps {
   admins: readonly HubAdmin[];
   canManage: boolean;
+  canOpenPerson: boolean;
   onAdd: () => void;
   onEnd: (groupAdminId: number) => void;
 }
 
-export const HubAdminsPanel: FC<HubAdminsPanelProps> = ({ admins, canManage, onAdd, onEnd }) => {
+export const HubAdminsPanel: FC<HubAdminsPanelProps> = ({
+  admins,
+  canManage,
+  canOpenPerson,
+  onAdd,
+  onEnd,
+}) => {
   const rows = admins.map((admin) => (
-    <HubAdminRow key={admin.groupAdminId} admin={admin} canManage={canManage} onEnd={onEnd} />
+    <HubAdminRow
+      key={admin.groupAdminId}
+      admin={admin}
+      canManage={canManage}
+      canOpenPerson={canOpenPerson}
+      onEnd={onEnd}
+    />
   ));
 
   const isEmpty = rows.length === 0;
   const variant = isEmpty ? 'block' : 'list';
 
   const action = canManage ? (
-    <KkButton
-      size="small"
-      variant="outlined"
-      startIcon={<KkIcon name="add" size="small" />}
-      onClick={onAdd}
-    >
+    <KkButton variant="contained" startIcon={<KkIcon name="add" size="small" />} onClick={onAdd}>
       {ADD_LABEL}
     </KkButton>
   ) : null;
@@ -44,7 +53,7 @@ export const HubAdminsPanel: FC<HubAdminsPanelProps> = ({ admins, canManage, onA
   );
 
   return (
-    <HubSection title={HUB_SECTION_TITLES.admins} action={action}>
+    <HubSection title={GROUP_SECTION_TITLES.admins} action={action}>
       <Stack sx={{ gap: 2, minWidth: 0 }}>
         <KkPanel variant={variant}>{body}</KkPanel>
         <KkNote>{ADMIN_NOTE}</KkNote>

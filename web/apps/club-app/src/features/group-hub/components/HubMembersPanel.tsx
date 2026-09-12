@@ -1,6 +1,7 @@
 import { KkButton, KkEmptyState, KkIcon, KkPanel } from '@furria/ui';
 import type { FC } from 'react';
-import { HUB_SECTION_TITLES, toNoMembersLine } from '../group-hub-labels';
+import { GROUP_SECTION_TITLES } from '@/lib/group-sections';
+import { toNoMembersLine } from '../group-hub-labels';
 import type { HubMember } from '../schemas';
 import { HubMemberRow } from './HubMemberRow';
 import { HubSection } from './HubSection';
@@ -12,6 +13,7 @@ interface HubMembersPanelProps {
   members: readonly HubMember[];
   groupName: string;
   canManage: boolean;
+  canOpenPerson: boolean;
   onAdd: () => void;
   onEnd: (groupMembershipId: number) => void;
 }
@@ -20,6 +22,7 @@ export const HubMembersPanel: FC<HubMembersPanelProps> = ({
   members,
   groupName,
   canManage,
+  canOpenPerson,
   onAdd,
   onEnd,
 }) => {
@@ -28,6 +31,7 @@ export const HubMembersPanel: FC<HubMembersPanelProps> = ({
       key={member.groupMembershipId}
       member={member}
       canManage={canManage}
+      canOpenPerson={canOpenPerson}
       onEnd={onEnd}
     />
   ));
@@ -36,12 +40,7 @@ export const HubMembersPanel: FC<HubMembersPanelProps> = ({
   const variant = isEmpty ? 'block' : 'list';
 
   const action = canManage ? (
-    <KkButton
-      size="small"
-      variant="outlined"
-      startIcon={<KkIcon name="add" size="small" />}
-      onClick={onAdd}
-    >
+    <KkButton variant="contained" startIcon={<KkIcon name="add" size="small" />} onClick={onAdd}>
       {ADD_LABEL}
     </KkButton>
   ) : null;
@@ -53,7 +52,7 @@ export const HubMembersPanel: FC<HubMembersPanelProps> = ({
   );
 
   return (
-    <HubSection title={HUB_SECTION_TITLES.members} action={action}>
+    <HubSection title={GROUP_SECTION_TITLES.members} action={action}>
       <KkPanel variant={variant}>{body}</KkPanel>
     </HubSection>
   );

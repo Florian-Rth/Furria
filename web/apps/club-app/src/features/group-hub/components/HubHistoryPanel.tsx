@@ -1,7 +1,8 @@
 import { KkChip, KkEmptyState, KkFactRow, KkPanel } from '@furria/ui';
 import type { FC } from 'react';
+import { GROUP_SECTION_TITLES } from '@/lib/group-sections';
 import type { HubHistoryKind } from '../group-hub-labels';
-import { HUB_SECTION_TITLES, toHistoryEntries } from '../group-hub-labels';
+import { toHistoryEntries } from '../group-hub-labels';
 import type { HubAdmin, HubMember } from '../schemas';
 import { HubSection } from './HubSection';
 
@@ -50,7 +51,7 @@ export const HubHistoryPanel: FC<HubHistoryPanelProps> = ({ pastMembers, pastAdm
   );
 
   return (
-    <HubSection title={HUB_SECTION_TITLES.history} meta={HISTORY_META}>
+    <HubSection title={GROUP_SECTION_TITLES.history} meta={HISTORY_META}>
       <KkPanel variant={variant}>{body}</KkPanel>
     </HubSection>
   );

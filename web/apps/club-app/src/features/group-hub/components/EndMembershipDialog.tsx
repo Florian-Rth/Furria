@@ -53,6 +53,7 @@ export const EndMembershipDialog: FC<EndMembershipDialogProps> = ({
       open={open}
       onClose={onClose}
       onConfirm={form.submit}
+      tone="danger"
       eyebrow={EYEBROW}
       question={toEndQuestion(target.firstName, groupName)}
       explanation={toEndExplanation(target.firstName)}

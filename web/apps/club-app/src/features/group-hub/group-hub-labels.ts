@@ -1,27 +1,18 @@
 import type { KkConfirmFact, KkDateQuickChoice } from '@furria/ui';
 import { SESSION_OPENING_DAY, SESSION_OPENING_MONTH, sessionAt } from '@/lib/club';
 import { isFutureDay, toIsoDay } from '@/lib/day';
-import {
-  GROUP_SECTION_TITLES as SHARED_GROUP_SECTION_TITLES,
-  toGroupSubline,
-} from '@/lib/group-sections';
-import { formatIsoDay, formatPeriod } from '@/lib/membership-labels';
+import { toGroupSubline } from '@/lib/group-sections';
+import { formatIsoDay, formatPeriod, formatSinceSession } from '@/lib/membership-labels';
+import type { StateChip } from '@/lib/state-chips';
+import { toRecruitingChip } from '@/lib/state-chips';
 import type { HubAdmin, HubDetails, HubMember } from './schemas';
 
 const GROUP_ID_PATTERN = /^[1-9]\d*$/;
 const HUB_TITLE_FALLBACK = 'Meine Gruppe';
+const SUBLINE_SEPARATOR = ' · ';
 
-const MEMBER_EYEBROW = 'du bist hier dabei';
-const ADMIN_EYEBROW = 'du bist Gruppen-Admin';
-
-export const HUB_SECTION_TITLES = {
-  about: 'Die Gruppe',
-  members: SHARED_GROUP_SECTION_TITLES.members,
-  admins: SHARED_GROUP_SECTION_TITLES.admins,
-  history: 'Geschichte',
-  events: 'Termine',
-  photos: 'Bilder',
-} as const;
+const MY_GROUP_EYEBROW = 'deine Gruppe';
+const CARE_LINE = 'du pflegst sie';
 
 export const toHubId = (raw: string): number | null =>
   GROUP_ID_PATTERN.test(raw) ? Number(raw) : null;
@@ -29,18 +20,32 @@ export const toHubId = (raw: string): number | null =>
 export interface HubHeadline {
   title: string;
   eyebrow: string | null;
-  countLine: string | null;
+  openness: StateChip | null;
+  subline: string | null;
 }
 
-export const toHubHeadline = (hub: HubDetails | undefined): HubHeadline => {
+const toStandingEyebrow = (ownSince: string | undefined): string =>
+  ownSince === undefined
+    ? MY_GROUP_EYEBROW
+    : `${MY_GROUP_EYEBROW} seit ${formatSinceSession(ownSince)}`;
+
+export const toHubHeadline = (
+  hub: HubDetails | undefined,
+  viewerPersonId: number | null,
+): HubHeadline => {
   if (hub === undefined) {
-    return { title: HUB_TITLE_FALLBACK, eyebrow: null, countLine: null };
+    return { title: HUB_TITLE_FALLBACK, eyebrow: null, openness: null, subline: null };
   }
+
+  const ownRow = hub.members.find((member) => member.personId === viewerPersonId);
+  const counts = toGroupSubline(hub.members.length, hub.admins.length);
+  const sublineParts = hub.viewerIsAdmin ? [CARE_LINE, counts] : [counts];
 
   return {
     title: hub.name,
-    eyebrow: hub.viewerIsAdmin ? ADMIN_EYEBROW : MEMBER_EYEBROW,
-    countLine: toGroupSubline(hub.members.length, hub.admins.length),
+    eyebrow: toStandingEyebrow(ownRow?.since),
+    openness: toRecruitingChip(hub.isRecruiting),
+    subline: sublineParts.join(SUBLINE_SEPARATOR),
   };
 };
 
@@ -285,3 +290,31 @@ export const toLastAdminWarning = (runningAdmins: number): string | null =>
   runningAdmins > 1
     ? null
     : 'Danach hat diese Gruppe keinen Gruppen-Admin mehr. Die Gruppenverwaltung kann jederzeit eine neue ernennen.';
+
+const SENTENCE_SEPARATOR = ' ';
+
+const SELF_ADMIN_END_NOTE =
+  'Das bist du. Danach kannst du die Gruppe nur noch lesen — neu ernennen kann dich die Gruppenverwaltung.';
+
+export const toAdminEndParagraph = (
+  consequence: string | null,
+  isSelf: boolean,
+  runningAdmins: number,
+): string | null => {
+  const sentences = [
+    isSelf ? SELF_ADMIN_END_NOTE : null,
+    consequence,
+    toLastAdminWarning(runningAdmins),
+  ].filter((sentence) => sentence !== null);
+
+  return sentences.length === 0 ? null : sentences.join(SENTENCE_SEPARATOR);
+};
+
+export const toSelfAdminEndedMessage = (
+  groupName: string,
+  endedOn: string,
+  todayIsoDay: string,
+): string =>
+  isFutureDay(endedOn, todayIsoDay)
+    ? `Ab dem ${formatIsoDay(endedOn)} bist du nicht mehr Gruppen-Admin von ${groupName}. Lesen kannst du sie weiter — neu ernennen kann dich die Gruppenverwaltung.`
+    : `Du bist nicht mehr Gruppen-Admin von ${groupName}. Lesen kannst du sie weiter — neu ernennen kann dich die Gruppenverwaltung.`;
