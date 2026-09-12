@@ -12,7 +12,7 @@ import { GROUP_ADMINS_NOTE, GROUP_SECTION_TITLES, NO_ADMINS_LINE } from '@/lib/g
 interface HubAdminsPanelProps {
   admins: readonly GroupDetailAdmin[];
   canManage: boolean;
-  canOpenPerson: boolean;
+  viewerIsAffiliated: boolean;
   newPersonId: number | null;
   titleRef: Ref<HTMLHeadingElement>;
   onAdd: () => void;
@@ -22,7 +22,7 @@ interface HubAdminsPanelProps {
 export const HubAdminsPanel: FC<HubAdminsPanelProps> = ({
   admins,
   canManage,
-  canOpenPerson,
+  viewerIsAffiliated,
   newPersonId,
   titleRef,
   onAdd,
@@ -38,7 +38,7 @@ export const HubAdminsPanel: FC<HubAdminsPanelProps> = ({
         key={admin.groupAdminId}
         admin={admin}
         canManage={canManage}
-        canOpenPerson={canOpenPerson}
+        viewerIsAffiliated={viewerIsAffiliated}
         onEnd={end}
         isNew={admin.personId === newPersonId}
       />

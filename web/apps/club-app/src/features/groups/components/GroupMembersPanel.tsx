@@ -7,11 +7,21 @@ import type { GroupMember } from '../schemas';
 interface GroupMembersPanelProps {
   members: readonly GroupMember[];
   groupName: string;
+  viewerIsAffiliated: boolean;
 }
 
-export const GroupMembersPanel: FC<GroupMembersPanelProps> = ({ members, groupName }) => {
+export const GroupMembersPanel: FC<GroupMembersPanelProps> = ({
+  members,
+  groupName,
+  viewerIsAffiliated,
+}) => {
   const rows = members.map((member) => (
-    <GroupMemberRow key={member.personId} member={member} canManage={false} canOpenPerson />
+    <GroupMemberRow
+      key={member.personId}
+      member={member}
+      canManage={false}
+      viewerIsAffiliated={viewerIsAffiliated}
+    />
   ));
 
   const isEmpty = rows.length === 0;

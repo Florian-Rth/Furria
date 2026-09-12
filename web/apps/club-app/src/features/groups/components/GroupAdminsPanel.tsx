@@ -5,7 +5,11 @@ import type { FC } from 'react';
 import { GroupAdminRow, NO_ADMINS_TITLE } from '@/features/group-detail';
 import { GROUP_ADMINS_NOTE, GROUP_SECTION_TITLES, NO_ADMINS_LINE } from '@/lib/group-sections';
 import type { RecruitingContactSegment } from '../groups-labels';
-import { toContactPersonName, toRecruitingContactSegments } from '../groups-labels';
+import {
+  toContactPersonName,
+  toOpenableAdminIds,
+  toRecruitingContactSegments,
+} from '../groups-labels';
 import type { GroupAdmin } from '../schemas';
 
 const MEMBER_PATH = '/members/$personId';
@@ -16,11 +20,21 @@ const toSegmentKey = (segment: RecruitingContactSegment, index: number): string 
 interface GroupAdminsPanelProps {
   admins: readonly GroupAdmin[];
   isRecruiting: boolean;
+  viewerIsAffiliated: boolean;
 }
 
-export const GroupAdminsPanel: FC<GroupAdminsPanelProps> = ({ admins, isRecruiting }) => {
+export const GroupAdminsPanel: FC<GroupAdminsPanelProps> = ({
+  admins,
+  isRecruiting,
+  viewerIsAffiliated,
+}) => {
   const rows = admins.map((admin) => (
-    <GroupAdminRow key={admin.personId} admin={admin} canManage={false} canOpenPerson />
+    <GroupAdminRow
+      key={admin.personId}
+      admin={admin}
+      canManage={false}
+      viewerIsAffiliated={viewerIsAffiliated}
+    />
   ));
 
   const isEmpty = rows.length === 0;
@@ -32,11 +46,19 @@ export const GroupAdminsPanel: FC<GroupAdminsPanelProps> = ({ admins, isRecruiti
     rows
   );
 
+  const openableAdminIds = toOpenableAdminIds(admins, viewerIsAffiliated);
+
   const contactSegments = toRecruitingContactSegments(admins).map((segment, index) => {
     const key = toSegmentKey(segment, index);
 
     if (segment.kind === 'text') {
       return <span key={key}>{segment.text}</span>;
+    }
+
+    const personName = toContactPersonName(segment);
+
+    if (!openableAdminIds.has(segment.personId)) {
+      return <span key={key}>{personName}</span>;
     }
 
     return (
@@ -46,7 +68,7 @@ export const GroupAdminsPanel: FC<GroupAdminsPanelProps> = ({ admins, isRecruiti
         to={MEMBER_PATH}
         params={{ personId: String(segment.personId) }}
       >
-        {toContactPersonName(segment)}
+        {personName}
       </KkInlineLink>
     );
   });

@@ -12,7 +12,7 @@ import { GROUP_ADMINS_NOTE, GROUP_SECTION_TITLES, NO_ADMINS_LINE } from '@/lib/g
 interface OverrideAdminsPanelProps {
   admins: readonly GroupDetailAdmin[];
   canManage: boolean;
-  canOpenPerson: boolean;
+  viewerIsAffiliated: boolean;
   titleRef: Ref<HTMLHeadingElement>;
   onAdd: () => void;
   onEnd: (groupAdminId: number) => void;
@@ -21,7 +21,7 @@ interface OverrideAdminsPanelProps {
 export const OverrideAdminsPanel: FC<OverrideAdminsPanelProps> = ({
   admins,
   canManage,
-  canOpenPerson,
+  viewerIsAffiliated,
   titleRef,
   onAdd,
   onEnd,
@@ -36,7 +36,7 @@ export const OverrideAdminsPanel: FC<OverrideAdminsPanelProps> = ({
         key={admin.groupAdminId}
         admin={admin}
         canManage={canManage}
-        canOpenPerson={canOpenPerson}
+        viewerIsAffiliated={viewerIsAffiliated}
         onEnd={end}
       />
     );

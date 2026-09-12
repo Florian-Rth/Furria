@@ -34,6 +34,7 @@ export const RoleHolderSchema = PersonRefSchema.extend({
   sinceOn: z.iso.date(),
   untilOn: z.iso.date().nullable(),
   since: z.iso.date(),
+  isAffiliated: z.boolean(),
 });
 export type RoleHolder = z.infer<typeof RoleHolderSchema>;
 

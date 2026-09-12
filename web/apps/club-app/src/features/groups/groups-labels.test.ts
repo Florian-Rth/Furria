@@ -12,12 +12,13 @@ import {
   toGroupStandings,
   toGroupsIntroSentence,
   toNoGroupMatchLine,
+  toOpenableAdminIds,
   toPersonUnitLabel,
   toRecruitingContactLine,
   toRecruitingContactSegments,
   toRecruitingFilterOptions,
 } from './groups-labels';
-import type { GroupDetails, GroupSummary } from './schemas';
+import type { GroupAdmin, GroupDetails, GroupSummary } from './schemas';
 
 const person = (personId: number, firstName: string, lastName = 'Kaiser'): PersonRef => ({
   personId,
@@ -50,6 +51,7 @@ const member = (personId: number): GroupDetails['members'][number] => ({
   firstName: 'Paula',
   lastName: 'Brendel',
   since: '2017-09-01',
+  isAffiliated: true,
 });
 
 describe('toGroupId', () => {
@@ -111,6 +113,35 @@ describe('toRecruitingContactSegments', () => {
       { kind: 'person', personId: 19, firstName: 'Katrin', lastName: 'Kaiser' },
       { kind: 'text', text: ' oder einer der anderen Gruppen-Admins.' },
     ]);
+  });
+});
+
+describe('toOpenableAdminIds', () => {
+  const admins: GroupAdmin[] = [
+    {
+      personId: 18,
+      firstName: 'Anna',
+      lastName: 'Kaiser',
+      function: null,
+      since: '2019-01-01',
+      isAffiliated: true,
+    },
+    {
+      personId: 19,
+      firstName: 'Katrin',
+      lastName: 'Kaiser',
+      function: null,
+      since: '2020-01-01',
+      isAffiliated: false,
+    },
+  ];
+
+  it('leaves out the admin who has no Karte of her own', () => {
+    expect([...toOpenableAdminIds(admins, true)]).toEqual([18]);
+  });
+
+  it('leaves out everyone when the viewer may not open a Karte at all', () => {
+    expect([...toOpenableAdminIds(admins, false)]).toEqual([]);
   });
 });
 

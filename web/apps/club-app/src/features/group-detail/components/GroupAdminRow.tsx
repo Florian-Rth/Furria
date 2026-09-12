@@ -12,7 +12,7 @@ const MEMBER_PATH = '/members/$personId';
 interface GroupAdminRowProps {
   admin: GroupDetailFunctionary;
   canManage: boolean;
-  canOpenPerson: boolean;
+  viewerIsAffiliated: boolean;
   onEnd?: () => void;
   isNew?: boolean;
   overlay?: ReactNode;
@@ -21,7 +21,7 @@ interface GroupAdminRowProps {
 export const GroupAdminRow: FC<GroupAdminRowProps> = ({
   admin,
   canManage,
-  canOpenPerson,
+  viewerIsAffiliated,
   onEnd,
   isNew = false,
   overlay,
@@ -48,10 +48,11 @@ export const GroupAdminRow: FC<GroupAdminRowProps> = ({
       </KkButton>
     ) : null;
 
+  const canOpen = viewerIsAffiliated && admin.isAffiliated;
   const personRoute = { to: MEMBER_PATH, params: { personId: String(admin.personId) } };
-  const rowLink = canOpenPerson && trailing === null ? { component: Link, ...personRoute } : {};
+  const rowLink = canOpen && trailing === null ? { component: Link, ...personRoute } : {};
   const titleLink =
-    canOpenPerson && trailing !== null
+    canOpen && trailing !== null
       ? { titleComponent: Link, titleTo: personRoute.to, titleParams: personRoute.params }
       : {};
 

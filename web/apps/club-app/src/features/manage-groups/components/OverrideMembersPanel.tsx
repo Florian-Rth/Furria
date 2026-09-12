@@ -14,7 +14,7 @@ interface OverrideMembersPanelProps {
   members: readonly GroupDetailMember[];
   groupName: string;
   canManage: boolean;
-  canOpenPerson: boolean;
+  viewerIsAffiliated: boolean;
   titleRef: Ref<HTMLHeadingElement>;
   onAdd: () => void;
   onEnd: (groupMembershipId: number) => void;
@@ -24,7 +24,7 @@ export const OverrideMembersPanel: FC<OverrideMembersPanelProps> = ({
   members,
   groupName,
   canManage,
-  canOpenPerson,
+  viewerIsAffiliated,
   titleRef,
   onAdd,
   onEnd,
@@ -39,7 +39,7 @@ export const OverrideMembersPanel: FC<OverrideMembersPanelProps> = ({
         key={member.groupMembershipId}
         member={member}
         canManage={canManage}
-        canOpenPerson={canOpenPerson}
+        viewerIsAffiliated={viewerIsAffiliated}
         onEnd={end}
       />
     );
