@@ -423,6 +423,81 @@ decision written back into `p1-contract.md`, not re-litigating by the next imple
     inside an `<a>`. Shipped the pinned link, with „Bearbeiten" on the detail page's
     `PersonMasterDataPanel`.
 
+### Amendments and bugs from the UX pass, round 1 — the `shared` bucket
+
+**Contract amendments taken by this bucket.** Each is a paragraph of `p1-contract.md` that could
+not be implemented as written; the resolution is recorded here and belongs folded back into the
+contract when that file is next touched.
+
+1. **§5.3 contradicts itself and is amended.** It pins `MemberHeader` as
+   „KkAvatar + name + state chip + „Mitglied seit …"" **and** pins `MemberClubPanel` as
+   „KkFieldRow Mitgliedschaft / Status / Mitglied seit" — so the right column of the Person card
+   opened by restating its own header, with the same chip and the same date 120 px apart, and
+   `MemberContactPanel` (the thing a member opens the card for) sat underneath.
+   **Resolution: the state chip stays in the header as the at-a-glance identity marker; the
+   „Mitglied seit" subline leaves it, and `MemberClubPanel` is the one place the dates live.**
+   `toMembershipLine` and `MemberHeadline.line` are deleted. `MemberView`'s right column is
+   reordered so Kontakt sits above Im Verein.
+
+2. **§5.9's Grid 5/7 is amended to apply only to the *selected* state.** Written unconditionally it
+   spent 60 % of a 1 400 px desktop on a 360 px dashed „KEINE GRUPPE GEWÄHLT" card followed by
+   ~1 800 px of nothing — on the surface an admin is *sent to* after a lockout. With no `?group=`
+   the list now renders full width as a 3-up card grid (`ManagedGroupsGrid` / `ManagedGroupCard`)
+   and the archive footnote is a page footnote; with a selection the 5/7 split is exactly as
+   pinned. `GroupOverrideEmpty` is deleted: the empty state disappears with the state that
+   required it.
+
+3. **§7.1 / §7.1a applied to the three Verwaltung surfaces.** The create action is each surface's
+   one `variant="contained"` primary, in the `action` slot of its section `KkPanelHeader`. One
+   gesture per screen: the header action is hidden below `desktop` and a `KkFab` carries the same
+   verb there — on **all three**, so `/manage/roles` gains the `RolesCreateFab` it lacked and
+   `/manage/groups` stops offering „+ Gruppe anlegen" and an unlabelled red FAB at once.
+   `features/session/components/ManagePageLayout.tsx` owns the breakpoint, so no future surface
+   has to remember it.
+
+4. **§5.7's „the state chip moves to line two (after the Gruppen)" is not a call-site rule.**
+   `KkPersonRow` renders `trailing` itself, so the app cannot order it; the chip sat *before* the
+   Gruppen and the meta text therefore started at a different x on every row. Fixed inside the
+   primitive. Both `MemberRow` and `PersonRow` were already correct as call sites.
+
+5. **§5.10's master list is split.** `RolesMasterList` held the search field, the rows **and** the
+   „+ Rolle anlegen" button at the bottom of its Stack. The search field is now `RolesToolbar`,
+   the button is the section head's action, and the list is rows only. The roles intro lead
+   (`toRolesLead`) is new copy; §8.8 records that this copy is not pinned.
+
+### Contract bugs the `shared` bucket found and did not work around
+
+1. **§10.7 and §10.8 name the same right two different ways.** §10.7 pins verbatim
+   „Unabhängig davon: Wer das Recht „Personendetails sehen" hat, sieht deine Daten immer.";
+   §10.8 pins the same key's title as **„Kontaktdaten aller Personen sehen"**. Both strings ship
+   today, 800 px apart on two surfaces, for `persons.read_details`. The §10.7 sentence was **not**
+   changed — it is pinned verbatim and shipping a third spelling would be worse than shipping two.
+   **A decision is owed: one of the two paragraphs has to give.**
+
+2. **There is no password-change endpoint and §5.5 does not pin one.** The „ZUGANG" card was named
+   after access, contained one read-only line and managed no access. „Build the end state" allows
+   a button that calls an endpoint that does not exist yet, but §0 forbids **inventing an endpoint
+   shape** — and a password dialog needs a route, a request body and a failure vocabulary that
+   nothing pins. **Resolution: the card is folded away**; the login address is a `KkFieldRow`
+   „Anmeldung" inside „DEINE DATEN". When `PUT /api/me/password` (or whatever it is called) is
+   pinned, the card comes back with the action it promises.
+
+3. **Both „in Zahlen" cards hard-coded three of the four states** and therefore contradicted the
+   lead 300 px above them — `/members` dropped `totals.ended` (the very cohort decision AA exists
+   to make visible) and read 113 · 6 · 11 = 130 under „132 Personen…"; `/manage/persons` dropped
+   `totals.paused`. Not a contract bug, but worth recording as the shape of the mistake: **a card
+   that restates a filter must be built from the same function the filter is built from.** Both
+   now map `toStateStats`, the shared occurring-state source behind `toStateFilterOptions`.
+
+4. **One list of people had three German names.** The running Zugehörigkeiten of one Gruppe were
+   headed MITGLIEDER on `/groups/$groupId`, WER IST DABEI on the Hub and ZUGEHÖRIGKEITEN on
+   `/manage/groups`, and the header sublines split the same three ways. `lib/group-sections.ts`
+   now owns the titles and `toGroupSubline`; the two read surfaces say **MITGLIEDER** and only the
+   Gruppenverwaltung, where the row is edited as a record, keeps **ZUGEHÖRIGKEITEN**. The subline
+   always names the admins, so „kein Gruppen-Admin" is said out loud everywhere. **Consequence to
+   watch:** the longer subline truncates in `/manage/groups`' 5-column master row
+   („18 Personen · 1 Gruppe…"); the row's primary facts (name, size, status chip) survive.
+
 ### Two behaviours that are correct and will be mistaken for bugs
 
 - **Client and server fold German names differently, and the contract pins both.** §4.41's
@@ -471,6 +546,19 @@ have been a contract amendment or a unilateral reshape of a primitive three sibl
    row or Inhaberschaft ended **today stays in the running list until tomorrow**, with `untilOn`
    set. Confirmed on the wire. Do not add a client-side filter and do not read it as a broken end
    flow — the server is right and §2 owns the rule.
+
+### Round 1 of the UX pass — the `shared` bucket
+
+Item 3 above (the `/manage/roles` intro) is **resolved**: all three Verwaltung surfaces now share
+`ManagePageLayout` — `KkLead` intro, accent-square section head carrying the one contained create
+action, sticky toolbar, list. Item 6 (decision B's inclusive end) is not this bucket's and stands.
+Findings S1–S12 landed across `apps/club-app` with five changes in `@furria/ui`:
+`KkStickyBar` and `KkLetterIndex variant="strip"` (new, S1), `KkAppShell.BackLink` (new, S5),
+the `KkSplitLayout` sheet opening on first paint plus `useKkPaneOpen` (S2), `KkBrandStage
+variant="band"` (S2), and the `KkPersonRow` chip order (S5.7 / S10). `KkPanel`'s interactive
+branch gained `width: 100%` — a `<button>` panel shrink-wrapped, so a card grid came out ragged.
+`useIsMobile` now passes `noSsr`, so the breakpoint is right on the first render and
+`KkSplitLayout.Pane` stops mounting the desktop column on a phone.
 
 ### Round 1 of the UX pass — the `ui` bucket
 
