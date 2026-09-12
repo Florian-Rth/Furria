@@ -6,7 +6,7 @@ export interface Permissions {
   keys: readonly PermissionKey[];
   has: (key: PermissionKey) => boolean;
   isAffiliated: boolean;
-  isPending: boolean;
+  isUndecided: boolean;
 }
 
 const KNOWN_KEYS: readonly PermissionKey[] = Object.values(PERMISSION_KEYS);
@@ -17,12 +17,13 @@ const isPermissionKey = (value: string): value is PermissionKey =>
 
 export const usePermissions = (): Permissions => {
   const me = useMeQuery();
-  const keys = me.data === undefined ? NO_KEYS : me.data.permissionKeys.filter(isPermissionKey);
+  const isUndecided = me.data === undefined;
+  const keys = isUndecided ? NO_KEYS : me.data.permissionKeys.filter(isPermissionKey);
 
   return {
     keys,
     has: (key) => keys.includes(key),
     isAffiliated: me.data?.isAffiliated ?? false,
-    isPending: me.data === undefined,
+    isUndecided,
   };
 };
