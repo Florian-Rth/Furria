@@ -1,9 +1,18 @@
-import { KkButton, KkChip, KkFieldRow, KkIcon, KkPanel, KkPanelSection } from '@furria/ui';
+import {
+  KkButton,
+  KkChip,
+  KkFieldRow,
+  KkIcon,
+  KkNote,
+  KkPanel,
+  KkPanelSection,
+} from '@furria/ui';
+import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { formatAddress, formatIsoDay } from '@/lib/membership-labels';
 import { toSwitchStateChip } from '@/lib/state-chips';
 import { usePersonFormDialog } from '../hooks/use-person-form-dialog';
-import { PERSON_SECTION_TITLES } from '../manage-persons-labels';
+import { PERSON_SECTION_TITLES, VISIBILITY_POINTER } from '../manage-persons-labels';
 import type { PersonDetails } from '../schemas';
 import { PersonFormDialog } from './PersonFormDialog';
 
@@ -15,7 +24,6 @@ const ADDRESS_LABEL = 'Adresse';
 const BIRTH_DATE_LABEL = 'Geburtsdatum';
 const VISIBILITY_LABEL = 'Für Mitglieder sichtbar';
 const MISSING_VALUE = 'nicht hinterlegt';
-const VISIBILITY_HINT = 'Wird auf das Wort der Person hin gesetzt.';
 
 interface PersonMasterDataPanelProps {
   person: PersonDetails;
@@ -45,17 +53,20 @@ export const PersonMasterDataPanel: FC<PersonMasterDataPanelProps> = ({ person }
 
   return (
     <KkPanelSection title={PERSON_SECTION_TITLES.masterData} action={action}>
-      <KkPanel>
-        <KkFieldRow label={NAME_LABEL} value={`${person.firstName} ${person.lastName}`} />
-        <KkFieldRow label={EMAIL_LABEL} value={person.email ?? MISSING_VALUE} />
-        <KkFieldRow label={PHONE_LABEL} value={person.phone ?? MISSING_VALUE} />
-        <KkFieldRow label={ADDRESS_LABEL} value={address ?? MISSING_VALUE} />
-        <KkFieldRow
-          label={BIRTH_DATE_LABEL}
-          value={person.birthDate === null ? MISSING_VALUE : formatIsoDay(person.birthDate)}
-        />
-        <KkFieldRow label={VISIBILITY_LABEL} value={visibilityChip} hint={VISIBILITY_HINT} />
-      </KkPanel>
+      <Stack sx={{ gap: 1.25, minWidth: 0 }}>
+        <KkPanel>
+          <KkFieldRow label={NAME_LABEL} value={`${person.firstName} ${person.lastName}`} />
+          <KkFieldRow label={EMAIL_LABEL} value={person.email ?? MISSING_VALUE} />
+          <KkFieldRow label={PHONE_LABEL} value={person.phone ?? MISSING_VALUE} />
+          <KkFieldRow label={ADDRESS_LABEL} value={address ?? MISSING_VALUE} />
+          <KkFieldRow
+            label={BIRTH_DATE_LABEL}
+            value={person.birthDate === null ? MISSING_VALUE : formatIsoDay(person.birthDate)}
+          />
+          <KkFieldRow label={VISIBILITY_LABEL} value={visibilityChip} />
+        </KkPanel>
+        <KkNote>{VISIBILITY_POINTER}</KkNote>
+      </Stack>
       <PersonFormDialog
         person={person}
         open={dialog.isOpen}

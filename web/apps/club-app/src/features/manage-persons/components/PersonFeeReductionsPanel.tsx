@@ -1,7 +1,7 @@
 import { KkButton, KkEmptyState, KkIcon, KkPanel, KkPanelSection } from '@furria/ui';
 import type { FC } from 'react';
 import type { FactEditor } from '../hooks/use-fact-editor';
-import { PERSON_SECTION_TITLES } from '../manage-persons-labels';
+import { ADD_FEE_REDUCTION_ACTION_LABEL, PERSON_SECTION_TITLES } from '../manage-persons-labels';
 import type { PersonDetails } from '../schemas';
 import { FeeReductionEditor } from './FeeReductionEditor';
 import { PersonFeeReductionRow } from './PersonFeeReductionRow';
@@ -9,7 +9,7 @@ import { PersonFeeReductionRow } from './PersonFeeReductionRow';
 const ADD_LABEL = 'Ermäßigung';
 const EMPTY_TITLE = 'KEINE ERMÄSSIGUNG';
 const EMPTY_DESCRIPTION =
-  'Für diese Person ist keine Beitragsermäßigung hinterlegt. Die Grundlage wird angegeben, nicht aus dem Geburtsdatum abgeleitet.';
+  'Für diese Person ist keine Beitragsermäßigung hinterlegt. Über „+ Ermäßigung“ trägst du eine ein.';
 
 interface PersonFeeReductionsPanelProps {
   person: PersonDetails;
@@ -28,6 +28,7 @@ export const PersonFeeReductionsPanel: FC<PersonFeeReductionsPanelProps> = ({ pe
       size="small"
       variant="outlined"
       startIcon={<KkIcon name="add" size="small" />}
+      ariaLabel={ADD_FEE_REDUCTION_ACTION_LABEL}
       onClick={startAdd}
     >
       {ADD_LABEL}

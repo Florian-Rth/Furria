@@ -76,14 +76,18 @@ export const PersonGroupsPanel: FC<PersonGroupsPanelProps> = ({ groups, firstNam
       </Stack>
     );
 
-  const chip = (
+  const readOnlyChip = (
     <KkChip tone={READ_ONLY_CHIP.tone} dot={READ_ONLY_CHIP.dot}>
       {READ_ONLY_CHIP.label}
     </KkChip>
   );
 
   return (
-    <KkPanelSection title={PERSON_SECTION_TITLES.groups} meta={chip} description={GROUPS_POINTER}>
+    <KkPanelSection
+      title={PERSON_SECTION_TITLES.groups}
+      meta={readOnlyChip}
+      description={GROUPS_POINTER}
+    >
       <Stack sx={{ gap: 1.25, minWidth: 0 }}>
         {runningPanel}
         {pastPanel}

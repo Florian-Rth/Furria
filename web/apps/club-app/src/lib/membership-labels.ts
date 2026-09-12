@@ -9,7 +9,7 @@ const MEMBERSHIP_STATE_LABELS: Record<MembershipState, string> = {
 };
 
 const ISO_DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
-const OPEN_END = 'offen';
+export const OPEN_END = 'offen';
 const SPAN_SEPARATOR = ' – ';
 const ADDRESS_SEPARATOR = ', ';
 

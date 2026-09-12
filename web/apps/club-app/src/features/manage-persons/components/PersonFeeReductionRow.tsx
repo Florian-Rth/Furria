@@ -6,6 +6,7 @@ import type { FactEditor } from '../hooks/use-fact-editor';
 import {
   SESSION_SPAN_LABEL,
   toFeeReductionBasisLabel,
+  toFeeReductionEditActionLabel,
   toFeeReductionSpan,
 } from '../manage-persons-labels';
 import type { PersonFeeReduction } from '../schemas';
@@ -55,7 +56,12 @@ export const PersonFeeReductionRow: FC<PersonFeeReductionRowProps> = ({
     );
 
   const actions = (
-    <KkButton size="small" variant="outlined" onClick={startEdit}>
+    <KkButton
+      size="small"
+      variant="text"
+      ariaLabel={toFeeReductionEditActionLabel(reduction)}
+      onClick={startEdit}
+    >
       {EDIT_LABEL}
     </KkButton>
   );
