@@ -120,8 +120,8 @@ export const KkPersonRow: FC<KkPersonRowProps> = ({
 
   const secondLine = hasSecondLine ? (
     <Stack component="span" direction="row" sx={{ alignItems: 'center', gap: 0.875, minWidth: 0 }}>
-      {inlineTrailing}
       {affiliationLine}
+      {inlineTrailing}
     </Stack>
   ) : null;
 
