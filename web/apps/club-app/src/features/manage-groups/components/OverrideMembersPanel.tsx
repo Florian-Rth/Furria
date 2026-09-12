@@ -59,7 +59,11 @@ export const OverrideMembersPanel: FC<OverrideMembersPanelProps> = ({
   ) : null;
 
   const body = isEmpty ? (
-    <KkEmptyState title={NO_MEMBERS_TITLE} description={toNoMembersLine(groupName, canManage)} />
+    <KkEmptyState
+      size="panel"
+      title={NO_MEMBERS_TITLE}
+      description={toNoMembersLine(groupName, canManage)}
+    />
   ) : (
     rows
   );

@@ -18,7 +18,11 @@ export const GroupMembersPanel: FC<GroupMembersPanelProps> = ({ members, groupNa
   const variant = isEmpty ? 'block' : 'list';
 
   const body = isEmpty ? (
-    <KkEmptyState title={NO_MEMBERS_TITLE} description={toNoMembersLine(groupName, false)} />
+    <KkEmptyState
+      size="panel"
+      title={NO_MEMBERS_TITLE}
+      description={toNoMembersLine(groupName, false)}
+    />
   ) : (
     rows
   );

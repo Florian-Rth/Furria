@@ -44,7 +44,7 @@ export const GroupHistoryPanel: FC<GroupHistoryPanelProps> = ({
   const variant = isEmpty ? 'block' : 'list';
 
   const body = isEmpty ? (
-    <KkEmptyState title={NO_HISTORY_TITLE} description={NO_HISTORY_LINE} />
+    <KkEmptyState size="panel" title={NO_HISTORY_TITLE} description={NO_HISTORY_LINE} />
   ) : (
     rows
   );

@@ -27,7 +27,7 @@ export const GroupAdminsPanel: FC<GroupAdminsPanelProps> = ({ admins, isRecruiti
   const variant = isEmpty ? 'block' : 'list';
 
   const body = isEmpty ? (
-    <KkEmptyState title={NO_ADMINS_TITLE} description={NO_ADMINS_LINE} />
+    <KkEmptyState size="panel" title={NO_ADMINS_TITLE} description={NO_ADMINS_LINE} />
   ) : (
     rows
   );
