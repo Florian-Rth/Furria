@@ -8,7 +8,6 @@ import { isPermissionKey, toPermissionCopy } from './role-permission-copy';
 import type { RoleDetails, RoleHolder, RoleSummary, RolesResponse } from './schemas';
 
 const UNHELD_LABEL = 'unbesetzt';
-const MORE_HOLDERS_SUFFIX = 'weitere';
 
 export const toPersonName = (person: { firstName: string; lastName: string }): string =>
   `${person.firstName} ${person.lastName}`;
@@ -25,7 +24,13 @@ export const toHoldersMeta = (
     return toPersonName(first);
   }
 
-  return `${toPersonName(first)} und ${holders.length - 1} ${MORE_HOLDERS_SUFFIX}`;
+  const further = holders.length - 1;
+
+  if (further === 1) {
+    return `${toPersonName(first)} und 1 weitere Person`;
+  }
+
+  return `${toPersonName(first)} und ${further} weitere`;
 };
 
 export const toRoleSearchTerm = (raw: string): string | null => {
@@ -140,17 +145,6 @@ export const toHolderCountLabel = (count: number): string => {
   return `${count} Inhaberschaften`;
 };
 
-export const toRightsCountLabel = (count: number): string => {
-  if (count === 0) {
-    return 'keine Rechte';
-  }
-  if (count === 1) {
-    return '1 Recht';
-  }
-
-  return `${count} Rechte`;
-};
-
 export const toHolderSinceValue = (holder: RoleHolder): string => formatSinceSession(holder.since);
 
 export const toNoRoleSearchResultLine = (term: string): string =>
@@ -243,7 +237,6 @@ export const toArchiveRoleFacts = (role: RoleDetails, todayIsoDay: string): KkCo
   { label: 'Rolle', value: role.name },
   { label: 'Archiviert am', value: formatIsoDay(todayIsoDay) },
   { label: 'Inhaberschaften', value: toHolderCountLabel(role.holders.length) },
-  { label: 'Rechte', value: toRightsCountLabel(role.permissionKeys.length) },
 ];
 
 const TODAY_LABEL = 'Heute';

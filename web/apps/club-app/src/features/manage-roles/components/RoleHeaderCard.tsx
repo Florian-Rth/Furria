@@ -11,7 +11,7 @@ import {
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { ARCHIVED_CHIP } from '@/lib/state-chips';
-import { toArchivedMeta, toNoDescriptionLine, toRightsCountLabel } from '../manage-roles-labels';
+import { toArchivedMeta, toNoDescriptionLine } from '../manage-roles-labels';
 import type { RoleDetails } from '../schemas';
 
 const EYEBROW = 'Rolle';
@@ -41,7 +41,8 @@ export const RoleHeaderCard: FC<RoleHeaderCardProps> = ({
 }) => {
   const isArchived = role.archivedOn !== null;
   const archivedMeta = toArchivedMeta(role.archivedOn);
-  const rightsLine = toRightsCountLabel(role.permissionKeys.length);
+
+  const metaLine = archivedMeta === undefined ? null : <KkMeta>{archivedMeta}</KkMeta>;
 
   const description =
     role.description === '' ? (
@@ -55,7 +56,6 @@ export const RoleHeaderCard: FC<RoleHeaderCardProps> = ({
       {ARCHIVED_CHIP.label}
     </KkChip>
   ) : null;
-  const metaLine = archivedMeta === undefined ? rightsLine : `${rightsLine} · ${archivedMeta}`;
 
   const actions = isArchived ? (
     <KkButton variant="outlined" onClick={onRestore} loading={isRestoring}>
@@ -89,7 +89,7 @@ export const RoleHeaderCard: FC<RoleHeaderCardProps> = ({
           {chip}
         </Stack>
         <KkHeading level={2}>{role.name}</KkHeading>
-        <KkMeta>{metaLine}</KkMeta>
+        {metaLine}
         {description}
         {archivedNote}
         <Stack direction="row" sx={{ gap: 1.25, minWidth: 0, flexWrap: 'wrap', pt: 0.5 }}>
