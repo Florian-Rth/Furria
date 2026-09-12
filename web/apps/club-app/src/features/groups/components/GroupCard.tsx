@@ -5,7 +5,7 @@ import type { FC } from 'react';
 import { toInitials } from '@/lib/initials';
 import { toRecruitingChip } from '@/lib/state-chips';
 import type { GroupStanding } from '../groups-labels';
-import { toGroupStandingChips, toRecruitingContactLine } from '../groups-labels';
+import { toGroupStandingChips, toPersonUnitLabel, toRecruitingContactLine } from '../groups-labels';
 import type { GroupSummary } from '../schemas';
 import { GroupCardBody } from './GroupCardBody';
 
@@ -20,6 +20,7 @@ interface GroupCardProps {
 export const GroupCard: FC<GroupCardProps> = ({ group, standing, sx }) => {
   const params = { groupId: String(group.groupId) };
   const openness = toRecruitingChip(group.isRecruiting);
+  const unitLabel = toPersonUnitLabel(group.memberCount);
   const standingChips = toGroupStandingChips(standing);
   const initials = group.memberPreview.map((person) =>
     toInitials(person.firstName, person.lastName),
@@ -45,7 +46,8 @@ export const GroupCard: FC<GroupCardProps> = ({ group, standing, sx }) => {
   return (
     <GroupCardBody
       name={group.name}
-      memberCount={group.memberCount}
+      count={group.memberCount}
+      unitLabel={unitLabel}
       description={group.description}
       initials={initials}
       total={group.memberCount}

@@ -1,7 +1,7 @@
 import type { KkConfirmFact, KkFilterOption } from '@furria/ui';
 import {
   GROUP_SECTION_TITLES as SHARED_GROUP_SECTION_TITLES,
-  toGroupSubline,
+  toGroupMembersLabel,
 } from '@/lib/group-sections';
 import { formatIsoDay } from '@/lib/membership-labels';
 import type { StateChip } from '@/lib/state-chips';
@@ -35,7 +35,7 @@ export const MANAGE_GROUPS_FOOTNOTE =
   'Archivieren löscht nichts: Die Gruppe verschwindet aus dem Verzeichnis, ihre Geschichte bleibt in den Profilen stehen.';
 
 export const toGroupCountLine = (group: ManagedGroupSummary): string =>
-  toGroupSubline(group.memberCount, group.admins.length);
+  toGroupMembersLabel(group.memberCount);
 
 export interface ManagedGroupChips {
   status: StateChip | null;
