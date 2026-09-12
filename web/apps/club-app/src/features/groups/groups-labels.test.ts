@@ -5,7 +5,9 @@ import {
   toGroupId,
   toGroupsIntroSentence,
   toMemberCountLabel,
+  toPersonUnitLabel,
   toRecruitingContactLine,
+  toRecruitingContactSegments,
 } from './groups-labels';
 import type { GroupDetails } from './schemas';
 
@@ -53,6 +55,54 @@ describe('toMemberCountLabel', () => {
     { count: 18, expected: '18 Personen' },
   ])('names $count member(s)', ({ count, expected }) => {
     expect(toMemberCountLabel(count)).toBe(expected);
+  });
+});
+
+describe('toPersonUnitLabel', () => {
+  it.each([
+    { count: 0, expected: 'Personen' },
+    { count: 1, expected: 'Person' },
+    { count: 18, expected: 'Personen' },
+  ])('names the unit for $count', ({ count, expected }) => {
+    expect(toPersonUnitLabel(count)).toBe(expected);
+  });
+});
+
+describe('toRecruitingContactSegments', () => {
+  it('offers no person to click when the Gruppe has no admin', () => {
+    expect(toRecruitingContactSegments([])).toEqual([
+      { kind: 'text', text: 'Diese Gruppe sucht noch eine Ansprechperson.' },
+    ]);
+  });
+
+  it('carries the one admin as a person segment', () => {
+    expect(toRecruitingContactSegments([person(18, 'Anna')])).toEqual([
+      { kind: 'text', text: 'Melde dich bei ' },
+      { kind: 'person', personId: 18, firstName: 'Anna' },
+      { kind: 'text', text: '.' },
+    ]);
+  });
+
+  it('carries both admins as person segments', () => {
+    expect(toRecruitingContactSegments([person(18, 'Anna'), person(19, 'Katrin')])).toEqual([
+      { kind: 'text', text: 'Melde dich bei ' },
+      { kind: 'person', personId: 18, firstName: 'Anna' },
+      { kind: 'text', text: ' oder ' },
+      { kind: 'person', personId: 19, firstName: 'Katrin' },
+      { kind: 'text', text: '.' },
+    ]);
+  });
+
+  it('carries two of three and leaves the rest unlinked', () => {
+    expect(
+      toRecruitingContactSegments([person(18, 'Anna'), person(19, 'Katrin'), person(20, 'Jens')]),
+    ).toEqual([
+      { kind: 'text', text: 'Melde dich bei ' },
+      { kind: 'person', personId: 18, firstName: 'Anna' },
+      { kind: 'text', text: ', ' },
+      { kind: 'person', personId: 19, firstName: 'Katrin' },
+      { kind: 'text', text: ' oder einer der anderen Gruppen-Admins.' },
+    ]);
   });
 });
 
