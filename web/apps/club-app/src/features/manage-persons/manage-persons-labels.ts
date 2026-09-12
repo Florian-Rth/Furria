@@ -51,7 +51,7 @@ export const GROUPS_POINTER =
 export const ROLES_POINTER = 'Rollen werden unter „Rollen & Rechte“ vergeben.';
 
 export const toVisibilityPointer = (firstName: string): string =>
-  `Das ändert nur ${firstName} selbst — im eigenen Profil.`;
+  `Diese Einstellung ändert nur ${firstName} selbst — im eigenen Profil.`;
 
 const FEE_REDUCTION_BASIS_LABELS: Record<FeeReductionBasis, string> = {
   minor: 'Minderjährig',
