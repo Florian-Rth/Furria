@@ -1,4 +1,4 @@
-import { KkEmptyState } from '@furria/ui';
+import { KkEmptyState, KkPanel } from '@furria/ui';
 import type { FC } from 'react';
 import { toEmptyDescription } from '../members-labels';
 
@@ -10,5 +10,7 @@ interface MembersEmptyProps {
 }
 
 export const MembersEmpty: FC<MembersEmptyProps> = ({ query, state }) => (
-  <KkEmptyState title={EMPTY_TITLE} description={toEmptyDescription(query, state)} />
+  <KkPanel variant="block">
+    <KkEmptyState title={EMPTY_TITLE} description={toEmptyDescription(query, state)} />
+  </KkPanel>
 );

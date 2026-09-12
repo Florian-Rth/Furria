@@ -2,7 +2,7 @@ import { KkButton, KkEmptyState } from '@furria/ui';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 
-const NOT_FOUND_TITLE = 'NICHT IM VERZEICHNIS';
+const NOT_FOUND_TITLE = 'DIESE PERSON GIBT ES NICHT';
 const NOT_FOUND_DESCRIPTION = 'Diese Person steht nicht im Verzeichnis.';
 const BACK_LABEL = 'Zur Mitgliederliste';
 const MEMBERS_PATH = '/members';
