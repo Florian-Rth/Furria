@@ -7,14 +7,12 @@ import { ManagedGroupRow } from './ManagedGroupRow';
 interface ManagedGroupsListProps {
   groups: readonly ManagedGroupSummary[];
   selectedId: number | null;
-  onSelect: (groupId: number) => void;
   isFiltered: boolean;
 }
 
 export const ManagedGroupsList: FC<ManagedGroupsListProps> = ({
   groups,
   selectedId,
-  onSelect,
   isFiltered,
 }) => {
   if (groups.length === 0) {
@@ -34,7 +32,6 @@ export const ManagedGroupsList: FC<ManagedGroupsListProps> = ({
           key={group.groupId}
           group={group}
           selected={group.groupId === selectedId}
-          onSelect={onSelect}
         />
       ))}
     </KkPanel>
