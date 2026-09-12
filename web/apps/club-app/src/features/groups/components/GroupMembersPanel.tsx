@@ -18,7 +18,11 @@ export const GroupMembersPanel: FC<GroupMembersPanelProps> = ({ members, groupNa
   const rows = members.map((member) => {
     const memberName = `${member.firstName} ${member.lastName}`;
     const avatar = (
-      <KkAvatar initials={toInitials(member.firstName, member.lastName)} size="small" />
+      <KkAvatar
+        initials={toInitials(member.firstName, member.lastName)}
+        size="small"
+        component="span"
+      />
     );
 
     return (
