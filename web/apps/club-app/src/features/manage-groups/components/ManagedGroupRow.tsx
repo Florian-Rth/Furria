@@ -1,20 +1,18 @@
 import { KkChip, KkSelectRow } from '@furria/ui';
+import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { toGroupCountLine, toManagedGroupChips } from '../manage-groups-labels';
 import type { ManagedGroupSummary } from '../schemas';
 
+const MANAGE_GROUPS_PATH = '/manage/groups';
+
 interface ManagedGroupRowProps {
   group: ManagedGroupSummary;
   selected: boolean;
-  onSelect: (groupId: number) => void;
 }
 
-export const ManagedGroupRow: FC<ManagedGroupRowProps> = ({ group, selected, onSelect }) => {
+export const ManagedGroupRow: FC<ManagedGroupRowProps> = ({ group, selected }) => {
   const status = toManagedGroupChips(group).status;
-
-  const select = (): void => {
-    onSelect(group.groupId);
-  };
 
   const trailing =
     status === null ? null : (
@@ -30,7 +28,9 @@ export const ManagedGroupRow: FC<ManagedGroupRowProps> = ({ group, selected, onS
       trailing={trailing}
       selected={selected}
       dimmed={group.archivedOn !== null}
-      onClick={select}
+      component={Link}
+      to={MANAGE_GROUPS_PATH}
+      search={{ group: group.groupId }}
     />
   );
 };
