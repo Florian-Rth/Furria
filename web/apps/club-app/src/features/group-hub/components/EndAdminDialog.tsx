@@ -24,6 +24,7 @@ interface EndAdminDialogProps {
   admin: GroupDetailAdmin | null;
   runningAdmins: number;
   onClose: () => void;
+  onEnded: () => void;
 }
 
 export const EndAdminDialog: FC<EndAdminDialogProps> = ({
@@ -32,11 +33,12 @@ export const EndAdminDialog: FC<EndAdminDialogProps> = ({
   admin,
   runningAdmins,
   onClose,
+  onEnded,
 }) => {
   const open = admin !== null;
   const me = useMeQuery();
   const isSelf = admin !== null && admin.personId === me.data?.person.id;
-  const form = useEndAdminForm({ groupId, groupName, admin, isSelf, open, onEnded: onClose });
+  const form = useEndAdminForm({ groupId, groupName, admin, isSelf, open, onEnded });
   const target = form.admin;
 
   if (target === null) {

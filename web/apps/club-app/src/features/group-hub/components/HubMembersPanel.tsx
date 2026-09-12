@@ -1,5 +1,5 @@
 import { KkButton, KkEmptyState, KkIcon, KkPanel, KkPanelSection } from '@furria/ui';
-import type { FC } from 'react';
+import type { FC, Ref } from 'react';
 import type { GroupDetailMember } from '@/features/group-detail';
 import {
   ADD_MEMBER_ACTION_LABEL,
@@ -18,6 +18,7 @@ interface HubMembersPanelProps {
   canOpenPerson: boolean;
   newPersonId: number | null;
   fireKey: number;
+  titleRef: Ref<HTMLHeadingElement>;
   onAdd: () => void;
   onEnd: (groupMembershipId: number) => void;
 }
@@ -29,6 +30,7 @@ export const HubMembersPanel: FC<HubMembersPanelProps> = ({
   canOpenPerson,
   newPersonId,
   fireKey,
+  titleRef,
   onAdd,
   onEnd,
 }) => {
@@ -80,7 +82,7 @@ export const HubMembersPanel: FC<HubMembersPanelProps> = ({
   );
 
   return (
-    <KkPanelSection title={GROUP_SECTION_TITLES.members} action={action}>
+    <KkPanelSection title={GROUP_SECTION_TITLES.members} titleRef={titleRef} action={action}>
       <KkPanel variant={variant}>{body}</KkPanel>
     </KkPanelSection>
   );

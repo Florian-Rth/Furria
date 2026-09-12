@@ -5,7 +5,7 @@ import {
   GroupHistoryPanel,
   GroupPhotosSlot,
 } from '@/features/group-detail';
-import { usePermissions } from '@/features/session';
+import { usePermissions, useReturnFocus } from '@/features/session';
 import { useHubCelebration } from '../hooks/use-hub-celebration';
 import { useHubDialogs } from '../hooks/use-hub-dialogs';
 import type { HubDetails } from '../schemas';
@@ -27,6 +27,18 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
   const dialogs = useHubDialogs(hub.members, hub.admins);
   const celebration = useHubCelebration();
   const { isAffiliated } = usePermissions();
+  const membersFocus = useReturnFocus();
+  const adminsFocus = useReturnFocus();
+
+  const closeAfterMemberEnded = (): void => {
+    dialogs.close();
+    membersFocus.returnFocus();
+  };
+
+  const closeAfterAdminEnded = (): void => {
+    dialogs.close();
+    adminsFocus.returnFocus();
+  };
 
   const onMemberAdded = (personId: number): void => {
     dialogs.close();
@@ -60,6 +72,7 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
         groupName={hub.name}
         member={dialogs.endMember}
         onClose={dialogs.close}
+        onEnded={closeAfterMemberEnded}
       />
       <AddAdminDialog
         groupId={hub.groupId}
@@ -74,6 +87,7 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
         admin={dialogs.endAdmin}
         runningAdmins={hub.admins.length}
         onClose={dialogs.close}
+        onEnded={closeAfterAdminEnded}
       />
     </>
   ) : null;
@@ -94,6 +108,7 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
       canManage={hub.viewerIsAdmin}
       canOpenPerson={isAffiliated}
       newPersonId={celebration.newAdminId}
+      titleRef={adminsFocus.targetRef}
       onAdd={dialogs.openAddAdmin}
       onEnd={dialogs.openEndAdmin}
     />
@@ -107,6 +122,7 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
       canOpenPerson={isAffiliated}
       newPersonId={celebration.newMemberId}
       fireKey={celebration.fireKey}
+      titleRef={membersFocus.targetRef}
       onAdd={dialogs.openAddMember}
       onEnd={dialogs.openEndMembership}
     />
