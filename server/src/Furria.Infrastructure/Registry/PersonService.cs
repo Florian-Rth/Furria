@@ -14,7 +14,7 @@ namespace Furria.Infrastructure.Registry;
 
 public sealed class PersonService
 {
-    private const string GermanCollation = "de-DE-x-icu";
+    private const string LikeEscape = "\\";
     private const string UnknownMemberMessage = "Diese Person steht nicht im Verzeichnis.";
     private const string MissingOwnPersonMessage = "Zu diesem Konto gibt es keine Person mehr.";
     private const string UnknownPersonMessage = "Diese Person steht nicht im Register.";
@@ -51,7 +51,7 @@ public sealed class PersonService
             person
                 .GroupMemberships.Where(membership => membership.Group!.ArchivedOn == null)
                 .OrderBy(membership =>
-                    EF.Functions.Collate(membership.Group!.Name, GermanCollation)
+                    EF.Functions.Collate(membership.Group!.Name, GermanCollation.Name)
                 )
                 .ThenBy(membership => membership.GroupId)
                 .Select(membership => new TieRow(
@@ -63,7 +63,7 @@ public sealed class PersonService
                 .ToList(),
             person
                 .RoleHoldings.Where(holding => holding.Role!.ArchivedOn == null)
-                .OrderBy(holding => EF.Functions.Collate(holding.Role!.Name, GermanCollation))
+                .OrderBy(holding => EF.Functions.Collate(holding.Role!.Name, GermanCollation.Name))
                 .ThenBy(holding => holding.RoleId)
                 .Select(holding => new TieRow(
                     holding.RoleId,
@@ -106,7 +106,7 @@ public sealed class PersonService
             person
                 .GroupMemberships.Where(membership => membership.Group!.ArchivedOn == null)
                 .OrderBy(membership =>
-                    EF.Functions.Collate(membership.Group!.Name, GermanCollation)
+                    EF.Functions.Collate(membership.Group!.Name, GermanCollation.Name)
                 )
                 .ThenBy(membership => membership.GroupId)
                 .Select(membership => new TieRow(
@@ -118,7 +118,7 @@ public sealed class PersonService
                 .ToList(),
             person
                 .RoleHoldings.Where(holding => holding.Role!.ArchivedOn == null)
-                .OrderBy(holding => EF.Functions.Collate(holding.Role!.Name, GermanCollation))
+                .OrderBy(holding => EF.Functions.Collate(holding.Role!.Name, GermanCollation.Name))
                 .ThenBy(holding => holding.RoleId)
                 .Select(holding => new TieRow(
                     holding.RoleId,
@@ -174,7 +174,7 @@ public sealed class PersonService
             person
                 .GroupMemberships.Where(membership => membership.Group!.ArchivedOn == null)
                 .OrderBy(membership =>
-                    EF.Functions.Collate(membership.Group!.Name, GermanCollation)
+                    EF.Functions.Collate(membership.Group!.Name, GermanCollation.Name)
                 )
                 .ThenByDescending(membership => membership.JoinedOn)
                 .ThenByDescending(membership => membership.Id)
@@ -188,7 +188,7 @@ public sealed class PersonService
                 .ToList(),
             person
                 .RoleHoldings.Where(holding => holding.Role!.ArchivedOn == null)
-                .OrderBy(holding => EF.Functions.Collate(holding.Role!.Name, GermanCollation))
+                .OrderBy(holding => EF.Functions.Collate(holding.Role!.Name, GermanCollation.Name))
                 .ThenByDescending(holding => holding.SinceOn)
                 .ThenByDescending(holding => holding.Id)
                 .Select(holding => new PersonRole
@@ -233,8 +233,8 @@ public sealed class PersonService
         var rows = await _dbContext
             .People.AsNoTracking()
             .Where(AffiliationQuery.IsAffiliatedOn(today))
-            .OrderBy(person => EF.Functions.Collate(person.LastName, GermanCollation))
-            .ThenBy(person => EF.Functions.Collate(person.FirstName, GermanCollation))
+            .OrderBy(person => EF.Functions.Collate(person.LastName, GermanCollation.Name))
+            .ThenBy(person => EF.Functions.Collate(person.FirstName, GermanCollation.Name))
             .ThenBy(person => person.Id)
             .Select(person => new MemberRow(
                 person.Id,
@@ -262,7 +262,7 @@ public sealed class PersonService
                         && membership.Group!.ArchivedOn == null
                     )
                     .OrderBy(membership =>
-                        EF.Functions.Collate(membership.Group!.Name, GermanCollation)
+                        EF.Functions.Collate(membership.Group!.Name, GermanCollation.Name)
                     )
                     .ThenBy(membership => membership.GroupId)
                     .Select(membership => new GroupReference
@@ -277,7 +277,9 @@ public sealed class PersonService
                         && (holding.UntilOn == null || holding.UntilOn >= today)
                         && holding.Role!.ArchivedOn == null
                     )
-                    .OrderBy(holding => EF.Functions.Collate(holding.Role!.Name, GermanCollation))
+                    .OrderBy(holding =>
+                        EF.Functions.Collate(holding.Role!.Name, GermanCollation.Name)
+                    )
                     .ThenBy(holding => holding.RoleId)
                     .Select(holding => new RoleReference
                     {
@@ -297,8 +299,8 @@ public sealed class PersonService
 
         var rows = await _dbContext
             .People.AsNoTracking()
-            .OrderBy(person => EF.Functions.Collate(person.LastName, GermanCollation))
-            .ThenBy(person => EF.Functions.Collate(person.FirstName, GermanCollation))
+            .OrderBy(person => EF.Functions.Collate(person.LastName, GermanCollation.Name))
+            .ThenBy(person => EF.Functions.Collate(person.FirstName, GermanCollation.Name))
             .ThenBy(person => person.Id)
             .Select(PersonRegistryProjection)
             .ToListAsync(ct);
@@ -353,12 +355,15 @@ public sealed class PersonService
         CancellationToken ct
     )
     {
-        var expanded = ToContainsPattern(GermanFold.Expand(query));
-        var stripped = ToContainsPattern(GermanFold.Strip(query));
+        var trimmed = query.Trim();
+        var expanded = ToContainsPattern(GermanFold.Expand(trimmed));
+        var stripped = ToContainsPattern(GermanFold.Strip(trimmed));
 
         return await _dbContext
             .People.AsNoTracking()
             .Where(person =>
+                // keep in sync with GermanFold.Expand / GermanFold.Strip — EF cannot translate
+                // the method onto the column side.
                 EF.Functions.ILike(
                     (person.FirstName + " " + person.LastName)
                         .ToLower()
@@ -366,7 +371,8 @@ public sealed class PersonService
                         .Replace("ö", "oe")
                         .Replace("ü", "ue")
                         .Replace("ß", "ss"),
-                    expanded
+                    expanded,
+                    LikeEscape
                 )
                 || EF.Functions.ILike(
                     (person.FirstName + " " + person.LastName)
@@ -375,11 +381,12 @@ public sealed class PersonService
                         .Replace("ö", "o")
                         .Replace("ü", "u")
                         .Replace("ß", "ss"),
-                    stripped
+                    stripped,
+                    LikeEscape
                 )
             )
-            .OrderBy(person => EF.Functions.Collate(person.LastName, GermanCollation))
-            .ThenBy(person => EF.Functions.Collate(person.FirstName, GermanCollation))
+            .OrderBy(person => EF.Functions.Collate(person.LastName, GermanCollation.Name))
+            .ThenBy(person => EF.Functions.Collate(person.FirstName, GermanCollation.Name))
             .ThenBy(person => person.Id)
             .Take(SearchResultLimit)
             .Select(person => new PersonSearchSummary
