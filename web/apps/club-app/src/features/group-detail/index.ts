@@ -1,5 +1,6 @@
 export { GroupAdminRow } from './components/GroupAdminRow';
 export { GroupDescriptionPanel } from './components/GroupDescriptionPanel';
+export { GroupDetailLayout } from './components/GroupDetailLayout';
 export { GroupEventsSlot } from './components/GroupEventsSlot';
 export { GroupHistoryPanel } from './components/GroupHistoryPanel';
 export { GroupMemberRow } from './components/GroupMemberRow';
