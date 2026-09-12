@@ -17,6 +17,14 @@ slice ledger.
 > pass is folded in; the ones rejected are answered in §12 (decisions AA–AT). If a section here
 > disagrees with a memory of the first revision, this file wins.
 
+> **Revision 3 (2026-09-13, reconciliation pass).** Slices 1–17 are built. Every paragraph the
+> implementers found **wrong, impossible or self-contradicting** is corrected to what actually
+> ships, marked inline „**Corrected 2026-09-13**" or „**Added 2026-09-13**" with the reason.
+> Those are corrections of fact. The questions that turned out to need a **decision** were *not*
+> answered here: they are §12's closing note and live in `p1-implementation-state.md` §5 under
+> „Decisions owed to Florian". **An implementer answers neither kind on their own** (§0's binding
+> rule); the §5 list exists so nobody has to.
+
 ---
 
 ## 0. How to use this file
@@ -1205,6 +1213,20 @@ against.
   `GroupAdminId`, `FeeReductionId`, `RoleHoldingId`, `PersonId`, `GroupId`, `RoleId`. A bare `Id`
   appears in exactly one place, `MePersonDto.Id` (shipped, unchanged). One spelling, so a client
   and a server written from two different paragraphs still line up.
+- **`IsAffiliated` on every person-row DTO of a detail payload. Added 2026-09-13** (reconciliation
+  pass; final server review, state file §8). Decisions L and AG together produce a **reachable dead
+  link**: rows on the Gruppen surfaces link to `/members/$personId`, decision L makes that a 404
+  for a Person who is not herself affiliated, and decision AG pins exactly such a Person as real
+  (only a Gruppen-Admin; or affiliated by an archived Gruppe/Rolle, decision D). The client cannot
+  compute the fact from any payload it has, so the server carries it: a per-row **`bool
+  IsAffiliated`** on the running-row DTOs of **§4.5 `GetGroupById`, §4.8 `GetMyGroupById`, §4.30
+  `GetManagedGroupById` and §4.32 `GetRoleById`**. The past-row lists reuse the same DTO types, so
+  the field is on those rows too and is computed honestly there rather than defaulted. It costs one
+  extra translatable query per detail request (`AffiliationLookup` → `AffiliationQuery.IsAffiliatedOn(today)`);
+  **the predicate itself is untouched — decision AG reserves widening it for Florian.**
+  On the client the prop that consumes it is `viewerIsAffiliated` (the *reader's* clearance) and
+  each row computes `canOpen = viewerIsAffiliated && row.isAffiliated`; the two facts must never
+  share one boolean again (§5.4, §5.6, §5.9, §5.10).
 - **`Since` vs the row dates.** Wherever a DTO carries **`Since`**, that field is the **chain
   minimum** of §2.6 and it is the **only** field a `KkSinceRow` may render. `SinceOn`, `UntilOn`,
   `JoinedOn` and `LeftOn` are that *row's* identity; they belong to `KkFactRow`, the history panels
@@ -1430,7 +1452,10 @@ GetGroupByIdResponse {
     IReadOnlyList<SincePersonDto> Members;              // running, by LastName
     IReadOnlyList<GroupAdminDto> Admins;                // running, by LastName
 }
-GroupAdminDto { int PersonId; string FirstName; string LastName; string? Function; DateOnly Since }
+SincePersonDto { int PersonId; string FirstName; string LastName; DateOnly Since;
+                 bool IsAffiliated }      // §4.0's shape + the per-row IsAffiliated
+GroupAdminDto { int PersonId; string FirstName; string LastName; string? Function; DateOnly Since;
+                bool IsAffiliated }
 ```
 **Failures** not affiliated → 403 · unknown **or archived** Gruppe → 404 (the read surface shows
 non-archived Gruppen only).
@@ -1487,9 +1512,10 @@ GetMyGroupByIdResponse {
     IReadOnlyList<HubAdminDto>  PastAdmins;              // ended — ADMIN ONLY, else empty
 }
 HubMemberDto { int GroupMembershipId; int PersonId; string FirstName; string LastName;
-               DateOnly JoinedOn; DateOnly? LeftOn; DateOnly Since }
+               DateOnly JoinedOn; DateOnly? LeftOn; DateOnly Since; bool IsAffiliated }
 HubAdminDto  { int GroupAdminId; int PersonId; string FirstName; string LastName;
-               string? Function; DateOnly SinceOn; DateOnly? UntilOn; DateOnly Since }
+               string? Function; DateOnly SinceOn; DateOnly? UntilOn; DateOnly Since;
+               bool IsAffiliated }
 ```
 `HubAdminDto.Since` is **not** optional and **not** `SinceOn`: without it the hub would render an
 admin's *row* start while `/groups/$groupId` two clicks away renders her *chain* minimum for the
@@ -1637,10 +1663,13 @@ PersonSummaryDto {
 **Every** Person in the registry — affiliated, former, ticket buyers, unaffiliated (ruling 2). The
 bootstrap admin is always among them (§3.6) — assert by alias, never by `Count`.
 `Street` and `Zip` are here (and **only** here and in §4.15 — never in an affiliated-gated payload,
-decision K) because `PersonsToolbar` searches „Name, Adresse, E-Mail" and because
-`PersonFormDialog` opens for **edit** straight off a list row: without them the search cannot match
-an address and the edit form would need a second round trip before it can prefill. This is a
-`persons.manage` payload; the manager may see everything already.
+decision K) because `PersonsToolbar` searches „Name, Adresse, E-Mail": without them the search
+cannot match an address. This is a `persons.manage` payload; the manager may see everything
+already. **Corrected 2026-09-13** (reconciliation pass, state file §8 item 12): the second reason
+given here — „`PersonFormDialog` opens for **edit** straight off a list row" — is **not** what
+ships. `PersonFormDialog` opens for *create* from the list and for *edit* from the detail page's
+`PersonMasterDataPanel` (§5.7), so the edit prefill comes from §4.15, not from this payload. The
+address half of the rationale stands on its own and is why the fields stay.
 **Application** `PersonService.GetAllAsync(ct) → IReadOnlyList<PersonSummary>`.
 
 #### 4.15 `GetPersonById` — `GET /api/manage/persons/{personId}`
@@ -1830,7 +1859,11 @@ ManagedGroupSummaryDto {
 **Request** `{ required string Name; required string Description; required bool IsRecruiting }`
 **Validator** `Name.NotEmpty().MaximumLength(80)`; `Description.NotNull().MaximumLength(400)`.
 **Response** `{ int GroupId }` → 200.
-**Failures** a non-archived Gruppe with this name (case-insensitive) exists → 409.
+**Failures** a non-archived Gruppe with this name (case-insensitive) exists → 409
+(`"Eine Gruppe mit diesem Namen gibt es schon."` — `WriteConflictMessages.DuplicateGruppenName`,
+the same constant §4.27 uses). **Added 2026-09-13** (reconciliation pass, state file §8 item 11):
+decision AH renders these strings verbatim to the member, so a 409 with no pinned German is a
+sentence an implementer has to invent.
 
 #### 4.27 `PutGroup` — `PUT /api/manage/groups/{groupId}`
 **Request** `PutGroupRequest { [RouteParam] required int GroupId; required string Name;
@@ -1861,7 +1894,11 @@ Datum beendet" is **wrong for this model and must not ship**.
 
 #### 4.29 `RestoreGroup` — `POST /api/manage/groups/{groupId}/restore`
 **Request** `{ required int GroupId }` · **Response** 204. Sets `ArchivedOn = null`.
-**Failures** 404 · not archived → 409 · another non-archived Gruppe now carries this name → 409.
+**Failures** 404 · not archived → 409 (`"Diese Gruppe ist nicht archiviert."`) · another
+non-archived Gruppe now carries this name → 409 (`"Eine Gruppe mit diesem Namen gibt es schon."`).
+The Rollen twins are `"Diese Rolle ist nicht archiviert."` (§4.36) and
+`"Eine Rolle mit diesem Namen gibt es schon."` (§4.34). All four strings added 2026-09-13, same
+reason as §4.26.
 
 ---
 
@@ -1880,9 +1917,10 @@ GetManagedGroupByIdResponse {
     IReadOnlyList<ManagedAdminDto>  PastAdmins;       // ended — always populated here
 }
 ManagedMemberDto { int GroupMembershipId; int PersonId; string FirstName; string LastName;
-                   DateOnly JoinedOn; DateOnly? LeftOn; DateOnly Since }
+                   DateOnly JoinedOn; DateOnly? LeftOn; DateOnly Since; bool IsAffiliated }
 ManagedAdminDto  { int GroupAdminId; int PersonId; string FirstName; string LastName;
-                   string? Function; DateOnly SinceOn; DateOnly? UntilOn; DateOnly Since }
+                   string? Function; DateOnly SinceOn; DateOnly? UntilOn; DateOnly Since;
+                   bool IsAffiliated }
 ```
 Its **own** response and DTO types — field-for-field identical to §4.8's apart from `ArchivedOn`
 and the absent `ViewerIsAdmin` (a key holder is always the higher instance here), because §4.0
@@ -1924,7 +1962,7 @@ GetRoleByIdResponse {
     IReadOnlyList<RoleHolderDto> PastHolders;      // ended
 }
 RoleHolderDto { int RoleHoldingId; int PersonId; string FirstName; string LastName;
-                DateOnly SinceOn; DateOnly? UntilOn; DateOnly Since }
+                DateOnly SinceOn; DateOnly? UntilOn; DateOnly Since; bool IsAffiliated }
 ```
 `Since` is the chain minimum of that Person's holdings of this Rolle. **Failures** 404.
 
@@ -2046,11 +2084,23 @@ export class RequestFailedError extends Error {
 - a **409 / 422** message renders verbatim in the open dialog's footer (`KkAlert tone="error"`
   inside `KkModalFrame.Footer`); if no dialog is open, as a toast (§7.3 `KkToast`);
 - a **400** maps each `failures[].field` (camelCased) onto the react-hook-form field of the same
-  name via `setError`; anything unmatched falls back to the footer;
+  name via `setError` **where the form is a react-hook-form** (§5.7's `PersonFormDialog`, §5.9's
+  `GroupFormDialog`, §5.10's `RoleFormDialog`); anything unmatched, and **every field of a form
+  that is not RHF**, falls back to the footer. **Corrected 2026-09-13** (reconciliation pass, state
+  file §8 item 4): the rule was written as if every write form were RHF. The four Gruppen-Hub forms
+  are plain `useState` controls — §5.6 does not require RHF and nothing else here does either — so
+  for them the footer fallback is not a degradation, it is the whole rule;
 - a **403** is never shown as an error at all — a guard is about to render `AccessDenied`, so
   `toXErrorMessage` returns `null` for status 403 exactly as it does for `UnauthorizedError`;
 - a **404** on a detail route renders that route's own not-found copy (§5.3, §5.8, §5.10), not an
   error panel.
+
+**A 404 from a *write* is not covered by the rule above and has no pinned answer here.** The four
+write surfaces currently answer it with one shared line in `lib/write-error.ts`
+(`WRITE_MISSING_MESSAGE`), because slice 9 first read this paragraph's silence as „say nothing",
+which made **every** Hub write fail mutely. **That reading, and its reversal, are a decision nobody
+has taken** — it is written up as an owed question in the implementation-state file's owed list.
+Do not re-litigate it in an implementation; do not add a second spelling of the message.
 
 **This is pinned before slice 9, not during it.**
 
@@ -2149,6 +2199,19 @@ features/session/components/PageSkeleton.tsx         props: none — KkPanelHead
 ```
 `features/session/index.ts` exports all four.
 
+**Two facts about this block, recorded 2026-09-13** (reconciliation pass, state file §8):
+
+- **`PageSkeleton` was never built, and as this section stands nothing can mount it** — decision AP
+  makes a guard render its children while `me` is pending, so the pending branch that would have
+  shown it does not exist, and every page already owns a skeleton of its own. Shipping it would be
+  dead code. Whether it is dropped from the contract or given a consumer is an **owed question**,
+  written up in the implementation-state file's owed list; it is not decided here.
+- **`RequirePermission` shipped late.** §11's ledger books it in slice 2; nothing built it there,
+  so three of the four parallel families of slices 9–17 each created it and the integration kept
+  one. The ledger row is corrected. If another §5.0 or §4.x deliverable is missing, this and the
+  §4.15 `GetPersonById` case are what it looks like: three identical files, or a route that answers
+  **405** rather than 404.
+
 **A guard renders its children while it is undecided.** Concretely: `me` pending **or** granted →
 `children`; `me` resolved and denied → `<AccessDenied/>`. Not `<PageSkeleton/>` while pending — a
 guard that withholds its children until `me` resolves turns every cold open and every deep link
@@ -2167,11 +2230,21 @@ nicht deine.") with an action link to `/groups/$groupId`; 404 → „Diese Grupp
 
 **Master→detail never shows a spinner over data it already has.** `useRoleQuery(roleId)` is seeded
 with `placeholderData` built from the matching `GetRoles` row (§5.10); the same applies to any
-later master→detail pair. `GetRoleById` adds only `PastHolders`.
+later master→detail pair. **Corrected 2026-09-13** (reconciliation pass, state file §8 item 7): the
+seed carries `roleId`, `name`, `description`, `archivedOn` and `permissionKeys` — the identity and
+the key matrix, which is what the detail opens on. It carries **neither** holder list: §4.31's
+`Holders` are `PersonRefDto` and §4.32's are `RoleHolderDto` (`roleHoldingId`, `sinceOn`, `since`),
+so a holder *row* cannot be built from the list payload. `holders` and `pastHolders` are both
+seeded empty and both arrive with the detail response. The earlier „`GetRoleById` adds only
+`PastHolders`" was half true and would have had an implementer render a holder row off a seed that
+has no holding id to end.
 
 `features/session/hooks/use-permissions.ts` exports
-`usePermissions(): { keys: readonly PermissionKey[]; has: (key: PermissionKey) => boolean; isAffiliated: boolean; isPending: boolean }`
-built on `useMeQuery` — **this is the only place a page asks about a key.**
+`usePermissions(): { keys: readonly PermissionKey[]; has: (key: PermissionKey) => boolean; isAffiliated: boolean; isUndecided: boolean }`
+built on `useMeQuery` — **this is the only place a page asks about a key.** (The flag was pinned as
+`isPending` and shipped as `isUndecided`; the name corrected here, 2026-09-13. It is not a loading
+flag — it is „`me` has not answered, so no key question has an answer yet", which is exactly the
+state decision AP tells a guard to pass through.)
 
 **The four `AccessDenied` messages are copy, pinned here** so three implementers do not write three
 tones:
@@ -2183,11 +2256,27 @@ tones:
 | `groups.manage` | „Die Gruppenverwaltung ist an eine Rolle gebunden. Du hast sie gerade nicht." |
 | `roles.manage` | „Rollen & Rechte ist an eine Rolle gebunden. Du hast sie gerade nicht." |
 
+**Three of those four rows are `PermissionKey`s, and the union has four members.**
+`persons.read_details` guards no page (decision T), so `RequirePermission`'s message map cannot be
+written as a total `Record<PermissionKey, string>` from this table. It ships as a
+`Partial<Record<…>>` plus a neutral fallback that is unreachable in P1. **Narrowing the prop type
+or pinning a fourth message is an owed question** — see the implementation-state file's owed list.
+Recorded 2026-09-13; not decided here, and an implementer must not decide it either.
+
 **Lacking a right HIDES the affordance.** Never `disabled`, never a greyed button with a tooltip,
 never a 403 toast after the click. A member who is not a Gruppen-Admin sees a Hub with no
 `+ Mitglied` button at all.
 
 **Route files are two lines.** All logic lives in the feature.
+
+**A detail route's file carries a trailing underscore on its parent segment.**
+`manage.persons_.$personId.tsx`, `_affiliated.members_.$personId.tsx`,
+`_affiliated.groups_.$groupId.tsx`. **Corrected 2026-09-13** (reconciliation pass, state file §8
+item 1): the dotted spelling `manage.persons.$personId.tsx` was pinned in §5.8 and in §11's ledger
+and **does not work** — TanStack Router reads `a.b.$id` as a child *of* `a.b`, so the register list
+renders above every Person's edit page. The underscore opts the child out of that nesting; the URL
+is byte-identical. `_affiliated.members_.$personId.tsx` shipped correctly in slice 5 and is the
+precedent the later routes follow.
 
 **`/backend-work`'s and `/frontend-work`'s rules bind the examples in this document too.** Three
 that the surfaces below would otherwise violate on sight: *no logic in JSX* means no calls, no
@@ -2388,7 +2477,7 @@ genuinely are desktop-only.
 
 ### 5.3 Person — `/members/$personId` (slice 5)
 
-Route file `routes/_app/_affiliated.members.$personId.tsx`; same guard; feature `features/members/`.
+Route file `routes/_app/_affiliated.members_.$personId.tsx`; same guard; feature `features/members/`.
 **Hooks** `useMemberQuery(personId)` → `memberQueryKey(personId)`.
 
 ```
@@ -2398,7 +2487,7 @@ components/MemberPage.tsx         header portal + <MemberBody/>. The portalled t
                                   empty `<h1>` that pops a name in a moment later
 components/MemberBody.tsx         query states
 components/MemberView.tsx         the loaded layout
-components/MemberHeader.tsx       KkAvatar + name + state chip + „Mitglied seit …"
+components/MemberHeader.tsx       KkAvatar + name + state chip — and NO date (corrected, below)
 components/MemberClubPanel.tsx    „Im Verein": KkFieldRow Mitgliedschaft / Status / Mitglied seit
 components/MemberGroupsPanel.tsx  KkSinceRow per Gruppe, local empty „IN KEINER GRUPPE"
 components/MemberRolesPanel.tsx   KkSinceRow tone="accent" per Rolle, local empty „KEINE ROLLE"
@@ -2406,6 +2495,16 @@ components/MemberContactPanel.tsx the three contact states
 components/MemberContactHidden.tsx  KkPanel tone="reserved" + KkRedactedValue ×3
 components/MemberError.tsx  components/MemberSkeleton.tsx
 ```
+
+**The header and „Im Verein" said the same thing twice. Corrected 2026-09-13** (reconciliation
+pass; UX pass round 1, `shared` bucket): this section pinned `MemberHeader` as „state chip +
+„Mitglied seit …"" *and* `MemberClubPanel` as „Mitgliedschaft / Status / Mitglied seit", so the
+right column of the card opened by restating its own header — the same chip and the same date
+120 px apart — and `MemberContactPanel`, the thing a member opens the card *for*, sat underneath
+both. **The state chip stays in the header** as the at-a-glance identity marker; the „Mitglied
+seit" subline leaves it and `MemberClubPanel` is the one place the dates live. `toMembershipLine`
+and `MemberHeadline.line` are deleted (`MemberHeadline` is `{ title, initials, state }`), and
+`MemberView`'s right column is ordered **Kontakt above Im Verein**.
 
 **States**
 - *first load* — `MemberSkeleton` (header block + three panel skeletons).
@@ -2429,7 +2528,7 @@ components/MemberError.tsx  components/MemberSkeleton.tsx
 
 ### 5.4 Gruppen — `/groups` and Gruppe — `/groups/$groupId` (slice 6)
 
-Route files `routes/_app/_affiliated.groups.tsx`, `routes/_app/_affiliated.groups.$groupId.tsx`;
+Route files `routes/_app/_affiliated.groups.tsx`, `routes/_app/_affiliated.groups_.$groupId.tsx`;
 same `_affiliated` guard; feature `features/groups/`.
 **Hooks** `useGroupsQuery()`, `useGroupQuery(groupId)`.
 
@@ -2506,6 +2605,15 @@ truthful, uses data `GetMe` already carries, flips live with the switch, and bel
 too**, where most members will meet it.
 
 Only the visibility card is added — no Fotofreigabe, no Push, no E-Mail switch.
+
+**There is no „ZUGANG" card, and there is no password endpoint. Recorded 2026-09-13**
+(reconciliation pass; UX pass round 1, `shared` bucket): the mock's card was named after access,
+contained one read-only line and managed no access. „Build the end state" permits a button that
+calls an endpoint that does not exist yet — but §0 forbids **inventing an endpoint shape**, and a
+password dialog needs a route, a request body and a failure vocabulary that nothing pins. So the
+card is folded away and the login address is a `KkFieldRow` „Anmeldung" inside „DEINE DATEN". When
+`PUT /api/me/password` (or whatever it is called) is pinned in §4, the card comes back with the
+action it promises.
 
 ---
 
@@ -2619,19 +2727,34 @@ create action. The same treatment for `/manage/groups` („NOCH KEINE GRUPPE") a
 („NOCH KEINE ROLLE"); until now only the *search*-empty was specified.
 `PersonFormSchema` / `PersonForm` in `schemas.ts`; fields Vorname, Nachname, E-Mail, Telefon,
 Straße, PLZ, Ort, Geburtsdatum (`KkDateField`), and the visibility switch labelled as set **on her
-word** (§10). The **edit** dialog prefills from the list row — `PersonSummaryDto` carries `Street`
-and `Zip` (§4.14) precisely so it can, with no second round trip. Search-empty copy names the query.
+word** (§10). Search-empty copy names the query.
+
+**The list row opens the Person, it does not open the editor. Corrected 2026-09-13**
+(reconciliation pass, state file §8 item 12). This section held both halves of a sentence that
+cannot both be true: `PersonFormDialog` „opens for edit straight off a list row" **and** the row is
+`KkPersonRow → /manage/persons/$personId`. `KkPersonRow` renders the **whole row** as the link, so
+an edit button inside it is a `<button>` inside an `<a>` — invalid HTML, and two competing targets
+under one finger on a phone. The link is what ships. `PersonFormDialog` is mounted twice: by
+`PersonsView` for **create**, and by §5.8's `PersonMasterDataPanel` — behind its „Bearbeiten" —
+for **edit**, where the full §4.15 payload is already loaded. One form, two mount points, no row
+button.
 
 **`PersonRow` on a phone**: avatar 38 + two lines + trailing chip + chevron leaves ~190px for the
 name at a 400px viewport, so below `desktop` the state chip moves to **line two** (after the
 Gruppen) and the trailing slot carries the chevron alone. The same rule applies to `MemberRow` on
 `/members`.
+**This is a rule for the primitive, not for its call sites. Corrected 2026-09-13** (reconciliation
+pass; UX pass round 1, `shared` bucket): `KkPersonRow` renders `trailing` itself, so no call site
+can order it — written as a call-site rule the chip sat *before* the Gruppen and the meta text
+started at a different x on every row. The order lives inside `KkPersonRow`; `MemberRow` and
+`PersonRow` were already correct as call sites and did not change.
 
 ---
 
 ### 5.8 Person bearbeiten — `/manage/persons/$personId` (slices 12–13)
 
-Route file `routes/_app/manage.persons.$personId.tsx`; same key guard; same feature.
+Route file `routes/_app/manage.persons_.$personId.tsx` (the trailing underscore is load-bearing,
+§5.0); same key guard; same feature.
 **Hooks** `usePersonQuery(personId)` plus one mutation hook per endpoint 4.18–4.24, all
 invalidating `personQueryKey(personId)` and `PERSONS_QUERY_KEY`.
 
@@ -2694,6 +2817,16 @@ else after a lockout, so it must be linkable and reloadable, and local component
 it neither. A row click sets `?group=<id>`; `GroupOverridePanel` renders beside the list on desktop
 (Grid 12: 5 / 7) and below it on mobile, scrolled into view on select. §6.3's `resolveSectionTitle`
 is unaffected — the prefix does not change.
+
+**The 5 / 7 split applies to the *selected* state only. Corrected 2026-09-13** (reconciliation
+pass; UX pass round 1, `shared` bucket): written unconditionally it spent 60 % of a 1 400 px
+desktop on a 360 px dashed „KEINE GRUPPE GEWÄHLT" card followed by ~1 800 px of nothing — on the
+one surface an admin is *sent to* after a lockout. With no `?group=` the list renders **full
+width** as a 3-up card grid (`ManagedGroupsGrid` / `ManagedGroupCard`) and the archive footnote
+(§10.7) is a page footnote; with a selection the list collapses to the pinned 5 and the panel takes
+the 7. `GroupOverrideEmpty` is **deleted** — the empty state disappears with the state that
+required it.
+
 Guard `permissionKey={PERMISSION_KEYS.groupsManage}`.
 Feature `features/manage-groups/`.
 **Hooks** `useManagedGroupsQuery()`, `useManagedGroupQuery(groupId)`, `useCreateGroupMutation`,
@@ -2703,19 +2836,44 @@ hub mutations from `features/group-hub/api.ts` for the overrides (slice 15).
 ```
 components/ManagedGroupsPage.tsx  ManagedGroupsBody.tsx  ManagedGroupsView.tsx
 components/ManagedGroupsToolbar.tsx   search + KkFilterChips (Alle / Aktiv / Archiviert)
-components/ManagedGroupRow.tsx        ≥ `desktop`: name · Personen · Admins · Offenheit · Status.
-                                     Below it: two lines — name / „N Personen · N Admins" — plus
-                                     one trailing chip (the most urgent of `kein Admin` →
-                                     `archiviert` → openness). Five columns do not fit 360px, and
-                                     the five-column table is the mock the design map calls out
-                                     as weak (#3); the phone form is the primary one.
+components/ManagedGroupRow.tsx        two lines — name / „N Personen · N Admins" — plus one
+                                     trailing chip, AT EVERY WIDTH (corrected 2026-09-13, below)
+components/ManagedGroupCard.tsx       the no-selection grid's card: name, description, counts,
+                                     the status chip AND the openness chip
+components/ManagedGroupHeaderCard.tsx the selected Gruppe's header: name, Offenheit, status,
+                                     „Bearbeiten" / „Archivieren" / „Aktivieren"
 components/GroupFormDialog.tsx        create + rename + description + openness
 components/ArchiveGroupDialog.tsx     KkConfirmDialog tone="neutral"
 components/RestoreGroupDialog.tsx     KkConfirmDialog tone="neutral"
 components/GroupOverridePanel.tsx     slice 15 — members and admins of the selected Gruppe
 components/ManagedGroupsCreateFab.tsx KkFab „Gruppe anlegen" (mobile)
 ```
-Archived rows render `dimmed` with an `archiviert` chip and offer „Aktivieren".
+**The master row has one form, and the chip order is `archiviert` → `kein Admin` → none.
+Corrected 2026-09-13** (reconciliation pass, state file §8 items 5 and 6). Two provable defects
+were pinned here:
+
+- *The desktop row was not constructible.* „name · Personen · Admins · Offenheit · Status" inside
+  the same paragraph's 5 / 7 split leaves the row ~500 px, and it **truncated real names** —
+  „ARCHIV UND CH…", „TANZGRUPPE WIRB…", read off a screenshot, not predicted. The paragraph itself
+  called the phone form „the primary one"; it is now the **only** one. `Offenheit` moves to
+  `ManagedGroupCard` (no selection) and `ManagedGroupHeaderCard` (selected), where it has room.
+- *The chip priority contradicted itself.* „the most urgent of `kein Admin` → `archiviert` →
+  openness" and, two sentences later, „archived rows render dimmed with an `archiviert` chip"
+  unconditionally. Taken literally an archived Gruppe with no admin would hide that it is archived.
+  Pinned order: **`archiviert` → `kein Admin` → no chip.** Openness is never the row's chip, so a
+  healthy active Gruppe carries none and the two chips that mean „look at me" carry all the weight.
+  `toManagedGroupChips` is the one place this is decided. **`/manage/roles` orders its chips the
+  same way — `archiviert` first — but may show two of them; §5.10 records that divergence.**
+
+Archived rows still render `dimmed` and offer „Aktivieren"; dimming is a row treatment, the chip is
+the label, and the two are independent.
+
+**History is rendered, not dropped.** §4.30 returns `PastMembers` and `PastAdmins` and says they
+are „always populated here", so the override column ends with a history panel — the **same**
+`GroupHistoryPanel` the Gruppen-Hub uses, fed by those two lists. Fetching a payload and showing
+half of it is not the end state. Added 2026-09-13 (state file §8 item 9); its German copy is not
+pinned and the UX pass may overrule it.
+
 Slice 15's override panel reuses `AddMemberDialog`, `EndMembershipDialog`, `AddAdminDialog`,
 `EndAdminDialog` from `features/group-hub/` — the components are exported from that feature's
 `index.ts` and imported here. Features may import features; only `lib` and `routes` are
@@ -2749,8 +2907,24 @@ components/RolesEmpty.tsx  RolesError.tsx  RolesSkeleton.tsx
 role-permission-copy.ts            the four German key descriptions (module constant)
 ```
 
+**This file list is a slice-16/17 snapshot and the UX pass has since reshaped the surface**
+(`RolesToolbar` split out of `RolesMasterList`, the create action moved into the section header,
+`RolesGrid`/`RoleCard` for the no-selection state, `RolePastHoldersPanel`, `RoleNotFound`). Read
+the feature directory for the current file set; **the rules below are what binds.** Noted
+2026-09-13 — the rules were re-verified against the code, the file list was not re-derived.
+
+**Three things this section leaves unowned, and still does** (state file §8 item 8, deliberately
+*not* decided here): the default no-`?role=` column, the restore-a-Rolle dialog, and
+`GetRoleById.pastHolders`. All three were built to the end-state rule and all three ship copy that
+**is not pinned** — including `toRolesLead`. See the implementation-state file's owed-decision
+list; the UX pass may overrule any of it.
+
 **Rules taken from the UX pass, not from the mock**
 - The master list is **flat** (alphabetical, archived last) — no `kind` groups, no origin hints.
+  Its row shows `archiviert` **first**, then `unbesetzt`, and nothing when neither holds
+  (`RoleStateChips`). Note the divergence from §5.9, which shows **one** chip per row: this list
+  can show two. Recorded 2026-09-13 as shipped, not ratified — unifying the two master rows is
+  cross-surface drift and belongs to the UX pass, not to an implementer.
 - **No rights counter** („16 von 26", „3 von 5", a red count per Rolle). With four keys a ratio
   reads as a score to fill. One row per key, plain German, a switch.
 - **Mobile shows the four switches directly** in the detail view — no „Rechte ändern" second
@@ -2759,8 +2933,13 @@ role-permission-copy.ts            the four German key descriptions (module cons
   in an effect keyed on `role`), because a tap that only changes a search param and moves nothing
   on screen reads as a dead row.
 - `useRoleQuery(roleId)` is seeded with `placeholderData` derived from the matching `GetRoles` row
-  — `GetRoles` already returns each Rolle's `PermissionKeys` and `Holders` (§4.31), so master →
-  detail is instant and only `PastHolders` arrives late.
+  — `GetRoles` already returns each Rolle's `Name`, `Description`, `ArchivedOn` and
+  `PermissionKeys` (§4.31), so the header card and the four switches are instant. **Corrected
+  2026-09-13** (state file §8 item 7): **both** holder lists arrive late, not only `PastHolders`.
+  §4.31's `Holders` are `PersonRefDto`, §4.32's are `RoleHolderDto` — no `roleHoldingId`, no
+  `sinceOn` — so `toRoleSeed` seeds `holders: []` and `pastHolders: []` rather than a row whose
+  „Beenden" would have nothing to post to. The holders panel shows its own empty/loading treatment
+  for that one hop.
 - A Rolle with no Inhaber shows „Die Rolle ist unbesetzt. Die Rechte sind gesetzt und greifen,
   sobald jemand eingetragen wird." — not an error.
 - Toggling a key uses the **optimistic idiom of §5.0** verbatim (`onMutate` snapshot →
@@ -2964,6 +3143,7 @@ bug** — report it and add the primitive to `@furria/ui`, never a page-level `s
 | `KkFieldRow` | `KkFieldRow.tsx` | props become `{ label: string; value: ReactNode; hint?: string }` — `value` accepts a `KkChip`, `hint` renders as a faint line under the value. |
 | `KkNote` | `KkNote.tsx` | props become `{ tone?: 'muted' \| 'info' \| 'warning'; icon?: KkIconName; sx?: KkSx }`. `info` = `info.main` text with a leading icon (the "über deine Rolle" strip); `warning` = `warning.main`. |
 | `KkButton` | `KkButton.tsx` | adds `tone?: 'default' \| 'danger'`. `danger` + `variant="outlined"` = accent text on an accent hairline (the `Beenden` ghost); `danger` + `variant="contained"` = the destructive primary. |
+| `KkTextField` | `KkTextField.tsx` | its two unions each gain one member: `type?: 'text' \| 'email' \| 'password' \| 'tel'` and `inputMode?: 'text' \| 'email' \| 'tel' \| 'numeric'`. **Added 2026-09-13** (reconciliation pass, state file §8 item 10): neither §7.3 nor §7.6 ever pinned them, and §5.7's form has a Telefon field and a PLZ field. Without `tel`/`numeric` a phone opens a full QWERTY keyboard for a phone number and a postcode, and the app cannot fix it — `@mui/material/TextField` is banned there and `sx` is a `noDesignSx` error. A textbook §7 „the primitive is missing an affordance" case. |
 | `KkIcon` | `KkIcon.tsx` | `KkIconName` gains 17 names (§7.2). |
 | `KkAvatar` | `KkAvatar.tsx` | adds `size?: 'small' \| 'medium' \| 'large'` (26 / 40 / 56) for the avatar stack and the person row. **No `tone` prop** — the gold Ehrenmitglied avatar is out of P1. |
 | `KkHeading` | `KkHeading.tsx` | adds `tone?: 'default' \| 'accent'`. `accent` = `primary.main`. Without it the single strongest element on `/groups` — the member count in accent Anton — is **physically unbuildable**: `sx={{ color: 'primary.main' }}` is a `noDesignSx` error and suppression is never allowed, so the implementer would ship a black number (drift) or reach for a documented bypass (ADR-0007 forbids it). Same prop unblocks every other big accent number (the Rollen master count, the stat values). |
@@ -2992,6 +3172,14 @@ one is used*, plus one contrast fix.
    „+ Zeitraum", „+ Ermäßigung", „Pflegen") is `variant="outlined" size="small"`. `/manage/roles`
    already does this correctly — „Rolle anlegen" filled, „+ Inhaber"/„Umbenennen"/„Archivieren"
    outlined.
+   **One gesture per screen, and one owner for the breakpoint** (added 2026-09-13; UX pass round 1,
+   `shared` bucket): the header create action is **hidden below `desktop`** and a `KkFab` carries
+   the same verb there — never both at once. All three Verwaltung surfaces obey it, so
+   `/manage/roles` gains the `RolesCreateFab` it lacked and `/manage/groups` stops offering
+   „+ Gruppe anlegen" **and** an unlabelled red FAB at the same time.
+   **One component owns that breakpoint** — it shipped as `ManagePageLayout` and is
+   `features/session/components/AppListLayout` + `AppListSectionHead` since the later
+   consolidation — so no future surface has to remember it.
 4. **Contrast.** Both red *label* branches of `KkButton` (`default/text` and
    `danger/outlined` · `danger/text`) paint through `kkTokens.color.*.redInk`, not `error.main`:
    `.main` is the fill, the `*Ink` token is the readable foreground. `error.main` at
@@ -4408,6 +4596,14 @@ actions) · „Umbenennen" (Rolle).
 | `groups.manage` | Gruppen verwalten | Gruppen anlegen, bearbeiten, archivieren und jede Zugehörigkeit oder Gruppen-Admin-Rolle überschreiben. |
 | `roles.manage` | Rollen und Rechte verwalten | Rollen anlegen, ihre Rechte ändern und Inhaberschaften eintragen. Wer das hat, kann sich alles andere selbst geben. |
 
+**§10.7 and §10.8 name `persons.read_details` two different ways, and both ship.** §10.7 pins,
+verbatim, „Unabhängig davon: Wer das Recht „**Personendetails sehen**" hat, sieht deine Daten
+immer."; the row above calls the same key „**Kontaktdaten aller Personen sehen**". Both strings are
+live today, 800 px apart on two surfaces. Neither was changed — §10.7 is pinned verbatim and a
+third spelling would be worse than two. **One of the two paragraphs has to give, and which one is
+an owed question**, written up in the implementation-state file's owed list. Recorded 2026-09-13;
+not decided here.
+
 ### 10.9 Beitragsermäßigung — the four bases
 
 `FeeReductionBasis` reaches the client as `minor | school | apprenticeship | studies` and had no
@@ -4455,18 +4651,18 @@ cd /home/florian/sources/furria/web && pnpm shot <route>
 
 | # | Slice | Backend deliverables | Frontend deliverables | Gates | Shots |
 |---|---|---|---|---|---|
-| 1 | Mitgliedschaft rework | **add** `Core/Club/{ClubSession,ClubClock,DatePeriod,SessionSpan,MembershipState,MembershipStateCalculator,ITimestamped}`, `Core/Identity/{MembershipPause,FeeReduction,FeeReductionBasis}`, `Infrastructure/Persistence/AuditTimestampInterceptor`, configurations for the two new tables, migration `RegistryFacts`, `Application/Identity/MembershipChainDetails`. **change** `Person` (Memberships, BirthDate, ContactVisibleToMembers), `Membership` (periods), `PersonConfiguration`, `MembershipConfiguration`, `AppDbContext`, `AccountService.GetDetailsAsync`, `MembershipDetails`, `GetMe`. **delete** `MembershipType`, `MembershipStatus`, `InsertMembershipDirectlyAsync`. **harness** `IdentitySeedBuilder` (§8.2), `IdentitySeedMaterializer`, `MembershipExpectations`, `PersonExpectations`, `MembershipPauseExpectations`, `FeeReductionExpectations` (+`ToHaveBeenTouchedAt`), `ApiTestFixture` (`UseEnvironment("Testing")`, `Today`, `CurrentSessionYear`); **docs** rewrite `docs/server/TESTING.md`'s `MembershipOf` example; rewrite `GetMeTests`, `MembershipPersistenceTests`, add `ClubSessionTests`, `ClubClockTests`, `Should_StampUpdatedAt_When_APersonIsEdited` | `lib/api/api-fetch.ts` (PUT/DELETE), **`lib/api/api-error.ts` (`RequestFailedError`, §5.0a)**, `lib/api/schemas.ts` (§5.1, +`PermissionKey`), `lib/membership-labels.ts`, `lib/state-chips.ts` (+tests), **`lib/text.ts` (+tests)**, `features/profile/components/ProfileMembershipPanel.tsx`, `features/session/components/AppUserLink.tsx` | B, F | `/profile` |
-| 2 | Rights core | `Core/Roles/{Role,RolePermission,RoleHolding}` + configurations, migration `Roles`, `Application/Authorization/FurriaPermissions`, **move** `PermissionAuthorizer` → `Infrastructure/Authorization` and implement `IsGrantedAsync` + `GrantedKeysAsync` with per-request caching, `BootstrapAdminSeeder` split into three guarded steps (§3.6), `ApiTestFixture` snapshot array, `RoleSeedBuilder` + materializer + `TestRoles` + `RoleExpectations` + `RoleHoldingExpectations`, `GetMe.permissionKeys`, tests for the enforcer against a real matrix | `MeSchema.permissionKeys`, `features/session/hooks/use-permissions.ts`, `RequirePermission`, `AccessDenied` | B, F | — |
-| 3 | Gruppen core | `Core/Groups/{Group,GroupMembership,GroupAdmin}` + configurations, migration `Groups` (incl. the hand-written `ix_group_name_active`), `Infrastructure/Registry/AffiliationQuery`, `PermissionAuthorizer.{IsAffiliatedAsync,IsGroupAdminAsync,IsGroupMemberOrAdminAsync,CanAdministerGroupAsync,CanSearchPersonsAsync}` + the `GroupTies` cache, `Api/Authorization/{AffiliationRequirement, RequireAffiliation}` + the `PermissionEnforcer` branch, `Api/Results/ResultResponseExtensions` + non-generic `Result` + `ResultErrorKind.Forbidden`, `GroupSeedBuilder` + materializer + `TestGroups` + the three group expectations, **`EndpointGateTests` (§8.8)**, `GetMe.isAffiliated` | `MeSchema.isAffiliated`, `RequireAffiliation`, `PageSkeleton`, `AccessDenied` (`action` slot + the four messages), `routes/_app/_affiliated.tsx` | B, F | — |
+| 1 | Mitgliedschaft rework | **add** `Core/Club/{ClubSession,ClubClock,DatePeriod,SessionSpan,MembershipState,MembershipStateCalculator,ITimestamped}`, `Core/Identity/{MembershipPause,FeeReduction,FeeReductionBasis}`, `Infrastructure/Persistence/AuditTimestampInterceptor`, configurations for the two new tables, migration `RegistryFacts`, `Application/Identity/MembershipChainDetails`. **change** `Person` (Memberships, BirthDate, ContactVisibleToMembers), `Membership` (periods), `PersonConfiguration`, `MembershipConfiguration`, `AppDbContext`, `AccountService.GetDetailsAsync`, `MembershipDetails`, `GetMe`. **delete** `MembershipType`, `MembershipStatus`, `InsertMembershipDirectlyAsync`. **harness** `IdentitySeedBuilder` (§8.2), `IdentitySeedMaterializer`, `MembershipExpectations`, `PersonExpectations`, `MembershipPauseExpectations`, `FeeReductionExpectations` (+`ToHaveBeenTouchedAt`), `ApiTestFixture` (`UseEnvironment("Testing")`, `Today`, `CurrentSessionYear`); **docs** rewrite `docs/server/TESTING.md`'s `MembershipOf` example; rewrite `GetMeTests`, `MembershipPersistenceTests`, add `ClubSessionTests`, `ClubClockTests`, `Should_StampUpdatedAt_When_APersonIsEdited` | `lib/api/api-fetch.ts` (PUT/DELETE), **`lib/api/api-error.ts` (`RequestFailedError`, §5.0a)**, `lib/api/schemas.ts` (§5.1, +`PermissionKey`), `lib/membership-labels.ts`, `lib/state-chips.ts` (+tests), **`lib/text.ts` (+tests)** — **but `formatSessionLabel`, `formatSessionSpan` and `toPeriodChip` were missed here and landed with slices 12–13** (corrected 2026-09-13, state file §8; they are in their pinned modules with their pinned §5.1 signatures), `features/profile/components/ProfileMembershipPanel.tsx`, `features/session/components/AppUserLink.tsx` | B, F | `/profile` |
+| 2 | Rights core | `Core/Roles/{Role,RolePermission,RoleHolding}` + configurations, migration `Roles`, `Application/Authorization/FurriaPermissions`, **move** `PermissionAuthorizer` → `Infrastructure/Authorization` and implement `IsGrantedAsync` + `GrantedKeysAsync` with per-request caching, `BootstrapAdminSeeder` split into three guarded steps (§3.6), `ApiTestFixture` snapshot array, `RoleSeedBuilder` + materializer + `TestRoles` + `RoleExpectations` + `RoleHoldingExpectations`, `GetMe.permissionKeys`, tests for the enforcer against a real matrix | `MeSchema.permissionKeys`, `features/session/hooks/use-permissions.ts`, `RequirePermission` (**missed here; actually built during slices 9–17** — corrected 2026-09-13, §5.0), `AccessDenied` | B, F | — |
+| 3 | Gruppen core | `Core/Groups/{Group,GroupMembership,GroupAdmin}` + configurations, migration `Groups` (incl. the hand-written `ix_group_name_active`), `Infrastructure/Registry/AffiliationQuery`, `PermissionAuthorizer.{IsAffiliatedAsync,IsGroupAdminAsync,IsGroupMemberOrAdminAsync,CanAdministerGroupAsync,CanSearchPersonsAsync}` + the `GroupTies` cache, `Api/Authorization/{AffiliationRequirement, RequireAffiliation}` + the `PermissionEnforcer` branch, `Api/Results/ResultResponseExtensions` + non-generic `Result` + `ResultErrorKind.Forbidden`, `GroupSeedBuilder` + materializer + `TestGroups` + the three group expectations, **`EndpointGateTests` (§8.8)**, `GetMe.isAffiliated` | `MeSchema.isAffiliated`, `RequireAffiliation`, ~~`PageSkeleton`~~ (**never built — decision AP leaves it no consumer; an owed question, §5.0**), `AccessDenied` (`action` slot + the four messages), `routes/_app/_affiliated.tsx` | B, F | — |
 | 4 | Mitglieder list | `GetMembers` (4.2) with the German collation + `Should_SortUmlautsAsGerman_When_ListingMembers`, `Infrastructure/Registry/PersonService.GetMembersAsync`, `Application/Registry/MemberSummary` | `features/members/*` (list half), `routes/_app/_affiliated.members.tsx`, `APP_SECTIONS` members target + Gruppen entry, `buildNavGroups`, `resolveSectionTitle` (+tests), `KkChip`, `KkPersonRow`, `KkSearchField`, `KkFilterChips`, `KkLetterDivider`, `KkLetterIndex`, `KkEmptyState`, `KkSkeletonRow`, `KkIcon` names | B, F, S | `/members` |
-| 5 | Person card | `GetMemberById` (4.3) with the contact rule, `PersonService.GetMemberAsync`, `Application/Registry/MemberDetails` | `features/members/*` (card half), `routes/_app/_affiliated.members.$personId.tsx`, `KkSinceRow`, `KkRedactedValue`, `KkNote` tone, `KkPanel` tones, `KkFieldRow` hint | B, F, S | `/members/$personId` |
-| 6 | Gruppen | `GetGroups` (4.4), `GetGroupById` (4.5), `Infrastructure/Groups/GroupService`, `Application/Groups/{GroupSummary,GroupDetails}` | `features/groups/*`, `routes/_app/_affiliated.groups.tsx` + `.$groupId.tsx`, `KkAvatarStack`, `KkPanelHeader` action slot | B, F, S | `/groups`, `/groups/$groupId` |
+| 5 | Person card | `GetMemberById` (4.3) with the contact rule, `PersonService.GetMemberAsync`, `Application/Registry/MemberDetails` | `features/members/*` (card half), `routes/_app/_affiliated.members_.$personId.tsx`, `KkSinceRow`, `KkRedactedValue`, `KkNote` tone, `KkPanel` tones, `KkFieldRow` hint | B, F, S | `/members/$personId` |
+| 6 | Gruppen | `GetGroups` (4.4), `GetGroupById` (4.5), `Infrastructure/Groups/GroupService`, `Application/Groups/{GroupSummary,GroupDetails}` | `features/groups/*`, `routes/_app/_affiliated.groups.tsx` + `_affiliated.groups_.$groupId.tsx`, `KkAvatarStack`, `KkPanelHeader` action slot | B, F, S | `/groups`, `/groups/$groupId` |
 | 7 | Profile visibility | `PutMyContactVisibility` (4.6), `PersonService.SetContactVisibilityAsync`, `ClaimsPrincipal.PersonId()` | `features/profile` visibility panel + contact-block preview + `use-contact-visibility` (the §5.0 optimistic idiom), `KkSwitchRow`, **`KkToast` + provider in `AppShell`** | B, F, S | `/profile` |
 | 8 | Hub read | `GetMyGroups` (4.7), `GetMyGroupById` (4.8) — 403 vs 404 kept distinct | `features/group-hub/*` (read half), `routes/_app/my-groups.$groupId.tsx` + `my-groups.index.tsx` (redirect), the 403/404 branches (no guard component), „Meine Gruppen" nav group folded into the boot gate, `KkReservedSlot` | B, F, S | `/my-groups/$groupId` |
 | 9 | Hub admin I | `GetPersonSearch` (4.41) + `Core/Club/GermanFold`, `PutGroupInfo` (4.9), `PostGroupMembership` (4.10), `EndGroupMembership` (4.11) | hub admin panels, `PersonPicker`, `AddMemberDialog`, `EndMembershipDialog`, `HubCelebration`, the mutation-invalidation idiom, `KkModalFrame`, `KkConfirmDialog`, `KkDateField`, `KkTextArea`, `KkButton` tone | B, F, S | `/my-groups/$groupId` |
 | 10 | Hub admin II | `PostGroupAdmin` (4.12), `EndGroupAdmin` (4.13) | `AddAdminDialog`, `EndAdminDialog`, `KkChipField` | B, F, S | `/my-groups/$groupId` |
 | 11 | Personenverwaltung | `GetPersons` (4.14), `GetPersonById` (4.15), `PostPerson` (4.16), `PutPerson` (4.17) | `features/manage-persons/*` (list half), `routes/_app/manage.persons.tsx`, „Verwaltung" nav group, `KkFab` | B, F, S | `/manage/persons` |
-| 12 | Person bearbeiten I | `PostMembership`, `PutMembership`, `EndMembership` (incl. the open-pause clamp), `PostMembershipPause`, `PutMembershipPause` (4.18–4.22), `Infrastructure/Registry/MembershipService` | `features/manage-persons/*` (edit half, pauses nested per period), `routes/_app/manage.persons.$personId.tsx`, `KkFactRow`, `KkConsequenceNote`, `KkSessionField` | B, F, S | `/manage/persons/$personId` |
+| 12 | Person bearbeiten I | `PostMembership`, `PutMembership`, `EndMembership` (incl. the open-pause clamp), `PostMembershipPause`, `PutMembershipPause` (4.18–4.22), `Infrastructure/Registry/MembershipService` | `features/manage-persons/*` (edit half, pauses nested per period), `routes/_app/manage.persons_.$personId.tsx`, `KkFactRow`, `KkConsequenceNote`, `KkSessionField` | B, F, S | `/manage/persons/$personId` |
 | 13 | Person bearbeiten II | `PostFeeReduction`, `PutFeeReduction` (4.23–4.24) | `PersonFeeReductionsPanel`, `FeeReductionEditor`, the four basis labels (§10.9), `KkSelectField` | B, F, S | `/manage/persons/$personId` |
 | 14 | Gruppenverwaltung I | `GetManagedGroups` (4.25), `PostGroup`, `PutGroup`, `ArchiveGroup`, `RestoreGroup` (4.26–4.29) | `features/manage-groups/*`, `routes/_app/manage.groups.tsx` | B, F, S | `/manage/groups` |
 | 15 | Gruppenverwaltung II | `GetManagedGroupById` (4.30) — **no write endpoints**, the overrides ride the disjunction gate of 4.9–4.13 | `GroupOverridePanel` selected by `?group=` (`ManagedGroupsSearchSchema`), reusing the four hub dialogs and `PersonPicker` | B, F, S | `/manage/groups`, `/manage/groups?group=1` |
@@ -4483,6 +4679,15 @@ contract bug it hit. Commits use conventional prefixes (`feat:`, `fix:`, `refact
 ## 12. Open questions — all decided
 
 None of these blocks an implementer. Each is decided here; the rationale is one line.
+
+**Eight questions raised *after* this table was written are NOT decided here.** Implementation
+found them, implementation wrote down what it shipped and why, and none of them blocked a slice —
+but each needs Florian, not a second implementer's reading. They live in
+`p1-implementation-state.md` §5, under **„Decisions owed to Florian"**, phrased as a question with
+its options. Two of them will become rows in this table when they are answered: the `BootstrapAdminSeeder`
+Admin-holding failsafe against decision W, and whether a row lying entirely in the future may be
+created on a surface that cannot display it (decisions C and AF). **An implementer who meets one of
+those eight reports it and moves on — exactly as §0 says — and does not decide it.**
 
 | # | Question | **Decision** | Why |
 |---|---|---|---|
