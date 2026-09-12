@@ -3,13 +3,9 @@ import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { toInitials } from '@/lib/initials';
+import { NO_AFFILIATION_META } from '@/lib/person-rows';
 import { toMembershipStateChip, WITHHELD_CHIP } from '@/lib/state-chips';
-import {
-  isContactWithheld,
-  NO_AFFILIATION_META,
-  toPersonName,
-  toPersonRowAffiliation,
-} from '../manage-persons-labels';
+import { isContactWithheld, toPersonName, toPersonRowAffiliation } from '../manage-persons-labels';
 import type { PersonSummary } from '../schemas';
 
 const PERSON_PATH = '/manage/persons/$personId';
