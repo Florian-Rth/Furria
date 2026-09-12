@@ -1,5 +1,7 @@
+import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { ManagedGroupSummary } from '../schemas';
+import { GroupOverrideBody } from './GroupOverrideBody';
 import { ManagedGroupHeaderCard } from './ManagedGroupHeaderCard';
 
 interface GroupOverridePanelProps {
@@ -15,10 +17,13 @@ export const GroupOverridePanel: FC<GroupOverridePanelProps> = ({
   onArchive,
   onRestore,
 }) => (
-  <ManagedGroupHeaderCard
-    group={group}
-    onEdit={onEdit}
-    onArchive={onArchive}
-    onRestore={onRestore}
-  />
+  <Stack sx={{ gap: 3.5, minWidth: 0 }}>
+    <ManagedGroupHeaderCard
+      group={group}
+      onEdit={onEdit}
+      onArchive={onArchive}
+      onRestore={onRestore}
+    />
+    <GroupOverrideBody groupId={group.groupId} />
+  </Stack>
 );
