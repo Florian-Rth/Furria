@@ -129,6 +129,78 @@ public sealed class PersonService
                 .ToList()
         );
 
+    private static readonly Expression<Func<Person, PersonDetailsRow>> PersonDetailsProjection =
+        person => new PersonDetailsRow(
+            person.Id,
+            person.FirstName,
+            person.LastName,
+            new ContactRow(
+                person.ContactVisibleToMembers,
+                person.Phone,
+                person.Email,
+                person.Street,
+                person.Zip,
+                person.City
+            ),
+            person.BirthDate,
+            person
+                .Memberships.Select(membership => new MembershipRow(
+                    membership.Id,
+                    membership.StartedOn,
+                    membership.EndedOn,
+                    membership
+                        .Pauses.OrderByDescending(pause => pause.FirstSessionYear)
+                        .ThenByDescending(pause => pause.Id)
+                        .Select(pause => new MembershipPauseDetails
+                        {
+                            PauseId = pause.Id,
+                            FirstSessionYear = pause.FirstSessionYear,
+                            LastSessionYear = pause.LastSessionYear,
+                        })
+                        .ToList()
+                ))
+                .ToList(),
+            person
+                .FeeReductions.OrderByDescending(reduction => reduction.FirstSessionYear)
+                .ThenByDescending(reduction => reduction.Id)
+                .Select(reduction => new PersonFeeReduction
+                {
+                    FeeReductionId = reduction.Id,
+                    Basis = reduction.Basis,
+                    FirstSessionYear = reduction.FirstSessionYear,
+                    LastSessionYear = reduction.LastSessionYear,
+                })
+                .ToList(),
+            person
+                .GroupMemberships.Where(membership => membership.Group!.ArchivedOn == null)
+                .OrderBy(membership =>
+                    EF.Functions.Collate(membership.Group!.Name, GermanCollation)
+                )
+                .ThenByDescending(membership => membership.JoinedOn)
+                .ThenByDescending(membership => membership.Id)
+                .Select(membership => new PersonGroup
+                {
+                    GroupId = membership.GroupId,
+                    Name = membership.Group!.Name,
+                    JoinedOn = membership.JoinedOn,
+                    LeftOn = membership.LeftOn,
+                })
+                .ToList(),
+            person
+                .RoleHoldings.Where(holding => holding.Role!.ArchivedOn == null)
+                .OrderBy(holding => EF.Functions.Collate(holding.Role!.Name, GermanCollation))
+                .ThenByDescending(holding => holding.SinceOn)
+                .ThenByDescending(holding => holding.Id)
+                .Select(holding => new PersonRole
+                {
+                    RoleId = holding.RoleId,
+                    Name = holding.Role!.Name,
+                    SinceOn = holding.SinceOn,
+                    UntilOn = holding.UntilOn,
+                })
+                .ToList()
+        );
+
     private static readonly MemberContact WithheldContact = new()
     {
         Visibility = ContactVisibility.Hidden,
@@ -232,6 +304,25 @@ public sealed class PersonService
             .ToListAsync(ct);
 
         return [.. rows.Select(row => ToSummary(row, today))];
+    }
+
+    public async Task<Result<ManagedPersonDetails>> GetPersonAsync(
+        int personId,
+        CancellationToken ct
+    )
+    {
+        var today = ClubClock.Today(_timeProvider);
+
+        var row = await _dbContext
+            .People.AsNoTracking()
+            .Where(person => person.Id == personId)
+            .Select(PersonDetailsProjection)
+            .SingleOrDefaultAsync(ct);
+
+        if (row is null)
+            return Result<ManagedPersonDetails>.NotFound(UnknownPersonMessage);
+
+        return Result<ManagedPersonDetails>.Success(ToDetails(row, today));
     }
 
     public async Task<Result<MemberDetails>> GetMemberAsync(
@@ -419,6 +510,31 @@ public sealed class PersonService
         };
     }
 
+    private static ManagedPersonDetails ToDetails(PersonDetailsRow row, DateOnly today)
+    {
+        var chain = MembershipChainDetails.Of(ToPeriods(row.Memberships, today), today);
+
+        return new ManagedPersonDetails
+        {
+            PersonId = row.Id,
+            FirstName = row.FirstName,
+            LastName = row.LastName,
+            Email = row.Contact.Email,
+            Phone = row.Contact.Phone,
+            Street = row.Contact.Street,
+            Zip = row.Contact.Zip,
+            City = row.Contact.City,
+            BirthDate = row.BirthDate,
+            ContactVisibleToMembers = row.Contact.VisibleToMembers,
+            MembershipState = chain.State,
+            MemberSince = chain.MemberSince,
+            Memberships = chain.All,
+            FeeReductions = row.FeeReductions,
+            Groups = row.Groups,
+            Roles = row.Roles,
+        };
+    }
+
     private static MemberContact ToContact(ContactRow row, ContactVisibility visibility) =>
         visibility == ContactVisibility.Hidden
             ? WithheldContact
@@ -536,6 +652,18 @@ public sealed class PersonService
         IReadOnlyList<MembershipRow> Memberships,
         IReadOnlyList<TieRow> Groups,
         IReadOnlyList<TieRow> Roles
+    );
+
+    private sealed record PersonDetailsRow(
+        int Id,
+        string FirstName,
+        string LastName,
+        ContactRow Contact,
+        DateOnly? BirthDate,
+        IReadOnlyList<MembershipRow> Memberships,
+        IReadOnlyList<PersonFeeReduction> FeeReductions,
+        IReadOnlyList<PersonGroup> Groups,
+        IReadOnlyList<PersonRole> Roles
     );
 
     private sealed record MemberCardRow(
