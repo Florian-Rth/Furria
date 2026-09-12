@@ -84,8 +84,8 @@ export const toGroupStatusFilterOptions = (
 
   return [
     { id: ALL_GROUPS_FILTER_ID, label: 'Alle', count: groups.length },
-    { id: ACTIVE_GROUPS_FILTER_ID, label: 'Aktiv', count: groups.length - archived },
-    { id: ARCHIVED_GROUPS_FILTER_ID, label: 'Archiviert', count: archived },
+    { id: ACTIVE_GROUPS_FILTER_ID, label: 'im Verzeichnis', count: groups.length - archived },
+    { id: ARCHIVED_GROUPS_FILTER_ID, label: 'archiviert', count: archived },
   ];
 };
 

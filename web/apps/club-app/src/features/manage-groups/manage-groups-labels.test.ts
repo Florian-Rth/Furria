@@ -68,8 +68,14 @@ describe('filterManagedGroups', () => {
 });
 
 describe('toGroupStatusFilterOptions', () => {
-  it('counts all, active and archived groups', () => {
-    expect(toGroupStatusFilterOptions(ALL).map((option) => option.count)).toEqual([4, 3, 1]);
+  it('counts all, listed and archived groups under their own ids', () => {
+    expect(
+      toGroupStatusFilterOptions(ALL).map((option) => ({ id: option.id, count: option.count })),
+    ).toEqual([
+      { id: ALL_GROUPS_FILTER_ID, count: 4 },
+      { id: ACTIVE_GROUPS_FILTER_ID, count: 3 },
+      { id: ARCHIVED_GROUPS_FILTER_ID, count: 1 },
+    ]);
   });
 
   it('reports zero counts for an empty register', () => {
