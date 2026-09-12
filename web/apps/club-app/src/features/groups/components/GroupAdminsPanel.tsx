@@ -17,6 +17,7 @@ import type { RecruitingContactSegment } from '../groups-labels';
 import {
   GROUP_SECTION_TITLES,
   NO_ADMINS_LINE,
+  toContactPersonName,
   toRecruitingContactSegments,
 } from '../groups-labels';
 import type { GroupAdmin } from '../schemas';
@@ -76,7 +77,7 @@ export const GroupAdminsPanel: FC<GroupAdminsPanelProps> = ({ admins, isRecruiti
         to={MEMBER_PATH}
         params={{ personId: String(segment.personId) }}
       >
-        {segment.firstName}
+        {toContactPersonName(segment)}
       </KkInlineLink>
     );
   });
