@@ -4,6 +4,7 @@ import { useLocation } from '@tanstack/react-router';
 import type { FC, PropsWithChildren } from 'react';
 import { useState } from 'react';
 import { sessionAt } from '@/lib/club';
+import { formatSessionNumber } from '@/lib/membership-labels';
 import { resolveSectionTitle } from '../app-sections';
 import { PageHeaderContext } from '../page-header-context';
 import { AppNav } from './AppNav';
@@ -17,7 +18,7 @@ export const AppShell: FC<PropsWithChildren> = ({ children }) => {
   const [headerContainer, setHeaderContainer] = useState<HTMLElement | null>(null);
   const session = sessionAt(new Date());
   const sectionTitle = resolveSectionTitle(location.pathname);
-  const sessionLabel = `Session ${session.yearsLabel}`;
+  const sessionLabel = `Session ${session.yearsLabel} · ${formatSessionNumber(session.number)}`;
   const railKicker = `Club-App · ${sessionLabel}`;
 
   return (
@@ -38,7 +39,7 @@ export const AppShell: FC<PropsWithChildren> = ({ children }) => {
           <KkAppShell.Main>
             <KkAppShell.Stage>
               <KkAppShell.Masthead>
-                <KkAppShell.Wordmark placement="stage" />
+                <KkBrandLockup size="sm" />
                 <KkEyebrow tone="muted">{sessionLabel}</KkEyebrow>
               </KkAppShell.Masthead>
               <Stack ref={setHeaderContainer} sx={{ minWidth: 0 }} />
