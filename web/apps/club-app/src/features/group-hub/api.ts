@@ -9,6 +9,7 @@ import {
 } from '@tanstack/react-query';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { toIsoDay } from '@/lib/day';
+import { toWriteErrorMessage } from '@/lib/write-error';
 import {
   GROUP_INFO_SAVED_MESSAGE,
   toAdminAppointedMessage,
@@ -17,7 +18,6 @@ import {
   toMembershipEndedMessage,
   toSelfAdminEndedMessage,
 } from './group-hub-labels';
-import { toWriteErrorMessage } from './group-hub-messages';
 import {
   requestAddGroupAdmin,
   requestAddGroupMembership,

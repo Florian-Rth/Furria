@@ -2,9 +2,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
+import { toWriteErrorMessage } from '@/lib/write-error';
 import { useCreateGroupMutation, useUpdateGroupMutation } from '../api';
 import { toFormFailures } from '../form-failures';
-import { toWriteErrorMessage } from '../manage-groups-messages';
 import type { GroupForm, ManagedGroupSummary } from '../schemas';
 import { GroupFormSchema } from '../schemas';
 

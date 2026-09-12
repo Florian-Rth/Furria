@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import type { GroupDetailAdmin } from '@/features/group-detail';
 import { toIsoDay } from '@/lib/day';
+import { toWriteErrorMessage } from '@/lib/write-error';
 import { useEndGroupAdminMutation } from '../api';
 import { toAdminEndConsequence } from '../group-hub-labels';
-import { toWriteErrorMessage } from '../group-hub-messages';
 
 interface EndAdminFormInput {
   groupId: number;

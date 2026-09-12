@@ -1,7 +1,7 @@
 import type { UseMutationResult } from '@tanstack/react-query';
 import { useState } from 'react';
+import { toWriteErrorMessage } from '@/lib/write-error';
 import type { GroupMutationInput } from '../api';
-import { toWriteErrorMessage } from '../manage-groups-messages';
 import type { ManagedGroupSummary } from '../schemas';
 
 interface GroupConfirmInput {

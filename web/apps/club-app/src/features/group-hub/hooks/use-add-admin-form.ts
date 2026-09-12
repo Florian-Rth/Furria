@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import type { PersonRef } from '@/lib/api/schemas';
 import { toIsoDay } from '@/lib/day';
+import { toWriteErrorMessage } from '@/lib/write-error';
 import { useAddGroupAdminMutation } from '../api';
 import { toAdminFunction, toAppointConsequence } from '../group-hub-labels';
-import { toWriteErrorMessage } from '../group-hub-messages';
 
 interface AddAdminFormInput {
   groupId: number;

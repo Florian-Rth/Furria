@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import type { PersonRef } from '@/lib/api/schemas';
 import { toIsoDay } from '@/lib/day';
+import { toWriteErrorMessage } from '@/lib/write-error';
 import { useAddRoleHoldingMutation } from '../api';
 import { toHoldingConsequence, toPersonName } from '../manage-roles-labels';
-import { toWriteErrorMessage } from '../manage-roles-messages';
 
 interface AddHolderFormInput {
   roleId: number;

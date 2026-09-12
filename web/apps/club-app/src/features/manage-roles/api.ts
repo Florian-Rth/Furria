@@ -5,6 +5,7 @@ import { ME_QUERY_KEY } from '@/features/session';
 import type { PermissionKey } from '@/lib/api/schemas';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { toIsoDay } from '@/lib/day';
+import { toWriteErrorMessage } from '@/lib/write-error';
 import {
   toHolderAddedMessage,
   toHoldingEndedMessage,
@@ -15,7 +16,6 @@ import {
   toRoleSavedMessage,
   toRoleSeed,
 } from './manage-roles-labels';
-import { toWriteErrorMessage } from './manage-roles-messages';
 import {
   requestAddRoleHolding,
   requestArchiveRole,

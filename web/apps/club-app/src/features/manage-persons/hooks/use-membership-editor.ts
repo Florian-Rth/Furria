@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { toIsoDay } from '@/lib/day';
+import { toWriteErrorMessage } from '@/lib/write-error';
 import { useCreateMembershipMutation, useUpdateMembershipMutation } from '../api';
 import { toMembershipConsequence } from '../manage-persons-labels';
-import { toWriteErrorMessage } from '../manage-persons-messages';
 import type { PersonMembership } from '../schemas';
 
 interface MembershipEditorInput {

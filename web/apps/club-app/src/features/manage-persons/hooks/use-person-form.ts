@@ -5,8 +5,8 @@ import type { FieldErrors, UseFormReturn } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 import { RequestFailedError } from '@/lib/api/api-error';
 import { toCamelCaseField } from '@/lib/api/api-failures';
+import { toWriteErrorMessage } from '@/lib/write-error';
 import { useCreatePersonMutation, useUpdatePersonMutation } from '../api';
-import { toWriteErrorMessage } from '../manage-persons-messages';
 import type { CreatedPerson, PersonForm } from '../schemas';
 import { PersonFormSchema } from '../schemas';
 
