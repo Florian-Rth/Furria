@@ -1,5 +1,6 @@
 import { KkConfirmDialog, KkDateField } from '@furria/ui';
 import type { FC } from 'react';
+import type { GroupDetailAdmin } from '@/features/group-detail';
 import { useMeQuery } from '@/features/session';
 import {
   toAdminEndExplanation,
@@ -9,7 +10,6 @@ import {
   toEndQuickChoices,
 } from '../group-hub-labels';
 import { useEndAdminForm } from '../hooks/use-end-admin-form';
-import type { HubAdmin } from '../schemas';
 
 const EYEBROW = 'Gruppen-Admin beenden';
 const DATE_LABEL = 'Letzter Tag';
@@ -21,7 +21,7 @@ const CONFIRM_LABEL = 'Gruppen-Admin beenden';
 interface EndAdminDialogProps {
   groupId: number;
   groupName: string;
-  admin: HubAdmin | null;
+  admin: GroupDetailAdmin | null;
   runningAdmins: number;
   onClose: () => void;
 }

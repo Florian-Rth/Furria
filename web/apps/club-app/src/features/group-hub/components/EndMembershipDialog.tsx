@@ -1,5 +1,6 @@
 import { KkConfirmDialog, KkDateField } from '@furria/ui';
 import type { FC } from 'react';
+import type { GroupDetailMember } from '@/features/group-detail';
 import {
   toEndExplanation,
   toEndFacts,
@@ -7,7 +8,6 @@ import {
   toEndQuickChoices,
 } from '../group-hub-labels';
 import { useEndMembershipForm } from '../hooks/use-end-membership-form';
-import type { HubMember } from '../schemas';
 
 const EYEBROW = 'Zugehörigkeit beenden';
 const DATE_LABEL = 'Letzter Tag';
@@ -19,7 +19,7 @@ const CONFIRM_LABEL = 'Zugehörigkeit beenden';
 interface EndMembershipDialogProps {
   groupId: number;
   groupName: string;
-  member: HubMember | null;
+  member: GroupDetailMember | null;
   onClose: () => void;
 }
 

@@ -1,21 +1,21 @@
 import { useState } from 'react';
+import type { GroupDetailAdmin } from '@/features/group-detail';
 import { toIsoDay } from '@/lib/day';
 import { useEndGroupAdminMutation } from '../api';
 import { toAdminEndConsequence } from '../group-hub-labels';
 import { toWriteErrorMessage } from '../group-hub-messages';
-import type { HubAdmin } from '../schemas';
 
 interface EndAdminFormInput {
   groupId: number;
   groupName: string;
-  admin: HubAdmin | null;
+  admin: GroupDetailAdmin | null;
   isSelf: boolean;
   open: boolean;
   onEnded: () => void;
 }
 
 export interface EndAdminFormControl {
-  admin: HubAdmin | null;
+  admin: GroupDetailAdmin | null;
   endedOn: string | null;
   setEndedOn: (value: string | null) => void;
   consequence: string | null;
@@ -33,7 +33,7 @@ export const useEndAdminForm = ({
   onEnded,
 }: EndAdminFormInput): EndAdminFormControl => {
   const today = toIsoDay(new Date());
-  const [shown, setShown] = useState<HubAdmin | null>(admin);
+  const [shown, setShown] = useState<GroupDetailAdmin | null>(admin);
   const [endedOn, setEndedOn] = useState<string | null>(today);
   const [rejection, setRejection] = useState<string | null>(null);
   const [wasOpen, setWasOpen] = useState(open);

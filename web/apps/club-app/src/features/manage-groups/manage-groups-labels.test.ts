@@ -6,14 +6,13 @@ import {
   filterManagedGroups,
   findManagedGroup,
   toArchiveConsequence,
-  toGroupHistoryEntries,
   toGroupStatusFilterId,
   toGroupStatusFilterOptions,
   toManagedGroupChips,
   toManagedGroupsIntro,
   toRestoreConsequence,
 } from './manage-groups-labels';
-import type { ManagedAdmin, ManagedGroupSummary, ManagedMember } from './schemas';
+import type { ManagedGroupSummary } from './schemas';
 
 const admin = (personId: number): ManagedGroupSummary['admins'][number] => ({
   personId,
@@ -176,52 +175,5 @@ describe('findManagedGroup', () => {
 
   it('finds the selected group', () => {
     expect(findManagedGroup(ALL, 8)?.name).toBe('Musikzug');
-  });
-});
-
-const pastMember = (id: number, joinedOn: string, leftOn: string): ManagedMember => ({
-  groupMembershipId: id,
-  personId: id,
-  firstName: 'Paula',
-  lastName: 'Brendel',
-  joinedOn,
-  leftOn,
-  since: joinedOn,
-});
-
-const pastAdmin = (id: number, sinceOn: string, untilOn: string): ManagedAdmin => ({
-  groupAdminId: id,
-  personId: id,
-  firstName: 'Anna',
-  lastName: 'Ärgerlich',
-  function: null,
-  sinceOn,
-  untilOn,
-  since: sinceOn,
-});
-
-describe('toGroupHistoryEntries', () => {
-  it('mixes both kinds and orders them by the newest start', () => {
-    const entries = toGroupHistoryEntries(
-      [pastMember(1, '2012-01-01', '2016-02-10')],
-      [pastAdmin(2, '2020-03-01', '2022-02-28')],
-    );
-
-    expect(entries.map((entry) => entry.key)).toEqual(['admin-2', 'membership-1']);
-  });
-
-  it('renders a closed row as a span, never as a since line', () => {
-    const [entry] = toGroupHistoryEntries([pastMember(1, '2012-01-01', '2016-02-10')], []);
-
-    expect(entry?.span).toBe('01.01.2012 – 10.02.2016');
-  });
-
-  it('breaks a tie on the same start date by key', () => {
-    const entries = toGroupHistoryEntries(
-      [pastMember(4, '2020-01-01', '2021-01-01')],
-      [pastAdmin(3, '2020-01-01', '2021-01-01')],
-    );
-
-    expect(entries.map((entry) => entry.key)).toEqual(['admin-3', 'membership-4']);
   });
 });

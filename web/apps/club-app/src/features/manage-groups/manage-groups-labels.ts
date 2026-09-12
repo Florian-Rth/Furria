@@ -3,18 +3,15 @@ import {
   GROUP_SECTION_TITLES as SHARED_GROUP_SECTION_TITLES,
   toGroupSubline,
 } from '@/lib/group-sections';
-import { formatIsoDay, formatPeriod } from '@/lib/membership-labels';
+import { formatIsoDay } from '@/lib/membership-labels';
 import type { StateChip } from '@/lib/state-chips';
 import { ARCHIVED_CHIP, NO_ADMIN_CHIP, toRecruitingChip } from '@/lib/state-chips';
 import { normalizeForSearch } from '@/lib/text';
-import type { ManagedAdmin, ManagedGroupSummary, ManagedMember } from './schemas';
+import type { ManagedGroupSummary } from './schemas';
 
 export const MANAGE_GROUPS_SECTION_TITLES = {
   list: 'Alle Gruppen',
-  group: SHARED_GROUP_SECTION_TITLES.about,
   members: SHARED_GROUP_SECTION_TITLES.managedMembers,
-  admins: SHARED_GROUP_SECTION_TITLES.admins,
-  history: SHARED_GROUP_SECTION_TITLES.history,
 } as const;
 
 export interface ManagedGroupsEmptyCopy {
@@ -39,15 +36,6 @@ export const MANAGE_GROUPS_FOOTNOTE =
 
 export const toGroupCountLine = (group: ManagedGroupSummary): string =>
   toGroupSubline(group.memberCount, group.admins.length);
-
-export const ADD_MEMBER_LABEL = 'Mitglied aufnehmen';
-export const ADD_ADMIN_LABEL = 'Admin eintragen';
-
-export const toEndMembershipLabel = (personName: string): string =>
-  `Zugehörigkeit von ${personName} beenden`;
-
-export const toEndAdminLabel = (personName: string): string =>
-  `Gruppen-Admin ${personName} beenden`;
 
 export interface ManagedGroupChips {
   status: StateChip | null;
@@ -219,59 +207,6 @@ export const toGroupFacts = (group: ManagedGroupSummary, dayLabel: string): KkCo
   { label: 'Gruppen-Admins', value: String(group.admins.length) },
   { label: 'Ab', value: dayLabel },
 ];
-
-export type GroupHistoryKind = 'membership' | 'admin';
-
-export interface GroupHistoryEntry {
-  key: string;
-  title: string;
-  span: string;
-  kind: GroupHistoryKind;
-  meta?: string;
-}
-
-interface DatedGroupHistoryEntry extends GroupHistoryEntry {
-  startedOn: string;
-}
-
-const toPersonName = (person: { firstName: string; lastName: string }): string =>
-  `${person.firstName} ${person.lastName}`;
-
-const toPastMemberEntry = (member: ManagedMember): DatedGroupHistoryEntry => ({
-  key: `membership-${member.groupMembershipId}`,
-  title: toPersonName(member),
-  span: formatPeriod(member.joinedOn, member.leftOn),
-  kind: 'membership',
-  startedOn: member.joinedOn,
-});
-
-const toPastAdminEntry = (admin: ManagedAdmin): DatedGroupHistoryEntry => ({
-  key: `admin-${admin.groupAdminId}`,
-  title: toPersonName(admin),
-  span: formatPeriod(admin.sinceOn, admin.untilOn),
-  kind: 'admin',
-  meta: admin.function ?? undefined,
-  startedOn: admin.sinceOn,
-});
-
-const byNewestStart = (left: DatedGroupHistoryEntry, right: DatedGroupHistoryEntry): number => {
-  if (left.startedOn !== right.startedOn) {
-    return left.startedOn < right.startedOn ? 1 : -1;
-  }
-
-  return left.key.localeCompare(right.key);
-};
-
-export const toGroupHistoryEntries = (
-  pastMembers: readonly ManagedMember[],
-  pastAdmins: readonly ManagedAdmin[],
-): GroupHistoryEntry[] => {
-  const dated = [...pastMembers.map(toPastMemberEntry), ...pastAdmins.map(toPastAdminEntry)];
-
-  return dated
-    .sort(byNewestStart)
-    .map(({ key, title, span, kind, meta }) => ({ key, title, span, kind, meta }));
-};
 
 export const toGroupCreatedMessage = (name: string): string => `${name} ist angelegt.`;
 

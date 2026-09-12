@@ -1,9 +1,9 @@
 import { KkButton, KkIcon, KkPanelSection } from '@furria/ui';
 import type { FC } from 'react';
+import { GroupDescriptionPanel } from '@/features/group-detail';
 import { GROUP_SECTION_TITLES } from '@/lib/group-sections';
 import { useGroupInfoForm } from '../hooks/use-group-info-form';
 import { HubCarePanel } from './HubCarePanel';
-import { HubInfoPanel } from './HubInfoPanel';
 
 const EDIT_LABEL = 'Pflegen';
 
@@ -39,7 +39,7 @@ export const HubGroupSection: FC<HubGroupSectionProps> = ({
   const panel = form.isEditing ? (
     <HubCarePanel form={form} />
   ) : (
-    <HubInfoPanel groupName={name} description={description} />
+    <GroupDescriptionPanel groupName={name} description={description} />
   );
 
   return (

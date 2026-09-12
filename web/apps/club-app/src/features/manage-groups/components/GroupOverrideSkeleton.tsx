@@ -2,6 +2,7 @@ import { KkPanel, KkPanelSection, KkSkeletonRow } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { AppSkeletonRegion } from '@/features/session';
+import { GROUP_SECTION_TITLES } from '@/lib/group-sections';
 import { MANAGE_GROUPS_SECTION_TITLES } from '../manage-groups-labels';
 
 const MEMBER_ROWS = 5;
@@ -17,7 +18,7 @@ export const GroupOverrideSkeleton: FC = () => (
           <KkSkeletonRow count={MEMBER_ROWS} />
         </KkPanel>
       </KkPanelSection>
-      <KkPanelSection title={MANAGE_GROUPS_SECTION_TITLES.admins}>
+      <KkPanelSection title={GROUP_SECTION_TITLES.admins}>
         <KkPanel variant="list">
           <KkSkeletonRow count={ADMIN_ROWS} />
         </KkPanel>

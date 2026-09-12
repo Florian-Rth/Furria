@@ -1,19 +1,19 @@
 import { useState } from 'react';
+import type { GroupDetailMember } from '@/features/group-detail';
 import { toIsoDay } from '@/lib/day';
 import { useEndGroupMembershipMutation } from '../api';
 import { toEndConsequence } from '../group-hub-labels';
 import { toWriteErrorMessage } from '../group-hub-messages';
-import type { HubMember } from '../schemas';
 
 interface EndMembershipFormInput {
   groupId: number;
-  member: HubMember | null;
+  member: GroupDetailMember | null;
   open: boolean;
   onEnded: () => void;
 }
 
 export interface EndMembershipFormControl {
-  member: HubMember | null;
+  member: GroupDetailMember | null;
   endedOn: string | null;
   setEndedOn: (value: string | null) => void;
   consequence: string | null;
@@ -29,7 +29,7 @@ export const useEndMembershipForm = ({
   onEnded,
 }: EndMembershipFormInput): EndMembershipFormControl => {
   const today = toIsoDay(new Date());
-  const [shown, setShown] = useState<HubMember | null>(member);
+  const [shown, setShown] = useState<GroupDetailMember | null>(member);
   const [endedOn, setEndedOn] = useState<string | null>(today);
   const [rejection, setRejection] = useState<string | null>(null);
   const [wasOpen, setWasOpen] = useState(open);

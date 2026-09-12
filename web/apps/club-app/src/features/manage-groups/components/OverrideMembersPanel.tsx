@@ -1,16 +1,18 @@
 import { KkButton, KkEmptyState, KkIcon, KkPanel, KkPanelSection } from '@furria/ui';
 import type { FC } from 'react';
-import { ADD_MEMBER_LABEL, MANAGE_GROUPS_SECTION_TITLES } from '../manage-groups-labels';
-import type { ManagedMember } from '../schemas';
-import { OverrideMemberRow } from './OverrideMemberRow';
-
-const ADD_TEXT = 'Mitglied';
-const EMPTY_TITLE = 'NOCH NIEMAND DABEI';
-const EMPTY_DESCRIPTION =
-  'In dieser Gruppe ist gerade niemand eingetragen. Du kannst jede Person aus dem Register aufnehmen.';
+import type { GroupDetailMember } from '@/features/group-detail';
+import {
+  ADD_MEMBER_ACTION_LABEL,
+  ADD_MEMBER_LABEL,
+  GroupMemberRow,
+  NO_MEMBERS_TITLE,
+  toNoMembersLine,
+} from '@/features/group-detail';
+import { MANAGE_GROUPS_SECTION_TITLES } from '../manage-groups-labels';
 
 interface OverrideMembersPanelProps {
-  members: readonly ManagedMember[];
+  members: readonly GroupDetailMember[];
+  groupName: string;
   canManage: boolean;
   canOpenPerson: boolean;
   onAdd: () => void;
@@ -19,20 +21,27 @@ interface OverrideMembersPanelProps {
 
 export const OverrideMembersPanel: FC<OverrideMembersPanelProps> = ({
   members,
+  groupName,
   canManage,
   canOpenPerson,
   onAdd,
   onEnd,
 }) => {
-  const rows = members.map((member) => (
-    <OverrideMemberRow
-      key={member.groupMembershipId}
-      member={member}
-      canManage={canManage}
-      canOpenPerson={canOpenPerson}
-      onEnd={onEnd}
-    />
-  ));
+  const rows = members.map((member) => {
+    const end = (): void => {
+      onEnd(member.groupMembershipId);
+    };
+
+    return (
+      <GroupMemberRow
+        key={member.groupMembershipId}
+        member={member}
+        canManage={canManage}
+        canOpenPerson={canOpenPerson}
+        onEnd={end}
+      />
+    );
+  });
 
   const isEmpty = rows.length === 0;
   const variant = isEmpty ? 'block' : 'list';
@@ -42,15 +51,15 @@ export const OverrideMembersPanel: FC<OverrideMembersPanelProps> = ({
       size="small"
       variant="outlined"
       startIcon={<KkIcon name="add" size="small" />}
-      ariaLabel={ADD_MEMBER_LABEL}
+      ariaLabel={ADD_MEMBER_ACTION_LABEL}
       onClick={onAdd}
     >
-      {ADD_TEXT}
+      {ADD_MEMBER_LABEL}
     </KkButton>
   ) : null;
 
   const body = isEmpty ? (
-    <KkEmptyState title={EMPTY_TITLE} description={EMPTY_DESCRIPTION} />
+    <KkEmptyState title={NO_MEMBERS_TITLE} description={toNoMembersLine(groupName, canManage)} />
   ) : (
     rows
   );

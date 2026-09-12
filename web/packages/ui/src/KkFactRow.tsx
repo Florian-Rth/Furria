@@ -81,27 +81,26 @@ export const KkFactRow: FC<KkFactRowProps> = ({
   const titleColor = dimmed ? 'text.secondary' : 'text.primary';
   const barOpacity = dimmed ? kkTokens.opacity.dimmed : 1;
 
-  const compactActionsDisplay = actions === undefined ? 'none' : 'flex';
-
-  const actionsRow = (
-    <Stack
-      direction="row"
-      data-kk-fact-row-actions
-      sx={{
-        display: { xs: compactActionsDisplay, desktop: 'flex' },
-        alignItems: 'center',
-        alignSelf: 'center',
-        justifyContent: { xs: 'flex-start', desktop: 'flex-end' },
-        gap: 0.75,
-        flexShrink: 0,
-        width: { xs: '100%', desktop: ACTIONS_WIDTH },
-        minWidth: { desktop: ACTIONS_WIDTH },
-        pl: { xs: BAR_GUTTER, desktop: 0 },
-      }}
-    >
-      {actions}
-    </Stack>
-  );
+  const actionsRow =
+    actions === undefined ? null : (
+      <Stack
+        direction="row"
+        data-kk-fact-row-actions
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          alignSelf: 'center',
+          justifyContent: { xs: 'flex-start', desktop: 'flex-end' },
+          gap: 0.75,
+          flexShrink: 0,
+          width: { xs: '100%', desktop: ACTIONS_WIDTH },
+          minWidth: { desktop: ACTIONS_WIDTH },
+          pl: { xs: BAR_GUTTER, desktop: 0 },
+        }}
+      >
+        {actions}
+      </Stack>
+    );
 
   const spanUnit =
     spanLabel === undefined ? null : (
