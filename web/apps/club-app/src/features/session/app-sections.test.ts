@@ -1,6 +1,47 @@
 import { describe, expect, it } from 'vitest';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
-import { APP_SECTIONS, buildNavGroups, LATER_SECTIONS, resolveSectionTitle } from './app-sections';
+import type { AppSection } from './app-sections';
+import {
+  APP_SECTIONS,
+  buildNavGroups,
+  LATER_SECTIONS,
+  resolveSectionTitle,
+  toNavMatch,
+} from './app-sections';
+
+const section = (overrides: Partial<AppSection>): AppSection => ({
+  id: 'members',
+  label: 'Mitglieder',
+  icon: 'members',
+  to: '/members',
+  ...overrides,
+});
+
+describe('toNavMatch', () => {
+  it('matches a list section fuzzily, so its detail routes keep the rail marked', () => {
+    expect(toNavMatch(section({ to: '/manage/persons' }))).toEqual({
+      to: '/manage/persons',
+      params: undefined,
+      fuzzy: true,
+    });
+  });
+
+  it('matches one Gruppe of the rail exactly, so the others stay unmarked', () => {
+    expect(toNavMatch(section({ to: '/my-groups/$groupId', params: { groupId: '3' } }))).toEqual({
+      to: '/my-groups/$groupId',
+      params: { groupId: '3' },
+      fuzzy: false,
+    });
+  });
+
+  it('never matches the overview fuzzily, which would mark it on every route', () => {
+    expect(toNavMatch(section({ to: '/' }))?.fuzzy).toBe(false);
+  });
+
+  it('has nothing to match for a routeless section', () => {
+    expect(toNavMatch(section({ to: null }))).toBeNull();
+  });
+});
 
 describe('resolveSectionTitle', () => {
   it.each([

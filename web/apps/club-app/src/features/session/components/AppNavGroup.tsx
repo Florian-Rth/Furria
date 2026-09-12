@@ -3,6 +3,7 @@ import Stack from '@mui/material/Stack';
 import { Link, useMatchRoute } from '@tanstack/react-router';
 import type { FC } from 'react';
 import type { AppSectionGroup } from '../app-sections';
+import { toNavMatch } from '../app-sections';
 
 interface AppNavGroupProps {
   group: AppSectionGroup;
@@ -12,7 +13,9 @@ export const AppNavGroup: FC<AppNavGroupProps> = ({ group }) => {
   const matchRoute = useMatchRoute();
 
   const items = group.sections.map((section) => {
-    if (section.to === null) {
+    const navMatch = toNavMatch(section);
+
+    if (navMatch === null) {
       return (
         <KkAppShell.NavItem
           key={section.id}
@@ -30,9 +33,9 @@ export const AppNavGroup: FC<AppNavGroupProps> = ({ group }) => {
         label={section.label}
         icon={section.icon}
         component={Link}
-        to={section.to}
-        params={section.params}
-        active={matchRoute({ to: section.to, params: section.params }) !== false}
+        to={navMatch.to}
+        params={navMatch.params}
+        active={matchRoute(navMatch) !== false}
       />
     );
   });
