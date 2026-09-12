@@ -43,11 +43,7 @@ export const PersonMasterDataPanel: FC<PersonMasterDataPanelProps> = ({ person }
   );
 
   return (
-    <KkPanelSection
-      title={PERSON_SECTION_TITLES.masterData}
-      action={action}
-      description={toVisibilityPointer(person.firstName)}
-    >
+    <KkPanelSection title={PERSON_SECTION_TITLES.masterData} action={action}>
       <KkPanel>
         <KkFieldRow label={NAME_LABEL} value={`${person.firstName} ${person.lastName}`} />
         <KkFieldRow label={EMAIL_LABEL} value={person.email ?? MISSING_VALUE} />
@@ -57,7 +53,11 @@ export const PersonMasterDataPanel: FC<PersonMasterDataPanelProps> = ({ person }
           label={BIRTH_DATE_LABEL}
           value={person.birthDate === null ? MISSING_VALUE : formatIsoDay(person.birthDate)}
         />
-        <KkFieldRow label={VISIBILITY_LABEL} value={visibilityChip} />
+        <KkFieldRow
+          label={VISIBILITY_LABEL}
+          value={visibilityChip}
+          hint={toVisibilityPointer(person.firstName)}
+        />
       </KkPanel>
       <PersonFormDialog
         person={person}
