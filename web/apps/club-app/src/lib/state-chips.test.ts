@@ -49,13 +49,21 @@ describe('toPeriodChip', () => {
 });
 
 describe('toStateStats', () => {
-  it('counts every state that occurs, in the club order, accenting only aktiv', () => {
+  it('counts every state that occurs, in the club order, letting only aktiv lead', () => {
     expect(toStateStats({ active: 113, paused: 6, ended: 2, none: 11 })).toEqual([
-      { state: 'active', label: 'aktiv', count: 113, tone: 'accent' },
-      { state: 'paused', label: 'ruht', count: 6, tone: 'default' },
-      { state: 'ended', label: 'beendet', count: 2, tone: 'default' },
-      { state: 'none', label: 'kein Mitglied', count: 11, tone: 'default' },
+      { state: 'active', label: 'aktiv', count: 113, tone: 'default' },
+      { state: 'paused', label: 'ruht', count: 6, tone: 'muted' },
+      { state: 'ended', label: 'beendet', count: 2, tone: 'muted' },
+      { state: 'none', label: 'kein Mitglied', count: 11, tone: 'muted' },
     ]);
+  });
+
+  it('never paints a membership state in the accent, which is an action, not a state', () => {
+    const tones = toStateStats({ active: 113, paused: 6, ended: 2, none: 11 }).map(
+      (stat) => stat.tone,
+    );
+
+    expect(tones).not.toContain('accent');
   });
 
   it('drops the states nobody is in, so three values remain when three occur', () => {
