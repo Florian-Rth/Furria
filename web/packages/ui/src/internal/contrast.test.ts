@@ -50,10 +50,31 @@ describe('the red button label', () => {
   });
 
   it.each([
-    { scheme: 'light', fill: light.redDk, on: light.onRed },
-    { scheme: 'dark', fill: dark.redDk, on: dark.onRed },
+    { scheme: 'light', fill: light.redDk, on: light.onRedDk },
+    { scheme: 'dark', fill: dark.redDk, on: dark.onRedDk },
   ])('clears AA as a destructive fill in $scheme', ({ fill, on }) => {
     expect(contrastRatio(on, fill)).toBeGreaterThanOrEqual(AA_SMALL_TEXT);
+  });
+
+  it.each([
+    { scheme: 'light', fill: light.red, on: light.onRed },
+    { scheme: 'dark', fill: dark.red, on: dark.onRed },
+  ])('clears AA as the primary fill in $scheme', ({ fill, on }) => {
+    expect(contrastRatio(on, fill)).toBeGreaterThanOrEqual(AA_SMALL_TEXT);
+  });
+});
+
+describe('the red accent text — eyebrows, row meta and hovered row titles', () => {
+  it.each([
+    { ground: 'a cream panel', ink: light.redInk, panel: light.panel },
+    { ground: 'the page', ink: light.redInk, panel: light.bg },
+    { ground: 'a raised surface', ink: light.redInk, panel: light.panel2 },
+  ])('clears AA on $ground in light', ({ ink, panel }) => {
+    expect(contrastRatio(ink, panel)).toBeGreaterThanOrEqual(AA_SMALL_TEXT);
+  });
+
+  it('is why the light fill token cannot carry it on a cream panel', () => {
+    expect(contrastRatio(light.red, light.panel)).toBeLessThan(AA_SMALL_TEXT);
   });
 });
 

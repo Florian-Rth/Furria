@@ -1,11 +1,13 @@
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { ElementType, FC } from 'react';
+import { focusRing } from '../../../internal/focus-ring';
 import { KkChip } from '../../../KkChip';
 import type { KkIconName } from '../../../KkIcon';
 import { KkIcon } from '../../../KkIcon';
 import { kkTokens } from '../../../tokens';
 import { useAppShellCurtain } from '../logic/app-shell-curtain-context';
+import type { KkAppShellTextTransform } from './KkAppShellPageTitle';
 
 const LABEL_SIZE = { xs: '1.4375rem', desktop: '1.25rem' };
 const ROW_PADDING = { xs: 1, desktop: 0.75 };
@@ -16,6 +18,7 @@ interface KkAppShellNavItemProps {
   active?: boolean;
   disabled?: boolean;
   hint?: string;
+  transform?: KkAppShellTextTransform;
   component?: ElementType;
   to?: string;
   params?: Record<string, string>;
@@ -28,6 +31,7 @@ export const KkAppShellNavItem: FC<KkAppShellNavItemProps> = ({
   active = false,
   disabled = false,
   hint,
+  transform = 'uppercase',
   component = 'button',
   to,
   params,
@@ -74,7 +78,7 @@ export const KkAppShellNavItem: FC<KkAppShellNavItemProps> = ({
         aria-current={active ? 'page' : undefined}
         aria-disabled={disabled || undefined}
         direction="row"
-        sx={{
+        sx={(theme) => ({
           alignItems: 'center',
           gap: 1.5,
           width: '100%',
@@ -86,8 +90,9 @@ export const KkAppShellNavItem: FC<KkAppShellNavItemProps> = ({
           py: ROW_PADDING,
           px: 0,
           cursor: disabled ? 'default' : 'pointer',
+          ...focusRing(theme),
           ...hoverPaint,
-        }}
+        })}
       >
         <KkIcon name={icon} size="small" sx={{ color: iconColor, flexShrink: 0 }} />
         <Typography
@@ -98,7 +103,7 @@ export const KkAppShellNavItem: FC<KkAppShellNavItemProps> = ({
             letterSpacing: '0.03em',
             lineHeight: 1.15,
             color: labelColor,
-            textTransform: 'uppercase',
+            textTransform: transform,
             minWidth: 0,
             flexGrow: 1,
           }}

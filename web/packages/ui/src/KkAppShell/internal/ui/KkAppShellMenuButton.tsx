@@ -1,6 +1,7 @@
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
+import { focusRing } from '../../../internal/focus-ring';
 import { KK_DARK_SCHEME_ATTRIBUTE } from '../../../theme';
 import { kkTokens } from '../../../tokens';
 import { useAppShellCurtain } from '../logic/app-shell-curtain-context';
@@ -43,7 +44,7 @@ export const KkAppShellMenuButton: FC<KkAppShellMenuButtonProps> = ({ label }) =
         onClick={curtain.open}
         direction="row"
         data-kk-app-shell-menu-button
-        sx={{
+        sx={(theme) => ({
           pointerEvents: 'auto',
           alignItems: 'center',
           gap: 1.5,
@@ -58,7 +59,8 @@ export const KkAppShellMenuButton: FC<KkAppShellMenuButtonProps> = ({ label }) =
           pl: 2.125,
           pr: 2.5,
           py: 1.625,
-        }}
+          ...focusRing(theme),
+        })}
       >
         <KkAppShellMenuMark />
         <Typography

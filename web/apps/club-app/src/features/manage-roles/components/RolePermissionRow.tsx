@@ -28,6 +28,7 @@ export const RolePermissionRow: FC<RolePermissionRowProps> = ({
       checked={entry.enabled}
       onChange={change}
       stateLabel={SWITCH_STATE_LABELS}
+      stateChip={false}
       busy={busy}
       disabled={disabled}
     />

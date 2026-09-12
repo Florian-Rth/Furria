@@ -2,6 +2,7 @@ import Stack from '@mui/material/Stack';
 import type { CSSObject, Theme } from '@mui/material/styles';
 import ToggleButton from '@mui/material/ToggleButton';
 import type { FC, MouseEvent } from 'react';
+import { useEffect, useRef } from 'react';
 import { accentWash } from './internal/accent-wash';
 import { focusRing } from './internal/focus-ring';
 import type { KkSx } from './kk-sx';
@@ -11,6 +12,7 @@ import { kkTokens } from './tokens';
 
 const CELL_SIZE = 25;
 const CELL_FONT_SIZE = '0.8125rem';
+const SELECTED_CELL = '[data-kk-letter-index-cell][aria-pressed="true"]';
 
 const cellStyles = (theme: Theme): CSSObject => ({
   width: CELL_SIZE,
@@ -41,11 +43,12 @@ const cellStyles = (theme: Theme): CSSObject => ({
 
 type KkLetterIndexVariant = 'grid' | 'strip';
 
-const variantLayout: Record<KkLetterIndexVariant, CSSObject> = {
+const variantLayout: Record<KkLetterIndexVariant, KkSx> = {
   grid: { flexWrap: 'wrap' },
   strip: {
-    flexWrap: 'nowrap',
-    overflowX: 'auto',
+    flexWrap: { xs: 'wrap', sm: 'nowrap' },
+    gap: { xs: 0.25, sm: 0.5 },
+    overflowX: { xs: 'visible', sm: 'auto' },
     scrollbarWidth: 'none',
     '&::-webkit-scrollbar': { display: 'none' },
   },
@@ -69,6 +72,13 @@ export const KkLetterIndex: FC<KkLetterIndexProps> = ({
   sx,
 }) => {
   const cells = toLetterIndexCells(letters, current);
+  const stripRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const selected = stripRef.current?.querySelector(SELECTED_CELL) ?? null;
+
+    selected?.scrollIntoView({ block: 'nearest', inline: 'center' });
+  }, [current]);
 
   const selectLetter = (_event: MouseEvent<HTMLElement>, letter: string): void => {
     onSelect(letter);
@@ -76,6 +86,7 @@ export const KkLetterIndex: FC<KkLetterIndexProps> = ({
 
   return (
     <Stack
+      ref={stripRef}
       direction="row"
       role="group"
       aria-label={label}
@@ -89,6 +100,7 @@ export const KkLetterIndex: FC<KkLetterIndexProps> = ({
           selected={cell.selected}
           disabled={cell.disabled}
           onChange={selectLetter}
+          data-kk-letter-index-cell
           sx={cellStyles}
         >
           {cell.letter}

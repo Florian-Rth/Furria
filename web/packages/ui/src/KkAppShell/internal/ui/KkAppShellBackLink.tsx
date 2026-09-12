@@ -34,11 +34,21 @@ export const KkAppShellBackLink: FC<KkAppShellBackLinkProps> = ({
       data-kk-app-shell-back-link
       sx={[
         (theme) => ({
+          position: 'relative',
           alignSelf: 'flex-start',
           alignItems: 'center',
           gap: 0.5,
           m: 0,
           p: 0,
+          '&::after': {
+            content: '""',
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            top: '50%',
+            height: kkTokens.tapTarget,
+            transform: 'translateY(-50%)',
+          },
           appearance: 'none',
           border: 'none',
           backgroundColor: 'transparent',

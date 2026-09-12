@@ -55,4 +55,23 @@ describe('buildAvatarStack', () => {
   it('renders nothing for an empty group', () => {
     expect(buildAvatarStack([], 4)).toEqual({ circles: [], overflowLabel: null });
   });
+
+  it('counts the overflow from the group size when a preview is shorter than the group', () => {
+    const plan = buildAvatarStack(['AB', 'CD', 'EF', 'GH', 'IJ'], 3, 16);
+
+    expect(plan.circles.map((circle) => circle.initials)).toEqual(['A', 'C', 'E']);
+    expect(plan.overflowLabel).toBe('+13');
+  });
+
+  it('keeps the cap when the preview is longer than the cap and a size is known', () => {
+    expect(buildAvatarStack(['AB', 'CD', 'EF', 'GH', 'IJ'], 5, 5).overflowLabel).toBeNull();
+  });
+
+  it('shows no bubble when the known size is already on screen', () => {
+    expect(buildAvatarStack(['AB', 'CD'], 3, 2).overflowLabel).toBeNull();
+  });
+
+  it('never shows a negative bubble when the known size lags the preview', () => {
+    expect(buildAvatarStack(['AB', 'CD', 'EF'], 5, 1).overflowLabel).toBeNull();
+  });
 });

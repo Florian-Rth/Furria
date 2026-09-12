@@ -4,6 +4,7 @@ import Typography from '@mui/material/Typography';
 import type { ElementType, FC, ReactNode } from 'react';
 import { focusRing } from './internal/focus-ring';
 import { raisedSurface } from './internal/raised-surface';
+import { redInk } from './internal/red-ink';
 import { rowDividerTop } from './internal/row-divider';
 import { KkEyebrow } from './KkEyebrow';
 import { KkIcon } from './KkIcon';
@@ -162,7 +163,7 @@ export const KkSummaryRow: FC<KkSummaryRowProps> = ({
           ...focusRing(theme),
           '@media (hover: hover)': {
             '&:hover': {
-              '& [data-kk-summary-row-title]': { color: 'primary.main' },
+              '& [data-kk-summary-row-title]': redInk(theme),
               '& [data-kk-summary-row-chevron]': { color: 'text.primary' },
             },
           },

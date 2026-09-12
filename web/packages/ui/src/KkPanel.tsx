@@ -4,6 +4,7 @@ import type { ElementType, FC, PropsWithChildren } from 'react';
 import { focusRing } from './internal/focus-ring';
 import { inkWash } from './internal/ink-wash';
 import { raisedSurfaceScheme } from './internal/raised-surface';
+import { redInk } from './internal/red-ink';
 import type { KkScheme } from './internal/scheme-paint';
 import { applyScheme, schemeEdge } from './internal/scheme-paint';
 import type { KkSx } from './kk-sx';
@@ -55,7 +56,7 @@ const interactivePaint = (theme: Theme): CSSObject => ({
   '@media (hover: hover)': {
     '&:hover': {
       borderColor: 'primary.main',
-      '& [data-kk-heading]': { color: 'primary.main' },
+      '& [data-kk-heading]': redInk(theme),
     },
   },
 });

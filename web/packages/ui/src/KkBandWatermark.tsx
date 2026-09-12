@@ -40,14 +40,15 @@ export const KkBandWatermark: FC<KkBandWatermarkProps> = ({
     aria-hidden
     sx={[
       placements[side],
-      {
+      (theme) => ({
         position: 'absolute',
         top: '50%',
         color: toneColors[tone],
         opacity: kkTokens.opacity.watermark,
         pointerEvents: 'none',
         zIndex: 0,
-      },
+        ...theme.applyStyles('dark', { opacity: kkTokens.opacity.watermarkDark }),
+      }),
       ...(Array.isArray(sx) ? sx : [sx]),
     ]}
   >

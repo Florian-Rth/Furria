@@ -16,15 +16,16 @@ type KkFactRowTone = 'neutral' | 'gold' | 'accent';
 const BAR_WIDTH = 3;
 const BAR_GUTTER = 1.875;
 const RAIL_MIX = '55%';
+const ACTIONS_WIDTH = 168;
 
 const softer = (color: string): string => `color-mix(in srgb, ${color} ${RAIL_MIX}, transparent)`;
 
 const toneBar: Record<KkFactRowTone, (theme: Theme) => CSSObject> = {
   neutral: (theme) => inkWashSurface(theme, '22%', '30%'),
   gold: (theme) =>
-    applyScheme(theme, schemeFill(kkTokens.color.light.goldInk, kkTokens.color.dark.goldInk)),
+    applyScheme(theme, schemeFill(kkTokens.color.light.gold, kkTokens.color.dark.gold)),
   accent: (theme) =>
-    applyScheme(theme, schemeFill(kkTokens.color.light.redInk, kkTokens.color.dark.redInk)),
+    applyScheme(theme, schemeFill(kkTokens.color.light.red, kkTokens.color.dark.red)),
 };
 
 const toneRail: Record<KkFactRowTone, (theme: Theme) => CSSObject> = {
@@ -32,12 +33,12 @@ const toneRail: Record<KkFactRowTone, (theme: Theme) => CSSObject> = {
   gold: (theme) =>
     applyScheme(
       theme,
-      schemeFill(softer(kkTokens.color.light.goldInk), softer(kkTokens.color.dark.goldInk)),
+      schemeFill(softer(kkTokens.color.light.gold), softer(kkTokens.color.dark.gold)),
     ),
   accent: (theme) =>
     applyScheme(
       theme,
-      schemeFill(softer(kkTokens.color.light.redInk), softer(kkTokens.color.dark.redInk)),
+      schemeFill(softer(kkTokens.color.light.red), softer(kkTokens.color.dark.red)),
     ),
 };
 
@@ -76,23 +77,27 @@ export const KkFactRow: FC<KkFactRowProps> = ({
   const titleColor = dimmed ? 'text.secondary' : 'text.primary';
   const barOpacity = dimmed ? kkTokens.opacity.dimmed : 1;
 
-  const actionsRow =
-    actions === undefined ? null : (
-      <Stack
-        direction="row"
-        data-kk-fact-row-actions
-        sx={{
-          alignItems: 'center',
-          alignSelf: 'center',
-          gap: 0.75,
-          flexShrink: 0,
-          width: { xs: '100%', desktop: 'auto' },
-          pl: { xs: BAR_GUTTER, desktop: 0 },
-        }}
-      >
-        {actions}
-      </Stack>
-    );
+  const compactActionsDisplay = actions === undefined ? 'none' : 'flex';
+
+  const actionsRow = (
+    <Stack
+      direction="row"
+      data-kk-fact-row-actions
+      sx={{
+        display: { xs: compactActionsDisplay, desktop: 'flex' },
+        alignItems: 'center',
+        alignSelf: 'center',
+        justifyContent: 'flex-end',
+        gap: 0.75,
+        flexShrink: 0,
+        width: { xs: '100%', desktop: ACTIONS_WIDTH },
+        minWidth: { desktop: ACTIONS_WIDTH },
+        pl: { xs: BAR_GUTTER, desktop: 0 },
+      }}
+    >
+      {actions}
+    </Stack>
+  );
 
   const spanUnit =
     spanLabel === undefined ? null : (

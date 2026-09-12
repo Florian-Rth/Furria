@@ -2,7 +2,7 @@ import Button from '@mui/material/Button';
 import type { CSSObject, Theme } from '@mui/material/styles';
 import type { ElementType, FC, PropsWithChildren, ReactNode } from 'react';
 import { focusRing } from './internal/focus-ring';
-import { applyScheme, schemeInk } from './internal/scheme-paint';
+import { redInk } from './internal/red-ink';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
@@ -16,9 +16,10 @@ const SMALL_FONT_SIZE = '0.75rem';
 const dangerBorderColor = (theme: Theme): string =>
   `color-mix(in srgb, ${(theme.vars ?? theme).palette.error.main} ${DANGER_BORDER_MIX}, transparent)`;
 
-const redInkScheme = schemeInk(kkTokens.color.light.redInk, kkTokens.color.dark.redInk);
-
-const redLabel = (theme: Theme): CSSObject => applyScheme(theme, redInkScheme);
+const restingDangerLabel = (theme: Theme): CSSObject => ({
+  color: 'text.secondary',
+  '&:hover, &:focus-visible': redInk(theme),
+});
 
 const hitArea: CSSObject = {
   position: 'relative',
@@ -50,16 +51,16 @@ const toneVariantStyles: Record<
       borderColor: 'divider',
       borderWidth: kkTokens.line.hair,
     }),
-    text: (theme) => redLabel(theme),
+    text: (theme) => redInk(theme),
   },
   danger: {
     contained: () => ({ color: 'error.contrastText' }),
     outlined: (theme) => ({
-      ...redLabel(theme),
+      ...redInk(theme),
       borderColor: dangerBorderColor(theme),
       borderWidth: kkTokens.line.hair,
     }),
-    text: (theme) => redLabel(theme),
+    text: (theme) => restingDangerLabel(theme),
   },
 };
 
@@ -82,6 +83,7 @@ interface KkButtonProps extends PropsWithChildren {
   to?: string;
   params?: Record<string, string>;
   href?: string;
+  ariaLabel?: string;
   sx?: KkSx;
 }
 
@@ -99,6 +101,7 @@ export const KkButton: FC<KkButtonProps> = ({
   to,
   params,
   href,
+  ariaLabel,
   sx,
   children,
 }) => {
@@ -122,6 +125,7 @@ export const KkButton: FC<KkButtonProps> = ({
       {...componentProps}
       {...routeProps}
       href={href}
+      aria-label={ariaLabel}
       data-kk-button
       sx={[
         (theme) => ({
