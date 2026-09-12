@@ -21,6 +21,11 @@ const restingDangerLabel = (theme: Theme): CSSObject => ({
   '&:hover, &:focus-visible': redInk(theme),
 });
 
+const restingQuietLabel: CSSObject = {
+  color: 'text.secondary',
+  '&:hover, &:focus-visible': { color: 'text.primary' },
+};
+
 const hitArea: CSSObject = {
   position: 'relative',
   '&::after': {
@@ -51,7 +56,7 @@ const toneVariantStyles: Record<
       borderColor: 'divider',
       borderWidth: kkTokens.line.hair,
     }),
-    text: (theme) => redInk(theme),
+    text: () => restingQuietLabel,
   },
   danger: {
     contained: () => ({ color: 'error.contrastText' }),
