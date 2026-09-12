@@ -15,12 +15,21 @@ const ADDRESS_SEPARATOR = ', ';
 
 const RUNNING_SINCE_LABEL = 'Mitglied seit';
 const STARTING_SINCE_LABEL = 'Mitglied ab';
+const ENDED_SINCE_LABEL = 'Eingetreten';
 
 export const toMembershipStateLabel = (state: MembershipState): string =>
   MEMBERSHIP_STATE_LABELS[state];
 
-export const toMemberSinceLabel = (state: MembershipState): string =>
-  state === 'active' || state === 'paused' ? RUNNING_SINCE_LABEL : STARTING_SINCE_LABEL;
+export const toMemberSinceLabel = (state: MembershipState): string => {
+  if (state === 'none') {
+    return STARTING_SINCE_LABEL;
+  }
+  if (state === 'ended') {
+    return ENDED_SINCE_LABEL;
+  }
+
+  return RUNNING_SINCE_LABEL;
+};
 
 const toCalendarDay = (isoDay: string): Date | null => {
   if (!ISO_DAY_PATTERN.test(isoDay)) {

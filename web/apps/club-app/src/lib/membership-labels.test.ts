@@ -63,7 +63,7 @@ describe('toMemberSinceLabel', () => {
   it.each<[MembershipState, string]>([
     ['active', 'Mitglied seit'],
     ['paused', 'Mitglied seit'],
-    ['ended', 'Mitglied ab'],
+    ['ended', 'Eingetreten'],
     ['none', 'Mitglied ab'],
   ])('labels a %s chain with %s', (state, expected) => {
     expect(toMemberSinceLabel(state)).toBe(expected);

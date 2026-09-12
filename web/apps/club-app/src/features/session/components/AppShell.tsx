@@ -1,4 +1,4 @@
-import { KkAppShell, KkEyebrow, KkToastProvider } from '@furria/ui';
+import { KkAppShell, KkBrandLockup, KkEyebrow, KkToastProvider } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import { useLocation } from '@tanstack/react-router';
 import type { FC, PropsWithChildren } from 'react';
@@ -26,8 +26,7 @@ export const AppShell: FC<PropsWithChildren> = ({ children }) => {
         <KkAppShell>
           <KkAppShell.Rail>
             <KkAppShell.RailHead>
-              <KkAppShell.Wordmark placement="rail" />
-              <KkEyebrow tone="muted">{railKicker}</KkEyebrow>
+              <KkBrandLockup size="sm" eyebrow={railKicker} />
             </KkAppShell.RailHead>
             <AppNav />
             <KkAppShell.UserRow>
