@@ -10,21 +10,32 @@ export interface LetterPosition {
   markLetter: (letter: string) => void;
 }
 
+export interface LetterClearance {
+  dividerTop: number;
+  dividerHeight: number;
+  barClearance: number;
+}
+
 /**
- * A divider sticks at the toolbar's measured height, which `KkLetterDivider` resolves
- * from the same custom property the toolbar publishes. Reading the resolved offset back
- * off the element keeps the index in step with the list at every breakpoint — a constant
- * here is only ever right at the one width it was measured at.
- *
  * The letter the reader is in is the one whose *rows* sit under the toolbar, so a divider
  * counts as passed one divider-height early: at that point the section above it has been
  * pushed out completely and this one is taking the clearance line.
  */
-const hasPassedTheToolbar = (element: HTMLElement): boolean => {
-  const clearance = Number.parseFloat(window.getComputedStyle(element).top) || 0;
+export const hasPassedTheToolbar = ({
+  dividerTop,
+  dividerHeight,
+  barClearance,
+}: LetterClearance): boolean => dividerTop <= barClearance + dividerHeight;
 
-  return element.getBoundingClientRect().top <= clearance + element.offsetHeight;
-};
+/**
+ * `KkLetterDivider` does not stick — it resolves the toolbar's measured height into its own
+ * `scroll-margin-top`, from the same custom property the toolbar publishes. That resolved
+ * offset is the clearance: reading it back off the element keeps the index in step with the
+ * list at every breakpoint and after every toolbar resize, where a constant would only ever
+ * be right at the one width it was measured at.
+ */
+const toBarClearance = (element: HTMLElement): number =>
+  Number.parseFloat(window.getComputedStyle(element).scrollMarginTop) || 0;
 
 const toCurrentLetter = (anchors: readonly LetterAnchor[]): string | undefined => {
   let current: string | undefined;
@@ -32,7 +43,14 @@ const toCurrentLetter = (anchors: readonly LetterAnchor[]): string | undefined =
   for (const anchor of anchors) {
     const element = document.getElementById(anchor.anchorId);
 
-    if (element !== null && hasPassedTheToolbar(element)) {
+    if (
+      element !== null &&
+      hasPassedTheToolbar({
+        dividerTop: element.getBoundingClientRect().top,
+        dividerHeight: element.offsetHeight,
+        barClearance: toBarClearance(element),
+      })
+    ) {
       current = anchor.letter;
     }
   }
