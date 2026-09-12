@@ -1,9 +1,15 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useMeQuery, usePermissions } from '@/features/session';
 import type { PermissionKey } from '@/lib/api/schemas';
 import { ROLES_QUERY_KEY, roleQueryKey, useSetRolePermissionsMutation } from '../api';
 import type { RolePermissionEntry } from '../manage-roles-labels';
-import { toNextPermissionKeys, toPermissionEntries, toRoleSeed } from '../manage-roles-labels';
+import {
+  isSelfLockout,
+  toNextPermissionKeys,
+  toPermissionEntries,
+  toRoleSeed,
+} from '../manage-roles-labels';
 import type { RoleDetails, RolesResponse } from '../schemas';
 
 const dropOnce = (keys: readonly PermissionKey[], key: PermissionKey): PermissionKey[] => {
@@ -16,6 +22,9 @@ export interface RolePermissionsControl {
   entries: readonly RolePermissionEntry[];
   toggle: (key: PermissionKey, enabled: boolean) => void;
   isBusy: (key: PermissionKey) => boolean;
+  selfLockout: RolePermissionEntry | null;
+  confirmSelfLockout: () => void;
+  cancelSelfLockout: () => void;
 }
 
 export const useRolePermissions = (
@@ -23,8 +32,17 @@ export const useRolePermissions = (
   catalogue: readonly string[],
 ): RolePermissionsControl => {
   const queryClient = useQueryClient();
+  const me = useMeQuery();
+  const permissions = usePermissions();
   const [busyKeys, setBusyKeys] = useState<readonly PermissionKey[]>([]);
+  const [lockoutKey, setLockoutKey] = useState<PermissionKey | null>(null);
   const mutation = useSetRolePermissionsMutation(role.roleId);
+
+  const entries = toPermissionEntries(catalogue, role.permissionKeys);
+  const viewerPersonId = me.data?.person.id;
+  const viewerIsHolder =
+    viewerPersonId !== undefined &&
+    role.holders.some((holder) => holder.personId === viewerPersonId);
 
   const readCurrentKeys = (): readonly string[] => {
     const cached = queryClient.getQueryData<RoleDetails>(roleQueryKey(role.roleId));
@@ -38,7 +56,7 @@ export const useRolePermissions = (
     return seed?.permissionKeys ?? role.permissionKeys;
   };
 
-  const toggle = (key: PermissionKey, enabled: boolean): void => {
+  const apply = (key: PermissionKey, enabled: boolean): void => {
     const permissionKeys = toNextPermissionKeys(readCurrentKeys(), key, enabled);
 
     setBusyKeys((keys) => [...keys, key]);
@@ -52,9 +70,34 @@ export const useRolePermissions = (
     );
   };
 
+  const toggle = (key: PermissionKey, enabled: boolean): void => {
+    if (isSelfLockout({ enabled, viewerIsHolder, viewerHasKey: permissions.has(key) })) {
+      setLockoutKey(key);
+      return;
+    }
+
+    apply(key, enabled);
+  };
+
+  const cancelSelfLockout = (): void => {
+    setLockoutKey(null);
+  };
+
+  const confirmSelfLockout = (): void => {
+    if (lockoutKey === null) {
+      return;
+    }
+
+    apply(lockoutKey, false);
+    setLockoutKey(null);
+  };
+
   return {
-    entries: toPermissionEntries(catalogue, role.permissionKeys),
+    entries,
     toggle,
     isBusy: (key) => busyKeys.includes(key),
+    selfLockout: entries.find((entry) => entry.key === lockoutKey) ?? null,
+    confirmSelfLockout,
+    cancelSelfLockout,
   };
 };
