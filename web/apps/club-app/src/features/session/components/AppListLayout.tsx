@@ -8,8 +8,8 @@ const DEFAULT_ASIDE_SIZE = 4;
 const DESKTOP_ONLY_ACTION = { xs: 'none', desktop: 'flex' };
 const DESKTOP_ONLY_COLUMN = { xs: 'none', desktop: 'block' };
 const DETAIL_SCROLL_MARGIN = 2;
-const LIST_FIRST = { xs: 1, desktop: 2 };
-const ASIDE_FIRST = { xs: 2, desktop: 1 };
+const LIST_VISUAL_ORDER = 1;
+const ASIDE_VISUAL_ORDER = 2;
 
 interface AppListLayoutProps {
   lead: string;
@@ -45,8 +45,8 @@ export const AppListLayout: FC<AppListLayoutProps> = ({
   const hasAside = aside !== undefined;
   const mainSize = hasAside ? FULL_WIDTH - asideSize : FULL_WIDTH;
   const asideDisplay = asideDesktopOnly ? DESKTOP_ONLY_COLUMN : undefined;
-  const mainOrder = asideLeadsFocus ? LIST_FIRST : undefined;
-  const asideOrder = asideLeadsFocus ? ASIDE_FIRST : undefined;
+  const mainOrder = asideLeadsFocus ? LIST_VISUAL_ORDER : undefined;
+  const asideOrder = asideLeadsFocus ? ASIDE_VISUAL_ORDER : undefined;
 
   const action =
     createAction === undefined ? undefined : (

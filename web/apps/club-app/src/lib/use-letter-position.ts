@@ -10,39 +10,50 @@ export interface LetterPosition {
   markLetter: (letter: string) => void;
 }
 
-const OBSERVER_MARGIN = '-170px 0px -55% 0px';
+const PASSED_ABOVE = 220;
+
+const toCurrentLetter = (anchors: readonly LetterAnchor[]): string | undefined => {
+  let current: string | undefined;
+
+  for (const anchor of anchors) {
+    const element = document.getElementById(anchor.anchorId);
+
+    if (element !== null && element.getBoundingClientRect().top <= PASSED_ABOVE) {
+      current = anchor.letter;
+    }
+  }
+
+  return current ?? anchors[0]?.letter;
+};
 
 export const useLetterPosition = (anchors: readonly LetterAnchor[]): LetterPosition => {
   const [letter, setLetter] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    const intersecting = new Map<string, boolean>();
+    let frame = 0;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          intersecting.set(entry.target.id, entry.isIntersecting);
-        }
+    const measure = (): void => {
+      frame = 0;
+      setLetter(toCurrentLetter(anchors));
+    };
 
-        const active = anchors.find((anchor) => intersecting.get(anchor.anchorId) === true);
-
-        if (active !== undefined) {
-          setLetter(active.letter);
-        }
-      },
-      { rootMargin: OBSERVER_MARGIN },
-    );
-
-    for (const anchor of anchors) {
-      const element = document.getElementById(anchor.anchorId);
-
-      if (element !== null) {
-        observer.observe(element);
+    const schedule = (): void => {
+      if (frame === 0) {
+        frame = window.requestAnimationFrame(measure);
       }
-    }
+    };
+
+    measure();
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
 
     return () => {
-      observer.disconnect();
+      window.removeEventListener('scroll', schedule);
+      window.removeEventListener('resize', schedule);
+
+      if (frame !== 0) {
+        window.cancelAnimationFrame(frame);
+      }
     };
   }, [anchors]);
 
