@@ -1,6 +1,5 @@
 import type { GroupRef, MembershipState, RoleRef } from '@/lib/api/schemas';
 import { toInitials } from '@/lib/initials';
-import { formatIsoDay, toMemberSinceLabel } from '@/lib/membership-labels';
 import type { StateChip } from '@/lib/state-chips';
 import { toMembershipStateChip } from '@/lib/state-chips';
 import type { MemberDetails } from './schemas';
@@ -77,7 +76,6 @@ export interface MemberHeadline {
   title: string;
   initials: string;
   state: StateChip | null;
-  line: string | null;
 }
 
 export const MEMBER_SECTION_TITLES = {
@@ -93,27 +91,15 @@ const PERSON_ID_PATTERN = /^[1-9]\d*$/;
 export const toPersonId = (raw: string): number | null =>
   PERSON_ID_PATTERN.test(raw) ? Number(raw) : null;
 
-export const toMembershipLine = (
-  state: MembershipState,
-  memberSince: string | null,
-): string | null => {
-  if (memberSince === null) {
-    return null;
-  }
-
-  return `${toMemberSinceLabel(state)} ${formatIsoDay(memberSince)}`;
-};
-
 export const toMemberHeadline = (member: MemberDetails | undefined): MemberHeadline => {
   if (member === undefined) {
-    return { title: MEMBER_TITLE_FALLBACK, initials: '', state: null, line: null };
+    return { title: MEMBER_TITLE_FALLBACK, initials: '', state: null };
   }
 
   return {
     title: `${member.firstName} ${member.lastName}`,
     initials: toInitials(member.firstName, member.lastName),
     state: toMembershipStateChip(member.membershipState),
-    line: toMembershipLine(member.membershipState, member.memberSince),
   };
 };
 
