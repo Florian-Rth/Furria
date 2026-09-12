@@ -11,13 +11,12 @@ namespace Furria.Infrastructure.Groups;
 
 public sealed class GroupService
 {
-    private const string GermanCollation = "de-DE-x-icu";
     private const int MemberPreviewSize = 5;
     private const string UnknownGroupMessage = "Diese Gruppe gibt es nicht mehr im Verzeichnis.";
     private const string ArchivedGroupMessage =
         "Eine archivierte Gruppe kann nicht bearbeitet werden.";
     private const string UnknownPersonMessage = "Diese Person steht nicht im Register.";
-    private const string DuplicateNameMessage = "Eine Gruppe mit diesem Namen gibt es schon.";
+    private const string DuplicateNameMessage = WriteConflictMessages.DuplicateGruppenName;
     private const string AlreadyArchivedMessage = "Diese Gruppe ist bereits archiviert.";
     private const string NotArchivedMessage = "Diese Gruppe ist nicht archiviert.";
     private const string UnknownZugehoerigkeitMessage =
@@ -25,13 +24,12 @@ public sealed class GroupService
     private const string EndedZugehoerigkeitMessage = "Diese Zugehörigkeit ist bereits beendet.";
     private const string EndBeforeStartMessage =
         "Eine Zugehörigkeit kann nicht vor ihrem Beginn enden.";
-    private const string OpenZugehoerigkeitMessage = "Diese Person gehört der Gruppe bereits an.";
+    private const string OpenZugehoerigkeitMessage = WriteConflictMessages.OpenZugehoerigkeit;
     private const string OverlappingZugehoerigkeitMessage =
         "Dieser Zeitraum überschneidet sich mit einer bestehenden Zugehörigkeit. "
         + "Ein Wiedereintritt beginnt frühestens am Tag nach dem Ende der vorigen Zugehörigkeit.";
 
-    private const string OpenErnennungMessage =
-        "Diese Person ist bereits Gruppen-Admin dieser Gruppe.";
+    private const string OpenErnennungMessage = WriteConflictMessages.OpenErnennung;
     private const string EndedErnennungMessage = "Diese Ernennung ist bereits beendet.";
     private const string EndBeforeErnennungMessage =
         "Eine Ernennung kann nicht vor ihrem Beginn enden.";
@@ -50,10 +48,10 @@ public sealed class GroupService
             group.ArchivedOn,
             group
                 .Memberships.OrderBy(membership =>
-                    EF.Functions.Collate(membership.Person!.LastName, GermanCollation)
+                    EF.Functions.Collate(membership.Person!.LastName, GermanCollation.Name)
                 )
                 .ThenBy(membership =>
-                    EF.Functions.Collate(membership.Person!.FirstName, GermanCollation)
+                    EF.Functions.Collate(membership.Person!.FirstName, GermanCollation.Name)
                 )
                 .ThenBy(membership => membership.PersonId)
                 .ThenBy(membership => membership.JoinedOn)
@@ -70,9 +68,11 @@ public sealed class GroupService
                 .ToList(),
             group
                 .Admins.OrderBy(admin =>
-                    EF.Functions.Collate(admin.Person!.LastName, GermanCollation)
+                    EF.Functions.Collate(admin.Person!.LastName, GermanCollation.Name)
                 )
-                .ThenBy(admin => EF.Functions.Collate(admin.Person!.FirstName, GermanCollation))
+                .ThenBy(admin =>
+                    EF.Functions.Collate(admin.Person!.FirstName, GermanCollation.Name)
+                )
                 .ThenBy(admin => admin.PersonId)
                 .ThenBy(admin => admin.SinceOn)
                 .ThenBy(admin => admin.Id)
@@ -104,7 +104,7 @@ public sealed class GroupService
         var rows = await _dbContext
             .Groups.AsNoTracking()
             .Where(group => group.ArchivedOn == null)
-            .OrderBy(group => EF.Functions.Collate(group.Name, GermanCollation))
+            .OrderBy(group => EF.Functions.Collate(group.Name, GermanCollation.Name))
             .ThenBy(group => group.Id)
             .Select(group => new GroupCardRow(
                 group.Id,
@@ -117,10 +117,10 @@ public sealed class GroupService
                         && (membership.LeftOn == null || membership.LeftOn >= today)
                     )
                     .OrderBy(membership =>
-                        EF.Functions.Collate(membership.Person!.LastName, GermanCollation)
+                        EF.Functions.Collate(membership.Person!.LastName, GermanCollation.Name)
                     )
                     .ThenBy(membership =>
-                        EF.Functions.Collate(membership.Person!.FirstName, GermanCollation)
+                        EF.Functions.Collate(membership.Person!.FirstName, GermanCollation.Name)
                     )
                     .ThenBy(membership => membership.PersonId)
                     .Select(membership => new PersonReference
@@ -134,8 +134,12 @@ public sealed class GroupService
                     .Admins.Where(admin =>
                         admin.SinceOn <= today && (admin.UntilOn == null || admin.UntilOn >= today)
                     )
-                    .OrderBy(admin => EF.Functions.Collate(admin.Person!.LastName, GermanCollation))
-                    .ThenBy(admin => EF.Functions.Collate(admin.Person!.FirstName, GermanCollation))
+                    .OrderBy(admin =>
+                        EF.Functions.Collate(admin.Person!.LastName, GermanCollation.Name)
+                    )
+                    .ThenBy(admin =>
+                        EF.Functions.Collate(admin.Person!.FirstName, GermanCollation.Name)
+                    )
                     .ThenBy(admin => admin.PersonId)
                     .Select(admin => new PersonReference
                     {
@@ -156,7 +160,7 @@ public sealed class GroupService
         await _dbContext
             .Groups.AsNoTracking()
             .Where(group => group.ArchivedOn == null)
-            .OrderBy(group => EF.Functions.Collate(group.Name, GermanCollation))
+            .OrderBy(group => EF.Functions.Collate(group.Name, GermanCollation.Name))
             .ThenBy(group => group.Id)
             .Select(group => new PublicGroupSummary
             {
@@ -177,7 +181,7 @@ public sealed class GroupService
         return await _dbContext
             .Groups.AsNoTracking()
             .Where(group => group.ArchivedOn == null)
-            .OrderBy(group => EF.Functions.Collate(group.Name, GermanCollation))
+            .OrderBy(group => EF.Functions.Collate(group.Name, GermanCollation.Name))
             .ThenBy(group => group.Id)
             .Select(group => new MyGroupSummary
             {
@@ -238,7 +242,7 @@ public sealed class GroupService
 
         var rows = await _dbContext
             .Groups.AsNoTracking()
-            .OrderBy(group => EF.Functions.Collate(group.Name, GermanCollation))
+            .OrderBy(group => EF.Functions.Collate(group.Name, GermanCollation.Name))
             .ThenBy(group => group.Id)
             .Select(group => new ManagedGroupRow(
                 group.Id,
@@ -262,8 +266,12 @@ public sealed class GroupService
                     .Admins.Where(admin =>
                         admin.SinceOn <= today && (admin.UntilOn == null || admin.UntilOn >= today)
                     )
-                    .OrderBy(admin => EF.Functions.Collate(admin.Person!.LastName, GermanCollation))
-                    .ThenBy(admin => EF.Functions.Collate(admin.Person!.FirstName, GermanCollation))
+                    .OrderBy(admin =>
+                        EF.Functions.Collate(admin.Person!.LastName, GermanCollation.Name)
+                    )
+                    .ThenBy(admin =>
+                        EF.Functions.Collate(admin.Person!.FirstName, GermanCollation.Name)
+                    )
                     .ThenBy(admin => admin.PersonId)
                     .Select(admin => new PersonReference
                     {
@@ -310,7 +318,10 @@ public sealed class GroupService
         };
 
         _dbContext.Groups.Add(group);
-        await _dbContext.SaveChangesAsync(ct);
+
+        var saved = await _dbContext.SaveOrConflictAsync(ct);
+        if (!saved.IsSuccess)
+            return Result<int>.Conflict(saved.Error.Message);
 
         return Result<int>.Success(group.Id);
     }
@@ -334,9 +345,8 @@ public sealed class GroupService
         group.Name = command.Name;
         group.Description = command.Description;
         group.IsRecruiting = command.IsRecruiting;
-        await _dbContext.SaveChangesAsync(ct);
 
-        return Result.Success();
+        return await _dbContext.SaveOrConflictAsync(ct);
     }
 
     public async Task<Result> ArchiveAsync(int groupId, CancellationToken ct)
@@ -369,9 +379,8 @@ public sealed class GroupService
             return Result.Conflict(DuplicateNameMessage);
 
         group.ArchivedOn = null;
-        await _dbContext.SaveChangesAsync(ct);
 
-        return Result.Success();
+        return await _dbContext.SaveOrConflictAsync(ct);
     }
 
     public async Task<Result> UpdateInfoAsync(UpdateGroupInfoCommand command, CancellationToken ct)
@@ -426,7 +435,10 @@ public sealed class GroupService
         };
 
         _dbContext.GroupMemberships.Add(membership);
-        await _dbContext.SaveChangesAsync(ct);
+
+        var saved = await _dbContext.SaveOrConflictAsync(ct);
+        if (!saved.IsSuccess)
+            return Result<int>.Conflict(saved.Error.Message);
 
         return Result<int>.Success(membership.Id);
     }
@@ -491,7 +503,10 @@ public sealed class GroupService
         };
 
         _dbContext.GroupAdmins.Add(admin);
-        await _dbContext.SaveChangesAsync(ct);
+
+        var saved = await _dbContext.SaveOrConflictAsync(ct);
+        if (!saved.IsSuccess)
+            return Result<int>.Conflict(saved.Error.Message);
 
         return Result<int>.Success(admin.Id);
     }
@@ -530,16 +545,20 @@ public sealed class GroupService
             .Select(row => new GroupState(row.ArchivedOn))
             .SingleOrDefaultAsync(ct);
 
-    private Task<bool> NameIsTakenAsync(string name, int? exceptGroupId, CancellationToken ct) =>
-        _dbContext
+    private Task<bool> NameIsTakenAsync(string name, int? exceptGroupId, CancellationToken ct)
+    {
+        var lowered = name.ToLowerInvariant();
+
+        return _dbContext
             .Groups.AsNoTracking()
             .AnyAsync(
                 row =>
                     row.ArchivedOn == null
                     && row.Id != exceptGroupId
-                    && row.Name.ToLower() == name.ToLower(),
+                    && row.Name.ToLower() == lowered,
                 ct
             );
+    }
 
     private Task<bool> PersonExistsAsync(int personId, CancellationToken ct) =>
         _dbContext.People.AsNoTracking().AnyAsync(row => row.Id == personId, ct);

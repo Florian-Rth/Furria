@@ -1,6 +1,8 @@
 using Furria.Application.Identity;
 using Furria.Application.PreviewAccess;
+using Furria.Application.Results;
 using Furria.Core.Club;
+using Furria.Core.Groups;
 using Furria.Core.Identity;
 using Furria.Core.Roles;
 using Furria.Infrastructure.Identity;
@@ -275,6 +277,40 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             $"DELETE FROM role_permission WHERE role_id = {roleId} AND permission_key = {permissionKey}",
             ct
         );
+    }
+
+    public async Task<Result> SaveSecondOpenZugehoerigkeitAsync(
+        int groupId,
+        int personId,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        db.GroupMemberships.Add(
+            new GroupMembership
+            {
+                GroupId = groupId,
+                PersonId = personId,
+                JoinedOn = Today,
+            }
+        );
+
+        return await db.SaveOrConflictAsync(ct);
+    }
+
+    public async Task<Result> SaveSecondActiveGruppeAsync(
+        string name,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        db.Groups.Add(new Group { Name = name, Description = string.Empty });
+
+        return await db.SaveOrConflictAsync(ct);
     }
 
     public async Task EditPersonNameDirectlyAsync(
