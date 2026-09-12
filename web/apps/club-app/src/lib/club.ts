@@ -22,3 +22,5 @@ export const sessionAt = (date: Date): Session => {
     yearsLabel: `${startYear}/${endYearShort}`,
   };
 };
+
+export const currentSessionYear = (): number => sessionAt(new Date()).startYear;

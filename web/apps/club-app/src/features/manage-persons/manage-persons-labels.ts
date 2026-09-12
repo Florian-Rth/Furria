@@ -167,6 +167,7 @@ export const splitPersonRoles = (roles: readonly PersonRole[]): SplitRelations<P
 
 export const MEMBERSHIP_ROW_TITLE = 'Mitgliedschaft';
 export const PAUSE_ROW_TITLE = 'Ruhezeit';
+export const SESSION_SPAN_LABEL = 'Session';
 
 export const toMembershipSpan = (membership: PersonMembership): string =>
   formatPeriod(membership.startedOn, membership.endedOn);
