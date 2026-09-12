@@ -24,6 +24,7 @@ interface AppListSkeletonProps {
   aside?: ReactNode;
   asideSize?: number;
   asideDesktopOnly?: boolean;
+  stickyList?: boolean;
   stickyAside?: boolean;
   asideLeadsFocus?: boolean;
   hasSelection?: boolean;
@@ -56,6 +57,7 @@ export const AppListSkeleton: FC<AppListSkeletonProps> = ({
   aside,
   asideSize,
   asideDesktopOnly,
+  stickyList,
   stickyAside,
   asideLeadsFocus,
   hasSelection = false,
@@ -90,6 +92,7 @@ export const AppListSkeleton: FC<AppListSkeletonProps> = ({
         aside={detail}
         asideSize={asideSize}
         asideDesktopOnly={asideDesktopOnly}
+        stickyList={stickyList}
         stickyAside={stickyAside}
         asideLeadsFocus={asideLeadsFocus}
       />

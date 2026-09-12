@@ -7,6 +7,7 @@ import { AppListSectionHead } from './AppListSectionHead';
 const FULL_WIDTH = 12;
 const DEFAULT_ASIDE_SIZE = 4;
 const DESKTOP_ONLY_COLUMN = { xs: 'none', desktop: 'block' };
+const PHONE_ONLY_RAIL = { xs: 'flex', desktop: 'none' };
 const DETAIL_SCROLL_MARGIN = 2;
 const LIST_VISUAL_ORDER = 1;
 const ASIDE_VISUAL_ORDER = 2;
@@ -16,12 +17,14 @@ export interface AppListColumnsProps {
   sectionTitle: string;
   createAction?: ReactNode;
   toolbar?: ReactNode;
+  letterRail?: ReactNode;
   list: ReactNode;
   footnote?: ReactNode;
   aside?: ReactNode;
   asideSize?: number;
   asideDesktopOnly?: boolean;
   asideRef?: Ref<HTMLDivElement>;
+  stickyList?: boolean;
   stickyAside?: boolean;
   asideLeadsFocus?: boolean;
 }
@@ -31,12 +34,14 @@ export const AppListColumns: FC<AppListColumnsProps> = ({
   sectionTitle,
   createAction,
   toolbar,
+  letterRail,
   list,
   footnote,
   aside,
   asideSize = DEFAULT_ASIDE_SIZE,
   asideDesktopOnly = false,
   asideRef,
+  stickyList = false,
   stickyAside = false,
   asideLeadsFocus = false,
 }) => {
@@ -49,13 +54,22 @@ export const AppListColumns: FC<AppListColumnsProps> = ({
   const toolbarBar = toolbar === undefined ? null : <KkStickyBar>{toolbar}</KkStickyBar>;
   const asideBody = stickyAside ? <KkStickyRail>{aside}</KkStickyRail> : aside;
 
+  const railBand =
+    letterRail === undefined ? null : (
+      <Stack sx={{ display: PHONE_ONLY_RAIL, minWidth: 0 }}>{letterRail}</Stack>
+    );
+
+  const mainBody = (
+    <Stack sx={{ gap: 1.5, minWidth: 0 }}>
+      <AppListSectionHead title={sectionTitle} action={createAction} />
+      {toolbarBar}
+      {list}
+    </Stack>
+  );
+
   const mainColumn = (
     <Grid key="main" size={{ xs: 12, desktop: mainSize }} sx={{ minWidth: 0, order: mainOrder }}>
-      <Stack sx={{ gap: 1.5, minWidth: 0 }}>
-        <AppListSectionHead title={sectionTitle} action={createAction} />
-        {toolbarBar}
-        {list}
-      </Stack>
+      {stickyList ? <KkStickyRail>{mainBody}</KkStickyRail> : mainBody}
     </Grid>
   );
 
@@ -84,6 +98,7 @@ export const AppListColumns: FC<AppListColumnsProps> = ({
         {columns}
       </Grid>
       {footnote}
+      {railBand}
     </Stack>
   );
 };
