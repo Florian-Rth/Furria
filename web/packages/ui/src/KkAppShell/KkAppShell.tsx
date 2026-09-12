@@ -10,6 +10,7 @@ import { KkAppShellRoot } from './internal/layout/KkAppShellRoot';
 import { KkAppShellSheet } from './internal/layout/KkAppShellSheet';
 import { KkAppShellStage } from './internal/layout/KkAppShellStage';
 import { KkAppShellUserRow } from './internal/layout/KkAppShellUserRow';
+import { KkAppShellBackLink } from './internal/ui/KkAppShellBackLink';
 import { KkAppShellCurtainAction } from './internal/ui/KkAppShellCurtainAction';
 import { KkAppShellCurtainClose } from './internal/ui/KkAppShellCurtainClose';
 import { KkAppShellGreeting } from './internal/ui/KkAppShellGreeting';
@@ -38,5 +39,6 @@ export const KkAppShell = Object.assign(KkAppShellRoot, {
   Wordmark: KkAppShellWordmark,
   Greeting: KkAppShellGreeting,
   PageTitle: KkAppShellPageTitle,
+  BackLink: KkAppShellBackLink,
   Identity: KkAppShellIdentity,
 });
