@@ -1,7 +1,7 @@
 ---
-status: in progress — paused for handoff
+status: in progress — W4 complete, W5 (UX pass) and W6 (slice 18) owed
 phase: CA-P1
-updated: 2026-09-11
+updated: 2026-09-12
 purpose: everything needed to continue CA-P1 on a different machine with no access to the
          session that started it
 ---
@@ -44,7 +44,7 @@ Binding coding rules, enforced by analyzers and lint, not by review:
 
 ## 2. Where the work stands
 
-33 commits on `feat/club-app-p1` since `07dd7a0`. Every commit left the tree green.
+52 commits on `feat/club-app-p1` since `07dd7a0`. Head is `332e439`.
 
 ### Done
 
@@ -60,43 +60,64 @@ Binding coding rules, enforced by analyzers and lint, not by review:
 | 6 Gruppen | ✅ `af71735` | ✅ `e4c9304` |
 | 7 Profil-Sichtbarkeit | ✅ `b2b7716` | ✅ `172834b` |
 | 8 Hub lesen | ✅ `d40060a` | ✅ `98aaf98` |
-| 9 Hub verwalten I | ✅ `94d6600` | ⚠️ `5a7b3e1` **partial, unverified — see below** |
-| 10 Hub verwalten II | ✅ `aedfcf3` | ❌ |
-| 11 Personenverwaltung | ✅ `0b03990` + `3ab1533` (§4.15, late) | ❌ |
-| 12 Person bearbeiten I | ✅ `e548b70` | ❌ |
-| 13 Person bearbeiten II | ✅ `130a6fe` | ❌ |
-| 14 Gruppenverwaltung I | ✅ `4e1a95f` | ❌ |
-| 15 Gruppenverwaltung II | ✅ `515ab18` | ❌ |
-| 16 Rollen & Rechte I | ✅ `5799e5d` | ❌ |
-| 17 Rollen & Rechte II | ✅ `c1b28e9` | ❌ |
+| 9 Hub verwalten I | ✅ `94d6600` | ✅ `5a7b3e1` + `b60f351` (finished and verified) |
+| 10 Hub verwalten II | ✅ `aedfcf3` | ✅ `01d7da2` |
+| 11 Personenverwaltung | ✅ `0b03990` + `3ab1533` (§4.15, late) | ✅ `72018f9` |
+| 12 Person bearbeiten I | ✅ `e548b70` | ✅ `2b3df5a` |
+| 13 Person bearbeiten II | ✅ `130a6fe` | ✅ `b60faf2` |
+| 14 Gruppenverwaltung I | ✅ `4e1a95f` | ✅ `7b36527` |
+| 15 Gruppenverwaltung II | ✅ `515ab18` | ✅ `4328ea1` |
+| 16 Rollen & Rechte I | ✅ `5799e5d` | ✅ `3ea966c` |
+| 17 Rollen & Rechte II | ✅ `c1b28e9` | ✅ `3ea966c` (one commit, see below) |
 | 18 Website re-pointing | ❌ | ❌ |
 
-**Backend is done through slice 17**; the frontend owes slices 8–17 (see §4).
+**Slices 1–17 are complete on both ends.** Only slice 18 is unbuilt.
+
+Slices 9–17's frontend was built by four families in parallel worktrees and replayed onto the
+branch in the order hub → persons → groups → roles. Three integration commits followed:
+`40a4cd6` (route tree regenerated for all three `/manage/*` routes — each family had regenerated
+it with only its own route), `7f39a28` and `332e439` (two second spellings, below).
+
+Slices 16 and 17 share one commit. `RoleDetail.tsx` is a slice-16 deliverable that imports all
+three slice-17 components, so a separately-compiling slice-16 commit would have required shipping
+a deliberately reduced `RoleDetail` and then rewriting it. The persons series (11 → 12 → 13) is
+likewise only gate-verified at its tip; its two intermediate commits do not typecheck alone.
 
 > **Slice 11 shipped without `GetPersonById` (§4.15).** `GET /api/manage/persons/{personId}`
 > answered **405** — only `PutPerson` bound that route — so `/manage/persons/$personId` had no
 > read at all. Built in `3ab1533` while integrating slices 13–17. If another §4.x endpoint is
 > missing, this is how it looks: a route that answers 405 rather than 404.
 
-> **⚠ Slice 9's frontend (`5a7b3e1`) is committed but NOT finished.** Its agent was stopped
-> mid-slice. All four web gates are green and it typechecks, lints, tests and builds — but it was
-> never screenshotted and its write flows were never exercised against a running API. The
-> „Mitglied aufnehmen" and „Zugehörigkeit beenden" dialogs, the `PersonPicker` and the
-> „Gruppe pflegen" panel are all present but unproven. **Finish and verify slice 9 before
-> starting slice 10.**
+> **Slice 9's frontend is now finished.** The audit that closed it found three real defects in
+> `5a7b3e1`, all fixed in `b60f351`: a 404 on any Hub write was completely silent
+> (`toWriteErrorMessage` returned `null`, so the dialog footer stayed empty and nothing toasted);
+> the confetti burst fired ~950 px below the fold because `HubCelebration` centred it on the whole
+> members panel; and the phone reading order put the admin-only Geschichte panel between Mitglieder
+> and Gruppen-Admins.
 
-### Gate state at the pause
+### Gate state
 
 ```
 server:  dotnet build  → 0 warnings, 0 errors
          dotnet test   → 19 analyzer + 643 API tests passing   (117 before the phase)
          dotnet csharpier check . → clean, 339 files
-web:     pnpm typecheck / test / lint / build → all clean, 1073 files, zero suppressions
-         (web unchanged since the pause; the server numbers are after slices 13-17 landed)
+         (unchanged since slices 13-17 landed; no server file was touched by the frontend wave)
+web:     pnpm lint      → 1224 files checked, zero warnings, zero suppressions
+         pnpm typecheck → all four projects clean
+         pnpm test      → 1161 passing, 0 failed, 0 skipped
+                          club-app 545 (30 files) · website 502 (72) · ui 102 (13) · shot 12 (1)
+         pnpm build     → club-app and website both Done
 
-Verified with the tree clean. Both are reproducible from a fresh checkout — the server suite
+Verified on the integrated tree with `git status --short` empty at 332e439. The server suite
 needs DOCKER_API_VERSION=1.41 on this machine, see the pitfall table.
 ```
+
+Every route of the phase was screenshotted after integration at phone/desktop × light/dark and
+read: `/members`, `/groups`, `/profile`, `/my-groups/1`, `/manage/persons`,
+`/manage/persons/2`, `/manage/groups`, `/manage/roles`. A Playwright walk of all eight routes
+logged **no `pageerror` and no `/api/` response ≥ 400**. The nav rail carries all three
+Verwaltung entries, `resolveSectionTitle` resolves every new prefix (the phone dock reads
+„ROLLEN & RECHTE" on `/manage/roles`), and the §5.2 `/profile` regression is confirmed gone.
 
 **Anything uncommitted in the working tree when you arrive is an interrupted agent's work.**
 Judge it, do not assume it is good: run the gates, finish or discard it, then continue.
@@ -159,6 +180,11 @@ Read tool and actually judge them.
 | `dotnet test` with no env var | **every** integration test dies in its collection fixture in <1 s with `DockerUnavailableException: client version 1.44 is too new. Maximum supported API version is 1.41` — reads as a catastrophic regression, is not one. Docker Desktop 4.11.0 caps the engine API at 1.41; Testcontainers asks for 1.44 | `DOCKER_API_VERSION=1.41 dotnet test`. `DOCKER_HOST` does not help; the `docker` CLI is unaffected because it negotiates down. All three backend families of slices 13–17 lost a gate pass to this |
 | `setsid` in the dev-API launch line | **macOS has no `setsid`** — the command dies with `command not found` and no API starts, while a stale one may still answer `/api/health` and fool the check | `nohup … & disown`. Then confirm with `pgrep -fl 'Furria[.]Api[.]dll'`, not with `/api/health` |
 | `pkill -f 'Furria[.]Api[.]dll'` against an API started by `dotnet run` | matches nothing: `dotnet run --project src/Furria.Api` execs the **apphost** (`…/bin/Debug/net10.0/Furria.Api`), whose command line has no `.dll`. The stale API keeps the port and keeps serving the old route table | check `lsof -nP -iTCP:5100 -sTCP:LISTEN` and kill that pid. Always start the dev API as `dotnet ./Furria.Api.dll` from its own `--artifacts-path` so the documented pkill works |
+| `pnpm --filter @furria/club-app dev -- --port 3011` | pnpm passes the `--` through, vite never sees the flag and binds its configured `strictPort` 3001, so it dies with „Port 3001 is already in use" — which reads like a collision with the shared server and is not one. All four frontend families hit this | drop the `--`: `pnpm --filter @furria/club-app dev --port 3011`, or `pnpm --filter @furria/club-app exec vite --port 3011 --strictPort` |
+| a running club-app dev server during `git am` | the TanStack router plugin rewrites `routeTree.gen.ts` the moment a route file appears, so the next patch aborts with „local changes would be overwritten" | stop the dev server by port (`kill $(lsof -nP -iTCP:3001 -sTCP:LISTEN -t)`) for the duration of the replay, then restart it |
+| resolving `routeTree.gen.ts` by hand | it is **generated**; each parallel family regenerated it with only its own route, so no hand-merge is right | take either side, `git add` it, finish the series, then run `pnpm build` once and commit the regenerated file |
+| a throwaway Playwright driver inside `web/` | biome lints it and it can land in a commit | keep it in the scratchpad; `<scratch>/node_modules` is symlinked to `web/tools/screenshot/node_modules`, so `node <scratch>/drive.mjs` resolves `playwright`. Always give it `finally { await browser.close() }` and `context.setDefaultTimeout(...)` — without them a timed-out locator leaves node hanging with the browser open |
+| `pnpm shot` for reading a long page | it always captures `fullPage`; `/manage/persons` is ~21 000 px tall and unreadable once downscaled, and macOS has neither ImageMagick nor PIL to crop it | shoot the same route with a viewport-sized `page.screenshot()` from a scratchpad driver when you need to *read* a page; use `pnpm shot` for the four-variant light/dark sweep |
 
 ### Machine limits that shaped the design
 
@@ -177,7 +203,7 @@ Six workflows, of which 1–3 are complete:
 | W1 | Contract & design: 4 readers → architect → 3 adversarial critics → revision | ✅ done |
 | W2 | Backend foundation, slices 1–3, TDD, then 3 reviews + fix | ✅ done (+ a rescue, see §7) |
 | W3 | `@furria/ui` primitive layer, then design + React review + fix | ✅ done |
-| W4 | Slices 4–17, two lanes | 🔄 paused — backend through 11, frontend through 7 |
+| W4 | Slices 4–17, two lanes | ✅ done — backend and frontend both through 17 |
 | W5 | UX roast: screenshot everything, critique, fix, re-shoot, loop until dry | ❌ not started |
 | W6 | Slice 18 + hardening | ❌ not started |
 
@@ -205,6 +231,25 @@ for (const slice of SLICES) {
 Each agent: reads its contract sections → implements → runs **all** gates → (frontend) screenshots
 its routes and fixes what it sees → commits its own pathspec only.
 
+**Slices 9–17's frontend was finished differently, and it worked better.** Four families (hub 9–10,
+persons 11–13, groups 14–15, roles 16–17) built concurrently in isolated worktrees, exported
+`git format-patch` series, and one integration agent replayed them in the order
+hub → persons → groups → roles, then ran a single gate pass and a single screenshot pass over the
+merged tree. Two things make that reproducible:
+
+- **Gate discipline.** Each family wrote its entire assignment before executing anything expensive,
+  then ran `dotnet test` / `pnpm test` / `pnpm build` / `pnpm shot` **once**. Earlier agents burned
+  25–45 minutes per slice on repeated Testcontainer boots and browser logins.
+- **Replay order is load-bearing.** `groups` and `roles` both import the hub's dialogs and
+  `PersonPicker`, so `hub` must land first; when `groups` duplicated slice 10's files (it was
+  building against a base where they did not exist) the conflict resolved cleanly toward the hub
+  family's versions, leaving only the two prop names to adapt in `GroupOverrideDetails.tsx`.
+
+**The worktrees were provisioned at `main` (`07dd7a0`), not at the branch head.** All four families
+caught it with `git rev-parse HEAD` as their first command and fast-forwarded. Any future worktree
+wave must check this before reading a line — a family that misses it writes against a tree with no
+contract file and no slice 4+ frontend, and its patch will look plausible and will not apply.
+
 **Expect 25–45 min per agent.** That is the gates, not the model: every `dotnet test` starts a
 Postgres Testcontainer (~35 s) and a TDD slice runs it 8–15 times; a frontend slice runs the full
 web suite plus four real browser logins. Two lanes → roughly 45 min of wall clock per slice pair.
@@ -219,12 +264,10 @@ web suite plus four real browser logins. Two lanes → roughly 45 min of wall cl
    real write endpoints. §9.3 lists the cases it must produce — the `beendet`-but-affiliated
    Person, the Gruppen-Admin affiliated by nothing else, the archived Gruppe with open
    Zugehörigkeiten, the Gruppe with no admin, the unbesetzte Rolle. Write it before W5.
-2. **`/profile` regression** — assigned to frontend slice 4; verify it is actually fixed
-   (`pnpm shot /profile` must not show the error state). `GET /api/auth/me` returns valid JSON;
-   the client zod schema had not followed slice 1's membership DTO change.
-3. **`KkToastProvider` mounting** — built in W3, must be mounted in
-   `features/session/components/AppShell.tsx` or the first `useKkToast()` throws and no mutation
-   can report success. Assigned to frontend slice 4; verify.
+2. ~~**`/profile` regression**~~ — **fixed and verified.** All four `/profile` PNGs render the full
+   page with no error state.
+3. ~~**`KkToastProvider` mounting**~~ — **confirmed mounted** in
+   `features/session/components/AppShell.tsx`; toasts were observed firing on real writes.
 4. **Commit timestamps** — every commit of this phase falls in the weekday 04:00–17:00 window that
    the repo's convention avoids. Sweep with the global `fix-commit-times` skill before the PR.
 5. **Umlaut folding in `GetPersonSearch`** (contract §4.41) is the least-pinned piece of the
@@ -241,9 +284,21 @@ web suite plus four real browser logins. Two lanes → roughly 45 min of wall cl
 
 1. **Triage the working tree.** Anything uncommitted is an interrupted agent's. Run the gates,
    finish or discard.
-2. **Finish W4**: backend slices 12–17, frontend slices 8–17, using the lane design in §4 and the
-   per-slice rows in contract §11.
-3. **Write the seed script** (§5.1) and run it against the dev database.
+2. ~~**Finish W4**~~ — done. Slices 1–17 are complete on both ends.
+3. **Re-seed the dev database before W5.** The seed script exists (`seed.py`, scratchpad only,
+   never committed) and its ids are deterministic, but the four families' live write-flow probes
+   left residue in the shared database that makes several documented handles wrong today:
+   persons **152 and 153** („Testine Überprüfung…", each with a Mitgliedschaft, an open Ruhezeit
+   and a Beitragsermäßigung) so the register is **153 rows, not 151**; **Gruppe 14 „Testgruppe
+   Zwei"**, archived, so `/manage/groups` counts 14 / aktiv 12 / archiviert 2; **Rolle 10
+   „Materialwart"**, so there are ten Rollen; Gruppe 1 „Große Garde" has a changed description and
+   `isRecruiting = false`, plus same-day-ended rows that make it read **22 Personen · 4
+   Gruppen-Admins** instead of 18 · 2; and **Rolle 8 „Chronistin" is not unbesetzt today** (two
+   holdings created and ended on 2026-09-12). Because period ends are **inclusive** (decision B) a
+   row ended today still counts today, so most of that heals by itself on 2026-09-13 — but
+   `docker compose down -v` + re-seed is the only way to get the documented state exactly.
+   **There is no delete endpoint (decision U); the three created records never go away by
+   themselves.** Match fixtures by name, never by count.
 4. **W5 — the UX pass.** Screenshot every route (`/members`, `/members/$id`, `/groups`,
    `/groups/$id`, `/my-groups/$id`, `/profile`, `/manage/persons`, `/manage/persons/$id`,
    `/manage/groups`, `/manage/roles`) at phone/desktop × light/dark. Then a deliberately hostile
@@ -296,3 +351,132 @@ All 30 fragments sit at their original line numbers and every unamended line is 
 - The position of the `Kontaktdaten` entry is inferred.
 
 The commit message of `4ba5a8e` lists all of this per entry.
+
+---
+
+## 8. Contract bugs reported by the frontend wave — all still open
+
+Every one of these was reported rather than worked around, and every implementer's reading is
+recorded so nobody writes a second spelling. **None of them blocked a slice.** They need a
+decision written back into `p1-contract.md`, not re-litigating by the next implementer.
+
+### Deliverables the contract pins that were never built
+
+| What | Where pinned | What happened |
+|---|---|---|
+| `RequirePermission` | §5.0, ledger slice 2 | **Never built.** All three `/manage/*` pages are gated on it, so three families created it simultaneously and the integration kept one. Same failure shape as the missing §4.15 `GetPersonById`. |
+| `PageSkeleton` | §5.0 | **Still missing.** Deliberately: decision AP makes a guard render its children while `me` is pending, so nothing in P1 mounts it. Shipping it would be dead code. |
+| `formatSessionLabel`, `formatSessionSpan`, `toPeriodChip` | §5.1, slice 1 | Never shipped; slices 12–13 could not render a Session span without them. Added to their pinned modules with their pinned signatures. |
+
+### Paragraphs that are wrong, impossible or read two ways
+
+1. **§5.8 / §11 pin the detail route file as `routes/_app/manage.persons.$personId.tsx`. That
+   spelling does not work** — TanStack nests it *under* `manage.persons`, so the register list
+   would render above every Person's edit page. Shipped as
+   **`manage.persons_.$personId.tsx`** (trailing underscore, the shipped `_affiliated.members_.$personId.tsx`
+   precedent). The URL is identical; correct the paragraph.
+2. **§5.0's `AccessDenied` table pins three messages for a four-member `PermissionKey` union.**
+   `persons.read_details` guards no page (decision T), so a total `Record` cannot be written from
+   the contract. Shipped as `Partial<Record<…>>` plus one neutral fallback
+   („Diese Seite ist an eine Rolle gebunden. Du hast sie gerade nicht.") which is unreachable in P1.
+   Either narrow the prop type or pin a fourth message.
+3. **§5.0a's 404 rule is scoped to detail *routes* and says nothing about a 404 from a *write*.**
+   Slice 9 had read the silence as intended and returned `null`, which made **every Hub write fail
+   mutely** — a Gruppen-Admin whose Person had just been removed would click „Aufnehmen" forever
+   with no feedback. The write path now has its own line
+   („Das gibt es so nicht mehr — jemand anderes war schneller. Lade die Seite neu."). If silence
+   really was the intent, revert `WRITE_MISSING_MESSAGE` in `group-hub-messages.ts` — but then say so.
+4. **§5.0a's 400 rule maps `failures[].field` „onto the react-hook-form field of the same name".**
+   The four Hub forms are plain `useState` controls, not RHF (§5.6 does not require RHF), so only
+   the same paragraph's footer fallback applies there. Say the field mapping is conditional on the
+   form actually being RHF.
+5. **§5.9's desktop row spec is not constructible.** „name · Personen · Admins · Offenheit · Status"
+   at ≥ desktop, inside the same paragraph's Grid 5/7 split, leaves ~500 px and **truncates the
+   names** („ARCHIV UND CH…", „TANZGRUPPE WIRB…" — seen in a screenshot, not predicted). Shipped
+   the phone form (one chip) at both widths, which §5.9 itself calls „the primary one", with
+   Offenheit in the detail header card.
+6. **§5.9 contradicts itself on chip priority** — „the most urgent of kein Admin → archiviert →
+   openness", then two sentences later „archived rows render dimmed with an `archiviert` chip"
+   unconditionally. Taken literally an archived Gruppe with no admin would hide that it is
+   archived. Shipped **archiviert → kein Admin → openness**. The Rollen master list needs the same
+   order.
+7. **§5.10's `placeholderData` claim is half true.** §4.31's `Holders` are `PersonRefDto`, §4.32's
+   are `RoleHolderDto` (+ `roleHoldingId`/`sinceOn`/`since`), so the seed cannot render a holder
+   row and **running holders arrive late too**, not only `PastHolders`.
+8. **§5.10 leaves three things unowned**: the default (no `?role=`) state has no component and no
+   copy; `useRestoreRoleMutation` is named with no dialog and no copy (§10.5's restore row says
+   „Gruppe aktivieren"); and `GetRoleById.pastHolders` has real data but no owner. All three were
+   built to the end-state rule; the copy for them is **not pinned** and the UX pass may overrule it.
+9. **§5.9 lists no history panel for the Gruppenverwaltung** while §4.30 returns `pastMembers` and
+   `pastAdmins` and says they are „always populated here". Rendering the payload and hiding half of
+   it is not the end state, so an `OverrideHistoryPanel` was built.
+10. **§7.3 / §7.6 never pin `KkTextField`'s `type` / `inputMode` unions**, and §5.7's form has a
+    Telefon and a PLZ field that need a numeric keypad on a phone. Both unions were widened by two
+    members (`'tel'`, `'numeric'`). A §7 „the primitive is missing an affordance" case.
+11. **No German `ResultError.Message` is pinned for two 409s** that decision AH says render
+    verbatim: §4.26 `PostGroup`'s duplicate active name and §4.29 `RestoreGroup`'s not-archived
+    case. The server does answer „Eine Gruppe mit diesem Namen gibt es schon." — confirmed on the
+    wire — but the string belongs in §4.
+12. **§5.7 cannot hold both halves of one sentence**: it says `PersonFormDialog` „opens for edit
+    straight off a list row" and pins the row as `KkPersonRow → /manage/persons/$personId`.
+    `KkPersonRow` renders the whole row as the link, so an edit button inside it is a `<button>`
+    inside an `<a>`. Shipped the pinned link, with „Bearbeiten" on the detail page's
+    `PersonMasterDataPanel`.
+
+### Two behaviours that are correct and will be mistaken for bugs
+
+- **Client and server fold German names differently, and the contract pins both.** §4.41's
+  server-side `GermanFold` maps `ue → ü`, so `GET /api/person-search?q=kuehn` finds Kühnel; §5.1's
+  `normalizeForSearch` is NFD-strip only, so typing `kuehnel` into `/members` or `/manage/persons`
+  finds nothing while `kuhnel` and `KÜHNEL` both work. Both were implemented exactly as written and
+  the divergence is pinned in `person-filters.test.ts`. Somebody should ratify which one is meant.
+- **A row lying entirely in the future appears in no list on `/manage/groups`** — neither in
+  `members`/`admins` nor in `pastMembers`/`pastAdmins` — while Person bearbeiten shows it with a
+  `geplant` chip (decision AF). Decision C makes such rows legal and `PostGroupMembership` accepts
+  them, and `AddMemberDialog`'s own date hint invites one („Darf in der Zukunft liegen"), **so this
+  surface can create a row it then cannot display.** That needs a contract decision, not a third list.
+
+---
+
+## 9. On the UX pass's desk already (W5)
+
+Things the families saw, judged and **deliberately did not change**, because changing them would
+have been a contract amendment or a unilateral reshape of a primitive three siblings were using.
+
+1. **Twenty red `Beenden` ghosts form a red column** that outshouts the single neutral
+   „+ Mitglied" — the destructive action is the loudest thing on a busy Gruppen-Hub and on the
+   Gruppenverwaltung override panel. §7.1 pins `tone="danger"` + `variant="outlined"` as exactly
+   „the `Beenden` ghost", and both surfaces render the identical row, so quieting one would desync
+   the two. **Needs a §7.1 decision.**
+2. **On a phone every row with a `Beenden` becomes two lines**, because `KkSinceRow` pins its
+   `trailing` slot to `width: 100%` at `xs`. A 20-member Hub is ~8 600 px tall. It is legible and
+   the tap targets are generous, and it is the primitive's specified mobile behaviour from W3
+   (§7.6-reviewed).
+3. **`/manage/roles` is the one Verwaltung surface with no intro lead and no
+   `KkPanelHeader` rule over its master column**, while `/manage/persons` and `/manage/groups` both
+   open with a `KkLead` and an accent-square section head. Side by side the roles page reads as a
+   different generation of the same app. Cosmetic, cross-page, exactly W5's remit.
+4. **The avatar stack on `/groups` clips its initials** — each circle cuts the second letter
+   („FA KE PE EF VG" render with the right edge shaved). Pre-existing, not from this wave.
+5. **The app shell's fixed mobile dock button floats over content on every phone route**, including
+   `/members`. Pre-existing and app-wide, not a Verwaltung defect.
+6. **Decision B's inclusive end is genuinely surprising in the UI**: a Zugehörigkeit, Gruppen-Admin
+   row or Inhaberschaft ended **today stays in the running list until tomorrow**, with `untilOn`
+   set. Confirmed on the wire. Do not add a client-side filter and do not read it as a broken end
+   flow — the server is right and §2 owns the rule.
+
+### Three implementation idioms worth copying, found the hard way
+
+- **React Compiler eats react-hook-form errors across a component boundary.** If `useForm` lives in
+  a custom hook and the child that renders the fields receives only the *stable* `form` object, the
+  compiler memoises it and the child **never re-renders when `formState.errors` changes** — the
+  field gets its red outline but the helper text stays empty, and it looks like a zod problem. It
+  is not. Return `form.formState.errors` from the hook as its own value and pass it as a second
+  prop. `LoginForm` is immune because it reads `formState` in the same component that hosts `useForm`.
+- **TanStack Router: `useSearch` takes the ROUTE ID (`'/_app/manage/groups'`), `useNavigate({ from })`
+  takes the PATH (`'/manage/groups'`)**, and a `from`-bound navigate types `search` as a *reducer*,
+  not an object. The shape that compiles is `useNavigate()` with no `from`, then
+  `navigate({ to: '/manage/groups', search: { group: 7 } })`; clearing is `{ group: undefined }`,
+  never `{}`. See `features/manage-groups/hooks/use-group-selection.ts`.
+- **Reset a dialog's fields with a render-phase update** (a `wasOpen` state compared during render),
+  never a `useEffect` — an effect flickers the previous record's values into a freshly opened dialog.
