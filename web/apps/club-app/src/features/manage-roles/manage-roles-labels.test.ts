@@ -11,7 +11,6 @@ import {
   toMasterEntries,
   toNextPermissionKeys,
   toPermissionEntries,
-  toRightsCountLabel,
   toRoleSearchTerm,
   toRoleSeed,
   toStartQuickChoices,
@@ -43,6 +42,15 @@ describe('toHoldersMeta', () => {
 
   it('names the single holder', () => {
     expect(toHoldersMeta([{ firstName: 'Heike', lastName: 'Krämer' }])).toBe('Heike Krämer');
+  });
+
+  it('names the second holder as one further Person, not as a bare number', () => {
+    expect(
+      toHoldersMeta([
+        { firstName: 'Jörg', lastName: 'Krüger' },
+        { firstName: 'Heike', lastName: 'Krämer' },
+      ]),
+    ).toBe('Jörg Krüger und 1 weitere Person');
   });
 
   it('counts the remaining holders after the first', () => {
@@ -177,14 +185,6 @@ describe('count labels', () => {
     [4, '4 Inhaberschaften'],
   ])('renders %i holdings', (count, expected) => {
     expect(toHolderCountLabel(count)).toBe(expected);
-  });
-
-  it.each([
-    [0, 'keine Rechte'],
-    [1, '1 Recht'],
-    [4, '4 Rechte'],
-  ])('renders %i rights', (count, expected) => {
-    expect(toRightsCountLabel(count)).toBe(expected);
   });
 });
 

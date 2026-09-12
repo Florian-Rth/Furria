@@ -5,7 +5,7 @@ import type { RolePermissionsControl } from '../hooks/use-role-permissions';
 import { RolePermissionRow } from './RolePermissionRow';
 import { RoleSection } from './RoleSection';
 
-const SECTION_TITLE = 'Was sie darf';
+const SECTION_TITLE = 'Rechte';
 const GUIDANCE =
   'Jede Zeile ist eine Sache, die man tun darf. Umschalten wirkt sofort für alle Inhaber dieser Rolle.';
 const ARCHIVED_GUIDANCE =

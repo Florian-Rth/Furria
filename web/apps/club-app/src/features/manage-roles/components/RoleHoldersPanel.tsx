@@ -4,7 +4,7 @@ import type { RoleHolder } from '../schemas';
 import { RoleHolderRow } from './RoleHolderRow';
 import { RoleSection } from './RoleSection';
 
-const SECTION_TITLE = 'Wer hat sie inne';
+const SECTION_TITLE = 'Inhaber';
 const SKELETON_ROWS = 2;
 const EMPTY_TITLE = 'NIEMAND EINGETRAGEN';
 const EMPTY_DESCRIPTION =
