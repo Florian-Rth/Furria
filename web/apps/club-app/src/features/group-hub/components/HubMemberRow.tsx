@@ -3,10 +3,10 @@ import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { toInitials } from '@/lib/initials';
 import { formatSinceSession } from '@/lib/membership-labels';
+import { END_LABEL, toEndMembershipActionLabel } from '../group-hub-labels';
 import type { HubMember } from '../schemas';
 
 const SINCE_LABEL = 'seit';
-const END_LABEL = 'Beenden';
 const MEMBER_PATH = '/members/$personId';
 
 interface HubMemberRowProps {
@@ -30,21 +30,30 @@ export const HubMemberRow: FC<HubMemberRowProps> = ({
   };
 
   const trailing = canManage ? (
-    <KkButton size="small" variant="text" tone="danger" onClick={end}>
+    <KkButton
+      size="small"
+      variant="text"
+      tone="danger"
+      ariaLabel={toEndMembershipActionLabel(name)}
+      onClick={end}
+    >
       {END_LABEL}
     </KkButton>
   ) : null;
 
-  const opensPerson = canOpenPerson && !canManage;
-  const linkProps = opensPerson
-    ? { component: Link, to: MEMBER_PATH, params: { personId: String(member.personId) } }
+  const titleLinkProps = canOpenPerson
+    ? {
+        titleComponent: Link,
+        titleTo: MEMBER_PATH,
+        titleParams: { personId: String(member.personId) },
+      }
     : {};
 
   const avatar = <KkAvatar initials={initials} size="small" component="span" />;
 
   return (
     <KkSinceRow
-      {...linkProps}
+      {...titleLinkProps}
       avatar={avatar}
       title={name}
       sinceLabel={SINCE_LABEL}
