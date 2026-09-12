@@ -15,6 +15,7 @@ import { PersonsAside } from './PersonsAside';
 import { PersonsColdEmpty } from './PersonsColdEmpty';
 import { PersonsCreateFab } from './PersonsCreateFab';
 import { PersonsEmpty } from './PersonsEmpty';
+import { PersonsLetterRail } from './PersonsLetterRail';
 import { PersonsList } from './PersonsList';
 import { PersonsToolbar } from './PersonsToolbar';
 
@@ -67,6 +68,11 @@ export const PersonsView: FC<PersonsViewProps> = ({ persons, search }) => {
       state={search.state}
       options={search.filterOptions}
       onStateChange={search.selectState}
+    />
+  );
+
+  const letterRail = (
+    <PersonsLetterRail
       letters={search.letters}
       letter={search.letter}
       onLetterSelect={search.jumpTo}
@@ -91,6 +97,7 @@ export const PersonsView: FC<PersonsViewProps> = ({ persons, search }) => {
         sectionTitle={MANAGE_PERSONS_SECTION_TITLE}
         createAction={createButton}
         toolbar={toolbar}
+        letterRail={letterRail}
         list={list}
         aside={aside}
         asideSize={ASIDE_SIZE}
