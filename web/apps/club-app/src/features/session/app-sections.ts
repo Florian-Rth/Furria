@@ -52,8 +52,8 @@ export const MANAGE_SECTIONS: AppSection[] = [
   },
   {
     id: 'manage-groups',
-    label: 'Gruppen',
-    icon: 'group',
+    label: 'Gruppenverwaltung',
+    icon: 'manage',
     to: '/manage/groups',
     permissionKey: PERMISSION_KEYS.groupsManage,
   },
@@ -139,6 +139,23 @@ interface SectionTitle {
   title: string;
 }
 
+const MY_GROUP_PREFIX = '/my-groups/';
+const GROUP_ID_PATTERN = /^[1-9]\d*$/;
+
+export const toMyGroupId = (pathname: string): number | null => {
+  if (!pathname.startsWith(MY_GROUP_PREFIX)) {
+    return null;
+  }
+
+  const [segment, ...rest] = pathname.slice(MY_GROUP_PREFIX.length).split('/');
+
+  if (rest.length > 0 || segment === undefined || !GROUP_ID_PATTERN.test(segment)) {
+    return null;
+  }
+
+  return Number(segment);
+};
+
 const SECTION_TITLES: readonly SectionTitle[] = [
   { prefix: '/manage/persons', title: 'Personenverwaltung' },
   { prefix: '/manage/groups', title: 'Gruppenverwaltung' },
@@ -149,7 +166,19 @@ const SECTION_TITLES: readonly SectionTitle[] = [
   { prefix: PROFILE_PATH, title: 'Profil' },
 ];
 
-export const resolveSectionTitle = (pathname: string): string => {
+const NO_GROUPS: readonly NavGroupRef[] = [];
+
+export const resolveSectionTitle = (
+  pathname: string,
+  myGroups: readonly NavGroupRef[] = NO_GROUPS,
+): string => {
+  const groupId = toMyGroupId(pathname);
+  const ownGroup = myGroups.find((group) => group.groupId === groupId);
+
+  if (ownGroup !== undefined) {
+    return ownGroup.name;
+  }
+
   const match = SECTION_TITLES.find(
     ({ prefix }) => pathname === prefix || pathname.startsWith(`${prefix}/`),
   );

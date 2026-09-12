@@ -6,6 +6,7 @@ import {
   buildNavGroups,
   LATER_SECTIONS,
   resolveSectionTitle,
+  toMyGroupId,
   toNavMatch,
 } from './app-sections';
 
@@ -52,6 +53,7 @@ describe('resolveSectionTitle', () => {
     { pathname: '/groups', expected: 'Gruppen' },
     { pathname: '/groups/3', expected: 'Gruppen' },
     { pathname: '/my-groups/3', expected: 'Meine Gruppe' },
+    { pathname: '/my-groups', expected: 'Meine Gruppe' },
     { pathname: '/manage/groups', expected: 'Gruppenverwaltung' },
     { pathname: '/manage/persons/12', expected: 'Personenverwaltung' },
     { pathname: '/manage/roles', expected: 'Rollen & Rechte' },
@@ -60,6 +62,42 @@ describe('resolveSectionTitle', () => {
     { pathname: '', expected: 'Übersicht' },
   ])('titles $pathname as $expected', ({ pathname, expected }) => {
     expect(resolveSectionTitle(pathname)).toBe(expected);
+  });
+
+  it('names the Hub after the Gruppe the viewer opened, not after the nav group', () => {
+    const myGroups = [
+      { groupId: 3, name: 'Tanzgarde' },
+      { groupId: 7, name: 'Elferrat' },
+    ];
+
+    expect(resolveSectionTitle('/my-groups/7', myGroups)).toBe('Elferrat');
+  });
+
+  it('falls back to the section noun for a Gruppe the viewer is not in', () => {
+    expect(resolveSectionTitle('/my-groups/9', [{ groupId: 3, name: 'Tanzgarde' }])).toBe(
+      'Meine Gruppe',
+    );
+  });
+
+  it('never reads a Gruppe name out of another route', () => {
+    expect(resolveSectionTitle('/members/3', [{ groupId: 3, name: 'Tanzgarde' }])).toBe(
+      'Mitglieder',
+    );
+  });
+});
+
+describe('toMyGroupId', () => {
+  it.each([
+    { pathname: '/my-groups/3', expected: 3 },
+    { pathname: '/my-groups/128', expected: 128 },
+    { pathname: '/my-groups', expected: null },
+    { pathname: '/my-groups/', expected: null },
+    { pathname: '/my-groups/3/mitglieder', expected: null },
+    { pathname: '/my-groups/0', expected: null },
+    { pathname: '/my-groups/abc', expected: null },
+    { pathname: '/members/3', expected: null },
+  ])('reads $pathname as $expected', ({ pathname, expected }) => {
+    expect(toMyGroupId(pathname)).toBe(expected);
   });
 });
 
