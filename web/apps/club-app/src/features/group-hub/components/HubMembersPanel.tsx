@@ -60,6 +60,7 @@ export const HubMembersPanel: FC<HubMembersPanelProps> = ({
   const action = canManage ? (
     <KkButton
       size="small"
+      variant="outlined"
       startIcon={<KkIcon name="add" size="small" />}
       ariaLabel={ADD_MEMBER_ACTION_LABEL}
       onClick={onAdd}
