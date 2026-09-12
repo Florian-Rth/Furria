@@ -1,12 +1,4 @@
-import {
-  KkButton,
-  KkChip,
-  KkFieldRow,
-  KkIcon,
-  KkNote,
-  KkPanel,
-  KkPanelSection,
-} from '@furria/ui';
+import { KkButton, KkChip, KkFieldRow, KkIcon, KkNote, KkPanel, KkPanelSection } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { formatAddress, formatIsoDay } from '@/lib/membership-labels';
