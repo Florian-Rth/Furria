@@ -35,13 +35,16 @@ export const KkPanelHeader: FC<KkPanelHeaderProps> = ({
   size = 'small',
   sx,
 }) => {
+  const metaContent = typeof meta === 'string' ? <KkEyebrow tone="muted">{meta}</KkEyebrow> : meta;
   const metaSlot =
-    typeof meta === 'string' ? (
-      <KkEyebrow tone="muted" sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
-        {meta}
-      </KkEyebrow>
-    ) : (
-      meta
+    meta === undefined ? null : (
+      <Stack
+        direction="row"
+        data-kk-panel-header-meta
+        sx={{ alignItems: 'center', flexShrink: 0, whiteSpace: 'nowrap' }}
+      >
+        {metaContent}
+      </Stack>
     );
 
   return (
