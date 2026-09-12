@@ -411,7 +411,13 @@ decision written back into `p1-contract.md`, not re-litigating by the next imple
    mutely** — a Gruppen-Admin whose Person had just been removed would click „Aufnehmen" forever
    with no feedback. The write path now has its own line
    („Das gibt es so nicht mehr — jemand anderes war schneller. Lade die Seite neu."). If silence
-   really was the intent, revert `WRITE_MISSING_MESSAGE` in `group-hub-messages.ts` — but then say so.
+   really was the intent, revert `WRITE_MISSING_MESSAGE` — but then say so. **Since the pre-push
+   pass it is one file, not four**: `WRITE_ERROR_MESSAGES`/`toWriteErrorMessage` stood byte-identical
+   in `group-hub-messages`, `manage-groups-messages`, `manage-roles-messages` and
+   `manage-persons-messages`, and only the hub's copy knew the 404, so the other three answered a row
+   another admin had just removed with „Das hat nicht geklappt. Bitte versuch es gleich noch einmal." —
+   a retry that can never succeed. The hub's version now lives in `lib/write-error.ts`, verbatim, and
+   the four copies are gone; the feature message modules keep only their read-path texts.
 4. **§5.0a's 400 rule maps `failures[].field` „onto the react-hook-form field of the same name".**
    The four Hub forms are plain `useState` controls, not RHF (§5.6 does not require RHF), so only
    the same paragraph's footer fallback applies there. Say the field mapping is conditional on the
@@ -538,6 +544,15 @@ contract when that file is next touched.
    translatable query per detail request through the new `AffiliationLookup`, which calls
    `AffiliationQuery.IsAffiliatedOn(today)` — the predicate itself is untouched, because decision
    AG reserves widening it for Florian.
+   **The client consumes it since the pre-push pass**, which also amends §5: one boolean was carrying
+   two unrelated facts. `canOpenPerson` was filled at every call site with the *reader's*
+   `usePermissions().isAffiliated` and then decided a link to a *third party's* Karte. The prop is now
+   `viewerIsAffiliated` — the reader's clearance only — and `GroupMemberRow`, `GroupAdminRow` and
+   `RoleHolderRow` each compute `canOpen = viewerIsAffiliated && row.isAffiliated`, so the two facts
+   no longer share a name. `GroupDetailMemberSchema`, `GroupDetailAdminSchema`, the `groups`
+   feature's `GroupMemberSchema`/`GroupAdminSchema` and `RoleHolderSchema` all carry the field, and
+   the recruiting contact note on `/groups/$groupId` prints an unreachable admin as plain text rather
+   than a link (`toOpenableAdminIds`). Nothing widened affiliation, client or server.
 
 2. **A new §12 decision is owed on the Admin-Rolle holding failsafe.** `BootstrapAdminSeeder`
    calls `EnsureAdminRoleIsHeldAsync` unconditionally on every `StartAsync`: once the Admin Rolle
@@ -783,3 +798,52 @@ Re-run the W5/W6 workflow. It re-enters at round 1 by design, so either edit `w5
 round 2, or let round 1's critics re-read the round-2 shots — they will find less, which is exactly
 the signal the loop's stop condition wants. **Re-seed the dev database first** (§6 item 3): the
 residue described there is still present.
+
+---
+
+## 11. The consolidation slice — run it after W5 settles the surfaces
+
+A composition review of the branch filed nine findings. All nine were spot-verified against the
+source and **all nine are real**; one of them (the four-way fork of `toWriteErrorMessage`) was taken
+immediately because it was user-visible copy, and is recorded in §8. The other eight were
+**declined for this push, together, for one reason: W5 round 2 and W6 are still owed, and W5
+explicitly allows and wants full-page rewrites.** Consolidating surfaces the UX pass is about to
+reshape means doing the work twice and re-taking every screenshot.
+
+They are recorded here so they are not rediscovered a fourth time. Run them as one slice once W5's
+last round has settled the surfaces.
+
+1. **`/members` and `/manage/persons` are the same register built twice** — seven component pairs
+   plus `member-filters.ts`/`person-filters.ts` and `use-member-search`/`use-persons-search`,
+   ~500 lines. `PersonsLetterRail.tsx` and `MembersLetterRail.tsx` diff to **one import path**.
+   Extract one register kit parameterised by row renderer + haystack.
+2. **`AppListLayout`** (`features/session/components/AppListLayout.tsx:8`) is a 15-prop, 4-boolean
+   matrix encoding three real layouts, with `ASIDE_SIZE`/`DETAIL_SIZE` declared twice per surface
+   (body and skeleton) so they can drift silently. Replace with three named layouts, each owning
+   its own `.Skeleton`.
+3. **The Hub's roster admin and the Gruppenverwaltung's override panel** are ~150 lines of the same
+   orchestration written twice (`use-hub-dialogs.ts` / `use-override-dialogs`), and „only one dialog
+   open" has five different encodings on this branch. Collapse onto `useFactEditor`'s discriminated
+   union, the one that is true by construction.
+4. **No shared app-component home.** `PersonPicker` is imported from `@/features/group-hub` by
+   manage-roles (and worded by `group-hub-messages`), and `GroupCardBody` — a Gruppen-feature name —
+   draws a Rolle. Give the app `src/components/` or non-page features, and add the missing
+   feature-boundary rule to the frontend-work skill **by proposal only** (never edit a skill without
+   Florian's explicit OK).
+5. **Six form dialogs hand-assemble the same `KkModalFrame` scaffold**; `KkConfirmDialog` proves the
+   extraction. `CANCEL_LABEL` is declared 16 times, `CLOSE_LABEL` 14, and one 110-character German
+   sentence is pasted into three features.
+6. **Four query+status filter hooks with four vocabularies**, three of which hide their pure filter
+   functions inside `*-labels.ts` copy modules (`manage-roles-labels.ts` is 449 lines of German
+   strings mixed with list projection).
+7. **„this record is archived, so it is read-only" is spelled three ways with two polarities**
+   (`canManage`, `canAdd={!isArchived}`, `isArchived`).
+8. **`useDetailScroll` / `useScrollIntoView` are duplicated**, and two different router idioms drive
+   the same URL-driven selection (`getRouteApi` vs `useSearch` + a hardcoded path string).
+9. **The reset-on-open render-phase idiom is written out nine times**, and `lib/state-chips.ts`
+   descriptors are manually re-spread into `KkChip` at 18 call sites. The fix is an app-level
+   `StateChip` next to `state-chips.ts` — decision Y keeps `@furria/ui` free of the German
+   vocabulary, so it does not belong in the primitive layer.
+
+Also declined, and belonging to item 4 rather than to the debounce it was filed against: moving
+`PersonPicker` out of `group-hub`.
