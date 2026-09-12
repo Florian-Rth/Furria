@@ -3096,6 +3096,12 @@ website spreads `kkTokens.eyebrow` wholesale. The orphan `kkTokens.layout.sticky
 `KkLetterDivider` stopped being sticky in round 3 — replaced by `kkTokens.layout.letterRailZ`,
 which the new rail variant actually reads.
 
+#### 7.1e One primitive from the round-4 integration
+
+| Primitive | Change | Finding |
+|---|---|---|
+| `KkVisuallyHidden` | **new.** A span that is read aloud and never seen — the announcement half of R13's counterpart on the loading side. `AppSkeletonRegion` announces its German label through it instead of an `aria-label` on the region, because an `aria-label` on a `role="status"` container replaces the content it is supposed to introduce. MUI's own `visuallyHidden` from `@mui/utils` is unreachable: `@mui/utils` is a transitive dependency and pnpm's strict layout exposes only `@mui/material` to an app, so the recipe had shipped as app-side CSS in `features/session`. It belongs in the package. | R15/R13, integration |
+
 ### 7.2 `KkIconName` additions
 
 ```

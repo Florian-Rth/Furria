@@ -85,6 +85,7 @@ export { KkTicker } from './KkTicker';
 export type { KkToastRequest, KkToastTone } from './KkToast/KkToast';
 export { KkToastProvider, useKkToast } from './KkToast/KkToast';
 export { KkTwoToneHeadline } from './KkTwoToneHeadline';
+export { KkVisuallyHidden } from './KkVisuallyHidden';
 export type { KkSx } from './kk-sx';
 export type { KkLetterIndexEntry } from './letter-index-cells';
 export type { KkLetterIndexVariant } from './letter-index-variant';
