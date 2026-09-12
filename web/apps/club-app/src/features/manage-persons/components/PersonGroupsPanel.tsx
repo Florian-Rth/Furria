@@ -1,6 +1,8 @@
 import { KkChip, KkEmptyState, KkFactRow, KkNote, KkPanel, KkSinceRow } from '@furria/ui';
 import Stack from '@mui/material/Stack';
+import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { usePermissions } from '@/features/session';
 import { formatPeriod, formatSinceSession } from '@/lib/membership-labels';
 import { READ_ONLY_CHIP } from '@/lib/state-chips';
 import { GROUPS_POINTER, PERSON_SECTION_TITLES, splitPersonGroups } from '../manage-persons-labels';
@@ -10,6 +12,7 @@ import { PersonSection } from './PersonSection';
 const EMPTY_TITLE = 'IN KEINER GRUPPE';
 const SINCE_LABEL = 'seit';
 const PAST_META = 'früher';
+const GROUP_PATH = '/groups/$groupId';
 
 interface PersonGroupsPanelProps {
   groups: readonly PersonGroup[];
@@ -17,17 +20,25 @@ interface PersonGroupsPanelProps {
 }
 
 export const PersonGroupsPanel: FC<PersonGroupsPanelProps> = ({ groups, firstName }) => {
+  const { isAffiliated } = usePermissions();
   const { running, past } = splitPersonGroups(groups);
 
-  const runningRows = running.map((group) => (
-    <KkSinceRow
-      key={`${group.groupId}-${group.joinedOn}`}
-      icon="group"
-      title={group.name}
-      sinceLabel={SINCE_LABEL}
-      sinceValue={formatSinceSession(group.joinedOn)}
-    />
-  ));
+  const runningRows = running.map((group) => {
+    const linkProps = isAffiliated
+      ? { component: Link, to: GROUP_PATH, params: { groupId: String(group.groupId) } }
+      : {};
+
+    return (
+      <KkSinceRow
+        key={`${group.groupId}-${group.joinedOn}`}
+        icon="group"
+        title={group.name}
+        sinceLabel={SINCE_LABEL}
+        sinceValue={formatSinceSession(group.joinedOn)}
+        {...linkProps}
+      />
+    );
+  });
 
   const pastRows = past.map((group) => (
     <KkFactRow
