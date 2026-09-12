@@ -62,13 +62,15 @@ export const toRecruitingChip = (isRecruiting: boolean): StateChip =>
 
 export const ARCHIVED_CHIP: StateChip = { label: 'archiviert', tone: 'neutral', dot: false };
 
+export const UNARCHIVED_LABEL = 'im Verein';
+
 export const NO_ADMIN_CHIP: StateChip = { label: 'kein Admin', tone: 'gold', dot: false };
 
 export const UNHELD_CHIP: StateChip = { label: 'unbesetzt', tone: 'gold', dot: false };
 
 export const GROUP_ADMIN_CHIP: StateChip = { label: 'Gruppen-Admin', tone: 'accent', dot: false };
 
-export const MY_GROUP_CHIP: StateChip = { label: 'deine Gruppe', tone: 'accent', dot: false };
+export const MY_GROUP_CHIP: StateChip = { label: 'deine Gruppe', tone: 'ink', dot: false };
 
 export const READ_ONLY_CHIP: StateChip = { label: 'nur Ansicht', tone: 'neutral', dot: false };
 
@@ -128,7 +130,7 @@ export const toStateFilterOptions = (counts: Record<MembershipState, number>): K
   return [{ id: ALL_STATES_FILTER_ID, label: ALL_STATES_LABEL, count: total }, ...offered];
 };
 
-export type StateStatTone = 'default' | 'accent';
+export type StateStatTone = 'default' | 'muted';
 
 export interface StateStat {
   state: MembershipState;
@@ -142,5 +144,5 @@ export const toStateStats = (counts: Record<MembershipState, number>): StateStat
     state,
     label: toMembershipStateLabel(state),
     count: counts[state],
-    tone: state === 'active' ? 'accent' : 'default',
+    tone: state === 'active' ? 'default' : 'muted',
   }));
