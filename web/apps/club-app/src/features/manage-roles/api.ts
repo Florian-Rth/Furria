@@ -186,6 +186,13 @@ export const useRestoreRoleMutation = (
     onSuccess: (_result, input) => {
       showToast({ tone: 'success', message: toRoleRestoredMessage(input.roleName) });
     },
+    onError: (error) => {
+      const message = toWriteErrorMessage(error);
+
+      if (message !== null) {
+        showToast({ tone: 'error', message });
+      }
+    },
     onSettled: () => {
       refreshRoles(queryClient);
     },
