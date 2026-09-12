@@ -6,8 +6,6 @@ namespace Furria.Infrastructure.Persistence.Configurations;
 
 public sealed class RoleConfiguration : IEntityTypeConfiguration<Role>
 {
-    private const string GermanCollation = "de-DE-x-icu";
-
     public void Configure(EntityTypeBuilder<Role> builder)
     {
         builder.ToTable("role");
@@ -17,7 +15,7 @@ public sealed class RoleConfiguration : IEntityTypeConfiguration<Role>
             .Property(role => role.Name)
             .HasMaxLength(80)
             .IsRequired()
-            .UseCollation(GermanCollation);
+            .UseCollation(GermanCollation.Name);
         builder.Property(role => role.Description).HasMaxLength(400).IsRequired();
 
         builder.HasIndex(role => role.Name).HasDatabaseName("ix_role_name_lookup");
