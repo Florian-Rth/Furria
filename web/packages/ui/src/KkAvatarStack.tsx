@@ -14,6 +14,9 @@ type KkAvatarStackRing = 'paper' | 'raised';
 
 const DEFAULT_MAX = 4;
 const OVERLAP = '-10px';
+const OVERFLOW_GAP = 0.75;
+const CIRCLE = '[data-kk-avatar-stack-circle]';
+const OVERFLOW = '[data-kk-avatar-stack-overflow]';
 const RING_WIDTH = '2.5px';
 const BUBBLE_SIZE = 26;
 const BUBBLE_WASH_LIGHT = '10%';
@@ -55,6 +58,7 @@ export const KkAvatarStack: FC<KkAvatarStackProps> = ({
     plan.overflowLabel === null ? null : (
       <Box
         component="span"
+        data-kk-avatar-stack-overflow
         sx={(theme) => ({
           display: 'inline-flex',
           width: BUBBLE_SIZE,
@@ -89,7 +93,8 @@ export const KkAvatarStack: FC<KkAvatarStackProps> = ({
           alignItems: 'center',
           gap: 0,
           minWidth: 0,
-          '& > span + span': { ml: OVERLAP },
+          [`& > ${CIRCLE} + ${CIRCLE}`]: { ml: OVERLAP },
+          [`& > ${OVERFLOW}`]: { ml: OVERFLOW_GAP },
         },
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
@@ -98,6 +103,7 @@ export const KkAvatarStack: FC<KkAvatarStackProps> = ({
         <Box
           key={circle.key}
           component="span"
+          data-kk-avatar-stack-circle
           sx={(theme) => ({
             display: 'inline-flex',
             borderRadius: '50%',
