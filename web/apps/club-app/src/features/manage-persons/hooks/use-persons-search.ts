@@ -1,6 +1,7 @@
 import type { KkFilterOption, KkLetterIndexEntry } from '@furria/ui';
 import { useState } from 'react';
 import type { MembershipState } from '@/lib/api/schemas';
+import { scrollElementIntoView } from '@/lib/scroll-to';
 import { ALL_STATES_FILTER_ID, toStateFilterOptions } from '@/lib/state-chips';
 import { useLetterPosition } from '@/lib/use-letter-position';
 import { toLetterAnchorId, toLetterAnchors } from '../letter-anchors';
@@ -39,9 +40,7 @@ export const usePersonsSearch = (persons: readonly PersonSummary[]): PersonsSear
 
   const jumpTo = (target: string): void => {
     position.markLetter(target);
-    document
-      .getElementById(toLetterAnchorId(target))
-      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    scrollElementIntoView(document.getElementById(toLetterAnchorId(target)), 'start');
   };
 
   return {
