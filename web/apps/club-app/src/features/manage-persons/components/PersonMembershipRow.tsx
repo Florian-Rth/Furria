@@ -3,7 +3,13 @@ import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { toPeriodChip } from '@/lib/state-chips';
 import type { FactEditor } from '../hooks/use-fact-editor';
-import { MEMBERSHIP_ROW_TITLE, toMembershipSpan } from '../manage-persons-labels';
+import {
+  ADD_PAUSE_ACTION_LABEL,
+  END_MEMBERSHIP_CONFIRM_LABEL,
+  MEMBERSHIP_ROW_TITLE,
+  toMembershipEditActionLabel,
+  toMembershipSpan,
+} from '../manage-persons-labels';
 import type { PersonMembership } from '../schemas';
 import { MembershipEditor } from './MembershipEditor';
 import { PersonPauseRow } from './PersonPauseRow';
@@ -51,6 +57,7 @@ export const PersonMembershipRow: FC<PersonMembershipRowProps> = ({
     );
   }
 
+  const span = toMembershipSpan(membership);
   const periodChip = toPeriodChip(membership.isRunning, membership.isFuture);
 
   const chip =
@@ -61,14 +68,25 @@ export const PersonMembershipRow: FC<PersonMembershipRowProps> = ({
     );
 
   const endButton = membership.isRunning ? (
-    <KkButton size="small" variant="text" tone="danger" onClick={startEnd}>
+    <KkButton
+      size="small"
+      variant="text"
+      tone="danger"
+      ariaLabel={END_MEMBERSHIP_CONFIRM_LABEL}
+      onClick={startEnd}
+    >
       {END_LABEL}
     </KkButton>
   ) : null;
 
   const actions = (
     <>
-      <KkButton size="small" variant="outlined" onClick={startEdit}>
+      <KkButton
+        size="small"
+        variant="text"
+        ariaLabel={toMembershipEditActionLabel(membership)}
+        onClick={startEdit}
+      >
         {EDIT_LABEL}
       </KkButton>
       {endButton}
@@ -103,8 +121,9 @@ export const PersonMembershipRow: FC<PersonMembershipRowProps> = ({
     <Stack direction="row" sx={{ minWidth: 0, pt: 0.75 }}>
       <KkButton
         size="small"
-        variant="outlined"
+        variant="text"
         startIcon={<KkIcon name="add" size="small" />}
+        ariaLabel={ADD_PAUSE_ACTION_LABEL}
         onClick={startAddPause}
       >
         {ADD_PAUSE_LABEL}
@@ -113,12 +132,7 @@ export const PersonMembershipRow: FC<PersonMembershipRowProps> = ({
   );
 
   return (
-    <KkFactRow
-      title={MEMBERSHIP_ROW_TITLE}
-      span={toMembershipSpan(membership)}
-      chip={chip}
-      actions={actions}
-    >
+    <KkFactRow title={MEMBERSHIP_ROW_TITLE} span={span} chip={chip} actions={actions}>
       {pauseRows}
       {addPauseSlot}
     </KkFactRow>

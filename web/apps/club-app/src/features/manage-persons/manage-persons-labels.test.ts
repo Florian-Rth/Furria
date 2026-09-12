@@ -247,12 +247,13 @@ describe('toEndMembershipConsequence', () => {
 });
 
 describe('toEndMembershipFacts', () => {
-  it('states the open end while no day is chosen', () => {
+  it('identifies the period being closed by its own two ends', () => {
     const facts = toEndMembershipFacts(membership({}), 'Anna Adam', null);
 
     expect(facts).toEqual([
       { label: 'Person', value: 'Anna Adam' },
-      { label: 'Mitglied seit', value: '01.03.2018' },
+      { label: 'Dieser Zeitraum seit', value: '01.03.2018' },
+      { label: 'Dieser Zeitraum bis', value: 'offen' },
       { label: 'Letzter Tag', value: 'noch offen' },
     ]);
   });

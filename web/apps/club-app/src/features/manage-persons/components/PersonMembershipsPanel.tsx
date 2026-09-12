@@ -1,7 +1,7 @@
 import { KkButton, KkEmptyState, KkIcon, KkPanel, KkPanelSection } from '@furria/ui';
 import type { FC } from 'react';
 import type { FactEditor } from '../hooks/use-fact-editor';
-import { PERSON_SECTION_TITLES } from '../manage-persons-labels';
+import { ADD_MEMBERSHIP_ACTION_LABEL, PERSON_SECTION_TITLES } from '../manage-persons-labels';
 import type { PersonDetails } from '../schemas';
 import { MembershipEditor } from './MembershipEditor';
 import { PersonMembershipRow } from './PersonMembershipRow';
@@ -28,6 +28,7 @@ export const PersonMembershipsPanel: FC<PersonMembershipsPanelProps> = ({ person
       size="small"
       variant="outlined"
       startIcon={<KkIcon name="add" size="small" />}
+      ariaLabel={ADD_MEMBERSHIP_ACTION_LABEL}
       onClick={startAdd}
     >
       {ADD_LABEL}

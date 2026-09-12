@@ -79,14 +79,18 @@ export const PersonRolesPanel: FC<PersonRolesPanelProps> = ({ roles, firstName }
       </Stack>
     );
 
-  const chip = (
+  const readOnlyChip = (
     <KkChip tone={READ_ONLY_CHIP.tone} dot={READ_ONLY_CHIP.dot}>
       {READ_ONLY_CHIP.label}
     </KkChip>
   );
 
   return (
-    <KkPanelSection title={PERSON_SECTION_TITLES.roles} meta={chip} description={ROLES_POINTER}>
+    <KkPanelSection
+      title={PERSON_SECTION_TITLES.roles}
+      meta={readOnlyChip}
+      description={ROLES_POINTER}
+    >
       <Stack sx={{ gap: 1.25, minWidth: 0 }}>
         {runningPanel}
         {pastPanel}

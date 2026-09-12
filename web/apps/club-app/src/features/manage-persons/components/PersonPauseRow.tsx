@@ -3,7 +3,12 @@ import type { FC } from 'react';
 import { currentSessionYear } from '@/lib/club';
 import { toSessionPeriodChip } from '@/lib/state-chips';
 import type { FactEditor } from '../hooks/use-fact-editor';
-import { PAUSE_ROW_TITLE, SESSION_SPAN_LABEL, toPauseSpan } from '../manage-persons-labels';
+import {
+  PAUSE_ROW_TITLE,
+  SESSION_SPAN_LABEL,
+  toPauseEditActionLabel,
+  toPauseSpan,
+} from '../manage-persons-labels';
 import type { PersonPause } from '../schemas';
 import { PauseEditor } from './PauseEditor';
 
@@ -64,7 +69,12 @@ export const PersonPauseRow: FC<PersonPauseRowProps> = ({
     );
 
   const actions = (
-    <KkButton size="small" variant="outlined" onClick={startEdit}>
+    <KkButton
+      size="small"
+      variant="text"
+      ariaLabel={toPauseEditActionLabel(pause)}
+      onClick={startEdit}
+    >
       {EDIT_LABEL}
     </KkButton>
   );

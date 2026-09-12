@@ -9,6 +9,7 @@ import {
   formatSessionLabel,
   formatSessionSpan,
   formatSinceSession,
+  OPEN_END,
 } from '@/lib/membership-labels';
 import type { StateChip } from '@/lib/state-chips';
 import { toMembershipStateChip, toNoStateMatchLine } from '@/lib/state-chips';
@@ -47,6 +48,7 @@ export const PERSON_SECTION_TITLES = {
 export const GROUPS_POINTER =
   'Gruppen pflegen die Gruppen-Admins. Überschreiben geht in der Gruppenverwaltung.';
 export const ROLES_POINTER = 'Rollen werden unter „Rollen & Rechte“ vergeben.';
+export const VISIBILITY_POINTER = 'Nur die Person selbst ändert das — in ihrem Profil.';
 
 const FEE_REDUCTION_BASIS_LABELS: Record<FeeReductionBasis, string> = {
   minor: 'Minderjährig',
@@ -180,6 +182,19 @@ export const toPauseSpan = (pause: PersonPause): string =>
 export const toFeeReductionSpan = (reduction: PersonFeeReduction): string =>
   formatSessionSpan(reduction.firstSessionYear, reduction.lastSessionYear);
 
+export const ADD_MEMBERSHIP_ACTION_LABEL = 'Zeitraum anlegen';
+export const ADD_PAUSE_ACTION_LABEL = 'Ruhezeit anlegen';
+export const ADD_FEE_REDUCTION_ACTION_LABEL = 'Ermäßigung anlegen';
+
+export const toMembershipEditActionLabel = (membership: PersonMembership): string =>
+  `Zeitraum vom ${toMembershipSpan(membership)} ändern`;
+
+export const toPauseEditActionLabel = (pause: PersonPause): string =>
+  `Ruhezeit ${toPauseSpan(pause)} ändern`;
+
+export const toFeeReductionEditActionLabel = (reduction: PersonFeeReduction): string =>
+  `${toFeeReductionBasisLabel(reduction.basis)} ${toFeeReductionSpan(reduction)} ändern`;
+
 export const toOpenPause = (membership: PersonMembership): PersonPause | null =>
   membership.pauses.find((pause) => pause.lastSessionYear === null) ?? null;
 
@@ -266,7 +281,11 @@ export const toEndMembershipFacts = (
 ): KkConfirmFact[] => {
   const facts: KkConfirmFact[] = [
     { label: 'Person', value: personName },
-    { label: 'Mitglied seit', value: formatIsoDay(membership.startedOn) },
+    { label: 'Dieser Zeitraum seit', value: formatIsoDay(membership.startedOn) },
+    {
+      label: 'Dieser Zeitraum bis',
+      value: membership.endedOn === null ? OPEN_END : formatIsoDay(membership.endedOn),
+    },
     { label: 'Letzter Tag', value: endedOn === null ? 'noch offen' : formatIsoDay(endedOn) },
   ];
   const openPause = toOpenPause(membership);

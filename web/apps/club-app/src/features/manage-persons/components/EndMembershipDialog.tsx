@@ -59,6 +59,7 @@ export const EndMembershipDialog: FC<EndMembershipDialogProps> = ({
   return (
     <KkConfirmDialog
       open={open}
+      tone="danger"
       onClose={onClose}
       onConfirm={form.submit}
       eyebrow={END_MEMBERSHIP_EYEBROW}
