@@ -4,6 +4,7 @@ import {
   toAdminEndConsequence,
   toAdminEndedMessage,
   toAdminEndFacts,
+  toAdminEndParagraph,
   toAdminFunction,
   toAppointConsequence,
   toEndConsequence,
@@ -19,6 +20,7 @@ import {
   toMembershipEndedMessage,
   toSearchCapLine,
   toSearchTerm,
+  toSelfAdminEndedMessage,
 } from './group-hub-labels';
 import type { HubAdmin, HubDetails, HubMember } from './schemas';
 
@@ -73,36 +75,60 @@ describe('toHubId', () => {
 });
 
 describe('toHubHeadline', () => {
-  it('falls back to the section title while the hub is still loading', () => {
-    expect(toHubHeadline(undefined)).toEqual({
+  it('carries nothing but the fallback title while the hub is still loading', () => {
+    expect(toHubHeadline(undefined, 12)).toEqual({
       title: 'Meine Gruppe',
       eyebrow: null,
-      countLine: null,
+      openness: null,
+      subline: null,
     });
   });
 
-  it('tells a plain member that she is one of the people here', () => {
+  it('dates the viewer own standing from her own row', () => {
     const headline = toHubHeadline(
-      hubDetails({ members: [hubMember({}), hubMember({ groupMembershipId: 8 })] }),
+      hubDetails({
+        members: [
+          hubMember({ personId: 12, since: '2016-11-11' }),
+          hubMember({ groupMembershipId: 8, personId: 44 }),
+        ],
+      }),
+      12,
     );
 
     expect(headline).toEqual({
       title: 'Tanzgarde',
-      eyebrow: 'du bist hier dabei',
-      countLine: '2 Personen · kein Gruppen-Admin',
+      eyebrow: 'deine Gruppe seit 2016/17',
+      openness: { label: 'sucht gerade niemanden', tone: 'neutral', dot: false },
+      subline: '2 Personen · kein Gruppen-Admin',
     });
   });
 
-  it('tells a Gruppen-Admin that she runs this Gruppe', () => {
+  it('claims the Gruppe without a date for an admin who is in no row of it', () => {
     const headline = toHubHeadline(
-      hubDetails({ viewerIsAdmin: true, members: [hubMember({})], admins: [hubAdmin({})] }),
+      hubDetails({
+        isRecruiting: true,
+        viewerIsAdmin: true,
+        members: [hubMember({ personId: 44 })],
+        admins: [hubAdmin({ personId: 12 })],
+      }),
+      12,
     );
 
     expect(headline).toEqual({
       title: 'Tanzgarde',
-      eyebrow: 'du bist Gruppen-Admin',
-      countLine: '1 Person · 1 Gruppen-Admin',
+      eyebrow: 'deine Gruppe',
+      openness: { label: 'sucht Verstärkung', tone: 'gold', dot: true },
+      subline: 'du pflegst sie · 1 Person · 1 Gruppen-Admin',
     });
+  });
+
+  it('says nothing about pflegen to a member who is not a Gruppen-Admin', () => {
+    const headline = toHubHeadline(
+      hubDetails({ members: [hubMember({ personId: 12, since: '2020-11-11' })] }),
+      12,
+    );
+
+    expect(headline.subline).toBe('1 Person · kein Gruppen-Admin');
   });
 });
 
@@ -421,5 +447,47 @@ describe('toLastAdminWarning', () => {
     { case: 'one of several', runningAdmins: 2, warned: false },
   ])('warns about $case: $warned', ({ runningAdmins, warned }) => {
     expect(toLastAdminWarning(runningAdmins) !== null).toBe(warned);
+  });
+});
+
+describe('toAdminEndParagraph', () => {
+  it('says nothing when there is nothing to say', () => {
+    expect(toAdminEndParagraph(null, false, 3)).toBeNull();
+  });
+
+  it('keeps the live consequence sentence on its own for someone else', () => {
+    expect(toAdminEndParagraph('Anna kann ab sofort nicht mehr pflegen.', false, 3)).toBe(
+      'Anna kann ab sofort nicht mehr pflegen.',
+    );
+  });
+
+  it('warns the viewer first when the row she is ending is her own', () => {
+    const paragraph = toAdminEndParagraph('Anna kann ab sofort nicht mehr pflegen.', true, 3);
+
+    expect(paragraph).toBe(
+      'Das bist du. Danach kannst du die Gruppe nur noch lesen — neu ernennen kann dich die Gruppenverwaltung. Anna kann ab sofort nicht mehr pflegen.',
+    );
+  });
+
+  it('keeps both warnings in one paragraph when she is also the last admin', () => {
+    const paragraph = toAdminEndParagraph('Anna kann ab sofort nicht mehr pflegen.', true, 1);
+
+    expect(paragraph).toContain('Das bist du.');
+    expect(paragraph).toContain('Anna kann ab sofort nicht mehr pflegen.');
+    expect(paragraph).toContain('hat diese Gruppe keinen Gruppen-Admin mehr');
+  });
+});
+
+describe('toSelfAdminEndedMessage', () => {
+  it('dates a removal that has not happened yet', () => {
+    expect(toSelfAdminEndedMessage('Tanzgarde', '2026-09-01', '2026-03-01')).toBe(
+      'Ab dem 01.09.2026 bist du nicht mehr Gruppen-Admin von Tanzgarde. Lesen kannst du sie weiter — neu ernennen kann dich die Gruppenverwaltung.',
+    );
+  });
+
+  it('reports a removal that takes effect today in the present tense', () => {
+    expect(toSelfAdminEndedMessage('Tanzgarde', '2026-03-01', '2026-03-01')).toBe(
+      'Du bist nicht mehr Gruppen-Admin von Tanzgarde. Lesen kannst du sie weiter — neu ernennen kann dich die Gruppenverwaltung.',
+    );
   });
 });

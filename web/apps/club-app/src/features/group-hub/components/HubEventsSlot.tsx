@@ -1,6 +1,6 @@
 import { KkReservedSlot } from '@furria/ui';
 import type { FC } from 'react';
-import { HUB_SECTION_TITLES } from '../group-hub-labels';
+import { GROUP_SECTION_TITLES } from '@/lib/group-sections';
 import { HubSection } from './HubSection';
 
 const EVENTS_TITLE = 'Noch nicht da';
@@ -9,7 +9,7 @@ const EVENTS_DESCRIPTION =
 const EVENTS_BADGE = 'reserviert';
 
 export const HubEventsSlot: FC = () => (
-  <HubSection title={HUB_SECTION_TITLES.events}>
+  <HubSection title={GROUP_SECTION_TITLES.events}>
     <KkReservedSlot
       icon="calendar"
       title={EVENTS_TITLE}
