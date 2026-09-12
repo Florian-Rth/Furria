@@ -40,6 +40,15 @@ export const MANAGE_GROUPS_FOOTNOTE =
 export const toGroupCountLine = (group: ManagedGroupSummary): string =>
   toGroupSubline(group.memberCount, group.admins.length);
 
+export const ADD_MEMBER_LABEL = 'Mitglied aufnehmen';
+export const ADD_ADMIN_LABEL = 'Admin eintragen';
+
+export const toEndMembershipLabel = (personName: string): string =>
+  `Zugehörigkeit von ${personName} beenden`;
+
+export const toEndAdminLabel = (personName: string): string =>
+  `Gruppen-Admin ${personName} beenden`;
+
 export interface ManagedGroupChips {
   status: StateChip | null;
   openness: StateChip;
@@ -125,12 +134,6 @@ export const filterManagedGroups = (
   );
 
   return matched.sort(byArchivedLastThenName);
-};
-
-export const toManagedGroupRowChip = (group: ManagedGroupSummary): StateChip => {
-  const { status, openness } = toManagedGroupChips(group);
-
-  return status ?? openness;
 };
 
 export const findManagedGroup = (

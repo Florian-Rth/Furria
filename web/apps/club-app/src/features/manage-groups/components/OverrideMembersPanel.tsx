@@ -1,10 +1,10 @@
 import { KkButton, KkEmptyState, KkIcon, KkPanel, KkPanelSection } from '@furria/ui';
 import type { FC } from 'react';
-import { MANAGE_GROUPS_SECTION_TITLES } from '../manage-groups-labels';
+import { ADD_MEMBER_LABEL, MANAGE_GROUPS_SECTION_TITLES } from '../manage-groups-labels';
 import type { ManagedMember } from '../schemas';
 import { OverrideMemberRow } from './OverrideMemberRow';
 
-const ADD_LABEL = 'Mitglied';
+const ADD_TEXT = 'Mitglied';
 const EMPTY_TITLE = 'NOCH NIEMAND DABEI';
 const EMPTY_DESCRIPTION =
   'In dieser Gruppe ist gerade niemand eingetragen. Du kannst jede Person aus dem Register aufnehmen.';
@@ -12,6 +12,7 @@ const EMPTY_DESCRIPTION =
 interface OverrideMembersPanelProps {
   members: readonly ManagedMember[];
   canManage: boolean;
+  canOpenPerson: boolean;
   onAdd: () => void;
   onEnd: (groupMembershipId: number) => void;
 }
@@ -19,6 +20,7 @@ interface OverrideMembersPanelProps {
 export const OverrideMembersPanel: FC<OverrideMembersPanelProps> = ({
   members,
   canManage,
+  canOpenPerson,
   onAdd,
   onEnd,
 }) => {
@@ -27,6 +29,7 @@ export const OverrideMembersPanel: FC<OverrideMembersPanelProps> = ({
       key={member.groupMembershipId}
       member={member}
       canManage={canManage}
+      canOpenPerson={canOpenPerson}
       onEnd={onEnd}
     />
   ));
@@ -35,8 +38,14 @@ export const OverrideMembersPanel: FC<OverrideMembersPanelProps> = ({
   const variant = isEmpty ? 'block' : 'list';
 
   const action = canManage ? (
-    <KkButton size="small" startIcon={<KkIcon name="add" size="small" />} onClick={onAdd}>
-      {ADD_LABEL}
+    <KkButton
+      size="small"
+      variant="outlined"
+      startIcon={<KkIcon name="add" size="small" />}
+      ariaLabel={ADD_MEMBER_LABEL}
+      onClick={onAdd}
+    >
+      {ADD_TEXT}
     </KkButton>
   ) : null;
 

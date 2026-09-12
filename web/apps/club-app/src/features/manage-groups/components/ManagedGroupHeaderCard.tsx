@@ -1,9 +1,20 @@
-import { KkButton, KkChip, KkHeading, KkIcon, KkMeta, KkNote, KkPanel, KkText } from '@furria/ui';
+import {
+  KkButton,
+  KkChip,
+  KkEyebrow,
+  KkHeading,
+  KkIcon,
+  KkMeta,
+  KkNote,
+  KkPanel,
+  KkText,
+} from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { toArchivedSinceLine, toManagedGroupChips } from '../manage-groups-labels';
 import type { ManagedGroupSummary } from '../schemas';
 
+const EYEBROW = 'Gruppe';
 const EDIT_LABEL = 'Bearbeiten';
 const ARCHIVE_LABEL = 'Archivieren';
 const RESTORE_LABEL = 'Aktivieren';
@@ -72,7 +83,8 @@ export const ManagedGroupHeaderCard: FC<ManagedGroupHeaderCardProps> = ({
     <KkPanel variant="block" dimmed={isArchived}>
       <Stack sx={{ gap: 1.75, minWidth: 0 }}>
         <Stack sx={{ gap: 1, minWidth: 0 }}>
-          <KkHeading level={2}>{group.name}</KkHeading>
+          <KkEyebrow tone="accent">{EYEBROW}</KkEyebrow>
+          <KkHeading level={3}>{group.name}</KkHeading>
           <Stack direction="row" sx={{ gap: 0.75, alignItems: 'center', flexWrap: 'wrap' }}>
             {statusChip}
             <KkChip tone={chips.openness.tone} dot={chips.openness.dot}>

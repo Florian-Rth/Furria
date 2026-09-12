@@ -5,15 +5,15 @@ import { MANAGED_GROUPS_EMPTY } from '../manage-groups-labels';
 import type { ManagedGroupSummary } from '../schemas';
 import { ManagedGroupCard } from './ManagedGroupCard';
 
-const CARD_SIZE = { xs: 12, desktop: 4 };
+const CARD_SIZE = { xs: 12, sm: 6, desktop: 4 };
+const FULL_HEIGHT = { height: '100%' } as const;
 
 interface ManagedGroupsGridProps {
   groups: readonly ManagedGroupSummary[];
-  onSelect: (groupId: number) => void;
   isFiltered: boolean;
 }
 
-export const ManagedGroupsGrid: FC<ManagedGroupsGridProps> = ({ groups, onSelect, isFiltered }) => {
+export const ManagedGroupsGrid: FC<ManagedGroupsGridProps> = ({ groups, isFiltered }) => {
   if (groups.length === 0) {
     const empty = isFiltered ? MANAGED_GROUPS_EMPTY.filtered : MANAGED_GROUPS_EMPTY.cold;
 
@@ -28,7 +28,7 @@ export const ManagedGroupsGrid: FC<ManagedGroupsGridProps> = ({ groups, onSelect
     <Grid container spacing={{ xs: 2, desktop: 2.5 }} sx={{ minWidth: 0 }}>
       {groups.map((group) => (
         <Grid key={group.groupId} size={CARD_SIZE} sx={{ minWidth: 0 }}>
-          <ManagedGroupCard group={group} onSelect={onSelect} />
+          <ManagedGroupCard group={group} sx={FULL_HEIGHT} />
         </Grid>
       ))}
     </Grid>
