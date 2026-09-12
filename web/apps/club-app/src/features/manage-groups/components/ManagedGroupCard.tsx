@@ -26,7 +26,7 @@ export const ManagedGroupCard: FC<ManagedGroupCardProps> = ({ group, onSelect })
     );
 
   return (
-    <KkPanel variant="block" dimmed={isArchived} onClick={select}>
+    <KkPanel variant="block" dimmed={isArchived} onClick={select} sx={{ height: '100%' }}>
       <Stack sx={{ gap: 1, minWidth: 0 }}>
         <KkHeading level={3}>{group.name}</KkHeading>
         <KkMeta>{countLine}</KkMeta>

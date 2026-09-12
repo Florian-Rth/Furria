@@ -43,6 +43,7 @@ const toneStyles: Record<KkPanelTone, (theme: Theme) => CSSObject> = {
 };
 
 const interactivePaint = (theme: Theme): CSSObject => ({
+  width: '100%',
   appearance: 'none',
   textAlign: 'left',
   textDecoration: 'none',
