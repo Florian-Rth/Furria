@@ -1,11 +1,12 @@
 import { KkConfirmDialog, KkDateField } from '@furria/ui';
 import type { FC } from 'react';
+import { useMeQuery } from '@/features/session';
 import {
   toAdminEndExplanation,
   toAdminEndFacts,
+  toAdminEndParagraph,
   toAdminEndQuestion,
   toEndQuickChoices,
-  toLastAdminWarning,
 } from '../group-hub-labels';
 import { useEndAdminForm } from '../hooks/use-end-admin-form';
 import type { HubAdmin } from '../schemas';
@@ -16,7 +17,6 @@ const DATE_HINT = 'Dieser Tag zählt noch dazu.';
 const CLOSE_LABEL = 'Schließen';
 const CANCEL_LABEL = 'Abbrechen';
 const CONFIRM_LABEL = 'Gruppen-Admin beenden';
-const SENTENCE_SEPARATOR = ' ';
 
 interface EndAdminDialogProps {
   groupId: number;
@@ -34,7 +34,9 @@ export const EndAdminDialog: FC<EndAdminDialogProps> = ({
   onClose,
 }) => {
   const open = admin !== null;
-  const form = useEndAdminForm({ groupId, admin, open, onEnded: onClose });
+  const me = useMeQuery();
+  const isSelf = admin !== null && admin.personId === me.data?.person.id;
+  const form = useEndAdminForm({ groupId, groupName, admin, isSelf, open, onEnded: onClose });
   const target = form.admin;
 
   if (target === null) {
@@ -52,16 +54,14 @@ export const EndAdminDialog: FC<EndAdminDialogProps> = ({
     />
   );
 
-  const warning = toLastAdminWarning(runningAdmins);
-  const consequenceParts = [form.consequence, warning].filter((part) => part !== null);
-  const consequence =
-    consequenceParts.length === 0 ? undefined : consequenceParts.join(SENTENCE_SEPARATOR);
+  const consequence = toAdminEndParagraph(form.consequence, isSelf, runningAdmins) ?? undefined;
 
   return (
     <KkConfirmDialog
       open={open}
       onClose={onClose}
       onConfirm={form.submit}
+      tone="danger"
       eyebrow={EYEBROW}
       question={toAdminEndQuestion(target.firstName)}
       explanation={toAdminEndExplanation(target.firstName, groupName)}

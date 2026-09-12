@@ -15,6 +15,7 @@ import {
   toAdminEndedMessage,
   toMemberAddedMessage,
   toMembershipEndedMessage,
+  toSelfAdminEndedMessage,
 } from './group-hub-labels';
 import { toWriteErrorMessage } from './group-hub-messages';
 import {
@@ -70,6 +71,8 @@ export interface AddAdminInput {
 export interface EndAdminInput {
   groupAdminId: number;
   personName: string;
+  groupName: string;
+  isSelf: boolean;
   endedOn: string;
 }
 
@@ -239,9 +242,19 @@ export const useEndGroupAdminMutation = (
         ),
       ),
     onSuccess: (_result, input) => {
-      const message = toAdminEndedMessage(input.personName, input.endedOn, toIsoDay(new Date()));
+      const today = toIsoDay(new Date());
 
-      showToast({ tone: 'success', message });
+      if (input.isSelf) {
+        showToast({
+          tone: 'info',
+          message: toSelfAdminEndedMessage(input.groupName, input.endedOn, today),
+        });
+      } else {
+        showToast({
+          tone: 'success',
+          message: toAdminEndedMessage(input.personName, input.endedOn, today),
+        });
+      }
       refreshHub(queryClient, groupId);
     },
     onError: () => {
