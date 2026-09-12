@@ -82,7 +82,7 @@ public sealed class PostPersonValidator : Validator<PostPersonRequest>
         RuleFor(request => request.Email)
             .MaximumLength(PersonLimits.EmailLength)
             .EmailAddress()
-            .When(request => !string.IsNullOrEmpty(request.Email));
+            .When(request => request.Email is not (null or ""));
         RuleFor(request => request.Phone).MaximumLength(PersonLimits.PhoneLength);
         RuleFor(request => request.Street).MaximumLength(PersonLimits.StreetLength);
         RuleFor(request => request.Zip).MaximumLength(PersonLimits.ZipLength);
