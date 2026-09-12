@@ -6,40 +6,58 @@ import { KkBroomMark } from './KkBroomMark';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
+type KkEmptyStateSize = 'panel' | 'page';
+
 const MARK_SIZE = 56;
 
 interface KkEmptyStateProps {
   title: string;
   description: string;
+  size?: KkEmptyStateSize;
   action?: ReactNode;
   sx?: KkSx;
 }
 
-export const KkEmptyState: FC<KkEmptyStateProps> = ({ title, description, action, sx }) => (
-  <Stack
-    data-kk-empty-state
-    sx={[
-      {
-        alignItems: 'center',
-        textAlign: 'center',
-        gap: 1.25,
-        minWidth: 0,
-        px: 2.75,
-        py: 3,
-      },
-      ...(Array.isArray(sx) ? sx : [sx]),
-    ]}
-  >
-    <KkBroomMark size={MARK_SIZE} sx={{ color: 'text.disabled' }} />
+export const KkEmptyState: FC<KkEmptyStateProps> = ({
+  title,
+  description,
+  size = 'page',
+  action,
+  sx,
+}) => {
+  const isPanel = size === 'panel';
+  const mark = isPanel ? null : <KkBroomMark size={MARK_SIZE} sx={{ color: 'text.disabled' }} />;
+  const headline = isPanel ? null : (
     <Typography component="p" sx={{ ...displayTitle, textWrap: 'balance' }}>
       {title}
     </Typography>
-    <Typography
-      variant="body2"
-      sx={{ color: 'text.secondary', maxWidth: kkTokens.measure.empty, textWrap: 'pretty' }}
+  );
+
+  return (
+    <Stack
+      data-kk-empty-state
+      data-kk-empty-state-size={size}
+      sx={[
+        {
+          alignItems: 'center',
+          textAlign: 'center',
+          gap: isPanel ? 0.75 : 1.25,
+          minWidth: 0,
+          px: 2.75,
+          py: isPanel ? 2 : 3,
+        },
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
     >
-      {description}
-    </Typography>
-    {action}
-  </Stack>
-);
+      {mark}
+      {headline}
+      <Typography
+        variant="body2"
+        sx={{ color: 'text.secondary', maxWidth: kkTokens.measure.empty, textWrap: 'pretty' }}
+      >
+        {description}
+      </Typography>
+      {action}
+    </Stack>
+  );
+};

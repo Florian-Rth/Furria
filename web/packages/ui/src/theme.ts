@@ -1,5 +1,6 @@
 import type { PaletteOptions } from '@mui/material/styles';
 import { createTheme } from '@mui/material/styles';
+import { redInk } from './internal/red-ink';
 import type { KkColorTokens } from './tokens';
 import { kkTokens } from './tokens';
 
@@ -77,6 +78,10 @@ export const kkTheme = createTheme({
           '0%, 100%': { opacity: 0.5 },
           '50%': { opacity: 1 },
         },
+        '@keyframes kk-row-highlight': {
+          from: { opacity: 1 },
+          to: { opacity: 0 },
+        },
         '@media (prefers-reduced-motion: reduce)': {
           '*, *::before, *::after': {
             animationDuration: '0.01ms !important',
@@ -136,9 +141,10 @@ export const kkTheme = createTheme({
     },
     MuiInputLabel: {
       styleOverrides: {
-        root: {
+        root: ({ theme }) => ({
           fontWeight: 700,
-        },
+          '&.Mui-focused': redInk(theme),
+        }),
       },
     },
     MuiAlert: {

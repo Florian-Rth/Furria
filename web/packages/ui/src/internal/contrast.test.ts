@@ -78,6 +78,68 @@ describe('the red accent text — eyebrows, row meta and hovered row titles', ()
   });
 });
 
+describe('the selected register letter', () => {
+  it.each([
+    { scheme: 'light', ink: light.redInk, wash: washOver(light.red, '10%', light.panel) },
+    { scheme: 'dark', ink: dark.redInk, wash: washOver(dark.red, '18%', dark.panel) },
+  ])('clears AA on the accent wash in $scheme', ({ ink, wash }) => {
+    expect(contrastRatio(ink, wash)).toBeGreaterThanOrEqual(AA_SMALL_TEXT);
+  });
+
+  it.each([
+    { scheme: 'light', fill: light.red, wash: washOver(light.red, '10%', light.panel) },
+    { scheme: 'dark', fill: dark.red, wash: washOver(dark.red, '18%', dark.panel) },
+  ])('is why the fill token cannot carry it in $scheme', ({ fill, wash }) => {
+    expect(contrastRatio(fill, wash)).toBeLessThan(AA_SMALL_TEXT);
+  });
+});
+
+describe('the focused field label on the notch', () => {
+  it.each([
+    { scheme: 'light', ink: light.redInk, ground: light.panel },
+    { scheme: 'dark', ink: dark.redInk, ground: dark.panel },
+  ])('clears AA in $scheme', ({ ink, ground }) => {
+    expect(contrastRatio(ink, ground)).toBeGreaterThanOrEqual(AA_SMALL_TEXT);
+  });
+
+  it('is why the primary fill token cannot carry it on the cream notch', () => {
+    expect(contrastRatio(light.red, light.panel)).toBeLessThan(AA_SMALL_TEXT);
+  });
+});
+
+describe('the switch-row validation line', () => {
+  it.each([
+    { scheme: 'light', ink: light.redInk, panel: light.panel },
+    { scheme: 'dark', ink: dark.redInk, panel: dark.panel },
+  ])('clears AA on the panel it paints on in $scheme', ({ ink, panel }) => {
+    expect(contrastRatio(ink, panel)).toBeGreaterThanOrEqual(AA_SMALL_TEXT);
+  });
+
+  it('is why the destructive fill token cannot carry it on the dark panel', () => {
+    expect(contrastRatio(dark.redDk, dark.panel)).toBeLessThan(AA_SMALL_TEXT);
+  });
+});
+
+describe('the dark app chrome', () => {
+  const chrome = kkTokens.chrome.light.sideBg;
+
+  it.each([
+    { role: 'the active nav label', ink: dark.ink },
+    { role: 'a resting nav label', ink: dark.sub },
+    { role: 'the active nav icon', ink: dark.red },
+    { role: 'a red accent string', ink: dark.redInk },
+  ])('clears AA for $role on the side ground', ({ ink }) => {
+    expect(contrastRatio(ink, chrome)).toBeGreaterThanOrEqual(AA_SMALL_TEXT);
+  });
+
+  it('clears AA for the neutral hint chip on the side ground', () => {
+    const recipe = toneRecipes.neutral;
+    const ground = washOver(dark.ink, recipe.groundDark, chrome);
+
+    expect(contrastRatio(recipe.inkDark, ground)).toBeGreaterThanOrEqual(AA_SMALL_TEXT);
+  });
+});
+
 const CHIP_TONES = [
   { tone: 'neutral', lightSource: light.ink, darkSource: dark.ink },
   { tone: 'ink', lightSource: light.ink, darkSource: dark.ink },

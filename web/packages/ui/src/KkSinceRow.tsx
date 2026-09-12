@@ -20,6 +20,7 @@ type KkSinceRowTone = 'neutral' | 'accent';
 const TILE_SIZE = 30;
 const TILE_WASH_LIGHT = '8%';
 const TILE_WASH_DARK = '14%';
+const TITLE_UNDERLINE_OFFSET = '0.22em';
 
 const toneTile: Record<KkSinceRowTone, (theme: Theme) => CSSObject> = {
   neutral: (theme) => ({
@@ -47,6 +48,39 @@ const titleHoverPaint = (theme: Theme): CSSObject => ({
   },
 });
 
+const titleLinkPaint: CSSObject = {
+  position: 'relative',
+  textDecoration: 'underline',
+  textDecorationThickness: kkTokens.line.hair,
+  textUnderlineOffset: TITLE_UNDERLINE_OFFSET,
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: '50%',
+    height: kkTokens.tapTarget,
+    transform: 'translateY(-50%)',
+  },
+};
+
+const highlightPaint = (theme: Theme): CSSObject => ({
+  position: 'relative',
+  isolation: 'isolate',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    insetBlock: 0,
+    insetInline: 0,
+    zIndex: -1,
+    pointerEvents: 'none',
+    borderRadius: `${kkTokens.radius.bar}px`,
+    ...accentWash(theme),
+    animation: kkTokens.motion.rowHighlight,
+    '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
+  },
+});
+
 const META_SEPARATOR = ' · ';
 const WIDE_ONLY = { display: { xs: 'none', desktop: 'block' } } as const;
 const COMPACT_ONLY = { display: { xs: 'block', desktop: 'none' } } as const;
@@ -61,6 +95,7 @@ interface KkSinceRowProps {
   tone?: KkSinceRowTone;
   trailing?: ReactNode;
   dimmed?: boolean;
+  highlight?: boolean;
   component?: ElementType;
   to?: string;
   params?: Record<string, string>;
@@ -81,6 +116,7 @@ export const KkSinceRow: FC<KkSinceRowProps> = ({
   tone = 'neutral',
   trailing,
   dimmed = false,
+  highlight = false,
   component,
   to,
   params,
@@ -156,7 +192,9 @@ export const KkSinceRow: FC<KkSinceRowProps> = ({
       </Stack>
     );
 
-  const chevron = interactive ? (
+  const showsChevron = interactive || (titleInteractive && trailingSlot === null);
+
+  const chevron = showsChevron ? (
     <Box
       component="span"
       data-kk-since-row-chevron
@@ -193,6 +231,7 @@ export const KkSinceRow: FC<KkSinceRowProps> = ({
           ...rowDividerTop,
           ...focusRing(theme),
           ...(interactive ? hoverPaint(theme) : {}),
+          ...(highlight ? highlightPaint(theme) : {}),
         }),
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
@@ -214,6 +253,7 @@ export const KkSinceRow: FC<KkSinceRowProps> = ({
             overflowWrap: 'anywhere',
             textDecoration: 'none',
             cursor: titleInteractive ? 'pointer' : 'inherit',
+            ...(titleInteractive ? titleLinkPaint : {}),
             ...(titleInteractive ? focusRing(theme) : {}),
             ...(titleInteractive ? titleHoverPaint(theme) : {}),
           })}

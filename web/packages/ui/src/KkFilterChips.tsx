@@ -1,15 +1,20 @@
+import ButtonBase from '@mui/material/ButtonBase';
 import Stack from '@mui/material/Stack';
 import type { CSSObject, Theme } from '@mui/material/styles';
-import ToggleButton from '@mui/material/ToggleButton';
-import type { FC, MouseEvent } from 'react';
+import type { FC, KeyboardEvent, MouseEvent } from 'react';
+import { useEffect, useRef } from 'react';
 import type { KkFilterOption } from './filter-chip-entries';
 import { toFilterChipEntries } from './filter-chip-entries';
 import { focusRing } from './internal/focus-ring';
+import { nextRovingId } from './internal/roving-focus';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
 const CHIP_FONT_SIZE = '0.75rem';
-const WRAPPABLE_OPTION_COUNT = 5;
+const CHIP_ATTRIBUTE = 'data-kk-filter-chip';
+const SELECTED_CHIP = `[${CHIP_ATTRIBUTE}][aria-checked="true"]`;
+const FADE_WIDTH = 36;
+const EDGE_FADE = `linear-gradient(to right, #000 calc(100% - ${FADE_WIDTH}px), transparent)`;
 
 const chipStyles = (theme: Theme): CSSObject => ({
   flexShrink: 0,
@@ -29,7 +34,7 @@ const chipStyles = (theme: Theme): CSSObject => ({
   color: 'text.secondary',
   backgroundColor: 'transparent',
   ...focusRing(theme),
-  '&.Mui-selected': {
+  '&[aria-checked="true"]': {
     color: 'background.paper',
     backgroundColor: 'text.primary',
     borderColor: 'text.primary',
@@ -47,17 +52,45 @@ interface KkFilterChipsProps {
 
 export const KkFilterChips: FC<KkFilterChipsProps> = ({ label, options, value, onChange, sx }) => {
   const entries = toFilterChipEntries(options, value);
-  const wraps = entries.length <= WRAPPABLE_OPTION_COUNT;
+  const stripRef = useRef<HTMLDivElement>(null);
+  const ids = entries.map((entry) => entry.id);
+  const tabbableId = entries.find((entry) => entry.selected)?.id ?? ids[0];
 
-  const selectEntry = (_event: MouseEvent<HTMLElement>, id: string): void => {
+  useEffect(() => {
+    const selected = stripRef.current?.querySelector(SELECTED_CHIP) ?? null;
+
+    selected?.scrollIntoView({ block: 'nearest', inline: 'center' });
+  }, [value]);
+
+  const selectEntry = (event: MouseEvent<HTMLElement>): void => {
+    const id = event.currentTarget.dataset.kkFilterChip;
+
+    if (id === undefined) {
+      return;
+    }
+
     onChange(id);
+  };
+
+  const moveSelection = (event: KeyboardEvent<HTMLDivElement>): void => {
+    const target = nextRovingId(ids, value, event.key);
+
+    if (target === null) {
+      return;
+    }
+
+    event.preventDefault();
+    onChange(target);
+    stripRef.current?.querySelector<HTMLButtonElement>(`[${CHIP_ATTRIBUTE}="${target}"]`)?.focus();
   };
 
   return (
     <Stack
+      ref={stripRef}
       direction="row"
-      role="group"
+      role="radiogroup"
       aria-label={label}
+      onKeyDown={moveSelection}
       data-kk-filter-chips
       sx={[
         {
@@ -65,8 +98,9 @@ export const KkFilterChips: FC<KkFilterChipsProps> = ({ label, options, value, o
           gap: 0.875,
           minWidth: 0,
           maxWidth: '100%',
-          flexWrap: wraps ? 'wrap' : { xs: 'nowrap', desktop: 'wrap' },
-          overflowX: wraps ? 'visible' : { xs: 'auto', desktop: 'visible' },
+          flexWrap: { xs: 'nowrap', desktop: 'wrap' },
+          overflowX: { xs: 'auto', desktop: 'visible' },
+          maskImage: { xs: EDGE_FADE, desktop: 'none' },
           scrollbarWidth: 'none',
           '&::-webkit-scrollbar': { display: 'none' },
         },
@@ -74,15 +108,17 @@ export const KkFilterChips: FC<KkFilterChipsProps> = ({ label, options, value, o
       ]}
     >
       {entries.map((entry) => (
-        <ToggleButton
+        <ButtonBase
           key={entry.id}
-          value={entry.id}
-          selected={entry.selected}
-          onChange={selectEntry}
+          role="radio"
+          aria-checked={entry.selected}
+          tabIndex={entry.id === tabbableId ? 0 : -1}
+          onClick={selectEntry}
+          data-kk-filter-chip={entry.id}
           sx={chipStyles}
         >
           {entry.text}
-        </ToggleButton>
+        </ButtonBase>
       ))}
     </Stack>
   );

@@ -44,7 +44,7 @@ export const RoleHoldersPanel: FC<RoleHoldersPanelProps> = ({
   const isEmpty = rows.length === 0;
 
   const body = isEmpty ? (
-    <KkEmptyState title={EMPTY_TITLE} description={EMPTY_DESCRIPTION} />
+    <KkEmptyState size="panel" title={EMPTY_TITLE} description={EMPTY_DESCRIPTION} />
   ) : (
     rows
   );

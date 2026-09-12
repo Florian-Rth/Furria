@@ -7,6 +7,9 @@ import { useAppShellCurtain } from '../logic/app-shell-curtain-context';
 
 const CLOSE_SIZE = 34;
 const CLOSE_LABEL = 'Menü schließen';
+const MUI_FOCUS_TARGET_ATTRIBUTE = 'data-mui-focusable';
+
+const initialFocusTarget = { [MUI_FOCUS_TARGET_ATTRIBUTE]: '' };
 
 export const KkAppShellCurtainClose: FC = () => {
   const curtain = useAppShellCurtain();
@@ -15,6 +18,7 @@ export const KkAppShellCurtainClose: FC = () => {
     <Stack
       component="button"
       type="button"
+      {...initialFocusTarget}
       aria-label={CLOSE_LABEL}
       onClick={curtain.close}
       data-kk-app-shell-curtain-close

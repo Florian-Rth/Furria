@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import type { CSSObject, Theme } from '@mui/material/styles';
 import type { ElementType, FC, PropsWithChildren } from 'react';
@@ -7,12 +8,14 @@ import { raisedSurfaceScheme } from './internal/raised-surface';
 import { redInk } from './internal/red-ink';
 import type { KkScheme } from './internal/scheme-paint';
 import { applyScheme, schemeEdge } from './internal/scheme-paint';
+import { KkIcon } from './KkIcon';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
 type KkPanelVariant = 'list' | 'block';
 type KkPanelTone = 'cream' | 'raised' | 'reserved' | 'editing';
 
+const CHEVRON_MIN_HEIGHT = 22;
 const RESERVED_EDGE_LIGHT = '28%';
 const RESERVED_EDGE_DARK = '32%';
 
@@ -57,6 +60,7 @@ const interactivePaint = (theme: Theme): CSSObject => ({
     '&:hover': {
       borderColor: 'primary.main',
       '& [data-kk-heading]': redInk(theme),
+      '& [data-kk-panel-chevron]': { color: 'text.primary' },
     },
   },
 });
@@ -70,6 +74,7 @@ interface KkPanelProps extends PropsWithChildren {
   variant?: KkPanelVariant;
   tone?: KkPanelTone;
   dimmed?: boolean;
+  chevron?: boolean;
   component?: ElementType;
   to?: string;
   params?: Record<string, string>;
@@ -82,6 +87,7 @@ export const KkPanel: FC<KkPanelProps> = ({
   variant = 'list',
   tone = 'cream',
   dimmed = false,
+  chevron = true,
   component,
   to,
   params,
@@ -94,6 +100,27 @@ export const KkPanel: FC<KkPanelProps> = ({
   const panelComponent = component ?? (onClick === undefined ? 'div' : 'button');
   const routeProps = component === undefined ? {} : { to, params, search };
   const nativeProps = panelComponent === 'button' ? { type: 'button' as const } : {};
+
+  const chevronSlot =
+    interactive && chevron ? (
+      <Box
+        aria-hidden
+        component="span"
+        data-kk-panel-chevron
+        sx={{
+          display: 'inline-flex',
+          alignSelf: 'flex-end',
+          flexShrink: 0,
+          minHeight: CHEVRON_MIN_HEIGHT,
+          alignItems: 'center',
+          color: 'text.secondary',
+          mt: 'auto',
+          pt: 0.75,
+        }}
+      >
+        <KkIcon name="chevron" size="small" />
+      </Box>
+    ) : null;
 
   return (
     <Stack
@@ -117,6 +144,7 @@ export const KkPanel: FC<KkPanelProps> = ({
       ]}
     >
       {children}
+      {chevronSlot}
     </Stack>
   );
 };

@@ -6,7 +6,7 @@ export interface KkLetterIndexEntry {
 export interface KkLetterIndexCell {
   letter: string;
   disabled: boolean;
-  selected: boolean;
+  current: boolean;
 }
 
 export const toLetterIndexCells = (
@@ -16,5 +16,5 @@ export const toLetterIndexCells = (
   letters.map((entry) => ({
     letter: entry.letter,
     disabled: !entry.enabled,
-    selected: entry.enabled && entry.letter === current,
+    current: entry.enabled && entry.letter === current,
   }));

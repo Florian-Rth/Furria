@@ -1,27 +1,42 @@
+import ButtonBase from '@mui/material/ButtonBase';
 import Stack from '@mui/material/Stack';
 import type { CSSObject, Theme } from '@mui/material/styles';
-import ToggleButton from '@mui/material/ToggleButton';
-import type { FC, MouseEvent } from 'react';
-import { useEffect, useRef } from 'react';
+import type { FC, KeyboardEvent, MouseEvent } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { accentWash } from './internal/accent-wash';
 import { focusRing } from './internal/focus-ring';
+import { redInk } from './internal/red-ink';
+import { nextRovingId } from './internal/roving-focus';
 import type { KkSx } from './kk-sx';
 import type { KkLetterIndexEntry } from './letter-index-cells';
 import { toLetterIndexCells } from './letter-index-cells';
 import { kkTokens } from './tokens';
 
-const CELL_SIZE = 25;
+const CELL_WIDTH_TOUCH = 32;
+const CELL_HEIGHT_TOUCH = 38;
+const CELL_SIZE_COMPACT = 25;
 const CELL_FONT_SIZE = '0.8125rem';
-const SELECTED_CELL = '[data-kk-letter-index-cell][aria-pressed="true"]';
+const CELL_ATTRIBUTE = 'data-kk-letter-index-cell';
+const CURRENT_CELL = `[${CELL_ATTRIBUTE}][aria-current="location"]`;
+const UNDERLINE_WIDTH = '58%';
+const UNDERLINE_INSET = '14%';
 
 const cellStyles = (theme: Theme): CSSObject => ({
-  width: CELL_SIZE,
-  height: CELL_SIZE,
-  minWidth: CELL_SIZE,
-  minHeight: CELL_SIZE,
+  position: 'relative',
+  width: CELL_WIDTH_TOUCH,
+  height: CELL_HEIGHT_TOUCH,
+  minWidth: CELL_WIDTH_TOUCH,
+  minHeight: CELL_HEIGHT_TOUCH,
+  flexShrink: 0,
   padding: 0,
-  borderWidth: 0,
-  borderRadius: '50%',
+  borderRadius: `${kkTokens.radius.pill}px`,
+  [theme.breakpoints.up('sm')]: {
+    width: CELL_SIZE_COMPACT,
+    height: CELL_SIZE_COMPACT,
+    minWidth: CELL_SIZE_COMPACT,
+    minHeight: CELL_SIZE_COMPACT,
+    borderRadius: '50%',
+  },
   fontFamily: kkTokens.font.display,
   fontSize: CELL_FONT_SIZE,
   fontWeight: kkTokens.font.displayWeight,
@@ -31,13 +46,22 @@ const cellStyles = (theme: Theme): CSSObject => ({
   backgroundColor: 'transparent',
   ...focusRing(theme),
   '&.Mui-disabled': {
-    borderWidth: 0,
     color: (theme.vars ?? theme).palette.text.disabled,
   },
-  '&.Mui-selected': {
-    color: (theme.vars ?? theme).palette.primary.main,
+  '&[aria-current="location"]': {
+    ...redInk(theme),
     ...accentWash(theme),
-    '&:hover': accentWash(theme),
+    '&::after': {
+      content: '""',
+      position: 'absolute',
+      left: '50%',
+      bottom: UNDERLINE_INSET,
+      transform: 'translateX(-50%)',
+      width: UNDERLINE_WIDTH,
+      height: kkTokens.line.section,
+      borderRadius: `${kkTokens.radius.bar}px`,
+      backgroundColor: 'currentColor',
+    },
   },
 });
 
@@ -47,7 +71,7 @@ const variantLayout: Record<KkLetterIndexVariant, KkSx> = {
   grid: { flexWrap: 'wrap' },
   strip: {
     flexWrap: { xs: 'wrap', sm: 'nowrap' },
-    gap: { xs: 0.25, sm: 0.5 },
+    gap: { xs: 0.75, sm: 0.5 },
     overflowX: { xs: 'visible', sm: 'auto' },
     scrollbarWidth: 'none',
     '&::-webkit-scrollbar': { display: 'none' },
@@ -73,38 +97,64 @@ export const KkLetterIndex: FC<KkLetterIndexProps> = ({
 }) => {
   const cells = toLetterIndexCells(letters, current);
   const stripRef = useRef<HTMLDivElement>(null);
+  const [focusedLetter, setFocusedLetter] = useState<string | null>(null);
+
+  const reachable = cells.filter((cell) => !cell.disabled).map((cell) => cell.letter);
+  const fallbackLetter = reachable.find((letter) => letter === current) ?? reachable[0];
+  const tabbableLetter =
+    focusedLetter !== null && reachable.includes(focusedLetter) ? focusedLetter : fallbackLetter;
 
   useEffect(() => {
-    const selected = stripRef.current?.querySelector(SELECTED_CELL) ?? null;
+    const marked = stripRef.current?.querySelector(CURRENT_CELL) ?? null;
 
-    selected?.scrollIntoView({ block: 'nearest', inline: 'center' });
+    marked?.scrollIntoView({ block: 'nearest', inline: 'center' });
   }, [current]);
 
-  const selectLetter = (_event: MouseEvent<HTMLElement>, letter: string): void => {
+  const selectCell = (event: MouseEvent<HTMLButtonElement>): void => {
+    const letter = event.currentTarget.dataset.kkLetterIndexCell;
+
+    if (letter === undefined) {
+      return;
+    }
+
+    setFocusedLetter(letter);
     onSelect(letter);
+  };
+
+  const moveFocus = (event: KeyboardEvent<HTMLDivElement>): void => {
+    const target = nextRovingId(reachable, tabbableLetter, event.key);
+
+    if (target === null) {
+      return;
+    }
+
+    event.preventDefault();
+    setFocusedLetter(target);
+    stripRef.current?.querySelector<HTMLButtonElement>(`[${CELL_ATTRIBUTE}="${target}"]`)?.focus();
   };
 
   return (
     <Stack
       ref={stripRef}
       direction="row"
-      role="group"
+      role="toolbar"
       aria-label={label}
+      onKeyDown={moveFocus}
       data-kk-letter-index
       sx={[{ gap: 0.5, minWidth: 0 }, variantLayout[variant], ...(Array.isArray(sx) ? sx : [sx])]}
     >
       {cells.map((cell) => (
-        <ToggleButton
+        <ButtonBase
           key={cell.letter}
-          value={cell.letter}
-          selected={cell.selected}
           disabled={cell.disabled}
-          onChange={selectLetter}
-          data-kk-letter-index-cell
+          onClick={selectCell}
+          aria-current={cell.current ? 'location' : undefined}
+          tabIndex={cell.letter === tabbableLetter ? 0 : -1}
+          data-kk-letter-index-cell={cell.letter}
           sx={cellStyles}
         >
           {cell.letter}
-        </ToggleButton>
+        </ButtonBase>
       ))}
     </Stack>
   );
