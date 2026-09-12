@@ -1,18 +1,18 @@
 import { KkSelectRow } from '@furria/ui';
+import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import type { RoleMasterEntry } from '../manage-roles-labels';
 import { RoleStateChips } from './RoleStateChips';
 
+const ROLES_PATH = '/manage/roles';
+
 interface RolesMasterRowProps {
   entry: RoleMasterEntry;
   selected: boolean;
-  onSelect: (roleId: number) => void;
 }
 
-export const RolesMasterRow: FC<RolesMasterRowProps> = ({ entry, selected, onSelect }) => {
-  const select = (): void => {
-    onSelect(entry.roleId);
-  };
+export const RolesMasterRow: FC<RolesMasterRowProps> = ({ entry, selected }) => {
+  const search = { role: entry.roleId };
 
   return (
     <KkSelectRow
@@ -21,7 +21,9 @@ export const RolesMasterRow: FC<RolesMasterRowProps> = ({ entry, selected, onSel
       trailing={<RoleStateChips isArchived={entry.isArchived} isUnheld={entry.isUnheld} />}
       selected={selected}
       dimmed={entry.isArchived && !selected}
-      onClick={select}
+      component={Link}
+      to={ROLES_PATH}
+      search={search}
     />
   );
 };
