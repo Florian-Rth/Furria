@@ -44,7 +44,7 @@ export const HubHistoryPanel: FC<HubHistoryPanelProps> = ({ pastMembers, pastAdm
   const variant = isEmpty ? 'block' : 'list';
 
   const body = isEmpty ? (
-    <KkEmptyState icon="archive" title={NO_HISTORY_TITLE} description={NO_HISTORY_DESCRIPTION} />
+    <KkEmptyState title={NO_HISTORY_TITLE} description={NO_HISTORY_DESCRIPTION} />
   ) : (
     rows
   );

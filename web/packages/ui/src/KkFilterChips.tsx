@@ -9,6 +9,7 @@ import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
 const CHIP_FONT_SIZE = '0.75rem';
+const WRAPPABLE_OPTION_COUNT = 5;
 
 const chipStyles = (theme: Theme): CSSObject => ({
   flexShrink: 0,
@@ -46,6 +47,7 @@ interface KkFilterChipsProps {
 
 export const KkFilterChips: FC<KkFilterChipsProps> = ({ label, options, value, onChange, sx }) => {
   const entries = toFilterChipEntries(options, value);
+  const wraps = entries.length <= WRAPPABLE_OPTION_COUNT;
 
   const selectEntry = (_event: MouseEvent<HTMLElement>, id: string): void => {
     onChange(id);
@@ -63,8 +65,8 @@ export const KkFilterChips: FC<KkFilterChipsProps> = ({ label, options, value, o
           gap: 0.875,
           minWidth: 0,
           maxWidth: '100%',
-          flexWrap: { xs: 'nowrap', desktop: 'wrap' },
-          overflowX: { xs: 'auto', desktop: 'visible' },
+          flexWrap: wraps ? 'wrap' : { xs: 'nowrap', desktop: 'wrap' },
+          overflowX: wraps ? 'visible' : { xs: 'auto', desktop: 'visible' },
           scrollbarWidth: 'none',
           '&::-webkit-scrollbar': { display: 'none' },
         },

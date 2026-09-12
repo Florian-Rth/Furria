@@ -9,5 +9,5 @@ interface MembersEmptyProps {
 }
 
 export const MembersEmpty: FC<MembersEmptyProps> = ({ query }) => (
-  <KkEmptyState icon="search" title={EMPTY_TITLE} description={toEmptyDescription(query)} />
+  <KkEmptyState title={EMPTY_TITLE} description={toEmptyDescription(query)} />
 );

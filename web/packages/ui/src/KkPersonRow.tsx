@@ -64,6 +64,7 @@ export const KkPersonRow: FC<KkPersonRowProps> = ({
   const routeProps = component === undefined ? {} : { to, params };
   const nativeProps = rowComponent === 'button' ? { type: 'button' as const } : {};
   const hasSecondLine = affiliation.present || trailing !== undefined;
+  const nameColor = dimmed ? 'text.secondary' : 'text.primary';
 
   const accentPart =
     affiliation.accent === null ? null : (
@@ -158,7 +159,6 @@ export const KkPersonRow: FC<KkPersonRowProps> = ({
           textDecoration: 'none',
           borderWidth: 0,
           borderStyle: 'solid',
-          opacity: dimmed ? kkTokens.opacity.dimmed : 1,
           cursor: interactive ? 'pointer' : 'default',
           ...rowDividerTop,
           ...focusRing(theme),
@@ -167,7 +167,11 @@ export const KkPersonRow: FC<KkPersonRowProps> = ({
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >
-      <KkAvatar initials={initials} component="span" sx={{ flexShrink: 0 }} />
+      <KkAvatar
+        initials={initials}
+        component="span"
+        sx={{ flexShrink: 0, opacity: dimmed ? kkTokens.opacity.dimmed : 1 }}
+      />
       <Stack component="span" sx={{ flexGrow: 1, minWidth: 0, gap: personRowMetrics.lineGap }}>
         <Typography
           component="span"
@@ -176,7 +180,7 @@ export const KkPersonRow: FC<KkPersonRowProps> = ({
             fontSize: kkTokens.type.rowTitle,
             fontWeight: 800,
             lineHeight: 1.25,
-            color: 'text.primary',
+            color: nameColor,
             ...clampedLine,
           }}
         >

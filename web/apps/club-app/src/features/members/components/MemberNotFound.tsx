@@ -9,7 +9,6 @@ const MEMBERS_PATH = '/members';
 
 export const MemberNotFound: FC = () => (
   <KkEmptyState
-    icon="person"
     title={NOT_FOUND_TITLE}
     description={NOT_FOUND_DESCRIPTION}
     action={

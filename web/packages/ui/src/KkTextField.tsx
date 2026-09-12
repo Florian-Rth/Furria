@@ -1,7 +1,9 @@
 import InputAdornment from '@mui/material/InputAdornment';
+import Stack from '@mui/material/Stack';
 import type { OutlinedTextFieldProps } from '@mui/material/TextField';
 import TextField from '@mui/material/TextField';
 import type { FC, ReactNode } from 'react';
+import { KkIcon } from './KkIcon';
 import type { KkSx } from './kk-sx';
 
 type KkTextFieldType = 'text' | 'email' | 'password' | 'tel';
@@ -44,9 +46,17 @@ export const KkTextField: FC<KkTextFieldProps> = ({
   inputRef,
   sx,
 }) => {
+  const errorMark =
+    error === true ? <KkIcon name="alert" size="small" sx={{ color: 'error.main' }} /> : null;
+
   const adornment =
-    endAdornment === undefined ? undefined : (
-      <InputAdornment position="end">{endAdornment}</InputAdornment>
+    endAdornment === undefined && errorMark === null ? undefined : (
+      <InputAdornment position="end">
+        <Stack direction="row" sx={{ alignItems: 'center', gap: 0.5 }}>
+          {errorMark}
+          {endAdornment}
+        </Stack>
+      </InputAdornment>
     );
 
   return (

@@ -46,7 +46,7 @@ export const OverrideHistoryPanel: FC<OverrideHistoryPanelProps> = ({
   const variant = isEmpty ? 'block' : 'list';
 
   const body = isEmpty ? (
-    <KkEmptyState icon="archive" title={EMPTY_TITLE} description={EMPTY_DESCRIPTION} />
+    <KkEmptyState title={EMPTY_TITLE} description={EMPTY_DESCRIPTION} />
   ) : (
     rows
   );

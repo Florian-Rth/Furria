@@ -47,7 +47,7 @@ export const HubMembersPanel: FC<HubMembersPanelProps> = ({
   ) : null;
 
   const body = isEmpty ? (
-    <KkEmptyState icon="person" title={NO_MEMBERS_TITLE} description={toNoMembersLine(groupName)} />
+    <KkEmptyState title={NO_MEMBERS_TITLE} description={toNoMembersLine(groupName)} />
   ) : (
     rows
   );

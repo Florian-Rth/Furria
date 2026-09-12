@@ -10,8 +10,10 @@ export interface KkAvatarStackPlan {
 
 const MIN_CIRCLES = 1;
 
+const firstGlyph = (entry: string): string => Array.from(entry)[0] ?? '';
+
 const toCircles = (initials: readonly string[]): KkAvatarStackCircle[] =>
-  initials.map((entry, index) => ({ key: `${index}-${entry}`, initials: entry }));
+  initials.map((entry, index) => ({ key: `${index}-${entry}`, initials: firstGlyph(entry) }));
 
 export const buildAvatarStack = (initials: readonly string[], max: number): KkAvatarStackPlan => {
   const capacity = Math.max(MIN_CIRCLES, Math.trunc(max));

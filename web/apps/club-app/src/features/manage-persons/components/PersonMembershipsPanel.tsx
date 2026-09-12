@@ -57,7 +57,7 @@ export const PersonMembershipsPanel: FC<PersonMembershipsPanelProps> = ({ person
   const isEmpty = rows.length === 0 && !isAdding;
 
   const body = isEmpty ? (
-    <KkEmptyState icon="calendar" title={EMPTY_TITLE} description={EMPTY_DESCRIPTION} />
+    <KkEmptyState title={EMPTY_TITLE} description={EMPTY_DESCRIPTION} />
   ) : (
     <>
       {addEditor}

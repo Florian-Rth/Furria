@@ -11,7 +11,6 @@ interface PersonsColdEmptyProps {
 
 export const PersonsColdEmpty: FC<PersonsColdEmptyProps> = ({ onCreate }) => (
   <KkEmptyState
-    icon="person"
     title={COLD_EMPTY_TITLE}
     description={COLD_EMPTY_DESCRIPTION}
     action={

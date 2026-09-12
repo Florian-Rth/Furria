@@ -5,7 +5,7 @@ describe('buildAvatarStack', () => {
   it('shows everyone while the stack fits', () => {
     const plan = buildAvatarStack(['AB', 'CD', 'EF'], 4);
 
-    expect(plan.circles.map((circle) => circle.initials)).toEqual(['AB', 'CD', 'EF']);
+    expect(plan.circles.map((circle) => circle.initials)).toEqual(['A', 'C', 'E']);
     expect(plan.overflowLabel).toBeNull();
   });
 
@@ -16,7 +16,7 @@ describe('buildAvatarStack', () => {
   it('gives up one circle to the overflow bubble so the cap is never exceeded', () => {
     const plan = buildAvatarStack(['AB', 'CD', 'EF', 'GH', 'IJ', 'KL'], 4);
 
-    expect(plan.circles.map((circle) => circle.initials)).toEqual(['AB', 'CD', 'EF']);
+    expect(plan.circles.map((circle) => circle.initials)).toEqual(['A', 'C', 'E']);
     expect(plan.overflowLabel).toBe('+3');
   });
 
@@ -40,6 +40,16 @@ describe('buildAvatarStack', () => {
       '0-AB',
       '1-AB',
     ]);
+  });
+
+  it('cuts every stacked monogram to one glyph so the overlap cannot shave a letter', () => {
+    const plan = buildAvatarStack(['ÖH', 'Kü', 'A'], 4);
+
+    expect(plan.circles.map((circle) => circle.initials)).toEqual(['Ö', 'K', 'A']);
+  });
+
+  it('survives a person with no initials at all', () => {
+    expect(buildAvatarStack([''], 4).circles).toEqual([{ key: '0-', initials: '' }]);
   });
 
   it('renders nothing for an empty group', () => {

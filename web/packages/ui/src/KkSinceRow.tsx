@@ -1,8 +1,10 @@
+import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import type { CSSObject, Theme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import type { FC, ReactNode } from 'react';
+import type { ElementType, FC, ReactNode } from 'react';
 import { accentWash } from './internal/accent-wash';
+import { focusRing } from './internal/focus-ring';
 import { inkWashSurface } from './internal/ink-wash';
 import { rowDividerTop } from './internal/row-divider';
 import { KkEyebrow } from './KkEyebrow';
@@ -15,7 +17,6 @@ import { kkTokens } from './tokens';
 type KkSinceRowTone = 'neutral' | 'accent';
 
 const TILE_SIZE = 30;
-const TILE_GUTTER = 5.25;
 const TILE_WASH_LIGHT = '8%';
 const TILE_WASH_DARK = '14%';
 
@@ -30,8 +31,18 @@ const toneTile: Record<KkSinceRowTone, (theme: Theme) => CSSObject> = {
   }),
 };
 
+const hoverPaint: CSSObject = {
+  '@media (hover: hover)': {
+    '&:hover': {
+      '& [data-kk-since-row-title]': { color: 'primary.main' },
+      '& [data-kk-since-row-chevron]': { color: 'text.primary' },
+    },
+  },
+};
+
 interface KkSinceRowProps {
-  icon: KkIconName;
+  icon?: KkIconName;
+  avatar?: ReactNode;
   title: string;
   meta?: string;
   sinceLabel: string;
@@ -39,11 +50,15 @@ interface KkSinceRowProps {
   tone?: KkSinceRowTone;
   trailing?: ReactNode;
   dimmed?: boolean;
+  component?: ElementType;
+  to?: string;
+  params?: Record<string, string>;
   sx?: KkSx;
 }
 
 export const KkSinceRow: FC<KkSinceRowProps> = ({
   icon,
+  avatar,
   title,
   meta,
   sinceLabel,
@@ -51,47 +66,24 @@ export const KkSinceRow: FC<KkSinceRowProps> = ({
   tone = 'neutral',
   trailing,
   dimmed = false,
+  component,
+  to,
+  params,
   sx,
 }) => {
-  const metaLine = meta === undefined ? null : <KkMeta>{meta}</KkMeta>;
+  const interactive = component !== undefined;
+  const rowComponent = component ?? 'div';
+  const routeProps = component === undefined ? {} : { to, params };
+  const titleColor = dimmed ? 'text.secondary' : 'text.primary';
+  const leadingOpacity = dimmed ? kkTokens.opacity.dimmed : 1;
 
-  const trailingRow =
-    trailing === undefined || trailing === null ? null : (
-      <Stack
-        direction="row"
-        data-kk-since-row-trailing
-        sx={{
-          alignItems: 'center',
-          justifyContent: { xs: 'flex-end', desktop: 'flex-start' },
-          gap: 0.75,
-          flexShrink: 0,
-          width: { xs: '100%', desktop: 'auto' },
-          pl: { xs: TILE_GUTTER, desktop: 0 },
-        }}
-      >
-        {trailing}
-      </Stack>
-    );
+  const metaLine = meta === undefined ? null : <KkMeta component="span">{meta}</KkMeta>;
 
-  return (
-    <Stack
-      direction="row"
-      data-kk-since-row
-      sx={[
-        {
-          alignItems: 'center',
-          gap: 1.5,
-          minWidth: 0,
-          flexWrap: { xs: 'wrap', desktop: 'nowrap' },
-          py: 1.5,
-          opacity: dimmed ? kkTokens.opacity.dimmed : 1,
-          ...rowDividerTop,
-        },
-        ...(Array.isArray(sx) ? sx : [sx]),
-      ]}
-    >
+  const iconTile =
+    icon === undefined ? null : (
       <Stack
         aria-hidden
+        component="span"
         sx={(theme) => ({
           width: TILE_SIZE,
           height: TILE_SIZE,
@@ -99,45 +91,116 @@ export const KkSinceRow: FC<KkSinceRowProps> = ({
           justifyContent: 'center',
           borderRadius: '50%',
           flexShrink: 0,
+          opacity: leadingOpacity,
           ...toneTile[tone](theme),
         })}
       >
         <KkIcon name={icon} size="small" />
       </Stack>
-      <Stack sx={{ flexGrow: 1, minWidth: 0, gap: 0.25 }}>
+    );
+
+  const leading =
+    avatar === undefined ? (
+      iconTile
+    ) : (
+      <Box component="span" sx={{ display: 'inline-flex', flexShrink: 0, opacity: leadingOpacity }}>
+        {avatar}
+      </Box>
+    );
+
+  const trailingSlot =
+    trailing === undefined || trailing === null ? null : (
+      <Stack
+        component="span"
+        direction="row"
+        data-kk-since-row-trailing
+        sx={{ alignItems: 'center', gap: 0.75, flexShrink: 0 }}
+      >
+        {trailing}
+      </Stack>
+    );
+
+  const chevron = interactive ? (
+    <Box
+      component="span"
+      data-kk-since-row-chevron
+      sx={{ display: 'inline-flex', color: 'text.secondary', flexShrink: 0 }}
+    >
+      <KkIcon name="chevron" size="small" />
+    </Box>
+  ) : null;
+
+  return (
+    <Stack
+      component={rowComponent}
+      {...routeProps}
+      direction="row"
+      data-kk-since-row
+      sx={[
+        (theme) => ({
+          width: '100%',
+          alignItems: 'center',
+          gap: { xs: 1.125, desktop: 1.5 },
+          minWidth: 0,
+          flexWrap: 'nowrap',
+          m: 0,
+          px: 0,
+          py: 1.5,
+          appearance: 'none',
+          backgroundColor: 'transparent',
+          color: 'inherit',
+          textAlign: 'left',
+          textDecoration: 'none',
+          borderWidth: 0,
+          borderStyle: 'solid',
+          cursor: interactive ? 'pointer' : 'default',
+          ...rowDividerTop,
+          ...focusRing(theme),
+          ...(interactive ? hoverPaint : {}),
+        }),
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
+    >
+      {leading}
+      <Stack component="span" sx={{ flexGrow: 1, minWidth: 0, gap: 0.25 }}>
         <Typography
-          component="p"
+          component="span"
+          data-kk-since-row-title
           sx={{
-            fontSize: kkTokens.type.rowTitle,
+            display: 'block',
+            fontSize: kkTokens.type.rowValue,
             fontWeight: 800,
             lineHeight: 1.25,
-            color: 'text.primary',
+            color: titleColor,
+            minWidth: 0,
+            overflowWrap: 'anywhere',
           }}
         >
           {title}
         </Typography>
         {metaLine}
       </Stack>
-      <Stack sx={{ alignItems: 'flex-end', gap: 0.25, flexShrink: 0 }}>
+      <Stack component="span" sx={{ alignItems: 'flex-end', gap: 0.25, flexShrink: 0 }}>
         <KkEyebrow tone="muted" size="small" sx={{ lineHeight: 1 }}>
           {sinceLabel}
         </KkEyebrow>
         <Typography
-          component="p"
+          component="span"
           sx={{
-            fontFamily: kkTokens.font.display,
-            fontWeight: kkTokens.font.displayWeight,
-            fontSize: kkTokens.type.rowValue,
-            letterSpacing: '0.02em',
-            lineHeight: 1,
-            color: 'text.primary',
+            display: 'block',
+            fontSize: kkTokens.type.rowTitle,
+            fontWeight: 800,
+            letterSpacing: '0.01em',
+            lineHeight: 1.2,
+            color: 'text.secondary',
             whiteSpace: 'nowrap',
           }}
         >
           {sinceValue}
         </Typography>
       </Stack>
-      {trailingRow}
+      {trailingSlot}
+      {chevron}
     </Stack>
   );
 };

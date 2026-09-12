@@ -1,5 +1,6 @@
 import Stack from '@mui/material/Stack';
 import type { FC, PropsWithChildren } from 'react';
+import { KkBandWatermark } from '../../../KkBandWatermark';
 import type { KkSx } from '../../../kk-sx';
 import { kkTokens } from '../../../tokens';
 import { KkAppShellGlow } from '../ui/KkAppShellGlow';
@@ -10,6 +11,8 @@ const GLOW = {
 } as const;
 
 const STAGE_Z_INDEX = 1;
+const WATERMARK_Z_INDEX = -1;
+const WATERMARK_SIZE = { xs: 220, desktop: 300 };
 
 interface KkAppShellStageProps extends PropsWithChildren {
   sx?: KkSx;
@@ -43,9 +46,21 @@ export const KkAppShellStage: FC<KkAppShellStageProps> = ({ sx, children }) => (
   >
     <Stack sx={{ display: { xs: 'flex', desktop: 'none' } }}>
       <KkAppShellGlow tone="red" {...GLOW.mobile} />
+      <KkBandWatermark
+        side="right"
+        tone="ink"
+        size={WATERMARK_SIZE.xs}
+        sx={{ zIndex: WATERMARK_Z_INDEX }}
+      />
     </Stack>
     <Stack sx={{ display: { xs: 'none', desktop: 'flex' } }}>
       <KkAppShellGlow tone="red" {...GLOW.desktop} />
+      <KkBandWatermark
+        side="right"
+        tone="ink"
+        size={WATERMARK_SIZE.desktop}
+        sx={{ zIndex: WATERMARK_Z_INDEX }}
+      />
     </Stack>
     {children}
   </Stack>

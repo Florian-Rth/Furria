@@ -5,5 +5,5 @@ const NOT_FOUND_TITLE = 'NICHT MEHR DA';
 const NOT_FOUND_DESCRIPTION = 'Diese Gruppe gibt es nicht mehr.';
 
 export const HubNotFound: FC = () => (
-  <KkEmptyState icon="group" title={NOT_FOUND_TITLE} description={NOT_FOUND_DESCRIPTION} />
+  <KkEmptyState title={NOT_FOUND_TITLE} description={NOT_FOUND_DESCRIPTION} />
 );

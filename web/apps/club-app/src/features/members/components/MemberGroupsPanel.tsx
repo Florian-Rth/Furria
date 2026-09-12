@@ -26,11 +26,7 @@ export const MemberGroupsPanel: FC<MemberGroupsPanelProps> = ({ groups, firstNam
 
   const body =
     rows.length === 0 ? (
-      <KkEmptyState
-        icon="group"
-        title={EMPTY_TITLE}
-        description={toNoGroupsDescription(firstName)}
-      />
+      <KkEmptyState title={EMPTY_TITLE} description={toNoGroupsDescription(firstName)} />
     ) : (
       rows
     );

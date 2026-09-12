@@ -6,6 +6,7 @@ import { focusRing } from './internal/focus-ring';
 import { raisedSurface } from './internal/raised-surface';
 import { rowDividerTop } from './internal/row-divider';
 import { KkEyebrow } from './KkEyebrow';
+import { KkIcon } from './KkIcon';
 import { KkMeta } from './KkMeta';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
@@ -60,6 +61,7 @@ export const KkSummaryRow: FC<KkSummaryRowProps> = ({
   const routeProps = component === undefined ? {} : { to, params };
   const nativeProps = rowComponent === 'button' ? { type: 'button' as const } : {};
   const current = selected ? true : undefined;
+  const titleColor = dimmed ? 'text.secondary' : 'text.primary';
 
   const metaLine =
     meta === undefined ? null : (
@@ -111,6 +113,16 @@ export const KkSummaryRow: FC<KkSummaryRowProps> = ({
       </Box>
     );
 
+  const chevron = interactive ? (
+    <Box
+      component="span"
+      data-kk-summary-row-chevron
+      sx={{ display: 'inline-flex', color: 'text.secondary', flexShrink: 0 }}
+    >
+      <KkIcon name="chevron" size="small" />
+    </Box>
+  ) : null;
+
   const compactTrailingSlot =
     compactTrailing === undefined ? null : (
       <Box component="span" sx={{ display: { xs: 'inline-flex', desktop: 'none' }, flexShrink: 0 }}>
@@ -144,13 +156,15 @@ export const KkSummaryRow: FC<KkSummaryRowProps> = ({
           textDecoration: 'none',
           borderWidth: 0,
           borderStyle: 'solid',
-          opacity: dimmed ? kkTokens.opacity.dimmed : 1,
           cursor: interactive ? 'pointer' : 'default',
           ...rowDividerTop,
           ...(selected ? raisedSurface(theme) : {}),
           ...focusRing(theme),
           '@media (hover: hover)': {
-            '&:hover': { '& [data-kk-summary-row-title]': { color: 'primary.main' } },
+            '&:hover': {
+              '& [data-kk-summary-row-title]': { color: 'primary.main' },
+              '& [data-kk-summary-row-chevron]': { color: 'text.primary' },
+            },
           },
         }),
         ...(Array.isArray(sx) ? sx : [sx]),
@@ -164,7 +178,7 @@ export const KkSummaryRow: FC<KkSummaryRowProps> = ({
             fontSize: kkTokens.type.rowTitle,
             fontWeight: 800,
             lineHeight: 1.25,
-            color: 'text.primary',
+            color: titleColor,
             ...clampedLine,
           }}
         >
@@ -175,6 +189,7 @@ export const KkSummaryRow: FC<KkSummaryRowProps> = ({
       {factRow}
       {trailingSlot}
       {compactTrailingSlot}
+      {chevron}
     </Stack>
   );
 };

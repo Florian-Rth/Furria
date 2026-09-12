@@ -5,7 +5,7 @@ import { applyScheme, schemeFill, schemeInk } from './scheme-paint';
 
 export type KkTone = 'neutral' | 'ink' | 'accent' | 'gold' | 'green' | 'blue';
 
-interface KkToneRecipe {
+export interface KkToneRecipe {
   inkLight: string;
   inkDark: string;
   source: (theme: Theme) => string;
@@ -18,13 +18,13 @@ const dark = kkTokens.color.dark;
 
 const primaryText = (theme: Theme): string => (theme.vars ?? theme).palette.text.primary;
 
-const recipes: Record<KkTone, KkToneRecipe> = {
+export const toneRecipes: Record<KkTone, KkToneRecipe> = {
   neutral: {
-    inkLight: light.sub,
-    inkDark: dark.sub,
+    inkLight: light.neutralInk,
+    inkDark: dark.neutralInk,
     source: primaryText,
-    groundLight: '6%',
-    groundDark: '12%',
+    groundLight: '10%',
+    groundDark: '16%',
   },
   ink: {
     inkLight: light.ink,
@@ -67,10 +67,10 @@ const mix = (color: string, amount: string): string =>
   `color-mix(in srgb, ${color} ${amount}, transparent)`;
 
 const toneInkScheme = (tone: KkTone): KkScheme =>
-  schemeInk(recipes[tone].inkLight, recipes[tone].inkDark);
+  schemeInk(toneRecipes[tone].inkLight, toneRecipes[tone].inkDark);
 
 const toneGroundScheme = (theme: Theme, tone: KkTone): KkScheme => {
-  const recipe = recipes[tone];
+  const recipe = toneRecipes[tone];
   const source = recipe.source(theme);
 
   return schemeFill(mix(source, recipe.groundLight), mix(source, recipe.groundDark));

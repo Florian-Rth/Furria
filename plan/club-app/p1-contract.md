@@ -2968,6 +2968,89 @@ bug** — report it and add the primitive to `@furria/ui`, never a page-level `s
 | `KkAvatar` | `KkAvatar.tsx` | adds `size?: 'small' \| 'medium' \| 'large'` (26 / 40 / 56) for the avatar stack and the person row. **No `tone` prop** — the gold Ehrenmitglied avatar is out of P1. |
 | `KkHeading` | `KkHeading.tsx` | adds `tone?: 'default' \| 'accent'`. `accent` = `primary.main`. Without it the single strongest element on `/groups` — the member count in accent Anton — is **physically unbuildable**: `sx={{ color: 'primary.main' }}` is a `noDesignSx` error and suppression is never allowed, so the implementer would ship a black number (drift) or reach for a documented bypass (ADR-0007 forbids it). Same prop unblocks every other big accent number (the Rollen master count, the stat values). |
 
+#### 7.1a Amendment — the action hierarchy (UX pass, round 1, finding U2)
+
+§9 item 1 of the implementation-state file asked for this decision. It is taken here and is binding
+on every surface. The primitive definitions above are **unchanged**; what this pins is *where each
+one is used*, plus one contrast fix.
+
+1. **A repeated row action is quiet.** A row-level `Beenden` — the Gruppen-Hub member and admin
+   rows, the Gruppenverwaltung override rows, a Rollen holder row, a running period on Person
+   bearbeiten — is `tone="danger" variant="text" size="small"`. A red verb, never a pill, never a
+   column of pills.
+2. **The loud destructive treatment is reserved for the single confirming button inside
+   `KkConfirmDialog`**, which carries the consequence sentence (§10.5). That is
+   `tone="danger" variant="contained"`.
+3. **Each surface gets exactly one `variant="contained"` primary**, in the `action` slot of its
+   section `KkPanelHeader`. `/manage/roles` already does this correctly — „+ Inhaber eintragen"
+   filled, „Umbenennen"/„Archivieren" outlined.
+4. **Contrast.** Both red *label* branches of `KkButton` (`default/text` and
+   `danger/outlined` · `danger/text`) paint through `kkTokens.color.*.redInk`, not `error.main`:
+   `.main` is the fill, the `*Ink` token is the readable foreground. `error.main` at
+   `size="small"` measured 4.35:1 on cream, under the AA floor, on a control that repeats ~20×
+   per surface. `variant="contained"` is untouched — there red is the fill and `onRed` the
+   foreground.
+5. **Rejected: a „Bearbeiten"/„Mitglieder pflegen" mode toggle** that hides the row actions until
+   switched on. It adds a mode to four surfaces, hides an affordance behind state, and contradicts
+   „build the end state". Do not build it.
+6. **Rejected: escalating the archive confirmations to `tone="danger"`** — decisions V and AE keep
+   archiving deliberately undramatic.
+
+Palette consequence (finding U7): `error.main` is now `color.redDk`, so a rejected field reads a
+step darker and heavier than a merely focused one. Before, `primary.main` and `error.main` were the
+same hex and focus and error were indistinguishable (WCAG 1.4.1). `KkTextField` additionally renders
+an `alert` icon in its `endAdornment` on `error`, so the state never rests on hue alone.
+
+#### 7.1b Amendment — uppercase is chrome, a club name is data (UX pass, round 1, finding U5)
+
+**Uppercase belongs to chrome**: the page-title band, the nav rail, `KkPanelHeader`, `KkEyebrow`,
+`internal/display-title`. **A Gruppe's or a Rolle's own name is data and reaches the screen exactly
+as the club typed it.** `KkSelectRow` was CSS-uppercasing the club's own names, which destroyed the
+ß („Große Garde" → „GROSSE GARDE") on the one surface whose entire content is those names, and its
+`lineHeight: 1.1` plus `overflow: hidden` sliced the diacritics off Ä/Ö/Ü in Anton.
+
+`KkSelectRow` therefore: no `textTransform`; `lineHeight: 1.3`; the ellipsis clip moved to an inner
+span so a diacritic can never fall outside the box that clips; and `title` is `text.primary` in
+**both** states — selection is carried by the accent bar, the `text.primary` border and
+`raisedSurface`, and the muted treatment is reserved for `dimmed`, so „archiviert" reads as a state
+and not as „not currently selected".
+
+**Rejected: uppercasing `KkHeading`** so the detail card titles match the master rows. That would
+spread the ß destruction and the clipped diacritics to `/groups` as well. `KkHeading` stays mixed
+case.
+
+#### 7.1c Further primitive changes from the same pass
+
+| Primitive | Change | Finding |
+|---|---|---|
+| `KkSinceRow` | optional `component`/`to`/`params` (the `KkPersonRow` interactive contract), focus ring, hover paint and a trailing chevron when interactive; optional `avatar` rendered **in place of** the icon tile (a row renders exactly one of the two); `title` raised to `type.rowValue` and `sinceValue` dropped to Archivo `type.rowTitle` at `text.secondary`, so the name outranks the Session; the `xs` full-width `trailing` band is gone and the slot sits inline at every width. A row whose `trailing` holds a `KkButton` stays non-interactive (§8.12: no `<button>` inside an `<a>`). | U1 |
+| `KkAppShell.Main` | `pb` of `curtainClearance + 24` below `desktop`, so the fixed mobile dock stops covering the last screenful of every phone route. | U3 |
+| `KkAppShell.NavItem` | new optional `hint?: string` (a small neutral chip, flush right). The disabled row no longer uses `opacity: 0.6` — its label **and** icon are `text.disabled`, a genuinely different token from the enabled `text.secondary`, which was the same value spelled twice. | U4 |
+| `KkAppShell.Stage` | renders `KkBandWatermark side="right" tone="ink"` behind the page title, at `kkTokens.opacity.watermark`, `zIndex: -1`. `KkBandWatermark` gains `tone` (`onAccent` default, `ink`), `size` and `sx`. | U8 |
+| `KkEmptyState` | the 52px ink-wash disc and its `KkIcon` are gone; `KkBroomMark` at 116 in `text.disabled` is the single figure. **The `icon` prop is removed** — it survives only on `KkReservedSlot`. | U8 |
+| `KkPageWatermark` | **new primitive.** The coat of arms as page content, for a surface whose own content has not been built yet. Consumer: `/` (the overview). | U8 |
+| `KkAvatarStack` | `buildAvatarStack` emits a **one-letter** monogram for stacked circles. At 26px with a −10px overlap the second letter was painted over on every circle but the last; the stack is a density texture, the names are spelled out on the detail surface. Standalone `KkAvatar` at `medium`/`large` keeps both letters. | U6 |
+| `KkIconButton` | `focusRing(theme)` — every modal close ✕, the password eye, the search clear ✕, the toast close and the rail logout had no visible keyboard focus (WCAG 2.4.7). | U7 |
+| `KkIcon` | `KkIconName` gains **`alert`** (`ErrorOutlineOutlined`) for the non-colour error signal. | U7 |
+| `KkSummaryRow`, `KkSelectRow` | a trailing chevron when the row is interactive, matching `KkPersonRow` — on a touch device nothing else said a row was tappable. | U10 |
+| `KkPanel` | an interactive panel carries a resting lift (`shadow.rest` light / `chrome.dark.lift` dark) outside the hover query; the `primary.main` border stays the hover state. | U10 |
+| `KkPersonRow`, `KkSummaryRow`, `KkSelectRow`, `KkFactRow`, `KkSinceRow`, `KkPanel` | `dimmed` no longer puts `opacity` on the whole node — it set `text.secondary` to 2.75:1 and made the `archiviert` chip the least readable thing in the row it explains. It now recolours the **title** to `text.secondary` and dims only the avatar/icon tile or the rail bar; chips render at full opacity. | U11 |
+| `kkTokens` | new `color.*.neutralInk`; the `neutral` chip ground rises 6→10 % (light) and 12→16 % (dark). `color.light.goldInk` → `#7E5C00` and `color.dark.blueInk` → `#7FB2E0`, the two remaining chip tones that were still under 4.5:1 at `chipSmall`. A `contrastRatio` unit test now guards every tone pair in both schemes, plus the red button label and the destructive fill. | U11 |
+| `KkFilterChips` | wraps at `xs` when there are ≤ 5 options instead of scrolling with no affordance — the fifth chip on `/members` was entirely off-screen at 390px with no fade, no shadow and no scrollbar. | U12 |
+| `KkPhotoPlaceholder` | set in `kkTokens.font.body` at `type.chip`; `ui-monospace` is a face the KK system does not own. | U9 |
+| `KkStickyRail` | **new primitive.** `position: sticky` with a px `top` is a `noDesignSx` error in a page and suppression is never allowed, so a page column could not be made sticky at all. `display: { xs: 'contents', desktop: 'block' }`, new token `kkTokens.layout.stickyTop`. | U13 |
+
+**One deliberate deviation from §10.3.** In a `KkSinceRow` the Session is still the unit
+(`seit 2018/19`, never `seit 2019`) — what changed is only its *typographic rank*: it is Archivo at
+`type.rowTitle` in `text.secondary` rather than Anton at `type.rowValue` in `text.primary`. §10.3
+governs which unit is rendered, not which face outranks the person's name.
+
+`app-sections.ts` (app side, same finding U4): the five routeless entries — Veranstaltungen,
+Live-Regie, Beitrag, Galerie, Klamotten — leave `APP_SECTIONS` for their own trailing group
+`{ id: 'later', label: 'Kommt später' }`, each with `hint: 'bald'`, hung after „Meine Gruppen" and
+„Verwaltung". Five of the eight front-row entries were dead ends rendered pixel-identical to the
+live ones.
+
 ### 7.2 `KkIconName` additions
 
 ```

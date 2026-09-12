@@ -2,6 +2,7 @@ import Button from '@mui/material/Button';
 import type { CSSObject, Theme } from '@mui/material/styles';
 import type { ElementType, FC, PropsWithChildren, ReactNode } from 'react';
 import { focusRing } from './internal/focus-ring';
+import { applyScheme, schemeInk } from './internal/scheme-paint';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
@@ -14,6 +15,10 @@ const SMALL_FONT_SIZE = '0.75rem';
 
 const dangerBorderColor = (theme: Theme): string =>
   `color-mix(in srgb, ${(theme.vars ?? theme).palette.error.main} ${DANGER_BORDER_MIX}, transparent)`;
+
+const redInkScheme = schemeInk(kkTokens.color.light.redInk, kkTokens.color.dark.redInk);
+
+const redLabel = (theme: Theme): CSSObject => applyScheme(theme, redInkScheme);
 
 const hitArea: CSSObject = {
   position: 'relative',
@@ -45,16 +50,16 @@ const toneVariantStyles: Record<
       borderColor: 'divider',
       borderWidth: kkTokens.line.hair,
     }),
-    text: () => ({ color: 'primary.main' }),
+    text: (theme) => redLabel(theme),
   },
   danger: {
     contained: () => ({ color: 'error.contrastText' }),
     outlined: (theme) => ({
-      color: 'error.main',
+      ...redLabel(theme),
       borderColor: dangerBorderColor(theme),
       borderWidth: kkTokens.line.hair,
     }),
-    text: () => ({ color: 'error.main' }),
+    text: (theme) => redLabel(theme),
   },
 };
 

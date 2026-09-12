@@ -38,7 +38,7 @@ export const HubAdminsPanel: FC<HubAdminsPanelProps> = ({ admins, canManage, onA
   ) : null;
 
   const body = isEmpty ? (
-    <KkEmptyState icon="role" title={NO_ADMINS_TITLE} description={NO_ADMINS_LINE} />
+    <KkEmptyState title={NO_ADMINS_TITLE} description={NO_ADMINS_LINE} />
   ) : (
     rows
   );

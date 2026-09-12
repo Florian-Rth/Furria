@@ -6,6 +6,6 @@ const DESCRIPTION = 'Wähl eine Rolle aus, um ihre Rechte und Inhaberschaften zu
 
 export const RoleUnselected: FC = () => (
   <KkPanel variant="block" tone="reserved">
-    <KkEmptyState icon="permissions" title={TITLE} description={DESCRIPTION} />
+    <KkEmptyState title={TITLE} description={DESCRIPTION} />
   </KkPanel>
 );
