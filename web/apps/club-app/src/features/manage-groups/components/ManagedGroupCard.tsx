@@ -1,9 +1,10 @@
 import type { KkSx } from '@furria/ui';
-import { KkChip } from '@furria/ui';
+import { KkChip, KkMeta } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { GroupCardBody } from '@/features/groups';
-import { toManagedGroupChips } from '../manage-groups-labels';
+import { toInitials } from '@/lib/initials';
+import { toGroupCountLine, toManagedGroupChips } from '../manage-groups-labels';
 import type { ManagedGroupSummary } from '../schemas';
 
 const MANAGE_GROUPS_PATH = '/manage/groups';
@@ -14,21 +15,23 @@ interface ManagedGroupCardProps {
 }
 
 export const ManagedGroupCard: FC<ManagedGroupCardProps> = ({ group, sx }) => {
-  const chips = toManagedGroupChips(group);
+  const { status, openness } = toManagedGroupChips(group);
   const isArchived = group.archivedOn !== null;
+  const adminInitials = group.admins.map((person) => toInitials(person.firstName, person.lastName));
+  const countLine = toGroupCountLine(group);
 
   const statusChip =
-    chips.status === null ? null : (
-      <KkChip tone={chips.status.tone} dot={chips.status.dot} size="small">
-        {chips.status.label}
+    status === null ? null : (
+      <KkChip tone={status.tone} dot={status.dot} size="small">
+        {status.label}
       </KkChip>
     );
 
-  const footer = (
+  const chips = (
     <Stack direction="row" sx={{ gap: 0.75, flexWrap: 'wrap', minWidth: 0 }}>
       {statusChip}
-      <KkChip tone={chips.openness.tone} dot={chips.openness.dot} size="small">
-        {chips.openness.label}
+      <KkChip tone={openness.tone} dot={openness.dot} size="small">
+        {openness.label}
       </KkChip>
     </Stack>
   );
@@ -38,7 +41,10 @@ export const ManagedGroupCard: FC<ManagedGroupCardProps> = ({ group, sx }) => {
       name={group.name}
       memberCount={group.memberCount}
       description={group.description}
-      footer={footer}
+      initials={adminInitials}
+      total={group.admins.length}
+      chips={chips}
+      footer={<KkMeta>{countLine}</KkMeta>}
       dimmed={isArchived}
       to={MANAGE_GROUPS_PATH}
       search={{ group: group.groupId }}
