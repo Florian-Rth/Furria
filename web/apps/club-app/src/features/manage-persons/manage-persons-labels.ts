@@ -9,10 +9,9 @@ import {
   formatSessionLabel,
   formatSessionSpan,
   formatSinceSession,
-  toMemberSinceLabel,
 } from '@/lib/membership-labels';
 import type { StateChip } from '@/lib/state-chips';
-import { toMembershipStateChip } from '@/lib/state-chips';
+import { toMembershipStateChip, toNoStateMatchLine } from '@/lib/state-chips';
 import type {
   FeeReductionBasis,
   PersonDetails,
@@ -104,14 +103,22 @@ export const toPersonRowAffiliation = (person: PersonSummary): PersonRowAffiliat
 
 export const NO_AFFILIATION_META = 'keine Gruppe, keine Rolle';
 
-export const toPersonsEmptyDescription = (query: string): string => {
+const ALL_FILTER_SUGGESTION = 'Wähle „Alle“, um wieder alle zu sehen.';
+
+export const toPersonsEmptyDescription = (query: string, state: string): string => {
   const needle = query.trim();
 
-  if (needle === '') {
-    return 'Zu diesem Filter passt gerade niemand. Wähle „Alle“, um wieder alle zu sehen.';
+  if (needle !== '') {
+    return `Kein Name, keine Adresse und keine E-Mail passt zu „${needle}“. Vielleicht anders geschrieben?`;
   }
 
-  return `Kein Name, keine Adresse und keine E-Mail passt zu „${needle}“. Vielleicht anders geschrieben?`;
+  const stateLine = toNoStateMatchLine(state);
+
+  if (stateLine === null) {
+    return 'Im Register steht gerade niemand.';
+  }
+
+  return `${stateLine} ${ALL_FILTER_SUGGESTION}`;
 };
 
 export const toRegisterSentence = (count: number): string => {
@@ -125,28 +132,23 @@ export const toRegisterSentence = (count: number): string => {
 export const toPersonsLead = (count: number): string =>
   `${toRegisterSentence(count)} ${PERSONS_INTRO}`;
 
+export const PERSON_EYEBROW = 'Person';
+
 export interface PersonHeadline {
   title: string;
   initials: string;
   state: StateChip | null;
-  line: string | null;
 }
 
 export const toPersonHeadline = (person: PersonDetails | undefined): PersonHeadline => {
   if (person === undefined) {
-    return { title: PERSON_TITLE_FALLBACK, initials: '', state: null, line: null };
+    return { title: PERSON_TITLE_FALLBACK, initials: '', state: null };
   }
-
-  const line =
-    person.memberSince === null
-      ? null
-      : `${toMemberSinceLabel(person.membershipState)} ${formatIsoDay(person.memberSince)}`;
 
   return {
     title: toPersonName(person),
     initials: toInitials(person.firstName, person.lastName),
     state: toMembershipStateChip(person.membershipState),
-    line,
   };
 };
 

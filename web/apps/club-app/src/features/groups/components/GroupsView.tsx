@@ -1,9 +1,9 @@
-import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
+import { AppListLayout } from '@/features/session';
+import { GROUPS_SECTION_TITLE, toGroupsIntroSentence } from '../groups-labels';
 import type { GroupSummary } from '../schemas';
 import { GroupsEmpty } from './GroupsEmpty';
 import { GroupsGrid } from './GroupsGrid';
-import { GroupsIntro } from './GroupsIntro';
 
 interface GroupsViewProps {
   groups: readonly GroupSummary[];
@@ -17,9 +17,10 @@ export const GroupsView: FC<GroupsViewProps> = ({ groups }) => {
   const recruiting = groups.filter((group) => group.isRecruiting).length;
 
   return (
-    <Stack sx={{ gap: 3, minWidth: 0 }}>
-      <GroupsIntro total={groups.length} recruiting={recruiting} />
-      <GroupsGrid groups={groups} />
-    </Stack>
+    <AppListLayout
+      lead={toGroupsIntroSentence(groups.length, recruiting)}
+      sectionTitle={GROUPS_SECTION_TITLE}
+      list={<GroupsGrid groups={groups} />}
+    />
   );
 };

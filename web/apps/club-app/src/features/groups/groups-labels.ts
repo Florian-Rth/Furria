@@ -78,6 +78,8 @@ const toSegmentText = (segment: RecruitingContactSegment): string =>
 export const toRecruitingContactLine = (admins: readonly PersonRef[]): string =>
   toRecruitingContactSegments(admins).map(toSegmentText).join('');
 
+export const GROUPS_SECTION_TITLE = 'Alle Gruppen';
+
 export const toGroupsIntroSentence = (total: number, recruiting: number): string => {
   const groups =
     total === 1 ? 'Eine Gruppe trägt die Session.' : `${total} Gruppen tragen die Session.`;
@@ -97,6 +99,8 @@ export interface GroupHeadline {
   openness: StateChip | null;
   memberCount: string | null;
 }
+
+export const GROUP_EYEBROW = 'Gruppe';
 
 export const toGroupHeadline = (group: GroupDetails | undefined): GroupHeadline => {
   if (group === undefined) {

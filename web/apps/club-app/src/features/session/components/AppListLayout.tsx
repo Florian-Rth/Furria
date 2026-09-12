@@ -8,11 +8,12 @@ const DEFAULT_ASIDE_SIZE = 4;
 const DESKTOP_ONLY_ACTION = { xs: 'none', desktop: 'flex' };
 const DESKTOP_ONLY_COLUMN = { xs: 'none', desktop: 'block' };
 const DETAIL_SCROLL_MARGIN = 2;
+const LIST_FIRST = { xs: 1, desktop: 2 };
+const ASIDE_FIRST = { xs: 2, desktop: 1 };
 
-type ManagePageStickyColumn = 'main' | 'aside';
-
-interface ManagePageLayoutProps {
+interface AppListLayoutProps {
   lead: string;
+  subLead?: ReactNode;
   sectionTitle: string;
   createAction?: ReactNode;
   toolbar?: ReactNode;
@@ -22,11 +23,13 @@ interface ManagePageLayoutProps {
   asideSize?: number;
   asideDesktopOnly?: boolean;
   asideRef?: Ref<HTMLDivElement>;
-  stickyColumn?: ManagePageStickyColumn;
+  stickyAside?: boolean;
+  asideLeadsFocus?: boolean;
 }
 
-export const ManagePageLayout: FC<ManagePageLayoutProps> = ({
+export const AppListLayout: FC<AppListLayoutProps> = ({
   lead,
+  subLead,
   sectionTitle,
   createAction,
   toolbar,
@@ -36,12 +39,14 @@ export const ManagePageLayout: FC<ManagePageLayoutProps> = ({
   asideSize = DEFAULT_ASIDE_SIZE,
   asideDesktopOnly = false,
   asideRef,
-  stickyColumn = 'main',
+  stickyAside = false,
+  asideLeadsFocus = false,
 }) => {
   const hasAside = aside !== undefined;
   const mainSize = hasAside ? FULL_WIDTH - asideSize : FULL_WIDTH;
-  const sticksMain = hasAside && stickyColumn === 'main';
   const asideDisplay = asideDesktopOnly ? DESKTOP_ONLY_COLUMN : undefined;
+  const mainOrder = asideLeadsFocus ? LIST_FIRST : undefined;
+  const asideOrder = asideLeadsFocus ? ASIDE_FIRST : undefined;
 
   const action =
     createAction === undefined ? undefined : (
@@ -50,36 +55,44 @@ export const ManagePageLayout: FC<ManagePageLayoutProps> = ({
 
   const toolbarBar = toolbar === undefined ? null : <KkStickyBar>{toolbar}</KkStickyBar>;
   const footnoteLine = footnote === undefined ? null : <KkNote>{footnote}</KkNote>;
+  const asideBody = stickyAside ? <KkStickyRail>{aside}</KkStickyRail> : aside;
 
-  const main = (
-    <Stack sx={{ gap: 1.5, minWidth: 0 }}>
-      <KkPanelHeader title={sectionTitle} action={action} />
-      {toolbarBar}
-      {list}
-    </Stack>
+  const mainColumn = (
+    <Grid key="main" size={{ xs: 12, desktop: mainSize }} sx={{ minWidth: 0, order: mainOrder }}>
+      <Stack sx={{ gap: 1.5, minWidth: 0 }}>
+        <KkPanelHeader title={sectionTitle} action={action} />
+        {toolbarBar}
+        {list}
+      </Stack>
+    </Grid>
   );
-
-  const mainBody = sticksMain ? <KkStickyRail>{main}</KkStickyRail> : main;
-  const asideBody = stickyColumn === 'aside' ? <KkStickyRail>{aside}</KkStickyRail> : aside;
 
   const asideColumn = hasAside ? (
     <Grid
+      key="aside"
       ref={asideRef}
       size={{ xs: 12, desktop: asideSize }}
-      sx={{ minWidth: 0, scrollMarginTop: DETAIL_SCROLL_MARGIN, display: asideDisplay }}
+      sx={{
+        minWidth: 0,
+        scrollMarginTop: DETAIL_SCROLL_MARGIN,
+        display: asideDisplay,
+        order: asideOrder,
+      }}
     >
       {asideBody}
     </Grid>
   ) : null;
 
+  const columns = asideLeadsFocus ? [asideColumn, mainColumn] : [mainColumn, asideColumn];
+
   return (
     <Stack sx={{ gap: 3, minWidth: 0 }}>
-      <KkLead>{lead}</KkLead>
+      <Stack sx={{ gap: 1, minWidth: 0 }}>
+        <KkLead>{lead}</KkLead>
+        {subLead}
+      </Stack>
       <Grid container spacing={{ xs: 3.5, desktop: 5 }} sx={{ minWidth: 0 }}>
-        <Grid size={{ xs: 12, desktop: mainSize }} sx={{ minWidth: 0 }}>
-          {mainBody}
-        </Grid>
-        {asideColumn}
+        {columns}
       </Grid>
       {footnoteLine}
     </Stack>

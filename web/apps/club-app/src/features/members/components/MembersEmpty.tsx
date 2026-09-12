@@ -6,8 +6,9 @@ const EMPTY_TITLE = 'NIEMAND GEFUNDEN';
 
 interface MembersEmptyProps {
   query: string;
+  state: string;
 }
 
-export const MembersEmpty: FC<MembersEmptyProps> = ({ query }) => (
-  <KkEmptyState title={EMPTY_TITLE} description={toEmptyDescription(query)} />
+export const MembersEmpty: FC<MembersEmptyProps> = ({ query, state }) => (
+  <KkEmptyState title={EMPTY_TITLE} description={toEmptyDescription(query, state)} />
 );

@@ -113,12 +113,20 @@ describe('toRegisterSentence', () => {
 });
 
 describe('toPersonsEmptyDescription', () => {
-  it('points at the filter when nothing was typed', () => {
-    expect(toPersonsEmptyDescription('   ')).toContain('Filter');
+  it('quotes the query that found nobody', () => {
+    expect(toPersonsEmptyDescription('  Kühn ', 'all')).toContain('„Kühn“');
   });
 
-  it('quotes the query that found nobody', () => {
-    expect(toPersonsEmptyDescription('  Kühn ')).toContain('„Kühn“');
+  it('leaves the filter out of it while a query is running', () => {
+    expect(toPersonsEmptyDescription('Kühn', 'paused')).not.toContain('Alle');
+  });
+
+  it('offers the Alle filter when a state filter hides everyone', () => {
+    expect(toPersonsEmptyDescription('', 'paused')).toContain('Alle');
+  });
+
+  it('suggests nothing when Alle is already the chosen filter', () => {
+    expect(toPersonsEmptyDescription('', 'all')).not.toContain('Alle');
   });
 });
 
@@ -128,11 +136,10 @@ describe('toPersonHeadline', () => {
       title: 'Person',
       initials: '',
       state: null,
-      line: null,
     });
   });
 
-  it('says ab for a membership that has not begun', () => {
+  it('chips a membership that has not begun as kein Mitglied', () => {
     const headline = toPersonHeadline({
       personId: 5,
       firstName: 'Dorothea',
@@ -156,7 +163,6 @@ describe('toPersonHeadline', () => {
       title: 'Dorothea Oehler',
       initials: 'DO',
       state: { label: 'kein Mitglied', tone: 'neutral', dot: false },
-      line: null,
     });
   });
 });
