@@ -11,10 +11,10 @@ import type { ManagedAdmin, ManagedGroupSummary, ManagedMember } from './schemas
 
 export const MANAGE_GROUPS_SECTION_TITLES = {
   list: 'Alle Gruppen',
-  group: 'Die Gruppe',
+  group: SHARED_GROUP_SECTION_TITLES.about,
   members: SHARED_GROUP_SECTION_TITLES.managedMembers,
   admins: SHARED_GROUP_SECTION_TITLES.admins,
-  history: 'Geschichte',
+  history: SHARED_GROUP_SECTION_TITLES.history,
 } as const;
 
 export interface ManagedGroupsEmptyCopy {
