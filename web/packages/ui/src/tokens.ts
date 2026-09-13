@@ -70,11 +70,11 @@ export const kkTokens = {
   chrome: {
     light: {
       base: '#FFFFFF',
-      sideBg: '#14161A',
+      sideBg: '#E8EBEF',
       gradient: 'linear-gradient(168deg, #FFFFFF 0%, #FAFBFC 46%, #F0F2F5 100%)',
       lift: '0 10px 26px rgba(16,18,22,0.08)',
-      glowRed: 'rgba(225,29,42,0.10)',
-      glowGold: 'rgba(244,180,0,0.16)',
+      glowRed: 'rgba(225,29,42,0.06)',
+      glowGold: 'rgba(244,180,0,0.05)',
     },
     dark: {
       base: '#0B0D10',

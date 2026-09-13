@@ -1,7 +1,6 @@
 import Modal from '@mui/material/Modal';
 import Stack from '@mui/material/Stack';
 import type { FC, PropsWithChildren } from 'react';
-import { KK_DARK_SCHEME_ATTRIBUTE } from '../../../theme';
 import { kkTokens } from '../../../tokens';
 import { useIsMobile } from '../../../use-is-mobile';
 import { useAppShellCurtain } from '../logic/app-shell-curtain-context';
@@ -10,8 +9,6 @@ import { KkAppShellCurtainTransition } from './KkAppShellCurtainTransition';
 
 const GLOW = { width: 460, height: 400, top: -80 } as const;
 const PANEL_LABEL = 'Navigation';
-
-const darkSchemeAttribute = { [KK_DARK_SCHEME_ATTRIBUTE]: '' };
 
 export const KkAppShellCurtain: FC<PropsWithChildren> = ({ children }) => {
   const curtain = useAppShellCurtain();
@@ -25,7 +22,6 @@ export const KkAppShellCurtain: FC<PropsWithChildren> = ({ children }) => {
           role="dialog"
           aria-modal
           aria-label={PANEL_LABEL}
-          {...darkSchemeAttribute}
           data-kk-app-shell-curtain
           sx={(theme) => ({
             position: 'relative',

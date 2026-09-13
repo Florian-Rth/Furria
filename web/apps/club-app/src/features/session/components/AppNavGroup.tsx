@@ -1,16 +1,16 @@
 import { KkAppShell, KkEyebrow } from '@furria/ui';
 import Stack from '@mui/material/Stack';
-import { Link, useMatchRoute } from '@tanstack/react-router';
+import { Link, useRouterState } from '@tanstack/react-router';
 import type { FC } from 'react';
 import type { AppSectionGroup } from '../app-sections';
-import { toNavMatch } from '../app-sections';
+import { isNavMatchActive, toNavMatch } from '../app-sections';
 
 interface AppNavGroupProps {
   group: AppSectionGroup;
 }
 
 export const AppNavGroup: FC<AppNavGroupProps> = ({ group }) => {
-  const matchRoute = useMatchRoute();
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
   const labelTransform = group.id === 'my-groups' ? 'none' : 'uppercase';
 
   const items = group.sections.map((section) => {
@@ -38,7 +38,7 @@ export const AppNavGroup: FC<AppNavGroupProps> = ({ group }) => {
         to={navMatch.to}
         params={navMatch.params}
         transform={labelTransform}
-        active={matchRoute(navMatch) !== false}
+        active={isNavMatchActive(navMatch, pathname)}
       />
     );
   });

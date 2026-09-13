@@ -1,7 +1,9 @@
 import Stack from '@mui/material/Stack';
+import type { CSSObject, Theme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import type { ElementType, FC } from 'react';
 import { focusRing } from '../../../internal/focus-ring';
+import { redInk } from '../../../internal/red-ink';
 import { KkChip } from '../../../KkChip';
 import type { KkIconName } from '../../../KkIcon';
 import { KkIcon } from '../../../KkIcon';
@@ -38,10 +40,13 @@ export const KkAppShellNavItem: FC<KkAppShellNavItemProps> = ({
   onClick,
 }) => {
   const curtain = useAppShellCurtain();
-  const liveIconColor = active ? 'primary.main' : 'text.secondary';
   const liveLabelColor = active ? 'text.primary' : 'text.secondary';
-  const iconColor = disabled ? 'text.disabled' : liveIconColor;
+  const restingIconColor = disabled ? 'text.disabled' : 'text.secondary';
   const labelColor = disabled ? 'text.disabled' : liveLabelColor;
+  const iconPaint = (theme: Theme): CSSObject =>
+    active && !disabled
+      ? { ...redInk(theme), flexShrink: 0 }
+      : { color: restingIconColor, flexShrink: 0 };
   const rowComponent = disabled ? 'span' : component;
   const routeProps = disabled ? {} : { to, params };
   const hoverPaint = disabled
@@ -93,7 +98,7 @@ export const KkAppShellNavItem: FC<KkAppShellNavItemProps> = ({
           ...hoverPaint,
         })}
       >
-        <KkIcon name={icon} size="small" sx={{ color: iconColor, flexShrink: 0 }} />
+        <KkIcon name={icon} size="small" sx={iconPaint} />
         <Typography
           data-kk-app-shell-nav-label
           sx={{

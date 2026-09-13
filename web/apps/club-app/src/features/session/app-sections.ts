@@ -72,6 +72,28 @@ export interface NavMatch {
   fuzzy: boolean;
 }
 
+const toNavHref = (match: NavMatch): string =>
+  match.params === undefined
+    ? match.to
+    : Object.entries(match.params).reduce(
+        (path, [name, value]) => path.replace(`$${name}`, value),
+        match.to,
+      );
+
+const toComparablePath = (path: string): string =>
+  path.length > 1 && path.endsWith('/') ? path.slice(0, -1) : path;
+
+export const isNavMatchActive = (match: NavMatch, pathname: string): boolean => {
+  const href = toComparablePath(toNavHref(match));
+  const current = toComparablePath(pathname);
+
+  if (current === href) {
+    return true;
+  }
+
+  return match.fuzzy && current.startsWith(`${href}/`);
+};
+
 export const toNavMatch = (section: AppSection): NavMatch | null => {
   if (section.to === null) {
     return null;
