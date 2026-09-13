@@ -2,7 +2,6 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import { focusRing } from '../../../internal/focus-ring';
-import { KK_DARK_SCHEME_ATTRIBUTE } from '../../../theme';
 import { kkTokens } from '../../../tokens';
 import { useAppShellCurtain } from '../logic/app-shell-curtain-context';
 import { KkAppShellMenuMark } from './KkAppShellMenuMark';
@@ -10,8 +9,6 @@ import { KkAppShellMenuMark } from './KkAppShellMenuMark';
 const FADE = 'linear-gradient(to top, var(--mui-palette-background-default) 46%, transparent)';
 const OPEN_LABEL = 'Menü öffnen';
 const LABEL_SEPARATOR = ' – ';
-
-const darkSchemeAttribute = { [KK_DARK_SCHEME_ATTRIBUTE]: '' };
 
 interface KkAppShellMenuButtonProps {
   label: string;
@@ -40,7 +37,6 @@ export const KkAppShellMenuButton: FC<KkAppShellMenuButtonProps> = ({ label }) =
       <Stack
         component="button"
         type="button"
-        {...darkSchemeAttribute}
         aria-label={accessibleName}
         aria-expanded={curtain.isOpen}
         onClick={curtain.open}

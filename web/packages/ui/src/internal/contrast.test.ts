@@ -149,23 +149,53 @@ describe('the switch-row validation line', () => {
   });
 });
 
-describe('the dark app chrome', () => {
-  const chrome = kkTokens.chrome.light.sideBg;
+describe('the app chrome — the rail, the curtain and the mobile dock', () => {
+  const lightChrome = kkTokens.chrome.light.sideBg;
+  const darkChrome = kkTokens.chrome.dark.sideBg;
+
+  it.each([
+    { role: 'the active nav label', ink: light.ink },
+    { role: 'a resting nav label', ink: light.sub },
+    { role: 'the active nav icon and any red accent string', ink: light.redInk },
+  ])('clears AA for $role on the light side ground', ({ ink }) => {
+    expect(contrastRatio(ink, lightChrome)).toBeGreaterThanOrEqual(AA_SMALL_TEXT);
+  });
 
   it.each([
     { role: 'the active nav label', ink: dark.ink },
     { role: 'a resting nav label', ink: dark.sub },
-    { role: 'the active nav icon', ink: dark.red },
-    { role: 'a red accent string', ink: dark.redInk },
-  ])('clears AA for $role on the side ground', ({ ink }) => {
-    expect(contrastRatio(ink, chrome)).toBeGreaterThanOrEqual(AA_SMALL_TEXT);
+    { role: 'the active nav icon and any red accent string', ink: dark.redInk },
+  ])('clears AA for $role on the dark side ground', ({ ink }) => {
+    expect(contrastRatio(ink, darkChrome)).toBeGreaterThanOrEqual(AA_SMALL_TEXT);
   });
 
-  it('clears AA for the neutral hint chip on the side ground', () => {
-    const recipe = toneRecipes.neutral;
-    const ground = washOver(dark.ink, recipe.groundDark, chrome);
+  it.each([
+    {
+      scheme: 'light',
+      source: light.ink,
+      ground: lightChrome,
+      ink: toneRecipes.neutral.inkLight,
+      share: toneRecipes.neutral.groundLight,
+    },
+    {
+      scheme: 'dark',
+      source: dark.ink,
+      ground: darkChrome,
+      ink: toneRecipes.neutral.inkDark,
+      share: toneRecipes.neutral.groundDark,
+    },
+  ])(
+    'clears AA for the neutral hint chip on the $scheme side ground',
+    ({ source, ground, ink, share }) => {
+      expect(contrastRatio(ink, washOver(source, share, ground))).toBeGreaterThanOrEqual(
+        AA_SMALL_TEXT,
+      );
+    },
+  );
 
-    expect(contrastRatio(recipe.inkDark, ground)).toBeGreaterThanOrEqual(AA_SMALL_TEXT);
+  it('keeps each scheme on its own side ground rather than one permanent dark rail', () => {
+    expect(luminanceOf(lightChrome)).toBeGreaterThan(luminanceOf(light.ink));
+    expect(luminanceOf(darkChrome)).toBeLessThan(luminanceOf(dark.ink));
   });
 });
 

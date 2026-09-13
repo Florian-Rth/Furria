@@ -4,6 +4,7 @@ import type { AppSection } from './app-sections';
 import {
   APP_SECTIONS,
   buildNavGroups,
+  isNavMatchActive,
   LATER_SECTIONS,
   resolveSectionTitle,
   toMyGroupId,
@@ -192,5 +193,34 @@ describe('buildNavGroups', () => {
     );
 
     expect(manage?.sections.map((section) => section.id) ?? []).toEqual(expected);
+  });
+});
+
+describe('isNavMatchActive', () => {
+  const overview = { to: '/', params: undefined, fuzzy: false };
+  const members = { to: '/members', params: undefined, fuzzy: true };
+  const managePersons = { to: '/manage/persons', params: undefined, fuzzy: true };
+  const myGroup = { to: '/my-groups/$groupId', params: { groupId: '1' }, fuzzy: false };
+
+  it.each([
+    { match: overview, pathname: '/', expected: true },
+    { match: overview, pathname: '/members', expected: false },
+    { match: overview, pathname: '/manage/persons', expected: false },
+    { match: members, pathname: '/members', expected: true },
+    { match: members, pathname: '/members/3', expected: true },
+    { match: members, pathname: '/members/', expected: true },
+    { match: members, pathname: '/manage/persons', expected: false },
+    { match: managePersons, pathname: '/manage/persons/2', expected: true },
+    { match: managePersons, pathname: '/manage/groups', expected: false },
+    { match: myGroup, pathname: '/my-groups/1', expected: true },
+    { match: myGroup, pathname: '/my-groups/4', expected: false },
+  ])('rates $match.to on $pathname as $expected', ({ match, pathname, expected }) => {
+    expect(isNavMatchActive(match, pathname)).toBe(expected);
+  });
+
+  it('never lets the overview swallow every other route', () => {
+    const elsewhere = ['/members', '/groups', '/profile', '/manage/roles'];
+
+    expect(elsewhere.some((pathname) => isNavMatchActive(overview, pathname))).toBe(false);
   });
 });
