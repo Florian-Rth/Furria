@@ -73,8 +73,8 @@ export const kkTokens = {
       sideBg: '#E8EBEF',
       gradient: 'linear-gradient(to bottom right, #FFFFFF 0%, #E8EBEF 55%, #D6DCE5 100%)',
       lift: '0 10px 26px rgba(16,18,22,0.08)',
-      glowRed: 'rgba(225,29,42,0.06)',
-      glowGold: 'rgba(244,180,0,0.05)',
+      glowRed: 'rgba(225,29,42,0.13)',
+      glowGold: 'rgba(244,180,0,0.12)',
     },
     dark: {
       base: '#0B0D10',
