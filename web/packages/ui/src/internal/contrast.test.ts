@@ -18,7 +18,7 @@ describe('the elevation axis', () => {
   it.each([
     { scheme: 'light', tokens: light },
     { scheme: 'dark', tokens: dark },
-  ])('lifts a raised surface above both the page and a cream panel in $scheme', ({ tokens }) => {
+  ])('lifts a raised surface above both the page and a panel in $scheme', ({ tokens }) => {
     const raised = luminanceOf(tokens.panel2);
 
     expect(raised).toBeGreaterThan(luminanceOf(tokens.bg));
@@ -41,8 +41,8 @@ describe('contrastRatio', () => {
   });
 
   it('composites a translucent foreground over its ground before measuring', () => {
-    const opaque = contrastRatio('rgba(26,20,17,1)', '#FBF4E6');
-    const translucent = contrastRatio('rgba(26,20,17,0.4)', '#FBF4E6');
+    const opaque = contrastRatio('rgba(20,22,26,1)', '#FAFBFC');
+    const translucent = contrastRatio('rgba(20,22,26,0.4)', '#FAFBFC');
 
     expect(translucent).toBeLessThan(opaque);
     expect(translucent).toBeGreaterThan(1);
@@ -89,15 +89,19 @@ describe('the red button label', () => {
 
 describe('the red accent text — eyebrows, row meta and hovered row titles', () => {
   it.each([
-    { ground: 'a cream panel', ink: light.redInk, panel: light.panel },
+    { ground: 'a panel', ink: light.redInk, panel: light.panel },
     { ground: 'the page', ink: light.redInk, panel: light.bg },
     { ground: 'a raised surface', ink: light.redInk, panel: light.panel2 },
   ])('clears AA on $ground in light', ({ ink, panel }) => {
     expect(contrastRatio(ink, panel)).toBeGreaterThanOrEqual(AA_SMALL_TEXT);
   });
 
-  it('is why the light fill token cannot carry it on a cream panel', () => {
-    expect(contrastRatio(light.red, light.panel)).toBeLessThan(AA_SMALL_TEXT);
+  it.each([
+    { ground: 'a panel', panel: light.panel },
+    { ground: 'the page', panel: light.bg },
+    { ground: 'a raised surface', panel: light.panel2 },
+  ])('is why the ink token, not the fill, carries it on $ground', ({ panel }) => {
+    expect(contrastRatio(light.redInk, panel)).toBeGreaterThan(contrastRatio(light.red, panel));
   });
 });
 
@@ -125,8 +129,10 @@ describe('the focused field label on the notch', () => {
     expect(contrastRatio(ink, ground)).toBeGreaterThanOrEqual(AA_SMALL_TEXT);
   });
 
-  it('is why the primary fill token cannot carry it on the cream notch', () => {
-    expect(contrastRatio(light.red, light.panel)).toBeLessThan(AA_SMALL_TEXT);
+  it('is why the ink token, not the primary fill, carries it on the notch', () => {
+    expect(contrastRatio(light.redInk, light.panel)).toBeGreaterThan(
+      contrastRatio(light.red, light.panel),
+    );
   });
 });
 
