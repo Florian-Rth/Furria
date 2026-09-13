@@ -2,6 +2,10 @@ import Box from '@mui/material/Box';
 import type { SxProps, Theme } from '@mui/material/styles';
 import type { FC } from 'react';
 
+const VIEWBOX = { x: -56, y: -41.7, width: 112, height: 85.2 } as const;
+const CROSS_ANGLE = 116;
+const CROSS_ORIGIN = '0 1';
+
 const strawBlades = [
   'M-8.28,6 L-20.45,48 L-15.55,49.22 L-6.29,6 Z',
   'M-5.85,6 L-14.45,49.22 L-9.55,50.04 L-3.86,6 Z',
@@ -21,21 +25,29 @@ const broomParts = (
   </>
 );
 
+const viewBox = `${VIEWBOX.x} ${VIEWBOX.y} ${VIEWBOX.width} ${VIEWBOX.height}`;
+const leftBroom = `rotate(-${CROSS_ANGLE} ${CROSS_ORIGIN})`;
+const rightBroom = `rotate(${CROSS_ANGLE} ${CROSS_ORIGIN})`;
+
 interface KkBroomMarkProps {
   size?: number;
   sx?: SxProps<Theme>;
 }
 
-export const KkBroomMark: FC<KkBroomMarkProps> = ({ size = 34, sx }) => (
-  <Box
-    component="svg"
-    viewBox="-52 -51 104 104"
-    width={size}
-    height={size}
-    aria-hidden
-    sx={[{ display: 'block', fill: 'currentColor' }, ...(Array.isArray(sx) ? sx : [sx])]}
-  >
-    <g transform="rotate(-135 0 1)">{broomParts}</g>
-    <g transform="rotate(135 0 1)">{broomParts}</g>
-  </Box>
-);
+export const KkBroomMark: FC<KkBroomMarkProps> = ({ size = 34, sx }) => {
+  const height = (size * VIEWBOX.height) / VIEWBOX.width;
+
+  return (
+    <Box
+      component="svg"
+      viewBox={viewBox}
+      width={size}
+      height={height}
+      aria-hidden
+      sx={[{ display: 'block', fill: 'currentColor' }, ...(Array.isArray(sx) ? sx : [sx])]}
+    >
+      <g transform={leftBroom}>{broomParts}</g>
+      <g transform={rightBroom}>{broomParts}</g>
+    </Box>
+  );
+};
