@@ -2,8 +2,8 @@ import Box from '@mui/material/Box';
 import type { SxProps, Theme } from '@mui/material/styles';
 import type { FC } from 'react';
 
-const VIEWBOX = { x: -56, y: -41.7, width: 112, height: 85.2 } as const;
-const CROSS_ANGLE = 116;
+const VIEWBOX = { x: -55.4, y: -45.2, width: 110.8, height: 92.2 } as const;
+const CROSS_ANGLE = 122;
 const CROSS_ORIGIN = '0 1';
 
 const strawBlades = [
