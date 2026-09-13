@@ -17,7 +17,7 @@ export const KkBrandStageMark: FC<KkBrandStageMarkProps> = ({ variant = 'poster'
     sx={{
       color: 'primary.main',
       width: markSize[variant],
-      height: markSize[variant],
+      height: 'auto',
     }}
   />
 );
