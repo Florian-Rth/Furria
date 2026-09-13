@@ -15,10 +15,12 @@ const posterSx = {
 };
 
 const bandSx = {
-  flex: { xs: '0 0 auto', desktop: 1 },
-  justifyContent: { xs: 'flex-start', desktop: 'center' },
+  flex: 1,
+  justifyContent: 'center',
   gap: { xs: 1.25, desktop: 2 },
   py: { xs: 0.5, desktop: 4 },
+  transform: { xs: SHEET_LIFT_TRANSFORM, desktop: 'none' },
+  willChange: 'transform',
 };
 
 interface KkBrandStageBrandProps extends PropsWithChildren {

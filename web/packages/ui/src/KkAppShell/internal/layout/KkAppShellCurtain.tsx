@@ -26,7 +26,9 @@ export const KkAppShellCurtain: FC<PropsWithChildren> = ({ children }) => {
           sx={(theme) => ({
             position: 'relative',
             isolation: 'isolate',
-            overflow: 'hidden',
+            overflowX: 'hidden',
+            overflowY: 'auto',
+            overscrollBehavior: 'contain',
             height: '100%',
             backgroundColor: kkTokens.chrome.light.sideBg,
             ...theme.applyStyles('dark', { backgroundColor: kkTokens.chrome.dark.sideBg }),
