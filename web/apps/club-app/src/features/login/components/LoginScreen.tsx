@@ -13,6 +13,7 @@ import { SESSION_EXPIRED_MESSAGE } from '../login-messages';
 import { buildLoginStageMeta } from '../stage-meta';
 import { LoginForm } from './LoginForm';
 import { LoginHelpNote } from './LoginHelpNote';
+import { LoginTestCredentials } from './LoginTestCredentials';
 
 const HEADING_LEVEL = { mobile: 4, desktop: 3 } as const;
 const INTRO = 'Der Mitgliederbereich des FCC.';
@@ -49,6 +50,7 @@ export const LoginScreen: FC<LoginScreenProps> = ({ expired }) => {
         {expiredNotice}
         <LoginForm />
         <LoginHelpNote />
+        <LoginTestCredentials />
       </KkSplitLayout.Pane>
     </KkSplitLayout>
   );
