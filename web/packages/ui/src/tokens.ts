@@ -69,9 +69,9 @@ export const kkTokens = {
   radius,
   chrome: {
     light: {
-      base: '#FFFFFF',
+      base: '#E8EBEF',
       sideBg: '#E8EBEF',
-      gradient: 'linear-gradient(168deg, #FFFFFF 0%, #FAFBFC 46%, #F0F2F5 100%)',
+      gradient: 'linear-gradient(168deg, #F2F4F7 0%, #E8EBEF 58%)',
       lift: '0 10px 26px rgba(16,18,22,0.08)',
       glowRed: 'rgba(225,29,42,0.06)',
       glowGold: 'rgba(244,180,0,0.05)',
