@@ -12,7 +12,7 @@ const GLOW = {
 
 const STAGE_Z_INDEX = 1;
 const WATERMARK_Z_INDEX = -1;
-const WATERMARK_SIZE = { xs: 160, desktop: 210 };
+const WATERMARK_SIZE = { xs: 230, desktop: 310 };
 
 interface KkAppShellStageProps extends PropsWithChildren {
   sx?: KkSx;

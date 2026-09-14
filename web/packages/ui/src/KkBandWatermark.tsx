@@ -1,7 +1,7 @@
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
 import { applyScheme } from './internal/scheme-paint';
-import { watermarkOpacityScheme } from './internal/watermark-paint';
+import { bandWatermarkOpacityScheme } from './internal/watermark-paint';
 import { KkBroomMark } from './KkBroomMark';
 import type { KkSx } from './kk-sx';
 
@@ -47,7 +47,7 @@ export const KkBandWatermark: FC<KkBandWatermarkProps> = ({
         color: toneColors[tone],
         pointerEvents: 'none',
         zIndex: 0,
-        ...applyScheme(theme, watermarkOpacityScheme),
+        ...applyScheme(theme, bandWatermarkOpacityScheme),
       }),
       ...(Array.isArray(sx) ? sx : [sx]),
     ]}
