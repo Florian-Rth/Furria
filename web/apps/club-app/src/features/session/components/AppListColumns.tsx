@@ -13,7 +13,7 @@ const LIST_VISUAL_ORDER = 1;
 const ASIDE_VISUAL_ORDER = 2;
 
 export interface AppListColumnsProps {
-  lead?: ReactNode;
+  note?: ReactNode;
   sectionTitle: string;
   createAction?: ReactNode;
   toolbar?: ReactNode;
@@ -30,7 +30,7 @@ export interface AppListColumnsProps {
 }
 
 export const AppListColumns: FC<AppListColumnsProps> = ({
-  lead,
+  note,
   sectionTitle,
   createAction,
   toolbar,
@@ -93,7 +93,7 @@ export const AppListColumns: FC<AppListColumnsProps> = ({
 
   return (
     <Stack sx={{ gap: 3, minWidth: 0 }}>
-      {lead}
+      {note}
       <Grid container spacing={{ xs: 3.5, desktop: 5 }} sx={{ minWidth: 0 }}>
         {columns}
       </Grid>

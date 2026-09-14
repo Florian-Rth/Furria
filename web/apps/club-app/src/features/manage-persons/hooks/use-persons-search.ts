@@ -23,7 +23,6 @@ export interface PersonsSearch {
   jumpTo: (letter: string) => void;
   sections: PersonLetterSection[];
   visibleCount: number;
-  total: number;
   totals: Record<MembershipState, number>;
   filterOptions: KkFilterOption[];
   letters: KkLetterIndexEntry[];
@@ -52,7 +51,6 @@ export const usePersonsSearch = (persons: readonly PersonSummary[]): PersonsSear
     jumpTo,
     sections,
     visibleCount: visible.length,
-    total: persons.length,
     totals: countPersonsByState(persons),
     filterOptions: toStateFilterOptions(countPersonsByState(searched)),
     letters: availablePersonLetters(visible),

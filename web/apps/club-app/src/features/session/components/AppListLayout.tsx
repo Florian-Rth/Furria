@@ -1,4 +1,4 @@
-import { KkLead, KkNote } from '@furria/ui';
+import { KkNote } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC, ReactNode, Ref } from 'react';
 import { AppListColumns } from './AppListColumns';
@@ -6,7 +6,6 @@ import { AppListColumns } from './AppListColumns';
 const PHONE_ONLY_NOTE = { xs: 'flex', desktop: 'none' };
 
 interface AppListLayoutProps {
-  lead: string;
   asideNote?: string;
   sectionTitle: string;
   createAction?: ReactNode;
@@ -24,7 +23,6 @@ interface AppListLayoutProps {
 }
 
 export const AppListLayout: FC<AppListLayoutProps> = ({
-  lead,
   asideNote,
   sectionTitle,
   createAction,
@@ -41,24 +39,17 @@ export const AppListLayout: FC<AppListLayoutProps> = ({
   asideLeadsFocus,
 }) => {
   const asideNoteLine =
-    asideNote === undefined ? null : (
+    asideNote === undefined ? undefined : (
       <Stack sx={{ display: PHONE_ONLY_NOTE, minWidth: 0 }}>
         <KkNote>{asideNote}</KkNote>
       </Stack>
     );
 
-  const leadBlock = (
-    <Stack sx={{ gap: 1, minWidth: 0 }}>
-      <KkLead>{lead}</KkLead>
-      {asideNoteLine}
-    </Stack>
-  );
-
   const footnoteLine = footnote === undefined ? null : <KkNote>{footnote}</KkNote>;
 
   return (
     <AppListColumns
-      lead={leadBlock}
+      note={asideNoteLine}
       sectionTitle={sectionTitle}
       createAction={createAction}
       toolbar={toolbar}

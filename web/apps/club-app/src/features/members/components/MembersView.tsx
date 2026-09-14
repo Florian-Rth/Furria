@@ -1,7 +1,7 @@
 import type { FC } from 'react';
 import { AppListLayout } from '@/features/session';
 import type { MemberSearch } from '../hooks/use-member-search';
-import { MEMBERS_SECTION_TITLE, toConnectedSentence, toStatsFootnote } from '../members-labels';
+import { MEMBERS_SECTION_TITLE, toStatsFootnote } from '../members-labels';
 import { MembersAside } from './MembersAside';
 import { MembersEmpty } from './MembersEmpty';
 import { MembersLetterRail } from './MembersLetterRail';
@@ -54,7 +54,6 @@ export const MembersView: FC<MembersViewProps> = ({ search }) => {
 
   return (
     <AppListLayout
-      lead={toConnectedSentence(search.total)}
       asideNote={footnote}
       sectionTitle={MEMBERS_SECTION_TITLE}
       toolbar={toolbar}

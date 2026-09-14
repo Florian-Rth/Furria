@@ -1,6 +1,6 @@
 import type { FC } from 'react';
 import { AppListLayout } from '@/features/session';
-import { GROUPS_SECTION_TITLE, toGroupsIntroSentence } from '../groups-labels';
+import { GROUPS_SECTION_TITLE } from '../groups-labels';
 import { useGroupStandings } from '../hooks/use-group-standings';
 import { useGroupsSearch } from '../hooks/use-groups-search';
 import type { GroupSummary } from '../schemas';
@@ -16,7 +16,6 @@ interface GroupsViewProps {
 export const GroupsView: FC<GroupsViewProps> = ({ groups }) => {
   const standings = useGroupStandings();
   const search = useGroupsSearch(groups);
-  const recruiting = groups.filter((group) => group.isRecruiting).length;
 
   if (groups.length === 0) {
     return <GroupsEmpty />;
@@ -39,12 +38,5 @@ export const GroupsView: FC<GroupsViewProps> = ({ groups }) => {
       <GroupsGrid groups={search.visible} standings={standings} />
     );
 
-  return (
-    <AppListLayout
-      lead={toGroupsIntroSentence(groups.length, recruiting)}
-      sectionTitle={GROUPS_SECTION_TITLE}
-      toolbar={toolbar}
-      list={list}
-    />
-  );
+  return <AppListLayout sectionTitle={GROUPS_SECTION_TITLE} toolbar={toolbar} list={list} />;
 };

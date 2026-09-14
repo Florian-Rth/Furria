@@ -90,7 +90,6 @@ export const ManagedGroupsView: FC<ManagedGroupsViewProps> = ({ groups }) => {
   return (
     <>
       <AppListLayout
-        lead={view.intro}
         sectionTitle={MANAGE_GROUPS_SECTION_TITLES.list}
         createAction={createButton}
         toolbar={toolbar}

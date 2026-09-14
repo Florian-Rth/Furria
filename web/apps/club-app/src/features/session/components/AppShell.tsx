@@ -1,5 +1,4 @@
 import { KkAppShell, KkBrandLockup, KkEyebrow, KkToastProvider } from '@furria/ui';
-import Stack from '@mui/material/Stack';
 import type { FC, PropsWithChildren } from 'react';
 import { useState } from 'react';
 import { sessionAt } from '@/lib/club';
@@ -40,7 +39,7 @@ export const AppShell: FC<PropsWithChildren> = ({ children }) => {
                 <KkBrandLockup size="sm" />
                 <KkEyebrow tone="muted">{sessionLabel}</KkEyebrow>
               </KkAppShell.Masthead>
-              <Stack ref={setHeaderContainer} sx={{ minWidth: 0 }} />
+              <KkAppShell.StageHead ref={setHeaderContainer} />
             </KkAppShell.Stage>
             <KkAppShell.Sheet>{children}</KkAppShell.Sheet>
           </KkAppShell.Main>

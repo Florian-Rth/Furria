@@ -226,6 +226,9 @@ export const toGroupsIntroSentence = (total: number, recruiting: number): string
   return `${groups} ${recruiting} davon suchen gerade Verstärkung.`;
 };
 
+export const toGroupsLead = (groups: readonly GroupSummary[]): string =>
+  toGroupsIntroSentence(groups.length, groups.filter((group) => group.isRecruiting).length);
+
 export interface GroupHeadline {
   title: string;
   openness: StateChip | null;
