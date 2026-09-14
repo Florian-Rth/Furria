@@ -114,6 +114,8 @@ export const kkTokens = {
     onAccentMuted: 0.85,
     watermark: 0.1,
     watermarkDark: 0.05,
+    watermarkBand: 0.055,
+    watermarkBandDark: 0.035,
     onAccentWash: 0.12,
     dimmed: 0.72,
   },
