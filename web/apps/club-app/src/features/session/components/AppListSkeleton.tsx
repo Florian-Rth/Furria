@@ -6,7 +6,6 @@ import { AppSkeletonRegion } from './AppSkeletonRegion';
 
 export type AppListSkeletonShape = 'rows' | 'cards';
 
-const LEAD_LINES = 2;
 const ROW_COUNT = 8;
 const MASTER_ROW_COUNT = 6;
 const DETAIL_LINES = 5;
@@ -17,7 +16,6 @@ const FULL_HEIGHT = { height: '100%' } as const;
 
 interface AppListSkeletonProps {
   label: string;
-  hasLead?: boolean;
   sectionTitle: string;
   toolbarChips?: number;
   listShape: AppListSkeletonShape;
@@ -50,7 +48,6 @@ const detailPanel = (
 
 export const AppListSkeleton: FC<AppListSkeletonProps> = ({
   label,
-  hasLead = true,
   sectionTitle,
   toolbarChips,
   listShape,
@@ -62,7 +59,6 @@ export const AppListSkeleton: FC<AppListSkeletonProps> = ({
   asideLeadsFocus,
   hasSelection = false,
 }) => {
-  const lead = hasLead ? <KkSkeletonBlock lines={LEAD_LINES} /> : undefined;
   const toolbar =
     toolbarChips === undefined ? undefined : <KkSkeletonToolbar chips={toolbarChips} />;
   const detail = aside ?? (hasSelection ? detailPanel : undefined);
@@ -85,7 +81,6 @@ export const AppListSkeleton: FC<AppListSkeletonProps> = ({
   return (
     <AppSkeletonRegion label={label}>
       <AppListColumns
-        lead={lead}
         sectionTitle={sectionTitle}
         toolbar={toolbar}
         list={list}

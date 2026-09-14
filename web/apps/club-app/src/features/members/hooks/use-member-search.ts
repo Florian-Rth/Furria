@@ -18,7 +18,6 @@ export interface MemberSearch {
   jumpTo: (letter: string) => void;
   sections: MemberLetterSection[];
   visibleCount: number;
-  total: number;
   totals: Record<MembershipState, number>;
   filterOptions: KkFilterOption[];
   letters: KkLetterIndexEntry[];
@@ -47,7 +46,6 @@ export const useMemberSearch = (members: readonly MemberSummary[]): MemberSearch
     jumpTo,
     sections,
     visibleCount: visible.length,
-    total: members.length,
     totals: countByState(members),
     filterOptions: toStateFilterOptions(countByState(searched)),
     letters: availableLetters(visible),

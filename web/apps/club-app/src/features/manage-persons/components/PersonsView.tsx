@@ -4,11 +4,7 @@ import type { FC } from 'react';
 import { AppListLayout } from '@/features/session';
 import { usePersonCreateDialog } from '../hooks/use-person-create-dialog';
 import type { PersonsSearch } from '../hooks/use-persons-search';
-import {
-  MANAGE_PERSONS_SECTION_TITLE,
-  PERSONS_STATS_NOTE,
-  toPersonsLead,
-} from '../manage-persons-labels';
+import { MANAGE_PERSONS_SECTION_TITLE, PERSONS_STATS_NOTE } from '../manage-persons-labels';
 import type { PersonSummary } from '../schemas';
 import { PersonFormDialog } from './PersonFormDialog';
 import { PersonsAside } from './PersonsAside';
@@ -92,7 +88,6 @@ export const PersonsView: FC<PersonsViewProps> = ({ persons, search }) => {
   return (
     <>
       <AppListLayout
-        lead={toPersonsLead(search.total)}
         asideNote={PERSONS_STATS_NOTE}
         sectionTitle={MANAGE_PERSONS_SECTION_TITLE}
         createAction={createButton}

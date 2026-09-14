@@ -6,7 +6,7 @@ import { AppListLayout } from '@/features/session';
 import { useDetailScroll } from '../hooks/use-detail-scroll';
 import { useRoleSearch } from '../hooks/use-role-search';
 import { useSelectedRole } from '../hooks/use-selected-role';
-import { MANAGE_ROLES_SECTION_TITLE, toRolesLead } from '../manage-roles-labels';
+import { MANAGE_ROLES_SECTION_TITLE } from '../manage-roles-labels';
 import type { RoleSummary } from '../schemas';
 import { RoleColumn } from './RoleColumn';
 import { RoleFormDialog } from './RoleFormDialog';
@@ -87,7 +87,6 @@ export const RolesView: FC<RolesViewProps> = ({ roles, catalogue }) => {
   return (
     <>
       <AppListLayout
-        lead={toRolesLead(roles)}
         sectionTitle={MANAGE_ROLES_SECTION_TITLE}
         createAction={createButton}
         toolbar={

@@ -11,6 +11,7 @@ import {
   toGroupStandingChips,
   toGroupStandings,
   toGroupsIntroSentence,
+  toGroupsLead,
   toNoGroupMatchLine,
   toOpenableAdminIds,
   toPersonUnitLabel,
@@ -262,6 +263,18 @@ describe('toGroupsIntroSentence', () => {
     expect(toGroupsIntroSentence(7, 0)).toBe(
       '7 Gruppen tragen die Session. Gerade sucht keine davon Verstärkung.',
     );
+  });
+});
+
+describe('toGroupsLead', () => {
+  it('counts the Gruppen that are looking for people', () => {
+    expect(
+      toGroupsLead([
+        summary({ groupId: 1, isRecruiting: true }),
+        summary({ groupId: 2, isRecruiting: false }),
+        summary({ groupId: 3, isRecruiting: true }),
+      ]),
+    ).toBe('3 Gruppen tragen die Session. 2 davon suchen gerade Verstärkung.');
   });
 });
 

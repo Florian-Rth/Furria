@@ -6,7 +6,6 @@ import {
   filterManagedGroups,
   toGroupStatusFilterId,
   toGroupStatusFilterOptions,
-  toManagedGroupsIntro,
 } from '../manage-groups-labels';
 import type { ManagedGroupSummary } from '../schemas';
 
@@ -17,7 +16,6 @@ export interface ManagedGroupsView {
   selectStatus: (id: string) => void;
   filterOptions: KkFilterOption[];
   visible: readonly ManagedGroupSummary[];
-  intro: string;
   isFiltered: boolean;
 }
 
@@ -36,7 +34,6 @@ export const useManagedGroupsView = (groups: readonly ManagedGroupSummary[]): Ma
     selectStatus,
     filterOptions: toGroupStatusFilterOptions(groups),
     visible: filterManagedGroups(groups, query, status),
-    intro: toManagedGroupsIntro(groups),
     isFiltered: query.trim() !== '' || status !== ALL_GROUPS_FILTER_ID,
   };
 };
