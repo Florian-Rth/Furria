@@ -1,5 +1,6 @@
 import type { KkFilterOption } from '@furria/ui';
 import { useState } from 'react';
+import { useSearchQuery } from '@/features/session';
 import {
   ALL_GROUPS_FILTER_ID,
   filterGroups,
@@ -10,7 +11,6 @@ import type { GroupSummary } from '../schemas';
 
 export interface GroupsSearch {
   query: string;
-  setQuery: (value: string) => void;
   status: string;
   selectStatus: (id: string) => void;
   filterOptions: KkFilterOption[];
@@ -19,12 +19,11 @@ export interface GroupsSearch {
 }
 
 export const useGroupsSearch = (groups: readonly GroupSummary[]): GroupsSearch => {
-  const [query, setQuery] = useState('');
+  const query = useSearchQuery();
   const [status, setStatus] = useState<string>(ALL_GROUPS_FILTER_ID);
 
   return {
     query,
-    setQuery,
     status,
     selectStatus: setStatus,
     filterOptions: toRecruitingFilterOptions(groups),

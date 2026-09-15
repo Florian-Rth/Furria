@@ -1,4 +1,4 @@
-import { KkAvatar, KkChip, KkEyebrow, KkPageHeader } from '@furria/ui';
+import { KkAvatar, KkChip, KkEyebrow, KkScreenHeader } from '@furria/ui';
 import type { FC } from 'react';
 import { PERSON_EYEBROW, toPersonHeadline } from '../manage-persons-labels';
 import type { PersonDetails } from '../schemas';
@@ -10,24 +10,27 @@ interface PersonEditHeaderProps {
 export const PersonEditHeader: FC<PersonEditHeaderProps> = ({ person }) => {
   const headline = toPersonHeadline(person);
 
-  const stateChip =
+  const stateRow =
     headline.state === null ? null : (
-      <KkChip tone={headline.state.tone} dot={headline.state.dot}>
-        {headline.state.label}
-      </KkChip>
+      <KkScreenHeader.Meta>
+        <KkChip tone={headline.state.tone} dot={headline.state.dot}>
+          {headline.state.label}
+        </KkChip>
+      </KkScreenHeader.Meta>
     );
 
   return (
-    <KkPageHeader
-      title={headline.title}
-      titleTransform="none"
-      eyebrow={
+    <KkScreenHeader>
+      <KkScreenHeader.Visual>
+        <KkAvatar initials={headline.initials} size="large" />
+      </KkScreenHeader.Visual>
+      <KkScreenHeader.Text>
         <KkEyebrow tone="accent" size="small">
           {PERSON_EYEBROW}
         </KkEyebrow>
-      }
-      avatar={<KkAvatar initials={headline.initials} size="large" />}
-      chip={stateChip}
-    />
+        <KkScreenHeader.Title transform="none">{headline.title}</KkScreenHeader.Title>
+        {stateRow}
+      </KkScreenHeader.Text>
+    </KkScreenHeader>
   );
 };

@@ -1,9 +1,10 @@
+import { KkScreen } from '@furria/ui';
 import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { AppPageHeader } from '@/features/session';
+import { useMeQuery } from '@/features/session';
 import { isForbiddenError } from '@/lib/query-error';
 import { useMyGroupQuery } from '../api';
-import { toHubId } from '../group-hub-labels';
+import { toHubHeadline, toHubId } from '../group-hub-labels';
 import { HubBody } from './HubBody';
 import { HubDenied } from './HubDenied';
 import { HubHeader } from './HubHeader';
@@ -14,17 +15,15 @@ export const HubPage: FC = () => {
   const { groupId } = useParams({ from: HUB_ROUTE_ID });
   const id = toHubId(groupId);
   const hub = useMyGroupQuery(id);
-
-  if (isForbiddenError(hub.error)) {
-    return <HubDenied groupId={groupId} />;
-  }
+  const me = useMeQuery();
+  const headline = toHubHeadline(hub.data, me.data?.person.id ?? null);
+  const denied = isForbiddenError(hub.error);
+  const header = denied ? undefined : <HubHeader hub={hub.data} />;
+  const body = denied ? <HubDenied groupId={groupId} /> : <HubBody groupId={id} />;
 
   return (
-    <>
-      <AppPageHeader>
-        <HubHeader hub={hub.data} />
-      </AppPageHeader>
-      <HubBody groupId={id} />
-    </>
+    <KkScreen kind="detail" title={headline.title} header={header}>
+      {body}
+    </KkScreen>
   );
 };

@@ -55,8 +55,6 @@ export const ManagedGroupsView: FC<ManagedGroupsViewProps> = ({ groups }) => {
 
   const toolbar = (
     <ManagedGroupsToolbar
-      query={view.query}
-      onQueryChange={view.setQuery}
       status={view.status}
       options={view.filterOptions}
       onStatusChange={view.selectStatus}

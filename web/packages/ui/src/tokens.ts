@@ -85,6 +85,31 @@ export const kkTokens = {
       glowGold: 'rgba(255,196,46,0.14)',
     },
   },
+  shell: {
+    gutter: 12,
+    chromeGap: 6,
+    barHeight: 52,
+    toolRowHeight: 44,
+    navHeight: 64,
+    threadHeight: 2.5,
+    scrollTravel: 72,
+    headerDrift: 14,
+    titleRise: 8,
+    material: {
+      blur: { rest: 2, dense: 14 },
+      shadowOffsetY: { rest: 1, dense: 10 },
+      shadowBlur: { rest: 2, dense: 26 },
+      shadowInk: { light: '#101216', dark: '#000000' },
+      light: {
+        rest: { tint: 0.4, hairline: 0.04, shadow: 0.03 },
+        dense: { tint: 0.92, hairline: 0.12, shadow: 0.1 },
+      },
+      dark: {
+        rest: { tint: 0.44, hairline: 0.06, shadow: 0.16 },
+        dense: { tint: 0.94, hairline: 0.16, shadow: 0.45 },
+      },
+    },
+  },
   layout: {
     gutterX: { xs: 3, md: 7 },
     gutterY: { xs: 4, md: 8 },

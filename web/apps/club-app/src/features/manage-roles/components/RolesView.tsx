@@ -91,8 +91,6 @@ export const RolesView: FC<RolesViewProps> = ({ roles, catalogue }) => {
         createAction={createButton}
         toolbar={
           <RolesToolbar
-            query={search.query}
-            onQueryChange={search.setQuery}
             status={search.status}
             options={search.filterOptions}
             onStatusChange={search.selectStatus}

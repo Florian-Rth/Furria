@@ -1,5 +1,4 @@
 import { KkAppShellCurtain } from './internal/layout/KkAppShellCurtain';
-import { KkAppShellCurtainFooter } from './internal/layout/KkAppShellCurtainFooter';
 import { KkAppShellCurtainHead } from './internal/layout/KkAppShellCurtainHead';
 import { KkAppShellMain } from './internal/layout/KkAppShellMain';
 import { KkAppShellMasthead } from './internal/layout/KkAppShellMasthead';
@@ -36,7 +35,6 @@ export const KkAppShell = Object.assign(KkAppShellRoot, {
   Curtain: KkAppShellCurtain,
   CurtainHead: KkAppShellCurtainHead,
   CurtainClose: KkAppShellCurtainClose,
-  CurtainFooter: KkAppShellCurtainFooter,
   CurtainAction: KkAppShellCurtainAction,
   Greeting: KkAppShellGreeting,
   PageTitle: KkAppShellPageTitle,

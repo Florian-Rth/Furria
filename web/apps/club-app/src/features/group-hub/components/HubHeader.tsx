@@ -1,5 +1,4 @@
-import { KkChip, KkEyebrow, KkMeta, KkPageHeader } from '@furria/ui';
-import Stack from '@mui/material/Stack';
+import { KkChip, KkEyebrow, KkMeta, KkScreenHeader } from '@furria/ui';
 import type { FC } from 'react';
 import { useMeQuery } from '@/features/session';
 import { toHubHeadline } from '../group-hub-labels';
@@ -22,24 +21,25 @@ export const HubHeader: FC<HubHeaderProps> = ({ hub }) => {
 
   const chipRow =
     headline.chips.length === 0 ? null : (
-      <Stack direction="row" sx={{ alignItems: 'center', gap: 1, flexWrap: 'wrap', minWidth: 0 }}>
+      <KkScreenHeader.Meta>
         {headline.chips.map((chip) => (
           <KkChip key={chip.label} tone={chip.tone} dot={chip.dot}>
             {chip.label}
           </KkChip>
         ))}
-      </Stack>
+      </KkScreenHeader.Meta>
     );
 
   const subline = headline.subline === null ? null : <KkMeta>{headline.subline}</KkMeta>;
 
   return (
-    <KkPageHeader
-      title={headline.title}
-      titleTransform="none"
-      eyebrow={eyebrow}
-      chip={chipRow}
-      subline={subline}
-    />
+    <KkScreenHeader>
+      <KkScreenHeader.Text>
+        {eyebrow}
+        <KkScreenHeader.Title transform="none">{headline.title}</KkScreenHeader.Title>
+        {chipRow}
+        {subline}
+      </KkScreenHeader.Text>
+    </KkScreenHeader>
   );
 };

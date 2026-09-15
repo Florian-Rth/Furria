@@ -26,8 +26,6 @@ export const MembersView: FC<MembersViewProps> = ({ search }) => {
 
   const toolbar = (
     <MembersToolbar
-      query={search.query}
-      onQueryChange={search.setQuery}
       state={search.state}
       options={search.filterOptions}
       onStateChange={search.selectState}

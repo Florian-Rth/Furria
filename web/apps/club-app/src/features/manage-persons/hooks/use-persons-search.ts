@@ -1,5 +1,6 @@
 import type { KkFilterOption, KkLetterIndexEntry } from '@furria/ui';
 import { useState } from 'react';
+import { useSearchQuery } from '@/features/session';
 import type { MembershipState } from '@/lib/api/schemas';
 import { scrollElementIntoView } from '@/lib/scroll-to';
 import { ALL_STATES_FILTER_ID, toStateFilterOptions } from '@/lib/state-chips';
@@ -16,7 +17,6 @@ import type { PersonSummary } from '../schemas';
 
 export interface PersonsSearch {
   query: string;
-  setQuery: (value: string) => void;
   state: string;
   selectState: (id: string) => void;
   letter: string | undefined;
@@ -29,7 +29,7 @@ export interface PersonsSearch {
 }
 
 export const usePersonsSearch = (persons: readonly PersonSummary[]): PersonsSearch => {
-  const [query, setQuery] = useState('');
+  const query = useSearchQuery();
   const [state, setState] = useState<string>(ALL_STATES_FILTER_ID);
 
   const searched = filterPersons(persons, { query, state: ALL_STATES_FILTER_ID });
@@ -44,7 +44,6 @@ export const usePersonsSearch = (persons: readonly PersonSummary[]): PersonsSear
 
   return {
     query,
-    setQuery,
     state,
     selectState: setState,
     letter: position.letter,

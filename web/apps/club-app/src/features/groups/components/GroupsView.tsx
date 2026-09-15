@@ -23,8 +23,6 @@ export const GroupsView: FC<GroupsViewProps> = ({ groups }) => {
 
   const toolbar = (
     <GroupsToolbar
-      query={search.query}
-      onQueryChange={search.setQuery}
       status={search.status}
       options={search.filterOptions}
       onStatusChange={search.selectStatus}
