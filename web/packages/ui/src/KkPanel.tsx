@@ -80,6 +80,7 @@ interface KkPanelProps extends PropsWithChildren {
   to?: string;
   params?: Record<string, string>;
   search?: KkLinkSearch;
+  resetScroll?: boolean;
   onClick?: () => void;
   sx?: KkSx;
 }
@@ -93,13 +94,14 @@ export const KkPanel: FC<KkPanelProps> = ({
   to,
   params,
   search,
+  resetScroll,
   onClick,
   sx,
   children,
 }) => {
   const interactive = component !== undefined || onClick !== undefined;
   const panelComponent = component ?? (onClick === undefined ? 'div' : 'button');
-  const routeProps = component === undefined ? {} : { to, params, search };
+  const routeProps = component === undefined ? {} : { to, params, search, resetScroll };
   const nativeProps = panelComponent === 'button' ? { type: 'button' as const } : {};
 
   const chevronSlot =

@@ -99,6 +99,10 @@ export interface MemberHeadline {
   state: StateChip | null;
 }
 
+export const MEMBER_PEEK_CLOSE_LABEL = 'Kurzansicht schließen';
+export const MEMBER_PEEK_OPEN_LABEL = 'Ganze Seite öffnen';
+export const MEMBER_PEEK_EMPTY_VALUE = 'keine';
+
 export const toPeekAffiliationLine = (entries: readonly { name: string }[]): string | null =>
   entries.length === 0 ? null : entries.map((entry) => entry.name).join(META_SEPARATOR);
 

@@ -135,6 +135,10 @@ const toSegmentText = (segment: RecruitingContactSegment): string =>
 export const toRecruitingContactLine = (admins: readonly PersonRef[]): string =>
   toRecruitingContactSegments(admins).map(toSegmentText).join('');
 
+export const GROUP_PEEK_CLOSE_LABEL = 'Kurzansicht schließen';
+export const GROUP_PEEK_OPEN_LABEL = 'Ganze Seite öffnen';
+export const toGroupSizeLine = (count: number): string => `${count} ${toPersonUnitLabel(count)}`;
+
 export const ALL_GROUPS_FILTER_ID = 'all';
 export const RECRUITING_FILTER_ID = 'recruiting';
 export const SETTLED_FILTER_ID = 'settled';

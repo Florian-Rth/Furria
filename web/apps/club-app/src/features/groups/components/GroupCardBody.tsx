@@ -22,6 +22,7 @@ interface GroupCardBodyProps {
   to: string;
   params?: Record<string, string>;
   search?: KkLinkSearch;
+  resetScroll?: boolean;
   sx?: KkSx;
 }
 
@@ -40,6 +41,7 @@ export const GroupCardBody: FC<GroupCardBodyProps> = ({
   to,
   params,
   search,
+  resetScroll,
   sx,
 }) => {
   const text = description.trim();
@@ -84,6 +86,7 @@ export const GroupCardBody: FC<GroupCardBodyProps> = ({
       to={to}
       params={params}
       search={search}
+      resetScroll={resetScroll}
       sx={sx}
     >
       <Stack sx={{ gap: 1.25, minWidth: 0, height: '100%' }}>

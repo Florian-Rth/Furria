@@ -9,6 +9,7 @@ import { redInk } from './internal/red-ink';
 import { rowDividerTop } from './internal/row-divider';
 import { KkAvatar } from './KkAvatar';
 import { KkIcon } from './KkIcon';
+import type { KkLinkSearch } from './kk-link-search';
 import type { KkSx } from './kk-sx';
 import { resolvePersonRowAffiliation } from './person-row-affiliation';
 import { kkTokens } from './tokens';
@@ -34,6 +35,8 @@ interface KkPersonRowProps {
   component?: ElementType;
   to?: string;
   params?: Record<string, string>;
+  search?: KkLinkSearch;
+  resetScroll?: boolean;
   onClick?: () => void;
   sx?: KkSx;
 }
@@ -58,13 +61,15 @@ export const KkPersonRow: FC<KkPersonRowProps> = ({
   component,
   to,
   params,
+  search,
+  resetScroll,
   onClick,
   sx,
 }) => {
   const affiliation = resolvePersonRowAffiliation({ accent, meta, emptyMeta });
   const interactive = component !== undefined || onClick !== undefined;
   const rowComponent = component ?? (onClick === undefined ? 'div' : 'button');
-  const routeProps = component === undefined ? {} : { to, params };
+  const routeProps = component === undefined ? {} : { to, params, search, resetScroll };
   const nativeProps = rowComponent === 'button' ? { type: 'button' as const } : {};
   const hasSecondLine = affiliation.present || trailing !== undefined;
   const nameColor = dimmed ? 'text.secondary' : 'text.primary';

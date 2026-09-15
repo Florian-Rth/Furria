@@ -2,12 +2,13 @@ import { KkChip, KkPersonRow } from '@furria/ui';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { toInitials } from '@/lib/initials';
+import { toPeekId } from '@/lib/peek';
 import { NO_AFFILIATION_META } from '@/lib/person-rows';
 import { toMembershipStateChip } from '@/lib/state-chips';
 import { toPersonRowAffiliation } from '../members-labels';
 import type { MemberSummary } from '../schemas';
 
-const MEMBER_PATH = '/members/$personId';
+const MEMBERS_PATH = '/members';
 
 interface MemberRowProps {
   member: MemberSummary;
@@ -16,7 +17,7 @@ interface MemberRowProps {
 export const MemberRow: FC<MemberRowProps> = ({ member }) => {
   const { accent, meta } = toPersonRowAffiliation(member.groups, member.roles);
   const state = toMembershipStateChip(member.membershipState);
-  const params = { personId: String(member.personId) };
+  const peek = toPeekId('member', member.personId);
   const name = `${member.firstName} ${member.lastName}`;
 
   const stateChip = (
@@ -34,8 +35,9 @@ export const MemberRow: FC<MemberRowProps> = ({ member }) => {
       emptyMeta={NO_AFFILIATION_META}
       trailing={stateChip}
       component={Link}
-      to={MEMBER_PATH}
-      params={params}
+      to={MEMBERS_PATH}
+      search={(previous) => ({ ...previous, sheet: peek })}
+      resetScroll={false}
     />
   );
 };

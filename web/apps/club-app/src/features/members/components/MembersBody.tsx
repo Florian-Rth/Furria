@@ -3,6 +3,7 @@ import { AppListSkeleton } from '@/features/session';
 import { useMembersQuery } from '../api';
 import type { MemberSearch } from '../hooks/use-member-search';
 import { toMembersErrorMessage } from '../members-messages';
+import { MemberPeekSheet } from './MemberPeekSheet';
 import { MembersError } from './MembersError';
 import { MembersView } from './MembersView';
 
@@ -21,7 +22,12 @@ export const MembersBody: FC<MembersBodyProps> = ({ search }) => {
   };
 
   if (members.data !== undefined) {
-    return <MembersView search={search} />;
+    return (
+      <>
+        <MembersView search={search} />
+        <MemberPeekSheet members={members.data.members} />
+      </>
+    );
   }
   if (errorMessage !== null) {
     return <MembersError message={errorMessage} onRetry={reload} />;

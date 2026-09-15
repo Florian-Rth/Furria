@@ -3,6 +3,7 @@ import { AppListSkeleton } from '@/features/session';
 import { useGroupsQuery } from '../api';
 import { toGroupsErrorMessage } from '../groups-messages';
 import type { GroupsSearch } from '../hooks/use-groups-search';
+import { GroupPeekSheet } from './GroupPeekSheet';
 import { GroupsError } from './GroupsError';
 import { GroupsView } from './GroupsView';
 
@@ -21,7 +22,12 @@ export const GroupsBody: FC<GroupsBodyProps> = ({ search }) => {
   };
 
   if (groups.data !== undefined) {
-    return <GroupsView groups={groups.data.groups} search={search} />;
+    return (
+      <>
+        <GroupsView groups={groups.data.groups} search={search} />
+        <GroupPeekSheet groups={groups.data.groups} />
+      </>
+    );
   }
   if (errorMessage !== null) {
     return <GroupsError message={errorMessage} onRetry={reload} />;
