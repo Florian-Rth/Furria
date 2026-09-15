@@ -1,5 +1,6 @@
 import type { KkFilterOption, KkLetterIndexEntry } from '@furria/ui';
 import { useState } from 'react';
+import { useSearchQuery } from '@/features/session';
 import type { MembershipState } from '@/lib/api/schemas';
 import { scrollElementIntoView } from '@/lib/scroll-to';
 import { ALL_STATES_FILTER_ID, toStateFilterOptions } from '@/lib/state-chips';
@@ -11,7 +12,6 @@ import type { MemberSummary } from '../schemas';
 
 export interface MemberSearch {
   query: string;
-  setQuery: (value: string) => void;
   state: string;
   selectState: (id: string) => void;
   letter: string | undefined;
@@ -24,7 +24,7 @@ export interface MemberSearch {
 }
 
 export const useMemberSearch = (members: readonly MemberSummary[]): MemberSearch => {
-  const [query, setQuery] = useState('');
+  const query = useSearchQuery();
   const [state, setState] = useState<string>(ALL_STATES_FILTER_ID);
 
   const searched = filterMembers(members, { query, state: ALL_STATES_FILTER_ID });
@@ -39,7 +39,6 @@ export const useMemberSearch = (members: readonly MemberSummary[]): MemberSearch
 
   return {
     query,
-    setQuery,
     state,
     selectState: setState,
     letter: position.letter,

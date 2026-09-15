@@ -1,7 +1,7 @@
 import { createFileRoute, Navigate, Outlet, redirect, useLocation } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { buildLoginSearch } from '@/features/login';
-import { AppShell, useSessionSnapshot } from '@/features/session';
+import { AppSearchSchema, AppShell, useSessionSnapshot } from '@/features/session';
 import { getSessionSnapshot } from '@/lib/api/session/session-store';
 import { LOGIN_PATH } from '@/lib/return-to';
 
@@ -22,6 +22,7 @@ const AppLayout: FC = () => {
 };
 
 export const Route = createFileRoute('/_app')({
+  validateSearch: AppSearchSchema,
   beforeLoad: ({ location }) => {
     const { status, expired } = getSessionSnapshot();
 

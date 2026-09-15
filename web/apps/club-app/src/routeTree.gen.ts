@@ -13,6 +13,8 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppProfileRouteImport } from './routes/_app/profile'
+import { Route as AppMoreRouteImport } from './routes/_app/more'
+import { Route as AppClubRouteImport } from './routes/_app/club'
 import { Route as AppAffiliatedRouteImport } from './routes/_app/_affiliated'
 import { Route as AppMyGroupsIndexRouteImport } from './routes/_app/my-groups.index'
 import { Route as AppMyGroupsGroupIdRouteImport } from './routes/_app/my-groups.$groupId'
@@ -42,6 +44,16 @@ const AppIndexRoute = AppIndexRouteImport.update({
 const AppProfileRoute = AppProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMoreRoute = AppMoreRouteImport.update({
+  id: '/more',
+  path: '/more',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppClubRoute = AppClubRouteImport.update({
+  id: '/club',
+  path: '/club',
   getParentRoute: () => AppRoute,
 } as any)
 const AppAffiliatedRoute = AppAffiliatedRouteImport.update({
@@ -105,6 +117,8 @@ const AppAffiliatedGroupsGroupIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/login': typeof LoginRoute
+  '/club': typeof AppClubRoute
+  '/more': typeof AppMoreRoute
   '/profile': typeof AppProfileRoute
   '/groups': typeof AppAffiliatedGroupsRoute
   '/members': typeof AppAffiliatedMembersRoute
@@ -120,6 +134,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/': typeof AppIndexRoute
+  '/club': typeof AppClubRoute
+  '/more': typeof AppMoreRoute
   '/profile': typeof AppProfileRoute
   '/groups': typeof AppAffiliatedGroupsRoute
   '/members': typeof AppAffiliatedMembersRoute
@@ -137,6 +153,8 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/_app/_affiliated': typeof AppAffiliatedRouteWithChildren
+  '/_app/club': typeof AppClubRoute
+  '/_app/more': typeof AppMoreRoute
   '/_app/profile': typeof AppProfileRoute
   '/_app/': typeof AppIndexRoute
   '/_app/_affiliated/groups': typeof AppAffiliatedGroupsRoute
@@ -155,6 +173,8 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/club'
+    | '/more'
     | '/profile'
     | '/groups'
     | '/members'
@@ -170,6 +190,8 @@ export interface FileRouteTypes {
   to:
     | '/login'
     | '/'
+    | '/club'
+    | '/more'
     | '/profile'
     | '/groups'
     | '/members'
@@ -186,6 +208,8 @@ export interface FileRouteTypes {
     | '/_app'
     | '/login'
     | '/_app/_affiliated'
+    | '/_app/club'
+    | '/_app/more'
     | '/_app/profile'
     | '/_app/'
     | '/_app/_affiliated/groups'
@@ -233,6 +257,20 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof AppProfileRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/more': {
+      id: '/_app/more'
+      path: '/more'
+      fullPath: '/more'
+      preLoaderRoute: typeof AppMoreRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/club': {
+      id: '/_app/club'
+      path: '/club'
+      fullPath: '/club'
+      preLoaderRoute: typeof AppClubRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/_affiliated': {
@@ -335,6 +373,8 @@ const AppAffiliatedRouteWithChildren = AppAffiliatedRoute._addFileChildren(
 
 interface AppRouteChildren {
   AppAffiliatedRoute: typeof AppAffiliatedRouteWithChildren
+  AppClubRoute: typeof AppClubRoute
+  AppMoreRoute: typeof AppMoreRoute
   AppProfileRoute: typeof AppProfileRoute
   AppIndexRoute: typeof AppIndexRoute
   AppManageGroupsRoute: typeof AppManageGroupsRoute
@@ -347,6 +387,8 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppAffiliatedRoute: AppAffiliatedRouteWithChildren,
+  AppClubRoute: AppClubRoute,
+  AppMoreRoute: AppMoreRoute,
   AppProfileRoute: AppProfileRoute,
   AppIndexRoute: AppIndexRoute,
   AppManageGroupsRoute: AppManageGroupsRoute,

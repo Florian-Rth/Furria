@@ -1,5 +1,6 @@
 import type { KkFilterOption } from '@furria/ui';
 import { useState } from 'react';
+import { useSearchQuery } from '@/features/session';
 import type { GroupStatusFilterId } from '../manage-groups-labels';
 import {
   ALL_GROUPS_FILTER_ID,
@@ -11,7 +12,6 @@ import type { ManagedGroupSummary } from '../schemas';
 
 export interface ManagedGroupsView {
   query: string;
-  setQuery: (value: string) => void;
   status: GroupStatusFilterId;
   selectStatus: (id: string) => void;
   filterOptions: KkFilterOption[];
@@ -20,7 +20,7 @@ export interface ManagedGroupsView {
 }
 
 export const useManagedGroupsView = (groups: readonly ManagedGroupSummary[]): ManagedGroupsView => {
-  const [query, setQuery] = useState('');
+  const query = useSearchQuery();
   const [status, setStatus] = useState<GroupStatusFilterId>(ALL_GROUPS_FILTER_ID);
 
   const selectStatus = (id: string): void => {
@@ -29,7 +29,6 @@ export const useManagedGroupsView = (groups: readonly ManagedGroupSummary[]): Ma
 
   return {
     query,
-    setQuery,
     status,
     selectStatus,
     filterOptions: toGroupStatusFilterOptions(groups),

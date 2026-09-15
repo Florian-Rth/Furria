@@ -59,8 +59,6 @@ export const PersonsView: FC<PersonsViewProps> = ({ persons, search }) => {
 
   const toolbar = (
     <PersonsToolbar
-      query={search.query}
-      onQueryChange={search.setQuery}
       state={search.state}
       options={search.filterOptions}
       onStateChange={search.selectState}

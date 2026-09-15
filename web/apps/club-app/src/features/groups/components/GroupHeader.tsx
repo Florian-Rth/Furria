@@ -1,5 +1,4 @@
-import { KkChip, KkEyebrow, KkMeta, KkPageHeader } from '@furria/ui';
-import Stack from '@mui/material/Stack';
+import { KkChip, KkEyebrow, KkMeta, KkScreenHeader } from '@furria/ui';
 import type { FC } from 'react';
 import { GROUP_EYEBROW, toGroupHeadline, toGroupStandingChips } from '../groups-labels';
 import { useGroupStanding } from '../hooks/use-group-standings';
@@ -29,26 +28,25 @@ export const GroupHeader: FC<GroupHeaderProps> = ({ group }) => {
 
   const chipRow =
     opennessChip === null && standingChips.length === 0 ? null : (
-      <Stack direction="row" sx={{ alignItems: 'center', gap: 1, flexWrap: 'wrap', minWidth: 0 }}>
+      <KkScreenHeader.Meta>
         {opennessChip}
         {standingChips}
-      </Stack>
+      </KkScreenHeader.Meta>
     );
 
   const memberCountLine =
     headline.memberCount === null ? null : <KkMeta>{headline.memberCount}</KkMeta>;
 
   return (
-    <KkPageHeader
-      title={headline.title}
-      titleTransform="none"
-      eyebrow={
+    <KkScreenHeader>
+      <KkScreenHeader.Text>
         <KkEyebrow tone="accent" size="small">
           {GROUP_EYEBROW}
         </KkEyebrow>
-      }
-      chip={chipRow}
-      subline={memberCountLine}
-    />
+        <KkScreenHeader.Title transform="none">{headline.title}</KkScreenHeader.Title>
+        {chipRow}
+        {memberCountLine}
+      </KkScreenHeader.Text>
+    </KkScreenHeader>
   );
 };

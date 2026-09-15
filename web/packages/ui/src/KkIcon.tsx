@@ -11,6 +11,10 @@ import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 import EuroOutlinedIcon from '@mui/icons-material/EuroOutlined';
 import EventOutlinedIcon from '@mui/icons-material/EventOutlined';
+import GridViewIcon from '@mui/icons-material/GridView';
+import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined';
+import Groups2Icon from '@mui/icons-material/Groups2';
+import Groups2OutlinedIcon from '@mui/icons-material/Groups2Outlined';
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
 import HomeIcon from '@mui/icons-material/Home';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
@@ -42,6 +46,10 @@ export type KkIconName =
   | 'visibility'
   | 'visibilityOff'
   | 'overview'
+  | 'club'
+  | 'clubFilled'
+  | 'more'
+  | 'moreFilled'
   | 'events'
   | 'live'
   | 'members'
@@ -84,6 +92,10 @@ const icons: Record<KkIconName, typeof HomeIcon> = {
   visibility: VisibilityIcon,
   visibilityOff: VisibilityOffIcon,
   overview: HomeOutlinedIcon,
+  club: Groups2OutlinedIcon,
+  clubFilled: Groups2Icon,
+  more: GridViewOutlinedIcon,
+  moreFilled: GridViewIcon,
   events: EventOutlinedIcon,
   live: SensorsOutlinedIcon,
   members: GroupsOutlinedIcon,
