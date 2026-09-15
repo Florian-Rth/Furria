@@ -22,7 +22,7 @@ Read all three before writing code. This file is only the order of work.
 - Dialogs are **not** migrated to sheets or wizards here. That is page rework.
 - **Three layers ship without a caller** — tool row, action bar and sheet — deliberately. They are
   layers, not features: leaving one out would reopen the scroll model, the bottom stacking order
-  and the track's bottom padding during page rework. Selection mode, a *mode* rather than a layer,
+  and the track's bottom padding during page rework. Selection mode, a _mode_ rather than a layer,
   is left out on the opposite reasoning.
 
 Anything beyond this boundary is CA-P3.
@@ -72,14 +72,14 @@ The spine of the phase.
 
 Eight rulings taken while building it, each amending the text below:
 
-- **The document is the scroll container.** `KkShell` owns the scroll *position*, not a scroll
+- **The document is the scroll container.** `KkShell` owns the scroll _position_, not a scroll
   element: chrome is `position: fixed` and the track carries padding computed from the tokens.
   An inner scroller would have bought nothing and broken `use-letter-position`,
   `scrollElementIntoView` and every `scrollIntoView` in the package, all of which already read
   the document. §3.2's "exactly one scroll container" stays true — it is the document.
 - **Back mode follows from `origin`, not from `kind`.** A screen that declares where "up" goes is
   inside a destination (§3.3) and its bar is in back mode; a screen without one is a destination
-  root. That is what lets `/members` be a `list` *and* sit inside Verein in slice 3, which §6's
+  root. That is what lets `/members` be a `list` _and_ sit inside Verein in slice 3, which §6's
   table alone cannot express.
 - **`section` moves to slice 3.** It has no consumer until the navigation exists, and it is then
   needed on exactly three routes — the Übersicht plus the two screens slice 3 creates.
@@ -111,7 +111,7 @@ Eight rulings taken while building it, each amending the text below:
   `prefers-reduced-motion` collapsing animation to state changes.
 - `use-track-scroll` — the only scroll listener in the app.
 - `KkScreen` — the declaration. Typed by screen kind (`overview | list | detail | working |
-  fullscreen`) so §6's table and §9's prohibitions are compile errors. Navigation is never passed;
+fullscreen`) so §6's table and §9's prohibitions are compile errors. Navigation is never passed;
   it follows from the kind.
 - `KkShellBar` — 52 px, floating-card material, three modes (rest · search · back); selection mode is
   deliberately not built until a multi-select screen exists.
@@ -175,7 +175,7 @@ Mehr gives them a home.
   navigation, per §4 mode 4.
 
 `AppNav`, `AppNavGroup`, `use-nav-groups` and the curtain's footer are deleted here. The dynamic
-*Meine Gruppen* entries lose their home; they are rehomed during page rework, not faked here.
+_Meine Gruppen_ entries lose their home; they are rehomed during page rework, not faked here.
 
 **Done.** The destination set is **injected into `KkShell` once** (`destinations`) rather than read
 from a route table, so the package stays router-agnostic; a screen declares `section` and the nav
@@ -288,7 +288,7 @@ would be decoration. `toSessionThread` turns that into a declaration or into not
 - Existing dialogs are **not** migrated here.
 
 **Done.** Scope ruled with Florian on 2026-09-15: **search mode ships here with its callers.** The
-sheet is a *layer* and may land callerless, but search is a *mode*, and the phase's own rule is
+sheet is a _layer_ and may land callerless, but search is a _mode_, and the phase's own rule is
 that a mode ships with a caller — so the five lists that already had a search field declare it and
 their toolbars lose it. The alternative, holding search until slice 7's tool-row rehoming, would
 have shipped the URL mechanism with nothing exercising it.
@@ -313,7 +313,7 @@ back gesture.
 string included — is search mode, so opening search is one navigation and the browser gesture
 closes it. Typing **replaces** the entry while opening and cancelling **push**, so back leaves
 search in one step instead of walking backwards through the query letter by letter. The bar
-*becomes* the input (§9.1: no second bar), the tool row hides while searching (§4 mode 2) and the
+_becomes_ the input (§9.1: no second bar), the tool row hides while searching (§4 mode 2) and the
 track's head clearance follows it, and the magnifier is rendered as an ordinary bar action, which
 is what the README means by "search is always a bar action".
 
@@ -368,7 +368,7 @@ breaks at density 1; it compares each value with `toBeCloseTo` now.
   — mobile-optimised, possibly per-user or customisable — is owed after the rebuild.
 - **Desktop.** The app is knowingly bad on a laptop. Desktop variants are separate, later work.
 - **Page rework.** Every body still carries CA-P1's layout. Dialogs are still dialogs, the
-  Übersicht is still empty, *Meine Gruppen* has no home.
+  Übersicht is still empty, _Meine Gruppen_ has no home.
 
 ## Risks
 
