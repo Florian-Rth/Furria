@@ -8,9 +8,12 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "cap:sync": "cap sync",
+    "cap:run:android": "cap run android"
   },
   "dependencies": {
+    "@capacitor/core": "catalog:",
     "@emotion/react": "catalog:",
     "@emotion/styled": "catalog:",
     "@furria/ui": "workspace:*",
@@ -25,6 +28,8 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@capacitor/android": "catalog:",
+    "@capacitor/cli": "catalog:",
     "@babel/core": "catalog:",
     "@rolldown/plugin-babel": "catalog:",
     "@tanstack/router-plugin": "catalog:",

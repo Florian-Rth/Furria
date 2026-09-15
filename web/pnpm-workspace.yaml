@@ -7,6 +7,9 @@ packages:
 catalog:
   '@babel/core': 7.29.7
   '@biomejs/biome': 2.5.4
+  '@capacitor/android': 8.5.2
+  '@capacitor/cli': 8.5.2
+  '@capacitor/core': 8.5.2
   '@emotion/react': 11.14.0
   '@emotion/styled': 11.14.1
   '@fontsource/anton': 5.2.7
