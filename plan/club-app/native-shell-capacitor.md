@@ -49,10 +49,12 @@ built for exactly this swap.
 | `appName` | `FURRIA Club` |
 | `webDir` | `dist` |
 | Android floor | `minSdk 24`, `compileSdk`/`targetSdk 36`, Android Studio 2025.2.1+ |
-| Android origin | `http://localhost` (Capacitor's default `androidScheme: 'http'`) |
+| Android origin | `https://localhost` (Capacitor's default `androidScheme: 'https'`) |
 | iOS origin | `capacitor://localhost` |
 
-**Do not change `androidScheme`.** A custom scheme breaks history routing in recent WebViews;
+**Do not change `androidScheme`.** Verified against `@capacitor/cli` 8.5.2 on 2026-09-16:
+the default is `https`, not `http`. An earlier draft of the table above claimed `http` and
+would have produced a CORS allowlist the app never matches. A custom scheme breaks history routing in recent WebViews;
 TanStack Router's browser history depends on the local server serving `index.html` for unknown
 paths, which the default scheme does.
 
@@ -67,18 +69,27 @@ native app the WebView is served by Capacitor's local static server, so a relati
 `/api/...`, so `API_BASE_URL` stays origin-only. Delivered as a build-time Vite env via a
 committed `.env.native` plus `vite build --mode native`, never baked into a source file.
 
-**Two profiles, decided 2026-09-11.** `.env.native` → `https://app.furria.de` for a build meant
-to behave like the real thing; `.env.native-local` → the LAN API (`http://<host>:5100`) for the
-A7 device loop, built via `build:native:local`. The device loop wants the LAN origin regardless
-of whether the deployed host is up, so the second profile is not a temporary version — it is
-the dev target of a shipped dev workflow. Three consequences carried by the local profile only:
+**One profile, decided 2026-09-16.** `.env.native` → `https://furria.florianrth.com`, the
+deployed test backend: that host serves the website container, whose nginx proxies `/api` to the
+API service. It is the only native API origin, and it is HTTPS.
 
-- the API must bind beyond loopback — `launchSettings.json` binds `http://localhost:5100` today;
-- the A3 CORS policy must also allow the LAN origin **in Development only**, never in the
-  deployed policy;
-- the Android build needs `server.allowCleartextTraffic` for plain-HTTP XHR — not just
-  `server.cleartext` for the live-reload URL — and it is gated by `CAP_DEV_SERVER_URL`'s
-  absence/presence the same way, so no release build carries it.
+The earlier two-profile decision assumed a plain-HTTP LAN API baked into the bundle. With an
+HTTPS API that profile is unnecessary, and three consequences it carried turn out never to have
+been real:
+
+- the API does **not** need to bind beyond loopback. In the A7 device loop the phone talks only
+  to the Vite dev server, and Vite's existing `/api` proxy reaches Kestrel over loopback from
+  the dev machine;
+- the CORS policy needs **no** Development-only LAN origin — a live-reload page calls `/api`
+  relative, so that path is same-origin and never preflights;
+- `android.allowMixedContent` is not needed either. An HTTP page calling an HTTPS API is not
+  mixed content; only the reverse is. `server.cleartext` stays gated on `CAP_DEV_SERVER_URL`,
+  for the live-reload page itself.
+
+Verified while pinning this: `server.cleartext` reaches the app through the Cordova-plugins
+manifest (`@capacitor/cli` `dist/cordova.js:757` writes `usesCleartextTraffic`), which merges
+into the app manifest. It applies only when a `server` block exists — so never in a release
+build, exactly as intended.
 
 **The runtime-config chain already works in native, verified 2026-09-11 — do not "fix" it.**
 `web/apps/club-app/public/config.js` has existed since CA-P0 slice 1 and contains exactly
@@ -92,7 +103,9 @@ of this plan called for both after reading the entrypoint without reading `publi
 
 CA-P0 deliberately chose same-origin per app and therefore configured **no CORS at all**. The
 native WebView is a genuinely different origin, so the API gains a CORS policy allowing
-`http://localhost` and `capacitor://localhost`, the `Authorization` header, and `GET`/`POST`.
+`https://localhost` and `capacitor://localhost`, the `Authorization` header, and every method
+the client actually uses — `GET`, `POST`, `PUT` and `DELETE`, not just `GET`/`POST`: the profile
+screen already calls `PUT /api/auth/me/contact-visibility`.
 **No credentials** — bearer tokens only, per ADR-0005. Localhost-with-no-port is a fixed
 Capacitor constant, not a wildcard: the policy stays an explicit allowlist.
 
@@ -229,12 +242,12 @@ Pinned, concretely:
 | # | Slice | Contents |
 |---|---|---|
 | A1 | Capacitor in the workspace | `@capacitor/core`, `@capacitor/cli`, `@capacitor/android` into the catalog and `club-app`; `npx cap init` → `capacitor.config.ts` (`de.furria.club`, `webDir: 'dist'`, env-driven dev server); `cap:sync` / `cap:run:android` package scripts |
-| A2 | The native API origins | `.env.native` (`https://app.furria.de`) + `.env.native-local` (LAN API); `build:native` / `build:native:local` scripts; Kestrel bound beyond loopback for the local profile. No source change — the runtime-config chain already behaves correctly in native |
-| A3 | API CORS (**backend — `/backend-work`, TDD**) | Explicit policy for `http://localhost` and `capacitor://localhost`, `Authorization` header, no credentials; a Development-only addition for the LAN origin; integration test asserting the preflight and a rejected foreign origin |
+| A2 | The native API origin | `.env.native` (`https://furria.florianrth.com`) and the `build:native` script. No source change, and no Kestrel or Vite change — the runtime-config chain already behaves correctly in native |
+| A3 | API CORS (**backend — `/backend-work`, TDD**) | Explicit policy for `https://localhost` and `capacitor://localhost`, `Authorization` header, `GET`/`POST`/`PUT`/`DELETE`, no credentials; integration test asserting the preflight and a rejected foreign origin |
 | A4 | The Android project | `pnpm build:native` → `npx cap add android`; app name and icons/splash generated from the existing brand assets (`@capacitor/assets` with a 1024px source); `.gitignore`, `.dockerignore`, `cd.yml` filter negations |
 | A5 | Native chrome | `@capacitor/system-bars`, `@capacitor/keyboard`, `@capacitor/app` back button, `@capacitor/splash-screen`; safe-area insets in the `@furria/ui` app shell |
 | A6 | Secure refresh-token storage | async `SessionStoragePort`; `'restoring'` initial snapshot; `@aparajita/capacitor-secure-storage` port behind a dynamic import, selected in `main.tsx` via `Capacitor.isNativePlatform()`; localStorage port kept for web |
-| A7 | Device loop, documented | `README.md` section: `CAP_DEV_SERVER_URL` live reload against `vite --host`, the API bound beyond loopback so the phone can reach `:5100`, `npx cap run android` onto a USB device; a debug APK actually installed and logged in |
+| A7 | Device loop, documented | `README.md` section: `CAP_DEV_SERVER_URL` live reload against `vite --host` (the phone reaches the API through Vite's proxy, never directly), `npx cap run android` onto a USB device; a debug APK actually installed and logged in |
 
 Slice order matters: A2 and A3 before A4, because an `android/` project that cannot reach the
 API teaches nothing. A6 last, because it touches shipped session code and wants a working app
@@ -261,8 +274,7 @@ is a release phase, not a "see it on my phone" phase.
 ## Done when
 
 - `pnpm build:native && npx cap sync && npx cap run android` installs the Club-App on a USB
-  device, it logs in against both origins (`.env.native` and `.env.native-local`), and the
-  session survives a cold start.
+  device, it logs in against the deployed API, and the session survives a cold start.
 - The same commit still builds, deploys and serves the web app unchanged — `pnpm build`,
   `pnpm test`, `pnpm lint`, `pnpm typecheck`, the club-app image, and a website commit that
   does not redeploy the club-app.
