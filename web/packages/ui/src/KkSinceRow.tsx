@@ -11,6 +11,7 @@ import { rowDividerTop } from './internal/row-divider';
 import type { KkIconName } from './KkIcon';
 import { KkIcon } from './KkIcon';
 import { KkMeta } from './KkMeta';
+import type { KkLinkSearch } from './kk-link-search';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
@@ -102,7 +103,7 @@ interface KkSinceRowProps {
   component?: ElementType;
   to?: string;
   params?: Record<string, string>;
-  search?: Record<string, string | number>;
+  search?: KkLinkSearch;
   titleComponent?: ElementType;
   titleTo?: string;
   titleParams?: Record<string, string>;

@@ -1,74 +1,31 @@
-import { KkButton, KkIcon } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { useState } from 'react';
-import { AppListLayout } from '@/features/session';
 import { useDetailScroll } from '../hooks/use-detail-scroll';
-import { useRoleSearch } from '../hooks/use-role-search';
+import type { RoleSearchControl } from '../hooks/use-role-search';
 import { useSelectedRole } from '../hooks/use-selected-role';
-import { MANAGE_ROLES_SECTION_TITLE } from '../manage-roles-labels';
 import type { RoleSummary } from '../schemas';
 import { RoleColumn } from './RoleColumn';
-import { RoleFormDialog } from './RoleFormDialog';
-import { RolesCreateFab } from './RolesCreateFab';
 import { RolesEmpty } from './RolesEmpty';
 import { RolesGrid } from './RolesGrid';
 import { RolesMasterList } from './RolesMasterList';
-import { RolesToolbar } from './RolesToolbar';
 
-const CREATE_LABEL = 'Rolle anlegen';
-const DETAIL_SIZE = 8;
+const VIEW_GAP = 3;
+const DETAIL_SCROLL_MARGIN = 2;
 
 interface RolesViewProps {
   roles: readonly RoleSummary[];
   catalogue: readonly string[];
+  search: RoleSearchControl;
+  onCreate: () => void;
 }
 
-export const RolesView: FC<RolesViewProps> = ({ roles, catalogue }) => {
-  const { roleId, select } = useSelectedRole();
-  const search = useRoleSearch(roles);
-  const [isCreateOpen, setCreateOpen] = useState(false);
+export const RolesView: FC<RolesViewProps> = ({ roles, catalogue, search, onCreate }) => {
+  const { roleId } = useSelectedRole();
   const detailRef = useDetailScroll(roleId);
 
-  const openCreate = (): void => {
-    setCreateOpen(true);
-  };
-
-  const closeCreate = (): void => {
-    setCreateOpen(false);
-  };
-
-  const handleCreated = (createdRoleId: number | null): void => {
-    setCreateOpen(false);
-
-    if (createdRoleId !== null) {
-      select(createdRoleId);
-    }
-  };
-
-  const createDialog = (
-    <RoleFormDialog
-      open={isCreateOpen}
-      editedRole={null}
-      onClose={closeCreate}
-      onSaved={handleCreated}
-    />
-  );
-
   if (roles.length === 0) {
-    return (
-      <Stack sx={{ minWidth: 0 }}>
-        <RolesEmpty onCreate={openCreate} />
-        {createDialog}
-      </Stack>
-    );
+    return <RolesEmpty onCreate={onCreate} />;
   }
-
-  const createButton = (
-    <KkButton startIcon={<KkIcon name="add" size="small" />} onClick={openCreate}>
-      {CREATE_LABEL}
-    </KkButton>
-  );
 
   const list =
     roleId === null ? (
@@ -81,29 +38,17 @@ export const RolesView: FC<RolesViewProps> = ({ roles, catalogue }) => {
       />
     );
 
-  const hasSelection = roleId !== null;
-  const detail = hasSelection ? <RoleColumn roleId={roleId} catalogue={catalogue} /> : undefined;
+  const detail =
+    roleId === null ? null : (
+      <Stack ref={detailRef} sx={{ minWidth: 0, scrollMarginTop: DETAIL_SCROLL_MARGIN }}>
+        <RoleColumn roleId={roleId} catalogue={catalogue} />
+      </Stack>
+    );
 
   return (
-    <>
-      <AppListLayout
-        sectionTitle={MANAGE_ROLES_SECTION_TITLE}
-        createAction={createButton}
-        toolbar={
-          <RolesToolbar
-            status={search.status}
-            options={search.filterOptions}
-            onStatusChange={search.selectStatus}
-          />
-        }
-        list={list}
-        aside={detail}
-        asideSize={DETAIL_SIZE}
-        asideRef={detailRef}
-        stickyList={hasSelection}
-      />
-      <RolesCreateFab onCreate={openCreate} />
-      {createDialog}
-    </>
+    <Stack sx={{ gap: VIEW_GAP, minWidth: 0 }}>
+      {list}
+      {detail}
+    </Stack>
   );
 };

@@ -1,5 +1,4 @@
 import { useNavigate, useSearch } from '@tanstack/react-router';
-import type { ManagedGroupsSearch } from '../schemas';
 
 const MANAGE_GROUPS_ROUTE_ID = '/_app/manage/groups';
 const MANAGE_GROUPS_PATH = '/manage/groups';
@@ -14,16 +13,20 @@ export const useGroupSelection = (): GroupSelection => {
   const search = useSearch({ from: MANAGE_GROUPS_ROUTE_ID });
   const navigate = useNavigate();
 
-  const go = (next: ManagedGroupsSearch): void => {
-    void navigate({ to: MANAGE_GROUPS_PATH, search: next });
+  const go = (next: number | undefined): void => {
+    void navigate({
+      to: MANAGE_GROUPS_PATH,
+      search: (previous) => ({ ...previous, group: next }),
+      resetScroll: false,
+    });
   };
 
   const select = (groupId: number): void => {
-    go({ group: groupId });
+    go(groupId);
   };
 
   const clear = (): void => {
-    go({ group: undefined });
+    go(undefined);
   };
 
   return { groupId: search.group ?? null, select, clear };

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { AppSearchSchema } from '@/features/session';
 import { PersonRefSchema } from '@/lib/api/schemas';
 
 const NAME_REQUIRED_MESSAGE = 'Gib der Rolle einen Namen.';
@@ -8,7 +9,7 @@ const DESCRIPTION_TOO_LONG_MESSAGE = 'Die Beschreibung darf höchstens 400 Zeich
 export const ROLE_NAME_MAX_LENGTH = 80;
 export const ROLE_DESCRIPTION_MAX_LENGTH = 400;
 
-export const RolesSearchSchema = z.object({
+export const RolesSearchSchema = AppSearchSchema.extend({
   role: z.coerce.number().int().positive().optional().catch(undefined),
 });
 export type RolesSearch = z.infer<typeof RolesSearchSchema>;

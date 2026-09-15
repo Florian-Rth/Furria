@@ -10,7 +10,6 @@ import { normalizeForSearch } from '@/lib/text';
 import type { ManagedGroupSummary } from './schemas';
 
 export const MANAGE_GROUPS_SECTION_TITLES = {
-  list: 'Alle Gruppen',
   members: SHARED_GROUP_SECTION_TITLES.managedMembers,
 } as const;
 

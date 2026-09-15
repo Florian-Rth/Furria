@@ -135,8 +135,6 @@ const toSegmentText = (segment: RecruitingContactSegment): string =>
 export const toRecruitingContactLine = (admins: readonly PersonRef[]): string =>
   toRecruitingContactSegments(admins).map(toSegmentText).join('');
 
-export const GROUPS_SECTION_TITLE = 'Alle Gruppen';
-
 export const ALL_GROUPS_FILTER_ID = 'all';
 export const RECRUITING_FILTER_ID = 'recruiting';
 export const SETTLED_FILTER_ID = 'settled';

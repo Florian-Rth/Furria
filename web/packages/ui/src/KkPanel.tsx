@@ -9,6 +9,7 @@ import { redInk } from './internal/red-ink';
 import type { KkScheme } from './internal/scheme-paint';
 import { applyScheme, schemeEdge } from './internal/scheme-paint';
 import { KkIcon } from './KkIcon';
+import type { KkLinkSearch } from './kk-link-search';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
@@ -78,7 +79,7 @@ interface KkPanelProps extends PropsWithChildren {
   component?: ElementType;
   to?: string;
   params?: Record<string, string>;
-  search?: Record<string, string | number>;
+  search?: KkLinkSearch;
   onClick?: () => void;
   sx?: KkSx;
 }

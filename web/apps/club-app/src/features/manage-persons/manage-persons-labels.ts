@@ -33,8 +33,6 @@ export const toPersonId = (raw: string): number | null =>
 
 export const PERSONS_TITLE = 'Personenverwaltung';
 
-export const MANAGE_PERSONS_SECTION_TITLE = 'Alle Personen';
-
 export const PERSONS_STATS_NOTE =
   'Gezählt wird jede Person — auch ohne Mitgliedschaft und ohne Gruppe.';
 

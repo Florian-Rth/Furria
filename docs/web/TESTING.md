@@ -1,7 +1,7 @@
 # Web Testing Conventions
 
 This file defines how every test in `web/` is written. It is short on purpose: the policy is
-one rule, six corollaries, and a list of what that leaves in and out.
+one rule, eight corollaries, and a list of what that leaves in and out.
 
 ## The rule
 
@@ -56,19 +56,65 @@ speed, but so the suite only fails when behaviour is wrong.
 7. **One test file per module, `it.each` over branches.** Files carry a fixed cost of roughly
    half a second in module loading; cases are effectively free. Prefer more cases in fewer
    files.
+8. **Never test chrome — declare it and compile it.** A screen declares its layers to
+   `KkScreen`; it renders no bar, no navigation, no tool row, no action bar of its own. What a
+   screen kind may and may not declare is a union in `KkShell/screen-declaration.ts`, so a
+   forbidden layer is a type error, not a failing assertion. See *The shell* below.
 
 ## What we test
 
 Date, money and session formatting · sales-status and capacity derivation · the order-flow
 step machine · matcher scoring, progress and exclusion · membership derivation from a birth
 date · form payload building and search-param parsing · Zod coercion and normalisation ·
-storage read/write helpers · geometry, layout and motion math · the copy guard (below).
+storage read/write helpers · geometry, layout and motion math · the shell's chrome maths
+(below) · the copy guard (below).
 
 ## What we never test
 
 Rendering · routing and redirects · a11y roles and labels · MUI wiring · React Query wiring ·
 React Hook Form wiring · that a constant equals itself · that placeholder seed data has N
-entries · that a required Zod field is required.
+entries · that a required Zod field is required · that a screen declares the right layers.
+
+## The shell
+
+The club-app runs on one declarative mobile shell ([ADR-0009](../adr/0009-club-app-runs-on-one-declarative-mobile-shell.md)).
+It moved every piece of chrome out of the pages, and that split its correctness across three
+gates — none of which is a render test.
+
+**The compiler owns the declaration.** `KkScreenProps` is a union over screen kind, so the
+handoff's layer table and its prohibitions are type errors: `action` is `never` on a `list`,
+`section` is `never` on anything that may carry an action bar (which is how navigation and
+action bar are kept apart structurally rather than by a runtime check), `actions` narrows to a
+single entry while a screen is searching, and a `fullscreen` screen cannot omit its `origin`.
+There is nothing to assert here that `pnpm typecheck` does not already prove, and a test that
+mounted a screen to check which layers appeared would be asserting the type system.
+
+**Pure modules own the maths.** Every value the chrome animates or measures is computed by a
+module a test imports directly, never inside a component:
+
+| Module | Answers |
+|---|---|
+| `internal/chrome-density.ts` | `chromeDensityAt(scrollOffset, motion)` → 0…1, and `chromeMaterialAt(density)` → tint, blur, hairline and shadow at that density, both schemes |
+| `KkShell/internal/logic/handover.ts` | `handoverAt(scrollOffset, motion)` → the header's fade and drift against the bar title's rise |
+| `KkShell/internal/logic/keyboard-inset.ts` | `keyboardInsetOf(metrics)` → the occluded pixels, `0` below the threshold |
+| `KkShell/internal/logic/action-bar-height.ts` | `actionBarHeightOf(action)` → the card height, which is also the track's foot clearance |
+| `lib/use-letter-position.ts` | `hasPassedTheToolbar(clearance)` → whether a letter divider has taken the chrome line |
+
+`motion` is the argument that makes reduced motion testable: under
+`prefers-reduced-motion` the shell passes `'instant'` and both ramps collapse to their end
+states, which is an assertion, not a screenshot.
+
+**Screenshots own the layout.** Neither gate can see that a correct declaration renders badly
+on a real viewport, and both chrome defects that survived the build were found this way: five
+filter chips wrapped to a second row inside a 44 px tool row, and the letter rail overflowed
+its band on a 705 px viewport while every shot at 844 px looked right. So chrome work ends with
+
+```bash
+pnpm shot /members       # phone/desktop × light/dark → web/tools/screenshot/out
+```
+
+and the shots are looked at. This is the same sentence as *Running*'s last line, made binding
+for one kind of change.
 
 ## Writing testable code
 
@@ -102,6 +148,7 @@ module to a scope deliberately; never widen a scope to silence a failure.
 cd web
 pnpm test          # every package, ~30s
 pnpm typecheck     # this and pnpm build are what catch wiring breaks
+pnpm shot /route   # needs a dev server and the API; the only gate that sees the layout
 ```
 
 `pnpm build` and `pnpm typecheck` carry the weight the deleted render tests used to: they

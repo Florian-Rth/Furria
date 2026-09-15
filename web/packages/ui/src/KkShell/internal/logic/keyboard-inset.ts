@@ -1,13 +1,19 @@
+import { kkTokens } from '../../../tokens';
+
 export interface KkViewportMetrics {
   innerHeight: number;
   viewportHeight: number;
   offsetTop: number;
 }
 
-const KEYBOARD_MIN_INSET = 120;
+const { keyboardMinInset } = kkTokens.shell;
 
-export const isKeyboardOpen = ({
+export const keyboardInsetOf = ({
   innerHeight,
   viewportHeight,
   offsetTop,
-}: KkViewportMetrics): boolean => innerHeight - viewportHeight - offsetTop >= KEYBOARD_MIN_INSET;
+}: KkViewportMetrics): number => {
+  const occluded = innerHeight - viewportHeight - offsetTop;
+
+  return occluded >= keyboardMinInset ? occluded : 0;
+};

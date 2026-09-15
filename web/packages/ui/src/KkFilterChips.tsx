@@ -4,7 +4,7 @@ import type { CSSObject, Theme } from '@mui/material/styles';
 import type { FC, KeyboardEvent, MouseEvent } from 'react';
 import { useEffect, useRef } from 'react';
 import type { KkFilterOption } from './filter-chip-entries';
-import { filterChipsWrap, toFilterChipEntries } from './filter-chip-entries';
+import { toFilterChipEntries } from './filter-chip-entries';
 import { focusRing } from './internal/focus-ring';
 import { nextRovingId } from './internal/roving-focus';
 import type { KkSx } from './kk-sx';
@@ -16,15 +16,10 @@ const SELECTED_CHIP = `[${CHIP_ATTRIBUTE}][aria-checked="true"]`;
 const FADE_WIDTH = 36;
 const EDGE_FADE = `linear-gradient(to right, #000 calc(100% - ${FADE_WIDTH}px), transparent)`;
 
-const wrappingLayout: KkSx = {
-  flexWrap: 'wrap',
-  overflowX: 'visible',
-};
-
 const scrollingLayout: KkSx = {
-  flexWrap: { xs: 'nowrap', desktop: 'wrap' },
-  overflowX: { xs: 'auto', desktop: 'visible' },
-  maskImage: { xs: EDGE_FADE, desktop: 'none' },
+  flexWrap: 'nowrap',
+  overflowX: 'auto',
+  maskImage: EDGE_FADE,
   scrollbarWidth: 'none',
   '&::-webkit-scrollbar': { display: 'none' },
 };
@@ -68,18 +63,11 @@ export const KkFilterChips: FC<KkFilterChipsProps> = ({ label, options, value, o
   const stripRef = useRef<HTMLDivElement>(null);
   const ids = entries.map((entry) => entry.id);
   const tabbableId = entries.find((entry) => entry.selected)?.id ?? ids[0];
-  const wraps = filterChipsWrap(options.length);
-  const layout = wraps ? wrappingLayout : scrollingLayout;
-
   useEffect(() => {
-    if (wraps) {
-      return;
-    }
-
     const selected = stripRef.current?.querySelector(SELECTED_CHIP) ?? null;
 
     selected?.scrollIntoView({ block: 'nearest', inline: 'center' });
-  }, [value, wraps]);
+  }, [value]);
 
   const selectEntry = (event: MouseEvent<HTMLElement>): void => {
     const id = event.currentTarget.dataset.kkFilterChip;
@@ -116,9 +104,9 @@ export const KkFilterChips: FC<KkFilterChipsProps> = ({ label, options, value, o
           alignItems: 'center',
           gap: 0.875,
           minWidth: 0,
-          maxWidth: '100%',
+          width: '100%',
         },
-        layout,
+        scrollingLayout,
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >

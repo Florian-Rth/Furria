@@ -6,6 +6,7 @@ import CheckroomOutlinedIcon from '@mui/icons-material/CheckroomOutlined';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import CloseIcon from '@mui/icons-material/Close';
+import CloudOffOutlinedIcon from '@mui/icons-material/CloudOffOutlined';
 import Diversity3OutlinedIcon from '@mui/icons-material/Diversity3Outlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
@@ -75,6 +76,7 @@ export type KkIconName =
   | 'bolt'
   | 'info'
   | 'alert'
+  | 'offline'
   | 'archive';
 type KkIconSize = 'small' | 'medium' | 'large';
 
@@ -121,6 +123,7 @@ const icons: Record<KkIconName, typeof HomeIcon> = {
   bolt: BoltOutlinedIcon,
   info: InfoOutlinedIcon,
   alert: ErrorOutlineOutlinedIcon,
+  offline: CloudOffOutlinedIcon,
   archive: Inventory2OutlinedIcon,
 };
 

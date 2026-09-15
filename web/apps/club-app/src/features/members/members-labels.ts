@@ -52,8 +52,6 @@ export const toLetterAnchors = (sections: readonly { letter: string }[]): Letter
     anchorId: toLetterAnchorId(section.letter),
   }));
 
-export const MEMBERS_SECTION_TITLE = 'Alle Mitglieder';
-
 export const LETTER_INDEX_LABEL = 'Zu einem Buchstaben springen';
 
 export const toConnectedSentence = (count: number): string => {
@@ -100,6 +98,9 @@ export interface MemberHeadline {
   initials: string;
   state: StateChip | null;
 }
+
+export const toPeekAffiliationLine = (entries: readonly { name: string }[]): string | null =>
+  entries.length === 0 ? null : entries.map((entry) => entry.name).join(META_SEPARATOR);
 
 export const MEMBER_SECTION_TITLES = {
   groups: 'Gruppen',

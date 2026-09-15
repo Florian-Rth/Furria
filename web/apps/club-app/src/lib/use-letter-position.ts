@@ -28,16 +28,16 @@ export const hasPassedTheToolbar = ({
 }: LetterClearance): boolean => dividerTop <= barClearance + dividerHeight;
 
 /**
- * `KkLetterDivider` does not stick — it resolves the toolbar's measured height into its own
- * `scroll-margin-top`, from the same custom property the toolbar publishes. That resolved
- * offset is the clearance: reading it back off the element keeps the index in step with the
- * list at every breakpoint and after every toolbar resize, where a constant would only ever
- * be right at the one width it was measured at.
+ * The shell publishes its head clearance as the document's `scroll-padding-top`, so every
+ * `scrollIntoView` lands below the chrome. Reading that one value back keeps the index in step
+ * with the list at every width and through every chrome change, where a constant would only
+ * ever be right at the one height it was measured at.
  */
-const toBarClearance = (element: HTMLElement): number =>
-  Number.parseFloat(window.getComputedStyle(element).scrollMarginTop) || 0;
+const toBarClearance = (): number =>
+  Number.parseFloat(window.getComputedStyle(document.documentElement).scrollPaddingTop) || 0;
 
 const toCurrentLetter = (anchors: readonly LetterAnchor[]): string | undefined => {
+  const barClearance = toBarClearance();
   let current: string | undefined;
 
   for (const anchor of anchors) {
@@ -48,7 +48,7 @@ const toCurrentLetter = (anchors: readonly LetterAnchor[]): string | undefined =
       hasPassedTheToolbar({
         dividerTop: element.getBoundingClientRect().top,
         dividerHeight: element.offsetHeight,
-        barClearance: toBarClearance(element),
+        barClearance,
       })
     ) {
       current = anchor.letter;

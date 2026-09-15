@@ -1,14 +1,12 @@
+import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { AppListLayout } from '@/features/session';
 import type { MemberSearch } from '../hooks/use-member-search';
-import { MEMBERS_SECTION_TITLE, toStatsFootnote } from '../members-labels';
-import { MembersAside } from './MembersAside';
+import { toStatsFootnote } from '../members-labels';
 import { MembersEmpty } from './MembersEmpty';
-import { MembersLetterRail } from './MembersLetterRail';
 import { MembersList } from './MembersList';
-import { MembersToolbar } from './MembersToolbar';
+import { MembersStats } from './MembersStats';
 
-const ASIDE_SIZE = 4;
+const VIEW_GAP = 3.5;
 
 interface MembersViewProps {
   search: MemberSearch;
@@ -24,44 +22,10 @@ export const MembersView: FC<MembersViewProps> = ({ search }) => {
       <MembersList sections={search.sections} />
     );
 
-  const toolbar = (
-    <MembersToolbar
-      state={search.state}
-      options={search.filterOptions}
-      onStateChange={search.selectState}
-    />
-  );
-
-  const letterRail = (
-    <MembersLetterRail
-      letters={search.letters}
-      letter={search.letter}
-      onLetterSelect={search.jumpTo}
-    />
-  );
-
-  const aside = (
-    <MembersAside
-      letters={search.letters}
-      letter={search.letter}
-      onLetterSelect={search.jumpTo}
-      totals={search.totals}
-      note={footnote}
-    />
-  );
-
   return (
-    <AppListLayout
-      asideNote={footnote}
-      sectionTitle={MEMBERS_SECTION_TITLE}
-      toolbar={toolbar}
-      letterRail={letterRail}
-      list={list}
-      aside={aside}
-      asideSize={ASIDE_SIZE}
-      asideDesktopOnly
-      stickyAside
-      asideLeadsFocus
-    />
+    <Stack sx={{ gap: VIEW_GAP, minWidth: 0 }}>
+      {list}
+      <MembersStats totals={search.totals} note={footnote} />
+    </Stack>
   );
 };

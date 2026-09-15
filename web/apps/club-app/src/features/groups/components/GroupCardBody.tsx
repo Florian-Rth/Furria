@@ -1,4 +1,4 @@
-import type { KkSx } from '@furria/ui';
+import type { KkLinkSearch, KkSx } from '@furria/ui';
 import { KkAvatarStack, KkEyebrow, KkHeading, KkMeta, KkPanel, KkText } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
@@ -21,7 +21,7 @@ interface GroupCardBodyProps {
   dimmed?: boolean;
   to: string;
   params?: Record<string, string>;
-  search?: Record<string, string | number>;
+  search?: KkLinkSearch;
   sx?: KkSx;
 }
 

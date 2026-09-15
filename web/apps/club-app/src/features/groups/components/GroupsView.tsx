@@ -1,40 +1,25 @@
 import type { FC } from 'react';
-import { AppListLayout } from '@/features/session';
-import { GROUPS_SECTION_TITLE } from '../groups-labels';
 import { useGroupStandings } from '../hooks/use-group-standings';
-import { useGroupsSearch } from '../hooks/use-groups-search';
+import type { GroupsSearch } from '../hooks/use-groups-search';
 import type { GroupSummary } from '../schemas';
 import { GroupsEmpty } from './GroupsEmpty';
 import { GroupsGrid } from './GroupsGrid';
 import { GroupsNoMatch } from './GroupsNoMatch';
-import { GroupsToolbar } from './GroupsToolbar';
 
 interface GroupsViewProps {
   groups: readonly GroupSummary[];
+  search: GroupsSearch;
 }
 
-export const GroupsView: FC<GroupsViewProps> = ({ groups }) => {
+export const GroupsView: FC<GroupsViewProps> = ({ groups, search }) => {
   const standings = useGroupStandings();
-  const search = useGroupsSearch(groups);
 
   if (groups.length === 0) {
     return <GroupsEmpty />;
   }
+  if (search.visible.length === 0) {
+    return <GroupsNoMatch description={search.emptyDescription} />;
+  }
 
-  const toolbar = (
-    <GroupsToolbar
-      status={search.status}
-      options={search.filterOptions}
-      onStatusChange={search.selectStatus}
-    />
-  );
-
-  const list =
-    search.visible.length === 0 ? (
-      <GroupsNoMatch description={search.emptyDescription} />
-    ) : (
-      <GroupsGrid groups={search.visible} standings={standings} />
-    );
-
-  return <AppListLayout sectionTitle={GROUPS_SECTION_TITLE} toolbar={toolbar} list={list} />;
+  return <GroupsGrid groups={search.visible} standings={standings} />;
 };

@@ -36,7 +36,7 @@ export const RoleCard: FC<RoleCardProps> = ({ entry }) => {
       footer={holderLine}
       dimmed={entry.isArchived}
       to={ROLES_PATH}
-      search={{ role: entry.roleId }}
+      search={(previous) => ({ ...previous, role: entry.roleId })}
       sx={FULL_HEIGHT}
     />
   );

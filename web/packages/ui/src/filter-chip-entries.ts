@@ -19,7 +19,3 @@ export const toFilterChipEntries = (
     text: `${option.label} ${option.count}`,
     selected: option.id === value,
   }));
-
-const WRAP_LIMIT = 5;
-
-export const filterChipsWrap = (optionCount: number): boolean => optionCount <= WRAP_LIMIT;

@@ -1,16 +1,28 @@
-import { KkSheetProvider, KkShell, KkToastProvider } from '@furria/ui';
+import type { KkNoticeLabels } from '@furria/ui';
+import { KkNoticeProvider, KkSheetProvider, KkShell } from '@furria/ui';
 import { Link } from '@tanstack/react-router';
 import type { FC, PropsWithChildren } from 'react';
 import { APP_DESTINATIONS } from '../app-sections';
 import { useSheetManager } from '../hooks/use-sheet-manager';
+import { useSystemNotice } from '../hooks/use-system-notice';
+import {
+  NOTICE_COLLAPSE_LABEL,
+  NOTICE_DISMISS_LABEL,
+  NOTICE_EXPAND_LABEL,
+} from '../session-messages';
 
-const TOAST_DISMISS_LABEL = 'Schließen';
+const NOTICE_LABELS: KkNoticeLabels = {
+  dismiss: NOTICE_DISMISS_LABEL,
+  expand: NOTICE_EXPAND_LABEL,
+  collapse: NOTICE_COLLAPSE_LABEL,
+};
 
 export const AppShell: FC<PropsWithChildren> = ({ children }) => {
   const sheets = useSheetManager();
+  const systemNotice = useSystemNotice();
 
   return (
-    <KkToastProvider dismissLabel={TOAST_DISMISS_LABEL}>
+    <KkNoticeProvider labels={NOTICE_LABELS} systemNotice={systemNotice}>
       <KkSheetProvider
         openSheetId={sheets.openSheetId}
         onOpen={sheets.onOpen}
@@ -20,6 +32,6 @@ export const AppShell: FC<PropsWithChildren> = ({ children }) => {
           {children}
         </KkShell>
       </KkSheetProvider>
-    </KkToastProvider>
+    </KkNoticeProvider>
   );
 };

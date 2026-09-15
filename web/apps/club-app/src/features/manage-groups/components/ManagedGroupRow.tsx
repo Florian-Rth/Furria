@@ -30,7 +30,7 @@ export const ManagedGroupRow: FC<ManagedGroupRowProps> = ({ group, selected }) =
       dimmed={group.archivedOn !== null}
       component={Link}
       to={MANAGE_GROUPS_PATH}
-      search={{ group: group.groupId }}
+      search={(previous) => ({ ...previous, group: group.groupId })}
     />
   );
 };

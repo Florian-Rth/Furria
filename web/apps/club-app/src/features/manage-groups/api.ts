@@ -1,4 +1,4 @@
-import { useKkToast } from '@furria/ui';
+import { useKkNotice } from '@furria/ui';
 import type { QueryClient, UseMutationResult, UseQueryResult } from '@tanstack/react-query';
 import { skipToken, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { MY_GROUPS_QUERY_KEY } from '@/features/group-hub';
@@ -71,13 +71,13 @@ export const useManagedGroupQuery = (
 
 export const useCreateGroupMutation = (): UseMutationResult<CreatedGroup, Error, GroupForm> => {
   const queryClient = useQueryClient();
-  const showToast = useKkToast();
+  const raiseNotice = useKkNotice();
 
   return useMutation({
     mutationFn: (form: GroupForm) =>
       withFreshAccessToken((accessToken) => requestGroupCreation(form, accessToken)),
     onSuccess: (_created, form) => {
-      showToast({ tone: 'success', message: toGroupCreatedMessage(form.name) });
+      raiseNotice({ tone: 'success', message: toGroupCreatedMessage(form.name) });
       refreshGroups(queryClient, null);
     },
   });
@@ -85,7 +85,7 @@ export const useCreateGroupMutation = (): UseMutationResult<CreatedGroup, Error,
 
 export const useUpdateGroupMutation = (): UseMutationResult<void, Error, UpdateGroupInput> => {
   const queryClient = useQueryClient();
-  const showToast = useKkToast();
+  const raiseNotice = useKkNotice();
 
   return useMutation({
     mutationFn: (input: UpdateGroupInput) =>
@@ -93,7 +93,7 @@ export const useUpdateGroupMutation = (): UseMutationResult<void, Error, UpdateG
         requestGroupUpdate(input.groupId, input.form, accessToken),
       ),
     onSuccess: (_result, input) => {
-      showToast({ tone: 'success', message: toGroupSavedMessage(input.form.name) });
+      raiseNotice({ tone: 'success', message: toGroupSavedMessage(input.form.name) });
       refreshGroups(queryClient, input.groupId);
     },
   });
@@ -101,13 +101,13 @@ export const useUpdateGroupMutation = (): UseMutationResult<void, Error, UpdateG
 
 export const useArchiveGroupMutation = (): UseMutationResult<void, Error, GroupMutationInput> => {
   const queryClient = useQueryClient();
-  const showToast = useKkToast();
+  const raiseNotice = useKkNotice();
 
   return useMutation({
     mutationFn: (input: GroupMutationInput) =>
       withFreshAccessToken((accessToken) => requestGroupArchival(input.groupId, accessToken)),
     onSuccess: (_result, input) => {
-      showToast({ tone: 'success', message: toGroupArchivedMessage(input.name) });
+      raiseNotice({ tone: 'success', message: toGroupArchivedMessage(input.name) });
       refreshGroups(queryClient, input.groupId);
     },
   });
@@ -115,13 +115,13 @@ export const useArchiveGroupMutation = (): UseMutationResult<void, Error, GroupM
 
 export const useRestoreGroupMutation = (): UseMutationResult<void, Error, GroupMutationInput> => {
   const queryClient = useQueryClient();
-  const showToast = useKkToast();
+  const raiseNotice = useKkNotice();
 
   return useMutation({
     mutationFn: (input: GroupMutationInput) =>
       withFreshAccessToken((accessToken) => requestGroupRestoration(input.groupId, accessToken)),
     onSuccess: (_result, input) => {
-      showToast({ tone: 'success', message: toGroupRestoredMessage(input.name) });
+      raiseNotice({ tone: 'success', message: toGroupRestoredMessage(input.name) });
       refreshGroups(queryClient, input.groupId);
     },
   });

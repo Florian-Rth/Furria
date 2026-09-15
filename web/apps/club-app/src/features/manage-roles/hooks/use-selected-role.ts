@@ -12,7 +12,7 @@ export const useSelectedRole = (): SelectedRole => {
   const navigate = routeApi.useNavigate();
 
   const select = (roleId: number): void => {
-    void navigate({ search: { role: roleId } });
+    void navigate({ search: (previous) => ({ ...previous, role: roleId }), resetScroll: false });
   };
 
   return { roleId: search.role ?? null, select };

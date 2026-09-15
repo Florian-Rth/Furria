@@ -37,8 +37,6 @@ export const toHoldersMeta = (
   return `${toPersonName(first)} und ${further} weitere Personen`;
 };
 
-export const MANAGE_ROLES_SECTION_TITLE = 'Alle Rollen';
-
 export const ROLE_SECTION_TITLES = {
   holders: 'Inhaber',
   permissions: 'Rechte',

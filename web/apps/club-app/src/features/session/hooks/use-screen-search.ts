@@ -1,4 +1,5 @@
 import type { KkScreenSearch } from '@furria/ui';
+import { useNavigate } from '@tanstack/react-router';
 import { appRouteApi } from '../app-route';
 
 const OPEN_LABEL = 'Suchen';
@@ -6,10 +7,15 @@ const CANCEL_LABEL = 'Suche beenden';
 
 export const useScreenSearch = (placeholder: string): KkScreenSearch => {
   const { q } = appRouteApi.useSearch();
-  const navigate = appRouteApi.useNavigate();
+  const navigate = useNavigate();
 
   const go = (next: string | undefined, replace: boolean): void => {
-    void navigate({ to: '.', search: (previous) => ({ ...previous, q: next }), replace });
+    void navigate({
+      to: '.',
+      search: (previous) => ({ ...previous, q: next }),
+      replace,
+      resetScroll: false,
+    });
   };
 
   return {

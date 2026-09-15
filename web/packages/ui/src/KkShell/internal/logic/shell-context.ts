@@ -8,7 +8,7 @@ export interface KkShellState {
   handover: KkHandover;
   link: ElementType;
   destinations: readonly KkShellDestination[];
-  keyboardOpen: boolean;
+  keyboardInset: number;
 }
 
 export const KkShellContext = createContext<KkShellState | null>(null);

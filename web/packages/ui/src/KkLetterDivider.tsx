@@ -5,9 +5,6 @@ import type { FC } from 'react';
 import { redInk } from './internal/red-ink';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
-import { STICKY_BAR_HEIGHT_VARIABLE } from './use-sticky-bar-height';
-
-const BAR_CLEARANCE = `var(${STICKY_BAR_HEIGHT_VARIABLE}, ${kkTokens.layout.stickyBarHeight}px)`;
 
 type KkLetterDividerGround = 'paper' | 'page';
 
@@ -36,7 +33,6 @@ export const KkLetterDivider: FC<KkLetterDividerProps> = ({ letter, id, ground =
         bgcolor: grounds[ground],
         pt: 1.75,
         pb: 0.5,
-        scrollMarginTop: BAR_CLEARANCE,
       },
       ...(Array.isArray(sx) ? sx : [sx]),
     ]}

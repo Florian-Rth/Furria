@@ -22,7 +22,6 @@ const CELL_ATTRIBUTE = 'data-kk-letter-index-cell';
 const CURRENT_CELL = `[${CELL_ATTRIBUTE}][aria-current="location"]`;
 const UNDERLINE_WIDTH = '58%';
 const UNDERLINE_INSET = '14%';
-const RAIL_INSET = 2;
 
 const flowingCellSize = (theme: Theme): CSSObject => ({
   width: CELL_WIDTH_TOUCH,
@@ -42,8 +41,10 @@ const flowingCellSize = (theme: Theme): CSSObject => ({
 const railCellSize: CSSObject = {
   width: CELL_SIZE_RAIL,
   height: CELL_SIZE_RAIL,
+  maxHeight: CELL_SIZE_RAIL,
   minWidth: CELL_SIZE_RAIL,
-  minHeight: CELL_SIZE_RAIL,
+  minHeight: 0,
+  flexShrink: 1,
   borderRadius: '50%',
 };
 
@@ -97,14 +98,11 @@ const variantLayout: Record<KkLetterIndexVariant, KkSx> = {
     '&::-webkit-scrollbar': { display: 'none' },
   },
   rail: {
-    position: 'fixed',
-    right: RAIL_INSET,
-    top: '50%',
-    transform: 'translateY(-50%)',
     flexDirection: 'column',
     flexWrap: 'nowrap',
+    justifyContent: 'center',
     gap: 0,
-    zIndex: kkTokens.layout.letterRailZ,
+    height: '100%',
   },
 };
 

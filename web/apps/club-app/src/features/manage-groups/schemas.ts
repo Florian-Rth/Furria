@@ -1,11 +1,12 @@
 import { z } from 'zod';
 import { GroupDetailAdminSchema, GroupDetailMemberSchema } from '@/features/group-detail';
+import { AppSearchSchema } from '@/features/session';
 import { PersonRefSchema } from '@/lib/api/schemas';
 
 export const GROUP_NAME_MAX_LENGTH = 80;
 export const GROUP_DESCRIPTION_MAX_LENGTH = 400;
 
-export const ManagedGroupsSearchSchema = z.object({
+export const ManagedGroupsSearchSchema = AppSearchSchema.extend({
   group: z.coerce.number().int().positive().optional().catch(undefined),
 });
 export type ManagedGroupsSearch = z.infer<typeof ManagedGroupsSearchSchema>;

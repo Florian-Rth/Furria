@@ -1,4 +1,4 @@
-import { useKkToast } from '@furria/ui';
+import { useKkNotice } from '@furria/ui';
 import type { UseMutationResult } from '@tanstack/react-query';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ME_QUERY_KEY } from '@/features/session';
@@ -27,7 +27,7 @@ export const useContactVisibilityMutation = (): UseMutationResult<
   ContactVisibilityRollback
 > => {
   const queryClient = useQueryClient();
-  const showToast = useKkToast();
+  const raiseNotice = useKkNotice();
 
   return useMutation({
     mutationFn: (visible: boolean) =>
@@ -40,14 +40,14 @@ export const useContactVisibilityMutation = (): UseMutationResult<
       return { previous };
     },
     onSuccess: (_result, visible) => {
-      showToast({ tone: 'success', message: toVisibilitySavedMessage(visible) });
+      raiseNotice({ tone: 'success', message: toVisibilitySavedMessage(visible) });
     },
     onError: (error, _visible, context) => {
       queryClient.setQueryData(ME_QUERY_KEY, context?.previous);
       const message = toVisibilityErrorMessage(error);
 
       if (message !== null) {
-        showToast({ tone: 'error', message });
+        raiseNotice({ tone: 'error', message });
       }
     },
     onSettled: () => {

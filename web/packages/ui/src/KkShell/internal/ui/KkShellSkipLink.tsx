@@ -7,7 +7,6 @@ import { MAIN_ELEMENT_ID } from '../main-element-id';
 const LABEL = 'Zum Inhalt springen';
 const OFFSCREEN = 'translateY(-200%)';
 const PINNED = 'translateY(0)';
-const SKIP_Z_INDEX = 1400;
 
 export const KkShellSkipLink: FC = () => (
   <Box
@@ -15,11 +14,11 @@ export const KkShellSkipLink: FC = () => (
     href={`#${MAIN_ELEMENT_ID}`}
     data-kk-shell-skip-link
     sx={[
-      {
+      (theme) => ({
         position: 'fixed',
         top: 0,
         left: 0,
-        zIndex: SKIP_Z_INDEX,
+        zIndex: theme.zIndex.snackbar,
         m: 1,
         px: 2,
         py: 1.25,
@@ -33,7 +32,7 @@ export const KkShellSkipLink: FC = () => (
         textDecoration: 'none',
         transform: OFFSCREEN,
         '&:focus-visible': { transform: PINNED },
-      },
+      }),
       focusRing,
     ]}
   >

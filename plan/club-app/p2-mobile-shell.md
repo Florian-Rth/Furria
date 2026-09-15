@@ -340,6 +340,47 @@ breaks at density 1; it compares each value with `toBeCloseTo` now.
 - Real callers from day one: connection loss and session expiry (ADR-0006), plus every existing
   toast call site.
 
+**Done.** The manager splits in two, because the two slots are two different things.
+`KkNoticeProvider` **owns the urgent slot** — a queue, exactly the absorbed `toast-queue.ts`, so a
+burst of confirmations shows one at a time instead of a stack — and takes the **quiet system slot
+as a prop**, the way `KkSheetProvider` takes `openSheetId`. A system notice is ambient state the
+app already holds; queueing it would be wrong, and the package stays free of the state's source.
+That is what enforces §3.6's two-slot budget structurally: one queue plus one prop, so a third
+notice cannot exist.
+
+**Self-resolving and dismissible are decided by the notice, not by the slot.** `awaitsAnswer` is
+the pure rule: a notice that carries rows or actions has something to read or do and never times
+out; a bare confirmation expires on its tone's lifetime (5 s, 8 s for an error). The urgent slot's
+notices carry a close affordance, the system notice does not — it is state, and it goes when the
+state goes, which is §3.6's "dismissible **or** self-resolving" read as an either/or rather than a
+both.
+
+**The notice is distinguished from the bar by tone, border and shadow**, per the README's ruling
+that ink is a control treatment and never a surface: the same `KkChrome` material at full density,
+but with a `line.section` edge in the tone's ink (`shell.notice.hairline`) and the raised shadow.
+No dark card, no second material.
+
+**The foot became one fixed stack.** `KkShellFoot` moved out of `KkShellNav` into `KkScreen`, which
+now composes `notice → navigation` in it — the stacking order §3.6 and §3.7 need, and the place the
+action bar takes in slice 7. The empty live region collapses through `&:empty`, so the navigation
+keeps its exact position while nothing is raised. `pointer-events` are off on the foot and on again
+per child, so the gap between notice and navigation does not swallow taps on the content beneath.
+
+**The track's bottom padding still clears the navigation only.** §3.2 asks it to clear the notice
+too, but a notice is transient and measuring the foot would buy a layout jump on every raise. The
+notice floats over the last rows while it is up, as toasts did. Revisit with the action bar, which
+is the layer that genuinely changes the foot's height.
+
+**Session expiry keeps its login-screen surface and is not a notice.** ADR-0006 makes a 401
+terminal: the session ends, `_app` redirects, and the shell — and with it the notice layer —
+unmounts in the same tick, so a notice raised there could never be seen. The honest surface is the
+one that already exists, `LoginScreen`'s expired line behind `?expired`. **Connection loss is the
+system slot's real caller**: `useIsOnline` over the browser's `online`/`offline` events, mapped in
+`useSystemNotice` to an expandable card that disappears by itself when the device is back.
+
+**Copy stayed in the app.** The package takes `labels` (dismiss, expand, collapse) on the provider,
+the way `KkToastProvider` took `dismissLabel`; the German lives in `session-messages.ts`.
+
 ### Slice 7 — the action bar, then the deletions
 
 - `KkShellActionBar` — one primary action, optional secondary, optional context line. Replaces
@@ -353,6 +394,104 @@ breaks at density 1; it compares each value with `toBeCloseTo` now.
   page header becomes the screen's declaration.
 - **Kept:** `KkSplitLayout` (login's chrome, not the lists'), `KkPanel` (49 callers — content
   material), `KkModalFrame` (until dialogs migrate), `KkBrandStage` (login).
+
+**Done.** `KkShellActionBar` is the eighth layer and the last one to ship without a caller. A screen
+declares `action` — `{ context?, primary, secondary? }` of `KkScreenDeed`s — and §6's action-bar
+column is a compile error again: `action` is `never` on `overview` and on both `list` variants, and
+a `KkScreenActionBar` on `detail`, `working` and `fullscreen`. It **never coexists with the
+navigation** structurally rather than by a runtime check: the navigation follows from `section`, and
+every kind that may declare an action carries `section?: never`.
+
+**One deviation from §6:** the action bar is *optional* on `working`, not mandatory. The app's one
+working screen is `/manage/persons/$personId`, whose deeds are still the six dialogs; requiring the
+action bar would force the wizard migration that the phase boundary defers to CA-P3. The mandate is
+a requirements rule, not a prohibition, so nothing in §9 is weakened by typing it optional.
+
+**The height is a token pair, so nothing is measured.** `actionHeight` plus `actionContextHeight`
+give `actionBarHeightOf` a single answer that both sizes the card and sets `KkShellTrack`'s bottom
+clearance — the layer slice 6 named as the one that genuinely changes the foot's height, resolved
+the way the head clearance already was.
+
+**The keyboard is now a distance, not a flag.** `isKeyboardOpen` became `keyboardInsetOf` — the same
+pure module, returning the occluded pixels and `0` below the threshold — and the shell publishes
+`keyboardInset`. `KkShellNav` hides on it exactly as before, and `KkShellFoot` lifts the **whole
+foot** above the keyboard, so §3's "an action bar rides above the keyboard" is the foot's business
+and no screen, and no layer, knows about it.
+
+**The deletions.** `KkAppShell` and its 25 internal files, `KkFab`, `KkStickyBar` and `KkStickyRail`
+leave the package; `AppListLayout`, `AppListColumns`, `AppListSectionHead`, `AppListAsideSkeleton`
+and the three create FABs leave club-app. `KkPageHeader`, `AppPageHeader` and `AppBackLink` went in
+slices 2 and 4.
+
+**`AppShell` survives, against the list above.** Its death was predicated on toasts being the only
+thing it wired; slice 6 gave it `KkNoticeProvider` **and** `useSystemNotice`, so it is now the one
+place that binds three package providers to this app's router and state. Deleting it would move two
+hooks and three providers into `_app.tsx`'s route component beside the anonymous-redirect guard,
+which is a worse seam, not a smaller one. Flagged rather than done quietly.
+
+**The five lists lost their columns and gained their chrome.** Each screen's narrowing hook moved up
+into the page that declares the tool row — one hook instance, one filter state, the chips in the
+chrome and the list in the track reading the same object — which is why `MembersBody` and its four
+siblings now take a `search` prop instead of calling the hook themselves. Create moved from the FAB
+*and* the desktop-only header button into **one** emphasised bar action, permission-gated in the
+page the way `RequirePermission` gates the body, and the create dialog moved up with it:
+`useGroupDialogs` lost its `create` kind, and `use-group-create-dialog` and `use-role-create-dialog`
+were split off beside the `usePersonFormDialog` that already existed.
+
+**The section head died with the columns.** „Alle Mitglieder" above a list whose screen is already
+titled twice — header and bar — was §9.3's duplicate hiding behind a layout component; the four
+constants went with it.
+
+**The desktop-only asides are gone and nothing real went with them.** The letter index lives in the
+rail, which is §3.5's one entry point; `MembersStats` and `PersonsStats` moved into the single
+column, carrying the note that used to be duplicated as a phone-only line above the list. Only
+`MembersAside` and `PersonsAside` — the two-column wrappers themselves — were deleted.
+
+**`KkSkeletonToolbar` lost its search field**, which slice 5 had already made a lie, and is declared
+as the screen's `tools` while data loads. The tool row is therefore present from the first frame and
+the head clearance never jumps when the chips arrive.
+
+**The tool row forced one rule back onto `KkFilterChips`.** Five state chips wrapped onto a second
+row inside a 44 px card, so the card read as a second, empty bar under the bar — §9.9 exactly. The
+wrapping layout was a body-era affordance and every caller is a tool row now, so `filterChipsWrap`
+and its branch are deleted: the strip is always one non-wrapping row that scrolls horizontally, fills
+the row's width and carries the edge fade at every width. Caught by screenshot, not by the types.
+
+**The letter rail became the ninth layer.** Ruled with Florian after the screenshot: a screen
+declaring its own `position: fixed` element is what §8 forbids, and that was why CA-P1's rail ran
+under the new chrome. A `list` screen now declares `index` — **data**, like `thread`: label, letters,
+current letter and a select callback — and the shell renders `KkLetterIndex variant="rail"` itself,
+so no screen builds chrome and the rail variant keeps nothing but its column layout. This is §6's own
+escalation clause used deliberately: the handoff's eight layers are nine, recorded here rather than
+improvised in a page.
+
+`KkShellIndex` pins the rail into the band **between the head and the foot clearance**, so no letter
+can hide behind the bar, the tool row, the navigation or an action bar, and it is centred in whatever
+is left; `pointer-events` are off on the band and on again per child. The band is inset by the same
+`gutter` as every chrome card, so the rail stands **inside the usable content area**, flush with the
+bar's right edge, and never at the screen edge — the bar and the tool row keep their full width on
+every screen, index or not. **The rail fits the band rather than overflowing it:** its cells cap at
+the rail size on a tall screen and shrink evenly on a short one, because a centred column that does
+not fit overflows at *both* ends — which is how the first letter ended up behind the filter row on a
+705 px viewport while every screenshot at 844 px looked right. `KkShellTrack` reserves
+`indexWidth` on its right when an index is declared, so rows and their chevrons stop before the rail
+instead of running under it. The index is declared **only when there are letters**, which keeps the
+rail off the loading, access-denied, cold-empty and no-match states.
+
+**The scroll clearance moved to the shell with it, and that was the bug underneath the bug.**
+`KkLetterDivider` resolved its `scroll-margin-top` from `--kk-sticky-bar-height`, a custom property
+published by the `KkStickyBar` this slice deletes — so every letter jump had been landing on a dead
+fallback of 196 px. The shell now publishes `scroll-padding-top` and `scroll-padding-bottom` on the
+document from the same two clearances the track pads with, which fixes **every** `scrollIntoView` in
+the app in one place — letter jumps, the Gruppen and Rollen detail panels, `KkShellSkipLink` — and
+`use-letter-position` reads that one value back instead of measuring the divider. Verified in the
+browser: a jump to M puts the divider exactly on the chrome edge and the rail marks M.
+`use-sticky-bar-height.ts` and the `stickyBar*` and `railFade` tokens went with the sticky bar.
+
+**`useIsMobile` is down to its last caller.** The two detail-scroll hooks dropped it: the phone
+layout renders at every width now, so a selected detail always stacks below its list and always
+deserves the scroll. Login's `KkSplitLayout` is the only branch left, as §"Login is out of scope"
+intends.
 
 ### Slice 8 — close the phase
 

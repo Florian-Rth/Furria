@@ -1,4 +1,4 @@
-import { useKkToast } from '@furria/ui';
+import { useKkNotice } from '@furria/ui';
 import type { QueryClient, UseMutationResult, UseQueryResult } from '@tanstack/react-query';
 import { skipToken, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ME_QUERY_KEY } from '@/features/session';
@@ -124,13 +124,13 @@ export const useRoleQuery = (roleId: number | null): UseQueryResult<RoleDetails,
 
 export const useCreateRoleMutation = (): UseMutationResult<CreatedRole, Error, RoleForm> => {
   const queryClient = useQueryClient();
-  const showToast = useKkToast();
+  const raiseNotice = useKkNotice();
 
   return useMutation({
     mutationFn: (form: RoleForm) =>
       withFreshAccessToken((accessToken) => requestCreateRole(form, accessToken)),
     onSuccess: (_created, form) => {
-      showToast({ tone: 'success', message: toRoleCreatedMessage(form.name) });
+      raiseNotice({ tone: 'success', message: toRoleCreatedMessage(form.name) });
       refreshRoles(queryClient);
     },
     onError: () => {
@@ -141,13 +141,13 @@ export const useCreateRoleMutation = (): UseMutationResult<CreatedRole, Error, R
 
 export const useUpdateRoleMutation = (roleId: number): UseMutationResult<void, Error, RoleForm> => {
   const queryClient = useQueryClient();
-  const showToast = useKkToast();
+  const raiseNotice = useKkNotice();
 
   return useMutation({
     mutationFn: (form: RoleForm) =>
       withFreshAccessToken((accessToken) => requestUpdateRole(roleId, form, accessToken)),
     onSuccess: (_result, form) => {
-      showToast({ tone: 'success', message: toRoleSavedMessage(form.name) });
+      raiseNotice({ tone: 'success', message: toRoleSavedMessage(form.name) });
       refreshRoles(queryClient);
     },
     onError: () => {
@@ -160,13 +160,13 @@ export const useArchiveRoleMutation = (
   roleId: number,
 ): UseMutationResult<void, Error, RoleNameInput> => {
   const queryClient = useQueryClient();
-  const showToast = useKkToast();
+  const raiseNotice = useKkNotice();
 
   return useMutation({
     mutationFn: () =>
       withFreshAccessToken((accessToken) => requestArchiveRole(roleId, accessToken)),
     onSuccess: (_result, input) => {
-      showToast({ tone: 'success', message: toRoleArchivedMessage(input.roleName) });
+      raiseNotice({ tone: 'success', message: toRoleArchivedMessage(input.roleName) });
     },
     onSettled: () => {
       refreshRoles(queryClient);
@@ -178,19 +178,19 @@ export const useRestoreRoleMutation = (
   roleId: number,
 ): UseMutationResult<void, Error, RoleNameInput> => {
   const queryClient = useQueryClient();
-  const showToast = useKkToast();
+  const raiseNotice = useKkNotice();
 
   return useMutation({
     mutationFn: () =>
       withFreshAccessToken((accessToken) => requestRestoreRole(roleId, accessToken)),
     onSuccess: (_result, input) => {
-      showToast({ tone: 'success', message: toRoleRestoredMessage(input.roleName) });
+      raiseNotice({ tone: 'success', message: toRoleRestoredMessage(input.roleName) });
     },
     onError: (error) => {
       const message = toWriteErrorMessage(error);
 
       if (message !== null) {
-        showToast({ tone: 'error', message });
+        raiseNotice({ tone: 'error', message });
       }
     },
     onSettled: () => {
@@ -203,7 +203,7 @@ export const useSetRolePermissionsMutation = (
   roleId: number,
 ): UseMutationResult<void, Error, SetRolePermissionsInput, RolePermissionsRollback> => {
   const queryClient = useQueryClient();
-  const showToast = useKkToast();
+  const raiseNotice = useKkNotice();
 
   return useMutation({
     mutationFn: (input: SetRolePermissionsInput) =>
@@ -227,7 +227,7 @@ export const useSetRolePermissionsMutation = (
     onSuccess: (_result, input) => {
       const message = toPermissionSavedMessage(toPermissionCopy(input.key).title, input.enabled);
 
-      showToast({ tone: 'success', message });
+      raiseNotice({ tone: 'success', message });
     },
     onError: (error, _input, context) => {
       queryClient.setQueryData(roleQueryKey(roleId), context?.role);
@@ -235,7 +235,7 @@ export const useSetRolePermissionsMutation = (
       const message = toWriteErrorMessage(error);
 
       if (message !== null) {
-        showToast({ tone: 'error', message });
+        raiseNotice({ tone: 'error', message });
       }
     },
     onSettled: () => {
@@ -249,7 +249,7 @@ export const useAddRoleHoldingMutation = (
   roleName: string,
 ): UseMutationResult<CreatedRoleHolding, Error, AddRoleHoldingInput> => {
   const queryClient = useQueryClient();
-  const showToast = useKkToast();
+  const raiseNotice = useKkNotice();
 
   return useMutation({
     mutationFn: (input: AddRoleHoldingInput) =>
@@ -268,7 +268,7 @@ export const useAddRoleHoldingMutation = (
         toIsoDay(new Date()),
       );
 
-      showToast({ tone: 'success', message });
+      raiseNotice({ tone: 'success', message });
     },
     onSettled: () => {
       refreshRoles(queryClient);
@@ -280,7 +280,7 @@ export const useEndRoleHoldingMutation = (
   roleId: number,
 ): UseMutationResult<void, Error, EndRoleHoldingInput> => {
   const queryClient = useQueryClient();
-  const showToast = useKkToast();
+  const raiseNotice = useKkNotice();
 
   return useMutation({
     mutationFn: (input: EndRoleHoldingInput) =>
@@ -294,7 +294,7 @@ export const useEndRoleHoldingMutation = (
     onSuccess: (_result, input) => {
       const message = toHoldingEndedMessage(input.personName, input.endedOn, toIsoDay(new Date()));
 
-      showToast({ tone: 'success', message });
+      raiseNotice({ tone: 'success', message });
     },
     onSettled: () => {
       refreshRoles(queryClient);

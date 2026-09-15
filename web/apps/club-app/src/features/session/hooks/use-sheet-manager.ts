@@ -1,3 +1,4 @@
+import { useNavigate } from '@tanstack/react-router';
 import { appRouteApi } from '../app-route';
 
 export interface SheetManager {
@@ -8,10 +9,14 @@ export interface SheetManager {
 
 export const useSheetManager = (): SheetManager => {
   const { sheet } = appRouteApi.useSearch();
-  const navigate = appRouteApi.useNavigate();
+  const navigate = useNavigate();
 
   const go = (next: string | undefined): void => {
-    void navigate({ to: '.', search: (previous) => ({ ...previous, sheet: next }) });
+    void navigate({
+      to: '.',
+      search: (previous) => ({ ...previous, sheet: next }),
+      resetScroll: false,
+    });
   };
 
   return {

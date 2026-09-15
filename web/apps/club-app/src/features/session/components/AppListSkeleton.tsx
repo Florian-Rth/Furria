@@ -1,7 +1,6 @@
-import { KkPanel, KkSkeletonBlock, KkSkeletonRow, KkSkeletonToolbar } from '@furria/ui';
+import { KkPanel, KkSkeletonBlock, KkSkeletonRow } from '@furria/ui';
 import Grid from '@mui/material/Grid';
-import type { FC, ReactNode } from 'react';
-import { AppListColumns } from './AppListColumns';
+import type { FC } from 'react';
 import { AppSkeletonRegion } from './AppSkeletonRegion';
 
 export type AppListSkeletonShape = 'rows' | 'cards';
@@ -16,15 +15,7 @@ const FULL_HEIGHT = { height: '100%' } as const;
 
 interface AppListSkeletonProps {
   label: string;
-  sectionTitle: string;
-  toolbarChips?: number;
   listShape: AppListSkeletonShape;
-  aside?: ReactNode;
-  asideSize?: number;
-  asideDesktopOnly?: boolean;
-  stickyList?: boolean;
-  stickyAside?: boolean;
-  asideLeadsFocus?: boolean;
   hasSelection?: boolean;
 }
 
@@ -46,51 +37,31 @@ const detailPanel = (
   </KkPanel>
 );
 
+const masterRows = (
+  <KkPanel variant="list">
+    <KkSkeletonRow count={MASTER_ROW_COUNT} shape="select" />
+  </KkPanel>
+);
+
+const plainRows = (
+  <KkPanel variant="list">
+    <KkSkeletonRow count={ROW_COUNT} />
+  </KkPanel>
+);
+
 export const AppListSkeleton: FC<AppListSkeletonProps> = ({
   label,
-  sectionTitle,
-  toolbarChips,
   listShape,
-  aside,
-  asideSize,
-  asideDesktopOnly,
-  stickyList,
-  stickyAside,
-  asideLeadsFocus,
   hasSelection = false,
 }) => {
-  const toolbar =
-    toolbarChips === undefined ? undefined : <KkSkeletonToolbar chips={toolbarChips} />;
-  const detail = aside ?? (hasSelection ? detailPanel : undefined);
-
-  const masterRows = (
-    <KkPanel variant="list">
-      <KkSkeletonRow count={MASTER_ROW_COUNT} shape="select" />
-    </KkPanel>
-  );
-
-  const plainRows = (
-    <KkPanel variant="list">
-      <KkSkeletonRow count={ROW_COUNT} />
-    </KkPanel>
-  );
-
   const listRows = hasSelection ? masterRows : plainRows;
   const list = !hasSelection && listShape === 'cards' ? cardGrid : listRows;
+  const detail = hasSelection ? detailPanel : null;
 
   return (
     <AppSkeletonRegion label={label}>
-      <AppListColumns
-        sectionTitle={sectionTitle}
-        toolbar={toolbar}
-        list={list}
-        aside={detail}
-        asideSize={asideSize}
-        asideDesktopOnly={asideDesktopOnly}
-        stickyList={stickyList}
-        stickyAside={stickyAside}
-        asideLeadsFocus={asideLeadsFocus}
-      />
+      {list}
+      {detail}
     </AppSkeletonRegion>
   );
 };

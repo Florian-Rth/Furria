@@ -1,4 +1,4 @@
-import { useKkToast } from '@furria/ui';
+import { useKkNotice } from '@furria/ui';
 import type { QueryClient, UseMutationResult, UseQueryResult } from '@tanstack/react-query';
 import {
   keepPreviousData,
@@ -117,20 +117,20 @@ export const useUpdateGroupInfoMutation = (
   groupId: number,
 ): UseMutationResult<void, Error, GroupInfoForm> => {
   const queryClient = useQueryClient();
-  const showToast = useKkToast();
+  const raiseNotice = useKkNotice();
 
   return useMutation({
     mutationFn: (form: GroupInfoForm) =>
       withFreshAccessToken((accessToken) => requestGroupInfoUpdate(groupId, form, accessToken)),
     onSuccess: () => {
-      showToast({ tone: 'success', message: GROUP_INFO_SAVED_MESSAGE });
+      raiseNotice({ tone: 'success', message: GROUP_INFO_SAVED_MESSAGE });
       refreshHub(queryClient, groupId);
     },
     onError: (error) => {
       const message = toWriteErrorMessage(error);
 
       if (message !== null) {
-        showToast({ tone: 'error', message });
+        raiseNotice({ tone: 'error', message });
       }
       refreshHub(queryClient, groupId);
     },
@@ -141,7 +141,7 @@ export const useAddGroupMembershipMutation = (
   groupId: number,
 ): UseMutationResult<AddedGroupMembership, Error, AddMemberInput> => {
   const queryClient = useQueryClient();
-  const showToast = useKkToast();
+  const raiseNotice = useKkNotice();
 
   return useMutation({
     mutationFn: (input: AddMemberInput) =>
@@ -155,7 +155,7 @@ export const useAddGroupMembershipMutation = (
     onSuccess: (_added, input) => {
       const message = toMemberAddedMessage(input.personName, input.joinedOn, toIsoDay(new Date()));
 
-      showToast({ tone: 'success', message });
+      raiseNotice({ tone: 'success', message });
       refreshHub(queryClient, groupId);
     },
     onError: () => {
@@ -168,7 +168,7 @@ export const useEndGroupMembershipMutation = (
   groupId: number,
 ): UseMutationResult<void, Error, EndMembershipInput> => {
   const queryClient = useQueryClient();
-  const showToast = useKkToast();
+  const raiseNotice = useKkNotice();
 
   return useMutation({
     mutationFn: (input: EndMembershipInput) =>
@@ -186,7 +186,7 @@ export const useEndGroupMembershipMutation = (
         toIsoDay(new Date()),
       );
 
-      showToast({ tone: 'success', message });
+      raiseNotice({ tone: 'success', message });
       refreshHub(queryClient, groupId);
     },
     onError: () => {
@@ -199,7 +199,7 @@ export const useAddGroupAdminMutation = (
   groupId: number,
 ): UseMutationResult<AddedGroupAdmin, Error, AddAdminInput> => {
   const queryClient = useQueryClient();
-  const showToast = useKkToast();
+  const raiseNotice = useKkNotice();
 
   return useMutation({
     mutationFn: (input: AddAdminInput) =>
@@ -217,7 +217,7 @@ export const useAddGroupAdminMutation = (
         toIsoDay(new Date()),
       );
 
-      showToast({ tone: 'success', message });
+      raiseNotice({ tone: 'success', message });
       refreshHub(queryClient, groupId);
     },
     onError: () => {
@@ -230,7 +230,7 @@ export const useEndGroupAdminMutation = (
   groupId: number,
 ): UseMutationResult<void, Error, EndAdminInput> => {
   const queryClient = useQueryClient();
-  const showToast = useKkToast();
+  const raiseNotice = useKkNotice();
 
   return useMutation({
     mutationFn: (input: EndAdminInput) =>
@@ -245,12 +245,12 @@ export const useEndGroupAdminMutation = (
       const today = toIsoDay(new Date());
 
       if (input.isSelf) {
-        showToast({
+        raiseNotice({
           tone: 'info',
           message: toSelfAdminEndedMessage(input.groupName, input.endedOn, today),
         });
       } else {
-        showToast({
+        raiseNotice({
           tone: 'success',
           message: toAdminEndedMessage(input.personName, input.endedOn, today),
         });

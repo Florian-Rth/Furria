@@ -1,4 +1,4 @@
-import { useKkToast } from '@furria/ui';
+import { useKkNotice } from '@furria/ui';
 import type { QueryClient, UseMutationResult, UseQueryResult } from '@tanstack/react-query';
 import { skipToken, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
@@ -70,13 +70,13 @@ export const usePersonQuery = (personId: number | null): UseQueryResult<PersonDe
 
 export const useCreatePersonMutation = (): UseMutationResult<CreatedPerson, Error, PersonForm> => {
   const queryClient = useQueryClient();
-  const showToast = useKkToast();
+  const raiseNotice = useKkNotice();
 
   return useMutation({
     mutationFn: (form: PersonForm) =>
       withFreshAccessToken((accessToken) => requestPersonCreate(form, accessToken)),
     onSuccess: (_created, form) => {
-      showToast({
+      raiseNotice({
         tone: 'success',
         message: toPersonCreatedMessage(`${form.firstName} ${form.lastName}`),
       });
@@ -89,13 +89,13 @@ export const useUpdatePersonMutation = (
   personId: number,
 ): UseMutationResult<void, Error, PersonForm> => {
   const queryClient = useQueryClient();
-  const showToast = useKkToast();
+  const raiseNotice = useKkNotice();
 
   return useMutation({
     mutationFn: (form: PersonForm) =>
       withFreshAccessToken((accessToken) => requestPersonUpdate(personId, form, accessToken)),
     onSuccess: (_result, form) => {
-      showToast({
+      raiseNotice({
         tone: 'success',
         message: toPersonSavedMessage(`${form.firstName} ${form.lastName}`),
       });
@@ -108,13 +108,13 @@ export const useCreateMembershipMutation = (
   personId: number,
 ): UseMutationResult<CreatedMembership, Error, MembershipForm> => {
   const queryClient = useQueryClient();
-  const showToast = useKkToast();
+  const raiseNotice = useKkNotice();
 
   return useMutation({
     mutationFn: (form: MembershipForm) =>
       withFreshAccessToken((accessToken) => requestMembershipCreate(personId, form, accessToken)),
     onSuccess: () => {
-      showToast({ tone: 'success', message: MEMBERSHIP_ADDED_MESSAGE });
+      raiseNotice({ tone: 'success', message: MEMBERSHIP_ADDED_MESSAGE });
       refreshPerson(queryClient, personId);
     },
   });
@@ -128,7 +128,7 @@ export const useUpdateMembershipMutation = (
   personId: number,
 ): UseMutationResult<void, Error, MembershipUpdateInput> => {
   const queryClient = useQueryClient();
-  const showToast = useKkToast();
+  const raiseNotice = useKkNotice();
 
   return useMutation({
     mutationFn: (input: MembershipUpdateInput) =>
@@ -141,7 +141,7 @@ export const useUpdateMembershipMutation = (
         ),
       ),
     onSuccess: () => {
-      showToast({ tone: 'success', message: MEMBERSHIP_SAVED_MESSAGE });
+      raiseNotice({ tone: 'success', message: MEMBERSHIP_SAVED_MESSAGE });
       refreshPerson(queryClient, personId);
     },
   });
@@ -155,7 +155,7 @@ export const useEndMembershipMutation = (
   personId: number,
 ): UseMutationResult<void, Error, MembershipEndInput> => {
   const queryClient = useQueryClient();
-  const showToast = useKkToast();
+  const raiseNotice = useKkNotice();
 
   return useMutation({
     mutationFn: (input: MembershipEndInput) =>
@@ -163,7 +163,7 @@ export const useEndMembershipMutation = (
         requestMembershipEnd(personId, input.membershipId, { endedOn: input.endedOn }, accessToken),
       ),
     onSuccess: (_result, input) => {
-      showToast({
+      raiseNotice({
         tone: 'success',
         message: toMembershipEndedMessage(input.endedOn, toIsoDay(new Date())),
       });
@@ -180,7 +180,7 @@ export const useCreatePauseMutation = (
   personId: number,
 ): UseMutationResult<CreatedPause, Error, PauseCreateInput> => {
   const queryClient = useQueryClient();
-  const showToast = useKkToast();
+  const raiseNotice = useKkNotice();
 
   return useMutation({
     mutationFn: (input: PauseCreateInput) =>
@@ -193,7 +193,7 @@ export const useCreatePauseMutation = (
         ),
       ),
     onSuccess: () => {
-      showToast({ tone: 'success', message: PAUSE_ADDED_MESSAGE });
+      raiseNotice({ tone: 'success', message: PAUSE_ADDED_MESSAGE });
       refreshPerson(queryClient, personId);
     },
   });
@@ -207,7 +207,7 @@ export const useUpdatePauseMutation = (
   personId: number,
 ): UseMutationResult<void, Error, PauseUpdateInput> => {
   const queryClient = useQueryClient();
-  const showToast = useKkToast();
+  const raiseNotice = useKkNotice();
 
   return useMutation({
     mutationFn: (input: PauseUpdateInput) =>
@@ -221,7 +221,7 @@ export const useUpdatePauseMutation = (
         ),
       ),
     onSuccess: () => {
-      showToast({ tone: 'success', message: PAUSE_SAVED_MESSAGE });
+      raiseNotice({ tone: 'success', message: PAUSE_SAVED_MESSAGE });
       refreshPerson(queryClient, personId);
     },
   });
@@ -231,13 +231,13 @@ export const useCreateFeeReductionMutation = (
   personId: number,
 ): UseMutationResult<CreatedFeeReduction, Error, FeeReductionForm> => {
   const queryClient = useQueryClient();
-  const showToast = useKkToast();
+  const raiseNotice = useKkNotice();
 
   return useMutation({
     mutationFn: (form: FeeReductionForm) =>
       withFreshAccessToken((accessToken) => requestFeeReductionCreate(personId, form, accessToken)),
     onSuccess: () => {
-      showToast({ tone: 'success', message: FEE_REDUCTION_ADDED_MESSAGE });
+      raiseNotice({ tone: 'success', message: FEE_REDUCTION_ADDED_MESSAGE });
       refreshPerson(queryClient, personId);
     },
   });
@@ -251,7 +251,7 @@ export const useUpdateFeeReductionMutation = (
   personId: number,
 ): UseMutationResult<void, Error, FeeReductionUpdateInput> => {
   const queryClient = useQueryClient();
-  const showToast = useKkToast();
+  const raiseNotice = useKkNotice();
 
   return useMutation({
     mutationFn: (input: FeeReductionUpdateInput) =>
@@ -268,7 +268,7 @@ export const useUpdateFeeReductionMutation = (
         ),
       ),
     onSuccess: () => {
-      showToast({ tone: 'success', message: FEE_REDUCTION_SAVED_MESSAGE });
+      raiseNotice({ tone: 'success', message: FEE_REDUCTION_SAVED_MESSAGE });
       refreshPerson(queryClient, personId);
     },
   });

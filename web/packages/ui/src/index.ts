@@ -4,7 +4,6 @@ export type { ConfettiPiece } from './confetti-pieces';
 export { buildConfettiPieces } from './confetti-pieces';
 export type { KkFilterOption } from './filter-chip-entries';
 export { KkAlert } from './KkAlert';
-export { KkAppShell } from './KkAppShell/KkAppShell';
 export { KkAvatar } from './KkAvatar';
 export { KkAvatarStack } from './KkAvatarStack';
 export { KkBandSection } from './KkBandSection/KkBandSection';
@@ -27,7 +26,6 @@ export { KkDateField } from './KkDateField';
 export { KkEmptyState } from './KkEmptyState';
 export { KkErrorState } from './KkErrorState';
 export { KkEyebrow } from './KkEyebrow';
-export { KkFab } from './KkFab';
 export { KkFactRow } from './KkFactRow';
 export { KkFieldRow } from './KkFieldRow';
 export { KkFilterChips } from './KkFilterChips';
@@ -45,6 +43,16 @@ export type { KkMetaTone } from './KkMeta';
 export { KkMeta } from './KkMeta';
 export { KkModalFrame } from './KkModalFrame/KkModalFrame';
 export { KkNote } from './KkNote';
+export type {
+  KkNoticeAction,
+  KkNoticeActions,
+  KkNoticeLabels,
+  KkNoticePublisher,
+  KkNoticeRequest,
+  KkNoticeTone,
+  KkSystemNotice,
+} from './KkNotice/KkNotice';
+export { KkNoticeProvider, useKkNotice } from './KkNotice/KkNotice';
 export { KkPageWatermark } from './KkPageWatermark';
 export { KkPanel } from './KkPanel';
 export { KkPanelHeader } from './KkPanelHeader';
@@ -74,7 +82,10 @@ export type {
   KkLoudScreenAction,
   KkQuietScreenAction,
   KkScreenAction,
+  KkScreenActionBar,
   KkScreenActions,
+  KkScreenDeed,
+  KkScreenIndex,
   KkScreenKind,
   KkScreenOrigin,
   KkScreenSearch,
@@ -89,8 +100,6 @@ export { KkSkeletonToolbar } from './KkSkeletonToolbar';
 export { useKkPaneOpen } from './KkSplitLayout/internal/logic/split-layout-sheet-context';
 export { KkSplitLayout } from './KkSplitLayout/KkSplitLayout';
 export { KkStatRow } from './KkStatRow/KkStatRow';
-export { KkStickyBar } from './KkStickyBar';
-export { KkStickyRail } from './KkStickyRail';
 export type { KkSummaryFact } from './KkSummaryRow';
 export { KkSummaryRow } from './KkSummaryRow';
 export { KkSwitchRow } from './KkSwitchRow';
@@ -101,10 +110,9 @@ export { KkThemeColorMeta } from './KkThemeColorMeta';
 export { KkThemeProvider } from './KkThemeProvider';
 export { KkTicker } from './KkTicker';
 export { KkTitleHeader } from './KkTitleHeader';
-export type { KkToastRequest, KkToastTone } from './KkToast/KkToast';
-export { KkToastProvider, useKkToast } from './KkToast/KkToast';
 export { KkTwoToneHeadline } from './KkTwoToneHeadline';
 export { KkVisuallyHidden } from './KkVisuallyHidden';
+export type { KkLinkSearch, KkLinkSearchValues } from './kk-link-search';
 export type { KkSx } from './kk-sx';
 export type { KkLetterIndexEntry } from './letter-index-cells';
 export type { KkLetterIndexVariant } from './letter-index-variant';

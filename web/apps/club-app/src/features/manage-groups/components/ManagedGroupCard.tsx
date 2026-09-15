@@ -49,7 +49,7 @@ export const ManagedGroupCard: FC<ManagedGroupCardProps> = ({ group, sx }) => {
       chips={chips}
       dimmed={isArchived}
       to={MANAGE_GROUPS_PATH}
-      search={{ group: group.groupId }}
+      search={(previous) => ({ ...previous, group: group.groupId })}
       sx={sx}
     />
   );

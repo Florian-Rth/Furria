@@ -2,16 +2,18 @@ import type { FC } from 'react';
 import { AppListSkeleton } from '@/features/session';
 import { useManagedGroupsQuery } from '../api';
 import { useGroupSelection } from '../hooks/use-group-selection';
-import { MANAGE_GROUPS_SECTION_TITLES } from '../manage-groups-labels';
+import type { ManagedGroupsListing } from '../hooks/use-managed-groups-listing';
 import { toManagedGroupsErrorMessage } from '../manage-groups-messages';
 import { ManagedGroupsError } from './ManagedGroupsError';
 import { ManagedGroupsView } from './ManagedGroupsView';
 
 const LOADING_LABEL = 'Die Gruppenverwaltung wird geladen';
-const TOOLBAR_CHIPS = 3;
-const DETAIL_SIZE = 7;
 
-export const ManagedGroupsBody: FC = () => {
+interface ManagedGroupsBodyProps {
+  listing: ManagedGroupsListing;
+}
+
+export const ManagedGroupsBody: FC<ManagedGroupsBodyProps> = ({ listing }) => {
   const groups = useManagedGroupsQuery();
   const selection = useGroupSelection();
   const errorMessage = toManagedGroupsErrorMessage(groups.error);
@@ -20,10 +22,8 @@ export const ManagedGroupsBody: FC = () => {
     void groups.refetch();
   };
 
-  const hasSelection = selection.groupId !== null;
-
   if (groups.data !== undefined) {
-    return <ManagedGroupsView groups={groups.data.groups} />;
+    return <ManagedGroupsView groups={groups.data.groups} listing={listing} />;
   }
   if (errorMessage !== null) {
     return <ManagedGroupsError message={errorMessage} onRetry={reload} />;
@@ -32,12 +32,8 @@ export const ManagedGroupsBody: FC = () => {
   return (
     <AppListSkeleton
       label={LOADING_LABEL}
-      sectionTitle={MANAGE_GROUPS_SECTION_TITLES.list}
-      toolbarChips={TOOLBAR_CHIPS}
       listShape="cards"
-      hasSelection={hasSelection}
-      stickyList={hasSelection}
-      asideSize={DETAIL_SIZE}
+      hasSelection={selection.groupId !== null}
     />
   );
 };
