@@ -14,7 +14,10 @@
     "cap:run:android": "cap run android"
   },
   "dependencies": {
+    "@capacitor/app": "catalog:",
     "@capacitor/core": "catalog:",
+    "@capacitor/keyboard": "catalog:",
+    "@capacitor/splash-screen": "catalog:",
     "@emotion/react": "catalog:",
     "@emotion/styled": "catalog:",
     "@furria/ui": "workspace:*",

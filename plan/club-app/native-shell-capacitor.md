@@ -200,28 +200,61 @@ SharedPreferences — instead of `androidx.security:security-crypto`, the deprec
 
 Capacitor 8 on `targetSdk 36` means **Android 16 enforces edge-to-edge**: `StatusBar`'s
 `overlaysWebView` and `backgroundColor` no longer work, and `android.adjustMarginsForEdgeToEdge`
-was removed in Cap 8. Insets are handled the web way — `env(safe-area-inset-*)` with the
-`@capacitor/system-bars` CSS-variable fallback for older WebViews — which means the
-`@furria/ui` app shell owns it, not the native project: `KkAppShell` is the single element
-that knows where the app's edges are, and all three apps will need the same treatment. Insets
-are layout, so this is not an ADR-0007 question — it is a "one owner" question.
+was removed in Cap 8. Insets are handled the web way — `env(safe-area-inset-*)` with a
+CSS-variable fallback for older WebViews — which means the `@furria/ui` app shell owns it, not
+the native project: `KkShell` is the single element that knows where the app's edges are, and
+all three apps will need the same treatment. Insets are layout, so this is not an ADR-0007
+question — it is a "one owner" question.
 
 Pinned, concretely:
 
-- `KkAppShell`'s root carries the insets —
-  `padding-top: var(--safe-area-inset-top, env(safe-area-inset-top, 0px))` and the same at the
-  bottom, in the `var()`-first order `@capacitor/system-bars` documents (the plugin only
-  supplies those variables as a fallback for older WebViews). The bottom inset is not optional:
+- The shell carries the insets in the `var()`-first order —
+  `calc(var(--safe-area-inset-top, env(safe-area-inset-top, 0px)) + …)` — because Capacitor only
+  supplies those variables as a fallback for older WebViews. The bottom inset is not optional:
   the mocks' sticky bottom navigation would otherwise sit under the gesture bar.
 - **The status bar gets a style, not a background.** With edge-to-edge enforced, the app
-  background already paints behind it; only icon contrast remains, via `StatusBar.setStyle`
-  mirrored to the MUI colour scheme. The pre-hydration script in `index.html` already computes
-  that scheme for `<meta name="theme-color">` — reuse its result instead of deriving it twice.
+  background already paints behind it; only icon contrast remains, via `setStyle` mirrored to
+  the MUI colour scheme. The pre-hydration script in `index.html` already computes that scheme
+  for `<meta name="theme-color">` — reuse its result instead of deriving it twice.
 - `@capacitor/keyboard` with `resize: 'body'`.
 - `@capacitor/app`'s `backButton` listener wired to router history with `App.exitApp()` at the
   root route — adding the listener disables the default behaviour, so it must handle both cases.
 - `@capacitor/splash-screen` hidden explicitly once the session boot decision is known, so the
   app never flashes a blank WebView.
+
+**Corrections from building it (A5, 2026-09-16).** The five bullets above hold as intentions —
+they are printed above in their corrected wording. The plumbing the draft named underneath them
+did not survive contact.
+
+- **There is no `@capacitor/system-bars` package.** It 404s on npm. In Capacitor 8 the system
+  bars are a *core* plugin: `SystemBars`, `SystemBarsStyle` and `SystemBarType` are exported by
+  `@capacitor/core` 8.5.2, so `SystemBars.setStyle` costs no new dependency. `@capacitor/status-bar`
+  still exists, but its own README says `overlaysWebView` and `backgroundColor` are dead on
+  Android 16 — the two things it would have been for.
+- **`insetsHandling` is the knob, and its default is already `css`.** Read in
+  `@capacitor/android`'s `SystemBars.java`: on every window-insets change it injects
+  `--safe-area-inset-{top,right,bottom,left}` onto `document.documentElement`. On a WebView
+  ≥ Chromium 140 it passes the real insets through, so the variable and `env()` agree; below
+  that it pads the WebView itself, forces `env()` to `0px` **and** injects `0px` — so the
+  `var()`-first order is correct on every Android version and, because nothing injects on
+  iOS or web, it falls through to `env()` there. `capacitor.config.ts` sets it explicitly
+  together with `initialViewportFitValueHint: 'cover'`, which matches the `viewport-fit=cover`
+  already in `index.html` and spares the first frame a layout jump.
+  The same listener zeroes the bottom variable while the keyboard is up, which is exactly what
+  a sticky action bar wants.
+- **`SystemBarsStyle.Dark` means *light icons*** — it is named for the background it sits on,
+  not the ink. `systemBarsStyleFor` is a two-line pure function with a test for precisely that
+  inversion.
+- **`@capacitor/keyboard`'s `resize` is iOS-only**; on Android its only layout knob is
+  `resizeOnFullScreen`, which must stay off because Cap 8's `SystemBars` already pads the
+  WebView for the IME. So the plugin is installed and configured (`resize: 'body'` for Phase B)
+  but changes nothing on Android beyond making its events available.
+- **The insets were already in the shell.** CA-P2 shipped `safeArea()` in `@furria/ui`, and
+  `KkShellChrome`, `KkShellFoot`, `KkShellIndex`, `KkShellTrack`, `KkScreen` and `KkSheetRoot`
+  all use it. A5 therefore did not add padding to a root element — the fixed chrome and foot
+  are `position: fixed` and a root padding would never have reached them. It changed the one
+  shared helper to the `var()`-first order and added the left/right inset to `KkShellTrack`,
+  which was the only shell part still ignoring a landscape cutout.
 
 ### The app mark — decided 2026-09-16
 
@@ -279,7 +312,7 @@ adaptive-icon safe zone and gets clipped by round masks.
 | A2 | The native API origin | `.env.native` (`https://furria.florianrth.com`) and the `build:native` script. No source change, and no Kestrel or Vite change — the runtime-config chain already behaves correctly in native |
 | A3 | API CORS (**backend — `/backend-work`, TDD**) | Explicit policy for `https://localhost` and `capacitor://localhost`, `Authorization` header, `GET`/`POST`/`PUT`/`DELETE`, no credentials; integration test asserting the preflight and a rejected foreign origin |
 | A4 | The Android project | `pnpm build:native` → `npx cap add android`; app name and icons/splash from the crossed-brooms mark (see *The app mark*); `.gitignore`, `.dockerignore`, `cd.yml` and Biome exclusions |
-| A5 | Native chrome | `@capacitor/system-bars`, `@capacitor/keyboard`, `@capacitor/app` back button, `@capacitor/splash-screen`; safe-area insets in the `@furria/ui` app shell |
+| A5 | Native chrome | `SystemBars` (core, not a package), `@capacitor/keyboard`, `@capacitor/app` back button, `@capacitor/splash-screen`; safe-area insets in the `@furria/ui` app shell |
 | A6 | Secure refresh-token storage | async `SessionStoragePort`; `'restoring'` initial snapshot; `@aparajita/capacitor-secure-storage` port behind a dynamic import, selected in `main.tsx` via `Capacitor.isNativePlatform()`; localStorage port kept for web |
 | A7 | Device loop, documented | `README.md` section: `CAP_DEV_SERVER_URL` live reload against `vite --host` (the phone reaches the API through Vite's proxy, never directly), `npx cap run android` onto a USB device; a debug APK actually installed and logged in |
 
@@ -331,17 +364,24 @@ blocks a test build on a phone.
 
 ## Open
 
-One item needs Florian before A5 can be built. Everything else is decided.
+Nothing is waiting on Florian. The one item that was — **the `@furria/ui` blast radius of
+A5** — closed while building it: the website never mounts `KkShell` at all (its only safe-area
+use is one raw `env()` in `StickyActionBar`), and a headless Chrome probe confirmed that
+`calc(var(--safe-area-inset-top, env(safe-area-inset-top, 0px)) + 12px)` computes to the same
+`12px` as the old `env()`-only form when nothing injects the variable, and to `60px` when
+Capacitor does. The change is a no-op on web by construction.
 
-**The `@furria/ui` blast radius of A5.** Safe-area insets land in `KkAppShell`, which the
-website may also mount. The slice must confirm that adding `env(safe-area-inset-*)` padding
-changes nothing on desktop web before it ships.
+Assumptions to **verify on first run**, none of which changes a decision:
 
-Two assumptions to **verify on first run**, neither of which changes a decision:
-
+- Whether the hardware back button should also close an open MUI dialog. Sheets are search-param
+  driven, so history back closes them for free; the group/person dialogs are local state and
+  will currently be navigated out from underneath. Cheap to fix once a device says it is wrong.
 - `navigator.locks` (the refresh lock from CA-P0) in the Android WebView and in WKWebView.
   Expected present; if absent on a target, the store's existing no-lock path must be checked
   rather than a lock polyfilled in.
 - Whether `pnpm`'s symlinked `node_modules` upsets the paths Capacitor writes into
-  `capacitor.settings.gradle`. If it does, the fix is a `node-linker` setting for the app, not
-  a change to the workspace layout.
+  `capacitor.settings.gradle`. A4 saw `cap add android` write
+  `../../../node_modules/.pnpm/@capacitor+android@8.5.2_.../@capacitor/android/capacitor`,
+  which resolves on disk — but no Gradle run has confirmed it, because this machine has no JDK
+  and no Android SDK. A7 is where it is actually proven; if it breaks, the fix is a
+  `node-linker` setting for the app, not a change to the workspace layout.

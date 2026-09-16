@@ -124,3 +124,4 @@ export { kkThemeColorForScheme, resolveKkColorScheme } from './theme-color';
 export type { KkColorTokens } from './tokens';
 export { kkTokens } from './tokens';
 export { useIsMobile } from './use-is-mobile';
+export { useKkColorScheme } from './use-kk-color-scheme';
