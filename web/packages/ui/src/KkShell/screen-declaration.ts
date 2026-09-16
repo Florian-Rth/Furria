@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import type { KkTone } from '../internal/tone';
 import type { KkIconName } from '../KkIcon';
 import type { KkLetterIndexEntry } from '../letter-index-cells';
+import type { KkLetterPace } from '../letter-pace';
 
 export type KkScreenKind = 'overview' | 'list' | 'detail' | 'working' | 'fullscreen';
 
@@ -55,7 +56,7 @@ export interface KkScreenIndex {
   label: string;
   letters: readonly KkLetterIndexEntry[];
   current?: string;
-  onSelect: (letter: string) => void;
+  onSelect: (letter: string, pace: KkLetterPace) => void;
 }
 
 export interface KkScreenThread {

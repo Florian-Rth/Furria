@@ -9,14 +9,14 @@ import {
 } from '../manage-roles-labels';
 import { RoleStateChips } from './RoleStateChips';
 
-const ROLES_PATH = '/manage/roles';
 const FULL_HEIGHT = { height: '100%' } as const;
 
 interface RoleCardProps {
   entry: RoleMasterEntry;
+  onSelect: () => void;
 }
 
-export const RoleCard: FC<RoleCardProps> = ({ entry }) => {
+export const RoleCard: FC<RoleCardProps> = ({ entry, onSelect }) => {
   const holderLine = entry.meta === null ? undefined : <KkMeta>{entry.meta}</KkMeta>;
   const unitLabel = toHolderUnitLabel(entry.holderCount);
   const emptyDescription = toNoDescriptionLine(entry.name);
@@ -35,8 +35,7 @@ export const RoleCard: FC<RoleCardProps> = ({ entry }) => {
       chips={chips}
       footer={holderLine}
       dimmed={entry.isArchived}
-      to={ROLES_PATH}
-      search={(previous) => ({ ...previous, role: entry.roleId })}
+      onSelect={onSelect}
       sx={FULL_HEIGHT}
     />
   );

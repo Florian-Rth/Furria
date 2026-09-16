@@ -20,7 +20,7 @@ interface RolesViewProps {
 }
 
 export const RolesView: FC<RolesViewProps> = ({ roles, catalogue, search, onCreate }) => {
-  const { roleId } = useSelectedRole();
+  const { roleId, select } = useSelectedRole();
   const detailRef = useDetailScroll(roleId);
 
   if (roles.length === 0) {
@@ -29,7 +29,11 @@ export const RolesView: FC<RolesViewProps> = ({ roles, catalogue, search, onCrea
 
   const list =
     roleId === null ? (
-      <RolesGrid entries={search.entries} emptyDescription={search.emptyDescription} />
+      <RolesGrid
+        entries={search.entries}
+        emptyDescription={search.emptyDescription}
+        onSelect={select}
+      />
     ) : (
       <RolesMasterList
         entries={search.entries}

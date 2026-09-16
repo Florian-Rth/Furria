@@ -75,7 +75,7 @@ export { KkSelectRow } from './KkSelectRow';
 export { KkSessionField } from './KkSessionField';
 export { KkSheet } from './KkSheet/KkSheet';
 export { KkSheetProvider } from './KkSheet/KkSheetProvider';
-export { useKkSheet } from './KkSheet/sheet-store';
+export { useKkSheet, useKkSheetCommands } from './KkSheet/sheet-store';
 export { KkScreen } from './KkShell/KkScreen';
 export { KkShell } from './KkShell/KkShell';
 export type {
@@ -92,6 +92,7 @@ export type {
   KkScreenThread,
   KkScreenThreadTone,
 } from './KkShell/screen-declaration';
+export type { KkScreenMove } from './KkShell/screen-move';
 export type { KkShellDestination } from './KkShell/shell-destination';
 export { KkSinceRow } from './KkSinceRow';
 export { KkSkeletonBlock } from './KkSkeletonBlock';
@@ -113,9 +114,11 @@ export { KkTitleHeader } from './KkTitleHeader';
 export { KkTwoToneHeadline } from './KkTwoToneHeadline';
 export { KkVisuallyHidden } from './KkVisuallyHidden';
 export type { KkLinkSearch, KkLinkSearchValues } from './kk-link-search';
+export { kkMotion } from './kk-motion';
 export type { KkSx } from './kk-sx';
 export type { KkLetterIndexEntry } from './letter-index-cells';
 export type { KkLetterIndexVariant } from './letter-index-variant';
+export type { KkLetterPace } from './letter-pace';
 export { PageLayout } from './PageLayout/PageLayout';
 export type { KkPhotoOrientation } from './photo-frame';
 export { KK_DARK_SCHEME_ATTRIBUTE, KK_DESKTOP_BREAKPOINT, kkTheme } from './theme';

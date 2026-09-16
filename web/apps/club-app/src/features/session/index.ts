@@ -34,6 +34,7 @@ export { usePermissions } from './hooks/use-permissions';
 export type { ReturnFocus } from './hooks/use-return-focus';
 export { useReturnFocus } from './hooks/use-return-focus';
 export { useScreenSearch } from './hooks/use-screen-search';
+export { useScreenTrail } from './hooks/use-screen-trail';
 export { useSearchQuery } from './hooks/use-search-query';
 export { useSessionSnapshot } from './hooks/use-session-snapshot';
 export { AppSearchSchema } from './schemas';

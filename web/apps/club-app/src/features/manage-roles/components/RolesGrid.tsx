@@ -10,9 +10,10 @@ const CARD_SIZE = { xs: 12, sm: 6, desktop: 4 };
 interface RolesGridProps {
   entries: readonly RoleMasterEntry[];
   emptyDescription: string;
+  onSelect: (roleId: number) => void;
 }
 
-export const RolesGrid: FC<RolesGridProps> = ({ entries, emptyDescription }) => {
+export const RolesGrid: FC<RolesGridProps> = ({ entries, emptyDescription, onSelect }) => {
   if (entries.length === 0) {
     return (
       <KkPanel variant="block">
@@ -25,7 +26,12 @@ export const RolesGrid: FC<RolesGridProps> = ({ entries, emptyDescription }) => 
     <Grid container spacing={{ xs: 2, desktop: 2.5 }} sx={{ minWidth: 0 }}>
       {entries.map((entry) => (
         <Grid key={entry.roleId} size={CARD_SIZE} sx={{ minWidth: 0 }}>
-          <RoleCard entry={entry} />
+          <RoleCard
+            entry={entry}
+            onSelect={() => {
+              onSelect(entry.roleId);
+            }}
+          />
         </Grid>
       ))}
     </Grid>

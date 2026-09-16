@@ -56,9 +56,14 @@ export const ManagedGroupsView: FC<ManagedGroupsViewProps> = ({ groups, listing 
       groups={listing.visible}
       selectedId={selection.groupId}
       isFiltered={listing.isFiltered}
+      onSelect={selection.select}
     />
   ) : (
-    <ManagedGroupsGrid groups={listing.visible} isFiltered={listing.isFiltered} />
+    <ManagedGroupsGrid
+      groups={listing.visible}
+      isFiltered={listing.isFiltered}
+      onSelect={selection.select}
+    />
   );
 
   return (

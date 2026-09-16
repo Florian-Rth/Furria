@@ -1,10 +1,13 @@
 import Stack from '@mui/material/Stack';
 import type { FC, PropsWithChildren } from 'react';
 import { safeArea, safeAreaInset } from '../../../internal/safe-area';
+import { kkTokens } from '../../../tokens';
+import { arrivalCascadeOf } from '../logic/arrival-cascade';
 import { MAIN_ELEMENT_ID } from '../main-element-id';
 
 const TRACK_PADDING_X = 2.5;
-const TRACK_GAP = 3;
+const ARRIVING_BLOCK = '& [data-kk-shell-entrance] > * > *';
+const ARRIVAL_CASCADE = arrivalCascadeOf(ARRIVING_BLOCK, kkTokens.shell.screen.arrivalBlocks);
 
 interface KkShellTrackProps extends PropsWithChildren {
   headClearance: number;
@@ -31,7 +34,8 @@ export const KkShellTrack: FC<KkShellTrackProps> = ({
       pb: safeArea('bottom', footClearance),
       pl: `calc(${safeAreaInset('left')} + ${theme.spacing(TRACK_PADDING_X)})`,
       pr: `calc(${safeAreaInset('right')} + ${theme.spacing(TRACK_PADDING_X)} + ${indexClearance}px)`,
-      gap: TRACK_GAP,
+      transition: kkTokens.motion.clearance,
+      ...ARRIVAL_CASCADE,
     })}
   >
     {children}

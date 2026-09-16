@@ -13,6 +13,7 @@ import { useKkShell } from './internal/logic/shell-context';
 import { KkShellActionBar } from './internal/ui/KkShellActionBar';
 import { KkShellBar } from './internal/ui/KkShellBar';
 import type { KkShellBarLead } from './internal/ui/KkShellBarLeading';
+import { KkShellEntrance } from './internal/ui/KkShellEntrance';
 import { KkShellNav } from './internal/ui/KkShellNav';
 import { KkShellNotice } from './internal/ui/KkShellNotice';
 import { KkShellToolRow } from './internal/ui/KkShellToolRow';
@@ -50,11 +51,11 @@ export const KkScreen: FC<KkScreenProps> = ({
   thread,
   children,
 }) => {
-  const { keyboardInset } = useKkShell();
+  const { keyboardInset, path, move } = useKkShell();
   const lead: KkShellBarLead = header === undefined ? 'title' : 'brand';
   const searching = search !== undefined && search.query !== null;
   const showsTools = tools !== undefined && !searching;
-  const toolRow = showsTools ? <KkShellToolRow>{tools}</KkShellToolRow> : null;
+  const toolRow = <KkShellToolRow open={showsTools}>{tools}</KkShellToolRow>;
   const nav = section === undefined ? null : <KkShellNav section={section} />;
   const actionBar = action === undefined ? null : <KkShellActionBar action={action} />;
   const notice = kind === 'fullscreen' ? null : <KkShellNotice />;
@@ -101,8 +102,10 @@ export const KkScreen: FC<KkScreenProps> = ({
         footClearance={footClearance}
         indexClearance={indexClearance}
       >
-        <KkShellHeader>{header}</KkShellHeader>
-        {children}
+        <KkShellEntrance path={path} move={move}>
+          <KkShellHeader>{header}</KkShellHeader>
+          {children}
+        </KkShellEntrance>
       </KkShellTrack>
       {letterIndex}
       <KkShellFoot raise={keyboardInset}>

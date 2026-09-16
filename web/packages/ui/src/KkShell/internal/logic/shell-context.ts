@@ -1,5 +1,6 @@
 import type { ElementType } from 'react';
 import { createContext, useContext } from 'react';
+import type { KkScreenMove } from '../../screen-move';
 import type { KkShellDestination } from '../../shell-destination';
 import type { KkHandover } from './handover';
 
@@ -9,6 +10,8 @@ export interface KkShellState {
   link: ElementType;
   destinations: readonly KkShellDestination[];
   keyboardInset: number;
+  path: string;
+  move: KkScreenMove;
 }
 
 export const KkShellContext = createContext<KkShellState | null>(null);

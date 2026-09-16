@@ -1,4 +1,4 @@
-import type { KkFilterOption, KkLetterIndexEntry } from '@furria/ui';
+import type { KkFilterOption, KkLetterIndexEntry, KkLetterPace } from '@furria/ui';
 import { useState } from 'react';
 import { useSearchQuery } from '@/features/session';
 import type { MembershipState } from '@/lib/api/schemas';
@@ -20,7 +20,7 @@ export interface PersonsSearch {
   state: string;
   selectState: (id: string) => void;
   letter: string | undefined;
-  jumpTo: (letter: string) => void;
+  jumpTo: (letter: string, pace: KkLetterPace) => void;
   sections: PersonLetterSection[];
   visibleCount: number;
   totals: Record<MembershipState, number>;
@@ -37,9 +37,9 @@ export const usePersonsSearch = (persons: readonly PersonSummary[]): PersonsSear
   const sections = groupPersonsByLetter(visible);
   const position = useLetterPosition(toLetterAnchors(sections));
 
-  const jumpTo = (target: string): void => {
+  const jumpTo = (target: string, pace: KkLetterPace): void => {
     position.markLetter(target);
-    scrollElementIntoView(document.getElementById(toLetterAnchorId(target)), 'start');
+    scrollElementIntoView(document.getElementById(toLetterAnchorId(target)), 'start', pace);
   };
 
   return {

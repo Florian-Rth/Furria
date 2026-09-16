@@ -173,6 +173,9 @@ importers:
       date-fns:
         specifier: 'catalog:'
         version: 4.4.0
+      motion:
+        specifier: 'catalog:'
+        version: 12.42.2(@emotion/is-prop-valid@1.4.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       react:
         specifier: 'catalog:'
         version: 19.2.7

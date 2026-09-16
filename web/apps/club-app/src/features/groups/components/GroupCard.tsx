@@ -1,5 +1,5 @@
 import type { KkSx } from '@furria/ui';
-import { KkChip, KkMeta } from '@furria/ui';
+import { KkChip, KkMeta, useKkSheetCommands } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { toInitials } from '@/lib/initials';
@@ -10,8 +10,6 @@ import { toGroupStandingChips, toPersonUnitLabel, toRecruitingContactLine } from
 import type { GroupSummary } from '../schemas';
 import { GroupCardBody } from './GroupCardBody';
 
-const GROUPS_PATH = '/groups';
-
 interface GroupCardProps {
   group: GroupSummary;
   standing?: GroupStanding;
@@ -19,7 +17,13 @@ interface GroupCardProps {
 }
 
 export const GroupCard: FC<GroupCardProps> = ({ group, standing, sx }) => {
+  const sheet = useKkSheetCommands();
   const peek = toPeekId('group', group.groupId);
+
+  const openPeek = (): void => {
+    sheet.open(peek);
+  };
+
   const openness = toRecruitingChip(group.isRecruiting);
   const unitLabel = toPersonUnitLabel(group.memberCount);
   const standingChips = toGroupStandingChips(standing);
@@ -54,9 +58,7 @@ export const GroupCard: FC<GroupCardProps> = ({ group, standing, sx }) => {
       total={group.memberCount}
       chips={chips}
       footer={contactLine}
-      to={GROUPS_PATH}
-      search={(previous) => ({ ...previous, sheet: peek })}
-      resetScroll={false}
+      onSelect={openPeek}
       sx={sx}
     />
   );
