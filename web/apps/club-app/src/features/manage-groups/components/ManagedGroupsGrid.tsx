@@ -11,9 +11,10 @@ const FULL_HEIGHT = { height: '100%' } as const;
 interface ManagedGroupsGridProps {
   groups: readonly ManagedGroupSummary[];
   isFiltered: boolean;
+  onSelect: (groupId: number) => void;
 }
 
-export const ManagedGroupsGrid: FC<ManagedGroupsGridProps> = ({ groups, isFiltered }) => {
+export const ManagedGroupsGrid: FC<ManagedGroupsGridProps> = ({ groups, isFiltered, onSelect }) => {
   if (groups.length === 0) {
     const empty = isFiltered ? MANAGED_GROUPS_EMPTY.filtered : MANAGED_GROUPS_EMPTY.cold;
 
@@ -28,7 +29,13 @@ export const ManagedGroupsGrid: FC<ManagedGroupsGridProps> = ({ groups, isFilter
     <Grid container spacing={{ xs: 2, desktop: 2.5 }} sx={{ minWidth: 0 }}>
       {groups.map((group) => (
         <Grid key={group.groupId} size={CARD_SIZE} sx={{ minWidth: 0 }}>
-          <ManagedGroupCard group={group} sx={FULL_HEIGHT} />
+          <ManagedGroupCard
+            group={group}
+            onSelect={() => {
+              onSelect(group.groupId);
+            }}
+            sx={FULL_HEIGHT}
+          />
         </Grid>
       ))}
     </Grid>

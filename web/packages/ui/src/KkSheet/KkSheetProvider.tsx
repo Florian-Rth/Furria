@@ -1,5 +1,5 @@
 import type { FC, PropsWithChildren } from 'react';
-import { KkSheetContext } from './sheet-store';
+import { KkSheetCommandsContext, KkSheetOpenContext } from './sheet-store';
 
 interface KkSheetProviderProps extends PropsWithChildren {
   openSheetId: string | null;
@@ -13,7 +13,7 @@ export const KkSheetProvider: FC<KkSheetProviderProps> = ({
   onClose,
   children,
 }) => (
-  <KkSheetContext.Provider value={{ openSheetId, open: onOpen, close: onClose }}>
-    {children}
-  </KkSheetContext.Provider>
+  <KkSheetCommandsContext.Provider value={{ open: onOpen, close: onClose }}>
+    <KkSheetOpenContext.Provider value={openSheetId}>{children}</KkSheetOpenContext.Provider>
+  </KkSheetCommandsContext.Provider>
 );

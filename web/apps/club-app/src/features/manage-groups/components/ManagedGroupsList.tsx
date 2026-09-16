@@ -8,12 +8,14 @@ interface ManagedGroupsListProps {
   groups: readonly ManagedGroupSummary[];
   selectedId: number | null;
   isFiltered: boolean;
+  onSelect: (groupId: number) => void;
 }
 
 export const ManagedGroupsList: FC<ManagedGroupsListProps> = ({
   groups,
   selectedId,
   isFiltered,
+  onSelect,
 }) => {
   if (groups.length === 0) {
     const empty = isFiltered ? MANAGED_GROUPS_EMPTY.filtered : MANAGED_GROUPS_EMPTY.cold;
@@ -32,6 +34,9 @@ export const ManagedGroupsList: FC<ManagedGroupsListProps> = ({
           key={group.groupId}
           group={group}
           selected={group.groupId === selectedId}
+          onSelect={() => {
+            onSelect(group.groupId);
+          }}
         />
       ))}
     </KkPanel>

@@ -75,7 +75,7 @@ export { KkSelectRow } from './KkSelectRow';
 export { KkSessionField } from './KkSessionField';
 export { KkSheet } from './KkSheet/KkSheet';
 export { KkSheetProvider } from './KkSheet/KkSheetProvider';
-export { useKkSheet } from './KkSheet/sheet-store';
+export { useKkSheet, useKkSheetCommands } from './KkSheet/sheet-store';
 export { KkScreen } from './KkShell/KkScreen';
 export { KkShell } from './KkShell/KkShell';
 export type {

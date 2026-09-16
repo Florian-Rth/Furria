@@ -8,14 +8,13 @@ import { toInitials } from '@/lib/initials';
 import { toManagedGroupChips } from '../manage-groups-labels';
 import type { ManagedGroupSummary } from '../schemas';
 
-const MANAGE_GROUPS_PATH = '/manage/groups';
-
 interface ManagedGroupCardProps {
   group: ManagedGroupSummary;
+  onSelect: () => void;
   sx?: KkSx;
 }
 
-export const ManagedGroupCard: FC<ManagedGroupCardProps> = ({ group, sx }) => {
+export const ManagedGroupCard: FC<ManagedGroupCardProps> = ({ group, onSelect, sx }) => {
   const { status, openness } = toManagedGroupChips(group);
   const isArchived = group.archivedOn !== null;
   const adminInitials = group.admins.map((person) => toInitials(person.firstName, person.lastName));
@@ -48,8 +47,7 @@ export const ManagedGroupCard: FC<ManagedGroupCardProps> = ({ group, sx }) => {
       footNote={GROUP_SECTION_TITLES.admins}
       chips={chips}
       dimmed={isArchived}
-      to={MANAGE_GROUPS_PATH}
-      search={(previous) => ({ ...previous, group: group.groupId })}
+      onSelect={onSelect}
       sx={sx}
     />
   );

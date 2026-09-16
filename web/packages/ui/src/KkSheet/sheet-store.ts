@@ -1,19 +1,34 @@
 import { createContext, useContext } from 'react';
 
-export interface KkSheetManager {
-  openSheetId: string | null;
+export interface KkSheetCommands {
   open: (sheetId: string) => void;
   close: () => void;
 }
 
-export const KkSheetContext = createContext<KkSheetManager | null>(null);
+export interface KkSheetManager extends KkSheetCommands {
+  openSheetId: string | null;
+}
+
+export const KkSheetOpenContext = createContext<string | null | undefined>(undefined);
+export const KkSheetCommandsContext = createContext<KkSheetCommands | null>(null);
+
+export const useKkSheetCommands = (): KkSheetCommands => {
+  const commands = useContext(KkSheetCommandsContext);
+
+  if (commands === null) {
+    throw new Error('useKkSheetCommands must be used inside KkSheetProvider.');
+  }
+
+  return commands;
+};
 
 export const useKkSheet = (): KkSheetManager => {
-  const manager = useContext(KkSheetContext);
+  const openSheetId = useContext(KkSheetOpenContext);
+  const commands = useKkSheetCommands();
 
-  if (manager === null) {
+  if (openSheetId === undefined) {
     throw new Error('useKkSheet must be used inside KkSheetProvider.');
   }
 
-  return manager;
+  return { openSheetId, ...commands };
 };

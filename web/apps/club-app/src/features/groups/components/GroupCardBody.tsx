@@ -1,7 +1,6 @@
-import type { KkLinkSearch, KkSx } from '@furria/ui';
+import type { KkSx } from '@furria/ui';
 import { KkAvatarStack, KkEyebrow, KkHeading, KkMeta, KkPanel, KkText } from '@furria/ui';
 import Stack from '@mui/material/Stack';
-import { Link } from '@tanstack/react-router';
 import type { FC, ReactNode } from 'react';
 
 const DESCRIPTION_LINES = 3;
@@ -19,10 +18,7 @@ interface GroupCardBodyProps {
   chips?: ReactNode;
   footer?: ReactNode;
   dimmed?: boolean;
-  to: string;
-  params?: Record<string, string>;
-  search?: KkLinkSearch;
-  resetScroll?: boolean;
+  onSelect: () => void;
   sx?: KkSx;
 }
 
@@ -38,10 +34,7 @@ export const GroupCardBody: FC<GroupCardBodyProps> = ({
   chips,
   footer,
   dimmed,
-  to,
-  params,
-  search,
-  resetScroll,
+  onSelect,
   sx,
 }) => {
   const text = description.trim();
@@ -79,16 +72,7 @@ export const GroupCardBody: FC<GroupCardBodyProps> = ({
     );
 
   return (
-    <KkPanel
-      variant="block"
-      dimmed={dimmed}
-      component={Link}
-      to={to}
-      params={params}
-      search={search}
-      resetScroll={resetScroll}
-      sx={sx}
-    >
+    <KkPanel variant="block" dimmed={dimmed} onClick={onSelect} sx={sx}>
       <Stack sx={{ gap: 1.25, minWidth: 0, height: '100%' }}>
         <Stack direction="row" sx={{ alignItems: 'flex-start', gap: 1.5, minWidth: 0 }}>
           <Stack sx={{ gap: 0.875, minWidth: 0, flexGrow: 1, alignItems: 'flex-start' }}>
