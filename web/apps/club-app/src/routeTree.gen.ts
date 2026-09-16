@@ -13,6 +13,19 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppProfileRouteImport } from './routes/_app/profile'
+import { Route as AppMoreRouteImport } from './routes/_app/more'
+import { Route as AppClubRouteImport } from './routes/_app/club'
+import { Route as AppAffiliatedRouteImport } from './routes/_app/_affiliated'
+import { Route as AppMyGroupsIndexRouteImport } from './routes/_app/my-groups.index'
+import { Route as AppMyGroupsGroupIdRouteImport } from './routes/_app/my-groups.$groupId'
+import { Route as AppManageRolesRouteImport } from './routes/_app/manage.roles'
+import { Route as AppManagePersonsRouteImport } from './routes/_app/manage.persons'
+import { Route as AppManageGroupsRouteImport } from './routes/_app/manage.groups'
+import { Route as AppAffiliatedMembersRouteImport } from './routes/_app/_affiliated.members'
+import { Route as AppAffiliatedGroupsRouteImport } from './routes/_app/_affiliated.groups'
+import { Route as AppManagePersonsPersonIdRouteImport } from './routes/_app/manage.persons_.$personId'
+import { Route as AppAffiliatedMembersPersonIdRouteImport } from './routes/_app/_affiliated.members_.$personId'
+import { Route as AppAffiliatedGroupsGroupIdRouteImport } from './routes/_app/_affiliated.groups_.$groupId'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -33,30 +46,182 @@ const AppProfileRoute = AppProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AppRoute,
 } as any)
+const AppMoreRoute = AppMoreRouteImport.update({
+  id: '/more',
+  path: '/more',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppClubRoute = AppClubRouteImport.update({
+  id: '/club',
+  path: '/club',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAffiliatedRoute = AppAffiliatedRouteImport.update({
+  id: '/_affiliated',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMyGroupsIndexRoute = AppMyGroupsIndexRouteImport.update({
+  id: '/my-groups/',
+  path: '/my-groups/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMyGroupsGroupIdRoute = AppMyGroupsGroupIdRouteImport.update({
+  id: '/my-groups/$groupId',
+  path: '/my-groups/$groupId',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppManageRolesRoute = AppManageRolesRouteImport.update({
+  id: '/manage/roles',
+  path: '/manage/roles',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppManagePersonsRoute = AppManagePersonsRouteImport.update({
+  id: '/manage/persons',
+  path: '/manage/persons',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppManageGroupsRoute = AppManageGroupsRouteImport.update({
+  id: '/manage/groups',
+  path: '/manage/groups',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAffiliatedMembersRoute = AppAffiliatedMembersRouteImport.update({
+  id: '/members',
+  path: '/members',
+  getParentRoute: () => AppAffiliatedRoute,
+} as any)
+const AppAffiliatedGroupsRoute = AppAffiliatedGroupsRouteImport.update({
+  id: '/groups',
+  path: '/groups',
+  getParentRoute: () => AppAffiliatedRoute,
+} as any)
+const AppManagePersonsPersonIdRoute =
+  AppManagePersonsPersonIdRouteImport.update({
+    id: '/manage/persons_/$personId',
+    path: '/manage/persons/$personId',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppAffiliatedMembersPersonIdRoute =
+  AppAffiliatedMembersPersonIdRouteImport.update({
+    id: '/members_/$personId',
+    path: '/members/$personId',
+    getParentRoute: () => AppAffiliatedRoute,
+  } as any)
+const AppAffiliatedGroupsGroupIdRoute =
+  AppAffiliatedGroupsGroupIdRouteImport.update({
+    id: '/groups_/$groupId',
+    path: '/groups/$groupId',
+    getParentRoute: () => AppAffiliatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/login': typeof LoginRoute
+  '/club': typeof AppClubRoute
+  '/more': typeof AppMoreRoute
   '/profile': typeof AppProfileRoute
+  '/groups': typeof AppAffiliatedGroupsRoute
+  '/members': typeof AppAffiliatedMembersRoute
+  '/manage/groups': typeof AppManageGroupsRoute
+  '/manage/persons': typeof AppManagePersonsRoute
+  '/manage/roles': typeof AppManageRolesRoute
+  '/my-groups/$groupId': typeof AppMyGroupsGroupIdRoute
+  '/my-groups/': typeof AppMyGroupsIndexRoute
+  '/groups/$groupId': typeof AppAffiliatedGroupsGroupIdRoute
+  '/members/$personId': typeof AppAffiliatedMembersPersonIdRoute
+  '/manage/persons/$personId': typeof AppManagePersonsPersonIdRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
-  '/profile': typeof AppProfileRoute
   '/': typeof AppIndexRoute
+  '/club': typeof AppClubRoute
+  '/more': typeof AppMoreRoute
+  '/profile': typeof AppProfileRoute
+  '/groups': typeof AppAffiliatedGroupsRoute
+  '/members': typeof AppAffiliatedMembersRoute
+  '/manage/groups': typeof AppManageGroupsRoute
+  '/manage/persons': typeof AppManagePersonsRoute
+  '/manage/roles': typeof AppManageRolesRoute
+  '/my-groups/$groupId': typeof AppMyGroupsGroupIdRoute
+  '/my-groups': typeof AppMyGroupsIndexRoute
+  '/groups/$groupId': typeof AppAffiliatedGroupsGroupIdRoute
+  '/members/$personId': typeof AppAffiliatedMembersPersonIdRoute
+  '/manage/persons/$personId': typeof AppManagePersonsPersonIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
+  '/_app/_affiliated': typeof AppAffiliatedRouteWithChildren
+  '/_app/club': typeof AppClubRoute
+  '/_app/more': typeof AppMoreRoute
   '/_app/profile': typeof AppProfileRoute
   '/_app/': typeof AppIndexRoute
+  '/_app/_affiliated/groups': typeof AppAffiliatedGroupsRoute
+  '/_app/_affiliated/members': typeof AppAffiliatedMembersRoute
+  '/_app/manage/groups': typeof AppManageGroupsRoute
+  '/_app/manage/persons': typeof AppManagePersonsRoute
+  '/_app/manage/roles': typeof AppManageRolesRoute
+  '/_app/my-groups/$groupId': typeof AppMyGroupsGroupIdRoute
+  '/_app/my-groups/': typeof AppMyGroupsIndexRoute
+  '/_app/_affiliated/groups_/$groupId': typeof AppAffiliatedGroupsGroupIdRoute
+  '/_app/_affiliated/members_/$personId': typeof AppAffiliatedMembersPersonIdRoute
+  '/_app/manage/persons_/$personId': typeof AppManagePersonsPersonIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/profile'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/club'
+    | '/more'
+    | '/profile'
+    | '/groups'
+    | '/members'
+    | '/manage/groups'
+    | '/manage/persons'
+    | '/manage/roles'
+    | '/my-groups/$groupId'
+    | '/my-groups/'
+    | '/groups/$groupId'
+    | '/members/$personId'
+    | '/manage/persons/$personId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/profile' | '/'
-  id: '__root__' | '/_app' | '/login' | '/_app/profile' | '/_app/'
+  to:
+    | '/login'
+    | '/'
+    | '/club'
+    | '/more'
+    | '/profile'
+    | '/groups'
+    | '/members'
+    | '/manage/groups'
+    | '/manage/persons'
+    | '/manage/roles'
+    | '/my-groups/$groupId'
+    | '/my-groups'
+    | '/groups/$groupId'
+    | '/members/$personId'
+    | '/manage/persons/$personId'
+  id:
+    | '__root__'
+    | '/_app'
+    | '/login'
+    | '/_app/_affiliated'
+    | '/_app/club'
+    | '/_app/more'
+    | '/_app/profile'
+    | '/_app/'
+    | '/_app/_affiliated/groups'
+    | '/_app/_affiliated/members'
+    | '/_app/manage/groups'
+    | '/_app/manage/persons'
+    | '/_app/manage/roles'
+    | '/_app/my-groups/$groupId'
+    | '/_app/my-groups/'
+    | '/_app/_affiliated/groups_/$groupId'
+    | '/_app/_affiliated/members_/$personId'
+    | '/_app/manage/persons_/$personId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -94,17 +259,144 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProfileRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/more': {
+      id: '/_app/more'
+      path: '/more'
+      fullPath: '/more'
+      preLoaderRoute: typeof AppMoreRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/club': {
+      id: '/_app/club'
+      path: '/club'
+      fullPath: '/club'
+      preLoaderRoute: typeof AppClubRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/_affiliated': {
+      id: '/_app/_affiliated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppAffiliatedRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/my-groups/': {
+      id: '/_app/my-groups/'
+      path: '/my-groups'
+      fullPath: '/my-groups/'
+      preLoaderRoute: typeof AppMyGroupsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/my-groups/$groupId': {
+      id: '/_app/my-groups/$groupId'
+      path: '/my-groups/$groupId'
+      fullPath: '/my-groups/$groupId'
+      preLoaderRoute: typeof AppMyGroupsGroupIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/manage/roles': {
+      id: '/_app/manage/roles'
+      path: '/manage/roles'
+      fullPath: '/manage/roles'
+      preLoaderRoute: typeof AppManageRolesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/manage/persons': {
+      id: '/_app/manage/persons'
+      path: '/manage/persons'
+      fullPath: '/manage/persons'
+      preLoaderRoute: typeof AppManagePersonsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/manage/groups': {
+      id: '/_app/manage/groups'
+      path: '/manage/groups'
+      fullPath: '/manage/groups'
+      preLoaderRoute: typeof AppManageGroupsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/_affiliated/members': {
+      id: '/_app/_affiliated/members'
+      path: '/members'
+      fullPath: '/members'
+      preLoaderRoute: typeof AppAffiliatedMembersRouteImport
+      parentRoute: typeof AppAffiliatedRoute
+    }
+    '/_app/_affiliated/groups': {
+      id: '/_app/_affiliated/groups'
+      path: '/groups'
+      fullPath: '/groups'
+      preLoaderRoute: typeof AppAffiliatedGroupsRouteImport
+      parentRoute: typeof AppAffiliatedRoute
+    }
+    '/_app/manage/persons_/$personId': {
+      id: '/_app/manage/persons_/$personId'
+      path: '/manage/persons/$personId'
+      fullPath: '/manage/persons/$personId'
+      preLoaderRoute: typeof AppManagePersonsPersonIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/_affiliated/members_/$personId': {
+      id: '/_app/_affiliated/members_/$personId'
+      path: '/members/$personId'
+      fullPath: '/members/$personId'
+      preLoaderRoute: typeof AppAffiliatedMembersPersonIdRouteImport
+      parentRoute: typeof AppAffiliatedRoute
+    }
+    '/_app/_affiliated/groups_/$groupId': {
+      id: '/_app/_affiliated/groups_/$groupId'
+      path: '/groups/$groupId'
+      fullPath: '/groups/$groupId'
+      preLoaderRoute: typeof AppAffiliatedGroupsGroupIdRouteImport
+      parentRoute: typeof AppAffiliatedRoute
+    }
   }
 }
 
+interface AppAffiliatedRouteChildren {
+  AppAffiliatedGroupsRoute: typeof AppAffiliatedGroupsRoute
+  AppAffiliatedMembersRoute: typeof AppAffiliatedMembersRoute
+  AppAffiliatedGroupsGroupIdRoute: typeof AppAffiliatedGroupsGroupIdRoute
+  AppAffiliatedMembersPersonIdRoute: typeof AppAffiliatedMembersPersonIdRoute
+}
+
+const AppAffiliatedRouteChildren: AppAffiliatedRouteChildren = {
+  AppAffiliatedGroupsRoute: AppAffiliatedGroupsRoute,
+  AppAffiliatedMembersRoute: AppAffiliatedMembersRoute,
+  AppAffiliatedGroupsGroupIdRoute: AppAffiliatedGroupsGroupIdRoute,
+  AppAffiliatedMembersPersonIdRoute: AppAffiliatedMembersPersonIdRoute,
+}
+
+const AppAffiliatedRouteWithChildren = AppAffiliatedRoute._addFileChildren(
+  AppAffiliatedRouteChildren,
+)
+
 interface AppRouteChildren {
+  AppAffiliatedRoute: typeof AppAffiliatedRouteWithChildren
+  AppClubRoute: typeof AppClubRoute
+  AppMoreRoute: typeof AppMoreRoute
   AppProfileRoute: typeof AppProfileRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppManageGroupsRoute: typeof AppManageGroupsRoute
+  AppManagePersonsRoute: typeof AppManagePersonsRoute
+  AppManageRolesRoute: typeof AppManageRolesRoute
+  AppMyGroupsGroupIdRoute: typeof AppMyGroupsGroupIdRoute
+  AppMyGroupsIndexRoute: typeof AppMyGroupsIndexRoute
+  AppManagePersonsPersonIdRoute: typeof AppManagePersonsPersonIdRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAffiliatedRoute: AppAffiliatedRouteWithChildren,
+  AppClubRoute: AppClubRoute,
+  AppMoreRoute: AppMoreRoute,
   AppProfileRoute: AppProfileRoute,
   AppIndexRoute: AppIndexRoute,
+  AppManageGroupsRoute: AppManageGroupsRoute,
+  AppManagePersonsRoute: AppManagePersonsRoute,
+  AppManageRolesRoute: AppManageRolesRoute,
+  AppMyGroupsGroupIdRoute: AppMyGroupsGroupIdRoute,
+  AppMyGroupsIndexRoute: AppMyGroupsIndexRoute,
+  AppManagePersonsPersonIdRoute: AppManagePersonsPersonIdRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

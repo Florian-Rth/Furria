@@ -11,4 +11,7 @@ public static class EndpointPermissionExtensions
         definition.Options(route =>
             route.WithMetadata(new PermissionRequirement { PermissionKey = permissionKey })
         );
+
+    public static void RequireAffiliation(this EndpointDefinition definition) =>
+        definition.Options(route => route.WithMetadata(new AffiliationRequirement()));
 }

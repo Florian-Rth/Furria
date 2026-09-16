@@ -6,12 +6,16 @@ namespace Furria.Api.Authorization;
 
 public static class ClaimsPrincipalExtensions
 {
-    public static int? AccountId(this ClaimsPrincipal principal)
-    {
-        var claim = principal.FindFirstValue(FurriaClaimTypes.AccountId);
+    public static int? AccountId(this ClaimsPrincipal principal) =>
+        NumericClaim(principal, FurriaClaimTypes.AccountId);
 
-        return int.TryParse(claim, CultureInfo.InvariantCulture, out var accountId)
-            ? accountId
-            : null;
+    public static int? PersonId(this ClaimsPrincipal principal) =>
+        NumericClaim(principal, FurriaClaimTypes.PersonId);
+
+    private static int? NumericClaim(ClaimsPrincipal principal, string claimType)
+    {
+        var claim = principal.FindFirstValue(claimType);
+
+        return int.TryParse(claim, CultureInfo.InvariantCulture, out var value) ? value : null;
     }
 }

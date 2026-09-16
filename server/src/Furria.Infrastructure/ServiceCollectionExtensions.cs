@@ -1,5 +1,9 @@
+using Furria.Infrastructure.Authorization;
+using Furria.Infrastructure.Groups;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Persistence;
+using Furria.Infrastructure.Registry;
+using Furria.Infrastructure.Roles;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -14,13 +18,18 @@ public static class ServiceCollectionExtensions
         IConfiguration configuration
     )
     {
-        services.AddDbContext<AppDbContext>(options =>
-            options
-                .UseNpgsql(
-                    configuration.GetConnectionString(AppDbContext.ConnectionName),
-                    npgsql => npgsql.MigrationsHistoryTable("__ef_migrations_history")
-                )
-                .UseSnakeCaseNamingConvention()
+        services.AddSingleton<AuditTimestampInterceptor>();
+        services.AddDbContext<AppDbContext>(
+            (serviceProvider, options) =>
+                options
+                    .UseNpgsql(
+                        configuration.GetConnectionString(AppDbContext.ConnectionName),
+                        npgsql => npgsql.MigrationsHistoryTable("__ef_migrations_history")
+                    )
+                    .UseSnakeCaseNamingConvention()
+                    .AddInterceptors(
+                        serviceProvider.GetRequiredService<AuditTimestampInterceptor>()
+                    )
         );
 
         services
@@ -40,6 +49,13 @@ public static class ServiceCollectionExtensions
         services.AddScoped<AccessTokenService>();
         services.AddScoped<RefreshTokenService>();
         services.AddScoped<AccountService>();
+        services.AddScoped<PermissionAuthorizer>();
+        services.AddScoped<AffiliationLookup>();
+        services.AddScoped<PersonService>();
+        services.AddScoped<MembershipService>();
+        services.AddScoped<FeeReductionService>();
+        services.AddScoped<GroupService>();
+        services.AddScoped<RoleService>();
 
         services.AddHostedService<DatabaseMigrator>();
         services.AddHostedService<BootstrapAdminSeeder>();

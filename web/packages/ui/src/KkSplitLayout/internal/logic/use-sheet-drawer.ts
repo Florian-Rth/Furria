@@ -10,9 +10,8 @@ import type { PointerEvent as ReactPointerEvent, RefObject } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { SHEET_PEEK_HEIGHT } from './sheet-metrics';
 import { resolveSheetSnap } from './sheet-snap';
-import { useSheetLift } from './split-layout-sheet-context';
+import { useSheetState } from './split-layout-sheet-context';
 
-const OPEN_DELAY_MS = 2400;
 const OFFSCREEN_Y = 4000;
 const SPRING = { type: 'spring', stiffness: 240, damping: 32, mass: 0.9 } as const;
 const INSTANT = { duration: 0 } as const;
@@ -29,20 +28,21 @@ interface SheetDrawer {
 }
 
 export const useSheetDrawer = (): SheetDrawer => {
-  const sheetLift = useSheetLift();
+  const sheet = useSheetState();
   const reducedMotion = useReducedMotion();
   const dragControls = useDragControls();
   const sheetRef = useRef<HTMLDivElement>(null);
-  const hasScheduledRef = useRef(false);
+  const hasOpenedRef = useRef(false);
   const didDragRef = useRef(false);
   const y = useMotionValue(OFFSCREEN_Y);
   const [sheetHeight, setSheetHeight] = useState(0);
-  const [isOpen, setIsOpen] = useState(false);
+  const isOpen = sheet.isSheetOpen;
+  const setOpen = sheet.setSheetOpen;
   const travel = Math.max(0, sheetHeight - SHEET_PEEK_HEIGHT);
   const transition = reducedMotion === true ? INSTANT : SPRING;
 
   useMotionValueEvent(y, 'change', (value) => {
-    sheetLift.set(`${Math.max(0, sheetHeight - value)}px`);
+    sheet.lift.set(`${Math.max(0, sheetHeight - value)}px`);
   });
 
   useEffect(() => {
@@ -71,24 +71,17 @@ export const useSheetDrawer = (): SheetDrawer => {
   }, [isOpen, travel, y]);
 
   useEffect(() => {
-    if (sheetHeight === 0 || hasScheduledRef.current) {
+    if (sheetHeight === 0 || hasOpenedRef.current) {
       return;
     }
 
-    hasScheduledRef.current = true;
-
-    const timer = window.setTimeout(() => {
-      setIsOpen(true);
-      void animate(y, 0, transition);
-    }, OPEN_DELAY_MS);
-
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [sheetHeight, transition, y]);
+    hasOpenedRef.current = true;
+    setOpen(true);
+    void animate(y, 0, transition);
+  }, [sheetHeight, setOpen, transition, y]);
 
   const settle = (snap: 'open' | 'closed'): void => {
-    setIsOpen(snap === 'open');
+    setOpen(snap === 'open');
     void animate(y, snap === 'open' ? 0 : travel, transition);
   };
 

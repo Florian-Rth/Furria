@@ -23,3 +23,28 @@ export class ServerFailureError extends Error {
     this.status = status;
   }
 }
+
+export interface ApiFieldFailure {
+  field: string;
+  message: string;
+}
+
+export type RequestFailedStatus = 400 | 409 | 422;
+
+const NEUTRAL_FAILURE_MESSAGE = 'Das hat der Server so nicht angenommen.';
+
+export class RequestFailedError extends Error {
+  readonly status: RequestFailedStatus;
+  readonly failures: readonly ApiFieldFailure[];
+
+  constructor(status: RequestFailedStatus, failures: readonly ApiFieldFailure[]) {
+    super(`The API refused the request with status ${status}.`);
+    this.name = 'RequestFailedError';
+    this.status = status;
+    this.failures = failures;
+  }
+
+  get firstMessage(): string {
+    return this.failures[0]?.message ?? NEUTRAL_FAILURE_MESSAGE;
+  }
+}

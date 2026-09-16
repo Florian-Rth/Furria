@@ -89,7 +89,7 @@ export const KkCardBadge: FC<KkCardBadgeProps> = ({ corner = 'topLeft', children
       fontFamily: kkTokens.font.display,
       fontSize: '1.125rem',
       lineHeight: 1.15,
-      letterSpacing: '0.01em',
+      letterSpacing: kkTokens.type.tracking.tight,
       px: 1.25,
       py: 0.75,
       borderStyle: 'solid',

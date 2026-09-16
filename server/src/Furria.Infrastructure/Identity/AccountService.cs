@@ -1,5 +1,7 @@
 using Furria.Application.Identity;
 using Furria.Application.Results;
+using Furria.Core.Club;
+using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +12,7 @@ public sealed class AccountService
 {
     private const string RejectedCredentialsMessage = "Email or password is not valid.";
     private const string RejectedSessionMessage = "The session could not be refreshed.";
+    private const string EndedSessionMessage = "The session is no longer valid.";
     private const string DecoyPassword = "decoy-password-that-no-account-ever-uses";
 
     private static readonly Account DecoyAccount = new();
@@ -21,13 +24,17 @@ public sealed class AccountService
     private readonly SignInManager<Account> _signInManager;
     private readonly RefreshTokenService _refreshTokenService;
     private readonly AccessTokenService _accessTokenService;
+    private readonly PermissionAuthorizer _permissionAuthorizer;
+    private readonly TimeProvider _timeProvider;
 
     public AccountService(
         AppDbContext dbContext,
         UserManager<Account> userManager,
         SignInManager<Account> signInManager,
         RefreshTokenService refreshTokenService,
-        AccessTokenService accessTokenService
+        AccessTokenService accessTokenService,
+        PermissionAuthorizer permissionAuthorizer,
+        TimeProvider timeProvider
     )
     {
         _dbContext = dbContext;
@@ -35,6 +42,8 @@ public sealed class AccountService
         _signInManager = signInManager;
         _refreshTokenService = refreshTokenService;
         _accessTokenService = accessTokenService;
+        _permissionAuthorizer = permissionAuthorizer;
+        _timeProvider = timeProvider;
     }
 
     public async Task<Result<SessionTokensDetails>> LoginAsync(
@@ -99,37 +108,56 @@ public sealed class AccountService
 
     public async Task<Result<AccountDetails>> GetDetailsAsync(int accountId, CancellationToken ct)
     {
-        var details = await _dbContext
+        var row = await _dbContext
             .Users.AsNoTracking()
             .Where(account => account.Id == accountId)
-            .Select(account => new AccountDetails
-            {
-                Id = account.Id,
-                Email = account.Email ?? "",
-                Person = new PersonDetails
+            .Select(account => new AccountRow(
+                account.Id,
+                account.Email ?? "",
+                account.IsDisabled,
+                new PersonDetails
                 {
                     Id = account.Person!.Id,
                     FirstName = account.Person.FirstName,
                     LastName = account.Person.LastName,
                     Email = account.Person.Email,
                     Phone = account.Person.Phone,
+                    Street = account.Person.Street,
+                    Zip = account.Person.Zip,
+                    City = account.Person.City,
+                    BirthDate = account.Person.BirthDate,
+                    ContactVisibleToMembers = account.Person.ContactVisibleToMembers,
                 },
-                Membership =
-                    account.Person.Membership == null
-                        ? null
-                        : new MembershipDetails
-                        {
-                            Type = account.Person.Membership.Type,
-                            Status = account.Person.Membership.Status,
-                            StartedAt = account.Person.Membership.StartedAt,
-                            EndedAt = account.Person.Membership.EndedAt,
-                        },
-            })
+                account
+                    .Person.Memberships.Select(membership => new MembershipRow(
+                        membership.Id,
+                        membership.StartedOn,
+                        membership.EndedOn,
+                        membership
+                            .Pauses.Select(pause => new MembershipPauseDetails
+                            {
+                                PauseId = pause.Id,
+                                FirstSessionYear = pause.FirstSessionYear,
+                                LastSessionYear = pause.LastSessionYear,
+                            })
+                            .ToList()
+                    ))
+                    .ToList()
+            ))
             .SingleOrDefaultAsync(ct);
 
-        return details is null
-            ? Result<AccountDetails>.NotFound("The account no longer exists.")
-            : Result<AccountDetails>.Success(details);
+        if (row is null)
+            return Result<AccountDetails>.NotFound("The account no longer exists.");
+
+        if (row.IsDisabled)
+            return Result<AccountDetails>.Unauthorized(EndedSessionMessage);
+
+        var isAffiliated = await _permissionAuthorizer.IsAffiliatedAsync(accountId, ct);
+        var permissionKeys = await _permissionAuthorizer.GrantedKeysAsync(accountId, ct);
+
+        return Result<AccountDetails>.Success(
+            ToDetails(row, ClubClock.Today(_timeProvider), isAffiliated, Ordered(permissionKeys))
+        );
     }
 
     private void BurnAPasswordCheck(string password)
@@ -138,6 +166,34 @@ public sealed class AccountService
         _decoyPasswordHash ??= hasher.HashPassword(DecoyAccount, DecoyPassword);
         hasher.VerifyHashedPassword(DecoyAccount, _decoyPasswordHash, password);
     }
+
+    private static AccountDetails ToDetails(
+        AccountRow row,
+        DateOnly today,
+        bool isAffiliated,
+        IReadOnlyList<string> permissionKeys
+    ) =>
+        new()
+        {
+            Id = row.Id,
+            Email = row.Email,
+            Person = row.Person,
+            Membership = MembershipChainDetails.Of(ToPeriods(row.Memberships, today), today),
+            IsAffiliated = isAffiliated,
+            PermissionKeys = permissionKeys,
+        };
+
+    private static IReadOnlyList<string> Ordered(IReadOnlyCollection<string> permissionKeys) =>
+        [.. permissionKeys.Order(StringComparer.Ordinal)];
+
+    private static IReadOnlyList<MembershipDetails> ToPeriods(
+        IReadOnlyList<MembershipRow> rows,
+        DateOnly today
+    ) =>
+        rows.Select(row =>
+                MembershipDetails.Of(row.Id, row.StartedOn, row.EndedOn, row.Pauses, today)
+            )
+            .ToList();
 
     private static SessionTokensDetails Combine(
         AccessTokenDetails access,
@@ -180,4 +236,19 @@ public sealed class AccountService
         var access = _accessTokenService.Issue(account.Id, account.PersonId);
         return Combine(access, refresh);
     }
+
+    private sealed record AccountRow(
+        int Id,
+        string Email,
+        bool IsDisabled,
+        PersonDetails Person,
+        IReadOnlyList<MembershipRow> Memberships
+    );
+
+    private sealed record MembershipRow(
+        int Id,
+        DateOnly StartedOn,
+        DateOnly? EndedOn,
+        IReadOnlyList<MembershipPauseDetails> Pauses
+    );
 }

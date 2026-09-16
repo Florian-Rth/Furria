@@ -1,4 +1,4 @@
-import { KkIconButton } from '@furria/ui';
+import { KkButton, KkIcon } from '@furria/ui';
 import type { FC } from 'react';
 import { useSignOut } from '../hooks/use-sign-out';
 
@@ -8,12 +8,15 @@ export const AppSignOutButton: FC = () => {
   const { signOut, isSigningOut } = useSignOut();
 
   return (
-    <KkIconButton
-      label={SIGN_OUT_LABEL}
-      icon="logout"
-      size="small"
+    <KkButton
+      variant="outlined"
+      fullWidth
+      startIcon={<KkIcon name="logout" size="small" />}
+      loading={isSigningOut}
       disabled={isSigningOut}
       onClick={signOut}
-    />
+    >
+      {SIGN_OUT_LABEL}
+    </KkButton>
   );
 };

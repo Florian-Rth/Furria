@@ -1,7 +1,8 @@
 using FastEndpoints;
 using Furria.Api.Authorization;
+using Furria.Api.Results;
 using Furria.Application.Identity;
-using Furria.Core.Identity;
+using Furria.Core.Club;
 using Furria.Infrastructure.Identity;
 
 namespace Furria.Api.Endpoints.Auth;
@@ -32,7 +33,7 @@ public sealed class GetMe : EndpointWithoutRequest<GetMeResponse>
         var account = await _accountService.GetDetailsAsync(accountId.Value, ct);
         if (!account.IsSuccess)
         {
-            await Send.NotFoundAsync(ct);
+            await HttpContext.Response.SendFailureAsync(account.Error, ct);
             return;
         }
 
@@ -45,10 +46,12 @@ public sealed class GetMe : EndpointWithoutRequest<GetMeResponse>
             AccountId = account.Id,
             Email = account.Email,
             Person = ToDto(account.Person),
-            Membership = account.Membership is null ? null : ToDto(account.Membership),
+            Membership = ToDto(account.Membership),
+            IsAffiliated = account.IsAffiliated,
+            PermissionKeys = account.PermissionKeys,
         };
 
-    private static AccountPersonDetailsDto ToDto(PersonDetails person) =>
+    private static MePersonDto ToDto(PersonDetails person) =>
         new()
         {
             Id = person.Id,
@@ -56,15 +59,20 @@ public sealed class GetMe : EndpointWithoutRequest<GetMeResponse>
             LastName = person.LastName,
             Email = person.Email,
             Phone = person.Phone,
+            Street = person.Street,
+            Zip = person.Zip,
+            City = person.City,
+            BirthDate = person.BirthDate,
+            ContactVisibleToMembers = person.ContactVisibleToMembers,
         };
 
-    private static AccountMembershipDetailsDto ToDto(MembershipDetails membership) =>
+    private static MeMembershipDto ToDto(MembershipChainDetails membership) =>
         new()
         {
-            Type = membership.Type,
-            Status = membership.Status,
-            StartedAt = membership.StartedAt,
-            EndedAt = membership.EndedAt,
+            State = membership.State,
+            MemberSince = membership.MemberSince,
+            CurrentStartedOn = membership.Current?.StartedOn,
+            CurrentEndedOn = membership.Current?.EndedOn,
         };
 }
 
@@ -74,12 +82,16 @@ public sealed record GetMeResponse
 
     public required string Email { get; init; }
 
-    public required AccountPersonDetailsDto Person { get; init; }
+    public required MePersonDto Person { get; init; }
 
-    public required AccountMembershipDetailsDto? Membership { get; init; }
+    public required MeMembershipDto Membership { get; init; }
+
+    public required bool IsAffiliated { get; init; }
+
+    public required IReadOnlyList<string> PermissionKeys { get; init; }
 }
 
-public sealed record AccountPersonDetailsDto
+public sealed record MePersonDto
 {
     public required int Id { get; init; }
 
@@ -90,15 +102,25 @@ public sealed record AccountPersonDetailsDto
     public required string? Email { get; init; }
 
     public required string? Phone { get; init; }
+
+    public required string? Street { get; init; }
+
+    public required string? Zip { get; init; }
+
+    public required string? City { get; init; }
+
+    public required DateOnly? BirthDate { get; init; }
+
+    public required bool ContactVisibleToMembers { get; init; }
 }
 
-public sealed record AccountMembershipDetailsDto
+public sealed record MeMembershipDto
 {
-    public required MembershipType Type { get; init; }
+    public required MembershipState State { get; init; }
 
-    public required MembershipStatus Status { get; init; }
+    public required DateOnly? MemberSince { get; init; }
 
-    public required DateOnly StartedAt { get; init; }
+    public required DateOnly? CurrentStartedOn { get; init; }
 
-    public required DateOnly? EndedAt { get; init; }
+    public required DateOnly? CurrentEndedOn { get; init; }
 }

@@ -1,7 +1,13 @@
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
+import { applyScheme, schemeFill } from './internal/scheme-paint';
 import { kkTokens } from './tokens';
+
+const placeholderSurface = schemeFill(
+  kkTokens.photo.placeholderSurface,
+  kkTokens.photo.placeholderSurfaceDark,
+);
 
 interface KkPhotoPlaceholderProps {
   label: string;
@@ -25,16 +31,18 @@ export const KkPhotoPlaceholder: FC<KkPhotoPlaceholderProps> = ({
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: fill ? 0 : `${kkTokens.radius.base}px`,
-        background: `repeating-linear-gradient(135deg, color-mix(in srgb, ${tintColor} 15%, transparent) 0 11px, color-mix(in srgb, ${tintColor} 6%, transparent) 11px 22px), ${kkTokens.photo.placeholderSurface}`,
+        backgroundImage: `repeating-linear-gradient(135deg, color-mix(in srgb, ${tintColor} 15%, transparent) 0 11px, color-mix(in srgb, ${tintColor} 6%, transparent) 11px 22px)`,
+        ...applyScheme(theme, placeholderSurface),
       };
     }}
   >
     <Typography
       component="span"
       sx={(theme) => ({
-        fontFamily: 'ui-monospace, monospace',
-        fontSize: '0.6875rem',
-        letterSpacing: '0.04em',
+        fontFamily: kkTokens.font.body,
+        fontSize: kkTokens.type.chip,
+        fontWeight: 800,
+        letterSpacing: kkTokens.type.tracking.display,
         color: tint ?? (theme.vars ?? theme).palette.primary.main,
         bgcolor: `color-mix(in srgb, ${(theme.vars ?? theme).palette.background.default} 80%, transparent)`,
         px: 1,

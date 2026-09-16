@@ -1,15 +1,22 @@
-import { KkAppShell } from '@furria/ui';
+import { KkScreen } from '@furria/ui';
 import type { FC } from 'react';
-import { AppPageHeader } from '@/features/session';
+import { MORE_ORIGIN, useMeQuery } from '@/features/session';
+import { toProfileHeadline } from '../profile-labels';
 import { ProfileBody } from './ProfileBody';
+import { ProfileHeader } from './ProfileHeader';
 
-const PROFILE_TITLE = 'Profil';
+export const ProfilePage: FC = () => {
+  const me = useMeQuery();
+  const headline = toProfileHeadline(me.data);
 
-export const ProfilePage: FC = () => (
-  <>
-    <AppPageHeader>
-      <KkAppShell.PageTitle>{PROFILE_TITLE}</KkAppShell.PageTitle>
-    </AppPageHeader>
-    <ProfileBody />
-  </>
-);
+  return (
+    <KkScreen
+      kind="detail"
+      title={headline.title}
+      origin={MORE_ORIGIN}
+      header={<ProfileHeader me={me.data} />}
+    >
+      <ProfileBody />
+    </KkScreen>
+  );
+};

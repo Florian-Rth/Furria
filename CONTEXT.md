@@ -12,37 +12,48 @@ Domain language is German; code identifiers are English — this glossary maps b
 A human in the club's master-data registry — name, contact, address. The root everything
 hangs off. Every Mitglied is a Person; not every Person has an Account — and since
 2026-08-18 not every Person is club-affiliated: public self-registration (see Account)
-creates Persons with no Mitgliedschaft.
+creates Persons with no Mitgliedschaft. Whether a Person is **affiliated** at all is derived,
+at the moment it is asked, from the relationships that are running
+(she holds a Mitgliedschaft, belongs to a Gruppe, or holds a Rolle), never stored as a flag.
 _Avoid_: user, contact, profile
 
 **Mitgliedschaft** (`membership`):
-The one-per-Person record of club membership: its Art, status, and period. **Art and status are
-different axes** and never share a field — the Art is the tier, the status is the current state.
-_Avoid_: subscription
+Layer A — a Person's **dated period** of club membership: Beitritt and, once over, Austritt.
+Several per Person over a lifetime, at most one open at a time; a period has **no kind and no
+stored status** (the Mitgliedschaftsart was retired 2026-09-10, see flagged note). The state is
+derived: *aktiv* / *ruht* / *beendet* / *kein Mitglied*. **Mitglied seit** is the start of the
+earliest period that has begun — a Kündigung and a later Wiedereintritt never reset it. Ending a
+Mitgliedschaft closes the period, it never deletes it (pinned 2026-09-10, CA-P1 fresh shaping).
+_Avoid_: subscription, Art / Typ (retired), storing the state
 
-**Mitgliedschaftsart** (`membership type`):
-Layer A of identity — exactly one per Mitglied: **Aktiv / Jugend / Ehren**. Drives the yearly
-Beitrag tier. Only **Aktiv** and **Jugend** can be applied for; **Ehren** is conferred and is
-**not published on the public website**.
-_Avoid_: **Passiv** (never an Art — see Ruhende Mitgliedschaft), role, member level
-
-**Ruhende Mitgliedschaft** (`paused`):
-A **status** of a Mitgliedschaft, not an Art: a Mitglied takes a Session off. The Art is untouched,
-no Kündigung happens, and it resumes without a new Beitrittsantrag. In German UI copy the
-membership *ruht*.
+**Ruhezeit** (`membership pause`):
+A pause inside a running Mitgliedschaft, counted in **whole Sessions** and never in days: a
+Mitglied takes a Session — or several, open-ended — off. The Mitgliedschaft is untouched, no
+Kündigung happens, and it resumes without a new Beitrittsantrag. While today's Session lies
+inside a Ruhezeit the membership *ruht* — that state is derived, never stored. A Ruhezeit
+carries **no Grund**; the club never asked for one (pinned 2026-09-10, CA-P1 fresh shaping).
 _Avoid_: **Passiv** (the word previously used for this — it wrongly implied a fourth
-Mitgliedschaftsart), inactive, Kündigung
+Mitgliedschaftsart), inactive, Kündigung, Grund (as a field)
+
+**Beitragsermäßigung** (`fee reduction`):
+A dated reason a Person pays less — **minderjährig / Schule / Ausbildung / Studium** — recorded
+for a span of Sessions. It is a fact of its own and not a tier: *Jugend* used to be a
+Mitgliedschaftsart and is one of these instead. The Grundlage is **stated, never derived** from
+the Geburtsdatum, and a Beitragsermäßigung always has an end — it expires on its own, so the
+Nachweis is renewed (pinned 2026-09-10, CA-P1 fresh shaping).
+_Avoid_: Rabatt, Ermäßigung (alone), **Jugend** (as a Mitgliedschaftsart), Grund (the field is
+**Grundlage** — Grund was the Ruhezeit reason the club never wanted)
 
 **Gruppe** (`group`):
 Layer B — a performing or organisational unit (Tanzgarde, Elferrat, …). Person↔Gruppe is
 many-to-many, groups are freely created and archivable. A Mitglied in **no** Gruppe is normal —
-Art and Gruppe are independent axes. Each Gruppe decides for itself whether it is **currently
+Mitgliedschaft and Gruppe are independent axes. Each Gruppe decides for itself whether it is **currently
 looking for new members**; that openness is the Gruppe's own setting and the public website shows
 it. **There are no open, drop-in trainings** — nobody can simply turn up; an Anfrage always comes
 first. **Gruppen-Zugehörigkeit requires no Mitgliedschaft** (decided 2026-09-03, backend
-kickoff): a Person can belong to a Gruppe — and hold a scoped Amt like Trainer — without being
+kickoff): a Person can belong to a Gruppe — and be its **Gruppen-Admin** — without being
 a Mitglied. Consequence for every Club-App surface: access is gated on **Account + Gruppen +
-Ämter, never on "is Mitglied"**; member-only surfaces (Mitgliederversammlung, Beitrag) are
+Rollen, never on "is Mitglied"**; member-only surfaces (Mitgliederversammlung, Beitrag) are
 explicit, deliberate exceptions, not the default.
 _Avoid_: team, squad, gating anything on Mitgliedschaft by default
 
@@ -52,21 +63,50 @@ Mitgliedschaft and its sender is **not** a Mitglied — the club still decides o
 Carries no Account and no Einladung (see **Account**: Mitglied ≠ Account).
 _Avoid_: Anmeldung, Registrierung, Bewerbung, calling the sender a Mitglied
 
-**Amt** (`role`):
-Layer C — an office from a **fixed, rights-bearing set** (Präsident, Finanzen, Getränkewart,
-Trainer, Admin, …). Grants targeted permissions via the rights matrix. Ämter are NOT freely
-created, and there is **no all-access "Vorstand" super-role**. In code the table is `role`.
-_Avoid_: Vorstand (as a right), position, job
+**Rolle** (`role`):
+Layer C — a named office with a set of Berechtigungen (Präsident, Finanzen, Getränkewart,
+Admin, …). **Rollen are created in the app** — a Rolle, its Berechtigungen and its Inhaber are
+club data; only the set of Berechtigung *keys* stays a code constant, because the code must
+know what it enforces (renamed from **Amt** and pinned 2026-09-11, CA-P1 — and overruling
+the earlier "Ämter are NOT freely created"). **Gruppen-Admin** is not a Rolle — it is its own,
+Gruppe-scoped resource. There is **no built-in "Vorstand" super-role**; if the club wants one it
+creates a Rolle and gives it the keys, like any other.
+_Avoid_: **Amt** / Ämter (renamed 2026-09-11), Vorstand (as a right), position, job
 
 **Berechtigung** (`permission`):
-A single targeted right (key + area) granted to an Amt through the rights matrix; never
-assigned to a Person directly.
+A single targeted right (key + area) granted to a **Rolle** through the rights matrix; never
+assigned to a Person directly — she has it for as long as she holds the Rolle. The set of keys
+is a **code constant** and grows phase by phase (CA-P1 ships four).
 _Avoid_: privilege, access level
 
-**Trainer**:
-A per-Gruppe Amt. Conferred by setting a Person as a Gruppe's trainer in group management —
-this auto-grants Trainer rights scoped to that one Gruppe only.
-_Avoid_: coach
+**Zugehörigkeit** (`group membership`):
+A Person's **dated period** in a Gruppe — Beitritt and, once over, Austritt. Several per Person
+and Gruppe over a lifetime; "aktuelle Mitglieder einer Gruppe" is derived from open periods.
+Leaving a Gruppe ends the period, it never deletes it (pinned 2026-09-10, CA-P1 fresh shaping).
+_Avoid_: Mitgliedschaft (that word is the club's, not a Gruppe's), Gruppenmitgliedschaft
+
+**Inhaberschaft** (`role holding`):
+A Person's **dated period** in a Rolle — the same shape as a Zugehörigkeit, ended and never
+deleted. The **Inhaber** of a Rolle are the open ones (pinned 2026-09-10, CA-P1 fresh shaping).
+_Avoid_: Zuweisung, assignment, "im Amt seit" (it is **Inhaberin seit** / Inhaber seit)
+
+**Kontaktdaten** (`contact details`):
+Telefon, E-Mail and Adresse of a Person — **hidden from other members by default**; she opts
+in herself, and a Person without Account is switched on her word. A Berechtigung sees them
+anyway; hidden is a setting, never a gap (pinned 2026-09-10, CA-P1 fresh shaping).
+_Avoid_: Kontakt (as a field name), showing hidden Kontaktdaten as missing data
+
+**Gruppen-Admin** (`group admin`):
+The Person responsible for a Gruppe — set in group management, dated, several per Gruppe
+possible. It is **not** a Zugehörigkeit: a Gruppen-Admin need not belong to the Gruppe she runs
+(the Kindergarde is 6–11, ihre Trainerin ist 43), and she stays Gruppen-Admin after she stops
+dancing herself. She may carry a **Funktion** — a free-text label (Trainerin, Sprecher,
+Kommandantin) that is shown and nothing more: the rights come from
+being Gruppen-Admin, never from the Funktion. In the rights matrix **Gruppen-Admin is one
+resource**, configured once and always scoped to the Gruppe it is held for (pinned 2026-09-10,
+CA-P1 fresh shaping).
+_Avoid_: **Trainer** (as a Rolle of its own — it is a Funktion of a Gruppen-Admin), coach,
+Gruppenleiter (as an entity name), treating it as membership in the Gruppe
 
 **Account** (`account`):
 An optional, 1:1-linked login for a Person. **Mitglied ≠ Account** — membership exists
@@ -202,7 +242,10 @@ _Avoid_: Galerie (for a single album), Ordner, Sammlung
 ### Money
 
 **Beitrag** (`fee`):
-The yearly membership fee, tiered by Mitgliedschaftsart.
+The yearly membership fee. It is **not** tiered by a Mitgliedschaftsart any more — the Art was
+retired 2026-09-10; what lowers it is a **Beitragsermäßigung**, a dated fact on the Person, and
+whether a Ruhezeit lowers it at all is an open club question (see flagged note). Nothing about
+the Beitrag is computed or billed anywhere yet.
 _Avoid_: dues, subscription fee
 
 **Ledger**:
@@ -227,6 +270,12 @@ _Avoid_: balance table, payments table (as source of truth)
   Plätze, for the entitlement. The decision unblocks `page-seat-picker` and shapes
   `page-purchase`.
 
+- **Gruppentermin** — **open 2026-09-10.** A Gruppe's own schedule (Training, Auftritt) is a real
+  need for the Gruppen-Hub, but **Veranstaltung** is deliberately narrow and the club has no pinned
+  word for a Gruppe's own dates. Until it names one, nothing is modelled and no surface promises
+  it: the Hub's Termine slot is a reserved placeholder pointing at a later phase, and no copy
+  calls it a Spielplan.
+
 - **Einlasskontrolle** — **open, 2026-08-19.** The club has not decided how entry is checked
   at the door (QR scanning per Karte, a name list, no check at all). Until decided, no public
   surface may show or promise a scannable code, a PDF ticket or a Wallet pass — the digitale
@@ -239,6 +288,11 @@ _Avoid_: balance table, payments table (as source of truth)
   online). The merge/claim mechanism (e.g. an Einladung claiming an existing self-registered
   Account by mail match, or an admin merge) is undecided — to be resolved when accounts are
   actually built (Club-App/backend territory).
+
+- **Beitrag während einer Ruhezeit** — **open, 2026-09-11.** Whether a Mitglied pays while her
+  Mitgliedschaft *ruht* is a club question nobody has answered. Until it is, no copy may say a
+  Ruhezeit costs nothing: a Ruhezeit is described by what it does to the state (ab der Session
+  zählt sie nicht als aktiv), never by what it does to the Beitrag.
 
 - **Non-member Gruppen people have no name** — **open, 2026-09-03.** People in a Gruppe
   without Mitgliedschaft are now a supported, first-class case (see **Gruppe**), but the club
@@ -265,12 +319,27 @@ _Avoid_: balance table, payments table (as source of truth)
   `membership_type`, `inactive` → `paused` in `membership_status`). **Lesson:** the earlier note
   resolved the ambiguity from the *handoff* rather than from the club.
 
+- **Mitgliedschaftsart** — **retired 2026-09-10.** Layer A is the Mitgliedschaft itself and the
+  Art is gone: **a Mitgliedschaft is a dated period, and a period has no kind**. The three values
+  the note above pinned were redistributed — *Aktiv* is the derived state, *Jugend* is a
+  **Beitragsermäßigung** on the Grundlage minderjährig, *Ehren* is the **Ehrenmitgliedschaft**,
+  an honour that runs alongside. `MembershipType` and `MembershipStatus` are deleted outright and
+  the status is no longer stored either; no surface, chip or filter may name an Art again. This
+  supersedes the `Passiv` retraction above, which settled the Art it now retires.
+
+- **Ehrenmitgliedschaft** — **removed from CA-P1 2026-09-11.** The honour the club confers is
+  real and it is **not** a kind of Mitgliedschaft — it runs alongside one, and an Ehrenmitglied
+  is **not published on the public website**. It is nevertheless **owed to a later phase**:
+  nothing is modelled, nothing is conferred in the app, and until it is, no surface carries an
+  Ehrenmitglied marker, seal or filter — the design mocks that showed one are ignored for
+  exactly that reason.
+
 ## Example dialogue
 
 > **Dev:** Lisa logs in and can edit the Tanzgarde calendar — is she Vorstand?
 > **Expert:** There is no Vorstand right. She's a Person with an Account, her Mitgliedschaft
-> is Aktiv, and someone set her as Trainer of the Tanzgarde — that Amt is scoped to exactly
-> that Gruppe.
+> is running, and someone made her Gruppen-Admin der Tanzgarde with the
+> Funktion "Trainerin" — that is scoped to exactly that Gruppe.
 > **Dev:** And her grandfather in the registry who never logs in?
 > **Expert:** A Person with an Ehren-Mitgliedschaft and no Account. If he ever wants the app,
 > the Geschäftsführer prints him an Einladung.

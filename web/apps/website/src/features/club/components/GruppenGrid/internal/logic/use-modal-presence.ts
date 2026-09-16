@@ -8,9 +8,9 @@ export interface ModalPresence {
 }
 
 export const useModalPresence = (active: ActiveGroup | null): ModalPresence => {
-  const activeId = active?.group.title ?? null;
+  const activeId = active?.group.groupId ?? null;
   const [shown, setShown] = useState<ActiveGroup | null>(active);
-  const [prevActiveId, setPrevActiveId] = useState<string | null>(activeId);
+  const [prevActiveId, setPrevActiveId] = useState<number | null>(activeId);
 
   if (activeId !== prevActiveId) {
     setPrevActiveId(activeId);

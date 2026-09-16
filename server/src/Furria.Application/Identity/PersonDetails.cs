@@ -11,4 +11,14 @@ public sealed record PersonDetails
     public required string? Email { get; init; }
 
     public required string? Phone { get; init; }
+
+    public required string? Street { get; init; }
+
+    public required string? Zip { get; init; }
+
+    public required string? City { get; init; }
+
+    public required DateOnly? BirthDate { get; init; }
+
+    public required bool ContactVisibleToMembers { get; init; }
 }

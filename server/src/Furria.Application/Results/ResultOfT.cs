@@ -38,6 +38,9 @@ public readonly record struct Result<TValue>
     public static Result<TValue> Unauthorized(string message) =>
         Failed(ResultErrorKind.Unauthorized, message);
 
+    public static Result<TValue> Forbidden(string message) =>
+        Failed(ResultErrorKind.Forbidden, message);
+
     private static Result<TValue> Failed(ResultErrorKind kind, string message) =>
         new(default, new ResultError { Kind = kind, Message = message });
 }

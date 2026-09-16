@@ -15,7 +15,34 @@ public sealed class Expected
 
     public PersonExpectations Person(int personId) => new(this, personId);
 
-    public MembershipExpectations MembershipOf(int personId) => new(this, personId);
+    public MembershipExpectations Membership(int membershipId) => new(this, membershipId);
+
+    public MembershipSetExpectations MembershipsOfPerson(int personId) => new(this, personId);
+
+    public MembershipPauseExpectations MembershipPause(int pauseId) => new(this, pauseId);
+
+    public FeeReductionExpectations FeeReduction(int feeReductionId) => new(this, feeReductionId);
+
+    public GroupExpectations Group(int groupId) => new(this, groupId);
+
+    public GroupSetExpectations Groups() => new(this);
+
+    public GroupMembershipExpectations GroupMembership(int groupMembershipId) =>
+        new(this, groupMembershipId);
+
+    public GroupMembershipSetExpectations GroupMembershipsOf(int groupId) => new(this, groupId);
+
+    public GroupAdminExpectations GroupAdmin(int groupAdminId) => new(this, groupAdminId);
+
+    public GroupAdminSetExpectations GroupAdminsOf(int groupId) => new(this, groupId);
+
+    public RoleExpectations Role(int roleId) => new(this, roleId);
+
+    public RoleSetExpectations Roles() => new(this);
+
+    public RoleHoldingExpectations RoleHolding(int roleHoldingId) => new(this, roleHoldingId);
+
+    public RoleHoldingSetExpectations RoleHoldingsOfPerson(int personId) => new(this, personId);
 
     public AccountExpectations Account(int accountId) => new(this, accountId);
 

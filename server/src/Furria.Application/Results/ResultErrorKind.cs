@@ -6,4 +6,5 @@ public enum ResultErrorKind
     Conflict = 2,
     Validation = 3,
     Unauthorized = 4,
+    Forbidden = 5,
 }

@@ -1,5 +1,6 @@
 import IconButton from '@mui/material/IconButton';
 import type { FC } from 'react';
+import { focusRing } from './internal/focus-ring';
 import type { KkIconName } from './KkIcon';
 import { KkIcon } from './KkIcon';
 import type { KkSx } from './kk-sx';
@@ -32,7 +33,10 @@ export const KkIconButton: FC<KkIconButtonProps> = ({
     disabled={disabled}
     onClick={onClick}
     data-kk-icon-button
-    sx={[{ color: 'text.primary' }, ...(Array.isArray(sx) ? sx : [sx])]}
+    sx={[
+      (theme) => ({ color: 'text.primary', ...focusRing(theme) }),
+      ...(Array.isArray(sx) ? sx : [sx]),
+    ]}
   >
     <KkIcon name={icon} size={size} />
   </IconButton>

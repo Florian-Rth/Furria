@@ -1,31 +1,36 @@
-import { KkAppShell } from '@furria/ui';
-import Stack from '@mui/material/Stack';
+import { KkChip, KkPersonRow, KkSkeletonRow } from '@furria/ui';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { toInitials } from '@/lib/initials';
-import { toMembershipTypeLabel } from '@/lib/membership-labels';
+import { toMembershipStateChip } from '@/lib/state-chips';
 import { useMeQuery } from '../api';
 import { PROFILE_PATH } from '../app-sections';
 
-const PROFILE_LABEL = 'Profil öffnen';
-const NO_MEMBERSHIP = 'Ohne Mitgliedschaft';
+const PROFILE_META = 'Deine Daten und ihre Sichtbarkeit';
+const SKELETON_ROWS = 1;
 
 export const AppUserLink: FC = () => {
   const me = useMeQuery();
 
   if (me.data === undefined) {
-    return <Stack sx={{ flex: 1 }} />;
+    return <KkSkeletonRow count={SKELETON_ROWS} />;
   }
 
   const { person, membership } = me.data;
-  const meta = membership === null ? NO_MEMBERSHIP : toMembershipTypeLabel(membership.type);
+  const stateChip = toMembershipStateChip(membership.state);
+
+  const chip = (
+    <KkChip tone={stateChip.tone} dot={stateChip.dot} size="small">
+      {stateChip.label}
+    </KkChip>
+  );
 
   return (
-    <KkAppShell.Identity
+    <KkPersonRow
       initials={toInitials(person.firstName, person.lastName)}
       name={`${person.firstName} ${person.lastName}`}
-      meta={meta}
-      label={PROFILE_LABEL}
+      meta={PROFILE_META}
+      trailing={chip}
       component={Link}
       to={PROFILE_PATH}
     />

@@ -1,5 +1,6 @@
 import type { PaletteOptions } from '@mui/material/styles';
 import { createTheme } from '@mui/material/styles';
+import { redInk } from './internal/red-ink';
 import type { KkColorTokens } from './tokens';
 import { kkTokens } from './tokens';
 
@@ -13,7 +14,7 @@ export const KK_DESKTOP_BREAKPOINT = 900;
 
 const buildPalette = (color: KkColorTokens): PaletteOptions => ({
   primary: { main: color.red, dark: color.redDk, contrastText: color.onRed },
-  error: { main: color.red, dark: color.redDk, contrastText: color.onRed },
+  error: { main: color.redDk, dark: color.redDk, contrastText: color.onRedDk },
   warning: { main: color.gold },
   success: { main: color.green },
   info: { main: color.blue },
@@ -24,8 +25,8 @@ const buildPalette = (color: KkColorTokens): PaletteOptions => ({
 
 const displayHeading = {
   fontFamily: kkTokens.font.display,
-  fontWeight: 400,
-  letterSpacing: '0.01em',
+  fontWeight: kkTokens.font.displayWeight,
+  letterSpacing: kkTokens.type.tracking.tight,
 } as const;
 
 export const KK_DARK_SCHEME_ATTRIBUTE = 'data-dark';
@@ -68,6 +69,18 @@ export const kkTheme = createTheme({
       styleOverrides: {
         '#root': {
           overflowX: 'clip',
+        },
+        '@keyframes kk-skeleton-shimmer': {
+          from: { backgroundPosition: '100% 0' },
+          to: { backgroundPosition: '-100% 0' },
+        },
+        '@keyframes kk-breath': {
+          '0%, 100%': { opacity: 0.5 },
+          '50%': { opacity: 1 },
+        },
+        '@keyframes kk-row-highlight': {
+          from: { opacity: 1 },
+          to: { opacity: 0 },
         },
         '@media (prefers-reduced-motion: reduce)': {
           '*, *::before, *::after': {
@@ -128,9 +141,10 @@ export const kkTheme = createTheme({
     },
     MuiInputLabel: {
       styleOverrides: {
-        root: {
+        root: ({ theme }) => ({
           fontWeight: 700,
-        },
+          '&.Mui-focused': redInk(theme),
+        }),
       },
     },
     MuiAlert: {

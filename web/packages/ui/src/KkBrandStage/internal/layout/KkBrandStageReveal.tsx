@@ -1,6 +1,7 @@
 import Box from '@mui/material/Box';
 import { keyframes } from '@mui/material/styles';
 import type { FC, PropsWithChildren } from 'react';
+import type { KkSx } from '../../../kk-sx';
 
 const rise = keyframes`
   from { opacity: 0; transform: translate3d(0, 1.5rem, 0); }
@@ -24,18 +25,23 @@ const EASING = 'cubic-bezier(0.22, 1, 0.36, 1)';
 interface KkBrandStageRevealProps extends PropsWithChildren {
   step: number;
   motion?: KkBrandStageRevealMotion;
+  sx?: KkSx;
 }
 
 export const KkBrandStageReveal: FC<KkBrandStageRevealProps> = ({
   step,
   motion = 'rise',
+  sx,
   children,
 }) => {
   const animation = `${revealMotions[motion]} ${DURATION_SECONDS[motion]}s ${EASING} both`;
   const animationDelay = `${BASE_DELAY_SECONDS + step * STEP_DELAY_SECONDS}s`;
 
   return (
-    <Box data-kk-brand-stage-reveal sx={{ animation, animationDelay }}>
+    <Box
+      data-kk-brand-stage-reveal
+      sx={[{ animation, animationDelay }, ...(Array.isArray(sx) ? sx : [sx])]}
+    >
       {children}
     </Box>
   );

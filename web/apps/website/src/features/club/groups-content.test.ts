@@ -1,59 +1,88 @@
 import { createTheme } from '@mui/material/styles';
 import { describe, expect, it } from 'vitest';
-import type { Group } from '@/lib/seed/groups';
-import { SEEDED_GROUPS } from '@/lib/seed/groups';
-import type { GroupEditorial } from './groups-content';
-import { buildGroupProfiles, GROUP_EDITORIAL, resolveGroupTint } from './groups-content';
+import {
+  buildGroupBadge,
+  countRecruitingGroups,
+  formatGroupCount,
+  formatRecruitingCount,
+  resolveGroupOpenness,
+  resolveGroupsIntroKind,
+  resolveGroupTint,
+} from './groups-content';
+import type { PublicGroup } from './schemas';
 
-const editorial: GroupEditorial = {
-  blurb: 'Kurz gesagt',
-  memberMeta: '11 Aktive',
-  fullText: 'Ausführlich gesagt',
-  lead: 'Clara Schumann',
-};
-
-const rosterEntry = (id: string, name: string): Group => ({
-  id,
-  name,
-  ageRange: { from: 12, to: null },
-  isRecruiting: true,
-  tagline: 'Ergebniszeile',
+const group = (groupId: number, isRecruiting: boolean): PublicGroup => ({
+  groupId,
+  name: `Gruppe ${groupId}`,
+  description: 'Beschreibung',
+  isRecruiting,
 });
 
-describe('GROUP_EDITORIAL', () => {
-  it('covers exactly the roster, so a renamed Gruppen-id is caught here', () => {
-    expect(Object.keys(GROUP_EDITORIAL).toSorted()).toEqual(
-      SEEDED_GROUPS.map((group) => group.id).toSorted(),
-    );
+describe('resolveGroupOpenness', () => {
+  it('marks a recruiting Gruppe with the live dot and the gold tone', () => {
+    expect(resolveGroupOpenness(true)).toMatchObject({ tone: 'gold', dot: true });
+  });
+
+  it('leaves a settled Gruppe quiet, without a dot', () => {
+    expect(resolveGroupOpenness(false)).toMatchObject({ tone: 'neutral', dot: false });
+  });
+
+  it('never calls a settled Gruppe complete', () => {
+    expect(resolveGroupOpenness(false).label).not.toMatch(/team/i);
   });
 });
 
-describe('buildGroupProfiles', () => {
-  it('follows the roster order and takes the display name from the roster', () => {
-    const profiles = buildGroupProfiles(
-      [rosterEntry('elferrat', 'Elferrat'), rosterEntry('kindergarde', 'Kindergarde')],
-      { elferrat: editorial, kindergarde: editorial },
-    );
-
-    expect(profiles.map((profile) => profile.id)).toEqual(['elferrat', 'kindergarde']);
-    expect(profiles.map((profile) => profile.title)).toEqual(['Elferrat', 'Kindergarde']);
+describe('countRecruitingGroups', () => {
+  it('counts only the Gruppen that are open', () => {
+    expect(countRecruitingGroups([group(1, true), group(2, false), group(3, true)])).toBe(2);
   });
 
-  it('merges the editorial copy onto the roster entry', () => {
-    const profiles = buildGroupProfiles([rosterEntry('elferrat', 'Elferrat')], {
-      elferrat: editorial,
-    });
+  it('counts nothing in an empty list', () => {
+    expect(countRecruitingGroups([])).toBe(0);
+  });
+});
 
-    expect(profiles[0]).toEqual({ id: 'elferrat', title: 'Elferrat', ...editorial });
+describe('resolveGroupsIntroKind', () => {
+  it.each([
+    { total: 6, recruiting: 0, expected: 'none' },
+    { total: 1, recruiting: 1, expected: 'sole' },
+    { total: 6, recruiting: 6, expected: 'all' },
+    { total: 6, recruiting: 2, expected: 'some' },
+  ])('reads $recruiting of $total as $expected', ({ total, recruiting, expected }) => {
+    expect(resolveGroupsIntroKind(total, recruiting)).toBe(expected);
   });
 
-  it('drops a Gruppe without copy instead of rendering an empty tile', () => {
-    const profiles = buildGroupProfiles(
-      [rosterEntry('elferrat', 'Elferrat'), rosterEntry('unbekannt', 'Unbekannt')],
-      { elferrat: editorial },
-    );
+  it('prefers the empty-openness reading over the single-Gruppe one', () => {
+    expect(resolveGroupsIntroKind(1, 0)).toBe('none');
+  });
+});
 
-    expect(profiles.map((profile) => profile.id)).toEqual(['elferrat']);
+describe('formatGroupCount', () => {
+  it.each([
+    { total: 1, expected: 'eine Gruppe' },
+    { total: 2, expected: '2 Gruppen' },
+    { total: 12, expected: '12 Gruppen' },
+  ])('renders $total as "$expected"', ({ total, expected }) => {
+    expect(formatGroupCount(total)).toBe(expected);
+  });
+});
+
+describe('formatRecruitingCount', () => {
+  it.each([
+    { recruiting: 1, expected: 'Eine davon sucht' },
+    { recruiting: 4, expected: '4 davon suchen' },
+  ])('renders $recruiting as "$expected"', ({ recruiting, expected }) => {
+    expect(formatRecruitingCount(recruiting)).toBe(expected);
+  });
+});
+
+describe('buildGroupBadge', () => {
+  it.each([
+    { index: 0, expected: '01' },
+    { index: 9, expected: '10' },
+    { index: 99, expected: '100' },
+  ])('renders position $index as "$expected"', ({ index, expected }) => {
+    expect(buildGroupBadge(index)).toBe(expected);
   });
 });
 

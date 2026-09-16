@@ -1,0 +1,363 @@
+import { describe, expect, it } from 'vitest';
+import type { PersonRef } from '@/lib/api/schemas';
+import {
+  ALL_GROUPS_FILTER_ID,
+  filterGroups,
+  RECRUITING_FILTER_ID,
+  SETTLED_FILTER_ID,
+  toGroupCareIntent,
+  toGroupHeadline,
+  toGroupId,
+  toGroupStandingChips,
+  toGroupStandings,
+  toGroupsIntroSentence,
+  toGroupsLead,
+  toNoGroupMatchLine,
+  toOpenableAdminIds,
+  toPersonUnitLabel,
+  toRecruitingContactLine,
+  toRecruitingContactSegments,
+  toRecruitingFilterOptions,
+} from './groups-labels';
+import type { GroupAdmin, GroupDetails, GroupSummary } from './schemas';
+
+const person = (personId: number, firstName: string, lastName = 'Kaiser'): PersonRef => ({
+  personId,
+  firstName,
+  lastName,
+});
+
+const summary = (overrides: Partial<GroupSummary> & { groupId: number }): GroupSummary => ({
+  name: 'Große Garde',
+  description: '',
+  isRecruiting: false,
+  memberCount: 0,
+  memberPreview: [],
+  admins: [],
+  ...overrides,
+});
+
+const details = (overrides: Partial<GroupDetails>): GroupDetails => ({
+  groupId: 3,
+  name: 'Tanzgarde',
+  description: 'Die Garde tanzt seit 1971.',
+  isRecruiting: false,
+  members: [],
+  admins: [],
+  ...overrides,
+});
+
+const member = (personId: number): GroupDetails['members'][number] => ({
+  personId,
+  firstName: 'Paula',
+  lastName: 'Brendel',
+  since: '2017-09-01',
+  isAffiliated: true,
+});
+
+describe('toGroupId', () => {
+  it.each([
+    { case: 'a positive id', raw: '3', expected: 3 },
+    { case: 'a long id', raw: '1204', expected: 1204 },
+    { case: 'zero', raw: '0', expected: null },
+    { case: 'a negative id', raw: '-3', expected: null },
+    { case: 'a word', raw: 'tanzgarde', expected: null },
+    { case: 'a decimal', raw: '3.5', expected: null },
+    { case: 'nothing', raw: '', expected: null },
+  ])('reads $case', ({ raw, expected }) => {
+    expect(toGroupId(raw)).toBe(expected);
+  });
+});
+
+describe('toPersonUnitLabel', () => {
+  it.each([
+    { count: 0, expected: 'Personen' },
+    { count: 1, expected: 'Person' },
+    { count: 18, expected: 'Personen' },
+  ])('names the unit for $count', ({ count, expected }) => {
+    expect(toPersonUnitLabel(count)).toBe(expected);
+  });
+});
+
+describe('toRecruitingContactSegments', () => {
+  it('offers no person to click when the Gruppe has no admin', () => {
+    expect(toRecruitingContactSegments([])).toEqual([
+      { kind: 'text', text: 'Diese Gruppe sucht noch eine Ansprechperson.' },
+    ]);
+  });
+
+  it('carries the one admin as a person segment', () => {
+    expect(toRecruitingContactSegments([person(18, 'Anna')])).toEqual([
+      { kind: 'text', text: 'Melde dich bei ' },
+      { kind: 'person', personId: 18, firstName: 'Anna', lastName: 'Kaiser' },
+      { kind: 'text', text: '.' },
+    ]);
+  });
+
+  it('carries both admins as person segments', () => {
+    expect(toRecruitingContactSegments([person(18, 'Anna'), person(19, 'Katrin')])).toEqual([
+      { kind: 'text', text: 'Melde dich bei ' },
+      { kind: 'person', personId: 18, firstName: 'Anna', lastName: 'Kaiser' },
+      { kind: 'text', text: ' oder ' },
+      { kind: 'person', personId: 19, firstName: 'Katrin', lastName: 'Kaiser' },
+      { kind: 'text', text: '.' },
+    ]);
+  });
+
+  it('carries two of three and leaves the rest unlinked', () => {
+    expect(
+      toRecruitingContactSegments([person(18, 'Anna'), person(19, 'Katrin'), person(20, 'Jens')]),
+    ).toEqual([
+      { kind: 'text', text: 'Melde dich bei ' },
+      { kind: 'person', personId: 18, firstName: 'Anna', lastName: 'Kaiser' },
+      { kind: 'text', text: ', ' },
+      { kind: 'person', personId: 19, firstName: 'Katrin', lastName: 'Kaiser' },
+      { kind: 'text', text: ' oder einer der anderen Gruppen-Admins.' },
+    ]);
+  });
+});
+
+describe('toOpenableAdminIds', () => {
+  const admins: GroupAdmin[] = [
+    {
+      personId: 18,
+      firstName: 'Anna',
+      lastName: 'Kaiser',
+      function: null,
+      since: '2019-01-01',
+      isAffiliated: true,
+    },
+    {
+      personId: 19,
+      firstName: 'Katrin',
+      lastName: 'Kaiser',
+      function: null,
+      since: '2020-01-01',
+      isAffiliated: false,
+    },
+  ];
+
+  it('leaves out the admin who has no Karte of her own', () => {
+    expect([...toOpenableAdminIds(admins, true)]).toEqual([18]);
+  });
+
+  it('leaves out everyone when the viewer may not open a Karte at all', () => {
+    expect([...toOpenableAdminIds(admins, false)]).toEqual([]);
+  });
+});
+
+describe('toRecruitingContactLine', () => {
+  it('asks for an Ansprechperson when the Gruppe has no admin', () => {
+    expect(toRecruitingContactLine([])).toBe('Diese Gruppe sucht noch eine Ansprechperson.');
+  });
+
+  it('names the one admin in full — the club holds four Jörgs', () => {
+    expect(toRecruitingContactLine([person(18, 'Jörg', 'Hoffmann')])).toBe(
+      'Melde dich bei Jörg Hoffmann.',
+    );
+  });
+
+  it('tells two admins of the same first name apart', () => {
+    expect(
+      toRecruitingContactLine([person(18, 'Jörg', 'Hoffmann'), person(19, 'Jörg', 'Krüger')]),
+    ).toBe('Melde dich bei Jörg Hoffmann oder Jörg Krüger.');
+  });
+
+  it('names two of three and points at the rest', () => {
+    expect(
+      toRecruitingContactLine([person(18, 'Anna'), person(19, 'Katrin'), person(20, 'Jens')]),
+    ).toBe('Melde dich bei Anna Kaiser, Katrin Kaiser oder einer der anderen Gruppen-Admins.');
+  });
+});
+
+describe('filterGroups', () => {
+  const groups: readonly GroupSummary[] = [
+    summary({ groupId: 1, name: 'Große Garde', isRecruiting: true }),
+    summary({ groupId: 2, name: 'Elferrat' }),
+    summary({ groupId: 3, name: 'Küche und Theke', isRecruiting: true }),
+  ];
+
+  const ids = (query: string, status: string): number[] =>
+    filterGroups(groups, { query, status }).map((group) => group.groupId);
+
+  it('keeps every Gruppe under Alle', () => {
+    expect(ids('', ALL_GROUPS_FILTER_ID)).toEqual([1, 2, 3]);
+  });
+
+  it('keeps only the recruiting Gruppen', () => {
+    expect(ids('', RECRUITING_FILTER_ID)).toEqual([1, 3]);
+  });
+
+  it('keeps only the settled Gruppen', () => {
+    expect(ids('', SETTLED_FILTER_ID)).toEqual([2]);
+  });
+
+  it('folds the ß and the umlaut when matching a name', () => {
+    expect(ids('grosse', ALL_GROUPS_FILTER_ID)).toEqual([1]);
+    expect(ids('kuche', ALL_GROUPS_FILTER_ID)).toEqual([3]);
+  });
+
+  it('applies the query inside the chosen chip', () => {
+    expect(ids('elferrat', RECRUITING_FILTER_ID)).toEqual([]);
+  });
+});
+
+describe('toRecruitingFilterOptions', () => {
+  it('counts all, recruiting and settled from the same list', () => {
+    const groups: readonly GroupSummary[] = [
+      summary({ groupId: 1, isRecruiting: true }),
+      summary({ groupId: 2 }),
+      summary({ groupId: 3 }),
+    ];
+
+    expect(toRecruitingFilterOptions(groups).map((option) => [option.id, option.count])).toEqual([
+      [ALL_GROUPS_FILTER_ID, 3],
+      [RECRUITING_FILTER_ID, 1],
+      [SETTLED_FILTER_ID, 2],
+    ]);
+  });
+});
+
+describe('toNoGroupMatchLine', () => {
+  it('names the query when there is one', () => {
+    expect(toNoGroupMatchLine('  Garde ', ALL_GROUPS_FILTER_ID)).toContain('Garde');
+  });
+
+  it('explains the chip when only a chip narrows the list', () => {
+    expect(toNoGroupMatchLine('', RECRUITING_FILTER_ID)).toBe(
+      'Gerade sucht keine Gruppe Verstärkung. Wähle „Alle“, um wieder alle zu sehen.',
+    );
+  });
+
+  it('falls back to the cold case under Alle', () => {
+    expect(toNoGroupMatchLine('', ALL_GROUPS_FILTER_ID)).toBe(
+      'Im Verzeichnis steht gerade keine Gruppe.',
+    );
+  });
+});
+
+describe('toGroupsIntroSentence', () => {
+  it.each([
+    { case: 'one Gruppe, none recruiting', total: 1, recruiting: 0 },
+    { case: 'one Gruppe recruiting', total: 1, recruiting: 1 },
+    { case: 'several Gruppen, one recruiting', total: 7, recruiting: 1 },
+    { case: 'several Gruppen recruiting', total: 7, recruiting: 3 },
+    { case: 'several Gruppen, none recruiting', total: 7, recruiting: 0 },
+  ])('never prints a bare count as a subject for $case', ({ total, recruiting }) => {
+    expect(toGroupsIntroSentence(total, recruiting)).not.toMatch(/(^|\. )1 (Gruppe|davon)/);
+  });
+
+  it('counts the Gruppen and the openings', () => {
+    expect(toGroupsIntroSentence(7, 3)).toBe(
+      '7 Gruppen tragen die Session. 3 davon suchen gerade Verstärkung.',
+    );
+  });
+
+  it('spells the single Gruppe and the single opening as words', () => {
+    expect(toGroupsIntroSentence(1, 1)).toBe(
+      'Eine Gruppe trägt die Session. Eine davon sucht gerade Verstärkung.',
+    );
+  });
+
+  it('says so when nobody is looking', () => {
+    expect(toGroupsIntroSentence(7, 0)).toBe(
+      '7 Gruppen tragen die Session. Gerade sucht keine davon Verstärkung.',
+    );
+  });
+});
+
+describe('toGroupsLead', () => {
+  it('counts the Gruppen that are looking for people', () => {
+    expect(
+      toGroupsLead([
+        summary({ groupId: 1, isRecruiting: true }),
+        summary({ groupId: 2, isRecruiting: false }),
+        summary({ groupId: 3, isRecruiting: true }),
+      ]),
+    ).toBe('3 Gruppen tragen die Session. 2 davon suchen gerade Verstärkung.');
+  });
+});
+
+describe('toGroupHeadline', () => {
+  it('falls back to the neutral title while the Gruppe is unknown', () => {
+    expect(toGroupHeadline(undefined)).toEqual({
+      title: 'Gruppe',
+      openness: null,
+      memberCount: null,
+    });
+  });
+
+  it('carries the name, the openness chip and the live member count', () => {
+    expect(
+      toGroupHeadline(details({ isRecruiting: true, members: [member(1), member(2)] })),
+    ).toEqual({
+      title: 'Tanzgarde',
+      openness: { label: 'sucht Verstärkung', tone: 'gold', dot: true },
+      memberCount: '2 Personen · kein Gruppen-Admin',
+    });
+  });
+
+  it('marks a Gruppe that is not recruiting', () => {
+    expect(toGroupHeadline(details({})).openness).toEqual({
+      label: 'sucht gerade niemanden',
+      tone: 'neutral',
+      dot: false,
+    });
+  });
+});
+
+describe('toGroupStandings', () => {
+  it('keys every standing by its Gruppe', () => {
+    const standings = toGroupStandings([
+      { groupId: 4, name: 'Elferrat', isMember: true, isAdmin: false },
+      { groupId: 9, name: 'Musikzug', isMember: false, isAdmin: true },
+    ]);
+
+    expect(standings.get(4)).toEqual({ isMember: true, isAdmin: false });
+    expect(standings.get(9)).toEqual({ isMember: false, isAdmin: true });
+    expect(standings.get(11)).toBeUndefined();
+  });
+});
+
+describe('toGroupStandingChips', () => {
+  it('marks nothing for a Gruppe the viewer has no standing in', () => {
+    expect(toGroupStandingChips(undefined)).toEqual([]);
+  });
+
+  it('marks a Gruppe the viewer belongs to', () => {
+    expect(toGroupStandingChips({ isMember: true, isAdmin: false })).toHaveLength(1);
+  });
+
+  it('marks both facts when the viewer belongs to a Gruppe she also administers', () => {
+    expect(toGroupStandingChips({ isMember: true, isAdmin: true })).toHaveLength(2);
+  });
+
+  it('marks the Gruppen-Admin who is not a member', () => {
+    const chips = toGroupStandingChips({ isMember: false, isAdmin: true });
+
+    expect(chips).toHaveLength(1);
+    expect(chips[0]?.label).toBe('Gruppen-Admin');
+  });
+});
+
+describe('toGroupCareIntent', () => {
+  it('offers no way into the Hub without a standing', () => {
+    expect(toGroupCareIntent(undefined)).toBeNull();
+  });
+
+  it('offers no way into the Hub to a viewer who neither belongs nor administers', () => {
+    expect(toGroupCareIntent({ isMember: false, isAdmin: false })).toBeNull();
+  });
+
+  it('sends a Gruppen-Admin who is not a member to her tools', () => {
+    expect(toGroupCareIntent({ isMember: false, isAdmin: true })).toBe('care');
+  });
+
+  it('lets the Gruppen-Admin standing outrank the membership', () => {
+    expect(toGroupCareIntent({ isMember: true, isAdmin: true })).toBe('care');
+  });
+
+  it('sends a member who does not administer to the plain Hub', () => {
+    expect(toGroupCareIntent({ isMember: true, isAdmin: false })).toBe('visit');
+  });
+});

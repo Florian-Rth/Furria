@@ -1,4 +1,3 @@
-using Furria.Application.Authorization;
 using Furria.Application.Identity;
 using Furria.Application.PreviewAccess;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,8 +38,6 @@ public static class ServiceCollectionExtensions
         services
             .AddOptions<BootstrapAdminOptions>()
             .BindConfiguration(BootstrapAdminOptions.SectionName);
-
-        services.AddScoped<PermissionAuthorizer>();
 
         return services;
     }

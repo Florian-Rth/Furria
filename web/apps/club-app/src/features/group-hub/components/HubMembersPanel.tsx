@@ -1,0 +1,89 @@
+import { KkButton, KkEmptyState, KkIcon, KkPanel, KkPanelSection } from '@furria/ui';
+import type { FC, Ref } from 'react';
+import type { GroupDetailMember } from '@/features/group-detail';
+import {
+  ADD_MEMBER_ACTION_LABEL,
+  ADD_MEMBER_LABEL,
+  GroupMemberRow,
+  NO_MEMBERS_TITLE,
+  toNoMembersLine,
+} from '@/features/group-detail';
+import { GROUP_SECTION_TITLES } from '@/lib/group-sections';
+import { HubCelebration } from './HubCelebration';
+
+interface HubMembersPanelProps {
+  members: readonly GroupDetailMember[];
+  groupName: string;
+  canManage: boolean;
+  viewerIsAffiliated: boolean;
+  newPersonId: number | null;
+  fireKey: number;
+  titleRef: Ref<HTMLHeadingElement>;
+  onAdd: () => void;
+  onEnd: (groupMembershipId: number) => void;
+}
+
+export const HubMembersPanel: FC<HubMembersPanelProps> = ({
+  members,
+  groupName,
+  canManage,
+  viewerIsAffiliated,
+  newPersonId,
+  fireKey,
+  titleRef,
+  onAdd,
+  onEnd,
+}) => {
+  const rows = members.map((member) => {
+    const isNew = member.personId === newPersonId;
+
+    const burst = isNew ? <HubCelebration fireKey={fireKey} /> : undefined;
+
+    const end = (): void => {
+      onEnd(member.groupMembershipId);
+    };
+
+    return (
+      <GroupMemberRow
+        key={member.groupMembershipId}
+        member={member}
+        canManage={canManage}
+        viewerIsAffiliated={viewerIsAffiliated}
+        onEnd={end}
+        isNew={isNew}
+        overlay={burst}
+      />
+    );
+  });
+
+  const isEmpty = rows.length === 0;
+  const variant = isEmpty ? 'block' : 'list';
+
+  const action = canManage ? (
+    <KkButton
+      size="small"
+      variant="outlined"
+      startIcon={<KkIcon name="add" size="small" />}
+      ariaLabel={ADD_MEMBER_ACTION_LABEL}
+      onClick={onAdd}
+    >
+      {ADD_MEMBER_LABEL}
+    </KkButton>
+  ) : null;
+
+  const body = isEmpty ? (
+    <KkEmptyState
+      size="panel"
+      title={NO_MEMBERS_TITLE}
+      description={toNoMembersLine(groupName, canManage)}
+    />
+  ) : (
+    rows
+  );
+
+  return (
+    <KkPanelSection title={GROUP_SECTION_TITLES.members} titleRef={titleRef} action={action}>
+      <KkPanel variant={variant}>{body}</KkPanel>
+    </KkPanelSection>
+  );
+};

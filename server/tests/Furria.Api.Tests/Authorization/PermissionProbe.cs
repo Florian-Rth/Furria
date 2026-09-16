@@ -1,16 +1,15 @@
 using FastEndpoints;
 using Furria.Api.Authorization;
+using Furria.Application.Authorization;
 
 namespace Furria.Api.Tests.Authorization;
 
 public sealed class PermissionProbe : EndpointWithoutRequest
 {
-    public const string PermissionKey = "probe:read";
-
     public override void Configure()
     {
         Get("tests/permission-probe");
-        Definition.RequirePermission(PermissionKey);
+        Definition.RequirePermission(FurriaPermissions.PersonsManage);
     }
 
     public override async Task HandleAsync(CancellationToken ct) => await Send.NoContentAsync(ct);

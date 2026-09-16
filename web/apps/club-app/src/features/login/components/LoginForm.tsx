@@ -1,12 +1,15 @@
-import { KkAlert, KkButton, KkIconButton, KkTextField } from '@furria/ui';
+import { KkAlert, KkButton, KkIconButton, KkTextField, useKkPaneOpen } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
+import { useState } from 'react';
 import { useLoginForm } from '../hooks/use-login-form';
 import { usePasswordVisibility } from '../hooks/use-password-visibility';
 
 export const LoginForm: FC = () => {
   const { form, submit, isSubmitting, submitError } = useLoginForm();
   const password = usePasswordVisibility();
+  const isPaneOpen = useKkPaneOpen();
+  const [takesFocusOnMount] = useState(isPaneOpen);
 
   const emailField = form.register('email');
   const passwordField = form.register('password');
@@ -34,7 +37,7 @@ export const LoginForm: FC = () => {
         type="email"
         inputMode="email"
         autoComplete="username"
-        autoFocus
+        autoFocus={takesFocusOnMount}
         error={hasEmailError}
         helperText={emailErrorText}
         onChange={emailField.onChange}

@@ -12,6 +12,17 @@ public sealed class AccountSetExpectations
         _expected = expected;
     }
 
+    public Expected ToContainEmail(string email) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.True(
+                    await dbContext
+                        .Users.AsNoTracking()
+                        .AnyAsync(account => account.Email == email, ct),
+                    $"No Account with the email {email} exists."
+                )
+        );
+
     public Expected ToHaveCount(int count) =>
         _expected.Enqueue(
             async (dbContext, ct) =>

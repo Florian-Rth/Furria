@@ -2,9 +2,10 @@ export type { BurstPiece } from './burst-pieces';
 export { buildBurstPieces } from './burst-pieces';
 export type { ConfettiPiece } from './confetti-pieces';
 export { buildConfettiPieces } from './confetti-pieces';
+export type { KkFilterOption } from './filter-chip-entries';
 export { KkAlert } from './KkAlert';
-export { KkAppShell } from './KkAppShell/KkAppShell';
 export { KkAvatar } from './KkAvatar';
+export { KkAvatarStack } from './KkAvatarStack';
 export { KkBandSection } from './KkBandSection/KkBandSection';
 export { KkBandWatermark } from './KkBandWatermark';
 export { KkBrandLockup } from './KkBrandLockup';
@@ -12,34 +13,109 @@ export { KkBrandStage } from './KkBrandStage/KkBrandStage';
 export { KkBroomMark } from './KkBroomMark';
 export { KkButton } from './KkButton';
 export { KkCard } from './KkCard/KkCard';
+export type { KkChipTone } from './KkChip';
+export { KkChip } from './KkChip';
+export { KkChipField } from './KkChipField';
 export { KkConfettiBurst } from './KkConfettiBurst';
 export { KkConfettiRain } from './KkConfettiRain';
+export type { KkConfirmFact } from './KkConfirmDialog';
+export { KkConfirmDialog } from './KkConfirmDialog';
+export { KkConsequenceNote } from './KkConsequenceNote';
+export type { KkDateQuickChoice } from './KkDateField';
+export { KkDateField } from './KkDateField';
+export { KkEmptyState } from './KkEmptyState';
+export { KkErrorState } from './KkErrorState';
 export { KkEyebrow } from './KkEyebrow';
+export { KkFactRow } from './KkFactRow';
 export { KkFieldRow } from './KkFieldRow';
+export { KkFilterChips } from './KkFilterChips';
 export { KkHeading } from './KkHeading';
 export { KkHeroSection } from './KkHeroSection/KkHeroSection';
+export { KkHubRow } from './KkHubRow';
 export type { KkIconName } from './KkIcon';
 export { KkIcon } from './KkIcon';
 export { KkIconButton } from './KkIconButton';
+export { KkInlineLink } from './KkInlineLink';
 export { KkLead } from './KkLead';
+export { KkLetterDivider } from './KkLetterDivider';
+export { KkLetterIndex } from './KkLetterIndex';
+export type { KkMetaTone } from './KkMeta';
+export { KkMeta } from './KkMeta';
+export { KkModalFrame } from './KkModalFrame/KkModalFrame';
 export { KkNote } from './KkNote';
+export type {
+  KkNoticeAction,
+  KkNoticeActions,
+  KkNoticeLabels,
+  KkNoticePublisher,
+  KkNoticeRequest,
+  KkNoticeTone,
+  KkSystemNotice,
+} from './KkNotice/KkNotice';
+export { KkNoticeProvider, useKkNotice } from './KkNotice/KkNotice';
+export { KkPageWatermark } from './KkPageWatermark';
 export { KkPanel } from './KkPanel';
 export { KkPanelHeader } from './KkPanelHeader';
+export { KkPanelSection } from './KkPanelSection';
+export { KkPersonRow } from './KkPersonRow';
 export { KkPhoto } from './KkPhoto';
 export { KkPhotoPlaceholder } from './KkPhotoPlaceholder';
+export { KkRedactedValue } from './KkRedactedValue';
+export { KkReservedSlot } from './KkReservedSlot';
 export { KkRule } from './KkRule';
+export type { KkScreenHeaderTitleTransform } from './KkScreenHeader/internal/ui/KkScreenHeaderTitle';
+export { KkScreenHeader } from './KkScreenHeader/KkScreenHeader';
 export { KkSeal } from './KkSeal';
+export { KkSearchField } from './KkSearchField';
 export { KkSection } from './KkSection/KkSection';
 export { KkSectionHeader } from './KkSectionHeader/KkSectionHeader';
+export type { KkSelectOption } from './KkSelectField';
+export { KkSelectField } from './KkSelectField';
+export { KkSelectRow } from './KkSelectRow';
+export { KkSessionField } from './KkSessionField';
+export { KkSheet } from './KkSheet/KkSheet';
+export { KkSheetProvider } from './KkSheet/KkSheetProvider';
+export { useKkSheet } from './KkSheet/sheet-store';
+export { KkScreen } from './KkShell/KkScreen';
+export { KkShell } from './KkShell/KkShell';
+export type {
+  KkLoudScreenAction,
+  KkQuietScreenAction,
+  KkScreenAction,
+  KkScreenActionBar,
+  KkScreenActions,
+  KkScreenDeed,
+  KkScreenIndex,
+  KkScreenKind,
+  KkScreenOrigin,
+  KkScreenSearch,
+  KkScreenThread,
+  KkScreenThreadTone,
+} from './KkShell/screen-declaration';
+export type { KkShellDestination } from './KkShell/shell-destination';
+export { KkSinceRow } from './KkSinceRow';
+export { KkSkeletonBlock } from './KkSkeletonBlock';
+export { KkSkeletonRow } from './KkSkeletonRow';
+export { KkSkeletonToolbar } from './KkSkeletonToolbar';
+export { useKkPaneOpen } from './KkSplitLayout/internal/logic/split-layout-sheet-context';
 export { KkSplitLayout } from './KkSplitLayout/KkSplitLayout';
 export { KkStatRow } from './KkStatRow/KkStatRow';
+export type { KkSummaryFact } from './KkSummaryRow';
+export { KkSummaryRow } from './KkSummaryRow';
+export { KkSwitchRow } from './KkSwitchRow';
 export { KkText } from './KkText';
+export { KkTextArea } from './KkTextArea';
 export { KkTextField } from './KkTextField';
 export { KkThemeColorMeta } from './KkThemeColorMeta';
 export { KkThemeProvider } from './KkThemeProvider';
 export { KkTicker } from './KkTicker';
+export { KkTitleHeader } from './KkTitleHeader';
 export { KkTwoToneHeadline } from './KkTwoToneHeadline';
+export { KkVisuallyHidden } from './KkVisuallyHidden';
+export type { KkLinkSearch, KkLinkSearchValues } from './kk-link-search';
 export type { KkSx } from './kk-sx';
+export type { KkLetterIndexEntry } from './letter-index-cells';
+export type { KkLetterIndexVariant } from './letter-index-variant';
 export { PageLayout } from './PageLayout/PageLayout';
 export type { KkPhotoOrientation } from './photo-frame';
 export { KK_DARK_SCHEME_ATTRIBUTE, KK_DESKTOP_BREAKPOINT, kkTheme } from './theme';

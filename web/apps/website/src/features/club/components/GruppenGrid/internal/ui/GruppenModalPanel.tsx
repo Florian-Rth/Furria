@@ -7,11 +7,12 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { Link as RouterLink } from '@tanstack/react-router';
 import type { FC } from 'react';
-import type { GroupProfile } from '@/features/club/groups-content';
-import { groupsModalLabels } from '@/features/club/groups-content';
+import { groupsLabels, groupsMailHref, resolveGroupOpenness } from '@/features/club/groups-content';
+import type { PublicGroup } from '@/features/club/schemas';
+import { GruppenOpennessChip } from './GruppenOpennessChip';
 
 interface GruppenModalPanelProps {
-  group: GroupProfile;
+  group: PublicGroup;
   tint?: string;
   titleId: string;
   onClose: () => void;
@@ -22,76 +23,85 @@ export const GruppenModalPanel: FC<GruppenModalPanelProps> = ({
   tint,
   titleId,
   onClose,
-}) => (
-  <Card
-    data-kk-gruppen-modal
-    sx={{
-      display: 'flex',
-      flexDirection: 'column',
-      width: '100%',
-      maxHeight: '90vh',
-      overflowY: 'auto',
-      borderRadius: {
-        xs: `${kkTokens.radius.base}px ${kkTokens.radius.base}px 0 0`,
-        sm: `${kkTokens.radius.base}px`,
-      },
-      boxShadow: kkTokens.shadow.raised,
-    }}
-  >
-    <Box sx={{ position: 'relative' }}>
-      <KkPhotoPlaceholder
-        label="gruppen-foto"
-        tint={tint}
-        aspectRatio={kkTokens.aspectRatio.banner}
-      />
-      <IconButton
-        aria-label={groupsModalLabels.close}
-        onClick={onClose}
-        sx={{
-          position: 'absolute',
-          top: 8,
-          right: 8,
-          bgcolor: 'background.paper',
-          border: 1,
-          borderColor: 'divider',
-          fontFamily: kkTokens.font.body,
-          fontSize: '1rem',
-          lineHeight: 1,
-          '&:hover': { bgcolor: 'background.paper' },
-        }}
-      >
-        ✕
-      </IconButton>
-    </Box>
-    <Stack sx={{ gap: 2.5, p: { xs: 3, md: 4 } }}>
-      <Typography id={titleId} variant="h3" component="h2">
-        {group.title}
-      </Typography>
-      <Typography variant="body1" sx={{ color: 'text.secondary' }}>
-        {group.fullText}
-      </Typography>
-      <Stack sx={{ gap: 0.5, pt: 2.5, borderTop: 1, borderColor: 'divider' }}>
-        <Typography
-          variant="caption"
-          sx={{ fontWeight: 800, letterSpacing: '0.08em', color: 'text.secondary' }}
+}) => {
+  const openness = resolveGroupOpenness(group.isRecruiting);
+  const description = group.description.trim();
+  const hasDescription = description !== '';
+  const body = hasDescription ? description : groupsLabels.noDescription;
+
+  return (
+    <Card
+      data-kk-gruppen-modal
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        width: '100%',
+        maxHeight: '90vh',
+        overflowY: 'auto',
+        borderRadius: {
+          xs: `${kkTokens.radius.base}px ${kkTokens.radius.base}px 0 0`,
+          sm: `${kkTokens.radius.base}px`,
+        },
+        boxShadow: kkTokens.shadow.raised,
+      }}
+    >
+      <Box sx={{ position: 'relative' }}>
+        <KkPhotoPlaceholder
+          label={groupsLabels.photo}
+          tint={tint}
+          aspectRatio={kkTokens.aspectRatio.banner}
+        />
+        <IconButton
+          aria-label={groupsLabels.close}
+          onClick={onClose}
+          sx={{
+            position: 'absolute',
+            top: 8,
+            right: 8,
+            bgcolor: 'background.paper',
+            border: 1,
+            borderColor: 'divider',
+            fontFamily: kkTokens.font.body,
+            fontSize: '1rem',
+            lineHeight: 1,
+            '&:hover': { bgcolor: 'background.paper' },
+          }}
         >
-          {groupsModalLabels.lead}
+          ✕
+        </IconButton>
+      </Box>
+      <Stack sx={{ gap: 2.5, p: { xs: 3, md: 4 } }}>
+        <Stack sx={{ gap: 1.5, alignItems: 'flex-start' }}>
+          <Typography id={titleId} variant="h3" component="h2">
+            {group.name}
+          </Typography>
+          <GruppenOpennessChip openness={openness} />
+        </Stack>
+        <Typography
+          variant="body1"
+          sx={{ color: 'text.secondary', fontStyle: hasDescription ? 'normal' : 'italic' }}
+        >
+          {body}
         </Typography>
-        <Typography variant="body2" sx={{ fontWeight: 700 }}>
-          {group.lead}
+        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+          {openness.note}
         </Typography>
+        <Stack direction="row" sx={{ gap: 2, flexWrap: 'wrap', pt: 0.5 }}>
+          <Button
+            component={RouterLink}
+            to="/join"
+            variant="contained"
+            color="primary"
+            size="large"
+            onClick={onClose}
+          >
+            {groupsLabels.joinCta}
+          </Button>
+          <Button variant="outlined" size="large" href={groupsMailHref}>
+            {groupsLabels.askCta}
+          </Button>
+        </Stack>
       </Stack>
-      <Button
-        component={RouterLink}
-        to="/join"
-        variant="contained"
-        color="primary"
-        size="large"
-        onClick={onClose}
-        sx={{ alignSelf: 'flex-start' }}
-      >
-        {groupsModalLabels.cta}
-      </Button>
-    </Stack>
-  </Card>
-);
+    </Card>
+  );
+};

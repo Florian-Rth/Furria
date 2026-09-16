@@ -3,12 +3,18 @@ import { buildGreeting, formatStageDate } from './stage-greeting';
 
 describe('buildGreeting', () => {
   it.each([
-    { firstName: 'Anna', expected: 'MOIN, ANNA.' },
-    { firstName: '  Björn  ', expected: 'MOIN, BJÖRN.' },
-    { firstName: '', expected: 'MOIN.' },
-    { firstName: '   ', expected: 'MOIN.' },
+    { firstName: 'Anna', expected: 'Hallo, Anna.' },
+    { firstName: '  Björn  ', expected: 'Hallo, Björn.' },
+    { firstName: 'Weiß', expected: 'Hallo, Weiß.' },
+    { firstName: '', expected: 'Hallo.' },
+    { firstName: '   ', expected: 'Hallo.' },
   ])('greets "$firstName" as $expected', ({ firstName, expected }) => {
     expect(buildGreeting(firstName)).toBe(expected);
+  });
+
+  it('hands the name on exactly as the club spells it', () => {
+    expect(buildGreeting('Karl-Heinz')).toContain('Karl-Heinz');
+    expect(buildGreeting('Karl-Heinz')).not.toContain('KARL-HEINZ');
   });
 });
 

@@ -22,6 +22,233 @@ namespace Furria.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Furria.Core.Groups.Group", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly?>("ArchivedOn")
+                        .HasColumnType("date")
+                        .HasColumnName("archived_on");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(400)
+                        .HasColumnType("character varying(400)")
+                        .HasColumnName("description");
+
+                    b.Property<bool>("IsRecruiting")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_recruiting");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("name")
+                        .UseCollation("de-DE-x-icu");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_group");
+
+                    b.HasIndex("Name")
+                        .HasDatabaseName("ix_group_name_lookup");
+
+                    b.ToTable("group", (string)null);
+                });
+
+            modelBuilder.Entity("Furria.Core.Groups.GroupAdmin", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Function")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("function");
+
+                    b.Property<int>("GroupId")
+                        .HasColumnType("integer")
+                        .HasColumnName("group_id");
+
+                    b.Property<int>("PersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("person_id");
+
+                    b.Property<DateOnly>("SinceOn")
+                        .HasColumnType("date")
+                        .HasColumnName("since_on");
+
+                    b.Property<DateOnly?>("UntilOn")
+                        .HasColumnType("date")
+                        .HasColumnName("until_on");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_group_admin");
+
+                    b.HasIndex("PersonId")
+                        .HasDatabaseName("ix_group_admin_person_id");
+
+                    b.HasIndex("GroupId", "PersonId")
+                        .HasDatabaseName("ix_group_admin_group_id_person_id");
+
+                    b.HasIndex(new[] { "GroupId", "PersonId" }, "ix_group_admin_group_id_person_id_open")
+                        .IsUnique()
+                        .HasDatabaseName("ix_group_admin_group_id_person_id_open")
+                        .HasFilter("until_on IS NULL");
+
+                    b.ToTable("group_admin", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_group_admin_period", "until_on IS NULL OR until_on >= since_on");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.Groups.GroupMembership", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int>("GroupId")
+                        .HasColumnType("integer")
+                        .HasColumnName("group_id");
+
+                    b.Property<DateOnly>("JoinedOn")
+                        .HasColumnType("date")
+                        .HasColumnName("joined_on");
+
+                    b.Property<DateOnly?>("LeftOn")
+                        .HasColumnType("date")
+                        .HasColumnName("left_on");
+
+                    b.Property<int>("PersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("person_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_group_membership");
+
+                    b.HasIndex("PersonId")
+                        .HasDatabaseName("ix_group_membership_person_id");
+
+                    b.HasIndex("GroupId", "PersonId")
+                        .HasDatabaseName("ix_group_membership_group_id_person_id");
+
+                    b.HasIndex(new[] { "GroupId", "PersonId" }, "ix_group_membership_group_id_person_id_open")
+                        .IsUnique()
+                        .HasDatabaseName("ix_group_membership_group_id_person_id_open")
+                        .HasFilter("left_on IS NULL");
+
+                    b.ToTable("group_membership", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_group_membership_period", "left_on IS NULL OR left_on >= joined_on");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.Identity.FeeReduction", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Basis")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("basis");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int>("FirstSessionYear")
+                        .HasColumnType("integer")
+                        .HasColumnName("first_session_year");
+
+                    b.Property<int>("LastSessionYear")
+                        .HasColumnType("integer")
+                        .HasColumnName("last_session_year");
+
+                    b.Property<int>("PersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("person_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_fee_reduction");
+
+                    b.HasIndex("PersonId")
+                        .HasDatabaseName("ix_fee_reduction_person_id");
+
+                    b.ToTable("fee_reduction", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_fee_reduction_basis", "basis IN ('Minor', 'School', 'Apprenticeship', 'Studies')");
+
+                            t.HasCheckConstraint("ck_fee_reduction_founding", "first_session_year >= 1971");
+
+                            t.HasCheckConstraint("ck_fee_reduction_span", "last_session_year >= first_session_year");
+                        });
+                });
+
             modelBuilder.Entity("Furria.Core.Identity.Membership", b =>
                 {
                     b.Property<int>("Id")
@@ -37,29 +264,17 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("now()");
 
-                    b.Property<DateOnly?>("EndedAt")
+                    b.Property<DateOnly?>("EndedOn")
                         .HasColumnType("date")
-                        .HasColumnName("ended_at");
+                        .HasColumnName("ended_on");
 
                     b.Property<int>("PersonId")
                         .HasColumnType("integer")
                         .HasColumnName("person_id");
 
-                    b.Property<DateOnly>("StartedAt")
+                    b.Property<DateOnly>("StartedOn")
                         .HasColumnType("date")
-                        .HasColumnName("started_at");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("status");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("type");
+                        .HasColumnName("started_on");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .ValueGeneratedOnAdd()
@@ -71,13 +286,64 @@ namespace Furria.Infrastructure.Migrations
                         .HasName("pk_membership");
 
                     b.HasIndex("PersonId")
-                        .IsUnique()
                         .HasDatabaseName("ix_membership_person_id");
 
-                    b.HasIndex("Status")
-                        .HasDatabaseName("ix_membership_status");
+                    b.HasIndex(new[] { "PersonId" }, "ix_membership_person_id_open")
+                        .IsUnique()
+                        .HasDatabaseName("ix_membership_person_id_open")
+                        .HasFilter("ended_on IS NULL");
 
-                    b.ToTable("membership", (string)null);
+                    b.ToTable("membership", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_membership_period", "ended_on IS NULL OR ended_on >= started_on");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.Identity.MembershipPause", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int>("FirstSessionYear")
+                        .HasColumnType("integer")
+                        .HasColumnName("first_session_year");
+
+                    b.Property<int?>("LastSessionYear")
+                        .HasColumnType("integer")
+                        .HasColumnName("last_session_year");
+
+                    b.Property<int>("MembershipId")
+                        .HasColumnType("integer")
+                        .HasColumnName("membership_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_membership_pause");
+
+                    b.HasIndex("MembershipId")
+                        .HasDatabaseName("ix_membership_pause_membership_id");
+
+                    b.ToTable("membership_pause", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_membership_pause_founding", "first_session_year >= 1971");
+
+                            t.HasCheckConstraint("ck_membership_pause_span", "last_session_year IS NULL OR last_session_year >= first_session_year");
+                        });
                 });
 
             modelBuilder.Entity("Furria.Core.Identity.Person", b =>
@@ -89,10 +355,20 @@ namespace Furria.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<DateOnly?>("BirthDate")
+                        .HasColumnType("date")
+                        .HasColumnName("birth_date");
+
                     b.Property<string>("City")
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)")
                         .HasColumnName("city");
+
+                    b.Property<bool>("ContactVisibleToMembers")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("contact_visible_to_members");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -109,13 +385,15 @@ namespace Furria.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)")
-                        .HasColumnName("first_name");
+                        .HasColumnName("first_name")
+                        .UseCollation("de-DE-x-icu");
 
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)")
-                        .HasColumnName("last_name");
+                        .HasColumnName("last_name")
+                        .UseCollation("de-DE-x-icu");
 
                     b.Property<string>("Phone")
                         .HasMaxLength(64)
@@ -145,6 +423,151 @@ namespace Furria.Infrastructure.Migrations
                         .HasDatabaseName("ix_person_last_name_first_name");
 
                     b.ToTable("person", (string)null);
+                });
+
+            modelBuilder.Entity("Furria.Core.Roles.Role", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly?>("ArchivedOn")
+                        .HasColumnType("date")
+                        .HasColumnName("archived_on");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(400)
+                        .HasColumnType("character varying(400)")
+                        .HasColumnName("description");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("name")
+                        .UseCollation("de-DE-x-icu");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_role");
+
+                    b.HasIndex("Name")
+                        .HasDatabaseName("ix_role_name_lookup");
+
+                    b.ToTable("role", (string)null);
+                });
+
+            modelBuilder.Entity("Furria.Core.Roles.RoleHolding", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int>("PersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("person_id");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("integer")
+                        .HasColumnName("role_id");
+
+                    b.Property<DateOnly>("SinceOn")
+                        .HasColumnType("date")
+                        .HasColumnName("since_on");
+
+                    b.Property<DateOnly?>("UntilOn")
+                        .HasColumnType("date")
+                        .HasColumnName("until_on");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_role_holding");
+
+                    b.HasIndex("PersonId")
+                        .HasDatabaseName("ix_role_holding_person_id");
+
+                    b.HasIndex("RoleId", "PersonId")
+                        .HasDatabaseName("ix_role_holding_role_id_person_id");
+
+                    b.HasIndex(new[] { "RoleId", "PersonId" }, "ix_role_holding_role_id_person_id_open")
+                        .IsUnique()
+                        .HasDatabaseName("ix_role_holding_role_id_person_id_open")
+                        .HasFilter("until_on IS NULL");
+
+                    b.ToTable("role_holding", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_role_holding_period", "until_on IS NULL OR until_on >= since_on");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.Roles.RolePermission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("PermissionKey")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("permission_key");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("integer")
+                        .HasColumnName("role_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_role_permission");
+
+                    b.HasIndex("RoleId", "PermissionKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_role_permission_role_id_permission_key");
+
+                    b.ToTable("role_permission", (string)null);
                 });
 
             modelBuilder.Entity("Furria.Infrastructure.Identity.Account", b =>
@@ -395,16 +818,115 @@ namespace Furria.Infrastructure.Migrations
                     b.ToTable("account_token", (string)null);
                 });
 
+            modelBuilder.Entity("Furria.Core.Groups.GroupAdmin", b =>
+                {
+                    b.HasOne("Furria.Core.Groups.Group", "Group")
+                        .WithMany("Admins")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_group_admin_group_group_id");
+
+                    b.HasOne("Furria.Core.Identity.Person", "Person")
+                        .WithMany("GroupAdminships")
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_group_admin_person_person_id");
+
+                    b.Navigation("Group");
+
+                    b.Navigation("Person");
+                });
+
+            modelBuilder.Entity("Furria.Core.Groups.GroupMembership", b =>
+                {
+                    b.HasOne("Furria.Core.Groups.Group", "Group")
+                        .WithMany("Memberships")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_group_membership_group_group_id");
+
+                    b.HasOne("Furria.Core.Identity.Person", "Person")
+                        .WithMany("GroupMemberships")
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_group_membership_person_person_id");
+
+                    b.Navigation("Group");
+
+                    b.Navigation("Person");
+                });
+
+            modelBuilder.Entity("Furria.Core.Identity.FeeReduction", b =>
+                {
+                    b.HasOne("Furria.Core.Identity.Person", "Person")
+                        .WithMany("FeeReductions")
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_fee_reduction_person_person_id");
+
+                    b.Navigation("Person");
+                });
+
             modelBuilder.Entity("Furria.Core.Identity.Membership", b =>
                 {
                     b.HasOne("Furria.Core.Identity.Person", "Person")
-                        .WithOne("Membership")
-                        .HasForeignKey("Furria.Core.Identity.Membership", "PersonId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .WithMany("Memberships")
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_membership_person_person_id");
 
                     b.Navigation("Person");
+                });
+
+            modelBuilder.Entity("Furria.Core.Identity.MembershipPause", b =>
+                {
+                    b.HasOne("Furria.Core.Identity.Membership", "Membership")
+                        .WithMany("Pauses")
+                        .HasForeignKey("MembershipId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_membership_pause_membership_membership_id");
+
+                    b.Navigation("Membership");
+                });
+
+            modelBuilder.Entity("Furria.Core.Roles.RoleHolding", b =>
+                {
+                    b.HasOne("Furria.Core.Identity.Person", "Person")
+                        .WithMany("RoleHoldings")
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_role_holding_person_person_id");
+
+                    b.HasOne("Furria.Core.Roles.Role", "Role")
+                        .WithMany("Holdings")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_role_holding_role_role_id");
+
+                    b.Navigation("Person");
+
+                    b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("Furria.Core.Roles.RolePermission", b =>
+                {
+                    b.HasOne("Furria.Core.Roles.Role", "Role")
+                        .WithMany("Permissions")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_role_permission_role_role_id");
+
+                    b.Navigation("Role");
                 });
 
             modelBuilder.Entity("Furria.Infrastructure.Identity.Account", b =>
@@ -461,9 +983,36 @@ namespace Furria.Infrastructure.Migrations
                         .HasConstraintName("fk_account_token_account_user_id");
                 });
 
+            modelBuilder.Entity("Furria.Core.Groups.Group", b =>
+                {
+                    b.Navigation("Admins");
+
+                    b.Navigation("Memberships");
+                });
+
+            modelBuilder.Entity("Furria.Core.Identity.Membership", b =>
+                {
+                    b.Navigation("Pauses");
+                });
+
             modelBuilder.Entity("Furria.Core.Identity.Person", b =>
                 {
-                    b.Navigation("Membership");
+                    b.Navigation("FeeReductions");
+
+                    b.Navigation("GroupAdminships");
+
+                    b.Navigation("GroupMemberships");
+
+                    b.Navigation("Memberships");
+
+                    b.Navigation("RoleHoldings");
+                });
+
+            modelBuilder.Entity("Furria.Core.Roles.Role", b =>
+                {
+                    b.Navigation("Holdings");
+
+                    b.Navigation("Permissions");
                 });
 #pragma warning restore 612, 618
         }
