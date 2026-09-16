@@ -67,8 +67,16 @@ export const kkTheme = createTheme({
   components: {
     MuiCssBaseline: {
       styleOverrides: {
+        html: {
+          WebkitTapHighlightColor: 'transparent',
+        },
         '#root': {
           overflowX: 'clip',
+        },
+        'a, button, label, summary, [role="button"], [role="tab"], [role="option"]': {
+          WebkitTouchCallout: 'none',
+          WebkitUserSelect: 'none',
+          userSelect: 'none',
         },
         '@keyframes kk-skeleton-shimmer': {
           from: { backgroundPosition: '100% 0' },
@@ -77,6 +85,13 @@ export const kkTheme = createTheme({
         '@keyframes kk-breath': {
           '0%, 100%': { opacity: 0.5 },
           '50%': { opacity: 1 },
+        },
+        '@keyframes kk-screen-arrival': {
+          from: {
+            opacity: 0,
+            transform: `translateY(${kkTokens.shell.screen.arrivalRise}px)`,
+          },
+          to: { opacity: 1, transform: 'translateY(0)' },
         },
         '@keyframes kk-row-highlight': {
           from: { opacity: 1 },

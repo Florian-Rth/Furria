@@ -1,13 +1,43 @@
 import Stack from '@mui/material/Stack';
 import type { CSSObject, Theme } from '@mui/material/styles';
-import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import { focusRing } from '../../../internal/focus-ring';
-import { redInk } from '../../../internal/red-ink';
-import { KkIcon } from '../../../KkIcon';
+import { useReducedMotion } from '../../../internal/use-reduced-motion';
 import { kkTokens } from '../../../tokens';
 import type { KkShellDestination } from '../../shell-destination';
+import { navGlide, navPop } from '../logic/nav-motion';
 import { useKkShell } from '../logic/shell-context';
+import { KkShellNavBar } from './KkShellNavBar';
+import { KkShellNavGlyph } from './KkShellNavGlyph';
+import { KkShellNavLabel } from './KkShellNavLabel';
+import { KkShellNavWash } from './KkShellNavWash';
+
+const { nav } = kkTokens.shell;
+const CONTENT_ATTRIBUTE = 'data-kk-shell-nav-content';
+const GLYPH_GAP = 0.25;
+
+const itemPaint = (theme: Theme): CSSObject => ({
+  position: 'relative',
+  flex: 1,
+  minWidth: 0,
+  minHeight: kkTokens.tapTarget,
+  alignItems: 'center',
+  justifyContent: 'center',
+  color: 'inherit',
+  textDecoration: 'none',
+  cursor: 'pointer',
+  borderRadius: `${kkTokens.radius.base}px`,
+  [`&:active [${CONTENT_ATTRIBUTE}]`]: { transform: `scale(${nav.pressScale})` },
+  ...focusRing(theme),
+});
+
+const CONTENT_PAINT: CSSObject = {
+  alignItems: 'center',
+  gap: GLYPH_GAP,
+  minWidth: 0,
+  paddingBottom: `${nav.contentRise}px`,
+  transition: kkTokens.motion.press,
+};
 
 interface KkShellNavItemProps {
   destination: KkShellDestination;
@@ -16,12 +46,17 @@ interface KkShellNavItemProps {
 
 export const KkShellNavItem: FC<KkShellNavItemProps> = ({ destination, active }) => {
   const { link } = useKkShell();
+  const reducedMotion = useReducedMotion();
+  const glide = navGlide(reducedMotion);
+  const pop = navPop(reducedMotion);
   const routeProps = { to: destination.to };
   const iconName = active ? destination.activeIcon : destination.icon;
-  const labelColor = active ? 'text.primary' : 'text.secondary';
-
-  const iconPaint = (theme: Theme): CSSObject =>
-    active ? { ...redInk(theme), flexShrink: 0 } : { color: 'text.secondary', flexShrink: 0 };
+  const marker = active ? (
+    <>
+      <KkShellNavWash transition={glide} />
+      <KkShellNavBar transition={glide} />
+    </>
+  ) : null;
 
   return (
     <Stack
@@ -29,35 +64,13 @@ export const KkShellNavItem: FC<KkShellNavItemProps> = ({ destination, active })
       {...routeProps}
       aria-current={active ? 'page' : undefined}
       data-kk-shell-nav-item
-      sx={(theme) => ({
-        flex: 1,
-        minWidth: 0,
-        minHeight: kkTokens.tapTarget,
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 0.25,
-        color: 'inherit',
-        textDecoration: 'none',
-        cursor: 'pointer',
-        borderRadius: `${kkTokens.radius.base}px`,
-        ...focusRing(theme),
-      })}
+      sx={itemPaint}
     >
-      <KkIcon name={iconName} size="small" sx={iconPaint} />
-      <Typography
-        data-kk-shell-nav-label
-        sx={{
-          fontSize: kkTokens.type.eyebrowSmall,
-          fontWeight: kkTokens.eyebrow.fontWeight,
-          letterSpacing: kkTokens.type.tracking.label,
-          lineHeight: 1,
-          textTransform: 'uppercase',
-          color: labelColor,
-          minWidth: 0,
-        }}
-      >
-        {destination.label}
-      </Typography>
+      {marker}
+      <Stack data-kk-shell-nav-content sx={CONTENT_PAINT}>
+        <KkShellNavGlyph name={iconName} active={active} transition={pop} />
+        <KkShellNavLabel active={active}>{destination.label}</KkShellNavLabel>
+      </Stack>
     </Stack>
   );
 };

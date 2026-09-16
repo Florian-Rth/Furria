@@ -3,7 +3,7 @@ import type { FC, PropsWithChildren } from 'react';
 import { safeArea } from '../../../internal/safe-area';
 import { kkTokens } from '../../../tokens';
 
-const { gutter, chromeGap } = kkTokens.shell;
+const { gutter } = kkTokens.shell;
 
 export const KkShellChrome: FC<PropsWithChildren> = ({ children }) => (
   <Stack
@@ -15,7 +15,6 @@ export const KkShellChrome: FC<PropsWithChildren> = ({ children }) => (
       right: safeArea('right', gutter),
       zIndex: theme.zIndex.appBar,
       minWidth: 0,
-      gap: `${chromeGap}px`,
     })}
   >
     {children}

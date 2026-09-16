@@ -26,6 +26,7 @@
     "@hookform/resolvers": "catalog:",
     "@tanstack/react-query": "catalog:",
     "date-fns": "catalog:",
+    "motion": "catalog:",
     "@tanstack/react-router": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",

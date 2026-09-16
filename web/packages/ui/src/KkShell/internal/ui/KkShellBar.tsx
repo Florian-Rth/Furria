@@ -1,4 +1,3 @@
-import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { KkChrome } from '../../../internal/KkChrome';
 import { kkTokens } from '../../../tokens';
@@ -10,9 +9,8 @@ import type {
 } from '../../screen-declaration';
 import { useKkShell } from '../logic/shell-context';
 import type { KkShellBarLead } from './KkShellBarLeading';
-import { KkShellBarLeading } from './KkShellBarLeading';
+import { KkShellBarRest } from './KkShellBarRest';
 import { KkShellBarSearch } from './KkShellBarSearch';
-import { KkShellBarTrailing } from './KkShellBarTrailing';
 import { KkShellThread } from './KkShellThread';
 
 const { barHeight } = kkTokens.shell;
@@ -38,17 +36,13 @@ export const KkShellBar: FC<KkShellBarProps> = ({
   const { density } = useKkShell();
   const threadLine = thread === undefined ? null : <KkShellThread thread={thread} />;
 
+  const searching = search !== undefined && search.query !== null;
+
   const row =
-    search !== undefined && search.query !== null ? (
+    searching && search !== undefined ? (
       <KkShellBarSearch search={search} />
     ) : (
-      <Stack
-        direction="row"
-        sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 1, minWidth: 0 }}
-      >
-        <KkShellBarLeading lead={lead} title={title} origin={origin} />
-        <KkShellBarTrailing search={search} actions={actions} />
-      </Stack>
+      <KkShellBarRest lead={lead} title={title} origin={origin} actions={actions} search={search} />
     );
 
   return (

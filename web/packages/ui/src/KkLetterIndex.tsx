@@ -1,7 +1,7 @@
 import ButtonBase from '@mui/material/ButtonBase';
 import Stack from '@mui/material/Stack';
 import type { CSSObject, Theme } from '@mui/material/styles';
-import type { FC, KeyboardEvent, MouseEvent } from 'react';
+import type { CSSProperties, FC, KeyboardEvent, MouseEvent } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { focusRing } from './internal/focus-ring';
 import { nextRovingId } from './internal/roving-focus';
@@ -11,7 +11,10 @@ import type { KkLetterIndexEntry } from './letter-index-cells';
 import { toLetterIndexCells } from './letter-index-cells';
 import type { KkLetterIndexVariant } from './letter-index-variant';
 import { toLetterIndexBehaviour } from './letter-index-variant';
+import type { KkLetterPace } from './letter-pace';
+import { AT_REST, railLiftAt } from './letter-rail-scrub';
 import { kkTokens } from './tokens';
+import { useLetterRailScrub } from './use-letter-rail-scrub';
 
 const CELL_WIDTH_TOUCH = 32;
 const CELL_HEIGHT_TOUCH = 38;
@@ -38,7 +41,12 @@ const flowingCellSize = (theme: Theme): CSSObject => ({
   },
 });
 
+const LIFTED_CELL_LAYER = 1;
+const RESTING_CELL_LAYER = 0;
+
 const railCellSize: CSSObject = {
+  transition: `transform ${kkTokens.letterRail.settleSeconds}s ease-out`,
+  willChange: 'transform',
   width: CELL_SIZE_RAIL,
   height: CELL_SIZE_RAIL,
   maxHeight: CELL_SIZE_RAIL,
@@ -103,6 +111,7 @@ const variantLayout: Record<KkLetterIndexVariant, KkSx> = {
     justifyContent: 'center',
     gap: 0,
     height: '100%',
+    touchAction: 'none',
   },
 };
 
@@ -110,7 +119,7 @@ interface KkLetterIndexProps {
   label: string;
   letters: readonly KkLetterIndexEntry[];
   current?: string;
-  onSelect: (letter: string) => void;
+  onSelect: (letter: string, pace: KkLetterPace) => void;
   variant?: KkLetterIndexVariant;
   sx?: KkSx;
 }
@@ -135,6 +144,32 @@ export const KkLetterIndex: FC<KkLetterIndexProps> = ({
   const orientation = behaviour.fixed ? 'vertical' : undefined;
   const paintCell = cellStyles(variant);
 
+  const reachLetter = (index: number): void => {
+    const reached = cells[index];
+
+    if (reached === undefined || reached.disabled) {
+      return;
+    }
+
+    setFocusedLetter(reached.letter);
+    onSelect(reached.letter, 'scrubbing');
+  };
+
+  const scrub = useLetterRailScrub(stripRef, reachLetter, behaviour.fixed);
+
+  const liftCell = (index: number): CSSProperties => {
+    if (!behaviour.fixed) {
+      return {};
+    }
+
+    const lift = railLiftAt(index, scrub.held);
+
+    return {
+      transform: `translateX(${lift.pull}px) scale(${lift.scale})`,
+      zIndex: lift === AT_REST ? RESTING_CELL_LAYER : LIFTED_CELL_LAYER,
+    };
+  };
+
   useEffect(() => {
     if (!behaviour.scrolls) {
       return;
@@ -153,7 +188,7 @@ export const KkLetterIndex: FC<KkLetterIndexProps> = ({
     }
 
     setFocusedLetter(letter);
-    onSelect(letter);
+    onSelect(letter, 'settled');
   };
 
   const moveFocus = (event: KeyboardEvent<HTMLDivElement>): void => {
@@ -176,10 +211,14 @@ export const KkLetterIndex: FC<KkLetterIndexProps> = ({
       aria-label={label}
       aria-orientation={orientation}
       onKeyDown={moveFocus}
+      onPointerDown={scrub.onPointerDown}
+      onPointerMove={scrub.onPointerMove}
+      onPointerUp={scrub.onPointerUp}
+      onPointerCancel={scrub.onPointerUp}
       data-kk-letter-index
       sx={[{ gap: 0.5, minWidth: 0 }, variantLayout[variant], ...(Array.isArray(sx) ? sx : [sx])]}
     >
-      {cells.map((cell) => (
+      {cells.map((cell, index) => (
         <ButtonBase
           key={cell.letter}
           disabled={cell.disabled}
@@ -187,6 +226,7 @@ export const KkLetterIndex: FC<KkLetterIndexProps> = ({
           aria-current={cell.current ? 'location' : undefined}
           tabIndex={cell.letter === tabbableLetter ? 0 : -1}
           data-kk-letter-index-cell={cell.letter}
+          style={liftCell(index)}
           sx={paintCell}
         >
           {cell.letter}

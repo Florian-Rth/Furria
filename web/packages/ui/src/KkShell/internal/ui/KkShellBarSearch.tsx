@@ -1,13 +1,23 @@
 import InputBase from '@mui/material/InputBase';
 import Stack from '@mui/material/Stack';
-import type { ChangeEvent, FC, KeyboardEvent } from 'react';
-import { KkIcon } from '../../../KkIcon';
+import { motion } from 'motion/react';
+import type { ChangeEvent, CSSProperties, FC, KeyboardEvent } from 'react';
 import { KkIconButton } from '../../../KkIconButton';
 import { kkTokens } from '../../../tokens';
 import type { KkScreenSearch } from '../../screen-declaration';
+import { FIELD_READY, FIELD_WAITING } from '../logic/bar-search-motion';
+import { KkShellBarGlass } from './KkShellBarGlass';
+import { KkShellBarRule } from './KkShellBarRule';
 
 const CANCEL_KEY = 'Escape';
 const FIELD_SIZE = '1rem';
+
+const UNFURLING: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  flex: 1,
+  minWidth: 0,
+};
 
 interface KkShellBarSearchProps {
   search: KkScreenSearch;
@@ -30,33 +40,38 @@ export const KkShellBarSearch: FC<KkShellBarSearchProps> = ({ search }) => {
       data-kk-shell-bar-search
       sx={{ alignItems: 'center', gap: 0.75, flex: 1, minWidth: 0 }}
     >
-      <KkIcon name="search" size="small" sx={{ color: 'text.secondary', flexShrink: 0 }} />
-      <InputBase
-        autoFocus
-        value={search.query ?? ''}
-        onChange={change}
-        onKeyDown={cancelOnEscape}
-        placeholder={search.placeholder}
-        slotProps={{ input: { 'aria-label': search.openLabel, inputMode: 'search' } }}
-        sx={{
-          flex: 1,
-          minWidth: 0,
-          fontFamily: kkTokens.font.body,
-          fontSize: FIELD_SIZE,
-          color: 'text.primary',
-        }}
-      />
-      <KkIconButton
-        label={search.cancelLabel}
-        icon="close"
-        onClick={search.onClose}
-        sx={{
-          flexShrink: 0,
-          minWidth: kkTokens.tapTarget,
-          minHeight: kkTokens.tapTarget,
-          color: 'text.secondary',
-        }}
-      />
+      <KkShellBarGlass />
+      <motion.div style={UNFURLING} initial={FIELD_WAITING} animate={FIELD_READY}>
+        <Stack sx={{ position: 'relative', flex: 1, minWidth: 0 }}>
+          <InputBase
+            autoFocus
+            value={search.query ?? ''}
+            onChange={change}
+            onKeyDown={cancelOnEscape}
+            placeholder={search.placeholder}
+            slotProps={{ input: { 'aria-label': search.openLabel, inputMode: 'search' } }}
+            sx={{
+              flex: 1,
+              minWidth: 0,
+              fontFamily: kkTokens.font.body,
+              fontSize: FIELD_SIZE,
+              color: 'text.primary',
+            }}
+          />
+          <KkShellBarRule />
+        </Stack>
+        <KkIconButton
+          label={search.cancelLabel}
+          icon="close"
+          onClick={search.onClose}
+          sx={{
+            flexShrink: 0,
+            minWidth: kkTokens.tapTarget,
+            minHeight: kkTokens.tapTarget,
+            color: 'text.secondary',
+          }}
+        />
+      </motion.div>
     </Stack>
   );
 };

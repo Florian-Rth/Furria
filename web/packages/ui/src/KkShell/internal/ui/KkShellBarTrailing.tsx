@@ -2,15 +2,9 @@ import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { KkScreenAction, KkScreenSearch } from '../../screen-declaration';
 import { KkShellBarAction } from './KkShellBarAction';
+import { KkShellBarSearchOpener } from './KkShellBarSearchOpener';
 
-const SEARCH_ACTION_ID = 'kk-shell-search';
-
-const toSearchAction = (search: KkScreenSearch): KkScreenAction => ({
-  id: SEARCH_ACTION_ID,
-  label: search.openLabel,
-  icon: 'search',
-  onSelect: search.onOpen,
-});
+const NO_ACTIONS = 0;
 
 interface KkShellBarTrailingProps {
   search?: KkScreenSearch;
@@ -18,11 +12,11 @@ interface KkShellBarTrailingProps {
 }
 
 export const KkShellBarTrailing: FC<KkShellBarTrailingProps> = ({ search, actions = [] }) => {
-  const trailing = search === undefined ? actions : [toSearchAction(search), ...actions];
-
-  if (trailing.length === 0) {
+  if (search === undefined && actions.length === NO_ACTIONS) {
     return null;
   }
+
+  const opener = search === undefined ? null : <KkShellBarSearchOpener search={search} />;
 
   return (
     <Stack
@@ -30,7 +24,8 @@ export const KkShellBarTrailing: FC<KkShellBarTrailingProps> = ({ search, action
       data-kk-shell-bar-trailing
       sx={{ alignItems: 'center', gap: 0.25, flexShrink: 0 }}
     >
-      {trailing.map((action) => (
+      {opener}
+      {actions.map((action) => (
         <KkShellBarAction key={action.id} action={action} />
       ))}
     </Stack>
