@@ -3,11 +3,15 @@ packages:
   - packages/*
   - tools/*
 
+allowBuilds:
+  sharp: true
+
 # Single source of truth for all shared dependency versions (plan decision #18).
 catalog:
   '@babel/core': 7.29.7
   '@biomejs/biome': 2.5.4
   '@capacitor/android': 8.5.2
+  '@capacitor/assets': 3.0.5
   '@capacitor/cli': 8.5.2
   '@capacitor/core': 8.5.2
   '@emotion/react': 11.14.0
@@ -34,6 +38,7 @@ catalog:
   react: 19.2.7
   react-dom: 19.2.7
   react-hook-form: 7.81.0
+  sharp: 0.35.4
   typescript: 7.0.2
   vite: 8.1.5
   vitest: 4.1.10

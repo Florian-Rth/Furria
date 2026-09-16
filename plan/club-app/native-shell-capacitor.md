@@ -223,6 +223,34 @@ Pinned, concretely:
 - `@capacitor/splash-screen` hidden explicitly once the session boot decision is known, so the
   app never flashes a blank WebView.
 
+### The app mark — decided 2026-09-16
+
+The icon is the **crossed-brooms tile** from `docs/design/fcc-logos.jsx` (`AppTile`): two white
+brooms crossed on a red squircle, the club's coat of arms reduced to one glyph. It is not the
+`favicon.svg` monogram the web app ships today; the web favicon is expected to follow the mark,
+not the other way round.
+
+One deviation from the mock: the tile gradient uses the shipped `@furria/ui` red tokens
+(`#E11D2A` → `#B3101C`) rather than the mock's own `#C8102E`, so the icon matches the red of the
+app it opens. The binding band keeps the mock's `#9C0B22` — it sits on white bristles, where a
+token red would be too light to read.
+
+**The mark is drawn, not stored.** `web/tools/app-icons` holds the brooms as SVG geometry in
+`brand-mark.ts` and rasterises the five `@capacitor/assets` sources
+(`icon-only`, `icon-background`, `icon-foreground`, `splash`, `splash-dark`) into
+`apps/club-app/assets/`, then fans them out into the Android project. `pnpm icons` runs both
+steps. Sources and generated resources are both committed, so a plain checkout builds without
+the tool.
+
+It is a `tools/` package and **not** a club-app dependency on purpose: `@capacitor/assets` drags
+in `sharp`, and the club-app Dockerfile runs `pnpm install` against club-app's manifest. As a
+club-app devDependency it would make every web image build download libvips to generate icons
+no web build ever uses.
+
+`icon-foreground` is drawn at 0.86 of the tile scale. `@capacitor/assets` insets both adaptive
+layers by a further 16.7%, so a foreground that fills its own canvas lands outside the Android
+adaptive-icon safe zone and gets clipped by round masks.
+
 ### Repo hygiene
 
 - `android/` and `ios/` are **committed** — they are editable source (manifest, icons,
@@ -233,6 +261,12 @@ Pinned, concretely:
 - The `cd.yml` `club-app` paths filter currently matches `web/apps/club-app/**`, so an
   Android-only commit would rebuild and redeploy the shipped web image. It gains
   `- '!web/apps/club-app/android/**'` and `- '!web/apps/club-app/ios/**'`.
+- **Both lists also exclude `apps/club-app/assets`** (added A4). That directory holds the
+  `@capacitor/assets` icon and splash sources, which only the native projects consume.
+- **Biome excludes `**/android` and `**/ios`** (added A4). `cap sync` copies the built web
+  bundle into `android/app/src/main/assets/public`, and `biome check .` does not read
+  `.gitignore` — without the exclusion it lints the minified bundle and reports tens of
+  thousands of errors.
 - No native build runs in CI in this phase. Building an APK on CI is a release concern.
 
 ---
@@ -244,7 +278,7 @@ Pinned, concretely:
 | A1 | Capacitor in the workspace | `@capacitor/core`, `@capacitor/cli`, `@capacitor/android` into the catalog and `club-app`; `npx cap init` → `capacitor.config.ts` (`de.furria.club`, `webDir: 'dist'`, env-driven dev server); `cap:sync` / `cap:run:android` package scripts |
 | A2 | The native API origin | `.env.native` (`https://furria.florianrth.com`) and the `build:native` script. No source change, and no Kestrel or Vite change — the runtime-config chain already behaves correctly in native |
 | A3 | API CORS (**backend — `/backend-work`, TDD**) | Explicit policy for `https://localhost` and `capacitor://localhost`, `Authorization` header, `GET`/`POST`/`PUT`/`DELETE`, no credentials; integration test asserting the preflight and a rejected foreign origin |
-| A4 | The Android project | `pnpm build:native` → `npx cap add android`; app name and icons/splash generated from the existing brand assets (`@capacitor/assets` with a 1024px source); `.gitignore`, `.dockerignore`, `cd.yml` filter negations |
+| A4 | The Android project | `pnpm build:native` → `npx cap add android`; app name and icons/splash from the crossed-brooms mark (see *The app mark*); `.gitignore`, `.dockerignore`, `cd.yml` and Biome exclusions |
 | A5 | Native chrome | `@capacitor/system-bars`, `@capacitor/keyboard`, `@capacitor/app` back button, `@capacitor/splash-screen`; safe-area insets in the `@furria/ui` app shell |
 | A6 | Secure refresh-token storage | async `SessionStoragePort`; `'restoring'` initial snapshot; `@aparajita/capacitor-secure-storage` port behind a dynamic import, selected in `main.tsx` via `Capacitor.isNativePlatform()`; localStorage port kept for web |
 | A7 | Device loop, documented | `README.md` section: `CAP_DEV_SERVER_URL` live reload against `vite --host` (the phone reaches the API through Vite's proxy, never directly), `npx cap run android` onto a USB device; a debug APK actually installed and logged in |
@@ -297,14 +331,9 @@ blocks a test build on a phone.
 
 ## Open
 
-Two items need Florian before A4 and A5 can be built. Everything else is decided.
+One item needs Florian before A5 can be built. Everything else is decided.
 
-**1. An app-icon source asset.** `@capacitor/assets` needs roughly a 1024px square source.
-The repo has only `public/favicon.svg`, `favicon-32.png` and `apple-touch-icon.png` — no
-large-format logo anywhere under `web/` or `docs/`. Either the SVG is accepted as the source or
-a 1024px logo has to be exported once.
-
-**2. The `@furria/ui` blast radius of A5.** Safe-area insets land in `KkAppShell`, which the
+**The `@furria/ui` blast radius of A5.** Safe-area insets land in `KkAppShell`, which the
 website may also mount. The slice must confirm that adding `env(safe-area-inset-*)` padding
 changes nothing on desktop web before it ships.
 
