@@ -8,6 +8,7 @@ allowBuilds:
 
 # Single source of truth for all shared dependency versions (plan decision #18).
 catalog:
+  '@aparajita/capacitor-secure-storage': 8.0.0
   '@babel/core': 7.29.7
   '@biomejs/biome': 2.5.4
   '@capacitor/android': 8.5.2

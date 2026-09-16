@@ -1,7 +1,7 @@
 import { createRouter, RouterProvider } from '@tanstack/react-router';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { restoreSession } from '@/lib/api/session/session-store';
+import { startSession } from '@/lib/api/session/session-boot';
 import { routeTree } from '@/routeTree.gen';
 
 const router = createRouter({ routeTree });
@@ -17,7 +17,7 @@ if (rootElement === null) {
   throw new Error('Root element #root not found');
 }
 
-void restoreSession();
+void startSession();
 
 createRoot(rootElement).render(
   <StrictMode>

@@ -196,6 +196,37 @@ SharedPreferences — instead of `androidx.security:security-crypto`, the deprec
   `@capacitor/preferences` **plus** an ADR-0005 amendment recording the deviation — never a
   silent downgrade.
 
+**Built 2026-09-16 (A6).** The interface, the plugin and the runtime selection all shipped as
+pinned. Five things the draft did not know:
+
+- **Use the plugin's low-level string pair, not `get`/`set`.** `set()` runs the value through
+  `JSON.stringify` and `get()` tries to parse ISO dates back into `Date`, so a token round-trips
+  as a quoted string and comes back typed `DataType | null` — a union to narrow for no reason.
+  `getItem`/`setItem`/`removeItem` store and return the raw string and are typed
+  `string | null`, which is exactly the port's shape.
+- **`setSessionStoragePort` no longer publishes anything.** It existed to recompute the snapshot
+  from the new port; with `'restoring'` as the initial status and `restoreSession()` owning the
+  decision, a plain assignment is the whole function. `hasStoredSession` went with it — CA-P0
+  exported it and nothing ever called it.
+- **Clearing is fire-and-forget.** `forgetTokens` is reached from `finishSession`, from
+  `endSession` and from the BroadcastChannel listener, all synchronous and all called from
+  synchronous paths. Awaiting the clear would turn the whole chain async to no end: the
+  in-memory token is already gone, and the port swallows its own failures. It stays
+  `void storagePort.clearRefreshToken()`.
+- **The boot redirect moved from `beforeLoad` to the component.** `_app`'s `beforeLoad` reads
+  the snapshot synchronously and redirects on `'anonymous'`; on a cold load that is now
+  `'restoring'`, so the redirect falls to the `<Navigate>` already in `AppLayout`. Both paths
+  were built in CA-P0 and both still work — verified in a browser: a cold `/members` with no
+  token lands on `/login?returnTo=%2Fmembers`, and with a token whose refresh fails it lands on
+  the boot-failure retry with the token kept.
+- **The dynamic import does what it promises.** The production bundle keeps the plugin in four
+  chunks of ~0.7–1.5 KB that the main chunk only references through `import()`; nothing of
+  `@aparajita/capacitor-secure-storage` is in the entry chunk.
+
+The entry point calls one function, `startSession()` in `lib/api/session/session-boot.ts`, which
+picks the port by `Capacitor.isNativePlatform()` and then restores — rather than spelling the
+ternary out in `main.tsx`.
+
 ### Native chrome is part of the phase, not a polish pass
 
 Capacitor 8 on `targetSdk 36` means **Android 16 enforces edge-to-edge**: `StatusBar`'s

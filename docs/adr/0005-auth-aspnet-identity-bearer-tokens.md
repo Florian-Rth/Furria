@@ -67,3 +67,29 @@ implementation is the native secure storage this ADR already anticipated. See
 [ADR-0006](0006-browser-session-storage-and-401-handling.md) for the full browser session model,
 including why a 401 is terminal and how cross-tab refreshes avoid tripping this ADR's own reuse
 detection.
+
+## Amendment (2026-09-16, CA-N slice A6)
+
+"In the Capacitor shell, the refresh token sits in native secure storage" is now built, on
+Android. Pinning that sentence to a concrete store ruled out the obvious candidate:
+`@capacitor/preferences` wraps `SharedPreferences`/`UserDefaults`, which are durable but
+**unencrypted** — persistence, not secure storage.
+
+The refresh token is held by `@aparajita/capacitor-secure-storage` 8, which on Android drives
+the **Android KeyStore** directly (a system-generated AES-256-GCM key, hardware-backed where
+available, ciphertext in SharedPreferences) instead of the deprecated `EncryptedSharedPreferences`
+library most alternatives are built on. On iOS it is the Keychain, with iCloud sync off, because
+a refresh token is device-bound.
+
+Two consequences belong to this ADR:
+
+- **A decrypt failure is a logout, not an error.** The OS can invalidate the KeyStore key — the
+  lock screen is removed, or a backup is restored onto a different device. Any storage failure
+  reads as "no token": the entry is cleared and the app lands on the login screen. It never
+  reaches the UI as an exception, and it never falls back to an unencrypted store.
+- **The plugin is a single-maintainer dependency.** If it ever stalls on a Capacitor major, the
+  fallback is `@capacitor/preferences` **plus** an amendment here recording that the refresh
+  token is no longer encrypted at rest — never a silent downgrade.
+
+The browser is unchanged: `localStorage` behind the same port and under the same key, per
+[ADR-0006](0006-browser-session-storage-and-401-handling.md).
