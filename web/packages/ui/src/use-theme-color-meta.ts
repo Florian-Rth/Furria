@@ -1,10 +1,9 @@
-import { useColorScheme } from '@mui/material/styles';
 import { useLayoutEffect } from 'react';
-import { kkThemeColorForScheme, resolveKkColorScheme } from './theme-color';
+import { kkThemeColorForScheme } from './theme-color';
+import { useKkColorScheme } from './use-kk-color-scheme';
 
 export const useThemeColorMeta = (): void => {
-  const { mode, systemMode } = useColorScheme();
-  const resolved = resolveKkColorScheme(mode, systemMode);
+  const resolved = useKkColorScheme();
 
   useLayoutEffect(() => {
     const head = document.head;

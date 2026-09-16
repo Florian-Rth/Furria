@@ -10,7 +10,8 @@
     "test": "pnpm -r test",
     "lint": "biome check .",
     "typecheck": "pnpm -r typecheck",
-    "shot": "pnpm --filter @furria/screenshot shot"
+    "shot": "pnpm --filter @furria/screenshot shot",
+    "icons": "pnpm --filter @furria/app-icons generate"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:"

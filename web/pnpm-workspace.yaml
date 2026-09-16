@@ -3,10 +3,21 @@ packages:
   - packages/*
   - tools/*
 
+allowBuilds:
+  sharp: true
+
 # Single source of truth for all shared dependency versions (plan decision #18).
 catalog:
+  '@aparajita/capacitor-secure-storage': 8.0.0
   '@babel/core': 7.29.7
   '@biomejs/biome': 2.5.4
+  '@capacitor/android': 8.5.2
+  '@capacitor/app': 8.1.1
+  '@capacitor/assets': 3.0.5
+  '@capacitor/cli': 8.5.2
+  '@capacitor/core': 8.5.2
+  '@capacitor/keyboard': 8.0.5
+  '@capacitor/splash-screen': 8.0.2
   '@emotion/react': 11.14.0
   '@emotion/styled': 11.14.1
   '@fontsource/anton': 5.2.7
@@ -31,6 +42,7 @@ catalog:
   react: 19.2.7
   react-dom: 19.2.7
   react-hook-form: 7.81.0
+  sharp: 0.35.4
   typescript: 7.0.2
   vite: 8.1.5
   vitest: 4.1.10

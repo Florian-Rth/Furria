@@ -37,6 +37,9 @@ jobs:
               - '.github/workflows/cd.yml'
             club-app:
               - 'web/apps/club-app/**'
+              - '!web/apps/club-app/android/**'
+              - '!web/apps/club-app/ios/**'
+              - '!web/apps/club-app/assets/**'
               - 'web/packages/**'
               - 'web/biome-plugins/**'
               - 'web/package.json'

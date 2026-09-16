@@ -1,5 +1,5 @@
 ---
-status: shaped — ready for implementation
+status: Phase A built and verified on device (2026-09-16); Phase B (iOS) not started
 phase: CA-N
 pulls: CA-P0 (shell & session), one backend slice (CORS for native origins)
 shaped: 2026-09-11
@@ -49,10 +49,12 @@ built for exactly this swap.
 | `appName` | `FURRIA Club` |
 | `webDir` | `dist` |
 | Android floor | `minSdk 24`, `compileSdk`/`targetSdk 36`, Android Studio 2025.2.1+ |
-| Android origin | `http://localhost` (Capacitor's default `androidScheme: 'http'`) |
+| Android origin | `https://localhost` (Capacitor's default `androidScheme: 'https'`) |
 | iOS origin | `capacitor://localhost` |
 
-**Do not change `androidScheme`.** A custom scheme breaks history routing in recent WebViews;
+**Do not change `androidScheme`.** Verified against `@capacitor/cli` 8.5.2 on 2026-09-16:
+the default is `https`, not `http`. An earlier draft of the table above claimed `http` and
+would have produced a CORS allowlist the app never matches. A custom scheme breaks history routing in recent WebViews;
 TanStack Router's browser history depends on the local server serving `index.html` for unknown
 paths, which the default scheme does.
 
@@ -67,18 +69,27 @@ native app the WebView is served by Capacitor's local static server, so a relati
 `/api/...`, so `API_BASE_URL` stays origin-only. Delivered as a build-time Vite env via a
 committed `.env.native` plus `vite build --mode native`, never baked into a source file.
 
-**Two profiles, decided 2026-09-11.** `.env.native` → `https://app.furria.de` for a build meant
-to behave like the real thing; `.env.native-local` → the LAN API (`http://<host>:5100`) for the
-A7 device loop, built via `build:native:local`. The device loop wants the LAN origin regardless
-of whether the deployed host is up, so the second profile is not a temporary version — it is
-the dev target of a shipped dev workflow. Three consequences carried by the local profile only:
+**One profile, decided 2026-09-16.** `.env.native` → `https://furria.florianrth.com`, the
+deployed test backend: that host serves the website container, whose nginx proxies `/api` to the
+API service. It is the only native API origin, and it is HTTPS.
 
-- the API must bind beyond loopback — `launchSettings.json` binds `http://localhost:5100` today;
-- the A3 CORS policy must also allow the LAN origin **in Development only**, never in the
-  deployed policy;
-- the Android build needs `server.allowCleartextTraffic` for plain-HTTP XHR — not just
-  `server.cleartext` for the live-reload URL — and it is gated by `CAP_DEV_SERVER_URL`'s
-  absence/presence the same way, so no release build carries it.
+The earlier two-profile decision assumed a plain-HTTP LAN API baked into the bundle. With an
+HTTPS API that profile is unnecessary, and three consequences it carried turn out never to have
+been real:
+
+- the API does **not** need to bind beyond loopback. In the A7 device loop the phone talks only
+  to the Vite dev server, and Vite's existing `/api` proxy reaches Kestrel over loopback from
+  the dev machine;
+- the CORS policy needs **no** Development-only LAN origin — a live-reload page calls `/api`
+  relative, so that path is same-origin and never preflights;
+- `android.allowMixedContent` is not needed either. An HTTP page calling an HTTPS API is not
+  mixed content; only the reverse is. `server.cleartext` stays gated on `CAP_DEV_SERVER_URL`,
+  for the live-reload page itself.
+
+Verified while pinning this: `server.cleartext` reaches the app through the Cordova-plugins
+manifest (`@capacitor/cli` `dist/cordova.js:757` writes `usesCleartextTraffic`), which merges
+into the app manifest. It applies only when a `server` block exists — so never in a release
+build, exactly as intended.
 
 **The runtime-config chain already works in native, verified 2026-09-11 — do not "fix" it.**
 `web/apps/club-app/public/config.js` has existed since CA-P0 slice 1 and contains exactly
@@ -92,7 +103,9 @@ of this plan called for both after reading the entrypoint without reading `publi
 
 CA-P0 deliberately chose same-origin per app and therefore configured **no CORS at all**. The
 native WebView is a genuinely different origin, so the API gains a CORS policy allowing
-`http://localhost` and `capacitor://localhost`, the `Authorization` header, and `GET`/`POST`.
+`https://localhost` and `capacitor://localhost`, the `Authorization` header, and every method
+the client actually uses — `GET`, `POST`, `PUT` and `DELETE`, not just `GET`/`POST`: the profile
+screen already calls `PUT /api/auth/me/contact-visibility`.
 **No credentials** — bearer tokens only, per ADR-0005. Localhost-with-no-port is a fixed
 Capacitor constant, not a wildcard: the policy stays an explicit allowlist.
 
@@ -183,32 +196,124 @@ SharedPreferences — instead of `androidx.security:security-crypto`, the deprec
   `@capacitor/preferences` **plus** an ADR-0005 amendment recording the deviation — never a
   silent downgrade.
 
+**Built 2026-09-16 (A6).** The interface, the plugin and the runtime selection all shipped as
+pinned. Five things the draft did not know:
+
+- **Use the plugin's low-level string pair, not `get`/`set`.** `set()` runs the value through
+  `JSON.stringify` and `get()` tries to parse ISO dates back into `Date`, so a token round-trips
+  as a quoted string and comes back typed `DataType | null` — a union to narrow for no reason.
+  `getItem`/`setItem`/`removeItem` store and return the raw string and are typed
+  `string | null`, which is exactly the port's shape.
+- **`setSessionStoragePort` no longer publishes anything.** It existed to recompute the snapshot
+  from the new port; with `'restoring'` as the initial status and `restoreSession()` owning the
+  decision, a plain assignment is the whole function. `hasStoredSession` went with it — CA-P0
+  exported it and nothing ever called it.
+- **Clearing is fire-and-forget.** `forgetTokens` is reached from `finishSession`, from
+  `endSession` and from the BroadcastChannel listener, all synchronous and all called from
+  synchronous paths. Awaiting the clear would turn the whole chain async to no end: the
+  in-memory token is already gone, and the port swallows its own failures. It stays
+  `void storagePort.clearRefreshToken()`.
+- **The boot redirect moved from `beforeLoad` to the component.** `_app`'s `beforeLoad` reads
+  the snapshot synchronously and redirects on `'anonymous'`; on a cold load that is now
+  `'restoring'`, so the redirect falls to the `<Navigate>` already in `AppLayout`. Both paths
+  were built in CA-P0 and both still work — verified in a browser: a cold `/members` with no
+  token lands on `/login?returnTo=%2Fmembers`, and with a token whose refresh fails it lands on
+  the boot-failure retry with the token kept.
+- **The dynamic import does what it promises.** The production bundle keeps the plugin in four
+  chunks of ~0.7–1.5 KB that the main chunk only references through `import()`; nothing of
+  `@aparajita/capacitor-secure-storage` is in the entry chunk.
+
+The entry point calls one function, `startSession()` in `lib/api/session/session-boot.ts`, which
+picks the port by `Capacitor.isNativePlatform()` and then restores — rather than spelling the
+ternary out in `main.tsx`.
+
 ### Native chrome is part of the phase, not a polish pass
 
 Capacitor 8 on `targetSdk 36` means **Android 16 enforces edge-to-edge**: `StatusBar`'s
 `overlaysWebView` and `backgroundColor` no longer work, and `android.adjustMarginsForEdgeToEdge`
-was removed in Cap 8. Insets are handled the web way — `env(safe-area-inset-*)` with the
-`@capacitor/system-bars` CSS-variable fallback for older WebViews — which means the
-`@furria/ui` app shell owns it, not the native project: `KkAppShell` is the single element
-that knows where the app's edges are, and all three apps will need the same treatment. Insets
-are layout, so this is not an ADR-0007 question — it is a "one owner" question.
+was removed in Cap 8. Insets are handled the web way — `env(safe-area-inset-*)` with a
+CSS-variable fallback for older WebViews — which means the `@furria/ui` app shell owns it, not
+the native project: `KkShell` is the single element that knows where the app's edges are, and
+all three apps will need the same treatment. Insets are layout, so this is not an ADR-0007
+question — it is a "one owner" question.
 
 Pinned, concretely:
 
-- `KkAppShell`'s root carries the insets —
-  `padding-top: var(--safe-area-inset-top, env(safe-area-inset-top, 0px))` and the same at the
-  bottom, in the `var()`-first order `@capacitor/system-bars` documents (the plugin only
-  supplies those variables as a fallback for older WebViews). The bottom inset is not optional:
+- The shell carries the insets in the `var()`-first order —
+  `calc(var(--safe-area-inset-top, env(safe-area-inset-top, 0px)) + …)` — because Capacitor only
+  supplies those variables as a fallback for older WebViews. The bottom inset is not optional:
   the mocks' sticky bottom navigation would otherwise sit under the gesture bar.
 - **The status bar gets a style, not a background.** With edge-to-edge enforced, the app
-  background already paints behind it; only icon contrast remains, via `StatusBar.setStyle`
-  mirrored to the MUI colour scheme. The pre-hydration script in `index.html` already computes
-  that scheme for `<meta name="theme-color">` — reuse its result instead of deriving it twice.
+  background already paints behind it; only icon contrast remains, via `setStyle` mirrored to
+  the MUI colour scheme. The pre-hydration script in `index.html` already computes that scheme
+  for `<meta name="theme-color">` — reuse its result instead of deriving it twice.
 - `@capacitor/keyboard` with `resize: 'body'`.
 - `@capacitor/app`'s `backButton` listener wired to router history with `App.exitApp()` at the
   root route — adding the listener disables the default behaviour, so it must handle both cases.
 - `@capacitor/splash-screen` hidden explicitly once the session boot decision is known, so the
   app never flashes a blank WebView.
+
+**Corrections from building it (A5, 2026-09-16).** The five bullets above hold as intentions —
+they are printed above in their corrected wording. The plumbing the draft named underneath them
+did not survive contact.
+
+- **There is no `@capacitor/system-bars` package.** It 404s on npm. In Capacitor 8 the system
+  bars are a *core* plugin: `SystemBars`, `SystemBarsStyle` and `SystemBarType` are exported by
+  `@capacitor/core` 8.5.2, so `SystemBars.setStyle` costs no new dependency. `@capacitor/status-bar`
+  still exists, but its own README says `overlaysWebView` and `backgroundColor` are dead on
+  Android 16 — the two things it would have been for.
+- **`insetsHandling` is the knob, and its default is already `css`.** Read in
+  `@capacitor/android`'s `SystemBars.java`: on every window-insets change it injects
+  `--safe-area-inset-{top,right,bottom,left}` onto `document.documentElement`. On a WebView
+  ≥ Chromium 140 it passes the real insets through, so the variable and `env()` agree; below
+  that it pads the WebView itself, forces `env()` to `0px` **and** injects `0px` — so the
+  `var()`-first order is correct on every Android version and, because nothing injects on
+  iOS or web, it falls through to `env()` there. `capacitor.config.ts` sets it explicitly
+  together with `initialViewportFitValueHint: 'cover'`, which matches the `viewport-fit=cover`
+  already in `index.html` and spares the first frame a layout jump.
+  The same listener zeroes the bottom variable while the keyboard is up, which is exactly what
+  a sticky action bar wants.
+- **`SystemBarsStyle.Dark` means *light icons*** — it is named for the background it sits on,
+  not the ink. `systemBarsStyleFor` is a two-line pure function with a test for precisely that
+  inversion.
+- **`@capacitor/keyboard`'s `resize` is iOS-only**; on Android its only layout knob is
+  `resizeOnFullScreen`, which must stay off because Cap 8's `SystemBars` already pads the
+  WebView for the IME. So the plugin is installed and configured (`resize: 'body'` for Phase B)
+  but changes nothing on Android beyond making its events available.
+- **The insets were already in the shell.** CA-P2 shipped `safeArea()` in `@furria/ui`, and
+  `KkShellChrome`, `KkShellFoot`, `KkShellIndex`, `KkShellTrack`, `KkScreen` and `KkSheetRoot`
+  all use it. A5 therefore did not add padding to a root element — the fixed chrome and foot
+  are `position: fixed` and a root padding would never have reached them. It changed the one
+  shared helper to the `var()`-first order and added the left/right inset to `KkShellTrack`,
+  which was the only shell part still ignoring a landscape cutout.
+
+### The app mark — decided 2026-09-16
+
+The icon is the **crossed-brooms tile** from `docs/design/fcc-logos.jsx` (`AppTile`): two white
+brooms crossed on a red squircle, the club's coat of arms reduced to one glyph. It is not the
+`favicon.svg` monogram the web app ships today; the web favicon is expected to follow the mark,
+not the other way round.
+
+One deviation from the mock: the tile gradient uses the shipped `@furria/ui` red tokens
+(`#E11D2A` → `#B3101C`) rather than the mock's own `#C8102E`, so the icon matches the red of the
+app it opens. The binding band keeps the mock's `#9C0B22` — it sits on white bristles, where a
+token red would be too light to read.
+
+**The mark is drawn, not stored.** `web/tools/app-icons` holds the brooms as SVG geometry in
+`brand-mark.ts` and rasterises the five `@capacitor/assets` sources
+(`icon-only`, `icon-background`, `icon-foreground`, `splash`, `splash-dark`) into
+`apps/club-app/assets/`, then fans them out into the Android project. `pnpm icons` runs both
+steps. Sources and generated resources are both committed, so a plain checkout builds without
+the tool.
+
+It is a `tools/` package and **not** a club-app dependency on purpose: `@capacitor/assets` drags
+in `sharp`, and the club-app Dockerfile runs `pnpm install` against club-app's manifest. As a
+club-app devDependency it would make every web image build download libvips to generate icons
+no web build ever uses.
+
+`icon-foreground` is drawn at 0.86 of the tile scale. `@capacitor/assets` insets both adaptive
+layers by a further 16.7%, so a foreground that fills its own canvas lands outside the Android
+adaptive-icon safe zone and gets clipped by round masks.
 
 ### Repo hygiene
 
@@ -220,6 +325,12 @@ Pinned, concretely:
 - The `cd.yml` `club-app` paths filter currently matches `web/apps/club-app/**`, so an
   Android-only commit would rebuild and redeploy the shipped web image. It gains
   `- '!web/apps/club-app/android/**'` and `- '!web/apps/club-app/ios/**'`.
+- **Both lists also exclude `apps/club-app/assets`** (added A4). That directory holds the
+  `@capacitor/assets` icon and splash sources, which only the native projects consume.
+- **Biome excludes `**/android` and `**/ios`** (added A4). `cap sync` copies the built web
+  bundle into `android/app/src/main/assets/public`, and `biome check .` does not read
+  `.gitignore` — without the exclusion it lints the minified bundle and reports tens of
+  thousands of errors.
 - No native build runs in CI in this phase. Building an APK on CI is a release concern.
 
 ---
@@ -229,16 +340,69 @@ Pinned, concretely:
 | # | Slice | Contents |
 |---|---|---|
 | A1 | Capacitor in the workspace | `@capacitor/core`, `@capacitor/cli`, `@capacitor/android` into the catalog and `club-app`; `npx cap init` → `capacitor.config.ts` (`de.furria.club`, `webDir: 'dist'`, env-driven dev server); `cap:sync` / `cap:run:android` package scripts |
-| A2 | The native API origins | `.env.native` (`https://app.furria.de`) + `.env.native-local` (LAN API); `build:native` / `build:native:local` scripts; Kestrel bound beyond loopback for the local profile. No source change — the runtime-config chain already behaves correctly in native |
-| A3 | API CORS (**backend — `/backend-work`, TDD**) | Explicit policy for `http://localhost` and `capacitor://localhost`, `Authorization` header, no credentials; a Development-only addition for the LAN origin; integration test asserting the preflight and a rejected foreign origin |
-| A4 | The Android project | `pnpm build:native` → `npx cap add android`; app name and icons/splash generated from the existing brand assets (`@capacitor/assets` with a 1024px source); `.gitignore`, `.dockerignore`, `cd.yml` filter negations |
-| A5 | Native chrome | `@capacitor/system-bars`, `@capacitor/keyboard`, `@capacitor/app` back button, `@capacitor/splash-screen`; safe-area insets in the `@furria/ui` app shell |
+| A2 | The native API origin | `.env.native` (`https://furria.florianrth.com`) and the `build:native` script. No source change, and no Kestrel or Vite change — the runtime-config chain already behaves correctly in native |
+| A3 | API CORS (**backend — `/backend-work`, TDD**) | Explicit policy for `https://localhost` and `capacitor://localhost`, `Authorization` header, `GET`/`POST`/`PUT`/`DELETE`, no credentials; integration test asserting the preflight and a rejected foreign origin |
+| A4 | The Android project | `pnpm build:native` → `npx cap add android`; app name and icons/splash from the crossed-brooms mark (see *The app mark*); `.gitignore`, `.dockerignore`, `cd.yml` and Biome exclusions |
+| A5 | Native chrome | `SystemBars` (core, not a package), `@capacitor/keyboard`, `@capacitor/app` back button, `@capacitor/splash-screen`; safe-area insets in the `@furria/ui` app shell |
 | A6 | Secure refresh-token storage | async `SessionStoragePort`; `'restoring'` initial snapshot; `@aparajita/capacitor-secure-storage` port behind a dynamic import, selected in `main.tsx` via `Capacitor.isNativePlatform()`; localStorage port kept for web |
-| A7 | Device loop, documented | `README.md` section: `CAP_DEV_SERVER_URL` live reload against `vite --host`, the API bound beyond loopback so the phone can reach `:5100`, `npx cap run android` onto a USB device; a debug APK actually installed and logged in |
+| A7 | Device loop, documented | `README.md` section: `CAP_DEV_SERVER_URL` live reload against `vite --host` (the phone reaches the API through Vite's proxy, never directly), `npx cap run android` onto a USB device; a debug APK actually installed and logged in |
 
 Slice order matters: A2 and A3 before A4, because an `android/` project that cannot reach the
 API teaches nothing. A6 last, because it touches shipped session code and wants a working app
 around it to verify against.
+
+### A7 ran on real hardware (2026-09-16)
+
+**Samsung Galaxy Z Fold6 (SM-F956B), Android 16, SDK 36, WebView Chromium 151.** Both machine
+prerequisites were already installed and simply not on `PATH`: the SDK at `~/Android/Sdk` and a
+full JDK 21 bundled with Android Studio at `~/.local/share/android-studio/jbr`. A cold first
+Gradle run took 8m41s (it downloads Gradle 8.14.3 and auto-installs Build-Tools 35); incremental
+rebuilds are ~20s.
+
+Every open question in this plan is now answered, and answered on the device rather than argued:
+
+- **pnpm's symlinked `node_modules` is fine.** Gradle configured `:capacitor-android`,
+  `:aparajita-capacitor-secure-storage`, `:capacitor-app`, `:capacitor-keyboard` and
+  `:capacitor-splash-screen` straight out of the `.pnpm` store. No `node-linker` setting needed.
+- **`navigator.locks` is present** in the Android WebView. CA-P0's refresh lock stands.
+- **The insets are right.** `--safe-area-inset-top: 36px` injected against `env()`'s 37px (a
+  rounding step apart — Capacitor truncates to whole dp), `--safe-area-inset-bottom: 48px` for
+  the navigation bar. On the app shell that lands the top bar at `top: 48px` and the sticky nav
+  at `bottom: 60px`, both = inset + the 12px gutter. The nav clears the navigation bar, which
+  was the whole point.
+- **`SystemBarsStyle.Dark` really does mean light icons.** Toggling the device between light and
+  dark flips the status-bar icons correctly and live, with no restart.
+- **The back button behaves on both branches.** `/club` → back → `/`; back at the root finishes
+  the activity and the launcher comes forward. (`pidof` is the wrong probe for that second case —
+  Android keeps the process cached after the activity finishes. `dumpsys activity activities |
+  grep ResumedActivity` is the honest check.)
+- **The refresh token is in the KeyStore, and it is observable.** `localStorage` on the device is
+  empty — `Object.keys(localStorage)` returns `[]` — while
+  `shared_prefs/WSSecureStorageSharedPreferences.xml` holds
+  `furria.club-app.refresh-token` as base64 ciphertext, under the same key the web port uses.
+  A force-stop and cold start restores the session without a login.
+
+Two things the slice changed:
+
+- **`adb reverse` replaces the LAN IP for live reload.** The phone is on a cable anyway;
+  `adb reverse tcp:3001 tcp:3001` makes its `localhost:3001` reach the dev machine, so there is
+  no shared-Wi-Fi requirement and no IP to re-discover. `/api` stays same-origin through Vite's
+  proxy, so the loop never touches CORS at all. The LAN variant is documented as the wireless
+  fallback.
+- **Vite was watching the native project.** `cap sync` copies the bundle into
+  `android/app/src/main/assets/public`, which sits inside the Vite root, so every sync fired a
+  spurious page reload — and the Gradle merge step fired a second one. `server.watch.ignored`
+  now excludes `**/android/**` and `**/ios/**`.
+
+**The bundled build cannot reach the API yet, and that is a deployment gap, not a code one.**
+A3's CORS policy is in the repo, but `cd.yml` deploys only from `main` and this branch has never
+been there, so `https://furria.florianrth.com` still runs a pre-A3 image: the preflight from
+`Origin: https://localhost` answers `405` with no CORS headers and the WebView reports a bare
+`TypeError: Failed to fetch`. Everything above was therefore proven through the device loop.
+Merging this branch is what closes it; re-run the bundled build against the deployment afterwards
+to confirm A3 end-to-end.
+
+---
 
 ## Phase B — iOS (needs a Mac and a human)
 
@@ -261,8 +425,7 @@ is a release phase, not a "see it on my phone" phase.
 ## Done when
 
 - `pnpm build:native && npx cap sync && npx cap run android` installs the Club-App on a USB
-  device, it logs in against both origins (`.env.native` and `.env.native-local`), and the
-  session survives a cold start.
+  device, it logs in against the deployed API, and the session survives a cold start.
 - The same commit still builds, deploys and serves the web app unchanged — `pnpm build`,
   `pnpm test`, `pnpm lint`, `pnpm typecheck`, the club-app image, and a website commit that
   does not redeploy the club-app.
@@ -285,22 +448,15 @@ blocks a test build on a phone.
 
 ## Open
 
-Two items need Florian before A4 and A5 can be built. Everything else is decided.
+Nothing is waiting on Florian except the merge. Every question this plan raised has been answered
+on hardware — see *A7 ran on real hardware* above for `navigator.locks`, the Gradle/pnpm paths,
+the insets and the `@furria/ui` blast radius.
 
-**1. An app-icon source asset.** `@capacitor/assets` needs roughly a 1024px square source.
-The repo has only `public/favicon.svg`, `favicon-32.png` and `apple-touch-icon.png` — no
-large-format logo anywhere under `web/` or `docs/`. Either the SVG is accepted as the source or
-a 1024px logo has to be exported once.
+What is left:
 
-**2. The `@furria/ui` blast radius of A5.** Safe-area insets land in `KkAppShell`, which the
-website may also mount. The slice must confirm that adding `env(safe-area-inset-*)` padding
-changes nothing on desktop web before it ships.
-
-Two assumptions to **verify on first run**, neither of which changes a decision:
-
-- `navigator.locks` (the refresh lock from CA-P0) in the Android WebView and in WKWebView.
-  Expected present; if absent on a target, the store's existing no-lock path must be checked
-  rather than a lock polyfilled in.
-- Whether `pnpm`'s symlinked `node_modules` upsets the paths Capacitor writes into
-  `capacitor.settings.gradle`. If it does, the fix is a `node-linker` setting for the app, not
-  a change to the workspace layout.
+- **Merge the branch so A3 deploys.** Until then the bundled APK cannot reach
+  `https://furria.florianrth.com`; the device loop is unaffected.
+- **Whether the hardware back button should also close an open MUI dialog.** Sheets are
+  search-param driven, so history back closes them for free; the group/person dialogs are local
+  state and are currently navigated out from underneath. Now cheap to try on the device.
+- **Phase B (iOS)** — unchanged, still gated on a Mac.

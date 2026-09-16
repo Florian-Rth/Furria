@@ -31,10 +31,7 @@ let accessTokenLifetimeMs = 0;
 let pendingInTabRefresh: Promise<string> | null = null;
 let expiryPublicationSuppressed = false;
 
-const resolveStoredStatus = (): SessionStatus =>
-  storagePort.readRefreshToken() === null ? 'anonymous' : 'restoring';
-
-let snapshot: SessionSnapshot = { status: resolveStoredStatus(), expired: false };
+let snapshot: SessionSnapshot = { status: 'restoring', expired: false };
 
 const listeners = new Set<() => void>();
 const sessionEndListeners = new Set<() => void>();
@@ -54,7 +51,7 @@ const forgetTokens = (): void => {
   accessTokenReceivedAtMs = 0;
   accessTokenReceivedAtTicks = 0;
   accessTokenLifetimeMs = 0;
-  storagePort.clearRefreshToken();
+  void storagePort.clearRefreshToken();
 };
 
 const hasLiveSession = (): boolean => snapshot.status !== 'anonymous' || accessToken !== null;
@@ -85,10 +82,10 @@ listenForRemoteSessionEnd((expired) => {
   finishSession(snapshot.expired || expired);
 });
 
-const adoptTokens = (tokens: SessionTokens): string => {
+const adoptTokens = async (tokens: SessionTokens): Promise<string> => {
   const receivedAtMs = Date.now();
   const receivedAtTicks = performance.now();
-  if (!storagePort.writeRefreshToken(tokens.refreshToken)) {
+  if (!(await storagePort.writeRefreshToken(tokens.refreshToken))) {
     endSession(false);
     throw new SessionPersistenceError();
   }
@@ -138,10 +135,10 @@ const withRefreshLock = async (run: () => Promise<string>): Promise<string> => {
 };
 
 const refreshThroughLock = async (): Promise<string> => {
-  const tokenSeenBeforeLock = storagePort.readRefreshToken();
+  const tokenSeenBeforeLock = await storagePort.readRefreshToken();
 
   return await withRefreshLock(async () => {
-    const storedToken = storagePort.readRefreshToken();
+    const storedToken = await storagePort.readRefreshToken();
     const currentAccessToken = accessToken;
 
     if (
@@ -157,7 +154,7 @@ const refreshThroughLock = async (): Promise<string> => {
     }
 
     try {
-      return adoptTokens(await requestRefresh(storedToken));
+      return await adoptTokens(await requestRefresh(storedToken));
     } catch (error) {
       if (error instanceof UnauthorizedError) {
         endSession(true);
@@ -185,13 +182,7 @@ export const subscribeToSessionEnd = (listener: () => void): (() => void) => {
 
 export const setSessionStoragePort = (port: SessionStoragePort): void => {
   storagePort = port;
-  if (accessToken !== null) {
-    return;
-  }
-  publish(resolveStoredStatus(), snapshot.expired);
 };
-
-export const hasStoredSession = (): boolean => storagePort.readRefreshToken() !== null;
 
 export const ensureFreshAccessToken = async (): Promise<string> => {
   const currentAccessToken = accessToken;
@@ -216,7 +207,7 @@ export const withFreshAccessToken = async <TResult>(
 };
 
 export const signIn = async (credentials: LoginRequest): Promise<void> => {
-  adoptTokens(await requestLogin(credentials));
+  await adoptTokens(await requestLogin(credentials));
 };
 
 const revokeQuietly = async (refreshToken: string): Promise<void> => {
@@ -228,7 +219,7 @@ const revokeQuietly = async (refreshToken: string): Promise<void> => {
 };
 
 export const signOut = async (): Promise<void> => {
-  const refreshToken = storagePort.readRefreshToken();
+  const refreshToken = await storagePort.readRefreshToken();
   expiryPublicationSuppressed = true;
   try {
     if (refreshToken !== null) {
@@ -245,7 +236,7 @@ export const restoreSession = async (): Promise<void> => {
   if (snapshot.status === 'authenticated') {
     return;
   }
-  if (storagePort.readRefreshToken() === null) {
+  if ((await storagePort.readRefreshToken()) === null) {
     publish('anonymous', snapshot.expired);
     return;
   }
@@ -253,7 +244,7 @@ export const restoreSession = async (): Promise<void> => {
   try {
     await ensureFreshAccessToken();
   } catch {
-    if (storagePort.readRefreshToken() === null) {
+    if ((await storagePort.readRefreshToken()) === null) {
       return;
     }
     publish('unavailable', false);

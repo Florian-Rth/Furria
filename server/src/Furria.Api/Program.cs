@@ -5,6 +5,7 @@ using FastEndpoints.Security;
 using FastEndpoints.Swagger;
 using Furria.Api.Authentication;
 using Furria.Api.Authorization;
+using Furria.Api.Cors;
 using Furria.Application;
 using Furria.Application.Identity;
 using Furria.Infrastructure;
@@ -38,6 +39,7 @@ builder
                 )
     );
 builder.Services.AddAuthorization();
+builder.Services.AddNativeShellCors();
 builder.Services.AddFastEndpoints();
 if (builder.Environment.IsDevelopment())
 {
@@ -53,6 +55,7 @@ if (builder.Environment.IsDevelopment())
 
 var app = builder.Build();
 
+app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseFastEndpoints(c =>

@@ -23,6 +23,9 @@ export default defineConfig({
   server: {
     port: 3001,
     strictPort: true,
+    watch: {
+      ignored: ['**/android/**', '**/ios/**'],
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:5100',

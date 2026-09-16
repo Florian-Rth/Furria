@@ -56,3 +56,25 @@ removes that: the losing tab finds the current token and skips its own refresh e
   test and reason about. Logout is the explicit exit and revokes server-side.
 - **`navigator.locks` is now a hard runtime dependency** of the session layer. It is available in
   every browser the platform targets and in both Capacitor webviews.
+
+## Amendment (2026-09-16, CA-N slice A6)
+
+Every decision above stands. The port turned out to be **asynchronous**, and that changes one
+sentence of the boot description.
+
+Every native secure store is async, so `SessionStoragePort` returns promises and the store can
+no longer read the token at module load to decide its first snapshot. **The initial status is
+`restoring`, not `anonymous`**, and `restoreSession()` publishes `anonymous` itself when
+hydration finds nothing — so the browser now shows one extra frame of the boot stage before the
+login screen. That is the correct price. The alternative, a synchronous port with a native cache
+hydrated behind the scenes, hides an async truth behind a lying signature and comes back as an
+empty token on a cold start.
+
+"A stored refresh token triggers one refresh at boot before the app renders" still holds; what
+changed is that the question *is there a stored token?* is itself awaited — including inside the
+refresh lock, where re-reading storage is what makes a stale tab stand down.
+
+Which implementation answers that question is chosen **at runtime**, by
+`Capacitor.isNativePlatform()` in the app's entry point, with the native plugin behind a dynamic
+`import()` so the browser bundle never carries it. Not at build time: web and native ship the
+same bundle, and the native build differs only in its API origin.
