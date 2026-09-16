@@ -1,5 +1,5 @@
 ---
-status: shaped — ready for implementation
+status: Phase A built and verified on device (2026-09-16); Phase B (iOS) not started
 phase: CA-N
 pulls: CA-P0 (shell & session), one backend slice (CORS for native origins)
 shaped: 2026-09-11
@@ -351,6 +351,59 @@ Slice order matters: A2 and A3 before A4, because an `android/` project that can
 API teaches nothing. A6 last, because it touches shipped session code and wants a working app
 around it to verify against.
 
+### A7 ran on real hardware (2026-09-16)
+
+**Samsung Galaxy Z Fold6 (SM-F956B), Android 16, SDK 36, WebView Chromium 151.** Both machine
+prerequisites were already installed and simply not on `PATH`: the SDK at `~/Android/Sdk` and a
+full JDK 21 bundled with Android Studio at `~/.local/share/android-studio/jbr`. A cold first
+Gradle run took 8m41s (it downloads Gradle 8.14.3 and auto-installs Build-Tools 35); incremental
+rebuilds are ~20s.
+
+Every open question in this plan is now answered, and answered on the device rather than argued:
+
+- **pnpm's symlinked `node_modules` is fine.** Gradle configured `:capacitor-android`,
+  `:aparajita-capacitor-secure-storage`, `:capacitor-app`, `:capacitor-keyboard` and
+  `:capacitor-splash-screen` straight out of the `.pnpm` store. No `node-linker` setting needed.
+- **`navigator.locks` is present** in the Android WebView. CA-P0's refresh lock stands.
+- **The insets are right.** `--safe-area-inset-top: 36px` injected against `env()`'s 37px (a
+  rounding step apart — Capacitor truncates to whole dp), `--safe-area-inset-bottom: 48px` for
+  the navigation bar. On the app shell that lands the top bar at `top: 48px` and the sticky nav
+  at `bottom: 60px`, both = inset + the 12px gutter. The nav clears the navigation bar, which
+  was the whole point.
+- **`SystemBarsStyle.Dark` really does mean light icons.** Toggling the device between light and
+  dark flips the status-bar icons correctly and live, with no restart.
+- **The back button behaves on both branches.** `/club` → back → `/`; back at the root finishes
+  the activity and the launcher comes forward. (`pidof` is the wrong probe for that second case —
+  Android keeps the process cached after the activity finishes. `dumpsys activity activities |
+  grep ResumedActivity` is the honest check.)
+- **The refresh token is in the KeyStore, and it is observable.** `localStorage` on the device is
+  empty — `Object.keys(localStorage)` returns `[]` — while
+  `shared_prefs/WSSecureStorageSharedPreferences.xml` holds
+  `furria.club-app.refresh-token` as base64 ciphertext, under the same key the web port uses.
+  A force-stop and cold start restores the session without a login.
+
+Two things the slice changed:
+
+- **`adb reverse` replaces the LAN IP for live reload.** The phone is on a cable anyway;
+  `adb reverse tcp:3001 tcp:3001` makes its `localhost:3001` reach the dev machine, so there is
+  no shared-Wi-Fi requirement and no IP to re-discover. `/api` stays same-origin through Vite's
+  proxy, so the loop never touches CORS at all. The LAN variant is documented as the wireless
+  fallback.
+- **Vite was watching the native project.** `cap sync` copies the bundle into
+  `android/app/src/main/assets/public`, which sits inside the Vite root, so every sync fired a
+  spurious page reload — and the Gradle merge step fired a second one. `server.watch.ignored`
+  now excludes `**/android/**` and `**/ios/**`.
+
+**The bundled build cannot reach the API yet, and that is a deployment gap, not a code one.**
+A3's CORS policy is in the repo, but `cd.yml` deploys only from `main` and this branch has never
+been there, so `https://furria.florianrth.com` still runs a pre-A3 image: the preflight from
+`Origin: https://localhost` answers `405` with no CORS headers and the WebView reports a bare
+`TypeError: Failed to fetch`. Everything above was therefore proven through the device loop.
+Merging this branch is what closes it; re-run the bundled build against the deployment afterwards
+to confirm A3 end-to-end.
+
+---
+
 ## Phase B — iOS (needs a Mac and a human)
 
 Gated behind Phase A and behind Florian being on macOS. Everything here either requires Xcode
@@ -395,24 +448,15 @@ blocks a test build on a phone.
 
 ## Open
 
-Nothing is waiting on Florian. The one item that was — **the `@furria/ui` blast radius of
-A5** — closed while building it: the website never mounts `KkShell` at all (its only safe-area
-use is one raw `env()` in `StickyActionBar`), and a headless Chrome probe confirmed that
-`calc(var(--safe-area-inset-top, env(safe-area-inset-top, 0px)) + 12px)` computes to the same
-`12px` as the old `env()`-only form when nothing injects the variable, and to `60px` when
-Capacitor does. The change is a no-op on web by construction.
+Nothing is waiting on Florian except the merge. Every question this plan raised has been answered
+on hardware — see *A7 ran on real hardware* above for `navigator.locks`, the Gradle/pnpm paths,
+the insets and the `@furria/ui` blast radius.
 
-Assumptions to **verify on first run**, none of which changes a decision:
+What is left:
 
-- Whether the hardware back button should also close an open MUI dialog. Sheets are search-param
-  driven, so history back closes them for free; the group/person dialogs are local state and
-  will currently be navigated out from underneath. Cheap to fix once a device says it is wrong.
-- `navigator.locks` (the refresh lock from CA-P0) in the Android WebView and in WKWebView.
-  Expected present; if absent on a target, the store's existing no-lock path must be checked
-  rather than a lock polyfilled in.
-- Whether `pnpm`'s symlinked `node_modules` upsets the paths Capacitor writes into
-  `capacitor.settings.gradle`. A4 saw `cap add android` write
-  `../../../node_modules/.pnpm/@capacitor+android@8.5.2_.../@capacitor/android/capacitor`,
-  which resolves on disk — but no Gradle run has confirmed it, because this machine has no JDK
-  and no Android SDK. A7 is where it is actually proven; if it breaks, the fix is a
-  `node-linker` setting for the app, not a change to the workspace layout.
+- **Merge the branch so A3 deploys.** Until then the bundled APK cannot reach
+  `https://furria.florianrth.com`; the device loop is unaffected.
+- **Whether the hardware back button should also close an open MUI dialog.** Sheets are
+  search-param driven, so history back closes them for free; the group/person dialogs are local
+  state and are currently navigated out from underneath. Now cheap to try on the device.
+- **Phase B (iOS)** — unchanged, still gated on a Mac.
