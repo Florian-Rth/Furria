@@ -270,11 +270,21 @@ _Avoid_: balance table, payments table (as source of truth)
   Plätze, for the entitlement. The decision unblocks `page-seat-picker` and shapes
   `page-purchase`.
 
-- **Gruppentermin** — **open 2026-09-10.** A Gruppe's own schedule (Training, Auftritt) is a real
-  need for the Gruppen-Hub, but **Veranstaltung** is deliberately narrow and the club has no pinned
-  word for a Gruppe's own dates. Until it names one, nothing is modelled and no surface promises
-  it: the Hub's Termine slot is a reserved placeholder pointing at a later phase, and no copy
-  calls it a Spielplan.
+- **Gruppentermin** — **open 2026-09-10, reframed 2026-09-17.** A Gruppe's own schedule
+  (Training, Auftritt) is a real need for the Gruppen-Hub, but **Veranstaltung** is deliberately
+  narrow and the club has no pinned word for a Gruppe's own dates.
+
+  The Club-App floor plan ruled on 2026-09-17 that there is **one club calendar**, not several:
+  one store holds Veranstaltungen, unticketed club occasions, members-only events and a Gruppe's
+  own dates alike, and every surface is a filter over it — a Gruppe's dates band is that calendar
+  scoped to the Gruppe. That changes the missing word: the club does not need a name for *a
+  Gruppe's dates*, it needs one for **an entry in the club calendar**, of which a training is one
+  kind. **Veranstaltung** cannot be it (it stays narrow), and **Termin** is on that entry's own
+  avoid-list.
+
+  Until the club names it, nothing is modelled and no surface promises it: the Hub's dates slot
+  is a reserved placeholder, and no copy calls it a Spielplan. It blocks the Kalender page, the
+  Verein hub's calendar band and the Gruppe hub's dates band.
 
 - **Einlasskontrolle** — **open, 2026-08-19.** The club has not decided how entry is checked
   at the door (QR scanning per Karte, a name list, no check at all). Until decided, no public
