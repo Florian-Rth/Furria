@@ -1,4 +1,4 @@
-import Stack from '@mui/material/Stack';
+import { KkPanelStack } from '@furria/ui';
 import type { FC } from 'react';
 import type { ManagedGroupSummary } from '../schemas';
 import { GroupOverrideBody } from './GroupOverrideBody';
@@ -17,7 +17,7 @@ export const GroupOverridePanel: FC<GroupOverridePanelProps> = ({
   onArchive,
   onRestore,
 }) => (
-  <Stack sx={{ gap: 3.5, minWidth: 0 }}>
+  <KkPanelStack>
     <ManagedGroupHeaderCard
       group={group}
       onEdit={onEdit}
@@ -25,5 +25,5 @@ export const GroupOverridePanel: FC<GroupOverridePanelProps> = ({
       onRestore={onRestore}
     />
     <GroupOverrideBody groupId={group.groupId} />
-  </Stack>
+  </KkPanelStack>
 );

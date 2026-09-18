@@ -1,6 +1,5 @@
-import { KkPanel, KkPanelSection, KkSkeletonBlock, KkSkeletonRow } from '@furria/ui';
+import { KkPanel, KkPanelSection, KkPanelStack, KkSkeletonBlock, KkSkeletonRow } from '@furria/ui';
 import Grid from '@mui/material/Grid';
-import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { AppSkeletonRegion } from '@/features/session';
 import { GROUP_SECTION_TITLES } from '@/lib/group-sections';
@@ -42,7 +41,7 @@ export const GroupSkeleton: FC = () => (
         </KkPanelSection>
       </Grid>
       <Grid size={RAIL_SIZE} sx={{ minWidth: 0 }}>
-        <Stack sx={{ gap: 3.5, minWidth: 0 }}>
+        <KkPanelStack>
           <KkPanelSection title={GROUP_SECTION_TITLES.events}>
             <KkPanel variant="block">
               <KkSkeletonBlock lines={RESERVED_LINES} />
@@ -53,7 +52,7 @@ export const GroupSkeleton: FC = () => (
               <KkSkeletonBlock lines={RESERVED_LINES} />
             </KkPanel>
           </KkPanelSection>
-        </Stack>
+        </KkPanelStack>
       </Grid>
     </Grid>
   </AppSkeletonRegion>

@@ -1,5 +1,5 @@
+import { KkPanelStack } from '@furria/ui';
 import Grid from '@mui/material/Grid';
-import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { useFactEditor } from '../hooks/use-fact-editor';
 import type { PersonDetails } from '../schemas';
@@ -24,17 +24,17 @@ export const PersonEditView: FC<PersonEditViewProps> = ({ person }) => {
     <>
       <Grid container spacing={{ xs: 3.5, desktop: 5 }} sx={{ minWidth: 0 }}>
         <Grid size={{ xs: 12, desktop: 7 }} sx={{ minWidth: 0 }}>
-          <Stack sx={{ gap: 3.5, minWidth: 0 }}>
+          <KkPanelStack>
             <PersonMembershipsPanel person={person} editor={editor} />
             <PersonFeeReductionsPanel person={person} editor={editor} />
-          </Stack>
+          </KkPanelStack>
         </Grid>
         <Grid size={{ xs: 12, desktop: 5 }} sx={{ minWidth: 0 }}>
-          <Stack sx={{ gap: 3.5, minWidth: 0 }}>
+          <KkPanelStack>
             <PersonMasterDataPanel person={person} />
             <PersonGroupsPanel groups={person.groups} firstName={person.firstName} />
             <PersonRolesPanel roles={person.roles} firstName={person.firstName} />
-          </Stack>
+          </KkPanelStack>
         </Grid>
       </Grid>
       <EndMembershipDialog

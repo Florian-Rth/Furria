@@ -1,5 +1,4 @@
-import { KkPanel, KkPanelSection, KkSkeletonBlock, KkSkeletonRow } from '@furria/ui';
-import Stack from '@mui/material/Stack';
+import { KkPanel, KkPanelSection, KkPanelStack, KkSkeletonBlock, KkSkeletonRow } from '@furria/ui';
 import type { FC } from 'react';
 import { AppSkeletonRegion } from '@/features/session';
 import { ROLE_SECTION_TITLES } from '../manage-roles-labels';
@@ -12,7 +11,7 @@ const LOADING_LABEL = 'Die Rolle wird geladen';
 
 export const RoleDetailSkeleton: FC = () => (
   <AppSkeletonRegion label={LOADING_LABEL}>
-    <Stack sx={{ gap: 3.5, minWidth: 0 }}>
+    <KkPanelStack>
       <KkPanel variant="block">
         <KkSkeletonBlock lines={HEADER_LINES} />
       </KkPanel>
@@ -26,6 +25,6 @@ export const RoleDetailSkeleton: FC = () => (
           <KkSkeletonRow count={PERMISSION_ROWS} />
         </KkPanel>
       </KkPanelSection>
-    </Stack>
+    </KkPanelStack>
   </AppSkeletonRegion>
 );

@@ -1,4 +1,4 @@
-import { KkPanel, KkPanelHeader, KkSkeletonBlock } from '@furria/ui';
+import { KkPanel, KkPanelHeader, KkPanelStack, KkSkeletonBlock } from '@furria/ui';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
@@ -16,7 +16,7 @@ export const ProfileSkeleton: FC = () => (
   <AppSkeletonRegion label={LOADING_LABEL}>
     <Grid container spacing={{ xs: 3.5, desktop: 5 }} sx={{ minWidth: 0 }}>
       <Grid size={{ xs: 12, desktop: 7 }} sx={{ minWidth: 0 }}>
-        <Stack sx={{ gap: 3.5, minWidth: 0 }}>
+        <KkPanelStack>
           <Stack sx={{ gap: 1.5, minWidth: 0 }}>
             <KkPanelHeader title={PROFILE_SECTION_TITLES.visibility} />
             <KkPanel variant="block">
@@ -29,10 +29,10 @@ export const ProfileSkeleton: FC = () => (
               <KkSkeletonBlock lines={PREVIEW_LINES} />
             </KkPanel>
           </Stack>
-        </Stack>
+        </KkPanelStack>
       </Grid>
       <Grid size={{ xs: 12, desktop: 5 }} sx={{ minWidth: 0 }}>
-        <Stack sx={{ gap: 3.5, minWidth: 0 }}>
+        <KkPanelStack>
           <Stack sx={{ gap: 1.5, minWidth: 0 }}>
             <KkPanelHeader title={PROFILE_SECTION_TITLES.data} />
             <KkPanel variant="block">
@@ -51,7 +51,7 @@ export const ProfileSkeleton: FC = () => (
               <KkSkeletonBlock lines={GROUPS_LINES} />
             </KkPanel>
           </Stack>
-        </Stack>
+        </KkPanelStack>
       </Grid>
     </Grid>
   </AppSkeletonRegion>
