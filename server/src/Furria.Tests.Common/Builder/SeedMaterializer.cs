@@ -35,6 +35,8 @@ internal static class SeedMaterializer
             ct
         );
 
-        return new SeededRegistry(identity, groups, roles);
+        var club = await ClubSeedMaterializer.InsertAsync(dbContext, recorded.RecordedClub, ct);
+
+        return new SeededRegistry(identity, groups, roles, club);
     }
 }

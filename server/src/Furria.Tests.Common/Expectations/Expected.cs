@@ -36,6 +36,8 @@ public sealed class Expected
 
     public GroupAdminSetExpectations GroupAdminsOf(int groupId) => new(this, groupId);
 
+    public SessionExpectations Session(int sessionId) => new(this, sessionId);
+
     public RoleExpectations Role(int roleId) => new(this, roleId);
 
     public RoleSetExpectations Roles() => new(this);
