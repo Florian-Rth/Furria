@@ -16,15 +16,10 @@ describe('formatGroupStat', () => {
 });
 
 describe('buildStoryStats', () => {
-  it('keeps all four stats while the Gruppen count is still missing', () => {
-    const stats = buildStoryStats(1971, '180+', null, 55);
+  it('keeps all three stats while the Gruppen count is still missing', () => {
+    const stats = buildStoryStats(1971, '180+', null);
 
-    expect(stats.map((stat) => stat.label)).toEqual([
-      'gegründet',
-      'Mitglieder',
-      'Gruppen',
-      'Session',
-    ]);
-    expect(stats.map((stat) => stat.value)).toEqual(['1971', '180+', UNKNOWN_STAT_VALUE, '55.']);
+    expect(stats.map((stat) => stat.label)).toEqual(['gegründet', 'Mitglieder', 'Gruppen']);
+    expect(stats.map((stat) => stat.value)).toEqual(['1971', '180+', UNKNOWN_STAT_VALUE]);
   });
 });

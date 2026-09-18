@@ -10,7 +10,6 @@ import {
   clubPrimaryCtaLabel,
   clubSecondaryCtaLabel,
 } from '@/features/club/header-content';
-import { ClubHeroNumeral } from './internal/ui/ClubHeroNumeral';
 import { ClubHeroPhoto } from './internal/ui/ClubHeroPhoto';
 
 export const ClubHeader: FC = () => (
@@ -29,7 +28,6 @@ export const ClubHeader: FC = () => (
       </KkHeroSection.Actions>
     </KkHeroSection.Main>
     <KkHeroSection.Aside>
-      <ClubHeroNumeral />
       <Box sx={{ pt: { md: 9 } }}>
         <ClubHeroPhoto />
       </Box>

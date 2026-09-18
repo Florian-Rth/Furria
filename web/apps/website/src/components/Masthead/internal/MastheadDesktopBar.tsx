@@ -59,12 +59,6 @@ export const MastheadDesktopBar: FC = () => (
           ))}
         </Stack>
         <Box sx={{ ...metaRuleSx, borderBottom: 2, borderColor: 'text.primary' }} />
-        <Typography
-          variant="caption"
-          sx={{ ...metaLabelSx, ...metaHideSx, color: 'text.secondary' }}
-        >
-          NUMBER {currentSession.number}
-        </Typography>
       </Stack>
       <Link component={RouterLink} to="/" underline="none">
         <Typography
