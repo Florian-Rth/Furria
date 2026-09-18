@@ -1,5 +1,4 @@
-import { KkNote, KkPanel, KkPanelHeader, KkSwitchRow } from '@furria/ui';
-import Stack from '@mui/material/Stack';
+import { KkNote, KkPanel, KkPanelSection, KkSwitchRow } from '@furria/ui';
 import type { FC } from 'react';
 import type { MePerson } from '@/lib/api/schemas';
 import { SWITCH_STATE_LABELS } from '@/lib/state-chips';
@@ -26,8 +25,7 @@ export const ProfileVisibilityPanel: FC<ProfileVisibilityPanelProps> = ({ person
   );
 
   return (
-    <Stack sx={{ gap: 1.5, minWidth: 0 }}>
-      <KkPanelHeader title={PROFILE_SECTION_TITLES.visibility} />
+    <KkPanelSection title={PROFILE_SECTION_TITLES.visibility}>
       <KkPanel variant="block" sx={{ gap: 1.75 }}>
         <KkSwitchRow
           label={VISIBILITY_SWITCH_LABEL}
@@ -43,6 +41,6 @@ export const ProfileVisibilityPanel: FC<ProfileVisibilityPanelProps> = ({ person
         </KkNote>
         {offNote}
       </KkPanel>
-    </Stack>
+    </KkPanelSection>
   );
 };
