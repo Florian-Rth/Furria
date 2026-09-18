@@ -4,7 +4,7 @@ namespace Furria.Core.Club;
 
 public static class ClubSession
 {
-    public const int FoundingYear = 1971;
+    public const int EarliestSessionYear = 1971;
     public const int OpeningMonth = 11;
     public const int OpeningDay = 11;
 

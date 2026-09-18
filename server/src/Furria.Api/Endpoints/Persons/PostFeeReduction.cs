@@ -68,8 +68,10 @@ public sealed class PostFeeReductionValidator : Validator<PostFeeReductionReques
     {
         RuleFor(request => request.PersonId).GreaterThan(0);
         RuleFor(request => request.Basis).IsInEnum();
-        RuleFor(request => request.FirstSessionYear).GreaterThanOrEqualTo(ClubSession.FoundingYear);
-        RuleFor(request => request.LastSessionYear).GreaterThanOrEqualTo(ClubSession.FoundingYear);
+        RuleFor(request => request.FirstSessionYear)
+            .GreaterThanOrEqualTo(ClubSession.EarliestSessionYear);
+        RuleFor(request => request.LastSessionYear)
+            .GreaterThanOrEqualTo(ClubSession.EarliestSessionYear);
     }
 }
 

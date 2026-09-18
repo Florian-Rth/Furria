@@ -24,7 +24,7 @@ public sealed class FeeReductionConfiguration : IEntityTypeConfiguration<FeeRedu
                 );
                 table.HasCheckConstraint(
                     "ck_fee_reduction_founding",
-                    $"first_session_year >= {ClubSession.FoundingYear}"
+                    $"first_session_year >= {ClubSession.EarliestSessionYear}"
                 );
                 table.HasCheckConstraint("ck_fee_reduction_basis", $"basis IN ({KnownBases})");
             }
