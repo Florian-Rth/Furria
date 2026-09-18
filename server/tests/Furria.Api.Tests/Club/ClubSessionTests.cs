@@ -36,18 +36,6 @@ public sealed class ClubSessionTests
     }
 
     [Fact]
-    public void Should_StartAtOne_When_NumberingTheFoundingSession()
-    {
-        Assert.Equal(1, ClubSession.NumberOf(ClubSession.FoundingYear));
-    }
-
-    [Fact]
-    public void Should_CountFromTheFoundingYear_When_NumberingALaterSession()
-    {
-        Assert.Equal(56, ClubSession.NumberOf(2026));
-    }
-
-    [Fact]
     public void Should_RenderBothYears_When_LabellingASession()
     {
         Assert.Equal("2025/26", ClubSession.LabelOf(2025));

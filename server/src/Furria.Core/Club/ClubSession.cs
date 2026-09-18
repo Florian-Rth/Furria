@@ -15,8 +15,5 @@ public static class ClubSession
             : date.Year - 1;
 
     [Pure]
-    public static int NumberOf(int sessionYear) => sessionYear - FoundingYear + 1;
-
-    [Pure]
     public static string LabelOf(int sessionYear) => $"{sessionYear}/{(sessionYear + 1) % 100:D2}";
 }
