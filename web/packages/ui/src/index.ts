@@ -57,6 +57,7 @@ export { KkPageWatermark } from './KkPageWatermark';
 export { KkPanel } from './KkPanel';
 export { KkPanelHeader } from './KkPanelHeader';
 export { KkPanelSection } from './KkPanelSection';
+export { KkPanelStack } from './KkPanelStack';
 export { KkPersonRow } from './KkPersonRow';
 export { KkPhoto } from './KkPhoto';
 export { KkPhotoPlaceholder } from './KkPhotoPlaceholder';
