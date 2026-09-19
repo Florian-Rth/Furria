@@ -34,8 +34,12 @@ needs the long form.
 Every hub has the same anatomy, so it is one component kit and not N layouts:
 
 - a scope identity at the top (the Overview screen type's opener),
-- a vertical stack of **bands**, each band one concern, each showing a live summary and a way in,
-- deeper work reached from a band as a sheet, a detail page, or a working view.
+- a vertical stack of **panels**, each panel one concern, each showing a live summary and a way in,
+- deeper work reached from a panel as a sheet, a detail page, or a working view.
+
+**Panel** is the word, in prose and in code — `KkPanelSection` in `@furria/ui` is already it, and
+`KkBandSection` is the *website's* full-bleed marketing band, an unrelated component (ruled
+2026-09-17).
 
 ### Member hubs
 
@@ -55,7 +59,7 @@ The rule that decides whether something gets a hub:
 is a Gruppe-scoped resource), so a Gruppen-Admin's tools live inside her Gruppe hub. Everything
 rights-bearing beyond that is a Rolle with global reach and gets a workbench:
 
-| Hub | Bands |
+| Hub | Panels |
 |---|---|
 | **Finanzen** | Zu erledigen · Beiträge offen/bezahlt · Auslagen zur Genehmigung · Kassenbericht |
 | **Veranstaltungen** | Kommende Veranstaltungen · offene Aufgaben je Abend · Vorverkauf · Ablauf & Live-Regie |
@@ -74,11 +78,11 @@ in the planner.
 
 ## Binding rules
 
-**No dead scope.** A band with nothing in it does not render, and a member never sees a scope
+**No dead scope.** A panel with nothing in it does not render, and a member never sees a scope
 they are not part of. This is what stops a hub decaying back into a menu.
 
-**Berechtigung gates bands, not only hubs.** The rights matrix already grants keys to Rollen.
-Someone holding only *Auslagen genehmigen* gets the Finanzen hub with exactly one band — an
+**Berechtigung gates panels, not only hubs.** The rights matrix already grants keys to Rollen.
+Someone holding only *Auslagen genehmigen* gets the Finanzen hub with exactly one panel — an
 honest small hub instead of a wall of disabled tools. The hub set needs no configuration of its
 own; it falls out of the matrix.
 
@@ -90,6 +94,19 @@ something is waiting.
 A member row, a Rolle, a Schlüssel-holder open as sheets. The routes that earn existence: the
 hubs, one Gruppe, one Person, the Mitglieder list, the Gruppen list, the Kalender, and search.
 
+**Prefer club-created data over a code constant** whenever the two cost the same. Rollen,
+Vorstandsfunktionen, Orte, Gruppen and Session records are club data, edited in the app — the club
+composes its own structure instead of waiting for a deploy. The line this stops at is the set of
+**Berechtigung keys**: the code must know what it enforces, so a club composes Rollen and grants
+freely but never invents a key (rule added 2026-09-19).
+
+> **North star, not a constraint: the platform should eventually fit clubs that are not the FCC —
+> not even carnival clubs.** Generalising `Session` (11.11. → Aschermittwoch), the carnival
+> vocabulary and ADR-0002's German-only UI is a *product* decision with its own ADR, taken when a
+> second club exists. It is deliberately **not** shaping any current phase: designing for an
+> unmet customer would make every surface vaguer and slower to build. The rule above is how the
+> goal is served today — genericity earned by configurability, not by abstraction.
+
 **There is no "Verwaltung" navigation.** `Mehr → Verwaltung` is an index of the admin hubs the
 viewer may open — the same role Mehr plays for member surfaces. Admin hubs are pinnable like
 anything else.
@@ -100,7 +117,7 @@ anything else.
 
 The bottom navigation starts with a default set and becomes **customisable by pinning**.
 
-Anything with an identity is pinnable: a hub, a band, a Gruppe, an admin hub, a detail page.
+Anything with an identity is pinnable: a hub, a panel, a Gruppe, an admin hub, a detail page.
 Pinned items fill the navigation (four plus the overflow entry); the rest become a pinned strip
 at the top of Start. The "default set" is simply what a new Account starts with.
 
@@ -117,27 +134,35 @@ See [ADR-0010](../../docs/adr/0010-club-app-is-a-set-of-scope-hubs.md).
 
 ## The Verein hub
 
-Bands, in order. Each renders only with content.
+Shaped in full on 2026-09-19 — see [`p4-verein-hub.md`](p4-verein-hub.md) for the slices. The
+order below is what that session settled and supersedes the five-panel list this file first
+carried.
 
-1. **Das Motto** — the opener. Eyebrow `Session 2026/27`, the motto as the display title, a
-   custom SVG per Session as the leading visual. Overview is the only screen type the shell
-   allows brand identity in, and the opener already hands its title to the bar on scroll, so
-   this costs nothing structurally.
+- **Motto-Bühne** — the opener, and the one place the app is allowed to be art. **The Bühne is
+  code and the Session-Signet is data** ([ADR-0012](../../docs/adr/0012-the-motto-buehne-is-code-the-session-signet-is-data.md)),
+  which amends this file's earlier "the motto and its artwork are data": true of the Signet,
+  false of the Bühne. Its four states are date-derived, and in the Zwischenzeit it looks
+  **forward** to the coming Session.
+- **Vereinsdaten** — promoted out of a panel into a stat strip under the opener: Mitglieder,
+  Gruppen, Neue diese Session. Ämter and Schlüssel are not stats; Jubiläen and Geburtstage are
+  deferred with a privacy question of their own.
+1. **Aushang** — club announcements, the newest two in full. **Explicitly not a chat**: no
+   replies, no threads, no reactions — and, settled 2026-09-19, no Kategorie, no Anheften, no
+   Kenntnisnahme either. Whether one is new to you is a single last-seen moment on the Account.
+2. **Kalender** — the next three **club-owned** entries, and the way into the full calendar. A
+   running entry is a **state of this panel**, not a live component: the hub never changes state,
+   the Notice carries "now".
+3. **Wer macht was** — the **Vorstand** band with Porträts, then the remaining Rollen with their
+   Inhaber. The Vorstand is recorded as a body and implies Rollen; it is still not a right
+   ([ADR-0011](../../docs/adr/0011-permissions-come-from-rollen-and-running-relationships.md),
+   amended 2026-09-19).
+4. **Schlüssel** — one tile per **Ort**, each an avatar stack of who can unlock it. Split out of
+   *Wer macht was*: it answers "wer schließt auf", not "wer entscheidet".
 
-   **The motto and its artwork are data, not a committed asset** — otherwise every November
-   needs a deploy. A Session carries its motto, its artwork and its span, edited in the
-   *Verein verwalten* hub.
+The hub stays **identical for every viewer** and is one query, so anything per-viewer rides on the
+session payload instead.
 
-2. **Aushang** — club announcements. **Explicitly not a chat**: no replies, no threads, no
-   reactions. Unread ones surface on Start; the Aushang itself lives here because it is club
-   scope. Posting is a Berechtigung (see open questions).
-3. **Kalender** — the next club dates inline, and the way into the full calendar.
-4. **Wer macht was** — the Rollen with their current Inhaber, and the Schlüssel with their
-   holders. The band that answers "wen frage ich" without anyone having to remember.
-5. **Vereinsdaten** — wir sind N, neue Mitglieder, Jubiläen, Geburtstage, and the entry into
-   search.
-
-**Gruppen are not a band.** There are too many to fit one, and they get their own page —
+**Gruppen are not a panel.** There are too many to fit one, and they get their own page —
 today's `/groups` reworked. Mitglieder likewise: the existing list page survives as the long
 form for the rare case somebody wants it.
 
@@ -155,14 +180,25 @@ have to be merged for display.
 Everything else is a **filter over that one store**:
 
 - the Kalender page shows all of it, filterable,
-- the Verein hub's band shows the next club-wide entries,
-- a Gruppe hub's dates band is the same calendar filtered to that Gruppe.
+- the Verein hub's panel shows the next club-wide entries,
+- a Gruppe hub's dates panel is the same calendar filtered to that Gruppe.
 
 Consequence: the Gruppe hub gets its dates for free, and a member never has to ask which
 calendar a date was in.
 
-**The entry type still has no club-approved name** — see open questions. Nothing is modelled and
-no surface promises a word until the club gives one.
+**The entry is a Kalendereintrag** (settled 2026-09-18) and it carries **three independent axes**
+(settled 2026-09-19), never collapsed into one:
+
+- **Eigentümer** — the club, or one Gruppe. Decides who may edit it, and **who a running entry
+  summons through the Notice**: a club-owned entry lights it for everyone, a Gruppe's only for
+  that Gruppe.
+- **Sichtbarkeit** — `Gruppe` / `Verein` / `Öffentlich`, chosen when the entry is created. A
+  Gruppe's Training defaults to `Verein`, so the club can see what the hall is doing. **Visible is
+  not the same as summoned.**
+- **Ort** — one of the club's few places, from a club-managed list. Two entries at one Ort at one
+  time is the real collision behind "the club should see all trainings", and the Ort is what makes
+  it findable instead of leaving it to whoever scrolls the calendar. The same list carries the
+  **Schlüssel**.
 
 ---
 
@@ -206,7 +242,7 @@ Removed from the handoff's feature set because no member's club life improves:
 - **A personal finance dashboard** — an "offen" item on Start and a one-tap pay flow, nothing more.
 - **Helfer-Bedarf**, **Mitfahren**, **Was mitbringen** — the last is a line in an event's
   description, not a feature.
-- The club-history band (see Verein hub).
+- The club-history panel (see Verein hub).
 
 ## Shelved, not cut
 
@@ -217,27 +253,40 @@ Removed from the handoff's feature set because no member's club life improves:
 
 ---
 
+## Settled 2026-09-18
+
+1. **The calendar entry is a `Kalendereintrag`** — the plain translation, ruled by Florian.
+   Unblocks the Kalender, the Verein hub's calendar panel and the Gruppe hub's dates panel.
+   See `CONTEXT.md`.
+2. **Who may post an Aushang** — a Berechtigung, granted on the rights matrix to whichever
+   Rollen the club counts as Vorstand. Nothing to decide in code beyond the key.
+3. **Zu-/Absage is built** — optional, per Kalendereintrag, switched on by whoever schedules it,
+   available for every kind including a Gruppe's Training.
+4. **Search is server-side.** Kontaktdaten visibility decides it.
+5. **A panel is a Panel** — `KkPanelSection` is the component; the website's `KkBandSection` is
+   an unrelated full-bleed marketing band.
+6. **Hubs elide, records state.** An empty panel does not render on a hub; on a detail page an
+   empty panel shows a `KkEmptyState`, as it does today.
+7. **A hub is one query.** One request per hub, so the hub knows its full shape before it paints
+   and reflows once.
+8. **Payload shape follows viewer variance.** The Verein hub is identical for every viewer, so
+   it is a typed `ClubHubSummary` and caches as one entry. Start varies per viewer, so it is a
+   server-shaped list. Not two house styles — one rule applied twice.
+9. **The Verein hub is gated on `club.read`**, which a running Mitgliedschaft supplies. Every
+   gate in the app is `has(key)`; nothing is gated on "is Mitglied" at a call site.
+   See [ADR-0011](../../docs/adr/0011-permissions-come-from-rollen-and-running-relationships.md).
+10. **No auto-assigned Rollen.** Keys come from Rollen *and* from running relationships, and the
+    derived half is never stored. ADR-0011 records the alternative and why it was rejected.
+
 ## Open questions
 
 Ordered by how much they block.
 
-1. **The calendar entry has no club-approved word.** `CONTEXT.md` flagged this on 2026-09-10 as
-   "Gruppentermin"; the one-calendar ruling reframes it — the club does not need a word for a
-   Gruppe's dates, it needs a word for **an entry in the club calendar**, of which a Gruppe's
-   training is one kind. `Veranstaltung` stays narrow and cannot be it, and `Termin` is on that
-   entry's own avoid-list. **This blocks the Kalender, the Verein hub's calendar band and the
-   Gruppe hub's dates band** — the largest single block in the project.
-2. **Who may post an Aushang.** Agreed: a Berechtigung, held by "the Vorstand". The model has
-   **no Vorstand role** (`CONTEXT.md`: there is no built-in Vorstand super-role), so this becomes
-   a key granted to whichever Rollen the club counts as Vorstand. The club names them.
-3. **Is Zusage/Absage on a date wanted at all?** Proposed as the highest-value feature in this
-   session and never ruled on, while three adjacent ideas were cut. Ask a Trainerin before
-   building it.
-4. **Who holds a child's Account.** The Kindergarde is 6–11. If parents hold the login, the
+1. **Who holds a child's Account.** The Kindergarde is 6–11. If parents hold the login, the
    Kalender and anything attendance-shaped are parent surfaces, which changes rosters and copy.
-5. **Search: server-side or cached client index.**
-6. **Photo consent** — blocks the Bildergalerie.
-7. **Non-member Gruppen people still have no word** — affects roster copy.
+   Now sharper than before, because Zu-/Absage is being built.
+2. **Photo consent** — blocks the Bildergalerie.
+3. **Non-member Gruppen people still have no word** — affects roster copy.
 
 ---
 
