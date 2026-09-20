@@ -1,5 +1,6 @@
 ---
-status: shaped 2026-09-19 (+ its 2026-09-20 amendment), not yet implemented
+status: shaped 2026-09-19 (+ its 2026-09-20 amendment); D1 landed on
+  `feat/club-app-verein-hub` (`5206fcb`…`4813168`, de-seeded); D2–D5 open
 phase: CA-P4 — the Verein hub
 shaped_with: Florian, grilling session 2026-09-19
 binding: docs/adr/0010, docs/adr/0011 (+ its 2026-09-19 amendment), docs/adr/0012,
@@ -52,6 +53,12 @@ The decisions that bind this work. Reasoning lives in `CONTEXT.md`, ADR-0012 and
     filled by hand; the club's own master data waits for its *verwalten* surface. A reference
     table that starts empty is **correct**: the panel that reads it elides, and that elision is
     the shipped empty state, not a gap.
+    **The one carve-out, named so the rule can be read literally everywhere else:
+    `BootstrapAdminSeeder`.** It is pre-existing recovery *access*, not Stammdaten — an
+    `IHostedService` that, only when `Auth:BootstrapAdmin` carries an e-mail and a password,
+    writes the recovery Person, her Account and the Admin Rolle, and re-opens an Inhaberschaft
+    when nobody holds that Rolle any more. It writes no club data, it predates this phase, and
+    CA-P4 does not touch it. Nothing else in the repo may seed.
 15. **Only English identifiers.** German belongs in UI copy, never in a type, field or symbol.
 
 ---
@@ -126,7 +133,10 @@ D2, D3 and D4 are independent of one another. D5 needs D3's `Ort`.
   Mitglieder and Gruppen).
 - The hub skeleton ruled in CA-P3 and deferred: opener instantly, three generic placeholders.
 
-**Done when** both gates are green and `pnpm shot /club` shows the teaser, light and dark.
+**Done when** both gates are green and D1's integration tests pass. A fresh database holds no
+Session, so the opener resolves to **Ruhe**, not the teaser, and `pnpm shot /club` proves nothing
+until a Session is typed into the dev database by hand — an optional check afterwards, never the
+criterion (ruling 14 as amended).
 
 ---
 
@@ -170,7 +180,10 @@ D2, D3 and D4 are independent of one another. D5 needs D3's `Ort`.
 - The Schlüssel panel: one tile per Ort with a `KkAvatarStack`. Tapping opens a sheet with the
   holders, *Inhaber seit*, and the route to their Kontaktdaten.
 
-**Done when** both gates are green and `pnpm shot /club` shows three tiles.
+**Done when** both gates are green and D3's integration tests pass. A fresh database holds no
+Ort, so `venues[]` is empty and the Schlüssel panel elides; `pnpm shot /club` shows tiles only
+after the Orte are typed into the dev database by hand — an optional check afterwards, never the
+criterion (ruling 14 as amended).
 
 ---
 
@@ -187,7 +200,11 @@ D2, D3 and D4 are independent of one another. D5 needs D3's `Ort`.
 - `BoardSeat` — `PersonId`, `BoardOfficeId`, `DatePeriod`, `ITimestamped`.
 - The board's own `ImpliedRoleId?` — a single-row club setting, or a nullable column on the one
   place club-wide settings land. **Decide when the file is opened; do not invent a settings table
-  for one field.**
+  for one field.** *Amended 2026-09-20:* the board-wide Rolle **ships in D4**. The file was opened
+  and there is no club-wide settings place, so the pointer is turned around — the Rolle carries
+  the marker (`Role.ImpliedByBoardSeat`), made single-valued by a unique index filtered to the
+  true rows (`ix_role_implied_by_board_seat`). No settings table was invented, and the marker is
+  set through *Rollen & Rechte*, never seeded.
 - `PermissionAuthorizer` — a fourth source, per ADR-0011's amendment: a running `BoardSeat`
   contributes the board's implied Rolle and its office's implied Rolle. **Nothing is written.**
   Tests: seat opens → keys appear; seat closes → keys vanish; no `RoleHolding` row in either case.
@@ -226,7 +243,9 @@ D2, D3 and D4 are independent of one another. D5 needs D3's `Ort`.
 - `KkFilterChips` for scope; the page defaults to club + the viewer's Gruppen.
 - Zu-/Absage inline on an entry that asks for one.
 
-**Done when** both gates are green and `pnpm shot /kalender` shows both views.
+**Done when** both gates are green and D5's integration tests pass. `calendar_entry` starts
+empty, so `pnpm shot /kalender` shows both views only after entries are typed into the dev
+database by hand — an optional check afterwards, never the criterion (ruling 14 as amended).
 
 ---
 
