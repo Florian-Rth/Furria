@@ -90,8 +90,8 @@ public sealed record GetCalendarRequest
 
 public sealed class GetCalendarValidator : Validator<GetCalendarRequest>
 {
-    private const string UnknownGruppeMessage = "Diese Gruppe gibt es nicht.";
-    private const string GruppenScopeNeedsGruppeMessage =
+    private const string UnknownGroupMessage = "Diese Gruppe gibt es nicht.";
+    private const string GroupScopeNeedsGroupMessage =
         "Für den Bereich „Gruppe“ wird eine Gruppe gebraucht.";
     private const string WindowEndsBeforeItStartsMessage =
         "Ein Zeitraum kann nicht vor seinem Beginn enden.";
@@ -103,12 +103,12 @@ public sealed class GetCalendarValidator : Validator<GetCalendarRequest>
         RuleFor(request => request.GroupId)
             .GreaterThan(0)
             .When(request => request.GroupId is not null)
-            .WithMessage(UnknownGruppeMessage);
+            .WithMessage(UnknownGroupMessage);
 
         RuleFor(request => request.GroupId)
             .NotNull()
             .When(request => request.Scope == CalendarScope.Group)
-            .WithMessage(GruppenScopeNeedsGruppeMessage);
+            .WithMessage(GroupScopeNeedsGroupMessage);
 
         RuleFor(request => request)
             .Must(SpansForwards)
