@@ -1,8 +1,11 @@
 export const GROUP_SECTION_TITLES = {
   about: 'Die Gruppe',
-  members: 'Mitglieder',
+  description: 'Kurz gesagt',
+  members: 'Wer dabei ist',
   managedMembers: 'Zugehörigkeiten',
   admins: 'Gruppen-Admins',
+  care: 'Die Gruppe pflegen',
+  rhythm: 'Trainingsrhythmus',
   history: 'Geschichte',
   events: 'Termine',
   photos: 'Bilder',
@@ -25,6 +28,12 @@ export const EVENTS_RESERVED: ReservedSlotCopy = {
   title: 'Noch nicht da',
   description:
     'Training, Proben und Auftritte der Gruppe an einem Ort. Kommt in einer späteren Phase.',
+};
+
+export const RHYTHM_RESERVED: ReservedSlotCopy = {
+  title: 'Noch kein Rhythmus',
+  description:
+    'Wann und wo die Gruppe regelmäßig trainiert. Die Gruppen-Admins tragen es in einer späteren Phase ein.',
 };
 
 export const PHOTOS_RESERVED: ReservedSlotCopy = {

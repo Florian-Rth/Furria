@@ -1,6 +1,23 @@
+import { GROUP_TONES } from '@furria/ui';
 import { z } from 'zod';
 import { GroupDetailAdminSchema, GroupDetailMemberSchema } from '@/features/group-detail';
 import { PersonRefSchema } from '@/lib/api/schemas';
+
+export const GroupToneSchema = z.enum(GROUP_TONES);
+export type GroupTone = z.infer<typeof GroupToneSchema>;
+
+export const WEEKDAY_VALUES = [
+  'monday',
+  'tuesday',
+  'wednesday',
+  'thursday',
+  'friday',
+  'saturday',
+  'sunday',
+] as const;
+
+export const WeekdaySchema = z.enum(WEEKDAY_VALUES);
+export type Weekday = z.infer<typeof WeekdaySchema>;
 
 export const MyGroupSummarySchema = z.object({
   groupId: z.number().int(),
@@ -13,18 +30,35 @@ export type MyGroupSummary = z.infer<typeof MyGroupSummarySchema>;
 export const MyGroupsResponseSchema = z.object({ groups: z.array(MyGroupSummarySchema) });
 export type MyGroupsResponse = z.infer<typeof MyGroupsResponseSchema>;
 
-export const HubDetailsSchema = z.object({
+export const TrainingSlotSchema = z.object({
+  groupTrainingSlotId: z.number().int(),
+  weekday: WeekdaySchema,
+  startsAt: z.string(),
+  durationMinutes: z.number().int(),
+  venueId: z.number().int().nullable(),
+  venueName: z.string().nullable(),
+});
+export type TrainingSlot = z.infer<typeof TrainingSlotSchema>;
+
+export const GroupHubSchema = z.object({
   groupId: z.number().int(),
   name: z.string(),
   description: z.string(),
   isRecruiting: z.boolean(),
-  viewerIsAdmin: z.boolean(),
-  members: z.array(GroupDetailMemberSchema),
+  groupKindId: z.number().int().nullable(),
+  groupKindName: z.string().nullable(),
+  foundedYear: z.number().int().nullable(),
+  tone: GroupToneSchema.nullable(),
+  trainingSlots: z.array(TrainingSlotSchema),
   admins: z.array(GroupDetailAdminSchema),
+  members: z.array(GroupDetailMemberSchema),
+  viewerIsMember: z.boolean(),
+  viewerIsAdmin: z.boolean(),
+  viewerSince: z.iso.date().nullable(),
   pastMembers: z.array(GroupDetailMemberSchema),
   pastAdmins: z.array(GroupDetailAdminSchema),
 });
-export type HubDetails = z.infer<typeof HubDetailsSchema>;
+export type GroupHub = z.infer<typeof GroupHubSchema>;
 
 export const PersonSearchResponseSchema = z.object({ persons: z.array(PersonRefSchema) });
 export type PersonSearchResponse = z.infer<typeof PersonSearchResponseSchema>;
@@ -32,9 +66,22 @@ export type PersonSearchResponse = z.infer<typeof PersonSearchResponseSchema>;
 export const AddedGroupMembershipSchema = z.object({ groupMembershipId: z.number().int() });
 export type AddedGroupMembership = z.infer<typeof AddedGroupMembershipSchema>;
 
+export const DESCRIPTION_MAX_LENGTH = 400;
+export const DESCRIPTION_TOO_LONG_MESSAGE = `Die Beschreibung darf höchstens ${DESCRIPTION_MAX_LENGTH} Zeichen lang sein.`;
+export const FOUNDED_YEAR_MESSAGE = 'Trag ein Jahr mit vier Ziffern ein, zum Beispiel 1974.';
+
+const FOUNDED_YEAR_PATTERN = /^(1[5-9]\d{2}|2[0-9]\d{2})$/;
+
 export const GroupInfoFormSchema = z.object({
-  description: z.string().max(400),
+  description: z.string().max(DESCRIPTION_MAX_LENGTH, DESCRIPTION_TOO_LONG_MESSAGE),
   isRecruiting: z.boolean(),
+  groupKindId: z.string(),
+  foundedYear: z
+    .string()
+    .trim()
+    .regex(FOUNDED_YEAR_PATTERN, FOUNDED_YEAR_MESSAGE)
+    .or(z.literal('')),
+  tone: GroupToneSchema.or(z.literal('')),
 });
 export type GroupInfoForm = z.infer<typeof GroupInfoFormSchema>;
 

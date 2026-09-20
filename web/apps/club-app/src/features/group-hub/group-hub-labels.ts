@@ -1,57 +1,143 @@
-import type { KkConfirmFact, KkDateQuickChoice } from '@furria/ui';
+import type { KkConfirmFact, KkDateQuickChoice, KkGroupStageJubilee } from '@furria/ui';
 import type { GroupDetailAdmin, GroupDetailMember } from '@/features/group-detail';
+import { toGroupKindId } from '@/features/group-kinds';
+import { toFoundedLine, toJubilee } from '@/features/groups';
 import { SESSION_OPENING_DAY, SESSION_OPENING_MONTH, sessionAt } from '@/lib/club';
 import { isFutureDay, toIsoDay } from '@/lib/day';
-import { toGroupSubline } from '@/lib/group-sections';
+import { toGroupAdminsLabel, toGroupMembersLabel } from '@/lib/group-sections';
 import { formatIsoDay, formatSinceSession } from '@/lib/membership-labels';
 import type { StateChip } from '@/lib/state-chips';
-import { GROUP_ADMIN_CHIP, toRecruitingChip } from '@/lib/state-chips';
-import type { HubDetails } from './schemas';
+import { toRecruitingChip } from '@/lib/state-chips';
+import type { GroupHub, GroupInfoForm, GroupTone } from './schemas';
 
 const GROUP_ID_PATTERN = /^[1-9]\d*$/;
-const HUB_TITLE_FALLBACK = 'Meine Gruppe';
+const HUB_TITLE_FALLBACK = 'Gruppe';
 
-const MEMBER_EYEBROW = 'du bist hier dabei';
-const GROUP_ADMIN_EYEBROW = 'du bist Gruppen-Admin';
+const DANCING_LINE_PREFIX = 'Du tanzt hier seit ';
+const LEADING_LINE = 'Du leitest diese Gruppe';
+const NOT_HERE_LINE = 'Du bist nicht dabei';
+const JUBILEE_CAPTION = 'JAHRE';
 
 export const toHubId = (raw: string): number | null =>
   GROUP_ID_PATTERN.test(raw) ? Number(raw) : null;
 
-export interface HubHeadline {
-  title: string;
-  eyebrow: string | null;
-  chips: StateChip[];
-  subline: string | null;
-}
+export const toHubTitle = (hub: GroupHub | undefined): string =>
+  hub === undefined ? HUB_TITLE_FALLBACK : hub.name;
 
-const toStandingEyebrow = (
-  ownRow: GroupDetailMember | undefined,
-  viewerIsAdmin: boolean,
-): string => {
-  if (ownRow !== undefined) {
-    return `${MEMBER_EYEBROW} seit ${formatSinceSession(ownRow.since)}`;
+export const toStandingLine = (hub: GroupHub): string => {
+  if (hub.viewerSince !== null) {
+    return `${DANCING_LINE_PREFIX}${formatSinceSession(hub.viewerSince)}`;
+  }
+  if (hub.viewerIsAdmin) {
+    return LEADING_LINE;
   }
 
-  return viewerIsAdmin ? GROUP_ADMIN_EYEBROW : MEMBER_EYEBROW;
+  return NOT_HERE_LINE;
 };
 
-export const toHubHeadline = (
-  hub: HubDetails | undefined,
-  viewerPersonId: number | null,
-): HubHeadline => {
-  if (hub === undefined) {
-    return { title: HUB_TITLE_FALLBACK, eyebrow: null, chips: [], subline: null };
+export const toHubMetaFacts = (hub: GroupHub): string[] => {
+  const founded = toFoundedLine(hub.foundedYear);
+  const facts = [toGroupMembersLabel(hub.members.length), toGroupAdminsLabel(hub.admins.length)];
+
+  return founded === null ? facts : [founded, ...facts];
+};
+
+export const toHubRecruitingChip = (hub: GroupHub): StateChip | null =>
+  hub.isRecruiting ? toRecruitingChip(true) : null;
+
+export const toJubileeSeal = (
+  foundedYear: number | null,
+  sessionYear: number,
+): KkGroupStageJubilee | null => {
+  const jubilee = toJubilee(foundedYear, sessionYear);
+
+  if (jubilee === null) {
+    return null;
   }
 
-  const ownRow = hub.members.find((member) => member.personId === viewerPersonId);
-  const openness = toRecruitingChip(hub.isRecruiting);
+  return { yearsLabel: String(jubilee.years), caption: JUBILEE_CAPTION };
+};
 
-  return {
-    title: hub.name,
-    eyebrow: toStandingEyebrow(ownRow, hub.viewerIsAdmin),
-    chips: hub.viewerIsAdmin ? [openness, GROUP_ADMIN_CHIP] : [openness],
-    subline: toGroupSubline(hub.members.length, hub.admins.length),
-  };
+export const toMemberSinceLine = (since: string): string => `seit ${formatSinceSession(since)}`;
+
+export type RosterTap = 'person' | 'peek';
+
+export const toRosterTap = (
+  canManage: boolean,
+  viewerIsAffiliated: boolean,
+  rowIsAffiliated: boolean,
+): RosterTap => (!canManage && viewerIsAffiliated && rowIsAffiliated ? 'person' : 'peek');
+
+export const HUB_DENIED_MESSAGE =
+  'Gruppen stehen Mitgliedern, Gruppen und Rollen des FCC offen. Dein Konto hat noch keine Verbindung zum Verein — melde dich bei der Personenverwaltung.';
+
+export const HUB_PEEK_CLOSE_LABEL = 'Kurzansicht schließen';
+export const HUB_PEEK_OPEN_LABEL = 'Zur Person';
+export const HUB_PEEK_CONTACT_NOTE =
+  'Kontaktdaten stehen auf der Personenseite — die Gruppe führt sie nicht.';
+export const HUB_PEEK_UNREACHABLE_NOTE =
+  'Diese Person hat keine eigene Seite im Verzeichnis. Wende dich an die Gruppen-Admins.';
+
+export type GroupInfoPayload = {
+  description: string;
+  isRecruiting: boolean;
+  groupKindId: number | null;
+  foundedYear: number | null;
+  tone: GroupTone | null;
+};
+
+export const toGroupInfoPayload = (form: GroupInfoForm): GroupInfoPayload => ({
+  description: form.description,
+  isRecruiting: form.isRecruiting,
+  groupKindId: toGroupKindId(form.groupKindId),
+  foundedYear: form.foundedYear === '' ? null : Number(form.foundedYear),
+  tone: form.tone === '' ? null : form.tone,
+});
+
+export interface GroupToneHolder {
+  groupId: number;
+  tone: GroupTone | null;
+}
+
+export const toTakenTones = (
+  groups: readonly GroupToneHolder[],
+  groupId: number,
+): ReadonlySet<GroupTone> => {
+  const taken = new Set<GroupTone>();
+
+  for (const group of groups) {
+    if (group.groupId !== groupId && group.tone !== null) {
+      taken.add(group.tone);
+    }
+  }
+
+  return taken;
+};
+
+const TONE_LABELS: Record<GroupTone, string> = {
+  clay: 'Ton',
+  olive: 'Oliv',
+  lime: 'Limette',
+  fern: 'Farn',
+  teal: 'Petrol',
+  indigo: 'Indigo',
+  iris: 'Iris',
+  violet: 'Violett',
+  orchid: 'Orchidee',
+  rose: 'Rosé',
+};
+
+export const toToneLabel = (tone: GroupTone): string => TONE_LABELS[tone];
+
+export const toToneWarning = (
+  tone: GroupTone | '',
+  takenTones: ReadonlySet<GroupTone>,
+): string | null => {
+  if (tone === '' || !takenTones.has(tone)) {
+    return null;
+  }
+
+  return `${TONE_LABELS[tone]} trägt schon eine andere Gruppe. Doppelt geht, auffällig ist es nicht.`;
 };
 
 const SEARCH_TERM_MIN_LENGTH = 2;

@@ -52,7 +52,7 @@ public sealed class GetManagedGroupById
             PastAdmins = [.. group.PastAdmins.Select(ToDto)],
         };
 
-    private static ManagedMemberDto ToDto(ManagedMember member) =>
+    private static ManagedMemberDto ToDto(HubMember member) =>
         new()
         {
             GroupMembershipId = member.GroupMembershipId,
@@ -65,7 +65,7 @@ public sealed class GetManagedGroupById
             IsAffiliated = member.IsAffiliated,
         };
 
-    private static ManagedAdminDto ToDto(ManagedAdministrator admin) =>
+    private static ManagedAdminDto ToDto(HubAdministrator admin) =>
         new()
         {
             GroupAdminId = admin.GroupAdminId,

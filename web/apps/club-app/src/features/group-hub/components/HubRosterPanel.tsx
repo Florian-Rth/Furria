@@ -1,17 +1,22 @@
 import { KkButton, KkEmptyState, KkIcon, KkPanel, KkPanelSection } from '@furria/ui';
+import Grid from '@mui/material/Grid';
 import type { FC, Ref } from 'react';
 import type { GroupDetailMember } from '@/features/group-detail';
 import {
   ADD_MEMBER_ACTION_LABEL,
   ADD_MEMBER_LABEL,
-  GroupMemberRow,
   NO_MEMBERS_TITLE,
   toNoMembersLine,
 } from '@/features/group-detail';
+import type { GroupTone } from '@/features/groups';
 import { GROUP_SECTION_TITLES } from '@/lib/group-sections';
-import { HubCelebration } from './HubCelebration';
+import { HubRosterTile } from './HubRosterTile';
 
-interface HubMembersPanelProps {
+const GRID_SPACING = { xs: 1.75, desktop: 2.5 };
+const TILE_SIZE = { xs: 3, desktop: 2 };
+
+interface HubRosterPanelProps {
+  tone: GroupTone;
   members: readonly GroupDetailMember[];
   groupName: string;
   canManage: boolean;
@@ -20,10 +25,10 @@ interface HubMembersPanelProps {
   fireKey: number;
   titleRef: Ref<HTMLHeadingElement>;
   onAdd: () => void;
-  onEnd: (groupMembershipId: number) => void;
 }
 
-export const HubMembersPanel: FC<HubMembersPanelProps> = ({
+export const HubRosterPanel: FC<HubRosterPanelProps> = ({
+  tone,
   members,
   groupName,
   canManage,
@@ -32,32 +37,8 @@ export const HubMembersPanel: FC<HubMembersPanelProps> = ({
   fireKey,
   titleRef,
   onAdd,
-  onEnd,
 }) => {
-  const rows = members.map((member) => {
-    const isNew = member.personId === newPersonId;
-
-    const burst = isNew ? <HubCelebration fireKey={fireKey} /> : undefined;
-
-    const end = (): void => {
-      onEnd(member.groupMembershipId);
-    };
-
-    return (
-      <GroupMemberRow
-        key={member.groupMembershipId}
-        member={member}
-        canManage={canManage}
-        viewerIsAffiliated={viewerIsAffiliated}
-        onEnd={end}
-        isNew={isNew}
-        overlay={burst}
-      />
-    );
-  });
-
-  const isEmpty = rows.length === 0;
-  const variant = isEmpty ? 'block' : 'list';
+  const isEmpty = members.length === 0;
 
   const action = canManage ? (
     <KkButton
@@ -78,12 +59,30 @@ export const HubMembersPanel: FC<HubMembersPanelProps> = ({
       description={toNoMembersLine(groupName, canManage)}
     />
   ) : (
-    rows
+    <Grid container spacing={GRID_SPACING} sx={{ minWidth: 0 }}>
+      {members.map((member) => (
+        <Grid key={member.groupMembershipId} size={TILE_SIZE} sx={{ minWidth: 0 }}>
+          <HubRosterTile
+            tone={tone}
+            member={member}
+            canManage={canManage}
+            viewerIsAffiliated={viewerIsAffiliated}
+            isNew={member.personId === newPersonId}
+            fireKey={fireKey}
+          />
+        </Grid>
+      ))}
+    </Grid>
   );
 
   return (
-    <KkPanelSection title={GROUP_SECTION_TITLES.members} titleRef={titleRef} action={action}>
-      <KkPanel variant={variant}>{body}</KkPanel>
+    <KkPanelSection
+      title={GROUP_SECTION_TITLES.members}
+      groupTone={tone}
+      titleRef={titleRef}
+      action={action}
+    >
+      <KkPanel variant="block">{body}</KkPanel>
     </KkPanelSection>
   );
 };

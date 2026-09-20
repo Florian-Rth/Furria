@@ -11,18 +11,24 @@ import {
   toEndConsequence,
   toEndFacts,
   toEndQuickChoices,
-  toHubHeadline,
+  toGroupInfoPayload,
   toHubId,
+  toHubMetaFacts,
   toJoinConsequence,
   toJoinQuickChoices,
+  toJubileeSeal,
   toLastAdminWarning,
   toMemberAddedMessage,
   toMembershipEndedMessage,
+  toRosterTap,
   toSearchCapLine,
   toSearchTerm,
   toSelfAdminEndedMessage,
+  toStandingLine,
+  toTakenTones,
+  toToneWarning,
 } from './group-hub-labels';
-import type { HubDetails } from './schemas';
+import type { GroupHub } from './schemas';
 
 const hubMember = (overrides: Partial<GroupDetailMember>): GroupDetailMember => ({
   groupMembershipId: 7,
@@ -49,14 +55,21 @@ const hubAdmin = (overrides: Partial<GroupDetailAdmin>): GroupDetailAdmin => ({
   ...overrides,
 });
 
-const hubDetails = (overrides: Partial<HubDetails>): HubDetails => ({
+const groupHub = (overrides: Partial<GroupHub>): GroupHub => ({
   groupId: 3,
   name: 'Tanzgarde',
   description: 'Die Garde tanzt seit 1971.',
   isRecruiting: false,
-  viewerIsAdmin: false,
-  members: [],
+  groupKindId: null,
+  groupKindName: null,
+  foundedYear: null,
+  tone: null,
+  trainingSlots: [],
   admins: [],
+  members: [],
+  viewerIsMember: false,
+  viewerIsAdmin: false,
+  viewerSince: null,
   pastMembers: [],
   pastAdmins: [],
   ...overrides,
@@ -76,83 +89,148 @@ describe('toHubId', () => {
   });
 });
 
-describe('toHubHeadline', () => {
-  it('carries nothing but the fallback title while the hub is still loading', () => {
-    expect(toHubHeadline(undefined, 12)).toEqual({
-      title: 'Meine Gruppe',
-      eyebrow: null,
-      chips: [],
-      subline: null,
-    });
+describe('toStandingLine', () => {
+  it('dates the viewer own Zugehörigkeit from the session she joined in', () => {
+    expect(toStandingLine(groupHub({ viewerIsMember: true, viewerSince: '2016-11-11' }))).toBe(
+      'Du tanzt hier seit 2016/17',
+    );
   });
 
-  it('dates the viewer own Zugehörigkeit from her own row', () => {
-    const headline = toHubHeadline(
-      hubDetails({
-        members: [
-          hubMember({ personId: 12, since: '2016-11-11' }),
-          hubMember({ groupMembershipId: 8, personId: 44 }),
-        ],
-      }),
-      12,
-    );
-
-    expect(headline).toEqual({
-      title: 'Tanzgarde',
-      eyebrow: 'du bist hier dabei seit 2016/17',
-      chips: [{ label: 'sucht gerade niemanden', tone: 'neutral', dot: false }],
-      subline: '2 Personen · kein Gruppen-Admin',
-    });
+  it('lets the Zugehörigkeit speak for an admin who dances in the Gruppe herself', () => {
+    expect(
+      toStandingLine(
+        groupHub({ viewerIsMember: true, viewerIsAdmin: true, viewerSince: '2020-11-11' }),
+      ),
+    ).toBe('Du tanzt hier seit 2020/21');
   });
 
   it('names the responsibility of an admin who dances in no row of the Gruppe', () => {
-    const headline = toHubHeadline(
-      hubDetails({
-        isRecruiting: true,
-        viewerIsAdmin: true,
-        members: [hubMember({ personId: 44 })],
-        admins: [hubAdmin({ personId: 12 })],
-      }),
-      12,
+    expect(toStandingLine(groupHub({ viewerIsAdmin: true }))).toBe('Du leitest diese Gruppe');
+  });
+
+  it('says plainly that a stranger is not in the Gruppe', () => {
+    expect(toStandingLine(groupHub({}))).toBe('Du bist nicht dabei');
+  });
+});
+
+describe('toHubMetaFacts', () => {
+  it('leaves the founding year out while nobody has entered one', () => {
+    expect(toHubMetaFacts(groupHub({ members: [hubMember({})] }))).toEqual([
+      '1 Person',
+      'kein Gruppen-Admin',
+    ]);
+  });
+
+  it('leads with the founding year once it is known', () => {
+    const facts = toHubMetaFacts(
+      groupHub({ foundedYear: 2009, members: [hubMember({})], admins: [hubAdmin({})] }),
     );
 
-    expect(headline).toEqual({
-      title: 'Tanzgarde',
-      eyebrow: 'du bist Gruppen-Admin',
-      chips: [
-        { label: 'sucht Verstärkung', tone: 'gold', dot: true },
-        { label: 'Gruppen-Admin', tone: 'accent', dot: false },
-      ],
-      subline: '1 Person · 1 Gruppen-Admin',
+    expect(facts).toEqual(['seit 2009', '1 Person', '1 Gruppen-Admin']);
+  });
+});
+
+describe('toJubileeSeal', () => {
+  it('splits a fifth year into the seal label and its caption', () => {
+    expect(toJubileeSeal(2011, 2026)).toEqual({ yearsLabel: '15', caption: 'JAHRE' });
+  });
+
+  it.each([
+    { case: 'an ordinary year', foundedYear: 2012, sessionYear: 2026 },
+    { case: 'an unknown founding', foundedYear: null, sessionYear: 2026 },
+    { case: 'the founding session itself', foundedYear: 2026, sessionYear: 2026 },
+  ])('seals nothing for $case', ({ foundedYear, sessionYear }) => {
+    expect(toJubileeSeal(foundedYear, sessionYear)).toBeNull();
+  });
+});
+
+describe('toRosterTap', () => {
+  it.each([
+    { case: 'an admin viewer', canManage: true, affiliated: true, row: true, expected: 'peek' },
+    { case: 'a stranger row', canManage: false, affiliated: true, row: false, expected: 'peek' },
+    {
+      case: 'an unaffiliated viewer',
+      canManage: false,
+      affiliated: false,
+      row: true,
+      expected: 'peek',
+    },
+    {
+      case: 'two affiliated parties',
+      canManage: false,
+      affiliated: true,
+      row: true,
+      expected: 'person',
+    },
+  ])('sends $case to the $expected surface', ({ canManage, affiliated, row, expected }) => {
+    expect(toRosterTap(canManage, affiliated, row)).toBe(expected);
+  });
+});
+
+describe('toGroupInfoPayload', () => {
+  it('turns the empty choices into nulls and the year into a number', () => {
+    expect(
+      toGroupInfoPayload({
+        description: 'Die Garde tanzt.',
+        isRecruiting: true,
+        groupKindId: '',
+        foundedYear: '',
+        tone: '',
+      }),
+    ).toEqual({
+      description: 'Die Garde tanzt.',
+      isRecruiting: true,
+      groupKindId: null,
+      foundedYear: null,
+      tone: null,
     });
   });
 
-  it('lets the Zugehörigkeit speak for an admin who is in the Gruppe herself', () => {
-    const headline = toHubHeadline(
-      hubDetails({
-        viewerIsAdmin: true,
-        members: [hubMember({ personId: 12, since: '2020-11-11' })],
-        admins: [hubAdmin({ personId: 12 })],
+  it('carries every filled choice through', () => {
+    expect(
+      toGroupInfoPayload({
+        description: '',
+        isRecruiting: false,
+        groupKindId: '7',
+        foundedYear: '1974',
+        tone: 'teal',
       }),
-      12,
+    ).toEqual({
+      description: '',
+      isRecruiting: false,
+      groupKindId: 7,
+      foundedYear: 1974,
+      tone: 'teal',
+    });
+  });
+});
+
+describe('toTakenTones', () => {
+  it('collects every other Gruppe tone and skips the one being edited', () => {
+    const taken = toTakenTones(
+      [
+        { groupId: 3, tone: 'rose' },
+        { groupId: 4, tone: 'teal' },
+        { groupId: 5, tone: null },
+        { groupId: 6, tone: 'teal' },
+      ],
+      3,
     );
 
-    expect(headline.eyebrow).toBe('du bist hier dabei seit 2020/21');
+    expect([...taken]).toEqual(['teal']);
+  });
+});
+
+describe('toToneWarning', () => {
+  it('warns when another Gruppe already wears the tone', () => {
+    expect(toToneWarning('teal', new Set(['teal']))).not.toBeNull();
   });
 
-  it('falls back to the member phrase when neither standing is known yet', () => {
-    const headline = toHubHeadline(hubDetails({ members: [hubMember({ personId: 44 })] }), 12);
-
-    expect(headline.eyebrow).toBe('du bist hier dabei');
-  });
-
-  it('leaves the accent Gruppen-Admin chip off a member who only belongs to the Gruppe', () => {
-    const headline = toHubHeadline(
-      hubDetails({ members: [hubMember({ personId: 12, since: '2020-11-11' })] }),
-      12,
-    );
-
-    expect(headline.chips.map((chip) => chip.label)).toEqual(['sucht gerade niemanden']);
+  it.each([
+    { case: 'a free tone', tone: 'rose' as const },
+    { case: 'no choice at all', tone: '' as const },
+  ])('stays quiet for $case', ({ tone }) => {
+    expect(toToneWarning(tone, new Set(['teal']))).toBeNull();
   });
 });
 

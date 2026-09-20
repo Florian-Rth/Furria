@@ -5,21 +5,17 @@ import {
   filterGroups,
   RECRUITING_FILTER_ID,
   SETTLED_FILTER_ID,
-  toGroupCareIntent,
-  toGroupHeadline,
-  toGroupId,
   toGroupStandingChips,
   toGroupStandings,
   toGroupsIntroSentence,
   toGroupsLead,
   toNoGroupMatchLine,
-  toOpenableAdminIds,
   toPersonUnitLabel,
   toRecruitingContactLine,
   toRecruitingContactSegments,
   toRecruitingFilterOptions,
 } from './groups-labels';
-import type { GroupAdmin, GroupDetails, GroupSummary } from './schemas';
+import type { GroupSummary } from './schemas';
 
 const person = (personId: number, firstName: string, lastName = 'Kaiser'): PersonRef => ({
   personId,
@@ -35,38 +31,6 @@ const summary = (overrides: Partial<GroupSummary> & { groupId: number }): GroupS
   memberPreview: [],
   admins: [],
   ...overrides,
-});
-
-const details = (overrides: Partial<GroupDetails>): GroupDetails => ({
-  groupId: 3,
-  name: 'Tanzgarde',
-  description: 'Die Garde tanzt seit 1971.',
-  isRecruiting: false,
-  members: [],
-  admins: [],
-  ...overrides,
-});
-
-const member = (personId: number): GroupDetails['members'][number] => ({
-  personId,
-  firstName: 'Paula',
-  lastName: 'Brendel',
-  since: '2017-09-01',
-  isAffiliated: true,
-});
-
-describe('toGroupId', () => {
-  it.each([
-    { case: 'a positive id', raw: '3', expected: 3 },
-    { case: 'a long id', raw: '1204', expected: 1204 },
-    { case: 'zero', raw: '0', expected: null },
-    { case: 'a negative id', raw: '-3', expected: null },
-    { case: 'a word', raw: 'tanzgarde', expected: null },
-    { case: 'a decimal', raw: '3.5', expected: null },
-    { case: 'nothing', raw: '', expected: null },
-  ])('reads $case', ({ raw, expected }) => {
-    expect(toGroupId(raw)).toBe(expected);
-  });
 });
 
 describe('toPersonUnitLabel', () => {
@@ -114,35 +78,6 @@ describe('toRecruitingContactSegments', () => {
       { kind: 'person', personId: 19, firstName: 'Katrin', lastName: 'Kaiser' },
       { kind: 'text', text: ' oder einer der anderen Gruppen-Admins.' },
     ]);
-  });
-});
-
-describe('toOpenableAdminIds', () => {
-  const admins: GroupAdmin[] = [
-    {
-      personId: 18,
-      firstName: 'Anna',
-      lastName: 'Kaiser',
-      function: null,
-      since: '2019-01-01',
-      isAffiliated: true,
-    },
-    {
-      personId: 19,
-      firstName: 'Katrin',
-      lastName: 'Kaiser',
-      function: null,
-      since: '2020-01-01',
-      isAffiliated: false,
-    },
-  ];
-
-  it('leaves out the admin who has no Karte of her own', () => {
-    expect([...toOpenableAdminIds(admins, true)]).toEqual([18]);
-  });
-
-  it('leaves out everyone when the viewer may not open a Karte at all', () => {
-    expect([...toOpenableAdminIds(admins, false)]).toEqual([]);
   });
 });
 
@@ -278,34 +213,6 @@ describe('toGroupsLead', () => {
   });
 });
 
-describe('toGroupHeadline', () => {
-  it('falls back to the neutral title while the Gruppe is unknown', () => {
-    expect(toGroupHeadline(undefined)).toEqual({
-      title: 'Gruppe',
-      openness: null,
-      memberCount: null,
-    });
-  });
-
-  it('carries the name, the openness chip and the live member count', () => {
-    expect(
-      toGroupHeadline(details({ isRecruiting: true, members: [member(1), member(2)] })),
-    ).toEqual({
-      title: 'Tanzgarde',
-      openness: { label: 'sucht Verstärkung', tone: 'gold', dot: true },
-      memberCount: '2 Personen · kein Gruppen-Admin',
-    });
-  });
-
-  it('marks a Gruppe that is not recruiting', () => {
-    expect(toGroupHeadline(details({})).openness).toEqual({
-      label: 'sucht gerade niemanden',
-      tone: 'neutral',
-      dot: false,
-    });
-  });
-});
-
 describe('toGroupStandings', () => {
   it('keys every standing by its Gruppe', () => {
     const standings = toGroupStandings([
@@ -337,27 +244,5 @@ describe('toGroupStandingChips', () => {
 
     expect(chips).toHaveLength(1);
     expect(chips[0]?.label).toBe('Gruppen-Admin');
-  });
-});
-
-describe('toGroupCareIntent', () => {
-  it('offers no way into the Hub without a standing', () => {
-    expect(toGroupCareIntent(undefined)).toBeNull();
-  });
-
-  it('offers no way into the Hub to a viewer who neither belongs nor administers', () => {
-    expect(toGroupCareIntent({ isMember: false, isAdmin: false })).toBeNull();
-  });
-
-  it('sends a Gruppen-Admin who is not a member to her tools', () => {
-    expect(toGroupCareIntent({ isMember: false, isAdmin: true })).toBe('care');
-  });
-
-  it('lets the Gruppen-Admin standing outrank the membership', () => {
-    expect(toGroupCareIntent({ isMember: true, isAdmin: true })).toBe('care');
-  });
-
-  it('sends a member who does not administer to the plain Hub', () => {
-    expect(toGroupCareIntent({ isMember: true, isAdmin: false })).toBe('visit');
   });
 });

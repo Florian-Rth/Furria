@@ -1,14 +1,10 @@
 import type { KkFilterOption } from '@furria/ui';
 import type { MyGroupSummary } from '@/features/group-hub';
 import type { PersonRef } from '@/lib/api/schemas';
-import { toGroupSubline } from '@/lib/group-sections';
 import type { StateChip } from '@/lib/state-chips';
 import { GROUP_ADMIN_CHIP, MY_GROUP_CHIP, toRecruitingChip } from '@/lib/state-chips';
 import { normalizeForSearch } from '@/lib/text';
-import type { GroupAdmin, GroupDetails, GroupSummary } from './schemas';
-
-const GROUP_ID_PATTERN = /^[1-9]\d*$/;
-const GROUP_TITLE_FALLBACK = 'Gruppe';
+import type { GroupSummary } from './schemas';
 
 export interface GroupStanding {
   isMember: boolean;
@@ -36,30 +32,6 @@ export const toGroupStandingChips = (standing: GroupStanding | undefined): State
 
   return chips;
 };
-
-export type GroupCareIntent = 'care' | 'visit';
-
-export const GROUP_CARE_LABELS: Record<GroupCareIntent, string> = {
-  care: 'Gruppe pflegen',
-  visit: 'Zur Gruppe',
-};
-
-export const toGroupCareIntent = (standing: GroupStanding | undefined): GroupCareIntent | null => {
-  if (standing === undefined) {
-    return null;
-  }
-  if (standing.isAdmin) {
-    return 'care';
-  }
-  if (standing.isMember) {
-    return 'visit';
-  }
-
-  return null;
-};
-
-export const toGroupId = (raw: string): number | null =>
-  GROUP_ID_PATTERN.test(raw) ? Number(raw) : null;
 
 export const toPersonUnitLabel = (count: number): string => (count === 1 ? 'Person' : 'Personen');
 
@@ -116,17 +88,6 @@ export const toRecruitingContactSegments = (
     name(second),
     text(' oder einer der anderen Gruppen-Admins.'),
   ];
-};
-
-export const toOpenableAdminIds = (
-  admins: readonly GroupAdmin[],
-  viewerIsAffiliated: boolean,
-): ReadonlySet<number> => {
-  if (!viewerIsAffiliated) {
-    return new Set<number>();
-  }
-
-  return new Set(admins.filter((admin) => admin.isAffiliated).map((admin) => admin.personId));
 };
 
 const toSegmentText = (segment: RecruitingContactSegment): string =>
@@ -230,23 +191,3 @@ export const toGroupsIntroSentence = (total: number, recruiting: number): string
 
 export const toGroupsLead = (groups: readonly GroupSummary[]): string =>
   toGroupsIntroSentence(groups.length, groups.filter((group) => group.isRecruiting).length);
-
-export interface GroupHeadline {
-  title: string;
-  openness: StateChip | null;
-  memberCount: string | null;
-}
-
-export const GROUP_EYEBROW = 'Gruppe';
-
-export const toGroupHeadline = (group: GroupDetails | undefined): GroupHeadline => {
-  if (group === undefined) {
-    return { title: GROUP_TITLE_FALLBACK, openness: null, memberCount: null };
-  }
-
-  return {
-    title: group.name,
-    openness: toRecruitingChip(group.isRecruiting),
-    memberCount: toGroupSubline(group.members.length, group.admins.length),
-  };
-};

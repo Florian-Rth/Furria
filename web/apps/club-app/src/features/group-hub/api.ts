@@ -23,24 +23,24 @@ import {
   requestAddGroupMembership,
   requestEndGroupAdmin,
   requestEndGroupMembership,
+  requestGroupHub,
   requestGroupInfoUpdate,
-  requestMyGroup,
   requestMyGroups,
   requestPersonSearch,
 } from './requests';
 import type {
   AddedGroupAdmin,
   AddedGroupMembership,
+  GroupHub,
   GroupInfoForm,
-  HubDetails,
   MyGroupsResponse,
   PersonSearchResponse,
 } from './schemas';
 
 export const MY_GROUPS_QUERY_KEY = ['my-groups'] as const;
 
-export const myGroupQueryKey = (groupId: number | null): readonly [string, number | null] => [
-  'my-groups',
+export const groupHubQueryKey = (groupId: number | null): readonly [string, number | null] => [
+  'groups',
   groupId,
 ];
 
@@ -77,7 +77,7 @@ export interface EndAdminInput {
 }
 
 const refreshHub = (queryClient: QueryClient, groupId: number): void => {
-  void queryClient.invalidateQueries({ queryKey: myGroupQueryKey(groupId) });
+  void queryClient.invalidateQueries({ queryKey: groupHubQueryKey(groupId) });
   void queryClient.invalidateQueries({ queryKey: MY_GROUPS_QUERY_KEY });
 };
 
@@ -87,14 +87,14 @@ export const useMyGroupsQuery = (): UseQueryResult<MyGroupsResponse, Error> =>
     queryFn: () => withFreshAccessToken(requestMyGroups),
   });
 
-export const useMyGroupQuery = (groupId: number | null): UseQueryResult<HubDetails, Error> => {
+export const useGroupHubQuery = (groupId: number | null): UseQueryResult<GroupHub, Error> => {
   const load =
     groupId === null
       ? skipToken
-      : (): Promise<HubDetails> =>
-          withFreshAccessToken((accessToken) => requestMyGroup(groupId, accessToken));
+      : (): Promise<GroupHub> =>
+          withFreshAccessToken((accessToken) => requestGroupHub(groupId, accessToken));
 
-  return useQuery({ queryKey: myGroupQueryKey(groupId), queryFn: load });
+  return useQuery({ queryKey: groupHubQueryKey(groupId), queryFn: load });
 };
 
 export const usePersonSearchQuery = (

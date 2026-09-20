@@ -1,6 +1,8 @@
 import type { FC } from 'react';
-import { isNotFoundError } from '@/lib/query-error';
-import { useMyGroupQuery } from '../api';
+import { AccessDenied } from '@/features/session';
+import { isForbiddenError, isNotFoundError } from '@/lib/query-error';
+import { useGroupHubQuery } from '../api';
+import { HUB_DENIED_MESSAGE } from '../group-hub-labels';
 import { toHubErrorMessage } from '../group-hub-messages';
 import { HubError } from './HubError';
 import { HubNotFound } from './HubNotFound';
@@ -12,7 +14,7 @@ interface HubBodyProps {
 }
 
 export const HubBody: FC<HubBodyProps> = ({ groupId }) => {
-  const hub = useMyGroupQuery(groupId);
+  const hub = useGroupHubQuery(groupId);
   const errorMessage = toHubErrorMessage(hub.error);
   const missing = groupId === null || isNotFoundError(hub.error);
 
@@ -25,6 +27,9 @@ export const HubBody: FC<HubBodyProps> = ({ groupId }) => {
   }
   if (missing) {
     return <HubNotFound />;
+  }
+  if (isForbiddenError(hub.error)) {
+    return <AccessDenied message={HUB_DENIED_MESSAGE} />;
   }
   if (errorMessage !== null) {
     return <HubError message={errorMessage} onRetry={reload} />;

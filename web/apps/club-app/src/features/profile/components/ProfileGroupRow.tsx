@@ -4,7 +4,7 @@ import type { FC } from 'react';
 import type { MyGroupSummary } from '@/features/group-hub';
 import { GROUP_ADMIN_CHIP } from '@/lib/state-chips';
 
-const HUB_PATH = '/my-groups/$groupId';
+const HUB_PATH = '/groups/$groupId';
 
 interface ProfileGroupRowProps {
   group: MyGroupSummary;

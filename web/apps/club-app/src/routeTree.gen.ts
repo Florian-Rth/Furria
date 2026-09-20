@@ -18,9 +18,7 @@ import { Route as AppClubRouteImport } from './routes/_app/club'
 import { Route as AppCalendarRouteImport } from './routes/_app/calendar'
 import { Route as AppAnnouncementsRouteImport } from './routes/_app/announcements'
 import { Route as AppAffiliatedRouteImport } from './routes/_app/_affiliated'
-import { Route as AppMyGroupsIndexRouteImport } from './routes/_app/my-groups.index'
 import { Route as AppManageIndexRouteImport } from './routes/_app/manage.index'
-import { Route as AppMyGroupsGroupIdRouteImport } from './routes/_app/my-groups.$groupId'
 import { Route as AppManageVenuesRouteImport } from './routes/_app/manage.venues'
 import { Route as AppManageSessionsRouteImport } from './routes/_app/manage.sessions'
 import { Route as AppManageRolesRouteImport } from './routes/_app/manage.roles'
@@ -28,11 +26,11 @@ import { Route as AppManagePersonsRouteImport } from './routes/_app/manage.perso
 import { Route as AppManageKeysRouteImport } from './routes/_app/manage.keys'
 import { Route as AppManageGroupsRouteImport } from './routes/_app/manage.groups'
 import { Route as AppManageBoardRouteImport } from './routes/_app/manage.board'
+import { Route as AppGroupsGroupIdRouteImport } from './routes/_app/groups_.$groupId'
 import { Route as AppAffiliatedMembersRouteImport } from './routes/_app/_affiliated.members'
 import { Route as AppAffiliatedGroupsRouteImport } from './routes/_app/_affiliated.groups'
 import { Route as AppManagePersonsPersonIdRouteImport } from './routes/_app/manage.persons_.$personId'
 import { Route as AppAffiliatedMembersPersonIdRouteImport } from './routes/_app/_affiliated.members_.$personId'
-import { Route as AppAffiliatedGroupsGroupIdRouteImport } from './routes/_app/_affiliated.groups_.$groupId'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -77,19 +75,9 @@ const AppAffiliatedRoute = AppAffiliatedRouteImport.update({
   id: '/_affiliated',
   getParentRoute: () => AppRoute,
 } as any)
-const AppMyGroupsIndexRoute = AppMyGroupsIndexRouteImport.update({
-  id: '/my-groups/',
-  path: '/my-groups/',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppManageIndexRoute = AppManageIndexRouteImport.update({
   id: '/manage/',
   path: '/manage/',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppMyGroupsGroupIdRoute = AppMyGroupsGroupIdRouteImport.update({
-  id: '/my-groups/$groupId',
-  path: '/my-groups/$groupId',
   getParentRoute: () => AppRoute,
 } as any)
 const AppManageVenuesRoute = AppManageVenuesRouteImport.update({
@@ -127,6 +115,11 @@ const AppManageBoardRoute = AppManageBoardRouteImport.update({
   path: '/manage/board',
   getParentRoute: () => AppRoute,
 } as any)
+const AppGroupsGroupIdRoute = AppGroupsGroupIdRouteImport.update({
+  id: '/groups_/$groupId',
+  path: '/groups/$groupId',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAffiliatedMembersRoute = AppAffiliatedMembersRouteImport.update({
   id: '/members',
   path: '/members',
@@ -149,12 +142,6 @@ const AppAffiliatedMembersPersonIdRoute =
     path: '/members/$personId',
     getParentRoute: () => AppAffiliatedRoute,
   } as any)
-const AppAffiliatedGroupsGroupIdRoute =
-  AppAffiliatedGroupsGroupIdRouteImport.update({
-    id: '/groups_/$groupId',
-    path: '/groups/$groupId',
-    getParentRoute: () => AppAffiliatedRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
@@ -166,6 +153,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof AppProfileRoute
   '/groups': typeof AppAffiliatedGroupsRoute
   '/members': typeof AppAffiliatedMembersRoute
+  '/groups/$groupId': typeof AppGroupsGroupIdRoute
   '/manage/board': typeof AppManageBoardRoute
   '/manage/groups': typeof AppManageGroupsRoute
   '/manage/keys': typeof AppManageKeysRoute
@@ -173,10 +161,7 @@ export interface FileRoutesByFullPath {
   '/manage/roles': typeof AppManageRolesRoute
   '/manage/sessions': typeof AppManageSessionsRoute
   '/manage/venues': typeof AppManageVenuesRoute
-  '/my-groups/$groupId': typeof AppMyGroupsGroupIdRoute
   '/manage/': typeof AppManageIndexRoute
-  '/my-groups/': typeof AppMyGroupsIndexRoute
-  '/groups/$groupId': typeof AppAffiliatedGroupsGroupIdRoute
   '/members/$personId': typeof AppAffiliatedMembersPersonIdRoute
   '/manage/persons/$personId': typeof AppManagePersonsPersonIdRoute
 }
@@ -190,6 +175,7 @@ export interface FileRoutesByTo {
   '/profile': typeof AppProfileRoute
   '/groups': typeof AppAffiliatedGroupsRoute
   '/members': typeof AppAffiliatedMembersRoute
+  '/groups/$groupId': typeof AppGroupsGroupIdRoute
   '/manage/board': typeof AppManageBoardRoute
   '/manage/groups': typeof AppManageGroupsRoute
   '/manage/keys': typeof AppManageKeysRoute
@@ -197,10 +183,7 @@ export interface FileRoutesByTo {
   '/manage/roles': typeof AppManageRolesRoute
   '/manage/sessions': typeof AppManageSessionsRoute
   '/manage/venues': typeof AppManageVenuesRoute
-  '/my-groups/$groupId': typeof AppMyGroupsGroupIdRoute
   '/manage': typeof AppManageIndexRoute
-  '/my-groups': typeof AppMyGroupsIndexRoute
-  '/groups/$groupId': typeof AppAffiliatedGroupsGroupIdRoute
   '/members/$personId': typeof AppAffiliatedMembersPersonIdRoute
   '/manage/persons/$personId': typeof AppManagePersonsPersonIdRoute
 }
@@ -217,6 +200,7 @@ export interface FileRoutesById {
   '/_app/': typeof AppIndexRoute
   '/_app/_affiliated/groups': typeof AppAffiliatedGroupsRoute
   '/_app/_affiliated/members': typeof AppAffiliatedMembersRoute
+  '/_app/groups_/$groupId': typeof AppGroupsGroupIdRoute
   '/_app/manage/board': typeof AppManageBoardRoute
   '/_app/manage/groups': typeof AppManageGroupsRoute
   '/_app/manage/keys': typeof AppManageKeysRoute
@@ -224,10 +208,7 @@ export interface FileRoutesById {
   '/_app/manage/roles': typeof AppManageRolesRoute
   '/_app/manage/sessions': typeof AppManageSessionsRoute
   '/_app/manage/venues': typeof AppManageVenuesRoute
-  '/_app/my-groups/$groupId': typeof AppMyGroupsGroupIdRoute
   '/_app/manage/': typeof AppManageIndexRoute
-  '/_app/my-groups/': typeof AppMyGroupsIndexRoute
-  '/_app/_affiliated/groups_/$groupId': typeof AppAffiliatedGroupsGroupIdRoute
   '/_app/_affiliated/members_/$personId': typeof AppAffiliatedMembersPersonIdRoute
   '/_app/manage/persons_/$personId': typeof AppManagePersonsPersonIdRoute
 }
@@ -243,6 +224,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/groups'
     | '/members'
+    | '/groups/$groupId'
     | '/manage/board'
     | '/manage/groups'
     | '/manage/keys'
@@ -250,10 +232,7 @@ export interface FileRouteTypes {
     | '/manage/roles'
     | '/manage/sessions'
     | '/manage/venues'
-    | '/my-groups/$groupId'
     | '/manage/'
-    | '/my-groups/'
-    | '/groups/$groupId'
     | '/members/$personId'
     | '/manage/persons/$personId'
   fileRoutesByTo: FileRoutesByTo
@@ -267,6 +246,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/groups'
     | '/members'
+    | '/groups/$groupId'
     | '/manage/board'
     | '/manage/groups'
     | '/manage/keys'
@@ -274,10 +254,7 @@ export interface FileRouteTypes {
     | '/manage/roles'
     | '/manage/sessions'
     | '/manage/venues'
-    | '/my-groups/$groupId'
     | '/manage'
-    | '/my-groups'
-    | '/groups/$groupId'
     | '/members/$personId'
     | '/manage/persons/$personId'
   id:
@@ -293,6 +270,7 @@ export interface FileRouteTypes {
     | '/_app/'
     | '/_app/_affiliated/groups'
     | '/_app/_affiliated/members'
+    | '/_app/groups_/$groupId'
     | '/_app/manage/board'
     | '/_app/manage/groups'
     | '/_app/manage/keys'
@@ -300,10 +278,7 @@ export interface FileRouteTypes {
     | '/_app/manage/roles'
     | '/_app/manage/sessions'
     | '/_app/manage/venues'
-    | '/_app/my-groups/$groupId'
     | '/_app/manage/'
-    | '/_app/my-groups/'
-    | '/_app/_affiliated/groups_/$groupId'
     | '/_app/_affiliated/members_/$personId'
     | '/_app/manage/persons_/$personId'
   fileRoutesById: FileRoutesById
@@ -378,25 +353,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAffiliatedRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/my-groups/': {
-      id: '/_app/my-groups/'
-      path: '/my-groups'
-      fullPath: '/my-groups/'
-      preLoaderRoute: typeof AppMyGroupsIndexRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/manage/': {
       id: '/_app/manage/'
       path: '/manage'
       fullPath: '/manage/'
       preLoaderRoute: typeof AppManageIndexRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/my-groups/$groupId': {
-      id: '/_app/my-groups/$groupId'
-      path: '/my-groups/$groupId'
-      fullPath: '/my-groups/$groupId'
-      preLoaderRoute: typeof AppMyGroupsGroupIdRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/manage/venues': {
@@ -448,6 +409,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppManageBoardRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/groups_/$groupId': {
+      id: '/_app/groups_/$groupId'
+      path: '/groups/$groupId'
+      fullPath: '/groups/$groupId'
+      preLoaderRoute: typeof AppGroupsGroupIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/_affiliated/members': {
       id: '/_app/_affiliated/members'
       path: '/members'
@@ -476,27 +444,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAffiliatedMembersPersonIdRouteImport
       parentRoute: typeof AppAffiliatedRoute
     }
-    '/_app/_affiliated/groups_/$groupId': {
-      id: '/_app/_affiliated/groups_/$groupId'
-      path: '/groups/$groupId'
-      fullPath: '/groups/$groupId'
-      preLoaderRoute: typeof AppAffiliatedGroupsGroupIdRouteImport
-      parentRoute: typeof AppAffiliatedRoute
-    }
   }
 }
 
 interface AppAffiliatedRouteChildren {
   AppAffiliatedGroupsRoute: typeof AppAffiliatedGroupsRoute
   AppAffiliatedMembersRoute: typeof AppAffiliatedMembersRoute
-  AppAffiliatedGroupsGroupIdRoute: typeof AppAffiliatedGroupsGroupIdRoute
   AppAffiliatedMembersPersonIdRoute: typeof AppAffiliatedMembersPersonIdRoute
 }
 
 const AppAffiliatedRouteChildren: AppAffiliatedRouteChildren = {
   AppAffiliatedGroupsRoute: AppAffiliatedGroupsRoute,
   AppAffiliatedMembersRoute: AppAffiliatedMembersRoute,
-  AppAffiliatedGroupsGroupIdRoute: AppAffiliatedGroupsGroupIdRoute,
   AppAffiliatedMembersPersonIdRoute: AppAffiliatedMembersPersonIdRoute,
 }
 
@@ -512,6 +471,7 @@ interface AppRouteChildren {
   AppMoreRoute: typeof AppMoreRoute
   AppProfileRoute: typeof AppProfileRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppGroupsGroupIdRoute: typeof AppGroupsGroupIdRoute
   AppManageBoardRoute: typeof AppManageBoardRoute
   AppManageGroupsRoute: typeof AppManageGroupsRoute
   AppManageKeysRoute: typeof AppManageKeysRoute
@@ -519,9 +479,7 @@ interface AppRouteChildren {
   AppManageRolesRoute: typeof AppManageRolesRoute
   AppManageSessionsRoute: typeof AppManageSessionsRoute
   AppManageVenuesRoute: typeof AppManageVenuesRoute
-  AppMyGroupsGroupIdRoute: typeof AppMyGroupsGroupIdRoute
   AppManageIndexRoute: typeof AppManageIndexRoute
-  AppMyGroupsIndexRoute: typeof AppMyGroupsIndexRoute
   AppManagePersonsPersonIdRoute: typeof AppManagePersonsPersonIdRoute
 }
 
@@ -533,6 +491,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppMoreRoute: AppMoreRoute,
   AppProfileRoute: AppProfileRoute,
   AppIndexRoute: AppIndexRoute,
+  AppGroupsGroupIdRoute: AppGroupsGroupIdRoute,
   AppManageBoardRoute: AppManageBoardRoute,
   AppManageGroupsRoute: AppManageGroupsRoute,
   AppManageKeysRoute: AppManageKeysRoute,
@@ -540,9 +499,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppManageRolesRoute: AppManageRolesRoute,
   AppManageSessionsRoute: AppManageSessionsRoute,
   AppManageVenuesRoute: AppManageVenuesRoute,
-  AppMyGroupsGroupIdRoute: AppMyGroupsGroupIdRoute,
   AppManageIndexRoute: AppManageIndexRoute,
-  AppMyGroupsIndexRoute: AppMyGroupsIndexRoute,
   AppManagePersonsPersonIdRoute: AppManagePersonsPersonIdRoute,
 }
 

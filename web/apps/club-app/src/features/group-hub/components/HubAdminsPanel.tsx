@@ -1,29 +1,26 @@
 import { KkButton, KkEmptyState, KkIcon, KkPanel, KkPanelSection } from '@furria/ui';
 import type { FC, Ref } from 'react';
 import type { GroupDetailAdmin } from '@/features/group-detail';
-import {
-  ADD_ADMIN_ACTION_LABEL,
-  ADD_ADMIN_LABEL,
-  GroupAdminRow,
-  NO_ADMINS_TITLE,
-} from '@/features/group-detail';
+import { ADD_ADMIN_ACTION_LABEL, ADD_ADMIN_LABEL, NO_ADMINS_TITLE } from '@/features/group-detail';
+import type { GroupTone } from '@/features/groups';
 import { GROUP_ADMINS_NOTE, GROUP_SECTION_TITLES, NO_ADMINS_LINE } from '@/lib/group-sections';
+import { HubAdminRow } from './HubAdminRow';
 
 interface HubAdminsPanelProps {
+  tone: GroupTone;
   admins: readonly GroupDetailAdmin[];
   canManage: boolean;
   viewerIsAffiliated: boolean;
-  newPersonId: number | null;
   titleRef: Ref<HTMLHeadingElement>;
   onAdd: () => void;
   onEnd: (groupAdminId: number) => void;
 }
 
 export const HubAdminsPanel: FC<HubAdminsPanelProps> = ({
+  tone,
   admins,
   canManage,
   viewerIsAffiliated,
-  newPersonId,
   titleRef,
   onAdd,
   onEnd,
@@ -34,13 +31,12 @@ export const HubAdminsPanel: FC<HubAdminsPanelProps> = ({
     };
 
     return (
-      <GroupAdminRow
+      <HubAdminRow
         key={admin.groupAdminId}
         admin={admin}
         canManage={canManage}
         viewerIsAffiliated={viewerIsAffiliated}
         onEnd={end}
-        isNew={admin.personId === newPersonId}
       />
     );
   });
@@ -69,6 +65,7 @@ export const HubAdminsPanel: FC<HubAdminsPanelProps> = ({
   return (
     <KkPanelSection
       title={GROUP_SECTION_TITLES.admins}
+      groupTone={tone}
       titleRef={titleRef}
       action={action}
       description={GROUP_ADMINS_NOTE}

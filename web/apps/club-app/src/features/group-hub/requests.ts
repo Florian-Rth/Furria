@@ -1,5 +1,6 @@
 import { apiFetch } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
+import { toGroupInfoPayload } from './group-hub-labels';
 import type {
   AddedGroupAdmin,
   AddedGroupMembership,
@@ -7,15 +8,15 @@ import type {
   AddGroupMembershipForm,
   EndGroupAdminForm,
   EndGroupMembershipForm,
+  GroupHub,
   GroupInfoForm,
-  HubDetails,
   MyGroupsResponse,
   PersonSearchResponse,
 } from './schemas';
 import {
   AddedGroupAdminSchema,
   AddedGroupMembershipSchema,
-  HubDetailsSchema,
+  GroupHubSchema,
   MyGroupsResponseSchema,
   PersonSearchResponseSchema,
 } from './schemas';
@@ -23,8 +24,8 @@ import {
 export const requestMyGroups = (accessToken: string): Promise<MyGroupsResponse> =>
   apiFetch('/api/my-groups', { schema: MyGroupsResponseSchema, accessToken });
 
-export const requestMyGroup = (groupId: number, accessToken: string): Promise<HubDetails> =>
-  apiFetch(`/api/my-groups/${groupId}`, { schema: HubDetailsSchema, accessToken });
+export const requestGroupHub = (groupId: number, accessToken: string): Promise<GroupHub> =>
+  apiFetch(`/api/groups/${groupId}`, { schema: GroupHubSchema, accessToken });
 
 export const requestPersonSearch = (
   query: string,
@@ -42,7 +43,7 @@ export const requestGroupInfoUpdate = (
 ): Promise<void> =>
   apiFetch(`/api/groups/${groupId}/info`, {
     method: 'PUT',
-    body: { description: form.description, isRecruiting: form.isRecruiting },
+    body: toGroupInfoPayload(form),
     schema: NoContentSchema,
     accessToken,
   });

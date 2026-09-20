@@ -1,7 +1,7 @@
 export {
+  groupHubQueryKey,
   MY_GROUPS_QUERY_KEY,
-  myGroupQueryKey,
-  useMyGroupQuery,
+  useGroupHubQuery,
   useMyGroupsQuery,
   usePersonSearchQuery,
 } from './api';
@@ -11,4 +11,5 @@ export { EndAdminDialog } from './components/EndAdminDialog';
 export { EndMembershipDialog } from './components/EndMembershipDialog';
 export { HubPage } from './components/HubPage';
 export { PersonPicker } from './components/PersonPicker';
-export type { MyGroupSummary } from './schemas';
+export type { GroupHub, GroupTone, MyGroupSummary, TrainingSlot, Weekday } from './schemas';
+export { GroupToneSchema, WeekdaySchema } from './schemas';

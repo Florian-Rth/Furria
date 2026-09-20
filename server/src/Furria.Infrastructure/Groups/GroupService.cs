@@ -237,25 +237,11 @@ public sealed class GroupService
             .ToListAsync(ct);
     }
 
-    public async Task<Result<MyGroupDetails>> GetMyGroupAsync(int groupId, CancellationToken ct)
-    {
-        var today = ClubClock.Today(_timeProvider);
-
-        var row = await _dbContext
-            .Groups.AsNoTracking()
-            .Where(group => group.Id == groupId && group.ArchivedOn == null)
-            .Select(GroupPageProjection)
-            .SingleOrDefaultAsync(ct);
-
-        if (row is null)
-            return Result<MyGroupDetails>.NotFound(UnknownGroupMessage);
-
-        var affiliated = await AffiliatedAmongAsync(row, today, ct);
-
-        return Result<MyGroupDetails>.Success(ToHubDetails(row, today, affiliated));
-    }
-
-    public async Task<Result<GroupDetails>> GetGroupAsync(int groupId, CancellationToken ct)
+    public async Task<Result<GroupDetails>> GetGroupAsync(
+        int groupId,
+        int? viewerPersonId,
+        CancellationToken ct
+    )
     {
         var today = ClubClock.Today(_timeProvider);
 
@@ -270,7 +256,7 @@ public sealed class GroupService
 
         var affiliated = await AffiliatedAmongAsync(row, today, ct);
 
-        return Result<GroupDetails>.Success(ToDetails(row, today, affiliated));
+        return Result<GroupDetails>.Success(ToHubDetails(row, today, affiliated, viewerPersonId));
     }
 
     public async Task<IReadOnlyList<ManagedGroupSummary>> GetManagedGroupsAsync(
@@ -735,31 +721,64 @@ public sealed class GroupService
         return chain.Any(row => joined.Overlaps(row.AsPeriod));
     }
 
-    private static MyGroupDetails ToHubDetails(
+    [Pure]
+    private static bool HasRunningRow(IReadOnlyList<TieRow> rows, int? personId, DateOnly today) =>
+        personId is { } viewerId
+        && rows.Any(row => row.PersonId == viewerId && IsRunningOn(row, today));
+
+    [Pure]
+    private static DateOnly? ChainStartOf(
+        IReadOnlyDictionary<int, DateOnly> chains,
+        int? personId
+    ) => personId is { } viewerId && chains.TryGetValue(viewerId, out var since) ? since : null;
+
+    [Pure]
+    private static GroupTrainingSlotDetails ToSlotDetails(SlotRow slot) =>
+        new()
+        {
+            GroupTrainingSlotId = slot.Id,
+            Weekday = slot.Weekday,
+            StartsAt = slot.StartsAt,
+            DurationMinutes = slot.DurationMinutes,
+            VenueId = slot.VenueId,
+            VenueName = slot.VenueName,
+        };
+
+    private static GroupDetails ToHubDetails(
         GroupPageRow row,
         DateOnly today,
-        IReadOnlySet<int> affiliated
+        IReadOnlySet<int> affiliated,
+        int? viewerPersonId
     )
     {
         var memberChains = ChainStarts(row.Members);
         var adminChains = ChainStarts(row.Admins);
+        var viewerIsMember = HasRunningRow(row.Members, viewerPersonId, today);
 
-        return new MyGroupDetails
+        return new GroupDetails
         {
             GroupId = row.Id,
             Name = row.Name,
             Description = row.Description,
             IsRecruiting = row.IsRecruiting,
-            Members =
-            [
-                .. RunningRows(row.Members, today)
-                    .Select(tie => ToHubMember(tie, memberChains[tie.PersonId], affiliated)),
-            ],
+            GroupKindId = row.GroupKindId,
+            GroupKindName = row.GroupKindName,
+            FoundedYear = row.FoundedYear,
+            Tone = row.Tone,
+            TrainingSlots = [.. row.TrainingSlots.Select(ToSlotDetails)],
             Admins =
             [
                 .. RunningRows(row.Admins, today)
                     .Select(tie => ToHubAdministrator(tie, adminChains[tie.PersonId], affiliated)),
             ],
+            Members =
+            [
+                .. RunningRows(row.Members, today)
+                    .Select(tie => ToHubMember(tie, memberChains[tie.PersonId], affiliated)),
+            ],
+            ViewerIsMember = viewerIsMember,
+            ViewerIsAdmin = HasRunningRow(row.Admins, viewerPersonId, today),
+            ViewerSince = viewerIsMember ? ChainStartOf(memberChains, viewerPersonId) : null,
             PastMembers =
             [
                 .. EndedRows(row.Members, today)
@@ -794,64 +813,25 @@ public sealed class GroupService
             Members =
             [
                 .. RunningRows(row.Members, today)
-                    .Select(tie => ToManagedMember(tie, memberChains[tie.PersonId], affiliated)),
+                    .Select(tie => ToHubMember(tie, memberChains[tie.PersonId], affiliated)),
             ],
             Admins =
             [
                 .. RunningRows(row.Admins, today)
-                    .Select(tie =>
-                        ToManagedAdministrator(tie, adminChains[tie.PersonId], affiliated)
-                    ),
+                    .Select(tie => ToHubAdministrator(tie, adminChains[tie.PersonId], affiliated)),
             ],
             PastMembers =
             [
                 .. EndedRows(row.Members, today)
-                    .Select(tie => ToManagedMember(tie, memberChains[tie.PersonId], affiliated)),
+                    .Select(tie => ToHubMember(tie, memberChains[tie.PersonId], affiliated)),
             ],
             PastAdmins =
             [
                 .. EndedRows(row.Admins, today)
-                    .Select(tie =>
-                        ToManagedAdministrator(tie, adminChains[tie.PersonId], affiliated)
-                    ),
+                    .Select(tie => ToHubAdministrator(tie, adminChains[tie.PersonId], affiliated)),
             ],
         };
     }
-
-    private static ManagedMember ToManagedMember(
-        TieRow tie,
-        DateOnly since,
-        IReadOnlySet<int> affiliated
-    ) =>
-        new()
-        {
-            GroupMembershipId = tie.RowId,
-            PersonId = tie.PersonId,
-            FirstName = tie.FirstName,
-            LastName = tie.LastName,
-            JoinedOn = tie.StartedOn,
-            LeftOn = tie.EndedOn,
-            Since = since,
-            IsAffiliated = affiliated.Contains(tie.PersonId),
-        };
-
-    private static ManagedAdministrator ToManagedAdministrator(
-        TieRow tie,
-        DateOnly since,
-        IReadOnlySet<int> affiliated
-    ) =>
-        new()
-        {
-            GroupAdminId = tie.RowId,
-            PersonId = tie.PersonId,
-            FirstName = tie.FirstName,
-            LastName = tie.LastName,
-            Function = tie.Function,
-            SinceOn = tie.StartedOn,
-            UntilOn = tie.EndedOn,
-            Since = since,
-            IsAffiliated = affiliated.Contains(tie.PersonId),
-        };
 
     private static ManagedGroupSummary ToManagedSummary(ManagedGroupRow row) =>
         new()
@@ -913,63 +893,6 @@ public sealed class GroupService
     private static IReadOnlyDictionary<int, DateOnly> ChainStarts(IReadOnlyList<TieRow> rows) =>
         rows.GroupBy(row => row.PersonId)
             .ToDictionary(chain => chain.Key, chain => chain.Min(row => row.StartedOn));
-
-    private static GroupDetails ToDetails(
-        GroupPageRow row,
-        DateOnly today,
-        IReadOnlySet<int> affiliated
-    ) =>
-        new()
-        {
-            GroupId = row.Id,
-            Name = row.Name,
-            Description = row.Description,
-            IsRecruiting = row.IsRecruiting,
-            Members =
-            [
-                .. RunningTies(row.Members, today)
-                    .Select(tie => new GroupMember
-                    {
-                        PersonId = tie.PersonId,
-                        FirstName = tie.FirstName,
-                        LastName = tie.LastName,
-                        Since = tie.Since,
-                        IsAffiliated = affiliated.Contains(tie.PersonId),
-                    }),
-            ],
-            Admins =
-            [
-                .. RunningTies(row.Admins, today)
-                    .Select(tie => new GroupAdministrator
-                    {
-                        PersonId = tie.PersonId,
-                        FirstName = tie.FirstName,
-                        LastName = tie.LastName,
-                        Function = tie.Function,
-                        Since = tie.Since,
-                        IsAffiliated = affiliated.Contains(tie.PersonId),
-                    }),
-            ],
-        };
-
-    private static IReadOnlyList<PersonTie> RunningTies(
-        IReadOnlyList<TieRow> rows,
-        DateOnly today
-    ) =>
-        [
-            .. rows.GroupBy(row => row.PersonId)
-                .Where(chain => chain.Any(row => IsRunningOn(row, today)))
-                .Select(chain => new PersonTie(
-                    chain.Key,
-                    chain.First().FirstName,
-                    chain.First().LastName,
-                    CurrentFunction(chain, today),
-                    chain.Min(row => row.StartedOn)
-                )),
-        ];
-
-    private static string? CurrentFunction(IEnumerable<TieRow> chain, DateOnly today) =>
-        chain.Last(row => IsRunningOn(row, today)).Function;
 
     private static bool IsRunningOn(TieRow row, DateOnly today) =>
         new DatePeriod { Start = row.StartedOn, End = row.EndedOn }.IsRunningOn(today);
@@ -1063,12 +986,4 @@ public sealed class GroupService
     {
         public DatePeriod AsPeriod => new() { Start = StartedOn, End = EndedOn };
     }
-
-    private sealed record PersonTie(
-        int PersonId,
-        string FirstName,
-        string LastName,
-        string? Function,
-        DateOnly Since
-    );
 }

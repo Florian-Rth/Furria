@@ -1,8 +1,10 @@
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
-import type { Theme } from '@mui/material/styles';
+import type { CSSObject, Theme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import type { FC, ReactNode, Ref } from 'react';
+import type { KkGroupTone } from './internal/group-tone';
+import { groupToneInkPaint } from './internal/group-tone';
 import { KkEyebrow } from './KkEyebrow';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
@@ -21,11 +23,25 @@ const titleSizes: Record<KkPanelHeaderSize, string> = {
 const ruleImage = (theme: Theme): string =>
   `linear-gradient(to right, ${(theme.vars ?? theme).palette.primary.main} 0, ${(theme.vars ?? theme).palette.divider} ${RULE_BLEED}px)`;
 
+const toneRuleImage = (theme: Theme): string =>
+  `linear-gradient(to right, currentColor 0, ${(theme.vars ?? theme).palette.divider} ${RULE_BLEED}px)`;
+
+const markerPaint = (theme: Theme, groupTone: KkGroupTone | undefined): CSSObject =>
+  groupTone === undefined
+    ? { backgroundColor: (theme.vars ?? theme).palette.primary.main }
+    : { ...groupToneInkPaint(theme, groupTone), backgroundColor: 'currentColor' };
+
+const rulePaint = (theme: Theme, groupTone: KkGroupTone | undefined): CSSObject =>
+  groupTone === undefined
+    ? { backgroundImage: ruleImage(theme) }
+    : { ...groupToneInkPaint(theme, groupTone), backgroundImage: toneRuleImage(theme) };
+
 interface KkPanelHeaderProps {
   title: string;
   action?: ReactNode;
   meta?: ReactNode;
   size?: KkPanelHeaderSize;
+  groupTone?: KkGroupTone;
   titleRef?: Ref<HTMLHeadingElement>;
   sx?: KkSx;
 }
@@ -35,6 +51,7 @@ export const KkPanelHeader: FC<KkPanelHeaderProps> = ({
   action,
   meta,
   size = 'small',
+  groupTone,
   titleRef,
   sx,
 }) => {
@@ -67,7 +84,12 @@ export const KkPanelHeader: FC<KkPanelHeaderProps> = ({
     >
       <Box
         aria-hidden
-        sx={{ width: MARKER_SIZE, height: MARKER_SIZE, bgcolor: 'primary.main', flexShrink: 0 }}
+        sx={(theme) => ({
+          width: MARKER_SIZE,
+          height: MARKER_SIZE,
+          flexShrink: 0,
+          ...markerPaint(theme, groupTone),
+        })}
       />
       <Typography
         ref={titleRef}
@@ -96,7 +118,7 @@ export const KkPanelHeader: FC<KkPanelHeaderProps> = ({
           flexShrink: 0,
           minWidth: RULE_MIN_WIDTH,
           height: kkTokens.line.hair,
-          backgroundImage: ruleImage(theme),
+          ...rulePaint(theme, groupTone),
         })}
       />
       {action}

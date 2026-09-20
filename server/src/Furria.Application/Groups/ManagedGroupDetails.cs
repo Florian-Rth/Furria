@@ -16,11 +16,11 @@ public sealed record ManagedGroupDetails
 
     public required DateOnly? ArchivedOn { get; init; }
 
-    public required IReadOnlyList<ManagedMember> Members { get; init; }
+    public required IReadOnlyList<HubMember> Members { get; init; }
 
-    public required IReadOnlyList<ManagedAdministrator> Admins { get; init; }
+    public required IReadOnlyList<HubAdministrator> Admins { get; init; }
 
-    public required IReadOnlyList<ManagedMember> PastMembers { get; init; }
+    public required IReadOnlyList<HubMember> PastMembers { get; init; }
 
-    public required IReadOnlyList<ManagedAdministrator> PastAdmins { get; init; }
+    public required IReadOnlyList<HubAdministrator> PastAdmins { get; init; }
 }
