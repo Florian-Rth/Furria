@@ -9,10 +9,12 @@ namespace Furria.Api.Endpoints.Groups;
 public sealed class GetManagedGroups : EndpointWithoutRequest<GetManagedGroupsResponse>
 {
     private readonly GroupService _groupService;
+    private readonly GroupKindService _groupKindService;
 
-    public GetManagedGroups(GroupService groupService)
+    public GetManagedGroups(GroupService groupService, GroupKindService groupKindService)
     {
         _groupService = groupService;
+        _groupKindService = groupKindService;
     }
 
     public override void Configure()
@@ -24,12 +26,25 @@ public sealed class GetManagedGroups : EndpointWithoutRequest<GetManagedGroupsRe
     public override async Task HandleAsync(CancellationToken ct)
     {
         var groups = await _groupService.GetManagedGroupsAsync(ct);
+        var kinds = await _groupKindService.GetKindsAsync(ct);
 
-        await Send.OkAsync(ToResponse(groups), cancellation: ct);
+        await Send.OkAsync(ToResponse(groups, kinds), cancellation: ct);
     }
 
-    private static GetManagedGroupsResponse ToResponse(IReadOnlyList<ManagedGroupSummary> groups) =>
-        new() { Groups = [.. groups.Select(ToDto)] };
+    private static GetManagedGroupsResponse ToResponse(
+        IReadOnlyList<ManagedGroupSummary> groups,
+        IReadOnlyList<GroupKindDetails> kinds
+    ) => new() { Groups = [.. groups.Select(ToDto)], Kinds = [.. kinds.Select(ToDto)] };
+
+    private static ManagedGroupKindDto ToDto(GroupKindDetails kind) =>
+        new()
+        {
+            GroupKindId = kind.GroupKindId,
+            Name = kind.Name,
+            SortOrder = kind.SortOrder,
+            ArchivedOn = kind.ArchivedOn,
+            GroupCount = kind.GroupCount,
+        };
 
     private static ManagedGroupSummaryDto ToDto(ManagedGroupSummary group) =>
         new()
@@ -55,6 +70,21 @@ public sealed class GetManagedGroups : EndpointWithoutRequest<GetManagedGroupsRe
 public sealed record GetManagedGroupsResponse
 {
     public required IReadOnlyList<ManagedGroupSummaryDto> Groups { get; init; }
+
+    public required IReadOnlyList<ManagedGroupKindDto> Kinds { get; init; }
+}
+
+public sealed record ManagedGroupKindDto
+{
+    public required int GroupKindId { get; init; }
+
+    public required string Name { get; init; }
+
+    public required int SortOrder { get; init; }
+
+    public required DateOnly? ArchivedOn { get; init; }
+
+    public required int GroupCount { get; init; }
 }
 
 public sealed record ManagedGroupSummaryDto

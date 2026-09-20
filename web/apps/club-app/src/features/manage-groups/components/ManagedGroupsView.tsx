@@ -6,9 +6,10 @@ import { useGroupSelection } from '../hooks/use-group-selection';
 import type { ManagedGroupsListing } from '../hooks/use-managed-groups-listing';
 import { useScrollIntoView } from '../hooks/use-scroll-into-view';
 import { findManagedGroup, MANAGE_GROUPS_FOOTNOTE } from '../manage-groups-labels';
-import type { ManagedGroupSummary } from '../schemas';
+import type { ManagedGroupKind, ManagedGroupSummary } from '../schemas';
 import { ArchiveGroupDialog } from './ArchiveGroupDialog';
 import { GroupFormDialog } from './GroupFormDialog';
+import { GroupKindsPanel } from './GroupKindsPanel';
 import { GroupOverrideNotFound } from './GroupOverrideNotFound';
 import { GroupOverridePanel } from './GroupOverridePanel';
 import { ManagedGroupsGrid } from './ManagedGroupsGrid';
@@ -20,10 +21,11 @@ const DETAIL_SCROLL_MARGIN = 2;
 
 interface ManagedGroupsViewProps {
   groups: readonly ManagedGroupSummary[];
+  kinds: readonly ManagedGroupKind[];
   listing: ManagedGroupsListing;
 }
 
-export const ManagedGroupsView: FC<ManagedGroupsViewProps> = ({ groups, listing }) => {
+export const ManagedGroupsView: FC<ManagedGroupsViewProps> = ({ groups, kinds, listing }) => {
   const selection = useGroupSelection();
   const dialogs = useGroupDialogs();
   const detailRef = useScrollIntoView(selection.groupId);
@@ -69,6 +71,7 @@ export const ManagedGroupsView: FC<ManagedGroupsViewProps> = ({ groups, listing 
   return (
     <>
       <Stack sx={{ gap: VIEW_GAP, minWidth: 0 }}>
+        <GroupKindsPanel kinds={kinds} />
         {list}
         {detail}
         <KkNote>{MANAGE_GROUPS_FOOTNOTE}</KkNote>

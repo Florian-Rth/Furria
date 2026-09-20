@@ -3,6 +3,17 @@ export { buildBurstPieces } from './burst-pieces';
 export type { ConfettiPiece } from './confetti-pieces';
 export { buildConfettiPieces } from './confetti-pieces';
 export type { KkFilterOption } from './filter-chip-entries';
+export type { KkGroupTone, KkGroupToneRecipe } from './internal/group-tone';
+export {
+  GROUP_TONE_ON_FIELD_DARK,
+  GROUP_TONE_ON_FIELD_LIGHT,
+  GROUP_TONES,
+  groupToneEdgeScheme,
+  groupToneFieldPaint,
+  groupToneInkPaint,
+  groupToneRecipes,
+  isKkGroupTone,
+} from './internal/group-tone';
 export { KkAlert } from './KkAlert';
 export { KkAvatar } from './KkAvatar';
 export { KkAvatarStack } from './KkAvatarStack';

@@ -7,7 +7,7 @@ import { formatIsoDay } from '@/lib/membership-labels';
 import type { StateChip } from '@/lib/state-chips';
 import { ARCHIVED_CHIP, NO_ADMIN_CHIP, toRecruitingChip } from '@/lib/state-chips';
 import { normalizeForSearch } from '@/lib/text';
-import type { ManagedGroupSummary } from './schemas';
+import type { ManagedGroupKind, ManagedGroupSummary } from './schemas';
 
 export const MANAGE_GROUPS_SECTION_TITLES = {
   members: SHARED_GROUP_SECTION_TITLES.managedMembers,
@@ -214,3 +214,129 @@ export const toGroupSavedMessage = (name: string): string => `${name} ist gespei
 export const toGroupArchivedMessage = (name: string): string => `${name} ist archiviert.`;
 
 export const toGroupRestoredMessage = (name: string): string => `${name} ist wieder aktiv.`;
+
+export const GROUP_KINDS_PANEL_TITLE = 'Gruppenarten';
+
+export const GROUP_KINDS_PANEL_DESCRIPTION =
+  'Die Gruppenart ordnet eine Gruppe ein — Garde, Elferrat, Spielmannszug. Sie steht im Verzeichnis und sortiert die Gruppen auf der Startseite.';
+
+export const GROUP_KIND_EYEBROW = 'Gruppenart';
+
+export const CREATE_GROUP_KIND_LABEL = 'Gruppenart anlegen';
+
+export const GROUP_KINDS_EMPTY_TITLE = 'NOCH KEINE GRUPPENART';
+
+export const GROUP_KINDS_EMPTY_DESCRIPTION =
+  'Leg die erste Gruppenart an. Danach kannst du jeder Gruppe eine zuordnen.';
+
+export const ARCHIVED_GROUP_KIND_NOTE =
+  'Diese Gruppenart lässt sich keiner Gruppe mehr zuordnen. Die Gruppen, die sie einmal trugen, behalten sie. Zum Bearbeiten oder Zuordnen musst du sie zuerst wieder aktivieren.';
+
+export const ARCHIVE_GROUP_KIND_BLOCKED_HINT = 'Erst die Gruppen umsortieren';
+
+export interface GroupKindEntry {
+  groupKindId: number;
+  name: string;
+  sortOrder: number;
+  archivedOn: string | null;
+  isArchived: boolean;
+  groupCount: number;
+}
+
+const toGroupKindEntry = (kind: ManagedGroupKind): GroupKindEntry => ({
+  groupKindId: kind.groupKindId,
+  name: kind.name,
+  sortOrder: kind.sortOrder,
+  archivedOn: kind.archivedOn,
+  isArchived: kind.archivedOn !== null,
+  groupCount: kind.groupCount,
+});
+
+const inBandOrder = (left: GroupKindEntry, right: GroupKindEntry): number => {
+  if (left.isArchived !== right.isArchived) {
+    return left.isArchived ? 1 : -1;
+  }
+  if (left.sortOrder !== right.sortOrder) {
+    return left.sortOrder - right.sortOrder;
+  }
+
+  return left.name.localeCompare(right.name, 'de');
+};
+
+export const toGroupKindEntries = (kinds: readonly ManagedGroupKind[]): GroupKindEntry[] =>
+  kinds.map(toGroupKindEntry).sort(inBandOrder);
+
+export const isGroupKindArchivable = (entry: GroupKindEntry): boolean =>
+  !entry.isArchived && entry.groupCount === 0;
+
+export const toArchivedGroupKindMeta = (archivedOn: string | null): string | undefined =>
+  archivedOn === null ? undefined : `Archiviert am ${formatIsoDay(archivedOn)}`;
+
+export const toGroupKindUsageLine = (groupCount: number): string => {
+  if (groupCount === 0) {
+    return 'Keine Gruppe trägt diese Art.';
+  }
+  if (groupCount === 1) {
+    return 'Eine Gruppe trägt diese Art.';
+  }
+
+  return `${groupCount} Gruppen tragen diese Art.`;
+};
+
+export const toGroupKindsIntro = (entries: readonly GroupKindEntry[]): string => {
+  if (entries.length === 0) {
+    return 'Noch ist keine Gruppenart festgehalten.';
+  }
+
+  const archived = entries.filter((entry) => entry.isArchived).length;
+  const live = entries.length - archived;
+  const head =
+    live === 1 ? 'Eine Gruppenart ist festgehalten.' : `${live} Gruppenarten sind festgehalten.`;
+
+  if (archived === 0) {
+    return head;
+  }
+
+  const tail =
+    archived === 1 ? 'Eine weitere ist archiviert.' : `${archived} weitere sind archiviert.`;
+
+  return `${head} ${tail}`;
+};
+
+export const toGroupKindFacts = (entry: GroupKindEntry, dayLabel: string): KkConfirmFact[] => [
+  { label: 'Gruppenart', value: entry.name },
+  { label: 'Platz in der Liste', value: String(entry.sortOrder) },
+  { label: 'Gruppen', value: String(entry.groupCount) },
+  { label: 'Ab', value: dayLabel },
+];
+
+export const ARCHIVE_GROUP_KIND_EYEBROW = 'Gruppenart archivieren';
+
+export const toArchiveGroupKindQuestion = (name: string): string => `${name} archivieren?`;
+
+export const ARCHIVE_GROUP_KIND_EXPLANATION =
+  'Archivieren löscht nichts: Die Gruppenart verschwindet aus der Auswahl und lässt sich keiner Gruppe mehr zuordnen. Zurückholen kannst du sie jederzeit.';
+
+export const toArchiveGroupKindConsequence = (name: string, dayLabel: string): string =>
+  `Ab dem ${dayLabel} steht ${name} nicht mehr zur Auswahl. An den Gruppen ändert sich nichts.`;
+
+export const RESTORE_GROUP_KIND_EYEBROW = 'Gruppenart aktivieren';
+
+export const toRestoreGroupKindQuestion = (name: string): string => `${name} wieder aktivieren?`;
+
+export const RESTORE_GROUP_KIND_EXPLANATION =
+  'Die Gruppenart steht wieder zur Auswahl und lässt sich wieder zuordnen. An den Gruppen, die sie schon tragen, ändert sich nichts — sie war nie weg.';
+
+export const toRestoreGroupKindConsequence = (name: string, dayLabel: string): string =>
+  `Ab dem ${dayLabel} steht ${name} wieder zur Auswahl.`;
+
+export const toGroupKindCreatedMessage = (name: string): string =>
+  `Die Gruppenart ${name} ist angelegt.`;
+
+export const toGroupKindSavedMessage = (name: string): string =>
+  `Die Angaben zu ${name} sind gespeichert.`;
+
+export const toGroupKindArchivedMessage = (name: string): string => `${name} ist archiviert.`;
+
+export const toGroupKindRestoredMessage = (name: string): string =>
+  `${name} steht wieder zur Auswahl.`;

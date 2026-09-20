@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { kkTokens } from '../tokens';
-import { contrastRatio, parseColor, relativeLuminance, washOver } from './contrast';
+import { contrastRatio, hueOf, parseColor, relativeLuminance, washOver } from './contrast';
 import { toneRecipes } from './tone';
 
 const AA_SMALL_TEXT = 4.5;
@@ -50,6 +50,35 @@ describe('contrastRatio', () => {
 
   it('returns no ratio for a colour it cannot read', () => {
     expect(contrastRatio('currentColor', '#FFFFFF')).toBe(0);
+  });
+});
+
+describe('hueOf', () => {
+  it.each([
+    { value: '#FF0000', expected: 0 },
+    { value: '#FFFF00', expected: 60 },
+    { value: '#00FF00', expected: 120 },
+    { value: '#00FFFF', expected: 180 },
+    { value: '#0000FF', expected: 240 },
+    { value: '#FF00FF', expected: 300 },
+    { value: '#FF0080', expected: 330 },
+    { value: '#A0522B', expected: 20 },
+    { value: 'rgb(255, 128, 0)', expected: 30 },
+  ])('places $value at $expected degrees', ({ value, expected }) => {
+    expect(hueOf(value)).toBeCloseTo(expected, 0);
+  });
+
+  it.each([
+    { value: '#808080', reason: 'a grey has no hue' },
+    { value: '#000000', reason: 'black has no hue' },
+    { value: 'currentColor', reason: 'an unreadable colour has no hue' },
+  ])('returns zero because $reason', ({ value }) => {
+    expect(hueOf(value)).toBe(0);
+  });
+
+  it('wraps a hue just below red back into the upper end of the circle', () => {
+    expect(hueOf('#FF0010')).toBeGreaterThan(350);
+    expect(hueOf('#FF0010')).toBeLessThan(360);
   });
 });
 

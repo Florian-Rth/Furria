@@ -5,14 +5,19 @@ import {
   ARCHIVED_GROUPS_FILTER_ID,
   filterManagedGroups,
   findManagedGroup,
+  isGroupKindArchivable,
   toArchiveConsequence,
+  toArchivedGroupKindMeta,
+  toGroupKindEntries,
+  toGroupKindsIntro,
+  toGroupKindUsageLine,
   toGroupStatusFilterId,
   toGroupStatusFilterOptions,
   toManagedGroupChips,
   toManagedGroupsIntro,
   toRestoreConsequence,
 } from './manage-groups-labels';
-import type { ManagedGroupSummary } from './schemas';
+import type { ManagedGroupKind, ManagedGroupSummary } from './schemas';
 
 const admin = (personId: number): ManagedGroupSummary['admins'][number] => ({
   personId,
@@ -181,5 +186,88 @@ describe('findManagedGroup', () => {
 
   it('finds the selected group', () => {
     expect(findManagedGroup(ALL, 8)?.name).toBe('Musikzug');
+  });
+});
+
+const kind = (overrides: Partial<ManagedGroupKind>): ManagedGroupKind => ({
+  groupKindId: 1,
+  name: 'Garde',
+  sortOrder: 1,
+  archivedOn: null,
+  groupCount: 2,
+  ...overrides,
+});
+
+describe('toGroupKindEntries', () => {
+  it('puts the archived ones last, then sorts by place, then as German', () => {
+    const entries = toGroupKindEntries([
+      kind({ groupKindId: 4, name: 'Zugabteilung', sortOrder: 2 }),
+      kind({ groupKindId: 3, name: 'Elferrat', sortOrder: 1, archivedOn: '2026-01-01' }),
+      kind({ groupKindId: 2, name: 'Ältestenrat', sortOrder: 2 }),
+      kind({ groupKindId: 1, name: 'Garde', sortOrder: 1 }),
+    ]);
+
+    expect(entries.map((entry) => entry.groupKindId)).toEqual([1, 2, 4, 3]);
+  });
+
+  it('marks an archived Gruppenart', () => {
+    const entries = toGroupKindEntries([kind({ archivedOn: '2026-01-01' })]);
+
+    expect(entries[0]?.isArchived).toBe(true);
+  });
+});
+
+describe('isGroupKindArchivable', () => {
+  it.each([
+    [{ archivedOn: null, groupCount: 0 }, true],
+    [{ archivedOn: null, groupCount: 1 }, false],
+    [{ archivedOn: '2026-01-01', groupCount: 0 }, false],
+  ])('reads %o as %s', (overrides, expected) => {
+    const entry = toGroupKindEntries([kind(overrides)])[0];
+
+    expect(entry !== undefined && isGroupKindArchivable(entry)).toBe(expected);
+  });
+});
+
+describe('toGroupKindUsageLine', () => {
+  it.each([
+    [0, 'Keine Gruppe trägt diese Art.'],
+    [1, 'Eine Gruppe trägt diese Art.'],
+    [4, '4 Gruppen tragen diese Art.'],
+  ])('writes %i as %s', (groupCount, expected) => {
+    expect(toGroupKindUsageLine(groupCount)).toBe(expected);
+  });
+});
+
+describe('toGroupKindsIntro', () => {
+  it('has its own line for an empty band', () => {
+    expect(toGroupKindsIntro([])).toBe('Noch ist keine Gruppenart festgehalten.');
+  });
+
+  it('uses the singular for a single running Gruppenart', () => {
+    expect(toGroupKindsIntro(toGroupKindEntries([kind({})]))).toBe(
+      'Eine Gruppenart ist festgehalten.',
+    );
+  });
+
+  it('counts the archived ones separately', () => {
+    const entries = toGroupKindEntries([
+      kind({ groupKindId: 1 }),
+      kind({ groupKindId: 2, name: 'Elferrat' }),
+      kind({ groupKindId: 3, name: 'Spielmannszug', archivedOn: '2026-01-01' }),
+    ]);
+
+    expect(toGroupKindsIntro(entries)).toBe(
+      '2 Gruppenarten sind festgehalten. Eine weitere ist archiviert.',
+    );
+  });
+});
+
+describe('toArchivedGroupKindMeta', () => {
+  it.each([
+    [null, undefined],
+    ['2026-09-12', 'Archiviert am 12.09.2026'],
+  ])('writes %s as %s', (archivedOn, expected) => {
+    expect(toArchivedGroupKindMeta(archivedOn)).toBe(expected);
   });
 });

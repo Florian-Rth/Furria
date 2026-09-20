@@ -22,6 +22,9 @@ public static class AppDbContextExtensions
             ["ix_board_office_name"] = WriteConflictMessages.DuplicateVorstandsfunktion,
             ["ix_attendance_response_calendar_entry_id_person_id"] =
                 WriteConflictMessages.DuplicateZusage,
+            ["ix_group_kind_name_active"] = WriteConflictMessages.DuplicateGruppenart,
+            ["ix_calendar_entry_group_calendar_entry_id_group_id"] =
+                WriteConflictMessages.DuplicateMitwirkung,
         }.ToFrozenDictionary(StringComparer.Ordinal);
 
     public static async Task<Result> SaveOrConflictAsync(

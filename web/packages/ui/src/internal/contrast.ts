@@ -69,6 +69,43 @@ export const parseColor = (value: string): KkRgba | null => {
   return null;
 };
 
+const NO_HUE = 0;
+const HUE_SECTORS = 6;
+const HUE_SECTOR_DEGREES = 60;
+const GREEN_SECTOR = 2;
+const BLUE_SECTOR = 4;
+
+const hueSectorOf = (color: KkRgba, span: number): number => {
+  const brightest = Math.max(color.red, color.green, color.blue);
+
+  if (brightest === color.red) {
+    return ((color.green - color.blue) / span + HUE_SECTORS) % HUE_SECTORS;
+  }
+
+  if (brightest === color.green) {
+    return (color.blue - color.red) / span + GREEN_SECTOR;
+  }
+
+  return (color.red - color.green) / span + BLUE_SECTOR;
+};
+
+export const hueOf = (value: string): number => {
+  const color = parseColor(value);
+
+  if (color === null) {
+    return NO_HUE;
+  }
+
+  const span =
+    Math.max(color.red, color.green, color.blue) - Math.min(color.red, color.green, color.blue);
+
+  if (span === 0) {
+    return NO_HUE;
+  }
+
+  return hueSectorOf(color, span) * HUE_SECTOR_DEGREES;
+};
+
 export const compositeOver = (foreground: KkRgba, background: KkRgba): KkRgba => ({
   red: foreground.red * foreground.alpha + background.red * (OPAQUE - foreground.alpha),
   green: foreground.green * foreground.alpha + background.green * (OPAQUE - foreground.alpha),

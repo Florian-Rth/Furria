@@ -2,11 +2,14 @@ import { apiFetch } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
 import type {
   CreatedGroup,
+  CreatedGroupKind,
   GroupForm,
+  GroupKindForm,
   ManagedGroupDetails,
   ManagedGroupsResponse,
 } from './schemas';
 import {
+  CreatedGroupKindSchema,
   CreatedGroupSchema,
   ManagedGroupDetailsSchema,
   ManagedGroupsResponseSchema,
@@ -54,6 +57,48 @@ export const requestGroupArchival = (groupId: number, accessToken: string): Prom
 
 export const requestGroupRestoration = (groupId: number, accessToken: string): Promise<void> =>
   apiFetch(`/api/manage/groups/${groupId}/restore`, {
+    method: 'POST',
+    body: {},
+    schema: NoContentSchema,
+    accessToken,
+  });
+
+export const requestGroupKindCreation = (
+  form: GroupKindForm,
+  accessToken: string,
+): Promise<CreatedGroupKind> =>
+  apiFetch('/api/manage/groups/kinds', {
+    method: 'POST',
+    body: { name: form.name, sortOrder: Number(form.sortOrder) },
+    schema: CreatedGroupKindSchema,
+    accessToken,
+  });
+
+export const requestGroupKindUpdate = (
+  groupKindId: number,
+  form: GroupKindForm,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`/api/manage/groups/kinds/${groupKindId}`, {
+    method: 'PUT',
+    body: { name: form.name, sortOrder: Number(form.sortOrder) },
+    schema: NoContentSchema,
+    accessToken,
+  });
+
+export const requestGroupKindArchival = (groupKindId: number, accessToken: string): Promise<void> =>
+  apiFetch(`/api/manage/groups/kinds/${groupKindId}/archive`, {
+    method: 'POST',
+    body: {},
+    schema: NoContentSchema,
+    accessToken,
+  });
+
+export const requestGroupKindRestoration = (
+  groupKindId: number,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`/api/manage/groups/kinds/${groupKindId}/restore`, {
     method: 'POST',
     body: {},
     schema: NoContentSchema,

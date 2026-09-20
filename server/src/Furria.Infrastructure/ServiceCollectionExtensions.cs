@@ -57,6 +57,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<MembershipService>();
         services.AddScoped<FeeReductionService>();
         services.AddScoped<GroupService>();
+        services.AddScoped<GroupKindService>();
         services.AddScoped<RoleService>();
         services.AddScoped<RunningBoardSeats>();
         services.AddScoped<ClubService>();

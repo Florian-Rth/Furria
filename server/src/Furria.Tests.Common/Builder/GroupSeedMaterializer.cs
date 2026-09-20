@@ -13,16 +13,48 @@ internal static class GroupSeedMaterializer
         CancellationToken ct
     )
     {
-        var groups = await InsertGroupsAsync(dbContext, recorded, ct);
+        var groupKinds = await InsertGroupKindsAsync(dbContext, recorded, ct);
+        var groups = await InsertGroupsAsync(dbContext, recorded, groupKinds, ct);
         var memberships = await InsertMembershipsAsync(dbContext, recorded, groups, personIds, ct);
         var admins = await InsertAdminsAsync(dbContext, recorded, groups, personIds, ct);
 
-        return new SeededGroups(groups, memberships, admins);
+        return new SeededGroups(groupKinds, groups, memberships, admins);
+    }
+
+    private static async Task<Dictionary<string, int>> InsertGroupKindsAsync(
+        AppDbContext dbContext,
+        GroupSeedBuilder recorded,
+        CancellationToken ct
+    )
+    {
+        var kinds = recorded.GroupKinds.ToDictionary(
+            intent => intent.Alias,
+            intent => new GroupKind
+            {
+                Name = intent.Name,
+                SortOrder = intent.SortOrder,
+                ArchivedOn = intent.ArchivedOn,
+            },
+            StringComparer.Ordinal
+        );
+
+        if (kinds.Count > 0)
+        {
+            dbContext.GroupKinds.AddRange(kinds.Values);
+            await dbContext.SaveChangesAsync(ct);
+        }
+
+        return kinds.ToDictionary(
+            entry => entry.Key,
+            entry => entry.Value.Id,
+            StringComparer.Ordinal
+        );
     }
 
     private static async Task<Dictionary<string, int>> InsertGroupsAsync(
         AppDbContext dbContext,
         GroupSeedBuilder recorded,
+        IReadOnlyDictionary<string, int> groupKindIds,
         CancellationToken ct
     )
     {
@@ -34,6 +66,7 @@ internal static class GroupSeedMaterializer
                 Description = intent.Description,
                 IsRecruiting = intent.IsRecruiting,
                 ArchivedOn = intent.ArchivedOn,
+                GroupKindId = OptionalId(groupKindIds, intent.GroupKindAlias, "Gruppenart"),
             },
             StringComparer.Ordinal
         );
@@ -50,6 +83,12 @@ internal static class GroupSeedMaterializer
             StringComparer.Ordinal
         );
     }
+
+    private static int? OptionalId(
+        IReadOnlyDictionary<string, int> ids,
+        string? alias,
+        string kind
+    ) => alias is null ? null : SeedAliases.RequireId(ids, alias, kind);
 
     private static async Task<Dictionary<string, int>> InsertMembershipsAsync(
         AppDbContext dbContext,

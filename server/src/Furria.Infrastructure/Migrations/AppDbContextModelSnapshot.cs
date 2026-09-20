@@ -531,6 +531,10 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("character varying(400)")
                         .HasColumnName("description");
 
+                    b.Property<int?>("GroupKindId")
+                        .HasColumnType("integer")
+                        .HasColumnName("group_kind_id");
+
                     b.Property<bool>("IsRecruiting")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
@@ -552,6 +556,9 @@ namespace Furria.Infrastructure.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_group");
+
+                    b.HasIndex("GroupKindId")
+                        .HasDatabaseName("ix_group_group_kind_id");
 
                     b.HasIndex("Name")
                         .HasDatabaseName("ix_group_name_lookup");
@@ -619,6 +626,51 @@ namespace Furria.Infrastructure.Migrations
                         {
                             t.HasCheckConstraint("ck_group_admin_period", "until_on IS NULL OR until_on >= since_on");
                         });
+                });
+
+            modelBuilder.Entity("Furria.Core.Groups.GroupKind", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly?>("ArchivedOn")
+                        .HasColumnType("date")
+                        .HasColumnName("archived_on");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("name")
+                        .UseCollation("de-DE-x-icu");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_group_kind");
+
+                    b.HasIndex("Name")
+                        .HasDatabaseName("ix_group_kind_name_lookup");
+
+                    b.ToTable("group_kind", (string)null);
                 });
 
             modelBuilder.Entity("Furria.Core.Groups.GroupMembership", b =>
@@ -1420,6 +1472,17 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Person");
 
                     b.Navigation("Venue");
+                });
+
+            modelBuilder.Entity("Furria.Core.Groups.Group", b =>
+                {
+                    b.HasOne("Furria.Core.Groups.GroupKind", "GroupKind")
+                        .WithMany()
+                        .HasForeignKey("GroupKindId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_group_group_kind_group_kind_id");
+
+                    b.Navigation("GroupKind");
                 });
 
             modelBuilder.Entity("Furria.Core.Groups.GroupAdmin", b =>

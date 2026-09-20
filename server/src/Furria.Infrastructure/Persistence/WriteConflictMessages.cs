@@ -11,4 +11,6 @@ public static class WriteConflictMessages
     public const string DuplicateOrt = "Diesen Ort gibt es schon.";
     public const string DuplicateVorstandsfunktion = "Diese Vorstandsfunktion gibt es schon.";
     public const string DuplicateZusage = "Für diesen Eintrag ist schon eine Antwort gespeichert.";
+    public const string DuplicateGruppenart = "Diese Gruppenart gibt es schon.";
+    public const string DuplicateMitwirkung = "Diese Gruppe wirkt bei diesem Eintrag schon mit.";
 }

@@ -19,7 +19,15 @@ public sealed class GroupConfiguration : IEntityTypeConfiguration<Group>
         builder.Property(group => group.Description).HasMaxLength(400).IsRequired();
         builder.Property(group => group.IsRecruiting).HasDefaultValue(false);
 
+        builder
+            .HasOne(group => group.GroupKind)
+            .WithMany()
+            .HasForeignKey(group => group.GroupKindId)
+            .HasConstraintName("fk_group_group_kind_group_kind_id")
+            .OnDelete(DeleteBehavior.SetNull);
+
         builder.HasIndex(group => group.Name).HasDatabaseName("ix_group_name_lookup");
+        builder.HasIndex(group => group.GroupKindId).HasDatabaseName("ix_group_group_kind_id");
 
         builder.Property(group => group.CreatedAt).HasDefaultValueSql("now()");
         builder.Property(group => group.UpdatedAt).HasDefaultValueSql("now()");

@@ -23,6 +23,8 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>
 
     public DbSet<Group> Groups => Set<Group>();
 
+    public DbSet<GroupKind> GroupKinds => Set<GroupKind>();
+
     public DbSet<GroupMembership> GroupMemberships => Set<GroupMembership>();
 
     public DbSet<GroupAdmin> GroupAdmins => Set<GroupAdmin>();

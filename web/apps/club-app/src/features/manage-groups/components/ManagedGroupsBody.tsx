@@ -23,7 +23,9 @@ export const ManagedGroupsBody: FC<ManagedGroupsBodyProps> = ({ listing }) => {
   };
 
   if (groups.data !== undefined) {
-    return <ManagedGroupsView groups={groups.data.groups} listing={listing} />;
+    return (
+      <ManagedGroupsView groups={groups.data.groups} kinds={groups.data.kinds} listing={listing} />
+    );
   }
   if (errorMessage !== null) {
     return <ManagedGroupsError message={errorMessage} onRetry={reload} />;

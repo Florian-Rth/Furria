@@ -210,6 +210,58 @@ public sealed class GetManagedGroupsTests
     }
 
     [Fact]
+    public async Task Should_CarryTheGruppenartenWithTheirGruppenzahl_When_TheListIsRead()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Groups(groups =>
+                    groups
+                        .AddGroupKind("garde", "Garde", 1)
+                        .AddGroupKind("spielmannszug", "Spielmannszug", 2, ArchivedIn2021)
+                        .AddGroup("tanzgarde", "Tanzgarde", groupKindAlias: "garde")
+                        .AddGroup("kindergarde", "Kindergarde", groupKindAlias: "garde")
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var (response, result) = await client.GETAsync<
+            GetManagedGroups,
+            GetManagedGroupsResponse
+        >();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(["Garde", "Spielmannszug"], result.Kinds.Select(kind => kind.Name));
+        var garde = result.Kinds.First();
+        Assert.Equal(ctx.Groups.GroupKinds.IdOf("garde"), garde.GroupKindId);
+        Assert.Equal(2, garde.GroupCount);
+        Assert.Null(garde.ArchivedOn);
+        var zug = result.Kinds.Last();
+        Assert.Equal(ArchivedIn2021, zug.ArchivedOn);
+        Assert.Equal(0, zug.GroupCount);
+    }
+
+    [Fact]
+    public async Task Should_CarryNoGruppenart_When_TheVerwaltungHasNotNamedOneYet()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Groups(groups => groups.AddGroup("tanzgarde", "Tanzgarde")),
+            ct
+        );
+
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var (response, result) = await client.GETAsync<
+            GetManagedGroups,
+            GetManagedGroupsResponse
+        >();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Empty(result.Kinds);
+    }
+
+    [Fact]
     public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldGroupsManage()
     {
         var ct = TestContext.Current.CancellationToken;

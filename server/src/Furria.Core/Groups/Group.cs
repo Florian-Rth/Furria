@@ -12,6 +12,8 @@ public sealed class Group : ITimestamped
 
     public bool IsRecruiting { get; set; }
 
+    public int? GroupKindId { get; set; }
+
     public DateOnly? ArchivedOn { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }
@@ -21,4 +23,6 @@ public sealed class Group : ITimestamped
     public ICollection<GroupMembership> Memberships { get; set; } = [];
 
     public ICollection<GroupAdmin> Admins { get; set; } = [];
+
+    public GroupKind? GroupKind { get; set; }
 }
