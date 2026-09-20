@@ -49,6 +49,7 @@ public sealed class GetMe : EndpointWithoutRequest<GetMeResponse>
             Membership = ToDto(account.Membership),
             IsAffiliated = account.IsAffiliated,
             PermissionKeys = account.PermissionKeys,
+            LastSeenAnnouncementAt = account.LastSeenAnnouncementAt,
         };
 
     private static MePersonDto ToDto(PersonDetails person) =>
@@ -89,6 +90,8 @@ public sealed record GetMeResponse
     public required bool IsAffiliated { get; init; }
 
     public required IReadOnlyList<string> PermissionKeys { get; init; }
+
+    public required DateTimeOffset? LastSeenAnnouncementAt { get; init; }
 }
 
 public sealed record MePersonDto

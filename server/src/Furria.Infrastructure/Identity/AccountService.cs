@@ -13,6 +13,7 @@ public sealed class AccountService
     private const string RejectedCredentialsMessage = "Email or password is not valid.";
     private const string RejectedSessionMessage = "The session could not be refreshed.";
     private const string EndedSessionMessage = "The session is no longer valid.";
+    private const string MissingAccountMessage = "The account no longer exists.";
     private const string DecoyPassword = "decoy-password-that-no-account-ever-uses";
 
     private static readonly Account DecoyAccount = new();
@@ -95,6 +96,19 @@ public sealed class AccountService
         return Result<SessionTokensDetails>.Success(Combine(access, rotated.Value));
     }
 
+    public async Task<Result> MarkAnnouncementsSeenAsync(int accountId, CancellationToken ct)
+    {
+        var account = await _dbContext.Users.SingleOrDefaultAsync(row => row.Id == accountId, ct);
+
+        if (account is null)
+            return Result.NotFound(MissingAccountMessage);
+
+        account.LastSeenAnnouncementAt = _timeProvider.GetUtcNow();
+        await _dbContext.SaveChangesAsync(ct);
+
+        return Result.Success();
+    }
+
     public Task LogoutAsync(string presentedToken, int accountId, CancellationToken ct) =>
         _refreshTokenService.RevokeFamilyAsync(
             new RevokeRefreshTokenFamilyCommand
@@ -115,6 +129,7 @@ public sealed class AccountService
                 account.Id,
                 account.Email ?? "",
                 account.IsDisabled,
+                account.LastSeenAnnouncementAt,
                 new PersonDetails
                 {
                     Id = account.Person!.Id,
@@ -181,6 +196,7 @@ public sealed class AccountService
             Membership = MembershipChainDetails.Of(ToPeriods(row.Memberships, today), today),
             IsAffiliated = isAffiliated,
             PermissionKeys = permissionKeys,
+            LastSeenAnnouncementAt = row.LastSeenAnnouncementAt,
         };
 
     private static IReadOnlyList<string> Ordered(IReadOnlyCollection<string> permissionKeys) =>
@@ -241,6 +257,7 @@ public sealed class AccountService
         int Id,
         string Email,
         bool IsDisabled,
+        DateTimeOffset? LastSeenAnnouncementAt,
         PersonDetails Person,
         IReadOnlyList<MembershipRow> Memberships
     );
