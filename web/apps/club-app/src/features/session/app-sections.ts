@@ -12,6 +12,7 @@ export interface AppSection {
   hint?: string;
 }
 
+export const ANNOUNCEMENTS_PATH = '/announcements';
 export const OVERVIEW_PATH = '/';
 export const CLUB_PATH = '/club';
 export const MORE_PATH = '/more';

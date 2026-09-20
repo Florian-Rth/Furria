@@ -1,6 +1,7 @@
 export { ME_QUERY_KEY, useMeQuery } from './api';
 export type { AppSection } from './app-sections';
 export {
+  ANNOUNCEMENTS_PATH,
   APP_DESTINATIONS,
   CLUB_ORIGIN,
   CLUB_PATH,
