@@ -11,6 +11,8 @@ const DENIED_MESSAGES: Partial<Record<PermissionKey, string>> = {
     'Die Gruppenverwaltung ist an eine Rolle gebunden. Du hast sie gerade nicht.',
   [PERMISSION_KEYS.rolesManage]:
     'Rollen & Rechte ist an eine Rolle gebunden. Du hast sie gerade nicht.',
+  [PERMISSION_KEYS.clubRead]:
+    'Der Verein ist den Mitgliedern vorbehalten. Deine Mitgliedschaft läuft gerade nicht.',
 };
 
 const FALLBACK_MESSAGE = 'Diese Seite ist an eine Rolle gebunden. Du hast sie gerade nicht.';
