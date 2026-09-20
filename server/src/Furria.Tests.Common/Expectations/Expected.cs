@@ -58,6 +58,8 @@ public sealed class Expected
 
     public KeyHoldingExpectations KeyHolding(int keyHoldingId) => new(this, keyHoldingId);
 
+    public BoardSeatExpectations BoardSeat(int boardSeatId) => new(this, boardSeatId);
+
     public async Task AssertAsync(CancellationToken ct = default)
     {
         var pending = _reads.ToList();

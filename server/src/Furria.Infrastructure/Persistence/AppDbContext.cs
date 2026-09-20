@@ -43,6 +43,10 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>
 
     public DbSet<KeyHolding> KeyHoldings => Set<KeyHolding>();
 
+    public DbSet<BoardOffice> BoardOffices => Set<BoardOffice>();
+
+    public DbSet<BoardSeat> BoardSeats => Set<BoardSeat>();
+
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }
 

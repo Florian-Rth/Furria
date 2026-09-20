@@ -35,14 +35,22 @@ internal static class ClubSeedMaterializer
         var venues = await InsertVenuesAsync(dbContext, recorded, ct);
         var announcements = await InsertAnnouncementsAsync(dbContext, recorded, personIds, ct);
         var keyHoldings = await InsertKeyHoldingsAsync(dbContext, recorded, venues, personIds, ct);
+        var boardOffices = await InsertBoardOfficesAsync(dbContext, recorded, roleIds, ct);
+        var boardSeats = await InsertBoardSeatsAsync(
+            dbContext,
+            recorded,
+            boardOffices,
+            personIds,
+            ct
+        );
 
         return new SeededClub(
             sessions,
             venues,
             announcements,
             keyHoldings,
-            NothingSeeded,
-            NothingSeeded,
+            boardOffices,
+            boardSeats,
             NothingSeeded,
             NothingSeeded
         );
@@ -50,16 +58,6 @@ internal static class ClubSeedMaterializer
 
     private static void RejectWhatNoTableCanHoldYet(ClubSeedBuilder recorded)
     {
-        RejectIfRecorded(
-            recorded.BoardOffices,
-            nameof(ClubSeedBuilder.AddBoardOffice),
-            "CA-P4 D4 (Vorstand)"
-        );
-        RejectIfRecorded(
-            recorded.BoardSeats,
-            nameof(ClubSeedBuilder.AddBoardSeat),
-            "CA-P4 D4 (Vorstand)"
-        );
         RejectIfRecorded(
             recorded.CalendarEntries,
             nameof(ClubSeedBuilder.AddCalendarEntry),
@@ -205,6 +203,76 @@ internal static class ClubSeedMaterializer
         }
 
         return keyHoldings.ToDictionary(
+            entry => entry.Key,
+            entry => entry.Value.Id,
+            StringComparer.Ordinal
+        );
+    }
+
+    private static async Task<Dictionary<string, int>> InsertBoardOfficesAsync(
+        AppDbContext dbContext,
+        ClubSeedBuilder recorded,
+        IReadOnlyDictionary<string, int> roleIds,
+        CancellationToken ct
+    )
+    {
+        var offices = recorded.BoardOffices.ToDictionary(
+            intent => intent.Alias,
+            intent => new BoardOffice
+            {
+                Name = intent.Name,
+                SortOrder = intent.SortOrder,
+                ImpliedRoleId = intent.ImpliedRoleAlias is { } roleAlias
+                    ? SeedAliases.RequireId(roleIds, roleAlias, "Rolle")
+                    : null,
+            },
+            StringComparer.Ordinal
+        );
+
+        if (offices.Count > 0)
+        {
+            dbContext.BoardOffices.AddRange(offices.Values);
+            await dbContext.SaveChangesAsync(ct);
+        }
+
+        return offices.ToDictionary(
+            entry => entry.Key,
+            entry => entry.Value.Id,
+            StringComparer.Ordinal
+        );
+    }
+
+    private static async Task<Dictionary<string, int>> InsertBoardSeatsAsync(
+        AppDbContext dbContext,
+        ClubSeedBuilder recorded,
+        IReadOnlyDictionary<string, int> boardOfficeIds,
+        IReadOnlyDictionary<string, int> personIds,
+        CancellationToken ct
+    )
+    {
+        var seats = recorded.BoardSeats.ToDictionary(
+            intent => intent.Alias,
+            intent => new BoardSeat
+            {
+                BoardOfficeId = SeedAliases.RequireId(
+                    boardOfficeIds,
+                    intent.BoardOfficeAlias,
+                    "Vorstandsfunktion"
+                ),
+                PersonId = SeedAliases.RequireId(personIds, intent.PersonAlias, "Person"),
+                SinceOn = intent.SinceOn,
+                UntilOn = intent.UntilOn,
+            },
+            StringComparer.Ordinal
+        );
+
+        if (seats.Count > 0)
+        {
+            dbContext.BoardSeats.AddRange(seats.Values);
+            await dbContext.SaveChangesAsync(ct);
+        }
+
+        return seats.ToDictionary(
             entry => entry.Key,
             entry => entry.Value.Id,
             StringComparer.Ordinal
