@@ -55,6 +55,13 @@ The rule that decides whether something gets a hub:
 
 > **Scoped rights → tools inside the scope's hub. Global rights → their own admin hub.**
 
+*Verein verwalten* was shaped in full on 2026-09-20 — see [`p5-verein-verwalten.md`](p5-verein-verwalten.md).
+Two changes to the table below came out of it: **Einladungen left** (no server model, and it pulls in
+the open Dubletten question — it belongs to account onboarding), and **Session grew into
+Sessionseinträge, Orte, Schlüssel and Vorstand**, the master data CA-P4 deliberately shipped with no
+write surface. **Vereinstermine never became a panel**: the Kalender authors its own entries
+([ADR-0013](../../docs/adr/0013-read-surfaces-show-what-is-running-the-back-office-holds-the-record.md)).
+
 **Gruppen-Admin is the only scoped resource in the model** (`CONTEXT.md`: it is not a Rolle, it
 is a Gruppe-scoped resource), so a Gruppen-Admin's tools live inside her Gruppe hub. Everything
 rights-bearing beyond that is a Rolle with global reach and gets a workbench:
@@ -63,7 +70,7 @@ rights-bearing beyond that is a Rolle with global reach and gets a workbench:
 |---|---|
 | **Finanzen** | Zu erledigen · Beiträge offen/bezahlt · Auslagen zur Genehmigung · Kassenbericht |
 | **Veranstaltungen** | Kommende Veranstaltungen · offene Aufgaben je Abend · Vorverkauf · Ablauf & Live-Regie |
-| **Verein verwalten** | Personen & Mitgliedschaften · Gruppen · Rollen & Rechte · Einladungen · Session |
+| **Verein verwalten** | Personen & Mitgliedschaften · Gruppen · Rollen & Rechte · Sessionseinträge · Orte · Schlüssel · Vorstand |
 | **Getränkekasse** | Offene Zahlungen · Bestand & Palettenabgleich · Strichliste · Teilnehmer |
 | **Kleidung** | Sammelbestellung · Lieferantenliste · Ausgabe · Sortiment |
 
@@ -267,6 +274,12 @@ Removed from the handoff's feature set because no member's club life improves:
    an unrelated full-bleed marketing band.
 6. **Hubs elide, records state.** An empty panel does not render on a hub; on a detail page an
    empty panel shows a `KkEmptyState`, as it does today.
+   **Amended 2026-09-20 (CA-P5 shaping): this is a rule about *member* hubs.** There, presence is
+   decided by **scope**, so an empty panel means "this doesn't concern you" and elides. On an
+   **admin** hub presence is decided by the **Berechtigung**, which already answered that — so
+   emptiness never hides a panel, and the empty state is the summary line itself
+   (`Noch keine Schlüssel vergeben`). Without the amendment the rule eats its own hub: a club with
+   no Ort gets no Orte panel and therefore no way to record the first one.
 7. **A hub is one query.** One request per hub, so the hub knows its full shape before it paints
    and reflows once.
 8. **Payload shape follows viewer variance.** The Verein hub is identical for every viewer, so
@@ -301,5 +314,8 @@ Areas, not slices. Each gets its own plan, shaped from the ground up when it is 
 4. **The Start hub and pinning.**
 5. **Gruppen** — the list page reworked, the Gruppe hub taking its dates from the calendar.
 6. **Verein verwalten**, the first admin hub, folding today's `manage/*` routes.
+   **Pulled forward to CA-P5 on 2026-09-20**, ahead of search and the Start hub: CA-P4 shipped six
+   domains nobody can write, so searching them and queueing work from them are both thinner than
+   they look until the club can fill them.
 7. **The remaining admin hubs** — Finanzen, Getränkekasse, Kleidung, and Veranstaltungen with
    Ablauf and Live-Regie.

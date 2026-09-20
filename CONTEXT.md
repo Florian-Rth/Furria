@@ -180,8 +180,8 @@ Jahreszeit"). **Which season it is now is derived from the date and never stored
 **The Session Nº is evidence, not arithmetic** (ruled 2026-09-18, superseding "numbered from the
 founding year, Nº 1 = 1971"). Sessions were skipped — war, crises, pandemics — so no formula over
 years can produce the right number, and the club anyway *knows* a number because it is printed on
-the Orden. The club therefore writes down what it knows, one record per season: its Nº, its
-Motto, its artwork. **Every part of a record but the year is optional**, because the chronicle is
+the Orden. The club therefore writes down what it knows, one **Sessionseintrag** per season: its Nº, its
+Motto, its **Sessionslogo**. **Every part of a record but the year is optional**, because the chronicle is
 incomplete in both directions (a banner photo gives a Motto with no Nº; a Festschrift gives a Nº
 with no Motto), and **nothing is ever inferred from a neighbouring record** — a guessed Nº could
 contradict the Orden. No record for a season means the app names the season from the date and
@@ -200,15 +200,27 @@ The staged presentation of the current Session's **Motto** — the Club-App's Ve
 it. It is a fresh piece of art each season, made to suit that season's Motto and rebuilt from
 nothing every November; it is not a picture the club uploads but something the club has made for
 it, like the Orden. Only the current Session has one (decided 2026-09-18).
-_Avoid_: Hero, Banner, Header, treating it as the Session's artwork (that is the **Session-Signet**)
+_Avoid_: Hero, Banner, Header, treating it as the Session's artwork (that is the **Sessionslogo**)
 
-**Session-Signet** (`session mark`):
-The small, still mark recorded with a **Session** — the emblem on the Orden, the banner, the
+**Sessionslogo** (`session logo`):
+The small, still mark recorded on a **Sessionseintrag** — the emblem on the Orden, the banner, the
 Festschrift. It is evidence of a season exactly as the Nº is: recorded when the club has one,
 absent when it does not, and never invented. It stands in wherever a season is named but not
-staged — past seasons, lists, the public website.
-_Avoid_: Logo (that is the club's), Artwork (in copy), animating it, using it for the current
-season's opener
+staged — past seasons, lists, the public website. Renamed from **Session-Signet** on 2026-09-20
+(CA-P5 shaping): nobody outside design knows what a Signet is, and the `Sessions-` prefix already
+keeps it clear of the club's own Logo, which is all the old name was protecting.
+_Avoid_: **Signet** (retired 2026-09-20), Logo (alone — that is the club's), Artwork (in copy),
+animating it, using it for the current season's opener
+
+**Sessionseintrag** (`session record`):
+What the club has written down about one season: its Nº, its **Motto** and its **Sessionslogo**.
+**Every part but the year is optional** and nothing is ever inferred from a neighbouring entry —
+see **Session** for why. A season with no Sessionseintrag is named from the date and nothing more
+is said about it. The entry is the *record*; the **Chronik** — a later, richer page telling a
+season's story — is its presentation, and the two are never the same surface (named 2026-09-20,
+CA-P5 shaping).
+_Avoid_: Chronik (that is the presentation), Sessionen / Saison (the club's word is **Session**),
+Jahrgang
 
 ### Events
 
@@ -257,8 +269,21 @@ One of the club's few places — Sporthalle, Vereinsraum, Lager. A club-managed 
 text on an entry: a **Kalendereintrag** happens at an Ort, and a **Schlüssel** is held for one.
 Because two entries at one Ort at one time is a real collision, the Ort is what makes that
 collision findable (decided 2026-09-19).
+
+An Ort carries **its address** — Straße, PLZ, Stadt — and an optional **Hinweis** for what an
+address cannot say („Zugang über den Hof“). It is written once here and read everywhere: a later
+**Veranstaltung** names an Ort, and the public website shows that Ort's address rather than
+carrying its own copy. The city field is **Stadt** and never *Ort*, because this domain already
+spent that word on the place itself. An Ort is **archived, never deleted** — last season's
+entries still happened there (extended 2026-09-20, CA-P5 shaping).
+
+**Kapazität is not an Ort's**: the club sells Karten for an *evening*, and one hall is laid out
+differently for a Prunksitzung and a Kinderfasching — it belongs to the **Veranstaltung**, and it
+waits on the open `Sitzplatzvergabe` question. Nor are **Koordinaten** (the address is the one
+truth; a link is built from it) or a **public flag** (an Ort is public exactly when a public
+Veranstaltung happens there — derived, as ever, never stored).
 _Avoid_: Raum (too narrow — the Sporthalle is not the club's), Location, Veranstaltungsort,
-free-text places
+free-text places, **Ort** as the name of an address's city field (that is **Stadt**)
 
 **Schlüssel** (`key holding`):
 A Person's **dated period** of holding a key for an **Ort** — the same shape as an Inhaberschaft,
