@@ -26,6 +26,10 @@ public sealed class Person : ITimestamped
 
     public bool ContactVisibleToMembers { get; set; }
 
+    public string? PortraitUrl { get; set; }
+
+    public bool PortraitIsPublic { get; set; }
+
     public DateTimeOffset CreatedAt { get; set; }
 
     public DateTimeOffset UpdatedAt { get; set; }
