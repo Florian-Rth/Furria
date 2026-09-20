@@ -25,7 +25,10 @@ public sealed class GetClubHubBoardTests
     public async Task Should_CarryNoSeats_When_DerVereinKeinenVorstandEingetragenHat()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(builder => builder.Identity(identity => MemberNamedMira(identity)), ct);
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => MemberNamedMira(identity)),
+            ct
+        );
 
         var result = await HubForAsync(ctx, ct);
 
