@@ -19,6 +19,7 @@ export const MORE_PATH = '/more';
 export const PROFILE_PATH = '/profile';
 export const MEMBERS_PATH = '/members';
 export const GROUPS_PATH = '/groups';
+export const CALENDAR_PATH = '/calendar';
 
 export const OVERVIEW_SECTION = 'overview';
 export const CLUB_SECTION = 'club';
