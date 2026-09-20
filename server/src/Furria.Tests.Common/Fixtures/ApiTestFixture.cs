@@ -138,6 +138,8 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
                 typeof(Role),
                 typeof(RolePermission),
                 typeof(RoleHolding),
+                typeof(Session),
+                typeof(Venue),
             ],
             CancellationToken.None
         );

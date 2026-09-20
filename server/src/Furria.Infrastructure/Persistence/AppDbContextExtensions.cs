@@ -18,6 +18,7 @@ public static class AppDbContextExtensions
             ["ix_role_holding_role_id_person_id_open"] = WriteConflictMessages.OpenInhaberschaft,
             ["ix_group_name_active"] = WriteConflictMessages.DuplicateGruppenName,
             ["ix_role_name_active"] = WriteConflictMessages.DuplicateRollenName,
+            ["ix_venue_name"] = WriteConflictMessages.DuplicateOrt,
         }.ToFrozenDictionary(StringComparer.Ordinal);
 
     public static async Task<Result> SaveOrConflictAsync(

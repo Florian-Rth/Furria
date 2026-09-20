@@ -37,6 +37,8 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>
 
     public DbSet<Session> Sessions => Set<Session>();
 
+    public DbSet<Venue> Venues => Set<Venue>();
+
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }
 

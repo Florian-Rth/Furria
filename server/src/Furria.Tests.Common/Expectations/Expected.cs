@@ -52,6 +52,8 @@ public sealed class Expected
 
     public RefreshTokenExpectations RefreshTokensOf(int accountId) => new(this, accountId);
 
+    public VenueExpectations Venue(int venueId) => new(this, venueId);
+
     public async Task AssertAsync(CancellationToken ct = default)
     {
         var pending = _reads.ToList();
