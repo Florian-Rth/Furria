@@ -1,21 +1,13 @@
-import { KkScreen, KkTitleHeader } from '@furria/ui';
+import { KkScreen } from '@furria/ui';
 import type { FC } from 'react';
 import { CLUB_SECTION } from '@/features/session';
-import { ClubLinks } from './ClubLinks';
+import { ClubBody } from './ClubBody';
+import { ClubStage } from './ClubStage';
 
 const CLUB_TITLE = 'Verein';
-const CLUB_LEAD =
-  'Wer zum FCC gehört und in welchen Gruppen getanzt, gespielt und organisiert wird.';
 
-export const ClubPage: FC = () => {
-  return (
-    <KkScreen
-      kind="overview"
-      section={CLUB_SECTION}
-      title={CLUB_TITLE}
-      header={<KkTitleHeader title={CLUB_TITLE} lead={CLUB_LEAD} />}
-    >
-      <ClubLinks />
-    </KkScreen>
-  );
-};
+export const ClubPage: FC = () => (
+  <KkScreen kind="overview" section={CLUB_SECTION} title={CLUB_TITLE} header={<ClubStage />}>
+    <ClubBody />
+  </KkScreen>
+);
