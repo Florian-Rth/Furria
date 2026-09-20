@@ -85,6 +85,11 @@ name **one Rolle every seat implies**, and each Vorstandsfunktion may name **one
 implies**. A running Sitz therefore contributes those Rollen's keys the same way a running
 Mitgliedschaft contributes `club.read`:
 
+> **Amended 2026-09-20 —** only the Vorstandsfunktion's Rolle ships. The board-wide Rolle every
+> seat would imply was cut before CA-P4 wave 2: it had no home until *Verein verwalten* exists,
+> and inventing one was rejected. `BoardOffice.ImpliedRoleId?` is the resolver's single new
+> source; read the line below as `KeysImpliedBy(running Vorstandssitz)` = the Funktion's Rolle.
+
 ```
                     ∪ KeysImpliedBy(running Vorstandssitz)       // club data: the named Rollen
 ```

@@ -114,8 +114,8 @@ _Avoid_: Amt (retired), Posten, hard-coding the offices
 **Vorstandssitz** (`board seat`):
 A Person's **dated period** in the **Vorstand** under one **Vorstandsfunktion** — the same shape
 as an Inhaberschaft, ended and never deleted, and carrying the band's order. A running seat
-**implies** the Vorstand's Rolle and its Funktion's Rolle: derived at the moment it is asked,
-never written as an Inhaberschaft
+**implies** its Funktion's Rolle: derived at the moment it is asked, never written as an
+Inhaberschaft (the board-wide Rolle was cut 2026-09-20 and waits for *Verein verwalten*)
 ([ADR-0011](docs/adr/0011-permissions-come-from-rollen-and-running-relationships.md)).
 _Avoid_: auto-assigning a Rolle when a seat opens, Vorstandsmitgliedschaft (that word is the
 club's Mitgliedschaft), Vorstandsamt

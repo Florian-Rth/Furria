@@ -1,6 +1,6 @@
 ---
-status: shaped 2026-09-19 (+ its 2026-09-20 amendment); D1 landed on
-  `feat/club-app-verein-hub` (`5206fcb`…`4813168`, de-seeded); D2–D5 open
+status: shaped 2026-09-19 (+ its 2026-09-20 amendment); D1–D5 landed on
+  `feat/club-app-verein-hub` (D1 `5206fcb`…`4813168`, de-seeded; D2–D5 in wave 2)
 phase: CA-P4 — the Verein hub
 shaped_with: Florian, grilling session 2026-09-19
 binding: docs/adr/0010, docs/adr/0011 (+ its 2026-09-19 amendment), docs/adr/0012,
@@ -78,6 +78,11 @@ The decisions that bind this work. Reasoning lives in `CONTEXT.md`, ADR-0012 and
 Panels elide when empty (settled 2026-09-18), so the hub gains a panel per slice and never looks
 half-built. The stat strip elides a single stat that would read `0`.
 
+One named exception, decided while D2 was built: the **Aushang panel stands, with its empty
+state, for a viewer holding `announcements.post`** — a poster looking at a fresh board needs the
+*Aushang schreiben* affordance, and there is nowhere else to offer it. For every other viewer it
+elides like its siblings.
+
 ---
 
 ## The slices
@@ -96,7 +101,7 @@ cd server && dotnet csharpier format . && dotnet build && dotnet test
 | **D2** | Aushang, with posting | server + club-app | D1 |
 | **D3** | Ort → Schlüssel | server + club-app | D1 |
 | **D4** | Vorstand · Vorstandsfunktion · Vorstandssitz · Porträt | server + club-app | D1 |
-| **D5** | Kalendereintrag, the panel, and `/kalender` | server + club-app | D1, D3 |
+| **D5** | Kalendereintrag, the panel, and `/calendar` | server + club-app | D1, D3 |
 
 D2, D3 and D4 are independent of one another. D5 needs D3's `Ort`.
 
@@ -149,8 +154,9 @@ criterion (ruling 14 as amended).
 - `Account.LastSeenAnnouncementAt` — one nullable column. No join table.
 - `FurriaPermissions.AnnouncementsPost = "announcements.post"`.
 - `GET /club/hub` gains `announcements` — the newest 2 that have not expired, plus `totalCount`.
-- `GET /announcements` (list, `club.read`), `POST` / `PUT` / `DELETE /announcements`
-  (`announcements.post`; editing and deleting also allowed to the author).
+- `GET /announcements` (list, `club.read`), `POST /announcements`, `PUT /announcements/{id}`,
+  `POST /announcements/{id}/withdraw` (`announcements.post`; changing and withdrawing also
+  allowed to the author). Abnehmen is a named act, not a bare `DELETE`.
 - The session/me payload gains `lastSeenAnnouncementAt`; a `PUT` marks it.
 
 **Club-app**
@@ -207,7 +213,9 @@ criterion (ruling 14 as amended).
   *verwalten* surface exists, a Funktion that should carry keys names its Rolle, by hand, like
   everything else in this table.
 - `PermissionAuthorizer` — a fourth source, per ADR-0011's amendment: a running `BoardSeat`
-  contributes its Vorstandsfunktion's implied Rolle. **Nothing is written.**
+  contributes its Vorstandsfunktion's implied Rolle. **Nothing is written.** What shipped is
+  exactly that: `BoardOffice.ImpliedRoleId?` is the resolver's one new source. There is no
+  board-wide marker anywhere in the tree, and it stays cut until *Verein verwalten*.
   Tests: seat opens → keys appear; seat closes → keys vanish; no `RoleHolding` row in either case.
 - `Person.PortraitUrl?` and `Person.PortraitIsPublic` (default `false`). **No upload, no media
   store** — the columns exist, nothing fills them yet.
@@ -239,13 +247,13 @@ criterion (ruling 14 as amended).
 
 **Club-app**
 - The Kalender panel: 3 rows, date · Titel · Ort; a running entry first, in its running state.
-- `/kalender` — **list view by default**; a month-grid view with a dot per day that filters the
+- `/calendar` — **list view by default**; a month-grid view with a dot per day that filters the
   list beneath it. Never entries inside a phone-width cell.
 - `KkFilterChips` for scope; the page defaults to club + the viewer's Gruppen.
 - Zu-/Absage inline on an entry that asks for one.
 
 **Done when** both gates are green and D5's integration tests pass. `calendar_entry` starts
-empty, so `pnpm shot /kalender` shows both views only after entries are typed into the dev
+empty, so `pnpm shot /calendar` shows both views only after entries are typed into the dev
 database by hand — an optional check afterwards, never the criterion (ruling 14 as amended).
 
 ---
