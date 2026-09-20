@@ -32,10 +32,10 @@ public sealed class SessionExpectations
             async (dbContext, ct) => Assert.Equal(motto, (await SingleAsync(dbContext, ct)).Motto)
         );
 
-    public Expected ToHaveSignet(string? signetSvg) =>
+    public Expected ToHaveLogo(string? logoSvg) =>
         _expected.Enqueue(
             async (dbContext, ct) =>
-                Assert.Equal(signetSvg, (await SingleAsync(dbContext, ct)).SignetSvg)
+                Assert.Equal(logoSvg, (await SingleAsync(dbContext, ct)).LogoSvg)
         );
 
     private Task<Session> SingleAsync(AppDbContext dbContext, CancellationToken ct) =>

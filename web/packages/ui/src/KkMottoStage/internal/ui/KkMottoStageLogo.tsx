@@ -7,14 +7,14 @@ const LIGHT_OPACITY = 0.94;
 const DARK_OPACITY = 0.82;
 const DARK_FILTER = 'invert(1) hue-rotate(180deg)';
 
-interface KkMottoStageSignetProps {
+interface KkMottoStageLogoProps {
   source: string;
 }
 
-export const KkMottoStageSignet: FC<KkMottoStageSignetProps> = ({ source }) => (
+export const KkMottoStageLogo: FC<KkMottoStageLogoProps> = ({ source }) => (
   <Box
     aria-hidden
-    data-kk-motto-stage-signet
+    data-kk-motto-stage-logo
     sx={{
       position: 'absolute',
       inset: 0,

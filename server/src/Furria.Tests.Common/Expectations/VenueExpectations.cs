@@ -27,6 +27,28 @@ public sealed class VenueExpectations
                 Assert.Equal(sortOrder, (await SingleAsync(dbContext, ct)).SortOrder)
         );
 
+    public Expected ToHaveAddress(string street, string zip, string city) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var venue = await SingleAsync(dbContext, ct);
+                Assert.Equal(street, venue.Street);
+                Assert.Equal(zip, venue.Zip);
+                Assert.Equal(city, venue.City);
+            }
+        );
+
+    public Expected ToHaveHint(string? hint) =>
+        _expected.Enqueue(
+            async (dbContext, ct) => Assert.Equal(hint, (await SingleAsync(dbContext, ct)).Hint)
+        );
+
+    public Expected ToBeArchivedOn(DateOnly? archivedOn) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(archivedOn, (await SingleAsync(dbContext, ct)).ArchivedOn)
+        );
+
     private Task<Venue> SingleAsync(AppDbContext dbContext, CancellationToken ct) =>
         dbContext.Venues.AsNoTracking().SingleAsync(row => row.Id == _venueId, ct);
 }

@@ -4,7 +4,7 @@ import type { FC } from 'react';
 import type { RolePermissionsControl } from '../hooks/use-role-permissions';
 import { ROLE_SECTION_TITLES } from '../manage-roles-labels';
 import type { RoleHolder } from '../schemas';
-import { KeyHandoverDialog } from './KeyHandoverDialog';
+import { PermissionHandoverDialog } from './PermissionHandoverDialog';
 import { RolePermissionRow } from './RolePermissionRow';
 import { SelfLockoutDialog } from './SelfLockoutDialog';
 
@@ -57,12 +57,12 @@ export const RolePermissionList: FC<RolePermissionListProps> = ({
         onConfirm={permissions.confirmSelfLockout}
         onClose={permissions.cancelSelfLockout}
       />
-      <KeyHandoverDialog
+      <PermissionHandoverDialog
         roleName={roleName}
         holders={holders}
-        entry={permissions.keyHandover}
-        onConfirm={permissions.confirmKeyHandover}
-        onClose={permissions.cancelKeyHandover}
+        entry={permissions.permissionHandover}
+        onConfirm={permissions.confirmPermissionHandover}
+        onClose={permissions.cancelPermissionHandover}
       />
     </KkPanelSection>
   );

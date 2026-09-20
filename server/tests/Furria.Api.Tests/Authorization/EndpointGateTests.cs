@@ -61,10 +61,7 @@ public sealed class EndpointGateTests
     public void Should_CarryOneGateKindOnly_When_AnEndpointIsRegistered()
     {
         var doubleGated = Registered()
-            .Where(endpoint =>
-                endpoint.Metadata.GetMetadata<PermissionRequirement>() is not null
-                && endpoint.Metadata.GetMetadata<AffiliationRequirement>() is not null
-            )
+            .Where(endpoint => GateKindCount(endpoint) > 1)
             .Select(RouteOf)
             .Where(route => !DoubleGatedProbes.Contains(route, StringComparer.Ordinal))
             .ToArray();
@@ -109,11 +106,18 @@ public sealed class EndpointGateTests
         RouteOf(endpoint).Equals(HarnessUrlCacheRoute, StringComparison.Ordinal);
 
     private static bool IsGated(RouteEndpoint endpoint) =>
-        endpoint.Metadata.GetMetadata<PermissionRequirement>() is not null
-        || endpoint.Metadata.GetMetadata<AffiliationRequirement>() is not null
+        GateKindCount(endpoint) > 0
         || endpoint.Metadata.GetMetadata<IAllowAnonymous>() is not null
         || InHandlerGated.Contains(RouteOf(endpoint), StringComparer.Ordinal)
         || InHandlerGatedProbes.Contains(RouteOf(endpoint), StringComparer.Ordinal);
+
+    private static int GateKindCount(RouteEndpoint endpoint) =>
+        Carried<PermissionRequirement>(endpoint)
+        + Carried<AnyPermissionRequirement>(endpoint)
+        + Carried<AffiliationRequirement>(endpoint);
+
+    private static int Carried<TRequirement>(RouteEndpoint endpoint)
+        where TRequirement : class => endpoint.Metadata.GetMetadata<TRequirement>() is null ? 0 : 1;
 
     private static string RouteOf(RouteEndpoint endpoint) => endpoint.RoutePattern.RawText ?? "";
 }

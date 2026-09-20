@@ -8,7 +8,7 @@ export interface AppSection {
   icon: KkIconName;
   to: string | null;
   meta?: string;
-  permissionKey?: PermissionKey;
+  permissionKeys?: readonly PermissionKey[];
   hint?: string;
 }
 
@@ -19,6 +19,7 @@ export const CALENDAR_PATH = '/calendar';
 export const MEMBERS_PATH = '/members';
 export const GROUPS_PATH = '/groups';
 export const MORE_PATH = '/more';
+export const MANAGE_PATH = '/manage';
 export const PROFILE_PATH = '/profile';
 
 export const OVERVIEW_SECTION = 'overview';
@@ -27,6 +28,16 @@ export const MORE_SECTION = 'more';
 
 export const CLUB_ORIGIN: KkScreenOrigin = { label: 'Verein', to: CLUB_PATH };
 export const MORE_ORIGIN: KkScreenOrigin = { label: 'Mehr', to: MORE_PATH };
+export const MANAGE_ORIGIN: KkScreenOrigin = { label: 'Verein verwalten', to: MANAGE_PATH };
+
+export const MANAGE_KEYS: readonly PermissionKey[] = [
+  PERMISSION_KEYS.personsManage,
+  PERMISSION_KEYS.groupsManage,
+  PERMISSION_KEYS.rolesManage,
+  PERMISSION_KEYS.boardManage,
+  PERMISSION_KEYS.clubManage,
+  PERMISSION_KEYS.keyHoldingsManage,
+];
 
 export const APP_DESTINATIONS: readonly KkShellDestination[] = [
   {
@@ -83,25 +94,12 @@ export const LATER_SECTIONS: AppSection[] = [
 
 export const MANAGE_SECTIONS: AppSection[] = [
   {
-    id: 'manage-persons',
-    label: 'Personen',
-    icon: 'person',
-    to: '/manage/persons',
-    permissionKey: PERMISSION_KEYS.personsManage,
-  },
-  {
-    id: 'manage-groups',
-    label: 'Gruppenverwaltung',
+    id: 'manage-hub',
+    label: 'Verein verwalten',
     icon: 'manage',
-    to: '/manage/groups',
-    permissionKey: PERMISSION_KEYS.groupsManage,
-  },
-  {
-    id: 'manage-roles',
-    label: 'Rollen & Rechte',
-    icon: 'permissions',
-    to: '/manage/roles',
-    permissionKey: PERMISSION_KEYS.rolesManage,
+    to: MANAGE_PATH,
+    meta: 'Der Bestand des Vereins',
+    permissionKeys: MANAGE_KEYS,
   },
 ];
 
@@ -109,7 +107,6 @@ export const toPermittedSections = (
   sections: readonly AppSection[],
   permissionKeys: readonly string[],
 ): AppSection[] =>
-  sections.filter(
-    (section) =>
-      section.permissionKey !== undefined && permissionKeys.includes(section.permissionKey),
+  sections.filter((section) =>
+    Boolean(section.permissionKeys?.some((key) => permissionKeys.includes(key))),
   );

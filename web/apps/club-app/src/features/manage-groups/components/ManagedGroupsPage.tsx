@@ -2,7 +2,7 @@ import type { KkScreenAction } from '@furria/ui';
 import { KkScreen, KkSkeletonToolbar, KkTitleHeader } from '@furria/ui';
 import type { FC } from 'react';
 import {
-  MORE_ORIGIN,
+  MANAGE_ORIGIN,
   RequirePermission,
   usePermissions,
   useScreenSearch,
@@ -72,7 +72,7 @@ export const ManagedGroupsPage: FC = () => {
       actions={actions}
       tools={canManage ? toolRow : undefined}
       title={MANAGE_GROUPS_TITLE}
-      origin={MORE_ORIGIN}
+      origin={MANAGE_ORIGIN}
       header={<KkTitleHeader title={MANAGE_GROUPS_TITLE} lead={lead} />}
     >
       <RequirePermission permissionKey={PERMISSION_KEYS.groupsManage}>

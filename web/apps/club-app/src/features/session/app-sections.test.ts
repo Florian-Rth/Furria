@@ -12,23 +12,36 @@ const section = (overrides: Partial<AppSection>): AppSection => ({
 
 describe('toPermittedSections', () => {
   it('keeps a section whose permission is held', () => {
-    const persons = section({ id: 'persons', permissionKey: 'persons.manage' });
+    const persons = section({ id: 'persons', permissionKeys: ['persons.manage'] });
 
     expect(toPermittedSections([persons], ['persons.manage'])).toEqual([persons]);
   });
 
   it('drops a section whose permission is missing', () => {
-    const persons = section({ id: 'persons', permissionKey: 'persons.manage' });
+    const persons = section({ id: 'persons', permissionKeys: ['persons.manage'] });
 
     expect(toPermittedSections([persons], ['groups.manage'])).toEqual([]);
+  });
+
+  it('keeps a section guarded by several permissions when only the last one is held', () => {
+    const hub = section({
+      id: 'hub',
+      permissionKeys: ['persons.manage', 'groups.manage', 'key_holdings.manage'],
+    });
+
+    expect(toPermittedSections([hub], ['key_holdings.manage'])).toEqual([hub]);
   });
 
   it('drops a section that guards nothing', () => {
     expect(toPermittedSections([section({})], ['persons.manage'])).toEqual([]);
   });
 
+  it('drops a section whose guard list is empty', () => {
+    expect(toPermittedSections([section({ permissionKeys: [] })], ['persons.manage'])).toEqual([]);
+  });
+
   it('keeps the declared order of the managed sections', () => {
-    const keys = MANAGE_SECTIONS.map((entry) => entry.permissionKey ?? '');
+    const keys = MANAGE_SECTIONS.flatMap((entry) => entry.permissionKeys ?? []);
 
     expect(toPermittedSections(MANAGE_SECTIONS, keys)).toEqual(MANAGE_SECTIONS);
   });

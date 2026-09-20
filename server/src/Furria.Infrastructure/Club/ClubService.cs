@@ -44,7 +44,7 @@ public sealed partial class ClubService
         var recorded = await _dbContext
             .Sessions.AsNoTracking()
             .Where(session => session.StartYear == startYear)
-            .Select(session => new SessionRow(session.Number, session.Motto, session.SignetSvg))
+            .Select(session => new SessionRow(session.Number, session.Motto, session.LogoSvg))
             .SingleOrDefaultAsync(ct);
 
         return new ClubHubSession
@@ -53,7 +53,7 @@ public sealed partial class ClubService
             Label = ClubSession.LabelOf(startYear),
             Number = recorded?.Number,
             Motto = recorded?.Motto,
-            SignetSvg = recorded?.SignetSvg,
+            LogoSvg = recorded?.LogoSvg,
         };
     }
 
@@ -88,5 +88,5 @@ public sealed partial class ClubService
         };
     }
 
-    private sealed record SessionRow(int? Number, string? Motto, string? SignetSvg);
+    private sealed record SessionRow(int? Number, string? Motto, string? LogoSvg);
 }

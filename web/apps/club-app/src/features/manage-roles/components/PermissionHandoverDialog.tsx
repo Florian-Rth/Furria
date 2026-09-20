@@ -2,16 +2,16 @@ import { KkConfirmDialog } from '@furria/ui';
 import type { FC } from 'react';
 import type { RolePermissionEntry } from '../manage-roles-labels';
 import {
-  KEY_HANDOVER_CONFIRM_LABEL,
-  KEY_HANDOVER_EYEBROW,
-  toKeyHandoverFacts,
-  toKeyHandoverQuestion,
+  PERMISSION_HANDOVER_CONFIRM_LABEL,
+  PERMISSION_HANDOVER_EYEBROW,
+  toPermissionHandoverFacts,
+  toPermissionHandoverQuestion,
 } from '../manage-roles-labels';
 
 const CANCEL_LABEL = 'Abbrechen';
 const CLOSE_LABEL = 'Schließen';
 
-interface KeyHandoverDialogProps {
+interface PermissionHandoverDialogProps {
   roleName: string;
   holders: readonly { firstName: string; lastName: string }[];
   entry: RolePermissionEntry | null;
@@ -19,7 +19,7 @@ interface KeyHandoverDialogProps {
   onClose: () => void;
 }
 
-export const KeyHandoverDialog: FC<KeyHandoverDialogProps> = ({
+export const PermissionHandoverDialog: FC<PermissionHandoverDialogProps> = ({
   roleName,
   holders,
   entry,
@@ -36,11 +36,11 @@ export const KeyHandoverDialog: FC<KeyHandoverDialogProps> = ({
       onClose={onClose}
       onConfirm={onConfirm}
       tone="danger"
-      eyebrow={KEY_HANDOVER_EYEBROW}
-      question={toKeyHandoverQuestion(roleName)}
+      eyebrow={PERMISSION_HANDOVER_EYEBROW}
+      question={toPermissionHandoverQuestion(roleName)}
       explanation={entry.line}
-      facts={toKeyHandoverFacts(roleName, holders)}
-      confirmLabel={KEY_HANDOVER_CONFIRM_LABEL}
+      facts={toPermissionHandoverFacts(roleName, holders)}
+      confirmLabel={PERMISSION_HANDOVER_CONFIRM_LABEL}
       cancelLabel={CANCEL_LABEL}
       closeLabel={CLOSE_LABEL}
     />

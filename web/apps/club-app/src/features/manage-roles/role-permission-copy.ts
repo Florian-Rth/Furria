@@ -31,6 +31,22 @@ const PERMISSION_COPY: Record<PermissionKey, RolePermissionCopy> = {
     title: 'Aushänge schreiben',
     line: 'Etwas an den Aushang hängen, ändern und wieder abnehmen — auch die Aushänge anderer.',
   },
+  [PERMISSION_KEYS.clubManage]: {
+    title: 'Sessionseinträge und Orte pflegen',
+    line: 'Motto, Nummer und Zeitraum einer Session eintragen und ändern, Orte anlegen, bearbeiten und archivieren.',
+  },
+  [PERMISSION_KEYS.keyHoldingsManage]: {
+    title: 'Schlüssel führen',
+    line: 'Ausgeben und zurücknehmen, wer für welchen Ort einen Schlüssel in der Hand hat. Gemeint ist das Metall, nicht die Berechtigung.',
+  },
+  [PERMISSION_KEYS.boardManage]: {
+    title: 'Vorstand führen',
+    line: 'Vorstandsfunktionen anlegen und archivieren, Sitze besetzen und beenden. Die Rolle, die eine Funktion mitbringt, bleibt davon unberührt.',
+  },
+  [PERMISSION_KEYS.calendarManageClub]: {
+    title: 'Vereinstermine führen',
+    line: 'Kalendereinträge anlegen, ändern und absagen, die dem Verein selbst gehören — nicht die einer Gruppe.',
+  },
 };
 
 const KNOWN_KEYS: readonly PermissionKey[] = Object.values(PERMISSION_KEYS);

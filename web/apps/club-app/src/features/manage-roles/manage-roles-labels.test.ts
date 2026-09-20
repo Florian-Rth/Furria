@@ -7,7 +7,7 @@ import {
   ACTIVE_ROLES_FILTER_ID,
   ALL_ROLES_FILTER_ID,
   ARCHIVED_ROLES_FILTER_ID,
-  isKeyHandover,
+  isPermissionHandover,
   isSelfLockout,
   toArchivedMeta,
   toEndHoldingConsequence,
@@ -424,25 +424,25 @@ describe('isSelfLockout', () => {
   });
 });
 
-describe('isKeyHandover', () => {
+describe('isPermissionHandover', () => {
   it.each([
     {
-      case: 'switching the rights key on',
+      case: 'switching the rights permission on',
       input: { key: PERMISSION_KEYS.rolesManage, enabled: true },
       expected: true,
     },
     {
-      case: 'switching the rights key off',
+      case: 'switching the rights permission off',
       input: { key: PERMISSION_KEYS.rolesManage, enabled: false },
       expected: false,
     },
     {
-      case: 'switching another key on',
+      case: 'switching another permission on',
       input: { key: PERMISSION_KEYS.groupsManage, enabled: true },
       expected: false,
     },
   ])('is $expected when $case', ({ input, expected }) => {
-    expect(isKeyHandover(input)).toBe(expected);
+    expect(isPermissionHandover(input)).toBe(expected);
   });
 });
 

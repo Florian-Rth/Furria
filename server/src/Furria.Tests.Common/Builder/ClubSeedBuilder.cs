@@ -36,16 +36,25 @@ public sealed class ClubSeedBuilder
         int startYear,
         int? number = null,
         string? motto = null,
-        string? signetSvg = null
+        string? logoSvg = null
     )
     {
-        _sessions.Add(new SessionIntent(alias, startYear, number, motto, signetSvg));
+        _sessions.Add(new SessionIntent(alias, startYear, number, motto, logoSvg));
         return this;
     }
 
-    public ClubSeedBuilder AddVenue(string alias, string name, int sortOrder = 1)
+    public ClubSeedBuilder AddVenue(
+        string alias,
+        string name,
+        int sortOrder = 1,
+        string street = "",
+        string zip = "",
+        string city = "",
+        string? hint = null,
+        DateOnly? archivedOn = null
+    )
     {
-        _venues.Add(new VenueIntent(alias, name, sortOrder));
+        _venues.Add(new VenueIntent(alias, name, sortOrder, street, zip, city, hint, archivedOn));
         return this;
     }
 
@@ -82,10 +91,13 @@ public sealed class ClubSeedBuilder
         string alias,
         string name,
         int sortOrder = 1,
-        string? impliedRoleAlias = null
+        string? impliedRoleAlias = null,
+        DateOnly? archivedOn = null
     )
     {
-        _boardOffices.Add(new BoardOfficeIntent(alias, name, sortOrder, impliedRoleAlias));
+        _boardOffices.Add(
+            new BoardOfficeIntent(alias, name, sortOrder, impliedRoleAlias, archivedOn)
+        );
         return this;
     }
 
@@ -157,10 +169,19 @@ public sealed class ClubSeedBuilder
         int StartYear,
         int? Number,
         string? Motto,
-        string? SignetSvg
+        string? LogoSvg
     );
 
-    internal sealed record VenueIntent(string Alias, string Name, int SortOrder);
+    internal sealed record VenueIntent(
+        string Alias,
+        string Name,
+        int SortOrder,
+        string Street,
+        string Zip,
+        string City,
+        string? Hint,
+        DateOnly? ArchivedOn
+    );
 
     internal sealed record AnnouncementIntent(
         string Alias,
@@ -183,7 +204,8 @@ public sealed class ClubSeedBuilder
         string Alias,
         string Name,
         int SortOrder,
-        string? ImpliedRoleAlias
+        string? ImpliedRoleAlias,
+        DateOnly? ArchivedOn
     );
 
     internal sealed record BoardSeatIntent(

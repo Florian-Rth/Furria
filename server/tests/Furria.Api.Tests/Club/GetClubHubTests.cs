@@ -98,7 +98,7 @@ public sealed class GetClubHubTests
                 Assert.Equal(2026, result.Session.StartYear);
                 Assert.Equal(RecordedMotto, result.Session.Motto);
                 Assert.Null(result.Session.Number);
-                Assert.Null(result.Session.SignetSvg);
+                Assert.Null(result.Session.LogoSvg);
             }
         );
     }
@@ -121,7 +121,7 @@ public sealed class GetClubHubTests
                 Assert.Equal("2027/28", result.Session.Label);
                 Assert.Null(result.Session.Motto);
                 Assert.Null(result.Session.Number);
-                Assert.Null(result.Session.SignetSvg);
+                Assert.Null(result.Session.LogoSvg);
             }
         );
     }
@@ -163,7 +163,7 @@ public sealed class GetClubHubTests
                 Assert.Equal("2026/27", result.Session.Label);
                 Assert.Null(result.Session.Number);
                 Assert.Null(result.Session.Motto);
-                Assert.Null(result.Session.SignetSvg);
+                Assert.Null(result.Session.LogoSvg);
                 Assert.Empty(result.Announcements.Newest);
                 Assert.Equal(0, result.Announcements.TotalCount);
                 Assert.Empty(result.Calendar);
