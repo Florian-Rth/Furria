@@ -200,13 +200,14 @@ criterion (ruling 14 as amended).
 - `BoardSeat` — `PersonId`, `BoardOfficeId`, `DatePeriod`, `ITimestamped`.
 - The board's own `ImpliedRoleId?` — a single-row club setting, or a nullable column on the one
   place club-wide settings land. **Decide when the file is opened; do not invent a settings table
-  for one field.** *Amended 2026-09-20:* the board-wide Rolle **ships in D4**. The file was opened
-  and there is no club-wide settings place, so the pointer is turned around — the Rolle carries
-  the marker (`Role.ImpliedByBoardSeat`), made single-valued by a unique index filtered to the
-  true rows (`ix_role_implied_by_board_seat`). No settings table was invented, and the marker is
-  set through *Rollen & Rechte*, never seeded.
+  for one field.** *Deferred 2026-09-20:* the file was opened and there is no place for it —
+  nothing club-wide and settings-shaped exists to hang it on, and the one field does not justify
+  inventing one. **So this implied Rolle is not added.** It waits for *Verein verwalten*, which
+  is the surface that would set it anyway. D4 ships `BoardOffice.ImpliedRoleId?` alone; until the
+  *verwalten* surface exists, a Funktion that should carry keys names its Rolle, by hand, like
+  everything else in this table.
 - `PermissionAuthorizer` — a fourth source, per ADR-0011's amendment: a running `BoardSeat`
-  contributes the board's implied Rolle and its office's implied Rolle. **Nothing is written.**
+  contributes its Vorstandsfunktion's implied Rolle. **Nothing is written.**
   Tests: seat opens → keys appear; seat closes → keys vanish; no `RoleHolding` row in either case.
 - `Person.PortraitUrl?` and `Person.PortraitIsPublic` (default `false`). **No upload, no media
   store** — the columns exist, nothing fills them yet.
