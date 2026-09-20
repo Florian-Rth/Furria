@@ -25,6 +25,7 @@ export const ClubStage: FC = () => {
     ? null
     : toCountdownLabel(daysUntilOpening(now, relevantStartYear));
   const progress = isRunning ? sessionProgressAt(now) : null;
+  const signet = session?.signetSvg ?? null;
   const Scene = sceneForSession(relevantStartYear);
 
   const scene =
@@ -42,6 +43,7 @@ export const ClubStage: FC = () => {
       numberLabel={numberLabel}
       countdownLabel={countdownLabel}
       progress={progress}
+      signet={signet}
     >
       {scene}
     </KkMottoStage>
