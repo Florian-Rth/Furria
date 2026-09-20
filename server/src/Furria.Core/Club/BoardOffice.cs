@@ -12,6 +12,8 @@ public sealed class BoardOffice : ITimestamped
 
     public int SortOrder { get; set; }
 
+    public DateOnly? ArchivedOn { get; set; }
+
     public DateTimeOffset CreatedAt { get; set; }
 
     public DateTimeOffset UpdatedAt { get; set; }

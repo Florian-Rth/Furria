@@ -16,6 +16,17 @@ public sealed class BoardSeatExpectations
         _boardSeatId = boardSeatId;
     }
 
+    public Expected ToNotExist() =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.False(
+                    await dbContext
+                        .BoardSeats.AsNoTracking()
+                        .AnyAsync(row => row.Id == _boardSeatId, ct),
+                    $"Expected no Vorstandssitz with id {_boardSeatId}."
+                )
+        );
+
     public Expected ToBeHeldBy(int personId) =>
         _expected.Enqueue(
             async (dbContext, ct) =>
@@ -36,6 +47,21 @@ public sealed class BoardSeatExpectations
                 Assert.Equal(sinceOn, seat.SinceOn);
                 Assert.Equal(untilOn, seat.UntilOn);
             }
+        );
+
+    public Expected ToHavePeriod(DateOnly sinceOn, DateOnly? untilOn) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var seat = await SingleAsync(dbContext, ct);
+                Assert.Equal(sinceOn, seat.SinceOn);
+                Assert.Equal(untilOn, seat.UntilOn);
+            }
+        );
+
+    public Expected ToBeOpen() =>
+        _expected.Enqueue(
+            async (dbContext, ct) => Assert.Null((await SingleAsync(dbContext, ct)).UntilOn)
         );
 
     private Task<BoardSeat> SingleAsync(AppDbContext dbContext, CancellationToken ct) =>

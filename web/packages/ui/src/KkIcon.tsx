@@ -1,4 +1,5 @@
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
+import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import BoltOutlinedIcon from '@mui/icons-material/BoltOutlined';
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
 import CheckOutlinedIcon from '@mui/icons-material/CheckOutlined';
@@ -12,6 +13,7 @@ import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 import EuroOutlinedIcon from '@mui/icons-material/EuroOutlined';
 import EventOutlinedIcon from '@mui/icons-material/EventOutlined';
+import GavelOutlinedIcon from '@mui/icons-material/GavelOutlined';
 import GridViewIcon from '@mui/icons-material/GridView';
 import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined';
 import Groups2Icon from '@mui/icons-material/Groups2';
@@ -29,6 +31,7 @@ import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 import PhotoLibraryOutlinedIcon from '@mui/icons-material/PhotoLibraryOutlined';
 import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
+import PolicyOutlinedIcon from '@mui/icons-material/PolicyOutlined';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import SensorsOutlinedIcon from '@mui/icons-material/SensorsOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
@@ -62,7 +65,10 @@ export type KkIconName =
   | 'group'
   | 'person'
   | 'role'
+  | 'board'
   | 'permissions'
+  | 'key'
+  | 'session'
   | 'search'
   | 'add'
   | 'edit'
@@ -109,7 +115,10 @@ const icons: Record<KkIconName, typeof HomeIcon> = {
   group: Diversity3OutlinedIcon,
   person: PersonOutlinedIcon,
   role: WorkspacePremiumOutlinedIcon,
-  permissions: KeyOutlinedIcon,
+  board: GavelOutlinedIcon,
+  permissions: PolicyOutlinedIcon,
+  key: KeyOutlinedIcon,
+  session: AutoAwesomeOutlinedIcon,
   search: SearchOutlinedIcon,
   add: AddOutlinedIcon,
   edit: EditOutlinedIcon,

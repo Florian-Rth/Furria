@@ -126,6 +126,38 @@ public sealed class PersonSearchAccessTests
     }
 
     [Fact]
+    public async Task Should_Allow_When_TheCallerHoldsClubManage()
+    {
+        var response = await ProbeAsHolderOfAsync(FurriaPermissions.ClubManage);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_Allow_When_TheCallerHoldsKeyHoldingsManage()
+    {
+        var response = await ProbeAsHolderOfAsync(FurriaPermissions.KeyHoldingsManage);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_Allow_When_TheCallerHoldsBoardManage()
+    {
+        var response = await ProbeAsHolderOfAsync(FurriaPermissions.BoardManage);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_Allow_When_TheCallerHoldsCalendarManageClub()
+    {
+        var response = await ProbeAsHolderOfAsync(FurriaPermissions.CalendarManageClub);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Should_Refuse_When_TheCallerOnlyHoldsPersonsReadDetails()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -280,5 +312,30 @@ public sealed class PersonSearchAccessTests
             .GETAsync<PersonSearchProbe, EmptyResponse>();
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    private async Task<HttpResponseMessage> ProbeAsHolderOfAsync(string permissionKey)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddAccount("hanna"))
+                    .Roles(roles =>
+                        roles.AddRoleWithHolder(
+                            "vereinspflege",
+                            "hanna-vereinspflege",
+                            "Vereinspflege",
+                            "hanna",
+                            permissionKey
+                        )
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("hanna", ct);
+        var (response, _) = await client.GETAsync<PersonSearchProbe, EmptyResponse>();
+
+        return response;
     }
 }

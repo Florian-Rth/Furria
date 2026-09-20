@@ -1,8 +1,15 @@
-import type { KkFilterOption } from '@furria/ui';
+import type { KkConfirmFact, KkFilterOption, KkSelectOption } from '@furria/ui';
 import type { CalendarEntryKind } from '@/features/club';
-import { toTimeSpanLabel } from '@/lib/calendar-days';
+import { toIsoDayLabel, toLocalIsoDay, toTimeSpanLabel } from '@/lib/calendar-days';
+import type { CalendarOwnerOption } from './calendar-authoring';
+import { NO_VENUE_ID, toTimeChoices } from './calendar-authoring';
 import { ALL_SCOPE_ID, CLUB_SCOPE_ID, toGroupScopeId } from './calendar-query';
-import type { AttendanceAnswer, CalendarEntry, CalendarEntryVisibility } from './schemas';
+import type {
+  AttendanceAnswer,
+  CalendarEntry,
+  CalendarEntryVisibility,
+  RunningVenue,
+} from './schemas';
 
 export const CALENDAR_TITLE = 'Kalender';
 export const CALENDAR_LOADING_LABEL = 'Der Kalender wird geladen';
@@ -142,3 +149,73 @@ export const toScopeOptions = (entries: readonly CalendarEntry[]): KkFilterOptio
     ...groupOptions,
   ];
 };
+
+export const CREATE_ENTRY_LABEL = 'Termin eintragen';
+export const EDIT_ENTRY_LABEL = 'Bearbeiten';
+export const DELETE_ENTRY_LABEL = 'Löschen';
+
+const CALENDAR_VISIBILITY_LABELS: Record<CalendarEntryVisibility, string> = {
+  group: 'Gruppenintern',
+  club: 'Verein',
+  public: 'Öffentlich',
+};
+
+const NO_VENUE_LABEL = 'Kein Ort';
+export const CALENDAR_KIND_OPTIONS: readonly KkSelectOption[] = (
+  ['training', 'rehearsal', 'performance', 'meeting', 'party', 'other'] as const
+).map((kind) => ({ value: kind, label: CALENDAR_KIND_LABELS[kind] }));
+
+export const CALENDAR_VISIBILITY_OPTIONS: readonly KkSelectOption[] = (
+  ['group', 'club', 'public'] as const
+).map((visibility) => ({
+  value: visibility,
+  label: CALENDAR_VISIBILITY_LABELS[visibility],
+}));
+
+export const toVenueOptions = (venues: readonly RunningVenue[]): KkSelectOption[] => [
+  { value: NO_VENUE_ID, label: NO_VENUE_LABEL },
+  ...venues.map((venue) => ({ value: String(venue.venueId), label: venue.name })),
+];
+
+export const toOwnerSelectOptions = (options: readonly CalendarOwnerOption[]): KkSelectOption[] =>
+  options.map((option) => ({ value: option.id, label: option.label }));
+
+export const toTimeOptions = (): KkSelectOption[] =>
+  toTimeChoices().map((time) => ({ value: time, label: time }));
+
+export const toEntryOwnerLabel = (entry: CalendarEntry): string =>
+  entry.ownerGroupName ?? CLUB_OWNER_LABEL;
+
+export const toEntryFacts = (entry: CalendarEntry): KkConfirmFact[] => {
+  const facts: KkConfirmFact[] = [
+    { label: 'Termin', value: entry.title },
+    {
+      label: 'Wann',
+      value: `${toIsoDayLabel(toLocalIsoDay(entry.startsAt))}, ${toTimeSpanLabel(entry.startsAt, entry.endsAt)}`,
+    },
+    { label: 'Art', value: CALENDAR_KIND_LABELS[entry.kind] },
+    { label: 'Eigentümer', value: toEntryOwnerLabel(entry) },
+  ];
+
+  if (entry.venueName !== null) {
+    facts.push({ label: 'Ort', value: entry.venueName });
+  }
+
+  return facts;
+};
+
+export const toDeleteConsequence = (entry: CalendarEntry): string => {
+  if (entry.asksForResponse) {
+    return `„${entry.title}“ verschwindet aus dem Kalender, und die schon abgegebenen Zu- und Absagen verschwinden mit.`;
+  }
+
+  return `„${entry.title}“ verschwindet aus dem Kalender. Rückgängig geht das nicht.`;
+};
+
+export const toEntryCreatedMessage = (title: string): string =>
+  `„${title}“ steht jetzt im Kalender.`;
+
+export const toEntrySavedMessage = (title: string): string => `„${title}“ ist gespeichert.`;
+
+export const toEntryDeletedMessage = (title: string): string =>
+  `„${title}“ ist aus dem Kalender gelöscht.`;

@@ -13,6 +13,7 @@ export const CalendarEntrySchema = z.object({
   startsAt: z.iso.datetime({ offset: true }),
   endsAt: z.iso.datetime({ offset: true }).nullable(),
   kind: CalendarEntryKindSchema,
+  venueId: z.number().int().nullable(),
   venueName: z.string().nullable(),
   ownerGroupId: z.number().int().nullable(),
   ownerGroupName: z.string().nullable(),
@@ -26,3 +27,67 @@ export type CalendarEntry = z.infer<typeof CalendarEntrySchema>;
 
 export const CalendarResponseSchema = z.object({ entries: z.array(CalendarEntrySchema) });
 export type CalendarResponse = z.infer<typeof CalendarResponseSchema>;
+
+export const RunningVenueSchema = z.object({
+  venueId: z.number().int(),
+  name: z.string(),
+});
+export type RunningVenue = z.infer<typeof RunningVenueSchema>;
+
+export const RunningVenuesResponseSchema = z.object({ venues: z.array(RunningVenueSchema) });
+export type RunningVenuesResponse = z.infer<typeof RunningVenuesResponseSchema>;
+
+export const CALENDAR_TITLE_MAX_LENGTH = 120;
+export const CALENDAR_DESCRIPTION_MAX_LENGTH = 2000;
+
+const END_BEFORE_START_MESSAGE = 'Ein Zeitraum kann nicht vor seinem Beginn enden.';
+const NO_END_DAY = '';
+
+export const CalendarCollisionSchema = z.object({
+  calendarEntryId: z.number().int(),
+  title: z.string(),
+  startsAt: z.iso.datetime({ offset: true }),
+  endsAt: z.iso.datetime({ offset: true }).nullable(),
+});
+export type CalendarCollision = z.infer<typeof CalendarCollisionSchema>;
+
+export const WrittenCalendarEntrySchema = z.object({
+  calendarEntryId: z.number().int(),
+  venueCollisions: z.array(CalendarCollisionSchema),
+});
+export type WrittenCalendarEntry = z.infer<typeof WrittenCalendarEntrySchema>;
+
+export const CalendarEntryFormSchema = z
+  .object({
+    title: z
+      .string()
+      .trim()
+      .min(1, 'Der Eintrag braucht einen Titel.')
+      .max(CALENDAR_TITLE_MAX_LENGTH, `Höchstens ${CALENDAR_TITLE_MAX_LENGTH} Zeichen.`),
+    description: z
+      .string()
+      .max(
+        CALENDAR_DESCRIPTION_MAX_LENGTH,
+        `Höchstens ${CALENDAR_DESCRIPTION_MAX_LENGTH} Zeichen.`,
+      ),
+    ownerId: z.string(),
+    venueId: z.string(),
+    kind: CalendarEntryKindSchema,
+    visibility: CalendarEntryVisibilitySchema,
+    startDay: z.string().min(1, 'Der Eintrag braucht einen Tag.'),
+    startTime: z.string().min(1, 'Der Eintrag braucht eine Uhrzeit.'),
+    endDay: z.string(),
+    endTime: z.string(),
+    asksForResponse: z.boolean(),
+  })
+  .superRefine((form, ctx) => {
+    if (form.endDay === NO_END_DAY) {
+      return;
+    }
+    if (`${form.endDay}T${form.endTime}` >= `${form.startDay}T${form.startTime}`) {
+      return;
+    }
+
+    ctx.addIssue({ code: 'custom', message: END_BEFORE_START_MESSAGE, path: ['endTime'] });
+  });
+export type CalendarEntryForm = z.infer<typeof CalendarEntryFormSchema>;

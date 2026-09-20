@@ -16,6 +16,17 @@ public sealed class CalendarEntryExpectations
         _calendarEntryId = calendarEntryId;
     }
 
+    public Expected ToNotExist() =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.False(
+                    await dbContext
+                        .CalendarEntries.AsNoTracking()
+                        .AnyAsync(row => row.Id == _calendarEntryId, ct),
+                    $"Expected no Kalendereintrag with id {_calendarEntryId}."
+                )
+        );
+
     public Expected ToHaveTitle(string title) =>
         _expected.Enqueue(
             async (dbContext, ct) => Assert.Equal(title, (await SingleAsync(dbContext, ct)).Title)
@@ -48,6 +59,33 @@ public sealed class CalendarEntryExpectations
         _expected.Enqueue(
             async (dbContext, ct) =>
                 Assert.Equal(asksForResponse, (await SingleAsync(dbContext, ct)).AsksForResponse)
+        );
+
+    public Expected ToHavePeriod(DateTimeOffset startsAt, DateTimeOffset? endsAt) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var entry = await SingleAsync(dbContext, ct);
+                Assert.Equal(startsAt, entry.StartsAt);
+                Assert.Equal(endsAt, entry.EndsAt);
+            }
+        );
+
+    public Expected ToHaveOwnerGroup(int groupId) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(groupId, (await SingleAsync(dbContext, ct)).OwnerGroupId)
+        );
+
+    public Expected ToBeClubOwned() =>
+        _expected.Enqueue(
+            async (dbContext, ct) => Assert.Null((await SingleAsync(dbContext, ct)).OwnerGroupId)
+        );
+
+    public Expected ToHaveVenue(int venueId) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(venueId, (await SingleAsync(dbContext, ct)).VenueId)
         );
 
     private Task<CalendarEntry> SingleAsync(AppDbContext dbContext, CancellationToken ct) =>

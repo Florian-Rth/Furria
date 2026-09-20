@@ -10,31 +10,56 @@ public sealed class PermissionEnforcer : IGlobalPreProcessor
     {
         var http = context.HttpContext;
         var metadata = http.GetEndpoint()?.Metadata;
-
-        if (
-            metadata?.GetMetadata<AffiliationRequirement>() is not null
-            && !await SatisfiesAsync(
-                http,
-                (authorizer, accountId) => authorizer.IsAffiliatedAsync(accountId, ct)
-            )
-        )
-        {
-            await http.Response.SendForbiddenAsync(ct);
+        if (metadata is null)
             return;
-        }
 
         if (
-            metadata?.GetMetadata<PermissionRequirement>() is { } requirement
-            && !await SatisfiesAsync(
-                http,
-                (authorizer, accountId) =>
-                    authorizer.IsGrantedAsync(accountId, requirement.PermissionKey, ct)
-            )
+            !await SatisfiesAffiliationAsync(http, metadata, ct)
+            || !await SatisfiesPermissionAsync(http, metadata, ct)
+            || !await SatisfiesAnyPermissionAsync(http, metadata, ct)
         )
         {
             await http.Response.SendForbiddenAsync(ct);
         }
     }
+
+    private static Task<bool> SatisfiesAffiliationAsync(
+        HttpContext http,
+        EndpointMetadataCollection metadata,
+        CancellationToken ct
+    ) =>
+        metadata.GetMetadata<AffiliationRequirement>() is null
+            ? Task.FromResult(true)
+            : SatisfiesAsync(
+                http,
+                (authorizer, accountId) => authorizer.IsAffiliatedAsync(accountId, ct)
+            );
+
+    private static Task<bool> SatisfiesPermissionAsync(
+        HttpContext http,
+        EndpointMetadataCollection metadata,
+        CancellationToken ct
+    ) =>
+        metadata.GetMetadata<PermissionRequirement>() is { } requirement
+            ? SatisfiesAsync(
+                http,
+                (authorizer, accountId) =>
+                    authorizer.IsGrantedAsync(accountId, requirement.PermissionKey, ct)
+            )
+            : Task.FromResult(true);
+
+    private static Task<bool> SatisfiesAnyPermissionAsync(
+        HttpContext http,
+        EndpointMetadataCollection metadata,
+        CancellationToken ct
+    ) =>
+        metadata.GetMetadata<AnyPermissionRequirement>() is { } requirement
+            ? SatisfiesAsync(
+                http,
+                (authorizer, accountId) =>
+                    authorizer.IsGrantedAnyAsync(accountId, requirement.PermissionKeys, ct)
+            )
+            : Task.FromResult(true);
 
     private static async Task<bool> SatisfiesAsync(
         HttpContext http,

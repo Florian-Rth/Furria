@@ -16,6 +16,15 @@ public sealed class VenueExpectations
         _venueId = venueId;
     }
 
+    public Expected ToNotExist() =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.False(
+                    await dbContext.Venues.AsNoTracking().AnyAsync(row => row.Id == _venueId, ct),
+                    $"Expected no Ort with id {_venueId}."
+                )
+        );
+
     public Expected ToHaveName(string name) =>
         _expected.Enqueue(
             async (dbContext, ct) => Assert.Equal(name, (await SingleAsync(dbContext, ct)).Name)
@@ -25,6 +34,33 @@ public sealed class VenueExpectations
         _expected.Enqueue(
             async (dbContext, ct) =>
                 Assert.Equal(sortOrder, (await SingleAsync(dbContext, ct)).SortOrder)
+        );
+
+    public Expected ToHaveAddress(string street, string zip, string city) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var venue = await SingleAsync(dbContext, ct);
+                Assert.Equal(street, venue.Street);
+                Assert.Equal(zip, venue.Zip);
+                Assert.Equal(city, venue.City);
+            }
+        );
+
+    public Expected ToHaveHint(string? hint) =>
+        _expected.Enqueue(
+            async (dbContext, ct) => Assert.Equal(hint, (await SingleAsync(dbContext, ct)).Hint)
+        );
+
+    public Expected ToBeArchivedOn(DateOnly? archivedOn) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(archivedOn, (await SingleAsync(dbContext, ct)).ArchivedOn)
+        );
+
+    public Expected ToBeOpen() =>
+        _expected.Enqueue(
+            async (dbContext, ct) => Assert.Null((await SingleAsync(dbContext, ct)).ArchivedOn)
         );
 
     private Task<Venue> SingleAsync(AppDbContext dbContext, CancellationToken ct) =>

@@ -60,6 +60,7 @@ public sealed class GetCalendar : Endpoint<GetCalendarRequest, GetCalendarRespon
             StartsAt = entry.StartsAt,
             EndsAt = entry.EndsAt,
             Kind = entry.Kind,
+            VenueId = entry.VenueId,
             VenueName = entry.VenueName,
             OwnerGroupId = entry.OwnerGroupId,
             OwnerGroupName = entry.OwnerGroupName,
@@ -147,6 +148,8 @@ public sealed record CalendarEntryDto
     public required DateTimeOffset? EndsAt { get; init; }
 
     public required CalendarEntryKind Kind { get; init; }
+
+    public required int? VenueId { get; init; }
 
     public required string? VenueName { get; init; }
 

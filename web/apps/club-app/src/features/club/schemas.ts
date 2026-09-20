@@ -14,7 +14,7 @@ export const ClubSessionSchema = z.object({
   label: z.string(),
   number: z.number().int().nullable(),
   motto: z.string().nullable(),
-  signetSvg: z.string().nullable(),
+  logoSvg: z.string().nullable(),
 });
 export type ClubSession = z.infer<typeof ClubSessionSchema>;
 

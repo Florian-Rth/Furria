@@ -8,6 +8,8 @@ namespace Furria.Api.Tests.Club;
 [Collection("Api")]
 public sealed class VenuePersistenceTests
 {
+    private static readonly DateOnly ArchivedOn = new(2024, 2, 14);
+
     private readonly ApiTestFixture _fixture;
 
     public VenuePersistenceTests(ApiTestFixture fixture)
@@ -29,6 +31,55 @@ public sealed class VenuePersistenceTests
             .ToHaveName("Bühnenhaus")
             .Venue(ctx.Club.Venues.IdOf("buehnenhaus"))
             .ToHaveSortOrder(4)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_KeepTheAddressAndTheHinweis_When_AnOrtIsWrittenDown()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Club(club =>
+                    club.AddVenue(
+                        "buehnenhaus",
+                        "Bühnenhaus",
+                        street: "Bahnhofstraße 12",
+                        zip: "47533",
+                        city: "Kleve",
+                        hint: "Eingang über den Hof"
+                    )
+                ),
+            ct
+        );
+
+        await ctx
+            .Expected.Venue(ctx.Club.Venues.IdOf("buehnenhaus"))
+            .ToHaveAddress("Bahnhofstraße 12", "47533", "Kleve")
+            .Venue(ctx.Club.Venues.IdOf("buehnenhaus"))
+            .ToHaveHint("Eingang über den Hof")
+            .Venue(ctx.Club.Venues.IdOf("buehnenhaus"))
+            .ToBeArchivedOn(null)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_KeepTheOrt_When_ItIsArchived()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Club(club =>
+                    club.AddVenue("alte-turnhalle", "Alte Turnhalle", archivedOn: ArchivedOn)
+                ),
+            ct
+        );
+
+        await ctx
+            .Expected.Venue(ctx.Club.Venues.IdOf("alte-turnhalle"))
+            .ToBeArchivedOn(ArchivedOn)
+            .Venue(ctx.Club.Venues.IdOf("alte-turnhalle"))
+            .ToHaveName("Alte Turnhalle")
             .AssertAsync(ct);
     }
 

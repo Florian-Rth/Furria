@@ -11,6 +11,17 @@ public sealed class PermissionAuthorizer
     private const string SecondAccountMessage =
         "PermissionAuthorizer answers for one Account per scope; ask about a second Account through its own scope.";
 
+    private static readonly IReadOnlyList<string> PersonSearchKeys =
+    [
+        FurriaPermissions.PersonsManage,
+        FurriaPermissions.GroupsManage,
+        FurriaPermissions.RolesManage,
+        FurriaPermissions.ClubManage,
+        FurriaPermissions.KeyHoldingsManage,
+        FurriaPermissions.BoardManage,
+        FurriaPermissions.CalendarManageClub,
+    ];
+
     private readonly AppDbContext _dbContext;
     private readonly TimeProvider _timeProvider;
     private readonly Dictionary<int, GroupTies> _groupTiesCache = [];
@@ -36,6 +47,18 @@ public sealed class PermissionAuthorizer
     {
         BindTo(accountId);
         return (await GrantedKeysAsync(accountId, ct)).Contains(permissionKey);
+    }
+
+    public async Task<bool> IsGrantedAnyAsync(
+        int accountId,
+        IReadOnlyList<string> permissionKeys,
+        CancellationToken ct
+    )
+    {
+        BindTo(accountId);
+        var granted = await GrantedKeysAsync(accountId, ct);
+
+        return permissionKeys.Any(key => granted.Contains(key));
     }
 
     public async Task<IReadOnlyCollection<string>> GrantedKeysAsync(
@@ -154,10 +177,7 @@ public sealed class PermissionAuthorizer
         if (_canSearchPersons is not null)
             return _canSearchPersons.Value;
 
-        var managesAnything =
-            await IsGrantedAsync(accountId, FurriaPermissions.PersonsManage, ct)
-            || await IsGrantedAsync(accountId, FurriaPermissions.GroupsManage, ct)
-            || await IsGrantedAsync(accountId, FurriaPermissions.RolesManage, ct);
+        var managesAnything = await IsGrantedAnyAsync(accountId, PersonSearchKeys, ct);
 
         return (
             _canSearchPersons = managesAnything || await AdministersAnyGroupAsync(accountId, ct)

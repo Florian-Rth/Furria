@@ -354,21 +354,21 @@ export const isSelfLockout = ({
   );
 };
 
-export interface KeyHandoverInput {
+export interface PermissionHandoverInput {
   key: PermissionKey;
   enabled: boolean;
 }
 
-export const isKeyHandover = ({ key, enabled }: KeyHandoverInput): boolean =>
+export const isPermissionHandover = ({ key, enabled }: PermissionHandoverInput): boolean =>
   enabled && key === PERMISSION_KEYS.rolesManage;
 
-export const KEY_HANDOVER_EYEBROW = 'Recht vergeben';
-export const KEY_HANDOVER_CONFIRM_LABEL = 'Recht vergeben';
+export const PERMISSION_HANDOVER_EYEBROW = 'Recht vergeben';
+export const PERMISSION_HANDOVER_CONFIRM_LABEL = 'Recht vergeben';
 
-export const toKeyHandoverQuestion = (roleName: string): string =>
+export const toPermissionHandoverQuestion = (roleName: string): string =>
   `Rollen und Rechte an ${roleName} vergeben?`;
 
-export const toKeyHandoverFacts = (
+export const toPermissionHandoverFacts = (
   roleName: string,
   holders: readonly { firstName: string; lastName: string }[],
 ): KkConfirmFact[] => [

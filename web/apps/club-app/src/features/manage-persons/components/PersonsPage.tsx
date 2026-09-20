@@ -2,7 +2,7 @@ import type { KkScreenAction, KkScreenIndex } from '@furria/ui';
 import { KkScreen, KkSkeletonToolbar, KkTitleHeader } from '@furria/ui';
 import type { FC } from 'react';
 import {
-  MORE_ORIGIN,
+  MANAGE_ORIGIN,
   RequirePermission,
   usePermissions,
   useScreenSearch,
@@ -74,7 +74,7 @@ export const PersonsPage: FC = () => {
       tools={canManage ? toolRow : undefined}
       index={index}
       title={PERSONS_TITLE}
-      origin={MORE_ORIGIN}
+      origin={MANAGE_ORIGIN}
       header={<KkTitleHeader title={PERSONS_TITLE} lead={lead} />}
     >
       <RequirePermission permissionKey={PERMISSION_KEYS.personsManage}>

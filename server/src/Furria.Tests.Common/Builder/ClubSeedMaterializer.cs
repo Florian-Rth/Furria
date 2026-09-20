@@ -76,7 +76,7 @@ internal static class ClubSeedMaterializer
                 StartYear = intent.StartYear,
                 Number = intent.Number,
                 Motto = intent.Motto,
-                SignetSvg = intent.SignetSvg,
+                LogoSvg = intent.LogoSvg,
             },
             StringComparer.Ordinal
         );
@@ -135,7 +135,16 @@ internal static class ClubSeedMaterializer
     {
         var venues = recorded.Venues.ToDictionary(
             intent => intent.Alias,
-            intent => new Venue { Name = intent.Name, SortOrder = intent.SortOrder },
+            intent => new Venue
+            {
+                Name = intent.Name,
+                Street = intent.Street,
+                Zip = intent.Zip,
+                City = intent.City,
+                Hint = intent.Hint,
+                SortOrder = intent.SortOrder,
+                ArchivedOn = intent.ArchivedOn,
+            },
             StringComparer.Ordinal
         );
 
@@ -198,6 +207,7 @@ internal static class ClubSeedMaterializer
             {
                 Name = intent.Name,
                 SortOrder = intent.SortOrder,
+                ArchivedOn = intent.ArchivedOn,
                 ImpliedRoleId = intent.ImpliedRoleAlias is { } roleAlias
                     ? SeedAliases.RequireId(roleIds, roleAlias, "Rolle")
                     : null,

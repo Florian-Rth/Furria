@@ -47,7 +47,7 @@ public sealed class GetClubHub : EndpointWithoutRequest<GetClubHubResponse>
             Label = session.Label,
             Number = session.Number,
             Motto = session.Motto,
-            SignetSvg = session.SignetSvg,
+            LogoSvg = session.LogoSvg,
         };
 
     private static ClubStatsDto ToDto(ClubHubStats stats) =>
@@ -144,7 +144,7 @@ public sealed record ClubSessionDto
 
     public required string? Motto { get; init; }
 
-    public required string? SignetSvg { get; init; }
+    public required string? LogoSvg { get; init; }
 }
 
 public sealed record ClubStatsDto

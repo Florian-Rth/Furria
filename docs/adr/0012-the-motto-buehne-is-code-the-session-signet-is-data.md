@@ -85,3 +85,14 @@ there is nothing to show in the Zwischenzeit before the Motto is known.
 
 **This is reversible.** Once the club names a Sommerfest date, the boundary becomes a date like
 the other two and this amendment is withdrawn.
+
+## Terminology note 2026-09-20 — the Session-Signet is now the **Sessionslogo**
+
+Renamed while shaping CA-P5. *Signet* is a design word nobody outside design knows; the
+`Sessions-` prefix already keeps it clear of the club's own Logo, which is all the old name was
+protecting. The decision above is unchanged — the Motto-Bühne is code, the **Sessionslogo** is
+data — and this ADR keeps its filename so the documents linking here still resolve.
+
+Renamed with it: `Session.SignetSvg` → `Session.LogoSvg`, `signetSourceOf` → `logoSourceOf`,
+`KkMottoStageSignet` → `KkMottoStageLogo`. The record the Logo hangs on is a **Sessionseintrag**;
+see `CONTEXT.md`.

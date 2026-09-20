@@ -20,6 +20,7 @@ public sealed class GetClubHubVenuesTests
         TimeSpan.Zero
     );
 
+    private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
     private static readonly DateOnly HeldSince2024 = new(2024, 3, 1);
     private static readonly DateOnly HeldSince2026 = new(2026, 5, 1);
@@ -277,6 +278,35 @@ public sealed class GetClubHubVenuesTests
                 Assert.Equal(HeldSince2024, north.SinceOn);
                 Assert.Equal(ctx.Identity.People.IdOf("chris"), south.Person.PersonId);
                 Assert.Equal(HeldSince2026, south.SinceOn);
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_LeaveOutAnOrt_When_ErArchiviertIst()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            InsideTheSession,
+            async () =>
+            {
+                var ctx = await ArrangeAsync(
+                    identity => identity.AddPerson("bea", "Bea", "Kessler"),
+                    club =>
+                        club.AddVenue("halle", "Turnhalle", 1)
+                            .AddVenue("altes-lager", "Altes Lager", 2, archivedOn: ArchivedIn2021)
+                            .AddKeyHolding("bea-lager", "altes-lager", "bea", HeldSince2024),
+                    ct
+                );
+
+                var result = await ReadAsync(ctx, ct);
+
+                Assert.Equal(["Turnhalle"], result.Venues.Select(venue => venue.Name));
+                await ctx
+                    .Expected.KeyHolding(ctx.Club.KeyHoldings.IdOf("bea-lager"))
+                    .ToHaveUntilOn(null)
+                    .AssertAsync(ct);
             }
         );
     }

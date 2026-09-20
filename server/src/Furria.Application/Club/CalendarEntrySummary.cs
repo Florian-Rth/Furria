@@ -14,6 +14,8 @@ public sealed record CalendarEntrySummary
 
     public required CalendarEntryKind Kind { get; init; }
 
+    public required int? VenueId { get; init; }
+
     public required string? VenueName { get; init; }
 
     public required int? OwnerGroupId { get; init; }

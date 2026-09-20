@@ -2,6 +2,7 @@ using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Groups;
 using Furria.Infrastructure.Identity;
+using Furria.Infrastructure.Management;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Registry;
 using Furria.Infrastructure.Roles;
@@ -59,8 +60,13 @@ public static class ServiceCollectionExtensions
         services.AddScoped<RoleService>();
         services.AddScoped<RunningBoardSeats>();
         services.AddScoped<ClubService>();
+        services.AddScoped<SessionRecordService>();
+        services.AddScoped<VenueService>();
+        services.AddScoped<BoardService>();
+        services.AddScoped<KeyHoldingService>();
         services.AddScoped<AnnouncementService>();
         services.AddScoped<CalendarService>();
+        services.AddScoped<ManagementService>();
 
         services.AddHostedService<DatabaseMigrator>();
         services.AddHostedService<BootstrapAdminSeeder>();
