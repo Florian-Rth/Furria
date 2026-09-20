@@ -37,10 +37,22 @@ export const CALENDAR_KIND_LABELS: Record<CalendarEntryKind, string> = {
   other: 'Sonstiges',
 };
 
-export const CALENDAR_VISIBILITY_LABELS: Record<CalendarEntryVisibility, string> = {
-  group: 'Gruppe',
-  club: 'Verein',
-  public: 'Öffentlich',
+const CLUB_OWNER_LABEL = 'Verein';
+const CLUB_REACH_LABEL = 'für alle im Verein';
+const PUBLIC_REACH_LABEL = 'öffentlich';
+
+const toReachLabel = (
+  visibility: CalendarEntryVisibility,
+  ownerGroupName: string | null,
+): string | null => {
+  if (visibility === 'public') {
+    return PUBLIC_REACH_LABEL;
+  }
+  if (visibility === 'club' && ownerGroupName !== null) {
+    return CLUB_REACH_LABEL;
+  }
+
+  return null;
 };
 
 const ATTENDANCE_LABELS: Record<AttendanceAnswer, string> = {
@@ -90,10 +102,13 @@ export const toEntryMetaLine = (entry: CalendarEntry): string => {
   if (entry.venueName !== null) {
     parts.push(entry.venueName);
   }
-  if (entry.ownerGroupName !== null) {
-    parts.push(entry.ownerGroupName);
+  parts.push(entry.ownerGroupName ?? CLUB_OWNER_LABEL);
+
+  const reachLabel = toReachLabel(entry.visibility, entry.ownerGroupName);
+
+  if (reachLabel !== null) {
+    parts.push(reachLabel);
   }
-  parts.push(CALENDAR_VISIBILITY_LABELS[entry.visibility]);
 
   return parts.join(META_SEPARATOR);
 };

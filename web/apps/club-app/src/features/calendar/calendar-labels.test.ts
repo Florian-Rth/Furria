@@ -66,7 +66,7 @@ describe('toEntryMetaLine', () => {
     );
   });
 
-  it('appends the owning group and the visibility last', () => {
+  it('names the owning group instead of the club and says nothing about a group-only reach', () => {
     expect(
       toEntryMetaLine(
         entry({
@@ -78,7 +78,28 @@ describe('toEntryMetaLine', () => {
           visibility: 'group',
         }),
       ),
-    ).toBe('19:00 – 23:00 Uhr · Probe · Probenraum · Garde · Gruppe');
+    ).toBe('19:00 – 23:00 Uhr · Probe · Probenraum · Garde');
+  });
+
+  it('spells out the reach when a group entry is open to the whole club', () => {
+    expect(
+      toEntryMetaLine(entry({ ownerGroupId: 3, ownerGroupName: 'Garde', visibility: 'club' })),
+    ).toBe('ab 19:00 Uhr · Auftritt · Garde · für alle im Verein');
+  });
+
+  it.each([
+    [null, 'ab 19:00 Uhr · Auftritt · Verein · öffentlich'],
+    ['Garde', 'ab 19:00 Uhr · Auftritt · Garde · öffentlich'],
+  ])('marks a public entry owned by %s', (ownerGroupName, expected) => {
+    expect(
+      toEntryMetaLine(
+        entry({
+          ownerGroupId: ownerGroupName === null ? null : 3,
+          ownerGroupName,
+          visibility: 'public',
+        }),
+      ),
+    ).toBe(expected);
   });
 });
 
