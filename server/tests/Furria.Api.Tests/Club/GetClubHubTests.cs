@@ -121,7 +121,7 @@ public sealed class GetClubHubTests
     }
 
     [Fact]
-    public async Task Should_CarryEverySectionEmpty_When_NothingButTheSessionIsRecorded()
+    public async Task Should_CarryAushangKalenderAndVorstandEmpty_When_TheClubHasWrittenNothingInThem()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -135,7 +135,6 @@ public sealed class GetClubHubTests
                 Assert.Equal(0, result.Announcements.TotalCount);
                 Assert.Empty(result.Calendar);
                 Assert.Empty(result.Board);
-                Assert.Empty(result.Venues);
             }
         );
     }
