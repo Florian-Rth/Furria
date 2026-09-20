@@ -42,6 +42,8 @@ export { KkLetterIndex } from './KkLetterIndex';
 export type { KkMetaTone } from './KkMeta';
 export { KkMeta } from './KkMeta';
 export { KkModalFrame } from './KkModalFrame/KkModalFrame';
+export type { KkMottoStageState } from './KkMottoStage/internal/motto-stage-state';
+export { KkMottoStage } from './KkMottoStage/KkMottoStage';
 export { KkNote } from './KkNote';
 export type {
   KkNoticeAction,
