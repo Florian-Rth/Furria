@@ -14,3 +14,4 @@ export type {
   ClubStats,
   ClubVenue,
 } from './schemas';
+export { CalendarEntryKindSchema } from './schemas';
