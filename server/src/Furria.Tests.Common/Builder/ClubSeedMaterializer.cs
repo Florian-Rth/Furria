@@ -5,6 +5,16 @@ namespace Furria.Tests.Common.Builder;
 
 internal static class ClubSeedMaterializer
 {
+    private static readonly DateTimeOffset DefaultPublishedAt = new(
+        2020,
+        11,
+        11,
+        11,
+        11,
+        0,
+        TimeSpan.Zero
+    );
+
     private static readonly IReadOnlyDictionary<string, int> NothingSeeded = new Dictionary<
         string,
         int
@@ -23,11 +33,12 @@ internal static class ClubSeedMaterializer
 
         var sessions = await InsertSessionsAsync(dbContext, recorded, ct);
         var venues = await InsertVenuesAsync(dbContext, recorded, ct);
+        var announcements = await InsertAnnouncementsAsync(dbContext, recorded, personIds, ct);
 
         return new SeededClub(
             sessions,
             venues,
-            NothingSeeded,
+            announcements,
             NothingSeeded,
             NothingSeeded,
             NothingSeeded,
@@ -38,11 +49,6 @@ internal static class ClubSeedMaterializer
 
     private static void RejectWhatNoTableCanHoldYet(ClubSeedBuilder recorded)
     {
-        RejectIfRecorded(
-            recorded.Announcements,
-            nameof(ClubSeedBuilder.AddAnnouncement),
-            "CA-P4 D2 (Aushang)"
-        );
         RejectIfRecorded(
             recorded.KeyHoldings,
             nameof(ClubSeedBuilder.AddKeyHolding),
@@ -112,6 +118,39 @@ internal static class ClubSeedMaterializer
         }
 
         return sessions.ToDictionary(
+            entry => entry.Key,
+            entry => entry.Value.Id,
+            StringComparer.Ordinal
+        );
+    }
+
+    private static async Task<Dictionary<string, int>> InsertAnnouncementsAsync(
+        AppDbContext dbContext,
+        ClubSeedBuilder recorded,
+        IReadOnlyDictionary<string, int> personIds,
+        CancellationToken ct
+    )
+    {
+        var announcements = recorded.Announcements.ToDictionary(
+            intent => intent.Alias,
+            intent => new Announcement
+            {
+                AuthorPersonId = personIds[intent.AuthorPersonAlias],
+                Title = intent.Title,
+                Body = intent.Body,
+                PublishedAt = intent.PublishedAt ?? DefaultPublishedAt,
+                ValidUntil = intent.ValidUntil,
+            },
+            StringComparer.Ordinal
+        );
+
+        if (announcements.Count > 0)
+        {
+            dbContext.Announcements.AddRange(announcements.Values);
+            await dbContext.SaveChangesAsync(ct);
+        }
+
+        return announcements.ToDictionary(
             entry => entry.Key,
             entry => entry.Value.Id,
             StringComparer.Ordinal

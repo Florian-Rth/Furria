@@ -9,5 +9,7 @@ public sealed class Account : IdentityUser<int>
 
     public bool IsDisabled { get; set; }
 
+    public DateTimeOffset? LastSeenAnnouncementAt { get; set; }
+
     public Person? Person { get; set; }
 }
