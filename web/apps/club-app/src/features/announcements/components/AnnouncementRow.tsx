@@ -1,12 +1,7 @@
-import { KkButton, KkChip, KkHeading, KkIcon, KkMeta, KkPanel, KkPhoto, KkText } from '@furria/ui';
-import Box from '@mui/material/Box';
+import { KkButton, KkChip, KkHeading, KkIcon, KkMeta, KkPanel, KkText } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import {
-  ANNOUNCEMENT_NEW_LABEL,
-  ANNOUNCEMENT_PORTRAIT_LABEL,
-  formatPublishedDay,
-} from '@/lib/announcements';
+import { ANNOUNCEMENT_NEW_LABEL } from '@/lib/announcements';
 import {
   ANNOUNCEMENT_EXPIRED_LABEL,
   EDIT_ANNOUNCEMENT_LABEL,
@@ -14,8 +9,7 @@ import {
   WITHDRAW_ANNOUNCEMENT_LABEL,
 } from '../announcements-labels';
 import type { Announcement } from '../schemas';
-
-const PORTRAIT_SPACING = 9;
+import { AnnouncementAuthorLine } from './AnnouncementAuthorLine';
 
 interface AnnouncementRowProps {
   announcement: Announcement;
@@ -32,16 +26,12 @@ export const AnnouncementRow: FC<AnnouncementRowProps> = ({
   onEdit,
   onWithdraw,
 }) => {
-  const { author } = announcement;
-  const authorName = `${author.firstName} ${author.lastName}`;
   const validUntilLabel = toValidUntilLabel(announcement.validUntil);
 
   const newChip = isNew ? <KkChip tone="gold">{ANNOUNCEMENT_NEW_LABEL}</KkChip> : null;
   const expiredChip = isExpired ? (
     <KkChip tone="neutral">{ANNOUNCEMENT_EXPIRED_LABEL}</KkChip>
   ) : null;
-  const officeLine =
-    author.officeName === null ? null : <KkMeta tone="accent">{author.officeName}</KkMeta>;
   const validUntilLine =
     validUntilLabel === null ? null : <KkMeta tone="faint">{validUntilLabel}</KkMeta>;
 
@@ -79,22 +69,9 @@ export const AnnouncementRow: FC<AnnouncementRowProps> = ({
         <KkText variant="body2" sx={{ whiteSpace: 'pre-line' }}>
           {announcement.body}
         </KkText>
-        <Stack direction="row" sx={{ gap: 1.5, alignItems: 'center', minWidth: 0 }}>
-          <Box sx={(theme) => ({ width: theme.spacing(PORTRAIT_SPACING), flexShrink: 0 })}>
-            <KkPhoto
-              alt={authorName}
-              orientation="portrait"
-              placeholderLabel={ANNOUNCEMENT_PORTRAIT_LABEL}
-              source={author.portraitUrl ?? undefined}
-            />
-          </Box>
-          <Stack sx={{ gap: 0.25, minWidth: 0 }}>
-            <KkText variant="subtitle2">{authorName}</KkText>
-            {officeLine}
-            <KkMeta>{formatPublishedDay(announcement.publishedAt)}</KkMeta>
-            {validUntilLine}
-          </Stack>
-        </Stack>
+        <AnnouncementAuthorLine author={announcement.author} publishedAt={announcement.publishedAt}>
+          {validUntilLine}
+        </AnnouncementAuthorLine>
         {actions}
       </Stack>
     </KkPanel>

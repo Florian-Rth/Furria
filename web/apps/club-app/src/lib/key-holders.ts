@@ -1,5 +1,5 @@
+import { formatIsoDay } from '@/lib/membership-labels';
 import { toInitials } from './initials';
-import { formatIsoDay } from './membership-labels';
 
 export const KEY_HOLDER_SINCE_LABEL = 'Inhaber seit';
 

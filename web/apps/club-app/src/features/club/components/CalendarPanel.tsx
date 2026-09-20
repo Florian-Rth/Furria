@@ -2,7 +2,6 @@ import { KkButton, KkPanel, KkPanelSection } from '@furria/ui';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { CALENDAR_PATH } from '@/features/session';
-import { sortRunningFirst } from '@/lib/calendar-days';
 import { useClubHubQuery } from '../api';
 import { CalendarRow } from './CalendarRow';
 
@@ -17,9 +16,7 @@ export const CalendarPanel: FC = () => {
     return null;
   }
 
-  const rows = sortRunningFirst(entries).map((entry) => (
-    <CalendarRow key={entry.calendarEntryId} entry={entry} />
-  ));
+  const rows = entries.map((entry) => <CalendarRow key={entry.calendarEntryId} entry={entry} />);
 
   const action = (
     <KkButton variant="text" size="small" component={Link} to={CALENDAR_PATH}>
