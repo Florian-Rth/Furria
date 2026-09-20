@@ -58,6 +58,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<GroupService>();
         services.AddScoped<RoleService>();
         services.AddScoped<ClubService>();
+        services.AddScoped<AnnouncementService>();
 
         services.AddHostedService<DatabaseMigrator>();
         services.AddHostedService<BootstrapAdminSeeder>();
