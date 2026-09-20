@@ -61,3 +61,27 @@ fit it gets a deploy anyway — at which point the parameter space is dead weigh
   never edits a Bühne, and no UI pretends otherwise.
 - `SvgSanitizer` remains correct and necessary — it guards the Signet, which is club-uploaded. It
   was never going to guard the Bühne, which is source.
+
+## Amendment, 2026-09-20 — Teaser and Ruhe are told apart by data
+
+Shaping CA-P4 found the one state boundary the dates cannot carry. *Läuft* is bounded by two
+dates the club already computes — 11.11. um 11:11 and the day after Aschermittwoch. *Teaser* and
+*Ruhe* are separated by the **Motto-Verkündung at the Sommerfest**, and the Sommerfest has no
+date anywhere in this system: not in the schema, not in a setting, not in a constant.
+
+So the boundary is drawn on the fact the Verkündung produces rather than on the day it happens:
+
+**Outside the running Session, the opener is *Teaser* when the coming Session has a Motto
+recorded, and *Ruhe* when it does not.** Recording the Motto *is* the Verkündung, as far as the
+app can tell, and the club records it when it is public.
+
+This amends the consequence above: the opener's states are date-derived **except** for the
+Teaser/Ruhe boundary, which reads one datum — `Session.Motto` for the relevant start year. The
+Motto was already data in both worlds, so nothing new is stored and no state flag is introduced.
+
+*Ruhe* therefore shows the still glow, the Session label and the countdown to the next 11.11.,
+and **no scene** — a scene is written for one Session and sealed until that Session opens, so
+there is nothing to show in the Zwischenzeit before the Motto is known.
+
+**This is reversible.** Once the club names a Sommerfest date, the boundary becomes a date like
+the other two and this amendment is withdrawn.
