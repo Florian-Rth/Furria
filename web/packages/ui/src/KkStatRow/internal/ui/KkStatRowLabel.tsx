@@ -1,9 +1,9 @@
-import type { SxProps, Theme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import type { FC, PropsWithChildren } from 'react';
+import type { KkSx } from '../../../kk-sx';
 
 interface KkStatRowLabelProps extends PropsWithChildren {
-  sx?: SxProps<Theme>;
+  sx?: KkSx;
 }
 
 export const KkStatRowLabel: FC<KkStatRowLabelProps> = ({ sx, children }) => (
