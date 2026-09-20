@@ -34,12 +34,13 @@ internal static class ClubSeedMaterializer
         var sessions = await InsertSessionsAsync(dbContext, recorded, ct);
         var venues = await InsertVenuesAsync(dbContext, recorded, ct);
         var announcements = await InsertAnnouncementsAsync(dbContext, recorded, personIds, ct);
+        var keyHoldings = await InsertKeyHoldingsAsync(dbContext, recorded, venues, personIds, ct);
 
         return new SeededClub(
             sessions,
             venues,
             announcements,
-            NothingSeeded,
+            keyHoldings,
             NothingSeeded,
             NothingSeeded,
             NothingSeeded,
@@ -49,11 +50,6 @@ internal static class ClubSeedMaterializer
 
     private static void RejectWhatNoTableCanHoldYet(ClubSeedBuilder recorded)
     {
-        RejectIfRecorded(
-            recorded.KeyHoldings,
-            nameof(ClubSeedBuilder.AddKeyHolding),
-            "CA-P4 D3 (Schlüssel)"
-        );
         RejectIfRecorded(
             recorded.BoardOffices,
             nameof(ClubSeedBuilder.AddBoardOffice),
@@ -176,6 +172,39 @@ internal static class ClubSeedMaterializer
         }
 
         return venues.ToDictionary(
+            entry => entry.Key,
+            entry => entry.Value.Id,
+            StringComparer.Ordinal
+        );
+    }
+
+    private static async Task<Dictionary<string, int>> InsertKeyHoldingsAsync(
+        AppDbContext dbContext,
+        ClubSeedBuilder recorded,
+        IReadOnlyDictionary<string, int> venueIds,
+        IReadOnlyDictionary<string, int> personIds,
+        CancellationToken ct
+    )
+    {
+        var keyHoldings = recorded.KeyHoldings.ToDictionary(
+            intent => intent.Alias,
+            intent => new KeyHolding
+            {
+                VenueId = venueIds[intent.VenueAlias],
+                PersonId = personIds[intent.PersonAlias],
+                SinceOn = intent.SinceOn,
+                UntilOn = intent.UntilOn,
+            },
+            StringComparer.Ordinal
+        );
+
+        if (keyHoldings.Count > 0)
+        {
+            dbContext.KeyHoldings.AddRange(keyHoldings.Values);
+            await dbContext.SaveChangesAsync(ct);
+        }
+
+        return keyHoldings.ToDictionary(
             entry => entry.Key,
             entry => entry.Value.Id,
             StringComparer.Ordinal

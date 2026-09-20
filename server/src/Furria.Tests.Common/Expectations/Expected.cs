@@ -56,6 +56,8 @@ public sealed class Expected
 
     public AnnouncementExpectations Announcement(int announcementId) => new(this, announcementId);
 
+    public KeyHoldingExpectations KeyHolding(int keyHoldingId) => new(this, keyHoldingId);
+
     public async Task AssertAsync(CancellationToken ct = default)
     {
         var pending = _reads.ToList();
