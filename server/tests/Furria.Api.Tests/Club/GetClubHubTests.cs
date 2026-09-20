@@ -10,7 +10,7 @@ namespace Furria.Api.Tests.Club;
 [Collection("Api")]
 public sealed class GetClubHubTests
 {
-    private const string SeededMotto = "FURRIA — Der Mittelpunkt des Universums";
+    private const string RecordedMotto = "FURRIA — Der Mittelpunkt des Universums";
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
     private static readonly DateOnly JoinedInDecember2026 = new(2026, 12, 1);
@@ -90,10 +90,13 @@ public sealed class GetClubHubTests
             InsideTheSession,
             async () =>
             {
-                var result = await ReadTheHubAsMemberAsync(ct);
+                var result = await ReadTheHubAsMemberAsync(
+                    club => club.AddSession("laufende", 2026, motto: RecordedMotto),
+                    ct
+                );
 
                 Assert.Equal(2026, result.Session.StartYear);
-                Assert.Equal(SeededMotto, result.Session.Motto);
+                Assert.Equal(RecordedMotto, result.Session.Motto);
                 Assert.Null(result.Session.Number);
                 Assert.Null(result.Session.SignetSvg);
             }
@@ -109,7 +112,10 @@ public sealed class GetClubHubTests
             InAnUnrecordedSession,
             async () =>
             {
-                var result = await ReadTheHubAsMemberAsync(ct);
+                var result = await ReadTheHubAsMemberAsync(
+                    club => club.AddSession("vorletzte", 2026, motto: RecordedMotto),
+                    ct
+                );
 
                 Assert.Equal(2027, result.Session.StartYear);
                 Assert.Equal("2027/28", result.Session.Label);
@@ -129,12 +135,42 @@ public sealed class GetClubHubTests
             InsideTheSession,
             async () =>
             {
-                var result = await ReadTheHubAsMemberAsync(ct);
+                var result = await ReadTheHubAsMemberAsync(
+                    club => club.AddSession("laufende", 2026, motto: RecordedMotto),
+                    ct
+                );
 
                 Assert.Empty(result.Announcements.Newest);
                 Assert.Equal(0, result.Announcements.TotalCount);
                 Assert.Empty(result.Calendar);
                 Assert.Empty(result.Board);
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_NameTheSeasonAndElideEverythingElse_When_TheClubHasRecordedNoStammdatenAtAll()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            InsideTheSession,
+            async () =>
+            {
+                var result = await ReadTheHubAsMemberAsync(ct);
+
+                Assert.Equal(2026, result.Session.StartYear);
+                Assert.Equal("2026/27", result.Session.Label);
+                Assert.Null(result.Session.Number);
+                Assert.Null(result.Session.Motto);
+                Assert.Null(result.Session.SignetSvg);
+                Assert.Empty(result.Announcements.Newest);
+                Assert.Equal(0, result.Announcements.TotalCount);
+                Assert.Empty(result.Calendar);
+                Assert.Empty(result.Board);
+                Assert.Empty(result.Venues);
+                Assert.Equal(1, result.Stats.MemberCount);
+                Assert.Equal(0, result.Stats.GroupCount);
             }
         );
     }
@@ -217,16 +253,24 @@ public sealed class GetClubHubTests
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
-    private async Task<GetClubHubResponse> ReadTheHubAsMemberAsync(CancellationToken ct)
+    private Task<GetClubHubResponse> ReadTheHubAsMemberAsync(CancellationToken ct) =>
+        ReadTheHubAsMemberAsync(_ => { }, ct);
+
+    private async Task<GetClubHubResponse> ReadTheHubAsMemberAsync(
+        Action<ClubSeedBuilder> club,
+        CancellationToken ct
+    )
     {
         var ctx = await _fixture.BuildAsync(
             builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("alice", "Alice", "Muster")
-                        .AddAccount("alice")
-                        .AddMembership("alice-first", "alice", JoinedIn2017)
-                ),
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddPerson("alice", "Alice", "Muster")
+                            .AddAccount("alice")
+                            .AddMembership("alice-first", "alice", JoinedIn2017)
+                    )
+                    .Club(club),
             ct
         );
 

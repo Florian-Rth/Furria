@@ -74,36 +74,11 @@ namespace Furria.Infrastructure.Migrations
                 column: "name",
                 unique: true
             );
-
-            migrationBuilder.InsertData(
-                table: "session",
-                columns: new[] { "start_year", "motto" },
-                values: new object[] { 2026, "FURRIA — Der Mittelpunkt des Universums" }
-            );
-
-            migrationBuilder.InsertData(
-                table: "venue",
-                columns: new[] { "name", "sort_order" },
-                values: new object[,]
-                {
-                    { "Sporthalle", 1 },
-                    { "Vereinsraum", 2 },
-                    { "Lager", 3 },
-                }
-            );
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DeleteData(table: "session", keyColumn: "start_year", keyValue: 2026);
-
-            migrationBuilder.DeleteData(
-                table: "venue",
-                keyColumn: "name",
-                keyValues: new object[] { "Sporthalle", "Vereinsraum", "Lager" }
-            );
-
             migrationBuilder.DropTable(name: "venue");
 
             migrationBuilder.DropColumn(name: "portrait_is_public", table: "person");
