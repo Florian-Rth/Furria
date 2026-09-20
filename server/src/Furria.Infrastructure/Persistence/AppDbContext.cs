@@ -29,6 +29,8 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>
 
     public DbSet<GroupAdmin> GroupAdmins => Set<GroupAdmin>();
 
+    public DbSet<GroupTrainingSlot> GroupTrainingSlots => Set<GroupTrainingSlot>();
+
     public DbSet<Role> Roles => Set<Role>();
 
     public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
@@ -52,6 +54,8 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>
     public DbSet<CalendarEntry> CalendarEntries => Set<CalendarEntry>();
 
     public DbSet<AttendanceResponse> AttendanceResponses => Set<AttendanceResponse>();
+
+    public DbSet<CalendarEntryGroup> CalendarEntryGroups => Set<CalendarEntryGroup>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }

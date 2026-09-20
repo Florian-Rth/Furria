@@ -14,6 +14,10 @@ public sealed class Group : ITimestamped
 
     public int? GroupKindId { get; set; }
 
+    public int? FoundedYear { get; set; }
+
+    public GroupTone? Tone { get; set; }
+
     public DateOnly? ArchivedOn { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }
@@ -25,4 +29,6 @@ public sealed class Group : ITimestamped
     public ICollection<GroupAdmin> Admins { get; set; } = [];
 
     public GroupKind? GroupKind { get; set; }
+
+    public ICollection<GroupTrainingSlot> TrainingSlots { get; set; } = [];
 }

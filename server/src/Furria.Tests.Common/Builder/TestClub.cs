@@ -14,6 +14,8 @@ public sealed class TestClub
 
     public AliasRegistry<int> BoardSeats { get; }
 
+    public AliasRegistry<int> TrainingSlots { get; }
+
     public AliasRegistry<int> CalendarEntries { get; }
 
     public AliasRegistry<int> AttendanceResponses { get; }
@@ -26,6 +28,7 @@ public sealed class TestClub
         KeyHoldings = new AliasRegistry<int>("Schluessel", seeded.KeyHoldingIds);
         BoardOffices = new AliasRegistry<int>("Vorstandsfunktion", seeded.BoardOfficeIds);
         BoardSeats = new AliasRegistry<int>("Vorstandssitz", seeded.BoardSeatIds);
+        TrainingSlots = new AliasRegistry<int>("Trainingsslot", seeded.TrainingSlotIds);
         CalendarEntries = new AliasRegistry<int>("Kalendereintrag", seeded.CalendarEntryIds);
         AttendanceResponses = new AliasRegistry<int>("Zusage", seeded.AttendanceResponseIds);
     }

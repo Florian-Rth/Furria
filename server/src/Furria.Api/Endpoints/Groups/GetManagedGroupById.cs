@@ -43,6 +43,8 @@ public sealed class GetManagedGroupById
             Name = group.Name,
             Description = group.Description,
             IsRecruiting = group.IsRecruiting,
+            GroupKindId = group.GroupKindId,
+            GroupKindName = group.GroupKindName,
             ArchivedOn = group.ArchivedOn,
             Members = [.. group.Members.Select(ToDto)],
             Admins = [.. group.Admins.Select(ToDto)],
@@ -101,6 +103,10 @@ public sealed record GetManagedGroupByIdResponse
     public required string Description { get; init; }
 
     public required bool IsRecruiting { get; init; }
+
+    public required int? GroupKindId { get; init; }
+
+    public required string? GroupKindName { get; init; }
 
     public required DateOnly? ArchivedOn { get; init; }
 

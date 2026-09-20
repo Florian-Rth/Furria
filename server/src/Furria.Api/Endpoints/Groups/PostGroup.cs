@@ -41,6 +41,7 @@ public sealed class PostGroup : Endpoint<PostGroupRequest, PostGroupResponse>
             Name = req.Name,
             Description = req.Description,
             IsRecruiting = req.IsRecruiting,
+            GroupKindId = req.GroupKindId,
         };
 
     private static PostGroupResponse ToResponse(int groupId) => new() { GroupId = groupId };
@@ -53,6 +54,8 @@ public sealed record PostGroupRequest
     public required string Description { get; init; }
 
     public required bool IsRecruiting { get; init; }
+
+    public required int? GroupKindId { get; init; }
 }
 
 public sealed class PostGroupValidator : Validator<PostGroupRequest>
@@ -63,6 +66,9 @@ public sealed class PostGroupValidator : Validator<PostGroupRequest>
         RuleFor(request => request.Description)
             .NotNull()
             .MaximumLength(GroupLimits.DescriptionLength);
+        RuleFor(request => request.GroupKindId)
+            .GreaterThan(0)
+            .When(request => request.GroupKindId is not null);
     }
 }
 

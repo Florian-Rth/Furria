@@ -10,6 +10,10 @@ public sealed record ManagedGroupSummary
 
     public required bool IsRecruiting { get; init; }
 
+    public required int? GroupKindId { get; init; }
+
+    public required string? GroupKindName { get; init; }
+
     public required DateOnly? ArchivedOn { get; init; }
 
     public required int MemberCount { get; init; }

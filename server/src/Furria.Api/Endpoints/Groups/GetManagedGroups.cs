@@ -53,6 +53,8 @@ public sealed class GetManagedGroups : EndpointWithoutRequest<GetManagedGroupsRe
             Name = group.Name,
             Description = group.Description,
             IsRecruiting = group.IsRecruiting,
+            GroupKindId = group.GroupKindId,
+            GroupKindName = group.GroupKindName,
             ArchivedOn = group.ArchivedOn,
             MemberCount = group.MemberCount,
             Admins = [.. group.Admins.Select(ToDto)],
@@ -96,6 +98,10 @@ public sealed record ManagedGroupSummaryDto
     public required string Description { get; init; }
 
     public required bool IsRecruiting { get; init; }
+
+    public required int? GroupKindId { get; init; }
+
+    public required string? GroupKindName { get; init; }
 
     public required DateOnly? ArchivedOn { get; init; }
 

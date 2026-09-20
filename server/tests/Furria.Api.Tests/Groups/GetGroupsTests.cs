@@ -2,6 +2,7 @@ using System.Net;
 using System.Text.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Groups;
+using Furria.Core.Groups;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -11,6 +12,7 @@ namespace Furria.Api.Tests.Groups;
 public sealed class GetGroupsTests
 {
     private const string GroupsRoute = "/api/groups";
+    private const int FoundedIn1971 = 1971;
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
     private static readonly DateOnly LeftIn2020 = new(2020, 3, 1);
@@ -314,6 +316,50 @@ public sealed class GetGroupsTests
     }
 
     [Fact]
+    public async Task Should_CarryTheSteckbrief_When_TheGruppeNamedArtJahrUndFarbe()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddAccount("alice")
+                            .AddMembership("alice-first", "alice", JoinedIn2017)
+                    )
+                    .Groups(groups =>
+                        groups
+                            .AddGroupKind("garden", "Garden")
+                            .AddGroup(
+                                "tanzgarde",
+                                "Tanzgarde",
+                                groupKindAlias: "garden",
+                                foundedYear: FoundedIn1971,
+                                tone: GroupTone.Rose
+                            )
+                            .AddGroup("elferrat", "Elferrat")
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        var payload = await client.GetStringAsync(GroupsRoute, ct);
+
+        using var document = JsonDocument.Parse(payload);
+        var groups = document.RootElement.GetProperty("groups").EnumerateArray().ToList();
+        var tanzgarde = groups.Single(group =>
+            group.GetProperty("name").GetString() == "Tanzgarde"
+        );
+        var elferrat = groups.Single(group => group.GetProperty("name").GetString() == "Elferrat");
+        Assert.Equal("Garden", tanzgarde.GetProperty("groupKindName").GetString());
+        Assert.Equal(FoundedIn1971, tanzgarde.GetProperty("foundedYear").GetInt32());
+        Assert.Equal("rose", tanzgarde.GetProperty("tone").GetString());
+        Assert.Equal(JsonValueKind.Null, elferrat.GetProperty("groupKindName").ValueKind);
+        Assert.Equal(JsonValueKind.Null, elferrat.GetProperty("foundedYear").ValueKind);
+        Assert.Equal(JsonValueKind.Null, elferrat.GetProperty("tone").ValueKind);
+    }
+
+    [Fact]
     public async Task Should_CarryExactlyTheContractFields_When_TheListIsRead()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -350,6 +396,9 @@ public sealed class GetGroupsTests
                 "name",
                 "description",
                 "isRecruiting",
+                "groupKindName",
+                "foundedYear",
+                "tone",
                 "memberCount",
                 "memberPreview",
                 "admins",

@@ -159,7 +159,7 @@ public sealed class GetPublicGroupsTests
         using var document = JsonDocument.Parse(payload);
         var tanzgarde = document.RootElement.GetProperty("groups").EnumerateArray().Single();
         Assert.Equal(
-            ["groupId", "name", "description", "isRecruiting"],
+            ["groupId", "name", "description", "isRecruiting", "groupKindName", "tone"],
             tanzgarde.EnumerateObject().Select(field => field.Name)
         );
     }

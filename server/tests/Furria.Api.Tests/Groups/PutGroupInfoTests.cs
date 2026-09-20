@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Groups;
 using Furria.Application.Authorization;
+using Furria.Core.Groups;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -15,6 +16,9 @@ public sealed class PutGroupInfoTests
     private const string OldDescription = "Die Garde tanzt seit 1971.";
     private const string ConflictField = "conflict";
     private const int UnknownGroupId = 999_999;
+    private const int UnknownGroupKindId = 999_999;
+    private const int FoundedIn1971 = 1971;
+    private const string ValidationField = "request";
 
     private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
 
@@ -50,6 +54,9 @@ public sealed class PutGroupInfoTests
                 GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
                 Description = NewDescription,
                 IsRecruiting = true,
+                GroupKindId = null,
+                FoundedYear = null,
+                Tone = null,
             }
         );
 
@@ -89,6 +96,9 @@ public sealed class PutGroupInfoTests
                 GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
                 Description = "",
                 IsRecruiting = false,
+                GroupKindId = null,
+                FoundedYear = null,
+                Tone = null,
             }
         );
 
@@ -126,6 +136,9 @@ public sealed class PutGroupInfoTests
                 GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
                 Description = NewDescription,
                 IsRecruiting = true,
+                GroupKindId = null,
+                FoundedYear = null,
+                Tone = null,
             }
         );
 
@@ -162,6 +175,9 @@ public sealed class PutGroupInfoTests
                 GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
                 Description = NewDescription,
                 IsRecruiting = true,
+                GroupKindId = null,
+                FoundedYear = null,
+                Tone = null,
             }
         );
 
@@ -202,6 +218,9 @@ public sealed class PutGroupInfoTests
                 GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
                 Description = NewDescription,
                 IsRecruiting = true,
+                GroupKindId = null,
+                FoundedYear = null,
+                Tone = null,
             }
         );
 
@@ -241,6 +260,9 @@ public sealed class PutGroupInfoTests
                 GroupId = UnknownGroupId,
                 Description = NewDescription,
                 IsRecruiting = true,
+                GroupKindId = null,
+                FoundedYear = null,
+                Tone = null,
             }
         );
 
@@ -277,6 +299,9 @@ public sealed class PutGroupInfoTests
                 GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
                 Description = NewDescription,
                 IsRecruiting = true,
+                GroupKindId = null,
+                FoundedYear = null,
+                Tone = null,
             }
         );
 
@@ -317,6 +342,9 @@ public sealed class PutGroupInfoTests
                 GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
                 Description = new string('a', 401),
                 IsRecruiting = true,
+                GroupKindId = null,
+                FoundedYear = null,
+                Tone = null,
             }
         );
 
@@ -347,10 +375,225 @@ public sealed class PutGroupInfoTests
                     GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
                     Description = NewDescription,
                     IsRecruiting = true,
+                    GroupKindId = null,
+                    FoundedYear = null,
+                    Tone = null,
                 }
             );
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_WriteTheSteckbrief_When_TheGruppenAdminNamesArtJahrUndFarbe()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity.AddPerson("anna", "Anna", "Kaiser").AddAccount("anna")
+                    )
+                    .Groups(groups =>
+                        groups
+                            .AddGroupKind("garden", "Garden")
+                            .AddGroup("tanzgarde", "Tanzgarde", OldDescription)
+                            .AddGroupAdmin("anna-tanzgarde", "tanzgarde", "anna", "Trainerin")
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("anna", ct);
+        var response = await client.PUTAsync<PutGroupInfo, PutGroupInfoRequest>(
+            new()
+            {
+                GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
+                Description = NewDescription,
+                IsRecruiting = true,
+                GroupKindId = ctx.Groups.GroupKinds.IdOf("garden"),
+                FoundedYear = FoundedIn1971,
+                Tone = GroupTone.Rose,
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx
+            .Expected.Group(ctx.Groups.Groups.IdOf("tanzgarde"))
+            .ToHaveGroupKind(ctx.Groups.GroupKinds.IdOf("garden"))
+            .Group(ctx.Groups.Groups.IdOf("tanzgarde"))
+            .ToHaveFoundedYear(FoundedIn1971)
+            .Group(ctx.Groups.Groups.IdOf("tanzgarde"))
+            .ToHaveTone(GroupTone.Rose)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ClearTheSteckbrief_When_TheGruppenAdminUnsetsArtJahrUndFarbe()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity.AddPerson("anna", "Anna", "Kaiser").AddAccount("anna")
+                    )
+                    .Groups(groups =>
+                        groups
+                            .AddGroupKind("garden", "Garden")
+                            .AddGroup(
+                                "tanzgarde",
+                                "Tanzgarde",
+                                OldDescription,
+                                groupKindAlias: "garden",
+                                foundedYear: FoundedIn1971,
+                                tone: GroupTone.Teal
+                            )
+                            .AddGroupAdmin("anna-tanzgarde", "tanzgarde", "anna")
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("anna", ct);
+        var response = await client.PUTAsync<PutGroupInfo, PutGroupInfoRequest>(
+            new()
+            {
+                GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
+                Description = OldDescription,
+                IsRecruiting = false,
+                GroupKindId = null,
+                FoundedYear = null,
+                Tone = null,
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx
+            .Expected.Group(ctx.Groups.Groups.IdOf("tanzgarde"))
+            .ToHaveGroupKind(null)
+            .Group(ctx.Groups.Groups.IdOf("tanzgarde"))
+            .ToHaveFoundedYear(null)
+            .Group(ctx.Groups.Groups.IdOf("tanzgarde"))
+            .ToHaveTone(null)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ReturnNotFound_When_TheGruppenartIsUnknown()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity.AddPerson("anna", "Anna", "Kaiser").AddAccount("anna")
+                    )
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("tanzgarde", "Tanzgarde", OldDescription)
+                            .AddGroupAdmin("anna-tanzgarde", "tanzgarde", "anna")
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("anna", ct);
+        var response = await client.PUTAsync<PutGroupInfo, PutGroupInfoRequest>(
+            new()
+            {
+                GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
+                Description = NewDescription,
+                IsRecruiting = true,
+                GroupKindId = UnknownGroupKindId,
+                FoundedYear = null,
+                Tone = null,
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        await ctx
+            .Expected.Group(ctx.Groups.Groups.IdOf("tanzgarde"))
+            .ToHaveDescription(OldDescription)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseTheYear_When_TheGruendungLiesInTheFuture()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity.AddPerson("anna", "Anna", "Kaiser").AddAccount("anna")
+                    )
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("tanzgarde", "Tanzgarde", OldDescription)
+                            .AddGroupAdmin("anna-tanzgarde", "tanzgarde", "anna")
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("anna", ct);
+        var response = await client.PUTAsync<PutGroupInfo, PutGroupInfoRequest>(
+            new()
+            {
+                GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
+                Description = NewDescription,
+                IsRecruiting = true,
+                GroupKindId = null,
+                FoundedYear = _fixture.Today.Year + 1,
+                Tone = null,
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        var failures = await ReadFailuresAsync(response, ct);
+        Assert.Equal(
+            ["Eine Gruppe kann nicht in der Zukunft gegründet worden sein."],
+            failures[ValidationField]
+        );
+        await ctx
+            .Expected.Group(ctx.Groups.Groups.IdOf("tanzgarde"))
+            .ToHaveFoundedYear(null)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_When_TheGruendungsjahrIsBeforeTheColumnFloor()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity.AddPerson("anna", "Anna", "Kaiser").AddAccount("anna")
+                    )
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("tanzgarde", "Tanzgarde", OldDescription)
+                            .AddGroupAdmin("anna-tanzgarde", "tanzgarde", "anna")
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("anna", ct);
+        var response = await client.PUTAsync<PutGroupInfo, PutGroupInfoRequest>(
+            new()
+            {
+                GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
+                Description = NewDescription,
+                IsRecruiting = true,
+                GroupKindId = null,
+                FoundedYear = 1799,
+                Tone = null,
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await ctx
+            .Expected.Group(ctx.Groups.Groups.IdOf("tanzgarde"))
+            .ToHaveFoundedYear(null)
+            .AssertAsync(ct);
     }
 
     private static async Task<IDictionary<string, List<string>>> ReadFailuresAsync(

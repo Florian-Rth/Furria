@@ -40,6 +40,7 @@ public sealed class PostGroupTests
                 Name = "Musik & Kapelle",
                 Description = Description,
                 IsRecruiting = true,
+                GroupKindId = null,
             }
         );
 
@@ -72,6 +73,7 @@ public sealed class PostGroupTests
                 Name = "tanzgarde",
                 Description = Description,
                 IsRecruiting = false,
+                GroupKindId = null,
             }
         );
 
@@ -109,6 +111,7 @@ public sealed class PostGroupTests
                 Name = "Tanzgarde",
                 Description = Description,
                 IsRecruiting = true,
+                GroupKindId = null,
             }
         );
 
@@ -134,6 +137,7 @@ public sealed class PostGroupTests
                 Name = "",
                 Description = Description,
                 IsRecruiting = false,
+                GroupKindId = null,
             }
         );
 
@@ -153,6 +157,7 @@ public sealed class PostGroupTests
                 Name = new string('a', 81),
                 Description = Description,
                 IsRecruiting = false,
+                GroupKindId = null,
             }
         );
 
@@ -172,6 +177,7 @@ public sealed class PostGroupTests
                 Name = "Technik & Bühne",
                 Description = new string('a', 401),
                 IsRecruiting = false,
+                GroupKindId = null,
             }
         );
 
@@ -207,6 +213,7 @@ public sealed class PostGroupTests
                 Name = "Technik & Bühne",
                 Description = Description,
                 IsRecruiting = false,
+                GroupKindId = null,
             }
         );
 
@@ -227,6 +234,7 @@ public sealed class PostGroupTests
                     Name = "Technik & Bühne",
                     Description = Description,
                     IsRecruiting = false,
+                    GroupKindId = null,
                 }
             );
 

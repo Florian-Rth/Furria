@@ -1,4 +1,5 @@
 using Furria.Core.Club;
+using Furria.Core.Groups;
 using Furria.Infrastructure.Persistence;
 
 namespace Furria.Tests.Common.Builder;
@@ -26,6 +27,13 @@ internal static class ClubSeedMaterializer
     {
         var sessions = await InsertSessionsAsync(dbContext, recorded, ct);
         var venues = await InsertVenuesAsync(dbContext, recorded, ct);
+        var trainingSlots = await InsertTrainingSlotsAsync(
+            dbContext,
+            recorded,
+            groupIds,
+            venues,
+            ct
+        );
         var announcements = await InsertAnnouncementsAsync(dbContext, recorded, personIds, ct);
         var keyHoldings = await InsertKeyHoldingsAsync(dbContext, recorded, venues, personIds, ct);
         var boardOffices = await InsertBoardOfficesAsync(dbContext, recorded, roleIds, ct);
@@ -58,6 +66,7 @@ internal static class ClubSeedMaterializer
             keyHoldings,
             boardOffices,
             boardSeats,
+            trainingSlots,
             calendarEntries,
             attendanceResponses
         );
@@ -155,6 +164,42 @@ internal static class ClubSeedMaterializer
         }
 
         return venues.ToDictionary(
+            entry => entry.Key,
+            entry => entry.Value.Id,
+            StringComparer.Ordinal
+        );
+    }
+
+    private static async Task<Dictionary<string, int>> InsertTrainingSlotsAsync(
+        AppDbContext dbContext,
+        ClubSeedBuilder recorded,
+        IReadOnlyDictionary<string, int> groupIds,
+        IReadOnlyDictionary<string, int> venueIds,
+        CancellationToken ct
+    )
+    {
+        var slots = recorded.TrainingSlots.ToDictionary(
+            intent => intent.Alias,
+            intent => new GroupTrainingSlot
+            {
+                GroupId = SeedAliases.RequireId(groupIds, intent.GroupAlias, "Gruppe"),
+                VenueId = intent.VenueAlias is null
+                    ? null
+                    : SeedAliases.RequireId(venueIds, intent.VenueAlias, "Ort"),
+                Weekday = intent.Weekday,
+                StartsAt = intent.StartsAt,
+                DurationMinutes = intent.DurationMinutes,
+            },
+            StringComparer.Ordinal
+        );
+
+        if (slots.Count > 0)
+        {
+            dbContext.GroupTrainingSlots.AddRange(slots.Values);
+            await dbContext.SaveChangesAsync(ct);
+        }
+
+        return slots.ToDictionary(
             entry => entry.Key,
             entry => entry.Value.Id,
             StringComparer.Ordinal

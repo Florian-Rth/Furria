@@ -1,6 +1,7 @@
 using FastEndpoints;
 using Furria.Api.Authorization;
 using Furria.Application.Groups;
+using Furria.Core.Groups;
 using Furria.Infrastructure.Groups;
 
 namespace Furria.Api.Endpoints.Groups;
@@ -37,6 +38,9 @@ public sealed class GetGroups : EndpointWithoutRequest<GetGroupsResponse>
             Name = group.Name,
             Description = group.Description,
             IsRecruiting = group.IsRecruiting,
+            GroupKindName = group.GroupKindName,
+            FoundedYear = group.FoundedYear,
+            Tone = group.Tone,
             MemberCount = group.MemberCount,
             MemberPreview = [.. group.MemberPreview.Select(ToDto)],
             Admins = [.. group.Admins.Select(ToDto)],
@@ -65,6 +69,12 @@ public sealed record GroupSummaryDto
     public required string Description { get; init; }
 
     public required bool IsRecruiting { get; init; }
+
+    public required string? GroupKindName { get; init; }
+
+    public required int? FoundedYear { get; init; }
+
+    public required GroupTone? Tone { get; init; }
 
     public required int MemberCount { get; init; }
 

@@ -31,4 +31,6 @@ public sealed class CalendarEntry : ITimestamped
     public Venue? Venue { get; set; }
 
     public Group? OwnerGroup { get; set; }
+
+    public ICollection<CalendarEntryGroup> ParticipatingGroups { get; set; } = [];
 }

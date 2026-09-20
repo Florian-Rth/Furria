@@ -67,6 +67,8 @@ internal static class GroupSeedMaterializer
                 IsRecruiting = intent.IsRecruiting,
                 ArchivedOn = intent.ArchivedOn,
                 GroupKindId = OptionalId(groupKindIds, intent.GroupKindAlias, "Gruppenart"),
+                FoundedYear = intent.FoundedYear,
+                Tone = intent.Tone,
             },
             StringComparer.Ordinal
         );

@@ -1,3 +1,5 @@
+using Furria.Core.Groups;
+
 namespace Furria.Tests.Common.Builder;
 
 public sealed class GroupSeedBuilder
@@ -34,11 +36,22 @@ public sealed class GroupSeedBuilder
         string description = "",
         bool isRecruiting = false,
         DateOnly? archivedOn = null,
-        string? groupKindAlias = null
+        string? groupKindAlias = null,
+        int? foundedYear = null,
+        GroupTone? tone = null
     )
     {
         _groups.Add(
-            new GroupIntent(alias, name, description, isRecruiting, archivedOn, groupKindAlias)
+            new GroupIntent(
+                alias,
+                name,
+                description,
+                isRecruiting,
+                archivedOn,
+                groupKindAlias,
+                foundedYear,
+                tone
+            )
         );
         return this;
     }
@@ -98,7 +111,9 @@ public sealed class GroupSeedBuilder
         string Description,
         bool IsRecruiting,
         DateOnly? ArchivedOn,
-        string? GroupKindAlias
+        string? GroupKindAlias,
+        int? FoundedYear,
+        GroupTone? Tone
     );
 
     internal sealed record GroupMembershipIntent(

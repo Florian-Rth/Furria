@@ -16,6 +16,7 @@ public sealed class ClubSeedBuilder
     private readonly List<KeyHoldingIntent> _keyHoldings = [];
     private readonly List<BoardOfficeIntent> _boardOffices = [];
     private readonly List<BoardSeatIntent> _boardSeats = [];
+    private readonly List<TrainingSlotIntent> _trainingSlots = [];
     private readonly List<CalendarEntryIntent> _calendarEntries = [];
     private readonly List<AttendanceResponseIntent> _attendanceResponses = [];
 
@@ -30,6 +31,8 @@ public sealed class ClubSeedBuilder
     internal IReadOnlyList<BoardOfficeIntent> BoardOffices => _boardOffices;
 
     internal IReadOnlyList<BoardSeatIntent> BoardSeats => _boardSeats;
+
+    internal IReadOnlyList<TrainingSlotIntent> TrainingSlots => _trainingSlots;
 
     internal IReadOnlyList<CalendarEntryIntent> CalendarEntries => _calendarEntries;
 
@@ -120,6 +123,28 @@ public sealed class ClubSeedBuilder
                 personAlias,
                 sinceOn ?? DefaultSinceOn,
                 untilOn
+            )
+        );
+        return this;
+    }
+
+    public ClubSeedBuilder AddTrainingSlot(
+        string alias,
+        string groupAlias,
+        DayOfWeek weekday,
+        TimeOnly startsAt,
+        int durationMinutes,
+        string? venueAlias = null
+    )
+    {
+        _trainingSlots.Add(
+            new TrainingSlotIntent(
+                alias,
+                groupAlias,
+                weekday,
+                startsAt,
+                durationMinutes,
+                venueAlias
             )
         );
         return this;
@@ -218,6 +243,15 @@ public sealed class ClubSeedBuilder
         string PersonAlias,
         DateOnly SinceOn,
         DateOnly? UntilOn
+    );
+
+    internal sealed record TrainingSlotIntent(
+        string Alias,
+        string GroupAlias,
+        DayOfWeek Weekday,
+        TimeOnly StartsAt,
+        int DurationMinutes,
+        string? VenueAlias
     );
 
     internal sealed record CalendarEntryIntent(

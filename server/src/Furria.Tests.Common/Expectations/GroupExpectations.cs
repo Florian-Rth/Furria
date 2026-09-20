@@ -33,6 +33,23 @@ public sealed class GroupExpectations
                 Assert.Equal(isRecruiting, (await SingleAsync(dbContext, ct)).IsRecruiting)
         );
 
+    public Expected ToHaveGroupKind(int? groupKindId) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(groupKindId, (await SingleAsync(dbContext, ct)).GroupKindId)
+        );
+
+    public Expected ToHaveFoundedYear(int? foundedYear) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(foundedYear, (await SingleAsync(dbContext, ct)).FoundedYear)
+        );
+
+    public Expected ToHaveTone(GroupTone? tone) =>
+        _expected.Enqueue(
+            async (dbContext, ct) => Assert.Equal(tone, (await SingleAsync(dbContext, ct)).Tone)
+        );
+
     public Expected ToBeArchivedOn(DateOnly? archivedOn) =>
         _expected.Enqueue(
             async (dbContext, ct) =>

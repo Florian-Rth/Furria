@@ -7,6 +7,7 @@ public sealed record SeededClub(
     IReadOnlyDictionary<string, int> KeyHoldingIds,
     IReadOnlyDictionary<string, int> BoardOfficeIds,
     IReadOnlyDictionary<string, int> BoardSeatIds,
+    IReadOnlyDictionary<string, int> TrainingSlotIds,
     IReadOnlyDictionary<string, int> CalendarEntryIds,
     IReadOnlyDictionary<string, int> AttendanceResponseIds
 );

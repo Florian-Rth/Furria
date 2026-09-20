@@ -1,5 +1,6 @@
 using FastEndpoints;
 using Furria.Application.Groups;
+using Furria.Core.Groups;
 using Furria.Infrastructure.Groups;
 
 namespace Furria.Api.Endpoints.Groups;
@@ -36,6 +37,8 @@ public sealed class GetPublicGroups : EndpointWithoutRequest<GetPublicGroupsResp
             Name = group.Name,
             Description = group.Description,
             IsRecruiting = group.IsRecruiting,
+            GroupKindName = group.GroupKindName,
+            Tone = group.Tone,
         };
 }
 
@@ -53,4 +56,8 @@ public sealed record PublicGroupDto
     public required string Description { get; init; }
 
     public required bool IsRecruiting { get; init; }
+
+    public required string? GroupKindName { get; init; }
+
+    public required GroupTone? Tone { get; init; }
 }

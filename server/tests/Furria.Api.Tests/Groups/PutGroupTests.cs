@@ -43,6 +43,7 @@ public sealed class PutGroupTests
                 Name = "Große Garde",
                 Description = NewDescription,
                 IsRecruiting = true,
+                GroupKindId = null,
             }
         );
 
@@ -75,6 +76,7 @@ public sealed class PutGroupTests
                 Name = "TANZGARDE",
                 Description = OldDescription,
                 IsRecruiting = false,
+                GroupKindId = null,
             }
         );
 
@@ -107,6 +109,7 @@ public sealed class PutGroupTests
                 Name = "tanzgarde",
                 Description = NewDescription,
                 IsRecruiting = false,
+                GroupKindId = null,
             }
         );
 
@@ -147,6 +150,7 @@ public sealed class PutGroupTests
                 Name = "Tanzgarde",
                 Description = NewDescription,
                 IsRecruiting = false,
+                GroupKindId = null,
             }
         );
 
@@ -185,6 +189,7 @@ public sealed class PutGroupTests
                 Name = "Kindergarde neu",
                 Description = NewDescription,
                 IsRecruiting = true,
+                GroupKindId = null,
             }
         );
 
@@ -214,6 +219,7 @@ public sealed class PutGroupTests
                 Name = "Elferrat",
                 Description = NewDescription,
                 IsRecruiting = false,
+                GroupKindId = null,
             }
         );
 
@@ -238,6 +244,7 @@ public sealed class PutGroupTests
                 Name = "",
                 Description = NewDescription,
                 IsRecruiting = false,
+                GroupKindId = null,
             }
         );
 
@@ -279,6 +286,7 @@ public sealed class PutGroupTests
                 Name = "Große Garde",
                 Description = NewDescription,
                 IsRecruiting = true,
+                GroupKindId = null,
             }
         );
 
@@ -308,6 +316,7 @@ public sealed class PutGroupTests
                     Name = "Große Garde",
                     Description = NewDescription,
                     IsRecruiting = true,
+                    GroupKindId = null,
                 }
             );
 
