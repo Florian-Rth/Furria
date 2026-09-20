@@ -14,6 +14,7 @@ public sealed class GetAnnouncementsTests
     private const string Body = "Der Saal bleibt am Freitag geschlossen.";
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
+    private static readonly DateOnly SeatedIn2023 = new(2023, 3, 1);
     private static readonly DateOnly ExpiredIn2021 = new(2021, 1, 31);
 
     private static readonly DateTimeOffset PublishedInJanuary = new(
@@ -70,7 +71,7 @@ public sealed class GetAnnouncementsTests
     }
 
     [Fact]
-    public async Task Should_NameTheAutorWithHerFunktion_When_TheBoardIsRead()
+    public async Task Should_LeaveTheFunktionEmpty_When_TheAutorHoldsNoVorstandssitz()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildBoardAsync(ct);
@@ -87,6 +88,34 @@ public sealed class GetAnnouncementsTests
         Assert.Equal("Muster", author.LastName);
         Assert.Null(author.PortraitUrl);
         Assert.Null(author.OfficeName);
+    }
+
+    [Fact]
+    public async Task Should_NameTheAutorsFunktion_When_SheHoldsARunningVorstandssitz()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddPerson("alice", "Alice", "Muster")
+                            .AddAccount("alice")
+                            .AddMembership("alice-first", "alice", JoinedIn2017)
+                    )
+                    .Club(club =>
+                        club.AddBoardOffice("praesident", "Präsident")
+                            .AddBoardSeat("alice-praesident", "praesident", "alice", SeatedIn2023)
+                            .AddAnnouncement("gruss", "alice", "Gruß", Body)
+                    ),
+            ct
+        );
+
+        var result = await ReadAsync(ctx, "alice", ct);
+
+        var author = Assert.Single(result.Announcements).Author;
+        Assert.Equal(ctx.Identity.People.IdOf("alice"), author.PersonId);
+        Assert.Equal("Präsident", author.OfficeName);
     }
 
     [Fact]

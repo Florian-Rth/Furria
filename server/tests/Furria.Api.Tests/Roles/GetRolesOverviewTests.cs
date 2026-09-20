@@ -25,7 +25,7 @@ public sealed class GetRolesOverviewTests
     }
 
     [Fact]
-    public async Task Should_CarryDieLaufendenInhaber_When_EinMitgliedAlleRollenOeffnet()
+    public async Task Should_CarryTheRunningInhaber_When_AMitgliedOpensAllRollen()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -72,7 +72,7 @@ public sealed class GetRolesOverviewTests
     }
 
     [Fact]
-    public async Task Should_ElideDieRolle_When_SieArchiviertIst()
+    public async Task Should_ElideTheRolle_When_ItIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -107,7 +107,7 @@ public sealed class GetRolesOverviewTests
     }
 
     [Fact]
-    public async Task Should_ElideDenInhaber_When_SeineInhaberschaftBeendetIst()
+    public async Task Should_ElideTheInhaber_When_TheInhaberschaftHasEnded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

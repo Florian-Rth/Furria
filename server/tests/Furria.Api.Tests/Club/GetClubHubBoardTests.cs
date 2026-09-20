@@ -22,7 +22,7 @@ public sealed class GetClubHubBoardTests
     }
 
     [Fact]
-    public async Task Should_CarryNoSeats_When_DerVereinKeinenVorstandEingetragenHat()
+    public async Task Should_CarryNoSeats_When_TheClubHasRecordedNoVorstand()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -36,7 +36,7 @@ public sealed class GetClubHubBoardTests
     }
 
     [Fact]
-    public async Task Should_CarryTheSeatsInFunktionsReihenfolge_When_DerVorstandBesetztIst()
+    public async Task Should_CarryTheSeatsInFunktionOrder_When_TheVorstandIsStaffed()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -68,7 +68,7 @@ public sealed class GetClubHubBoardTests
     }
 
     [Fact]
-    public async Task Should_OrderNachNachnamen_When_ZweiPersonenEineFunktionTeilen()
+    public async Task Should_OrderByLastName_When_TwoPeopleShareAFunktion()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -107,7 +107,7 @@ public sealed class GetClubHubBoardTests
     }
 
     [Fact]
-    public async Task Should_ElideTheSeat_When_DerVorstandssitzBeendetIst()
+    public async Task Should_ElideTheSeat_When_TheVorstandssitzHasEnded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -135,7 +135,7 @@ public sealed class GetClubHubBoardTests
     }
 
     [Fact]
-    public async Task Should_ElideTheSeat_When_DerVorstandssitzErstMorgenBeginnt()
+    public async Task Should_ElideTheSeat_When_TheVorstandssitzStartsTomorrow()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -162,7 +162,7 @@ public sealed class GetClubHubBoardTests
     }
 
     [Fact]
-    public async Task Should_CarryTheSeat_When_DerVorstandssitzHeuteEndet()
+    public async Task Should_CarryTheSeat_When_TheVorstandssitzEndsToday()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -191,7 +191,7 @@ public sealed class GetClubHubBoardTests
     }
 
     [Fact]
-    public async Task Should_LeaveDasPortraetPrivat_When_EinVorstandssitzLaeuft()
+    public async Task Should_LeaveThePortraetPrivate_When_AVorstandssitzIsRunning()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -215,6 +215,58 @@ public sealed class GetClubHubBoardTests
             .Expected.Person(ctx.Identity.People.IdOf("nadine"))
             .ToHavePortrait(null, portraitIsPublic: false)
             .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_NameTheAushangAutorsFunktion_When_SheHoldsARunningVorstandssitz()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        MemberNamedMira(identity).AddPerson("nadine", "Nadine", "Wolters")
+                    )
+                    .Club(club =>
+                        club.AddBoardOffice("praesident", "Präsident")
+                            .AddBoardSeat("nadine-praesident", "praesident", "nadine", SeatedIn2023)
+                            .AddAnnouncement("gruss", "nadine", "Gruß", "Helau.")
+                    ),
+            ct
+        );
+
+        var result = await HubForAsync(ctx, ct);
+
+        var newest = Assert.Single(result.Announcements.Newest);
+        Assert.Equal(ctx.Identity.People.IdOf("nadine"), newest.Author.PersonId);
+        Assert.Equal("Präsident", newest.Author.OfficeName);
+    }
+
+    [Fact]
+    public async Task Should_NameTheSchluesseltraegersFunktion_When_SheHoldsARunningVorstandssitz()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        MemberNamedMira(identity).AddPerson("nadine", "Nadine", "Wolters")
+                    )
+                    .Club(club =>
+                        club.AddBoardOffice("praesident", "Präsident")
+                            .AddBoardSeat("nadine-praesident", "praesident", "nadine", SeatedIn2023)
+                            .AddVenue("heim", "Vereinsheim")
+                            .AddKeyHolding("nadine-heim", "heim", "nadine", SeatedIn2024)
+                    ),
+            ct
+        );
+
+        var result = await HubForAsync(ctx, ct);
+
+        var venue = Assert.Single(result.Venues);
+        var holder = Assert.Single(venue.Holders);
+        Assert.Equal(ctx.Identity.People.IdOf("nadine"), holder.Person.PersonId);
+        Assert.Equal("Präsident", holder.Person.OfficeName);
     }
 
     private static IdentitySeedBuilder MemberNamedMira(IdentitySeedBuilder identity) =>

@@ -19,7 +19,7 @@ public sealed class BoardPersistenceTests
     }
 
     [Fact]
-    public async Task Should_KeepFunktionUndZeitraum_When_EinVorstandssitzEingetragenIst()
+    public async Task Should_KeepFunktionAndZeitraum_When_AVorstandssitzIsRecorded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -50,7 +50,7 @@ public sealed class BoardPersistenceTests
     }
 
     [Fact]
-    public async Task Should_RejectTheSecondRecord_When_DieVorstandsfunktionSchonNotiertIst()
+    public async Task Should_RejectTheSecondRecord_When_TheVorstandsfunktionIsAlreadyNoted()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -71,7 +71,7 @@ public sealed class BoardPersistenceTests
     }
 
     [Fact]
-    public async Task Should_RejectTheSeat_When_DerVorstandssitzVorSeinemBeginnEndet()
+    public async Task Should_RejectTheSeat_When_TheVorstandssitzEndsBeforeItStarts()
     {
         var ct = TestContext.Current.CancellationToken;
 
