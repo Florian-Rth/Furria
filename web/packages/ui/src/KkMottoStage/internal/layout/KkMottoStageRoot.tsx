@@ -68,14 +68,20 @@ export const KkMottoStageRoot: FC<KkMottoStageRootProps> = ({
   const reducedMotion = useReducedMotion();
   const motion = mottoStageMotionOf(state, reducedMotion);
   const scene = state === 'running' ? children : null;
-  const seal =
-    state === 'teaser' && countdownLabel !== null ? (
-      <KkMottoStageSeal
-        dateLabel={OPENING_DATE_LABEL}
-        caption={countdownLabel}
-        sx={revealAt(SEAL_STEP, motion.reveal)}
-      />
-    ) : null;
+  const sealed = state === 'teaser' && countdownLabel !== null;
+  const seal = sealed ? (
+    <KkMottoStageSeal
+      dateLabel={OPENING_DATE_LABEL}
+      caption={countdownLabel}
+      sx={revealAt(SEAL_STEP, motion.reveal)}
+    />
+  ) : null;
+  const countdownLine = sealed ? null : (
+    <KkMottoStageCountdown
+      countdownLabel={countdownLabel}
+      sx={revealAt(COUNTDOWN_STEP, motion.reveal)}
+    />
+  );
 
   return (
     <Stack
@@ -128,10 +134,7 @@ export const KkMottoStageRoot: FC<KkMottoStageRootProps> = ({
           <KkMottoStageMotto motto={motto} sx={revealAt(MOTTO_STEP, motion.reveal)} />
           {seal}
         </Stack>
-        <KkMottoStageCountdown
-          countdownLabel={countdownLabel}
-          sx={revealAt(COUNTDOWN_STEP, motion.reveal)}
-        />
+        {countdownLine}
         <KkMottoStageProgress progress={progress} sx={revealAt(PROGRESS_STEP, motion.reveal)} />
       </Stack>
     </Stack>
