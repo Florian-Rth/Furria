@@ -25,11 +25,11 @@ const PERMISSION_COPY: Record<PermissionKey, RolePermissionCopy> = {
   },
   [PERMISSION_KEYS.clubRead]: {
     title: 'Den Verein sehen',
-    line: 'Aushang, Kalender, Vorstand und Schlüssel. Jede laufende Mitgliedschaft bringt das mit — als Rolle vergeben muss es niemand.',
+    line: 'Ergibt sich aus einer laufenden Mitgliedschaft und lässt sich nicht über eine Rolle vergeben.',
   },
   [PERMISSION_KEYS.announcementsPost]: {
-    title: 'Aushänge anschlagen',
-    line: 'Aushänge schreiben, ändern und wieder abnehmen — auch die von anderen.',
+    title: 'Aushänge schreiben',
+    line: 'Etwas an den Aushang hängen, ändern und wieder abnehmen — auch die Aushänge anderer.',
   },
 };
 
