@@ -16,6 +16,15 @@ public sealed class VenueExpectations
         _venueId = venueId;
     }
 
+    public Expected ToNotExist() =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.False(
+                    await dbContext.Venues.AsNoTracking().AnyAsync(row => row.Id == _venueId, ct),
+                    $"Expected no Ort with id {_venueId}."
+                )
+        );
+
     public Expected ToHaveName(string name) =>
         _expected.Enqueue(
             async (dbContext, ct) => Assert.Equal(name, (await SingleAsync(dbContext, ct)).Name)
@@ -47,6 +56,11 @@ public sealed class VenueExpectations
         _expected.Enqueue(
             async (dbContext, ct) =>
                 Assert.Equal(archivedOn, (await SingleAsync(dbContext, ct)).ArchivedOn)
+        );
+
+    public Expected ToBeOpen() =>
+        _expected.Enqueue(
+            async (dbContext, ct) => Assert.Null((await SingleAsync(dbContext, ct)).ArchivedOn)
         );
 
     private Task<Venue> SingleAsync(AppDbContext dbContext, CancellationToken ct) =>

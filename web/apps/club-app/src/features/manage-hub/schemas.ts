@@ -19,6 +19,7 @@ export const ManageRolesPanelSchema = z.object({
 export type ManageRolesPanel = z.infer<typeof ManageRolesPanelSchema>;
 
 export const ManageBoardPanelSchema = z.object({
+  officeCount: z.number().int(),
   seatCount: z.number().int(),
   vacantOfficeCount: z.number().int(),
 });
@@ -37,6 +38,7 @@ export const ManageVenuesPanelSchema = z.object({
 export type ManageVenuesPanel = z.infer<typeof ManageVenuesPanelSchema>;
 
 export const ManageKeysPanelSchema = z.object({
+  issuedCount: z.number().int(),
   holdingCount: z.number().int(),
   holderCount: z.number().int(),
 });

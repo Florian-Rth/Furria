@@ -3,15 +3,17 @@ import { AppListSkeleton } from '@/features/session';
 import { useCalendarQuery } from '../api';
 import { CALENDAR_LOADING_LABEL } from '../calendar-labels';
 import { toCalendarErrorMessage } from '../calendar-messages';
+import type { CalendarAuthoring } from '../hooks/use-calendar-authoring';
 import type { CalendarBoard } from '../hooks/use-calendar-board';
 import { CalendarError } from './CalendarError';
 import { CalendarView } from './CalendarView';
 
 interface CalendarBodyProps {
   board: CalendarBoard;
+  authoring: CalendarAuthoring;
 }
 
-export const CalendarBody: FC<CalendarBodyProps> = ({ board }) => {
+export const CalendarBody: FC<CalendarBodyProps> = ({ board, authoring }) => {
   const calendar = useCalendarQuery(board.query);
   const errorMessage = toCalendarErrorMessage(calendar.error);
 
@@ -20,7 +22,7 @@ export const CalendarBody: FC<CalendarBodyProps> = ({ board }) => {
   };
 
   if (calendar.data !== undefined) {
-    return <CalendarView board={board} entries={calendar.data.entries} />;
+    return <CalendarView board={board} entries={calendar.data.entries} authoring={authoring} />;
   }
   if (errorMessage !== null) {
     return <CalendarError message={errorMessage} onRetry={reload} />;

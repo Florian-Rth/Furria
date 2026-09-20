@@ -129,6 +129,7 @@ public sealed class VenueCollisionTests
         var ctx = await BuildOrteAsync(ct);
 
         var collisions = await CollisionsAsync(
+            ctx.Identity.People.IdOf("regine"),
             ctx.Club.Venues.IdOf("buehnenhaus"),
             InsideTheAbendprobe,
             AlsoInsideTheAbendprobe,
@@ -147,6 +148,7 @@ public sealed class VenueCollisionTests
         var ctx = await BuildOrteAsync(ct);
 
         var collisions = await CollisionsAsync(
+            ctx.Identity.People.IdOf("regine"),
             ctx.Club.Venues.IdOf("buehnenhaus"),
             AbendprobeEnd,
             AfterTheAbendprobe,
@@ -164,6 +166,7 @@ public sealed class VenueCollisionTests
         var ctx = await BuildOrteAsync(ct);
 
         var collisions = await CollisionsAsync(
+            ctx.Identity.People.IdOf("regine"),
             ctx.Club.Venues.IdOf("buehnenhaus"),
             TwoDaysLaterStart,
             TwoDaysLaterEnd,
@@ -181,6 +184,7 @@ public sealed class VenueCollisionTests
         var ctx = await BuildOrteAsync(ct);
 
         var collisions = await CollisionsAsync(
+            ctx.Identity.People.IdOf("regine"),
             ctx.Club.Venues.IdOf("buehnenhaus"),
             InsideTheOpenEnd,
             AfterTheOpenEnd,
@@ -199,6 +203,7 @@ public sealed class VenueCollisionTests
         var ctx = await BuildOrteAsync(ct);
 
         var collisions = await CollisionsAsync(
+            ctx.Identity.People.IdOf("regine"),
             ctx.Club.Venues.IdOf("buehnenhaus"),
             BeforeTheAbendprobe,
             null,
@@ -217,6 +222,7 @@ public sealed class VenueCollisionTests
         var ctx = await BuildOrteAsync(ct);
 
         var collisions = await CollisionsAsync(
+            ctx.Identity.People.IdOf("regine"),
             ctx.Club.Venues.IdOf("buehnenhaus"),
             AbendprobeStart,
             AbendprobeEnd,
@@ -228,6 +234,7 @@ public sealed class VenueCollisionTests
     }
 
     private async Task<IReadOnlyList<CalendarEntrySummary>> CollisionsAsync(
+        int viewerPersonId,
         int venueId,
         DateTimeOffset startsAt,
         DateTimeOffset? endsAt,
@@ -239,10 +246,14 @@ public sealed class VenueCollisionTests
         var calendarService = scope.ServiceProvider.GetRequiredService<CalendarService>();
 
         return await calendarService.FindVenueCollisionsAsync(
-            venueId,
-            startsAt,
-            endsAt,
-            excludeCalendarEntryId,
+            new VenueCollisionQuery
+            {
+                ViewerPersonId = viewerPersonId,
+                VenueId = venueId,
+                StartsAt = startsAt,
+                EndsAt = endsAt,
+                ExcludeCalendarEntryId = excludeCalendarEntryId,
+            },
             ct
         );
     }
@@ -250,37 +261,39 @@ public sealed class VenueCollisionTests
     private Task<SeededContext> BuildOrteAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder =>
-                builder.Club(club =>
-                    club.AddVenue("buehnenhaus", "Bühnenhaus")
-                        .AddVenue("vereinsraum", "Vereinsraum", 2)
-                        .AddCalendarEntry(
-                            "abendprobe",
-                            Abendprobe,
-                            AbendprobeStart,
-                            AbendprobeEnd,
-                            venueAlias: "buehnenhaus"
-                        )
-                        .AddCalendarEntry(
-                            "naechster-abend",
-                            "Stellprobe",
-                            NextDayStart,
-                            NextDayEnd,
-                            venueAlias: "buehnenhaus"
-                        )
-                        .AddCalendarEntry(
-                            "offene-werkstatt",
-                            OffeneWerkstatt,
-                            OpenEndedStart,
-                            venueAlias: "buehnenhaus"
-                        )
-                        .AddCalendarEntry(
-                            "parallelsitzung",
-                            "Vorstandssitzung",
-                            InsideTheAbendprobe,
-                            AlsoInsideTheAbendprobe,
-                            venueAlias: "vereinsraum"
-                        )
-                ),
+                builder
+                    .Identity(identity => identity.AddPerson("regine", "Regine", "Voß"))
+                    .Club(club =>
+                        club.AddVenue("buehnenhaus", "Bühnenhaus")
+                            .AddVenue("vereinsraum", "Vereinsraum", 2)
+                            .AddCalendarEntry(
+                                "abendprobe",
+                                Abendprobe,
+                                AbendprobeStart,
+                                AbendprobeEnd,
+                                venueAlias: "buehnenhaus"
+                            )
+                            .AddCalendarEntry(
+                                "naechster-abend",
+                                "Stellprobe",
+                                NextDayStart,
+                                NextDayEnd,
+                                venueAlias: "buehnenhaus"
+                            )
+                            .AddCalendarEntry(
+                                "offene-werkstatt",
+                                OffeneWerkstatt,
+                                OpenEndedStart,
+                                venueAlias: "buehnenhaus"
+                            )
+                            .AddCalendarEntry(
+                                "parallelsitzung",
+                                "Vorstandssitzung",
+                                InsideTheAbendprobe,
+                                AlsoInsideTheAbendprobe,
+                                venueAlias: "vereinsraum"
+                            )
+                    ),
             ct
         );
 }

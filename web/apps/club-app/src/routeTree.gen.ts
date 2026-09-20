@@ -21,9 +21,13 @@ import { Route as AppAffiliatedRouteImport } from './routes/_app/_affiliated'
 import { Route as AppMyGroupsIndexRouteImport } from './routes/_app/my-groups.index'
 import { Route as AppManageIndexRouteImport } from './routes/_app/manage.index'
 import { Route as AppMyGroupsGroupIdRouteImport } from './routes/_app/my-groups.$groupId'
+import { Route as AppManageVenuesRouteImport } from './routes/_app/manage.venues'
+import { Route as AppManageSessionsRouteImport } from './routes/_app/manage.sessions'
 import { Route as AppManageRolesRouteImport } from './routes/_app/manage.roles'
 import { Route as AppManagePersonsRouteImport } from './routes/_app/manage.persons'
+import { Route as AppManageKeysRouteImport } from './routes/_app/manage.keys'
 import { Route as AppManageGroupsRouteImport } from './routes/_app/manage.groups'
+import { Route as AppManageBoardRouteImport } from './routes/_app/manage.board'
 import { Route as AppAffiliatedMembersRouteImport } from './routes/_app/_affiliated.members'
 import { Route as AppAffiliatedGroupsRouteImport } from './routes/_app/_affiliated.groups'
 import { Route as AppManagePersonsPersonIdRouteImport } from './routes/_app/manage.persons_.$personId'
@@ -88,6 +92,16 @@ const AppMyGroupsGroupIdRoute = AppMyGroupsGroupIdRouteImport.update({
   path: '/my-groups/$groupId',
   getParentRoute: () => AppRoute,
 } as any)
+const AppManageVenuesRoute = AppManageVenuesRouteImport.update({
+  id: '/manage/venues',
+  path: '/manage/venues',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppManageSessionsRoute = AppManageSessionsRouteImport.update({
+  id: '/manage/sessions',
+  path: '/manage/sessions',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppManageRolesRoute = AppManageRolesRouteImport.update({
   id: '/manage/roles',
   path: '/manage/roles',
@@ -98,9 +112,19 @@ const AppManagePersonsRoute = AppManagePersonsRouteImport.update({
   path: '/manage/persons',
   getParentRoute: () => AppRoute,
 } as any)
+const AppManageKeysRoute = AppManageKeysRouteImport.update({
+  id: '/manage/keys',
+  path: '/manage/keys',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppManageGroupsRoute = AppManageGroupsRouteImport.update({
   id: '/manage/groups',
   path: '/manage/groups',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppManageBoardRoute = AppManageBoardRouteImport.update({
+  id: '/manage/board',
+  path: '/manage/board',
   getParentRoute: () => AppRoute,
 } as any)
 const AppAffiliatedMembersRoute = AppAffiliatedMembersRouteImport.update({
@@ -142,9 +166,13 @@ export interface FileRoutesByFullPath {
   '/profile': typeof AppProfileRoute
   '/groups': typeof AppAffiliatedGroupsRoute
   '/members': typeof AppAffiliatedMembersRoute
+  '/manage/board': typeof AppManageBoardRoute
   '/manage/groups': typeof AppManageGroupsRoute
+  '/manage/keys': typeof AppManageKeysRoute
   '/manage/persons': typeof AppManagePersonsRoute
   '/manage/roles': typeof AppManageRolesRoute
+  '/manage/sessions': typeof AppManageSessionsRoute
+  '/manage/venues': typeof AppManageVenuesRoute
   '/my-groups/$groupId': typeof AppMyGroupsGroupIdRoute
   '/manage/': typeof AppManageIndexRoute
   '/my-groups/': typeof AppMyGroupsIndexRoute
@@ -162,9 +190,13 @@ export interface FileRoutesByTo {
   '/profile': typeof AppProfileRoute
   '/groups': typeof AppAffiliatedGroupsRoute
   '/members': typeof AppAffiliatedMembersRoute
+  '/manage/board': typeof AppManageBoardRoute
   '/manage/groups': typeof AppManageGroupsRoute
+  '/manage/keys': typeof AppManageKeysRoute
   '/manage/persons': typeof AppManagePersonsRoute
   '/manage/roles': typeof AppManageRolesRoute
+  '/manage/sessions': typeof AppManageSessionsRoute
+  '/manage/venues': typeof AppManageVenuesRoute
   '/my-groups/$groupId': typeof AppMyGroupsGroupIdRoute
   '/manage': typeof AppManageIndexRoute
   '/my-groups': typeof AppMyGroupsIndexRoute
@@ -185,9 +217,13 @@ export interface FileRoutesById {
   '/_app/': typeof AppIndexRoute
   '/_app/_affiliated/groups': typeof AppAffiliatedGroupsRoute
   '/_app/_affiliated/members': typeof AppAffiliatedMembersRoute
+  '/_app/manage/board': typeof AppManageBoardRoute
   '/_app/manage/groups': typeof AppManageGroupsRoute
+  '/_app/manage/keys': typeof AppManageKeysRoute
   '/_app/manage/persons': typeof AppManagePersonsRoute
   '/_app/manage/roles': typeof AppManageRolesRoute
+  '/_app/manage/sessions': typeof AppManageSessionsRoute
+  '/_app/manage/venues': typeof AppManageVenuesRoute
   '/_app/my-groups/$groupId': typeof AppMyGroupsGroupIdRoute
   '/_app/manage/': typeof AppManageIndexRoute
   '/_app/my-groups/': typeof AppMyGroupsIndexRoute
@@ -207,9 +243,13 @@ export interface FileRouteTypes {
     | '/profile'
     | '/groups'
     | '/members'
+    | '/manage/board'
     | '/manage/groups'
+    | '/manage/keys'
     | '/manage/persons'
     | '/manage/roles'
+    | '/manage/sessions'
+    | '/manage/venues'
     | '/my-groups/$groupId'
     | '/manage/'
     | '/my-groups/'
@@ -227,9 +267,13 @@ export interface FileRouteTypes {
     | '/profile'
     | '/groups'
     | '/members'
+    | '/manage/board'
     | '/manage/groups'
+    | '/manage/keys'
     | '/manage/persons'
     | '/manage/roles'
+    | '/manage/sessions'
+    | '/manage/venues'
     | '/my-groups/$groupId'
     | '/manage'
     | '/my-groups'
@@ -249,9 +293,13 @@ export interface FileRouteTypes {
     | '/_app/'
     | '/_app/_affiliated/groups'
     | '/_app/_affiliated/members'
+    | '/_app/manage/board'
     | '/_app/manage/groups'
+    | '/_app/manage/keys'
     | '/_app/manage/persons'
     | '/_app/manage/roles'
+    | '/_app/manage/sessions'
+    | '/_app/manage/venues'
     | '/_app/my-groups/$groupId'
     | '/_app/manage/'
     | '/_app/my-groups/'
@@ -351,6 +399,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppMyGroupsGroupIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/manage/venues': {
+      id: '/_app/manage/venues'
+      path: '/manage/venues'
+      fullPath: '/manage/venues'
+      preLoaderRoute: typeof AppManageVenuesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/manage/sessions': {
+      id: '/_app/manage/sessions'
+      path: '/manage/sessions'
+      fullPath: '/manage/sessions'
+      preLoaderRoute: typeof AppManageSessionsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/manage/roles': {
       id: '/_app/manage/roles'
       path: '/manage/roles'
@@ -365,11 +427,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppManagePersonsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/manage/keys': {
+      id: '/_app/manage/keys'
+      path: '/manage/keys'
+      fullPath: '/manage/keys'
+      preLoaderRoute: typeof AppManageKeysRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/manage/groups': {
       id: '/_app/manage/groups'
       path: '/manage/groups'
       fullPath: '/manage/groups'
       preLoaderRoute: typeof AppManageGroupsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/manage/board': {
+      id: '/_app/manage/board'
+      path: '/manage/board'
+      fullPath: '/manage/board'
+      preLoaderRoute: typeof AppManageBoardRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/_affiliated/members': {
@@ -436,9 +512,13 @@ interface AppRouteChildren {
   AppMoreRoute: typeof AppMoreRoute
   AppProfileRoute: typeof AppProfileRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppManageBoardRoute: typeof AppManageBoardRoute
   AppManageGroupsRoute: typeof AppManageGroupsRoute
+  AppManageKeysRoute: typeof AppManageKeysRoute
   AppManagePersonsRoute: typeof AppManagePersonsRoute
   AppManageRolesRoute: typeof AppManageRolesRoute
+  AppManageSessionsRoute: typeof AppManageSessionsRoute
+  AppManageVenuesRoute: typeof AppManageVenuesRoute
   AppMyGroupsGroupIdRoute: typeof AppMyGroupsGroupIdRoute
   AppManageIndexRoute: typeof AppManageIndexRoute
   AppMyGroupsIndexRoute: typeof AppMyGroupsIndexRoute
@@ -453,9 +533,13 @@ const AppRouteChildren: AppRouteChildren = {
   AppMoreRoute: AppMoreRoute,
   AppProfileRoute: AppProfileRoute,
   AppIndexRoute: AppIndexRoute,
+  AppManageBoardRoute: AppManageBoardRoute,
   AppManageGroupsRoute: AppManageGroupsRoute,
+  AppManageKeysRoute: AppManageKeysRoute,
   AppManagePersonsRoute: AppManagePersonsRoute,
   AppManageRolesRoute: AppManageRolesRoute,
+  AppManageSessionsRoute: AppManageSessionsRoute,
+  AppManageVenuesRoute: AppManageVenuesRoute,
   AppMyGroupsGroupIdRoute: AppMyGroupsGroupIdRoute,
   AppManageIndexRoute: AppManageIndexRoute,
   AppMyGroupsIndexRoute: AppMyGroupsIndexRoute,

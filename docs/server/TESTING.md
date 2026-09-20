@@ -212,8 +212,16 @@ public sealed class GetMeTests
    `Expected.GroupMembershipsOf(groupId)` (`ToHaveCount`, `ToHaveOpenCount`) and
    `Expected.GroupAdmin(id)` (`ToHaveFunction`, `ToHavePeriod`). The Session accessor is
    `Expected.Session(sessionId)` (`ToHaveStartYear`, `ToHaveNumber`, `ToHaveMotto`,
-   `ToHaveSignet`), and the Ort accessor is `Expected.Venue(venueId)` (`ToHaveName`,
-   `ToHaveSortOrder`).
+   `ToHaveLogo`), and the Ort accessor is `Expected.Venue(venueId)` (`ToHaveName`,
+   `ToHaveSortOrder`, `ToHaveAddress`, `ToHaveHint`, `ToBeArchivedOn`, `ToBeOpen`,
+   `ToNotExist`). The Vorstand accessors split the same way as the Rollen ones:
+   `Expected.BoardOffice(boardOfficeId)` (`ToHaveName`, `ToHaveSortOrder`, `ToImplyRole`,
+   `ToImplyNoRole`, `ToBeArchivedOn`, `ToBeOpen`, `ToNotExist`),
+   `Expected.BoardSeat(boardSeatId)` (`ToFillOffice`, `ToBeHeldBy`, `ToRunFrom`, `ToHavePeriod`,
+   `ToBeOpen`, `ToNotExist`) and `Expected.BoardSeatsOfOffice(boardOfficeId)` (`ToHaveCount`,
+   `ToHaveOpenCount`). The Schlüssel accessors are `Expected.KeyHolding(keyHoldingId)`
+   (`ToBeHeldAt`, `ToBeHeldBy`, `ToHaveSinceOn`, `ToHaveUntilOn`, `ToHavePeriod`, `ToBeOpen`,
+   `ToNotExist`) and `Expected.KeyHoldingsOfVenue(venueId)` (`ToHaveCount`, `ToHaveOpenCount`).
    `Expected.Groups().ToReadInGermanOrder(names…)` orders by the **column**, with no
    `EF.Functions.Collate` anywhere — the German ICU collation lives on `group.name` itself
    (ADR-0008), so the assertion reads what production reads. `CollationTests` owns the proof in

@@ -129,6 +129,7 @@ public sealed class ManagementService
 
         return new ManageHubKeys
         {
+            IssuedCount = await _dbContext.KeyHoldings.CountAsync(ct),
             HoldingCount = await running.CountAsync(ct),
             HolderCount = await running
                 .Select(holding => holding.PersonId)
@@ -140,6 +141,10 @@ public sealed class ManagementService
     private async Task<ManageHubBoard> BoardAsync(DateOnly today, CancellationToken ct) =>
         new()
         {
+            OfficeCount = await _dbContext.BoardOffices.CountAsync(
+                office => office.ArchivedOn == null,
+                ct
+            ),
             SeatCount = await _dbContext.BoardSeats.CountAsync(
                 seat => seat.SinceOn <= today && (seat.UntilOn == null || seat.UntilOn >= today),
                 ct

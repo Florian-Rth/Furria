@@ -13,6 +13,12 @@ public sealed class CalendarService
     private const string UnknownEntryMessage = "Diesen Kalendereintrag gibt es nicht.";
     private const string NoResponseWantedMessage = "Dieser Eintrag fragt nicht nach einer Antwort.";
     private const string DuplicateResponseMessage = WriteConflictMessages.DuplicateZusage;
+    private const string UnknownVenueMessage = "Diesen Ort gibt es nicht im Verzeichnis.";
+    private const string ArchivedVenueMessage =
+        "Ein archivierter Ort kann nicht mehr gewählt werden.";
+    private const string UnknownOwnerGroupMessage = "Diese Gruppe gibt es nicht.";
+    private const string ClubEntryCannotBeGroupOnlyMessage =
+        "Ein Eintrag des Vereins kann nicht gruppenintern sein.";
 
     private static readonly IReadOnlyDictionary<int, AttendanceAnswer> NoAnswers =
         new Dictionary<int, AttendanceAnswer>();
@@ -62,16 +68,17 @@ public sealed class CalendarService
     }
 
     public async Task<IReadOnlyList<CalendarEntrySummary>> FindVenueCollisionsAsync(
-        int venueId,
-        DateTimeOffset startsAt,
-        DateTimeOffset? endsAt,
-        int? excludeCalendarEntryId,
+        VenueCollisionQuery query,
         CancellationToken ct
     )
     {
         var now = _timeProvider.GetUtcNow();
+        var today = ClubClock.Today(_timeProvider);
         var openEndedCutoff = now.AddHours(-CalendarDefaults.OpenEndedHours);
-        var probeEnd = endsAt ?? startsAt.AddHours(CalendarDefaults.OpenEndedHours);
+        var startsAt = query.StartsAt;
+        var venueId = query.VenueId;
+        var excludeCalendarEntryId = query.ExcludeCalendarEntryId;
+        var probeEnd = query.EndsAt ?? startsAt.AddHours(CalendarDefaults.OpenEndedHours);
         var probeStartLessOpenEnded = startsAt.AddHours(-CalendarDefaults.OpenEndedHours);
 
         var rows = await _dbContext
@@ -88,12 +95,115 @@ public sealed class CalendarService
                         : entry.EndsAt > startsAt
                 )
             )
+            .Where(VisibleTo(query.ViewerPersonId, today))
             .OrderBy(entry => entry.StartsAt)
             .ThenBy(entry => entry.Id)
             .Select(RowProjection(now, openEndedCutoff))
             .ToListAsync(ct);
 
         return [.. rows.Select(row => ToSummary(row, NoAnswers))];
+    }
+
+    public Task<CalendarEntryOwnership?> OwnershipOfAsync(
+        int calendarEntryId,
+        CancellationToken ct
+    ) =>
+        _dbContext
+            .CalendarEntries.AsNoTracking()
+            .Where(entry => entry.Id == calendarEntryId)
+            .Select(entry => new CalendarEntryOwnership
+            {
+                CalendarEntryId = entry.Id,
+                OwnerGroupId = entry.OwnerGroupId,
+            })
+            .SingleOrDefaultAsync(ct);
+
+    public async Task<Result<CalendarEntryWriteResult>> CreateAsync(
+        CreateCalendarEntryCommand command,
+        CancellationToken ct
+    )
+    {
+        var refusal = await PlacementRefusalAsync(
+            new Placement(command.OwnerGroupId, command.VenueId, command.Visibility),
+            ct
+        );
+
+        if (refusal is not null)
+            return Result<CalendarEntryWriteResult>.Validation(refusal);
+
+        var entry = new CalendarEntry
+        {
+            Title = command.Title,
+            Description = command.Description,
+            OwnerGroupId = command.OwnerGroupId,
+            VenueId = command.VenueId,
+            StartsAt = command.StartsAt,
+            EndsAt = command.EndsAt,
+            Kind = command.Kind,
+            Visibility = command.Visibility,
+            AsksForResponse = command.AsksForResponse,
+        };
+
+        _dbContext.CalendarEntries.Add(entry);
+        await _dbContext.SaveChangesAsync(ct);
+
+        return Result<CalendarEntryWriteResult>.Success(
+            await WrittenAsync(entry, command.ViewerPersonId, ct)
+        );
+    }
+
+    public async Task<Result<CalendarEntryWriteResult>> UpdateAsync(
+        UpdateCalendarEntryCommand command,
+        CancellationToken ct
+    )
+    {
+        var entry = await _dbContext.CalendarEntries.SingleOrDefaultAsync(
+            row => row.Id == command.CalendarEntryId,
+            ct
+        );
+
+        if (entry is null)
+            return Result<CalendarEntryWriteResult>.NotFound(UnknownEntryMessage);
+
+        var refusal = await PlacementRefusalAsync(
+            new Placement(command.OwnerGroupId, command.VenueId, command.Visibility),
+            ct
+        );
+
+        if (refusal is not null)
+            return Result<CalendarEntryWriteResult>.Validation(refusal);
+
+        entry.Title = command.Title;
+        entry.Description = command.Description;
+        entry.OwnerGroupId = command.OwnerGroupId;
+        entry.VenueId = command.VenueId;
+        entry.StartsAt = command.StartsAt;
+        entry.EndsAt = command.EndsAt;
+        entry.Kind = command.Kind;
+        entry.Visibility = command.Visibility;
+        entry.AsksForResponse = command.AsksForResponse;
+
+        await _dbContext.SaveChangesAsync(ct);
+
+        return Result<CalendarEntryWriteResult>.Success(
+            await WrittenAsync(entry, command.ViewerPersonId, ct)
+        );
+    }
+
+    public async Task<Result> DeleteAsync(int calendarEntryId, CancellationToken ct)
+    {
+        var entry = await _dbContext.CalendarEntries.SingleOrDefaultAsync(
+            row => row.Id == calendarEntryId,
+            ct
+        );
+
+        if (entry is null)
+            return Result.NotFound(UnknownEntryMessage);
+
+        _dbContext.CalendarEntries.Remove(entry);
+        await _dbContext.SaveChangesAsync(ct);
+
+        return Result.Success();
     }
 
     public async Task<Result> SetResponseAsync(
@@ -170,6 +280,7 @@ public sealed class CalendarService
             entry.StartsAt,
             entry.EndsAt,
             entry.Kind,
+            entry.VenueId,
             entry.Venue!.Name,
             entry.OwnerGroupId,
             entry.OwnerGroup!.Name,
@@ -192,6 +303,7 @@ public sealed class CalendarService
             StartsAt = row.StartsAt,
             EndsAt = row.EndsAt,
             Kind = row.Kind,
+            VenueId = row.VenueId,
             VenueName = row.VenueName,
             OwnerGroupId = row.OwnerGroupId,
             OwnerGroupName = row.OwnerGroupName,
@@ -201,6 +313,65 @@ public sealed class CalendarService
             ViewerAnswer = answers.TryGetValue(row.CalendarEntryId, out var answer) ? answer : null,
             IsRunning = row.IsRunning,
         };
+
+    private async Task<CalendarEntryWriteResult> WrittenAsync(
+        CalendarEntry entry,
+        int viewerPersonId,
+        CancellationToken ct
+    ) =>
+        new()
+        {
+            CalendarEntryId = entry.Id,
+            VenueCollisions = await CollisionsOfAsync(entry, viewerPersonId, ct),
+        };
+
+    private async Task<IReadOnlyList<CalendarEntrySummary>> CollisionsOfAsync(
+        CalendarEntry entry,
+        int viewerPersonId,
+        CancellationToken ct
+    )
+    {
+        if (entry.VenueId is not { } venueId)
+            return [];
+
+        return await FindVenueCollisionsAsync(
+            new VenueCollisionQuery
+            {
+                ViewerPersonId = viewerPersonId,
+                VenueId = venueId,
+                StartsAt = entry.StartsAt,
+                EndsAt = entry.EndsAt,
+                ExcludeCalendarEntryId = entry.Id,
+            },
+            ct
+        );
+    }
+
+    private async Task<string?> PlacementRefusalAsync(Placement placement, CancellationToken ct)
+    {
+        if (placement.OwnerGroupId is null && placement.Visibility == CalendarEntryVisibility.Group)
+            return ClubEntryCannotBeGroupOnlyMessage;
+
+        if (placement.OwnerGroupId is { } ownerGroupId && !await GroupExistsAsync(ownerGroupId, ct))
+            return UnknownOwnerGroupMessage;
+
+        if (placement.VenueId is not { } venueId)
+            return null;
+
+        var venue = await _dbContext
+            .Venues.AsNoTracking()
+            .Where(row => row.Id == venueId)
+            .Select(row => new VenueStateRow(row.Id, row.ArchivedOn))
+            .SingleOrDefaultAsync(ct);
+
+        if (venue is null)
+            return UnknownVenueMessage;
+
+        return venue.ArchivedOn is null ? null : ArchivedVenueMessage;
+    }
+
+    private Task<bool> GroupExistsAsync(int groupId, CancellationToken ct) =>
+        _dbContext.Groups.AsNoTracking().AnyAsync(group => group.Id == groupId, ct);
 
     private async Task<IReadOnlyDictionary<int, AttendanceAnswer>> AnswersOfAsync(
         int personId,
@@ -229,6 +400,7 @@ public sealed class CalendarService
         DateTimeOffset StartsAt,
         DateTimeOffset? EndsAt,
         CalendarEntryKind Kind,
+        int? VenueId,
         string? VenueName,
         int? OwnerGroupId,
         string? OwnerGroupName,
@@ -239,4 +411,12 @@ public sealed class CalendarService
     );
 
     private sealed record EntryStateRow(int CalendarEntryId, bool AsksForResponse);
+
+    private sealed record VenueStateRow(int VenueId, DateOnly? ArchivedOn);
+
+    private readonly record struct Placement(
+        int? OwnerGroupId,
+        int? VenueId,
+        CalendarEntryVisibility Visibility
+    );
 }

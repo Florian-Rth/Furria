@@ -60,6 +60,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<RoleService>();
         services.AddScoped<RunningBoardSeats>();
         services.AddScoped<ClubService>();
+        services.AddScoped<SessionRecordService>();
+        services.AddScoped<VenueService>();
+        services.AddScoped<BoardService>();
+        services.AddScoped<KeyHoldingService>();
         services.AddScoped<AnnouncementService>();
         services.AddScoped<CalendarService>();
         services.AddScoped<ManagementService>();

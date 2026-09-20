@@ -75,10 +75,20 @@ public sealed class GetManageHub : EndpointWithoutRequest<GetManageHubResponse>
         new() { VenueCount = venues.VenueCount, ArchivedCount = venues.ArchivedCount };
 
     private static ManageHubKeysDto ToDto(ManageHubKeys keys) =>
-        new() { HoldingCount = keys.HoldingCount, HolderCount = keys.HolderCount };
+        new()
+        {
+            IssuedCount = keys.IssuedCount,
+            HoldingCount = keys.HoldingCount,
+            HolderCount = keys.HolderCount,
+        };
 
     private static ManageHubBoardDto ToDto(ManageHubBoard board) =>
-        new() { SeatCount = board.SeatCount, VacantOfficeCount = board.VacantOfficeCount };
+        new()
+        {
+            OfficeCount = board.OfficeCount,
+            SeatCount = board.SeatCount,
+            VacantOfficeCount = board.VacantOfficeCount,
+        };
 }
 
 public sealed record GetManageHubResponse
@@ -137,6 +147,8 @@ public sealed record ManageHubVenuesDto
 
 public sealed record ManageHubKeysDto
 {
+    public required int IssuedCount { get; init; }
+
     public required int HoldingCount { get; init; }
 
     public required int HolderCount { get; init; }
@@ -144,6 +156,8 @@ public sealed record ManageHubKeysDto
 
 public sealed record ManageHubBoardDto
 {
+    public required int OfficeCount { get; init; }
+
     public required int SeatCount { get; init; }
 
     public required int VacantOfficeCount { get; init; }

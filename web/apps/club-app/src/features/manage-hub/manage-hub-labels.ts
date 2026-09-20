@@ -41,6 +41,7 @@ export interface ManageBankModel {
 
 interface ManageTileFacts {
   primaryCount: number;
+  presenceCount: number;
   fullLine: string;
   emptyLine: string;
   vacancyCount: number | null;
@@ -83,7 +84,18 @@ const toHolderLine = (holderCount: number): string => {
     return 'bei 1 Person';
   }
 
-  return 'bei niemandem';
+  return 'Alle zurück';
+};
+
+const toSeatLine = (seatCount: number): string => {
+  if (seatCount > 1) {
+    return `${seatCount} Sitze besetzt`;
+  }
+  if (seatCount === 1) {
+    return '1 Sitz besetzt';
+  }
+
+  return 'Kein Sitz besetzt';
 };
 
 const toSessionLine = (sessionLabel: string, hasCurrentEntry: boolean): string =>
@@ -95,6 +107,7 @@ const PANEL_FACTS: Record<ManagePanelId, ManageFactReader> = {
       ? null
       : {
           primaryCount: hub.persons.personCount,
+          presenceCount: hub.persons.personCount,
           fullLine: toMemberLine(hub.persons.memberCount),
           emptyLine: 'Die erste Person',
           vacancyCount: null,
@@ -104,6 +117,7 @@ const PANEL_FACTS: Record<ManagePanelId, ManageFactReader> = {
       ? null
       : {
           primaryCount: hub.groups.groupCount,
+          presenceCount: hub.groups.groupCount,
           fullLine: toArchivedLine(hub.groups.archivedCount),
           emptyLine: 'Die erste Gruppe',
           vacancyCount: null,
@@ -113,6 +127,7 @@ const PANEL_FACTS: Record<ManagePanelId, ManageFactReader> = {
       ? null
       : {
           primaryCount: hub.roles.roleCount,
+          presenceCount: hub.roles.roleCount,
           fullLine: ALL_SEATS_TAKEN,
           emptyLine: 'Die erste Rolle',
           vacancyCount: hub.roles.vacantCount,
@@ -121,8 +136,9 @@ const PANEL_FACTS: Record<ManagePanelId, ManageFactReader> = {
     hub.board === null
       ? null
       : {
-          primaryCount: hub.board.seatCount,
-          fullLine: ALL_SEATS_TAKEN,
+          primaryCount: hub.board.officeCount,
+          presenceCount: hub.board.officeCount,
+          fullLine: toSeatLine(hub.board.seatCount),
           emptyLine: 'Die erste Funktion',
           vacancyCount: hub.board.vacantOfficeCount,
         },
@@ -131,6 +147,7 @@ const PANEL_FACTS: Record<ManagePanelId, ManageFactReader> = {
       ? null
       : {
           primaryCount: hub.sessions.entryCount,
+          presenceCount: hub.sessions.entryCount,
           fullLine: toSessionLine(sessionLabel, hub.sessions.hasCurrentEntry),
           emptyLine: 'Der erste Eintrag',
           vacancyCount: null,
@@ -140,6 +157,7 @@ const PANEL_FACTS: Record<ManagePanelId, ManageFactReader> = {
       ? null
       : {
           primaryCount: hub.venues.venueCount,
+          presenceCount: hub.venues.venueCount,
           fullLine: toArchivedLine(hub.venues.archivedCount),
           emptyLine: 'Der erste Ort',
           vacancyCount: null,
@@ -149,6 +167,7 @@ const PANEL_FACTS: Record<ManagePanelId, ManageFactReader> = {
       ? null
       : {
           primaryCount: hub.keys.holdingCount,
+          presenceCount: hub.keys.issuedCount,
           fullLine: toHolderLine(hub.keys.holderCount),
           emptyLine: 'Der erste Schlüssel',
           vacancyCount: null,
@@ -156,7 +175,7 @@ const PANEL_FACTS: Record<ManagePanelId, ManageFactReader> = {
 };
 
 const toTile = (panel: ManagePanelDefinition, facts: ManageTileFacts): ManageTileModel => {
-  const isEmpty = facts.primaryCount === 0;
+  const isEmpty = facts.presenceCount === 0;
   const vacancyCount = facts.vacancyCount;
   const vacancyLabel =
     isEmpty || vacancyCount === null || vacancyCount === 0 ? null : `${vacancyCount} unbesetzt`;

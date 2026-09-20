@@ -29,6 +29,7 @@ public sealed partial class ClubService
     {
         var venues = await _dbContext
             .Venues.AsNoTracking()
+            .Where(venue => venue.ArchivedOn == null)
             .OrderBy(venue => venue.SortOrder)
             .ThenBy(venue => EF.Functions.Collate(venue.Name, GermanCollation.Name))
             .ThenBy(venue => venue.Id)

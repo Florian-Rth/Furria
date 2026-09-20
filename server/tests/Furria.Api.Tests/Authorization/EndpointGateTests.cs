@@ -28,6 +28,8 @@ public sealed class EndpointGateTests
         "/api/announcements/{announcementId}",
         "/api/announcements/{announcementId}/withdraw",
         "/api/auth/me/last-seen-announcement",
+        "/api/calendar/entries",
+        "/api/calendar/entries/{calendarEntryId}",
     ];
 
     private static readonly string[] InHandlerGatedProbes =

@@ -32,6 +32,7 @@ export { AppSkeletonRegion } from './components/AppSkeletonRegion';
 export { AppStageGreeting } from './components/AppStageGreeting';
 export { AppUserLink } from './components/AppUserLink';
 export { RequireAffiliation } from './components/RequireAffiliation';
+export { RequireAnyPermission } from './components/RequireAnyPermission';
 export { RequirePermission } from './components/RequirePermission';
 export { SessionBoot } from './components/SessionBoot';
 export { useAuthenticatedRedirect } from './hooks/use-authenticated-redirect';

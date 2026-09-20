@@ -16,6 +16,17 @@ public sealed class SessionExpectations
         _sessionId = sessionId;
     }
 
+    public Expected ToNotExist() =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.False(
+                    await dbContext
+                        .Sessions.AsNoTracking()
+                        .AnyAsync(row => row.Id == _sessionId, ct),
+                    $"Expected no Session with id {_sessionId}."
+                )
+        );
+
     public Expected ToHaveStartYear(int startYear) =>
         _expected.Enqueue(
             async (dbContext, ct) =>

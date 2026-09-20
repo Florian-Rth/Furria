@@ -4,6 +4,10 @@ namespace Furria.Tests.Common.Builder;
 
 public sealed class ClubSeedBuilder
 {
+    private const string DefaultStreet = "Schulstraße 4";
+    private const string DefaultZip = "99713";
+    private const string DefaultCity = "Großfurra";
+
     private static readonly DateOnly DefaultSinceOn = new(2020, 11, 11);
 
     private readonly List<SessionIntent> _sessions = [];
@@ -47,9 +51,9 @@ public sealed class ClubSeedBuilder
         string alias,
         string name,
         int sortOrder = 1,
-        string street = "",
-        string zip = "",
-        string city = "",
+        string street = DefaultStreet,
+        string zip = DefaultZip,
+        string city = DefaultCity,
         string? hint = null,
         DateOnly? archivedOn = null
     )

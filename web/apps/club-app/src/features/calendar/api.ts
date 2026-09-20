@@ -4,10 +4,22 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CLUB_HUB_QUERY_KEY } from '@/features/club';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { toWriteErrorMessage } from '@/lib/write-error';
-import { toAttendanceSavedMessage } from './calendar-labels';
+import type { CalendarEntryPayload } from './calendar-authoring';
+import {
+  toAttendanceSavedMessage,
+  toEntryCreatedMessage,
+  toEntryDeletedMessage,
+  toEntrySavedMessage,
+} from './calendar-labels';
 import type { CalendarQuery, CalendarScope } from './calendar-query';
-import { requestAttendanceResponse, requestCalendar } from './requests';
-import type { AttendanceAnswer, CalendarResponse } from './schemas';
+import {
+  requestAttendanceResponse,
+  requestCalendar,
+  requestCalendarEntryCreation,
+  requestCalendarEntryDeletion,
+  requestCalendarEntryUpdate,
+} from './requests';
+import type { AttendanceAnswer, CalendarResponse, WrittenCalendarEntry } from './schemas';
 
 export const CALENDAR_QUERY_KEY = ['calendar'] as const;
 
@@ -63,6 +75,77 @@ export const useAttendanceResponseMutation = (): UseMutationResult<
       if (message !== null) {
         raiseNotice({ tone: 'error', message });
       }
+      refreshCalendar(queryClient);
+    },
+  });
+};
+
+export interface CalendarEntryInput {
+  payload: CalendarEntryPayload;
+}
+
+export interface CalendarEntryUpdateInput extends CalendarEntryInput {
+  calendarEntryId: number;
+}
+
+export interface CalendarEntryDeletionInput {
+  calendarEntryId: number;
+  title: string;
+}
+
+export const useCreateCalendarEntryMutation = (): UseMutationResult<
+  WrittenCalendarEntry,
+  Error,
+  CalendarEntryInput
+> => {
+  const queryClient = useQueryClient();
+  const raiseNotice = useKkNotice();
+
+  return useMutation({
+    mutationFn: ({ payload }: CalendarEntryInput) =>
+      withFreshAccessToken((accessToken) => requestCalendarEntryCreation(payload, accessToken)),
+    onSuccess: (_written, { payload }) => {
+      raiseNotice({ tone: 'success', message: toEntryCreatedMessage(payload.title) });
+      refreshCalendar(queryClient);
+    },
+  });
+};
+
+export const useUpdateCalendarEntryMutation = (): UseMutationResult<
+  WrittenCalendarEntry,
+  Error,
+  CalendarEntryUpdateInput
+> => {
+  const queryClient = useQueryClient();
+  const raiseNotice = useKkNotice();
+
+  return useMutation({
+    mutationFn: ({ calendarEntryId, payload }: CalendarEntryUpdateInput) =>
+      withFreshAccessToken((accessToken) =>
+        requestCalendarEntryUpdate(calendarEntryId, payload, accessToken),
+      ),
+    onSuccess: (_written, { payload }) => {
+      raiseNotice({ tone: 'success', message: toEntrySavedMessage(payload.title) });
+      refreshCalendar(queryClient);
+    },
+  });
+};
+
+export const useDeleteCalendarEntryMutation = (): UseMutationResult<
+  void,
+  Error,
+  CalendarEntryDeletionInput
+> => {
+  const queryClient = useQueryClient();
+  const raiseNotice = useKkNotice();
+
+  return useMutation({
+    mutationFn: ({ calendarEntryId }: CalendarEntryDeletionInput) =>
+      withFreshAccessToken((accessToken) =>
+        requestCalendarEntryDeletion(calendarEntryId, accessToken),
+      ),
+    onSuccess: (_removed, { title }) => {
+      raiseNotice({ tone: 'success', message: toEntryDeletedMessage(title) });
       refreshCalendar(queryClient);
     },
   });

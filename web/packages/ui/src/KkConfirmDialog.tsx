@@ -89,6 +89,15 @@ export const KkConfirmDialog: FC<KkConfirmDialogProps> = ({
 }) => {
   const titleId = useId();
   const mark = toneMarks[tone];
+  const isBusy = busy === true;
+
+  const dismiss = (): void => {
+    if (isBusy) {
+      return;
+    }
+
+    onClose();
+  };
   const factRows = facts.map((fact, index) => ({ ...fact, key: `${index}-${fact.label}` }));
 
   const fieldBlock =
@@ -111,7 +120,7 @@ export const KkConfirmDialog: FC<KkConfirmDialogProps> = ({
   const errorAlert = error === undefined ? null : <KkAlert severity="error">{error}</KkAlert>;
 
   return (
-    <KkModalFrame open={open} onClose={onClose} labelledBy={titleId} closeLabel={closeLabel}>
+    <KkModalFrame open={open} onClose={dismiss} labelledBy={titleId} closeLabel={closeLabel}>
       <Stack direction="row" sx={{ minWidth: 0, gap: 1.375, alignItems: 'flex-start' }}>
         <Stack
           aria-hidden
@@ -144,7 +153,7 @@ export const KkConfirmDialog: FC<KkConfirmDialogProps> = ({
       {consequenceNote}
       <KkModalFrame.Footer>
         {errorAlert}
-        <KkButton variant="outlined" onClick={onClose}>
+        <KkButton variant="outlined" disabled={isBusy} onClick={dismiss}>
           {cancelLabel}
         </KkButton>
         <KkButton tone={confirmButtonTones[tone]} loading={busy} onClick={onConfirm}>

@@ -58,7 +58,14 @@ public sealed class Expected
 
     public KeyHoldingExpectations KeyHolding(int keyHoldingId) => new(this, keyHoldingId);
 
+    public KeyHoldingSetExpectations KeyHoldingsOfVenue(int venueId) => new(this, venueId);
+
+    public BoardOfficeExpectations BoardOffice(int boardOfficeId) => new(this, boardOfficeId);
+
     public BoardSeatExpectations BoardSeat(int boardSeatId) => new(this, boardSeatId);
+
+    public BoardSeatSetExpectations BoardSeatsOfOffice(int boardOfficeId) =>
+        new(this, boardOfficeId);
 
     public CalendarEntryExpectations CalendarEntry(int calendarEntryId) =>
         new(this, calendarEntryId);

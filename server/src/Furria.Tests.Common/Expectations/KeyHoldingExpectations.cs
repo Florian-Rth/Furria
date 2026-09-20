@@ -16,6 +16,17 @@ public sealed class KeyHoldingExpectations
         _keyHoldingId = keyHoldingId;
     }
 
+    public Expected ToNotExist() =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.False(
+                    await dbContext
+                        .KeyHoldings.AsNoTracking()
+                        .AnyAsync(row => row.Id == _keyHoldingId, ct),
+                    $"Expected no Schlüssel with id {_keyHoldingId}."
+                )
+        );
+
     public Expected ToBeHeldAt(int venueId) =>
         _expected.Enqueue(
             async (dbContext, ct) =>
@@ -38,6 +49,21 @@ public sealed class KeyHoldingExpectations
         _expected.Enqueue(
             async (dbContext, ct) =>
                 Assert.Equal(untilOn, (await SingleAsync(dbContext, ct)).UntilOn)
+        );
+
+    public Expected ToHavePeriod(DateOnly sinceOn, DateOnly? untilOn) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var holding = await SingleAsync(dbContext, ct);
+                Assert.Equal(sinceOn, holding.SinceOn);
+                Assert.Equal(untilOn, holding.UntilOn);
+            }
+        );
+
+    public Expected ToBeOpen() =>
+        _expected.Enqueue(
+            async (dbContext, ct) => Assert.Null((await SingleAsync(dbContext, ct)).UntilOn)
         );
 
     private Task<KeyHolding> SingleAsync(AppDbContext dbContext, CancellationToken ct) =>

@@ -2,8 +2,11 @@ import { describe, expect, it } from 'vitest';
 import {
   toAttendanceChoices,
   toCalendarLead,
+  toDeleteConsequence,
+  toEntryFacts,
   toEntryMetaLine,
   toScopeOptions,
+  toVenueOptions,
 } from './calendar-labels';
 import type { CalendarEntry } from './schemas';
 
@@ -16,6 +19,7 @@ const entry = (overrides: Partial<CalendarEntry>): CalendarEntry => ({
   startsAt: at(2026, 2, 14, 19),
   endsAt: null,
   kind: 'performance',
+  venueId: null,
   venueName: null,
   ownerGroupId: null,
   ownerGroupName: null,
@@ -123,5 +127,45 @@ describe('toScopeOptions', () => {
 
   it('offers no group chip when nothing in the window belongs to a group', () => {
     expect(toScopeOptions([entry({})]).map((option) => option.id)).toEqual(['all', 'club']);
+  });
+});
+
+describe('toEntryFacts', () => {
+  it('leaves the Ort out when the Termin names none', () => {
+    const labels = toEntryFacts(entry({ venueName: null })).map((fact) => fact.label);
+
+    expect(labels).not.toContain('Ort');
+  });
+
+  it('names the Ort when the Termin holds one', () => {
+    const facts = toEntryFacts(entry({ venueId: 3, venueName: 'Bühnenhaus' }));
+
+    expect(facts.find((fact) => fact.label === 'Ort')?.value).toBe('Bühnenhaus');
+  });
+
+  it('reads a Gruppe as the Eigentümer and the Verein otherwise', () => {
+    const owned = toEntryFacts(entry({ ownerGroupId: 7, ownerGroupName: 'Tanzgarde' }));
+    const club = toEntryFacts(entry({}));
+
+    expect(owned.find((fact) => fact.label === 'Eigentümer')?.value).toBe('Tanzgarde');
+    expect(club.find((fact) => fact.label === 'Eigentümer')?.value).toBe('Verein');
+  });
+});
+
+describe('toDeleteConsequence', () => {
+  it('warns about the Zusagen only when the Termin collects them', () => {
+    expect(toDeleteConsequence(entry({ asksForResponse: true }))).toContain('Absagen');
+    expect(toDeleteConsequence(entry({ asksForResponse: false }))).not.toContain('Absagen');
+  });
+});
+
+describe('toVenueOptions', () => {
+  it('offers no Ort ahead of the Orte the Verein holds', () => {
+    const options = toVenueOptions([
+      { venueId: 4, name: 'Bühnenhaus', sortOrder: 1, holders: [] },
+      { venueId: 9, name: 'Lager', sortOrder: 2, holders: [] },
+    ]);
+
+    expect(options.map((option) => option.value)).toEqual(['', '4', '9']);
   });
 });
