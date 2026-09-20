@@ -6,6 +6,8 @@ import type { KkLetterPace } from '../letter-pace';
 
 export type KkScreenKind = 'overview' | 'list' | 'detail' | 'working' | 'fullscreen';
 
+export type KkScreenHeaderKind = 'title' | 'banner';
+
 export interface KkScreenOrigin {
   label: string;
   to: string;
@@ -78,6 +80,7 @@ export interface KkScreenSearch {
 interface KkScreenShared {
   title: string;
   header?: ReactNode;
+  headerKind?: KkScreenHeaderKind;
   thread?: KkScreenThread;
   children?: ReactNode;
 }

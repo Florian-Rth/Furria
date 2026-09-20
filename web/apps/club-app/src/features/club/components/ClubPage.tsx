@@ -7,7 +7,13 @@ import { ClubStage } from './ClubStage';
 const CLUB_TITLE = 'Verein';
 
 export const ClubPage: FC = () => (
-  <KkScreen kind="overview" section={CLUB_SECTION} title={CLUB_TITLE} header={<ClubStage />}>
+  <KkScreen
+    kind="overview"
+    section={CLUB_SECTION}
+    title={CLUB_TITLE}
+    header={<ClubStage />}
+    headerKind="banner"
+  >
     <ClubBody />
   </KkScreen>
 );

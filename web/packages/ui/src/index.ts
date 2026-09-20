@@ -88,6 +88,7 @@ export type {
   KkScreenActionBar,
   KkScreenActions,
   KkScreenDeed,
+  KkScreenHeaderKind,
   KkScreenIndex,
   KkScreenKind,
   KkScreenOrigin,
