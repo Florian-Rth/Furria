@@ -20,6 +20,8 @@ public static class AppDbContextExtensions
             ["ix_role_name_active"] = WriteConflictMessages.DuplicateRollenName,
             ["ix_venue_name"] = WriteConflictMessages.DuplicateOrt,
             ["ix_board_office_name"] = WriteConflictMessages.DuplicateVorstandsfunktion,
+            ["ix_attendance_response_calendar_entry_id_person_id"] =
+                WriteConflictMessages.DuplicateZusage,
         }.ToFrozenDictionary(StringComparer.Ordinal);
 
     public static async Task<Result> SaveOrConflictAsync(

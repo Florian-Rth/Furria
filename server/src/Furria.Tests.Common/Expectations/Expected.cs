@@ -60,6 +60,12 @@ public sealed class Expected
 
     public BoardSeatExpectations BoardSeat(int boardSeatId) => new(this, boardSeatId);
 
+    public CalendarEntryExpectations CalendarEntry(int calendarEntryId) =>
+        new(this, calendarEntryId);
+
+    public AttendanceResponseExpectations AttendanceResponsesFor(int calendarEntryId) =>
+        new(this, calendarEntryId);
+
     public async Task AssertAsync(CancellationToken ct = default)
     {
         var pending = _reads.ToList();

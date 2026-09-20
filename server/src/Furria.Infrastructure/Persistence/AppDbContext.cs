@@ -47,6 +47,10 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>
 
     public DbSet<BoardSeat> BoardSeats => Set<BoardSeat>();
 
+    public DbSet<CalendarEntry> CalendarEntries => Set<CalendarEntry>();
+
+    public DbSet<AttendanceResponse> AttendanceResponses => Set<AttendanceResponse>();
+
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }
 

@@ -15,11 +15,6 @@ internal static class ClubSeedMaterializer
         TimeSpan.Zero
     );
 
-    private static readonly IReadOnlyDictionary<string, int> NothingSeeded = new Dictionary<
-        string,
-        int
-    >(StringComparer.Ordinal);
-
     internal static async Task<SeededClub> InsertAsync(
         AppDbContext dbContext,
         ClubSeedBuilder recorded,
@@ -29,8 +24,6 @@ internal static class ClubSeedMaterializer
         CancellationToken ct
     )
     {
-        RejectWhatNoTableCanHoldYet(recorded);
-
         var sessions = await InsertSessionsAsync(dbContext, recorded, ct);
         var venues = await InsertVenuesAsync(dbContext, recorded, ct);
         var announcements = await InsertAnnouncementsAsync(dbContext, recorded, personIds, ct);
@@ -43,6 +36,20 @@ internal static class ClubSeedMaterializer
             personIds,
             ct
         );
+        var calendarEntries = await InsertCalendarEntriesAsync(
+            dbContext,
+            recorded,
+            venues,
+            groupIds,
+            ct
+        );
+        var attendanceResponses = await InsertAttendanceResponsesAsync(
+            dbContext,
+            recorded,
+            calendarEntries,
+            personIds,
+            ct
+        );
 
         return new SeededClub(
             sessions,
@@ -51,39 +58,8 @@ internal static class ClubSeedMaterializer
             keyHoldings,
             boardOffices,
             boardSeats,
-            NothingSeeded,
-            NothingSeeded
-        );
-    }
-
-    private static void RejectWhatNoTableCanHoldYet(ClubSeedBuilder recorded)
-    {
-        RejectIfRecorded(
-            recorded.CalendarEntries,
-            nameof(ClubSeedBuilder.AddCalendarEntry),
-            "CA-P4 D5 (Kalender)"
-        );
-        RejectIfRecorded(
-            recorded.AttendanceResponses,
-            nameof(ClubSeedBuilder.AddAttendanceResponse),
-            "CA-P4 D5 (Kalender)"
-        );
-    }
-
-    private static void RejectIfRecorded(
-        IReadOnlyCollection<object> arrangement,
-        string builderMethod,
-        string owningSlice
-    )
-    {
-        if (arrangement.Count == 0)
-            return;
-
-        throw new NotSupportedException(
-            $"{nameof(ClubSeedBuilder)}.{builderMethod} arranges rows no table can hold yet — "
-                + $"{owningSlice} lands the entity, its DbSet and the matching "
-                + $"{nameof(ClubSeedMaterializer)} insert block. Until it does, the arrangement "
-                + "would be dropped silently and the test would pass without it."
+            calendarEntries,
+            attendanceResponses
         );
     }
 
@@ -273,6 +249,84 @@ internal static class ClubSeedMaterializer
         }
 
         return seats.ToDictionary(
+            entry => entry.Key,
+            entry => entry.Value.Id,
+            StringComparer.Ordinal
+        );
+    }
+
+    private static async Task<Dictionary<string, int>> InsertCalendarEntriesAsync(
+        AppDbContext dbContext,
+        ClubSeedBuilder recorded,
+        IReadOnlyDictionary<string, int> venueIds,
+        IReadOnlyDictionary<string, int> groupIds,
+        CancellationToken ct
+    )
+    {
+        var entries = recorded.CalendarEntries.ToDictionary(
+            intent => intent.Alias,
+            intent => new CalendarEntry
+            {
+                Title = intent.Title,
+                Description = intent.Description,
+                StartsAt = intent.StartsAt,
+                EndsAt = intent.EndsAt,
+                Kind = intent.Kind,
+                Visibility = intent.Visibility,
+                AsksForResponse = intent.AsksForResponse,
+                VenueId = intent.VenueAlias is null
+                    ? null
+                    : SeedAliases.RequireId(venueIds, intent.VenueAlias, "Ort"),
+                OwnerGroupId = intent.OwnerGroupAlias is null
+                    ? null
+                    : SeedAliases.RequireId(groupIds, intent.OwnerGroupAlias, "Gruppe"),
+            },
+            StringComparer.Ordinal
+        );
+
+        if (entries.Count > 0)
+        {
+            dbContext.CalendarEntries.AddRange(entries.Values);
+            await dbContext.SaveChangesAsync(ct);
+        }
+
+        return entries.ToDictionary(
+            entry => entry.Key,
+            entry => entry.Value.Id,
+            StringComparer.Ordinal
+        );
+    }
+
+    private static async Task<Dictionary<string, int>> InsertAttendanceResponsesAsync(
+        AppDbContext dbContext,
+        ClubSeedBuilder recorded,
+        IReadOnlyDictionary<string, int> calendarEntryIds,
+        IReadOnlyDictionary<string, int> personIds,
+        CancellationToken ct
+    )
+    {
+        var responses = recorded.AttendanceResponses.ToDictionary(
+            intent => intent.Alias,
+            intent => new AttendanceResponse
+            {
+                CalendarEntryId = SeedAliases.RequireId(
+                    calendarEntryIds,
+                    intent.CalendarEntryAlias,
+                    "Kalendereintrag"
+                ),
+                PersonId = SeedAliases.RequireId(personIds, intent.PersonAlias, "Person"),
+                Answer = intent.Answer,
+            },
+            StringComparer.Ordinal
+        );
+
+        if (responses.Count > 0)
+        {
+            dbContext.AttendanceResponses.AddRange(responses.Values);
+            await dbContext.SaveChangesAsync(ct);
+        }
+
+        return responses.ToDictionary(
             entry => entry.Key,
             entry => entry.Value.Id,
             StringComparer.Ordinal
