@@ -1,31 +1,31 @@
 import { KkConfirmDialog } from '@furria/ui';
 import type { FC } from 'react';
 import { toIsoDay } from '@/lib/day';
-import { useArchiveBoardOfficeMutation } from '../api';
+import { useRestoreBoardOfficeMutation } from '../api';
 import { useBoardOfficeConfirm } from '../hooks/use-board-office-confirm';
 import type { BoardOfficeEntry } from '../manage-board-labels';
 import {
-  ARCHIVE_OFFICE_EXPLANATION,
-  ARCHIVE_OFFICE_EYEBROW,
-  toArchiveOfficeConsequence,
-  toArchiveOfficeQuestion,
+  RESTORE_OFFICE_EXPLANATION,
+  RESTORE_OFFICE_EYEBROW,
   toBoardOfficeFacts,
+  toRestoreOfficeConsequence,
+  toRestoreOfficeQuestion,
 } from '../manage-board-labels';
 
 const CLOSE_LABEL = 'Schließen';
 const CANCEL_LABEL = 'Abbrechen';
-const CONFIRM_LABEL = 'Archivieren';
+const CONFIRM_LABEL = 'Aktivieren';
 
-interface ArchiveBoardOfficeDialogProps {
+interface RestoreBoardOfficeDialogProps {
   office: BoardOfficeEntry | null;
   onClose: () => void;
 }
 
-export const ArchiveBoardOfficeDialog: FC<ArchiveBoardOfficeDialogProps> = ({
+export const RestoreBoardOfficeDialog: FC<RestoreBoardOfficeDialogProps> = ({
   office,
   onClose,
 }) => {
-  const mutation = useArchiveBoardOfficeMutation(office?.boardOfficeId ?? 0);
+  const mutation = useRestoreBoardOfficeMutation(office?.boardOfficeId ?? 0);
   const control = useBoardOfficeConfirm({
     mutation,
     officeName: office?.name ?? '',
@@ -42,11 +42,11 @@ export const ArchiveBoardOfficeDialog: FC<ArchiveBoardOfficeDialogProps> = ({
       open
       onClose={onClose}
       onConfirm={control.submit}
-      eyebrow={ARCHIVE_OFFICE_EYEBROW}
-      question={toArchiveOfficeQuestion(office.name)}
-      explanation={ARCHIVE_OFFICE_EXPLANATION}
+      eyebrow={RESTORE_OFFICE_EYEBROW}
+      question={toRestoreOfficeQuestion(office.name)}
+      explanation={RESTORE_OFFICE_EXPLANATION}
       facts={toBoardOfficeFacts(office, today)}
-      consequence={toArchiveOfficeConsequence(office.name, today)}
+      consequence={toRestoreOfficeConsequence(office.name, today)}
       error={control.rejection ?? undefined}
       confirmLabel={CONFIRM_LABEL}
       cancelLabel={CANCEL_LABEL}

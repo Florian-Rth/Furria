@@ -10,7 +10,7 @@ export const OFFICE_EYEBROW = 'Vorstandsfunktion';
 export const PAST_SEATS_LABEL = 'Frühere Sitze';
 
 export const ARCHIVED_OFFICE_NOTE =
-  'Diese Vorstandsfunktion gehört nicht mehr zum Vorstand. Ihre Sitze bleiben als Geschichte stehen.';
+  'Diese Vorstandsfunktion gehört nicht mehr zum Vorstand. Ihre Sitze bleiben als Geschichte stehen. Zum Besetzen oder Bearbeiten musst du sie zuerst wieder aktivieren.';
 
 export const toArchivedOfficeMeta = (archivedOn: string | null): string | undefined =>
   archivedOn === null ? undefined : `Archiviert am ${formatIsoDay(archivedOn)}`;
@@ -166,6 +166,9 @@ export const toOfficeSavedMessage = (name: string): string =>
 
 export const toOfficeArchivedMessage = (name: string): string => `${name} ist archiviert.`;
 
+export const toOfficeRestoredMessage = (name: string): string =>
+  `${name} gehört wieder zum Vorstand.`;
+
 export const toImpliedRoleSavedMessage = (name: string, roleName: string | null): string =>
   roleName === null
     ? `${name} zieht keine Rolle mehr nach sich.`
@@ -245,25 +248,37 @@ export const toEndSeatFacts = (
   { label: 'Letzter Tag', value: endedOn === null ? 'noch offen' : formatIsoDay(endedOn) },
 ];
 
-export const toArchiveOfficeQuestion = (name: string): string => `${name} archivieren?`;
-
 export const ARCHIVE_OFFICE_BLOCKED_HINT = 'Erst den Sitz beenden';
 
 export const isOfficeArchivable = (entry: BoardOfficeEntry): boolean =>
   !entry.isArchived && entry.seats.length === 0;
 
+export const ARCHIVE_OFFICE_EYEBROW = 'Vorstandsfunktion archivieren';
+
+export const toArchiveOfficeQuestion = (name: string): string => `${name} archivieren?`;
+
 export const ARCHIVE_OFFICE_EXPLANATION =
-  'Archivieren löscht nichts: Die Vorstandsfunktion verschwindet aus dem Vorstand, ihre früheren Sitze bleiben als Geschichte stehen. Zurückholen lässt sie sich nicht — wird sie wieder gewählt, legst du sie neu an.';
+  'Archivieren löscht nichts: Die Vorstandsfunktion verlässt den Vorstand und nimmt die Rechte mit, die sie nach sich zieht — sie lässt sich nicht mehr besetzen, ihre früheren Sitze bleiben als Geschichte stehen. Zurückholen kannst du sie jederzeit.';
 
 export const toArchiveOfficeConsequence = (name: string, todayIsoDay: string): string =>
-  `Ab heute, dem ${formatIsoDay(todayIsoDay)}, gehört ${name} dauerhaft nicht mehr zum Vorstand.`;
+  `Ab heute, dem ${formatIsoDay(todayIsoDay)}, gehört ${name} nicht mehr zum Vorstand und lässt sich nicht mehr besetzen. Die früheren Sitze bleiben stehen.`;
 
-export const toArchiveOfficeFacts = (
+export const RESTORE_OFFICE_EYEBROW = 'Vorstandsfunktion aktivieren';
+
+export const toRestoreOfficeQuestion = (name: string): string => `${name} wieder aktivieren?`;
+
+export const RESTORE_OFFICE_EXPLANATION =
+  'Die Vorstandsfunktion steht wieder im Vorstand und lässt sich wieder besetzen. Zieht sie eine Rolle nach sich, greifen deren Rechte wieder für jeden, der in ihr sitzt. An ihrer Geschichte ändert sich nichts — sie war nie weg.';
+
+export const toRestoreOfficeConsequence = (name: string, todayIsoDay: string): string =>
+  `Ab heute, dem ${formatIsoDay(todayIsoDay)}, gehört ${name} wieder zum Vorstand. An den früheren Sitzen ändert sich nichts.`;
+
+export const toBoardOfficeFacts = (
   entry: BoardOfficeEntry,
   todayIsoDay: string,
 ): KkConfirmFact[] => [
   { label: 'Vorstandsfunktion', value: entry.name },
   { label: 'Zieht nach sich', value: toImpliedRoleStatement(entry.impliedRoleName) },
   { label: 'Laufende Sitze', value: String(entry.seats.length) },
-  { label: 'Archiviert am', value: formatIsoDay(todayIsoDay) },
+  { label: 'Ab', value: formatIsoDay(todayIsoDay) },
 ];

@@ -1,5 +1,5 @@
 ---
-status: shaped 2026-09-20, not yet implemented
+status: implemented 2026-09-20
 phase: CA-P5 — Verein verwalten
 shaped_with: Florian, grilling session 2026-09-20
 binding: docs/adr/0010, docs/adr/0011 (+ its 2026-09-19 amendment), docs/adr/0012,
@@ -308,3 +308,81 @@ website all read off one row.
 - **Who may grant `roles.manage`.** Ruled in passing on 2026-09-20 that it sits with the Admin by
   default and the club may later hand it to the Geschäftsführer — a configuration question, not a
   code one, but worth naming before the club composes its first Rollen.
+
+---
+
+## What was built — 2026-09-20
+
+The phase is shipped. `/manage` stands, the four new Berechtigungen are grantable through the
+rights matrix, and every table CA-P4 left empty by design can now be written from the app instead
+of from psql. What follows is where the build knowingly left the shape above, and why.
+
+**Two waves on one branch, not seven shippable slices.** E0–E6 were never released one at a time.
+The platform ships as a whole (CLAUDE.md: build the end state), so nothing was gained by making
+each slice independently releasable, and a slice boundary that buys nothing costs a migration.
+The renames, the hub and the Ort's address landed together; the four screens and the Kalender's
+`+` landed together. The consequence worth writing down: **all of the phase's schema changes sit
+in one migration, `VereinVerwalten`** — `session.signet_svg` renamed to `logo_svg`, `venue` gaining
+`street`, `zip`, `city`, `hint` and `archived_on`, and `board_office` gaining `archived_on` —
+instead of E0 and E3 each adding one. The columns therefore exist a wave before the screens that
+write them, which is harmless and was the point.
+
+**The hub shipped with all seven panels at once.** E1 was shaped to carry three panels and let
+E2–E5 add the rest. Since every screen lands in the same branch, a response that deliberately
+omits four panels would have been a fiction from the day it was written. `ManagementService.HubAsync`
+counts all seven from the start.
+
+**The hub is not the flat seven-row table drawn above.** It is three named banks of tiles —
+*Wer dazugehört* (Personen & Mitgliedschaften, Gruppen), *Wer darf was* (Rollen & Rechte, Vorstand)
+and *Was der Verein führt* (Sessionseinträge, Orte, Schlüssel). **Vorstand moved beside Rollen &
+Rechte** because a Vorstandssitz implies a Rolle; filing it under what the club *führt* would have
+hidden the one panel that hands out rights. Gold is reserved for **unbesetzt** and appears nowhere
+else on the screen, so the eye finds the quietly-wrong thing without reading. An empty panel is
+rendered as a dashed reserved silhouette — ruling 7 said emptiness never hides a panel, and this is
+what that looks like — and its foot names **what comes next** rather than what is missing:
+*Die erste Person*, *Der erste Schlüssel*. Day one reads as a club that has not started yet, not as
+a club that is broken.
+
+**Six keys open the hub, not seven.** The table above lists seven panels but only six distinct
+Berechtigungen — `club.manage` carries both Sessionseinträge and Orte. `calendar.manage_club` is
+the seventh new key and gates nothing on this hub, because the Kalender is not one of its panels
+(ruling 2). `RequireAnyPermission` on `GET manage/hub` therefore names six.
+
+**Seating a Person into a Vorstandsfunktion that implies a Rolle demands `roles.manage` as well as
+`board.manage`.** Found by the review pass, after the shaping. Ruling 9 closed the escalation at
+`PutBoardOfficeImpliedRole` — but `PostBoardSeat` was the same door left open: seating yourself
+into an *existing* Funktion that already implies **Admin** grants exactly the keys ruling 9 was
+written to protect. `BoardSeatingExtensions.MaySeatIntoOfficeAsync` asks for `roles.manage` only
+when the Funktion actually implies a Rolle, so a `board.manage` holder can still record an election
+into a Beisitz that implies nothing.
+
+**A Kollisionswarnung is filtered by the reader's Sichtbarkeit.** `FindVenueCollisionsAsync` runs
+the same `VisibleTo` predicate the Kalender itself runs, so a warning never names a gruppeninterner
+Eintrag the author may not read. The warning is still never a rejection (E6), it is simply quieter
+for some authors than for others.
+
+**The Kalender's Ort-Auswahl reads the Verein hub, as E6 intended.** No affiliation-gated
+`GET venues` exists; `useCalendarAuthoring` takes its Orte from `club/hub`, which is gated on
+`club.read`. Named here because it leaves a gap: a Gruppen-Admin without a running Mitgliedschaft
+may own a Kalendereintrag and would open the picker empty. Nothing in this phase hits that case —
+it wants its own ruling before the Gruppen-Admin role is handed out freely.
+
+**A Vorstandsfunktion is archived and stays archived.** Unlike a Gruppe, an Ort and a Rolle, it has
+no Restore. `ArchiveBoardOffice` refuses while a Sitz is running (as shaped), and every write on an
+archived Funktion is a `Conflict` — but there is no way back. That was not decided, it was simply
+never built, and it is the one asymmetry in the phase worth revisiting.
+
+**Form-Fehler moved out of `manage-groups`.** Four new form screens landed at once, so
+`manage-groups/form-failures.ts` was lifted into `lib/api/api-failures.ts` as `toFormFailures`
+rather than copied five times. No behaviour changed.
+
+### What this did to the open questions
+
+- **Who holds a child's Account** — sharpened, as E6 predicted. The Zu-/Absage is now *authored*:
+  whoever creates an entry decides whether it asks for one, so the question of who answers it has a
+  surface that can ask it wrongly.
+- **Who may grant `roles.manage`** — sharpened. It now guards two doors, not one: the rights matrix
+  and seating a Person into a Funktion that implies a Rolle. Handing it to the Geschäftsführer is a
+  larger decision than it was on the morning of the shaping.
+- **The founding year** and **the word for non-member Gruppen people** are untouched by this phase
+  and stay open exactly as written.

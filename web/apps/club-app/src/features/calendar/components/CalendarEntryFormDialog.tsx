@@ -13,7 +13,6 @@ import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { useId } from 'react';
-import type { ClubVenue } from '@/features/club';
 import type { CalendarOwnerOption } from '../calendar-authoring';
 import {
   CALENDAR_KIND_OPTIONS,
@@ -23,7 +22,7 @@ import {
   toVenueOptions,
 } from '../calendar-labels';
 import { useCalendarEntryForm } from '../hooks/use-calendar-entry-form';
-import type { CalendarEntry } from '../schemas';
+import type { CalendarEntry, RunningVenue } from '../schemas';
 import { CALENDAR_DESCRIPTION_MAX_LENGTH } from '../schemas';
 
 const CREATE_TITLE = 'Termin eintragen';
@@ -66,7 +65,7 @@ const toCountLabel = (used: number, max: number): string => `${used} von ${max} 
 interface CalendarEntryFormDialogProps {
   entry: CalendarEntry | null;
   ownerOptions: readonly CalendarOwnerOption[];
-  venues: readonly ClubVenue[];
+  venues: readonly RunningVenue[];
   open: boolean;
   onClose: () => void;
   onSaved: () => void;

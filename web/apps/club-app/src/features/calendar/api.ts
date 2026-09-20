@@ -18,8 +18,14 @@ import {
   requestCalendarEntryCreation,
   requestCalendarEntryDeletion,
   requestCalendarEntryUpdate,
+  requestRunningVenues,
 } from './requests';
-import type { AttendanceAnswer, CalendarResponse, WrittenCalendarEntry } from './schemas';
+import type {
+  AttendanceAnswer,
+  CalendarResponse,
+  RunningVenuesResponse,
+  WrittenCalendarEntry,
+} from './schemas';
 
 export const CALENDAR_QUERY_KEY = ['calendar'] as const;
 
@@ -50,6 +56,14 @@ export const useCalendarQuery = (query: CalendarQuery): UseQueryResult<CalendarR
   useQuery({
     queryKey: calendarQueryKey(query.scope, query.groupId, query.from, query.to),
     queryFn: () => withFreshAccessToken((accessToken) => requestCalendar(query, accessToken)),
+  });
+
+export const RUNNING_VENUES_QUERY_KEY = ['running-venues'] as const;
+
+export const useRunningVenuesQuery = (): UseQueryResult<RunningVenuesResponse, Error> =>
+  useQuery({
+    queryKey: RUNNING_VENUES_QUERY_KEY,
+    queryFn: () => withFreshAccessToken((accessToken) => requestRunningVenues(accessToken)),
   });
 
 export const useAttendanceResponseMutation = (): UseMutationResult<

@@ -28,6 +28,15 @@ export type CalendarEntry = z.infer<typeof CalendarEntrySchema>;
 export const CalendarResponseSchema = z.object({ entries: z.array(CalendarEntrySchema) });
 export type CalendarResponse = z.infer<typeof CalendarResponseSchema>;
 
+export const RunningVenueSchema = z.object({
+  venueId: z.number().int(),
+  name: z.string(),
+});
+export type RunningVenue = z.infer<typeof RunningVenueSchema>;
+
+export const RunningVenuesResponseSchema = z.object({ venues: z.array(RunningVenueSchema) });
+export type RunningVenuesResponse = z.infer<typeof RunningVenuesResponseSchema>;
+
 export const CALENDAR_TITLE_MAX_LENGTH = 120;
 export const CALENDAR_DESCRIPTION_MAX_LENGTH = 2000;
 

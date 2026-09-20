@@ -33,6 +33,10 @@ export const BoardOfficeSection: FC<BoardOfficeSectionProps> = ({ entry, onOpen,
     onOpen('archive', entry.boardOfficeId);
   };
 
+  const restore = (): void => {
+    onOpen('restore', entry.boardOfficeId);
+  };
+
   const openSeat = (): void => {
     onOpen('open-seat', entry.boardOfficeId);
   };
@@ -70,6 +74,7 @@ export const BoardOfficeSection: FC<BoardOfficeSectionProps> = ({ entry, onOpen,
             onOpenSeat={openSeat}
             onRename={rename}
             onArchive={archive}
+            onRestore={restore}
           />
         }
         dimmed={entry.isArchived}

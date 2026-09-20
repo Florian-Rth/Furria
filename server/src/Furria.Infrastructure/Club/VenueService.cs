@@ -42,6 +42,17 @@ public sealed class VenueService
             })
             .ToListAsync(ct);
 
+    public async Task<IReadOnlyList<RunningVenueSummary>> GetRunningVenuesAsync(
+        CancellationToken ct
+    ) =>
+        await _dbContext
+            .Venues.AsNoTracking()
+            .Where(venue => venue.ArchivedOn == null)
+            .OrderBy(venue => venue.Name)
+            .ThenBy(venue => venue.Id)
+            .Select(venue => new RunningVenueSummary { VenueId = venue.Id, Name = venue.Name })
+            .ToListAsync(ct);
+
     public async Task<Result<int>> CreateAsync(CreateVenueCommand command, CancellationToken ct)
     {
         if (await NameIsTakenAsync(command.Name, null, ct))

@@ -7,6 +7,7 @@ const OPEN_SEAT_LABEL = 'Sitz besetzen';
 const OPEN_SEAT_TEXT = 'Besetzen';
 const RENAME_LABEL = 'Umbenennen';
 const ARCHIVE_LABEL = 'Archivieren';
+const RESTORE_LABEL = 'Aktivieren';
 
 interface BoardOfficeActionsProps {
   isArchived: boolean;
@@ -14,6 +15,7 @@ interface BoardOfficeActionsProps {
   onOpenSeat: () => void;
   onRename: () => void;
   onArchive: () => void;
+  onRestore: () => void;
 }
 
 export const BoardOfficeActions: FC<BoardOfficeActionsProps> = ({
@@ -22,9 +24,16 @@ export const BoardOfficeActions: FC<BoardOfficeActionsProps> = ({
   onOpenSeat,
   onRename,
   onArchive,
+  onRestore,
 }) => {
   if (isArchived) {
-    return null;
+    return (
+      <Stack sx={{ alignItems: 'flex-end', flexShrink: 0, minWidth: 0 }}>
+        <KkButton size="small" variant="outlined" onClick={onRestore}>
+          {RESTORE_LABEL}
+        </KkButton>
+      </Stack>
+    );
   }
 
   const blockedHint = canArchive ? null : <KkMeta>{ARCHIVE_OFFICE_BLOCKED_HINT}</KkMeta>;

@@ -292,6 +292,12 @@ per Person and per Ort. It is a *fact*, not an inventory: **copies are not numbe
 not counted** — the questions the club actually asks are "wen frage ich, um aufzuschließen" and
 "wem müssen wir einen abnehmen", and the holding answers both. Every member may see who holds
 what (decided 2026-09-19).
+
+**The counting that is forbidden is the Verein's.** No Schlüsselzahl belongs on the Verein hub or
+in a club statistic — there the club names holders, never a number. The **back office** counts, and
+must: `/manage/keys` and its Kachel show how many Ausgaben gerade laufen and bei wie vielen
+Personen, because handing one out and taking one back is the whole job of that screen
+(clarified 2026-09-20, CA-P5).
 _Avoid_: Schlüsselnummer, counting keys as a club statistic, Zutritt, Zugangsberechtigung
 (a Schlüssel is metal, a **Berechtigung** is a right in the app — never the same word)
 

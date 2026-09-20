@@ -16,6 +16,7 @@ public sealed class BoardService
     private const string ArchivedOfficeMessage =
         "Eine archivierte Vorstandsfunktion kann nicht bearbeitet werden.";
     private const string AlreadyArchivedMessage = "Diese Vorstandsfunktion ist bereits archiviert.";
+    private const string NotArchivedMessage = "Diese Vorstandsfunktion ist nicht archiviert.";
     private const string OccupiedOfficeMessage =
         "Diese Vorstandsfunktion ist besetzt. Beende zuerst den Vorstandssitz.";
     private const string UnknownRoleMessage = "Diese Rolle gibt es nicht.";
@@ -179,6 +180,22 @@ public sealed class BoardService
             return Result.Conflict(OccupiedOfficeMessage);
 
         office.ArchivedOn = today;
+        await _dbContext.SaveChangesAsync(ct);
+
+        return Result.Success();
+    }
+
+    public async Task<Result> RestoreOfficeAsync(int boardOfficeId, CancellationToken ct)
+    {
+        var office = await TrackedOfficeAsync(boardOfficeId, ct);
+
+        if (office is null)
+            return Result.NotFound(UnknownOfficeMessage);
+
+        if (office.ArchivedOn is null)
+            return Result.Conflict(NotArchivedMessage);
+
+        office.ArchivedOn = null;
         await _dbContext.SaveChangesAsync(ct);
 
         return Result.Success();

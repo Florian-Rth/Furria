@@ -1,10 +1,15 @@
 import type { KkConfirmFact, KkFilterOption, KkSelectOption } from '@furria/ui';
-import type { CalendarEntryKind, ClubVenue } from '@/features/club';
+import type { CalendarEntryKind } from '@/features/club';
 import { toIsoDayLabel, toLocalIsoDay, toTimeSpanLabel } from '@/lib/calendar-days';
 import type { CalendarOwnerOption } from './calendar-authoring';
 import { NO_VENUE_ID, toTimeChoices } from './calendar-authoring';
 import { ALL_SCOPE_ID, CLUB_SCOPE_ID, toGroupScopeId } from './calendar-query';
-import type { AttendanceAnswer, CalendarEntry, CalendarEntryVisibility } from './schemas';
+import type {
+  AttendanceAnswer,
+  CalendarEntry,
+  CalendarEntryVisibility,
+  RunningVenue,
+} from './schemas';
 
 export const CALENDAR_TITLE = 'Kalender';
 export const CALENDAR_LOADING_LABEL = 'Der Kalender wird geladen';
@@ -167,7 +172,7 @@ export const CALENDAR_VISIBILITY_OPTIONS: readonly KkSelectOption[] = (
   label: CALENDAR_VISIBILITY_LABELS[visibility],
 }));
 
-export const toVenueOptions = (venues: readonly ClubVenue[]): KkSelectOption[] => [
+export const toVenueOptions = (venues: readonly RunningVenue[]): KkSelectOption[] => [
   { value: NO_VENUE_ID, label: NO_VENUE_LABEL },
   ...venues.map((venue) => ({ value: String(venue.venueId), label: venue.name })),
 ];

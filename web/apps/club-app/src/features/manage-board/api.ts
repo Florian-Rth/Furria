@@ -9,6 +9,7 @@ import {
   toImpliedRoleSavedMessage,
   toOfficeArchivedMessage,
   toOfficeCreatedMessage,
+  toOfficeRestoredMessage,
   toOfficeSavedMessage,
   toSeatEndedMessage,
   toSeatOpenedMessage,
@@ -20,6 +21,7 @@ import {
   requestEndBoardSeat,
   requestImpliedRoleOptions,
   requestOpenBoardSeat,
+  requestRestoreBoardOffice,
   requestSetImpliedRole,
   requestUpdateBoardOffice,
 } from './requests';
@@ -126,6 +128,24 @@ export const useArchiveBoardOfficeMutation = (
       withFreshAccessToken((accessToken) => requestArchiveBoardOffice(boardOfficeId, accessToken)),
     onSuccess: (_result, input) => {
       raiseNotice({ tone: 'success', message: toOfficeArchivedMessage(input.officeName) });
+    },
+    onSettled: () => {
+      refreshBoard(queryClient);
+    },
+  });
+};
+
+export const useRestoreBoardOfficeMutation = (
+  boardOfficeId: number,
+): UseMutationResult<void, Error, OfficeNameInput> => {
+  const queryClient = useQueryClient();
+  const raiseNotice = useKkNotice();
+
+  return useMutation({
+    mutationFn: () =>
+      withFreshAccessToken((accessToken) => requestRestoreBoardOffice(boardOfficeId, accessToken)),
+    onSuccess: (_result, input) => {
+      raiseNotice({ tone: 'success', message: toOfficeRestoredMessage(input.officeName) });
     },
     onSettled: () => {
       refreshBoard(queryClient);

@@ -8,6 +8,7 @@ import { BoardOfficeFormDialog } from './BoardOfficeFormDialog';
 import { BoardOfficeSection } from './BoardOfficeSection';
 import { EndSeatDialog } from './EndSeatDialog';
 import { OpenSeatDialog } from './OpenSeatDialog';
+import { RestoreBoardOfficeDialog } from './RestoreBoardOfficeDialog';
 
 interface BoardViewProps {
   entries: readonly BoardOfficeEntry[];
@@ -43,6 +44,10 @@ export const BoardView: FC<BoardViewProps> = ({ entries, onCreate }) => {
       />
       <ArchiveBoardOfficeDialog
         office={dialogs.openDialog === 'archive' ? dialogs.office : null}
+        onClose={dialogs.close}
+      />
+      <RestoreBoardOfficeDialog
+        office={dialogs.openDialog === 'restore' ? dialogs.office : null}
         onClose={dialogs.close}
       />
       <OpenSeatDialog

@@ -162,8 +162,8 @@ describe('toDeleteConsequence', () => {
 describe('toVenueOptions', () => {
   it('offers no Ort ahead of the Orte the Verein holds', () => {
     const options = toVenueOptions([
-      { venueId: 4, name: 'Bühnenhaus', sortOrder: 1, holders: [] },
-      { venueId: 9, name: 'Lager', sortOrder: 2, holders: [] },
+      { venueId: 4, name: 'Bühnenhaus' },
+      { venueId: 9, name: 'Lager' },
     ]);
 
     expect(options.map((option) => option.value)).toEqual(['', '4', '9']);

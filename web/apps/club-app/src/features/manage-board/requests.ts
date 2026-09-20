@@ -55,6 +55,16 @@ export const requestArchiveBoardOffice = (
     accessToken,
   });
 
+export const requestRestoreBoardOffice = (
+  boardOfficeId: number,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`/api/manage/board/offices/${boardOfficeId}/restore`, {
+    method: 'POST',
+    schema: NoContentSchema,
+    accessToken,
+  });
+
 export const requestSetImpliedRole = (
   boardOfficeId: number,
   impliedRoleId: number | null,

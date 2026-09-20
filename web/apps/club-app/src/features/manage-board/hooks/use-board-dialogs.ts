@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { BoardOfficeEntry } from '../manage-board-labels';
 import type { BoardSeat } from '../schemas';
 
-export type BoardDialog = 'rename' | 'archive' | 'open-seat';
+export type BoardDialog = 'rename' | 'archive' | 'restore' | 'open-seat';
 
 export interface EndSeatTarget {
   office: BoardOfficeEntry;
