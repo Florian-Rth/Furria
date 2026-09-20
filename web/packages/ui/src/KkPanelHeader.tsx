@@ -54,7 +54,16 @@ export const KkPanelHeader: FC<KkPanelHeaderProps> = ({
     <Stack
       direction="row"
       data-kk-panel-header
-      sx={[{ alignItems: 'center', gap: 1.25, minWidth: 0 }, ...(Array.isArray(sx) ? sx : [sx])]}
+      sx={[
+        {
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          flexWrap: 'wrap',
+          gap: 1.25,
+          minWidth: 0,
+        },
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
     >
       <Box
         aria-hidden

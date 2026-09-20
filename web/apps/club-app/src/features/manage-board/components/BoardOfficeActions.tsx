@@ -28,37 +28,38 @@ export const BoardOfficeActions: FC<BoardOfficeActionsProps> = ({
 }) => {
   if (isArchived) {
     return (
-      <Stack sx={{ alignItems: 'flex-end', flexShrink: 0, minWidth: 0 }}>
-        <KkButton size="small" variant="outlined" onClick={onRestore}>
-          {RESTORE_LABEL}
-        </KkButton>
-      </Stack>
+      <KkButton size="small" variant="outlined" onClick={onRestore}>
+        {RESTORE_LABEL}
+      </KkButton>
     );
   }
 
   const blockedHint = canArchive ? null : <KkMeta>{ARCHIVE_OFFICE_BLOCKED_HINT}</KkMeta>;
 
   return (
-    <Stack sx={{ gap: 0.5, alignItems: 'flex-end', flexShrink: 0, minWidth: 0 }}>
-      <Stack direction="row" sx={{ gap: 0.75, flexWrap: 'wrap' }}>
-        <KkButton
-          size="small"
-          variant="outlined"
-          startIcon={<KkIcon name="add" size="small" />}
-          ariaLabel={OPEN_SEAT_LABEL}
-          onClick={onOpenSeat}
-        >
-          {OPEN_SEAT_TEXT}
-        </KkButton>
-        <KkButton
-          size="small"
-          variant="outlined"
-          startIcon={<KkIcon name="edit" size="small" />}
-          ariaLabel={RENAME_LABEL}
-          onClick={onRename}
-        >
-          {RENAME_LABEL}
-        </KkButton>
+    <Stack
+      direction="row"
+      sx={{ gap: 0.75, flexWrap: 'wrap', alignItems: 'flex-start', minWidth: 0 }}
+    >
+      <KkButton
+        size="small"
+        variant="outlined"
+        startIcon={<KkIcon name="add" size="small" />}
+        ariaLabel={OPEN_SEAT_LABEL}
+        onClick={onOpenSeat}
+      >
+        {OPEN_SEAT_TEXT}
+      </KkButton>
+      <KkButton
+        size="small"
+        variant="outlined"
+        startIcon={<KkIcon name="edit" size="small" />}
+        ariaLabel={RENAME_LABEL}
+        onClick={onRename}
+      >
+        {RENAME_LABEL}
+      </KkButton>
+      <Stack sx={{ gap: 0.25, alignItems: 'flex-start', minWidth: 0 }}>
         <KkButton
           size="small"
           variant="outlined"
@@ -69,8 +70,8 @@ export const BoardOfficeActions: FC<BoardOfficeActionsProps> = ({
         >
           {ARCHIVE_LABEL}
         </KkButton>
+        {blockedHint}
       </Stack>
-      {blockedHint}
     </Stack>
   );
 };

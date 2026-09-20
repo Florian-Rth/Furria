@@ -24,8 +24,21 @@ export const MANAGED_VENUES_EMPTY: ManagedVenuesEmptyCopy = {
 export const MANAGE_VENUES_FOOTNOTE =
   'Archivieren löscht nichts: Der Ort verschwindet aus den Schlüsselkacheln und aus der Ortsauswahl im Kalender, seine Termine und Schlüssel bleiben stehen.';
 
-export const toVenueAddressLine = (venue: ManagedVenue): string =>
-  `${venue.street}, ${venue.zip} ${venue.city}`;
+export const VENUE_WITHOUT_ADDRESS =
+  'Noch ohne Anschrift — trag sie nach, sonst findet niemand hin.';
+
+const isWritten = (part: string): boolean => part.length > 0;
+
+export const toVenueAddressLine = (venue: ManagedVenue): string | null => {
+  const town = [venue.zip.trim(), venue.city.trim()].filter(isWritten).join(' ');
+  const parts = [venue.street.trim(), town].filter(isWritten);
+
+  if (parts.length === 0) {
+    return null;
+  }
+
+  return parts.join(', ');
+};
 
 export interface ManagedVenuePartition {
   running: ManagedVenue[];
@@ -108,11 +121,18 @@ export const RESTORE_EXPLANATION =
 export const toRestoreConsequence = (name: string, todayLabel: string): string =>
   `Ab dem ${todayLabel} steht ${name} wieder zur Auswahl. An den Schlüsseln und den Terminen ändert sich nichts.`;
 
-export const toVenueFacts = (venue: ManagedVenue, dayLabel: string): KkConfirmFact[] => [
-  { label: 'Ort', value: venue.name },
-  { label: 'Anschrift', value: toVenueAddressLine(venue) },
-  { label: 'Ab', value: dayLabel },
-];
+export const toVenueFacts = (venue: ManagedVenue, dayLabel: string): KkConfirmFact[] => {
+  const addressLine = toVenueAddressLine(venue);
+  const facts: KkConfirmFact[] = [{ label: 'Ort', value: venue.name }];
+
+  if (addressLine !== null) {
+    facts.push({ label: 'Anschrift', value: addressLine });
+  }
+
+  facts.push({ label: 'Ab', value: dayLabel });
+
+  return facts;
+};
 
 export const toVenueCreatedMessage = (name: string): string => `${name} ist eingetragen.`;
 

@@ -108,11 +108,15 @@ const toArchiveTail = (archived: number): string => {
   return ` ${archived} weitere sind archiviert.`;
 };
 
+const IMPLIED_ROLE_RULE =
+  'Wer in einer Funktion sitzt, hat die Rechte der Rolle, die sie nach sich zieht — solange der Sitz läuft.';
+
 export const toBoardLead = (entries: readonly BoardOfficeEntry[]): string => {
   const live = entries.filter((entry) => !entry.isArchived);
   const vacant = live.filter((entry) => entry.isVacant).length;
+  const band = `${toBandHead(live.length)}${toVacancyTail(vacant)}${toArchiveTail(entries.length - live.length)}`;
 
-  return `${toBandHead(live.length)}${toVacancyTail(vacant)}${toArchiveTail(entries.length - live.length)}`;
+  return `${band} ${IMPLIED_ROLE_RULE}`;
 };
 
 export const toImpliedRoleChoices = (
@@ -139,8 +143,6 @@ export const toImpliedRoleValue = (impliedRoleId: number | null): string =>
   impliedRoleId === null ? NO_IMPLIED_ROLE_VALUE : String(impliedRoleId);
 
 export const IMPLIED_ROLE_LABEL = 'Diese Funktion zieht nach sich';
-export const IMPLIED_ROLE_HINT =
-  'Wer in dieser Funktion sitzt, hat die Rechte dieser Rolle — solange der Sitz läuft.';
 export const IMPLIED_ROLE_READ_ONLY_HINT =
   'Nur wer Rollen & Rechte verwalten darf, kann das ändern.';
 export const NO_IMPLIED_ROLE_VALUE_LABEL = 'keine';

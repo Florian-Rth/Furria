@@ -3,7 +3,6 @@ import type { FC } from 'react';
 import { useImpliedRole } from '../hooks/use-implied-role';
 import type { BoardOfficeEntry } from '../manage-board-labels';
 import {
-  IMPLIED_ROLE_HINT,
   IMPLIED_ROLE_LABEL,
   IMPLIED_ROLE_READ_ONLY_HINT,
   toImpliedRoleStatement,
@@ -36,7 +35,6 @@ export const BoardOfficeRoleField: FC<BoardOfficeRoleFieldProps> = ({ entry }) =
       options={implied.choices}
       onChange={implied.change}
       presentation="select"
-      hint={IMPLIED_ROLE_HINT}
       disabled={implied.isSaving}
     />
   );

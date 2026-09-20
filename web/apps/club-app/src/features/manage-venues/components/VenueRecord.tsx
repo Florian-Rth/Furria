@@ -1,10 +1,11 @@
 import { KkHeading, KkMeta, KkNote, KkPanel } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC, ReactNode } from 'react';
+import { VENUE_WITHOUT_ADDRESS } from '../manage-venues-labels';
 
 interface VenueRecordProps {
   name: string;
-  addressLine: string;
+  addressLine: string | null;
   hint: string | null;
   note: string | null;
   dimmed: boolean;
@@ -19,6 +20,7 @@ export const VenueRecord: FC<VenueRecordProps> = ({
   dimmed,
   actions,
 }) => {
+  const addressText = addressLine ?? VENUE_WITHOUT_ADDRESS;
   const hintLine = hint === null ? null : <KkMeta italic>{hint}</KkMeta>;
   const noteLine = note === null ? null : <KkNote>{note}</KkNote>;
 
@@ -38,7 +40,7 @@ export const VenueRecord: FC<VenueRecordProps> = ({
           <KkHeading level={5} component="h3" sx={{ minWidth: 0 }}>
             {name}
           </KkHeading>
-          <KkMeta>{addressLine}</KkMeta>
+          <KkMeta>{addressText}</KkMeta>
           {hintLine}
           {noteLine}
         </Stack>

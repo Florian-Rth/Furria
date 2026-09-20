@@ -32,6 +32,25 @@ describe('toVenueAddressLine', () => {
   it('writes street, postcode and city as one German line', () => {
     expect(toVenueAddressLine(HALLE)).toBe('Am Sportplatz 7, 99713 Großfurra');
   });
+
+  it('has no line at all for an Ort without any address part', () => {
+    expect(toVenueAddressLine(venue({ street: '', zip: '', city: '' }))).toBeNull();
+  });
+
+  it('treats blank-only parts as absent', () => {
+    expect(toVenueAddressLine(venue({ street: ' ', zip: '  ', city: ' ' }))).toBeNull();
+  });
+
+  it.each([
+    ['Am Sportplatz 7', '', '', 'Am Sportplatz 7'],
+    ['', '99713', '', '99713'],
+    ['', '', 'Großfurra', 'Großfurra'],
+    ['Am Sportplatz 7', '99713', '', 'Am Sportplatz 7, 99713'],
+    ['Am Sportplatz 7', '', 'Großfurra', 'Am Sportplatz 7, Großfurra'],
+    ['', '99713', 'Großfurra', '99713 Großfurra'],
+  ])('joins %s / %s / %s without a stray separator', (street, zip, city, expected) => {
+    expect(toVenueAddressLine(venue({ street, zip, city }))).toBe(expected);
+  });
 });
 
 describe('partitionVenues', () => {
@@ -117,5 +136,11 @@ describe('toVenueFacts', () => {
       'Am Sportplatz 7, 99713 Großfurra',
       '12.09.2026',
     ]);
+  });
+
+  it('leaves the Anschrift out when the Ort has none', () => {
+    const facts = toVenueFacts(venue({ street: '', zip: '', city: '' }), '12.09.2026');
+
+    expect(facts.map((fact) => fact.label)).toEqual(['Ort', 'Ab']);
   });
 });
