@@ -1,36 +1,104 @@
 import type { KkFilterOption } from '@furria/ui';
-import type { MyGroupSummary } from '@/features/group-hub';
 import type { PersonRef } from '@/lib/api/schemas';
 import type { StateChip } from '@/lib/state-chips';
 import { GROUP_ADMIN_CHIP, MY_GROUP_CHIP, toRecruitingChip } from '@/lib/state-chips';
 import { normalizeForSearch } from '@/lib/text';
 import type { GroupSummary } from './schemas';
 
-export interface GroupStanding {
-  isMember: boolean;
-  isAdmin: boolean;
+export const MY_GROUPS_SECTION_TITLE = 'Meine Gruppen';
+export const OTHER_GROUPS_SECTION_TITLE = 'Alle Gruppen';
+
+const MY_GROUPS_SECTION_ID = 'mine';
+const OTHER_GROUPS_SECTION_ID = 'rest';
+const ONE_LIST_SECTION_ID = 'all';
+
+export interface GroupsSection {
+  readonly id: string;
+  readonly title: string | null;
+  readonly groups: readonly GroupSummary[];
 }
 
-export const toGroupStandings = (groups: readonly MyGroupSummary[]): Map<number, GroupStanding> =>
-  new Map(
-    groups.map((group) => [group.groupId, { isMember: group.isMember, isAdmin: group.isAdmin }]),
-  );
+const isMyGroup = (group: GroupSummary): boolean => group.viewerIsMember || group.viewerIsAdmin;
 
-export const toGroupStandingChips = (standing: GroupStanding | undefined): StateChip[] => {
-  if (standing === undefined) {
+export const toGroupsSections = (groups: readonly GroupSummary[]): readonly GroupsSection[] => {
+  if (groups.length === 0) {
     return [];
   }
 
+  const mine = groups.filter(isMyGroup);
+
+  if (mine.length === 0) {
+    return [{ id: ONE_LIST_SECTION_ID, title: null, groups }];
+  }
+  if (mine.length === groups.length) {
+    return [{ id: MY_GROUPS_SECTION_ID, title: MY_GROUPS_SECTION_TITLE, groups }];
+  }
+
+  return [
+    { id: MY_GROUPS_SECTION_ID, title: MY_GROUPS_SECTION_TITLE, groups: mine },
+    {
+      id: OTHER_GROUPS_SECTION_ID,
+      title: OTHER_GROUPS_SECTION_TITLE,
+      groups: groups.filter((group) => !isMyGroup(group)),
+    },
+  ];
+};
+
+export const toGroupStandingChips = (group: GroupSummary): StateChip[] => {
   const chips: StateChip[] = [];
 
-  if (standing.isMember) {
+  if (group.viewerIsMember) {
     chips.push(MY_GROUP_CHIP);
   }
-  if (standing.isAdmin) {
+  if (group.viewerIsAdmin) {
     chips.push(GROUP_ADMIN_CHIP);
   }
 
   return chips;
+};
+
+export const toGroupCardChips = (group: GroupSummary): StateChip[] => {
+  const chips: StateChip[] = [];
+
+  if (group.isRecruiting) {
+    chips.push(toRecruitingChip(true));
+  }
+  if (group.viewerIsAdmin) {
+    chips.push(GROUP_ADMIN_CHIP);
+  }
+
+  return chips;
+};
+
+const GROUP_KIND_FALLBACK = 'Gruppe';
+
+export const toGroupKindLabel = (groupKindName: string | null): string =>
+  groupKindName === null || groupKindName.trim() === '' ? GROUP_KIND_FALLBACK : groupKindName;
+
+const LED_BY_PREFIX = 'Geleitet von ';
+const LED_BY_PAIR = ' und ';
+const NO_LEAD_LINE = 'Noch ohne Gruppen-Admin';
+const FURTHER_LEADS_SUFFIX = ' weitere';
+const NAMED_LEAD = 1;
+
+const toFullName = (person: PersonRef): string => `${person.firstName} ${person.lastName}`;
+
+export const toGroupLeadLine = (admins: readonly PersonRef[]): string => {
+  const [first, second, ...further] = admins;
+
+  if (first === undefined) {
+    return NO_LEAD_LINE;
+  }
+  if (second === undefined) {
+    return `${LED_BY_PREFIX}${toFullName(first)}`;
+  }
+  if (further.length === 0) {
+    return `${LED_BY_PREFIX}${toFullName(first)}${LED_BY_PAIR}${toFullName(second)}`;
+  }
+
+  const rest = further.length + NAMED_LEAD;
+
+  return `${LED_BY_PREFIX}${toFullName(first)}${LED_BY_PAIR}${rest}${FURTHER_LEADS_SUFFIX}`;
 };
 
 export const toPersonUnitLabel = (count: number): string => (count === 1 ? 'Person' : 'Personen');
@@ -96,9 +164,23 @@ const toSegmentText = (segment: RecruitingContactSegment): string =>
 export const toRecruitingContactLine = (admins: readonly PersonRef[]): string =>
   toRecruitingContactSegments(admins).map(toSegmentText).join('');
 
+export const toGroupContactLine = (group: GroupSummary): string =>
+  group.isRecruiting ? toRecruitingContactLine(group.admins) : toGroupLeadLine(group.admins);
+
+const CARD_LABEL_SUFFIX = ' – Kurzansicht öffnen';
+
+export const toGroupCardLabel = (name: string): string => `${name}${CARD_LABEL_SUFFIX}`;
+
 export const GROUP_PEEK_CLOSE_LABEL = 'Kurzansicht schließen';
 export const GROUP_PEEK_OPEN_LABEL = 'Ganze Seite öffnen';
 export const toGroupSizeLine = (count: number): string => `${count} ${toPersonUnitLabel(count)}`;
+
+const ONE_GROUP_LABEL = '1 Gruppe';
+const GROUP_UNIT_LABEL = 'Gruppen';
+const ONE_GROUP = 1;
+
+export const toGroupCountLabel = (count: number): string =>
+  count === ONE_GROUP ? ONE_GROUP_LABEL : `${count} ${GROUP_UNIT_LABEL}`;
 
 export const ALL_GROUPS_FILTER_ID = 'all';
 export const RECRUITING_FILTER_ID = 'recruiting';

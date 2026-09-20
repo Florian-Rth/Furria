@@ -172,6 +172,7 @@ public sealed class PutCalendarEntryTests
                 Kind = CalendarEntryKind.Performance,
                 Visibility = CalendarEntryVisibility.Group,
                 AsksForResponse = true,
+                ParticipatingGroupIds = [],
             }
         );
 
@@ -216,6 +217,7 @@ public sealed class PutCalendarEntryTests
                 Kind = CalendarEntryKind.Training,
                 Visibility = CalendarEntryVisibility.Club,
                 AsksForResponse = false,
+                ParticipatingGroupIds = [],
             }
         );
 
@@ -258,6 +260,7 @@ public sealed class PutCalendarEntryTests
                 Kind = CalendarEntryKind.Training,
                 Visibility = CalendarEntryVisibility.Club,
                 AsksForResponse = false,
+                ParticipatingGroupIds = [],
             }
         );
 
@@ -299,6 +302,7 @@ public sealed class PutCalendarEntryTests
             Kind = CalendarEntryKind.Performance,
             Visibility = CalendarEntryVisibility.Club,
             AsksForResponse = false,
+            ParticipatingGroupIds = [],
         };
 
     private Task<SeededContext> BuildClubAsync(CancellationToken ct) =>

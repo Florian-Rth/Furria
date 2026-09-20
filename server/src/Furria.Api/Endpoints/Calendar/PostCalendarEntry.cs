@@ -68,6 +68,7 @@ public sealed class PostCalendarEntry
             Kind = req.Kind,
             Visibility = req.Visibility,
             AsksForResponse = req.AsksForResponse,
+            ParticipatingGroupIds = req.ParticipatingGroupIds,
         };
 
     private static PostCalendarEntryResponse ToResponse(CalendarEntryWriteResult written) =>
@@ -106,6 +107,8 @@ public sealed record PostCalendarEntryRequest
     public required CalendarEntryVisibility Visibility { get; init; }
 
     public required bool AsksForResponse { get; init; }
+
+    public required IReadOnlyList<int> ParticipatingGroupIds { get; init; }
 }
 
 public sealed class PostCalendarEntryValidator : Validator<PostCalendarEntryRequest>
@@ -139,6 +142,9 @@ public sealed class PostCalendarEntryValidator : Validator<PostCalendarEntryRequ
             .GreaterThanOrEqualTo(request => request.StartsAt)
             .When(request => request.EndsAt is not null)
             .WithMessage(EndsBeforeItStartsMessage);
+        RuleForEach(request => request.ParticipatingGroupIds)
+            .GreaterThan(0)
+            .WithMessage(UnknownGroupMessage);
     }
 }
 

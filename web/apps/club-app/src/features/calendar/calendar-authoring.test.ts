@@ -13,7 +13,11 @@ import {
   toEntryPayload,
   toInstant,
   toOwnerOptions,
+  toParticipatingGroupIds,
+  toParticipatingGroupOptions,
+  toParticipationKeptForOwner,
   toTimeChoices,
+  toToggledParticipation,
 } from './calendar-authoring';
 import type { CalendarEntry, CalendarEntryForm } from './schemas';
 
@@ -38,6 +42,8 @@ const entry = (overrides: Partial<CalendarEntry>): CalendarEntry => ({
   venueName: null,
   ownerGroupId: null,
   ownerGroupName: null,
+  ownerGroupTone: null,
+  participatingGroups: [],
   visibility: 'club',
   asksForResponse: false,
   description: null,
@@ -58,6 +64,7 @@ const form = (overrides: Partial<CalendarEntryForm>): CalendarEntryForm => ({
   endDay: '2027-01-20',
   endTime: '22:15',
   asksForResponse: false,
+  participatingGroupIds: [],
   ...overrides,
 });
 
@@ -285,5 +292,99 @@ describe('toEndKeptInStep', () => {
         { day: '2027-01-20', time: '21:00' },
       ),
     ).toEqual({ day: '2027-01-20', time: '23:00' });
+  });
+});
+
+describe('toParticipatingGroupOptions', () => {
+  const groups = [
+    { groupId: 3, name: 'Männerballett' },
+    { groupId: 1, name: 'Tanzgarde' },
+    { groupId: 2, name: 'Ältestenrat' },
+  ];
+
+  it('leaves the Eigentümerin out of the list', () => {
+    expect(toParticipatingGroupOptions(groups, '1')).toEqual([
+      { value: '2', label: 'Ältestenrat' },
+      { value: '3', label: 'Männerballett' },
+    ]);
+  });
+
+  it('keeps every Gruppe when the Verein owns the Termin', () => {
+    expect(toParticipatingGroupOptions(groups, 'club').map((option) => option.label)).toEqual([
+      'Ältestenrat',
+      'Männerballett',
+      'Tanzgarde',
+    ]);
+  });
+});
+
+describe('toParticipatingGroupIds', () => {
+  it.each([
+    [['2', '3'], 'club', [2, 3]],
+    [['2', '2', '3'], 'club', [2, 3]],
+    [['1', '2'], '1', [2]],
+    [[], 'club', []],
+  ])('maps %s under owner %s', (values, ownerId, expected) => {
+    expect(toParticipatingGroupIds(values, ownerId)).toEqual(expected);
+  });
+});
+
+describe('toParticipationKeptForOwner', () => {
+  it.each([
+    [['1', '2'], '1', ['2']],
+    [['2', '3'], '1', ['2', '3']],
+    [['2'], 'club', ['2']],
+  ])('drops the new owner %s from %s', (values, ownerId, expected) => {
+    expect(toParticipationKeptForOwner(values, ownerId)).toEqual(expected);
+  });
+});
+
+describe('toToggledParticipation', () => {
+  it.each([
+    [['2'], '3', ['2', '3']],
+    [['2', '3'], '3', ['2']],
+    [[], '2', ['2']],
+  ])('toggles %s with %s', (values, value, expected) => {
+    expect(toToggledParticipation(values, value)).toEqual(expected);
+  });
+});
+
+describe('toEntryPayload mitwirkende Gruppen', () => {
+  it('maps the chosen ids to numbers', () => {
+    expect(
+      toEntryPayload(form({ participatingGroupIds: ['2', '3'] })).participatingGroupIds,
+    ).toEqual([2, 3]);
+  });
+
+  it('drops the Eigentümerin from the mitwirkenden', () => {
+    expect(
+      toEntryPayload(form({ ownerId: '2', participatingGroupIds: ['2', '3'] }))
+        .participatingGroupIds,
+    ).toEqual([3]);
+  });
+
+  it('sends no mitwirkende Gruppe when none is chosen', () => {
+    expect(toEntryPayload(form({})).participatingGroupIds).toEqual([]);
+  });
+});
+
+describe('toEntryFormValues mitwirkende Gruppen', () => {
+  it('starts an empty Termin without mitwirkende Gruppen', () => {
+    expect(toEntryFormValues(null, [], new Date(2027, 0, 20)).participatingGroupIds).toEqual([]);
+  });
+
+  it('reads the mitwirkenden of an existing Termin as string ids', () => {
+    const values = toEntryFormValues(
+      entry({
+        participatingGroups: [
+          { groupId: 2, name: 'Kindergarde', tone: null },
+          { groupId: 3, name: 'Männerballett', tone: 'teal' },
+        ],
+      }),
+      [],
+      new Date(2027, 0, 20),
+    );
+
+    expect(values.participatingGroupIds).toEqual(['2', '3']);
   });
 });

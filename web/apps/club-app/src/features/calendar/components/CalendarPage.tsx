@@ -77,6 +77,7 @@ export const CalendarPage: FC = () => {
       <CalendarEntryFormDialog
         entry={null}
         ownerOptions={authoring.ownerOptions}
+        clubGroups={authoring.clubGroups}
         venues={authoring.venues}
         open={create.isOpen}
         onClose={create.close}

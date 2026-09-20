@@ -8,6 +8,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
+import { toAttendanceSavedMessage } from '@/lib/calendar-copy';
 import { toIsoDay } from '@/lib/day';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import {
@@ -18,11 +19,14 @@ import {
   toMembershipEndedMessage,
   toSelfAdminEndedMessage,
 } from './group-hub-labels';
+import type { TermineWindow } from './group-termine';
 import {
   requestAddGroupAdmin,
   requestAddGroupMembership,
   requestEndGroupAdmin,
   requestEndGroupMembership,
+  requestGroupAttendanceResponse,
+  requestGroupCalendar,
   requestGroupHub,
   requestGroupInfoUpdate,
   requestMyGroups,
@@ -31,6 +35,8 @@ import {
 import type {
   AddedGroupAdmin,
   AddedGroupMembership,
+  GroupAttendanceAnswer,
+  GroupCalendarResponse,
   GroupHub,
   GroupInfoForm,
   MyGroupsResponse,
@@ -44,10 +50,27 @@ export const groupHubQueryKey = (groupId: number | null): readonly [string, numb
   groupId,
 ];
 
+export const groupCalendarQueryKey = (
+  groupId: number | null,
+  from: string,
+  to: string,
+): readonly [string, number | null, string, string, string] => [
+  'groups',
+  groupId,
+  'calendar',
+  from,
+  to,
+];
+
 export const personSearchQueryKey = (term: string): readonly [string, string] => [
   'person-search',
   term,
 ];
+
+export interface GroupAttendanceInput {
+  calendarEntryId: number;
+  answer: GroupAttendanceAnswer;
+}
 
 export interface AddMemberInput {
   personId: number;
@@ -95,6 +118,52 @@ export const useGroupHubQuery = (groupId: number | null): UseQueryResult<GroupHu
           withFreshAccessToken((accessToken) => requestGroupHub(groupId, accessToken));
 
   return useQuery({ queryKey: groupHubQueryKey(groupId), queryFn: load });
+};
+
+export const useGroupCalendarQuery = (
+  groupId: number | null,
+  window: TermineWindow,
+): UseQueryResult<GroupCalendarResponse, Error> => {
+  const load =
+    groupId === null
+      ? skipToken
+      : (): Promise<GroupCalendarResponse> =>
+          withFreshAccessToken((accessToken) => requestGroupCalendar(groupId, window, accessToken));
+
+  return useQuery({
+    queryKey: groupCalendarQueryKey(groupId, window.from, window.to),
+    queryFn: load,
+  });
+};
+
+export const useGroupAttendanceMutation = (
+  groupId: number,
+): UseMutationResult<void, Error, GroupAttendanceInput> => {
+  const queryClient = useQueryClient();
+  const raiseNotice = useKkNotice();
+
+  const refreshCalendar = (): void => {
+    void queryClient.invalidateQueries({ queryKey: groupHubQueryKey(groupId) });
+  };
+
+  return useMutation({
+    mutationFn: ({ calendarEntryId, answer }: GroupAttendanceInput) =>
+      withFreshAccessToken((accessToken) =>
+        requestGroupAttendanceResponse(calendarEntryId, answer, accessToken),
+      ),
+    onSuccess: (_saved, { answer }) => {
+      raiseNotice({ tone: 'success', message: toAttendanceSavedMessage(answer) });
+      refreshCalendar();
+    },
+    onError: (error) => {
+      const message = toWriteErrorMessage(error);
+
+      if (message !== null) {
+        raiseNotice({ tone: 'error', message });
+      }
+      refreshCalendar();
+    },
+  });
 };
 
 export const usePersonSearchQuery = (

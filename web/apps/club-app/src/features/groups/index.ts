@@ -1,4 +1,4 @@
-export { GROUPS_QUERY_KEY } from './api';
+export { GROUPS_QUERY_KEY, useGroupsQuery } from './api';
 export { GroupCardBody } from './components/GroupCardBody';
 export { GroupsPage } from './components/GroupsPage';
 export type { GroupTone, Jubilee, TrainingSlotFacts, Weekday } from './group-identity';
@@ -12,3 +12,4 @@ export {
   WEEKDAY_VALUES,
 } from './group-identity';
 export { toPersonUnitLabel } from './groups-labels';
+export type { GroupSummary } from './schemas';

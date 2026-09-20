@@ -8,6 +8,8 @@ import type {
   AddGroupMembershipForm,
   EndGroupAdminForm,
   EndGroupMembershipForm,
+  GroupAttendanceAnswer,
+  GroupCalendarResponse,
   GroupHub,
   GroupInfoForm,
   MyGroupsResponse,
@@ -16,6 +18,7 @@ import type {
 import {
   AddedGroupAdminSchema,
   AddedGroupMembershipSchema,
+  GroupCalendarResponseSchema,
   GroupHubSchema,
   MyGroupsResponseSchema,
   PersonSearchResponseSchema,
@@ -26,6 +29,28 @@ export const requestMyGroups = (accessToken: string): Promise<MyGroupsResponse> 
 
 export const requestGroupHub = (groupId: number, accessToken: string): Promise<GroupHub> =>
   apiFetch(`/api/groups/${groupId}`, { schema: GroupHubSchema, accessToken });
+
+export const requestGroupCalendar = (
+  groupId: number,
+  window: { from: string; to: string },
+  accessToken: string,
+): Promise<GroupCalendarResponse> =>
+  apiFetch(`/api/groups/${groupId}/calendar?from=${window.from}&to=${window.to}`, {
+    schema: GroupCalendarResponseSchema,
+    accessToken,
+  });
+
+export const requestGroupAttendanceResponse = (
+  calendarEntryId: number,
+  answer: GroupAttendanceAnswer,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`/api/calendar/${calendarEntryId}/response`, {
+    method: 'POST',
+    body: { answer },
+    schema: NoContentSchema,
+    accessToken,
+  });
 
 export const requestPersonSearch = (
   query: string,

@@ -23,7 +23,14 @@ public sealed class GetGroups : EndpointWithoutRequest<GetGroupsResponse>
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var groups = await _groupService.GetGroupsAsync(ct);
+        var personId = User.PersonId();
+        if (personId is null)
+        {
+            await Send.UnauthorizedAsync(ct);
+            return;
+        }
+
+        var groups = await _groupService.GetGroupsAsync(personId.Value, ct);
 
         await Send.OkAsync(ToResponse(groups), cancellation: ct);
     }
@@ -44,6 +51,8 @@ public sealed class GetGroups : EndpointWithoutRequest<GetGroupsResponse>
             MemberCount = group.MemberCount,
             MemberPreview = [.. group.MemberPreview.Select(ToDto)],
             Admins = [.. group.Admins.Select(ToDto)],
+            ViewerIsMember = group.ViewerIsMember,
+            ViewerIsAdmin = group.ViewerIsAdmin,
         };
 
     private static PersonRefDto ToDto(PersonReference person) =>
@@ -81,6 +90,10 @@ public sealed record GroupSummaryDto
     public required IReadOnlyList<PersonRefDto> MemberPreview { get; init; }
 
     public required IReadOnlyList<PersonRefDto> Admins { get; init; }
+
+    public required bool ViewerIsMember { get; init; }
+
+    public required bool ViewerIsAdmin { get; init; }
 }
 
 public sealed record PersonRefDto

@@ -335,6 +335,13 @@ internal static class ClubSeedMaterializer
                 OwnerGroupId = intent.OwnerGroupAlias is null
                     ? null
                     : SeedAliases.RequireId(groupIds, intent.OwnerGroupAlias, "Gruppe"),
+                ParticipatingGroups =
+                [
+                    .. intent.ParticipatingGroupAliases.Select(alias => new CalendarEntryGroup
+                    {
+                        GroupId = SeedAliases.RequireId(groupIds, alias, "Gruppe"),
+                    }),
+                ],
             },
             StringComparer.Ordinal
         );

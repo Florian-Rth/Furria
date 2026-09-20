@@ -5,10 +5,14 @@ import {
   filterGroups,
   RECRUITING_FILTER_ID,
   SETTLED_FILTER_ID,
+  toGroupContactLine,
+  toGroupCountLabel,
+  toGroupKindLabel,
+  toGroupLeadLine,
   toGroupStandingChips,
-  toGroupStandings,
   toGroupsIntroSentence,
   toGroupsLead,
+  toGroupsSections,
   toNoGroupMatchLine,
   toPersonUnitLabel,
   toRecruitingContactLine,
@@ -27,9 +31,14 @@ const summary = (overrides: Partial<GroupSummary> & { groupId: number }): GroupS
   name: 'Große Garde',
   description: '',
   isRecruiting: false,
+  groupKindName: null,
+  foundedYear: null,
+  tone: null,
   memberCount: 0,
   memberPreview: [],
   admins: [],
+  viewerIsMember: false,
+  viewerIsAdmin: false,
   ...overrides,
 });
 
@@ -213,36 +222,136 @@ describe('toGroupsLead', () => {
   });
 });
 
-describe('toGroupStandings', () => {
-  it('keys every standing by its Gruppe', () => {
-    const standings = toGroupStandings([
-      { groupId: 4, name: 'Elferrat', isMember: true, isAdmin: false },
-      { groupId: 9, name: 'Musikzug', isMember: false, isAdmin: true },
-    ]);
-
-    expect(standings.get(4)).toEqual({ isMember: true, isAdmin: false });
-    expect(standings.get(9)).toEqual({ isMember: false, isAdmin: true });
-    expect(standings.get(11)).toBeUndefined();
-  });
-});
-
 describe('toGroupStandingChips', () => {
   it('marks nothing for a Gruppe the viewer has no standing in', () => {
-    expect(toGroupStandingChips(undefined)).toEqual([]);
+    expect(toGroupStandingChips(summary({ groupId: 4 }))).toEqual([]);
   });
 
   it('marks a Gruppe the viewer belongs to', () => {
-    expect(toGroupStandingChips({ isMember: true, isAdmin: false })).toHaveLength(1);
+    expect(toGroupStandingChips(summary({ groupId: 4, viewerIsMember: true }))).toHaveLength(1);
   });
 
   it('marks both facts when the viewer belongs to a Gruppe she also administers', () => {
-    expect(toGroupStandingChips({ isMember: true, isAdmin: true })).toHaveLength(2);
+    expect(
+      toGroupStandingChips(summary({ groupId: 4, viewerIsMember: true, viewerIsAdmin: true })),
+    ).toHaveLength(2);
   });
 
   it('marks the Gruppen-Admin who is not a member', () => {
-    const chips = toGroupStandingChips({ isMember: false, isAdmin: true });
+    const chips = toGroupStandingChips(summary({ groupId: 4, viewerIsAdmin: true }));
 
     expect(chips).toHaveLength(1);
     expect(chips[0]?.label).toBe('Gruppen-Admin');
+  });
+});
+
+describe('toGroupsSections', () => {
+  it('leaves the rack empty when no Gruppe is listed', () => {
+    expect(toGroupsSections([])).toEqual([]);
+  });
+
+  it('gives a viewer in no Gruppe one unlabelled section and no empty heading', () => {
+    const groups = [summary({ groupId: 1 }), summary({ groupId: 2 })];
+    const sections = toGroupsSections(groups);
+
+    expect(sections).toHaveLength(1);
+    expect(sections[0]?.title).toBeNull();
+    expect(sections[0]?.groups).toEqual(groups);
+  });
+
+  it('titles the one section when the viewer belongs to every Gruppe', () => {
+    const groups = [
+      summary({ groupId: 1, viewerIsMember: true }),
+      summary({ groupId: 2, viewerIsAdmin: true }),
+    ];
+    const sections = toGroupsSections(groups);
+
+    expect(sections).toHaveLength(1);
+    expect(sections[0]?.title).toBe('Meine Gruppen');
+    expect(sections[0]?.groups).toEqual(groups);
+  });
+
+  it('puts meine Gruppen first and keeps the server order inside each section', () => {
+    const sections = toGroupsSections([
+      summary({ groupId: 1, name: 'Ältestenrat' }),
+      summary({ groupId: 2, name: 'Elferrat', viewerIsAdmin: true }),
+      summary({ groupId: 3, name: 'Musikzug' }),
+      summary({ groupId: 4, name: 'Tanzgarde', viewerIsMember: true }),
+    ]);
+
+    expect(sections.map((section) => section.title)).toEqual(['Meine Gruppen', 'Alle Gruppen']);
+    expect(sections[0]?.groups.map((group) => group.name)).toEqual(['Elferrat', 'Tanzgarde']);
+    expect(sections[1]?.groups.map((group) => group.name)).toEqual(['Ältestenrat', 'Musikzug']);
+  });
+
+  it('breaks the rack exactly once', () => {
+    const sections = toGroupsSections([
+      summary({ groupId: 1, viewerIsMember: true }),
+      summary({ groupId: 2 }),
+      summary({ groupId: 3, viewerIsAdmin: true }),
+      summary({ groupId: 4 }),
+    ]);
+
+    expect(sections).toHaveLength(2);
+  });
+});
+
+describe('toGroupLeadLine', () => {
+  it.each([
+    { admins: [], expected: 'Noch ohne Gruppen-Admin' },
+    { admins: [person(1, 'Anna')], expected: 'Geleitet von Anna Kaiser' },
+    {
+      admins: [person(1, 'Anna'), person(2, 'Katrin', 'Sommer')],
+      expected: 'Geleitet von Anna Kaiser und Katrin Sommer',
+    },
+    {
+      admins: [person(1, 'Anna'), person(2, 'Katrin', 'Sommer'), person(3, 'Mara', 'Lenz')],
+      expected: 'Geleitet von Anna Kaiser und 2 weitere',
+    },
+    {
+      admins: [
+        person(1, 'Anna'),
+        person(2, 'Katrin', 'Sommer'),
+        person(3, 'Mara', 'Lenz'),
+        person(4, 'Nina', 'Orth'),
+      ],
+      expected: 'Geleitet von Anna Kaiser und 3 weitere',
+    },
+  ])('names who runs a Gruppe with $admins.length admins', ({ admins, expected }) => {
+    expect(toGroupLeadLine(admins)).toBe(expected);
+  });
+});
+
+describe('toGroupContactLine', () => {
+  it('asks the reader to get in touch while the Gruppe is recruiting', () => {
+    expect(
+      toGroupContactLine(summary({ groupId: 1, isRecruiting: true, admins: [person(1, 'Anna')] })),
+    ).toBe('Melde dich bei Anna Kaiser.');
+  });
+
+  it('only names who runs a settled Gruppe', () => {
+    expect(toGroupContactLine(summary({ groupId: 1, admins: [person(1, 'Anna')] }))).toBe(
+      'Geleitet von Anna Kaiser',
+    );
+  });
+});
+
+describe('toGroupKindLabel', () => {
+  it.each([
+    { groupKindName: null, expected: 'Gruppe' },
+    { groupKindName: '   ', expected: 'Gruppe' },
+    { groupKindName: 'Garden', expected: 'Garden' },
+  ])('names the Gruppenart $groupKindName', ({ groupKindName, expected }) => {
+    expect(toGroupKindLabel(groupKindName)).toBe(expected);
+  });
+});
+
+describe('toGroupCountLabel', () => {
+  it.each([
+    { count: 0, expected: '0 Gruppen' },
+    { count: 1, expected: '1 Gruppe' },
+    { count: 7, expected: '7 Gruppen' },
+  ])('counts $count', ({ count, expected }) => {
+    expect(toGroupCountLabel(count)).toBe(expected);
   });
 });

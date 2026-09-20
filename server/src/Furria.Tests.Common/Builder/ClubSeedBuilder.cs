@@ -160,7 +160,8 @@ public sealed class ClubSeedBuilder
         string? venueAlias = null,
         string? ownerGroupAlias = null,
         bool asksForResponse = false,
-        string? description = null
+        string? description = null,
+        IReadOnlyList<string>? participatingGroupAliases = null
     )
     {
         _calendarEntries.Add(
@@ -174,7 +175,8 @@ public sealed class ClubSeedBuilder
                 venueAlias,
                 ownerGroupAlias,
                 asksForResponse,
-                description
+                description,
+                participatingGroupAliases ?? []
             )
         );
         return this;
@@ -264,7 +266,8 @@ public sealed class ClubSeedBuilder
         string? VenueAlias,
         string? OwnerGroupAlias,
         bool AsksForResponse,
-        string? Description
+        string? Description,
+        IReadOnlyList<string> ParticipatingGroupAliases
     );
 
     internal sealed record AttendanceResponseIntent(

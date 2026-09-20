@@ -23,6 +23,8 @@ const entry = (overrides: Partial<CalendarEntry>): CalendarEntry => ({
   venueName: null,
   ownerGroupId: null,
   ownerGroupName: null,
+  ownerGroupTone: null,
+  participatingGroups: [],
   visibility: 'club',
   asksForResponse: false,
   description: null,

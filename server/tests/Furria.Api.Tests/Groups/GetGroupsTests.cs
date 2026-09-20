@@ -402,6 +402,8 @@ public sealed class GetGroupsTests
                 "memberCount",
                 "memberPreview",
                 "admins",
+                "viewerIsMember",
+                "viewerIsAdmin",
             ],
             tanzgarde.EnumerateObject().Select(field => field.Name)
         );
@@ -410,6 +412,116 @@ public sealed class GetGroupsTests
             ["personId", "firstName", "lastName"],
             paula.EnumerateObject().Select(field => field.Name)
         );
+    }
+
+    [Fact]
+    public async Task Should_MarkTheGruppe_When_TheViewerDancesInIt()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddAccount("alice")
+                            .AddMembership("alice-first", "alice", JoinedIn2017)
+                    )
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("tanzgarde", "Tanzgarde")
+                            .AddGroup("elferrat", "Elferrat")
+                            .AddGroupMembership(
+                                "alice-tanzgarde",
+                                "tanzgarde",
+                                "alice",
+                                JoinedIn2017
+                            )
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        var (response, result) = await client.GETAsync<GetGroups, GetGroupsResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var tanzgarde = result.Groups.Single(group => group.Name == "Tanzgarde");
+        var elferrat = result.Groups.Single(group => group.Name == "Elferrat");
+        Assert.True(tanzgarde.ViewerIsMember);
+        Assert.False(tanzgarde.ViewerIsAdmin);
+        Assert.False(elferrat.ViewerIsMember);
+        Assert.False(elferrat.ViewerIsAdmin);
+    }
+
+    [Fact]
+    public async Task Should_MarkTheGruppe_When_TheViewerRunsItWithoutDancing()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddAccount("alice")
+                            .AddMembership("alice-first", "alice", JoinedIn2017)
+                    )
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("kindergarde", "Kindergarde")
+                            .AddGroupAdmin("alice-kindergarde", "kindergarde", "alice", "Trainerin")
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        var (response, result) = await client.GETAsync<GetGroups, GetGroupsResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var kindergarde = Assert.Single(result.Groups);
+        Assert.False(kindergarde.ViewerIsMember);
+        Assert.True(kindergarde.ViewerIsAdmin);
+    }
+
+    [Fact]
+    public async Task Should_MarkNoStanding_When_TheViewerLeftTheGruppeAndHandedTheAdminOver()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddAccount("alice")
+                            .AddMembership("alice-first", "alice", JoinedIn2017)
+                    )
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("tanzgarde", "Tanzgarde")
+                            .AddGroupMembership(
+                                "alice-tanzgarde",
+                                "tanzgarde",
+                                "alice",
+                                JoinedIn2017,
+                                LeftIn2020
+                            )
+                            .AddGroupAdmin(
+                                "alice-tanzgarde-admin",
+                                "tanzgarde",
+                                "alice",
+                                "Trainerin",
+                                JoinedIn2017,
+                                LeftIn2020
+                            )
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        var (response, result) = await client.GETAsync<GetGroups, GetGroupsResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var tanzgarde = Assert.Single(result.Groups);
+        Assert.False(tanzgarde.ViewerIsMember);
+        Assert.False(tanzgarde.ViewerIsAdmin);
     }
 
     [Fact]

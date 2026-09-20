@@ -82,6 +82,7 @@ public sealed class PostCalendarEntryTests
                 Kind = CalendarEntryKind.Meeting,
                 Visibility = CalendarEntryVisibility.Club,
                 AsksForResponse = true,
+                ParticipatingGroupIds = [],
             }
         );
 
@@ -145,6 +146,7 @@ public sealed class PostCalendarEntryTests
                 Kind = CalendarEntryKind.Training,
                 Visibility = CalendarEntryVisibility.Club,
                 AsksForResponse = false,
+                ParticipatingGroupIds = [],
             }
         );
 
@@ -182,6 +184,7 @@ public sealed class PostCalendarEntryTests
                 Kind = CalendarEntryKind.Training,
                 Visibility = CalendarEntryVisibility.Club,
                 AsksForResponse = false,
+                ParticipatingGroupIds = [],
             }
         );
 
@@ -227,6 +230,7 @@ public sealed class PostCalendarEntryTests
                 Kind = CalendarEntryKind.Meeting,
                 Visibility = CalendarEntryVisibility.Club,
                 AsksForResponse = false,
+                ParticipatingGroupIds = [],
             }
         );
 
@@ -296,6 +300,7 @@ public sealed class PostCalendarEntryTests
                 Kind = CalendarEntryKind.Training,
                 Visibility = CalendarEntryVisibility.Club,
                 AsksForResponse = false,
+                ParticipatingGroupIds = [],
             }
         );
 
@@ -339,6 +344,7 @@ public sealed class PostCalendarEntryTests
                 Kind = CalendarEntryKind.Meeting,
                 Visibility = CalendarEntryVisibility.Club,
                 AsksForResponse = false,
+                ParticipatingGroupIds = [],
             }
         );
 
@@ -377,6 +383,7 @@ public sealed class PostCalendarEntryTests
             Kind = CalendarEntryKind.Meeting,
             Visibility = CalendarEntryVisibility.Club,
             AsksForResponse = false,
+            ParticipatingGroupIds = [],
         };
 
     private static void Club(IdentitySeedBuilder identity) =>

@@ -44,6 +44,8 @@ export type { KkGroupStageJubilee } from './KkGroupStage/internal/group-stage-ju
 export { KkGroupStage } from './KkGroupStage/KkGroupStage';
 export { KkGroupTile } from './KkGroupTile';
 export { KkGroupToneChip } from './KkGroupToneChip';
+export { KkGroupToneEdge } from './KkGroupToneEdge';
+export { KkGroupToneField } from './KkGroupToneField';
 export { KkGroupToneSwatch } from './KkGroupToneSwatch';
 export { KkHeading } from './KkHeading';
 export { KkHeroSection } from './KkHeroSection/KkHeroSection';
@@ -61,6 +63,7 @@ export { KkModalFrame } from './KkModalFrame/KkModalFrame';
 export { logoSourceOf } from './KkMottoStage/internal/logic/logo-source';
 export type { KkMottoStageState } from './KkMottoStage/internal/motto-stage-state';
 export { KkMottoStage } from './KkMottoStage/KkMottoStage';
+export { KkMultiSelectField } from './KkMultiSelectField';
 export { KkNote } from './KkNote';
 export type {
   KkNoticeAction,

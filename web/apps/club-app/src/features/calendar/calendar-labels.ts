@@ -1,15 +1,15 @@
 import type { KkConfirmFact, KkFilterOption, KkSelectOption } from '@furria/ui';
-import type { CalendarEntryKind } from '@/features/club';
+import type { AttendanceChoice } from '@/lib/calendar-copy';
+import {
+  CALENDAR_KIND_LABELS,
+  toAttendanceChoices,
+  toAttendanceSavedMessage,
+} from '@/lib/calendar-copy';
 import { toIsoDayLabel, toLocalIsoDay, toTimeSpanLabel } from '@/lib/calendar-days';
 import type { CalendarOwnerOption } from './calendar-authoring';
 import { NO_VENUE_ID, toTimeChoices } from './calendar-authoring';
 import { ALL_SCOPE_ID, CLUB_SCOPE_ID, toGroupScopeId } from './calendar-query';
-import type {
-  AttendanceAnswer,
-  CalendarEntry,
-  CalendarEntryVisibility,
-  RunningVenue,
-} from './schemas';
+import type { CalendarEntry, CalendarEntryVisibility, RunningVenue } from './schemas';
 
 export const CALENDAR_TITLE = 'Kalender';
 export const CALENDAR_LOADING_LABEL = 'Der Kalender wird geladen';
@@ -35,14 +35,8 @@ const NO_ENTRIES_LEAD = 'Gerade steht nichts im Kalender.';
 const ONE_ENTRY_LEAD = 'Ein Termin steht im Kalender.';
 const ONE_ENTRY = 1;
 
-export const CALENDAR_KIND_LABELS: Record<CalendarEntryKind, string> = {
-  training: 'Training',
-  rehearsal: 'Probe',
-  performance: 'Auftritt',
-  meeting: 'Sitzung',
-  party: 'Feier',
-  other: 'Sonstiges',
-};
+export type { AttendanceChoice };
+export { CALENDAR_KIND_LABELS, toAttendanceChoices, toAttendanceSavedMessage };
 
 const CLUB_OWNER_LABEL = 'Verein';
 const CLUB_REACH_LABEL = 'für alle im Verein';
@@ -61,36 +55,6 @@ const toReachLabel = (
 
   return null;
 };
-
-const ATTENDANCE_LABELS: Record<AttendanceAnswer, string> = {
-  yes: 'Zusage',
-  no: 'Absage',
-  maybe: 'Vielleicht',
-};
-
-const ATTENDANCE_SAVED_MESSAGES: Record<AttendanceAnswer, string> = {
-  yes: 'Deine Zusage ist notiert.',
-  no: 'Deine Absage ist notiert.',
-  maybe: 'Dein Vielleicht ist notiert.',
-};
-
-const ATTENDANCE_ORDER: readonly AttendanceAnswer[] = ['yes', 'no', 'maybe'];
-
-export interface AttendanceChoice {
-  answer: AttendanceAnswer;
-  label: string;
-  selected: boolean;
-}
-
-export const toAttendanceChoices = (viewerAnswer: AttendanceAnswer | null): AttendanceChoice[] =>
-  ATTENDANCE_ORDER.map((answer) => ({
-    answer,
-    label: ATTENDANCE_LABELS[answer],
-    selected: answer === viewerAnswer,
-  }));
-
-export const toAttendanceSavedMessage = (answer: AttendanceAnswer): string =>
-  ATTENDANCE_SAVED_MESSAGES[answer];
 
 export const toCalendarLead = (count: number): string => {
   if (count === 0) {

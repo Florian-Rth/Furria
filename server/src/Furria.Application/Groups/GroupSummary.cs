@@ -23,4 +23,8 @@ public sealed record GroupSummary
     public required IReadOnlyList<PersonReference> MemberPreview { get; init; }
 
     public required IReadOnlyList<PersonReference> Admins { get; init; }
+
+    public required bool ViewerIsMember { get; init; }
+
+    public required bool ViewerIsAdmin { get; init; }
 }

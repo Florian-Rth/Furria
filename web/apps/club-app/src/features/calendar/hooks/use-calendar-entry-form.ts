@@ -15,6 +15,8 @@ import {
   toEndKeptInStep,
   toEntryFormValues,
   toEntryPayload,
+  toParticipationKeptForOwner,
+  toToggledParticipation,
 } from '../calendar-authoring';
 import type { CalendarEntry, CalendarEntryForm, WrittenCalendarEntry } from '../schemas';
 import { CalendarEntryFormSchema } from '../schemas';
@@ -34,6 +36,7 @@ export interface CalendarEntryFormControl {
   setDescription: (value: string) => void;
   setOwner: (value: string) => void;
   setVenue: (value: string) => void;
+  toggleParticipatingGroup: (value: string) => void;
   setKind: (value: string) => void;
   setVisibility: (value: string) => void;
   setStartDay: (value: string | null) => void;
@@ -126,6 +129,19 @@ export const useCalendarEntryForm = ({
   const setOwner = (value: string): void => {
     form.setValue('ownerId', value);
     form.setValue('visibility', toDefaultVisibility(ownerGroupIdOf(value), form.getValues('kind')));
+    form.setValue(
+      'participatingGroupIds',
+      toParticipationKeptForOwner(form.getValues('participatingGroupIds'), value),
+      { shouldValidate: true },
+    );
+  };
+
+  const toggleParticipatingGroup = (value: string): void => {
+    form.setValue(
+      'participatingGroupIds',
+      toToggledParticipation(form.getValues('participatingGroupIds'), value),
+      { shouldValidate: true },
+    );
   };
 
   const keepEndInStep = (nextStart: CalendarDayTime): void => {
@@ -180,6 +196,7 @@ export const useCalendarEntryForm = ({
     setVenue: (value) => {
       form.setValue('venueId', value);
     },
+    toggleParticipatingGroup,
     setKind,
     setVisibility: (value) => {
       form.setValue('visibility', toCalendarVisibility(value));

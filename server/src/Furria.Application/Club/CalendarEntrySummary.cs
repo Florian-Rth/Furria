@@ -1,4 +1,5 @@
 using Furria.Core.Club;
+using Furria.Core.Groups;
 
 namespace Furria.Application.Club;
 
@@ -21,6 +22,10 @@ public sealed record CalendarEntrySummary
     public required int? OwnerGroupId { get; init; }
 
     public required string? OwnerGroupName { get; init; }
+
+    public required GroupTone? OwnerGroupTone { get; init; }
+
+    public required IReadOnlyList<ParticipatingGroup> ParticipatingGroups { get; init; }
 
     public required CalendarEntryVisibility Visibility { get; init; }
 

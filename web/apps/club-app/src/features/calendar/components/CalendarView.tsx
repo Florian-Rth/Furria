@@ -47,6 +47,7 @@ export const CalendarView: FC<CalendarViewProps> = ({ board, entries, authoring 
       <CalendarEntryFormDialog
         entry={target}
         ownerOptions={authoring.ownerOptions}
+        clubGroups={authoring.clubGroups}
         venues={authoring.venues}
         open={dialogs.kind === 'edit'}
         onClose={dialogs.close}

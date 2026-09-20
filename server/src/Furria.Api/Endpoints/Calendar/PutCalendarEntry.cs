@@ -84,6 +84,7 @@ public sealed class PutCalendarEntry : Endpoint<PutCalendarEntryRequest, PutCale
             Kind = req.Kind,
             Visibility = req.Visibility,
             AsksForResponse = req.AsksForResponse,
+            ParticipatingGroupIds = req.ParticipatingGroupIds,
         };
 
     private static PutCalendarEntryResponse ToResponse(CalendarEntryWriteResult written) =>
@@ -125,6 +126,8 @@ public sealed record PutCalendarEntryRequest
     public required CalendarEntryVisibility Visibility { get; init; }
 
     public required bool AsksForResponse { get; init; }
+
+    public required IReadOnlyList<int> ParticipatingGroupIds { get; init; }
 }
 
 public sealed class PutCalendarEntryValidator : Validator<PutCalendarEntryRequest>
@@ -159,6 +162,9 @@ public sealed class PutCalendarEntryValidator : Validator<PutCalendarEntryReques
             .GreaterThanOrEqualTo(request => request.StartsAt)
             .When(request => request.EndsAt is not null)
             .WithMessage(EndsBeforeItStartsMessage);
+        RuleForEach(request => request.ParticipatingGroupIds)
+            .GreaterThan(0)
+            .WithMessage(UnknownGroupMessage);
     }
 }
 

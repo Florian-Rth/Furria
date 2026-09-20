@@ -2,6 +2,7 @@ import { GROUP_TONES } from '@furria/ui';
 import { z } from 'zod';
 import { GroupDetailAdminSchema, GroupDetailMemberSchema } from '@/features/group-detail';
 import { PersonRefSchema } from '@/lib/api/schemas';
+import { ATTENDANCE_ANSWER_KEYS, CALENDAR_KIND_KEYS } from '@/lib/calendar-copy';
 
 export const GroupToneSchema = z.enum(GROUP_TONES);
 export type GroupTone = z.infer<typeof GroupToneSchema>;
@@ -112,3 +113,44 @@ export const EndGroupAdminFormSchema = z.object({
   endedOn: z.iso.date(),
 });
 export type EndGroupAdminForm = z.infer<typeof EndGroupAdminFormSchema>;
+
+export const GroupCalendarKindSchema = z.enum(CALENDAR_KIND_KEYS);
+export type GroupCalendarKind = z.infer<typeof GroupCalendarKindSchema>;
+
+export const GroupCalendarVisibilitySchema = z.enum(['group', 'club', 'public']);
+export type GroupCalendarVisibility = z.infer<typeof GroupCalendarVisibilitySchema>;
+
+export const GroupAttendanceAnswerSchema = z.enum(ATTENDANCE_ANSWER_KEYS);
+export type GroupAttendanceAnswer = z.infer<typeof GroupAttendanceAnswerSchema>;
+
+export const GroupCalendarParticipantSchema = z.object({
+  groupId: z.number().int(),
+  name: z.string(),
+  tone: GroupToneSchema.nullable(),
+});
+export type GroupCalendarParticipant = z.infer<typeof GroupCalendarParticipantSchema>;
+
+export const GroupCalendarEntrySchema = z.object({
+  calendarEntryId: z.number().int(),
+  title: z.string(),
+  startsAt: z.iso.datetime({ offset: true }),
+  endsAt: z.iso.datetime({ offset: true }).nullable(),
+  kind: GroupCalendarKindSchema,
+  venueId: z.number().int().nullable(),
+  venueName: z.string().nullable(),
+  ownerGroupId: z.number().int().nullable(),
+  ownerGroupName: z.string().nullable(),
+  ownerGroupTone: GroupToneSchema.nullable(),
+  participatingGroups: z.array(GroupCalendarParticipantSchema),
+  visibility: GroupCalendarVisibilitySchema,
+  asksForResponse: z.boolean(),
+  description: z.string().nullable(),
+  viewerAnswer: GroupAttendanceAnswerSchema.nullable(),
+  isRunning: z.boolean(),
+});
+export type GroupCalendarEntry = z.infer<typeof GroupCalendarEntrySchema>;
+
+export const GroupCalendarResponseSchema = z.object({
+  entries: z.array(GroupCalendarEntrySchema),
+});
+export type GroupCalendarResponse = z.infer<typeof GroupCalendarResponseSchema>;

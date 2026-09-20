@@ -1,3 +1,4 @@
+import type { KkSelectOption } from '@furria/ui';
 import type { CalendarEntryKind } from '@/features/club';
 import type { MyGroupSummary } from '@/features/group-hub';
 import { toDayNumberLabel, toTimeSpanLabel } from '@/lib/calendar-days';
@@ -31,6 +32,11 @@ const KIND_ORDER: readonly CalendarEntryKind[] = [
 
 const VISIBILITY_ORDER: readonly CalendarEntryVisibility[] = ['group', 'club', 'public'];
 
+export interface CalendarParticipantGroup {
+  groupId: number;
+  name: string;
+}
+
 export interface CalendarOwnerOption {
   id: string;
   ownerGroupId: number | null;
@@ -47,6 +53,7 @@ export interface CalendarEntryPayload {
   kind: CalendarEntryKind;
   visibility: CalendarEntryVisibility;
   asksForResponse: boolean;
+  participatingGroupIds: number[];
 }
 
 export interface CalendarDayTime {
@@ -81,6 +88,25 @@ export const toOwnerOptions = (
     ...administered,
   ];
 };
+
+export const toParticipatingGroupOptions = (
+  groups: readonly CalendarParticipantGroup[],
+  ownerId: string,
+): KkSelectOption[] =>
+  groups
+    .filter((group) => toOwnerId(group.groupId) !== ownerId)
+    .map((group) => ({ value: toOwnerId(group.groupId), label: group.name }))
+    .sort((left, right) => left.label.localeCompare(right.label, 'de'));
+
+export const toParticipatingGroupIds = (values: readonly string[], ownerId: string): number[] => [
+  ...new Set(values.filter((value) => value !== ownerId).map((value) => Number(value))),
+];
+
+export const toParticipationKeptForOwner = (values: readonly string[], ownerId: string): string[] =>
+  values.filter((value) => value !== ownerId);
+
+export const toToggledParticipation = (values: readonly string[], value: string): string[] =>
+  values.includes(value) ? values.filter((held) => held !== value) : [...values, value];
 
 export const mayOwnCalendarEntry = (
   options: readonly CalendarOwnerOption[],
@@ -148,6 +174,7 @@ export const toEntryPayload = (form: CalendarEntryForm): CalendarEntryPayload =>
     kind: form.kind,
     visibility: form.visibility,
     asksForResponse: form.asksForResponse,
+    participatingGroupIds: toParticipatingGroupIds(form.participatingGroupIds, form.ownerId),
   };
 };
 
@@ -173,6 +200,7 @@ export const toEntryFormValues = (
       endDay: startDay,
       endTime: DEFAULT_END_TIME,
       asksForResponse: false,
+      participatingGroupIds: [],
     };
   }
 
@@ -191,6 +219,7 @@ export const toEntryFormValues = (
     endDay: end?.day ?? '',
     endTime: end?.time ?? DEFAULT_END_TIME,
     asksForResponse: entry.asksForResponse,
+    participatingGroupIds: entry.participatingGroups.map((group) => toOwnerId(group.groupId)),
   };
 };
 

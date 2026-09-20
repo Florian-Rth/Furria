@@ -77,7 +77,8 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
     dialogs.close();
   };
 
-  const termine = hub.viewerIsMember || hub.viewerIsAdmin ? <HubTerminePanel tone={tone} /> : null;
+  const seesTermine = hub.viewerIsMember || hub.viewerIsAdmin;
+  const termine = seesTermine ? <HubTerminePanel groupId={hub.groupId} tone={tone} /> : null;
 
   const care = hub.viewerIsAdmin ? (
     <HubCarePanel tone={tone} form={form} takenTones={takenTones} titleRef={careFocus.targetRef} />

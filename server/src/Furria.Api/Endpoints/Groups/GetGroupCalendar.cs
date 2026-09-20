@@ -1,46 +1,59 @@
 using FastEndpoints;
 using FluentValidation;
 using Furria.Api.Authorization;
+using Furria.Api.Endpoints.Calendar;
 using Furria.Application.Authorization;
 using Furria.Application.Club;
 using Furria.Core.Club;
 using Furria.Core.Groups;
+using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Club;
 
-namespace Furria.Api.Endpoints.Calendar;
+namespace Furria.Api.Endpoints.Groups;
 
-public sealed class GetCalendar : Endpoint<GetCalendarRequest, GetCalendarResponse>
+public sealed class GetGroupCalendar : Endpoint<GetGroupCalendarRequest, GetGroupCalendarResponse>
 {
     private readonly CalendarService _calendarService;
+    private readonly PermissionAuthorizer _authorizer;
     private readonly TimeProvider _timeProvider;
 
-    public GetCalendar(CalendarService calendarService, TimeProvider timeProvider)
+    public GetGroupCalendar(
+        CalendarService calendarService,
+        PermissionAuthorizer authorizer,
+        TimeProvider timeProvider
+    )
     {
         _calendarService = calendarService;
+        _authorizer = authorizer;
         _timeProvider = timeProvider;
     }
 
     public override void Configure()
     {
-        Get("calendar");
-        Definition.RequirePermission(FurriaPermissions.ClubRead);
+        Get("groups/{groupId}/calendar");
     }
 
-    public override async Task HandleAsync(GetCalendarRequest req, CancellationToken ct)
+    public override async Task HandleAsync(GetGroupCalendarRequest req, CancellationToken ct)
     {
+        var accountId = User.AccountId();
         var personId = User.PersonId();
-        if (personId is null)
+        if (accountId is null || personId is null)
         {
             await Send.UnauthorizedAsync(ct);
+            return;
+        }
+
+        if (!await MayReadAsync(accountId.Value, req.GroupId, ct))
+        {
+            await Send.ForbiddenAsync(ct);
             return;
         }
 
         var from = req.From ?? ClubClock.Today(_timeProvider);
         var to = req.To ?? from.AddDays(CalendarLimits.DefaultWindowDays);
 
-        var entries = await _calendarService.GetEntriesAsync(
+        var entries = await _calendarService.GetGroupEntriesAsync(
             personId.Value,
-            req.Scope == CalendarScope.Club,
             req.GroupId,
             from,
             to,
@@ -50,10 +63,15 @@ public sealed class GetCalendar : Endpoint<GetCalendarRequest, GetCalendarRespon
         await Send.OkAsync(ToResponse(entries), cancellation: ct);
     }
 
-    private static GetCalendarResponse ToResponse(IReadOnlyList<CalendarEntrySummary> entries) =>
-        new() { Entries = [.. entries.Select(ToDto)] };
+    private async Task<bool> MayReadAsync(int accountId, int groupId, CancellationToken ct) =>
+        await _authorizer.IsGroupMemberOrAdminAsync(accountId, groupId, ct)
+        || await _authorizer.IsGrantedAsync(accountId, FurriaPermissions.GroupsManage, ct);
 
-    private static CalendarEntryDto ToDto(CalendarEntrySummary entry) =>
+    private static GetGroupCalendarResponse ToResponse(
+        IReadOnlyList<CalendarEntrySummary> entries
+    ) => new() { Entries = [.. entries.Select(ToDto)] };
+
+    private static GroupCalendarEntryDto ToDto(CalendarEntrySummary entry) =>
         new()
         {
             CalendarEntryId = entry.CalendarEntryId,
@@ -74,7 +92,7 @@ public sealed class GetCalendar : Endpoint<GetCalendarRequest, GetCalendarRespon
             IsRunning = entry.IsRunning,
         };
 
-    private static ParticipatingGroupDto ToDto(ParticipatingGroup group) =>
+    private static GroupCalendarParticipantDto ToDto(ParticipatingGroup group) =>
         new()
         {
             GroupId = group.GroupId,
@@ -83,13 +101,10 @@ public sealed class GetCalendar : Endpoint<GetCalendarRequest, GetCalendarRespon
         };
 }
 
-public sealed record GetCalendarRequest
+public sealed record GetGroupCalendarRequest
 {
-    [QueryParam]
-    public CalendarScope? Scope { get; init; }
-
-    [QueryParam]
-    public int? GroupId { get; init; }
+    [RouteParam]
+    public required int GroupId { get; init; }
 
     [QueryParam]
     [BindFrom("from")]
@@ -100,27 +115,17 @@ public sealed record GetCalendarRequest
     public DateOnly? To { get; init; }
 }
 
-public sealed class GetCalendarValidator : Validator<GetCalendarRequest>
+public sealed class GetGroupCalendarValidator : Validator<GetGroupCalendarRequest>
 {
     private const string UnknownGroupMessage = "Diese Gruppe gibt es nicht.";
-    private const string GroupScopeNeedsGroupMessage =
-        "Für den Bereich „Gruppe“ wird eine Gruppe gebraucht.";
     private const string WindowEndsBeforeItStartsMessage =
         "Ein Zeitraum kann nicht vor seinem Beginn enden.";
     private static readonly string WindowTooLongMessage =
         $"Ein Zeitraum umfasst höchstens {CalendarLimits.MaxWindowDays} Tage.";
 
-    public GetCalendarValidator()
+    public GetGroupCalendarValidator()
     {
-        RuleFor(request => request.GroupId)
-            .GreaterThan(0)
-            .When(request => request.GroupId is not null)
-            .WithMessage(UnknownGroupMessage);
-
-        RuleFor(request => request.GroupId)
-            .NotNull()
-            .When(request => request.Scope == CalendarScope.Group)
-            .WithMessage(GroupScopeNeedsGroupMessage);
+        RuleFor(request => request.GroupId).GreaterThan(0).WithMessage(UnknownGroupMessage);
 
         RuleFor(request => request)
             .Must(SpansForwards)
@@ -133,22 +138,22 @@ public sealed class GetCalendarValidator : Validator<GetCalendarRequest>
             .WithMessage(WindowTooLongMessage);
     }
 
-    private static bool HasBothEnds(GetCalendarRequest request) =>
+    private static bool HasBothEnds(GetGroupCalendarRequest request) =>
         request.From is not null && request.To is not null;
 
-    private static bool SpansForwards(GetCalendarRequest request) =>
+    private static bool SpansForwards(GetGroupCalendarRequest request) =>
         request.To!.Value >= request.From!.Value;
 
-    private static bool StaysInsideTheLimit(GetCalendarRequest request) =>
+    private static bool StaysInsideTheLimit(GetGroupCalendarRequest request) =>
         request.To!.Value.DayNumber - request.From!.Value.DayNumber <= CalendarLimits.MaxWindowDays;
 }
 
-public sealed record GetCalendarResponse
+public sealed record GetGroupCalendarResponse
 {
-    public required IReadOnlyList<CalendarEntryDto> Entries { get; init; }
+    public required IReadOnlyList<GroupCalendarEntryDto> Entries { get; init; }
 }
 
-public sealed record CalendarEntryDto
+public sealed record GroupCalendarEntryDto
 {
     public required int CalendarEntryId { get; init; }
 
@@ -170,7 +175,7 @@ public sealed record CalendarEntryDto
 
     public required GroupTone? OwnerGroupTone { get; init; }
 
-    public required IReadOnlyList<ParticipatingGroupDto> ParticipatingGroups { get; init; }
+    public required IReadOnlyList<GroupCalendarParticipantDto> ParticipatingGroups { get; init; }
 
     public required CalendarEntryVisibility Visibility { get; init; }
 
@@ -183,7 +188,7 @@ public sealed record CalendarEntryDto
     public required bool IsRunning { get; init; }
 }
 
-public sealed record ParticipatingGroupDto
+public sealed record GroupCalendarParticipantDto
 {
     public required int GroupId { get; init; }
 

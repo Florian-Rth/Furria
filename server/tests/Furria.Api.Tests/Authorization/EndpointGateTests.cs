@@ -19,6 +19,7 @@ public sealed class EndpointGateTests
         "/api/auth/logout",
         "/api/my-groups",
         "/api/groups/{groupId}",
+        "/api/groups/{groupId}/calendar",
         "/api/groups/{groupId}/info",
         "/api/groups/{groupId}/training-slots",
         "/api/groups/{groupId}/memberships",

@@ -3,6 +3,7 @@ import {
   KkButton,
   KkDateField,
   KkModalFrame,
+  KkMultiSelectField,
   KkNote,
   KkSelectField,
   KkSwitchRow,
@@ -13,7 +14,8 @@ import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { useId } from 'react';
-import type { CalendarOwnerOption } from '../calendar-authoring';
+import type { CalendarOwnerOption, CalendarParticipantGroup } from '../calendar-authoring';
+import { toParticipatingGroupOptions } from '../calendar-authoring';
 import {
   CALENDAR_KIND_OPTIONS,
   CALENDAR_VISIBILITY_OPTIONS,
@@ -41,6 +43,10 @@ const DESCRIPTION_ROWS = 4;
 const OWNER_LABEL = 'Eigentümer';
 const OWNER_HINT = 'Wem der Termin gehört — der Verein oder eine Gruppe. Nur der darf ihn ändern.';
 const KIND_LABEL = 'Art';
+const PARTICIPANTS_LABEL = 'Mitwirkende Gruppen';
+const PARTICIPANTS_HINT =
+  'Welche Gruppen hier gebraucht werden. Der Termin taucht in ihrem Gruppen-Hub auf — ändern darf ihn weiterhin nur der Eigentümer.';
+const PARTICIPANTS_EMPTY = 'Es gibt keine weitere Gruppe, die mitwirken könnte.';
 const VENUE_LABEL = 'Ort';
 const VENUE_HINT = 'Aus dem Ortsverzeichnis. Ohne Ort findet niemand eine Doppelbelegung.';
 const START_DAY_LABEL = 'Tag';
@@ -65,6 +71,7 @@ const toCountLabel = (used: number, max: number): string => `${used} von ${max} 
 interface CalendarEntryFormDialogProps {
   entry: CalendarEntry | null;
   ownerOptions: readonly CalendarOwnerOption[];
+  clubGroups: readonly CalendarParticipantGroup[];
   venues: readonly RunningVenue[];
   open: boolean;
   onClose: () => void;
@@ -74,6 +81,7 @@ interface CalendarEntryFormDialogProps {
 export const CalendarEntryFormDialog: FC<CalendarEntryFormDialogProps> = ({
   entry,
   ownerOptions,
+  clubGroups,
   venues,
   open,
   onClose,
@@ -93,6 +101,8 @@ export const CalendarEntryFormDialog: FC<CalendarEntryFormDialogProps> = ({
   const kicker = entry === null ? CREATE_KICKER : entry.title;
   const confirmLabel = control.isEditing ? EDIT_CONFIRM : CREATE_CONFIRM;
   const timeOptions = toTimeOptions();
+  const participantOptions = toParticipatingGroupOptions(clubGroups, control.values.ownerId);
+  const participantsErrorText = errors.participatingGroupIds?.message;
 
   const intro = control.isEditing ? null : <KkNote>{CREATE_NOTE}</KkNote>;
   const rejection =
@@ -132,6 +142,17 @@ export const CalendarEntryFormDialog: FC<CalendarEntryFormDialogProps> = ({
             inputRef={titleField.ref}
           />
           {ownerField}
+          <KkMultiSelectField
+            name="participatingGroupIds"
+            label={PARTICIPANTS_LABEL}
+            values={control.values.participatingGroupIds}
+            options={participantOptions}
+            onToggle={control.toggleParticipatingGroup}
+            emptyLabel={PARTICIPANTS_EMPTY}
+            hint={PARTICIPANTS_HINT}
+            error={participantsErrorText !== undefined}
+            helperText={participantsErrorText}
+          />
           <KkSelectField
             name="kind"
             label={KIND_LABEL}

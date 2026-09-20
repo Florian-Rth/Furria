@@ -127,7 +127,10 @@ public sealed class GroupService
         _timeProvider = timeProvider;
     }
 
-    public async Task<IReadOnlyList<GroupSummary>> GetGroupsAsync(CancellationToken ct)
+    public async Task<IReadOnlyList<GroupSummary>> GetGroupsAsync(
+        int viewerPersonId,
+        CancellationToken ct
+    )
     {
         var today = ClubClock.Today(_timeProvider);
 
@@ -144,6 +147,16 @@ public sealed class GroupService
                 group.GroupKind!.Name,
                 group.FoundedYear,
                 group.Tone,
+                group.Memberships.Any(membership =>
+                    membership.PersonId == viewerPersonId
+                    && membership.JoinedOn <= today
+                    && (membership.LeftOn == null || membership.LeftOn >= today)
+                ),
+                group.Admins.Any(admin =>
+                    admin.PersonId == viewerPersonId
+                    && admin.SinceOn <= today
+                    && (admin.UntilOn == null || admin.UntilOn >= today)
+                ),
                 group
                     .Memberships.Where(membership =>
                         membership.JoinedOn <= today
@@ -913,6 +926,8 @@ public sealed class GroupService
             MemberCount = members.Count,
             MemberPreview = [.. members.Take(MemberPreviewSize)],
             Admins = OnePerPerson(row.Admins),
+            ViewerIsMember = row.ViewerIsMember,
+            ViewerIsAdmin = row.ViewerIsAdmin,
         };
     }
 
@@ -928,6 +943,8 @@ public sealed class GroupService
         string? GroupKindName,
         int? FoundedYear,
         GroupTone? Tone,
+        bool ViewerIsMember,
+        bool ViewerIsAdmin,
         IReadOnlyList<PersonReference> Members,
         IReadOnlyList<PersonReference> Admins
     );

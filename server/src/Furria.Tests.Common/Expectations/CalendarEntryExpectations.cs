@@ -88,6 +88,28 @@ public sealed class CalendarEntryExpectations
                 Assert.Equal(venueId, (await SingleAsync(dbContext, ct)).VenueId)
         );
 
+    public Expected ToCarryMitwirkendeGruppen(params int[] groupIds) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal([.. groupIds.Order()], await ParticipatingGroupIdsAsync(dbContext, ct))
+        );
+
+    public Expected ToCarryNoMitwirkendeGruppe() =>
+        _expected.Enqueue(
+            async (dbContext, ct) => Assert.Empty(await ParticipatingGroupIdsAsync(dbContext, ct))
+        );
+
+    private async Task<IReadOnlyList<int>> ParticipatingGroupIdsAsync(
+        AppDbContext dbContext,
+        CancellationToken ct
+    ) =>
+        await dbContext
+            .CalendarEntryGroups.AsNoTracking()
+            .Where(link => link.CalendarEntryId == _calendarEntryId)
+            .Select(link => link.GroupId)
+            .OrderBy(groupId => groupId)
+            .ToListAsync(ct);
+
     private Task<CalendarEntry> SingleAsync(AppDbContext dbContext, CancellationToken ct) =>
         dbContext.CalendarEntries.AsNoTracking().SingleAsync(row => row.Id == _calendarEntryId, ct);
 }
