@@ -14,6 +14,7 @@ public sealed class PermissionAuthorizerTests
 {
     private static readonly DateOnly HeldSince2017 = new(2017, 9, 1);
     private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
+    private static readonly DateOnly SeatedIn2023 = new(2023, 3, 1);
     private static readonly DateTimeOffset HalfPastMidnightInBerlin = new(
         2026,
         6,
@@ -507,6 +508,200 @@ public sealed class PermissionAuthorizerTests
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
+
+    [Fact]
+    public async Task Should_GrantDieImplizierteRolle_When_EinVorstandssitzLaeuft()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await SeatedAsync(SeatedIn2023, untilOn: null, ct);
+
+        var client = await ctx.Identity.ClientForAsync("nadine", ct);
+        var (response, _) = await client.GETAsync<PermissionProbe, EmptyResponse>();
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_GrantNoKeys_When_DerVorstandssitzBeendetIst()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await SeatedAsync(SeatedIn2023, _fixture.Today.AddDays(-1), ct);
+
+        var client = await ctx.Identity.ClientForAsync("nadine", ct);
+        var (response, _) = await client.GETAsync<PermissionProbe, EmptyResponse>();
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_WriteNoInhaberschaft_When_EinVorstandssitzLaeuft()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await SeatedAsync(SeatedIn2023, untilOn: null, ct);
+
+        var client = await ctx.Identity.ClientForAsync("nadine", ct);
+        await client.GETAsync<PermissionProbe, EmptyResponse>();
+
+        await ctx
+            .Expected.RoleHoldingsOfPerson(ctx.Identity.People.IdOf("nadine"))
+            .ToHaveCount(0)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_WriteNoInhaberschaft_When_DerVorstandssitzBeendetIst()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await SeatedAsync(SeatedIn2023, _fixture.Today.AddDays(-1), ct);
+
+        var client = await ctx.Identity.ClientForAsync("nadine", ct);
+        await client.GETAsync<PermissionProbe, EmptyResponse>();
+
+        await ctx
+            .Expected.RoleHoldingsOfPerson(ctx.Identity.People.IdOf("nadine"))
+            .ToHaveCount(0)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_GrantNoKeys_When_DieFunktionKeineRolleNennt()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddAccount("nadine"))
+                    .Roles(roles =>
+                        roles.AddRole(
+                            "personenpflege",
+                            "Personenpflege",
+                            FurriaPermissions.PersonsManage
+                        )
+                    )
+                    .Club(club =>
+                        club.AddBoardOffice("praesident", "Präsident", impliedRoleAlias: null)
+                            .AddBoardSeat("nadine-praesident", "praesident", "nadine", SeatedIn2023)
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("nadine", ct);
+        var (response, _) = await client.GETAsync<PermissionProbe, EmptyResponse>();
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_GrantNoKeys_When_DieImplizierteRolleArchiviertIst()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddAccount("nadine"))
+                    .Roles(roles =>
+                        roles.AddRoleWithDetails(
+                            "personenpflege",
+                            "Personenpflege",
+                            "Aufgeloest.",
+                            ArchivedIn2021,
+                            FurriaPermissions.PersonsManage
+                        )
+                    )
+                    .Club(club =>
+                        club.AddBoardOffice(
+                                "praesident",
+                                "Präsident",
+                                impliedRoleAlias: "personenpflege"
+                            )
+                            .AddBoardSeat("nadine-praesident", "praesident", "nadine", SeatedIn2023)
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("nadine", ct);
+        var (response, _) = await client.GETAsync<PermissionProbe, EmptyResponse>();
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_KeepTheKey_When_DieEigeneInhaberschaftDenSitzUeberdauert()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddAccount("nadine"))
+                    .Roles(roles =>
+                        roles
+                            .AddRole(
+                                "personenpflege",
+                                "Personenpflege",
+                                FurriaPermissions.PersonsManage
+                            )
+                            .AddRoleHolding(
+                                "nadine-personenpflege",
+                                "personenpflege",
+                                "nadine",
+                                HeldSince2017
+                            )
+                    )
+                    .Club(club =>
+                        club.AddBoardOffice(
+                                "praesident",
+                                "Präsident",
+                                impliedRoleAlias: "personenpflege"
+                            )
+                            .AddBoardSeat(
+                                "nadine-praesident",
+                                "praesident",
+                                "nadine",
+                                SeatedIn2023,
+                                _fixture.Today.AddDays(-1)
+                            )
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("nadine", ct);
+        var (response, _) = await client.GETAsync<PermissionProbe, EmptyResponse>();
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+    }
+
+    private Task<SeededContext> SeatedAsync(
+        DateOnly sinceOn,
+        DateOnly? untilOn,
+        CancellationToken ct
+    ) =>
+        _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddAccount("nadine"))
+                    .Roles(roles =>
+                        roles.AddRole(
+                            "personenpflege",
+                            "Personenpflege",
+                            FurriaPermissions.PersonsManage
+                        )
+                    )
+                    .Club(club =>
+                        club.AddBoardOffice(
+                                "praesident",
+                                "Präsident",
+                                impliedRoleAlias: "personenpflege"
+                            )
+                            .AddBoardSeat(
+                                "nadine-praesident",
+                                "praesident",
+                                "nadine",
+                                sinceOn,
+                                untilOn
+                            )
+                    ),
+            ct
+        );
 
     private Task<SeededContext> SeededWithHoldingUntilAsync(
         DateOnly untilOn,
