@@ -361,16 +361,18 @@ the same `VisibleTo` predicate the Kalender itself runs, so a warning never name
 Eintrag the author may not read. The warning is still never a rejection (E6), it is simply quieter
 for some authors than for others.
 
-**The Kalender's Ort-Auswahl reads the Verein hub, as E6 intended.** No affiliation-gated
-`GET venues` exists; `useCalendarAuthoring` takes its Orte from `club/hub`, which is gated on
-`club.read`. Named here because it leaves a gap: a Gruppen-Admin without a running Mitgliedschaft
-may own a Kalendereintrag and would open the picker empty. Nothing in this phase hits that case —
-it wants its own ruling before the Gruppen-Admin role is handed out freely.
+**The Kalender got its own Ort-Auswahl.** E6 first took its Orte from `club/hub`, which is gated
+on `club.read` and therefore on a *running Mitgliedschaft* — so a Gruppen-Admin whose only tie is
+an open Zugehörigkeit may own a Kalendereintrag and would have opened the picker empty, and every
+author paid for a whole Hub-Payload to fill one Select. `GET venues` closes it: affiliation-gated,
+laufende Orte only, `venueId` and `name` and nothing else. It is deliberately *not* a second
+`manage/venues` — an Anschrift has no business in a picker.
 
-**A Vorstandsfunktion is archived and stays archived.** Unlike a Gruppe, an Ort and a Rolle, it has
-no Restore. `ArchiveBoardOffice` refuses while a Sitz is running (as shaped), and every write on an
-archived Funktion is a `Conflict` — but there is no way back. That was not decided, it was simply
-never built, and it is the one asymmetry in the phase worth revisiting.
+**A Vorstandsfunktion is restorable, like a Gruppe, ein Ort und eine Rolle.** It first shipped
+archive-only, which was never decided — it was simply not built — and it made a typo in
+*Beisitzer* permanent. `RestoreBoardOffice` closes the asymmetry, and the implied Rolle survives
+the round trip, so archiving revokes the derived Berechtigungen and restoring gives them back.
+`ArchiveBoardOffice` still refuses while a Sitz is running, as shaped.
 
 **Form-Fehler moved out of `manage-groups`.** Four new form screens landed at once, so
 `manage-groups/form-failures.ts` was lifted into `lib/api/api-failures.ts` as `toFormFailures`
@@ -386,3 +388,25 @@ rather than copied five times. No behaviour changed.
   larger decision than it was on the morning of the shaping.
 - **The founding year** and **the word for non-member Gruppen people** are untouched by this phase
   and stay open exactly as written.
+
+**The four new Berechtigungen are held by nobody on the day this deploys.** `BootstrapAdminSeeder`
+grants `FurriaPermissions.All` only when it *creates* the Admin Rolle; against a database that
+already has one it never re-grants a key, which is Decision W and is pinned by
+`Should_LeaveTheKeysAlone_When_TheClubRemovedOneFromTheAdminRolle`. That is right — the club owns
+its Rollen and the seeder must not silently restore a Berechtigung the club removed on purpose —
+but it means the back office ships with four invisible panels until somebody opens
+`/manage/roles` and grants `club.manage`, `key_holdings.manage`, `board.manage` and
+`calendar.manage_club`. No lockout: the hub opens on any of its six keys, and the Admin already
+holds `roles.manage`. Worth saying out loud in the release note, because an operator who does not
+know this will read an empty hub as a broken one.
+
+**Three defects only a phone found.** All gates were green and every one of these was invisible to
+them: the Vorstand's *Archivieren* and its „Erst den Sitz beenden" ran off the card at 390px; the
+Schlüssel-Kopfzeile pushed *Ausgeben* past the right edge for every Ort whose name is longer than
+*Lager*, so on a phone no key could be handed out for the Sporthalle or den Vereinsraum; and an Ort
+with no Anschrift printed a lone comma — the one thing the Sessionseinträge screen was built to
+never do. The first two wrap now, the third says
+„Noch ohne Anschrift — trag sie nach, sonst findet niemand hin." `KkPanelHeader` learned to wrap,
+which is what carries the Schlüssel fix without a feature reaching into the kit's internals.
+The lesson is not about these three: **a screen in this app is not finished when its gates pass,
+it is finished when somebody has looked at it at 390px in both Farbschemata.**
