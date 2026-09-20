@@ -1,5 +1,4 @@
 using System.Diagnostics.Contracts;
-using System.Linq.Expressions;
 using Furria.Application.Club;
 using Furria.Application.Results;
 using Furria.Core.Club;
@@ -14,31 +13,18 @@ public sealed class AnnouncementService
     private const string ForeignAnnouncementMessage =
         "Diesen Aushang hat jemand anderes geschrieben.";
 
-    private static readonly Expression<Func<Announcement, AnnouncementRow>> AnnouncementProjection =
-        announcement => new AnnouncementRow(
-            announcement.Id,
-            announcement.Title,
-            announcement.Body,
-            announcement.PublishedAt,
-            announcement.ValidUntil,
-            announcement.AuthorPersonId,
-            announcement.Author!.FirstName,
-            announcement.Author!.LastName,
-            announcement.Author!.PortraitUrl
-        );
-
     private readonly AppDbContext _dbContext;
-    private readonly ClubService _clubService;
+    private readonly RunningBoardSeats _runningBoardSeats;
     private readonly TimeProvider _timeProvider;
 
     public AnnouncementService(
         AppDbContext dbContext,
-        ClubService clubService,
+        RunningBoardSeats runningBoardSeats,
         TimeProvider timeProvider
     )
     {
         _dbContext = dbContext;
-        _clubService = clubService;
+        _runningBoardSeats = runningBoardSeats;
         _timeProvider = timeProvider;
     }
 
@@ -52,10 +38,10 @@ public sealed class AnnouncementService
             .Announcements.AsNoTracking()
             .OrderByDescending(announcement => announcement.PublishedAt)
             .ThenByDescending(announcement => announcement.Id)
-            .Select(AnnouncementProjection)
+            .Select(AnnouncementRows.Projection)
             .ToListAsync(ct);
 
-        var officeNames = await _clubService.OfficeNamesOfRunningBoardSeatsAsync(today, ct);
+        var officeNames = await _runningBoardSeats.OfficeNamesAsync(today, ct);
 
         return [.. rows.Select(row => ToSummary(row, officeNames))];
     }
@@ -155,16 +141,4 @@ public sealed class AnnouncementService
 
     private Task<Announcement?> FindAsync(int announcementId, CancellationToken ct) =>
         _dbContext.Announcements.SingleOrDefaultAsync(row => row.Id == announcementId, ct);
-
-    private sealed record AnnouncementRow(
-        int AnnouncementId,
-        string Title,
-        string Body,
-        DateTimeOffset PublishedAt,
-        DateOnly? ValidUntil,
-        int AuthorPersonId,
-        string FirstName,
-        string LastName,
-        string? PortraitUrl
-    );
 }

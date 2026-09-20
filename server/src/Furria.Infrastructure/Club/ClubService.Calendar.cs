@@ -26,7 +26,7 @@ public sealed partial class ClubService
             .ThenBy(entry => entry.StartsAt)
             .ThenBy(entry => entry.Id)
             .Take(HubCalendarEntryCount)
-            .Select(entry => new HubCalendarRow(
+            .Select(entry => new CalendarRow(
                 entry.Id,
                 entry.Title,
                 entry.StartsAt,
@@ -41,7 +41,7 @@ public sealed partial class ClubService
     }
 
     [Pure]
-    private static ClubHubCalendarEntry ToHubCalendarEntry(HubCalendarRow row) =>
+    private static ClubHubCalendarEntry ToHubCalendarEntry(CalendarRow row) =>
         new()
         {
             CalendarEntryId = row.CalendarEntryId,
@@ -53,7 +53,7 @@ public sealed partial class ClubService
             IsRunning = row.IsRunning,
         };
 
-    private sealed record HubCalendarRow(
+    private sealed record CalendarRow(
         int CalendarEntryId,
         string Title,
         DateTimeOffset StartsAt,

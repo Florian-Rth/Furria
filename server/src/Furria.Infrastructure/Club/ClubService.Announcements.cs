@@ -1,3 +1,4 @@
+using System.Diagnostics.Contracts;
 using Furria.Application.Club;
 using Microsoft.EntityFrameworkCore;
 
@@ -5,12 +6,7 @@ namespace Furria.Infrastructure.Club;
 
 public sealed partial class ClubService
 {
-    private const int NewestAnnouncementsShown = 2;
-
-    internal Task<IReadOnlyDictionary<int, string>> OfficeNamesOfRunningBoardSeatsAsync(
-        DateOnly today,
-        CancellationToken ct
-    ) => RunningOfficeNamesAsync(today, ct);
+    private const int HubAnnouncementCount = 2;
 
     private async Task<ClubHubAnnouncements> AnnouncementsAsync(
         DateOnly today,
@@ -28,21 +24,14 @@ public sealed partial class ClubService
         var rows = await unexpired
             .OrderByDescending(announcement => announcement.PublishedAt)
             .ThenByDescending(announcement => announcement.Id)
-            .Take(NewestAnnouncementsShown)
-            .Select(announcement => new AnnouncementRow(
-                announcement.Id,
-                announcement.Title,
-                announcement.Body,
-                announcement.PublishedAt,
-                announcement.ValidUntil,
-                announcement.AuthorPersonId,
-                announcement.Author!.FirstName,
-                announcement.Author!.LastName,
-                announcement.Author!.PortraitUrl
-            ))
+            .Take(HubAnnouncementCount)
+            .Select(AnnouncementRows.Projection)
             .ToListAsync(ct);
 
-        var officeNames = await RunningOfficeNamesAsync(today, ct);
+        if (rows.Count == 0)
+            return new ClubHubAnnouncements { Newest = [], TotalCount = totalCount };
+
+        var officeNames = await _runningBoardSeats.OfficeNamesAsync(today, ct);
 
         return new ClubHubAnnouncements
         {
@@ -51,6 +40,7 @@ public sealed partial class ClubService
         };
     }
 
+    [Pure]
     private static ClubHubAnnouncement ToHubAnnouncement(
         AnnouncementRow row,
         IReadOnlyDictionary<int, string> officeNames
@@ -71,16 +61,4 @@ public sealed partial class ClubService
                 OfficeName = officeNames.GetValueOrDefault(row.AuthorPersonId),
             },
         };
-
-    private sealed record AnnouncementRow(
-        int AnnouncementId,
-        string Title,
-        string Body,
-        DateTimeOffset PublishedAt,
-        DateOnly? ValidUntil,
-        int AuthorPersonId,
-        string FirstName,
-        string LastName,
-        string? PortraitUrl
-    );
 }

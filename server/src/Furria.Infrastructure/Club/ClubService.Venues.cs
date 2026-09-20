@@ -1,3 +1,4 @@
+using System.Diagnostics.Contracts;
 using System.Linq.Expressions;
 using Furria.Application.Club;
 using Furria.Core.Club;
@@ -54,7 +55,7 @@ public sealed partial class ClubService
             .Select(KeyHoldingProjection)
             .ToListAsync(ct);
 
-        var officeNames = await RunningOfficeNamesAsync(today, ct);
+        var officeNames = await _runningBoardSeats.OfficeNamesAsync(today, ct);
 
         var holdersByVenue = holdings
             .GroupBy(holding => holding.VenueId)
@@ -72,6 +73,7 @@ public sealed partial class ClubService
         ];
     }
 
+    [Pure]
     private static IReadOnlyList<ClubHubKeyHolder> ToHolders(
         IEnumerable<KeyHoldingRow> holdings,
         IReadOnlyDictionary<int, string> officeNames

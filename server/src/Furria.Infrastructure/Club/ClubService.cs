@@ -8,11 +8,17 @@ namespace Furria.Infrastructure.Club;
 public sealed partial class ClubService
 {
     private readonly AppDbContext _dbContext;
+    private readonly RunningBoardSeats _runningBoardSeats;
     private readonly TimeProvider _timeProvider;
 
-    public ClubService(AppDbContext dbContext, TimeProvider timeProvider)
+    public ClubService(
+        AppDbContext dbContext,
+        RunningBoardSeats runningBoardSeats,
+        TimeProvider timeProvider
+    )
     {
         _dbContext = dbContext;
+        _runningBoardSeats = runningBoardSeats;
         _timeProvider = timeProvider;
     }
 
