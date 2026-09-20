@@ -62,6 +62,7 @@ export const MeSchema = z.object({
   membership: MeMembershipSchema,
   isAffiliated: z.boolean(),
   permissionKeys: z.array(z.string()),
+  lastSeenAnnouncementAt: z.iso.datetime({ offset: true }).nullable(),
 });
 export type Me = z.infer<typeof MeSchema>;
 
