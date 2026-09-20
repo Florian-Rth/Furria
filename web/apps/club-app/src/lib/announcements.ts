@@ -5,7 +5,6 @@ const ISO_DAY_LENGTH = 10;
 export const ANNOUNCEMENT_FORM_SHEET_ID = 'announcement-form';
 
 export const ANNOUNCEMENT_NEW_LABEL = 'neu';
-export const ANNOUNCEMENT_PORTRAIT_LABEL = 'porträt';
 
 export const formatPublishedDay = (publishedAt: string): string =>
   formatIsoDay(publishedAt.slice(0, ISO_DAY_LENGTH));

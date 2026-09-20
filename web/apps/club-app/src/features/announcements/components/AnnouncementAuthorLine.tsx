@@ -2,7 +2,8 @@ import { KkMeta, KkPhoto, KkText } from '@furria/ui';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import type { FC, ReactNode } from 'react';
-import { ANNOUNCEMENT_PORTRAIT_LABEL, formatPublishedDay } from '@/lib/announcements';
+import { formatPublishedDay } from '@/lib/announcements';
+import { toInitials } from '@/lib/initials';
 import type { AnnouncementAuthor } from '../schemas';
 
 const PORTRAIT_SPACING = 9;
@@ -19,6 +20,7 @@ export const AnnouncementAuthorLine: FC<AnnouncementAuthorLineProps> = ({
   children,
 }) => {
   const authorName = `${author.firstName} ${author.lastName}`;
+  const initials = toInitials(author.firstName, author.lastName);
   const officeLine =
     author.officeName === null ? null : <KkMeta tone="accent">{author.officeName}</KkMeta>;
 
@@ -28,7 +30,7 @@ export const AnnouncementAuthorLine: FC<AnnouncementAuthorLineProps> = ({
         <KkPhoto
           alt={authorName}
           orientation="portrait"
-          placeholderLabel={ANNOUNCEMENT_PORTRAIT_LABEL}
+          placeholderLabel={initials}
           source={author.portraitUrl ?? undefined}
         />
       </Box>

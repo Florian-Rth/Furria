@@ -24,7 +24,7 @@ export const AnnouncementCard: FC<AnnouncementCardProps> = ({ announcement, isNe
         </KkHeading>
         {newChip}
       </Stack>
-      <KkText variant="body2" sx={{ whiteSpace: 'pre-line' }}>
+      <KkText variant="body2" measure="lead" sx={{ whiteSpace: 'pre-line' }}>
         {announcement.body}
       </KkText>
       <AnnouncementAuthorLine author={announcement.author} publishedAt={announcement.publishedAt} />
