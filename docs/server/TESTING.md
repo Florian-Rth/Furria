@@ -162,6 +162,13 @@ public sealed class GetMeTests
    `AddRoleWithHolder`; `builder.Club(…)` takes `AddSession`, whose every argument but the alias
    and the `startYear` is optional, because a Session record is exactly as complete as the club's
    evidence, and `AddVenue`.
+   **`ClubSeedBuilder` also declares `AddAnnouncement`, `AddKeyHolding`, `AddBoardOffice`,
+   `AddBoardSeat`, `AddCalendarEntry` and `AddAttendanceResponse` ahead of their entities** —
+   the class has its final shape from CA-P4 D1 so the later slices only append. None of the six
+   has a table yet, so `ClubSeedMaterializer` **refuses** an arrangement that uses one:
+   `BuildAsync` throws `NotSupportedException` naming the method and the slice that will land it
+   (`ClubSeedBuilderTests`). A test may call them once that slice has inserted them, never
+   before — a silently dropped arrangement would read as a green test.
    `AddAccount` and `AddPersonContact` create the Person under the same alias unless `AddPerson`
    already declared it. **Every dated fact carries its own alias first and names its parent by
    alias** — `AddMembership("alice-first", "alice", startedOn)` — so a Person can hold several

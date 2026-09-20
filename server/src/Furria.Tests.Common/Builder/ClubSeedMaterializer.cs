@@ -19,6 +19,8 @@ internal static class ClubSeedMaterializer
         CancellationToken ct
     )
     {
+        RejectWhatNoTableCanHoldYet(recorded);
+
         var sessions = await InsertSessionsAsync(dbContext, recorded, ct);
         var venues = await InsertVenuesAsync(dbContext, recorded, ct);
 
@@ -31,6 +33,57 @@ internal static class ClubSeedMaterializer
             NothingSeeded,
             NothingSeeded,
             NothingSeeded
+        );
+    }
+
+    private static void RejectWhatNoTableCanHoldYet(ClubSeedBuilder recorded)
+    {
+        RejectIfRecorded(
+            recorded.Announcements,
+            nameof(ClubSeedBuilder.AddAnnouncement),
+            "CA-P4 D2 (Aushang)"
+        );
+        RejectIfRecorded(
+            recorded.KeyHoldings,
+            nameof(ClubSeedBuilder.AddKeyHolding),
+            "CA-P4 D3 (Schlüssel)"
+        );
+        RejectIfRecorded(
+            recorded.BoardOffices,
+            nameof(ClubSeedBuilder.AddBoardOffice),
+            "CA-P4 D4 (Vorstand)"
+        );
+        RejectIfRecorded(
+            recorded.BoardSeats,
+            nameof(ClubSeedBuilder.AddBoardSeat),
+            "CA-P4 D4 (Vorstand)"
+        );
+        RejectIfRecorded(
+            recorded.CalendarEntries,
+            nameof(ClubSeedBuilder.AddCalendarEntry),
+            "CA-P4 D5 (Kalender)"
+        );
+        RejectIfRecorded(
+            recorded.AttendanceResponses,
+            nameof(ClubSeedBuilder.AddAttendanceResponse),
+            "CA-P4 D5 (Kalender)"
+        );
+    }
+
+    private static void RejectIfRecorded(
+        IReadOnlyCollection<object> arrangement,
+        string builderMethod,
+        string owningSlice
+    )
+    {
+        if (arrangement.Count == 0)
+            return;
+
+        throw new NotSupportedException(
+            $"{nameof(ClubSeedBuilder)}.{builderMethod} arranges rows no table can hold yet — "
+                + $"{owningSlice} lands the entity, its DbSet and the matching "
+                + $"{nameof(ClubSeedMaterializer)} insert block. Until it does, the arrangement "
+                + "would be dropped silently and the test would pass without it."
         );
     }
 
