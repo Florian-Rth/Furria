@@ -41,6 +41,8 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>
 
     public DbSet<Announcement> Announcements => Set<Announcement>();
 
+    public DbSet<KeyHolding> KeyHoldings => Set<KeyHolding>();
+
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }
 
