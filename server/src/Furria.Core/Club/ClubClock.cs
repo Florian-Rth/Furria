@@ -13,4 +13,13 @@ public static class ClubClock
         DateOnly.FromDateTime(
             TimeZoneInfo.ConvertTime(timeProvider.GetUtcNow(), ClubTimeZone).DateTime
         );
+
+    [Pure]
+    public static DateTimeOffset StartOfDay(DateOnly day) =>
+        new(
+            TimeZoneInfo.ConvertTimeToUtc(
+                day.ToDateTime(TimeOnly.MinValue, DateTimeKind.Unspecified),
+                ClubTimeZone
+            )
+        );
 }
