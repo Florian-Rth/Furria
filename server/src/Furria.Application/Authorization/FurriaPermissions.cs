@@ -6,6 +6,7 @@ public static class FurriaPermissions
     public const string PersonsManage = "persons.manage";
     public const string GroupsManage = "groups.manage";
     public const string RolesManage = "roles.manage";
+    public const string ClubRead = "club.read";
 
     public static readonly IReadOnlyList<string> All =
     [
@@ -14,4 +15,6 @@ public static class FurriaPermissions
         GroupsManage,
         RolesManage,
     ];
+
+    public static readonly IReadOnlyList<string> ImpliedByRelationship = [ClubRead];
 }

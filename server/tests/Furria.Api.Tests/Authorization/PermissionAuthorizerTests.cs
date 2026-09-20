@@ -372,6 +372,142 @@ public sealed class PermissionAuthorizerTests
         );
     }
 
+    [Fact]
+    public async Task Should_Allow_When_ARunningMitgliedschaftImpliesTheKey()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity.AddAccount("mira").AddMembership("mira-first", "mira", HeldSince2017)
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("mira", ct);
+        var (response, _) = await client.GETAsync<ClubReadProbe, EmptyResponse>();
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_Allow_When_TheRunningMitgliedschaftRuht()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddAccount("mira")
+                        .AddMembership("mira-first", "mira", HeldSince2017)
+                        .AddMembershipPause(
+                            "mira-ruhezeit",
+                            "mira-first",
+                            _fixture.CurrentSessionYear
+                        )
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("mira", ct);
+        var (response, _) = await client.GETAsync<ClubReadProbe, EmptyResponse>();
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_Refuse_When_TheMitgliedschaftHasEnded()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddAccount("mira")
+                        .AddMembership(
+                            "mira-first",
+                            "mira",
+                            HeldSince2017,
+                            _fixture.Today.AddDays(-1)
+                        )
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("mira", ct);
+        var (response, _) = await client.GETAsync<ClubReadProbe, EmptyResponse>();
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_Refuse_When_TheOnlyTieIsARunningZugehoerigkeit()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddAccount("mira"))
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("tanzgarde", "Tanzgarde")
+                            .AddGroupMembership("mira-tanzgarde", "tanzgarde", "mira")
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("mira", ct);
+        var (response, _) = await client.GETAsync<ClubReadProbe, EmptyResponse>();
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_Refuse_When_TheOnlyTieIsARunningInhaberschaft()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddAccount("mira"))
+                    .Roles(roles =>
+                        roles.AddRoleWithHolder(
+                            "notenwart",
+                            "mira-notenwart",
+                            "Notenwart",
+                            "mira",
+                            FurriaPermissions.GroupsManage
+                        )
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("mira", ct);
+        var (response, _) = await client.GETAsync<ClubReadProbe, EmptyResponse>();
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_Refuse_When_TheMitgliedsAccountWasDisabled()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity.AddAccount("mira").AddMembership("mira-first", "mira", HeldSince2017)
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("mira", ct);
+        await _fixture.DisableAccountDirectlyAsync(ctx.Identity.Accounts.IdOf("mira"), ct);
+
+        var (response, _) = await client.GETAsync<ClubReadProbe, EmptyResponse>();
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
     private Task<SeededContext> SeededWithHoldingUntilAsync(
         DateOnly untilOn,
         CancellationToken ct
