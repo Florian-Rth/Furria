@@ -114,7 +114,7 @@ namespace Furria.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_venue");
 
-                    b.HasIndex(new[] { "Name" }, "ix_venue_name")
+                    b.HasIndex("Name")
                         .IsUnique()
                         .HasDatabaseName("ix_venue_name");
 

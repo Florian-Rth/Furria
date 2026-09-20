@@ -19,10 +19,7 @@ public sealed class VenueConfiguration : IEntityTypeConfiguration<Venue>
             .IsRequired()
             .UseCollation(GermanCollation.Name);
 
-        builder
-            .HasIndex(venue => venue.Name, "ix_venue_name")
-            .HasDatabaseName("ix_venue_name")
-            .IsUnique();
+        builder.HasIndex(venue => venue.Name).HasDatabaseName("ix_venue_name").IsUnique();
 
         builder.Property(venue => venue.CreatedAt).HasDefaultValueSql("now()");
         builder.Property(venue => venue.UpdatedAt).HasDefaultValueSql("now()");
