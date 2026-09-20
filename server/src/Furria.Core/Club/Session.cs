@@ -10,7 +10,7 @@ public sealed class Session : ITimestamped
 
     public string? Motto { get; set; }
 
-    public string? ArtworkSvg { get; set; }
+    public string? SignetSvg { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }
 

@@ -18,7 +18,7 @@ internal static class ClubSeedMaterializer
                 StartYear = intent.StartYear,
                 Number = intent.Number,
                 Motto = intent.Motto,
-                ArtworkSvg = intent.ArtworkSvg,
+                SignetSvg = intent.SignetSvg,
             },
             StringComparer.Ordinal
         );

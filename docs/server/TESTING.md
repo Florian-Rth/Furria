@@ -205,7 +205,7 @@ public sealed class GetMeTests
    `Expected.GroupMembershipsOf(groupId)` (`ToHaveCount`, `ToHaveOpenCount`) and
    `Expected.GroupAdmin(id)` (`ToHaveFunction`, `ToHavePeriod`). The Session accessor is
    `Expected.Session(sessionId)` (`ToHaveStartYear`, `ToHaveNumber`, `ToHaveMotto`,
-   `ToHaveArtwork`).
+   `ToHaveSignet`).
    `Expected.Groups().ToReadInGermanOrder(names…)` orders by the **column**, with no
    `EF.Functions.Collate` anywhere — the German ICU collation lives on `group.name` itself
    (ADR-0008), so the assertion reads what production reads. `CollationTests` owns the proof in

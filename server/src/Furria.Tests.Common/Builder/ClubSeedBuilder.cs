@@ -11,10 +11,10 @@ public sealed class ClubSeedBuilder
         int startYear,
         int? number = null,
         string? motto = null,
-        string? artworkSvg = null
+        string? signetSvg = null
     )
     {
-        _sessions.Add(new SessionIntent(alias, startYear, number, motto, artworkSvg));
+        _sessions.Add(new SessionIntent(alias, startYear, number, motto, signetSvg));
         return this;
     }
 
@@ -23,6 +23,6 @@ public sealed class ClubSeedBuilder
         int StartYear,
         int? Number,
         string? Motto,
-        string? ArtworkSvg
+        string? SignetSvg
     );
 }

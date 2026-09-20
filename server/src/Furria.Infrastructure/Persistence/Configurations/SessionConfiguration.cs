@@ -7,7 +7,7 @@ namespace Furria.Infrastructure.Persistence.Configurations;
 public sealed class SessionConfiguration : IEntityTypeConfiguration<Session>
 {
     private const int MottoLength = 160;
-    private const int ArtworkSvgLength = 200_000;
+    private const int SignetSvgLength = 200_000;
 
     public void Configure(EntityTypeBuilder<Session> builder)
     {
@@ -18,7 +18,7 @@ public sealed class SessionConfiguration : IEntityTypeConfiguration<Session>
         builder.HasKey(session => session.Id);
 
         builder.Property(session => session.Motto).HasMaxLength(MottoLength);
-        builder.Property(session => session.ArtworkSvg).HasMaxLength(ArtworkSvgLength);
+        builder.Property(session => session.SignetSvg).HasMaxLength(SignetSvgLength);
 
         builder
             .HasIndex(session => session.StartYear)

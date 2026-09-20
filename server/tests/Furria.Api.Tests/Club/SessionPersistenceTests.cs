@@ -27,7 +27,7 @@ public sealed class SessionPersistenceTests
                         2021,
                         number: 50,
                         motto: "Grossfurra feiert weiter",
-                        artworkSvg: "<svg viewBox=\"0 0 10 10\"></svg>"
+                        signetSvg: "<svg viewBox=\"0 0 10 10\"></svg>"
                     )
                 ),
             ct
@@ -41,7 +41,7 @@ public sealed class SessionPersistenceTests
             .Session(ctx.Club.Sessions.IdOf("jubilaeum"))
             .ToHaveMotto("Grossfurra feiert weiter")
             .Session(ctx.Club.Sessions.IdOf("jubilaeum"))
-            .ToHaveArtwork("<svg viewBox=\"0 0 10 10\"></svg>")
+            .ToHaveSignet("<svg viewBox=\"0 0 10 10\"></svg>")
             .AssertAsync(ct);
     }
 
@@ -142,7 +142,7 @@ public sealed class SessionPersistenceTests
             .Session(ctx.Club.Sessions.IdOf("nur-das-jahr"))
             .ToHaveMotto(null)
             .Session(ctx.Club.Sessions.IdOf("nur-das-jahr"))
-            .ToHaveArtwork(null)
+            .ToHaveSignet(null)
             .AssertAsync(ct);
     }
 }
