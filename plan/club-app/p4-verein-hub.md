@@ -1,5 +1,5 @@
 ---
-status: shaped 2026-09-19, not yet implemented
+status: shaped 2026-09-19 (+ its 2026-09-20 amendment), not yet implemented
 phase: CA-P4 — the Verein hub
 shaped_with: Florian, grilling session 2026-09-19
 binding: docs/adr/0010, docs/adr/0011 (+ its 2026-09-19 amendment), docs/adr/0012,
@@ -46,7 +46,12 @@ The decisions that bind this work. Reasoning lives in `CONTEXT.md`, ADR-0012 and
 13. **The hub is one query and identical for every viewer.** Anything per-viewer — the
     `lastSeenAushangAt` the "neu" marker needs — rides on the session/me payload instead.
 14. **Member writes ship with their slice; master-data administration waits for
-    *Verein verwalten*.** Until then, read-only data is seeded by migration.
+    *Verein verwalten*.** Until then the tables stay empty. **Amended 2026-09-20: nothing is
+    seeded from code — no migration `InsertData`, no `HasData`, no seeder class.** A migration
+    creates schema and nothing else. Test data comes from the test builders; the dev database is
+    filled by hand; the club's own master data waits for its *verwalten* surface. A reference
+    table that starts empty is **correct**: the panel that reads it elides, and that elision is
+    the shipped empty state, not a gap.
 15. **Only English identifiers.** German belongs in UI copy, never in a type, field or symbol.
 
 ---
@@ -102,8 +107,11 @@ D2, D3 and D4 are independent of one another. D5 needs D3's `Ort`.
   `session { startYear, label, number?, motto?, signetSvg? }` for the **relevant** Session —
   the coming one in the Zwischenzeit, the current one otherwise — plus
   `stats { memberCount, groupCount, joinedThisSessionCount }`.
-- Seed migration: the Session records the club knows, including `2026/27` with its Motto
-  **"FURRIA — Der Mittelpunkt des Universums"**.
+- The `session` table ships **empty** and the migration writes no row into it. The Session
+  records the club knows — `2026/27` with its Motto **"FURRIA — Der Mittelpunkt des Universums"**
+  among them — are entered through *Verein verwalten*, and by hand until it exists. With no
+  record the opener names the season from the date and says nothing further, which is the
+  fresh-install shape and is pinned by a test.
 
 **Club-app**
 - `features/club` — the hub screen, replacing `ClubPage`'s title + links.
@@ -150,7 +158,8 @@ D2, D3 and D4 are independent of one another. D5 needs D3's `Ort`.
 **Goal.** "Wen frage ich, um aufzuschließen" — answered in one look.
 
 **Server**
-- `Venue` — `Name`, `SortOrder`, `ITimestamped`. Seed migration: Sporthalle, Vereinsraum, Lager.
+- `Venue` — `Name`, `SortOrder`, `ITimestamped`. The table ships **empty**; Sporthalle,
+  Vereinsraum and Lager are entered through *Verein verwalten*, and by hand until it exists.
 - `KeyHolding` — `PersonId`, `VenueId`, `DatePeriod`, `ITimestamped`. Several per Person and Venue;
   ended, never deleted. **No copy number, no count.**
 - `GET /club/hub` gains `venues[] { id, name, holders[] { personId, displayName, portraitUrl? } }`
@@ -170,8 +179,11 @@ D2, D3 and D4 are independent of one another. D5 needs D3's `Ort`.
 **Goal.** The band — and the permission derivation behind it.
 
 **Server**
-- `BoardOffice` — `Name`, `SortOrder`, `ImpliedRoleId?`, `ITimestamped`. Seeded with the club's
-  offices.
+- `BoardOffice` — `Name`, `SortOrder`, `ImpliedRoleId?`, `ITimestamped`. The table ships
+  **empty**. The club's offices — Präsident · Vizepräsident · Geschäftsführung · Schriftführung ·
+  Finanzen · Kinderpräsident, in that sort order (confirmed 2026-09-20) — are entered through
+  *Verein verwalten*, and by hand until it exists; the integration tests arrange them through the
+  builder.
 - `BoardSeat` — `PersonId`, `BoardOfficeId`, `DatePeriod`, `ITimestamped`.
 - The board's own `ImpliedRoleId?` — a single-row club setting, or a nullable column on the one
   place club-wide settings land. **Decide when the file is opened; do not invent a settings table
@@ -223,9 +235,11 @@ D2, D3 and D4 are independent of one another. D5 needs D3's `Ort`.
 - **The Enthüllung route.** The full-screen reveal at 11.11. 11:11 is shaped (a `kind: 'fullscreen'`
   route, `localStorage` per device, reduced motion gets the reveal without the particles) and
   **shelved**. The Bühne's four states do not depend on it.
-- ***Verein verwalten*** — every master-data write. Session, Ort, Schlüssel, Vorstandssitz and
-  club-wide Kalendereinträge are seeded until it exists. It is a hub of its own and wants its own
-  shaping.
+- ***Verein verwalten*** — every master-data write. Session, Ort, Schlüssel, Vorstandsfunktion,
+  Vorstandssitz and club-wide Kalendereinträge have **no surface at all** until it exists, and
+  none of them is seeded from code (ruling 14, amended 2026-09-20): their tables ship empty, and
+  what the club needs before the surface lands is typed into the database by hand. It is a hub of
+  its own and wants its own shaping.
 - **Creating a Gruppe's Kalendereintrag.** Gruppen-Admin is a scoped right, so it belongs to the
   Gruppe hub, not here.
 - **The media store** — upload, GDPR erasure, deployment target. D4 ships the columns and the
