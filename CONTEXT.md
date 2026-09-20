@@ -57,6 +57,15 @@ Rollen, never on "is Mitglied"**; member-only surfaces (Mitgliederversammlung, B
 explicit, deliberate exceptions, not the default.
 _Avoid_: team, squad, gating anything on Mitgliedschaft by default
 
+**Gruppenart** (`group kind`):
+What a Gruppe *is* — Tanzgarde, Showtanz, Männerballett, Gesang, Büttenrede, Musik, Sketch,
+Organisation. A named, archivable record the club composes itself, exactly as it composes its
+Rollen, Orte und Vorstandsfunktionen; it is never a code constant (ruled 2026-09-21, CA-P6
+shaping). One Gruppenart per Gruppe. It groups the public website's Gruppen presentation and the
+Club-App's Gruppen list, and it is what a later Ablauf hangs on. `Organisation` is the kind that
+does not perform — Elferrat, Technik, Küche.
+_Avoid_: Kategorie, Typ, Sparte, treating it as an enum in code
+
 **Beitrittsantrag** (`membership application`):
 A visitor's request to become a Mitglied, submitted on the public website. It is **not** a
 Mitgliedschaft and its sender is **not** a Mitglied — the club still decides on the Aufnahme.
@@ -157,7 +166,11 @@ stays **invite-only** via Einladung; additionally the public may **self-register
 Account to buy and keep Karten (mail, Kartenübersicht, history, payment methods) — this
 creates a Person with **no Mitgliedschaft**. Buying itself never requires an Account.
 The login identifier is the **email address** — there are no usernames
-([ADR-0005](docs/adr/0005-auth-aspnet-identity-bearer-tokens.md)).
+([ADR-0005](docs/adr/0005-auth-aspnet-identity-bearer-tokens.md)). **The MVP has no
+child Accounts** (ruled 2026-09-21, CA-P6 shaping): nobody under the club's own age of consent
+gets a login, and no Account is held on another Person's behalf. A Kind in der Kindergarde is a
+Person with a Zugehörigkeit and no Account, exactly like a Mitglied who never asked for the app —
+so no surface may assume the dancer is the one reading it.
 _Avoid_: user (as a table/entity name), Gast-Konto (it is the same Account concept),
 username / Benutzername
 
@@ -258,6 +271,15 @@ its **Sichtbarkeit** (`Gruppe` / `Verein` / `Öffentlich`, chosen when it is cre
 Training defaults to `Verein` so the club can see what the hall is doing) and its **Ort**.
 Visible is not the same as summoned: a Training everyone can see still concerns only its Gruppe
 (decided 2026-09-19).
+
+A fourth thing sits beside them and is never confused with the Eigentümer: the entry's
+**Mitwirkende Gruppen** (`participating groups`) — who is expected there, many per entry
+(added 2026-09-21, CA-P6 shaping). The Prunksitzung is club-owned and the Garde dances at it;
+without this the biggest date of a Gruppe's year is missing from its own hub. Mitwirken grants
+nothing: it never confers the right to edit the entry, and it never summons the Notice — the
+Eigentümer alone does both. A Gruppe never lists itself as mitwirkend on an entry it owns.
+_Avoid_: collapsing Mitwirkende into the Eigentümer, Teilnehmer (that is a Zu-/Absage of one
+Person), Gastgruppe
 
 A Kalendereintrag may optionally ask for a **Zu-/Absage** (`attendance response`) — per entry,
 switched on by whoever schedules it, and available for every kind including a Gruppe's Training
@@ -374,7 +396,10 @@ _Avoid_: Tag, Rubrik
 A club announcement inside the Club-App, shown on the Verein hub — the digital notice board.
 **Explicitly not a chat**: no replies, no threads, no reactions. It is **club-wide**; an
 announcement meant for one Gruppe belongs in that Gruppe's hub, not here, which is what keeps
-the Verein hub identical for every viewer (pinned 2026-09-18, CA-P3 shaping). Posting is a
+the Verein hub identical for every viewer (pinned 2026-09-18, CA-P3 shaping). **That second half is
+a promissory note, not a built thing**: CA-P6 ruled on 2026-09-21 that the Gruppe hub gets no
+Aushänge, so an Aushang has exactly one scope today and a Gruppe has no way to tell its Gruppe
+anything inside the app. Posting is a
 Berechtigung the club grants to whichever Rollen it counts as Vorstand; reading one is not.
 
 It carries a **Titel**, a **Text**, its **Autor**, its date and an optional **Gültig bis** — and

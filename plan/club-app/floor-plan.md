@@ -295,9 +295,12 @@ Removed from the handoff's feature set because no member's club life improves:
 
 Ordered by how much they block.
 
-1. **Who holds a child's Account.** The Kindergarde is 6–11. If parents hold the login, the
-   Kalender and anything attendance-shaped are parent surfaces, which changes rosters and copy.
-   Now sharper than before, because Zu-/Absage is being built.
+1. **Who holds a child's Account** — **resolved 2026-09-21 (CA-P6 shaping): the MVP has no child
+   Accounts.** Nobody under the club's age of consent gets a login and no Account is held on
+   another Person's behalf, so the Kalender and every attendance surface answer for their own
+   reader only. A Kind in der Kindergarde is a Person with a Zugehörigkeit and no Account. The
+   consequence to carry: a Gruppe whose dancers cannot log in is reached through its
+   Gruppen-Admin, so no surface may assume the dancer is the one reading it.
 2. **Photo consent** — blocks the Bildergalerie.
 3. **Non-member Gruppen people still have no word** — affects roster copy.
 
@@ -312,7 +315,9 @@ Areas, not slices. Each gets its own plan, shaped from the ground up when it is 
 2. **The Verein hub and the Kalender page.**
 3. **Global search.**
 4. **The Start hub and pinning.**
-5. **Gruppen** — the list page reworked, the Gruppe hub taking its dates from the calendar.
+5. **Gruppen** — shaped in full on 2026-09-21, see [`p6-gruppen.md`](p6-gruppen.md). It turned out
+   to be a model rebuild before a surface one: `Group` was three fields, and the Gruppe hub's right
+   to write its own record needed [ADR-0014](../../docs/adr/0014-the-gruppe-hub-writes-its-own-record.md).
 6. **Verein verwalten**, the first admin hub, folding today's `manage/*` routes.
    **Pulled forward to CA-P5 on 2026-09-20**, ahead of search and the Start hub: CA-P4 shipped six
    domains nobody can write, so searching them and queueing work from them are both thinner than
