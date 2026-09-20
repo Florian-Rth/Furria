@@ -5,6 +5,7 @@ describe('toPeekId', () => {
   it.each([
     { kind: 'member', id: 42, expected: 'member-42' },
     { kind: 'group', id: 7, expected: 'group-7' },
+    { kind: 'venue', id: 3, expected: 'venue-3' },
   ] as const)('names the $kind sheet $expected', ({ kind, id, expected }) => {
     expect(toPeekId(kind, id)).toBe(expected);
   });
