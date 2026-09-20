@@ -1,5 +1,5 @@
+import { KkPanelStack } from '@furria/ui';
 import Grid from '@mui/material/Grid';
-import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { MemberDetails } from '../schemas';
 import { MemberClubPanel } from './MemberClubPanel';
@@ -15,16 +15,16 @@ interface MemberViewProps {
 export const MemberView: FC<MemberViewProps> = ({ member, isSelf }) => (
   <Grid container spacing={{ xs: 3.5, desktop: 5 }} sx={{ minWidth: 0 }}>
     <Grid size={{ xs: 12, desktop: 7 }} sx={{ minWidth: 0 }}>
-      <Stack sx={{ gap: 3.5, minWidth: 0 }}>
+      <KkPanelStack>
         <MemberGroupsPanel groups={member.groups} firstName={member.firstName} />
         <MemberRolesPanel roles={member.roles} firstName={member.firstName} />
-      </Stack>
+      </KkPanelStack>
     </Grid>
     <Grid size={{ xs: 12, desktop: 5 }} sx={{ minWidth: 0 }}>
-      <Stack sx={{ gap: 3.5, minWidth: 0 }}>
+      <KkPanelStack>
         <MemberContactPanel contact={member.contact} firstName={member.firstName} isSelf={isSelf} />
         <MemberClubPanel member={member} />
-      </Stack>
+      </KkPanelStack>
     </Grid>
   </Grid>
 );

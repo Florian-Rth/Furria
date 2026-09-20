@@ -13,4 +13,6 @@ public sealed record AccountDetails
     public required bool IsAffiliated { get; init; }
 
     public required IReadOnlyList<string> PermissionKeys { get; init; }
+
+    public required DateTimeOffset? LastSeenAnnouncementAt { get; init; }
 }

@@ -1,3 +1,4 @@
+using Furria.Core.Club;
 using Furria.Core.Groups;
 using Furria.Core.Identity;
 using Furria.Core.Roles;
@@ -33,6 +34,22 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>
     public DbSet<RoleHolding> RoleHoldings => Set<RoleHolding>();
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
+    public DbSet<Session> Sessions => Set<Session>();
+
+    public DbSet<Venue> Venues => Set<Venue>();
+
+    public DbSet<Announcement> Announcements => Set<Announcement>();
+
+    public DbSet<KeyHolding> KeyHoldings => Set<KeyHolding>();
+
+    public DbSet<BoardOffice> BoardOffices => Set<BoardOffice>();
+
+    public DbSet<BoardSeat> BoardSeats => Set<BoardSeat>();
+
+    public DbSet<CalendarEntry> CalendarEntries => Set<CalendarEntry>();
+
+    public DbSet<AttendanceResponse> AttendanceResponses => Set<AttendanceResponse>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }

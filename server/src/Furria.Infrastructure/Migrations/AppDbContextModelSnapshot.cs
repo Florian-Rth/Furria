@@ -22,6 +22,458 @@ namespace Furria.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Furria.Core.Club.Announcement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AuthorPersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("author_person_id");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("body");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateTimeOffset>("PublishedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("published_at");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateOnly?>("ValidUntil")
+                        .HasColumnType("date")
+                        .HasColumnName("valid_until");
+
+                    b.HasKey("Id")
+                        .HasName("pk_announcement");
+
+                    b.HasIndex("AuthorPersonId")
+                        .HasDatabaseName("ix_announcement_author_person_id");
+
+                    b.HasIndex("PublishedAt")
+                        .HasDatabaseName("ix_announcement_published_at");
+
+                    b.ToTable("announcement", (string)null);
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.AttendanceResponse", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Answer")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("answer");
+
+                    b.Property<int>("CalendarEntryId")
+                        .HasColumnType("integer")
+                        .HasColumnName("calendar_entry_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int>("PersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("person_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_attendance_response");
+
+                    b.HasIndex("PersonId")
+                        .HasDatabaseName("ix_attendance_response_person_id");
+
+                    b.HasIndex("CalendarEntryId", "PersonId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_attendance_response_calendar_entry_id_person_id");
+
+                    b.ToTable("attendance_response", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_attendance_response_answer", "answer IN ('Yes', 'No', 'Maybe')");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.BoardOffice", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int?>("ImpliedRoleId")
+                        .HasColumnType("integer")
+                        .HasColumnName("implied_role_id");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("name")
+                        .UseCollation("de-DE-x-icu");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_board_office");
+
+                    b.HasIndex("ImpliedRoleId")
+                        .HasDatabaseName("ix_board_office_implied_role_id");
+
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasDatabaseName("ix_board_office_name");
+
+                    b.ToTable("board_office", (string)null);
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.BoardSeat", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BoardOfficeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("board_office_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int>("PersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("person_id");
+
+                    b.Property<DateOnly>("SinceOn")
+                        .HasColumnType("date")
+                        .HasColumnName("since_on");
+
+                    b.Property<DateOnly?>("UntilOn")
+                        .HasColumnType("date")
+                        .HasColumnName("until_on");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_board_seat");
+
+                    b.HasIndex("BoardOfficeId")
+                        .HasDatabaseName("ix_board_seat_board_office_id");
+
+                    b.HasIndex("PersonId")
+                        .HasDatabaseName("ix_board_seat_person_id");
+
+                    b.ToTable("board_seat", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_board_seat_period", "until_on IS NULL OR until_on >= since_on");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.CalendarEntry", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("AsksForResponse")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("asks_for_response");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("description");
+
+                    b.Property<DateTimeOffset?>("EndsAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ends_at");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("kind");
+
+                    b.Property<int?>("OwnerGroupId")
+                        .HasColumnType("integer")
+                        .HasColumnName("owner_group_id");
+
+                    b.Property<DateTimeOffset>("StartsAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("starts_at");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int?>("VenueId")
+                        .HasColumnType("integer")
+                        .HasColumnName("venue_id");
+
+                    b.Property<string>("Visibility")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasDefaultValue("Club")
+                        .HasColumnName("visibility");
+
+                    b.HasKey("Id")
+                        .HasName("pk_calendar_entry");
+
+                    b.HasIndex("OwnerGroupId")
+                        .HasDatabaseName("ix_calendar_entry_owner_group_id");
+
+                    b.HasIndex("StartsAt")
+                        .HasDatabaseName("ix_calendar_entry_starts_at");
+
+                    b.HasIndex("VenueId", "StartsAt")
+                        .HasDatabaseName("ix_calendar_entry_venue_id_starts_at");
+
+                    b.ToTable("calendar_entry", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_calendar_entry_kind", "kind IN ('Training', 'Rehearsal', 'Performance', 'Meeting', 'Party', 'Other')");
+
+                            t.HasCheckConstraint("ck_calendar_entry_owner_visibility", "owner_group_id IS NOT NULL OR visibility <> 'Group'");
+
+                            t.HasCheckConstraint("ck_calendar_entry_visibility", "visibility IN ('Group', 'Club', 'Public')");
+
+                            t.HasCheckConstraint("ck_calendar_entry_window", "ends_at IS NULL OR ends_at >= starts_at");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.KeyHolding", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int>("PersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("person_id");
+
+                    b.Property<DateOnly>("SinceOn")
+                        .HasColumnType("date")
+                        .HasColumnName("since_on");
+
+                    b.Property<DateOnly?>("UntilOn")
+                        .HasColumnType("date")
+                        .HasColumnName("until_on");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int>("VenueId")
+                        .HasColumnType("integer")
+                        .HasColumnName("venue_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_key_holding");
+
+                    b.HasIndex("PersonId")
+                        .HasDatabaseName("ix_key_holding_person_id");
+
+                    b.HasIndex("VenueId")
+                        .HasDatabaseName("ix_key_holding_venue_id");
+
+                    b.ToTable("key_holding", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_key_holding_period", "until_on IS NULL OR until_on >= since_on");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.Session", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Motto")
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)")
+                        .HasColumnName("motto");
+
+                    b.Property<int?>("Number")
+                        .HasColumnType("integer")
+                        .HasColumnName("number");
+
+                    b.Property<string>("SignetSvg")
+                        .HasMaxLength(200000)
+                        .HasColumnType("character varying(200000)")
+                        .HasColumnName("signet_svg");
+
+                    b.Property<int>("StartYear")
+                        .HasColumnType("integer")
+                        .HasColumnName("start_year");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_session");
+
+                    b.HasIndex("Number")
+                        .IsUnique()
+                        .HasDatabaseName("ix_session_number")
+                        .HasFilter("number IS NOT NULL");
+
+                    b.HasIndex("StartYear")
+                        .IsUnique()
+                        .HasDatabaseName("ix_session_start_year");
+
+                    b.ToTable("session", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_session_number", "number IS NULL OR number > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.Venue", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("name")
+                        .UseCollation("de-DE-x-icu");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_venue");
+
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasDatabaseName("ix_venue_name");
+
+                    b.ToTable("venue", (string)null);
+                });
+
             modelBuilder.Entity("Furria.Core.Groups.Group", b =>
                 {
                     b.Property<int>("Id")
@@ -400,6 +852,17 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("character varying(64)")
                         .HasColumnName("phone");
 
+                    b.Property<bool>("PortraitIsPublic")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("portrait_is_public");
+
+                    b.Property<string>("PortraitUrl")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("portrait_url");
+
                     b.Property<string>("Street")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)")
@@ -602,6 +1065,10 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(false)
                         .HasColumnName("is_disabled");
+
+                    b.Property<DateTimeOffset?>("LastSeenAnnouncementAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_seen_announcement_at");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("boolean")
@@ -816,6 +1283,111 @@ namespace Furria.Infrastructure.Migrations
                         .HasName("pk_account_token");
 
                     b.ToTable("account_token", (string)null);
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.Announcement", b =>
+                {
+                    b.HasOne("Furria.Core.Identity.Person", "Author")
+                        .WithMany()
+                        .HasForeignKey("AuthorPersonId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_announcement_person_author_person_id");
+
+                    b.Navigation("Author");
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.AttendanceResponse", b =>
+                {
+                    b.HasOne("Furria.Core.Club.CalendarEntry", "CalendarEntry")
+                        .WithMany()
+                        .HasForeignKey("CalendarEntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_attendance_response_calendar_entry_calendar_entry_id");
+
+                    b.HasOne("Furria.Core.Identity.Person", "Person")
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_attendance_response_person_person_id");
+
+                    b.Navigation("CalendarEntry");
+
+                    b.Navigation("Person");
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.BoardOffice", b =>
+                {
+                    b.HasOne("Furria.Core.Roles.Role", "ImpliedRole")
+                        .WithMany()
+                        .HasForeignKey("ImpliedRoleId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_board_office_role_implied_role_id");
+
+                    b.Navigation("ImpliedRole");
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.BoardSeat", b =>
+                {
+                    b.HasOne("Furria.Core.Club.BoardOffice", "BoardOffice")
+                        .WithMany()
+                        .HasForeignKey("BoardOfficeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_board_seat_board_office_board_office_id");
+
+                    b.HasOne("Furria.Core.Identity.Person", "Person")
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_board_seat_person_person_id");
+
+                    b.Navigation("BoardOffice");
+
+                    b.Navigation("Person");
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.CalendarEntry", b =>
+                {
+                    b.HasOne("Furria.Core.Groups.Group", "OwnerGroup")
+                        .WithMany()
+                        .HasForeignKey("OwnerGroupId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_calendar_entry_group_owner_group_id");
+
+                    b.HasOne("Furria.Core.Club.Venue", "Venue")
+                        .WithMany()
+                        .HasForeignKey("VenueId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_calendar_entry_venue_venue_id");
+
+                    b.Navigation("OwnerGroup");
+
+                    b.Navigation("Venue");
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.KeyHolding", b =>
+                {
+                    b.HasOne("Furria.Core.Identity.Person", "Person")
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_key_holding_person_person_id");
+
+                    b.HasOne("Furria.Core.Club.Venue", "Venue")
+                        .WithMany()
+                        .HasForeignKey("VenueId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_key_holding_venue_venue_id");
+
+                    b.Navigation("Person");
+
+                    b.Navigation("Venue");
                 });
 
             modelBuilder.Entity("Furria.Core.Groups.GroupAdmin", b =>

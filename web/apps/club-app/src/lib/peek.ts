@@ -1,4 +1,4 @@
-export type PeekKind = 'member' | 'group';
+export type PeekKind = 'member' | 'group' | 'venue';
 
 const SEPARATOR = '-';
 const ID_PATTERN = /^[1-9]\d*$/;

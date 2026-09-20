@@ -10,7 +10,7 @@ until a member has to learn it. Decided 2026-09-17 while shaping the floor plan
 ## The decision
 
 **The app is a small set of hubs, not a set of pages.** A hub owns one scope and answers
-everything about it: identity at the top, then a stack of bands, each band one concern with a
+everything about it: identity at the top, then a stack of panels, each panel one concern with a
 live summary and a way in. Detail pages hang off a hub for the long form nobody needs often.
 Member hubs are **Start**, **Verein** and **Gruppen**; the remaining hubs are administrative.
 
@@ -20,8 +20,8 @@ Every other rights-bearing Rolle gets a workbench — Finanzen, Veranstaltungen,
 Getränkekasse, Kleidung — built from the same component kit as a member hub. There is no
 "Verwaltung" navigation; `Mehr → Verwaltung` indexes the hubs the viewer may open.
 
-**Berechtigung gates bands, not only hubs.** A holder of one key sees a hub with one band. The
-hub set is therefore not configured anywhere — it falls out of the rights matrix, and a band
+**Berechtigung gates panels, not only hubs.** A holder of one key sees a hub with one panel. The
+hub set is therefore not configured anywhere — it falls out of the rights matrix, and a panel
 with nothing in it does not render.
 
 **The destination set becomes the viewer's own, by pinning.** A new Account starts with a default
@@ -49,7 +49,7 @@ document, and it still cannot express "I want the Mitglieder list in reach".
 
 - `KkShell`'s `destinations` become per-Account state, read from the session rather than a module
   constant. The shell keeps rendering one set; only its source changes.
-- Hubs and bands need a stable identity so they can be pinned, searched and deep-linked.
+- Hubs and panels need a stable identity so they can be pinned, searched and deep-linked.
 - Global search becomes load-bearing: it is the fallback for anything not pinned, which is what
   makes an imperfect default set harmless.
 - The handoff's §8 route tree is superseded. It was already marked non-final there.

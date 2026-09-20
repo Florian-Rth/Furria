@@ -14,10 +14,12 @@ export interface AppSection {
 
 export const OVERVIEW_PATH = '/';
 export const CLUB_PATH = '/club';
-export const MORE_PATH = '/more';
-export const PROFILE_PATH = '/profile';
+export const ANNOUNCEMENTS_PATH = '/announcements';
+export const CALENDAR_PATH = '/calendar';
 export const MEMBERS_PATH = '/members';
 export const GROUPS_PATH = '/groups';
+export const MORE_PATH = '/more';
+export const PROFILE_PATH = '/profile';
 
 export const OVERVIEW_SECTION = 'overview';
 export const CLUB_SECTION = 'club';
@@ -52,6 +54,20 @@ export const CLUB_SECTIONS: AppSection[] = [
     icon: 'group',
     to: GROUPS_PATH,
     meta: 'Garden, Elferrat und alle anderen',
+  },
+  {
+    id: 'calendar',
+    label: 'Kalender',
+    icon: 'calendar',
+    to: CALENDAR_PATH,
+    meta: 'Termine, Trainings und Sitzungen',
+  },
+  {
+    id: 'announcements',
+    label: 'Aushänge',
+    icon: 'info',
+    to: ANNOUNCEMENTS_PATH,
+    meta: 'Was der Verein alle wissen lässt',
   },
 ];
 

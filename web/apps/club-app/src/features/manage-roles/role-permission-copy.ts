@@ -23,6 +23,14 @@ const PERMISSION_COPY: Record<PermissionKey, RolePermissionCopy> = {
     title: 'Rollen und Rechte verwalten',
     line: 'Rollen anlegen, ihre Rechte ändern und Inhaberschaften eintragen. Wer das hat, kann sich alles andere selbst geben.',
   },
+  [PERMISSION_KEYS.clubRead]: {
+    title: 'Den Verein sehen',
+    line: 'Ergibt sich aus einer laufenden Mitgliedschaft und lässt sich nicht über eine Rolle vergeben.',
+  },
+  [PERMISSION_KEYS.announcementsPost]: {
+    title: 'Aushänge schreiben',
+    line: 'Etwas an den Aushang hängen, ändern und wieder abnehmen — auch die Aushänge anderer.',
+  },
 };
 
 const KNOWN_KEYS: readonly PermissionKey[] = Object.values(PERMISSION_KEYS);

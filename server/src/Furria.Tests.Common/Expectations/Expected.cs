@@ -36,6 +36,8 @@ public sealed class Expected
 
     public GroupAdminSetExpectations GroupAdminsOf(int groupId) => new(this, groupId);
 
+    public SessionExpectations Session(int sessionId) => new(this, sessionId);
+
     public RoleExpectations Role(int roleId) => new(this, roleId);
 
     public RoleSetExpectations Roles() => new(this);
@@ -49,6 +51,20 @@ public sealed class Expected
     public AccountSetExpectations Accounts() => new(this);
 
     public RefreshTokenExpectations RefreshTokensOf(int accountId) => new(this, accountId);
+
+    public VenueExpectations Venue(int venueId) => new(this, venueId);
+
+    public AnnouncementExpectations Announcement(int announcementId) => new(this, announcementId);
+
+    public KeyHoldingExpectations KeyHolding(int keyHoldingId) => new(this, keyHoldingId);
+
+    public BoardSeatExpectations BoardSeat(int boardSeatId) => new(this, boardSeatId);
+
+    public CalendarEntryExpectations CalendarEntry(int calendarEntryId) =>
+        new(this, calendarEntryId);
+
+    public AttendanceResponseExpectations AttendanceResponsesFor(int calendarEntryId) =>
+        new(this, calendarEntryId);
 
     public async Task AssertAsync(CancellationToken ct = default)
     {

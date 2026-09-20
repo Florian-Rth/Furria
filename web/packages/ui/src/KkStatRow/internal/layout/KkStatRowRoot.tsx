@@ -1,10 +1,10 @@
 import Stack from '@mui/material/Stack';
-import type { SxProps, Theme } from '@mui/material/styles';
 import type { FC, PropsWithChildren } from 'react';
+import type { KkSx } from '../../../kk-sx';
 import { kkTokens } from '../../../tokens';
 
 interface KkStatRowRootProps extends PropsWithChildren {
-  sx?: SxProps<Theme>;
+  sx?: KkSx;
 }
 
 export const KkStatRowRoot: FC<KkStatRowRootProps> = ({ sx, children }) => (

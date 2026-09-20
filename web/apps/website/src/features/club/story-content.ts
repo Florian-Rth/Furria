@@ -29,10 +29,8 @@ export const buildStoryStats = (
   foundingYear: number,
   memberCount: string,
   groupCount: number | null,
-  sessionNumber: number,
 ): StoryStat[] => [
   { value: String(foundingYear), label: 'gegründet' },
   { value: memberCount, label: 'Mitglieder' },
   { value: formatGroupStat(groupCount), label: 'Gruppen' },
-  { value: `${sessionNumber}.`, label: 'Session' },
 ];

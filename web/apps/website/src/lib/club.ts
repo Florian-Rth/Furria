@@ -9,7 +9,6 @@ export const MEMBER_COUNT_PLACEHOLDER = '180+';
 export const GROUP_COUNT_PLACEHOLDER = 6;
 
 export interface Session {
-  number: number;
   startYear: number;
   yearsLabel: string;
 }
@@ -22,7 +21,6 @@ export const sessionAt = (date: Date): Session => {
   const startYear = openingHasPassed ? date.getFullYear() : date.getFullYear() - 1;
   const endYearShort = String((startYear + 1) % 100).padStart(2, '0');
   return {
-    number: startYear - FOUNDING_YEAR + 1,
     startYear,
     yearsLabel: `${startYear}/${endYearShort}`,
   };

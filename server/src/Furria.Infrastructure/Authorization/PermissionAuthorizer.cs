@@ -64,7 +64,41 @@ public sealed class PermissionAuthorizer
             .Distinct()
             .ToListAsync(ct);
 
-        return _grantedKeys = keys.ToHashSet(StringComparer.Ordinal);
+        var keySet = keys.ToHashSet(StringComparer.Ordinal);
+
+        var isMember = await _dbContext
+            .People.AsNoTracking()
+            .Where(person => person.Id == personId.Value)
+            .AnyAsync(
+                person =>
+                    person.Memberships.Any(membership =>
+                        membership.StartedOn <= today
+                        && (membership.EndedOn == null || membership.EndedOn >= today)
+                    ),
+                ct
+            );
+
+        if (isMember)
+            keySet.Add(FurriaPermissions.ClubRead);
+
+        var impliedKeys = await _dbContext
+            .BoardSeats.AsNoTracking()
+            .Where(seat =>
+                seat.PersonId == personId.Value
+                && seat.SinceOn <= today
+                && (seat.UntilOn == null || seat.UntilOn >= today)
+                && seat.BoardOffice!.ImpliedRoleId != null
+                && seat.BoardOffice!.ImpliedRole!.ArchivedOn == null
+            )
+            .SelectMany(seat =>
+                seat.BoardOffice!.ImpliedRole!.Permissions.Select(row => row.PermissionKey)
+            )
+            .Distinct()
+            .ToListAsync(ct);
+
+        keySet.UnionWith(impliedKeys);
+
+        return _grantedKeys = keySet;
     }
 
     public async Task<bool> IsAffiliatedAsync(int accountId, CancellationToken ct)

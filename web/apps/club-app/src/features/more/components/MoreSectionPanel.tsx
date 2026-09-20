@@ -1,5 +1,4 @@
-import { KkHubRow, KkPanel, KkPanelHeader } from '@furria/ui';
-import Stack from '@mui/material/Stack';
+import { KkHubRow, KkPanel, KkPanelSection } from '@furria/ui';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import type { AppSection } from '@/features/session';
@@ -27,9 +26,8 @@ export const MoreSectionPanel: FC<MoreSectionPanelProps> = ({ title, sections })
   ));
 
   return (
-    <Stack sx={{ gap: 1.5, minWidth: 0 }}>
-      <KkPanelHeader title={title} />
+    <KkPanelSection title={title}>
       <KkPanel>{rows}</KkPanel>
-    </Stack>
+    </KkPanelSection>
   );
 };

@@ -62,6 +62,7 @@ export const MeSchema = z.object({
   membership: MeMembershipSchema,
   isAffiliated: z.boolean(),
   permissionKeys: z.array(z.string()),
+  lastSeenAnnouncementAt: z.iso.datetime({ offset: true }).nullable(),
 });
 export type Me = z.infer<typeof MeSchema>;
 
@@ -70,6 +71,8 @@ export const PERMISSION_KEYS = {
   personsManage: 'persons.manage',
   groupsManage: 'groups.manage',
   rolesManage: 'roles.manage',
+  clubRead: 'club.read',
+  announcementsPost: 'announcements.post',
 } as const;
 
 export type PermissionKey = (typeof PERMISSION_KEYS)[keyof typeof PERMISSION_KEYS];

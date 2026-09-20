@@ -1,7 +1,7 @@
-import type { SxProps, Theme } from '@mui/material/styles';
 import type { TypographyProps } from '@mui/material/Typography';
 import Typography from '@mui/material/Typography';
 import type { FC, PropsWithChildren } from 'react';
+import type { KkSx } from '../../../kk-sx';
 
 type KkStatRowValueTone = 'default' | 'accent' | 'muted';
 
@@ -14,7 +14,7 @@ const toneColors: Record<KkStatRowValueTone, string> = {
 interface KkStatRowValueProps extends PropsWithChildren {
   variant: TypographyProps['variant'];
   tone?: KkStatRowValueTone;
-  sx?: SxProps<Theme>;
+  sx?: KkSx;
 }
 
 export const KkStatRowValue: FC<KkStatRowValueProps> = ({

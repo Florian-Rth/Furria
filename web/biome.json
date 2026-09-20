@@ -136,7 +136,7 @@
       }
     },
     {
-      "includes": ["apps/club-app/**"],
+      "includes": ["apps/club-app/**", "!apps/club-app/src/features/club/stages/**"],
       "plugins": ["./biome-plugins/noDesignSx.grit"],
       "linter": {
         "rules": {
@@ -174,7 +174,12 @@
       }
     },
     {
-      "includes": ["apps/club-app/src/features/**", "!**/*.test.ts", "!**/*.test.tsx"],
+      "includes": [
+        "apps/club-app/src/features/**",
+        "!apps/club-app/src/features/club/stages/**",
+        "!**/*.test.ts",
+        "!**/*.test.tsx"
+      ],
       "linter": {
         "rules": {
           "style": {
@@ -253,6 +258,35 @@
                   {
                     "group": ["@/features/**", "@/routes/**"],
                     "message": "Dependency flow is lib/components → features → routes: shared code never imports a feature or route."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/club-app/src/features/club/stages/**"],
+      "plugins": [
+        "./biome-plugins/useStackOverFlexBox.grit",
+        "./biome-plugins/useGridTwelveColumns.grit",
+        "./biome-plugins/noManualMemoization.grit",
+        "./biome-plugins/noUnknownType.grit"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "@mui/material": "Import defaults from `@mui/material/<Component>`, never the barrel."
+                },
+                "patterns": [
+                  {
+                    "group": ["@/routes/**"],
+                    "message": "Dependency flow is lib/components → features → routes: a feature never imports a route."
                   }
                 ]
               }

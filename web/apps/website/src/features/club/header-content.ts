@@ -1,8 +1,5 @@
-import { currentSession } from '@/lib/club';
-
 export const clubEyebrow = 'DER FURRSCHE CARNEVALS CLUB';
 export const clubPageTitle = 'VEREIN';
-export const clubHeroNumeral: string = String(currentSession.number);
 
 export const clubDescription =
   'Der Furrsche Carnevals Club e.V. ist der Ort, an dem die fünfte Jahreszeit lebt: ein Verein, der Bühne, Tradition und Freundschaft über Generationen zusammenhält — und jede Session aufs Neue feiert.';

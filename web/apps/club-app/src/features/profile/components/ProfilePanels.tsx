@@ -1,13 +1,11 @@
-import { KkFieldRow } from '@furria/ui';
+import { KkFieldRow, KkPanel, KkPanelSection, KkPanelStack } from '@furria/ui';
 import Grid from '@mui/material/Grid';
-import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { Me } from '@/lib/api/schemas';
 import { formatIsoDay } from '@/lib/membership-labels';
 import { PROFILE_SECTION_TITLES } from '../profile-labels';
 import { ProfileGroupsPanel } from './ProfileGroupsPanel';
 import { ProfileMembershipPanel } from './ProfileMembershipPanel';
-import { ProfilePanel } from './ProfilePanel';
 import { ProfileVisibilityPanel } from './ProfileVisibilityPanel';
 import { ProfileVisibilityPreview } from './ProfileVisibilityPreview';
 
@@ -26,20 +24,22 @@ export const ProfilePanels: FC<ProfilePanelsProps> = ({ me }) => {
   return (
     <Grid container spacing={{ xs: 3.5, desktop: 5 }} sx={{ minWidth: 0 }}>
       <Grid size={{ xs: 12, desktop: 7 }} sx={{ minWidth: 0 }}>
-        <Stack sx={{ gap: 3.5, minWidth: 0 }}>
+        <KkPanelStack>
           <ProfileVisibilityPanel person={person} />
           <ProfileVisibilityPreview person={person} />
-        </Stack>
+        </KkPanelStack>
       </Grid>
       <Grid size={{ xs: 12, desktop: 5 }} sx={{ minWidth: 0 }}>
-        <Stack sx={{ gap: 3.5, minWidth: 0 }}>
-          <ProfilePanel title={PROFILE_SECTION_TITLES.data}>
-            <KkFieldRow label={BIRTH_DATE_LABEL} value={birthDate} />
-            <KkFieldRow label={SIGN_IN_LABEL} value={me.email} />
-          </ProfilePanel>
+        <KkPanelStack>
+          <KkPanelSection title={PROFILE_SECTION_TITLES.data}>
+            <KkPanel>
+              <KkFieldRow label={BIRTH_DATE_LABEL} value={birthDate} />
+              <KkFieldRow label={SIGN_IN_LABEL} value={me.email} />
+            </KkPanel>
+          </KkPanelSection>
           <ProfileMembershipPanel membership={me.membership} />
           <ProfileGroupsPanel />
-        </Stack>
+        </KkPanelStack>
       </Grid>
     </Grid>
   );

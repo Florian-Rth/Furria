@@ -46,6 +46,21 @@ public sealed class PersonPersistenceTests
     }
 
     [Fact]
+    public async Task Should_KeepThePortraetPrivate_When_ThePersonIsSeededAlone()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => identity.AddPerson("alice")),
+            ct
+        );
+
+        await ctx
+            .Expected.Person(ctx.Identity.People.IdOf("alice"))
+            .ToHavePortrait(null, false)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_HideTheContactData_When_ThePersonHasNotOptedIn()
     {
         var ct = TestContext.Current.CancellationToken;

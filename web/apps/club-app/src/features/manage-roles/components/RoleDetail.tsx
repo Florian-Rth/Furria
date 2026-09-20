@@ -1,4 +1,4 @@
-import Stack from '@mui/material/Stack';
+import { KkPanelStack } from '@furria/ui';
 import type { FC } from 'react';
 import { usePermissions, useReturnFocus } from '@/features/session';
 import { useRoleDialogs } from '../hooks/use-role-dialogs';
@@ -49,7 +49,7 @@ export const RoleDetail: FC<RoleDetailProps> = ({ role, catalogue, holdersPendin
   };
 
   return (
-    <Stack sx={{ gap: 3.5, minWidth: 0 }}>
+    <KkPanelStack>
       <RoleHeaderCard
         role={role}
         onRename={openRename}
@@ -98,6 +98,6 @@ export const RoleDetail: FC<RoleDetailProps> = ({ role, catalogue, holdersPendin
         onClose={dialogs.close}
         onEnded={closeAfterEnding}
       />
-    </Stack>
+    </KkPanelStack>
   );
 };

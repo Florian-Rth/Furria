@@ -41,6 +41,7 @@ export const KkScreen: FC<KkScreenProps> = ({
   kind,
   title,
   header,
+  headerKind = 'title',
   origin,
   section,
   actions,
@@ -103,7 +104,7 @@ export const KkScreen: FC<KkScreenProps> = ({
         indexClearance={indexClearance}
       >
         <KkShellEntrance path={path} move={move}>
-          <KkShellHeader>{header}</KkShellHeader>
+          <KkShellHeader kind={headerKind}>{header}</KkShellHeader>
           {children}
         </KkShellEntrance>
       </KkShellTrack>

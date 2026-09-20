@@ -42,6 +42,8 @@ export { KkLetterIndex } from './KkLetterIndex';
 export type { KkMetaTone } from './KkMeta';
 export { KkMeta } from './KkMeta';
 export { KkModalFrame } from './KkModalFrame/KkModalFrame';
+export type { KkMottoStageState } from './KkMottoStage/internal/motto-stage-state';
+export { KkMottoStage } from './KkMottoStage/KkMottoStage';
 export { KkNote } from './KkNote';
 export type {
   KkNoticeAction,
@@ -57,6 +59,7 @@ export { KkPageWatermark } from './KkPageWatermark';
 export { KkPanel } from './KkPanel';
 export { KkPanelHeader } from './KkPanelHeader';
 export { KkPanelSection } from './KkPanelSection';
+export { KkPanelStack } from './KkPanelStack';
 export { KkPersonRow } from './KkPersonRow';
 export { KkPhoto } from './KkPhoto';
 export { KkPhotoPlaceholder } from './KkPhotoPlaceholder';
@@ -85,6 +88,7 @@ export type {
   KkScreenActionBar,
   KkScreenActions,
   KkScreenDeed,
+  KkScreenHeaderKind,
   KkScreenIndex,
   KkScreenKind,
   KkScreenOrigin,

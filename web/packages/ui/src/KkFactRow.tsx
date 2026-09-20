@@ -166,7 +166,7 @@ export const KkFactRow: FC<KkFactRowProps> = ({
           aria-hidden
           sx={(theme) => ({ ...barShape, opacity: barOpacity, ...toneBar[tone](theme) })}
         />
-        <Stack sx={{ flexGrow: 1, minWidth: 0, alignSelf: 'center', gap: 0.375 }}>
+        <Stack sx={{ flexGrow: 1, flexBasis: 0, minWidth: 0, alignSelf: 'center', gap: 0.375 }}>
           <Stack
             direction="row"
             sx={{

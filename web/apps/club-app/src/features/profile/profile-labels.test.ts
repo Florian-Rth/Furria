@@ -23,6 +23,7 @@ const me = (state: Me['membership']['state']): Me => ({
   membership: { state, memberSince: null, currentStartedOn: null, currentEndedOn: null },
   isAffiliated: true,
   permissionKeys: [],
+  lastSeenAnnouncementAt: null,
 });
 
 describe('toProfileHeadline', () => {

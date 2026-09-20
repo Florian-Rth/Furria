@@ -1,6 +1,5 @@
-import { KkPanel, KkPanelSection, KkSkeletonBlock } from '@furria/ui';
+import { KkPanel, KkPanelSection, KkPanelStack, KkSkeletonBlock } from '@furria/ui';
 import Grid from '@mui/material/Grid';
-import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { AppSkeletonRegion } from '@/features/session';
 import { PERSON_SECTION_TITLES } from '../manage-persons-labels';
@@ -14,7 +13,7 @@ export const PersonEditSkeleton: FC = () => (
   <AppSkeletonRegion label={LOADING_LABEL}>
     <Grid container spacing={{ xs: 3.5, desktop: 5 }} sx={{ minWidth: 0 }}>
       <Grid size={{ xs: 12, desktop: 7 }} sx={{ minWidth: 0 }}>
-        <Stack sx={{ gap: 3.5, minWidth: 0 }}>
+        <KkPanelStack>
           <KkPanelSection title={PERSON_SECTION_TITLES.memberships}>
             <KkPanel variant="block">
               <KkSkeletonBlock lines={WIDE_LINES} />
@@ -25,10 +24,10 @@ export const PersonEditSkeleton: FC = () => (
               <KkSkeletonBlock lines={NARROW_LINES} />
             </KkPanel>
           </KkPanelSection>
-        </Stack>
+        </KkPanelStack>
       </Grid>
       <Grid size={{ xs: 12, desktop: 5 }} sx={{ minWidth: 0 }}>
-        <Stack sx={{ gap: 3.5, minWidth: 0 }}>
+        <KkPanelStack>
           <KkPanelSection title={PERSON_SECTION_TITLES.masterData}>
             <KkPanel variant="block">
               <KkSkeletonBlock lines={WIDE_LINES} />
@@ -39,7 +38,7 @@ export const PersonEditSkeleton: FC = () => (
               <KkSkeletonBlock lines={NARROW_LINES} />
             </KkPanel>
           </KkPanelSection>
-        </Stack>
+        </KkPanelStack>
       </Grid>
     </Grid>
   </AppSkeletonRegion>

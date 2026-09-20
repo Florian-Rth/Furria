@@ -1,19 +1,13 @@
-import type { Session } from '@/lib/club';
-import { currentSession, GROUP_COUNT_PLACEHOLDER, MEMBER_COUNT_PLACEHOLDER } from '@/lib/club';
+import { GROUP_COUNT_PLACEHOLDER, MEMBER_COUNT_PLACEHOLDER } from '@/lib/club';
 
 export interface JoinStat {
   value: string;
   label: string;
 }
 
-export const buildJoinStats = (
-  memberCount: string,
-  groupCount: number,
-  session: Session,
-): JoinStat[] => [
+export const buildJoinStats = (memberCount: string, groupCount: number): JoinStat[] => [
   { value: memberCount, label: 'Mitglieder' },
   { value: String(groupCount), label: 'Garden & Gruppen' },
-  { value: `${session.number}.`, label: 'Session' },
 ];
 
 export const joinEyebrow = 'DU MÖCHTEST MITMACHEN?';
@@ -21,7 +15,6 @@ export const joinEyebrow = 'DU MÖCHTEST MITMACHEN?';
 export const joinStats: JoinStat[] = buildJoinStats(
   MEMBER_COUNT_PLACEHOLDER,
   GROUP_COUNT_PLACEHOLDER,
-  currentSession,
 );
 
 export const joinPageTitle = 'MITGLIED WERDEN';

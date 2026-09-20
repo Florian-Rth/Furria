@@ -191,6 +191,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             identity,
             new TestGroups(seeded.Groups),
             new TestRoles(seeded.Roles),
+            new TestClub(seeded.Club),
             new Expected(scopeFactory)
         );
     }

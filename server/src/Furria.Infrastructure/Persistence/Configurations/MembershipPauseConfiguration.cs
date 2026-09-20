@@ -19,7 +19,7 @@ public sealed class MembershipPauseConfiguration : IEntityTypeConfiguration<Memb
                 );
                 table.HasCheckConstraint(
                     "ck_membership_pause_founding",
-                    $"first_session_year >= {ClubSession.FoundingYear}"
+                    $"first_session_year >= {ClubSession.EarliestSessionYear}"
                 );
             }
         );

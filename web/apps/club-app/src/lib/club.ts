@@ -1,10 +1,13 @@
-export const FOUNDING_YEAR = 1971;
+import type { KkMottoStageState } from '@furria/ui';
 
 export const SESSION_OPENING_MONTH = 11;
 export const SESSION_OPENING_DAY = 11;
+export const SESSION_OPENING_HOUR = 11;
+export const SESSION_OPENING_MINUTE = 11;
+
+const MS_PER_DAY = 86_400_000;
 
 export interface Session {
-  number: number;
   startYear: number;
   yearsLabel: string;
 }
@@ -17,7 +20,6 @@ export const sessionAt = (date: Date): Session => {
   const startYear = openingHasPassed ? date.getFullYear() : date.getFullYear() - 1;
   const endYearShort = String((startYear + 1) % 100).padStart(2, '0');
   return {
-    number: startYear - FOUNDING_YEAR + 1,
     startYear,
     yearsLabel: `${startYear}/${endYearShort}`,
   };
@@ -69,4 +71,45 @@ export const sessionProgressAt = (date: Date): number | null => {
     (date.getTime() - opening.getTime()) / (closing.getTime() - opening.getTime()),
     1,
   );
+};
+
+export const sessionOpeningAt = (startYear: number): Date =>
+  new Date(
+    startYear,
+    SESSION_OPENING_MONTH - 1,
+    SESSION_OPENING_DAY,
+    SESSION_OPENING_HOUR,
+    SESSION_OPENING_MINUTE,
+  );
+
+export const sessionClosingAt = (startYear: number): Date => {
+  const ashWednesday = ashWednesdayOf(startYear + 1);
+
+  return new Date(ashWednesday.getFullYear(), ashWednesday.getMonth(), ashWednesday.getDate() + 1);
+};
+
+export const isBetweenSessions = (date: Date): boolean =>
+  date >= sessionClosingAt(sessionAt(date).startYear);
+
+export const relevantSessionYear = (date: Date): number =>
+  isBetweenSessions(date) ? sessionAt(date).startYear + 1 : sessionAt(date).startYear;
+
+export const mottoStageStateAt = (
+  date: Date,
+  relevantStartYear: number,
+  mottoIsKnown: boolean,
+): KkMottoStageState => {
+  if (date >= sessionOpeningAt(relevantStartYear) && date < sessionClosingAt(relevantStartYear)) {
+    return 'running';
+  }
+
+  return mottoIsKnown ? 'teaser' : 'resting';
+};
+
+export const daysUntilOpening = (date: Date, relevantStartYear: number): number => {
+  const from = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const opening = sessionOpeningAt(relevantStartYear);
+  const to = new Date(opening.getFullYear(), opening.getMonth(), opening.getDate());
+
+  return Math.round((to.getTime() - from.getTime()) / MS_PER_DAY);
 };

@@ -110,7 +110,7 @@ public sealed class MembershipPausePersistenceTests
                             .AddMembershipPause(
                                 "alice-ruhezeit",
                                 "alice-first",
-                                ClubSession.FoundingYear - 1
+                                ClubSession.EarliestSessionYear - 1
                             )
                     ),
                 ct

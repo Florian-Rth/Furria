@@ -65,6 +65,7 @@ description: Mandatory rules for all C#/.NET backend work. Invoke before writing
 - EF Core entities never cross the service boundary
 
 ### Endpoints (FastEndpoints REPR)
+- **Never create an endpoint until a caller in an app needs it.** No endpoint is written "for completeness", to round out a CRUD set, or because a plan lists it — an app surface asks for it first. An endpoint with no caller is dead code with a public URL: it carries auth, validation, tests and a migration path forever. Endpoints that lose their last caller are deleted, not kept
 - One file per endpoint containing: Endpoint + Request + Validator + Response
 - Endpoints never share Requests or Responses between each other
 - Endpoints never access DbContext directly — always go through a service

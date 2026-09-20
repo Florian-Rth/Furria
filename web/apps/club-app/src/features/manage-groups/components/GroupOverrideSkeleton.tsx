@@ -1,5 +1,4 @@
-import { KkPanel, KkPanelSection, KkSkeletonRow } from '@furria/ui';
-import Stack from '@mui/material/Stack';
+import { KkPanel, KkPanelSection, KkPanelStack, KkSkeletonRow } from '@furria/ui';
 import type { FC } from 'react';
 import { AppSkeletonRegion } from '@/features/session';
 import { GROUP_SECTION_TITLES } from '@/lib/group-sections';
@@ -13,7 +12,7 @@ const LOADING_LABEL = 'Die Gruppe wird geladen';
 
 export const GroupOverrideSkeleton: FC = () => (
   <AppSkeletonRegion label={LOADING_LABEL}>
-    <Stack sx={{ gap: 3.5, minWidth: 0 }}>
+    <KkPanelStack>
       <KkPanelSection title={MANAGE_GROUPS_SECTION_TITLES.members}>
         <KkPanel variant="list">
           <KkSkeletonRow count={MEMBER_ROWS} />
@@ -29,6 +28,6 @@ export const GroupOverrideSkeleton: FC = () => (
           <KkSkeletonRow count={HISTORY_ROWS} />
         </KkPanel>
       </KkPanelSection>
-    </Stack>
+    </KkPanelStack>
   </AppSkeletonRegion>
 );

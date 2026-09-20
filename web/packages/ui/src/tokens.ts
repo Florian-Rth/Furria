@@ -163,6 +163,7 @@ export const kkTokens = {
     gutterY: { xs: 4, md: 8 },
     sectionGap: { xs: 8, md: 12 },
     blockGap: { xs: 4, md: 6 },
+    panelGap: 3.5,
     bandY: { xs: 6, md: 10 },
     fieldGap: 3,
     mastheadClearance: 2,

@@ -70,9 +70,10 @@ public sealed class PutMembershipPauseValidator : Validator<PutMembershipPauseRe
         RuleFor(request => request.PersonId).GreaterThan(0);
         RuleFor(request => request.MembershipId).GreaterThan(0);
         RuleFor(request => request.PauseId).GreaterThan(0);
-        RuleFor(request => request.FirstSessionYear).GreaterThanOrEqualTo(ClubSession.FoundingYear);
+        RuleFor(request => request.FirstSessionYear)
+            .GreaterThanOrEqualTo(ClubSession.EarliestSessionYear);
         RuleFor(request => request.LastSessionYear)
-            .GreaterThanOrEqualTo(ClubSession.FoundingYear)
+            .GreaterThanOrEqualTo(ClubSession.EarliestSessionYear)
             .When(request => request.LastSessionYear.HasValue);
     }
 }

@@ -71,13 +71,19 @@ know what it enforces (renamed from **Amt** and pinned 2026-09-11, CA-P1 — and
 the earlier "Ämter are NOT freely created"). **Gruppen-Admin** is not a Rolle — it is its own,
 Gruppe-scoped resource. There is **no built-in "Vorstand" super-role**; if the club wants one it
 creates a Rolle and gives it the keys, like any other.
-_Avoid_: **Amt** / Ämter (renamed 2026-09-11), Vorstand (as a right), position, job
+_Avoid_: **Amt** / Ämter (renamed 2026-09-11), Vorstand (as a right — the body itself is
+recorded, see **Vorstand**), position, job
 
 **Berechtigung** (`permission`):
-A single targeted right (key + area) granted to a **Rolle** through the rights matrix; never
-assigned to a Person directly — she has it for as long as she holds the Rolle. The set of keys
-is a **code constant** and grows phase by phase (CA-P1 ships four).
-_Avoid_: privilege, access level
+A single targeted right (key + area). **Every gate in the app is a Berechtigung** — no surface
+is ever gated on "is Mitglied" directly. A Person's effective keys come from **two sources**:
+granted to a **Rolle** through the rights matrix (she has it for as long as she holds the
+Rolle), or **implied by a relationship that is running** — a Mitgliedschaft implies `club.read`,
+a Zugehörigkeit implies its Gruppe-scoped keys. Neither is ever assigned to a Person directly
+and neither is stored: the implied keys are derived at the moment they are asked, exactly as
+affiliation is ([ADR-0011](docs/adr/0011-permissions-come-from-rollen-and-running-relationships.md),
+2026-09-18). The set of keys is a **code constant** and grows phase by phase.
+_Avoid_: privilege, access level, a **Mitglied-Rolle** (there is none — see ADR-0011)
 
 **Zugehörigkeit** (`group membership`):
 A Person's **dated period** in a Gruppe — Beitritt and, once over, Austritt. Several per Person
@@ -90,11 +96,47 @@ A Person's **dated period** in a Rolle — the same shape as a Zugehörigkeit, e
 deleted. The **Inhaber** of a Rolle are the open ones (pinned 2026-09-10, CA-P1 fresh shaping).
 _Avoid_: Zuweisung, assignment, "im Amt seit" (it is **Inhaberin seit** / Inhaber seit)
 
+**Vorstand** (`board`):
+The club's official governing body. It is **not a fourth identity layer and not a Rolle** — it
+grants nothing by itself. What it may do is **name one Rolle that every seat implies**, so the
+club expresses "everyone on the board may do this" once. Recorded because every Verein has a
+Vorstand and members ask who is on it, not because the app needs it to decide anything
+(decided 2026-09-19).
+_Avoid_: Vorstand as a Berechtigung or a super-role (see **Rolle**), Führung, Leitung
+
+**Vorstandsfunktion** (`board office`):
+A named office within the **Vorstand** — Präsident, Kassenwart, Schriftführerin. **Club-created
+and edited in the app**, never a code constant, and each may **name one Rolle it implies**. This
+is the one Funktion that is more than a label; the **Gruppen-Admin**'s Funktion stays free text
+and grants nothing, and the two are never unified (decided 2026-09-19).
+_Avoid_: Amt (retired), Posten, hard-coding the offices
+
+**Vorstandssitz** (`board seat`):
+A Person's **dated period** in the **Vorstand** under one **Vorstandsfunktion** — the same shape
+as an Inhaberschaft, ended and never deleted, and carrying the band's order. A running seat
+**implies** its Funktion's Rolle: derived at the moment it is asked, never written as an
+Inhaberschaft (the board-wide Rolle was cut 2026-09-20 and waits for *Verein verwalten*)
+([ADR-0011](docs/adr/0011-permissions-come-from-rollen-and-running-relationships.md)).
+_Avoid_: auto-assigning a Rolle when a seat opens, Vorstandsmitgliedschaft (that word is the
+club's Mitgliedschaft), Vorstandsamt
+
+
 **Kontaktdaten** (`contact details`):
 Telefon, E-Mail and Adresse of a Person — **hidden from other members by default**; she opts
 in herself, and a Person without Account is switched on her word. A Berechtigung sees them
 anyway; hidden is a setting, never a gap (pinned 2026-09-10, CA-P1 fresh shaping).
 _Avoid_: Kontakt (as a field name), showing hidden Kontaktdaten as missing data
+
+**Porträt** (`portrait`):
+The **one** picture a Person has in the platform, in rectangular portrait format — her profile
+picture in the app, and the same file shown in the round wherever a list needs an avatar. A
+Porträt is **provided, never taken**: the Person hands it over to be shown, and that act is the
+consent — which is why it is untouched by the open question about event photography. Showing it
+publicly is a **switch she owns, off by default**, exactly as her Kontaktdaten are; holding a
+**Vorstandssitz** never flips it (decided 2026-09-19).
+_Avoid_: Foto (that is event photography — a different question entirely), Avatar (that is how a
+Porträt is *displayed*), a second picture for the website, publishing by virtue of an office
+
 
 **Gruppen-Admin** (`group admin`):
 The Person responsible for a Gruppe — set in group management, dated, several per Gruppe
@@ -130,10 +172,43 @@ The club's carnival call: **"Gross - Furria!"** — always this, spoken and in U
 _Avoid_: Helau, Alaaf — using these will get you hated in Großfurra.
 
 **Session** (`session`):
-A carnival season: opens **11.11.** (the **Eröffnung**) and runs to Aschermittwoch. Numbered from
-the founding year (Session Nº 1 = 1971) and labelled by its span (e.g. `2025/26`). The unit the
-public site advertises ("SESSION …", "die fünfte Jahreszeit").
-_Avoid_: Kampagne, campaign, season (as a table name)
+A carnival season: opens **11.11.** (the **Eröffnung**) and runs to Aschermittwoch, and labelled
+by its span (e.g. `2025/26`). The unit the public site advertises ("SESSION …", "die fünfte
+Jahreszeit"). **Which season it is now is derived from the date and never stored** — the
+11.11. boundary decides it, so no surface has a "current Session" pointer anybody has to flip.
+
+**The Session Nº is evidence, not arithmetic** (ruled 2026-09-18, superseding "numbered from the
+founding year, Nº 1 = 1971"). Sessions were skipped — war, crises, pandemics — so no formula over
+years can produce the right number, and the club anyway *knows* a number because it is printed on
+the Orden. The club therefore writes down what it knows, one record per season: its Nº, its
+Motto, its artwork. **Every part of a record but the year is optional**, because the chronicle is
+incomplete in both directions (a banner photo gives a Motto with no Nº; a Festschrift gives a Nº
+with no Motto), and **nothing is ever inferred from a neighbouring record** — a guessed Nº could
+contradict the Orden. No record for a season means the app names the season from the date and
+says nothing further.
+_Avoid_: Kampagne, campaign, season (as a table name), computing the Nº from the founding year,
+a stored "current Session" flag
+
+**Motto** (`motto`):
+The Session's slogan, proclaimed by the club before the season and printed on everything that
+season — "FURRIA — Der Mittelpunkt des Universums". One per Session, part of its record, and
+optional there like every other part (an old season may be remembered without one).
+_Avoid_: Slogan, Thema, Titel
+
+**Motto-Bühne** (`motto stage`):
+The staged presentation of the current Session's **Motto** — the Club-App's Verein hub opens with
+it. It is a fresh piece of art each season, made to suit that season's Motto and rebuilt from
+nothing every November; it is not a picture the club uploads but something the club has made for
+it, like the Orden. Only the current Session has one (decided 2026-09-18).
+_Avoid_: Hero, Banner, Header, treating it as the Session's artwork (that is the **Session-Signet**)
+
+**Session-Signet** (`session mark`):
+The small, still mark recorded with a **Session** — the emblem on the Orden, the banner, the
+Festschrift. It is evidence of a season exactly as the Nº is: recorded when the club has one,
+absent when it does not, and never invented. It stands in wherever a season is named but not
+staged — past seasons, lists, the public website.
+_Avoid_: Logo (that is the club's), Artwork (in copy), animating it, using it for the current
+season's opener
 
 ### Events
 
@@ -154,6 +229,48 @@ most of a Veranstaltung's public life there is no Ablauf at all. What the public
 shows of it is the **order only, never times** — the sequence is stable enough to
 publish, the clock is not.
 _Avoid_: **Programm** (retired), Setlist
+
+**Kalendereintrag** (`calendar entry`):
+One dated entry in the club's **one** calendar — the store that holds every club-related date
+alike: Veranstaltungen, unticketed club occasions, the members-only summer event, a Gruppe's
+Training, a Gruppe's Auftritt. There are not several calendars that get merged for display;
+every surface is a **filter** over this one store, so a Gruppe's dates are that calendar scoped
+to the Gruppe. The word was the project's largest open block from 2026-09-10 until Florian
+settled it on 2026-09-18: it is the plain translation of *calendar entry*, nothing cleverer.
+A Veranstaltung is one **kind** of Kalendereintrag, not a synonym for it — Veranstaltung stays
+narrow (a ticketed hall evening) and never widens to cover a training.
+
+Every entry carries three independent things, never collapsed into one: its **Eigentümer**
+(the club, or one Gruppe — who may edit it, and who a running entry summons through the Notice),
+its **Sichtbarkeit** (`Gruppe` / `Verein` / `Öffentlich`, chosen when it is created; a Gruppe's
+Training defaults to `Verein` so the club can see what the hall is doing) and its **Ort**.
+Visible is not the same as summoned: a Training everyone can see still concerns only its Gruppe
+(decided 2026-09-19).
+
+A Kalendereintrag may optionally ask for a **Zu-/Absage** (`attendance response`) — per entry,
+switched on by whoever schedules it, and available for every kind including a Gruppe's Training
+(decided 2026-09-18). An entry that does not ask for one collects nothing.
+_Avoid_: **Termin**, **Gruppentermin**, Spielplan, Event, calling it a Veranstaltung
+
+**Ort** (`venue`):
+One of the club's few places — Sporthalle, Vereinsraum, Lager. A club-managed list, not free
+text on an entry: a **Kalendereintrag** happens at an Ort, and a **Schlüssel** is held for one.
+Because two entries at one Ort at one time is a real collision, the Ort is what makes that
+collision findable (decided 2026-09-19).
+_Avoid_: Raum (too narrow — the Sporthalle is not the club's), Location, Veranstaltungsort,
+free-text places
+
+**Schlüssel** (`key holding`):
+A Person's **dated period** of holding a key for an **Ort** — the same shape as an Inhaberschaft,
+ended and never deleted, so who held a Lagerschlüssel two years ago is still answerable. Several
+per Person and per Ort. It is a *fact*, not an inventory: **copies are not numbered and keys are
+not counted** — the questions the club actually asks are "wen frage ich, um aufzuschließen" and
+"wem müssen wir einen abnehmen", and the holding answers both. Every member may see who holds
+what (decided 2026-09-19).
+_Avoid_: Schlüsselnummer, counting keys as a club statistic, Zutritt, Zugangsberechtigung
+(a Schlüssel is metal, a **Berechtigung** is a right in the app — never the same word)
+
+
 
 **Live-Regie** (`live direction`):
 Running a Veranstaltung's Ablauf on the night itself: one operator advances the running order
@@ -220,6 +337,24 @@ The one label a **Meldung** carries, from a fixed set. Label only — the public
 filtering by it.
 _Avoid_: Tag, Rubrik
 
+### Interne Kommunikation
+
+**Aushang** (`announcement`):
+A club announcement inside the Club-App, shown on the Verein hub — the digital notice board.
+**Explicitly not a chat**: no replies, no threads, no reactions. It is **club-wide**; an
+announcement meant for one Gruppe belongs in that Gruppe's hub, not here, which is what keeps
+the Verein hub identical for every viewer (pinned 2026-09-18, CA-P3 shaping). Posting is a
+Berechtigung the club grants to whichever Rollen it counts as Vorstand; reading one is not.
+
+It carries a **Titel**, a **Text**, its **Autor**, its date and an optional **Gültig bis** — and
+nothing else (settled 2026-09-19). Reactions, a Kategorie, an Anheften and a **Kenntnisnahme**
+("von 87 gelesen") were each weighed and rejected: a notice board that scores its notices is a
+feed, and the club has no rule that asks anyone to prove they read one. Whether an Aushang is
+*new to you* is answered by a single last-seen moment on the Account, never by tracking each
+Aushang against each reader.
+_Avoid_: Notice (that is the shell's live-evening layer), Meldung (that is public website
+news), Nachricht, Chat, schwarzes Brett, Kategorie, Anhang, Kenntnisnahme
+
 ### Fotos
 
 **Galerie** (`gallery`):
@@ -270,21 +405,12 @@ _Avoid_: balance table, payments table (as source of truth)
   Plätze, for the entitlement. The decision unblocks `page-seat-picker` and shapes
   `page-purchase`.
 
-- **Gruppentermin** — **open 2026-09-10, reframed 2026-09-17.** A Gruppe's own schedule
-  (Training, Auftritt) is a real need for the Gruppen-Hub, but **Veranstaltung** is deliberately
-  narrow and the club has no pinned word for a Gruppe's own dates.
-
-  The Club-App floor plan ruled on 2026-09-17 that there is **one club calendar**, not several:
-  one store holds Veranstaltungen, unticketed club occasions, members-only events and a Gruppe's
-  own dates alike, and every surface is a filter over it — a Gruppe's dates band is that calendar
-  scoped to the Gruppe. That changes the missing word: the club does not need a name for *a
-  Gruppe's dates*, it needs one for **an entry in the club calendar**, of which a training is one
-  kind. **Veranstaltung** cannot be it (it stays narrow), and **Termin** is on that entry's own
-  avoid-list.
-
-  Until the club names it, nothing is modelled and no surface promises it: the Hub's dates slot
-  is a reserved placeholder, and no copy calls it a Spielplan. It blocks the Kalender page, the
-  Verein hub's calendar band and the Gruppe hub's dates band.
+- **Gruppentermin** — **resolved 2026-09-18.** A Gruppe's own dates were flagged as nameless on
+  2026-09-10 and reframed on 2026-09-17 by the one-calendar ruling: the club never needed a word
+  for *a Gruppe's dates*, it needed one for **an entry in the club calendar**. Florian settled it
+  on 2026-09-18 by translating it — **Kalendereintrag**, see the entry above. This unblocks the
+  Kalender page, the Verein hub's calendar panel and the Gruppe hub's dates panel, which were the
+  project's largest single block.
 
 - **Einlasskontrolle** — **open, 2026-08-19.** The club has not decided how entry is checked
   at the door (QR scanning per Karte, a name list, no check at all). Until decided, no public

@@ -15,6 +15,8 @@ import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppProfileRouteImport } from './routes/_app/profile'
 import { Route as AppMoreRouteImport } from './routes/_app/more'
 import { Route as AppClubRouteImport } from './routes/_app/club'
+import { Route as AppCalendarRouteImport } from './routes/_app/calendar'
+import { Route as AppAnnouncementsRouteImport } from './routes/_app/announcements'
 import { Route as AppAffiliatedRouteImport } from './routes/_app/_affiliated'
 import { Route as AppMyGroupsIndexRouteImport } from './routes/_app/my-groups.index'
 import { Route as AppMyGroupsGroupIdRouteImport } from './routes/_app/my-groups.$groupId'
@@ -54,6 +56,16 @@ const AppMoreRoute = AppMoreRouteImport.update({
 const AppClubRoute = AppClubRouteImport.update({
   id: '/club',
   path: '/club',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCalendarRoute = AppCalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAnnouncementsRoute = AppAnnouncementsRouteImport.update({
+  id: '/announcements',
+  path: '/announcements',
   getParentRoute: () => AppRoute,
 } as any)
 const AppAffiliatedRoute = AppAffiliatedRouteImport.update({
@@ -117,6 +129,8 @@ const AppAffiliatedGroupsGroupIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/login': typeof LoginRoute
+  '/announcements': typeof AppAnnouncementsRoute
+  '/calendar': typeof AppCalendarRoute
   '/club': typeof AppClubRoute
   '/more': typeof AppMoreRoute
   '/profile': typeof AppProfileRoute
@@ -134,6 +148,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/': typeof AppIndexRoute
+  '/announcements': typeof AppAnnouncementsRoute
+  '/calendar': typeof AppCalendarRoute
   '/club': typeof AppClubRoute
   '/more': typeof AppMoreRoute
   '/profile': typeof AppProfileRoute
@@ -153,6 +169,8 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/_app/_affiliated': typeof AppAffiliatedRouteWithChildren
+  '/_app/announcements': typeof AppAnnouncementsRoute
+  '/_app/calendar': typeof AppCalendarRoute
   '/_app/club': typeof AppClubRoute
   '/_app/more': typeof AppMoreRoute
   '/_app/profile': typeof AppProfileRoute
@@ -173,6 +191,8 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/announcements'
+    | '/calendar'
     | '/club'
     | '/more'
     | '/profile'
@@ -190,6 +210,8 @@ export interface FileRouteTypes {
   to:
     | '/login'
     | '/'
+    | '/announcements'
+    | '/calendar'
     | '/club'
     | '/more'
     | '/profile'
@@ -208,6 +230,8 @@ export interface FileRouteTypes {
     | '/_app'
     | '/login'
     | '/_app/_affiliated'
+    | '/_app/announcements'
+    | '/_app/calendar'
     | '/_app/club'
     | '/_app/more'
     | '/_app/profile'
@@ -271,6 +295,20 @@ declare module '@tanstack/react-router' {
       path: '/club'
       fullPath: '/club'
       preLoaderRoute: typeof AppClubRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/calendar': {
+      id: '/_app/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof AppCalendarRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/announcements': {
+      id: '/_app/announcements'
+      path: '/announcements'
+      fullPath: '/announcements'
+      preLoaderRoute: typeof AppAnnouncementsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/_affiliated': {
@@ -373,6 +411,8 @@ const AppAffiliatedRouteWithChildren = AppAffiliatedRoute._addFileChildren(
 
 interface AppRouteChildren {
   AppAffiliatedRoute: typeof AppAffiliatedRouteWithChildren
+  AppAnnouncementsRoute: typeof AppAnnouncementsRoute
+  AppCalendarRoute: typeof AppCalendarRoute
   AppClubRoute: typeof AppClubRoute
   AppMoreRoute: typeof AppMoreRoute
   AppProfileRoute: typeof AppProfileRoute
@@ -387,6 +427,8 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppAffiliatedRoute: AppAffiliatedRouteWithChildren,
+  AppAnnouncementsRoute: AppAnnouncementsRoute,
+  AppCalendarRoute: AppCalendarRoute,
   AppClubRoute: AppClubRoute,
   AppMoreRoute: AppMoreRoute,
   AppProfileRoute: AppProfileRoute,
