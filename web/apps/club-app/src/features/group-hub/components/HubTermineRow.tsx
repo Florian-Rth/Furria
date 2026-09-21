@@ -9,14 +9,16 @@ import { HubTermineMark } from './HubTermineMark';
 interface HubTermineRowProps {
   groupId: number;
   entry: GroupCalendarEntry;
+  canAnswer: boolean;
 }
 
-export const HubTermineRow: FC<HubTermineRowProps> = ({ groupId, entry }) => {
+export const HubTermineRow: FC<HubTermineRowProps> = ({ groupId, entry, canAnswer }) => {
   const tone = entry.isRunning ? 'accent' : 'neutral';
   const chip = <HubTermineMark mark={toTermineMark(entry, groupId)} />;
-  const actions = entry.asksForResponse ? (
-    <HubTermineAnswers groupId={groupId} entry={entry} />
-  ) : undefined;
+  const actions =
+    entry.asksForResponse && canAnswer ? (
+      <HubTermineAnswers groupId={groupId} entry={entry} />
+    ) : undefined;
   const span = toDayNumberLabel(entry.startsAt);
   const spanLabel = toWeekdayEyebrow(entry.startsAt);
   const meta = toTerminMetaLine(entry, groupId);

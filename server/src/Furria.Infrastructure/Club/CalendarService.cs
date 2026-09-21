@@ -277,7 +277,10 @@ public sealed class CalendarService
         };
 
         _dbContext.CalendarEntries.Add(entry);
-        await _dbContext.SaveChangesAsync(ct);
+
+        var saved = await _dbContext.SaveOrConflictAsync(ct);
+        if (!saved.IsSuccess)
+            return Result<CalendarEntryWriteResult>.Carrying(saved);
 
         return Result<CalendarEntryWriteResult>.Success(
             await WrittenAsync(entry, command.ViewerPersonId, ct)
@@ -322,7 +325,9 @@ public sealed class CalendarService
         entry.Visibility = command.Visibility;
         entry.AsksForResponse = command.AsksForResponse;
 
-        await _dbContext.SaveChangesAsync(ct);
+        var saved = await _dbContext.SaveOrConflictAsync(ct);
+        if (!saved.IsSuccess)
+            return Result<CalendarEntryWriteResult>.Carrying(saved);
 
         return Result<CalendarEntryWriteResult>.Success(
             await WrittenAsync(entry, command.ViewerPersonId, ct)

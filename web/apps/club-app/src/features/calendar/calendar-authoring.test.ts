@@ -13,6 +13,8 @@ import {
   toEntryPayload,
   toInstant,
   toOwnerOptions,
+  toParticipantPool,
+  toParticipantsEmptyLabel,
   toParticipatingGroupIds,
   toParticipatingGroupOptions,
   toParticipationKeptForOwner,
@@ -296,25 +298,76 @@ describe('toEndKeptInStep', () => {
 });
 
 describe('toParticipatingGroupOptions', () => {
-  const groups = [
-    { groupId: 3, name: 'Männerballett' },
-    { groupId: 1, name: 'Tanzgarde' },
-    { groupId: 2, name: 'Ältestenrat' },
-  ];
+  const running = {
+    state: 'ready',
+    groups: [
+      { groupId: 3, name: 'Männerballett' },
+      { groupId: 1, name: 'Tanzgarde' },
+      { groupId: 2, name: 'Ältestenrat' },
+    ],
+  } as const;
 
   it('leaves the Eigentümerin out of the list', () => {
-    expect(toParticipatingGroupOptions(groups, '1')).toEqual([
+    expect(toParticipatingGroupOptions(running, [], '1')).toEqual([
       { value: '2', label: 'Ältestenrat' },
       { value: '3', label: 'Männerballett' },
     ]);
   });
 
   it('keeps every Gruppe when the Verein owns the Termin', () => {
-    expect(toParticipatingGroupOptions(groups, 'club').map((option) => option.label)).toEqual([
+    expect(toParticipatingGroupOptions(running, [], 'club').map((option) => option.label)).toEqual([
       'Ältestenrat',
       'Männerballett',
       'Tanzgarde',
     ]);
+  });
+
+  it('keeps a mitwirkende Gruppe choosable after it left the Verzeichnis', () => {
+    const held = [{ groupId: 9, name: 'Wirbelwinde' }];
+
+    expect(toParticipatingGroupOptions(running, held, 'club')).toContainEqual({
+      value: '9',
+      label: 'Wirbelwinde — archiviert',
+    });
+  });
+
+  it('calls no held Gruppe archived while the Verzeichnis is missing', () => {
+    const held = [{ groupId: 9, name: 'Wirbelwinde' }];
+
+    expect(toParticipatingGroupOptions({ state: 'failed' }, held, 'club')).toEqual([
+      { value: '9', label: 'Wirbelwinde' },
+    ]);
+  });
+
+  it('lists a held Gruppe once when it is still in the Verzeichnis', () => {
+    const held = [{ groupId: 1, name: 'Tanzgarde' }];
+
+    expect(toParticipatingGroupOptions(running, held, 'club')).toHaveLength(3);
+  });
+});
+
+describe('toParticipantPool', () => {
+  it('reads loaded Gruppen as ready', () => {
+    expect(toParticipantPool([{ groupId: 1, name: 'Tanzgarde' }], false)).toEqual({
+      state: 'ready',
+      groups: [{ groupId: 1, name: 'Tanzgarde' }],
+    });
+  });
+
+  it.each([
+    [true, 'failed'],
+    [false, 'loading'],
+  ])('reads a missing Verzeichnis with failed %s as %s', (failed, state) => {
+    expect(toParticipantPool(undefined, failed).state).toBe(state);
+  });
+});
+
+describe('toParticipantsEmptyLabel', () => {
+  it('states no Gruppe is left only once the Verzeichnis is there', () => {
+    const ready = toParticipantsEmptyLabel({ state: 'ready', groups: [] });
+
+    expect(ready).not.toBe(toParticipantsEmptyLabel({ state: 'failed' }));
+    expect(ready).not.toBe(toParticipantsEmptyLabel({ state: 'loading' }));
   });
 });
 

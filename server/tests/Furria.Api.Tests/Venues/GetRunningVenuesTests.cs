@@ -147,6 +147,34 @@ public sealed class GetRunningVenuesTests
     }
 
     [Fact]
+    public async Task Should_ListTheOrte_When_TheCallerOnlyAdministersEineGruppe()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddAccount("trixi"))
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("kindergarde", "Kindergarde")
+                            .AddGroupAdmin("trixi-leitet", "kindergarde", "trixi", "Trainerin")
+                    )
+                    .Club(club => club.AddVenue("halle", "Turnhalle")),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("trixi", ct);
+        var (response, result) = await client.GETAsync<
+            GetRunningVenues,
+            GetRunningVenuesResponse
+        >();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var halle = Assert.Single(result.Venues);
+        Assert.Equal("Turnhalle", halle.Name);
+    }
+
+    [Fact]
     public async Task Should_ReturnForbidden_When_TheCallerIsNotAffiliated()
     {
         var ct = TestContext.Current.CancellationToken;

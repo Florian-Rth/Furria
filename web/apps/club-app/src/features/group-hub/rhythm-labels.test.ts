@@ -2,12 +2,30 @@ import { describe, expect, it } from 'vitest';
 import {
   toCollisionNotice,
   toDurationLabel,
+  toHeldVenue,
   toRhythmMeta,
+  toRhythmVenueOptions,
   toSlotFormValues,
   toSlotPayload,
+  toSlotVenueLine,
   toTrainingsCreatedMessage,
+  toUnavailableVenueIds,
   toVenueId,
 } from './rhythm-labels';
+import type { TrainingSlot } from './schemas';
+
+const slot = (
+  groupTrainingSlotId: number,
+  venueId: number | null,
+  venueName: string | null,
+): TrainingSlot => ({
+  groupTrainingSlotId,
+  weekday: 'tuesday',
+  startsAt: '17:00:00',
+  durationMinutes: 60,
+  venueId,
+  venueName,
+});
 
 describe('toDurationLabel', () => {
   it.each([
@@ -104,5 +122,72 @@ describe('toCollisionNotice', () => {
     [2, 'An 2 Abenden ist der Ort doppelt belegt. Sieh im Kalender nach.'],
   ])('reads %i collisions', (count, expected) => {
     expect(toCollisionNotice(count)).toBe(expected);
+  });
+});
+
+describe('toRhythmVenueOptions', () => {
+  const running = [
+    { venueId: 1, name: 'Sporthalle' },
+    { venueId: 2, name: 'Vereinsraum' },
+  ];
+
+  it('leads with the no-Ort choice and offers what runs', () => {
+    expect(toRhythmVenueOptions(running, null).map((option) => option.value)).toEqual([
+      '',
+      '1',
+      '2',
+    ]);
+  });
+
+  it('keeps the held Ort choosable after it was archived', () => {
+    const options = toRhythmVenueOptions(running, { venueId: 9, name: 'Lager' });
+
+    expect(options.at(-1)).toEqual({ value: '9', label: 'Lager — archiviert' });
+  });
+
+  it('adds nothing when the held Ort still runs', () => {
+    expect(toRhythmVenueOptions(running, { venueId: 1, name: 'Sporthalle' })).toHaveLength(3);
+  });
+
+  it('calls the held Ort nothing while the Ortsverzeichnis is missing', () => {
+    expect(toRhythmVenueOptions(null, { venueId: 9, name: 'Lager' }).at(-1)).toEqual({
+      value: '9',
+      label: 'Lager',
+    });
+  });
+});
+
+describe('toHeldVenue', () => {
+  it.each([
+    [null, null],
+    [slot(1, null, null), null],
+  ])('reads %o as nothing held', (held, expected) => {
+    expect(toHeldVenue(held)).toBe(expected);
+  });
+
+  it('pairs the id with the name the Trainingszeit carries', () => {
+    expect(toHeldVenue(slot(1, 9, 'Lager'))).toEqual({ venueId: 9, name: 'Lager' });
+  });
+});
+
+describe('toUnavailableVenueIds', () => {
+  it('names the Orte no longer in the Verzeichnis', () => {
+    const slots = [slot(1, 9, 'Lager'), slot(2, 1, 'Sporthalle'), slot(3, null, null)];
+
+    expect([...toUnavailableVenueIds(slots, [{ venueId: 1, name: 'Sporthalle' }])]).toEqual([9]);
+  });
+
+  it('accuses nothing while the Ortsverzeichnis is missing', () => {
+    expect(toUnavailableVenueIds([slot(1, 9, 'Lager')], null).size).toBe(0);
+  });
+});
+
+describe('toSlotVenueLine', () => {
+  it.each([
+    [null, false, 'Ohne Ort'],
+    ['Sporthalle', false, 'Sporthalle'],
+    ['Lager', true, 'Lager — archiviert'],
+  ])('writes %s as %s', (venueName, isArchived, expected) => {
+    expect(toSlotVenueLine(venueName, isArchived)).toBe(expected);
   });
 });

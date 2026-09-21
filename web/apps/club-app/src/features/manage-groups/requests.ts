@@ -1,3 +1,4 @@
+import { toGroupKindId } from '@/features/group-kinds';
 import { apiFetch } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
 import type {
@@ -30,7 +31,12 @@ export const requestManagedGroup = (
 export const requestGroupCreation = (form: GroupForm, accessToken: string): Promise<CreatedGroup> =>
   apiFetch('/api/manage/groups', {
     method: 'POST',
-    body: { name: form.name, description: form.description, isRecruiting: form.isRecruiting },
+    body: {
+      name: form.name,
+      description: form.description,
+      isRecruiting: form.isRecruiting,
+      groupKindId: toGroupKindId(form.groupKindId),
+    },
     schema: CreatedGroupSchema,
     accessToken,
   });
@@ -42,7 +48,12 @@ export const requestGroupUpdate = (
 ): Promise<void> =>
   apiFetch(`/api/manage/groups/${groupId}`, {
     method: 'PUT',
-    body: { name: form.name, description: form.description, isRecruiting: form.isRecruiting },
+    body: {
+      name: form.name,
+      description: form.description,
+      isRecruiting: form.isRecruiting,
+      groupKindId: toGroupKindId(form.groupKindId),
+    },
     schema: NoContentSchema,
     accessToken,
   });

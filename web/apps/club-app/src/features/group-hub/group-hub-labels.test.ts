@@ -14,6 +14,7 @@ import {
   toGroupInfoPayload,
   toHubId,
   toHubMetaFacts,
+  toHubOrigin,
   toJoinConsequence,
   toJoinQuickChoices,
   toJubileeSeal,
@@ -202,6 +203,16 @@ describe('toGroupInfoPayload', () => {
       foundedYear: 1974,
       tone: 'teal',
     });
+  });
+});
+
+describe('toHubOrigin', () => {
+  it('sends an affiliated viewer back to the Gruppenverzeichnis', () => {
+    expect(toHubOrigin(true).to).toBe('/groups');
+  });
+
+  it('sends a viewer without a Verbindung somewhere she may go', () => {
+    expect(toHubOrigin(false).to).toBe('/profile');
   });
 });
 

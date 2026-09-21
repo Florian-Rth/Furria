@@ -1,7 +1,13 @@
-import type { KkConfirmFact, KkDateQuickChoice, KkGroupStageJubilee } from '@furria/ui';
+import type {
+  KkConfirmFact,
+  KkDateQuickChoice,
+  KkGroupStageJubilee,
+  KkScreenOrigin,
+} from '@furria/ui';
 import type { GroupDetailAdmin, GroupDetailMember } from '@/features/group-detail';
 import { toGroupKindId } from '@/features/group-kinds';
 import { toFoundedLine, toJubilee } from '@/features/groups';
+import { GROUPS_ORIGIN, PROFILE_ORIGIN } from '@/features/session';
 import { SESSION_OPENING_DAY, SESSION_OPENING_MONTH, sessionAt } from '@/lib/club';
 import { isFutureDay, toIsoDay } from '@/lib/day';
 import { toGroupAdminsLabel, toGroupMembersLabel } from '@/lib/group-sections';
@@ -24,6 +30,9 @@ export const toHubId = (raw: string): number | null =>
 
 export const toHubTitle = (hub: GroupHub | undefined): string =>
   hub === undefined ? HUB_TITLE_FALLBACK : hub.name;
+
+export const toHubOrigin = (viewerIsAffiliated: boolean): KkScreenOrigin =>
+  viewerIsAffiliated ? GROUPS_ORIGIN : PROFILE_ORIGIN;
 
 export const toStandingLine = (hub: GroupHub): string => {
   if (hub.viewerSince !== null) {

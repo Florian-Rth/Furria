@@ -2,20 +2,31 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
+import { toGroupKindValue } from '@/features/group-kinds';
 import { toFormFailures } from '@/lib/api/api-failures';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useCreateGroupMutation, useUpdateGroupMutation } from '../api';
 import type { GroupForm, ManagedGroupSummary } from '../schemas';
 import { GroupFormSchema } from '../schemas';
 
-const FIELD_NAMES = ['name', 'description', 'isRecruiting'] as const;
+const FIELD_NAMES = ['name', 'description', 'isRecruiting', 'groupKindId'] as const;
 
-const EMPTY_VALUES: GroupForm = { name: '', description: '', isRecruiting: false };
+const EMPTY_VALUES: GroupForm = {
+  name: '',
+  description: '',
+  isRecruiting: false,
+  groupKindId: '',
+};
 
 const toValues = (group: ManagedGroupSummary | null): GroupForm =>
   group === null
     ? EMPTY_VALUES
-    : { name: group.name, description: group.description, isRecruiting: group.isRecruiting };
+    : {
+        name: group.name,
+        description: group.description,
+        isRecruiting: group.isRecruiting,
+        groupKindId: toGroupKindValue(group.groupKindId),
+      };
 
 interface GroupFormInput {
   group: ManagedGroupSummary | null;
@@ -29,6 +40,8 @@ export interface GroupFormControl {
   setDescription: (value: string) => void;
   isRecruiting: boolean;
   setRecruiting: (value: boolean) => void;
+  groupKindId: string;
+  setGroupKindId: (value: string) => void;
   isEditing: boolean;
   isSaving: boolean;
   rejection: string | null;
@@ -103,12 +116,18 @@ export const useGroupForm = ({ group, open, onSaved }: GroupFormInput): GroupFor
     form.setValue('isRecruiting', value);
   };
 
+  const setGroupKindId = (value: string): void => {
+    form.setValue('groupKindId', value);
+  };
+
   return {
     form,
     description: form.watch('description'),
     setDescription,
     isRecruiting: form.watch('isRecruiting'),
     setRecruiting,
+    groupKindId: form.watch('groupKindId'),
+    setGroupKindId,
     isEditing: group !== null,
     isSaving: createMutation.isPending || updateMutation.isPending,
     rejection,

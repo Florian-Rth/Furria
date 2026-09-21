@@ -9,6 +9,7 @@ import {
   toDefaultTicked,
   toPreviewRows,
   toPreviewSummary,
+  toTickedAll,
   toTickedCount,
   toTickedInstants,
   toToggledTicks,
@@ -73,7 +74,7 @@ export const useTrainingGenerator = (groupId: number): TrainingGeneratorControl 
   };
 
   const tickAll = (): void => {
-    setTicked(new Set(entries.map((entry) => entry.key)));
+    setTicked(toTickedAll(entries));
   };
 
   const tickNone = (): void => {

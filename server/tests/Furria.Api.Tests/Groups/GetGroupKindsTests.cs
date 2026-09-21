@@ -129,6 +129,31 @@ public sealed class GetGroupKindsTests
     }
 
     [Fact]
+    public async Task Should_ListTheGruppenarten_When_TheCallerOnlyAdministersEineGruppe()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddAccount("trixi"))
+                    .Groups(groups =>
+                        groups
+                            .AddGroupKind("garde", "Garde", 1)
+                            .AddGroup("kindergarde", "Kindergarde")
+                            .AddGroupAdmin("trixi-leitet", "kindergarde", "trixi", "Trainerin")
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("trixi", ct);
+        var (response, result) = await client.GETAsync<GetGroupKinds, GetGroupKindsResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var garde = Assert.Single(result.Kinds);
+        Assert.Equal("Garde", garde.Name);
+    }
+
+    [Fact]
     public async Task Should_ReturnForbidden_When_TheCallerIsNotAffiliated()
     {
         var ct = TestContext.Current.CancellationToken;

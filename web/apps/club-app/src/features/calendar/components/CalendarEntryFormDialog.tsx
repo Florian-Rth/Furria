@@ -14,8 +14,8 @@ import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { useId } from 'react';
-import type { CalendarOwnerOption, CalendarParticipantGroup } from '../calendar-authoring';
-import { toParticipatingGroupOptions } from '../calendar-authoring';
+import type { CalendarOwnerOption, CalendarParticipantPool } from '../calendar-authoring';
+import { toParticipantsEmptyLabel, toParticipatingGroupOptions } from '../calendar-authoring';
 import {
   CALENDAR_KIND_OPTIONS,
   CALENDAR_VISIBILITY_OPTIONS,
@@ -24,7 +24,7 @@ import {
   toVenueOptions,
 } from '../calendar-labels';
 import { useCalendarEntryForm } from '../hooks/use-calendar-entry-form';
-import type { CalendarEntry, RunningVenue } from '../schemas';
+import type { CalendarEntry, ParticipatingGroup, RunningVenue } from '../schemas';
 import { CALENDAR_DESCRIPTION_MAX_LENGTH } from '../schemas';
 
 const CREATE_TITLE = 'Termin eintragen';
@@ -46,7 +46,6 @@ const KIND_LABEL = 'Art';
 const PARTICIPANTS_LABEL = 'Mitwirkende Gruppen';
 const PARTICIPANTS_HINT =
   'Welche Gruppen hier gebraucht werden. Der Termin taucht in ihrem Gruppen-Hub auf — ändern darf ihn weiterhin nur der Eigentümer.';
-const PARTICIPANTS_EMPTY = 'Es gibt keine weitere Gruppe, die mitwirken könnte.';
 const VENUE_LABEL = 'Ort';
 const VENUE_HINT = 'Aus dem Ortsverzeichnis. Ohne Ort findet niemand eine Doppelbelegung.';
 const START_DAY_LABEL = 'Tag';
@@ -66,12 +65,14 @@ const GRID_SPACING = 2;
 const DAY_SIZE = { xs: 12, sm: 7 };
 const TIME_SIZE = { xs: 12, sm: 5 };
 
+const NO_PARTICIPANTS: readonly ParticipatingGroup[] = [];
+
 const toCountLabel = (used: number, max: number): string => `${used} von ${max} Zeichen`;
 
 interface CalendarEntryFormDialogProps {
   entry: CalendarEntry | null;
   ownerOptions: readonly CalendarOwnerOption[];
-  clubGroups: readonly CalendarParticipantGroup[];
+  clubGroups: CalendarParticipantPool;
   venues: readonly RunningVenue[];
   open: boolean;
   onClose: () => void;
@@ -101,7 +102,13 @@ export const CalendarEntryFormDialog: FC<CalendarEntryFormDialogProps> = ({
   const kicker = entry === null ? CREATE_KICKER : entry.title;
   const confirmLabel = control.isEditing ? EDIT_CONFIRM : CREATE_CONFIRM;
   const timeOptions = toTimeOptions();
-  const participantOptions = toParticipatingGroupOptions(clubGroups, control.values.ownerId);
+  const heldParticipants = entry?.participatingGroups ?? NO_PARTICIPANTS;
+  const participantOptions = toParticipatingGroupOptions(
+    clubGroups,
+    heldParticipants,
+    control.values.ownerId,
+  );
+  const participantsEmptyLabel = toParticipantsEmptyLabel(clubGroups);
   const participantsErrorText = errors.participatingGroupIds?.message;
 
   const intro = control.isEditing ? null : <KkNote>{CREATE_NOTE}</KkNote>;
@@ -148,7 +155,7 @@ export const CalendarEntryFormDialog: FC<CalendarEntryFormDialogProps> = ({
             values={control.values.participatingGroupIds}
             options={participantOptions}
             onToggle={control.toggleParticipatingGroup}
-            emptyLabel={PARTICIPANTS_EMPTY}
+            emptyLabel={participantsEmptyLabel}
             hint={PARTICIPANTS_HINT}
             error={participantsErrorText !== undefined}
             helperText={participantsErrorText}

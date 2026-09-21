@@ -8,12 +8,29 @@ export const GROUP_KIND_FIELD_LABEL = 'Gruppenart';
 export const GROUP_KIND_FIELD_HINT =
   'Die Art ordnet die Gruppe ein — Garde, Elferrat, Spielmannszug. Die Gruppenverwaltung pflegt die Liste.';
 
-export const toGroupKindOptions = (kinds: readonly RunningGroupKind[]): KkSelectOption[] => {
-  const offered = kinds
-    .map((kind) => ({ value: String(kind.groupKindId), label: kind.name }))
-    .sort((left, right) => left.label.localeCompare(right.label, 'de'));
+const ARCHIVED_SUFFIX = ' — archiviert';
 
-  return [{ value: NO_GROUP_KIND_VALUE, label: NO_GROUP_KIND_LABEL }, ...offered];
+export const toHeldGroupKind = (
+  groupKindId: number | null,
+  groupKindName: string | null,
+): RunningGroupKind | null =>
+  groupKindId === null || groupKindName === null ? null : { groupKindId, name: groupKindName };
+
+export const toGroupKindOptions = (
+  kinds: readonly RunningGroupKind[],
+  held: RunningGroupKind | null,
+): KkSelectOption[] => {
+  const offered = kinds.map((kind) => ({ value: String(kind.groupKindId), label: kind.name }));
+
+  if (held === null) {
+    return [{ value: NO_GROUP_KIND_VALUE, label: NO_GROUP_KIND_LABEL }, ...offered];
+  }
+
+  const heldValue = String(held.groupKindId);
+  const isOffered = offered.some((option) => option.value === heldValue);
+  const kept = isOffered ? [] : [{ value: heldValue, label: `${held.name}${ARCHIVED_SUFFIX}` }];
+
+  return [{ value: NO_GROUP_KIND_VALUE, label: NO_GROUP_KIND_LABEL }, ...offered, ...kept];
 };
 
 export const toGroupKindId = (value: string): number | null =>

@@ -3,6 +3,7 @@ import {
   KkButton,
   KkModalFrame,
   KkNote,
+  KkSelectField,
   KkSwitchRow,
   KkTextArea,
   KkTextField,
@@ -10,6 +11,13 @@ import {
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { useId } from 'react';
+import {
+  GROUP_KIND_FIELD_HINT,
+  GROUP_KIND_FIELD_LABEL,
+  toGroupKindOptions,
+  toHeldGroupKind,
+  useGroupKindsQuery,
+} from '@/features/group-kinds';
 import { useGroupForm } from '../hooks/use-group-form';
 import type { ManagedGroupSummary } from '../schemas';
 import { GROUP_DESCRIPTION_MAX_LENGTH } from '../schemas';
@@ -44,6 +52,9 @@ interface GroupFormDialogProps {
 export const GroupFormDialog: FC<GroupFormDialogProps> = ({ group, open, onClose, onSaved }) => {
   const titleId = useId();
   const control = useGroupForm({ group, open, onSaved });
+  const kinds = useGroupKindsQuery();
+  const heldKind = toHeldGroupKind(group?.groupKindId ?? null, group?.groupKindName ?? null);
+  const kindOptions = toGroupKindOptions(kinds.data?.kinds ?? [], heldKind);
   const nameField = control.form.register('name');
   const errors = control.form.formState.errors;
 
@@ -87,6 +98,15 @@ export const GroupFormDialog: FC<GroupFormDialogProps> = ({ group, open, onClose
             hint={DESCRIPTION_HINT}
             error={descriptionErrorText !== undefined}
             helperText={descriptionErrorText}
+          />
+          <KkSelectField
+            name="groupKindId"
+            label={GROUP_KIND_FIELD_LABEL}
+            value={control.groupKindId}
+            options={kindOptions}
+            onChange={control.setGroupKindId}
+            presentation="select"
+            hint={GROUP_KIND_FIELD_HINT}
           />
           <KkSwitchRow
             label={OPENNESS_LABEL}

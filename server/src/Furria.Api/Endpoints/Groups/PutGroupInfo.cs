@@ -80,6 +80,9 @@ public sealed record PutGroupInfoRequest
 
 public sealed class PutGroupInfoValidator : Validator<PutGroupInfoRequest>
 {
+    private const string FoundedYearOutOfRangeMessage =
+        "Das Gründungsjahr liegt zwischen 1800 und 2100.";
+
     public PutGroupInfoValidator()
     {
         RuleFor(request => request.GroupId).GreaterThan(0);
@@ -91,6 +94,7 @@ public sealed class PutGroupInfoValidator : Validator<PutGroupInfoRequest>
             .When(request => request.GroupKindId is not null);
         RuleFor(request => request.FoundedYear)
             .InclusiveBetween(GroupLimits.EarliestFoundedYear, GroupLimits.LatestFoundedYear)
+            .WithMessage(FoundedYearOutOfRangeMessage)
             .When(request => request.FoundedYear is not null);
         RuleFor(request => request.Tone).IsInEnum().When(request => request.Tone is not null);
     }

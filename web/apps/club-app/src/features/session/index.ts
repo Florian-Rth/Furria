@@ -8,6 +8,7 @@ export {
   CLUB_PATH,
   CLUB_SECTION,
   CLUB_SECTIONS,
+  GROUPS_ORIGIN,
   GROUPS_PATH,
   LATER_SECTIONS,
   MANAGE_KEYS,
@@ -20,6 +21,7 @@ export {
   MORE_SECTION,
   OVERVIEW_PATH,
   OVERVIEW_SECTION,
+  PROFILE_ORIGIN,
   PROFILE_PATH,
   toPermittedSections,
 } from './app-sections';

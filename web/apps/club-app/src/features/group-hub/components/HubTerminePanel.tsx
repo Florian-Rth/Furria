@@ -61,7 +61,12 @@ export const HubTerminePanel: FC<HubTerminePanelProps> = ({ groupId, tone }) => 
   }
 
   const rows = termine.entries.map((entry) => (
-    <HubTermineRow key={entry.calendarEntryId} groupId={groupId} entry={entry} />
+    <HubTermineRow
+      key={entry.calendarEntryId}
+      groupId={groupId}
+      entry={entry}
+      canAnswer={termine.canAnswer}
+    />
   ));
   const isEmpty = rows.length === 0;
   const meta = <KkMeta>{toTermineMeta(rows.length)}</KkMeta>;

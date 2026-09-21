@@ -4,7 +4,6 @@ using Furria.Api.Authorization;
 using Furria.Api.Results;
 using Furria.Application.Club;
 using Furria.Application.Groups;
-using Furria.Core.Groups;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Groups;
 
@@ -118,7 +117,7 @@ public sealed class PostTrainingsValidator : Validator<PostTrainingsRequest>
             .MaximumLength(GroupLimits.MaxTrainingTitleLength);
         RuleFor(request => request.Instants).NotEmpty().WithMessage(NothingTickedMessage);
         RuleFor(request => request.Instants)
-            .Must(instants => instants.Count <= TrainingGenerator.MaxHorizonDays)
+            .Must(instants => instants.Count <= GroupLimits.MaxTrainingInstants)
             .WithMessage(TooManyMessage)
             .When(request => request.Instants is not null);
         RuleForEach(request => request.Instants).SetValidator(new TrainingInstantDataValidator());

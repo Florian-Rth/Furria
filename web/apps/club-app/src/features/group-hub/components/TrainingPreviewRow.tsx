@@ -5,6 +5,7 @@ import type { TrainingPreviewEntry } from '../training-preview';
 import { toCollisionLine } from '../training-preview';
 
 const ALREADY_LINE = 'Steht schon im Kalender.';
+const ARCHIVED_VENUE_LINE = 'Der Ort ist archiviert — daraus entsteht kein Termin.';
 const NO_VENUE_LINE = 'Ohne Ort';
 
 interface TrainingPreviewRowProps {
@@ -15,6 +16,9 @@ interface TrainingPreviewRowProps {
 const toMetaLine = (entry: TrainingPreviewEntry): string => {
   if (entry.row.state === 'alreadyExists') {
     return ALREADY_LINE;
+  }
+  if (entry.row.state === 'venueArchived') {
+    return ARCHIVED_VENUE_LINE;
   }
 
   return toCollisionLine(entry.row) ?? entry.row.venueName ?? NO_VENUE_LINE;
@@ -40,6 +44,7 @@ export const TrainingPreviewRow: FC<TrainingPreviewRowProps> = ({ entry, onToggl
       chip={chip}
       checked={entry.checked}
       dimmed={entry.dimmed}
+      disabled={entry.blocked}
       onToggle={toggle}
     />
   );

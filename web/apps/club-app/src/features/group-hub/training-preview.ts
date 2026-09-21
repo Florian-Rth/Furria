@@ -1,15 +1,15 @@
 import type { StateChip } from '@/lib/state-chips';
-import type { TrainingPreviewRow, TrainingPreviewState, TrainingSlot } from './schemas';
+import type { TrainingPreviewRow, TrainingPreviewState } from './schemas';
 
 const KEY_SEPARATOR = '@';
 const COLLISION_SEPARATOR = ', ';
 const NO_COLLISION_HOLDER = 'ein anderer Eintrag';
-const CLUB_HOLDER = 'Verein';
 
 const STATE_CHIPS: Record<TrainingPreviewState, StateChip> = {
   creatable: { label: 'neu', tone: 'green', dot: true },
   venueTaken: { label: 'Ort belegt', tone: 'gold', dot: true },
   alreadyExists: { label: 'steht schon', tone: 'neutral', dot: false },
+  venueArchived: { label: 'Ort archiviert', tone: 'gold', dot: false },
 };
 
 export interface TrainingPreviewEntry {
@@ -18,7 +18,11 @@ export interface TrainingPreviewEntry {
   readonly checked: boolean;
   readonly chip: StateChip;
   readonly dimmed: boolean;
+  readonly blocked: boolean;
 }
+
+export const isTickable = (state: TrainingPreviewState): boolean =>
+  state === 'creatable' || state === 'venueTaken';
 
 export const toPreviewRowKey = (row: TrainingPreviewRow): string =>
   `${row.groupTrainingSlotId}${KEY_SEPARATOR}${row.startsAt}`;
@@ -26,7 +30,7 @@ export const toPreviewRowKey = (row: TrainingPreviewRow): string =>
 export const toPreviewStateChip = (state: TrainingPreviewState): StateChip => STATE_CHIPS[state];
 
 export const toDefaultTicked = (rows: readonly TrainingPreviewRow[]): ReadonlySet<string> =>
-  new Set(rows.filter((row) => row.state !== 'alreadyExists').map((row) => toPreviewRowKey(row)));
+  new Set(rows.filter((row) => isTickable(row.state)).map((row) => toPreviewRowKey(row)));
 
 export const toPreviewRows = (
   rows: readonly TrainingPreviewRow[],
@@ -35,12 +39,15 @@ export const toPreviewRows = (
   rows.map((row) => {
     const key = toPreviewRowKey(row);
 
+    const blocked = !isTickable(row.state);
+
     return {
       key,
       row,
-      checked: ticked.has(key),
+      checked: ticked.has(key) && !blocked,
       chip: toPreviewStateChip(row.state),
       dimmed: row.state === 'alreadyExists',
+      blocked,
     };
   });
 
@@ -73,6 +80,9 @@ export const toTickedInstants = (
       startsAt: entry.row.startsAt,
     }));
 
+export const toTickedAll = (entries: readonly TrainingPreviewEntry[]): ReadonlySet<string> =>
+  new Set(entries.filter((entry) => !entry.blocked).map((entry) => entry.key));
+
 export const toToggledTicks = (ticked: ReadonlySet<string>, key: string): ReadonlySet<string> => {
   const next = new Set(ticked);
 
@@ -94,8 +104,3 @@ export const toCollisionLine = (row: TrainingPreviewRow): string | null => {
 
   return `${row.venueName ?? NO_COLLISION_HOLDER} ist belegt: ${holders.join(COLLISION_SEPARATOR)}`;
 };
-
-export const toCollisionOwner = (ownerGroupName: string | null): string =>
-  ownerGroupName ?? CLUB_HOLDER;
-
-export const toSlotKey = (slot: TrainingSlot): string => String(slot.groupTrainingSlotId);

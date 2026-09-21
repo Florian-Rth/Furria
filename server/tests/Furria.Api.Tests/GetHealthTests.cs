@@ -25,6 +25,6 @@ public sealed class GetHealthTests
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("ok", result.Status);
-        Assert.Equal("0.1.0", result.Version);
+        Assert.Equal("0.2.0", result.Version);
     }
 }

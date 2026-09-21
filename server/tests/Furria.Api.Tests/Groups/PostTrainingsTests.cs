@@ -4,6 +4,7 @@ using FastEndpoints;
 using Furria.Api.Endpoints.Groups;
 using Furria.Application.Authorization;
 using Furria.Core.Club;
+using Furria.Core.Groups;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -20,9 +21,20 @@ public sealed class PostTrainingsTests
     private const string TrainingTitle = "Training";
     private const string Abendprobe = "Abendprobe der Prinzengarde";
     private const string Sporthalle = "Sporthalle";
+    private const string AltesLager = "Altes Lager";
 
     private static readonly DateOnly ArchivedIn2026 = new(2026, 6, 30);
     private static readonly TimeOnly HalfPastSeven = new(19, 30);
+    private static readonly TimeOnly HalfPastFive = new(17, 30);
+    private static readonly DateTimeOffset JustAfterTheSessionClosed = new(
+        2027,
+        2,
+        12,
+        12,
+        0,
+        0,
+        TimeSpan.Zero
+    );
 
     private readonly ApiTestFixture _fixture;
 
@@ -283,6 +295,87 @@ public sealed class PostTrainingsTests
         await ctx.Expected.TrainingsOf(tanzgarde).ToBeEmpty().AssertAsync(ct);
     }
 
+    [Fact]
+    public async Task Should_WriteTheLaufendenAbende_When_DieZeitMitArchiviertemOrtNichtAngehaktIst()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildAsync(
+            club =>
+            {
+                Rhythm(club);
+                club.AddVenue("altes-lager", AltesLager, archivedOn: ArchivedIn2026)
+                    .AddTrainingSlot(
+                        "donnerstags",
+                        "tanzgarde",
+                        DayOfWeek.Thursday,
+                        HalfPastSeven,
+                        TrainingMinutes,
+                        "altes-lager"
+                    );
+            },
+            ct
+        );
+        var tanzgarde = ctx.Groups.Groups.IdOf("tanzgarde");
+
+        var client = await ctx.Identity.ClientForAsync("anna", ct);
+        var (response, result) = await client.POSTAsync<
+            PostTrainings,
+            PostTrainingsRequest,
+            PostTrainingsResponse
+        >(OneEvening(tanzgarde, ctx.Club.TrainingSlots.IdOf("dienstags")));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(1, result.CreatedCount);
+        await ctx.Expected.TrainingsOf(tanzgarde).ToHaveCount(1).AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_WriteTheWholeSession_When_DieGruppeJedenTagUndDienstagsZweimalProbt()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildAsync(EveryDay, ct);
+        var tanzgarde = ctx.Groups.Groups.IdOf("tanzgarde");
+
+        await _fixture.AtInstantAsync(
+            JustAfterTheSessionClosed,
+            async () =>
+            {
+                var client = await ctx.Identity.ClientForAsync("anna", ct);
+                var (previewResponse, preview) = await client.POSTAsync<
+                    PostTrainingPreview,
+                    PostTrainingPreviewRequest,
+                    PostTrainingPreviewResponse
+                >(new() { GroupId = tanzgarde, EndsOn = null });
+
+                Assert.Equal(HttpStatusCode.OK, previewResponse.StatusCode);
+                Assert.True(preview.Rows.Count > TrainingGenerator.MaxHorizonDays);
+
+                var (response, result) = await client.POSTAsync<
+                    PostTrainings,
+                    PostTrainingsRequest,
+                    PostTrainingsResponse
+                >(
+                    new()
+                    {
+                        GroupId = tanzgarde,
+                        Title = TrainingTitle,
+                        Instants =
+                        [
+                            .. preview.Rows.Select(row => new TrainingInstantDataDto
+                            {
+                                GroupTrainingSlotId = row.GroupTrainingSlotId,
+                                StartsAt = row.StartsAt,
+                            }),
+                        ],
+                    }
+                );
+
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.Equal(preview.Rows.Count, result.CreatedCount);
+            }
+        );
+    }
+
     private PostTrainingsRequest OneEvening(int groupId, int groupTrainingSlotId) =>
         new()
         {
@@ -319,6 +412,28 @@ public sealed class PostTrainingsTests
         groups
             .AddGroup("tanzgarde", "Tanzgarde")
             .AddGroupAdmin("anna-tanzgarde", "tanzgarde", "anna");
+
+    private static void EveryDay(ClubSeedBuilder club)
+    {
+        foreach (var weekday in Enum.GetValues<DayOfWeek>())
+        {
+            club.AddTrainingSlot(
+                $"slot-{weekday}",
+                "tanzgarde",
+                weekday,
+                HalfPastSeven,
+                TrainingMinutes
+            );
+        }
+
+        club.AddTrainingSlot(
+            "dienstags-frueh",
+            "tanzgarde",
+            DayOfWeek.Tuesday,
+            HalfPastFive,
+            TrainingMinutes
+        );
+    }
 
     private static void Rhythm(ClubSeedBuilder club) =>
         club.AddVenue("sporthalle", Sporthalle)

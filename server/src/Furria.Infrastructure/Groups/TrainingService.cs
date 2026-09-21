@@ -65,6 +65,7 @@ public sealed class TrainingService
         var slots = await SlotsOfAsync(query.GroupId, ct);
         var candidates = TrainingGenerator.Expand(slots, today, endsOn);
         var venueNames = VenueNamesOf(slots);
+        var archivedVenueIds = ArchivedVenueIdsOf(slots);
         var taken = await TakenAsync(query.GroupId, today, endsOn, ct);
         var collisions = await CollisionsOfAsync(candidates, query.ViewerPersonId, ct);
 
@@ -78,7 +79,7 @@ public sealed class TrainingService
                     .. candidates.Select(candidate =>
                         ToRow(
                             candidate,
-                            venueNames,
+                            new VenueFacts(venueNames, archivedVenueIds),
                             taken,
                             FoundFor(candidate, query.ViewerPersonId, collisions)
                         )
@@ -247,6 +248,13 @@ public sealed class TrainingService
         ClubSession.ClosingOf(ClubSession.RelevantYearOf(today));
 
     [Pure]
+    private static IReadOnlySet<int> ArchivedVenueIdsOf(IReadOnlyList<GroupTrainingSlot> slots) =>
+        slots
+            .Where(slot => slot.Venue is { ArchivedOn: not null })
+            .Select(slot => slot.VenueId ?? 0)
+            .ToHashSet();
+
+    [Pure]
     private static IReadOnlyDictionary<int, string> VenueNamesOf(
         IReadOnlyList<GroupTrainingSlot> slots
     ) =>
@@ -296,7 +304,7 @@ public sealed class TrainingService
     [Pure]
     private static TrainingPreviewRow ToRow(
         TrainingCandidate candidate,
-        IReadOnlyDictionary<int, string> venueNames,
+        VenueFacts venues,
         IReadOnlySet<DateTimeOffset> taken,
         IReadOnlyList<CalendarEntrySummary> collisions
     ) =>
@@ -306,8 +314,8 @@ public sealed class TrainingService
             StartsAt = candidate.StartsAt,
             EndsAt = candidate.EndsAt,
             VenueId = candidate.VenueId,
-            VenueName = NameOf(candidate.VenueId, venueNames),
-            State = StateOf(candidate, taken, collisions),
+            VenueName = NameOf(candidate.VenueId, venues.Names),
+            State = StateOf(candidate, venues.ArchivedIds, taken, collisions),
             VenueCollisions = collisions,
         };
 
@@ -318,12 +326,16 @@ public sealed class TrainingService
     [Pure]
     private static TrainingPreviewState StateOf(
         TrainingCandidate candidate,
+        IReadOnlySet<int> archivedVenueIds,
         IReadOnlySet<DateTimeOffset> taken,
         IReadOnlyList<CalendarEntrySummary> collisions
     )
     {
         if (taken.Contains(candidate.StartsAt))
             return TrainingPreviewState.AlreadyExists;
+
+        if (candidate.VenueId is { } venueId && archivedVenueIds.Contains(venueId))
+            return TrainingPreviewState.VenueArchived;
 
         return collisions.Count == 0
             ? TrainingPreviewState.Creatable
@@ -344,4 +356,9 @@ public sealed class TrainingService
         (instant.GroupTrainingSlotId, instant.StartsAt);
 
     private sealed record GroupStateRow(int GroupId, DateOnly? ArchivedOn);
+
+    private sealed record VenueFacts(
+        IReadOnlyDictionary<int, string> Names,
+        IReadOnlySet<int> ArchivedIds
+    );
 }

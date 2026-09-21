@@ -4,21 +4,50 @@ import {
   toGroupKindId,
   toGroupKindOptions,
   toGroupKindValue,
+  toHeldGroupKind,
 } from './group-kinds-labels';
 
-describe('toGroupKindOptions', () => {
-  it('leads with the empty choice and sorts the rest as German', () => {
-    const options = toGroupKindOptions([
-      { groupKindId: 3, name: 'Zugabteilung' },
-      { groupKindId: 1, name: 'Ältestenrat' },
-      { groupKindId: 2, name: 'Garde' },
-    ]);
+const KINDS = [
+  { groupKindId: 3, name: 'Zugabteilung' },
+  { groupKindId: 1, name: 'Ältestenrat' },
+  { groupKindId: 2, name: 'Garde' },
+];
 
-    expect(options.map((option) => option.value)).toEqual(['', '1', '2', '3']);
+describe('toGroupKindOptions', () => {
+  it('leads with the empty choice and keeps the order the Gruppenverwaltung set', () => {
+    const options = toGroupKindOptions(KINDS, null);
+
+    expect(options.map((option) => option.value)).toEqual(['', '3', '1', '2']);
   });
 
   it('offers the empty choice alone when nothing is running', () => {
-    expect(toGroupKindOptions([])).toHaveLength(1);
+    expect(toGroupKindOptions([], null)).toHaveLength(1);
+  });
+
+  it('adds no second entry when the held Gruppenart is running', () => {
+    const options = toGroupKindOptions(KINDS, { groupKindId: 2, name: 'Garde' });
+
+    expect(options.map((option) => option.value)).toEqual(['', '3', '1', '2']);
+  });
+
+  it('keeps the held Gruppenart offered when it left the running list', () => {
+    const options = toGroupKindOptions(KINDS, { groupKindId: 9, name: 'Spielmannszug' });
+
+    expect(options.at(-1)).toEqual({ value: '9', label: 'Spielmannszug — archiviert' });
+  });
+});
+
+describe('toHeldGroupKind', () => {
+  it.each([
+    [null, null],
+    [7, null],
+    [null, 'Garde'],
+  ])('reads %s / %s as nothing held', (groupKindId, groupKindName) => {
+    expect(toHeldGroupKind(groupKindId, groupKindName)).toBeNull();
+  });
+
+  it('pairs the id with the name the Gruppe carries', () => {
+    expect(toHeldGroupKind(7, 'Garde')).toEqual({ groupKindId: 7, name: 'Garde' });
   });
 });
 

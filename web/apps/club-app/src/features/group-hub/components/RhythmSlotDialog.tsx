@@ -15,6 +15,7 @@ import {
   SLOT_VENUE_LABEL,
   SLOT_WEEKDAY_LABEL,
   toDurationOptions,
+  toHeldVenue,
   toRhythmVenueOptions,
   WEEKDAY_OPTIONS,
 } from '../rhythm-labels';
@@ -43,7 +44,7 @@ export const RhythmSlotDialog: FC<RhythmSlotDialogProps> = ({
   const venues = useRunningVenuesQuery();
   const form = useRhythmSlotForm({ open, slot, onSubmit });
   const title = slot === null ? SLOT_DIALOG_ADD_TITLE : SLOT_DIALOG_EDIT_TITLE;
-  const venueOptions = toRhythmVenueOptions(venues.data?.venues ?? []);
+  const venueOptions = toRhythmVenueOptions(venues.data?.venues ?? null, toHeldVenue(slot));
   const timeOptions = toTimeOptions();
   const durationOptions = toDurationOptions();
 

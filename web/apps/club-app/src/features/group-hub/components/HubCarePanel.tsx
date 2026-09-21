@@ -12,6 +12,7 @@ import {
 } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { ChangeEvent, FC, Ref } from 'react';
+import type { RunningGroupKind } from '@/features/group-kinds';
 import {
   GROUP_KIND_FIELD_HINT,
   GROUP_KIND_FIELD_LABEL,
@@ -32,7 +33,8 @@ const DESCRIPTION_HINT = 'Ein paar Sätze über die Gruppe. Der Text steht so im
 const DESCRIPTION_ROWS = 5;
 
 const FOUNDED_LABEL = 'Gründungsjahr';
-const FOUNDED_HINT = 'Nur das Jahr. Alle fünf Jahre feiert die App das Jubiläum mit.';
+const FOUNDED_HINT =
+  'Nur das Jahr, zwischen 1800 und 2100. Alle fünf Jahre feiert die App das Jubiläum mit.';
 
 const OPENNESS_LABEL = 'Sucht Verstärkung';
 const OPENNESS_DESCRIPTION = 'Zeigt im Verzeichnis, dass ihr gerade Leute aufnehmt.';
@@ -53,15 +55,21 @@ const toCountLabel = (used: number, max: number): string => `${used} von ${max} 
 interface HubCarePanelProps {
   tone: GroupTone;
   form: GroupInfoFormControl;
+  heldKind: RunningGroupKind | null;
   takenTones: ReadonlySet<GroupTone>;
   titleRef: Ref<HTMLHeadingElement>;
 }
 
-export const HubCarePanel: FC<HubCarePanelProps> = ({ tone, form, takenTones, titleRef }) => {
+export const HubCarePanel: FC<HubCarePanelProps> = ({
+  tone,
+  form,
+  heldKind,
+  takenTones,
+  titleRef,
+}) => {
   const kinds = useGroupKindsQuery();
-  const kindOptions = toGroupKindOptions(kinds.data?.kinds ?? []);
-  const currentKind = kindOptions.find((option) => option.value === form.groupKindId);
-  const kindLine = currentKind?.label ?? NO_GROUP_KIND_LABEL;
+  const kindOptions = toGroupKindOptions(kinds.data?.kinds ?? [], heldKind);
+  const kindLine = heldKind === null ? NO_GROUP_KIND_LABEL : heldKind.name;
   const foundedLine = form.foundedYear === '' ? NO_FOUNDED_YEAR : form.foundedYear;
   const toneLine = form.tone === '' ? NO_TONE_LABEL : toToneLabel(form.tone);
   const recruitingLine = form.isRecruiting ? RECRUITING_YES : RECRUITING_NO;

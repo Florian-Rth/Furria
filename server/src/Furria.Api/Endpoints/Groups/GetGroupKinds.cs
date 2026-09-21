@@ -1,6 +1,7 @@
 using FastEndpoints;
 using Furria.Api.Authorization;
 using Furria.Application.Groups;
+using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Groups;
 
 namespace Furria.Api.Endpoints.Groups;
@@ -8,20 +9,34 @@ namespace Furria.Api.Endpoints.Groups;
 public sealed class GetGroupKinds : EndpointWithoutRequest<GetGroupKindsResponse>
 {
     private readonly GroupKindService _groupKindService;
+    private readonly PermissionAuthorizer _authorizer;
 
-    public GetGroupKinds(GroupKindService groupKindService)
+    public GetGroupKinds(GroupKindService groupKindService, PermissionAuthorizer authorizer)
     {
         _groupKindService = groupKindService;
+        _authorizer = authorizer;
     }
 
     public override void Configure()
     {
         Get("group-kinds");
-        Definition.RequireAffiliation();
     }
 
     public override async Task HandleAsync(CancellationToken ct)
     {
+        var accountId = User.AccountId();
+        if (accountId is null)
+        {
+            await Send.UnauthorizedAsync(ct);
+            return;
+        }
+
+        if (!await _authorizer.IsAffiliatedOrGroupAdminAsync(accountId.Value, ct))
+        {
+            await Send.ForbiddenAsync(ct);
+            return;
+        }
+
         var kinds = await _groupKindService.GetRunningKindsAsync(ct);
 
         await Send.OkAsync(ToResponse(kinds), cancellation: ct);

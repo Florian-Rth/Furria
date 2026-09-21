@@ -55,7 +55,7 @@ public sealed record PostGroupRequest
 
     public required bool IsRecruiting { get; init; }
 
-    public required int? GroupKindId { get; init; }
+    public int? GroupKindId { get; init; }
 }
 
 public sealed class PostGroupValidator : Validator<PostGroupRequest>

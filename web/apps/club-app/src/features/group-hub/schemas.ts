@@ -38,7 +38,12 @@ export const TrainingSlotSchema = z.object({
 });
 export type TrainingSlot = z.infer<typeof TrainingSlotSchema>;
 
-export const TRAINING_PREVIEW_STATES = ['creatable', 'venueTaken', 'alreadyExists'] as const;
+export const TRAINING_PREVIEW_STATES = [
+  'creatable',
+  'venueTaken',
+  'alreadyExists',
+  'venueArchived',
+] as const;
 
 export const TrainingPreviewStateSchema = z.enum(TRAINING_PREVIEW_STATES);
 export type TrainingPreviewState = z.infer<typeof TrainingPreviewStateSchema>;
@@ -105,9 +110,17 @@ export type AddedGroupMembership = z.infer<typeof AddedGroupMembershipSchema>;
 
 export const DESCRIPTION_MAX_LENGTH = 400;
 export const DESCRIPTION_TOO_LONG_MESSAGE = `Die Beschreibung darf höchstens ${DESCRIPTION_MAX_LENGTH} Zeichen lang sein.`;
-export const FOUNDED_YEAR_MESSAGE = 'Trag ein Jahr mit vier Ziffern ein, zum Beispiel 1974.';
+export const EARLIEST_FOUNDED_YEAR = 1800;
+export const LATEST_FOUNDED_YEAR = 2100;
+export const FOUNDED_YEAR_MESSAGE = `Trag ein Jahr zwischen ${EARLIEST_FOUNDED_YEAR} und ${LATEST_FOUNDED_YEAR} ein, zum Beispiel 1974.`;
 
-const FOUNDED_YEAR_PATTERN = /^(1[5-9]\d{2}|2[0-9]\d{2})$/;
+const FOUNDED_YEAR_PATTERN = /^\d{4}$/;
+
+const isFoundedYearInRange = (value: string): boolean => {
+  const year = Number(value);
+
+  return year >= EARLIEST_FOUNDED_YEAR && year <= LATEST_FOUNDED_YEAR;
+};
 
 export const GroupInfoFormSchema = z.object({
   description: z.string().max(DESCRIPTION_MAX_LENGTH, DESCRIPTION_TOO_LONG_MESSAGE),
@@ -117,6 +130,7 @@ export const GroupInfoFormSchema = z.object({
     .string()
     .trim()
     .regex(FOUNDED_YEAR_PATTERN, FOUNDED_YEAR_MESSAGE)
+    .refine(isFoundedYearInRange, FOUNDED_YEAR_MESSAGE)
     .or(z.literal('')),
   tone: GroupToneSchema.or(z.literal('')),
 });

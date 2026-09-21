@@ -21,7 +21,9 @@ public sealed class PostTrainingPreviewTests
     private const string Krisensitzung = "Krisensitzung der Kindergarde";
     private const string GardeTraining = "Training der Tanzgarde";
     private const string Sporthalle = "Sporthalle";
+    private const string AltesLager = "Altes Lager";
 
+    private static readonly DateOnly ArchivedIn2026 = new(2026, 6, 30);
     private static readonly TimeOnly HalfPastSeven = new(19, 30);
 
     private readonly ApiTestFixture _fixture;
@@ -273,6 +275,124 @@ public sealed class PostTrainingPreviewTests
             >(WholeSessionOf(ctx));
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_MarkEveryEvening_When_DerOrtDerTrainingszeitArchiviertWurde()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildAsync(
+            club =>
+                club.AddVenue("altes-lager", AltesLager, archivedOn: ArchivedIn2026)
+                    .AddTrainingSlot(
+                        "dienstags",
+                        "tanzgarde",
+                        DayOfWeek.Tuesday,
+                        HalfPastSeven,
+                        TrainingMinutes,
+                        "altes-lager"
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("anna", ct);
+        var (response, result) = await client.POSTAsync<
+            PostTrainingPreview,
+            PostTrainingPreviewRequest,
+            PostTrainingPreviewResponse
+        >(TwoWeeksOf(ctx));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(3, result.Rows.Count);
+        Assert.All(result.Rows, row => Assert.Equal(TrainingPreviewState.VenueArchived, row.State));
+        Assert.Equal(AltesLager, result.Rows[0].VenueName);
+    }
+
+    [Fact]
+    public async Task Should_MarkOnlyTheAffectedEvenings_When_EineZweiteTrainingszeitLaeuft()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildAsync(
+            club =>
+            {
+                Rhythm(club);
+                club.AddVenue("altes-lager", AltesLager, archivedOn: ArchivedIn2026)
+                    .AddTrainingSlot(
+                        "donnerstags",
+                        "tanzgarde",
+                        DayOfWeek.Thursday,
+                        HalfPastSeven,
+                        TrainingMinutes,
+                        "altes-lager"
+                    );
+            },
+            ct
+        );
+        var dienstags = ctx.Club.TrainingSlots.IdOf("dienstags");
+        var donnerstags = ctx.Club.TrainingSlots.IdOf("donnerstags");
+
+        var client = await ctx.Identity.ClientForAsync("anna", ct);
+        var (response, result) = await client.POSTAsync<
+            PostTrainingPreview,
+            PostTrainingPreviewRequest,
+            PostTrainingPreviewResponse
+        >(TwoWeeksOf(ctx));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.All(
+            result.Rows.Where(row => row.GroupTrainingSlotId == dienstags),
+            row => Assert.Equal(TrainingPreviewState.Creatable, row.State)
+        );
+        Assert.Contains(
+            result.Rows,
+            row =>
+                row.GroupTrainingSlotId == donnerstags
+                && row.State == TrainingPreviewState.VenueArchived
+        );
+        Assert.All(
+            result.Rows.Where(row => row.GroupTrainingSlotId == donnerstags),
+            row => Assert.Equal(TrainingPreviewState.VenueArchived, row.State)
+        );
+    }
+
+    [Fact]
+    public async Task Should_MarkTheEveningAsHeld_When_EsSchonExistiertUndDerOrtArchiviertIst()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var firstEvening = FirstTraining();
+        var ctx = await BuildAsync(
+            club =>
+                club.AddVenue("altes-lager", AltesLager, archivedOn: ArchivedIn2026)
+                    .AddTrainingSlot(
+                        "dienstags",
+                        "tanzgarde",
+                        DayOfWeek.Tuesday,
+                        HalfPastSeven,
+                        TrainingMinutes,
+                        "altes-lager"
+                    )
+                    .AddCalendarEntry(
+                        "training",
+                        GardeTraining,
+                        firstEvening,
+                        firstEvening.AddMinutes(TrainingMinutes),
+                        CalendarEntryKind.Training,
+                        CalendarEntryVisibility.Group,
+                        ownerGroupAlias: "tanzgarde"
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("anna", ct);
+        var (response, result) = await client.POSTAsync<
+            PostTrainingPreview,
+            PostTrainingPreviewRequest,
+            PostTrainingPreviewResponse
+        >(TwoWeeksOf(ctx));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(TrainingPreviewState.AlreadyExists, result.Rows[0].State);
+        Assert.Equal(TrainingPreviewState.VenueArchived, result.Rows[1].State);
     }
 
     private static PostTrainingPreviewRequest WholeSessionOf(SeededContext ctx) =>

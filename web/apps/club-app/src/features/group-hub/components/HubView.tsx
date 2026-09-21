@@ -1,13 +1,13 @@
 import { KkPanelStack, useKkSheetCommands } from '@furria/ui';
 import type { FC } from 'react';
 import { GroupHistoryPanel } from '@/features/group-detail';
+import { toHeldGroupKind } from '@/features/group-kinds';
 import { toGroupTone } from '@/features/groups';
 import { usePermissions, useReturnFocus } from '@/features/session';
-import type { GroupToneHolder } from '../group-hub-labels';
-import { toTakenTones } from '../group-hub-labels';
 import { useGroupInfoForm } from '../hooks/use-group-info-form';
 import { useHubCelebration } from '../hooks/use-hub-celebration';
 import { useHubDialogs } from '../hooks/use-hub-dialogs';
+import { useTakenTones } from '../hooks/use-taken-tones';
 import type { GroupHub } from '../schemas';
 import { AddAdminDialog } from './AddAdminDialog';
 import { AddMemberDialog } from './AddMemberDialog';
@@ -22,7 +22,6 @@ import { HubRosterPanel } from './HubRosterPanel';
 import { HubTerminePanel } from './HubTerminePanel';
 
 const HISTORY_META = 'nur für Gruppen-Admins';
-const NO_TONE_HOLDERS: readonly GroupToneHolder[] = [];
 
 interface HubViewProps {
   hub: GroupHub;
@@ -37,7 +36,8 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
   const careFocus = useReturnFocus();
   const sheet = useKkSheetCommands();
   const tone = toGroupTone(hub.groupId, hub.tone);
-  const takenTones = toTakenTones(NO_TONE_HOLDERS, hub.groupId);
+  const takenTones = useTakenTones(hub.groupId, hub.viewerIsAdmin);
+  const heldKind = toHeldGroupKind(hub.groupKindId, hub.groupKindName);
 
   const form = useGroupInfoForm({
     groupId: hub.groupId,
@@ -81,7 +81,13 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
   const termine = seesTermine ? <HubTerminePanel groupId={hub.groupId} tone={tone} /> : null;
 
   const care = hub.viewerIsAdmin ? (
-    <HubCarePanel tone={tone} form={form} takenTones={takenTones} titleRef={careFocus.targetRef} />
+    <HubCarePanel
+      tone={tone}
+      form={form}
+      heldKind={heldKind}
+      takenTones={takenTones}
+      titleRef={careFocus.targetRef}
+    />
   ) : null;
 
   const history = hub.viewerIsAdmin ? (

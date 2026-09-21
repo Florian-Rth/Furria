@@ -30,6 +30,8 @@ const group = (overrides: Partial<ManagedGroupSummary>): ManagedGroupSummary => 
   name: 'Große Garde',
   description: 'Tanzt.',
   isRecruiting: true,
+  groupKindId: null,
+  groupKindName: null,
   archivedOn: null,
   memberCount: 18,
   admins: [admin(8)],

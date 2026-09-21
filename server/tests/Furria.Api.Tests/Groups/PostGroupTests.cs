@@ -1,5 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Net.Mime;
+using System.Text;
 using FastEndpoints;
 using Furria.Api.Endpoints.Groups;
 using Furria.Application.Authorization;
@@ -13,6 +15,9 @@ public sealed class PostGroupTests
 {
     private const string ConflictField = "conflict";
     private const string Description = "Wir proben freitags im Vereinsheim.";
+    private const string GroupsRoute = "/api/manage/groups";
+    private const string BodyWithoutGruppenart =
+        "{\"name\":\"Die Biergarde\",\"description\":\"Wir proben freitags.\",\"isRecruiting\":true}";
 
     private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
 
@@ -239,6 +244,69 @@ public sealed class PostGroupTests
             );
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_RefuseTheGruppenart_When_SieArchiviertIst()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Groups(groups =>
+                    groups.AddGroupKind(
+                        "spielmannszug",
+                        "Spielmannszug",
+                        archivedOn: ArchivedIn2021
+                    )
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var (response, _) = await client.POSTAsync<PostGroup, PostGroupRequest, PostGroupResponse>(
+            new()
+            {
+                Name = "Spielmannszug",
+                Description = Description,
+                IsRecruiting = false,
+                GroupKindId = ctx.Groups.GroupKinds.IdOf("spielmannszug"),
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        var failures = await ReadFailuresAsync(response, ct);
+        Assert.Equal(
+            ["Eine archivierte Gruppenart lässt sich einer Gruppe nicht zuordnen."],
+            failures[ConflictField]
+        );
+    }
+
+    [Fact]
+    public async Task Should_CreateTheGruppe_When_TheBodyLeavesTheGruppenartOut()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(ct);
+
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var response = await client.PostAsync(
+            GroupsRoute,
+            new StringContent(
+                BodyWithoutGruppenart,
+                Encoding.UTF8,
+                MediaTypeNames.Application.Json
+            ),
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var created = await response.Content.ReadFromJsonAsync<PostGroupResponse>(ct);
+        Assert.NotNull(created);
+        await ctx
+            .Expected.Group(created.GroupId)
+            .ToHaveName("Die Biergarde")
+            .Group(created.GroupId)
+            .ToHaveGroupKind(null)
+            .AssertAsync(ct);
     }
 
     private static async Task<IDictionary<string, List<string>>> ReadFailuresAsync(

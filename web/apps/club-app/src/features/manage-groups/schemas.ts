@@ -22,6 +22,8 @@ export const ManagedGroupSummarySchema = z.object({
   name: z.string(),
   description: z.string(),
   isRecruiting: z.boolean(),
+  groupKindId: z.number().int().nullable(),
+  groupKindName: z.string().nullable(),
   archivedOn: z.iso.date().nullable(),
   memberCount: z.number().int(),
   admins: z.array(PersonRefSchema),
@@ -82,5 +84,6 @@ export const GroupFormSchema = z.object({
     .string()
     .max(GROUP_DESCRIPTION_MAX_LENGTH, `Höchstens ${GROUP_DESCRIPTION_MAX_LENGTH} Zeichen.`),
   isRecruiting: z.boolean(),
+  groupKindId: z.string(),
 });
 export type GroupForm = z.infer<typeof GroupFormSchema>;

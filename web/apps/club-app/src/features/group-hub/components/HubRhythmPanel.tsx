@@ -19,6 +19,7 @@ import {
   RHYTHM_ADD_ACTION_LABEL,
   RHYTHM_ADD_LABEL,
   RHYTHM_ADMIN_NOTE,
+  RHYTHM_ARCHIVED_VENUE_NOTE,
   RHYTHM_EMPTY_LINE,
   RHYTHM_EMPTY_TITLE,
   RHYTHM_FULL_NOTE,
@@ -69,6 +70,7 @@ export const HubRhythmPanel: FC<HubRhythmPanelProps> = ({
       key={slot.groupTrainingSlotId}
       slot={slot}
       canManage={canManage}
+      venueIsArchived={slot.venueId !== null && rhythm.unavailableVenueIds.has(slot.venueId)}
       onEdit={rhythm.openEdit}
       onRemove={rhythm.remove}
     />
@@ -90,6 +92,10 @@ export const HubRhythmPanel: FC<HubRhythmPanelProps> = ({
   );
 
   const fullNote = canManage && !rhythm.canAdd ? <KkNote>{RHYTHM_FULL_NOTE}</KkNote> : null;
+  const archivedVenueNote =
+    canManage && rhythm.unavailableVenueIds.size > 0 ? (
+      <KkNote tone="warning">{RHYTHM_ARCHIVED_VENUE_NOTE}</KkNote>
+    ) : null;
   const meta = <KkMeta>{toRhythmMeta(slots.length)}</KkMeta>;
 
   const tools = canManage ? (
@@ -105,6 +111,7 @@ export const HubRhythmPanel: FC<HubRhythmPanelProps> = ({
       </KkButton>
       <KkMeta>{RHYTHM_GENERATE_HINT}</KkMeta>
       {fullNote}
+      {archivedVenueNote}
     </Stack>
   ) : null;
 

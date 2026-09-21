@@ -8,7 +8,6 @@ export const GROUP_SECTION_TITLES = {
   rhythm: 'Trainingsrhythmus',
   history: 'Geschichte',
   events: 'Termine',
-  photos: 'Bilder',
 } as const;
 
 export const GROUP_ADMINS_NOTE =
@@ -16,19 +15,6 @@ export const GROUP_ADMINS_NOTE =
 
 export const NO_ADMINS_LINE =
   'Für diese Gruppe ist gerade niemand als Gruppen-Admin eingetragen. Ohne Admin pflegt die Gruppenverwaltung sie allein.';
-
-export const RESERVED_BADGE = 'bald';
-
-export interface ReservedSlotCopy {
-  title: string;
-  description: string;
-}
-
-export const PHOTOS_RESERVED: ReservedSlotCopy = {
-  title: 'Noch keine Bilder',
-  description:
-    'Platz für ein paar Bilder aus vergangenen Sessions. Die Bildergalerie liefert sie später automatisch — hier wird nichts hochgeladen.',
-};
 
 const SUBLINE_SEPARATOR = ' · ';
 

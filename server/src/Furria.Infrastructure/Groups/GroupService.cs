@@ -18,6 +18,10 @@ public sealed class GroupService
         "Eine archivierte Gruppe kann nicht bearbeitet werden.";
     private const string UnknownPersonMessage = "Diese Person steht nicht im Register.";
     private const string UnknownGroupKindMessage = "Diese Gruppenart gibt es nicht.";
+    private const string ArchivedGroupKindMessage =
+        "Eine archivierte Gruppenart lässt sich einer Gruppe nicht zuordnen.";
+    private const string ArchivedGroupKindOnRestoreMessage =
+        "Die Gruppenart dieser Gruppe ist archiviert. Hole zuerst die Gruppenart zurück.";
     private const string FutureFoundedYearMessage =
         "Eine Gruppe kann nicht in der Zukunft gegründet worden sein.";
     private const string UnknownVenueMessage = "Diesen Ort gibt es nicht im Verzeichnis.";
@@ -352,8 +356,8 @@ public sealed class GroupService
         if (await NameIsTakenAsync(command.Name, null, ct))
             return Result<int>.Conflict(DuplicateNameMessage);
 
-        if (!await GroupKindExistsAsync(command.GroupKindId, ct))
-            return Result<int>.NotFound(UnknownGroupKindMessage);
+        if (await GroupKindRefusalAsync(command.GroupKindId, ct) is { } kindRefusal)
+            return Result<int>.Carrying(kindRefusal);
 
         var group = new Group
         {
@@ -388,8 +392,8 @@ public sealed class GroupService
         if (await NameIsTakenAsync(command.Name, command.GroupId, ct))
             return Result.Conflict(DuplicateNameMessage);
 
-        if (!await GroupKindExistsAsync(command.GroupKindId, ct))
-            return Result.NotFound(UnknownGroupKindMessage);
+        if (await GroupKindRefusalAsync(command.GroupKindId, ct) is { } kindRefusal)
+            return kindRefusal;
 
         group.Name = command.Name;
         group.Description = command.Description;
@@ -428,6 +432,9 @@ public sealed class GroupService
         if (await NameIsTakenAsync(group.Name, groupId, ct))
             return Result.Conflict(DuplicateNameMessage);
 
+        if (await GroupKindIsArchivedAsync(group.GroupKindId, ct))
+            return Result.Conflict(ArchivedGroupKindOnRestoreMessage);
+
         group.ArchivedOn = null;
 
         return await _dbContext.SaveOrConflictAsync(ct);
@@ -446,8 +453,8 @@ public sealed class GroupService
         if (group.ArchivedOn is not null)
             return Result.Conflict(ArchivedGroupMessage);
 
-        if (!await GroupKindExistsAsync(command.GroupKindId, ct))
-            return Result.NotFound(UnknownGroupKindMessage);
+        if (await GroupKindRefusalAsync(command.GroupKindId, ct) is { } kindRefusal)
+            return kindRefusal;
 
         if (IsInTheFuture(command.FoundedYear, ClubClock.Today(_timeProvider)))
             return Result.Validation(FutureFoundedYearMessage);
@@ -659,9 +666,29 @@ public sealed class GroupService
             );
     }
 
-    private async Task<bool> GroupKindExistsAsync(int? groupKindId, CancellationToken ct) =>
-        groupKindId is not { } kindId
-        || await _dbContext.GroupKinds.AsNoTracking().AnyAsync(kind => kind.Id == kindId, ct);
+    private async Task<Result?> GroupKindRefusalAsync(int? groupKindId, CancellationToken ct)
+    {
+        if (groupKindId is not { } kindId)
+            return null;
+
+        var kind = await GroupKindStateAsync(kindId, ct);
+
+        if (kind is null)
+            return Result.NotFound(UnknownGroupKindMessage);
+
+        return kind.ArchivedOn is not null ? Result.Conflict(ArchivedGroupKindMessage) : null;
+    }
+
+    private async Task<bool> GroupKindIsArchivedAsync(int? groupKindId, CancellationToken ct) =>
+        groupKindId is { } kindId
+        && await GroupKindStateAsync(kindId, ct) is { ArchivedOn: not null };
+
+    private Task<GroupKindStateRow?> GroupKindStateAsync(int groupKindId, CancellationToken ct) =>
+        _dbContext
+            .GroupKinds.AsNoTracking()
+            .Where(kind => kind.Id == groupKindId)
+            .Select(kind => new GroupKindStateRow(kind.ArchivedOn))
+            .SingleOrDefaultAsync(ct);
 
     private async Task<Result?> VenueRefusalAsync(
         IReadOnlyList<GroupTrainingSlotInput> slots,
@@ -998,6 +1025,8 @@ public sealed class GroupService
     private sealed record GroupState(DateOnly? ArchivedOn);
 
     private sealed record VenueStateRow(int Id, DateOnly? ArchivedOn);
+
+    private sealed record GroupKindStateRow(DateOnly? ArchivedOn);
 
     private sealed record PeriodRow(DateOnly StartedOn, DateOnly? EndedOn)
     {

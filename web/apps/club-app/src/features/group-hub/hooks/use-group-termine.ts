@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { usePermissions } from '@/features/session';
+import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { sortRunningFirst } from '@/lib/calendar-days';
 import { useGroupCalendarQuery } from '../api';
 import { toHubErrorMessage } from '../group-hub-messages';
@@ -11,12 +13,15 @@ export interface GroupTermine {
   entries: readonly GroupCalendarEntry[];
   isLoading: boolean;
   errorMessage: string | null;
+  canAnswer: boolean;
   retry: () => void;
 }
 
 export const useGroupTermine = (groupId: number): GroupTermine => {
   const [span] = useState(() => toTermineWindow(new Date()));
+  const { has } = usePermissions();
   const calendar = useGroupCalendarQuery(groupId, span);
+  const canAnswer = has(PERMISSION_KEYS.clubRead);
 
   const retry = (): void => {
     void calendar.refetch();
@@ -27,6 +32,7 @@ export const useGroupTermine = (groupId: number): GroupTermine => {
       entries: NO_ENTRIES,
       isLoading: calendar.error === null,
       errorMessage: toHubErrorMessage(calendar.error),
+      canAnswer,
       retry,
     };
   }
@@ -35,6 +41,7 @@ export const useGroupTermine = (groupId: number): GroupTermine => {
     entries: sortRunningFirst(calendar.data.entries),
     isLoading: false,
     errorMessage: null,
+    canAnswer,
     retry,
   };
 };

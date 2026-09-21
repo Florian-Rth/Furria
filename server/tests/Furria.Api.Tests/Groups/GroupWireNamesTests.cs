@@ -41,6 +41,20 @@ public sealed class GroupWireNamesTests
         string wireName
     ) => Assert.Equal($"\"{wireName}\"", JsonSerializer.Serialize(weekday, ApiOptions));
 
+    [Theory]
+    [InlineData(TrainingPreviewState.Creatable, "creatable")]
+    [InlineData(TrainingPreviewState.VenueTaken, "venueTaken")]
+    [InlineData(TrainingPreviewState.AlreadyExists, "alreadyExists")]
+    [InlineData(TrainingPreviewState.VenueArchived, "venueArchived")]
+    public void Should_CarryTheCamelCaseName_When_AVorschauZeileGoesOnTheWire(
+        TrainingPreviewState state,
+        string wireName
+    ) => Assert.Equal($"\"{wireName}\"", JsonSerializer.Serialize(state, ApiOptions));
+
+    [Fact]
+    public void Should_PinEveryValue_When_TheVorschauZustaendeAreCounted() =>
+        Assert.Equal(4, Enum.GetValues<TrainingPreviewState>().Length);
+
     [Fact]
     public void Should_PinEveryValue_When_TheGruppenfarbenAreCounted() =>
         Assert.Equal(10, Enum.GetValues<GroupTone>().Length);

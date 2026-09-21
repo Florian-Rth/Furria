@@ -19,6 +19,7 @@ public sealed class PutGroupInfoTests
     private const int UnknownGroupKindId = 999_999;
     private const int FoundedIn1971 = 1971;
     private const string ValidationField = "request";
+    private const string FoundedYearField = "foundedYear";
 
     private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
 
@@ -590,9 +591,107 @@ public sealed class PutGroupInfoTests
         );
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var failures = await ReadFailuresAsync(response, ct);
+        Assert.Equal(
+            ["Das Gründungsjahr liegt zwischen 1800 und 2100."],
+            failures[FoundedYearField]
+        );
         await ctx
             .Expected.Group(ctx.Groups.Groups.IdOf("tanzgarde"))
             .ToHaveFoundedYear(null)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_When_TheGruendungsjahrLiesAboveTheColumnCeiling()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity.AddPerson("anna", "Anna", "Kaiser").AddAccount("anna")
+                    )
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("tanzgarde", "Tanzgarde", OldDescription)
+                            .AddGroupAdmin("anna-tanzgarde", "tanzgarde", "anna")
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("anna", ct);
+        var response = await client.PUTAsync<PutGroupInfo, PutGroupInfoRequest>(
+            new()
+            {
+                GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
+                Description = NewDescription,
+                IsRecruiting = true,
+                GroupKindId = null,
+                FoundedYear = 2101,
+                Tone = null,
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var failures = await ReadFailuresAsync(response, ct);
+        Assert.Equal(
+            ["Das Gründungsjahr liegt zwischen 1800 und 2100."],
+            failures[FoundedYearField]
+        );
+        await ctx
+            .Expected.Group(ctx.Groups.Groups.IdOf("tanzgarde"))
+            .ToHaveFoundedYear(null)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseTheGruppenart_When_SieArchiviertIst()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity.AddPerson("anna", "Anna", "Kaiser").AddAccount("anna")
+                    )
+                    .Groups(groups =>
+                        groups
+                            .AddGroupKind(
+                                "spielmannszug",
+                                "Spielmannszug",
+                                archivedOn: ArchivedIn2021
+                            )
+                            .AddGroup("tanzgarde", "Tanzgarde", OldDescription)
+                            .AddGroupAdmin("anna-tanzgarde", "tanzgarde", "anna")
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("anna", ct);
+        var response = await client.PUTAsync<PutGroupInfo, PutGroupInfoRequest>(
+            new()
+            {
+                GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
+                Description = NewDescription,
+                IsRecruiting = true,
+                GroupKindId = ctx.Groups.GroupKinds.IdOf("spielmannszug"),
+                FoundedYear = null,
+                Tone = null,
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        var failures = await ReadFailuresAsync(response, ct);
+        Assert.Equal(
+            ["Eine archivierte Gruppenart lässt sich einer Gruppe nicht zuordnen."],
+            failures[ConflictField]
+        );
+        await ctx
+            .Expected.Group(ctx.Groups.Groups.IdOf("tanzgarde"))
+            .ToHaveGroupKind(null)
+            .Group(ctx.Groups.Groups.IdOf("tanzgarde"))
+            .ToHaveDescription(OldDescription)
             .AssertAsync(ct);
     }
 

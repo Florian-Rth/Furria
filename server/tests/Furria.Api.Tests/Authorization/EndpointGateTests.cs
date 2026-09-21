@@ -18,6 +18,8 @@ public sealed class EndpointGateTests
         "/api/auth/me/contact-visibility",
         "/api/auth/logout",
         "/api/my-groups",
+        "/api/group-kinds",
+        "/api/venues",
         "/api/groups/{groupId}",
         "/api/groups/{groupId}/calendar",
         "/api/groups/{groupId}/info",

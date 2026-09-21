@@ -1,3 +1,5 @@
+using Furria.Core.Groups;
+
 namespace Furria.Api.Endpoints.Groups;
 
 internal static class GroupLimits
@@ -13,4 +15,5 @@ internal static class GroupLimits
     internal const int MaxTrainingDurationMinutes = 480;
     internal const int MaxTrainingSlots = 14;
     internal const int MaxTrainingTitleLength = 120;
+    internal const int MaxTrainingInstants = MaxTrainingSlots * TrainingGenerator.MaxHorizonWeeks;
 }

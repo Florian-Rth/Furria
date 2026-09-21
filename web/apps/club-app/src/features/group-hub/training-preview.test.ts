@@ -6,6 +6,7 @@ import {
   toPreviewRowKey,
   toPreviewRows,
   toPreviewSummary,
+  toTickedAll,
   toTickedInstants,
   toToggledTicks,
 } from './training-preview';
@@ -44,6 +45,7 @@ describe('toDefaultTicked', () => {
     ['creatable' as const, true],
     ['venueTaken' as const, true],
     ['alreadyExists' as const, false],
+    ['venueArchived' as const, false],
   ])('ticks %s by default: %s', (state, ticked) => {
     const only = row(1, '2027-01-05T19:30:00+01:00', state);
 
@@ -67,6 +69,26 @@ describe('toPreviewRows', () => {
     expect(entries.map((entry) => entry.checked)).toEqual([true, false]);
     expect(entries.map((entry) => entry.dimmed)).toEqual([false, true]);
     expect(entries.map((entry) => entry.chip.tone)).toEqual(['green', 'neutral']);
+  });
+});
+
+describe('toPreviewRows', () => {
+  it('blocks a row whose Ort is archived and refuses a tick it was handed', () => {
+    const archived = row(1, '2027-01-05T19:30:00+01:00', 'venueArchived');
+    const entries = toPreviewRows([archived], new Set([toPreviewRowKey(archived)]));
+
+    expect(entries.map((entry) => entry.blocked)).toEqual([true]);
+    expect(entries.map((entry) => entry.checked)).toEqual([false]);
+  });
+});
+
+describe('toTickedAll', () => {
+  it('leaves the blocked rows out', () => {
+    const creatable = row(1, '2027-01-05T19:30:00+01:00', 'creatable');
+    const archived = row(1, '2027-01-12T19:30:00+01:00', 'venueArchived');
+    const entries = toPreviewRows([creatable, archived], new Set());
+
+    expect([...toTickedAll(entries)]).toEqual([toPreviewRowKey(creatable)]);
   });
 });
 

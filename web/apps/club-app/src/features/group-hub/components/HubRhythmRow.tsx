@@ -5,21 +5,28 @@ import {
   RHYTHM_REMOVE_LABEL,
   toClockValue,
   toDurationLabel,
+  toSlotVenueLine,
   toWeekdayLabel,
 } from '../rhythm-labels';
 import type { TrainingSlot } from '../schemas';
 
-const NO_VENUE_LINE = 'Ohne Ort';
 const META_SEPARATOR = ' · ';
 
 interface HubRhythmRowProps {
   slot: TrainingSlot;
   canManage: boolean;
+  venueIsArchived: boolean;
   onEdit: (groupTrainingSlotId: number) => void;
   onRemove: (groupTrainingSlotId: number) => void;
 }
 
-export const HubRhythmRow: FC<HubRhythmRowProps> = ({ slot, canManage, onEdit, onRemove }) => {
+export const HubRhythmRow: FC<HubRhythmRowProps> = ({
+  slot,
+  canManage,
+  venueIsArchived,
+  onEdit,
+  onRemove,
+}) => {
   const edit = (): void => {
     onEdit(slot.groupTrainingSlotId);
   };
@@ -28,9 +35,12 @@ export const HubRhythmRow: FC<HubRhythmRowProps> = ({ slot, canManage, onEdit, o
     onRemove(slot.groupTrainingSlotId);
   };
 
-  const meta = [toDurationLabel(slot.durationMinutes), slot.venueName ?? NO_VENUE_LINE].join(
-    META_SEPARATOR,
-  );
+  const meta = [
+    toDurationLabel(slot.durationMinutes),
+    toSlotVenueLine(slot.venueName, venueIsArchived),
+  ].join(META_SEPARATOR);
+
+  const tone = venueIsArchived ? 'gold' : 'neutral';
 
   const actions = canManage ? (
     <>
@@ -45,6 +55,7 @@ export const HubRhythmRow: FC<HubRhythmRowProps> = ({ slot, canManage, onEdit, o
       span={toClockValue(slot.startsAt)}
       spanLabel="ab"
       meta={meta}
+      tone={tone}
       actions={actions}
     />
   );

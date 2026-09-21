@@ -121,7 +121,6 @@ export const KkTickRow: FC<KkTickRowProps> = ({
           borderColor: checked ? 'primary.main' : 'divider',
           color: checked ? (theme.vars ?? theme).palette.primary.contrastText : 'text.secondary',
           backgroundColor: checked ? (theme.vars ?? theme).palette.primary.main : 'transparent',
-          transition: kkTokens.motion.bar,
         })}
       >
         {tick}

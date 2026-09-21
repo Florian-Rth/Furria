@@ -184,6 +184,13 @@ public sealed class PermissionAuthorizer
         ).Value;
     }
 
+    public async Task<bool> IsAffiliatedOrGroupAdminAsync(int accountId, CancellationToken ct)
+    {
+        BindTo(accountId);
+        return await IsAffiliatedAsync(accountId, ct)
+            || await AdministersAnyGroupAsync(accountId, ct);
+    }
+
     private void BindTo(int accountId)
     {
         if (_boundAccountId is { } bound && bound != accountId)

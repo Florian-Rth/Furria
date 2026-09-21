@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import { useRunningVenuesQuery } from '@/features/calendar';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useSetTrainingSlotsMutation } from '../api';
-import { toSlotPayload, toSlotPayloadOf } from '../rhythm-labels';
+import { toSlotPayload, toSlotPayloadOf, toUnavailableVenueIds } from '../rhythm-labels';
 import type { TrainingSlot, TrainingSlotForm } from '../schemas';
 import { MAX_TRAINING_SLOTS } from '../schemas';
 
@@ -21,12 +22,14 @@ export interface RhythmSlotsControl {
   canAdd: boolean;
   isSaving: boolean;
   rejection: string | null;
+  unavailableVenueIds: ReadonlySet<number>;
 }
 
 export const useRhythmSlots = ({ groupId, slots }: RhythmSlotsInput): RhythmSlotsControl => {
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [editedId, setEditedId] = useState<number | null>(null);
   const mutation = useSetTrainingSlotsMutation(groupId);
+  const venues = useRunningVenuesQuery();
 
   const edited = slots.find((slot) => slot.groupTrainingSlotId === editedId) ?? null;
 
@@ -74,5 +77,6 @@ export const useRhythmSlots = ({ groupId, slots }: RhythmSlotsInput): RhythmSlot
     canAdd: slots.length < MAX_TRAINING_SLOTS,
     isSaving: mutation.isPending,
     rejection: toWriteErrorMessage(mutation.error),
+    unavailableVenueIds: toUnavailableVenueIds(slots, venues.data?.venues ?? null),
   };
 };

@@ -57,7 +57,7 @@ public sealed record PutGroupRequest
 
     public required bool IsRecruiting { get; init; }
 
-    public required int? GroupKindId { get; init; }
+    public int? GroupKindId { get; init; }
 }
 
 public sealed class PutGroupValidator : Validator<PutGroupRequest>

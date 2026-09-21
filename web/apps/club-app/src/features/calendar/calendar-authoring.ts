@@ -20,6 +20,11 @@ const MINUTES_PER_HOUR = 60;
 const DEFAULT_START_TIME = '19:00';
 const DEFAULT_END_TIME = '21:00';
 const ONE_COLLISION = 1;
+const ARCHIVED_SUFFIX = ' — archiviert';
+const PARTICIPANTS_EMPTY = 'Es gibt keine weitere Gruppe, die mitwirken könnte.';
+const PARTICIPANTS_PENDING = 'Die Gruppen werden geladen.';
+const PARTICIPANTS_UNAVAILABLE =
+  'Die Gruppen konnten nicht geladen werden. Schon eingetragene Gruppen stehen weiter zur Wahl.';
 
 const KIND_ORDER: readonly CalendarEntryKind[] = [
   'training',
@@ -89,14 +94,51 @@ export const toOwnerOptions = (
   ];
 };
 
+export type CalendarParticipantPool =
+  | { readonly state: 'loading' }
+  | { readonly state: 'failed' }
+  | { readonly state: 'ready'; readonly groups: readonly CalendarParticipantGroup[] };
+
+export const toParticipantPool = (
+  groups: readonly CalendarParticipantGroup[] | undefined,
+  failed: boolean,
+): CalendarParticipantPool => {
+  if (groups !== undefined) {
+    return { state: 'ready', groups };
+  }
+
+  return failed ? { state: 'failed' } : { state: 'loading' };
+};
+
+export const toParticipantsEmptyLabel = (pool: CalendarParticipantPool): string => {
+  if (pool.state === 'failed') {
+    return PARTICIPANTS_UNAVAILABLE;
+  }
+
+  return pool.state === 'loading' ? PARTICIPANTS_PENDING : PARTICIPANTS_EMPTY;
+};
+
 export const toParticipatingGroupOptions = (
-  groups: readonly CalendarParticipantGroup[],
+  pool: CalendarParticipantPool,
+  held: readonly CalendarParticipantGroup[],
   ownerId: string,
-): KkSelectOption[] =>
-  groups
+): KkSelectOption[] => {
+  const running = pool.state === 'ready' ? pool.groups : [];
+  const offered = running
     .filter((group) => toOwnerId(group.groupId) !== ownerId)
-    .map((group) => ({ value: toOwnerId(group.groupId), label: group.name }))
-    .sort((left, right) => left.label.localeCompare(right.label, 'de'));
+    .map((group) => ({ value: toOwnerId(group.groupId), label: group.name }));
+  const listed = new Set(offered.map((option) => option.value));
+  const kept = held
+    .filter(
+      (group) => toOwnerId(group.groupId) !== ownerId && !listed.has(toOwnerId(group.groupId)),
+    )
+    .map((group) => ({
+      value: toOwnerId(group.groupId),
+      label: pool.state === 'ready' ? `${group.name}${ARCHIVED_SUFFIX}` : group.name,
+    }));
+
+  return [...offered, ...kept].sort((left, right) => left.label.localeCompare(right.label, 'de'));
+};
 
 export const toParticipatingGroupIds = (values: readonly string[], ownerId: string): number[] => [
   ...new Set(values.filter((value) => value !== ownerId).map((value) => Number(value))),

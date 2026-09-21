@@ -27,6 +27,8 @@ export const CLUB_SECTION = 'club';
 export const MORE_SECTION = 'more';
 
 export const CLUB_ORIGIN: KkScreenOrigin = { label: 'Verein', to: CLUB_PATH };
+export const GROUPS_ORIGIN: KkScreenOrigin = { label: 'Gruppen', to: GROUPS_PATH };
+export const PROFILE_ORIGIN: KkScreenOrigin = { label: 'Profil', to: PROFILE_PATH };
 export const MORE_ORIGIN: KkScreenOrigin = { label: 'Mehr', to: MORE_PATH };
 export const MANAGE_ORIGIN: KkScreenOrigin = { label: 'Verein verwalten', to: MANAGE_PATH };
 

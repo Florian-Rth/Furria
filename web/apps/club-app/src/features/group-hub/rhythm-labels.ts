@@ -17,6 +17,8 @@ export const RHYTHM_GENERATE_HINT =
   'Aus dem Rhythmus entstehen einzelne Termine im Kalender. Du siehst jeden Tag vorher und hakst ab, was entstehen soll.';
 export const RHYTHM_SAVED_MESSAGE = 'Der Trainingsrhythmus ist gespeichert.';
 export const RHYTHM_FULL_NOTE = 'Mehr Trainingszeiten passen nicht in eine Woche.';
+export const RHYTHM_ARCHIVED_VENUE_NOTE =
+  'Eine Trainingszeit hält einen archivierten Ort. Solange er dort steht, lässt sich am Rhythmus nichts speichern — öffne die markierte Zeit und wähl einen anderen Ort.';
 
 export const SLOT_DIALOG_ADD_TITLE = 'Trainingszeit hinzufügen';
 export const SLOT_DIALOG_EDIT_TITLE = 'Trainingszeit ändern';
@@ -55,6 +57,8 @@ const MINUTES_PER_HOUR = 60;
 const DURATION_CHOICES = [45, 60, 75, 90, 105, 120, 150, 180] as const;
 const NO_VENUE_VALUE = '';
 const NO_VENUE_LABEL = 'Kein Ort';
+const NO_VENUE_LINE = 'Ohne Ort';
+const ARCHIVED_VENUE_SUFFIX = ' — archiviert';
 const ONE_TRAINING = 1;
 
 const WEEKDAY_LABELS: Record<Weekday, string> = {
@@ -103,12 +107,62 @@ export const toVenueValue = (venueId: number | null): string =>
 export const toVenueId = (value: string): number | null =>
   value === NO_VENUE_VALUE ? null : Number(value);
 
+export interface RhythmVenueRef {
+  venueId: number;
+  name: string;
+}
+
+export const toHeldVenue = (slot: TrainingSlot | null): RhythmVenueRef | null =>
+  slot === null || slot.venueId === null || slot.venueName === null
+    ? null
+    : { venueId: slot.venueId, name: slot.venueName };
+
 export const toRhythmVenueOptions = (
-  venues: readonly { venueId: number; name: string }[],
-): KkSelectOption[] => [
-  { value: NO_VENUE_VALUE, label: NO_VENUE_LABEL },
-  ...venues.map((venue) => ({ value: String(venue.venueId), label: venue.name })),
-];
+  venues: readonly RhythmVenueRef[] | null,
+  held: RhythmVenueRef | null,
+): KkSelectOption[] => {
+  const offered = (venues ?? []).map((venue) => ({
+    value: String(venue.venueId),
+    label: venue.name,
+  }));
+
+  if (held === null || offered.some((option) => option.value === String(held.venueId))) {
+    return [{ value: NO_VENUE_VALUE, label: NO_VENUE_LABEL }, ...offered];
+  }
+
+  const label = venues === null ? held.name : `${held.name}${ARCHIVED_VENUE_SUFFIX}`;
+
+  return [
+    { value: NO_VENUE_VALUE, label: NO_VENUE_LABEL },
+    ...offered,
+    { value: String(held.venueId), label },
+  ];
+};
+
+export const toUnavailableVenueIds = (
+  slots: readonly TrainingSlot[],
+  venues: readonly RhythmVenueRef[] | null,
+): ReadonlySet<number> => {
+  if (venues === null) {
+    return new Set();
+  }
+
+  const running = new Set(venues.map((venue) => venue.venueId));
+
+  return new Set(
+    slots.flatMap((slot) =>
+      slot.venueId !== null && !running.has(slot.venueId) ? [slot.venueId] : [],
+    ),
+  );
+};
+
+export const toSlotVenueLine = (venueName: string | null, isArchived: boolean): string => {
+  if (venueName === null) {
+    return NO_VENUE_LINE;
+  }
+
+  return isArchived ? `${venueName}${ARCHIVED_VENUE_SUFFIX}` : venueName;
+};
 
 export const toClockValue = (startsAt: string): string => startsAt.slice(0, 5);
 
@@ -142,9 +196,6 @@ export const toSlotPayloadOf = (slot: TrainingSlot): TrainingSlotPayload => ({
   durationMinutes: slot.durationMinutes,
   venueId: slot.venueId,
 });
-
-export const toSlotPayloads = (slots: readonly TrainingSlot[]): TrainingSlotPayload[] =>
-  slots.map(toSlotPayloadOf);
 
 export const toRhythmMeta = (count: number): string => {
   if (count === 0) {

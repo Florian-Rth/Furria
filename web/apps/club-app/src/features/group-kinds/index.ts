@@ -7,5 +7,6 @@ export {
   toGroupKindId,
   toGroupKindOptions,
   toGroupKindValue,
+  toHeldGroupKind,
 } from './group-kinds-labels';
 export type { GroupKindsResponse, RunningGroupKind } from './schemas';

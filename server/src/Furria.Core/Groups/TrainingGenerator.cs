@@ -5,9 +5,10 @@ namespace Furria.Core.Groups;
 
 public static class TrainingGenerator
 {
-    public const int MaxHorizonDays = 400;
-
     private const int DaysPerWeek = 7;
+
+    public const int MaxHorizonDays = 400;
+    public const int MaxHorizonWeeks = (MaxHorizonDays / DaysPerWeek) + 1;
 
     [Pure]
     public static IReadOnlyList<TrainingCandidate> Expand(

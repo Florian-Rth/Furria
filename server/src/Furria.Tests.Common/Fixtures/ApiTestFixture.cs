@@ -1,3 +1,4 @@
+using Furria.Application.Club;
 using Furria.Application.Identity;
 using Furria.Application.PreviewAccess;
 using Furria.Application.Results;
@@ -5,6 +6,7 @@ using Furria.Core.Club;
 using Furria.Core.Groups;
 using Furria.Core.Identity;
 using Furria.Core.Roles;
+using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Persistence;
 using Furria.Tests.Common.Builder;
@@ -56,6 +58,18 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
     {
         var now = DateTimeOffset.UtcNow;
         return now.AddTicks(-(now.Ticks % TimeSpan.TicksPerSecond));
+    }
+
+    private async Task WinTheMitwirkungAsync(int calendarEntryId, int groupId, CancellationToken ct)
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        db.CalendarEntryGroups.Add(
+            new CalendarEntryGroup { CalendarEntryId = calendarEntryId, GroupId = groupId }
+        );
+
+        await db.SaveChangesAsync(ct);
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -299,6 +313,47 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         );
 
         return await db.SaveOrConflictAsync(ct);
+    }
+
+    public async Task<Result<CalendarEntryWriteResult>> SaveSecondMitwirkungAsync(
+        int calendarEntryId,
+        int groupId,
+        int viewerPersonId,
+        CancellationToken ct = default
+    )
+    {
+        await using var loser = Services.CreateAsyncScope();
+        var db = loser.ServiceProvider.GetRequiredService<AppDbContext>();
+        var calendarService = loser.ServiceProvider.GetRequiredService<CalendarService>();
+
+        db.CalendarEntryGroups.Add(
+            new CalendarEntryGroup { CalendarEntryId = calendarEntryId, GroupId = groupId }
+        );
+
+        await WinTheMitwirkungAsync(calendarEntryId, groupId, ct);
+
+        var entry = await db
+            .CalendarEntries.AsNoTracking()
+            .SingleAsync(row => row.Id == calendarEntryId, ct);
+
+        return await calendarService.UpdateAsync(
+            new UpdateCalendarEntryCommand
+            {
+                ViewerPersonId = viewerPersonId,
+                CalendarEntryId = entry.Id,
+                Title = entry.Title,
+                Description = entry.Description,
+                OwnerGroupId = entry.OwnerGroupId,
+                VenueId = entry.VenueId,
+                StartsAt = entry.StartsAt,
+                EndsAt = entry.EndsAt,
+                Kind = entry.Kind,
+                Visibility = entry.Visibility,
+                AsksForResponse = entry.AsksForResponse,
+                ParticipatingGroupIds = [groupId],
+            },
+            ct
+        );
     }
 
     public async Task<Result> SaveSecondActiveGruppeAsync(

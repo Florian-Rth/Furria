@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { kkTokens } from '../tokens';
-import { contrastRatio, hueOf } from './contrast';
+import { contrastRatio, hueOf, washOver } from './contrast';
 import {
   GROUP_TONE_ON_FIELD_DARK,
   GROUP_TONE_ON_FIELD_LIGHT,
@@ -109,5 +109,25 @@ describe('the group tones', () => {
     expect(isKkGroupTone('teal')).toBe(true);
     expect(isKkGroupTone('accent')).toBe(false);
     expect(isKkGroupTone('')).toBe(false);
+  });
+});
+
+describe('the group tone chip', () => {
+  it.each(GROUP_TONES)('carries the %s tone as the on-field ink on the field itself', (tone) => {
+    const recipe = groupToneRecipes[tone];
+
+    expect(contrastRatio(GROUP_TONE_ON_FIELD_LIGHT, recipe.fieldLight)).toBeGreaterThanOrEqual(
+      AA_SMALL_TEXT,
+    );
+    expect(contrastRatio(GROUP_TONE_ON_FIELD_DARK, recipe.fieldDark)).toBeGreaterThanOrEqual(
+      AA_SMALL_TEXT,
+    );
+  });
+
+  it.each(GROUP_TONES)('is why %s ink can never sit on a wash of its own field', (tone) => {
+    const recipe = groupToneRecipes[tone];
+    const selfWash = washOver(recipe.fieldLight, '12%', light.panel);
+
+    expect(contrastRatio(recipe.inkLight, selfWash)).toBeLessThan(AA_SMALL_TEXT);
   });
 });
