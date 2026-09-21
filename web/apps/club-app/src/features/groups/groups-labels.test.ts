@@ -338,8 +338,9 @@ describe('toGroupContactLine', () => {
 
 describe('toGroupKindLabel', () => {
   it.each([
-    { groupKindName: null, expected: 'Gruppe' },
-    { groupKindName: '   ', expected: 'Gruppe' },
+    { groupKindName: null, expected: null },
+    { groupKindName: '   ', expected: null },
+    { groupKindName: '  Garden ', expected: 'Garden' },
     { groupKindName: 'Garden', expected: 'Garden' },
   ])('names the Gruppenart $groupKindName', ({ groupKindName, expected }) => {
     expect(toGroupKindLabel(groupKindName)).toBe(expected);

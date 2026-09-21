@@ -5,10 +5,10 @@ import { toFoundedLine, toJubilee } from '@/features/groups';
 import { SESSION_OPENING_DAY, SESSION_OPENING_MONTH, sessionAt } from '@/lib/club';
 import { isFutureDay, toIsoDay } from '@/lib/day';
 import { toGroupAdminsLabel, toGroupMembersLabel } from '@/lib/group-sections';
+import type { GroupTone } from '@/lib/group-tone';
 import { formatIsoDay, formatSinceSession } from '@/lib/membership-labels';
 import type { StateChip } from '@/lib/state-chips';
 import { toRecruitingChip } from '@/lib/state-chips';
-import type { GroupTone } from '@/lib/group-tone';
 import type { GroupHub, GroupInfoForm } from './schemas';
 
 const GROUP_ID_PATTERN = /^[1-9]\d*$/;

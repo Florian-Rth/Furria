@@ -315,9 +315,14 @@ Areas, not slices. Each gets its own plan, shaped from the ground up when it is 
 2. **The Verein hub and the Kalender page.**
 3. **Global search.**
 4. **The Start hub and pinning.**
-5. **Gruppen** — shaped in full on 2026-09-21, see [`p6-gruppen.md`](p6-gruppen.md). It turned out
-   to be a model rebuild before a surface one: `Group` was three fields, and the Gruppe hub's right
-   to write its own record needed [ADR-0014](../../docs/adr/0014-the-gruppe-hub-writes-its-own-record.md).
+5. **Gruppen** — **shipped as CA-P6 on 2026-09-21**, see [`p6-gruppen.md`](p6-gruppen.md). It
+   turned out to be a model rebuild before a surface one: `Group` was three fields, and the Gruppe
+   hub's right to write its own record needed
+   [ADR-0014](../../docs/adr/0014-the-gruppe-hub-writes-its-own-record.md). `/my-groups` is
+   retired — one hub at `/groups/$groupId` whose panel set varies by relationship — and a
+   Kalendereintrag now carries **Mitwirkende Gruppen**
+   ([ADR-0015](../../docs/adr/0015-a-kalendereintrag-carries-mitwirkende-gruppen.md)), which is
+   what lets the club-owned Prunksitzung appear in the Garde's own hub.
 6. **Verein verwalten**, the first admin hub, folding today's `manage/*` routes.
    **Pulled forward to CA-P5 on 2026-09-20**, ahead of search and the Start hub: CA-P4 shipped six
    domains nobody can write, so searching them and queueing work from them are both thinner than

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { toGroupKindValue } from '@/features/group-kinds';
-import { useUpdateGroupInfoMutation } from '../api';
 import type { GroupTone } from '@/lib/group-tone';
+import { useUpdateGroupInfoMutation } from '../api';
 import { FOUNDED_YEAR_MESSAGE, GroupInfoFormSchema } from '../schemas';
 
 type GroupToneChoice = GroupTone | '';

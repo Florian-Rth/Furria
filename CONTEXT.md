@@ -55,7 +55,22 @@ kickoff): a Person can belong to a Gruppe — and be its **Gruppen-Admin** — w
 a Mitglied. Consequence for every Club-App surface: access is gated on **Account + Gruppen +
 Rollen, never on "is Mitglied"**; member-only surfaces (Mitgliederversammlung, Beitrag) are
 explicit, deliberate exceptions, not the default.
-_Avoid_: team, squad, gating anything on Mitgliedschaft by default
+Since CA-P6 a Gruppe also carries a **Steckbrief it maintains itself**
+([ADR-0014](docs/adr/0014-the-gruppe-hub-writes-its-own-record.md)): its Gruppenart, a
+**Gründungsjahr** (`founded year`) — a year, never a date, because nobody remembers the day the
+Biergarde formed — a **Gruppenfarbe** (`group tone`) and a **Trainingsrhythmus**, a list of
+**Trainingsslots** (`group training slot`), each `(Wochentag, Uhrzeit, Dauer, Ort)`. The
+**Jubiläum** is *derived* from the Gründungsjahr at every fifth year and never stored; a club that
+celebrates a 13th anniversary celebrates nothing. The Gruppenfarbe comes from an identity palette
+that shares no value with the status tones (green = ok/bezahlt, gold = Warnung, rot = Aktion), so
+a Kalender tinted by Gruppe never accidentally says *bezahlt*. The Trainingsrhythmus is a **stated
+habit, not a rule**: it is what the Gruppe says it does, the Kalender holds what actually happens,
+and the two are allowed to disagree — generating Trainings from it writes ordinary
+Kalendereinträge and nothing on them remembers the batch.
+_Avoid_: team, squad, gating anything on Mitgliedschaft by default, Serientermin /
+Wiederholungsregel (for the Trainingsrhythmus), storing the Jubiläum, Altersgruppe (ruled out
+2026-09-21 — the Name and the Beschreibung say it, and it would lie about a 43-jährige Trainerin
+der Kindergarde)
 
 **Gruppenart** (`group kind`):
 What a Gruppe *is* — Tanzgarde, Showtanz, Männerballett, Gesang, Büttenrede, Musik, Sketch,

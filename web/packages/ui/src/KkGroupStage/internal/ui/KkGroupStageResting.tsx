@@ -7,6 +7,7 @@ import { kkTokens } from '../../../tokens';
 
 const PHONE_RATIO = kkTokens.aspectRatio.banner;
 const DESKTOP_RATIO = '16 / 5';
+const DESKTOP_CAP = kkTokens.layout.groupStageCap;
 const TOP_RADIUS = `${kkTokens.radius.base}px ${kkTokens.radius.base}px 0 0`;
 const RULE_WASH_LIGHT = '22%';
 const RULE_WASH_DARK = '26%';
@@ -22,6 +23,7 @@ export const KkGroupStageResting: FC = () => (
         {
           width: '100%',
           aspectRatio: { xs: PHONE_RATIO, desktop: DESKTOP_RATIO },
+          maxHeight: { desktop: DESKTOP_CAP },
           borderRadius: TOP_RADIUS,
         },
       ]}

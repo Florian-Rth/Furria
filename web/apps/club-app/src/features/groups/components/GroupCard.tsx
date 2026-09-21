@@ -26,6 +26,7 @@ import type { GroupSummary } from '../schemas';
 const FACE_RATIO = kkTokens.aspectRatio.landscape;
 const AVATAR_MAX = 3;
 const FACE_FILL = { position: 'absolute', inset: 0 } as const;
+const NO_SHRINK = { flexShrink: 0 } as const;
 
 interface GroupCardProps {
   group: GroupSummary;
@@ -39,6 +40,14 @@ export const GroupCard: FC<GroupCardProps> = ({ group, sx }) => {
   const initials = group.memberPreview.map((person) =>
     toInitials(person.firstName, person.lastName),
   );
+  const kindLabel = toGroupKindLabel(group.groupKindName);
+
+  const kindEyebrow =
+    kindLabel === null ? null : (
+      <KkEyebrow tone="muted" size="small">
+        {kindLabel}
+      </KkEyebrow>
+    );
 
   const openPeek = (): void => {
     sheet.open(toPeekId('group', group.groupId));
@@ -52,9 +61,7 @@ export const GroupCard: FC<GroupCardProps> = ({ group, sx }) => {
         </KkCard.Media>
         <KkGroupToneEdge tone={tone} />
         <KkCard.Body>
-          <KkEyebrow tone="muted" size="small">
-            {toGroupKindLabel(group.groupKindName)}
-          </KkEyebrow>
+          {kindEyebrow}
           <KkCard.Meta>
             {chips.map((chip) => (
               <KkChip key={chip.label} tone={chip.tone} dot={chip.dot} size="small">
@@ -64,7 +71,12 @@ export const GroupCard: FC<GroupCardProps> = ({ group, sx }) => {
           </KkCard.Meta>
           <KkMeta>{toGroupLeadLine(group.admins)}</KkMeta>
           <KkCard.Footer>
-            <KkAvatarStack initials={initials} max={AVATAR_MAX} total={group.memberCount} />
+            <KkAvatarStack
+              initials={initials}
+              max={AVATAR_MAX}
+              total={group.memberCount}
+              sx={NO_SHRINK}
+            />
             <KkMeta>{toGroupSizeLine(group.memberCount)}</KkMeta>
           </KkCard.Footer>
         </KkCard.Body>

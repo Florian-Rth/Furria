@@ -1,5 +1,5 @@
 ---
-status: shaped 2026-09-21, not yet implemented
+status: implemented 2026-09-21
 phase: CA-P6 — Gruppen
 shaped_with: Florian, grilling session 2026-09-21
 binding: docs/adr/0010, docs/adr/0013 (+ ADR-0014's exception), docs/adr/0014, docs/adr/0015,
@@ -224,3 +224,85 @@ meaning.
 - **The club's own Gründungsjahr** — 1971, per the handoff — still has no home in the model.
   `Session` carries Motto, Nummer und Logo; nothing carries the Verein. Out of scope here, and it
   wants a small slice of its own before the website reads it from data rather than a constant.
+
+---
+
+## What was built — 2026-09-21
+
+The phase is shipped, in six commits on `feat/club-app-p6-gruppen`. **Every slice G0–G7 landed**:
+the `groupTone` palette in `@furria/ui`, the Gruppenart, the Gruppe's Steckbrief, the merged hub,
+the rebuilt Gruppen list, Mitwirkende Gruppen, the Trainingsrhythmus with its generator, and the
+Gruppenfarbe on the Kalender. What follows is where the build had to rule on something this file
+left open, and where it knowingly left the shape above.
+
+### Four rulings the plan did not make
+
+**`Group.Tone` is nullable, and the web derives the fallback.** Ruling 14 forbids a migration that
+invents a Gruppenart for the eight Gruppen that already exist, and the same argument covers the
+colour: a non-null column with a database default would paint all eight identically and store a
+lie. So the column is `GroupTone?`, and `toGroupTone(groupId, tone)` in
+`features/groups/group-identity.ts` picks a stable palette entry from the id until a Gruppen-Admin
+chooses one. The Gruppe always has a colour on screen; the database only holds one once somebody
+meant it. Pinned by `group-identity.test.ts`.
+
+**The Termine panel got its own endpoint, `GET groups/{groupId}/calendar`.** Widening
+`CalendarScope.Group` on `GET calendar` would have silently changed the Kalender's own Gruppe
+filter for every caller, and ADR-0015 only ever speaks about *the Gruppe hub's dates panel*. The
+new endpoint filters `Eigentümer = diese Gruppe OR mitwirkend = diese Gruppe` and reuses the
+Kalender's existing `VisibleTo` predicate unchanged.
+
+**`VisibleTo` is deliberately untouched.** ADR-0015's „Mitwirken grants nothing" is read to include
+*read* access: standing on another Gruppe's stage does not open that Gruppe's gruppeninterne
+Einträge. The motivating case — the club-owned Prunksitzung — is `Visibility.Club` and already
+passes for everyone, so nothing was owed and nothing was widened.
+
+**The admins panel keeps „Gruppen-Admins".** The hub table above titles it *Wer macht was*; that is
+already the Verein hub's Vorstand panel, and two panels sharing one name inside one app is worse
+than a small deviation from the shape. `lib/group-sections.ts` keeps `admins: 'Gruppen-Admins'`.
+For the same reason the recruiting chip keeps the shipped *sucht Verstärkung* rather than the
+table's *Sucht Mitglieder* — the public website already carries that string.
+
+### The trap the phase turned on
+
+**A Gruppen-Admin is not affiliated.** `AffiliationQuery` counts Mitgliedschaften, Zugehörigkeiten
+and Rollen — never a `group_admin` row. So the Trainerin of the Kindergarde who dances in nothing
+administers a Gruppe she is not affiliated with, and today she reaches it only through
+`/my-groups/{id}`, which has no affiliation gate. Merging the three surfaces into one hub behind
+`Definition.RequireAffiliation()` would have taken the hub away from exactly the person who writes
+its record.
+
+`AffiliationQuery` was **not** widened — that would have silently changed `/members`, `/groups`,
+`/calendar` and `GetMe.isAffiliated`. Instead `GET groups/{groupId}` carries **no metadata gate**
+and asks in-handler: `IsAffiliatedAsync ∨ CanAdministerGroupAsync`, **403 before 404** (the
+opposite of what `GetMyGroupById` did, chosen deliberately and pinned). On the web the hub route
+moved out from under `_affiliated` — `routes/_app/groups_.$groupId.tsx` — while `/groups`, the
+list, stays inside it. That preserves exactly today's split; it only merges the surface.
+
+### Two migrations, not one
+
+The dossier planned a single `Gruppen` migration and the build produced **two**, one per commit:
+`20260921115711_Gruppenarten` (the `group_kind` table and `group.group_kind_id`, with G1) and
+`20260921121638_Gruppensteckbrief` (`group.founded_year`, `group.tone` and `group_training_slot`,
+with G2). G1's shipped first and re-generating it once G2's shape was settled would have meant
+rewriting a model snapshot by hand. **The `calendar_entry_group` join table rode along with the
+second** rather than getting a third of its own, so a migration named for the Steckbrief also
+creates Mitwirkende Gruppen — and their schema exists two commits before G5 fills it. Harmless,
+but worth knowing when reading the folder.
+
+### Two declared deviations
+
+**`groupTone` amends `docs/design/README.md` §12's „no new colors".** Ruling 8 required it: all six
+`KkTone` values carry meaning — green = ok/paid, gold = warning, red = danger/action, blue = info —
+so a Kalender tinted from them says *bezahlt* on every Perlen row. The ten identity hues live in
+their own type (`KkGroupTone`) that shares no string with `KkTone`, so passing a Gruppenfarbe where
+a status tone belongs is a compile error. They clear AA against `bg`, `panel` and `panel2` in
+both schemes (`group-tone.test.ts`) and are never the only carrier of meaning. No font, radius or shadow was added.
+
+**The Trainingsgenerator is a Gruppe-owned bulk act, not the Kalender's generic `+`.** The floor
+plan and ADR-0013 have the Kalender author its own entries; CA-P5's E6 built that button. The
+generator sheet (`TrainingGeneratorSheet`, opened from the Gruppe's Rhythmus panel) is a second
+authoring surface for Kalendereinträge outside the Kalender, and it is meant to be: generating a
+Session of Trainings is strictly the Gruppe's own act, gated on `CanAdministerGroupAsync` and out
+of reach of `calendar.manage_club` — the club does not schedule the Garde's training. Every entry
+it writes is an ordinary `CalendarEntry` with nothing on it that remembers the batch, so the
+Kalender keeps authoring the record; only the bulk gesture lives elsewhere.

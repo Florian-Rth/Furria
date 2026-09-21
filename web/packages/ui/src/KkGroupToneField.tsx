@@ -11,7 +11,7 @@ import { KkBroomMark } from './KkBroomMark';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
-const NAME_SIZE = 'clamp(1.25rem, 11cqw, 2.75rem)';
+const NAME_SIZE = 'clamp(1rem, 10cqw, 2.75rem)';
 const NAME_LINE_HEIGHT = 0.94;
 const NAME_LINES = 3;
 const MARK_SIZE = 170;
@@ -109,7 +109,7 @@ export const KkGroupToneField: FC<KkGroupToneFieldProps> = ({
             letterSpacing: kkTokens.type.tracking.display,
             lineHeight: NAME_LINE_HEIGHT,
             textShadow: kkTokens.overlay.textShadow,
-            overflowWrap: 'anywhere',
+            overflowWrap: 'break-word',
             ...lineClamp(NAME_LINES),
           }}
         >

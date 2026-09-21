@@ -157,24 +157,36 @@ public sealed class GetMeTests
    `ClubSeedBuilder`** —
    pure accumulators. One sub-builder per bounded context, not per entity: `builder.Identity(…)`
    takes `AddPerson`, `AddPersonContact`, `AddMembership`, `AddMembershipPause`,
-   `AddFeeReduction`, `AddAccount`; `builder.Groups(…)` takes `AddGroup`, `AddGroupMembership`,
-   `AddGroupAdmin`; `builder.Roles(…)` takes `AddRole`, `AddRoleWithDetails`, `AddRoleHolding`,
+   `AddFeeReduction`, `AddAccount`; `builder.Groups(…)` takes `AddGroupKind`, `AddGroup`,
+   `AddGroupMembership`, `AddGroupAdmin`; `builder.Roles(…)` takes `AddRole`,
+   `AddRoleWithDetails`, `AddRoleHolding`,
    `AddRoleWithHolder`; `builder.Club(…)` takes `AddSession`, whose every argument but the alias
    and the `startYear` is optional, because a Session record is exactly as complete as the club's
-   evidence, and `AddVenue`.
-   **`ClubSeedBuilder` also declares `AddAnnouncement`, `AddKeyHolding`, `AddBoardOffice`,
-   `AddBoardSeat`, `AddCalendarEntry` and `AddAttendanceResponse` ahead of their entities** —
-   the class has its final shape from CA-P4 D1 so the later slices only append. None of the six
-   has a table yet, so `ClubSeedMaterializer` **refuses** an arrangement that uses one:
-   `BuildAsync` throws `NotSupportedException` naming the method and the slice that will land it
-   (`ClubSeedBuilderTests`). A test may call them once that slice has inserted them, never
-   before — a silently dropped arrangement would read as a green test.
+   evidence, and `AddVenue`, `AddAnnouncement`, `AddKeyHolding`, `AddBoardOffice`, `AddBoardSeat`,
+   `AddTrainingSlot`, `AddCalendarEntry` and `AddAttendanceResponse`.
+   **Every one of them materializes.** `ClubSeedBuilder` was given its final shape in CA-P4 D1,
+   ahead of the entities, and while that lasted `ClubSeedMaterializer` threw
+   `NotSupportedException` for the methods that had no table yet. CA-P4 wave 2 landed the last of
+   them and the refusal went with it; there is no `ClubSeedBuilderTests`. The rule it enforced
+   still holds, by construction now rather than by a throw: **no `Add*` on any sub-builder is a
+   declaration without an insert**, because an arrangement that is silently dropped would read as
+   a green test.
+   **`AddGroupKind` is inserted first inside `GroupSeedMaterializer`**, before the Gruppen that
+   name it; **`AddTrainingSlot` lives on `ClubSeedBuilder`**, not on `GroupSeedBuilder`, because a
+   Trainingsslot needs both a `groupId` and a `venueId` and only `ClubSeedMaterializer` holds both.
+   Its alias names the slot, its parents are named by alias (`AddTrainingSlot("garde-dienstag",
+   "tanzgarde", DayOfWeek.Tuesday, new TimeOnly(19, 30), 90, venueAlias: "sporthalle")`), and
+   `venueAlias` is optional — a Gruppe may state a habit without naming a hall.
+   **`AddCalendarEntry` takes `participatingGroupAliases`** as its last parameter, which is how a
+   test arranges Mitwirkende Gruppen.
    `AddAccount` and `AddPersonContact` create the Person under the same alias unless `AddPerson`
    already declared it. **Every dated fact carries its own alias first and names its parent by
    alias** — `AddMembership("alice-first", "alice", startedOn)` — so a Person can hold several
    Mitgliedschaften and every id comes back through an MET007-protected `IdOf`. `SeedMaterializer`
    opens the one scope and inserts Person → Membership → MembershipPause → FeeReduction → Account
-   → Group → GroupMembership → GroupAdmin → Role → RolePermission → RoleHolding, one
+   → GroupKind → Group → GroupMembership → GroupAdmin → Role → RolePermission → RoleHolding →
+   Session → Aushang → Ort → Trainingsslot → Schlüssel → Vorstandsfunktion → Vorstandssitz →
+   Kalendereintrag → Zu-/Absage, one
    `SaveChanges` per layer, and uniquifies emails behind the alias so unique indexes never
    collide. A sub-builder records its parents by alias, not by order: `AddGroupAdmin` may name a
    Gruppe a later `AddGroup` call declares.
@@ -187,9 +199,11 @@ public sealed class GetMeTests
 3. **`AliasRegistry`** — `ctx.Identity.People.IdOf("alice")`; an unknown alias throws listing the
    declared ones. `EmailOf` resolves the materialized unique email. One registry per entity kind:
    `ctx.Identity.{People, Memberships, Pauses, FeeReductions, Accounts}`,
-   `ctx.Groups.{Groups, GroupMemberships, GroupAdmins}`,
-   `ctx.Roles.{Roles, RolePermissions, RoleHoldings}` and `ctx.Club.{Sessions, Venues}`. A `RolePermission` has no alias of its own —
-   it is registered under `"{roleAlias}:{permissionKey}"`.
+   `ctx.Groups.{GroupKinds, Groups, GroupMemberships, GroupAdmins}`,
+   `ctx.Roles.{Roles, RolePermissions, RoleHoldings}` and
+   `ctx.Club.{Sessions, Venues, Announcements, KeyHoldings, BoardOffices, BoardSeats,
+   TrainingSlots, CalendarEntries, AttendanceResponses}`. A `RolePermission` has no alias of its
+   own — it is registered under `"{roleAlias}:{permissionKey}"`.
 4. **Identity shortcut** — Account rows are inserted directly, not through `UserManager`: the
    harness owns normalization and the password hash, and the hash is computed once per run and
    cached (Identity's PBKDF2 would otherwise dominate the suite). `ctx.Identity.BootstrapAdmin`
@@ -208,9 +222,25 @@ public sealed class GetMeTests
    (`ToHaveCount`), `Expected.RoleHolding(id)` (`ToHavePeriod`, `ToBeOpen`) and
    `Expected.RoleHoldingsOfPerson(personId)` (`ToHaveCount`, `ToHaveOpenCount`). So do the Gruppen
    accessors: `Expected.Group(groupId)` (`ToHaveName`, `ToHaveDescription`, `ToBeRecruiting`,
-   `ToBeArchivedOn`), `Expected.GroupMembership(id)` (`ToHavePeriod`, `ToBeOpen`),
-   `Expected.GroupMembershipsOf(groupId)` (`ToHaveCount`, `ToHaveOpenCount`) and
-   `Expected.GroupAdmin(id)` (`ToHaveFunction`, `ToHavePeriod`). The Session accessor is
+   `ToHaveGroupKind`, `ToHaveFoundedYear`, `ToHaveTone`, `ToBeArchivedOn`,
+   `ToHaveBeenCreatedAt`, `ToHaveBeenTouchedAt`), `Expected.GroupMembership(id)` (`ToHavePeriod`,
+   `ToBeOpen`), `Expected.GroupMembershipsOf(groupId)` (`ToHaveCount`, `ToHaveOpenCount`),
+   `Expected.GroupAdmin(id)` (`ToHaveFunction`, `ToHavePeriod`) and
+   `Expected.GroupAdminsOf(groupId)` (`ToHaveCount`, `ToHaveOpenCount`). The Gruppenart accessors
+   are `Expected.GroupKind(groupKindId)` (`ToHaveName`, `ToHaveSortOrder`, `ToBeArchivedOn`,
+   `ToBeOpen`, `ToNotExist`) and `Expected.GroupKinds()`, whose
+   `ToReadInBandOrder(names…)` pins *Sortierung, then German name, then id* — the order the
+   Gruppenart-Band reads in — and whose `ToCountGruppenOf(groupKindId, count)` counts the
+   laufende Gruppen that name it, which is what an Archivieren must refuse over.
+   The Trainingsrhythmus and the Trainings the generator writes are **set**-scoped and Gruppe-
+   scoped, never slot-scoped, because a Gruppe states several habits and the endpoint replaces
+   them wholesale: `Expected.TrainingSlotsOf(groupId)` (`ToHaveCount`, `ToBeEmpty`,
+   `ToCarrySlot(weekday, startsAt, durationMinutes, venueId)`) and
+   `Expected.TrainingsOf(groupId)` (`ToHaveCount`, `ToBeEmpty`,
+   `ToCarryTraining(title, startsAt, endsAt, venueId)`, which also pins that a generated entry is
+   `Kind.Training` and `Visibility.Group`). Mitwirkende Gruppen are asserted on the entry that
+   carries them, not on a set of their own: `Expected.CalendarEntry(id)`'s
+   `ToCarryMitwirkendeGruppen(groupIds…)` and `ToCarryNoMitwirkendeGruppe()`. The Session accessor is
    `Expected.Session(sessionId)` (`ToHaveStartYear`, `ToHaveNumber`, `ToHaveMotto`,
    `ToHaveLogo`), and the Ort accessor is `Expected.Venue(venueId)` (`ToHaveName`,
    `ToHaveSortOrder`, `ToHaveAddress`, `ToHaveHint`, `ToBeArchivedOn`, `ToBeOpen`,
@@ -273,12 +303,19 @@ public sealed class GetMeTests
   **Assert list contents by alias membership, never by a raw `Count`.**
 - **A Gruppen-Admin is not a Zugehörigkeit and confers no affiliation.** Affiliation is
   *running Mitgliedschaft ∨ open Zugehörigkeit ∨ running Inhaberschaft*; a Person whose only tie
-  is a `group_admin` row reads **not affiliated**, while her Gruppen-Hub gate
-  (`IsGroupMemberOrAdminAsync`) still passes. `AffiliationRequirementTests` and `GroupAccessTests`
-  pin both halves — do not "fix" one of them.
+  is a `group_admin` row reads **not affiliated**, while her Gruppe-scoped gates
+  (`CanAdministerGroupAsync`, `IsGroupMemberOrAdminAsync`) still pass.
+  `AffiliationRequirementTests` and `GroupAccessTests` pin both halves — do not "fix" one of them.
+  This is why `GET groups/{groupId}` carries **no** `Definition.RequireAffiliation()` and asks
+  `IsAffiliatedAsync ∨ CanAdministerGroupAsync` in the handler instead (CA-P6): widening
+  `AffiliationQuery` to count `group_admin` would silently move `/members`, `/groups`, `/calendar`
+  and `GetMe.isAffiliated`. Every such in-handler gate must be named in `EndpointGateTests`'
+  `InHandlerGated` list, which fails in **both** directions — a registered route with no gate and
+  no entry, and an entry naming a route that no longer exists.
 - **Only `person`, `account`, `role`, `role_permission` and `role_holding` survive a reset.**
-  Everything else, the three Gruppen tables included, is truncated before every `BuildAsync`, so a
-  test seeds every Gruppe it needs and may never assume one from a neighbour.
+  Everything else, the five Gruppen tables included (`group_kind`, `group`, `group_membership`,
+  `group_admin`, `group_training_slot`), is truncated before every `BuildAsync`, so a
+  test seeds every Gruppe and every Gruppenart it needs and may never assume one from a neighbour.
 - **`session` and `venue` start empty — in a test and in a fresh production database alike.**
   Nothing is seeded from code: a migration builds schema and nothing else, and the club's master
   data is entered through its *verwalten* surface. So a test arranges every Session and every Ort

@@ -11,5 +11,5 @@ export {
   toTrainingSlotLine,
   WEEKDAY_VALUES,
 } from './group-identity';
-export { toPersonUnitLabel } from './groups-labels';
+export { toGroupKindLabel, toPersonUnitLabel } from './groups-labels';
 export type { GroupSummary } from './schemas';

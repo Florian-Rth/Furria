@@ -6,6 +6,7 @@ import { kkTokens } from '../../../tokens';
 
 const PHONE_RATIO = kkTokens.aspectRatio.banner;
 const DESKTOP_RATIO = '16 / 5';
+const DESKTOP_CAP = kkTokens.layout.groupStageCap;
 const TOP_RADIUS = `${kkTokens.radius.base}px ${kkTokens.radius.base}px 0 0`;
 
 interface KkGroupStageFieldProps extends PropsWithChildren {
@@ -22,6 +23,7 @@ export const KkGroupStageField: FC<KkGroupStageFieldProps> = ({ tone, children }
       width: '100%',
       minWidth: 0,
       aspectRatio: { xs: PHONE_RATIO, desktop: DESKTOP_RATIO },
+      maxHeight: { desktop: DESKTOP_CAP },
       borderRadius: TOP_RADIUS,
       ...groupToneFieldPaint(theme, tone),
     })}

@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { GroupDetailAdminSchema, GroupDetailMemberSchema } from '@/features/group-detail';
 import { PersonRefSchema } from '@/lib/api/schemas';
-import { GroupToneSchema } from '@/lib/group-tone';
 import { ATTENDANCE_ANSWER_KEYS, CALENDAR_KIND_KEYS } from '@/lib/calendar-copy';
+import { GroupToneSchema } from '@/lib/group-tone';
 
 export const WEEKDAY_VALUES = [
   'monday',

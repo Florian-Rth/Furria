@@ -1,6 +1,6 @@
 import { KkChip, KkGroupStage } from '@furria/ui';
 import type { FC } from 'react';
-import { toGroupTone } from '@/features/groups';
+import { toGroupKindLabel, toGroupTone } from '@/features/groups';
 import { currentSessionYear } from '@/lib/club';
 import { useGroupHubQuery } from '../api';
 import {
@@ -36,7 +36,7 @@ export const HubStage: FC<HubStageProps> = ({ groupId }) => {
     <KkGroupStage
       tone={tone}
       name={group.name}
-      kindLabel={group.groupKindName}
+      kindLabel={toGroupKindLabel(group.groupKindName)}
       jubilee={toJubileeSeal(group.foundedYear, currentSessionYear())}
     >
       <KkGroupStage.Standing tone={tone}>{toStandingLine(group)}</KkGroupStage.Standing>

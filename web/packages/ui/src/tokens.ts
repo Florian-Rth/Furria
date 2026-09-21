@@ -168,6 +168,7 @@ export const kkTokens = {
     fieldGap: 3,
     mastheadClearance: 2,
     curtainClearance: 84,
+    groupStageCap: 300,
     stickyTop: 24,
     letterRailZ: 1,
     sheetLift: `-${radius.base}px`,

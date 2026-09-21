@@ -70,10 +70,15 @@ export const toGroupCardChips = (group: GroupSummary): StateChip[] => {
   return chips;
 };
 
-const GROUP_KIND_FALLBACK = 'Gruppe';
+export const toGroupKindLabel = (groupKindName: string | null): string | null => {
+  if (groupKindName === null) {
+    return null;
+  }
 
-export const toGroupKindLabel = (groupKindName: string | null): string =>
-  groupKindName === null || groupKindName.trim() === '' ? GROUP_KIND_FALLBACK : groupKindName;
+  const named = groupKindName.trim();
+
+  return named === '' ? null : named;
+};
 
 const LED_BY_PREFIX = 'Geleitet von ';
 const LED_BY_PAIR = ' und ';

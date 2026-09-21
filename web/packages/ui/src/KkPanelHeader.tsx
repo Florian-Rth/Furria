@@ -14,6 +14,7 @@ type KkPanelHeaderSize = 'small' | 'medium';
 const MARKER_SIZE = 9;
 const RULE_BLEED = 26;
 const RULE_MIN_WIDTH = RULE_BLEED * 2;
+const ACTION_SLOT = { ml: 'auto', flexShrink: 0 } as const;
 
 const titleSizes: Record<KkPanelHeaderSize, string> = {
   small: kkTokens.type.sectionTitle,
@@ -56,12 +57,13 @@ export const KkPanelHeader: FC<KkPanelHeaderProps> = ({
   sx,
 }) => {
   const metaContent = typeof meta === 'string' ? <KkEyebrow tone="muted">{meta}</KkEyebrow> : meta;
+  const actionSlot = action === undefined ? null : <Box sx={ACTION_SLOT}>{action}</Box>;
   const metaSlot =
     meta === undefined ? null : (
       <Stack
         direction="row"
         data-kk-panel-header-meta
-        sx={{ alignItems: 'center', flexShrink: 0, whiteSpace: 'nowrap' }}
+        sx={{ alignItems: 'center', minWidth: 0, flexShrink: 1 }}
       >
         {metaContent}
       </Stack>
@@ -74,7 +76,6 @@ export const KkPanelHeader: FC<KkPanelHeaderProps> = ({
       sx={[
         {
           alignItems: 'center',
-          justifyContent: 'flex-end',
           flexWrap: 'wrap',
           gap: 1.25,
           minWidth: 0,
@@ -121,7 +122,7 @@ export const KkPanelHeader: FC<KkPanelHeaderProps> = ({
           ...rulePaint(theme, groupTone),
         })}
       />
-      {action}
+      {actionSlot}
     </Stack>
   );
 };
