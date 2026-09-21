@@ -1,3 +1,4 @@
+import type { KkGroupTone } from '@furria/ui';
 import { describe, expect, it } from 'vitest';
 import {
   entriesOnDay,
@@ -124,27 +125,69 @@ describe('toMonthWeeks', () => {
   });
 });
 
+interface ToneCase {
+  case: string;
+  tones: readonly (KkGroupTone | null)[];
+  expected: readonly KkGroupTone[];
+}
+
+const toneCases: readonly ToneCase[] = [
+  { case: 'keeps a club-only day without a tone', tones: [null, null], expected: [] },
+  {
+    case: 'keeps the first-seen order of the tones',
+    tones: ['rose', 'teal'],
+    expected: ['rose', 'teal'],
+  },
+  {
+    case: 'drops a tone the day already carries',
+    tones: ['teal', 'rose', 'teal'],
+    expected: ['teal', 'rose'],
+  },
+  {
+    case: 'skips the club entries between two tones',
+    tones: ['teal', null, 'rose'],
+    expected: ['teal', 'rose'],
+  },
+  {
+    case: 'caps the tones of one day at three',
+    tones: ['clay', 'olive', 'lime', 'fern'],
+    expected: ['clay', 'olive', 'lime'],
+  },
+];
+
 describe('toDayCounts', () => {
   it('counts the entries that fall on one local day', () => {
-    const counts = toDayCounts([
-      { startsAt: at(2026, 2, 14, 10) },
-      { startsAt: at(2026, 2, 14, 20) },
-      { startsAt: at(2026, 2, 15, 10) },
+    const days = toDayCounts([
+      { startsAt: at(2026, 2, 14, 10), tone: null },
+      { startsAt: at(2026, 2, 14, 20), tone: null },
+      { startsAt: at(2026, 2, 15, 10), tone: null },
     ]);
 
-    expect([...counts.entries()]).toEqual([
-      ['2026-02-14', 2],
-      ['2026-02-15', 1],
+    expect([...days.entries()]).toEqual([
+      ['2026-02-14', { entryCount: 2, tones: [] }],
+      ['2026-02-15', { entryCount: 1, tones: [] }],
     ]);
+  });
+
+  it.each(toneCases)('$case', ({ tones, expected }) => {
+    const marks = tones.map((tone) => ({ startsAt: at(2026, 2, 14, 10), tone }));
+
+    expect(toDayCounts(marks).get('2026-02-14')).toEqual({
+      entryCount: tones.length,
+      tones: expected,
+    });
   });
 });
 
 describe('toMonthGridWeeks', () => {
-  it('marks the month, today, the selection and the entry count', () => {
+  it('marks the month, today, the selection, the entry count and the tones', () => {
     const weeks = toMonthGridWeeks(
       new Date(2026, 1, 1),
       new Date(2026, 1, 14),
-      [{ startsAt: at(2026, 2, 14, 19) }, { startsAt: at(2026, 2, 14, 21) }],
+      [
+        { startsAt: at(2026, 2, 14, 19), tone: 'teal' },
+        { startsAt: at(2026, 2, 14, 21), tone: null },
+      ],
       '2026-02-16',
     );
     const days = weeks.flatMap((week) => week.days);
@@ -156,6 +199,7 @@ describe('toMonthGridWeeks', () => {
       isToday: false,
       selected: false,
       entryCount: 0,
+      tones: [],
     });
     expect(days.find((day) => day.isoDay === '2026-02-14')).toEqual({
       isoDay: '2026-02-14',
@@ -164,6 +208,7 @@ describe('toMonthGridWeeks', () => {
       isToday: true,
       selected: false,
       entryCount: 2,
+      tones: ['teal'],
     });
     expect(days.find((day) => day.isoDay === '2026-02-16')?.selected).toBe(true);
   });

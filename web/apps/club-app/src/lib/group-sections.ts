@@ -24,12 +24,6 @@ export interface ReservedSlotCopy {
   description: string;
 }
 
-export const RHYTHM_RESERVED: ReservedSlotCopy = {
-  title: 'Noch kein Rhythmus',
-  description:
-    'Wann und wo die Gruppe regelmäßig trainiert. Die Gruppen-Admins tragen es in einer späteren Phase ein.',
-};
-
 export const PHOTOS_RESERVED: ReservedSlotCopy = {
   title: 'Noch keine Bilder',
   description:

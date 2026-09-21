@@ -158,7 +158,13 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
           onAdd={dialogs.openAddMember}
         />
         {termine}
-        <HubRhythmPanel tone={tone} slots={hub.trainingSlots} />
+        <HubRhythmPanel
+          groupId={hub.groupId}
+          groupName={hub.name}
+          tone={tone}
+          slots={hub.trainingSlots}
+          canManage={hub.viewerIsAdmin}
+        />
         {care}
         {history}
       </KkPanelStack>

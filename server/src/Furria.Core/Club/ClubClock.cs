@@ -9,10 +9,22 @@ public static class ClubClock
     );
 
     [Pure]
-    public static DateOnly Today(TimeProvider timeProvider) =>
-        DateOnly.FromDateTime(
-            TimeZoneInfo.ConvertTime(timeProvider.GetUtcNow(), ClubTimeZone).DateTime
-        );
+    public static DateOnly Today(TimeProvider timeProvider) => DayOf(timeProvider.GetUtcNow());
+
+    [Pure]
+    public static DateOnly DayOf(DateTimeOffset instant) =>
+        DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(instant, ClubTimeZone).DateTime);
+
+    [Pure]
+    public static DateTimeOffset At(DateOnly day, TimeOnly time)
+    {
+        var wallClock = day.ToDateTime(time, DateTimeKind.Unspecified);
+
+        return new DateTimeOffset(
+            wallClock,
+            ClubTimeZone.GetUtcOffset(wallClock)
+        ).ToUniversalTime();
+    }
 
     [Pure]
     public static DateTimeOffset StartOfDay(DateOnly day) =>

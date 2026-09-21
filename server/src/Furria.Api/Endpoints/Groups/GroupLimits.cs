@@ -12,6 +12,5 @@ internal static class GroupLimits
     internal const int MinTrainingDurationMinutes = 15;
     internal const int MaxTrainingDurationMinutes = 480;
     internal const int MaxTrainingSlots = 14;
-    internal const int MaxTrainingHorizonDays = 400;
     internal const int MaxTrainingTitleLength = 120;
 }

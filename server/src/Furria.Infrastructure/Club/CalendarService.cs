@@ -26,6 +26,11 @@ public sealed class CalendarService
     private static readonly IReadOnlyDictionary<int, AttendanceAnswer> NoAnswers =
         new Dictionary<int, AttendanceAnswer>();
 
+    private static readonly IReadOnlyDictionary<
+        VenueCollisionQuery,
+        IReadOnlyList<CalendarEntrySummary>
+    > NoCollisions = new Dictionary<VenueCollisionQuery, IReadOnlyList<CalendarEntrySummary>>();
+
     private readonly AppDbContext _dbContext;
     private readonly TimeProvider _timeProvider;
 
@@ -111,36 +116,111 @@ public sealed class CalendarService
         CancellationToken ct
     )
     {
+        var found = await FindVenueCollisionsAsync([query], ct);
+
+        return found.TryGetValue(query, out var collisions) ? collisions : [];
+    }
+
+    public async Task<
+        IReadOnlyDictionary<VenueCollisionQuery, IReadOnlyList<CalendarEntrySummary>>
+    > FindVenueCollisionsAsync(IReadOnlyList<VenueCollisionQuery> probes, CancellationToken ct)
+    {
+        if (probes.Count == 0)
+            return NoCollisions;
+
         var now = _timeProvider.GetUtcNow();
         var today = ClubClock.Today(_timeProvider);
         var openEndedCutoff = now.AddHours(-CalendarDefaults.OpenEndedHours);
-        var startsAt = query.StartsAt;
-        var venueId = query.VenueId;
-        var excludeCalendarEntryId = query.ExcludeCalendarEntryId;
-        var probeEnd = query.EndsAt ?? startsAt.AddHours(CalendarDefaults.OpenEndedHours);
-        var probeStartLessOpenEnded = startsAt.AddHours(-CalendarDefaults.OpenEndedHours);
+        var found = new Dictionary<VenueCollisionQuery, IReadOnlyList<CalendarEntrySummary>>();
 
-        var rows = await _dbContext
-            .CalendarEntries.AsNoTracking()
-            .Where(entry => entry.VenueId == venueId)
-            .Where(entry =>
-                excludeCalendarEntryId == null || entry.Id != excludeCalendarEntryId.Value
-            )
-            .Where(entry =>
-                entry.StartsAt < probeEnd
-                && (
-                    entry.EndsAt == null
-                        ? entry.StartsAt > probeStartLessOpenEnded
-                        : entry.EndsAt > startsAt
+        foreach (var perViewer in probes.Distinct().GroupBy(probe => probe.ViewerPersonId))
+        {
+            var wanted = perViewer.ToList();
+            var venueIds = wanted.Select(probe => probe.VenueId).Distinct().ToList();
+            var windowStart = wanted
+                .Min(probe => probe.StartsAt)
+                .AddHours(-CalendarDefaults.OpenEndedHours);
+            var windowEnd = wanted.Max(ProbeEndOf);
+
+            var rows = await _dbContext
+                .CalendarEntries.AsNoTracking()
+                .Where(entry => entry.VenueId != null && venueIds.Contains(entry.VenueId.Value))
+                .Where(entry =>
+                    entry.StartsAt < windowEnd
+                    && (
+                        entry.EndsAt == null
+                            ? entry.StartsAt > windowStart
+                            : entry.EndsAt > windowStart
+                    )
                 )
-            )
-            .Where(VisibleTo(query.ViewerPersonId, today))
-            .OrderBy(entry => entry.StartsAt)
-            .ThenBy(entry => entry.Id)
-            .Select(RowProjection(now, openEndedCutoff))
-            .ToListAsync(ct);
+                .Where(VisibleTo(perViewer.Key, today))
+                .OrderBy(entry => entry.StartsAt)
+                .ThenBy(entry => entry.Id)
+                .Select(RowProjection(now, openEndedCutoff))
+                .ToListAsync(ct);
 
-        return [.. rows.Select(row => ToSummary(row, NoAnswers))];
+            foreach (var probe in wanted)
+            {
+                found[probe] =
+                [
+                    .. rows.Where(row => Collides(row, probe))
+                        .Select(row => ToSummary(row, NoAnswers)),
+                ];
+            }
+        }
+
+        return found;
+    }
+
+    public async Task<IReadOnlyList<DateTimeOffset>> FindExistingTrainingsAsync(
+        int groupId,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken ct
+    )
+    {
+        var windowStart = ClubClock.StartOfDay(from);
+        var windowEnd = ClubClock.StartOfDay(to.AddDays(1));
+
+        return await _dbContext
+            .CalendarEntries.AsNoTracking()
+            .Where(entry =>
+                entry.OwnerGroupId == groupId && entry.Kind == CalendarEntryKind.Training
+            )
+            .Where(entry => entry.StartsAt >= windowStart && entry.StartsAt < windowEnd)
+            .OrderBy(entry => entry.StartsAt)
+            .Select(entry => entry.StartsAt)
+            .ToListAsync(ct);
+    }
+
+    public async Task<Result<int>> CreateManyAsync(
+        CreateTrainingsCommand command,
+        CancellationToken ct
+    )
+    {
+        if (!await GroupExistsAsync(command.OwnerGroupId, ct))
+            return Result<int>.Validation(UnknownOwnerGroupMessage);
+
+        var venueIds = command
+            .Placements.Select(placement => placement.VenueId)
+            .OfType<int>()
+            .Distinct()
+            .ToList();
+
+        foreach (var venueId in venueIds)
+        {
+            if (await VenueRefusalAsync(venueId, ct) is { } refusal)
+                return Result<int>.Validation(refusal);
+        }
+
+        var entries = command
+            .Placements.Select(placement => ToTraining(command, placement))
+            .ToList();
+
+        _dbContext.CalendarEntries.AddRange(entries);
+        await _dbContext.SaveChangesAsync(ct);
+
+        return Result<int>.Success(entries.Count);
     }
 
     public Task<CalendarEntryOwnership?> OwnershipOfAsync(
@@ -362,6 +442,39 @@ public sealed class CalendarService
         );
 
     [Pure]
+    private static DateTimeOffset ProbeEndOf(VenueCollisionQuery probe) =>
+        probe.EndsAt ?? probe.StartsAt.AddHours(CalendarDefaults.OpenEndedHours);
+
+    [Pure]
+    private static bool Collides(EntryRow entry, VenueCollisionQuery probe) =>
+        entry.VenueId == probe.VenueId
+        && entry.CalendarEntryId != probe.ExcludeCalendarEntryId
+        && entry.StartsAt < ProbeEndOf(probe)
+        && (
+            entry.EndsAt == null
+                ? entry.StartsAt > probe.StartsAt.AddHours(-CalendarDefaults.OpenEndedHours)
+                : entry.EndsAt > probe.StartsAt
+        );
+
+    [Pure]
+    private static CalendarEntry ToTraining(
+        CreateTrainingsCommand command,
+        TrainingPlacement placement
+    ) =>
+        new()
+        {
+            Title = command.Title,
+            Description = null,
+            OwnerGroupId = command.OwnerGroupId,
+            VenueId = placement.VenueId,
+            StartsAt = placement.StartsAt,
+            EndsAt = placement.EndsAt,
+            Kind = CalendarEntryKind.Training,
+            Visibility = CalendarEntryVisibility.Group,
+            AsksForResponse = false,
+        };
+
+    [Pure]
     private static IReadOnlyList<int> ParticipationOf(
         IReadOnlyList<int> wanted,
         int? ownerGroupId
@@ -466,9 +579,11 @@ public sealed class CalendarService
         if (participationRefusal is not null)
             return participationRefusal;
 
-        if (placement.VenueId is not { } venueId)
-            return null;
+        return placement.VenueId is { } venueId ? await VenueRefusalAsync(venueId, ct) : null;
+    }
 
+    private async Task<string?> VenueRefusalAsync(int venueId, CancellationToken ct)
+    {
         var venue = await _dbContext
             .Venues.AsNoTracking()
             .Where(row => row.Id == venueId)

@@ -42,6 +42,46 @@ public sealed class ClubClockTests
         );
     }
 
+    [Fact]
+    public void Should_ReadTheWinterOffset_When_AWallClockTimeIsPlacedInJanuary()
+    {
+        var placed = ClubClock.At(new DateOnly(2027, 1, 5), new TimeOnly(19, 30));
+
+        Assert.Equal(new DateTimeOffset(2027, 1, 5, 19, 30, 0, TimeSpan.FromHours(1)), placed);
+    }
+
+    [Fact]
+    public void Should_ReadTheSummerOffset_When_AWallClockTimeIsPlacedInJuly()
+    {
+        var placed = ClubClock.At(new DateOnly(2027, 7, 6), new TimeOnly(19, 30));
+
+        Assert.Equal(new DateTimeOffset(2027, 7, 6, 19, 30, 0, TimeSpan.FromHours(2)), placed);
+    }
+
+    [Fact]
+    public void Should_KeepTheEvening_When_TheDayIsTheLastSundayInMarch()
+    {
+        var placed = ClubClock.At(new DateOnly(2027, 3, 28), new TimeOnly(19, 30));
+
+        Assert.Equal(new DateTimeOffset(2027, 3, 28, 19, 30, 0, TimeSpan.FromHours(2)), placed);
+    }
+
+    [Fact]
+    public void Should_KeepTheEvening_When_TheDayIsTheLastSundayInOctober()
+    {
+        var placed = ClubClock.At(new DateOnly(2027, 10, 31), new TimeOnly(19, 30));
+
+        Assert.Equal(new DateTimeOffset(2027, 10, 31, 19, 30, 0, TimeSpan.FromHours(1)), placed);
+    }
+
+    [Fact]
+    public void Should_ReadTheGermanDay_When_AnInstantSitsBeforeMidnightUtc()
+    {
+        var instant = new DateTimeOffset(2027, 1, 5, 23, 30, 0, TimeSpan.Zero);
+
+        Assert.Equal(new DateOnly(2027, 1, 6), ClubClock.DayOf(instant));
+    }
+
     private static FakeTimeProvider At(int year, int month, int day, int hour, int minute) =>
         new(new DateTimeOffset(year, month, day, hour, minute, 0, TimeSpan.Zero));
 }

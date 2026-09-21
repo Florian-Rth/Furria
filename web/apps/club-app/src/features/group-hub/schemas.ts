@@ -41,6 +41,45 @@ export const TrainingSlotSchema = z.object({
 });
 export type TrainingSlot = z.infer<typeof TrainingSlotSchema>;
 
+export const TRAINING_PREVIEW_STATES = ['creatable', 'venueTaken', 'alreadyExists'] as const;
+
+export const TrainingPreviewStateSchema = z.enum(TRAINING_PREVIEW_STATES);
+export type TrainingPreviewState = z.infer<typeof TrainingPreviewStateSchema>;
+
+export const TrainingCollisionSchema = z.object({
+  calendarEntryId: z.number().int(),
+  title: z.string(),
+  startsAt: z.iso.datetime({ offset: true }),
+  endsAt: z.iso.datetime({ offset: true }).nullable(),
+  ownerGroupName: z.string().nullable(),
+});
+export type TrainingCollision = z.infer<typeof TrainingCollisionSchema>;
+
+export const TrainingPreviewRowSchema = z.object({
+  groupTrainingSlotId: z.number().int(),
+  startsAt: z.iso.datetime({ offset: true }),
+  endsAt: z.iso.datetime({ offset: true }),
+  venueId: z.number().int().nullable(),
+  venueName: z.string().nullable(),
+  state: TrainingPreviewStateSchema,
+  venueCollisions: z.array(TrainingCollisionSchema),
+});
+export type TrainingPreviewRow = z.infer<typeof TrainingPreviewRowSchema>;
+
+export const TrainingPreviewSchema = z.object({
+  defaultEndsOn: z.iso.date(),
+  endsOn: z.iso.date(),
+  rows: z.array(TrainingPreviewRowSchema),
+});
+export type TrainingPreview = z.infer<typeof TrainingPreviewSchema>;
+
+export const GeneratedTrainingsSchema = z.object({
+  createdCount: z.number().int(),
+  skippedCount: z.number().int(),
+  venueCollisions: z.array(TrainingCollisionSchema),
+});
+export type GeneratedTrainings = z.infer<typeof GeneratedTrainingsSchema>;
+
 export const GroupHubSchema = z.object({
   groupId: z.number().int(),
   name: z.string(),
@@ -113,6 +152,33 @@ export const EndGroupAdminFormSchema = z.object({
   endedOn: z.iso.date(),
 });
 export type EndGroupAdminForm = z.infer<typeof EndGroupAdminFormSchema>;
+
+export const TRAINING_DURATION_MINUTES = { min: 15, max: 480 } as const;
+export const TRAINING_TITLE_MAX_LENGTH = 120;
+export const MAX_TRAINING_SLOTS = 14;
+
+export const TRAINING_TITLE_MESSAGE = 'Die Trainings brauchen einen Titel.';
+export const TRAINING_DURATION_MESSAGE = 'Trag eine Dauer zwischen 15 und 480 Minuten ein.';
+
+const CLOCK_TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+export const TrainingSlotFormSchema = z.object({
+  weekday: WeekdaySchema,
+  startsAt: z.string().regex(CLOCK_TIME_PATTERN),
+  durationMinutes: z
+    .number()
+    .int()
+    .min(TRAINING_DURATION_MINUTES.min, TRAINING_DURATION_MESSAGE)
+    .max(TRAINING_DURATION_MINUTES.max, TRAINING_DURATION_MESSAGE),
+  venueId: z.string(),
+});
+export type TrainingSlotForm = z.infer<typeof TrainingSlotFormSchema>;
+
+export const GenerateTrainingsFormSchema = z.object({
+  title: z.string().trim().min(1, TRAINING_TITLE_MESSAGE).max(TRAINING_TITLE_MAX_LENGTH),
+  endsOn: z.iso.date(),
+});
+export type GenerateTrainingsForm = z.infer<typeof GenerateTrainingsFormSchema>;
 
 export const GroupCalendarKindSchema = z.enum(CALENDAR_KIND_KEYS);
 export type GroupCalendarKind = z.infer<typeof GroupCalendarKindSchema>;

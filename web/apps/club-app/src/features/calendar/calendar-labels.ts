@@ -34,6 +34,8 @@ const META_SEPARATOR = ' · ';
 const NO_ENTRIES_LEAD = 'Gerade steht nichts im Kalender.';
 const ONE_ENTRY_LEAD = 'Ein Termin steht im Kalender.';
 const ONE_ENTRY = 1;
+const ONE_ENTRY_LABEL = 'Ein Termin';
+const MANY_ENTRIES_LABEL = 'Termine';
 
 export type { AttendanceChoice };
 export { CALENDAR_KIND_LABELS, toAttendanceChoices, toAttendanceSavedMessage };
@@ -65,6 +67,14 @@ export const toCalendarLead = (count: number): string => {
   }
 
   return `${count} Termine stehen im Kalender.`;
+};
+
+export const toDayEntriesLabel = (count: number): string => {
+  if (count === ONE_ENTRY) {
+    return ONE_ENTRY_LABEL;
+  }
+
+  return `${count} ${MANY_ENTRIES_LABEL}`;
 };
 
 export const toEntryMetaLine = (entry: CalendarEntry): string => {

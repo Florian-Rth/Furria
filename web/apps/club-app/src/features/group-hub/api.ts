@@ -7,6 +7,8 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
+import { CALENDAR_QUERY_KEY } from '@/features/calendar';
+import { CLUB_HUB_QUERY_KEY } from '@/features/club';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { toAttendanceSavedMessage } from '@/lib/calendar-copy';
 import { toIsoDay } from '@/lib/day';
@@ -25,22 +27,29 @@ import {
   requestAddGroupMembership,
   requestEndGroupAdmin,
   requestEndGroupMembership,
+  requestGeneratedTrainings,
   requestGroupAttendanceResponse,
   requestGroupCalendar,
   requestGroupHub,
   requestGroupInfoUpdate,
   requestMyGroups,
   requestPersonSearch,
+  requestSetTrainingSlots,
+  requestTrainingPreview,
 } from './requests';
+import type { TrainingSlotPayload } from './rhythm-labels';
+import { RHYTHM_SAVED_MESSAGE, toTrainingsCreatedMessage } from './rhythm-labels';
 import type {
   AddedGroupAdmin,
   AddedGroupMembership,
+  GeneratedTrainings,
   GroupAttendanceAnswer,
   GroupCalendarResponse,
   GroupHub,
   GroupInfoForm,
   MyGroupsResponse,
   PersonSearchResponse,
+  TrainingPreview,
 } from './schemas';
 
 export const MY_GROUPS_QUERY_KEY = ['my-groups'] as const;
@@ -328,6 +337,84 @@ export const useEndGroupAdminMutation = (
     },
     onError: () => {
       refreshHub(queryClient, groupId);
+    },
+  });
+};
+
+export const trainingPreviewQueryKey = (
+  groupId: number,
+  endsOn: string | null,
+): readonly [string, number, string, string | null] => [
+  'groups',
+  groupId,
+  'training-preview',
+  endsOn,
+];
+
+export interface GenerateTrainingsInput {
+  title: string;
+  instants: readonly { groupTrainingSlotId: number; startsAt: string }[];
+}
+
+const refreshTermine = (queryClient: QueryClient, groupId: number): void => {
+  void queryClient.invalidateQueries({ queryKey: groupHubQueryKey(groupId) });
+  void queryClient.invalidateQueries({ queryKey: CALENDAR_QUERY_KEY });
+  void queryClient.invalidateQueries({ queryKey: CLUB_HUB_QUERY_KEY });
+};
+
+export const useSetTrainingSlotsMutation = (
+  groupId: number,
+): UseMutationResult<void, Error, readonly TrainingSlotPayload[]> => {
+  const queryClient = useQueryClient();
+  const raiseNotice = useKkNotice();
+
+  return useMutation({
+    mutationFn: (slots: readonly TrainingSlotPayload[]) =>
+      withFreshAccessToken((accessToken) => requestSetTrainingSlots(groupId, slots, accessToken)),
+    onSuccess: () => {
+      raiseNotice({ tone: 'success', message: RHYTHM_SAVED_MESSAGE });
+      refreshHub(queryClient, groupId);
+    },
+    onError: () => {
+      refreshHub(queryClient, groupId);
+    },
+  });
+};
+
+export const useTrainingPreviewQuery = (
+  groupId: number,
+  endsOn: string | null,
+  enabled: boolean,
+): UseQueryResult<TrainingPreview, Error> => {
+  const load = enabled
+    ? (): Promise<TrainingPreview> =>
+        withFreshAccessToken((accessToken) => requestTrainingPreview(groupId, endsOn, accessToken))
+    : skipToken;
+
+  return useQuery({
+    queryKey: trainingPreviewQueryKey(groupId, endsOn),
+    queryFn: load,
+    placeholderData: keepPreviousData,
+  });
+};
+
+export const useGenerateTrainingsMutation = (
+  groupId: number,
+): UseMutationResult<GeneratedTrainings, Error, GenerateTrainingsInput> => {
+  const queryClient = useQueryClient();
+  const raiseNotice = useKkNotice();
+
+  return useMutation({
+    mutationFn: (input: GenerateTrainingsInput) =>
+      withFreshAccessToken((accessToken) =>
+        requestGeneratedTrainings(groupId, input.title, input.instants, accessToken),
+      ),
+    onSuccess: (written) => {
+      raiseNotice({
+        tone: 'success',
+        message: toTrainingsCreatedMessage(written.createdCount, written.skippedCount),
+      });
+      refreshTermine(queryClient, groupId);
     },
   });
 };

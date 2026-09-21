@@ -2,6 +2,7 @@ import { KkChip, KkFactRow, KkText } from '@furria/ui';
 import type { FC } from 'react';
 import { toDayNumberLabel, toWeekdayEyebrow } from '@/lib/calendar-days';
 import { RUNNING_CHIP_LABEL, toEntryMetaLine } from '../calendar-labels';
+import { toEntryTone } from '../calendar-tones';
 import type { CalendarEntry } from '../schemas';
 import { CalendarEntryActions } from './CalendarEntryActions';
 
@@ -26,20 +27,12 @@ export const CalendarEntryRow: FC<CalendarEntryRowProps> = ({ entry, owned, onEd
   const span = toDayNumberLabel(entry.startsAt);
   const spanLabel = toWeekdayEyebrow(entry.startsAt);
   const meta = toEntryMetaLine(entry);
-
-  if (entry.description === null) {
-    return (
-      <KkFactRow
-        title={entry.title}
-        span={span}
-        spanLabel={spanLabel}
-        meta={meta}
-        tone={tone}
-        chip={chip}
-        actions={actions}
-      />
+  const description =
+    entry.description === null ? null : (
+      <KkText variant="body2" tone="secondary">
+        {entry.description}
+      </KkText>
     );
-  }
 
   return (
     <KkFactRow
@@ -48,12 +41,11 @@ export const CalendarEntryRow: FC<CalendarEntryRowProps> = ({ entry, owned, onEd
       spanLabel={spanLabel}
       meta={meta}
       tone={tone}
+      groupTone={toEntryTone(entry)}
       chip={chip}
       actions={actions}
     >
-      <KkText variant="body2" tone="secondary">
-        {entry.description}
-      </KkText>
+      {description}
     </KkFactRow>
   );
 };

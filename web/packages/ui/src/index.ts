@@ -44,6 +44,7 @@ export type { KkGroupStageJubilee } from './KkGroupStage/internal/group-stage-ju
 export { KkGroupStage } from './KkGroupStage/KkGroupStage';
 export { KkGroupTile } from './KkGroupTile';
 export { KkGroupToneChip } from './KkGroupToneChip';
+export { KkGroupToneDot } from './KkGroupToneDot';
 export { KkGroupToneEdge } from './KkGroupToneEdge';
 export { KkGroupToneField } from './KkGroupToneField';
 export { KkGroupToneSwatch } from './KkGroupToneSwatch';
@@ -134,6 +135,7 @@ export { KkTextField } from './KkTextField';
 export { KkThemeColorMeta } from './KkThemeColorMeta';
 export { KkThemeProvider } from './KkThemeProvider';
 export { KkTicker } from './KkTicker';
+export { KkTickRow } from './KkTickRow';
 export { KkTitleHeader } from './KkTitleHeader';
 export { KkTwoToneHeadline } from './KkTwoToneHeadline';
 export { KkVisuallyHidden } from './KkVisuallyHidden';

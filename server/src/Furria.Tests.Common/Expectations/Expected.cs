@@ -82,6 +82,8 @@ public sealed class Expected
     public CalendarEntryGroupSetExpectations ParticipatingGroupsOf(int calendarEntryId) =>
         new(this, calendarEntryId);
 
+    public TrainingSetExpectations TrainingsOf(int groupId) => new(this, groupId);
+
     public async Task AssertAsync(CancellationToken ct = default)
     {
         var pending = _reads.ToList();

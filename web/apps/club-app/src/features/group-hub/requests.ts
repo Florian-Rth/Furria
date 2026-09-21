@@ -1,6 +1,7 @@
 import { apiFetch } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
 import { toGroupInfoPayload } from './group-hub-labels';
+import type { TrainingSlotPayload } from './rhythm-labels';
 import type {
   AddedGroupAdmin,
   AddedGroupMembership,
@@ -8,20 +9,24 @@ import type {
   AddGroupMembershipForm,
   EndGroupAdminForm,
   EndGroupMembershipForm,
+  GeneratedTrainings,
   GroupAttendanceAnswer,
   GroupCalendarResponse,
   GroupHub,
   GroupInfoForm,
   MyGroupsResponse,
   PersonSearchResponse,
+  TrainingPreview,
 } from './schemas';
 import {
   AddedGroupAdminSchema,
   AddedGroupMembershipSchema,
+  GeneratedTrainingsSchema,
   GroupCalendarResponseSchema,
   GroupHubSchema,
   MyGroupsResponseSchema,
   PersonSearchResponseSchema,
+  TrainingPreviewSchema,
 } from './schemas';
 
 export const requestMyGroups = (accessToken: string): Promise<MyGroupsResponse> =>
@@ -118,5 +123,55 @@ export const requestEndGroupAdmin = (
     method: 'POST',
     body: { endedOn: form.endedOn },
     schema: NoContentSchema,
+    accessToken,
+  });
+
+export const requestSetTrainingSlots = (
+  groupId: number,
+  slots: readonly TrainingSlotPayload[],
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`/api/groups/${groupId}/training-slots`, {
+    method: 'PUT',
+    body: {
+      slots: slots.map((slot) => ({
+        weekday: slot.weekday,
+        startsAt: slot.startsAt,
+        durationMinutes: slot.durationMinutes,
+        venueId: slot.venueId,
+      })),
+    },
+    schema: NoContentSchema,
+    accessToken,
+  });
+
+export const requestTrainingPreview = (
+  groupId: number,
+  endsOn: string | null,
+  accessToken: string,
+): Promise<TrainingPreview> =>
+  apiFetch(`/api/groups/${groupId}/trainings/preview`, {
+    method: 'POST',
+    body: { endsOn },
+    schema: TrainingPreviewSchema,
+    accessToken,
+  });
+
+export const requestGeneratedTrainings = (
+  groupId: number,
+  title: string,
+  instants: readonly { groupTrainingSlotId: number; startsAt: string }[],
+  accessToken: string,
+): Promise<GeneratedTrainings> =>
+  apiFetch(`/api/groups/${groupId}/trainings`, {
+    method: 'POST',
+    body: {
+      title,
+      instants: instants.map((instant) => ({
+        groupTrainingSlotId: instant.groupTrainingSlotId,
+        startsAt: instant.startsAt,
+      })),
+    },
+    schema: GeneratedTrainingsSchema,
     accessToken,
   });

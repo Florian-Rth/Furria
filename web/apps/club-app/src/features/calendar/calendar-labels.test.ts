@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   toAttendanceChoices,
   toCalendarLead,
+  toDayEntriesLabel,
   toDeleteConsequence,
   toEntryFacts,
   toEntryMetaLine,
@@ -58,6 +59,15 @@ describe('toAttendanceChoices', () => {
     ['maybe' as const, [false, false, true]],
   ])('marks the answer %s', (answer, expected) => {
     expect(toAttendanceChoices(answer).map((choice) => choice.selected)).toEqual(expected);
+  });
+});
+
+describe('toDayEntriesLabel', () => {
+  it.each([
+    [1, 'Ein Termin'],
+    [3, '3 Termine'],
+  ])('reads %i as %s', (count, expected) => {
+    expect(toDayEntriesLabel(count)).toBe(expected);
   });
 });
 

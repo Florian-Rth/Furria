@@ -3,6 +3,8 @@ import Stack from '@mui/material/Stack';
 import type { CSSObject, Theme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import type { FC, PropsWithChildren, ReactNode } from 'react';
+import type { KkGroupTone } from './internal/group-tone';
+import { groupToneEdgeScheme } from './internal/group-tone';
 import { inkWashSurface } from './internal/ink-wash';
 import { rowDividerTop } from './internal/row-divider';
 import { applyScheme, schemeFill } from './internal/scheme-paint';
@@ -15,6 +17,7 @@ type KkFactRowTone = 'neutral' | 'gold' | 'accent';
 
 const BAR_WIDTH = 3;
 const BAR_GUTTER = 1.875;
+const GROUP_EDGE_GUTTER = 1.25;
 const RAIL_MIX = '55%';
 const ACTIONS_WIDTH = 168;
 
@@ -49,12 +52,30 @@ const barShape: CSSObject = {
   flexShrink: 0,
 };
 
+const groupEdgeShape: CSSObject = {
+  width: 0,
+  alignSelf: 'stretch',
+  flexShrink: 0,
+  borderLeftWidth: kkTokens.line.page,
+  borderLeftStyle: 'solid',
+  borderLeftColor: 'transparent',
+};
+
+const groupEdgePaint = (theme: Theme, tone: KkGroupTone | null): CSSObject => {
+  if (tone === null) {
+    return groupEdgeShape;
+  }
+
+  return { ...groupEdgeShape, ...applyScheme(theme, groupToneEdgeScheme(tone)) };
+};
+
 interface KkFactRowProps extends PropsWithChildren {
   title: string;
   span: string;
   spanLabel?: string;
   meta?: string;
   tone?: KkFactRowTone;
+  groupTone?: KkGroupTone | null;
   chip?: ReactNode;
   actions?: ReactNode;
   dimmed?: boolean;
@@ -67,6 +88,7 @@ export const KkFactRow: FC<KkFactRowProps> = ({
   spanLabel,
   meta,
   tone = 'neutral',
+  groupTone,
   chip,
   actions,
   dimmed = false,
@@ -130,7 +152,7 @@ export const KkFactRow: FC<KkFactRowProps> = ({
   );
 
   const nestedRows =
-    children === undefined ? null : (
+    children === undefined || children === null ? null : (
       <Stack
         direction="row"
         data-kk-fact-row-nested
@@ -141,64 +163,82 @@ export const KkFactRow: FC<KkFactRowProps> = ({
       </Stack>
     );
 
+  const groupEdge =
+    groupTone === undefined ? null : (
+      <Box
+        aria-hidden
+        data-kk-fact-row-group-edge
+        sx={(theme) => groupEdgePaint(theme, groupTone)}
+      />
+    );
+
+  const mainRow = (
+    <Stack
+      direction="row"
+      sx={{
+        alignItems: 'stretch',
+        gap: 1.5,
+        minWidth: 0,
+        flexWrap: { xs: 'wrap', desktop: 'nowrap' },
+      }}
+    >
+      <Box
+        aria-hidden
+        sx={(theme) => ({ ...barShape, opacity: barOpacity, ...toneBar[tone](theme) })}
+      />
+      <Stack sx={{ flexGrow: 1, flexBasis: 0, minWidth: 0, alignSelf: 'center', gap: 0.375 }}>
+        <Stack
+          direction="row"
+          sx={{
+            alignItems: 'center',
+            gap: 1,
+            minWidth: 0,
+            flexWrap: { xs: 'wrap', desktop: 'nowrap' },
+          }}
+        >
+          <Typography
+            component="p"
+            sx={{
+              fontSize: kkTokens.type.rowTitle,
+              fontWeight: 800,
+              lineHeight: 1.25,
+              color: titleColor,
+              minWidth: 0,
+              whiteSpace: { xs: 'normal', desktop: 'nowrap' },
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {title}
+          </Typography>
+          {chipSlot}
+        </Stack>
+        {metaLine}
+      </Stack>
+      {spanBlock}
+      {actionsRow}
+    </Stack>
+  );
+
   return (
     <Stack
+      direction="row"
       data-kk-fact-row
       sx={[
         {
           minWidth: 0,
+          gap: GROUP_EDGE_GUTTER,
           py: { xs: 1, desktop: 1.5 },
           ...rowDividerTop,
         },
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >
-      <Stack
-        direction="row"
-        sx={{
-          alignItems: 'stretch',
-          gap: 1.5,
-          minWidth: 0,
-          flexWrap: { xs: 'wrap', desktop: 'nowrap' },
-        }}
-      >
-        <Box
-          aria-hidden
-          sx={(theme) => ({ ...barShape, opacity: barOpacity, ...toneBar[tone](theme) })}
-        />
-        <Stack sx={{ flexGrow: 1, flexBasis: 0, minWidth: 0, alignSelf: 'center', gap: 0.375 }}>
-          <Stack
-            direction="row"
-            sx={{
-              alignItems: 'center',
-              gap: 1,
-              minWidth: 0,
-              flexWrap: { xs: 'wrap', desktop: 'nowrap' },
-            }}
-          >
-            <Typography
-              component="p"
-              sx={{
-                fontSize: kkTokens.type.rowTitle,
-                fontWeight: 800,
-                lineHeight: 1.25,
-                color: titleColor,
-                minWidth: 0,
-                whiteSpace: { xs: 'normal', desktop: 'nowrap' },
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-              }}
-            >
-              {title}
-            </Typography>
-            {chipSlot}
-          </Stack>
-          {metaLine}
-        </Stack>
-        {spanBlock}
-        {actionsRow}
+      {groupEdge}
+      <Stack sx={{ flexGrow: 1, minWidth: 0 }}>
+        {mainRow}
+        {nestedRows}
       </Stack>
-      {nestedRows}
     </Stack>
   );
 };
