@@ -1,11 +1,8 @@
-import { GROUP_TONES } from '@furria/ui';
 import { z } from 'zod';
 import { GroupDetailAdminSchema, GroupDetailMemberSchema } from '@/features/group-detail';
 import { PersonRefSchema } from '@/lib/api/schemas';
+import { GroupToneSchema } from '@/lib/group-tone';
 import { ATTENDANCE_ANSWER_KEYS, CALENDAR_KIND_KEYS } from '@/lib/calendar-copy';
-
-export const GroupToneSchema = z.enum(GROUP_TONES);
-export type GroupTone = z.infer<typeof GroupToneSchema>;
 
 export const WEEKDAY_VALUES = [
   'monday',

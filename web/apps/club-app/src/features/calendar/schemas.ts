@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { CalendarEntryKindSchema } from '@/features/club';
-import { GroupToneSchema } from '@/features/group-hub';
+import { GroupToneSchema } from '@/lib/group-tone';
 
 export const CalendarEntryVisibilitySchema = z.enum(['group', 'club', 'public']);
 export type CalendarEntryVisibility = z.infer<typeof CalendarEntryVisibilitySchema>;

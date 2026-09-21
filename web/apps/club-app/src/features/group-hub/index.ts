@@ -11,5 +11,5 @@ export { EndAdminDialog } from './components/EndAdminDialog';
 export { EndMembershipDialog } from './components/EndMembershipDialog';
 export { HubPage } from './components/HubPage';
 export { PersonPicker } from './components/PersonPicker';
-export type { GroupHub, GroupTone, MyGroupSummary, TrainingSlot, Weekday } from './schemas';
-export { GroupToneSchema, WeekdaySchema } from './schemas';
+export type { GroupHub, MyGroupSummary, TrainingSlot, Weekday } from './schemas';
+export { WeekdaySchema } from './schemas';

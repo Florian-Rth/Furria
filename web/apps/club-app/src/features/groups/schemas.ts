@@ -1,8 +1,6 @@
-import { GROUP_TONES } from '@furria/ui';
 import { z } from 'zod';
 import { PersonRefSchema } from '@/lib/api/schemas';
-
-export const GroupToneSchema = z.enum(GROUP_TONES);
+import { GroupToneSchema } from '@/lib/group-tone';
 
 export const GroupSummarySchema = z.object({
   groupId: z.number().int(),

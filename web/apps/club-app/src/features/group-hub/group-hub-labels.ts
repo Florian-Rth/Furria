@@ -8,7 +8,8 @@ import { toGroupAdminsLabel, toGroupMembersLabel } from '@/lib/group-sections';
 import { formatIsoDay, formatSinceSession } from '@/lib/membership-labels';
 import type { StateChip } from '@/lib/state-chips';
 import { toRecruitingChip } from '@/lib/state-chips';
-import type { GroupHub, GroupInfoForm, GroupTone } from './schemas';
+import type { GroupTone } from '@/lib/group-tone';
+import type { GroupHub, GroupInfoForm } from './schemas';
 
 const GROUP_ID_PATTERN = /^[1-9]\d*$/;
 const HUB_TITLE_FALLBACK = 'Gruppe';
