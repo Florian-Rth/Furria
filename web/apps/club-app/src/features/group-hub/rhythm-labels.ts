@@ -10,8 +10,6 @@ export const RHYTHM_ADMIN_NOTE =
   'Der Rhythmus ist eine Angabe, keine Regel: Er sagt, wann ihr normalerweise trainiert. Termine entstehen erst, wenn du sie erzeugst.';
 export const RHYTHM_ADD_LABEL = 'Trainingszeit';
 export const RHYTHM_ADD_ACTION_LABEL = 'Trainingszeit hinzufügen';
-export const RHYTHM_EDIT_ACTION_LABEL = 'Trainingszeit ändern';
-export const RHYTHM_REMOVE_LABEL = 'Entfernen';
 export const RHYTHM_GENERATE_LABEL = 'Trainings erzeugen';
 export const RHYTHM_GENERATE_HINT =
   'Aus dem Rhythmus entstehen einzelne Termine im Kalender. Du siehst jeden Tag vorher und hakst ab, was entstehen soll.';
@@ -27,9 +25,11 @@ export const SLOT_START_LABEL = 'Beginn';
 export const SLOT_DURATION_LABEL = 'Dauer';
 export const SLOT_VENUE_LABEL = 'Ort';
 export const SLOT_VENUE_HINT = 'Ohne Ort warnt die Vorschau nicht vor Doppelbelegungen.';
-export const SLOT_CANCEL_LABEL = 'Abbrechen';
-export const SLOT_CONFIRM_LABEL = 'Übernehmen';
-export const SLOT_CLOSE_LABEL = 'Schließen';
+
+export const SLOT_REMOVE_LABEL = 'Trainingszeit entfernen';
+export const SLOT_REMOVE_EYEBROW = 'Trainingszeit entfernen';
+export const SLOT_REMOVE_EXPLANATION =
+  'Die Trainingszeit verschwindet aus dem Rhythmus. Schon erzeugte Termine bleiben im Kalender stehen.';
 
 export const GENERATOR_SHEET_TITLE = 'Trainings erzeugen';
 export const GENERATOR_TITLE_LABEL = 'Titel der Termine';
@@ -165,6 +165,18 @@ export const toSlotVenueLine = (venueName: string | null, isArchived: boolean): 
 };
 
 export const toClockValue = (startsAt: string): string => startsAt.slice(0, 5);
+
+export interface SlotFact {
+  label: string;
+  value: string;
+}
+
+export const toSlotRemoveFacts = (slot: TrainingSlot, venueIsArchived: boolean): SlotFact[] => [
+  { label: SLOT_WEEKDAY_LABEL, value: toWeekdayLabel(slot.weekday) },
+  { label: SLOT_START_LABEL, value: toClockValue(slot.startsAt) },
+  { label: SLOT_DURATION_LABEL, value: toDurationLabel(slot.durationMinutes) },
+  { label: SLOT_VENUE_LABEL, value: toSlotVenueLine(slot.venueName, venueIsArchived) },
+];
 
 export const toSlotFormValues = (slot: TrainingSlot | null): TrainingSlotForm =>
   slot === null

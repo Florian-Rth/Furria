@@ -60,18 +60,9 @@ export const GROUP_HISTORY_KIND_LABELS: Record<GroupHistoryKind, string> = {
 };
 
 export const SINCE_LABEL = 'seit';
-export const END_LABEL = 'Beenden';
 
 export const ADD_MEMBER_LABEL = 'Mitglied';
 export const ADD_MEMBER_ACTION_LABEL = 'Mitglied aufnehmen';
-export const ADD_ADMIN_LABEL = 'Admin';
-export const ADD_ADMIN_ACTION_LABEL = 'Admin eintragen';
-
-export const toEndMembershipActionLabel = (personName: string): string =>
-  `Zugehörigkeit von ${personName} beenden`;
-
-export const toEndAdminActionLabel = (personName: string): string =>
-  `Gruppen-Admin ${personName} beenden`;
 
 export const NO_MEMBERS_TITLE = 'NOCH NIEMAND DABEI';
 export const NO_ADMINS_TITLE = 'KEIN GRUPPEN-ADMIN';

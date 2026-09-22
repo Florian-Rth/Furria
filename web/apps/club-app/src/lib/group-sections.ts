@@ -8,6 +8,7 @@ export const GROUP_SECTION_TITLES = {
   rhythm: 'Trainingsrhythmus',
   history: 'Geschichte',
   events: 'Termine',
+  administration: 'Für die Verwaltung',
 } as const;
 
 export const GROUP_ADMINS_NOTE =

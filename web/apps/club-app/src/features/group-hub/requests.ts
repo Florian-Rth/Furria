@@ -1,3 +1,4 @@
+import { toGroupKindId } from '@/features/group-kinds';
 import { apiFetch } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
 import { toGroupInfoPayload } from './group-hub-labels';
@@ -10,6 +11,7 @@ import type {
   EndGroupAdminForm,
   EndGroupMembershipForm,
   GeneratedTrainings,
+  GroupAdministrationForm,
   GroupAttendanceAnswer,
   GroupCalendarResponse,
   GroupHub,
@@ -74,6 +76,26 @@ export const requestGroupInfoUpdate = (
   apiFetch(`/api/groups/${groupId}/info`, {
     method: 'PUT',
     body: toGroupInfoPayload(form),
+    schema: NoContentSchema,
+    accessToken,
+  });
+
+export const requestGroupAdministrationUpdate = (
+  groupId: number,
+  form: GroupAdministrationForm,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`/api/manage/groups/${groupId}`, {
+    method: 'PUT',
+    body: { name: form.name, groupKindId: toGroupKindId(form.groupKindId) },
+    schema: NoContentSchema,
+    accessToken,
+  });
+
+export const requestGroupArchivalFromHub = (groupId: number, accessToken: string): Promise<void> =>
+  apiFetch(`/api/manage/groups/${groupId}/archive`, {
+    method: 'POST',
+    body: {},
     schema: NoContentSchema,
     accessToken,
   });

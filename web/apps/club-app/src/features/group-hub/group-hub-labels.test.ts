@@ -2,15 +2,18 @@ import { describe, expect, it } from 'vitest';
 import type { GroupDetailAdmin, GroupDetailMember } from '@/features/group-detail';
 import {
   toAdminAppointedMessage,
+  toAdminChainRows,
   toAdminEndConsequence,
   toAdminEndedMessage,
-  toAdminEndFacts,
   toAdminEndParagraph,
   toAdminFunction,
   toAppointConsequence,
+  toArchiveGroupConsequence,
+  toArchiveGroupFacts,
   toEndConsequence,
-  toEndFacts,
   toEndQuickChoices,
+  toGroupArchivedFromHubMessage,
+  toGroupInfoFormValues,
   toGroupInfoPayload,
   toHubId,
   toHubMetaFacts,
@@ -22,12 +25,12 @@ import {
   toLastAdminWarning,
   toMemberAddedAsAdminMessage,
   toMemberAddedMessage,
+  toMembershipChainRows,
   toMembershipEndedMessage,
-  toPeekAdminIntent,
   toPersonAccent,
+  toPersonIdParam,
   toPersonMetaLine,
   toPersonStandingLines,
-  toPersonTap,
   toSearchCapLine,
   toSearchTerm,
   toSelfAdminEndedMessage,
@@ -98,6 +101,65 @@ describe('toHubId', () => {
   });
 });
 
+describe('toPersonIdParam', () => {
+  it.each([
+    { case: 'undefined', raw: undefined, expected: null },
+    { case: 'a positive id', raw: '9', expected: 9 },
+    { case: 'zero', raw: '0', expected: null },
+    { case: 'a word', raw: 'anna', expected: null },
+  ])('reads $case', ({ raw, expected }) => {
+    expect(toPersonIdParam(raw)).toBe(expected);
+  });
+});
+
+describe('toMembershipChainRows', () => {
+  it('lists the running period ahead of every past one', () => {
+    const hub = groupHub({
+      members: [hubMember({ groupMembershipId: 7, personId: 12 })],
+      pastMembers: [
+        hubMember({
+          groupMembershipId: 5,
+          personId: 12,
+          joinedOn: '2015-09-01',
+          leftOn: '2016-09-01',
+        }),
+      ],
+    });
+
+    expect(toMembershipChainRows(hub, 12, null)).toEqual([
+      { key: '7', span: '01.09.2017 – offen', isEdited: false },
+      { key: '5', span: '01.09.2015 – 01.09.2016', isEdited: false },
+    ]);
+  });
+
+  it('marks the edited entry and leaves every other person out', () => {
+    const hub = groupHub({
+      members: [hubMember({ groupMembershipId: 7, personId: 12 })],
+      pastMembers: [hubMember({ groupMembershipId: 5, personId: 99 })],
+    });
+
+    expect(toMembershipChainRows(hub, 12, 7)).toEqual([
+      { key: '7', span: '01.09.2017 – offen', isEdited: true },
+    ]);
+  });
+});
+
+describe('toAdminChainRows', () => {
+  it('lists a Gruppen-Admin history with her Funktion folded into the span', () => {
+    const hub = groupHub({
+      admins: [hubAdmin({ groupAdminId: 4, personId: 9 })],
+      pastAdmins: [
+        hubAdmin({ groupAdminId: 2, personId: 9, sinceOn: '2018-01-01', untilOn: '2018-12-31' }),
+      ],
+    });
+
+    expect(toAdminChainRows(hub, 9, null)).toEqual([
+      { key: '4', span: '01.01.2019 – offen', isEdited: false },
+      { key: '2', span: '01.01.2018 – 31.12.2018', isEdited: false },
+    ]);
+  });
+});
+
 describe('toStandingLine', () => {
   it('dates the viewer own Zugehörigkeit from the session she joined in', () => {
     expect(toStandingLine(groupHub({ viewerIsMember: true, viewerSince: '2016-11-11' }))).toBe(
@@ -157,29 +219,6 @@ describe('toJubileeSeal', () => {
   });
 });
 
-describe('toPersonTap', () => {
-  it.each([
-    { case: 'an admin viewer', canManage: true, affiliated: true, row: true, expected: 'peek' },
-    { case: 'a stranger row', canManage: false, affiliated: true, row: false, expected: 'peek' },
-    {
-      case: 'an unaffiliated viewer',
-      canManage: false,
-      affiliated: false,
-      row: true,
-      expected: 'peek',
-    },
-    {
-      case: 'two affiliated parties',
-      canManage: false,
-      affiliated: true,
-      row: true,
-      expected: 'person',
-    },
-  ])('sends $case to the $expected surface', ({ canManage, affiliated, row, expected }) => {
-    expect(toPersonTap(canManage, affiliated, row)).toBe(expected);
-  });
-});
-
 describe('toGroupInfoPayload', () => {
   it('turns the empty choices into nulls and the year into a number', () => {
     expect(
@@ -215,6 +254,40 @@ describe('toGroupInfoPayload', () => {
       foundedYear: 1974,
       tone: 'teal',
     });
+  });
+});
+
+describe('toGroupInfoFormValues', () => {
+  it('reads every field off the loaded hub', () => {
+    expect(
+      toGroupInfoFormValues(
+        groupHub({
+          description: 'Die Garde tanzt.',
+          isRecruiting: true,
+          groupKindId: 7,
+          foundedYear: 1974,
+          tone: 'teal',
+        }),
+      ),
+    ).toEqual({
+      description: 'Die Garde tanzt.',
+      isRecruiting: true,
+      groupKindId: '7',
+      foundedYear: '1974',
+      tone: 'teal',
+    });
+  });
+
+  it('turns an unset Gruppenart, Gründungsjahr and Gruppenfarbe into empty choices', () => {
+    expect(
+      toGroupInfoFormValues(groupHub({ groupKindId: null, foundedYear: null, tone: null })),
+    ).toEqual(expect.objectContaining({ groupKindId: '', foundedYear: '', tone: '' }));
+  });
+
+  it('overrides isRecruiting without touching any other field', () => {
+    expect(
+      toGroupInfoFormValues(groupHub({ isRecruiting: false }), { isRecruiting: true }),
+    ).toEqual(expect.objectContaining({ isRecruiting: true }));
   });
 });
 
@@ -376,27 +449,47 @@ describe('toEndConsequence', () => {
   });
 });
 
-describe('toEndFacts', () => {
-  it('answers who, in which Gruppe, since when and until when', () => {
-    const facts = toEndFacts(
-      hubMember({ firstName: 'Paula', lastName: 'Brendel', joinedOn: '2019-09-01' }),
-      'Tanzgarde',
-      '2026-02-28',
+describe('toArchiveGroupConsequence', () => {
+  it('says nobody is left when the Gruppe has no Zugehörigkeit', () => {
+    expect(toArchiveGroupConsequence('Tanzgarde', 0, '22.09.2026')).toBe(
+      'Ab dem 22.09.2026 steht Tanzgarde nicht mehr im Verzeichnis. Es ist gerade niemand eingetragen.',
     );
-
-    expect(facts).toEqual([
-      { label: 'Person', value: 'Paula Brendel' },
-      { label: 'Gruppe', value: 'Tanzgarde' },
-      { label: 'Dabei seit', value: '01.09.2019' },
-      { label: 'Letzter Tag', value: '28.02.2026' },
-    ]);
   });
 
-  it('says the last day is still open while none is chosen', () => {
-    expect(toEndFacts(hubMember({}), 'Tanzgarde', null)[3]).toEqual({
-      label: 'Letzter Tag',
-      value: 'noch offen',
-    });
+  it('keeps a single Zugehörigkeit in the singular', () => {
+    expect(toArchiveGroupConsequence('Tanzgarde', 1, '22.09.2026')).toContain(
+      'Die eine Zugehörigkeit bleibt bestehen.',
+    );
+  });
+
+  it('counts several Zugehörigkeiten in the plural', () => {
+    expect(toArchiveGroupConsequence('Tanzgarde', 4, '22.09.2026')).toContain(
+      'Die 4 Zugehörigkeiten bleiben bestehen.',
+    );
+  });
+});
+
+describe('toArchiveGroupFacts', () => {
+  it('counts every running Person and Gruppen-Admin', () => {
+    expect(
+      toArchiveGroupFacts(
+        groupHub({ name: 'Tanzgarde', members: [hubMember({})], admins: [hubAdmin({})] }),
+        '22.09.2026',
+      ),
+    ).toEqual([
+      { label: 'Gruppe', value: 'Tanzgarde' },
+      { label: 'Personen', value: '1' },
+      { label: 'Gruppen-Admins', value: '1' },
+      { label: 'Ab', value: '22.09.2026' },
+    ]);
+  });
+});
+
+describe('toGroupArchivedFromHubMessage', () => {
+  it('names the Gruppe that left the Verzeichnis', () => {
+    expect(toGroupArchivedFromHubMessage('Tanzgarde')).toBe(
+      'Tanzgarde steht nicht mehr im Verzeichnis.',
+    );
   });
 });
 
@@ -463,38 +556,6 @@ describe('toAdminEndConsequence', () => {
 
   it('speaks of an end today in the present tense', () => {
     expect(toAdminEndConsequence('Anna Kaiser', '2026-03-01', '2026-03-01')).toContain('ab sofort');
-  });
-});
-
-describe('toAdminEndFacts', () => {
-  it('answers who, where, with which Funktion and until when', () => {
-    const facts = toAdminEndFacts(
-      hubAdmin({ firstName: 'Anna', lastName: 'Kaiser', function: 'Trainerin' }),
-      'Tanzgarde',
-      '2026-02-28',
-    );
-
-    expect(facts).toEqual([
-      { label: 'Person', value: 'Anna Kaiser' },
-      { label: 'Gruppe', value: 'Tanzgarde' },
-      { label: 'Funktion', value: 'Trainerin' },
-      { label: 'Admin seit', value: '01.01.2019' },
-      { label: 'Letzter Tag', value: '28.02.2026' },
-    ]);
-  });
-
-  it('names the missing Funktion instead of leaving the row blank', () => {
-    expect(toAdminEndFacts(hubAdmin({ function: null }), 'Tanzgarde', null)[2]).toEqual({
-      label: 'Funktion',
-      value: 'ohne Funktion',
-    });
-  });
-
-  it('says the last day is still open while none is chosen', () => {
-    expect(toAdminEndFacts(hubAdmin({}), 'Tanzgarde', null)[4]).toEqual({
-      label: 'Letzter Tag',
-      value: 'noch offen',
-    });
   });
 });
 
@@ -625,26 +686,6 @@ describe('toPersonStandingLines', () => {
         }),
       ),
     ).toEqual(['Gruppen-Admin seit 2018/19']);
-  });
-});
-
-describe('toPeekAdminIntent', () => {
-  it('offers nothing to a viewer who may not manage the Gruppe', () => {
-    expect(toPeekAdminIntent(groupPerson({ groupAdminId: 4 }), false)).toBe('none');
-  });
-
-  it('offers to end the office of a standing Gruppen-Admin', () => {
-    expect(toPeekAdminIntent(groupPerson({ groupAdminId: 4 }), true)).toBe('endAdmin');
-  });
-
-  it('offers to promote a member who holds no office', () => {
-    expect(toPeekAdminIntent(groupPerson({}), true)).toBe('promote');
-  });
-
-  it('offers no promotion to someone who is not in the Gruppe', () => {
-    expect(
-      toPeekAdminIntent(groupPerson({ groupMembershipId: null, memberSince: null }), true),
-    ).toBe('none');
   });
 });
 

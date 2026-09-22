@@ -1,52 +1,46 @@
-import { KkGroupTile, useKkSheetCommands } from '@furria/ui';
+import { KkGroupTile } from '@furria/ui';
 import Box from '@mui/material/Box';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import type { GroupTone } from '@/features/groups';
+import { toLandingKey } from '@/features/write';
 import { toInitials } from '@/lib/initials';
-import { toPeekId } from '@/lib/peek';
-import { toPersonAccent, toPersonMetaLine, toPersonTap } from '../group-hub-labels';
+import { toPersonAccent, toPersonMetaLine } from '../group-hub-labels';
 import type { HubPerson } from '../hub-people';
 import { HubCelebration } from './HubCelebration';
 
-const MEMBER_PATH = '/members/$personId';
+const PERSON_ROUTE = '/groups/$groupId/people/$personId';
+const NO_FIRE = 0;
 
 interface HubPersonTileProps {
   tone: GroupTone;
   person: HubPerson;
+  groupId: number;
   canManage: boolean;
-  viewerIsAffiliated: boolean;
-  isNew: boolean;
-  fireKey: number;
+  highlightedKey: string | null;
 }
 
 export const HubPersonTile: FC<HubPersonTileProps> = ({
   tone,
   person,
+  groupId,
   canManage,
-  viewerIsAffiliated,
-  isNew,
-  fireKey,
+  highlightedKey,
 }) => {
-  const sheet = useKkSheetCommands();
   const name = `${person.firstName} ${person.lastName}`;
-  const tap = toPersonTap(canManage, viewerIsAffiliated, person.isAffiliated);
+  const membershipId = person.groupMembershipId;
+  const celebrates =
+    membershipId !== null && highlightedKey === toLandingKey('membership', membershipId);
+  const fireKey = celebrates && membershipId !== null ? membershipId : NO_FIRE;
 
-  const peek = (): void => {
-    sheet.open(toPeekId('member', person.personId));
-  };
-
-  const link =
-    tap === 'person'
-      ? { component: Link, to: MEMBER_PATH, params: { personId: String(person.personId) } }
-      : { onClick: peek };
-
-  const burst = isNew ? <HubCelebration fireKey={fireKey} /> : null;
+  const burst = celebrates ? <HubCelebration fireKey={fireKey} /> : null;
 
   return (
     <Box sx={{ position: 'relative', minWidth: 0 }}>
       <KkGroupTile
-        {...link}
+        component={Link}
+        to={PERSON_ROUTE}
+        params={{ groupId: String(groupId), personId: String(person.personId) }}
         tone={tone}
         initials={toInitials(person.firstName, person.lastName)}
         name={name}

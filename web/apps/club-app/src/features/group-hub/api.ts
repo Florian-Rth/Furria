@@ -9,6 +9,7 @@ import {
 } from '@tanstack/react-query';
 import { CALENDAR_QUERY_KEY } from '@/features/calendar';
 import { CLUB_HUB_QUERY_KEY } from '@/features/club';
+import { GROUPS_QUERY_KEY } from '@/features/groups';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { toAttendanceSavedMessage } from '@/lib/calendar-copy';
 import { toIsoDay } from '@/lib/day';
@@ -17,6 +18,8 @@ import {
   GROUP_INFO_SAVED_MESSAGE,
   toAdminAppointedMessage,
   toAdminEndedMessage,
+  toGroupAdministrationSavedMessage,
+  toGroupArchivedFromHubMessage,
   toMemberAddedAsAdminMessage,
   toMemberAddedMessage,
   toMembershipEndedMessage,
@@ -29,6 +32,8 @@ import {
   requestEndGroupAdmin,
   requestEndGroupMembership,
   requestGeneratedTrainings,
+  requestGroupAdministrationUpdate,
+  requestGroupArchivalFromHub,
   requestGroupAttendanceResponse,
   requestGroupCalendar,
   requestGroupHub,
@@ -44,6 +49,7 @@ import type {
   AddedGroupAdmin,
   AddedGroupMembership,
   GeneratedTrainings,
+  GroupAdministrationForm,
   GroupAttendanceAnswer,
   GroupCalendarResponse,
   GroupHub,
@@ -52,6 +58,8 @@ import type {
   PersonSearchResponse,
   TrainingPreview,
 } from './schemas';
+
+const MANAGED_GROUPS_QUERY_KEY = ['manage', 'groups'] as const;
 
 export const MY_GROUPS_QUERY_KEY = ['my-groups'] as const;
 
@@ -210,13 +218,54 @@ export const useUpdateGroupInfoMutation = (
       raiseNotice({ tone: 'success', message: GROUP_INFO_SAVED_MESSAGE });
       refreshHub(queryClient, groupId);
     },
-    onError: (error) => {
-      const message = toWriteErrorMessage(error);
-
-      if (message !== null) {
-        raiseNotice({ tone: 'error', message });
-      }
+    onError: () => {
       refreshHub(queryClient, groupId);
+    },
+  });
+};
+
+export const useUpdateGroupAdministrationMutation = (
+  groupId: number,
+): UseMutationResult<void, Error, GroupAdministrationForm> => {
+  const queryClient = useQueryClient();
+  const raiseNotice = useKkNotice();
+
+  return useMutation({
+    mutationFn: (form: GroupAdministrationForm) =>
+      withFreshAccessToken((accessToken) =>
+        requestGroupAdministrationUpdate(groupId, form, accessToken),
+      ),
+    onSuccess: (_result, form) => {
+      raiseNotice({ tone: 'success', message: toGroupAdministrationSavedMessage(form.name) });
+      refreshHub(queryClient, groupId);
+      void queryClient.invalidateQueries({ queryKey: MANAGED_GROUPS_QUERY_KEY });
+      void queryClient.invalidateQueries({ queryKey: GROUPS_QUERY_KEY });
+    },
+    onError: () => {
+      refreshHub(queryClient, groupId);
+    },
+  });
+};
+
+export interface ArchiveGroupFromHubInput {
+  name: string;
+}
+
+export const useArchiveGroupFromHubMutation = (
+  groupId: number,
+): UseMutationResult<void, Error, ArchiveGroupFromHubInput> => {
+  const queryClient = useQueryClient();
+  const raiseNotice = useKkNotice();
+
+  return useMutation({
+    mutationFn: () =>
+      withFreshAccessToken((accessToken) => requestGroupArchivalFromHub(groupId, accessToken)),
+    onSuccess: (_result, input) => {
+      raiseNotice({ tone: 'success', message: toGroupArchivedFromHubMessage(input.name) });
+      void queryClient.invalidateQueries({ queryKey: groupHubQueryKey(groupId) });
+      void queryClient.invalidateQueries({ queryKey: MY_GROUPS_QUERY_KEY });
+      void queryClient.invalidateQueries({ queryKey: MANAGED_GROUPS_QUERY_KEY });
+      void queryClient.invalidateQueries({ queryKey: GROUPS_QUERY_KEY });
     },
   });
 };

@@ -1,4 +1,5 @@
 import type { GroupDetailAdmin, GroupDetailMember } from '@/features/group-detail';
+import type { PersonRef } from '@/lib/api/schemas';
 
 export interface HubPerson {
   personId: number;
@@ -53,3 +54,18 @@ export const toHubPeople = (
 
 export const countGroupAdmins = (people: readonly HubPerson[]): number =>
   people.filter((person) => person.groupAdminId !== null).length;
+
+export const toPrefillPerson = (
+  people: readonly HubPerson[],
+  personId: number | null,
+): PersonRef | null => {
+  if (personId === null) {
+    return null;
+  }
+
+  const found = people.find((person) => person.personId === personId);
+
+  return found === undefined
+    ? null
+    : { personId: found.personId, firstName: found.firstName, lastName: found.lastName };
+};

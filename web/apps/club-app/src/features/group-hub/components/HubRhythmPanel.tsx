@@ -10,12 +10,12 @@ import {
   KkPanelSection,
 } from '@furria/ui';
 import Stack from '@mui/material/Stack';
+import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import type { GroupTone } from '@/features/groups';
 import { toRhythmSentence } from '@/features/groups';
 import { GROUP_SECTION_TITLES } from '@/lib/group-sections';
-import { useRhythmSlots } from '../hooks/use-rhythm-slots';
-import { useTrainingGenerator } from '../hooks/use-training-generator';
+import { useRhythmSlotsInfo } from '../hooks/use-rhythm-slots-info';
 import {
   RHYTHM_ADD_ACTION_LABEL,
   RHYTHM_ADD_LABEL,
@@ -30,26 +30,19 @@ import {
 } from '../rhythm-labels';
 import type { TrainingSlot } from '../schemas';
 import { HubRhythmRow } from './HubRhythmRow';
-import { RhythmSlotDialog } from './RhythmSlotDialog';
-import { TrainingGeneratorSheet } from './TrainingGeneratorSheet';
+
+const NEW_SLOT_ROUTE = '/groups/$groupId/slots/new';
+const TRAININGS_ROUTE = '/groups/$groupId/trainings';
 
 interface HubRhythmPanelProps {
   groupId: number;
-  groupName: string;
   tone: GroupTone;
   slots: readonly TrainingSlot[];
   canManage: boolean;
 }
 
-export const HubRhythmPanel: FC<HubRhythmPanelProps> = ({
-  groupId,
-  groupName,
-  tone,
-  slots,
-  canManage,
-}) => {
-  const rhythm = useRhythmSlots({ groupId, slots });
-  const generator = useTrainingGenerator(groupId);
+export const HubRhythmPanel: FC<HubRhythmPanelProps> = ({ groupId, tone, slots, canManage }) => {
+  const info = useRhythmSlotsInfo({ slots });
   const sentence = toRhythmSentence(slots);
   const isEmpty = slots.length === 0;
 
@@ -58,19 +51,18 @@ export const HubRhythmPanel: FC<HubRhythmPanelProps> = ({
         label: RHYTHM_ADD_LABEL,
         icon: 'add',
         ariaLabel: RHYTHM_ADD_ACTION_LABEL,
-        onClick: rhythm.openAdd,
-        disabled: !rhythm.canAdd,
+        component: Link,
+        to: NEW_SLOT_ROUTE,
+        params: { groupId: String(groupId) },
       }
     : undefined;
 
   const rows = slots.map((slot) => (
     <HubRhythmRow
       key={slot.groupTrainingSlotId}
+      groupId={groupId}
       slot={slot}
-      canManage={canManage}
-      venueIsArchived={slot.venueId !== null && rhythm.unavailableVenueIds.has(slot.venueId)}
-      onEdit={rhythm.openEdit}
-      onRemove={rhythm.remove}
+      venueIsArchived={slot.venueId !== null && info.unavailableVenueIds.has(slot.venueId)}
     />
   ));
 
@@ -89,9 +81,9 @@ export const HubRhythmPanel: FC<HubRhythmPanelProps> = ({
     <KkPanel variant="list">{rows}</KkPanel>
   );
 
-  const fullNote = canManage && !rhythm.canAdd ? <KkNote>{RHYTHM_FULL_NOTE}</KkNote> : null;
+  const fullNote = canManage && info.isFull ? <KkNote>{RHYTHM_FULL_NOTE}</KkNote> : null;
   const archivedVenueNote =
-    canManage && rhythm.unavailableVenueIds.size > 0 ? (
+    canManage && info.unavailableVenueIds.size > 0 ? (
       <KkNote tone="warning">{RHYTHM_ARCHIVED_VENUE_NOTE}</KkNote>
     ) : null;
   const meta = <KkMeta>{toRhythmMeta(slots.length)}</KkMeta>;
@@ -101,9 +93,10 @@ export const HubRhythmPanel: FC<HubRhythmPanelProps> = ({
       <KkNote>{RHYTHM_ADMIN_NOTE}</KkNote>
       <KkButton
         variant="outlined"
+        component={Link}
+        to={TRAININGS_ROUTE}
+        params={{ groupId: String(groupId) }}
         startIcon={<KkIcon name="calendar" size="small" />}
-        onClick={generator.open}
-        disabled={isEmpty}
       >
         {RHYTHM_GENERATE_LABEL}
       </KkButton>
@@ -111,21 +104,6 @@ export const HubRhythmPanel: FC<HubRhythmPanelProps> = ({
       {fullNote}
       {archivedVenueNote}
     </Stack>
-  ) : null;
-
-  const writes = canManage ? (
-    <>
-      <RhythmSlotDialog
-        groupName={groupName}
-        open={rhythm.isDialogOpen}
-        slot={rhythm.edited}
-        isSaving={rhythm.isSaving}
-        rejection={rhythm.rejection}
-        onClose={rhythm.closeDialog}
-        onSubmit={rhythm.save}
-      />
-      <TrainingGeneratorSheet control={generator} hasRhythm={!isEmpty} />
-    </>
   ) : null;
 
   return (
@@ -140,7 +118,6 @@ export const HubRhythmPanel: FC<HubRhythmPanelProps> = ({
         {list}
         {tools}
       </Stack>
-      {writes}
     </KkPanelSection>
   );
 };

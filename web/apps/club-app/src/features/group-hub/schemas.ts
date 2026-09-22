@@ -1,8 +1,14 @@
 import { z } from 'zod';
 import { GroupDetailAdminSchema, GroupDetailMemberSchema } from '@/features/group-detail';
+import { AppSearchSchema } from '@/features/session';
 import { PersonRefSchema } from '@/lib/api/schemas';
 import { ATTENDANCE_ANSWER_KEYS, CALENDAR_KIND_KEYS } from '@/lib/calendar-copy';
 import { GroupToneSchema } from '@/lib/group-tone';
+
+export const GroupEntryPrefillSearchSchema = AppSearchSchema.extend({
+  person: z.string().optional().catch(undefined),
+});
+export type GroupEntryPrefillSearch = z.infer<typeof GroupEntryPrefillSearchSchema>;
 
 export const WEEKDAY_VALUES = [
   'monday',
@@ -122,6 +128,20 @@ const isFoundedYearInRange = (value: string): boolean => {
 
   return year >= EARLIEST_FOUNDED_YEAR && year <= LATEST_FOUNDED_YEAR;
 };
+
+export const GROUP_NAME_MAX_LENGTH = 80;
+export const GROUP_NAME_REQUIRED_MESSAGE = 'Die Gruppe braucht einen Namen.';
+export const GROUP_NAME_TOO_LONG_MESSAGE = `Höchstens ${GROUP_NAME_MAX_LENGTH} Zeichen.`;
+
+export const GroupAdministrationFormSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, GROUP_NAME_REQUIRED_MESSAGE)
+    .max(GROUP_NAME_MAX_LENGTH, GROUP_NAME_TOO_LONG_MESSAGE),
+  groupKindId: z.string(),
+});
+export type GroupAdministrationForm = z.infer<typeof GroupAdministrationFormSchema>;
 
 export const GroupInfoFormSchema = z.object({
   description: z.string().max(DESCRIPTION_MAX_LENGTH, DESCRIPTION_TOO_LONG_MESSAGE),

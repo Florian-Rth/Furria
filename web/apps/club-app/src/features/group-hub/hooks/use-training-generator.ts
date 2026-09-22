@@ -1,5 +1,5 @@
 import type { KkDateQuickChoice } from '@furria/ui';
-import { useKkSheet } from '@furria/ui';
+import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useGenerateTrainingsMutation, useTrainingPreviewQuery } from '../api';
@@ -15,14 +15,9 @@ import {
   toToggledTicks,
 } from '../training-preview';
 
-const SHEET_PREFIX = 'training-generator-';
 const NO_TICKS: ReadonlySet<string> = new Set();
 
 export interface TrainingGeneratorControl {
-  sheetId: string;
-  isOpen: boolean;
-  open: () => void;
-  close: () => void;
   title: string;
   setTitle: (value: string) => void;
   endsOn: string | null;
@@ -42,17 +37,12 @@ export interface TrainingGeneratorControl {
   submit: () => void;
 }
 
-export const toTrainingGeneratorSheetId = (groupId: number): string => `${SHEET_PREFIX}${groupId}`;
-
 export const useTrainingGenerator = (groupId: number): TrainingGeneratorControl => {
-  const sheetId = toTrainingGeneratorSheetId(groupId);
-  const sheet = useKkSheet();
-  const isOpen = sheet.openSheetId === sheetId;
-
   const [title, setTitle] = useState(GENERATOR_TITLE_DEFAULT);
   const [endsOn, setEndsOn] = useState<string | null>(null);
-  const preview = useTrainingPreviewQuery(groupId, endsOn, isOpen);
+  const preview = useTrainingPreviewQuery(groupId, endsOn, true);
   const generate = useGenerateTrainingsMutation(groupId);
+  const navigate = useNavigate();
 
   const rows = preview.data?.rows ?? [];
   const stamp = preview.dataUpdatedAt;
@@ -85,30 +75,22 @@ export const useTrainingGenerator = (groupId: number): TrainingGeneratorControl 
     void preview.refetch();
   };
 
-  const close = (): void => {
-    sheet.close();
-  };
-
-  const open = (): void => {
-    sheet.open(sheetId);
-  };
-
   const submit = (): void => {
     generate.mutate(
       { title, instants: toTickedInstants(entries) },
       {
         onSuccess: () => {
-          close();
+          void navigate({
+            to: '/groups/$groupId',
+            params: { groupId: String(groupId) },
+            replace: true,
+          });
         },
       },
     );
   };
 
   return {
-    sheetId,
-    isOpen,
-    open,
-    close,
     title,
     setTitle,
     endsOn: endsOn ?? preview.data?.endsOn ?? null,

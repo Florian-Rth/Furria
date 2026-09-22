@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { GroupDetailAdmin, GroupDetailMember } from '@/features/group-detail';
-import { countGroupAdmins, toHubPeople } from './hub-people';
+import { countGroupAdmins, toHubPeople, toPrefillPerson } from './hub-people';
 
 const member = (over: Partial<GroupDetailMember>): GroupDetailMember => ({
   personId: 1,
@@ -91,5 +91,25 @@ describe('countGroupAdmins', () => {
     },
   ])('counts the Admins of $case', ({ members, admins, expected }) => {
     expect(countGroupAdmins(toHubPeople(members, admins))).toBe(expected);
+  });
+});
+
+describe('toPrefillPerson', () => {
+  it('returns null without a person id', () => {
+    expect(toPrefillPerson(toHubPeople([member({})], []), null)).toBeNull();
+  });
+
+  it('returns null when nobody in the Gruppe matches the id', () => {
+    expect(toPrefillPerson(toHubPeople([member({})], []), 999)).toBeNull();
+  });
+
+  it('resolves a name from the Gruppe her people already carry', () => {
+    const people = toHubPeople([member({ personId: 4, groupMembershipId: 14 })], []);
+
+    expect(toPrefillPerson(people, 4)).toEqual({
+      personId: 4,
+      firstName: 'Anna',
+      lastName: 'Bauer',
+    });
   });
 });

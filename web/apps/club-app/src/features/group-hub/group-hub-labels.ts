@@ -5,14 +5,14 @@ import type {
   KkScreenOrigin,
 } from '@furria/ui';
 import type { GroupDetailAdmin, GroupDetailMember } from '@/features/group-detail';
-import { toGroupKindId } from '@/features/group-kinds';
+import { toGroupKindId, toGroupKindValue } from '@/features/group-kinds';
 import { toFoundedLine, toJubilee } from '@/features/groups';
 import { GROUPS_ORIGIN, PROFILE_ORIGIN } from '@/features/session';
 import { SESSION_OPENING_DAY, SESSION_OPENING_MONTH, sessionAt } from '@/lib/club';
 import { isFutureDay, toIsoDay } from '@/lib/day';
 import { toGroupAdminsLabel, toGroupMembersLabel } from '@/lib/group-sections';
 import type { GroupTone } from '@/lib/group-tone';
-import { formatIsoDay, formatSinceSession } from '@/lib/membership-labels';
+import { formatIsoDay, formatPeriod, formatSinceSession } from '@/lib/membership-labels';
 import type { StateChip } from '@/lib/state-chips';
 import { toRecruitingChip } from '@/lib/state-chips';
 import type { HubPerson } from './hub-people';
@@ -28,11 +28,30 @@ const JUBILEE_CAPTION = 'JAHRE';
 export const toHubId = (raw: string): number | null =>
   GROUP_ID_PATTERN.test(raw) ? Number(raw) : null;
 
+export const toEntryId = (raw: string): number | null =>
+  GROUP_ID_PATTERN.test(raw) ? Number(raw) : null;
+
+export const toPersonIdParam = (raw: string | undefined): number | null => {
+  if (raw === undefined || !GROUP_ID_PATTERN.test(raw)) {
+    return null;
+  }
+
+  return Number(raw);
+};
+
 export const toHubTitle = (hub: GroupHub | undefined): string =>
   hub === undefined ? HUB_TITLE_FALLBACK : hub.name;
 
 export const toHubOrigin = (viewerIsAffiliated: boolean): KkScreenOrigin =>
   viewerIsAffiliated ? GROUPS_ORIGIN : PROFILE_ORIGIN;
+
+const HUB_ROUTE = '/groups/$groupId';
+
+export const toHubEditorOrigin = (hub: GroupHub): KkScreenOrigin => ({
+  label: hub.name,
+  to: HUB_ROUTE,
+  params: { groupId: String(hub.groupId) },
+});
 
 export const toStandingLine = (hub: GroupHub): string | null => {
   if (hub.viewerSince !== null) {
@@ -69,6 +88,46 @@ export const toJubileeSeal = (
 };
 
 export const toMemberSinceLine = (since: string): string => `seit ${formatSinceSession(since)}`;
+
+export interface EntryChainRow {
+  key: string;
+  span: string;
+  isEdited: boolean;
+}
+
+export const toMembershipChainRows = (
+  hub: GroupHub,
+  personId: number,
+  editedMembershipId: number | null,
+): EntryChainRow[] => {
+  const toRow = (member: GroupDetailMember): EntryChainRow => ({
+    key: String(member.groupMembershipId),
+    span: formatPeriod(member.joinedOn, member.leftOn),
+    isEdited: member.groupMembershipId === editedMembershipId,
+  });
+
+  return [
+    ...hub.members.filter((member) => member.personId === personId).map(toRow),
+    ...hub.pastMembers.filter((member) => member.personId === personId).map(toRow),
+  ];
+};
+
+export const toAdminChainRows = (
+  hub: GroupHub,
+  personId: number,
+  editedAdminId: number | null,
+): EntryChainRow[] => {
+  const toRow = (admin: GroupDetailAdmin): EntryChainRow => ({
+    key: String(admin.groupAdminId),
+    span: formatPeriod(admin.sinceOn, admin.untilOn),
+    isEdited: admin.groupAdminId === editedAdminId,
+  });
+
+  return [
+    ...hub.admins.filter((admin) => admin.personId === personId).map(toRow),
+    ...hub.pastAdmins.filter((admin) => admin.personId === personId).map(toRow),
+  ];
+};
 
 export const GROUP_ADMIN_ACCENT = 'Gruppen-Admin';
 
@@ -107,40 +166,22 @@ export const toPersonStandingLines = (person: HubPerson): string[] => {
   return lines;
 };
 
-export type PersonTap = 'person' | 'peek';
-
-export const toPersonTap = (
-  canManage: boolean,
-  viewerIsAffiliated: boolean,
-  rowIsAffiliated: boolean,
-): PersonTap => (!canManage && viewerIsAffiliated && rowIsAffiliated ? 'person' : 'peek');
-
 export const HUB_DENIED_MESSAGE =
   'Gruppen stehen Mitgliedern, Gruppen und Rollen des FCC offen. Dein Konto hat noch keine Verbindung zum Verein — melde dich bei der Personenverwaltung.';
 
-export const PEEK_PROMOTE_LABEL = 'Zum Admin machen';
-export const PEEK_END_ADMIN_LABEL = 'Adminstatus entfernen';
-export const PEEK_END_MEMBERSHIP_LABEL = 'Aus Gruppe entfernen';
+export const EDITOR_DENIED_MESSAGE =
+  'Nur ein Gruppen-Admin oder die Gruppenverwaltung darf die Gruppe pflegen.';
 
-export type PeekAdminIntent = 'promote' | 'endAdmin' | 'none';
+export const ADMINISTRATION_DENIED_MESSAGE =
+  'Nur die Gruppenverwaltung darf Name und Gruppenart ändern.';
 
-export const toPeekAdminIntent = (person: HubPerson, canManage: boolean): PeekAdminIntent => {
-  if (!canManage) {
-    return 'none';
-  }
-  if (person.groupAdminId !== null) {
-    return 'endAdmin';
-  }
-
-  return person.groupMembershipId === null ? 'none' : 'promote';
-};
-
-export const HUB_PEEK_CLOSE_LABEL = 'Kurzansicht schließen';
-export const HUB_PEEK_OPEN_LABEL = 'Zum Profil';
-export const HUB_PEEK_CONTACT_NOTE =
+export const PERSON_SCREEN_OPEN_LABEL = 'Zum Profil';
+export const PERSON_SCREEN_CONTACT_NOTE =
   'Kontaktdaten stehen auf der Personenseite — die Gruppe führt sie nicht.';
-export const HUB_PEEK_UNREACHABLE_NOTE =
+export const PERSON_SCREEN_UNREACHABLE_NOTE =
   'Diese Person hat keine eigene Seite im Verzeichnis. Wende dich an die Gruppen-Admins.';
+export const PERSON_SCREEN_ADD_MEMBERSHIP_LABEL = 'Mitglied aufnehmen';
+export const PERSON_SCREEN_ADD_ADMIN_LABEL = 'Gruppen-Admin ernennen';
 
 export type GroupInfoPayload = {
   description: string;
@@ -156,6 +197,21 @@ export const toGroupInfoPayload = (form: GroupInfoForm): GroupInfoPayload => ({
   groupKindId: toGroupKindId(form.groupKindId),
   foundedYear: form.foundedYear === '' ? null : Number(form.foundedYear),
   tone: form.tone === '' ? null : form.tone,
+});
+
+export interface GroupInfoFormOverrides {
+  isRecruiting?: boolean;
+}
+
+export const toGroupInfoFormValues = (
+  hub: GroupHub,
+  overrides: GroupInfoFormOverrides = {},
+): GroupInfoForm => ({
+  description: hub.description,
+  isRecruiting: overrides.isRecruiting ?? hub.isRecruiting,
+  groupKindId: toGroupKindValue(hub.groupKindId),
+  foundedYear: hub.foundedYear === null ? '' : String(hub.foundedYear),
+  tone: hub.tone ?? '',
 });
 
 export interface GroupToneHolder {
@@ -314,23 +370,6 @@ export const toEndConsequence = (
     ? `Der ${formatIsoDay(endedOn)} wird der letzte Tag von ${personName} in der Gruppe. Die Zugehörigkeit bleibt in der Geschichte stehen.`
     : `Der ${formatIsoDay(endedOn)} ist der letzte Tag von ${personName} in der Gruppe. Die Zugehörigkeit bleibt in der Geschichte stehen.`;
 
-export const toEndQuestion = (firstName: string, groupName: string): string =>
-  `${firstName} aus der Gruppe ${groupName}?`;
-
-export const toEndExplanation = (firstName: string): string =>
-  `Die Zugehörigkeit endet am gewählten Tag und wandert in die Geschichte der Gruppe. Gelöscht wird nichts: ${firstName} kann jederzeit wieder aufgenommen werden.`;
-
-export const toEndFacts = (
-  member: GroupDetailMember,
-  groupName: string,
-  endedOn: string | null,
-): KkConfirmFact[] => [
-  { label: 'Person', value: `${member.firstName} ${member.lastName}` },
-  { label: 'Gruppe', value: groupName },
-  { label: 'Dabei seit', value: formatIsoDay(member.joinedOn) },
-  { label: 'Letzter Tag', value: endedOn === null ? 'noch offen' : formatIsoDay(endedOn) },
-];
-
 export const ADMIN_FUNCTION_SUGGESTIONS: readonly string[] = [
   'Trainerin',
   'Sprecher',
@@ -380,24 +419,6 @@ export const toAdminEndConsequence = (
     ? `Ab dem ${formatIsoDay(endedOn)} kann ${personName} die Gruppe nicht mehr pflegen. Die Zugehörigkeit zur Gruppe bleibt davon unberührt.`
     : `${personName} kann die Gruppe ab sofort nicht mehr pflegen. Die Zugehörigkeit zur Gruppe bleibt davon unberührt.`;
 
-export const toAdminEndQuestion = (firstName: string): string =>
-  `${firstName} als Gruppen-Admin beenden?`;
-
-export const toAdminEndExplanation = (firstName: string, groupName: string): string =>
-  `Die Ernennung endet am gewählten Tag und wandert in die Geschichte der Gruppe. Gelöscht wird nichts: ${firstName} behält jede Zugehörigkeit zu ${groupName} und kann jederzeit wieder ernannt werden.`;
-
-export const toAdminEndFacts = (
-  admin: GroupDetailAdmin,
-  groupName: string,
-  endedOn: string | null,
-): KkConfirmFact[] => [
-  { label: 'Person', value: `${admin.firstName} ${admin.lastName}` },
-  { label: 'Gruppe', value: groupName },
-  { label: 'Funktion', value: admin.function ?? 'ohne Funktion' },
-  { label: 'Admin seit', value: formatIsoDay(admin.sinceOn) },
-  { label: 'Letzter Tag', value: endedOn === null ? 'noch offen' : formatIsoDay(endedOn) },
-];
-
 export const toLastAdminWarning = (runningAdmins: number): string | null =>
   runningAdmins > 1
     ? null
@@ -430,3 +451,46 @@ export const toSelfAdminEndedMessage = (
   isFutureDay(endedOn, todayIsoDay)
     ? `Ab dem ${formatIsoDay(endedOn)} bist du nicht mehr Gruppen-Admin von ${groupName}. Lesen kannst du sie weiter — neu ernennen kann dich die Gruppenverwaltung.`
     : `Du bist nicht mehr Gruppen-Admin von ${groupName}. Lesen kannst du sie weiter — neu ernennen kann dich die Gruppenverwaltung.`;
+
+export const toGroupAdministrationSavedMessage = (name: string): string =>
+  `${name} ist gespeichert.`;
+
+const NOBODY_LINE = 'Es ist gerade niemand eingetragen.';
+
+const toZugehoerigkeitenClause = (
+  count: number,
+  singularVerb: string,
+  pluralVerb: string,
+): string => {
+  if (count === 0) {
+    return NOBODY_LINE;
+  }
+  if (count === 1) {
+    return `Die eine Zugehörigkeit ${singularVerb}.`;
+  }
+
+  return `Die ${count} Zugehörigkeiten ${pluralVerb}.`;
+};
+
+export const ARCHIVE_GROUP_EYEBROW = 'Gruppe archivieren';
+export const ARCHIVE_GROUP_EXPLANATION =
+  'Archivieren löscht nichts: Die Zugehörigkeiten bleiben bestehen — die Gruppe zählt nur nicht mehr mit. Sie verschwindet aus dem Verzeichnis, ihre Geschichte bleibt in den Profilen stehen.';
+
+export const toArchiveGroupQuestion = (name: string): string => `${name} archivieren?`;
+
+export const toArchiveGroupConsequence = (
+  name: string,
+  memberCount: number,
+  todayLabel: string,
+): string =>
+  `Ab dem ${todayLabel} steht ${name} nicht mehr im Verzeichnis. ${toZugehoerigkeitenClause(memberCount, 'bleibt bestehen', 'bleiben bestehen')}`;
+
+export const toArchiveGroupFacts = (hub: GroupHub, todayLabel: string): KkConfirmFact[] => [
+  { label: 'Gruppe', value: hub.name },
+  { label: 'Personen', value: String(hub.members.length) },
+  { label: 'Gruppen-Admins', value: String(hub.admins.length) },
+  { label: 'Ab', value: todayLabel },
+];
+
+export const toGroupArchivedFromHubMessage = (name: string): string =>
+  `${name} steht nicht mehr im Verzeichnis.`;

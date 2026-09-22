@@ -1,7 +1,8 @@
 import type { KkPanelAction } from '@furria/ui';
 import { KkEmptyState, KkPanel, KkPanelSection } from '@furria/ui';
 import Grid from '@mui/material/Grid';
-import type { FC, Ref } from 'react';
+import { Link } from '@tanstack/react-router';
+import type { FC } from 'react';
 import {
   ADD_MEMBER_ACTION_LABEL,
   ADD_MEMBER_LABEL,
@@ -16,29 +17,24 @@ import { HubPersonTile } from './HubPersonTile';
 
 const GRID_SPACING = { xs: 1.75, desktop: 2.5 };
 const TILE_SIZE = { xs: 3, desktop: 2 };
+const NEW_MEMBER_ROUTE = '/groups/$groupId/memberships/new';
 
 interface HubPeoplePanelProps {
   tone: GroupTone;
   people: readonly HubPerson[];
+  groupId: number;
   groupName: string;
   canManage: boolean;
-  viewerIsAffiliated: boolean;
-  newPersonId: number | null;
-  fireKey: number;
-  titleRef: Ref<HTMLHeadingElement>;
-  onAddMember: () => void;
+  highlightedKey: string | null;
 }
 
 export const HubPeoplePanel: FC<HubPeoplePanelProps> = ({
   tone,
   people,
+  groupId,
   groupName,
   canManage,
-  viewerIsAffiliated,
-  newPersonId,
-  fireKey,
-  titleRef,
-  onAddMember,
+  highlightedKey,
 }) => {
   const isEmpty = people.length === 0;
 
@@ -47,7 +43,9 @@ export const HubPeoplePanel: FC<HubPeoplePanelProps> = ({
         label: ADD_MEMBER_LABEL,
         icon: 'add',
         ariaLabel: ADD_MEMBER_ACTION_LABEL,
-        onClick: onAddMember,
+        component: Link,
+        to: NEW_MEMBER_ROUTE,
+        params: { groupId: String(groupId) },
       }
     : undefined;
 
@@ -64,10 +62,9 @@ export const HubPeoplePanel: FC<HubPeoplePanelProps> = ({
           <HubPersonTile
             tone={tone}
             person={person}
+            groupId={groupId}
             canManage={canManage}
-            viewerIsAffiliated={viewerIsAffiliated}
-            isNew={person.personId === newPersonId}
-            fireKey={fireKey}
+            highlightedKey={highlightedKey}
           />
         </Grid>
       ))}
@@ -78,7 +75,6 @@ export const HubPeoplePanel: FC<HubPeoplePanelProps> = ({
     <KkPanelSection
       title={GROUP_SECTION_TITLES.members}
       groupTone={tone}
-      titleRef={titleRef}
       action={action}
       description={toGroupPeopleNote(people.length, countGroupAdmins(people))}
     >
