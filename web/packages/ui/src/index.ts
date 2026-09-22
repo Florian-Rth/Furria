@@ -111,8 +111,11 @@ export type {
   KkQuietScreenAction,
   KkScreenAction,
   KkScreenActionBar,
+  KkScreenActionContext,
   KkScreenActions,
+  KkScreenActionTone,
   KkScreenDeed,
+  KkScreenDeedTone,
   KkScreenHeaderKind,
   KkScreenIndex,
   KkScreenKind,
@@ -143,6 +146,8 @@ export { KkTickRow } from './KkTickRow';
 export { KkTitleHeader } from './KkTitleHeader';
 export { KkTwoToneHeadline } from './KkTwoToneHeadline';
 export { KkVisuallyHidden } from './KkVisuallyHidden';
+export { KkWriteScreen } from './KkWriteScreen/KkWriteScreen';
+export { KK_LANDING_ATTRIBUTE } from './kk-landing';
 export type { KkLinkSearch, KkLinkSearchValues } from './kk-link-search';
 export { kkMotion } from './kk-motion';
 export type { KkSx } from './kk-sx';

@@ -3,6 +3,7 @@ import { KkChrome } from '../../../internal/KkChrome';
 import { kkTokens } from '../../../tokens';
 import type {
   KkScreenAction,
+  KkScreenKind,
   KkScreenOrigin,
   KkScreenSearch,
   KkScreenThread,
@@ -17,6 +18,7 @@ const { barHeight } = kkTokens.shell;
 const BAR_PADDING_X = 1.25;
 
 interface KkShellBarProps {
+  kind: KkScreenKind;
   lead: KkShellBarLead;
   title: string;
   origin?: KkScreenOrigin;
@@ -26,6 +28,7 @@ interface KkShellBarProps {
 }
 
 export const KkShellBar: FC<KkShellBarProps> = ({
+  kind,
   lead,
   title,
   origin,
@@ -42,7 +45,14 @@ export const KkShellBar: FC<KkShellBarProps> = ({
     searching && search !== undefined ? (
       <KkShellBarSearch search={search} />
     ) : (
-      <KkShellBarRest lead={lead} title={title} origin={origin} actions={actions} search={search} />
+      <KkShellBarRest
+        kind={kind}
+        lead={lead}
+        title={title}
+        origin={origin}
+        actions={actions}
+        search={search}
+      />
     );
 
   return (

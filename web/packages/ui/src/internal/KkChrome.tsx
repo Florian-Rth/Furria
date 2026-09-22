@@ -1,7 +1,7 @@
 import Stack from '@mui/material/Stack';
 import type { CSSObject, Theme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
-import type { ElementType, FC, PropsWithChildren } from 'react';
+import type { ElementType, FC, PropsWithChildren, Ref } from 'react';
 import type { KkSx } from '../kk-sx';
 import { kkTokens } from '../tokens';
 import type { KkChromeMaterial } from './chrome-density';
@@ -49,14 +49,16 @@ const chromePaint = (theme: Theme, chrome: KkChromeMaterial): CSSObject => ({
 interface KkChromeProps extends PropsWithChildren {
   density: number;
   component?: ElementType;
+  ref?: Ref<HTMLDivElement>;
   sx?: KkSx;
 }
 
-export const KkChrome: FC<KkChromeProps> = ({ density, component = 'div', sx, children }) => {
+export const KkChrome: FC<KkChromeProps> = ({ density, component = 'div', ref, sx, children }) => {
   const chrome = chromeMaterialAt(density);
 
   return (
     <Stack
+      ref={ref}
       component={component}
       data-kk-chrome
       sx={[(theme) => chromePaint(theme, chrome), ...(Array.isArray(sx) ? sx : [sx])]}

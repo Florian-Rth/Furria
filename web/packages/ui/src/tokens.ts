@@ -5,6 +5,8 @@ const radius = {
   bar: 3,
 } as const;
 
+const rowHighlightSeconds = 1.6;
+
 const tracking = {
   tight: '0.01em',
   display: '0.03em',
@@ -229,7 +231,8 @@ export const kkTokens = {
     press: 'transform 120ms ease-out',
     clearance: 'padding-top 260ms cubic-bezier(0.22, 0.61, 0.36, 1)',
     label: 'opacity 180ms ease-out, transform 180ms ease-out, color 180ms ease-out',
-    rowHighlight: 'kk-row-highlight 2s ease-out forwards',
+    rowHighlightSeconds,
+    rowHighlight: `kk-row-highlight ${rowHighlightSeconds}s ease-out forwards`,
   },
   font: {
     display: "'Anton', sans-serif",

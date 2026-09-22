@@ -3,6 +3,7 @@ import Stack from '@mui/material/Stack';
 import type { CSSObject, Theme } from '@mui/material/styles';
 import type { ElementType, FC, PropsWithChildren } from 'react';
 import { focusRing } from './internal/focus-ring';
+import { highlightMark, highlightOverlayPaint } from './internal/highlight-paint';
 import { inkWash } from './internal/ink-wash';
 import { raisedSurfaceScheme } from './internal/raised-surface';
 import { redInk } from './internal/red-ink';
@@ -75,6 +76,8 @@ interface KkPanelProps extends PropsWithChildren {
   variant?: KkPanelVariant;
   tone?: KkPanelTone;
   dimmed?: boolean;
+  highlight?: boolean;
+  landing?: string;
   chevron?: boolean;
   component?: ElementType;
   to?: string;
@@ -89,6 +92,8 @@ export const KkPanel: FC<KkPanelProps> = ({
   variant = 'list',
   tone = 'cream',
   dimmed = false,
+  highlight = false,
+  landing,
   chevron = true,
   component,
   to,
@@ -103,6 +108,7 @@ export const KkPanel: FC<KkPanelProps> = ({
   const panelComponent = component ?? (onClick === undefined ? 'div' : 'button');
   const routeProps = component === undefined ? {} : { to, params, search, resetScroll };
   const nativeProps = panelComponent === 'button' ? { type: 'button' as const } : {};
+  const highlightProps = highlightMark(highlight);
 
   const chevronSlot =
     interactive && chevron ? (
@@ -130,8 +136,10 @@ export const KkPanel: FC<KkPanelProps> = ({
       component={panelComponent}
       {...routeProps}
       {...nativeProps}
+      {...highlightProps}
       onClick={onClick}
       data-kk-panel
+      data-kk-landing={landing}
       sx={[
         (theme) => ({
           minWidth: 0,
@@ -142,6 +150,7 @@ export const KkPanel: FC<KkPanelProps> = ({
           ...panelPadding[variant],
           ...(interactive ? interactivePaint(theme) : {}),
           ...(dimmed ? dimmedPaint : {}),
+          ...(highlight ? highlightOverlayPaint(theme) : {}),
         }),
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}

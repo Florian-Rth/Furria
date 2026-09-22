@@ -4,6 +4,7 @@ import type { CSSObject, Theme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import type { ElementType, FC } from 'react';
 import { focusRing } from './internal/focus-ring';
+import { highlightMark, highlightPaint } from './internal/highlight-paint';
 import { redInk } from './internal/red-ink';
 import { rowDividerTop } from './internal/row-divider';
 import { KkChip } from './KkChip';
@@ -27,13 +28,26 @@ interface KkHubRowProps {
   icon: KkIconName;
   meta?: string;
   hint?: string;
+  highlight?: boolean;
+  landing?: string;
   component?: ElementType;
   to?: string | null;
   sx?: KkSx;
 }
 
-export const KkHubRow: FC<KkHubRowProps> = ({ label, icon, meta, hint, component, to, sx }) => {
+export const KkHubRow: FC<KkHubRowProps> = ({
+  label,
+  icon,
+  meta,
+  hint,
+  highlight = false,
+  landing,
+  component,
+  to,
+  sx,
+}) => {
   const inert = to === undefined || to === null || component === undefined;
+  const highlightProps = highlightMark(highlight);
   const rowComponent = inert ? 'div' : component;
   const routeProps = inert ? {} : { to };
   const labelColor = inert ? 'text.disabled' : 'text.primary';
@@ -62,8 +76,10 @@ export const KkHubRow: FC<KkHubRowProps> = ({ label, icon, meta, hint, component
     <Stack
       component={rowComponent}
       {...routeProps}
+      {...highlightProps}
       direction="row"
       data-kk-hub-row
+      data-kk-landing={landing}
       sx={[
         (theme) => ({
           width: '100%',
@@ -81,6 +97,7 @@ export const KkHubRow: FC<KkHubRowProps> = ({ label, icon, meta, hint, component
           ...rowDividerTop,
           ...focusRing(theme),
           ...(inert ? {} : hoverPaint(theme)),
+          ...(highlight ? highlightPaint(theme) : {}),
         }),
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}

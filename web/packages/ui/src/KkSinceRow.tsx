@@ -5,6 +5,7 @@ import Typography from '@mui/material/Typography';
 import type { ElementType, FC, ReactNode, Ref } from 'react';
 import { accentWash } from './internal/accent-wash';
 import { focusRing } from './internal/focus-ring';
+import { highlightMark, highlightPaint } from './internal/highlight-paint';
 import { inkWashSurface } from './internal/ink-wash';
 import { redInk } from './internal/red-ink';
 import { rowDividerTop } from './internal/row-divider';
@@ -64,23 +65,6 @@ const titleLinkPaint: CSSObject = {
   },
 };
 
-const highlightPaint = (theme: Theme): CSSObject => ({
-  position: 'relative',
-  isolation: 'isolate',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    insetBlock: 0,
-    insetInline: 0,
-    zIndex: -1,
-    pointerEvents: 'none',
-    borderRadius: `${kkTokens.radius.bar}px`,
-    ...accentWash(theme),
-    animation: kkTokens.motion.rowHighlight,
-    '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
-  },
-});
-
 const overlayAnchor: CSSObject = { position: 'relative' };
 
 const META_SEPARATOR = ' · ';
@@ -99,6 +83,7 @@ interface KkSinceRowProps {
   overlay?: ReactNode;
   dimmed?: boolean;
   highlight?: boolean;
+  landing?: string;
   ref?: Ref<HTMLElement>;
   component?: ElementType;
   to?: string;
@@ -122,6 +107,7 @@ export const KkSinceRow: FC<KkSinceRowProps> = ({
   overlay,
   dimmed = false,
   highlight = false,
+  landing,
   ref,
   component,
   to,
@@ -133,6 +119,7 @@ export const KkSinceRow: FC<KkSinceRowProps> = ({
   sx,
 }) => {
   const interactive = component !== undefined;
+  const highlightProps = highlightMark(highlight);
   const titleInteractive = titleComponent !== undefined;
   const rowComponent = component ?? 'div';
   const routeProps = component === undefined ? {} : { to, params, search };
@@ -215,8 +202,10 @@ export const KkSinceRow: FC<KkSinceRowProps> = ({
       ref={ref}
       component={rowComponent}
       {...routeProps}
+      {...highlightProps}
       direction="row"
       data-kk-since-row
+      data-kk-landing={landing}
       sx={[
         (theme) => ({
           width: '100%',
