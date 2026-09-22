@@ -1,43 +1,48 @@
 import type { KkPanelAction } from '@furria/ui';
 import { KkEmptyState, KkPanel, KkPanelSection, KkSkeletonRow } from '@furria/ui';
-import type { FC, Ref } from 'react';
+import { Link } from '@tanstack/react-router';
+import type { FC } from 'react';
 import { ROLE_SECTION_TITLES } from '../manage-roles-labels';
 import type { RoleHolder } from '../schemas';
 import { RoleHolderRow } from './RoleHolderRow';
 
-const ADD_HOLDER_LABEL = 'Inhaber eintragen';
-const ADD_TEXT = 'Inhaber';
+const ADD_TEXT = 'Inhaberschaft';
+const ADD_ACTION_LABEL = 'Inhaberschaft eintragen';
+const HOLDINGS_NEW_ROUTE = '/manage/roles/$roleId/holdings/new';
 const SKELETON_ROWS = 2;
 const EMPTY_TITLE = 'NIEMAND EINGETRAGEN';
 const EMPTY_DESCRIPTION =
   'Die Rolle ist unbesetzt. Die Rechte sind gesetzt und greifen, sobald jemand eingetragen wird.';
 
 interface RoleHoldersPanelProps {
+  roleId: number;
   holders: readonly RoleHolder[];
-  viewerIsAffiliated: boolean;
   canAdd: boolean;
   pending: boolean;
-  titleRef: Ref<HTMLHeadingElement>;
-  onAdd: () => void;
-  onEnd: (roleHoldingId: number) => void;
+  highlightedKey: string | null;
 }
 
 export const RoleHoldersPanel: FC<RoleHoldersPanelProps> = ({
+  roleId,
   holders,
-  viewerIsAffiliated,
   canAdd,
   pending,
-  titleRef,
-  onAdd,
-  onEnd,
+  highlightedKey,
 }) => {
   const action: KkPanelAction | undefined = canAdd
-    ? { label: ADD_TEXT, icon: 'add', ariaLabel: ADD_HOLDER_LABEL, onClick: onAdd }
+    ? {
+        label: ADD_TEXT,
+        icon: 'add',
+        ariaLabel: ADD_ACTION_LABEL,
+        component: Link,
+        to: HOLDINGS_NEW_ROUTE,
+        params: { roleId: String(roleId) },
+      }
     : undefined;
 
   if (pending) {
     return (
-      <KkPanelSection title={ROLE_SECTION_TITLES.holders} titleRef={titleRef} action={action}>
+      <KkPanelSection title={ROLE_SECTION_TITLES.holders} action={action}>
         <KkPanel variant="list">
           <KkSkeletonRow count={SKELETON_ROWS} />
         </KkPanel>
@@ -48,9 +53,9 @@ export const RoleHoldersPanel: FC<RoleHoldersPanelProps> = ({
   const rows = holders.map((holder) => (
     <RoleHolderRow
       key={holder.roleHoldingId}
+      roleId={roleId}
       holder={holder}
-      viewerIsAffiliated={viewerIsAffiliated}
-      onEnd={onEnd}
+      highlightedKey={highlightedKey}
     />
   ));
 
@@ -63,7 +68,7 @@ export const RoleHoldersPanel: FC<RoleHoldersPanelProps> = ({
   );
 
   return (
-    <KkPanelSection title={ROLE_SECTION_TITLES.holders} titleRef={titleRef} action={action}>
+    <KkPanelSection title={ROLE_SECTION_TITLES.holders} action={action}>
       <KkPanel variant={isEmpty ? 'block' : 'list'}>{body}</KkPanel>
     </KkPanelSection>
   );

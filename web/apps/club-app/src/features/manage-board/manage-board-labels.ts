@@ -1,9 +1,19 @@
-import type { KkConfirmFact, KkSelectOption } from '@furria/ui';
+import type { KkConfirmFact, KkScreenOrigin, KkSelectOption } from '@furria/ui';
 import { isFutureDay } from '@/lib/day';
 import { formatIsoDay, formatPeriod } from '@/lib/membership-labels';
 import type { BoardOffice, BoardSeat, ImpliedRoleOption } from './schemas';
 
 export const BOARD_TITLE = 'Vorstand';
+
+export const BOARD_ORIGIN: KkScreenOrigin = { label: BOARD_TITLE, to: '/manage/board' };
+
+const ID_PATTERN = /^[1-9]\d*$/;
+
+export const toBoardOfficeId = (raw: string): number | null =>
+  ID_PATTERN.test(raw) ? Number(raw) : null;
+
+export const toBoardSeatId = (raw: string): number | null =>
+  ID_PATTERN.test(raw) ? Number(raw) : null;
 
 export const OFFICE_EYEBROW = 'Vorstandsfunktion';
 
@@ -69,6 +79,30 @@ export const toBoardEntries = (
   todayIsoDay: string,
 ): BoardOfficeEntry[] =>
   offices.map((office) => toOfficeEntry(office, todayIsoDay)).sort(inBandOrder);
+
+export const toOfficeOrigin = (entry: { boardOfficeId: number; name: string }): KkScreenOrigin => ({
+  label: entry.name,
+  to: '/manage/board',
+});
+
+export interface SeatChainRow {
+  key: string;
+  span: string;
+  isEdited: boolean;
+}
+
+export const toSeatChainRows = (
+  entry: BoardOfficeEntry,
+  editedSeatId: number | null,
+): SeatChainRow[] => {
+  const toRow = (seat: BoardSeat): SeatChainRow => ({
+    key: String(seat.boardSeatId),
+    span: formatPeriod(seat.sinceOn, seat.untilOn),
+    isEdited: seat.boardSeatId === editedSeatId,
+  });
+
+  return [...entry.seats.map(toRow), ...entry.pastSeats.map(toRow)];
+};
 
 export const toSeatPeriodLabel = (seat: BoardSeat, todayIsoDay: string): string => {
   if (seat.untilOn !== null) {
@@ -157,9 +191,6 @@ export const VACANT_TITLE = 'UNBESETZT';
 export const toVacantDescription = (name: string): string =>
   `Für ${name} ist gerade niemand eingetragen. Trag ein, wer gewählt wurde — erst dann greift, was die Funktion nach sich zieht.`;
 
-export const toEndSeatLabel = (personName: string): string =>
-  `Vorstandssitz von ${personName} beenden`;
-
 export const toOfficeCreatedMessage = (name: string): string =>
   `Die Vorstandsfunktion ${name} ist angelegt.`;
 
@@ -214,12 +245,6 @@ export const toSeatConsequence = (
   return `${opening} Damit greifen für ${personName} die Rechte von ${impliedRoleName}.`;
 };
 
-export const toEndSeatQuestion = (firstName: string, officeName: string): string =>
-  `${firstName} als ${officeName} beenden?`;
-
-export const toEndSeatExplanation = (firstName: string): string =>
-  `Der Vorstandssitz endet am gewählten Tag und wandert in die Geschichte der Funktion. Gelöscht wird nichts: ${firstName} kann jederzeit wieder eingetragen werden.`;
-
 export const toEndSeatConsequence = (
   firstName: string,
   officeName: string,
@@ -239,18 +264,8 @@ export const toEndSeatConsequence = (
   return `${opening} Danach greifen die Rechte von ${impliedRoleName} für ${firstName} nicht mehr.`;
 };
 
-export const toEndSeatFacts = (
-  seat: BoardSeat,
-  officeName: string,
-  endedOn: string | null,
-): KkConfirmFact[] => [
-  { label: 'Person', value: toPersonName(seat) },
-  { label: 'Vorstandsfunktion', value: officeName },
-  { label: 'Im Vorstand seit', value: formatIsoDay(seat.sinceOn) },
-  { label: 'Letzter Tag', value: endedOn === null ? 'noch offen' : formatIsoDay(endedOn) },
-];
-
-export const ARCHIVE_OFFICE_BLOCKED_HINT = 'Erst den Sitz beenden';
+export const ARCHIVE_OFFICE_BLOCKED_NOTE =
+  'Solange ein Sitz läuft, lässt sich diese Vorstandsfunktion nicht archivieren.';
 
 export const isOfficeArchivable = (entry: BoardOfficeEntry): boolean =>
   !entry.isArchived && entry.seats.length === 0;

@@ -1,60 +1,47 @@
-import { KkPanelStack } from '@furria/ui';
+import type { KkPanelAction } from '@furria/ui';
+import { KkPanelSection, KkPanelStack } from '@furria/ui';
+import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { useBoardDialogs } from '../hooks/use-board-dialogs';
+import { useLanding } from '@/features/write';
 import type { BoardOfficeEntry } from '../manage-board-labels';
-import { ArchiveBoardOfficeDialog } from './ArchiveBoardOfficeDialog';
 import { BoardEmpty } from './BoardEmpty';
-import { BoardOfficeFormDialog } from './BoardOfficeFormDialog';
 import { BoardOfficeSection } from './BoardOfficeSection';
-import { EndSeatDialog } from './EndSeatDialog';
-import { OpenSeatDialog } from './OpenSeatDialog';
-import { RestoreBoardOfficeDialog } from './RestoreBoardOfficeDialog';
+
+const LIST_TITLE = 'Vorstandsfunktionen';
+const ADD_TEXT = 'Funktion';
+const ADD_ACTION_LABEL = 'Funktion hinzufügen';
+const NEW_ROUTE = '/manage/board/new';
+
+const ADD_ACTION: KkPanelAction = {
+  label: ADD_TEXT,
+  icon: 'add',
+  ariaLabel: ADD_ACTION_LABEL,
+  component: Link,
+  to: NEW_ROUTE,
+};
 
 interface BoardViewProps {
   entries: readonly BoardOfficeEntry[];
-  onCreate: () => void;
 }
 
-export const BoardView: FC<BoardViewProps> = ({ entries, onCreate }) => {
-  const dialogs = useBoardDialogs(entries);
+export const BoardView: FC<BoardViewProps> = ({ entries }) => {
+  const { highlightedKey } = useLanding();
 
   if (entries.length === 0) {
-    return <BoardEmpty onCreate={onCreate} />;
+    return <BoardEmpty />;
   }
 
-  const sections = entries.map((entry) => (
-    <BoardOfficeSection
-      key={entry.boardOfficeId}
-      entry={entry}
-      onOpen={dialogs.openFor}
-      onEndSeat={dialogs.openEndSeat}
-    />
-  ));
-
-  const renamed = dialogs.openDialog === 'rename' ? dialogs.office : null;
-
   return (
-    <KkPanelStack>
-      {sections}
-      <BoardOfficeFormDialog
-        open={renamed !== null}
-        editedOffice={renamed}
-        onClose={dialogs.close}
-        onSaved={dialogs.close}
-      />
-      <ArchiveBoardOfficeDialog
-        office={dialogs.openDialog === 'archive' ? dialogs.office : null}
-        onClose={dialogs.close}
-      />
-      <RestoreBoardOfficeDialog
-        office={dialogs.openDialog === 'restore' ? dialogs.office : null}
-        onClose={dialogs.close}
-      />
-      <OpenSeatDialog
-        office={dialogs.openDialog === 'open-seat' ? dialogs.office : null}
-        onClose={dialogs.close}
-      />
-      <EndSeatDialog target={dialogs.endSeat} onClose={dialogs.close} />
-    </KkPanelStack>
+    <KkPanelSection title={LIST_TITLE} action={ADD_ACTION}>
+      <KkPanelStack>
+        {entries.map((entry) => (
+          <BoardOfficeSection
+            key={entry.boardOfficeId}
+            entry={entry}
+            highlightedKey={highlightedKey}
+          />
+        ))}
+      </KkPanelStack>
+    </KkPanelSection>
   );
 };

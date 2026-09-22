@@ -9,11 +9,7 @@ import { BoardView } from './BoardView';
 
 const LOADING_LABEL = 'Der Vorstand wird geladen';
 
-interface BoardBodyProps {
-  onCreate: () => void;
-}
-
-export const BoardBody: FC<BoardBodyProps> = ({ onCreate }) => {
+export const BoardBody: FC = () => {
   const board = useBoardQuery();
   const errorMessage = toBoardErrorMessage(board.error);
 
@@ -24,7 +20,7 @@ export const BoardBody: FC<BoardBodyProps> = ({ onCreate }) => {
   if (board.data !== undefined) {
     const entries = toBoardEntries(board.data.offices, toIsoDay(new Date()));
 
-    return <BoardView entries={entries} onCreate={onCreate} />;
+    return <BoardView entries={entries} />;
   }
   if (errorMessage !== null) {
     return <BoardError message={errorMessage} onRetry={reload} />;

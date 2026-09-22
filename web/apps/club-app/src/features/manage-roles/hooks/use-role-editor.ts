@@ -1,7 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
+import { toLandingKey } from '@/features/write';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useCreateRoleMutation, useUpdateRoleMutation } from '../api';
 import { toRoleFieldErrors } from '../role-form-errors';
@@ -10,36 +12,34 @@ import { RoleFormSchema } from '../schemas';
 
 const NO_ROLE = 0;
 
-interface RoleFormInput {
+interface RoleEditorInput {
   roleId: number | null;
-  open: boolean;
   initial: RoleForm;
-  onSaved: (roleId: number | null) => void;
 }
 
-export interface RoleFormControl {
+export interface RoleEditorControl {
   form: UseFormReturn<RoleForm>;
-  submit: () => void;
+  isDirty: boolean;
   isSaving: boolean;
   rejection: string | null;
+  submit: () => void;
 }
 
-export const useRoleForm = ({ roleId, open, initial, onSaved }: RoleFormInput): RoleFormControl => {
+export const useRoleEditor = ({ roleId, initial }: RoleEditorInput): RoleEditorControl => {
   const [rejection, setRejection] = useState<string | null>(null);
-  const [wasOpen, setWasOpen] = useState(open);
   const create = useCreateRoleMutation();
   const update = useUpdateRoleMutation(roleId ?? NO_ROLE);
+  const navigate = useNavigate();
 
   const form = useForm<RoleForm>({ resolver: zodResolver(RoleFormSchema), defaultValues: initial });
 
-  if (wasOpen !== open) {
-    setWasOpen(open);
-
-    if (open) {
-      form.reset(initial);
-      setRejection(null);
-    }
-  }
+  const landBack = (id: number): void => {
+    void navigate({
+      to: '/manage/roles',
+      search: (previous) => ({ ...previous, role: id, changed: toLandingKey('role', id) }),
+      replace: true,
+    });
+  };
 
   const reject = (error: Error): void => {
     const fieldErrors = toRoleFieldErrors(error);
@@ -56,7 +56,7 @@ export const useRoleForm = ({ roleId, open, initial, onSaved }: RoleFormInput): 
     if (roleId === null) {
       create.mutate(values, {
         onSuccess: (created) => {
-          onSaved(created.roleId);
+          landBack(created.roleId);
         },
         onError: reject,
       });
@@ -66,7 +66,7 @@ export const useRoleForm = ({ roleId, open, initial, onSaved }: RoleFormInput): 
 
     update.mutate(values, {
       onSuccess: () => {
-        onSaved(null);
+        landBack(roleId);
       },
       onError: reject,
     });
@@ -74,10 +74,11 @@ export const useRoleForm = ({ roleId, open, initial, onSaved }: RoleFormInput): 
 
   return {
     form,
+    isDirty: form.formState.isDirty,
+    isSaving: create.isPending || update.isPending,
+    rejection,
     submit: () => {
       void handleFormSubmit();
     },
-    isSaving: create.isPending || update.isPending,
-    rejection,
   };
 };

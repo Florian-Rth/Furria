@@ -21,13 +21,17 @@ import {
   toNextPermissionKeys,
   toNoRoleMatchLine,
   toPermissionEntries,
+  toPersonIdParam,
+  toRoleHoldingChainRows,
+  toRoleHoldingId,
+  toRoleId,
   toRoleSearchTerm,
   toRoleSeed,
   toRoleStatusFilterOptions,
   toRolesLead,
   toStartQuickChoices,
 } from './manage-roles-labels';
-import type { RoleSummary } from './schemas';
+import type { RoleDetails, RoleHolder, RoleSummary } from './schemas';
 
 const role = (overrides: Partial<RoleSummary> & { roleId: number; name: string }): RoleSummary => ({
   description: '',
@@ -491,6 +495,85 @@ describe('dated write messages', () => {
     expect(toEndHoldingConsequence('Heike', 'Präsidentin', '2026-09-12', '2026-09-12')).toContain(
       'ist der letzte Tag',
     );
+  });
+});
+
+describe('toRoleId', () => {
+  it.each([
+    { case: 'a positive id', raw: '3', expected: 3 },
+    { case: 'a long id', raw: '1204', expected: 1204 },
+    { case: 'zero', raw: '0', expected: null },
+    { case: 'a negative id', raw: '-3', expected: null },
+    { case: 'a word', raw: 'praesident', expected: null },
+    { case: 'a decimal', raw: '3.5', expected: null },
+    { case: 'nothing', raw: '', expected: null },
+  ])('reads $case', ({ raw, expected }) => {
+    expect(toRoleId(raw)).toBe(expected);
+  });
+});
+
+describe('toRoleHoldingId', () => {
+  it.each([
+    { case: 'a positive id', raw: '12', expected: 12 },
+    { case: 'zero', raw: '0', expected: null },
+    { case: 'a word', raw: 'neu', expected: null },
+  ])('reads $case', ({ raw, expected }) => {
+    expect(toRoleHoldingId(raw)).toBe(expected);
+  });
+});
+
+describe('toPersonIdParam', () => {
+  it.each([
+    { case: 'undefined', raw: undefined, expected: null },
+    { case: 'a positive id', raw: '9', expected: 9 },
+    { case: 'zero', raw: '0', expected: null },
+    { case: 'a word', raw: 'anna', expected: null },
+  ])('reads $case', ({ raw, expected }) => {
+    expect(toPersonIdParam(raw)).toBe(expected);
+  });
+});
+
+describe('toRoleHoldingChainRows', () => {
+  const holder = (overrides: Partial<RoleHolder> & { roleHoldingId: number }): RoleHolder => ({
+    personId: 4,
+    firstName: 'Lukas',
+    lastName: 'Schmitt',
+    sinceOn: '2020-01-01',
+    untilOn: null,
+    since: '2020-01-01',
+    isAffiliated: true,
+    ...overrides,
+  });
+
+  const details = (overrides: Partial<RoleDetails> = {}): RoleDetails => ({
+    roleId: 3,
+    name: 'Finanzen',
+    description: '',
+    archivedOn: null,
+    permissionKeys: [],
+    holders: [],
+    pastHolders: [],
+    ...overrides,
+  });
+
+  it('keeps only the picked person, running before past', () => {
+    const role = details({
+      holders: [
+        holder({ roleHoldingId: 1, personId: 4 }),
+        holder({ roleHoldingId: 2, personId: 9 }),
+      ],
+      pastHolders: [holder({ roleHoldingId: 3, personId: 4, untilOn: '2019-12-31' })],
+    });
+
+    expect(toRoleHoldingChainRows(role, 4, null).map((row) => row.key)).toEqual(['1', '3']);
+  });
+
+  it('marks the row being edited', () => {
+    const role = details({ holders: [holder({ roleHoldingId: 1, personId: 4 })] });
+
+    expect(toRoleHoldingChainRows(role, 4, 1)).toEqual([
+      { key: '1', span: '01.01.2020 – offen', isEdited: true },
+    ]);
   });
 });
 

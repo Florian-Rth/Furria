@@ -1,4 +1,7 @@
+import type { KkPanelAction } from '@furria/ui';
+import { KkPanelSection } from '@furria/ui';
 import Stack from '@mui/material/Stack';
+import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { useDetailScroll } from '../hooks/use-detail-scroll';
 import type { RoleSearchControl } from '../hooks/use-role-search';
@@ -11,20 +14,31 @@ import { RolesMasterList } from './RolesMasterList';
 
 const VIEW_GAP = 3;
 const DETAIL_SCROLL_MARGIN = 2;
+const LIST_TITLE = 'Rollen';
+const ADD_TEXT = 'Rolle';
+const ADD_ACTION_LABEL = 'Rolle hinzufügen';
+const NEW_ROUTE = '/manage/roles/new';
+
+const ADD_ACTION: KkPanelAction = {
+  label: ADD_TEXT,
+  icon: 'add',
+  ariaLabel: ADD_ACTION_LABEL,
+  component: Link,
+  to: NEW_ROUTE,
+};
 
 interface RolesViewProps {
   roles: readonly RoleSummary[];
   catalogue: readonly string[];
   search: RoleSearchControl;
-  onCreate: () => void;
 }
 
-export const RolesView: FC<RolesViewProps> = ({ roles, catalogue, search, onCreate }) => {
+export const RolesView: FC<RolesViewProps> = ({ roles, catalogue, search }) => {
   const { roleId, select } = useSelectedRole();
   const detailRef = useDetailScroll(roleId);
 
   if (roles.length === 0) {
-    return <RolesEmpty onCreate={onCreate} />;
+    return <RolesEmpty />;
   }
 
   const list =
@@ -51,7 +65,9 @@ export const RolesView: FC<RolesViewProps> = ({ roles, catalogue, search, onCrea
 
   return (
     <Stack sx={{ gap: VIEW_GAP, minWidth: 0 }}>
-      {list}
+      <KkPanelSection title={LIST_TITLE} action={ADD_ACTION}>
+        {list}
+      </KkPanelSection>
       {detail}
     </Stack>
   );

@@ -6,6 +6,7 @@ import type { RoleDetails } from '../schemas';
 interface RoleLifecycleInput {
   role: RoleDetails;
   onArchived: () => void;
+  onRestored: () => void;
 }
 
 export interface RoleLifecycleControl {
@@ -19,6 +20,7 @@ export interface RoleLifecycleControl {
 export const useRoleLifecycle = ({
   role,
   onArchived,
+  onRestored,
 }: RoleLifecycleInput): RoleLifecycleControl => {
   const [rejection, setRejection] = useState<string | null>(null);
   const archiveMutation = useArchiveRoleMutation(role.roleId);
@@ -38,7 +40,16 @@ export const useRoleLifecycle = ({
   };
 
   const restore = (): void => {
-    restoreMutation.mutate({ roleName: role.name });
+    setRejection(null);
+    restoreMutation.mutate(
+      { roleName: role.name },
+      {
+        onSuccess: onRestored,
+        onError: (error) => {
+          setRejection(toWriteErrorMessage(error));
+        },
+      },
+    );
   };
 
   return {

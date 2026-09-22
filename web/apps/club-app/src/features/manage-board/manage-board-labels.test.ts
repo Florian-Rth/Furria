@@ -1,11 +1,15 @@
 import { describe, expect, it } from 'vitest';
+import type { BoardOfficeEntry } from './manage-board-labels';
 import {
   isVacantOn,
   toBoardEntries,
   toBoardLead,
+  toBoardOfficeId,
+  toBoardSeatId,
   toImpliedRoleChoices,
   toImpliedRoleId,
   toImpliedRoleValue,
+  toSeatChainRows,
   toSeatEndedMessage,
   toSeatOpenedMessage,
   toSeatPeriodLabel,
@@ -245,5 +249,51 @@ describe('dated write messages', () => {
 
   it('speaks of an end that has arrived in the past tense', () => {
     expect(toSeatEndedMessage('Ilka Reineke', TODAY, TODAY)).toContain('ist beendet');
+  });
+});
+
+describe('toBoardOfficeId', () => {
+  it.each([
+    { case: 'a positive id', raw: '3', expected: 3 },
+    { case: 'zero', raw: '0', expected: null },
+    { case: 'a word', raw: 'praesident', expected: null },
+  ])('reads $case', ({ raw, expected }) => {
+    expect(toBoardOfficeId(raw)).toBe(expected);
+  });
+});
+
+describe('toBoardSeatId', () => {
+  it.each([
+    { case: 'a positive id', raw: '12', expected: 12 },
+    { case: 'zero', raw: '0', expected: null },
+    { case: 'a word', raw: 'neu', expected: null },
+  ])('reads $case', ({ raw, expected }) => {
+    expect(toBoardSeatId(raw)).toBe(expected);
+  });
+});
+
+describe('toSeatChainRows', () => {
+  const entry: BoardOfficeEntry = {
+    boardOfficeId: 1,
+    name: 'Präsident',
+    sortOrder: 1,
+    impliedRoleId: null,
+    impliedRoleName: null,
+    archivedOn: null,
+    isArchived: false,
+    isVacant: false,
+    seats: [seat({ boardSeatId: 7, sinceOn: '2016-11-11' })],
+    pastSeats: [seat({ boardSeatId: 3, sinceOn: '2010-11-11', untilOn: '2016-11-10' })],
+  };
+
+  it('lists the running seat before the past ones', () => {
+    expect(toSeatChainRows(entry, null).map((row) => row.key)).toEqual(['7', '3']);
+  });
+
+  it('marks the seat being edited', () => {
+    const rows = toSeatChainRows(entry, 7);
+
+    expect(rows.find((row) => row.key === '7')?.isEdited).toBe(true);
+    expect(rows.find((row) => row.key === '3')?.isEdited).toBe(false);
   });
 });

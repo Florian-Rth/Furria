@@ -1,48 +1,55 @@
-import { KkMeta, KkNote } from '@furria/ui';
+import { KkButton, KkFieldRow, KkIcon, KkMeta, KkNote, KkWriteScreen } from '@furria/ui';
 import Stack from '@mui/material/Stack';
+import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { useState } from 'react';
 import { AppRecordHeaderCard } from '@/features/session';
-import type { BoardDialog } from '../hooks/use-board-dialogs';
 import type { BoardOfficeEntry } from '../manage-board-labels';
 import {
+  ARCHIVE_OFFICE_BLOCKED_NOTE,
   ARCHIVED_OFFICE_NOTE,
+  IMPLIED_ROLE_LABEL,
   isOfficeArchivable,
   OFFICE_EYEBROW,
   toArchivedOfficeMeta,
+  toImpliedRoleStatement,
 } from '../manage-board-labels';
-import { BoardOfficeActions } from './BoardOfficeActions';
+import { ArchiveBoardOfficeDialog } from './ArchiveBoardOfficeDialog';
 import { BoardOfficeChips } from './BoardOfficeChips';
-import { BoardOfficeRoleField } from './BoardOfficeRoleField';
 import { BoardPastSeatsPanel } from './BoardPastSeatsPanel';
 import { BoardSeatsPanel } from './BoardSeatsPanel';
+import { RestoreBoardOfficeDialog } from './RestoreBoardOfficeDialog';
 
 const BLOCK_GAP = 1.5;
+const EDIT_LABEL = 'Bearbeiten';
+const EDIT_ACTION_LABEL = 'Vorstandsfunktion bearbeiten';
+const RESTORE_LABEL = 'Aktivieren';
+const EDIT_ROUTE = '/manage/board/$boardOfficeId/edit';
+const ARCHIVE_LABEL = 'Vorstandsfunktion archivieren';
 
 interface BoardOfficeSectionProps {
   entry: BoardOfficeEntry;
-  onOpen: (dialog: BoardDialog, boardOfficeId: number) => void;
-  onEndSeat: (boardOfficeId: number, boardSeatId: number) => void;
+  highlightedKey: string | null;
 }
 
-export const BoardOfficeSection: FC<BoardOfficeSectionProps> = ({ entry, onOpen, onEndSeat }) => {
-  const rename = (): void => {
-    onOpen('rename', entry.boardOfficeId);
+export const BoardOfficeSection: FC<BoardOfficeSectionProps> = ({ entry, highlightedKey }) => {
+  const [archiveOpen, setArchiveOpen] = useState(false);
+  const [restoreOpen, setRestoreOpen] = useState(false);
+
+  const openArchive = (): void => {
+    setArchiveOpen(true);
   };
 
-  const archive = (): void => {
-    onOpen('archive', entry.boardOfficeId);
+  const closeArchive = (): void => {
+    setArchiveOpen(false);
   };
 
-  const restore = (): void => {
-    onOpen('restore', entry.boardOfficeId);
+  const openRestore = (): void => {
+    setRestoreOpen(true);
   };
 
-  const openSeat = (): void => {
-    onOpen('open-seat', entry.boardOfficeId);
-  };
-
-  const endSeat = (boardSeatId: number): void => {
-    onEndSeat(entry.boardOfficeId, boardSeatId);
+  const closeRestore = (): void => {
+    setRestoreOpen(false);
   };
 
   const archivedMeta = toArchivedOfficeMeta(entry.archivedOn);
@@ -59,28 +66,51 @@ export const BoardOfficeSection: FC<BoardOfficeSectionProps> = ({ entry, onOpen,
       </Stack>
     );
 
+  const description = (
+    <KkFieldRow label={IMPLIED_ROLE_LABEL} value={toImpliedRoleStatement(entry.impliedRoleName)} />
+  );
+
+  const actions = entry.isArchived ? (
+    <KkButton size="small" variant="outlined" onClick={openRestore}>
+      {RESTORE_LABEL}
+    </KkButton>
+  ) : (
+    <KkButton
+      size="small"
+      variant="outlined"
+      startIcon={<KkIcon name="edit" size="small" />}
+      ariaLabel={EDIT_ACTION_LABEL}
+      component={Link}
+      to={EDIT_ROUTE}
+      params={{ boardOfficeId: String(entry.boardOfficeId) }}
+    >
+      {EDIT_LABEL}
+    </KkButton>
+  );
+
+  const archivableFoot = isOfficeArchivable(entry) ? (
+    <KkWriteScreen.Danger label={ARCHIVE_LABEL} onSelect={openArchive} />
+  ) : (
+    <KkNote>{ARCHIVE_OFFICE_BLOCKED_NOTE}</KkNote>
+  );
+  const danger = entry.isArchived ? null : archivableFoot;
+
   return (
     <Stack sx={{ gap: BLOCK_GAP, minWidth: 0 }}>
       <AppRecordHeaderCard
         eyebrow={OFFICE_EYEBROW}
         title={entry.name}
         chips={chips}
-        description={<BoardOfficeRoleField entry={entry} />}
+        description={description}
         note={note}
-        actions={
-          <BoardOfficeActions
-            isArchived={entry.isArchived}
-            canArchive={isOfficeArchivable(entry)}
-            onOpenSeat={openSeat}
-            onRename={rename}
-            onArchive={archive}
-            onRestore={restore}
-          />
-        }
+        actions={actions}
         dimmed={entry.isArchived}
       />
-      <BoardSeatsPanel entry={entry} onEnd={endSeat} />
+      <BoardSeatsPanel entry={entry} highlightedKey={highlightedKey} />
       <BoardPastSeatsPanel seats={entry.pastSeats} />
+      {danger}
+      <ArchiveBoardOfficeDialog office={archiveOpen ? entry : null} onClose={closeArchive} />
+      <RestoreBoardOfficeDialog office={restoreOpen ? entry : null} onClose={closeRestore} />
     </Stack>
   );
 };
