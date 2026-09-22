@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { toAnnouncementsLead, toValidUntilLabel } from './announcements-labels';
+import {
+  toAnnouncementIdParam,
+  toAnnouncementsLead,
+  toValidUntilLabel,
+} from './announcements-labels';
 
 describe('toValidUntilLabel', () => {
   it.each([
@@ -8,6 +12,17 @@ describe('toValidUntilLabel', () => {
     { validUntil: '2027-01-05', expected: 'Gültig bis 05.01.2027' },
   ])('turns $validUntil into $expected', ({ validUntil, expected }) => {
     expect(toValidUntilLabel(validUntil)).toBe(expected);
+  });
+});
+
+describe('toAnnouncementIdParam', () => {
+  it.each([
+    ['11', 11],
+    ['0', null],
+    ['-3', null],
+    ['abc', null],
+  ])('reads %s as %s', (raw, expected) => {
+    expect(toAnnouncementIdParam(raw)).toBe(expected);
   });
 });
 

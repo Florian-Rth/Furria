@@ -3,6 +3,7 @@ import type { MyGroupSummary } from '@/features/group-hub';
 import {
   findCalendarEntry,
   mayOwnCalendarEntry,
+  toCalendarEntryIdParam,
   toCalendarKind,
   toCalendarVisibility,
   toCollisionSentence,
@@ -11,6 +12,7 @@ import {
   toEndKeptInStep,
   toEntryFormValues,
   toEntryPayload,
+  toEntryWriteNotice,
   toInstant,
   toOwnerOptions,
   toParticipantPool,
@@ -233,6 +235,36 @@ describe('toCollisionSentence', () => {
 
     expect(sentence).toContain('„Abendprobe“');
     expect(sentence).toContain('„Bastelabend“');
+  });
+});
+
+describe('toCalendarEntryIdParam', () => {
+  it.each([
+    ['11', 11],
+    ['0', null],
+    ['-3', null],
+    ['abc', null],
+  ])('reads %s as %s', (raw, expected) => {
+    expect(toCalendarEntryIdParam(raw)).toBe(expected);
+  });
+});
+
+describe('toEntryWriteNotice', () => {
+  it('reads success plainly when nothing clashes', () => {
+    expect(toEntryWriteNotice('„Prunksitzung“ steht jetzt im Kalender.', [])).toEqual({
+      tone: 'success',
+      message: '„Prunksitzung“ steht jetzt im Kalender.',
+    });
+  });
+
+  it('appends the clash as info without hiding that the save went through', () => {
+    const notice = toEntryWriteNotice('„Prunksitzung“ steht jetzt im Kalender.', [
+      { calendarEntryId: 9, title: 'Abendprobe', startsAt: at(2026, 2, 14, 18), endsAt: null },
+    ]);
+
+    expect(notice.tone).toBe('info');
+    expect(notice.message).toContain('„Prunksitzung“ steht jetzt im Kalender.');
+    expect(notice.message).toContain('Abendprobe');
   });
 });
 

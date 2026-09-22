@@ -1,16 +1,16 @@
 import { createFileRoute } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { CalendarBoardSearchSchema, CalendarPage } from '@/features/calendar';
+import { CalendarBoardSearchSchema, CalendarEntryScreen } from '@/features/calendar';
 import { RequirePermission } from '@/features/session';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 
-const CalendarRoute: FC = () => (
+const CalendarEntryRoute: FC = () => (
   <RequirePermission permissionKey={PERMISSION_KEYS.clubRead}>
-    <CalendarPage />
+    <CalendarEntryScreen />
   </RequirePermission>
 );
 
-export const Route = createFileRoute('/_app/calendar')({
-  component: CalendarRoute,
+export const Route = createFileRoute('/_app/calendar_/$calendarEntryId')({
+  component: CalendarEntryRoute,
   validateSearch: CalendarBoardSearchSchema,
 });

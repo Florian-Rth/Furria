@@ -11,9 +11,10 @@ import { CalendarView } from './CalendarView';
 interface CalendarBodyProps {
   board: CalendarBoard;
   authoring: CalendarAuthoring;
+  highlightedKey: string | null;
 }
 
-export const CalendarBody: FC<CalendarBodyProps> = ({ board, authoring }) => {
+export const CalendarBody: FC<CalendarBodyProps> = ({ board, authoring, highlightedKey }) => {
   const calendar = useCalendarQuery(board.query);
   const errorMessage = toCalendarErrorMessage(calendar.error);
 
@@ -22,7 +23,14 @@ export const CalendarBody: FC<CalendarBodyProps> = ({ board, authoring }) => {
   };
 
   if (calendar.data !== undefined) {
-    return <CalendarView board={board} entries={calendar.data.entries} authoring={authoring} />;
+    return (
+      <CalendarView
+        board={board}
+        entries={calendar.data.entries}
+        authoring={authoring}
+        highlightedKey={highlightedKey}
+      />
+    );
   }
   if (errorMessage !== null) {
     return <CalendarError message={errorMessage} onRetry={reload} />;

@@ -17,6 +17,7 @@ export interface CalendarAuthoring {
   venues: readonly RunningVenue[];
   mayAuthor: boolean;
   mayOwn: (entry: CalendarEntry) => boolean;
+  isLoading: boolean;
 }
 
 export const useCalendarAuthoring = (): CalendarAuthoring => {
@@ -34,5 +35,6 @@ export const useCalendarAuthoring = (): CalendarAuthoring => {
     venues: runningVenues.data?.venues ?? NO_VENUES,
     mayAuthor: ownerOptions.length > 0,
     mayOwn: (entry) => mayOwnCalendarEntry(ownerOptions, entry.ownerGroupId),
+    isLoading: myGroups.isLoading || runningVenues.isLoading,
   };
 };

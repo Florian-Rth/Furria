@@ -1,6 +1,15 @@
 import { z } from 'zod';
 import { CalendarEntryKindSchema } from '@/features/club';
+import { AppSearchSchema } from '@/features/session';
 import { GroupToneSchema } from '@/lib/group-tone';
+
+export const CalendarBoardSearchSchema = AppSearchSchema.extend({
+  scope: z.string().optional().catch(undefined),
+  view: z.enum(['list', 'month']).optional().catch(undefined),
+  month: z.string().optional().catch(undefined),
+  day: z.string().optional().catch(undefined),
+});
+export type CalendarBoardSearch = z.infer<typeof CalendarBoardSearchSchema>;
 
 export const CalendarEntryVisibilitySchema = z.enum(['group', 'club', 'public']);
 export type CalendarEntryVisibility = z.infer<typeof CalendarEntryVisibilitySchema>;

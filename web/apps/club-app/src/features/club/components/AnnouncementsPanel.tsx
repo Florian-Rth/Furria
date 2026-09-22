@@ -1,11 +1,11 @@
 import type { KkPanelAction } from '@furria/ui';
 import { KkButton, KkEmptyState, KkIcon, KkPanel, KkPanelSection, KkRule } from '@furria/ui';
 import Stack from '@mui/material/Stack';
-import { Link, useNavigate } from '@tanstack/react-router';
+import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { Fragment } from 'react';
 import { ANNOUNCEMENTS_PATH, useMeQuery, usePermissions } from '@/features/session';
-import { ANNOUNCEMENT_FORM_SHEET_ID, isAnnouncementNew } from '@/lib/announcements';
+import { isAnnouncementNew } from '@/lib/announcements';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { useClubHubQuery } from '../api';
 import { AnnouncementCard } from './AnnouncementCard';
@@ -15,19 +15,15 @@ const ALL_ANNOUNCEMENTS_LABEL = 'Alle Aushänge';
 const POST_ANNOUNCEMENT_LABEL = 'Aushang schreiben';
 const NOTHING_POSTED_TITLE = 'BRETT LEER';
 const NOTHING_POSTED_LINE = 'Am Brett hängt gerade nichts. Häng den ersten Aushang auf.';
+const NEW_ANNOUNCEMENT_ROUTE = '/announcements/new';
 
 export const AnnouncementsPanel: FC = () => {
   const clubHub = useClubHubQuery();
   const me = useMeQuery();
-  const navigate = useNavigate();
   const { has } = usePermissions();
 
   const announcements = clubHub.data?.announcements;
   const canPost = has(PERMISSION_KEYS.announcementsPost);
-
-  const writeAnnouncement = (): void => {
-    void navigate({ to: ANNOUNCEMENTS_PATH, search: { sheet: ANNOUNCEMENT_FORM_SHEET_ID } });
-  };
 
   if (announcements === undefined) {
     return null;
@@ -61,8 +57,9 @@ export const AnnouncementsPanel: FC = () => {
     <KkButton
       variant="outlined"
       fullWidth
+      component={Link}
+      to={NEW_ANNOUNCEMENT_ROUTE}
       startIcon={<KkIcon name="add" size="small" />}
-      onClick={writeAnnouncement}
     >
       {POST_ANNOUNCEMENT_LABEL}
     </KkButton>

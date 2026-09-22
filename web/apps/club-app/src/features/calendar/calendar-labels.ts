@@ -1,4 +1,5 @@
-import type { KkConfirmFact, KkFilterOption, KkSelectOption } from '@furria/ui';
+import type { KkConfirmFact, KkFilterOption, KkScreenOrigin, KkSelectOption } from '@furria/ui';
+import { CALENDAR_PATH } from '@/features/session';
 import type { AttendanceChoice } from '@/lib/calendar-copy';
 import {
   CALENDAR_KIND_LABELS,
@@ -12,6 +13,8 @@ import { ALL_SCOPE_ID, CLUB_SCOPE_ID, toGroupScopeId } from './calendar-query';
 import type { CalendarEntry, CalendarEntryVisibility, RunningVenue } from './schemas';
 
 export const CALENDAR_TITLE = 'Kalender';
+export const CALENDAR_ORIGIN: KkScreenOrigin = { label: CALENDAR_TITLE, to: CALENDAR_PATH };
+export const CALENDAR_LIST_SECTION_TITLE = 'Termine';
 export const CALENDAR_LOADING_LABEL = 'Der Kalender wird geladen';
 export const CALENDAR_ERROR_TITLE = 'KALENDER NICHT GELADEN';
 export const CALENDAR_RETRY_LABEL = 'Noch einmal';
@@ -124,9 +127,11 @@ export const toScopeOptions = (entries: readonly CalendarEntry[]): KkFilterOptio
   ];
 };
 
-export const CREATE_ENTRY_LABEL = 'Termin eintragen';
-export const EDIT_ENTRY_LABEL = 'Bearbeiten';
-export const DELETE_ENTRY_LABEL = 'Löschen';
+export const ADD_ENTRY_PILL_LABEL = 'Termin';
+export const ADD_ENTRY_ACTION_LABEL = 'Termin hinzufügen';
+export const CALENDAR_ENTRY_CREATE_TITLE = 'Termin hinzufügen';
+export const CALENDAR_ENTRY_EDIT_TITLE = 'Termin ändern';
+export const DELETE_ENTRY_DANGER_LABEL = 'Termin löschen';
 
 const CALENDAR_VISIBILITY_LABELS: Record<CalendarEntryVisibility, string> = {
   group: 'Gruppenintern',

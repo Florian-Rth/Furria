@@ -1,13 +1,20 @@
+import type { KkScreenOrigin } from '@furria/ui';
+import { ANNOUNCEMENTS_PATH } from '@/features/session';
 import { formatIsoDay } from '@/lib/membership-labels';
 
 export const ANNOUNCEMENTS_TITLE = 'Aushänge';
+export const ANNOUNCEMENTS_ORIGIN: KkScreenOrigin = {
+  label: ANNOUNCEMENTS_TITLE,
+  to: ANNOUNCEMENTS_PATH,
+};
+export const ANNOUNCEMENTS_SECTION_TITLE = 'Am Brett';
 export const ANNOUNCEMENTS_LOADING_LABEL = 'Die Aushänge werden geladen';
 
 export const ANNOUNCEMENT_EXPIRED_LABEL = 'abgelaufen';
 
-export const POST_ANNOUNCEMENT_LABEL = 'Aushang schreiben';
-export const EDIT_ANNOUNCEMENT_LABEL = 'Ändern';
-export const WITHDRAW_ANNOUNCEMENT_LABEL = 'Abnehmen';
+export const ADD_ANNOUNCEMENT_PILL_LABEL = 'Aushang';
+export const ADD_ANNOUNCEMENT_ACTION_LABEL = 'Aushang hinzufügen';
+export const WITHDRAW_ANNOUNCEMENT_DANGER_LABEL = 'Aushang abnehmen';
 
 export const ANNOUNCEMENT_TITLE_FIELD_LABEL = 'Titel';
 export const ANNOUNCEMENT_BODY_FIELD_LABEL = 'Text';
@@ -15,17 +22,17 @@ export const ANNOUNCEMENT_VALID_UNTIL_FIELD_LABEL = 'Gültig bis';
 export const ANNOUNCEMENT_VALID_UNTIL_EMPTY_LABEL = 'hängt bis jemand ihn abnimmt';
 export const ANNOUNCEMENT_BODY_PLACEHOLDER = 'Was soll am Brett stehen?';
 
-export const POST_SHEET_TITLE = 'Aushang schreiben';
-export const EDIT_SHEET_TITLE = 'Aushang ändern';
-export const POST_CONFIRM_LABEL = 'Aushängen';
-export const EDIT_CONFIRM_LABEL = 'Speichern';
-export const SHEET_CLOSE_LABEL = 'Schließen';
-export const SHEET_CANCEL_LABEL = 'Abbrechen';
+export const ANNOUNCEMENT_CREATE_TITLE = 'Aushang hinzufügen';
+export const ANNOUNCEMENT_EDIT_TITLE = 'Aushang ändern';
+export const ANNOUNCEMENT_ADD_LABEL = 'Hinzufügen';
+export const ANNOUNCEMENT_SAVE_LABEL = 'Speichern';
 
 export const WITHDRAW_EYEBROW = 'Aushang abnehmen';
 export const WITHDRAW_EXPLANATION =
-  'Der Aushang verschwindet vom Brett und aus der Liste. Zurückholen lässt er sich nicht.';
-export const WITHDRAW_CONFIRM_LABEL = 'Abnehmen';
+  'Ein abgenommener Aushang ist weg — vom Brett und aus der Liste, nicht nur bis später.';
+export const WITHDRAW_CONFIRM_LABEL = 'Aushang abnehmen';
+export const WITHDRAW_CANCEL_LABEL = 'Abbrechen';
+export const WITHDRAW_CLOSE_LABEL = 'Schließen';
 
 export const ANNOUNCEMENT_POSTED_MESSAGE = 'Der Aushang hängt.';
 export const ANNOUNCEMENT_CHANGED_MESSAGE = 'Der Aushang ist geändert.';
@@ -47,4 +54,12 @@ export const toValidUntilLabel = (validUntil: string | null): string | null =>
 export const toAnnouncementsLead = (count: number): string =>
   count === ONE_ANNOUNCEMENT ? '1 Aushang' : `${count} Aushänge`;
 
+const ANNOUNCEMENT_ID_PATTERN = /^[1-9]\d*$/;
+
+export const toAnnouncementIdParam = (raw: string): number | null =>
+  ANNOUNCEMENT_ID_PATTERN.test(raw) ? Number(raw) : null;
+
 export const toWithdrawQuestion = (title: string): string => `„${title}“ abnehmen?`;
+
+export const toWithdrawConsequence = (title: string): string =>
+  `„${title}“ verschwindet vom Brett und aus der Liste. Zurückholen lässt es sich nicht.`;

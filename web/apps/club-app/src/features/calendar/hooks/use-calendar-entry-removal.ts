@@ -1,36 +1,34 @@
+import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useDeleteCalendarEntryMutation } from '../api';
 import type { CalendarEntry } from '../schemas';
 
-interface CalendarEntryRemovalInput {
-  entry: CalendarEntry | null;
-  open: boolean;
-  onDone: () => void;
-}
-
 export interface CalendarEntryRemovalControl {
+  isOpen: boolean;
+  open: () => void;
+  close: () => void;
   rejection: string | null;
   isSaving: boolean;
   submit: () => void;
 }
 
-export const useCalendarEntryRemoval = ({
-  entry,
-  open,
-  onDone,
-}: CalendarEntryRemovalInput): CalendarEntryRemovalControl => {
+export const useCalendarEntryRemoval = (
+  entry: CalendarEntry | null,
+): CalendarEntryRemovalControl => {
+  const [isOpen, setIsOpen] = useState(false);
   const [rejection, setRejection] = useState<string | null>(null);
-  const [wasOpen, setWasOpen] = useState(open);
   const mutation = useDeleteCalendarEntryMutation();
+  const navigate = useNavigate();
 
-  if (wasOpen !== open) {
-    setWasOpen(open);
+  const open = (): void => {
+    setRejection(null);
+    setIsOpen(true);
+  };
 
-    if (open) {
-      setRejection(null);
-    }
-  }
+  const close = (): void => {
+    setIsOpen(false);
+  };
 
   const submit = (): void => {
     if (entry === null) {
@@ -41,7 +39,10 @@ export const useCalendarEntryRemoval = ({
     mutation.mutate(
       { calendarEntryId: entry.calendarEntryId, title: entry.title },
       {
-        onSuccess: onDone,
+        onSuccess: () => {
+          setIsOpen(false);
+          void navigate({ to: '/calendar', search: (previous) => previous });
+        },
         onError: (error) => {
           setRejection(toWriteErrorMessage(error));
         },
@@ -49,5 +50,5 @@ export const useCalendarEntryRemoval = ({
     );
   };
 
-  return { rejection, isSaving: mutation.isPending, submit };
+  return { isOpen, open, close, rejection, isSaving: mutation.isPending, submit };
 };

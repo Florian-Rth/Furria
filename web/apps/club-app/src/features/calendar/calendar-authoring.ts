@@ -299,6 +299,27 @@ export const toCollisionSentence = (names: readonly string[]): string | null => 
   return `An diesem Ort stehen zur gleichen Zeit schon ${names.join(', ')}. Gespeichert ist der Eintrag trotzdem — klärt das im Verein.`;
 };
 
+const CALENDAR_ENTRY_ID_PATTERN = /^[1-9]\d*$/;
+
+export const toCalendarEntryIdParam = (raw: string): number | null =>
+  CALENDAR_ENTRY_ID_PATTERN.test(raw) ? Number(raw) : null;
+
+export interface EntryWriteNotice {
+  tone: 'success' | 'info';
+  message: string;
+}
+
+export const toEntryWriteNotice = (
+  baseMessage: string,
+  collisions: readonly CalendarCollision[],
+): EntryWriteNotice => {
+  const sentence = toCollisionSentence(collisions.map(toCollisionName));
+
+  return sentence === null
+    ? { tone: 'success', message: baseMessage }
+    : { tone: 'info', message: `${baseMessage} ${sentence}` };
+};
+
 export const findCalendarEntry = (
   entries: readonly CalendarEntry[],
   calendarEntryId: number | null,

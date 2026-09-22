@@ -1,7 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
+import { toLandingKey } from '@/features/write';
 import { toFormFailures } from '@/lib/api/api-failures';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useCreateCalendarEntryMutation, useUpdateCalendarEntryMutation } from '../api';
@@ -9,8 +11,6 @@ import type { CalendarDayTime, CalendarOwnerOption } from '../calendar-authoring
 import {
   toCalendarKind,
   toCalendarVisibility,
-  toCollisionName,
-  toCollisionSentence,
   toDefaultVisibility,
   toEndKeptInStep,
   toEntryFormValues,
@@ -18,19 +18,18 @@ import {
   toParticipationKeptForOwner,
   toToggledParticipation,
 } from '../calendar-authoring';
-import type { CalendarEntry, CalendarEntryForm, WrittenCalendarEntry } from '../schemas';
+import type { CalendarEntry, CalendarEntryForm } from '../schemas';
 import { CalendarEntryFormSchema } from '../schemas';
 
 const FIELD_NAMES = ['title', 'description'] as const;
+const LANDING_KIND = 'calendar-entry';
 
-interface CalendarEntryFormInput {
+interface CalendarEntryEditorInput {
   entry: CalendarEntry | null;
   ownerOptions: readonly CalendarOwnerOption[];
-  open: boolean;
-  onSaved: () => void;
 }
 
-export interface CalendarEntryFormControl {
+export interface CalendarEntryEditorControl {
   form: UseFormReturn<CalendarEntryForm>;
   values: CalendarEntryForm;
   setDescription: (value: string) => void;
@@ -45,43 +44,39 @@ export interface CalendarEntryFormControl {
   setEndTime: (value: string) => void;
   setAsksForResponse: (value: boolean) => void;
   isEditing: boolean;
+  isDirty: boolean;
   isSaving: boolean;
   rejection: string | null;
-  collisionWarning: string | null;
   submit: () => void;
 }
 
-export const useCalendarEntryForm = ({
+export const useCalendarEntryEditor = ({
   entry,
   ownerOptions,
-  open,
-  onSaved,
-}: CalendarEntryFormInput): CalendarEntryFormControl => {
+}: CalendarEntryEditorInput): CalendarEntryEditorControl => {
   const [today] = useState(() => new Date());
   const [rejection, setRejection] = useState<string | null>(null);
-  const [collisionWarning, setCollisionWarning] = useState<string | null>(null);
-  const [writtenEntryId, setWrittenEntryId] = useState<number | null>(null);
-  const [wasOpen, setWasOpen] = useState(open);
   const createMutation = useCreateCalendarEntryMutation();
   const updateMutation = useUpdateCalendarEntryMutation();
+  const navigate = useNavigate();
 
   const form = useForm<CalendarEntryForm>({
     resolver: zodResolver(CalendarEntryFormSchema),
     defaultValues: toEntryFormValues(entry, ownerOptions, today),
   });
 
-  if (wasOpen !== open) {
-    setWasOpen(open);
-
-    if (open) {
-      form.reset(toEntryFormValues(entry, ownerOptions, today));
-      setRejection(null);
-      setCollisionWarning(null);
-      setWrittenEntryId(null);
-    }
-  }
-
   const values = form.watch();
+
+  const landOn = (calendarEntryId: number): void => {
+    void navigate({
+      to: '/calendar',
+      search: (previous) => ({
+        ...previous,
+        changed: toLandingKey(LANDING_KIND, calendarEntryId),
+      }),
+      replace: true,
+    });
+  };
 
   const showFailure = (error: Error): void => {
     const failures = toFormFailures(error, FIELD_NAMES);
@@ -95,31 +90,21 @@ export const useCalendarEntryForm = ({
     setRejection(failures.footer ?? fallback);
   };
 
-  const settle = (written: WrittenCalendarEntry): void => {
-    setWrittenEntryId(written.calendarEntryId);
-
-    if (written.venueCollisions.length === 0) {
-      onSaved();
-      return;
-    }
-
-    setCollisionWarning(toCollisionSentence(written.venueCollisions.map(toCollisionName)));
-  };
-
   const handleSubmit = form.handleSubmit((submitted) => {
     setRejection(null);
-    setCollisionWarning(null);
     const payload = toEntryPayload(submitted);
-    const targetId = entry?.calendarEntryId ?? writtenEntryId;
 
-    if (targetId === null) {
-      createMutation.mutate({ payload }, { onSuccess: settle, onError: showFailure });
+    if (entry === null) {
+      createMutation.mutate(
+        { payload },
+        { onSuccess: (written) => landOn(written.calendarEntryId), onError: showFailure },
+      );
       return;
     }
 
     updateMutation.mutate(
-      { calendarEntryId: targetId, payload },
-      { onSuccess: settle, onError: showFailure },
+      { calendarEntryId: entry.calendarEntryId, payload },
+      { onSuccess: (written) => landOn(written.calendarEntryId), onError: showFailure },
     );
   });
 
@@ -213,9 +198,9 @@ export const useCalendarEntryForm = ({
       form.setValue('asksForResponse', value);
     },
     isEditing: entry !== null,
+    isDirty: form.formState.isDirty,
     isSaving: createMutation.isPending || updateMutation.isPending,
     rejection,
-    collisionWarning,
     submit: () => {
       void handleSubmit();
     },

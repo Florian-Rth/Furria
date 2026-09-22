@@ -2,8 +2,6 @@ import { formatIsoDay } from '@/lib/membership-labels';
 
 const ISO_DAY_LENGTH = 10;
 
-export const ANNOUNCEMENT_FORM_SHEET_ID = 'announcement-form';
-
 export const ANNOUNCEMENT_NEW_LABEL = 'neu';
 
 export const formatPublishedDay = (publishedAt: string): string =>
