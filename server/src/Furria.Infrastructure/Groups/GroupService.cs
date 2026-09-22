@@ -331,27 +331,6 @@ public sealed class GroupService
         return [.. rows.Select(ToManagedSummary)];
     }
 
-    public async Task<Result<ManagedGroupDetails>> GetManagedGroupAsync(
-        int groupId,
-        CancellationToken ct
-    )
-    {
-        var today = ClubClock.Today(_timeProvider);
-
-        var row = await _dbContext
-            .Groups.AsNoTracking()
-            .Where(group => group.Id == groupId)
-            .Select(GroupPageProjection)
-            .SingleOrDefaultAsync(ct);
-
-        if (row is null)
-            return Result<ManagedGroupDetails>.NotFound(UnknownGroupMessage);
-
-        var affiliated = await AffiliatedAmongAsync(row, today, ct);
-
-        return Result<ManagedGroupDetails>.Success(ToManagedDetails(row, today, affiliated));
-    }
-
     public async Task<Result<int>> CreateAsync(CreateGroupCommand command, CancellationToken ct)
     {
         if (await NameIsTakenAsync(command.Name, null, ct))
@@ -360,13 +339,7 @@ public sealed class GroupService
         if (await GroupKindRefusalAsync(command.GroupKindId, ct) is { } kindRefusal)
             return Result<int>.Carrying(kindRefusal);
 
-        var group = new Group
-        {
-            Name = command.Name,
-            Description = command.Description,
-            IsRecruiting = command.IsRecruiting,
-            GroupKindId = command.GroupKindId,
-        };
+        var group = new Group { Name = command.Name, GroupKindId = command.GroupKindId };
 
         _dbContext.Groups.Add(group);
 
@@ -397,8 +370,6 @@ public sealed class GroupService
             return kindRefusal;
 
         group.Name = command.Name;
-        group.Description = command.Description;
-        group.IsRecruiting = command.IsRecruiting;
         group.GroupKindId = command.GroupKindId;
 
         return await _dbContext.SaveOrConflictAsync(ct);
@@ -820,47 +791,6 @@ public sealed class GroupService
             ViewerIsMember = viewerIsMember,
             ViewerIsAdmin = HasRunningRow(row.Admins, viewerPersonId, today),
             ViewerSince = viewerIsMember ? ChainStartOf(memberChains, viewerPersonId) : null,
-            PastMembers =
-            [
-                .. EndedRows(row.Members, today)
-                    .Select(tie => ToHubMember(tie, memberChains[tie.PersonId], affiliated)),
-            ],
-            PastAdmins =
-            [
-                .. EndedRows(row.Admins, today)
-                    .Select(tie => ToHubAdministrator(tie, adminChains[tie.PersonId], affiliated)),
-            ],
-        };
-    }
-
-    private static ManagedGroupDetails ToManagedDetails(
-        GroupPageRow row,
-        DateOnly today,
-        IReadOnlySet<int> affiliated
-    )
-    {
-        var memberChains = ChainStarts(row.Members);
-        var adminChains = ChainStarts(row.Admins);
-
-        return new ManagedGroupDetails
-        {
-            GroupId = row.Id,
-            Name = row.Name,
-            Description = row.Description,
-            IsRecruiting = row.IsRecruiting,
-            GroupKindId = row.GroupKindId,
-            GroupKindName = row.GroupKindName,
-            ArchivedOn = row.ArchivedOn,
-            Members =
-            [
-                .. RunningRows(row.Members, today)
-                    .Select(tie => ToHubMember(tie, memberChains[tie.PersonId], affiliated)),
-            ],
-            Admins =
-            [
-                .. RunningRows(row.Admins, today)
-                    .Select(tie => ToHubAdministrator(tie, adminChains[tie.PersonId], affiliated)),
-            ],
             PastMembers =
             [
                 .. EndedRows(row.Members, today)

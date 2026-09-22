@@ -1,8 +1,5 @@
-export { GroupAdminRow } from './components/GroupAdminRow';
 export { GroupDescriptionPanel } from './components/GroupDescriptionPanel';
-export { GroupDetailLayout } from './components/GroupDetailLayout';
 export { GroupHistoryPanel } from './components/GroupHistoryPanel';
-export { GroupMemberRow } from './components/GroupMemberRow';
 export {
   ADD_ADMIN_ACTION_LABEL,
   ADD_ADMIN_LABEL,

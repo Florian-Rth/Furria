@@ -39,7 +39,7 @@ export const GroupRegisterActions: FC<GroupRegisterActionsProps> = ({
 }) => {
   const params = { groupId: String(groupId) };
 
-  const hubLink = (
+  const hubLink = isArchived ? null : (
     <KkIconButton
       component={Link}
       to={HUB_PATH}

@@ -235,6 +235,16 @@ the rebuilt Gruppen list, Mitwirkende Gruppen, the Trainingsrhythmus with its ge
 Gruppenfarbe on the Kalender. What follows is where the build had to rule on something this file
 left open, and where it knowingly left the shape above.
 
+### Cut back — 2026-09-22
+
+The Gruppenverwaltung shipped with an expanding override panel per Gruppe. It was deleted: it
+duplicated the Gruppe hub, which a `groups.manage` holder already administers in full. See the
+amendment to [ADR-0014](../../docs/adr/0014-the-gruppe-hub-writes-its-own-record.md). With it went
+`GET manage/groups/{id}`, the Beschreibung and *sucht Verstärkung* fields on the club's own write
+(ruling 16 put both on the hub), the permanent footnote, and the „Alles gepflegt." all-clear that
+was computed from two checks. The register gained an *„ohne Personen"* facet — a Gruppe nobody is
+in is the archive candidate the page never named.
+
 ### Four rulings the plan did not make
 
 **`Group.Tone` is nullable, and the web derives the fallback.** Ruling 14 forbids a migration that

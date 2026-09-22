@@ -55,3 +55,27 @@ letter — the rule would have exactly zero instances.
 - Every Gruppe-scoped write goes through `CanAdministerGroupAsync`, never through a key.
 - Gruppen-Admin remains what `CONTEXT.md` says it is: not a Rolle, not a Berechtigung key, a
   Gruppe-scoped resource.
+
+## Amended — 2026-09-22
+
+CA-P6 shipped the club-wide override as an expanding panel inside `/manage/groups`: selecting a
+Gruppe fetched `GET manage/groups/{id}` and rendered its Zugehörigkeiten, Gruppen-Admins and
+Geschichte through the hub's own `GroupDetailLayout` and dialogs. **That is the scoped back office
+this ADR rejected**, built inline instead of at its own route, and it cost the same thing the
+rejection named: a second detail surface per Gruppe duplicating the hub's panels.
+
+It was also unnecessary. `CanAdministerGroupAsync` is `IsGroupAdminAsync || IsGranted(GroupsManage)`,
+so a key holder already *is* an admin of every Gruppe on the hub — the override was reachable there
+the whole time. The panel is deleted, with `GetManagedGroupById` and `ManagedGroupDetails`.
+
+**One surface ends a Zugehörigkeit** — the Gruppe hub — reached by two authorities, the Gruppe's own
+Admin and the global key. The consequence above that predicted two surfaces is withdrawn.
+
+`PutGroup` narrowed to match the dividing line: the club writes a Gruppe's **Name** and its
+**Gruppenart**; `Description` and `IsRecruiting` are the Gruppe's own record and belong to
+`PutGroupInfo`. The Gruppenart assignment stays on both, because `/manage/groups` carries the
+*„ohne Gruppenart"* backlog and a page must be able to close the work it reports.
+
+**The cost, accepted:** an archived Gruppe's hub is 404 (`ArchivedOn == null` in the hub query), so
+its roster is no longer readable anywhere. The only decision an archived Gruppe carries is
+*zurückholen oder nicht*, and the register row states its member count.

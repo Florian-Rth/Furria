@@ -1,7 +1,6 @@
 import type { FC } from 'react';
 import { AppListSkeleton } from '@/features/session';
 import { useManagedGroupsQuery } from '../api';
-import { useGroupSelection } from '../hooks/use-group-selection';
 import type { ManagedGroupsListing } from '../hooks/use-managed-groups-listing';
 import { toManagedGroupsErrorMessage } from '../manage-groups-messages';
 import { ManagedGroupsError } from './ManagedGroupsError';
@@ -15,7 +14,6 @@ interface ManagedGroupsBodyProps {
 
 export const ManagedGroupsBody: FC<ManagedGroupsBodyProps> = ({ listing }) => {
   const groups = useManagedGroupsQuery();
-  const selection = useGroupSelection();
   const errorMessage = toManagedGroupsErrorMessage(groups.error);
 
   const reload = (): void => {
@@ -31,11 +29,5 @@ export const ManagedGroupsBody: FC<ManagedGroupsBodyProps> = ({ listing }) => {
     return <ManagedGroupsError message={errorMessage} onRetry={reload} />;
   }
 
-  return (
-    <AppListSkeleton
-      label={LOADING_LABEL}
-      listShape="rows"
-      hasSelection={selection.groupId !== null}
-    />
-  );
+  return <AppListSkeleton label={LOADING_LABEL} listShape="rows" />;
 };

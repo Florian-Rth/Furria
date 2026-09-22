@@ -40,8 +40,6 @@ public sealed class PutGroup : Endpoint<PutGroupRequest>
         {
             GroupId = req.GroupId,
             Name = req.Name,
-            Description = req.Description,
-            IsRecruiting = req.IsRecruiting,
             GroupKindId = req.GroupKindId,
         };
 }
@@ -53,10 +51,6 @@ public sealed record PutGroupRequest
 
     public required string Name { get; init; }
 
-    public required string Description { get; init; }
-
-    public required bool IsRecruiting { get; init; }
-
     public int? GroupKindId { get; init; }
 }
 
@@ -66,9 +60,6 @@ public sealed class PutGroupValidator : Validator<PutGroupRequest>
     {
         RuleFor(request => request.GroupId).GreaterThan(0);
         RuleFor(request => request.Name).NotEmpty().MaximumLength(GroupLimits.NameLength);
-        RuleFor(request => request.Description)
-            .NotNull()
-            .MaximumLength(GroupLimits.DescriptionLength);
         RuleFor(request => request.GroupKindId)
             .GreaterThan(0)
             .When(request => request.GroupKindId is not null);

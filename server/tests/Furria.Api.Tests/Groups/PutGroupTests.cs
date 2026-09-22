@@ -15,7 +15,6 @@ public sealed class PutGroupTests
 {
     private const string ConflictField = "conflict";
     private const string OldDescription = "Die Garde tanzt seit 1971.";
-    private const string NewDescription = "Wir tanzen dienstags und donnerstags.";
     private const int UnknownGroupId = 999_999;
     private const string GroupsRoute = "/api/manage/groups";
     private const string BodyWithoutGruppenart =
@@ -31,7 +30,7 @@ public sealed class PutGroupTests
     }
 
     [Fact]
-    public async Task Should_RenameTheGruppe_When_TheKeyHolderSaves()
+    public async Task Should_RenameTheGruppeAndLeaveItsOwnRecordAlone_When_TheKeyHolderSaves()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -46,8 +45,6 @@ public sealed class PutGroupTests
             {
                 GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
                 Name = "Große Garde",
-                Description = NewDescription,
-                IsRecruiting = true,
                 GroupKindId = null,
             }
         );
@@ -57,9 +54,9 @@ public sealed class PutGroupTests
             .Expected.Group(ctx.Groups.Groups.IdOf("tanzgarde"))
             .ToHaveName("Große Garde")
             .Group(ctx.Groups.Groups.IdOf("tanzgarde"))
-            .ToHaveDescription(NewDescription)
+            .ToHaveDescription(OldDescription)
             .Group(ctx.Groups.Groups.IdOf("tanzgarde"))
-            .ToBeRecruiting(true)
+            .ToBeRecruiting(false)
             .AssertAsync(ct);
     }
 
@@ -79,8 +76,6 @@ public sealed class PutGroupTests
             {
                 GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
                 Name = "TANZGARDE",
-                Description = OldDescription,
-                IsRecruiting = false,
                 GroupKindId = null,
             }
         );
@@ -112,8 +107,6 @@ public sealed class PutGroupTests
             {
                 GroupId = ctx.Groups.Groups.IdOf("elferrat"),
                 Name = "tanzgarde",
-                Description = NewDescription,
-                IsRecruiting = false,
                 GroupKindId = null,
             }
         );
@@ -153,8 +146,6 @@ public sealed class PutGroupTests
             {
                 GroupId = ctx.Groups.Groups.IdOf("elferrat"),
                 Name = "Tanzgarde",
-                Description = NewDescription,
-                IsRecruiting = false,
                 GroupKindId = null,
             }
         );
@@ -192,8 +183,6 @@ public sealed class PutGroupTests
             {
                 GroupId = ctx.Groups.Groups.IdOf("kindergarde"),
                 Name = "Kindergarde neu",
-                Description = NewDescription,
-                IsRecruiting = true,
                 GroupKindId = null,
             }
         );
@@ -222,8 +211,6 @@ public sealed class PutGroupTests
             {
                 GroupId = UnknownGroupId,
                 Name = "Elferrat",
-                Description = NewDescription,
-                IsRecruiting = false,
                 GroupKindId = null,
             }
         );
@@ -247,8 +234,6 @@ public sealed class PutGroupTests
             {
                 GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
                 Name = "",
-                Description = NewDescription,
-                IsRecruiting = false,
                 GroupKindId = null,
             }
         );
@@ -289,8 +274,6 @@ public sealed class PutGroupTests
             {
                 GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
                 Name = "Große Garde",
-                Description = NewDescription,
-                IsRecruiting = true,
                 GroupKindId = null,
             }
         );
@@ -319,8 +302,6 @@ public sealed class PutGroupTests
                 {
                     GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
                     Name = "Große Garde",
-                    Description = NewDescription,
-                    IsRecruiting = true,
                     GroupKindId = null,
                 }
             );
@@ -348,8 +329,6 @@ public sealed class PutGroupTests
             {
                 GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
                 Name = "Tanzgarde",
-                Description = NewDescription,
-                IsRecruiting = true,
                 GroupKindId = ctx.Groups.GroupKinds.IdOf("spielmannszug"),
             }
         );

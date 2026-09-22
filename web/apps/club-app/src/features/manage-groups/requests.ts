@@ -6,35 +6,18 @@ import type {
   CreatedGroupKind,
   GroupForm,
   GroupKindForm,
-  ManagedGroupDetails,
   ManagedGroupsResponse,
 } from './schemas';
-import {
-  CreatedGroupKindSchema,
-  CreatedGroupSchema,
-  ManagedGroupDetailsSchema,
-  ManagedGroupsResponseSchema,
-} from './schemas';
+import { CreatedGroupKindSchema, CreatedGroupSchema, ManagedGroupsResponseSchema } from './schemas';
 
 export const requestManagedGroups = (accessToken: string): Promise<ManagedGroupsResponse> =>
   apiFetch('/api/manage/groups', { schema: ManagedGroupsResponseSchema, accessToken });
-
-export const requestManagedGroup = (
-  groupId: number,
-  accessToken: string,
-): Promise<ManagedGroupDetails> =>
-  apiFetch(`/api/manage/groups/${groupId}`, {
-    schema: ManagedGroupDetailsSchema,
-    accessToken,
-  });
 
 export const requestGroupCreation = (form: GroupForm, accessToken: string): Promise<CreatedGroup> =>
   apiFetch('/api/manage/groups', {
     method: 'POST',
     body: {
       name: form.name,
-      description: form.description,
-      isRecruiting: form.isRecruiting,
       groupKindId: toGroupKindId(form.groupKindId),
     },
     schema: CreatedGroupSchema,
@@ -50,8 +33,6 @@ export const requestGroupUpdate = (
     method: 'PUT',
     body: {
       name: form.name,
-      description: form.description,
-      isRecruiting: form.isRecruiting,
       groupKindId: toGroupKindId(form.groupKindId),
     },
     schema: NoContentSchema,

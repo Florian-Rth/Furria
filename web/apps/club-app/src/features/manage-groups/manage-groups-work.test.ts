@@ -6,6 +6,7 @@ import {
   countBandedGroups,
   NO_ADMIN_GROUPS_FILTER_ID,
   NO_KIND_GROUPS_FILTER_ID,
+  NO_PEOPLE_GROUPS_FILTER_ID,
   resolveGroupWorkFilter,
   toGroupRegisterBands,
   toGroupWorkFacets,
@@ -48,6 +49,7 @@ const CHRONIK = group({
   groupId: 10,
   name: 'Archiv und Chronik',
   admins: [],
+  memberCount: 0,
   groupKindId: null,
   groupKindName: null,
 });
@@ -71,23 +73,19 @@ describe('toGroupWorkFacets', () => {
       listed: 3,
       withoutAdmin: 1,
       withoutKind: 2,
+      withoutPeople: 1,
       archived: 1,
-      isSettled: false,
     });
   });
 
-  it('settles once nothing is missing', () => {
-    expect(toGroupWorkFacets([GARDE]).isSettled).toBe(true);
-  });
-
-  it('settles an empty register', () => {
+  it('counts an empty register', () => {
     expect(toGroupWorkFacets([])).toEqual({
       total: 0,
       listed: 0,
       withoutAdmin: 0,
       withoutKind: 0,
+      withoutPeople: 0,
       archived: 0,
-      isSettled: true,
     });
   });
 });
@@ -104,6 +102,7 @@ describe('toGroupWorkFilterOptions', () => {
     ).toEqual([
       { id: NO_ADMIN_GROUPS_FILTER_ID, count: 1, tone: 'accent', countFirst: true },
       { id: NO_KIND_GROUPS_FILTER_ID, count: 2, tone: 'gold', countFirst: true },
+      { id: NO_PEOPLE_GROUPS_FILTER_ID, count: 1, tone: 'gold', countFirst: true },
       { id: ARCHIVED_GROUPS_FILTER_ID, count: 1, tone: 'neutral', countFirst: true },
       { id: ALL_GROUPS_FILTER_ID, count: 4, tone: undefined, countFirst: undefined },
     ]);
@@ -120,6 +119,7 @@ describe('toGroupWorkFilterId', () => {
   it.each([
     [NO_ADMIN_GROUPS_FILTER_ID, NO_ADMIN_GROUPS_FILTER_ID],
     [NO_KIND_GROUPS_FILTER_ID, NO_KIND_GROUPS_FILTER_ID],
+    [NO_PEOPLE_GROUPS_FILTER_ID, NO_PEOPLE_GROUPS_FILTER_ID],
     [ARCHIVED_GROUPS_FILTER_ID, ARCHIVED_GROUPS_FILTER_ID],
     ['active', ALL_GROUPS_FILTER_ID],
     ['', ALL_GROUPS_FILTER_ID],
@@ -132,6 +132,7 @@ describe('resolveGroupWorkFilter', () => {
   const fallbacks: [GroupWorkFilterId, GroupWorkFilterId][] = [
     [NO_ADMIN_GROUPS_FILTER_ID, ALL_GROUPS_FILTER_ID],
     [NO_KIND_GROUPS_FILTER_ID, ALL_GROUPS_FILTER_ID],
+    [NO_PEOPLE_GROUPS_FILTER_ID, ALL_GROUPS_FILTER_ID],
     [ARCHIVED_GROUPS_FILTER_ID, ALL_GROUPS_FILTER_ID],
     [ALL_GROUPS_FILTER_ID, ALL_GROUPS_FILTER_ID],
   ];
@@ -185,20 +186,22 @@ describe('toGroupRegisterBands', () => {
 });
 
 describe('toManagedGroupsLead', () => {
-  it('leaves the open work to the chips and states what the register holds', () => {
-    expect(toManagedGroupsLead(toGroupWorkFacets(ALL))).toBe('3 Gruppen stehen im Verzeichnis.');
+  it('names the archived ones apart so the whole-register count reconciles', () => {
+    expect(toManagedGroupsLead(toGroupWorkFacets(ALL))).toBe(
+      '3 Gruppen stehen im Verzeichnis. Eine weitere ist archiviert.',
+    );
   });
 
-  it('says so calmly when nothing is open', () => {
+  it('says only what the register holds when nothing is archived', () => {
     expect(toManagedGroupsLead(toGroupWorkFacets([GARDE]))).toBe(
-      'Eine Gruppe steht im Verzeichnis. Alles gepflegt.',
+      'Eine Gruppe steht im Verzeichnis.',
     );
   });
 
   it('counts the listed groups in the plural', () => {
     expect(
       toManagedGroupsLead(toGroupWorkFacets([GARDE, group({ groupId: 2, name: 'Elferrat' })])),
-    ).toBe('2 Gruppen stehen im Verzeichnis. Alles gepflegt.');
+    ).toBe('2 Gruppen stehen im Verzeichnis.');
   });
 
   it('has its own line for an empty register', () => {
@@ -207,7 +210,7 @@ describe('toManagedGroupsLead', () => {
     );
   });
 
-  it('stays calm about open work and never claims everything is tended', () => {
+  it('never claims everything is tended', () => {
     expect(toManagedGroupsLead(toGroupWorkFacets([GARDE, group({ groupId: 3, admins: [] })]))).toBe(
       '2 Gruppen stehen im Verzeichnis.',
     );
@@ -218,22 +221,8 @@ describe('toRegisterMeta', () => {
   const bandsOf = (filter: GroupWorkFilterId): GroupRegisterBands =>
     toGroupRegisterBands(ALL, '', filter);
 
-  it('keeps the archived ones out of the Verzeichnis count and names them apart', () => {
-    expect(toRegisterMeta(ALL_GROUPS_FILTER_ID, bandsOf(ALL_GROUPS_FILTER_ID))).toBe(
-      '3 Gruppen im Verzeichnis · 1 archiviert',
-    );
-  });
-
-  it('drops the tail when nothing is archived', () => {
-    expect(
-      toRegisterMeta(ALL_GROUPS_FILTER_ID, toGroupRegisterBands([GARDE], '', ALL_GROUPS_FILTER_ID)),
-    ).toBe('Eine Gruppe im Verzeichnis');
-  });
-
-  it('counts the archived band alone once only archived groups are banded', () => {
-    expect(toRegisterMeta(ALL_GROUPS_FILTER_ID, bandsOf(ARCHIVED_GROUPS_FILTER_ID))).toBe(
-      'Eine archivierte Gruppe',
-    );
+  it('stays silent on the whole register, which the lead already states', () => {
+    expect(toRegisterMeta(ALL_GROUPS_FILTER_ID, bandsOf(ALL_GROUPS_FILTER_ID))).toBeUndefined();
   });
 
   it('names the facet it is filtered to', () => {

@@ -14,7 +14,6 @@ namespace Furria.Api.Tests.Groups;
 public sealed class PostGroupTests
 {
     private const string ConflictField = "conflict";
-    private const string Description = "Wir proben freitags im Vereinsheim.";
     private const string GroupsRoute = "/api/manage/groups";
     private const string BodyWithoutGruppenart =
         "{\"name\":\"Die Biergarde\",\"description\":\"Wir proben freitags.\",\"isRecruiting\":true}";
@@ -39,24 +38,16 @@ public sealed class PostGroupTests
             PostGroup,
             PostGroupRequest,
             PostGroupResponse
-        >(
-            new()
-            {
-                Name = "Musik & Kapelle",
-                Description = Description,
-                IsRecruiting = true,
-                GroupKindId = null,
-            }
-        );
+        >(new() { Name = "Musik & Kapelle", GroupKindId = null });
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         await ctx
             .Expected.Group(result.GroupId)
             .ToHaveName("Musik & Kapelle")
             .Group(result.GroupId)
-            .ToHaveDescription(Description)
+            .ToHaveDescription("")
             .Group(result.GroupId)
-            .ToBeRecruiting(true)
+            .ToBeRecruiting(false)
             .Group(result.GroupId)
             .ToBeArchivedOn(null)
             .AssertAsync(ct);
@@ -73,13 +64,7 @@ public sealed class PostGroupTests
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var (response, _) = await client.POSTAsync<PostGroup, PostGroupRequest, PostGroupResponse>(
-            new()
-            {
-                Name = "tanzgarde",
-                Description = Description,
-                IsRecruiting = false,
-                GroupKindId = null,
-            }
+            new() { Name = "tanzgarde", GroupKindId = null }
         );
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -110,15 +95,7 @@ public sealed class PostGroupTests
             PostGroup,
             PostGroupRequest,
             PostGroupResponse
-        >(
-            new()
-            {
-                Name = "Tanzgarde",
-                Description = Description,
-                IsRecruiting = true,
-                GroupKindId = null,
-            }
-        );
+        >(new() { Name = "Tanzgarde", GroupKindId = null });
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         await ctx
@@ -137,13 +114,7 @@ public sealed class PostGroupTests
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var (response, _) = await client.POSTAsync<PostGroup, PostGroupRequest, PostGroupResponse>(
-            new()
-            {
-                Name = "",
-                Description = Description,
-                IsRecruiting = false,
-                GroupKindId = null,
-            }
+            new() { Name = "", GroupKindId = null }
         );
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -157,33 +128,7 @@ public sealed class PostGroupTests
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var (response, _) = await client.POSTAsync<PostGroup, PostGroupRequest, PostGroupResponse>(
-            new()
-            {
-                Name = new string('a', 81),
-                Description = Description,
-                IsRecruiting = false,
-                GroupKindId = null,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_TheDescriptionIsLongerThanTheColumn()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
-        var (response, _) = await client.POSTAsync<PostGroup, PostGroupRequest, PostGroupResponse>(
-            new()
-            {
-                Name = "Technik & Bühne",
-                Description = new string('a', 401),
-                IsRecruiting = false,
-                GroupKindId = null,
-            }
+            new() { Name = new string('a', 81), GroupKindId = null }
         );
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -213,13 +158,7 @@ public sealed class PostGroupTests
 
         var client = await ctx.Identity.ClientForAsync("ilka", ct);
         var (response, _) = await client.POSTAsync<PostGroup, PostGroupRequest, PostGroupResponse>(
-            new()
-            {
-                Name = "Technik & Bühne",
-                Description = Description,
-                IsRecruiting = false,
-                GroupKindId = null,
-            }
+            new() { Name = "Technik & Bühne", GroupKindId = null }
         );
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -234,13 +173,7 @@ public sealed class PostGroupTests
         var (response, _) = await _fixture
             .CreateClient()
             .POSTAsync<PostGroup, PostGroupRequest, PostGroupResponse>(
-                new()
-                {
-                    Name = "Technik & Bühne",
-                    Description = Description,
-                    IsRecruiting = false,
-                    GroupKindId = null,
-                }
+                new() { Name = "Technik & Bühne", GroupKindId = null }
             );
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -267,8 +200,6 @@ public sealed class PostGroupTests
             new()
             {
                 Name = "Spielmannszug",
-                Description = Description,
-                IsRecruiting = false,
                 GroupKindId = ctx.Groups.GroupKinds.IdOf("spielmannszug"),
             }
         );

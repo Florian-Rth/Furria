@@ -10,7 +10,6 @@ import {
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { useManagedGroupsQuery } from '../api';
 import { useGroupCreateDialog } from '../hooks/use-group-create-dialog';
-import { useGroupSelection } from '../hooks/use-group-selection';
 import { useManagedGroupsListing } from '../hooks/use-managed-groups-listing';
 import { toManagedGroupsLead } from '../manage-groups-work';
 import type { ManagedGroupSummary } from '../schemas';
@@ -36,14 +35,12 @@ export const ManagedGroupsPage: FC = () => {
   const rows = groups.data?.groups ?? NO_GROUPS;
   const listing = useManagedGroupsListing(rows);
   const create = useGroupCreateDialog();
-  const selection = useGroupSelection();
   const { has } = usePermissions();
   const canManage = has(PERMISSION_KEYS.groupsManage);
   const lead = groups.data === undefined ? undefined : toManagedGroupsLead(listing.facets);
 
-  const onCreated = (groupId: number): void => {
+  const onCreated = (): void => {
     create.close();
-    selection.select(groupId);
   };
 
   const createAction: KkScreenAction = {

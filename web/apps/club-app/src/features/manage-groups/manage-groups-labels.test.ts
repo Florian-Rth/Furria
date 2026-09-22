@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { ARCHIVED_CHIP } from '@/lib/state-chips';
 import {
   findManagedGroup,
   isGroupKindArchivable,
@@ -9,7 +8,6 @@ import {
   toGroupKindEntries,
   toGroupKindsIntro,
   toGroupKindUsageLine,
-  toManagedGroupStatusChip,
   toRestoreConsequence,
 } from './manage-groups-labels';
 import type { ManagedGroupKind, ManagedGroupSummary } from './schemas';
@@ -44,20 +42,6 @@ const WIRBELWIND = group({
   admins: [],
 });
 const ALL = [GARDE, MUSIKZUG, CHRONIK, WIRBELWIND];
-
-describe('toManagedGroupStatusChip', () => {
-  it('reports the archived state before anything else', () => {
-    expect(toManagedGroupStatusChip(WIRBELWIND)).toBe(ARCHIVED_CHIP);
-  });
-
-  it('flags a group that is looking for people', () => {
-    expect(toManagedGroupStatusChip(GARDE)?.tone).toBe('gold');
-  });
-
-  it('says nothing about a settled group', () => {
-    expect(toManagedGroupStatusChip(MUSIKZUG)).toBeNull();
-  });
-});
 
 describe('toGroupAdminsLine', () => {
   it('reports nobody as an absent line', () => {

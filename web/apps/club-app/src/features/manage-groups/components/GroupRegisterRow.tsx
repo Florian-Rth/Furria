@@ -3,7 +3,7 @@ import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { toGroupKindLabel, toGroupTone } from '@/features/groups';
-import { toGroupSizeLine, toManagedGroupStatusChip } from '../manage-groups-labels';
+import { toGroupSizeLine } from '../manage-groups-labels';
 import type { ManagedGroupSummary } from '../schemas';
 import { GroupRegisterActions } from './GroupRegisterActions';
 import { GroupRegisterAdmins } from './GroupRegisterAdmins';
@@ -21,8 +21,6 @@ const GRID = { minWidth: 0, alignItems: 'center' } as const;
 
 interface GroupRegisterRowProps {
   group: ManagedGroupSummary;
-  selectedId: number | null;
-  onSelect: (groupId: number) => void;
   onAppointAdmin: (groupId: number) => void;
   onEdit: (groupId: number) => void;
   onArchive: (groupId: number) => void;
@@ -31,22 +29,14 @@ interface GroupRegisterRowProps {
 
 export const GroupRegisterRow: FC<GroupRegisterRowProps> = ({
   group,
-  selectedId,
-  onSelect,
   onAppointAdmin,
   onEdit,
   onArchive,
   onRestore,
 }) => {
   const tone = toGroupTone(group.groupId, group.tone);
-  const selected = group.groupId === selectedId;
   const isArchived = group.archivedOn !== null;
-  const status = toManagedGroupStatusChip(group);
   const kindLabel = toGroupKindLabel(group.groupKindName);
-
-  const select = (): void => {
-    onSelect(group.groupId);
-  };
 
   const appoint = (): void => {
     onAppointAdmin(group.groupId);
@@ -71,32 +61,19 @@ export const GroupRegisterRow: FC<GroupRegisterRowProps> = ({
       </KkChip>
     );
 
-  const statusSlot =
-    status === null ? null : (
-      <KkChip tone={status.tone} dot={status.dot} size="small">
-        {status.label}
-      </KkChip>
-    );
-
   const chips =
-    kindSlot === null && statusSlot === null ? null : (
+    kindSlot === null ? null : (
       <Stack direction="row" sx={CHIP_ROW}>
         {kindSlot}
-        {statusSlot}
       </Stack>
     );
 
   return (
-    <KkRegisterRow groupTone={tone} selected={selected} dimmed={isArchived}>
+    <KkRegisterRow groupTone={tone} dimmed={isArchived}>
       <Grid container spacing={{ xs: 1, desktop: 1.5 }} sx={GRID}>
         <Grid size={IDENTITY_SIZE} sx={CELL}>
           <Stack sx={IDENTITY}>
-            <KkRecordName
-              name={group.name}
-              selected={selected}
-              dimmed={isArchived}
-              onSelect={select}
-            />
+            <KkRecordName name={group.name} dimmed={isArchived} />
             {chips}
           </Stack>
         </Grid>

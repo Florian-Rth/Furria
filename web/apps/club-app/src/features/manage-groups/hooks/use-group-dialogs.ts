@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export type GroupDialogKind = 'edit' | 'archive' | 'restore';
+export type GroupDialogKind = 'edit' | 'archive' | 'restore' | 'appoint';
 
 export interface GroupDialogs {
   open: GroupDialogKind | null;
@@ -8,6 +8,7 @@ export interface GroupDialogs {
   openEdit: (groupId: number) => void;
   openArchive: (groupId: number) => void;
   openRestore: (groupId: number) => void;
+  openAppoint: (groupId: number) => void;
   close: () => void;
 }
 
@@ -33,6 +34,7 @@ export const useGroupDialogs = (): GroupDialogs => {
     openEdit: openFor('edit'),
     openArchive: openFor('archive'),
     openRestore: openFor('restore'),
+    openAppoint: openFor('appoint'),
     close,
   };
 };

@@ -1,13 +1,4 @@
-import {
-  KkAlert,
-  KkButton,
-  KkModalFrame,
-  KkNote,
-  KkSelectField,
-  KkSwitchRow,
-  KkTextArea,
-  KkTextField,
-} from '@furria/ui';
+import { KkAlert, KkButton, KkModalFrame, KkNote, KkSelectField, KkTextField } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { useId } from 'react';
@@ -20,7 +11,6 @@ import {
 } from '@/features/group-kinds';
 import { useGroupForm } from '../hooks/use-group-form';
 import type { ManagedGroupSummary } from '../schemas';
-import { GROUP_DESCRIPTION_MAX_LENGTH } from '../schemas';
 
 const CREATE_TITLE = 'Gruppe anlegen';
 const EDIT_TITLE = 'Gruppe bearbeiten';
@@ -31,16 +21,8 @@ const CLOSE_LABEL = 'Schließen';
 const CANCEL_LABEL = 'Abbrechen';
 
 const NAME_LABEL = 'Name der Gruppe';
-const DESCRIPTION_LABEL = 'Über die Gruppe';
-const DESCRIPTION_PLACEHOLDER = 'Was macht die Gruppe, wann trefft ihr euch?';
-const DESCRIPTION_HINT = 'Ein paar Sätze über die Gruppe. Der Text steht so im Verzeichnis.';
-const DESCRIPTION_ROWS = 5;
-const OPENNESS_LABEL = 'Sucht Verstärkung';
-const OPENNESS_DESCRIPTION = 'Zeigt im Verzeichnis, dass die Gruppe gerade Leute aufnimmt.';
 const CREATE_NOTE =
-  'Die Gruppe steht sofort im Verzeichnis. Personen und Gruppen-Admins trägst du danach ein.';
-
-const toCountLabel = (used: number, max: number): string => `${used} von ${max} Zeichen`;
+  'Die Gruppe steht sofort im Verzeichnis. Ernenne ihr danach einen Gruppen-Admin — Beschreibung, Farbe und Training schreibt die Gruppe dann selbst.';
 
 interface GroupFormDialogProps {
   group: ManagedGroupSummary | null;
@@ -59,7 +41,6 @@ export const GroupFormDialog: FC<GroupFormDialogProps> = ({ group, open, onClose
   const errors = control.form.formState.errors;
 
   const nameErrorText = errors.name?.message;
-  const descriptionErrorText = errors.description?.message;
 
   const title = control.isEditing ? EDIT_TITLE : CREATE_TITLE;
   const kicker = group === null ? CREATE_KICKER : group.name;
@@ -85,20 +66,6 @@ export const GroupFormDialog: FC<GroupFormDialogProps> = ({ group, open, onClose
             onBlur={nameField.onBlur}
             inputRef={nameField.ref}
           />
-          <KkTextArea
-            name="description"
-            label={DESCRIPTION_LABEL}
-            value={control.description}
-            onChange={control.setDescription}
-            rows={DESCRIPTION_ROWS}
-            maxLength={GROUP_DESCRIPTION_MAX_LENGTH}
-            showCount
-            countLabel={toCountLabel}
-            placeholder={DESCRIPTION_PLACEHOLDER}
-            hint={DESCRIPTION_HINT}
-            error={descriptionErrorText !== undefined}
-            helperText={descriptionErrorText}
-          />
           <KkSelectField
             name="groupKindId"
             label={GROUP_KIND_FIELD_LABEL}
@@ -107,12 +74,6 @@ export const GroupFormDialog: FC<GroupFormDialogProps> = ({ group, open, onClose
             onChange={control.setGroupKindId}
             presentation="select"
             hint={GROUP_KIND_FIELD_HINT}
-          />
-          <KkSwitchRow
-            label={OPENNESS_LABEL}
-            checked={control.isRecruiting}
-            onChange={control.setRecruiting}
-            description={OPENNESS_DESCRIPTION}
           />
         </Stack>
       </KkModalFrame.Fields>

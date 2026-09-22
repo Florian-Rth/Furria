@@ -12,7 +12,6 @@ const KIND_NAME_REQUIRED_MESSAGE = 'Gib der Gruppenart einen Namen.';
 const KIND_NAME_TOO_LONG_MESSAGE = `Höchstens ${GROUP_KIND_NAME_MAX_LENGTH} Zeichen.`;
 
 export const ManagedGroupsSearchSchema = AppSearchSchema.extend({
-  group: z.coerce.number().int().positive().optional().catch(undefined),
   work: z.string().optional().catch(undefined),
 });
 export type ManagedGroupsSearch = z.infer<typeof ManagedGroupsSearchSchema>;
@@ -79,10 +78,6 @@ export const GroupFormSchema = z.object({
     .trim()
     .min(1, 'Die Gruppe braucht einen Namen.')
     .max(GROUP_NAME_MAX_LENGTH, `Höchstens ${GROUP_NAME_MAX_LENGTH} Zeichen.`),
-  description: z
-    .string()
-    .max(GROUP_DESCRIPTION_MAX_LENGTH, `Höchstens ${GROUP_DESCRIPTION_MAX_LENGTH} Zeichen.`),
-  isRecruiting: z.boolean(),
   groupKindId: z.string(),
 });
 export type GroupForm = z.infer<typeof GroupFormSchema>;

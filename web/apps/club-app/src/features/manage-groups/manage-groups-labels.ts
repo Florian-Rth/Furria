@@ -1,18 +1,8 @@
 import type { KkConfirmFact } from '@furria/ui';
 import type { PersonRef } from '@/lib/api/schemas';
-import {
-  GROUP_SECTION_TITLES as SHARED_GROUP_SECTION_TITLES,
-  toGroupMembersLabel,
-} from '@/lib/group-sections';
+import { toGroupMembersLabel } from '@/lib/group-sections';
 import { formatIsoDay } from '@/lib/membership-labels';
-import type { StateChip } from '@/lib/state-chips';
-import { ARCHIVED_CHIP, toRecruitingChip } from '@/lib/state-chips';
-import { isGroupArchived } from './manage-groups-work';
 import type { ManagedGroupKind, ManagedGroupSummary } from './schemas';
-
-export const MANAGE_GROUPS_SECTION_TITLES = {
-  members: SHARED_GROUP_SECTION_TITLES.managedMembers,
-} as const;
 
 export interface ManagedGroupsEmptyCopy {
   title: string;
@@ -33,24 +23,10 @@ export const MANAGED_GROUPS_EMPTY: Record<'filtered' | 'cold', ManagedGroupsEmpt
 
 export const REGISTER_TITLE = 'Verzeichnis';
 
-export const MANAGE_GROUPS_FOOTNOTE =
-  'Archivieren löscht nichts: Die Gruppe verschwindet aus dem Verzeichnis, ihre Geschichte bleibt in den Profilen stehen.';
-
 export const APPOINT_ADMIN_LABEL = 'Admin ernennen';
 
 export const toAppointAdminActionLabel = (name: string): string =>
   `Gruppen-Admin für ${name} ernennen`;
-
-export const toManagedGroupStatusChip = (group: ManagedGroupSummary): StateChip | null => {
-  if (isGroupArchived(group)) {
-    return ARCHIVED_CHIP;
-  }
-  if (group.isRecruiting) {
-    return toRecruitingChip(true);
-  }
-
-  return null;
-};
 
 export const toGroupSizeLine = toGroupMembersLabel;
 

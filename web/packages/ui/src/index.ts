@@ -87,7 +87,6 @@ export { KkPhoto } from './KkPhoto';
 export { KkPhotoPlaceholder } from './KkPhotoPlaceholder';
 export { KkRecordName } from './KkRecordName';
 export { KkRedactedValue } from './KkRedactedValue';
-export { KkRegisterExpansion } from './KkRegisterExpansion';
 export { KkRegisterRow } from './KkRegisterRow';
 export { KkReservedSlot } from './KkReservedSlot';
 export { KkRule } from './KkRule';

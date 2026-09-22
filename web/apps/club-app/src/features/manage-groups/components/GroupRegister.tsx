@@ -1,6 +1,6 @@
 import { KkEmptyState, KkEyebrow, KkPanel, KkPanelSection } from '@furria/ui';
 import Stack from '@mui/material/Stack';
-import type { FC, ReactNode } from 'react';
+import type { FC } from 'react';
 import { MANAGED_GROUPS_EMPTY, REGISTER_TITLE } from '../manage-groups-labels';
 import type { GroupRegisterBands, GroupWorkFilterId } from '../manage-groups-work';
 import { countBandedGroups, toRegisterMeta } from '../manage-groups-work';
@@ -13,10 +13,7 @@ const BAND_LABEL = { pt: 2.25, pb: 0.5, minWidth: 0 } as const;
 interface GroupRegisterProps {
   bands: GroupRegisterBands;
   filter: GroupWorkFilterId;
-  selectedId: number | null;
   isFiltered: boolean;
-  detail: ReactNode;
-  onSelect: (groupId: number) => void;
   onAppointAdmin: (groupId: number) => void;
   onEdit: (groupId: number) => void;
   onArchive: (groupId: number) => void;
@@ -26,10 +23,7 @@ interface GroupRegisterProps {
 export const GroupRegister: FC<GroupRegisterProps> = ({
   bands,
   filter,
-  selectedId,
   isFiltered,
-  detail,
-  onSelect,
   onAppointAdmin,
   onEdit,
   onArchive,
@@ -56,9 +50,6 @@ export const GroupRegister: FC<GroupRegisterProps> = ({
       <KkPanel variant="list">
         <GroupRegisterBand
           groups={bands.running}
-          selectedId={selectedId}
-          detail={detail}
-          onSelect={onSelect}
           onAppointAdmin={onAppointAdmin}
           onEdit={onEdit}
           onArchive={onArchive}
@@ -67,9 +58,6 @@ export const GroupRegister: FC<GroupRegisterProps> = ({
         {archivedLabel}
         <GroupRegisterBand
           groups={bands.archived}
-          selectedId={selectedId}
-          detail={detail}
-          onSelect={onSelect}
           onAppointAdmin={onAppointAdmin}
           onEdit={onEdit}
           onArchive={onArchive}

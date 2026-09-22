@@ -9,22 +9,15 @@ import { useCreateGroupMutation, useUpdateGroupMutation } from '../api';
 import type { GroupForm, ManagedGroupSummary } from '../schemas';
 import { GroupFormSchema } from '../schemas';
 
-const FIELD_NAMES = ['name', 'description', 'isRecruiting', 'groupKindId'] as const;
+const FIELD_NAMES = ['name', 'groupKindId'] as const;
 
-const EMPTY_VALUES: GroupForm = {
-  name: '',
-  description: '',
-  isRecruiting: false,
-  groupKindId: '',
-};
+const EMPTY_VALUES: GroupForm = { name: '', groupKindId: '' };
 
 const toValues = (group: ManagedGroupSummary | null): GroupForm =>
   group === null
     ? EMPTY_VALUES
     : {
         name: group.name,
-        description: group.description,
-        isRecruiting: group.isRecruiting,
         groupKindId: toGroupKindValue(group.groupKindId),
       };
 
@@ -36,10 +29,6 @@ interface GroupFormInput {
 
 export interface GroupFormControl {
   form: UseFormReturn<GroupForm>;
-  description: string;
-  setDescription: (value: string) => void;
-  isRecruiting: boolean;
-  setRecruiting: (value: boolean) => void;
   groupKindId: string;
   setGroupKindId: (value: string) => void;
   isEditing: boolean;
@@ -108,24 +97,12 @@ export const useGroupForm = ({ group, open, onSaved }: GroupFormInput): GroupFor
     void handleSubmit();
   };
 
-  const setDescription = (value: string): void => {
-    form.setValue('description', value, { shouldValidate: true });
-  };
-
-  const setRecruiting = (value: boolean): void => {
-    form.setValue('isRecruiting', value);
-  };
-
   const setGroupKindId = (value: string): void => {
     form.setValue('groupKindId', value);
   };
 
   return {
     form,
-    description: form.watch('description'),
-    setDescription,
-    isRecruiting: form.watch('isRecruiting'),
-    setRecruiting,
     groupKindId: form.watch('groupKindId'),
     setGroupKindId,
     isEditing: group !== null,
