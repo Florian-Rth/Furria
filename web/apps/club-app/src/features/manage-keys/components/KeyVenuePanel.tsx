@@ -1,4 +1,5 @@
-import { KkButton, KkEmptyState, KkIcon, KkPanel, KkPanelSection } from '@furria/ui';
+import type { KkPanelAction } from '@furria/ui';
+import { KkEmptyState, KkPanel, KkPanelSection } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import {
@@ -30,17 +31,14 @@ export const KeyVenuePanel: FC<KeyVenuePanelProps> = ({ venue, onHandOut, onTake
     onHandOut(venue.venueId);
   };
 
-  const action = isArchived ? null : (
-    <KkButton
-      size="small"
-      variant="outlined"
-      startIcon={<KkIcon name="add" size="small" />}
-      ariaLabel={toHandOutLabel(venue.name)}
-      onClick={handOut}
-    >
-      {HAND_OUT_TEXT}
-    </KkButton>
-  );
+  const action: KkPanelAction | undefined = isArchived
+    ? undefined
+    : {
+        label: HAND_OUT_TEXT,
+        icon: 'add',
+        ariaLabel: toHandOutLabel(venue.name),
+        onClick: handOut,
+      };
 
   const description = venue.archivedOn === null ? undefined : toArchivedVenueNote(venue.archivedOn);
 

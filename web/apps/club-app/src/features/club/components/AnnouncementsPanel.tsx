@@ -1,3 +1,4 @@
+import type { KkPanelAction } from '@furria/ui';
 import { KkButton, KkEmptyState, KkIcon, KkPanel, KkPanelSection, KkRule } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import { Link, useNavigate } from '@tanstack/react-router';
@@ -67,12 +68,15 @@ export const AnnouncementsPanel: FC = () => {
     </KkButton>
   ) : null;
 
-  const openAll =
-    announcements.totalCount > 0 ? (
-      <KkButton size="small" variant="text" component={Link} to={ANNOUNCEMENTS_PATH}>
-        {ALL_ANNOUNCEMENTS_LABEL}
-      </KkButton>
-    ) : null;
+  const openAll: KkPanelAction | undefined =
+    announcements.totalCount > 0
+      ? {
+          label: ALL_ANNOUNCEMENTS_LABEL,
+          emphasis: 'quiet',
+          component: Link,
+          to: ANNOUNCEMENTS_PATH,
+        }
+      : undefined;
 
   return (
     <KkPanelSection title={PANEL_TITLE} action={openAll}>

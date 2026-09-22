@@ -1,4 +1,5 @@
-import { KkButton, KkIcon, KkPanelSection } from '@furria/ui';
+import type { KkPanelAction } from '@furria/ui';
+import { KkPanelSection } from '@furria/ui';
 import type { FC } from 'react';
 import { GroupDescriptionPanel } from '@/features/group-detail';
 import type { GroupTone } from '@/features/groups';
@@ -22,17 +23,9 @@ export const HubDescriptionPanel: FC<HubDescriptionPanelProps> = ({
   canManage,
   onEdit,
 }) => {
-  const action = canManage ? (
-    <KkButton
-      size="small"
-      variant="outlined"
-      startIcon={<KkIcon name="edit" size="small" />}
-      ariaLabel={EDIT_ACTION_LABEL}
-      onClick={onEdit}
-    >
-      {EDIT_LABEL}
-    </KkButton>
-  ) : null;
+  const action: KkPanelAction | undefined = canManage
+    ? { label: EDIT_LABEL, icon: 'edit', ariaLabel: EDIT_ACTION_LABEL, onClick: onEdit }
+    : undefined;
 
   return (
     <KkPanelSection title={GROUP_SECTION_TITLES.description} groupTone={tone} action={action}>

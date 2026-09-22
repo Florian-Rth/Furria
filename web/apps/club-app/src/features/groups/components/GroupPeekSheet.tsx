@@ -1,6 +1,5 @@
 import {
   KkAvatarStack,
-  KkButton,
   KkChip,
   KkEyebrow,
   KkGroupToneField,
@@ -105,11 +104,9 @@ export const GroupPeekSheet: FC<GroupPeekSheetProps> = ({ groups }) => {
           <KkMeta>{toGroupContactLine(group)}</KkMeta>
         </KkPanelSection>
       </KkSheet.Body>
-      <KkSheet.Actions>
-        <KkButton component={Link} to={GROUP_PATH} params={params} fullWidth>
-          {GROUP_PEEK_OPEN_LABEL}
-        </KkButton>
-      </KkSheet.Actions>
+      <KkSheet.Actions
+        primary={{ label: GROUP_PEEK_OPEN_LABEL, component: Link, to: GROUP_PATH, params }}
+      />
     </KkSheet>
   );
 };

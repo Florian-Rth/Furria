@@ -32,6 +32,8 @@ export const HubStage: FC<HubStageProps> = ({ groupId }) => {
       </KkChip>
     );
 
+  const standing = toStandingLine(group);
+
   return (
     <KkGroupStage
       tone={tone}
@@ -39,7 +41,9 @@ export const HubStage: FC<HubStageProps> = ({ groupId }) => {
       kindLabel={toGroupKindLabel(group.groupKindName)}
       jubilee={toJubileeSeal(group.foundedYear, currentSessionYear())}
     >
-      <KkGroupStage.Standing tone={tone}>{toStandingLine(group)}</KkGroupStage.Standing>
+      {standing === null ? null : (
+        <KkGroupStage.Standing tone={tone}>{standing}</KkGroupStage.Standing>
+      )}
       <KkGroupStage.Meta facts={toHubMetaFacts(group)} chip={chip} />
     </KkGroupStage>
   );

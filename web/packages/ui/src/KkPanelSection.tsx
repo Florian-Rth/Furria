@@ -4,11 +4,12 @@ import type { KkGroupTone } from './internal/group-tone';
 import { KkNote } from './KkNote';
 import { KkPanelHeader } from './KkPanelHeader';
 import type { KkSx } from './kk-sx';
+import type { KkPanelAction } from './panel-action';
 
 interface KkPanelSectionProps extends PropsWithChildren {
   title: string;
   meta?: ReactNode;
-  action?: ReactNode;
+  action?: KkPanelAction;
   description?: string;
   groupTone?: KkGroupTone;
   titleRef?: Ref<HTMLHeadingElement>;

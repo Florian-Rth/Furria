@@ -1,4 +1,6 @@
-import { KkButton, KkIcon, KkPanel, KkPanelSection } from '@furria/ui';
+import type { KkPanelAction } from '@furria/ui';
+import { KkPanel, KkPanelSection } from '@furria/ui';
+import Grid from '@mui/material/Grid';
 import type { FC } from 'react';
 import { useGroupKindDialogs } from '../hooks/use-group-kind-dialogs';
 import {
@@ -9,10 +11,15 @@ import {
 } from '../manage-groups-labels';
 import type { ManagedGroupKind } from '../schemas';
 import { ArchiveGroupKindDialog } from './ArchiveGroupKindDialog';
+import { GroupKindCard } from './GroupKindCard';
 import { GroupKindFormDialog } from './GroupKindFormDialog';
-import { GroupKindRow } from './GroupKindRow';
 import { GroupKindsEmpty } from './GroupKindsEmpty';
 import { RestoreGroupKindDialog } from './RestoreGroupKindDialog';
+
+const GRID_SPACING = { xs: 1.5, desktop: 2 };
+const CARD_SIZE = { xs: 12, sm: 6, desktop: 4 };
+const CARD_SLOT = { minWidth: 0 } as const;
+const GRID = { minWidth: 0 } as const;
 
 interface GroupKindsPanelProps {
   kinds: readonly ManagedGroupKind[];
@@ -22,8 +29,10 @@ export const GroupKindsPanel: FC<GroupKindsPanelProps> = ({ kinds }) => {
   const entries = toGroupKindEntries(kinds);
   const dialogs = useGroupKindDialogs(entries);
 
-  const rows = entries.map((entry) => (
-    <GroupKindRow key={entry.groupKindId} entry={entry} onOpen={dialogs.openFor} />
+  const cards = entries.map((entry) => (
+    <Grid key={entry.groupKindId} size={CARD_SIZE} sx={CARD_SLOT}>
+      <GroupKindCard entry={entry} onOpen={dialogs.openFor} />
+    </Grid>
   ));
 
   const body =
@@ -32,22 +41,19 @@ export const GroupKindsPanel: FC<GroupKindsPanelProps> = ({ kinds }) => {
         <GroupKindsEmpty onCreate={dialogs.openCreate} />
       </KkPanel>
     ) : (
-      <KkPanel variant="list">{rows}</KkPanel>
+      <Grid container spacing={GRID_SPACING} sx={GRID}>
+        {cards}
+      </Grid>
     );
 
   const isCreating = dialogs.openDialog === 'create';
   const renamed = dialogs.openDialog === 'rename' ? dialogs.kind : null;
 
-  const action = (
-    <KkButton
-      size="small"
-      variant="outlined"
-      startIcon={<KkIcon name="add" size="small" />}
-      onClick={dialogs.openCreate}
-    >
-      {CREATE_GROUP_KIND_LABEL}
-    </KkButton>
-  );
+  const action: KkPanelAction = {
+    label: CREATE_GROUP_KIND_LABEL,
+    icon: 'add',
+    onClick: dialogs.openCreate,
+  };
 
   return (
     <KkPanelSection

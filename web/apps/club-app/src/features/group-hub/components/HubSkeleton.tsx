@@ -1,11 +1,10 @@
-import { KkPanel, KkPanelSection, KkPanelStack, KkSkeletonBlock, KkSkeletonRow } from '@furria/ui';
+import { KkPanel, KkPanelSection, KkPanelStack, KkSkeletonBlock } from '@furria/ui';
 import type { FC } from 'react';
 import { AppSkeletonRegion } from '@/features/session';
 import { GROUP_SECTION_TITLES } from '@/lib/group-sections';
 
 const DESCRIPTION_LINES = 3;
-const ADMIN_ROWS = 2;
-const ROSTER_LINES = 4;
+const PEOPLE_LINES = 4;
 const RESERVED_LINES = 2;
 
 const LOADING_LABEL = 'Die Gruppe wird geladen';
@@ -18,14 +17,9 @@ export const HubSkeleton: FC = () => (
           <KkSkeletonBlock lines={DESCRIPTION_LINES} />
         </KkPanel>
       </KkPanelSection>
-      <KkPanelSection title={GROUP_SECTION_TITLES.admins}>
-        <KkPanel variant="list">
-          <KkSkeletonRow count={ADMIN_ROWS} />
-        </KkPanel>
-      </KkPanelSection>
       <KkPanelSection title={GROUP_SECTION_TITLES.members}>
         <KkPanel variant="block">
-          <KkSkeletonBlock lines={ROSTER_LINES} />
+          <KkSkeletonBlock lines={PEOPLE_LINES} />
         </KkPanel>
       </KkPanelSection>
       <KkPanelSection title={GROUP_SECTION_TITLES.rhythm}>

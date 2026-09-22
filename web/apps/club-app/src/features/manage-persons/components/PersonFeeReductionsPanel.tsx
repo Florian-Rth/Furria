@@ -1,4 +1,5 @@
-import { KkButton, KkEmptyState, KkIcon, KkPanel, KkPanelSection } from '@furria/ui';
+import type { KkPanelAction } from '@furria/ui';
+import { KkEmptyState, KkPanel, KkPanelSection } from '@furria/ui';
 import type { FC } from 'react';
 import type { FactEditor } from '../hooks/use-fact-editor';
 import { ADD_FEE_REDUCTION_ACTION_LABEL, PERSON_SECTION_TITLES } from '../manage-persons-labels';
@@ -23,17 +24,12 @@ export const PersonFeeReductionsPanel: FC<PersonFeeReductionsPanelProps> = ({ pe
     editor.openFeeReduction(null);
   };
 
-  const action = (
-    <KkButton
-      size="small"
-      variant="outlined"
-      startIcon={<KkIcon name="add" size="small" />}
-      ariaLabel={ADD_FEE_REDUCTION_ACTION_LABEL}
-      onClick={startAdd}
-    >
-      {ADD_LABEL}
-    </KkButton>
-  );
+  const action: KkPanelAction = {
+    label: ADD_LABEL,
+    icon: 'add',
+    ariaLabel: ADD_FEE_REDUCTION_ACTION_LABEL,
+    onClick: startAdd,
+  };
 
   const addEditor = isAdding ? (
     <FeeReductionEditor

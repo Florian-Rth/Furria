@@ -15,14 +15,14 @@ import type { GroupTone } from '@/lib/group-tone';
 import { formatIsoDay, formatSinceSession } from '@/lib/membership-labels';
 import type { StateChip } from '@/lib/state-chips';
 import { toRecruitingChip } from '@/lib/state-chips';
+import type { HubPerson } from './hub-people';
 import type { GroupHub, GroupInfoForm } from './schemas';
 
 const GROUP_ID_PATTERN = /^[1-9]\d*$/;
 const HUB_TITLE_FALLBACK = 'Gruppe';
 
-const DANCING_LINE_PREFIX = 'Du tanzt hier seit ';
+const MEMBER_LINE_PREFIX = 'Du bist Mitglied seit ';
 const LEADING_LINE = 'Du leitest diese Gruppe';
-const NOT_HERE_LINE = 'Du bist nicht dabei';
 const JUBILEE_CAPTION = 'JAHRE';
 
 export const toHubId = (raw: string): number | null =>
@@ -34,15 +34,15 @@ export const toHubTitle = (hub: GroupHub | undefined): string =>
 export const toHubOrigin = (viewerIsAffiliated: boolean): KkScreenOrigin =>
   viewerIsAffiliated ? GROUPS_ORIGIN : PROFILE_ORIGIN;
 
-export const toStandingLine = (hub: GroupHub): string => {
+export const toStandingLine = (hub: GroupHub): string | null => {
   if (hub.viewerSince !== null) {
-    return `${DANCING_LINE_PREFIX}${formatSinceSession(hub.viewerSince)}`;
+    return `${MEMBER_LINE_PREFIX}${formatSinceSession(hub.viewerSince)}`;
   }
   if (hub.viewerIsAdmin) {
     return LEADING_LINE;
   }
 
-  return NOT_HERE_LINE;
+  return null;
 };
 
 export const toHubMetaFacts = (hub: GroupHub): string[] => {
@@ -70,19 +70,73 @@ export const toJubileeSeal = (
 
 export const toMemberSinceLine = (since: string): string => `seit ${formatSinceSession(since)}`;
 
-export type RosterTap = 'person' | 'peek';
+export const GROUP_ADMIN_ACCENT = 'Gruppen-Admin';
 
-export const toRosterTap = (
+export const toPersonAccent = (person: HubPerson): string | undefined => {
+  if (person.groupAdminId === null) {
+    return undefined;
+  }
+
+  return person.adminFunction ?? GROUP_ADMIN_ACCENT;
+};
+
+export const toPersonMetaLine = (person: HubPerson, canManage: boolean): string | undefined => {
+  if (!canManage) {
+    return undefined;
+  }
+  if (person.memberSince !== null) {
+    return toMemberSinceLine(person.memberSince);
+  }
+  if (person.adminSince !== null) {
+    return `leitet seit ${formatSinceSession(person.adminSince)}`;
+  }
+
+  return undefined;
+};
+
+export const toPersonStandingLines = (person: HubPerson): string[] => {
+  const lines: string[] = [];
+
+  if (person.memberSince !== null) {
+    lines.push(`Mitglied seit ${formatSinceSession(person.memberSince)}`);
+  }
+  if (person.adminSince !== null) {
+    lines.push(`Gruppen-Admin seit ${formatSinceSession(person.adminSince)}`);
+  }
+
+  return lines;
+};
+
+export type PersonTap = 'person' | 'peek';
+
+export const toPersonTap = (
   canManage: boolean,
   viewerIsAffiliated: boolean,
   rowIsAffiliated: boolean,
-): RosterTap => (!canManage && viewerIsAffiliated && rowIsAffiliated ? 'person' : 'peek');
+): PersonTap => (!canManage && viewerIsAffiliated && rowIsAffiliated ? 'person' : 'peek');
 
 export const HUB_DENIED_MESSAGE =
   'Gruppen stehen Mitgliedern, Gruppen und Rollen des FCC offen. Dein Konto hat noch keine Verbindung zum Verein — melde dich bei der Personenverwaltung.';
 
+export const PEEK_PROMOTE_LABEL = 'Zum Admin machen';
+export const PEEK_END_ADMIN_LABEL = 'Adminstatus entfernen';
+export const PEEK_END_MEMBERSHIP_LABEL = 'Aus Gruppe entfernen';
+
+export type PeekAdminIntent = 'promote' | 'endAdmin' | 'none';
+
+export const toPeekAdminIntent = (person: HubPerson, canManage: boolean): PeekAdminIntent => {
+  if (!canManage) {
+    return 'none';
+  }
+  if (person.groupAdminId !== null) {
+    return 'endAdmin';
+  }
+
+  return person.groupMembershipId === null ? 'none' : 'promote';
+};
+
 export const HUB_PEEK_CLOSE_LABEL = 'Kurzansicht schließen';
-export const HUB_PEEK_OPEN_LABEL = 'Zur Person';
+export const HUB_PEEK_OPEN_LABEL = 'Zum Profil';
 export const HUB_PEEK_CONTACT_NOTE =
   'Kontaktdaten stehen auf der Personenseite — die Gruppe führt sie nicht.';
 export const HUB_PEEK_UNREACHABLE_NOTE =
@@ -215,6 +269,15 @@ export const toMemberAddedMessage = (
     ? `${personName} ist ab dem ${formatIsoDay(joinedOn)} dabei.`
     : `${personName} ist aufgenommen.`;
 
+export const toMemberAddedAsAdminMessage = (
+  personName: string,
+  joinedOn: string,
+  todayIsoDay: string,
+): string =>
+  isFutureDay(joinedOn, todayIsoDay)
+    ? `${personName} ist ab dem ${formatIsoDay(joinedOn)} dabei — und Gruppen-Admin.`
+    : `${personName} ist aufgenommen und Gruppen-Admin.`;
+
 export const toMembershipEndedMessage = (
   personName: string,
   endedOn: string,
@@ -232,6 +295,15 @@ export const toJoinConsequence = (
   isFutureDay(joinedOn, todayIsoDay)
     ? `Ab dem ${formatIsoDay(joinedOn)} steht ${personName} in der Gruppe — vorher nicht in der Liste.`
     : `${personName} gehört ab dem ${formatIsoDay(joinedOn)} zur Gruppe.`;
+
+export const toJoinAsAdminConsequence = (
+  personName: string,
+  joinedOn: string,
+  todayIsoDay: string,
+): string =>
+  isFutureDay(joinedOn, todayIsoDay)
+    ? `Ab dem ${formatIsoDay(joinedOn)} steht ${personName} in der Gruppe und darf sie pflegen — vorher nicht.`
+    : `${personName} gehört ab dem ${formatIsoDay(joinedOn)} zur Gruppe und darf sie pflegen: Beschreibung ändern, Leute aufnehmen und beenden.`;
 
 export const toEndConsequence = (
   personName: string,

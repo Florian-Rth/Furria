@@ -799,6 +799,7 @@ public sealed class GetGroupByIdTests
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.True(result.ViewerIsAdmin);
+        Assert.True(result.ViewerMayManage);
         Assert.False(result.ViewerIsMember);
         Assert.Null(result.ViewerSince);
         Assert.Equal(
@@ -847,7 +848,8 @@ public sealed class GetGroupByIdTests
         var (response, result) = await ReadHubAsync(client, ctx.Groups.Groups.IdOf("tanzgarde"));
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.True(result.ViewerIsAdmin);
+        Assert.False(result.ViewerIsAdmin);
+        Assert.True(result.ViewerMayManage);
         Assert.False(result.ViewerIsMember);
         Assert.Equal(
             [ctx.Identity.People.IdOf("katrin")],
@@ -878,6 +880,7 @@ public sealed class GetGroupByIdTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.False(result.ViewerIsMember);
         Assert.False(result.ViewerIsAdmin);
+        Assert.False(result.ViewerMayManage);
     }
 
     [Fact]
@@ -1103,6 +1106,7 @@ public sealed class GetGroupByIdTests
                 "members",
                 "viewerIsMember",
                 "viewerIsAdmin",
+                "viewerMayManage",
                 "viewerSince",
                 "pastMembers",
                 "pastAdmins",

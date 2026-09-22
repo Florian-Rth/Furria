@@ -3,27 +3,24 @@ import Stack from '@mui/material/Stack';
 import type { ElementType, FC } from 'react';
 import { focusRing } from './internal/focus-ring';
 import type { KkGroupTone } from './internal/group-tone';
-import { groupToneEdgeScheme } from './internal/group-tone';
+import { groupToneInkPaint } from './internal/group-tone';
 import { lineClamp } from './internal/line-clamp';
 import { redInk } from './internal/red-ink';
-import { applyScheme } from './internal/scheme-paint';
 import { KkAvatar } from './KkAvatar';
 import { KkMeta } from './KkMeta';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
-const RING_PADDING = 3;
-const RING_WIDTH = kkTokens.line.section;
-const RING_MAX_WIDTH = 72;
-const AVATAR_FONT_SIZE = 'clamp(0.875rem, 4.4vw, 1.5rem)';
 const NAME_LINES = 2;
 const NAME_LINE_HEIGHT = 1.2;
 const NAME_SIZE = { xs: kkTokens.type.rowMeta, desktop: kkTokens.type.rowTitle };
+const ACCENT_LINES = 2;
 
 interface KkGroupTileProps {
   tone: KkGroupTone;
   initials: string;
   name: string;
+  accent?: string;
   meta?: string;
   component?: ElementType;
   to?: string;
@@ -36,6 +33,7 @@ export const KkGroupTile: FC<KkGroupTileProps> = ({
   tone,
   initials,
   name,
+  accent,
   meta,
   component,
   to,
@@ -47,7 +45,29 @@ export const KkGroupTile: FC<KkGroupTileProps> = ({
   const tileComponent = component ?? (onClick === undefined ? 'div' : 'button');
   const routeProps = component === undefined ? {} : { to, params };
   const nativeProps = tileComponent === 'button' ? { type: 'button' as const } : {};
+  const isAccented = accent !== undefined;
   const metaLine = meta === undefined ? null : <KkMeta component="span">{meta}</KkMeta>;
+
+  const accentLine = isAccented ? (
+    <Box
+      component="span"
+      data-kk-group-tile-accent
+      sx={(theme) => ({
+        fontFamily: kkTokens.font.body,
+        fontSize: kkTokens.type.chipSmall,
+        fontWeight: 900,
+        letterSpacing: kkTokens.type.tracking.label,
+        lineHeight: 1.3,
+        textTransform: 'uppercase',
+        hyphens: 'auto',
+        overflowWrap: 'anywhere',
+        ...lineClamp(ACCENT_LINES),
+        ...groupToneInkPaint(theme, tone),
+      })}
+    >
+      {accent}
+    </Box>
+  ) : null;
 
   return (
     <Stack
@@ -79,27 +99,12 @@ export const KkGroupTile: FC<KkGroupTileProps> = ({
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >
-      <Box
-        aria-hidden
-        sx={(theme) => ({
-          display: 'inline-flex',
-          width: '100%',
-          maxWidth: RING_MAX_WIDTH,
-          aspectRatio: '1 / 1',
-          borderRadius: '50%',
-          borderWidth: RING_WIDTH,
-          borderStyle: 'solid',
-          padding: `${RING_PADDING}px`,
-          ...applyScheme(theme, groupToneEdgeScheme(tone)),
-        })}
-      >
-        <KkAvatar
-          initials={initials}
-          size="large"
-          component="span"
-          sx={{ width: '100%', height: '100%', fontSize: AVATAR_FONT_SIZE }}
-        />
-      </Box>
+      <KkAvatar
+        initials={initials}
+        size="large"
+        component="span"
+        tone={isAccented ? tone : undefined}
+      />
       <Box
         component="span"
         data-kk-group-tile-name
@@ -116,6 +121,7 @@ export const KkGroupTile: FC<KkGroupTileProps> = ({
       >
         {name}
       </Box>
+      {accentLine}
       {metaLine}
     </Stack>
   );

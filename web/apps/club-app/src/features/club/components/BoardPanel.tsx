@@ -1,4 +1,5 @@
-import { KkButton, KkPanelSection, useKkSheetCommands } from '@furria/ui';
+import type { KkPanelAction } from '@furria/ui';
+import { KkPanelSection, useKkSheetCommands } from '@furria/ui';
 import Grid from '@mui/material/Grid';
 import type { FC } from 'react';
 import { useClubHubQuery } from '../api';
@@ -26,11 +27,7 @@ export const BoardPanel: FC = () => {
     return null;
   }
 
-  const action = (
-    <KkButton variant="text" size="small" onClick={openRoles}>
-      {ROLES_LABEL}
-    </KkButton>
-  );
+  const action: KkPanelAction = { label: ROLES_LABEL, emphasis: 'quiet', onClick: openRoles };
 
   const seats = board.map((seat) => (
     <Grid key={toSeatKey(seat)} size={SEAT_SIZE} sx={{ minWidth: 0 }}>

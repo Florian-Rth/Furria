@@ -1,4 +1,5 @@
-import { KkButton, KkChip, KkFieldRow, KkIcon, KkPanel, KkPanelSection } from '@furria/ui';
+import type { KkPanelAction } from '@furria/ui';
+import { KkChip, KkFieldRow, KkPanel, KkPanelSection } from '@furria/ui';
 import type { FC } from 'react';
 import { formatAddress, formatIsoDay } from '@/lib/membership-labels';
 import { toSwitchStateChip } from '@/lib/state-chips';
@@ -24,16 +25,7 @@ export const PersonMasterDataPanel: FC<PersonMasterDataPanelProps> = ({ person }
   const dialog = usePersonFormDialog();
   const address = formatAddress(person.street, person.zip, person.city);
 
-  const action = (
-    <KkButton
-      size="small"
-      variant="outlined"
-      startIcon={<KkIcon name="edit" size="small" />}
-      onClick={dialog.open}
-    >
-      {EDIT_LABEL}
-    </KkButton>
-  );
+  const action: KkPanelAction = { label: EDIT_LABEL, icon: 'edit', onClick: dialog.open };
 
   const visibility = toSwitchStateChip(person.contactVisibleToMembers);
   const visibilityChip = (

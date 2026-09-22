@@ -96,6 +96,7 @@ export const GroupHubSchema = z.object({
   members: z.array(GroupDetailMemberSchema),
   viewerIsMember: z.boolean(),
   viewerIsAdmin: z.boolean(),
+  viewerMayManage: z.boolean(),
   viewerSince: z.iso.date().nullable(),
   pastMembers: z.array(GroupDetailMemberSchema),
   pastAdmins: z.array(GroupDetailAdminSchema),

@@ -1,8 +1,8 @@
-import { KkAvatar, KkButton, KkGroupToneChip, KkMeta, KkNote, KkSheet } from '@furria/ui';
+import type { KkSheetAction } from '@furria/ui';
+import { KkAvatar, KkGroupToneChip, KkMeta, KkNote, KkSheet } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import type { GroupDetailAdmin, GroupDetailMember } from '@/features/group-detail';
 import type { GroupTone } from '@/features/groups';
 import { usePermissions } from '@/features/session';
 import { toInitials } from '@/lib/initials';
@@ -13,89 +13,122 @@ import {
   HUB_PEEK_CONTACT_NOTE,
   HUB_PEEK_OPEN_LABEL,
   HUB_PEEK_UNREACHABLE_NOTE,
-  toMemberSinceLine,
+  PEEK_END_ADMIN_LABEL,
+  PEEK_END_MEMBERSHIP_LABEL,
+  PEEK_PROMOTE_LABEL,
+  type PeekAdminIntent,
+  toPeekAdminIntent,
+  toPersonAccent,
+  toPersonStandingLines,
 } from '../group-hub-labels';
+import type { HubPerson } from '../hub-people';
 
 const MEMBER_PATH = '/members/$personId';
-const GROUP_ADMIN_LABEL = 'Gruppen-Admin';
-const END_MEMBERSHIP_LABEL = 'Zugehörigkeit beenden';
 const HEAD_GAP = 1.5;
 
-const toPersonId = (member: GroupDetailMember): number => member.personId;
+const toPersonId = (person: HubPerson): number => person.personId;
 
 interface HubPeekSheetProps {
   tone: GroupTone;
-  members: readonly GroupDetailMember[];
-  admins: readonly GroupDetailAdmin[];
+  people: readonly HubPerson[];
   canManage: boolean;
-  onEnd: (groupMembershipId: number) => void;
+  onPromote: (personId: number) => void;
+  onEndMembership: (groupMembershipId: number) => void;
+  onEndAdmin: (groupAdminId: number) => void;
 }
 
 export const HubPeekSheet: FC<HubPeekSheetProps> = ({
   tone,
-  members,
-  admins,
+  people,
   canManage,
-  onEnd,
+  onPromote,
+  onEndMembership,
+  onEndAdmin,
 }) => {
-  const member = usePeek('member', members, toPersonId);
+  const person = usePeek('member', people, toPersonId);
   const { isAffiliated } = usePermissions();
 
-  if (member === null) {
+  if (person === null) {
     return null;
   }
 
-  const name = `${member.firstName} ${member.lastName}`;
-  const admin = admins.find((row) => row.personId === member.personId);
-  const functionLabel = admin === undefined ? null : (admin.function ?? GROUP_ADMIN_LABEL);
-  const canOpen = isAffiliated && member.isAffiliated;
+  const name = `${person.firstName} ${person.lastName}`;
+  const accent = toPersonAccent(person);
+  const canOpen = isAffiliated && person.isAffiliated;
+  const membershipId = person.groupMembershipId;
+  const adminId = person.groupAdminId;
 
-  const end = (): void => {
-    onEnd(member.groupMembershipId);
+  const endMembership = (): void => {
+    if (membershipId !== null) {
+      onEndMembership(membershipId);
+    }
   };
 
+  const endAdmin = (): void => {
+    if (adminId !== null) {
+      onEndAdmin(adminId);
+    }
+  };
+
+  const promote = (): void => {
+    onPromote(person.personId);
+  };
+
+  const standing = toPersonStandingLines(person).map((line) => <KkMeta key={line}>{line}</KkMeta>);
+
   const functionChip =
-    functionLabel === null ? null : <KkGroupToneChip tone={tone}>{functionLabel}</KkGroupToneChip>;
+    accent === undefined ? null : <KkGroupToneChip tone={tone}>{accent}</KkGroupToneChip>;
 
-  const openAction = canOpen ? (
-    <KkButton
-      component={Link}
-      to={MEMBER_PATH}
-      params={{ personId: String(member.personId) }}
-      fullWidth
-    >
-      {HUB_PEEK_OPEN_LABEL}
-    </KkButton>
-  ) : (
-    <KkNote>{HUB_PEEK_UNREACHABLE_NOTE}</KkNote>
-  );
+  const openAction: KkSheetAction | undefined = canOpen
+    ? {
+        label: HUB_PEEK_OPEN_LABEL,
+        component: Link,
+        to: MEMBER_PATH,
+        params: { personId: String(person.personId) },
+      }
+    : undefined;
 
-  const endAction = canManage ? (
-    <KkButton variant="outlined" tone="danger" onClick={end} fullWidth>
-      {END_MEMBERSHIP_LABEL}
-    </KkButton>
-  ) : null;
+  const adminIntent = toPeekAdminIntent(person, canManage);
+
+  const adminActions: Record<PeekAdminIntent, KkSheetAction | undefined> = {
+    promote: { label: PEEK_PROMOTE_LABEL, onClick: promote },
+    endAdmin: { label: PEEK_END_ADMIN_LABEL, tone: 'danger', onClick: endAdmin },
+    none: undefined,
+  };
+
+  const endMembershipAction: KkSheetAction | undefined =
+    canManage && membershipId !== null
+      ? { label: PEEK_END_MEMBERSHIP_LABEL, tone: 'danger', onClick: endMembership }
+      : undefined;
+
+  const unreachableNote = canOpen ? null : <KkNote>{HUB_PEEK_UNREACHABLE_NOTE}</KkNote>;
 
   return (
     <KkSheet
-      id={toPeekId('member', member.personId)}
+      id={toPeekId('member', person.personId)}
       title={name}
       closeLabel={HUB_PEEK_CLOSE_LABEL}
     >
       <KkSheet.Body>
         <Stack direction="row" sx={{ alignItems: 'center', gap: HEAD_GAP, minWidth: 0 }}>
-          <KkAvatar initials={toInitials(member.firstName, member.lastName)} size="large" />
+          <KkAvatar
+            initials={toInitials(person.firstName, person.lastName)}
+            size="large"
+            tone={accent === undefined ? undefined : tone}
+          />
           <Stack sx={{ minWidth: 0, gap: 0.5, alignItems: 'flex-start' }}>
-            <KkMeta>{toMemberSinceLine(member.since)}</KkMeta>
+            {standing}
             {functionChip}
           </Stack>
         </Stack>
         <KkNote>{HUB_PEEK_CONTACT_NOTE}</KkNote>
+        {unreachableNote}
       </KkSheet.Body>
-      <KkSheet.Actions>
-        {openAction}
-        {endAction}
-      </KkSheet.Actions>
+      <KkSheet.Actions
+        primary={openAction}
+        secondary={adminActions[adminIntent]}
+        tertiary={endMembershipAction}
+      />
     </KkSheet>
   );
 };

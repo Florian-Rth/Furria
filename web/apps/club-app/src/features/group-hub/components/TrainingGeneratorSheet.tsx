@@ -1,4 +1,4 @@
-import { KkAlert, KkButton, KkDateField, KkSheet, KkTextField } from '@furria/ui';
+import { KkAlert, KkDateField, KkSheet, KkTextField } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { ChangeEvent, FC } from 'react';
 import type { TrainingGeneratorControl } from '../hooks/use-training-generator';
@@ -53,19 +53,19 @@ export const TrainingGeneratorSheet: FC<TrainingGeneratorSheetProps> = ({ contro
           {rejection}
         </Stack>
       </KkSheet.Body>
-      <KkSheet.Actions>
-        <KkButton variant="outlined" onClick={control.close} disabled={control.isSaving} fullWidth>
-          {GENERATOR_CANCEL_LABEL}
-        </KkButton>
-        <KkButton
-          onClick={control.submit}
-          loading={control.isSaving}
-          disabled={!canSubmit}
-          fullWidth
-        >
-          {GENERATOR_CONFIRM_LABEL}
-        </KkButton>
-      </KkSheet.Actions>
+      <KkSheet.Actions
+        primary={{
+          label: GENERATOR_CONFIRM_LABEL,
+          onClick: control.submit,
+          loading: control.isSaving,
+          disabled: !canSubmit,
+        }}
+        secondary={{
+          label: GENERATOR_CANCEL_LABEL,
+          onClick: control.close,
+          disabled: control.isSaving,
+        }}
+      />
     </KkSheet>
   );
 };

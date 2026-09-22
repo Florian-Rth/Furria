@@ -3,7 +3,7 @@ import type { PersonRef } from '@/lib/api/schemas';
 import { toIsoDay } from '@/lib/day';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useAddGroupMembershipMutation } from '../api';
-import { toJoinConsequence } from '../group-hub-labels';
+import { toAdminFunction, toJoinAsAdminConsequence, toJoinConsequence } from '../group-hub-labels';
 
 interface AddMemberFormInput {
   groupId: number;
@@ -17,6 +17,10 @@ export interface AddMemberFormControl {
   clearPerson: () => void;
   joinedOn: string | null;
   setJoinedOn: (value: string | null) => void;
+  makeAdmin: boolean;
+  setMakeAdmin: (value: boolean) => void;
+  functionLabel: string;
+  setFunctionLabel: (value: string) => void;
   consequence: string | null;
   rejection: string | null;
   isSaving: boolean;
@@ -32,6 +36,8 @@ export const useAddMemberForm = ({
   const today = toIsoDay(new Date());
   const [person, setPerson] = useState<PersonRef | null>(null);
   const [joinedOn, setJoinedOn] = useState<string | null>(today);
+  const [makeAdmin, setMakeAdmin] = useState(false);
+  const [functionLabel, setFunctionLabel] = useState('');
   const [rejection, setRejection] = useState<string | null>(null);
   const [wasOpen, setWasOpen] = useState(open);
   const mutation = useAddGroupMembershipMutation(groupId);
@@ -42,6 +48,8 @@ export const useAddMemberForm = ({
     if (open) {
       setPerson(null);
       setJoinedOn(today);
+      setMakeAdmin(false);
+      setFunctionLabel('');
       setRejection(null);
     }
   }
@@ -60,7 +68,12 @@ export const useAddMemberForm = ({
 
     setRejection(null);
     mutation.mutate(
-      { personId: person.personId, personName, joinedOn },
+      {
+        personId: person.personId,
+        personName,
+        joinedOn,
+        admin: makeAdmin ? { function: toAdminFunction(functionLabel) } : null,
+      },
       {
         onSuccess: added,
         onError: (error) => {
@@ -80,14 +93,20 @@ export const useAddMemberForm = ({
     setRejection(null);
   };
 
+  const describeJoin = makeAdmin ? toJoinAsAdminConsequence : toJoinConsequence;
+
   return {
     person,
     select,
     clearPerson,
     joinedOn,
     setJoinedOn,
+    makeAdmin,
+    setMakeAdmin,
+    functionLabel,
+    setFunctionLabel,
     consequence:
-      person === null || joinedOn === null ? null : toJoinConsequence(personName, joinedOn, today),
+      person === null || joinedOn === null ? null : describeJoin(personName, joinedOn, today),
     rejection,
     isSaving: mutation.isPending,
     canSubmit,

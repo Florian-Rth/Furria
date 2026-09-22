@@ -17,6 +17,7 @@ import {
   GROUP_INFO_SAVED_MESSAGE,
   toAdminAppointedMessage,
   toAdminEndedMessage,
+  toMemberAddedAsAdminMessage,
   toMemberAddedMessage,
   toMembershipEndedMessage,
   toSelfAdminEndedMessage,
@@ -81,10 +82,15 @@ export interface GroupAttendanceInput {
   answer: GroupAttendanceAnswer;
 }
 
+export interface AdminAppointment {
+  function: string | null;
+}
+
 export interface AddMemberInput {
   personId: number;
   personName: string;
   joinedOn: string;
+  admin: AdminAppointment | null;
 }
 
 export interface EndMembershipInput {
@@ -223,15 +229,29 @@ export const useAddGroupMembershipMutation = (
 
   return useMutation({
     mutationFn: (input: AddMemberInput) =>
-      withFreshAccessToken((accessToken) =>
-        requestAddGroupMembership(
+      withFreshAccessToken(async (accessToken) => {
+        const added = await requestAddGroupMembership(
           groupId,
           { personId: input.personId, joinedOn: input.joinedOn },
           accessToken,
-        ),
-      ),
+        );
+
+        if (input.admin !== null) {
+          await requestAddGroupAdmin(
+            groupId,
+            { personId: input.personId, function: input.admin.function, sinceOn: input.joinedOn },
+            accessToken,
+          );
+        }
+
+        return added;
+      }),
     onSuccess: (_added, input) => {
-      const message = toMemberAddedMessage(input.personName, input.joinedOn, toIsoDay(new Date()));
+      const today = toIsoDay(new Date());
+      const message =
+        input.admin === null
+          ? toMemberAddedMessage(input.personName, input.joinedOn, today)
+          : toMemberAddedAsAdminMessage(input.personName, input.joinedOn, today);
 
       raiseNotice({ tone: 'success', message });
       refreshHub(queryClient, groupId);

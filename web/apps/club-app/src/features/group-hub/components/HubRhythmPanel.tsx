@@ -1,3 +1,4 @@
+import type { KkPanelAction } from '@furria/ui';
 import {
   KkButton,
   KkEmptyState,
@@ -52,18 +53,15 @@ export const HubRhythmPanel: FC<HubRhythmPanelProps> = ({
   const sentence = toRhythmSentence(slots);
   const isEmpty = slots.length === 0;
 
-  const action = canManage ? (
-    <KkButton
-      size="small"
-      variant="outlined"
-      startIcon={<KkIcon name="add" size="small" />}
-      ariaLabel={RHYTHM_ADD_ACTION_LABEL}
-      onClick={rhythm.openAdd}
-      disabled={!rhythm.canAdd}
-    >
-      {RHYTHM_ADD_LABEL}
-    </KkButton>
-  ) : null;
+  const action: KkPanelAction | undefined = canManage
+    ? {
+        label: RHYTHM_ADD_LABEL,
+        icon: 'add',
+        ariaLabel: RHYTHM_ADD_ACTION_LABEL,
+        onClick: rhythm.openAdd,
+        disabled: !rhythm.canAdd,
+      }
+    : undefined;
 
   const rows = slots.map((slot) => (
     <HubRhythmRow

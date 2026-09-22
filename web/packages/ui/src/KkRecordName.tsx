@@ -1,6 +1,6 @@
 import type { CSSObject, Theme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import type { FC } from 'react';
+import type { ElementType, FC } from 'react';
 import { focusRing } from './internal/focus-ring';
 import { labelSignifier, signifierCommitted } from './internal/label-signifier';
 import { redInk } from './internal/red-ink';
@@ -15,7 +15,7 @@ const sizeFonts: Record<KkRecordNameSize, string> = {
   small: kkTokens.type.span,
 };
 
-const buttonPaint = (theme: Theme): CSSObject => ({
+const interactivePaint = (theme: Theme): CSSObject => ({
   appearance: 'none',
   m: 0,
   p: 0,
@@ -23,6 +23,7 @@ const buttonPaint = (theme: Theme): CSSObject => ({
   borderStyle: 'solid',
   backgroundColor: 'transparent',
   textAlign: 'left',
+  textDecoration: 'none',
   cursor: 'pointer',
   outlineOffset: FOCUS_OFFSET,
   ...focusRing(theme),
@@ -35,6 +36,9 @@ interface KkRecordNameProps {
   size?: KkRecordNameSize;
   selected?: boolean;
   dimmed?: boolean;
+  component?: ElementType;
+  to?: string;
+  params?: Record<string, string>;
   onSelect?: () => void;
 }
 
@@ -43,17 +47,23 @@ export const KkRecordName: FC<KkRecordNameProps> = ({
   size = 'medium',
   selected = false,
   dimmed = false,
+  component,
+  to,
+  params,
   onSelect,
 }) => {
-  const interactive = onSelect !== undefined;
-  const component = interactive ? 'button' : 'p';
-  const nativeProps = interactive ? { type: 'button' as const } : {};
+  const linked = component !== undefined;
+  const interactive = linked || onSelect !== undefined;
+  const element = component ?? (onSelect === undefined ? 'p' : 'button');
+  const routeProps = linked ? { to, params } : {};
+  const nativeProps = element === 'button' ? { type: 'button' as const } : {};
   const current = selected ? true : undefined;
   const color = dimmed ? 'text.secondary' : 'text.primary';
 
   return (
     <Typography
-      component={component}
+      component={element}
+      {...routeProps}
       {...nativeProps}
       aria-current={current}
       onClick={onSelect}
@@ -66,7 +76,7 @@ export const KkRecordName: FC<KkRecordNameProps> = ({
         letterSpacing: kkTokens.type.tracking.display,
         lineHeight: 1.25,
         color,
-        ...(interactive ? buttonPaint(theme) : {}),
+        ...(interactive ? interactivePaint(theme) : {}),
       })}
     >
       {name}

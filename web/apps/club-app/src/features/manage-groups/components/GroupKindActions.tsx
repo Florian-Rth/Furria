@@ -1,25 +1,15 @@
-import { KkButton, KkIcon, KkMeta } from '@furria/ui';
+import { KkButton, KkIcon } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { toArchiveGroupKindBlockedHint } from '../manage-groups-labels';
 
 const RENAME_LABEL = 'Umbenennen';
 const ARCHIVE_LABEL = 'Archivieren';
 const RESTORE_LABEL = 'Zurückholen';
 
-const CLUSTER = {
-  alignItems: 'flex-start',
-  justifyContent: { xs: 'flex-start', desktop: 'flex-end' },
-  gap: 1.25,
-  flexWrap: 'nowrap',
-  minWidth: 0,
-} as const;
-
-const BLOCKED = { gap: 0.25, alignItems: 'flex-start', minWidth: 0 } as const;
+const CLUSTER = { alignItems: 'center', gap: 0.5, flexWrap: 'wrap', minWidth: 0 } as const;
 
 interface GroupKindActionsProps {
   name: string;
-  groupCount: number;
   isArchived: boolean;
   canArchive: boolean;
   onRename: () => void;
@@ -29,7 +19,6 @@ interface GroupKindActionsProps {
 
 export const GroupKindActions: FC<GroupKindActionsProps> = ({
   name,
-  groupCount,
   isArchived,
   canArchive,
   onRename,
@@ -41,7 +30,7 @@ export const GroupKindActions: FC<GroupKindActionsProps> = ({
       <Stack direction="row" sx={CLUSTER}>
         <KkButton
           size="small"
-          variant="text"
+          variant="outlined"
           ariaLabel={`${name} ${RESTORE_LABEL}`}
           onClick={onRestore}
         >
@@ -51,9 +40,17 @@ export const GroupKindActions: FC<GroupKindActionsProps> = ({
     );
   }
 
-  const blockedHint = canArchive ? null : (
-    <KkMeta>{toArchiveGroupKindBlockedHint(groupCount)}</KkMeta>
-  );
+  const archive = canArchive ? (
+    <KkButton
+      size="small"
+      variant="text"
+      startIcon={<KkIcon name="archive" size="small" />}
+      ariaLabel={`${name} ${ARCHIVE_LABEL}`}
+      onClick={onArchive}
+    >
+      {ARCHIVE_LABEL}
+    </KkButton>
+  ) : null;
 
   return (
     <Stack direction="row" sx={CLUSTER}>
@@ -66,19 +63,7 @@ export const GroupKindActions: FC<GroupKindActionsProps> = ({
       >
         {RENAME_LABEL}
       </KkButton>
-      <Stack sx={BLOCKED}>
-        <KkButton
-          size="small"
-          variant="text"
-          disabled={!canArchive}
-          startIcon={<KkIcon name="archive" size="small" />}
-          ariaLabel={`${name} ${ARCHIVE_LABEL}`}
-          onClick={onArchive}
-        >
-          {ARCHIVE_LABEL}
-        </KkButton>
-        {blockedHint}
-      </Stack>
+      {archive}
     </Stack>
   );
 };

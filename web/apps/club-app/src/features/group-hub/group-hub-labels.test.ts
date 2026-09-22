@@ -15,13 +15,19 @@ import {
   toHubId,
   toHubMetaFacts,
   toHubOrigin,
+  toJoinAsAdminConsequence,
   toJoinConsequence,
   toJoinQuickChoices,
   toJubileeSeal,
   toLastAdminWarning,
+  toMemberAddedAsAdminMessage,
   toMemberAddedMessage,
   toMembershipEndedMessage,
-  toRosterTap,
+  toPeekAdminIntent,
+  toPersonAccent,
+  toPersonMetaLine,
+  toPersonStandingLines,
+  toPersonTap,
   toSearchCapLine,
   toSearchTerm,
   toSelfAdminEndedMessage,
@@ -29,6 +35,7 @@ import {
   toTakenTones,
   toToneWarning,
 } from './group-hub-labels';
+import type { HubPerson } from './hub-people';
 import type { GroupHub } from './schemas';
 
 const hubMember = (overrides: Partial<GroupDetailMember>): GroupDetailMember => ({
@@ -70,6 +77,7 @@ const groupHub = (overrides: Partial<GroupHub>): GroupHub => ({
   members: [],
   viewerIsMember: false,
   viewerIsAdmin: false,
+  viewerMayManage: false,
   viewerSince: null,
   pastMembers: [],
   pastAdmins: [],
@@ -93,7 +101,7 @@ describe('toHubId', () => {
 describe('toStandingLine', () => {
   it('dates the viewer own Zugehörigkeit from the session she joined in', () => {
     expect(toStandingLine(groupHub({ viewerIsMember: true, viewerSince: '2016-11-11' }))).toBe(
-      'Du tanzt hier seit 2016/17',
+      'Du bist Mitglied seit 2016/17',
     );
   });
 
@@ -102,15 +110,19 @@ describe('toStandingLine', () => {
       toStandingLine(
         groupHub({ viewerIsMember: true, viewerIsAdmin: true, viewerSince: '2020-11-11' }),
       ),
-    ).toBe('Du tanzt hier seit 2020/21');
+    ).toBe('Du bist Mitglied seit 2020/21');
   });
 
   it('names the responsibility of an admin who dances in no row of the Gruppe', () => {
     expect(toStandingLine(groupHub({ viewerIsAdmin: true }))).toBe('Du leitest diese Gruppe');
   });
 
-  it('says plainly that a stranger is not in the Gruppe', () => {
-    expect(toStandingLine(groupHub({}))).toBe('Du bist nicht dabei');
+  it('stays silent for a mere Gruppenverwalterin who is not in the Gruppe', () => {
+    expect(toStandingLine(groupHub({ viewerMayManage: true }))).toBeNull();
+  });
+
+  it('stays silent for a stranger', () => {
+    expect(toStandingLine(groupHub({}))).toBeNull();
   });
 });
 
@@ -145,7 +157,7 @@ describe('toJubileeSeal', () => {
   });
 });
 
-describe('toRosterTap', () => {
+describe('toPersonTap', () => {
   it.each([
     { case: 'an admin viewer', canManage: true, affiliated: true, row: true, expected: 'peek' },
     { case: 'a stranger row', canManage: false, affiliated: true, row: false, expected: 'peek' },
@@ -164,7 +176,7 @@ describe('toRosterTap', () => {
       expected: 'person',
     },
   ])('sends $case to the $expected surface', ({ canManage, affiliated, row, expected }) => {
-    expect(toRosterTap(canManage, affiliated, row)).toBe(expected);
+    expect(toPersonTap(canManage, affiliated, row)).toBe(expected);
   });
 });
 
@@ -534,6 +546,132 @@ describe('toSelfAdminEndedMessage', () => {
   it('reports a removal that takes effect today in the present tense', () => {
     expect(toSelfAdminEndedMessage('Tanzgarde', '2026-03-01', '2026-03-01')).toBe(
       'Du bist nicht mehr Gruppen-Admin von Tanzgarde. Lesen kannst du sie weiter — neu ernennen kann dich die Gruppenverwaltung.',
+    );
+  });
+});
+
+const groupPerson = (overrides: Partial<HubPerson>): HubPerson => ({
+  personId: 12,
+  firstName: 'Mara',
+  lastName: 'Lenz',
+  isAffiliated: true,
+  groupMembershipId: 7,
+  memberSince: '2017-09-01',
+  groupAdminId: null,
+  adminSince: null,
+  adminFunction: null,
+  ...overrides,
+});
+
+describe('toPersonAccent', () => {
+  it('leaves a plain member without a role label', () => {
+    expect(toPersonAccent(groupPerson({}))).toBeUndefined();
+  });
+
+  it('wears the Funktion of an admin who has one', () => {
+    expect(toPersonAccent(groupPerson({ groupAdminId: 4, adminFunction: 'Trainerin' }))).toBe(
+      'Trainerin',
+    );
+  });
+
+  it('falls back to the bare office for an admin without a Funktion', () => {
+    expect(toPersonAccent(groupPerson({ groupAdminId: 4 }))).toBe('Gruppen-Admin');
+  });
+});
+
+describe('toPersonMetaLine', () => {
+  it('keeps the dates to the Verwaltung', () => {
+    expect(toPersonMetaLine(groupPerson({}), false)).toBeUndefined();
+  });
+
+  it('dates a member from the session she joined in', () => {
+    expect(toPersonMetaLine(groupPerson({}), true)).toBe('seit 2016/17');
+  });
+
+  it('dates an admin who is no member from her appointment', () => {
+    expect(
+      toPersonMetaLine(
+        groupPerson({
+          groupMembershipId: null,
+          memberSince: null,
+          groupAdminId: 4,
+          adminSince: '2019-01-01',
+        }),
+        true,
+      ),
+    ).toBe('leitet seit 2018/19');
+  });
+});
+
+describe('toPersonStandingLines', () => {
+  it('names the Zugehörigkeit of a plain member', () => {
+    expect(toPersonStandingLines(groupPerson({}))).toEqual(['Mitglied seit 2016/17']);
+  });
+
+  it('names both standings of an admin who dances along', () => {
+    expect(
+      toPersonStandingLines(groupPerson({ groupAdminId: 4, adminSince: '2019-01-01' })),
+    ).toEqual(['Mitglied seit 2016/17', 'Gruppen-Admin seit 2018/19']);
+  });
+
+  it('names only the office of an admin who is no member', () => {
+    expect(
+      toPersonStandingLines(
+        groupPerson({
+          groupMembershipId: null,
+          memberSince: null,
+          groupAdminId: 4,
+          adminSince: '2019-01-01',
+        }),
+      ),
+    ).toEqual(['Gruppen-Admin seit 2018/19']);
+  });
+});
+
+describe('toPeekAdminIntent', () => {
+  it('offers nothing to a viewer who may not manage the Gruppe', () => {
+    expect(toPeekAdminIntent(groupPerson({ groupAdminId: 4 }), false)).toBe('none');
+  });
+
+  it('offers to end the office of a standing Gruppen-Admin', () => {
+    expect(toPeekAdminIntent(groupPerson({ groupAdminId: 4 }), true)).toBe('endAdmin');
+  });
+
+  it('offers to promote a member who holds no office', () => {
+    expect(toPeekAdminIntent(groupPerson({}), true)).toBe('promote');
+  });
+
+  it('offers no promotion to someone who is not in the Gruppe', () => {
+    expect(
+      toPeekAdminIntent(groupPerson({ groupMembershipId: null, memberSince: null }), true),
+    ).toBe('none');
+  });
+});
+
+describe('toMemberAddedAsAdminMessage', () => {
+  it('names both standings once the day has come', () => {
+    expect(toMemberAddedAsAdminMessage('Mara Lenz', '2026-09-22', '2026-09-22')).toBe(
+      'Mara Lenz ist aufgenommen und Gruppen-Admin.',
+    );
+  });
+
+  it('dates both standings while the day is still ahead', () => {
+    expect(toMemberAddedAsAdminMessage('Mara Lenz', '2026-10-01', '2026-09-22')).toBe(
+      'Mara Lenz ist ab dem 01.10.2026 dabei — und Gruppen-Admin.',
+    );
+  });
+});
+
+describe('toJoinAsAdminConsequence', () => {
+  it('spells out the care duties for a day that has come', () => {
+    expect(toJoinAsAdminConsequence('Mara', '2026-09-22', '2026-09-22')).toBe(
+      'Mara gehört ab dem 22.09.2026 zur Gruppe und darf sie pflegen: Beschreibung ändern, Leute aufnehmen und beenden.',
+    );
+  });
+
+  it('holds the care duties back until the day comes', () => {
+    expect(toJoinAsAdminConsequence('Mara', '2026-10-01', '2026-09-22')).toBe(
+      'Ab dem 01.10.2026 steht Mara in der Gruppe und darf sie pflegen — vorher nicht.',
     );
   });
 });

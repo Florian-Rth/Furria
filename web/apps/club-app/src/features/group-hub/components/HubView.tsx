@@ -8,20 +8,20 @@ import { useGroupInfoForm } from '../hooks/use-group-info-form';
 import { useHubCelebration } from '../hooks/use-hub-celebration';
 import { useHubDialogs } from '../hooks/use-hub-dialogs';
 import { useTakenTones } from '../hooks/use-taken-tones';
+import { toHubPeople } from '../hub-people';
 import type { GroupHub } from '../schemas';
-import { AddAdminDialog } from './AddAdminDialog';
 import { AddMemberDialog } from './AddMemberDialog';
 import { EndAdminDialog } from './EndAdminDialog';
 import { EndMembershipDialog } from './EndMembershipDialog';
-import { HubAdminsPanel } from './HubAdminsPanel';
 import { HubCarePanel } from './HubCarePanel';
 import { HubDescriptionPanel } from './HubDescriptionPanel';
 import { HubPeekSheet } from './HubPeekSheet';
+import { HubPeoplePanel } from './HubPeoplePanel';
 import { HubRhythmPanel } from './HubRhythmPanel';
-import { HubRosterPanel } from './HubRosterPanel';
 import { HubTerminePanel } from './HubTerminePanel';
+import { PromoteAdminDialog } from './PromoteAdminDialog';
 
-const HISTORY_META = 'nur für Gruppen-Admins';
+const HISTORY_META = 'nur für die Verwaltung dieser Gruppe';
 
 interface HubViewProps {
   hub: GroupHub;
@@ -31,13 +31,13 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
   const dialogs = useHubDialogs(hub.members, hub.admins);
   const celebration = useHubCelebration();
   const { isAffiliated } = usePermissions();
-  const membersFocus = useReturnFocus();
-  const adminsFocus = useReturnFocus();
+  const peopleFocus = useReturnFocus();
   const careFocus = useReturnFocus();
   const sheet = useKkSheetCommands();
   const tone = toGroupTone(hub.groupId, hub.tone);
-  const takenTones = useTakenTones(hub.groupId, hub.viewerIsAdmin);
+  const takenTones = useTakenTones(hub.groupId, hub.viewerMayManage);
   const heldKind = toHeldGroupKind(hub.groupKindId, hub.groupKindName);
+  const people = toHubPeople(hub.members, hub.admins);
 
   const form = useGroupInfoForm({
     groupId: hub.groupId,
@@ -48,9 +48,14 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
     tone: hub.tone,
   });
 
-  const endFromPeek = (groupMembershipId: number): void => {
+  const endMembershipFromPeek = (groupMembershipId: number): void => {
     sheet.close();
     dialogs.openEndMembership(groupMembershipId);
+  };
+
+  const endAdminFromPeek = (groupAdminId: number): void => {
+    sheet.close();
+    dialogs.openEndAdmin(groupAdminId);
   };
 
   const startCare = (): void => {
@@ -58,14 +63,9 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
     careFocus.returnFocus();
   };
 
-  const closeAfterMemberEnded = (): void => {
+  const closeAfterPersonEnded = (): void => {
     dialogs.close();
-    membersFocus.returnFocus();
-  };
-
-  const closeAfterAdminEnded = (): void => {
-    dialogs.close();
-    adminsFocus.returnFocus();
+    peopleFocus.returnFocus();
   };
 
   const onMemberAdded = (personId: number): void => {
@@ -73,14 +73,20 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
     celebration.celebrateMember(personId);
   };
 
-  const onAdminAppointed = (): void => {
-    dialogs.close();
+  const promoteFromPeek = (personId: number): void => {
+    sheet.close();
+    dialogs.openPromote(personId);
   };
 
-  const seesTermine = hub.viewerIsMember || hub.viewerIsAdmin;
+  const closeAfterPromotion = (): void => {
+    dialogs.close();
+    peopleFocus.returnFocus();
+  };
+
+  const seesTermine = hub.viewerIsMember || hub.viewerMayManage;
   const termine = seesTermine ? <HubTerminePanel groupId={hub.groupId} tone={tone} /> : null;
 
-  const care = hub.viewerIsAdmin ? (
+  const care = hub.viewerMayManage ? (
     <HubCarePanel
       tone={tone}
       form={form}
@@ -90,7 +96,7 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
     />
   ) : null;
 
-  const history = hub.viewerIsAdmin ? (
+  const history = hub.viewerMayManage ? (
     <GroupHistoryPanel
       pastMembers={hub.pastMembers}
       pastAdmins={hub.pastAdmins}
@@ -99,7 +105,7 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
     />
   ) : null;
 
-  const tools = hub.viewerIsAdmin ? (
+  const tools = hub.viewerMayManage ? (
     <>
       <AddMemberDialog
         groupId={hub.groupId}
@@ -113,14 +119,14 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
         groupName={hub.name}
         member={dialogs.endMember}
         onClose={dialogs.close}
-        onEnded={closeAfterMemberEnded}
+        onEnded={closeAfterPersonEnded}
       />
-      <AddAdminDialog
+      <PromoteAdminDialog
         groupId={hub.groupId}
         groupName={hub.name}
-        open={dialogs.isAddAdminOpen}
+        member={dialogs.promoteMember}
         onClose={dialogs.close}
-        onAppointed={onAdminAppointed}
+        onAppointed={closeAfterPromotion}
       />
       <EndAdminDialog
         groupId={hub.groupId}
@@ -128,7 +134,7 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
         admin={dialogs.endAdmin}
         runningAdmins={hub.admins.length}
         onClose={dialogs.close}
-        onEnded={closeAfterAdminEnded}
+        onEnded={closeAfterPersonEnded}
       />
     </>
   ) : null;
@@ -140,28 +146,19 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
           tone={tone}
           groupName={hub.name}
           description={hub.description}
-          canManage={hub.viewerIsAdmin}
+          canManage={hub.viewerMayManage}
           onEdit={startCare}
         />
-        <HubAdminsPanel
+        <HubPeoplePanel
           tone={tone}
-          admins={hub.admins}
-          canManage={hub.viewerIsAdmin}
-          viewerIsAffiliated={isAffiliated}
-          titleRef={adminsFocus.targetRef}
-          onAdd={dialogs.openAddAdmin}
-          onEnd={dialogs.openEndAdmin}
-        />
-        <HubRosterPanel
-          tone={tone}
-          members={hub.members}
+          people={people}
           groupName={hub.name}
-          canManage={hub.viewerIsAdmin}
+          canManage={hub.viewerMayManage}
           viewerIsAffiliated={isAffiliated}
           newPersonId={celebration.newMemberId}
           fireKey={celebration.fireKey}
-          titleRef={membersFocus.targetRef}
-          onAdd={dialogs.openAddMember}
+          titleRef={peopleFocus.targetRef}
+          onAddMember={dialogs.openAddMember}
         />
         {termine}
         <HubRhythmPanel
@@ -169,17 +166,18 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
           groupName={hub.name}
           tone={tone}
           slots={hub.trainingSlots}
-          canManage={hub.viewerIsAdmin}
+          canManage={hub.viewerMayManage}
         />
         {care}
         {history}
       </KkPanelStack>
       <HubPeekSheet
         tone={tone}
-        members={hub.members}
-        admins={hub.admins}
-        canManage={hub.viewerIsAdmin}
-        onEnd={endFromPeek}
+        people={people}
+        canManage={hub.viewerMayManage}
+        onPromote={promoteFromPeek}
+        onEndMembership={endMembershipFromPeek}
+        onEndAdmin={endAdminFromPeek}
       />
       {tools}
     </>

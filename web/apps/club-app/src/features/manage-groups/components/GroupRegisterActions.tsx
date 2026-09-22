@@ -1,67 +1,69 @@
-import { KkButton, KkIcon, KkIconButton } from '@furria/ui';
+import { KkButton, KkIcon } from '@furria/ui';
 import Stack from '@mui/material/Stack';
-import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-
-const HUB_PATH = '/groups/$groupId';
 
 const EDIT_LABEL = 'Bearbeiten';
 const ARCHIVE_LABEL = 'Archivieren';
 const RESTORE_LABEL = 'Zurückholen';
-const HUB_LABEL = 'Zur Gruppe';
+const APPOINT_LABEL = 'Admin ernennen';
 
 const CLUSTER = {
   alignItems: 'center',
   justifyContent: { xs: 'flex-start', desktop: 'flex-end' },
-  gap: 1,
-  flexWrap: 'nowrap',
+  gap: { xs: 0.5, desktop: 1 },
+  flexWrap: 'wrap',
   minWidth: 0,
 } as const;
 
-const HUB_BUTTON = { flexShrink: 0 } as const;
-
 interface GroupRegisterActionsProps {
-  groupId: number;
   groupName: string;
   isArchived: boolean;
+  needsAdmin: boolean;
+  onAppointAdmin: () => void;
   onEdit: () => void;
   onArchive: () => void;
   onRestore: () => void;
 }
 
 export const GroupRegisterActions: FC<GroupRegisterActionsProps> = ({
-  groupId,
   groupName,
   isArchived,
+  needsAdmin,
+  onAppointAdmin,
   onEdit,
   onArchive,
   onRestore,
 }) => {
-  const params = { groupId: String(groupId) };
+  if (isArchived) {
+    return (
+      <Stack direction="row" sx={CLUSTER}>
+        <KkButton
+          size="small"
+          variant="outlined"
+          ariaLabel={`${groupName} ${RESTORE_LABEL}`}
+          onClick={onRestore}
+        >
+          {RESTORE_LABEL}
+        </KkButton>
+      </Stack>
+    );
+  }
 
-  const hubLink = isArchived ? null : (
-    <KkIconButton
-      component={Link}
-      to={HUB_PATH}
-      params={params}
-      icon="chevron"
-      size="small"
-      label={`${HUB_LABEL} ${groupName}`}
-      sx={HUB_BUTTON}
-    />
-  );
-
-  const lifecycle = isArchived ? (
+  const appoint = needsAdmin ? (
     <KkButton
       size="small"
       variant="text"
-      ariaLabel={`${groupName} ${RESTORE_LABEL}`}
-      onClick={onRestore}
+      startIcon={<KkIcon name="person" size="small" />}
+      ariaLabel={`Gruppen-Admin für ${groupName} ernennen`}
+      onClick={onAppointAdmin}
     >
-      {RESTORE_LABEL}
+      {APPOINT_LABEL}
     </KkButton>
-  ) : (
-    <>
+  ) : null;
+
+  return (
+    <Stack direction="row" sx={CLUSTER}>
+      {appoint}
       <KkButton
         size="small"
         variant="text"
@@ -80,13 +82,6 @@ export const GroupRegisterActions: FC<GroupRegisterActionsProps> = ({
       >
         {ARCHIVE_LABEL}
       </KkButton>
-    </>
-  );
-
-  return (
-    <Stack direction="row" sx={CLUSTER}>
-      {lifecycle}
-      {hubLink}
     </Stack>
   );
 };

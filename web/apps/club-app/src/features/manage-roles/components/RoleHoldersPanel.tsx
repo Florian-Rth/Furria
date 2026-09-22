@@ -1,4 +1,5 @@
-import { KkButton, KkEmptyState, KkIcon, KkPanel, KkPanelSection, KkSkeletonRow } from '@furria/ui';
+import type { KkPanelAction } from '@furria/ui';
+import { KkEmptyState, KkPanel, KkPanelSection, KkSkeletonRow } from '@furria/ui';
 import type { FC, Ref } from 'react';
 import { ROLE_SECTION_TITLES } from '../manage-roles-labels';
 import type { RoleHolder } from '../schemas';
@@ -30,17 +31,9 @@ export const RoleHoldersPanel: FC<RoleHoldersPanelProps> = ({
   onAdd,
   onEnd,
 }) => {
-  const action = canAdd ? (
-    <KkButton
-      size="small"
-      variant="outlined"
-      startIcon={<KkIcon name="add" size="small" />}
-      ariaLabel={ADD_HOLDER_LABEL}
-      onClick={onAdd}
-    >
-      {ADD_TEXT}
-    </KkButton>
-  ) : null;
+  const action: KkPanelAction | undefined = canAdd
+    ? { label: ADD_TEXT, icon: 'add', ariaLabel: ADD_HOLDER_LABEL, onClick: onAdd }
+    : undefined;
 
   if (pending) {
     return (

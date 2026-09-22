@@ -3,11 +3,14 @@ import {
   findManagedGroup,
   isGroupKindArchivable,
   toArchiveConsequence,
-  toArchivedGroupKindMeta,
   toGroupAdminsLine,
+  toGroupFactsLine,
   toGroupKindEntries,
+  toGroupKindLockedReason,
   toGroupKindsIntro,
+  toGroupKindUsageBadge,
   toGroupKindUsageLine,
+  toGroupRegisterFlags,
   toRestoreConsequence,
 } from './manage-groups-labels';
 import type { ManagedGroupKind, ManagedGroupSummary } from './schemas';
@@ -60,6 +63,44 @@ describe('toGroupAdminsLine', () => {
     expect(toGroupAdminsLine([admin(1), admin(2), admin(3)])).toBe(
       'Birgit Kühnel und 2 weitere Personen',
     );
+  });
+});
+
+describe('toGroupFactsLine', () => {
+  it('joins the admin line and the size line', () => {
+    expect(toGroupFactsLine(group({ memberCount: 18 }))).toBe('Birgit Kühnel · 18 Personen');
+  });
+
+  it('drops an empty group from the line', () => {
+    expect(toGroupFactsLine(group({ memberCount: 0 }))).toBe('Birgit Kühnel');
+  });
+
+  it('stays silent when neither an admin nor a person is there', () => {
+    expect(toGroupFactsLine(group({ memberCount: 0, admins: [] }))).toBeNull();
+  });
+});
+
+describe('toGroupRegisterFlags', () => {
+  it('names every gap of a running group before its Gruppenart', () => {
+    const flags = toGroupRegisterFlags(group({ admins: [], memberCount: 0 }));
+
+    expect(flags.map((flag) => flag.id)).toEqual(['no-admin', 'no-kind', 'no-people']);
+  });
+
+  it('carries the Gruppenart alone once nothing is missing', () => {
+    const flags = toGroupRegisterFlags(group({ groupKindId: 2, groupKindName: 'Garde' }));
+
+    expect(flags).toEqual([{ id: 'kind', label: 'Garde', tone: 'neutral', dot: false }]);
+  });
+
+  it('replaces the gaps of an archived group with its archive day', () => {
+    const flags = toGroupRegisterFlags(
+      group({ archivedOn: '2026-09-12', admins: [], memberCount: 0 }),
+    );
+
+    expect(flags).toEqual([
+      { id: 'archived', label: 'Archiviert am 12.09.2026', tone: 'neutral', dot: false },
+    ]);
   });
 });
 
@@ -170,29 +211,44 @@ describe('toGroupKindsIntro', () => {
   });
 
   it('uses the singular for a single running Gruppenart', () => {
-    expect(toGroupKindsIntro(toGroupKindEntries([kind({})]))).toBe(
-      'Eine Gruppenart ist festgehalten.',
+    expect(toGroupKindsIntro(toGroupKindEntries([kind({ groupCount: 2 })]))).toBe(
+      'Eine Art steht zur Auswahl.',
     );
   });
 
-  it('counts the archived ones separately', () => {
+  it('counts the unused and the archived ones separately', () => {
     const entries = toGroupKindEntries([
-      kind({ groupKindId: 1 }),
-      kind({ groupKindId: 2, name: 'Elferrat' }),
+      kind({ groupKindId: 1, groupCount: 2 }),
+      kind({ groupKindId: 2, name: 'Elferrat', groupCount: 0 }),
       kind({ groupKindId: 3, name: 'Spielmannszug', archivedOn: '2026-01-01' }),
     ]);
 
     expect(toGroupKindsIntro(entries)).toBe(
-      '2 Gruppenarten sind festgehalten. Eine weitere ist archiviert.',
+      '2 Arten stehen zur Auswahl. Eine davon ohne Gruppe. Eine weitere ist archiviert.',
     );
   });
 });
 
-describe('toArchivedGroupKindMeta', () => {
+describe('toGroupKindUsageBadge', () => {
   it.each([
-    [null, undefined],
-    ['2026-09-12', 'Archiviert am 12.09.2026'],
-  ])('writes %s as %s', (archivedOn, expected) => {
-    expect(toArchivedGroupKindMeta(archivedOn)).toBe(expected);
+    [{ groupCount: 0 }, 'Ohne Gruppe', 'gold'],
+    [{ groupCount: 2 }, '2 Gruppen', 'neutral'],
+    [{ groupCount: 0, archivedOn: '2026-09-12' }, 'Archiviert am 12.09.2026', 'neutral'],
+  ])('badges %o as %s', (overrides, label, tone) => {
+    const entry = toGroupKindEntries([kind(overrides)])[0];
+
+    expect(entry === undefined ? null : toGroupKindUsageBadge(entry)).toMatchObject({
+      label,
+      tone,
+    });
+  });
+});
+
+describe('toGroupKindLockedReason', () => {
+  it.each([
+    [1, 'Eine Gruppe trägt diese Art. Erst umtragen, dann archivieren.'],
+    [3, '3 Gruppen tragen diese Art. Erst umtragen, dann archivieren.'],
+  ])('explains %i as %s', (groupCount, expected) => {
+    expect(toGroupKindLockedReason(groupCount)).toBe(expected);
   });
 });

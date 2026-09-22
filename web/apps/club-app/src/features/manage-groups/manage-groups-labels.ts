@@ -1,4 +1,5 @@
-import type { KkConfirmFact } from '@furria/ui';
+import type { KkChipTone, KkConfirmFact } from '@furria/ui';
+import { toGroupKindLabel } from '@/features/groups';
 import type { PersonRef } from '@/lib/api/schemas';
 import { toGroupMembersLabel } from '@/lib/group-sections';
 import { formatIsoDay } from '@/lib/membership-labels';
@@ -23,11 +24,6 @@ export const MANAGED_GROUPS_EMPTY: Record<'filtered' | 'cold', ManagedGroupsEmpt
 
 export const REGISTER_TITLE = 'Verzeichnis';
 
-export const APPOINT_ADMIN_LABEL = 'Admin ernennen';
-
-export const toAppointAdminActionLabel = (name: string): string =>
-  `Gruppen-Admin für ${name} ernennen`;
-
 export const toGroupSizeLine = toGroupMembersLabel;
 
 const toPersonName = (person: PersonRef): string => `${person.firstName} ${person.lastName}`;
@@ -49,6 +45,65 @@ export const toGroupAdminsLine = (admins: readonly PersonRef[]): string | null =
   }
 
   return `${toPersonName(first)} und ${further} weitere Personen`;
+};
+
+export const toGroupFactsLine = (group: ManagedGroupSummary): string | null => {
+  const parts: string[] = [];
+  const admins = toGroupAdminsLine(group.admins);
+
+  if (admins !== null) {
+    parts.push(admins);
+  }
+  if (group.memberCount > 0) {
+    parts.push(toGroupSizeLine(group.memberCount));
+  }
+  if (parts.length === 0) {
+    return null;
+  }
+
+  return parts.join(' \u00b7 ');
+};
+
+export interface GroupRegisterFlag {
+  id: string;
+  label: string;
+  tone: KkChipTone;
+  dot: boolean;
+}
+
+const NO_ADMIN_FLAG = 'Ohne Gruppen-Admin';
+const NO_KIND_FLAG = 'Ohne Gruppenart';
+const NO_PEOPLE_FLAG = 'Niemand dabei';
+
+export const toArchivedOnLabel = (archivedOn: string): string =>
+  `Archiviert am ${formatIsoDay(archivedOn)}`;
+
+export const toGroupRegisterFlags = (group: ManagedGroupSummary): GroupRegisterFlag[] => {
+  if (group.archivedOn !== null) {
+    return [
+      { id: 'archived', label: toArchivedOnLabel(group.archivedOn), tone: 'neutral', dot: false },
+    ];
+  }
+
+  const flags: GroupRegisterFlag[] = [];
+
+  if (group.admins.length === 0) {
+    flags.push({ id: 'no-admin', label: NO_ADMIN_FLAG, tone: 'accent', dot: true });
+  }
+  if (group.groupKindId === null) {
+    flags.push({ id: 'no-kind', label: NO_KIND_FLAG, tone: 'gold', dot: true });
+  }
+  if (group.memberCount === 0) {
+    flags.push({ id: 'no-people', label: NO_PEOPLE_FLAG, tone: 'gold', dot: true });
+  }
+
+  const kindLabel = toGroupKindLabel(group.groupKindName);
+
+  if (kindLabel !== null) {
+    flags.push({ id: 'kind', label: kindLabel, tone: 'neutral', dot: false });
+  }
+
+  return flags;
 };
 
 export const findManagedGroup = (
@@ -132,8 +187,10 @@ export const GROUP_KINDS_EMPTY_TITLE = 'NOCH KEINE GRUPPENART';
 export const GROUP_KINDS_EMPTY_DESCRIPTION =
   'Leg die erste Gruppenart an. Danach kannst du jeder Gruppe eine zuordnen.';
 
-export const toArchiveGroupKindBlockedHint = (groupCount: number): string =>
-  groupCount === 1 ? '1 Gruppe trägt diese Art' : `${groupCount} Gruppen tragen diese Art`;
+export const toGroupKindLockedReason = (groupCount: number): string =>
+  groupCount === 1
+    ? 'Eine Gruppe trägt diese Art. Erst umtragen, dann archivieren.'
+    : `${groupCount} Gruppen tragen diese Art. Erst umtragen, dann archivieren.`;
 
 export interface GroupKindEntry {
   groupKindId: number;
@@ -165,9 +222,6 @@ export const toGroupKindEntries = (kinds: readonly ManagedGroupKind[]): GroupKin
 export const isGroupKindArchivable = (entry: GroupKindEntry): boolean =>
   !entry.isArchived && entry.groupCount === 0;
 
-export const toArchivedGroupKindMeta = (archivedOn: string | null): string | undefined =>
-  archivedOn === null ? undefined : `Archiviert am ${formatIsoDay(archivedOn)}`;
-
 export const toGroupKindUsageLine = (groupCount: number): string => {
   if (groupCount === 0) {
     return 'keine Gruppe';
@@ -179,24 +233,59 @@ export const toGroupKindUsageLine = (groupCount: number): string => {
   return `${groupCount} Gruppen`;
 };
 
+export interface GroupKindUsageBadge {
+  label: string;
+  tone: KkChipTone;
+  dot: boolean;
+}
+
+const UNUSED_KIND_LABEL = 'Ohne Gruppe';
+
+export const toGroupKindUsageBadge = (entry: GroupKindEntry): GroupKindUsageBadge => {
+  if (entry.archivedOn !== null) {
+    return { label: toArchivedOnLabel(entry.archivedOn), tone: 'neutral', dot: false };
+  }
+  if (entry.groupCount === 0) {
+    return { label: UNUSED_KIND_LABEL, tone: 'gold', dot: true };
+  }
+
+  return { label: toGroupKindUsageLine(entry.groupCount), tone: 'neutral', dot: false };
+};
+
+const toLiveKindSentence = (live: number): string => {
+  if (live === 0) {
+    return 'Keine Art steht zur Auswahl.';
+  }
+  if (live === 1) {
+    return 'Eine Art steht zur Auswahl.';
+  }
+
+  return `${live} Arten stehen zur Auswahl.`;
+};
+
+const toUnusedKindSentence = (unused: number): string =>
+  unused === 1 ? 'Eine davon ohne Gruppe.' : `${unused} davon ohne Gruppe.`;
+
+const toArchivedKindSentence = (archived: number): string =>
+  archived === 1 ? 'Eine weitere ist archiviert.' : `${archived} weitere sind archiviert.`;
+
 export const toGroupKindsIntro = (entries: readonly GroupKindEntry[]): string => {
   if (entries.length === 0) {
     return 'Noch ist keine Gruppenart festgehalten.';
   }
 
   const archived = entries.filter((entry) => entry.isArchived).length;
-  const live = entries.length - archived;
-  const head =
-    live === 1 ? 'Eine Gruppenart ist festgehalten.' : `${live} Gruppenarten sind festgehalten.`;
+  const unused = entries.filter((entry) => !entry.isArchived && entry.groupCount === 0).length;
+  const sentences = [toLiveKindSentence(entries.length - archived)];
 
-  if (archived === 0) {
-    return head;
+  if (unused > 0) {
+    sentences.push(toUnusedKindSentence(unused));
+  }
+  if (archived > 0) {
+    sentences.push(toArchivedKindSentence(archived));
   }
 
-  const tail =
-    archived === 1 ? 'Eine weitere ist archiviert.' : `${archived} weitere sind archiviert.`;
-
-  return `${head} ${tail}`;
+  return sentences.join(' ');
 };
 
 export const toGroupKindFacts = (entry: GroupKindEntry, dayLabel: string): KkConfirmFact[] => [

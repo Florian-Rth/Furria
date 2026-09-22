@@ -1,7 +1,7 @@
+import type { KkPanelAction } from '@furria/ui';
 import {
   KkButton,
   KkFieldRow,
-  KkIcon,
   KkNote,
   KkPanel,
   KkPanelSection,
@@ -78,17 +78,9 @@ export const HubCarePanel: FC<HubCarePanelProps> = ({
     form.setFoundedYear(event.target.value);
   };
 
-  const action = form.isEditing ? null : (
-    <KkButton
-      size="small"
-      variant="outlined"
-      startIcon={<KkIcon name="edit" size="small" />}
-      ariaLabel={EDIT_ACTION_LABEL}
-      onClick={form.start}
-    >
-      {EDIT_LABEL}
-    </KkButton>
-  );
+  const action: KkPanelAction | undefined = form.isEditing
+    ? undefined
+    : { label: EDIT_LABEL, icon: 'edit', ariaLabel: EDIT_ACTION_LABEL, onClick: form.start };
 
   const resting = (
     <KkPanel>

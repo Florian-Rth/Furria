@@ -5,8 +5,11 @@ import Typography from '@mui/material/Typography';
 import type { FC, ReactNode, Ref } from 'react';
 import type { KkGroupTone } from './internal/group-tone';
 import { groupToneInkPaint } from './internal/group-tone';
+import { KkButton } from './KkButton';
 import { KkEyebrow } from './KkEyebrow';
+import { KkIcon } from './KkIcon';
 import type { KkSx } from './kk-sx';
+import type { KkPanelAction, KkPanelActionEmphasis } from './panel-action';
 import { kkTokens } from './tokens';
 
 type KkPanelHeaderSize = 'small' | 'medium';
@@ -15,6 +18,11 @@ const MARKER_SIZE = 9;
 const RULE_BLEED = 26;
 const RULE_MIN_WIDTH = RULE_BLEED * 2;
 const ACTION_SLOT = { ml: 'auto', flexShrink: 0 } as const;
+
+const actionVariants: Record<KkPanelActionEmphasis, 'outlined' | 'text'> = {
+  strong: 'outlined',
+  quiet: 'text',
+};
 
 const titleSizes: Record<KkPanelHeaderSize, string> = {
   small: kkTokens.type.sectionTitle,
@@ -39,7 +47,7 @@ const rulePaint = (theme: Theme, groupTone: KkGroupTone | undefined): CSSObject 
 
 interface KkPanelHeaderProps {
   title: string;
-  action?: ReactNode;
+  action?: KkPanelAction;
   meta?: ReactNode;
   size?: KkPanelHeaderSize;
   groupTone?: KkGroupTone;
@@ -57,7 +65,26 @@ export const KkPanelHeader: FC<KkPanelHeaderProps> = ({
   sx,
 }) => {
   const metaContent = typeof meta === 'string' ? <KkEyebrow tone="muted">{meta}</KkEyebrow> : meta;
-  const actionSlot = action === undefined ? null : <Box sx={ACTION_SLOT}>{action}</Box>;
+  const actionSlot =
+    action === undefined ? null : (
+      <Box sx={ACTION_SLOT}>
+        <KkButton
+          size="small"
+          variant={actionVariants[action.emphasis ?? 'strong']}
+          startIcon={
+            action.icon === undefined ? undefined : <KkIcon name={action.icon} size="small" />
+          }
+          component={action.component}
+          to={action.to}
+          params={action.params}
+          onClick={action.onClick}
+          disabled={action.disabled}
+          ariaLabel={action.ariaLabel}
+        >
+          {action.label}
+        </KkButton>
+      </Box>
+    );
   const metaSlot =
     meta === undefined ? null : (
       <Stack

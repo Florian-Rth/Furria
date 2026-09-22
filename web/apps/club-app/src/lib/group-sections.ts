@@ -16,11 +16,22 @@ export const GROUP_ADMINS_NOTE =
 export const NO_ADMINS_LINE =
   'Für diese Gruppe ist gerade niemand als Gruppen-Admin eingetragen. Ohne Admin pflegt die Gruppenverwaltung sie allein.';
 
+export const GROUP_PEOPLE_NOTE =
+  'Gruppen-Admins stehen vorn. Sie pflegen die Gruppe und müssen nicht selbst dabei sein.';
+
+export const toGroupPeopleNote = (people: number, admins: number): string | undefined => {
+  if (people === 0) {
+    return undefined;
+  }
+
+  return admins === 0 ? NO_ADMINS_LINE : GROUP_PEOPLE_NOTE;
+};
+
 const SUBLINE_SEPARATOR = ' · ';
 
 export const toGroupMembersLabel = (count: number): string => {
   if (count === 0) {
-    return 'niemand dabei';
+    return 'keine Mitglieder';
   }
   if (count === 1) {
     return '1 Person';

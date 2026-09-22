@@ -1,23 +1,27 @@
-import { KkChip, KkMeta, KkRecordName, KkRegisterRow } from '@furria/ui';
-import Grid from '@mui/material/Grid';
+import { KkRecordName, KkRegisterRow } from '@furria/ui';
 import Stack from '@mui/material/Stack';
+import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { toGroupKindLabel, toGroupTone } from '@/features/groups';
-import { toGroupSizeLine } from '../manage-groups-labels';
+import { toGroupTone } from '@/features/groups';
+import { toGroupFactsLine, toGroupRegisterFlags } from '../manage-groups-labels';
 import type { ManagedGroupSummary } from '../schemas';
 import { GroupRegisterActions } from './GroupRegisterActions';
-import { GroupRegisterAdmins } from './GroupRegisterAdmins';
+import { GroupRegisterFacts } from './GroupRegisterFacts';
+import { GroupRegisterFlags } from './GroupRegisterFlags';
 
-const IDENTITY_SIZE = { xs: 12, desktop: 4 };
-const ADMINS_SIZE = { xs: 7, desktop: 3 };
-const COUNT_SIZE = { xs: 5, desktop: 2 };
-const ACTIONS_SIZE = { xs: 12, desktop: 3 };
+const HUB_PATH = '/groups/$groupId';
 
-const CELL = { minWidth: 0 } as const;
-const COUNT_CELL = { minWidth: 0, textAlign: { desktop: 'right' } } as const;
-const CHIP_ROW = { alignItems: 'center', gap: 0.75, flexWrap: 'wrap', minWidth: 0 } as const;
-const IDENTITY = { gap: 0.5, minWidth: 0 } as const;
-const GRID = { minWidth: 0, alignItems: 'center' } as const;
+const ROW = {
+  gap: { xs: 1, desktop: 2.5 },
+  minWidth: 0,
+  flexWrap: 'wrap',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+} as const;
+
+const IDENTITY = { gap: 0.625, minWidth: 0, flexGrow: 1, flexBasis: '17rem' } as const;
+const HEADLINE = { gap: 1, minWidth: 0, alignItems: 'center', flexWrap: 'wrap' } as const;
+const ACTIONS = { minWidth: 0, flexBasis: { xs: '100%', desktop: 'auto' } } as const;
 
 interface GroupRegisterRowProps {
   group: ManagedGroupSummary;
@@ -34,9 +38,8 @@ export const GroupRegisterRow: FC<GroupRegisterRowProps> = ({
   onArchive,
   onRestore,
 }) => {
-  const tone = toGroupTone(group.groupId, group.tone);
   const isArchived = group.archivedOn !== null;
-  const kindLabel = toGroupKindLabel(group.groupKindName);
+  const tone = isArchived ? undefined : toGroupTone(group.groupId, group.tone);
 
   const appoint = (): void => {
     onAppointAdmin(group.groupId);
@@ -54,51 +57,39 @@ export const GroupRegisterRow: FC<GroupRegisterRowProps> = ({
     onRestore(group.groupId);
   };
 
-  const kindSlot =
-    kindLabel === null ? null : (
-      <KkChip tone="neutral" size="small">
-        {kindLabel}
-      </KkChip>
-    );
-
-  const chips =
-    kindSlot === null ? null : (
-      <Stack direction="row" sx={CHIP_ROW}>
-        {kindSlot}
-      </Stack>
-    );
+  const name = isArchived ? (
+    <KkRecordName name={group.name} dimmed />
+  ) : (
+    <KkRecordName
+      name={group.name}
+      component={Link}
+      to={HUB_PATH}
+      params={{ groupId: String(group.groupId) }}
+    />
+  );
 
   return (
-    <KkRegisterRow groupTone={tone} dimmed={isArchived}>
-      <Grid container spacing={{ xs: 1, desktop: 1.5 }} sx={GRID}>
-        <Grid size={IDENTITY_SIZE} sx={CELL}>
-          <Stack sx={IDENTITY}>
-            <KkRecordName name={group.name} dimmed={isArchived} />
-            {chips}
+    <KkRegisterRow groupTone={tone}>
+      <Stack direction="row" sx={ROW}>
+        <Stack sx={IDENTITY}>
+          <Stack direction="row" sx={HEADLINE}>
+            {name}
+            <GroupRegisterFlags flags={toGroupRegisterFlags(group)} />
           </Stack>
-        </Grid>
-        <Grid size={ADMINS_SIZE} sx={CELL}>
-          <GroupRegisterAdmins
-            admins={group.admins}
-            groupName={group.name}
-            canAppoint={!isArchived}
-            onAppoint={appoint}
-          />
-        </Grid>
-        <Grid size={COUNT_SIZE} sx={COUNT_CELL}>
-          <KkMeta>{toGroupSizeLine(group.memberCount)}</KkMeta>
-        </Grid>
-        <Grid size={ACTIONS_SIZE} sx={CELL}>
+          <GroupRegisterFacts admins={group.admins} line={toGroupFactsLine(group)} />
+        </Stack>
+        <Stack sx={ACTIONS}>
           <GroupRegisterActions
-            groupId={group.groupId}
             groupName={group.name}
             isArchived={isArchived}
+            needsAdmin={group.admins.length === 0}
+            onAppointAdmin={appoint}
             onEdit={edit}
             onArchive={archive}
             onRestore={restore}
           />
-        </Grid>
-      </Grid>
+        </Stack>
+      </Stack>
     </KkRegisterRow>
   );
 };

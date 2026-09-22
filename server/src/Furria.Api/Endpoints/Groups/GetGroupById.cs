@@ -48,7 +48,7 @@ public sealed class GetGroupById : Endpoint<GetGroupByIdRequest, GetGroupByIdRes
             return;
         }
 
-        var viewerIsAdmin =
+        var viewerMayManage =
             group.Value.ViewerIsAdmin
             || await _authorizer.IsGrantedAsync(
                 accountId.Value,
@@ -56,14 +56,14 @@ public sealed class GetGroupById : Endpoint<GetGroupByIdRequest, GetGroupByIdRes
                 ct
             );
 
-        await Send.OkAsync(ToResponse(group.Value, viewerIsAdmin), cancellation: ct);
+        await Send.OkAsync(ToResponse(group.Value, viewerMayManage), cancellation: ct);
     }
 
     private async Task<bool> MayReadAsync(int accountId, int groupId, CancellationToken ct) =>
         await _authorizer.IsAffiliatedAsync(accountId, ct)
         || await _authorizer.CanAdministerGroupAsync(accountId, groupId, ct);
 
-    private static GetGroupByIdResponse ToResponse(GroupDetails group, bool viewerIsAdmin) =>
+    private static GetGroupByIdResponse ToResponse(GroupDetails group, bool viewerMayManage) =>
         new()
         {
             GroupId = group.GroupId,
@@ -78,10 +78,11 @@ public sealed class GetGroupById : Endpoint<GetGroupByIdRequest, GetGroupByIdRes
             Admins = [.. group.Admins.Select(ToDto)],
             Members = [.. group.Members.Select(ToDto)],
             ViewerIsMember = group.ViewerIsMember,
-            ViewerIsAdmin = viewerIsAdmin,
+            ViewerIsAdmin = group.ViewerIsAdmin,
+            ViewerMayManage = viewerMayManage,
             ViewerSince = group.ViewerSince,
-            PastMembers = viewerIsAdmin ? [.. group.PastMembers.Select(ToDto)] : [],
-            PastAdmins = viewerIsAdmin ? [.. group.PastAdmins.Select(ToDto)] : [],
+            PastMembers = viewerMayManage ? [.. group.PastMembers.Select(ToDto)] : [],
+            PastAdmins = viewerMayManage ? [.. group.PastAdmins.Select(ToDto)] : [],
         };
 
     private static GroupTrainingSlotDto ToDto(GroupTrainingSlotDetails slot) =>
@@ -164,6 +165,8 @@ public sealed record GetGroupByIdResponse
     public required bool ViewerIsMember { get; init; }
 
     public required bool ViewerIsAdmin { get; init; }
+
+    public required bool ViewerMayManage { get; init; }
 
     public required DateOnly? ViewerSince { get; init; }
 

@@ -1,4 +1,4 @@
-import { KkAlert, KkButton, KkDateField, KkSheet, KkTextArea, KkTextField } from '@furria/ui';
+import { KkAlert, KkDateField, KkSheet, KkTextArea, KkTextField } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { ANNOUNCEMENT_FORM_SHEET_ID } from '@/lib/announcements';
@@ -93,14 +93,14 @@ export const AnnouncementFormSheet: FC<AnnouncementFormSheetProps> = ({ sheet })
           {rejection}
         </Stack>
       </KkSheet.Body>
-      <KkSheet.Actions>
-        <KkButton variant="outlined" onClick={sheet.close} disabled={control.isSaving} fullWidth>
-          {SHEET_CANCEL_LABEL}
-        </KkButton>
-        <KkButton onClick={control.submit} loading={control.isSaving} fullWidth>
-          {confirmLabel}
-        </KkButton>
-      </KkSheet.Actions>
+      <KkSheet.Actions
+        primary={{ label: confirmLabel, onClick: control.submit, loading: control.isSaving }}
+        secondary={{
+          label: SHEET_CANCEL_LABEL,
+          onClick: sheet.close,
+          disabled: control.isSaving,
+        }}
+      />
     </KkSheet>
   );
 };

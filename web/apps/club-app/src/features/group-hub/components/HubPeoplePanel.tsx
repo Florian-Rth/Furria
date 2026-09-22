@@ -1,7 +1,7 @@
-import { KkButton, KkEmptyState, KkIcon, KkPanel, KkPanelSection } from '@furria/ui';
+import type { KkPanelAction } from '@furria/ui';
+import { KkEmptyState, KkPanel, KkPanelSection } from '@furria/ui';
 import Grid from '@mui/material/Grid';
 import type { FC, Ref } from 'react';
-import type { GroupDetailMember } from '@/features/group-detail';
 import {
   ADD_MEMBER_ACTION_LABEL,
   ADD_MEMBER_LABEL,
@@ -9,48 +9,47 @@ import {
   toNoMembersLine,
 } from '@/features/group-detail';
 import type { GroupTone } from '@/features/groups';
-import { GROUP_SECTION_TITLES } from '@/lib/group-sections';
-import { HubRosterTile } from './HubRosterTile';
+import { GROUP_SECTION_TITLES, toGroupPeopleNote } from '@/lib/group-sections';
+import type { HubPerson } from '../hub-people';
+import { countGroupAdmins } from '../hub-people';
+import { HubPersonTile } from './HubPersonTile';
 
 const GRID_SPACING = { xs: 1.75, desktop: 2.5 };
 const TILE_SIZE = { xs: 3, desktop: 2 };
 
-interface HubRosterPanelProps {
+interface HubPeoplePanelProps {
   tone: GroupTone;
-  members: readonly GroupDetailMember[];
+  people: readonly HubPerson[];
   groupName: string;
   canManage: boolean;
   viewerIsAffiliated: boolean;
   newPersonId: number | null;
   fireKey: number;
   titleRef: Ref<HTMLHeadingElement>;
-  onAdd: () => void;
+  onAddMember: () => void;
 }
 
-export const HubRosterPanel: FC<HubRosterPanelProps> = ({
+export const HubPeoplePanel: FC<HubPeoplePanelProps> = ({
   tone,
-  members,
+  people,
   groupName,
   canManage,
   viewerIsAffiliated,
   newPersonId,
   fireKey,
   titleRef,
-  onAdd,
+  onAddMember,
 }) => {
-  const isEmpty = members.length === 0;
+  const isEmpty = people.length === 0;
 
-  const action = canManage ? (
-    <KkButton
-      size="small"
-      variant="outlined"
-      startIcon={<KkIcon name="add" size="small" />}
-      ariaLabel={ADD_MEMBER_ACTION_LABEL}
-      onClick={onAdd}
-    >
-      {ADD_MEMBER_LABEL}
-    </KkButton>
-  ) : null;
+  const action: KkPanelAction | undefined = canManage
+    ? {
+        label: ADD_MEMBER_LABEL,
+        icon: 'add',
+        ariaLabel: ADD_MEMBER_ACTION_LABEL,
+        onClick: onAddMember,
+      }
+    : undefined;
 
   const body = isEmpty ? (
     <KkEmptyState
@@ -60,14 +59,14 @@ export const HubRosterPanel: FC<HubRosterPanelProps> = ({
     />
   ) : (
     <Grid container spacing={GRID_SPACING} sx={{ minWidth: 0 }}>
-      {members.map((member) => (
-        <Grid key={member.groupMembershipId} size={TILE_SIZE} sx={{ minWidth: 0 }}>
-          <HubRosterTile
+      {people.map((person) => (
+        <Grid key={person.personId} size={TILE_SIZE} sx={{ minWidth: 0 }}>
+          <HubPersonTile
             tone={tone}
-            member={member}
+            person={person}
             canManage={canManage}
             viewerIsAffiliated={viewerIsAffiliated}
-            isNew={member.personId === newPersonId}
+            isNew={person.personId === newPersonId}
             fireKey={fireKey}
           />
         </Grid>
@@ -81,6 +80,7 @@ export const HubRosterPanel: FC<HubRosterPanelProps> = ({
       groupTone={tone}
       titleRef={titleRef}
       action={action}
+      description={toGroupPeopleNote(people.length, countGroupAdmins(people))}
     >
       <KkPanel variant="block">{body}</KkPanel>
     </KkPanelSection>

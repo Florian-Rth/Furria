@@ -1,9 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { toGroupAdminsLabel, toGroupMembersLabel, toGroupSubline } from './group-sections';
+import {
+  GROUP_PEOPLE_NOTE,
+  NO_ADMINS_LINE,
+  toGroupAdminsLabel,
+  toGroupMembersLabel,
+  toGroupPeopleNote,
+  toGroupSubline,
+} from './group-sections';
 
 describe('toGroupMembersLabel', () => {
   it.each([
-    { count: 0, expected: 'niemand dabei' },
+    { count: 0, expected: 'keine Mitglieder' },
     { count: 1, expected: '1 Person' },
     { count: 2, expected: '2 Personen' },
     { count: 18, expected: '18 Personen' },
@@ -37,6 +44,20 @@ describe('toGroupSubline', () => {
   });
 
   it('says out loud when nobody is in the Gruppe', () => {
-    expect(toGroupSubline(0, 0)).toBe('niemand dabei · kein Gruppen-Admin');
+    expect(toGroupSubline(0, 0)).toBe('keine Mitglieder · kein Gruppen-Admin');
+  });
+});
+
+describe('toGroupPeopleNote', () => {
+  it('stays quiet while the Gruppe holds nobody at all', () => {
+    expect(toGroupPeopleNote(0, 0)).toBeUndefined();
+  });
+
+  it('warns that nobody pflegt the Gruppe while it has members but no Admin', () => {
+    expect(toGroupPeopleNote(18, 0)).toBe(NO_ADMINS_LINE);
+  });
+
+  it('explains the order of the list once an Admin stands in it', () => {
+    expect(toGroupPeopleNote(18, 2)).toBe(GROUP_PEOPLE_NOTE);
   });
 });

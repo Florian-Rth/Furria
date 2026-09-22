@@ -1,4 +1,5 @@
-import { KkButton, KkPanel, KkPanelSection } from '@furria/ui';
+import type { KkPanelAction } from '@furria/ui';
+import { KkPanel, KkPanelSection } from '@furria/ui';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { CALENDAR_PATH } from '@/features/session';
@@ -18,11 +19,12 @@ export const CalendarPanel: FC = () => {
 
   const rows = entries.map((entry) => <CalendarRow key={entry.calendarEntryId} entry={entry} />);
 
-  const action = (
-    <KkButton variant="text" size="small" component={Link} to={CALENDAR_PATH}>
-      {ALL_ENTRIES_LABEL}
-    </KkButton>
-  );
+  const action: KkPanelAction = {
+    label: ALL_ENTRIES_LABEL,
+    emphasis: 'quiet',
+    component: Link,
+    to: CALENDAR_PATH,
+  };
 
   return (
     <KkPanelSection title={PANEL_TITLE} action={action}>

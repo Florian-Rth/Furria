@@ -79,3 +79,21 @@ Admin and the global key. The consequence above that predicted two surfaces is w
 **The cost, accepted:** an archived Gruppe's hub is 404 (`ArchivedOn == null` in the hub query), so
 its roster is no longer readable anywhere. The only decision an archived Gruppe carries is
 *zurückholen oder nicht*, and the register row states its member count.
+
+## Amended — 2026-09-22 (the register links to the hub)
+
+[ADR-0016](0016-every-write-is-one-of-three-kinds.md) made a row's whole surface the tap target and
+banned buttons inside rows. Applied to `/manage/groups`, the register's rows lose *Bearbeiten*,
+*Archivieren* and *Admin ernennen*, and the row opens the Gruppe — which, by the amendment above, is
+the hub and nothing else. The row's Name already linked there.
+
+The club's acts therefore move **onto the hub**, into a block at its end shown only to a holder of
+`groups.manage`: the Name, the Gruppenart, and *Gruppe archivieren*. This is the same reasoning that
+withdrew the two-surfaces consequence — a key holder already is an admin of every Gruppe on the hub,
+so nothing new becomes reachable. `/manage/groups` keeps what a register is for: the list, the
+backlog facets, the search, and creating a Gruppe.
+
+**One named exception.** An archived Gruppe's hub is 404 by the amendment above, so an archived
+Gruppe has no screen for its single act to live on. *Zurückholen* stays on the archived row. The
+exception is bounded by the same fact that created it: an archived Gruppe carries exactly one
+decision, and a row is enough to carry one.
