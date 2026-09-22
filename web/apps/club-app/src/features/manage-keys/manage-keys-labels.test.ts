@@ -7,7 +7,6 @@ import {
   toHoldingPeriodLabel,
   toManagedKeysIntro,
   toReturnConsequence,
-  toReturnFacts,
   toVenueEmptyCopy,
   toVenueHolderMeta,
 } from './manage-keys-labels';
@@ -185,20 +184,5 @@ describe('toReturnConsequence', () => {
     expect(toReturnConsequence('Anna', 'Turnhalle', '2026-11-11', '2026-09-20')).toContain(
       'wird der letzte Tag',
     );
-  });
-});
-
-describe('toReturnFacts', () => {
-  it('leaves the last day open until one is picked', () => {
-    expect(toReturnFacts(ANNA, 'Requisitenlager', null).map((fact) => fact.value)).toEqual([
-      'Anna Kaiser',
-      'Requisitenlager',
-      '01.03.2024',
-      'noch offen',
-    ]);
-  });
-
-  it('carries the picked last day', () => {
-    expect(toReturnFacts(ANNA, 'Requisitenlager', '2026-09-20')[3]?.value).toBe('20.09.2026');
   });
 });

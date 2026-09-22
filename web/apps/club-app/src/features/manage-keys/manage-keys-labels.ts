@@ -1,10 +1,29 @@
-import type { KkConfirmFact, KkDateQuickChoice } from '@furria/ui';
+import type { KkDateQuickChoice, KkScreenOrigin } from '@furria/ui';
 import { SESSION_OPENING_DAY, SESSION_OPENING_MONTH, sessionAt } from '@/lib/club';
 import { isFutureDay, toIsoDay } from '@/lib/day';
 import { formatIsoDay, formatPeriod } from '@/lib/membership-labels';
 import type { KeyHolding, KeyVenue } from './schemas';
 
 export const MANAGE_KEYS_TITLE = 'Schlüssel';
+const KEYS_PATH = '/manage/keys';
+
+export const KEYS_ORIGIN: KkScreenOrigin = { label: MANAGE_KEYS_TITLE, to: KEYS_PATH };
+
+export const KEY_EDITOR_DENIED_MESSAGE =
+  'Nur wer die Schlüssel verwaltet, darf Schlüssel ausgeben oder zurücknehmen.';
+
+export const toKeyEditorOrigin = (venueName: string): KkScreenOrigin => ({
+  label: venueName,
+  to: KEYS_PATH,
+});
+
+const KEY_ID_PATTERN = /^[1-9]\d*$/;
+
+export const toVenueIdParam = (raw: string): number | null =>
+  KEY_ID_PATTERN.test(raw) ? Number(raw) : null;
+
+export const toKeyHoldingIdParam = (raw: string): number | null =>
+  KEY_ID_PATTERN.test(raw) ? Number(raw) : null;
 
 export const KEY_SECTION_TITLES = {
   ended: 'Zurückgenommen',
@@ -61,6 +80,24 @@ export const toHoldingPeriodLabel = (holding: KeyHolding): string =>
   holding.untilOn === null
     ? `seit ${formatIsoDay(holding.sinceOn)}`
     : formatPeriod(holding.sinceOn, holding.untilOn);
+
+export interface KeyHoldingChainRow {
+  key: string;
+  title: string;
+  span: string;
+  isEdited: boolean;
+}
+
+export const toKeyHoldingChainRows = (
+  venue: KeyVenue,
+  editedKeyHoldingId: number | null,
+): KeyHoldingChainRow[] =>
+  venue.holdings.map((holding) => ({
+    key: String(holding.keyHoldingId),
+    title: toPersonName(holding),
+    span: toHoldingPeriodLabel(holding),
+    isEdited: holding.keyHoldingId === editedKeyHoldingId,
+  }));
 
 export interface KeyHoldingTarget {
   venue: KeyVenue;
@@ -175,14 +212,6 @@ export const toHandoutConsequence = (
     ? `Ab dem ${formatIsoDay(sinceOn)} kann ${personName} ${venueName} aufschließen — vorher nicht.`
     : `${personName} kann ${venueName} ab dem ${formatIsoDay(sinceOn)} aufschließen.`;
 
-export const RETURN_EYEBROW = 'Schlüssel zurücknehmen';
-
-export const toReturnQuestion = (firstName: string, venueName: string): string =>
-  `Schlüssel für ${venueName} von ${firstName} zurücknehmen?`;
-
-export const toReturnExplanation = (firstName: string): string =>
-  `Der Schlüssel wandert in die Geschichte des Ortes und bleibt dort lesbar. Gelöscht wird nichts: ${firstName} kann jederzeit wieder einen bekommen.`;
-
 export const toReturnConsequence = (
   firstName: string,
   venueName: string,
@@ -192,17 +221,6 @@ export const toReturnConsequence = (
   isFutureDay(untilOn, todayIsoDay)
     ? `Der ${formatIsoDay(untilOn)} wird der letzte Tag, an dem ${firstName} ${venueName} aufschließen kann.`
     : `Der ${formatIsoDay(untilOn)} ist der letzte Tag, an dem ${firstName} ${venueName} aufschließen kann.`;
-
-export const toReturnFacts = (
-  holding: KeyHolding,
-  venueName: string,
-  untilOn: string | null,
-): KkConfirmFact[] => [
-  { label: 'Person', value: toPersonName(holding) },
-  { label: 'Ort', value: venueName },
-  { label: 'Ausgegeben am', value: formatIsoDay(holding.sinceOn) },
-  { label: 'Letzter Tag', value: untilOn === null ? 'noch offen' : formatIsoDay(untilOn) },
-];
 
 const TODAY_LABEL = 'heute';
 const SESSION_START_LABEL = 'Sessionsbeginn';
@@ -260,6 +278,3 @@ export const toKeyTakenBackMessage = (
     : `Der Schlüssel von ${personName} ist zurück.`;
 
 export const toHandOutLabel = (venueName: string): string => `Schlüssel für ${venueName} ausgeben`;
-
-export const toTakeBackLabel = (personName: string): string =>
-  `Schlüssel von ${personName} zurücknehmen`;
