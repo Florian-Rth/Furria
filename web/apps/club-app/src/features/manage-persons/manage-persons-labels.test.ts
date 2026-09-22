@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  findMembershipOfPause,
   isContactWithheld,
   splitPersonGroups,
   toEndMembershipConsequence,
-  toEndMembershipFacts,
   toFeeReductionConsequence,
   toMembershipConsequence,
   toOpenPause,
@@ -14,7 +14,7 @@ import {
   toPersonsEmptyDescription,
   toPersonsLead,
 } from './manage-persons-labels';
-import type { PersonMembership, PersonSummary } from './schemas';
+import type { PersonDetails, PersonMembership, PersonSummary } from './schemas';
 
 const person = (overrides: Partial<PersonSummary> & { personId: number }): PersonSummary => ({
   firstName: 'Anna',
@@ -246,29 +246,6 @@ describe('toEndMembershipConsequence', () => {
   });
 });
 
-describe('toEndMembershipFacts', () => {
-  it('identifies the period being closed by its own two ends', () => {
-    const facts = toEndMembershipFacts(membership({}), 'Anna Adam', null);
-
-    expect(facts).toEqual([
-      { label: 'Person', value: 'Anna Adam' },
-      { label: 'Dieser Zeitraum seit', value: '01.03.2018' },
-      { label: 'Dieser Zeitraum bis', value: 'offen' },
-      { label: 'Letzter Tag', value: 'noch offen' },
-    ]);
-  });
-
-  it('adds the clamped Ruhezeit row once a day is chosen', () => {
-    const facts = toEndMembershipFacts(
-      membership({ pauses: [{ pauseId: 2, firstSessionYear: 2024, lastSessionYear: null }] }),
-      'Nicole Oehler',
-      '2026-02-18',
-    );
-
-    expect(facts.at(-1)).toEqual({ label: 'Offene Ruhezeit', value: 'endet mit 2025/26' });
-  });
-});
-
 describe('splitPersonGroups', () => {
   it('keeps the running rows apart from the closed ones', () => {
     const split = splitPersonGroups([
@@ -278,5 +255,53 @@ describe('splitPersonGroups', () => {
 
     expect(split.running.map((row) => row.groupId)).toEqual([1]);
     expect(split.past.map((row) => row.groupId)).toEqual([2]);
+  });
+});
+
+const personDetails = (
+  overrides: Partial<PersonDetails> & { personId: number },
+): PersonDetails => ({
+  firstName: 'Anna',
+  lastName: 'Adam',
+  email: null,
+  phone: null,
+  street: null,
+  zip: null,
+  city: null,
+  birthDate: null,
+  contactVisibleToMembers: false,
+  membershipState: 'active',
+  memberSince: null,
+  memberships: [],
+  feeReductions: [],
+  groups: [],
+  roles: [],
+  ...overrides,
+});
+
+describe('findMembershipOfPause', () => {
+  it('finds the membership owning a given pause across several periods', () => {
+    const found = findMembershipOfPause(
+      personDetails({
+        personId: 1,
+        memberships: [
+          membership({ membershipId: 1, pauses: [] }),
+          membership({
+            membershipId: 2,
+            pauses: [{ pauseId: 9, firstSessionYear: 2020, lastSessionYear: null }],
+          }),
+        ],
+      }),
+      9,
+    );
+
+    expect(found?.membership.membershipId).toBe(2);
+    expect(found?.pause.pauseId).toBe(9);
+  });
+
+  it('answers null when no membership holds that pause', () => {
+    expect(
+      findMembershipOfPause(personDetails({ personId: 1, memberships: [membership({})] }), 9),
+    ).toBeNull();
   });
 });

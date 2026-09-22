@@ -1,2 +1,11 @@
 export { PersonEditPage } from './components/PersonEditPage';
+export { PersonEditScreen } from './components/PersonEditScreen';
+export { PersonFeeReductionNewScreen } from './components/PersonFeeReductionNewScreen';
+export { PersonFeeReductionScreen } from './components/PersonFeeReductionScreen';
+export { PersonMembershipNewScreen } from './components/PersonMembershipNewScreen';
+export { PersonMembershipScreen } from './components/PersonMembershipScreen';
+export { PersonNewScreen } from './components/PersonNewScreen';
+export { PersonPauseNewScreen } from './components/PersonPauseNewScreen';
+export { PersonPauseScreen } from './components/PersonPauseScreen';
 export { PersonsPage } from './components/PersonsPage';
+export { PauseNewSearchSchema } from './schemas';

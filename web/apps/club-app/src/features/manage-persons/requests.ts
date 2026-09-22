@@ -6,7 +6,6 @@ import type {
   CreatedMembership,
   CreatedPause,
   CreatedPerson,
-  EndMembershipForm,
   FeeReductionForm,
   MembershipForm,
   PauseForm,
@@ -87,19 +86,6 @@ export const requestMembershipUpdate = (
   apiFetch(`/api/manage/persons/${personId}/memberships/${membershipId}`, {
     method: 'PUT',
     body: { startedOn: form.startedOn, endedOn: form.endedOn },
-    schema: NoContentSchema,
-    accessToken,
-  });
-
-export const requestMembershipEnd = (
-  personId: number,
-  membershipId: number,
-  form: EndMembershipForm,
-  accessToken: string,
-): Promise<void> =>
-  apiFetch(`/api/manage/persons/${personId}/memberships/${membershipId}/end`, {
-    method: 'POST',
-    body: { endedOn: form.endedOn },
     schema: NoContentSchema,
     accessToken,
   });

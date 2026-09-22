@@ -1,8 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import type { FormEvent } from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import type { FieldErrors, UseFormReturn } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
+import { toLandingKey } from '@/features/write';
 import { RequestFailedError } from '@/lib/api/api-error';
 import { toCamelCaseField } from '@/lib/api/api-failures';
 import { toWriteErrorMessage } from '@/lib/write-error';
@@ -24,6 +25,9 @@ export interface PersonFormSource {
 }
 
 const FIELD_ERROR_STATUS = 400;
+const UNSAVED_PERSON_ID = 0;
+const CREATE_LABEL = 'Hinzufügen';
+const SAVE_LABEL = 'Speichern';
 
 const PERSON_FIELD_NAMES = [
   'firstName',
@@ -53,9 +57,16 @@ const EMPTY_PERSON: PersonForm = {
   contactVisibleToMembers: false,
 };
 
-export const toPersonFormValues = (person: PersonFormSource | null): PersonForm => {
+export interface PersonFormOverrides {
+  contactVisibleToMembers?: boolean;
+}
+
+export const toPersonFormValues = (
+  person: PersonFormSource | null,
+  overrides: PersonFormOverrides = {},
+): PersonForm => {
   if (person === null) {
-    return EMPTY_PERSON;
+    return { ...EMPTY_PERSON, ...overrides };
   }
 
   return {
@@ -67,47 +78,36 @@ export const toPersonFormValues = (person: PersonFormSource | null): PersonForm 
     zip: person.zip ?? '',
     city: person.city ?? '',
     birthDate: person.birthDate,
-    contactVisibleToMembers: person.contactVisibleToMembers,
+    contactVisibleToMembers: overrides.contactVisibleToMembers ?? person.contactVisibleToMembers,
   };
 };
 
-interface PersonFormInput {
+interface PersonEditorInput {
   person: PersonFormSource | null;
-  open: boolean;
-  onSaved: (saved: CreatedPerson) => void;
 }
 
-export interface PersonFormControl {
+export interface PersonEditorControl {
   form: UseFormReturn<PersonForm>;
   errors: FieldErrors<PersonForm>;
-  submit: (event: FormEvent<HTMLFormElement>) => void;
   birthDate: string | null;
   setBirthDate: (value: string | null) => void;
-  contactVisibleToMembers: boolean;
-  setContactVisibleToMembers: (value: boolean) => void;
+  isDirty: boolean;
   isSaving: boolean;
   rejection: string | null;
+  actionLabel: string;
+  submit: () => void;
 }
 
-export const usePersonForm = ({ person, open, onSaved }: PersonFormInput): PersonFormControl => {
+export const usePersonEditor = ({ person }: PersonEditorInput): PersonEditorControl => {
   const [rejection, setRejection] = useState<string | null>(null);
-  const [wasOpen, setWasOpen] = useState(open);
   const create = useCreatePersonMutation();
-  const update = useUpdatePersonMutation(person?.personId ?? 0);
+  const update = useUpdatePersonMutation(person?.personId ?? UNSAVED_PERSON_ID);
+  const navigate = useNavigate();
 
   const form = useForm<PersonForm>({
     resolver: zodResolver(PersonFormSchema),
     defaultValues: toPersonFormValues(person),
   });
-
-  if (wasOpen !== open) {
-    setWasOpen(open);
-
-    if (open) {
-      form.reset(toPersonFormValues(person));
-      setRejection(null);
-    }
-  }
 
   const reject = (error: Error): void => {
     if (error instanceof RequestFailedError && error.status === FIELD_ERROR_STATUS) {
@@ -131,41 +131,43 @@ export const usePersonForm = ({ person, open, onSaved }: PersonFormInput): Perso
     setRejection(toWriteErrorMessage(error));
   };
 
+  const landOnPerson = (personId: number): void => {
+    void navigate({
+      to: '/manage/persons/$personId',
+      params: { personId: String(personId) },
+      search: (previous) => ({ ...previous, changed: toLandingKey('person', personId) }),
+      replace: true,
+    });
+  };
+
   const handleFormSubmit = form.handleSubmit((values) => {
     setRejection(null);
 
     if (person === null) {
-      create.mutate(values, { onSuccess: onSaved, onError: reject });
+      create.mutate(values, {
+        onSuccess: (created: CreatedPerson) => landOnPerson(created.personId),
+        onError: reject,
+      });
 
       return;
     }
 
-    update.mutate(values, {
-      onSuccess: () => {
-        onSaved({ personId: person.personId });
-      },
-      onError: reject,
-    });
+    update.mutate(values, { onSuccess: () => landOnPerson(person.personId), onError: reject });
   });
-
-  const birthDate = form.watch('birthDate');
-  const contactVisibleToMembers = form.watch('contactVisibleToMembers');
 
   return {
     form,
     errors: form.formState.errors,
-    submit: (event) => {
-      void handleFormSubmit(event);
-    },
-    birthDate,
+    birthDate: form.watch('birthDate'),
     setBirthDate: (value) => {
       form.setValue('birthDate', value, { shouldDirty: true });
     },
-    contactVisibleToMembers,
-    setContactVisibleToMembers: (value) => {
-      form.setValue('contactVisibleToMembers', value, { shouldDirty: true });
-    },
+    isDirty: form.formState.isDirty,
     isSaving: create.isPending || update.isPending,
     rejection,
+    actionLabel: person === null ? CREATE_LABEL : SAVE_LABEL,
+    submit: () => {
+      void handleFormSubmit();
+    },
   };
 };

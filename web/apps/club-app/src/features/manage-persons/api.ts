@@ -18,7 +18,6 @@ import {
   requestFeeReductionCreate,
   requestFeeReductionUpdate,
   requestMembershipCreate,
-  requestMembershipEnd,
   requestMembershipUpdate,
   requestPauseCreate,
   requestPauseUpdate,
@@ -32,7 +31,6 @@ import type {
   CreatedMembership,
   CreatedPause,
   CreatedPerson,
-  EndMembershipForm,
   FeeReductionForm,
   MembershipForm,
   PauseForm,
@@ -122,6 +120,7 @@ export const useCreateMembershipMutation = (
 
 export interface MembershipUpdateInput extends MembershipForm {
   membershipId: number;
+  wasOpen: boolean;
 }
 
 export const useUpdateMembershipMutation = (
@@ -140,33 +139,13 @@ export const useUpdateMembershipMutation = (
           accessToken,
         ),
       ),
-    onSuccess: () => {
-      raiseNotice({ tone: 'success', message: MEMBERSHIP_SAVED_MESSAGE });
-      refreshPerson(queryClient, personId);
-    },
-  });
-};
-
-export interface MembershipEndInput extends EndMembershipForm {
-  membershipId: number;
-}
-
-export const useEndMembershipMutation = (
-  personId: number,
-): UseMutationResult<void, Error, MembershipEndInput> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: (input: MembershipEndInput) =>
-      withFreshAccessToken((accessToken) =>
-        requestMembershipEnd(personId, input.membershipId, { endedOn: input.endedOn }, accessToken),
-      ),
     onSuccess: (_result, input) => {
-      raiseNotice({
-        tone: 'success',
-        message: toMembershipEndedMessage(input.endedOn, toIsoDay(new Date())),
-      });
+      const message =
+        input.wasOpen && input.endedOn !== null
+          ? toMembershipEndedMessage(input.endedOn, toIsoDay(new Date()))
+          : MEMBERSHIP_SAVED_MESSAGE;
+
+      raiseNotice({ tone: 'success', message });
       refreshPerson(queryClient, personId);
     },
   });

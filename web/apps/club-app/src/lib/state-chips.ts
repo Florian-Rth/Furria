@@ -70,8 +70,6 @@ export const GROUP_ADMIN_CHIP: StateChip = { label: 'Gruppen-Admin', tone: 'acce
 
 export const MY_GROUP_CHIP: StateChip = { label: 'deine Gruppe', tone: 'ink', dot: false };
 
-export const READ_ONLY_CHIP: StateChip = { label: 'nur Ansicht', tone: 'neutral', dot: false };
-
 export const WITHHELD_CHIP: StateChip = {
   label: 'nicht freigegeben',
   tone: 'neutral',

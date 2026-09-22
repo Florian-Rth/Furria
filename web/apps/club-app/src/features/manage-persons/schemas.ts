@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { AppSearchSchema } from '@/features/session';
 import { GroupRefSchema, MembershipStateSchema, RoleRefSchema } from '@/lib/api/schemas';
 
 export const FeeReductionBasisSchema = z.enum(['minor', 'school', 'apprenticeship', 'studies']);
@@ -128,8 +129,10 @@ export const MembershipFormSchema = z.object({
 });
 export type MembershipForm = z.infer<typeof MembershipFormSchema>;
 
-export const EndMembershipFormSchema = z.object({ endedOn: z.iso.date() });
-export type EndMembershipForm = z.infer<typeof EndMembershipFormSchema>;
+export const PauseNewSearchSchema = AppSearchSchema.extend({
+  membership: z.string().optional().catch(undefined),
+});
+export type PauseNewSearch = z.infer<typeof PauseNewSearchSchema>;
 
 export const PauseFormSchema = z.object({
   firstSessionYear: z.number().int(),

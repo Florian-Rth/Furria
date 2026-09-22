@@ -1,16 +1,14 @@
-import type { KkScreenOrigin } from '@furria/ui';
 import { KkScreen } from '@furria/ui';
 import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { RequirePermission } from '@/features/session';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { usePersonQuery } from '../api';
-import { toPersonHeadline, toPersonId } from '../manage-persons-labels';
+import { PERSONS_ORIGIN, toPersonHeadline, toPersonId } from '../manage-persons-labels';
 import { PersonEditBody } from './PersonEditBody';
 import { PersonEditHeader } from './PersonEditHeader';
 
 const PERSON_ROUTE_ID = '/_app/manage/persons_/$personId';
-const PERSONS_ORIGIN: KkScreenOrigin = { label: 'Personenverwaltung', to: '/manage/persons' };
 
 export const PersonEditPage: FC = () => {
   const { personId } = useParams({ from: PERSON_ROUTE_ID });

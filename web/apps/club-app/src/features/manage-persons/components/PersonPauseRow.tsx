@@ -1,60 +1,21 @@
-import { KkButton, KkChip, KkFactRow } from '@furria/ui';
+import { KkChip, KkFactRow } from '@furria/ui';
+import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { toLandingKey } from '@/features/write';
 import { currentSessionYear } from '@/lib/club';
 import { toSessionPeriodChip } from '@/lib/state-chips';
-import type { FactEditor } from '../hooks/use-fact-editor';
-import {
-  PAUSE_ROW_TITLE,
-  SESSION_SPAN_LABEL,
-  toPauseEditActionLabel,
-  toPauseSpan,
-} from '../manage-persons-labels';
+import { PAUSE_ROW_TITLE, SESSION_SPAN_LABEL, toPauseSpan } from '../manage-persons-labels';
 import type { PersonPause } from '../schemas';
-import { PauseEditor } from './PauseEditor';
 
-const EDIT_LABEL = 'Ändern';
+const PAUSE_ROUTE = '/manage/persons/$personId/pauses/$pauseId';
 
 interface PersonPauseRowProps {
   personId: number;
-  membershipId: number;
-  firstName: string;
-  pause: PersonPause | null;
-  editor: FactEditor;
+  pause: PersonPause;
+  highlight?: boolean;
 }
 
-export const PersonPauseRow: FC<PersonPauseRowProps> = ({
-  personId,
-  membershipId,
-  firstName,
-  pause,
-  editor,
-}) => {
-  const isEditing =
-    editor.pause !== null &&
-    editor.pause.membershipId === membershipId &&
-    editor.pause.pauseId === (pause?.pauseId ?? null);
-
-  const startEdit = (): void => {
-    editor.openPause(membershipId, pause?.pauseId ?? null);
-  };
-
-  if (isEditing) {
-    return (
-      <PauseEditor
-        personId={personId}
-        membershipId={membershipId}
-        firstName={firstName}
-        pause={pause}
-        onClose={editor.close}
-        onSaved={editor.close}
-      />
-    );
-  }
-
-  if (pause === null) {
-    return null;
-  }
-
+export const PersonPauseRow: FC<PersonPauseRowProps> = ({ personId, pause, highlight = false }) => {
   const periodChip = toSessionPeriodChip(
     pause.firstSessionYear,
     pause.lastSessionYear,
@@ -68,17 +29,6 @@ export const PersonPauseRow: FC<PersonPauseRowProps> = ({
       </KkChip>
     );
 
-  const actions = (
-    <KkButton
-      size="small"
-      variant="text"
-      ariaLabel={toPauseEditActionLabel(pause)}
-      onClick={startEdit}
-    >
-      {EDIT_LABEL}
-    </KkButton>
-  );
-
   return (
     <KkFactRow
       title={PAUSE_ROW_TITLE}
@@ -86,7 +36,11 @@ export const PersonPauseRow: FC<PersonPauseRowProps> = ({
       spanLabel={SESSION_SPAN_LABEL}
       chip={chip}
       tone="gold"
-      actions={actions}
+      highlight={highlight}
+      landing={toLandingKey('pause', pause.pauseId)}
+      component={Link}
+      to={PAUSE_ROUTE}
+      params={{ personId: String(personId), pauseId: String(pause.pauseId) }}
     />
   );
 };

@@ -1,18 +1,9 @@
-import {
-  KkChip,
-  KkEmptyState,
-  KkFactRow,
-  KkNote,
-  KkPanel,
-  KkPanelSection,
-  KkSinceRow,
-} from '@furria/ui';
+import { KkEmptyState, KkFactRow, KkNote, KkPanel, KkPanelSection, KkSinceRow } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { usePermissions } from '@/features/session';
 import { formatPeriod, formatSinceSession } from '@/lib/membership-labels';
-import { READ_ONLY_CHIP } from '@/lib/state-chips';
 import { GROUPS_POINTER, PERSON_SECTION_TITLES, splitPersonGroups } from '../manage-persons-labels';
 import type { PersonGroup } from '../schemas';
 
@@ -77,18 +68,8 @@ export const PersonGroupsPanel: FC<PersonGroupsPanelProps> = ({ groups, firstNam
       </Stack>
     );
 
-  const readOnlyChip = (
-    <KkChip tone={READ_ONLY_CHIP.tone} dot={READ_ONLY_CHIP.dot}>
-      {READ_ONLY_CHIP.label}
-    </KkChip>
-  );
-
   return (
-    <KkPanelSection
-      title={PERSON_SECTION_TITLES.groups}
-      meta={readOnlyChip}
-      description={GROUPS_POINTER}
-    >
+    <KkPanelSection title={PERSON_SECTION_TITLES.groups} description={GROUPS_POINTER}>
       <Stack sx={{ gap: 1.25, minWidth: 0 }}>
         {runningPanel}
         {pastPanel}
