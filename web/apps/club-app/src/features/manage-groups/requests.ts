@@ -24,29 +24,6 @@ export const requestGroupCreation = (form: GroupForm, accessToken: string): Prom
     accessToken,
   });
 
-export const requestGroupUpdate = (
-  groupId: number,
-  form: GroupForm,
-  accessToken: string,
-): Promise<void> =>
-  apiFetch(`/api/manage/groups/${groupId}`, {
-    method: 'PUT',
-    body: {
-      name: form.name,
-      groupKindId: toGroupKindId(form.groupKindId),
-    },
-    schema: NoContentSchema,
-    accessToken,
-  });
-
-export const requestGroupArchival = (groupId: number, accessToken: string): Promise<void> =>
-  apiFetch(`/api/manage/groups/${groupId}/archive`, {
-    method: 'POST',
-    body: {},
-    schema: NoContentSchema,
-    accessToken,
-  });
-
 export const requestGroupRestoration = (groupId: number, accessToken: string): Promise<void> =>
   apiFetch(`/api/manage/groups/${groupId}/restore`, {
     method: 'POST',

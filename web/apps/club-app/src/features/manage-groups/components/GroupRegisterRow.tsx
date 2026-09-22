@@ -1,15 +1,18 @@
-import { KkRecordName, KkRegisterRow } from '@furria/ui';
+import { KkButton, KkRecordName, KkRegisterRow } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { useState } from 'react';
 import { toGroupTone } from '@/features/groups';
+import { toLandingKey } from '@/features/write';
 import { toGroupFactsLine, toGroupRegisterFlags } from '../manage-groups-labels';
 import type { ManagedGroupSummary } from '../schemas';
-import { GroupRegisterActions } from './GroupRegisterActions';
 import { GroupRegisterFacts } from './GroupRegisterFacts';
 import { GroupRegisterFlags } from './GroupRegisterFlags';
+import { RestoreGroupDialog } from './RestoreGroupDialog';
 
 const HUB_PATH = '/groups/$groupId';
+const RESTORE_LABEL = 'Zurückholen';
 
 const ROW = {
   gap: { xs: 1, desktop: 2.5 },
@@ -25,71 +28,61 @@ const ACTIONS = { minWidth: 0, flexBasis: { xs: '100%', desktop: 'auto' } } as c
 
 interface GroupRegisterRowProps {
   group: ManagedGroupSummary;
-  onAppointAdmin: (groupId: number) => void;
-  onEdit: (groupId: number) => void;
-  onArchive: (groupId: number) => void;
-  onRestore: (groupId: number) => void;
+  highlight: boolean;
 }
 
-export const GroupRegisterRow: FC<GroupRegisterRowProps> = ({
-  group,
-  onAppointAdmin,
-  onEdit,
-  onArchive,
-  onRestore,
-}) => {
+export const GroupRegisterRow: FC<GroupRegisterRowProps> = ({ group, highlight }) => {
   const isArchived = group.archivedOn !== null;
   const tone = isArchived ? undefined : toGroupTone(group.groupId, group.tone);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
-  const appoint = (): void => {
-    onAppointAdmin(group.groupId);
+  const openConfirm = (): void => {
+    setConfirmOpen(true);
   };
 
-  const edit = (): void => {
-    onEdit(group.groupId);
+  const closeConfirm = (): void => {
+    setConfirmOpen(false);
   };
 
-  const archive = (): void => {
-    onArchive(group.groupId);
-  };
+  const trailing = isArchived ? (
+    <Stack sx={ACTIONS}>
+      <KkButton
+        size="small"
+        variant="outlined"
+        ariaLabel={`${group.name} ${RESTORE_LABEL}`}
+        onClick={openConfirm}
+      >
+        {RESTORE_LABEL}
+      </KkButton>
+    </Stack>
+  ) : null;
 
-  const restore = (): void => {
-    onRestore(group.groupId);
-  };
-
-  const name = isArchived ? (
-    <KkRecordName name={group.name} dimmed />
-  ) : (
-    <KkRecordName
-      name={group.name}
-      component={Link}
-      to={HUB_PATH}
-      params={{ groupId: String(group.groupId) }}
-    />
-  );
+  const restoreDialog = isArchived ? (
+    <RestoreGroupDialog group={group} open={confirmOpen} onClose={closeConfirm} />
+  ) : null;
 
   return (
-    <KkRegisterRow groupTone={tone}>
-      <Stack direction="row" sx={ROW}>
-        <Stack sx={IDENTITY}>
-          <Stack direction="row" sx={HEADLINE}>
-            {name}
-            <GroupRegisterFlags flags={toGroupRegisterFlags(group)} />
+    <>
+      <KkRegisterRow
+        groupTone={tone}
+        highlight={highlight}
+        landing={toLandingKey('group', group.groupId)}
+        component={isArchived ? undefined : Link}
+        to={isArchived ? undefined : HUB_PATH}
+        params={isArchived ? undefined : { groupId: String(group.groupId) }}
+      >
+        <Stack direction="row" sx={ROW}>
+          <Stack sx={IDENTITY}>
+            <Stack direction="row" sx={HEADLINE}>
+              <KkRecordName name={group.name} dimmed={isArchived} />
+              <GroupRegisterFlags flags={toGroupRegisterFlags(group)} />
+            </Stack>
+            <GroupRegisterFacts admins={group.admins} line={toGroupFactsLine(group)} />
           </Stack>
-          <GroupRegisterFacts admins={group.admins} line={toGroupFactsLine(group)} />
+          {trailing}
         </Stack>
-        <Stack sx={ACTIONS}>
-          <GroupRegisterActions
-            groupName={group.name}
-            isArchived={isArchived}
-            needsAdmin={group.admins.length === 0}
-            onAppointAdmin={appoint}
-            onEdit={edit}
-            onArchive={archive}
-            onRestore={restore}
-          />
-        </Stack>
-      </Stack>
-    </KkRegisterRow>
+      </KkRegisterRow>
+      {restoreDialog}
+    </>
   );
 };

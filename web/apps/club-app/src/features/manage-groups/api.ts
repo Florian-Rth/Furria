@@ -6,24 +6,20 @@ import { GROUP_KINDS_QUERY_KEY } from '@/features/group-kinds';
 import { GROUPS_QUERY_KEY } from '@/features/groups';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import {
-  toGroupArchivedMessage,
   toGroupCreatedMessage,
   toGroupKindArchivedMessage,
   toGroupKindCreatedMessage,
   toGroupKindRestoredMessage,
   toGroupKindSavedMessage,
   toGroupRestoredMessage,
-  toGroupSavedMessage,
 } from './manage-groups-labels';
 import {
-  requestGroupArchival,
   requestGroupCreation,
   requestGroupKindArchival,
   requestGroupKindCreation,
   requestGroupKindRestoration,
   requestGroupKindUpdate,
   requestGroupRestoration,
-  requestGroupUpdate,
   requestManagedGroups,
 } from './requests';
 import type {
@@ -39,11 +35,6 @@ export const MANAGED_GROUPS_QUERY_KEY = ['manage', 'groups'] as const;
 export interface GroupMutationInput {
   groupId: number;
   name: string;
-}
-
-export interface UpdateGroupInput {
-  groupId: number;
-  form: GroupForm;
 }
 
 export interface GroupKindNameInput {
@@ -66,14 +57,6 @@ const refreshGroups = (queryClient: QueryClient): void => {
   void queryClient.invalidateQueries({ queryKey: MY_GROUPS_QUERY_KEY });
 };
 
-export const useRefreshManagedGroups = (): (() => void) => {
-  const queryClient = useQueryClient();
-
-  return () => {
-    refreshGroups(queryClient);
-  };
-};
-
 export const useManagedGroupsQuery = (): UseQueryResult<ManagedGroupsResponse, Error> =>
   useQuery({
     queryKey: MANAGED_GROUPS_QUERY_KEY,
@@ -89,36 +72,6 @@ export const useCreateGroupMutation = (): UseMutationResult<CreatedGroup, Error,
       withFreshAccessToken((accessToken) => requestGroupCreation(form, accessToken)),
     onSuccess: (_created, form) => {
       raiseNotice({ tone: 'success', message: toGroupCreatedMessage(form.name) });
-      refreshGroups(queryClient);
-    },
-  });
-};
-
-export const useUpdateGroupMutation = (): UseMutationResult<void, Error, UpdateGroupInput> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: (input: UpdateGroupInput) =>
-      withFreshAccessToken((accessToken) =>
-        requestGroupUpdate(input.groupId, input.form, accessToken),
-      ),
-    onSuccess: (_result, input) => {
-      raiseNotice({ tone: 'success', message: toGroupSavedMessage(input.form.name) });
-      refreshGroups(queryClient);
-    },
-  });
-};
-
-export const useArchiveGroupMutation = (): UseMutationResult<void, Error, GroupMutationInput> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: (input: GroupMutationInput) =>
-      withFreshAccessToken((accessToken) => requestGroupArchival(input.groupId, accessToken)),
-    onSuccess: (_result, input) => {
-      raiseNotice({ tone: 'success', message: toGroupArchivedMessage(input.name) });
       refreshGroups(queryClient);
     },
   });

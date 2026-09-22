@@ -18,26 +18,27 @@ const CANCEL_LABEL = 'Abbrechen';
 const CONFIRM_LABEL = 'Aktivieren';
 
 interface RestoreGroupKindDialogProps {
-  kind: GroupKindEntry | null;
+  kind: GroupKindEntry;
+  open: boolean;
   onClose: () => void;
 }
 
-export const RestoreGroupKindDialog: FC<RestoreGroupKindDialogProps> = ({ kind, onClose }) => {
-  const mutation = useRestoreGroupKindMutation(kind?.groupKindId ?? 0);
+export const RestoreGroupKindDialog: FC<RestoreGroupKindDialogProps> = ({
+  kind,
+  open,
+  onClose,
+}) => {
+  const mutation = useRestoreGroupKindMutation(kind.groupKindId);
   const control = useGroupKindConfirm({
     mutation,
-    kindName: kind?.name ?? '',
+    kindName: kind.name,
     onDone: onClose,
   });
   const today = formatIsoDay(toIsoDay(new Date()));
 
-  if (kind === null) {
-    return null;
-  }
-
   return (
     <KkConfirmDialog
-      open
+      open={open}
       onClose={onClose}
       onConfirm={control.submit}
       eyebrow={RESTORE_GROUP_KIND_EYEBROW}

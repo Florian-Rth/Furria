@@ -1,4 +1,5 @@
 import { KkButton, KkEmptyState, KkIcon } from '@furria/ui';
+import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import {
   CREATE_GROUP_KIND_LABEL,
@@ -6,16 +7,18 @@ import {
   GROUP_KINDS_EMPTY_TITLE,
 } from '../manage-groups-labels';
 
-interface GroupKindsEmptyProps {
-  onCreate: () => void;
-}
+const NEW_GROUP_KIND_ROUTE = '/manage/groups/kinds/new';
 
-export const GroupKindsEmpty: FC<GroupKindsEmptyProps> = ({ onCreate }) => (
+export const GroupKindsEmpty: FC = () => (
   <KkEmptyState
     title={GROUP_KINDS_EMPTY_TITLE}
     description={GROUP_KINDS_EMPTY_DESCRIPTION}
     action={
-      <KkButton startIcon={<KkIcon name="add" size="small" />} onClick={onCreate}>
+      <KkButton
+        startIcon={<KkIcon name="add" size="small" />}
+        component={Link}
+        to={NEW_GROUP_KIND_ROUTE}
+      >
         {CREATE_GROUP_KIND_LABEL}
       </KkButton>
     }

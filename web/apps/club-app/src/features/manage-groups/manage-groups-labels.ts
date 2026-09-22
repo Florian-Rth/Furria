@@ -1,9 +1,22 @@
-import type { KkChipTone, KkConfirmFact } from '@furria/ui';
+import type { KkChipTone, KkConfirmFact, KkScreenOrigin } from '@furria/ui';
 import { toGroupKindLabel } from '@/features/groups';
 import type { PersonRef } from '@/lib/api/schemas';
 import { toGroupMembersLabel } from '@/lib/group-sections';
 import { formatIsoDay } from '@/lib/membership-labels';
 import type { ManagedGroupKind, ManagedGroupSummary } from './schemas';
+
+const MANAGE_GROUPS_PATH = '/manage/groups';
+const GROUP_KIND_ID_PATTERN = /^[1-9]\d*$/;
+
+export const MANAGE_GROUPS_TITLE = 'Gruppenverwaltung';
+
+export const MANAGE_GROUPS_ORIGIN: KkScreenOrigin = {
+  label: MANAGE_GROUPS_TITLE,
+  to: MANAGE_GROUPS_PATH,
+};
+
+export const toGroupKindEntryId = (raw: string): number | null =>
+  GROUP_KIND_ID_PATTERN.test(raw) ? Number(raw) : null;
 
 export interface ManagedGroupsEmptyCopy {
   title: string;
@@ -106,17 +119,6 @@ export const toGroupRegisterFlags = (group: ManagedGroupSummary): GroupRegisterF
   return flags;
 };
 
-export const findManagedGroup = (
-  groups: readonly ManagedGroupSummary[],
-  groupId: number | null,
-): ManagedGroupSummary | null => {
-  if (groupId === null) {
-    return null;
-  }
-
-  return groups.find((group) => group.groupId === groupId) ?? null;
-};
-
 const NOBODY_LINE = 'Es ist gerade niemand eingetragen.';
 
 const toZugehoerigkeitenClause = (
@@ -133,22 +135,6 @@ const toZugehoerigkeitenClause = (
 
   return `Die ${count} Zugehörigkeiten ${pluralVerb}.`;
 };
-
-export const toArchivedSinceLine = (archivedOn: string): string =>
-  `Archiviert am ${formatIsoDay(archivedOn)}. Zum Bearbeiten musst du die Gruppe zuerst zurückholen.`;
-
-export const toArchiveQuestion = (name: string): string => `${name} archivieren?`;
-
-export const ARCHIVE_EYEBROW = 'Gruppe archivieren';
-export const ARCHIVE_EXPLANATION =
-  'Archivieren löscht nichts: Die Zugehörigkeiten bleiben bestehen — die Gruppe zählt nur nicht mehr mit. Sie verschwindet aus dem Verzeichnis, ihre Geschichte bleibt in den Profilen stehen.';
-
-export const toArchiveConsequence = (
-  name: string,
-  memberCount: number,
-  todayLabel: string,
-): string =>
-  `Ab dem ${todayLabel} steht ${name} nicht mehr im Verzeichnis. ${toZugehoerigkeitenClause(memberCount, 'bleibt bestehen', 'bleiben bestehen')}`;
 
 export const toRestoreQuestion = (name: string): string => `${name} wieder aktivieren?`;
 
@@ -172,15 +158,12 @@ export const toGroupFacts = (group: ManagedGroupSummary, dayLabel: string): KkCo
 
 export const toGroupCreatedMessage = (name: string): string => `${name} ist angelegt.`;
 
-export const toGroupSavedMessage = (name: string): string => `${name} ist gespeichert.`;
-
-export const toGroupArchivedMessage = (name: string): string => `${name} ist archiviert.`;
-
 export const toGroupRestoredMessage = (name: string): string => `${name} ist wieder aktiv.`;
 
 export const GROUP_KINDS_PANEL_TITLE = 'Gruppenarten';
 
-export const CREATE_GROUP_KIND_LABEL = 'Gruppenart anlegen';
+export const CREATE_GROUP_KIND_LABEL = 'Gruppenart hinzufügen';
+export const CREATE_GROUP_KIND_PILL_LABEL = 'Gruppenart';
 
 export const GROUP_KINDS_EMPTY_TITLE = 'NOCH KEINE GRUPPENART';
 
@@ -218,6 +201,28 @@ const runningFirstThenByName = (left: GroupKindEntry, right: GroupKindEntry): nu
 
 export const toGroupKindEntries = (kinds: readonly ManagedGroupKind[]): GroupKindEntry[] =>
   kinds.map(toGroupKindEntry).sort(runningFirstThenByName);
+
+export const findGroupKindEntry = (
+  entries: readonly GroupKindEntry[],
+  groupKindId: number | null,
+): GroupKindEntry | null => {
+  if (groupKindId === null) {
+    return null;
+  }
+
+  return entries.find((entry) => entry.groupKindId === groupKindId) ?? null;
+};
+
+const GROUP_KIND_ROUTE = '/manage/groups/kinds/$groupKindId';
+
+export const toGroupKindEditorOrigin = (entry: GroupKindEntry | null): KkScreenOrigin =>
+  entry === null
+    ? MANAGE_GROUPS_ORIGIN
+    : {
+        label: entry.name,
+        to: GROUP_KIND_ROUTE,
+        params: { groupKindId: String(entry.groupKindId) },
+      };
 
 export const isGroupKindArchivable = (entry: GroupKindEntry): boolean =>
   !entry.isArchived && entry.groupCount === 0;
