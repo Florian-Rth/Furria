@@ -1,4 +1,4 @@
-import type { KkConfirmFact } from '@furria/ui';
+import type { KkConfirmFact, KkScreenOrigin } from '@furria/ui';
 import { relevantSessionYear } from '@/lib/club';
 import { formatSessionLabel, formatSessionNumber } from '@/lib/membership-labels';
 import type { StateChip } from '@/lib/state-chips';
@@ -9,10 +9,37 @@ const QUOTE_OPEN = '„';
 const QUOTE_CLOSE = '“';
 
 export const MANAGE_SESSIONS_TITLE = 'Sessionseinträge';
-export const MANAGE_SESSIONS_CREATE_LABEL = 'Session eintragen';
+export const MANAGE_SESSIONS_CREATE_LABEL = 'Session hinzufügen';
 export const MANAGE_SESSIONS_LOADING_LABEL = 'Die Sessionseinträge werden geladen';
 export const MANAGE_SESSIONS_ERROR_TITLE = 'SESSIONSEINTRÄGE NICHT GELADEN';
 export const MANAGE_SESSIONS_RETRY_LABEL = 'Erneut laden';
+
+export const SESSIONS_ORIGIN: KkScreenOrigin = {
+  label: MANAGE_SESSIONS_TITLE,
+  to: '/manage/sessions',
+};
+
+const SESSION_RECORD_ID_PATTERN = /^[1-9]\d*$/;
+
+export const toSessionRecordId = (raw: string): number | null =>
+  SESSION_RECORD_ID_PATTERN.test(raw) ? Number(raw) : null;
+
+export const findSessionRecord = (
+  records: readonly SessionRecordSummary[],
+  sessionId: number | null,
+): SessionRecordSummary | null => {
+  if (sessionId === null) {
+    return null;
+  }
+
+  return records.find((record) => record.sessionId === sessionId) ?? null;
+};
+
+export const SESSION_NOT_FOUND_TITLE = 'NICHT MEHR DA';
+export const SESSION_NOT_FOUND_DESCRIPTION = 'Diesen Sessionseintrag gibt es nicht mehr.';
+
+export const SESSION_EDITOR_DENIED_MESSAGE =
+  'Sessionseinträge und Orte sind an eine Rolle gebunden. Du hast sie gerade nicht.';
 
 export const MANAGE_SESSIONS_EMPTY = {
   title: 'NOCH KEINE SESSION EINGETRAGEN',
@@ -90,12 +117,6 @@ export const toSessionsIntro = (records: readonly SessionRecordSummary[], today:
 
   return `${head} ${tail}`;
 };
-
-export const toSessionEditActionLabel = (record: SessionRecordSummary): string =>
-  `${toSessionRowLabel(record)} bearbeiten`;
-
-export const toSessionDeleteActionLabel = (record: SessionRecordSummary): string =>
-  `${toSessionRowLabel(record)} löschen`;
 
 export const DELETE_EYEBROW = 'Sessionseintrag löschen';
 export const DELETE_EXPLANATION =

@@ -1,10 +1,10 @@
-import { KkButton, KkChip, KkFactRow } from '@furria/ui';
+import { KkChip, KkFactRow } from '@furria/ui';
+import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { toLandingKey, useLanding } from '@/features/write';
 import {
   hasSessionLogo,
   SESSION_SPAN_LABEL,
-  toSessionDeleteActionLabel,
-  toSessionEditActionLabel,
   toSessionLogoLabel,
   toSessionNumberLabel,
   toSessionRowChip,
@@ -14,35 +14,21 @@ import {
 import type { SessionRecordSummary } from '../schemas';
 import { SessionLogoMark } from './SessionLogoMark';
 
-const EDIT_LABEL = 'Bearbeiten';
-const DELETE_LABEL = 'Löschen';
 const LOGO_SIZE = 34;
+const EDIT_ROUTE = '/manage/sessions/$sessionId/edit';
 
 interface SessionRecordRowProps {
   record: SessionRecordSummary;
   today: Date;
-  onEdit: (record: SessionRecordSummary) => void;
-  onDelete: (record: SessionRecordSummary) => void;
 }
 
-export const SessionRecordRow: FC<SessionRecordRowProps> = ({
-  record,
-  today,
-  onEdit,
-  onDelete,
-}) => {
+export const SessionRecordRow: FC<SessionRecordRowProps> = ({ record, today }) => {
+  const { highlightedKey } = useLanding();
+  const landingKey = toLandingKey('session', record.sessionId);
   const seasonChip = toSessionRowChip(record, today);
   const seasonLabel = toSessionSeasonLabel(record.startYear);
   const title = toSessionRowTitle(record);
   const numberLine = toSessionNumberLabel(record.number) ?? undefined;
-
-  const edit = (): void => {
-    onEdit(record);
-  };
-
-  const remove = (): void => {
-    onDelete(record);
-  };
 
   const chip =
     seasonChip === null ? undefined : (
@@ -59,28 +45,6 @@ export const SessionRecordRow: FC<SessionRecordRowProps> = ({
     />
   ) : undefined;
 
-  const actions = (
-    <>
-      <KkButton
-        size="small"
-        variant="text"
-        ariaLabel={toSessionEditActionLabel(record)}
-        onClick={edit}
-      >
-        {EDIT_LABEL}
-      </KkButton>
-      <KkButton
-        size="small"
-        variant="text"
-        tone="danger"
-        ariaLabel={toSessionDeleteActionLabel(record)}
-        onClick={remove}
-      >
-        {DELETE_LABEL}
-      </KkButton>
-    </>
-  );
-
   return (
     <KkFactRow
       title={title}
@@ -88,7 +52,11 @@ export const SessionRecordRow: FC<SessionRecordRowProps> = ({
       spanLabel={SESSION_SPAN_LABEL}
       meta={numberLine}
       chip={chip}
-      actions={actions}
+      component={Link}
+      to={EDIT_ROUTE}
+      params={{ sessionId: String(record.sessionId) }}
+      highlight={highlightedKey === landingKey}
+      landing={landingKey}
     >
       {logoMark}
     </KkFactRow>

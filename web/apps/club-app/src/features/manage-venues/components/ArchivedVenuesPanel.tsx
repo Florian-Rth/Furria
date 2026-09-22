@@ -11,10 +11,9 @@ const LIST_GAP = 1.5;
 
 interface ArchivedVenuesPanelProps {
   venues: readonly ManagedVenue[];
-  onRestore: (venueId: number) => void;
 }
 
-export const ArchivedVenuesPanel: FC<ArchivedVenuesPanelProps> = ({ venues, onRestore }) => {
+export const ArchivedVenuesPanel: FC<ArchivedVenuesPanelProps> = ({ venues }) => {
   if (venues.length === 0) {
     return null;
   }
@@ -23,7 +22,7 @@ export const ArchivedVenuesPanel: FC<ArchivedVenuesPanelProps> = ({ venues, onRe
     <KkPanelSection title={VENUE_SECTION_TITLES.archived} description={ARCHIVED_DESCRIPTION}>
       <Stack sx={{ gap: LIST_GAP, minWidth: 0 }}>
         {venues.map((venue) => (
-          <ArchivedVenueCard key={venue.venueId} venue={venue} onRestore={onRestore} />
+          <ArchivedVenueCard key={venue.venueId} venue={venue} />
         ))}
       </Stack>
     </KkPanelSection>

@@ -7,11 +7,7 @@ import { ManagedVenuesView } from './ManagedVenuesView';
 
 const LOADING_LABEL = 'Die Orte werden geladen';
 
-interface ManagedVenuesBodyProps {
-  onCreate: () => void;
-}
-
-export const ManagedVenuesBody: FC<ManagedVenuesBodyProps> = ({ onCreate }) => {
+export const ManagedVenuesBody: FC = () => {
   const venues = useManagedVenuesQuery();
   const errorMessage = toManagedVenuesErrorMessage(venues.error);
 
@@ -20,7 +16,7 @@ export const ManagedVenuesBody: FC<ManagedVenuesBodyProps> = ({ onCreate }) => {
   };
 
   if (venues.data !== undefined) {
-    return <ManagedVenuesView venues={venues.data.venues} onCreate={onCreate} />;
+    return <ManagedVenuesView venues={venues.data.venues} />;
   }
   if (errorMessage !== null) {
     return <ManagedVenuesError message={errorMessage} onRetry={reload} />;

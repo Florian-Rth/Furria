@@ -1,14 +1,30 @@
-import type { KkConfirmFact } from '@furria/ui';
+import type { KkConfirmFact, KkScreenOrigin } from '@furria/ui';
 import { formatIsoDay } from '@/lib/membership-labels';
 import type { ManagedVenue } from './schemas';
 
 export const MANAGE_VENUES_TITLE = 'Orte';
-export const MANAGE_VENUES_CREATE_LABEL = 'Ort eintragen';
+export const MANAGE_VENUES_CREATE_LABEL = 'Ort hinzufügen';
+
+export const VENUES_ORIGIN: KkScreenOrigin = { label: MANAGE_VENUES_TITLE, to: '/manage/venues' };
 
 export const VENUE_SECTION_TITLES = {
   running: 'Im Verzeichnis',
   archived: 'Archiviert',
 } as const;
+
+const VENUE_ID_PATTERN = /^[1-9]\d*$/;
+
+export const toVenueId = (raw: string): number | null =>
+  VENUE_ID_PATTERN.test(raw) ? Number(raw) : null;
+
+export const VENUE_NOT_FOUND_TITLE = 'NICHT MEHR DA';
+export const VENUE_NOT_FOUND_DESCRIPTION = 'Diesen Ort gibt es nicht mehr.';
+
+export const VENUE_EDITOR_DENIED_MESSAGE =
+  'Sessionseinträge und Orte sind an eine Rolle gebunden. Du hast sie gerade nicht.';
+
+export const VENUE_EDIT_LABEL = 'Bearbeiten';
+export const ARCHIVE_VENUE_LABEL = 'Ort archivieren';
 
 export interface ManagedVenuesEmptyCopy {
   title: string;

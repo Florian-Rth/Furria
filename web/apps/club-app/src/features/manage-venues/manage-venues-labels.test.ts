@@ -7,6 +7,7 @@ import {
   toRestoreConsequence,
   toVenueAddressLine,
   toVenueFacts,
+  toVenueId,
 } from './manage-venues-labels';
 import type { ManagedVenue } from './schemas';
 
@@ -70,6 +71,20 @@ describe('partitionVenues', () => {
 
   it('puts every Ort into the archived bank when none is running', () => {
     expect(idsOf(partitionVenues([LAGER, MAGAZIN]).running)).toEqual([]);
+  });
+});
+
+describe('toVenueId', () => {
+  it.each([
+    { case: 'a positive id', raw: '3', expected: 3 },
+    { case: 'a long id', raw: '1204', expected: 1204 },
+    { case: 'zero', raw: '0', expected: null },
+    { case: 'a negative id', raw: '-3', expected: null },
+    { case: 'a word', raw: 'turnhalle', expected: null },
+    { case: 'a decimal', raw: '3.5', expected: null },
+    { case: 'nothing', raw: '', expected: null },
+  ])('reads $case', ({ raw, expected }) => {
+    expect(toVenueId(raw)).toBe(expected);
   });
 });
 

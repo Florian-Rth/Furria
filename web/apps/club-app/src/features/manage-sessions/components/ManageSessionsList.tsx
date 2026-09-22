@@ -1,51 +1,58 @@
-import { KkButton, KkEmptyState, KkIcon, KkPanel } from '@furria/ui';
+import type { KkPanelAction } from '@furria/ui';
+import { KkButton, KkEmptyState, KkIcon, KkPanel, KkPanelSection } from '@furria/ui';
+import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { MANAGE_SESSIONS_CREATE_LABEL, MANAGE_SESSIONS_EMPTY } from '../manage-sessions-labels';
 import type { SessionRecordSummary } from '../schemas';
 import { SessionRecordRow } from './SessionRecordRow';
 
+const CREATE_ROUTE = '/manage/sessions/new';
+const CREATE_PILL_LABEL = 'Session';
+const SECTION_TITLE = 'Sessionseinträge';
+
 interface ManageSessionsListProps {
   records: readonly SessionRecordSummary[];
   today: Date;
-  onCreate: () => void;
-  onEdit: (record: SessionRecordSummary) => void;
-  onDelete: (record: SessionRecordSummary) => void;
 }
 
-export const ManageSessionsList: FC<ManageSessionsListProps> = ({
-  records,
-  today,
-  onCreate,
-  onEdit,
-  onDelete,
-}) => {
+export const ManageSessionsList: FC<ManageSessionsListProps> = ({ records, today }) => {
+  const action: KkPanelAction = {
+    label: CREATE_PILL_LABEL,
+    icon: 'add',
+    ariaLabel: MANAGE_SESSIONS_CREATE_LABEL,
+    component: Link,
+    to: CREATE_ROUTE,
+  };
+
   if (records.length === 0) {
     return (
-      <KkPanel variant="block">
-        <KkEmptyState
-          title={MANAGE_SESSIONS_EMPTY.title}
-          description={MANAGE_SESSIONS_EMPTY.description}
-          action={
-            <KkButton startIcon={<KkIcon name="add" size="small" />} onClick={onCreate}>
-              {MANAGE_SESSIONS_CREATE_LABEL}
-            </KkButton>
-          }
-        />
-      </KkPanel>
+      <KkPanelSection title={SECTION_TITLE} action={action}>
+        <KkPanel variant="block">
+          <KkEmptyState
+            title={MANAGE_SESSIONS_EMPTY.title}
+            description={MANAGE_SESSIONS_EMPTY.description}
+            action={
+              <KkButton
+                startIcon={<KkIcon name="add" size="small" />}
+                component={Link}
+                to={CREATE_ROUTE}
+              >
+                {MANAGE_SESSIONS_CREATE_LABEL}
+              </KkButton>
+            }
+          />
+        </KkPanel>
+      </KkPanelSection>
     );
   }
 
   return (
-    <KkPanel variant="list">
-      {records.map((record) => (
-        <SessionRecordRow
-          key={record.sessionId}
-          record={record}
-          today={today}
-          onEdit={onEdit}
-          onDelete={onDelete}
-        />
-      ))}
-    </KkPanel>
+    <KkPanelSection title={SECTION_TITLE} action={action}>
+      <KkPanel variant="list">
+        {records.map((record) => (
+          <SessionRecordRow key={record.sessionId} record={record} today={today} />
+        ))}
+      </KkPanel>
+    </KkPanelSection>
   );
 };

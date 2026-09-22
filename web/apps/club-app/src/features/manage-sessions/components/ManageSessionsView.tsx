@@ -10,26 +10,11 @@ const VIEW_GAP = 3;
 interface ManageSessionsViewProps {
   records: readonly SessionRecordSummary[];
   today: Date;
-  onCreate: () => void;
-  onEdit: (record: SessionRecordSummary) => void;
-  onDelete: (record: SessionRecordSummary) => void;
 }
 
-export const ManageSessionsView: FC<ManageSessionsViewProps> = ({
-  records,
-  today,
-  onCreate,
-  onEdit,
-  onDelete,
-}) => (
+export const ManageSessionsView: FC<ManageSessionsViewProps> = ({ records, today }) => (
   <Stack sx={{ gap: VIEW_GAP, minWidth: 0 }}>
-    <ManageSessionsList
-      records={records}
-      today={today}
-      onCreate={onCreate}
-      onEdit={onEdit}
-      onDelete={onDelete}
-    />
+    <ManageSessionsList records={records} today={today} />
     <KkNote>{MANAGE_SESSIONS_FOOTNOTE}</KkNote>
   </Stack>
 );

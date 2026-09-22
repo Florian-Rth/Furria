@@ -1,10 +1,9 @@
-import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { toWriteErrorMessage } from '@/lib/write-error';
-import { useRemoveSessionRecordMutation } from '../api';
-import type { SessionRecordSummary } from '../schemas';
+import { useRestoreVenueMutation } from '../api';
+import type { ManagedVenue } from '../schemas';
 
-export interface SessionRemovalControl {
+export interface VenueRestoreControl {
   isOpen: boolean;
   open: () => void;
   close: () => void;
@@ -13,11 +12,10 @@ export interface SessionRemovalControl {
   submit: () => void;
 }
 
-export const useSessionRemoval = (record: SessionRecordSummary | null): SessionRemovalControl => {
+export const useVenueRestore = (venue: ManagedVenue): VenueRestoreControl => {
   const [isOpen, setIsOpen] = useState(false);
   const [rejection, setRejection] = useState<string | null>(null);
-  const mutation = useRemoveSessionRecordMutation();
-  const navigate = useNavigate();
+  const mutation = useRestoreVenueMutation();
 
   const open = (): void => {
     setRejection(null);
@@ -29,17 +27,12 @@ export const useSessionRemoval = (record: SessionRecordSummary | null): SessionR
   };
 
   const submit = (): void => {
-    if (record === null) {
-      return;
-    }
-
     setRejection(null);
     mutation.mutate(
-      { sessionId: record.sessionId, startYear: record.startYear },
+      { venueId: venue.venueId, name: venue.name },
       {
         onSuccess: () => {
           setIsOpen(false);
-          void navigate({ to: '/manage/sessions' });
         },
         onError: (error) => {
           setRejection(toWriteErrorMessage(error));

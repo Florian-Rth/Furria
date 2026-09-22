@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  findSessionRecord,
   isRelevantSession,
   MISSING_MOTTO_LINE,
+  toSessionRecordId,
   toSessionRowChip,
   toSessionRowLabel,
   toSessionRowTitle,
@@ -20,6 +22,34 @@ const record = (overrides: Partial<SessionRecordSummary>): SessionRecordSummary 
 
 const INSIDE_THE_SESSION = new Date(2026, 0, 15);
 const BETWEEN_SESSIONS = new Date(2026, 6, 1);
+
+describe('toSessionRecordId', () => {
+  it.each([
+    { case: 'a positive id', raw: '3', expected: 3 },
+    { case: 'a long id', raw: '1204', expected: 1204 },
+    { case: 'zero', raw: '0', expected: null },
+    { case: 'a negative id', raw: '-3', expected: null },
+    { case: 'a word', raw: 'session', expected: null },
+    { case: 'a decimal', raw: '3.5', expected: null },
+    { case: 'nothing', raw: '', expected: null },
+  ])('reads $case', ({ raw, expected }) => {
+    expect(toSessionRecordId(raw)).toBe(expected);
+  });
+});
+
+describe('findSessionRecord', () => {
+  it('finds nothing when no Sessionseintrag is targeted', () => {
+    expect(findSessionRecord([record({})], null)).toBeNull();
+  });
+
+  it('finds nothing for an unknown id', () => {
+    expect(findSessionRecord([record({ sessionId: 7 })], 999)).toBeNull();
+  });
+
+  it('finds the targeted Sessionseintrag', () => {
+    expect(findSessionRecord([record({ sessionId: 7 })], 7)?.sessionId).toBe(7);
+  });
+});
 
 describe('toSessionRowLabel', () => {
   it('names the season, the Nº and the Motto', () => {
