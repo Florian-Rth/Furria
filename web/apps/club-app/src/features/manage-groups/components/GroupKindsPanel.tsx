@@ -1,10 +1,8 @@
-import { KkButton, KkIcon, KkPanelSection } from '@furria/ui';
-import Stack from '@mui/material/Stack';
+import { KkButton, KkIcon, KkPanel, KkPanelSection } from '@furria/ui';
 import type { FC } from 'react';
 import { useGroupKindDialogs } from '../hooks/use-group-kind-dialogs';
 import {
   CREATE_GROUP_KIND_LABEL,
-  GROUP_KINDS_PANEL_DESCRIPTION,
   GROUP_KINDS_PANEL_TITLE,
   toGroupKindEntries,
   toGroupKindsIntro,
@@ -12,11 +10,9 @@ import {
 import type { ManagedGroupKind } from '../schemas';
 import { ArchiveGroupKindDialog } from './ArchiveGroupKindDialog';
 import { GroupKindFormDialog } from './GroupKindFormDialog';
-import { GroupKindSection } from './GroupKindSection';
+import { GroupKindRow } from './GroupKindRow';
 import { GroupKindsEmpty } from './GroupKindsEmpty';
 import { RestoreGroupKindDialog } from './RestoreGroupKindDialog';
-
-const SECTION_GAP = 1.5;
 
 interface GroupKindsPanelProps {
   kinds: readonly ManagedGroupKind[];
@@ -26,15 +22,17 @@ export const GroupKindsPanel: FC<GroupKindsPanelProps> = ({ kinds }) => {
   const entries = toGroupKindEntries(kinds);
   const dialogs = useGroupKindDialogs(entries);
 
-  const sections = entries.map((entry) => (
-    <GroupKindSection key={entry.groupKindId} entry={entry} onOpen={dialogs.openFor} />
+  const rows = entries.map((entry) => (
+    <GroupKindRow key={entry.groupKindId} entry={entry} onOpen={dialogs.openFor} />
   ));
 
   const body =
     entries.length === 0 ? (
-      <GroupKindsEmpty onCreate={dialogs.openCreate} />
+      <KkPanel variant="block">
+        <GroupKindsEmpty onCreate={dialogs.openCreate} />
+      </KkPanel>
     ) : (
-      <Stack sx={{ gap: SECTION_GAP, minWidth: 0 }}>{sections}</Stack>
+      <KkPanel variant="list">{rows}</KkPanel>
     );
 
   const isCreating = dialogs.openDialog === 'create';
@@ -56,7 +54,6 @@ export const GroupKindsPanel: FC<GroupKindsPanelProps> = ({ kinds }) => {
       title={GROUP_KINDS_PANEL_TITLE}
       meta={toGroupKindsIntro(entries)}
       action={action}
-      description={GROUP_KINDS_PANEL_DESCRIPTION}
     >
       {body}
       <GroupKindFormDialog

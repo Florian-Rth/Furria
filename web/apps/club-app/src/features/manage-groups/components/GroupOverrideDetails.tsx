@@ -1,4 +1,5 @@
 import type { FC } from 'react';
+import { useState } from 'react';
 import { GroupDetailLayout, GroupHistoryPanel } from '@/features/group-detail';
 import {
   AddAdminDialog,
@@ -15,13 +16,23 @@ import { OverrideMembersPanel } from './OverrideMembersPanel';
 
 interface GroupOverrideDetailsProps {
   group: ManagedGroupDetails;
+  appointToken: number | null;
 }
 
-export const GroupOverrideDetails: FC<GroupOverrideDetailsProps> = ({ group }) => {
+export const GroupOverrideDetails: FC<GroupOverrideDetailsProps> = ({ group, appointToken }) => {
   const dialogs = useOverrideDialogs(group.members, group.admins);
   const refresh = useOverrideRefresh(group.groupId);
   const { isAffiliated } = usePermissions();
   const canManage = group.archivedOn === null;
+  const [servedToken, setServedToken] = useState(appointToken);
+
+  if (servedToken !== appointToken) {
+    setServedToken(appointToken);
+
+    if (appointToken !== null && canManage) {
+      dialogs.openAddAdmin();
+    }
+  }
 
   const membersFocus = useReturnFocus();
   const adminsFocus = useReturnFocus();
@@ -104,7 +115,7 @@ export const GroupOverrideDetails: FC<GroupOverrideDetailsProps> = ({ group }) =
 
   return (
     <>
-      <GroupDetailLayout stacked admins={admins} members={members} history={history} />
+      <GroupDetailLayout stacked adminsFirst admins={admins} members={members} history={history} />
       {tools}
     </>
   );

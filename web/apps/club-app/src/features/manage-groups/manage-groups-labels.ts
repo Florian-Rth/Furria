@@ -1,12 +1,13 @@
-import type { KkConfirmFact, KkFilterOption } from '@furria/ui';
+import type { KkConfirmFact } from '@furria/ui';
+import type { PersonRef } from '@/lib/api/schemas';
 import {
   GROUP_SECTION_TITLES as SHARED_GROUP_SECTION_TITLES,
   toGroupMembersLabel,
 } from '@/lib/group-sections';
 import { formatIsoDay } from '@/lib/membership-labels';
 import type { StateChip } from '@/lib/state-chips';
-import { ARCHIVED_CHIP, NO_ADMIN_CHIP, toRecruitingChip } from '@/lib/state-chips';
-import { normalizeForSearch } from '@/lib/text';
+import { ARCHIVED_CHIP, toRecruitingChip } from '@/lib/state-chips';
+import { isGroupArchived } from './manage-groups-work';
 import type { ManagedGroupKind, ManagedGroupSummary } from './schemas';
 
 export const MANAGE_GROUPS_SECTION_TITLES = {
@@ -30,97 +31,48 @@ export const MANAGED_GROUPS_EMPTY: Record<'filtered' | 'cold', ManagedGroupsEmpt
   },
 };
 
+export const REGISTER_TITLE = 'Verzeichnis';
+
 export const MANAGE_GROUPS_FOOTNOTE =
   'Archivieren löscht nichts: Die Gruppe verschwindet aus dem Verzeichnis, ihre Geschichte bleibt in den Profilen stehen.';
 
-export const toGroupCountLine = (group: ManagedGroupSummary): string =>
-  toGroupMembersLabel(group.memberCount);
+export const APPOINT_ADMIN_LABEL = 'Admin ernennen';
 
-export interface ManagedGroupChips {
-  status: StateChip | null;
-  openness: StateChip;
-}
+export const toAppointAdminActionLabel = (name: string): string =>
+  `Gruppen-Admin für ${name} ernennen`;
 
-export const toManagedGroupChips = (group: ManagedGroupSummary): ManagedGroupChips => {
-  const openness = toRecruitingChip(group.isRecruiting);
-
-  if (group.archivedOn !== null) {
-    return { status: ARCHIVED_CHIP, openness };
+export const toManagedGroupStatusChip = (group: ManagedGroupSummary): StateChip | null => {
+  if (isGroupArchived(group)) {
+    return ARCHIVED_CHIP;
   }
-  if (group.admins.length === 0) {
-    return { status: NO_ADMIN_CHIP, openness };
+  if (group.isRecruiting) {
+    return toRecruitingChip(true);
   }
 
-  return { status: null, openness };
+  return null;
 };
 
-export const ALL_GROUPS_FILTER_ID = 'all';
-export const ACTIVE_GROUPS_FILTER_ID = 'active';
-export const ARCHIVED_GROUPS_FILTER_ID = 'archived';
+export const toGroupSizeLine = toGroupMembersLabel;
 
-export type GroupStatusFilterId =
-  | typeof ALL_GROUPS_FILTER_ID
-  | typeof ACTIVE_GROUPS_FILTER_ID
-  | typeof ARCHIVED_GROUPS_FILTER_ID;
+const toPersonName = (person: PersonRef): string => `${person.firstName} ${person.lastName}`;
 
-export const toGroupStatusFilterId = (raw: string): GroupStatusFilterId => {
-  if (raw === ACTIVE_GROUPS_FILTER_ID || raw === ARCHIVED_GROUPS_FILTER_ID) {
-    return raw;
+export const toGroupAdminsLine = (admins: readonly PersonRef[]): string | null => {
+  const [first] = admins;
+
+  if (first === undefined) {
+    return null;
+  }
+  if (admins.length === 1) {
+    return toPersonName(first);
   }
 
-  return ALL_GROUPS_FILTER_ID;
-};
+  const further = admins.length - 1;
 
-const isArchived = (group: ManagedGroupSummary): boolean => group.archivedOn !== null;
-
-export const countArchived = (groups: readonly ManagedGroupSummary[]): number =>
-  groups.filter(isArchived).length;
-
-export const toGroupStatusFilterOptions = (
-  groups: readonly ManagedGroupSummary[],
-): KkFilterOption[] => {
-  const archived = countArchived(groups);
-
-  return [
-    { id: ALL_GROUPS_FILTER_ID, label: 'Alle', count: groups.length },
-    { id: ACTIVE_GROUPS_FILTER_ID, label: 'im Verzeichnis', count: groups.length - archived },
-    { id: ARCHIVED_GROUPS_FILTER_ID, label: 'archiviert', count: archived },
-  ];
-};
-
-const matchesStatus = (group: ManagedGroupSummary, status: GroupStatusFilterId): boolean => {
-  if (status === ACTIVE_GROUPS_FILTER_ID) {
-    return !isArchived(group);
-  }
-  if (status === ARCHIVED_GROUPS_FILTER_ID) {
-    return isArchived(group);
+  if (further === 1) {
+    return `${toPersonName(first)} und 1 weitere Person`;
   }
 
-  return true;
-};
-
-const matchesQuery = (group: ManagedGroupSummary, needle: string): boolean =>
-  normalizeForSearch(group.name).includes(needle);
-
-const byArchivedLastThenName = (left: ManagedGroupSummary, right: ManagedGroupSummary): number => {
-  if (isArchived(left) !== isArchived(right)) {
-    return isArchived(left) ? 1 : -1;
-  }
-
-  return left.name.localeCompare(right.name, 'de');
-};
-
-export const filterManagedGroups = (
-  groups: readonly ManagedGroupSummary[],
-  query: string,
-  status: GroupStatusFilterId,
-): ManagedGroupSummary[] => {
-  const needle = normalizeForSearch(query.trim());
-  const matched = groups.filter(
-    (group) => matchesStatus(group, status) && (needle === '' || matchesQuery(group, needle)),
-  );
-
-  return matched.sort(byArchivedLastThenName);
+  return `${toPersonName(first)} und ${further} weitere Personen`;
 };
 
 export const findManagedGroup = (
@@ -132,26 +84,6 @@ export const findManagedGroup = (
   }
 
   return groups.find((group) => group.groupId === groupId) ?? null;
-};
-
-export const toManagedGroupsIntro = (groups: readonly ManagedGroupSummary[]): string => {
-  if (groups.length === 0) {
-    return 'Noch steht keine Gruppe im Verzeichnis.';
-  }
-
-  const archived = countArchived(groups);
-  const active = groups.length - archived;
-  const head =
-    active === 1 ? 'Eine Gruppe steht im Verzeichnis.' : `${active} Gruppen stehen im Verzeichnis.`;
-
-  if (archived === 0) {
-    return head;
-  }
-
-  const tail =
-    archived === 1 ? 'Eine weitere ist archiviert.' : `${archived} weitere sind archiviert.`;
-
-  return `${head} ${tail}`;
 };
 
 const NOBODY_LINE = 'Es ist gerade niemand eingetragen.';
@@ -172,7 +104,7 @@ const toZugehoerigkeitenClause = (
 };
 
 export const toArchivedSinceLine = (archivedOn: string): string =>
-  `Archiviert am ${formatIsoDay(archivedOn)}. Zum Bearbeiten musst du die Gruppe zuerst wieder aktivieren.`;
+  `Archiviert am ${formatIsoDay(archivedOn)}. Zum Bearbeiten musst du die Gruppe zuerst zurückholen.`;
 
 export const toArchiveQuestion = (name: string): string => `${name} archivieren?`;
 
@@ -217,11 +149,6 @@ export const toGroupRestoredMessage = (name: string): string => `${name} ist wie
 
 export const GROUP_KINDS_PANEL_TITLE = 'Gruppenarten';
 
-export const GROUP_KINDS_PANEL_DESCRIPTION =
-  'Die Gruppenart ordnet eine Gruppe ein — Garde, Elferrat, Spielmannszug. Sie steht im Verzeichnis und sortiert die Gruppen auf der Startseite.';
-
-export const GROUP_KIND_EYEBROW = 'Gruppenart';
-
 export const CREATE_GROUP_KIND_LABEL = 'Gruppenart anlegen';
 
 export const GROUP_KINDS_EMPTY_TITLE = 'NOCH KEINE GRUPPENART';
@@ -229,10 +156,8 @@ export const GROUP_KINDS_EMPTY_TITLE = 'NOCH KEINE GRUPPENART';
 export const GROUP_KINDS_EMPTY_DESCRIPTION =
   'Leg die erste Gruppenart an. Danach kannst du jeder Gruppe eine zuordnen.';
 
-export const ARCHIVED_GROUP_KIND_NOTE =
-  'Diese Gruppenart lässt sich keiner Gruppe mehr zuordnen. Die Gruppen, die sie einmal trugen, behalten sie. Zum Bearbeiten oder Zuordnen musst du sie zuerst wieder aktivieren.';
-
-export const ARCHIVE_GROUP_KIND_BLOCKED_HINT = 'Erst die Gruppen umsortieren';
+export const toArchiveGroupKindBlockedHint = (groupCount: number): string =>
+  groupCount === 1 ? '1 Gruppe trägt diese Art' : `${groupCount} Gruppen tragen diese Art`;
 
 export interface GroupKindEntry {
   groupKindId: number;
@@ -274,13 +199,13 @@ export const toArchivedGroupKindMeta = (archivedOn: string | null): string | und
 
 export const toGroupKindUsageLine = (groupCount: number): string => {
   if (groupCount === 0) {
-    return 'Keine Gruppe trägt diese Art.';
+    return 'keine Gruppe';
   }
   if (groupCount === 1) {
-    return 'Eine Gruppe trägt diese Art.';
+    return '1 Gruppe';
   }
 
-  return `${groupCount} Gruppen tragen diese Art.`;
+  return `${groupCount} Gruppen`;
 };
 
 export const toGroupKindsIntro = (entries: readonly GroupKindEntry[]): string => {

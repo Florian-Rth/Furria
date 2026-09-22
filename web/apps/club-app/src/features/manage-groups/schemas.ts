@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { GroupDetailAdminSchema, GroupDetailMemberSchema } from '@/features/group-detail';
 import { AppSearchSchema } from '@/features/session';
 import { PersonRefSchema } from '@/lib/api/schemas';
+import { GroupToneSchema } from '@/lib/group-tone';
 
 export const GROUP_NAME_MAX_LENGTH = 80;
 export const GROUP_DESCRIPTION_MAX_LENGTH = 400;
@@ -14,6 +15,7 @@ const KIND_SORT_ORDER_PATTERN = /^(?:[1-9]|[1-9]\d|[1-9]\d\d)$/;
 
 export const ManagedGroupsSearchSchema = AppSearchSchema.extend({
   group: z.coerce.number().int().positive().optional().catch(undefined),
+  work: z.string().optional().catch(undefined),
 });
 export type ManagedGroupsSearch = z.infer<typeof ManagedGroupsSearchSchema>;
 
@@ -24,6 +26,7 @@ export const ManagedGroupSummarySchema = z.object({
   isRecruiting: z.boolean(),
   groupKindId: z.number().int().nullable(),
   groupKindName: z.string().nullable(),
+  tone: GroupToneSchema.nullable().default(null),
   archivedOn: z.iso.date().nullable(),
   memberCount: z.number().int(),
   admins: z.array(PersonRefSchema),

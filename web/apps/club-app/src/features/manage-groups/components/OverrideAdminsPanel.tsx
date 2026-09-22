@@ -37,6 +37,7 @@ export const OverrideAdminsPanel: FC<OverrideAdminsPanelProps> = ({
         admin={admin}
         canManage={canManage}
         viewerIsAffiliated={viewerIsAffiliated}
+        endTone="default"
         onEnd={end}
       />
     );

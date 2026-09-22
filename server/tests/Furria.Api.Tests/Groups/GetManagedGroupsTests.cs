@@ -2,6 +2,7 @@ using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Groups;
 using Furria.Application.Authorization;
+using Furria.Core.Groups;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -101,6 +102,31 @@ public sealed class GetManagedGroupsTests
         var kindergarde = Assert.Single(result.Groups);
         Assert.Equal(ctx.Groups.Groups.IdOf("kindergarde"), kindergarde.GroupId);
         Assert.Equal(ArchivedIn2021, kindergarde.ArchivedOn);
+    }
+
+    [Fact]
+    public async Task Should_CarryTheStoredTone_When_TheGruppeCarriesOne()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Groups(groups =>
+                    groups
+                        .AddGroup("musikzug", "Musikzug", tone: GroupTone.Teal)
+                        .AddGroup("elferrat", "Elferrat")
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var (response, result) = await client.GETAsync<
+            GetManagedGroups,
+            GetManagedGroupsResponse
+        >();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(GroupTone.Teal, result.Groups.Single(group => group.Name == "Musikzug").Tone);
+        Assert.Null(result.Groups.Single(group => group.Name == "Elferrat").Tone);
     }
 
     [Fact]

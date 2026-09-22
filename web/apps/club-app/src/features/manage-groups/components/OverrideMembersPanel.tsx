@@ -40,6 +40,7 @@ export const OverrideMembersPanel: FC<OverrideMembersPanelProps> = ({
         member={member}
         canManage={canManage}
         viewerIsAffiliated={viewerIsAffiliated}
+        endTone="default"
         onEnd={end}
       />
     );

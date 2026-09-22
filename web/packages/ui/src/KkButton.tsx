@@ -2,43 +2,32 @@ import Button from '@mui/material/Button';
 import type { CSSObject, Theme } from '@mui/material/styles';
 import type { ElementType, FC, PropsWithChildren, ReactNode } from 'react';
 import { focusRing } from './internal/focus-ring';
+import { inertLabel, labelSignifier, signifierCommitted } from './internal/label-signifier';
 import { redInk } from './internal/red-ink';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
 type KkButtonVariant = 'contained' | 'outlined' | 'text';
-type KkButtonTone = 'default' | 'danger';
+export type KkButtonTone = 'default' | 'danger';
 type KkButtonSize = 'small' | 'medium' | 'large';
 
 const DANGER_BORDER_MIX = '35%';
 const SMALL_FONT_SIZE = '0.75rem';
-const UNDERLINE_OFFSET = '0.25em';
 
 const dangerBorderColor = (theme: Theme): string =>
   `color-mix(in srgb, ${(theme.vars ?? theme).palette.error.main} ${DANGER_BORDER_MIX}, transparent)`;
 
-const signifierCommitted: CSSObject = {
-  textDecorationStyle: 'solid',
-  textDecorationThickness: kkTokens.line.section,
-};
-
-const labelSignifier: CSSObject = {
-  textDecorationLine: 'underline',
-  textDecorationStyle: 'dotted',
-  textDecorationThickness: kkTokens.line.hair,
-  textUnderlineOffset: UNDERLINE_OFFSET,
-  '&:hover, &:focus-visible': signifierCommitted,
-};
-
 const restingDangerLabel = (theme: Theme): CSSObject => ({
   ...labelSignifier,
   ...redInk(theme),
+  ...inertLabel,
 });
 
 const restingQuietLabel: CSSObject = {
   ...labelSignifier,
   color: 'text.secondary',
   '&:hover, &:focus-visible': { ...signifierCommitted, color: 'text.primary' },
+  ...inertLabel,
 };
 
 const hitArea: CSSObject = {

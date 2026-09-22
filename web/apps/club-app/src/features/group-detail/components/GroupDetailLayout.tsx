@@ -15,9 +15,15 @@ const STACKED_SIZES = {
   history: { xs: 12, desktop: 12 },
 };
 
-const ORDERS = {
+const MEMBERS_FIRST_ORDERS = {
   admins: { xs: 3, desktop: 2 },
   members: { xs: 2, desktop: 3 },
+  history: { xs: 4, desktop: 5 },
+};
+
+const ADMINS_FIRST_ORDERS = {
+  admins: { xs: 2, desktop: 2 },
+  members: { xs: 3, desktop: 3 },
   history: { xs: 4, desktop: 5 },
 };
 
@@ -26,6 +32,7 @@ interface GroupDetailLayoutProps {
   members?: ReactNode;
   history?: ReactNode;
   stacked?: boolean;
+  adminsFirst?: boolean;
 }
 
 export const GroupDetailLayout: FC<GroupDetailLayoutProps> = ({
@@ -33,26 +40,28 @@ export const GroupDetailLayout: FC<GroupDetailLayoutProps> = ({
   members,
   history,
   stacked = false,
+  adminsFirst = false,
 }) => {
   const sizes = stacked ? STACKED_SIZES : SPLIT_SIZES;
+  const orders = adminsFirst ? ADMINS_FIRST_ORDERS : MEMBERS_FIRST_ORDERS;
 
   const adminsSlot =
     admins === undefined ? null : (
-      <Grid size={sizes.admins} sx={{ minWidth: 0, order: ORDERS.admins }}>
+      <Grid size={sizes.admins} sx={{ minWidth: 0, order: orders.admins }}>
         {admins}
       </Grid>
     );
 
   const membersSlot =
     members === undefined ? null : (
-      <Grid size={sizes.members} sx={{ minWidth: 0, order: ORDERS.members }}>
+      <Grid size={sizes.members} sx={{ minWidth: 0, order: orders.members }}>
         {members}
       </Grid>
     );
 
   const historySlot =
     history === undefined ? null : (
-      <Grid size={sizes.history} sx={{ minWidth: 0, order: ORDERS.history }}>
+      <Grid size={sizes.history} sx={{ minWidth: 0, order: orders.history }}>
         {history}
       </Grid>
     );

@@ -1,29 +1,24 @@
-import { KkPanelStack } from '@furria/ui';
+import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { ManagedGroupSummary } from '../schemas';
 import { GroupOverrideBody } from './GroupOverrideBody';
-import { ManagedGroupHeaderCard } from './ManagedGroupHeaderCard';
+import { GroupOverrideHeader } from './GroupOverrideHeader';
+
+const PANEL = { gap: 2.5, minWidth: 0 } as const;
 
 interface GroupOverridePanelProps {
   group: ManagedGroupSummary;
-  onEdit: () => void;
-  onArchive: () => void;
-  onRestore: () => void;
+  appointToken: number | null;
+  onClear: () => void;
 }
 
 export const GroupOverridePanel: FC<GroupOverridePanelProps> = ({
   group,
-  onEdit,
-  onArchive,
-  onRestore,
+  appointToken,
+  onClear,
 }) => (
-  <KkPanelStack>
-    <ManagedGroupHeaderCard
-      group={group}
-      onEdit={onEdit}
-      onArchive={onArchive}
-      onRestore={onRestore}
-    />
-    <GroupOverrideBody groupId={group.groupId} />
-  </KkPanelStack>
+  <Stack sx={PANEL}>
+    <GroupOverrideHeader group={group} onClear={onClear} />
+    <GroupOverrideBody groupId={group.groupId} appointToken={appointToken} />
+  </Stack>
 );

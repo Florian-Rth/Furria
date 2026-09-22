@@ -1,40 +1,77 @@
 import type { KkFilterOption } from '@furria/ui';
-import { useState } from 'react';
+import { useNavigate, useSearch } from '@tanstack/react-router';
+import { useEffect } from 'react';
 import { useSearchQuery } from '@/features/session';
-import type { GroupStatusFilterId } from '../manage-groups-labels';
+import type { GroupRegisterBands, GroupWorkFacets, GroupWorkFilterId } from '../manage-groups-work';
 import {
   ALL_GROUPS_FILTER_ID,
-  filterManagedGroups,
-  toGroupStatusFilterId,
-  toGroupStatusFilterOptions,
-} from '../manage-groups-labels';
+  resolveGroupWorkFilter,
+  toGroupRegisterBands,
+  toGroupWorkFacets,
+  toGroupWorkFilterId,
+  toGroupWorkFilterOptions,
+} from '../manage-groups-work';
 import type { ManagedGroupSummary } from '../schemas';
+
+const MANAGE_GROUPS_ROUTE_ID = '/_app/manage/groups';
+const MANAGE_GROUPS_PATH = '/manage/groups';
 
 export interface ManagedGroupsListing {
   query: string;
-  status: GroupStatusFilterId;
-  selectStatus: (id: string) => void;
+  filter: GroupWorkFilterId;
+  selectFilter: (id: string) => void;
+  facets: GroupWorkFacets;
   filterOptions: KkFilterOption[];
-  visible: readonly ManagedGroupSummary[];
+  bands: GroupRegisterBands;
   isFiltered: boolean;
 }
+
+const toSearchValue = (filter: GroupWorkFilterId): string | undefined =>
+  filter === ALL_GROUPS_FILTER_ID ? undefined : filter;
 
 export const useManagedGroupsListing = (
   groups: readonly ManagedGroupSummary[],
 ): ManagedGroupsListing => {
   const query = useSearchQuery();
-  const [status, setStatus] = useState<GroupStatusFilterId>(ALL_GROUPS_FILTER_ID);
+  const search = useSearch({ from: MANAGE_GROUPS_ROUTE_ID });
+  const navigate = useNavigate();
+  const requested = toGroupWorkFilterId(search.work ?? ALL_GROUPS_FILTER_ID);
+  const facets = toGroupWorkFacets(groups);
+  const filter = resolveGroupWorkFilter(requested, facets);
 
-  const selectStatus = (id: string): void => {
-    setStatus(toGroupStatusFilterId(id));
+  const go = (next: GroupWorkFilterId, replace: boolean): void => {
+    void navigate({
+      to: MANAGE_GROUPS_PATH,
+      search: (previous) => ({ ...previous, work: toSearchValue(next) }),
+      replace,
+      resetScroll: false,
+    });
+  };
+
+  useEffect(() => {
+    if (filter === requested) {
+      return;
+    }
+
+    void navigate({
+      to: MANAGE_GROUPS_PATH,
+      search: (previous) => ({ ...previous, work: toSearchValue(filter) }),
+      replace: true,
+      resetScroll: false,
+    });
+  }, [filter, requested, navigate]);
+
+  const selectFilter = (id: string): void => {
+    go(toGroupWorkFilterId(id), false);
   };
 
   return {
     query,
-    status,
-    selectStatus,
-    filterOptions: toGroupStatusFilterOptions(groups),
-    visible: filterManagedGroups(groups, query, status),
-    isFiltered: query.trim() !== '' || status !== ALL_GROUPS_FILTER_ID,
+    filter,
+    selectFilter,
+    facets,
+    filterOptions: toGroupWorkFilterOptions(facets),
+    bands: toGroupRegisterBands(groups, query, filter),
+    isFiltered: query.trim() !== '' || filter !== ALL_GROUPS_FILTER_ID,
   };
 };

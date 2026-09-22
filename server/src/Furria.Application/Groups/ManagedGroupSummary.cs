@@ -1,3 +1,5 @@
+using Furria.Core.Groups;
+
 namespace Furria.Application.Groups;
 
 public sealed record ManagedGroupSummary
@@ -13,6 +15,8 @@ public sealed record ManagedGroupSummary
     public required int? GroupKindId { get; init; }
 
     public required string? GroupKindName { get; init; }
+
+    public required GroupTone? Tone { get; init; }
 
     public required DateOnly? ArchivedOn { get; init; }
 

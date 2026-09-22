@@ -34,7 +34,7 @@ export const ManagedGroupsBody: FC<ManagedGroupsBodyProps> = ({ listing }) => {
   return (
     <AppListSkeleton
       label={LOADING_LABEL}
-      listShape="cards"
+      listShape="rows"
       hasSelection={selection.groupId !== null}
     />
   );

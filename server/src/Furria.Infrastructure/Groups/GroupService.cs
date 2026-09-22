@@ -293,6 +293,7 @@ public sealed class GroupService
                 group.IsRecruiting,
                 group.GroupKindId,
                 group.GroupKind!.Name,
+                group.Tone,
                 group.ArchivedOn,
                 group
                     .Memberships.Where(membership =>
@@ -882,6 +883,7 @@ public sealed class GroupService
             IsRecruiting = row.IsRecruiting,
             GroupKindId = row.GroupKindId,
             GroupKindName = row.GroupKindName,
+            Tone = row.Tone,
             ArchivedOn = row.ArchivedOn,
             MemberCount = OnePerPerson(row.Members).Count,
             Admins = OnePerPerson(row.Admins),
@@ -1007,6 +1009,7 @@ public sealed class GroupService
         bool IsRecruiting,
         int? GroupKindId,
         string? GroupKindName,
+        GroupTone? Tone,
         DateOnly? ArchivedOn,
         IReadOnlyList<PersonReference> Members,
         IReadOnlyList<PersonReference> Admins

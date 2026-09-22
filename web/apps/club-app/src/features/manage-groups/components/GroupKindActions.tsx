@@ -1,13 +1,25 @@
 import { KkButton, KkIcon, KkMeta } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { ARCHIVE_GROUP_KIND_BLOCKED_HINT } from '../manage-groups-labels';
+import { toArchiveGroupKindBlockedHint } from '../manage-groups-labels';
 
 const RENAME_LABEL = 'Umbenennen';
 const ARCHIVE_LABEL = 'Archivieren';
-const RESTORE_LABEL = 'Aktivieren';
+const RESTORE_LABEL = 'Zurückholen';
+
+const CLUSTER = {
+  alignItems: 'flex-start',
+  justifyContent: { xs: 'flex-start', desktop: 'flex-end' },
+  gap: 1.25,
+  flexWrap: 'nowrap',
+  minWidth: 0,
+} as const;
+
+const BLOCKED = { gap: 0.25, alignItems: 'flex-start', minWidth: 0 } as const;
 
 interface GroupKindActionsProps {
+  name: string;
+  groupCount: number;
   isArchived: boolean;
   canArchive: boolean;
   onRename: () => void;
@@ -16,6 +28,8 @@ interface GroupKindActionsProps {
 }
 
 export const GroupKindActions: FC<GroupKindActionsProps> = ({
+  name,
+  groupCount,
   isArchived,
   canArchive,
   onRename,
@@ -24,35 +38,41 @@ export const GroupKindActions: FC<GroupKindActionsProps> = ({
 }) => {
   if (isArchived) {
     return (
-      <KkButton size="small" variant="outlined" onClick={onRestore}>
-        {RESTORE_LABEL}
-      </KkButton>
+      <Stack direction="row" sx={CLUSTER}>
+        <KkButton
+          size="small"
+          variant="text"
+          ariaLabel={`${name} ${RESTORE_LABEL}`}
+          onClick={onRestore}
+        >
+          {RESTORE_LABEL}
+        </KkButton>
+      </Stack>
     );
   }
 
-  const blockedHint = canArchive ? null : <KkMeta>{ARCHIVE_GROUP_KIND_BLOCKED_HINT}</KkMeta>;
+  const blockedHint = canArchive ? null : (
+    <KkMeta>{toArchiveGroupKindBlockedHint(groupCount)}</KkMeta>
+  );
 
   return (
-    <Stack
-      direction="row"
-      sx={{ gap: 0.75, flexWrap: 'wrap', alignItems: 'flex-start', minWidth: 0 }}
-    >
+    <Stack direction="row" sx={CLUSTER}>
       <KkButton
         size="small"
-        variant="outlined"
+        variant="text"
         startIcon={<KkIcon name="edit" size="small" />}
-        ariaLabel={RENAME_LABEL}
+        ariaLabel={`${name} ${RENAME_LABEL}`}
         onClick={onRename}
       >
         {RENAME_LABEL}
       </KkButton>
-      <Stack sx={{ gap: 0.25, alignItems: 'flex-start', minWidth: 0 }}>
+      <Stack sx={BLOCKED}>
         <KkButton
           size="small"
-          variant="outlined"
+          variant="text"
           disabled={!canArchive}
           startIcon={<KkIcon name="archive" size="small" />}
-          ariaLabel={ARCHIVE_LABEL}
+          ariaLabel={`${name} ${ARCHIVE_LABEL}`}
           onClick={onArchive}
         >
           {ARCHIVE_LABEL}

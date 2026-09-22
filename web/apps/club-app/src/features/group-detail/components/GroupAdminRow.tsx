@@ -1,3 +1,4 @@
+import type { KkButtonTone } from '@furria/ui';
 import { KkAvatar, KkButton, KkSinceRow } from '@furria/ui';
 import { Link } from '@tanstack/react-router';
 import type { FC, ReactNode } from 'react';
@@ -14,6 +15,7 @@ interface GroupAdminRowProps {
   canManage: boolean;
   viewerIsAffiliated: boolean;
   onEnd?: () => void;
+  endTone?: KkButtonTone;
   isNew?: boolean;
   overlay?: ReactNode;
 }
@@ -23,6 +25,7 @@ export const GroupAdminRow: FC<GroupAdminRowProps> = ({
   canManage,
   viewerIsAffiliated,
   onEnd,
+  endTone = 'danger',
   isNew = false,
   overlay,
 }) => {
@@ -40,7 +43,7 @@ export const GroupAdminRow: FC<GroupAdminRowProps> = ({
       <KkButton
         size="small"
         variant="text"
-        tone="danger"
+        tone={endTone}
         ariaLabel={toEndAdminActionLabel(name)}
         onClick={onEnd}
       >

@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
+import type { KkFilterOption } from './filter-chip-entries';
 import { toFilterChipEntries } from './filter-chip-entries';
 
-const options = [
+const options: KkFilterOption[] = [
   { id: 'all', label: 'Alle', count: 152 },
-  { id: 'active', label: 'Aktiv', count: 134 },
+  { id: 'active', label: 'Aktiv', count: 134, tone: 'gold' },
   { id: 'ended', label: 'Beendet', count: 0 },
+  { id: 'open', label: 'Offen', count: 7, countFirst: true },
 ];
 
 describe('toFilterChipEntries', () => {
@@ -13,6 +15,7 @@ describe('toFilterChipEntries', () => {
       'Alle 152',
       'Aktiv 134',
       'Beendet 0',
+      '7 Offen',
     ]);
   });
 
@@ -26,11 +29,21 @@ describe('toFilterChipEntries', () => {
     expect(toFilterChipEntries(options, 'roles').some((entry) => entry.selected)).toBe(false);
   });
 
+  it('carries a tone only for the options that asked for one', () => {
+    expect(toFilterChipEntries(options, 'all').map((entry) => entry.tone)).toEqual([
+      undefined,
+      'gold',
+      undefined,
+      undefined,
+    ]);
+  });
+
   it('carries the id through untouched so the callback answers with it', () => {
     expect(toFilterChipEntries(options, 'all').map((entry) => entry.id)).toEqual([
       'all',
       'active',
       'ended',
+      'open',
     ]);
   });
 });

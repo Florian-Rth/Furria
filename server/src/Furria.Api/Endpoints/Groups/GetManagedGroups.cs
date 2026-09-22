@@ -2,6 +2,7 @@ using FastEndpoints;
 using Furria.Api.Authorization;
 using Furria.Application.Authorization;
 using Furria.Application.Groups;
+using Furria.Core.Groups;
 using Furria.Infrastructure.Groups;
 
 namespace Furria.Api.Endpoints.Groups;
@@ -55,6 +56,7 @@ public sealed class GetManagedGroups : EndpointWithoutRequest<GetManagedGroupsRe
             IsRecruiting = group.IsRecruiting,
             GroupKindId = group.GroupKindId,
             GroupKindName = group.GroupKindName,
+            Tone = group.Tone,
             ArchivedOn = group.ArchivedOn,
             MemberCount = group.MemberCount,
             Admins = [.. group.Admins.Select(ToDto)],
@@ -102,6 +104,8 @@ public sealed record ManagedGroupSummaryDto
     public required int? GroupKindId { get; init; }
 
     public required string? GroupKindName { get; init; }
+
+    public required GroupTone? Tone { get; init; }
 
     public required DateOnly? ArchivedOn { get; init; }
 

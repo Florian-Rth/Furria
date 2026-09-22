@@ -10,7 +10,7 @@ export const useScrollIntoView = (key: number | null): RefObject<HTMLDivElement 
       return;
     }
 
-    scrollElementIntoView(ref.current, 'start');
+    scrollElementIntoView(ref.current, 'nearest');
   }, [key]);
 
   return ref;

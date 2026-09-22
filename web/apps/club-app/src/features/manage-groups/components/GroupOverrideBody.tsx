@@ -7,9 +7,10 @@ import { ManagedGroupsError } from './ManagedGroupsError';
 
 interface GroupOverrideBodyProps {
   groupId: number;
+  appointToken: number | null;
 }
 
-export const GroupOverrideBody: FC<GroupOverrideBodyProps> = ({ groupId }) => {
+export const GroupOverrideBody: FC<GroupOverrideBodyProps> = ({ groupId, appointToken }) => {
   const details = useManagedGroupQuery(groupId);
   const errorMessage = toManagedGroupErrorMessage(details.error);
 
@@ -18,7 +19,7 @@ export const GroupOverrideBody: FC<GroupOverrideBodyProps> = ({ groupId }) => {
   };
 
   if (details.data !== undefined) {
-    return <GroupOverrideDetails group={details.data} />;
+    return <GroupOverrideDetails group={details.data} appointToken={appointToken} />;
   }
   if (errorMessage !== null) {
     return <ManagedGroupsError message={errorMessage} onRetry={reload} />;

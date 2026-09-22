@@ -12,7 +12,7 @@ import { useManagedGroupsQuery } from '../api';
 import { useGroupCreateDialog } from '../hooks/use-group-create-dialog';
 import { useGroupSelection } from '../hooks/use-group-selection';
 import { useManagedGroupsListing } from '../hooks/use-managed-groups-listing';
-import { toManagedGroupsIntro } from '../manage-groups-labels';
+import { toManagedGroupsLead } from '../manage-groups-work';
 import type { ManagedGroupSummary } from '../schemas';
 import { GroupFormDialog } from './GroupFormDialog';
 import { ManagedGroupsBody } from './ManagedGroupsBody';
@@ -24,7 +24,9 @@ const SEARCH_PLACEHOLDER = 'Name der Gruppe';
 
 const CREATE_LABEL = 'Gruppe anlegen';
 
-const TOOLBAR_CHIPS = 3;
+const TOOLBAR_CHIPS = 2;
+
+const MIN_OFFERED_FILTERS = 2;
 
 const NO_GROUPS: readonly ManagedGroupSummary[] = [];
 
@@ -37,7 +39,7 @@ export const ManagedGroupsPage: FC = () => {
   const selection = useGroupSelection();
   const { has } = usePermissions();
   const canManage = has(PERMISSION_KEYS.groupsManage);
-  const lead = groups.data === undefined ? undefined : toManagedGroupsIntro(rows);
+  const lead = groups.data === undefined ? undefined : toManagedGroupsLead(listing.facets);
 
   const onCreated = (groupId: number): void => {
     create.close();
@@ -54,16 +56,17 @@ export const ManagedGroupsPage: FC = () => {
 
   const actions: readonly [KkScreenAction] | undefined = canManage ? [createAction] : undefined;
 
-  const toolRow =
-    groups.data === undefined ? (
-      <KkSkeletonToolbar chips={TOOLBAR_CHIPS} />
-    ) : (
+  const filterStrip =
+    listing.filterOptions.length < MIN_OFFERED_FILTERS ? undefined : (
       <ManagedGroupsToolbar
-        status={listing.status}
+        filter={listing.filter}
         options={listing.filterOptions}
-        onStatusChange={listing.selectStatus}
+        onFilterChange={listing.selectFilter}
       />
     );
+
+  const toolRow =
+    groups.data === undefined ? <KkSkeletonToolbar chips={TOOLBAR_CHIPS} /> : filterStrip;
 
   return (
     <KkScreen

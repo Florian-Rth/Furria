@@ -2,18 +2,18 @@ import type { KkFilterOption } from '@furria/ui';
 import { KkFilterChips } from '@furria/ui';
 import type { FC } from 'react';
 
-const FILTER_LABEL = 'Nach Status filtern';
+const FILTER_LABEL = 'Die Arbeit filtern';
 
 interface ManagedGroupsToolbarProps {
-  status: string;
+  filter: string;
   options: readonly KkFilterOption[];
-  onStatusChange: (id: string) => void;
+  onFilterChange: (id: string) => void;
 }
 
 export const ManagedGroupsToolbar: FC<ManagedGroupsToolbarProps> = ({
-  status,
+  filter,
   options,
-  onStatusChange,
+  onFilterChange,
 }) => (
-  <KkFilterChips label={FILTER_LABEL} options={options} value={status} onChange={onStatusChange} />
+  <KkFilterChips label={FILTER_LABEL} options={options} value={filter} onChange={onFilterChange} />
 );
