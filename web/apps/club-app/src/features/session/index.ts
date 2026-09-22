@@ -39,8 +39,6 @@ export { RequirePermission } from './components/RequirePermission';
 export { SessionBoot } from './components/SessionBoot';
 export { useAuthenticatedRedirect } from './hooks/use-authenticated-redirect';
 export { usePermissions } from './hooks/use-permissions';
-export type { ReturnFocus } from './hooks/use-return-focus';
-export { useReturnFocus } from './hooks/use-return-focus';
 export { useScreenSearch } from './hooks/use-screen-search';
 export { useScreenTrail } from './hooks/use-screen-trail';
 export { useSearchQuery } from './hooks/use-search-query';
