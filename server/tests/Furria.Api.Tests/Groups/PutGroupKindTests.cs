@@ -30,16 +30,10 @@ public sealed class PutGroupKindTests
     private static Task<HttpResponseMessage> RenameKindAsync(
         HttpClient client,
         int groupKindId,
-        string name,
-        int sortOrder
+        string name
     ) =>
         client.PUTAsync<PutGroupKind, PutGroupKindRequest>(
-            new PutGroupKindRequest
-            {
-                GroupKindId = groupKindId,
-                Name = name,
-                SortOrder = sortOrder,
-            }
+            new PutGroupKindRequest { GroupKindId = groupKindId, Name = name }
         );
 
     [Fact]
@@ -47,7 +41,7 @@ public sealed class PutGroupKindTests
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
-            builder => builder.Groups(groups => groups.AddGroupKind("garde", "Garde", 1)),
+            builder => builder.Groups(groups => groups.AddGroupKind("garde", "Garde")),
             ct
         );
 
@@ -55,16 +49,13 @@ public sealed class PutGroupKindTests
         var response = await RenameKindAsync(
             client,
             ctx.Groups.GroupKinds.IdOf("garde"),
-            "Tanzgarde",
-            2
+            "Tanzgarde"
         );
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         await ctx
             .Expected.GroupKind(ctx.Groups.GroupKinds.IdOf("garde"))
             .ToHaveName("Tanzgarde")
-            .GroupKind(ctx.Groups.GroupKinds.IdOf("garde"))
-            .ToHaveSortOrder(2)
             .AssertAsync(ct);
     }
 
@@ -76,19 +67,14 @@ public sealed class PutGroupKindTests
             builder =>
                 builder.Groups(groups =>
                     groups
-                        .AddGroupKind("garde", "Garde", 1)
+                        .AddGroupKind("garde", "Garde")
                         .AddGroup("tanzgarde", "Tanzgarde", groupKindAlias: "garde")
                 ),
             ct
         );
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
-        var response = await RenameKindAsync(
-            client,
-            ctx.Groups.GroupKinds.IdOf("garde"),
-            "Garden",
-            1
-        );
+        var response = await RenameKindAsync(client, ctx.Groups.GroupKinds.IdOf("garde"), "Garden");
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         await ctx
@@ -104,7 +90,7 @@ public sealed class PutGroupKindTests
         var ctx = await _fixture.BuildAsync(
             builder =>
                 builder.Groups(groups =>
-                    groups.AddGroupKind("garde", "Garde", 1).AddGroupKind("elferrat", "Elferrat", 2)
+                    groups.AddGroupKind("garde", "Garde").AddGroupKind("elferrat", "Elferrat")
                 ),
             ct
         );
@@ -113,8 +99,7 @@ public sealed class PutGroupKindTests
         var response = await RenameKindAsync(
             client,
             ctx.Groups.GroupKinds.IdOf("elferrat"),
-            "garde",
-            2
+            "garde"
         );
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -133,7 +118,7 @@ public sealed class PutGroupKindTests
         var ctx = await _fixture.BuildAsync(
             builder =>
                 builder.Groups(groups =>
-                    groups.AddGroupKind("spielmannszug", "Spielmannszug", 2, ArchivedIn2021)
+                    groups.AddGroupKind("spielmannszug", "Spielmannszug", ArchivedIn2021)
                 ),
             ct
         );
@@ -142,8 +127,7 @@ public sealed class PutGroupKindTests
         var response = await RenameKindAsync(
             client,
             ctx.Groups.GroupKinds.IdOf("spielmannszug"),
-            "Spielmannszüge",
-            2
+            "Spielmannszüge"
         );
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -162,7 +146,7 @@ public sealed class PutGroupKindTests
         var ctx = await _fixture.BuildAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
-        var response = await RenameKindAsync(client, UnknownGroupKindId, "Garde", 1);
+        var response = await RenameKindAsync(client, UnknownGroupKindId, "Garde");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -172,12 +156,12 @@ public sealed class PutGroupKindTests
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
-            builder => builder.Groups(groups => groups.AddGroupKind("garde", "Garde", 1)),
+            builder => builder.Groups(groups => groups.AddGroupKind("garde", "Garde")),
             ct
         );
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
-        var response = await RenameKindAsync(client, ctx.Groups.GroupKinds.IdOf("garde"), "", 1);
+        var response = await RenameKindAsync(client, ctx.Groups.GroupKinds.IdOf("garde"), "");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         await ctx
@@ -203,7 +187,7 @@ public sealed class PutGroupKindTests
                             FurriaPermissions.RolesManage
                         )
                     )
-                    .Groups(groups => groups.AddGroupKind("garde", "Garde", 1)),
+                    .Groups(groups => groups.AddGroupKind("garde", "Garde")),
             ct
         );
 
@@ -211,8 +195,7 @@ public sealed class PutGroupKindTests
         var response = await RenameKindAsync(
             client,
             ctx.Groups.GroupKinds.IdOf("garde"),
-            "Tanzgarde",
-            1
+            "Tanzgarde"
         );
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -227,15 +210,14 @@ public sealed class PutGroupKindTests
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
-            builder => builder.Groups(groups => groups.AddGroupKind("garde", "Garde", 1)),
+            builder => builder.Groups(groups => groups.AddGroupKind("garde", "Garde")),
             ct
         );
 
         var response = await RenameKindAsync(
             _fixture.CreateClient(),
             ctx.Groups.GroupKinds.IdOf("garde"),
-            "Tanzgarde",
-            1
+            "Tanzgarde"
         );
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);

@@ -26,11 +26,10 @@ public sealed class PostGroupKindTests
 
     private static Task<TestResult<PostGroupKindResponse>> CreateKindAsync(
         HttpClient client,
-        string name,
-        int sortOrder
+        string name
     ) =>
         client.POSTAsync<PostGroupKind, PostGroupKindRequest, PostGroupKindResponse>(
-            new PostGroupKindRequest { Name = name, SortOrder = sortOrder }
+            new PostGroupKindRequest { Name = name }
         );
 
     [Fact]
@@ -40,14 +39,12 @@ public sealed class PostGroupKindTests
         var ctx = await _fixture.BuildAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
-        var (response, result) = await CreateKindAsync(client, "Garde", 1);
+        var (response, result) = await CreateKindAsync(client, "Garde");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         await ctx
             .Expected.GroupKind(result.GroupKindId)
             .ToHaveName("Garde")
-            .GroupKind(result.GroupKindId)
-            .ToHaveSortOrder(1)
             .GroupKind(result.GroupKindId)
             .ToBeOpen()
             .AssertAsync(ct);
@@ -58,12 +55,12 @@ public sealed class PostGroupKindTests
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
-            builder => builder.Groups(groups => groups.AddGroupKind("garde", "Garde", 1)),
+            builder => builder.Groups(groups => groups.AddGroupKind("garde", "Garde")),
             ct
         );
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
-        var (response, _) = await CreateKindAsync(client, "garde", 2);
+        var (response, _) = await CreateKindAsync(client, "garde");
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         var failures = await ReadFailuresAsync(response, ct);
@@ -77,13 +74,13 @@ public sealed class PostGroupKindTests
         var ctx = await _fixture.BuildAsync(
             builder =>
                 builder.Groups(groups =>
-                    groups.AddGroupKind("spielmannszug", "Spielmannszug", 2, ArchivedIn2021)
+                    groups.AddGroupKind("spielmannszug", "Spielmannszug", ArchivedIn2021)
                 ),
             ct
         );
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
-        var (response, result) = await CreateKindAsync(client, "Spielmannszug", 2);
+        var (response, result) = await CreateKindAsync(client, "Spielmannszug");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         await ctx
@@ -101,19 +98,7 @@ public sealed class PostGroupKindTests
         var ctx = await _fixture.BuildAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
-        var (response, _) = await CreateKindAsync(client, "", 1);
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_ThePlaceInTheBandIsNotPositive()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
-        var (response, _) = await CreateKindAsync(client, "Garde", 0);
+        var (response, _) = await CreateKindAsync(client, "");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -139,7 +124,7 @@ public sealed class PostGroupKindTests
         );
 
         var client = await ctx.Identity.ClientForAsync("katrin", ct);
-        var (response, _) = await CreateKindAsync(client, "Garde", 1);
+        var (response, _) = await CreateKindAsync(client, "Garde");
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
@@ -150,7 +135,7 @@ public sealed class PostGroupKindTests
         var ct = TestContext.Current.CancellationToken;
         await _fixture.BuildAsync(ct);
 
-        var (response, _) = await CreateKindAsync(_fixture.CreateClient(), "Garde", 1);
+        var (response, _) = await CreateKindAsync(_fixture.CreateClient(), "Garde");
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }

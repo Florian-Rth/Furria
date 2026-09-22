@@ -227,10 +227,10 @@ public sealed class GetMeTests
    `ToBeOpen`), `Expected.GroupMembershipsOf(groupId)` (`ToHaveCount`, `ToHaveOpenCount`),
    `Expected.GroupAdmin(id)` (`ToHaveFunction`, `ToHavePeriod`) and
    `Expected.GroupAdminsOf(groupId)` (`ToHaveCount`, `ToHaveOpenCount`). The Gruppenart accessors
-   are `Expected.GroupKind(groupKindId)` (`ToHaveName`, `ToHaveSortOrder`, `ToBeArchivedOn`,
+   are `Expected.GroupKind(groupKindId)` (`ToHaveName`, `ToBeArchivedOn`,
    `ToBeOpen`, `ToNotExist`) and `Expected.GroupKinds()`, whose
-   `ToReadInBandOrder(names…)` pins *Sortierung, then German name, then id* — the order the
-   Gruppenart-Band reads in — and whose `ToCountGruppenOf(groupKindId, count)` counts the
+   `ToReadInNameOrder(names…)` pins *German name, then id* — the order the
+   Gruppenarten read in — and whose `ToCountGruppenOf(groupKindId, count)` counts the
    laufende Gruppen that name it, which is what an Archivieren must refuse over.
    The Trainingsrhythmus and the Trainings the generator writes are **set**-scoped and Gruppe-
    scoped, never slot-scoped, because a Gruppe states several habits and the endpoint replaces

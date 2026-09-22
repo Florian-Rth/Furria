@@ -29,12 +29,7 @@ internal static class GroupSeedMaterializer
     {
         var kinds = recorded.GroupKinds.ToDictionary(
             intent => intent.Alias,
-            intent => new GroupKind
-            {
-                Name = intent.Name,
-                SortOrder = intent.SortOrder,
-                ArchivedOn = intent.ArchivedOn,
-            },
+            intent => new GroupKind { Name = intent.Name, ArchivedOn = intent.ArchivedOn },
             StringComparer.Ordinal
         );
 

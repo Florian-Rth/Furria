@@ -7,8 +7,6 @@ internal static class GroupLimits
     internal const int NameLength = 80;
     internal const int DescriptionLength = 400;
     internal const int KindNameLength = 80;
-    internal const int MinSortOrder = 1;
-    internal const int MaxSortOrder = 999;
     internal const int EarliestFoundedYear = 1800;
     internal const int LatestFoundedYear = 2100;
     internal const int MinTrainingDurationMinutes = 15;

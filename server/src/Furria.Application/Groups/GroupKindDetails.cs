@@ -6,8 +6,6 @@ public sealed record GroupKindDetails
 
     public required string Name { get; init; }
 
-    public required int SortOrder { get; init; }
-
     public required DateOnly? ArchivedOn { get; init; }
 
     public required int GroupCount { get; init; }

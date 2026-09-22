@@ -13,7 +13,7 @@ public sealed class GroupKindSetExpectations
         _expected = expected;
     }
 
-    public Expected ToReadInBandOrder(params string[] names) =>
+    public Expected ToReadInNameOrder(params string[] names) =>
         _expected.Enqueue(
             async (dbContext, ct) =>
                 Assert.Equal(
@@ -21,8 +21,7 @@ public sealed class GroupKindSetExpectations
                     await dbContext
                         .GroupKinds.AsNoTracking()
                         .Where(kind => names.Contains(kind.Name))
-                        .OrderBy(kind => kind.SortOrder)
-                        .ThenBy(kind => EF.Functions.Collate(kind.Name, GermanCollation.Name))
+                        .OrderBy(kind => EF.Functions.Collate(kind.Name, GermanCollation.Name))
                         .ThenBy(kind => kind.Id)
                         .Select(kind => kind.Name)
                         .ToListAsync(ct)

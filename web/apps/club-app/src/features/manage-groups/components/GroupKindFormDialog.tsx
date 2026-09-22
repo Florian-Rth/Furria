@@ -10,16 +10,13 @@ const CREATE_KICKER = 'Neue Gruppenart';
 const CREATE_EXPLANATION =
   'Eine Gruppenart ordnet Gruppen ein — Garde, Elferrat, Spielmannszug. Welche Gruppe welche Art trägt, legst du danach an der Gruppe fest.';
 const EDIT_EXPLANATION =
-  'Name und Platz stehen so im Verzeichnis. Die Gruppen, die diese Art tragen, behalten sie — auch nach einer Umbenennung.';
+  'Der Name steht so im Verzeichnis. Die Gruppen, die diese Art tragen, behalten sie — auch nach einer Umbenennung.';
 const NAME_LABEL = 'Name';
-const SORT_ORDER_LABEL = 'Platz in der Liste';
-const SORT_ORDER_HINT =
-  'Kleinere Zahlen stehen weiter vorn. Gleiche Zahlen sortieren alphabetisch.';
 const CLOSE_LABEL = 'Schließen';
 const CANCEL_LABEL = 'Abbrechen';
 const CREATE_CONFIRM_LABEL = 'Anlegen';
 const EDIT_CONFIRM_LABEL = 'Speichern';
-const EMPTY_FORM = { name: '', sortOrder: '1' };
+const EMPTY_FORM = { name: '' };
 
 interface GroupKindFormDialogProps {
   open: boolean;
@@ -35,10 +32,7 @@ export const GroupKindFormDialog: FC<GroupKindFormDialogProps> = ({
   onSaved,
 }) => {
   const titleId = useId();
-  const initial =
-    editedKind === null
-      ? EMPTY_FORM
-      : { name: editedKind.name, sortOrder: String(editedKind.sortOrder) };
+  const initial = editedKind === null ? EMPTY_FORM : { name: editedKind.name };
   const control = useGroupKindForm({
     groupKindId: editedKind?.groupKindId ?? null,
     open,
@@ -53,7 +47,6 @@ export const GroupKindFormDialog: FC<GroupKindFormDialogProps> = ({
   const confirmLabel = editedKind === null ? CREATE_CONFIRM_LABEL : EDIT_CONFIRM_LABEL;
 
   const nameField = control.form.register('name');
-  const sortOrderField = control.form.register('sortOrder');
 
   const rejection =
     control.rejection === null ? null : <KkAlert severity="error">{control.rejection}</KkAlert>;
@@ -74,16 +67,6 @@ export const GroupKindFormDialog: FC<GroupKindFormDialogProps> = ({
           onBlur={nameField.onBlur}
           error={errors.name !== undefined}
           helperText={errors.name?.message}
-        />
-        <KkTextField
-          name={sortOrderField.name}
-          label={SORT_ORDER_LABEL}
-          inputMode="numeric"
-          inputRef={sortOrderField.ref}
-          onChange={sortOrderField.onChange}
-          onBlur={sortOrderField.onBlur}
-          error={errors.sortOrder !== undefined}
-          helperText={errors.sortOrder?.message ?? SORT_ORDER_HINT}
         />
       </KkModalFrame.Fields>
       <KkModalFrame.Footer>

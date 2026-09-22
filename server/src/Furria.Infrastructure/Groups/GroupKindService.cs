@@ -22,7 +22,7 @@ public sealed class GroupKindService
         "Diese Gruppenart ist in Benutzung. Ordne die Gruppen zuerst einer anderen Art zu.";
 
     private static readonly Expression<Func<GroupKind, KindRow>> KindProjection =
-        kind => new KindRow(kind.Id, kind.Name, kind.SortOrder, kind.ArchivedOn);
+        kind => new KindRow(kind.Id, kind.Name, kind.ArchivedOn);
 
     private readonly AppDbContext _dbContext;
     private readonly TimeProvider _timeProvider;
@@ -63,7 +63,7 @@ public sealed class GroupKindService
         if (await NameIsTakenAsync(command.Name, NoGroupKindId, ct))
             return Result<int>.Conflict(DuplicateNameMessage);
 
-        var kind = new GroupKind { Name = command.Name, SortOrder = command.SortOrder };
+        var kind = new GroupKind { Name = command.Name };
 
         _dbContext.GroupKinds.Add(kind);
 
@@ -88,7 +88,6 @@ public sealed class GroupKindService
             return Result.Conflict(DuplicateNameMessage);
 
         kind.Name = command.Name;
-        kind.SortOrder = command.SortOrder;
 
         return await _dbContext.SaveOrConflictAsync(ct);
     }
@@ -156,8 +155,7 @@ public sealed class GroupKindService
     [Pure]
     private static IQueryable<GroupKind> OrderedKinds(IQueryable<GroupKind> kinds) =>
         kinds
-            .OrderBy(kind => kind.SortOrder)
-            .ThenBy(kind => EF.Functions.Collate(kind.Name, GermanCollation.Name))
+            .OrderBy(kind => EF.Functions.Collate(kind.Name, GermanCollation.Name))
             .ThenBy(kind => kind.Id);
 
     [Pure]
@@ -170,12 +168,11 @@ public sealed class GroupKindService
         {
             GroupKindId = kind.Id,
             Name = kind.Name,
-            SortOrder = kind.SortOrder,
             ArchivedOn = kind.ArchivedOn,
             GroupCount = groupCount,
         };
 
-    private sealed record KindRow(int Id, string Name, int SortOrder, DateOnly? ArchivedOn);
+    private sealed record KindRow(int Id, string Name, DateOnly? ArchivedOn);
 
     private sealed record UsageRow(int GroupKindId, int GroupCount);
 }

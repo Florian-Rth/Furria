@@ -36,7 +36,7 @@ public sealed class PostGroupKind : Endpoint<PostGroupKindRequest, PostGroupKind
     }
 
     private static GroupKindCreateCommand ToCommand(PostGroupKindRequest req) =>
-        new() { Name = req.Name, SortOrder = req.SortOrder };
+        new() { Name = req.Name };
 
     private static PostGroupKindResponse ToResponse(int groupKindId) =>
         new() { GroupKindId = groupKindId };
@@ -45,8 +45,6 @@ public sealed class PostGroupKind : Endpoint<PostGroupKindRequest, PostGroupKind
 public sealed record PostGroupKindRequest
 {
     public required string Name { get; init; }
-
-    public required int SortOrder { get; init; }
 }
 
 public sealed class PostGroupKindValidator : Validator<PostGroupKindRequest>
@@ -54,8 +52,6 @@ public sealed class PostGroupKindValidator : Validator<PostGroupKindRequest>
     public PostGroupKindValidator()
     {
         RuleFor(request => request.Name).NotEmpty().MaximumLength(GroupLimits.KindNameLength);
-        RuleFor(request => request.SortOrder)
-            .InclusiveBetween(GroupLimits.MinSortOrder, GroupLimits.MaxSortOrder);
     }
 }
 

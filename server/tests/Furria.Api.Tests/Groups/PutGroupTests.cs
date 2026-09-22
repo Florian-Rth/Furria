@@ -376,7 +376,7 @@ public sealed class PutGroupTests
             builder =>
                 builder.Groups(groups =>
                     groups
-                        .AddGroupKind("garde", "Garde", 1)
+                        .AddGroupKind("garde", "Garde")
                         .AddGroup("tanzgarde", "Tanzgarde", OldDescription, groupKindAlias: "garde")
                 ),
             ct

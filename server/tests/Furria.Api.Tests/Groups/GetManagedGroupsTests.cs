@@ -243,8 +243,8 @@ public sealed class GetManagedGroupsTests
             builder =>
                 builder.Groups(groups =>
                     groups
-                        .AddGroupKind("garde", "Garde", 1)
-                        .AddGroupKind("spielmannszug", "Spielmannszug", 2, ArchivedIn2021)
+                        .AddGroupKind("garde", "Garde")
+                        .AddGroupKind("spielmannszug", "Spielmannszug", ArchivedIn2021)
                         .AddGroup("tanzgarde", "Tanzgarde", groupKindAlias: "garde")
                         .AddGroup("kindergarde", "Kindergarde", groupKindAlias: "garde")
                 ),

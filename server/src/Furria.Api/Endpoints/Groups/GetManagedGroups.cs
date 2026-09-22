@@ -42,7 +42,6 @@ public sealed class GetManagedGroups : EndpointWithoutRequest<GetManagedGroupsRe
         {
             GroupKindId = kind.GroupKindId,
             Name = kind.Name,
-            SortOrder = kind.SortOrder,
             ArchivedOn = kind.ArchivedOn,
             GroupCount = kind.GroupCount,
         };
@@ -83,8 +82,6 @@ public sealed record ManagedGroupKindDto
     public required int GroupKindId { get; init; }
 
     public required string Name { get; init; }
-
-    public required int SortOrder { get; init; }
 
     public required DateOnly? ArchivedOn { get; init; }
 

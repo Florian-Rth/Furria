@@ -134,22 +134,21 @@ describe('findManagedGroup', () => {
 const kind = (overrides: Partial<ManagedGroupKind>): ManagedGroupKind => ({
   groupKindId: 1,
   name: 'Garde',
-  sortOrder: 1,
   archivedOn: null,
   groupCount: 2,
   ...overrides,
 });
 
 describe('toGroupKindEntries', () => {
-  it('puts the archived ones last, then sorts by place, then as German', () => {
+  it('puts the archived ones last and sorts the rest as German', () => {
     const entries = toGroupKindEntries([
-      kind({ groupKindId: 4, name: 'Zugabteilung', sortOrder: 2 }),
-      kind({ groupKindId: 3, name: 'Elferrat', sortOrder: 1, archivedOn: '2026-01-01' }),
-      kind({ groupKindId: 2, name: 'Ältestenrat', sortOrder: 2 }),
-      kind({ groupKindId: 1, name: 'Garde', sortOrder: 1 }),
+      kind({ groupKindId: 4, name: 'Zugabteilung' }),
+      kind({ groupKindId: 3, name: 'Elferrat', archivedOn: '2026-01-01' }),
+      kind({ groupKindId: 2, name: 'Ältestenrat' }),
+      kind({ groupKindId: 1, name: 'Garde' }),
     ]);
 
-    expect(entries.map((entry) => entry.groupKindId)).toEqual([1, 2, 4, 3]);
+    expect(entries.map((entry) => entry.groupKindId)).toEqual([2, 1, 4, 3]);
   });
 
   it('marks an archived Gruppenart', () => {

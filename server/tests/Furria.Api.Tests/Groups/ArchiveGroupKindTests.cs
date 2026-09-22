@@ -38,7 +38,7 @@ public sealed class ArchiveGroupKindTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
             builder =>
-                builder.Groups(groups => groups.AddGroupKind("spielmannszug", "Spielmannszug", 2)),
+                builder.Groups(groups => groups.AddGroupKind("spielmannszug", "Spielmannszug")),
             ct
         );
 
@@ -60,7 +60,7 @@ public sealed class ArchiveGroupKindTests
             builder =>
                 builder.Groups(groups =>
                     groups
-                        .AddGroupKind("spielmannszug", "Spielmannszug", 2)
+                        .AddGroupKind("spielmannszug", "Spielmannszug")
                         .AddGroup(
                             "alter-zug",
                             "Alter Spielmannszug",
@@ -93,7 +93,7 @@ public sealed class ArchiveGroupKindTests
             builder =>
                 builder.Groups(groups =>
                     groups
-                        .AddGroupKind("garde", "Garde", 1)
+                        .AddGroupKind("garde", "Garde")
                         .AddGroup("tanzgarde", "Tanzgarde", groupKindAlias: "garde")
                 ),
             ct
@@ -118,7 +118,7 @@ public sealed class ArchiveGroupKindTests
         var ctx = await _fixture.BuildAsync(
             builder =>
                 builder.Groups(groups =>
-                    groups.AddGroupKind("spielmannszug", "Spielmannszug", 2, ArchivedIn2021)
+                    groups.AddGroupKind("spielmannszug", "Spielmannszug", ArchivedIn2021)
                 ),
             ct
         );
@@ -164,7 +164,7 @@ public sealed class ArchiveGroupKindTests
                             FurriaPermissions.RolesManage
                         )
                     )
-                    .Groups(groups => groups.AddGroupKind("garde", "Garde", 1)),
+                    .Groups(groups => groups.AddGroupKind("garde", "Garde")),
             ct
         );
 
@@ -183,7 +183,7 @@ public sealed class ArchiveGroupKindTests
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
-            builder => builder.Groups(groups => groups.AddGroupKind("garde", "Garde", 1)),
+            builder => builder.Groups(groups => groups.AddGroupKind("garde", "Garde")),
             ct
         );
 

@@ -36,12 +36,7 @@ public sealed class PutGroupKind : Endpoint<PutGroupKindRequest>
     }
 
     private static GroupKindUpdateCommand ToCommand(PutGroupKindRequest req) =>
-        new()
-        {
-            GroupKindId = req.GroupKindId,
-            Name = req.Name,
-            SortOrder = req.SortOrder,
-        };
+        new() { GroupKindId = req.GroupKindId, Name = req.Name };
 }
 
 public sealed record PutGroupKindRequest
@@ -50,8 +45,6 @@ public sealed record PutGroupKindRequest
     public required int GroupKindId { get; init; }
 
     public required string Name { get; init; }
-
-    public required int SortOrder { get; init; }
 }
 
 public sealed class PutGroupKindValidator : Validator<PutGroupKindRequest>
@@ -60,7 +53,5 @@ public sealed class PutGroupKindValidator : Validator<PutGroupKindRequest>
     {
         RuleFor(request => request.GroupKindId).GreaterThan(0);
         RuleFor(request => request.Name).NotEmpty().MaximumLength(GroupLimits.KindNameLength);
-        RuleFor(request => request.SortOrder)
-            .InclusiveBetween(GroupLimits.MinSortOrder, GroupLimits.MaxSortOrder);
     }
 }

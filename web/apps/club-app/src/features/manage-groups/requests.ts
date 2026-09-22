@@ -80,7 +80,7 @@ export const requestGroupKindCreation = (
 ): Promise<CreatedGroupKind> =>
   apiFetch('/api/manage/groups/kinds', {
     method: 'POST',
-    body: { name: form.name, sortOrder: Number(form.sortOrder) },
+    body: { name: form.name },
     schema: CreatedGroupKindSchema,
     accessToken,
   });
@@ -92,7 +92,7 @@ export const requestGroupKindUpdate = (
 ): Promise<void> =>
   apiFetch(`/api/manage/groups/kinds/${groupKindId}`, {
     method: 'PUT',
-    body: { name: form.name, sortOrder: Number(form.sortOrder) },
+    body: { name: form.name },
     schema: NoContentSchema,
     accessToken,
   });

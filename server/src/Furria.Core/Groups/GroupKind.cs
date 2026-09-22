@@ -8,8 +8,6 @@ public sealed class GroupKind : ITimestamped
 
     public string Name { get; set; } = "";
 
-    public int SortOrder { get; set; }
-
     public DateOnly? ArchivedOn { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }

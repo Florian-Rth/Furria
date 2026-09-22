@@ -19,14 +19,9 @@ public sealed class GroupSeedBuilder
 
     internal IReadOnlyList<GroupAdminIntent> Admins => _admins;
 
-    public GroupSeedBuilder AddGroupKind(
-        string alias,
-        string name,
-        int sortOrder = 1,
-        DateOnly? archivedOn = null
-    )
+    public GroupSeedBuilder AddGroupKind(string alias, string name, DateOnly? archivedOn = null)
     {
-        _groupKinds.Add(new GroupKindIntent(alias, name, sortOrder, archivedOn));
+        _groupKinds.Add(new GroupKindIntent(alias, name, archivedOn));
         return this;
     }
 
@@ -98,12 +93,7 @@ public sealed class GroupSeedBuilder
         return this;
     }
 
-    internal sealed record GroupKindIntent(
-        string Alias,
-        string Name,
-        int SortOrder,
-        DateOnly? ArchivedOn
-    );
+    internal sealed record GroupKindIntent(string Alias, string Name, DateOnly? ArchivedOn);
 
     internal sealed record GroupIntent(
         string Alias,

@@ -38,7 +38,7 @@ public sealed class RestoreGroupKindTests
         var ctx = await _fixture.BuildAsync(
             builder =>
                 builder.Groups(groups =>
-                    groups.AddGroupKind("spielmannszug", "Spielmannszug", 2, ArchivedIn2021)
+                    groups.AddGroupKind("spielmannszug", "Spielmannszug", ArchivedIn2021)
                 ),
             ct
         );
@@ -52,8 +52,6 @@ public sealed class RestoreGroupKindTests
             .ToBeOpen()
             .GroupKind(ctx.Groups.GroupKinds.IdOf("spielmannszug"))
             .ToHaveName("Spielmannszug")
-            .GroupKind(ctx.Groups.GroupKinds.IdOf("spielmannszug"))
-            .ToHaveSortOrder(2)
             .AssertAsync(ct);
     }
 
@@ -65,8 +63,8 @@ public sealed class RestoreGroupKindTests
             builder =>
                 builder.Groups(groups =>
                     groups
-                        .AddGroupKind("alter-zug", "Spielmannszug", 2, ArchivedIn2021)
-                        .AddGroupKind("neuer-zug", "Spielmannszug", 3)
+                        .AddGroupKind("alter-zug", "Spielmannszug", ArchivedIn2021)
+                        .AddGroupKind("neuer-zug", "Spielmannszug")
                 ),
             ct
         );
@@ -88,7 +86,7 @@ public sealed class RestoreGroupKindTests
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
-            builder => builder.Groups(groups => groups.AddGroupKind("garde", "Garde", 1)),
+            builder => builder.Groups(groups => groups.AddGroupKind("garde", "Garde")),
             ct
         );
 
@@ -134,7 +132,7 @@ public sealed class RestoreGroupKindTests
                         )
                     )
                     .Groups(groups =>
-                        groups.AddGroupKind("spielmannszug", "Spielmannszug", 2, ArchivedIn2021)
+                        groups.AddGroupKind("spielmannszug", "Spielmannszug", ArchivedIn2021)
                     ),
             ct
         );
@@ -156,7 +154,7 @@ public sealed class RestoreGroupKindTests
         var ctx = await _fixture.BuildAsync(
             builder =>
                 builder.Groups(groups =>
-                    groups.AddGroupKind("spielmannszug", "Spielmannszug", 2, ArchivedIn2021)
+                    groups.AddGroupKind("spielmannszug", "Spielmannszug", ArchivedIn2021)
                 ),
             ct
         );

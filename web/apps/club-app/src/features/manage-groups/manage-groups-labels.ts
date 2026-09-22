@@ -162,7 +162,6 @@ export const toArchiveGroupKindBlockedHint = (groupCount: number): string =>
 export interface GroupKindEntry {
   groupKindId: number;
   name: string;
-  sortOrder: number;
   archivedOn: string | null;
   isArchived: boolean;
   groupCount: number;
@@ -171,25 +170,21 @@ export interface GroupKindEntry {
 const toGroupKindEntry = (kind: ManagedGroupKind): GroupKindEntry => ({
   groupKindId: kind.groupKindId,
   name: kind.name,
-  sortOrder: kind.sortOrder,
   archivedOn: kind.archivedOn,
   isArchived: kind.archivedOn !== null,
   groupCount: kind.groupCount,
 });
 
-const inBandOrder = (left: GroupKindEntry, right: GroupKindEntry): number => {
+const runningFirstThenByName = (left: GroupKindEntry, right: GroupKindEntry): number => {
   if (left.isArchived !== right.isArchived) {
     return left.isArchived ? 1 : -1;
-  }
-  if (left.sortOrder !== right.sortOrder) {
-    return left.sortOrder - right.sortOrder;
   }
 
   return left.name.localeCompare(right.name, 'de');
 };
 
 export const toGroupKindEntries = (kinds: readonly ManagedGroupKind[]): GroupKindEntry[] =>
-  kinds.map(toGroupKindEntry).sort(inBandOrder);
+  kinds.map(toGroupKindEntry).sort(runningFirstThenByName);
 
 export const isGroupKindArchivable = (entry: GroupKindEntry): boolean =>
   !entry.isArchived && entry.groupCount === 0;
@@ -230,7 +225,6 @@ export const toGroupKindsIntro = (entries: readonly GroupKindEntry[]): string =>
 
 export const toGroupKindFacts = (entry: GroupKindEntry, dayLabel: string): KkConfirmFact[] => [
   { label: 'Gruppenart', value: entry.name },
-  { label: 'Platz in der Liste', value: String(entry.sortOrder) },
   { label: 'Gruppen', value: String(entry.groupCount) },
   { label: 'Ab', value: dayLabel },
 ];

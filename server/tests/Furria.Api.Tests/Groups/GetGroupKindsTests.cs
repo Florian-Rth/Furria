@@ -23,7 +23,7 @@ public sealed class GetGroupKindsTests
     }
 
     [Fact]
-    public async Task Should_ListTheGruppenartenInBandOrder_When_AnAffiliatedPersonReadsThePicker()
+    public async Task Should_ListTheGruppenartenAsGerman_When_AnAffiliatedPersonReadsThePicker()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -36,9 +36,9 @@ public sealed class GetGroupKindsTests
                     )
                     .Groups(groups =>
                         groups
-                            .AddGroupKind("elferrat", "Elferrat", 3)
-                            .AddGroupKind("garde", "Garde", 1)
-                            .AddGroupKind("aeltestenrat", "Ältestenrat", 1)
+                            .AddGroupKind("elferrat", "Elferrat")
+                            .AddGroupKind("garde", "Garde")
+                            .AddGroupKind("aeltestenrat", "Ältestenrat")
                     ),
             ct
         );
@@ -47,7 +47,7 @@ public sealed class GetGroupKindsTests
         var (response, result) = await client.GETAsync<GetGroupKinds, GetGroupKindsResponse>();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        string[] inOrder = ["Ältestenrat", "Garde", "Elferrat"];
+        string[] inOrder = ["Ältestenrat", "Elferrat", "Garde"];
         Assert.Equal(inOrder, result.Kinds.Select(kind => kind.Name));
     }
 
@@ -65,8 +65,8 @@ public sealed class GetGroupKindsTests
                     )
                     .Groups(groups =>
                         groups
-                            .AddGroupKind("garde", "Garde", 1)
-                            .AddGroupKind("spielmannszug", "Spielmannszug", 2, ArchivedIn2021)
+                            .AddGroupKind("garde", "Garde")
+                            .AddGroupKind("spielmannszug", "Spielmannszug", ArchivedIn2021)
                     ),
             ct
         );
@@ -89,7 +89,7 @@ public sealed class GetGroupKindsTests
                     .Identity(identity => identity.AddAccount("anna"))
                     .Groups(groups =>
                         groups
-                            .AddGroupKind("garde", "Garde", 1)
+                            .AddGroupKind("garde", "Garde")
                             .AddGroup("tanzgarde", "Tanzgarde")
                             .AddGroupMembership("anna-tanzgarde", "tanzgarde", "anna", JoinedIn2017)
                     ),
@@ -116,7 +116,7 @@ public sealed class GetGroupKindsTests
                             .AddAccount("alice")
                             .AddMembership("alice-first", "alice", JoinedIn2017)
                     )
-                    .Groups(groups => groups.AddGroupKind("garde", "Garde", 1)),
+                    .Groups(groups => groups.AddGroupKind("garde", "Garde")),
             ct
         );
 
@@ -138,7 +138,7 @@ public sealed class GetGroupKindsTests
                     .Identity(identity => identity.AddAccount("trixi"))
                     .Groups(groups =>
                         groups
-                            .AddGroupKind("garde", "Garde", 1)
+                            .AddGroupKind("garde", "Garde")
                             .AddGroup("kindergarde", "Kindergarde")
                             .AddGroupAdmin("trixi-leitet", "kindergarde", "trixi", "Trainerin")
                     ),
@@ -161,7 +161,7 @@ public sealed class GetGroupKindsTests
             builder =>
                 builder
                     .Identity(identity => identity.AddAccount("tom"))
-                    .Groups(groups => groups.AddGroupKind("garde", "Garde", 1)),
+                    .Groups(groups => groups.AddGroupKind("garde", "Garde")),
             ct
         );
 
@@ -176,7 +176,7 @@ public sealed class GetGroupKindsTests
     {
         var ct = TestContext.Current.CancellationToken;
         await _fixture.BuildAsync(
-            builder => builder.Groups(groups => groups.AddGroupKind("garde", "Garde", 1)),
+            builder => builder.Groups(groups => groups.AddGroupKind("garde", "Garde")),
             ct
         );
 

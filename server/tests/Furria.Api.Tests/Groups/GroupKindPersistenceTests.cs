@@ -18,25 +18,6 @@ public sealed class GroupKindPersistenceTests
     }
 
     [Fact]
-    public async Task Should_StoreItsPlaceInTheBand_When_AGruppenartIsSeeded()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Groups(groups => groups.AddGroupKind("garde", "Garde", 2)),
-            ct
-        );
-
-        await ctx
-            .Expected.GroupKind(ctx.Groups.GroupKinds.IdOf("garde"))
-            .ToHaveName("Garde")
-            .GroupKind(ctx.Groups.GroupKinds.IdOf("garde"))
-            .ToHaveSortOrder(2)
-            .GroupKind(ctx.Groups.GroupKinds.IdOf("garde"))
-            .ToBeArchivedOn(null)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_RejectTheName_When_ARunningGruppenartUsesItInAnotherCase()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -45,7 +26,7 @@ public sealed class GroupKindPersistenceTests
             _fixture.BuildAsync(
                 builder =>
                     builder.Groups(groups =>
-                        groups.AddGroupKind("garde", "Garde", 1).AddGroupKind("copy", "garde", 2)
+                        groups.AddGroupKind("garde", "Garde").AddGroupKind("copy", "garde")
                     ),
                 ct
             )
@@ -64,8 +45,8 @@ public sealed class GroupKindPersistenceTests
             builder =>
                 builder.Groups(groups =>
                     groups
-                        .AddGroupKind("alter-zug", "Spielmannszug", 2, ArchivedIn2021)
-                        .AddGroupKind("neuer-zug", "Spielmannszug", 3)
+                        .AddGroupKind("alter-zug", "Spielmannszug", ArchivedIn2021)
+                        .AddGroupKind("neuer-zug", "Spielmannszug")
                 ),
             ct
         );
@@ -86,7 +67,7 @@ public sealed class GroupKindPersistenceTests
             builder =>
                 builder.Groups(groups =>
                     groups
-                        .AddGroupKind("garde", "Garde", 1)
+                        .AddGroupKind("garde", "Garde")
                         .AddGroup("tanzgarde", "Tanzgarde", groupKindAlias: "garde")
                         .AddGroup("elferrat", "Elferrat")
                 ),
@@ -100,23 +81,23 @@ public sealed class GroupKindPersistenceTests
     }
 
     [Fact]
-    public async Task Should_SortUmlautsAsGerman_When_TheBandSharesOnePlace()
+    public async Task Should_SortUmlautsAsGerman_When_TheGruppenartenAreRead()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
             builder =>
                 builder.Groups(groups =>
                     groups
-                        .AddGroupKind("zug", "Zug", 1)
-                        .AddGroupKind("aeltestenrat", "Ältestenrat", 1)
-                        .AddGroupKind("garde", "Garde", 1)
+                        .AddGroupKind("zug", "Zug")
+                        .AddGroupKind("aeltestenrat", "Ältestenrat")
+                        .AddGroupKind("garde", "Garde")
                 ),
             ct
         );
 
         await ctx
             .Expected.GroupKinds()
-            .ToReadInBandOrder("Ältestenrat", "Garde", "Zug")
+            .ToReadInNameOrder("Ältestenrat", "Garde", "Zug")
             .AssertAsync(ct);
     }
 }

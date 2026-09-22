@@ -32,12 +32,6 @@ public sealed class GroupKindExpectations
             async (dbContext, ct) => Assert.Equal(name, (await SingleAsync(dbContext, ct)).Name)
         );
 
-    public Expected ToHaveSortOrder(int sortOrder) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(sortOrder, (await SingleAsync(dbContext, ct)).SortOrder)
-        );
-
     public Expected ToBeArchivedOn(DateOnly? archivedOn) =>
         _expected.Enqueue(
             async (dbContext, ct) =>
