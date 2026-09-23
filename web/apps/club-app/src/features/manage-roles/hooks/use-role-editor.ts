@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
-import { useForm } from 'react-hook-form';
+import { useController, useForm } from 'react-hook-form';
 import { toLandingKey } from '@/features/write';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useCreateRoleMutation, useUpdateRoleMutation } from '../api';
@@ -19,7 +19,11 @@ interface RoleEditorInput {
 
 export interface RoleEditorControl {
   form: UseFormReturn<RoleForm>;
+  description: string;
+  setDescription: (value: string) => void;
+  touchDescription: () => void;
   isDirty: boolean;
+  canSubmit: boolean;
   isSaving: boolean;
   rejection: string | null;
   submit: () => void;
@@ -31,7 +35,13 @@ export const useRoleEditor = ({ roleId, initial }: RoleEditorInput): RoleEditorC
   const update = useUpdateRoleMutation(roleId ?? NO_ROLE);
   const navigate = useNavigate();
 
-  const form = useForm<RoleForm>({ resolver: zodResolver(RoleFormSchema), defaultValues: initial });
+  const form = useForm<RoleForm>({
+    resolver: zodResolver(RoleFormSchema),
+    defaultValues: initial,
+    mode: 'onTouched',
+  });
+  const { isDirty, isValid } = form.formState;
+  const description = useController({ control: form.control, name: 'description' });
 
   const landBack = (id: number): void => {
     void navigate({
@@ -74,7 +84,11 @@ export const useRoleEditor = ({ roleId, initial }: RoleEditorInput): RoleEditorC
 
   return {
     form,
-    isDirty: form.formState.isDirty,
+    description: description.field.value,
+    setDescription: description.field.onChange,
+    touchDescription: description.field.onBlur,
+    isDirty,
+    canSubmit: isValid,
     isSaving: create.isPending || update.isPending,
     rejection,
     submit: () => {

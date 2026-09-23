@@ -1,12 +1,15 @@
 import Stack from '@mui/material/Stack';
 import { keyframes } from '@mui/material/styles';
-import type { FC, PropsWithChildren } from 'react';
+import type { FC, PropsWithChildren, ReactNode } from 'react';
 import { useReducedMotion } from '../../../internal/use-reduced-motion';
 import type { KkSx } from '../../../kk-sx';
 import { kkTokens } from '../../../tokens';
 import { logoSourceOf } from '../logic/logo-source';
 import { mottoStageMotionOf } from '../logic/motto-stage-motion';
 import type { KkMottoStageState } from '../motto-stage-state';
+import { KkMottoStageBroom } from '../ui/KkMottoStageBroom';
+import { KkMottoStageBucket } from '../ui/KkMottoStageBucket';
+import { KkMottoStageConfetti } from '../ui/KkMottoStageConfetti';
 import { KkMottoStageCountdown } from '../ui/KkMottoStageCountdown';
 import { KkMottoStageGlow } from '../ui/KkMottoStageGlow';
 import { KkMottoStageLogo } from '../ui/KkMottoStageLogo';
@@ -49,6 +52,7 @@ interface KkMottoStageRootProps extends PropsWithChildren {
   state: KkMottoStageState;
   sessionLabel: string;
   motto: string | null;
+  mottoPendingLabel: string;
   numberLabel: string | null;
   countdownLabel: string | null;
   progress: number | null;
@@ -60,6 +64,7 @@ export const KkMottoStageRoot: FC<KkMottoStageRootProps> = ({
   state,
   sessionLabel,
   motto,
+  mottoPendingLabel,
   numberLabel,
   countdownLabel,
   progress,
@@ -72,8 +77,18 @@ export const KkMottoStageRoot: FC<KkMottoStageRootProps> = ({
   const isRunning = state === 'running';
   const logoSource = logoSourceOf(logo);
   const scene = isRunning ? children : null;
-  const artwork =
-    isRunning || logoSource === null ? null : <KkMottoStageLogo source={logoSource} />;
+  const logoArtwork = logoSource === null ? null : <KkMottoStageLogo source={logoSource} />;
+  const artworkByState: Record<KkMottoStageState, ReactNode> = {
+    teaser: logoArtwork,
+    running: <KkMottoStageConfetti />,
+    resting: (
+      <>
+        <KkMottoStageBroom />
+        <KkMottoStageBucket />
+      </>
+    ),
+  };
+  const artwork = artworkByState[state];
 
   return (
     <Stack
@@ -116,7 +131,11 @@ export const KkMottoStageRoot: FC<KkMottoStageRootProps> = ({
           sx={revealAt(META_STEP, motion.reveal)}
         />
         <Stack sx={{ minWidth: 0, maxWidth: TEXT_WIDTH, gap: { xs: 1, desktop: 1.25 } }}>
-          <KkMottoStageMotto motto={motto} sx={revealAt(MOTTO_STEP, motion.reveal)} />
+          <KkMottoStageMotto
+            motto={motto}
+            pendingLabel={mottoPendingLabel}
+            sx={revealAt(MOTTO_STEP, motion.reveal)}
+          />
           <KkMottoStageCountdown
             countdownLabel={countdownLabel}
             sx={revealAt(COUNTDOWN_STEP, motion.reveal)}

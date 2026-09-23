@@ -55,7 +55,6 @@ const interactivePaint = (theme: Theme): CSSObject => ({
   textDecoration: 'none',
   color: 'inherit',
   cursor: 'pointer',
-  borderColor: 'divider',
   ...applyScheme(theme, liftScheme),
   ...focusRing(theme),
   '@media (hover: hover)': {
@@ -141,17 +140,17 @@ export const KkPanel: FC<KkPanelProps> = ({
       data-kk-panel
       data-kk-landing={landing}
       sx={[
-        (theme) => ({
+        {
           minWidth: 0,
           borderWidth: kkTokens.line.hair,
           borderColor: 'divider',
           borderRadius: `${kkTokens.radius.base}px`,
-          ...toneStyles[tone](theme),
           ...panelPadding[variant],
-          ...(interactive ? interactivePaint(theme) : {}),
           ...(dimmed ? dimmedPaint : {}),
-          ...(highlight ? highlightOverlayPaint(theme) : {}),
-        }),
+        },
+        toneStyles[tone],
+        interactive && interactivePaint,
+        highlight && highlightOverlayPaint,
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >

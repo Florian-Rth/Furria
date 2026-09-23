@@ -29,9 +29,7 @@ export const CalendarMonthGrid: FC<CalendarMonthGridProps> = ({ board, entries }
 
   const headers = WEEKDAY_HEADERS.map((label) => (
     <Box key={label} sx={HEADER_CELL_SX}>
-      <KkEyebrow tone="muted" size="small">
-        {label}
-      </KkEyebrow>
+      <KkEyebrow tone="muted">{label}</KkEyebrow>
     </Box>
   ));
 
@@ -71,7 +69,7 @@ export const CalendarMonthGrid: FC<CalendarMonthGridProps> = ({ board, entries }
         >
           <KkIcon name="back" size="small" />
         </KkButton>
-        <KkHeading level={5}>{toMonthLabel(board.monthCursor)}</KkHeading>
+        <KkHeading level={3}>{toMonthLabel(board.monthCursor)}</KkHeading>
         <KkButton
           variant="text"
           size="small"

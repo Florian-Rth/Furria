@@ -34,7 +34,7 @@ export const NewsListPage: FC<NewsListPageProps> = ({ posts }) => {
                   post={leadPost}
                   sx={{
                     aspectRatio: kkTokens.aspectRatio.banner,
-                    fontSize: { xs: '1.75rem', md: '3.375rem' },
+                    typography: { xs: 'h1', md: 'display' },
                     border: kkTokens.line.hair,
                     borderColor: 'divider',
                     borderRadius: `${kkTokens.radius.base}px`,

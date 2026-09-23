@@ -125,7 +125,7 @@ export const KkSwitchRow: FC<KkSwitchRowProps> = ({
             id={titleId}
             sx={{
               color: 'text.primary',
-              fontSize: kkTokens.type.rowTitle,
+              typography: 'body2',
               fontWeight: 800,
               minWidth: 0,
             }}

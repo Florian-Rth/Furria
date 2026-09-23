@@ -35,6 +35,7 @@ export const PersonEditor: FC<PersonEditorProps> = ({ person }) => {
           label: control.actionLabel,
           onSelect: control.submit,
           loading: control.isSaving,
+          disabled: !control.canSubmit,
         },
       }}
     >

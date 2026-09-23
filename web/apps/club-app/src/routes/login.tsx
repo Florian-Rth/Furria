@@ -1,7 +1,7 @@
 import { createFileRoute, redirect } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { EXPIRED_FLAG, LoginScreen, LoginSearchSchema } from '@/features/login';
-import { useAuthenticatedRedirect } from '@/features/session';
+import { AppFailure, useAuthenticatedRedirect } from '@/features/session';
 import { getSessionSnapshot } from '@/lib/api/session/session-store';
 import { sanitizeReturnTo } from '@/lib/return-to';
 
@@ -25,4 +25,5 @@ export const Route = createFileRoute('/login')({
     }
   },
   component: LoginComponent,
+  errorComponent: AppFailure,
 });

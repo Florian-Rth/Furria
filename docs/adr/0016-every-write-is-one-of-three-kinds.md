@@ -66,8 +66,11 @@ carries no create: `/manage/groups` proved the ambiguity by shipping an unlabell
 The editor **waits** for the server, then closes, scrolls the record to the row or block that
 changed, holds it highlighted for about a second and names what happened in a short strip. A
 rejection keeps the editor open with the typed values and the reason at the top. **The action is
-never disabled** — pressing it unchanged simply closes, so nothing is ever greyed out without an
-explanation. Every exit path — the X, the back gesture, a swipe — runs the same check: unchanged
+enabled exactly when every required field holds a valid value** — every required field carries a
+required mark (`*`), and a field names its problem as soon as it is left, so a greyed-out action
+always has its reason on screen. Pressing it unchanged simply closes. *(Revised 2026-09-23: the
+first version never disabled the action; Florian reversed that after using the editors.)* Every
+editor is a react-hook-form form validated by its Zod schema; the action follows `isValid`. Every exit path — the X, the back gesture, a swipe — runs the same check: unchanged
 closes silently, changed asks once, and discard means discard. No drafts are kept.
 
 **A destructive act never appears on a row.** It sits at the end of the thing's own screen as a single

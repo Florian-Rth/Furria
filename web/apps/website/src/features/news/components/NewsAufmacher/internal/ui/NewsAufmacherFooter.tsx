@@ -24,10 +24,7 @@ export const NewsAufmacherFooter: FC<NewsAufmacherFooterProps> = ({ post }) => {
         flexWrap: 'wrap',
       }}
     >
-      <Typography
-        component="span"
-        sx={{ fontWeight: 900, fontSize: '0.9375rem', color: 'primary.main' }}
-      >
+      <Typography variant="body1" component="span" sx={{ fontWeight: 900, color: 'primary.main' }}>
         {readMoreLabel}
       </Typography>
       {readingTime !== null && (

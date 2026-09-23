@@ -55,7 +55,7 @@ export const VenueRecord: FC<VenueRecordProps> = ({
         }}
       >
         <Stack sx={{ gap: 0.5, minWidth: 0, flexGrow: 1 }}>
-          <KkHeading level={5} component="h3" sx={{ minWidth: 0 }}>
+          <KkHeading level={4} component="h3" sx={{ minWidth: 0 }}>
             {name}
           </KkHeading>
           <KkMeta>{addressText}</KkMeta>

@@ -39,7 +39,7 @@ export const MastheadMobileBar: FC<MastheadMobileBarProps> = ({ menuOpen, onMenu
     <Box sx={{ flex: 1, mx: 1.5, borderBottom: 2, borderColor: 'text.primary' }} />
     <Link component={RouterLink} to="/" underline="none">
       <Typography
-        variant="h4"
+        variant="h2"
         component="span"
         sx={{ color: 'text.primary', letterSpacing: '0.06em', lineHeight: 1 }}
       >

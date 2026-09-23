@@ -40,8 +40,8 @@ export const OlderSessionAlbumLink: FC<OlderSessionAlbumLinkProps> = ({ album })
           <Typography
             component="span"
             sx={{
+              typography: 'body1',
               fontWeight: 800,
-              fontSize: { xs: '0.9375rem', desktop: '1rem' },
               color: 'text.primary',
               overflowWrap: 'anywhere',
             }}

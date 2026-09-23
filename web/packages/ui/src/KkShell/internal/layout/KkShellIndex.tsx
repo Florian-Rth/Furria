@@ -1,17 +1,19 @@
 import Stack from '@mui/material/Stack';
-import type { FC, PropsWithChildren } from 'react';
+import type { FC, Ref } from 'react';
 import { safeArea } from '../../../internal/safe-area';
 import { kkTokens } from '../../../tokens';
 
 const { gutter, indexWidth } = kkTokens.shell;
 
-interface KkShellIndexProps extends PropsWithChildren {
+interface KkShellIndexProps {
   headClearance: number;
   footClearance: number;
+  ref?: Ref<HTMLDivElement>;
 }
 
-export const KkShellIndex: FC<KkShellIndexProps> = ({ headClearance, footClearance, children }) => (
+export const KkShellIndex: FC<KkShellIndexProps> = ({ headClearance, footClearance, ref }) => (
   <Stack
+    ref={ref}
     data-kk-shell-index
     sx={{
       position: 'fixed',
@@ -24,9 +26,8 @@ export const KkShellIndex: FC<KkShellIndexProps> = ({ headClearance, footClearan
       justifyContent: 'center',
       zIndex: kkTokens.layout.letterRailZ,
       pointerEvents: 'none',
+      '&:empty': { display: 'none' },
       '& > *': { pointerEvents: 'auto' },
     }}
-  >
-    {children}
-  </Stack>
+  />
 );

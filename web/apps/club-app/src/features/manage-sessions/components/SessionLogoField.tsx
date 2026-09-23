@@ -79,9 +79,7 @@ export const SessionLogoField: FC<SessionLogoFieldProps> = ({
 
   return (
     <Stack sx={{ gap: 1, minWidth: 0 }} onDragOver={dragOver} onDragLeave={dragLeave} onDrop={drop}>
-      <KkEyebrow tone="muted" size="small">
-        {LOGO_FIELD_LABEL}
-      </KkEyebrow>
+      <KkEyebrow tone="muted">{LOGO_FIELD_LABEL}</KkEyebrow>
       <input hidden ref={inputRef} type="file" accept={SVG_ACCEPT} onChange={change} />
       <KkPanel variant="block" tone={panelTone} chevron={false} onClick={openPicker}>
         <Stack sx={{ gap: 1, minWidth: 0, alignItems: 'flex-start' }}>

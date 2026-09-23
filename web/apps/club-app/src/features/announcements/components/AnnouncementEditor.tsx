@@ -33,16 +33,6 @@ export const AnnouncementEditor: FC<AnnouncementEditorProps> = ({ announcement }
   const { errors } = control.form.formState;
 
   const titleField = control.form.register('title');
-  const body = control.form.watch('body');
-  const validUntil = control.form.watch('validUntil');
-
-  const setBody = (value: string): void => {
-    control.form.setValue('body', value, { shouldValidate: false });
-  };
-
-  const setValidUntil = (value: string | null): void => {
-    control.form.setValue('validUntil', value, { shouldValidate: false });
-  };
 
   const title = announcement === null ? ANNOUNCEMENT_CREATE_TITLE : ANNOUNCEMENT_EDIT_TITLE;
   const actionLabel = announcement === null ? ANNOUNCEMENT_ADD_LABEL : ANNOUNCEMENT_SAVE_LABEL;
@@ -66,12 +56,18 @@ export const AnnouncementEditor: FC<AnnouncementEditorProps> = ({ announcement }
       rejection={control.rejection ?? undefined}
       isDirty={control.isDirty}
       action={{
-        primary: { label: actionLabel, onSelect: control.submit, loading: control.isSaving },
+        primary: {
+          label: actionLabel,
+          onSelect: control.submit,
+          loading: control.isSaving,
+          disabled: !control.canSubmit,
+        },
       }}
     >
       <KkTextField
         name={titleField.name}
         label={ANNOUNCEMENT_TITLE_FIELD_LABEL}
+        required
         inputRef={titleField.ref}
         onChange={titleField.onChange}
         onBlur={titleField.onBlur}
@@ -81,8 +77,10 @@ export const AnnouncementEditor: FC<AnnouncementEditorProps> = ({ announcement }
       <KkTextArea
         name="body"
         label={ANNOUNCEMENT_BODY_FIELD_LABEL}
-        value={body}
-        onChange={setBody}
+        value={control.body}
+        onChange={control.setBody}
+        onBlur={control.touchBody}
+        required
         rows={BODY_ROWS}
         maxLength={ANNOUNCEMENT_BODY_MAX_LENGTH}
         showCount
@@ -94,8 +92,8 @@ export const AnnouncementEditor: FC<AnnouncementEditorProps> = ({ announcement }
       <KkDateField
         name="validUntil"
         label={ANNOUNCEMENT_VALID_UNTIL_FIELD_LABEL}
-        value={validUntil}
-        onChange={setValidUntil}
+        value={control.validUntil}
+        onChange={control.setValidUntil}
         allowEmpty
         emptyLabel={ANNOUNCEMENT_VALID_UNTIL_EMPTY_LABEL}
         error={errors.validUntil !== undefined}

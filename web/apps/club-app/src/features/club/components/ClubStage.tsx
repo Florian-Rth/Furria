@@ -8,7 +8,7 @@ import {
 } from '@/lib/club';
 import { formatSessionLabel } from '@/lib/membership-labels';
 import { useClubHubQuery } from '../api';
-import { toCountdownLabel, toNumberLabel } from '../club-labels';
+import { MOTTO_PENDING_LABEL, toCountdownLabel, toNumberLabel } from '../club-labels';
 import { sceneForSession } from '../stages/stage-registry';
 
 export const ClubStage: FC = () => {
@@ -40,6 +40,7 @@ export const ClubStage: FC = () => {
       state={state}
       sessionLabel={sessionLabel}
       motto={motto}
+      mottoPendingLabel={MOTTO_PENDING_LABEL}
       numberLabel={numberLabel}
       countdownLabel={countdownLabel}
       progress={progress}

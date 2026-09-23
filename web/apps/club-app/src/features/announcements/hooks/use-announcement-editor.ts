@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
-import { useForm } from 'react-hook-form';
+import { useController, useForm } from 'react-hook-form';
 import { toLandingKey } from '@/features/write';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { toAnnouncementFieldErrors } from '../announcement-form-errors';
@@ -19,8 +19,14 @@ interface AnnouncementEditorInput {
 
 export interface AnnouncementEditorControl {
   form: UseFormReturn<AnnouncementForm>;
+  body: string;
+  setBody: (value: string) => void;
+  touchBody: () => void;
+  validUntil: string | null;
+  setValidUntil: (value: string | null) => void;
   submit: () => void;
   isDirty: boolean;
+  canSubmit: boolean;
   isSaving: boolean;
   rejection: string | null;
 }
@@ -37,7 +43,11 @@ export const useAnnouncementEditor = ({
   const form = useForm<AnnouncementForm>({
     resolver: zodResolver(AnnouncementFormSchema),
     defaultValues: toAnnouncementFormValues(announcement),
+    mode: 'onTouched',
   });
+  const { isDirty, isValid } = form.formState;
+  const body = useController({ control: form.control, name: 'body' });
+  const validUntil = useController({ control: form.control, name: 'validUntil' });
 
   const landOn = (id: number): void => {
     void navigate({
@@ -72,10 +82,16 @@ export const useAnnouncementEditor = ({
 
   return {
     form,
+    body: body.field.value,
+    setBody: body.field.onChange,
+    touchBody: body.field.onBlur,
+    validUntil: validUntil.field.value,
+    setValidUntil: validUntil.field.onChange,
     submit: () => {
       void handleFormSubmit();
     },
-    isDirty: form.formState.isDirty,
+    isDirty,
+    canSubmit: isValid,
     isSaving: create.isPending || update.isPending,
     rejection,
   };

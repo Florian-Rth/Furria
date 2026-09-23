@@ -18,6 +18,8 @@ export const NewsHeroMark: FC = () => (
       zIndex: 0,
     }}
   >
-    <NewspaperIcon sx={{ display: 'block', fontSize: { xs: 260, desktop: 440 } }} />
+    <NewspaperIcon
+      sx={{ display: 'block', width: { xs: 260, desktop: 440 }, height: { xs: 260, desktop: 440 } }}
+    />
   </Box>
 );

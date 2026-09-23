@@ -4,6 +4,7 @@ import { AppSearchSchema } from '@/features/session';
 import { PersonRefSchema } from '@/lib/api/schemas';
 import { ATTENDANCE_ANSWER_KEYS, CALENDAR_KIND_KEYS } from '@/lib/calendar-copy';
 import { GroupToneSchema } from '@/lib/group-tone';
+import { requiredDay, requiredPerson } from '@/lib/required-fields';
 
 export const GroupEntryPrefillSearchSchema = AppSearchSchema.extend({
   person: z.string().optional().catch(undefined),
@@ -184,6 +185,29 @@ export const EndGroupAdminFormSchema = z.object({
   endedOn: z.iso.date(),
 });
 export type EndGroupAdminForm = z.infer<typeof EndGroupAdminFormSchema>;
+
+export const ADMIN_FUNCTION_MAX_LENGTH = 64;
+
+export const GroupMembershipJoinFormSchema = z.object({
+  person: requiredPerson('Wähle die Person, die in die Gruppe kommt.'),
+  joinedOn: requiredDay('Der erste Tag fehlt.'),
+  makeAdmin: z.boolean(),
+  functionLabel: z.string().max(ADMIN_FUNCTION_MAX_LENGTH),
+});
+
+export const GroupMembershipEndFormSchema = z.object({
+  endedOn: requiredDay('Der letzte Tag fehlt.'),
+});
+
+export const GroupAdminAppointFormSchema = z.object({
+  person: requiredPerson('Wähle die Person, die Gruppen-Admin wird.'),
+  functionLabel: z.string().max(ADMIN_FUNCTION_MAX_LENGTH),
+  sinceOn: requiredDay('Der erste Tag fehlt.'),
+});
+
+export const GroupAdminEndFormSchema = z.object({
+  endedOn: requiredDay('Der letzte Tag fehlt.'),
+});
 
 export const TRAINING_DURATION_MINUTES = { min: 15, max: 480 } as const;
 export const TRAINING_TITLE_MAX_LENGTH = 120;

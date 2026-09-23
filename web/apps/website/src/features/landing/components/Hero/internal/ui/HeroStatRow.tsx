@@ -9,7 +9,7 @@ export const HeroStatRow: FC = () => (
   <KkStatRow sx={{ gap: 4 }}>
     {stats.map((stat) => (
       <KkStatRow.Item key={stat.label}>
-        <KkStatRow.Value variant="h4" sx={{ color: 'primary.main' }}>
+        <KkStatRow.Value variant="h2" sx={{ color: 'primary.main' }}>
           {stat.value}
         </KkStatRow.Value>
         <KkStatRow.Label>{stat.label}</KkStatRow.Label>

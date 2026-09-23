@@ -40,9 +40,7 @@ export const KeyHistoryPanel: FC<KeyHistoryPanelProps> = ({ holdings, highlighte
 
   return (
     <Stack sx={{ gap: HISTORY_GAP, minWidth: 0 }}>
-      <KkEyebrow tone="muted" size="small">
-        {KEY_SECTION_TITLES.ended}
-      </KkEyebrow>
+      <KkEyebrow tone="muted">{KEY_SECTION_TITLES.ended}</KkEyebrow>
       <KkPanel variant="list">{rows}</KkPanel>
     </Stack>
   );

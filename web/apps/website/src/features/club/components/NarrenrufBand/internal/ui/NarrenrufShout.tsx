@@ -1,4 +1,3 @@
-import { kkTokens } from '@furria/ui';
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
 import { narrenrufBandContent } from '@/features/club/narrenruf-content';
@@ -9,8 +8,7 @@ export const NarrenrufShout: FC = () => (
     sx={{
       position: 'relative',
       zIndex: 1,
-      fontFamily: kkTokens.font.display,
-      fontSize: { xs: '4.5rem', sm: '6rem', md: '8rem' },
+      typography: 'display',
       lineHeight: 0.86,
       letterSpacing: '0.01em',
       textAlign: { xs: 'left', md: 'right' },

@@ -1,5 +1,5 @@
 import type { KkPanelAction } from '@furria/ui';
-import { KkPanelSection } from '@furria/ui';
+import { KkPanel, KkPanelSection } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
@@ -38,7 +38,13 @@ export const RolesView: FC<RolesViewProps> = ({ roles, catalogue, search }) => {
   const detailRef = useDetailScroll(roleId);
 
   if (roles.length === 0) {
-    return <RolesEmpty />;
+    return (
+      <KkPanelSection title={LIST_TITLE} action={ADD_ACTION}>
+        <KkPanel variant="block">
+          <RolesEmpty />
+        </KkPanel>
+      </KkPanelSection>
+    );
   }
 
   const list =

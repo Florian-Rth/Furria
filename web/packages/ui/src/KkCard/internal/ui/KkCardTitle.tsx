@@ -7,7 +7,7 @@ interface KkCardTitleProps extends PropsWithChildren {
 
 export const KkCardTitle: FC<KkCardTitleProps> = ({ clamp, children }) => (
   <Typography
-    variant="h5"
+    variant="h4"
     component="h3"
     data-kk-card-title
     sx={(theme) => ({

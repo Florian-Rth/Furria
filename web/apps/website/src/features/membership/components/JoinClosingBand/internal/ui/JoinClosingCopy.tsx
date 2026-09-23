@@ -7,7 +7,11 @@ import { joinClosingBandContent } from '@/features/membership/closing-content';
 export const JoinClosingCopy: FC = () => (
   <Stack sx={{ gap: 1.5, maxWidth: { md: '38rem' } }}>
     <KkEyebrow tone="onAccent">{joinClosingBandContent.kicker}</KkEyebrow>
-    <Typography variant="h2" component="h2" sx={{ textWrap: 'balance' }}>
+    <Typography
+      variant="h2"
+      component="h2"
+      sx={{ typography: { xs: 'h2', md: 'h1' }, textWrap: 'balance' }}
+    >
       {joinClosingBandContent.headline}
     </Typography>
     <Typography variant="body1" sx={{ fontWeight: 500, opacity: 0.92, textWrap: 'pretty' }}>

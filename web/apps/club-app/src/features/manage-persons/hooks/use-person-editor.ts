@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import type { FieldErrors, UseFormReturn } from 'react-hook-form';
-import { useForm } from 'react-hook-form';
+import { useController, useForm } from 'react-hook-form';
 import { toLandingKey } from '@/features/write';
 import { RequestFailedError } from '@/lib/api/api-error';
 import { toCamelCaseField } from '@/lib/api/api-failures';
@@ -92,6 +92,7 @@ export interface PersonEditorControl {
   birthDate: string | null;
   setBirthDate: (value: string | null) => void;
   isDirty: boolean;
+  canSubmit: boolean;
   isSaving: boolean;
   rejection: string | null;
   actionLabel: string;
@@ -107,7 +108,10 @@ export const usePersonEditor = ({ person }: PersonEditorInput): PersonEditorCont
   const form = useForm<PersonForm>({
     resolver: zodResolver(PersonFormSchema),
     defaultValues: toPersonFormValues(person),
+    mode: 'onTouched',
   });
+  const { isDirty, isValid } = form.formState;
+  const birthDate = useController({ control: form.control, name: 'birthDate' });
 
   const reject = (error: Error): void => {
     if (error instanceof RequestFailedError && error.status === FIELD_ERROR_STATUS) {
@@ -158,11 +162,10 @@ export const usePersonEditor = ({ person }: PersonEditorInput): PersonEditorCont
   return {
     form,
     errors: form.formState.errors,
-    birthDate: form.watch('birthDate'),
-    setBirthDate: (value) => {
-      form.setValue('birthDate', value, { shouldDirty: true });
-    },
-    isDirty: form.formState.isDirty,
+    birthDate: birthDate.field.value,
+    setBirthDate: birthDate.field.onChange,
+    isDirty,
+    canSubmit: isValid,
     isSaving: create.isPending || update.isPending,
     rejection,
     actionLabel: person === null ? CREATE_LABEL : SAVE_LABEL,

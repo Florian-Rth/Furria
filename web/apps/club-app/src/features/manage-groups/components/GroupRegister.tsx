@@ -34,9 +34,7 @@ export const GroupRegister: FC<GroupRegisterProps> = ({
   const archivedLabel =
     bands.archived.length === 0 ? null : (
       <Stack sx={BAND_LABEL}>
-        <KkEyebrow tone="muted" size="small">
-          {ARCHIVED_BAND_TITLE}
-        </KkEyebrow>
+        <KkEyebrow tone="muted">{ARCHIVED_BAND_TITLE}</KkEyebrow>
       </Stack>
     );
 

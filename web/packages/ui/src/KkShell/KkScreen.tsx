@@ -1,31 +1,25 @@
-import GlobalStyles from '@mui/material/GlobalStyles';
 import type { FC } from 'react';
-import { safeArea } from '../internal/safe-area';
+import { createPortal } from 'react-dom';
 import { KkLetterIndex } from '../KkLetterIndex';
 import { kkTokens } from '../tokens';
-import { KkShellChrome } from './internal/layout/KkShellChrome';
-import { KkShellFoot } from './internal/layout/KkShellFoot';
 import { KkShellHeader } from './internal/layout/KkShellHeader';
-import { KkShellIndex } from './internal/layout/KkShellIndex';
-import { KkShellTrack } from './internal/layout/KkShellTrack';
 import { footClearanceOf } from './internal/logic/foot-clearance';
+import { sectionOriginOf } from './internal/logic/section-origin';
 import { useKkShell } from './internal/logic/shell-context';
 import { useFootMeasure } from './internal/logic/use-foot-measure';
+import { useScreenStance } from './internal/logic/use-screen-stance';
 import { KkShellActionBar } from './internal/ui/KkShellActionBar';
 import { KkShellBar } from './internal/ui/KkShellBar';
 import type { KkShellBarLead } from './internal/ui/KkShellBarLeading';
 import { KkShellEntrance } from './internal/ui/KkShellEntrance';
-import { KkShellNav } from './internal/ui/KkShellNav';
-import { KkShellNotice } from './internal/ui/KkShellNotice';
 import { KkShellToolRow } from './internal/ui/KkShellToolRow';
 import type { KkScreenProps } from './screen-declaration';
 
-const { gutter, barHeight, chromeGap, toolRowHeight, indexWidth, screen } = kkTokens.shell;
+const { gutter, barHeight, chromeGap, toolRowHeight, indexWidth } = kkTokens.shell;
 
 const BAR_CLEARANCE = gutter * 2 + barHeight;
 const TOOL_ROW_CLEARANCE = chromeGap + toolRowHeight;
 const NO_CLEARANCE = 0;
-const FIRST_ARRIVAL_BLOCK = 1;
 
 export const KkScreen: FC<KkScreenProps> = ({
   kind,
@@ -42,75 +36,73 @@ export const KkScreen: FC<KkScreenProps> = ({
   thread,
   children,
 }) => {
-  const { keyboardInset, path, move } = useKkShell();
+  const { path, move, destinations, chromeHost, footHost, indexHost } = useKkShell();
   const { ref: actionBarRef, measured: measuredActionHeight } = useFootMeasure(
     action !== undefined,
   );
+  const barOrigin = origin ?? sectionOriginOf({ section, path, destinations });
   const lead: KkShellBarLead = header === undefined ? 'title' : 'brand';
   const searching = search !== undefined && search.query !== null;
   const showsTools = tools !== undefined && !searching;
-  const toolRow = <KkShellToolRow open={showsTools}>{tools}</KkShellToolRow>;
-  const nav = section === undefined ? null : <KkShellNav section={section} />;
-  const actionBar =
-    action === undefined ? null : <KkShellActionBar action={action} ref={actionBarRef} />;
-  const notice = kind === 'fullscreen' ? null : <KkShellNotice />;
   const headClearance = showsTools ? BAR_CLEARANCE + TOOL_ROW_CLEARANCE : BAR_CLEARANCE;
   const footClearance = footClearanceOf({ section, action, measured: measuredActionHeight });
   const indexClearance = index === undefined ? NO_CLEARANCE : indexWidth;
-  const arrivalBlocks = kind === 'fullscreen' ? FIRST_ARRIVAL_BLOCK : screen.arrivalBlocks;
 
-  const scrollClearance = {
-    html: {
-      scrollPaddingTop: safeArea('top', headClearance),
-      scrollPaddingBottom: safeArea('bottom', footClearance),
-    },
-  };
+  useScreenStance({
+    kind,
+    section: section ?? null,
+    headClearance,
+    footClearance,
+    indexClearance,
+  });
+
+  const chrome =
+    chromeHost === null
+      ? null
+      : createPortal(
+          <>
+            <KkShellBar
+              kind={kind}
+              lead={lead}
+              title={title}
+              origin={barOrigin}
+              actions={actions}
+              search={search}
+              thread={thread}
+            />
+            <KkShellToolRow open={showsTools}>{tools}</KkShellToolRow>
+          </>,
+          chromeHost,
+        );
+
+  const actionBar =
+    action === undefined || footHost === null
+      ? null
+      : createPortal(<KkShellActionBar action={action} ref={actionBarRef} />, footHost);
 
   const letterIndex =
-    index === undefined ? null : (
-      <KkShellIndex headClearance={headClearance} footClearance={footClearance}>
-        <KkLetterIndex
-          variant="rail"
-          label={index.label}
-          letters={index.letters}
-          current={index.current}
-          onSelect={index.onSelect}
-        />
-      </KkShellIndex>
-    );
+    index === undefined || indexHost === null
+      ? null
+      : createPortal(
+          <KkLetterIndex
+            variant="rail"
+            label={index.label}
+            letters={index.letters}
+            current={index.current}
+            onSelect={index.onSelect}
+          />,
+          indexHost,
+        );
 
   return (
     <>
-      <GlobalStyles styles={scrollClearance} />
-      <KkShellChrome>
-        <KkShellBar
-          kind={kind}
-          lead={lead}
-          title={title}
-          origin={origin}
-          actions={actions}
-          search={search}
-          thread={thread}
-        />
-        {toolRow}
-      </KkShellChrome>
-      <KkShellTrack
-        headClearance={headClearance}
-        footClearance={footClearance}
-        indexClearance={indexClearance}
-        arrivalBlocks={arrivalBlocks}
-      >
-        <KkShellEntrance path={path} move={move}>
-          <KkShellHeader kind={headerKind}>{header}</KkShellHeader>
-          {children}
-        </KkShellEntrance>
-      </KkShellTrack>
+      {chrome}
+      {actionBar}
       {letterIndex}
-      <KkShellFoot raise={keyboardInset}>
-        {notice}
-        {actionBar}
-        {nav}
-      </KkShellFoot>
+      <KkShellEntrance path={path} move={move}>
+        <KkShellHeader kind={headerKind}>{header}</KkShellHeader>
+        {children}
+      </KkShellEntrance>
     </>
   );
 };

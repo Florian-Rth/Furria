@@ -15,7 +15,7 @@ export const PhotoViewerCounter: FC<PhotoViewerCounterProps> = ({ position, coun
     data-kk-photo-viewer-counter
     sx={{
       flexShrink: 0,
-      fontSize: { xs: '1.0625rem', desktop: '1.375rem' },
+      typography: { xs: 'h4', desktop: 'h3' },
       letterSpacing: '0.04em',
       lineHeight: 1,
     }}

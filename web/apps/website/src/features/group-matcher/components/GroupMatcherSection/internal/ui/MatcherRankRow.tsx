@@ -20,10 +20,10 @@ export const MatcherRankRow: FC<MatcherRankRowProps> = ({ match }) => {
     <MatcherMatchCard>
       <MatcherMatchHead>
         <MatcherMatchTitleRow>
-          <Typography variant="h5" component="span" sx={{ color: 'text.secondary' }}>
+          <Typography variant="h3" component="span" sx={{ color: 'text.secondary' }}>
             {rankLabel}
           </Typography>
-          <Typography variant="h5" component="p">
+          <Typography variant="h3" component="p">
             {match.group.name}
           </Typography>
           <MatcherRecruitingChip badge={match.badge} />

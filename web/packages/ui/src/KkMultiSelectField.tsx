@@ -4,7 +4,7 @@ import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import { useId } from 'react';
 import { KkFieldChoiceChip } from './internal/KkFieldChoiceChip';
-import { KkEyebrow } from './KkEyebrow';
+import { KkFieldLabel } from './internal/KkFieldLabel';
 import type { KkSelectOption } from './KkSelectField';
 import type { KkSx } from './kk-sx';
 
@@ -17,6 +17,7 @@ interface KkMultiSelectFieldProps {
   emptyLabel?: string;
   hint?: string;
   disabled?: boolean;
+  required?: boolean;
   error?: boolean;
   helperText?: string;
   sx?: KkSx;
@@ -31,6 +32,7 @@ export const KkMultiSelectField: FC<KkMultiSelectFieldProps> = ({
   emptyLabel,
   hint,
   disabled = false,
+  required = false,
   error,
   helperText,
   sx,
@@ -74,7 +76,7 @@ export const KkMultiSelectField: FC<KkMultiSelectFieldProps> = ({
   return (
     <Stack data-kk-multi-select-field sx={[{ minWidth: 0, gap: 1 }, ...callerSx]}>
       <Box component="span" id={labelId}>
-        <KkEyebrow tone="muted">{label}</KkEyebrow>
+        <KkFieldLabel label={label} required={required} />
       </Box>
       <Stack
         direction="row"

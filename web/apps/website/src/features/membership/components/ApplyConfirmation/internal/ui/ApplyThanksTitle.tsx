@@ -11,7 +11,7 @@ interface ApplyThanksTitleProps {
 export const ApplyThanksTitle: FC<ApplyThanksTitleProps> = ({ firstName }) => (
   <Stack sx={{ gap: 1 }}>
     <KkEyebrow>{applyThanksEyebrow}</KkEyebrow>
-    <Typography variant="h2" component="h1" sx={{ textTransform: 'uppercase' }}>
+    <Typography variant="h1" component="h1" sx={{ textTransform: 'uppercase' }}>
       {buildApplyThanksHeadline(firstName)}
     </Typography>
   </Stack>

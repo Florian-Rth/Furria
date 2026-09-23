@@ -38,11 +38,6 @@ export const RoleEditor: FC<RoleEditorProps> = ({ roleEntry }) => {
   const origin = roleEntry === null ? ROLES_ORIGIN : toRoleOrigin(roleEntry);
 
   const nameField = control.form.register('name');
-  const description = control.form.watch('description');
-
-  const setDescription = (value: string): void => {
-    control.form.setValue('description', value, { shouldValidate: false });
-  };
 
   return (
     <WriteScreen
@@ -51,13 +46,19 @@ export const RoleEditor: FC<RoleEditorProps> = ({ roleEntry }) => {
       rejection={control.rejection ?? undefined}
       isDirty={control.isDirty}
       action={{
-        primary: { label: actionLabel, onSelect: control.submit, loading: control.isSaving },
+        primary: {
+          label: actionLabel,
+          onSelect: control.submit,
+          loading: control.isSaving,
+          disabled: !control.canSubmit,
+        },
       }}
     >
       <KkNote>{explanation}</KkNote>
       <KkTextField
         name={nameField.name}
         label={NAME_LABEL}
+        required
         inputRef={nameField.ref}
         onChange={nameField.onChange}
         onBlur={nameField.onBlur}
@@ -67,8 +68,9 @@ export const RoleEditor: FC<RoleEditorProps> = ({ roleEntry }) => {
       <KkTextArea
         name="description"
         label={DESCRIPTION_LABEL}
-        value={description}
-        onChange={setDescription}
+        value={control.description}
+        onChange={control.setDescription}
+        onBlur={control.touchDescription}
         rows={DESCRIPTION_ROWS}
         maxLength={ROLE_DESCRIPTION_MAX_LENGTH}
         showCount

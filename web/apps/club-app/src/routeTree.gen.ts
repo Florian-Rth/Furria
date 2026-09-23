@@ -18,6 +18,7 @@ import { Route as AppClubRouteImport } from './routes/_app/club'
 import { Route as AppCalendarRouteImport } from './routes/_app/calendar'
 import { Route as AppAnnouncementsRouteImport } from './routes/_app/announcements'
 import { Route as AppAffiliatedRouteImport } from './routes/_app/_affiliated'
+import { Route as AppSplatRouteImport } from './routes/_app/$'
 import { Route as AppManageIndexRouteImport } from './routes/_app/manage.index'
 import { Route as AppManageVenuesRouteImport } from './routes/_app/manage.venues'
 import { Route as AppManageSessionsRouteImport } from './routes/_app/manage.sessions'
@@ -114,6 +115,11 @@ const AppAnnouncementsRoute = AppAnnouncementsRouteImport.update({
 } as any)
 const AppAffiliatedRoute = AppAffiliatedRouteImport.update({
   id: '/_affiliated',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSplatRoute = AppSplatRouteImport.update({
+  id: '/$',
+  path: '/$',
   getParentRoute: () => AppRoute,
 } as any)
 const AppManageIndexRoute = AppManageIndexRouteImport.update({
@@ -422,6 +428,7 @@ const AppManageBoardBoardOfficeIdSeatsBoardSeatIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/login': typeof LoginRoute
+  '/$': typeof AppSplatRoute
   '/announcements': typeof AppAnnouncementsRoute
   '/calendar': typeof AppCalendarRoute
   '/club': typeof AppClubRoute
@@ -484,6 +491,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
+  '/$': typeof AppSplatRoute
   '/': typeof AppIndexRoute
   '/announcements': typeof AppAnnouncementsRoute
   '/calendar': typeof AppCalendarRoute
@@ -549,6 +557,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
+  '/_app/$': typeof AppSplatRoute
   '/_app/_affiliated': typeof AppAffiliatedRouteWithChildren
   '/_app/announcements': typeof AppAnnouncementsRoute
   '/_app/calendar': typeof AppCalendarRoute
@@ -616,6 +625,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/$'
     | '/announcements'
     | '/calendar'
     | '/club'
@@ -678,6 +688,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
+    | '/$'
     | '/'
     | '/announcements'
     | '/calendar'
@@ -742,6 +753,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_app'
     | '/login'
+    | '/_app/$'
     | '/_app/_affiliated'
     | '/_app/announcements'
     | '/_app/calendar'
@@ -873,6 +885,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AppAffiliatedRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/$': {
+      id: '/_app/$'
+      path: '/$'
+      fullPath: '/$'
+      preLoaderRoute: typeof AppSplatRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/manage/': {
@@ -1273,6 +1292,7 @@ const AppAffiliatedRouteWithChildren = AppAffiliatedRoute._addFileChildren(
 )
 
 interface AppRouteChildren {
+  AppSplatRoute: typeof AppSplatRoute
   AppAffiliatedRoute: typeof AppAffiliatedRouteWithChildren
   AppAnnouncementsRoute: typeof AppAnnouncementsRoute
   AppCalendarRoute: typeof AppCalendarRoute
@@ -1334,6 +1354,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppSplatRoute: AppSplatRoute,
   AppAffiliatedRoute: AppAffiliatedRouteWithChildren,
   AppAnnouncementsRoute: AppAnnouncementsRoute,
   AppCalendarRoute: AppCalendarRoute,

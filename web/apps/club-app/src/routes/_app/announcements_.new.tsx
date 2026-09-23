@@ -1,13 +1,21 @@
 import { createFileRoute } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { AnnouncementNewScreen } from '@/features/announcements';
-import { RequirePermission } from '@/features/session';
+import {
+  ANNOUNCEMENTS_ORIGIN,
+  ANNOUNCEMENTS_TITLE,
+  AnnouncementNewScreen,
+} from '@/features/announcements';
+import { RequireScreenPermission } from '@/features/session';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 
 const AnnouncementNewRoute: FC = () => (
-  <RequirePermission permissionKey={PERMISSION_KEYS.clubRead}>
+  <RequireScreenPermission
+    permissionKey={PERMISSION_KEYS.clubRead}
+    title={ANNOUNCEMENTS_TITLE}
+    origin={ANNOUNCEMENTS_ORIGIN}
+  >
     <AnnouncementNewScreen />
-  </RequirePermission>
+  </RequireScreenPermission>
 );
 
 export const Route = createFileRoute('/_app/announcements_/new')({

@@ -104,6 +104,7 @@ export const PersonMembershipEditor: FC<PersonMembershipEditorProps> = ({ person
           label: control.actionLabel,
           onSelect: control.submit,
           loading: control.isSaving,
+          disabled: !control.canSubmit,
           tone: control.actionTone,
         },
       }}
@@ -115,6 +116,9 @@ export const PersonMembershipEditor: FC<PersonMembershipEditorProps> = ({ person
         value={control.startedOn}
         onChange={control.setStartedOn}
         quickChoices={toMembershipQuickChoices(today)}
+        required
+        error={control.startedOnError !== undefined}
+        helperText={control.startedOnError}
         hint={START_HINT}
       />
       <KkDateField

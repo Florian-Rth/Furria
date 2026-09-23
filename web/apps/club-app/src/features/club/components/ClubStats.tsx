@@ -21,7 +21,7 @@ export const ClubStats: FC = () => {
     <KkStatRow>
       {entries.map((entry) => (
         <KkStatRow.Item key={entry.id}>
-          <KkStatRow.Value variant="h3" tone={entry.tone}>
+          <KkStatRow.Value variant="h2" tone={entry.tone}>
             {entry.count}
           </KkStatRow.Value>
           <KkStatRow.Label>{entry.label}</KkStatRow.Label>

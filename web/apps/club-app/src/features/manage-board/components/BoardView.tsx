@@ -1,5 +1,5 @@
 import type { KkPanelAction } from '@furria/ui';
-import { KkPanelSection, KkPanelStack } from '@furria/ui';
+import { KkPanel, KkPanelSection, KkPanelStack } from '@furria/ui';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { useLanding } from '@/features/write';
@@ -28,7 +28,13 @@ export const BoardView: FC<BoardViewProps> = ({ entries }) => {
   const { highlightedKey } = useLanding();
 
   if (entries.length === 0) {
-    return <BoardEmpty />;
+    return (
+      <KkPanelSection title={LIST_TITLE} action={ADD_ACTION}>
+        <KkPanel variant="block">
+          <BoardEmpty />
+        </KkPanel>
+      </KkPanelSection>
+    );
   }
 
   return (

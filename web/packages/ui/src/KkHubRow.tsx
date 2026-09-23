@@ -7,6 +7,7 @@ import { focusRing } from './internal/focus-ring';
 import { highlightMark, highlightPaint } from './internal/highlight-paint';
 import { redInk } from './internal/red-ink';
 import { rowDividerTop } from './internal/row-divider';
+import type { KkChipTone } from './KkChip';
 import { KkChip } from './KkChip';
 import type { KkIconName } from './KkIcon';
 import { KkIcon } from './KkIcon';
@@ -28,6 +29,7 @@ interface KkHubRowProps {
   icon: KkIconName;
   meta?: string;
   hint?: string;
+  hintTone?: KkChipTone;
   highlight?: boolean;
   landing?: string;
   component?: ElementType;
@@ -40,6 +42,7 @@ export const KkHubRow: FC<KkHubRowProps> = ({
   icon,
   meta,
   hint,
+  hintTone = 'neutral',
   highlight = false,
   landing,
   component,
@@ -57,7 +60,7 @@ export const KkHubRow: FC<KkHubRowProps> = ({
 
   const hintChip =
     hint === undefined ? null : (
-      <KkChip tone="neutral" size="small">
+      <KkChip tone={hintTone} size="small">
         {hint}
       </KkChip>
     );
@@ -108,9 +111,7 @@ export const KkHubRow: FC<KkHubRowProps> = ({
           component="span"
           data-kk-hub-row-label
           sx={{
-            fontFamily: kkTokens.font.display,
-            fontWeight: kkTokens.font.displayWeight,
-            fontSize: kkTokens.type.rowValue,
+            typography: 'h4',
             letterSpacing: kkTokens.type.tracking.display,
             lineHeight: 1.3,
             color: labelColor,

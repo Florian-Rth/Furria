@@ -26,7 +26,11 @@ export const OVERVIEW_SECTION = 'overview';
 export const CLUB_SECTION = 'club';
 export const MORE_SECTION = 'more';
 
-export const CLUB_ORIGIN: KkScreenOrigin = { label: 'Verein', to: CLUB_PATH };
+export const OVERVIEW_TITLE = 'Übersicht';
+export const CLUB_TITLE = 'Verein';
+
+export const OVERVIEW_ORIGIN: KkScreenOrigin = { label: OVERVIEW_TITLE, to: OVERVIEW_PATH };
+export const CLUB_ORIGIN: KkScreenOrigin = { label: CLUB_TITLE, to: CLUB_PATH };
 export const GROUPS_ORIGIN: KkScreenOrigin = { label: 'Gruppen', to: GROUPS_PATH };
 export const PROFILE_ORIGIN: KkScreenOrigin = { label: 'Profil', to: PROFILE_PATH };
 export const MORE_ORIGIN: KkScreenOrigin = { label: 'Mehr', to: MORE_PATH };
@@ -44,12 +48,12 @@ export const MANAGE_KEYS: readonly PermissionKey[] = [
 export const APP_DESTINATIONS: readonly KkShellDestination[] = [
   {
     id: OVERVIEW_SECTION,
-    label: 'Übersicht',
+    label: OVERVIEW_TITLE,
     icon: 'overview',
     activeIcon: 'home',
     to: OVERVIEW_PATH,
   },
-  { id: CLUB_SECTION, label: 'Verein', icon: 'club', activeIcon: 'clubFilled', to: CLUB_PATH },
+  { id: CLUB_SECTION, label: CLUB_TITLE, icon: 'club', activeIcon: 'clubFilled', to: CLUB_PATH },
   { id: MORE_SECTION, label: 'Mehr', icon: 'more', activeIcon: 'moreFilled', to: MORE_PATH },
 ];
 

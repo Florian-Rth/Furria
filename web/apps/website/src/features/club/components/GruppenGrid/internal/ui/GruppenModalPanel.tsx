@@ -61,8 +61,7 @@ export const GruppenModalPanel: FC<GruppenModalPanelProps> = ({
             bgcolor: 'background.paper',
             border: 1,
             borderColor: 'divider',
-            fontFamily: kkTokens.font.body,
-            fontSize: '1rem',
+            typography: 'body1',
             lineHeight: 1,
             '&:hover': { bgcolor: 'background.paper' },
           }}
@@ -72,7 +71,7 @@ export const GruppenModalPanel: FC<GruppenModalPanelProps> = ({
       </Box>
       <Stack sx={{ gap: 2.5, p: { xs: 3, md: 4 } }}>
         <Stack sx={{ gap: 1.5, alignItems: 'flex-start' }}>
-          <Typography id={titleId} variant="h3" component="h2">
+          <Typography id={titleId} variant="h2" component="h2">
             {group.name}
           </Typography>
           <GruppenOpennessChip openness={openness} />

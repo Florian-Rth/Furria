@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { AppSearchSchema } from '@/features/session';
 import { GroupRefSchema, MembershipStateSchema, RoleRefSchema } from '@/lib/api/schemas';
+import { requiredDay, requiredSessionYear } from '@/lib/required-fields';
 
 export const FeeReductionBasisSchema = z.enum(['minor', 'school', 'apprenticeship', 'studies']);
 export type FeeReductionBasis = z.infer<typeof FeeReductionBasisSchema>;
@@ -124,7 +125,7 @@ export const PersonFormSchema = z.object({
 export type PersonForm = z.infer<typeof PersonFormSchema>;
 
 export const MembershipFormSchema = z.object({
-  startedOn: z.iso.date(),
+  startedOn: requiredDay('Der erste Tag fehlt.'),
   endedOn: z.iso.date().nullable(),
 });
 export type MembershipForm = z.infer<typeof MembershipFormSchema>;
@@ -134,15 +135,17 @@ export const PauseNewSearchSchema = AppSearchSchema.extend({
 });
 export type PauseNewSearch = z.infer<typeof PauseNewSearchSchema>;
 
+const FIRST_SESSION_MISSING = 'Die erste Session fehlt.';
+
 export const PauseFormSchema = z.object({
-  firstSessionYear: z.number().int(),
+  firstSessionYear: requiredSessionYear(FIRST_SESSION_MISSING),
   lastSessionYear: z.number().int().nullable(),
 });
 export type PauseForm = z.infer<typeof PauseFormSchema>;
 
 export const FeeReductionFormSchema = z.object({
   basis: FeeReductionBasisSchema,
-  firstSessionYear: z.number().int(),
-  lastSessionYear: z.number().int(),
+  firstSessionYear: requiredSessionYear(FIRST_SESSION_MISSING),
+  lastSessionYear: requiredSessionYear('Die letzte Session fehlt.'),
 });
 export type FeeReductionForm = z.infer<typeof FeeReductionFormSchema>;

@@ -22,6 +22,7 @@ export interface SessionEditorControl {
   clearLogo: () => void;
   currentSessionYear: number;
   isDirty: boolean;
+  canSubmit: boolean;
   isSaving: boolean;
   rejection: string | null;
   submit: () => void;
@@ -37,7 +38,9 @@ export const useSessionEditor = (record: SessionRecordSummary | null): SessionEd
   const form = useForm<SessionRecordForm>({
     resolver: zodResolver(SessionRecordFormSchema),
     defaultValues: toSessionRecordForm(record),
+    mode: 'onTouched',
   });
+  const { isDirty, isValid } = form.formState;
 
   const setStartYear = (value: number | null): void => {
     form.setValue('startYear', value, { shouldValidate: true, shouldDirty: true });
@@ -133,7 +136,8 @@ export const useSessionEditor = (record: SessionRecordSummary | null): SessionEd
     takeLogoFile,
     clearLogo,
     currentSessionYear: relevantSessionYear(new Date()),
-    isDirty: form.formState.isDirty,
+    isDirty,
+    canSubmit: isValid,
     isSaving: createMutation.isPending || updateMutation.isPending,
     rejection,
     submit,

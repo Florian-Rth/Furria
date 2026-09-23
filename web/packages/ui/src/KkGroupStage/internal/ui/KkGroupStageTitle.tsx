@@ -6,7 +6,6 @@ import { kkTokens } from '../../../tokens';
 
 const TITLE_LINES = 2;
 const TITLE_LINE_HEIGHT = 0.92;
-const TITLE_SIZE = kkTokens.headline.page;
 
 interface KkGroupStageTitleProps {
   name: string;
@@ -20,7 +19,7 @@ export const KkGroupStageTitle: FC<KkGroupStageTitleProps> = ({ name, sx }) => (
     sx={[
       {
         color: 'inherit',
-        fontSize: TITLE_SIZE,
+        typography: 'display',
         letterSpacing: kkTokens.type.tracking.display,
         lineHeight: TITLE_LINE_HEIGHT,
         textShadow: kkTokens.overlay.textShadow,

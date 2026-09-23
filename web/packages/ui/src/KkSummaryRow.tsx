@@ -77,13 +77,13 @@ export const KkSummaryRow: FC<KkSummaryRowProps> = ({
       component="span"
       sx={{ width: FACT_COLUMN_WIDTH, flexShrink: 0, gap: 0.25, minWidth: 0 }}
     >
-      <KkEyebrow tone="muted" size="small" sx={{ lineHeight: 1, whiteSpace: 'nowrap' }}>
+      <KkEyebrow tone="muted" sx={{ lineHeight: 1, whiteSpace: 'nowrap' }}>
         {fact.label}
       </KkEyebrow>
       <Typography
         component="span"
         sx={{
-          fontSize: kkTokens.type.rowMeta,
+          typography: 'caption',
           fontWeight: 800,
           lineHeight: 1.2,
           color: 'text.primary',
@@ -176,7 +176,7 @@ export const KkSummaryRow: FC<KkSummaryRowProps> = ({
           component="span"
           data-kk-summary-row-title
           sx={{
-            fontSize: kkTokens.type.rowTitle,
+            typography: 'body2',
             fontWeight: 800,
             lineHeight: 1.25,
             color: titleColor,

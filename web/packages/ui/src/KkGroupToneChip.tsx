@@ -30,7 +30,7 @@ export const KkGroupToneChip: FC<KkGroupToneChipProps> = ({
         flexShrink: 0,
         gap: 0.75,
         borderRadius: `${kkTokens.radius.chip}px`,
-        fontFamily: kkTokens.font.body,
+        ...theme.typography.caption,
         fontWeight: 800,
         letterSpacing: kkTokens.type.tracking.label,
         lineHeight: 1.2,

@@ -12,8 +12,6 @@ import type { KkSx } from './kk-sx';
 import type { KkPanelAction, KkPanelActionEmphasis } from './panel-action';
 import { kkTokens } from './tokens';
 
-type KkPanelHeaderSize = 'small' | 'medium';
-
 const MARKER_SIZE = 9;
 const RULE_BLEED = 26;
 const RULE_MIN_WIDTH = RULE_BLEED * 2;
@@ -22,11 +20,6 @@ const ACTION_SLOT = { ml: 'auto', flexShrink: 0 } as const;
 const actionVariants: Record<KkPanelActionEmphasis, 'outlined' | 'text'> = {
   strong: 'outlined',
   quiet: 'text',
-};
-
-const titleSizes: Record<KkPanelHeaderSize, string> = {
-  small: kkTokens.type.sectionTitle,
-  medium: kkTokens.type.blockTitle,
 };
 
 const ruleImage = (theme: Theme): string =>
@@ -49,7 +42,6 @@ interface KkPanelHeaderProps {
   title: string;
   action?: KkPanelAction;
   meta?: ReactNode;
-  size?: KkPanelHeaderSize;
   groupTone?: KkGroupTone;
   titleRef?: Ref<HTMLHeadingElement>;
   sx?: KkSx;
@@ -59,7 +51,6 @@ export const KkPanelHeader: FC<KkPanelHeaderProps> = ({
   title,
   action,
   meta,
-  size = 'small',
   groupTone,
   titleRef,
   sx,
@@ -125,9 +116,7 @@ export const KkPanelHeader: FC<KkPanelHeaderProps> = ({
         tabIndex={-1}
         data-kk-panel-header-title
         sx={{
-          fontFamily: kkTokens.font.display,
-          fontWeight: kkTokens.font.displayWeight,
-          fontSize: titleSizes[size],
+          typography: 'h3',
           letterSpacing: kkTokens.type.tracking.section,
           lineHeight: 1,
           color: 'text.primary',

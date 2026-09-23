@@ -28,14 +28,20 @@ export const GroupCreateEditor: FC = () => {
       origin={MANAGE_GROUPS_ORIGIN}
       title={TITLE}
       rejection={control.rejection ?? undefined}
-      isDirty={control.form.formState.isDirty}
+      isDirty={control.isDirty}
       action={{
-        primary: { label: ADD_LABEL, onSelect: control.submit, loading: control.isSaving },
+        primary: {
+          label: ADD_LABEL,
+          onSelect: control.submit,
+          loading: control.isSaving,
+          disabled: !control.canSubmit,
+        },
       }}
     >
       <KkTextField
         name={nameField.name}
         label={NAME_LABEL}
+        required
         error={nameErrorText !== undefined}
         helperText={nameErrorText}
         onChange={nameField.onChange}

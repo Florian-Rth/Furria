@@ -22,7 +22,7 @@ export const SiteFooter: FC = () => (
       <Stack sx={{ gap: 1.5, maxWidth: 'sm' }}>
         <Stack direction="row" sx={{ alignItems: 'center', gap: 1.5, color: 'text.primary' }}>
           <BroomMarkIcon />
-          <Typography variant="h5" component="span" sx={{ letterSpacing: '0.06em' }}>
+          <Typography variant="h3" component="span" sx={{ letterSpacing: '0.06em' }}>
             FURRIA
           </Typography>
         </Stack>

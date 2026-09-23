@@ -10,7 +10,6 @@ export const NewsPostParagraph: FC<NewsPostParagraphProps> = ({ paragraph }) => 
   <Typography
     variant="body1"
     sx={{
-      fontSize: { xs: '1rem', md: '1.125rem' },
       lineHeight: 1.72,
       textWrap: 'pretty',
     }}

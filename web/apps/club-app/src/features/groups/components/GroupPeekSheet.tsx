@@ -59,11 +59,7 @@ export const GroupPeekSheet: FC<GroupPeekSheetProps> = ({ groups }) => {
   const kindLabel = toGroupKindLabel(group.groupKindName);
 
   const kindEyebrow =
-    kindLabel === null ? undefined : (
-      <KkEyebrow tone="onAccent" size="small">
-        {kindLabel}
-      </KkEyebrow>
-    );
+    kindLabel === null ? undefined : <KkEyebrow tone="onAccent">{kindLabel}</KkEyebrow>;
 
   return (
     <KkSheet

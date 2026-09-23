@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { AppSearchSchema } from '@/features/session';
 import { PersonRefSchema } from '@/lib/api/schemas';
+import { requiredDay, requiredPerson } from '@/lib/required-fields';
 
 const NAME_REQUIRED_MESSAGE = 'Gib der Rolle einen Namen.';
 const NAME_TOO_LONG_MESSAGE = 'Der Name darf höchstens 80 Zeichen haben.';
@@ -73,3 +74,12 @@ export const EndRoleHoldingFormSchema = z.object({
   endedOn: z.iso.date(),
 });
 export type EndRoleHoldingForm = z.infer<typeof EndRoleHoldingFormSchema>;
+
+export const RoleHoldingAddFormSchema = z.object({
+  person: requiredPerson('Wähle die Person, die die Rolle innehat.'),
+  sinceOn: requiredDay('Der erste Tag fehlt.'),
+});
+
+export const RoleHoldingEndFormSchema = z.object({
+  endedOn: requiredDay('Der letzte Tag fehlt.'),
+});

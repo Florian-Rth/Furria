@@ -1,12 +1,4 @@
-import {
-  KkAlert,
-  KkBrandStage,
-  KkEyebrow,
-  KkHeading,
-  KkNote,
-  KkSplitLayout,
-  useIsMobile,
-} from '@furria/ui';
+import { KkAlert, KkBrandStage, KkEyebrow, KkHeading, KkNote, KkSplitLayout } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { SESSION_EXPIRED_MESSAGE } from '../login-messages';
@@ -15,7 +7,6 @@ import { LoginForm } from './LoginForm';
 import { LoginHelpNote } from './LoginHelpNote';
 import { LoginTestCredentials } from './LoginTestCredentials';
 
-const HEADING_LEVEL = { mobile: 4, desktop: 3 } as const;
 const INTRO = 'Der Mitgliederbereich des FCC.';
 
 interface LoginScreenProps {
@@ -23,9 +14,7 @@ interface LoginScreenProps {
 }
 
 export const LoginScreen: FC<LoginScreenProps> = ({ expired }) => {
-  const isMobile = useIsMobile();
   const stageMeta = buildLoginStageMeta(new Date());
-  const headingLevel = isMobile ? HEADING_LEVEL.mobile : HEADING_LEVEL.desktop;
   const expiredNotice = expired ? (
     <KkAlert severity="warning">{SESSION_EXPIRED_MESSAGE}</KkAlert>
   ) : null;
@@ -42,7 +31,7 @@ export const LoginScreen: FC<LoginScreenProps> = ({ expired }) => {
       </KkSplitLayout.Stage>
       <KkSplitLayout.Pane>
         <Stack sx={{ gap: 1 }}>
-          <KkHeading level={headingLevel} component="h1">
+          <KkHeading level={1} component="h1">
             ANMELDEN
           </KkHeading>
           <KkNote>{INTRO}</KkNote>

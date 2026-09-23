@@ -42,7 +42,7 @@ export const KeyVenueTile: FC<KeyVenueTileProps> = ({ venue, sx }) => {
       sx={sx}
     >
       <Stack sx={{ gap: 1.25, minWidth: 0, height: '100%' }}>
-        <KkHeading level={5} component="h3" sx={{ minWidth: 0 }}>
+        <KkHeading level={4} component="h3" sx={{ minWidth: 0 }}>
           {venue.name}
         </KkHeading>
         <Stack sx={{ minWidth: 0, alignItems: 'flex-start', mt: 'auto', pt: 0.5 }}>{faces}</Stack>

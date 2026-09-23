@@ -179,7 +179,7 @@ public sealed class BootstrapAdminSeederTests
     }
 
     [Fact]
-    public async Task Should_LeaveTheKeysAlone_When_TheClubRemovedOneFromTheAdminRolle()
+    public async Task Should_GrantTheMissingBerechtigung_When_TheAdminRolleLacksOne()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
@@ -193,10 +193,35 @@ public sealed class BootstrapAdminSeederTests
 
         await ctx
             .Expected.Role(_fixture.AdminRoleId)
-            .ToGrantExactly([
-                .. FurriaPermissions.All.Where(key => key != FurriaPermissions.RolesManage),
-            ])
+            .ToGrantExactly([.. FurriaPermissions.All])
             .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_EnableTheAdminAccount_When_ItWasDisabled()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(ct);
+        await _fixture.DisableAccountDirectlyAsync(_fixture.BootstrapAdmin.AccountId, ct);
+
+        await _fixture.RunBootstrapSeederAsync(ct);
+
+        await ctx
+            .Expected.Account(_fixture.BootstrapAdmin.AccountId)
+            .ToBeDisabled(false)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_UnarchiveTheAdminRolle_When_TheClubArchivedIt()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(ct);
+        await _fixture.ArchiveRoleDirectlyAsync(_fixture.AdminRoleId, _fixture.Today, ct);
+
+        await _fixture.RunBootstrapSeederAsync(ct);
+
+        await ctx.Expected.Role(_fixture.AdminRoleId).ToBeArchivedOn(null).AssertAsync(ct);
     }
 
     [Fact]

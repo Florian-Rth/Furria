@@ -1,5 +1,7 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
+import { useController, useForm } from 'react-hook-form';
 import { toLandingKey } from '@/features/write';
 import { sessionAt } from '@/lib/club';
 import { toWriteErrorMessage } from '@/lib/write-error';
@@ -10,7 +12,7 @@ import {
   toFeeReductionConsequence,
 } from '../manage-persons-labels';
 import type { CreatedFeeReduction, FeeReductionBasis, PersonFeeReduction } from '../schemas';
-import { FeeReductionBasisSchema } from '../schemas';
+import { FeeReductionBasisSchema, FeeReductionFormSchema } from '../schemas';
 
 const DEFAULT_BASIS: FeeReductionBasis = 'minor';
 
@@ -24,13 +26,16 @@ export interface PersonFeeReductionEditorControl {
   selectBasis: (value: string) => void;
   firstSessionYear: number | null;
   setFirstSessionYear: (value: number | null) => void;
+  firstSessionYearError: string | undefined;
   lastSessionYear: number | null;
   setLastSessionYear: (value: number | null) => void;
+  lastSessionYearError: string | undefined;
   currentSessionYear: number;
   consequence: string | null;
   rejection: string | null;
   isSaving: boolean;
   isDirty: boolean;
+  canSubmit: boolean;
   actionLabel: string;
   submit: () => void;
 }
@@ -40,17 +45,24 @@ export const usePersonFeeReductionEditor = ({
   reduction,
 }: PersonFeeReductionEditorInput): PersonFeeReductionEditorControl => {
   const currentSessionYearValue = sessionAt(new Date()).startYear;
-  const initialBasis = reduction?.basis ?? DEFAULT_BASIS;
-  const initialFirst = reduction?.firstSessionYear ?? currentSessionYearValue;
-  const initialLast = reduction?.lastSessionYear ?? currentSessionYearValue;
-
-  const [basis, setBasis] = useState<FeeReductionBasis>(initialBasis);
-  const [firstSessionYear, setFirstSessionYear] = useState<number | null>(initialFirst);
-  const [lastSessionYear, setLastSessionYear] = useState<number | null>(initialLast);
   const [rejection, setRejection] = useState<string | null>(null);
   const create = useCreateFeeReductionMutation(personId);
   const update = useUpdateFeeReductionMutation(personId);
   const navigate = useNavigate();
+
+  const form = useForm({
+    resolver: zodResolver(FeeReductionFormSchema),
+    defaultValues: {
+      basis: reduction?.basis ?? DEFAULT_BASIS,
+      firstSessionYear: reduction?.firstSessionYear ?? currentSessionYearValue,
+      lastSessionYear: reduction?.lastSessionYear ?? currentSessionYearValue,
+    },
+    mode: 'onTouched',
+  });
+  const { isDirty, isValid, errors } = form.formState;
+  const basis = useController({ control: form.control, name: 'basis' });
+  const firstSessionYear = useController({ control: form.control, name: 'firstSessionYear' });
+  const lastSessionYear = useController({ control: form.control, name: 'lastSessionYear' });
 
   const fail = (error: Error): void => {
     setRejection(toWriteErrorMessage(error));
@@ -72,54 +84,53 @@ export const usePersonFeeReductionEditor = ({
     const parsed = FeeReductionBasisSchema.safeParse(value);
 
     if (parsed.success) {
-      setBasis(parsed.data);
+      basis.field.onChange(parsed.data);
     }
   };
 
-  const submit = (): void => {
-    if (firstSessionYear === null || lastSessionYear === null) {
-      return;
-    }
-
+  const handleFormSubmit = form.handleSubmit((submitted) => {
     setRejection(null);
 
     if (reduction === null) {
-      create.mutate(
-        { basis, firstSessionYear, lastSessionYear },
-        {
-          onSuccess: (created: CreatedFeeReduction) => landBack(created.feeReductionId),
-          onError: fail,
-        },
-      );
+      create.mutate(submitted, {
+        onSuccess: (created: CreatedFeeReduction) => landBack(created.feeReductionId),
+        onError: fail,
+      });
 
       return;
     }
 
     update.mutate(
-      { feeReductionId: reduction.feeReductionId, basis, firstSessionYear, lastSessionYear },
+      { feeReductionId: reduction.feeReductionId, ...submitted },
       { onSuccess: () => landBack(reduction.feeReductionId), onError: fail },
     );
-  };
+  });
+
+  const basisValue = basis.field.value;
+  const firstValue = firstSessionYear.field.value;
+  const lastValue = lastSessionYear.field.value;
 
   return {
-    basis,
+    basis: basisValue,
     selectBasis,
-    firstSessionYear,
-    setFirstSessionYear,
-    lastSessionYear,
-    setLastSessionYear,
+    firstSessionYear: firstValue,
+    setFirstSessionYear: firstSessionYear.field.onChange,
+    firstSessionYearError: errors.firstSessionYear?.message,
+    lastSessionYear: lastValue,
+    setLastSessionYear: lastSessionYear.field.onChange,
+    lastSessionYearError: errors.lastSessionYear?.message,
     currentSessionYear: currentSessionYearValue,
     consequence:
-      firstSessionYear === null || lastSessionYear === null
+      firstValue === null || lastValue === null
         ? null
-        : toFeeReductionConsequence(basis, firstSessionYear, lastSessionYear),
+        : toFeeReductionConsequence(basisValue, firstValue, lastValue),
     rejection,
     isSaving: create.isPending || update.isPending,
-    isDirty:
-      basis !== initialBasis ||
-      firstSessionYear !== initialFirst ||
-      lastSessionYear !== initialLast,
+    isDirty,
+    canSubmit: isValid,
     actionLabel: reduction === null ? ADD_FEE_REDUCTION_ACTION_LABEL : FEE_REDUCTION_CHANGE_LABEL,
-    submit,
+    submit: () => {
+      void handleFormSubmit();
+    },
   };
 };

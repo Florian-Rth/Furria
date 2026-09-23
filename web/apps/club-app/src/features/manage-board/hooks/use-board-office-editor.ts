@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
-import { useForm } from 'react-hook-form';
+import { useController, useForm } from 'react-hook-form';
 import { usePermissions } from '@/features/session';
 import { toLandingKey } from '@/features/write';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
@@ -21,20 +21,21 @@ import {
   toImpliedRoleStatement,
   toImpliedRoleValue,
 } from '../manage-board-labels';
-import type { BoardOfficeForm, ImpliedRoleOption } from '../schemas';
-import { BoardOfficeFormSchema } from '../schemas';
+import type { BoardOfficeEditorForm, ImpliedRoleOption } from '../schemas';
+import { BoardOfficeEditorFormSchema } from '../schemas';
 
 const NO_BOARD_OFFICE = 0;
 const NO_ROLES: readonly ImpliedRoleOption[] = [];
 
 export interface BoardOfficeEditorControl {
-  form: UseFormReturn<BoardOfficeForm>;
+  form: UseFormReturn<BoardOfficeEditorForm>;
   canChangeRole: boolean;
   impliedRoleValue: string;
   setImpliedRoleValue: (value: string) => void;
   impliedRoleChoices: KkSelectOption[];
   impliedRoleStatement: string;
   isDirty: boolean;
+  canSubmit: boolean;
   isSaving: boolean;
   rejection: string | null;
   submit: () => void;
@@ -42,16 +43,19 @@ export interface BoardOfficeEditorControl {
 
 export const useBoardOfficeEditor = (entry: BoardOfficeEntry | null): BoardOfficeEditorControl => {
   const boardOfficeId = entry?.boardOfficeId ?? null;
-  const initial =
-    entry === null
-      ? { name: '', sortOrder: '1' }
-      : { name: entry.name, sortOrder: String(entry.sortOrder) };
   const initialImpliedRoleValue = toImpliedRoleValue(entry?.impliedRoleId ?? null);
+  const initial: BoardOfficeEditorForm =
+    entry === null
+      ? { name: '', sortOrder: '1', impliedRoleValue: initialImpliedRoleValue }
+      : {
+          name: entry.name,
+          sortOrder: String(entry.sortOrder),
+          impliedRoleValue: initialImpliedRoleValue,
+        };
 
   const { has } = usePermissions();
   const canChangeRole = entry !== null && has(PERMISSION_KEYS.rolesManage) && !entry.isArchived;
 
-  const [impliedRoleValue, setImpliedRoleValue] = useState(initialImpliedRoleValue);
   const [rejection, setRejection] = useState<string | null>(null);
 
   const roleOptions = useImpliedRoleOptionsQuery(canChangeRole);
@@ -67,12 +71,14 @@ export const useBoardOfficeEditor = (entry: BoardOfficeEntry | null): BoardOffic
   const setImpliedRole = useSetImpliedRoleMutation(boardOfficeId ?? NO_BOARD_OFFICE);
   const navigate = useNavigate();
 
-  const form = useForm<BoardOfficeForm>({
-    resolver: zodResolver(BoardOfficeFormSchema),
+  const form = useForm<BoardOfficeEditorForm>({
+    resolver: zodResolver(BoardOfficeEditorFormSchema),
     defaultValues: initial,
+    mode: 'onTouched',
   });
-
-  const isDirty = form.formState.isDirty || impliedRoleValue !== initialImpliedRoleValue;
+  const { isDirty, isValid } = form.formState;
+  const impliedRole = useController({ control: form.control, name: 'impliedRoleValue' });
+  const impliedRoleValue = impliedRole.field.value;
 
   const landBack = (id: number): void => {
     void navigate({
@@ -82,7 +88,7 @@ export const useBoardOfficeEditor = (entry: BoardOfficeEntry | null): BoardOffic
     });
   };
 
-  const handleFormSubmit = form.handleSubmit((values) => {
+  const handleFormSubmit = form.handleSubmit(({ impliedRoleValue: chosenValue, ...values }) => {
     setRejection(null);
 
     if (boardOfficeId === null) {
@@ -98,8 +104,8 @@ export const useBoardOfficeEditor = (entry: BoardOfficeEntry | null): BoardOffic
       return;
     }
 
-    const chosen = impliedRoleChoices.find((option) => option.value === impliedRoleValue);
-    const impliedRoleId = toImpliedRoleId(impliedRoleValue);
+    const chosen = impliedRoleChoices.find((option) => option.value === chosenValue);
+    const impliedRoleId = toImpliedRoleId(chosenValue);
     const impliedRoleName = impliedRoleId === null ? null : (chosen?.label ?? null);
 
     update.mutate(values, {
@@ -131,10 +137,11 @@ export const useBoardOfficeEditor = (entry: BoardOfficeEntry | null): BoardOffic
     form,
     canChangeRole,
     impliedRoleValue,
-    setImpliedRoleValue,
+    setImpliedRoleValue: impliedRole.field.onChange,
     impliedRoleChoices,
     impliedRoleStatement: toImpliedRoleStatement(entry?.impliedRoleName ?? null),
     isDirty,
+    canSubmit: isValid,
     isSaving: create.isPending || update.isPending || setImpliedRole.isPending,
     rejection,
     submit: () => {

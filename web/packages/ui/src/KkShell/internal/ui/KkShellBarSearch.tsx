@@ -10,7 +10,6 @@ import { KkShellBarGlass } from './KkShellBarGlass';
 import { KkShellBarRule } from './KkShellBarRule';
 
 const CANCEL_KEY = 'Escape';
-const FIELD_SIZE = '1rem';
 
 const UNFURLING: CSSProperties = {
   display: 'flex',
@@ -53,8 +52,7 @@ export const KkShellBarSearch: FC<KkShellBarSearchProps> = ({ search }) => {
             sx={{
               flex: 1,
               minWidth: 0,
-              fontFamily: kkTokens.font.body,
-              fontSize: FIELD_SIZE,
+              typography: 'body1',
               color: 'text.primary',
             }}
           />

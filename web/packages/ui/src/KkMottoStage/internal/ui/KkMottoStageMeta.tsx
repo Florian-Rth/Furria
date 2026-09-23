@@ -13,12 +13,7 @@ interface KkMottoStageMetaProps {
 
 export const KkMottoStageMeta: FC<KkMottoStageMetaProps> = ({ sessionLabel, numberLabel, sx }) => {
   const session = `${SESSION_WORD} ${sessionLabel}`;
-  const number =
-    numberLabel === null ? null : (
-      <KkEyebrow tone="muted" size="small">
-        {numberLabel}
-      </KkEyebrow>
-    );
+  const number = numberLabel === null ? null : <KkEyebrow tone="muted">{numberLabel}</KkEyebrow>;
 
   return (
     <Stack
@@ -36,9 +31,7 @@ export const KkMottoStageMeta: FC<KkMottoStageMetaProps> = ({ sessionLabel, numb
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >
-      <KkEyebrow tone="accent" size="small">
-        {session}
-      </KkEyebrow>
+      <KkEyebrow tone="accent">{session}</KkEyebrow>
       {number}
     </Stack>
   );

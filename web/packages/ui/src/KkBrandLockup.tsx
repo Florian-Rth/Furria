@@ -7,7 +7,7 @@ import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
 type KkBrandLockupSize = 'sm' | 'lg';
-type KkBrandLockupVariant = 'h5' | 'h3';
+type KkBrandLockupVariant = 'h4' | 'h2';
 
 interface KkBrandLockupProps {
   size?: KkBrandLockupSize;
@@ -22,8 +22,8 @@ interface KkBrandLockupStyle {
 }
 
 const sizeStyles: Record<KkBrandLockupSize, KkBrandLockupStyle> = {
-  sm: { markSize: 30, variant: 'h5', gap: 1.25 },
-  lg: { markSize: 44, variant: 'h3', gap: 1.75 },
+  sm: { markSize: 30, variant: 'h4', gap: 1.25 },
+  lg: { markSize: 44, variant: 'h2', gap: 1.75 },
 };
 
 export const KkBrandLockup: FC<KkBrandLockupProps> = ({ size = 'sm', eyebrow, sx }) => {

@@ -25,9 +25,7 @@ export const PersonEditHeader: FC<PersonEditHeaderProps> = ({ person }) => {
         <KkAvatar initials={headline.initials} size="large" />
       </KkScreenHeader.Visual>
       <KkScreenHeader.Text>
-        <KkEyebrow tone="accent" size="small">
-          {PERSON_EYEBROW}
-        </KkEyebrow>
+        <KkEyebrow tone="accent">{PERSON_EYEBROW}</KkEyebrow>
         <KkScreenHeader.Title transform="none">{headline.title}</KkScreenHeader.Title>
         {stateRow}
       </KkScreenHeader.Text>

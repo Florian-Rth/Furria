@@ -55,6 +55,9 @@ export const BoardSeatEditor: FC<BoardSeatEditorProps> = ({ entry, seat }) => {
           label={SINCE_LABEL}
           value={control.sinceOn}
           onChange={control.setSinceOn}
+          required
+          error={control.sinceOnError !== undefined}
+          helperText={control.sinceOnError}
           hint={SINCE_HINT}
         />
       </>
@@ -66,6 +69,9 @@ export const BoardSeatEditor: FC<BoardSeatEditorProps> = ({ entry, seat }) => {
           label={END_DATE_LABEL}
           value={control.endedOn}
           onChange={control.setEndedOn}
+          required
+          error={control.endedOnError !== undefined}
+          helperText={control.endedOnError}
           hint={END_DATE_HINT}
         />
       </>
@@ -86,6 +92,7 @@ export const BoardSeatEditor: FC<BoardSeatEditorProps> = ({ entry, seat }) => {
           label: control.actionLabel,
           onSelect: control.submit,
           loading: control.isSaving,
+          disabled: !control.canSubmit,
           tone: seat === null ? undefined : 'danger',
         },
       }}

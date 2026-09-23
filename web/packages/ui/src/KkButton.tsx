@@ -12,7 +12,6 @@ export type KkButtonTone = 'default' | 'danger';
 type KkButtonSize = 'small' | 'medium' | 'large';
 
 const DANGER_BORDER_MIX = '35%';
-const SMALL_FONT_SIZE = '0.75rem';
 
 const dangerBorderColor = (theme: Theme): string =>
   `color-mix(in srgb, ${(theme.vars ?? theme).palette.error.main} ${DANGER_BORDER_MIX}, transparent)`;
@@ -44,9 +43,9 @@ const hitArea: CSSObject = {
 };
 
 const sizeStyles: Record<KkButtonSize, CSSObject> = {
-  small: { minHeight: 0, px: 1.5, py: 0.625, fontSize: SMALL_FONT_SIZE, ...hitArea },
+  small: { minHeight: 0, px: 1.5, py: 0.625, typography: 'caption', fontWeight: 800, ...hitArea },
   medium: { minHeight: kkTokens.tapTarget, px: 2.5 },
-  large: { minHeight: kkTokens.tapTarget, px: 3 },
+  large: { minHeight: kkTokens.tapTarget, px: 3, typography: 'button' },
 };
 
 const toneVariantStyles: Record<

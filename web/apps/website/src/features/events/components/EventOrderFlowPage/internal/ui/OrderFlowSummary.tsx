@@ -18,7 +18,7 @@ export const OrderFlowSummary: FC<OrderFlowSummaryProps> = ({ event, buyer }) =>
 
   return (
     <OrderPanel tone="content" sx={{ gap: 3 }}>
-      <Typography variant="h3" component="h2">
+      <Typography variant="h2" component="h2">
         {orderSummaryTitle}
       </Typography>
       <Stack sx={{ gap: 0 }}>

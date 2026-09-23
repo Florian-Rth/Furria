@@ -1,12 +1,17 @@
 import Stack from '@mui/material/Stack';
-import type { FC, PropsWithChildren } from 'react';
+import type { FC, Ref } from 'react';
 import { safeArea } from '../../../internal/safe-area';
 import { kkTokens } from '../../../tokens';
 
 const { gutter } = kkTokens.shell;
 
-export const KkShellChrome: FC<PropsWithChildren> = ({ children }) => (
+interface KkShellChromeProps {
+  ref?: Ref<HTMLDivElement>;
+}
+
+export const KkShellChrome: FC<KkShellChromeProps> = ({ ref }) => (
   <Stack
+    ref={ref}
     data-kk-shell-chrome
     sx={(theme) => ({
       position: 'fixed',
@@ -16,7 +21,5 @@ export const KkShellChrome: FC<PropsWithChildren> = ({ children }) => (
       zIndex: theme.zIndex.appBar,
       minWidth: 0,
     })}
-  >
-    {children}
-  </Stack>
+  />
 );

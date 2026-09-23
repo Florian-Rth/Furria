@@ -1,5 +1,7 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
+import { useController, useForm } from 'react-hook-form';
 import { toLandingKey } from '@/features/write';
 import { sessionAt } from '@/lib/club';
 import { toWriteErrorMessage } from '@/lib/write-error';
@@ -10,6 +12,7 @@ import {
   toPauseConsequence,
 } from '../manage-persons-labels';
 import type { CreatedPause, PersonMembership, PersonPause } from '../schemas';
+import { PauseFormSchema } from '../schemas';
 
 interface PersonPauseEditorInput {
   personId: number;
@@ -21,6 +24,7 @@ interface PersonPauseEditorInput {
 export interface PersonPauseEditorControl {
   firstSessionYear: number | null;
   setFirstSessionYear: (value: number | null) => void;
+  firstSessionYearError: string | undefined;
   lastSessionYear: number | null;
   setLastSessionYear: (value: number | null) => void;
   currentSessionYear: number;
@@ -28,6 +32,7 @@ export interface PersonPauseEditorControl {
   rejection: string | null;
   isSaving: boolean;
   isDirty: boolean;
+  canSubmit: boolean;
   actionLabel: string;
   submit: () => void;
 }
@@ -39,15 +44,22 @@ export const usePersonPauseEditor = ({
   pause,
 }: PersonPauseEditorInput): PersonPauseEditorControl => {
   const currentSessionYearValue = sessionAt(new Date()).startYear;
-  const initialFirst = pause?.firstSessionYear ?? currentSessionYearValue;
-  const initialLast = pause?.lastSessionYear ?? null;
-
-  const [firstSessionYear, setFirstSessionYear] = useState<number | null>(initialFirst);
-  const [lastSessionYear, setLastSessionYear] = useState<number | null>(initialLast);
   const [rejection, setRejection] = useState<string | null>(null);
   const create = useCreatePauseMutation(personId);
   const update = useUpdatePauseMutation(personId);
   const navigate = useNavigate();
+
+  const form = useForm({
+    resolver: zodResolver(PauseFormSchema),
+    defaultValues: {
+      firstSessionYear: pause?.firstSessionYear ?? currentSessionYearValue,
+      lastSessionYear: pause?.lastSessionYear ?? null,
+    },
+    mode: 'onTouched',
+  });
+  const { isDirty, isValid, errors } = form.formState;
+  const firstSessionYear = useController({ control: form.control, name: 'firstSessionYear' });
+  const lastSessionYear = useController({ control: form.control, name: 'lastSessionYear' });
 
   const fail = (error: Error): void => {
     setRejection(toWriteErrorMessage(error));
@@ -62,16 +74,12 @@ export const usePersonPauseEditor = ({
     });
   };
 
-  const submit = (): void => {
-    if (firstSessionYear === null) {
-      return;
-    }
-
+  const handleFormSubmit = form.handleSubmit((submitted) => {
     setRejection(null);
 
     if (pause === null) {
       create.mutate(
-        { membershipId: membership.membershipId, firstSessionYear, lastSessionYear },
+        { membershipId: membership.membershipId, ...submitted },
         { onSuccess: (created: CreatedPause) => landBack(created.pauseId), onError: fail },
       );
 
@@ -79,30 +87,29 @@ export const usePersonPauseEditor = ({
     }
 
     update.mutate(
-      {
-        membershipId: membership.membershipId,
-        pauseId: pause.pauseId,
-        firstSessionYear,
-        lastSessionYear,
-      },
+      { membershipId: membership.membershipId, pauseId: pause.pauseId, ...submitted },
       { onSuccess: () => landBack(pause.pauseId), onError: fail },
     );
-  };
+  });
+
+  const firstValue = firstSessionYear.field.value;
+  const lastValue = lastSessionYear.field.value;
 
   return {
-    firstSessionYear,
-    setFirstSessionYear,
-    lastSessionYear,
-    setLastSessionYear,
+    firstSessionYear: firstValue,
+    setFirstSessionYear: firstSessionYear.field.onChange,
+    firstSessionYearError: errors.firstSessionYear?.message,
+    lastSessionYear: lastValue,
+    setLastSessionYear: lastSessionYear.field.onChange,
     currentSessionYear: currentSessionYearValue,
-    consequence:
-      firstSessionYear === null
-        ? null
-        : toPauseConsequence(firstName, firstSessionYear, lastSessionYear),
+    consequence: firstValue === null ? null : toPauseConsequence(firstName, firstValue, lastValue),
     rejection,
     isSaving: create.isPending || update.isPending,
-    isDirty: firstSessionYear !== initialFirst || lastSessionYear !== initialLast,
+    isDirty,
+    canSubmit: isValid,
     actionLabel: pause === null ? ADD_PAUSE_ACTION_LABEL : PAUSE_CHANGE_LABEL,
-    submit,
+    submit: () => {
+      void handleFormSubmit();
+    },
   };
 };

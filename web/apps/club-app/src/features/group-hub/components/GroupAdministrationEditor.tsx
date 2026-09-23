@@ -1,5 +1,5 @@
 import { KkSelectField, KkTextField } from '@furria/ui';
-import type { ChangeEvent, FC } from 'react';
+import type { FC } from 'react';
 import {
   GROUP_KIND_FIELD_HINT,
   GROUP_KIND_FIELD_LABEL,
@@ -26,10 +26,6 @@ export const GroupAdministrationEditor: FC<GroupAdministrationEditorProps> = ({ 
   const heldKind = toHeldGroupKind(hub.groupKindId, hub.groupKindName);
   const kindOptions = toGroupKindOptions(kinds.data?.kinds ?? [], heldKind);
 
-  const changeName = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
-    control.setName(event.target.value);
-  };
-
   return (
     <WriteScreen
       origin={toHubEditorOrigin(hub)}
@@ -37,16 +33,23 @@ export const GroupAdministrationEditor: FC<GroupAdministrationEditorProps> = ({ 
       rejection={control.rejection ?? undefined}
       isDirty={control.isDirty}
       action={{
-        primary: { label: SAVE_LABEL, onSelect: control.submit, loading: control.isSaving },
+        primary: {
+          label: SAVE_LABEL,
+          onSelect: control.submit,
+          loading: control.isSaving,
+          disabled: !control.canSubmit,
+        },
       }}
     >
       <KkTextField
-        name="name"
+        name={control.name.name}
         label={NAME_LABEL}
-        value={control.name}
-        onChange={changeName}
-        error={control.nameError !== null}
-        helperText={control.nameError ?? undefined}
+        required
+        onChange={control.name.onChange}
+        onBlur={control.name.onBlur}
+        inputRef={control.name.ref}
+        error={control.nameError !== undefined}
+        helperText={control.nameError}
       />
       <KkSelectField
         name="groupKindId"

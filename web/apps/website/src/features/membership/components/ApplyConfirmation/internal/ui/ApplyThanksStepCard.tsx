@@ -12,7 +12,7 @@ export const ApplyThanksStepCard: FC<ApplyThanksStepCardProps> = ({ numeral, ste
   <KkCard>
     <KkCard.Body>
       <Typography
-        variant="h3"
+        variant="h2"
         component="span"
         data-kk-apply-thanks-numeral
         sx={{ color: 'primary.main', lineHeight: 0.9 }}

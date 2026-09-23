@@ -42,12 +42,7 @@ export const GroupCard: FC<GroupCardProps> = ({ group, sx }) => {
   );
   const kindLabel = toGroupKindLabel(group.groupKindName);
 
-  const kindEyebrow =
-    kindLabel === null ? null : (
-      <KkEyebrow tone="muted" size="small">
-        {kindLabel}
-      </KkEyebrow>
-    );
+  const kindEyebrow = kindLabel === null ? null : <KkEyebrow tone="muted">{kindLabel}</KkEyebrow>;
 
   const openPeek = (): void => {
     sheet.open(toPeekId('group', group.groupId));

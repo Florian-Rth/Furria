@@ -62,7 +62,7 @@ export const KkBrandStageRoot: FC<KkBrandStageRootProps> = ({
       {children}
       <KkBrandStageBrand variant={variant}>
         <KkBrandStageReveal step={0}>
-          <KkBrandStageWordmark variant={variant} />
+          <KkBrandStageWordmark />
         </KkBrandStageReveal>
         <KkBrandStageReveal step={1} motion="wipe" sx={{ display: posterOnlyDisplay }}>
           <KkBrandStageRule />

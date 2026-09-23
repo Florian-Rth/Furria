@@ -59,7 +59,7 @@ export const KkChip: FC<KkChipProps> = ({
           gap: 0.75,
           ...tonePaint(theme, tone),
           borderRadius: `${kkTokens.radius.pill}px`,
-          fontFamily: kkTokens.font.body,
+          ...theme.typography.caption,
           fontWeight: 800,
           letterSpacing: kkTokens.type.tracking.tight,
           lineHeight: 1.2,

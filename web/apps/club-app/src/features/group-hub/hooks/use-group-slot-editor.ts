@@ -1,5 +1,7 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
+import { useController, useForm } from 'react-hook-form';
 import type { Weekday } from '@/features/groups';
 import { toLandingKey } from '@/features/write';
 import { toWriteErrorMessage } from '@/lib/write-error';
@@ -24,6 +26,7 @@ export interface GroupSlotEditorControl {
   venueId: string;
   setVenueId: (value: string) => void;
   isDirty: boolean;
+  canSubmit: boolean;
   isSaving: boolean;
   rejection: string | null;
   actionLabel: string;
@@ -45,24 +48,28 @@ export const useGroupSlotEditor = ({
   slot,
   slots,
 }: GroupSlotEditorInput): GroupSlotEditorControl => {
-  const initial = toSlotFormValues(slot);
-  const [weekday, setWeekdayValue] = useState<Weekday>(initial.weekday);
-  const [startsAt, setStartsAt] = useState(initial.startsAt);
-  const [durationMinutes, setDurationMinutes] = useState(String(initial.durationMinutes));
-  const [venueId, setVenueId] = useState(initial.venueId);
   const [rejection, setRejection] = useState<string | null>(null);
   const mutation = useSetTrainingSlotsMutation(groupId);
   const navigate = useNavigate();
 
+  const form = useForm({
+    resolver: zodResolver(TrainingSlotFormSchema),
+    defaultValues: toSlotFormValues(slot),
+    mode: 'onTouched',
+  });
+  const { isDirty, isValid } = form.formState;
+  const weekday = useController({ control: form.control, name: 'weekday' });
+  const startsAt = useController({ control: form.control, name: 'startsAt' });
+  const durationMinutes = useController({ control: form.control, name: 'durationMinutes' });
+  const venueId = useController({ control: form.control, name: 'venueId' });
+
   const setWeekday = (value: string): void => {
-    setWeekdayValue(toWeekday(value, weekday));
+    weekday.field.onChange(toWeekday(value, weekday.field.value));
   };
 
-  const isDirty =
-    weekday !== initial.weekday ||
-    startsAt !== initial.startsAt ||
-    durationMinutes !== String(initial.durationMinutes) ||
-    venueId !== initial.venueId;
+  const setDurationMinutes = (value: string): void => {
+    durationMinutes.field.onChange(Number(value));
+  };
 
   const leave = (): void => {
     void navigate({ to: '/groups/$groupId', params: { groupId: String(groupId) }, replace: true });
@@ -77,20 +84,9 @@ export const useGroupSlotEditor = ({
     });
   };
 
-  const submit = (): void => {
-    const draft = TrainingSlotFormSchema.safeParse({
-      weekday,
-      startsAt,
-      durationMinutes: Number(durationMinutes),
-      venueId,
-    });
-
-    if (!draft.success) {
-      return;
-    }
-
+  const handleFormSubmit = form.handleSubmit((values) => {
     setRejection(null);
-    const payload = toSlotPayload(draft.data);
+    const payload = toSlotPayload(values);
     const next =
       slot === null
         ? [...slots.map(toSlotPayloadOf), payload]
@@ -112,7 +108,7 @@ export const useGroupSlotEditor = ({
         setRejection(toWriteErrorMessage(error));
       },
     });
-  };
+  });
 
   const remove = (): void => {
     if (slot === null) {
@@ -133,19 +129,22 @@ export const useGroupSlotEditor = ({
   };
 
   return {
-    weekday,
+    weekday: weekday.field.value,
     setWeekday,
-    startsAt,
-    setStartsAt,
-    durationMinutes,
+    startsAt: startsAt.field.value,
+    setStartsAt: startsAt.field.onChange,
+    durationMinutes: String(durationMinutes.field.value),
     setDurationMinutes,
-    venueId,
-    setVenueId,
+    venueId: venueId.field.value,
+    setVenueId: venueId.field.onChange,
     isDirty,
+    canSubmit: isValid,
     isSaving: mutation.isPending,
     rejection,
     actionLabel: slot === null ? ADD_LABEL : SAVE_LABEL,
-    submit,
+    submit: () => {
+      void handleFormSubmit();
+    },
     remove,
   };
 };

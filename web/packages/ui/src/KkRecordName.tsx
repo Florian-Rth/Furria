@@ -10,9 +10,9 @@ type KkRecordNameSize = 'medium' | 'small';
 
 const FOCUS_OFFSET = 2;
 
-const sizeFonts: Record<KkRecordNameSize, string> = {
-  medium: '1.0625rem',
-  small: kkTokens.type.span,
+const sizeTypography: Record<KkRecordNameSize, 'h4' | 'body2'> = {
+  medium: 'h4',
+  small: 'body2',
 };
 
 const interactivePaint = (theme: Theme): CSSObject => ({
@@ -70,9 +70,9 @@ export const KkRecordName: FC<KkRecordNameProps> = ({
       data-kk-record-name
       sx={(theme) => ({
         minWidth: 0,
+        ...theme.typography[sizeTypography[size]],
         fontFamily: kkTokens.font.display,
         fontWeight: kkTokens.font.displayWeight,
-        fontSize: sizeFonts[size],
         letterSpacing: kkTokens.type.tracking.display,
         lineHeight: 1.25,
         color,

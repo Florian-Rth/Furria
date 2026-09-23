@@ -15,6 +15,8 @@ const FIELD_NAMES = ['name'] as const;
 
 export interface GroupKindEditorControl {
   form: UseFormReturn<GroupKindForm>;
+  isDirty: boolean;
+  canSubmit: boolean;
   isSaving: boolean;
   rejection: string | null;
   submit: () => void;
@@ -29,7 +31,9 @@ export const useGroupKindEditor = (entry: GroupKindEntry | null): GroupKindEdito
   const form = useForm<GroupKindForm>({
     resolver: zodResolver(GroupKindFormSchema),
     defaultValues: { name: entry?.name ?? '' },
+    mode: 'onTouched',
   });
+  const { isDirty, isValid } = form.formState;
 
   const showFailure = (error: Error): void => {
     const failures = toFormFailures(error, FIELD_NAMES);
@@ -84,6 +88,8 @@ export const useGroupKindEditor = (entry: GroupKindEntry | null): GroupKindEdito
 
   return {
     form,
+    isDirty,
+    canSubmit: isValid,
     isSaving: create.isPending || update.isPending,
     rejection,
     submit: () => {

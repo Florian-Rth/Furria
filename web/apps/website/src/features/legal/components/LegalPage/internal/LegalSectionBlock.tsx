@@ -9,7 +9,7 @@ interface LegalSectionBlockProps {
 
 export const LegalSectionBlock: FC<LegalSectionBlockProps> = ({ section }) => (
   <Stack component="section" sx={{ gap: 1.5 }}>
-    <Typography variant="h5" component="h2">
+    <Typography variant="h3" component="h2">
       {section.heading}
     </Typography>
     {section.paragraphs.map((paragraph) => (

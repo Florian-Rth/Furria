@@ -64,13 +64,19 @@ export const BoardOfficeEditor: FC<BoardOfficeEditorProps> = ({ entry }) => {
       rejection={control.rejection ?? undefined}
       isDirty={control.isDirty}
       action={{
-        primary: { label: actionLabel, onSelect: control.submit, loading: control.isSaving },
+        primary: {
+          label: actionLabel,
+          onSelect: control.submit,
+          loading: control.isSaving,
+          disabled: !control.canSubmit,
+        },
       }}
     >
       <KkNote>{explanation}</KkNote>
       <KkTextField
         name={nameField.name}
         label={NAME_LABEL}
+        required
         inputRef={nameField.ref}
         onChange={nameField.onChange}
         onBlur={nameField.onBlur}
@@ -80,6 +86,7 @@ export const BoardOfficeEditor: FC<BoardOfficeEditorProps> = ({ entry }) => {
       <KkTextField
         name={sortOrderField.name}
         label={SORT_ORDER_LABEL}
+        required
         inputMode="numeric"
         inputRef={sortOrderField.ref}
         onChange={sortOrderField.onChange}

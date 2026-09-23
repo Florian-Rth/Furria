@@ -9,7 +9,7 @@ interface MatcherResultUnansweredProps {
 
 export const MatcherResultUnanswered: FC<MatcherResultUnansweredProps> = ({ summary }) => (
   <Stack sx={{ gap: 1.5 }}>
-    <Typography variant="h3" component="p">
+    <Typography variant="h2" component="p">
       {matcherResultLabels.unansweredTitle}
     </Typography>
     <Typography variant="body1" sx={{ fontWeight: 600 }}>

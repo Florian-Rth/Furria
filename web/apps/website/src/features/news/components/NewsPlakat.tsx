@@ -40,11 +40,12 @@ export const NewsPlakat: FC<NewsPlakatProps> = ({ category }) => (
       }}
     />
     <Typography
+      variant="inherit"
       component="span"
       sx={{
         position: 'relative',
         fontFamily: kkTokens.font.display,
-        fontSize: 'inherit',
+        fontWeight: kkTokens.font.displayWeight,
         lineHeight: 0.9,
         letterSpacing: '0.01em',
         p: '0.42em',

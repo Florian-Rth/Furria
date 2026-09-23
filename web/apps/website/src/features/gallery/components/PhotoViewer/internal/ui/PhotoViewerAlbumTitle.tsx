@@ -14,7 +14,7 @@ export const PhotoViewerAlbumTitle: FC<PhotoViewerAlbumTitleProps> = ({ album, t
     component="h2"
     sx={{
       minWidth: 0,
-      fontSize: { xs: '1.125rem', desktop: '1.625rem' },
+      typography: { xs: 'h3', desktop: 'h2' },
       lineHeight: 1.05,
       overflowWrap: 'anywhere',
     }}

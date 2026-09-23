@@ -1,5 +1,5 @@
 import type { KkPanelAction } from '@furria/ui';
-import { KkButton, KkEmptyState, KkIcon, KkPanelSection } from '@furria/ui';
+import { KkEmptyState, KkPanel, KkPanelSection } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
@@ -31,19 +31,12 @@ export const ManagedVenuesList: FC<ManagedVenuesListProps> = ({ venues }) => {
   if (venues.length === 0) {
     return (
       <KkPanelSection title={VENUE_SECTION_TITLES.running} action={action}>
-        <KkEmptyState
-          title={MANAGED_VENUES_EMPTY.title}
-          description={MANAGED_VENUES_EMPTY.description}
-          action={
-            <KkButton
-              startIcon={<KkIcon name="add" size="small" />}
-              component={Link}
-              to={CREATE_ROUTE}
-            >
-              {MANAGE_VENUES_CREATE_LABEL}
-            </KkButton>
-          }
-        />
+        <KkPanel variant="block">
+          <KkEmptyState
+            title={MANAGED_VENUES_EMPTY.title}
+            description={MANAGED_VENUES_EMPTY.description}
+          />
+        </KkPanel>
       </KkPanelSection>
     );
   }

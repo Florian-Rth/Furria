@@ -55,6 +55,9 @@ export const KeyHoldingEditor: FC<KeyHoldingEditorProps> = ({ venue, holding }) 
           value={control.sinceOn}
           onChange={control.setSinceOn}
           quickChoices={toHandoutQuickChoices(today)}
+          required
+          error={control.sinceOnError !== undefined}
+          helperText={control.sinceOnError}
           hint={SINCE_HINT}
         />
       </>
@@ -67,6 +70,9 @@ export const KeyHoldingEditor: FC<KeyHoldingEditorProps> = ({ venue, holding }) 
           value={control.untilOn}
           onChange={control.setUntilOn}
           quickChoices={toReturnQuickChoices(today)}
+          required
+          error={control.untilOnError !== undefined}
+          helperText={control.untilOnError}
           hint={UNTIL_HINT}
         />
       </>
@@ -87,6 +93,7 @@ export const KeyHoldingEditor: FC<KeyHoldingEditorProps> = ({ venue, holding }) 
           label: control.actionLabel,
           onSelect: control.submit,
           loading: control.isSaving,
+          disabled: !control.canSubmit,
           tone: holding === null ? undefined : 'danger',
         },
       }}

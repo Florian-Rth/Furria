@@ -389,16 +389,12 @@ rather than copied five times. No behaviour changed.
 - **The founding year** and **the word for non-member Gruppen people** are untouched by this phase
   and stay open exactly as written.
 
-**The four new Berechtigungen are held by nobody on the day this deploys.** `BootstrapAdminSeeder`
-grants `FurriaPermissions.All` only when it *creates* the Admin Rolle; against a database that
-already has one it never re-grants a key, which is Decision W and is pinned by
-`Should_LeaveTheKeysAlone_When_TheClubRemovedOneFromTheAdminRolle`. That is right — the club owns
-its Rollen and the seeder must not silently restore a Berechtigung the club removed on purpose —
-but it means the back office ships with four invisible panels until somebody opens
-`/manage/roles` and grants `club.manage`, `key_holdings.manage`, `board.manage` and
-`calendar.manage_club`. No lockout: the hub opens on any of its six keys, and the Admin already
-holds `roles.manage`. Worth saying out loud in the release note, because an operator who does not
-know this will read an empty hub as a broken one.
+~~**The four new Berechtigungen are held by nobody on the day this deploys.**~~ — **resolved
+2026-09-23 by the revision of Decision W.** `BootstrapAdminSeeder` now reconciles the Admin Rolle
+on every start: `club.manage`, `key_holdings.manage`, `board.manage` and `calendar.manage_club`
+land on it at the first restart after deployment, pinned by
+`Should_GrantTheMissingBerechtigung_When_TheAdminRolleLacksOne`. Nobody has to open
+`/manage/roles` first.
 
 **Three defects only a phone found.** All gates were green and every one of these was invisible to
 them: the Vorstand's *Archivieren* and its „Erst den Sitz beenden" ran off the card at 390px; the

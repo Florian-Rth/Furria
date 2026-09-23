@@ -9,7 +9,7 @@ export const KkModalFrameTitle: FC<KkModalFrameTitleProps> = ({ id, children }) 
   <Typography
     id={id}
     component="h2"
-    variant="h5"
+    variant="h3"
     data-kk-modal-frame-title
     sx={{ lineHeight: 1.1, textTransform: 'uppercase', textWrap: 'balance' }}
   >

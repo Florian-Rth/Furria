@@ -16,7 +16,7 @@ export const RecruitCopy: FC = () => (
     }}
   >
     <KkEyebrow tone="onAccent">{recruitBandContent.kicker}</KkEyebrow>
-    <Typography variant="h2" component="h2">
+    <Typography variant="h2" component="h2" sx={{ typography: { xs: 'h2', md: 'h1' } }}>
       {recruitBandContent.headline}
     </Typography>
     <Typography variant="body1" sx={{ fontWeight: 500, opacity: 0.92 }}>

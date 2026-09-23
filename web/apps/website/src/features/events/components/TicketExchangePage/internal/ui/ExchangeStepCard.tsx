@@ -12,7 +12,7 @@ export const ExchangeStepCard: FC<ExchangeStepCardProps> = ({ numeral, step }) =
   <KkCard>
     <KkCard.Body>
       <Typography
-        variant="h3"
+        variant="h2"
         component="span"
         data-kk-exchange-step-numeral
         sx={{ color: 'primary.main', lineHeight: 0.9 }}

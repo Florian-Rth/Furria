@@ -1,5 +1,5 @@
 import type { KkPanelAction } from '@furria/ui';
-import { KkPanelSection } from '@furria/ui';
+import { KkPanel, KkPanelSection } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
@@ -25,8 +25,22 @@ interface PersonsViewProps {
 }
 
 export const PersonsView: FC<PersonsViewProps> = ({ persons, search }) => {
+  const action: KkPanelAction = {
+    label: ADD_PERSON_LABEL,
+    icon: 'add',
+    ariaLabel: ADD_PERSON_ACTION_LABEL,
+    component: Link,
+    to: CREATE_ROUTE,
+  };
+
   if (persons.length === 0) {
-    return <PersonsColdEmpty />;
+    return (
+      <KkPanelSection title={PERSON_DIRECTORY_TITLE} action={action}>
+        <KkPanel variant="block">
+          <PersonsColdEmpty />
+        </KkPanel>
+      </KkPanelSection>
+    );
   }
 
   const list =
@@ -35,14 +49,6 @@ export const PersonsView: FC<PersonsViewProps> = ({ persons, search }) => {
     ) : (
       <PersonsList sections={search.sections} />
     );
-
-  const action: KkPanelAction = {
-    label: ADD_PERSON_LABEL,
-    icon: 'add',
-    ariaLabel: ADD_PERSON_ACTION_LABEL,
-    component: Link,
-    to: CREATE_ROUTE,
-  };
 
   return (
     <Stack sx={{ gap: VIEW_GAP, minWidth: 0 }}>

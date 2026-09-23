@@ -10,7 +10,11 @@ export const ExchangeTeaserBand: FC = () => (
     <KkBandSection.Row>
       <Stack sx={{ gap: 1.5, maxWidth: { md: '40rem' } }}>
         <KkEyebrow tone="onAccent">{exchangeBandContent.kicker}</KkEyebrow>
-        <Typography variant="h2" component="h2" sx={{ textWrap: 'balance' }}>
+        <Typography
+          variant="h2"
+          component="h2"
+          sx={{ typography: { xs: 'h2', md: 'h1' }, textWrap: 'balance' }}
+        >
           {exchangeBandContent.headline}
         </Typography>
         <Typography variant="body1" sx={{ opacity: kkTokens.opacity.onAccent }}>

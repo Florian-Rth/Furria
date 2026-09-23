@@ -1,16 +1,35 @@
+import GlobalStyles from '@mui/material/GlobalStyles';
 import Stack from '@mui/material/Stack';
 import { MotionConfig } from 'motion/react';
 import type { ElementType, FC, PropsWithChildren } from 'react';
+import { useState } from 'react';
 import { chromeDensityAt } from '../internal/chrome-density';
+import { safeArea } from '../internal/safe-area';
 import { useReducedMotion } from '../internal/use-reduced-motion';
 import type { KkSx } from '../kk-sx';
+import { kkTokens } from '../tokens';
+import { KkShellActionSlot } from './internal/layout/KkShellActionSlot';
+import { KkShellChrome } from './internal/layout/KkShellChrome';
+import { KkShellFoot } from './internal/layout/KkShellFoot';
+import { KkShellIndex } from './internal/layout/KkShellIndex';
+import { KkShellTrack } from './internal/layout/KkShellTrack';
 import { handoverAt } from './internal/logic/handover';
+import type { KkScreenStance } from './internal/logic/screen-stance';
 import { KkShellContext } from './internal/logic/shell-context';
 import { useKeyboardInset } from './internal/logic/use-keyboard-inset';
+import { useShellHost } from './internal/logic/use-shell-host';
 import { useTrackScroll } from './internal/logic/use-track-scroll';
+import { KkShellNav } from './internal/ui/KkShellNav';
+import { KkShellNotice } from './internal/ui/KkShellNotice';
 import { KkShellSkipLink } from './internal/ui/KkShellSkipLink';
 import type { KkScreenMove } from './screen-move';
 import type { KkShellDestination } from './shell-destination';
+
+const { gutter, barHeight, screen } = kkTokens.shell;
+
+const BAR_CLEARANCE = gutter * 2 + barHeight;
+const NO_CLEARANCE = 0;
+const FIRST_ARRIVAL_BLOCK = 1;
 
 interface KkShellProps extends PropsWithChildren {
   link: ElementType;
@@ -24,15 +43,50 @@ export const KkShell: FC<KkShellProps> = ({ link, destinations, path, move, sx, 
   const scrollOffset = useTrackScroll();
   const keyboardInset = useKeyboardInset();
   const reducedMotion = useReducedMotion();
+  const chrome = useShellHost();
+  const foot = useShellHost();
+  const index = useShellHost();
+  const [stance, holdStance] = useState<KkScreenStance | null>(null);
+
   const motion = reducedMotion ? 'instant' : 'ramped';
   const density = chromeDensityAt(scrollOffset, motion);
   const handover = handoverAt(scrollOffset, motion);
 
+  const section = stance?.section ?? null;
+  const headClearance = stance?.headClearance ?? BAR_CLEARANCE;
+  const footClearance = stance?.footClearance ?? gutter;
+  const indexClearance = stance?.indexClearance ?? NO_CLEARANCE;
+  const silent = stance?.kind === 'fullscreen';
+  const arrivalBlocks = silent ? FIRST_ARRIVAL_BLOCK : screen.arrivalBlocks;
+
+  const nav = section === null ? null : <KkShellNav section={section} />;
+  const notice = silent ? null : <KkShellNotice />;
+
+  const scrollClearance = {
+    html: {
+      scrollPaddingTop: safeArea('top', headClearance),
+      scrollPaddingBottom: safeArea('bottom', footClearance),
+    },
+  };
+
   return (
     <KkShellContext.Provider
-      value={{ density, handover, link, destinations, keyboardInset, path, move }}
+      value={{
+        density,
+        handover,
+        link,
+        destinations,
+        keyboardInset,
+        path,
+        move,
+        chromeHost: chrome.node,
+        footHost: foot.node,
+        indexHost: index.node,
+        holdStance,
+      }}
     >
       <MotionConfig reducedMotion="user">
+        <GlobalStyles styles={scrollClearance} />
         <Stack
           data-kk-shell
           sx={[
@@ -41,7 +95,25 @@ export const KkShell: FC<KkShellProps> = ({ link, destinations, path, move, sx, 
           ]}
         >
           <KkShellSkipLink />
-          {children}
+          <KkShellChrome ref={chrome.hold} />
+          <KkShellTrack
+            headClearance={headClearance}
+            footClearance={footClearance}
+            indexClearance={indexClearance}
+            arrivalBlocks={arrivalBlocks}
+          >
+            {children}
+          </KkShellTrack>
+          <KkShellIndex
+            ref={index.hold}
+            headClearance={headClearance}
+            footClearance={footClearance}
+          />
+          <KkShellFoot raise={keyboardInset}>
+            {notice}
+            <KkShellActionSlot ref={foot.hold} />
+            {nav}
+          </KkShellFoot>
         </Stack>
       </MotionConfig>
     </KkShellContext.Provider>

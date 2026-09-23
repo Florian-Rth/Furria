@@ -3,6 +3,7 @@ import { createContext, useContext } from 'react';
 import type { KkScreenMove } from '../../screen-move';
 import type { KkShellDestination } from '../../shell-destination';
 import type { KkHandover } from './handover';
+import type { KkScreenStance } from './screen-stance';
 
 export interface KkShellState {
   density: number;
@@ -12,6 +13,10 @@ export interface KkShellState {
   keyboardInset: number;
   path: string;
   move: KkScreenMove;
+  chromeHost: HTMLElement | null;
+  footHost: HTMLElement | null;
+  indexHost: HTMLElement | null;
+  holdStance: (stance: KkScreenStance | null) => void;
 }
 
 export const KkShellContext = createContext<KkShellState | null>(null);

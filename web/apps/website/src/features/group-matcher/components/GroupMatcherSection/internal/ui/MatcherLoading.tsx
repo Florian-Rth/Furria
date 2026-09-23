@@ -17,8 +17,8 @@ export const MatcherLoading: FC = () => (
       <LinearProgress />
     </Stack>
     <Stack sx={{ gap: 1 }}>
-      <Skeleton variant="text" sx={{ fontSize: { xs: '1.25rem', md: '1.5rem' } }} />
-      <Skeleton variant="text" sx={{ fontSize: { xs: '1.25rem', md: '1.5rem' }, width: '70%' }} />
+      <Skeleton variant="text" sx={{ typography: { xs: 'h3', md: 'h2' } }} />
+      <Skeleton variant="text" sx={{ typography: { xs: 'h3', md: 'h2' }, width: '70%' }} />
     </Stack>
     <Skeleton variant="rounded" sx={{ height: '2.75rem', width: '60%' }} />
   </Stack>

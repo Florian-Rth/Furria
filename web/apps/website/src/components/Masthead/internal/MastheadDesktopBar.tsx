@@ -62,7 +62,7 @@ export const MastheadDesktopBar: FC = () => (
       </Stack>
       <Link component={RouterLink} to="/" underline="none">
         <Typography
-          variant="h3"
+          variant="h1"
           component="span"
           sx={{ color: 'text.primary', letterSpacing: '0.06em', lineHeight: 1 }}
         >

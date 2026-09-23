@@ -8,11 +8,11 @@ interface NewsAufmacherHeadlineProps {
 
 export const NewsAufmacherHeadline: FC<NewsAufmacherHeadlineProps> = ({ post }) => (
   <Typography
-    variant="h2"
+    variant="h1"
     component="h2"
     data-kk-news-aufmacher-title
     sx={(theme) => ({
-      fontSize: { xs: '1.75rem', md: '3rem' },
+      typography: { xs: 'h1', md: 'display' },
       lineHeight: 0.96,
       transition: theme.transitions.create(['color'], {
         duration: theme.transitions.duration.shortest,

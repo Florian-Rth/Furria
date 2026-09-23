@@ -17,7 +17,7 @@ export const NextEventIntro: FC<NextEventIntroProps> = ({ kicker, event }) => {
   return (
     <Stack sx={{ gap: 1 }}>
       <KkEyebrow tone="accent">{kicker}</KkEyebrow>
-      <Typography variant="h3" component="h2">
+      <Typography variant="h2" component="h2">
         {event.title}
       </Typography>
       <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary' }}>

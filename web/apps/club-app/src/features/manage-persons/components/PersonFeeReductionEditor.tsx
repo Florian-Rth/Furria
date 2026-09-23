@@ -52,6 +52,7 @@ export const PersonFeeReductionEditor: FC<PersonFeeReductionEditorProps> = ({
           label: control.actionLabel,
           onSelect: control.submit,
           loading: control.isSaving,
+          disabled: !control.canSubmit,
         },
       }}
     >
@@ -62,6 +63,7 @@ export const PersonFeeReductionEditor: FC<PersonFeeReductionEditorProps> = ({
         value={control.basis}
         options={FEE_REDUCTION_BASIS_OPTIONS}
         onChange={control.selectBasis}
+        required
         hint={BASIS_HINT}
       />
       <KkSessionField
@@ -70,6 +72,9 @@ export const PersonFeeReductionEditor: FC<PersonFeeReductionEditorProps> = ({
         value={control.firstSessionYear}
         onChange={control.setFirstSessionYear}
         currentSessionYear={control.currentSessionYear}
+        required
+        error={control.firstSessionYearError !== undefined}
+        helperText={control.firstSessionYearError}
       />
       <KkSessionField
         name="lastSessionYear"
@@ -77,6 +82,9 @@ export const PersonFeeReductionEditor: FC<PersonFeeReductionEditorProps> = ({
         value={control.lastSessionYear}
         onChange={control.setLastSessionYear}
         currentSessionYear={control.currentSessionYear}
+        required
+        error={control.lastSessionYearError !== undefined}
+        helperText={control.lastSessionYearError}
         hint={LAST_HINT}
       />
     </WriteScreen>

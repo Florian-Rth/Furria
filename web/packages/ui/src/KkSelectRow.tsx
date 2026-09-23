@@ -123,9 +123,7 @@ export const KkSelectRow: FC<KkSelectRowProps> = ({
           component="span"
           data-kk-select-row-title
           sx={{
-            fontFamily: kkTokens.font.display,
-            fontWeight: kkTokens.font.displayWeight,
-            fontSize: kkTokens.type.rowValue,
+            typography: 'h4',
             letterSpacing: kkTokens.type.tracking.display,
             lineHeight: 1.3,
             color: titleColor,

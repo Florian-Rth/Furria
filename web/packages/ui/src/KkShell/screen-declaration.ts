@@ -53,6 +53,7 @@ export interface KkScreenDeed {
   icon?: KkIconName;
   tone?: KkScreenDeedTone;
   loading?: boolean;
+  disabled?: boolean;
 }
 
 export interface KkScreenActionBar {

@@ -40,6 +40,7 @@ export const PersonFormFields: FC<PersonFormFieldsProps> = ({ form, errors }) =>
         <KkTextField
           name={firstName.name}
           label={FIRST_NAME_LABEL}
+          required
           autoComplete="given-name"
           error={firstNameError !== undefined}
           helperText={firstNameError}
@@ -52,6 +53,7 @@ export const PersonFormFields: FC<PersonFormFieldsProps> = ({ form, errors }) =>
         <KkTextField
           name={lastName.name}
           label={LAST_NAME_LABEL}
+          required
           autoComplete="family-name"
           error={lastNameError !== undefined}
           helperText={lastNameError}

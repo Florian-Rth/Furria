@@ -399,6 +399,20 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         await db.SaveChangesAsync(ct);
     }
 
+    public async Task ArchiveRoleDirectlyAsync(
+        int roleId,
+        DateOnly archivedOn,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var role = await db.Roles.SingleAsync(row => row.Id == roleId, ct);
+        role.ArchivedOn = archivedOn;
+        await db.SaveChangesAsync(ct);
+    }
+
     public async Task EditGroupNameDirectlyAsync(
         int groupId,
         string name,

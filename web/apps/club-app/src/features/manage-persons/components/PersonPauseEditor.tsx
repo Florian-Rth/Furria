@@ -56,6 +56,7 @@ export const PersonPauseEditor: FC<PersonPauseEditorProps> = ({ person, membersh
           label: control.actionLabel,
           onSelect: control.submit,
           loading: control.isSaving,
+          disabled: !control.canSubmit,
         },
       }}
     >
@@ -67,6 +68,9 @@ export const PersonPauseEditor: FC<PersonPauseEditorProps> = ({ person, membersh
         value={control.firstSessionYear}
         onChange={control.setFirstSessionYear}
         currentSessionYear={control.currentSessionYear}
+        required
+        error={control.firstSessionYearError !== undefined}
+        helperText={control.firstSessionYearError}
         hint={FIRST_HINT}
       />
       <KkSessionField

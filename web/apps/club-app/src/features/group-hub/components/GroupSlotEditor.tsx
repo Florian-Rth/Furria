@@ -86,6 +86,7 @@ export const GroupSlotEditor: FC<GroupSlotEditorProps> = ({ hub, slot }) => {
           label: control.actionLabel,
           onSelect: control.submit,
           loading: control.isSaving,
+          disabled: !control.canSubmit,
         },
       }}
     >
@@ -96,6 +97,7 @@ export const GroupSlotEditor: FC<GroupSlotEditorProps> = ({ hub, slot }) => {
         options={WEEKDAY_OPTIONS}
         onChange={control.setWeekday}
         presentation="select"
+        required
       />
       <KkSelectField
         name="startsAt"
@@ -104,6 +106,7 @@ export const GroupSlotEditor: FC<GroupSlotEditorProps> = ({ hub, slot }) => {
         options={toTimeOptions()}
         onChange={control.setStartsAt}
         presentation="select"
+        required
       />
       <KkSelectField
         name="durationMinutes"
@@ -112,6 +115,7 @@ export const GroupSlotEditor: FC<GroupSlotEditorProps> = ({ hub, slot }) => {
         options={toDurationOptions()}
         onChange={control.setDurationMinutes}
         presentation="select"
+        required
       />
       <KkSelectField
         name="venueId"

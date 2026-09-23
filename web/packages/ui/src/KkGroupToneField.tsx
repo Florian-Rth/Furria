@@ -4,6 +4,7 @@ import type { FC, ReactNode } from 'react';
 import type { KkGroupTone } from './internal/group-tone';
 import { groupToneFieldPaint } from './internal/group-tone';
 import { lineClamp } from './internal/line-clamp';
+import { responsiveTypography } from './internal/responsive-typography';
 import type { KkScheme } from './internal/scheme-paint';
 import { applyScheme } from './internal/scheme-paint';
 import { watermarkOpacityScheme } from './internal/watermark-paint';
@@ -11,7 +12,7 @@ import { KkBroomMark } from './KkBroomMark';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
-const NAME_SIZE = 'clamp(1rem, 10cqw, 2.75rem)';
+const NAME_TYPOGRAPHY = { xs: 'h3', desktop: 'h2' } as const;
 const NAME_LINE_HEIGHT = 0.94;
 const NAME_LINES = 3;
 const MARK_SIZE = 170;
@@ -50,7 +51,6 @@ export const KkGroupToneField: FC<KkGroupToneFieldProps> = ({
           position: 'relative',
           isolation: 'isolate',
           overflow: 'hidden',
-          containerType: 'inline-size',
           width: '100%',
           minWidth: 0,
           ...sizing,
@@ -100,18 +100,17 @@ export const KkGroupToneField: FC<KkGroupToneFieldProps> = ({
         <Box
           component="p"
           data-kk-group-tone-field-name
-          sx={{
+          sx={(theme) => ({
             m: 0,
             color: 'inherit',
-            fontFamily: kkTokens.font.display,
-            fontWeight: kkTokens.font.displayWeight,
-            fontSize: NAME_SIZE,
-            letterSpacing: kkTokens.type.tracking.display,
-            lineHeight: NAME_LINE_HEIGHT,
+            ...responsiveTypography(theme, NAME_TYPOGRAPHY, {
+              letterSpacing: kkTokens.type.tracking.display,
+              lineHeight: NAME_LINE_HEIGHT,
+            }),
             textShadow: kkTokens.overlay.textShadow,
             overflowWrap: 'break-word',
             ...lineClamp(NAME_LINES),
-          }}
+          })}
         >
           {name}
         </Box>

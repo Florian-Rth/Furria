@@ -19,6 +19,7 @@ import {
 import { useGroupMembershipEditor } from '../hooks/use-group-membership-editor';
 import { toHubPeople, toPrefillPerson } from '../hub-people';
 import type { GroupHub } from '../schemas';
+import { ADMIN_FUNCTION_MAX_LENGTH } from '../schemas';
 import { PersonPicker } from './PersonPicker';
 
 const CHAIN_TITLE = 'Bisherige Zeiträume';
@@ -35,7 +36,6 @@ const FUNCTION_LABEL = 'Funktion';
 const FUNCTION_PLACEHOLDER = 'Trainerin, Sprecher, …';
 const FUNCTION_HINT =
   'Nur ein Etikett für die Anzeige. Die Rechte hängen an der Gruppen-Admin-Rolle, nicht am Wort.';
-const FUNCTION_MAX = 64;
 const END_DATE_LABEL = 'Letzter Tag';
 const END_DATE_HINT = 'Dieser Tag zählt noch dazu.';
 
@@ -80,7 +80,7 @@ export const GroupMembershipEditor: FC<GroupMembershipEditorProps> = ({
       suggestions={ADMIN_FUNCTION_SUGGESTIONS}
       placeholder={FUNCTION_PLACEHOLDER}
       hint={FUNCTION_HINT}
-      maxLength={FUNCTION_MAX}
+      maxLength={ADMIN_FUNCTION_MAX_LENGTH}
     />
   ) : null;
 
@@ -100,6 +100,9 @@ export const GroupMembershipEditor: FC<GroupMembershipEditorProps> = ({
           value={control.joinedOn}
           onChange={control.setJoinedOn}
           quickChoices={toJoinQuickChoices(today)}
+          required
+          error={control.joinedOnError !== undefined}
+          helperText={control.joinedOnError}
           hint={JOIN_DATE_HINT}
         />
         <KkSwitchRow
@@ -120,6 +123,9 @@ export const GroupMembershipEditor: FC<GroupMembershipEditorProps> = ({
           value={control.endedOn}
           onChange={control.setEndedOn}
           quickChoices={toEndQuickChoices(today)}
+          required
+          error={control.endedOnError !== undefined}
+          helperText={control.endedOnError}
           hint={END_DATE_HINT}
         />
       </>
@@ -140,6 +146,7 @@ export const GroupMembershipEditor: FC<GroupMembershipEditorProps> = ({
           label: control.actionLabel,
           onSelect: control.submit,
           loading: control.isSaving,
+          disabled: !control.canSubmit,
           tone: membership === null ? undefined : 'danger',
         },
       }}

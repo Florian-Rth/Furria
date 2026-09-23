@@ -1,5 +1,5 @@
 import type { KkPanelAction } from '@furria/ui';
-import { KkButton, KkEmptyState, KkIcon, KkPanel, KkPanelSection } from '@furria/ui';
+import { KkEmptyState, KkPanel, KkPanelSection } from '@furria/ui';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { MANAGE_SESSIONS_CREATE_LABEL, MANAGE_SESSIONS_EMPTY } from '../manage-sessions-labels';
@@ -31,15 +31,6 @@ export const ManageSessionsList: FC<ManageSessionsListProps> = ({ records, today
           <KkEmptyState
             title={MANAGE_SESSIONS_EMPTY.title}
             description={MANAGE_SESSIONS_EMPTY.description}
-            action={
-              <KkButton
-                startIcon={<KkIcon name="add" size="small" />}
-                component={Link}
-                to={CREATE_ROUTE}
-              >
-                {MANAGE_SESSIONS_CREATE_LABEL}
-              </KkButton>
-            }
           />
         </KkPanel>
       </KkPanelSection>

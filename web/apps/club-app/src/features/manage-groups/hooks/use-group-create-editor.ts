@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
-import { useForm } from 'react-hook-form';
+import { useController, useForm } from 'react-hook-form';
 import { toLandingKey } from '@/features/write';
 import { toFormFailures } from '@/lib/api/api-failures';
 import { toWriteErrorMessage } from '@/lib/write-error';
@@ -18,6 +18,8 @@ export interface GroupCreateEditorControl {
   form: UseFormReturn<GroupForm>;
   groupKindId: string;
   setGroupKindId: (value: string) => void;
+  isDirty: boolean;
+  canSubmit: boolean;
   isSaving: boolean;
   rejection: string | null;
   submit: () => void;
@@ -31,11 +33,10 @@ export const useGroupCreateEditor = (): GroupCreateEditorControl => {
   const form = useForm<GroupForm>({
     resolver: zodResolver(GroupFormSchema),
     defaultValues: EMPTY_VALUES,
+    mode: 'onTouched',
   });
-
-  const setGroupKindId = (value: string): void => {
-    form.setValue('groupKindId', value, { shouldDirty: true });
-  };
+  const { isDirty, isValid } = form.formState;
+  const groupKindId = useController({ control: form.control, name: 'groupKindId' });
 
   const handleSubmit = form.handleSubmit((values) => {
     setRejection(null);
@@ -66,8 +67,10 @@ export const useGroupCreateEditor = (): GroupCreateEditorControl => {
 
   return {
     form,
-    groupKindId: form.watch('groupKindId'),
-    setGroupKindId,
+    groupKindId: groupKindId.field.value,
+    setGroupKindId: groupKindId.field.onChange,
+    isDirty,
+    canSubmit: isValid,
     isSaving: mutation.isPending,
     rejection,
     submit: () => {

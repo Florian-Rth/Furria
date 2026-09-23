@@ -186,7 +186,7 @@ export const KkFactRow: FC<KkFactRowProps> = ({
 
   const spanUnit =
     spanLabel === undefined ? null : (
-      <KkEyebrow tone="muted" size="small" sx={{ lineHeight: 1 }}>
+      <KkEyebrow tone="muted" sx={{ lineHeight: 1 }}>
         {spanLabel}
       </KkEyebrow>
     );
@@ -197,9 +197,7 @@ export const KkFactRow: FC<KkFactRowProps> = ({
       <Typography
         component="p"
         sx={{
-          fontFamily: kkTokens.font.display,
-          fontWeight: kkTokens.font.displayWeight,
-          fontSize: kkTokens.type.span,
+          typography: 'h4',
           letterSpacing: kkTokens.type.tracking.display,
           lineHeight: 1.2,
           color: 'text.primary',
@@ -260,7 +258,7 @@ export const KkFactRow: FC<KkFactRowProps> = ({
             component="p"
             data-kk-fact-row-title
             sx={{
-              fontSize: kkTokens.type.rowTitle,
+              typography: 'body2',
               fontWeight: 800,
               lineHeight: 1.25,
               color: titleColor,

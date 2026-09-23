@@ -137,6 +137,7 @@ export const kkTokens = {
     keyboardMinInset: 120,
     actionHeight: 60,
     actionContextHeight: 24,
+    actionFadeHeight: 32,
     threadHeight: 2.5,
     scrollTravel: 72,
     headerDrift: 14,
@@ -203,10 +204,6 @@ export const kkTokens = {
     section: 2,
     page: 3,
   },
-  headline: {
-    page: 'clamp(2.75rem, 6vw, 4.75rem)',
-    compact: 'clamp(2.25rem, 5vw, 3.75rem)',
-  },
   eyebrow: {
     fontWeight: 900,
     letterSpacing: tracking.eyebrow,
@@ -214,15 +211,6 @@ export const kkTokens = {
   },
   type: {
     tracking,
-    rowTitle: '0.875rem',
-    rowMeta: '0.71875rem',
-    rowValue: '1.0625rem',
-    span: '0.9375rem',
-    chip: '0.6875rem',
-    chipSmall: '0.625rem',
-    eyebrowSmall: '0.5625rem',
-    sectionTitle: '0.8125rem',
-    blockTitle: '1.1875rem',
   },
   motion: {
     breath: 'kk-breath 2.4s ease-in-out infinite',

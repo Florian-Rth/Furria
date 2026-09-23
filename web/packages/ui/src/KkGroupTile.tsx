@@ -6,6 +6,7 @@ import type { KkGroupTone } from './internal/group-tone';
 import { groupToneInkPaint } from './internal/group-tone';
 import { lineClamp } from './internal/line-clamp';
 import { redInk } from './internal/red-ink';
+import { responsiveTypography } from './internal/responsive-typography';
 import { KkAvatar } from './KkAvatar';
 import { KkMeta } from './KkMeta';
 import type { KkSx } from './kk-sx';
@@ -13,7 +14,7 @@ import { kkTokens } from './tokens';
 
 const NAME_LINES = 2;
 const NAME_LINE_HEIGHT = 1.2;
-const NAME_SIZE = { xs: kkTokens.type.rowMeta, desktop: kkTokens.type.rowTitle };
+const NAME_TYPOGRAPHY = { xs: 'caption', desktop: 'body2' } as const;
 const ACCENT_LINES = 2;
 
 interface KkGroupTileProps {
@@ -53,8 +54,7 @@ export const KkGroupTile: FC<KkGroupTileProps> = ({
       component="span"
       data-kk-group-tile-accent
       sx={(theme) => ({
-        fontFamily: kkTokens.font.body,
-        fontSize: kkTokens.type.chipSmall,
+        ...theme.typography.caption,
         fontWeight: 900,
         letterSpacing: kkTokens.type.tracking.label,
         lineHeight: 1.3,
@@ -108,16 +108,16 @@ export const KkGroupTile: FC<KkGroupTileProps> = ({
       <Box
         component="span"
         data-kk-group-tile-name
-        sx={{
-          fontFamily: kkTokens.font.body,
-          fontSize: NAME_SIZE,
-          fontWeight: 800,
-          lineHeight: NAME_LINE_HEIGHT,
-          letterSpacing: kkTokens.type.tracking.tight,
+        sx={(theme) => ({
+          ...responsiveTypography(theme, NAME_TYPOGRAPHY, {
+            fontWeight: 800,
+            lineHeight: NAME_LINE_HEIGHT,
+            letterSpacing: kkTokens.type.tracking.tight,
+          }),
           color: 'text.primary',
           overflowWrap: 'anywhere',
           ...lineClamp(NAME_LINES),
-        }}
+        })}
       >
         {name}
       </Box>

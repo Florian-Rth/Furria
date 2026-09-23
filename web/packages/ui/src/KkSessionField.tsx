@@ -17,8 +17,6 @@ import {
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
-const SESSION_LABEL_FONT_SIZE = '0.8125rem';
-
 interface KkSessionFieldProps {
   name: string;
   label: string;
@@ -28,6 +26,7 @@ interface KkSessionFieldProps {
   allowOpen?: boolean;
   openLabel?: string;
   hint?: string;
+  required?: boolean;
   error?: boolean;
   helperText?: string;
   sx?: KkSx;
@@ -42,6 +41,7 @@ export const KkSessionField: FC<KkSessionFieldProps> = ({
   allowOpen = false,
   openLabel,
   hint,
+  required,
   error,
   helperText,
   sx,
@@ -84,8 +84,8 @@ export const KkSessionField: FC<KkSessionFieldProps> = ({
         <Typography
           sx={{
             color: 'text.secondary',
+            typography: 'body2',
             fontFamily: kkTokens.font.display,
-            fontSize: SESSION_LABEL_FONT_SIZE,
             letterSpacing: kkTokens.type.tracking.display,
             whiteSpace: 'nowrap',
           }}
@@ -103,6 +103,7 @@ export const KkSessionField: FC<KkSessionFieldProps> = ({
         value={draft}
         onChange={change}
         onBlur={restoreDraft}
+        required={required}
         error={error}
         helperText={helper}
         autoComplete="off"

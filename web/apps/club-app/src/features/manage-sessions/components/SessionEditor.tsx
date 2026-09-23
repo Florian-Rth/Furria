@@ -90,7 +90,12 @@ export const SessionEditor: FC<SessionEditorProps> = ({ record }) => {
       rejection={control.rejection ?? undefined}
       isDirty={control.isDirty}
       action={{
-        primary: { label: actionLabel, onSelect: control.submit, loading: control.isSaving },
+        primary: {
+          label: actionLabel,
+          onSelect: control.submit,
+          loading: control.isSaving,
+          disabled: !control.canSubmit,
+        },
       }}
     >
       {intro}
@@ -101,6 +106,7 @@ export const SessionEditor: FC<SessionEditorProps> = ({ record }) => {
           value={control.startYear}
           onChange={control.setStartYear}
           currentSessionYear={control.currentSessionYear}
+          required
           error={startYearErrorText !== undefined}
           helperText={startYearErrorText}
         />

@@ -9,7 +9,7 @@ interface EventDateBlockProps {
 
 export const EventDateBlock: FC<EventDateBlockProps> = ({ day, month }) => (
   <Stack data-kk-event-date sx={{ textAlign: 'center', flexShrink: 0, minWidth: 44 }}>
-    <Typography variant="h3" component="span" sx={{ color: 'primary.main', lineHeight: 0.9 }}>
+    <Typography variant="h2" component="span" sx={{ color: 'primary.main', lineHeight: 0.9 }}>
       {day}
     </Typography>
     <Typography

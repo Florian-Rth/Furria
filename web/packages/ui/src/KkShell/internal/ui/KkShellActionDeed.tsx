@@ -25,6 +25,7 @@ export const KkShellActionDeed: FC<KkShellActionDeedProps> = ({ deed, weight, sx
       tone={tone}
       startIcon={icon}
       loading={deed.loading}
+      disabled={deed.disabled}
       onClick={deed.onSelect}
       sx={sx}
     >

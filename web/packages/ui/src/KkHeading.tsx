@@ -2,8 +2,8 @@ import Typography from '@mui/material/Typography';
 import type { ElementType, FC, PropsWithChildren } from 'react';
 import type { KkSx } from './kk-sx';
 
-type KkHeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
-type KkHeadingVariant = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+type KkHeadingLevel = 1 | 2 | 3 | 4;
+type KkHeadingVariant = 'h1' | 'h2' | 'h3' | 'h4';
 type KkHeadingTone = 'default' | 'accent';
 
 interface KkHeadingProps extends PropsWithChildren {
@@ -18,8 +18,6 @@ const levelVariants: Record<KkHeadingLevel, KkHeadingVariant> = {
   2: 'h2',
   3: 'h3',
   4: 'h4',
-  5: 'h5',
-  6: 'h6',
 };
 
 const toneStyles: Record<KkHeadingTone, { color?: string }> = {

@@ -1,5 +1,5 @@
 import { KkNote, KkSelectField, KkTextArea, KkTextField } from '@furria/ui';
-import type { ChangeEvent, FC } from 'react';
+import type { FC } from 'react';
 import {
   GROUP_KIND_FIELD_HINT,
   GROUP_KIND_FIELD_LABEL,
@@ -39,10 +39,6 @@ export const GroupInfoEditor: FC<GroupInfoEditorProps> = ({ hub }) => {
   const heldKind = toHeldGroupKind(hub.groupKindId, hub.groupKindName);
   const kindOptions = toGroupKindOptions(kinds.data?.kinds ?? [], heldKind);
 
-  const changeFoundedYear = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
-    control.setFoundedYear(event.target.value);
-  };
-
   return (
     <WriteScreen
       origin={toHubEditorOrigin(hub)}
@@ -50,7 +46,12 @@ export const GroupInfoEditor: FC<GroupInfoEditorProps> = ({ hub }) => {
       rejection={control.rejection ?? undefined}
       isDirty={control.isDirty}
       action={{
-        primary: { label: SAVE_LABEL, onSelect: control.submit, loading: control.isSaving },
+        primary: {
+          label: SAVE_LABEL,
+          onSelect: control.submit,
+          loading: control.isSaving,
+          disabled: !control.canSubmit,
+        },
       }}
     >
       <KkTextArea
@@ -75,12 +76,13 @@ export const GroupInfoEditor: FC<GroupInfoEditorProps> = ({ hub }) => {
         hint={GROUP_KIND_FIELD_HINT}
       />
       <KkTextField
-        name="foundedYear"
+        name={control.foundedYear.name}
         label={FOUNDED_LABEL}
         inputMode="numeric"
-        value={control.foundedYear}
-        onChange={changeFoundedYear}
-        error={control.foundedYearError !== null}
+        onChange={control.foundedYear.onChange}
+        onBlur={control.foundedYear.onBlur}
+        inputRef={control.foundedYear.ref}
+        error={control.foundedYearError !== undefined}
         helperText={control.foundedYearError ?? FOUNDED_HINT}
       />
       <HubTonePicker value={control.tone} takenTones={takenTones} onChange={control.setTone} />

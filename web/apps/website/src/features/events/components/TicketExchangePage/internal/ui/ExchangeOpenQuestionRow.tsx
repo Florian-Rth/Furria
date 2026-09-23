@@ -18,7 +18,7 @@ export const ExchangeOpenQuestionRow: FC<ExchangeOpenQuestionRowProps> = ({ ques
       borderColor: 'divider',
     }}
   >
-    <Typography variant="h5" component="h3">
+    <Typography variant="h3" component="h3">
       {question.title}
     </Typography>
     <KkNote>{question.description}</KkNote>

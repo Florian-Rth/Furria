@@ -1,5 +1,7 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
+import { useController, useForm } from 'react-hook-form';
 import { toLandingKey } from '@/features/write';
 import type { PersonRef } from '@/lib/api/schemas';
 import { toIsoDay } from '@/lib/day';
@@ -11,6 +13,7 @@ import {
   toPersonName,
 } from '../manage-roles-labels';
 import type { RoleHolder } from '../schemas';
+import { RoleHoldingAddFormSchema, RoleHoldingEndFormSchema } from '../schemas';
 
 const END_LABEL = 'Inhaberschaft beenden';
 const ADD_LABEL = 'Inhaberschaft eintragen';
@@ -28,12 +31,15 @@ export interface RoleHoldingEditorControl {
   clearPerson: () => void;
   sinceOn: string | null;
   setSinceOn: (value: string | null) => void;
+  sinceOnError: string | undefined;
   endedOn: string | null;
   setEndedOn: (value: string | null) => void;
+  endedOnError: string | undefined;
   consequence: string | null;
   rejection: string | null;
   isSaving: boolean;
   isDirty: boolean;
+  canSubmit: boolean;
   actionLabel: string;
   submit: () => void;
 }
@@ -46,16 +52,33 @@ export const useRoleHoldingEditor = ({
 }: RoleHoldingEditorInput): RoleHoldingEditorControl => {
   const today = toIsoDay(new Date());
   const isEditing = holder !== null;
-
-  const [person, setPerson] = useState<PersonRef | null>(prefillPerson);
-  const [sinceOn, setSinceOn] = useState<string | null>(today);
-  const [endedOn, setEndedOn] = useState<string | null>(today);
   const [rejection, setRejection] = useState<string | null>(null);
 
   const addMutation = useAddRoleHoldingMutation(roleId, roleName);
   const endMutation = useEndRoleHoldingMutation(roleId);
   const navigate = useNavigate();
 
+  const addForm = useForm({
+    resolver: zodResolver(RoleHoldingAddFormSchema),
+    defaultValues: { person: prefillPerson, sinceOn: today },
+    mode: 'onTouched',
+  });
+  const endForm = useForm({
+    resolver: zodResolver(RoleHoldingEndFormSchema),
+    defaultValues: { endedOn: today },
+    mode: 'onTouched',
+  });
+  const addState = addForm.formState;
+  const endState = endForm.formState;
+  const { isDirty: isAddDirty, isValid: isAddValid } = addState;
+  const { isDirty: isEndDirty, isValid: isEndValid } = endState;
+  const personField = useController({ control: addForm.control, name: 'person' });
+  const sinceOnField = useController({ control: addForm.control, name: 'sinceOn' });
+  const endedOnField = useController({ control: endForm.control, name: 'endedOn' });
+
+  const person = personField.field.value;
+  const sinceOn = sinceOnField.field.value;
+  const endedOn = endedOnField.field.value;
   const personName = person === null ? '' : toPersonName(person);
   const holderName = holder === null ? '' : toPersonName(holder);
 
@@ -71,53 +94,43 @@ export const useRoleHoldingEditor = ({
     });
   };
 
+  const fail = (error: Error): void => {
+    setRejection(toWriteErrorMessage(error));
+  };
+
   const clearPerson = (): void => {
-    setPerson(null);
+    personField.field.onChange(null);
     setRejection(null);
   };
 
   const select = (next: PersonRef): void => {
-    setPerson(next);
+    personField.field.onChange(next);
     setRejection(null);
   };
 
-  const submitAdd = (): void => {
-    if (person === null || sinceOn === null) {
-      return;
-    }
-
+  const submitAdd = addForm.handleSubmit((values) => {
     setRejection(null);
     addMutation.mutate(
-      { personId: person.personId, personName, sinceOn },
       {
-        onSuccess: (added) => {
-          landBack(added.roleHoldingId);
-        },
-        onError: (error) => {
-          setRejection(toWriteErrorMessage(error));
-        },
+        personId: values.person.personId,
+        personName: toPersonName(values.person),
+        sinceOn: values.sinceOn,
       },
+      { onSuccess: (added) => landBack(added.roleHoldingId), onError: fail },
     );
-  };
+  });
 
-  const submitEnd = (): void => {
-    if (holder === null || endedOn === null) {
+  const submitEnd = endForm.handleSubmit((values) => {
+    if (holder === null) {
       return;
     }
 
     setRejection(null);
     endMutation.mutate(
-      { roleHoldingId: holder.roleHoldingId, personName: holderName, endedOn },
-      {
-        onSuccess: () => {
-          landBack(holder.roleHoldingId);
-        },
-        onError: (error) => {
-          setRejection(toWriteErrorMessage(error));
-        },
-      },
+      { roleHoldingId: holder.roleHoldingId, personName: holderName, endedOn: values.endedOn },
+      { onSuccess: () => landBack(holder.roleHoldingId), onError: fail },
     );
-  };
+  });
 
   const consequence = isEditing
     ? endedOn === null
@@ -132,14 +145,19 @@ export const useRoleHoldingEditor = ({
     select,
     clearPerson,
     sinceOn,
-    setSinceOn,
+    setSinceOn: sinceOnField.field.onChange,
+    sinceOnError: addState.errors.sinceOn?.message,
     endedOn,
-    setEndedOn,
+    setEndedOn: endedOnField.field.onChange,
+    endedOnError: endState.errors.endedOn?.message,
     consequence,
     rejection,
     isSaving: isEditing ? endMutation.isPending : addMutation.isPending,
-    isDirty: isEditing ? endedOn !== today : person !== null,
+    isDirty: isEditing ? isEndDirty : isAddDirty,
+    canSubmit: isEditing ? isEndValid : isAddValid,
     actionLabel: isEditing ? END_LABEL : ADD_LABEL,
-    submit: isEditing ? submitEnd : submitAdd,
+    submit: () => {
+      void (isEditing ? submitEnd() : submitAdd());
+    },
   };
 };

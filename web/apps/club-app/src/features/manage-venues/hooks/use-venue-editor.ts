@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
-import { useForm } from 'react-hook-form';
+import { useController, useForm } from 'react-hook-form';
 import { toLandingKey } from '@/features/write';
 import { toFormFailures } from '@/lib/api/api-failures';
 import { toWriteErrorMessage } from '@/lib/write-error';
@@ -29,7 +29,9 @@ export interface VenueEditorControl {
   form: UseFormReturn<VenueForm>;
   hint: string;
   setHint: (value: string) => void;
+  touchHint: () => void;
   isDirty: boolean;
+  canSubmit: boolean;
   isSaving: boolean;
   rejection: string | null;
   submit: () => void;
@@ -44,7 +46,10 @@ export const useVenueEditor = (venue: ManagedVenue | null): VenueEditorControl =
   const form = useForm<VenueForm>({
     resolver: zodResolver(VenueFormSchema),
     defaultValues: toValues(venue),
+    mode: 'onTouched',
   });
+  const { isDirty, isValid } = form.formState;
+  const hint = useController({ control: form.control, name: 'hint' });
 
   const showFailure = (error: Error): void => {
     const failures = toFormFailures(error, FIELD_NAMES);
@@ -95,15 +100,13 @@ export const useVenueEditor = (venue: ManagedVenue | null): VenueEditorControl =
     void handleSubmit();
   };
 
-  const setHint = (value: string): void => {
-    form.setValue('hint', value, { shouldValidate: true });
-  };
-
   return {
     form,
-    hint: form.watch('hint'),
-    setHint,
-    isDirty: form.formState.isDirty,
+    hint: hint.field.value,
+    setHint: hint.field.onChange,
+    touchHint: hint.field.onBlur,
+    isDirty,
+    canSubmit: isValid,
     isSaving: createMutation.isPending || updateMutation.isPending,
     rejection,
     submit,

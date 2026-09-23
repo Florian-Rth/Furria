@@ -1,5 +1,7 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
+import { useController, useForm } from 'react-hook-form';
 import { toLandingKey } from '@/features/write';
 import { toIsoDay } from '@/lib/day';
 import { toWriteErrorMessage } from '@/lib/write-error';
@@ -13,6 +15,7 @@ import {
   toOpenPause,
 } from '../manage-persons-labels';
 import type { CreatedMembership, PersonDetails, PersonMembership } from '../schemas';
+import { MembershipFormSchema } from '../schemas';
 
 interface PersonMembershipEditorInput {
   person: PersonDetails;
@@ -22,12 +25,14 @@ interface PersonMembershipEditorInput {
 export interface PersonMembershipEditorControl {
   startedOn: string | null;
   setStartedOn: (value: string | null) => void;
+  startedOnError: string | undefined;
   endedOn: string | null;
   setEndedOn: (value: string | null) => void;
   consequence: string | null;
   rejection: string | null;
   isSaving: boolean;
   isDirty: boolean;
+  canSubmit: boolean;
   actionLabel: string;
   actionTone: 'danger' | undefined;
   submit: () => void;
@@ -38,16 +43,26 @@ export const usePersonMembershipEditor = ({
   membership,
 }: PersonMembershipEditorInput): PersonMembershipEditorControl => {
   const today = toIsoDay(new Date());
-  const initialStartedOn = membership?.startedOn ?? today;
-  const initialEndedOn = membership?.endedOn ?? null;
   const wasOpen = membership !== null && membership.endedOn === null;
 
-  const [startedOn, setStartedOn] = useState<string | null>(initialStartedOn);
-  const [endedOn, setEndedOn] = useState<string | null>(initialEndedOn);
   const [rejection, setRejection] = useState<string | null>(null);
   const create = useCreateMembershipMutation(person.personId);
   const update = useUpdateMembershipMutation(person.personId);
   const navigate = useNavigate();
+
+  const form = useForm({
+    resolver: zodResolver(MembershipFormSchema),
+    defaultValues: {
+      startedOn: membership?.startedOn ?? today,
+      endedOn: membership?.endedOn ?? null,
+    },
+    mode: 'onTouched',
+  });
+  const { isDirty, isValid, errors } = form.formState;
+  const startedOnField = useController({ control: form.control, name: 'startedOn' });
+  const endedOnField = useController({ control: form.control, name: 'endedOn' });
+  const startedOn = startedOnField.field.value;
+  const endedOn = endedOnField.field.value;
 
   const isClosingNow = wasOpen && endedOn !== null;
 
@@ -64,30 +79,23 @@ export const usePersonMembershipEditor = ({
     });
   };
 
-  const submit = (): void => {
-    if (startedOn === null) {
-      return;
-    }
-
+  const handleFormSubmit = form.handleSubmit((submitted) => {
     setRejection(null);
 
     if (membership === null) {
-      create.mutate(
-        { startedOn, endedOn },
-        {
-          onSuccess: (created: CreatedMembership) => landBack(created.membershipId),
-          onError: fail,
-        },
-      );
+      create.mutate(submitted, {
+        onSuccess: (created: CreatedMembership) => landBack(created.membershipId),
+        onError: fail,
+      });
 
       return;
     }
 
     update.mutate(
-      { membershipId: membership.membershipId, startedOn, endedOn, wasOpen },
+      { membershipId: membership.membershipId, ...submitted, wasOpen },
       { onSuccess: () => landBack(membership.membershipId), onError: fail },
     );
-  };
+  });
 
   const consequence =
     startedOn === null
@@ -98,13 +106,15 @@ export const usePersonMembershipEditor = ({
 
   return {
     startedOn,
-    setStartedOn,
+    setStartedOn: startedOnField.field.onChange,
+    startedOnError: errors.startedOn?.message,
     endedOn,
-    setEndedOn,
+    setEndedOn: endedOnField.field.onChange,
     consequence,
     rejection,
     isSaving: create.isPending || update.isPending,
-    isDirty: startedOn !== initialStartedOn || endedOn !== initialEndedOn,
+    isDirty,
+    canSubmit: isValid,
     actionLabel:
       membership === null
         ? ADD_MEMBERSHIP_ACTION_LABEL
@@ -112,6 +122,8 @@ export const usePersonMembershipEditor = ({
           ? MEMBERSHIP_END_LABEL
           : MEMBERSHIP_CHANGE_LABEL,
     actionTone: isClosingNow ? 'danger' : undefined,
-    submit,
+    submit: () => {
+      void handleFormSubmit();
+    },
   };
 };

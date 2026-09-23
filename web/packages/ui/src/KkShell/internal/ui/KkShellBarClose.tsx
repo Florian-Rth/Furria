@@ -40,7 +40,7 @@ export const KkShellBarClose: FC<KkShellBarCloseProps> = ({ origin, title }) => 
     >
       <KkIcon name="close" size="medium" sx={{ flexShrink: 0 }} />
       <Stack sx={{ minWidth: 0, gap: 0 }}>
-        <KkEyebrow tone="muted" size="small" sx={{ lineHeight: 1 }}>
+        <KkEyebrow tone="muted" sx={{ lineHeight: 1 }}>
           {origin.label}
         </KkEyebrow>
         <KkShellBarTitle>{title}</KkShellBarTitle>

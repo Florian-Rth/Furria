@@ -12,6 +12,7 @@ import {
 import { useGroupAdminEditor } from '../hooks/use-group-admin-editor';
 import { toHubPeople, toPrefillPerson } from '../hub-people';
 import type { GroupHub } from '../schemas';
+import { ADMIN_FUNCTION_MAX_LENGTH } from '../schemas';
 import { PersonPicker } from './PersonPicker';
 
 const CHAIN_TITLE = 'Bisherige Ernennungen';
@@ -20,7 +21,6 @@ const FUNCTION_LABEL = 'Funktion';
 const FUNCTION_PLACEHOLDER = 'Trainerin, Sprecher, …';
 const FUNCTION_HINT =
   'Nur ein Etikett für die Anzeige. Die Rechte hängen an der Gruppen-Admin-Rolle, nicht am Wort.';
-const FUNCTION_MAX = 64;
 const SINCE_LABEL = 'Admin ab';
 const SINCE_HINT = 'Darf in der Zukunft liegen. Vorher darf die Person die Gruppe nicht pflegen.';
 const END_DATE_LABEL = 'Letzter Tag';
@@ -75,7 +75,7 @@ export const GroupAdminEditor: FC<GroupAdminEditorProps> = ({ hub, admin, prefil
           suggestions={ADMIN_FUNCTION_SUGGESTIONS}
           placeholder={FUNCTION_PLACEHOLDER}
           hint={FUNCTION_HINT}
-          maxLength={FUNCTION_MAX}
+          maxLength={ADMIN_FUNCTION_MAX_LENGTH}
         />
         <KkDateField
           name="sinceOn"
@@ -83,6 +83,9 @@ export const GroupAdminEditor: FC<GroupAdminEditorProps> = ({ hub, admin, prefil
           value={control.sinceOn}
           onChange={control.setSinceOn}
           quickChoices={toJoinQuickChoices(today)}
+          required
+          error={control.sinceOnError !== undefined}
+          helperText={control.sinceOnError}
           hint={SINCE_HINT}
         />
       </>
@@ -95,6 +98,9 @@ export const GroupAdminEditor: FC<GroupAdminEditorProps> = ({ hub, admin, prefil
           value={control.endedOn}
           onChange={control.setEndedOn}
           quickChoices={toEndQuickChoices(today)}
+          required
+          error={control.endedOnError !== undefined}
+          helperText={control.endedOnError}
           hint={END_DATE_HINT}
         />
       </>
@@ -115,6 +121,7 @@ export const GroupAdminEditor: FC<GroupAdminEditorProps> = ({ hub, admin, prefil
           label: control.actionLabel,
           onSelect: control.submit,
           loading: control.isSaving,
+          disabled: !control.canSubmit,
           tone: admin === null ? undefined : 'danger',
         },
       }}

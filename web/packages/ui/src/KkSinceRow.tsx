@@ -242,7 +242,7 @@ export const KkSinceRow: FC<KkSinceRowProps> = ({
           sx={(theme) => ({
             display: 'block',
             alignSelf: 'flex-start',
-            fontSize: kkTokens.type.rowValue,
+            ...theme.typography.body1,
             fontWeight: 800,
             lineHeight: 1.25,
             color: titleColor,
@@ -266,7 +266,7 @@ export const KkSinceRow: FC<KkSinceRowProps> = ({
         sx={{
           display: { xs: 'none', desktop: 'block' },
           flexShrink: 0,
-          fontSize: kkTokens.type.rowTitle,
+          typography: 'body2',
           fontWeight: 800,
           letterSpacing: kkTokens.type.tracking.tight,
           lineHeight: 1.2,

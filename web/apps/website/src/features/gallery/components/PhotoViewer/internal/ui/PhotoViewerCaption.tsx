@@ -8,11 +8,11 @@ interface PhotoViewerCaptionProps {
 
 export const PhotoViewerCaption: FC<PhotoViewerCaptionProps> = ({ photo }) => (
   <Typography
+    variant="body1"
     component="p"
     data-kk-photo-viewer-caption
     sx={{
       fontWeight: 600,
-      fontSize: { xs: '0.9375rem', desktop: '1.0625rem' },
       lineHeight: 1.5,
       textWrap: 'pretty',
       maxWidth: '52rem',

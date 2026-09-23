@@ -66,8 +66,11 @@ public sealed class BootstrapAdminSeeder : IHostedService
         CancellationToken ct
     )
     {
-        if (await userManager.FindByEmailAsync(_options.Email) is not null)
+        if (await userManager.FindByEmailAsync(_options.Email) is { } existing)
+        {
+            await ReopenBootstrapAccountAsync(dbContext, existing, ct);
             return;
+        }
 
         var person = new Person
         {
@@ -97,6 +100,19 @@ public sealed class BootstrapAdminSeeder : IHostedService
         );
     }
 
+    private static async Task ReopenBootstrapAccountAsync(
+        AppDbContext dbContext,
+        Account account,
+        CancellationToken ct
+    )
+    {
+        if (!account.IsDisabled)
+            return;
+
+        account.IsDisabled = false;
+        await dbContext.SaveChangesAsync(ct);
+    }
+
     private async Task EnsureAdminRoleAsync(
         AppDbContext dbContext,
         UserManager<Account> userManager,
@@ -112,7 +128,7 @@ public sealed class BootstrapAdminSeeder : IHostedService
 
         if (adminRoleId is not null)
         {
-            await EnsureAdminRoleIsHeldAsync(dbContext, userManager, adminRoleId.Value, today, ct);
+            await ReconcileAdminRoleAsync(dbContext, userManager, adminRoleId.Value, today, ct);
             return;
         }
 
@@ -138,12 +154,54 @@ public sealed class BootstrapAdminSeeder : IHostedService
         await dbContext.SaveChangesAsync(ct);
     }
 
-    // Anti-lockout failsafe, not an oversight: roles.manage can only be granted by someone who
-    // holds it and there is no delete endpoint (decision U), so an Admin Rolle nobody holds locks
-    // the club out of Rollen & Rechte for good. Decision W's scope is the permission keys — those
-    // are never re-granted, which Should_LeaveTheKeysAlone_When_TheClubRemovedOneFromTheAdminRolle
-    // pins; Should_OpenAnInhaberschaft_When_TheAdminRolleLostEveryInhaber and
-    // Should_OpenAFurtherInhaberschaft_When_TheLastOneOnTheAdminRolleHasEnded pin this half.
+    private async Task ReconcileAdminRoleAsync(
+        AppDbContext dbContext,
+        UserManager<Account> userManager,
+        int adminRoleId,
+        DateOnly today,
+        CancellationToken ct
+    )
+    {
+        await ReopenAdminRoleAsync(dbContext, adminRoleId, ct);
+        await GrantEveryMissingKeyAsync(dbContext, adminRoleId, ct);
+        await EnsureAdminRoleIsHeldAsync(dbContext, userManager, adminRoleId, today, ct);
+    }
+
+    private static async Task ReopenAdminRoleAsync(
+        AppDbContext dbContext,
+        int adminRoleId,
+        CancellationToken ct
+    )
+    {
+        var role = await dbContext.Roles.SingleAsync(row => row.Id == adminRoleId, ct);
+        if (role.ArchivedOn is null)
+            return;
+
+        role.ArchivedOn = null;
+        await dbContext.SaveChangesAsync(ct);
+    }
+
+    private static async Task GrantEveryMissingKeyAsync(
+        AppDbContext dbContext,
+        int adminRoleId,
+        CancellationToken ct
+    )
+    {
+        var granted = await dbContext
+            .RolePermissions.Where(permission => permission.RoleId == adminRoleId)
+            .Select(permission => permission.PermissionKey)
+            .ToListAsync(ct);
+
+        var missing = FurriaPermissions.All.Except(granted).ToList();
+        if (missing.Count == 0)
+            return;
+
+        dbContext.RolePermissions.AddRange(
+            missing.Select(key => new RolePermission { RoleId = adminRoleId, PermissionKey = key })
+        );
+        await dbContext.SaveChangesAsync(ct);
+    }
+
     private async Task EnsureAdminRoleIsHeldAsync(
         AppDbContext dbContext,
         UserManager<Account> userManager,

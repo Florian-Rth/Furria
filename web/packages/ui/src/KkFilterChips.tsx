@@ -12,7 +12,6 @@ import { tonePaint, toneSelectedPaint } from './internal/tone';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
-const CHIP_FONT_SIZE = '0.75rem';
 const CHIP_ATTRIBUTE = 'data-kk-filter-chip';
 const SELECTED_CHIP = `[${CHIP_ATTRIBUTE}][aria-checked="true"]`;
 const FADE_WIDTH = 36;
@@ -59,8 +58,7 @@ const chipStyles = (theme: Theme): CSSObject => ({
   borderStyle: 'solid',
   borderColor: 'divider',
   borderRadius: `${kkTokens.radius.pill}px`,
-  fontFamily: kkTokens.font.body,
-  fontSize: CHIP_FONT_SIZE,
+  ...theme.typography.caption,
   fontWeight: 800,
   letterSpacing: kkTokens.type.tracking.tight,
   lineHeight: 1.2,

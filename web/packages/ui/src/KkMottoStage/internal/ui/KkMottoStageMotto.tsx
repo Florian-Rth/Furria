@@ -3,18 +3,18 @@ import { KkHeading } from '../../../KkHeading';
 import type { KkSx } from '../../../kk-sx';
 import { kkTokens } from '../../../tokens';
 
-const MOTTO_SIZE = { xs: kkTokens.headline.compact, desktop: kkTokens.headline.page };
 const MOTTO_LINE_HEIGHT = 0.96;
 
 interface KkMottoStageMottoProps {
   motto: string | null;
+  pendingLabel: string;
   sx?: KkSx;
 }
 
-export const KkMottoStageMotto: FC<KkMottoStageMottoProps> = ({ motto, sx }) => {
-  if (motto === null) {
-    return null;
-  }
+export const KkMottoStageMotto: FC<KkMottoStageMottoProps> = ({ motto, pendingLabel, sx }) => {
+  const isPending = motto === null;
+  const headline = motto ?? pendingLabel;
+  const color = isPending ? 'text.secondary' : 'text.primary';
 
   return (
     <KkHeading
@@ -23,15 +23,14 @@ export const KkMottoStageMotto: FC<KkMottoStageMottoProps> = ({ motto, sx }) => 
       sx={[
         {
           minWidth: 0,
-          color: 'text.primary',
-          fontSize: MOTTO_SIZE,
+          color,
           letterSpacing: kkTokens.type.tracking.display,
           lineHeight: MOTTO_LINE_HEIGHT,
         },
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >
-      {motto}
+      {headline}
     </KkHeading>
   );
 };

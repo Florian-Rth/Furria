@@ -1,3 +1,4 @@
+export { ANNOUNCEMENTS_ORIGIN, ANNOUNCEMENTS_TITLE } from './announcements-labels';
 export { ANNOUNCEMENTS_QUERY_KEY, useAnnouncementsQuery } from './api';
 export { AnnouncementAuthorLine } from './components/AnnouncementAuthorLine';
 export { AnnouncementNewScreen } from './components/AnnouncementNewScreen';

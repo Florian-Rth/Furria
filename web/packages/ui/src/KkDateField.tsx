@@ -26,6 +26,7 @@ interface KkDateFieldProps {
   allowEmpty?: boolean;
   emptyLabel?: string;
   hint?: string;
+  required?: boolean;
   error?: boolean;
   helperText?: string;
   sx?: KkSx;
@@ -40,6 +41,7 @@ export const KkDateField: FC<KkDateFieldProps> = ({
   allowEmpty = false,
   emptyLabel,
   hint,
+  required,
   error,
   helperText,
   sx,
@@ -79,7 +81,7 @@ export const KkDateField: FC<KkDateFieldProps> = ({
         format={DISPLAY_FORMAT}
         slotProps={{
           field: { clearable: allowEmpty },
-          textField: { name, error, helperText: helper, fullWidth: true },
+          textField: { name, required, error, helperText: helper, fullWidth: true },
         }}
       />
       {choiceRow}

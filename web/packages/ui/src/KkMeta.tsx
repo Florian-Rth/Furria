@@ -33,8 +33,7 @@ export const KkMeta: FC<KkMetaProps> = ({
     sx={[
       (theme) => ({
         ...tonePaint[tone](theme),
-        fontFamily: kkTokens.font.body,
-        fontSize: kkTokens.type.rowMeta,
+        ...theme.typography.caption,
         fontWeight: 600,
         fontStyle: italic ? 'italic' : 'normal',
         letterSpacing: kkTokens.type.tracking.tight,

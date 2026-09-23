@@ -23,6 +23,7 @@ import { CalendarEntryFormSchema } from '../schemas';
 
 const FIELD_NAMES = ['title', 'description'] as const;
 const LANDING_KIND = 'calendar-entry';
+const FIELD_EDIT = { shouldDirty: true, shouldValidate: true } as const;
 
 interface CalendarEntryEditorInput {
   entry: CalendarEntry | null;
@@ -45,6 +46,7 @@ export interface CalendarEntryEditorControl {
   setAsksForResponse: (value: boolean) => void;
   isEditing: boolean;
   isDirty: boolean;
+  canSubmit: boolean;
   isSaving: boolean;
   rejection: string | null;
   submit: () => void;
@@ -63,7 +65,9 @@ export const useCalendarEntryEditor = ({
   const form = useForm<CalendarEntryForm>({
     resolver: zodResolver(CalendarEntryFormSchema),
     defaultValues: toEntryFormValues(entry, ownerOptions, today),
+    mode: 'onTouched',
   });
+  const { isDirty, isValid } = form.formState;
 
   const values = form.watch();
 
@@ -112,12 +116,16 @@ export const useCalendarEntryEditor = ({
     ownerOptions.find((option) => option.id === ownerId)?.ownerGroupId ?? null;
 
   const setOwner = (value: string): void => {
-    form.setValue('ownerId', value);
-    form.setValue('visibility', toDefaultVisibility(ownerGroupIdOf(value), form.getValues('kind')));
+    form.setValue('ownerId', value, FIELD_EDIT);
+    form.setValue(
+      'visibility',
+      toDefaultVisibility(ownerGroupIdOf(value), form.getValues('kind')),
+      FIELD_EDIT,
+    );
     form.setValue(
       'participatingGroupIds',
       toParticipationKeptForOwner(form.getValues('participatingGroupIds'), value),
-      { shouldValidate: true },
+      FIELD_EDIT,
     );
   };
 
@@ -125,7 +133,7 @@ export const useCalendarEntryEditor = ({
     form.setValue(
       'participatingGroupIds',
       toToggledParticipation(form.getValues('participatingGroupIds'), value),
-      { shouldValidate: true },
+      FIELD_EDIT,
     );
   };
 
@@ -145,29 +153,30 @@ export const useCalendarEntryEditor = ({
       time: form.getValues('endTime'),
     });
 
-    form.setValue('endDay', kept.day);
-    form.setValue('endTime', kept.time);
+    form.setValue('endDay', kept.day, FIELD_EDIT);
+    form.setValue('endTime', kept.time, FIELD_EDIT);
   };
 
   const setStartDay = (value: string | null): void => {
     const day = value ?? '';
 
     keepEndInStep({ day, time: form.getValues('startTime') });
-    form.setValue('startDay', day, { shouldValidate: true });
+    form.setValue('startDay', day, FIELD_EDIT);
   };
 
   const setStartTime = (value: string): void => {
     keepEndInStep({ day: form.getValues('startDay'), time: value });
-    form.setValue('startTime', value, { shouldValidate: true });
+    form.setValue('startTime', value, FIELD_EDIT);
   };
 
   const setKind = (value: string): void => {
     const kind = toCalendarKind(value);
 
-    form.setValue('kind', kind);
+    form.setValue('kind', kind, FIELD_EDIT);
     form.setValue(
       'visibility',
       toDefaultVisibility(ownerGroupIdOf(form.getValues('ownerId')), kind),
+      FIELD_EDIT,
     );
   };
 
@@ -175,30 +184,31 @@ export const useCalendarEntryEditor = ({
     form,
     values,
     setDescription: (value) => {
-      form.setValue('description', value, { shouldValidate: true });
+      form.setValue('description', value, FIELD_EDIT);
     },
     setOwner,
     setVenue: (value) => {
-      form.setValue('venueId', value);
+      form.setValue('venueId', value, FIELD_EDIT);
     },
     toggleParticipatingGroup,
     setKind,
     setVisibility: (value) => {
-      form.setValue('visibility', toCalendarVisibility(value));
+      form.setValue('visibility', toCalendarVisibility(value), FIELD_EDIT);
     },
     setStartDay,
     setStartTime,
     setEndDay: (value) => {
-      form.setValue('endDay', value ?? '', { shouldValidate: true });
+      form.setValue('endDay', value ?? '', FIELD_EDIT);
     },
     setEndTime: (value) => {
-      form.setValue('endTime', value, { shouldValidate: true });
+      form.setValue('endTime', value, FIELD_EDIT);
     },
     setAsksForResponse: (value) => {
-      form.setValue('asksForResponse', value);
+      form.setValue('asksForResponse', value, FIELD_EDIT);
     },
     isEditing: entry !== null,
-    isDirty: form.formState.isDirty,
+    isDirty,
+    canSubmit: isValid,
     isSaving: createMutation.isPending || updateMutation.isPending,
     rejection,
     submit: () => {

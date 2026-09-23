@@ -105,7 +105,7 @@ export const KkPersonRow: FC<KkPersonRowProps> = ({
     <Typography
       component="span"
       sx={{
-        fontSize: kkTokens.type.rowMeta,
+        typography: 'caption',
         fontWeight: 700,
         lineHeight: 1.3,
         color: 'text.secondary',
@@ -209,7 +209,7 @@ export const KkPersonRow: FC<KkPersonRowProps> = ({
           component="span"
           data-kk-person-row-name
           sx={{
-            fontSize: kkTokens.type.rowTitle,
+            typography: 'body2',
             fontWeight: 800,
             lineHeight: 1.25,
             color: nameColor,

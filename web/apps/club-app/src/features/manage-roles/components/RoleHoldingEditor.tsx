@@ -78,6 +78,9 @@ export const RoleHoldingEditor: FC<RoleHoldingEditorProps> = ({
           value={control.sinceOn}
           onChange={control.setSinceOn}
           quickChoices={toStartQuickChoices(today)}
+          required
+          error={control.sinceOnError !== undefined}
+          helperText={control.sinceOnError}
           hint={SINCE_HINT}
         />
       </>
@@ -90,6 +93,9 @@ export const RoleHoldingEditor: FC<RoleHoldingEditorProps> = ({
           value={control.endedOn}
           onChange={control.setEndedOn}
           quickChoices={toEndQuickChoices(today)}
+          required
+          error={control.endedOnError !== undefined}
+          helperText={control.endedOnError}
           hint={END_DATE_HINT}
         />
       </>
@@ -110,6 +116,7 @@ export const RoleHoldingEditor: FC<RoleHoldingEditorProps> = ({
           label: control.actionLabel,
           onSelect: control.submit,
           loading: control.isSaving,
+          disabled: !control.canSubmit,
           tone: holder === null ? undefined : 'danger',
         },
       }}

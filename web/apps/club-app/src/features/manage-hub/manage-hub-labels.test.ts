@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { ManageTileModel } from './manage-hub-labels';
-import { isBoardEmpty, toManageBanks, toManageTiles } from './manage-hub-labels';
+import type { ManageRowModel } from './manage-hub-labels';
+import { isBoardEmpty, toManageBanks, toManageRows } from './manage-hub-labels';
 import type { ManageHub } from './schemas';
 
 const EMPTY_HUB: ManageHub = {
@@ -17,168 +17,121 @@ const hubWith = (panels: Partial<ManageHub>): ManageHub => ({ ...EMPTY_HUB, ...p
 
 const SESSION_LABEL = '2025/26';
 
-const onlyTile = (hub: ManageHub): ManageTileModel => {
-  const [tile] = toManageTiles(hub, SESSION_LABEL);
+const onlyRow = (hub: ManageHub): ManageRowModel => {
+  const [row] = toManageRows(hub, SESSION_LABEL);
 
-  if (tile === undefined) {
+  if (row === undefined) {
     throw new Error('the fixture holds no panel');
   }
 
-  return tile;
+  return row;
 };
 
-const footOf = (hub: ManageHub): string => onlyTile(hub).footLine;
+const summaryOf = (hub: ManageHub): string | undefined => onlyRow(hub).summary;
 
-describe('toManageTiles', () => {
+describe('toManageRows', () => {
   it.each([
-    { personCount: 184, memberCount: 121, expected: '121 Mitglieder' },
-    { personCount: 4, memberCount: 1, expected: '1 Mitglied' },
-    { personCount: 4, memberCount: 0, expected: 'Keine Mitgliedschaft' },
-    { personCount: 0, memberCount: 0, expected: 'Die erste Person' },
-  ])('foots the Personen tile with "$expected"', ({ personCount, memberCount, expected }) => {
-    expect(footOf(hubWith({ persons: { personCount, memberCount } }))).toBe(expected);
+    { personCount: 184, memberCount: 121, expected: '184 Personen · 121 Mitglieder' },
+    { personCount: 1, memberCount: 1, expected: '1 Person · 1 Mitglied' },
+    { personCount: 4, memberCount: 0, expected: '4 Personen · 0 Mitglieder' },
+  ])('sums up the Personen row as "$expected"', ({ personCount, memberCount, expected }) => {
+    expect(summaryOf(hubWith({ persons: { personCount, memberCount } }))).toBe(expected);
   });
 
   it.each([
-    { groupCount: 9, archivedCount: 3, expected: '3 archiviert' },
-    { groupCount: 9, archivedCount: 1, expected: '1 archiviert' },
-    { groupCount: 9, archivedCount: 0, expected: 'Keine archiviert' },
-    { groupCount: 0, archivedCount: 0, expected: 'Die erste Gruppe' },
-  ])('foots the Gruppen tile with "$expected"', ({ groupCount, archivedCount, expected }) => {
-    expect(footOf(hubWith({ groups: { groupCount, archivedCount } }))).toBe(expected);
+    { groupCount: 9, archivedCount: 3, expected: '9 Gruppen · 3 archiviert' },
+    { groupCount: 1, archivedCount: 0, expected: '1 Gruppe' },
+    { groupCount: 0, archivedCount: 2, expected: '0 Gruppen · 2 archiviert' },
+  ])('sums up the Gruppen row as "$expected"', ({ groupCount, archivedCount, expected }) => {
+    expect(summaryOf(hubWith({ groups: { groupCount, archivedCount } }))).toBe(expected);
   });
 
   it.each([
-    { venueCount: 5, archivedCount: 2, expected: '2 archiviert' },
-    { venueCount: 5, archivedCount: 1, expected: '1 archiviert' },
-    { venueCount: 5, archivedCount: 0, expected: 'Keine archiviert' },
-    { venueCount: 0, archivedCount: 0, expected: 'Der erste Ort' },
-  ])('foots the Orte tile with "$expected"', ({ venueCount, archivedCount, expected }) => {
-    expect(footOf(hubWith({ venues: { venueCount, archivedCount } }))).toBe(expected);
+    { venueCount: 5, archivedCount: 1, expected: '5 Orte · 1 archiviert' },
+    { venueCount: 1, archivedCount: 0, expected: '1 Ort' },
+  ])('sums up the Orte row as "$expected"', ({ venueCount, archivedCount, expected }) => {
+    expect(summaryOf(hubWith({ venues: { venueCount, archivedCount } }))).toBe(expected);
   });
 
   it.each([
-    { issuedCount: 9, holdingCount: 7, holderCount: 4, expected: 'bei 4 Personen' },
-    { issuedCount: 3, holdingCount: 2, holderCount: 1, expected: 'bei 1 Person' },
+    { issuedCount: 9, holdingCount: 7, holderCount: 4, expected: '7 ausgegeben · bei 4 Personen' },
+    { issuedCount: 3, holdingCount: 1, holderCount: 1, expected: '1 ausgegeben · bei 1 Person' },
     { issuedCount: 3, holdingCount: 0, holderCount: 0, expected: 'Alle zurück' },
-    { issuedCount: 0, holdingCount: 0, holderCount: 0, expected: 'Der erste Schlüssel' },
-  ])('foots the Schlüssel tile with "$expected"', (fixture) => {
+  ])('sums up the Schlüssel row as "$expected"', (fixture) => {
     const { issuedCount, holdingCount, holderCount, expected } = fixture;
 
-    expect(footOf(hubWith({ keys: { issuedCount, holdingCount, holderCount } }))).toBe(expected);
+    expect(summaryOf(hubWith({ keys: { issuedCount, holdingCount, holderCount } }))).toBe(expected);
   });
 
-  it('counts a Schlüssel tile that was handed out and returned as a figure, not a dash', () => {
-    const tile = onlyTile(hubWith({ keys: { issuedCount: 3, holdingCount: 0, holderCount: 0 } }));
+  it.each([
+    { officeCount: 8, seatCount: 7, expected: '8 Funktionen · 7 Sitze besetzt' },
+    { officeCount: 1, seatCount: 1, expected: '1 Funktion · 1 Sitz besetzt' },
+    { officeCount: 7, seatCount: 0, expected: '7 Funktionen · 0 Sitze besetzt' },
+  ])('sums up the Vorstand row as "$expected"', ({ officeCount, seatCount, expected }) => {
+    const board = { officeCount, seatCount, vacantOfficeCount: 0 };
 
-    expect({ countLabel: tile.countLabel, isEmpty: tile.isEmpty }).toEqual({
-      countLabel: '0',
-      isEmpty: false,
+    expect(summaryOf(hubWith({ board }))).toBe(expected);
+  });
+
+  it.each([
+    { entryCount: 3, expected: '3 Einträge' },
+    { entryCount: 1, expected: '1 Eintrag' },
+  ])('sums up the Sessionseinträge row as "$expected"', ({ entryCount, expected }) => {
+    expect(summaryOf(hubWith({ sessions: { entryCount, hasCurrentEntry: true } }))).toBe(expected);
+  });
+
+  it.each([
+    { hub: hubWith({ roles: { roleCount: 12, vacantCount: 2 } }), expected: '2 unbesetzt' },
+    {
+      hub: hubWith({ board: { officeCount: 8, seatCount: 7, vacantOfficeCount: 1 } }),
+      expected: '1 unbesetzt',
+    },
+    {
+      hub: hubWith({ sessions: { entryCount: 3, hasCurrentEntry: false } }),
+      expected: '2025/26 fehlt',
+    },
+  ])('flags "$expected" as needing attention', ({ hub, expected }) => {
+    expect(onlyRow(hub).status).toEqual({ label: expected, tone: 'gold' });
+  });
+
+  it.each([
+    { hub: hubWith({ roles: { roleCount: 12, vacantCount: 0 } }) },
+    { hub: hubWith({ board: { officeCount: 7, seatCount: 7, vacantOfficeCount: 0 } }) },
+    { hub: hubWith({ sessions: { entryCount: 3, hasCurrentEntry: true } }) },
+    { hub: hubWith({ persons: { personCount: 184, memberCount: 121 } }) },
+    { hub: hubWith({ keys: { issuedCount: 3, holdingCount: 3, holderCount: 2 } }) },
+  ])('flags nothing on a settled row', ({ hub }) => {
+    expect(onlyRow(hub).status).toBeUndefined();
+  });
+
+  it.each([
+    { hub: hubWith({ persons: { personCount: 0, memberCount: 0 } }) },
+    { hub: hubWith({ groups: { groupCount: 0, archivedCount: 0 } }) },
+    { hub: hubWith({ roles: { roleCount: 0, vacantCount: 0 } }) },
+    { hub: hubWith({ board: { officeCount: 0, seatCount: 0, vacantOfficeCount: 0 } }) },
+    { hub: hubWith({ sessions: { entryCount: 0, hasCurrentEntry: false } }) },
+    { hub: hubWith({ venues: { venueCount: 0, archivedCount: 0 } }) },
+    { hub: hubWith({ keys: { issuedCount: 0, holdingCount: 0, holderCount: 0 } }) },
+  ])('marks an empty register as empty, with no summary and a neutral status', ({ hub }) => {
+    const row = onlyRow(hub);
+
+    expect({ isEmpty: row.isEmpty, summary: row.summary, tone: row.status?.tone }).toEqual({
+      isEmpty: true,
+      summary: undefined,
+      tone: 'neutral',
     });
   });
 
   it.each([
-    { entryCount: 3, hasCurrentEntry: true, expected: '2025/26 eingetragen' },
-    { entryCount: 3, hasCurrentEntry: false, expected: '2025/26 fehlt noch' },
-    { entryCount: 0, hasCurrentEntry: false, expected: 'Der erste Eintrag' },
-  ])('foots the Sessionseinträge tile with "$expected"', (fixture) => {
-    const { entryCount, hasCurrentEntry, expected } = fixture;
-
-    expect(footOf(hubWith({ sessions: { entryCount, hasCurrentEntry } }))).toBe(expected);
+    { hub: hubWith({ groups: { groupCount: 0, archivedCount: 2 } }) },
+    { hub: hubWith({ venues: { venueCount: 0, archivedCount: 1 } }) },
+    { hub: hubWith({ keys: { issuedCount: 3, holdingCount: 0, holderCount: 0 } }) },
+  ])('keeps a register with only history as filled', ({ hub }) => {
+    expect(onlyRow(hub).isEmpty).toBe(false);
   });
 
-  it.each([
-    { roleCount: 12, vacantCount: 2, vacancyLabel: '2 unbesetzt', footLine: 'Alle besetzt' },
-    { roleCount: 12, vacantCount: 0, vacancyLabel: null, footLine: 'Alle besetzt' },
-    { roleCount: 0, vacantCount: 0, vacancyLabel: null, footLine: 'Die erste Rolle' },
-  ])('marks the Rollen tile with $vacancyLabel', (fixture) => {
-    const { roleCount, vacantCount, vacancyLabel, footLine } = fixture;
-    const tile = onlyTile(hubWith({ roles: { roleCount, vacantCount } }));
-
-    expect({ vacancyLabel: tile.vacancyLabel, footLine: tile.footLine }).toEqual({
-      vacancyLabel,
-      footLine,
-    });
-  });
-
-  it.each([
-    {
-      officeCount: 8,
-      seatCount: 7,
-      vacantOfficeCount: 1,
-      vacancyLabel: '1 unbesetzt',
-      footLine: '7 Sitze besetzt',
-    },
-    {
-      officeCount: 7,
-      seatCount: 7,
-      vacantOfficeCount: 0,
-      vacancyLabel: null,
-      footLine: '7 Sitze besetzt',
-    },
-    {
-      officeCount: 7,
-      seatCount: 0,
-      vacantOfficeCount: 7,
-      vacancyLabel: '7 unbesetzt',
-      footLine: 'Kein Sitz besetzt',
-    },
-    {
-      officeCount: 1,
-      seatCount: 1,
-      vacantOfficeCount: 0,
-      vacancyLabel: null,
-      footLine: '1 Sitz besetzt',
-    },
-    {
-      officeCount: 0,
-      seatCount: 0,
-      vacantOfficeCount: 0,
-      vacancyLabel: null,
-      footLine: 'Die erste Funktion',
-    },
-  ])('marks the Vorstand tile with $vacancyLabel', (fixture) => {
-    const { officeCount, seatCount, vacantOfficeCount, vacancyLabel, footLine } = fixture;
-    const tile = onlyTile(hubWith({ board: { officeCount, seatCount, vacantOfficeCount } }));
-
-    expect({ vacancyLabel: tile.vacancyLabel, footLine: tile.footLine }).toEqual({
-      vacancyLabel,
-      footLine,
-    });
-  });
-
-  it('counts the Vorstand tile by its Funktionen, not by the Sitze that fill them', () => {
-    const tile = onlyTile(
-      hubWith({ board: { officeCount: 7, seatCount: 0, vacantOfficeCount: 7 } }),
-    );
-
-    expect({ countLabel: tile.countLabel, isEmpty: tile.isEmpty }).toEqual({
-      countLabel: '7',
-      isEmpty: false,
-    });
-  });
-
-  it('keeps no vacancy marking on a panel that has nothing yet', () => {
-    const tile = onlyTile(hubWith({ roles: { roleCount: 0, vacantCount: 0 } }));
-
-    expect({
-      countLabel: tile.countLabel,
-      isEmpty: tile.isEmpty,
-      vacancyLabel: tile.vacancyLabel,
-    }).toEqual({ countLabel: '—', isEmpty: true, vacancyLabel: null });
-  });
-
-  it('counts a filled panel with its own figure', () => {
-    const tile = onlyTile(hubWith({ persons: { personCount: 184, memberCount: 121 } }));
-
-    expect({ countLabel: tile.countLabel, isEmpty: tile.isEmpty }).toEqual({
-      countLabel: '184',
-      isEmpty: false,
-    });
-  });
-
-  it('builds no tile for a panel the viewer may not see', () => {
-    expect(toManageTiles(EMPTY_HUB, SESSION_LABEL)).toEqual([]);
+  it('builds no row for a panel the viewer may not see', () => {
+    expect(toManageRows(EMPTY_HUB, SESSION_LABEL)).toEqual([]);
   });
 
   it('keeps the declared panel order when only some panels arrive', () => {
@@ -188,7 +141,7 @@ describe('toManageTiles', () => {
       roles: { roleCount: 3, vacantCount: 0 },
     });
 
-    expect(toManageTiles(hub, SESSION_LABEL).map((tile) => tile.id)).toEqual([
+    expect(toManageRows(hub, SESSION_LABEL).map((row) => row.id)).toEqual([
       'persons',
       'roles',
       'keys',
@@ -197,54 +150,23 @@ describe('toManageTiles', () => {
 });
 
 describe('toManageBanks', () => {
-  const tilesOf = (hub: ManageHub): ReturnType<typeof toManageTiles> =>
-    toManageTiles(hub, SESSION_LABEL);
-
-  it('widens only the last tile of an odd bank', () => {
-    const hub = hubWith({
-      sessions: { entryCount: 1, hasCurrentEntry: true },
-      venues: { venueCount: 2, archivedCount: 0 },
-      keys: { issuedCount: 3, holdingCount: 3, holderCount: 2 },
-    });
-    const banks = toManageBanks(tilesOf(hub));
-
-    expect(banks.map((bank) => bank.tiles.map((entry) => entry.isWide))).toEqual([
-      [false, false, true],
-    ]);
-  });
-
-  it('widens nothing in an even bank', () => {
-    const hub = hubWith({
-      persons: { personCount: 5, memberCount: 5 },
-      groups: { groupCount: 2, archivedCount: 0 },
-    });
-    const banks = toManageBanks(tilesOf(hub));
-
-    expect(banks.map((bank) => bank.tiles.map((entry) => entry.isWide))).toEqual([[false, false]]);
-  });
-
-  it('widens a lone tile', () => {
-    const hub = hubWith({ keys: { issuedCount: 0, holdingCount: 0, holderCount: 0 } });
-    const banks = toManageBanks(tilesOf(hub));
-
-    expect(
-      banks.map((bank) => ({ id: bank.id, wide: bank.tiles.map((entry) => entry.isWide) })),
-    ).toEqual([{ id: 'record', wide: [true] }]);
-  });
-
-  it('leaves out a bank that has no tile at all', () => {
+  it('groups rows into their banks and leaves out a bank with no row', () => {
     const hub = hubWith({
       persons: { personCount: 5, memberCount: 5 },
       keys: { issuedCount: 1, holdingCount: 1, holderCount: 1 },
+      venues: { venueCount: 2, archivedCount: 0 },
     });
+    const banks = toManageBanks(toManageRows(hub, SESSION_LABEL));
 
-    expect(toManageBanks(tilesOf(hub)).map((bank) => bank.id)).toEqual(['belonging', 'record']);
+    expect(banks.map((bank) => ({ id: bank.id, rows: bank.rows.map((row) => row.id) }))).toEqual([
+      { id: 'belonging', rows: ['persons'] },
+      { id: 'record', rows: ['venues', 'keys'] },
+    ]);
   });
 });
 
 describe('isBoardEmpty', () => {
-  const tilesOf = (hub: ManageHub): ReturnType<typeof toManageTiles> =>
-    toManageTiles(hub, SESSION_LABEL);
+  const rowsOf = (hub: ManageHub): ManageRowModel[] => toManageRows(hub, SESSION_LABEL);
 
   it('reads an all-zero board as empty', () => {
     const hub = hubWith({
@@ -253,19 +175,19 @@ describe('isBoardEmpty', () => {
       keys: { issuedCount: 0, holdingCount: 0, holderCount: 0 },
     });
 
-    expect(isBoardEmpty(tilesOf(hub))).toBe(true);
+    expect(isBoardEmpty(rowsOf(hub))).toBe(true);
   });
 
-  it('reads a board with one filled tile as not empty', () => {
+  it('reads a board with one filled row as not empty', () => {
     const hub = hubWith({
       persons: { personCount: 0, memberCount: 0 },
       groups: { groupCount: 1, archivedCount: 0 },
     });
 
-    expect(isBoardEmpty(tilesOf(hub))).toBe(false);
+    expect(isBoardEmpty(rowsOf(hub))).toBe(false);
   });
 
-  it('reads a board with no tile at all as not empty', () => {
+  it('reads a board with no row at all as not empty', () => {
     expect(isBoardEmpty([])).toBe(false);
   });
 });

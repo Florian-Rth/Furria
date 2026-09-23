@@ -1,4 +1,4 @@
-import type { PaletteOptions } from '@mui/material/styles';
+import type { CSSProperties, PaletteOptions } from '@mui/material/styles';
 import { createTheme } from '@mui/material/styles';
 import { redInk } from './internal/red-ink';
 import type { KkColorTokens } from './tokens';
@@ -8,9 +8,38 @@ declare module '@mui/material/styles' {
   interface BreakpointOverrides {
     desktop: true;
   }
+
+  interface TypographyVariants {
+    display: CSSProperties;
+  }
+
+  interface TypographyVariantsOptions {
+    display?: CSSProperties;
+  }
+}
+
+declare module '@mui/material/Typography' {
+  interface TypographyPropsVariantOverrides {
+    display: true;
+    h5: false;
+    h6: false;
+  }
 }
 
 export const KK_DESKTOP_BREAKPOINT = 900;
+
+const fontSize = {
+  meta: '0.75rem',
+  body: '0.875rem',
+  lead: '1rem',
+  section: '1.25rem',
+  stat: '1.5rem',
+  pageTitle: '2rem',
+  hero: '3rem',
+  heroWide: '4.5rem',
+} as const;
+
+const onDesktop = `@media (min-width:${KK_DESKTOP_BREAKPOINT}px)`;
 
 const buildPalette = (color: KkColorTokens): PaletteOptions => ({
   primary: { main: color.red, dark: color.redDk, contrastText: color.onRed },
@@ -54,15 +83,25 @@ export const kkTheme = createTheme({
     fontWeightRegular: 500,
     fontWeightMedium: 700,
     fontWeightBold: 800,
-    h1: { ...displayHeading, fontSize: 'clamp(3.75rem, 8vw, 6.5rem)', lineHeight: 1.02 },
-    h2: { ...displayHeading, fontSize: 'clamp(2.25rem, 5vw, 3.25rem)', lineHeight: 1.05 },
-    h3: { ...displayHeading, fontSize: '2.25rem', lineHeight: 1.1 },
-    h4: { ...displayHeading, fontSize: '1.75rem', lineHeight: 1.15 },
-    h5: { ...displayHeading, fontSize: '1.375rem', lineHeight: 1.2 },
-    h6: { ...displayHeading, fontSize: '1.125rem', lineHeight: 1.25 },
-    subtitle1: { fontWeight: 600 },
-    subtitle2: { fontWeight: 700 },
-    button: { fontWeight: 800, textTransform: 'none' },
+    display: {
+      ...displayHeading,
+      fontSize: fontSize.hero,
+      lineHeight: 0.95,
+      [onDesktop]: { fontSize: fontSize.heroWide },
+    },
+    h1: { ...displayHeading, fontSize: fontSize.pageTitle, lineHeight: 1.05 },
+    h2: { ...displayHeading, fontSize: fontSize.stat, lineHeight: 1.1 },
+    h3: { ...displayHeading, fontSize: fontSize.section, lineHeight: 1.15 },
+    h4: { ...displayHeading, fontSize: fontSize.lead, lineHeight: 1.2 },
+    h5: undefined,
+    h6: undefined,
+    subtitle1: { fontSize: fontSize.lead, fontWeight: 600, lineHeight: 1.45 },
+    subtitle2: { fontSize: fontSize.body, fontWeight: 700, lineHeight: 1.45 },
+    body1: { fontSize: fontSize.lead, lineHeight: 1.5 },
+    body2: { fontSize: fontSize.body, lineHeight: 1.45 },
+    caption: { fontSize: fontSize.meta, lineHeight: 1.4 },
+    overline: { fontSize: fontSize.meta, lineHeight: 1.4 },
+    button: { fontSize: fontSize.body, fontWeight: 800, textTransform: 'none' },
   },
   components: {
     MuiCssBaseline: {
@@ -114,6 +153,9 @@ export const kkTheme = createTheme({
           borderRadius: kkTokens.radius.pill,
           fontWeight: 800,
         },
+        sizeSmall: { fontSize: fontSize.meta },
+        sizeMedium: { fontSize: fontSize.body },
+        sizeLarge: { fontSize: fontSize.body },
       },
     },
     MuiCard: {
@@ -129,8 +171,14 @@ export const kkTheme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: kkTokens.radius.chip,
+          fontSize: fontSize.meta,
           fontWeight: 800,
         },
+      },
+    },
+    MuiTooltip: {
+      styleOverrides: {
+        tooltip: { fontSize: fontSize.meta },
       },
     },
     MuiOutlinedInput: {

@@ -106,6 +106,7 @@ export const CalendarEntryEditor: FC<CalendarEntryEditorProps> = ({
       <KkSelectField
         name="ownerId"
         label={OWNER_LABEL}
+        required
         value={control.values.ownerId}
         options={toOwnerSelectOptions(ownerOptions)}
         onChange={control.setOwner}
@@ -128,13 +129,19 @@ export const CalendarEntryEditor: FC<CalendarEntryEditorProps> = ({
       rejection={control.rejection ?? undefined}
       isDirty={control.isDirty}
       action={{
-        primary: { label: actionLabel, onSelect: control.submit, loading: control.isSaving },
+        primary: {
+          label: actionLabel,
+          onSelect: control.submit,
+          loading: control.isSaving,
+          disabled: !control.canSubmit,
+        },
       }}
     >
       {intro}
       <KkTextField
         name={titleField.name}
         label={TITLE_LABEL}
+        required
         error={titleErrorText !== undefined}
         helperText={titleErrorText}
         onChange={titleField.onChange}
@@ -156,6 +163,7 @@ export const CalendarEntryEditor: FC<CalendarEntryEditorProps> = ({
       <KkSelectField
         name="kind"
         label={KIND_LABEL}
+        required
         value={control.values.kind}
         options={CALENDAR_KIND_OPTIONS}
         onChange={control.setKind}
@@ -175,6 +183,7 @@ export const CalendarEntryEditor: FC<CalendarEntryEditorProps> = ({
           <KkDateField
             name="startDay"
             label={START_DAY_LABEL}
+            required
             value={control.values.startDay}
             onChange={control.setStartDay}
             error={startDayErrorText !== undefined}
@@ -185,6 +194,7 @@ export const CalendarEntryEditor: FC<CalendarEntryEditorProps> = ({
           <KkSelectField
             name="startTime"
             label={START_TIME_LABEL}
+            required
             value={control.values.startTime}
             options={timeOptions}
             onChange={control.setStartTime}
@@ -218,6 +228,7 @@ export const CalendarEntryEditor: FC<CalendarEntryEditorProps> = ({
       <KkSelectField
         name="visibility"
         label={VISIBILITY_LABEL}
+        required
         value={control.values.visibility}
         options={CALENDAR_VISIBILITY_OPTIONS}
         onChange={control.setVisibility}

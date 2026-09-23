@@ -33,14 +33,20 @@ export const GroupKindEditor: FC<GroupKindEditorProps> = ({ entry }) => {
       origin={toGroupKindEditorOrigin(entry)}
       title={title}
       rejection={control.rejection ?? undefined}
-      isDirty={control.form.formState.isDirty}
+      isDirty={control.isDirty}
       action={{
-        primary: { label: actionLabel, onSelect: control.submit, loading: control.isSaving },
+        primary: {
+          label: actionLabel,
+          onSelect: control.submit,
+          loading: control.isSaving,
+          disabled: !control.canSubmit,
+        },
       }}
     >
       <KkTextField
         name={nameField.name}
         label={NAME_LABEL}
+        required
         error={nameErrorText !== undefined}
         helperText={nameErrorText}
         onChange={nameField.onChange}

@@ -36,7 +36,7 @@ export const AppRecordHeaderCard: FC<AppRecordHeaderCardProps> = ({
       <Stack sx={{ gap: 1.75, minWidth: 0 }}>
         <Stack sx={{ gap: 1, minWidth: 0 }}>
           <KkEyebrow tone="accent">{eyebrow}</KkEyebrow>
-          <KkHeading level={3}>{title}</KkHeading>
+          <KkHeading level={2}>{title}</KkHeading>
           {chipRow}
         </Stack>
         {description}

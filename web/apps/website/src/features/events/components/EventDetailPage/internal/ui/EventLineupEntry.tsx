@@ -26,7 +26,7 @@ export const EventLineupEntry: FC<EventLineupEntryProps> = ({ entry }) => (
     >
       {entry.position}
     </Typography>
-    <Typography variant="h5" component="span">
+    <Typography variant="h3" component="span">
       {entry.act}
     </Typography>
   </Stack>

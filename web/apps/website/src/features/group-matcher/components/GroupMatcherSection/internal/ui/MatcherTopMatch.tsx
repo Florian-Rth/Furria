@@ -19,7 +19,7 @@ export const MatcherTopMatch: FC<MatcherTopMatchProps> = ({ match }) => (
     <MatcherMatchHead>
       <KkEyebrow>{matcherResultLabels.topKicker}</KkEyebrow>
       <MatcherMatchTitleRow>
-        <Typography variant="h4" component="p">
+        <Typography variant="h2" component="p">
           {match.group.name}
         </Typography>
         <MatcherRecruitingChip badge={match.badge} />

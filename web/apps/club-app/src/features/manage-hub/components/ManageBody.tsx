@@ -4,12 +4,7 @@ import type { FC } from 'react';
 import { relevantSessionYear } from '@/lib/club';
 import { formatSessionLabel } from '@/lib/membership-labels';
 import { useManageHubQuery } from '../api';
-import {
-  isBoardEmpty,
-  MANAGE_EMPTY_NOTE,
-  toManageBanks,
-  toManageTiles,
-} from '../manage-hub-labels';
+import { isBoardEmpty, MANAGE_EMPTY_NOTE, toManageBanks, toManageRows } from '../manage-hub-labels';
 import { toManageHubErrorMessage } from '../manage-hub-messages';
 import { ManageBank } from './ManageBank';
 import { ManageError } from './ManageError';
@@ -29,14 +24,14 @@ export const ManageBody: FC = () => {
   };
 
   if (manageHub.data !== undefined) {
-    const tiles = toManageTiles(manageHub.data, sessionLabel);
-    const banks = toManageBanks(tiles);
+    const rows = toManageRows(manageHub.data, sessionLabel);
+    const banks = toManageBanks(rows);
     const bankCells = banks.map((bank) => (
       <Grid key={bank.id} size={BANK_SIZE} sx={CELL_SX}>
         <ManageBank bank={bank} />
       </Grid>
     ));
-    const emptyNote = isBoardEmpty(tiles) ? (
+    const emptyNote = isBoardEmpty(rows) ? (
       <KkNote tone="hint" icon="info">
         {MANAGE_EMPTY_NOTE}
       </KkNote>

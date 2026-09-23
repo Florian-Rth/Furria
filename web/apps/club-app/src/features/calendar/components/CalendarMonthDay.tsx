@@ -45,7 +45,7 @@ export const CalendarMonthDay: FC<CalendarMonthDayProps> = ({ day, onSelect, sx 
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >
-      <KkHeading level={6} tone={headingTone}>
+      <KkHeading level={4} tone={headingTone}>
         {day.dayNumber}
       </KkHeading>
       {marker}

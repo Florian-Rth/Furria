@@ -14,7 +14,9 @@ export interface ScreenJourney {
 }
 
 export const useScreenTrail = (): ScreenJourney => {
-  const path = useRouterState({ select: (state) => state.location.pathname });
+  const path = useRouterState({
+    select: (state) => state.matches.at(LAST)?.pathname ?? state.location.pathname,
+  });
   const [trail, setTrail] = useState<ScreenTrail>({ paths: [], move: 'still' });
 
   if (trail.paths.at(LAST) !== path) {

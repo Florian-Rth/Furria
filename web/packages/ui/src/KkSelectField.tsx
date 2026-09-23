@@ -6,7 +6,7 @@ import Typography from '@mui/material/Typography';
 import type { ChangeEvent, FC } from 'react';
 import { useId } from 'react';
 import { KkFieldChoices } from './internal/KkFieldChoices';
-import { KkEyebrow } from './KkEyebrow';
+import { KkFieldLabel } from './internal/KkFieldLabel';
 import type { KkSx } from './kk-sx';
 
 type KkSelectPresentation = 'auto' | 'choices' | 'select';
@@ -28,6 +28,7 @@ interface KkSelectFieldProps {
   placeholder?: string;
   hint?: string;
   disabled?: boolean;
+  required?: boolean;
   error?: boolean;
   helperText?: string;
   sx?: KkSx;
@@ -43,6 +44,7 @@ export const KkSelectField: FC<KkSelectFieldProps> = ({
   placeholder,
   hint,
   disabled = false,
+  required = false,
   error,
   helperText,
   sx,
@@ -73,7 +75,7 @@ export const KkSelectField: FC<KkSelectFieldProps> = ({
     return (
       <Stack data-kk-select-field sx={[{ minWidth: 0, gap: 1 }, ...callerSx]}>
         <Box component="span" id={labelId}>
-          <KkEyebrow tone="muted">{label}</KkEyebrow>
+          <KkFieldLabel label={label} required={required} />
         </Box>
         <KkFieldChoices
           labelledBy={labelId}
@@ -105,6 +107,7 @@ export const KkSelectField: FC<KkSelectFieldProps> = ({
       value={value}
       onChange={change}
       disabled={disabled}
+      required={required}
       error={error}
       helperText={helper}
       variant="outlined"

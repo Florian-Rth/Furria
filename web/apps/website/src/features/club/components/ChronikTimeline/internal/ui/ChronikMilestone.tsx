@@ -38,7 +38,7 @@ export const ChronikMilestone: FC<ChronikMilestoneProps> = ({ milestone, tint, a
       }}
     >
       <KkCard.Body>
-        <Typography variant="h3" component="span" sx={{ color: 'primary.main', lineHeight: 0.9 }}>
+        <Typography variant="h2" component="span" sx={{ color: 'primary.main', lineHeight: 0.9 }}>
           {milestone.year}
         </Typography>
         <KkCard.Title>{milestone.title}</KkCard.Title>

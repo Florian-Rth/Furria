@@ -68,7 +68,12 @@ export const VenueEditor: FC<VenueEditorProps> = ({ venue }) => {
       rejection={control.rejection ?? undefined}
       isDirty={control.isDirty}
       action={{
-        primary: { label: actionLabel, onSelect: control.submit, loading: control.isSaving },
+        primary: {
+          label: actionLabel,
+          onSelect: control.submit,
+          loading: control.isSaving,
+          disabled: !control.canSubmit,
+        },
       }}
     >
       {intro}
@@ -76,6 +81,7 @@ export const VenueEditor: FC<VenueEditorProps> = ({ venue }) => {
         <KkTextField
           name={nameField.name}
           label={NAME_LABEL}
+          required
           error={nameErrorText !== undefined}
           helperText={nameErrorText}
           onChange={nameField.onChange}
@@ -85,6 +91,7 @@ export const VenueEditor: FC<VenueEditorProps> = ({ venue }) => {
         <KkTextField
           name={streetField.name}
           label={STREET_LABEL}
+          required
           autoComplete="street-address"
           error={streetErrorText !== undefined}
           helperText={streetErrorText}
@@ -97,6 +104,7 @@ export const VenueEditor: FC<VenueEditorProps> = ({ venue }) => {
             <KkTextField
               name={zipField.name}
               label={ZIP_LABEL}
+              required
               inputMode="numeric"
               autoComplete="postal-code"
               error={zipErrorText !== undefined}
@@ -110,6 +118,7 @@ export const VenueEditor: FC<VenueEditorProps> = ({ venue }) => {
             <KkTextField
               name={cityField.name}
               label={CITY_LABEL}
+              required
               autoComplete="address-level2"
               error={cityErrorText !== undefined}
               helperText={cityErrorText}
@@ -124,6 +133,7 @@ export const VenueEditor: FC<VenueEditorProps> = ({ venue }) => {
           label={HINT_LABEL}
           value={control.hint}
           onChange={control.setHint}
+          onBlur={control.touchHint}
           rows={HINT_ROWS}
           maxLength={VENUE_HINT_MAX_LENGTH}
           showCount
