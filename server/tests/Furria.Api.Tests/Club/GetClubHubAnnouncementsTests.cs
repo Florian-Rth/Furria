@@ -85,7 +85,7 @@ public sealed class GetClubHubAnnouncementsTests
     }
 
     [Fact]
-    public async Task Should_LeaveTheExpiredAushangOff_When_TheHubIsRead()
+    public async Task Should_LeaveTheExpiredAnnouncementOff_When_TheHubIsRead()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -132,7 +132,7 @@ public sealed class GetClubHubAnnouncementsTests
     }
 
     [Fact]
-    public async Task Should_BreakTheTieOnTheYoungerAushang_When_TwoWereHungUpAtTheSameMoment()
+    public async Task Should_BreakTheTieOnTheYoungerAnnouncement_When_TwoWereHungUpAtTheSameMoment()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -152,7 +152,7 @@ public sealed class GetClubHubAnnouncementsTests
     }
 
     [Fact]
-    public async Task Should_CarryTheAushangEmpty_When_NobodyHasHungAnythingUp()
+    public async Task Should_CarryTheAnnouncementsEmpty_When_NobodyHasHungAnythingUp()
     {
         var ct = TestContext.Current.CancellationToken;
 

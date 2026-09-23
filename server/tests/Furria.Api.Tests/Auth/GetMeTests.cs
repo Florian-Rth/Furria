@@ -22,7 +22,7 @@ public sealed class GetMeTests
     }
 
     [Fact]
-    public async Task Should_ReportAktiv_When_ThePersonHoldsARunningMitgliedschaft()
+    public async Task Should_ReportActive_When_ThePersonHoldsARunningMembership()
     {
         var ct = TestContext.Current.CancellationToken;
         var joinedOn = _fixture.Today.AddYears(-5);
@@ -50,7 +50,7 @@ public sealed class GetMeTests
     }
 
     [Fact]
-    public async Task Should_ReportKeinMitglied_When_ThePersonNeverHeldAMitgliedschaft()
+    public async Task Should_ReportNoMember_When_ThePersonNeverHeldAMembership()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -73,7 +73,7 @@ public sealed class GetMeTests
     }
 
     [Fact]
-    public async Task Should_ReportKeinMitglied_When_TheOnlyMitgliedschaftStartsTomorrow()
+    public async Task Should_ReportNoMember_When_TheOnlyMembershipStartsTomorrow()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -95,7 +95,7 @@ public sealed class GetMeTests
     }
 
     [Fact]
-    public async Task Should_ReportBeendet_When_EveryMitgliedschaftHasEnded()
+    public async Task Should_ReportEnded_When_EveryMembershipHasEnded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -123,7 +123,7 @@ public sealed class GetMeTests
     }
 
     [Fact]
-    public async Task Should_ReportRuht_When_ARuhezeitCoversTheRunningSession()
+    public async Task Should_ReportPaused_When_AMembershipPauseCoversTheRunningSession()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -149,7 +149,7 @@ public sealed class GetMeTests
     }
 
     [Fact]
-    public async Task Should_IgnoreARuhezeit_When_ItBelongsToAnEndedMitgliedschaft()
+    public async Task Should_IgnoreAMembershipPause_When_ItBelongsToAnEndedMembership()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -183,7 +183,7 @@ public sealed class GetMeTests
     }
 
     [Fact]
-    public async Task Should_ReturnTheOwnStammdaten_When_ThePersonHasThem()
+    public async Task Should_ReturnTheOwnMasterData_When_ThePersonHasThem()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -238,7 +238,7 @@ public sealed class GetMeTests
     }
 
     [Fact]
-    public async Task Should_ReportTheHeldKeys_When_ThePersonHoldsTwoRollen()
+    public async Task Should_ReportTheHeldKeys_When_ThePersonHoldsTwoRoles()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -281,7 +281,7 @@ public sealed class GetMeTests
     }
 
     [Fact]
-    public async Task Should_ReportOneEntry_When_TwoRollenGrantTheSameBerechtigung()
+    public async Task Should_ReportOneEntry_When_TwoRolesGrantTheSamePermission()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -320,7 +320,7 @@ public sealed class GetMeTests
     }
 
     [Fact]
-    public async Task Should_ReportNoKeys_When_TheOnlyInhaberschaftHasExpired()
+    public async Task Should_ReportNoKeys_When_TheOnlyRoleHoldingHasExpired()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -353,7 +353,7 @@ public sealed class GetMeTests
     }
 
     [Fact]
-    public async Task Should_ReportAffiliated_When_ThePersonOnlyHoldsAnOpenZugehoerigkeit()
+    public async Task Should_ReportAffiliated_When_ThePersonOnlyHoldsAnOpenGroupMembership()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

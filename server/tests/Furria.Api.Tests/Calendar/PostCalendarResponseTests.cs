@@ -16,9 +16,9 @@ public sealed class PostCalendarResponseTests
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
 
     private static readonly DateTimeOffset Now = new(2027, 1, 15, 12, 0, 0, TimeSpan.Zero);
-    private static readonly DateTimeOffset AtTheSitzung = new(2027, 1, 20, 19, 0, 0, TimeSpan.Zero);
-    private static readonly DateTimeOffset AtTheUmzug = new(2027, 1, 22, 11, 0, 0, TimeSpan.Zero);
-    private static readonly DateTimeOffset AtTheGardeTraining = new(
+    private static readonly DateTimeOffset AtTheMeeting = new(2027, 1, 20, 19, 0, 0, TimeSpan.Zero);
+    private static readonly DateTimeOffset AtTheParade = new(2027, 1, 22, 11, 0, 0, TimeSpan.Zero);
+    private static readonly DateTimeOffset AtTheDanceGuardTraining = new(
         2027,
         1,
         18,
@@ -45,7 +45,7 @@ public sealed class PostCalendarResponseTests
     }
 
     [Fact]
-    public async Task Should_RecordTheZusage_When_TheEintragAsksForOne()
+    public async Task Should_RecordTheResponse_When_TheEntryAsksForOne()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -53,21 +53,19 @@ public sealed class PostCalendarResponseTests
             Now,
             async () =>
             {
-                var ctx = await BuildKalenderAsync(ct);
+                var ctx = await BuildCalendarAsync(ct);
                 var client = await ctx.Identity.ClientForAsync("alice", ct);
 
                 var response = await AnswerAsync(
                     client,
-                    ctx.Club.CalendarEntries.IdOf("vereinssitzung"),
+                    ctx.Club.CalendarEntries.IdOf("club-meeting"),
                     AttendanceAnswer.Yes
                 );
 
                 Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
                 await ctx
-                    .Expected.AttendanceResponsesFor(
-                        ctx.Club.CalendarEntries.IdOf("vereinssitzung")
-                    )
+                    .Expected.AttendanceResponsesFor(ctx.Club.CalendarEntries.IdOf("club-meeting"))
                     .ToCarryAnswerFrom(ctx.Identity.People.IdOf("alice"), AttendanceAnswer.Yes)
                     .AssertAsync(ct);
             }
@@ -83,19 +81,19 @@ public sealed class PostCalendarResponseTests
             Now,
             async () =>
             {
-                var ctx = await BuildKalenderAsync(ct);
+                var ctx = await BuildCalendarAsync(ct);
                 var client = await ctx.Identity.ClientForAsync("alice", ct);
-                var sitzungId = ctx.Club.CalendarEntries.IdOf("vereinssitzung");
+                var meetingId = ctx.Club.CalendarEntries.IdOf("club-meeting");
 
-                await AnswerAsync(client, sitzungId, AttendanceAnswer.Yes);
-                var response = await AnswerAsync(client, sitzungId, AttendanceAnswer.No);
+                await AnswerAsync(client, meetingId, AttendanceAnswer.Yes);
+                var response = await AnswerAsync(client, meetingId, AttendanceAnswer.No);
 
                 Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
                 await ctx
-                    .Expected.AttendanceResponsesFor(sitzungId)
+                    .Expected.AttendanceResponsesFor(meetingId)
                     .ToCarryExactlyOneAnswerFrom(ctx.Identity.People.IdOf("alice"))
-                    .AttendanceResponsesFor(sitzungId)
+                    .AttendanceResponsesFor(meetingId)
                     .ToCarryAnswerFrom(ctx.Identity.People.IdOf("alice"), AttendanceAnswer.No)
                     .AssertAsync(ct);
             }
@@ -103,7 +101,7 @@ public sealed class PostCalendarResponseTests
     }
 
     [Fact]
-    public async Task Should_TakeTheAnswer_When_TheEintragIsAlreadyPast()
+    public async Task Should_TakeTheAnswer_When_TheEntryIsAlreadyPast()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -111,7 +109,7 @@ public sealed class PostCalendarResponseTests
             Now,
             async () =>
             {
-                var ctx = await BuildKalenderAsync(ct);
+                var ctx = await BuildCalendarAsync(ct);
                 var client = await ctx.Identity.ClientForAsync("alice", ct);
 
                 var response = await AnswerAsync(
@@ -131,7 +129,7 @@ public sealed class PostCalendarResponseTests
     }
 
     [Fact]
-    public async Task Should_RejectTheAnswer_When_TheEintragDoesNotAskForOne()
+    public async Task Should_RejectTheAnswer_When_TheEntryDoesNotAskForOne()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -139,19 +137,19 @@ public sealed class PostCalendarResponseTests
             Now,
             async () =>
             {
-                var ctx = await BuildKalenderAsync(ct);
+                var ctx = await BuildCalendarAsync(ct);
                 var client = await ctx.Identity.ClientForAsync("alice", ct);
 
                 var response = await AnswerAsync(
                     client,
-                    ctx.Club.CalendarEntries.IdOf("umzug"),
+                    ctx.Club.CalendarEntries.IdOf("parade"),
                     AttendanceAnswer.Maybe
                 );
 
                 Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
 
                 await ctx
-                    .Expected.AttendanceResponsesFor(ctx.Club.CalendarEntries.IdOf("umzug"))
+                    .Expected.AttendanceResponsesFor(ctx.Club.CalendarEntries.IdOf("parade"))
                     .ToCarryNoAnswerFrom(ctx.Identity.People.IdOf("alice"))
                     .AssertAsync(ct);
             }
@@ -159,7 +157,7 @@ public sealed class PostCalendarResponseTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheEintragIsInvisibleToTheCaller()
+    public async Task Should_ReturnNotFound_When_TheEntryIsInvisibleToTheCaller()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -167,7 +165,7 @@ public sealed class PostCalendarResponseTests
             Now,
             async () =>
             {
-                var ctx = await BuildKalenderAsync(ct);
+                var ctx = await BuildCalendarAsync(ct);
                 var client = await ctx.Identity.ClientForAsync("alice", ct);
 
                 var response = await AnswerAsync(
@@ -182,7 +180,7 @@ public sealed class PostCalendarResponseTests
     }
 
     [Fact]
-    public async Task Should_TakeTheAnswer_When_TheCallerBelongsToTheOwningGruppe()
+    public async Task Should_TakeTheAnswer_When_TheCallerBelongsToTheOwningGroup()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -190,7 +188,7 @@ public sealed class PostCalendarResponseTests
             Now,
             async () =>
             {
-                var ctx = await BuildKalenderAsync(ct);
+                var ctx = await BuildCalendarAsync(ct);
                 var client = await ctx.Identity.ClientForAsync("bea", ct);
 
                 var response = await AnswerAsync(
@@ -212,7 +210,7 @@ public sealed class PostCalendarResponseTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheEintragDoesNotExist()
+    public async Task Should_ReturnNotFound_When_TheEntryDoesNotExist()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -220,12 +218,12 @@ public sealed class PostCalendarResponseTests
             Now,
             async () =>
             {
-                var ctx = await BuildKalenderAsync(ct);
+                var ctx = await BuildCalendarAsync(ct);
                 var client = await ctx.Identity.ClientForAsync("alice", ct);
 
                 var response = await AnswerAsync(
                     client,
-                    ctx.Club.CalendarEntries.IdOf("vereinssitzung") + NoSuchEntryOffset,
+                    ctx.Club.CalendarEntries.IdOf("club-meeting") + NoSuchEntryOffset,
                     AttendanceAnswer.Yes
                 );
 
@@ -235,7 +233,7 @@ public sealed class PostCalendarResponseTests
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerHoldsNoRunningMitgliedschaft()
+    public async Task Should_ReturnForbidden_When_TheCallerHoldsNoRunningMembership()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -243,12 +241,12 @@ public sealed class PostCalendarResponseTests
             Now,
             async () =>
             {
-                var ctx = await BuildKalenderAsync(ct);
+                var ctx = await BuildCalendarAsync(ct);
                 var client = await ctx.Identity.ClientForAsync("gast", ct);
 
                 var response = await AnswerAsync(
                     client,
-                    ctx.Club.CalendarEntries.IdOf("vereinssitzung"),
+                    ctx.Club.CalendarEntries.IdOf("club-meeting"),
                     AttendanceAnswer.Yes
                 );
 
@@ -266,11 +264,11 @@ public sealed class PostCalendarResponseTests
             Now,
             async () =>
             {
-                var ctx = await BuildKalenderAsync(ct);
+                var ctx = await BuildCalendarAsync(ct);
 
                 var response = await AnswerAsync(
                     _fixture.CreateClient(),
-                    ctx.Club.CalendarEntries.IdOf("vereinssitzung"),
+                    ctx.Club.CalendarEntries.IdOf("club-meeting"),
                     AttendanceAnswer.Yes
                 );
 
@@ -288,7 +286,7 @@ public sealed class PostCalendarResponseTests
             new PostCalendarResponseRequest { CalendarEntryId = calendarEntryId, Answer = answer }
         );
 
-    private Task<SeededContext> BuildKalenderAsync(CancellationToken ct) =>
+    private Task<SeededContext> BuildCalendarAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder =>
                 builder
@@ -309,22 +307,22 @@ public sealed class PostCalendarResponseTests
                     )
                     .Club(club =>
                         club.AddCalendarEntry(
-                                "vereinssitzung",
+                                "club-meeting",
                                 "Vereinssitzung",
-                                AtTheSitzung,
+                                AtTheMeeting,
                                 asksForResponse: true
                             )
                             .AddCalendarEntry(
-                                "umzug",
+                                "parade",
                                 "Rosenmontagsumzug",
-                                AtTheUmzug,
+                                AtTheParade,
                                 kind: CalendarEntryKind.Performance,
                                 visibility: CalendarEntryVisibility.Public
                             )
                             .AddCalendarEntry(
                                 "garde-training",
                                 "Training der Tanzgarde",
-                                AtTheGardeTraining,
+                                AtTheDanceGuardTraining,
                                 kind: CalendarEntryKind.Training,
                                 visibility: CalendarEntryVisibility.Group,
                                 ownerGroupAlias: "tanzgarde",

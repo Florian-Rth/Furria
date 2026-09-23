@@ -25,7 +25,7 @@ public sealed class RestoreGroupTests
     }
 
     [Fact]
-    public async Task Should_ClearTheArchivedOn_When_TheKeyHolderAktiviertDieGruppe()
+    public async Task Should_ClearTheArchivedOn_When_TheKeyHolderRestoresTheGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -57,7 +57,7 @@ public sealed class RestoreGroupTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheGruppeIsNotArchived()
+    public async Task Should_ReturnConflict_When_TheGroupIsNotArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -76,7 +76,7 @@ public sealed class RestoreGroupTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_AnotherActiveGruppeNowCarriesTheName()
+    public async Task Should_ReturnConflict_When_AnotherActiveGroupNowCarriesTheName()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -110,7 +110,7 @@ public sealed class RestoreGroupTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheGruppeIsUnknown()
+    public async Task Should_ReturnNotFound_When_TheGroupIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
@@ -194,7 +194,7 @@ public sealed class RestoreGroupTests
     }
 
     [Fact]
-    public async Task Should_RefuseTheGruppe_When_IhreGruppenartArchiviertIst()
+    public async Task Should_RefuseTheGroup_When_ItsGroupKindIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

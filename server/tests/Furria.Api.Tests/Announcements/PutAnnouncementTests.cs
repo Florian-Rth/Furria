@@ -37,7 +37,7 @@ public sealed class PutAnnouncementTests
     }
 
     [Fact]
-    public async Task Should_CorrectTheAushang_When_TheAutorHoldsNoBerechtigung()
+    public async Task Should_CorrectTheAnnouncement_When_TheAuthorHoldsNoPermission()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildBoardAsync(ct);
@@ -66,7 +66,7 @@ public sealed class PutAnnouncementTests
     }
 
     [Fact]
-    public async Task Should_KeepTheDatum_When_AnAushangIsCorrected()
+    public async Task Should_KeepTheDate_When_AnAnnouncementIsCorrected()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildBoardAsync(ct);
@@ -91,7 +91,7 @@ public sealed class PutAnnouncementTests
     }
 
     [Fact]
-    public async Task Should_CorrectAForeignAushang_When_TheCallerHoldsTheBerechtigung()
+    public async Task Should_CorrectAForeignAnnouncement_When_TheCallerHoldsThePermission()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildBoardAsync(ct);
@@ -135,7 +135,7 @@ public sealed class PutAnnouncementTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheAushangIsAlreadyOffTheBoard()
+    public async Task Should_ReturnNotFound_When_TheAnnouncementIsAlreadyOffTheBoard()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildBoardAsync(ct);

@@ -23,13 +23,16 @@ public sealed class TestClub
     internal TestClub(SeededClub seeded)
     {
         Sessions = new AliasRegistry<int>("Session", seeded.SessionIds);
-        Venues = new AliasRegistry<int>("Ort", seeded.VenueIds);
-        Announcements = new AliasRegistry<int>("Aushang", seeded.AnnouncementIds);
-        KeyHoldings = new AliasRegistry<int>("Schluessel", seeded.KeyHoldingIds);
-        BoardOffices = new AliasRegistry<int>("Vorstandsfunktion", seeded.BoardOfficeIds);
-        BoardSeats = new AliasRegistry<int>("Vorstandssitz", seeded.BoardSeatIds);
-        TrainingSlots = new AliasRegistry<int>("Trainingsslot", seeded.TrainingSlotIds);
-        CalendarEntries = new AliasRegistry<int>("Kalendereintrag", seeded.CalendarEntryIds);
-        AttendanceResponses = new AliasRegistry<int>("Zusage", seeded.AttendanceResponseIds);
+        Venues = new AliasRegistry<int>("Venue", seeded.VenueIds);
+        Announcements = new AliasRegistry<int>("Announcement", seeded.AnnouncementIds);
+        KeyHoldings = new AliasRegistry<int>("KeyHolding", seeded.KeyHoldingIds);
+        BoardOffices = new AliasRegistry<int>("BoardOffice", seeded.BoardOfficeIds);
+        BoardSeats = new AliasRegistry<int>("BoardSeat", seeded.BoardSeatIds);
+        TrainingSlots = new AliasRegistry<int>("TrainingSlot", seeded.TrainingSlotIds);
+        CalendarEntries = new AliasRegistry<int>("CalendarEntry", seeded.CalendarEntryIds);
+        AttendanceResponses = new AliasRegistry<int>(
+            "AttendanceResponse",
+            seeded.AttendanceResponseIds
+        );
     }
 }

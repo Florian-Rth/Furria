@@ -13,7 +13,7 @@ public sealed class EndGroupMembershipTests
 {
     private const string ConflictField = "conflict";
     private const string ValidationField = "request";
-    private const int UnknownZugehoerigkeitId = 999_999;
+    private const int UnknownGroupMembershipId = 999_999;
 
     private static readonly DateOnly JoinedOn = new(2017, 9, 1);
     private static readonly DateOnly EndedOn = new(2026, 3, 1);
@@ -27,7 +27,7 @@ public sealed class EndGroupMembershipTests
     }
 
     [Fact]
-    public async Task Should_CloseTheZugehoerigkeit_When_TheCallerIsTheGruppenAdmin()
+    public async Task Should_CloseTheGroupMembership_When_TheCallerIsTheGroupAdmin()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -70,7 +70,7 @@ public sealed class EndGroupMembershipTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheZugehoerigkeitIsAlreadyEnded()
+    public async Task Should_ReturnConflict_When_TheGroupMembershipIsAlreadyEnded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -115,7 +115,7 @@ public sealed class EndGroupMembershipTests
     }
 
     [Fact]
-    public async Task Should_ReturnUnprocessable_When_TheEndLiesBeforeTheBeitritt()
+    public async Task Should_ReturnUnprocessable_When_TheEndLiesBeforeTheJoinDate()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -161,7 +161,7 @@ public sealed class EndGroupMembershipTests
     }
 
     [Fact]
-    public async Task Should_CloseTheZugehoerigkeit_When_TheEndIsTheBeitrittsTag()
+    public async Task Should_CloseTheGroupMembership_When_TheEndIsTheJoinDate()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -202,7 +202,7 @@ public sealed class EndGroupMembershipTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheGruppeIsArchived()
+    public async Task Should_ReturnConflict_When_TheGroupIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -248,7 +248,7 @@ public sealed class EndGroupMembershipTests
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerOnlyBelongsToTheGruppe()
+    public async Task Should_ReturnForbidden_When_TheCallerOnlyBelongsToTheGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -338,7 +338,7 @@ public sealed class EndGroupMembershipTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheZugehoerigkeitBelongsToAnotherGruppe()
+    public async Task Should_ReturnNotFound_When_TheGroupMembershipBelongsToAnotherGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -380,7 +380,7 @@ public sealed class EndGroupMembershipTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheZugehoerigkeitIsUnknown()
+    public async Task Should_ReturnNotFound_When_TheGroupMembershipIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -401,7 +401,7 @@ public sealed class EndGroupMembershipTests
         var request = new EndGroupMembershipRequest
         {
             GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
-            GroupMembershipId = UnknownZugehoerigkeitId,
+            GroupMembershipId = UnknownGroupMembershipId,
             EndedOn = EndedOn,
         };
 
@@ -413,7 +413,7 @@ public sealed class EndGroupMembershipTests
     }
 
     [Fact]
-    public async Task Should_ReturnBadRequest_When_TheZugehoerigkeitIdIsNotAnId()
+    public async Task Should_ReturnBadRequest_When_TheGroupMembershipIdIsNotAnId()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

@@ -9,7 +9,7 @@ namespace Furria.Api.Tests.Persistence;
 public sealed class WriteConflictTests
 {
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
-    private static readonly DateTimeOffset PrunksitzungStart = new(
+    private static readonly DateTimeOffset GalaSessionStart = new(
         2027,
         2,
         6,
@@ -27,7 +27,7 @@ public sealed class WriteConflictTests
     }
 
     [Fact]
-    public async Task Should_AnswerConflict_When_ASecondOffeneZugehoerigkeitLosesTheRace()
+    public async Task Should_AnswerConflict_When_ASecondOpenGroupMembershipLosesTheRace()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -42,7 +42,7 @@ public sealed class WriteConflictTests
             ct
         );
 
-        var result = await _fixture.SaveSecondOpenZugehoerigkeitAsync(
+        var result = await _fixture.SaveSecondOpenGroupMembershipAsync(
             ctx.Groups.Groups.IdOf("tanzgarde"),
             ctx.Identity.People.IdOf("mara"),
             ct
@@ -50,11 +50,11 @@ public sealed class WriteConflictTests
 
         Assert.False(result.IsSuccess);
         Assert.Equal(ResultErrorKind.Conflict, result.Error.Kind);
-        Assert.Equal(WriteConflictMessages.OpenZugehoerigkeit, result.Error.Message);
+        Assert.Equal(WriteConflictMessages.OpenGroupMembership, result.Error.Message);
     }
 
     [Fact]
-    public async Task Should_AnswerConflict_When_AZweiteMitwirkungDasRennenVerliert()
+    public async Task Should_AnswerConflict_When_ASecondParticipationLosesTheRace()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -68,12 +68,12 @@ public sealed class WriteConflictTests
                     )
                     .Groups(groups => groups.AddGroup("tanzgarde", "Tanzgarde"))
                     .Club(club =>
-                        club.AddCalendarEntry("prunksitzung", "Prunksitzung", PrunksitzungStart)
+                        club.AddCalendarEntry("prunksitzung", "Prunksitzung", GalaSessionStart)
                     ),
             ct
         );
 
-        var result = await _fixture.SaveSecondMitwirkungAsync(
+        var result = await _fixture.SaveSecondParticipationAsync(
             ctx.Club.CalendarEntries.IdOf("prunksitzung"),
             ctx.Groups.Groups.IdOf("tanzgarde"),
             ctx.Identity.People.IdOf("ilka"),
@@ -82,11 +82,11 @@ public sealed class WriteConflictTests
 
         Assert.False(result.IsSuccess);
         Assert.Equal(ResultErrorKind.Conflict, result.Error.Kind);
-        Assert.Equal(WriteConflictMessages.DuplicateMitwirkung, result.Error.Message);
+        Assert.Equal(WriteConflictMessages.DuplicateParticipation, result.Error.Message);
     }
 
     [Fact]
-    public async Task Should_AnswerConflict_When_ASecondAktiveGruppeLosesTheRaceForTheName()
+    public async Task Should_AnswerConflict_When_ASecondActiveGroupLosesTheRaceForTheName()
     {
         var ct = TestContext.Current.CancellationToken;
         await _fixture.BuildAsync(
@@ -94,10 +94,10 @@ public sealed class WriteConflictTests
             ct
         );
 
-        var result = await _fixture.SaveSecondActiveGruppeAsync("tanzgarde", ct);
+        var result = await _fixture.SaveSecondActiveGroupAsync("tanzgarde", ct);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(ResultErrorKind.Conflict, result.Error.Kind);
-        Assert.Equal(WriteConflictMessages.DuplicateGruppenName, result.Error.Message);
+        Assert.Equal(WriteConflictMessages.DuplicateGroupName, result.Error.Message);
     }
 }

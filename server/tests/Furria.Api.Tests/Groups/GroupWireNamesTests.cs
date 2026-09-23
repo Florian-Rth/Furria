@@ -23,7 +23,7 @@ public sealed class GroupWireNamesTests
     [InlineData(GroupTone.Violet, "violet")]
     [InlineData(GroupTone.Orchid, "orchid")]
     [InlineData(GroupTone.Rose, "rose")]
-    public void Should_CarryTheCamelCaseName_When_AGruppenfarbeGoesOnTheWire(
+    public void Should_CarryTheCamelCaseName_When_AGroupsfarbeGoesOnTheWire(
         GroupTone tone,
         string wireName
     ) => Assert.Equal($"\"{wireName}\"", JsonSerializer.Serialize(tone, ApiOptions));
@@ -56,6 +56,6 @@ public sealed class GroupWireNamesTests
         Assert.Equal(4, Enum.GetValues<TrainingPreviewState>().Length);
 
     [Fact]
-    public void Should_PinEveryValue_When_TheGruppenfarbenAreCounted() =>
+    public void Should_PinEveryValue_When_TheGroupsfarbenAreCounted() =>
         Assert.Equal(10, Enum.GetValues<GroupTone>().Length);
 }

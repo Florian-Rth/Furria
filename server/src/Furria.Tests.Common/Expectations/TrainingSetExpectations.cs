@@ -55,7 +55,7 @@ public sealed class TrainingSetExpectations
                                 && entry.VenueId == venueId,
                             ct
                         ),
-                    $"Expected a Training „{title}“ at {startsAt} for Gruppe {_groupId}."
+                    $"Expected a Training \"{title}\" at {startsAt} for Group {_groupId}."
                 )
         );
 }

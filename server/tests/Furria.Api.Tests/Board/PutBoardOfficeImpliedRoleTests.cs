@@ -43,10 +43,10 @@ public sealed class PutBoardOfficeImpliedRoleTests
         );
 
     [Fact]
-    public async Task Should_PointTheFunktionAtTheRolle_When_TheCallerHoldsRolesManage()
+    public async Task Should_PointTheOfficeAtTheRole_When_TheCallerHoldsRolesManage()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithBandAndRolleAsync(ct);
+        var ctx = await BuildWithOfficeAndRoleAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var response = await SetImpliedRoleAsync(
@@ -63,7 +63,7 @@ public sealed class PutBoardOfficeImpliedRoleTests
     }
 
     [Fact]
-    public async Task Should_ClearTheRolle_When_TheFunktionShouldImplyNothing()
+    public async Task Should_ClearTheRole_When_TheOfficeShouldImplyNothing()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -148,10 +148,10 @@ public sealed class PutBoardOfficeImpliedRoleTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheRolleIsUnknown()
+    public async Task Should_ReturnNotFound_When_TheRoleIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithBandAndRolleAsync(ct);
+        var ctx = await BuildWithOfficeAndRoleAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var response = await SetImpliedRoleAsync(
@@ -168,7 +168,7 @@ public sealed class PutBoardOfficeImpliedRoleTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheRolleIsArchived()
+    public async Task Should_ReturnConflict_When_TheRoleIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -203,7 +203,7 @@ public sealed class PutBoardOfficeImpliedRoleTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheFunktionIsArchived()
+    public async Task Should_ReturnConflict_When_TheOfficeIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -231,10 +231,10 @@ public sealed class PutBoardOfficeImpliedRoleTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheFunktionIsUnknown()
+    public async Task Should_ReturnNotFound_When_TheOfficeIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithBandAndRolleAsync(ct);
+        var ctx = await BuildWithOfficeAndRoleAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var response = await SetImpliedRoleAsync(
@@ -250,7 +250,7 @@ public sealed class PutBoardOfficeImpliedRoleTests
     public async Task Should_ReturnBadRequest_When_TheRouteCarriesNoUsableId()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithBandAndRolleAsync(ct);
+        var ctx = await BuildWithOfficeAndRoleAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var response = await SetImpliedRoleAsync(client, 0, ctx.Roles.Roles.IdOf("vereinsleitung"));
@@ -262,7 +262,7 @@ public sealed class PutBoardOfficeImpliedRoleTests
     public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithBandAndRolleAsync(ct);
+        var ctx = await BuildWithOfficeAndRoleAsync(ct);
 
         var response = await SetImpliedRoleAsync(
             _fixture.CreateClient(),
@@ -277,7 +277,7 @@ public sealed class PutBoardOfficeImpliedRoleTests
             .AssertAsync(ct);
     }
 
-    private Task<SeededContext> BuildWithBandAndRolleAsync(CancellationToken ct) =>
+    private Task<SeededContext> BuildWithOfficeAndRoleAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder =>
                 builder

@@ -41,7 +41,7 @@ public sealed class GetGroupByIdTests
         );
 
     [Fact]
-    public async Task Should_CarryTheGruppeWithItsPeople_When_AnAffiliatedStrangerReadsIt()
+    public async Task Should_CarryTheGroupWithItsPeople_When_AnAffiliatedStrangerReadsIt()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -112,7 +112,7 @@ public sealed class GetGroupByIdTests
     }
 
     [Fact]
-    public async Task Should_CarryTheSteckbrief_When_TheGruppeNamesArtJahrUndFarbe()
+    public async Task Should_CarryTheProfile_When_TheGroupNamesKindYearAndTone()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -166,7 +166,7 @@ public sealed class GetGroupByIdTests
     }
 
     [Fact]
-    public async Task Should_CarryNoSteckbrief_When_TheGruppeNamesNone()
+    public async Task Should_CarryNoProfile_When_TheGroupNamesNone()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -237,7 +237,7 @@ public sealed class GetGroupByIdTests
     }
 
     [Fact]
-    public async Task Should_ReportHerChainMinimum_When_SheLeftTheGruppeAndReturned()
+    public async Task Should_ReportHerChainMinimum_When_SheLeftTheGroupAndReturned()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -303,7 +303,7 @@ public sealed class GetGroupByIdTests
     }
 
     [Fact]
-    public async Task Should_CarryTheHistory_When_TheGruppenAdminReadsHerHub()
+    public async Task Should_CarryTheHistory_When_TheGroupAdminReadsHerHub()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -385,7 +385,7 @@ public sealed class GetGroupByIdTests
     }
 
     [Fact]
-    public async Task Should_ListTheHistoryNewestFirst_When_TheGruppenAdminReadsHerHub()
+    public async Task Should_ListTheHistoryNewestFirst_When_TheGroupAdminReadsHerHub()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -491,7 +491,7 @@ public sealed class GetGroupByIdTests
     }
 
     [Fact]
-    public async Task Should_CarryTheFunktionOfTheRunningRow_When_TheGruppenAdminWasRenewed()
+    public async Task Should_CarryTheFunctionOfTheRunningRow_When_TheGroupAdminWasRenewed()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -535,7 +535,7 @@ public sealed class GetGroupByIdTests
     }
 
     [Fact]
-    public async Task Should_CarryNoFunktion_When_TheGruppenAdminRowNamesNone()
+    public async Task Should_CarryNoFunction_When_TheGroupAdminRowNamesNone()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -601,7 +601,7 @@ public sealed class GetGroupByIdTests
     }
 
     [Fact]
-    public async Task Should_SortTheRunningRowsAsGerman_When_TheGruppeHasSeveral()
+    public async Task Should_SortTheRunningRowsAsGerman_When_TheGroupHasSeveral()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -720,7 +720,7 @@ public sealed class GetGroupByIdTests
     }
 
     [Fact]
-    public async Task Should_SayTheRowHasNoKarte_When_ThePersonIsAffiliatedByNothingElse()
+    public async Task Should_SayTheRowIsNotAffiliated_When_ThePersonIsAffiliatedByNothingElse()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -762,7 +762,7 @@ public sealed class GetGroupByIdTests
     }
 
     [Fact]
-    public async Task Should_ReturnTheHub_When_TheCallerOnlyAdministersTheGruppe()
+    public async Task Should_ReturnTheHub_When_TheCallerOnlyAdministersTheGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -809,7 +809,7 @@ public sealed class GetGroupByIdTests
     }
 
     [Fact]
-    public async Task Should_ReturnTheHubWithItsHistory_When_TheCallerOnlyHoldsGruppenverwaltung()
+    public async Task Should_ReturnTheHubWithItsHistory_When_TheCallerOnlyHoldsGroupManagement()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -858,7 +858,7 @@ public sealed class GetGroupByIdTests
     }
 
     [Fact]
-    public async Task Should_ReturnTheHub_When_TheCallerBelongsToAnotherGruppe()
+    public async Task Should_ReturnTheHub_When_TheCallerBelongsToAnotherGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -902,7 +902,7 @@ public sealed class GetGroupByIdTests
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_HerZugehoerigkeitHasEnded()
+    public async Task Should_ReturnForbidden_When_HerGroupMembershipHasEnded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -930,7 +930,7 @@ public sealed class GetGroupByIdTests
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_AStrangerAsksForAnUnknownGruppe()
+    public async Task Should_ReturnForbidden_When_AStrangerAsksForAnUnknownGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -945,7 +945,7 @@ public sealed class GetGroupByIdTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheGruppeIsArchived()
+    public async Task Should_ReturnNotFound_When_TheGroupIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -977,7 +977,7 @@ public sealed class GetGroupByIdTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheGruppeDoesNotExist()
+    public async Task Should_ReturnNotFound_When_TheGroupDoesNotExist()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

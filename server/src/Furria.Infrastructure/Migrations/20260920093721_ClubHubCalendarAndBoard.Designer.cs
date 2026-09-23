@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Furria.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260921121638_Gruppensteckbrief")]
-    partial class Gruppensteckbrief
+    [Migration("20260920093721_ClubHubCalendarAndBoard")]
+    partial class ClubHubCalendarAndBoard
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -141,10 +141,6 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateOnly?>("ArchivedOn")
-                        .HasColumnType("date")
-                        .HasColumnName("archived_on");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -330,48 +326,6 @@ namespace Furria.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Furria.Core.Club.CalendarEntryGroup", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CalendarEntryId")
-                        .HasColumnType("integer")
-                        .HasColumnName("calendar_entry_id");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("now()");
-
-                    b.Property<int>("GroupId")
-                        .HasColumnType("integer")
-                        .HasColumnName("group_id");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at")
-                        .HasDefaultValueSql("now()");
-
-                    b.HasKey("Id")
-                        .HasName("pk_calendar_entry_group");
-
-                    b.HasIndex("GroupId")
-                        .HasDatabaseName("ix_calendar_entry_group_group_id");
-
-                    b.HasIndex("CalendarEntryId", "GroupId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_calendar_entry_group_calendar_entry_id_group_id");
-
-                    b.ToTable("calendar_entry_group", (string)null);
-                });
-
             modelBuilder.Entity("Furria.Core.Club.KeyHolding", b =>
                 {
                     b.Property<int>("Id")
@@ -439,11 +393,6 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("now()");
 
-                    b.Property<string>("LogoSvg")
-                        .HasMaxLength(200000)
-                        .HasColumnType("character varying(200000)")
-                        .HasColumnName("logo_svg");
-
                     b.Property<string>("Motto")
                         .HasMaxLength(160)
                         .HasColumnType("character varying(160)")
@@ -452,6 +401,11 @@ namespace Furria.Infrastructure.Migrations
                     b.Property<int?>("Number")
                         .HasColumnType("integer")
                         .HasColumnName("number");
+
+                    b.Property<string>("SignetSvg")
+                        .HasMaxLength(200000)
+                        .HasColumnType("character varying(200000)")
+                        .HasColumnName("signet_svg");
 
                     b.Property<int>("StartYear")
                         .HasColumnType("integer")
@@ -490,27 +444,11 @@ namespace Furria.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateOnly?>("ArchivedOn")
-                        .HasColumnType("date")
-                        .HasColumnName("archived_on");
-
-                    b.Property<string>("City")
-                        .IsRequired()
-                        .HasMaxLength(80)
-                        .HasColumnType("character varying(80)")
-                        .HasColumnName("city")
-                        .UseCollation("de-DE-x-icu");
-
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("now()");
-
-                    b.Property<string>("Hint")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("hint");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -523,23 +461,11 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("sort_order");
 
-                    b.Property<string>("Street")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("character varying(120)")
-                        .HasColumnName("street");
-
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at")
                         .HasDefaultValueSql("now()");
-
-                    b.Property<string>("Zip")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)")
-                        .HasColumnName("zip");
 
                     b.HasKey("Id")
                         .HasName("pk_venue");
@@ -576,14 +502,6 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("character varying(400)")
                         .HasColumnName("description");
 
-                    b.Property<int?>("FoundedYear")
-                        .HasColumnType("integer")
-                        .HasColumnName("founded_year");
-
-                    b.Property<int?>("GroupKindId")
-                        .HasColumnType("integer")
-                        .HasColumnName("group_kind_id");
-
                     b.Property<bool>("IsRecruiting")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
@@ -597,11 +515,6 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnName("name")
                         .UseCollation("de-DE-x-icu");
 
-                    b.Property<string>("Tone")
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("tone");
-
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -611,18 +524,10 @@ namespace Furria.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_group");
 
-                    b.HasIndex("GroupKindId")
-                        .HasDatabaseName("ix_group_group_kind_id");
-
                     b.HasIndex("Name")
                         .HasDatabaseName("ix_group_name_lookup");
 
-                    b.ToTable("group", null, t =>
-                        {
-                            t.HasCheckConstraint("ck_group_founded_year", "founded_year IS NULL OR founded_year >= 1800");
-
-                            t.HasCheckConstraint("ck_group_tone", "tone IS NULL OR tone IN ('Clay', 'Olive', 'Lime', 'Fern', 'Teal', 'Indigo', 'Iris', 'Violet', 'Orchid', 'Rose')");
-                        });
+                    b.ToTable("group", (string)null);
                 });
 
             modelBuilder.Entity("Furria.Core.Groups.GroupAdmin", b =>
@@ -687,51 +592,6 @@ namespace Furria.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Furria.Core.Groups.GroupKind", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateOnly?>("ArchivedOn")
-                        .HasColumnType("date")
-                        .HasColumnName("archived_on");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("now()");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(80)
-                        .HasColumnType("character varying(80)")
-                        .HasColumnName("name")
-                        .UseCollation("de-DE-x-icu");
-
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("integer")
-                        .HasColumnName("sort_order");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at")
-                        .HasDefaultValueSql("now()");
-
-                    b.HasKey("Id")
-                        .HasName("pk_group_kind");
-
-                    b.HasIndex("Name")
-                        .HasDatabaseName("ix_group_kind_name_lookup");
-
-                    b.ToTable("group_kind", (string)null);
-                });
-
             modelBuilder.Entity("Furria.Core.Groups.GroupMembership", b =>
                 {
                     b.Property<int>("Id")
@@ -786,66 +646,6 @@ namespace Furria.Infrastructure.Migrations
                     b.ToTable("group_membership", null, t =>
                         {
                             t.HasCheckConstraint("ck_group_membership_period", "left_on IS NULL OR left_on >= joined_on");
-                        });
-                });
-
-            modelBuilder.Entity("Furria.Core.Groups.GroupTrainingSlot", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("now()");
-
-                    b.Property<int>("DurationMinutes")
-                        .HasColumnType("integer")
-                        .HasColumnName("duration_minutes");
-
-                    b.Property<int>("GroupId")
-                        .HasColumnType("integer")
-                        .HasColumnName("group_id");
-
-                    b.Property<TimeOnly>("StartsAt")
-                        .HasColumnType("time without time zone")
-                        .HasColumnName("starts_at");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at")
-                        .HasDefaultValueSql("now()");
-
-                    b.Property<int?>("VenueId")
-                        .HasColumnType("integer")
-                        .HasColumnName("venue_id");
-
-                    b.Property<string>("Weekday")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("weekday");
-
-                    b.HasKey("Id")
-                        .HasName("pk_group_training_slot");
-
-                    b.HasIndex("GroupId")
-                        .HasDatabaseName("ix_group_training_slot_group_id");
-
-                    b.HasIndex("VenueId")
-                        .HasDatabaseName("ix_group_training_slot_venue_id");
-
-                    b.ToTable("group_training_slot", null, t =>
-                        {
-                            t.HasCheckConstraint("ck_group_training_slot_duration", "duration_minutes > 0 AND duration_minutes <= 480");
-
-                            t.HasCheckConstraint("ck_group_training_slot_weekday", "weekday IN ('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday')");
                         });
                 });
 
@@ -1572,27 +1372,6 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Venue");
                 });
 
-            modelBuilder.Entity("Furria.Core.Club.CalendarEntryGroup", b =>
-                {
-                    b.HasOne("Furria.Core.Club.CalendarEntry", "CalendarEntry")
-                        .WithMany("ParticipatingGroups")
-                        .HasForeignKey("CalendarEntryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_calendar_entry_group_calendar_entry_calendar_entry_id");
-
-                    b.HasOne("Furria.Core.Groups.Group", "Group")
-                        .WithMany()
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_calendar_entry_group_group_group_id");
-
-                    b.Navigation("CalendarEntry");
-
-                    b.Navigation("Group");
-                });
-
             modelBuilder.Entity("Furria.Core.Club.KeyHolding", b =>
                 {
                     b.HasOne("Furria.Core.Identity.Person", "Person")
@@ -1612,17 +1391,6 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Person");
 
                     b.Navigation("Venue");
-                });
-
-            modelBuilder.Entity("Furria.Core.Groups.Group", b =>
-                {
-                    b.HasOne("Furria.Core.Groups.GroupKind", "GroupKind")
-                        .WithMany()
-                        .HasForeignKey("GroupKindId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .HasConstraintName("fk_group_group_kind_group_kind_id");
-
-                    b.Navigation("GroupKind");
                 });
 
             modelBuilder.Entity("Furria.Core.Groups.GroupAdmin", b =>
@@ -1665,26 +1433,6 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Group");
 
                     b.Navigation("Person");
-                });
-
-            modelBuilder.Entity("Furria.Core.Groups.GroupTrainingSlot", b =>
-                {
-                    b.HasOne("Furria.Core.Groups.Group", "Group")
-                        .WithMany("TrainingSlots")
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_group_training_slot_group_group_id");
-
-                    b.HasOne("Furria.Core.Club.Venue", "Venue")
-                        .WithMany()
-                        .HasForeignKey("VenueId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .HasConstraintName("fk_group_training_slot_venue_venue_id");
-
-                    b.Navigation("Group");
-
-                    b.Navigation("Venue");
                 });
 
             modelBuilder.Entity("Furria.Core.Identity.FeeReduction", b =>
@@ -1810,18 +1558,11 @@ namespace Furria.Infrastructure.Migrations
                         .HasConstraintName("fk_account_token_account_user_id");
                 });
 
-            modelBuilder.Entity("Furria.Core.Club.CalendarEntry", b =>
-                {
-                    b.Navigation("ParticipatingGroups");
-                });
-
             modelBuilder.Entity("Furria.Core.Groups.Group", b =>
                 {
                     b.Navigation("Admins");
 
                     b.Navigation("Memberships");
-
-                    b.Navigation("TrainingSlots");
                 });
 
             modelBuilder.Entity("Furria.Core.Identity.Membership", b =>

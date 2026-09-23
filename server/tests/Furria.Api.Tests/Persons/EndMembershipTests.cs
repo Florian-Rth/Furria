@@ -30,7 +30,7 @@ public sealed class EndMembershipTests
     }
 
     [Fact]
-    public async Task Should_CloseTheMitgliedschaft_When_AManagerEndsIt()
+    public async Task Should_CloseTheMembership_When_AManagerEndsIt()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -63,7 +63,7 @@ public sealed class EndMembershipTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheMitgliedschaftIsAlreadyEnded()
+    public async Task Should_ReturnConflict_When_TheMembershipIsAlreadyEnded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -132,7 +132,7 @@ public sealed class EndMembershipTests
     }
 
     [Fact]
-    public async Task Should_ClampTheOpenRuhezeit_When_TheMitgliedschaftEnds()
+    public async Task Should_ClampTheOpenMembershipPause_When_TheMembershipEnds()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -166,7 +166,7 @@ public sealed class EndMembershipTests
     }
 
     [Fact]
-    public async Task Should_ReturnUnprocessableEntity_When_AClosedRuhezeitWouldFallOutside()
+    public async Task Should_ReturnUnprocessableEntity_When_AClosedMembershipPauseWouldFallOutside()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -210,7 +210,7 @@ public sealed class EndMembershipTests
     }
 
     [Fact]
-    public async Task Should_KeepTheClosedRuhezeit_When_TheMitgliedschaftEnds()
+    public async Task Should_KeepTheClosedMembershipPause_When_TheMembershipEnds()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -247,7 +247,7 @@ public sealed class EndMembershipTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheMitgliedschaftBelongsToAnotherPerson()
+    public async Task Should_ReturnNotFound_When_TheMembershipBelongsToAnotherPerson()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

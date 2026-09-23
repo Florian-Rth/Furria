@@ -2,6 +2,7 @@ using Furria.Application.Identity;
 using Furria.Application.Results;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Furria.Infrastructure.Identity;
@@ -13,16 +14,19 @@ public sealed class RefreshTokenService
     private readonly AppDbContext _dbContext;
     private readonly TimeProvider _timeProvider;
     private readonly RefreshTokenOptions _options;
+    private readonly ILogger<RefreshTokenService> _logger;
 
     public RefreshTokenService(
         AppDbContext dbContext,
         TimeProvider timeProvider,
-        IOptions<RefreshTokenOptions> options
+        IOptions<RefreshTokenOptions> options,
+        ILogger<RefreshTokenService> logger
     )
     {
         _dbContext = dbContext;
         _timeProvider = timeProvider;
         _options = options.Value;
+        _logger = logger;
     }
 
     public async Task<IssuedRefreshTokenDetails> IssueAsync(int accountId, CancellationToken ct)
@@ -53,6 +57,11 @@ public sealed class RefreshTokenService
                     RefreshTokenRevocationReason.ReuseDetected,
                     now,
                     ct
+                );
+                _logger.LogWarning(
+                    "Refresh token replay for account {AccountId}, family {TokenFamilyId} revoked",
+                    presented.AccountId,
+                    presented.FamilyId
                 );
             }
 

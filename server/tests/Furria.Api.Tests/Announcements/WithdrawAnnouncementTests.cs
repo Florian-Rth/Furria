@@ -34,7 +34,7 @@ public sealed class WithdrawAnnouncementTests
     }
 
     [Fact]
-    public async Task Should_TakeTheAushangDown_When_TheAutorHoldsNoBerechtigung()
+    public async Task Should_TakeTheAnnouncementDown_When_TheAuthorHoldsNoPermission()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildBoardAsync(ct);
@@ -55,7 +55,7 @@ public sealed class WithdrawAnnouncementTests
     }
 
     [Fact]
-    public async Task Should_TakeAForeignAushangDown_When_TheCallerHoldsTheBerechtigung()
+    public async Task Should_TakeAForeignAnnouncementDown_When_TheCallerHoldsThePermission()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildBoardAsync(ct);
@@ -87,7 +87,7 @@ public sealed class WithdrawAnnouncementTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheAushangIsAlreadyOffTheBoard()
+    public async Task Should_ReturnNotFound_When_TheAnnouncementIsAlreadyOffTheBoard()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildBoardAsync(ct);

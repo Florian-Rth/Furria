@@ -34,7 +34,7 @@ public sealed class PostBoardOfficeTests
         );
 
     [Fact]
-    public async Task Should_RecordTheFunktion_When_AManagerAddsItToTheBand()
+    public async Task Should_RecordTheOffice_When_AManagerAddsItToTheBand()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
@@ -73,7 +73,7 @@ public sealed class PostBoardOfficeTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheNameBelongsToAnArchivedFunktion()
+    public async Task Should_ReturnConflict_When_TheNameBelongsToAnArchivedOffice()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

@@ -35,7 +35,7 @@ public sealed class PostAnnouncementTests
     }
 
     [Fact]
-    public async Task Should_HangTheAushangUp_When_TheBerechtigteSchreibtIhn()
+    public async Task Should_HangTheAnnouncementUp_When_ThePermittedPersonWritesIt()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -77,7 +77,7 @@ public sealed class PostAnnouncementTests
     }
 
     [Fact]
-    public async Task Should_HangAnUnbefristetenAushangUp_When_NoGueltigBisIsGiven()
+    public async Task Should_HangAnOpenEndedAnnouncementUp_When_NoValidUntilIsGiven()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildBoardAsync(ct);
@@ -150,7 +150,7 @@ public sealed class PostAnnouncementTests
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_TheMitgliedHoldsNoBerechtigung()
+    public async Task Should_ReturnForbidden_When_TheMemberHoldsNoPermission()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildBoardAsync(ct);

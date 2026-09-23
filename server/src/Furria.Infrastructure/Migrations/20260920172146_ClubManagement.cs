@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Furria.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class VereinVerwalten : Migration
+    public partial class ClubManagement : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

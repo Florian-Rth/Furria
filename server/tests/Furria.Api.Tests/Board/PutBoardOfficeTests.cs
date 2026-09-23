@@ -43,7 +43,7 @@ public sealed class PutBoardOfficeTests
         );
 
     [Fact]
-    public async Task Should_RenameTheFunktion_When_AManagerCorrectsTheWording()
+    public async Task Should_RenameTheOffice_When_AManagerCorrectsTheWording()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithBandAsync(ct);
@@ -66,7 +66,7 @@ public sealed class PutBoardOfficeTests
     }
 
     [Fact]
-    public async Task Should_MoveTheFunktion_When_TheBandOrderChanges()
+    public async Task Should_MoveTheOffice_When_TheBandOrderChanges()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithBandAsync(ct);
@@ -87,7 +87,7 @@ public sealed class PutBoardOfficeTests
     }
 
     [Fact]
-    public async Task Should_KeepTheSitz_When_TheFunktionIsRenamedUnderItsHolder()
+    public async Task Should_KeepTheSeat_When_TheOfficeIsRenamedUnderItsHolder()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -119,7 +119,7 @@ public sealed class PutBoardOfficeTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_AnotherFunktionCarriesTheName()
+    public async Task Should_ReturnConflict_When_AnotherOfficeCarriesTheName()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithBandAsync(ct);
@@ -140,7 +140,7 @@ public sealed class PutBoardOfficeTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheFunktionIsArchived()
+    public async Task Should_ReturnConflict_When_TheOfficeIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -169,7 +169,7 @@ public sealed class PutBoardOfficeTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheFunktionIsUnknown()
+    public async Task Should_ReturnNotFound_When_TheOfficeIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithBandAsync(ct);

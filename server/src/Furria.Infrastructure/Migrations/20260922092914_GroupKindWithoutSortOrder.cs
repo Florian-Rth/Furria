@@ -5,7 +5,7 @@
 namespace Furria.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class GruppenartOhnePlatz : Migration
+    public partial class GroupKindWithoutSortOrder : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

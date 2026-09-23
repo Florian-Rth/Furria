@@ -64,7 +64,7 @@ internal static class RoleSeedMaterializer
                         Alias: PermissionAlias(intent.Alias, key),
                         Row: new RolePermission
                         {
-                            RoleId = SeedAliases.RequireId(roleIds, intent.Alias, "Rolle"),
+                            RoleId = SeedAliases.RequireId(roleIds, intent.Alias, "Role"),
                             PermissionKey = key,
                         }
                     )
@@ -97,7 +97,7 @@ internal static class RoleSeedMaterializer
             intent => intent.Alias,
             intent => new RoleHolding
             {
-                RoleId = SeedAliases.RequireId(roleIds, intent.RoleAlias, "Rolle"),
+                RoleId = SeedAliases.RequireId(roleIds, intent.RoleAlias, "Role"),
                 PersonId = SeedAliases.RequireId(personIds, intent.PersonAlias, "Person"),
                 SinceOn = intent.SinceOn,
                 UntilOn = intent.UntilOn,

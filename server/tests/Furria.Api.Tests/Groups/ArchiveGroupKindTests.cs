@@ -33,7 +33,7 @@ public sealed class ArchiveGroupKindTests
         );
 
     [Fact]
-    public async Task Should_ArchiveTheGruppenart_When_NoGruppeCarriesIt()
+    public async Task Should_ArchiveTheGroupKind_When_NoGroupCarriesIt()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -53,7 +53,7 @@ public sealed class ArchiveGroupKindTests
     }
 
     [Fact]
-    public async Task Should_ArchiveTheGruppenart_When_OnlyAnArchivedGruppeUsesIt()
+    public async Task Should_ArchiveTheGroupKind_When_OnlyAnArchivedGroupUsesIt()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -86,7 +86,7 @@ public sealed class ArchiveGroupKindTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_ARunningGruppeStillCarriesTheGruppenart()
+    public async Task Should_ReturnConflict_When_ARunningGroupStillCarriesTheGroupKind()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -112,7 +112,7 @@ public sealed class ArchiveGroupKindTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheGruppenartIsAlreadyArchived()
+    public async Task Should_ReturnConflict_When_TheGroupKindIsAlreadyArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -136,7 +136,7 @@ public sealed class ArchiveGroupKindTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheGruppenartIsUnknown()
+    public async Task Should_ReturnNotFound_When_TheGroupKindIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);

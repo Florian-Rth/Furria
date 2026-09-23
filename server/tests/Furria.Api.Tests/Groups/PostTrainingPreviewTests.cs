@@ -17,11 +17,11 @@ public sealed class PostTrainingPreviewTests
     private const int TrainingMinutes = 90;
     private const int DaysPerWeek = 7;
     private const int TwoWeeks = 14;
-    private const string Abendprobe = "Abendprobe der Prinzengarde";
-    private const string Krisensitzung = "Krisensitzung der Kindergarde";
-    private const string GardeTraining = "Training der Tanzgarde";
-    private const string Sporthalle = "Sporthalle";
-    private const string AltesLager = "Altes Lager";
+    private const string EveningRehearsal = "Abendprobe der Prinzengarde";
+    private const string CrisisMeeting = "Krisensitzung der Kindergarde";
+    private const string DanceGuardTraining = "Training der Tanzgarde";
+    private const string SportsHall = "Sporthalle";
+    private const string OldStorage = "Altes Lager";
 
     private static readonly DateOnly ArchivedIn2026 = new(2026, 6, 30);
     private static readonly TimeOnly HalfPastSeven = new(19, 30);
@@ -34,7 +34,7 @@ public sealed class PostTrainingPreviewTests
     }
 
     [Fact]
-    public async Task Should_ListEveryEvening_When_TheGruppeStatesOneSlot()
+    public async Task Should_ListEveryEvening_When_TheGroupStatesOneSlot()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildRhythmAsync(ct);
@@ -55,7 +55,7 @@ public sealed class PostTrainingPreviewTests
             result.Rows.Select(row => row.StartsAt)
         );
         var first = result.Rows[0];
-        Assert.Equal(Sporthalle, first.VenueName);
+        Assert.Equal(SportsHall, first.VenueName);
         Assert.Equal(firstEvening.AddMinutes(TrainingMinutes), first.EndsAt);
     }
 
@@ -79,7 +79,7 @@ public sealed class PostTrainingPreviewTests
     }
 
     [Fact]
-    public async Task Should_WarnAboutTheOrt_When_AnotherEintragHoldsItThatEvening()
+    public async Task Should_WarnAboutTheVenue_When_AnotherEntryHoldsItThatEvening()
     {
         var ct = TestContext.Current.CancellationToken;
         var firstEvening = FirstTraining();
@@ -89,7 +89,7 @@ public sealed class PostTrainingPreviewTests
                 Rhythm(club);
                 club.AddCalendarEntry(
                     "abendprobe",
-                    Abendprobe,
+                    EveningRehearsal,
                     firstEvening,
                     firstEvening.AddMinutes(TrainingMinutes),
                     venueAlias: "sporthalle"
@@ -109,7 +109,7 @@ public sealed class PostTrainingPreviewTests
         var first = result.Rows[0];
         Assert.Equal(TrainingPreviewState.VenueTaken, first.State);
         var collision = Assert.Single(first.VenueCollisions);
-        Assert.Equal(Abendprobe, collision.Title);
+        Assert.Equal(EveningRehearsal, collision.Title);
         Assert.Equal(
             [TrainingPreviewState.Creatable, TrainingPreviewState.Creatable],
             result.Rows.Skip(1).Select(row => row.State)
@@ -117,7 +117,7 @@ public sealed class PostTrainingPreviewTests
     }
 
     [Fact]
-    public async Task Should_LeaveTheOrtFree_When_TheCallerMayNotReadTheEintragHoldingIt()
+    public async Task Should_LeaveTheVenueFree_When_TheCallerMayNotReadTheEntryHoldingIt()
     {
         var ct = TestContext.Current.CancellationToken;
         var firstEvening = FirstTraining();
@@ -135,7 +135,7 @@ public sealed class PostTrainingPreviewTests
                         Rhythm(club);
                         club.AddCalendarEntry(
                             "krisensitzung",
-                            Krisensitzung,
+                            CrisisMeeting,
                             firstEvening,
                             firstEvening.AddMinutes(TrainingMinutes),
                             visibility: CalendarEntryVisibility.Group,
@@ -158,7 +158,7 @@ public sealed class PostTrainingPreviewTests
     }
 
     [Fact]
-    public async Task Should_MarkTheEveningAsTaken_When_ATrainingOfThatGruppeAlreadyStands()
+    public async Task Should_MarkTheEveningAsTaken_When_ATrainingOfThatGroupAlreadyStands()
     {
         var ct = TestContext.Current.CancellationToken;
         var firstEvening = FirstTraining();
@@ -168,7 +168,7 @@ public sealed class PostTrainingPreviewTests
                 Rhythm(club);
                 club.AddCalendarEntry(
                     "garde-training",
-                    GardeTraining,
+                    DanceGuardTraining,
                     firstEvening,
                     firstEvening.AddMinutes(TrainingMinutes),
                     kind: CalendarEntryKind.Training,
@@ -192,10 +192,10 @@ public sealed class PostTrainingPreviewTests
     }
 
     [Fact]
-    public async Task Should_ListNothing_When_TheGruppeStatesNoRhythm()
+    public async Task Should_ListNothing_When_TheGroupStatesNoRhythm()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(club => club.AddVenue("sporthalle", Sporthalle), ct);
+        var ctx = await BuildAsync(club => club.AddVenue("sporthalle", SportsHall), ct);
 
         var client = await ctx.Identity.ClientForAsync("anna", ct);
         var (response, result) = await client.POSTAsync<
@@ -245,7 +245,7 @@ public sealed class PostTrainingPreviewTests
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_TheGruppeIsUnknown()
+    public async Task Should_ReturnForbidden_When_TheGroupIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildRhythmAsync(ct);
@@ -278,12 +278,12 @@ public sealed class PostTrainingPreviewTests
     }
 
     [Fact]
-    public async Task Should_MarkEveryEvening_When_DerOrtDerTrainingszeitArchiviertWurde()
+    public async Task Should_MarkEveryEvening_When_TheTrainingSlotsVenueWasArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildAsync(
             club =>
-                club.AddVenue("altes-lager", AltesLager, archivedOn: ArchivedIn2026)
+                club.AddVenue("altes-lager", OldStorage, archivedOn: ArchivedIn2026)
                     .AddTrainingSlot(
                         "dienstags",
                         "tanzgarde",
@@ -305,18 +305,18 @@ public sealed class PostTrainingPreviewTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal(3, result.Rows.Count);
         Assert.All(result.Rows, row => Assert.Equal(TrainingPreviewState.VenueArchived, row.State));
-        Assert.Equal(AltesLager, result.Rows[0].VenueName);
+        Assert.Equal(OldStorage, result.Rows[0].VenueName);
     }
 
     [Fact]
-    public async Task Should_MarkOnlyTheAffectedEvenings_When_EineZweiteTrainingszeitLaeuft()
+    public async Task Should_MarkOnlyTheAffectedEvenings_When_ASecondTrainingSlotIsRunning()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildAsync(
             club =>
             {
                 Rhythm(club);
-                club.AddVenue("altes-lager", AltesLager, archivedOn: ArchivedIn2026)
+                club.AddVenue("altes-lager", OldStorage, archivedOn: ArchivedIn2026)
                     .AddTrainingSlot(
                         "donnerstags",
                         "tanzgarde",
@@ -356,13 +356,13 @@ public sealed class PostTrainingPreviewTests
     }
 
     [Fact]
-    public async Task Should_MarkTheEveningAsHeld_When_EsSchonExistiertUndDerOrtArchiviertIst()
+    public async Task Should_MarkTheEveningAsHeld_When_ItAlreadyExistsAndTheVenueIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var firstEvening = FirstTraining();
         var ctx = await BuildAsync(
             club =>
-                club.AddVenue("altes-lager", AltesLager, archivedOn: ArchivedIn2026)
+                club.AddVenue("altes-lager", OldStorage, archivedOn: ArchivedIn2026)
                     .AddTrainingSlot(
                         "dienstags",
                         "tanzgarde",
@@ -373,7 +373,7 @@ public sealed class PostTrainingPreviewTests
                     )
                     .AddCalendarEntry(
                         "training",
-                        GardeTraining,
+                        DanceGuardTraining,
                         firstEvening,
                         firstEvening.AddMinutes(TrainingMinutes),
                         CalendarEntryKind.Training,
@@ -432,7 +432,7 @@ public sealed class PostTrainingPreviewTests
             .AddGroupAdmin("anna-tanzgarde", "tanzgarde", "anna");
 
     private static void Rhythm(ClubSeedBuilder club) =>
-        club.AddVenue("sporthalle", Sporthalle)
+        club.AddVenue("sporthalle", SportsHall)
             .AddTrainingSlot(
                 "dienstags",
                 "tanzgarde",

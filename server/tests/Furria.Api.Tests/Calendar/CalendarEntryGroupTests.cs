@@ -14,14 +14,14 @@ namespace Furria.Api.Tests.Calendar;
 public sealed class CalendarEntryGroupTests
 {
     private const string ValidationField = "request";
-    private const string Prunksitzung = "Prunksitzung";
-    private const string GardeTraining = "Training der Tanzgarde";
+    private const string GalaSession = "Prunksitzung";
+    private const string DanceGuardTraining = "Training der Tanzgarde";
     private const int UnknownGroupId = 999_999;
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
     private static readonly DateOnly ArchivedIn2026 = new(2026, 6, 30);
 
-    private static readonly DateTimeOffset PrunksitzungStart = new(
+    private static readonly DateTimeOffset GalaSessionStart = new(
         2027,
         2,
         6,
@@ -30,7 +30,7 @@ public sealed class CalendarEntryGroupTests
         0,
         TimeSpan.Zero
     );
-    private static readonly DateTimeOffset PrunksitzungEnd = new(
+    private static readonly DateTimeOffset GalaSessionEnd = new(
         2027,
         2,
         6,
@@ -48,7 +48,7 @@ public sealed class CalendarEntryGroupTests
     }
 
     [Fact]
-    public async Task Should_CarryTheMitwirkendenGruppen_When_TheEintragNamesThem()
+    public async Task Should_CarryTheParticipatingGroups_When_TheEntryNamesThem()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
@@ -62,7 +62,7 @@ public sealed class CalendarEntryGroupTests
 
         await ctx
             .Expected.CalendarEntry(result.CalendarEntryId)
-            .ToCarryMitwirkendeGruppen(
+            .ToCarryParticipatingGroups(
                 ctx.Groups.Groups.IdOf("tanzgarde"),
                 ctx.Groups.Groups.IdOf("kindergarde")
             )
@@ -70,7 +70,7 @@ public sealed class CalendarEntryGroupTests
     }
 
     [Fact]
-    public async Task Should_DropTheEigentuemerin_When_SieAuchAlsMitwirkendGenanntWird()
+    public async Task Should_DropTheOwner_When_ItIsAlsoNamedAsParticipating()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
@@ -84,12 +84,12 @@ public sealed class CalendarEntryGroupTests
         >(
             new()
             {
-                Title = GardeTraining,
+                Title = DanceGuardTraining,
                 Description = null,
                 OwnerGroupId = tanzgarde,
                 VenueId = null,
-                StartsAt = PrunksitzungStart,
-                EndsAt = PrunksitzungEnd,
+                StartsAt = GalaSessionStart,
+                EndsAt = GalaSessionEnd,
                 Kind = CalendarEntryKind.Training,
                 Visibility = CalendarEntryVisibility.Group,
                 AsksForResponse = false,
@@ -100,12 +100,12 @@ public sealed class CalendarEntryGroupTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         await ctx
             .Expected.CalendarEntry(result.CalendarEntryId)
-            .ToCarryMitwirkendeGruppen(ctx.Groups.Groups.IdOf("kindergarde"))
+            .ToCarryParticipatingGroups(ctx.Groups.Groups.IdOf("kindergarde"))
             .AssertAsync(ct);
     }
 
     [Fact]
-    public async Task Should_StoreTheGruppeOnce_When_SieZweimalGenanntWird()
+    public async Task Should_StoreTheGroupOnce_When_ItIsNamedTwice()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
@@ -115,16 +115,16 @@ public sealed class CalendarEntryGroupTests
 
         await ctx
             .Expected.CalendarEntry(result.CalendarEntryId)
-            .ToCarryMitwirkendeGruppen(tanzgarde)
+            .ToCarryParticipatingGroups(tanzgarde)
             .AssertAsync(ct);
     }
 
     [Fact]
-    public async Task Should_ReplaceTheMitwirkenden_When_TheEintragIsUpdated()
+    public async Task Should_ReplaceTheParticipatingGroups_When_TheEntryIsUpdated()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildPrunksitzungAsync(ct);
-        var calendarEntryId = ctx.Club.CalendarEntries.IdOf("prunksitzung");
+        var ctx = await BuildGalaSessionAsync(ct);
+        var calendarEntryId = ctx.Club.CalendarEntries.IdOf("gala-session");
         var kindergarde = ctx.Groups.Groups.IdOf("kindergarde");
 
         var client = await ctx.Identity.ClientForAsync("ilka", ct);
@@ -136,12 +136,12 @@ public sealed class CalendarEntryGroupTests
             new()
             {
                 CalendarEntryId = calendarEntryId,
-                Title = Prunksitzung,
+                Title = GalaSession,
                 Description = null,
                 OwnerGroupId = null,
                 VenueId = null,
-                StartsAt = PrunksitzungStart,
-                EndsAt = PrunksitzungEnd,
+                StartsAt = GalaSessionStart,
+                EndsAt = GalaSessionEnd,
                 Kind = CalendarEntryKind.Meeting,
                 Visibility = CalendarEntryVisibility.Club,
                 AsksForResponse = false,
@@ -152,16 +152,16 @@ public sealed class CalendarEntryGroupTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         await ctx
             .Expected.CalendarEntry(calendarEntryId)
-            .ToCarryMitwirkendeGruppen(kindergarde)
+            .ToCarryParticipatingGroups(kindergarde)
             .AssertAsync(ct);
     }
 
     [Fact]
-    public async Task Should_KeepTheMitwirkende_When_TheEintragIsSavedUnchanged()
+    public async Task Should_KeepTheParticipatingGroup_When_TheEntryIsSavedUnchanged()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildPrunksitzungAsync(ct);
-        var calendarEntryId = ctx.Club.CalendarEntries.IdOf("prunksitzung");
+        var ctx = await BuildGalaSessionAsync(ct);
+        var calendarEntryId = ctx.Club.CalendarEntries.IdOf("gala-session");
         var tanzgarde = ctx.Groups.Groups.IdOf("tanzgarde");
 
         var client = await ctx.Identity.ClientForAsync("ilka", ct);
@@ -173,12 +173,12 @@ public sealed class CalendarEntryGroupTests
             new()
             {
                 CalendarEntryId = calendarEntryId,
-                Title = Prunksitzung,
+                Title = GalaSession,
                 Description = null,
                 OwnerGroupId = null,
                 VenueId = null,
-                StartsAt = PrunksitzungStart,
-                EndsAt = PrunksitzungEnd,
+                StartsAt = GalaSessionStart,
+                EndsAt = GalaSessionEnd,
                 Kind = CalendarEntryKind.Meeting,
                 Visibility = CalendarEntryVisibility.Club,
                 AsksForResponse = false,
@@ -189,16 +189,16 @@ public sealed class CalendarEntryGroupTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         await ctx
             .Expected.CalendarEntry(calendarEntryId)
-            .ToCarryMitwirkendeGruppen(tanzgarde)
+            .ToCarryParticipatingGroups(tanzgarde)
             .AssertAsync(ct);
     }
 
     [Fact]
-    public async Task Should_DropAllMitwirkenden_When_TheEintragNamesNoneAnymore()
+    public async Task Should_DropAllParticipatingGroups_When_TheEntryNamesNoneAnymore()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildPrunksitzungAsync(ct);
-        var calendarEntryId = ctx.Club.CalendarEntries.IdOf("prunksitzung");
+        var ctx = await BuildGalaSessionAsync(ct);
+        var calendarEntryId = ctx.Club.CalendarEntries.IdOf("gala-session");
 
         var client = await ctx.Identity.ClientForAsync("ilka", ct);
         var (response, _) = await client.PUTAsync<
@@ -209,12 +209,12 @@ public sealed class CalendarEntryGroupTests
             new()
             {
                 CalendarEntryId = calendarEntryId,
-                Title = Prunksitzung,
+                Title = GalaSession,
                 Description = null,
                 OwnerGroupId = null,
                 VenueId = null,
-                StartsAt = PrunksitzungStart,
-                EndsAt = PrunksitzungEnd,
+                StartsAt = GalaSessionStart,
+                EndsAt = GalaSessionEnd,
                 Kind = CalendarEntryKind.Meeting,
                 Visibility = CalendarEntryVisibility.Club,
                 AsksForResponse = false,
@@ -225,12 +225,12 @@ public sealed class CalendarEntryGroupTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         await ctx
             .Expected.CalendarEntry(calendarEntryId)
-            .ToCarryNoMitwirkendeGruppe()
+            .ToCarryNoParticipatingGroup()
             .AssertAsync(ct);
     }
 
     [Fact]
-    public async Task Should_RefuseTheEintrag_When_AMitwirkendeGruppeIsUnknown()
+    public async Task Should_RefuseTheEntry_When_AParticipatingGroupIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
@@ -248,7 +248,7 @@ public sealed class CalendarEntryGroupTests
     }
 
     [Fact]
-    public async Task Should_RefuseTheEintrag_When_AMitwirkendeGruppeIsArchived()
+    public async Task Should_RefuseTheEntry_When_AParticipatingGroupIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
@@ -266,11 +266,11 @@ public sealed class CalendarEntryGroupTests
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerOnlyAdministersAMitwirkendeGruppe()
+    public async Task Should_ReturnForbidden_When_TheCallerOnlyAdministersAParticipatingGroup()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildPrunksitzungAsync(ct);
-        var calendarEntryId = ctx.Club.CalendarEntries.IdOf("prunksitzung");
+        var ctx = await BuildGalaSessionAsync(ct);
+        var calendarEntryId = ctx.Club.CalendarEntries.IdOf("gala-session");
 
         var client = await ctx.Identity.ClientForAsync("chris", ct);
         var (response, _) = await client.PUTAsync<
@@ -285,8 +285,8 @@ public sealed class CalendarEntryGroupTests
                 Description = null,
                 OwnerGroupId = null,
                 VenueId = null,
-                StartsAt = PrunksitzungStart,
-                EndsAt = PrunksitzungEnd,
+                StartsAt = GalaSessionStart,
+                EndsAt = GalaSessionEnd,
                 Kind = CalendarEntryKind.Meeting,
                 Visibility = CalendarEntryVisibility.Club,
                 AsksForResponse = false,
@@ -297,17 +297,17 @@ public sealed class CalendarEntryGroupTests
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         await ctx
             .Expected.CalendarEntry(calendarEntryId)
-            .ToHaveTitle(Prunksitzung)
+            .ToHaveTitle(GalaSession)
             .CalendarEntry(calendarEntryId)
-            .ToCarryMitwirkendeGruppen(ctx.Groups.Groups.IdOf("tanzgarde"))
+            .ToCarryParticipatingGroups(ctx.Groups.Groups.IdOf("tanzgarde"))
             .AssertAsync(ct);
     }
 
     [Fact]
-    public async Task Should_LeaveOutTheMitwirkendenEintrag_When_TheGruppenScopeIsRead()
+    public async Task Should_LeaveOutTheParticipatingGroupEntry_When_TheGroupScopeIsRead()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildPrunksitzungAsync(ct);
+        var ctx = await BuildGalaSessionAsync(ct);
 
         var client = await ctx.Identity.ClientForAsync("bea", ct);
         var (response, result) = await client.GETAsync<
@@ -329,10 +329,10 @@ public sealed class CalendarEntryGroupTests
     }
 
     [Fact]
-    public async Task Should_NameTheMitwirkendeGruppe_When_TheKalenderIsRead()
+    public async Task Should_NameTheParticipatingGroup_When_TheCalendarIsRead()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildPrunksitzungAsync(ct);
+        var ctx = await BuildGalaSessionAsync(ct);
 
         var client = await ctx.Identity.ClientForAsync("bea", ct);
         var (response, result) = await client.GETAsync<
@@ -358,12 +358,12 @@ public sealed class CalendarEntryGroupTests
     private static PostCalendarEntryRequest ClubOwned(IReadOnlyList<int> participatingGroupIds) =>
         new()
         {
-            Title = Prunksitzung,
+            Title = GalaSession,
             Description = null,
             OwnerGroupId = null,
             VenueId = null,
-            StartsAt = PrunksitzungStart,
-            EndsAt = PrunksitzungEnd,
+            StartsAt = GalaSessionStart,
+            EndsAt = GalaSessionEnd,
             Kind = CalendarEntryKind.Meeting,
             Visibility = CalendarEntryVisibility.Club,
             AsksForResponse = false,
@@ -409,7 +409,7 @@ public sealed class CalendarEntryGroupTests
             FurriaPermissions.CalendarManageClub
         );
 
-    private static void Gruppen(GroupSeedBuilder groups) =>
+    private static void Groups(GroupSeedBuilder groups) =>
         groups
             .AddGroup("tanzgarde", "Tanzgarde")
             .AddGroup("kindergarde", "Kindergarde")
@@ -419,23 +419,23 @@ public sealed class CalendarEntryGroupTests
 
     private Task<SeededContext> BuildClubAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
-            builder => builder.Identity(Club).Roles(CalendarRole).Groups(Gruppen),
+            builder => builder.Identity(Club).Roles(CalendarRole).Groups(Groups),
             ct
         );
 
-    private Task<SeededContext> BuildPrunksitzungAsync(CancellationToken ct) =>
+    private Task<SeededContext> BuildGalaSessionAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder =>
                 builder
                     .Identity(Club)
                     .Roles(CalendarRole)
-                    .Groups(Gruppen)
+                    .Groups(Groups)
                     .Club(club =>
                         club.AddCalendarEntry(
-                            "prunksitzung",
-                            Prunksitzung,
-                            PrunksitzungStart,
-                            PrunksitzungEnd,
+                            "gala-session",
+                            GalaSession,
+                            GalaSessionStart,
+                            GalaSessionEnd,
                             participatingGroupAliases: ["tanzgarde"]
                         )
                     ),

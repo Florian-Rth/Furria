@@ -18,7 +18,7 @@ public sealed class MembershipService
         "Diese Mitgliedschaft gibt es bei dieser Person nicht.";
     private const string UnknownPauseMessage =
         "Diese Ruhezeit gibt es in dieser Mitgliedschaft nicht.";
-    private const string OpenMembershipMessage = WriteConflictMessages.OpenMitgliedschaft;
+    private const string OpenMembershipMessage = WriteConflictMessages.OpenMembership;
     private const string EndedMembershipMessage = "Diese Mitgliedschaft ist bereits beendet.";
     private const string EndBeforeStartMessage =
         "Eine Mitgliedschaft kann nicht vor ihrem Beginn enden.";

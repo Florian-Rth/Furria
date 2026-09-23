@@ -43,10 +43,10 @@ public sealed class PutRoleTests
         );
 
     [Fact]
-    public async Task Should_RenameTheRolle_When_AManagerEditsIt()
+    public async Task Should_RenameTheRole_When_AManagerEditsIt()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithZeugwartAsync(ct);
+        var ctx = await BuildWithEquipmentWardenAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var response = await RenameRoleAsync(
@@ -69,7 +69,7 @@ public sealed class PutRoleTests
     public async Task Should_KeepTheName_When_OnlyTheDescriptionChanges()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithZeugwartAsync(ct);
+        var ctx = await BuildWithEquipmentWardenAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var response = await RenameRoleAsync(
@@ -87,7 +87,7 @@ public sealed class PutRoleTests
     }
 
     [Fact]
-    public async Task Should_KeepTheKeys_When_TheRolleIsRenamed()
+    public async Task Should_KeepTheKeys_When_TheRoleIsRenamed()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -114,7 +114,7 @@ public sealed class PutRoleTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_AnotherActiveRolleCarriesTheName()
+    public async Task Should_ReturnConflict_When_AnotherActiveRoleCarriesTheName()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -143,7 +143,7 @@ public sealed class PutRoleTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheRolleIsArchived()
+    public async Task Should_ReturnConflict_When_TheRoleIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -177,7 +177,7 @@ public sealed class PutRoleTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheRolleIsUnknown()
+    public async Task Should_ReturnNotFound_When_TheRoleIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
@@ -241,7 +241,7 @@ public sealed class PutRoleTests
     public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithZeugwartAsync(ct);
+        var ctx = await BuildWithEquipmentWardenAsync(ct);
 
         var response = await RenameRoleAsync(
             _fixture.CreateClient(),
@@ -257,7 +257,7 @@ public sealed class PutRoleTests
             .AssertAsync(ct);
     }
 
-    private Task<SeededContext> BuildWithZeugwartAsync(CancellationToken ct) =>
+    private Task<SeededContext> BuildWithEquipmentWardenAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder =>
                 builder.Roles(roles =>

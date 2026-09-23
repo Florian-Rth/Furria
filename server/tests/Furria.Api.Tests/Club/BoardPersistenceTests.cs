@@ -19,7 +19,7 @@ public sealed class BoardPersistenceTests
     }
 
     [Fact]
-    public async Task Should_KeepFunktionAndZeitraum_When_AVorstandssitzIsRecorded()
+    public async Task Should_KeepOfficeAndPeriod_When_ABoardSeatIsRecorded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -50,7 +50,7 @@ public sealed class BoardPersistenceTests
     }
 
     [Fact]
-    public async Task Should_RejectTheSecondRecord_When_TheVorstandsfunktionIsAlreadyNoted()
+    public async Task Should_RejectTheSecondRecord_When_TheBoardOfficeIsAlreadyNoted()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -58,8 +58,8 @@ public sealed class BoardPersistenceTests
             _fixture.BuildAsync(
                 builder =>
                     builder.Club(club =>
-                        club.AddBoardOffice("aus-der-satzung", "Präsident")
-                            .AddBoardOffice("aus-dem-protokoll", "Präsident", sortOrder: 2)
+                        club.AddBoardOffice("from-the-statutes", "Präsident")
+                            .AddBoardOffice("from-the-minutes", "Präsident", sortOrder: 2)
                     ),
                 ct
             )
@@ -71,7 +71,7 @@ public sealed class BoardPersistenceTests
     }
 
     [Fact]
-    public async Task Should_RejectTheSeat_When_TheVorstandssitzEndsBeforeItStarts()
+    public async Task Should_RejectTheSeat_When_TheBoardSeatEndsBeforeItStarts()
     {
         var ct = TestContext.Current.CancellationToken;
 

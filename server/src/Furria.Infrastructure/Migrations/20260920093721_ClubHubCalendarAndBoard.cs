@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Furria.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class VereinHub : Migration
+    public partial class ClubHubCalendarAndBoard : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

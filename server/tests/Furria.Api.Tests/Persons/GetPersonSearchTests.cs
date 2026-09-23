@@ -28,7 +28,7 @@ public sealed class GetPersonSearchTests
         );
 
     [Fact]
-    public async Task Should_FindThePerson_When_SheHasNoVereinsbindungAtAll()
+    public async Task Should_FindThePerson_When_SheHasNoClubTieAtAll()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -110,7 +110,7 @@ public sealed class GetPersonSearchTests
     }
 
     [Fact]
-    public async Task Should_SortUmlautsAsGerman_When_SeveralPersonenMatch()
+    public async Task Should_SortUmlautsAsGerman_When_SeveralPersonsMatch()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

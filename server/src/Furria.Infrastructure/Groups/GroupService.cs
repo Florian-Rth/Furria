@@ -27,26 +27,26 @@ public sealed class GroupService
     private const string UnknownVenueMessage = "Diesen Ort gibt es nicht im Verzeichnis.";
     private const string ArchivedVenueMessage =
         "Ein archivierter Ort kann nicht mehr gewählt werden.";
-    private const string DuplicateNameMessage = WriteConflictMessages.DuplicateGruppenName;
+    private const string DuplicateNameMessage = WriteConflictMessages.DuplicateGroupName;
     private const string AlreadyArchivedMessage = "Diese Gruppe ist bereits archiviert.";
     private const string NotArchivedMessage = "Diese Gruppe ist nicht archiviert.";
-    private const string UnknownZugehoerigkeitMessage =
+    private const string UnknownGroupMembershipMessage =
         "Diese Zugehörigkeit gibt es in dieser Gruppe nicht.";
-    private const string EndedZugehoerigkeitMessage = "Diese Zugehörigkeit ist bereits beendet.";
+    private const string EndedGroupMembershipMessage = "Diese Zugehörigkeit ist bereits beendet.";
     private const string EndBeforeStartMessage =
         "Eine Zugehörigkeit kann nicht vor ihrem Beginn enden.";
-    private const string OpenZugehoerigkeitMessage = WriteConflictMessages.OpenZugehoerigkeit;
-    private const string OverlappingZugehoerigkeitMessage =
+    private const string OpenGroupMembershipMessage = WriteConflictMessages.OpenGroupMembership;
+    private const string OverlappingGroupMembershipMessage =
         "Dieser Zeitraum überschneidet sich mit einer bestehenden Zugehörigkeit. "
         + "Ein Wiedereintritt beginnt frühestens am Tag nach dem Ende der vorigen Zugehörigkeit.";
 
-    private const string OpenErnennungMessage = WriteConflictMessages.OpenErnennung;
-    private const string EndedErnennungMessage = "Diese Ernennung ist bereits beendet.";
-    private const string EndBeforeErnennungMessage =
+    private const string OpenGroupAdminMessage = WriteConflictMessages.OpenGroupAdmin;
+    private const string EndedGroupAdminMessage = "Diese Ernennung ist bereits beendet.";
+    private const string EndBeforeGroupAdminMessage =
         "Eine Ernennung kann nicht vor ihrem Beginn enden.";
-    private const string UnknownErnennungMessage =
+    private const string UnknownGroupAdminMessage =
         "Diese Ernennung gibt es in dieser Gruppe nicht.";
-    private const string OverlappingErnennungMessage =
+    private const string OverlappingGroupAdminMessage =
         "Dieser Zeitraum überschneidet sich mit einer bestehenden Ernennung. "
         + "Eine erneute Ernennung beginnt frühestens am Tag nach dem Ende der vorigen.";
 
@@ -489,10 +489,10 @@ public sealed class GroupService
         var chain = await ChainOfAsync(command.GroupId, command.PersonId, ct);
 
         if (HasOpenRow(chain))
-            return Result<int>.Conflict(OpenZugehoerigkeitMessage);
+            return Result<int>.Conflict(OpenGroupMembershipMessage);
 
         if (OverlapsChain(chain, command.JoinedOn))
-            return Result<int>.Conflict(OverlappingZugehoerigkeitMessage);
+            return Result<int>.Conflict(OverlappingGroupMembershipMessage);
 
         var membership = new GroupMembership
         {
@@ -523,13 +523,13 @@ public sealed class GroupService
             );
 
         if (membership is null)
-            return Result.NotFound(UnknownZugehoerigkeitMessage);
+            return Result.NotFound(UnknownGroupMembershipMessage);
 
         if (membership.Group!.ArchivedOn is not null)
             return Result.Conflict(ArchivedGroupMessage);
 
         if (membership.LeftOn is not null)
-            return Result.Conflict(EndedZugehoerigkeitMessage);
+            return Result.Conflict(EndedGroupMembershipMessage);
 
         if (command.EndedOn < membership.JoinedOn)
             return Result.Validation(EndBeforeStartMessage);
@@ -556,10 +556,10 @@ public sealed class GroupService
         var chain = await AdminChainOfAsync(command.GroupId, command.PersonId, ct);
 
         if (HasOpenRow(chain))
-            return Result<int>.Conflict(OpenErnennungMessage);
+            return Result<int>.Conflict(OpenGroupAdminMessage);
 
         if (OverlapsChain(chain, command.SinceOn))
-            return Result<int>.Conflict(OverlappingErnennungMessage);
+            return Result<int>.Conflict(OverlappingGroupAdminMessage);
 
         var admin = new GroupAdmin
         {
@@ -588,16 +588,16 @@ public sealed class GroupService
             );
 
         if (admin is null)
-            return Result.NotFound(UnknownErnennungMessage);
+            return Result.NotFound(UnknownGroupAdminMessage);
 
         if (admin.Group!.ArchivedOn is not null)
             return Result.Conflict(ArchivedGroupMessage);
 
         if (admin.UntilOn is not null)
-            return Result.Conflict(EndedErnennungMessage);
+            return Result.Conflict(EndedGroupAdminMessage);
 
         if (command.EndedOn < admin.SinceOn)
-            return Result.Validation(EndBeforeErnennungMessage);
+            return Result.Validation(EndBeforeGroupAdminMessage);
 
         admin.UntilOn = command.EndedOn;
         await _dbContext.SaveChangesAsync(ct);

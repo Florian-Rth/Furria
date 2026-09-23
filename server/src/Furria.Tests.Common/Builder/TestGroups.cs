@@ -12,9 +12,9 @@ public sealed class TestGroups
 
     internal TestGroups(SeededGroups seeded)
     {
-        GroupKinds = new AliasRegistry<int>("Gruppenart", seeded.GroupKindIds);
-        Groups = new AliasRegistry<int>("Gruppe", seeded.GroupIds);
-        GroupMemberships = new AliasRegistry<int>("Zugehoerigkeit", seeded.GroupMembershipIds);
-        GroupAdmins = new AliasRegistry<int>("Gruppen-Admin", seeded.GroupAdminIds);
+        GroupKinds = new AliasRegistry<int>("GroupKind", seeded.GroupKindIds);
+        Groups = new AliasRegistry<int>("Group", seeded.GroupIds);
+        GroupMemberships = new AliasRegistry<int>("GroupMembership", seeded.GroupMembershipIds);
+        GroupAdmins = new AliasRegistry<int>("GroupAdmin", seeded.GroupAdminIds);
     }
 }

@@ -16,7 +16,7 @@ public sealed class CollationTests
     }
 
     [Fact]
-    public async Task Should_SortUmlautsAsGerman_When_TheDatabaseOrdersGruppenNames()
+    public async Task Should_SortUmlautsAsGerman_When_TheDatabaseOrdersGroupNames()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -38,7 +38,7 @@ public sealed class CollationTests
     }
 
     [Fact]
-    public async Task Should_RejectTheName_When_AnActiveGruppeUsesItsUmlautInAnotherCase()
+    public async Task Should_RejectTheName_When_AnActiveGroupUsesItsUmlautInAnotherCase()
     {
         var ct = TestContext.Current.CancellationToken;
 

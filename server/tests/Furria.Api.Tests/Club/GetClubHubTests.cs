@@ -127,7 +127,7 @@ public sealed class GetClubHubTests
     }
 
     [Fact]
-    public async Task Should_CarryAushangKalenderAndVorstandEmpty_When_TheClubHasWrittenNothingInThem()
+    public async Task Should_CarryAnnouncementsCalendarAndBoardEmpty_When_TheClubHasWrittenNothingInThem()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -149,7 +149,7 @@ public sealed class GetClubHubTests
     }
 
     [Fact]
-    public async Task Should_NameTheSeasonAndElideEverythingElse_When_TheClubHasRecordedNoStammdatenAtAll()
+    public async Task Should_NameTheSeasonAndElideEverythingElse_When_TheClubHasRecordedNoMasterDataAtAll()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -176,7 +176,7 @@ public sealed class GetClubHubTests
     }
 
     [Fact]
-    public async Task Should_CountPeopleRatherThanMitgliedschaften_When_TheStripIsRead()
+    public async Task Should_CountPeopleRatherThanMemberships_When_TheStripIsRead()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -193,7 +193,7 @@ public sealed class GetClubHubTests
     }
 
     [Fact]
-    public async Task Should_LeaveOutArchivedGruppen_When_TheStripIsRead()
+    public async Task Should_LeaveOutArchivedGroups_When_TheStripIsRead()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -226,7 +226,7 @@ public sealed class GetClubHubTests
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerHoldsNoRunningMitgliedschaft()
+    public async Task Should_ReturnForbidden_When_TheCallerHoldsNoRunningMembership()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

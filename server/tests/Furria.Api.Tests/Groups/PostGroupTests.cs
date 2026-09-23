@@ -15,7 +15,7 @@ public sealed class PostGroupTests
 {
     private const string ConflictField = "conflict";
     private const string GroupsRoute = "/api/manage/groups";
-    private const string BodyWithoutGruppenart =
+    private const string BodyWithoutGroupKind =
         "{\"name\":\"Die Biergarde\",\"description\":\"Wir proben freitags.\",\"isRecruiting\":true}";
 
     private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
@@ -28,7 +28,7 @@ public sealed class PostGroupTests
     }
 
     [Fact]
-    public async Task Should_CreateTheGruppe_When_TheKeyHolderAnlegtSie()
+    public async Task Should_CreateTheGroup_When_TheKeyHolderCreatesIt()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
@@ -54,7 +54,7 @@ public sealed class PostGroupTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_AnActiveGruppeCarriesTheNameInAnotherCase()
+    public async Task Should_ReturnConflict_When_AnActiveGroupCarriesTheNameInAnotherCase()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -73,7 +73,7 @@ public sealed class PostGroupTests
     }
 
     [Fact]
-    public async Task Should_CreateTheGruppe_When_OnlyAnArchivedGruppeCarriesTheName()
+    public async Task Should_CreateTheGroup_When_OnlyAnArchivedGroupCarriesTheName()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -180,7 +180,7 @@ public sealed class PostGroupTests
     }
 
     [Fact]
-    public async Task Should_RefuseTheGruppenart_When_SieArchiviertIst()
+    public async Task Should_RefuseTheGroupKind_When_ItIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -213,7 +213,7 @@ public sealed class PostGroupTests
     }
 
     [Fact]
-    public async Task Should_CreateTheGruppe_When_TheBodyLeavesTheGruppenartOut()
+    public async Task Should_CreateTheGroup_When_TheBodyLeavesTheGroupKindOut()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
@@ -221,11 +221,7 @@ public sealed class PostGroupTests
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var response = await client.PostAsync(
             GroupsRoute,
-            new StringContent(
-                BodyWithoutGruppenart,
-                Encoding.UTF8,
-                MediaTypeNames.Application.Json
-            ),
+            new StringContent(BodyWithoutGroupKind, Encoding.UTF8, MediaTypeNames.Application.Json),
             ct
         );
 

@@ -37,7 +37,7 @@ public sealed class PutGroupKindTests
         );
 
     [Fact]
-    public async Task Should_RenameTheGruppenart_When_AManagerSharpensTheWord()
+    public async Task Should_RenameTheGroupKind_When_AManagerSharpensTheWord()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -60,7 +60,7 @@ public sealed class PutGroupKindTests
     }
 
     [Fact]
-    public async Task Should_KeepTheGruppenZugeordnet_When_TheGruppenartIsRenamed()
+    public async Task Should_KeepTheGroupsAssigned_When_TheGroupKindIsRenamed()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -79,12 +79,12 @@ public sealed class PutGroupKindTests
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         await ctx
             .Expected.GroupKinds()
-            .ToCountGruppenOf(ctx.Groups.GroupKinds.IdOf("garde"), 1)
+            .ToCountGroupsOf(ctx.Groups.GroupKinds.IdOf("garde"), 1)
             .AssertAsync(ct);
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_AnotherRunningGruppenartCarriesTheName()
+    public async Task Should_ReturnConflict_When_AnotherRunningGroupKindCarriesTheName()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -112,7 +112,7 @@ public sealed class PutGroupKindTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheGruppenartIsArchived()
+    public async Task Should_ReturnConflict_When_TheGroupKindIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -140,7 +140,7 @@ public sealed class PutGroupKindTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheGruppenartIsUnknown()
+    public async Task Should_ReturnNotFound_When_TheGroupKindIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);

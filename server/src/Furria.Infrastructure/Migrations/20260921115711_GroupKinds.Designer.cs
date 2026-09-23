@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Furria.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260920093721_VereinHub")]
-    partial class VereinHub
+    [Migration("20260921115711_GroupKinds")]
+    partial class GroupKinds
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -141,6 +141,10 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly?>("ArchivedOn")
+                        .HasColumnType("date")
+                        .HasColumnName("archived_on");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -393,6 +397,11 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("now()");
 
+                    b.Property<string>("LogoSvg")
+                        .HasMaxLength(200000)
+                        .HasColumnType("character varying(200000)")
+                        .HasColumnName("logo_svg");
+
                     b.Property<string>("Motto")
                         .HasMaxLength(160)
                         .HasColumnType("character varying(160)")
@@ -401,11 +410,6 @@ namespace Furria.Infrastructure.Migrations
                     b.Property<int?>("Number")
                         .HasColumnType("integer")
                         .HasColumnName("number");
-
-                    b.Property<string>("SignetSvg")
-                        .HasMaxLength(200000)
-                        .HasColumnType("character varying(200000)")
-                        .HasColumnName("signet_svg");
 
                     b.Property<int>("StartYear")
                         .HasColumnType("integer")
@@ -444,11 +448,27 @@ namespace Furria.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<DateOnly?>("ArchivedOn")
+                        .HasColumnType("date")
+                        .HasColumnName("archived_on");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("city")
+                        .UseCollation("de-DE-x-icu");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Hint")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("hint");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -461,11 +481,23 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("sort_order");
 
+                    b.Property<string>("Street")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("street");
+
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at")
                         .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Zip")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("zip");
 
                     b.HasKey("Id")
                         .HasName("pk_venue");
@@ -502,6 +534,10 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("character varying(400)")
                         .HasColumnName("description");
 
+                    b.Property<int?>("GroupKindId")
+                        .HasColumnType("integer")
+                        .HasColumnName("group_kind_id");
+
                     b.Property<bool>("IsRecruiting")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
@@ -523,6 +559,9 @@ namespace Furria.Infrastructure.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_group");
+
+                    b.HasIndex("GroupKindId")
+                        .HasDatabaseName("ix_group_group_kind_id");
 
                     b.HasIndex("Name")
                         .HasDatabaseName("ix_group_name_lookup");
@@ -590,6 +629,51 @@ namespace Furria.Infrastructure.Migrations
                         {
                             t.HasCheckConstraint("ck_group_admin_period", "until_on IS NULL OR until_on >= since_on");
                         });
+                });
+
+            modelBuilder.Entity("Furria.Core.Groups.GroupKind", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly?>("ArchivedOn")
+                        .HasColumnType("date")
+                        .HasColumnName("archived_on");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("name")
+                        .UseCollation("de-DE-x-icu");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_group_kind");
+
+                    b.HasIndex("Name")
+                        .HasDatabaseName("ix_group_kind_name_lookup");
+
+                    b.ToTable("group_kind", (string)null);
                 });
 
             modelBuilder.Entity("Furria.Core.Groups.GroupMembership", b =>
@@ -1391,6 +1475,17 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Person");
 
                     b.Navigation("Venue");
+                });
+
+            modelBuilder.Entity("Furria.Core.Groups.Group", b =>
+                {
+                    b.HasOne("Furria.Core.Groups.GroupKind", "GroupKind")
+                        .WithMany()
+                        .HasForeignKey("GroupKindId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_group_group_kind_group_kind_id");
+
+                    b.Navigation("GroupKind");
                 });
 
             modelBuilder.Entity("Furria.Core.Groups.GroupAdmin", b =>

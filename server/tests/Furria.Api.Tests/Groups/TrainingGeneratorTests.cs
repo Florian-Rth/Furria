@@ -14,7 +14,7 @@ public sealed class TrainingGeneratorTests
     private static readonly TimeOnly EighteenThirty = new(18, 30);
 
     [Fact]
-    public void Should_ReturnNothing_When_TheGruppeStatesNoRhythm()
+    public void Should_ReturnNothing_When_TheGroupStatesNoRhythm()
     {
         var expanded = TrainingGenerator.Expand(
             [],
@@ -74,7 +74,7 @@ public sealed class TrainingGeneratorTests
     }
 
     [Fact]
-    public void Should_OrderByInstant_When_TheGruppeTrainsTwiceAWeek()
+    public void Should_OrderByInstant_When_TheGroupTrainsTwiceAWeek()
     {
         var expanded = TrainingGenerator.Expand(
             [Thursday(), Tuesday()],
@@ -141,7 +141,7 @@ public sealed class TrainingGeneratorTests
     }
 
     [Fact]
-    public void Should_CarryTheOrt_When_TheSlotNamesOne()
+    public void Should_CarryTheVenue_When_TheSlotNamesOne()
     {
         var expanded = TrainingGenerator.Expand(
             [Tuesday()],

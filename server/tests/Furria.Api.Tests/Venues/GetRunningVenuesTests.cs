@@ -23,7 +23,7 @@ public sealed class GetRunningVenuesTests
     }
 
     [Fact]
-    public async Task Should_ListTheOrteInGermanNameOrder_When_AnAffiliatedPersonReadsThePicker()
+    public async Task Should_ListTheVenuesInGermanNameOrder_When_AnAffiliatedPersonReadsThePicker()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -54,7 +54,7 @@ public sealed class GetRunningVenuesTests
     }
 
     [Fact]
-    public async Task Should_OmitTheOrt_When_ItIsArchived()
+    public async Task Should_OmitTheVenue_When_ItIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -84,7 +84,7 @@ public sealed class GetRunningVenuesTests
     }
 
     [Fact]
-    public async Task Should_ListTheOrte_When_TheCallerIsTiedToTheVereinByAnOffeneZugehoerigkeitOnly()
+    public async Task Should_ListTheVenues_When_TheCallerIsTiedToTheClubByAnOpenGroupMembershipOnly()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -147,7 +147,7 @@ public sealed class GetRunningVenuesTests
     }
 
     [Fact]
-    public async Task Should_ListTheOrte_When_TheCallerOnlyAdministersEineGruppe()
+    public async Task Should_ListTheVenues_When_TheCallerOnlyAdministersAGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

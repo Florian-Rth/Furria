@@ -17,7 +17,7 @@ public sealed class FeeReductionPersistenceTests
     }
 
     [Fact]
-    public async Task Should_RoundTripBasisAndSpan_When_ABeitragsermaessigungIsRecorded()
+    public async Task Should_RoundTripBasisAndSpan_When_AFeeReductionIsRecorded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -45,7 +45,7 @@ public sealed class FeeReductionPersistenceTests
     }
 
     [Fact]
-    public async Task Should_RejectTheBasis_When_ItNamesNoKnownGrund()
+    public async Task Should_RejectTheBasis_When_ItNamesNoKnownBasis()
     {
         var ct = TestContext.Current.CancellationToken;
 

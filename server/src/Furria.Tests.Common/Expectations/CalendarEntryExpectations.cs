@@ -23,7 +23,7 @@ public sealed class CalendarEntryExpectations
                     await dbContext
                         .CalendarEntries.AsNoTracking()
                         .AnyAsync(row => row.Id == _calendarEntryId, ct),
-                    $"Expected no Kalendereintrag with id {_calendarEntryId}."
+                    $"Expected no CalendarEntry with id {_calendarEntryId}."
                 )
         );
 
@@ -88,13 +88,13 @@ public sealed class CalendarEntryExpectations
                 Assert.Equal(venueId, (await SingleAsync(dbContext, ct)).VenueId)
         );
 
-    public Expected ToCarryMitwirkendeGruppen(params int[] groupIds) =>
+    public Expected ToCarryParticipatingGroups(params int[] groupIds) =>
         _expected.Enqueue(
             async (dbContext, ct) =>
                 Assert.Equal([.. groupIds.Order()], await ParticipatingGroupIdsAsync(dbContext, ct))
         );
 
-    public Expected ToCarryNoMitwirkendeGruppe() =>
+    public Expected ToCarryNoParticipatingGroup() =>
         _expected.Enqueue(
             async (dbContext, ct) => Assert.Empty(await ParticipatingGroupIdsAsync(dbContext, ct))
         );

@@ -23,7 +23,7 @@ public sealed class GroupKindExpectations
                     await dbContext
                         .GroupKinds.AsNoTracking()
                         .AnyAsync(row => row.Id == _groupKindId, ct),
-                    $"Expected no Gruppenart with id {_groupKindId}."
+                    $"Expected no GroupKind with id {_groupKindId}."
                 )
         );
 

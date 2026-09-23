@@ -47,7 +47,7 @@ public sealed class GroupTrainingSlotSetExpectations
                                 && slot.VenueId == venueId,
                             ct
                         ),
-                    $"Expected a Trainingsslot on {weekday} at {startsAt} for Gruppe {_groupId}."
+                    $"Expected a TrainingSlot on {weekday} at {startsAt} for Group {_groupId}."
                 )
         );
 }

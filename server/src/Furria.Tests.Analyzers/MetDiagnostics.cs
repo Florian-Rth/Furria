@@ -7,6 +7,7 @@ namespace Furria.Tests.Analyzers;
 internal static class MetDiagnostics
 {
     private const string Category = "TestInfrastructure";
+    private const string LoggingCategory = "Logging";
 
     public static readonly DiagnosticDescriptor NoMockingFramework = Create(
         "MET001",
@@ -50,12 +51,38 @@ internal static class MetDiagnostics
         "Alias \"{0}\" is referenced via {1} but never declared by an Add* builder call in the test class"
     );
 
-    private static DiagnosticDescriptor Create(string id, string title, string messageFormat) =>
+    public static readonly DiagnosticDescriptor NoStaticSerilogLog = Create(
+        "MET008",
+        "No static Serilog Log in production code",
+        "'Serilog.Log.{0}' is banned in production code; inject ILogger<T> instead",
+        LoggingCategory
+    );
+
+    public static readonly DiagnosticDescriptor NoConsoleOutput = Create(
+        "MET009",
+        "No console output in production code",
+        "'Console.{0}' is banned in production code; write a log event through ILogger<T> instead",
+        LoggingCategory
+    );
+
+    public static readonly DiagnosticDescriptor LogTemplatePlaceholder = Create(
+        "MET010",
+        "Log placeholders are PascalCase and name no personal data",
+        "Log placeholder '{0}' {1}",
+        LoggingCategory
+    );
+
+    private static DiagnosticDescriptor Create(
+        string id,
+        string title,
+        string messageFormat,
+        string category = Category
+    ) =>
         new(
             id,
             title,
             messageFormat,
-            Category,
+            category,
             DiagnosticSeverity.Warning,
             isEnabledByDefault: true
         );

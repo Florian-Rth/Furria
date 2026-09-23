@@ -13,7 +13,7 @@ public sealed class GroupKindService
 {
     private const int NoGroupKindId = 0;
     private const string UnknownKindMessage = "Diese Gruppenart gibt es nicht.";
-    private const string DuplicateNameMessage = WriteConflictMessages.DuplicateGruppenart;
+    private const string DuplicateNameMessage = WriteConflictMessages.DuplicateGroupKind;
     private const string ArchivedKindMessage =
         "Eine archivierte Gruppenart kann nicht bearbeitet werden.";
     private const string AlreadyArchivedMessage = "Diese Gruppenart ist bereits archiviert.";

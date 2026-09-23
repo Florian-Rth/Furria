@@ -54,7 +54,7 @@ public sealed class GetMembersTests
     }
 
     [Fact]
-    public async Task Should_ContainHer_When_APersonOnlyBelongsToAGruppe()
+    public async Task Should_ContainHer_When_APersonOnlyBelongsToAGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -95,7 +95,7 @@ public sealed class GetMembersTests
     }
 
     [Fact]
-    public async Task Should_ContainNeitherOfThem_When_APersonLeftTheVereinOrOnlyBuysTickets()
+    public async Task Should_ContainNeitherOfThem_When_APersonLeftTheClubOrOnlyBuysTickets()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -127,7 +127,7 @@ public sealed class GetMembersTests
     }
 
     [Fact]
-    public async Task Should_ReportBeendet_When_AFormerMitgliedStillDancesInAGruppe()
+    public async Task Should_ReportEnded_When_AFormerMemberStillDancesInAGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -165,7 +165,7 @@ public sealed class GetMembersTests
     }
 
     [Fact]
-    public async Task Should_ReportRuht_When_TheRunningMitgliedschaftPausesThisSession()
+    public async Task Should_ReportPaused_When_TheRunningMembershipPausesThisSession()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -196,7 +196,7 @@ public sealed class GetMembersTests
     }
 
     [Fact]
-    public async Task Should_ListTheRunningRolle_When_APersonHoldsOne()
+    public async Task Should_ListTheRunningRole_When_APersonHoldsOne()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -223,9 +223,9 @@ public sealed class GetMembersTests
             result.Members,
             member => member.PersonId == ctx.Identity.People.IdOf("ilka")
         );
-        var gruppenpflege = Assert.Single(ilka.Roles);
-        Assert.Equal(ctx.Roles.Roles.IdOf("gruppenpflege"), gruppenpflege.RoleId);
-        Assert.Equal("Gruppenpflege", gruppenpflege.Name);
+        var groupCare = Assert.Single(ilka.Roles);
+        Assert.Equal(ctx.Roles.Roles.IdOf("gruppenpflege"), groupCare.RoleId);
+        Assert.Equal("Gruppenpflege", groupCare.Name);
         Assert.Contains(
             result.Members,
             member => member.PersonId == ctx.Identity.BootstrapAdmin.PersonId
@@ -233,7 +233,7 @@ public sealed class GetMembersTests
     }
 
     [Fact]
-    public async Task Should_OmitTheGruppe_When_TheZugehoerigkeitEndedOrTheGruppeIsArchived()
+    public async Task Should_OmitTheGroup_When_TheGroupMembershipEndedOrTheGroupIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -287,7 +287,7 @@ public sealed class GetMembersTests
     }
 
     [Fact]
-    public async Task Should_OmitTheRolle_When_TheInhaberschaftEndedOrTheRolleIsArchived()
+    public async Task Should_OmitTheRole_When_TheRoleHoldingEndedOrTheRoleIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -340,12 +340,12 @@ public sealed class GetMembersTests
             result.Members,
             member => member.PersonId == ctx.Identity.People.IdOf("ilka")
         );
-        var gruppenpflege = Assert.Single(ilka.Roles);
-        Assert.Equal(ctx.Roles.Roles.IdOf("gruppenpflege"), gruppenpflege.RoleId);
+        var groupCare = Assert.Single(ilka.Roles);
+        Assert.Equal(ctx.Roles.Roles.IdOf("gruppenpflege"), groupCare.RoleId);
     }
 
     [Fact]
-    public async Task Should_NameEachGruppeAndRolleOnce_When_ATieEndedAndANewOneStartedToday()
+    public async Task Should_NameEachGroupAndRoleOnce_When_ATieEndedAndANewOneStartedToday()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -404,12 +404,12 @@ public sealed class GetMembersTests
         );
         var tanzgarde = Assert.Single(paula.Groups);
         Assert.Equal(ctx.Groups.Groups.IdOf("tanzgarde"), tanzgarde.GroupId);
-        var zeugwartin = Assert.Single(paula.Roles);
-        Assert.Equal(ctx.Roles.Roles.IdOf("zeugwartin"), zeugwartin.RoleId);
+        var equipmentWarden = Assert.Single(paula.Roles);
+        Assert.Equal(ctx.Roles.Roles.IdOf("zeugwartin"), equipmentWarden.RoleId);
     }
 
     [Fact]
-    public async Task Should_SortGruppenAndRollenByName_When_APersonCarriesSeveral()
+    public async Task Should_SortGroupsAndRolesByName_When_APersonCarriesSeveral()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

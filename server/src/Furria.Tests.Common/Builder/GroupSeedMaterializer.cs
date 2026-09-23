@@ -61,7 +61,7 @@ internal static class GroupSeedMaterializer
                 Description = intent.Description,
                 IsRecruiting = intent.IsRecruiting,
                 ArchivedOn = intent.ArchivedOn,
-                GroupKindId = OptionalId(groupKindIds, intent.GroupKindAlias, "Gruppenart"),
+                GroupKindId = OptionalId(groupKindIds, intent.GroupKindAlias, "GroupKind"),
                 FoundedYear = intent.FoundedYear,
                 Tone = intent.Tone,
             },
@@ -99,7 +99,7 @@ internal static class GroupSeedMaterializer
             intent => intent.Alias,
             intent => new GroupMembership
             {
-                GroupId = SeedAliases.RequireId(groupIds, intent.GroupAlias, "Gruppe"),
+                GroupId = SeedAliases.RequireId(groupIds, intent.GroupAlias, "Group"),
                 PersonId = SeedAliases.RequireId(personIds, intent.PersonAlias, "Person"),
                 JoinedOn = intent.JoinedOn,
                 LeftOn = intent.LeftOn,
@@ -132,7 +132,7 @@ internal static class GroupSeedMaterializer
             intent => intent.Alias,
             intent => new GroupAdmin
             {
-                GroupId = SeedAliases.RequireId(groupIds, intent.GroupAlias, "Gruppe"),
+                GroupId = SeedAliases.RequireId(groupIds, intent.GroupAlias, "Group"),
                 PersonId = SeedAliases.RequireId(personIds, intent.PersonAlias, "Person"),
                 Function = intent.Function,
                 SinceOn = intent.SinceOn,

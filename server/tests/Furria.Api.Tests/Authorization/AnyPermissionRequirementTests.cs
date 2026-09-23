@@ -54,7 +54,7 @@ public sealed class AnyPermissionRequirementTests
     }
 
     [Fact]
-    public async Task Should_Refuse_When_TheCallerHoldsNoBerechtigungAtAll()
+    public async Task Should_Refuse_When_TheCallerHoldsNoPermissionAtAll()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

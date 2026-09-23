@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Furria.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260922092914_GruppenartOhnePlatz")]
-    partial class GruppenartOhnePlatz
+    [Migration("20260922092914_GroupKindWithoutSortOrder")]
+    partial class GroupKindWithoutSortOrder
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

@@ -23,7 +23,7 @@ public sealed class MembershipExpectations
                     await dbContext
                         .Memberships.AsNoTracking()
                         .AnyAsync(row => row.Id == _membershipId, ct),
-                    $"Expected no Mitgliedschaft with id {_membershipId}."
+                    $"Expected no Membership with id {_membershipId}."
                 )
         );
 

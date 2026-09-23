@@ -29,7 +29,7 @@ public sealed class EndKeyHoldingTests
     }
 
     [Fact]
-    public async Task Should_StampDenRueckgabetag_When_DerSchluesselZurueckgenommenWird()
+    public async Task Should_StampTheReturnDate_When_TheKeyIsReturned()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -62,7 +62,7 @@ public sealed class EndKeyHoldingTests
     }
 
     [Fact]
-    public async Task Should_ReturnValidation_When_DieRueckgabeVorDerAusgabeLiegt()
+    public async Task Should_ReturnValidation_When_TheReturnComesBeforeTheIssuance()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -94,7 +94,7 @@ public sealed class EndKeyHoldingTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_DerSchluesselSchonZurueckIst()
+    public async Task Should_ReturnConflict_When_TheKeyIsAlreadyBack()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -132,7 +132,7 @@ public sealed class EndKeyHoldingTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_DenSchluesselNichtGibt()
+    public async Task Should_ReturnNotFound_When_TheKeyDoesNotExist()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);

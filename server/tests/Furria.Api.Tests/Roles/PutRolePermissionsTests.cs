@@ -118,7 +118,7 @@ public sealed class PutRolePermissionsTests
     }
 
     [Fact]
-    public async Task Should_LockHerOutImmediately_When_AManagerDropsRolesManageFromHerOwnRolle()
+    public async Task Should_LockHerOutImmediately_When_AManagerDropsRolesManageFromHerOwnRole()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -149,7 +149,7 @@ public sealed class PutRolePermissionsTests
     public async Task Should_ReturnBadRequest_When_AKeyIsNotInTheCatalogue()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithGruppenpflegeAsync(ct);
+        var ctx = await BuildWithGroupCareAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var response = await SetKeysAsync(
@@ -170,7 +170,7 @@ public sealed class PutRolePermissionsTests
     public async Task Should_ReturnBadRequest_When_AKeyIsListedTwice()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithGruppenpflegeAsync(ct);
+        var ctx = await BuildWithGroupCareAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var response = await SetKeysAsync(
@@ -188,7 +188,7 @@ public sealed class PutRolePermissionsTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheRolleIsUnknown()
+    public async Task Should_ReturnNotFound_When_TheRoleIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
@@ -200,7 +200,7 @@ public sealed class PutRolePermissionsTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheRolleIsArchived()
+    public async Task Should_ReturnConflict_When_TheRoleIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -283,7 +283,7 @@ public sealed class PutRolePermissionsTests
     public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithGruppenpflegeAsync(ct);
+        var ctx = await BuildWithGroupCareAsync(ct);
 
         var response = await SetKeysAsync(
             _fixture.CreateClient(),
@@ -298,7 +298,7 @@ public sealed class PutRolePermissionsTests
             .AssertAsync(ct);
     }
 
-    private Task<SeededContext> BuildWithGruppenpflegeAsync(CancellationToken ct) =>
+    private Task<SeededContext> BuildWithGroupCareAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder =>
                 builder.Roles(roles =>

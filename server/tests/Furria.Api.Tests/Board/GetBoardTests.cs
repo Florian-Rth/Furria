@@ -27,7 +27,7 @@ public sealed class GetBoardTests
         client.GETAsync<GetBoard, GetBoardResponse>();
 
     [Fact]
-    public async Task Should_ReadTheFunktionenInBandOrder_When_TheSortOrderDisagreesWithTheName()
+    public async Task Should_ReadTheOfficesInBandOrder_When_TheSortOrderDisagreesWithTheName()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -101,7 +101,7 @@ public sealed class GetBoardTests
     }
 
     [Fact]
-    public async Task Should_ReadBothSitze_When_TwoPersonsShareOneFunktion()
+    public async Task Should_ReadBothSeats_When_TwoPersonsShareOneOffice()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -135,7 +135,7 @@ public sealed class GetBoardTests
     }
 
     [Fact]
-    public async Task Should_NameTheImpliedRolle_When_TheFunktionCarriesOne()
+    public async Task Should_NameTheImpliedRole_When_TheOfficeCarriesOne()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -160,7 +160,7 @@ public sealed class GetBoardTests
     }
 
     [Fact]
-    public async Task Should_ReadTheArchivedFunktion_When_ItStillCarriesItsGeschichte()
+    public async Task Should_ReadTheArchivedOffice_When_ItStillCarriesItsHistory()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -191,7 +191,7 @@ public sealed class GetBoardTests
     }
 
     [Fact]
-    public async Task Should_ReadAnEmptyBoard_When_TheClubNeverRecordedAFunktion()
+    public async Task Should_ReadAnEmptyBoard_When_TheClubNeverRecordedAnOffice()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);

@@ -23,7 +23,7 @@ public sealed class GetPublicGroupsTests
     }
 
     [Fact]
-    public async Task Should_CarryTheGruppeWithItsOpenness_When_AnAnonymousCallerReadsTheList()
+    public async Task Should_CarryTheGroupWithItsOpenness_When_AnAnonymousCallerReadsTheList()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -76,7 +76,7 @@ public sealed class GetPublicGroupsTests
     }
 
     [Fact]
-    public async Task Should_OmitTheGruppe_When_ItIsArchived()
+    public async Task Should_OmitTheGroup_When_ItIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -107,7 +107,7 @@ public sealed class GetPublicGroupsTests
     }
 
     [Fact]
-    public async Task Should_SortTheGruppenAsGerman_When_TheVerzeichnisIsRead()
+    public async Task Should_SortTheGroupsAsGerman_When_TheListIsRead()
     {
         var ct = TestContext.Current.CancellationToken;
         await _fixture.BuildAsync(

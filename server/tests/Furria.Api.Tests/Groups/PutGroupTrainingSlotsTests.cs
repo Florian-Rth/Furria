@@ -28,7 +28,7 @@ public sealed class PutGroupTrainingSlotsTests
     }
 
     [Fact]
-    public async Task Should_WriteTheRhythmus_When_TheGruppenAdminStatesTwoSlots()
+    public async Task Should_WriteTheRhythm_When_TheGroupAdminStatesTwoSlots()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -88,7 +88,7 @@ public sealed class PutGroupTrainingSlotsTests
     }
 
     [Fact]
-    public async Task Should_ReplaceTheWholeList_When_TheGruppenAdminSavesAgain()
+    public async Task Should_ReplaceTheWholeList_When_TheGroupAdminSavesAgain()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -144,7 +144,7 @@ public sealed class PutGroupTrainingSlotsTests
     }
 
     [Fact]
-    public async Task Should_ClearTheRhythmus_When_TheGruppenAdminSendsAnEmptyList()
+    public async Task Should_ClearTheRhythm_When_TheGroupAdminSendsAnEmptyList()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -231,7 +231,7 @@ public sealed class PutGroupTrainingSlotsTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheOrtIsUnknown()
+    public async Task Should_ReturnNotFound_When_TheVenueIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -274,7 +274,7 @@ public sealed class PutGroupTrainingSlotsTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheOrtIsArchived()
+    public async Task Should_ReturnConflict_When_TheVenueIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -325,7 +325,7 @@ public sealed class PutGroupTrainingSlotsTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheGruppeIsArchived()
+    public async Task Should_ReturnConflict_When_TheGroupIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -373,7 +373,7 @@ public sealed class PutGroupTrainingSlotsTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheGruppeIsUnknown()
+    public async Task Should_ReturnNotFound_When_TheGroupIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -459,7 +459,7 @@ public sealed class PutGroupTrainingSlotsTests
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerOnlyBelongsToTheGruppe()
+    public async Task Should_ReturnForbidden_When_TheCallerOnlyBelongsToTheGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

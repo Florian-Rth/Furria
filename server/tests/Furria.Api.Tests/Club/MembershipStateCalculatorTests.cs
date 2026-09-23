@@ -11,7 +11,7 @@ public sealed class MembershipStateCalculatorTests
     private static readonly IReadOnlyCollection<SessionSpan> NoPauses = [];
 
     [Fact]
-    public void Should_BeNone_When_ThePersonNeverHeldAMitgliedschaft()
+    public void Should_BeNone_When_ThePersonNeverHeldAMembership()
     {
         Assert.Equal(MembershipState.None, Resolve([], NoPauses));
     }
@@ -62,7 +62,7 @@ public sealed class MembershipStateCalculatorTests
     }
 
     [Fact]
-    public void Should_BePaused_When_ARuhezeitCoversTheRunningSession()
+    public void Should_BePaused_When_AMembershipPauseCoversTheRunningSession()
     {
         Assert.Equal(
             MembershipState.Paused,
@@ -74,7 +74,7 @@ public sealed class MembershipStateCalculatorTests
     }
 
     [Fact]
-    public void Should_BePaused_When_TheRuhezeitIsOpenEnded()
+    public void Should_BePaused_When_TheMembershipPauseIsOpenEnded()
     {
         Assert.Equal(
             MembershipState.Paused,
@@ -83,7 +83,7 @@ public sealed class MembershipStateCalculatorTests
     }
 
     [Fact]
-    public void Should_BeActive_When_TheRuhezeitEndedWithTheLastSession()
+    public void Should_BeActive_When_TheMembershipPauseEndedWithTheLastSession()
     {
         Assert.Equal(
             MembershipState.Active,
@@ -95,7 +95,7 @@ public sealed class MembershipStateCalculatorTests
     }
 
     [Fact]
-    public void Should_BeEnded_When_ARuhezeitStillCoversTheSessionButNoPeriodRuns()
+    public void Should_BeEnded_When_AMembershipPauseStillCoversTheSessionButNoPeriodRuns()
     {
         Assert.Equal(
             MembershipState.Ended,

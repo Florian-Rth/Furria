@@ -31,7 +31,7 @@ public sealed class PutGroupInfoTests
     }
 
     [Fact]
-    public async Task Should_WriteDescriptionAndOpenness_When_TheGruppenAdminSaves()
+    public async Task Should_WriteDescriptionAndOpenness_When_TheGroupAdminSaves()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -73,7 +73,7 @@ public sealed class PutGroupInfoTests
     }
 
     [Fact]
-    public async Task Should_ClearTheDescription_When_TheGruppenAdminSavesAnEmptyText()
+    public async Task Should_ClearTheDescription_When_TheGroupAdminSavesAnEmptyText()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -113,7 +113,7 @@ public sealed class PutGroupInfoTests
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerOnlyBelongsToTheGruppe()
+    public async Task Should_ReturnForbidden_When_TheCallerOnlyBelongsToTheGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -151,7 +151,7 @@ public sealed class PutGroupInfoTests
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerAdministersAnotherGruppe()
+    public async Task Should_ReturnForbidden_When_TheCallerAdministersAnotherGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -233,7 +233,7 @@ public sealed class PutGroupInfoTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheGruppeIsUnknown()
+    public async Task Should_ReturnNotFound_When_TheGroupIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -271,7 +271,7 @@ public sealed class PutGroupInfoTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheGruppeIsArchived()
+    public async Task Should_ReturnConflict_When_TheGroupIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -386,7 +386,7 @@ public sealed class PutGroupInfoTests
     }
 
     [Fact]
-    public async Task Should_WriteTheSteckbrief_When_TheGruppenAdminNamesArtJahrUndFarbe()
+    public async Task Should_WriteTheProfile_When_TheGroupAdminNamesKindYearAndTone()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -429,7 +429,7 @@ public sealed class PutGroupInfoTests
     }
 
     [Fact]
-    public async Task Should_ClearTheSteckbrief_When_TheGruppenAdminUnsetsArtJahrUndFarbe()
+    public async Task Should_ClearTheProfile_When_TheGroupAdminUnsetsKindYearAndTone()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -479,7 +479,7 @@ public sealed class PutGroupInfoTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheGruppenartIsUnknown()
+    public async Task Should_ReturnNotFound_When_TheGroupKindIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -517,7 +517,7 @@ public sealed class PutGroupInfoTests
     }
 
     [Fact]
-    public async Task Should_RefuseTheYear_When_TheGruendungLiesInTheFuture()
+    public async Task Should_RefuseTheYear_When_TheFoundingLiesInTheFuture()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -560,7 +560,7 @@ public sealed class PutGroupInfoTests
     }
 
     [Fact]
-    public async Task Should_ReturnBadRequest_When_TheGruendungsjahrIsBeforeTheColumnFloor()
+    public async Task Should_ReturnBadRequest_When_TheFoundedYearIsBeforeTheColumnFloor()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -603,7 +603,7 @@ public sealed class PutGroupInfoTests
     }
 
     [Fact]
-    public async Task Should_ReturnBadRequest_When_TheGruendungsjahrLiesAboveTheColumnCeiling()
+    public async Task Should_ReturnBadRequest_When_TheFoundedYearLiesAboveTheColumnCeiling()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -646,7 +646,7 @@ public sealed class PutGroupInfoTests
     }
 
     [Fact]
-    public async Task Should_RefuseTheGruppenart_When_SieArchiviertIst()
+    public async Task Should_RefuseTheGroupKind_When_ItIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

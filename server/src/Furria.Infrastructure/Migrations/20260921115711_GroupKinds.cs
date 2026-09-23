@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Furria.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class Gruppenarten : Migration
+    public partial class GroupKinds : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

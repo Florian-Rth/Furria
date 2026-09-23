@@ -28,7 +28,7 @@ public sealed class PostGroupAdminTests
     }
 
     [Fact]
-    public async Task Should_OpenTheErnennung_When_TheGruppenAdminAppointsAPerson()
+    public async Task Should_OpenTheTenure_When_TheGroupAdminAppointsAPerson()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -73,7 +73,7 @@ public sealed class PostGroupAdminTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_ThePersonIsAlreadyGruppenAdmin()
+    public async Task Should_ReturnConflict_When_ThePersonIsAlreadyGroupAdmin()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -127,7 +127,7 @@ public sealed class PostGroupAdminTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheErnennungOverlapsAnEndedOne()
+    public async Task Should_ReturnConflict_When_TheTenureOverlapsAnEndedOne()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -181,7 +181,7 @@ public sealed class PostGroupAdminTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheGruppeIsUnknown()
+    public async Task Should_ReturnNotFound_When_TheGroupIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -260,7 +260,7 @@ public sealed class PostGroupAdminTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheGruppeIsArchived()
+    public async Task Should_ReturnConflict_When_TheGroupIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -308,7 +308,7 @@ public sealed class PostGroupAdminTests
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerOnlyBelongsToTheGruppe()
+    public async Task Should_ReturnForbidden_When_TheCallerOnlyBelongsToTheGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -401,7 +401,7 @@ public sealed class PostGroupAdminTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheErnennungStartsOnTheDayTheLastOneEnded()
+    public async Task Should_ReturnConflict_When_TheTenureStartsOnTheDayTheLastOneEnded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -451,7 +451,7 @@ public sealed class PostGroupAdminTests
     }
 
     [Fact]
-    public async Task Should_OpenTheErnennung_When_ItStartsTheDayAfterTheLastOneEnded()
+    public async Task Should_OpenTheTenure_When_ItStartsTheDayAfterTheLastOneEnded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -503,7 +503,7 @@ public sealed class PostGroupAdminTests
     }
 
     [Fact]
-    public async Task Should_OpenTheErnennung_When_ThePersonIsNeitherMitgliedNorInTheGruppe()
+    public async Task Should_OpenTheTenure_When_ThePersonIsNeitherMemberNorInTheGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -548,7 +548,7 @@ public sealed class PostGroupAdminTests
     }
 
     [Fact]
-    public async Task Should_OpenTheErnennung_When_ItStartsInTheFuture()
+    public async Task Should_OpenTheTenure_When_ItStartsInTheFuture()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -592,7 +592,7 @@ public sealed class PostGroupAdminTests
     }
 
     [Fact]
-    public async Task Should_ReturnBadRequest_When_TheFunktionIsTooLong()
+    public async Task Should_ReturnBadRequest_When_TheFunctionIsTooLong()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

@@ -28,7 +28,7 @@ public sealed class GroupKindSetExpectations
                 )
         );
 
-    public Expected ToCountGruppenOf(int groupKindId, int count) =>
+    public Expected ToCountGroupsOf(int groupKindId, int count) =>
         _expected.Enqueue(
             async (dbContext, ct) =>
                 Assert.Equal(

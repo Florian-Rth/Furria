@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Furria.Infrastructure.Identity;
@@ -23,20 +24,26 @@ public sealed class BootstrapAdminSeeder : IHostedService
 
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly BootstrapAdminOptions _options;
+    private readonly ILogger<BootstrapAdminSeeder> _logger;
 
     public BootstrapAdminSeeder(
         IServiceScopeFactory scopeFactory,
-        IOptions<BootstrapAdminOptions> options
+        IOptions<BootstrapAdminOptions> options,
+        ILogger<BootstrapAdminSeeder> logger
     )
     {
         _scopeFactory = scopeFactory;
         _options = options.Value;
+        _logger = logger;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         if (_options.Email.Length == 0 || _options.Password.Length == 0)
+        {
+            _logger.LogInformation("Bootstrap admin not configured, seeding skipped");
             return;
+        }
 
         await using var scope = _scopeFactory.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -92,7 +99,14 @@ public sealed class BootstrapAdminSeeder : IHostedService
 
         var created = await userManager.CreateAsync(account, _options.Password);
         if (created.Succeeded)
+        {
+            _logger.LogInformation(
+                "Bootstrap admin account {AccountId} created for {Email}",
+                account.Id,
+                _options.Email
+            );
             return;
+        }
 
         await transaction.RollbackAsync(ct);
         throw new InvalidOperationException(
@@ -100,7 +114,7 @@ public sealed class BootstrapAdminSeeder : IHostedService
         );
     }
 
-    private static async Task ReopenBootstrapAccountAsync(
+    private async Task ReopenBootstrapAccountAsync(
         AppDbContext dbContext,
         Account account,
         CancellationToken ct
@@ -111,6 +125,7 @@ public sealed class BootstrapAdminSeeder : IHostedService
 
         account.IsDisabled = false;
         await dbContext.SaveChangesAsync(ct);
+        _logger.LogInformation("Bootstrap admin account {AccountId} re-enabled", account.Id);
     }
 
     private async Task EnsureAdminRoleAsync(
@@ -152,6 +167,7 @@ public sealed class BootstrapAdminSeeder : IHostedService
 
         dbContext.Roles.Add(role);
         await dbContext.SaveChangesAsync(ct);
+        _logger.LogInformation("Admin role {RoleId} created", role.Id);
     }
 
     private async Task ReconcileAdminRoleAsync(
@@ -167,7 +183,7 @@ public sealed class BootstrapAdminSeeder : IHostedService
         await EnsureAdminRoleIsHeldAsync(dbContext, userManager, adminRoleId, today, ct);
     }
 
-    private static async Task ReopenAdminRoleAsync(
+    private async Task ReopenAdminRoleAsync(
         AppDbContext dbContext,
         int adminRoleId,
         CancellationToken ct
@@ -179,9 +195,10 @@ public sealed class BootstrapAdminSeeder : IHostedService
 
         role.ArchivedOn = null;
         await dbContext.SaveChangesAsync(ct);
+        _logger.LogInformation("Admin role {RoleId} restored from archive", adminRoleId);
     }
 
-    private static async Task GrantEveryMissingKeyAsync(
+    private async Task GrantEveryMissingKeyAsync(
         AppDbContext dbContext,
         int adminRoleId,
         CancellationToken ct
@@ -200,6 +217,11 @@ public sealed class BootstrapAdminSeeder : IHostedService
             missing.Select(key => new RolePermission { RoleId = adminRoleId, PermissionKey = key })
         );
         await dbContext.SaveChangesAsync(ct);
+        _logger.LogInformation(
+            "Admin role {RoleId} granted {MissingPermissionCount} missing permissions",
+            adminRoleId,
+            missing.Count
+        );
     }
 
     private async Task EnsureAdminRoleIsHeldAsync(
@@ -220,15 +242,21 @@ public sealed class BootstrapAdminSeeder : IHostedService
         if (stillHeld)
             return;
 
+        var personId = await RequireBootstrapPersonIdAsync(userManager);
         dbContext.RoleHoldings.Add(
             new RoleHolding
             {
                 RoleId = adminRoleId,
-                PersonId = await RequireBootstrapPersonIdAsync(userManager),
+                PersonId = personId,
                 SinceOn = today,
             }
         );
         await dbContext.SaveChangesAsync(ct);
+        _logger.LogInformation(
+            "Admin role {RoleId} handed back to bootstrap person {PersonId}",
+            adminRoleId,
+            personId
+        );
     }
 
     private async Task<int> RequireBootstrapPersonIdAsync(UserManager<Account> userManager)
@@ -237,7 +265,7 @@ public sealed class BootstrapAdminSeeder : IHostedService
 
         return account?.PersonId
             ?? throw new InvalidOperationException(
-                $"The Admin Rolle cannot be seeded: no Account exists for {_options.Email}."
+                $"The Admin role cannot be seeded: no Account exists for {_options.Email}."
             );
     }
 

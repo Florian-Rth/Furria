@@ -13,7 +13,8 @@ public sealed class CalendarService
 {
     private const string UnknownEntryMessage = "Diesen Kalendereintrag gibt es nicht.";
     private const string NoResponseWantedMessage = "Dieser Eintrag fragt nicht nach einer Antwort.";
-    private const string DuplicateResponseMessage = WriteConflictMessages.DuplicateZusage;
+    private const string DuplicateResponseMessage =
+        WriteConflictMessages.DuplicateAttendanceResponse;
     private const string UnknownVenueMessage = "Diesen Ort gibt es nicht im Verzeichnis.";
     private const string ArchivedVenueMessage =
         "Ein archivierter Ort kann nicht mehr gewählt werden.";

@@ -32,7 +32,7 @@ public sealed class RestoreGroupKindTests
         );
 
     [Fact]
-    public async Task Should_LetTheGruppenartBackIntoTheBand_When_TheVerwaltungHoltSieZurueck()
+    public async Task Should_LetTheGroupKindBackIntoTheBand_When_TheManagerRestoresIt()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -56,7 +56,7 @@ public sealed class RestoreGroupKindTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_ARunningGruppenartTookTheNameMeanwhile()
+    public async Task Should_ReturnConflict_When_ARunningGroupKindTookTheNameMeanwhile()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -82,7 +82,7 @@ public sealed class RestoreGroupKindTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheGruppenartIsNotArchived()
+    public async Task Should_ReturnConflict_When_TheGroupKindIsNotArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -103,7 +103,7 @@ public sealed class RestoreGroupKindTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheGruppenartIsUnknown()
+    public async Task Should_ReturnNotFound_When_TheGroupKindIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);

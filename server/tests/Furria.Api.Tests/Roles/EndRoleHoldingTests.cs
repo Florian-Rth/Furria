@@ -45,10 +45,10 @@ public sealed class EndRoleHoldingTests
         );
 
     [Fact]
-    public async Task Should_CloseThePeriod_When_AManagerEndsTheInhaberschaft()
+    public async Task Should_CloseThePeriod_When_AManagerEndsTheRoleHolding()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithRunningInhaberschaftAsync(ct);
+        var ctx = await BuildWithRunningRoleHoldingAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var response = await EndHoldingAsync(
@@ -71,7 +71,7 @@ public sealed class EndRoleHoldingTests
     public async Task Should_CloseThePeriod_When_TheEndIsInTheFuture()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithRunningInhaberschaftAsync(ct);
+        var ctx = await BuildWithRunningRoleHoldingAsync(ct);
 
         var handsOverTomorrow = _fixture.Today.AddDays(1);
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
@@ -90,10 +90,10 @@ public sealed class EndRoleHoldingTests
     }
 
     [Fact]
-    public async Task Should_EndOnItsOwnStart_When_TheInhaberschaftLastedOneDay()
+    public async Task Should_EndOnItsOwnStart_When_TheRoleHoldingLastedOneDay()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithRunningInhaberschaftAsync(ct);
+        var ctx = await BuildWithRunningRoleHoldingAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var response = await EndHoldingAsync(
@@ -111,7 +111,7 @@ public sealed class EndRoleHoldingTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheInhaberschaftIsAlreadyEnded()
+    public async Task Should_ReturnConflict_When_TheRoleHoldingIsAlreadyEnded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -153,7 +153,7 @@ public sealed class EndRoleHoldingTests
     public async Task Should_ReturnUnprocessableEntity_When_TheEndPrecedesTheStart()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithRunningInhaberschaftAsync(ct);
+        var ctx = await BuildWithRunningRoleHoldingAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var response = await EndHoldingAsync(
@@ -173,10 +173,10 @@ public sealed class EndRoleHoldingTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheInhaberschaftIsUnknown()
+    public async Task Should_ReturnNotFound_When_TheRoleHoldingIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithRunningInhaberschaftAsync(ct);
+        var ctx = await BuildWithRunningRoleHoldingAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var response = await EndHoldingAsync(
@@ -190,7 +190,7 @@ public sealed class EndRoleHoldingTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheInhaberschaftBelongsToAnotherRolle()
+    public async Task Should_ReturnNotFound_When_TheRoleHoldingBelongsToAnotherRole()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -225,7 +225,7 @@ public sealed class EndRoleHoldingTests
     public async Task Should_ReturnBadRequest_When_TheRouteCarriesNoUsableId()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithRunningInhaberschaftAsync(ct);
+        var ctx = await BuildWithRunningRoleHoldingAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var response = await EndHoldingAsync(
@@ -282,7 +282,7 @@ public sealed class EndRoleHoldingTests
     public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithRunningInhaberschaftAsync(ct);
+        var ctx = await BuildWithRunningRoleHoldingAsync(ct);
 
         var response = await EndHoldingAsync(
             _fixture.CreateClient(),
@@ -298,7 +298,7 @@ public sealed class EndRoleHoldingTests
             .AssertAsync(ct);
     }
 
-    private Task<SeededContext> BuildWithRunningInhaberschaftAsync(CancellationToken ct) =>
+    private Task<SeededContext> BuildWithRunningRoleHoldingAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder =>
                 builder

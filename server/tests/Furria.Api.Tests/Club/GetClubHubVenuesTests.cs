@@ -36,7 +36,7 @@ public sealed class GetClubHubVenuesTests
     }
 
     [Fact]
-    public async Task Should_CarryNoOrte_When_TheClubHasRecordedNone()
+    public async Task Should_CarryNoVenues_When_TheClubHasRecordedNone()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -54,7 +54,7 @@ public sealed class GetClubHubVenuesTests
     }
 
     [Fact]
-    public async Task Should_ListEveryOrtBySortOrderThenGermanName_When_TheHubIsRead()
+    public async Task Should_ListEveryVenueBySortOrderThenGermanName_When_TheHubIsRead()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -81,7 +81,7 @@ public sealed class GetClubHubVenuesTests
     }
 
     [Fact]
-    public async Task Should_CarryAnEmptyHolderList_When_NobodyHoldsAKeyToThatOrt()
+    public async Task Should_CarryAnEmptyHolderList_When_NobodyHoldsAKeyToThatVenue()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -107,7 +107,7 @@ public sealed class GetClubHubVenuesTests
     }
 
     [Fact]
-    public async Task Should_LeaveOutASchluessel_When_TheHoldingEndedYesterday()
+    public async Task Should_LeaveOutAKeyHolding_When_TheHoldingEndedYesterday()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -142,7 +142,7 @@ public sealed class GetClubHubVenuesTests
     }
 
     [Fact]
-    public async Task Should_LeaveOutASchluessel_When_TheHoldingStartsTomorrow()
+    public async Task Should_LeaveOutAKeyHolding_When_TheHoldingStartsTomorrow()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -213,7 +213,7 @@ public sealed class GetClubHubVenuesTests
     }
 
     [Fact]
-    public async Task Should_OrderHoldersByGermanLastName_When_SeveralPeopleHoldAKeyToOneOrt()
+    public async Task Should_OrderHoldersByGermanLastName_When_SeveralPeopleHoldAKeyToOneVenue()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -248,7 +248,7 @@ public sealed class GetClubHubVenuesTests
     }
 
     [Fact]
-    public async Task Should_KeepTheHoldersOfEachOrtApart_When_TwoOrteAreHeldByDifferentPeople()
+    public async Task Should_KeepTheHoldersOfEachVenueApart_When_TwoVenuesAreHeldByDifferentPeople()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -283,7 +283,7 @@ public sealed class GetClubHubVenuesTests
     }
 
     [Fact]
-    public async Task Should_LeaveOutAnOrt_When_ErArchiviertIst()
+    public async Task Should_LeaveOutAVenue_When_ItIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
 

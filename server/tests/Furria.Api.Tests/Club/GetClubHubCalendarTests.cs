@@ -81,7 +81,7 @@ public sealed class GetClubHubCalendarTests
     }
 
     [Fact]
-    public async Task Should_CarryNoEintrag_When_TheKalenderIsEmpty()
+    public async Task Should_CarryNoEntry_When_TheCalendarIsEmpty()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -97,7 +97,7 @@ public sealed class GetClubHubCalendarTests
     }
 
     [Fact]
-    public async Task Should_PutTheRunningEintragFirst_When_OneIsUnderway()
+    public async Task Should_PutTheRunningEntryFirst_When_OneIsUnderway()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -167,7 +167,7 @@ public sealed class GetClubHubCalendarTests
     }
 
     [Fact]
-    public async Task Should_KeepAnEintragThatBeganEarlierToday_When_ItHasNotEndedYet()
+    public async Task Should_KeepAnEntryThatBeganEarlierToday_When_ItHasNotEndedYet()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -191,7 +191,7 @@ public sealed class GetClubHubCalendarTests
     }
 
     [Fact]
-    public async Task Should_LeaveOutAGruppenEintrag_When_TheGruppeOwnsItAtVereinsSichtbarkeit()
+    public async Task Should_LeaveOutAGroupEntry_When_TheGroupOwnsItAtClubVisibility()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -220,7 +220,7 @@ public sealed class GetClubHubCalendarTests
     }
 
     [Fact]
-    public async Task Should_NameTheOrt_When_TheEintragIsHeldSomewhere()
+    public async Task Should_NameTheVenue_When_TheEntryIsHeldSomewhere()
     {
         var ct = TestContext.Current.CancellationToken;
 

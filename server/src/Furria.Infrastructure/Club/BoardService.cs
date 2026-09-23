@@ -12,7 +12,7 @@ public sealed class BoardService
 {
     private const int NoBoardOfficeId = 0;
     private const string UnknownOfficeMessage = "Diese Vorstandsfunktion gibt es nicht.";
-    private const string DuplicateNameMessage = WriteConflictMessages.DuplicateVorstandsfunktion;
+    private const string DuplicateNameMessage = WriteConflictMessages.DuplicateBoardOffice;
     private const string ArchivedOfficeMessage =
         "Eine archivierte Vorstandsfunktion kann nicht bearbeitet werden.";
     private const string AlreadyArchivedMessage = "Diese Vorstandsfunktion ist bereits archiviert.";

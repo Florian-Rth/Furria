@@ -12,10 +12,10 @@ namespace Furria.Api.Tests.Groups;
 [Collection("Api")]
 public sealed class GetGroupCalendarTests
 {
-    private const string GardeTraining = "Training der Tanzgarde";
-    private const string Prunksitzung = "Prunksitzung";
-    private const string KinderProbe = "Probe der Kindergarde";
-    private const string Umzug = "Rosenmontagsumzug";
+    private const string DanceGuardTraining = "Training der Tanzgarde";
+    private const string GalaSession = "Prunksitzung";
+    private const string ChildrensRehearsal = "Probe der Kindergarde";
+    private const string Parade = "Rosenmontagsumzug";
     private const int UnknownGroupId = 999_999;
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
@@ -32,7 +32,7 @@ public sealed class GetGroupCalendarTests
         0,
         TimeSpan.Zero
     );
-    private static readonly DateTimeOffset AtThePrunksitzung = new(
+    private static readonly DateTimeOffset AtTheGalaSession = new(
         2027,
         2,
         6,
@@ -41,7 +41,7 @@ public sealed class GetGroupCalendarTests
         0,
         TimeSpan.Zero
     );
-    private static readonly DateTimeOffset AtTheKinderProbe = new(
+    private static readonly DateTimeOffset AtTheChildrensRehearsal = new(
         2027,
         1,
         22,
@@ -50,7 +50,7 @@ public sealed class GetGroupCalendarTests
         0,
         TimeSpan.Zero
     );
-    private static readonly DateTimeOffset AtTheUmzug = new(2027, 2, 10, 11, 0, 0, TimeSpan.Zero);
+    private static readonly DateTimeOffset AtTheParade = new(2027, 2, 10, 11, 0, 0, TimeSpan.Zero);
 
     private readonly ApiTestFixture _fixture;
 
@@ -60,79 +60,79 @@ public sealed class GetGroupCalendarTests
     }
 
     [Fact]
-    public async Task Should_CarryTheEigenenUndDieMitwirkenden_When_TheCallerIsInTheGruppe()
+    public async Task Should_CarryItsOwnAndParticipatingEntries_When_TheCallerIsInTheGroup()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildKalenderAsync(ct);
+        var ctx = await BuildCalendarAsync(ct);
 
         var result = await ReadAsync(ctx, "bea", Window(ctx.Groups.Groups.IdOf("tanzgarde")), ct);
 
-        Assert.Equal(new[] { GardeTraining, Prunksitzung }, TitlesOf(result));
+        Assert.Equal(new[] { DanceGuardTraining, GalaSession }, TitlesOf(result));
     }
 
     [Fact]
-    public async Task Should_CarryTheKalender_When_TheCallerOnlyAdministersTheGruppe()
+    public async Task Should_CarryTheCalendar_When_TheCallerOnlyAdministersTheGroup()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildKalenderAsync(ct);
+        var ctx = await BuildCalendarAsync(ct);
 
         var result = await ReadAsync(ctx, "chris", Window(ctx.Groups.Groups.IdOf("tanzgarde")), ct);
 
-        Assert.Equal(new[] { GardeTraining, Prunksitzung }, TitlesOf(result));
+        Assert.Equal(new[] { DanceGuardTraining, GalaSession }, TitlesOf(result));
     }
 
     [Fact]
-    public async Task Should_CarryTheKalender_When_TheCallerHoldsGroupsManage()
+    public async Task Should_CarryTheCalendar_When_TheCallerHoldsGroupsManage()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildKalenderAsync(ct);
+        var ctx = await BuildCalendarAsync(ct);
 
         var result = await ReadAsync(ctx, "ilka", Window(ctx.Groups.Groups.IdOf("tanzgarde")), ct);
 
-        Assert.Contains(Prunksitzung, TitlesOf(result));
+        Assert.Contains(GalaSession, TitlesOf(result));
     }
 
     [Fact]
-    public async Task Should_LeaveOutTheFremdenGruppeninternenEintrag_When_TheGruppeOnlyMitwirkt()
+    public async Task Should_LeaveOutAnotherGroupsInternalEntry_When_TheGroupOnlyParticipates()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildKalenderAsync(ct);
+        var ctx = await BuildCalendarAsync(ct);
 
         var result = await ReadAsync(ctx, "bea", Window(ctx.Groups.Groups.IdOf("tanzgarde")), ct);
 
-        Assert.DoesNotContain(KinderProbe, TitlesOf(result));
+        Assert.DoesNotContain(ChildrensRehearsal, TitlesOf(result));
     }
 
     [Fact]
-    public async Task Should_LeaveOutTheVereinsEintrag_When_DieGruppeNichtMitwirkt()
+    public async Task Should_LeaveOutTheClubEntry_When_TheGroupDoesNotParticipate()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildKalenderAsync(ct);
+        var ctx = await BuildCalendarAsync(ct);
 
         var result = await ReadAsync(ctx, "bea", Window(ctx.Groups.Groups.IdOf("tanzgarde")), ct);
 
-        Assert.DoesNotContain(Umzug, TitlesOf(result));
+        Assert.DoesNotContain(Parade, TitlesOf(result));
     }
 
     [Fact]
-    public async Task Should_NameTheMitwirkendeGruppe_When_TheEintragCarriesOne()
+    public async Task Should_NameTheParticipatingGroup_When_TheEntryCarriesOne()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildKalenderAsync(ct);
+        var ctx = await BuildCalendarAsync(ct);
 
         var result = await ReadAsync(ctx, "bea", Window(ctx.Groups.Groups.IdOf("tanzgarde")), ct);
 
-        var prunksitzung = result.Entries.Single(entry => entry.Title == Prunksitzung);
-        var participant = Assert.Single(prunksitzung.ParticipatingGroups);
+        var galaSession = result.Entries.Single(entry => entry.Title == GalaSession);
+        var participant = Assert.Single(galaSession.ParticipatingGroups);
         Assert.Equal(ctx.Groups.Groups.IdOf("tanzgarde"), participant.GroupId);
         Assert.Equal("Tanzgarde", participant.Name);
     }
 
     [Fact]
-    public async Task Should_NarrowTheFenster_When_AWindowIsGiven()
+    public async Task Should_NarrowTheResults_When_AWindowIsGiven()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildKalenderAsync(ct);
+        var ctx = await BuildCalendarAsync(ct);
 
         var result = await ReadAsync(
             ctx,
@@ -146,14 +146,14 @@ public sealed class GetGroupCalendarTests
             ct
         );
 
-        Assert.Equal(new[] { GardeTraining }, TitlesOf(result));
+        Assert.Equal(new[] { DanceGuardTraining }, TitlesOf(result));
     }
 
     [Fact]
     public async Task Should_ReturnForbidden_When_TheCallerIsOnlyAffiliated()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildKalenderAsync(ct);
+        var ctx = await BuildCalendarAsync(ct);
 
         var client = await ctx.Identity.ClientForAsync("alice", ct);
         var (response, _) = await client.GETAsync<
@@ -166,10 +166,10 @@ public sealed class GetGroupCalendarTests
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_TheGruppeIsUnknown()
+    public async Task Should_ReturnForbidden_When_TheGroupIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildKalenderAsync(ct);
+        var ctx = await BuildCalendarAsync(ct);
 
         var client = await ctx.Identity.ClientForAsync("bea", ct);
         var (response, _) = await client.GETAsync<
@@ -185,7 +185,7 @@ public sealed class GetGroupCalendarTests
     public async Task Should_RejectTheRequest_When_TheWindowEndsBeforeItStarts()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildKalenderAsync(ct);
+        var ctx = await BuildCalendarAsync(ct);
 
         var client = await ctx.Identity.ClientForAsync("bea", ct);
         var (response, _) = await client.GETAsync<
@@ -263,7 +263,7 @@ public sealed class GetGroupCalendarTests
             .AddAccount("ilka")
             .AddMembership("ilka-first", "ilka", JoinedIn2017);
 
-    private Task<SeededContext> BuildKalenderAsync(CancellationToken ct) =>
+    private Task<SeededContext> BuildCalendarAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder =>
                 builder
@@ -293,7 +293,7 @@ public sealed class GetGroupCalendarTests
                     .Club(club =>
                         club.AddCalendarEntry(
                                 "garde-training",
-                                GardeTraining,
+                                DanceGuardTraining,
                                 AtTheTraining,
                                 kind: CalendarEntryKind.Training,
                                 visibility: CalendarEntryVisibility.Group,
@@ -301,8 +301,8 @@ public sealed class GetGroupCalendarTests
                             )
                             .AddCalendarEntry(
                                 "kinder-probe",
-                                KinderProbe,
-                                AtTheKinderProbe,
+                                ChildrensRehearsal,
+                                AtTheChildrensRehearsal,
                                 kind: CalendarEntryKind.Rehearsal,
                                 visibility: CalendarEntryVisibility.Group,
                                 ownerGroupAlias: "kindergarde",
@@ -310,14 +310,14 @@ public sealed class GetGroupCalendarTests
                             )
                             .AddCalendarEntry(
                                 "prunksitzung",
-                                Prunksitzung,
-                                AtThePrunksitzung,
+                                GalaSession,
+                                AtTheGalaSession,
                                 participatingGroupAliases: ["tanzgarde"]
                             )
                             .AddCalendarEntry(
-                                "umzug",
-                                Umzug,
-                                AtTheUmzug,
+                                "parade",
+                                Parade,
+                                AtTheParade,
                                 kind: CalendarEntryKind.Performance,
                                 visibility: CalendarEntryVisibility.Public
                             )

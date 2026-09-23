@@ -20,7 +20,7 @@ public sealed class GroupPersistenceTests
     }
 
     [Fact]
-    public async Task Should_StoreItsOpenness_When_AGruppeIsSeeded()
+    public async Task Should_StoreItsOpenness_When_AGroupIsSeeded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -49,7 +49,7 @@ public sealed class GroupPersistenceTests
     }
 
     [Fact]
-    public async Task Should_RejectASecondOpenZugehoerigkeit_When_OneIsAlreadyOpen()
+    public async Task Should_RejectASecondOpenGroupMembership_When_OneIsAlreadyOpen()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -84,7 +84,7 @@ public sealed class GroupPersistenceTests
     }
 
     [Fact]
-    public async Task Should_KeepBothZugehoerigkeiten_When_TheEarlierOneEnded()
+    public async Task Should_KeepBothGroupMemberships_When_TheEarlierOneEnded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -124,7 +124,7 @@ public sealed class GroupPersistenceTests
     }
 
     [Fact]
-    public async Task Should_RejectAZugehoerigkeit_When_TheEndPrecedesTheStart()
+    public async Task Should_RejectAGroupMembership_When_TheEndPrecedesTheStart()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -154,7 +154,7 @@ public sealed class GroupPersistenceTests
     }
 
     [Fact]
-    public async Task Should_RejectASecondOpenGruppenAdminschaft_When_OneIsAlreadyOpen()
+    public async Task Should_RejectASecondOpenGroupAdminTenure_When_OneIsAlreadyOpen()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -191,7 +191,7 @@ public sealed class GroupPersistenceTests
     }
 
     [Fact]
-    public async Task Should_RejectAGruppenAdminschaft_When_TheEndPrecedesTheStart()
+    public async Task Should_RejectAGroupAdminTenure_When_TheEndPrecedesTheStart()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -222,7 +222,7 @@ public sealed class GroupPersistenceTests
     }
 
     [Fact]
-    public async Task Should_RejectTheName_When_AnActiveGruppeUsesItInAnotherCase()
+    public async Task Should_RejectTheName_When_AnActiveGroupUsesItInAnotherCase()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -244,7 +244,7 @@ public sealed class GroupPersistenceTests
     }
 
     [Fact]
-    public async Task Should_AcceptTheName_When_TheGruppeThatUsedItIsArchived()
+    public async Task Should_AcceptTheName_When_TheGroupThatUsedItIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -272,7 +272,7 @@ public sealed class GroupPersistenceTests
     }
 
     [Fact]
-    public async Task Should_StoreTheFunktionAsALabel_When_AGruppenAdminIsSeeded()
+    public async Task Should_StoreTheFunctionAsALabel_When_AGroupAdminIsSeeded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -311,7 +311,7 @@ public sealed class GroupPersistenceTests
     }
 
     [Fact]
-    public async Task Should_StampUpdatedAt_When_AGruppeIsEdited()
+    public async Task Should_StampUpdatedAt_When_AGroupIsEdited()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

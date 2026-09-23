@@ -1,3 +1,4 @@
+using Furria.Api.Logging;
 using Furria.Application.Club;
 using Furria.Application.Identity;
 using Furria.Application.PreviewAccess;
@@ -17,7 +18,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Serilog.Core;
 using Testcontainers.PostgreSql;
 using Xunit;
 
@@ -45,6 +48,8 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
 
     public TestClock TimeProvider { get; } = new(WholeSecondNow());
 
+    public CapturingLogSink Logs { get; } = new();
+
     public DateOnly Today => ClubClock.Today(TimeProvider);
 
     public int CurrentSessionYear => ClubSession.YearOf(Today);
@@ -60,7 +65,11 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         return now.AddTicks(-(now.Ticks % TimeSpan.TicksPerSecond));
     }
 
-    private async Task WinTheMitwirkungAsync(int calendarEntryId, int groupId, CancellationToken ct)
+    private async Task WinTheParticipationAsync(
+        int calendarEntryId,
+        int groupId,
+        CancellationToken ct
+    )
     {
         await using var scope = Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -75,6 +84,10 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
+        builder.UseSetting(
+            $"{ConsoleLogOptions.SectionName}:{nameof(ConsoleLogOptions.Format)}",
+            nameof(ConsoleLogFormat.Off)
+        );
         builder.UseSetting(
             $"ConnectionStrings:{AppDbContext.ConnectionName}",
             _postgres.GetConnectionString()
@@ -115,6 +128,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         {
             services.RemoveAll<TimeProvider>();
             services.AddSingleton<TimeProvider>(TimeProvider);
+            services.AddSingleton<ILogEventSink>(Logs);
         });
     }
 
@@ -216,13 +230,17 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         await seeder.StartAsync(ct);
     }
 
+    public Task RunDatabaseMigratorAsync(CancellationToken ct = default) =>
+        Services.GetServices<IHostedService>().OfType<DatabaseMigrator>().Single().StartAsync(ct);
+
     public Task RunBootstrapSeederAsync(
         BootstrapAdminOptions options,
         CancellationToken ct = default
     ) =>
         new BootstrapAdminSeeder(
             Services.GetRequiredService<IServiceScopeFactory>(),
-            Options.Create(options)
+            Options.Create(options),
+            Services.GetRequiredService<ILogger<BootstrapAdminSeeder>>()
         ).StartAsync(ct);
 
     public async Task DeleteAccountDirectlyAsync(int accountId, CancellationToken ct = default)
@@ -294,7 +312,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         );
     }
 
-    public async Task<Result> SaveSecondOpenZugehoerigkeitAsync(
+    public async Task<Result> SaveSecondOpenGroupMembershipAsync(
         int groupId,
         int personId,
         CancellationToken ct = default
@@ -315,7 +333,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         return await db.SaveOrConflictAsync(ct);
     }
 
-    public async Task<Result<CalendarEntryWriteResult>> SaveSecondMitwirkungAsync(
+    public async Task<Result<CalendarEntryWriteResult>> SaveSecondParticipationAsync(
         int calendarEntryId,
         int groupId,
         int viewerPersonId,
@@ -330,7 +348,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             new CalendarEntryGroup { CalendarEntryId = calendarEntryId, GroupId = groupId }
         );
 
-        await WinTheMitwirkungAsync(calendarEntryId, groupId, ct);
+        await WinTheParticipationAsync(calendarEntryId, groupId, ct);
 
         var entry = await db
             .CalendarEntries.AsNoTracking()
@@ -356,7 +374,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         );
     }
 
-    public async Task<Result> SaveSecondActiveGruppeAsync(
+    public async Task<Result> SaveSecondActiveGroupAsync(
         string name,
         CancellationToken ct = default
     )

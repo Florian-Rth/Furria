@@ -20,7 +20,7 @@ public sealed class MembershipPersistenceTests
     }
 
     [Fact]
-    public async Task Should_PersistBothPeriodEnds_When_TheMitgliedschaftHasEnded()
+    public async Task Should_PersistBothPeriodEnds_When_TheMembershipHasEnded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

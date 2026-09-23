@@ -23,7 +23,7 @@ public sealed class GetGroupKindsTests
     }
 
     [Fact]
-    public async Task Should_ListTheGruppenartenAsGerman_When_AnAffiliatedPersonReadsThePicker()
+    public async Task Should_ListTheGroupKindsAsGerman_When_AnAffiliatedPersonReadsThePicker()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -52,7 +52,7 @@ public sealed class GetGroupKindsTests
     }
 
     [Fact]
-    public async Task Should_OmitTheGruppenart_When_ItIsArchived()
+    public async Task Should_OmitTheGroupKind_When_ItIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -80,7 +80,7 @@ public sealed class GetGroupKindsTests
     }
 
     [Fact]
-    public async Task Should_ListTheGruppenarten_When_TheCallerIsTiedToTheVereinByAZugehoerigkeitOnly()
+    public async Task Should_ListTheGroupKinds_When_TheCallerIsTiedToTheClubByAGroupMembershipOnly()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -129,7 +129,7 @@ public sealed class GetGroupKindsTests
     }
 
     [Fact]
-    public async Task Should_ListTheGruppenarten_When_TheCallerOnlyAdministersEineGruppe()
+    public async Task Should_ListTheGroupKinds_When_TheCallerOnlyAdministersAGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

@@ -6,67 +6,92 @@ using FastEndpoints.Swagger;
 using Furria.Api.Authentication;
 using Furria.Api.Authorization;
 using Furria.Api.Cors;
+using Furria.Api.Errors;
+using Furria.Api.Logging;
 using Furria.Application;
 using Furria.Application.Identity;
 using Furria.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Serilog;
+
+#pragma warning disable MET008
 
 var builder = WebApplication.CreateBuilder(args);
+Log.Logger = FurriaLogging.CreateBootstrapLogger(builder.Configuration);
 
-var accessToken =
-    builder.Configuration.GetSection(AccessTokenOptions.SectionName).Get<AccessTokenOptions>()
-    ?? new AccessTokenOptions();
-
-builder.Services.AddApplication();
-builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddAuthenticationJwtBearer(
-    signing => signing.SigningKey = accessToken.SigningKey,
-    bearer =>
-    {
-        bearer.TokenValidationParameters.ValidIssuer = accessToken.Issuer;
-        bearer.TokenValidationParameters.ValidAudience = accessToken.Audience;
-    }
-);
-builder
-    .Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
-    .Configure<TimeProvider>(
-        (bearer, timeProvider) =>
-            bearer.TokenValidationParameters.LifetimeValidator = (notBefore, expires, _, _) =>
-                AccessTokenLifetime.IsCurrent(
-                    notBefore,
-                    expires,
-                    timeProvider.GetUtcNow().UtcDateTime
-                )
-    );
-builder.Services.AddAuthorization();
-builder.Services.AddNativeShellCors();
-builder.Services.AddFastEndpoints();
-if (builder.Environment.IsDevelopment())
+try
 {
-    builder.Services.SwaggerDocument(o =>
-    {
-        o.DocumentSettings = s =>
+    var accessToken =
+        builder.Configuration.GetSection(AccessTokenOptions.SectionName).Get<AccessTokenOptions>()
+        ?? new AccessTokenOptions();
+
+    builder.Services.AddFurriaLogging(builder.Configuration);
+    builder.Services.AddFurriaProblemDetails();
+    builder.Services.AddApplication();
+    builder.Services.AddInfrastructure(builder.Configuration);
+    builder.Services.AddAuthenticationJwtBearer(
+        signing => signing.SigningKey = accessToken.SigningKey,
+        bearer =>
         {
-            s.Title = "Furria API";
-            s.Version = "v1";
-        };
+            bearer.TokenValidationParameters.ValidIssuer = accessToken.Issuer;
+            bearer.TokenValidationParameters.ValidAudience = accessToken.Audience;
+        }
+    );
+    builder
+        .Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+        .Configure<TimeProvider>(
+            (bearer, timeProvider) =>
+                bearer.TokenValidationParameters.LifetimeValidator = (notBefore, expires, _, _) =>
+                    AccessTokenLifetime.IsCurrent(
+                        notBefore,
+                        expires,
+                        timeProvider.GetUtcNow().UtcDateTime
+                    )
+        );
+    builder.Services.AddAuthorization();
+    builder.Services.AddNativeShellCors();
+    builder.Services.AddFastEndpoints();
+    if (builder.Environment.IsDevelopment())
+    {
+        builder.Services.SwaggerDocument(o =>
+        {
+            o.DocumentSettings = s =>
+            {
+                s.Title = "Furria API";
+                s.Version = "v1";
+            };
+        });
+    }
+
+    var app = builder.Build();
+
+    app.UseFurriaRequestLogging();
+    app.UseExceptionHandler();
+    app.UseCors();
+    app.UseAuthentication();
+    app.UseAuthorization();
+    app.UseFastEndpoints(c =>
+    {
+        c.Endpoints.RoutePrefix = "api";
+        c.Serializer.Options.Converters.Add(
+            new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
+        );
+        c.Endpoints.Configurator = endpoint =>
+            endpoint.PreProcessor<PermissionEnforcer>(Order.Before);
     });
+    if (app.Environment.IsDevelopment())
+        app.UseSwaggerGen();
+
+    app.Run();
 }
-
-var app = builder.Build();
-
-app.UseCors();
-app.UseAuthentication();
-app.UseAuthorization();
-app.UseFastEndpoints(c =>
+catch (Exception exception) when (exception is not HostAbortedException)
 {
-    c.Endpoints.RoutePrefix = "api";
-    c.Serializer.Options.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
-    c.Endpoints.Configurator = endpoint => endpoint.PreProcessor<PermissionEnforcer>(Order.Before);
-});
-if (app.Environment.IsDevelopment())
-    app.UseSwaggerGen();
-
-app.Run();
+    Log.Fatal(exception, "Host terminated unexpectedly");
+    Environment.ExitCode = 1;
+}
+finally
+{
+    Log.CloseAndFlush();
+}
 
 public sealed partial class Program;

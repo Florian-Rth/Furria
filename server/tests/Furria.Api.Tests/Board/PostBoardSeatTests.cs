@@ -50,10 +50,10 @@ public sealed class PostBoardSeatTests
         );
 
     [Fact]
-    public async Task Should_OpenTheSitz_When_AManagerRecordsTheElection()
+    public async Task Should_OpenTheSeat_When_AManagerRecordsTheElection()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithFreeFunktionAsync(ct);
+        var ctx = await BuildWithFreeOfficeAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var (response, result) = await OpenSeatAsync(
@@ -75,7 +75,7 @@ public sealed class PostBoardSeatTests
     }
 
     [Fact]
-    public async Task Should_OpenASecondSitz_When_TwoPersonsShareOneFunktion()
+    public async Task Should_OpenASecondSeat_When_TwoPersonsShareOneOffice()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -112,10 +112,10 @@ public sealed class PostBoardSeatTests
     }
 
     [Fact]
-    public async Task Should_StoreTheRow_When_TheSitzStartsInTheFuture()
+    public async Task Should_StoreTheRow_When_TheSeatStartsInTheFuture()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithFreeFunktionAsync(ct);
+        var ctx = await BuildWithFreeOfficeAsync(ct);
 
         var takesOverTomorrow = _fixture.Today.AddDays(1);
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
@@ -134,10 +134,10 @@ public sealed class PostBoardSeatTests
     }
 
     [Fact]
-    public async Task Should_OpenAnotherSitz_When_TheReelectionStartsAfterTheLastOne()
+    public async Task Should_OpenAnotherSeat_When_TheReelectionStartsAfterTheLastOne()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithHandedOverFunktionAsync(ct);
+        var ctx = await BuildWithHandedOverOfficeAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var (response, result) = await OpenSeatAsync(
@@ -159,7 +159,7 @@ public sealed class PostBoardSeatTests
     public async Task Should_ReturnConflict_When_TheReelectionStartsOnTheDayTheLastOneEnded()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithHandedOverFunktionAsync(ct);
+        var ctx = await BuildWithHandedOverOfficeAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var (response, _) = await OpenSeatAsync(
@@ -175,7 +175,7 @@ public sealed class PostBoardSeatTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_ThePersonAlreadySitsInTheFunktion()
+    public async Task Should_ReturnConflict_When_ThePersonAlreadySitsInTheOffice()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -207,7 +207,7 @@ public sealed class PostBoardSeatTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheFunktionIsArchived()
+    public async Task Should_ReturnConflict_When_TheOfficeIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -234,10 +234,10 @@ public sealed class PostBoardSeatTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheFunktionIsUnknown()
+    public async Task Should_ReturnNotFound_When_TheOfficeIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithFreeFunktionAsync(ct);
+        var ctx = await BuildWithFreeOfficeAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var (response, _) = await OpenSeatAsync(
@@ -254,7 +254,7 @@ public sealed class PostBoardSeatTests
     public async Task Should_ReturnNotFound_When_ThePersonIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithFreeFunktionAsync(ct);
+        var ctx = await BuildWithFreeOfficeAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var (response, _) = await OpenSeatAsync(
@@ -271,7 +271,7 @@ public sealed class PostBoardSeatTests
     public async Task Should_ReturnBadRequest_When_TheBodyCarriesNoUsablePersonId()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithFreeFunktionAsync(ct);
+        var ctx = await BuildWithFreeOfficeAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var (response, _) = await OpenSeatAsync(
@@ -319,10 +319,10 @@ public sealed class PostBoardSeatTests
     }
 
     [Fact]
-    public async Task Should_RefuseTheSitz_When_TheFunktionCarriesARolleTheCallerMayNotGrant()
+    public async Task Should_RefuseTheSeat_When_TheOfficeCarriesARoleTheCallerMayNotGrant()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithPoweredFunktionAsync(ct);
+        var ctx = await BuildWithPoweredOfficeAsync(ct);
 
         var client = await ctx.Identity.ClientForAsync("katrin", ct);
         var (response, _) = await OpenSeatAsync(
@@ -342,10 +342,10 @@ public sealed class PostBoardSeatTests
     }
 
     [Fact]
-    public async Task Should_OpenTheSitz_When_TheCallerMayAlsoGrantTheRolleItCarries()
+    public async Task Should_OpenTheSeat_When_TheCallerMayAlsoGrantTheRoleItCarries()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithPoweredFunktionAsync(ct);
+        var ctx = await BuildWithPoweredOfficeAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var (response, result) = await OpenSeatAsync(
@@ -366,7 +366,7 @@ public sealed class PostBoardSeatTests
     public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithFreeFunktionAsync(ct);
+        var ctx = await BuildWithFreeOfficeAsync(ct);
 
         var (response, _) = await OpenSeatAsync(
             _fixture.CreateClient(),
@@ -378,7 +378,7 @@ public sealed class PostBoardSeatTests
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
-    private Task<SeededContext> BuildWithFreeFunktionAsync(CancellationToken ct) =>
+    private Task<SeededContext> BuildWithFreeOfficeAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder =>
                 builder
@@ -387,7 +387,7 @@ public sealed class PostBoardSeatTests
             ct
         );
 
-    private Task<SeededContext> BuildWithPoweredFunktionAsync(CancellationToken ct) =>
+    private Task<SeededContext> BuildWithPoweredOfficeAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder =>
                 builder
@@ -407,7 +407,7 @@ public sealed class PostBoardSeatTests
             ct
         );
 
-    private Task<SeededContext> BuildWithHandedOverFunktionAsync(CancellationToken ct) =>
+    private Task<SeededContext> BuildWithHandedOverOfficeAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder =>
                 builder

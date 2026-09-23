@@ -27,7 +27,7 @@ public sealed class GetGroupsTests
     }
 
     [Fact]
-    public async Task Should_CarryTheGruppeWithItsPeople_When_AnAffiliatedPersonReadsTheList()
+    public async Task Should_CarryTheGroupWithItsPeople_When_AnAffiliatedPersonReadsTheList()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -80,7 +80,7 @@ public sealed class GetGroupsTests
     }
 
     [Fact]
-    public async Task Should_OmitTheGruppe_When_ItIsArchived()
+    public async Task Should_OmitTheGroup_When_ItIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -115,7 +115,7 @@ public sealed class GetGroupsTests
     }
 
     [Fact]
-    public async Task Should_CountTheRunningRowsOnly_When_ZugehoerigkeitenAndAdminsEndedOrLieAhead()
+    public async Task Should_CountTheRunningRowsOnly_When_GroupMembershipsAndAdminsEndedOrLieAhead()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -174,7 +174,7 @@ public sealed class GetGroupsTests
     }
 
     [Fact]
-    public async Task Should_PreviewTheFirstFiveGermanSorted_When_TheGruppeHasMoreMembers()
+    public async Task Should_PreviewTheFirstFiveGermanSorted_When_TheGroupHasMoreMembers()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -219,7 +219,7 @@ public sealed class GetGroupsTests
     }
 
     [Fact]
-    public async Task Should_SortTheGruppenAsGerman_When_TheVerzeichnisIsRead()
+    public async Task Should_SortTheGroupsAsGerman_When_TheListIsRead()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -247,10 +247,10 @@ public sealed class GetGroupsTests
             ["Ältestenrat", "Archiv & Chronik", "Zwergengarde"],
             result.Groups.Select(group => group.Name)
         );
-        var aeltestenrat = result.Groups[0];
-        Assert.Equal(0, aeltestenrat.MemberCount);
-        Assert.Empty(aeltestenrat.MemberPreview);
-        Assert.Empty(aeltestenrat.Admins);
+        var eldersCouncil = result.Groups[0];
+        Assert.Equal(0, eldersCouncil.MemberCount);
+        Assert.Empty(eldersCouncil.MemberPreview);
+        Assert.Empty(eldersCouncil.Admins);
     }
 
     [Fact]
@@ -316,7 +316,7 @@ public sealed class GetGroupsTests
     }
 
     [Fact]
-    public async Task Should_CarryTheSteckbrief_When_TheGruppeNamedArtJahrUndFarbe()
+    public async Task Should_CarryTheProfile_When_TheGroupNamedKindYearAndTone()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -350,13 +350,15 @@ public sealed class GetGroupsTests
         var tanzgarde = groups.Single(group =>
             group.GetProperty("name").GetString() == "Tanzgarde"
         );
-        var elferrat = groups.Single(group => group.GetProperty("name").GetString() == "Elferrat");
+        var councilOfEleven = groups.Single(group =>
+            group.GetProperty("name").GetString() == "Elferrat"
+        );
         Assert.Equal("Garden", tanzgarde.GetProperty("groupKindName").GetString());
         Assert.Equal(FoundedIn1971, tanzgarde.GetProperty("foundedYear").GetInt32());
         Assert.Equal("rose", tanzgarde.GetProperty("tone").GetString());
-        Assert.Equal(JsonValueKind.Null, elferrat.GetProperty("groupKindName").ValueKind);
-        Assert.Equal(JsonValueKind.Null, elferrat.GetProperty("foundedYear").ValueKind);
-        Assert.Equal(JsonValueKind.Null, elferrat.GetProperty("tone").ValueKind);
+        Assert.Equal(JsonValueKind.Null, councilOfEleven.GetProperty("groupKindName").ValueKind);
+        Assert.Equal(JsonValueKind.Null, councilOfEleven.GetProperty("foundedYear").ValueKind);
+        Assert.Equal(JsonValueKind.Null, councilOfEleven.GetProperty("tone").ValueKind);
     }
 
     [Fact]
@@ -415,7 +417,7 @@ public sealed class GetGroupsTests
     }
 
     [Fact]
-    public async Task Should_MarkTheGruppe_When_TheViewerDancesInIt()
+    public async Task Should_MarkTheGroup_When_TheViewerDancesInIt()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -445,15 +447,15 @@ public sealed class GetGroupsTests
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var tanzgarde = result.Groups.Single(group => group.Name == "Tanzgarde");
-        var elferrat = result.Groups.Single(group => group.Name == "Elferrat");
+        var councilOfEleven = result.Groups.Single(group => group.Name == "Elferrat");
         Assert.True(tanzgarde.ViewerIsMember);
         Assert.False(tanzgarde.ViewerIsAdmin);
-        Assert.False(elferrat.ViewerIsMember);
-        Assert.False(elferrat.ViewerIsAdmin);
+        Assert.False(councilOfEleven.ViewerIsMember);
+        Assert.False(councilOfEleven.ViewerIsAdmin);
     }
 
     [Fact]
-    public async Task Should_MarkTheGruppe_When_TheViewerRunsItWithoutDancing()
+    public async Task Should_MarkTheGroup_When_TheViewerRunsItWithoutDancing()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -482,7 +484,7 @@ public sealed class GetGroupsTests
     }
 
     [Fact]
-    public async Task Should_MarkNoStanding_When_TheViewerLeftTheGruppeAndHandedTheAdminOver()
+    public async Task Should_MarkNoStanding_When_TheViewerLeftTheGroupAndHandedTheAdminOver()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

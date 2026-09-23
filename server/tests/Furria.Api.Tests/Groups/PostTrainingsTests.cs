@@ -19,9 +19,9 @@ public sealed class PostTrainingsTests
     private const int TrainingMinutes = 90;
     private const int DaysPerWeek = 7;
     private const string TrainingTitle = "Training";
-    private const string Abendprobe = "Abendprobe der Prinzengarde";
-    private const string Sporthalle = "Sporthalle";
-    private const string AltesLager = "Altes Lager";
+    private const string EveningRehearsal = "Abendprobe der Prinzengarde";
+    private const string SportsHall = "Sporthalle";
+    private const string OldStorage = "Altes Lager";
 
     private static readonly DateOnly ArchivedIn2026 = new(2026, 6, 30);
     private static readonly TimeOnly HalfPastSeven = new(19, 30);
@@ -44,7 +44,7 @@ public sealed class PostTrainingsTests
     }
 
     [Fact]
-    public async Task Should_WriteEveryTickedEvening_When_TheGruppenAdminConfirms()
+    public async Task Should_WriteEveryTickedEvening_When_TheGroupAdminConfirms()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildRhythmAsync(ct);
@@ -99,7 +99,7 @@ public sealed class PostTrainingsTests
     }
 
     [Fact]
-    public async Task Should_WriteNothingTwice_When_TheGruppenAdminRunsItAgain()
+    public async Task Should_WriteNothingTwice_When_TheGroupAdminRunsItAgain()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildRhythmAsync(ct);
@@ -121,7 +121,7 @@ public sealed class PostTrainingsTests
     }
 
     [Fact]
-    public async Task Should_WarnAboutTheOrtAndStillWrite_When_AnotherEintragHoldsIt()
+    public async Task Should_WarnAboutTheVenueAndStillWrite_When_AnotherEntryHoldsIt()
     {
         var ct = TestContext.Current.CancellationToken;
         var firstEvening = FirstTraining();
@@ -131,7 +131,7 @@ public sealed class PostTrainingsTests
                 Rhythm(club);
                 club.AddCalendarEntry(
                     "abendprobe",
-                    Abendprobe,
+                    EveningRehearsal,
                     firstEvening,
                     firstEvening.AddMinutes(TrainingMinutes),
                     venueAlias: "sporthalle"
@@ -151,12 +151,12 @@ public sealed class PostTrainingsTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal(1, result.CreatedCount);
         var collision = Assert.Single(result.VenueCollisions);
-        Assert.Equal(Abendprobe, collision.Title);
+        Assert.Equal(EveningRehearsal, collision.Title);
         await ctx.Expected.TrainingsOf(tanzgarde).ToHaveCount(1).AssertAsync(ct);
     }
 
     [Fact]
-    public async Task Should_RefuseTheEvening_When_ItDoesNotMatchTheTrainingszeit()
+    public async Task Should_RefuseTheEvening_When_ItDoesNotMatchTheTrainingSlot()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildRhythmAsync(ct);
@@ -188,7 +188,7 @@ public sealed class PostTrainingsTests
     }
 
     [Fact]
-    public async Task Should_RefuseTheTrainingszeit_When_ItBelongsToAnotherGruppe()
+    public async Task Should_RefuseTheTrainingSlot_When_ItBelongsToAnotherGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildRhythmAsync(ct);
@@ -206,7 +206,7 @@ public sealed class PostTrainingsTests
     }
 
     [Fact]
-    public async Task Should_RefuseTheOrt_When_ErSeitDemRhythmusArchiviertWurde()
+    public async Task Should_RefuseTheVenue_When_ItWasArchivedAfterTheSlotNamedIt()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildAsync(
@@ -296,14 +296,14 @@ public sealed class PostTrainingsTests
     }
 
     [Fact]
-    public async Task Should_WriteTheLaufendenAbende_When_DieZeitMitArchiviertemOrtNichtAngehaktIst()
+    public async Task Should_WriteTheRunningEvenings_When_TheSlotWithTheArchivedVenueIsNotTicked()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildAsync(
             club =>
             {
                 Rhythm(club);
-                club.AddVenue("altes-lager", AltesLager, archivedOn: ArchivedIn2026)
+                club.AddVenue("altes-lager", OldStorage, archivedOn: ArchivedIn2026)
                     .AddTrainingSlot(
                         "donnerstags",
                         "tanzgarde",
@@ -330,7 +330,7 @@ public sealed class PostTrainingsTests
     }
 
     [Fact]
-    public async Task Should_WriteTheWholeSession_When_DieGruppeJedenTagUndDienstagsZweimalProbt()
+    public async Task Should_WriteTheWholeSession_When_TheGroupTrainsEveryDayAndTwiceOnTuesdays()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildAsync(EveryDay, ct);
@@ -436,7 +436,7 @@ public sealed class PostTrainingsTests
     }
 
     private static void Rhythm(ClubSeedBuilder club) =>
-        club.AddVenue("sporthalle", Sporthalle)
+        club.AddVenue("sporthalle", SportsHall)
             .AddTrainingSlot(
                 "dienstags",
                 "tanzgarde",

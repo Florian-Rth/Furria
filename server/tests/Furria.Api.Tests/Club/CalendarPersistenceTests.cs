@@ -28,7 +28,7 @@ public sealed class CalendarPersistenceTests
     }
 
     [Fact]
-    public async Task Should_KeepOrtGruppeUndSichtbarkeit_When_AnEintragIsRecorded()
+    public async Task Should_KeepVenueGroupAndVisibility_When_AnEntryIsRecorded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -70,7 +70,7 @@ public sealed class CalendarPersistenceTests
     }
 
     [Fact]
-    public async Task Should_RefuseTheEintrag_When_GruppenSichtbarkeitNamesNoGruppe()
+    public async Task Should_RefuseTheEntry_When_GroupVisibilityNamesNoGroup()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -79,7 +79,7 @@ public sealed class CalendarPersistenceTests
                 builder =>
                     builder.Club(club =>
                         club.AddCalendarEntry(
-                            "herrenlos",
+                            "ownerless",
                             "Geheime Sitzung",
                             AtTheBall,
                             visibility: CalendarEntryVisibility.Group
@@ -95,7 +95,7 @@ public sealed class CalendarPersistenceTests
     }
 
     [Fact]
-    public async Task Should_RefuseTheEintrag_When_ItEndsBeforeItBegins()
+    public async Task Should_RefuseTheEntry_When_ItEndsBeforeItBegins()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -103,7 +103,7 @@ public sealed class CalendarPersistenceTests
             _fixture.BuildAsync(
                 builder =>
                     builder.Club(club =>
-                        club.AddCalendarEntry("rueckwaerts", "Sitzung", AtTheBall, BeforeTheBall)
+                        club.AddCalendarEntry("backwards", "Sitzung", AtTheBall, BeforeTheBall)
                     ),
                 ct
             )
@@ -126,20 +126,20 @@ public sealed class CalendarPersistenceTests
                         .Identity(identity => identity.AddPerson("alice", "Alice", "Muster"))
                         .Club(club =>
                             club.AddCalendarEntry(
-                                    "sitzung",
+                                    "meeting",
                                     "Vereinssitzung",
                                     AtTheBall,
                                     asksForResponse: true
                                 )
                                 .AddAttendanceResponse(
-                                    "alice-sagt-zu",
-                                    "sitzung",
+                                    "alice-says-yes",
+                                    "meeting",
                                     "alice",
                                     AttendanceAnswer.Yes
                                 )
                                 .AddAttendanceResponse(
-                                    "alice-sagt-ab",
-                                    "sitzung",
+                                    "alice-says-no",
+                                    "meeting",
                                     "alice",
                                     AttendanceAnswer.No
                                 )

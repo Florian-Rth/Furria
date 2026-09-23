@@ -35,7 +35,7 @@ public sealed class PermissionAuthorizerTests
     }
 
     [Fact]
-    public async Task Should_Allow_When_AnOpenInhaberschaftGrantsTheKey()
+    public async Task Should_Allow_When_AnOpenRoleHoldingGrantsTheKey()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -61,7 +61,7 @@ public sealed class PermissionAuthorizerTests
     }
 
     [Fact]
-    public async Task Should_Allow_When_TheInhaberschaftEndsToday()
+    public async Task Should_Allow_When_TheRoleHoldingEndsToday()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -93,7 +93,7 @@ public sealed class PermissionAuthorizerTests
     }
 
     [Fact]
-    public async Task Should_Allow_When_TheKeyComesFromASecondRolle()
+    public async Task Should_Allow_When_TheKeyComesFromASecondRole()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -139,7 +139,7 @@ public sealed class PermissionAuthorizerTests
     }
 
     [Fact]
-    public async Task Should_Refuse_When_TheInhaberschaftHasExpired()
+    public async Task Should_Refuse_When_TheRoleHoldingHasExpired()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -171,7 +171,7 @@ public sealed class PermissionAuthorizerTests
     }
 
     [Fact]
-    public async Task Should_Refuse_When_TheInhaberschaftStartsTomorrow()
+    public async Task Should_Refuse_When_TheRoleHoldingStartsTomorrow()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -202,7 +202,7 @@ public sealed class PermissionAuthorizerTests
     }
 
     [Fact]
-    public async Task Should_Refuse_When_TheRolleIsArchived()
+    public async Task Should_Refuse_When_TheRoleIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -235,7 +235,7 @@ public sealed class PermissionAuthorizerTests
     }
 
     [Fact]
-    public async Task Should_Refuse_When_TheRolleDoesNotHoldThatKey()
+    public async Task Should_Refuse_When_TheRoleDoesNotHoldThatKey()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -289,7 +289,7 @@ public sealed class PermissionAuthorizerTests
     }
 
     [Fact]
-    public async Task Should_Refuse_When_TheInhaberschaftEndedOnTheUtcDateButBerlinIsAlreadyPastIt()
+    public async Task Should_Refuse_When_TheRoleHoldingEndedOnTheUtcDateButBerlinIsAlreadyPastIt()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -308,7 +308,7 @@ public sealed class PermissionAuthorizerTests
     }
 
     [Fact]
-    public async Task Should_Allow_When_TheInhaberschaftEndsOnTheBerlinDateAheadOfTheUtcDate()
+    public async Task Should_Allow_When_TheRoleHoldingEndsOnTheBerlinDateAheadOfTheUtcDate()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -374,7 +374,7 @@ public sealed class PermissionAuthorizerTests
     }
 
     [Fact]
-    public async Task Should_Allow_When_ARunningMitgliedschaftImpliesTheKey()
+    public async Task Should_Allow_When_ARunningMembershipImpliesTheKey()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -392,7 +392,7 @@ public sealed class PermissionAuthorizerTests
     }
 
     [Fact]
-    public async Task Should_Allow_When_TheRunningMitgliedschaftRuht()
+    public async Task Should_Allow_When_TheRunningMembershipIsPaused()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -417,7 +417,7 @@ public sealed class PermissionAuthorizerTests
     }
 
     [Fact]
-    public async Task Should_Refuse_When_TheMitgliedschaftHasEnded()
+    public async Task Should_Refuse_When_TheMembershipHasEnded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -442,7 +442,7 @@ public sealed class PermissionAuthorizerTests
     }
 
     [Fact]
-    public async Task Should_Refuse_When_TheOnlyTieIsARunningZugehoerigkeit()
+    public async Task Should_Refuse_When_TheOnlyTieIsARunningGroupMembership()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -464,7 +464,7 @@ public sealed class PermissionAuthorizerTests
     }
 
     [Fact]
-    public async Task Should_Refuse_When_TheOnlyTieIsARunningInhaberschaft()
+    public async Task Should_Refuse_When_TheOnlyTieIsARunningRoleHolding()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -490,7 +490,7 @@ public sealed class PermissionAuthorizerTests
     }
 
     [Fact]
-    public async Task Should_Refuse_When_TheMitgliedsAccountWasDisabled()
+    public async Task Should_Refuse_When_TheMembersAccountWasDisabled()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -510,7 +510,7 @@ public sealed class PermissionAuthorizerTests
     }
 
     [Fact]
-    public async Task Should_GrantDieImplizierteRolle_When_EinVorstandssitzLaeuft()
+    public async Task Should_GrantTheImpliedRole_When_ABoardSeatIsRunning()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await SeatedAsync(SeatedIn2023, untilOn: null, ct);
@@ -522,7 +522,7 @@ public sealed class PermissionAuthorizerTests
     }
 
     [Fact]
-    public async Task Should_GrantNoKeys_When_DerVorstandssitzBeendetIst()
+    public async Task Should_GrantNoKeys_When_TheBoardSeatHasEnded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await SeatedAsync(SeatedIn2023, _fixture.Today.AddDays(-1), ct);
@@ -534,7 +534,7 @@ public sealed class PermissionAuthorizerTests
     }
 
     [Fact]
-    public async Task Should_WriteNoInhaberschaft_When_EinVorstandssitzLaeuft()
+    public async Task Should_WriteNoRoleHolding_When_ABoardSeatIsRunning()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await SeatedAsync(SeatedIn2023, untilOn: null, ct);
@@ -549,7 +549,7 @@ public sealed class PermissionAuthorizerTests
     }
 
     [Fact]
-    public async Task Should_WriteNoInhaberschaft_When_DerVorstandssitzBeendetIst()
+    public async Task Should_WriteNoRoleHolding_When_TheBoardSeatHasEnded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await SeatedAsync(SeatedIn2023, _fixture.Today.AddDays(-1), ct);
@@ -564,7 +564,7 @@ public sealed class PermissionAuthorizerTests
     }
 
     [Fact]
-    public async Task Should_GrantNoKeys_When_DieFunktionKeineRolleNennt()
+    public async Task Should_GrantNoKeys_When_TheOfficeNamesNoRole()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -592,7 +592,7 @@ public sealed class PermissionAuthorizerTests
     }
 
     [Fact]
-    public async Task Should_GrantNoKeys_When_DieImplizierteRolleArchiviertIst()
+    public async Task Should_GrantNoKeys_When_TheImpliedRoleIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -626,7 +626,7 @@ public sealed class PermissionAuthorizerTests
     }
 
     [Fact]
-    public async Task Should_KeepTheKey_When_DieEigeneInhaberschaftDenSitzUeberdauert()
+    public async Task Should_KeepTheKey_When_TheOwnRoleHoldingOutlastsTheSeat()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

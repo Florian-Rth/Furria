@@ -16,7 +16,7 @@ public sealed class PostMembershipPauseTests
     private const string ValidationField = "request";
     private const int PausedFrom2018 = 2018;
     private const int PausedUntil2019 = 2019;
-    private const int BeforeTheMitgliedschaft = 2015;
+    private const int BeforeTheMembership = 2015;
     private const int BeforeTheFounding = 1970;
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
@@ -30,7 +30,7 @@ public sealed class PostMembershipPauseTests
     }
 
     [Fact]
-    public async Task Should_OpenTheRuhezeit_When_AManagerPausesARunningMitgliedschaft()
+    public async Task Should_OpenTheMembershipPause_When_AManagerPausesARunningMembership()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -103,7 +103,7 @@ public sealed class PostMembershipPauseTests
     }
 
     [Fact]
-    public async Task Should_ReturnUnprocessableEntity_When_TheRuhezeitLiesOutsideTheMitgliedschaft()
+    public async Task Should_ReturnUnprocessableEntity_When_TheMembershipPauseLiesOutsideTheMembership()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -126,8 +126,8 @@ public sealed class PostMembershipPauseTests
             {
                 PersonId = ctx.Identity.People.IdOf("paula"),
                 MembershipId = ctx.Identity.Memberships.IdOf("paula-erste"),
-                FirstSessionYear = BeforeTheMitgliedschaft,
-                LastSessionYear = BeforeTheMitgliedschaft + 1,
+                FirstSessionYear = BeforeTheMembership,
+                LastSessionYear = BeforeTheMembership + 1,
             }
         );
 
@@ -140,10 +140,10 @@ public sealed class PostMembershipPauseTests
     }
 
     [Fact]
-    public async Task Should_ReturnUnprocessableEntity_When_AnOpenRuhezeitIsAddedToAnEndedMitgliedschaft()
+    public async Task Should_ReturnUnprocessableEntity_When_AnOpenMembershipPauseIsAddedToAnEndedMembership()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithEndedMitgliedschaftAsync(ct);
+        var ctx = await BuildWithEndedMembershipAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var (response, _) = await client.POSTAsync<
@@ -172,7 +172,7 @@ public sealed class PostMembershipPauseTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheRuhezeitOverlapsAnother()
+    public async Task Should_ReturnConflict_When_TheMembershipPauseOverlapsAnother()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -219,10 +219,10 @@ public sealed class PostMembershipPauseTests
     }
 
     [Fact]
-    public async Task Should_AddTheRuhezeit_When_TheMitgliedschaftIsAlreadyClosed()
+    public async Task Should_AddTheMembershipPause_When_TheMembershipIsAlreadyClosed()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithEndedMitgliedschaftAsync(ct);
+        var ctx = await BuildWithEndedMembershipAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var (response, result) = await client.POSTAsync<
@@ -247,7 +247,7 @@ public sealed class PostMembershipPauseTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheMitgliedschaftBelongsToAnotherPerson()
+    public async Task Should_ReturnNotFound_When_TheMembershipBelongsToAnotherPerson()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -388,7 +388,7 @@ public sealed class PostMembershipPauseTests
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
-    private Task<SeededContext> BuildWithEndedMitgliedschaftAsync(CancellationToken ct) =>
+    private Task<SeededContext> BuildWithEndedMembershipAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder =>
                 builder.Identity(identity =>

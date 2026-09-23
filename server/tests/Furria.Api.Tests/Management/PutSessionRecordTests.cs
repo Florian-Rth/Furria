@@ -38,7 +38,7 @@ public sealed class PutSessionRecordTests
     }
 
     [Fact]
-    public async Task Should_WriteDownTheNummer_When_TheEvidenceTurnsUpLater()
+    public async Task Should_WriteDownTheNumber_When_TheEvidenceTurnsUpLater()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -94,7 +94,7 @@ public sealed class PutSessionRecordTests
     }
 
     [Fact]
-    public async Task Should_KeepTheEintragAsItWas_When_TheLogoIsNotReadableArtwork()
+    public async Task Should_KeepTheEntryAsItWas_When_TheLogoIsNotReadableArtwork()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -118,7 +118,7 @@ public sealed class PutSessionRecordTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheSeasonAlreadyCarriesAnotherEintrag()
+    public async Task Should_ReturnConflict_When_TheSeasonAlreadyCarriesAnotherEntry()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -138,7 +138,7 @@ public sealed class PutSessionRecordTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheEintragIsUnknown()
+    public async Task Should_ReturnNotFound_When_TheEntryIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);

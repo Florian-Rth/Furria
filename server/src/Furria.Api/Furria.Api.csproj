@@ -3,6 +3,7 @@
     <PackageReference Include="FastEndpoints" />
     <PackageReference Include="FastEndpoints.Security" />
     <PackageReference Include="FastEndpoints.Swagger" />
+    <PackageReference Include="Serilog.AspNetCore" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
   </ItemGroup>
 

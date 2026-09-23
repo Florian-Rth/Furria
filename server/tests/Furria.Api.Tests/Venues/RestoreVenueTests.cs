@@ -25,7 +25,7 @@ public sealed class RestoreVenueTests
     }
 
     [Fact]
-    public async Task Should_LetTheOrtRunAgain_When_TheKeyHolderHoltIhnZurueck()
+    public async Task Should_LetTheVenueRunAgain_When_TheKeyHolderRestoresIt()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -51,7 +51,7 @@ public sealed class RestoreVenueTests
     }
 
     [Fact]
-    public async Task Should_KeepJedenSchluessel_When_TheOrtIsRestored()
+    public async Task Should_KeepEveryKey_When_TheVenueIsRestored()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -78,7 +78,7 @@ public sealed class RestoreVenueTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheOrtIsNotArchived()
+    public async Task Should_ReturnConflict_When_TheVenueIsNotArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -97,7 +97,7 @@ public sealed class RestoreVenueTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheOrtIsUnknown()
+    public async Task Should_ReturnNotFound_When_TheVenueIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);

@@ -1,6 +1,8 @@
 using Furria.Application.Authorization;
 using Furria.Application.Identity;
+using Furria.Infrastructure.Identity;
 using Furria.Tests.Common.Fixtures;
+using Serilog.Events;
 using Xunit;
 
 namespace Furria.Api.Tests.Identity;
@@ -8,6 +10,16 @@ namespace Furria.Api.Tests.Identity;
 [Collection("Api")]
 public sealed class BootstrapAdminSeederTests
 {
+    private const string SeedingSkipped = "Bootstrap admin not configured, seeding skipped";
+    private const string AccountCreated = "Bootstrap admin account {AccountId} created for {Email}";
+    private const string AccountReenabled = "Bootstrap admin account {AccountId} re-enabled";
+    private const string RoleCreated = "Admin role {RoleId} created";
+    private const string RoleRestored = "Admin role {RoleId} restored from archive";
+    private const string PermissionsGranted =
+        "Admin role {RoleId} granted {MissingPermissionCount} missing permissions";
+    private const string RoleHandedBack =
+        "Admin role {RoleId} handed back to bootstrap person {PersonId}";
+
     private readonly ApiTestFixture _fixture;
 
     public BootstrapAdminSeederTests(ApiTestFixture fixture)
@@ -87,7 +99,7 @@ public sealed class BootstrapAdminSeederTests
     }
 
     [Fact]
-    public async Task Should_GrantTheAdminRolleEveryBerechtigung_When_ItIsSeeded()
+    public async Task Should_GrantTheAdminRoleEveryPermission_When_ItIsSeeded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
@@ -101,7 +113,7 @@ public sealed class BootstrapAdminSeederTests
     }
 
     [Fact]
-    public async Task Should_GiveTheAdminAnOpenInhaberschaft_When_TheRolleIsSeeded()
+    public async Task Should_GiveTheAdminAnOpenRoleHolding_When_TheRoleIsSeeded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
@@ -113,7 +125,7 @@ public sealed class BootstrapAdminSeederTests
     }
 
     [Fact]
-    public async Task Should_CreateNoSecondAdminRolle_When_TheSeederRunsAgain()
+    public async Task Should_CreateNoSecondAdminRole_When_TheSeederRunsAgain()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
@@ -179,7 +191,7 @@ public sealed class BootstrapAdminSeederTests
     }
 
     [Fact]
-    public async Task Should_GrantTheMissingBerechtigung_When_TheAdminRolleLacksOne()
+    public async Task Should_GrantTheMissingPermission_When_TheAdminRoleLacksOne()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
@@ -213,7 +225,7 @@ public sealed class BootstrapAdminSeederTests
     }
 
     [Fact]
-    public async Task Should_UnarchiveTheAdminRolle_When_TheClubArchivedIt()
+    public async Task Should_UnarchiveTheAdminRole_When_TheClubArchivedIt()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
@@ -225,7 +237,7 @@ public sealed class BootstrapAdminSeederTests
     }
 
     [Fact]
-    public async Task Should_CreateNoSecondAdminRolle_When_TheClubRenamedItToAnotherCase()
+    public async Task Should_CreateNoSecondAdminRole_When_TheClubRenamedItToAnotherCase()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
@@ -237,7 +249,7 @@ public sealed class BootstrapAdminSeederTests
     }
 
     [Fact]
-    public async Task Should_OpenAnInhaberschaft_When_TheAdminRolleLostEveryInhaber()
+    public async Task Should_OpenARoleHolding_When_TheAdminRoleLostEveryHolder()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
@@ -254,7 +266,7 @@ public sealed class BootstrapAdminSeederTests
     }
 
     [Fact]
-    public async Task Should_OpenAFurtherInhaberschaft_When_TheLastOneOnTheAdminRolleHasEnded()
+    public async Task Should_OpenAFurtherRoleHolding_When_TheLastOneOnTheAdminRoleHasEnded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
@@ -282,7 +294,7 @@ public sealed class BootstrapAdminSeederTests
     }
 
     [Fact]
-    public async Task Should_RestoreTheAdminRolle_When_TheDatabaseIsReset()
+    public async Task Should_RestoreTheAdminRole_When_TheDatabaseIsReset()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -303,5 +315,123 @@ public sealed class BootstrapAdminSeederTests
             .RoleHoldingsOfPerson(_fixture.BootstrapAdmin.PersonId)
             .ToHaveOpenCount(1)
             .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ReportTheAdminRoleCreation_When_TheHostSeedsAFreshDatabase()
+    {
+        await _fixture.BuildAsync(TestContext.Current.CancellationToken);
+
+        var written = Assert.Single(_fixture.Logs.Written(RoleCreated));
+        Assert.Equal(LogEventLevel.Information, written.Level);
+        Assert.Equal(_fixture.AdminRoleId, written.ScalarOf("RoleId"));
+    }
+
+    [Fact]
+    public async Task Should_ReportTheSkippedSeeding_When_TheBootstrapAdminIsNotConfigured()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await _fixture.BuildAsync(ct);
+        var mark = _fixture.Logs.Mark();
+
+        await _fixture.RunBootstrapSeederAsync(new BootstrapAdminOptions(), ct);
+
+        Assert.Single(_fixture.Logs.Written(SeedingSkipped, mark));
+    }
+
+    [Fact]
+    public async Task Should_ReportTheCreatedAccount_When_TheBootstrapAccountWasMissing()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(ct);
+        await _fixture.DeleteAccountDirectlyAsync(_fixture.BootstrapAdmin.AccountId, ct);
+        var mark = _fixture.Logs.Mark();
+
+        await _fixture.RunBootstrapSeederAsync(ct);
+
+        var written = Assert.Single(_fixture.Logs.Written(AccountCreated, mark));
+        Assert.Equal(ApiTestFixture.BootstrapAdminEmail, written.ScalarOf("Email"));
+        await ctx
+            .Expected.Account((int)written.ScalarOf("AccountId")!)
+            .ToHaveEmail(ApiTestFixture.BootstrapAdminEmail)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ReportTheReenabledAccount_When_TheAdminAccountWasDisabled()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await _fixture.BuildAsync(ct);
+        await _fixture.DisableAccountDirectlyAsync(_fixture.BootstrapAdmin.AccountId, ct);
+        var mark = _fixture.Logs.Mark();
+
+        await _fixture.RunBootstrapSeederAsync(ct);
+
+        var written = Assert.Single(_fixture.Logs.Written(AccountReenabled, mark));
+        Assert.Equal(_fixture.BootstrapAdmin.AccountId, written.ScalarOf("AccountId"));
+    }
+
+    [Fact]
+    public async Task Should_ReportTheRestoredRole_When_TheClubArchivedTheAdminRole()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await _fixture.BuildAsync(ct);
+        await _fixture.ArchiveRoleDirectlyAsync(_fixture.AdminRoleId, _fixture.Today, ct);
+        var mark = _fixture.Logs.Mark();
+
+        await _fixture.RunBootstrapSeederAsync(ct);
+
+        var written = Assert.Single(_fixture.Logs.Written(RoleRestored, mark));
+        Assert.Equal(_fixture.AdminRoleId, written.ScalarOf("RoleId"));
+    }
+
+    [Fact]
+    public async Task Should_ReportTheGrantedPermissions_When_TheAdminRoleLackedOne()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await _fixture.BuildAsync(ct);
+        await _fixture.RemoveRolePermissionDirectlyAsync(
+            _fixture.AdminRoleId,
+            FurriaPermissions.RolesManage,
+            ct
+        );
+        var mark = _fixture.Logs.Mark();
+
+        await _fixture.RunBootstrapSeederAsync(ct);
+
+        var written = Assert.Single(_fixture.Logs.Written(PermissionsGranted, mark));
+        Assert.Equal(_fixture.AdminRoleId, written.ScalarOf("RoleId"));
+        Assert.Equal(1, written.ScalarOf("MissingPermissionCount"));
+    }
+
+    [Fact]
+    public async Task Should_ReportTheHandedBackRole_When_TheAdminRoleLostEveryHolder()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await _fixture.BuildAsync(ct);
+        await _fixture.RemoveRoleHoldingsDirectlyAsync(_fixture.AdminRoleId, ct);
+        var mark = _fixture.Logs.Mark();
+
+        await _fixture.RunBootstrapSeederAsync(ct);
+
+        var written = Assert.Single(_fixture.Logs.Written(RoleHandedBack, mark));
+        Assert.Equal(_fixture.AdminRoleId, written.ScalarOf("RoleId"));
+        Assert.Equal(_fixture.BootstrapAdmin.PersonId, written.ScalarOf("PersonId"));
+    }
+
+    [Fact]
+    public async Task Should_ReportNothing_When_EverythingIsAlreadyInPlace()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await _fixture.BuildAsync(ct);
+        var mark = _fixture.Logs.Mark();
+
+        await _fixture.RunBootstrapSeederAsync(ct);
+
+        Assert.DoesNotContain(
+            _fixture.Logs.Since(mark),
+            logged =>
+                Equals(logged.ScalarOf("SourceContext"), typeof(BootstrapAdminSeeder).FullName)
+        );
     }
 }

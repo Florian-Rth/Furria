@@ -20,7 +20,7 @@ public sealed class GetVenuesTests
     }
 
     [Fact]
-    public async Task Should_ListRunningOrteInGermanNameOrderBeforeArchivedOnes_When_TheBackOfficeIsRead()
+    public async Task Should_ListRunningVenuesInGermanNameOrderBeforeArchivedOnes_When_TheBackOfficeIsRead()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -43,7 +43,7 @@ public sealed class GetVenuesTests
     }
 
     [Fact]
-    public async Task Should_CarryTheArchivedOrtWithItsStichtag_When_AnOrtWasArchived()
+    public async Task Should_CarryTheArchivedVenueWithItsArchiveDate_When_TheVenueWasArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -64,7 +64,7 @@ public sealed class GetVenuesTests
     }
 
     [Fact]
-    public async Task Should_CarryTheAnschriftAndDenHinweis_When_TheOrtRecordsThem()
+    public async Task Should_CarryTheAddressAndTheHint_When_TheVenueRecordsThem()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -94,7 +94,7 @@ public sealed class GetVenuesTests
     }
 
     [Fact]
-    public async Task Should_CarryNoHinweis_When_TheOrtNeedsNone()
+    public async Task Should_CarryNoHint_When_TheVenueNeedsNone()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

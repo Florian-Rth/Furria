@@ -44,6 +44,12 @@ services:
       Auth__BootstrapAdmin__Password: ${BOOTSTRAP_ADMIN_PASSWORD:-}
       Auth__BootstrapAdmin__FirstName: ${BOOTSTRAP_ADMIN_FIRST_NAME:-}
       Auth__BootstrapAdmin__LastName: ${BOOTSTRAP_ADMIN_LAST_NAME:-}
+    # Logs are JSON on stdout (ADR-0017); rotate them so `docker logs` never fills the disk.
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
     labels:
       com.centurylinklabs.watchtower.enable: "true"
 

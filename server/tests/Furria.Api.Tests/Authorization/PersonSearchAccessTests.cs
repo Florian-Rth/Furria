@@ -46,7 +46,7 @@ public sealed class PersonSearchAccessTests
     }
 
     [Fact]
-    public async Task Should_Allow_When_TheCallerAdministersAnyGruppe()
+    public async Task Should_Allow_When_TheCallerAdministersAnyGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -184,7 +184,7 @@ public sealed class PersonSearchAccessTests
     }
 
     [Fact]
-    public async Task Should_Refuse_When_TheCallerOnlyBelongsToAGruppe()
+    public async Task Should_Refuse_When_TheCallerOnlyBelongsToAGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -211,7 +211,7 @@ public sealed class PersonSearchAccessTests
     }
 
     [Fact]
-    public async Task Should_Refuse_When_TheGruppenAdminschaftHasEnded()
+    public async Task Should_Refuse_When_TheGroupAdminPeriodHasEnded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -240,7 +240,7 @@ public sealed class PersonSearchAccessTests
     }
 
     [Fact]
-    public async Task Should_Allow_When_TheOnlyAdministeredGruppeIsArchived()
+    public async Task Should_Allow_When_TheOnlyAdministeredGroupIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

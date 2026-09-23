@@ -29,7 +29,7 @@ public sealed class PostGroupMembershipTests
     }
 
     [Fact]
-    public async Task Should_OpenTheZugehoerigkeit_When_TheGruppenAdminTakesAPersonIn()
+    public async Task Should_OpenTheGroupMembership_When_TheGroupAdminTakesAPersonIn()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -73,7 +73,7 @@ public sealed class PostGroupMembershipTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_ThePersonAlreadyBelongsToTheGruppe()
+    public async Task Should_ReturnConflict_When_ThePersonAlreadyBelongsToTheGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -123,10 +123,10 @@ public sealed class PostGroupMembershipTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheNewPeriodOverlapsAnEndedZugehoerigkeit()
+    public async Task Should_ReturnConflict_When_TheNewPeriodOverlapsAnEndedGroupMembership()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithEndedZugehoerigkeitAsync(ct);
+        var ctx = await BuildWithEndedGroupMembershipAsync(ct);
 
         var client = await ctx.Identity.ClientForAsync("anna", ct);
         var (response, _) = await client.POSTAsync<
@@ -161,7 +161,7 @@ public sealed class PostGroupMembershipTests
     public async Task Should_ReturnConflict_When_TheRejoinStartsOnTheDayTheLastOneEnded()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithEndedZugehoerigkeitAsync(ct);
+        var ctx = await BuildWithEndedGroupMembershipAsync(ct);
 
         var client = await ctx.Identity.ClientForAsync("anna", ct);
         var (response, _) = await client.POSTAsync<
@@ -185,10 +185,10 @@ public sealed class PostGroupMembershipTests
     }
 
     [Fact]
-    public async Task Should_OpenASecondZugehoerigkeit_When_TheRejoinStartsAfterTheLastOne()
+    public async Task Should_OpenASecondGroupMembership_When_TheRejoinStartsAfterTheLastOne()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithEndedZugehoerigkeitAsync(ct);
+        var ctx = await BuildWithEndedGroupMembershipAsync(ct);
 
         var client = await ctx.Identity.ClientForAsync("anna", ct);
         var (response, result) = await client.POSTAsync<
@@ -220,7 +220,7 @@ public sealed class PostGroupMembershipTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheGruppeIsUnknown()
+    public async Task Should_ReturnNotFound_When_TheGroupIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -301,7 +301,7 @@ public sealed class PostGroupMembershipTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheGruppeIsArchived()
+    public async Task Should_ReturnConflict_When_TheGroupIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -348,7 +348,7 @@ public sealed class PostGroupMembershipTests
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerOnlyBelongsToTheGruppe()
+    public async Task Should_ReturnForbidden_When_TheCallerOnlyBelongsToTheGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -437,7 +437,7 @@ public sealed class PostGroupMembershipTests
     }
 
     [Fact]
-    public async Task Should_StoreTheRow_When_TheZugehoerigkeitStartsInTheFuture()
+    public async Task Should_StoreTheRow_When_TheGroupMembershipStartsInTheFuture()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -552,7 +552,7 @@ public sealed class PostGroupMembershipTests
             .AssertAsync(ct);
     }
 
-    private Task<SeededContext> BuildWithEndedZugehoerigkeitAsync(CancellationToken ct) =>
+    private Task<SeededContext> BuildWithEndedGroupMembershipAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder =>
                 builder

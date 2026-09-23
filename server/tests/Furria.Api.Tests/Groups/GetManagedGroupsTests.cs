@@ -24,7 +24,7 @@ public sealed class GetManagedGroupsTests
     }
 
     [Fact]
-    public async Task Should_CarryTheGruppeWithItsAdmins_When_TheKeyHolderReadsTheList()
+    public async Task Should_CarryTheGroupWithItsAdmins_When_TheKeyHolderReadsTheList()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -75,7 +75,7 @@ public sealed class GetManagedGroupsTests
     }
 
     [Fact]
-    public async Task Should_CarryTheArchivedGruppe_When_TheKeyHolderReadsTheList()
+    public async Task Should_CarryTheArchivedGroup_When_TheKeyHolderReadsTheList()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -105,7 +105,7 @@ public sealed class GetManagedGroupsTests
     }
 
     [Fact]
-    public async Task Should_CarryTheStoredTone_When_TheGruppeCarriesOne()
+    public async Task Should_CarryTheStoredTone_When_TheGroupCarriesOne()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -130,7 +130,7 @@ public sealed class GetManagedGroupsTests
     }
 
     [Fact]
-    public async Task Should_CarryAnEmptyAdminList_When_TheGruppeHasNoRunningAdmin()
+    public async Task Should_CarryAnEmptyAdminList_When_TheGroupHasNoRunningAdmin()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -158,12 +158,12 @@ public sealed class GetManagedGroupsTests
         >();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var elferrat = Assert.Single(result.Groups);
-        Assert.Empty(elferrat.Admins);
+        var councilOfEleven = Assert.Single(result.Groups);
+        Assert.Empty(councilOfEleven.Admins);
     }
 
     [Fact]
-    public async Task Should_CountOnlyRunningZugehoerigkeiten_When_TheGruppeHasHistory()
+    public async Task Should_CountOnlyRunningGroupMemberships_When_TheGroupHasHistory()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -208,7 +208,7 @@ public sealed class GetManagedGroupsTests
     }
 
     [Fact]
-    public async Task Should_SortUmlautsAsGerman_When_ListingTheGruppen()
+    public async Task Should_SortUmlautsAsGerman_When_ListingTheGroups()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -236,7 +236,7 @@ public sealed class GetManagedGroupsTests
     }
 
     [Fact]
-    public async Task Should_CarryTheGruppenartenWithTheirGruppenzahl_When_TheListIsRead()
+    public async Task Should_CarryTheGroupKindsWithTheirGroupCount_When_TheListIsRead()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -269,7 +269,7 @@ public sealed class GetManagedGroupsTests
     }
 
     [Fact]
-    public async Task Should_CarryNoGruppenart_When_TheVerwaltungHasNotNamedOneYet()
+    public async Task Should_CarryNoGroupKind_When_TheManagerHasNotNamedOneYet()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

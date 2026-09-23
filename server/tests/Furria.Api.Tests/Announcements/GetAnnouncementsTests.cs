@@ -53,7 +53,7 @@ public sealed class GetAnnouncementsTests
     }
 
     [Fact]
-    public async Task Should_CarryTheExpiredAushangToo_When_TheBoardIsReadInFull()
+    public async Task Should_CarryTheExpiredAnnouncementToo_When_TheBoardIsReadInFull()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildBoardAsync(ct);
@@ -71,7 +71,7 @@ public sealed class GetAnnouncementsTests
     }
 
     [Fact]
-    public async Task Should_LeaveTheFunktionEmpty_When_TheAutorHoldsNoVorstandssitz()
+    public async Task Should_LeaveTheOfficeEmpty_When_TheAuthorHoldsNoBoardSeat()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildBoardAsync(ct);
@@ -91,7 +91,7 @@ public sealed class GetAnnouncementsTests
     }
 
     [Fact]
-    public async Task Should_NameTheAutorsFunktion_When_SheHoldsARunningVorstandssitz()
+    public async Task Should_NameTheAuthorsOffice_When_SheHoldsARunningBoardSeat()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -119,7 +119,7 @@ public sealed class GetAnnouncementsTests
     }
 
     [Fact]
-    public async Task Should_OfferEditingHerOwnAushangOnly_When_TheAutorHoldsNoBerechtigung()
+    public async Task Should_OfferEditingHerOwnAnnouncementOnly_When_TheAuthorHoldsNoPermission()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildBoardAsync(ct);
@@ -131,7 +131,7 @@ public sealed class GetAnnouncementsTests
     }
 
     [Fact]
-    public async Task Should_OfferEditingEveryAushang_When_TheReaderHoldsTheBerechtigung()
+    public async Task Should_OfferEditingEveryAnnouncement_When_TheReaderHoldsThePermission()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildBoardAsync(ct);
@@ -174,7 +174,7 @@ public sealed class GetAnnouncementsTests
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerHoldsNoRunningMitgliedschaft()
+    public async Task Should_ReturnForbidden_When_TheCallerHoldsNoRunningMembership()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

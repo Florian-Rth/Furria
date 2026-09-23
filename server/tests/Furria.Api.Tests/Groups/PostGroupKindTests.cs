@@ -33,7 +33,7 @@ public sealed class PostGroupKindTests
         );
 
     [Fact]
-    public async Task Should_RecordTheGruppenart_When_AManagerAddsItToTheBand()
+    public async Task Should_RecordTheGroupKind_When_AManagerAddsItToTheBand()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
@@ -68,7 +68,7 @@ public sealed class PostGroupKindTests
     }
 
     [Fact]
-    public async Task Should_TakeTheName_When_TheGruppenartThatUsedItIsArchived()
+    public async Task Should_TakeTheName_When_TheGroupKindThatUsedItIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

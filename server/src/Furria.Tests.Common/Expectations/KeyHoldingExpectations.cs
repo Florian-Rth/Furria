@@ -23,7 +23,7 @@ public sealed class KeyHoldingExpectations
                     await dbContext
                         .KeyHoldings.AsNoTracking()
                         .AnyAsync(row => row.Id == _keyHoldingId, ct),
-                    $"Expected no Schlüssel with id {_keyHoldingId}."
+                    $"Expected no KeyHolding with id {_keyHoldingId}."
                 )
         );
 

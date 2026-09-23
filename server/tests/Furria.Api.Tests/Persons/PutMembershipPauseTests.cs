@@ -16,7 +16,7 @@ public sealed class PutMembershipPauseTests
     private const string ValidationField = "request";
     private const int PausedFrom2018 = 2018;
     private const int PausedUntil2019 = 2019;
-    private const int BeforeTheMitgliedschaft = 2015;
+    private const int BeforeTheMembership = 2015;
     private const int PausedFrom2022 = 2022;
     private const int PausedUntil2023 = 2023;
 
@@ -32,10 +32,10 @@ public sealed class PutMembershipPauseTests
     }
 
     [Fact]
-    public async Task Should_CorrectTheSpan_When_AManagerFixesARuhezeit()
+    public async Task Should_CorrectTheSpan_When_AManagerFixesAMembershipPause()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithClosedRuhezeitAsync(ct);
+        var ctx = await BuildWithClosedMembershipPauseAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var response = await client.PUTAsync<PutMembershipPause, PutMembershipPauseRequest>(
@@ -57,10 +57,10 @@ public sealed class PutMembershipPauseTests
     }
 
     [Fact]
-    public async Task Should_ReturnUnprocessableEntity_When_TheSpanLeavesTheMitgliedschaft()
+    public async Task Should_ReturnUnprocessableEntity_When_TheSpanLeavesTheMembership()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithClosedRuhezeitAsync(ct);
+        var ctx = await BuildWithClosedMembershipPauseAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var response = await client.PUTAsync<PutMembershipPause, PutMembershipPauseRequest>(
@@ -69,8 +69,8 @@ public sealed class PutMembershipPauseTests
                 PersonId = ctx.Identity.People.IdOf("paula"),
                 MembershipId = ctx.Identity.Memberships.IdOf("paula-erste"),
                 PauseId = ctx.Identity.Pauses.IdOf("paula-ruhte"),
-                FirstSessionYear = BeforeTheMitgliedschaft,
-                LastSessionYear = BeforeTheMitgliedschaft + 1,
+                FirstSessionYear = BeforeTheMembership,
+                LastSessionYear = BeforeTheMembership + 1,
             }
         );
 
@@ -87,7 +87,7 @@ public sealed class PutMembershipPauseTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheCorrectedSpanOverlapsAnotherRuhezeit()
+    public async Task Should_ReturnConflict_When_TheCorrectedSpanOverlapsAnotherMembershipPause()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -137,7 +137,7 @@ public sealed class PutMembershipPauseTests
     }
 
     [Fact]
-    public async Task Should_CloseTheOpenRuhezeit_When_TheLastSessionIsGiven()
+    public async Task Should_CloseTheOpenMembershipPause_When_TheLastSessionIsGiven()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -174,7 +174,7 @@ public sealed class PutMembershipPauseTests
     public async Task Should_ReturnUnprocessableEntity_When_TheLastSessionPrecedesTheFirst()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithClosedRuhezeitAsync(ct);
+        var ctx = await BuildWithClosedMembershipPauseAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var response = await client.PUTAsync<PutMembershipPause, PutMembershipPauseRequest>(
@@ -197,7 +197,7 @@ public sealed class PutMembershipPauseTests
     }
 
     [Fact]
-    public async Task Should_ReturnUnprocessableEntity_When_TheRuhezeitStaysOpenOnAnEndedMitgliedschaft()
+    public async Task Should_ReturnUnprocessableEntity_When_TheMembershipPauseStaysOpenOnAnEndedMembership()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -244,7 +244,7 @@ public sealed class PutMembershipPauseTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheRuhezeitBelongsToAnotherMitgliedschaft()
+    public async Task Should_ReturnNotFound_When_TheMembershipPauseBelongsToAnotherMembership()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -287,7 +287,7 @@ public sealed class PutMembershipPauseTests
     public async Task Should_ReturnBadRequest_When_TheRouteCarriesNoUsableId()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithClosedRuhezeitAsync(ct);
+        var ctx = await BuildWithClosedMembershipPauseAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var response = await client.PUTAsync<PutMembershipPause, PutMembershipPauseRequest>(
@@ -363,7 +363,7 @@ public sealed class PutMembershipPauseTests
     public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithClosedRuhezeitAsync(ct);
+        var ctx = await BuildWithClosedMembershipPauseAsync(ct);
 
         var response = await _fixture
             .CreateClient()
@@ -386,7 +386,7 @@ public sealed class PutMembershipPauseTests
     }
 
     [Fact]
-    public async Task Should_ChangeOnlyTheAddressedRuhezeit_When_TheMitgliedschaftHasSeveral()
+    public async Task Should_ChangeOnlyTheAddressedMembershipPause_When_TheMembershipHasSeveral()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -432,7 +432,7 @@ public sealed class PutMembershipPauseTests
             .AssertAsync(ct);
     }
 
-    private Task<SeededContext> BuildWithClosedRuhezeitAsync(CancellationToken ct) =>
+    private Task<SeededContext> BuildWithClosedMembershipPauseAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder =>
                 builder.Identity(identity =>

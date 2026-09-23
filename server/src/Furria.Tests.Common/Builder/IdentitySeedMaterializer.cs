@@ -138,7 +138,7 @@ internal static class IdentitySeedMaterializer
                 MembershipId = SeedAliases.RequireId(
                     membershipIds,
                     intent.MembershipAlias,
-                    "Mitgliedschaft"
+                    "Membership"
                 ),
                 FirstSessionYear = intent.FirstSessionYear,
                 LastSessionYear = intent.LastSessionYear,

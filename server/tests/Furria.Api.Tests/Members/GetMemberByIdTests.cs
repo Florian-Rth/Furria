@@ -80,10 +80,10 @@ public sealed class GetMemberByIdTests
         Assert.Equal(ctx.Groups.Groups.IdOf("tanzgarde"), tanzgarde.GroupId);
         Assert.Equal("Tanzgarde", tanzgarde.Name);
         Assert.Equal(JoinedIn2017, tanzgarde.Since);
-        var zeugwartin = Assert.Single(result.Roles);
-        Assert.Equal(ctx.Roles.Roles.IdOf("zeugwartin"), zeugwartin.RoleId);
-        Assert.Equal("Zeugwartin", zeugwartin.Name);
-        Assert.Equal(JoinedIn2017, zeugwartin.Since);
+        var equipmentWarden = Assert.Single(result.Roles);
+        Assert.Equal(ctx.Roles.Roles.IdOf("zeugwartin"), equipmentWarden.RoleId);
+        Assert.Equal("Zeugwartin", equipmentWarden.Name);
+        Assert.Equal(JoinedIn2017, equipmentWarden.Since);
         Assert.Equal(ContactVisibility.Hidden, result.Contact.Visibility);
     }
 
@@ -218,7 +218,7 @@ public sealed class GetMemberByIdTests
     }
 
     [Fact]
-    public async Task Should_ReportTheChainMinimum_When_SheLeftAndRejoinedTheGruppeAndTheRolle()
+    public async Task Should_ReportTheChainMinimum_When_SheLeftAndRejoinedTheGroupAndTheRole()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -274,12 +274,12 @@ public sealed class GetMemberByIdTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var tanzgarde = Assert.Single(result.Groups);
         Assert.Equal(JoinedIn2017, tanzgarde.Since);
-        var zeugwartin = Assert.Single(result.Roles);
-        Assert.Equal(JoinedIn2017, zeugwartin.Since);
+        var equipmentWarden = Assert.Single(result.Roles);
+        Assert.Equal(JoinedIn2017, equipmentWarden.Since);
     }
 
     [Fact]
-    public async Task Should_OmitTheTie_When_ItEndedOrItsGruppeOrRolleIsArchived()
+    public async Task Should_OmitTheTie_When_ItEndedOrItsGroupOrRoleIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -352,12 +352,12 @@ public sealed class GetMemberByIdTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var marschmusik = Assert.Single(result.Groups);
         Assert.Equal(ctx.Groups.Groups.IdOf("marschmusik"), marschmusik.GroupId);
-        var zeugwartin = Assert.Single(result.Roles);
-        Assert.Equal(ctx.Roles.Roles.IdOf("zeugwartin"), zeugwartin.RoleId);
+        var equipmentWarden = Assert.Single(result.Roles);
+        Assert.Equal(ctx.Roles.Roles.IdOf("zeugwartin"), equipmentWarden.RoleId);
     }
 
     [Fact]
-    public async Task Should_NameEachGruppeAndRolleOnce_When_ATieEndedAndANewOneStartedToday()
+    public async Task Should_NameEachGroupAndRoleOnce_When_ATieEndedAndANewOneStartedToday()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -413,12 +413,12 @@ public sealed class GetMemberByIdTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var tanzgarde = Assert.Single(result.Groups);
         Assert.Equal(JoinedIn2017, tanzgarde.Since);
-        var zeugwartin = Assert.Single(result.Roles);
-        Assert.Equal(JoinedIn2017, zeugwartin.Since);
+        var equipmentWarden = Assert.Single(result.Roles);
+        Assert.Equal(JoinedIn2017, equipmentWarden.Since);
     }
 
     [Fact]
-    public async Task Should_SortGruppenAndRollenAsGerman_When_SheCarriesSeveral()
+    public async Task Should_SortGroupsAndRolesAsGerman_When_SheCarriesSeveral()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -487,7 +487,7 @@ public sealed class GetMemberByIdTests
     }
 
     [Fact]
-    public async Task Should_KeepTheFirstStartDate_When_SheQuitAndRejoinedTheVerein()
+    public async Task Should_KeepTheFirstStartDate_When_SheQuitAndRejoinedTheClub()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -512,7 +512,7 @@ public sealed class GetMemberByIdTests
     }
 
     [Fact]
-    public async Task Should_ReportBeendetAndKeepHerCard_When_AFormerMitgliedStillDances()
+    public async Task Should_ReportEndedAndKeepHerCard_When_AFormerMemberStillDances()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -548,7 +548,7 @@ public sealed class GetMemberByIdTests
     }
 
     [Fact]
-    public async Task Should_ReportKeinMitglied_When_SheOnlyBelongsToAGruppe()
+    public async Task Should_ReportNoMembership_When_SheOnlyBelongsToAGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -583,7 +583,7 @@ public sealed class GetMemberByIdTests
     }
 
     [Fact]
-    public async Task Should_ReportRuht_When_TheRunningMitgliedschaftPausesThisSession()
+    public async Task Should_ReportPaused_When_TheRunningMembershipPausesThisSession()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

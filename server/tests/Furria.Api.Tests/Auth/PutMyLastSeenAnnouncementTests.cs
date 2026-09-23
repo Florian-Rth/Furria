@@ -30,7 +30,7 @@ public sealed class PutMyLastSeenAnnouncementTests
     }
 
     [Fact]
-    public async Task Should_LeaveTheMarkUnset_When_TheMitgliedHasNeverReadTheAushang()
+    public async Task Should_LeaveTheMarkUnset_When_TheMemberHasNeverReadTheAnnouncement()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildAsync(ct);
@@ -43,7 +43,7 @@ public sealed class PutMyLastSeenAnnouncementTests
     }
 
     [Fact]
-    public async Task Should_StampTheMark_When_TheMitgliedHasReadTheAushang()
+    public async Task Should_StampTheMark_When_TheMemberHasReadTheAnnouncement()
     {
         var ct = TestContext.Current.CancellationToken;
 

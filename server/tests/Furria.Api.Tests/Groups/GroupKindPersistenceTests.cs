@@ -18,7 +18,7 @@ public sealed class GroupKindPersistenceTests
     }
 
     [Fact]
-    public async Task Should_RejectTheName_When_ARunningGruppenartUsesItInAnotherCase()
+    public async Task Should_RejectTheName_When_ARunningGroupKindUsesItInAnotherCase()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -38,7 +38,7 @@ public sealed class GroupKindPersistenceTests
     }
 
     [Fact]
-    public async Task Should_AcceptTheName_When_TheGruppenartThatUsedItIsArchived()
+    public async Task Should_AcceptTheName_When_TheGroupKindThatUsedItIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -60,7 +60,7 @@ public sealed class GroupKindPersistenceTests
     }
 
     [Fact]
-    public async Task Should_TieTheGruppeToItsArt_When_TheSeedNamesOne()
+    public async Task Should_TieTheGroupToItsKind_When_TheSeedNamesOne()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -76,12 +76,12 @@ public sealed class GroupKindPersistenceTests
 
         await ctx
             .Expected.GroupKinds()
-            .ToCountGruppenOf(ctx.Groups.GroupKinds.IdOf("garde"), 1)
+            .ToCountGroupsOf(ctx.Groups.GroupKinds.IdOf("garde"), 1)
             .AssertAsync(ct);
     }
 
     [Fact]
-    public async Task Should_SortUmlautsAsGerman_When_TheGruppenartenAreRead()
+    public async Task Should_SortUmlautsAsGerman_When_TheGroupKindsAreRead()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
