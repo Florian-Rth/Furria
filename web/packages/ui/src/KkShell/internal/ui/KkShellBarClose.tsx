@@ -5,6 +5,7 @@ import { KkEyebrow } from '../../../KkEyebrow';
 import { KkIcon } from '../../../KkIcon';
 import { kkTokens } from '../../../tokens';
 import type { KkScreenOrigin } from '../../screen-declaration';
+import { KkShellBarMark } from '../layout/KkShellBarMark';
 import { useKkShell } from '../logic/shell-context';
 import { KkShellBarTitle } from './KkShellBarTitle';
 
@@ -28,7 +29,7 @@ export const KkShellBarClose: FC<KkShellBarCloseProps> = ({ origin, title }) => 
       data-kk-shell-bar-close
       sx={(theme) => ({
         alignItems: 'center',
-        gap: 0.75,
+        gap: 0.25,
         minWidth: 0,
         minHeight: kkTokens.tapTarget,
         pr: 1,
@@ -38,7 +39,9 @@ export const KkShellBarClose: FC<KkShellBarCloseProps> = ({ origin, title }) => 
         ...focusRing(theme),
       })}
     >
-      <KkIcon name="close" size="medium" sx={{ flexShrink: 0 }} />
+      <KkShellBarMark>
+        <KkIcon name="close" size="medium" />
+      </KkShellBarMark>
       <Stack sx={{ minWidth: 0, gap: 0 }}>
         <KkEyebrow tone="muted" sx={{ lineHeight: 1 }}>
           {origin.label}

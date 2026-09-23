@@ -3,7 +3,8 @@ import type { KkTone } from '../internal/tone';
 import type { KkIconName } from '../KkIcon';
 import type { KkLetterIndexEntry } from '../letter-index-cells';
 import type { KkLetterPace } from '../letter-pace';
-import type { KkHandoverStage } from './handover-stage';
+import type { KkBarMorphName } from './bar-morph';
+import type { KkHandoverName } from './handover-stage';
 
 export type KkScreenKind = 'overview' | 'list' | 'detail' | 'working' | 'fullscreen';
 
@@ -93,7 +94,8 @@ interface KkScreenShared {
   header?: ReactNode;
   headerKind?: KkScreenHeaderKind;
   thread?: KkScreenThread;
-  handover?: KkHandoverStage;
+  handover?: KkHandoverName;
+  barMorph?: KkBarMorphName;
   children?: ReactNode;
 }
 

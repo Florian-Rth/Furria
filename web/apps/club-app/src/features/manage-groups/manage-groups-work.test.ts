@@ -160,7 +160,7 @@ describe('toGroupRegisterBands', () => {
     expect(bands.archived).toEqual([]);
   });
 
-  it('keeps only the groups without a Gruppenart', () => {
+  it('keeps only the groups without a group kind', () => {
     expect(idsOf(toGroupRegisterBands(ALL, '', NO_KIND_GROUPS_FILTER_ID).running)).toEqual([10, 8]);
   });
 

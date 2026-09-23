@@ -31,7 +31,7 @@ describe('toGroupAdminsLabel', () => {
 });
 
 describe('toGroupSubline', () => {
-  it('names the people and the admins of one Gruppe in one line', () => {
+  it('names the people and the admins of one group in one line', () => {
     expect(toGroupSubline(18, 2)).toBe('18 Personen · 2 Gruppen-Admins');
   });
 
@@ -39,21 +39,21 @@ describe('toGroupSubline', () => {
     expect(toGroupSubline(1, 1)).toBe('1 Person · 1 Gruppen-Admin');
   });
 
-  it('says out loud when a Gruppe has no admin', () => {
+  it('says out loud when a group has no admin', () => {
     expect(toGroupSubline(18, 0)).toBe('18 Personen · kein Gruppen-Admin');
   });
 
-  it('says out loud when nobody is in the Gruppe', () => {
+  it('says out loud when nobody is in the group', () => {
     expect(toGroupSubline(0, 0)).toBe('keine Mitglieder · kein Gruppen-Admin');
   });
 });
 
 describe('toGroupPeopleNote', () => {
-  it('stays quiet while the Gruppe holds nobody at all', () => {
+  it('stays quiet while the group holds nobody at all', () => {
     expect(toGroupPeopleNote(0, 0)).toBeUndefined();
   });
 
-  it('warns that nobody pflegt the Gruppe while it has members but no Admin', () => {
+  it('warns that nobody maintains the group while it has members but no admin', () => {
     expect(toGroupPeopleNote(18, 0)).toBe(NO_ADMINS_LINE);
   });
 

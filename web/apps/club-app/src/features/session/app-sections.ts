@@ -1,4 +1,4 @@
-import type { KkIconName, KkScreenOrigin, KkShellDestination } from '@furria/ui';
+import type { KkHandoverName, KkIconName, KkScreenOrigin, KkShellDestination } from '@furria/ui';
 import type { PermissionKey } from '@/lib/api/schemas';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 
@@ -35,6 +35,18 @@ export const GROUPS_ORIGIN: KkScreenOrigin = { label: 'Gruppen', to: GROUPS_PATH
 export const PROFILE_ORIGIN: KkScreenOrigin = { label: 'Profil', to: PROFILE_PATH };
 export const MORE_ORIGIN: KkScreenOrigin = { label: 'Mehr', to: MORE_PATH };
 export const MANAGE_ORIGIN: KkScreenOrigin = { label: 'Verein verwalten', to: MANAGE_PATH };
+
+export const AREA_HANDOVERS = {
+  overview: 'confetti',
+  club: 'confetti',
+  calendar: 'splitFlap',
+  members: 'sway',
+  groups: 'sway',
+  profile: 'sway',
+  announcements: 'fanfare',
+  manage: 'fanfare',
+  more: 'fanfare',
+} as const satisfies Record<string, KkHandoverName>;
 
 export const MANAGE_KEYS: readonly PermissionKey[] = [
   PERMISSION_KEYS.personsManage,

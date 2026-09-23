@@ -2,6 +2,7 @@ import type { KkScreenOrigin } from '@furria/ui';
 import { KkScreen, KkScreenHeaderSkeleton } from '@furria/ui';
 import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { AREA_HANDOVERS } from '@/features/session';
 import { useMemberQuery } from '../api';
 import { useIsSelf } from '../hooks/use-is-self';
 import { toMemberHeadline, toPersonId } from '../members-labels';
@@ -28,7 +29,13 @@ export const MemberPage: FC = () => {
     );
 
   return (
-    <KkScreen kind="detail" title={headline.title} origin={MEMBERS_ORIGIN} header={header}>
+    <KkScreen
+      kind="detail"
+      title={headline.title}
+      origin={MEMBERS_ORIGIN}
+      header={header}
+      handover={AREA_HANDOVERS.members}
+    >
       <MemberBody personId={id} />
     </KkScreen>
   );

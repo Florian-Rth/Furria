@@ -1,12 +1,12 @@
 export { GROUPS_QUERY_KEY, useGroupsQuery } from './api';
 export { GroupCardBody } from './components/GroupCardBody';
 export { GroupsPage } from './components/GroupsPage';
-export type { GroupTone, Jubilee, TrainingSlotFacts, Weekday } from './group-identity';
+export type { Anniversary, GroupTone, TrainingSlotFacts, Weekday } from './group-identity';
 export {
-  JUBILEE_STEP,
+  ANNIVERSARY_STEP,
+  toAnniversary,
   toFoundedLine,
   toGroupTone,
-  toJubilee,
   toRhythmSentence,
   toTrainingSlotLine,
   WEEKDAY_VALUES,

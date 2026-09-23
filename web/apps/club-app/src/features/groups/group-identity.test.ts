@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { GroupTone, TrainingSlotFacts } from './group-identity';
 import {
+  toAnniversary,
   toFoundedLine,
   toGroupTone,
-  toJubilee,
   toRhythmSentence,
   toTrainingSlotLine,
 } from './group-identity';
@@ -15,7 +15,7 @@ const slot = (
   venueName: string | null,
 ): TrainingSlotFacts => ({ weekday, startsAt, durationMinutes, venueName });
 
-describe('toJubilee', () => {
+describe('toAnniversary', () => {
   it.each([
     { foundedYear: null, sessionYear: 2026, expected: null },
     { foundedYear: 2026, sessionYear: 2026, expected: null },
@@ -27,9 +27,9 @@ describe('toJubilee', () => {
     { foundedYear: 2030, sessionYear: 2026, expected: null },
     { foundedYear: 2031, sessionYear: 2026, expected: null },
   ])(
-    'turns the Gründungsjahr $foundedYear into $expected in $sessionYear',
+    'turns the founded year $foundedYear into $expected in $sessionYear',
     ({ foundedYear, sessionYear, expected }) => {
-      expect(toJubilee(foundedYear, sessionYear)).toEqual(expected);
+      expect(toAnniversary(foundedYear, sessionYear)).toEqual(expected);
     },
   );
 });
@@ -42,7 +42,7 @@ describe('toGroupTone', () => {
     { groupId: 9, tone: null, expected: 'rose' },
     { groupId: 12, tone: null, expected: 'lime' },
     { groupId: 20, tone: null, expected: 'clay' },
-  ])('paints Gruppe $groupId as $expected', ({ groupId, tone, expected }) => {
+  ])('paints group $groupId as $expected', ({ groupId, tone, expected }) => {
     expect(toGroupTone(groupId, tone)).toBe(expected);
   });
 });
@@ -80,7 +80,7 @@ describe('toTrainingSlotLine', () => {
 });
 
 describe('toRhythmSentence', () => {
-  it('says nothing when the Gruppe has stated no rhythm', () => {
+  it('says nothing when the group has stated no rhythm', () => {
     expect(toRhythmSentence([])).toBeNull();
   });
 
@@ -90,7 +90,7 @@ describe('toRhythmSentence', () => {
     );
   });
 
-  it('joins two slots with und', () => {
+  it('joins two slots with and', () => {
     expect(
       toRhythmSentence([
         slot('tuesday', '19:30:00', 90, 'Sporthalle'),
@@ -101,7 +101,7 @@ describe('toRhythmSentence', () => {
     );
   });
 
-  it('joins three slots with commas and a closing und', () => {
+  it('joins three slots with commas and a closing and', () => {
     expect(
       toRhythmSentence([
         slot('monday', '17:00:00', 60, null),

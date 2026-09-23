@@ -167,7 +167,7 @@ describe('toRoleStatusFilterOptions', () => {
     expect(toRoleStatusFilterOptions([role({ roleId: 1, name: 'Admin' })])).toHaveLength(3);
   });
 
-  it('counts an unbesetzte Rolle on the non-archived side, so its word may not claim service', () => {
+  it('counts a vacant role on the non-archived side, so its word may not claim service', () => {
     const unheld = [role({ roleId: 4, name: 'Chronistin' })];
     const [, nonArchived] = toRoleStatusFilterOptions(unheld);
 
@@ -325,11 +325,11 @@ describe('isSelfLockout', () => {
     ...overrides,
   });
 
-  it('warns when the only Rolle that grants her the key is losing it', () => {
+  it('warns when the only role that grants her the key is losing it', () => {
     expect(isSelfLockout(input())).toBe(true);
   });
 
-  it('stays quiet when a second Rolle she holds still grants the key', () => {
+  it('stays quiet when a second role she holds still grants the key', () => {
     const admin = role({
       roleId: 2,
       name: 'Admin',
@@ -340,7 +340,7 @@ describe('isSelfLockout', () => {
     expect(isSelfLockout(input({ roles: [president, admin] }))).toBe(false);
   });
 
-  it('warns when the second Rolle that grants the key is archived', () => {
+  it('warns when the second role that grants the key is archived', () => {
     const archivedAdmin = role({
       roleId: 2,
       name: 'Admin',
@@ -352,7 +352,7 @@ describe('isSelfLockout', () => {
     expect(isSelfLockout(input({ roles: [president, archivedAdmin] }))).toBe(true);
   });
 
-  it('warns when the second Rolle grants the key to somebody else', () => {
+  it('warns when the second role grants the key to somebody else', () => {
     const admin = role({
       roleId: 2,
       name: 'Admin',
@@ -363,7 +363,7 @@ describe('isSelfLockout', () => {
     expect(isSelfLockout(input({ roles: [president, admin] }))).toBe(true);
   });
 
-  it('warns when the second Rolle she holds grants another key', () => {
+  it('warns when the second role she holds grants another key', () => {
     const treasurer = role({
       roleId: 2,
       name: 'Finanzen',
@@ -378,7 +378,7 @@ describe('isSelfLockout', () => {
     expect(isSelfLockout(input({ enabled: true }))).toBe(false);
   });
 
-  it('stays quiet when the viewer does not hold the edited Rolle', () => {
+  it('stays quiet when the viewer does not hold the edited role', () => {
     const heldByAnother = role({
       roleId: 1,
       name: 'Präsidentin',
@@ -389,7 +389,7 @@ describe('isSelfLockout', () => {
     expect(isSelfLockout(input({ roles: [heldByAnother] }))).toBe(false);
   });
 
-  it('stays quiet when the edited Rolle never granted the key', () => {
+  it('stays quiet when the edited role never granted the key', () => {
     const withoutTheKey = role({
       roleId: 1,
       name: 'Präsidentin',
@@ -461,13 +461,13 @@ describe('dated write messages', () => {
     );
   });
 
-  it('keeps the Rolle until a scheduled last day', () => {
+  it('keeps the role until a scheduled last day', () => {
     expect(toEndHoldingConsequence('Heike', 'Präsidentin', '2026-11-10', '2026-09-12')).toContain(
       'bis einschließlich 10.11.2026',
     );
   });
 
-  it('reports the Inhaberschaft as ended when the last day is today', () => {
+  it('reports the role holding as ended when the last day is today', () => {
     expect(toEndHoldingConsequence('Heike', 'Präsidentin', '2026-09-12', '2026-09-12')).toContain(
       'ist zum 12.09.2026 beendet',
     );

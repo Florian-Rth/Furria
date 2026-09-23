@@ -37,7 +37,7 @@ describe('toSessionRecordId', () => {
 });
 
 describe('findSessionRecord', () => {
-  it('finds nothing when no Sessionseintrag is targeted', () => {
+  it('finds nothing when no session record is targeted', () => {
     expect(findSessionRecord([record({})], null)).toBeNull();
   });
 
@@ -45,25 +45,25 @@ describe('findSessionRecord', () => {
     expect(findSessionRecord([record({ sessionId: 7 })], 999)).toBeNull();
   });
 
-  it('finds the targeted Sessionseintrag', () => {
+  it('finds the targeted session record', () => {
     expect(findSessionRecord([record({ sessionId: 7 })], 7)?.sessionId).toBe(7);
   });
 });
 
 describe('toSessionRowLabel', () => {
-  it('names the season, the Sessionsnummer and the Motto', () => {
+  it('names the season, the session number and the motto', () => {
     expect(toSessionRowLabel(record({}))).toBe(
       '2025/26 · 53. Session · „Wir sind die Narren vom Rhein“',
     );
   });
 
-  it('leaves out the Sessionsnummer the club never wrote down', () => {
+  it('leaves out the session number the club never wrote down', () => {
     expect(toSessionRowLabel(record({ number: null }))).toBe(
       '2025/26 · „Wir sind die Narren vom Rhein“',
     );
   });
 
-  it('leaves out the Motto the club never wrote down', () => {
+  it('leaves out the motto the club never wrote down', () => {
     expect(toSessionRowLabel(record({ motto: null }))).toBe('2025/26 · 53. Session');
   });
 
@@ -71,13 +71,13 @@ describe('toSessionRowLabel', () => {
     expect(toSessionRowLabel(record({ number: null, motto: null }))).toBe('2025/26');
   });
 
-  it.each(['', '   '])('treats the blank Motto %j as never written down', (motto) => {
+  it.each(['', '   '])('treats the blank motto %j as never written down', (motto) => {
     expect(toSessionRowLabel(record({ number: null, motto }))).toBe('2025/26');
   });
 });
 
 describe('toSessionRowMotto', () => {
-  it('speaks a written Motto in quotes', () => {
+  it('speaks a written motto in quotes', () => {
     expect(toSessionRowMotto(record({}), INSIDE_THE_SESSION)).toEqual({
       line: '„Wir sind die Narren vom Rhein“',
       missing: false,
@@ -94,7 +94,7 @@ describe('toSessionRowMotto', () => {
       today: BETWEEN_SESSIONS,
       pending: false,
     },
-  ])('tells a missing Motto of $case apart', ({ startYear, today, pending }) => {
+  ])('tells a missing motto of $case apart', ({ startYear, today, pending }) => {
     const pendingLine = toSessionRowMotto(record({ startYear: 2030, motto: null }), today).line;
     const motto = toSessionRowMotto(record({ startYear, motto: '  ' }), today);
 

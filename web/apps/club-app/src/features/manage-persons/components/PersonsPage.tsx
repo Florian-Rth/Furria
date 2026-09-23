@@ -2,6 +2,7 @@ import type { KkScreenIndex } from '@furria/ui';
 import { KkScreen, KkSkeletonToolbar, KkTitleHeader } from '@furria/ui';
 import type { FC } from 'react';
 import {
+  AREA_HANDOVERS,
   MANAGE_ORIGIN,
   RequirePermission,
   usePermissions,
@@ -60,6 +61,7 @@ export const PersonsPage: FC = () => {
       title={PERSONS_TITLE}
       origin={MANAGE_ORIGIN}
       header={<KkTitleHeader title={PERSONS_TITLE} lead={PERSONS_LEAD} />}
+      handover={AREA_HANDOVERS.manage}
     >
       <RequirePermission permissionKey={PERMISSION_KEYS.personsManage}>
         <PersonsBody search={search} />

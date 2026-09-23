@@ -120,7 +120,7 @@ export const toGroupRegisterFlags = (group: ManagedGroupSummary): GroupRegisterF
 
 const NOBODY_LINE = 'Es ist niemand eingetragen.';
 
-const toZugehoerigkeitenClause = (
+const toGroupMembershipsClause = (
   count: number,
   singularVerb: string,
   pluralVerb: string,
@@ -146,7 +146,7 @@ export const toRestoreConsequence = (
   memberCount: number,
   todayLabel: string,
 ): string =>
-  `Ab dem ${todayLabel} ist ${name} wieder aktiv. ${toZugehoerigkeitenClause(memberCount, 'zählt wieder mit', 'zählen wieder mit')}`;
+  `Ab dem ${todayLabel} ist ${name} wieder aktiv. ${toGroupMembershipsClause(memberCount, 'zählt wieder mit', 'zählen wieder mit')}`;
 
 export const toGroupFacts = (group: ManagedGroupSummary, dayLabel: string): KkConfirmFact[] => [
   { label: 'Gruppe', value: group.name },

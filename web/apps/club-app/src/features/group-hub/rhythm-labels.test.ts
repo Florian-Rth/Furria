@@ -70,7 +70,7 @@ describe('toSlotFormValues', () => {
 });
 
 describe('toSlotPayload', () => {
-  it('writes the wall clock back with seconds and reads the Ort as a number', () => {
+  it('writes the wall clock back with seconds and reads the venue as a number', () => {
     expect(
       toSlotPayload({
         weekday: 'tuesday',
@@ -81,7 +81,7 @@ describe('toSlotPayload', () => {
     ).toEqual({ weekday: 'tuesday', startsAt: '19:30:00', durationMinutes: 90, venueId: 7 });
   });
 
-  it('keeps a slot without an Ort', () => {
+  it('keeps a slot without a venue', () => {
     expect(
       toSlotPayload({
         weekday: 'tuesday',
@@ -131,7 +131,7 @@ describe('toRhythmVenueOptions', () => {
     { venueId: 2, name: 'Vereinsraum' },
   ];
 
-  it('leads with the no-Ort choice and offers what runs', () => {
+  it('leads with the no-venue choice and offers what runs', () => {
     expect(toRhythmVenueOptions(running, null).map((option) => option.value)).toEqual([
       '',
       '1',
@@ -139,17 +139,17 @@ describe('toRhythmVenueOptions', () => {
     ]);
   });
 
-  it('keeps the held Ort choosable after it was archived', () => {
+  it('keeps the held venue choosable after it was archived', () => {
     const options = toRhythmVenueOptions(running, { venueId: 9, name: 'Lager' });
 
     expect(options.at(-1)).toEqual({ value: '9', label: 'Lager — archiviert' });
   });
 
-  it('adds nothing when the held Ort still runs', () => {
+  it('adds nothing when the held venue still runs', () => {
     expect(toRhythmVenueOptions(running, { venueId: 1, name: 'Sporthalle' })).toHaveLength(3);
   });
 
-  it('calls the held Ort nothing while the Ortsverzeichnis is missing', () => {
+  it('calls the held venue nothing while the venue list is missing', () => {
     expect(toRhythmVenueOptions(null, { venueId: 9, name: 'Lager' }).at(-1)).toEqual({
       value: '9',
       label: 'Lager',
@@ -165,19 +165,19 @@ describe('toHeldVenue', () => {
     expect(toHeldVenue(held)).toBe(expected);
   });
 
-  it('pairs the id with the name the Trainingszeit carries', () => {
+  it('pairs the id with the name the training slot carries', () => {
     expect(toHeldVenue(slot(1, 9, 'Lager'))).toEqual({ venueId: 9, name: 'Lager' });
   });
 });
 
 describe('toUnavailableVenueIds', () => {
-  it('names the Orte no longer in the Verzeichnis', () => {
+  it('names the venues no longer in the venue list', () => {
     const slots = [slot(1, 9, 'Lager'), slot(2, 1, 'Sporthalle'), slot(3, null, null)];
 
     expect([...toUnavailableVenueIds(slots, [{ venueId: 1, name: 'Sporthalle' }])]).toEqual([9]);
   });
 
-  it('accuses nothing while the Ortsverzeichnis is missing', () => {
+  it('accuses nothing while the venue list is missing', () => {
     expect(toUnavailableVenueIds([slot(1, 9, 'Lager')], null).size).toBe(0);
   });
 });

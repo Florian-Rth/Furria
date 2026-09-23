@@ -4,9 +4,9 @@ import { toGroupKindLabel, toGroupTone } from '@/features/groups';
 import { currentSessionYear } from '@/lib/club';
 import { useGroupHubQuery } from '../api';
 import {
+  toAnniversarySeal,
   toHubMetaFacts,
   toHubRecruitingChip,
-  toJubileeSeal,
   toStandingLine,
 } from '../group-hub-labels';
 
@@ -39,7 +39,7 @@ export const HubStage: FC<HubStageProps> = ({ groupId }) => {
       tone={tone}
       name={group.name}
       kindLabel={toGroupKindLabel(group.groupKindName)}
-      jubilee={toJubileeSeal(group.foundedYear, currentSessionYear())}
+      anniversary={toAnniversarySeal(group.foundedYear, currentSessionYear())}
     >
       {standing === null ? null : (
         <KkGroupStage.Standing tone={tone}>{standing}</KkGroupStage.Standing>

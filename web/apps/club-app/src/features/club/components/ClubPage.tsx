@@ -1,6 +1,6 @@
 import { KkScreen } from '@furria/ui';
 import type { FC } from 'react';
-import { CLUB_SECTION } from '@/features/session';
+import { AREA_HANDOVERS, CLUB_SECTION } from '@/features/session';
 import { ClubBody } from './ClubBody';
 import { ClubStage } from './ClubStage';
 
@@ -12,6 +12,7 @@ export const ClubPage: FC = () => (
     section={CLUB_SECTION}
     title={CLUB_TITLE}
     header={<ClubStage />}
+    handover={AREA_HANDOVERS.club}
     headerKind="banner"
   >
     <ClubBody />

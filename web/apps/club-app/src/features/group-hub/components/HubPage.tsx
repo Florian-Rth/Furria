@@ -1,7 +1,7 @@
 import { KkScreen } from '@furria/ui';
 import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { usePermissions } from '@/features/session';
+import { AREA_HANDOVERS, usePermissions } from '@/features/session';
 import { useGroupHubQuery } from '../api';
 import { toHubId, toHubOrigin, toHubTitle } from '../group-hub-labels';
 import { HubBody } from './HubBody';
@@ -23,6 +23,7 @@ export const HubPage: FC = () => {
       origin={origin}
       headerKind="banner"
       header={<HubStage groupId={id} />}
+      handover={AREA_HANDOVERS.groups}
     >
       <HubBody groupId={id} />
     </KkScreen>

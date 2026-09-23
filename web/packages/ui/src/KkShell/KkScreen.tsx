@@ -2,6 +2,8 @@ import type { FC } from 'react';
 import { createPortal } from 'react-dom';
 import { KkLetterIndex } from '../KkLetterIndex';
 import { kkTokens } from '../tokens';
+import { BAR_MORPHS } from './bar-morph/bar-morphs';
+import { HANDOVER_STAGES } from './handover/handover-stages';
 import { KkHandoverStageContext } from './handover-stage';
 import { KkShellHeader } from './internal/layout/KkShellHeader';
 import { footClearanceOf } from './internal/logic/foot-clearance';
@@ -36,6 +38,7 @@ export const KkScreen: FC<KkScreenProps> = ({
   index,
   thread,
   handover,
+  barMorph,
   children,
 }) => {
   const { path, move, destinations, chromeHost, footHost, indexHost } = useKkShell();
@@ -43,6 +46,7 @@ export const KkScreen: FC<KkScreenProps> = ({
     action !== undefined,
   );
   const barOrigin = origin ?? sectionOriginOf({ section, path, destinations });
+  const morph = barMorph === undefined ? null : BAR_MORPHS[barMorph];
   const lead: KkShellBarLead = header === undefined ? 'title' : 'brand';
   const searching = search !== undefined && search.query !== null;
   const showsTools = tools !== undefined && !searching;
@@ -71,6 +75,7 @@ export const KkScreen: FC<KkScreenProps> = ({
               actions={actions}
               search={search}
               thread={thread}
+              morph={morph}
             />
             <KkShellToolRow open={showsTools}>{tools}</KkShellToolRow>
           </>,
@@ -96,10 +101,11 @@ export const KkScreen: FC<KkScreenProps> = ({
           indexHost,
         );
 
-  const Header = handover?.Header ?? KkShellHeader;
+  const stage = handover === undefined ? null : HANDOVER_STAGES[handover];
+  const Header = stage?.Header ?? KkShellHeader;
 
   return (
-    <KkHandoverStageContext.Provider value={handover ?? null}>
+    <KkHandoverStageContext.Provider value={stage}>
       {chrome}
       {actionBar}
       {letterIndex}

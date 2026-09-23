@@ -28,7 +28,7 @@ const admin = (over: Partial<GroupDetailAdmin>): GroupDetailAdmin => ({
 });
 
 describe('toHubPeople', () => {
-  it('folds the Gruppen-Admin and her Zugehörigkeit into one entry', () => {
+  it('folds the group admin and her group membership into one entry', () => {
     const people = toHubPeople([member({})], [admin({})]);
 
     expect(people).toEqual([
@@ -46,7 +46,7 @@ describe('toHubPeople', () => {
     ]);
   });
 
-  it('puts every Gruppen-Admin ahead of the plain members', () => {
+  it('puts every group admin ahead of the plain members', () => {
     const people = toHubPeople(
       [member({ personId: 1 }), member({ personId: 2, groupMembershipId: 12 })],
       [admin({ personId: 2, groupAdminId: 92 })],
@@ -55,13 +55,13 @@ describe('toHubPeople', () => {
     expect(people.map((person) => person.personId)).toEqual([2, 1]);
   });
 
-  it('keeps a Gruppen-Admin who dances in no row of the Gruppe', () => {
+  it('keeps a group admin who dances in no row of the group', () => {
     const people = toHubPeople([], [admin({ personId: 7, groupAdminId: 97 })]);
 
     expect(people[0]).toMatchObject({ personId: 7, groupMembershipId: null, memberSince: null });
   });
 
-  it('leaves a plain member without any Admin trace', () => {
+  it('leaves a plain member without any admin trace', () => {
     const people = toHubPeople([member({ personId: 3, groupMembershipId: 13 })], []);
 
     expect(people[0]).toMatchObject({ groupAdminId: null, adminSince: null, adminFunction: null });
@@ -70,26 +70,26 @@ describe('toHubPeople', () => {
 
 describe('countGroupAdmins', () => {
   it.each([
-    { case: 'an empty Gruppe', members: [] as GroupDetailMember[], admins: [], expected: 0 },
+    { case: 'an empty group', members: [] as GroupDetailMember[], admins: [], expected: 0 },
     {
-      case: 'a Gruppe without Admins',
+      case: 'a group without admins',
       members: [member({})],
       admins: [] as GroupDetailAdmin[],
       expected: 0,
     },
     {
-      case: 'a Gruppe whose only Admin dances along',
+      case: 'a group whose only admin dances along',
       members: [member({})],
       admins: [admin({})],
       expected: 1,
     },
     {
-      case: 'a Gruppe led from outside',
+      case: 'a group led from outside',
       members: [member({ personId: 4, groupMembershipId: 14 })],
       admins: [admin({ personId: 5, groupAdminId: 95 })],
       expected: 1,
     },
-  ])('counts the Admins of $case', ({ members, admins, expected }) => {
+  ])('counts the admins of $case', ({ members, admins, expected }) => {
     expect(countGroupAdmins(toHubPeople(members, admins))).toBe(expected);
   });
 });
@@ -99,11 +99,11 @@ describe('toPrefillPerson', () => {
     expect(toPrefillPerson(toHubPeople([member({})], []), null)).toBeNull();
   });
 
-  it('returns null when nobody in the Gruppe matches the id', () => {
+  it('returns null when nobody in the group matches the id', () => {
     expect(toPrefillPerson(toHubPeople([member({})], []), 999)).toBeNull();
   });
 
-  it('resolves a name from the Gruppe her people already carry', () => {
+  it('resolves a name from the group her people already carry', () => {
     const people = toHubPeople([member({ personId: 4, groupMembershipId: 14 })], []);
 
     expect(toPrefillPerson(people, 4)).toEqual({

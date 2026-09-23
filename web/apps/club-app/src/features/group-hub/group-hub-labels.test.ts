@@ -7,6 +7,7 @@ import {
   toAdminEndedMessage,
   toAdminEndParagraph,
   toAdminFunction,
+  toAnniversarySeal,
   toAppointConsequence,
   toArchiveGroupConsequence,
   toArchiveGroupFacts,
@@ -21,7 +22,6 @@ import {
   toJoinAsAdminConsequence,
   toJoinConsequence,
   toJoinQuickChoices,
-  toJubileeSeal,
   toLastAdminWarning,
   toMemberAddedAsAdminMessage,
   toMemberAddedMessage,
@@ -145,7 +145,7 @@ describe('toMembershipChainRows', () => {
 });
 
 describe('toAdminChainRows', () => {
-  it('lists a Gruppen-Admin history with her Funktion folded into the span', () => {
+  it('lists a group admin history with her function folded into the span', () => {
     const hub = groupHub({
       admins: [hubAdmin({ groupAdminId: 4, personId: 9 })],
       pastAdmins: [
@@ -161,13 +161,13 @@ describe('toAdminChainRows', () => {
 });
 
 describe('toStandingLine', () => {
-  it('dates the viewer own Zugehörigkeit from the session she joined in', () => {
+  it('dates the viewer own group membership from the session she joined in', () => {
     expect(toStandingLine(groupHub({ viewerIsMember: true, viewerSince: '2016-11-11' }))).toBe(
       'Du bist Mitglied seit 2016/17',
     );
   });
 
-  it('lets the Zugehörigkeit speak for an admin who dances in the Gruppe herself', () => {
+  it('lets the group membership speak for an admin who dances in the group herself', () => {
     expect(
       toStandingLine(
         groupHub({ viewerIsMember: true, viewerIsAdmin: true, viewerSince: '2020-11-11' }),
@@ -175,11 +175,11 @@ describe('toStandingLine', () => {
     ).toBe('Du bist Mitglied seit 2020/21');
   });
 
-  it('names the responsibility of an admin who dances in no row of the Gruppe', () => {
+  it('names the responsibility of an admin who dances in no row of the group', () => {
     expect(toStandingLine(groupHub({ viewerIsAdmin: true }))).toBe('Du leitest diese Gruppe');
   });
 
-  it('stays silent for a mere Gruppenverwalterin who is not in the Gruppe', () => {
+  it('stays silent for a mere group admin who is not in the group', () => {
     expect(toStandingLine(groupHub({ viewerMayManage: true }))).toBeNull();
   });
 
@@ -205,9 +205,9 @@ describe('toHubMetaFacts', () => {
   });
 });
 
-describe('toJubileeSeal', () => {
+describe('toAnniversarySeal', () => {
   it('splits a fifth year into the seal label and its caption', () => {
-    expect(toJubileeSeal(2011, 2026)).toEqual({ yearsLabel: '15', caption: 'JAHRE' });
+    expect(toAnniversarySeal(2011, 2026)).toEqual({ yearsLabel: '15', caption: 'JAHRE' });
   });
 
   it.each([
@@ -215,7 +215,7 @@ describe('toJubileeSeal', () => {
     { case: 'an unknown founding', foundedYear: null, sessionYear: 2026 },
     { case: 'the founding session itself', foundedYear: 2026, sessionYear: 2026 },
   ])('seals nothing for $case', ({ foundedYear, sessionYear }) => {
-    expect(toJubileeSeal(foundedYear, sessionYear)).toBeNull();
+    expect(toAnniversarySeal(foundedYear, sessionYear)).toBeNull();
   });
 });
 
@@ -278,7 +278,7 @@ describe('toGroupInfoFormValues', () => {
     });
   });
 
-  it('turns an unset Gruppenart, Gründungsjahr and Gruppenfarbe into empty choices', () => {
+  it('turns an unset group kind, founded year and group tone into empty choices', () => {
     expect(
       toGroupInfoFormValues(groupHub({ groupKindId: null, foundedYear: null, tone: null })),
     ).toEqual(expect.objectContaining({ groupKindId: '', foundedYear: '', tone: '' }));
@@ -292,21 +292,21 @@ describe('toGroupInfoFormValues', () => {
 });
 
 describe('toHubOrigin', () => {
-  it('sends an affiliated viewer back to the Gruppenverzeichnis', () => {
+  it('sends an affiliated viewer back to the group directory', () => {
     expect(toHubOrigin(true).to).toBe('/groups');
   });
 
-  it('sends a viewer without a Verbindung somewhere she may go', () => {
+  it('sends an unaffiliated viewer somewhere she may go', () => {
     expect(toHubOrigin(false).to).toBe('/profile');
   });
 
-  it('keeps the Gruppenverzeichnis while the Verbindung is still undecided', () => {
+  it('keeps the group directory while affiliation is still undecided', () => {
     expect(toHubOrigin(null).to).toBe('/groups');
   });
 });
 
 describe('toTakenTones', () => {
-  it('collects every other Gruppe tone and skips the one being edited', () => {
+  it('collects every other group tone and skips the one being edited', () => {
     const taken = toTakenTones(
       [
         { groupId: 3, tone: 'rose' },
@@ -322,7 +322,7 @@ describe('toTakenTones', () => {
 });
 
 describe('toToneWarning', () => {
-  it('warns when another Gruppe already wears the tone', () => {
+  it('warns when another group already wears the tone', () => {
     expect(toToneWarning('teal', new Set(['teal']))).not.toBeNull();
   });
 
@@ -454,19 +454,19 @@ describe('toEndConsequence', () => {
 });
 
 describe('toArchiveGroupConsequence', () => {
-  it('says nobody is left when the Gruppe has no Zugehörigkeit', () => {
+  it('says nobody is left when the group has no group membership', () => {
     expect(toArchiveGroupConsequence('Tanzgarde', 0, '22.09.2026')).toBe(
       'Ab dem 22.09.2026 ist Tanzgarde archiviert. Es ist niemand eingetragen.',
     );
   });
 
-  it('keeps a single Zugehörigkeit in the singular', () => {
+  it('keeps a single group membership in the singular', () => {
     expect(toArchiveGroupConsequence('Tanzgarde', 1, '22.09.2026')).toContain(
       '1 Zugehörigkeit bleibt bestehen.',
     );
   });
 
-  it('counts several Zugehörigkeiten in the plural', () => {
+  it('counts several group memberships in the plural', () => {
     expect(toArchiveGroupConsequence('Tanzgarde', 4, '22.09.2026')).toContain(
       '4 Zugehörigkeiten bleiben bestehen.',
     );
@@ -474,7 +474,7 @@ describe('toArchiveGroupConsequence', () => {
 });
 
 describe('toArchiveGroupFacts', () => {
-  it('counts every running Person and Gruppen-Admin', () => {
+  it('counts every running person and group admin', () => {
     expect(
       toArchiveGroupFacts(
         groupHub({ name: 'Tanzgarde', members: [hubMember({})], admins: [hubAdmin({})] }),
@@ -490,7 +490,7 @@ describe('toArchiveGroupFacts', () => {
 });
 
 describe('toGroupArchivedFromHubMessage', () => {
-  it('names the Gruppe that left the Verzeichnis', () => {
+  it('names the group that left the directory', () => {
     expect(toGroupArchivedFromHubMessage('Tanzgarde')).toBe('Tanzgarde ist archiviert.');
   });
 });
@@ -549,7 +549,7 @@ describe('toAppointConsequence', () => {
 });
 
 describe('toAdminEndConsequence', () => {
-  it('dates a future end and keeps the Zugehörigkeit out of it', () => {
+  it('dates a future end and keeps the group membership out of it', () => {
     const consequence = toAdminEndConsequence('Anna Kaiser', '2026-09-01', '2026-03-01');
 
     expect(consequence).toContain('ab dem 01.09.2026');
@@ -564,7 +564,7 @@ describe('toAdminEndConsequence', () => {
 describe('toLastAdminWarning', () => {
   it.each([
     { case: 'the last running admin', runningAdmins: 1, warned: true },
-    { case: 'a Gruppe already without one', runningAdmins: 0, warned: true },
+    { case: 'a group already without one', runningAdmins: 0, warned: true },
     { case: 'one of several', runningAdmins: 2, warned: false },
   ])('warns about $case: $warned', ({ runningAdmins, warned }) => {
     expect(toLastAdminWarning(runningAdmins) !== null).toBe(warned);
@@ -631,19 +631,19 @@ describe('toPersonAccent', () => {
     expect(toPersonAccent(groupPerson({}))).toBeUndefined();
   });
 
-  it('wears the Funktion of an admin who has one', () => {
+  it('wears the function of an admin who has one', () => {
     expect(toPersonAccent(groupPerson({ groupAdminId: 4, adminFunction: 'Trainerin' }))).toBe(
       'Trainerin',
     );
   });
 
-  it('falls back to the bare office for an admin without a Funktion', () => {
+  it('falls back to the bare office for an admin without a function', () => {
     expect(toPersonAccent(groupPerson({ groupAdminId: 4 }))).toBe('Gruppen-Admin');
   });
 });
 
 describe('toPersonMetaLine', () => {
-  it('keeps the dates to the Verwaltung', () => {
+  it('keeps the dates to management', () => {
     expect(toPersonMetaLine(groupPerson({}), false)).toBeUndefined();
   });
 
@@ -667,7 +667,7 @@ describe('toPersonMetaLine', () => {
 });
 
 describe('toPersonStandingLines', () => {
-  it('names the Zugehörigkeit of a plain member', () => {
+  it('names the group membership of a plain member', () => {
     expect(toPersonStandingLines(groupPerson({}))).toEqual(['Mitglied seit 2016/17']);
   });
 

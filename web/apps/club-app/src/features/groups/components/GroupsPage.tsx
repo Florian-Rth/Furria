@@ -1,6 +1,6 @@
 import { KkScreen, KkSkeletonToolbar, KkTitleHeader } from '@furria/ui';
 import type { FC } from 'react';
-import { CLUB_ORIGIN, useScreenSearch } from '@/features/session';
+import { AREA_HANDOVERS, CLUB_ORIGIN, useScreenSearch } from '@/features/session';
 import { useGroupsQuery } from '../api';
 import { GROUPS_LEAD } from '../groups-labels';
 import { useGroupsSearch } from '../hooks/use-groups-search';
@@ -41,6 +41,7 @@ export const GroupsPage: FC = () => {
       title={GROUPS_TITLE}
       origin={CLUB_ORIGIN}
       header={<KkTitleHeader title={GROUPS_TITLE} lead={GROUPS_LEAD} />}
+      handover={AREA_HANDOVERS.groups}
     >
       <GroupsBody search={search} />
     </KkScreen>

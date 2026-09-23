@@ -73,7 +73,7 @@ describe('toPreviewRows', () => {
 });
 
 describe('toPreviewRows', () => {
-  it('blocks a row whose Ort is archived and refuses a tick it was handed', () => {
+  it('blocks a row whose venue is archived and refuses a tick it was handed', () => {
     const archived = row(1, '2027-01-05T19:30:00+01:00', 'venueArchived');
     const entries = toPreviewRows([archived], new Set([toPreviewRowKey(archived)]));
 
@@ -131,7 +131,7 @@ describe('toTickedInstants', () => {
 });
 
 describe('toCollisionLine', () => {
-  it('names the Ort and what holds it', () => {
+  it('names the venue and what holds it', () => {
     const taken: TrainingPreviewRow = {
       ...row(1, '2027-01-05T19:30:00+01:00', 'venueTaken'),
       venueCollisions: [
@@ -148,7 +148,7 @@ describe('toCollisionLine', () => {
     expect(toCollisionLine(taken)).toBe('Sporthalle ist belegt: Abendprobe');
   });
 
-  it('stays silent when nothing holds the Ort', () => {
+  it('stays silent when nothing holds the venue', () => {
     expect(toCollisionLine(row(1, '2027-01-05T19:30:00+01:00', 'creatable'))).toBeNull();
   });
 });

@@ -4,6 +4,7 @@ import { focusRing } from '../../../internal/focus-ring';
 import { KkIcon } from '../../../KkIcon';
 import { kkTokens } from '../../../tokens';
 import type { KkScreenOrigin } from '../../screen-declaration';
+import { KkShellBarMark } from '../layout/KkShellBarMark';
 import { useKkShell } from '../logic/shell-context';
 
 const BACK_PREFIX = 'Zurück zu ';
@@ -35,7 +36,9 @@ export const KkShellBarBack: FC<KkShellBarBackProps> = ({ origin, children }) =>
         ...focusRing(theme),
       })}
     >
-      <KkIcon name="back" size="medium" sx={{ flexShrink: 0 }} />
+      <KkShellBarMark>
+        <KkIcon name="back" size="medium" />
+      </KkShellBarMark>
       {children}
     </Stack>
   );

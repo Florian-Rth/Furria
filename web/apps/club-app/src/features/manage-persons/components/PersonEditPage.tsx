@@ -1,7 +1,7 @@
 import { KkScreen, KkScreenHeaderSkeleton } from '@furria/ui';
 import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { RequirePermission } from '@/features/session';
+import { AREA_HANDOVERS, RequirePermission } from '@/features/session';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { usePersonQuery } from '../api';
 import { PERSONS_ORIGIN, toPersonHeadline, toPersonId } from '../manage-persons-labels';
@@ -22,7 +22,13 @@ export const PersonEditPage: FC = () => {
     person.data === undefined ? pendingHeader : <PersonEditHeader person={person.data} />;
 
   return (
-    <KkScreen kind="working" title={headline.title} origin={PERSONS_ORIGIN} header={header}>
+    <KkScreen
+      kind="working"
+      title={headline.title}
+      origin={PERSONS_ORIGIN}
+      header={header}
+      handover={AREA_HANDOVERS.manage}
+    >
       <RequirePermission permissionKey={PERMISSION_KEYS.personsManage}>
         <PersonEditBody personId={id} />
       </RequirePermission>

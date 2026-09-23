@@ -57,7 +57,7 @@ describe('ashWednesdayOf', () => {
 });
 
 describe('sessionProgressAt', () => {
-  it('starts at nothing on the Eröffnung', () => {
+  it('starts at nothing on the season opening', () => {
     expect(sessionProgressAt(new Date(2025, 10, 11))).toBe(0);
   });
 
@@ -68,14 +68,14 @@ describe('sessionProgressAt', () => {
     expect(progress).toBeLessThan(0.75);
   });
 
-  it('still runs on Aschermittwoch itself', () => {
+  it('still runs on Ash Wednesday itself', () => {
     const progress = sessionProgressAt(new Date(2026, 1, 18, 12));
 
     expect(progress).toBeGreaterThan(0.9);
     expect(progress).toBeLessThanOrEqual(1);
   });
 
-  it('has nothing left to watch once Aschermittwoch is over', () => {
+  it('has nothing left to watch once Ash Wednesday is over', () => {
     expect(sessionProgressAt(new Date(2026, 1, 19))).toBeNull();
   });
 
@@ -83,7 +83,7 @@ describe('sessionProgressAt', () => {
     expect(sessionProgressAt(new Date(2026, 6, 21))).toBeNull();
   });
 
-  it('starts over with the next Eröffnung', () => {
+  it('starts over with the next season opening', () => {
     expect(sessionProgressAt(new Date(2026, 10, 11))).toBe(0);
   });
 });
@@ -115,7 +115,11 @@ describe('isBetweenSessions', () => {
     { label: 'Aschermittwoch itself', date: new Date(2026, 1, 18, 12), expected: false },
     { label: 'the day after Aschermittwoch', date: new Date(2026, 1, 19), expected: true },
     { label: 'high summer', date: new Date(2026, 6, 21), expected: true },
-    { label: 'the eve of the Eröffnung', date: new Date(2026, 10, 10, 23, 59), expected: true },
+    {
+      label: 'the eve of the season opening',
+      date: new Date(2026, 10, 10, 23, 59),
+      expected: true,
+    },
     { label: 'midnight on 11.11.', date: new Date(2026, 10, 11, 0, 0), expected: false },
     { label: 'the turn of the year', date: new Date(2027, 0, 5), expected: false },
   ])('is $expected on $label', ({ date, expected }) => {
@@ -128,7 +132,11 @@ describe('relevantSessionYear', () => {
     { label: 'Aschermittwoch itself', date: new Date(2026, 1, 18, 12), expected: 2025 },
     { label: 'the day after Aschermittwoch', date: new Date(2026, 1, 19), expected: 2026 },
     { label: 'high summer', date: new Date(2026, 6, 21), expected: 2026 },
-    { label: 'the eve of the Eröffnung', date: new Date(2026, 10, 10, 23, 59), expected: 2026 },
+    {
+      label: 'the eve of the season opening',
+      date: new Date(2026, 10, 10, 23, 59),
+      expected: 2026,
+    },
     { label: 'midnight on 11.11.', date: new Date(2026, 10, 11, 0, 0), expected: 2026 },
     { label: 'the turn of the year', date: new Date(2027, 0, 5), expected: 2026 },
   ])('looks at $expected on $label', ({ date, expected }) => {
@@ -145,7 +153,7 @@ describe('mottoStageStateAt', () => {
       expected: 'running',
     },
     {
-      label: 'the stroke of 11:11 without a Motto',
+      label: 'the stroke of 11:11 without a motto',
       date: new Date(2026, 10, 11, 11, 11),
       known: false,
       expected: 'running',
@@ -157,7 +165,7 @@ describe('mottoStageStateAt', () => {
       expected: 'teaser',
     },
     {
-      label: 'the minute before 11:11 without a Motto',
+      label: 'the minute before 11:11 without a motto',
       date: new Date(2026, 10, 11, 11, 10),
       known: false,
       expected: 'resting',
@@ -175,13 +183,13 @@ describe('mottoStageStateAt', () => {
       expected: 'teaser',
     },
     {
-      label: 'high summer with a Motto',
+      label: 'high summer with a motto',
       date: new Date(2026, 6, 21),
       known: true,
       expected: 'teaser',
     },
     {
-      label: 'high summer without a Motto',
+      label: 'high summer without a motto',
       date: new Date(2026, 6, 21),
       known: false,
       expected: 'resting',
@@ -219,7 +227,7 @@ describe('daysUntilOpening', () => {
       expected: 22,
     },
     {
-      label: 'a whole Zwischenzeit away',
+      label: 'a whole in-between spell away',
       date: new Date(2026, 8, 20, 0, 0),
       startYear: 2026,
       expected: 52,
@@ -235,10 +243,10 @@ describe('daysUntilOpening', () => {
   });
 });
 
-describe('the midnight label flip against the sealed Bühne', () => {
+describe('the midnight label flip against the sealed motto stage', () => {
   it.each([
     {
-      label: 'the eve of the Eröffnung',
+      label: 'the eve of the season opening',
       date: new Date(2026, 10, 10, 23, 59),
       yearsLabel: '2025/26',
       state: 'teaser',

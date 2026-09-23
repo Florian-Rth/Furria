@@ -28,10 +28,7 @@ import { Route as AppManagePersonsRouteImport } from './routes/_app/manage.perso
 import { Route as AppManageKeysRouteImport } from './routes/_app/manage.keys'
 import { Route as AppManageGroupsRouteImport } from './routes/_app/manage.groups'
 import { Route as AppManageBoardRouteImport } from './routes/_app/manage.board'
-import { Route as AppLabTuschRouteImport } from './routes/_app/lab.tusch'
-import { Route as AppLabSchunkelnRouteImport } from './routes/_app/lab.schunkeln'
-import { Route as AppLabKonfettiRouteImport } from './routes/_app/lab.konfetti'
-import { Route as AppLabFallblattRouteImport } from './routes/_app/lab.fallblatt'
+import { Route as AppLabMorphRouteImport } from './routes/_app/lab_.$morph'
 import { Route as AppGroupsGroupIdRouteImport } from './routes/_app/groups_.$groupId'
 import { Route as AppCalendarNewRouteImport } from './routes/_app/calendar_.new'
 import { Route as AppCalendarCalendarEntryIdRouteImport } from './routes/_app/calendar_.$calendarEntryId'
@@ -47,6 +44,7 @@ import { Route as AppManagePersonsNewRouteImport } from './routes/_app/manage.pe
 import { Route as AppManagePersonsPersonIdRouteImport } from './routes/_app/manage.persons_.$personId'
 import { Route as AppManageGroupsNewRouteImport } from './routes/_app/manage.groups_.new'
 import { Route as AppManageBoardNewRouteImport } from './routes/_app/manage.board_.new'
+import { Route as AppLabMorphElferratRouteImport } from './routes/_app/lab_.$morph_.elferrat'
 import { Route as AppGroupsGroupIdTrainingsRouteImport } from './routes/_app/groups_.$groupId_.trainings'
 import { Route as AppGroupsGroupIdEditRouteImport } from './routes/_app/groups_.$groupId_.edit'
 import { Route as AppGroupsGroupIdAdministrationRouteImport } from './routes/_app/groups_.$groupId_.administration'
@@ -59,6 +57,7 @@ import { Route as AppManageKeysHoldingsKeyHoldingIdRouteImport } from './routes/
 import { Route as AppManageGroupsKindsNewRouteImport } from './routes/_app/manage.groups_.kinds.new'
 import { Route as AppManageGroupsKindsGroupKindIdRouteImport } from './routes/_app/manage.groups_.kinds.$groupKindId'
 import { Route as AppManageBoardBoardOfficeIdEditRouteImport } from './routes/_app/manage.board_.$boardOfficeId_.edit'
+import { Route as AppLabMorphElferratPraesidentRouteImport } from './routes/_app/lab_.$morph_.elferrat_.praesident'
 import { Route as AppGroupsGroupIdSlotsNewRouteImport } from './routes/_app/groups_.$groupId_.slots.new'
 import { Route as AppGroupsGroupIdSlotsSlotIdRouteImport } from './routes/_app/groups_.$groupId_.slots.$slotId'
 import { Route as AppGroupsGroupIdPeoplePersonIdRouteImport } from './routes/_app/groups_.$groupId_.people.$personId'
@@ -172,24 +171,9 @@ const AppManageBoardRoute = AppManageBoardRouteImport.update({
   path: '/manage/board',
   getParentRoute: () => AppRoute,
 } as any)
-const AppLabTuschRoute = AppLabTuschRouteImport.update({
-  id: '/lab/tusch',
-  path: '/lab/tusch',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppLabSchunkelnRoute = AppLabSchunkelnRouteImport.update({
-  id: '/lab/schunkeln',
-  path: '/lab/schunkeln',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppLabKonfettiRoute = AppLabKonfettiRouteImport.update({
-  id: '/lab/konfetti',
-  path: '/lab/konfetti',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppLabFallblattRoute = AppLabFallblattRouteImport.update({
-  id: '/lab/fallblatt',
-  path: '/lab/fallblatt',
+const AppLabMorphRoute = AppLabMorphRouteImport.update({
+  id: '/lab_/$morph',
+  path: '/lab/$morph',
   getParentRoute: () => AppRoute,
 } as any)
 const AppGroupsGroupIdRoute = AppGroupsGroupIdRouteImport.update({
@@ -270,6 +254,11 @@ const AppManageBoardNewRoute = AppManageBoardNewRouteImport.update({
   path: '/manage/board/new',
   getParentRoute: () => AppRoute,
 } as any)
+const AppLabMorphElferratRoute = AppLabMorphElferratRouteImport.update({
+  id: '/lab_/$morph_/elferrat',
+  path: '/lab/$morph/elferrat',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppGroupsGroupIdTrainingsRoute =
   AppGroupsGroupIdTrainingsRouteImport.update({
     id: '/groups_/$groupId_/trainings',
@@ -338,6 +327,12 @@ const AppManageBoardBoardOfficeIdEditRoute =
   AppManageBoardBoardOfficeIdEditRouteImport.update({
     id: '/manage/board_/$boardOfficeId_/edit',
     path: '/manage/board/$boardOfficeId/edit',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppLabMorphElferratPraesidentRoute =
+  AppLabMorphElferratPraesidentRouteImport.update({
+    id: '/lab_/$morph_/elferrat_/praesident',
+    path: '/lab/$morph/elferrat/praesident',
     getParentRoute: () => AppRoute,
   } as any)
 const AppGroupsGroupIdSlotsNewRoute =
@@ -471,10 +466,7 @@ export interface FileRoutesByFullPath {
   '/calendar/$calendarEntryId': typeof AppCalendarCalendarEntryIdRoute
   '/calendar/new': typeof AppCalendarNewRoute
   '/groups/$groupId': typeof AppGroupsGroupIdRoute
-  '/lab/fallblatt': typeof AppLabFallblattRoute
-  '/lab/konfetti': typeof AppLabKonfettiRoute
-  '/lab/schunkeln': typeof AppLabSchunkelnRoute
-  '/lab/tusch': typeof AppLabTuschRoute
+  '/lab/$morph': typeof AppLabMorphRoute
   '/manage/board': typeof AppManageBoardRoute
   '/manage/groups': typeof AppManageGroupsRoute
   '/manage/keys': typeof AppManageKeysRoute
@@ -488,6 +480,7 @@ export interface FileRoutesByFullPath {
   '/groups/$groupId/administration': typeof AppGroupsGroupIdAdministrationRoute
   '/groups/$groupId/edit': typeof AppGroupsGroupIdEditRoute
   '/groups/$groupId/trainings': typeof AppGroupsGroupIdTrainingsRoute
+  '/lab/$morph/elferrat': typeof AppLabMorphElferratRoute
   '/manage/board/new': typeof AppManageBoardNewRoute
   '/manage/groups/new': typeof AppManageGroupsNewRoute
   '/manage/persons/$personId': typeof AppManagePersonsPersonIdRoute
@@ -503,6 +496,7 @@ export interface FileRoutesByFullPath {
   '/groups/$groupId/people/$personId': typeof AppGroupsGroupIdPeoplePersonIdRoute
   '/groups/$groupId/slots/$slotId': typeof AppGroupsGroupIdSlotsSlotIdRoute
   '/groups/$groupId/slots/new': typeof AppGroupsGroupIdSlotsNewRoute
+  '/lab/$morph/elferrat/praesident': typeof AppLabMorphElferratPraesidentRoute
   '/manage/board/$boardOfficeId/edit': typeof AppManageBoardBoardOfficeIdEditRoute
   '/manage/groups/kinds/$groupKindId': typeof AppManageGroupsKindsGroupKindIdRoute
   '/manage/groups/kinds/new': typeof AppManageGroupsKindsNewRoute
@@ -540,10 +534,7 @@ export interface FileRoutesByTo {
   '/calendar/$calendarEntryId': typeof AppCalendarCalendarEntryIdRoute
   '/calendar/new': typeof AppCalendarNewRoute
   '/groups/$groupId': typeof AppGroupsGroupIdRoute
-  '/lab/fallblatt': typeof AppLabFallblattRoute
-  '/lab/konfetti': typeof AppLabKonfettiRoute
-  '/lab/schunkeln': typeof AppLabSchunkelnRoute
-  '/lab/tusch': typeof AppLabTuschRoute
+  '/lab/$morph': typeof AppLabMorphRoute
   '/manage/board': typeof AppManageBoardRoute
   '/manage/groups': typeof AppManageGroupsRoute
   '/manage/keys': typeof AppManageKeysRoute
@@ -557,6 +548,7 @@ export interface FileRoutesByTo {
   '/groups/$groupId/administration': typeof AppGroupsGroupIdAdministrationRoute
   '/groups/$groupId/edit': typeof AppGroupsGroupIdEditRoute
   '/groups/$groupId/trainings': typeof AppGroupsGroupIdTrainingsRoute
+  '/lab/$morph/elferrat': typeof AppLabMorphElferratRoute
   '/manage/board/new': typeof AppManageBoardNewRoute
   '/manage/groups/new': typeof AppManageGroupsNewRoute
   '/manage/persons/$personId': typeof AppManagePersonsPersonIdRoute
@@ -572,6 +564,7 @@ export interface FileRoutesByTo {
   '/groups/$groupId/people/$personId': typeof AppGroupsGroupIdPeoplePersonIdRoute
   '/groups/$groupId/slots/$slotId': typeof AppGroupsGroupIdSlotsSlotIdRoute
   '/groups/$groupId/slots/new': typeof AppGroupsGroupIdSlotsNewRoute
+  '/lab/$morph/elferrat/praesident': typeof AppLabMorphElferratPraesidentRoute
   '/manage/board/$boardOfficeId/edit': typeof AppManageBoardBoardOfficeIdEditRoute
   '/manage/groups/kinds/$groupKindId': typeof AppManageGroupsKindsGroupKindIdRoute
   '/manage/groups/kinds/new': typeof AppManageGroupsKindsNewRoute
@@ -612,10 +605,7 @@ export interface FileRoutesById {
   '/_app/calendar_/$calendarEntryId': typeof AppCalendarCalendarEntryIdRoute
   '/_app/calendar_/new': typeof AppCalendarNewRoute
   '/_app/groups_/$groupId': typeof AppGroupsGroupIdRoute
-  '/_app/lab/fallblatt': typeof AppLabFallblattRoute
-  '/_app/lab/konfetti': typeof AppLabKonfettiRoute
-  '/_app/lab/schunkeln': typeof AppLabSchunkelnRoute
-  '/_app/lab/tusch': typeof AppLabTuschRoute
+  '/_app/lab_/$morph': typeof AppLabMorphRoute
   '/_app/manage/board': typeof AppManageBoardRoute
   '/_app/manage/groups': typeof AppManageGroupsRoute
   '/_app/manage/keys': typeof AppManageKeysRoute
@@ -629,6 +619,7 @@ export interface FileRoutesById {
   '/_app/groups_/$groupId_/administration': typeof AppGroupsGroupIdAdministrationRoute
   '/_app/groups_/$groupId_/edit': typeof AppGroupsGroupIdEditRoute
   '/_app/groups_/$groupId_/trainings': typeof AppGroupsGroupIdTrainingsRoute
+  '/_app/lab_/$morph_/elferrat': typeof AppLabMorphElferratRoute
   '/_app/manage/board_/new': typeof AppManageBoardNewRoute
   '/_app/manage/groups_/new': typeof AppManageGroupsNewRoute
   '/_app/manage/persons_/$personId': typeof AppManagePersonsPersonIdRoute
@@ -644,6 +635,7 @@ export interface FileRoutesById {
   '/_app/groups_/$groupId_/people/$personId': typeof AppGroupsGroupIdPeoplePersonIdRoute
   '/_app/groups_/$groupId_/slots/$slotId': typeof AppGroupsGroupIdSlotsSlotIdRoute
   '/_app/groups_/$groupId_/slots/new': typeof AppGroupsGroupIdSlotsNewRoute
+  '/_app/lab_/$morph_/elferrat_/praesident': typeof AppLabMorphElferratPraesidentRoute
   '/_app/manage/board_/$boardOfficeId_/edit': typeof AppManageBoardBoardOfficeIdEditRoute
   '/_app/manage/groups_/kinds/$groupKindId': typeof AppManageGroupsKindsGroupKindIdRoute
   '/_app/manage/groups_/kinds/new': typeof AppManageGroupsKindsNewRoute
@@ -683,10 +675,7 @@ export interface FileRouteTypes {
     | '/calendar/$calendarEntryId'
     | '/calendar/new'
     | '/groups/$groupId'
-    | '/lab/fallblatt'
-    | '/lab/konfetti'
-    | '/lab/schunkeln'
-    | '/lab/tusch'
+    | '/lab/$morph'
     | '/manage/board'
     | '/manage/groups'
     | '/manage/keys'
@@ -700,6 +689,7 @@ export interface FileRouteTypes {
     | '/groups/$groupId/administration'
     | '/groups/$groupId/edit'
     | '/groups/$groupId/trainings'
+    | '/lab/$morph/elferrat'
     | '/manage/board/new'
     | '/manage/groups/new'
     | '/manage/persons/$personId'
@@ -715,6 +705,7 @@ export interface FileRouteTypes {
     | '/groups/$groupId/people/$personId'
     | '/groups/$groupId/slots/$slotId'
     | '/groups/$groupId/slots/new'
+    | '/lab/$morph/elferrat/praesident'
     | '/manage/board/$boardOfficeId/edit'
     | '/manage/groups/kinds/$groupKindId'
     | '/manage/groups/kinds/new'
@@ -752,10 +743,7 @@ export interface FileRouteTypes {
     | '/calendar/$calendarEntryId'
     | '/calendar/new'
     | '/groups/$groupId'
-    | '/lab/fallblatt'
-    | '/lab/konfetti'
-    | '/lab/schunkeln'
-    | '/lab/tusch'
+    | '/lab/$morph'
     | '/manage/board'
     | '/manage/groups'
     | '/manage/keys'
@@ -769,6 +757,7 @@ export interface FileRouteTypes {
     | '/groups/$groupId/administration'
     | '/groups/$groupId/edit'
     | '/groups/$groupId/trainings'
+    | '/lab/$morph/elferrat'
     | '/manage/board/new'
     | '/manage/groups/new'
     | '/manage/persons/$personId'
@@ -784,6 +773,7 @@ export interface FileRouteTypes {
     | '/groups/$groupId/people/$personId'
     | '/groups/$groupId/slots/$slotId'
     | '/groups/$groupId/slots/new'
+    | '/lab/$morph/elferrat/praesident'
     | '/manage/board/$boardOfficeId/edit'
     | '/manage/groups/kinds/$groupKindId'
     | '/manage/groups/kinds/new'
@@ -823,10 +813,7 @@ export interface FileRouteTypes {
     | '/_app/calendar_/$calendarEntryId'
     | '/_app/calendar_/new'
     | '/_app/groups_/$groupId'
-    | '/_app/lab/fallblatt'
-    | '/_app/lab/konfetti'
-    | '/_app/lab/schunkeln'
-    | '/_app/lab/tusch'
+    | '/_app/lab_/$morph'
     | '/_app/manage/board'
     | '/_app/manage/groups'
     | '/_app/manage/keys'
@@ -840,6 +827,7 @@ export interface FileRouteTypes {
     | '/_app/groups_/$groupId_/administration'
     | '/_app/groups_/$groupId_/edit'
     | '/_app/groups_/$groupId_/trainings'
+    | '/_app/lab_/$morph_/elferrat'
     | '/_app/manage/board_/new'
     | '/_app/manage/groups_/new'
     | '/_app/manage/persons_/$personId'
@@ -855,6 +843,7 @@ export interface FileRouteTypes {
     | '/_app/groups_/$groupId_/people/$personId'
     | '/_app/groups_/$groupId_/slots/$slotId'
     | '/_app/groups_/$groupId_/slots/new'
+    | '/_app/lab_/$morph_/elferrat_/praesident'
     | '/_app/manage/board_/$boardOfficeId_/edit'
     | '/_app/manage/groups_/kinds/$groupKindId'
     | '/_app/manage/groups_/kinds/new'
@@ -1017,32 +1006,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppManageBoardRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/lab/tusch': {
-      id: '/_app/lab/tusch'
-      path: '/lab/tusch'
-      fullPath: '/lab/tusch'
-      preLoaderRoute: typeof AppLabTuschRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/lab/schunkeln': {
-      id: '/_app/lab/schunkeln'
-      path: '/lab/schunkeln'
-      fullPath: '/lab/schunkeln'
-      preLoaderRoute: typeof AppLabSchunkelnRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/lab/konfetti': {
-      id: '/_app/lab/konfetti'
-      path: '/lab/konfetti'
-      fullPath: '/lab/konfetti'
-      preLoaderRoute: typeof AppLabKonfettiRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/lab/fallblatt': {
-      id: '/_app/lab/fallblatt'
-      path: '/lab/fallblatt'
-      fullPath: '/lab/fallblatt'
-      preLoaderRoute: typeof AppLabFallblattRouteImport
+    '/_app/lab_/$morph': {
+      id: '/_app/lab_/$morph'
+      path: '/lab/$morph'
+      fullPath: '/lab/$morph'
+      preLoaderRoute: typeof AppLabMorphRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/groups_/$groupId': {
@@ -1150,6 +1118,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppManageBoardNewRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/lab_/$morph_/elferrat': {
+      id: '/_app/lab_/$morph_/elferrat'
+      path: '/lab/$morph/elferrat'
+      fullPath: '/lab/$morph/elferrat'
+      preLoaderRoute: typeof AppLabMorphElferratRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/groups_/$groupId_/trainings': {
       id: '/_app/groups_/$groupId_/trainings'
       path: '/groups/$groupId/trainings'
@@ -1232,6 +1207,13 @@ declare module '@tanstack/react-router' {
       path: '/manage/board/$boardOfficeId/edit'
       fullPath: '/manage/board/$boardOfficeId/edit'
       preLoaderRoute: typeof AppManageBoardBoardOfficeIdEditRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/lab_/$morph_/elferrat_/praesident': {
+      id: '/_app/lab_/$morph_/elferrat_/praesident'
+      path: '/lab/$morph/elferrat/praesident'
+      fullPath: '/lab/$morph/elferrat/praesident'
+      preLoaderRoute: typeof AppLabMorphElferratPraesidentRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/groups_/$groupId_/slots/new': {
@@ -1400,10 +1382,7 @@ interface AppRouteChildren {
   AppCalendarCalendarEntryIdRoute: typeof AppCalendarCalendarEntryIdRoute
   AppCalendarNewRoute: typeof AppCalendarNewRoute
   AppGroupsGroupIdRoute: typeof AppGroupsGroupIdRoute
-  AppLabFallblattRoute: typeof AppLabFallblattRoute
-  AppLabKonfettiRoute: typeof AppLabKonfettiRoute
-  AppLabSchunkelnRoute: typeof AppLabSchunkelnRoute
-  AppLabTuschRoute: typeof AppLabTuschRoute
+  AppLabMorphRoute: typeof AppLabMorphRoute
   AppManageBoardRoute: typeof AppManageBoardRoute
   AppManageGroupsRoute: typeof AppManageGroupsRoute
   AppManageKeysRoute: typeof AppManageKeysRoute
@@ -1416,6 +1395,7 @@ interface AppRouteChildren {
   AppGroupsGroupIdAdministrationRoute: typeof AppGroupsGroupIdAdministrationRoute
   AppGroupsGroupIdEditRoute: typeof AppGroupsGroupIdEditRoute
   AppGroupsGroupIdTrainingsRoute: typeof AppGroupsGroupIdTrainingsRoute
+  AppLabMorphElferratRoute: typeof AppLabMorphElferratRoute
   AppManageBoardNewRoute: typeof AppManageBoardNewRoute
   AppManageGroupsNewRoute: typeof AppManageGroupsNewRoute
   AppManagePersonsPersonIdRoute: typeof AppManagePersonsPersonIdRoute
@@ -1431,6 +1411,7 @@ interface AppRouteChildren {
   AppGroupsGroupIdPeoplePersonIdRoute: typeof AppGroupsGroupIdPeoplePersonIdRoute
   AppGroupsGroupIdSlotsSlotIdRoute: typeof AppGroupsGroupIdSlotsSlotIdRoute
   AppGroupsGroupIdSlotsNewRoute: typeof AppGroupsGroupIdSlotsNewRoute
+  AppLabMorphElferratPraesidentRoute: typeof AppLabMorphElferratPraesidentRoute
   AppManageBoardBoardOfficeIdEditRoute: typeof AppManageBoardBoardOfficeIdEditRoute
   AppManageGroupsKindsGroupKindIdRoute: typeof AppManageGroupsKindsGroupKindIdRoute
   AppManageGroupsKindsNewRoute: typeof AppManageGroupsKindsNewRoute
@@ -1467,10 +1448,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppCalendarCalendarEntryIdRoute: AppCalendarCalendarEntryIdRoute,
   AppCalendarNewRoute: AppCalendarNewRoute,
   AppGroupsGroupIdRoute: AppGroupsGroupIdRoute,
-  AppLabFallblattRoute: AppLabFallblattRoute,
-  AppLabKonfettiRoute: AppLabKonfettiRoute,
-  AppLabSchunkelnRoute: AppLabSchunkelnRoute,
-  AppLabTuschRoute: AppLabTuschRoute,
+  AppLabMorphRoute: AppLabMorphRoute,
   AppManageBoardRoute: AppManageBoardRoute,
   AppManageGroupsRoute: AppManageGroupsRoute,
   AppManageKeysRoute: AppManageKeysRoute,
@@ -1483,6 +1461,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppGroupsGroupIdAdministrationRoute: AppGroupsGroupIdAdministrationRoute,
   AppGroupsGroupIdEditRoute: AppGroupsGroupIdEditRoute,
   AppGroupsGroupIdTrainingsRoute: AppGroupsGroupIdTrainingsRoute,
+  AppLabMorphElferratRoute: AppLabMorphElferratRoute,
   AppManageBoardNewRoute: AppManageBoardNewRoute,
   AppManageGroupsNewRoute: AppManageGroupsNewRoute,
   AppManagePersonsPersonIdRoute: AppManagePersonsPersonIdRoute,
@@ -1499,6 +1478,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppGroupsGroupIdPeoplePersonIdRoute: AppGroupsGroupIdPeoplePersonIdRoute,
   AppGroupsGroupIdSlotsSlotIdRoute: AppGroupsGroupIdSlotsSlotIdRoute,
   AppGroupsGroupIdSlotsNewRoute: AppGroupsGroupIdSlotsNewRoute,
+  AppLabMorphElferratPraesidentRoute: AppLabMorphElferratPraesidentRoute,
   AppManageBoardBoardOfficeIdEditRoute: AppManageBoardBoardOfficeIdEditRoute,
   AppManageGroupsKindsGroupKindIdRoute: AppManageGroupsKindsGroupKindIdRoute,
   AppManageGroupsKindsNewRoute: AppManageGroupsKindsNewRoute,

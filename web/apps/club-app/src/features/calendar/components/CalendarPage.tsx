@@ -1,7 +1,7 @@
 import type { KkQuietScreenAction } from '@furria/ui';
 import { KkScreen, KkSkeletonToolbar, KkTitleHeader } from '@furria/ui';
 import type { FC } from 'react';
-import { CLUB_ORIGIN } from '@/features/session';
+import { AREA_HANDOVERS, CLUB_ORIGIN } from '@/features/session';
 import { useLanding } from '@/features/write';
 import { useCalendarQuery } from '../api';
 import {
@@ -57,6 +57,7 @@ export const CalendarPage: FC = () => {
       actions={[viewAction]}
       tools={tools}
       header={<KkTitleHeader title={CALENDAR_TITLE} lead={CALENDAR_LEAD} />}
+      handover={AREA_HANDOVERS.calendar}
     >
       <CalendarBody board={board} highlightedKey={highlightedKey} />
     </KkScreen>

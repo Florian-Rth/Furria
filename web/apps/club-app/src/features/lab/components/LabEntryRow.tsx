@@ -1,7 +1,7 @@
 import { KkHubRow, KkPanel, KkPanelSection } from '@furria/ui';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { LAB_ENTRY_META, LAB_PATH, LAB_TITLE } from '../lab-entries';
+import { LAB_ENTRY_META, LAB_PATH, LAB_TITLE } from '../lab-morphs';
 
 export const LabEntryRow: FC = () => (
   <KkPanelSection title={LAB_TITLE}>

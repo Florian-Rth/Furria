@@ -1,7 +1,7 @@
 import type { KkScreenIndex } from '@furria/ui';
 import { KkScreen, KkSkeletonToolbar, KkTitleHeader } from '@furria/ui';
 import type { FC } from 'react';
-import { CLUB_ORIGIN, useScreenSearch } from '@/features/session';
+import { AREA_HANDOVERS, CLUB_ORIGIN, useScreenSearch } from '@/features/session';
 import { useMembersQuery } from '../api';
 import { useMemberSearch } from '../hooks/use-member-search';
 import { LETTER_INDEX_LABEL, MEMBERS_LEAD } from '../members-labels';
@@ -53,6 +53,7 @@ export const MembersPage: FC = () => {
       title={MEMBERS_TITLE}
       origin={CLUB_ORIGIN}
       header={<KkTitleHeader title={MEMBERS_TITLE} lead={MEMBERS_LEAD} />}
+      handover={AREA_HANDOVERS.members}
     >
       <MembersBody search={search} />
     </KkScreen>

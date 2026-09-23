@@ -77,25 +77,25 @@ const ELFERRAT = group({ groupId: 3, name: 'Elferrat', isAdmin: true });
 const KINDERGARDE = group({ groupId: 9, name: 'Kindergarde', isAdmin: false });
 
 describe('toOwnerOptions', () => {
-  it('offers only the Gruppen the viewer administers', () => {
+  it('offers only the groups the viewer administers', () => {
     const options = toOwnerOptions([TANZGARDE, KINDERGARDE], false);
 
     expect(options.map((option) => option.ownerGroupId)).toEqual([7]);
   });
 
-  it('puts the Verein first and sorts the Gruppen by name', () => {
+  it('puts the club first and sorts the groups by name', () => {
     const options = toOwnerOptions([TANZGARDE, ELFERRAT], true);
 
     expect(options.map((option) => option.ownerGroupId)).toEqual([null, 3, 7]);
   });
 
-  it('offers nothing when the viewer owns neither the Verein nor a Gruppe', () => {
+  it('offers nothing when the viewer owns neither the club nor a group', () => {
     expect(toOwnerOptions([KINDERGARDE], false)).toEqual([]);
   });
 });
 
 describe('mayOwnCalendarEntry', () => {
-  it('answers for the Verein and for one Gruppe apart', () => {
+  it('answers for the club and for one group apart', () => {
     const options = toOwnerOptions([TANZGARDE], false);
 
     expect(mayOwnCalendarEntry(options, 7)).toBe(true);
@@ -158,30 +158,30 @@ describe('toInstant', () => {
 });
 
 describe('toEntryPayload', () => {
-  it('trims the Titel and drops an empty Beschreibung', () => {
+  it('trims the title and drops an empty description', () => {
     const payload = toEntryPayload(form({}));
 
     expect(payload.title).toBe('Prunksitzung');
     expect(payload.description).toBeNull();
   });
 
-  it('keeps a Beschreibung that carries text', () => {
+  it('keeps a description that carries text', () => {
     expect(toEntryPayload(form({ description: '  Kostüm mitbringen. ' })).description).toBe(
       'Kostüm mitbringen.',
     );
   });
 
-  it('reads the Verein as no Eigentümer and a Gruppe as its id', () => {
+  it('reads the club as no owner and a group as its id', () => {
     expect(toEntryPayload(form({ ownerId: 'club' })).ownerGroupId).toBeNull();
     expect(toEntryPayload(form({ ownerId: '7' })).ownerGroupId).toBe(7);
   });
 
-  it('reads no Ort as none and a chosen Ort as its id', () => {
+  it('reads no venue as none and a chosen venue as its id', () => {
     expect(toEntryPayload(form({ venueId: '' })).venueId).toBeNull();
     expect(toEntryPayload(form({ venueId: '4' })).venueId).toBe(4);
   });
 
-  it('writes an offenes Ende when no last day is chosen', () => {
+  it('writes an open end when no last day is chosen', () => {
     expect(toEntryPayload(form({ endDay: '' })).endsAt).toBeNull();
   });
 
@@ -194,7 +194,7 @@ describe('toEntryPayload', () => {
 });
 
 describe('toEntryFormValues', () => {
-  it('fills in the only possible Eigentümer and its default Sichtbarkeit', () => {
+  it('fills in the only possible owner and its default visibility', () => {
     const values = toEntryFormValues(
       null,
       toOwnerOptions([TANZGARDE], false),
@@ -206,13 +206,13 @@ describe('toEntryFormValues', () => {
     expect(values.startDay).toBe('2027-01-20');
   });
 
-  it('reads an offenes Ende off an existing Termin', () => {
+  it('reads an open end off an existing calendar entry', () => {
     const values = toEntryFormValues(entry({ endsAt: null }), [], new Date(2027, 0, 20));
 
     expect(values.endDay).toBe('');
   });
 
-  it('carries the Ort of an existing Termin into the form', () => {
+  it('carries the venue of an existing calendar entry into the form', () => {
     const values = toEntryFormValues(entry({ venueId: 4 }), [], new Date(2027, 0, 20));
 
     expect(values.venueId).toBe('4');
@@ -220,17 +220,17 @@ describe('toEntryFormValues', () => {
 });
 
 describe('toCollisionSentence', () => {
-  it('says nothing when no Termin clashes', () => {
+  it('says nothing when no calendar entry clashes', () => {
     expect(toCollisionSentence([])).toBeNull();
   });
 
-  it('names the one Termin that clashes', () => {
+  it('names the one calendar entry that clashes', () => {
     expect(toCollisionSentence(['„Abendprobe“ (20.01. 18:00 – 21:00 Uhr)'])).toContain(
       '„Abendprobe“ (20.01. 18:00 – 21:00 Uhr)',
     );
   });
 
-  it('names every Termin that clashes', () => {
+  it('names every calendar entry that clashes', () => {
     const sentence = toCollisionSentence(['„Abendprobe“', '„Bastelabend“']) ?? '';
 
     expect(sentence).toContain('„Abendprobe“');
@@ -269,15 +269,15 @@ describe('toEntryWriteNotice', () => {
 });
 
 describe('findCalendarEntry', () => {
-  it('finds nothing when no Termin is targeted', () => {
+  it('finds nothing when no calendar entry is targeted', () => {
     expect(findCalendarEntry([entry({})], null)).toBeNull();
   });
 
-  it('finds nothing when the targeted Termin is gone', () => {
+  it('finds nothing when the targeted calendar entry is gone', () => {
     expect(findCalendarEntry([entry({ calendarEntryId: 11 })], 12)).toBeNull();
   });
 
-  it('finds the targeted Termin', () => {
+  it('finds the targeted calendar entry', () => {
     const found = findCalendarEntry(
       [entry({ calendarEntryId: 11 }), entry({ calendarEntryId: 12 })],
       12,
@@ -339,14 +339,14 @@ describe('toParticipatingGroupOptions', () => {
     ],
   } as const;
 
-  it('leaves the Eigentümerin out of the list', () => {
+  it('leaves the owner out of the list', () => {
     expect(toParticipatingGroupOptions(running, [], '1')).toEqual([
       { value: '2', label: 'Ältestenrat' },
       { value: '3', label: 'Männerballett' },
     ]);
   });
 
-  it('keeps every Gruppe when the Verein owns the Termin', () => {
+  it('keeps every group when the club owns the calendar entry', () => {
     expect(toParticipatingGroupOptions(running, [], 'club').map((option) => option.label)).toEqual([
       'Ältestenrat',
       'Männerballett',
@@ -354,7 +354,7 @@ describe('toParticipatingGroupOptions', () => {
     ]);
   });
 
-  it('keeps a mitwirkende Gruppe choosable after it left the Verzeichnis', () => {
+  it('keeps a participating group choosable after it left the directory', () => {
     const held = [{ groupId: 9, name: 'Wirbelwinde' }];
 
     expect(toParticipatingGroupOptions(running, held, 'club')).toContainEqual({
@@ -363,7 +363,7 @@ describe('toParticipatingGroupOptions', () => {
     });
   });
 
-  it('calls no held Gruppe archived while the Verzeichnis is missing', () => {
+  it('calls no held group archived while the directory is missing', () => {
     const held = [{ groupId: 9, name: 'Wirbelwinde' }];
 
     expect(toParticipatingGroupOptions({ state: 'failed' }, held, 'club')).toEqual([
@@ -371,7 +371,7 @@ describe('toParticipatingGroupOptions', () => {
     ]);
   });
 
-  it('lists a held Gruppe once when it is still in the Verzeichnis', () => {
+  it('lists a held group once when it is still in the directory', () => {
     const held = [{ groupId: 1, name: 'Tanzgarde' }];
 
     expect(toParticipatingGroupOptions(running, held, 'club')).toHaveLength(3);
@@ -379,20 +379,20 @@ describe('toParticipatingGroupOptions', () => {
 });
 
 describe('toParticipantPool', () => {
-  it('reads loaded Gruppen as ready', () => {
+  it('reads loaded groups as ready', () => {
     expect(toParticipantPool([{ groupId: 1, name: 'Tanzgarde' }])).toEqual({
       state: 'ready',
       groups: [{ groupId: 1, name: 'Tanzgarde' }],
     });
   });
 
-  it('reads a missing Verzeichnis as failed', () => {
+  it('reads a missing directory as failed', () => {
     expect(toParticipantPool(undefined).state).toBe('failed');
   });
 });
 
 describe('toParticipantsEmptyLabel', () => {
-  it('states no Gruppe is left only once the Verzeichnis is there', () => {
+  it('states no group is left only once the directory is there', () => {
     const ready = toParticipantsEmptyLabel({ state: 'ready', groups: [] });
 
     expect(ready).not.toBe(toParticipantsEmptyLabel({ state: 'failed' }));
@@ -430,31 +430,31 @@ describe('toToggledParticipation', () => {
   });
 });
 
-describe('toEntryPayload mitwirkende Gruppen', () => {
+describe('toEntryPayload participating groups', () => {
   it('maps the chosen ids to numbers', () => {
     expect(
       toEntryPayload(form({ participatingGroupIds: ['2', '3'] })).participatingGroupIds,
     ).toEqual([2, 3]);
   });
 
-  it('drops the Eigentümerin from the mitwirkenden', () => {
+  it('drops the owner from the participants', () => {
     expect(
       toEntryPayload(form({ ownerId: '2', participatingGroupIds: ['2', '3'] }))
         .participatingGroupIds,
     ).toEqual([3]);
   });
 
-  it('sends no mitwirkende Gruppe when none is chosen', () => {
+  it('sends no participating group when none is chosen', () => {
     expect(toEntryPayload(form({})).participatingGroupIds).toEqual([]);
   });
 });
 
-describe('toEntryFormValues mitwirkende Gruppen', () => {
-  it('starts an empty Termin without mitwirkende Gruppen', () => {
+describe('toEntryFormValues participating groups', () => {
+  it('starts an empty calendar entry without participating groups', () => {
     expect(toEntryFormValues(null, [], new Date(2027, 0, 20)).participatingGroupIds).toEqual([]);
   });
 
-  it('reads the mitwirkenden of an existing Termin as string ids', () => {
+  it('reads the participants of an existing calendar entry as string ids', () => {
     const values = toEntryFormValues(
       entry({
         participatingGroups: [

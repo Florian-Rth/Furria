@@ -132,19 +132,19 @@ describe('toScopeOptions', () => {
 });
 
 describe('toEntryFacts', () => {
-  it('leaves the Ort out when the Termin names none', () => {
+  it('leaves the venue out when the calendar entry names none', () => {
     const labels = toEntryFacts(entry({ venueName: null })).map((fact) => fact.label);
 
     expect(labels).not.toContain('Ort');
   });
 
-  it('names the Ort when the Termin holds one', () => {
+  it('names the venue when the calendar entry holds one', () => {
     const facts = toEntryFacts(entry({ venueId: 3, venueName: 'Bühnenhaus' }));
 
     expect(facts.find((fact) => fact.label === 'Ort')?.value).toBe('Bühnenhaus');
   });
 
-  it('reads a Gruppe as the Eigentümer and the Verein otherwise', () => {
+  it('reads a group as the owner and the club otherwise', () => {
     const owned = toEntryFacts(entry({ ownerGroupId: 7, ownerGroupName: 'Tanzgarde' }));
     const club = toEntryFacts(entry({}));
 
@@ -154,14 +154,14 @@ describe('toEntryFacts', () => {
 });
 
 describe('toDeleteConsequence', () => {
-  it('warns about the Zusagen only when the Termin collects them', () => {
+  it('warns about the responses only when the calendar entry collects them', () => {
     expect(toDeleteConsequence(entry({ asksForResponse: true }))).toContain('Absagen');
     expect(toDeleteConsequence(entry({ asksForResponse: false }))).not.toContain('Absagen');
   });
 });
 
 describe('toVenueOptions', () => {
-  it('offers no Ort ahead of the Orte the Verein holds', () => {
+  it('offers no venue ahead of the venues the club holds', () => {
     const options = toVenueOptions([
       { venueId: 4, name: 'Bühnenhaus' },
       { venueId: 9, name: 'Lager' },

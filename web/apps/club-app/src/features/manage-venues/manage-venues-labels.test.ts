@@ -33,7 +33,7 @@ describe('toVenueAddressLine', () => {
     expect(toVenueAddressLine(HALLE)).toBe('Am Sportplatz 7, 99713 Großfurra');
   });
 
-  it('has no line at all for an Ort without any address part', () => {
+  it('has no line at all for a venue without any address part', () => {
     expect(toVenueAddressLine(venue({ street: '', zip: '', city: '' }))).toBeNull();
   });
 
@@ -54,7 +54,7 @@ describe('toVenueAddressLine', () => {
 });
 
 describe('partitionVenues', () => {
-  it('keeps running and archived Orte apart in the order they arrived', () => {
+  it('keeps running and archived venues apart in the order they arrived', () => {
     const partition = partitionVenues([HALLE, LAGER, RAUM, MAGAZIN]);
 
     expect(idsOf(partition.running)).toEqual([1, 4]);
@@ -68,7 +68,7 @@ describe('partitionVenues', () => {
     expect(partition.archived).toEqual([]);
   });
 
-  it('puts every Ort into the archived bank when none is running', () => {
+  it('puts every venue into the archived bank when none is running', () => {
     expect(idsOf(partitionVenues([LAGER, MAGAZIN]).running)).toEqual([]);
   });
 });
@@ -88,7 +88,7 @@ describe('toVenueId', () => {
 });
 
 describe('findManagedVenue', () => {
-  it('finds nothing when no Ort is targeted', () => {
+  it('finds nothing when no venue is targeted', () => {
     expect(findManagedVenue([HALLE, LAGER], null)).toBeNull();
   });
 
@@ -96,7 +96,7 @@ describe('findManagedVenue', () => {
     expect(findManagedVenue([HALLE, LAGER], 999)).toBeNull();
   });
 
-  it('finds the targeted Ort', () => {
+  it('finds the targeted venue', () => {
     expect(findManagedVenue([HALLE, LAGER], 9)?.name).toBe('Altes Lager');
   });
 });
@@ -114,7 +114,7 @@ describe('toRestoreConsequence', () => {
 });
 
 describe('toVenueFacts', () => {
-  it('carries the Ort, its Anschrift and the stamped day', () => {
+  it('carries the venue, its address and the stamped day', () => {
     expect(toVenueFacts(HALLE, '12.09.2026').map((fact) => fact.value)).toEqual([
       'Turnhalle',
       'Am Sportplatz 7, 99713 Großfurra',
@@ -122,7 +122,7 @@ describe('toVenueFacts', () => {
     ]);
   });
 
-  it('leaves the Anschrift out when the Ort has none', () => {
+  it('leaves the address out when the venue has none', () => {
     const facts = toVenueFacts(venue({ street: '', zip: '', city: '' }), '12.09.2026');
 
     expect(facts.map((fact) => fact.label)).toEqual(['Ort', 'Ab']);

@@ -69,13 +69,13 @@ describe('toGroupFactsLine', () => {
 });
 
 describe('toGroupRegisterFlags', () => {
-  it('names every gap of a running group before its Gruppenart', () => {
+  it('names every gap of a running group before its group kind', () => {
     const flags = toGroupRegisterFlags(group({ admins: [], memberCount: 0 }));
 
     expect(flags.map((flag) => flag.id)).toEqual(['no-admin', 'no-kind', 'no-people']);
   });
 
-  it('carries the Gruppenart alone once nothing is missing', () => {
+  it('carries the group kind alone once nothing is missing', () => {
     const flags = toGroupRegisterFlags(group({ groupKindId: 2, groupKindName: 'Garde' }));
 
     expect(flags).toEqual([{ id: 'kind', label: 'Garde', tone: 'neutral', dot: false }]);
@@ -93,13 +93,13 @@ describe('toGroupRegisterFlags', () => {
 });
 
 describe('toRestoreConsequence', () => {
-  it('agrees with a single Zugehörigkeit', () => {
+  it('agrees with a single group membership', () => {
     expect(toRestoreConsequence('Musikzug', 1, '12.09.2026')).toContain(
       '1 Zugehörigkeit zählt wieder mit.',
     );
   });
 
-  it('agrees with several Zugehörigkeiten', () => {
+  it('agrees with several group memberships', () => {
     expect(toRestoreConsequence('Musikzug', 6, '12.09.2026')).toContain(
       '6 Zugehörigkeiten zählen wieder mit.',
     );
@@ -126,7 +126,7 @@ describe('toGroupKindEntries', () => {
     expect(entries.map((entry) => entry.groupKindId)).toEqual([2, 1, 4, 3]);
   });
 
-  it('marks an archived Gruppenart', () => {
+  it('marks an archived group kind', () => {
     const entries = toGroupKindEntries([kind({ archivedOn: '2026-01-01' })]);
 
     expect(entries[0]?.isArchived).toBe(true);
@@ -136,7 +136,7 @@ describe('toGroupKindEntries', () => {
 describe('findGroupKindEntry', () => {
   const entries = toGroupKindEntries([kind({ groupKindId: 1, name: 'Garde' })]);
 
-  it('finds nothing when no Gruppenart is selected', () => {
+  it('finds nothing when no group kind is selected', () => {
     expect(findGroupKindEntry(entries, null)).toBeNull();
   });
 
@@ -144,7 +144,7 @@ describe('findGroupKindEntry', () => {
     expect(findGroupKindEntry(entries, 999)).toBeNull();
   });
 
-  it('finds the selected Gruppenart', () => {
+  it('finds the selected group kind', () => {
     expect(findGroupKindEntry(entries, 1)?.name).toBe('Garde');
   });
 });

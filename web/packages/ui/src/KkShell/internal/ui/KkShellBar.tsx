@@ -1,6 +1,7 @@
 import type { FC } from 'react';
 import { KkChrome } from '../../../internal/KkChrome';
 import { kkTokens } from '../../../tokens';
+import type { KkBarMorph } from '../../bar-morph';
 import type {
   KkScreenAction,
   KkScreenKind,
@@ -9,6 +10,7 @@ import type {
   KkScreenThread,
 } from '../../screen-declaration';
 import { useKkShell } from '../logic/shell-context';
+import { useBarScene } from '../logic/use-bar-scene';
 import type { KkShellBarLead } from './KkShellBarLeading';
 import { KkShellBarRest } from './KkShellBarRest';
 import { KkShellBarSearch } from './KkShellBarSearch';
@@ -25,6 +27,7 @@ interface KkShellBarProps {
   actions?: readonly KkScreenAction[];
   search?: KkScreenSearch;
   thread?: KkScreenThread;
+  morph: KkBarMorph | null;
 }
 
 export const KkShellBar: FC<KkShellBarProps> = ({
@@ -35,8 +38,10 @@ export const KkShellBar: FC<KkShellBarProps> = ({
   actions,
   search,
   thread,
+  morph,
 }) => {
-  const { density } = useKkShell();
+  const { path } = useKkShell();
+  const scene = useBarScene({ path, kind, lead, title, origin: origin ?? null });
   const threadLine = thread === undefined ? null : <KkShellThread thread={thread} />;
 
   const searching = search !== undefined && search.query !== null;
@@ -52,12 +57,13 @@ export const KkShellBar: FC<KkShellBarProps> = ({
         origin={origin}
         actions={actions}
         search={search}
+        morph={morph}
+        scene={scene}
       />
     );
 
-  return (
+  const bar = (
     <KkChrome
-      density={density}
       component="header"
       sx={{
         position: 'relative',
@@ -70,4 +76,10 @@ export const KkShellBar: FC<KkShellBarProps> = ({
       {threadLine}
     </KkChrome>
   );
+
+  if (morph?.Bar === undefined) {
+    return bar;
+  }
+
+  return <morph.Bar scene={scene}>{bar}</morph.Bar>;
 };

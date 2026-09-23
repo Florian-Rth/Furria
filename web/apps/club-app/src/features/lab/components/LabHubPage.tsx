@@ -2,17 +2,17 @@ import { KkHubRow, KkPanel, KkPanelSection, KkScreen, KkTitleHeader } from '@fur
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { MANAGE_ORIGIN } from '@/features/session';
-import { HANDOVER_LAB_BANK, HANDOVER_LABS, LAB_LEAD, LAB_TITLE } from '../lab-entries';
+import { LAB_LEAD, LAB_MORPHS, LAB_TITLE, MORPH_LAB_BANK, stagePathOf } from '../lab-morphs';
 
 export const LabHubPage: FC = () => {
-  const rows = HANDOVER_LABS.map((lab) => (
+  const rows = LAB_MORPHS.map((morph) => (
     <KkHubRow
-      key={lab.id}
-      label={lab.title}
-      icon={lab.icon}
-      meta={lab.summary}
+      key={morph.slug}
+      label={morph.title}
+      icon="bolt"
+      meta={morph.summary}
       component={Link}
-      to={lab.to}
+      to={stagePathOf(morph)}
     />
   ));
 
@@ -23,7 +23,7 @@ export const LabHubPage: FC = () => {
       origin={MANAGE_ORIGIN}
       header={<KkTitleHeader title={LAB_TITLE} lead={LAB_LEAD} />}
     >
-      <KkPanelSection title={HANDOVER_LAB_BANK}>
+      <KkPanelSection title={MORPH_LAB_BANK}>
         <KkPanel>{rows}</KkPanel>
       </KkPanelSection>
     </KkScreen>

@@ -14,6 +14,7 @@ import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { toAttendanceSavedMessage } from '@/lib/calendar-copy';
 import { toIsoDay } from '@/lib/day';
 import { toWriteErrorMessage } from '@/lib/write-error';
+import type { CalendarEntryWindow } from './group-calendar-entries';
 import {
   GROUP_INFO_SAVED_MESSAGE,
   toAdminAppointedMessage,
@@ -25,7 +26,6 @@ import {
   toMembershipEndedMessage,
   toSelfAdminEndedMessage,
 } from './group-hub-labels';
-import type { TermineWindow } from './group-termine';
 import {
   requestAddGroupAdmin,
   requestAddGroupMembership,
@@ -145,7 +145,7 @@ export const useGroupHubQuery = (groupId: number | null): UseQueryResult<GroupHu
 
 export const useGroupCalendarQuery = (
   groupId: number | null,
-  window: TermineWindow,
+  window: CalendarEntryWindow,
 ): UseQueryResult<GroupCalendarResponse, Error> => {
   const load =
     groupId === null
@@ -425,7 +425,7 @@ export interface GenerateTrainingsInput {
   instants: readonly { groupTrainingSlotId: number; startsAt: string }[];
 }
 
-const refreshTermine = (queryClient: QueryClient, groupId: number): void => {
+const refreshCalendarEntries = (queryClient: QueryClient, groupId: number): void => {
   void queryClient.invalidateQueries({ queryKey: groupHubQueryKey(groupId) });
   void queryClient.invalidateQueries({ queryKey: CALENDAR_QUERY_KEY });
   void queryClient.invalidateQueries({ queryKey: CLUB_HUB_QUERY_KEY });
@@ -483,7 +483,7 @@ export const useGenerateTrainingsMutation = (
         tone: 'success',
         message: toTrainingsCreatedMessage(written.createdCount, written.skippedCount),
       });
-      refreshTermine(queryClient, groupId);
+      refreshCalendarEntries(queryClient, groupId);
     },
   });
 };

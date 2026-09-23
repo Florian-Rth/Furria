@@ -14,7 +14,7 @@ const KINDS = [
 ];
 
 describe('toGroupKindOptions', () => {
-  it('leads with the empty choice and keeps the order the Gruppenverwaltung set', () => {
+  it('leads with the empty choice and keeps the order group management set', () => {
     const options = toGroupKindOptions(KINDS, null);
 
     expect(options.map((option) => option.value)).toEqual(['', '3', '1', '2']);
@@ -24,13 +24,13 @@ describe('toGroupKindOptions', () => {
     expect(toGroupKindOptions([], null)).toHaveLength(1);
   });
 
-  it('adds no second entry when the held Gruppenart is running', () => {
+  it('adds no second entry when the held group kind is running', () => {
     const options = toGroupKindOptions(KINDS, { groupKindId: 2, name: 'Garde' });
 
     expect(options.map((option) => option.value)).toEqual(['', '3', '1', '2']);
   });
 
-  it('keeps the held Gruppenart offered when it left the running list', () => {
+  it('keeps the held group kind offered when it left the running list', () => {
     const options = toGroupKindOptions(KINDS, { groupKindId: 9, name: 'Spielmannszug' });
 
     expect(options.at(-1)).toEqual({ value: '9', label: 'Spielmannszug — archiviert' });
@@ -46,7 +46,7 @@ describe('toHeldGroupKind', () => {
     expect(toHeldGroupKind(groupKindId, groupKindName)).toBeNull();
   });
 
-  it('pairs the id with the name the Gruppe carries', () => {
+  it('pairs the id with the name the group carries', () => {
     expect(toHeldGroupKind(7, 'Garde')).toEqual({ groupKindId: 7, name: 'Garde' });
   });
 });

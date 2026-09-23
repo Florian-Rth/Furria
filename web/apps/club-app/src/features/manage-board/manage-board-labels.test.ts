@@ -90,7 +90,7 @@ describe('toBoardEntries', () => {
     expect(ids(offices)).toEqual([1, 3, 9]);
   });
 
-  it('moves an archived Funktion behind the band it left', () => {
+  it('moves an archived board office behind the band it left', () => {
     const [, , last] = toBoardEntries(offices, TODAY);
 
     expect(last?.isArchived).toBe(true);
@@ -105,7 +105,7 @@ describe('toBoardEntries', () => {
     expect(ids(shared)).toEqual([4, 5]);
   });
 
-  it('marks a Funktion nobody sits in', () => {
+  it('marks a board office nobody sits in', () => {
     const [first, second] = toBoardEntries(offices, TODAY);
 
     expect(first?.isVacant).toBe(false);
@@ -140,20 +140,20 @@ describe('toImpliedRoleChoices', () => {
     { roleId: 5, name: 'Chronik', archivedOn: '2021-01-01' },
   ];
 
-  it('offers the empty choice first, so a Funktion may imply nothing', () => {
+  it('offers the empty choice first, so a board office may imply nothing', () => {
     const [first] = toImpliedRoleChoices(roles, null, null);
 
     expect(first?.value).toBe('');
   });
 
-  it('drops an archived Rolle nobody points at', () => {
+  it('drops an archived role nobody points at', () => {
     expect(toImpliedRoleChoices(roles, null, null).map((option) => option.value)).toEqual([
       '',
       '2',
     ]);
   });
 
-  it('keeps the archived Rolle the Funktion already points at, so the field is never blank', () => {
+  it('keeps the archived role the board office already points at, so the field is never blank', () => {
     expect(toImpliedRoleChoices(roles, 5, 'Chronik').map((option) => option.value)).toEqual([
       '',
       '2',
@@ -161,7 +161,7 @@ describe('toImpliedRoleChoices', () => {
     ]);
   });
 
-  it('carries a pointed-at Rolle the list never returned', () => {
+  it('carries a pointed-at role the list never returned', () => {
     expect(toImpliedRoleChoices(roles, 8, 'Vorstand').map((option) => option.value)).toEqual([
       '',
       '8',

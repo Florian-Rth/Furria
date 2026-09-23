@@ -35,8 +35,8 @@ describe('filterMembers', () => {
     { case: 'surname first', query: 'kühnel katrin', expected: [2] },
     { case: 'an umlaut typed without one', query: 'kuhnel', expected: [2] },
     { case: 'an umlaut typed with one', query: 'kühnel', expected: [2] },
-    { case: 'a Gruppe', query: 'tanzgarde', expected: [1] },
-    { case: 'a Rolle', query: 'präsident', expected: [2] },
+    { case: 'a group', query: 'tanzgarde', expected: [1] },
+    { case: 'a role', query: 'präsident', expected: [2] },
     { case: 'surrounding blanks', query: '  zimmer  ', expected: [3] },
     { case: 'nothing that matches', query: 'schmidtke', expected: [] },
   ])('matches $case', ({ query, expected }) => {

@@ -22,16 +22,16 @@ export interface TrainingSlotFacts {
   readonly venueName: string | null;
 }
 
-export interface Jubilee {
+export interface Anniversary {
   readonly years: number;
   readonly label: string;
 }
 
-export const JUBILEE_STEP = 5;
+export const ANNIVERSARY_STEP = 5;
 
 const FALLBACK_TONE: GroupTone = 'clay';
 const FOUNDED_PREFIX = 'seit ';
-const JUBILEE_SUFFIX = ' Jahre';
+const ANNIVERSARY_SUFFIX = ' Jahre';
 const RHYTHM_LEAD = 'Wir trainieren ';
 const RHYTHM_END = '.';
 const RHYTHM_SEPARATOR = ', ';
@@ -76,18 +76,21 @@ export const toGroupTone = (groupId: number, tone: GroupTone | null): GroupTone 
   return GROUP_TONES[Math.abs(groupId) % GROUP_TONES.length] ?? FALLBACK_TONE;
 };
 
-export const toJubilee = (foundedYear: number | null, sessionYear: number): Jubilee | null => {
+export const toAnniversary = (
+  foundedYear: number | null,
+  sessionYear: number,
+): Anniversary | null => {
   if (foundedYear === null) {
     return null;
   }
 
   const years = sessionYear - foundedYear;
 
-  if (years <= NO_YEARS || years % JUBILEE_STEP !== 0) {
+  if (years <= NO_YEARS || years % ANNIVERSARY_STEP !== 0) {
     return null;
   }
 
-  return { years, label: `${years}${JUBILEE_SUFFIX}` };
+  return { years, label: `${years}${ANNIVERSARY_SUFFIX}` };
 };
 
 export const toFoundedLine = (foundedYear: number | null): string | null =>

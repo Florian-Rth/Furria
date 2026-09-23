@@ -2,6 +2,8 @@ import type { ComponentType, PropsWithChildren, ReactNode } from 'react';
 import { createContext, useContext } from 'react';
 import type { KkScreenHeaderKind } from './screen-declaration';
 
+export type KkHandoverName = 'splitFlap' | 'confetti' | 'fanfare' | 'sway';
+
 export interface KkHandoverSwapProps {
   rest: ReactNode;
   title: ReactNode;

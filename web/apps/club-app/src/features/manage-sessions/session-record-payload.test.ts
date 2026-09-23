@@ -24,7 +24,7 @@ describe('toSessionRecordPayload', () => {
     expect(toSessionRecordPayload(form({ startYear: null }))).toBeNull();
   });
 
-  it('sends the Sessionsnummer as a number', () => {
+  it('sends the session number as a number', () => {
     expect(toSessionRecordPayload(form({ number: '53' }))?.number).toBe(53);
   });
 
@@ -32,21 +32,21 @@ describe('toSessionRecordPayload', () => {
     ['', null],
     ['   ', null],
     ['53', 53],
-  ])('turns the typed Sessionsnummer %j into %j', (typed, expected) => {
+  ])('turns the typed session number %j into %j', (typed, expected) => {
     expect(toSessionRecordPayload(form({ number: typed }))?.number).toBe(expected);
   });
 
-  it.each(['', '   '])('reports a blank Motto %j as unknown', (typed) => {
+  it.each(['', '   '])('reports a blank motto %j as unknown', (typed) => {
     expect(toSessionRecordPayload(form({ motto: typed }))?.motto).toBeNull();
   });
 
-  it('trims the Motto the club typed', () => {
+  it('trims the motto the club typed', () => {
     expect(toSessionRecordPayload(form({ motto: '  Vom Festzelt ins All  ' }))?.motto).toBe(
       'Vom Festzelt ins All',
     );
   });
 
-  it.each([null, '', '  \n '])('reports a blank Logo %j as unknown', (typed) => {
+  it.each([null, '', '  \n '])('reports a blank session logo %j as unknown', (typed) => {
     expect(toSessionRecordPayload(form({ logoSvg: typed }))?.logoSvg).toBeNull();
   });
 
@@ -68,7 +68,7 @@ describe('toSessionRecordForm', () => {
     });
   });
 
-  it('reads an unknown Sessionsnummer and Motto as empty fields', () => {
+  it('reads an unknown session number and motto as empty fields', () => {
     expect(toSessionRecordForm(record({ number: null, motto: null }), 2030)).toEqual({
       startYear: 2026,
       number: '',
@@ -77,7 +77,7 @@ describe('toSessionRecordForm', () => {
     });
   });
 
-  it('carries the recorded Sessionsnummer into the field', () => {
+  it('carries the recorded session number into the field', () => {
     expect(toSessionRecordForm(record({ number: 7 }), null).number).toBe('7');
   });
 });

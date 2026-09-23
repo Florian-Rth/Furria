@@ -1,12 +1,12 @@
 import type {
   KkConfirmFact,
   KkDateQuickChoice,
-  KkGroupStageJubilee,
+  KkGroupStageAnniversary,
   KkScreenOrigin,
 } from '@furria/ui';
 import type { GroupDetailAdmin, GroupDetailMember } from '@/features/group-detail';
 import { toGroupKindId, toGroupKindValue } from '@/features/group-kinds';
-import { toFoundedLine, toJubilee } from '@/features/groups';
+import { toAnniversary, toFoundedLine } from '@/features/groups';
 import { GROUPS_ORIGIN, PROFILE_ORIGIN } from '@/features/session';
 import { SESSION_OPENING_DAY, SESSION_OPENING_MONTH, sessionAt } from '@/lib/club';
 import { isFutureDay, toIsoDay } from '@/lib/day';
@@ -23,7 +23,7 @@ const HUB_TITLE_FALLBACK = 'Gruppe';
 
 const MEMBER_LINE_PREFIX = 'Du bist Mitglied seit ';
 const LEADING_LINE = 'Du leitest diese Gruppe';
-const JUBILEE_CAPTION = 'JAHRE';
+const ANNIVERSARY_CAPTION = 'JAHRE';
 
 export const toHubId = (raw: string): number | null =>
   GROUP_ID_PATTERN.test(raw) ? Number(raw) : null;
@@ -74,17 +74,17 @@ export const toHubMetaFacts = (hub: GroupHub): string[] => {
 export const toHubRecruitingChip = (hub: GroupHub): StateChip | null =>
   hub.isRecruiting ? toRecruitingChip(true) : null;
 
-export const toJubileeSeal = (
+export const toAnniversarySeal = (
   foundedYear: number | null,
   sessionYear: number,
-): KkGroupStageJubilee | null => {
-  const jubilee = toJubilee(foundedYear, sessionYear);
+): KkGroupStageAnniversary | null => {
+  const anniversary = toAnniversary(foundedYear, sessionYear);
 
-  if (jubilee === null) {
+  if (anniversary === null) {
     return null;
   }
 
-  return { yearsLabel: String(jubilee.years), caption: JUBILEE_CAPTION };
+  return { yearsLabel: String(anniversary.years), caption: ANNIVERSARY_CAPTION };
 };
 
 export const toMemberSinceLine = (since: string): string => `seit ${formatSinceSession(since)}`;
@@ -453,7 +453,7 @@ export const toGroupAdministrationSavedMessage = (name: string): string =>
 
 const NOBODY_LINE = 'Es ist niemand eingetragen.';
 
-const toZugehoerigkeitenClause = (
+const toGroupMembershipClause = (
   count: number,
   singularVerb: string,
   pluralVerb: string,
@@ -479,7 +479,7 @@ export const toArchiveGroupConsequence = (
   memberCount: number,
   todayLabel: string,
 ): string =>
-  `Ab dem ${todayLabel} ist ${name} archiviert. ${toZugehoerigkeitenClause(memberCount, 'bleibt bestehen', 'bleiben bestehen')}`;
+  `Ab dem ${todayLabel} ist ${name} archiviert. ${toGroupMembershipClause(memberCount, 'bleibt bestehen', 'bleiben bestehen')}`;
 
 export const toArchiveGroupFacts = (hub: GroupHub, todayLabel: string): KkConfirmFact[] => [
   { label: 'Gruppe', value: hub.name },

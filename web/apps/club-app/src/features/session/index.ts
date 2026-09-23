@@ -3,6 +3,7 @@ export type { AppSection } from './app-sections';
 export {
   ANNOUNCEMENTS_PATH,
   APP_DESTINATIONS,
+  AREA_HANDOVERS,
   CALENDAR_PATH,
   CLUB_ORIGIN,
   CLUB_PATH,

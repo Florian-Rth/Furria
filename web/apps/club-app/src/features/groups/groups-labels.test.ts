@@ -52,7 +52,7 @@ describe('toPersonUnitLabel', () => {
 });
 
 describe('toRecruitingContactSegments', () => {
-  it('offers no person to click when the Gruppe has no admin', () => {
+  it('offers no person to click when the group has no admin', () => {
     expect(toRecruitingContactSegments([])).toEqual([
       { kind: 'text', text: 'Diese Gruppe hat noch keine Ansprechperson.' },
     ]);
@@ -90,7 +90,7 @@ describe('toRecruitingContactSegments', () => {
 });
 
 describe('toRecruitingContactLine', () => {
-  it('asks for an Ansprechperson when the Gruppe has no admin', () => {
+  it('asks for a contact person when the group has no admin', () => {
     expect(toRecruitingContactLine([])).toBe('Diese Gruppe hat noch keine Ansprechperson.');
   });
 
@@ -123,15 +123,15 @@ describe('filterGroups', () => {
   const ids = (query: string, status: string): number[] =>
     filterGroups(groups, { query, status }).map((group) => group.groupId);
 
-  it('keeps every Gruppe under Alle', () => {
+  it('keeps every group under Alle', () => {
     expect(ids('', ALL_GROUPS_FILTER_ID)).toEqual([1, 2, 3]);
   });
 
-  it('keeps only the recruiting Gruppen', () => {
+  it('keeps only the recruiting groups', () => {
     expect(ids('', RECRUITING_FILTER_ID)).toEqual([1, 3]);
   });
 
-  it('keeps only the settled Gruppen', () => {
+  it('keeps only the settled groups', () => {
     expect(ids('', SETTLED_FILTER_ID)).toEqual([2]);
   });
 
@@ -181,22 +181,22 @@ describe('toNoGroupMatchLine', () => {
 
 describe('toGroupsIntroSentence', () => {
   it.each([
-    { case: 'one Gruppe, none recruiting', total: 1, recruiting: 0 },
-    { case: 'one Gruppe recruiting', total: 1, recruiting: 1 },
-    { case: 'several Gruppen, one recruiting', total: 7, recruiting: 1 },
-    { case: 'several Gruppen recruiting', total: 7, recruiting: 3 },
-    { case: 'several Gruppen, none recruiting', total: 7, recruiting: 0 },
+    { case: 'one group, none recruiting', total: 1, recruiting: 0 },
+    { case: 'one group recruiting', total: 1, recruiting: 1 },
+    { case: 'several groups, one recruiting', total: 7, recruiting: 1 },
+    { case: 'several groups recruiting', total: 7, recruiting: 3 },
+    { case: 'several groups, none recruiting', total: 7, recruiting: 0 },
   ])('never prints a bare count as a subject for $case', ({ total, recruiting }) => {
     expect(toGroupsIntroSentence(total, recruiting)).not.toMatch(/(^|\. )1 (Gruppe|davon)/);
   });
 
-  it('counts the Gruppen and the openings', () => {
+  it('counts the groups and the openings', () => {
     expect(toGroupsIntroSentence(7, 3)).toBe(
       '7 Gruppen tragen die Session. 3 davon suchen Verstärkung.',
     );
   });
 
-  it('spells the single Gruppe and the single opening as words', () => {
+  it('spells the single group and the single opening as words', () => {
     expect(toGroupsIntroSentence(1, 1)).toBe(
       'Eine Gruppe trägt die Session. Eine davon sucht Verstärkung.',
     );
@@ -210,15 +210,15 @@ describe('toGroupsIntroSentence', () => {
 });
 
 describe('toGroupStandingChips', () => {
-  it('marks nothing for a Gruppe the viewer has no standing in', () => {
+  it('marks nothing for a group the viewer has no standing in', () => {
     expect(toGroupStandingChips(summary({ groupId: 4 }))).toEqual([]);
   });
 
-  it('marks a Gruppe the viewer belongs to', () => {
+  it('marks a group the viewer belongs to', () => {
     expect(toGroupStandingChips(summary({ groupId: 4, viewerIsMember: true }))).toHaveLength(1);
   });
 
-  it('marks both facts when the viewer belongs to a Gruppe she also administers', () => {
+  it('marks both facts when the viewer belongs to a group she also administers', () => {
     expect(
       toGroupStandingChips(summary({ groupId: 4, viewerIsMember: true, viewerIsAdmin: true })),
     ).toHaveLength(2);
@@ -233,11 +233,11 @@ describe('toGroupStandingChips', () => {
 });
 
 describe('toGroupsSections', () => {
-  it('leaves the rack empty when no Gruppe is listed', () => {
+  it('leaves the rack empty when no group is listed', () => {
     expect(toGroupsSections([])).toEqual([]);
   });
 
-  it('gives a viewer in no Gruppe one unlabelled section and no empty heading', () => {
+  it('gives a viewer in no group one unlabelled section and no empty heading', () => {
     const groups = [summary({ groupId: 1 }), summary({ groupId: 2 })];
     const sections = toGroupsSections(groups);
 
@@ -246,7 +246,7 @@ describe('toGroupsSections', () => {
     expect(sections[0]?.groups).toEqual(groups);
   });
 
-  it('titles the one section when the viewer belongs to every Gruppe', () => {
+  it('titles the one section when the viewer belongs to every group', () => {
     const groups = [
       summary({ groupId: 1, viewerIsMember: true }),
       summary({ groupId: 2, viewerIsAdmin: true }),
@@ -258,7 +258,7 @@ describe('toGroupsSections', () => {
     expect(sections[0]?.groups).toEqual(groups);
   });
 
-  it('puts meine Gruppen first and keeps the server order inside each section', () => {
+  it('puts my groups first and keeps the server order inside each section', () => {
     const sections = toGroupsSections([
       summary({ groupId: 1, name: 'Ältestenrat' }),
       summary({ groupId: 2, name: 'Elferrat', viewerIsAdmin: true }),
@@ -304,19 +304,19 @@ describe('toGroupLeadLine', () => {
       ],
       expected: 'Geleitet von Anna Kaiser und 3 weitere',
     },
-  ])('names who runs a Gruppe with $admins.length admins', ({ admins, expected }) => {
+  ])('names who runs a group with $admins.length admins', ({ admins, expected }) => {
     expect(toGroupLeadLine(admins)).toBe(expected);
   });
 });
 
 describe('toGroupContactLine', () => {
-  it('asks the reader to get in touch while the Gruppe is recruiting', () => {
+  it('asks the reader to get in touch while the group is recruiting', () => {
     expect(
       toGroupContactLine(summary({ groupId: 1, isRecruiting: true, admins: [person(1, 'Anna')] })),
     ).toBe('Melde dich bei Anna Kaiser.');
   });
 
-  it('only names who runs a settled Gruppe', () => {
+  it('only names who runs a settled group', () => {
     expect(toGroupContactLine(summary({ groupId: 1, admins: [person(1, 'Anna')] }))).toBe(
       'Geleitet von Anna Kaiser',
     );
@@ -329,7 +329,7 @@ describe('toGroupKindLabel', () => {
     { groupKindName: '   ', expected: null },
     { groupKindName: '  Garden ', expected: 'Garden' },
     { groupKindName: 'Garden', expected: 'Garden' },
-  ])('names the Gruppenart $groupKindName', ({ groupKindName, expected }) => {
+  ])('names the group kind $groupKindName', ({ groupKindName, expected }) => {
     expect(toGroupKindLabel(groupKindName)).toBe(expected);
   });
 });

@@ -1,6 +1,7 @@
 import { KkScreen, KkSkeletonToolbar, KkTitleHeader } from '@furria/ui';
 import type { FC } from 'react';
 import {
+  AREA_HANDOVERS,
   MANAGE_ORIGIN,
   RequirePermission,
   usePermissions,
@@ -49,6 +50,7 @@ export const RolesPage: FC = () => {
       title={ROLES_TITLE}
       origin={MANAGE_ORIGIN}
       header={<KkTitleHeader title={ROLES_TITLE} lead={ROLES_LEAD} />}
+      handover={AREA_HANDOVERS.manage}
     >
       <RequirePermission permissionKey={PERMISSION_KEYS.rolesManage}>
         <RolesBody search={search} />

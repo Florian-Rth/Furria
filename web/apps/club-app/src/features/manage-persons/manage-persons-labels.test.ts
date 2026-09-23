@@ -72,7 +72,7 @@ describe('isContactWithheld', () => {
 });
 
 describe('toPersonRowAffiliation', () => {
-  it('names one Rolle in full and counts the rest', () => {
+  it('names one role in full and counts the rest', () => {
     const affiliation = toPersonRowAffiliation(
       person({
         personId: 1,
@@ -110,11 +110,11 @@ describe('toPersonsEmptyDescription', () => {
     expect(toPersonsEmptyDescription('Kühn', 'paused')).not.toContain('Alle');
   });
 
-  it('offers the Alle filter when a state filter hides everyone', () => {
+  it('offers the „Alle“ filter when a state filter hides everyone', () => {
     expect(toPersonsEmptyDescription('', 'paused')).toContain('Alle');
   });
 
-  it('suggests nothing when Alle is already the chosen filter', () => {
+  it('suggests nothing when „Alle“ is already the chosen filter', () => {
     expect(toPersonsEmptyDescription('', 'all')).not.toContain('Alle');
   });
 });
@@ -128,7 +128,7 @@ describe('toPersonHeadline', () => {
     });
   });
 
-  it('chips a membership that has not begun as kein Mitglied', () => {
+  it('chips a membership that has not begun as „kein Mitglied“', () => {
     const headline = toPersonHeadline({
       personId: 5,
       firstName: 'Dorothea',

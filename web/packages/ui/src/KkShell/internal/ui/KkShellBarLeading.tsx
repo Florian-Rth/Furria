@@ -1,15 +1,18 @@
+import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { KkBrandLockup } from '../../../KkBrandLockup';
+import { KkBroomMark } from '../../../KkBroomMark';
 import { useKkHandoverStage } from '../../handover-stage';
 import type { KkScreenKind, KkScreenOrigin } from '../../screen-declaration';
+import { KkShellBarMark } from '../layout/KkShellBarMark';
 import { KkShellBarBack } from './KkShellBarBack';
 import { KkShellBarClose } from './KkShellBarClose';
 import { KkShellBarSwap } from './KkShellBarSwap';
 import { KkShellBarTitle } from './KkShellBarTitle';
+import { KkShellBarWordmark } from './KkShellBarWordmark';
 
 export type KkShellBarLead = 'brand' | 'title';
 
-const BRAND_MARK_SIZE = 'sm';
+const BROOM_SIZE = 30;
 
 interface KkShellBarLeadingProps {
   kind: KkScreenKind;
@@ -29,7 +32,7 @@ export const KkShellBarLeading: FC<KkShellBarLeadingProps> = ({ kind, lead, titl
   const titleLine = <KkShellBarTitle>{title}</KkShellBarTitle>;
   const restLine =
     origin === undefined ? (
-      <KkBrandLockup size={BRAND_MARK_SIZE} />
+      <KkShellBarWordmark />
     ) : (
       <KkShellBarTitle>{origin.label}</KkShellBarTitle>
     );
@@ -40,9 +43,20 @@ export const KkShellBarLeading: FC<KkShellBarLeadingProps> = ({ kind, lead, titl
       <Swap rest={restLine} title={titleLine} restText={origin?.label ?? null} titleText={title} />
     );
 
-  if (origin === undefined) {
-    return leading;
+  if (origin !== undefined) {
+    return <KkShellBarBack origin={origin}>{leading}</KkShellBarBack>;
   }
 
-  return <KkShellBarBack origin={origin}>{leading}</KkShellBarBack>;
+  return (
+    <Stack
+      direction="row"
+      data-kk-shell-bar-home
+      sx={{ alignItems: 'center', gap: 0.25, minWidth: 0 }}
+    >
+      <KkShellBarMark>
+        <KkBroomMark size={BROOM_SIZE} sx={{ color: 'primary.main' }} />
+      </KkShellBarMark>
+      {leading}
+    </Stack>
+  );
 };

@@ -9,11 +9,11 @@ import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { toHubPeople } from '../hub-people';
 import type { GroupHub } from '../schemas';
 import { HubAdministrationPanel } from './HubAdministrationPanel';
+import { HubCalendarEntriesPanel } from './HubCalendarEntriesPanel';
 import { HubCarePanel } from './HubCarePanel';
 import { HubDescriptionPanel } from './HubDescriptionPanel';
 import { HubPeoplePanel } from './HubPeoplePanel';
 import { HubRhythmPanel } from './HubRhythmPanel';
-import { HubTerminePanel } from './HubTerminePanel';
 
 const HISTORY_META = 'nur für die Verwaltung dieser Gruppe';
 
@@ -28,8 +28,10 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
   const heldKind = toHeldGroupKind(hub.groupKindId, hub.groupKindName);
   const people = toHubPeople(hub.members, hub.admins);
 
-  const seesTermine = hub.viewerIsMember || hub.viewerMayManage;
-  const termine = seesTermine ? <HubTerminePanel groupId={hub.groupId} tone={tone} /> : null;
+  const seesCalendarEntries = hub.viewerIsMember || hub.viewerMayManage;
+  const calendarEntries = seesCalendarEntries ? (
+    <HubCalendarEntriesPanel groupId={hub.groupId} tone={tone} />
+  ) : null;
 
   const care = hub.viewerMayManage ? (
     <HubCarePanel hub={hub} tone={tone} heldKind={heldKind} />
@@ -59,7 +61,7 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
         canManage={hub.viewerMayManage}
         highlightedKey={highlightedKey}
       />
-      {termine}
+      {calendarEntries}
       <HubRhythmPanel
         groupId={hub.groupId}
         tone={tone}
