@@ -1,5 +1,6 @@
 import type { FC } from 'react';
 import { KkBrandLockup } from '../../../KkBrandLockup';
+import { useKkHandoverStage } from '../../handover-stage';
 import type { KkScreenKind, KkScreenOrigin } from '../../screen-declaration';
 import { KkShellBarBack } from './KkShellBarBack';
 import { KkShellBarClose } from './KkShellBarClose';
@@ -18,6 +19,9 @@ interface KkShellBarLeadingProps {
 }
 
 export const KkShellBarLeading: FC<KkShellBarLeadingProps> = ({ kind, lead, title, origin }) => {
+  const stage = useKkHandoverStage();
+  const Swap = stage?.Swap ?? KkShellBarSwap;
+
   if (kind === 'fullscreen' && origin !== undefined) {
     return <KkShellBarClose origin={origin} title={title} />;
   }
@@ -30,7 +34,11 @@ export const KkShellBarLeading: FC<KkShellBarLeadingProps> = ({ kind, lead, titl
       <KkShellBarTitle>{origin.label}</KkShellBarTitle>
     );
   const leading =
-    lead === 'title' ? titleLine : <KkShellBarSwap rest={restLine} title={titleLine} />;
+    lead === 'title' ? (
+      titleLine
+    ) : (
+      <Swap rest={restLine} title={titleLine} restText={origin?.label ?? null} titleText={title} />
+    );
 
   if (origin === undefined) {
     return leading;

@@ -2,6 +2,7 @@ import type { FC } from 'react';
 import { createPortal } from 'react-dom';
 import { KkLetterIndex } from '../KkLetterIndex';
 import { kkTokens } from '../tokens';
+import { KkHandoverStageContext } from './handover-stage';
 import { KkShellHeader } from './internal/layout/KkShellHeader';
 import { footClearanceOf } from './internal/logic/foot-clearance';
 import { sectionOriginOf } from './internal/logic/section-origin';
@@ -34,6 +35,7 @@ export const KkScreen: FC<KkScreenProps> = ({
   tools,
   index,
   thread,
+  handover,
   children,
 }) => {
   const { path, move, destinations, chromeHost, footHost, indexHost } = useKkShell();
@@ -94,15 +96,17 @@ export const KkScreen: FC<KkScreenProps> = ({
           indexHost,
         );
 
+  const Header = handover?.Header ?? KkShellHeader;
+
   return (
-    <>
+    <KkHandoverStageContext.Provider value={handover ?? null}>
       {chrome}
       {actionBar}
       {letterIndex}
       <KkShellEntrance path={path} move={move}>
-        <KkShellHeader kind={headerKind}>{header}</KkShellHeader>
+        <Header kind={headerKind}>{header}</Header>
         {children}
       </KkShellEntrance>
-    </>
+    </KkHandoverStageContext.Provider>
   );
 };

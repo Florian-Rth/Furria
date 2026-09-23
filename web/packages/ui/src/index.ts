@@ -103,8 +103,17 @@ export { KkSheet } from './KkSheet/KkSheet';
 export { KkSheetProvider } from './KkSheet/KkSheetProvider';
 export type { KkSheetAction } from './KkSheet/sheet-actions';
 export { useKkSheet, useKkSheetCommands } from './KkSheet/sheet-store';
+export type {
+  KkHandoverHeaderProps,
+  KkHandoverStage,
+  KkHandoverSwapProps,
+} from './KkShell/handover-stage';
 export { KkScreen } from './KkShell/KkScreen';
 export { KkShell } from './KkShell/KkShell';
+export { fallblattStage } from './KkShell/lab/fallblatt/fallblatt-stage';
+export { konfettiDockStage } from './KkShell/lab/konfetti-dock/konfetti-dock-stage';
+export { schunkelnStage } from './KkShell/lab/schunkeln/schunkeln-stage';
+export { tuschStage } from './KkShell/lab/tusch/tusch-stage';
 export type {
   KkLoudScreenAction,
   KkQuietScreenAction,
