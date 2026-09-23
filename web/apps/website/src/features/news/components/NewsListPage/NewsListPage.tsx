@@ -4,8 +4,8 @@ import { NewsHeader } from '@/features/news/components/NewsHeader/NewsHeader';
 import { NewsMedia } from '@/features/news/components/NewsMedia';
 import type { NewsPost } from '@/features/news/news-content';
 import { moreNewsLabel, selectFollowingPosts, selectLeadPost } from '@/features/news/news-content';
-import { NewsAufmacher } from '../NewsAufmacher/NewsAufmacher';
 import { NewsEventsBand } from '../NewsEventsBand/NewsEventsBand';
+import { NewsLead } from '../NewsLead/NewsLead';
 import { NewsRowList } from './internal/layout/NewsRowList';
 import { NewsEmptyPanel } from './internal/ui/NewsEmptyPanel';
 import { NewsListFooter } from './internal/ui/NewsListFooter';
@@ -28,8 +28,8 @@ export const NewsListPage: FC<NewsListPageProps> = ({ posts }) => {
           <NewsEmptyPanel />
         ) : (
           <>
-            <NewsAufmacher post={leadPost}>
-              <NewsAufmacher.MediaColumn>
+            <NewsLead post={leadPost}>
+              <NewsLead.MediaColumn>
                 <NewsMedia
                   post={leadPost}
                   sx={{
@@ -40,14 +40,14 @@ export const NewsListPage: FC<NewsListPageProps> = ({ posts }) => {
                     borderRadius: `${kkTokens.radius.base}px`,
                   }}
                 />
-              </NewsAufmacher.MediaColumn>
-              <NewsAufmacher.TextColumn>
-                <NewsAufmacher.Meta post={leadPost} />
-                <NewsAufmacher.Headline post={leadPost} />
-                <NewsAufmacher.Teaser post={leadPost} />
-                <NewsAufmacher.Footer post={leadPost} />
-              </NewsAufmacher.TextColumn>
-            </NewsAufmacher>
+              </NewsLead.MediaColumn>
+              <NewsLead.TextColumn>
+                <NewsLead.Meta post={leadPost} />
+                <NewsLead.Headline post={leadPost} />
+                <NewsLead.Teaser post={leadPost} />
+                <NewsLead.Footer post={leadPost} />
+              </NewsLead.TextColumn>
+            </NewsLead>
             <KkSection>
               {followingPosts.length > 0 && (
                 <>

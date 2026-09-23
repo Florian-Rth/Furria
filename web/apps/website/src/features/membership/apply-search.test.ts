@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ApplySearchSchema, parseGroupInterestsParam } from './apply-search';
 
 describe('ApplySearchSchema', () => {
-  it('takes the Gruppen the Matcher handed over', () => {
+  it('takes the groups the Matcher handed over', () => {
     expect(ApplySearchSchema.parse({ groups: 'tanzgarde,organisation' })).toEqual({
       groups: 'tanzgarde,organisation',
     });

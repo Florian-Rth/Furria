@@ -34,21 +34,21 @@ describe('deriveOrderTicketCountLabel', () => {
 });
 
 describe('isDemoOrder', () => {
-  it('marks the seeded example Bestellung and leaves every other one unmarked', () => {
+  it('marks the seeded example order and leaves every other one unmarked', () => {
     expect(isDemoOrder(DEMO_ORDER)).toBe(true);
     expect(isDemoOrder(singleTicketOrder())).toBe(false);
   });
 });
 
 describe('derivePaymentStatusColor', () => {
-  it('separates a paid Bestellung from one still waiting', () => {
+  it('separates a paid order from one still waiting', () => {
     expect(derivePaymentStatusColor('paid')).toBe('success');
     expect(derivePaymentStatusColor('processing')).toBe('info');
   });
 });
 
 describe('buildOrderSummaryRows', () => {
-  it('shows the evening, the Karten, the sum and the buyer, and never the order code', () => {
+  it('shows the evening, the tickets, the sum and the buyer, and never the order code', () => {
     const rows = buildOrderSummaryRows(DEMO_ORDER);
 
     expect(rows.map((row) => row.label)).toEqual([
@@ -67,13 +67,13 @@ describe('buildOrderSummaryRows', () => {
 });
 
 describe('selectOrderCrossSellEvent', () => {
-  it('offers the next evening that still sells Karten', () => {
+  it('offers the next evening that still sells tickets', () => {
     expect(selectOrderCrossSellEvent(SEEDED_EVENTS, DEMO_ORDER, NOW)?.id).toBe(
       'prunksitzung-2-2027',
     );
   });
 
-  it('never offers the evening the Bestellung is already for', () => {
+  it('never offers the evening the order is already for', () => {
     const ownEveningOnly = SEEDED_EVENTS.filter((event) => event.id === DEMO_ORDER.event.id);
 
     expect(selectOrderCrossSellEvent(ownEveningOnly, DEMO_ORDER, NOW)).toBeNull();

@@ -89,12 +89,12 @@ describe('deriveOrderFlowCapacity', () => {
 });
 
 describe('deriveOrderFlowNotice', () => {
-  it('lets a running sale through to the Kartenwahl', () => {
+  it('lets a running sale through to ticket selection', () => {
     expect(deriveOrderFlowNotice(onSale)).toBeNull();
     expect(deriveOrderFlowNotice(notScarce)).toBeNull();
   });
 
-  it('routes a sold-out evening to the Kartenbörse and every other blocked one back', () => {
+  it('routes a sold-out evening to the ticket exchange and every other blocked one back', () => {
     expect(deriveOrderFlowNotice(soldOut)?.cta.to).toBe('/events/exchange');
 
     for (const event of [announced, presaleScheduled, salesClosed, cancelled]) {

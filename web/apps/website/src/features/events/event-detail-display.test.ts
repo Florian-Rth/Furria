@@ -31,7 +31,7 @@ const baseFacts: EventFacts = {
 const event = buildEvent(baseFacts, midPresale);
 
 describe('deriveEventStats', () => {
-  it('states Termin, Einlass, Beginn and price — never an end time', () => {
+  it('states the date, doors and start time, and price — never an end time', () => {
     expect(deriveEventStats(event)).toEqual([
       { value: '23. Januar 2027', label: 'Termin' },
       { value: '18:11 Uhr', label: 'Einlass' },
@@ -40,7 +40,7 @@ describe('deriveEventStats', () => {
     ]);
   });
 
-  it('omits Einlass and price while they are unknown', () => {
+  it('omits doors and price while they are unknown', () => {
     const sparse = buildEvent(
       {
         ...baseFacts,
@@ -70,7 +70,7 @@ describe('deriveEventIntroParagraphs', () => {
 });
 
 describe('deriveEventLineup', () => {
-  it('numbers the acts in the order the Ablauf states them', () => {
+  it('numbers the acts in the order the running order states them', () => {
     const withLineup = buildEvent(
       { ...baseFacts, performers: ['Elferrat', 'Tanzgarde', 'Büttenrede'] },
       midPresale,

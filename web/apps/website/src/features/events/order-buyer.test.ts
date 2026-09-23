@@ -13,7 +13,7 @@ const LENA: OrderBuyer = {
 };
 
 describe('buildOrderBuyer', () => {
-  it('carries the typed buyer into the Bestellung payload', () => {
+  it('carries the typed buyer into the order payload', () => {
     expect(buildFromTyped('Lena', 'Brandt', 'lena.brandt@example.de')).toEqual(LENA);
   });
 

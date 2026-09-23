@@ -28,7 +28,7 @@ const matches: GroupMatch[] = [
 ];
 
 describe('selectHandoffGroups', () => {
-  it('hands the Antrag the best matches in ranking order', () => {
+  it('hands the application the best matches in ranking order', () => {
     expect(selectHandoffGroups(matches).map((group) => group.id)).toEqual([
       'alpha',
       'beta',
@@ -36,21 +36,21 @@ describe('selectHandoffGroups', () => {
     ]);
   });
 
-  it('never hands over more Gruppen than the limit', () => {
+  it('never hands over more groups than the limit', () => {
     expect(selectHandoffGroups(matches)).toHaveLength(HANDOFF_GROUP_LIMIT);
   });
 
-  it('hands over what there is when fewer Gruppen matched', () => {
+  it('hands over what there is when fewer groups matched', () => {
     expect(selectHandoffGroups(matches.slice(0, 1)).map((group) => group.id)).toEqual(['alpha']);
   });
 });
 
 describe('buildApplyHref', () => {
-  it('carries the Gruppen as one comma-separated search param', () => {
+  it('carries the groups as one comma-separated search param', () => {
     expect(buildApplyHref(['alpha', 'beta'])).toBe('/join/apply?groups=alpha,beta');
   });
 
-  it('links to the plain Antrag when there is nothing to carry', () => {
+  it('links to the plain application when there is nothing to carry', () => {
     expect(buildApplyHref([])).toBe(APPLY_PATH);
   });
 

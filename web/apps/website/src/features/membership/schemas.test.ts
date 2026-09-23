@@ -37,7 +37,7 @@ const messagesFor = (values: MembershipApplicationForm, field: string): string[]
 };
 
 describe('buildMembershipApplicationFormSchema', () => {
-  it('accepts an empty Telefon and no Gruppen-Interessen', () => {
+  it('accepts an empty phone and no group interests', () => {
     const result = schema.safeParse({ ...adult, phone: '', groupInterests: [] });
 
     expect(result.success).toBe(true);
@@ -54,22 +54,22 @@ describe('buildMembershipApplicationFormSchema', () => {
     expect(result.success && result.data.email).toBe('lena@example.de');
   });
 
-  it('insists on a five-digit Postleitzahl', () => {
+  it('insists on a five-digit postal code', () => {
     expect(messagesFor({ ...adult, postalCode: '997' }, 'postalCode')).toHaveLength(1);
     expect(messagesFor({ ...adult, postalCode: 'DE99713' }, 'postalCode')).toHaveLength(1);
     expect(schema.safeParse({ ...adult, postalCode: '99713' }).success).toBe(true);
   });
 
-  it('blocks the application until the Einwilligung is given', () => {
+  it('blocks the application until consent is given', () => {
     expect(messagesFor({ ...adult, consent: false }, 'consent')).toHaveLength(1);
     expect(schema.safeParse(adult).success).toBe(true);
   });
 
-  it('refuses a Geburtsdatum in the future', () => {
+  it('refuses a birth date in the future', () => {
     expect(messagesFor({ ...adult, birthDate: '2026-07-31' }, 'birthDate')).toHaveLength(1);
   });
 
-  it('refuses a Geburtsdatum that cannot belong to a person', () => {
+  it('refuses a birth date that cannot belong to a person', () => {
     expect(messagesFor({ ...adult, birthDate: '1880-01-01' }, 'birthDate')).toHaveLength(1);
   });
 
