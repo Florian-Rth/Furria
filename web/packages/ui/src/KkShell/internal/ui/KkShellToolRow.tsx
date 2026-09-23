@@ -10,7 +10,7 @@ const { toolRowHeight } = kkTokens.shell;
 const TOOL_ROW_PADDING_X = 1;
 const TOOL_ROW_KEY = 'tools';
 
-const TUCKING: CSSProperties = { overflow: 'hidden', flexShrink: 0 };
+const TUCKING: CSSProperties = { flexShrink: 0 };
 
 interface KkShellToolRowProps extends PropsWithChildren {
   open: boolean;

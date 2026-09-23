@@ -34,28 +34,42 @@ describe('chromeMaterialAt', () => {
     const chrome = chromeMaterialAt(0);
 
     expect(chrome.blurRadius).toBeCloseTo(material.blur.rest);
+    expect(chrome.saturation).toBeCloseTo(material.saturation.rest);
     expect(chrome.shadowOffsetY).toBeCloseTo(material.shadowOffsetY.rest);
     expect(chrome.shadowBlur).toBeCloseTo(material.shadowBlur.rest);
     expect(chrome.light.tint).toBeCloseTo(material.light.rest.tint);
     expect(chrome.light.hairline).toBeCloseTo(material.light.rest.hairline);
     expect(chrome.light.shadow).toBeCloseTo(material.light.rest.shadow);
+    expect(chrome.light.glint).toBeCloseTo(material.light.rest.glint);
+    expect(chrome.light.sheen).toBeCloseTo(material.light.rest.sheen);
+    expect(chrome.light.rim).toBeCloseTo(material.light.rest.rim);
     expect(chrome.dark.tint).toBeCloseTo(material.dark.rest.tint);
     expect(chrome.dark.hairline).toBeCloseTo(material.dark.rest.hairline);
     expect(chrome.dark.shadow).toBeCloseTo(material.dark.rest.shadow);
+    expect(chrome.dark.glint).toBeCloseTo(material.dark.rest.glint);
+    expect(chrome.dark.sheen).toBeCloseTo(material.dark.rest.sheen);
+    expect(chrome.dark.rim).toBeCloseTo(material.dark.rest.rim);
   });
 
   it('reaches the solid end of every value', () => {
     const chrome = chromeMaterialAt(1);
 
     expect(chrome.blurRadius).toBeCloseTo(material.blur.dense);
+    expect(chrome.saturation).toBeCloseTo(material.saturation.dense);
     expect(chrome.shadowOffsetY).toBeCloseTo(material.shadowOffsetY.dense);
     expect(chrome.shadowBlur).toBeCloseTo(material.shadowBlur.dense);
     expect(chrome.light.tint).toBeCloseTo(material.light.dense.tint);
     expect(chrome.light.hairline).toBeCloseTo(material.light.dense.hairline);
     expect(chrome.light.shadow).toBeCloseTo(material.light.dense.shadow);
+    expect(chrome.light.glint).toBeCloseTo(material.light.dense.glint);
+    expect(chrome.light.sheen).toBeCloseTo(material.light.dense.sheen);
+    expect(chrome.light.rim).toBeCloseTo(material.light.dense.rim);
     expect(chrome.dark.tint).toBeCloseTo(material.dark.dense.tint);
     expect(chrome.dark.hairline).toBeCloseTo(material.dark.dense.hairline);
     expect(chrome.dark.shadow).toBeCloseTo(material.dark.dense.shadow);
+    expect(chrome.dark.glint).toBeCloseTo(material.dark.dense.glint);
+    expect(chrome.dark.sheen).toBeCloseTo(material.dark.dense.sheen);
+    expect(chrome.dark.rim).toBeCloseTo(material.dark.dense.rim);
   });
 
   it('sits halfway between both ends at half density', () => {
@@ -78,10 +92,14 @@ describe('chromeMaterialAt', () => {
 
         if (previous !== undefined) {
           expect(chrome.blurRadius).toBeGreaterThan(previous.blurRadius);
+          expect(chrome.saturation).toBeGreaterThan(previous.saturation);
           expect(chrome.shadowBlur).toBeGreaterThan(previous.shadowBlur);
           expect(chrome[scheme].tint).toBeGreaterThan(previous[scheme].tint);
           expect(chrome[scheme].hairline).toBeGreaterThan(previous[scheme].hairline);
           expect(chrome[scheme].shadow).toBeGreaterThan(previous[scheme].shadow);
+          expect(chrome[scheme].glint).toBeGreaterThan(previous[scheme].glint);
+          expect(chrome[scheme].sheen).toBeGreaterThan(previous[scheme].sheen);
+          expect(chrome[scheme].rim).toBeGreaterThan(previous[scheme].rim);
         }
       }
     },
