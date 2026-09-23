@@ -9,8 +9,7 @@ import { PersonMembershipRow } from './PersonMembershipRow';
 
 const ADD_LABEL = 'Zeitraum';
 const EMPTY_TITLE = 'NOCH KEINE MITGLIEDSCHAFT';
-const EMPTY_DESCRIPTION =
-  'Diese Person ist nie Mitglied gewesen. Über „+ Zeitraum“ trägst du einen ein.';
+const EMPTY_DESCRIPTION = 'Diese Person war noch nie Mitglied.';
 const MEMBERSHIPS_NEW_ROUTE = '/manage/persons/$personId/memberships/new';
 
 interface PersonMembershipsPanelProps {

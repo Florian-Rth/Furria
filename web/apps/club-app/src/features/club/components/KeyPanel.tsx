@@ -6,7 +6,7 @@ import { KeyHoldersSheet } from './KeyHoldersSheet';
 import { KeyVenueTile } from './KeyVenueTile';
 
 const KEY_PANEL_TITLE = 'Schlüssel';
-const KEY_PANEL_DESCRIPTION = 'Wen du fragst, wenn aufgeschlossen werden muss';
+const KEY_PANEL_DESCRIPTION = 'Wer welchen Ort aufschließen kann';
 const TILE_SIZE = { xs: 6, sm: 4, desktop: 3 };
 const TILE_SPACING = { xs: 1.5, desktop: 2 };
 const FULL_HEIGHT = { height: '100%' } as const;

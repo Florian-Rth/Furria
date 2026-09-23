@@ -3,6 +3,7 @@ import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { AccessDenied, AppSkeletonRegion, usePermissions } from '@/features/session';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
+import { isForbiddenError } from '@/lib/query-error';
 import { useManagedVenuesQuery } from '../api';
 import {
   findManagedVenue,
@@ -12,6 +13,8 @@ import {
   VENUE_NOT_FOUND_TITLE,
   VENUES_ORIGIN,
 } from '../manage-venues-labels';
+import { toManagedVenuesErrorMessage } from '../manage-venues-messages';
+import { ManagedVenuesError } from './ManagedVenuesError';
 import { VenueDetailPanel } from './VenueDetailPanel';
 
 const ROUTE_ID = '/_app/manage/venues_/$venueId';
@@ -23,7 +26,26 @@ export const VenueScreen: FC = () => {
   const id = toVenueId(venueId);
   const venues = useManagedVenuesQuery();
   const permissions = usePermissions();
+  const errorMessage = toManagedVenuesErrorMessage(venues.error);
 
+  const reload = (): void => {
+    void venues.refetch();
+  };
+
+  if (venues.data === undefined && isForbiddenError(venues.error)) {
+    return (
+      <KkScreen kind="detail" title={VENUES_ORIGIN.label} origin={VENUES_ORIGIN}>
+        <AccessDenied message={VENUE_EDITOR_DENIED_MESSAGE} />
+      </KkScreen>
+    );
+  }
+  if (venues.data === undefined && errorMessage !== null) {
+    return (
+      <KkScreen kind="detail" title={VENUES_ORIGIN.label} origin={VENUES_ORIGIN}>
+        <ManagedVenuesError message={errorMessage} onRetry={reload} />
+      </KkScreen>
+    );
+  }
   if (venues.data === undefined) {
     return (
       <KkScreen kind="detail" title={VENUES_ORIGIN.label} origin={VENUES_ORIGIN}>

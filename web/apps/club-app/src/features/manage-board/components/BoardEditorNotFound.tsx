@@ -4,7 +4,7 @@ import { BOARD_ORIGIN } from '../manage-board-labels';
 
 const FALLBACK_TITLE = 'Vorstand';
 const TITLE = 'DIESE VORSTANDSFUNKTION GIBT ES NICHT';
-const DESCRIPTION = 'Vielleicht wurde sie umbenannt. Wähl eine andere aus dem Vorstand.';
+const DESCRIPTION = 'Sie wurde gelöscht oder der Link ist veraltet.';
 
 export const BoardEditorNotFound: FC = () => (
   <KkScreen kind="fullscreen" title={FALLBACK_TITLE} origin={BOARD_ORIGIN}>

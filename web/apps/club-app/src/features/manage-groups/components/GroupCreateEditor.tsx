@@ -1,10 +1,10 @@
 import { KkNote, KkSelectField, KkTextField } from '@furria/ui';
 import type { FC } from 'react';
+import type { RunningGroupKind } from '@/features/group-kinds';
 import {
   GROUP_KIND_FIELD_HINT,
   GROUP_KIND_FIELD_LABEL,
   toGroupKindOptions,
-  useGroupKindsQuery,
 } from '@/features/group-kinds';
 import { WriteScreen } from '@/features/write';
 import { useGroupCreateEditor } from '../hooks/use-group-create-editor';
@@ -14,12 +14,15 @@ const TITLE = 'Gruppe hinzufügen';
 const ADD_LABEL = 'Hinzufügen';
 const NAME_LABEL = 'Name der Gruppe';
 const CREATE_NOTE =
-  'Die Gruppe steht sofort im Verzeichnis. Ernenne ihr danach einen Gruppen-Admin — Beschreibung, Farbe und Training schreibt die Gruppe dann selbst.';
+  'Die Gruppe erscheint sofort im Verzeichnis. Beschreibung, Farbe und Trainingszeiten pflegen anschließend die Gruppen-Admins.';
 
-export const GroupCreateEditor: FC = () => {
+interface GroupCreateEditorProps {
+  kinds: readonly RunningGroupKind[];
+}
+
+export const GroupCreateEditor: FC<GroupCreateEditorProps> = ({ kinds }) => {
   const control = useGroupCreateEditor();
-  const kinds = useGroupKindsQuery();
-  const kindOptions = toGroupKindOptions(kinds.data?.kinds ?? [], null);
+  const kindOptions = toGroupKindOptions(kinds, null);
   const nameField = control.form.register('name');
   const nameErrorText = control.form.formState.errors.name?.message;
 

@@ -5,9 +5,8 @@ export const SESSION_EXPIRED_MESSAGE = 'Deine Sitzung ist abgelaufen. Bitte meld
 
 const LOGIN_ERROR_MESSAGES: Record<LoginErrorKind, string> = {
   'invalid-credentials': 'E-Mail-Adresse oder Passwort ist falsch.',
-  unreachable:
-    'Die Anmeldung hat den Server nicht erreicht. Prüfe deine Verbindung und versuch es noch einmal.',
-  unexpected: 'Da ist etwas schiefgelaufen. Bitte versuch es gleich noch einmal.',
+  unreachable: 'Keine Verbindung zum Server. Prüfe deine Internetverbindung.',
+  unexpected: 'Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut.',
 };
 
 export const toLoginErrorMessage = (error: Error | null): string | null => {

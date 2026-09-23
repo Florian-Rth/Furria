@@ -9,8 +9,7 @@ import { PersonFeeReductionRow } from './PersonFeeReductionRow';
 
 const ADD_LABEL = 'Ermäßigung';
 const EMPTY_TITLE = 'KEINE ERMÄSSIGUNG';
-const EMPTY_DESCRIPTION =
-  'Für diese Person ist keine Beitragsermäßigung hinterlegt. Über „+ Ermäßigung“ trägst du eine ein.';
+const EMPTY_DESCRIPTION = 'Keine Beitragsermäßigung hinterlegt.';
 const FEE_REDUCTIONS_NEW_ROUTE = '/manage/persons/$personId/fee-reductions/new';
 
 interface PersonFeeReductionsPanelProps {

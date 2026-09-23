@@ -18,11 +18,10 @@ const STREET_LABEL = 'Straße und Hausnummer';
 const ZIP_LABEL = 'PLZ';
 const CITY_LABEL = 'Stadt';
 const HINT_LABEL = 'Hinweis';
-const HINT_PLACEHOLDER = 'Zugang über den Hof';
-const HINT_HINT = 'Was die Anschrift nicht sagt. Bleibt leer, wenn es nichts zu sagen gibt.';
+const HINT_PLACEHOLDER = 'Optional';
+const HINT_HINT = 'Ergänzende Hinweise zu Anfahrt oder Zugang.';
 const HINT_ROWS = 3;
-const CREATE_NOTE =
-  'Die Anschrift wird einmal hier geschrieben und überall gelesen — im Kalender, bei den Schlüsseln und später auf der Website.';
+const CREATE_NOTE = 'Die Anschrift erscheint im Kalender, bei den Schlüsseln und auf der Website.';
 
 const FIELD_GAP = 2.25;
 const ZIP_SIZE = { xs: 4, sm: 3 };

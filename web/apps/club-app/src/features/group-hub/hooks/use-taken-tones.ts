@@ -6,9 +6,14 @@ import { toTakenTones } from '../group-hub-labels';
 
 const NO_TONE_HOLDERS: readonly GroupToneHolder[] = [];
 
-export const useTakenTones = (groupId: number, canPick: boolean): ReadonlySet<GroupTone> => {
-  const { isAffiliated } = usePermissions();
-  const groups = useGroupsQuery(canPick && isAffiliated);
+export const useTakenTones = (groupId: number, canPick: boolean): ReadonlySet<GroupTone> | null => {
+  const { isAffiliated, isUndecided } = usePermissions();
+  const readsDirectory = canPick && isAffiliated;
+  const groups = useGroupsQuery(readsDirectory);
+
+  if (isUndecided || (readsDirectory && groups.isPending)) {
+    return null;
+  }
 
   return toTakenTones(groups.data?.groups ?? NO_TONE_HOLDERS, groupId);
 };

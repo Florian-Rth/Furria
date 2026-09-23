@@ -5,7 +5,7 @@ const SVG_MIME_TYPE = 'image/svg+xml';
 const WRONG_TYPE_MESSAGE = 'Das Sessionslogo muss eine SVG-Datei sein.';
 const TOO_LARGE_MESSAGE = 'Diese SVG-Datei ist zu groß für einen Sessionseintrag.';
 
-export const UNREADABLE_FILE_MESSAGE = 'Diese Datei ließ sich nicht lesen.';
+export const UNREADABLE_FILE_MESSAGE = 'Die Datei konnte nicht gelesen werden.';
 
 export interface PickedLogoFile {
   type: string;

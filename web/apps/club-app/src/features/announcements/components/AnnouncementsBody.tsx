@@ -18,20 +18,26 @@ export const AnnouncementsBody: FC<AnnouncementsBodyProps> = ({ highlightedKey }
   const me = useMeQuery();
   const { has } = usePermissions();
   const lastSeenAt = useSeenBaseline(me.data?.lastSeenAnnouncementAt);
-  const errorMessage = toAnnouncementsErrorMessage(announcements.error);
+  const mayPost = has(PERMISSION_KEYS.announcementsPost);
+  const errorMessage = toAnnouncementsErrorMessage(announcements.error ?? me.error);
 
   useLastSeenMark(announcements.data !== undefined && lastSeenAt !== undefined);
 
   const reload = (): void => {
-    void announcements.refetch();
+    if (announcements.isError) {
+      void announcements.refetch();
+    }
+    if (me.isError) {
+      void me.refetch();
+    }
   };
 
-  if (announcements.data !== undefined) {
+  if (announcements.data !== undefined && me.data !== undefined) {
     return (
       <AnnouncementsList
         announcements={announcements.data.announcements}
         lastSeenAt={lastSeenAt}
-        mayPost={has(PERMISSION_KEYS.announcementsPost)}
+        mayPost={mayPost}
         highlightedKey={highlightedKey}
       />
     );

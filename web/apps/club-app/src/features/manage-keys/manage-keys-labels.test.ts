@@ -5,7 +5,6 @@ import {
   partitionKeyVenues,
   toHandoutConsequence,
   toHoldingPeriodLabel,
-  toManagedKeysIntro,
   toReturnConsequence,
   toVenueEmptyCopy,
   toVenueHolderMeta,
@@ -43,7 +42,7 @@ const BEA = holding({ keyHoldingId: 3, personId: 3, firstName: 'Bea', lastName: 
 
 const LAGER = venue({ venueId: 1, name: 'Requisitenlager', holdings: [ANNA, MAIK] });
 const HALLE = venue({ venueId: 4, name: 'Turnhalle', holdings: [BEA] });
-const LEER = venue({ venueId: 7, name: 'Vereinsraum' });
+
 const ALTES_LAGER = venue({ venueId: 9, name: 'Altes Lager', archivedOn: '2021-01-01' });
 
 const idsOf = (holdings: readonly KeyHolding[]): number[] =>
@@ -110,34 +109,6 @@ describe('findKeyHolding', () => {
   });
 });
 
-describe('toManagedKeysIntro', () => {
-  it('names the missing Orte rather than counting zero Schlüssel', () => {
-    expect(toManagedKeysIntro([])).toContain('kein Ort');
-  });
-
-  it('reports that nothing is out when every Schlüssel came back', () => {
-    expect(toManagedKeysIntro([venue({ holdings: [MAIK] }), LEER])).toBe(
-      'Gerade ist kein Schlüssel ausgegeben.',
-    );
-  });
-
-  it('uses the singular and names no Ort for a single running Schlüssel', () => {
-    expect(toManagedKeysIntro([HALLE])).toBe('Ein Schlüssel ist ausgegeben.');
-  });
-
-  it('counts only the Orte that actually have a Schlüssel out', () => {
-    expect(toManagedKeysIntro([LAGER, HALLE, LEER])).toBe(
-      '2 Schlüssel sind für 2 Orte ausgegeben.',
-    );
-  });
-
-  it('uses the singular Ort when both running Schlüssel hang at one', () => {
-    expect(toManagedKeysIntro([venue({ holdings: [ANNA, BEA] }), LEER])).toBe(
-      '2 Schlüssel sind für einen Ort ausgegeben.',
-    );
-  });
-});
-
 describe('toVenueHolderMeta', () => {
   it('names no Schlüssel when every one came back', () => {
     expect(toVenueHolderMeta([MAIK])).toBe('kein Schlüssel');
@@ -153,36 +124,32 @@ describe('toVenueEmptyCopy', () => {
   it('separates an Ort that never had a Schlüssel from one whose Schlüssel came back', () => {
     expect(toVenueEmptyCopy([]).title).not.toBe(toVenueEmptyCopy([MAIK]).title);
   });
-
-  it('points at the history once there is one', () => {
-    expect(toVenueEmptyCopy([MAIK]).description).toContain('unten');
-  });
 });
 
 describe('toHandoutConsequence', () => {
   it('speaks of a Schlüssel that is already out', () => {
     expect(toHandoutConsequence('Anna Kaiser', 'Turnhalle', '2026-09-20', '2026-09-20')).toContain(
-      'ab dem 20.09.2026',
+      'seit dem 20.09.2026',
     );
   });
 
-  it('marks a handout dated ahead as not yet in force', () => {
+  it('dates a handout ahead from its first day', () => {
     expect(toHandoutConsequence('Anna Kaiser', 'Turnhalle', '2026-11-11', '2026-09-20')).toContain(
-      'vorher nicht',
+      'ab dem 11.11.2026',
     );
   });
 });
 
 describe('toReturnConsequence', () => {
-  it('states the last day in the present when it is today', () => {
+  it('reports the Schlüssel as returned when the last day is today', () => {
     expect(toReturnConsequence('Anna', 'Turnhalle', '2026-09-20', '2026-09-20')).toContain(
-      'ist der letzte Tag',
+      'ist zum 20.09.2026 zurückgegeben',
     );
   });
 
-  it('states the last day in the future when it is dated ahead', () => {
+  it('keeps the Schlüssel usable until a last day dated ahead', () => {
     expect(toReturnConsequence('Anna', 'Turnhalle', '2026-11-11', '2026-09-20')).toContain(
-      'wird der letzte Tag',
+      'bis einschließlich 11.11.2026',
     );
   });
 });

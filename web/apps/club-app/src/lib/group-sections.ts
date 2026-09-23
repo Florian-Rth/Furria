@@ -12,13 +12,13 @@ export const GROUP_SECTION_TITLES = {
 } as const;
 
 export const GROUP_ADMINS_NOTE =
-  'Gruppen-Admins pflegen die Gruppe. Sie müssen nicht selbst in der Gruppe tanzen.';
+  'Gruppen-Admins verwalten die Gruppe und müssen ihr nicht selbst angehören.';
 
 export const NO_ADMINS_LINE =
-  'Für diese Gruppe ist gerade niemand als Gruppen-Admin eingetragen. Ohne Admin pflegt die Gruppenverwaltung sie allein.';
+  'Diese Gruppe hat keinen Gruppen-Admin. Sie wird von der Gruppenverwaltung gepflegt.';
 
 export const GROUP_PEOPLE_NOTE =
-  'Gruppen-Admins stehen vorn. Sie pflegen die Gruppe und müssen nicht selbst dabei sein.';
+  'Gruppen-Admins stehen oben. Sie müssen der Gruppe nicht selbst angehören.';
 
 export const toGroupPeopleNote = (people: number, admins: number): string | undefined => {
   if (people === 0) {

@@ -1,11 +1,10 @@
-import { KkButton, KkEmptyState, KkErrorState, KkLead, KkPanel, KkSkeletonRow } from '@furria/ui';
+import { KkButton, KkEmptyState, KkErrorState, KkLead, KkPanel } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { TrainingGeneratorControl } from '../hooks/use-training-generator';
 import { GENERATOR_NO_RHYTHM_LINE, GENERATOR_NO_RHYTHM_TITLE } from '../rhythm-labels';
 import { TrainingPreviewList } from './TrainingPreviewList';
 
-const SKELETON_ROWS = 5;
 const RETRY_LABEL = 'Noch einmal';
 const ERROR_TITLE = 'VORSCHAU NICHT GELADEN';
 
@@ -37,14 +36,6 @@ export const TrainingGeneratorBody: FC<TrainingGeneratorBodyProps> = ({ control,
     return (
       <KkPanel variant="block">
         <KkErrorState title={ERROR_TITLE} description={control.errorMessage} action={retry} />
-      </KkPanel>
-    );
-  }
-
-  if (control.isLoading) {
-    return (
-      <KkPanel variant="block">
-        <KkSkeletonRow count={SKELETON_ROWS} shape="select" />
       </KkPanel>
     );
   }

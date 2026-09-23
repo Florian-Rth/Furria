@@ -1,4 +1,5 @@
 import type { FC } from 'react';
+import { usePermissions } from '@/features/session';
 import { isNotFoundError } from '@/lib/query-error';
 import { usePersonQuery } from '../api';
 import { toPersonErrorMessage } from '../manage-persons-messages';
@@ -13,6 +14,7 @@ interface PersonEditBodyProps {
 
 export const PersonEditBody: FC<PersonEditBodyProps> = ({ personId }) => {
   const person = usePersonQuery(personId);
+  const { isUndecided } = usePermissions();
   const errorMessage = toPersonErrorMessage(person.error);
   const missing = personId === null || isNotFoundError(person.error);
 
@@ -20,7 +22,7 @@ export const PersonEditBody: FC<PersonEditBodyProps> = ({ personId }) => {
     void person.refetch();
   };
 
-  if (person.data !== undefined) {
+  if (person.data !== undefined && !isUndecided) {
     return <PersonEditView person={person.data} />;
   }
   if (missing) {

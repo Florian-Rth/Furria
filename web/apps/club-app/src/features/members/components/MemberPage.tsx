@@ -1,5 +1,5 @@
 import type { KkScreenOrigin } from '@furria/ui';
-import { KkScreen } from '@furria/ui';
+import { KkScreen, KkScreenHeaderSkeleton } from '@furria/ui';
 import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { useMemberQuery } from '../api';
@@ -17,14 +17,18 @@ export const MemberPage: FC = () => {
   const member = useMemberQuery(id);
   const isSelf = useIsSelf(id);
   const headline = toMemberHeadline(member.data);
+  const hasFailed = id === null || member.error !== null;
+
+  const pendingHeader = hasFailed ? null : <KkScreenHeaderSkeleton />;
+  const header =
+    member.data === undefined || isSelf === undefined ? (
+      pendingHeader
+    ) : (
+      <MemberHeader member={member.data} isSelf={isSelf} />
+    );
 
   return (
-    <KkScreen
-      kind="detail"
-      title={headline.title}
-      origin={MEMBERS_ORIGIN}
-      header={<MemberHeader member={member.data} isSelf={isSelf} />}
-    >
+    <KkScreen kind="detail" title={headline.title} origin={MEMBERS_ORIGIN} header={header}>
       <MemberBody personId={id} />
     </KkScreen>
   );

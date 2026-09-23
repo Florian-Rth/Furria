@@ -42,8 +42,8 @@ export const toPersonIdParam = (raw: string | undefined): number | null => {
 export const toHubTitle = (hub: GroupHub | undefined): string =>
   hub === undefined ? HUB_TITLE_FALLBACK : hub.name;
 
-export const toHubOrigin = (viewerIsAffiliated: boolean): KkScreenOrigin =>
-  viewerIsAffiliated ? GROUPS_ORIGIN : PROFILE_ORIGIN;
+export const toHubOrigin = (viewerIsAffiliated: boolean | null): KkScreenOrigin =>
+  viewerIsAffiliated === false ? PROFILE_ORIGIN : GROUPS_ORIGIN;
 
 const HUB_ROUTE = '/groups/$groupId';
 
@@ -167,19 +167,18 @@ export const toPersonStandingLines = (person: HubPerson): string[] => {
 };
 
 export const HUB_DENIED_MESSAGE =
-  'Gruppen stehen Mitgliedern, Gruppen und Rollen des FCC offen. Dein Konto hat noch keine Verbindung zum Verein — melde dich bei der Personenverwaltung.';
+  'Dein Konto ist noch keiner Person im Verein zugeordnet. Wende dich an die Personenverwaltung.';
 
 export const EDITOR_DENIED_MESSAGE =
-  'Nur ein Gruppen-Admin oder die Gruppenverwaltung darf die Gruppe pflegen.';
+  'Nur Gruppen-Admins und die Gruppenverwaltung können die Gruppe bearbeiten.';
 
 export const ADMINISTRATION_DENIED_MESSAGE =
-  'Nur die Gruppenverwaltung darf Name und Gruppenart ändern.';
+  'Nur die Gruppenverwaltung kann Name und Gruppenart ändern.';
 
 export const PERSON_SCREEN_OPEN_LABEL = 'Zum Profil';
-export const PERSON_SCREEN_CONTACT_NOTE =
-  'Kontaktdaten stehen auf der Personenseite — die Gruppe führt sie nicht.';
+export const PERSON_SCREEN_CONTACT_NOTE = 'Kontaktdaten findest du im Profil der Person.';
 export const PERSON_SCREEN_UNREACHABLE_NOTE =
-  'Diese Person hat keine eigene Seite im Verzeichnis. Wende dich an die Gruppen-Admins.';
+  'Diese Person hat kein Profil im Verzeichnis. Wende dich an die Gruppen-Admins.';
 export const PERSON_SCREEN_ADD_MEMBERSHIP_LABEL = 'Mitglied aufnehmen';
 export const PERSON_SCREEN_ADD_ADMIN_LABEL = 'Gruppen-Admin ernennen';
 
@@ -257,7 +256,7 @@ export const toToneWarning = (
     return null;
   }
 
-  return `${TONE_LABELS[tone]} trägt schon eine andere Gruppe. Doppelt geht, auffällig ist es nicht.`;
+  return `${TONE_LABELS[tone]} ist bereits einer anderen Gruppe zugewiesen.`;
 };
 
 const SEARCH_TERM_MIN_LENGTH = 2;
@@ -279,10 +278,9 @@ export const toSearchTerm = (raw: string): string | null => {
 export const toSearchCapLine = (count: number): string | null =>
   count < SEARCH_RESULT_CAP
     ? null
-    : `Es werden höchstens ${SEARCH_RESULT_CAP} Treffer gezeigt. Tipp den Namen genauer.`;
+    : `Es werden nur die ersten ${SEARCH_RESULT_CAP} Treffer angezeigt. Präzisiere die Suche.`;
 
-export const toNoSearchResultLine = (term: string): string =>
-  `Zu „${term}“ steht niemand im Register.`;
+export const toNoSearchResultLine = (term: string): string => `Keine Treffer für „${term}“.`;
 
 export const toJoinQuickChoices = (today: Date): KkDateQuickChoice[] => {
   const todayValue = toIsoDay(today);
@@ -331,7 +329,7 @@ export const toMemberAddedAsAdminMessage = (
   todayIsoDay: string,
 ): string =>
   isFutureDay(joinedOn, todayIsoDay)
-    ? `${personName} ist ab dem ${formatIsoDay(joinedOn)} dabei — und Gruppen-Admin.`
+    ? `${personName} ist ab dem ${formatIsoDay(joinedOn)} dabei und Gruppen-Admin.`
     : `${personName} ist aufgenommen und Gruppen-Admin.`;
 
 export const toMembershipEndedMessage = (
@@ -349,8 +347,8 @@ export const toJoinConsequence = (
   todayIsoDay: string,
 ): string =>
   isFutureDay(joinedOn, todayIsoDay)
-    ? `Ab dem ${formatIsoDay(joinedOn)} steht ${personName} in der Gruppe — vorher nicht in der Liste.`
-    : `${personName} gehört ab dem ${formatIsoDay(joinedOn)} zur Gruppe.`;
+    ? `${personName} gehört ab dem ${formatIsoDay(joinedOn)} zur Gruppe.`
+    : `${personName} gehört seit dem ${formatIsoDay(joinedOn)} zur Gruppe.`;
 
 export const toJoinAsAdminConsequence = (
   personName: string,
@@ -358,8 +356,8 @@ export const toJoinAsAdminConsequence = (
   todayIsoDay: string,
 ): string =>
   isFutureDay(joinedOn, todayIsoDay)
-    ? `Ab dem ${formatIsoDay(joinedOn)} steht ${personName} in der Gruppe und darf sie pflegen — vorher nicht.`
-    : `${personName} gehört ab dem ${formatIsoDay(joinedOn)} zur Gruppe und darf sie pflegen: Beschreibung ändern, Leute aufnehmen und beenden.`;
+    ? `${personName} gehört ab dem ${formatIsoDay(joinedOn)} zur Gruppe und ist Gruppen-Admin.`
+    : `${personName} gehört seit dem ${formatIsoDay(joinedOn)} zur Gruppe und ist Gruppen-Admin.`;
 
 export const toEndConsequence = (
   personName: string,
@@ -367,8 +365,8 @@ export const toEndConsequence = (
   todayIsoDay: string,
 ): string =>
   isFutureDay(endedOn, todayIsoDay)
-    ? `Der ${formatIsoDay(endedOn)} wird der letzte Tag von ${personName} in der Gruppe. Die Zugehörigkeit bleibt in der Geschichte stehen.`
-    : `Der ${formatIsoDay(endedOn)} ist der letzte Tag von ${personName} in der Gruppe. Die Zugehörigkeit bleibt in der Geschichte stehen.`;
+    ? `Die Zugehörigkeit von ${personName} endet am ${formatIsoDay(endedOn)}. Sie bleibt im Verlauf erhalten.`
+    : `Die Zugehörigkeit von ${personName} ist zum ${formatIsoDay(endedOn)} beendet. Sie bleibt im Verlauf erhalten.`;
 
 export const ADMIN_FUNCTION_SUGGESTIONS: readonly string[] = [
   'Trainerin',
@@ -407,8 +405,8 @@ export const toAppointConsequence = (
   todayIsoDay: string,
 ): string =>
   isFutureDay(sinceOn, todayIsoDay)
-    ? `Ab dem ${formatIsoDay(sinceOn)} darf ${personName} die Gruppe pflegen — vorher nicht.`
-    : `${personName} darf die Gruppe ab dem ${formatIsoDay(sinceOn)} pflegen: Beschreibung ändern, Leute aufnehmen und beenden.`;
+    ? `${personName} ist ab dem ${formatIsoDay(sinceOn)} Gruppen-Admin und kann die Gruppe verwalten.`
+    : `${personName} ist seit dem ${formatIsoDay(sinceOn)} Gruppen-Admin und kann die Gruppe verwalten.`;
 
 export const toAdminEndConsequence = (
   personName: string,
@@ -416,18 +414,16 @@ export const toAdminEndConsequence = (
   todayIsoDay: string,
 ): string =>
   isFutureDay(endedOn, todayIsoDay)
-    ? `Ab dem ${formatIsoDay(endedOn)} kann ${personName} die Gruppe nicht mehr pflegen. Die Zugehörigkeit zur Gruppe bleibt davon unberührt.`
-    : `${personName} kann die Gruppe ab sofort nicht mehr pflegen. Die Zugehörigkeit zur Gruppe bleibt davon unberührt.`;
+    ? `${personName} ist ab dem ${formatIsoDay(endedOn)} nicht mehr Gruppen-Admin. Die Zugehörigkeit zur Gruppe bleibt bestehen.`
+    : `${personName} ist ab sofort nicht mehr Gruppen-Admin. Die Zugehörigkeit zur Gruppe bleibt bestehen.`;
 
 export const toLastAdminWarning = (runningAdmins: number): string | null =>
-  runningAdmins > 1
-    ? null
-    : 'Danach hat diese Gruppe keinen Gruppen-Admin mehr. Die Gruppenverwaltung kann jederzeit eine neue ernennen.';
+  runningAdmins > 1 ? null : 'Die Gruppe hat danach keinen Gruppen-Admin mehr.';
 
 const SENTENCE_SEPARATOR = ' ';
 
 const SELF_ADMIN_END_NOTE =
-  'Das bist du. Danach kannst du die Gruppe nur noch lesen — neu ernennen kann dich die Gruppenverwaltung.';
+  'Du beendest deine eigene Ernennung und kannst die Gruppe danach nicht mehr bearbeiten.';
 
 export const toAdminEndParagraph = (
   consequence: string | null,
@@ -449,13 +445,13 @@ export const toSelfAdminEndedMessage = (
   todayIsoDay: string,
 ): string =>
   isFutureDay(endedOn, todayIsoDay)
-    ? `Ab dem ${formatIsoDay(endedOn)} bist du nicht mehr Gruppen-Admin von ${groupName}. Lesen kannst du sie weiter — neu ernennen kann dich die Gruppenverwaltung.`
-    : `Du bist nicht mehr Gruppen-Admin von ${groupName}. Lesen kannst du sie weiter — neu ernennen kann dich die Gruppenverwaltung.`;
+    ? `Ab dem ${formatIsoDay(endedOn)} bist du nicht mehr Gruppen-Admin von ${groupName}.`
+    : `Du bist nicht mehr Gruppen-Admin von ${groupName}.`;
 
 export const toGroupAdministrationSavedMessage = (name: string): string =>
   `${name} ist gespeichert.`;
 
-const NOBODY_LINE = 'Es ist gerade niemand eingetragen.';
+const NOBODY_LINE = 'Es ist niemand eingetragen.';
 
 const toZugehoerigkeitenClause = (
   count: number,
@@ -466,15 +462,15 @@ const toZugehoerigkeitenClause = (
     return NOBODY_LINE;
   }
   if (count === 1) {
-    return `Die eine Zugehörigkeit ${singularVerb}.`;
+    return `1 Zugehörigkeit ${singularVerb}.`;
   }
 
-  return `Die ${count} Zugehörigkeiten ${pluralVerb}.`;
+  return `${count} Zugehörigkeiten ${pluralVerb}.`;
 };
 
 export const ARCHIVE_GROUP_EYEBROW = 'Gruppe archivieren';
 export const ARCHIVE_GROUP_EXPLANATION =
-  'Archivieren löscht nichts: Die Zugehörigkeiten bleiben bestehen — die Gruppe zählt nur nicht mehr mit. Sie verschwindet aus dem Verzeichnis, ihre Geschichte bleibt in den Profilen stehen.';
+  'Die Gruppe verschwindet aus dem Verzeichnis und zählt nicht mehr für die Vereinsbindung. Zugehörigkeiten bleiben erhalten.';
 
 export const toArchiveGroupQuestion = (name: string): string => `${name} archivieren?`;
 
@@ -483,7 +479,7 @@ export const toArchiveGroupConsequence = (
   memberCount: number,
   todayLabel: string,
 ): string =>
-  `Ab dem ${todayLabel} steht ${name} nicht mehr im Verzeichnis. ${toZugehoerigkeitenClause(memberCount, 'bleibt bestehen', 'bleiben bestehen')}`;
+  `Ab dem ${todayLabel} ist ${name} archiviert. ${toZugehoerigkeitenClause(memberCount, 'bleibt bestehen', 'bleiben bestehen')}`;
 
 export const toArchiveGroupFacts = (hub: GroupHub, todayLabel: string): KkConfirmFact[] => [
   { label: 'Gruppe', value: hub.name },
@@ -492,5 +488,4 @@ export const toArchiveGroupFacts = (hub: GroupHub, todayLabel: string): KkConfir
   { label: 'Ab', value: todayLabel },
 ];
 
-export const toGroupArchivedFromHubMessage = (name: string): string =>
-  `${name} steht nicht mehr im Verzeichnis.`;
+export const toGroupArchivedFromHubMessage = (name: string): string => `${name} ist archiviert.`;

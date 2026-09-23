@@ -380,17 +380,14 @@ describe('toParticipatingGroupOptions', () => {
 
 describe('toParticipantPool', () => {
   it('reads loaded Gruppen as ready', () => {
-    expect(toParticipantPool([{ groupId: 1, name: 'Tanzgarde' }], false)).toEqual({
+    expect(toParticipantPool([{ groupId: 1, name: 'Tanzgarde' }])).toEqual({
       state: 'ready',
       groups: [{ groupId: 1, name: 'Tanzgarde' }],
     });
   });
 
-  it.each([
-    [true, 'failed'],
-    [false, 'loading'],
-  ])('reads a missing Verzeichnis with failed %s as %s', (failed, state) => {
-    expect(toParticipantPool(undefined, failed).state).toBe(state);
+  it('reads a missing Verzeichnis as failed', () => {
+    expect(toParticipantPool(undefined).state).toBe('failed');
   });
 });
 
@@ -399,7 +396,6 @@ describe('toParticipantsEmptyLabel', () => {
     const ready = toParticipantsEmptyLabel({ state: 'ready', groups: [] });
 
     expect(ready).not.toBe(toParticipantsEmptyLabel({ state: 'failed' }));
-    expect(ready).not.toBe(toParticipantsEmptyLabel({ state: 'loading' }));
   });
 });
 

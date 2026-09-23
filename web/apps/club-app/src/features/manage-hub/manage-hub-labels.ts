@@ -4,10 +4,9 @@ import { MANAGE_BANKS, MANAGE_PANELS } from './manage-hub-panels';
 import type { ManageHub } from './schemas';
 
 export const MANAGE_TITLE = 'Verein verwalten';
-export const MANAGE_LEAD = 'Personen, Gruppen, Ämter und Schlüssel des Vereins zentral pflegen.';
+export const MANAGE_LEAD = 'Personen, Gruppen, Ämter und Schlüssel des Vereins verwalten.';
 export const MANAGE_LOADING_LABEL = 'Die Verwaltung wird geladen';
-export const MANAGE_EMPTY_NOTE =
-  'Noch ist nichts eingetragen. Alles, was Verein und Kalender zeigen, steht ab hier.';
+export const MANAGE_EMPTY_NOTE = 'Es sind noch keine Daten erfasst.';
 export const MANAGE_ERROR_TITLE = 'VERWALTUNG NICHT GELADEN';
 export const MANAGE_RETRY_LABEL = 'Erneut laden';
 

@@ -58,15 +58,15 @@ export const toGroupWorkFacets = (groups: readonly ManagedGroupSummary[]): Group
 };
 
 export const toGroupWorkFilterOptions = (facets: GroupWorkFacets): KkFilterOption[] => {
-  const options: KkFilterOption[] = [];
+  const options: KkFilterOption[] = [
+    { id: ALL_GROUPS_FILTER_ID, label: ALL_GROUPS_LABEL, count: facets.total },
+  ];
 
   if (facets.withoutAdmin > 0) {
     options.push({
       id: NO_ADMIN_GROUPS_FILTER_ID,
       label: NO_ADMIN_LABEL,
       count: facets.withoutAdmin,
-      tone: 'accent',
-      countFirst: true,
     });
   }
   if (facets.withoutKind > 0) {
@@ -74,8 +74,6 @@ export const toGroupWorkFilterOptions = (facets: GroupWorkFacets): KkFilterOptio
       id: NO_KIND_GROUPS_FILTER_ID,
       label: NO_KIND_LABEL,
       count: facets.withoutKind,
-      tone: 'gold',
-      countFirst: true,
     });
   }
   if (facets.withoutPeople > 0) {
@@ -83,8 +81,6 @@ export const toGroupWorkFilterOptions = (facets: GroupWorkFacets): KkFilterOptio
       id: NO_PEOPLE_GROUPS_FILTER_ID,
       label: NO_PEOPLE_LABEL,
       count: facets.withoutPeople,
-      tone: 'gold',
-      countFirst: true,
     });
   }
   if (facets.archived > 0) {
@@ -92,11 +88,8 @@ export const toGroupWorkFilterOptions = (facets: GroupWorkFacets): KkFilterOptio
       id: ARCHIVED_GROUPS_FILTER_ID,
       label: ARCHIVED_LABEL,
       count: facets.archived,
-      tone: 'neutral',
-      countFirst: true,
     });
   }
-  options.push({ id: ALL_GROUPS_FILTER_ID, label: ALL_GROUPS_LABEL, count: facets.total });
 
   return options;
 };
@@ -180,25 +173,7 @@ export const toGroupRegisterBands = (
 export const countBandedGroups = (bands: GroupRegisterBands): number =>
   bands.running.length + bands.archived.length;
 
-const EMPTY_REGISTER_LEAD = 'Noch steht keine Gruppe im Verzeichnis.';
-
-const toListedSentence = (listed: number): string =>
-  listed === 1 ? 'Eine Gruppe steht im Verzeichnis.' : `${listed} Gruppen stehen im Verzeichnis.`;
-
-const toArchivedSentence = (archived: number): string =>
-  archived === 1 ? 'Eine weitere ist archiviert.' : `${archived} weitere sind archiviert.`;
-
-export const toManagedGroupsLead = (facets: GroupWorkFacets): string => {
-  if (facets.total === 0) {
-    return EMPTY_REGISTER_LEAD;
-  }
-  if (facets.archived === 0) {
-    return toListedSentence(facets.listed);
-  }
-
-  return `${toListedSentence(facets.listed)} ${toArchivedSentence(facets.archived)}`;
-};
-
+export const MANAGE_GROUPS_LEAD = 'Gruppen anlegen, einordnen und archivieren.';
 const FACET_META: Record<GroupWorkFilterId, (count: number) => string> = {
   [ALL_GROUPS_FILTER_ID]: (count) =>
     count === 1 ? 'Eine Gruppe im Verzeichnis' : `${count} Gruppen im Verzeichnis`,

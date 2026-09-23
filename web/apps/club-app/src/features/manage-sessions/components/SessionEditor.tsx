@@ -27,21 +27,22 @@ const CANCEL_LABEL = 'Abbrechen';
 const CLOSE_LABEL = 'Schließen';
 
 const SEASON_LABEL = 'Session';
-const NUMBER_LABEL = 'Nº';
-const NUMBER_HINT = 'Steht auf dem Orden oder in der Festschrift. Leer lassen, wenn unbekannt.';
+const NUMBER_LABEL = 'Sessionsnummer';
+const NUMBER_HINT = 'Leer lassen, wenn unbekannt.';
 const MOTTO_LABEL = 'Motto';
-const MOTTO_HINT = 'Der Ruf der Session, so wie er ausgerufen wurde.';
+const MOTTO_HINT = 'Im originalen Wortlaut.';
 const CREATE_NOTE =
-  'Das Jahr genügt. Nº, Motto und Sessionslogo kommen dazu, sobald der Verein sie belegen kann — abgeleitet wird nichts.';
+  'Nur das Jahr ist Pflicht. Sessionsnummer, Motto und Sessionslogo nur eintragen, wenn sie belegt sind.';
 
 const FIELD_GAP = 2.25;
 
 interface SessionEditorProps {
   record: SessionRecordSummary | null;
+  draftYear?: number | null;
 }
 
-export const SessionEditor: FC<SessionEditorProps> = ({ record }) => {
-  const control = useSessionEditor(record);
+export const SessionEditor: FC<SessionEditorProps> = ({ record, draftYear = null }) => {
+  const control = useSessionEditor(record, draftYear);
   const removal = useSessionRemoval(record);
   const numberField = control.form.register('number');
   const mottoField = control.form.register('motto');

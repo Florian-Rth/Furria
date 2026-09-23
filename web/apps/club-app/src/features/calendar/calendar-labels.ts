@@ -19,10 +19,9 @@ export const CALENDAR_LOADING_LABEL = 'Der Kalender wird geladen';
 export const CALENDAR_ERROR_TITLE = 'KALENDER NICHT GELADEN';
 export const CALENDAR_RETRY_LABEL = 'Noch einmal';
 export const CALENDAR_EMPTY_TITLE = 'NICHTS IM KALENDER';
-export const CALENDAR_EMPTY_LINE =
-  'In diesem Zeitraum steht kein Termin. Wähle einen anderen Bereich oder blättere weiter.';
+export const CALENDAR_EMPTY_LINE = 'In diesem Zeitraum gibt es keine Termine.';
 export const CALENDAR_DAY_EMPTY_TITLE = 'AN DIESEM TAG NICHTS';
-export const CALENDAR_DAY_EMPTY_LINE = 'An diesem Tag steht kein Termin.';
+export const CALENDAR_DAY_EMPTY_LINE = 'An diesem Tag gibt es keine Termine.';
 export const SCOPE_FILTER_LABEL = 'Nach Bereich filtern';
 export const MONTH_VIEW_LABEL = 'Monat';
 export const LIST_VIEW_LABEL = 'Liste';
@@ -34,8 +33,7 @@ export const RUNNING_CHIP_LABEL = 'läuft gerade';
 const ALL_SCOPE_LABEL = 'Alle';
 const CLUB_SCOPE_LABEL = 'Verein';
 const META_SEPARATOR = ' · ';
-const NO_ENTRIES_LEAD = 'Gerade steht nichts im Kalender.';
-const ONE_ENTRY_LEAD = 'Ein Termin steht im Kalender.';
+
 const ONE_ENTRY = 1;
 const ONE_ENTRY_LABEL = 'Ein Termin';
 const MANY_ENTRIES_LABEL = 'Termine';
@@ -61,17 +59,7 @@ const toReachLabel = (
   return null;
 };
 
-export const toCalendarLead = (count: number): string => {
-  if (count === 0) {
-    return NO_ENTRIES_LEAD;
-  }
-  if (count === ONE_ENTRY) {
-    return ONE_ENTRY_LEAD;
-  }
-
-  return `${count} Termine stehen im Kalender.`;
-};
-
+export const CALENDAR_LEAD = 'Termine, Trainings und Sitzungen des Vereins.';
 export const toDayEntriesLabel = (count: number): string => {
   if (count === ONE_ENTRY) {
     return ONE_ENTRY_LABEL;
@@ -185,10 +173,10 @@ export const toEntryFacts = (entry: CalendarEntry): KkConfirmFact[] => {
 
 export const toDeleteConsequence = (entry: CalendarEntry): string => {
   if (entry.asksForResponse) {
-    return `„${entry.title}“ verschwindet aus dem Kalender, und die schon abgegebenen Zu- und Absagen verschwinden mit.`;
+    return `„${entry.title}“ wird mit allen Zu- und Absagen gelöscht.`;
   }
 
-  return `„${entry.title}“ verschwindet aus dem Kalender. Rückgängig geht das nicht.`;
+  return `„${entry.title}“ wird endgültig gelöscht.`;
 };
 
 export const toEntryCreatedMessage = (title: string): string =>

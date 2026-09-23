@@ -15,6 +15,7 @@ import {
 } from '../rhythm-labels';
 import type { GroupHub } from '../schemas';
 import { TrainingGeneratorBody } from './TrainingGeneratorBody';
+import { TrainingGeneratorSkeleton } from './TrainingGeneratorSkeleton';
 
 interface TrainingGeneratorPageProps {
   hub: GroupHub;
@@ -40,6 +41,31 @@ export const TrainingGeneratorPage: FC<TrainingGeneratorPageProps> = ({ hub }) =
   const rejection =
     control.rejection === null ? null : <KkAlert severity="error">{control.rejection}</KkAlert>;
 
+  const form = control.isLoading ? (
+    <TrainingGeneratorSkeleton />
+  ) : (
+    <Stack sx={{ gap: 2, minWidth: 0 }}>
+      <KkTextField
+        name="trainingTitle"
+        label={GENERATOR_TITLE_LABEL}
+        value={control.title}
+        onChange={changeTitle}
+        error={control.title.trim() === ''}
+        helperText={GENERATOR_TITLE_HINT}
+      />
+      <KkDateField
+        name="endsOn"
+        label={GENERATOR_END_LABEL}
+        value={control.endsOn}
+        onChange={control.setEndsOn}
+        quickChoices={control.quickChoices}
+        hint={GENERATOR_END_HINT}
+      />
+      <TrainingGeneratorBody control={control} hasRhythm={hasRhythm} />
+      {rejection}
+    </Stack>
+  );
+
   return (
     <KkScreen
       kind="working"
@@ -50,30 +76,12 @@ export const TrainingGeneratorPage: FC<TrainingGeneratorPageProps> = ({ hub }) =
           label: GENERATOR_CONFIRM_LABEL,
           onSelect: control.submit,
           loading: control.isSaving,
+          disabled: control.isLoading,
         },
         secondary: { label: GENERATOR_CANCEL_LABEL, onSelect: cancel },
       }}
     >
-      <Stack sx={{ gap: 2, minWidth: 0 }}>
-        <KkTextField
-          name="trainingTitle"
-          label={GENERATOR_TITLE_LABEL}
-          value={control.title}
-          onChange={changeTitle}
-          error={control.title.trim() === ''}
-          helperText={GENERATOR_TITLE_HINT}
-        />
-        <KkDateField
-          name="endsOn"
-          label={GENERATOR_END_LABEL}
-          value={control.endsOn}
-          onChange={control.setEndsOn}
-          quickChoices={control.quickChoices}
-          hint={GENERATOR_END_HINT}
-        />
-        <TrainingGeneratorBody control={control} hasRhythm={hasRhythm} />
-        {rejection}
-      </Stack>
+      {form}
     </KkScreen>
   );
 };

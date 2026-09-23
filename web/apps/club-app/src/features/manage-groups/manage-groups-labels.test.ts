@@ -7,7 +7,6 @@ import {
   toGroupKindEntries,
   toGroupKindEntryId,
   toGroupKindLockedReason,
-  toGroupKindsIntro,
   toGroupKindUsageBadge,
   toGroupKindUsageLine,
   toGroupRegisterFlags,
@@ -96,13 +95,13 @@ describe('toGroupRegisterFlags', () => {
 describe('toRestoreConsequence', () => {
   it('agrees with a single Zugehörigkeit', () => {
     expect(toRestoreConsequence('Musikzug', 1, '12.09.2026')).toContain(
-      'Die eine Zugehörigkeit zählt wieder mit.',
+      '1 Zugehörigkeit zählt wieder mit.',
     );
   });
 
   it('agrees with several Zugehörigkeiten', () => {
     expect(toRestoreConsequence('Musikzug', 6, '12.09.2026')).toContain(
-      'Die 6 Zugehörigkeiten zählen wieder mit.',
+      '6 Zugehörigkeiten zählen wieder mit.',
     );
   });
 });
@@ -186,30 +185,6 @@ describe('toGroupKindUsageLine', () => {
   });
 });
 
-describe('toGroupKindsIntro', () => {
-  it('has its own line for an empty band', () => {
-    expect(toGroupKindsIntro([])).toBe('Noch ist keine Gruppenart festgehalten.');
-  });
-
-  it('uses the singular for a single running Gruppenart', () => {
-    expect(toGroupKindsIntro(toGroupKindEntries([kind({ groupCount: 2 })]))).toBe(
-      'Eine Art steht zur Auswahl.',
-    );
-  });
-
-  it('counts the unused and the archived ones separately', () => {
-    const entries = toGroupKindEntries([
-      kind({ groupKindId: 1, groupCount: 2 }),
-      kind({ groupKindId: 2, name: 'Elferrat', groupCount: 0 }),
-      kind({ groupKindId: 3, name: 'Spielmannszug', archivedOn: '2026-01-01' }),
-    ]);
-
-    expect(toGroupKindsIntro(entries)).toBe(
-      '2 Arten stehen zur Auswahl. Eine davon ohne Gruppe. Eine weitere ist archiviert.',
-    );
-  });
-});
-
 describe('toGroupKindUsageBadge', () => {
   it.each([
     [{ groupCount: 0 }, 'Ohne Gruppe', 'gold'],
@@ -227,8 +202,8 @@ describe('toGroupKindUsageBadge', () => {
 
 describe('toGroupKindLockedReason', () => {
   it.each([
-    [1, 'Eine Gruppe trägt diese Art. Erst umtragen, dann archivieren.'],
-    [3, '3 Gruppen tragen diese Art. Erst umtragen, dann archivieren.'],
+    [1, 'Einer Gruppe ist diese Art zugeordnet. Ändere zuerst die Zuordnung.'],
+    [3, '3 Gruppen ist diese Art zugeordnet. Ändere zuerst die Zuordnung.'],
   ])('explains %i as %s', (groupCount, expected) => {
     expect(toGroupKindLockedReason(groupCount)).toBe(expected);
   });

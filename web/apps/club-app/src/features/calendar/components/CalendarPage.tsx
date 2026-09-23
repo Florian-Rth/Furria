@@ -5,13 +5,12 @@ import { CLUB_ORIGIN } from '@/features/session';
 import { useLanding } from '@/features/write';
 import { useCalendarQuery } from '../api';
 import {
+  CALENDAR_LEAD,
   CALENDAR_TITLE,
   LIST_VIEW_LABEL,
   MONTH_VIEW_LABEL,
-  toCalendarLead,
   toScopeOptions,
 } from '../calendar-labels';
-import { useCalendarAuthoring } from '../hooks/use-calendar-authoring';
 import { useCalendarBoard } from '../hooks/use-calendar-board';
 import { CalendarBody } from './CalendarBody';
 import { CalendarToolbar } from './CalendarToolbar';
@@ -20,11 +19,8 @@ const TOOLBAR_CHIPS = 3;
 
 export const CalendarPage: FC = () => {
   const board = useCalendarBoard();
-  const authoring = useCalendarAuthoring();
   const { highlightedKey } = useLanding();
   const scopeSource = useCalendarQuery(board.scopeSourceQuery);
-  const listed = useCalendarQuery(board.query);
-  const lead = listed.data === undefined ? undefined : toCalendarLead(listed.data.entries.length);
 
   const monthAction: KkQuietScreenAction = {
     id: 'calendar-month-view',
@@ -60,9 +56,9 @@ export const CalendarPage: FC = () => {
       origin={CLUB_ORIGIN}
       actions={[viewAction]}
       tools={tools}
-      header={<KkTitleHeader title={CALENDAR_TITLE} lead={lead} />}
+      header={<KkTitleHeader title={CALENDAR_TITLE} lead={CALENDAR_LEAD} />}
     >
-      <CalendarBody board={board} authoring={authoring} highlightedKey={highlightedKey} />
+      <CalendarBody board={board} highlightedKey={highlightedKey} />
     </KkScreen>
   );
 };

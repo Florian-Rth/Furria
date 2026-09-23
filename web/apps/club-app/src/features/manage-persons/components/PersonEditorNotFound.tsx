@@ -4,8 +4,7 @@ import { PERSONS_ORIGIN } from '../manage-persons-labels';
 
 const FALLBACK_TITLE = 'Person';
 const NOT_FOUND_TITLE = 'GIBT ES NICHT (MEHR)';
-const NOT_FOUND_DESCRIPTION =
-  'Das gibt es hier nicht — oder nicht mehr. Vielleicht war jemand anderes schneller.';
+const NOT_FOUND_DESCRIPTION = 'Dieser Eintrag existiert nicht oder wurde gelöscht.';
 
 export const PersonEditorNotFound: FC = () => (
   <KkScreen kind="fullscreen" title={FALLBACK_TITLE} origin={PERSONS_ORIGIN}>

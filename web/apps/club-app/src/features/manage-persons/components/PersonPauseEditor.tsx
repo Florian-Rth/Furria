@@ -12,9 +12,9 @@ import {
 import type { PersonDetails, PersonMembership, PersonPause } from '../schemas';
 
 const FIRST_LABEL = 'Von Session';
-const FIRST_HINT = 'Eine Ruhezeit zählt in ganzen Sessions, nie in Tagen.';
+const FIRST_HINT = 'Ruhezeiten gelten immer für ganze Sessions.';
 const LAST_LABEL = 'Bis Session';
-const LAST_HINT = 'Offen lassen, solange das Ende noch nicht feststeht.';
+const LAST_HINT = 'Leer lassen, solange das Ende nicht feststeht.';
 const OPEN_LABEL = 'offen lassen';
 
 interface PersonPauseEditorProps {

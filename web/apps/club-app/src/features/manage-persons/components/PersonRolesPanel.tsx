@@ -56,7 +56,7 @@ export const PersonRolesPanel: FC<PersonRolesPanelProps> = ({ roles, firstName }
       <KkEmptyState
         size="panel"
         title={EMPTY_TITLE}
-        description={`${firstName} trägt gerade keine Rolle im Verein.`}
+        description={`${firstName} hat keine Rolle im Verein.`}
       />
     </KkPanel>
   ) : (

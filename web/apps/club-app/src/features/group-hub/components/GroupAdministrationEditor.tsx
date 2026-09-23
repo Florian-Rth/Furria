@@ -9,8 +9,11 @@ import {
 } from '@/features/group-kinds';
 import { WriteScreen } from '@/features/write';
 import { toHubEditorOrigin } from '../group-hub-labels';
+import { toEditorChoicesErrorMessage } from '../group-hub-messages';
 import { useGroupAdministrationEditor } from '../hooks/use-group-administration-editor';
 import type { GroupHub } from '../schemas';
+import { GroupEditorError } from './GroupEditorError';
+import { GroupEditorSkeleton } from './GroupEditorSkeleton';
 
 const TITLE = 'Name und Gruppenart bearbeiten';
 const SAVE_LABEL = 'Speichern';
@@ -24,11 +27,34 @@ export const GroupAdministrationEditor: FC<GroupAdministrationEditorProps> = ({ 
   const control = useGroupAdministrationEditor(hub);
   const kinds = useGroupKindsQuery();
   const heldKind = toHeldGroupKind(hub.groupKindId, hub.groupKindName);
-  const kindOptions = toGroupKindOptions(kinds.data?.kinds ?? [], heldKind);
+  const origin = toHubEditorOrigin(hub);
+
+  const reloadKinds = (): void => {
+    void kinds.refetch();
+  };
+
+  if (kinds.data === undefined) {
+    if (kinds.error === null) {
+      return <GroupEditorSkeleton />;
+    }
+
+    const kindsErrorMessage = toEditorChoicesErrorMessage(kinds.error);
+
+    return (
+      <GroupEditorError
+        title={TITLE}
+        origin={origin}
+        message={kindsErrorMessage}
+        onRetry={reloadKinds}
+      />
+    );
+  }
+
+  const kindOptions = toGroupKindOptions(kinds.data.kinds, heldKind);
 
   return (
     <WriteScreen
-      origin={toHubEditorOrigin(hub)}
+      origin={origin}
       title={TITLE}
       rejection={control.rejection ?? undefined}
       isDirty={control.isDirty}

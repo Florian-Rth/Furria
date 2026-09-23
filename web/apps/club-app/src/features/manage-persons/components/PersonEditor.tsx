@@ -9,7 +9,7 @@ import { PersonFormFields } from './PersonFormFields';
 const EDIT_TITLE = 'Stammdaten bearbeiten';
 const CREATE_TITLE = 'Person hinzufügen';
 const CREATE_NOTE =
-  'Name genügt. Kontaktdaten, Adresse und Geburtsdatum kannst du jederzeit nachtragen. Eine Mitgliedschaft entsteht dabei nicht — die trägst du danach im Profil der Person ein.';
+  'Nur der Name ist Pflicht. Die Mitgliedschaft wird anschließend im Profil der Person eingetragen.';
 const BIRTH_DATE_LABEL = 'Geburtsdatum';
 const BIRTH_DATE_HINT = 'Nur die Personenverwaltung sieht das Geburtsdatum.';
 const BIRTH_DATE_EMPTY_LABEL = 'Nicht bekannt';

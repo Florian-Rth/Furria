@@ -2,14 +2,12 @@ import type { QueryErrorKind } from '@/lib/query-error';
 import { isNotFoundError, toQueryErrorMessage } from '@/lib/query-error';
 
 const WRITE_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
-  unreachable:
-    'Das hat den Server nicht erreicht. Prüfe deine Verbindung und versuch es noch einmal.',
-  unexpected: 'Das hat nicht geklappt. Bitte versuch es gleich noch einmal.',
-  rejected: 'Der Server hat diese Änderung nicht angenommen.',
+  unreachable: 'Keine Verbindung zum Server. Prüfe deine Internetverbindung.',
+  unexpected: 'Das hat nicht funktioniert. Bitte versuche es erneut.',
+  rejected: 'Der Server hat die Änderung abgelehnt.',
 };
 
-const WRITE_MISSING_MESSAGE =
-  'Das gibt es so nicht mehr — jemand anderes war schneller. Lade die Seite neu.';
+const WRITE_MISSING_MESSAGE = 'Dieser Eintrag wurde inzwischen geändert. Lade die Seite neu.';
 
 export const toWriteErrorMessage = (error: Error | null): string | null => {
   if (isNotFoundError(error)) {

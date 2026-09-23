@@ -5,8 +5,7 @@ import type { CalendarEntryRemovalControl } from '../hooks/use-calendar-entry-re
 import type { CalendarEntry } from '../schemas';
 
 const EYEBROW = 'Kalender';
-const EXPLANATION =
-  'Ein Termin wird gelöscht, nicht archiviert — im Kalender steht, was ansteht, nicht was einmal anstand.';
+const EXPLANATION = 'Termine werden endgültig gelöscht, nicht archiviert.';
 const CONFIRM_LABEL = 'Löschen';
 const CANCEL_LABEL = 'Abbrechen';
 const CLOSE_LABEL = 'Schließen';

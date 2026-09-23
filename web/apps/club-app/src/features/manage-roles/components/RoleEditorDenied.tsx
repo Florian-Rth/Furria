@@ -3,7 +3,7 @@ import type { FC } from 'react';
 import { AccessDenied } from '@/features/session';
 import { ROLES_ORIGIN } from '../manage-roles-labels';
 
-const DENIED_MESSAGE = 'Rollen & Rechte ist an eine Rolle gebunden. Du hast sie gerade nicht.';
+const DENIED_MESSAGE = 'Dir fehlt die Berechtigung für Rollen & Rechte.';
 
 interface RoleEditorDeniedProps {
   title: string;

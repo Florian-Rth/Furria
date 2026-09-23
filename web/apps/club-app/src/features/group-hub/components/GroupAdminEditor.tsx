@@ -16,13 +16,12 @@ import { ADMIN_FUNCTION_MAX_LENGTH } from '../schemas';
 import { PersonPicker } from './PersonPicker';
 
 const CHAIN_TITLE = 'Bisherige Ernennungen';
-const APPOINT_NOTE = 'Kein Mitglied — geht trotzdem.';
+const APPOINT_NOTE = 'Auch ohne Mitgliedschaft möglich.';
 const FUNCTION_LABEL = 'Funktion';
-const FUNCTION_PLACEHOLDER = 'Trainerin, Sprecher, …';
-const FUNCTION_HINT =
-  'Nur ein Etikett für die Anzeige. Die Rechte hängen an der Gruppen-Admin-Rolle, nicht am Wort.';
+const FUNCTION_PLACEHOLDER = 'Optional';
+const FUNCTION_HINT = 'Dient nur der Anzeige und hat keinen Einfluss auf Rechte.';
 const SINCE_LABEL = 'Admin ab';
-const SINCE_HINT = 'Darf in der Zukunft liegen. Vorher darf die Person die Gruppe nicht pflegen.';
+const SINCE_HINT = 'Auch ein Datum in der Zukunft ist möglich.';
 const END_DATE_LABEL = 'Letzter Tag';
 const END_DATE_HINT = 'Dieser Tag zählt noch dazu.';
 

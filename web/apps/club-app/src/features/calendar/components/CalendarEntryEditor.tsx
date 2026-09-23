@@ -35,27 +35,25 @@ const SAVE_LABEL = 'Speichern';
 
 const TITLE_LABEL = 'Titel';
 const DESCRIPTION_LABEL = 'Beschreibung';
-const DESCRIPTION_PLACEHOLDER = 'Was passiert, was mitbringen?';
+const DESCRIPTION_PLACEHOLDER = 'Weitere Informationen zum Termin';
 const DESCRIPTION_ROWS = 4;
 const OWNER_LABEL = 'Eigentümer';
-const OWNER_HINT = 'Wem der Termin gehört — der Verein oder eine Gruppe. Nur der darf ihn ändern.';
+const OWNER_HINT = 'Nur der Eigentümer kann den Termin bearbeiten.';
 const KIND_LABEL = 'Art';
 const PARTICIPANTS_LABEL = 'Mitwirkende Gruppen';
-const PARTICIPANTS_HINT =
-  'Welche Gruppen hier gebraucht werden. Der Termin taucht in ihrem Gruppen-Hub auf — ändern darf ihn weiterhin nur der Eigentümer.';
+const PARTICIPANTS_HINT = 'Der Termin erscheint zusätzlich bei diesen Gruppen.';
 const VENUE_LABEL = 'Ort';
-const VENUE_HINT = 'Aus dem Ortsverzeichnis. Ohne Ort findet niemand eine Doppelbelegung.';
+const VENUE_HINT = 'Nur mit Ort werden Doppelbelegungen erkannt.';
 const START_DAY_LABEL = 'Tag';
 const START_TIME_LABEL = 'Beginn';
 const END_DAY_LABEL = 'Letzter Tag';
 const END_DAY_EMPTY_LABEL = 'Offenes Ende';
 const END_TIME_LABEL = 'Ende';
 const VISIBILITY_LABEL = 'Sichtbarkeit';
-const VISIBILITY_HINT =
-  'Wer den Termin im Kalender sieht. Gesehen werden heißt nicht gemeint sein.';
+const VISIBILITY_HINT = 'Legt fest, wer den Termin sieht.';
 const RESPONSE_LABEL = 'Nach Zu-/Absage fragen';
-const RESPONSE_DESCRIPTION = 'Jeder, der den Termin sieht, kann zu- oder absagen.';
-const CREATE_NOTE = 'Der Termin steht sofort im Kalender — bei allen, die ihn sehen dürfen.';
+const RESPONSE_DESCRIPTION = 'Alle, die den Termin sehen, können zu- oder absagen.';
+const CREATE_NOTE = 'Der Termin ist sofort für alle Berechtigten sichtbar.';
 
 const GRID_SPACING = 2;
 const DAY_SIZE = { xs: 12, sm: 7 };

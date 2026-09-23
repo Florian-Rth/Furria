@@ -3,8 +3,7 @@ import type { FC } from 'react';
 import { AccessDenied } from '@/features/session';
 import { ANNOUNCEMENTS_ORIGIN } from '../announcements-labels';
 
-const DENIED_MESSAGE =
-  'Diese Berechtigung fehlt dir — nur wer Aushänge posten darf, hängt einen auf.';
+const DENIED_MESSAGE = 'Dir fehlt die Berechtigung, Aushänge zu veröffentlichen.';
 
 interface AnnouncementDeniedProps {
   title: string;

@@ -3,8 +3,7 @@ import type { FC } from 'react';
 import { useGroupHubQuery } from '../api';
 import { EDITOR_DENIED_MESSAGE, toHubId } from '../group-hub-labels';
 import { GENERATOR_SHEET_TITLE } from '../rhythm-labels';
-import { GroupEditorNotFound } from './GroupEditorNotFound';
-import { GroupEditorSkeleton } from './GroupEditorSkeleton';
+import { GroupEditorUnloaded } from './GroupEditorUnloaded';
 import { HubEditorDenied } from './HubEditorDenied';
 import { TrainingGeneratorPage } from './TrainingGeneratorPage';
 
@@ -16,7 +15,7 @@ export const TrainingGeneratorScreen: FC = () => {
   const hub = useGroupHubQuery(id);
 
   if (hub.data === undefined) {
-    return hub.isLoading ? <GroupEditorSkeleton /> : <GroupEditorNotFound />;
+    return <GroupEditorUnloaded groupId={id} />;
   }
   if (!hub.data.viewerMayManage) {
     return (

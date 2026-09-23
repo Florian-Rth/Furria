@@ -5,8 +5,7 @@ export const NO_GROUP_KIND_VALUE = '';
 export const NO_GROUP_KIND_LABEL = 'Keine Gruppenart';
 
 export const GROUP_KIND_FIELD_LABEL = 'Gruppenart';
-export const GROUP_KIND_FIELD_HINT =
-  'Die Art ordnet die Gruppe ein — Garde, Elferrat, Spielmannszug. Die Gruppenverwaltung pflegt die Liste.';
+export const GROUP_KIND_FIELD_HINT = 'Die Gruppenarten pflegt die Gruppenverwaltung.';
 
 const ARCHIVED_SUFFIX = ' — archiviert';
 

@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { GroupRef, MembershipState, RoleRef } from '@/lib/api/schemas';
 import {
-  toConnectedSentence,
   toEmptyDescription,
   toLetterAnchorId,
   toMemberHeadline,
@@ -81,24 +80,14 @@ describe('toLetterAnchorId', () => {
   });
 });
 
-describe('toConnectedSentence', () => {
-  it.each([
-    [1, '1 Person ist'],
-    [2, '2 Personen sind'],
-    [0, '0 Personen sind'],
-  ])('opens the sentence for %d with %s', (count, opening) => {
-    expect(toConnectedSentence(count).startsWith(opening)).toBe(true);
-  });
-});
-
 describe('toWithoutMembershipSentence', () => {
   it('says nothing when everybody is a Mitglied', () => {
     expect(toWithoutMembershipSentence(0)).toBeNull();
   });
 
   it.each([
-    [1, '1 Person tanzt'],
-    [6, '6 Personen tanzen'],
+    [1, 'Darunter 1 Person '],
+    [6, 'Darunter 6 Personen '],
   ])('opens the sentence for %d with %s', (count, opening) => {
     expect(toWithoutMembershipSentence(count)?.startsWith(opening)).toBe(true);
   });

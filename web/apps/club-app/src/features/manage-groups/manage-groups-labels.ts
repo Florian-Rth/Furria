@@ -26,12 +26,11 @@ export interface ManagedGroupsEmptyCopy {
 export const MANAGED_GROUPS_EMPTY: Record<'filtered' | 'cold', ManagedGroupsEmptyCopy> = {
   filtered: {
     title: 'KEINE GRUPPE PASST',
-    description: 'Anderer Suchbegriff oder ein anderer Filter bringt sie zurück.',
+    description: 'Passe Suche oder Filter an.',
   },
   cold: {
     title: 'NOCH KEINE GRUPPE',
-    description:
-      'Leg die erste Gruppe an. Danach kannst du Personen dazu eintragen und Gruppen-Admins ernennen.',
+    description: 'Lege die erste Gruppe an.',
   },
 };
 
@@ -119,7 +118,7 @@ export const toGroupRegisterFlags = (group: ManagedGroupSummary): GroupRegisterF
   return flags;
 };
 
-const NOBODY_LINE = 'Es ist gerade niemand eingetragen.';
+const NOBODY_LINE = 'Es ist niemand eingetragen.';
 
 const toZugehoerigkeitenClause = (
   count: number,
@@ -130,24 +129,24 @@ const toZugehoerigkeitenClause = (
     return NOBODY_LINE;
   }
   if (count === 1) {
-    return `Die eine Zugehörigkeit ${singularVerb}.`;
+    return `1 Zugehörigkeit ${singularVerb}.`;
   }
 
-  return `Die ${count} Zugehörigkeiten ${pluralVerb}.`;
+  return `${count} Zugehörigkeiten ${pluralVerb}.`;
 };
 
 export const toRestoreQuestion = (name: string): string => `${name} wieder aktivieren?`;
 
 export const RESTORE_EYEBROW = 'Gruppe aktivieren';
 export const RESTORE_EXPLANATION =
-  'Die Gruppe steht wieder im Verzeichnis und zählt wieder für die Vereinsbindung. An den Zeiträumen ändert sich nichts — sie waren nie weg.';
+  'Die Gruppe erscheint wieder im Verzeichnis und zählt wieder für die Vereinsbindung.';
 
 export const toRestoreConsequence = (
   name: string,
   memberCount: number,
   todayLabel: string,
 ): string =>
-  `Ab dem ${todayLabel} steht ${name} wieder im Verzeichnis. ${toZugehoerigkeitenClause(memberCount, 'zählt wieder mit', 'zählen wieder mit')}`;
+  `Ab dem ${todayLabel} ist ${name} wieder aktiv. ${toZugehoerigkeitenClause(memberCount, 'zählt wieder mit', 'zählen wieder mit')}`;
 
 export const toGroupFacts = (group: ManagedGroupSummary, dayLabel: string): KkConfirmFact[] => [
   { label: 'Gruppe', value: group.name },
@@ -162,18 +161,19 @@ export const toGroupRestoredMessage = (name: string): string => `${name} ist wie
 
 export const GROUP_KINDS_PANEL_TITLE = 'Gruppenarten';
 
+export const GROUP_KIND_SECTION_TITLE = 'Gruppenart';
+
 export const CREATE_GROUP_KIND_LABEL = 'Gruppenart hinzufügen';
 export const CREATE_GROUP_KIND_PILL_LABEL = 'Gruppenart';
 
 export const GROUP_KINDS_EMPTY_TITLE = 'NOCH KEINE GRUPPENART';
 
-export const GROUP_KINDS_EMPTY_DESCRIPTION =
-  'Leg die erste Gruppenart an. Danach kannst du jeder Gruppe eine zuordnen.';
+export const GROUP_KINDS_EMPTY_DESCRIPTION = 'Lege die erste Gruppenart an.';
 
 export const toGroupKindLockedReason = (groupCount: number): string =>
   groupCount === 1
-    ? 'Eine Gruppe trägt diese Art. Erst umtragen, dann archivieren.'
-    : `${groupCount} Gruppen tragen diese Art. Erst umtragen, dann archivieren.`;
+    ? 'Einer Gruppe ist diese Art zugeordnet. Ändere zuerst die Zuordnung.'
+    : `${groupCount} Gruppen ist diese Art zugeordnet. Ändere zuerst die Zuordnung.`;
 
 export interface GroupKindEntry {
   groupKindId: number;
@@ -257,42 +257,7 @@ export const toGroupKindUsageBadge = (entry: GroupKindEntry): GroupKindUsageBadg
   return { label: toGroupKindUsageLine(entry.groupCount), tone: 'neutral', dot: false };
 };
 
-const toLiveKindSentence = (live: number): string => {
-  if (live === 0) {
-    return 'Keine Art steht zur Auswahl.';
-  }
-  if (live === 1) {
-    return 'Eine Art steht zur Auswahl.';
-  }
-
-  return `${live} Arten stehen zur Auswahl.`;
-};
-
-const toUnusedKindSentence = (unused: number): string =>
-  unused === 1 ? 'Eine davon ohne Gruppe.' : `${unused} davon ohne Gruppe.`;
-
-const toArchivedKindSentence = (archived: number): string =>
-  archived === 1 ? 'Eine weitere ist archiviert.' : `${archived} weitere sind archiviert.`;
-
-export const toGroupKindsIntro = (entries: readonly GroupKindEntry[]): string => {
-  if (entries.length === 0) {
-    return 'Noch ist keine Gruppenart festgehalten.';
-  }
-
-  const archived = entries.filter((entry) => entry.isArchived).length;
-  const unused = entries.filter((entry) => !entry.isArchived && entry.groupCount === 0).length;
-  const sentences = [toLiveKindSentence(entries.length - archived)];
-
-  if (unused > 0) {
-    sentences.push(toUnusedKindSentence(unused));
-  }
-  if (archived > 0) {
-    sentences.push(toArchivedKindSentence(archived));
-  }
-
-  return sentences.join(' ');
-};
-
+export const GROUP_KINDS_LEAD = 'Einordnung der Gruppen.';
 export const toGroupKindFacts = (entry: GroupKindEntry, dayLabel: string): KkConfirmFact[] => [
   { label: 'Gruppenart', value: entry.name },
   { label: 'Gruppen', value: String(entry.groupCount) },
@@ -304,17 +269,17 @@ export const ARCHIVE_GROUP_KIND_EYEBROW = 'Gruppenart archivieren';
 export const toArchiveGroupKindQuestion = (name: string): string => `${name} archivieren?`;
 
 export const ARCHIVE_GROUP_KIND_EXPLANATION =
-  'Archivieren löscht nichts: Die Gruppenart verschwindet aus der Auswahl und lässt sich keiner Gruppe mehr zuordnen. Zurückholen kannst du sie jederzeit.';
+  'Die Gruppenart lässt sich danach keiner Gruppe mehr zuordnen. Bestehende Zuordnungen bleiben erhalten.';
 
 export const toArchiveGroupKindConsequence = (name: string, dayLabel: string): string =>
-  `Ab dem ${dayLabel} steht ${name} nicht mehr zur Auswahl. An den Gruppen ändert sich nichts.`;
+  `Ab dem ${dayLabel} steht ${name} nicht mehr zur Auswahl.`;
 
 export const RESTORE_GROUP_KIND_EYEBROW = 'Gruppenart aktivieren';
 
 export const toRestoreGroupKindQuestion = (name: string): string => `${name} wieder aktivieren?`;
 
 export const RESTORE_GROUP_KIND_EXPLANATION =
-  'Die Gruppenart steht wieder zur Auswahl und lässt sich wieder zuordnen. An den Gruppen, die sie schon tragen, ändert sich nichts — sie war nie weg.';
+  'Die Gruppenart lässt sich wieder zuordnen. Bestehende Zuordnungen bleiben unverändert.';
 
 export const toRestoreGroupKindConsequence = (name: string, dayLabel: string): string =>
   `Ab dem ${dayLabel} steht ${name} wieder zur Auswahl.`;

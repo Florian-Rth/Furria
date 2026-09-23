@@ -12,7 +12,6 @@ import {
   toPersonId,
   toPersonRowAffiliation,
   toPersonsEmptyDescription,
-  toPersonsLead,
 } from './manage-persons-labels';
 import type { PersonDetails, PersonMembership, PersonSummary } from './schemas';
 
@@ -102,16 +101,6 @@ describe('toPersonRowAffiliation', () => {
   });
 });
 
-describe('toPersonsLead', () => {
-  it.each([
-    { count: 0, expected: '0 Personen stehen' },
-    { count: 1, expected: '1 Person steht' },
-    { count: 151, expected: '151 Personen stehen' },
-  ])('counts $count', ({ count, expected }) => {
-    expect(toPersonsLead(count)).toContain(expected);
-  });
-});
-
 describe('toPersonsEmptyDescription', () => {
   it('quotes the query that found nobody', () => {
     expect(toPersonsEmptyDescription('  Kühn ', 'all')).toContain('„Kühn“');
@@ -196,7 +185,7 @@ describe('toMembershipConsequence', () => {
       label: 'a closed period',
       startedOn: '2009-01-11',
       endedOn: '2016-02-10',
-      expected: 'Der Zeitraum steht vom 11.01.2009 bis zum 10.02.2016 im Register.',
+      expected: 'Die Mitgliedschaft gilt vom 11.01.2009 bis zum 10.02.2016.',
     },
     {
       label: 'a future start',
@@ -208,7 +197,7 @@ describe('toMembershipConsequence', () => {
       label: 'a running period',
       startedOn: '2018-03-01',
       endedOn: null,
-      expected: 'Die Mitgliedschaft läuft seit dem 01.03.2018 und bleibt offen.',
+      expected: 'Die Mitgliedschaft besteht seit dem 01.03.2018 und ist unbefristet.',
     },
   ])('describes $label', ({ startedOn, endedOn, expected }) => {
     expect(toMembershipConsequence(startedOn, endedOn, '2026-09-12')).toContain(expected);
@@ -217,23 +206,25 @@ describe('toMembershipConsequence', () => {
 
 describe('toPauseConsequence', () => {
   it('says the pause has no end yet when it is open', () => {
-    expect(toPauseConsequence('Nicole', 2025, null)).toContain('Ab Session 2025/26');
+    expect(toPauseConsequence('Nicole', 2025, null)).toContain(
+      'ab Session 2025/26 bis auf Weiteres',
+    );
   });
 
   it('names the span when both ends are known', () => {
-    expect(toPauseConsequence('Anna', 2012, 2013)).toContain('In 2012/13 – 2013/14');
+    expect(toPauseConsequence('Anna', 2012, 2013)).toContain('in 2012/13 – 2013/14');
   });
 });
 
 describe('toFeeReductionConsequence', () => {
   it('names the German basis and the Session span', () => {
     expect(toFeeReductionConsequence('studies', 2024, 2026)).toContain(
-      'Studium steht für 2024/25 – 2026/27',
+      'Studium gilt für 2024/25 – 2026/27',
     );
   });
 
   it('collapses a one-Session span', () => {
-    expect(toFeeReductionConsequence('school', 2025, 2025)).toContain('Schule steht für 2025/26 ');
+    expect(toFeeReductionConsequence('school', 2025, 2025)).toContain('Schule gilt für 2025/26.');
   });
 });
 

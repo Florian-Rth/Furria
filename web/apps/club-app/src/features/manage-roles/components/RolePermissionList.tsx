@@ -8,10 +8,9 @@ import { PermissionHandoverDialog } from './PermissionHandoverDialog';
 import { RolePermissionRow } from './RolePermissionRow';
 import { SelfLockoutDialog } from './SelfLockoutDialog';
 
-const GUIDANCE =
-  'Jede Zeile ist eine Sache, die man tun darf. Umschalten wirkt sofort für alle Inhaber dieser Rolle.';
+const GUIDANCE = 'Änderungen gelten sofort für alle Inhaber dieser Rolle.';
 const ARCHIVED_GUIDANCE =
-  'Die Rechte einer archivierten Rolle greifen nicht und lassen sich nicht ändern.';
+  'Die Rechte einer archivierten Rolle gelten nicht und sind nicht änderbar.';
 
 interface RolePermissionListProps {
   permissions: RolePermissionsControl;

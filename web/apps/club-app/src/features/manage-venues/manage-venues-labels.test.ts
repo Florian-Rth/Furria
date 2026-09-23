@@ -3,7 +3,6 @@ import {
   findManagedVenue,
   partitionVenues,
   toArchiveConsequence,
-  toManagedVenuesIntro,
   toRestoreConsequence,
   toVenueAddressLine,
   toVenueFacts,
@@ -102,39 +101,9 @@ describe('findManagedVenue', () => {
   });
 });
 
-describe('toManagedVenuesIntro', () => {
-  it('has its own line for an empty register', () => {
-    expect(toManagedVenuesIntro([])).toBe('Noch steht kein Ort im Verzeichnis.');
-  });
-
-  it('uses the singular for a single running Ort', () => {
-    expect(toManagedVenuesIntro([HALLE])).toBe('Ein Ort steht im Verzeichnis.');
-  });
-
-  it('drops the archived sentence when there is none', () => {
-    expect(toManagedVenuesIntro([HALLE, RAUM])).toBe('2 Orte stehen im Verzeichnis.');
-  });
-
-  it('counts the running Orte and the archived ones separately', () => {
-    expect(toManagedVenuesIntro([HALLE, RAUM, LAGER])).toBe(
-      '2 Orte stehen im Verzeichnis. Einer ist archiviert.',
-    );
-  });
-
-  it('says that none is running rather than counting zero', () => {
-    expect(toManagedVenuesIntro([LAGER, MAGAZIN])).toBe(
-      'Kein Ort steht im Verzeichnis. 2 weitere sind archiviert.',
-    );
-  });
-});
-
 describe('toArchiveConsequence', () => {
   it('states the stamped day rather than offering one', () => {
     expect(toArchiveConsequence('Turnhalle', '12.09.2026')).toContain('Ab dem 12.09.2026');
-  });
-
-  it('promises that the Schlüssel and the Termine survive', () => {
-    expect(toArchiveConsequence('Turnhalle', '12.09.2026')).toContain('bleiben bestehen');
   });
 });
 

@@ -137,7 +137,7 @@ export const toContactPersonName = (segment: RecruitingContactPersonSegment): st
   `${segment.firstName} ${segment.lastName}`;
 
 const CONTACT_OPENING = 'Melde dich bei ';
-const NO_CONTACT_LINE = 'Diese Gruppe sucht noch eine Ansprechperson.';
+const NO_CONTACT_LINE = 'Diese Gruppe hat noch keine Ansprechperson.';
 
 export const toRecruitingContactSegments = (
   admins: readonly PersonRef[],
@@ -192,7 +192,7 @@ export const RECRUITING_FILTER_ID = 'recruiting';
 export const SETTLED_FILTER_ID = 'settled';
 
 const ALL_GROUPS_LABEL = 'Alle';
-const ALL_GROUPS_SUGGESTION = 'Wähle „Alle“, um wieder alle zu sehen.';
+const ALL_GROUPS_SUGGESTION = 'Wähle „Alle“, um alle anzuzeigen.';
 
 const isRecruiting = (group: GroupSummary): boolean => group.isRecruiting;
 
@@ -240,21 +240,21 @@ export const filterGroups = (
 };
 
 const NO_GROUP_MATCH_LINES: Record<string, string> = {
-  [RECRUITING_FILTER_ID]: 'Gerade sucht keine Gruppe Verstärkung.',
-  [SETTLED_FILTER_ID]: 'Gerade sucht jede Gruppe im Verzeichnis Verstärkung.',
+  [RECRUITING_FILTER_ID]: 'Keine Gruppe sucht Verstärkung.',
+  [SETTLED_FILTER_ID]: 'Alle Gruppen suchen Verstärkung.',
 };
 
 export const toNoGroupMatchLine = (query: string, status: string): string => {
   const needle = query.trim();
 
   if (needle !== '') {
-    return `Kein Gruppenname passt zu „${needle}“. Vielleicht anders geschrieben?`;
+    return `Keine Gruppe passt zu „${needle}“.`;
   }
 
   const statusLine = NO_GROUP_MATCH_LINES[status];
 
   if (statusLine === undefined) {
-    return 'Im Verzeichnis steht gerade keine Gruppe.';
+    return 'Es sind noch keine Gruppen angelegt.';
   }
 
   return `${statusLine} ${ALL_GROUPS_SUGGESTION}`;
@@ -267,14 +267,13 @@ export const toGroupsIntroSentence = (total: number, recruiting: number): string
     total === 1 ? 'Eine Gruppe trägt die Session.' : `${total} Gruppen tragen die Session.`;
 
   if (recruiting === 0) {
-    return `${groups} Gerade sucht keine davon Verstärkung.`;
+    return `${groups} Keine davon sucht Verstärkung.`;
   }
   if (recruiting === 1) {
-    return `${groups} Eine davon sucht gerade Verstärkung.`;
+    return `${groups} Eine davon sucht Verstärkung.`;
   }
 
-  return `${groups} ${recruiting} davon suchen gerade Verstärkung.`;
+  return `${groups} ${recruiting} davon suchen Verstärkung.`;
 };
 
-export const toGroupsLead = (groups: readonly GroupSummary[]): string =>
-  toGroupsIntroSentence(groups.length, groups.filter((group) => group.isRecruiting).length);
+export const GROUPS_LEAD = 'Alle Gruppen des Vereins und wer Verstärkung sucht.';

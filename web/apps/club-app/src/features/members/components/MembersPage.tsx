@@ -4,7 +4,7 @@ import type { FC } from 'react';
 import { CLUB_ORIGIN, useScreenSearch } from '@/features/session';
 import { useMembersQuery } from '../api';
 import { useMemberSearch } from '../hooks/use-member-search';
-import { LETTER_INDEX_LABEL, toConnectedSentence } from '../members-labels';
+import { LETTER_INDEX_LABEL, MEMBERS_LEAD } from '../members-labels';
 import type { MemberSummary } from '../schemas';
 import { MembersBody } from './MembersBody';
 import { MembersToolbar } from './MembersToolbar';
@@ -22,7 +22,6 @@ export const MembersPage: FC = () => {
   const members = useMembersQuery();
   const rows = members.data?.members ?? NO_MEMBERS;
   const search = useMemberSearch(rows);
-  const lead = members.data === undefined ? undefined : toConnectedSentence(rows.length);
 
   const index: KkScreenIndex | undefined =
     search.letters.length === 0
@@ -53,7 +52,7 @@ export const MembersPage: FC = () => {
       index={index}
       title={MEMBERS_TITLE}
       origin={CLUB_ORIGIN}
-      header={<KkTitleHeader title={MEMBERS_TITLE} lead={lead} />}
+      header={<KkTitleHeader title={MEMBERS_TITLE} lead={MEMBERS_LEAD} />}
     >
       <MembersBody search={search} />
     </KkScreen>

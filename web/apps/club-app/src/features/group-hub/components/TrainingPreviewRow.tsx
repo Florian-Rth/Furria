@@ -5,7 +5,7 @@ import type { TrainingPreviewEntry } from '../training-preview';
 import { toCollisionLine } from '../training-preview';
 
 const ALREADY_LINE = 'Steht schon im Kalender.';
-const ARCHIVED_VENUE_LINE = 'Der Ort ist archiviert — daraus entsteht kein Termin.';
+const ARCHIVED_VENUE_LINE = 'Der Ort ist archiviert. Es wird kein Termin angelegt.';
 const NO_VENUE_LINE = 'Ohne Ort';
 
 interface TrainingPreviewRowProps {

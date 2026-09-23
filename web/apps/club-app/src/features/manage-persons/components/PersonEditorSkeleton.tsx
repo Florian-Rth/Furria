@@ -5,10 +5,13 @@ import { PERSONS_ORIGIN } from '../manage-persons-labels';
 
 const LOADING_LABEL = 'Wird geladen';
 const SKELETON_LINES = 4;
-const FALLBACK_TITLE = 'Person';
 
-export const PersonEditorSkeleton: FC = () => (
-  <KkScreen kind="fullscreen" title={FALLBACK_TITLE} origin={PERSONS_ORIGIN}>
+interface PersonEditorSkeletonProps {
+  title: string;
+}
+
+export const PersonEditorSkeleton: FC<PersonEditorSkeletonProps> = ({ title }) => (
+  <KkScreen kind="fullscreen" title={title} origin={PERSONS_ORIGIN}>
     <AppSkeletonRegion label={LOADING_LABEL}>
       <KkPanelStack>
         <KkPanel variant="block">

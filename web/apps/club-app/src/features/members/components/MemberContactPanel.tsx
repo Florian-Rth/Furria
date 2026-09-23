@@ -6,7 +6,7 @@ import type { MemberContact } from '../schemas';
 import { MemberContactHidden } from './MemberContactHidden';
 import { MemberContactValue } from './MemberContactValue';
 
-const REVEALED_NOTE = 'Du siehst das über deine Rolle — für andere Mitglieder ist es verborgen.';
+const REVEALED_NOTE = 'Nur aufgrund deiner Rolle sichtbar.';
 
 interface MemberContactPanelProps {
   contact: MemberContact;

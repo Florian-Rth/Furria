@@ -9,22 +9,24 @@ import {
 } from '@/features/group-kinds';
 import { WriteScreen } from '@/features/write';
 import { toHubEditorOrigin } from '../group-hub-labels';
+import { toEditorChoicesErrorMessage } from '../group-hub-messages';
 import { useGroupInfoEditor } from '../hooks/use-group-info-editor';
 import { useTakenTones } from '../hooks/use-taken-tones';
 import type { GroupHub } from '../schemas';
 import { DESCRIPTION_MAX_LENGTH } from '../schemas';
+import { GroupEditorError } from './GroupEditorError';
+import { GroupEditorSkeleton } from './GroupEditorSkeleton';
 import { HubTonePicker } from './HubTonePicker';
 
 const TITLE = 'Angaben zur Gruppe bearbeiten';
 const SAVE_LABEL = 'Speichern';
 const DESCRIPTION_LABEL = 'Über die Gruppe';
-const DESCRIPTION_PLACEHOLDER = 'Was macht die Gruppe, wann trefft ihr euch?';
-const DESCRIPTION_HINT = 'Ein paar Sätze über die Gruppe. Der Text steht so im Verzeichnis.';
+const DESCRIPTION_PLACEHOLDER = 'Kurzbeschreibung der Gruppe';
+const DESCRIPTION_HINT = 'Erscheint so im Gruppenverzeichnis.';
 const DESCRIPTION_ROWS = 5;
 const FOUNDED_LABEL = 'Gründungsjahr';
-const FOUNDED_HINT =
-  'Nur das Jahr, zwischen 1800 und 2100. Alle fünf Jahre feiert die App das Jubiläum mit.';
-const NAME_NOTE = 'Den Namen der Gruppe ändert die Gruppenverwaltung.';
+const FOUNDED_HINT = 'Nur die Jahreszahl. Die App hebt Jubiläen hervor.';
+const NAME_NOTE = 'Der Name wird in der Gruppenverwaltung geändert.';
 
 const toCountLabel = (used: number, max: number): string => `${used} von ${max} Zeichen`;
 
@@ -37,11 +39,37 @@ export const GroupInfoEditor: FC<GroupInfoEditorProps> = ({ hub }) => {
   const kinds = useGroupKindsQuery();
   const takenTones = useTakenTones(hub.groupId, true);
   const heldKind = toHeldGroupKind(hub.groupKindId, hub.groupKindName);
-  const kindOptions = toGroupKindOptions(kinds.data?.kinds ?? [], heldKind);
+  const origin = toHubEditorOrigin(hub);
+
+  const reloadKinds = (): void => {
+    void kinds.refetch();
+  };
+
+  if (kinds.data === undefined) {
+    if (kinds.error === null) {
+      return <GroupEditorSkeleton />;
+    }
+
+    const kindsErrorMessage = toEditorChoicesErrorMessage(kinds.error);
+
+    return (
+      <GroupEditorError
+        title={TITLE}
+        origin={origin}
+        message={kindsErrorMessage}
+        onRetry={reloadKinds}
+      />
+    );
+  }
+  if (takenTones === null) {
+    return <GroupEditorSkeleton />;
+  }
+
+  const kindOptions = toGroupKindOptions(kinds.data.kinds, heldKind);
 
   return (
     <WriteScreen
-      origin={toHubEditorOrigin(hub)}
+      origin={origin}
       title={TITLE}
       rejection={control.rejection ?? undefined}
       isDirty={control.isDirty}

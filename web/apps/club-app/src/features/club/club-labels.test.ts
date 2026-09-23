@@ -17,8 +17,8 @@ describe('toCountdownLabel', () => {
 describe('toNumberLabel', () => {
   it.each([
     { sessionNumber: null, expected: null },
-    { sessionNumber: 56, expected: 'Nº 56' },
-    { sessionNumber: 1, expected: 'Nº 1' },
+    { sessionNumber: 56, expected: '56. Session' },
+    { sessionNumber: 1, expected: '1. Session' },
   ])('turns $sessionNumber into $expected', ({ sessionNumber, expected }) => {
     expect(toNumberLabel(sessionNumber)).toBe(expected);
   });

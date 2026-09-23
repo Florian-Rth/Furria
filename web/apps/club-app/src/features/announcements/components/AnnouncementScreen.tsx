@@ -1,9 +1,11 @@
 import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { toAnnouncementIdParam } from '../announcements-labels';
+import { toAnnouncementsErrorMessage } from '../announcements-messages';
 import { useAnnouncementsQuery } from '../api';
 import { AnnouncementDenied } from './AnnouncementDenied';
 import { AnnouncementEditor } from './AnnouncementEditor';
+import { AnnouncementEditorError } from './AnnouncementEditorError';
 import { AnnouncementEditorSkeleton } from './AnnouncementEditorSkeleton';
 import { AnnouncementNotFound } from './AnnouncementNotFound';
 
@@ -14,9 +16,18 @@ export const AnnouncementScreen: FC = () => {
   const { announcementId } = useParams({ from: ROUTE_ID });
   const id = toAnnouncementIdParam(announcementId);
   const announcements = useAnnouncementsQuery();
+  const errorMessage = toAnnouncementsErrorMessage(announcements.error);
+
+  const reload = (): void => {
+    void announcements.refetch();
+  };
 
   if (announcements.data === undefined) {
-    return announcements.isLoading ? <AnnouncementEditorSkeleton /> : <AnnouncementNotFound />;
+    if (errorMessage !== null) {
+      return <AnnouncementEditorError message={errorMessage} onRetry={reload} />;
+    }
+
+    return <AnnouncementEditorSkeleton title={TITLE} />;
   }
 
   const announcement =

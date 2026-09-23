@@ -1,4 +1,4 @@
-import { KkScreen } from '@furria/ui';
+import { KkScreen, KkScreenHeaderSkeleton } from '@furria/ui';
 import type { FC } from 'react';
 import { MORE_ORIGIN, useMeQuery } from '@/features/session';
 import { toProfileHeadline } from '../profile-labels';
@@ -9,13 +9,11 @@ export const ProfilePage: FC = () => {
   const me = useMeQuery();
   const headline = toProfileHeadline(me.data);
 
+  const pendingHeader = me.error === null ? <KkScreenHeaderSkeleton /> : null;
+  const header = me.data === undefined ? pendingHeader : <ProfileHeader me={me.data} />;
+
   return (
-    <KkScreen
-      kind="detail"
-      title={headline.title}
-      origin={MORE_ORIGIN}
-      header={<ProfileHeader me={me.data} />}
-    >
+    <KkScreen kind="detail" title={headline.title} origin={MORE_ORIGIN} header={header}>
       <ProfileBody />
     </KkScreen>
   );

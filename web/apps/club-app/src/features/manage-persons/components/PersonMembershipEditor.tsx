@@ -19,9 +19,9 @@ import { PersonPauseRow } from './PersonPauseRow';
 
 const START_LABEL = 'Mitglied ab';
 const START_HINT =
-  'Ein Wiedereintritt beginnt frühestens am Tag nach dem Ende der vorigen Mitgliedschaft.';
+  'Ein Wiedereintritt ist frühestens am Tag nach dem Ende der vorherigen Mitgliedschaft möglich.';
 const END_LABEL = 'Mitglied bis';
-const END_HINT = 'Leer lassen, solange die Mitgliedschaft läuft. Dieser Tag zählt noch dazu.';
+const END_HINT = 'Leer lassen, solange die Mitgliedschaft besteht. Der Tag zählt noch dazu.';
 const END_EMPTY_LABEL = 'Offen lassen';
 const ADD_PAUSE_LABEL = 'Ruhezeit';
 const PAUSE_NEW_ROUTE = '/manage/persons/$personId/pauses/new';

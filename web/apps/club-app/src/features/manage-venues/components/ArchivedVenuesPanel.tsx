@@ -6,7 +6,7 @@ import type { ManagedVenue } from '../schemas';
 import { ArchivedVenueCard } from './ArchivedVenueCard';
 
 const ARCHIVED_DESCRIPTION =
-  'Diese Orte stehen nicht mehr zur Auswahl. Ihre Termine und Schlüssel bleiben stehen.';
+  'Diese Orte stehen nicht mehr zur Auswahl. Termine und Schlüssel bleiben erhalten.';
 const LIST_GAP = 1.5;
 
 interface ArchivedVenuesPanelProps {

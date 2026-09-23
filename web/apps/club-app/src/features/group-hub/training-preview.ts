@@ -58,10 +58,10 @@ export const toPreviewSummary = (entries: readonly TrainingPreviewEntry[]): stri
   const ticked = toTickedCount(entries);
 
   if (entries.length === 0) {
-    return 'Es gibt nichts zu planen.';
+    return 'Im gewählten Zeitraum gibt es keine Termine.';
   }
   if (ticked === 0) {
-    return 'Nichts angehakt — es entsteht kein Termin.';
+    return 'Keine Termine ausgewählt.';
   }
   if (ticked === 1) {
     return '1 Training entsteht.';

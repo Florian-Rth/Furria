@@ -11,7 +11,6 @@ import {
   toGroupLeadLine,
   toGroupStandingChips,
   toGroupsIntroSentence,
-  toGroupsLead,
   toGroupsSections,
   toNoGroupMatchLine,
   toPersonUnitLabel,
@@ -55,7 +54,7 @@ describe('toPersonUnitLabel', () => {
 describe('toRecruitingContactSegments', () => {
   it('offers no person to click when the Gruppe has no admin', () => {
     expect(toRecruitingContactSegments([])).toEqual([
-      { kind: 'text', text: 'Diese Gruppe sucht noch eine Ansprechperson.' },
+      { kind: 'text', text: 'Diese Gruppe hat noch keine Ansprechperson.' },
     ]);
   });
 
@@ -92,7 +91,7 @@ describe('toRecruitingContactSegments', () => {
 
 describe('toRecruitingContactLine', () => {
   it('asks for an Ansprechperson when the Gruppe has no admin', () => {
-    expect(toRecruitingContactLine([])).toBe('Diese Gruppe sucht noch eine Ansprechperson.');
+    expect(toRecruitingContactLine([])).toBe('Diese Gruppe hat noch keine Ansprechperson.');
   });
 
   it('names the one admin in full — the club holds four Jörgs', () => {
@@ -169,13 +168,13 @@ describe('toNoGroupMatchLine', () => {
 
   it('explains the chip when only a chip narrows the list', () => {
     expect(toNoGroupMatchLine('', RECRUITING_FILTER_ID)).toBe(
-      'Gerade sucht keine Gruppe Verstärkung. Wähle „Alle“, um wieder alle zu sehen.',
+      'Keine Gruppe sucht Verstärkung. Wähle „Alle“, um alle anzuzeigen.',
     );
   });
 
   it('falls back to the cold case under Alle', () => {
     expect(toNoGroupMatchLine('', ALL_GROUPS_FILTER_ID)).toBe(
-      'Im Verzeichnis steht gerade keine Gruppe.',
+      'Es sind noch keine Gruppen angelegt.',
     );
   });
 });
@@ -193,32 +192,20 @@ describe('toGroupsIntroSentence', () => {
 
   it('counts the Gruppen and the openings', () => {
     expect(toGroupsIntroSentence(7, 3)).toBe(
-      '7 Gruppen tragen die Session. 3 davon suchen gerade Verstärkung.',
+      '7 Gruppen tragen die Session. 3 davon suchen Verstärkung.',
     );
   });
 
   it('spells the single Gruppe and the single opening as words', () => {
     expect(toGroupsIntroSentence(1, 1)).toBe(
-      'Eine Gruppe trägt die Session. Eine davon sucht gerade Verstärkung.',
+      'Eine Gruppe trägt die Session. Eine davon sucht Verstärkung.',
     );
   });
 
   it('says so when nobody is looking', () => {
     expect(toGroupsIntroSentence(7, 0)).toBe(
-      '7 Gruppen tragen die Session. Gerade sucht keine davon Verstärkung.',
+      '7 Gruppen tragen die Session. Keine davon sucht Verstärkung.',
     );
-  });
-});
-
-describe('toGroupsLead', () => {
-  it('counts the Gruppen that are looking for people', () => {
-    expect(
-      toGroupsLead([
-        summary({ groupId: 1, isRecruiting: true }),
-        summary({ groupId: 2, isRecruiting: false }),
-        summary({ groupId: 3, isRecruiting: true }),
-      ]),
-    ).toBe('3 Gruppen tragen die Session. 2 davon suchen gerade Verstärkung.');
   });
 });
 

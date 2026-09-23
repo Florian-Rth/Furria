@@ -299,6 +299,10 @@ describe('toHubOrigin', () => {
   it('sends a viewer without a Verbindung somewhere she may go', () => {
     expect(toHubOrigin(false).to).toBe('/profile');
   });
+
+  it('keeps the Gruppenverzeichnis while the Verbindung is still undecided', () => {
+    expect(toHubOrigin(null).to).toBe('/groups');
+  });
 });
 
 describe('toTakenTones', () => {
@@ -422,15 +426,15 @@ describe('toMembershipEndedMessage', () => {
 });
 
 describe('toJoinConsequence', () => {
-  it('warns that a future row stays out of the list until its day', () => {
-    expect(toJoinConsequence('Paula Brendel', '2026-09-01', '2026-03-01')).toContain(
-      'vorher nicht in der Liste',
+  it('dates a future row from its first day', () => {
+    expect(toJoinConsequence('Paula Brendel', '2026-09-01', '2026-03-01')).toBe(
+      'Paula Brendel gehört ab dem 01.09.2026 zur Gruppe.',
     );
   });
 
-  it('states the day a running row begins', () => {
+  it('dates a running row since its first day', () => {
     expect(toJoinConsequence('Paula Brendel', '2026-03-01', '2026-03-01')).toBe(
-      'Paula Brendel gehört ab dem 01.03.2026 zur Gruppe.',
+      'Paula Brendel gehört seit dem 01.03.2026 zur Gruppe.',
     );
   });
 });
@@ -438,13 +442,13 @@ describe('toJoinConsequence', () => {
 describe('toEndConsequence', () => {
   it('speaks of a future last day in the future tense', () => {
     expect(toEndConsequence('Paula Brendel', '2026-09-01', '2026-03-01')).toBe(
-      'Der 01.09.2026 wird der letzte Tag von Paula Brendel in der Gruppe. Die Zugehörigkeit bleibt in der Geschichte stehen.',
+      'Die Zugehörigkeit von Paula Brendel endet am 01.09.2026. Sie bleibt im Verlauf erhalten.',
     );
   });
 
   it('speaks of today as the last day in the present tense', () => {
     expect(toEndConsequence('Paula Brendel', '2026-03-01', '2026-03-01')).toBe(
-      'Der 01.03.2026 ist der letzte Tag von Paula Brendel in der Gruppe. Die Zugehörigkeit bleibt in der Geschichte stehen.',
+      'Die Zugehörigkeit von Paula Brendel ist zum 01.03.2026 beendet. Sie bleibt im Verlauf erhalten.',
     );
   });
 });
@@ -452,19 +456,19 @@ describe('toEndConsequence', () => {
 describe('toArchiveGroupConsequence', () => {
   it('says nobody is left when the Gruppe has no Zugehörigkeit', () => {
     expect(toArchiveGroupConsequence('Tanzgarde', 0, '22.09.2026')).toBe(
-      'Ab dem 22.09.2026 steht Tanzgarde nicht mehr im Verzeichnis. Es ist gerade niemand eingetragen.',
+      'Ab dem 22.09.2026 ist Tanzgarde archiviert. Es ist niemand eingetragen.',
     );
   });
 
   it('keeps a single Zugehörigkeit in the singular', () => {
     expect(toArchiveGroupConsequence('Tanzgarde', 1, '22.09.2026')).toContain(
-      'Die eine Zugehörigkeit bleibt bestehen.',
+      '1 Zugehörigkeit bleibt bestehen.',
     );
   });
 
   it('counts several Zugehörigkeiten in the plural', () => {
     expect(toArchiveGroupConsequence('Tanzgarde', 4, '22.09.2026')).toContain(
-      'Die 4 Zugehörigkeiten bleiben bestehen.',
+      '4 Zugehörigkeiten bleiben bestehen.',
     );
   });
 });
@@ -487,9 +491,7 @@ describe('toArchiveGroupFacts', () => {
 
 describe('toGroupArchivedFromHubMessage', () => {
   it('names the Gruppe that left the Verzeichnis', () => {
-    expect(toGroupArchivedFromHubMessage('Tanzgarde')).toBe(
-      'Tanzgarde steht nicht mehr im Verzeichnis.',
-    );
+    expect(toGroupArchivedFromHubMessage('Tanzgarde')).toBe('Tanzgarde ist archiviert.');
   });
 });
 
@@ -533,15 +535,15 @@ describe('toAdminEndedMessage', () => {
 });
 
 describe('toAppointConsequence', () => {
-  it('warns that a future appointment grants nothing yet', () => {
+  it('dates a future appointment from its first day', () => {
     expect(toAppointConsequence('Anna Kaiser', '2026-09-01', '2026-03-01')).toContain(
-      'vorher nicht',
+      'ab dem 01.09.2026',
     );
   });
 
-  it('spells out what a running Gruppen-Admin may do', () => {
+  it('dates a running appointment since its first day', () => {
     expect(toAppointConsequence('Anna Kaiser', '2026-03-01', '2026-03-01')).toContain(
-      'Leute aufnehmen und beenden',
+      'seit dem 01.03.2026',
     );
   });
 });
@@ -550,8 +552,8 @@ describe('toAdminEndConsequence', () => {
   it('dates a future end and keeps the Zugehörigkeit out of it', () => {
     const consequence = toAdminEndConsequence('Anna Kaiser', '2026-09-01', '2026-03-01');
 
-    expect(consequence).toContain('Ab dem 01.09.2026');
-    expect(consequence).toContain('Zugehörigkeit zur Gruppe bleibt davon unberührt');
+    expect(consequence).toContain('ab dem 01.09.2026');
+    expect(consequence).toContain('Zugehörigkeit zur Gruppe bleibt bestehen');
   });
 
   it('speaks of an end today in the present tense', () => {
@@ -584,29 +586,29 @@ describe('toAdminEndParagraph', () => {
     const paragraph = toAdminEndParagraph('Anna kann ab sofort nicht mehr pflegen.', true, 3);
 
     expect(paragraph).toBe(
-      'Das bist du. Danach kannst du die Gruppe nur noch lesen — neu ernennen kann dich die Gruppenverwaltung. Anna kann ab sofort nicht mehr pflegen.',
+      'Du beendest deine eigene Ernennung und kannst die Gruppe danach nicht mehr bearbeiten. Anna kann ab sofort nicht mehr pflegen.',
     );
   });
 
   it('keeps both warnings in one paragraph when she is also the last admin', () => {
     const paragraph = toAdminEndParagraph('Anna kann ab sofort nicht mehr pflegen.', true, 1);
 
-    expect(paragraph).toContain('Das bist du.');
+    expect(paragraph).toContain('Du beendest deine eigene Ernennung');
     expect(paragraph).toContain('Anna kann ab sofort nicht mehr pflegen.');
-    expect(paragraph).toContain('hat diese Gruppe keinen Gruppen-Admin mehr');
+    expect(paragraph).toContain('keinen Gruppen-Admin mehr');
   });
 });
 
 describe('toSelfAdminEndedMessage', () => {
   it('dates a removal that has not happened yet', () => {
     expect(toSelfAdminEndedMessage('Tanzgarde', '2026-09-01', '2026-03-01')).toBe(
-      'Ab dem 01.09.2026 bist du nicht mehr Gruppen-Admin von Tanzgarde. Lesen kannst du sie weiter — neu ernennen kann dich die Gruppenverwaltung.',
+      'Ab dem 01.09.2026 bist du nicht mehr Gruppen-Admin von Tanzgarde.',
     );
   });
 
   it('reports a removal that takes effect today in the present tense', () => {
     expect(toSelfAdminEndedMessage('Tanzgarde', '2026-03-01', '2026-03-01')).toBe(
-      'Du bist nicht mehr Gruppen-Admin von Tanzgarde. Lesen kannst du sie weiter — neu ernennen kann dich die Gruppenverwaltung.',
+      'Du bist nicht mehr Gruppen-Admin von Tanzgarde.',
     );
   });
 });
@@ -698,21 +700,21 @@ describe('toMemberAddedAsAdminMessage', () => {
 
   it('dates both standings while the day is still ahead', () => {
     expect(toMemberAddedAsAdminMessage('Mara Lenz', '2026-10-01', '2026-09-22')).toBe(
-      'Mara Lenz ist ab dem 01.10.2026 dabei — und Gruppen-Admin.',
+      'Mara Lenz ist ab dem 01.10.2026 dabei und Gruppen-Admin.',
     );
   });
 });
 
 describe('toJoinAsAdminConsequence', () => {
-  it('spells out the care duties for a day that has come', () => {
+  it('dates both standings since a day that has come', () => {
     expect(toJoinAsAdminConsequence('Mara', '2026-09-22', '2026-09-22')).toBe(
-      'Mara gehört ab dem 22.09.2026 zur Gruppe und darf sie pflegen: Beschreibung ändern, Leute aufnehmen und beenden.',
+      'Mara gehört seit dem 22.09.2026 zur Gruppe und ist Gruppen-Admin.',
     );
   });
 
-  it('holds the care duties back until the day comes', () => {
+  it('dates both standings from a day still ahead', () => {
     expect(toJoinAsAdminConsequence('Mara', '2026-10-01', '2026-09-22')).toBe(
-      'Ab dem 01.10.2026 steht Mara in der Gruppe und darf sie pflegen — vorher nicht.',
+      'Mara gehört ab dem 01.10.2026 zur Gruppe und ist Gruppen-Admin.',
     );
   });
 });

@@ -12,7 +12,6 @@ import {
   toGroupWorkFacets,
   toGroupWorkFilterId,
   toGroupWorkFilterOptions,
-  toManagedGroupsLead,
   toRegisterMeta,
 } from './manage-groups-work';
 import type { ManagedGroupSummary } from './schemas';
@@ -91,20 +90,18 @@ describe('toGroupWorkFacets', () => {
 });
 
 describe('toGroupWorkFilterOptions', () => {
-  it('leads with the work and leaves the whole register last, each facet with its own tone', () => {
+  it('leads with the whole register, then the work', () => {
     expect(
       toGroupWorkFilterOptions(toGroupWorkFacets(ALL)).map((option) => ({
         id: option.id,
         count: option.count,
-        tone: option.tone,
-        countFirst: option.countFirst,
       })),
     ).toEqual([
-      { id: NO_ADMIN_GROUPS_FILTER_ID, count: 1, tone: 'accent', countFirst: true },
-      { id: NO_KIND_GROUPS_FILTER_ID, count: 2, tone: 'gold', countFirst: true },
-      { id: NO_PEOPLE_GROUPS_FILTER_ID, count: 1, tone: 'gold', countFirst: true },
-      { id: ARCHIVED_GROUPS_FILTER_ID, count: 1, tone: 'neutral', countFirst: true },
-      { id: ALL_GROUPS_FILTER_ID, count: 4, tone: undefined, countFirst: undefined },
+      { id: ALL_GROUPS_FILTER_ID, count: 4 },
+      { id: NO_ADMIN_GROUPS_FILTER_ID, count: 1 },
+      { id: NO_KIND_GROUPS_FILTER_ID, count: 2 },
+      { id: NO_PEOPLE_GROUPS_FILTER_ID, count: 1 },
+      { id: ARCHIVED_GROUPS_FILTER_ID, count: 1 },
     ]);
   });
 
@@ -181,38 +178,6 @@ describe('toGroupRegisterBands', () => {
   it('combines the query with the facet', () => {
     expect(countBandedGroups(toGroupRegisterBands(ALL, 'musik', NO_ADMIN_GROUPS_FILTER_ID))).toBe(
       0,
-    );
-  });
-});
-
-describe('toManagedGroupsLead', () => {
-  it('names the archived ones apart so the whole-register count reconciles', () => {
-    expect(toManagedGroupsLead(toGroupWorkFacets(ALL))).toBe(
-      '3 Gruppen stehen im Verzeichnis. Eine weitere ist archiviert.',
-    );
-  });
-
-  it('says only what the register holds when nothing is archived', () => {
-    expect(toManagedGroupsLead(toGroupWorkFacets([GARDE]))).toBe(
-      'Eine Gruppe steht im Verzeichnis.',
-    );
-  });
-
-  it('counts the listed groups in the plural', () => {
-    expect(
-      toManagedGroupsLead(toGroupWorkFacets([GARDE, group({ groupId: 2, name: 'Elferrat' })])),
-    ).toBe('2 Gruppen stehen im Verzeichnis.');
-  });
-
-  it('has its own line for an empty register', () => {
-    expect(toManagedGroupsLead(toGroupWorkFacets([]))).toBe(
-      'Noch steht keine Gruppe im Verzeichnis.',
-    );
-  });
-
-  it('never claims everything is tended', () => {
-    expect(toManagedGroupsLead(toGroupWorkFacets([GARDE, group({ groupId: 3, admins: [] })]))).toBe(
-      '2 Gruppen stehen im Verzeichnis.',
     );
   });
 });

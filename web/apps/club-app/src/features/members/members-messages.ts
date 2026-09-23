@@ -2,17 +2,15 @@ import type { QueryErrorKind } from '@/lib/query-error';
 import { isNotFoundError, toQueryErrorMessage } from '@/lib/query-error';
 
 const MEMBERS_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
-  unreachable:
-    'Die Mitgliederliste hat den Server nicht erreicht. Prüfe deine Verbindung und versuch es noch einmal.',
+  unreachable: 'Keine Verbindung zum Server. Prüfe deine Internetverbindung.',
   unexpected: 'Die Mitgliederliste konnte nicht geladen werden.',
-  rejected: 'Der Server hat diese Anfrage nicht angenommen.',
+  rejected: 'Der Server hat die Anfrage abgelehnt.',
 };
 
 const MEMBER_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
-  unreachable:
-    'Diese Person hat den Server nicht erreicht. Prüfe deine Verbindung und versuch es noch einmal.',
+  unreachable: 'Keine Verbindung zum Server. Prüfe deine Internetverbindung.',
   unexpected: 'Diese Person konnte nicht geladen werden.',
-  rejected: 'Der Server hat diese Anfrage nicht angenommen.',
+  rejected: 'Der Server hat die Anfrage abgelehnt.',
 };
 
 export const toMembersErrorMessage = (error: Error | null): string | null =>

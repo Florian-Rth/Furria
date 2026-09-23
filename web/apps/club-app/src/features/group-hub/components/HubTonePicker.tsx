@@ -5,8 +5,7 @@ import type { GroupTone } from '@/features/groups';
 import { toToneLabel, toToneWarning } from '../group-hub-labels';
 
 const PICKER_LABEL = 'Gruppenfarbe';
-const PICKER_HINT =
-  'Die Farbe trägt die Gruppe durch App und Kalender. Sie sagt nichts über einen Zustand aus.';
+const PICKER_HINT = 'Kennzeichnet die Gruppe in App und Kalender.';
 const TAKEN_SUFFIX = ' — schon vergeben';
 
 interface HubTonePickerProps {

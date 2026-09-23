@@ -4,7 +4,7 @@ import { requiredDay, requiredPerson } from '@/lib/required-fields';
 
 const NAME_REQUIRED_MESSAGE = 'Gib der Vorstandsfunktion einen Namen.';
 const NAME_TOO_LONG_MESSAGE = 'Der Name darf höchstens 80 Zeichen haben.';
-const SORT_ORDER_MESSAGE = 'Der Platz im Vorstand ist eine Zahl zwischen 1 und 999.';
+const SORT_ORDER_MESSAGE = 'Gib eine Zahl zwischen 1 und 999 ein.';
 const SORT_ORDER_PATTERN = /^(?:[1-9]|[1-9]\d|[1-9]\d\d)$/;
 
 export const BoardSeatSchema = PersonRefSchema.extend({

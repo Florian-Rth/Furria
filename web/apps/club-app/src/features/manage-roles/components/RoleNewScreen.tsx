@@ -7,9 +7,9 @@ import { RoleEditorDenied } from './RoleEditorDenied';
 const TITLE = 'Rolle hinzufügen';
 
 export const RoleNewScreen: FC = () => {
-  const { has } = usePermissions();
+  const { has, isUndecided } = usePermissions();
 
-  if (!has(PERMISSION_KEYS.rolesManage)) {
+  if (!isUndecided && !has(PERMISSION_KEYS.rolesManage)) {
     return <RoleEditorDenied title={TITLE} />;
   }
 

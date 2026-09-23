@@ -102,8 +102,8 @@ const STATE_FILTER_ORDER: readonly MembershipState[] = ['active', 'paused', 'end
 const NO_STATE_MATCH_LINES: Record<MembershipState, string> = {
   active: 'Gerade ist niemand aktives Mitglied.',
   paused: 'Gerade ruht keine Mitgliedschaft.',
-  ended: 'Gerade hat niemand eine beendete Mitgliedschaft.',
-  none: 'Gerade steht niemand ohne Mitgliedschaft in der Liste.',
+  ended: 'Niemand hat eine beendete Mitgliedschaft.',
+  none: 'Es gibt keine Personen ohne Mitgliedschaft.',
 };
 
 export const toNoStateMatchLine = (state: string): string | null => {

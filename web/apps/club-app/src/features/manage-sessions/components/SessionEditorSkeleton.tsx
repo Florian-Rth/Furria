@@ -6,8 +6,12 @@ import { SESSIONS_ORIGIN } from '../manage-sessions-labels';
 const LOADING_LABEL = 'Wird geladen';
 const SKELETON_LINES = 4;
 
-export const SessionEditorSkeleton: FC = () => (
-  <KkScreen kind="fullscreen" title={SESSIONS_ORIGIN.label} origin={SESSIONS_ORIGIN}>
+interface SessionEditorSkeletonProps {
+  title: string;
+}
+
+export const SessionEditorSkeleton: FC<SessionEditorSkeletonProps> = ({ title }) => (
+  <KkScreen kind="fullscreen" title={title} origin={SESSIONS_ORIGIN}>
     <AppSkeletonRegion label={LOADING_LABEL}>
       <KkPanelStack>
         <KkPanel variant="block">

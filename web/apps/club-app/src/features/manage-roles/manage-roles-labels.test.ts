@@ -28,7 +28,6 @@ import {
   toRoleSearchTerm,
   toRoleSeed,
   toRoleStatusFilterOptions,
-  toRolesLead,
   toStartQuickChoices,
 } from './manage-roles-labels';
 import type { RoleDetails, RoleHolder, RoleSummary } from './schemas';
@@ -77,29 +76,6 @@ describe('toHoldersMeta', () => {
         { firstName: 'Lukas', lastName: 'Schmitt' },
       ]),
     ).toBe('Heike Krämer und 2 weitere Personen');
-  });
-});
-
-describe('toRolesLead', () => {
-  it('counts the live Rollen', () => {
-    expect(
-      toRolesLead([role({ roleId: 1, name: 'Admin' }), role({ roleId: 2, name: 'Kasse' })]),
-    ).toBe('2 Rollen sagen, wer im Verein was darf.');
-  });
-
-  it('reads a single Rolle in the singular', () => {
-    expect(toRolesLead([role({ roleId: 1, name: 'Admin' })])).toBe(
-      'Eine Rolle sagt, wer im Verein was darf.',
-    );
-  });
-
-  it('counts the archived Rollen separately', () => {
-    expect(
-      toRolesLead([
-        role({ roleId: 1, name: 'Admin' }),
-        role({ roleId: 9, name: 'Chronistin', archivedOn: '2026-09-12' }),
-      ]),
-    ).toBe('Eine Rolle sagt, wer im Verein was darf. Eine weitere ist archiviert.');
   });
 });
 
@@ -207,7 +183,7 @@ describe('toNoRoleMatchLine', () => {
 
   it('explains the status when only a chip narrows the list', () => {
     expect(toNoRoleMatchLine('', ARCHIVED_ROLES_FILTER_ID)).toBe(
-      'Gerade ist keine Rolle archiviert. Wähle „Alle“, um wieder alle zu sehen.',
+      'Gerade ist keine Rolle archiviert. Wähle „Alle“, um alle anzuzeigen.',
     );
   });
 
@@ -485,15 +461,15 @@ describe('dated write messages', () => {
     );
   });
 
-  it('states the last day in the future tense when the end is scheduled', () => {
+  it('keeps the Rolle until a scheduled last day', () => {
     expect(toEndHoldingConsequence('Heike', 'Präsidentin', '2026-11-10', '2026-09-12')).toContain(
-      'wird der letzte Tag',
+      'bis einschließlich 10.11.2026',
     );
   });
 
-  it('states the last day in the present tense when the end is today', () => {
+  it('reports the Inhaberschaft as ended when the last day is today', () => {
     expect(toEndHoldingConsequence('Heike', 'Präsidentin', '2026-09-12', '2026-09-12')).toContain(
-      'ist der letzte Tag',
+      'ist zum 12.09.2026 beendet',
     );
   });
 });

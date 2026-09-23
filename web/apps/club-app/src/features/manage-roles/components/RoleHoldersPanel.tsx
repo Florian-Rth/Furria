@@ -12,7 +12,7 @@ const HOLDINGS_NEW_ROUTE = '/manage/roles/$roleId/holdings/new';
 const SKELETON_ROWS = 2;
 const EMPTY_TITLE = 'NIEMAND EINGETRAGEN';
 const EMPTY_DESCRIPTION =
-  'Die Rolle ist unbesetzt. Die Rechte sind gesetzt und greifen, sobald jemand eingetragen wird.';
+  'Die Rolle ist unbesetzt. Ihre Rechte gelten, sobald jemand eingetragen ist.';
 
 interface RoleHoldersPanelProps {
   roleId: number;

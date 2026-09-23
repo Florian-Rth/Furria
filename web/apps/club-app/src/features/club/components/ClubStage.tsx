@@ -1,4 +1,4 @@
-import { KkMottoStage } from '@furria/ui';
+import { KkMottoStage, KkMottoStageSkeleton } from '@furria/ui';
 import type { FC } from 'react';
 import {
   daysUntilOpening,
@@ -13,19 +13,24 @@ import { sceneForSession } from '../stages/stage-registry';
 
 export const ClubStage: FC = () => {
   const clubHub = useClubHubQuery();
+
+  if (clubHub.data === undefined) {
+    return <KkMottoStageSkeleton />;
+  }
+
   const now = new Date();
   const relevantStartYear = relevantSessionYear(now);
-  const session = clubHub.data?.session;
-  const motto = session?.motto ?? null;
+  const session = clubHub.data.session;
+  const motto = session.motto;
   const state = mottoStageStateAt(now, relevantStartYear, motto !== null);
   const isRunning = state === 'running';
   const sessionLabel = formatSessionLabel(relevantStartYear);
-  const numberLabel = toNumberLabel(session?.number ?? null);
+  const numberLabel = toNumberLabel(session.number);
   const countdownLabel = isRunning
     ? null
     : toCountdownLabel(daysUntilOpening(now, relevantStartYear));
   const progress = isRunning ? sessionProgressAt(now) : null;
-  const logo = session?.logoSvg ?? null;
+  const logo = session.logoSvg;
   const Scene = sceneForSession(relevantStartYear);
 
   const scene =

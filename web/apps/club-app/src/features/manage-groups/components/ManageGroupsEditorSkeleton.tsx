@@ -5,10 +5,13 @@ import { MANAGE_GROUPS_ORIGIN } from '../manage-groups-labels';
 
 const LOADING_LABEL = 'Wird geladen';
 const SKELETON_LINES = 4;
-const TITLE_FALLBACK = 'Gruppenart';
 
-export const ManageGroupsEditorSkeleton: FC = () => (
-  <KkScreen kind="fullscreen" title={TITLE_FALLBACK} origin={MANAGE_GROUPS_ORIGIN}>
+interface ManageGroupsEditorSkeletonProps {
+  title: string;
+}
+
+export const ManageGroupsEditorSkeleton: FC<ManageGroupsEditorSkeletonProps> = ({ title }) => (
+  <KkScreen kind="fullscreen" title={title} origin={MANAGE_GROUPS_ORIGIN}>
     <AppSkeletonRegion label={LOADING_LABEL}>
       <KkPanelStack>
         <KkPanel variant="block">

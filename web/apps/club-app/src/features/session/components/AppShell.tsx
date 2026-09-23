@@ -11,6 +11,7 @@ import {
   NOTICE_DISMISS_LABEL,
   NOTICE_EXPAND_LABEL,
 } from '../session-messages';
+import { RequireMe } from './RequireMe';
 
 const NOTICE_LABELS: KkNoticeLabels = {
   dismiss: NOTICE_DISMISS_LABEL,
@@ -36,7 +37,7 @@ export const AppShell: FC<PropsWithChildren> = ({ children }) => {
           path={journey.path}
           move={journey.move}
         >
-          {children}
+          <RequireMe>{children}</RequireMe>
         </KkShell>
       </KkSheetProvider>
     </KkNoticeProvider>

@@ -38,8 +38,19 @@ export const useOverflowEdges = (): OverflowEdgesState => {
 
   useLayoutEffect(() => {
     measure();
-    window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
+  });
+
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (el === null || typeof ResizeObserver === 'undefined') {
+      return;
+    }
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    for (const child of el.children) {
+      observer.observe(child);
+    }
+    return () => observer.disconnect();
   }, [measure]);
 
   return { ref, edges, onScroll: measure };

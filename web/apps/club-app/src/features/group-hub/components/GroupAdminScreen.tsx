@@ -1,10 +1,12 @@
 import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { useMeQuery } from '@/features/session';
 import { useGroupHubQuery } from '../api';
 import { EDITOR_DENIED_MESSAGE, toEntryId, toHubId } from '../group-hub-labels';
 import { GroupAdminEditor } from './GroupAdminEditor';
 import { GroupEditorNotFound } from './GroupEditorNotFound';
 import { GroupEditorSkeleton } from './GroupEditorSkeleton';
+import { GroupEditorUnloaded } from './GroupEditorUnloaded';
 import { HubEditorDenied } from './HubEditorDenied';
 
 const ROUTE_ID = '/_app/groups_/$groupId_/admins/$adminId';
@@ -15,9 +17,10 @@ export const GroupAdminScreen: FC = () => {
   const id = toHubId(groupId);
   const entryId = toEntryId(adminId);
   const hub = useGroupHubQuery(id);
+  const me = useMeQuery();
 
   if (hub.data === undefined) {
-    return hub.isLoading ? <GroupEditorSkeleton /> : <GroupEditorNotFound />;
+    return <GroupEditorUnloaded groupId={id} />;
   }
   if (!hub.data.viewerMayManage) {
     return <HubEditorDenied hub={hub.data} title={TITLE} message={EDITOR_DENIED_MESSAGE} />;
@@ -30,6 +33,9 @@ export const GroupAdminScreen: FC = () => {
 
   if (admin === null) {
     return <GroupEditorNotFound />;
+  }
+  if (me.data === undefined) {
+    return <GroupEditorSkeleton />;
   }
 
   return <GroupAdminEditor hub={hub.data} admin={admin} prefillPersonId={null} />;

@@ -63,14 +63,14 @@ export const CLUB_SECTIONS: AppSection[] = [
     label: 'Mitglieder',
     icon: 'members',
     to: MEMBERS_PATH,
-    meta: 'Wer mit dem FCC verbunden ist',
+    meta: 'Alle Personen im Verein',
   },
   {
     id: 'groups',
     label: 'Gruppen',
     icon: 'group',
     to: GROUPS_PATH,
-    meta: 'Garden, Elferrat und alle anderen',
+    meta: 'Alle Gruppen des Vereins',
   },
   {
     id: 'calendar',
@@ -84,7 +84,7 @@ export const CLUB_SECTIONS: AppSection[] = [
     label: 'Aushänge',
     icon: 'info',
     to: ANNOUNCEMENTS_PATH,
-    meta: 'Was der Verein alle wissen lässt',
+    meta: 'Mitteilungen des Vereins',
   },
 ];
 
@@ -104,7 +104,7 @@ export const MANAGE_SECTIONS: AppSection[] = [
     label: 'Verein verwalten',
     icon: 'manage',
     to: MANAGE_PATH,
-    meta: 'Der Bestand des Vereins',
+    meta: 'Daten des Vereins pflegen',
     permissionKeys: MANAGE_KEYS,
   },
 ];

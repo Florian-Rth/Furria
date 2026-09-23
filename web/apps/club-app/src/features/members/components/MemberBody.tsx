@@ -22,7 +22,7 @@ export const MemberBody: FC<MemberBodyProps> = ({ personId }) => {
     void member.refetch();
   };
 
-  if (member.data !== undefined) {
+  if (member.data !== undefined && isSelf !== undefined) {
     return <MemberView member={member.data} isSelf={isSelf} />;
   }
   if (missing) {

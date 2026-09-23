@@ -114,7 +114,7 @@ export const PersonFormSchema = z.object({
     .string()
     .trim()
     .max(EMAIL_MAX)
-    .refine(isEmailOrEmpty, { message: 'Das sieht nicht nach einer E-Mail-Adresse aus.' }),
+    .refine(isEmailOrEmpty, { message: 'Bitte gib eine gültige E-Mail-Adresse ein.' }),
   phone: z.string().trim().max(PHONE_MAX),
   street: z.string().trim().max(STREET_MAX),
   zip: z.string().trim().max(ZIP_MAX),

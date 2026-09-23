@@ -17,7 +17,7 @@ const NO_FOUNDED_YEAR = 'noch offen';
 const NO_TONE_LABEL = 'noch keine';
 const TONE_FIELD_LABEL = 'Gruppenfarbe';
 const OPENNESS_LABEL = 'Sucht Verstärkung';
-const OPENNESS_DESCRIPTION = 'Zeigt im Verzeichnis, dass ihr gerade Leute aufnehmt.';
+const OPENNESS_DESCRIPTION = 'Zeigt im Verzeichnis an, dass die Gruppe Verstärkung sucht.';
 const EDIT_ROUTE = '/groups/$groupId/edit';
 
 interface HubCarePanelProps {

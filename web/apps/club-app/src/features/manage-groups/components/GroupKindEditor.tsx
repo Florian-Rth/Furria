@@ -10,10 +10,8 @@ const EDIT_TITLE = 'Gruppenart bearbeiten';
 const ADD_LABEL = 'Hinzufügen';
 const SAVE_LABEL = 'Speichern';
 const NAME_LABEL = 'Name';
-const CREATE_EXPLANATION =
-  'Eine Gruppenart ordnet Gruppen ein — Garde, Elferrat, Spielmannszug. Welche Gruppe welche Art trägt, legst du danach an der Gruppe fest.';
-const EDIT_EXPLANATION =
-  'Der Name steht so im Verzeichnis. Die Gruppen, die diese Art tragen, behalten sie — auch nach einer Umbenennung.';
+const CREATE_EXPLANATION = 'Die Zuordnung erfolgt an der jeweiligen Gruppe.';
+const EDIT_EXPLANATION = 'Eine Umbenennung ändert nichts an der Zuordnung der Gruppen.';
 
 interface GroupKindEditorProps {
   entry: GroupKindEntry | null;

@@ -5,7 +5,7 @@ export const ANNOUNCEMENT_BODY_MAX_LENGTH = 4_000;
 
 const TITLE_REQUIRED_MESSAGE = 'Gib dem Aushang eine Überschrift.';
 const TITLE_TOO_LONG_MESSAGE = 'Die Überschrift darf höchstens 120 Zeichen haben.';
-const BODY_REQUIRED_MESSAGE = 'Schreib, was am Brett stehen soll.';
+const BODY_REQUIRED_MESSAGE = 'Der Text fehlt.';
 const BODY_TOO_LONG_MESSAGE = 'Der Text darf höchstens 4000 Zeichen haben.';
 
 export const AnnouncementAuthorSchema = z.object({

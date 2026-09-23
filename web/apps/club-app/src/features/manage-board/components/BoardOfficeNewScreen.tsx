@@ -7,9 +7,9 @@ import { BoardOfficeEditor } from './BoardOfficeEditor';
 const TITLE = 'Vorstandsfunktion hinzufügen';
 
 export const BoardOfficeNewScreen: FC = () => {
-  const { has } = usePermissions();
+  const { has, isUndecided } = usePermissions();
 
-  if (!has(PERMISSION_KEYS.boardManage)) {
+  if (!isUndecided && !has(PERMISSION_KEYS.boardManage)) {
     return <BoardEditorDenied title={TITLE} />;
   }
 

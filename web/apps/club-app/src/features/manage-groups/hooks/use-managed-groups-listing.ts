@@ -26,18 +26,21 @@ export interface ManagedGroupsListing {
   isFiltered: boolean;
 }
 
+const NO_GROUPS: readonly ManagedGroupSummary[] = [];
+
 const toSearchValue = (filter: GroupWorkFilterId): string | undefined =>
   filter === ALL_GROUPS_FILTER_ID ? undefined : filter;
 
 export const useManagedGroupsListing = (
-  groups: readonly ManagedGroupSummary[],
+  loadedGroups: readonly ManagedGroupSummary[] | undefined,
 ): ManagedGroupsListing => {
   const query = useSearchQuery();
   const search = useSearch({ from: MANAGE_GROUPS_ROUTE_ID });
   const navigate = useNavigate();
   const requested = toGroupWorkFilterId(search.work ?? ALL_GROUPS_FILTER_ID);
+  const groups = loadedGroups ?? NO_GROUPS;
   const facets = toGroupWorkFacets(groups);
-  const filter = resolveGroupWorkFilter(requested, facets);
+  const filter = loadedGroups === undefined ? requested : resolveGroupWorkFilter(requested, facets);
 
   const go = (next: GroupWorkFilterId, replace: boolean): void => {
     void navigate({

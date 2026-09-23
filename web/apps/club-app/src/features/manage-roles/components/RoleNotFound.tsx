@@ -2,7 +2,7 @@ import { KkEmptyState, KkPanel } from '@furria/ui';
 import type { FC } from 'react';
 
 const TITLE = 'DIESE ROLLE GIBT ES NICHT';
-const DESCRIPTION = 'Vielleicht wurde sie umbenannt. Wähl eine andere aus der Liste.';
+const DESCRIPTION = 'Sie wurde gelöscht oder der Link ist veraltet.';
 
 export const RoleNotFound: FC = () => (
   <KkPanel variant="block">

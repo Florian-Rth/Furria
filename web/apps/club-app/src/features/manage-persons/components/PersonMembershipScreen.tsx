@@ -1,17 +1,9 @@
 import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { usePermissions } from '@/features/session';
-import { PERMISSION_KEYS } from '@/lib/api/schemas';
-import { usePersonQuery } from '../api';
-import {
-  EDITOR_DENIED_MESSAGE,
-  toEntryId,
-  toPersonId,
-  toPersonOrigin,
-} from '../manage-persons-labels';
-import { PersonEditorDenied } from './PersonEditorDenied';
+import { usePersonEditorGate } from '../hooks/use-person-editor-gate';
+import { toEntryId, toPersonId } from '../manage-persons-labels';
+import { PersonEditorFallback } from './PersonEditorFallback';
 import { PersonEditorNotFound } from './PersonEditorNotFound';
-import { PersonEditorSkeleton } from './PersonEditorSkeleton';
 import { PersonMembershipEditor } from './PersonMembershipEditor';
 
 const ROUTE_ID = '/_app/manage/persons_/$personId_/memberships/$membershipId';
@@ -19,33 +11,21 @@ const TITLE = 'Zeitraum ändern';
 
 export const PersonMembershipScreen: FC = () => {
   const { personId, membershipId } = useParams({ from: ROUTE_ID });
-  const id = toPersonId(personId);
   const entryId = toEntryId(membershipId);
-  const person = usePersonQuery(id);
-  const { has, isUndecided } = usePermissions();
-  const mayManage = isUndecided || has(PERMISSION_KEYS.personsManage);
+  const { gate, retry } = usePersonEditorGate(toPersonId(personId));
 
-  if (person.data === undefined) {
-    return person.isLoading ? <PersonEditorSkeleton /> : <PersonEditorNotFound />;
+  if (gate.kind !== 'ready') {
+    return <PersonEditorFallback hold={gate} title={TITLE} onRetry={retry} />;
   }
 
   const membership =
     entryId === null
       ? null
-      : (person.data.memberships.find((candidate) => candidate.membershipId === entryId) ?? null);
+      : (gate.person.memberships.find((candidate) => candidate.membershipId === entryId) ?? null);
 
   if (membership === null) {
     return <PersonEditorNotFound />;
   }
-  if (!mayManage) {
-    return (
-      <PersonEditorDenied
-        title={TITLE}
-        origin={toPersonOrigin(person.data)}
-        message={EDITOR_DENIED_MESSAGE}
-      />
-    );
-  }
 
-  return <PersonMembershipEditor person={person.data} membership={membership} />;
+  return <PersonMembershipEditor person={gate.person} membership={membership} />;
 };

@@ -35,7 +35,7 @@ export const toEntryId = (raw: string): number | null =>
 export const PERSONS_TITLE = 'Personenverwaltung';
 
 export const PERSONS_STATS_NOTE =
-  'Gezählt wird jede Person — auch ohne Mitgliedschaft und ohne Gruppe.';
+  'Gezählt werden alle Personen, auch ohne Mitgliedschaft oder Gruppe.';
 
 export const PERSON_DIRECTORY_TITLE = 'Register';
 export const ADD_PERSON_LABEL = 'Person';
@@ -50,19 +50,18 @@ export const PERSON_SECTION_TITLES = {
 } as const;
 
 export const GROUPS_POINTER =
-  'Gruppen pflegen die Gruppen-Admins. Überschreiben geht in der Gruppenverwaltung.';
+  'Gruppen werden von den Gruppen-Admins oder der Gruppenverwaltung gepflegt.';
 export const ROLES_POINTER = 'Rollen werden unter „Rollen & Rechte“ vergeben.';
 
 export const VISIBILITY_DESCRIPTION =
-  'Wird auf ihr Wort hin gesetzt, wenn die Person kein eigenes Konto hat. Mit Konto entscheidet sie selbst in „Mein Profil“.';
+  'Nur auf Wunsch der Person setzen. Mit eigenem Konto entscheidet sie selbst in „Mein Profil“.';
 
 export const PERSONS_ORIGIN: KkScreenOrigin = {
   label: 'Personenverwaltung',
   to: '/manage/persons',
 };
 
-export const EDITOR_DENIED_MESSAGE =
-  'Die Personenverwaltung ist an eine Rolle gebunden. Du hast sie gerade nicht.';
+export const EDITOR_DENIED_MESSAGE = 'Dir fehlt die Berechtigung für die Personenverwaltung.';
 
 export const toPersonOrigin = (person: {
   personId: number;
@@ -138,13 +137,13 @@ export const toPersonRowAffiliation = (person: PersonSummary): PersonRowAffiliat
 
 export const LETTER_INDEX_LABEL = 'Zu einem Buchstaben springen';
 
-const ALL_FILTER_SUGGESTION = 'Wähle „Alle“, um wieder alle zu sehen.';
+const ALL_FILTER_SUGGESTION = 'Wähle „Alle“, um alle anzuzeigen.';
 
 export const toPersonsEmptyDescription = (query: string, state: string): string => {
   const needle = query.trim();
 
   if (needle !== '') {
-    return `Kein Name, keine Adresse und keine E-Mail passt zu „${needle}“. Vielleicht anders geschrieben?`;
+    return `Keine Person passt zu „${needle}“.`;
   }
 
   const stateLine = toNoStateMatchLine(state);
@@ -156,14 +155,7 @@ export const toPersonsEmptyDescription = (query: string, state: string): string 
   return `${stateLine} ${ALL_FILTER_SUGGESTION}`;
 };
 
-const REGISTER_SCOPE = 'auch ausgetretene und Leute ohne Vereinsbindung';
-
-export const toPersonsLead = (count: number): string => {
-  const counted = count === 1 ? '1 Person steht' : `${count} Personen stehen`;
-
-  return `${counted} im Register — ${REGISTER_SCOPE}.`;
-};
-
+export const PERSONS_LEAD = 'Stammdaten, Mitgliedschaften und Beitragsermäßigungen aller Personen.';
 export const PERSON_EYEBROW = 'Person';
 
 export interface PersonHeadline {
@@ -327,13 +319,13 @@ export const toMembershipConsequence = (
   todayIsoDay: string,
 ): string => {
   if (endedOn !== null) {
-    return `Der Zeitraum steht vom ${formatIsoDay(startedOn)} bis zum ${formatIsoDay(endedOn)} im Register. Danach zählt die Person nicht mehr als Mitglied.`;
+    return `Die Mitgliedschaft gilt vom ${formatIsoDay(startedOn)} bis zum ${formatIsoDay(endedOn)}.`;
   }
   if (isFutureDay(startedOn, todayIsoDay)) {
-    return `Die Mitgliedschaft beginnt am ${formatIsoDay(startedOn)}. Bis dahin gilt die Person als kein Mitglied.`;
+    return `Die Mitgliedschaft beginnt am ${formatIsoDay(startedOn)}.`;
   }
 
-  return `Die Mitgliedschaft läuft seit dem ${formatIsoDay(startedOn)} und bleibt offen.`;
+  return `Die Mitgliedschaft besteht seit dem ${formatIsoDay(startedOn)} und ist unbefristet.`;
 };
 
 export const toPauseConsequence = (
@@ -342,10 +334,10 @@ export const toPauseConsequence = (
   lastSessionYear: number | null,
 ): string => {
   if (lastSessionYear === null) {
-    return `Ab Session ${formatSessionLabel(firstSessionYear)} zählt ${firstName} nicht als aktiv, bis die Ruhezeit ein Ende bekommt. Die Gruppen bleiben bestehen.`;
+    return `${firstName} gilt ab Session ${formatSessionLabel(firstSessionYear)} bis auf Weiteres als nicht aktiv. Gruppenzugehörigkeiten bleiben bestehen.`;
   }
 
-  return `In ${formatSessionSpan(firstSessionYear, lastSessionYear)} zählt ${firstName} nicht als aktiv. Die Gruppen bleiben bestehen.`;
+  return `${firstName} gilt in ${formatSessionSpan(firstSessionYear, lastSessionYear)} als nicht aktiv. Gruppenzugehörigkeiten bleiben bestehen.`;
 };
 
 export const toFeeReductionConsequence = (
@@ -353,7 +345,7 @@ export const toFeeReductionConsequence = (
   firstSessionYear: number,
   lastSessionYear: number,
 ): string =>
-  `${toFeeReductionBasisLabel(basis)} steht für ${formatSessionSpan(firstSessionYear, lastSessionYear)} im Register. Danach läuft die Ermäßigung aus und der Nachweis wird neu gebraucht.`;
+  `${toFeeReductionBasisLabel(basis)} gilt für ${formatSessionSpan(firstSessionYear, lastSessionYear)}. Danach ist ein neuer Nachweis nötig.`;
 
 export const OPEN_PAUSE_SENTENCE = 'Eine offene Ruhezeit endet mit der Mitgliedschaft.';
 
@@ -362,13 +354,12 @@ export const toEndMembershipConsequence = (
   endedOn: string,
   hasOpenPause: boolean,
 ): string => {
-  const lead = `Ab dem ${formatIsoDay(endedOn)} zählt ${firstName} nicht mehr als Mitglied. Die Gruppen und Rollen bleiben bestehen.`;
+  const lead = `Ab dem ${formatIsoDay(endedOn)} ist ${firstName} kein Mitglied mehr. Gruppen und Rollen bleiben bestehen.`;
 
   return hasOpenPause ? `${lead} ${OPEN_PAUSE_SENTENCE}` : lead;
 };
 
-export const toPersonCreatedMessage = (personName: string): string =>
-  `${personName} steht jetzt im Register.`;
+export const toPersonCreatedMessage = (personName: string): string => `${personName} ist angelegt.`;
 
 export const toPersonSavedMessage = (personName: string): string =>
   `Die Stammdaten von ${personName} sind gespeichert.`;

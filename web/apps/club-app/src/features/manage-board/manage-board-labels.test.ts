@@ -3,7 +3,6 @@ import type { BoardOfficeEntry } from './manage-board-labels';
 import {
   isVacantOn,
   toBoardEntries,
-  toBoardLead,
   toBoardOfficeId,
   toBoardSeatId,
   toImpliedRoleChoices,
@@ -132,49 +131,6 @@ describe('toSeatPeriodLabel', () => {
     expect(toSeatPeriodLabel(seat({ boardSeatId: 1, untilOn: '2026-11-10' }), TODAY)).toBe(
       '11.11.2016 – 10.11.2026',
     );
-  });
-});
-
-describe('toBoardLead', () => {
-  const lead = (offices: readonly BoardOffice[]): string =>
-    toBoardLead(toBoardEntries(offices, TODAY));
-
-  it('stays silent about vacancies when every Funktion is filled', () => {
-    expect(
-      lead([
-        office({
-          boardOfficeId: 1,
-          name: 'Präsident',
-          seats: [seat({ boardSeatId: 7 })],
-        }),
-      ]),
-    ).not.toContain('unbesetzt');
-  });
-
-  it('names the vacancy, because that is the alarm', () => {
-    expect(
-      lead([
-        office({ boardOfficeId: 1, name: 'Präsident', seats: [seat({ boardSeatId: 7 })] }),
-        office({ boardOfficeId: 2, name: 'Kassenwart', sortOrder: 2 }),
-      ]),
-    ).toContain('unbesetzt');
-  });
-
-  it('counts only the Funktionen that are still in the band', () => {
-    expect(
-      lead([
-        office({ boardOfficeId: 1, name: 'Präsident', seats: [seat({ boardSeatId: 7 })] }),
-        office({ boardOfficeId: 9, name: 'Pressewart', sortOrder: 2, archivedOn: '2021-01-01' }),
-      ]),
-    ).toContain('Eine Vorstandsfunktion');
-  });
-
-  it('counts an archived Funktion as unbesetzt nowhere', () => {
-    expect(
-      lead([
-        office({ boardOfficeId: 9, name: 'Pressewart', sortOrder: 2, archivedOn: '2021-01-01' }),
-      ]),
-    ).not.toContain('unbesetzt');
   });
 });
 

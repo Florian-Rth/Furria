@@ -13,7 +13,7 @@ const EDIT_ACTION_LABEL = 'Rolle bearbeiten';
 const RESTORE_LABEL = 'Aktivieren';
 const EDIT_ROUTE = '/manage/roles/$roleId/edit';
 const ARCHIVED_NOTE =
-  'Diese Rolle ist archiviert. Ihre Rechte greifen nicht mehr, und sie lässt sich erst nach dem Aktivieren wieder bearbeiten.';
+  'Diese Rolle ist archiviert, ihre Rechte gelten nicht. Aktiviere sie, um sie zu bearbeiten.';
 
 interface RoleHeaderCardProps {
   role: RoleDetails;

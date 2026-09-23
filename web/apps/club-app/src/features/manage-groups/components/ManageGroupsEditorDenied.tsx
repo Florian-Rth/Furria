@@ -3,8 +3,7 @@ import type { FC } from 'react';
 import { AccessDenied } from '@/features/session';
 import { MANAGE_GROUPS_ORIGIN } from '../manage-groups-labels';
 
-const DENIED_MESSAGE =
-  'Die Gruppenverwaltung ist an eine Rolle gebunden. Du hast sie gerade nicht.';
+const DENIED_MESSAGE = 'Dir fehlt die Berechtigung für die Gruppenverwaltung.';
 
 interface ManageGroupsEditorDeniedProps {
   title: string;

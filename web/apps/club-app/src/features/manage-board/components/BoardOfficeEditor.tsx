@@ -12,14 +12,11 @@ import {
 
 const CREATE_TITLE = 'Vorstandsfunktion hinzufügen';
 const EDIT_TITLE = 'Vorstandsfunktion bearbeiten';
-const CREATE_EXPLANATION =
-  'Eine Vorstandsfunktion ist ein Posten im Vorstand — Präsident, Kassenwart, Beisitzer. Wer darin sitzt, trägst du danach ein.';
-const EDIT_EXPLANATION =
-  'Name und Platz stehen so im Vorstand. Die Sitze bleiben, wie sie sind — auch nach einer Änderung.';
+const CREATE_EXPLANATION = 'Die Besetzung trägst du im Anschluss ein.';
+const EDIT_EXPLANATION = 'Bestehende Sitze bleiben von Änderungen unberührt.';
 const NAME_LABEL = 'Name';
 const SORT_ORDER_LABEL = 'Platz im Vorstand';
-const SORT_ORDER_HINT =
-  'Kleinere Zahlen stehen weiter vorn. Der Platz bleibt über jede Wahl hinweg.';
+const SORT_ORDER_HINT = 'Legt die Reihenfolge fest. Kleinere Zahlen stehen weiter oben.';
 const CREATE_ACTION_LABEL = 'Hinzufügen';
 const EDIT_ACTION_LABEL = 'Speichern';
 
@@ -39,6 +36,8 @@ export const BoardOfficeEditor: FC<BoardOfficeEditorProps> = ({ entry }) => {
   const nameField = control.form.register('name');
   const sortOrderField = control.form.register('sortOrder');
 
+  const impliedRoleError = control.impliedRoleChoicesError ?? undefined;
+
   const impliedRoleControl = control.canChangeRole ? (
     <KkSelectField
       name="impliedRole"
@@ -47,6 +46,9 @@ export const BoardOfficeEditor: FC<BoardOfficeEditorProps> = ({ entry }) => {
       options={control.impliedRoleChoices}
       onChange={control.setImpliedRoleValue}
       presentation="select"
+      disabled={control.impliedRoleChoicesPending}
+      error={impliedRoleError !== undefined}
+      helperText={impliedRoleError}
     />
   ) : (
     <KkFieldRow

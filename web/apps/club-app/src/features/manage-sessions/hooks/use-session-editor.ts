@@ -28,7 +28,10 @@ export interface SessionEditorControl {
   submit: () => void;
 }
 
-export const useSessionEditor = (record: SessionRecordSummary | null): SessionEditorControl => {
+export const useSessionEditor = (
+  record: SessionRecordSummary | null,
+  draftYear: number | null,
+): SessionEditorControl => {
   const [rejection, setRejection] = useState<string | null>(null);
   const [logoRejection, setLogoRejection] = useState<string | null>(null);
   const createMutation = useCreateSessionRecordMutation();
@@ -37,7 +40,7 @@ export const useSessionEditor = (record: SessionRecordSummary | null): SessionEd
 
   const form = useForm<SessionRecordForm>({
     resolver: zodResolver(SessionRecordFormSchema),
-    defaultValues: toSessionRecordForm(record),
+    defaultValues: toSessionRecordForm(record, draftYear),
     mode: 'onTouched',
   });
   const { isDirty, isValid } = form.formState;

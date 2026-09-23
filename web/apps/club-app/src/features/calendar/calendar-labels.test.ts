@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
   toAttendanceChoices,
-  toCalendarLead,
   toDayEntriesLabel,
   toDeleteConsequence,
   toEntryFacts,
@@ -32,16 +31,6 @@ const entry = (overrides: Partial<CalendarEntry>): CalendarEntry => ({
   viewerAnswer: null,
   isRunning: false,
   ...overrides,
-});
-
-describe('toCalendarLead', () => {
-  it.each([
-    [0, 'Gerade steht nichts im Kalender.'],
-    [1, 'Ein Termin steht im Kalender.'],
-    [4, '4 Termine stehen im Kalender.'],
-  ])('reads %i entries as %s', (count, expected) => {
-    expect(toCalendarLead(count)).toBe(expected);
-  });
 });
 
 describe('toAttendanceChoices', () => {

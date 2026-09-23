@@ -104,8 +104,8 @@ describe('toToggledTicks', () => {
 
 describe('toPreviewSummary', () => {
   it.each([
-    [[], 'Es gibt nichts zu planen.'],
-    [['alreadyExists' as const], 'Nichts angehakt — es entsteht kein Termin.'],
+    [[], 'Im gewählten Zeitraum gibt es keine Termine.'],
+    [['alreadyExists' as const], 'Keine Termine ausgewählt.'],
     [['creatable' as const], '1 Training entsteht.'],
     [['creatable' as const, 'venueTaken' as const], '2 Trainings entstehen.'],
   ])('counts %j', (states, expected) => {

@@ -11,10 +11,10 @@ import {
 import type { PersonDetails, PersonFeeReduction } from '../schemas';
 
 const BASIS_LABEL = 'Grundlage';
-const BASIS_HINT = 'Wird angegeben, nicht aus dem Geburtsdatum abgeleitet.';
+const BASIS_HINT = 'Wird manuell angegeben, nicht aus dem Geburtsdatum berechnet.';
 const FIRST_LABEL = 'Von Session';
 const LAST_LABEL = 'Bis Session';
-const LAST_HINT = 'Eine Ermäßigung läuft immer aus — danach wird der Nachweis neu gebraucht.';
+const LAST_HINT = 'Eine Ermäßigung ist immer befristet und muss danach neu nachgewiesen werden.';
 
 interface PersonFeeReductionEditorProps {
   person: PersonDetails;

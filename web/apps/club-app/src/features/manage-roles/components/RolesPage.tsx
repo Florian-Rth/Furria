@@ -9,7 +9,7 @@ import {
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { useRolesQuery } from '../api';
 import { useRoleSearch } from '../hooks/use-role-search';
-import { toRolesLead } from '../manage-roles-labels';
+import { ROLES_LEAD } from '../manage-roles-labels';
 import type { RoleSummary } from '../schemas';
 import { RolesBody } from './RolesBody';
 import { RolesToolbar } from './RolesToolbar';
@@ -27,9 +27,8 @@ export const RolesPage: FC = () => {
   const roles = useRolesQuery();
   const rows = roles.data?.roles ?? NO_ROLES;
   const search = useRoleSearch(rows);
-  const { has } = usePermissions();
-  const canManage = has(PERMISSION_KEYS.rolesManage);
-  const lead = roles.data === undefined ? undefined : toRolesLead(rows);
+  const { has, isUndecided } = usePermissions();
+  const canManage = isUndecided || has(PERMISSION_KEYS.rolesManage);
 
   const toolRow =
     roles.data === undefined ? (
@@ -49,7 +48,7 @@ export const RolesPage: FC = () => {
       tools={canManage ? toolRow : undefined}
       title={ROLES_TITLE}
       origin={MANAGE_ORIGIN}
-      header={<KkTitleHeader title={ROLES_TITLE} lead={lead} />}
+      header={<KkTitleHeader title={ROLES_TITLE} lead={ROLES_LEAD} />}
     >
       <RequirePermission permissionKey={PERMISSION_KEYS.rolesManage}>
         <RolesBody search={search} />

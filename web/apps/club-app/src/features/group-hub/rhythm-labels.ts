@@ -4,19 +4,18 @@ import { WEEKDAY_VALUES } from '@/features/groups';
 import type { TrainingSlot, TrainingSlotForm } from './schemas';
 
 export const RHYTHM_EMPTY_TITLE = 'NOCH KEIN RHYTHMUS';
-export const RHYTHM_EMPTY_LINE =
-  'Wann und wo die Gruppe regelmäßig trainiert. Die Gruppen-Admins tragen es hier ein.';
+export const RHYTHM_EMPTY_LINE = 'Die Gruppen-Admins legen die Trainingszeiten fest.';
 export const RHYTHM_ADMIN_NOTE =
-  'Der Rhythmus ist eine Angabe, keine Regel: Er sagt, wann ihr normalerweise trainiert. Termine entstehen erst, wenn du sie erzeugst.';
+  'Der Rhythmus beschreibt die üblichen Trainingszeiten. Termine entstehen erst beim Erzeugen.';
 export const RHYTHM_ADD_LABEL = 'Trainingszeit';
 export const RHYTHM_ADD_ACTION_LABEL = 'Trainingszeit hinzufügen';
 export const RHYTHM_GENERATE_LABEL = 'Trainings erzeugen';
 export const RHYTHM_GENERATE_HINT =
-  'Aus dem Rhythmus entstehen einzelne Termine im Kalender. Du siehst jeden Tag vorher und hakst ab, was entstehen soll.';
+  'Legt aus dem Rhythmus einzelne Termine im Kalender an. Vorher wählst du die gewünschten Tage aus.';
 export const RHYTHM_SAVED_MESSAGE = 'Der Trainingsrhythmus ist gespeichert.';
-export const RHYTHM_FULL_NOTE = 'Mehr Trainingszeiten passen nicht in eine Woche.';
+export const RHYTHM_FULL_NOTE = 'Die maximale Anzahl an Trainingszeiten ist erreicht.';
 export const RHYTHM_ARCHIVED_VENUE_NOTE =
-  'Eine Trainingszeit hält einen archivierten Ort. Solange er dort steht, lässt sich am Rhythmus nichts speichern — öffne die markierte Zeit und wähl einen anderen Ort.';
+  'Eine Trainingszeit verwendet einen archivierten Ort. Wähle dort einen anderen Ort, um speichern zu können.';
 
 export const SLOT_DIALOG_ADD_TITLE = 'Trainingszeit hinzufügen';
 export const SLOT_DIALOG_EDIT_TITLE = 'Trainingszeit ändern';
@@ -24,32 +23,27 @@ export const SLOT_WEEKDAY_LABEL = 'Wochentag';
 export const SLOT_START_LABEL = 'Beginn';
 export const SLOT_DURATION_LABEL = 'Dauer';
 export const SLOT_VENUE_LABEL = 'Ort';
-export const SLOT_VENUE_HINT = 'Ohne Ort warnt die Vorschau nicht vor Doppelbelegungen.';
+export const SLOT_VENUE_HINT = 'Nur mit Ort werden Doppelbelegungen erkannt.';
 
 export const SLOT_REMOVE_LABEL = 'Trainingszeit entfernen';
 export const SLOT_REMOVE_EYEBROW = 'Trainingszeit entfernen';
-export const SLOT_REMOVE_EXPLANATION =
-  'Die Trainingszeit verschwindet aus dem Rhythmus. Schon erzeugte Termine bleiben im Kalender stehen.';
+export const SLOT_REMOVE_EXPLANATION = 'Bereits erzeugte Termine bleiben im Kalender erhalten.';
 
 export const GENERATOR_SHEET_TITLE = 'Trainings erzeugen';
 export const GENERATOR_TITLE_LABEL = 'Titel der Termine';
-export const GENERATOR_TITLE_HINT = 'So heißt jeder erzeugte Termin im Kalender.';
+export const GENERATOR_TITLE_HINT = 'Gilt für alle erzeugten Termine.';
 export const GENERATOR_TITLE_DEFAULT = 'Training';
 export const GENERATOR_END_LABEL = 'Bis einschließlich';
-export const GENERATOR_END_HINT =
-  'Voreingestellt ist das Ende der laufenden Session. Wer über den Sommer trainiert, setzt es weiter.';
+export const GENERATOR_END_HINT = 'Standardmäßig das Ende der laufenden Session.';
 export const GENERATOR_SESSION_CHOICE = 'Sessionende';
 export const GENERATOR_CONFIRM_LABEL = 'Termine anlegen';
 export const GENERATOR_CANCEL_LABEL = 'Abbrechen';
 export const GENERATOR_CLOSE_LABEL = 'Schließen';
 export const GENERATOR_EMPTY_TITLE = 'NICHTS ZU ERZEUGEN';
-export const GENERATOR_EMPTY_LINE =
-  'Für diesen Zeitraum ergibt der Rhythmus keinen einzigen Termin.';
-export const GENERATOR_NO_RHYTHM_TITLE = 'ERST DER RHYTHMUS';
-export const GENERATOR_NO_RHYTHM_LINE =
-  'Trag zuerst ein, wann die Gruppe trainiert. Daraus entstehen die Termine.';
-export const GENERATOR_LEGEND =
-  'Hak ab, was entstehen soll. Feiertage, Ferien und ausgefallene Abende hakst du einfach weg.';
+export const GENERATOR_EMPTY_LINE = 'Im gewählten Zeitraum ergeben sich keine Termine.';
+export const GENERATOR_NO_RHYTHM_TITLE = 'KEIN RHYTHMUS';
+export const GENERATOR_NO_RHYTHM_LINE = 'Lege zuerst die Trainingszeiten fest.';
+export const GENERATOR_LEGEND = 'Wähle die Termine aus, die angelegt werden sollen.';
 export const GENERATOR_ALL_LABEL = 'Alle';
 export const GENERATOR_NONE_LABEL = 'Keinen';
 
@@ -221,16 +215,16 @@ export const toTrainingsCreatedMessage = (created: number, skipped: number): str
   const held =
     skipped === 0
       ? ''
-      : ` ${skipped === ONE_TRAINING ? '1 Termin stand' : `${skipped} Termine standen`} schon.`;
+      : ` ${skipped === ONE_TRAINING ? '1 Termin war' : `${skipped} Termine waren`} bereits vorhanden.`;
 
   if (created === 0) {
-    return `Es ist kein Termin entstanden.${held}`;
+    return `Es wurde kein Termin angelegt.${held}`;
   }
   if (created === ONE_TRAINING) {
-    return `1 Training steht jetzt im Kalender.${held}`;
+    return `1 Training ist angelegt.${held}`;
   }
 
-  return `${created} Trainings stehen jetzt im Kalender.${held}`;
+  return `${created} Trainings sind angelegt.${held}`;
 };
 
 export const toCollisionNotice = (count: number): string | null => {
@@ -239,6 +233,6 @@ export const toCollisionNotice = (count: number): string | null => {
   }
 
   return count === ONE_TRAINING
-    ? 'An einem Abend ist der Ort doppelt belegt. Sieh im Kalender nach.'
-    : `An ${count} Abenden ist der Ort doppelt belegt. Sieh im Kalender nach.`;
+    ? 'An einem Termin ist der Ort doppelt belegt.'
+    : `An ${count} Terminen ist der Ort doppelt belegt.`;
 };

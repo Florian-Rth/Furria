@@ -1,21 +1,26 @@
 import type { KkPanelAction } from '@furria/ui';
-import { KkEmptyState, KkPanel, KkPanelSection } from '@furria/ui';
+import { KkPanel, KkPanelSection } from '@furria/ui';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { MANAGE_SESSIONS_CREATE_LABEL, MANAGE_SESSIONS_EMPTY } from '../manage-sessions-labels';
+import { MANAGE_SESSIONS_CREATE_LABEL, SESSION_SECTION_TITLES } from '../manage-sessions-labels';
 import type { SessionRecordSummary } from '../schemas';
 import { SessionRecordRow } from './SessionRecordRow';
+import { VacantSessionRow } from './VacantSessionRow';
 
 const CREATE_ROUTE = '/manage/sessions/new';
 const CREATE_PILL_LABEL = 'Session';
-const SECTION_TITLE = 'Sessionseinträge';
 
-interface ManageSessionsListProps {
+interface SessionsAheadSectionProps {
   records: readonly SessionRecordSummary[];
+  vacantYear: number | null;
   today: Date;
 }
 
-export const ManageSessionsList: FC<ManageSessionsListProps> = ({ records, today }) => {
+export const SessionsAheadSection: FC<SessionsAheadSectionProps> = ({
+  records,
+  vacantYear,
+  today,
+}) => {
   const action: KkPanelAction = {
     label: CREATE_PILL_LABEL,
     icon: 'add',
@@ -24,25 +29,15 @@ export const ManageSessionsList: FC<ManageSessionsListProps> = ({ records, today
     to: CREATE_ROUTE,
   };
 
-  if (records.length === 0) {
-    return (
-      <KkPanelSection title={SECTION_TITLE} action={action}>
-        <KkPanel variant="block">
-          <KkEmptyState
-            title={MANAGE_SESSIONS_EMPTY.title}
-            description={MANAGE_SESSIONS_EMPTY.description}
-          />
-        </KkPanel>
-      </KkPanelSection>
-    );
-  }
+  const vacantRow = vacantYear === null ? null : <VacantSessionRow startYear={vacantYear} />;
 
   return (
-    <KkPanelSection title={SECTION_TITLE} action={action}>
+    <KkPanelSection title={SESSION_SECTION_TITLES.ahead} action={action}>
       <KkPanel variant="list">
         {records.map((record) => (
           <SessionRecordRow key={record.sessionId} record={record} today={today} />
         ))}
+        {vacantRow}
       </KkPanel>
     </KkPanelSection>
   );

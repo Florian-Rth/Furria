@@ -21,6 +21,7 @@ import {
   toImpliedRoleStatement,
   toImpliedRoleValue,
 } from '../manage-board-labels';
+import { toImpliedRoleOptionsErrorMessage } from '../manage-board-messages';
 import type { BoardOfficeEditorForm, ImpliedRoleOption } from '../schemas';
 import { BoardOfficeEditorFormSchema } from '../schemas';
 
@@ -33,6 +34,8 @@ export interface BoardOfficeEditorControl {
   impliedRoleValue: string;
   setImpliedRoleValue: (value: string) => void;
   impliedRoleChoices: KkSelectOption[];
+  impliedRoleChoicesPending: boolean;
+  impliedRoleChoicesError: string | null;
   impliedRoleStatement: string;
   isDirty: boolean;
   canSubmit: boolean;
@@ -139,6 +142,8 @@ export const useBoardOfficeEditor = (entry: BoardOfficeEntry | null): BoardOffic
     impliedRoleValue,
     setImpliedRoleValue: impliedRole.field.onChange,
     impliedRoleChoices,
+    impliedRoleChoicesPending: roleOptions.data === undefined,
+    impliedRoleChoicesError: toImpliedRoleOptionsErrorMessage(roleOptions.error),
     impliedRoleStatement: toImpliedRoleStatement(entry?.impliedRoleName ?? null),
     isDirty,
     canSubmit: isValid,

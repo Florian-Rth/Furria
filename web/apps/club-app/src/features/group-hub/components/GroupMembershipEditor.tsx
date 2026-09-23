@@ -23,19 +23,17 @@ import { ADMIN_FUNCTION_MAX_LENGTH } from '../schemas';
 import { PersonPicker } from './PersonPicker';
 
 const CHAIN_TITLE = 'Bisherige Zeiträume';
-const JOIN_NOTE =
-  'Such die Person im Verzeichnis. Wer noch nicht drin ist, muss zuerst in der Personenverwaltung angelegt werden.';
+const JOIN_NOTE = 'Neue Personen werden in der Personenverwaltung angelegt.';
 const JOIN_DATE_LABEL = 'Dabei ab';
 const JOIN_DATE_HINT =
-  'Darf in der Zukunft liegen. Ein Wiedereintritt beginnt frühestens am Tag nach dem Ende der vorigen Zugehörigkeit.';
+  'Ein Wiedereintritt ist frühestens am Tag nach dem Ende der vorherigen Zugehörigkeit möglich.';
 const ADMIN_LABEL = 'Auch Gruppen-Admin';
 const ADMIN_DESCRIPTION =
-  'Gruppen-Admins pflegen die Gruppe: Beschreibung ändern, Leute aufnehmen und beenden. Die Ernennung beginnt am selben Tag wie die Zugehörigkeit.';
+  'Gruppen-Admins verwalten Beschreibung und Zugehörigkeiten. Die Ernennung gilt ab Beginn der Zugehörigkeit.';
 const ADMIN_STATE_LABEL = { on: 'ja', off: 'nein' };
 const FUNCTION_LABEL = 'Funktion';
-const FUNCTION_PLACEHOLDER = 'Trainerin, Sprecher, …';
-const FUNCTION_HINT =
-  'Nur ein Etikett für die Anzeige. Die Rechte hängen an der Gruppen-Admin-Rolle, nicht am Wort.';
+const FUNCTION_PLACEHOLDER = 'Optional';
+const FUNCTION_HINT = 'Dient nur der Anzeige und hat keinen Einfluss auf Rechte.';
 const END_DATE_LABEL = 'Letzter Tag';
 const END_DATE_HINT = 'Dieser Tag zählt noch dazu.';
 

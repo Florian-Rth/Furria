@@ -120,7 +120,7 @@ export const DESCRIPTION_MAX_LENGTH = 400;
 export const DESCRIPTION_TOO_LONG_MESSAGE = `Die Beschreibung darf höchstens ${DESCRIPTION_MAX_LENGTH} Zeichen lang sein.`;
 export const EARLIEST_FOUNDED_YEAR = 1800;
 export const LATEST_FOUNDED_YEAR = 2100;
-export const FOUNDED_YEAR_MESSAGE = `Trag ein Jahr zwischen ${EARLIEST_FOUNDED_YEAR} und ${LATEST_FOUNDED_YEAR} ein, zum Beispiel 1974.`;
+export const FOUNDED_YEAR_MESSAGE = `Gib ein Jahr zwischen ${EARLIEST_FOUNDED_YEAR} und ${LATEST_FOUNDED_YEAR} ein.`;
 
 const FOUNDED_YEAR_PATTERN = /^\d{4}$/;
 
@@ -214,7 +214,7 @@ export const TRAINING_TITLE_MAX_LENGTH = 120;
 export const MAX_TRAINING_SLOTS = 14;
 
 export const TRAINING_TITLE_MESSAGE = 'Die Trainings brauchen einen Titel.';
-export const TRAINING_DURATION_MESSAGE = 'Trag eine Dauer zwischen 15 und 480 Minuten ein.';
+export const TRAINING_DURATION_MESSAGE = 'Die Dauer muss zwischen 15 und 480 Minuten liegen.';
 
 const CLOCK_TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 

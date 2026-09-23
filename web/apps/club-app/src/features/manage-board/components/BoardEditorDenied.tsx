@@ -3,7 +3,7 @@ import type { FC } from 'react';
 import { AccessDenied } from '@/features/session';
 import { BOARD_ORIGIN } from '../manage-board-labels';
 
-const DENIED_MESSAGE = 'Der Vorstand ist an eine Rolle gebunden. Du hast sie gerade nicht.';
+const DENIED_MESSAGE = 'Dir fehlt die Berechtigung für den Vorstand.';
 
 interface BoardEditorDeniedProps {
   title: string;

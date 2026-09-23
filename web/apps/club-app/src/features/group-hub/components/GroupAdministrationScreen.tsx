@@ -5,8 +5,8 @@ import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { useGroupHubQuery } from '../api';
 import { ADMINISTRATION_DENIED_MESSAGE, toHubId } from '../group-hub-labels';
 import { GroupAdministrationEditor } from './GroupAdministrationEditor';
-import { GroupEditorNotFound } from './GroupEditorNotFound';
 import { GroupEditorSkeleton } from './GroupEditorSkeleton';
+import { GroupEditorUnloaded } from './GroupEditorUnloaded';
 import { HubEditorDenied } from './HubEditorDenied';
 
 const ROUTE_ID = '/_app/groups_/$groupId_/administration';
@@ -19,7 +19,10 @@ export const GroupAdministrationScreen: FC = () => {
   const permissions = usePermissions();
 
   if (hub.data === undefined) {
-    return hub.isLoading ? <GroupEditorSkeleton /> : <GroupEditorNotFound />;
+    return <GroupEditorUnloaded groupId={id} />;
+  }
+  if (permissions.isUndecided) {
+    return <GroupEditorSkeleton />;
   }
   if (!permissions.has(PERMISSION_KEYS.groupsManage)) {
     return <HubEditorDenied hub={hub.data} title={TITLE} message={ADMINISTRATION_DENIED_MESSAGE} />;

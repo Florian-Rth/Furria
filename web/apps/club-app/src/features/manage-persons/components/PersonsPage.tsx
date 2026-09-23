@@ -10,7 +10,7 @@ import {
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { usePersonsQuery } from '../api';
 import { usePersonsSearch } from '../hooks/use-persons-search';
-import { LETTER_INDEX_LABEL, PERSONS_TITLE, toPersonsLead } from '../manage-persons-labels';
+import { LETTER_INDEX_LABEL, PERSONS_LEAD, PERSONS_TITLE } from '../manage-persons-labels';
 import type { PersonSummary } from '../schemas';
 import { PersonsBody } from './PersonsBody';
 import { PersonsToolbar } from './PersonsToolbar';
@@ -26,9 +26,9 @@ export const PersonsPage: FC = () => {
   const persons = usePersonsQuery();
   const rows = persons.data?.persons ?? NO_PERSONS;
   const search = usePersonsSearch(rows);
-  const { has } = usePermissions();
+  const { has, isUndecided } = usePermissions();
   const canManage = has(PERMISSION_KEYS.personsManage);
-  const lead = persons.data === undefined ? undefined : toPersonsLead(rows.length);
+  const showsTools = isUndecided || canManage;
 
   const index: KkScreenIndex | undefined =
     !canManage || search.letters.length === 0
@@ -41,7 +41,7 @@ export const PersonsPage: FC = () => {
         };
 
   const toolRow =
-    persons.data === undefined ? (
+    persons.data === undefined || isUndecided ? (
       <KkSkeletonToolbar chips={TOOLBAR_CHIPS} />
     ) : (
       <PersonsToolbar
@@ -55,11 +55,11 @@ export const PersonsPage: FC = () => {
     <KkScreen
       kind="list"
       search={searchMode}
-      tools={canManage ? toolRow : undefined}
+      tools={showsTools ? toolRow : undefined}
       index={index}
       title={PERSONS_TITLE}
       origin={MANAGE_ORIGIN}
-      header={<KkTitleHeader title={PERSONS_TITLE} lead={lead} />}
+      header={<KkTitleHeader title={PERSONS_TITLE} lead={PERSONS_LEAD} />}
     >
       <RequirePermission permissionKey={PERMISSION_KEYS.personsManage}>
         <PersonsBody search={search} />

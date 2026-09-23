@@ -15,7 +15,7 @@ import type { KeyHolding, KeyVenue } from '../schemas';
 
 const CHAIN_TITLE = 'Bisherige Schlüsselübergaben';
 const SINCE_LABEL = 'Ausgegeben am';
-const SINCE_HINT = 'Darf in der Zukunft liegen. Vorher steht der Schlüssel nicht in der Übersicht.';
+const SINCE_HINT = 'Auch ein Datum in der Zukunft ist möglich.';
 const UNTIL_LABEL = 'Letzter Tag';
 const UNTIL_HINT = 'Dieser Tag zählt noch dazu.';
 

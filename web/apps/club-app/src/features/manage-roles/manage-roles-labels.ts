@@ -86,24 +86,7 @@ export const ROLE_SECTION_TITLES = {
   history: 'Geschichte',
 } as const;
 
-export const toRolesLead = (roles: readonly RoleSummary[]): string => {
-  const archived = roles.filter((role) => role.archivedOn !== null).length;
-  const active = roles.length - archived;
-  const head =
-    active === 1
-      ? 'Eine Rolle sagt, wer im Verein was darf.'
-      : `${active} Rollen sagen, wer im Verein was darf.`;
-
-  if (archived === 0) {
-    return head;
-  }
-
-  const tail =
-    archived === 1 ? 'Eine weitere ist archiviert.' : `${archived} weitere sind archiviert.`;
-
-  return `${head} ${tail}`;
-};
-
+export const ROLES_LEAD = 'Rollen, ihre Rechte und Inhaber.';
 export const toRoleSearchTerm = (raw: string): string | null => {
   const trimmed = raw.trim();
 
@@ -155,7 +138,7 @@ export const ARCHIVED_ROLES_FILTER_ID = 'archived';
 const ALL_ROLES_LABEL = 'Alle';
 const ACTIVE_ROLES_LABEL = UNARCHIVED_LABEL;
 const ARCHIVED_ROLES_LABEL = 'archiviert';
-const ALL_ROLES_SUGGESTION = 'Wähle „Alle“, um wieder alle zu sehen.';
+const ALL_ROLES_SUGGESTION = 'Wähle „Alle“, um alle anzuzeigen.';
 
 const isArchivedRole = (role: RoleSummary): boolean => role.archivedOn !== null;
 
@@ -275,7 +258,7 @@ export const toNoRoleMatchLine = (query: string, status: string): string => {
   const term = toRoleSearchTerm(query);
 
   if (term !== null) {
-    return `Zu „${term}“ gibt es keine Rolle. Vielleicht anders geschrieben?`;
+    return `Keine Rolle passt zu „${term}“.`;
   }
 
   const statusLine = NO_ROLE_MATCH_LINES[status];
@@ -288,7 +271,7 @@ export const toNoRoleMatchLine = (query: string, status: string): string => {
 };
 
 export const toNoDescriptionLine = (name: string): string =>
-  `Zu ${name} steht noch nichts geschrieben.`;
+  `Für ${name} gibt es noch keine Beschreibung.`;
 
 export const toRoleCreatedMessage = (name: string): string => `Die Rolle ${name} ist angelegt.`;
 
@@ -328,8 +311,8 @@ export const toHoldingConsequence = (
   todayIsoDay: string,
 ): string =>
   isFutureDay(sinceOn, todayIsoDay)
-    ? `Ab dem ${formatIsoDay(sinceOn)} hat ${personName} die Rechte von ${roleName} — vorher nicht.`
-    : `${personName} hat die Rechte von ${roleName} ab dem ${formatIsoDay(sinceOn)}.`;
+    ? `${personName} erhält ab dem ${formatIsoDay(sinceOn)} die Rechte von ${roleName}.`
+    : `${personName} hat seit dem ${formatIsoDay(sinceOn)} die Rechte von ${roleName}.`;
 
 export const toEndHoldingConsequence = (
   firstName: string,
@@ -338,8 +321,8 @@ export const toEndHoldingConsequence = (
   todayIsoDay: string,
 ): string =>
   isFutureDay(endedOn, todayIsoDay)
-    ? `Der ${formatIsoDay(endedOn)} wird der letzte Tag, an dem ${firstName} ${roleName} innehat. Danach greifen die Rechte der Rolle für ${firstName} nicht mehr.`
-    : `Der ${formatIsoDay(endedOn)} ist der letzte Tag, an dem ${firstName} ${roleName} innehat. Danach greifen die Rechte der Rolle für ${firstName} nicht mehr.`;
+    ? `${firstName} hat ${roleName} bis einschließlich ${formatIsoDay(endedOn)} inne. Danach entfallen die Rechte der Rolle.`
+    : `Die Inhaberschaft von ${firstName} für ${roleName} ist zum ${formatIsoDay(endedOn)} beendet. Die Rechte der Rolle entfallen.`;
 
 export interface SelfLockoutInput {
   key: PermissionKey;
@@ -407,7 +390,7 @@ export const toPermissionHandoverFacts = (
 
 export const SELF_LOCKOUT_EYEBROW = 'Recht abgeben';
 export const SELF_LOCKOUT_EXPLANATION =
-  'Du nimmst dir dieses Recht selbst weg. Danach kommst du hier nicht mehr rein.';
+  'Du entziehst dir dieses Recht selbst und verlierst den Zugriff auf diese Seite.';
 export const SELF_LOCKOUT_CONFIRM_LABEL = 'Recht abgeben';
 
 export const toSelfLockoutQuestion = (permissionTitle: string): string =>
@@ -421,14 +404,14 @@ export const toSelfLockoutFacts = (roleName: string, permissionTitle: string): K
 export const toArchiveRoleQuestion = (name: string): string => `${name} archivieren?`;
 
 export const ARCHIVE_ROLE_EXPLANATION =
-  'Archivieren löscht nichts: Die Rolle verschwindet aus der Auswahl, ihre Inhaberschaften bleiben in den Profilen stehen.';
+  'Die Rolle verschwindet aus der Auswahl, ihre Rechte entfallen. Inhaberschaften bleiben erhalten.';
 
 export const toArchiveRoleConsequence = (
   name: string,
   holderCount: number,
   todayIsoDay: string,
 ): string =>
-  `Ab heute, dem ${formatIsoDay(todayIsoDay)}, greifen die Rechte von ${name} nicht mehr. Die ${toHolderCountLabel(holderCount)} bleiben bestehen.`;
+  `Ab heute, dem ${formatIsoDay(todayIsoDay)}, entfallen die Rechte von ${name}. Die ${toHolderCountLabel(holderCount)} bleiben bestehen.`;
 
 export const toArchiveRoleFacts = (role: RoleDetails, todayIsoDay: string): KkConfirmFact[] => [
   { label: 'Rolle', value: role.name },
@@ -441,10 +424,10 @@ export const RESTORE_ROLE_EYEBROW = 'Rolle aktivieren';
 export const toRestoreRoleQuestion = (name: string): string => `${name} wieder aktivieren?`;
 
 export const RESTORE_ROLE_EXPLANATION =
-  'Die Rolle steht wieder in der Auswahl. Ihre Rechte greifen wieder für jeden, der sie innehat. An ihrer Geschichte ändert sich nichts — sie war nie weg.';
+  'Die Rolle steht wieder zur Auswahl, ihre Rechte gelten wieder für alle Inhaber.';
 
 export const toRestoreRoleConsequence = (name: string, todayIsoDay: string): string =>
-  `Ab heute, dem ${formatIsoDay(todayIsoDay)}, greifen die Rechte von ${name} wieder.`;
+  `Ab heute, dem ${formatIsoDay(todayIsoDay)}, gelten die Rechte von ${name} wieder.`;
 
 export const toRestoreRoleFacts = (role: RoleDetails, todayIsoDay: string): KkConfirmFact[] => [
   { label: 'Rolle', value: role.name },

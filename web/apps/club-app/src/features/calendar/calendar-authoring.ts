@@ -21,10 +21,9 @@ const DEFAULT_START_TIME = '19:00';
 const DEFAULT_END_TIME = '21:00';
 const ONE_COLLISION = 1;
 const ARCHIVED_SUFFIX = ' — archiviert';
-const PARTICIPANTS_EMPTY = 'Es gibt keine weitere Gruppe, die mitwirken könnte.';
-const PARTICIPANTS_PENDING = 'Die Gruppen werden geladen.';
+const PARTICIPANTS_EMPTY = 'Keine weiteren Gruppen verfügbar.';
 const PARTICIPANTS_UNAVAILABLE =
-  'Die Gruppen konnten nicht geladen werden. Schon eingetragene Gruppen stehen weiter zur Wahl.';
+  'Die Gruppen konnten nicht geladen werden. Bereits zugeordnete Gruppen bleiben erhalten.';
 
 const KIND_ORDER: readonly CalendarEntryKind[] = [
   'training',
@@ -95,28 +94,16 @@ export const toOwnerOptions = (
 };
 
 export type CalendarParticipantPool =
-  | { readonly state: 'loading' }
   | { readonly state: 'failed' }
   | { readonly state: 'ready'; readonly groups: readonly CalendarParticipantGroup[] };
 
 export const toParticipantPool = (
   groups: readonly CalendarParticipantGroup[] | undefined,
-  failed: boolean,
-): CalendarParticipantPool => {
-  if (groups !== undefined) {
-    return { state: 'ready', groups };
-  }
+): CalendarParticipantPool =>
+  groups === undefined ? { state: 'failed' } : { state: 'ready', groups };
 
-  return failed ? { state: 'failed' } : { state: 'loading' };
-};
-
-export const toParticipantsEmptyLabel = (pool: CalendarParticipantPool): string => {
-  if (pool.state === 'failed') {
-    return PARTICIPANTS_UNAVAILABLE;
-  }
-
-  return pool.state === 'loading' ? PARTICIPANTS_PENDING : PARTICIPANTS_EMPTY;
-};
+export const toParticipantsEmptyLabel = (pool: CalendarParticipantPool): string =>
+  pool.state === 'failed' ? PARTICIPANTS_UNAVAILABLE : PARTICIPANTS_EMPTY;
 
 export const toParticipatingGroupOptions = (
   pool: CalendarParticipantPool,
@@ -293,10 +280,10 @@ export const toCollisionSentence = (names: readonly string[]): string | null => 
     return null;
   }
   if (names.length === ONE_COLLISION) {
-    return `An diesem Ort steht zur gleichen Zeit schon ${names[0]}. Gespeichert ist der Eintrag trotzdem — klärt das im Verein.`;
+    return `Der Ort ist zur selben Zeit bereits durch ${names[0]} belegt. Der Termin wurde trotzdem gespeichert.`;
   }
 
-  return `An diesem Ort stehen zur gleichen Zeit schon ${names.join(', ')}. Gespeichert ist der Eintrag trotzdem — klärt das im Verein.`;
+  return `Der Ort ist zur selben Zeit bereits durch ${names.join(', ')} belegt. Der Termin wurde trotzdem gespeichert.`;
 };
 
 const CALENDAR_ENTRY_ID_PATTERN = /^[1-9]\d*$/;

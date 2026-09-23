@@ -7,9 +7,9 @@ import { toLandingKey } from '@/features/write';
 import {
   CREATE_GROUP_KIND_LABEL,
   CREATE_GROUP_KIND_PILL_LABEL,
+  GROUP_KINDS_LEAD,
   GROUP_KINDS_PANEL_TITLE,
   toGroupKindEntries,
-  toGroupKindsIntro,
 } from '../manage-groups-labels';
 import type { ManagedGroupKind } from '../schemas';
 import { GroupKindCard } from './GroupKindCard';
@@ -58,11 +58,7 @@ export const GroupKindsPanel: FC<GroupKindsPanelProps> = ({ kinds, highlightedKe
   };
 
   return (
-    <KkPanelSection
-      title={GROUP_KINDS_PANEL_TITLE}
-      meta={toGroupKindsIntro(entries)}
-      action={action}
-    >
+    <KkPanelSection title={GROUP_KINDS_PANEL_TITLE} meta={GROUP_KINDS_LEAD} action={action}>
       {body}
     </KkPanelSection>
   );

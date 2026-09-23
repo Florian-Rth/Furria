@@ -1,4 +1,4 @@
-import { KkScreen } from '@furria/ui';
+import { KkScreen, KkScreenHeaderSkeleton } from '@furria/ui';
 import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { RequirePermission } from '@/features/session';
@@ -15,14 +15,14 @@ export const PersonEditPage: FC = () => {
   const id = toPersonId(personId);
   const person = usePersonQuery(id);
   const headline = toPersonHeadline(person.data);
+  const hasFailed = id === null || person.error !== null;
+
+  const pendingHeader = hasFailed ? null : <KkScreenHeaderSkeleton />;
+  const header =
+    person.data === undefined ? pendingHeader : <PersonEditHeader person={person.data} />;
 
   return (
-    <KkScreen
-      kind="working"
-      title={headline.title}
-      origin={PERSONS_ORIGIN}
-      header={<PersonEditHeader person={person.data} />}
-    >
+    <KkScreen kind="working" title={headline.title} origin={PERSONS_ORIGIN} header={header}>
       <RequirePermission permissionKey={PERMISSION_KEYS.personsManage}>
         <PersonEditBody personId={id} />
       </RequirePermission>

@@ -2,8 +2,7 @@ import { useParams, useSearch } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { useGroupHubQuery } from '../api';
 import { EDITOR_DENIED_MESSAGE, toHubId, toPersonIdParam } from '../group-hub-labels';
-import { GroupEditorNotFound } from './GroupEditorNotFound';
-import { GroupEditorSkeleton } from './GroupEditorSkeleton';
+import { GroupEditorUnloaded } from './GroupEditorUnloaded';
 import { GroupMembershipEditor } from './GroupMembershipEditor';
 import { HubEditorDenied } from './HubEditorDenied';
 
@@ -17,7 +16,7 @@ export const GroupMembershipNewScreen: FC = () => {
   const hub = useGroupHubQuery(id);
 
   if (hub.data === undefined) {
-    return hub.isLoading ? <GroupEditorSkeleton /> : <GroupEditorNotFound />;
+    return <GroupEditorUnloaded groupId={id} />;
   }
   if (!hub.data.viewerMayManage) {
     return <HubEditorDenied hub={hub.data} title={TITLE} message={EDITOR_DENIED_MESSAGE} />;

@@ -29,16 +29,14 @@ export const toProfileHeadline = (me: Me | undefined): ProfileHeadline => {
 export const VISIBILITY_SWITCH_LABEL = 'Meine Kontaktdaten für Mitglieder sichtbar';
 
 export const VISIBILITY_EXPLANATION =
-  'Ist das an, sehen eingeloggte Mitglieder im Verzeichnis deine Telefonnummer, E-Mail und Adresse. Ist es aus, steht dort nur der Hinweis, dass du sie nicht freigegeben hast — deine Daten bleiben im Verein hinterlegt.';
+  'Wenn aktiviert, sehen Mitglieder im Verzeichnis deine Telefonnummer, E-Mail und Adresse. Andernfalls erscheint dort ein Hinweis, dass sie nicht freigegeben sind.';
 
 export const VISIBILITY_KEY_HOLDER_NOTE =
-  'Unabhängig davon: Wer das Recht „Personendetails sehen“ hat, sieht deine Daten immer.';
+  'Mit dem Recht „Kontaktdaten aller Personen sehen“ sind deine Daten immer sichtbar.';
 
-export const VISIBILITY_OFF_NOTE =
-  'Aus heißt aus: Auch deine Gruppen-Admins müssen dich dann über deine Gruppe oder persönlich erreichen.';
+export const VISIBILITY_OFF_NOTE = 'Das gilt auch für deine Gruppen-Admins.';
 
-export const VISIBILITY_PREVIEW_CAPTION =
-  'So steht dein Kontakt im Verzeichnis, wenn ein anderes Mitglied ihn aufruft.';
+export const VISIBILITY_PREVIEW_CAPTION = 'So sehen andere Mitglieder deinen Kontakt.';
 
 export const PROFILE_SECTION_TITLES = {
   data: 'Deine Daten',

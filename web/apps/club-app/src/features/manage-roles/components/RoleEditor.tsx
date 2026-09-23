@@ -9,12 +9,11 @@ import { ROLE_DESCRIPTION_MAX_LENGTH } from '../schemas';
 const CREATE_TITLE = 'Rolle hinzufügen';
 const EDIT_TITLE = 'Rolle bearbeiten';
 const CREATE_EXPLANATION =
-  'Eine Rolle bündelt eine Aufgabe im Verein. Die Rechte setzt du danach — eine neue Rolle startet ohne.';
-const EDIT_EXPLANATION =
-  'Name und Beschreibung stehen so in der Auswahl und in jedem Profil, das die Rolle nennt.';
+  'Neue Rollen haben zunächst keine Rechte. Diese vergibst du im Anschluss.';
+const EDIT_EXPLANATION = 'Name und Beschreibung erscheinen in der Auswahl und in den Profilen.';
 const NAME_LABEL = 'Name';
 const DESCRIPTION_LABEL = 'Beschreibung';
-const DESCRIPTION_PLACEHOLDER = 'Wofür ist diese Rolle da?';
+const DESCRIPTION_PLACEHOLDER = 'Aufgabe der Rolle';
 const DESCRIPTION_ROWS = 4;
 const CREATE_ACTION_LABEL = 'Hinzufügen';
 const EDIT_ACTION_LABEL = 'Speichern';

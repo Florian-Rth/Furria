@@ -3,7 +3,7 @@ import type { FC } from 'react';
 import type { RoleOverview } from '@/features/roles-overview';
 import { RoleHolderRow } from './RoleHolderRow';
 
-const NO_HOLDER_LINE = 'Diese Rolle hat gerade niemand.';
+const NO_HOLDER_LINE = 'Diese Rolle ist unbesetzt.';
 
 interface RoleOverviewBlockProps {
   role: RoleOverview;

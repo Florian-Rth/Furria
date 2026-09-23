@@ -8,7 +8,7 @@ import { KeyHolderRow } from './KeyHolderRow';
 
 const SHEET_CLOSE_LABEL = 'Schlüsselliste schließen';
 const NO_HOLDERS_TITLE = 'Kein Schlüssel vergeben';
-const NO_HOLDERS_DESCRIPTION = 'Für diesen Ort hat gerade niemand einen Schlüssel.';
+const NO_HOLDERS_DESCRIPTION = 'Für diesen Ort ist kein Schlüssel ausgegeben.';
 
 const toVenueId = (venue: ClubVenue): number => venue.venueId;
 

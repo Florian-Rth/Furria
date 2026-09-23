@@ -5,7 +5,9 @@ import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { toIsoDay } from '@/lib/day';
 import { useBoardQuery } from '../api';
 import { toBoardEntries, toBoardOfficeId } from '../manage-board-labels';
+import { toBoardErrorMessage } from '../manage-board-messages';
 import { BoardEditorDenied } from './BoardEditorDenied';
+import { BoardEditorError } from './BoardEditorError';
 import { BoardEditorNotFound } from './BoardEditorNotFound';
 import { BoardEditorSkeleton } from './BoardEditorSkeleton';
 import { BoardOfficeEditor } from './BoardOfficeEditor';
@@ -15,27 +17,35 @@ const TITLE = 'Vorstandsfunktion bearbeiten';
 
 export const BoardOfficeEditScreen: FC = () => {
   const { boardOfficeId } = useParams({ from: ROUTE_ID });
-  const { has } = usePermissions();
+  const { has, isUndecided } = usePermissions();
   const id = toBoardOfficeId(boardOfficeId);
   const board = useBoardQuery();
+  const errorMessage = toBoardErrorMessage(board.error);
 
-  if (!has(PERMISSION_KEYS.boardManage)) {
+  const reload = (): void => {
+    void board.refetch();
+  };
+
+  if (!isUndecided && !has(PERMISSION_KEYS.boardManage)) {
     return <BoardEditorDenied title={TITLE} />;
   }
   if (id === null) {
     return <BoardEditorNotFound />;
   }
-  if (board.data === undefined) {
-    return board.isLoading ? <BoardEditorSkeleton /> : <BoardEditorNotFound />;
+  if (board.data !== undefined && !isUndecided) {
+    const entry = toBoardEntries(board.data.offices, toIsoDay(new Date())).find(
+      (candidate) => candidate.boardOfficeId === id,
+    );
+
+    if (entry === undefined) {
+      return <BoardEditorNotFound />;
+    }
+
+    return <BoardOfficeEditor entry={entry} />;
+  }
+  if (errorMessage !== null) {
+    return <BoardEditorError message={errorMessage} onRetry={reload} />;
   }
 
-  const entry = toBoardEntries(board.data.offices, toIsoDay(new Date())).find(
-    (candidate) => candidate.boardOfficeId === id,
-  );
-
-  if (entry === undefined) {
-    return <BoardEditorNotFound />;
-  }
-
-  return <BoardOfficeEditor entry={entry} />;
+  return <BoardEditorSkeleton />;
 };

@@ -2,9 +2,17 @@ import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { usePermissions } from '@/features/session';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
+import { isForbiddenError } from '@/lib/query-error';
 import { useManagedKeysQuery } from '../api';
-import { findKeyHolding, toKeyEditorOrigin, toKeyHoldingIdParam } from '../manage-keys-labels';
+import {
+  findKeyHolding,
+  KEYS_ORIGIN,
+  toKeyEditorOrigin,
+  toKeyHoldingIdParam,
+} from '../manage-keys-labels';
+import { toManagedKeysErrorMessage } from '../manage-keys-messages';
 import { KeyEditorDenied } from './KeyEditorDenied';
+import { KeyEditorError } from './KeyEditorError';
 import { KeyEditorNotFound } from './KeyEditorNotFound';
 import { KeyEditorSkeleton } from './KeyEditorSkeleton';
 import { KeyHoldingEditor } from './KeyHoldingEditor';
@@ -16,9 +24,21 @@ export const KeyHoldingScreen: FC = () => {
   const { keyHoldingId } = useParams({ from: ROUTE_ID });
   const permissions = usePermissions();
   const keys = useManagedKeysQuery();
+  const errorMessage = toManagedKeysErrorMessage(keys.error);
+
+  const reload = (): void => {
+    void keys.refetch();
+  };
 
   if (keys.data === undefined) {
-    return keys.isLoading ? <KeyEditorSkeleton /> : <KeyEditorNotFound />;
+    if (isForbiddenError(keys.error)) {
+      return <KeyEditorDenied title={TITLE} origin={KEYS_ORIGIN} />;
+    }
+    if (errorMessage !== null) {
+      return <KeyEditorError message={errorMessage} onRetry={reload} />;
+    }
+
+    return <KeyEditorSkeleton />;
   }
 
   const id = toKeyHoldingIdParam(keyHoldingId);

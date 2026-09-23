@@ -5,7 +5,7 @@ import { AccessDeniedScreen } from './AccessDeniedScreen';
 
 const NOT_AFFILIATED_TITLE = 'Kein Zugang';
 const NOT_AFFILIATED_MESSAGE =
-  'Das Verzeichnis ist für Mitglieder, Gruppen und Rollen des FCC. Dein Konto hat noch keine Verbindung zum Verein — melde dich bei der Personenverwaltung.';
+  'Dein Konto ist noch keiner Person im Verein zugeordnet. Wende dich an die Personenverwaltung.';
 
 export const RequireAffiliation: FC<PropsWithChildren> = ({ children }) => {
   const { isAffiliated, isUndecided } = usePermissions();

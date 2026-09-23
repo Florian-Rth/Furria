@@ -14,7 +14,7 @@ const PANEL_TITLE = 'Aushang';
 const ALL_ANNOUNCEMENTS_LABEL = 'Alle Aushänge';
 const POST_ANNOUNCEMENT_LABEL = 'Aushang schreiben';
 const NOTHING_POSTED_TITLE = 'BRETT LEER';
-const NOTHING_POSTED_LINE = 'Am Brett hängt gerade nichts. Häng den ersten Aushang auf.';
+const NOTHING_POSTED_LINE = 'Neue Aushänge erscheinen hier.';
 const NEW_ANNOUNCEMENT_ROUTE = '/announcements/new';
 
 export const AnnouncementsPanel: FC = () => {

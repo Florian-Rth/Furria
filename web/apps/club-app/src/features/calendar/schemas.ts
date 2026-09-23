@@ -59,9 +59,8 @@ export type RunningVenuesResponse = z.infer<typeof RunningVenuesResponseSchema>;
 export const CALENDAR_TITLE_MAX_LENGTH = 120;
 export const CALENDAR_DESCRIPTION_MAX_LENGTH = 2000;
 
-const END_BEFORE_START_MESSAGE = 'Ein Zeitraum kann nicht vor seinem Beginn enden.';
-const OWNER_CANNOT_PARTICIPATE_MESSAGE =
-  'Der Eigentümer wirkt immer mit — er gehört nicht in die Liste.';
+const END_BEFORE_START_MESSAGE = 'Das Ende muss nach dem Beginn liegen.';
+const OWNER_CANNOT_PARTICIPATE_MESSAGE = 'Der Eigentümer ist automatisch beteiligt.';
 const NO_END_DAY = '';
 
 export const CalendarCollisionSchema = z.object({

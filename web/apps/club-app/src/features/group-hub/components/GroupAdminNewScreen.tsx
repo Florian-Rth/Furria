@@ -3,8 +3,7 @@ import type { FC } from 'react';
 import { useGroupHubQuery } from '../api';
 import { EDITOR_DENIED_MESSAGE, toHubId, toPersonIdParam } from '../group-hub-labels';
 import { GroupAdminEditor } from './GroupAdminEditor';
-import { GroupEditorNotFound } from './GroupEditorNotFound';
-import { GroupEditorSkeleton } from './GroupEditorSkeleton';
+import { GroupEditorUnloaded } from './GroupEditorUnloaded';
 import { HubEditorDenied } from './HubEditorDenied';
 
 const ROUTE_ID = '/_app/groups_/$groupId_/admins/new';
@@ -17,7 +16,7 @@ export const GroupAdminNewScreen: FC = () => {
   const hub = useGroupHubQuery(id);
 
   if (hub.data === undefined) {
-    return hub.isLoading ? <GroupEditorSkeleton /> : <GroupEditorNotFound />;
+    return <GroupEditorUnloaded groupId={id} />;
   }
   if (!hub.data.viewerMayManage) {
     return <HubEditorDenied hub={hub.data} title={TITLE} message={EDITOR_DENIED_MESSAGE} />;

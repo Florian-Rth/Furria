@@ -105,11 +105,11 @@ describe('toRhythmMeta', () => {
 
 describe('toTrainingsCreatedMessage', () => {
   it.each([
-    [0, 0, 'Es ist kein Termin entstanden.'],
-    [0, 2, 'Es ist kein Termin entstanden. 2 Termine standen schon.'],
-    [1, 0, '1 Training steht jetzt im Kalender.'],
-    [3, 0, '3 Trainings stehen jetzt im Kalender.'],
-    [3, 1, '3 Trainings stehen jetzt im Kalender. 1 Termin stand schon.'],
+    [0, 0, 'Es wurde kein Termin angelegt.'],
+    [0, 2, 'Es wurde kein Termin angelegt. 2 Termine waren bereits vorhanden.'],
+    [1, 0, '1 Training ist angelegt.'],
+    [3, 0, '3 Trainings sind angelegt.'],
+    [3, 1, '3 Trainings sind angelegt. 1 Termin war bereits vorhanden.'],
   ])('reads %i created and %i skipped', (created, skipped, expected) => {
     expect(toTrainingsCreatedMessage(created, skipped)).toBe(expected);
   });
@@ -118,8 +118,8 @@ describe('toTrainingsCreatedMessage', () => {
 describe('toCollisionNotice', () => {
   it.each([
     [0, null],
-    [1, 'An einem Abend ist der Ort doppelt belegt. Sieh im Kalender nach.'],
-    [2, 'An 2 Abenden ist der Ort doppelt belegt. Sieh im Kalender nach.'],
+    [1, 'An einem Termin ist der Ort doppelt belegt.'],
+    [2, 'An 2 Terminen ist der Ort doppelt belegt.'],
   ])('reads %i collisions', (count, expected) => {
     expect(toCollisionNotice(count)).toBe(expected);
   });

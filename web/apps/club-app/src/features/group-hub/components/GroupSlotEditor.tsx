@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { toTimeOptions, useRunningVenuesQuery } from '@/features/calendar';
 import { WriteScreen } from '@/features/write';
 import { toHubEditorOrigin } from '../group-hub-labels';
+import { toEditorChoicesErrorMessage } from '../group-hub-messages';
 import { useGroupSlotEditor } from '../hooks/use-group-slot-editor';
 import {
   SLOT_DIALOG_ADD_TITLE,
@@ -23,6 +24,8 @@ import {
   WEEKDAY_OPTIONS,
 } from '../rhythm-labels';
 import type { GroupHub, TrainingSlot } from '../schemas';
+import { GroupEditorError } from './GroupEditorError';
+import { GroupEditorSkeleton } from './GroupEditorSkeleton';
 
 const CANCEL_LABEL = 'Abbrechen';
 const CLOSE_LABEL = 'Schließen';
@@ -38,10 +41,7 @@ export const GroupSlotEditor: FC<GroupSlotEditorProps> = ({ hub, slot }) => {
   const venues = useRunningVenuesQuery();
   const [confirmingRemove, setConfirmingRemove] = useState(false);
   const title = slot === null ? SLOT_DIALOG_ADD_TITLE : SLOT_DIALOG_EDIT_TITLE;
-  const venueOptions = toRhythmVenueOptions(venues.data?.venues ?? null, toHeldVenue(slot));
-  const runningVenueIds = new Set((venues.data?.venues ?? []).map((venue) => venue.venueId));
-  const venueIsArchived =
-    slot !== null && slot.venueId !== null && !runningVenueIds.has(slot.venueId);
+  const origin = toHubEditorOrigin(hub);
 
   const openRemoveConfirm = (): void => {
     setConfirmingRemove(true);
@@ -50,6 +50,32 @@ export const GroupSlotEditor: FC<GroupSlotEditorProps> = ({ hub, slot }) => {
   const closeRemoveConfirm = (): void => {
     setConfirmingRemove(false);
   };
+
+  const reloadVenues = (): void => {
+    void venues.refetch();
+  };
+
+  if (venues.data === undefined) {
+    if (venues.error === null) {
+      return <GroupEditorSkeleton />;
+    }
+
+    const venuesErrorMessage = toEditorChoicesErrorMessage(venues.error);
+
+    return (
+      <GroupEditorError
+        title={title}
+        origin={origin}
+        message={venuesErrorMessage}
+        onRetry={reloadVenues}
+      />
+    );
+  }
+
+  const venueOptions = toRhythmVenueOptions(venues.data.venues, toHeldVenue(slot));
+  const runningVenueIds = new Set(venues.data.venues.map((venue) => venue.venueId));
+  const venueIsArchived =
+    slot !== null && slot.venueId !== null && !runningVenueIds.has(slot.venueId);
 
   const danger =
     slot === null ? null : (
@@ -77,7 +103,7 @@ export const GroupSlotEditor: FC<GroupSlotEditorProps> = ({ hub, slot }) => {
 
   return (
     <WriteScreen
-      origin={toHubEditorOrigin(hub)}
+      origin={origin}
       title={title}
       rejection={control.rejection ?? undefined}
       isDirty={control.isDirty}

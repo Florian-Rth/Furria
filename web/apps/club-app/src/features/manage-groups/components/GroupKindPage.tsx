@@ -17,6 +17,7 @@ import type { GroupKindEntry } from '../manage-groups-labels';
 import {
   ARCHIVE_GROUP_KIND_EXPLANATION,
   ARCHIVE_GROUP_KIND_EYEBROW,
+  GROUP_KIND_SECTION_TITLE,
   isGroupKindArchivable,
   toArchiveGroupKindConsequence,
   toArchiveGroupKindQuestion,
@@ -25,7 +26,6 @@ import {
   toGroupKindUsageLine,
 } from '../manage-groups-labels';
 
-const SECTION_TITLE = 'Gruppenart';
 const NAME_LABEL = 'Name';
 const USAGE_LABEL = 'Gruppen';
 const EDIT_LABEL = 'Bearbeiten';
@@ -79,7 +79,7 @@ export const GroupKindPage: FC<GroupKindPageProps> = ({ entry, highlight }) => {
   );
 
   return (
-    <KkPanelSection title={SECTION_TITLE} action={action}>
+    <KkPanelSection title={GROUP_KIND_SECTION_TITLE} action={action}>
       <KkPanel highlight={highlight} landing={toLandingKey('group-kind', entry.groupKindId)}>
         <KkFieldRow label={NAME_LABEL} value={entry.name} />
         <KkFieldRow label={USAGE_LABEL} value={toGroupKindUsageLine(entry.groupCount)} />
