@@ -26,7 +26,10 @@ public static class ServiceCollectionExtensions
                 options
                     .UseNpgsql(
                         configuration.GetConnectionString(AppDbContext.ConnectionName),
-                        npgsql => npgsql.MigrationsHistoryTable("__ef_migrations_history")
+                        npgsql =>
+                            npgsql
+                                .MigrationsHistoryTable("__ef_migrations_history")
+                                .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
                     )
                     .UseSnakeCaseNamingConvention()
                     .AddInterceptors(
