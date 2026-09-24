@@ -10,16 +10,19 @@ declare module '@mui/material/styles' {
   }
 
   interface TypographyVariants {
+    poster: CSSProperties;
     display: CSSProperties;
   }
 
   interface TypographyVariantsOptions {
+    poster?: CSSProperties;
     display?: CSSProperties;
   }
 }
 
 declare module '@mui/material/Typography' {
   interface TypographyPropsVariantOverrides {
+    poster: true;
     display: true;
     h5: false;
     h6: false;
@@ -37,6 +40,8 @@ const fontSize = {
   pageTitle: '2rem',
   hero: '3rem',
   heroWide: '4.5rem',
+  poster: '4rem',
+  posterWide: '6.5rem',
 } as const;
 
 const onDesktop = `@media (min-width:${KK_DESKTOP_BREAKPOINT}px)`;
@@ -83,6 +88,12 @@ export const kkTheme = createTheme({
     fontWeightRegular: 500,
     fontWeightMedium: 700,
     fontWeightBold: 800,
+    poster: {
+      ...displayHeading,
+      fontSize: fontSize.poster,
+      lineHeight: 0.95,
+      [onDesktop]: { fontSize: fontSize.posterWide },
+    },
     display: {
       ...displayHeading,
       fontSize: fontSize.hero,

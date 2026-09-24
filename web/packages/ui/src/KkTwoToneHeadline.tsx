@@ -8,7 +8,7 @@ interface KkTwoToneHeadlineProps {
   line2: string;
   posterShadow?: boolean;
   line1Color?: string;
-  variant?: 'h1' | 'h2';
+  variant?: 'poster' | 'display' | 'h1' | 'h2';
   component?: 'h1' | 'h2' | 'p';
 }
 
@@ -17,7 +17,7 @@ export const KkTwoToneHeadline: FC<KkTwoToneHeadlineProps> = ({
   line2,
   posterShadow = false,
   line1Color,
-  variant = 'h1',
+  variant = 'poster',
   component = 'h1',
 }) => (
   <Typography variant={variant} component={component}>

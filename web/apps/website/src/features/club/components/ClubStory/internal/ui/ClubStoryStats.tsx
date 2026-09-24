@@ -9,7 +9,7 @@ export const ClubStoryStats: FC = () => {
     <KkStatRow>
       {stats.map((stat) => (
         <KkStatRow.Item key={stat.label}>
-          <KkStatRow.Value variant="h2">{stat.value}</KkStatRow.Value>
+          <KkStatRow.Value variant="h1">{stat.value}</KkStatRow.Value>
           <KkStatRow.Label sx={{ fontWeight: 700, letterSpacing: '0.08em' }}>
             {stat.label}
           </KkStatRow.Label>

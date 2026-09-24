@@ -22,7 +22,7 @@ export const KkSectionHeader: FC<KkSectionHeaderProps> = ({ title, kicker, numer
     <KkSectionMarker numeral={numeral} />
     <Stack sx={{ gap: 0.5, minWidth: 0 }}>
       {kicker !== undefined && <KkEyebrow tone="muted">{kicker}</KkEyebrow>}
-      <Typography variant="h2" component="h2" sx={{ lineHeight: 1 }}>
+      <Typography variant="h1" component="h2" sx={{ lineHeight: 1 }}>
         {title}
       </Typography>
     </Stack>

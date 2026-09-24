@@ -8,7 +8,7 @@ export const CarnivalCallShout: FC = () => (
     sx={{
       position: 'relative',
       zIndex: 1,
-      typography: 'display',
+      typography: 'poster',
       lineHeight: 0.86,
       letterSpacing: '0.01em',
       textAlign: { xs: 'left', md: 'right' },

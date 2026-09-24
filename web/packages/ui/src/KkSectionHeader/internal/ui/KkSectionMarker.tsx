@@ -27,7 +27,7 @@ export const KkSectionMarker: FC<KkSectionMarkerProps> = ({ numeral }) => {
       aria-hidden
       data-kk-section-numeral
       sx={{
-        typography: 'display',
+        typography: 'poster',
         color: 'primary.main',
         lineHeight: 0.74,
         flexShrink: 0,

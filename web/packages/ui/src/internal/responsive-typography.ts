@@ -1,6 +1,7 @@
 import type { CSSObject, Theme } from '@mui/material/styles';
 
 export type KkTypographyVariant =
+  | 'poster'
   | 'display'
   | 'h1'
   | 'h2'

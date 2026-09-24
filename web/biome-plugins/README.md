@@ -111,8 +111,8 @@ intended bluntness: theme tokens, not raw dimensions.
 
 Flags any `fontSize` / `font-size` object key, a `font` shorthand string, and any JSX `fontSize` attribute other than
 the icon literals `"small"`, `"medium"`, `"large"`, `"inherit"`. Registered for every file except
-`packages/ui/src/theme.ts`, which owns the only type scale: 12 · 14 · 16 · 20 · 24 · 32 · 48 · 72px,
-exposed as the typography variants `display`, `h1`–`h4`, `subtitle1/2`, `body1/2`, `caption`,
+`packages/ui/src/theme.ts`, which owns the only type scale: 12 · 14 · 16 · 20 · 24 · 32 · 48 · 64 · 72 · 104px,
+exposed as the typography variants `poster`, `display`, `h1`–`h4`, `subtitle1/2`, `body1/2`, `caption`,
 `overline`, `button` (`h5`/`h6` are disabled). Pick a variant (`variant="caption"`,
 `sx={{ typography: { xs: 'h3', desktop: 'h2' } }}`); never grow the scale to fit a design. Icons are
 sized with `width`/`height`.
