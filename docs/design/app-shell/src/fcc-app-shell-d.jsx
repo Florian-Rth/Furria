@@ -1,10 +1,10 @@
-// fcc-app-shell-d.jsx — Layout D „Destillat": personenzentrierte Bühne +
-// Vorhang-Navigation. Mobile & Desktop, konsequent hell ODER dunkel.
+// fcc-app-shell-d.jsx — Layout D "Distilled": person-centred stage +
+// curtain navigation. Mobile & desktop, consistently light OR dark.
 
 const D = window.T;
 const DME = { name: 'Anna Brunner', first: 'Anna', short: 'AB', group: 'Tanzgarde' };
 
-// Zwei Paletten, gleiche Struktur. Hell = kein Schwarz, auch nicht in Bühne/Vorhang.
+// Two palettes, same structure. Light = no black, not even in the stage/curtain.
 function dpal(dark) {
   return dark ? {
     dark: true,
@@ -67,7 +67,7 @@ function DChip({ tone = 'neutral', children, c }) {
   return <span style={{ background: bg, color: fg, fontWeight: 800, fontSize: 11, padding: '4px 9px', borderRadius: 20, whiteSpace: 'nowrap' }}>{children}</span>;
 }
 
-// ── Aufgabe in der Bühne: was der Mensch noch nicht weiß ──
+// ── Task in the stage: what the person doesn't know yet ──
 function DTask({ eyebrow, title, action, tone = 'red', last, wide, c }) {
   const bg = tone === 'red' ? D.red : tone === 'gold' ? D.gold : c.ghostBg;
   const fg = tone === 'gold' ? D.ink : tone === 'red' ? '#fff' : c.ghostFg;
@@ -258,7 +258,7 @@ function LayoutD({ open = false, quiet = false, dark = false }) {
 }
 
 // ══════════════════════════════════════════════════════════════════
-// Desktop — der Vorhang wird zur festen Schiene, die Bühne zum Kopfband
+// Desktop — the curtain becomes a fixed rail, the stage becomes a header band
 // ══════════════════════════════════════════════════════════════════
 function LayoutDDesk({ dark = false, quiet = false }) {
   const c = dpal(dark);

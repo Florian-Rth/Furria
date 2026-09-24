@@ -14,7 +14,7 @@ shaped: 2026-09-11
 
 # CA-N — Native Shell (Capacitor)
 
-The Club-App becomes a native Android and iOS app **without becoming a second app**. Capacitor
+The club app becomes a native Android and iOS app **without becoming a second app**. Capacitor
 wraps the existing `web/apps/club-app` bundle in a native project whose WebView loads the same
 `dist/` from inside the app package, plus a JS↔native bridge for platform APIs. One codebase,
 one build, three targets: `app.furria.de`, Play-installable APK, App Store build.
@@ -424,7 +424,7 @@ is a release phase, not a "see it on my phone" phase.
 
 ## Done when
 
-- `pnpm build:native && npx cap sync && npx cap run android` installs the Club-App on a USB
+- `pnpm build:native && npx cap sync && npx cap run android` installs the club app on a USB
   device, it logs in against the deployed API, and the session survives a cold start.
 - The same commit still builds, deploys and serves the web app unchanged — `pnpm build`,
   `pnpm test`, `pnpm lint`, `pnpm typecheck`, the club-app image, and a website commit that

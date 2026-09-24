@@ -1,4 +1,4 @@
-# Handoff: Personen &amp; Gruppen (FCC / FURRIA Club-App, Block 2)
+# Handoff: Persons &amp; Groups (FCC / FURRIA Club-App, Block 2)
 
 ## Overview
 This bundle covers the **people-and-groups half of the internal member app** of the *Furrscher Carnevals Club e.V.* (FCC, brand name **FURRIA**), a German carnival club with ~150 affiliated people.
@@ -20,7 +20,7 @@ The files in `design/` are **design references written as HTML + React (Babel-in
 
 The task is to **recreate these designs in the target codebase's own environment**, using its established framework, component library, styling approach, state management and data layer. If no environment exists yet, pick the appropriate stack for a small club web app (the product direction is: **web app first, later wrapped in Capacitor** for native push / iOS live activities / home-screen widgets) and implement there.
 
-Open `design/FCC Club-App - Personen und Gruppen.html` in a browser to see all 44 artboards on a pannable canvas (drag to pan, scroll to zoom). Needs an internet connection (React, Babel and Google Fonts load from CDN).
+Open `design/FCC Club-App - Persons and Groups.html` in a browser to see all 44 artboards on a pannable canvas (drag to pan, scroll to zoom). Needs an internet connection (React, Babel and Google Fonts load from CDN).
 
 ## Fidelity
 **High-fidelity.** Colours, typography, spacing, borders, radii and copy are final and come from the club's existing "Konfetti Kinetik" design system (this bundle is its **light, app-side dialect**, identical to the already-approved `FCC Club-App - Mocks` Layout D). Recreate pixel-close.
@@ -111,7 +111,7 @@ Minimum text size in the mocks is 9.5px (only for the monospace placeholder capt
 - Radii: **cards 16**, panels/dialogs 20, inner boxes 12–14, chips/buttons/pills 30–40 (fully round), icon tiles 7–9, avatars full.
 - **Two elevation languages** (carry this over):
   1. *App soft* — `1.5px solid line` hairline border, shadow `0 1px 2px rgba(26,20,17,0.05)` or none. Default for everything in this bundle.
-  2. *Plakat hard* — `Npx Npx 0 ink` offset shadow, no blur. **Not used in this bundle** (it belongs to the public website and hero elements). Do not introduce it here.
+  2. *poster hard* — `Npx Npx 0 ink` offset shadow, no blur. **Not used in this bundle** (it belongs to the public website and hero elements). Do not introduce it here.
 - Header lift: `box-shadow: 0 10px 26px rgba(26,20,17,0.07)` under the "Bühne".
 - Dialog shadow: `0 30px 80px rgba(26,20,17,0.34)`; bottom sheet: `0 -10px 40px rgba(26,20,17,0.18)`.
 - Scrim: `rgba(26,20,17,0.42)` + `backdrop-filter: blur(1.5px)` for dialogs, `rgba(26,20,17,0.34)` for sheets.
@@ -131,7 +131,7 @@ Minimum text size in the mocks is 9.5px (only for the monospace placeholder capt
 
 **Honorary seal** (`PgSeal`) — gold filled circle with an ink star glyph, 13–26px, optionally followed by `EHRENMITGLIED` in 11/900 `#8a6600`.
 
-**Key marker** (`PgKey`) — 24px round `rgba(47,109,168,0.12)` tile with a blue key icon. Reserved for the later Schlüssel-Register; already rendered in the member list, person header and person management table.
+**Key marker** (`PgKey`) — 24px round `rgba(47,109,168,0.12)` tile with a blue key icon. Reserved for the later key registry; already rendered in the member list, person header and person management table.
 
 **Photo placeholder** (`PgBilder`) — `1.5px dashed rgba(26,20,17,0.18)`, radius 12, `repeating-linear-gradient(135deg, rgba(26,20,17,0.045) 0 7px, transparent 7px 14px)`, centred monospace caption (`SITZUNG 24/25`, `UMZUG 23/24`, …), plus one 11.5 `faint` line of explanation underneath.
 
@@ -175,12 +175,12 @@ Mobile screens are one scroll surface; the mocks show the visible ~660px. Two de
 Implement this exactly; the screens depend on it.
 
 **Person** — the registry entry. Any combination of the following may be true:
-- has a **Mitgliedschaft** with a state *derived* from dated facts: `aktiv` · `ruht` · `beendet` (plus "no membership at all"),
-- is an **Ehrenmitglied** (an honour that runs *alongside* the membership, granted in a session),
-- belongs to one or more **Gruppen** (m:n, each with "in der Gruppe seit"),
-- holds one or more **Rollen** (each with "seit").
+- has a **membership** with a state *derived* from dated facts: `aktiv` · `ruht` · `beendet` (plus "no membership at all"),
+- is an **honorary member** (an honour that runs *alongside* the membership, granted in a session),
+- belongs to one or more **groups** (m:n, each with "in der Gruppe seit"),
+- holds one or more **roles** (each with "seit").
 
-A person in a group **need not be a Mitglied** (example: Elif Kaya, trainer of the Kindergarde). There is **no "Vorstand" catch-all role** — rights hang on roles only.
+A person in a group **need not be a member** (example: Elif Kaya, trainer of the Kindergarde). There is **no "board" catch-all role** — rights hang on roles only.
 
 **Mitgliedschaftsart**: `Aktiv` (~30 €/yr) · `Passiv` · `Jugend` (~15 €/yr) · `Ehren`.
 
@@ -236,7 +236,7 @@ No `/admin` prefix — a permission guard decides visibility.
 
 # Screens
 
-Artboard ids in brackets refer to `design/FCC Club-App - Personen und Gruppen.html`.
+Artboard ids in brackets refer to `design/FCC Club-App - Persons and Groups.html`.
 
 ## 1 · Mitglieder — `/members` (read-only)
 
@@ -424,7 +424,7 @@ None to hand over. Icons are the inline 24×24 stroke set in `fcc-ds-shell.jsx` 
 
 ```
 design/
-  FCC Club-App - Personen und Gruppen.html   the canvas — open this first (44 artboards)
+  FCC Club-App - Persons and Groups.html   the canvas — open this first (44 artboards)
   fcc-pg-kit.jsx      palette PGP, primitives (PgSec/PgCd/PgAv/PgSw/PgSeal/PgKey/PgState/
                       PgSearch/PgFilters/PgStat/PgSkel/PgEmpty/PgConfirm/PgModal),
                       shells PgMob/PgDesk/PgRail, and ALL sample data +

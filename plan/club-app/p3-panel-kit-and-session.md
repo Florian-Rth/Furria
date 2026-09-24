@@ -2,14 +2,14 @@
 status: shaped 2026-09-18, all eight slices implemented 2026-09-18
 phase: CA-P3, packages C and A
 shaped_with: Florian, grilling session 2026-09-18
-binding: docs/adr/0010, docs/adr/0011, CONTEXT.md (Session, Aushang, Kalendereintrag, Berechtigung)
+binding: docs/adr/0010, docs/adr/0011, CONTEXT.md (Session, announcement, calendar entry, permission)
 ---
 
 # CA-P3 — the panel kit and the Session
 
-Two packages, shaped together because the Verein hub (package D, next phase) needs both and
+Two packages, shaped together because the club hub (package D, next phase) needs both and
 neither is useful alone. **Neither package ships an endpoint**: nothing reads a Session until D
-and nothing writes one until *Verein verwalten* (G). That is the rule, not a reduction —
+and nothing writes one until *club management* (G). That is the rule, not a reduction —
 see `.claude/skills/backend-work/SKILL.md`.
 
 ## What was ruled on 2026-09-18
@@ -23,10 +23,10 @@ ADR-0011.
    shows a `KkEmptyState`, exactly as ~30 call sites do today. Elision is the hub's job, not a
    `whenEmpty` prop on the panel.
 3. **A hub is one query.** One request per hub, so the hub knows its shape before it paints.
-4. **Payload shape follows viewer variance.** The Verein hub is identical for every viewer, so it
+4. **Payload shape follows viewer variance.** The club hub is identical for every viewer, so it
    is a typed `ClubHubSummary` and caches as one entry. Start varies, so it is a server-shaped
    list. (Both are package D and F; recorded here because they decide what A's data is for.)
-5. **Every gate is `has(key)`** — ADR-0011. Nothing is gated on "is Mitglied" at a call site.
+5. **Every gate is `has(key)`** — ADR-0011. Nothing is gated on "is a member" at a call site.
 6. **The Session Nº is evidence, not arithmetic.** One record per season the club knows
    something about; every field but the year optional; nothing inferred from a neighbour.
 7. **The app must work with no data at all.** Every degradation step is listed under package A.
@@ -207,5 +207,5 @@ It is called on write, which lands in G. A ships the function and its tests.
 ## Open — needs Florian
 
 - **Is 1971 the founding year?** It is in the public masthead ("GROSSFURRA · EST. 1971"), the
-  footer, a hero stat and the Chronik. Florian wrote "founded 1974 (or whatever)" on 2026-09-18,
+  footer, a hero stat and the chronicle. Florian wrote "founded 1974 (or whatever)" on 2026-09-18,
   so it is not certain, and it is on the public site today. Blocks nothing in this phase.

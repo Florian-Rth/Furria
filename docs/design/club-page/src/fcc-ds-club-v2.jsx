@@ -1,11 +1,11 @@
 // fcc-ds-club-v2.jsx — public "Verein" page, ALTERNATE DIRECTION.
-// Concept "Plakat-Kapitel": a bold broadsheet feature — numbered full-bleed chapters
-// alternating ink/cream/red, the HARD offset-shadow "Plakat" elevation as the leading
+// Concept "poster chapters": a bold broadsheet feature — numbered full-bleed chapters
+// alternating ink/cream/red, the HARD offset-shadow "poster" elevation as the leading
 // language, the 11.11 KKSeal + diagonal KKTicker (both unused in v1), Gruppen as a
 // numbered magazine index (not a card grid), Vorstand as a portrait wall.
 // Konfetti-Kinetik system only. Exports ClubV2({ mode, device }).
 
-// hard offset-shadow (Plakat) — the bold elevation language
+// hard offset-shadow (poster) — the bold elevation language
 const v2Hard = (c, n = 8, col) => `${n}px ${n}px 0 ${col || c.ink}`;
 const V2_CREAM = '#FBF4E6';
 const { useState } = React;
@@ -156,7 +156,7 @@ function ClubV2Desktop({ c }) {
       </div>
 
 
-      {/* KAPITEL 01 — Wer wir sind */}
+      {/* CHAPTER 01 — Who we are */}
       <div style={{ padding: '78px 64px 0' }}>
         <V2Chapter c={c} num="01" kicker="DAS SIND WIR" title="EIN VEREIN MIT HERZ" />
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.05fr', gap: 56, alignItems: 'center' }}>
@@ -215,7 +215,7 @@ function ClubV2Desktop({ c }) {
         </div>
       </div>
 
-      {/* KAPITEL 03 — Die fünfte Jahreszeit, cream filmstrip */}
+      {/* CHAPTER 03 — The fifth season, cream filmstrip */}
       <div style={{ padding: '78px 64px 0' }}>
         <V2Chapter c={c} num="03" kicker="DIE FÜNFTE JAHRESZEIT" title="EINE SESSION" fs={56} />
         <p style={{ fontSize: 18, fontWeight: 500, lineHeight: 1.6, color: c.sub, maxWidth: 700, margin: '0 0 32px' }}>
@@ -336,7 +336,7 @@ function ClubV2Mobile({ c }) {
           </div>
         </div>
 
-        {/* 01 wer wir sind */}
+        {/* 01 who we are */}
         <div style={{ padding: '28px 22px 0' }}>
           <V2MChapter c={c} num="01" kicker="DAS SIND WIR" title="EIN VEREIN MIT HERZ" />
           <div style={{ border: `2px solid ${c.ink}`, boxShadow: v2Hard(c, 8, c.red), overflow: 'hidden' }}><window.KKPlh h={190} label="vereinsfoto-2026" c={c} tint={c.red} /></div>

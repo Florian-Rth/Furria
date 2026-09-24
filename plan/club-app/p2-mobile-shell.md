@@ -12,9 +12,9 @@ Read all three before writing code. This file is only the order of work.
 
 - Page bodies move into the content track as they are. They will look unpolished inside correct
   chrome, and that is the expected state at the end of the phase.
-- The Übersicht stays deliberately empty. `/manage/roles` stays as it is.
+- The Overview stays deliberately empty. `/manage/roles` stays as it is.
 - Two screens are nevertheless **new**, because the navigation is dead without them: the
-  **Verein** hub and **Mehr**. Both are link lists. That is their final form until the area
+  **club hub** and **More**. Both are link lists. That is their final form until the area
   structure is worked out, not an interim version.
 - The only page edits allowed are at call sites of primitives this phase deletes — a FAB, a
   sticky toolbar, a page header. Their job moves into a shell declaration; nothing else in the
@@ -79,10 +79,10 @@ Eight rulings taken while building it, each amending the text below:
   the document. §3.2's "exactly one scroll container" stays true — it is the document.
 - **Back mode follows from `origin`, not from `kind`.** A screen that declares where "up" goes is
   inside a destination (§3.3) and its bar is in back mode; a screen without one is a destination
-  root. That is what lets `/members` be a `list` _and_ sit inside Verein in slice 3, which §6's
+  root. That is what lets `/members` be a `list` _and_ sit inside the club hub in slice 3, which §6's
   table alone cannot express.
 - **`section` moves to slice 3.** It has no consumer until the navigation exists, and it is then
-  needed on exactly three routes — the Übersicht plus the two screens slice 3 creates.
+  needed on exactly three routes — the Overview plus the two screens slice 3 creates.
 - **Search mode moves to slice 5.** Its mechanism is a search param, and slice 5 is where that
   plumbing lands. Building the mode on local state first and rewriting it there is precisely the
   interim version `CLAUDE.md` forbids. The bar ships rest and back; search is the third mode and
@@ -154,12 +154,12 @@ screen of its own, because on denial it replaces the whole `_affiliated` outlet 
 declaration is left to carry the bar; `RequirePermission` sits inside a page that has already
 declared one, so it stays a plain body.
 
-### Slice 3 — navigation, the Verein hub, Mehr
+### Slice 3 — navigation, the club hub, More
 
 Inherited from slice 2: `section` lands on the three destination roots, `origin` on `/members`,
 `/groups`, `/profile` and the `/manage/*` screens, and `KkShellTrack`'s bottom clearance grows
 from one gutter to clear the navigation. `AppUserLink` and `AppSignOutButton` are uncalled until
-Mehr gives them a home.
+More gives them a home.
 
 - `KkShellNav` — the bottom bar, generic: a destination set passed in, 44 px minimum targets,
   thumb reach, safe-area aware. The active destination is marked by the **filled** icon variant.
@@ -168,9 +168,9 @@ Mehr gives them a home.
 - **`KkIcon` has no filled variants** — everything is Outlined except `home`. Each nav
   destination's icon gains a filled counterpart here.
 - club-app declares `Übersicht · Verein · Mehr` — **provisional, see the README**.
-- **Verein** (hub, overview kind): links to Mitglieder and Gruppen.
-- **Mehr** (hub): Profil, the permission-gated Verwaltung screens, the five inert "kommt später"
-  entries, Abmelden.
+- **Club hub** (hub, overview kind): links to Members and Groups.
+- **More** (hub): Profile, the permission-gated management screens, the five inert "kommt später"
+  entries, sign out.
 - `/members`, `/groups` and the `/manage/*` screens switch to back mode and lose the bottom
   navigation, per §4 mode 4.
 
@@ -182,14 +182,14 @@ from a route table, so the package stays router-agnostic; a screen declares `sec
 resolves the active destination from it. That makes §6's navigation column a compile error:
 `section` is **required** on `overview`, and `list` splits into a root variant (`section`, no
 `origin`) and a nested one (`origin`, no `section`), while `detail`, `working` and `fullscreen`
-carry `section?: never`. Verein and Mehr are both `overview` screens — the two hubs behave alike,
+carry `section?: never`. The club hub and More are both `overview` screens — the two hubs behave alike,
 and §6 already reserves brand identity for that type.
 
 `KkShellNav` sits in `internal/ui/` beside a `KkShellFoot` positioner that mirrors `KkShellChrome`
 at the bottom edge; both float permanently and pass density `1`. The active destination is the
 **filled** icon in red ink with a `text.primary` label, the inactive one outlined and secondary —
 the mock's red square above the icon is not reproduced. `KkIcon` gained `club`/`clubFilled` and
-`more`/`moreFilled`; the Übersicht's filled counterpart is the `home` it already had.
+`more`/`moreFilled`; the Overview's filled counterpart is the `home` it already had.
 
 **The keyboard is the shell's business.** `internal/logic/keyboard-inset.ts` is pure — viewport
 metrics → open or not, unit tested — and `use-keyboard-open` feeds it the visual viewport and
@@ -198,7 +198,7 @@ screen touches it.
 
 `KkHubRow` is the one new content primitive: icon, label, optional description, optional hint
 chip, link **or inert**. Both hubs are a `KkPanel` of them, so the five "kommt später" entries need
-no second component. Mehr groups them under `KkPanelHeader`s — Profil, Verwaltung, Kommt später —
+no second component. More groups them under `KkPanelHeader`s — Profil, Verwaltung, Kommt später —
 with the permission filter now a pure `toPermittedSections`, which is what survives of
 `buildNavGroups` and its test.
 
@@ -206,8 +206,8 @@ with the permission filter now a pure `toPermittedSections`, which is what survi
 outside `KkAppShell`. It is a `KkPersonRow` now, and `AppSignOutButton` a labelled button rather
 than a bare icon — both are call sites the phase boundary allows, and both are the end state.
 
-`/my-groups/$groupId` deliberately gets **no** origin. It is reachable from a Gruppe's detail and
-from Profil, so a single declared origin would be a lie; it keeps the brand lockup and no back
+`/my-groups/$groupId` deliberately gets **no** origin. It is reachable from a group's detail and
+from Profile, so a single declared origin would be a lie; it keeps the brand lockup and no back
 affordance until page rework rehomes it.
 
 ### Slice 4 — the page header, tool row, thread
@@ -227,7 +227,7 @@ affordance until page rework rehomes it.
   only. `CONTEXT.md` has a Session running 11.11. → Aschermittwoch, which is Easter-derived and
   movable, so the thread's caller needs a new **pure Aschermittwoch computation** and a session
   progress derived from it. Unit tested against known years; no DOM, no clock injection beyond the
-  date passed in. The Übersicht is the one screen that declares a thread.
+  date passed in. The Overview is the one screen that declares a thread.
 
 **Done.** `internal/logic/handover.ts` is the second pure module: scroll offset → header opacity
 and drift, bar rest opacity, bar title opacity and rise. It runs on the **same `scrollTravel` as
@@ -270,11 +270,11 @@ Its tone is `Exclude<KkTone, 'ink'>` — ink is a control treatment, never a sur
 a status.
 
 `ashWednesdayOf` (Gregorian Easter minus 46 days) and `sessionProgressAt` live in `lib/club.ts`
-beside `sessionAt`, tested against the known Aschermittwoche 2024–2038. **`sessionProgressAt`
-returns `null` between Aschermittwoch and the next Eröffnung**: `sessionAt` still names that
+beside `sessionAt`, tested against the known Ash Wednesdays 2024–2038. **`sessionProgressAt`
+returns `null` between Ash Wednesday and the next season opening**: `sessionAt` still names that
 Session for membership maths, but nothing is running, and a thread pinned at full for eight months
 would be decoration. `toSessionThread` turns that into a declaration or into nothing, so the
-Übersicht simply has no thread in the summer — §5's "absence is the default", as data.
+Overview simply has no thread in the summer — §5's "absence is the default", as data.
 
 ### Slice 5 — the sheet manager
 
@@ -388,7 +388,7 @@ the way `KkToastProvider` took `dismissLabel`; the German lives in `session-mess
 - Delete `KkAppShell` and its 25 internal files, `KkFab`, `KkStickyBar`, `KkStickyRail`,
   `KkPageHeader`, and club-app's `AppShell`, `AppPageHeader`, `AppBackLink`, `AppListLayout`,
   `AppListColumns`.
-- **`AppStageGreeting` is not deleted** — the greeting is real data and becomes the Übersicht's
+- **`AppStageGreeting` is not deleted** — the greeting is real data and becomes the Overview's
   page header.
 - Rehome every call site: a FAB becomes a bar action, a sticky toolbar becomes the tool row, a
   page header becomes the screen's declaration.
@@ -483,7 +483,7 @@ rail off the loading, access-denied, cold-empty and no-match states.
 published by the `KkStickyBar` this slice deletes — so every letter jump had been landing on a dead
 fallback of 196 px. The shell now publishes `scroll-padding-top` and `scroll-padding-bottom` on the
 document from the same two clearances the track pads with, which fixes **every** `scrollIntoView` in
-the app in one place — letter jumps, the Gruppen and Rollen detail panels, `KkShellSkipLink` — and
+the app in one place — letter jumps, the group and role detail panels, `KkShellSkipLink` — and
 `use-letter-position` reads that one value back instead of measuring the divider. Verified in the
 browser: a jump to M puts the divider exactly on the chrome edge and the rail marks M.
 `use-sticky-bar-height.ts` and the `stickyBar*` and `railFade` tokens went with the sticky bar.
@@ -507,7 +507,7 @@ intends.
   — mobile-optimised, possibly per-user or customisable — is owed after the rebuild.
 - **Desktop.** The app is knowingly bad on a laptop. Desktop variants are separate, later work.
 - **Page rework.** Every body still carries CA-P1's layout. Dialogs are still dialogs, the
-  Übersicht is still empty, _Meine Gruppen_ has no home.
+  Overview is still empty, _Meine Gruppen_ has no home.
 
 ## Risks
 

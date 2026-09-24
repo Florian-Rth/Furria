@@ -1,11 +1,11 @@
-// fcc-ds-drinks.jsx — Bierliste & Getränkekasse (/drinks + /drinks/inventory).
+// fcc-ds-drinks.jsx — Drinks list & drinks kitty (/drinks + /drinks/inventory).
 // Two surfaces:
-//  • MEMBER (Biertrinker): meine Kisten · offener Betrag → PayPal des Getränkewarts ·
-//    "Kiste kaufen"-Dialog · Sponsoren-Scoreboard (Top 3 + eigener Rang).
-//  • GETRÄNKEWART: Kasse/Bestand/offen-Stats · "Geld erhalten" (Person + Kisten →
-//    automatischer Abgleich offener Käufe) · Teilnehmerliste · PALETTENABGLEICH
-//    (App sagt exakt, wie viele Kisten auf die bezahlte Seite zu rücken sind).
-// Zahlung wird IMMER vom Getränkewart bestätigt (PayPal ODER bar).
+//  • MEMBER (beer drinker): my crates · open balance → the drinks steward's PayPal ·
+//    "buy a crate" dialog · sponsor scoreboard (top 3 + own rank).
+//  • DRINKS STEWARD: cashbox/stock/open stats · "money received" (person + crates →
+//    automatic reconcile of open purchases) · participant list · PALLET RECONCILE
+//    (the app states exactly how many crates to move to the paid side).
+// Payment is ALWAYS confirmed by the drinks steward (PayPal OR cash).
 // Composes the system shell + tokens. Exports PageDrinks, MDrinks, PageDrinksAdmin, MDrinksReceive.
 
 (function () {
@@ -91,7 +91,7 @@
     );
   }
 
-  // ── MEMBER · scoreboard (Top 3 + eigener Rang, ohne Mengen) ──────────────────
+  // ── MEMBER · scoreboard (top 3 + own rank, no amounts) ───────────────────────
   function Scoreboard({ compact }) {
     const medal = ['#F4B400', '#B8B8C0', '#C8895A'];
     return (
@@ -119,7 +119,7 @@
     );
   }
 
-  // ── MEMBER · mobile (Übersicht + Sheets) ─────────────────────────────────────
+  // ── MEMBER · mobile (overview + sheets) ───────────────────────────────────────
   function MDrinks({ initial = null }) {
     const [sheet, setSheet] = useState(initial); // null | buy | pay | sent
     const [qty, setQty] = useState(2);
@@ -232,7 +232,7 @@
     );
   }
 
-  // ── MEMBER · desktop (kompakte Übersicht) ────────────────────────────────────
+  // ── MEMBER · desktop (compact overview) ───────────────────────────────────────
   function PageDrinks() {
     const myOpen = ME[4];
     return (
@@ -271,7 +271,7 @@
     );
   }
 
-  // ── GETRÄNKEWART · Palettenabgleich card (the B mechanic) ─────────────────────
+  // ── DRINKS STEWARD · pallet reconcile card (the B mechanic) ──────────────────
   function PalettenCard({ mobile }) {
     const [moved, setMoved] = useState(false);
     const paid = moved ? PALLET.paid + PALLET.toMove : PALLET.paid;
@@ -312,7 +312,7 @@
     );
   }
 
-  // ── GETRÄNKEWART · KPI tile ───────────────────────────────────────────────────
+  // ── DRINKS STEWARD · KPI tile ─────────────────────────────────────────────────
   function Kpi({ value, sub, label, tone = 'ink', warn }) {
     const col = tone === 'red' ? T.red : tone === 'green' ? T.green : tone === 'gold' ? '#9a7200' : T.ink;
     return (
@@ -327,7 +327,7 @@
     );
   }
 
-  // ── GETRÄNKEWART · desktop dashboard ─────────────────────────────────────────
+  // ── DRINKS STEWARD · desktop dashboard ────────────────────────────────────────
   function PageDrinksAdmin() {
     return (
       <div style={{ padding: 28, maxWidth: 1240, display: 'flex', flexDirection: 'column', gap: 22 }}>
@@ -399,7 +399,7 @@
     );
   }
 
-  // ── GETRÄNKEWART · mobile "Geld erhalten" reconcile flow ──────────────────────
+  // ── DRINKS STEWARD · mobile "money received" reconcile flow ─────────────────
   function MDrinksReceive({ initial = 'who', onClose }) {
     const [step, setStep] = useState(initial); // who | count | done
     const [person, setPerson] = useState(PEOPLE[4]); // Markus (2 offen)
@@ -475,7 +475,7 @@
     );
   }
 
-  // ── GETRÄNKEWART · mobile dashboard ──────────────────────────────────────────
+  // ── DRINKS STEWARD · mobile dashboard ─────────────────────────────────────────
   function MDrinksAdmin({ initial = 'dash' }) {
     const [view, setView] = useState(initial);
     if (view === 'receive') return <MDrinksReceive onClose={() => setView('dash')} />;

@@ -1,7 +1,7 @@
 // fcc-ds-news.jsx — public "News" page (Neuigkeiten). Deliberately SMALL:
 // a lead story + a compact chronological list + an article page. No blog machinery
 // (no tags cloud, no author pages, no comments, no filters).
-// Konfetti-Kinetik only: tokens from window.KK, Anton/Archivo, hard "Plakat" shadow
+// Konfetti-Kinetik only: tokens from window.KK, Anton/Archivo, hard "poster" shadow
 // reserved for ONE hero element per screen.
 // Exports NewsPage({ mode, device, view }) + NewsTeaser({ mode, device }).
 
@@ -13,7 +13,7 @@ const nPanel = (c) => (c.bg === '#15110E'
 const nTint = (c, k) => (k === 'red' ? c.red : k === 'gold' ? c.gold : c.ink);
 
 // ── content ─────────────────────────────────────────────────────────────
-// img:false → typographic "Plakat" fallback instead of a photo. Kategorien are
+// img:false → typographic "poster" fallback instead of a photo. categories are
 // labels only (4 fixed ones) — no filter UI at ~10 posts a year.
 const NEWS = [
   {
@@ -36,7 +36,7 @@ const NEWS = [
 ];
 
 // typographic fallback: the headline itself becomes the picture
-function NewsPlakat({ c, n, h, fs = 34, small }) {
+function NewsPoster({ c, n, h, fs = 34, small }) {
   const tint = nTint(c, n.tint);
   const on = tint === c.gold ? c.ink : '#fff';
   return (
@@ -95,7 +95,7 @@ function NewsListDesktop({ c, go }) {
       </div>
       <div style={{ height: 3, background: c.ink, margin: '30px 64px 0' }} />
 
-      {/* AUFMACHER — the one Plakat-shadow element on this screen */}
+      {/* LEAD POST — the one poster-shadow element on this screen */}
       <div style={{ padding: '38px 64px 0' }}>
         <button onClick={() => go(lead.id)} style={{ display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: 0, width: '100%', textAlign: 'left', font: 'inherit', color: 'inherit', cursor: 'pointer', padding: 0, border: `2px solid ${c.ink}`, background: c.paper, boxShadow: nHard(c, 12, c.red) }}>
           <div style={{ position: 'relative' }}>
@@ -133,7 +133,7 @@ function NewsListDesktop({ c, go }) {
                 <div style={{ fontSize: 15, fontWeight: 500, lineHeight: 1.55, color: c.sub, marginTop: 7, maxWidth: 640 }}>{n.teaser}</div>
               </div>
               <div style={{ border: `1.5px solid ${c.line}`, overflow: 'hidden' }}>
-                {n.img ? <window.KKPlh h={104} label="foto" c={c} tint={nTint(c, n.tint)} /> : <NewsPlakat c={c} n={n} h={104} fs={22} small />}
+                {n.img ? <window.KKPlh h={104} label="foto" c={c} tint={nTint(c, n.tint)} /> : <NewsPoster c={c} n={n} h={104} fs={22} small />}
               </div>
             </button>
           ))}
@@ -177,7 +177,7 @@ function NewsArticleDesktop({ c, n, go }) {
       {/* hero: the one hard-shadow element */}
       <div style={{ maxWidth: 820, margin: '32px auto 0', padding: '0 64px' }}>
         <div style={{ border: `2px solid ${c.ink}`, boxShadow: nHard(c, 10, nTint(c, n.tint)), overflow: 'hidden' }}>
-          {n.img ? <window.KKPlh h={368} label="motto-56-session" c={c} tint={nTint(c, n.tint)} /> : <NewsPlakat c={c} n={n} h={368} fs={54} />}
+          {n.img ? <window.KKPlh h={368} label="motto-56-session" c={c} tint={nTint(c, n.tint)} /> : <NewsPoster c={c} n={n} h={368} fs={54} />}
         </div>
         <div style={{ fontSize: 12, fontWeight: 600, color: c.sub, marginTop: 9 }}>Foto: Vereinsarchiv · Platzhalter</div>
       </div>
@@ -193,7 +193,7 @@ function NewsArticleDesktop({ c, n, go }) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }}>
           {others.map((o) => (
             <button key={o.id} onClick={() => go(o.id)} style={{ textAlign: 'left', font: 'inherit', color: 'inherit', cursor: 'pointer', padding: 0, border: `1.5px solid ${c.line}`, background: c.paper, overflow: 'hidden' }}>
-              {o.img ? <window.KKPlh h={132} label="foto" c={c} tint={nTint(c, o.tint)} /> : <NewsPlakat c={c} n={o} h={132} fs={28} small />}
+              {o.img ? <window.KKPlh h={132} label="foto" c={c} tint={nTint(c, o.tint)} /> : <NewsPoster c={c} n={o} h={132} fs={28} small />}
               <div style={{ padding: '16px 18px 18px' }}>
                 <div style={{ fontWeight: 900, fontSize: 10, letterSpacing: 1.2, color: nTint(c, o.tint) === c.gold ? c.ink : nTint(c, o.tint) }}>{o.kat.toUpperCase()} · {o.kurz}</div>
                 <div style={{ fontFamily: "'Anton', sans-serif", fontSize: 21, lineHeight: 1, marginTop: 7 }}>{o.titel}</div>
@@ -281,7 +281,7 @@ function NewsListMobile({ c, go }) {
                   <div style={{ fontSize: 12, fontWeight: 500, lineHeight: 1.45, color: c.sub, marginTop: 5 }}>{n.teaser.slice(0, 72)}…</div>
                 </div>
                 <div style={{ border: `1.5px solid ${c.line}`, overflow: 'hidden' }}>
-                  {n.img ? <window.KKPlh h={72} label="" c={c} tint={nTint(c, n.tint)} /> : <NewsPlakat c={c} n={n} h={72} fs={14} small />}
+                  {n.img ? <window.KKPlh h={72} label="" c={c} tint={nTint(c, n.tint)} /> : <NewsPoster c={c} n={n} h={72} fs={14} small />}
                 </div>
               </button>
             ))}
@@ -319,7 +319,7 @@ function NewsArticleMobile({ c, n, go }) {
           <h1 style={{ fontFamily: "'Anton', sans-serif", fontSize: 34, lineHeight: 0.94, margin: '12px 0 0' }}>{n.titel}</h1>
           <p style={{ fontFamily: "'Anton', sans-serif", fontSize: 17, lineHeight: 1.28, color: c.sub, margin: '12px 0 0' }}>{n.teaser}</p>
           <div style={{ border: `2px solid ${c.ink}`, boxShadow: nHard(c, 7, nTint(c, n.tint)), overflow: 'hidden', marginTop: 20 }}>
-            {n.img ? <window.KKPlh h={200} label="motto-56-session" c={c} tint={nTint(c, n.tint)} /> : <NewsPlakat c={c} n={n} h={200} fs={34} />}
+            {n.img ? <window.KKPlh h={200} label="motto-56-session" c={c} tint={nTint(c, n.tint)} /> : <NewsPoster c={c} n={n} h={200} fs={34} />}
           </div>
           {(n.body || [n.teaser]).map((t, i) => (
             <p key={i} style={{ fontSize: 14.5, fontWeight: 500, lineHeight: 1.7, color: c.ink, margin: i ? '14px 0 0' : '20px 0 0', textWrap: 'pretty' }} dangerouslySetInnerHTML={{ __html: t }} />
@@ -331,7 +331,7 @@ function NewsArticleMobile({ c, n, go }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {others.map((o) => (
               <button key={o.id} onClick={() => go(o.id)} style={{ display: 'grid', gridTemplateColumns: '78px 1fr', gap: 14, alignItems: 'center', width: '100%', textAlign: 'left', font: 'inherit', color: 'inherit', cursor: 'pointer', background: c.paper, border: `1.5px solid ${c.line}`, padding: 10 }}>
-                <div style={{ overflow: 'hidden' }}>{o.img ? <window.KKPlh h={62} label="" c={c} tint={nTint(c, o.tint)} /> : <NewsPlakat c={c} n={o} h={62} fs={13} small />}</div>
+                <div style={{ overflow: 'hidden' }}>{o.img ? <window.KKPlh h={62} label="" c={c} tint={nTint(c, o.tint)} /> : <NewsPoster c={c} n={o} h={62} fs={13} small />}</div>
                 <div>
                   <div style={{ fontWeight: 900, fontSize: 9, letterSpacing: 1.1, color: nTint(c, o.tint) === c.gold ? c.ink : nTint(c, o.tint) }}>{o.kat.toUpperCase()} · {o.kurz}</div>
                   <div style={{ fontFamily: "'Anton', sans-serif", fontSize: 17, lineHeight: 1, marginTop: 5 }}>{o.titel}</div>
@@ -364,7 +364,7 @@ function NewsTeaser({ mode = 'light', device = 'desktop' }) {
       <div style={{ display: 'grid', gridTemplateColumns: small ? '1fr' : 'repeat(3,1fr)', gap: small ? 12 : 20 }}>
         {three.map((n, i) => (
           <div key={n.id} style={{ background: c.paper, border: `1.5px solid ${c.line}`, overflow: 'hidden', boxShadow: i === 0 ? nHard(c, 6, c.red) : 'none', borderColor: i === 0 ? c.ink : c.line, borderWidth: i === 0 ? 2 : 1.5 }}>
-            {n.img ? <window.KKPlh h={small ? 120 : 150} label="foto" c={c} tint={nTint(c, n.tint)} /> : <NewsPlakat c={c} n={n} h={small ? 120 : 150} fs={small ? 26 : 30} small={small} />}
+            {n.img ? <window.KKPlh h={small ? 120 : 150} label="foto" c={c} tint={nTint(c, n.tint)} /> : <NewsPoster c={c} n={n} h={small ? 120 : 150} fs={small ? 26 : 30} small={small} />}
             <div style={{ padding: small ? '14px 16px 16px' : '18px 20px 20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
                 <NewsKat c={c} n={n} size={9.5} />
@@ -380,8 +380,8 @@ function NewsTeaser({ mode = 'light', device = 'desktop' }) {
   );
 }
 
-// view: null|'list' → Liste · <id> → Artikel. Klicks wechseln intern (im echten
-// Produkt sind das Routen /news und /news/:slug).
+// view: null|'list' → List · <id> → Article. Clicks switch internally (in the real
+// product these are the routes /news and /news/:slug).
 function NewsPage({ mode = 'light', device = 'desktop', view = null }) {
   const c = window.KK[mode];
   const [cur, setCur] = React.useState(view === 'list' ? null : view);

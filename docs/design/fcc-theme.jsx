@@ -57,7 +57,7 @@ function KKTicker({ c, fs = 22, rot = -1.4, bg, fg }) {
   );
 }
 
-// circular "11.11" eröffnung seal
+// circular "11.11" opening seal
 function KKSeal({ c, size = 168, rot = -8 }) {
   return (
     <div style={{ width: size, height: size, transform: `rotate(${rot}deg)`, position: 'relative', flexShrink: 0 }}>

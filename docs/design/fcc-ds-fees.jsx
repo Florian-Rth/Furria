@@ -1,11 +1,11 @@
-// fcc-ds-fees.jsx — Zahlungen & Kasse (Part 1).
-// ONE payment system across Beitrag · Klamotten · Getränkekasse · Tickets, settled
+// fcc-ds-fees.jsx — Fees & Cashbox (Part 1).
+// ONE payment system across membership fee · clothing · drinks kitty · tickets, settled
 // via Stripe + PayPal. Two surfaces:
-//  • PageFees (desktop, Amt Finanzen): controlling dashboard — income by category,
-//    offene Posten, members by Mitgliedschaftsart, Kassenbericht CSV/PDF export.
-//  • MPay (mobile, member): light "offen"-hint → focused one-tap pay flow.
-// Composes the system shell + tokens. Exports window.PageFees (tabbed: Einnahmen-
-// Übersicht + Ausgaben & Belege) + window.MPay (pay flow) + window.MBeleg (submit).
+//  • PageFees (desktop, Finance office): controlling dashboard — income by category,
+//    open items, members by membership type, cash report CSV/PDF export.
+//  • MPay (mobile, member): light "open"-hint → focused one-tap pay flow.
+// Composes the system shell + tokens. Exports window.PageFees (tabbed: income
+// overview + expenses & receipts) + window.MPay (pay flow) + window.MBeleg (submit).
 
 (function () {
   const { T, Ic, Card, Chip, Btn, Title, Eyebrow, Avatar, Progress } = window;
@@ -107,7 +107,7 @@
     );
   }
 
-  // ── DESKTOP · Finanzen controlling dashboard (Einnahmen-Übersicht) ───────────
+  // ── DESKTOP · Finance controlling dashboard (income overview) ───────────
   function FeesOverview() {
     return (
       <div style={{ padding: '16px 28px 28px', maxWidth: 1240, display: 'flex', flexDirection: 'column', gap: 22 }}>
@@ -464,7 +464,7 @@
     );
   }
 
-  // ── PageFees: tabbed wrapper (Einnahmen-Übersicht ↔ Ausgaben & Belege) ────────
+  // ── PageFees: tabbed wrapper (income overview ↔ expenses & receipts) ────────
   function PageFees({ tab: tab0 = 'overview' }) {
     const [tab, setTab] = useState(tab0);
     const TABS = [['overview', 'Einnahmen & Übersicht'], ['expenses', 'Ausgaben & Belege']];

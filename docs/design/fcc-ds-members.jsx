@@ -417,19 +417,19 @@
             {edit && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, border: `1.5px dashed ${T.line}`, color: T.sub, fontWeight: 700, fontSize: 12.5, padding: '5px 10px', borderRadius: 20 }}><Ic name="plus" size={13} color={T.sub} sw={2.2} />Gruppe</span>}
           </div>
         </Panel>
-        {/* ämter */}
+        {/* offices */}
         <Panel title="Ämter & Funktionen">
           {m.aemter.length ? <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>{m.aemter.map((a) => <Chip key={a} tone="red" dot>{a}</Chip>)}</div> : <span style={{ color: T.faint, fontSize: 13, fontWeight: 600 }}>Kein Amt</span>}
           {edit && <div style={{ marginTop: 11 }}><Btn sm ghost icon="plus">Amt zuweisen</Btn></div>}
         </Panel>
-        {/* teilnahme */}
+        {/* participation */}
         <Panel title="Teilnahme & Einwilligung">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <Toggle on={drinks} onClick={() => edit && setDrinks((v) => !v)} label="Getränkekasse" sub="Nimmt an der Bierliste teil" />
             <Toggle on={consent} onClick={() => edit && setConsent((v) => !v)} label="Foto-Einwilligung" sub="Fotos intern sichtbar" />
           </div>
         </Panel>
-        {/* schlüssel */}
+        {/* keys */}
         <Panel title="Schlüssel">
           {m.keys.length ? <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{m.keys.map((k) => <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', background: T.panel2, border: `1px solid ${T.line2}`, borderRadius: 10 }}><Ic name="key" size={15} color="#9a7200" sw={2} /><span style={{ flex: 1, fontWeight: 800, fontSize: 13 }}>{k}</span></div>)}</div> : <span style={{ color: T.faint, fontSize: 13, fontWeight: 600 }}>Hält keine Schlüssel</span>}
           <div style={{ fontSize: 11, fontWeight: 600, color: T.faint, marginTop: 10 }}>Im Verzeichnis für alle sichtbar.</div>

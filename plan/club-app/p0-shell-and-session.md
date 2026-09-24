@@ -120,8 +120,8 @@ slot exists and cold starts are genuinely slow.
 ## The login mock
 
 Copied to [`docs/design/app-login/`](../../docs/design/app-login/) as a per-page bundle
-(`preview.html` + `src/`). It carries three directions — A *Bühne*, B *Mitgliedsausweis*,
-C *Plakat* — but `preview.html` renders only **A** plus its desktop split-screen.
+(`preview.html` + `src/`). It carries three directions — A *Stage*, B *membership card*,
+C *Poster* — but `preview.html` renders only **A** plus its desktop split-screen.
 
 **It is inspiration, not a target.** It was authored without knowledge of the design system or
 of the decisions above. The screen is built from `kkTokens`/`kkTheme` and `Kk*` components from
@@ -132,7 +132,7 @@ the ground up; the mock contributes layout ideas only.
 | Mock | Ruling |
 |---|---|
 | `"Benutzername oder E-Mail"`, value `m.schulz` | **Email only.** ADR-0005 dropped `account.username`; B1 ships `LoginRequest { Email, Password }` with an `EmailAddress()` validator |
-| `HELAU` (direction B footer) | The Narrenruf is **"Gross - Furria!"** — `CONTEXT.md` is explicit that Helau/Alaaf are local heresy |
+| `HELAU` (direction B footer) | The carnival call is **"Gross - Furria!"** — `CONTEXT.md` is explicit that Helau/Alaaf are local heresy |
 | `SEIT 1963`, `Nº 128` | The club is est. **1971**; sessions are numbered from it, so 2026/27 is Session **Nº 56** |
 | `Angemeldet bleiben` toggle | Dropped — see Session decisions |
 

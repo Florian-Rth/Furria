@@ -54,16 +54,16 @@ shareable material" ambition on the public side.
   configured anywhere in the app, and a relative canonical is spec-valid — it resolves with the
   absolute `og:image` URL in P7.
 
-**P5 (Galerie) — per-Album head only (shipped 2026-07-29):**
+**P5 (Gallery) — per-Album head only (shipped 2026-07-29):**
 
 - The Album route sets its own head from the resolved Album: title, description from its intro,
   OG title/description, root-relative canonical (`/gallery/{albumSlug}`). **No new mechanism** —
   the same `head` API and the same root-relative-canonical decision as the news post route.
-- **The title carries the derived Session** (`Prunksitzung 2025/26 · FURRIA`), unlike the news post
-  route's bare title. Album titles are honest event types and therefore **repeat across Sessions** —
+- **The title carries the derived session** (`Prunksitzung 2025/26 · FURRIA`), unlike the news post
+  route's bare title. Album titles are honest event types and therefore **repeat across sessions** —
   two seeded Alben are "Prunksitzung", two "Rosenmontagsumzug" — so a bare title would publish
   duplicate `<title>`/`og:title` for distinct canonical URLs. `buildAlbumDocumentTitle` appends
-  `albumSession(album).yearsLabel`, so nothing new is stored ("Session is derived, never stored"), and
+  `albumSession(album).yearsLabel`, so nothing new is stored ("session is derived, never stored"), and
   the visible H1 stays the bare title.
 - **`og:type` stays the root's `website`** — an Album is not an `article`, and there is no published
   time to declare.
@@ -83,7 +83,7 @@ shareable material" ambition on the public side.
   injection because social scrapers don't run JS and *dynamic* pages would otherwise share blank.
   But news content is **compile-time TS constants**, so every slug is known at build time and the
   pages **prerender** with correct per-post OG meta baked in. **Injection is only ever needed for
-  backend-driven detail pages** (real events, backend-served Meldungen) → Deferred with the
+  backend-driven detail pages** (real events, backend-served news posts) → Deferred with the
   Club-App. See the [ADR-0003](../../docs/adr/0003-website-rendering-strategy.md) amendment.
 - Both, plus the robots flip, the absolute `og:image` URL and the sitemap, now live in the
   master plan's **P7 — Launch**.
@@ -95,7 +95,7 @@ shareable material" ambition on the public side.
   prerender-ready.
 - **Bot OG-meta injection mechanism** (edge middleware vs. a `<meta>`-serving endpoint on the API) →
   **only for backend-driven detail pages**; deferred with the Club-App backend.
-- Per-event OG images generated (matching the planner's Werbung feature) vs. static.
+- Per-event OG images generated (matching the planner's advertising feature) vs. static.
 - **Absolute share-image URL** — P0 ships `og:image` as root-relative `/og-default.png`
   (placeholder art); scrapers need an absolute URL, but none exists until a production domain
   is fixed → resolve in P7 (Launch).
@@ -118,4 +118,4 @@ shareable material" ambition on the public side.
 
 ## References
 
-- Design README §9 (Veranstaltungsplaner → Werbung: auto-generated shareable material).
+- Design README §9 (event planner → advertising: auto-generated shareable material).

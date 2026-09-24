@@ -1,4 +1,4 @@
-// fcc-ds-landing.jsx — public landing page. NOW THE "DESTILLAT" WINNER of the
+// fcc-ds-landing.jsx — public landing page. NOW THE "DISTILLED" WINNER of the
 // modernization: same newspaper components (masthead-nav, asymmetric editorial hero,
 // tilted photo + 11.11 seal, ticker, program cards, Mitmachen recruit band, footer)
 // but the CALM modern treatment chosen over the loud poster original:

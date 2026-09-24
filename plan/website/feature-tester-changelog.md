@@ -16,7 +16,7 @@ appends one entry, and each tester sees exactly which entries are new **to them*
 
 **Tester scaffolding, not a product feature.** It exists only while the site is gated and is
 **deleted at launch together with the gate** (P7). It is deliberately never shown to the public — a
-Karnevalsverein's visitors do not want release notes.
+carnival club's visitors do not want release notes.
 
 ## Scope / Slices
 
@@ -57,7 +57,7 @@ Karnevalsverein's visitors do not want release notes.
   `/club` still sees it.
 
 ### Content: a JSON file, validated
-- **JSON, deliberately unlike the rest of the site's content** (news/programm/gruppen are typed TS
+- **JSON, deliberately unlike the rest of the site's content** (news/event-list/groups are typed TS
   constants). The reason is the authoring workflow: entries are appended mechanically at the end of
   a branch, and a data file cannot be broken by a stray brace in the way a `.ts` module can.
 - **The JSON is validated with Zod once at module load**, and the inferred type is the entry type
@@ -158,7 +158,7 @@ Karnevalsverein's visitors do not want release notes.
   the end of a branch/phase on request. Worth a line in `CLAUDE.md` once the shape is proven, so it
   becomes routine rather than something to remember. *Still open after P4.*
 - **Backfill** — *resolved in the P4 build:* the log **backfills P0–P3** (P0 shell & theme, P1 + P1.1
-  landing hero, P2 landing complete, P3 Verein) plus a P4 entry, so testers see the full history rather
+  landing hero, P2 landing complete, P3 Club) plus a P4 entry, so testers see the full history rather
   than a log that starts mid-project.
 
 ## Done When

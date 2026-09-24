@@ -1,6 +1,6 @@
-# The public website submits the Beitrittsantrag to our own API
+# The public website submits the membership application to our own API
 
-The **Beitrittsantrag** on `/join` is posted to **our own .NET API**
+The **membership application** on `/join` is posted to **our own .NET API**
 (`POST /api/membership-applications`), which persists it and notifies the club. We deliberately do
 **not** use a third-party form service (Formspree, Web3Forms, Netlify Forms), a prefilled
 `mailto:`, or a client-generated PDF.
@@ -17,9 +17,10 @@ Why not the cheaper options:
 
 - **A third-party form service** would put a processor — usually US-based — in the path of
   applicants' names, birth dates, postal addresses, phone numbers and, for under-18s, a
-  guardian's contact details. That means an AV-Vertrag, an entry in the Datenschutzerklärung and a
-  vendor dependency on the club's single most important conversion. We would be exporting the most
-  sensitive data the site touches to save an endpoint we are already positioned to write.
+  guardian's contact details. That means a DPA (data-processing agreement), an entry in the
+  privacy policy and a vendor dependency on the club's single most important conversion. We would
+  be exporting the most sensitive data the site touches to save an endpoint we are already
+  positioned to write.
 - **`mailto:` or a printable PDF** shifts the last step to the applicant. It fails silently on
   webmail-only phones — which is most of the audience — and produces unstructured, unvalidated
   input that someone has to retype.
@@ -30,7 +31,7 @@ Why not the cheaper options:
 ## Consequences
 
 - We become the **controller of applicant personal data at rest**. That requires a retention and
-  deletion rule in the Datenschutzerklärung, and it must cover the data of minors and their
+  deletion rule in the privacy policy, and it must cover the data of minors and their
   guardians. This is a launch obligation, not a nice-to-have.
 - The API gains an **outbound mail dependency** (SMTP credentials, a real sender domain with
   SPF/DKIM, a real recipient address). `CLUB_CONTACT_EMAIL` is still a placeholder.
@@ -47,4 +48,4 @@ Why not the cheaper options:
   covered by this ADR's reasoning — those are ordinary public read endpoints of the kind
   [ADR-0003](0003-website-rendering-strategy.md) already anticipates. Note its consequence though:
   content that becomes backend-driven stops being prerenderable, which is why `/club` keeps
-  reading Gruppen synchronously while `/join`'s interactive matcher fetches.
+  reading groups synchronously while `/join`'s interactive matcher fetches.

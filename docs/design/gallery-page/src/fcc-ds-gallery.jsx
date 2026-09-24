@@ -1,7 +1,7 @@
 // fcc-ds-gallery.jsx — public "Galerie" page. Deliberately SMALL & curated:
-// ONE featured album (Plakat-shadow hero) + the current session's albums + older
+// ONE featured album (poster-shadow hero) + the current session's albums + older
 // sessions collapsed to slim year rows. No videos, no download, no infinite feed.
-// Photos come from the internal app gallery via a "für Website freigeben" flag —
+// Photos come from the internal app gallery via a "release for website" flag —
 // the website only ever shows a hand-picked ~12 per album.
 // Konfetti-Kinetik only (window.KK tokens, Anton/Archivo, ONE hard shadow/screen).
 // Exports GalleryPage({ mode, device, view }).
@@ -118,7 +118,7 @@ function GLightbox({ c, a, i, go, close, small }) {
   );
 }
 
-// ── DESKTOP · ÜBERSICHT ─────────────────────────────────────────────────
+// ── DESKTOP · OVERVIEW ───────────────────────────────────────────────────
 function GalleryIndexDesktop({ c, go }) {
   const p = gPanel(c);
   const [open, setOpen] = React.useState(null);
@@ -137,7 +137,7 @@ function GalleryIndexDesktop({ c, go }) {
       </div>
       <div style={{ height: 3, background: c.ink, margin: '30px 64px 0' }} />
 
-      {/* HERO — newest album, the one Plakat-shadow element on this screen */}
+      {/* HERO — newest album, the one poster-shadow element on this screen */}
       <div style={{ padding: '38px 64px 0' }}>
         <button onClick={() => go(hero.id)} style={{ display: 'block', width: '100%', textAlign: 'left', font: 'inherit', color: 'inherit', cursor: 'pointer', padding: 0, border: `2px solid ${c.ink}`, background: c.paper, boxShadow: gHard(c, 12, c.red) }}>
           <div style={{ position: 'relative' }}>
@@ -202,7 +202,7 @@ function GalleryIndexDesktop({ c, go }) {
         </div>
       </div>
 
-      {/* one small band: Instagram für den Alltag, Tickets für den nächsten Anlass */}
+      {/* one small band: Instagram for everyday, tickets for the next occasion */}
       <div style={{ background: p.bg, color: p.fg, padding: '34px 64px', marginTop: 54, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 30 }}>
         <div>
           <div style={{ fontWeight: 900, fontSize: 11.5, letterSpacing: 2, color: c.red }}>ZWISCHEN DEN ANLÄSSEN</div>
@@ -448,7 +448,7 @@ function GalleryLightboxMobile({ c, a, i, go, close }) {
   );
 }
 
-// view: null|'index' → Übersicht · '<albumId>' → Album · '<albumId>:<n>' → Lightbox
+// view: null|'index' → Overview · '<albumId>' → Album · '<albumId>:<n>' → Lightbox
 function GalleryPage({ mode = 'light', device = 'desktop', view = null }) {
   const c = window.KK[mode];
   const init = view && view !== 'index' ? view : null;

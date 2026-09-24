@@ -1,6 +1,6 @@
 ---
-title: Mitmachen-Band
-slug: mitmachen-band
+title: Join-in band
+slug: join-in-band
 type: capability
 status: shipped
 mock: docs/design/fcc-ds-landing.jsx
@@ -11,7 +11,7 @@ adrs: []
 
 The recruit CTA band near the foot of the home page: a bold red block ("WERD TEIL DER GARDE")
 inviting visitors to join. It is the home page's entry point into the
-[Mitglied werden](feature-membership-funnel.md) funnel — the club's growth hook.
+[Become a member](feature-membership-funnel.md) funnel — the club's growth hook.
 
 ## Scope / Slices
 
@@ -33,12 +33,12 @@ inviting visitors to join. It is the home page's entry point into the
   surface is fine (red is the background, not body text); the CTA is a white pill with red text.
 - **CTA target `/join`** (the existing gated placeholder route; nav already points there). No
   scroll anchor, no new contact route — when the funnel gets real content, zero rewiring.
-- **Gruppen list is static copy** (this build has no backend). Embedded in the body sentence,
-  not a live list. The club's **actual Gruppen** are **Tanzgarde, Männerballett, Elferrat,
+- **Groups list is static copy** (this build has no backend). Embedded in the body sentence,
+  not a live list. The club's **actual groups** are **Tanzgarde, Männerballett, Elferrat,
   Büttenrede** — **not** Spielmannszug (a mock error). "Büttenrede" is the carnival-speech
   discipline (from the Bütt).
 - **Ownership / location:** `features/landing/components/MitmachenBand/`; composed by
-  `LandingPage` below the Programm-Teaser, inside the gutter container. Watermark uses the shared
+  `LandingPage` below the Events teaser, inside the gutter container. Watermark uses the shared
   `KkBroomMark` primitive.
 - **Final copy (static-final):**
   - Kicker: **MITMACHEN · DAS GANZE JAHR**
@@ -51,7 +51,7 @@ inviting visitors to join. It is the home page's entry point into the
 
 ## Open Questions
 
-- None. (Both prior open questions resolved: CTA → `/join`; Gruppen list → static copy.)
+- None. (Both prior open questions resolved: CTA → `/join`; Groups list → static copy.)
 
 ## Done When
 
@@ -66,7 +66,7 @@ Vertical slice; leaves the app building and working. **Frontend only.** **Backen
 1. **Responsive recruit band, end-to-end.** `MitmachenBand` — red surface, `KkBroomMark`
    watermark, kicker + Anton headline + body (final copy), white pill CTA → `/join`; responsive
    reflow (row + right-aligned button at `md`+, clean stack at `xs`); mounted in `LandingPage`
-   below the Programm-Teaser, inside the gutter container.
+   below the Events teaser, inside the gutter container.
    *Delivers (FE):* the recruit band live at `/`, both breakpoints, light + dark.
    *Verify:* component test asserts copy, CTA target `/join`, watermark present, and the reflow
    at `xs` vs `md`; `LandingPage` test includes the band; both themes; `pnpm build`/`typecheck`
@@ -75,4 +75,4 @@ Vertical slice; leaves the app building and working. **Frontend only.** **Backen
 ## References
 
 - Mock: `fcc-ds-landing.jsx` (`MitmachenBand` desktop; `MitmachenMobile` — broken, not the target).
-- `CONTEXT.md` (Gruppe). Funnel destination: [Mitglied werden](feature-membership-funnel.md).
+- `CONTEXT.md` (Group). Funnel destination: [Become a member](feature-membership-funnel.md).

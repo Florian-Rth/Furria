@@ -1,6 +1,6 @@
-// fcc-pg-kit.jsx — Kit für den Block „Personen & Gruppen“.
-// Sprache = Layout D aus „FCC Club-App - Mocks“: helle Bühne, Sahne-Karten,
-// Haarlinien, Anton-Displays, rot nur für Handlung. Plus ein paar Konfetti-Gimmicks.
+// fcc-pg-kit.jsx — Kit for the "Persons & Groups" block.
+// Language = Layout D from "FCC Club-App - Mocks": light stage, cream cards,
+// hairlines, Anton displays, red only for action. Plus a few confetti gimmicks.
 
 const KT = window.T;
 
@@ -35,7 +35,7 @@ function PgCd({ children, style, pad = '4px 16px', onClick }) {
   return <div onClick={onClick} style={{ background: PGP.card, border: `1.5px solid ${PGP.cardLine}`, borderRadius: 16, padding: pad, ...style }}>{children}</div>;
 }
 
-// Konfetti-Schnipsel: sparsam, nur in Bühnenköpfen
+// Confetti flecks: sparing, only in stage headers
 const FLECK = [[6, 12, -18, PGP.red], [26, 74, 24, PGP.gold], [12, 88, 8, PGP.blue], [54, 34, -34, PGP.gold], [70, 92, 16, PGP.red]];
 function PgFlecks({ o = 0.5 }) {
   return (
@@ -66,7 +66,7 @@ function PgSeal({ size = 18, label }) {
   );
 }
 
-// Schlüssel-Marke (kommt später, Platz ist reserviert)
+// Key marker (comes later, space is reserved)
 function PgKey({ size = 15 }) {
   return <span title="hat Schlüssel" style={{ width: size + 9, height: size + 9, borderRadius: 20, background: 'rgba(47,109,168,0.12)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><window.Ic name="key" size={size} color={PGP.blue} sw={2} /></span>;
 }
@@ -114,7 +114,7 @@ function PgStat({ label, value, sub, style }) {
   );
 }
 
-// ── Zustände ──────────────────────────────────────────────────────────────
+// ── States ────────────────────────────────────────────────────────────────
 function PgSkel({ w = '100%', h = 12, r = 6, style }) {
   return <span style={{ display: 'block', width: w, height: h, borderRadius: r, background: 'linear-gradient(90deg, rgba(26,20,17,0.07) 0%, rgba(26,20,17,0.12) 50%, rgba(26,20,17,0.07) 100%)', backgroundSize: '200% 100%', animation: 'pg-shim 1.4s linear infinite', ...style }} />;
 }
@@ -140,7 +140,7 @@ function PgEmpty({ icon = 'users', title, text, action }) {
   );
 }
 
-// Modaler Rahmen: Dialog (Desktop) oder Blatt von unten (Mobile)
+// Modal frame: dialog (desktop) or bottom sheet (mobile)
 function PgModal({ children, mode = 'sheet', w = 520 }) {
   if (mode === 'dialog') return (
     <div style={{ position: 'absolute', inset: 0, background: 'rgba(26,20,17,0.42)', backdropFilter: 'blur(1.5px)', zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40 }}>
@@ -150,7 +150,7 @@ function PgModal({ children, mode = 'sheet', w = 520 }) {
   return <div style={{ position: 'absolute', inset: 0, background: 'rgba(26,20,17,0.34)', zIndex: 60, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>{children}</div>;
 }
 
-// Bestätigung für zerstörende Enden — immer modal
+// Confirmation for destructive endings — always modal
 function PgConfirm({ eyebrow, title, text, rows, danger = 'Beenden', cancel = 'Abbrechen', mode = 'sheet' }) {
   const sheet = mode !== 'dialog';
   const body = (
@@ -177,7 +177,7 @@ function PgConfirm({ eyebrow, title, text, rows, danger = 'Beenden', cancel = 'A
   return <PgModal mode={mode}>{body}</PgModal>;
 }
 
-// ── Mobile-Hülle ──────────────────────────────────────────────────────────
+// ── Mobile shell ──────────────────────────────────────────────────────────
 function PgPill({ label = 'Mitglieder' }) {
   return (
     <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, paddingBottom: 14, paddingTop: 26, display: 'flex', justifyContent: 'center', pointerEvents: 'none', background: `linear-gradient(to top, ${PGP.bg} 46%, rgba(253,252,250,0))`, zIndex: 20 }}>
@@ -225,7 +225,7 @@ function PgMob({ kicker, title, back, right, head, children, pill, sheet, pad = 
   );
 }
 
-// ── Desktop-Hülle: Vorhang als feste Schiene ──────────────────────────────
+// ── Desktop shell: curtain as a fixed rail ────────────────────────────────
 const PG_NAV = [
   ['MEIN BEREICH', [['Übersicht', 'home'], ['Meine Auftritte', 'star'], ['Mein Profil', 'settings']]],
   ['VEREIN', [['Spielplan', 'clock'], ['Mitglieder', 'users'], ['Gruppen', 'grid'], ['Galerie', 'image'], ['Bierliste', 'beer']]],
@@ -326,8 +326,8 @@ const PERSONS = [
   { n: 'Paula Dietz', s: 'ruht', art: 'Aktiv', seit: '2017', g: [['Tanzgarde', '2017']], a: [], c: true, tel: '0176 55 01 229', mail: 'paula.dietz@uni-jena.de', adr: 'Wagnergasse 12, 07743 Jena', geb: '03.02.2003' },
 ];
 
-// ── Rechte-Katalog: eine wachsende Liste, logisch gruppiert ──────────────
-// Ein Recht = eine Sache, die man tun darf. Beschreibung gehört dazu.
+// ── Rights catalogue: a growing list, logically grouped ──────────────────
+// One right = one thing you may do. A description belongs to it.
 const RIGHTGROUPS = [
   { id: 'personen', label: 'Personen & Mitgliedschaft', icon: 'users', hint: 'Das Register und alles, was daran datiert hängt', rights: [
     { id: 'p_view', label: 'Verzeichnis sehen', desc: 'Namen, Status, Gruppen und Rollen aller verbundenen Personen.', base: true },
@@ -374,7 +374,7 @@ const RIGHT_BY = {};
 RIGHTGROUPS.forEach(g => g.rights.forEach(r => { RIGHT_BY[r.id] = { ...r, group: g.label, groupId: g.id }; }));
 const RIGHT_COUNT = RIGHTGROUPS.reduce((n, g) => n + g.rights.length, 0);
 
-// ── Rollen: Name, Kurzbeschreibung, Rechte, Inhaber mit „seit“ ──────────
+// ── Roles: name, short description, rights, holders with "since" ────────
 const ROLES = [
   { id: 'mitglied', n: 'Mitglied', kind: 'basis', desc: 'Die Grundrolle. Hat jede Person mit App-Zugang automatisch — nur lesend.', r: ['p_view'], h: [], count: 152, locked: true },
   { id: 'praesidentin', n: 'Präsidentin', kind: 'gewählt', unique: true, desc: 'Führt den Verein, vertritt ihn nach außen und darf im Zweifel alles außer Geld buchen.', r: ['p_view', 'p_detail', 'p_edit', 'p_member', 'p_ehren', 'g_manage', 'g_members', 'g_admins', 'r_assign', 'm_view', 'e_manage', 'e_program', 'e_seating', 'e_live', 'c_news', 'k_keys'], h: [['Katrin Möller', '2022']] },

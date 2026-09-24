@@ -133,13 +133,13 @@ place — extract it, don't reach for a renderer.
 
 `apps/website/src/test/copy-guard.test.ts` is the one sanctioned exception to corollary 2. It
 sweeps named copy modules for facts the club has **not decided** — seat plans, payment
-methods, QR codes, an Abendkasse, a Vorstand framing, a `passiv` Mitgliedschaft, a Gruppe that
+methods, QR codes, door sales, a board framing, a `passive` membership, a group that
 does not exist — and also checks the copy those modules *derive* per lifecycle state, plus the
 messages a rejected buyer form produces.
 
 It passes when copy changes and fails only when a forbidden fact appears, which is why it does
 not violate the rule's intent. Its scopes are explicit module lists, not globs: a pattern that
-is forbidden in the Karten copy (`Reihe 3`) may be ordinary German prose elsewhere. Add a
+is forbidden in the ticket copy (`Reihe 3`) may be ordinary German prose elsewhere. Add a
 module to a scope deliberately; never widen a scope to silence a failure.
 
 ## Running

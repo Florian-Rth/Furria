@@ -1,5 +1,5 @@
 ---
-title: Kartenbörse
+title: Ticket exchange
 slug: ticket-exchange
 route: /events/exchange (pinned by event-detail shaping, 2026-08-15)
 type: page
@@ -11,28 +11,28 @@ adrs: []
 
 ## What & Why
 
-The club's answer to sold-out evenings and empty chairs: return a Karte you can't use, the
-Warteliste moves up, the price stays the price — no private resale, no markup. Expected to
+The club's answer to sold-out evenings and empty chairs: return a ticket you can't use, the
+waitlist moves up, the price stays the price — no private resale, no markup. Expected to
 become a key feature — **but it highly depends on data structures and club rules that are
 created later** (user directive, shaping 2026-09-01). So this page ships as a **concept
 page**: a "future view" presenting the ideas as clearly-framed plans in the making, a
-starting point the user adjusts later. How the Börse really works is a second, real shaping
+starting point the user adjusts later. How the ticket exchange really works is a second, real shaping
 round when the club decides. The website is not public — the copy is scaffold-quality
 draft, not final prose; the *structure* is what this plan pins.
 
 ## Mock inventory (inspiration only)
 
-- Returned-seat rows: seat + location hint, when returned, state (Vorkaufsrecht läuft ·
-  öffentlich, sofort sicherbar) with claim CTA
-- `EvWaitPanel`: join the Warteliste, position, "chance" meter, no prepayment
+- Returned-seat rows: seat + location hint, when returned, state (*Vorkaufsrecht läuft ·
+  öffentlich, sofort sicherbar*) with claim CTA
+- `EvWaitPanel`: join the waitlist, position, "chance" meter, no prepayment
 - `EvSwap`: Zurückgeben / Abend tauschen tabs (return by ticket number, free one-time swap
   to another evening)
-- Stats row (returns this Session, free now, waitlist length, "0 € Aufpreis, immer")
+- Stats row (returns this session, free now, waitlist length, "0 € Aufpreis, immer")
 - "Warum nicht privat verkaufen" panel: named tickets, old QR invalidated on transfer
-- 4-step how-it-works · integration points elsewhere: Börse band on `/events`, waitlist
-  panel on sold-out detail pages, freed (gold) seats in the Saalplan
-- Mock flows that P6 precedent flags: SMS notifications with 6-hour Vorkaufsrecht — an
-  unbuilt flow like the one P6 cut from the Antrag
+- 4-step how-it-works · integration points elsewhere: ticket-exchange band on `/events`, waitlist
+  panel on sold-out detail pages, freed (gold) seats in the seating plan
+- Mock flows that P6 precedent flags: SMS notifications with 6-hour right of first refusal — an
+  unbuilt flow like the one P6 cut from the membership application
 
 Rulings (adopted-as-ideas / rejected, and why) are recorded in the
 [mock README](../../../docs/design/events-page/README.md#rulings--kartenbörse--page-ticket-exchange-shaped-2026-09-01).
@@ -41,41 +41,41 @@ Rulings (adopted-as-ideas / rejected, and why) are recorded in the
 
 Carried from the events-list shaping (2026-08-13):
 
-- **This page owns the Börse mechanics shaping.** The user confirmed the mock's
-  return → waitlist → SMS/Vorkaufsrecht flow is *not* settled club intent. → **Resolved
+- **This page owns the ticket-exchange mechanics shaping.** The user confirmed the mock's
+  return → waitlist → SMS/right-of-first-refusal flow is *not* settled club intent. → **Resolved
   2026-09-01: the mechanics deliberately stay unshaped.** This session shaped the *concept
   page* only; the mechanics shaping moves to the future round (see Lifecycle below).
 
 Pinned by the event-detail shaping (2026-08-15):
 
-- **Route is `/events/exchange`** — the Börse serves the whole Session, not one evening;
+- **Route is `/events/exchange`** — the ticket exchange serves the whole session, not one evening;
   static sibling inside the area. E3 created it as a `PlaceholderPage`; E3 also wired both
   entry links (the `/events` band's "Zur Kartenbörse →" and the sold-out ticket panel's
   CTA), so **no integration work remains for this page's phase**.
-- **Glossary:** `CONTEXT.md` carries **Kartenbörse**, **Karte**, **Vorverkauf** — use
+- **Glossary:** `CONTEXT.md` carries **Ticket exchange**, **Ticket**, **Presale** — use
   them, don't redefine them.
 
 Decided in the concept shaping (2026-09-01):
 
 - **The page is a concept page ("future view").** The glossary embargo was amended
-  (`CONTEXT.md` → Kartenbörse): this page may present values and mechanics as
+  (`CONTEXT.md` → Ticket exchange): this page may present values and mechanics as
   **clearly-framed plans in the making** — visibly labeled as in planning, nothing stated
   as existing, decided or guaranteed. Every other surface stays existence-only.
 - **Everything is assumptions** — the user confirmed even the value story (fixed price,
   club-run) is not decided club intent. The only confident statement is *that* a
-  Kartenbörse is planned. The page frames values as guiding principles of the planning,
+  ticket exchange is planned. The page frames values as guiding principles of the planning,
   mechanics as ideas.
 - **Zero interaction.** No forms, no disabled buttons, no notify-me — a form would assert
-  the mechanic as real (an honest-failing P6-Antrag-style signup was explicitly rejected).
+  the mechanic as real (an honest-failing P6-membership-application-style signup was explicitly rejected).
   The only CTA links back to `/events`. No data, no seed, no API, no Zod schema.
 - **Idea in/out split** — see the mock README rulings. In (as framed ideas): the core
-  loop **with the refund-only-on-actual-resale sharpening** (bis dahin bleibt die Karte
-  deine), Warteliste ohne Vorkasse, the principles (Preis bleibt Preis · über den Verein ·
-  kein Stuhl bleibt leer), Abend tauschen ("z. B. bis eine Woche vor dem Abend" —
-  example-flavored). Out: SMS, the 6-hour Vorkaufsrecht, stats row, returned-seat rows,
-  named-tickets/QR enforcement (doubly embargoed via Einlasskontrolle).
+  loop **with the refund-only-on-actual-resale sharpening** (*bis dahin bleibt die Karte
+  deine*), *Warteliste ohne Vorkasse*, the principles (*Preis bleibt Preis · über den Verein ·
+  kein Stuhl bleibt leer*), *Abend tauschen* ("z. B. bis eine Woche vor dem Abend" —
+  example-flavored). Out: SMS, the 6-hour right of first refusal, stats row, returned-seat rows,
+  named-tickets/QR enforcement (doubly embargoed via entry check).
 - **Open questions become content**: a "Was wir noch klären" section names what's
-  undecided (wer zuerst dran ist, wie die Rückgabe genau abläuft, Fristen) instead of
+  undecided (*wer zuerst dran ist, wie die Rückgabe genau abläuft, Fristen*) instead of
   answering it — that's what makes "in Planung" credible.
 - **The band and the sold-out panel stay untouched.** Their claim-free copy is still true
   and matches the page's frame. The E2 obligation ("this page's phase replaces the teaser
@@ -88,7 +88,7 @@ Decided in the concept shaping (2026-09-01):
 
 ### Page structure (pinned 2026-09-01)
 
-Destillat system, existing KK primitives, German copy, copy constants in
+Distilled system, existing KK primitives, German copy, copy constants in
 `exchange-content.ts` (embargo-/copy-guard-sweepable):
 
 1. **Hero** — eyebrow `KARTENBÖRSE`, H1 in the "Ausverkauft ist nicht das Ende" spirit,
@@ -111,13 +111,13 @@ Destillat system, existing KK primitives, German copy, copy constants in
 
 Not decisions. Logged so the real shaping round starts from them:
 
-- Refund only when the returned Karte is **actually re-bought**; until then it stays the
+- Refund only when the returned ticket is **actually re-bought**; until then it stays the
   returner's (no-risk return). Refund mechanics are Ledger territory.
-- Warteliste without prepayment; notification channel realistically **mail** (SMS killed
-  by P6 precedent); "who gets first refusal" (Vorkaufsrecht?) wholly open.
+- Waitlist without prepayment; notification channel realistically **mail** (SMS killed
+  by P6 precedent); "who gets first refusal" (right of first refusal?) wholly open.
 - Free evening swap, deadline idea: until ~1 week before the evening.
-- Enforcement (named Karten, code invalidation on transfer) blocked on the
-  **Einlasskontrolle** decision.
+- Enforcement (named tickets, code invalidation on transfer) blocked on the
+  **entry check** decision.
 - Inherited obligation: replace the `/events` teaser band with the real band + mechanics
   copy once decided (E2 ruling).
 
@@ -146,7 +146,7 @@ deviations:
   the two idea cards carry the same dashed border, so the least-decided content is
   visibly marked twice.
 - **Copy-guard restructure** (`src/test/copy-guard.test.ts`): the concept copy may say
-  Warteliste/Rückgabe, so `exchange-content` left the strict Karten sweep — the teaser
+  Warteliste/Rückgabe, so `exchange-content` left the strict ticket-language sweep — the teaser
   band's copy stays under it as a named sub-object, and the whole module is now swept by
   `REJECTED_EXCHANGE_SPECIFICS` (Zweitmarkt/Weiterverkauf/Resale, SMS, Vorkaufsrecht,
   hour-count deadlines, QR, live claims, and standalone "Börse" via lookbehind).
@@ -160,12 +160,12 @@ deviations:
 ## Lifecycle note
 
 After E6 this page is **`shipped (concept)`** — shipped in its intended *current* end
-state. A second, real shaping round (Börse mechanics, club decisions, backend contract)
+state. A second, real shaping round (ticket-exchange mechanics, club decisions, backend contract)
 reopens it later; that round inherits the idea inventory and the teaser-band obligation.
 
 ## Implementation plan (E-phases)
 
-### E6 — Kartenbörse (Konzeptseite) — single slice
+### E6 — Ticket exchange (concept page) — single slice
 
 Deliberately the smallest phase of the area:
 
@@ -178,7 +178,7 @@ Deliberately the smallest phase of the area:
 
 ## References
 
-- [Area plan](master-plan.md) · [Purchase](page-purchase.md) ·
-  [Karten-Bestellflow](page-order-flow.md) · [Event detail](page-event-detail.md)
+- [Area plan](master-plan.md) · [Purchase & ticket](page-purchase.md) ·
+  [Ticket order flow](page-order-flow.md) · [Event page](page-event-detail.md)
 - [Mock rulings](../../../docs/design/events-page/README.md#rulings--kartenbörse--page-ticket-exchange-shaped-2026-09-01)
-- [`CONTEXT.md`](../../../CONTEXT.md) — Kartenbörse (amended 2026-09-01), Ledger
+- [`CONTEXT.md`](../../../CONTEXT.md) — Ticket exchange (amended 2026-09-01), Ledger

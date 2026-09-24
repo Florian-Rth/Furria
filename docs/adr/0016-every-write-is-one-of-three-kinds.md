@@ -2,24 +2,25 @@
 
 By the end of CA-P6 the Club-App had **five edit paradigms** and no rule connecting any of them to
 what was being written: a centred dialog for the two-field *Gruppe bearbeiten*, an inline panel
-editor two thousand pixels down the Gruppe hub for the six-field Steckbrief, an inline row editor
-that deleted the row it was editing in the Personenverwaltung, a bottom sheet for the Aushang, and
-bare always-live controls that committed on change on `/manage/board` and `/profile`. Five verbs
-started an edit (*Pflegen, Bearbeiten, Ändern, Umbenennen*, and nothing at all on the Rollen cards),
-eight finished one, and six different visual weights signalled the same act. Decided with Florian on
-2026-09-22 after a review of every write surface in the app.
+editor two thousand pixels down the group hub for the six-field group profile, an inline row editor
+that deleted the row it was editing in the person management screen, a bottom sheet for the
+announcement, and bare always-live controls that committed on change on `/manage/board` and
+`/profile`. Five verbs started an edit (*Pflegen, Bearbeiten, Ändern, Umbenennen*, and nothing at
+all on the role cards), eight finished one, and six different visual weights signalled the same
+act. Decided with Florian on 2026-09-22 after a review of every write surface in the app.
 
 ## The decision
 
 **A write surface is chosen by the kind of write, never by the field count, the screen size or the
 feature that happens to own it.** There are exactly three kinds.
 
-**A detail write** changes a thing's own fields. It overwrites; no history is kept. The Gruppe's
-Steckbrief, a Person's Stammdaten, an Ort, a Rolle, an Aushang, a Kalendereintrag, a Sessionseintrag.
+**A detail write** changes a thing's own fields. It overwrites; no history is kept. The group
+profile, a Person's master data, a venue, a role, an announcement, a calendar entry, a session
+record.
 
 **An entry write** opens or closes **one dated entry** in a chain the club never deletes. A
-Mitgliedschaft, a Ruhezeit, a Beitragsermäßigung, a Zugehörigkeit, a Gruppen-Admin-Ernennung, a Sitz,
-eine Schlüsselübergabe, eine Inhaberschaft. **Ending is an entry write**, not a separate
+membership, a membership pause, a fee reduction, a group membership, a group-admin appointment, a
+seat, a key handover, a role holding. **Ending is an entry write**, not a separate
 confirmation — the separate *beenden* dialogs are retired.
 
 **A setting** is one stated value, flipped instantly, with no save button. It qualifies only when all
@@ -51,7 +52,7 @@ leaves. Everything else — entry writes and destructive acts — names its own 
 *Umbenennen*, *Übernehmen*, *Anlegen*, *Eintragen*, *Aushängen*, *Aufnehmen* are retired as button
 words, except where they *are* the act of an entry write.
 
-One weight, app-wide. `Bearbeiten` and `+ <Ding>` are small pills in the section header of the block
+One weight, app-wide. `Bearbeiten` and `+ <Thing>` are small pills in the section header of the block
 they act on. **A row carries no buttons.** The whole row is the target, and it opens the record it
 stands for: one entry opens that entry's editor, a thing holding several entries opens its own screen
 listing them as rows in turn. Peek sheets become that screen and stop carrying write actions.
@@ -88,10 +89,10 @@ the correlation in the shipped app ran backwards — two fields got a modal, six
 and because the same act would then feel different on a phone than on a desktop.
 
 **Classify by scope of authority**, following ADR-0013: scoped surfaces write one way, the back
-office another. Rejected because a Person's Stammdaten and a Gruppe's Steckbrief are the same act and
+office another. Rejected because a Person's master data and a group's profile are the same act and
 would land on opposite sides of the line.
 
-**Keep the per-surface verbs and fix only the weight** — a Gruppe *gepflegt*, an Ort *bearbeitet*.
+**Keep the per-surface verbs and fix only the weight** — a group *gepflegt*, a venue *bearbeitet*.
 Warmer copy. Rejected because recognition over recall is the whole point: five words for one act is
 five things to relearn in every corner of the app.
 
@@ -105,8 +106,8 @@ later.
 
 ## Consequences
 
-- **`sucht Verstärkung` leaves the Gruppe's detail write** and becomes an instant switch on the read
-  surface; **the Vorstandsfunktion's *zieht nach sich* dropdown loses its autosave** and becomes a
+- **`sucht Verstärkung` leaves the group's detail write** and becomes an instant switch on the read
+  surface; **the board office's *zieht nach sich* dropdown loses its autosave** and becomes a
   detail write. Those are the two changes this rule forces on shipped behaviour.
 - **The success strip is a new primitive.** The app has no toast, snackbar or save confirmation today
   — `KkShellNotice` is the only live region and it is not one. It must announce politely for a
@@ -116,7 +117,8 @@ later.
 - **`useReturnFocus` should disappear.** Its 500 ms `requestAnimationFrame` loop reclaiming focus
   from `<body>` is a patch on a lifecycle nobody owned; a routed editor restores focus by navigating.
 - **Peek sheets lose their write actions.** `HubPeekSheet` becomes the person's screen within the
-  Gruppe, listing her Zugehörigkeit and her Gruppen-Admin-Ernennung as rows that open their editors.
+  group, listing her group membership and her group-admin appointment as rows that open their
+  editors.
 - **The design language is unchanged.** Nothing here touches tokens, typography or the primitives —
   `KkPanelSection`'s action slot, `KkConsequenceNote` and `KkScreenActionBar` are the pattern; they
   were simply used six ways or not at all.

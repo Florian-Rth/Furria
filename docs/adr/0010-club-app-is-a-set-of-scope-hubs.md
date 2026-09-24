@@ -12,15 +12,15 @@ until a member has to learn it. Decided 2026-09-17 while shaping the floor plan
 **The app is a small set of hubs, not a set of pages.** A hub owns one scope and answers
 everything about it: identity at the top, then a stack of panels, each panel one concern with a
 live summary and a way in. Detail pages hang off a hub for the long form nobody needs often.
-Member hubs are **Start**, **Verein** and **Gruppen**; the remaining hubs are administrative.
+Member hubs are **Start**, **Club** and **Groups**; the remaining hubs are administrative.
 
-**Scoped rights live in the scope's hub; global rights get their own admin hub.** Gruppen-Admin
-is the model's only scoped resource, so a Gruppen-Admin's tools sit inside her Gruppe hub.
-Every other rights-bearing Rolle gets a workbench — Finanzen, Veranstaltungen, Verein verwalten,
-Getränkekasse, Kleidung — built from the same component kit as a member hub. There is no
+**Scoped rights live in the scope's hub; global rights get their own admin hub.** Group admin
+is the model's only scoped resource, so a group admin's tools sit inside her group hub.
+Every other rights-bearing role gets a workbench — Finance, Events, Club management,
+Drinks till, Wardrobe — built from the same component kit as a member hub. There is no
 "Verwaltung" navigation; `Mehr → Verwaltung` indexes the hubs the viewer may open.
 
-**Berechtigung gates panels, not only hubs.** A holder of one key sees a hub with one panel. The
+**Permission gates panels, not only hubs.** A holder of one key sees a hub with one panel. The
 hub set is therefore not configured anywhere — it falls out of the rights matrix, and a panel
 with nothing in it does not render.
 
@@ -43,7 +43,7 @@ without a second navigation system, and the shell's layer contract is untouched.
 The alternative considered and rejected was a permission-filtered destination set. It produces a
 navigation bar whose shape depends on data the member cannot see or change, which is worse on
 every count: unpredictable between two members standing next to each other, impossible to
-document, and it still cannot express "I want the Mitglieder list in reach".
+document, and it still cannot express "I want the members list in reach".
 
 ## Consequences
 

@@ -1,10 +1,10 @@
-// fcc-pg-hub.jsx — Screens 5–7: Gruppen-Hub (Mitglied / Gruppen-Admin) + Mein Profil.
+// fcc-pg-hub.jsx — Screens 5–7: Group hub (member / group admin) + My profile.
 
 const { PGP: H, PgRow: HR, PgEyeb: HEb, PgDisp: HDp, PgBody: HBy, PgSec: HSc, PgCd: HCd, PgAv: HAv,
   PgState: HSt, PgSw: HSw, PgSearch: HSrch, PgStat: HStt, PgEmpty: HEmp, PgConfirm: HConf,
   PgMob: HMob, PgDesk: HDesk, PgSinceRow: HSince, PgAdminRow: HAdm, PgBilder: HBil, PgOpenTag: HOpen, P_BY: HP } = window;
 
-// ── generisches Blatt für Schreib-Aktionen ────────────────────────────────
+// ── generic sheet for write actions ───────────────────────────────────────
 function PgSheet({ kicker, title, text, children, primary = 'Speichern', cancel = 'Abbrechen', mode = 'sheet' }) {
   const sheet = mode !== 'dialog';
   const body = (
@@ -37,7 +37,7 @@ function PgField({ label, value, hint, ph, chips, icon }) {
   );
 }
 
-// die drei Schreib-Blätter des Gruppen-Admins
+// the group admin's three write sheets
 function PgSheetAddMember({ mode }) {
   return (
     <PgSheet mode={mode} kicker="Tanzgarde" title="MITGLIED AUFNEHMEN" text="Such die Person im Verzeichnis. Wer noch nicht drin ist, muss zuerst in der Personenverwaltung angelegt werden."
@@ -174,7 +174,7 @@ function PgHubDesk({ admin, confirm, add }) {
   );
 }
 
-// ══ 7 · MEIN PROFIL — die neue Einstellung ═══════════════════════════════
+// ══ 7 · MY PROFILE — the new setting ═══════════════════════════════════
 function PgVisibilityCard({ on, wide }) {
   return (
     <HCd pad={wide ? '20px 22px' : '16px 18px'} style={{ background: '#fff' }}>

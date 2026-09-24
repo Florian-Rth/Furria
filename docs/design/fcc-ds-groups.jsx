@@ -1,5 +1,5 @@
-// fcc-ds-groups.jsx — Gruppen & Ämter (/groups).
-// Two tabs: Gruppen (CRUD + archive, member assignment, leader) and Ämter
+// fcc-ds-groups.jsx — Groups & offices (/groups).
+// Two tabs: Groups (CRUD + archive, member assignment, leader) and Offices
 // (roster of all offices with holders / vacancies, unique-rule enforced).
 // Composes the system. Exports window.PageGroups + window.MGroups.
 

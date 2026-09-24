@@ -1,5 +1,5 @@
 ---
-title: Events-Teaser
+title: Events teaser
 slug: events-teaser
 type: capability
 status: shipped
@@ -16,7 +16,7 @@ adrs: []
 ## What & Why
 
 The home page's "DAS PROGRAMM" section: a short teaser of upcoming events (3 cards) with an
-"Alle Termine →" link into the full [Veranstaltungen page](events/page-event-list.md). It is
+"Alle Termine →" link into the full [events page](events/page-event-list.md). It is
 the marketing bridge that turns the home page into a reason to buy tickets — and later carries
 **live ticket-scarcity** as a scarcity/marketing signal.
 
@@ -61,10 +61,10 @@ Uses the term **Programm** in its **public-website sense** — the season's publ
   - `2026-02-14T19:11` · Große Prunksitzung · Festhalle → 14 / FEB / 19:11 Uhr · red
   - `2026-02-08T14:30` · Kinderfasching · Sporthalle → 08 / FEB / 14:30 Uhr · gold
   - `2026-02-16T13:11` · Rosenmontagsumzug · Dorfplatz → 16 / FEB / 13:11 Uhr · ink
-  - Dates line up with the **2025/26 Session** (Rosenmontag = 16 Feb 2026).
+  - Dates line up with the **2025/26 Session** (Rose Monday = 16 Feb 2026).
 - **Ownership / location.** Lives at `features/landing/components/ProgramTeaser/`; the landing
   page (`LandingPage`) composes it below the ticker. The event card is built **locally** here —
-  **not** pre-shared. When the full Veranstaltungskalender is built (deferred), the card can be
+  **not** pre-shared. When the full event calendar is built (deferred), the card can be
   promoted/extracted then; no seam is reserved now (YAGNI).
 - Reads the same event data as the full calendar *conceptually* — a **teaser view**, not a
   separate source — but there is no shared code until the calendar exists.
@@ -109,5 +109,5 @@ only** (`web/apps/website` + `@furria/ui`). **Backend: none** — static-final.
 
 - Mock: `fcc-ds-landing.jsx` (`LProgramCard`, `LEventCard`, "DAS PROGRAMM").
 - `CONTEXT.md` (**Programm** — public-website sense).
-- Design README §9 (Vorverkauf → "live remaining-ticket scarcity feeds the public site") —
+- Design README §9 (Presale → "live remaining-ticket scarcity feeds the public site") —
   deferred to the backend era.

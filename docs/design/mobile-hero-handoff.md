@@ -69,7 +69,7 @@ The `PhoneFrame`, `HomeIndicator`, and `StatusBar` in the file are **prototype c
 - Animation: `@keyframes { from translateX(0) to translateX(-50%) }`, `26s linear infinite`. Duplicate the run so the loop is seamless. Respect `prefers-reduced-motion`.
 
 ## Interactions & Behavior
-- **Hamburger** → opens the site nav drawer (nav destinations: Verein · Programm · Galerie · Login · Tickets).
+- **Hamburger** → opens the site nav drawer (nav destinations: club · events · gallery · login · tickets).
 - **Tickets** (nav button + primary CTA) → ticket shop / pre-sale.
 - **Programm** (secondary CTA) → event calendar.
 - **Ticker**: continuous horizontal marquee, `26s`, pauses under `prefers-reduced-motion: reduce`.

@@ -1,8 +1,8 @@
-// fcc-ds-program.jsx — Programm & Auto-Reihenfolge (inside /events · Programm task).
+// fcc-ds-program.jsx — Program & auto running order (inside /events · Program task).
 // The marquee "it thinks for us" feature: a manual draft has real problems
 // (performers in back-to-back acts → no costume change; clustered categories);
-// "Reihenfolge berechnen" optimises while RESPECTING locked acts + hints.
-// Human-in-control: pins (fixed position) + hints (früh/spät/Finale) + weighted
+// "compute running order" optimises while RESPECTING locked acts + hints.
+// Human-in-control: pins (fixed position) + hints (earlier/later/finale) + weighted
 // factors. Composes the system shell + tokens. Exports window.TaskProgram + MProgram.
 
 (function () {

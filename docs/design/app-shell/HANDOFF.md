@@ -51,7 +51,7 @@ Full-screen, `background: #15110E` (dark: `#0E0B0A`), `z-index` above everything
   Order: `Übersicht · Meine Auftritte · Spielplan · Live-Regie · Bierliste · Beitrag · Mitglieder · Galerie · Klamotten · Schlüssel`.
 - **Footer:** hairline, then settings icon + `Einstellungen` + logout icon.
 
-**Open question left for the client:** once the Amt-gated admin pages exist, this flat list should probably be grouped (`Mein Bereich` / `Verein` / `Verwaltung`) with small caps group labels. Implement it flat first; grouping is additive.
+**Open question left for the client:** once the role-gated admin pages exist, this flat list should probably be grouped (`Mein Bereich` / `Verein` / `Verwaltung`) with small caps group labels. Implement it flat first; grouping is additive.
 
 ### 3. Übersicht — desktop (≥ ~1100 px)
 
@@ -101,7 +101,7 @@ Same content, three regions:
 | type scale | 10 · 11 · 12 · 12.5 · 13 · 13.5 · 14 · 14.5 · 15 · 17 · 18 · 20 · 23 · 26 · 33 · 46 | |
 | easing | `cubic-bezier(.2,.8,.25,1)` | |
 
-Rules from the design system: **red is accent and action only, never body text**; gold is the festive accent; two elevation languages exist (soft hairline + tiny shadow for app surfaces, hard offset shadow `Npx Npx 0 ink` for one "Plakat" hero element per screen — this shell deliberately uses **no** hard shadow, the dark stage is the hero). Do not introduce new colours, fonts or radii.
+Rules from the design system: **red is accent and action only, never body text**; gold is the festive accent; two elevation languages exist (soft hairline + tiny shadow for app surfaces, hard offset shadow `Npx Npx 0 ink` for one "poster" hero element per screen — this shell deliberately uses **no** hard shadow, the dark stage is the hero). Do not introduce new colours, fonts or radii.
 
 ## Assets
 None. Type, rectangles, hairlines, two radial gradients and the stroke icon set. Fonts: Anton + Archivo (Google Fonts). The icon set in `src/fcc-ds-shell.jsx` (`Ic`) is a 24 × 24 stroke set — replace with the codebase's icon library if one exists, matching stroke weight ~1.85–2.

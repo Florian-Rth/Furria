@@ -1,9 +1,9 @@
-// fcc-ds-seating.jsx — Saalplan-Editor (Veranstaltungsplaner · Aufgabe Saalplanung).
+// fcc-ds-seating.jsx — Hall plan editor (event planner · hall planning task).
 // Mobile-first drag&drop hall planner (pointer events → touch + mouse).
-// PRIMARY OBJECT = Tischreihe (banquet row): N×80cm tables butted into one long
+// PRIMARY OBJECT = table row (banquet row): N×80cm tables butted into one long
 // table, chairs along the long sides, moved/rotated/resized AS ONE batch.
-// Single table = Reihe of length 1. Two modes: "Tische planen" / "Saal einrichten".
-// 10cm snap, meter ruler, live Kapazität-HUD, Tischreihen-Block helper, Vorlage.
+// Single table = row of length 1. Two modes: "plan tables" / "set up hall".
+// 10cm snap, meter ruler, live capacity HUD, table-row-block helper, template.
 // Composes system shell + tokens. Exports window.TaskSaalplan (+ SeatingEditor alias).
 
 (function () {

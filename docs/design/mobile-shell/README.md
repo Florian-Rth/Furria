@@ -172,7 +172,7 @@ hardware back button close the sheet or leave search instead of abandoning the s
 ### Dialogs become sheets or wizards
 
 Today's six dialogs split: pickers and confirmations become **sheets**; anything more complex
-(creating a Gruppe, editing a Person) becomes a **wizard** — a sequence of working views, bar in
+(creating a group, editing a Person) becomes a **wizard** — a sequence of working views, bar in
 back mode, no navigation, one action bar, and the **thread** showing progress through the
 sequence, which is a use §5 names explicitly. A wizard is **one route with the step in a search
 param**, so back steps backwards through the wizard rather than out of it. Executed with the page
@@ -216,8 +216,8 @@ foreign beside the new chrome.
 |---|---|
 | `Anna Brunner`, `Große Garde`, `Showtanz` | Sample data. The app shows the signed-in member or nothing |
 | `SPIELPLAN` | Banned word — see `CONTEXT.md` → Gruppentermin. The label is **Veranstaltungen** |
-| `Ehrenmitglied · Archiv` chip | Ehrenmitgliedschaft was removed from CA-P1; nothing confers or displays it |
-| `kein Mitglied` chip | The club has no word for non-member Gruppen people — open in `CONTEXT.md` |
+| `Ehrenmitglied · Archiv` chip | Honorary membership was removed from CA-P1; nothing confers or displays it |
+| `kein Mitglied` chip | The club has no word for non-member group people — open in `CONTEXT.md` |
 | `Beitrag offen · 30,00 €` | Needs B9. No fee surface exists |
 | `Läuft gerade · Du bist in 12 Minuten dran` | Needs B13 (Live-Regie). No live state exists |
 | Bell with a red dot | No notification system. A dot could never be honest |

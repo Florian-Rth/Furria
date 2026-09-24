@@ -1,5 +1,5 @@
-// fcc-pg-admin.jsx — Screens 8–11: Personenverwaltung, Person bearbeiten,
-// Gruppenverwaltung, Ämter & Rechte. Werkzeug-Charakter, aber gleiche Sprache.
+// fcc-pg-admin.jsx — Screens 8–11: Person management, Edit person,
+// Group management, Offices & rights. Tool character, but the same language.
 
 const { PGP: A, PG: AD, PgRow: AR, PgEyeb: AEb, PgDisp: ADp, PgBody: ABy, PgSec: ASc, PgCd: ACd,
   PgAv: AAv, PgSeal: ASeal, PgKey: AKey, PgState: ASt, PgSw: ASw, PgSearch: ASrch, PgFilters: AFlt,
@@ -115,7 +115,7 @@ function PgFactRow({ title, span, meta, tone = 'ink', i, actions = true, running
   );
 }
 
-// Der Editor für EINEN datierten Fakt — hier: Ruhezeit
+// The editor for ONE dated fact — here: membership pause
 function PgFactEditor({ inline = true }) {
   return (
     <ACd pad="18px" style={{ background: '#fff', border: `1.5px solid ${A.red}` }}>

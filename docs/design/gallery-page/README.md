@@ -1,4 +1,4 @@
-# Handoff: FURRIA — Galerie (öffentliche Website)
+# Handoff: FURRIA — Gallery (public website)
 
 Design direction for the public **Galerie** of the Furrscher Carnevals Club e.V. ("FURRIA").
 This bundle arrived **without a README** — this file was written by the team while shaping
@@ -44,8 +44,8 @@ The mock's editorial **structure** is good and is what P5 builds:
 Recorded so the deviations are explained rather than silent (the READ FIRST asks for exactly this).
 Full reasoning lives in [`plan/website/feature-gallery.md`](../../../plan/website/feature-gallery.md).
 
-- **Hard "Plakat" offset-shadows** (`12px 12px 0 red`, 2px ink contours, square corners). Rejected as
-  the system for the third phase running — our shipped **Destillat** language wins:
+- **Hard "poster" offset-shadows** (`12px 12px 0 red`, 2px ink contours, square corners). Rejected as
+  the system for the third phase running — our shipped **Distilled** language wins:
   `radius.base` 14, hairline borders, soft elevation. `shadow.posterOffset` stays reserved for hero
   headlines, so the featured album earns emphasis through **scale + layout + `shadow.raised`**.
 - **`columnCount: 3` masonry.** Rejected on a **defect, not taste**: CSS multi-column fills
@@ -56,7 +56,7 @@ Full reasoning lives in [`plan/website/feature-gallery.md`](../../../plan/websit
 - **Wrap-around in the viewer.** The mock steps with modulo *and* prints "Letztes Bild" in the
   footer — self-contradictory. We clamp at both ends and disable the buttons.
 - **Plausible-real photographer names** (*"Anja Weber"*, *"Uwe Krämer"*). These name invented people
-  in what is effectively the **Fotograf** Amt; P4 already refused to invent a "Vorstand" byline.
+  in what is effectively the **Fotograf** role; P4 already refused to invent a "Vorstand" byline.
   Placeholder credits must be unmistakably fake.
 - **Invented past.** `ARCHIV` hardcodes 2024/25, 2023/24 and "Vereinsarchiv 1971–2023" with album
   names we do not have. Older sessions are **derived** from content and appear the day they become

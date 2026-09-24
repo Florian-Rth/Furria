@@ -1,7 +1,7 @@
 // fcc-ds-join.jsx — public "Mitglied werden" page (/join). The membership funnel.
 // Premise: joining a Karnevalsverein is intimidating. The page removes fear first,
-// then offers ONE concrete next step (beim Training vorbeikommen), then the digital Antrag.
-// Invented features: Findomat (3-question group matcher) · Vereins-Ticket (alles auf
+// then offers ONE concrete next step (coming by a training session), then the digital application.
+// Invented features: Findomat (3-question group matcher) · club ticket (everything on
 // einer Eintrittskarte) · Beitrags-Rechner · „Ehrlich gesagt“-FAQ · Antrag + Danke-Screen.
 // Konfetti-Kinetik only (window.KK tokens, Anton/Archivo, ONE hard shadow per screen).
 // Exports JoinPage({ mode, device, view }) — view: 'index' | 'antrag' | 'fertig'.
@@ -217,7 +217,7 @@ function Rechner({ c, small }) {
 }
 
 // ── VEREINS-TICKET: everything you need to decide, on one ticket ────────
-// The one bold Plakat object in its section. Stub carries the joke, body the facts.
+// The one bold poster object in its section. Stub carries the joke, body the facts.
 function JTicket({ c, small, go }) {
   const bars = Array.from({ length: 26 }).map((_, i) => (i * 7 % 5 < 2 ? 4 : i % 3 === 0 ? 3 : 1.5));
   const zeile = (k, v, strong) => (

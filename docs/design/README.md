@@ -1,6 +1,6 @@
 # Handoff: FCC / FURRIA — Club-App (internal member app)
 
-> **Furrscher Carnevals Club e.V. ("FURRIA")** — a German *Karnevalsverein* in "Großbesenstadt", est. 1971.
+> **Furrscher Carnevals Club e.V. ("FURRIA")** — a German carnival club in "Großbesenstadt", est. 1971.
 > This package is the design + information handoff for the **internal Club-App**. Everything a developer needs to
 > implement it — design system, data model, routes, per-feature specs — is in this README. The HTML files are the
 > visual reference mocks.
@@ -72,7 +72,7 @@ Pan = drag; zoom = scroll/pinch. Each framed rectangle ("artboard") is one scree
 
 ## 5. Design System — "Konfetti Kinetik"
 
-Bold editorial-newspaper DNA, festive but — in the current **"Destillat"** treatment — **calm and wertig**: soft
+Bold editorial-newspaper DNA, festive but — in the current **"Distilled"** treatment — **calm and high-quality**: soft
 elevation, hairlines, dezente Akzente. Same language across Website and App.
 
 ### Typography
@@ -130,29 +130,29 @@ key, euro, upload, bolt, logout`). App chrome: `AppShell` (top strip + dark role
 
 A person's identity has **three independent layers** — do not collapse them:
 
-- **(A) Mitgliedschaftsart** — exactly **one** per member: `Aktiv` / `Passiv` / `Jugend` / `Ehren`. Drives the yearly Beitrag (≈ **30 €**, **15 €** for Kind/Jugend).
-- **(B) Gruppen** — **many-to-many**, fully CRUD + archivable, any size (Tanzgarde, Männerballett, Elferrat, Spielmannszug, …). The user picks a display title.
-- **(C) Ämter (offices)** — grant **targeted** admin rights. **There is no all-access "Vorstand" super-role.**
+- **(A) Membership type** — exactly **one** per member: active / passive / youth / honorary. Drives the yearly fee (≈ **30 €**, **15 €** for children/youth).
+- **(B) Groups** — **many-to-many**, fully CRUD + archivable, any size (dance guard, men's ballet, Council of Eleven, marching band, …). The user picks a display title.
+- **(C) Offices** — grant **targeted** admin rights. **There is no all-access "board" super-role.**
 
-### Ämter (fixed, rights-bearing set — NOT freely created)
-- **Unique (always exactly these):** Präsident, Präsidentin, Kinderpräsident/in, Geschäftsführer, Schriftführer, Finanzen, Getränkewart.
-- **Per-group:** Trainer / Gruppenleiter.
-- **Multi:** Fotograf, Kleidung.
+### Offices (fixed, rights-bearing set — NOT freely created)
+- **Unique (always exactly these):** president (m/f), children's president, managing director, secretary, finance, drinks warden.
+- **Per-group:** trainer / group leader.
+- **Multi:** photographer, clothing.
 - **Technical:** **Admin** (separate from elected roles).
 
-**Assignment & hierarchy:** you assign an Amt to a person **only in Mitglieder-Management** (member detail), and only
-**hierarchically** — you must hold an Amt of at least equal rank to grant it. **Exception:** Trainer/Gruppenleiter is
-conferred by setting someone as a group's trainer in `/groups`, which **auto-grants Trainer rights scoped to that one
-group** (manage its members, add trainers, edit its calendar entries). The **rights-per-Amt matrix** is configured on
-the **Admin-only `/roles` (Ämter & Rechte)** page.
+**Assignment & hierarchy:** you assign an office to a person **only in member management** (member detail), and only
+**hierarchically** — you must hold an office of at least equal rank to grant it. **Exception:** trainer/group leader is
+conferred by setting someone as a group's trainer in `/groups`, which **auto-grants trainer rights scoped to that one
+group** (manage its members, add trainers, edit its calendar entries). The **rights-per-office matrix** is configured on
+the **admin-only `/roles` (offices & rights)** page.
 
-**Mitglied ≠ Account.** Everyone is in the member DB; an app login is **optional** and 1:1-linked. Onboarding is
-**invite-only** via a one-time token (link OR printed QR/code for email-less members). Inviters: Geschäftsführer,
-Präsident, Präsidentin, Admin. Photo-consent is captured at signup. Login = username/email + password (reset via email
+**Member ≠ account.** Everyone is in the member DB; an app login is **optional** and 1:1-linked. Onboarding is
+**invite-only** via a one-time token (link OR printed QR/code for email-less members). Inviters: managing director,
+president, admin. Photo-consent is captured at signup. Login = username/email + password (reset via email
 or admin reset link).
 
 **Visibility default:** members see almost everything **read-only**; only personal/financial data + edit rights are
-gated by Ämter.
+gated by roles.
 
 ---
 
@@ -165,7 +165,7 @@ Full DBML in **`FCC-Schema.txt`** (paste into dbdiagram.io to visualize). Summar
 - **`account`** — optional 1:1 login (username, email, password_hash, status, last_login_at).
 - **`invitation`** — one-time onboarding token (`token`, `invited_by`, `expires_at`, `accepted_at`).
 - **`group_category`**, **`group`** (archivable via `archived_at`), **`group_membership`** (m:n person↔group, `is_trainer` flag).
-- **`permission`** (key/name/area), **`role`** (= Amt; `key`, `parent_id` for hierarchy, `is_unique`), **`role_permission`** (m:n matrix), **`role_assignment`** (person↔role, `assigned_by`).
+- **`permission`** (key/name/area), **`role`** (= office; `key`, `parent_id` for hierarchy, `is_unique`), **`role_permission`** (m:n matrix), **`role_assignment`** (person↔role, `assigned_by`).
 
 > The schema currently covers identity/roles/groups. Extend it for the feature domains below (fees/ledger, events,
 > ticketing, seating, program, drinks kitty, shop orders, gallery, keys) following the same conventions.
@@ -185,28 +185,28 @@ All mocks use only the design-system primitives. Desktop bodies live in the name
 `renderFccPage(id, {role, go})` (+ `PAGEMETA`) in `fcc-ds-pages.jsx`; mobile equivalents in `fcc-ds-mobile.jsx`;
 nav + gating in `NAVCONFIG` (`fcc-ds-shell.jsx`).
 
-- **Mitglieder-Management** (`/members/manage`, `fcc-ds-members.jsx`) — master data; assign Ämter (hierarchical) + groups (m:n). The root all else hangs off.
-- **Gruppen** (`/groups`, `fcc-ds-groups.jsx`) — create/edit/archive (privileged: GF/Präsident/in/Admin); set a group's Trainer (auto-grants scoped Trainer rights). Everyone else read-only.
-- **Ämter & Rechte** (`/roles`, `fcc-ds-roles.jsx`, **Admin-only**) — curated rights-per-Amt matrix.
-- **Beiträge & Kasse / Zahlungen** (`/fees`, `fcc-ds-fees.jsx`) — yearly fees tiered by Mitgliedschaftsart. **Ledger is the source of truth; payment is pluggable** (Ledger-only / **Stripe** / **PayPal**). One payment system bundles **Beitrag · Shop · Getränkekasse · Ticket-Einkäufe** (no Spenden). Member side is **light**: an "offen"-Hinweis on Übersicht → a focused one-tap pay-flow (Stripe card / PayPal), **no** personal finance dashboard. Amt-Finanzen page: income by category, offen-vs-bezahlt, members by type, Jahres-Kassenbericht CSV/PDF. **Belegverwaltung / Auslagen** tab (outflow): member submits an expense (Beleg photo, amount, category, event, note) → Finanzen genehmigt → marks **"bar erstattet"** → auto-booked into the same ledger → **Kassenbericht = Einnahmen − Ausgaben = Saldo**.
-- **Veranstaltungsplaner** (`/events`, `fcc-ds-events.jsx` + `fcc-ds-program.jsx`) — **a status/task hub, NOT a linear stepper.** An event opens to task cards with status (offen/in Arbeit/erledigt), tackled in **any order**: (a) **Eckdaten** (name/date/location/motto → published immediately so the public site can advertise), (b) **Vorverkauf/Ticketing** (Kontingent/Preis/VVK-Fenster, sale by channel, member pre-orders, fast offline-ticket entry; **live remaining-ticket scarcity feeds the public site as marketing**), (c) **Werbung** (auto-generate shareable material from event data + brand: Instagram Story/Post, Flyer A6, WhatsApp-Status; live brand-composed poster + share/download), (d) **Saalplanung** (reuses the Saalplan-Editor, informed by sold tickets), (e) **Programm/Reihenfolge** (below).
-- **Auto-Reihenfolge (Programm-Algorithmus)** (`fcc-ds-program.jsx`) — computes the best running order. **Objective: maximise change-time** for performers in multiple groups (avoid back-to-back). **Not fully automatic** — optimise around inputs: (a) pinned acts at fixed positions, (b) hints (earlier/later/opener/finale), (c) category tags (Tanz, Büttenrede, Show, Gastauftritt…) to avoid clustering, (d) other weighted factors. Present best order; planner locks/nudges and re-runs. The human stays in control; the app does the combinatorics.
-- **Saalplan-Editor** (`/seating`, `fcc-ds-seating.jsx`) — mobile-first drag&drop hall planner (pointer events). **Primary object = Tischreihe** (N×80cm banquet tables butted into a row; chairs auto-placed on the long sides; moved/rotated/resized as one batch; single table = Reihe of length 1). Add by choosing Länge + Quer/Hoch; inspector changes Länge live, dreht, toggles Kopfplätze; Tischreihen-Block helper drops parallel rows. Two modes (Tische planen / Saal einrichten), 10cm snap + meter ruler, Bühne/Bar/Eingang/Säule/Fluchtweg obstacles, live Kapazität-HUD (Plätze/Ziel 350). **Build generic — reused as the public ticket-shop seat map.**
-- **Live-Regie** (`/live`, `fcc-ds-live.jsx`) — runs the planned order **live**. `PageLive` operator cockpit + `MLive` performer view + lock-screen push. Current act advances down the list; **last-second changes propagate in real time**; performers get a **push when up next** ("du bist als nächstes dran"), scoped to the performing group. The bridge between plan and evening. *(Rename placeholder: "Live-Regie" is good.)*
-- **Bierliste & Getränkekasse** (`/drinks` + `/drinks/inventory`, `fcc-ds-drinks.jsx`) — season starts with ~2 pallets of beer (club/one person pays). Any member can **sponsor crates for the round**. Digitises today's cash-on-paper pain: crate **stock + low-stock warning, digital Strichliste, per-person balance, who's paid/open**. Member buys crates, pays open balance via the Getränkewart's PayPal link **or** cash — **payment is always Getränkewart-confirmed** (status "gemeldet → wartet auf Bestätigung"). Top-3 + own-rank scoreboard (no amounts). Getränkewart: Kasse/Bestand/offen stats, **"Geld erhalten"** reconcile flow, Teilnehmerliste, **Palettenabgleich** card (app dictates how many crates to move to the paid side). 12 €/Kiste, 80 at season start. Participation is a **per-user flag**.
-- **Klamotten-Shop** (`/shop` + `/shop/manage`, `fcc-ds-shop.jsx` + `fcc-ds-shop-manage.jsx`) — Dauer-Sortiment + seasonal **Sammelbestellung**. Member browses, picks Größe, orders & pays **direct (Stripe/PayPal) OR bar (Amt confirms)**, tracks "Meine Bestellungen". Amt Kleidung gets an **auto-consolidated supplier list** (X× Gr. L …, CSV/PDF/send), **Ausgabe-Tracking** (abhaken wer abgeholt hat) + bar-offen, and a Sortiment tab. Products: Softshell-/Fleece-Jacke, Polo, Schal, Mütze, Narrenkappe (Herren/Damen).
-- **Schlüssel-Management** (`/keys`) — a registry: editable key-types (Sporthalle, Vereinsraum, Lager Halle, Lager Vereinsraum) → who holds each. **Visible to all members** so they know whom to ask. **Not an Amt.**
-- **Trainingsplaner / Spielplan** (`/schedule`) — **one shared calendar** for everyone; trainers edit in place. No private/personal calendar.
-- **Bildergalerie** (`/gallery`) — members upload/view event photos; gated by photo-consent.
-- **Übersicht** (`/`, dynamic personalised home) — *(to refine)* each member sees what's relevant to them: their open balance, next training/event, when their group is on stage, pushes. Role-aware. The glue.
+- **Member management** (`/members/manage`, `fcc-ds-members.jsx`) — master data; assign roles (hierarchical) + groups (m:n). The root all else hangs off.
+- **Groups** (`/groups`, `fcc-ds-groups.jsx`) — create/edit/archive (privileged: managing director/president/admin); set a group's trainer (auto-grants scoped trainer rights). Everyone else read-only.
+- **Offices & rights** (`/roles`, `fcc-ds-roles.jsx`, **admin-only**) — curated rights-per-role matrix.
+- **Fees & till / payments** (`/fees`, `fcc-ds-fees.jsx`) — yearly fees tiered by membership type. **Ledger is the source of truth; payment is pluggable** (ledger-only / **Stripe** / **PayPal**). One payment system bundles **fee · shop · drinks till · ticket purchases** (no donations). Member side is **light**: an "open balance" note on the overview → a focused one-tap pay flow (Stripe card / PayPal), **no** personal finance dashboard. Finance-office page: income by category, open vs. paid, members by type, annual cash report CSV/PDF. **Receipts / expenses** tab (outflow): member submits an expense (receipt photo, amount, category, event, note) → finance approves → marks **"reimbursed in cash"** → auto-booked into the same ledger → **cash report = income − expenses = balance**.
+- **Event planner** (`/events`, `fcc-ds-events.jsx` + `fcc-ds-program.jsx`) — **a status/task hub, NOT a linear stepper.** An event opens to task cards with status (open / in progress / done), tackled in **any order**: (a) **Key facts** (name/date/location/motto → published immediately so the public site can advertise), (b) **Presale/ticketing** (quota/price/presale window, sale by channel, member pre-orders, fast offline-ticket entry; **live remaining-ticket scarcity feeds the public site as marketing**), (c) **Advertising** (auto-generate shareable material from event data + brand: Instagram Story/Post, flyer A6, WhatsApp status; live brand-composed poster + share/download), (d) **Hall planning** (reuses the seating-plan editor, informed by sold tickets), (e) **Programme/running order** (below).
+- **Automatic running order (programme algorithm)** (`fcc-ds-program.jsx`) — computes the best running order. **Objective: maximise change-time** for performers in multiple groups (avoid back-to-back). **Not fully automatic** — optimise around inputs: (a) pinned acts at fixed positions, (b) hints (earlier/later/opener/finale), (c) category tags (dance, carnival speech, show, guest act…) to avoid clustering, (d) other weighted factors. Present best order; planner locks/nudges and re-runs. The human stays in control; the app does the combinatorics.
+- **Seating-plan editor** (`/seating`, `fcc-ds-seating.jsx`) — mobile-first drag&drop hall planner (pointer events). **Primary object = table row** (N×80cm banquet tables butted into a row; chairs auto-placed on the long sides; moved/rotated/resized as one batch; single table = row of length 1). Add by choosing length + landscape/portrait; inspector changes length live, rotates, toggles head seats; a table-row block helper drops parallel rows. Two modes (plan tables / set up hall), 10cm snap + meter ruler, stage/bar/entrance/pillar/escape-route obstacles, live capacity HUD (seats/target 350). **Build generic — reused as the public ticket-shop seat map.**
+- **Live direction** (`/live`, `fcc-ds-live.jsx`) — runs the planned order **live**. `PageLive` operator cockpit + `MLive` performer view + lock-screen push. Current act advances down the list; **last-second changes propagate in real time**; performers get a **push when up next** ("you're up next"), scoped to the performing group. The bridge between plan and evening. *(Rename placeholder: "live direction" is good.)*
+- **Beer list & drinks till** (`/drinks` + `/drinks/inventory`, `fcc-ds-drinks.jsx`) — season starts with ~2 pallets of beer (club/one person pays). Any member can **sponsor crates for the round**. Digitises today's cash-on-paper pain: crate **stock + low-stock warning, digital tally list, per-person balance, who's paid/open**. Member buys crates, pays open balance via the drinks warden's PayPal link **or** cash — **payment is always confirmed by the drinks warden** (status "reported → awaiting confirmation"). Top-3 + own-rank scoreboard (no amounts). Drinks warden: till/stock/open stats, **"money received"** reconcile flow, participant list, **pallet reconciliation** card (app dictates how many crates to move to the paid side). 12 €/crate, 80 at season start. Participation is a **per-user flag**.
+- **Wardrobe shop** (`/shop` + `/shop/manage`, `fcc-ds-shop.jsx` + `fcc-ds-shop-manage.jsx`) — permanent range + seasonal **bulk order**. Member browses, picks a size, orders & pays **direct (Stripe/PayPal) OR cash (office confirms)**, tracks "my orders". The clothing office gets an **auto-consolidated supplier list** (X× size L …, CSV/PDF/send), **hand-out tracking** (tick off who picked up) + open cash, and a range tab. Products: softshell/fleece jacket, polo, scarf, beanie, jester's cap (men/women).
+- **Key management** (`/keys`) — a registry: editable key types (sports hall, clubroom, hall storeroom, clubroom storeroom) → who holds each. **Visible to all members** so they know whom to ask. **Not an office.**
+- **Training planner / schedule** (`/schedule`) — **one shared calendar** for everyone; trainers edit in place. No private/personal calendar.
+- **Member photo library** (`/gallery`) — members upload/view event photos; gated by photo-consent.
+- **Overview** (`/`, dynamic personalised home) — *(to refine)* each member sees what's relevant to them: their open balance, next training/event, when their group is on stage, pushes. Role-aware. The glue.
 
 ---
 
 ## 10. Money model (summary)
-- **Ledger is source of truth; payment methods are pluggable.** Member-facing: **Stripe (card) + PayPal**. One payment system bundles Beitrag, Shop, Getränkekasse, Ticket purchases.
-- **Fees** yearly, tiered by Mitgliedschaftsart. Member pays an open balance one-tap; controlling lives on `/fees`.
-- **Reimbursements (Auslagen)** stay **cash** (Bar vom Finanzwart) — the app tracks & books them so the Kassenbericht is complete.
-- **Getränkekasse** — one kasse under the Getränkewart; payments always Getränkewart-confirmed.
+- **Ledger is source of truth; payment methods are pluggable.** Member-facing: **Stripe (card) + PayPal**. One payment system bundles fee, shop, drinks till, ticket purchases.
+- **Fees** yearly, tiered by membership type. Member pays an open balance one-tap; controlling lives on `/fees`.
+- **Reimbursements (expenses)** stay **cash** (paid out by the treasurer) — the app tracks & books them so the cash report is complete.
+- **Drinks till** — one till under the drinks warden; payments always confirmed by the drinks warden.
 
 ---
 
@@ -222,12 +222,12 @@ nav + gating in `NAVCONFIG` (`fcc-ds-shell.jsx`).
 
 **App design system:** `fcc-ds-shell.jsx` (**tokens `T`, icons `Ic`, primitives `Card/Chip/Btn/Avatar/Eyebrow/Title/Progress`, `NAVCONFIG`, `AppShell`**), `fcc-ds-docs.jsx` (the documentation panels), `fcc-ds-pages.jsx` (`renderFccPage` + `PAGEMETA` dispatcher), `fcc-ds-mobile.jsx` (mobile app + bottom-nav).
 
-**Public website:** `fcc-ds-landing.jsx` (`BestV({mode, device})` — the current "Destillat" landing, light/dark, desktop/mobile). `mobile-hero.html` + `mobile-hero-handoff.md` — dedicated **mobile** hero redesign handoff (see that file's own READ FIRST); source of record `fcc-ds-landing.jsx` → `BestMobileHero`/`BestMobile`.
+**Public website:** `fcc-ds-landing.jsx` (`BestV({mode, device})` — the current "Distilled" landing, light/dark, desktop/mobile). `mobile-hero.html` + `mobile-hero-handoff.md` — dedicated **mobile** hero redesign handoff (see that file's own READ FIRST); source of record `fcc-ds-landing.jsx` → `BestMobileHero`/`BestMobile`.
 
 **Per-page website bundles** (each a self-contained folder with its own `preview.html`, `src/` and **README — read that README first**, it records what was adopted and what was rejected for that page):
-- `verein-page/` — the Verein page (`/club`), built in P3.
-- `news-page/` — Aktuelles list + article + landing teaser (`/news`), built in P4.
-- `gallery-page/` — the Galerie: album index + album + lightbox (`/gallery`), P5. Its README was written by the team; the bundle arrived without one.
+- `club-page/` — the club page (`/club`), built in P3.
+- `news-page/` — news list + article + landing teaser (`/news`), built in P4.
+- `gallery-page/` — the gallery: album index + album + lightbox (`/gallery`), P5. Its README was written by the team; the bundle arrived without one.
 
 **Feature pages:** `fcc-ds-members.jsx`, `fcc-ds-groups.jsx`, `fcc-ds-roles.jsx`, `fcc-ds-events.jsx`, `fcc-ds-seating.jsx`, `fcc-ds-program.jsx`, `fcc-ds-fees.jsx`, `fcc-ds-live.jsx`, `fcc-ds-drinks.jsx`, `fcc-ds-shop.jsx`, `fcc-ds-shop-manage.jsx`.
 
@@ -237,7 +237,7 @@ nav + gating in `NAVCONFIG` (`fcc-ds-shell.jsx`).
 
 ## 12. Non-negotiable conventions (carry into the codebase)
 - **Compose the system, don't extend it.** Use the tokens + primitives. No new colors, fonts, radii, shadows.
-- **The Narrenruf is "Gross - Furria!"** — never "Helau" or "Alaaf" in any copy. This is local law.
+- **The carnival call is "Gross - Furria!"** — never "Helau" or "Alaaf" in any copy. This is local law.
 - **Routes/IDs/props = English. Visible text = German.**
 - Red is **accent/action only — never body text.**
 - Soft elevation is the default; the hard offset-shadow is a rare single-hero accent.

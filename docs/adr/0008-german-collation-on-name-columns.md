@@ -17,7 +17,7 @@ for, and every German list was a seq scan plus a sort.
 The second, quieter half is uniqueness. `ix_group_name_active` and `ix_role_name_active` are
 `UNIQUE (lower(name)) WHERE archived_on IS NULL`, and `lower()` follows the column's collation.
 In a `C`-locale database `lower('Ä')` is `'Ä'`, so "Ärzte" and "ärzte" would both be insertable
-and the club would hold two Gruppen with the same name. Pinning the collation on the column
+and the club would hold two groups with the same name. Pinning the collation on the column
 pins `lower()` with it — verified by execution, and now pinned by `CollationTests`, which goes
 red the moment `UseCollation` disappears from the model.
 

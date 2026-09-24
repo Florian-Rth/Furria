@@ -1,7 +1,7 @@
-# Handoff: FURRIA — Termine & Karten (öffentliche Website)
+# Handoff: FURRIA — Events & Tickets (public website)
 
-Design direction for the public **Events area** (Programm, event detail, Platzwahl,
-Kauf/Karte, Kartenbörse). This bundle arrived **without a README** — this file was written
+Design direction for the public **Events area** (event list, event detail, seat picker,
+purchase/ticket, ticket exchange). This bundle arrived **without a README** — this file was written
 by the team when the bundle was moved into the repo (2026-08-12), *before* any shaping
 session had ruled on it.
 
@@ -14,14 +14,14 @@ session had ruled on it.
 
 Open `preview.html` in a browser (needs internet for CDN React + Google Fonts). It renders
 `EventsPage({ mode, device, view, id })` with five views, faked with `useState` because the
-prototype has no router: `index` (Spielplan, plus a `kalender` toggle), `detail`, `seats`
-(Platzwahl/Saalplan), `karte` (paid confirmation + digital ticket), `boerse` (Kartenbörse).
+prototype has no router: `index` (event list, plus a `kalender` toggle), `detail`, `seats`
+(seat picker/seating plan), `karte` (paid confirmation + digital ticket), `boerse` (ticket exchange).
 
 | File | Content |
 |---|---|
-| `src/fcc-web-events.jsx` | Data + building blocks, Spielplan (list + two months), event detail |
-| `src/fcc-web-tickets.jsx` | Saalplan/Platzwahl, digitale Karte, all mobile views, mock router |
-| `src/fcc-web-boerse.jsx` | Kartenbörse page + the pieces wiring it into the other views |
+| `src/fcc-web-events.jsx` | Data + building blocks, event list (list + two months), event detail |
+| `src/fcc-web-tickets.jsx` | Seating plan/seat picker, digital ticket, all mobile views, mock router |
+| `src/fcc-web-boerse.jsx` | Ticket exchange page + the pieces wiring it into the other views |
 | `src/fcc-theme.jsx`, `fcc-logos.jsx` | Shared brand layer |
 | `src/fcc-shared.jsx` | Mock-only phone frame / canvas chrome — **do not port** |
 
@@ -138,12 +138,12 @@ by default.
 
 **Rejected**
 
-- **The timed Ablauf, the "Reihenfolge kommt später" copy and the "AM ABEND SELBST /
-  WELCHE NUMMER GERADE LÄUFT" live card** — the club assembles the Ablauf only 2–3 weeks
+- **The timed running order, the "Reihenfolge kommt später" copy and the "AM ABEND SELBST /
+  WELCHE NUMMER GERADE LÄUFT" live card** — the club assembles the running order only 2–3 weeks
   out and shifts acts on the night; a public clock is a promise the evening breaks, and a
-  live Ablauf is Club-App fiction here. Only the **order** is published.
+  live running order is Club-App fiction here. Only the **order** is published.
 - **The auto-advancing Foto-Theater** (pause + dots) — motion for its own sake that
-  duplicates the Galerie's own viewer; replaced by a static 3–4 photo preview linking into
+  duplicates the gallery's own viewer; replaced by a static 3–4 photo preview linking into
   the Album.
 - **"SO SITZT DER SAAL — 24 TISCHREIHEN, 288 STÜHLE"** — fixed geometry again contradicts
   per-event capacity (E1 ruling); the shared placeholder venue block is used instead.
@@ -156,10 +156,10 @@ by default.
 
 **Added by us**
 
-- **`performers`** (ordered act names, Gruppen *and* guests, nullable) and an optional
-  per-event **`description`**, so a page without an Ablauf or an Album still reads complete.
+- **`performers`** (ordered act names, groups *and* guests, nullable) and an optional
+  per-event **`description`**, so a page without a running order or an Album still reads complete.
 - **Album ↔ event matched by `eventType`**, never by id — an Album covers an occasion, not
-  a Veranstaltung (glossary).
+  an event (glossary).
 - **`/tickets` retired**: the orphan placeholder behind the masthead chip, the desktop button
   and the landing hero CTA now points at `/events` (ADR-0002 kills the English "Tickets"
   label). Built differently than shaped: the masthead ended up with **one** entry labelled
@@ -167,13 +167,13 @@ by default.
   chip beside a "Veranstaltungen" link; the landing hero dropped its second CTA and keeps
   **"Karten sichern →"**.
 - **Routes pinned** for the two unbuilt pages: `/events/$eventSlug/seats`, `/events/exchange`.
-- **Glossary grew**: Karte · Vorverkauf · Kartenbörse, plus the Ablauf's late, order-only
+- **Glossary grew**: Karte · Vorverkauf · Kartenbörse, plus the running order's late, order-only
   public face.
 
 ## Rulings — Karten-Bestellflow / `page-order-flow` (shaped 2026-08-18)
 
-The session that was meant to shape the Platzwahl discovered its core is an **undecided
-club fact** (numbered seats vs. general admission — `CONTEXT.md` → Sitzplatzvergabe) and
+The session that was meant to shape the seat picker discovered its core is an **undecided
+club fact** (numbered seats vs. general admission — `CONTEXT.md` → seat allocation) and
 merged the mock's page-per-view purchase (seats → jump to "karte") into **one continuous
 Bestellflow** at `/events/$eventSlug/order`.
 
@@ -204,7 +204,7 @@ Bestellflow** at `/events/$eventSlug/order`.
 - **Rollstuhl "kurz anrufen" link** — unverified practice and there is no publishable
   number (P5/P6 precedent).
 - **Platz language for the entitlement** ("Platzwahl", "SETZ DICH, WOHIN DU WILLST.") — the
-  glossary sells **Karten**; Platz is the seat. Step is **KARTENWAHL**, entry CTA "Karten
+  glossary sells **tickets**; Platz is the seat. Step is **KARTENWAHL**, entry CTA "Karten
   wählen →".
 - **Payment hints** ("Kreditkarte · PayPal · bar im Vereinsraum") — still unconfirmed
   practice (E3 precedent).
@@ -216,9 +216,9 @@ Bestellflow** at `/events/$eventSlug/order`.
   undecided, claims nothing about *how*.
 - **State guard in the frame**: every `salesStatus` lands honestly (VVK-Termin, "Zur
   Kartenbörse →", cancelled notice) — the mock only knows onSale/knapp/ausverkauft.
-- **`/orders/$orderCode` capability URL** for the confirmation/digitale Karte —
+- **`/orders/$orderCode` capability URL** for the confirmation/digital ticket —
   unguessable token, mail-linkable, guest-checkout-safe.
-- **Optional self-registered buyer Accounts** (Person without Mitgliedschaft; duplicates
+- **Optional self-registered buyer Accounts** (Person without membership; duplicates
   flagged open) — the mock has no identity at all.
 - **Direct flow entry from the list** in purchasable states, alongside the detail panel.
 
@@ -231,8 +231,8 @@ single-flow route were challenged and **upheld**; the payment model changed.
 **Adopted**
 
 - **The confirmation-page concept** ("BEZAHLT" hero → order → what's next → onward
-  teasers) — as four blocks: state hero, Bestellung summary, cross-sell to another
-  purchasable evening, Kartenbörse existence teaser.
+  teasers) — as four blocks: state hero, order summary, cross-sell to another
+  purchasable evening, ticket exchange existence teaser.
 - **The cross-sell card** — honest and seed-derivable.
 - **The Börse return/swap teaser** — reduced to *that it exists* (glossary rule: its
   mechanics are undecided).
@@ -258,7 +258,7 @@ single-flow route were challenged and **upheld**; the payment model changed.
 
 **Added by us**
 
-- **The buyer form the mock never drew**: one buyer per Bestellung — Vorname, Nachname,
+- **The buyer form the mock never drew**: one buyer per order — Vorname, Nachname,
   E-Mail, nothing else.
 - **§312j/§312g legal framing**: "Zahlungspflichtig bestellen" wording (final form) and
   the Widerruf-exemption notice; no AGB checkbox while no Karten-AGB exist.
@@ -280,14 +280,14 @@ confident statement is *that* a Kartenbörse is planned.
 
 **Adopted — as clearly-framed ideas, never as claims**
 
-- **The core loop** (Karte zurückgeben → jemand anderes kauft sie → Geld zurück, die
-  Warteliste rückt nach) — the page's centerpiece idea, sharpened by the user: **the
-  refund happens only when the Karte is actually re-bought; until then it stays yours**
+- **The core loop** (return the ticket → someone else buys it → refund follows, the
+  waitlist moves up) — the page's centerpiece idea, sharpened by the user: **the
+  refund happens only when the ticket is actually re-bought; until then it stays yours**
   (no risk — if nobody takes it, you go as planned).
 - **The Warteliste idea** — join for a sold-out evening, no prepayment. As idea only; the
   mock's position/"chance" meter UI is rejected below.
-- **The "warum nicht privat" value story** — Preis bleibt Preis (kein Aufpreis), läuft
-  über den Verein — reduced to *guiding principles of the planning*, explicitly not club
+- **The "warum nicht privat" value story** — price stays price (no markup), runs
+  through the club — reduced to *guiding principles of the planning*, explicitly not club
   decisions.
 - **Abend tauschen** (`EvSwap`'s free-swap idea) — as a secondary "wir denken auch über …
   nach" idea with an example-flavored deadline ("z. B. bis eine Woche vor dem Abend",
@@ -318,7 +318,7 @@ confident statement is *that* a Kartenbörse is planned.
 - **A "Was wir noch klären" section** — the open questions stated honestly (wer zuerst
   dran ist, wie die Rückgabe genau abläuft, Fristen), which makes "in Planung" credible
   instead of evasive.
-- **The glossary amendment** (`CONTEXT.md` → Kartenbörse): values are as undecided as
+- **The glossary amendment** (`CONTEXT.md` → ticket exchange): values are as undecided as
   mechanics; the page may present both as clearly-framed plans.
 - **No backend contract pinned** — deliberately nothing: no API, no seed, no Zod schema.
   The idea inventory lives in the page plan for the future real shaping round, which also
@@ -330,9 +330,9 @@ confident statement is *that* a Kartenbörse is planned.
 - **12 € flat price** for every seat and every evening
 - **Six events** with concrete 2027 dates, times (19:11 …), age hints and teasers
 - **"Präsidentin Marlies Hoffmann"** and the private mobile **0170 55 44 21** — a plausible
-  named person in an Amt with a private number, banned twice over (P5 invented-people rule,
+  named person in a role, banned twice over (P5 invented-people rule,
   P6 private-mobile rule)
-- **SMS notifications** with a 6-hour Vorkaufsrecht, live-updating lists, a live Ablauf on
+- **SMS notifications** with a 6-hour Vorkaufsrecht, live-updating lists, a live running order on
   the evening, Wallet passes, a Shuttle nach Sondershausen, Gruppenbestellungen
 - The Börse mechanics as a whole (return → waitlist → public, free swap, named tickets,
   QR invalidation) are **design fiction to confirm**, not documented club practice

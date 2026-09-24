@@ -1,4 +1,4 @@
-# Handoff: FURRIA — Mitglied werden (öffentliche Website)
+# Handoff: FURRIA — „Mitglied werden" (public website)
 
 Design direction for the public **Mitglied werden** funnel (`/join`) of the Furrscher Carnevals
 Club e.V. ("FURRIA"). This bundle arrived **without a README** — this file was written by the team
@@ -16,7 +16,7 @@ prototype has no router:
 
 | `view` | Screen |
 |---|---|
-| `'index'` | Info page — hero + Findomat, Vorbeikommen, Vereins-Ticket, Weg, Kosten, FAQ, Helfer, Schlussband |
+| `'index'` | Info page — hero + Findomat, Vorbeikommen, club ticket, Weg, Kosten, FAQ, Helfer, Schlussband |
 | `'antrag'` | The application form + a live summary panel |
 | `'fertig'` | "WILLKOMMEN, LENA." confirmation |
 
@@ -26,7 +26,7 @@ mock-only phone frame (`fcc-shared.jsx` — **do not port**).
 ## Adopted
 
 - **The page's thesis, and its headline.** *"DU MUSST NICHT TANZEN KÖNNEN."* is the best single line
-  in any handoff so far: what keeps people out of a Karnevalsverein is not the Beitrag, it is the
+  in any handoff so far: what keeps people out of a carnival club is not the fee, it is the
   fear of not fitting in. The whole page is organised around removing that fear, and we keep that.
 - **The idea of a matcher** — "wo passe ich hin?" answered without asking for a name or an e-mail.
   Rebuilt from scratch as the [Jeck-Check](../../../plan/website/feature-group-matcher.md);
@@ -39,7 +39,7 @@ mock-only phone frame (`fcc-shared.jsx` — **do not port**).
 - **"Jetzt wird nichts abgebucht"** and the *jetzt fällig: 0 €* summary line — the objection that
   actually stops people, answered in the right place.
 - **Deriving nothing from a login.** The mock never confuses joining the club with getting an
-  account, which matches the glossary's Mitglied ≠ Account law.
+  account, which matches the glossary's Member ≠ account law.
 
 ## Rejected, and why
 
@@ -68,9 +68,9 @@ and [`feature-group-matcher.md`](../../../plan/website/feature-group-matcher.md)
 **Glossary and legal defects:**
 
 - **"Vorstand"** — *"Vorstand nimmt auf"*, *"Der Antrag geht direkt an den Vorstand"*, *"spricht mit
-  dem Vorstand"*. There is no Vorstand right in this domain (P4 already fixed this twice). Copy says
+  dem Vorstand"*. There is no board right in this domain (P4 already fixed this twice). Copy says
   *der Verein* / *wir*.
-- **"WILLKOMMEN, LENA."** on the confirmation. She is an applicant, not a Mitglied — the club has not
+- **"WILLKOMMEN, LENA."** on the confirmation. She is an applicant, not a member — the club has not
   decided. New glossary term **Beitrittsantrag**.
 - **The consent checkbox defaults to checked** (`ok: true`) — legally invalid — **and bundles photo
   consent** for website, Instagram and Club-App into the same box (Kopplungsverbot), on a topic
@@ -81,20 +81,20 @@ and [`feature-group-matcher.md`](../../../plan/website/feature-group-matcher.md)
 - **A promised SMS confirmation link** for a parent's consent. A whole flow, not built; the guardian
   consents in the form instead (§107 BGB).
 - **Three named people with private mobile numbers** (*"Marlies Hoffmann, Präsidentin, 0170 55 44
-  21"*). P5 banned inventing plausible real people in an Amt, and publishing private mobiles is a
+  21"*). P5 banned inventing plausible real people in a role, and publishing private mobiles is a
   spam and DSGVO problem even when they are real. One official channel instead.
 
 **Design:**
 
 - **Hard offset-shadows as the system** (`jHard()`, `12px 12px 0 red`, 2px ink contours, square
-  corners) — rejected for the **fifth phase running**. Destillat wins; `shadow.posterOffset` stays
+  corners) — rejected for the **fifth phase running**. Distilled wins; `shadow.posterOffset` stays
   reserved for hero headlines.
 - **`jPanel()`'s hand-rolled inverted dark panel and `jTint()`'s three-way tint** — both hand-roll
   what the theme already gives us; colours must come from the palette so they switch with the scheme.
   Same objection as P5's `gPanel`/`gTint`.
-- **The Findomat's mechanics** — a hardcoded if/else over eight invented Gruppen printing one
-  winner under the banner "DEIN PLATZ". Fake authority. Replaced by authored per-Gruppe positions
-  with Gruppe-owned weights, a normalised score, and a **ranking** the visitor can interrogate.
+- **The Findomat's mechanics** — a hardcoded if/else over eight invented groups printing one
+  winner under the banner "DEIN PLATZ". Fake authority. Replaced by authored per-group positions
+  with group-owned weights, a normalised score, and a **ranking** the visitor can interrogate.
   The **"-O-Mat" naming is also out on legal exposure**: the Bundeszentrale für politische Bildung
   holds the *Wahl-O-Mat* word mark and has objected to derivative names.
 - **The Findomat inside the hero.** `KkHeroSection`'s `Aside` slot lays *behind* the main column at
@@ -113,14 +113,14 @@ and [`feature-group-matcher.md`](../../../plan/website/feature-group-matcher.md)
 
 - **Filter questions** in the matcher, so an age-impossible match (adult → Kindergarde) is
   structurally impossible rather than merely unlikely.
-- **Per-Gruppe recruiting status** (`isRecruiting`), shown honestly in the result: a Gruppe that is
+- **Per-group recruiting status** (`isRecruiting`), shown honestly in the result: a group that is
   not searching still ranks where it scored, badged, with *Anfrage trotzdem willkommen*.
-- **A derived «warum»** panel per Gruppe — the trust-builder the mock's single verdict cannot offer.
+- **A derived «warum»** panel per group — the trust-builder the mock's single verdict cannot offer.
 - **A real submission path** — `POST /api/membership-applications` on our own API
   ([ADR-0004](../../adr/0004-website-writes-membership-applications.md)); the mock's buttons only
   call `setState`.
 - **Full postal address** on the Antrag; the mock collects city only, which is useless for a
-  Verein's records.
+  club's records.
 - **A human fallback in the form's error state**, so a failed submission never dead-ends.
 - **A honeypot** against the bots that will find a public unauthenticated POST.
 - **`KkStatRow`** in `@furria/ui` — the mock's third hand-rolled stat row is what surfaced the

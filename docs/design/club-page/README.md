@@ -1,13 +1,13 @@
-# Handoff: FCC „Verein"-Seite (öffentliche Website)
+# Handoff: FCC club page (public website)
 
 ## Overview
-The public **Verein** page for the **Furrscher Carnevals Club (FCC / „FURRIA")**, a German
-Karnevalsverein in the fictional „Großbesenstadt". It is the „About the club" page of the
+The public **club** page for the **Furrscher Carnevals Club (FCC / „FURRIA")**, a German
+carnival club in the fictional „Großbesenstadt". It is the „About the club" page of the
 public marketing website — the page a prospective member or ticket buyer lands on to learn
-who the club is: hero, club story, chronicle/timeline, the season arc, the groups (Gruppen),
-the people (Vorstand/faces), and a membership call-to-action.
+who the club is: hero, club story, chronicle/timeline, the season arc, the groups,
+the people (board/faces), and a membership call-to-action.
 
-Design direction is **„Plakat-Kapitel"**: a bold editorial broadsheet made of numbered,
+Design direction is **„poster chapter"**: a bold editorial broadsheet made of numbered,
 full-bleed chapters (01–05) that alternate ink / cream / red backgrounds, using a hard
 offset poster-shadow as the leading elevation language. This is the club's „Konfetti-Kinetik"
 brand system.
@@ -83,7 +83,7 @@ naive „use ink as panel bg" produces a cream panel in dark mode, which is wron
 - Never use red for body text; red is accent/action only.
 
 ### Elevation — two languages
-- **Plakat (hard):** `Npx Npx 0 <color>` — a solid offset shadow, no blur. This is the
+- **poster (hard):** `Npx Npx 0 <color>` — a solid offset shadow, no blur. This is the
   LEADING elevation. Helper: `v2Hard(c, n=8, col) => `${n}px ${n}px 0 ${col||c.ink}``.
   Offsets range 3–12px; shadow color is often `red` or `gold` (tinted) or `ink`.
 - Cards/tiles pair the hard shadow with a **2px solid `ink` border**, `border-radius: 0`
@@ -132,7 +132,7 @@ Chapter header pattern (see below), then a 2-column grid (`1fr 1.05fr`, gap 56):
   Vereinsgeschichte" note) + a 4-up stat strip separated by left borders:
   `1971 gegründet · ≈180 Mitglieder · 6 Gruppen · 55. Session` (numbers Anton 40px).
 
-### 3. Narrenruf band (full-bleed RED)
+### 3. Carnival call band (full-bleed RED)
 Red background, white text, faint rotated broom watermark (opacity 0.12). 2-col grid
 (`0.8fr 1.2fr`): left kicker „UNSER NARRENRUF — UND NUR DIESER" + sentence („Kein „Helau".
 Kein „Alaaf". … ruft **Groß**"); right giant Anton 130px, right-aligned:
@@ -244,7 +244,7 @@ to any number of groups (auto-fill grid).
 
 ## Files
 - `preview.html` — runnable preview (toolbar: Desktop/Mobile, Hell/Dunkel).
-- `src/fcc-ds-club-v2.jsx` — **the Verein page itself** (`ClubV2`, `ClubV2Desktop`,
+- `src/fcc-ds-club-v2.jsx` — **the club page itself** (`ClubV2`, `ClubV2Desktop`,
   `ClubV2Mobile`, all sub-components + content data). Start here.
 - `src/fcc-theme.jsx` — brand tokens (`KK.light`/`KK.dark`) + shared brand components
   (`KKMastheadBar`, `KKFooter`, `KKSeal`, `KKBroom`, `KKConfetti`, `KKPlh`, `KKTicker`,
@@ -256,5 +256,5 @@ to any number of groups (auto-fill grid).
 - **Routes/IDs/code = English; all visible text = German.** This page's route is `/club`
   (public site). Keep the German copy verbatim.
 - Compose from the brand tokens/components — **do not invent new colors, fonts, radii, or
-  shadows.** Red is action/accent only, never body text. One bold hero/„Plakat" element per
+  shadows.** Red is action/accent only, never body text. One bold hero/"poster" element per
   screen; don't put the hard shadow on literally everything.
