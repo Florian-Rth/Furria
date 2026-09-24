@@ -279,7 +279,10 @@ membership), board office (for the seat)
 **Contact details**:
 Phone, email and address of a person — **hidden from other members by default**; she opts in
 herself, and a person without account is switched on her word. A permission sees them anyway;
-hidden is a setting, never a gap (pinned 2026-09-10, CA-P1 fresh shaping).
+hidden is a setting, never a gap (pinned 2026-09-10, CA-P1 fresh shaping). **A person with an
+account keeps her own contact details** — she edits phone, address and contact email herself, and
+the change shows who made it and when; her name and birth date stay with the club, because they
+are who she is, not how to reach her (ruled 2026-09-25, accounts shaping).
 _UI copy_: Kontaktdaten (Telefon, E-Mail, Adresse)
 _Avoid_: contact (as a field name), showing hidden contact details as missing data
 
@@ -314,7 +317,20 @@ login. Two ways in (decided 2026-08-18, order-flow shaping): member onboarding s
 buy and keep **tickets** (mail, ticket overview, history, payment methods) — this creates a
 person with **no membership**. Buying itself never requires an account. The login identifier is
 the **email address** — there are no usernames
-([ADR-0005](docs/adr/0005-auth-aspnet-identity-bearer-tokens.md)). **The MVP has no child
+([ADR-0005](docs/adr/0005-auth-aspnet-identity-bearer-tokens.md)). The **login email** is the
+account's own and is distinct from the email in her **contact details**: it starts as a copy of
+it, and when *she* changes her login email the contact email follows unless she says otherwise —
+but nobody else's edit of her contact details ever touches her login, because that would let
+whoever keeps the registry take her account over (ruled 2026-09-25). Two persons may share a
+contact email; never a login email. She signs in with her **password**, always available, or
+with a **passkey** (*Mit Fingerabdruck anmelden*) she may add on any of her devices — the passkey
+is a convenience on top, never a replacement (ruled 2026-09-25). **An account outlives
+affiliation**: when her last running relationship ends, her keys fall away by derivation and the
+account stays, showing her that she is no longer active in the club; rejoining lights it up again
+without a new invitation (ruled 2026-09-25). **Only she deletes her account**; her person and
+everything the club recorded about her stays, and she can return through a new invitation. The
+club never deletes an account — it **disables** one, reversibly (ruled 2026-09-25).
+**The MVP has no child
 accounts** (ruled 2026-09-21, CA-P6 shaping): nobody under the club's own age of consent gets a
 login, and no account is held on another person's behalf. A child in the children's guard is a
 person with a group membership and no account, exactly like a member who never asked for the
@@ -323,10 +339,55 @@ _UI copy_: Account
 _Avoid_: user (as a table/entity name), guest account (it is the same account concept),
 username
 
+**Account state**:
+What the club sees about a person's access. The state itself is derived, never stored: *no access* (with the reason
+she cannot be invited, when she cannot: no email, under age, birth date missing, not affiliated),
+*invited* (an invitation is live), *active*, or *disabled*; plus the history of who invited,
+reminded, recovered or disabled her, and when. **The club never sees when she last signed in** —
+access is recorded, use is not (ruled 2026-09-25).
+_UI copy_: *kein Zugang* · *eingeladen* · *aktiv* · *gesperrt*
+_Avoid_: last seen, activity (as something the club watches)
+
+**Account eligibility**:
+Whether a person may be given an **account** — derived at the moment it is asked, never stored:
+she is **affiliated**, has no account yet, and has reached the club's **age of consent** (kept on
+the **club record**, 16 unless the club says otherwise). A person with **no recorded birth date** can be
+invited only by someone in the club, who vouches for her age by doing so; she can neither request
+her own invitation nor be reached by a bulk invitation (ruled 2026-09-25, accounts shaping).
+_UI copy_: — (surfaces say what she can do: *kann eingeladen werden*)
+_Avoid_: storing an "invitable" flag, treating an unknown birth date as either adult or child
+
 **Invitation**:
-A one-time onboarding token (link or printed QR/code) that lets a person create their account.
-_UI copy_: Einladung
+A one-time onboarding token that lets a person create their account. It reaches her one of two
+ways: **by mail** to the address the club has on record, or **in person** — a QR and a short code
+on a manager's screen, alive for minutes. Nothing is printed (ruled 2026-09-25).
+It is issued by the club **or requested by the person herself**: asking with the email address
+the club has on record sends an invitation to that address, and **control of that inbox is the
+proof** — no one in the club approves it (ruled 2026-09-25, accounts shaping). Who redeemed it,
+and when, stays visible on the person. When several eligible persons share that address, the
+request invites each of them — whoever reads a shared inbox is entitled for everyone it serves,
+and the first to redeem takes the address as her login email. The club's invitations are
+**never sent by the system on its own** — someone decides, for one person or for everyone
+eligible at once (**bulk invitation**, *Alle einladen*). A bulk invitation reaches only those
+**never invited**; nudging someone who let hers lie is a separate, deliberate act (**reminder**, *Erinnern*), so
+pressing the button twice never mails the same person twice. A person has **at most one live
+invitation**: a new one, by any channel, voids the one before; each lives as long as its channel
+warrants (a mail for days, a code on a manager's screen for minutes). A **group admin** issues
+none — accounts are the club's business, never a group's (ruled 2026-09-25).
+_UI copy_: Einladung; *Zugang anfordern* (the person's own request)
 _Avoid_: sign-up, registration
+
+**Access recovery**:
+A one-time token, handed out by the club, that sets new credentials on an **existing** account —
+for someone who lost both her password and her mailbox. It is the invitation's mechanism with a
+different target, and a **separate right** from inviting: whoever can recover an account can take
+it over, so the right to invite (harmless — there is no account yet) never implies it. Disabling an
+account and vouching for an unknown birth date sit with the same right (ruled 2026-09-25). It is
+**handed over in person only** — shown on the club's screen — never sent to an address
+someone names on her behalf, and her previous login email is told it happened.
+Forgetting a password is **not** access recovery — she resets it herself by mail.
+_UI copy_: Zugang wiederherstellen
+_Avoid_: password reset (that is the self-service path), re-invitation
 
 ### Club app structure
 
@@ -337,6 +398,13 @@ identical for every viewer ([ADR-0010](docs/adr/0010-club-app-is-a-set-of-scope-
 office) is where the club's records are written. A **tile** is one entry card on a hub.
 _UI copy_: Verein; Gruppe; Verein verwalten; Kachel
 _Avoid_: association, society, admin area (for club management)
+
+**Club record**:
+The club's own facts about itself — there is exactly one: its **founded year** and its **age of
+consent** (the age from which a person may hold an account). Written in club management, read
+wherever the club describes itself (ruled 2026-09-25, accounts shaping).
+_UI copy_: Vereinsdaten; *Gründungsjahr*; *Mindestalter für einen Zugang*
+_Avoid_: settings (it is the club's record, not an app's configuration)
 
 ### Club culture
 
@@ -666,11 +734,13 @@ _Avoid_: balance table, payments table (as source of truth)
   confirmation shows the purchase honestly without codes. The decision shapes `page-purchase`'s
   ticket display and the eventual event-app scanner.
 
-- **Guest registration & duplicates** — **open, 2026-08-18.** Self-registration can create a
-  second person for a human already in the registry (a member without account buys tickets
-  online). The merge/claim mechanism (e.g. an invitation claiming an existing self-registered
-  account by mail match, or an admin merge) is undecided — to be resolved when accounts are
-  actually built (club-app/backend territory).
+- **Guest registration & duplicates** — **resolved 2026-09-25 (accounts shaping).**
+  Self-registration can create a second person for a human already in the registry. Two rules
+  close it, and neither needs the club to hunt for duplicates: when the club records a person
+  whose email belongs to a person with no affiliation, it is offered that person to **adopt**
+  instead of creating a second; and whatever slips through is closed by her — redeeming an
+  invitation to an address that already has an account asks her to sign in with it, and that
+  account moves onto the club's person, which absorbs the stray one and everything it holds.
 
 - **Fee during a membership pause** — **open, 2026-09-11.** Whether a member pays while her
   membership is *paused* is a club question nobody has answered. Until it is, no copy may say a
