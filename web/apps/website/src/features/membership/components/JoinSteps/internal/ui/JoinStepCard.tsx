@@ -12,7 +12,7 @@ export const JoinStepCard: FC<JoinStepCardProps> = ({ numeral, step }) => (
   <KkCard>
     <KkCard.Body>
       <Typography
-        variant="h3"
+        variant="h2"
         component="span"
         data-kk-join-step-numeral
         sx={{ color: 'primary.main', lineHeight: 0.9 }}

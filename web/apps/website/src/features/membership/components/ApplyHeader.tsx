@@ -18,7 +18,7 @@ export const ApplyHeader: FC = () => (
     </BackLink>
     <Stack sx={{ gap: 1 }}>
       <KkEyebrow>{applyEyebrow}</KkEyebrow>
-      <Typography variant="h2" component="h1" sx={{ textTransform: 'uppercase' }}>
+      <Typography variant="h1" component="h1" sx={{ textTransform: 'uppercase' }}>
         {applyTitle}
       </Typography>
     </Stack>

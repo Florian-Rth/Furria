@@ -2,16 +2,15 @@ import type { QueryErrorKind } from '@/lib/query-error';
 import { isNotFoundError, toQueryErrorMessage } from '@/lib/query-error';
 
 const HUB_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
-  unreachable:
-    'Diese Gruppe hat den Server nicht erreicht. Prüfe deine Verbindung und versuch es noch einmal.',
+  unreachable: 'Keine Verbindung zum Server. Prüfe deine Internetverbindung.',
   unexpected: 'Diese Gruppe konnte nicht geladen werden.',
-  rejected: 'Der Server hat diese Anfrage nicht angenommen.',
+  rejected: 'Der Server hat die Anfrage abgelehnt.',
 };
 
 const PERSON_SEARCH_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
-  unreachable: 'Die Suche hat den Server nicht erreicht. Prüfe deine Verbindung.',
-  unexpected: 'Die Suche geht gerade nicht. Versuch es gleich noch einmal.',
-  rejected: 'Die Suche hat der Server nicht angenommen.',
+  unreachable: 'Keine Verbindung zum Server. Prüfe deine Internetverbindung.',
+  unexpected: 'Die Suche ist fehlgeschlagen. Versuche es erneut.',
+  rejected: 'Der Server hat die Anfrage abgelehnt.',
 };
 
 export const toHubErrorMessage = (error: Error | null): string | null => {
@@ -24,3 +23,14 @@ export const toHubErrorMessage = (error: Error | null): string | null => {
 
 export const toPersonSearchErrorMessage = (error: Error | null): string | null =>
   toQueryErrorMessage(error, PERSON_SEARCH_ERROR_MESSAGES);
+
+const EDITOR_CHOICES_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
+  unreachable:
+    'Die Auswahllisten haben den Server nicht erreicht. Prüfe deine Verbindung und versuch es noch einmal.',
+  unexpected: 'Die Auswahllisten konnten nicht geladen werden.',
+  rejected: 'Der Server hat diese Anfrage nicht angenommen.',
+};
+
+export const toEditorChoicesErrorMessage = (error: Error): string =>
+  toQueryErrorMessage(error, EDITOR_CHOICES_ERROR_MESSAGES) ??
+  EDITOR_CHOICES_ERROR_MESSAGES.unexpected;

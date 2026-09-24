@@ -7,13 +7,21 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
+import { CALENDAR_QUERY_KEY } from '@/features/calendar';
+import { CLUB_HUB_QUERY_KEY } from '@/features/club';
+import { GROUPS_QUERY_KEY } from '@/features/groups';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
+import { toAttendanceSavedMessage } from '@/lib/calendar-copy';
 import { toIsoDay } from '@/lib/day';
 import { toWriteErrorMessage } from '@/lib/write-error';
+import type { CalendarEntryWindow } from './group-calendar-entries';
 import {
   GROUP_INFO_SAVED_MESSAGE,
   toAdminAppointedMessage,
   toAdminEndedMessage,
+  toGroupAdministrationSavedMessage,
+  toGroupArchivedFromHubMessage,
+  toMemberAddedAsAdminMessage,
   toMemberAddedMessage,
   toMembershipEndedMessage,
   toSelfAdminEndedMessage,
@@ -23,25 +31,53 @@ import {
   requestAddGroupMembership,
   requestEndGroupAdmin,
   requestEndGroupMembership,
+  requestGeneratedTrainings,
+  requestGroupAdministrationUpdate,
+  requestGroupArchivalFromHub,
+  requestGroupAttendanceResponse,
+  requestGroupCalendar,
+  requestGroupHub,
   requestGroupInfoUpdate,
-  requestMyGroup,
   requestMyGroups,
   requestPersonSearch,
+  requestSetTrainingSlots,
+  requestTrainingPreview,
 } from './requests';
+import type { TrainingSlotPayload } from './rhythm-labels';
+import { RHYTHM_SAVED_MESSAGE, toTrainingsCreatedMessage } from './rhythm-labels';
 import type {
   AddedGroupAdmin,
   AddedGroupMembership,
+  GeneratedTrainings,
+  GroupAdministrationForm,
+  GroupAttendanceAnswer,
+  GroupCalendarResponse,
+  GroupHub,
   GroupInfoForm,
-  HubDetails,
   MyGroupsResponse,
   PersonSearchResponse,
+  TrainingPreview,
 } from './schemas';
+
+const MANAGED_GROUPS_QUERY_KEY = ['manage', 'groups'] as const;
 
 export const MY_GROUPS_QUERY_KEY = ['my-groups'] as const;
 
-export const myGroupQueryKey = (groupId: number | null): readonly [string, number | null] => [
-  'my-groups',
+export const groupHubQueryKey = (groupId: number | null): readonly [string, number | null] => [
+  'groups',
   groupId,
+];
+
+export const groupCalendarQueryKey = (
+  groupId: number | null,
+  from: string,
+  to: string,
+): readonly [string, number | null, string, string, string] => [
+  'groups',
+  groupId,
+  'calendar',
+  from,
+  to,
 ];
 
 export const personSearchQueryKey = (term: string): readonly [string, string] => [
@@ -49,10 +85,20 @@ export const personSearchQueryKey = (term: string): readonly [string, string] =>
   term,
 ];
 
+export interface GroupAttendanceInput {
+  calendarEntryId: number;
+  answer: GroupAttendanceAnswer;
+}
+
+export interface AdminAppointment {
+  function: string | null;
+}
+
 export interface AddMemberInput {
   personId: number;
   personName: string;
   joinedOn: string;
+  admin: AdminAppointment | null;
 }
 
 export interface EndMembershipInput {
@@ -77,7 +123,7 @@ export interface EndAdminInput {
 }
 
 const refreshHub = (queryClient: QueryClient, groupId: number): void => {
-  void queryClient.invalidateQueries({ queryKey: myGroupQueryKey(groupId) });
+  void queryClient.invalidateQueries({ queryKey: groupHubQueryKey(groupId) });
   void queryClient.invalidateQueries({ queryKey: MY_GROUPS_QUERY_KEY });
 };
 
@@ -87,14 +133,60 @@ export const useMyGroupsQuery = (): UseQueryResult<MyGroupsResponse, Error> =>
     queryFn: () => withFreshAccessToken(requestMyGroups),
   });
 
-export const useMyGroupQuery = (groupId: number | null): UseQueryResult<HubDetails, Error> => {
+export const useGroupHubQuery = (groupId: number | null): UseQueryResult<GroupHub, Error> => {
   const load =
     groupId === null
       ? skipToken
-      : (): Promise<HubDetails> =>
-          withFreshAccessToken((accessToken) => requestMyGroup(groupId, accessToken));
+      : (): Promise<GroupHub> =>
+          withFreshAccessToken((accessToken) => requestGroupHub(groupId, accessToken));
 
-  return useQuery({ queryKey: myGroupQueryKey(groupId), queryFn: load });
+  return useQuery({ queryKey: groupHubQueryKey(groupId), queryFn: load });
+};
+
+export const useGroupCalendarQuery = (
+  groupId: number | null,
+  window: CalendarEntryWindow,
+): UseQueryResult<GroupCalendarResponse, Error> => {
+  const load =
+    groupId === null
+      ? skipToken
+      : (): Promise<GroupCalendarResponse> =>
+          withFreshAccessToken((accessToken) => requestGroupCalendar(groupId, window, accessToken));
+
+  return useQuery({
+    queryKey: groupCalendarQueryKey(groupId, window.from, window.to),
+    queryFn: load,
+  });
+};
+
+export const useGroupAttendanceMutation = (
+  groupId: number,
+): UseMutationResult<void, Error, GroupAttendanceInput> => {
+  const queryClient = useQueryClient();
+  const raiseNotice = useKkNotice();
+
+  const refreshCalendar = (): void => {
+    void queryClient.invalidateQueries({ queryKey: groupHubQueryKey(groupId) });
+  };
+
+  return useMutation({
+    mutationFn: ({ calendarEntryId, answer }: GroupAttendanceInput) =>
+      withFreshAccessToken((accessToken) =>
+        requestGroupAttendanceResponse(calendarEntryId, answer, accessToken),
+      ),
+    onSuccess: (_saved, { answer }) => {
+      raiseNotice({ tone: 'success', message: toAttendanceSavedMessage(answer) });
+      refreshCalendar();
+    },
+    onError: (error) => {
+      const message = toWriteErrorMessage(error);
+
+      if (message !== null) {
+        raiseNotice({ tone: 'error', message });
+      }
+      refreshCalendar();
+    },
+  });
 };
 
 export const usePersonSearchQuery = (
@@ -126,13 +218,54 @@ export const useUpdateGroupInfoMutation = (
       raiseNotice({ tone: 'success', message: GROUP_INFO_SAVED_MESSAGE });
       refreshHub(queryClient, groupId);
     },
-    onError: (error) => {
-      const message = toWriteErrorMessage(error);
-
-      if (message !== null) {
-        raiseNotice({ tone: 'error', message });
-      }
+    onError: () => {
       refreshHub(queryClient, groupId);
+    },
+  });
+};
+
+export const useUpdateGroupAdministrationMutation = (
+  groupId: number,
+): UseMutationResult<void, Error, GroupAdministrationForm> => {
+  const queryClient = useQueryClient();
+  const raiseNotice = useKkNotice();
+
+  return useMutation({
+    mutationFn: (form: GroupAdministrationForm) =>
+      withFreshAccessToken((accessToken) =>
+        requestGroupAdministrationUpdate(groupId, form, accessToken),
+      ),
+    onSuccess: (_result, form) => {
+      raiseNotice({ tone: 'success', message: toGroupAdministrationSavedMessage(form.name) });
+      refreshHub(queryClient, groupId);
+      void queryClient.invalidateQueries({ queryKey: MANAGED_GROUPS_QUERY_KEY });
+      void queryClient.invalidateQueries({ queryKey: GROUPS_QUERY_KEY });
+    },
+    onError: () => {
+      refreshHub(queryClient, groupId);
+    },
+  });
+};
+
+export interface ArchiveGroupFromHubInput {
+  name: string;
+}
+
+export const useArchiveGroupFromHubMutation = (
+  groupId: number,
+): UseMutationResult<void, Error, ArchiveGroupFromHubInput> => {
+  const queryClient = useQueryClient();
+  const raiseNotice = useKkNotice();
+
+  return useMutation({
+    mutationFn: () =>
+      withFreshAccessToken((accessToken) => requestGroupArchivalFromHub(groupId, accessToken)),
+    onSuccess: (_result, input) => {
+      raiseNotice({ tone: 'success', message: toGroupArchivedFromHubMessage(input.name) });
+      void queryClient.invalidateQueries({ queryKey: groupHubQueryKey(groupId) });
+      void queryClient.invalidateQueries({ queryKey: MY_GROUPS_QUERY_KEY });
+      void queryClient.invalidateQueries({ queryKey: MANAGED_GROUPS_QUERY_KEY });
+      void queryClient.invalidateQueries({ queryKey: GROUPS_QUERY_KEY });
     },
   });
 };
@@ -145,15 +278,29 @@ export const useAddGroupMembershipMutation = (
 
   return useMutation({
     mutationFn: (input: AddMemberInput) =>
-      withFreshAccessToken((accessToken) =>
-        requestAddGroupMembership(
+      withFreshAccessToken(async (accessToken) => {
+        const added = await requestAddGroupMembership(
           groupId,
           { personId: input.personId, joinedOn: input.joinedOn },
           accessToken,
-        ),
-      ),
+        );
+
+        if (input.admin !== null) {
+          await requestAddGroupAdmin(
+            groupId,
+            { personId: input.personId, function: input.admin.function, sinceOn: input.joinedOn },
+            accessToken,
+          );
+        }
+
+        return added;
+      }),
     onSuccess: (_added, input) => {
-      const message = toMemberAddedMessage(input.personName, input.joinedOn, toIsoDay(new Date()));
+      const today = toIsoDay(new Date());
+      const message =
+        input.admin === null
+          ? toMemberAddedMessage(input.personName, input.joinedOn, today)
+          : toMemberAddedAsAdminMessage(input.personName, input.joinedOn, today);
 
       raiseNotice({ tone: 'success', message });
       refreshHub(queryClient, groupId);
@@ -259,6 +406,84 @@ export const useEndGroupAdminMutation = (
     },
     onError: () => {
       refreshHub(queryClient, groupId);
+    },
+  });
+};
+
+export const trainingPreviewQueryKey = (
+  groupId: number,
+  endsOn: string | null,
+): readonly [string, number, string, string | null] => [
+  'groups',
+  groupId,
+  'training-preview',
+  endsOn,
+];
+
+export interface GenerateTrainingsInput {
+  title: string;
+  instants: readonly { groupTrainingSlotId: number; startsAt: string }[];
+}
+
+const refreshCalendarEntries = (queryClient: QueryClient, groupId: number): void => {
+  void queryClient.invalidateQueries({ queryKey: groupHubQueryKey(groupId) });
+  void queryClient.invalidateQueries({ queryKey: CALENDAR_QUERY_KEY });
+  void queryClient.invalidateQueries({ queryKey: CLUB_HUB_QUERY_KEY });
+};
+
+export const useSetTrainingSlotsMutation = (
+  groupId: number,
+): UseMutationResult<void, Error, readonly TrainingSlotPayload[]> => {
+  const queryClient = useQueryClient();
+  const raiseNotice = useKkNotice();
+
+  return useMutation({
+    mutationFn: (slots: readonly TrainingSlotPayload[]) =>
+      withFreshAccessToken((accessToken) => requestSetTrainingSlots(groupId, slots, accessToken)),
+    onSuccess: () => {
+      raiseNotice({ tone: 'success', message: RHYTHM_SAVED_MESSAGE });
+      refreshHub(queryClient, groupId);
+    },
+    onError: () => {
+      refreshHub(queryClient, groupId);
+    },
+  });
+};
+
+export const useTrainingPreviewQuery = (
+  groupId: number,
+  endsOn: string | null,
+  enabled: boolean,
+): UseQueryResult<TrainingPreview, Error> => {
+  const load = enabled
+    ? (): Promise<TrainingPreview> =>
+        withFreshAccessToken((accessToken) => requestTrainingPreview(groupId, endsOn, accessToken))
+    : skipToken;
+
+  return useQuery({
+    queryKey: trainingPreviewQueryKey(groupId, endsOn),
+    queryFn: load,
+    placeholderData: keepPreviousData,
+  });
+};
+
+export const useGenerateTrainingsMutation = (
+  groupId: number,
+): UseMutationResult<GeneratedTrainings, Error, GenerateTrainingsInput> => {
+  const queryClient = useQueryClient();
+  const raiseNotice = useKkNotice();
+
+  return useMutation({
+    mutationFn: (input: GenerateTrainingsInput) =>
+      withFreshAccessToken((accessToken) =>
+        requestGeneratedTrainings(groupId, input.title, input.instants, accessToken),
+      ),
+    onSuccess: (written) => {
+      raiseNotice({
+        tone: 'success',
+        message: toTrainingsCreatedMessage(written.createdCount, written.skippedCount),
+      });
+      refreshCalendarEntries(queryClient, groupId);
     },
   });
 };

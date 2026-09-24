@@ -11,17 +11,17 @@ namespace Furria.Api.Tests.Calendar;
 [Collection("Api")]
 public sealed class GetCalendarTests
 {
-    private const string Vereinssitzung = "Vereinssitzung";
-    private const string Umzug = "Rosenmontagsumzug";
-    private const string GardeTraining = "Training der Tanzgarde";
-    private const string GardeAuftritt = "Auftritt der Tanzgarde";
-    private const string GardeFeier = "Gardefeier";
+    private const string ClubMeeting = "Vereinssitzung";
+    private const string Parade = "Rosenmontagsumzug";
+    private const string DanceGuardTraining = "Training der Tanzgarde";
+    private const string DanceGuardPerformance = "Auftritt der Tanzgarde";
+    private const string DanceGuardParty = "Gardefeier";
     private const string KinderTraining = "Training der Kindergarde";
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
 
     private static readonly DateTimeOffset Now = new(2027, 1, 15, 12, 0, 0, TimeSpan.Zero);
-    private static readonly DateTimeOffset AtTheGardeTraining = new(
+    private static readonly DateTimeOffset AtTheDanceGuardTraining = new(
         2027,
         1,
         18,
@@ -30,7 +30,7 @@ public sealed class GetCalendarTests
         0,
         TimeSpan.Zero
     );
-    private static readonly DateTimeOffset AtTheGardeAuftritt = new(
+    private static readonly DateTimeOffset AtTheDanceGuardPerformance = new(
         2027,
         1,
         19,
@@ -39,8 +39,8 @@ public sealed class GetCalendarTests
         0,
         TimeSpan.Zero
     );
-    private static readonly DateTimeOffset AtTheSitzung = new(2027, 1, 20, 19, 0, 0, TimeSpan.Zero);
-    private static readonly DateTimeOffset AtTheGardeFeier = new(
+    private static readonly DateTimeOffset AtTheMeeting = new(2027, 1, 20, 19, 0, 0, TimeSpan.Zero);
+    private static readonly DateTimeOffset AtTheDanceGuardParty = new(
         2027,
         1,
         21,
@@ -58,10 +58,10 @@ public sealed class GetCalendarTests
         0,
         TimeSpan.Zero
     );
-    private static readonly DateTimeOffset AtTheUmzug = new(2027, 2, 10, 11, 0, 0, TimeSpan.Zero);
+    private static readonly DateTimeOffset AtTheParade = new(2027, 2, 10, 11, 0, 0, TimeSpan.Zero);
 
     private static readonly DateOnly TheAuftrittDay = new(2027, 1, 19);
-    private static readonly DateOnly TheSitzungDay = new(2027, 1, 20);
+    private static readonly DateOnly TheMeetingDay = new(2027, 1, 20);
 
     private readonly ApiTestFixture _fixture;
 
@@ -71,7 +71,7 @@ public sealed class GetCalendarTests
     }
 
     [Fact]
-    public async Task Should_CarryNoEintrag_When_TheKalenderIsEmpty()
+    public async Task Should_CarryNoEntry_When_TheCalendarIsEmpty()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -89,7 +89,7 @@ public sealed class GetCalendarTests
     }
 
     [Fact]
-    public async Task Should_LeaveOutAGruppeninternenEintrag_When_TheCallerIsNotInThatGruppe()
+    public async Task Should_LeaveOutAGroupInternalEntry_When_TheCallerIsNotInThatGroup()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -97,12 +97,12 @@ public sealed class GetCalendarTests
             Now,
             async () =>
             {
-                var ctx = await BuildKalenderAsync(ct);
+                var ctx = await BuildCalendarAsync(ct);
 
                 var result = await ReadAsync(ctx, "alice", new GetCalendarRequest(), ct);
 
                 Assert.Equal(
-                    new[] { GardeAuftritt, Vereinssitzung, GardeFeier, Umzug },
+                    new[] { DanceGuardPerformance, ClubMeeting, DanceGuardParty, Parade },
                     TitlesOf(result)
                 );
             }
@@ -110,7 +110,7 @@ public sealed class GetCalendarTests
     }
 
     [Fact]
-    public async Task Should_CarryTheGruppeninternenEintrag_When_TheCallerBelongsToTheGruppe()
+    public async Task Should_CarryTheGroupInternalEntry_When_TheCallerBelongsToTheGroup()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -118,12 +118,19 @@ public sealed class GetCalendarTests
             Now,
             async () =>
             {
-                var ctx = await BuildKalenderAsync(ct);
+                var ctx = await BuildCalendarAsync(ct);
 
                 var result = await ReadAsync(ctx, "bea", new GetCalendarRequest(), ct);
 
                 Assert.Equal(
-                    new[] { GardeTraining, GardeAuftritt, Vereinssitzung, GardeFeier, Umzug },
+                    new[]
+                    {
+                        DanceGuardTraining,
+                        DanceGuardPerformance,
+                        ClubMeeting,
+                        DanceGuardParty,
+                        Parade,
+                    },
                     TitlesOf(result)
                 );
             }
@@ -131,7 +138,7 @@ public sealed class GetCalendarTests
     }
 
     [Fact]
-    public async Task Should_CarryTheGruppeninternenEintrag_When_TheCallerAdministersTheGruppe()
+    public async Task Should_CarryTheGroupInternalEntry_When_TheCallerAdministersTheGroup()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -139,18 +146,18 @@ public sealed class GetCalendarTests
             Now,
             async () =>
             {
-                var ctx = await BuildKalenderAsync(ct);
+                var ctx = await BuildCalendarAsync(ct);
 
                 var result = await ReadAsync(ctx, "chris", new GetCalendarRequest(), ct);
 
-                Assert.Contains(GardeTraining, TitlesOf(result));
+                Assert.Contains(DanceGuardTraining, TitlesOf(result));
                 Assert.DoesNotContain(KinderTraining, TitlesOf(result));
             }
         );
     }
 
     [Fact]
-    public async Task Should_CarryOnlyVereinsEintraege_When_TheScopeIsVerein()
+    public async Task Should_CarryOnlyClubEntries_When_TheScopeIsClub()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -158,7 +165,7 @@ public sealed class GetCalendarTests
             Now,
             async () =>
             {
-                var ctx = await BuildKalenderAsync(ct);
+                var ctx = await BuildCalendarAsync(ct);
 
                 var result = await ReadAsync(
                     ctx,
@@ -167,13 +174,13 @@ public sealed class GetCalendarTests
                     ct
                 );
 
-                Assert.Equal(new[] { Vereinssitzung, Umzug }, TitlesOf(result));
+                Assert.Equal(new[] { ClubMeeting, Parade }, TitlesOf(result));
             }
         );
     }
 
     [Fact]
-    public async Task Should_CarryOnlyThatGruppesEintraege_When_TheScopeIsGruppe()
+    public async Task Should_CarryOnlyThatGroupsEntries_When_TheScopeIsGroup()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -181,7 +188,7 @@ public sealed class GetCalendarTests
             Now,
             async () =>
             {
-                var ctx = await BuildKalenderAsync(ct);
+                var ctx = await BuildCalendarAsync(ct);
 
                 var result = await ReadAsync(
                     ctx,
@@ -194,13 +201,16 @@ public sealed class GetCalendarTests
                     ct
                 );
 
-                Assert.Equal(new[] { GardeTraining, GardeAuftritt, GardeFeier }, TitlesOf(result));
+                Assert.Equal(
+                    new[] { DanceGuardTraining, DanceGuardPerformance, DanceGuardParty },
+                    TitlesOf(result)
+                );
             }
         );
     }
 
     [Fact]
-    public async Task Should_RejectTheRequest_When_TheGruppenScopeNamesNoGruppe()
+    public async Task Should_RejectTheRequest_When_TheGroupScopeNamesNoGroup()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -208,7 +218,7 @@ public sealed class GetCalendarTests
             Now,
             async () =>
             {
-                var ctx = await BuildKalenderAsync(ct);
+                var ctx = await BuildCalendarAsync(ct);
                 var client = await ctx.Identity.ClientForAsync("alice", ct);
 
                 var (response, _) = await client.GETAsync<
@@ -223,7 +233,7 @@ public sealed class GetCalendarTests
     }
 
     [Fact]
-    public async Task Should_LeaveOutAnEintragOutsideTheWindow_When_TheWindowIsNarrowed()
+    public async Task Should_LeaveOutAnEntryOutsideTheWindow_When_TheWindowIsNarrowed()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -231,16 +241,16 @@ public sealed class GetCalendarTests
             Now,
             async () =>
             {
-                var ctx = await BuildKalenderAsync(ct);
+                var ctx = await BuildCalendarAsync(ct);
 
                 var result = await ReadAsync(
                     ctx,
                     "alice",
-                    new GetCalendarRequest { From = TheAuftrittDay, To = TheSitzungDay },
+                    new GetCalendarRequest { From = TheAuftrittDay, To = TheMeetingDay },
                     ct
                 );
 
-                Assert.Equal(new[] { GardeAuftritt, Vereinssitzung }, TitlesOf(result));
+                Assert.Equal(new[] { DanceGuardPerformance, ClubMeeting }, TitlesOf(result));
             }
         );
     }
@@ -254,14 +264,14 @@ public sealed class GetCalendarTests
             Now,
             async () =>
             {
-                var ctx = await BuildKalenderAsync(ct);
+                var ctx = await BuildCalendarAsync(ct);
                 var client = await ctx.Identity.ClientForAsync("alice", ct);
 
                 var (response, _) = await client.GETAsync<
                     GetCalendar,
                     GetCalendarRequest,
                     GetCalendarResponse
-                >(new GetCalendarRequest { From = TheSitzungDay, To = TheAuftrittDay });
+                >(new GetCalendarRequest { From = TheMeetingDay, To = TheAuftrittDay });
 
                 Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             }
@@ -277,7 +287,7 @@ public sealed class GetCalendarTests
             Now,
             async () =>
             {
-                var ctx = await BuildKalenderAsync(ct);
+                var ctx = await BuildCalendarAsync(ct);
                 var client = await ctx.Identity.ClientForAsync("alice", ct);
 
                 var (response, _) = await client.GETAsync<
@@ -306,7 +316,7 @@ public sealed class GetCalendarTests
             Now,
             async () =>
             {
-                var ctx = await BuildKalenderAsync(ct);
+                var ctx = await BuildCalendarAsync(ct);
 
                 var result = await ReadAsync(
                     ctx,
@@ -315,18 +325,18 @@ public sealed class GetCalendarTests
                     ct
                 );
 
-                var sitzung = result.Entries.Single(entry => entry.Title == Vereinssitzung);
-                Assert.True(sitzung.AsksForResponse);
-                Assert.Equal(AttendanceAnswer.Yes, sitzung.ViewerAnswer);
+                var meeting = result.Entries.Single(entry => entry.Title == ClubMeeting);
+                Assert.True(meeting.AsksForResponse);
+                Assert.Equal(AttendanceAnswer.Yes, meeting.ViewerAnswer);
 
-                var umzug = result.Entries.Single(entry => entry.Title == Umzug);
-                Assert.Null(umzug.ViewerAnswer);
+                var parade = result.Entries.Single(entry => entry.Title == Parade);
+                Assert.Null(parade.ViewerAnswer);
             }
         );
     }
 
     [Fact]
-    public async Task Should_NameTheOrtAndDieGruppe_When_TheEintragCarriesThem()
+    public async Task Should_NameTheVenueAndTheGroup_When_TheEntryCarriesThem()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -334,27 +344,27 @@ public sealed class GetCalendarTests
             Now,
             async () =>
             {
-                var ctx = await BuildKalenderAsync(ct);
+                var ctx = await BuildCalendarAsync(ct);
 
                 var result = await ReadAsync(ctx, "bea", new GetCalendarRequest(), ct);
 
-                var training = result.Entries.Single(entry => entry.Title == GardeTraining);
+                var training = result.Entries.Single(entry => entry.Title == DanceGuardTraining);
                 Assert.Equal("Bühnenhaus", training.VenueName);
                 Assert.Equal(ctx.Groups.Groups.IdOf("tanzgarde"), training.OwnerGroupId);
                 Assert.Equal("Tanzgarde", training.OwnerGroupName);
                 Assert.Equal(CalendarEntryKind.Training, training.Kind);
                 Assert.Equal(CalendarEntryVisibility.Group, training.Visibility);
 
-                var umzug = result.Entries.Single(entry => entry.Title == Umzug);
-                Assert.Null(umzug.VenueName);
-                Assert.Null(umzug.OwnerGroupId);
-                Assert.Null(umzug.OwnerGroupName);
+                var parade = result.Entries.Single(entry => entry.Title == Parade);
+                Assert.Null(parade.VenueName);
+                Assert.Null(parade.OwnerGroupId);
+                Assert.Null(parade.OwnerGroupName);
             }
         );
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerHoldsNoRunningMitgliedschaft()
+    public async Task Should_ReturnForbidden_When_TheCallerHoldsNoRunningMembership()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -402,7 +412,7 @@ public sealed class GetCalendarTests
             .AddAccount("chris")
             .AddMembership("chris-first", "chris", JoinedIn2017);
 
-    private Task<SeededContext> BuildKalenderAsync(CancellationToken ct) =>
+    private Task<SeededContext> BuildCalendarAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder =>
                 builder
@@ -424,8 +434,8 @@ public sealed class GetCalendarTests
                         club.AddVenue("buehnenhaus", "Bühnenhaus")
                             .AddCalendarEntry(
                                 "garde-training",
-                                GardeTraining,
-                                AtTheGardeTraining,
+                                DanceGuardTraining,
+                                AtTheDanceGuardTraining,
                                 kind: CalendarEntryKind.Training,
                                 visibility: CalendarEntryVisibility.Group,
                                 venueAlias: "buehnenhaus",
@@ -433,16 +443,16 @@ public sealed class GetCalendarTests
                             )
                             .AddCalendarEntry(
                                 "garde-auftritt",
-                                GardeAuftritt,
-                                AtTheGardeAuftritt,
+                                DanceGuardPerformance,
+                                AtTheDanceGuardPerformance,
                                 kind: CalendarEntryKind.Performance,
                                 visibility: CalendarEntryVisibility.Club,
                                 ownerGroupAlias: "tanzgarde"
                             )
                             .AddCalendarEntry(
                                 "garde-feier",
-                                GardeFeier,
-                                AtTheGardeFeier,
+                                DanceGuardParty,
+                                AtTheDanceGuardParty,
                                 kind: CalendarEntryKind.Party,
                                 visibility: CalendarEntryVisibility.Public,
                                 ownerGroupAlias: "tanzgarde"
@@ -456,21 +466,21 @@ public sealed class GetCalendarTests
                                 ownerGroupAlias: "kindergarde"
                             )
                             .AddCalendarEntry(
-                                "vereinssitzung",
-                                Vereinssitzung,
-                                AtTheSitzung,
+                                "club-meeting",
+                                ClubMeeting,
+                                AtTheMeeting,
                                 asksForResponse: true
                             )
                             .AddCalendarEntry(
-                                "umzug",
-                                Umzug,
-                                AtTheUmzug,
+                                "parade",
+                                Parade,
+                                AtTheParade,
                                 kind: CalendarEntryKind.Performance,
                                 visibility: CalendarEntryVisibility.Public
                             )
                             .AddAttendanceResponse(
-                                "bea-sagt-zu",
-                                "vereinssitzung",
+                                "bea-says-yes",
+                                "club-meeting",
                                 "bea",
                                 AttendanceAnswer.Yes
                             )

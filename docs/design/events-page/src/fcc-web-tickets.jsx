@@ -1,13 +1,13 @@
-// FCC Website — Termine & Karten, Teil 2: Saalplan/Platzwahl, digitale Karte,
-// alle Mobile-Ansichten und der EventsPage-Router. Ein Saal, 12 € pro Platz.
+// FCC Website — Events & Tickets, Part 2: hall plan/seat picker, digital ticket,
+// all mobile views and the EventsPage router. One hall, 12 € per seat.
 
 const evH = (s) => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return ((h >>> 0) % 100000) / 100000; };
-const EV_RANKS = 8, EV_BLOCKS = 3, EV_SEATS = 12; // 24 Tischreihen × 12 Plätze = 288 Sitzplätze
+const EV_RANKS = 8, EV_BLOCKS = 3, EV_SEATS = 12; // 24 table rows × 12 seats = 288 seats
 const evReihe = (rank, blk) => rank * EV_BLOCKS + blk + 1;
 const evKey = (rank, blk, seat) => `${rank}-${blk}-${seat}`;
 const evReiheOf = (n) => ({ r: Math.floor((n - 1) / EV_BLOCKS), b: (n - 1) % EV_BLOCKS });
 
-// deterministisch belegen — vorne wird zuerst voll (so verkauft sich ein Saal wirklich)
+// occupy deterministically — the front fills up first (that's how a hall really sells)
 function evTakenSet(seed, count) {
   const arr = [];
   for (let r = 0; r < EV_RANKS; r++) for (let b = 0; b < EV_BLOCKS; b++) for (let s = 1; s <= EV_SEATS; s++) {

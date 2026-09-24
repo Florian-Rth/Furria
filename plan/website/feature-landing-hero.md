@@ -18,7 +18,7 @@ CTAs, a stat row, and the anchor photo.
 - Eyebrow badge: `★ SESSION 2026 · 11.11. ERÖFFNUNG`.
 - Two-tone headline: line 1 ink **GROSS**, line 2 red **FURRIA!** with the whisper poster
   head-shadow (`3px 3px 0 ink`) — the one allowed hard shadow.
-- Intro paragraph (Großfurra / fünfte Jahreszeit copy).
+- Intro paragraph (Großfurra / fifth-season copy).
 - Two CTAs: primary **Tickets sichern →**, secondary **Programm ansehen**.
 - Stat row: `180+ Mitglieder · 6 Garden & Gruppen · 1971 gegründet` (the count was corrected from 12 to
   the derived 6 in P5). **P6 (2026-07-30):** `HeroStatRow` no longer hand-rolls the row — it composes
@@ -38,7 +38,7 @@ CTAs, a stat row, and the anchor photo.
 - Confetti is decorative, deterministic, boxed — never over text. Uses a new **static**
   `@furria/ui` primitive **`KkConfettiScatter`** (≤13 chips, seeded, positioned behind the reading
   column via z-index) — distinct from the existing `KkConfettiRain`/`KkConfettiBurst`.
-- Narrenruf headline is **GROSS FURRIA!** (local law).
+- Carnival call headline is **GROSS FURRIA!** (local law).
 - **Stats are static in P1** (live wiring is deferred — needs the Club-App backend). Single-sourced from `lib/club.ts`: `1971` from
   `FOUNDING_YEAR`; `180+ Mitglieder` and `12 Garden & Gruppen` are **clearly-marked placeholder
   constants** pending real figures / live data. (See [Session](../../CONTEXT.md) term.)
@@ -47,11 +47,11 @@ CTAs, a stat row, and the anchor photo.
   (from exported opening day/month constants) + `ERÖFFNUNG`.
 - **CTAs link to real routes:** primary **Tickets sichern →** `/tickets` (matches the masthead
   Tickets button), secondary **Programm ansehen** → `/program`. Both resolve to the branded
-  `PlaceholderPage` until their features ship (Ticket-Shop and Veranstaltungskalender are both
+  `PlaceholderPage` until their features ship (Ticket-Shop and event calendar are both
   **deferred — need the Club-App backend**). No same-page anchor
-  (the Programm-Teaser block is P2) and no dead buttons.
+  (the Events teaser block is P2) and no dead buttons.
 - **Hero photo is a branded placeholder for launch:** new shared `@furria/ui` primitive
-  **`KkPhotoPlaceholder`** (hatched box + label + tint), reused later by Programm-Teaser (P2) and
+  **`KkPhotoPlaceholder`** (hatched box + label + tint), reused later by the Events teaser (P2) and
   Gallery (P5). The "Seit {year}" tag derives from `FOUNDING_YEAR`.
 - The broom watermark uses the shared **`KkBroomMark`** (`@furria/ui`); the 11.11 seal uses
   **`KkSeal`** (`@furria/ui`). All hero motion (seal float, confetti, headline) honours
@@ -111,7 +111,7 @@ CTAs, a stat row, and the anchor photo.
   stat and `/club`'s derived `GROUPS.length` agree. The seam below still stands for when live data
   lands. Original record kept for the reasoning:
 - ⚠️ **Defect — the group count contradicted `/club` (found in P5 grilling, 2026-07-28).** This hero
-  prints `GROUP_COUNT_PLACEHOLDER` = **12 Gruppen**, while [Verein](feature-about-verein.md) derives
+  prints `GROUP_COUNT_PLACEHOLDER` = **12 groups**, while [Club](feature-about-club.md) derives
   from `GROUPS.length` = **6** ("Aktuell 6 Gruppen" *and* the story stat). Two shipped pages state
   different values for one fact — a visitor can see both in one session.
   **Immediate fix:** `GROUP_COUNT_PLACEHOLDER = 6` in `lib/club.ts`, so the two agree.

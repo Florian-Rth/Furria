@@ -14,7 +14,7 @@ export const EventDetailStats: FC<EventDetailStatsProps> = ({ event }) => {
     <KkStatRow sx={{ gap: { xs: 3, md: 4 } }}>
       {stats.map((stat) => (
         <KkStatRow.Item key={stat.label}>
-          <KkStatRow.Value variant="h5">{stat.value}</KkStatRow.Value>
+          <KkStatRow.Value variant="h3">{stat.value}</KkStatRow.Value>
           <KkStatRow.Label>{stat.label}</KkStatRow.Label>
         </KkStatRow.Item>
       ))}

@@ -28,14 +28,14 @@ export const MemberSkeleton: FC = () => (
       </Grid>
       <Grid size={{ xs: 12, desktop: 5 }} sx={{ minWidth: 0 }}>
         <KkPanelStack>
-          <KkPanelSection title={MEMBER_SECTION_TITLES.club}>
-            <KkPanel variant="block">
-              <KkSkeletonBlock lines={BLOCK_LINES} />
-            </KkPanel>
-          </KkPanelSection>
           <KkPanelSection title={MEMBER_SECTION_TITLES.contact}>
             <KkPanel variant="block">
               <KkSkeletonBlock lines={ROW_LINES} />
+            </KkPanel>
+          </KkPanelSection>
+          <KkPanelSection title={MEMBER_SECTION_TITLES.club}>
+            <KkPanel variant="block">
+              <KkSkeletonBlock lines={BLOCK_LINES} />
             </KkPanel>
           </KkPanelSection>
         </KkPanelStack>

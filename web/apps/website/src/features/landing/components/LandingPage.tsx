@@ -5,9 +5,9 @@ import type { FC, ReactNode } from 'react';
 import { EventsTeaser } from './EventsTeaser/EventsTeaser';
 import { Hero } from './Hero/Hero';
 import { HeroFollow } from './HeroFollow';
+import { JoinInBand } from './JoinInBand/JoinInBand';
 import { LandingHeroBackdrop } from './LandingHeroBackdrop';
 import { LandingTicker } from './LandingTicker';
-import { MitmachenBand } from './MitmachenBand/MitmachenBand';
 import { MobileHero } from './MobileHero/MobileHero';
 
 interface LandingPageProps {
@@ -69,7 +69,7 @@ export const LandingPage: FC<LandingPageProps> = ({ newsTeaser }) => (
       <Stack sx={{ gap: kkTokens.layout.sectionGap }}>
         <EventsTeaser />
         {newsTeaser}
-        <MitmachenBand />
+        <JoinInBand />
       </Stack>
     </Container>
   </Stack>

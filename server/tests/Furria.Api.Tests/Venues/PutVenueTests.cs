@@ -27,7 +27,7 @@ public sealed class PutVenueTests
     }
 
     [Fact]
-    public async Task Should_CarryTheNewAnschrift_When_TheKeyHolderUmziehtDenOrt()
+    public async Task Should_CarryTheNewAddress_When_TheKeyHolderMovesTheVenue()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -70,7 +70,7 @@ public sealed class PutVenueTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_AnotherOrtCarriesTheName()
+    public async Task Should_ReturnConflict_When_AnotherVenueCarriesTheName()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -104,7 +104,7 @@ public sealed class PutVenueTests
     }
 
     [Fact]
-    public async Task Should_KeepItsName_When_OnlyTheAnschriftChanges()
+    public async Task Should_KeepItsName_When_OnlyTheAddressChanges()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -133,7 +133,7 @@ public sealed class PutVenueTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheOrtIsArchived()
+    public async Task Should_ReturnConflict_When_TheVenueIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -170,7 +170,7 @@ public sealed class PutVenueTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheOrtIsUnknown()
+    public async Task Should_ReturnNotFound_When_TheVenueIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);

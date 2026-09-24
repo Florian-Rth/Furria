@@ -1,5 +1,5 @@
-// fcc-pg-dir.jsx — Screens 1–4: Mitglieder (Liste), Person, Gruppen, Gruppe.
-// Lesend, für alle im Verein. Keine Schreib-Aktionen.
+// fcc-pg-dir.jsx — Screens 1–4: Members (list), Person, Groups, Group.
+// Read-only, for everyone in the club. No write actions.
 
 const { PGP: G, PG: GD, PgRow: R, PgEyeb: Eb, PgDisp: Dp, PgBody: By, PgSec: Sc, PgCd: Cd,
   PgAv: Av, PgSeal: Seal, PgKey: KeyM, PgState: St, PgSearch: Srch, PgFilters: Flt, PgStat: Stt,
@@ -9,7 +9,7 @@ const lastOf = (n) => n.split(' ').slice(-1)[0];
 const byName = [...GD.PERSONS].sort((a, b) => lastOf(a.n).localeCompare(lastOf(b.n), 'de'));
 const P_BY = Object.fromEntries(GD.PERSONS.map(p => [p.n, p]));
 
-// ── eine Person als Zeile ────────────────────────────────────────────────
+// ── one person as a row ────────────────────────────────────────────────────
 function PgPersonRow({ p, i, size = 38, showAdr }) {
   const amt = p.a[0] && p.a[0][0].split(' · ')[0];
   const grp = p.g.length ? p.g.map(x => x[0]).join(' · ') : null;
@@ -158,7 +158,7 @@ function PgSinceRow({ label, since, sub, tone = 'ink', i, icon = 'star' }) {
   );
 }
 
-// Kontakt in zwei ehrlichen Zuständen
+// Contact in two honest states
 function PgContact({ p, open, canSeeAnyway }) {
   if (open || canSeeAnyway) {
     return (

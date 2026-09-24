@@ -23,7 +23,7 @@ public sealed class GetRolesTests
     }
 
     [Fact]
-    public async Task Should_CarryEveryRolleWithKeysAndInhabern_When_AManagerReadsTheMatrix()
+    public async Task Should_CarryEveryRoleWithKeysAndHolders_When_AManagerReadsTheMatrix()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -53,12 +53,12 @@ public sealed class GetRolesTests
         var (response, result) = await client.GETAsync<GetRoles, GetRolesResponse>();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var gruppenpflege = Single(result, "Gruppenpflege");
-        Assert.Equal(ctx.Roles.Roles.IdOf("gruppenpflege"), gruppenpflege.RoleId);
-        Assert.Equal("Pflegt die Gruppen des Vereins.", gruppenpflege.Description);
-        Assert.Null(gruppenpflege.ArchivedOn);
-        Assert.Equal([FurriaPermissions.GroupsManage], gruppenpflege.PermissionKeys);
-        var ilka = Assert.Single(gruppenpflege.Holders);
+        var groupCare = Single(result, "Gruppenpflege");
+        Assert.Equal(ctx.Roles.Roles.IdOf("gruppenpflege"), groupCare.RoleId);
+        Assert.Equal("Pflegt die Gruppen des Vereins.", groupCare.Description);
+        Assert.Null(groupCare.ArchivedOn);
+        Assert.Equal([FurriaPermissions.GroupsManage], groupCare.PermissionKeys);
+        var ilka = Assert.Single(groupCare.Holders);
         Assert.Equal(ctx.Identity.People.IdOf("ilka"), ilka.PersonId);
         Assert.Equal("Ilka", ilka.FirstName);
         Assert.Equal("Reineke", ilka.LastName);
@@ -78,7 +78,7 @@ public sealed class GetRolesTests
     }
 
     [Fact]
-    public async Task Should_ListTheArchivedRolle_When_TheMatrixIsRead()
+    public async Task Should_ListTheArchivedRole_When_TheMatrixIsRead()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -102,7 +102,7 @@ public sealed class GetRolesTests
     }
 
     [Fact]
-    public async Task Should_OmitTheInhaberin_When_HerInhaberschaftHasEnded()
+    public async Task Should_OmitTheHolder_When_HerRoleHoldingHasEnded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -142,7 +142,7 @@ public sealed class GetRolesTests
     }
 
     [Fact]
-    public async Task Should_CarryNoKeys_When_ARolleGrantsNothing()
+    public async Task Should_CarryNoKeys_When_ARoleGrantsNothing()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -159,7 +159,7 @@ public sealed class GetRolesTests
     }
 
     [Fact]
-    public async Task Should_SortUmlautsAsGerman_When_ListingRollen()
+    public async Task Should_SortUmlautsAsGerman_When_ListingRoles()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -185,7 +185,7 @@ public sealed class GetRolesTests
     public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldRolesManage()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithGruppenpflegerinAsync(ct);
+        var ctx = await BuildWithGroupCareHolderAsync(ct);
 
         var client = await ctx.Identity.ClientForAsync("ilka", ct);
         var (response, _) = await client.GETAsync<GetRoles, GetRolesResponse>();
@@ -204,7 +204,7 @@ public sealed class GetRolesTests
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
-    private Task<SeededContext> BuildWithGruppenpflegerinAsync(CancellationToken ct) =>
+    private Task<SeededContext> BuildWithGroupCareHolderAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder =>
                 builder

@@ -1,7 +1,7 @@
-// FCC Website — Termine & Karten (/events). Konfetti-Kinetik, öffentliche Seite.
-// Nur öffentliche Veranstaltungen, ein Saal (Dorfgemeindehaus Großfurra), 12 € pro Karte.
-// Teil 1: Daten, Bausteine, Spielplan (Liste + 2 Monate), Event-Detail incl. Foto-Theater.
-// Teil 2 (fcc-web-tickets.jsx): Saalplan/Platzwahl, digitale Karte, Mobile, EventsPage-Router.
+// FCC Website — Events & Tickets (/events). Konfetti-Kinetik, public page.
+// Only public events, one hall (Dorfgemeindehaus Großfurra), 12 € per ticket.
+// Part 1: data, building blocks, schedule (list + 2 months), event detail incl. photo theater.
+// Part 2 (fcc-web-tickets.jsx): hall plan/seat picker, digital ticket, mobile, EventsPage router.
 
 const evHard = (c, n = 8, col) => `${n}px ${n}px 0 ${col || c.ink}`;
 const EV_CREAM = '#FBF4E6';
@@ -10,8 +10,8 @@ const EV_ORT = 'Dorfgemeindehaus Großfurra';
 const EV_PREIS = 12;
 const evPanel = (c) => (c.bg === '#15110E' ? { bg: '#0C0806', fg: EV_CREAM, sub: 'rgba(251,244,230,0.62)' } : { bg: c.ink, fg: EV_CREAM, sub: 'rgba(251,244,230,0.62)' });
 
-// ── DIE SECHS ÖFFENTLICHEN ABENDE ───────────────────────────────────────
-// status: offen · knapp · ausverkauft · bald
+// ── THE SIX PUBLIC EVENINGS ───────────────────────────────────────────────
+// status: offen (open) · knapp (low) · ausverkauft (sold out) · bald (soon)
 const EV_EVENTS = [
   { id: 'prunk1', tag: 'Sa', d: '23.', m: 'JAN', mm: '01', y: '2027', datum: '23. Januar 2027', zeit: '19:11', einlass: '18:11', ende: 'ca. 2:00', programm: true, typ: 'Prunksitzung', titel: '1. Prunksitzung', unter: 'Vier Stunden Programm, elf Nummern, ein Männerballett, das keiner vergisst. Der Auftakt ist traditionell zuerst weg.', status: 'ausverkauft', kap: 288, frei: 0, dauer: '4 Std', alter: 'ab 12 empfohlen' },
   { id: 'prunk2', tag: 'Sa', d: '30.', m: 'JAN', mm: '01', y: '2027', datum: '30. Januar 2027', zeit: '19:11', einlass: '18:11', ende: 'ca. 2:00', typ: 'Prunksitzung', titel: '2. Prunksitzung', unter: 'Dasselbe Programm, zweiter Abend — und der letzte, für den es noch Karten gibt.', status: 'knapp', kap: 288, frei: 34, dauer: '4 Std', alter: 'ab 12 empfohlen' },
@@ -22,7 +22,7 @@ const EV_EVENTS = [
 ];
 const evById = (id) => EV_EVENTS.find((e) => e.id === id) || EV_EVENTS[1];
 
-// eine einzige Formulierung für alle Zustände: „N von 288 frei“ — die Farbe trägt die Dringlichkeit.
+// one single phrasing for all states: "N of 288 free" — the color carries the urgency.
 const evStatus = (e) => {
   if (e.status === 'knapp') return { label: `${e.frei} von ${e.kap} frei`, cta: 'Platz wählen', kind: 'warn', bar: true };
   if (e.status === 'offen') return { label: `${e.frei} von ${e.kap} frei`, cta: 'Platz wählen', kind: 'go', bar: true };
@@ -115,7 +115,7 @@ function EvCountdown({ c, when, invert, small }) {
   React.useEffect(() => { const i = setInterval(() => setT(evCountdown(when)), 1000); return () => clearInterval(i); }, [when]);
   if (!t) return null;
   const sub = invert ? 'rgba(251,244,230,0.6)' : c.sub;
-  // Sekunden erst, wenn sie etwas bedeuten — sonst ist der Zähler nur Theater.
+  // Seconds only once they mean something — otherwise the counter is just theater.
   const units = t.d >= 2 ? [[t.d, 'TAGE'], [t.h, 'STD'], [t.m, 'MIN']] : [[t.d, 'TAGE'], [t.h, 'STD'], [t.m, 'MIN'], [t.s, 'SEK']];
   return (
     <div style={{ display: 'flex', gap: small ? 8 : 14 }}>
@@ -135,9 +135,9 @@ function EvSubscribe({ c, kind, small, block }) {
   return <button onClick={() => setOn(!on)} style={{ border: `2px solid ${on ? c.red : c.ink}`, background: on ? c.red : 'transparent', color: on ? c.onRed : c.ink, fontFamily: 'Archivo, sans-serif', fontWeight: 900, fontSize: small ? 12 : 14, padding: small ? '9px 12px' : '12px 18px', cursor: 'pointer', whiteSpace: 'nowrap', width: block ? '100%' : 'auto' }}>{txt}</button>;
 }
 
-// ── FOTO-THEATER: die Bilder vom selben Abend im Vorjahr ───────────────
-// Später automatisch aus der Galerie gezogen. Stapel schiebt sich alle 3,4 s
-// weiter, das vorderste Bild fliegt nach rechts raus und kommt hinten wieder.
+// ── PHOTO THEATER: the photos from the same evening last year ────────────
+// Later pulled automatically from the gallery. The stack advances every 3.4 s,
+// the front photo flies out to the right and reappears at the back.
 function EvPhotoTheater({ c, small, h }) {
   const n = EV_FOTOS.length;
   const [i, setI] = React.useState(0);
@@ -179,8 +179,8 @@ function EvPhotoTheater({ c, small, h }) {
   );
 }
 
-// Ablauf: liegt meistens noch nicht vor — dann nur eine Zeile. Steht das Programm,
-// klappt derselbe Block die Prognose aus.
+// Running order: usually not available yet — then just one line. Once the program
+// is set, the same block unfolds the forecast.
 function EvAblauf({ c, e, small }) {
   const [open, setOpen] = React.useState(true);
   if (!e.programm) {
@@ -334,7 +334,7 @@ function EvMonth({ c, m, go, small }) {
   );
 }
 
-// ── KARTENBÖRSE ─────────────────────────────────────────────────────────
+// ── TICKET EXCHANGE ───────────────────────────────────────────────────────
 function EvBoerse({ c, small }) {
   const p = evPanel(c);
   return (
@@ -361,7 +361,7 @@ function EvBoerse({ c, small }) {
   );
 }
 
-// ── DER SAAL (ein Ort für alles) ─────────────────────────────────────────
+// ── THE HALL (one venue for everything) ───────────────────────────────────
 function EvVenue({ c, small, go }) {
   const rows = [['Saal', '288 Sitzplätze an 24 Tischreihen, 62 Stehplätze an der Theke'], ['Adresse', 'Schulstraße 4, 99713 Großfurra — ebenerdig, Rollstuhlplätze an Reihe 1'], ['Parken', 'Schulhof und Feuerwehr, 4 Minuten zu Fuß, kostenlos'], ['Heimweg', 'Shuttle nach Sondershausen um 0:30 und 2:15 · 2 € an der Theke']];
   return (

@@ -31,6 +31,7 @@ description: Mandatory rules for all React/TypeScript frontend work. Invoke befo
 - Use an existing MUI component before hand-rolling with `Box` + `sx`
 - Use MUI `Grid` (12-column `container`/`size`) for multi-column layouts; approximate ratios with spans, never a custom `columns` base or magic spans — the `columns` prop is lint-enforced
 - Use `Stack` instead of `Box` with `display: flex` — lint-enforced
+- Never set a font size outside the theme — pick a typography variant; the theme's fixed scale never grows to fit a design — lint-enforced
 - Exception: use `sx={{ display: 'flex' }}` on MUI containers (DialogContent, etc.) to avoid extra wrapper divs
 - Put Stack layout props (`alignItems`, `justifyContent`, `spacing`) in `sx`, not as component props — only `direction` is allowed as a prop
 - Always use default imports from MUI, never named imports — lint-enforced

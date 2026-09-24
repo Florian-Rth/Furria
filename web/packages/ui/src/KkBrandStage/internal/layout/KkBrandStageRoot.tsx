@@ -4,9 +4,9 @@ import { KkConfettiRain } from '../../../KkConfettiRain';
 import type { KkSx } from '../../../kk-sx';
 import { kkTokens } from '../../../tokens';
 import type { KkBrandStageVariant } from '../brand-stage-variant';
+import { KkBrandStageCarnivalCall } from '../ui/KkBrandStageCarnivalCall';
 import { KkBrandStageClubName } from '../ui/KkBrandStageClubName';
 import { KkBrandStageGlow } from '../ui/KkBrandStageGlow';
-import { KkBrandStageNarrenruf } from '../ui/KkBrandStageNarrenruf';
 import { KkBrandStageRule } from '../ui/KkBrandStageRule';
 import { KkBrandStageWordmark } from '../ui/KkBrandStageWordmark';
 import { KkBrandStageBrand } from './KkBrandStageBrand';
@@ -62,7 +62,7 @@ export const KkBrandStageRoot: FC<KkBrandStageRootProps> = ({
       {children}
       <KkBrandStageBrand variant={variant}>
         <KkBrandStageReveal step={0}>
-          <KkBrandStageWordmark variant={variant} />
+          <KkBrandStageWordmark />
         </KkBrandStageReveal>
         <KkBrandStageReveal step={1} motion="wipe" sx={{ display: posterOnlyDisplay }}>
           <KkBrandStageRule />
@@ -71,7 +71,7 @@ export const KkBrandStageRoot: FC<KkBrandStageRootProps> = ({
           <KkBrandStageClubName />
         </KkBrandStageReveal>
         <KkBrandStageReveal step={3}>
-          <KkBrandStageNarrenruf />
+          <KkBrandStageCarnivalCall />
         </KkBrandStageReveal>
       </KkBrandStageBrand>
     </Stack>

@@ -35,7 +35,7 @@ export const ChangelogTabLabel: FC<ChangelogTabLabelProps> = ({ entry, unread })
             ml: 'auto',
             flexShrink: 0,
             height: '1.25rem',
-            fontSize: '0.625rem',
+            typography: 'caption',
             letterSpacing: '0.08em',
           }}
         />

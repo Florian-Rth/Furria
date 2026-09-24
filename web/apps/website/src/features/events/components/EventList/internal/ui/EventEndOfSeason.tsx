@@ -14,7 +14,7 @@ export const EventEndOfSeason: FC = () => (
   >
     <Stack sx={{ gap: 2, alignItems: 'center' }}>
       <KkEyebrow tone="muted">{endOfSeasonContent.kicker}</KkEyebrow>
-      <Typography variant="h2" component="h2">
+      <Typography variant="h2" component="h2" sx={{ typography: { xs: 'h2', md: 'h1' } }}>
         {endOfSeasonContent.headline}
       </Typography>
       <Typography variant="body1" sx={{ color: 'text.secondary', maxWidth: '36rem' }}>

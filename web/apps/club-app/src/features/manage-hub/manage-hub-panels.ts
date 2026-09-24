@@ -27,7 +27,7 @@ export interface ManageBankDefinition {
 export const MANAGE_BANKS: readonly ManageBankDefinition[] = [
   { id: 'belonging', title: 'Wer dazugehört' },
   { id: 'rights', title: 'Wer darf was' },
-  { id: 'record', title: 'Was der Verein führt' },
+  { id: 'record', title: 'Vereinsdaten' },
 ];
 
 export const MANAGE_PANELS: readonly ManagePanelDefinition[] = [

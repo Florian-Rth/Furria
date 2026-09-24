@@ -34,11 +34,11 @@ describe('buildMembershipApplicationPayload', () => {
     });
   });
 
-  it('sends an unanswered Telefon as null instead of an empty string', () => {
+  it('sends an unanswered phone as null instead of an empty string', () => {
     expect(buildMembershipApplicationPayload({ ...values, phone: '' }, false).phone).toBeNull();
   });
 
-  it('sends no Gruppen-Interessen as an empty list, because that is a normal answer', () => {
+  it('sends no group interests as an empty list, because that is a normal answer', () => {
     expect(
       buildMembershipApplicationPayload({ ...values, groupInterests: [] }, false).groupInterests,
     ).toEqual([]);
@@ -71,7 +71,7 @@ describe('buildMembershipApplicationPayload', () => {
     expect(Object.keys(payload)).not.toContain('honeypot');
   });
 
-  it('never sends a Mitgliedschaftsart the applicant could have picked', () => {
+  it('never sends a membership type the applicant could have picked', () => {
     const payload = buildMembershipApplicationPayload(values, false);
 
     expect(Object.keys(payload)).not.toContain('membershipType');

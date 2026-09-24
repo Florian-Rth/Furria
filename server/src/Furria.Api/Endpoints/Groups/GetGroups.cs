@@ -1,6 +1,7 @@
 using FastEndpoints;
 using Furria.Api.Authorization;
 using Furria.Application.Groups;
+using Furria.Core.Groups;
 using Furria.Infrastructure.Groups;
 
 namespace Furria.Api.Endpoints.Groups;
@@ -22,7 +23,14 @@ public sealed class GetGroups : EndpointWithoutRequest<GetGroupsResponse>
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var groups = await _groupService.GetGroupsAsync(ct);
+        var personId = User.PersonId();
+        if (personId is null)
+        {
+            await Send.UnauthorizedAsync(ct);
+            return;
+        }
+
+        var groups = await _groupService.GetGroupsAsync(personId.Value, ct);
 
         await Send.OkAsync(ToResponse(groups), cancellation: ct);
     }
@@ -37,9 +45,14 @@ public sealed class GetGroups : EndpointWithoutRequest<GetGroupsResponse>
             Name = group.Name,
             Description = group.Description,
             IsRecruiting = group.IsRecruiting,
+            GroupKindName = group.GroupKindName,
+            FoundedYear = group.FoundedYear,
+            Tone = group.Tone,
             MemberCount = group.MemberCount,
             MemberPreview = [.. group.MemberPreview.Select(ToDto)],
             Admins = [.. group.Admins.Select(ToDto)],
+            ViewerIsMember = group.ViewerIsMember,
+            ViewerIsAdmin = group.ViewerIsAdmin,
         };
 
     private static PersonRefDto ToDto(PersonReference person) =>
@@ -66,11 +79,21 @@ public sealed record GroupSummaryDto
 
     public required bool IsRecruiting { get; init; }
 
+    public required string? GroupKindName { get; init; }
+
+    public required int? FoundedYear { get; init; }
+
+    public required GroupTone? Tone { get; init; }
+
     public required int MemberCount { get; init; }
 
     public required IReadOnlyList<PersonRefDto> MemberPreview { get; init; }
 
     public required IReadOnlyList<PersonRefDto> Admins { get; init; }
+
+    public required bool ViewerIsMember { get; init; }
+
+    public required bool ViewerIsAdmin { get; init; }
 }
 
 public sealed record PersonRefDto

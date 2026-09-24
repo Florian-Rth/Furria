@@ -21,7 +21,6 @@ const RING_WIDTH = '2.5px';
 const BUBBLE_SIZE = 26;
 const BUBBLE_WASH_LIGHT = '10%';
 const BUBBLE_WASH_DARK = '16%';
-const BUBBLE_FONT = '0.6875rem';
 
 const ring = (color: string): string => `0 0 0 ${RING_WIDTH} ${color}`;
 
@@ -67,7 +66,7 @@ export const KkAvatarStack: FC<KkAvatarStackProps> = ({
           justifyContent: 'center',
           borderRadius: '50%',
           flexShrink: 0,
-          fontSize: BUBBLE_FONT,
+          ...theme.typography.caption,
           fontWeight: 800,
           color: 'text.secondary',
           ...applyScheme(

@@ -105,7 +105,7 @@ public sealed class GetPersonByIdTests
     }
 
     [Fact]
-    public async Task Should_NestTheRuhezeitInsideItsPeriod_When_APersonPausedHerMitgliedschaft()
+    public async Task Should_NestTheMembershipPauseInsideItsPeriod_When_APersonPausedHerMembership()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -131,7 +131,7 @@ public sealed class GetPersonByIdTests
     }
 
     [Fact]
-    public async Task Should_MarkThePeriodAsFuture_When_TheMitgliedschaftHasNotBegunYet()
+    public async Task Should_MarkThePeriodAsFuture_When_TheMembershipHasNotBegunYet()
     {
         var ct = TestContext.Current.CancellationToken;
         var startsNextMonth = _fixture.Today.AddMonths(1);
@@ -157,7 +157,7 @@ public sealed class GetPersonByIdTests
     }
 
     [Fact]
-    public async Task Should_ListTheBeitragsermaessigungenNewestFirst_When_APersonCarriesSeveral()
+    public async Task Should_ListTheFeeReductionsNewestFirst_When_APersonCarriesSeveral()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -195,7 +195,7 @@ public sealed class GetPersonByIdTests
     }
 
     [Fact]
-    public async Task Should_ListTheEndedTiesToo_When_ThePersonLeftAGruppeAndARolle()
+    public async Task Should_ListTheEndedTiesToo_When_ThePersonLeftAGroupAndARole()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -244,7 +244,7 @@ public sealed class GetPersonByIdTests
     }
 
     [Fact]
-    public async Task Should_LeaveOutTheArchivedOnes_When_ThePersonBelongedToAnArchivedGruppe()
+    public async Task Should_LeaveOutTheArchivedOnes_When_ThePersonBelongedToAnArchivedGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

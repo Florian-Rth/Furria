@@ -4,13 +4,13 @@
 
 # FURRIA
 
-**Die fünfte Jahreszeit, jetzt mit Continuous Integration.**
+**The fifth season, now with Continuous Integration.**
 
 [![CI](https://github.com/Florian-Rth/Furria/actions/workflows/ci.yml/badge.svg)](https://github.com/Florian-Rth/Furria/actions/workflows/ci.yml)
-![Narrenruf](https://img.shields.io/badge/Narrenruf-Gross_--_Furria!-E11D2A)
-![Gegründet](https://img.shields.io/badge/gegr.-1971-F4B400)
-![Mocks](https://img.shields.io/badge/Mocks-verboten-1A1411)
-![Eröffnung](https://img.shields.io/badge/Session-11.11%2C%2011%3A11%20Uhr-2E9E5B)
+![Carnival call](https://img.shields.io/badge/Carnival_call-Gross_--_Furria!-E11D2A)
+![Founded](https://img.shields.io/badge/founded-1971-F4B400)
+![Mocks](https://img.shields.io/badge/Mocks-banned-1A1411)
+![Season opening](https://img.shields.io/badge/Session-11.11%2C%2011%3A11-2E9E5B)
 
 </div>
 
@@ -20,14 +20,14 @@ since 2026.
 
 ## The plan
 
-One repo, one backend, three apps. If eleven people on the Elferrat can run an entire carnival,
-one API can serve three frontends.
+One repo, one backend, three apps. If eleven people on the Council of Eleven can run an entire
+carnival, one API can serve three frontends.
 
 | App | What it's for | Status |
 |-----|---------------|--------|
 | 🌐 **Website** (`web/apps/website`) | The public face: events, tickets with a cinema-style seat picker, news, and the "Mitglied werden" funnel | v0 teaser is live — the fifth season starts here |
-| 🎭 **Club-App** (`web/apps/club-app`) | The engine room for members: Mitglieder, Ämter, Beiträge, event planning, Live-Regie, the legendary Bierliste | CA-P0 shipped: login, session, Übersicht. Domain features next |
-| 📸 **Event-App** (`web/apps/event-app`) | For guests at the party: per-table photo upload, live photo wall, digital programme — no install, no excuses | Kommt nach dem Umzug |
+| 🎭 **Club-App** (`web/apps/club-app`) | The engine room for members: members, roles, fees, event planning, live direction, the legendary beer list | CA-P0 shipped: login, session, overview. Domain features next |
+| 📸 **Event-App** (`web/apps/event-app`) | For guests at the party: per-table photo upload, live photo wall, digital programme — no install, no excuses | Coming after the parade |
 
 ## The serious part
 
@@ -73,7 +73,7 @@ Details in [`docs/server/TESTING.md`](docs/server/TESTING.md), rationale in
 
 Bold editorial-newspaper DNA — Anton headlines, Archivo everything else, cream & ink, confetti
 strictly rationed. **Red is for action buttons, never body text** — save the drama for the
-Männerballett. One theme for all apps, radius 14, no exceptions.
+men's ballet. One theme for all apps, radius 14, no exceptions.
 
 The full design handoff lives in [`docs/design/`](docs/design/README.md) — read its
 **READ FIRST** section before pixel-copying anything.
@@ -82,7 +82,7 @@ The full design handoff lives in [`docs/design/`](docs/design/README.md) — rea
 
 | Where | What |
 |-------|------|
-| [`CONTEXT.md`](CONTEXT.md) | Domain glossary — what a Mitglied is, why there is no Vorstand super-role, and other club law |
+| [`CONTEXT.md`](CONTEXT.md) | Domain glossary — what a member is, why there is no board super-role, and other club law |
 | [`docs/adr/`](docs/adr/) | Architecture decisions — the "why did they do it this way?" file |
 | [`docs/design/`](docs/design/README.md) | Design system + feature mocks (direction, not spec) |
 | [`docs/server/TESTING.md`](docs/server/TESTING.md) | The testing conventions the compiler enforces |

@@ -8,7 +8,7 @@ import { orderFlowMissingBuyerNotice } from '@/features/events/order-flow-conten
 export const OrderFlowMissingBuyerNotice: FC = () => (
   <OrderPanel tone="content" sx={{ gap: 3 }}>
     <Stack sx={{ gap: 1, alignItems: 'flex-start' }}>
-      <Typography variant="h3" component="h2">
+      <Typography variant="h2" component="h2">
         {orderFlowMissingBuyerNotice.headline}
       </Typography>
       <KkNote>{orderFlowMissingBuyerNotice.body}</KkNote>

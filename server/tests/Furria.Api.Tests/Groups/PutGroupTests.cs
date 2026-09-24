@@ -1,5 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Net.Mime;
+using System.Text;
 using FastEndpoints;
 using Furria.Api.Endpoints.Groups;
 using Furria.Application.Authorization;
@@ -13,8 +15,10 @@ public sealed class PutGroupTests
 {
     private const string ConflictField = "conflict";
     private const string OldDescription = "Die Garde tanzt seit 1971.";
-    private const string NewDescription = "Wir tanzen dienstags und donnerstags.";
     private const int UnknownGroupId = 999_999;
+    private const string GroupsRoute = "/api/manage/groups";
+    private const string BodyWithoutGroupKind =
+        "{\"name\":\"Große Garde\",\"description\":\"Wir tanzen dienstags und donnerstags.\",\"isRecruiting\":true}";
 
     private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
 
@@ -26,7 +30,7 @@ public sealed class PutGroupTests
     }
 
     [Fact]
-    public async Task Should_RenameTheGruppe_When_TheKeyHolderSaves()
+    public async Task Should_RenameTheGroupAndLeaveItsOwnRecordAlone_When_TheKeyHolderSaves()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -41,8 +45,7 @@ public sealed class PutGroupTests
             {
                 GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
                 Name = "Große Garde",
-                Description = NewDescription,
-                IsRecruiting = true,
+                GroupKindId = null,
             }
         );
 
@@ -51,9 +54,9 @@ public sealed class PutGroupTests
             .Expected.Group(ctx.Groups.Groups.IdOf("tanzgarde"))
             .ToHaveName("Große Garde")
             .Group(ctx.Groups.Groups.IdOf("tanzgarde"))
-            .ToHaveDescription(NewDescription)
+            .ToHaveDescription(OldDescription)
             .Group(ctx.Groups.Groups.IdOf("tanzgarde"))
-            .ToBeRecruiting(true)
+            .ToBeRecruiting(false)
             .AssertAsync(ct);
     }
 
@@ -73,8 +76,7 @@ public sealed class PutGroupTests
             {
                 GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
                 Name = "TANZGARDE",
-                Description = OldDescription,
-                IsRecruiting = false,
+                GroupKindId = null,
             }
         );
 
@@ -86,7 +88,7 @@ public sealed class PutGroupTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_AnotherActiveGruppeCarriesTheName()
+    public async Task Should_ReturnConflict_When_AnotherActiveGroupCarriesTheName()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -105,8 +107,7 @@ public sealed class PutGroupTests
             {
                 GroupId = ctx.Groups.Groups.IdOf("elferrat"),
                 Name = "tanzgarde",
-                Description = NewDescription,
-                IsRecruiting = false,
+                GroupKindId = null,
             }
         );
 
@@ -120,7 +121,7 @@ public sealed class PutGroupTests
     }
 
     [Fact]
-    public async Task Should_SaveTheName_When_OnlyAnArchivedGruppeCarriesIt()
+    public async Task Should_SaveTheName_When_OnlyAnArchivedGroupCarriesIt()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -145,8 +146,7 @@ public sealed class PutGroupTests
             {
                 GroupId = ctx.Groups.Groups.IdOf("elferrat"),
                 Name = "Tanzgarde",
-                Description = NewDescription,
-                IsRecruiting = false,
+                GroupKindId = null,
             }
         );
 
@@ -160,7 +160,7 @@ public sealed class PutGroupTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheGruppeIsArchived()
+    public async Task Should_ReturnConflict_When_TheGroupIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -183,8 +183,7 @@ public sealed class PutGroupTests
             {
                 GroupId = ctx.Groups.Groups.IdOf("kindergarde"),
                 Name = "Kindergarde neu",
-                Description = NewDescription,
-                IsRecruiting = true,
+                GroupKindId = null,
             }
         );
 
@@ -201,7 +200,7 @@ public sealed class PutGroupTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheGruppeIsUnknown()
+    public async Task Should_ReturnNotFound_When_TheGroupIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
@@ -212,8 +211,7 @@ public sealed class PutGroupTests
             {
                 GroupId = UnknownGroupId,
                 Name = "Elferrat",
-                Description = NewDescription,
-                IsRecruiting = false,
+                GroupKindId = null,
             }
         );
 
@@ -236,8 +234,7 @@ public sealed class PutGroupTests
             {
                 GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
                 Name = "",
-                Description = NewDescription,
-                IsRecruiting = false,
+                GroupKindId = null,
             }
         );
 
@@ -277,8 +274,7 @@ public sealed class PutGroupTests
             {
                 GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
                 Name = "Große Garde",
-                Description = NewDescription,
-                IsRecruiting = true,
+                GroupKindId = null,
             }
         );
 
@@ -306,12 +302,80 @@ public sealed class PutGroupTests
                 {
                     GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
                     Name = "Große Garde",
-                    Description = NewDescription,
-                    IsRecruiting = true,
+                    GroupKindId = null,
                 }
             );
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_RefuseTheGroupKind_When_ItIsArchived()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Groups(groups =>
+                    groups
+                        .AddGroupKind("spielmannszug", "Spielmannszug", archivedOn: ArchivedIn2021)
+                        .AddGroup("tanzgarde", "Tanzgarde", OldDescription)
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var response = await client.PUTAsync<PutGroup, PutGroupRequest>(
+            new()
+            {
+                GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
+                Name = "Tanzgarde",
+                GroupKindId = ctx.Groups.GroupKinds.IdOf("spielmannszug"),
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        var failures = await ReadFailuresAsync(response, ct);
+        Assert.Equal(
+            ["Eine archivierte Gruppenart lässt sich einer Gruppe nicht zuordnen."],
+            failures[ConflictField]
+        );
+        await ctx
+            .Expected.Group(ctx.Groups.Groups.IdOf("tanzgarde"))
+            .ToHaveGroupKind(null)
+            .Group(ctx.Groups.Groups.IdOf("tanzgarde"))
+            .ToHaveDescription(OldDescription)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_SaveTheGroup_When_TheBodyLeavesTheGroupKindOut()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Groups(groups =>
+                    groups
+                        .AddGroupKind("garde", "Garde")
+                        .AddGroup("tanzgarde", "Tanzgarde", OldDescription, groupKindAlias: "garde")
+                ),
+            ct
+        );
+        var tanzgarde = ctx.Groups.Groups.IdOf("tanzgarde");
+
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var response = await client.PutAsync(
+            $"{GroupsRoute}/{tanzgarde}",
+            new StringContent(BodyWithoutGroupKind, Encoding.UTF8, MediaTypeNames.Application.Json),
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx
+            .Expected.Group(tanzgarde)
+            .ToHaveName("Große Garde")
+            .Group(tanzgarde)
+            .ToHaveGroupKind(null)
+            .AssertAsync(ct);
     }
 
     private static async Task<IDictionary<string, List<string>>> ReadFailuresAsync(

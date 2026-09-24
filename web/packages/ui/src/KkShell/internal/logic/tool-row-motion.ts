@@ -12,10 +12,12 @@ export const TOOL_ROW_TUCKED: TargetAndTransition = {
   height: 0,
   paddingTop: 0,
   opacity: 0,
+  overflow: 'hidden',
 };
 
 export const TOOL_ROW_OUT: TargetAndTransition = {
   height: toolRowHeight + chromeGap,
   paddingTop: chromeGap,
   opacity: 1,
+  transitionEnd: { overflow: 'visible' },
 };

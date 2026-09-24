@@ -49,11 +49,11 @@ describe('buildFallbackMailHref', () => {
     expect(body).toContain('E-Mail: lena.brandt@example.de');
   });
 
-  it('spells the Geburtsdatum out in German', () => {
+  it('spells the birth date out in German', () => {
     expect(bodyOf(buildFallbackMailHref(values, []))).toContain('Geburtsdatum: 14. März 1994');
   });
 
-  it('keeps an unusable Geburtsdatum as it was typed', () => {
+  it('keeps an unusable birth date as it was typed', () => {
     const body = bodyOf(buildFallbackMailHref({ ...values, birthDate: '' }, []));
 
     expect(body).not.toContain('Geburtsdatum:');
@@ -67,7 +67,7 @@ describe('buildFallbackMailHref', () => {
     expect(body).not.toContain('Vertretung');
   });
 
-  it('lists the Gruppen by name, not by id', () => {
+  it('lists the groups by name, not by id', () => {
     const body = bodyOf(buildFallbackMailHref(values, ['Tanzgarde', 'Organisation']));
 
     expect(body).toContain('Gruppen-Interessen: Tanzgarde, Organisation');
@@ -87,7 +87,7 @@ describe('buildFallbackMailHref', () => {
     expect(body).not.toContain('E-Mail der gesetzlichen Vertretung:');
   });
 
-  it('records that the Einwilligung was given, and only then', () => {
+  it('records that consent was given, and only then', () => {
     expect(bodyOf(buildFallbackMailHref(values, []))).toContain(
       'Satzung und Datenschutzhinweise gelesen: ja',
     );

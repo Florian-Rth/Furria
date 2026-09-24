@@ -25,7 +25,7 @@ public sealed class ArchiveVenueTests
     }
 
     [Fact]
-    public async Task Should_StampToday_When_TheKeyHolderArchiviertDenOrt()
+    public async Task Should_StampToday_When_TheKeyHolderArchivesTheVenue()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -46,7 +46,7 @@ public sealed class ArchiveVenueTests
     }
 
     [Fact]
-    public async Task Should_KeepTheAnschriftAndJedenSchluessel_When_TheOrtIsArchived()
+    public async Task Should_KeepTheAddressAndEveryKey_When_TheVenueIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -83,7 +83,7 @@ public sealed class ArchiveVenueTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheOrtIsAlreadyArchived()
+    public async Task Should_ReturnConflict_When_TheVenueIsAlreadyArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -109,7 +109,7 @@ public sealed class ArchiveVenueTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheOrtIsUnknown()
+    public async Task Should_ReturnNotFound_When_TheVenueIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);

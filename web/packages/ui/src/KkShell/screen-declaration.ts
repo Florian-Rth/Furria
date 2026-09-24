@@ -3,6 +3,7 @@ import type { KkTone } from '../internal/tone';
 import type { KkIconName } from '../KkIcon';
 import type { KkLetterIndexEntry } from '../letter-index-cells';
 import type { KkLetterPace } from '../letter-pace';
+import type { KkHandoverName } from './handover-stage';
 
 export type KkScreenKind = 'overview' | 'list' | 'detail' | 'working' | 'fullscreen';
 
@@ -38,16 +39,26 @@ export type KkScreenActions =
   | readonly [KkQuietScreenAction, KkLoudScreenAction]
   | readonly [KkLoudScreenAction, KkQuietScreenAction];
 
+export type KkScreenActionTone = 'quiet' | 'consequence';
+
+export interface KkScreenActionContext {
+  text: string;
+  tone: KkScreenActionTone;
+}
+
+export type KkScreenDeedTone = 'danger';
+
 export interface KkScreenDeed {
   label: string;
   onSelect: () => void;
   icon?: KkIconName;
-  disabled?: boolean;
+  tone?: KkScreenDeedTone;
   loading?: boolean;
+  disabled?: boolean;
 }
 
 export interface KkScreenActionBar {
-  context?: string;
+  context?: string | KkScreenActionContext;
   primary: KkScreenDeed;
   secondary?: KkScreenDeed;
 }
@@ -82,6 +93,7 @@ interface KkScreenShared {
   header?: ReactNode;
   headerKind?: KkScreenHeaderKind;
   thread?: KkScreenThread;
+  handover?: KkHandoverName;
   children?: ReactNode;
 }
 

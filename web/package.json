@@ -1,8 +1,8 @@
 {
   "name": "@furria/web",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "packageManager": "pnpm@11.13.1",
+  "packageManager": "pnpm@12.5.1",
   "scripts": {
     "dev": "pnpm --filter @furria/website dev",
     "dev:club-app": "pnpm --filter @furria/club-app dev",

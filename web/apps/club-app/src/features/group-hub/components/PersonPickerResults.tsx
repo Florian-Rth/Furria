@@ -7,7 +7,7 @@ import type { PersonSearchControl } from '../hooks/use-person-search';
 import { PersonPickerRow } from './PersonPickerRow';
 
 const SKELETON_ROWS = 3;
-const TYPE_MORE_LINE = 'Tipp mindestens zwei Buchstaben.';
+const TYPE_MORE_LINE = 'Gib mindestens zwei Zeichen ein.';
 
 interface PersonPickerResultsProps {
   search: PersonSearchControl;

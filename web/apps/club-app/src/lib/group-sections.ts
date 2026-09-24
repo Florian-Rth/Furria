@@ -1,43 +1,38 @@
 export const GROUP_SECTION_TITLES = {
   about: 'Die Gruppe',
-  members: 'Mitglieder',
+  description: 'Kurz gesagt',
+  members: 'Wer dabei ist',
   managedMembers: 'Zugehörigkeiten',
   admins: 'Gruppen-Admins',
+  care: 'Die Gruppe pflegen',
+  rhythm: 'Trainingsrhythmus',
   history: 'Geschichte',
   events: 'Termine',
-  photos: 'Bilder',
+  administration: 'Für die Verwaltung',
 } as const;
 
 export const GROUP_ADMINS_NOTE =
-  'Gruppen-Admins pflegen die Gruppe. Sie müssen nicht selbst in der Gruppe tanzen.';
+  'Gruppen-Admins verwalten die Gruppe und müssen ihr nicht selbst angehören.';
 
 export const NO_ADMINS_LINE =
-  'Für diese Gruppe ist gerade niemand als Gruppen-Admin eingetragen. Ohne Admin pflegt die Gruppenverwaltung sie allein.';
+  'Diese Gruppe hat keinen Gruppen-Admin. Sie wird von der Gruppenverwaltung gepflegt.';
 
-export const RESERVED_BADGE = 'bald';
+export const GROUP_PEOPLE_NOTE =
+  'Gruppen-Admins stehen oben. Sie müssen der Gruppe nicht selbst angehören.';
 
-export interface ReservedSlotCopy {
-  title: string;
-  description: string;
-}
+export const toGroupPeopleNote = (people: number, admins: number): string | undefined => {
+  if (people === 0) {
+    return undefined;
+  }
 
-export const EVENTS_RESERVED: ReservedSlotCopy = {
-  title: 'Noch nicht da',
-  description:
-    'Training, Proben und Auftritte der Gruppe an einem Ort. Kommt in einer späteren Phase.',
-};
-
-export const PHOTOS_RESERVED: ReservedSlotCopy = {
-  title: 'Noch keine Bilder',
-  description:
-    'Platz für ein paar Bilder aus vergangenen Sessions. Die Bildergalerie liefert sie später automatisch — hier wird nichts hochgeladen.',
+  return admins === 0 ? NO_ADMINS_LINE : GROUP_PEOPLE_NOTE;
 };
 
 const SUBLINE_SEPARATOR = ' · ';
 
 export const toGroupMembersLabel = (count: number): string => {
   if (count === 0) {
-    return 'niemand dabei';
+    return 'keine Mitglieder';
   }
   if (count === 1) {
     return '1 Person';

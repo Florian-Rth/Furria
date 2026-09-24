@@ -30,7 +30,7 @@ export const MatcherMatchBar: FC<MatcherMatchBarProps> = ({ percentage, groupNam
         >
           {matcherResultLabels.matchCaption}
         </Typography>
-        <Typography variant="h6" component="span">
+        <Typography variant="h4" component="span">
           {text}
         </Typography>
       </Stack>

@@ -5,7 +5,7 @@ import { resolveEventTypeTint } from './event-tint';
 const palette = (kkTheme.vars ?? kkTheme).palette;
 
 describe('resolveEventTypeTint', () => {
-  it('tints Prunksitzungen in the club red', () => {
+  it('tints gala sessions in the club red', () => {
     expect(resolveEventTypeTint(kkTheme, 'Prunksitzung')).toBe(palette.primary.main);
   });
 

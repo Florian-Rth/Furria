@@ -1,8 +1,8 @@
-// FCC Website — Die Kartenbörse. Rückgabe, Warteliste, Abend tauschen.
-// Eigene Seite (/termine/boerse) + die Bausteine, die sie an Spielplan, Abend,
-// Saalplan und die eigene Karte anschließen.
+// FCC Website — The ticket exchange. Return, waitlist, swap an evening.
+// Its own page (/termine/boerse) + the building blocks that connect it to the schedule, the
+// event, the hall plan and the ticket itself.
 
-// Zurückgegebene Plätze. status: 'warteliste' (Vorkaufsrecht läuft) · 'offen' (für alle)
+// Returned seats. status: 'warteliste' (right of first refusal running) · 'offen' (open to all)
 const EV_RETURNS = [
   { id: 'r1', event: 'prunk1', reihe: 9, platz: 5, seit: 'vor 12 Minuten', status: 'warteliste', wer: 'Nr. 1 der Warteliste', restMin: 252 },
   { id: 'r2', event: 'prunk1', reihe: 21, platz: 8, seit: 'vor 2 Stunden', status: 'offen', grund: 'Warteliste hat nicht zugegriffen' },
@@ -21,7 +21,7 @@ const EV_BOERSE_SCHRITTE = [
 
 function evClock(min) { const h = Math.floor(min / 60); return `${h}:${String(min % 60).padStart(2, '0')} h`; }
 
-// ── Ein zurückgegebener Platz als Zeile ─────────────────────────────────
+// ── One returned seat as a row ────────────────────────────────────────────
 function EvReturnRow({ c, r, go, small }) {
   const e = window.evById(r.event);
   const offen = r.status === 'offen';
@@ -57,7 +57,7 @@ function EvReturnRow({ c, r, go, small }) {
   );
 }
 
-// ── Warteliste für einen ausverkauften Abend ────────────────────────────
+// ── Waitlist for a sold-out evening ───────────────────────────────────────
 function EvWaitPanel({ c, e, small, compact, go }) {
   const [on, setOn] = React.useState(false);
   const pos = 8;
@@ -86,7 +86,7 @@ function EvWaitPanel({ c, e, small, compact, go }) {
   );
 }
 
-// ── Rückgabe / Abend tauschen ───────────────────────────────────────────
+// ── Return / swap an evening ──────────────────────────────────────────────
 function EvSwap({ c, small, invert }) {
   const [tab, setTab] = React.useState('back');
   const p = window.evPanel(c);
@@ -123,7 +123,7 @@ function EvSwap({ c, small, invert }) {
   );
 }
 
-// ── Band für den Spielplan (kurz, mit echten Zahlen) ────────────────────
+// ── Band for the schedule (short, with real numbers) ─────────────────────
 function EvBoerseBand({ c, small, go }) {
   return (
     <div style={{ background: c.paper, color: c.ink, borderTop: `1.5px solid ${c.line}`, borderBottom: `1.5px solid ${c.line}`, padding: small ? '20px 20px' : '28px 40px' }}>

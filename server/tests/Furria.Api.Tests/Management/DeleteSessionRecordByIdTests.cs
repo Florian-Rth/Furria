@@ -21,7 +21,7 @@ public sealed class DeleteSessionRecordByIdTests
     }
 
     [Fact]
-    public async Task Should_LeaveTheSeasonNamedByItsDateAlone_When_TheEintragWasWrong()
+    public async Task Should_LeaveTheSeasonNamedByItsDateAlone_When_TheEntryWasWrong()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -46,7 +46,7 @@ public sealed class DeleteSessionRecordByIdTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheEintragIsUnknown()
+    public async Task Should_ReturnNotFound_When_TheEntryIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);

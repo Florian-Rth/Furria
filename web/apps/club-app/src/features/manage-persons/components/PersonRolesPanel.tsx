@@ -1,19 +1,10 @@
-import {
-  KkChip,
-  KkEmptyState,
-  KkFactRow,
-  KkNote,
-  KkPanel,
-  KkPanelSection,
-  KkSinceRow,
-} from '@furria/ui';
+import { KkEmptyState, KkFactRow, KkNote, KkPanel, KkPanelSection, KkSinceRow } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { usePermissions } from '@/features/session';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { formatPeriod, formatSinceSession } from '@/lib/membership-labels';
-import { READ_ONLY_CHIP } from '@/lib/state-chips';
 import { PERSON_SECTION_TITLES, ROLES_POINTER, splitPersonRoles } from '../manage-persons-labels';
 import type { PersonRole } from '../schemas';
 
@@ -65,7 +56,7 @@ export const PersonRolesPanel: FC<PersonRolesPanelProps> = ({ roles, firstName }
       <KkEmptyState
         size="panel"
         title={EMPTY_TITLE}
-        description={`${firstName} trägt gerade keine Rolle im Verein.`}
+        description={`${firstName} hat keine Rolle im Verein.`}
       />
     </KkPanel>
   ) : (
@@ -80,18 +71,8 @@ export const PersonRolesPanel: FC<PersonRolesPanelProps> = ({ roles, firstName }
       </Stack>
     );
 
-  const readOnlyChip = (
-    <KkChip tone={READ_ONLY_CHIP.tone} dot={READ_ONLY_CHIP.dot}>
-      {READ_ONLY_CHIP.label}
-    </KkChip>
-  );
-
   return (
-    <KkPanelSection
-      title={PERSON_SECTION_TITLES.roles}
-      meta={readOnlyChip}
-      description={ROLES_POINTER}
-    >
+    <KkPanelSection title={PERSON_SECTION_TITLES.roles} description={ROLES_POINTER}>
       <Stack sx={{ gap: 1.25, minWidth: 0 }}>
         {runningPanel}
         {pastPanel}

@@ -30,9 +30,7 @@ export const MemberHeader: FC<MemberHeaderProps> = ({ member, isSelf }) => {
         <KkAvatar initials={headline.initials} size="large" />
       </KkScreenHeader.Visual>
       <KkScreenHeader.Text>
-        <KkEyebrow tone="accent" size="small">
-          {eyebrow}
-        </KkEyebrow>
+        <KkEyebrow tone="accent">{eyebrow}</KkEyebrow>
         <KkScreenHeader.Title transform="none">{headline.title}</KkScreenHeader.Title>
         {stateRow}
       </KkScreenHeader.Text>

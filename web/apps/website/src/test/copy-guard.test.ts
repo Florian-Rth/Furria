@@ -23,7 +23,7 @@ import { buildCancelledEvent, buildEvent } from '@/lib/seed/events';
 const UNDECIDED_SALE_MECHANICS =
   /Saalplan|Sitzplan|\bSitzplätze?\b|\bPlätze\b|Sitzreihe|Reihe \d|reserviert|Warteliste|Stehplätz|Gruppenbestellung|Rollstuhl|PayPal|Kreditkarte|Lastschrift|Abendkasse|Apple Pay|Google Pay|Wallet|\bQR\b|\bscan|\bPDF\b|Ausdruck|Kalender|Erinnerung|\blive\b/i;
 
-const PLATZ_LANGUAGE = /Platzwahl|Platz wählen/i;
+const SEAT_SELECTION_LANGUAGE = /Platzwahl|Platz wählen/i;
 
 const UNDECIDED_MEMBERSHIP_FRAMING =
   /Vorstand|passiv|vorbeikommen|vorbeischauen|ohne Anmeldung|Turnschuhe|Instagram|\bSMS\b/i;
@@ -33,7 +33,7 @@ const REJECTED_EXCHANGE_SPECIFICS =
 
 const GROUP_THE_CLUB_DOES_NOT_HAVE = /Spielmannszug/i;
 
-const KARTEN_COPY = {
+const TICKET_COPY = {
   'order-flow-content': orderFlowContent,
   'order-confirmation-content': orderConfirmationContent,
   'order-summary-content': orderSummaryContent,
@@ -41,7 +41,7 @@ const KARTEN_COPY = {
   'events/faq-content': eventsFaqContent,
 };
 
-const MITGLIEDSCHAFT_COPY = {
+const MEMBERSHIP_COPY = {
   'apply-content': applyContent,
   'closing-content': closingContent,
   'contact-content': contactContent,
@@ -50,7 +50,7 @@ const MITGLIEDSCHAFT_COPY = {
   'steps-content': stepsContent,
 };
 
-const GRUPPEN_COPY = {
+const GROUPS_COPY = {
   'groups-content': clubGroupsContent,
 };
 
@@ -89,7 +89,7 @@ const everyLifecycleEvent: Event[] = [
   buildCancelledEvent(baseFacts),
 ];
 
-const derivedKartenCopy = (): string[] => [
+const derivedTicketCopy = (): string[] => [
   ...everyLifecycleEvent.map((event) => deriveOrderFlowNotice(event)?.body ?? ''),
   ...everyLifecycleEvent.map((event) => deriveTicketPanelNote(deriveTicketPanelFace(event)) ?? ''),
 ];
@@ -99,16 +99,16 @@ const rejectionMessages = (): string[] => {
   return result.success ? [] : result.error.issues.map((issue) => issue.message);
 };
 
-describe('the Karten copy', () => {
-  it.each(copyOf(KARTEN_COPY))('claims no undecided sale mechanic in %s', (_name, copy) => {
+describe('the ticket copy', () => {
+  it.each(copyOf(TICKET_COPY))('claims no undecided sale mechanic in %s', (_name, copy) => {
     expect(copy).not.toMatch(UNDECIDED_SALE_MECHANICS);
-    expect(copy).not.toMatch(PLATZ_LANGUAGE);
+    expect(copy).not.toMatch(SEAT_SELECTION_LANGUAGE);
   });
 
   it('claims no undecided sale mechanic in the copy it derives per lifecycle state', () => {
-    for (const copy of derivedKartenCopy()) {
+    for (const copy of derivedTicketCopy()) {
       expect(copy).not.toMatch(UNDECIDED_SALE_MECHANICS);
-      expect(copy).not.toMatch(PLATZ_LANGUAGE);
+      expect(copy).not.toMatch(SEAT_SELECTION_LANGUAGE);
     }
   });
 
@@ -118,28 +118,25 @@ describe('the Karten copy', () => {
     expect(messages.length).toBeGreaterThan(0);
     for (const message of messages) {
       expect(message).not.toMatch(UNDECIDED_SALE_MECHANICS);
-      expect(message).not.toMatch(PLATZ_LANGUAGE);
+      expect(message).not.toMatch(SEAT_SELECTION_LANGUAGE);
     }
   });
 });
 
-describe('the Kartenbörse concept copy', () => {
+describe('the ticket exchange concept copy', () => {
   it('frames its plans without any rejected mechanic or banned market term', () => {
     expect(JSON.stringify(exchangeContent)).not.toMatch(REJECTED_EXCHANGE_SPECIFICS);
   });
 });
 
-describe('the Mitgliedschaft copy', () => {
-  it.each(copyOf(MITGLIEDSCHAFT_COPY))(
-    'frames no undecided Mitgliedschaft fact in %s',
-    (_name, copy) => {
-      expect(copy).not.toMatch(UNDECIDED_MEMBERSHIP_FRAMING);
-    },
-  );
+describe('the membership copy', () => {
+  it.each(copyOf(MEMBERSHIP_COPY))('frames no undecided membership fact in %s', (_name, copy) => {
+    expect(copy).not.toMatch(UNDECIDED_MEMBERSHIP_FRAMING);
+  });
 });
 
-describe('the Gruppen copy', () => {
-  it.each(copyOf(GRUPPEN_COPY))('names no Gruppe the club does not have in %s', (_name, copy) => {
+describe('the groups copy', () => {
+  it.each(copyOf(GROUPS_COPY))('names no group the club does not have in %s', (_name, copy) => {
     expect(copy).not.toMatch(GROUP_THE_CLUB_DOES_NOT_HAVE);
   });
 });

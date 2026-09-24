@@ -18,7 +18,7 @@ export const SeasonStep: FC<SeasonStepProps> = ({ step, accented }) => (
   >
     <KkCard.Body>
       <Typography
-        variant="h4"
+        variant="h2"
         component="span"
         sx={{ color: accented ? 'inherit' : 'primary.main', lineHeight: 1 }}
       >

@@ -66,7 +66,7 @@ describe('calculateAge', () => {
 });
 
 describe('deriveMembership', () => {
-  it('derives Jugend and the youth Beitrag for someone under 18', () => {
+  it('derives youth and the youth fee for someone under 18', () => {
     const derived = deriveMembership('2012-05-04', localDate('2026-07-30'));
 
     expect(derived).toEqual({
@@ -77,7 +77,7 @@ describe('deriveMembership', () => {
     });
   });
 
-  it('derives Aktiv and the full Beitrag for an adult', () => {
+  it('derives active and the full fee for an adult', () => {
     const derived = deriveMembership('1994-03-14', localDate('2026-07-30'));
 
     expect(derived).toEqual({
@@ -88,7 +88,7 @@ describe('deriveMembership', () => {
     });
   });
 
-  it('switches to Aktiv on the eighteenth birthday itself', () => {
+  it('switches to active on the eighteenth birthday itself', () => {
     const derived = deriveMembership('2008-07-30', localDate('2026-07-30'));
 
     expect(derived?.age).toBe(MAJORITY_AGE);
@@ -96,7 +96,7 @@ describe('deriveMembership', () => {
     expect(derived?.requiresGuardian).toBe(false);
   });
 
-  it('is still Jugend the day before the eighteenth birthday', () => {
+  it('is still youth the day before the eighteenth birthday', () => {
     const derived = deriveMembership('2008-07-30', localDate('2026-07-29'));
 
     expect(derived?.age).toBe(17);
@@ -104,16 +104,16 @@ describe('deriveMembership', () => {
     expect(derived?.requiresGuardian).toBe(true);
   });
 
-  it('has nothing to derive without a usable Geburtsdatum', () => {
+  it('has nothing to derive without a usable birth date', () => {
     expect(deriveMembership('', localDate('2026-07-30'))).toBeNull();
     expect(deriveMembership('2026-02-30', localDate('2026-07-30'))).toBeNull();
   });
 
-  it('refuses a Geburtsdatum in the future', () => {
+  it('refuses a birth date in the future', () => {
     expect(deriveMembership('2026-07-31', localDate('2026-07-30'))).toBeNull();
   });
 
-  it('refuses an implausibly old Geburtsdatum', () => {
+  it('refuses an implausibly old birth date', () => {
     expect(deriveMembership('1880-01-01', localDate('2026-07-30'))).toBeNull();
   });
 });

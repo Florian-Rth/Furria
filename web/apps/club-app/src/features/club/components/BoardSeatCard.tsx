@@ -18,7 +18,7 @@ export const BoardSeatCard: FC<BoardSeatCardProps> = ({ seat }) => {
       <KkPhoto alt={name} orientation="portrait" placeholderLabel={initials} source={portrait} />
       <Stack sx={{ gap: 0.25, minWidth: 0 }}>
         <KkMeta tone="accent">{seat.officeName}</KkMeta>
-        <KkHeading level={6} component="h3" sx={{ minWidth: 0 }}>
+        <KkHeading level={4} component="h3" sx={{ minWidth: 0 }}>
           {name}
         </KkHeading>
       </Stack>

@@ -23,7 +23,7 @@ public sealed class BoardOfficeExpectations
                     await dbContext
                         .BoardOffices.AsNoTracking()
                         .AnyAsync(row => row.Id == _boardOfficeId, ct),
-                    $"Expected no Vorstandsfunktion with id {_boardOfficeId}."
+                    $"Expected no BoardOffice with id {_boardOfficeId}."
                 )
         );
 

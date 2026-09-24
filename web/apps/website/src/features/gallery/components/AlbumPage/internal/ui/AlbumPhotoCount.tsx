@@ -17,7 +17,7 @@ export const AlbumPhotoCount: FC<AlbumPhotoCountProps> = ({ album }) => (
       alignItems: { xs: 'flex-start', sm: 'flex-end' },
     }}
   >
-    <Typography variant="h3" component="span" sx={{ color: 'primary.main', lineHeight: 0.9 }}>
+    <Typography variant="h2" component="span" sx={{ color: 'primary.main', lineHeight: 0.9 }}>
       {album.photos.length}
     </Typography>
     <Typography

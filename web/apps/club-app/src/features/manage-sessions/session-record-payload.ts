@@ -17,9 +17,12 @@ const written = (value: string | null): string | null => {
   return trimmed === '' ? null : trimmed;
 };
 
-export const toSessionRecordForm = (record: SessionRecordSummary | null): SessionRecordForm => {
+export const toSessionRecordForm = (
+  record: SessionRecordSummary | null,
+  draftYear: number | null,
+): SessionRecordForm => {
   if (record === null) {
-    return { startYear: null, number: '', motto: '', logoSvg: null };
+    return { startYear: draftYear, number: '', motto: '', logoSvg: null };
   }
 
   return {

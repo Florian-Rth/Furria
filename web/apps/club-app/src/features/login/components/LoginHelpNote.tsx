@@ -1,7 +1,7 @@
 import { KkNote } from '@furria/ui';
 import type { FC } from 'react';
 
-const HELP_LINE = 'Passwort vergessen? Melde dich bei einer Person aus der Personenverwaltung.';
+const HELP_LINE = 'Passwort vergessen? Wende dich an die Personenverwaltung.';
 
 export const LoginHelpNote: FC = () => (
   <KkNote tone="hint" icon="info">

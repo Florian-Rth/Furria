@@ -98,7 +98,7 @@ public sealed class PutMembershipTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_ClearingTheEndWouldRunASecondMitgliedschaft()
+    public async Task Should_ReturnConflict_When_ClearingTheEndWouldRunASecondMembership()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -164,7 +164,7 @@ public sealed class PutMembershipTests
     }
 
     [Fact]
-    public async Task Should_ReturnUnprocessableEntity_When_AClosedRuhezeitWouldFallOutside()
+    public async Task Should_ReturnUnprocessableEntity_When_AClosedMembershipPauseWouldFallOutside()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -207,7 +207,7 @@ public sealed class PutMembershipTests
     }
 
     [Fact]
-    public async Task Should_ClampTheOpenRuhezeit_When_ThePeriodGainsAnEnd()
+    public async Task Should_ClampTheOpenMembershipPause_When_ThePeriodGainsAnEnd()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -242,7 +242,7 @@ public sealed class PutMembershipTests
     }
 
     [Fact]
-    public async Task Should_ReopenTheMitgliedschaft_When_TheEndIsCleared()
+    public async Task Should_ReopenTheMembership_When_TheEndIsCleared()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -276,7 +276,7 @@ public sealed class PutMembershipTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheMitgliedschaftBelongsToAnotherPerson()
+    public async Task Should_ReturnNotFound_When_TheMembershipBelongsToAnotherPerson()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

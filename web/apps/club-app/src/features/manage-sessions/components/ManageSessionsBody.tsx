@@ -3,23 +3,14 @@ import { AppListSkeleton } from '@/features/session';
 import { useSessionRecordsQuery } from '../api';
 import { MANAGE_SESSIONS_LOADING_LABEL } from '../manage-sessions-labels';
 import { toSessionRecordsErrorMessage } from '../manage-sessions-messages';
-import type { SessionRecordSummary } from '../schemas';
 import { ManageSessionsError } from './ManageSessionsError';
 import { ManageSessionsView } from './ManageSessionsView';
 
 interface ManageSessionsBodyProps {
   today: Date;
-  onCreate: () => void;
-  onEdit: (record: SessionRecordSummary) => void;
-  onDelete: (record: SessionRecordSummary) => void;
 }
 
-export const ManageSessionsBody: FC<ManageSessionsBodyProps> = ({
-  today,
-  onCreate,
-  onEdit,
-  onDelete,
-}) => {
+export const ManageSessionsBody: FC<ManageSessionsBodyProps> = ({ today }) => {
   const sessions = useSessionRecordsQuery();
   const errorMessage = toSessionRecordsErrorMessage(sessions.error);
 
@@ -28,15 +19,7 @@ export const ManageSessionsBody: FC<ManageSessionsBodyProps> = ({
   };
 
   if (sessions.data !== undefined) {
-    return (
-      <ManageSessionsView
-        records={sessions.data.sessions}
-        today={today}
-        onCreate={onCreate}
-        onEdit={onEdit}
-        onDelete={onDelete}
-      />
-    );
+    return <ManageSessionsView records={sessions.data.sessions} today={today} />;
   }
   if (errorMessage !== null) {
     return <ManageSessionsError message={errorMessage} onRetry={reload} />;

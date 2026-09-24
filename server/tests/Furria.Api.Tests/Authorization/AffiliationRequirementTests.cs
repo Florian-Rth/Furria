@@ -33,7 +33,7 @@ public sealed class AffiliationRequirementTests
     }
 
     [Fact]
-    public async Task Should_Allow_When_TheCallerHoldsARunningMitgliedschaft()
+    public async Task Should_Allow_When_TheCallerHoldsARunningMembership()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -51,7 +51,7 @@ public sealed class AffiliationRequirementTests
     }
 
     [Fact]
-    public async Task Should_Allow_When_TheCallerOnlyHoldsARunningInhaberschaft()
+    public async Task Should_Allow_When_TheCallerOnlyHoldsARunningRoleHolding()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -77,7 +77,7 @@ public sealed class AffiliationRequirementTests
     }
 
     [Fact]
-    public async Task Should_Allow_When_TheCallerOnlyHoldsAnOpenZugehoerigkeit()
+    public async Task Should_Allow_When_TheCallerOnlyHoldsAnOpenGroupMembership()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -104,7 +104,7 @@ public sealed class AffiliationRequirementTests
     }
 
     [Fact]
-    public async Task Should_Refuse_When_TheOnlyMitgliedschaftHasEnded()
+    public async Task Should_Refuse_When_TheOnlyMembershipHasEnded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -124,7 +124,7 @@ public sealed class AffiliationRequirementTests
     }
 
     [Fact]
-    public async Task Should_Refuse_When_TheOnlyZugehoerigkeitHasEnded()
+    public async Task Should_Refuse_When_TheOnlyGroupMembershipHasEnded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -152,7 +152,7 @@ public sealed class AffiliationRequirementTests
     }
 
     [Fact]
-    public async Task Should_Refuse_When_TheOnlyZugehoerigkeitIsInAnArchivedGruppe()
+    public async Task Should_Refuse_When_TheOnlyGroupMembershipIsInAnArchivedGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -185,7 +185,7 @@ public sealed class AffiliationRequirementTests
     }
 
     [Fact]
-    public async Task Should_Refuse_When_TheOnlyInhaberschaftIsOfAnArchivedRolle()
+    public async Task Should_Refuse_When_TheOnlyRoleHoldingIsOfAnArchivedRole()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -218,7 +218,7 @@ public sealed class AffiliationRequirementTests
     }
 
     [Fact]
-    public async Task Should_Refuse_When_TheCallerIsOnlyTheAdminOfAGruppeSheDoesNotBelongTo()
+    public async Task Should_Refuse_When_TheCallerIsOnlyTheAdminOfAGroupSheDoesNotBelongTo()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -246,7 +246,7 @@ public sealed class AffiliationRequirementTests
     }
 
     [Fact]
-    public async Task Should_Allow_When_TheMitgliedschaftEndsToday()
+    public async Task Should_Allow_When_TheMembershipEndsToday()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -266,7 +266,7 @@ public sealed class AffiliationRequirementTests
     }
 
     [Fact]
-    public async Task Should_Refuse_When_TheOnlyMitgliedschaftStartsTomorrow()
+    public async Task Should_Refuse_When_TheOnlyMembershipStartsTomorrow()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -286,7 +286,7 @@ public sealed class AffiliationRequirementTests
     }
 
     [Fact]
-    public async Task Should_Allow_When_TheZugehoerigkeitEndsToday()
+    public async Task Should_Allow_When_TheGroupMembershipEndsToday()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -314,7 +314,7 @@ public sealed class AffiliationRequirementTests
     }
 
     [Fact]
-    public async Task Should_Allow_When_TheRunningMitgliedschaftRuht()
+    public async Task Should_Allow_When_TheRunningMembershipIsPaused()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -339,7 +339,7 @@ public sealed class AffiliationRequirementTests
     }
 
     [Fact]
-    public async Task Should_Refuse_When_TheMitgliedschaftEndedOnTheUtcDateButBerlinIsPastIt()
+    public async Task Should_Refuse_When_TheMembershipEndedOnTheUtcDateButBerlinIsPastIt()
     {
         var ct = TestContext.Current.CancellationToken;
 

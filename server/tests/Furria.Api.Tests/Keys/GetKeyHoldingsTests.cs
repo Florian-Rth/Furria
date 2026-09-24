@@ -23,7 +23,7 @@ public sealed class GetKeyHoldingsTests
     }
 
     [Fact]
-    public async Task Should_ListRunningOrteInGermanNameOrderBeforeArchivedOnes_When_TheSchluesselScreenIsRead()
+    public async Task Should_ListRunningVenuesInGermanNameOrderBeforeArchivedOnes_When_TheKeyScreenIsRead()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -46,7 +46,7 @@ public sealed class GetKeyHoldingsTests
     }
 
     [Fact]
-    public async Task Should_CarryTheOrtWithoutSchluessel_When_NiemandEinenHat()
+    public async Task Should_CarryTheVenueWithoutKey_When_NobodyHoldsOne()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -62,7 +62,7 @@ public sealed class GetKeyHoldingsTests
     }
 
     [Fact]
-    public async Task Should_KeepTheZurueckgenommenenSchluessel_When_ErLaengstBeendetIst()
+    public async Task Should_KeepTheReturnedKey_When_ItHasLongEnded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -95,7 +95,7 @@ public sealed class GetKeyHoldingsTests
     }
 
     [Fact]
-    public async Task Should_ListOffeneSchluesselVorZurueckgenommenen_When_EinOrtBeidesKennt()
+    public async Task Should_ListOpenKeysBeforeReturnedOnes_When_AVenueHasBoth()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -136,7 +136,7 @@ public sealed class GetKeyHoldingsTests
     }
 
     [Fact]
-    public async Task Should_MarkTheArchivedOrtAndKeepSeineHistorie_When_ErAusDemVerzeichnisIst()
+    public async Task Should_MarkTheArchivedVenueAndKeepItsHistory_When_ItIsOffTheList()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

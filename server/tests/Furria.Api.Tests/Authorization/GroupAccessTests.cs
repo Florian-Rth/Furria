@@ -23,7 +23,7 @@ public sealed class GroupAccessTests
     }
 
     [Fact]
-    public async Task Should_Allow_When_TheCallerIsOnlyTheGruppenAdmin()
+    public async Task Should_Allow_When_TheCallerIsOnlyTheGroupAdmin()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -56,7 +56,7 @@ public sealed class GroupAccessTests
     }
 
     [Fact]
-    public async Task Should_ReportNotAdmin_When_TheCallerOnlyBelongsToTheGruppe()
+    public async Task Should_ReportNotAdmin_When_TheCallerOnlyBelongsToTheGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -88,7 +88,7 @@ public sealed class GroupAccessTests
     }
 
     [Fact]
-    public async Task Should_Allow_When_TheGruppeIsArchived()
+    public async Task Should_Allow_When_TheGroupIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -125,7 +125,7 @@ public sealed class GroupAccessTests
     }
 
     [Fact]
-    public async Task Should_Allow_When_TheGruppenAdminschaftEndsToday()
+    public async Task Should_Allow_When_TheGroupAdminPeriodEndsToday()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -159,7 +159,7 @@ public sealed class GroupAccessTests
     }
 
     [Fact]
-    public async Task Should_Refuse_When_TheCallerBelongsToAnotherGruppe()
+    public async Task Should_Refuse_When_TheCallerBelongsToAnotherGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -191,7 +191,7 @@ public sealed class GroupAccessTests
     }
 
     [Fact]
-    public async Task Should_Refuse_When_TheZugehoerigkeitHasEnded()
+    public async Task Should_Refuse_When_TheGroupMembershipHasEnded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -223,7 +223,7 @@ public sealed class GroupAccessTests
     }
 
     [Fact]
-    public async Task Should_Refuse_When_TheGruppenAdminschaftHasEnded()
+    public async Task Should_Refuse_When_TheGroupAdminPeriodHasEnded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -256,7 +256,7 @@ public sealed class GroupAccessTests
     }
 
     [Fact]
-    public async Task Should_Refuse_When_TheZugehoerigkeitStartsTomorrow()
+    public async Task Should_Refuse_When_TheGroupMembershipStartsTomorrow()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -287,7 +287,7 @@ public sealed class GroupAccessTests
     }
 
     [Fact]
-    public async Task Should_Refuse_When_TheGruppenAdminschaftStartsTomorrow()
+    public async Task Should_Refuse_When_TheGroupAdminPeriodStartsTomorrow()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -350,7 +350,7 @@ public sealed class GroupAccessTests
     }
 
     [Fact]
-    public async Task Should_Refuse_When_TheGruppeDoesNotExist()
+    public async Task Should_Refuse_When_TheGroupDoesNotExist()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

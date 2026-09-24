@@ -18,7 +18,7 @@ const CANCEL_LABEL = 'Abbrechen';
 const CLOSE_LABEL = 'Schließen';
 
 interface RestoreGroupDialogProps {
-  group: ManagedGroupSummary | null;
+  group: ManagedGroupSummary;
   open: boolean;
   onClose: () => void;
 }
@@ -26,11 +26,6 @@ interface RestoreGroupDialogProps {
 export const RestoreGroupDialog: FC<RestoreGroupDialogProps> = ({ group, open, onClose }) => {
   const mutation = useRestoreGroupMutation();
   const control = useGroupConfirm({ mutation, group, open, onDone: onClose });
-
-  if (group === null) {
-    return null;
-  }
-
   const today = formatIsoDay(toIsoDay(new Date()));
 
   return (

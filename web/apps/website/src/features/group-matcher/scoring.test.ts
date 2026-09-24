@@ -85,13 +85,13 @@ describe('agreementScore', () => {
 });
 
 describe('rankGroups', () => {
-  it('normalises every Gruppe against its own possible points', () => {
+  it('normalises every group against its own possible points', () => {
     expect(percentageOf({ stage: 'yes' }, 'alpha')).toBe(100);
     expect(percentageOf({ stage: 'yes' }, 'gamma')).toBe(50);
     expect(percentageOf({ stage: 'yes' }, 'beta')).toBe(0);
   });
 
-  it('weights a question by the importance the Gruppe gave it', () => {
+  it('weights a question by the importance the group gave it', () => {
     expect(percentageOf({ stage: 'yes', build: 'yes' }, 'beta')).toBe(67);
     expect(percentageOf({ stage: 'yes', build: 'yes' }, 'gamma')).toBe(17);
   });
@@ -114,7 +114,7 @@ describe('rankGroups', () => {
     }
   });
 
-  it('keeps tied Gruppen in roster order', () => {
+  it('keeps tied groups in roster order', () => {
     const outcome = rank({ build: 'yes' });
 
     expect(outcome.status).toBe('ranked');
@@ -124,7 +124,7 @@ describe('rankGroups', () => {
     }
   });
 
-  it('excludes a Gruppe whose filter rejects the answer and names the reason', () => {
+  it('excludes a group whose filter rejects the answer and names the reason', () => {
     const outcome = rank({ 'age-band': 'young', stage: 'yes' });
 
     expect(outcome.status).toBe('ranked');
@@ -159,7 +159,7 @@ describe('rankGroups', () => {
     expect(rank({ 'age-band': 'old' }).status).toBe('unanswered');
   });
 
-  it('reports an honest empty outcome when every Gruppe is filtered out', () => {
+  it('reports an honest empty outcome when every group is filtered out', () => {
     const narrow: GroupMatcher = {
       ...matcher,
       groups: [matcher.groups[1]].flatMap((group) => (group === undefined ? [] : [group])),
@@ -206,12 +206,12 @@ describe('the seeded questions', () => {
     return Math.max(...percentages) - Math.min(...percentages);
   };
 
-  it('spreads the ranking instead of clustering every Gruppe on one number', () => {
+  it('spreads the ranking instead of clustering every group on one number', () => {
     expect(spreadOf(answerAll('yes'))).toBeGreaterThanOrEqual(20);
     expect(spreadOf(answerAll('no'))).toBeGreaterThanOrEqual(20);
   });
 
-  it('puts a different Gruppe on top for two opposing answer profiles', () => {
+  it('puts a different group on top for two opposing answer profiles', () => {
     const onStage = rankGroups(SEEDED_GROUP_MATCHER, {
       'age-band': '18-plus',
       'confetti-hearing': 'yes',

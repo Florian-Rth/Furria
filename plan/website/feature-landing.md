@@ -16,14 +16,14 @@ block is planned in its own feature file.
 
 ## Scope / Slices
 
-Block order (top → bottom), from the "Destillat" mock:
+Block order (top → bottom), from the "Distilled" mock:
 
 1. Masthead nav — [Site-Shell](feature-site-shell.md)
 2. [Landing-Hero](feature-landing-hero.md) — asymmetric editorial hero
 3. [Ticker](feature-ticker.md)
-4. [Programm-Teaser](feature-events-teaser.md) — "DAS PROGRAMM"
-5. [Aktuelles](feature-news.md) — "AKTUELLES" news teaser, 3 newest Meldungen *(added P4)*
-6. [Mitmachen-Band](feature-mitmachen-band.md) — recruit CTA
+4. [Events teaser](feature-events-teaser.md) — "DAS PROGRAMM"
+5. [News](feature-news.md) — "AKTUELLES" news teaser, 3 newest news posts *(added P4)*
+6. [Join-in band](feature-join-in-band.md) — recruit CTA
 7. Footer — [Site-Shell](feature-site-shell.md)
 
 ## Decisions
@@ -36,14 +36,14 @@ Block order (top → bottom), from the "Destillat" mock:
   door — see [Preview-Gate](feature-preview-gate.md)). `features/landing/LandingPage` is now the
   real landing.
 - **Final block order (locked, mock order, no extras):** Masthead (shell) → [Landing-Hero](feature-landing-hero.md)
-  → [Ticker](feature-ticker.md) → [Programm-Teaser](feature-events-teaser.md) → [Mitmachen-Band](feature-mitmachen-band.md)
+  → [Ticker](feature-ticker.md) → [Events teaser](feature-events-teaser.md) → [Join-in band](feature-join-in-band.md)
   → Footer (shell). **No** news-teaser or gallery-strip block in v1 (news = P4, gallery = P5; a
   landing teaser for either can be reconsidered then). P1 delivers **Hero → Ticker** only, laid out
   so the P2 blocks slot in below the ticker with no restructuring.
 - **Revised (2026-07-25, P4): the news teaser is in.** The reconsideration the line above reserved
   for P4 happened, and the answer is yes — a news section the home page never links to is dead
-  weight. **New block order:** Hero → Ticker → Programm-Teaser → **News-Teaser** → Mitmachen-Band →
-  Footer. News sits *after* Programm (events/tickets remain the primary draw) and *before* the
+  weight. **New block order:** Hero → Ticker → Events teaser → **News-Teaser** → Join-in band →
+  Footer. News sits *after* the Events teaser (events/tickets remain the primary draw) and *before* the
   recruit band, so the page still closes on the CTA.
 - **How the teaser is wired (P4) — `LandingPage` gains one node slot.** The teaser needs news
   content, and **features must never import each other**, so `NewsTeaser` lives in `features/news`
@@ -164,22 +164,22 @@ grilling session. Details in [Landing-Hero](feature-landing-hero.md) Decisions (
 The page gains its final two blocks below the ticker — **still fully static, no backend**. Block
 detail + build slices live in each block's own feature file; the landing only owns the composition.
 
-11. **[done]** **Compose the P2 blocks.** Mount [Programm-Teaser](feature-events-teaser.md) then
-    [Mitmachen-Band](feature-mitmachen-band.md) in `LandingPage` below `LandingTicker`, inside a
+11. **[done]** **Compose the P2 blocks.** Mount [Events teaser](feature-events-teaser.md) then
+    [Join-in band](feature-join-in-band.md) in `LandingPage` below `LandingTicker`, inside a
     gutter-constrained container (`kkTokens.layout` gutters), for both breakpoints. Final order:
-    Hero → Ticker → Programm-Teaser → Mitmachen-Band → Footer. No restructuring of the P1 layout.
+    Hero → Ticker → Events teaser → Join-in band → Footer. No restructuring of the P1 layout.
     *Delivers (FE):* the full landing reads end-to-end at `/`, responsive, light + dark.
     *Verify:* `LandingPage.test.tsx` asserts all blocks present in order at both breakpoints;
     `pnpm build`/`typecheck` pass.
 
 ### P4 — News teaser slot
 
-The landing's only P4 change; the teaser itself is built in [Aktuelles](feature-news.md) slice 10.
+The landing's only P4 change; the teaser itself is built in [News](feature-news.md) slice 10.
 
 12. **[done]** **Add the news slot.** Give `LandingPage` one optional node slot rendered between
     `ProgramTeaser` and `MitmachenBand`, and have `routes/_site/index.tsx` pass `<NewsTeaser/>` from
     the news barrel. No other change to the shipped landing.
-    *Delivers (FE):* the home page surfaces the 3 newest Meldungen and links to `/news`.
+    *Delivers (FE):* the home page surfaces the 3 newest news posts and links to `/news`.
     *Verify:* no `features/landing` ↔ `features/news` import in either direction; `LandingPage`
     renders correctly with the slot omitted; block order asserted at both breakpoints;
     `pnpm build`/`typecheck` pass.

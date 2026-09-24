@@ -49,7 +49,7 @@ export const OlderSessionToggle: FC<OlderSessionToggleProps> = ({
       <Stack direction="row" sx={{ alignItems: 'center', gap: 2, width: '100%', minWidth: 0 }}>
         <Stack sx={{ flexGrow: 1, minWidth: 0, gap: 0.25, alignItems: 'flex-start' }}>
           <Typography
-            variant="h4"
+            variant="h3"
             component="span"
             data-kk-older-session-label
             sx={(theme) => ({

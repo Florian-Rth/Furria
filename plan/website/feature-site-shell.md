@@ -60,7 +60,7 @@ hang in — built first so everything else has a home.
 
 - **URLs and code English; visible text German** (CLAUDE.md, as written). P0 fix: rename
   `/impressum` → `/imprint`, `/datenschutz` → `/privacy` (labels stay "Impressum"/"Datenschutz").
-- IA: `/program` · `/club` (Verein) · `/news` · `/gallery` · `/join` · `/tickets` (+ `/apps`).
+- IA: `/program` · `/club` · `/news` · `/gallery` · `/join` · `/tickets` (+ `/apps`).
 - **No Login** in the public masthead — the website is public-only; member login lives in the
   Club-App (invite-only). A link out to Club-App is the only future option.
 
@@ -127,7 +127,7 @@ hang in — built first so everything else has a home.
   *card* inside the landing's `Container`, not a full-bleed band; folding it in would require a
   `fullBleed`-style prop, i.e. the boolean-flag API the frontend rules ban.
 - *As built (P4):* **the watermark stayed call-site-owned.** The two shipped watermarks genuinely
-  differ (Narrenruf: left, −12°, opacity 0.12, size 320; Recruit: centred, −8°, 0.08, 360), so rather
+  differ (carnival call: left, −12°, opacity 0.12, size 320; Recruit: centred, −8°, 0.08, 360), so rather
   than reconcile them behind a flag the root exposes a `watermark` **node slot** each band fills with
   its own component. Migration parity was verified by rendering inline copies of the shipped originals
   beside the migrated ones and diffing the emitted Emotion declarations per breakpoint.
@@ -142,7 +142,7 @@ hang in — built first so everything else has a home.
 
 - The club's e-mail address is **`CLUB_CONTACT_EMAIL` in `lib/club.ts`**, beside the other club
   facts. It was a hardcoded literal buried in `imprint-content.ts` **prose** (`'E-Mail: …'`), and the
-  [Galerie](feature-gallery.md)'s takedown `mailto:` would have been a second copy — an address that
+  [Gallery](feature-gallery.md)'s takedown `mailto:` would have been a second copy — an address that
   can drift between two pages, one of which is legally required to be correct.
 - **`privacy-content.ts` held a third copy**, which the P5 slice brief had not spotted — its §1
   *Verantwortlicher* sentence carried the same literal. Both legal documents now interpolate the
@@ -156,7 +156,7 @@ hang in — built first so everything else has a home.
 - `@furria/ui` exports the colour-scheme attribute name (`data-dark`) beside the
   `cssVariables: { colorSchemeSelector: 'data' }` config that defines it. Setting it on a subtree is
   the sanctioned way to **pin a surface to one scheme** while its parts keep reading ordinary palette
-  values — which is what the [Galerie](feature-gallery.md)'s photo viewer needs ("the dark surface *is*
+  values — which is what the [Gallery](feature-gallery.md)'s photo viewer needs ("the dark surface *is*
   the backdrop"). Do not hand-roll `kkTokens.color.dark.*` reads for this; they bake the mode into
   every leaf, which is exactly what review rejected in P5.
 - The attribute is **not inert** because it is an attribute selector, not a root selector: MUI
@@ -188,14 +188,14 @@ hang in — built first so everything else has a home.
 
 **Legal pages (P6 → P7):**
 
-- A third legal page **`/satzung`** is owed. P6's Antrag links it from inside the Einwilligung while
+- A third legal page **`/satzung`** is owed. P6's membership application links it from inside the consent while
   the route does not exist yet (accepting the branded 404, P4's archive-button precedent), so it
   ships as a **plain anchor** — a typed `Link` cannot compile against a missing route. Because the
   link sits inside a legal consent, shipping the page is a **P7 launch blocker**, not a polish task.
 
 ## Open Questions
 
-- Footer build-out — *resolved in P0:* built lean — broom lockup, tagline with the Narrenruf,
+- Footer build-out — *resolved in P0:* built lean — broom lockup, tagline with the carnival call,
   legal links, FB/IG/YT socials as `#` placeholders — on light token-pure chrome instead of the
   mock's fixed dark band. Real social URLs + further build-out are a later polish task.
 - Prerender mechanism — deferred out of P0 (see [SEO & Meta](feature-seo-meta.md)); the routing

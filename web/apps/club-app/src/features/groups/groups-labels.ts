@@ -1,65 +1,110 @@
 import type { KkFilterOption } from '@furria/ui';
-import type { MyGroupSummary } from '@/features/group-hub';
 import type { PersonRef } from '@/lib/api/schemas';
-import { toGroupSubline } from '@/lib/group-sections';
 import type { StateChip } from '@/lib/state-chips';
 import { GROUP_ADMIN_CHIP, MY_GROUP_CHIP, toRecruitingChip } from '@/lib/state-chips';
 import { normalizeForSearch } from '@/lib/text';
-import type { GroupAdmin, GroupDetails, GroupSummary } from './schemas';
+import type { GroupSummary } from './schemas';
 
-const GROUP_ID_PATTERN = /^[1-9]\d*$/;
-const GROUP_TITLE_FALLBACK = 'Gruppe';
+export const MY_GROUPS_SECTION_TITLE = 'Meine Gruppen';
+export const OTHER_GROUPS_SECTION_TITLE = 'Alle Gruppen';
 
-export interface GroupStanding {
-  isMember: boolean;
-  isAdmin: boolean;
+const MY_GROUPS_SECTION_ID = 'mine';
+const OTHER_GROUPS_SECTION_ID = 'rest';
+const ONE_LIST_SECTION_ID = 'all';
+
+export interface GroupsSection {
+  readonly id: string;
+  readonly title: string | null;
+  readonly groups: readonly GroupSummary[];
 }
 
-export const toGroupStandings = (groups: readonly MyGroupSummary[]): Map<number, GroupStanding> =>
-  new Map(
-    groups.map((group) => [group.groupId, { isMember: group.isMember, isAdmin: group.isAdmin }]),
-  );
+const isMyGroup = (group: GroupSummary): boolean => group.viewerIsMember || group.viewerIsAdmin;
 
-export const toGroupStandingChips = (standing: GroupStanding | undefined): StateChip[] => {
-  if (standing === undefined) {
+export const toGroupsSections = (groups: readonly GroupSummary[]): readonly GroupsSection[] => {
+  if (groups.length === 0) {
     return [];
   }
 
+  const mine = groups.filter(isMyGroup);
+
+  if (mine.length === 0) {
+    return [{ id: ONE_LIST_SECTION_ID, title: null, groups }];
+  }
+  if (mine.length === groups.length) {
+    return [{ id: MY_GROUPS_SECTION_ID, title: MY_GROUPS_SECTION_TITLE, groups }];
+  }
+
+  return [
+    { id: MY_GROUPS_SECTION_ID, title: MY_GROUPS_SECTION_TITLE, groups: mine },
+    {
+      id: OTHER_GROUPS_SECTION_ID,
+      title: OTHER_GROUPS_SECTION_TITLE,
+      groups: groups.filter((group) => !isMyGroup(group)),
+    },
+  ];
+};
+
+export const toGroupStandingChips = (group: GroupSummary): StateChip[] => {
   const chips: StateChip[] = [];
 
-  if (standing.isMember) {
+  if (group.viewerIsMember) {
     chips.push(MY_GROUP_CHIP);
   }
-  if (standing.isAdmin) {
+  if (group.viewerIsAdmin) {
     chips.push(GROUP_ADMIN_CHIP);
   }
 
   return chips;
 };
 
-export type GroupCareIntent = 'care' | 'visit';
+export const toGroupCardChips = (group: GroupSummary): StateChip[] => {
+  const chips: StateChip[] = [];
 
-export const GROUP_CARE_LABELS: Record<GroupCareIntent, string> = {
-  care: 'Gruppe pflegen',
-  visit: 'Zur Gruppe',
+  if (group.isRecruiting) {
+    chips.push(toRecruitingChip(true));
+  }
+  if (group.viewerIsAdmin) {
+    chips.push(GROUP_ADMIN_CHIP);
+  }
+
+  return chips;
 };
 
-export const toGroupCareIntent = (standing: GroupStanding | undefined): GroupCareIntent | null => {
-  if (standing === undefined) {
+export const toGroupKindLabel = (groupKindName: string | null): string | null => {
+  if (groupKindName === null) {
     return null;
   }
-  if (standing.isAdmin) {
-    return 'care';
-  }
-  if (standing.isMember) {
-    return 'visit';
-  }
 
-  return null;
+  const named = groupKindName.trim();
+
+  return named === '' ? null : named;
 };
 
-export const toGroupId = (raw: string): number | null =>
-  GROUP_ID_PATTERN.test(raw) ? Number(raw) : null;
+const LED_BY_PREFIX = 'Geleitet von ';
+const LED_BY_PAIR = ' und ';
+const NO_LEAD_LINE = 'Noch ohne Gruppen-Admin';
+const FURTHER_LEADS_SUFFIX = ' weitere';
+const NAMED_LEAD = 1;
+
+const toFullName = (person: PersonRef): string => `${person.firstName} ${person.lastName}`;
+
+export const toGroupLeadLine = (admins: readonly PersonRef[]): string => {
+  const [first, second, ...further] = admins;
+
+  if (first === undefined) {
+    return NO_LEAD_LINE;
+  }
+  if (second === undefined) {
+    return `${LED_BY_PREFIX}${toFullName(first)}`;
+  }
+  if (further.length === 0) {
+    return `${LED_BY_PREFIX}${toFullName(first)}${LED_BY_PAIR}${toFullName(second)}`;
+  }
+
+  const rest = further.length + NAMED_LEAD;
+
+  return `${LED_BY_PREFIX}${toFullName(first)}${LED_BY_PAIR}${rest}${FURTHER_LEADS_SUFFIX}`;
+};
 
 export const toPersonUnitLabel = (count: number): string => (count === 1 ? 'Person' : 'Personen');
 
@@ -92,7 +137,7 @@ export const toContactPersonName = (segment: RecruitingContactPersonSegment): st
   `${segment.firstName} ${segment.lastName}`;
 
 const CONTACT_OPENING = 'Melde dich bei ';
-const NO_CONTACT_LINE = 'Diese Gruppe sucht noch eine Ansprechperson.';
+const NO_CONTACT_LINE = 'Diese Gruppe hat noch keine Ansprechperson.';
 
 export const toRecruitingContactSegments = (
   admins: readonly PersonRef[],
@@ -118,33 +163,36 @@ export const toRecruitingContactSegments = (
   ];
 };
 
-export const toOpenableAdminIds = (
-  admins: readonly GroupAdmin[],
-  viewerIsAffiliated: boolean,
-): ReadonlySet<number> => {
-  if (!viewerIsAffiliated) {
-    return new Set<number>();
-  }
-
-  return new Set(admins.filter((admin) => admin.isAffiliated).map((admin) => admin.personId));
-};
-
 const toSegmentText = (segment: RecruitingContactSegment): string =>
   segment.kind === 'text' ? segment.text : toContactPersonName(segment);
 
 export const toRecruitingContactLine = (admins: readonly PersonRef[]): string =>
   toRecruitingContactSegments(admins).map(toSegmentText).join('');
 
+export const toGroupContactLine = (group: GroupSummary): string =>
+  group.isRecruiting ? toRecruitingContactLine(group.admins) : toGroupLeadLine(group.admins);
+
+const CARD_LABEL_SUFFIX = ' – Kurzansicht öffnen';
+
+export const toGroupCardLabel = (name: string): string => `${name}${CARD_LABEL_SUFFIX}`;
+
 export const GROUP_PEEK_CLOSE_LABEL = 'Kurzansicht schließen';
 export const GROUP_PEEK_OPEN_LABEL = 'Ganze Seite öffnen';
 export const toGroupSizeLine = (count: number): string => `${count} ${toPersonUnitLabel(count)}`;
+
+const ONE_GROUP_LABEL = '1 Gruppe';
+const GROUP_UNIT_LABEL = 'Gruppen';
+const ONE_GROUP = 1;
+
+export const toGroupCountLabel = (count: number): string =>
+  count === ONE_GROUP ? ONE_GROUP_LABEL : `${count} ${GROUP_UNIT_LABEL}`;
 
 export const ALL_GROUPS_FILTER_ID = 'all';
 export const RECRUITING_FILTER_ID = 'recruiting';
 export const SETTLED_FILTER_ID = 'settled';
 
 const ALL_GROUPS_LABEL = 'Alle';
-const ALL_GROUPS_SUGGESTION = 'Wähle „Alle“, um wieder alle zu sehen.';
+const ALL_GROUPS_SUGGESTION = 'Wähle „Alle“, um alle anzuzeigen.';
 
 const isRecruiting = (group: GroupSummary): boolean => group.isRecruiting;
 
@@ -192,21 +240,21 @@ export const filterGroups = (
 };
 
 const NO_GROUP_MATCH_LINES: Record<string, string> = {
-  [RECRUITING_FILTER_ID]: 'Gerade sucht keine Gruppe Verstärkung.',
-  [SETTLED_FILTER_ID]: 'Gerade sucht jede Gruppe im Verzeichnis Verstärkung.',
+  [RECRUITING_FILTER_ID]: 'Keine Gruppe sucht Verstärkung.',
+  [SETTLED_FILTER_ID]: 'Alle Gruppen suchen Verstärkung.',
 };
 
 export const toNoGroupMatchLine = (query: string, status: string): string => {
   const needle = query.trim();
 
   if (needle !== '') {
-    return `Kein Gruppenname passt zu „${needle}“. Vielleicht anders geschrieben?`;
+    return `Keine Gruppe passt zu „${needle}“.`;
   }
 
   const statusLine = NO_GROUP_MATCH_LINES[status];
 
   if (statusLine === undefined) {
-    return 'Im Verzeichnis steht gerade keine Gruppe.';
+    return 'Es sind noch keine Gruppen angelegt.';
   }
 
   return `${statusLine} ${ALL_GROUPS_SUGGESTION}`;
@@ -219,34 +267,13 @@ export const toGroupsIntroSentence = (total: number, recruiting: number): string
     total === 1 ? 'Eine Gruppe trägt die Session.' : `${total} Gruppen tragen die Session.`;
 
   if (recruiting === 0) {
-    return `${groups} Gerade sucht keine davon Verstärkung.`;
+    return `${groups} Keine davon sucht Verstärkung.`;
   }
   if (recruiting === 1) {
-    return `${groups} Eine davon sucht gerade Verstärkung.`;
+    return `${groups} Eine davon sucht Verstärkung.`;
   }
 
-  return `${groups} ${recruiting} davon suchen gerade Verstärkung.`;
+  return `${groups} ${recruiting} davon suchen Verstärkung.`;
 };
 
-export const toGroupsLead = (groups: readonly GroupSummary[]): string =>
-  toGroupsIntroSentence(groups.length, groups.filter((group) => group.isRecruiting).length);
-
-export interface GroupHeadline {
-  title: string;
-  openness: StateChip | null;
-  memberCount: string | null;
-}
-
-export const GROUP_EYEBROW = 'Gruppe';
-
-export const toGroupHeadline = (group: GroupDetails | undefined): GroupHeadline => {
-  if (group === undefined) {
-    return { title: GROUP_TITLE_FALLBACK, openness: null, memberCount: null };
-  }
-
-  return {
-    title: group.name,
-    openness: toRecruitingChip(group.isRecruiting),
-    memberCount: toGroupSubline(group.members.length, group.admins.length),
-  };
-};
+export const GROUPS_LEAD = 'Alle Gruppen des Vereins und wer Verstärkung sucht.';

@@ -35,7 +35,7 @@ export const EventsFaqItem: FC<EventsFaqItemProps> = ({ entry }) => {
         expandIcon={<ExpandMoreIcon sx={{ color: 'primary.main' }} />}
         sx={{ py: 1 }}
       >
-        <Typography variant="h5" component="span">
+        <Typography variant="h3" component="span">
           {entry.question}
         </Typography>
       </AccordionSummary>

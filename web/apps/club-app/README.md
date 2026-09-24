@@ -1,7 +1,7 @@
 # @furria/club-app
 
-The internal member app of the Furrscher Carnevals Club e.V.: member master data, roles (Ämter),
-groups, fees and payments, event planning, live show control, drinks kitty, shop, gallery and key
+The internal member app of the Furrscher Carnevals Club e.V.: member master data, roles, groups,
+fees and payments, event planning, live show control, drinks kitty, shop, gallery and key
 registry. React 19 (Compiler on) + TypeScript + Vite + TanStack Router/Query, themed exclusively
 via [`@furria/ui`](../../packages/ui), later wrapped in **Capacitor** for native push, iOS live
 activities and home-screen widgets.

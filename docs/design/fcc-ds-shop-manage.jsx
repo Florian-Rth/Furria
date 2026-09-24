@@ -1,7 +1,7 @@
-// fcc-ds-shop-manage.jsx — Klamotten-Shop · Kleidung-Amt (/shop/manage).
-// The magic: a Sammelbestellung auto-consolidates every member order into ONE
-// supplier list (X× Gr. L …) to export, then Ausgabe-Tracking (abhaken wer seins
-// hat) + wer bar offen ist. Reads window.SHOP. Exports PageShopManage + MShopManage.
+// fcc-ds-shop-manage.jsx — Clothing shop · Clothing office (/shop/manage).
+// The magic: a bulk order auto-consolidates every member order into ONE
+// supplier list (X× size L …) to export, then handout tracking (checking off who
+// has theirs) + who still owes cash. Reads window.SHOP. Exports PageShopManage + MShopManage.
 
 (function () {
   const { T, Ic, Card, Chip, Btn, Title, Eyebrow, Avatar } = window;

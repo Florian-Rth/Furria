@@ -17,8 +17,8 @@ export const OrderConfirmationLoading: FC = () => (
       <LinearProgress />
     </Stack>
     <Stack sx={{ gap: 1 }}>
-      <Skeleton variant="text" sx={{ fontSize: { xs: '2rem', md: '3rem' } }} />
-      <Skeleton variant="text" sx={{ fontSize: { xs: '2rem', md: '3rem' }, width: '60%' }} />
+      <Skeleton variant="text" sx={{ typography: 'display' }} />
+      <Skeleton variant="text" sx={{ typography: 'display', width: '60%' }} />
     </Stack>
     <Skeleton variant="rounded" sx={{ height: '14rem', maxWidth: '48rem' }} />
   </Stack>

@@ -61,7 +61,7 @@ function MHeader({ page, title, sub, role, go }) {
   );
 }
 
-// ── ÜBERSICHT ─────────────────────────────────────────────────────────────
+// ── OVERVIEW ──────────────────────────────────────────────────────────────
 function MUebersicht({ go }) {
   const qa = (icon, label, target) => (
     <button onClick={() => go(target)} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 7, alignItems: 'center', background: TM.panel, border: `1.5px solid ${TM.line}`, borderRadius: 12, padding: '13px 6px', cursor: 'pointer', fontFamily: TM.font }}>

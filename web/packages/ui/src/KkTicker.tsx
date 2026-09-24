@@ -2,7 +2,10 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import { keyframes } from '@mui/material/styles';
 import type { FC, ReactNode } from 'react';
+import { responsiveTypography } from './internal/responsive-typography';
 import { kkTokens } from './tokens';
+
+const SEGMENT_TYPOGRAPHY = { xs: 'h4', desktop: 'h3' } as const;
 
 const scroll = keyframes`
   from {
@@ -35,16 +38,16 @@ export const KkTicker: FC<KkTickerProps> = ({ content, speedSeconds = 30 }) => (
           component="span"
           data-kk-ticker-segment
           aria-hidden={segment === 1 || undefined}
-          sx={{
+          sx={(theme) => ({
             display: 'inline-flex',
             alignItems: 'center',
             flexShrink: 0,
             whiteSpace: 'nowrap',
-            fontFamily: kkTokens.font.display,
-            fontSize: { xs: '0.9375rem', md: '1.25rem' },
-            letterSpacing: kkTokens.type.tracking.label,
             color: 'primary.contrastText',
-          }}
+            ...responsiveTypography(theme, SEGMENT_TYPOGRAPHY, {
+              letterSpacing: kkTokens.type.tracking.label,
+            }),
+          })}
         >
           {content}
         </Box>

@@ -1,3 +1,5 @@
+using Furria.Core.Groups;
+
 namespace Furria.Application.Groups;
 
 public sealed record GroupSummary
@@ -10,9 +12,19 @@ public sealed record GroupSummary
 
     public required bool IsRecruiting { get; init; }
 
+    public required string? GroupKindName { get; init; }
+
+    public required int? FoundedYear { get; init; }
+
+    public required GroupTone? Tone { get; init; }
+
     public required int MemberCount { get; init; }
 
     public required IReadOnlyList<PersonReference> MemberPreview { get; init; }
 
     public required IReadOnlyList<PersonReference> Admins { get; init; }
+
+    public required bool ViewerIsMember { get; init; }
+
+    public required bool ViewerIsAdmin { get; init; }
 }

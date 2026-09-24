@@ -13,12 +13,12 @@ namespace Furria.Api.Tests.Calendar;
 public sealed class DeleteCalendarEntryByIdTests
 {
     private const int UnknownEntryId = 999_999;
-    private const string Vereinssitzung = "Vereinssitzung";
-    private const string GardeTraining = "Training der Tanzgarde";
+    private const string ClubMeeting = "Vereinssitzung";
+    private const string DanceGuardTraining = "Training der Tanzgarde";
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
 
-    private static readonly DateTimeOffset SitzungStart = new(2027, 1, 20, 19, 0, 0, TimeSpan.Zero);
+    private static readonly DateTimeOffset MeetingStart = new(2027, 1, 20, 19, 0, 0, TimeSpan.Zero);
     private static readonly DateTimeOffset TrainingStart = new(
         2027,
         1,
@@ -37,11 +37,11 @@ public sealed class DeleteCalendarEntryByIdTests
     }
 
     [Fact]
-    public async Task Should_TakeTheZusagenWithIt_When_TheEigentuemerVerwirftDenEintrag()
+    public async Task Should_TakeTheResponsesWithIt_When_TheOwnerDeletesTheEntry()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var entryId = ctx.Club.CalendarEntries.IdOf("vereinssitzung");
+        var entryId = ctx.Club.CalendarEntries.IdOf("club-meeting");
         var chrisId = ctx.Identity.People.IdOf("chris");
 
         var client = await ctx.Identity.ClientForAsync("ilka", ct);
@@ -54,12 +54,12 @@ public sealed class DeleteCalendarEntryByIdTests
             .AttendanceResponsesFor(entryId)
             .ToCarryNoAnswerFrom(chrisId)
             .CalendarEntry(ctx.Club.CalendarEntries.IdOf("garde-training"))
-            .ToHaveTitle(GardeTraining)
+            .ToHaveTitle(DanceGuardTraining)
             .AssertAsync(ct);
     }
 
     [Fact]
-    public async Task Should_LetTheGruppenAdminVerwerfen_When_IhreGruppeTheEintragBesitzt()
+    public async Task Should_LetTheGroupAdminDelete_When_HerGroupOwnsTheEntry()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
@@ -73,7 +73,7 @@ public sealed class DeleteCalendarEntryByIdTests
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotOwnTheEintrag()
+    public async Task Should_ReturnForbidden_When_TheCallerDoesNotOwnTheEntry()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
@@ -83,11 +83,11 @@ public sealed class DeleteCalendarEntryByIdTests
         var response = await DiscardAsync(client, entryId);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx.Expected.CalendarEntry(entryId).ToHaveTitle(GardeTraining).AssertAsync(ct);
+        await ctx.Expected.CalendarEntry(entryId).ToHaveTitle(DanceGuardTraining).AssertAsync(ct);
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheEintragIsUnknown()
+    public async Task Should_ReturnNotFound_When_TheEntryIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
@@ -138,22 +138,22 @@ public sealed class DeleteCalendarEntryByIdTests
                     )
                     .Club(club =>
                         club.AddCalendarEntry(
-                                "vereinssitzung",
-                                Vereinssitzung,
-                                SitzungStart,
+                                "club-meeting",
+                                ClubMeeting,
+                                MeetingStart,
                                 asksForResponse: true
                             )
                             .AddCalendarEntry(
                                 "garde-training",
-                                GardeTraining,
+                                DanceGuardTraining,
                                 TrainingStart,
                                 kind: CalendarEntryKind.Training,
                                 visibility: CalendarEntryVisibility.Club,
                                 ownerGroupAlias: "tanzgarde"
                             )
                             .AddAttendanceResponse(
-                                "chris-sagt-zu",
-                                "vereinssitzung",
+                                "chris-says-yes",
+                                "club-meeting",
                                 "chris",
                                 AttendanceAnswer.Yes
                             )

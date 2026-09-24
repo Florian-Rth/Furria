@@ -2,7 +2,7 @@ import { KkPanel, KkPanelSection, KkPanelStack, KkSkeletonBlock } from '@furria/
 import Grid from '@mui/material/Grid';
 import type { FC } from 'react';
 import { AppSkeletonRegion } from '@/features/session';
-import { PERSON_SECTION_TITLES } from '../manage-persons-labels';
+import { GROUPS_POINTER, PERSON_SECTION_TITLES, ROLES_POINTER } from '../manage-persons-labels';
 
 const WIDE_LINES = 4;
 const NARROW_LINES = 3;
@@ -33,7 +33,12 @@ export const PersonEditSkeleton: FC = () => (
               <KkSkeletonBlock lines={WIDE_LINES} />
             </KkPanel>
           </KkPanelSection>
-          <KkPanelSection title={PERSON_SECTION_TITLES.groups}>
+          <KkPanelSection title={PERSON_SECTION_TITLES.groups} description={GROUPS_POINTER}>
+            <KkPanel variant="block">
+              <KkSkeletonBlock lines={NARROW_LINES} />
+            </KkPanel>
+          </KkPanelSection>
+          <KkPanelSection title={PERSON_SECTION_TITLES.roles} description={ROLES_POINTER}>
             <KkPanel variant="block">
               <KkSkeletonBlock lines={NARROW_LINES} />
             </KkPanel>

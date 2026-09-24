@@ -13,9 +13,7 @@ export const KkSheetTitle: FC<KkSheetTitleProps> = ({ id, children }) => (
     data-kk-sheet-title
     sx={{
       flexShrink: 0,
-      fontFamily: kkTokens.font.display,
-      fontSize: kkTokens.type.blockTitle,
-      fontWeight: kkTokens.font.displayWeight,
+      typography: 'h3',
       letterSpacing: kkTokens.type.tracking.display,
       lineHeight: 1.2,
       color: 'text.primary',

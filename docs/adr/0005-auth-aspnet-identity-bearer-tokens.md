@@ -9,17 +9,17 @@ sessions are carried as **bearer access tokens with refresh tokens**, not cookie
 **ASP.NET Identity is the user store — and nothing more.** It owns what should never be
 hand-rolled: password hashing, lockout, email confirmation, reset tokens, and (later) 2FA.
 It does **authentication only**. Authorization lives entirely in the domain rights matrix
-(`role`, `permission`, `role_permission`, `role_assignment` — the Ämter/Berechtigungen model in
+(`role`, `permission`, `role_permission`, `role_assignment` — the roles/permissions model in
 `CONTEXT.md`), because Identity's flat role strings cannot express "Trainer, scoped to exactly
-one Gruppe". `AddRoles<>()` is never wired up; Identity claims never carry permissions.
+one group". `AddRoles<>()` is never wired up; Identity claims never carry permissions.
 
 **The Identity user entity *is* the Account.** A custom user class (extending `IdentityUser`)
 with a required, unique `PersonId` replaces the hand-designed `account` table in
 `docs/design/FCC-Schema.txt` — Identity brings its own password hash, lockout and security-stamp
 columns, and maintaining a parallel table would duplicate them. The domain rule is unchanged:
-Account is optional and 1:1 to Person, master data stays on `person`, **Mitglied ≠ Account**.
+Account is optional and 1:1 to Person, master data stays on `person`, **Member ≠ Account**.
 
-**Email is the login identifier. There are no usernames.** Self-registering Karten buyers
+**Email is the login identifier. There are no usernames.** Self-registering ticket buyers
 (decided 2026-08-18) will not invent usernames, and two identifiers mean two recovery flows.
 The DBML's `account.username` column is dropped; `person.email` stays contact data, the
 Account's email is the credential — they may differ, and the Account email is the one that is
@@ -51,9 +51,9 @@ be put in front of the same Identity store; nothing in this decision blocks that
 - The DBML `account` table and its `account_status` enum in `docs/design/FCC-Schema.txt` are
   **superseded** by the Identity schema; a manual "disabled by the club" switch is a domain flag
   on the Account entity, distinct from Identity's automatic lockout.
-- Both Account entry paths — Einladung (members and non-member Gruppen people) and public
-  self-registration (Karten buyers) — create users through the same Identity store; the open
-  **Gast-Registrierung & Dubletten** question (`CONTEXT.md`) is unaffected by this ADR and
+- Both Account entry paths — invitation (members and non-member group people) and public
+  self-registration (ticket buyers) — create users through the same Identity store; the open
+  **guest registration & duplicates** question (`CONTEXT.md`) is unaffected by this ADR and
   must be decided before self-registration ships.
 
 ## Amendment (2026-09-04, CA-P0 shaping)

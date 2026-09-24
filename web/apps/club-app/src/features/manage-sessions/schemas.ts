@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { AppSearchSchema } from '@/features/session';
 
 export const SESSION_MOTTO_MAX_LENGTH = 160;
 export const SESSION_LOGO_MAX_LENGTH = 200_000;
@@ -24,18 +25,29 @@ export type SessionRecordsResponse = z.infer<typeof SessionRecordsResponseSchema
 export const CreatedSessionRecordSchema = z.object({ sessionId: z.number().int() });
 export type CreatedSessionRecord = z.infer<typeof CreatedSessionRecordSchema>;
 
+export const SessionNewSearchSchema = AppSearchSchema.extend({
+  startYear: z
+    .number()
+    .int()
+    .min(EARLIEST_SESSION_YEAR)
+    .max(LATEST_SESSION_YEAR)
+    .optional()
+    .catch(undefined),
+});
+export type SessionNewSearch = z.infer<typeof SessionNewSearchSchema>;
+
 export const SessionRecordFormSchema = z.object({
   startYear: z
     .number()
     .int()
-    .min(EARLIEST_SESSION_YEAR, 'So weit zurück reicht der Verein nicht.')
-    .max(LATEST_SESSION_YEAR, 'So weit voraus wird nicht eingetragen.')
+    .min(EARLIEST_SESSION_YEAR, 'Dieses Jahr liegt zu weit zurück.')
+    .max(LATEST_SESSION_YEAR, 'Dieses Jahr liegt zu weit in der Zukunft.')
     .nullable()
-    .refine((year): boolean => year !== null, 'Sag, um welche Session es geht.'),
+    .refine((year): boolean => year !== null, 'Die Session fehlt.'),
   number: z
     .string()
     .trim()
-    .regex(SESSION_NUMBER_PATTERN, 'Die Nº ist eine Zahl — oder bleibt leer.'),
+    .regex(SESSION_NUMBER_PATTERN, 'Die Sessionsnummer muss eine Zahl sein.'),
   motto: z
     .string()
     .trim()

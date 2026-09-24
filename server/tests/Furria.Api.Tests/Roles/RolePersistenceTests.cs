@@ -21,7 +21,7 @@ public sealed class RolePersistenceTests
     }
 
     [Fact]
-    public async Task Should_StoreItsBerechtigungen_When_ARolleIsSeeded()
+    public async Task Should_StoreItsPermissions_When_ARoleIsSeeded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -46,7 +46,7 @@ public sealed class RolePersistenceTests
     }
 
     [Fact]
-    public async Task Should_KeepBothInhaberschaften_When_TheEarlierOneWasHandedOver()
+    public async Task Should_KeepBothRoleHoldings_When_TheEarlierOneWasHandedOver()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -77,7 +77,7 @@ public sealed class RolePersistenceTests
     }
 
     [Fact]
-    public async Task Should_RejectASecondOpenInhaberschaft_When_OneIsAlreadyOpen()
+    public async Task Should_RejectASecondOpenRoleHolding_When_OneIsAlreadyOpen()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -112,7 +112,7 @@ public sealed class RolePersistenceTests
     }
 
     [Fact]
-    public async Task Should_RejectASecondBerechtigung_When_TheRolleAlreadyCarriesThatKey()
+    public async Task Should_RejectASecondPermission_When_TheRoleAlreadyCarriesThatKey()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -137,7 +137,7 @@ public sealed class RolePersistenceTests
     }
 
     [Fact]
-    public async Task Should_RejectAnInhaberschaft_When_TheEndPrecedesTheStart()
+    public async Task Should_RejectAnRoleHolding_When_TheEndPrecedesTheStart()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -167,7 +167,7 @@ public sealed class RolePersistenceTests
     }
 
     [Fact]
-    public async Task Should_RejectTheName_When_AnActiveRolleUsesItInAnotherCase()
+    public async Task Should_RejectTheName_When_AnActiveRoleUsesItInAnotherCase()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -189,7 +189,7 @@ public sealed class RolePersistenceTests
     }
 
     [Fact]
-    public async Task Should_AcceptTheName_When_TheRolleThatUsedItIsArchived()
+    public async Task Should_AcceptTheName_When_TheRoleThatUsedItIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -216,7 +216,7 @@ public sealed class RolePersistenceTests
     }
 
     [Fact]
-    public async Task Should_StampUpdatedAt_When_ARolleIsEdited()
+    public async Task Should_StampUpdatedAt_When_ARoleIsEdited()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

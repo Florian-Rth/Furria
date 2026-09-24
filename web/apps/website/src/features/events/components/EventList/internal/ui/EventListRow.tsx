@@ -108,11 +108,11 @@ export const EventListRow: FC<EventListRowProps> = ({ event, now, highlighted })
         <Stack sx={{ gap: 0.75, minWidth: 0, flexGrow: 1, flexBasis: '12rem' }}>
           <Stack direction="row" sx={{ gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
             <Typography
-              variant="h4"
+              variant="h3"
               component="h3"
               data-kk-event-row-title
               sx={{
-                fontSize: { xs: '1.25rem', md: '1.875rem' },
+                typography: { xs: 'h3', md: 'h2' },
                 lineHeight: 1.05,
                 transition: theme.transitions.create(['color'], {
                   duration: theme.transitions.duration.shortest,

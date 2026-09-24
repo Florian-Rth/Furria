@@ -18,7 +18,7 @@ public sealed class VenuePersistenceTests
     }
 
     [Fact]
-    public async Task Should_KeepNameAndOrder_When_AnOrtIsRecorded()
+    public async Task Should_KeepNameAndOrder_When_AVenueIsRecorded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -35,7 +35,7 @@ public sealed class VenuePersistenceTests
     }
 
     [Fact]
-    public async Task Should_KeepTheAddressAndTheHinweis_When_AnOrtIsWrittenDown()
+    public async Task Should_KeepTheAddressAndTheHint_When_AVenueIsWrittenDown()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -64,7 +64,7 @@ public sealed class VenuePersistenceTests
     }
 
     [Fact]
-    public async Task Should_KeepTheOrt_When_ItIsArchived()
+    public async Task Should_KeepTheVenue_When_ItIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -84,7 +84,7 @@ public sealed class VenuePersistenceTests
     }
 
     [Fact]
-    public async Task Should_RejectTheSecondRecord_When_TheOrtIsAlreadyWrittenDown()
+    public async Task Should_RejectTheSecondRecord_When_TheVenueIsAlreadyWrittenDown()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -92,7 +92,7 @@ public sealed class VenuePersistenceTests
             _fixture.BuildAsync(
                 builder =>
                     builder.Club(club =>
-                        club.AddVenue("aus-dem-protokoll", "Bühnenhaus")
+                        club.AddVenue("from-the-minutes", "Bühnenhaus")
                             .AddVenue("vom-schluesselbrett", "Bühnenhaus", 2)
                     ),
                 ct

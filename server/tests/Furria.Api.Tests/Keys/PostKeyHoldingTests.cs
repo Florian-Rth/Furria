@@ -30,7 +30,7 @@ public sealed class PostKeyHoldingTests
     }
 
     [Fact]
-    public async Task Should_RecordAnOffenenSchluessel_When_DerSchluesselAusgegebenWird()
+    public async Task Should_RecordAnOpenKey_When_TheKeyIsHandedOut()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -67,7 +67,7 @@ public sealed class PostKeyHoldingTests
     }
 
     [Fact]
-    public async Task Should_ReturnValidationNamingDenOrt_When_DerOrtArchiviertIst()
+    public async Task Should_ReturnValidationNamingTheVenue_When_TheVenueIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -104,7 +104,7 @@ public sealed class PostKeyHoldingTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_DiePersonFuerDiesenOrtSchonEinenHat()
+    public async Task Should_ReturnConflict_When_ThePersonAlreadyHoldsOneForThisVenue()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -141,7 +141,7 @@ public sealed class PostKeyHoldingTests
     }
 
     [Fact]
-    public async Task Should_RecordAnotherSchluessel_When_DerVorigeZurueckgenommenWurde()
+    public async Task Should_RecordAnotherKey_When_ThePreviousOneWasReturned()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -187,7 +187,7 @@ public sealed class PostKeyHoldingTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_DenOrtNichtGibt()
+    public async Task Should_ReturnNotFound_When_TheVenueDoesNotExist()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -213,7 +213,7 @@ public sealed class PostKeyHoldingTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_DiePersonNichtImRegisterSteht()
+    public async Task Should_ReturnNotFound_When_ThePersonIsNotInTheRegister()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -239,7 +239,7 @@ public sealed class PostKeyHoldingTests
     }
 
     [Fact]
-    public async Task Should_FindDiePersonUndGebeIhrDenSchluessel_When_TheCallerOnlyHoldsKeyHoldingsManage()
+    public async Task Should_FindThePersonAndGiveHerTheKey_When_TheCallerOnlyHoldsKeyHoldingsManage()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

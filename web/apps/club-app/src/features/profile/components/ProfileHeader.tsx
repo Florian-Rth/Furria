@@ -25,10 +25,8 @@ export const ProfileHeader: FC<ProfileHeaderProps> = ({ me }) => {
         <KkAvatar initials={headline.initials} size="large" />
       </KkScreenHeader.Visual>
       <KkScreenHeader.Text>
-        <KkEyebrow tone="accent" size="small">
-          {PROFILE_EYEBROW}
-        </KkEyebrow>
-        <KkScreenHeader.Title transform="none">{headline.title}</KkScreenHeader.Title>
+        <KkEyebrow tone="accent">{PROFILE_EYEBROW}</KkEyebrow>
+        <KkScreenHeader.Title>{headline.title}</KkScreenHeader.Title>
         {stateRow}
       </KkScreenHeader.Text>
     </KkScreenHeader>

@@ -1,7 +1,9 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Auth;
+using Furria.Infrastructure.Identity;
 using Furria.Tests.Common.Fixtures;
+using Serilog.Events;
 using Xunit;
 
 namespace Furria.Api.Tests.Auth;
@@ -9,6 +11,11 @@ namespace Furria.Api.Tests.Auth;
 [Collection("Api")]
 public sealed class LoginTests
 {
+    private const string LoginSucceeded = "Login succeeded for account {AccountId}";
+    private const string LoginFailed = "Login failed for {Email}: {LoginFailureReason}";
+    private const string AccountLockedOut = "Account {AccountId} locked out until {LockoutEnd}";
+    private const int AttemptsUntilLockout = 5;
+
     private readonly ApiTestFixture _fixture;
 
     public LoginTests(ApiTestFixture fixture)
@@ -117,6 +124,91 @@ public sealed class LoginTests
         var (response, _) = await Post("");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_ReportTheSignedInAccount_When_LoginSucceeds()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => identity.AddAccount("alice")),
+            ct
+        );
+        var mark = _fixture.Logs.Mark();
+
+        await Post(ctx.Identity.EmailOf("alice"));
+
+        var written = Assert.Single(_fixture.Logs.Written(LoginSucceeded, mark));
+        Assert.Equal(LogEventLevel.Information, written.Level);
+        Assert.Equal(ctx.Identity.Accounts.IdOf("alice"), written.ScalarOf("AccountId"));
+    }
+
+    [Fact]
+    public async Task Should_ReportAWrongPassword_When_ThePasswordIsWrong()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => identity.AddAccount("alice")),
+            ct
+        );
+        var mark = _fixture.Logs.Mark();
+
+        await Post(ctx.Identity.EmailOf("alice"), "Wrong-Password-1!");
+
+        var written = Assert.Single(_fixture.Logs.Written(LoginFailed, mark));
+        Assert.Equal(LogEventLevel.Information, written.Level);
+        Assert.Equal(ctx.Identity.EmailOf("alice"), written.ScalarOf("Email"));
+        Assert.Equal(LoginFailureReason.WrongPassword, written.ScalarOf("LoginFailureReason"));
+    }
+
+    [Fact]
+    public async Task Should_ReportAnUnknownAccount_When_TheEmailIsUnknown()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await _fixture.BuildAsync(ct);
+        var mark = _fixture.Logs.Mark();
+
+        await Post("nobody@test.local");
+
+        var written = Assert.Single(_fixture.Logs.Written(LoginFailed, mark));
+        Assert.Equal("nobody@test.local", written.ScalarOf("Email"));
+        Assert.Equal(LoginFailureReason.UnknownAccount, written.ScalarOf("LoginFailureReason"));
+    }
+
+    [Fact]
+    public async Task Should_ReportADisabledAccount_When_TheAccountIsDisabled()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => identity.AddAccount("alice", disabled: true)),
+            ct
+        );
+        var mark = _fixture.Logs.Mark();
+
+        await Post(ctx.Identity.EmailOf("alice"));
+
+        var written = Assert.Single(_fixture.Logs.Written(LoginFailed, mark));
+        Assert.Equal(LoginFailureReason.Disabled, written.ScalarOf("LoginFailureReason"));
+    }
+
+    [Fact]
+    public async Task Should_WarnOfTheLockoutOnce_When_TheLastAllowedAttemptFails()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => identity.AddAccount("alice")),
+            ct
+        );
+        var mark = _fixture.Logs.Mark();
+
+        for (var attempt = 0; attempt <= AttemptsUntilLockout; attempt++)
+            await Post(ctx.Identity.EmailOf("alice"), "Wrong-Password-1!");
+
+        var written = Assert.Single(_fixture.Logs.Written(AccountLockedOut, mark));
+        Assert.Equal(LogEventLevel.Warning, written.Level);
+        Assert.Equal(ctx.Identity.Accounts.IdOf("alice"), written.ScalarOf("AccountId"));
+        var lastAttempt = _fixture.Logs.Written(LoginFailed, mark)[^1];
+        Assert.Equal(LoginFailureReason.LockedOut, lastAttempt.ScalarOf("LoginFailureReason"));
     }
 
     private Task<TestResult<LoginResponse>> Post(

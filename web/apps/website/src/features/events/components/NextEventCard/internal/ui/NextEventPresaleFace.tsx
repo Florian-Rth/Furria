@@ -19,7 +19,7 @@ export const NextEventPresaleFace: FC<NextEventPresaleFaceProps> = ({ event, pre
 
   const countdownLine =
     countdownLabel === null ? null : (
-      <Typography variant="h5" component="p">
+      <Typography variant="h3" component="p">
         {countdownLabel}
       </Typography>
     );

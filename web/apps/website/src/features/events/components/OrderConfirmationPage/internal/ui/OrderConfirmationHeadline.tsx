@@ -1,4 +1,3 @@
-import { kkTokens } from '@furria/ui';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 
@@ -7,11 +6,7 @@ interface OrderConfirmationHeadlineProps {
 }
 
 export const OrderConfirmationHeadline: FC<OrderConfirmationHeadlineProps> = ({ headline }) => (
-  <Typography
-    variant="h1"
-    component="h1"
-    sx={{ textWrap: 'balance', fontSize: kkTokens.headline.compact }}
-  >
+  <Typography variant="display" component="h1" sx={{ textWrap: 'balance' }}>
     {headline}
   </Typography>
 );

@@ -38,7 +38,7 @@ public sealed class ArchiveBoardOfficeTests
         );
 
     [Fact]
-    public async Task Should_ArchiveTheFunktion_When_NobodySitsInIt()
+    public async Task Should_ArchiveTheOffice_When_NobodySitsInIt()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -57,7 +57,7 @@ public sealed class ArchiveBoardOfficeTests
     }
 
     [Fact]
-    public async Task Should_ArchiveTheFunktion_When_ItsOnlySitzIsAlreadyOver()
+    public async Task Should_ArchiveTheOffice_When_ItsOnlySeatIsAlreadyOver()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -90,7 +90,7 @@ public sealed class ArchiveBoardOfficeTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_ARunningSitzWouldLoseItsImpliedRechte()
+    public async Task Should_ReturnConflict_When_ARunningSeatWouldLoseItsImpliedPermissions()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -118,7 +118,7 @@ public sealed class ArchiveBoardOfficeTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_ASitzStillEndsInTheFuture()
+    public async Task Should_ReturnConflict_When_ASeatStillEndsInTheFuture()
     {
         var ct = TestContext.Current.CancellationToken;
         var endsTomorrow = _fixture.Today.AddDays(1);
@@ -150,7 +150,7 @@ public sealed class ArchiveBoardOfficeTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheFunktionIsAlreadyArchived()
+    public async Task Should_ReturnConflict_When_TheOfficeIsAlreadyArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -174,7 +174,7 @@ public sealed class ArchiveBoardOfficeTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheFunktionIsUnknown()
+    public async Task Should_ReturnNotFound_When_TheOfficeIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);

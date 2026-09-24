@@ -7,7 +7,7 @@ describe('deriveShotName', () => {
     ['/members', 'members'],
     ['/members/3', 'members-3'],
     ['/manage/roles?role=7', 'manage-roles-role-7'],
-    ['/My-Groups/2/', 'my-groups-2'],
+    ['/Groups/2/', 'groups-2'],
   ])('turns %s into %s', (route, expected) => {
     expect(deriveShotName(route)).toBe(expected);
   });

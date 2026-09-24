@@ -3,18 +3,18 @@ import { SEEDED_GROUPS } from '@/lib/seed/groups';
 import { selectGroupLabels, selectKnownGroupIds, toggleGroupInterest } from './group-interests';
 
 describe('toggleGroupInterest', () => {
-  it('adds a Gruppe that was not picked yet', () => {
+  it('adds a group that was not picked yet', () => {
     expect(toggleGroupInterest([], 'tanzgarde')).toEqual(['tanzgarde']);
   });
 
-  it('keeps several Gruppen, because the interest is many-to-many', () => {
+  it('keeps several groups, because the interest is many-to-many', () => {
     expect(toggleGroupInterest(['tanzgarde'], 'organisation')).toEqual([
       'tanzgarde',
       'organisation',
     ]);
   });
 
-  it('drops a Gruppe that was picked before', () => {
+  it('drops a group that was picked before', () => {
     expect(toggleGroupInterest(['tanzgarde', 'organisation'], 'tanzgarde')).toEqual([
       'organisation',
     ]);
@@ -41,11 +41,11 @@ describe('selectKnownGroupIds', () => {
     ]);
   });
 
-  it('drops an id no Gruppe answers to instead of passing it on', () => {
+  it('drops an id no group answers to instead of passing it on', () => {
     expect(selectKnownGroupIds(SEEDED_GROUPS, ['tanzgarde', 'showtanz'])).toEqual(['tanzgarde']);
   });
 
-  it('drops every id when none of them is a Gruppe', () => {
+  it('drops every id when none of them is a group', () => {
     expect(selectKnownGroupIds(SEEDED_GROUPS, ['showtanz', 'werkstatt'])).toEqual([]);
   });
 
@@ -70,7 +70,7 @@ describe('selectKnownGroupIds', () => {
 });
 
 describe('selectGroupLabels', () => {
-  it('names the picked Gruppen instead of listing ids', () => {
+  it('names the picked groups instead of listing ids', () => {
     expect(selectGroupLabels(SEEDED_GROUPS, ['kindergarde'])).toEqual(['Kindergarde']);
   });
 
@@ -81,7 +81,7 @@ describe('selectGroupLabels', () => {
     ]);
   });
 
-  it('ignores an id no Gruppe answers to', () => {
+  it('ignores an id no group answers to', () => {
     expect(selectGroupLabels(SEEDED_GROUPS, ['showtanz'])).toEqual([]);
   });
 

@@ -26,7 +26,7 @@ export const EventClosingBand: FC<EventClosingBandProps> = ({ event }) => {
 
   const countdownLine =
     beginsLabel === null ? null : (
-      <Typography variant="h5" component="p">
+      <Typography variant="h3" component="p">
         {beginsLabel}
       </Typography>
     );
@@ -53,7 +53,11 @@ export const EventClosingBand: FC<EventClosingBandProps> = ({ event }) => {
           <Typography
             variant="h2"
             component="h2"
-            sx={{ textWrap: 'balance', textTransform: 'uppercase' }}
+            sx={{
+              typography: { xs: 'h2', md: 'h1' },
+              textWrap: 'balance',
+              textTransform: 'uppercase',
+            }}
           >
             {event.title}
           </Typography>

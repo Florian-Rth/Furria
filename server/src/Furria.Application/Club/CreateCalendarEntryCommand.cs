@@ -23,4 +23,6 @@ public sealed record CreateCalendarEntryCommand
     public required CalendarEntryVisibility Visibility { get; init; }
 
     public required bool AsksForResponse { get; init; }
+
+    public required IReadOnlyList<int> ParticipatingGroupIds { get; init; }
 }

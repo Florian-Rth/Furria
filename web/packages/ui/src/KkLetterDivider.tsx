@@ -40,9 +40,7 @@ export const KkLetterDivider: FC<KkLetterDividerProps> = ({ letter, id, ground =
     <Typography
       component="p"
       sx={(theme) => ({
-        fontFamily: kkTokens.font.display,
-        fontWeight: kkTokens.font.displayWeight,
-        fontSize: kkTokens.type.span,
+        ...theme.typography.h4,
         letterSpacing: kkTokens.type.tracking.label,
         lineHeight: 1,
         ...redInk(theme),

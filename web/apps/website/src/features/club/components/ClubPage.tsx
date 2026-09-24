@@ -1,10 +1,10 @@
 import { PageLayout } from '@furria/ui';
 import type { FC } from 'react';
-import { ChronikTimeline } from './ChronikTimeline/ChronikTimeline';
+import { CarnivalCallBand } from './CarnivalCallBand/CarnivalCallBand';
+import { ChronicleTimeline } from './ChronicleTimeline/ChronicleTimeline';
 import { ClubHeader } from './ClubHeader/ClubHeader';
 import { ClubStory } from './ClubStory/ClubStory';
-import { GruppenGrid } from './GruppenGrid/GruppenGrid';
-import { NarrenrufBand } from './NarrenrufBand/NarrenrufBand';
+import { GroupsGrid } from './GroupsGrid/GroupsGrid';
 import { PeopleWall } from './PeopleWall/PeopleWall';
 import { RecruitBand } from './RecruitBand/RecruitBand';
 import { SeasonArc } from './SeasonArc/SeasonArc';
@@ -15,11 +15,11 @@ export const ClubPage: FC = () => (
       <ClubHeader />
       <ClubStory />
     </PageLayout.Body>
-    <NarrenrufBand />
+    <CarnivalCallBand />
     <PageLayout.Body>
-      <ChronikTimeline />
+      <ChronicleTimeline />
       <SeasonArc />
-      <GruppenGrid />
+      <GroupsGrid />
       <PeopleWall />
     </PageLayout.Body>
     <RecruitBand />

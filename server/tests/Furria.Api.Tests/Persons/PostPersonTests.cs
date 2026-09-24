@@ -89,7 +89,7 @@ public sealed class PostPersonTests
     }
 
     [Fact]
-    public async Task Should_RecordNeitherMitgliedschaftNorKonto_When_APersonIsCreated()
+    public async Task Should_RecordNeitherMembershipNorAccount_When_APersonIsCreated()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);

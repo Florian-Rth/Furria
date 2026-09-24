@@ -5,7 +5,7 @@ import { kkTokens } from '../../../tokens';
 import { navLabelPose } from '../logic/nav-motion';
 
 const LABEL_PAINT: CSSObject = {
-  fontSize: kkTokens.type.eyebrowSmall,
+  typography: 'caption',
   fontWeight: kkTokens.eyebrow.fontWeight,
   letterSpacing: kkTokens.type.tracking.label,
   lineHeight: 1,

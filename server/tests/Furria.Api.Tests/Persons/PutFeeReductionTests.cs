@@ -31,10 +31,10 @@ public sealed class PutFeeReductionTests
     }
 
     [Fact]
-    public async Task Should_CorrectTheSpan_When_AManagerFixesAClosedErmaessigung()
+    public async Task Should_CorrectTheSpan_When_AManagerFixesAClosedReduction()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithSchoolErmaessigungAsync(ct);
+        var ctx = await BuildWithSchoolReductionAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var response = await client.PUTAsync<PutFeeReduction, PutFeeReductionRequest>(
@@ -56,10 +56,10 @@ public sealed class PutFeeReductionTests
     }
 
     [Fact]
-    public async Task Should_ChangeTheGrundlage_When_AManagerCorrectsIt()
+    public async Task Should_ChangeTheBasis_When_AManagerCorrectsIt()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithSchoolErmaessigungAsync(ct);
+        var ctx = await BuildWithSchoolReductionAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var response = await client.PUTAsync<PutFeeReduction, PutFeeReductionRequest>(
@@ -86,7 +86,7 @@ public sealed class PutFeeReductionTests
     public async Task Should_ReturnUnprocessableEntity_When_TheLastSessionPrecedesTheFirst()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithSchoolErmaessigungAsync(ct);
+        var ctx = await BuildWithSchoolReductionAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var response = await client.PUTAsync<PutFeeReduction, PutFeeReductionRequest>(
@@ -113,7 +113,7 @@ public sealed class PutFeeReductionTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheCorrectedSpanOverlapsAnotherErmaessigung()
+    public async Task Should_ReturnConflict_When_TheCorrectedSpanOverlapsAnotherReduction()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -165,7 +165,7 @@ public sealed class PutFeeReductionTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheErmaessigungBelongsToAnotherPerson()
+    public async Task Should_ReturnNotFound_When_TheReductionBelongsToAnotherPerson()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -210,7 +210,7 @@ public sealed class PutFeeReductionTests
     public async Task Should_ReturnBadRequest_When_TheFirstSessionPredatesTheFounding()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithSchoolErmaessigungAsync(ct);
+        var ctx = await BuildWithSchoolReductionAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var response = await client.PUTAsync<PutFeeReduction, PutFeeReductionRequest>(
@@ -278,7 +278,7 @@ public sealed class PutFeeReductionTests
     public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithSchoolErmaessigungAsync(ct);
+        var ctx = await BuildWithSchoolReductionAsync(ct);
 
         var response = await _fixture
             .CreateClient()
@@ -296,7 +296,7 @@ public sealed class PutFeeReductionTests
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
-    private Task<SeededContext> BuildWithSchoolErmaessigungAsync(CancellationToken ct) =>
+    private Task<SeededContext> BuildWithSchoolReductionAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder =>
                 builder.Identity(identity =>

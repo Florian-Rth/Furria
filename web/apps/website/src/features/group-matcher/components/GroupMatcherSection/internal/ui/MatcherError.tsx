@@ -10,7 +10,7 @@ interface MatcherErrorProps {
 
 export const MatcherError: FC<MatcherErrorProps> = ({ onRetry }) => (
   <Stack role="alert" sx={{ gap: 2 }}>
-    <Typography variant="h5" component="p">
+    <Typography variant="h3" component="p">
       {matcherLabels.errorTitle}
     </Typography>
     <Typography variant="body1" sx={{ color: 'text.secondary' }}>

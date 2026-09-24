@@ -1,65 +1,81 @@
 import type { KkSx } from '@furria/ui';
-import { KkChip, KkMeta, useKkSheetCommands } from '@furria/ui';
-import Stack from '@mui/material/Stack';
+import {
+  KkAvatarStack,
+  KkCard,
+  KkChip,
+  KkEyebrow,
+  KkGroupToneEdge,
+  KkGroupToneField,
+  KkMeta,
+  kkTokens,
+  useKkSheetCommands,
+} from '@furria/ui';
 import type { FC } from 'react';
 import { toInitials } from '@/lib/initials';
 import { toPeekId } from '@/lib/peek';
-import { toRecruitingChip } from '@/lib/state-chips';
-import type { GroupStanding } from '../groups-labels';
-import { toGroupStandingChips, toPersonUnitLabel, toRecruitingContactLine } from '../groups-labels';
+import { toGroupTone } from '../group-identity';
+import {
+  toGroupCardChips,
+  toGroupCardLabel,
+  toGroupKindLabel,
+  toGroupLeadLine,
+  toGroupSizeLine,
+} from '../groups-labels';
 import type { GroupSummary } from '../schemas';
-import { GroupCardBody } from './GroupCardBody';
+
+const FACE_RATIO = kkTokens.aspectRatio.landscape;
+const AVATAR_MAX = 3;
+const FACE_FILL = { position: 'absolute', inset: 0 } as const;
+const NO_SHRINK = { flexShrink: 0 } as const;
 
 interface GroupCardProps {
   group: GroupSummary;
-  standing?: GroupStanding;
   sx?: KkSx;
 }
 
-export const GroupCard: FC<GroupCardProps> = ({ group, standing, sx }) => {
+export const GroupCard: FC<GroupCardProps> = ({ group, sx }) => {
   const sheet = useKkSheetCommands();
-  const peek = toPeekId('group', group.groupId);
-
-  const openPeek = (): void => {
-    sheet.open(peek);
-  };
-
-  const openness = toRecruitingChip(group.isRecruiting);
-  const unitLabel = toPersonUnitLabel(group.memberCount);
-  const standingChips = toGroupStandingChips(standing);
+  const tone = toGroupTone(group.groupId, group.tone);
+  const chips = toGroupCardChips(group);
   const initials = group.memberPreview.map((person) =>
     toInitials(person.firstName, person.lastName),
   );
+  const kindLabel = toGroupKindLabel(group.groupKindName);
 
-  const chips = (
-    <Stack direction="row" sx={{ gap: 0.75, flexWrap: 'wrap', minWidth: 0 }}>
-      <KkChip tone={openness.tone} dot={openness.dot} size="small">
-        {openness.label}
-      </KkChip>
-      {standingChips.map((chip) => (
-        <KkChip key={chip.label} tone={chip.tone} dot={chip.dot} size="small">
-          {chip.label}
-        </KkChip>
-      ))}
-    </Stack>
-  );
+  const kindEyebrow = kindLabel === null ? null : <KkEyebrow tone="muted">{kindLabel}</KkEyebrow>;
 
-  const contactLine = group.isRecruiting ? (
-    <KkMeta>{toRecruitingContactLine(group.admins)}</KkMeta>
-  ) : undefined;
+  const openPeek = (): void => {
+    sheet.open(toPeekId('group', group.groupId));
+  };
 
   return (
-    <GroupCardBody
-      name={group.name}
-      count={group.memberCount}
-      unitLabel={unitLabel}
-      description={group.description}
-      initials={initials}
-      total={group.memberCount}
-      chips={chips}
-      footer={contactLine}
-      onSelect={openPeek}
-      sx={sx}
-    />
+    <KkCard sx={sx}>
+      <KkCard.Action onClick={openPeek} aria-label={toGroupCardLabel(group.name)}>
+        <KkCard.Media aspectRatio={FACE_RATIO}>
+          <KkGroupToneField tone={tone} name={group.name} sx={FACE_FILL} />
+        </KkCard.Media>
+        <KkGroupToneEdge tone={tone} />
+        <KkCard.Body>
+          {kindEyebrow}
+          <KkCard.Meta>
+            {chips.map((chip) => (
+              <KkChip key={chip.label} tone={chip.tone} dot={chip.dot} size="small">
+                {chip.label}
+              </KkChip>
+            ))}
+          </KkCard.Meta>
+          <KkMeta>{toGroupLeadLine(group.admins)}</KkMeta>
+          <KkCard.Footer>
+            <KkAvatarStack
+              initials={initials}
+              max={AVATAR_MAX}
+              total={group.memberCount}
+              sx={NO_SHRINK}
+            />
+            <KkMeta>{toGroupSizeLine(group.memberCount)}</KkMeta>
+          </KkCard.Footer>
+        </KkCard.Body>
+      </KkCard.Action>
+    </KkCard>
   );
 };

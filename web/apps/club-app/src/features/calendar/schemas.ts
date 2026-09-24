@@ -1,11 +1,28 @@
 import { z } from 'zod';
 import { CalendarEntryKindSchema } from '@/features/club';
+import { AppSearchSchema } from '@/features/session';
+import { GroupToneSchema } from '@/lib/group-tone';
+
+export const CalendarBoardSearchSchema = AppSearchSchema.extend({
+  scope: z.string().optional().catch(undefined),
+  view: z.enum(['list', 'month']).optional().catch(undefined),
+  month: z.string().optional().catch(undefined),
+  day: z.string().optional().catch(undefined),
+});
+export type CalendarBoardSearch = z.infer<typeof CalendarBoardSearchSchema>;
 
 export const CalendarEntryVisibilitySchema = z.enum(['group', 'club', 'public']);
 export type CalendarEntryVisibility = z.infer<typeof CalendarEntryVisibilitySchema>;
 
 export const AttendanceAnswerSchema = z.enum(['yes', 'no', 'maybe']);
 export type AttendanceAnswer = z.infer<typeof AttendanceAnswerSchema>;
+
+export const ParticipatingGroupSchema = z.object({
+  groupId: z.number().int(),
+  name: z.string(),
+  tone: GroupToneSchema.nullable(),
+});
+export type ParticipatingGroup = z.infer<typeof ParticipatingGroupSchema>;
 
 export const CalendarEntrySchema = z.object({
   calendarEntryId: z.number().int(),
@@ -17,6 +34,8 @@ export const CalendarEntrySchema = z.object({
   venueName: z.string().nullable(),
   ownerGroupId: z.number().int().nullable(),
   ownerGroupName: z.string().nullable(),
+  ownerGroupTone: GroupToneSchema.nullable(),
+  participatingGroups: z.array(ParticipatingGroupSchema),
   visibility: CalendarEntryVisibilitySchema,
   asksForResponse: z.boolean(),
   description: z.string().nullable(),
@@ -40,7 +59,8 @@ export type RunningVenuesResponse = z.infer<typeof RunningVenuesResponseSchema>;
 export const CALENDAR_TITLE_MAX_LENGTH = 120;
 export const CALENDAR_DESCRIPTION_MAX_LENGTH = 2000;
 
-const END_BEFORE_START_MESSAGE = 'Ein Zeitraum kann nicht vor seinem Beginn enden.';
+const END_BEFORE_START_MESSAGE = 'Das Ende muss nach dem Beginn liegen.';
+const OWNER_CANNOT_PARTICIPATE_MESSAGE = 'Der Eigentümer ist automatisch beteiligt.';
 const NO_END_DAY = '';
 
 export const CalendarCollisionSchema = z.object({
@@ -79,8 +99,16 @@ export const CalendarEntryFormSchema = z
     endDay: z.string(),
     endTime: z.string(),
     asksForResponse: z.boolean(),
+    participatingGroupIds: z.array(z.string()),
   })
   .superRefine((form, ctx) => {
+    if (form.participatingGroupIds.includes(form.ownerId)) {
+      ctx.addIssue({
+        code: 'custom',
+        message: OWNER_CANNOT_PARTICIPATE_MESSAGE,
+        path: ['participatingGroupIds'],
+      });
+    }
     if (form.endDay === NO_END_DAY) {
       return;
     }

@@ -1,7 +1,13 @@
 import { createFileRoute, Navigate, Outlet, redirect, useLocation } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { buildLoginSearch } from '@/features/login';
-import { AppSearchSchema, AppShell, useSessionSnapshot } from '@/features/session';
+import {
+  AppFailure,
+  AppSearchSchema,
+  AppShell,
+  ScreenNotFound,
+  useSessionSnapshot,
+} from '@/features/session';
 import { getSessionSnapshot } from '@/lib/api/session/session-store';
 import { LOGIN_PATH } from '@/lib/return-to';
 
@@ -35,4 +41,6 @@ export const Route = createFileRoute('/_app')({
     }
   },
   component: AppLayout,
+  errorComponent: AppFailure,
+  notFoundComponent: ScreenNotFound,
 });

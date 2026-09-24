@@ -48,6 +48,7 @@ export const PersonPicker: FC<PersonPickerProps> = ({ selected, onSelect, onClea
         value={search.query}
         onChange={search.setQuery}
         placeholder={SEARCH_PLACEHOLDER}
+        required
       />
       <PersonPickerResults search={search} onSelect={onSelect} />
       {noteLine}

@@ -25,7 +25,7 @@ public sealed class RestoreGroupTests
     }
 
     [Fact]
-    public async Task Should_ClearTheArchivedOn_When_TheKeyHolderAktiviertDieGruppe()
+    public async Task Should_ClearTheArchivedOn_When_TheKeyHolderRestoresTheGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -57,7 +57,7 @@ public sealed class RestoreGroupTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheGruppeIsNotArchived()
+    public async Task Should_ReturnConflict_When_TheGroupIsNotArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -76,7 +76,7 @@ public sealed class RestoreGroupTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_AnotherActiveGruppeNowCarriesTheName()
+    public async Task Should_ReturnConflict_When_AnotherActiveGroupNowCarriesTheName()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -110,7 +110,7 @@ public sealed class RestoreGroupTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheGruppeIsUnknown()
+    public async Task Should_ReturnNotFound_When_TheGroupIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
@@ -191,6 +191,47 @@ public sealed class RestoreGroupTests
             );
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_RefuseTheGroup_When_ItsGroupKindIsArchived()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Groups(groups =>
+                    groups
+                        .AddGroupKind("spielmannszug", "Spielmannszug", archivedOn: ArchivedIn2021)
+                        .AddGroup(
+                            "spielleute",
+                            "Spielleute",
+                            RetiredDescription,
+                            isRecruiting: false,
+                            ArchivedIn2021,
+                            groupKindAlias: "spielmannszug"
+                        )
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var response = await client.POSTAsync<RestoreGroup, RestoreGroupRequest>(
+            new() { GroupId = ctx.Groups.Groups.IdOf("spielleute") }
+        );
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        var failures = await ReadFailuresAsync(response, ct);
+        Assert.Equal(
+            [
+                "Die Gruppenart dieser Gruppe ist archiviert. "
+                    + "Hole zuerst die Gruppenart zurück.",
+            ],
+            failures[ConflictField]
+        );
+        await ctx
+            .Expected.Group(ctx.Groups.Groups.IdOf("spielleute"))
+            .ToBeArchivedOn(ArchivedIn2021)
+            .AssertAsync(ct);
     }
 
     private static async Task<IDictionary<string, List<string>>> ReadFailuresAsync(

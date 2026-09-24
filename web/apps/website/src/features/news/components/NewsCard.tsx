@@ -18,7 +18,7 @@ export const NewsCard: FC<NewsCardProps> = ({ post, sx }) => (
   <KkCard sx={sx}>
     <KkCard.Action component={Link} to={buildPostHref(post.slug)} aria-label={post.title}>
       <KkCard.Media>
-        <NewsMedia post={post} sx={{ height: '100%', fontSize: { xs: '1.25rem', md: '1.5rem' } }} />
+        <NewsMedia post={post} sx={{ height: '100%', typography: { xs: 'h3', md: 'h2' } }} />
       </KkCard.Media>
       <KkCard.Body>
         <KkCard.Meta>

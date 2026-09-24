@@ -10,10 +10,9 @@ const LOADING_LABEL = 'Personenregister wird geladen';
 
 interface PersonsBodyProps {
   search: PersonsSearch;
-  onCreate: () => void;
 }
 
-export const PersonsBody: FC<PersonsBodyProps> = ({ search, onCreate }) => {
+export const PersonsBody: FC<PersonsBodyProps> = ({ search }) => {
   const persons = usePersonsQuery();
   const errorMessage = toPersonsErrorMessage(persons.error);
 
@@ -22,7 +21,7 @@ export const PersonsBody: FC<PersonsBodyProps> = ({ search, onCreate }) => {
   };
 
   if (persons.data !== undefined) {
-    return <PersonsView persons={persons.data.persons} search={search} onCreate={onCreate} />;
+    return <PersonsView persons={persons.data.persons} search={search} />;
   }
   if (errorMessage !== null) {
     return <PersonsError message={errorMessage} onRetry={reload} />;

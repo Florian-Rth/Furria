@@ -1,10 +1,29 @@
-import type { KkConfirmFact, KkDateQuickChoice } from '@furria/ui';
+import type { KkDateQuickChoice, KkScreenOrigin } from '@furria/ui';
 import { SESSION_OPENING_DAY, SESSION_OPENING_MONTH, sessionAt } from '@/lib/club';
 import { isFutureDay, toIsoDay } from '@/lib/day';
 import { formatIsoDay, formatPeriod } from '@/lib/membership-labels';
 import type { KeyHolding, KeyVenue } from './schemas';
 
 export const MANAGE_KEYS_TITLE = 'Schlüssel';
+const KEYS_PATH = '/manage/keys';
+
+export const KEYS_ORIGIN: KkScreenOrigin = { label: MANAGE_KEYS_TITLE, to: KEYS_PATH };
+
+export const KEY_EDITOR_DENIED_MESSAGE =
+  'Dir fehlt die Berechtigung, Schlüssel auszugeben oder zurückzunehmen.';
+
+export const toKeyEditorOrigin = (venueName: string): KkScreenOrigin => ({
+  label: venueName,
+  to: KEYS_PATH,
+});
+
+const KEY_ID_PATTERN = /^[1-9]\d*$/;
+
+export const toVenueIdParam = (raw: string): number | null =>
+  KEY_ID_PATTERN.test(raw) ? Number(raw) : null;
+
+export const toKeyHoldingIdParam = (raw: string): number | null =>
+  KEY_ID_PATTERN.test(raw) ? Number(raw) : null;
 
 export const KEY_SECTION_TITLES = {
   ended: 'Zurückgenommen',
@@ -12,7 +31,7 @@ export const KEY_SECTION_TITLES = {
 } as const;
 
 export const MANAGE_KEYS_FOOTNOTE =
-  'Schlüssel werden nicht gezählt und nicht nummeriert. Hier steht, wer aufschließen kann und wem wir noch einen abnehmen müssen — Zurückgenommenes bleibt stehen.';
+  'Übersicht, wer welchen Ort aufschließen kann. Zurückgegebene Schlüssel bleiben im Verlauf erhalten.';
 
 export const toPersonName = (person: { firstName: string; lastName: string }): string =>
   `${person.firstName} ${person.lastName}`;
@@ -62,6 +81,24 @@ export const toHoldingPeriodLabel = (holding: KeyHolding): string =>
     ? `seit ${formatIsoDay(holding.sinceOn)}`
     : formatPeriod(holding.sinceOn, holding.untilOn);
 
+export interface KeyHoldingChainRow {
+  key: string;
+  title: string;
+  span: string;
+  isEdited: boolean;
+}
+
+export const toKeyHoldingChainRows = (
+  venue: KeyVenue,
+  editedKeyHoldingId: number | null,
+): KeyHoldingChainRow[] =>
+  venue.holdings.map((holding) => ({
+    key: String(holding.keyHoldingId),
+    title: toPersonName(holding),
+    span: toHoldingPeriodLabel(holding),
+    isEdited: holding.keyHoldingId === editedKeyHoldingId,
+  }));
+
 export interface KeyHoldingTarget {
   venue: KeyVenue;
   holding: KeyHolding;
@@ -97,31 +134,7 @@ export const findKeyVenue = (
   return venues.find((venue) => venue.venueId === venueId) ?? null;
 };
 
-const countRunning = (venues: readonly KeyVenue[]): number =>
-  venues.reduce((total, venue) => total + partitionKeyHoldings(venue.holdings).running.length, 0);
-
-const countVenuesWithRunning = (venues: readonly KeyVenue[]): number =>
-  venues.filter((venue) => partitionKeyHoldings(venue.holdings).running.length > 0).length;
-
-const toVenueClause = (count: number): string => (count === 1 ? 'einen Ort' : `${count} Orte`);
-
-export const toManagedKeysIntro = (venues: readonly KeyVenue[]): string => {
-  if (venues.length === 0) {
-    return 'Noch steht kein Ort im Verzeichnis, für den ein Schlüssel ausgegeben werden könnte.';
-  }
-
-  const running = countRunning(venues);
-
-  if (running === 0) {
-    return 'Gerade ist kein Schlüssel ausgegeben.';
-  }
-  if (running === 1) {
-    return 'Ein Schlüssel ist ausgegeben.';
-  }
-
-  return `${running} Schlüssel sind für ${toVenueClause(countVenuesWithRunning(venues))} ausgegeben.`;
-};
-
+export const MANAGE_KEYS_LEAD = 'Wer welchen Ort aufschließen kann.';
 export const toVenueHolderMeta = (holdings: readonly KeyHolding[]): string => {
   const { running } = partitionKeyHoldings(holdings);
 
@@ -136,7 +149,7 @@ export const toVenueHolderMeta = (holdings: readonly KeyHolding[]): string => {
 };
 
 export const toArchivedVenueNote = (archivedOn: string): string =>
-  `Der Ort ist seit dem ${formatIsoDay(archivedOn)} archiviert. Neue Schlüssel gibt es dafür nicht mehr, die Geschichte bleibt stehen.`;
+  `Der Ort ist seit dem ${formatIsoDay(archivedOn)} archiviert. Es können keine Schlüssel mehr ausgegeben werden.`;
 
 export interface KeyVenueEmptyCopy {
   title: string;
@@ -145,25 +158,22 @@ export interface KeyVenueEmptyCopy {
 
 const NEVER_HELD: KeyVenueEmptyCopy = {
   title: 'KEIN SCHLÜSSEL',
-  description: 'Für diesen Ort ist noch nie ein Schlüssel ausgegeben worden.',
+  description: 'Für diesen Ort wurde noch kein Schlüssel ausgegeben.',
 };
 
 const ALL_RETURNED: KeyVenueEmptyCopy = {
   title: 'ALLE ZURÜCK',
-  description:
-    'Gerade hat niemand einen Schlüssel für diesen Ort. Wer je einen hatte, steht unten.',
+  description: 'Derzeit hat niemand einen Schlüssel für diesen Ort.',
 };
 
 export const toVenueEmptyCopy = (holdings: readonly KeyHolding[]): KeyVenueEmptyCopy =>
   holdings.length === 0 ? NEVER_HELD : ALL_RETURNED;
 
 export const NO_VENUES_TITLE = 'NOCH KEIN ORT';
-export const NO_VENUES_DESCRIPTION =
-  'Schlüssel hängen an Orten. Trag erst einen Ort ein, dann lässt sich einer dafür ausgeben.';
+export const NO_VENUES_DESCRIPTION = 'Lege zuerst einen Ort an, um Schlüssel auszugeben.';
 
-export const HANDOUT_EXPLANATION =
-  'Such die Person im Verzeichnis. Wer noch nicht drin ist, muss zuerst in der Personenverwaltung angelegt werden.';
-export const HANDOUT_PICKER_NOTE = 'Kein Mitglied — geht trotzdem.';
+export const HANDOUT_EXPLANATION = 'Neue Personen werden in der Personenverwaltung angelegt.';
+export const HANDOUT_PICKER_NOTE = 'Auch ohne Mitgliedschaft möglich.';
 
 export const toHandoutConsequence = (
   personName: string,
@@ -172,16 +182,8 @@ export const toHandoutConsequence = (
   todayIsoDay: string,
 ): string =>
   isFutureDay(sinceOn, todayIsoDay)
-    ? `Ab dem ${formatIsoDay(sinceOn)} kann ${personName} ${venueName} aufschließen — vorher nicht.`
-    : `${personName} kann ${venueName} ab dem ${formatIsoDay(sinceOn)} aufschließen.`;
-
-export const RETURN_EYEBROW = 'Schlüssel zurücknehmen';
-
-export const toReturnQuestion = (firstName: string, venueName: string): string =>
-  `Schlüssel für ${venueName} von ${firstName} zurücknehmen?`;
-
-export const toReturnExplanation = (firstName: string): string =>
-  `Der Schlüssel wandert in die Geschichte des Ortes und bleibt dort lesbar. Gelöscht wird nichts: ${firstName} kann jederzeit wieder einen bekommen.`;
+    ? `${personName} kann ${venueName} ab dem ${formatIsoDay(sinceOn)} aufschließen.`
+    : `${personName} kann ${venueName} seit dem ${formatIsoDay(sinceOn)} aufschließen.`;
 
 export const toReturnConsequence = (
   firstName: string,
@@ -190,19 +192,8 @@ export const toReturnConsequence = (
   todayIsoDay: string,
 ): string =>
   isFutureDay(untilOn, todayIsoDay)
-    ? `Der ${formatIsoDay(untilOn)} wird der letzte Tag, an dem ${firstName} ${venueName} aufschließen kann.`
-    : `Der ${formatIsoDay(untilOn)} ist der letzte Tag, an dem ${firstName} ${venueName} aufschließen kann.`;
-
-export const toReturnFacts = (
-  holding: KeyHolding,
-  venueName: string,
-  untilOn: string | null,
-): KkConfirmFact[] => [
-  { label: 'Person', value: toPersonName(holding) },
-  { label: 'Ort', value: venueName },
-  { label: 'Ausgegeben am', value: formatIsoDay(holding.sinceOn) },
-  { label: 'Letzter Tag', value: untilOn === null ? 'noch offen' : formatIsoDay(untilOn) },
-];
+    ? `${firstName} kann ${venueName} bis einschließlich ${formatIsoDay(untilOn)} aufschließen.`
+    : `Der Schlüssel von ${firstName} für ${venueName} ist zum ${formatIsoDay(untilOn)} zurückgegeben.`;
 
 const TODAY_LABEL = 'heute';
 const SESSION_START_LABEL = 'Sessionsbeginn';
@@ -257,9 +248,6 @@ export const toKeyTakenBackMessage = (
 ): string =>
   isFutureDay(untilOn, todayIsoDay)
     ? `Der Schlüssel von ${personName} läuft am ${formatIsoDay(untilOn)} aus.`
-    : `Der Schlüssel von ${personName} ist zurück.`;
+    : `Der Schlüssel von ${personName} ist zurückgegeben.`;
 
 export const toHandOutLabel = (venueName: string): string => `Schlüssel für ${venueName} ausgeben`;
-
-export const toTakeBackLabel = (personName: string): string =>
-  `Schlüssel von ${personName} zurücknehmen`;

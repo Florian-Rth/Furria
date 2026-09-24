@@ -13,7 +13,7 @@ public sealed class EndGroupAdminTests
 {
     private const string ConflictField = "conflict";
     private const string ValidationField = "request";
-    private const int UnknownErnennungId = 999_999;
+    private const int UnknownTenureId = 999_999;
 
     private static readonly DateOnly AppointedIn2017 = new(2017, 9, 1);
     private static readonly DateOnly EndedIn2026 = new(2026, 3, 1);
@@ -27,7 +27,7 @@ public sealed class EndGroupAdminTests
     }
 
     [Fact]
-    public async Task Should_CloseTheErnennung_When_TheCallerIsTheGruppenAdmin()
+    public async Task Should_CloseTheTenure_When_TheCallerIsTheGroupAdmin()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -74,7 +74,7 @@ public sealed class EndGroupAdminTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheErnennungBelongsToAnotherGruppe()
+    public async Task Should_ReturnNotFound_When_TheTenureBelongsToAnotherGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -119,7 +119,7 @@ public sealed class EndGroupAdminTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheGruppeIsArchived()
+    public async Task Should_ReturnConflict_When_TheGroupIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -168,7 +168,7 @@ public sealed class EndGroupAdminTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheErnennungIsAlreadyEnded()
+    public async Task Should_ReturnConflict_When_TheTenureIsAlreadyEnded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -215,7 +215,7 @@ public sealed class EndGroupAdminTests
     }
 
     [Fact]
-    public async Task Should_ReturnUnprocessable_When_TheEndLiesBeforeTheErnennung()
+    public async Task Should_ReturnUnprocessable_When_TheEndLiesBeforeTheTenure()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -264,7 +264,7 @@ public sealed class EndGroupAdminTests
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerOnlyBelongsToTheGruppe()
+    public async Task Should_ReturnForbidden_When_TheCallerOnlyBelongsToTheGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -360,7 +360,7 @@ public sealed class EndGroupAdminTests
     }
 
     [Fact]
-    public async Task Should_CloseTheErnennung_When_TheEndIsTheErnennungsTag()
+    public async Task Should_CloseTheTenure_When_TheEndIsTheTenureDay()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -404,7 +404,7 @@ public sealed class EndGroupAdminTests
     }
 
     [Fact]
-    public async Task Should_LeaveTheGruppeWithoutAdmin_When_TheLastAdminEndsHerOwnErnennung()
+    public async Task Should_LeaveTheGroupWithoutAdmin_When_TheLastAdminEndsHerOwnTenure()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -446,7 +446,7 @@ public sealed class EndGroupAdminTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheErnennungIsUnknown()
+    public async Task Should_ReturnNotFound_When_TheTenureIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -468,7 +468,7 @@ public sealed class EndGroupAdminTests
             new()
             {
                 GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
-                GroupAdminId = UnknownErnennungId,
+                GroupAdminId = UnknownTenureId,
                 EndedOn = EndedIn2026,
             }
         );
@@ -477,7 +477,7 @@ public sealed class EndGroupAdminTests
     }
 
     [Fact]
-    public async Task Should_ReturnBadRequest_When_TheErnennungIdIsNotAnId()
+    public async Task Should_ReturnBadRequest_When_TheTenureIdIsNotAnId()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

@@ -37,7 +37,7 @@ describe('joinGroupNames', () => {
 });
 
 describe('buildReasonAnswerLine', () => {
-  it('puts the visitor answer next to the one the Gruppe gave', () => {
+  it('puts the visitor answer next to the one the group gave', () => {
     const reason: MatchReason = {
       questionId: 'stage',
       prompt: 'Ich will auf die Bühne.',
@@ -54,7 +54,7 @@ describe('buildReasonAnswerLine', () => {
 });
 
 describe('resolveRecruitingBadge', () => {
-  it('separates a recruiting Gruppe from one that is not looking', () => {
+  it('separates a recruiting group from one that is not looking', () => {
     expect(resolveRecruitingBadge(true).color).toBe('success');
     expect(resolveRecruitingBadge(false).color).toBe('default');
     expect(resolveRecruitingBadge(true).label).not.toBe(resolveRecruitingBadge(false).label);

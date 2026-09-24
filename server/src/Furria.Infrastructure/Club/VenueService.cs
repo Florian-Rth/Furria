@@ -11,7 +11,7 @@ public sealed class VenueService
     private const string UnknownVenueMessage = "Diesen Ort gibt es nicht im Verzeichnis.";
     private const string ArchivedVenueMessage =
         "Ein archivierter Ort kann nicht bearbeitet werden.";
-    private const string DuplicateNameMessage = WriteConflictMessages.DuplicateOrt;
+    private const string DuplicateNameMessage = WriteConflictMessages.DuplicateVenue;
     private const string AlreadyArchivedMessage = "Dieser Ort ist bereits archiviert.";
     private const string NotArchivedMessage = "Dieser Ort ist nicht archiviert.";
 

@@ -1,5 +1,5 @@
 ---
-title: Galerie
+title: Gallery
 slug: gallery
 type: capability
 status: shipped
@@ -10,8 +10,8 @@ adrs: []
 ## What & Why
 
 The club's celebratory face: visitors relive an evening, and prospective members get the atmosphere
-no amount of prose delivers. **Galerie** (public, curated, view-only) is deliberately *not* the
-Club-App's **Bildergalerie** (member upload + browse) — see [`CONTEXT.md`](../../CONTEXT.md); the nav
+no amount of prose delivers. **Gallery** (public, curated, view-only) is deliberately *not* the
+Club-App's **member photo library** (member upload + browse) — see [`CONTEXT.md`](../../CONTEXT.md); the nav
 label has always said "Galerie".
 
 Its scope is small on purpose: **one Album per occasion, roughly a dozen hand-picked photos each.**
@@ -37,7 +37,7 @@ Not a dump of everything that was shot. That restraint is the feature, not a lim
   would bury the album page 12 entries deep.
 - Route file is **`gallery_.$albumSlug.tsx`** (trailing underscore) and links use
   `to={buildAlbumHref(slug)}` **plain strings** — both are P4's hard-won lessons
-  ([Aktuelles](feature-news.md)): the dotted name nests the child under a parent that renders no
+  ([News](feature-news.md)): the dotted name nests the child under a parent that renders no
   `<Outlet/>`, and MUI's polymorphic `component={Link}` collapses TanStack's `to`-driven param
   generics to `string`.
 - `?photo` is **validated with Zod via `validateSearch`**. Out-of-range or garbage → the viewer
@@ -48,7 +48,7 @@ Not a dump of everything that was shot. That restraint is the feature, not a lim
 **The Album model** *(P5)*
 
 - **An Album is exactly one occasion** (Prunksitzung, Umzug, Sessionseröffnung) — the same kind of
-  occasion the **Programm** lists. Not one Album per Session, and not a flat feed.
+  occasion the **event list** lists. Not one Album per Session, and not a flat feed.
 - **Session is derived, never stored.** An Album carries its date; its Session comes from the
   existing `sessionAt()` helper in `lib/club.ts`. Same rule P4 applied to the news archive. A stored
   session field would be a second truth that can disagree with the date printed next to it.
@@ -56,7 +56,7 @@ Not a dump of everything that was shot. That restraint is the feature, not a lim
   slim rows that expand **in place** to a compact Album list. The whole older block **renders only
   if older Albums exist** — no invented past. Unlike P4's archive button, every target here is real,
   so this ships no dead links.
-- The future backend seam is an **`eventId`** pointing at the Club-App's Veranstaltung; until then
+- The future backend seam is an **`eventId`** pointing at the Club-App's event; until then
   the Album carries its own title/date/venue.
 
 **Images** *(P5)*
@@ -77,7 +77,7 @@ Not a dump of everything that was shot. That restraint is the feature, not a lim
 
 - **Hard offset-shadows stay rejected as the system.** The mock leads with `12px 12px 0 red` on the
   newest Album; `shadow.posterOffset` is reserved for hero headlines (P1/P3/P4). The featured Album
-  earns emphasis through **scale + layout + `shadow.raised`**, exactly like the news Aufmacher.
+  earns emphasis through **scale + layout + `shadow.raised`**, exactly like the news Lead post.
 - **Hero gesture: a fanned Fotostapel** — 3–4 overlapping, slightly rotated photo frames, distilling
   to a single tilted frame at `xs`. It is **decoration only**: `aria-hidden`, not a link, generic
   frames. Every other hero aside on the site (`/club`'s photo, `/news`'s broom) is decorative too,
@@ -117,10 +117,10 @@ Not a dump of everything that was shot. That restraint is the feature, not a lim
   Sessionseröffnung) — those are real event types the site already advertises. **Everything else is
   obviously fake**, in the `/news` voice, per the P4 correction (`8f5a643`).
 - **Photographer credits must be unmistakably fake.** The mock credits *"Foto: Anja Weber"* /
-  *"Uwe Krämer"* — plausible-sounding real people in what is effectively the **Fotograf** Amt. P4
+  *"Uwe Krämer"* — plausible-sounding real people in what is effectively the **photographer** office. P4
   banned exactly this when it refused to invent a "Vorstand" byline.
 - **The broom mark is brand furniture, not a joke well.** The village name (Großfurra) and the mark
-  name ships in the masthead, footer, ticker, hero and Chronik and stays. But captions must **not**
+  name ships in the masthead, footer, ticker, hero and chronicle and stays. But captions must **not**
   be built on broom gags — humour comes from the situations, as in `/news`.
 - **The takedown promise gets a working address.** *"Du bist auf einem Foto und möchtest es hier
   nicht sehen?"* is the page's only real-world remedy, so it is a live `mailto:` — not prose naming
@@ -173,7 +173,7 @@ decisions above, and why — the rest was built as written:
   date-derived content hits this.
 - **`photoCredit`, and the credits are devices** (`Wegwerfkamera vom Kiosk`) rather than one repeated
   fake person — the unmistakably-fake rule without the gag wearing thin. No caption names anyone.
-- **Seed content is reconciled with the Programm's** dates, venues and names (the mock's
+- **Seed content is reconciled with the event list's** dates, venues and names (the mock's
   "Kindersitzung" is **Kinderfasching** on `/`). Consistent content, no cross-feature import.
 - **The featured Album is excluded from the older-Session groups too**, and DIESE SESSION renders only
   when a non-featured Album remains: after 11.11.2026 every seeded Album becomes "older" and the
@@ -250,14 +250,14 @@ Backend: none** for every slice. *(All nine shipped — see "As built" above.)*
    *Delivers:* the index survives every future Session without a redesign.
    *Verify:* renders from the 2 seeded older Albums; disappears when they are removed from the
    array; expand/collapse is keyboard-operable.
-6. **Rights note + Programm band.** The © / takedown note with a live `mailto:`; promote
+6. **Rights note + event list band.** The © / takedown note with a live `mailto:`; promote
    `CLUB_CONTACT_EMAIL` into `lib/club.ts` and refactor `imprint-content.ts` to read it; accent
    `KkBandSection` → `/program`. **Drive-by while `lib/club.ts` is open:** set
    `GROUP_COUNT_PLACEHOLDER = 6` so the landing hero stops contradicting `/club`'s derived
    `GROUPS.length` (defect recorded in [Landing-Hero](feature-landing-hero.md)).
    *Delivers:* the index is complete end-to-end.
    *Verify:* one source for the address (no second literal anywhere); imprint renders unchanged; the
-   hero stat and the Gruppen section both say 6.
+   hero stat and the group section both say 6.
 7. **Album page.** `gallery_.$albumSlug.tsx` with loader + `notFound()` + the 404 registration; own
    lighter header (back link, date · venue eyebrow, H1, derived count, intro, credit row);
    orientation-aware `PhotoGrid` of `PhotoTile`s. Per-album head.
@@ -280,7 +280,7 @@ Backend: none** for every slice. *(All nine shipped — see "As built" above.)*
 
 - Mock: [`docs/design/gallery-page/`](../../docs/design/gallery-page/) — direction only; its README
   records what was adopted and what was rejected.
-- [`CONTEXT.md`](../../CONTEXT.md) — **Galerie**, **Bildergalerie**, **Album**; the open photo-gate
+- [`CONTEXT.md`](../../CONTEXT.md) — **Gallery**, **member photo library**, **Album**; the open photo-gate
   question under *Flagged ambiguities*.
-- [Aktuelles](feature-news.md) — the router traps, the derived-archive precedent, the
+- [News](feature-news.md) — the router traps, the derived-archive precedent, the
   obviously-fake-content ruling.

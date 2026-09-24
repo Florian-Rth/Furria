@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Furria.Infrastructure.Identity;
@@ -23,20 +24,26 @@ public sealed class BootstrapAdminSeeder : IHostedService
 
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly BootstrapAdminOptions _options;
+    private readonly ILogger<BootstrapAdminSeeder> _logger;
 
     public BootstrapAdminSeeder(
         IServiceScopeFactory scopeFactory,
-        IOptions<BootstrapAdminOptions> options
+        IOptions<BootstrapAdminOptions> options,
+        ILogger<BootstrapAdminSeeder> logger
     )
     {
         _scopeFactory = scopeFactory;
         _options = options.Value;
+        _logger = logger;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         if (_options.Email.Length == 0 || _options.Password.Length == 0)
+        {
+            _logger.LogInformation("Bootstrap admin not configured, seeding skipped");
             return;
+        }
 
         await using var scope = _scopeFactory.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -66,8 +73,11 @@ public sealed class BootstrapAdminSeeder : IHostedService
         CancellationToken ct
     )
     {
-        if (await userManager.FindByEmailAsync(_options.Email) is not null)
+        if (await userManager.FindByEmailAsync(_options.Email) is { } existing)
+        {
+            await ReopenBootstrapAccountAsync(dbContext, existing, ct);
             return;
+        }
 
         var person = new Person
         {
@@ -89,12 +99,33 @@ public sealed class BootstrapAdminSeeder : IHostedService
 
         var created = await userManager.CreateAsync(account, _options.Password);
         if (created.Succeeded)
+        {
+            _logger.LogInformation(
+                "Bootstrap admin account {AccountId} created for {Email}",
+                account.Id,
+                _options.Email
+            );
             return;
+        }
 
         await transaction.RollbackAsync(ct);
         throw new InvalidOperationException(
             $"The bootstrap admin could not be created: {Describe(created)}"
         );
+    }
+
+    private async Task ReopenBootstrapAccountAsync(
+        AppDbContext dbContext,
+        Account account,
+        CancellationToken ct
+    )
+    {
+        if (!account.IsDisabled)
+            return;
+
+        account.IsDisabled = false;
+        await dbContext.SaveChangesAsync(ct);
+        _logger.LogInformation("Bootstrap admin account {AccountId} re-enabled", account.Id);
     }
 
     private async Task EnsureAdminRoleAsync(
@@ -112,7 +143,7 @@ public sealed class BootstrapAdminSeeder : IHostedService
 
         if (adminRoleId is not null)
         {
-            await EnsureAdminRoleIsHeldAsync(dbContext, userManager, adminRoleId.Value, today, ct);
+            await ReconcileAdminRoleAsync(dbContext, userManager, adminRoleId.Value, today, ct);
             return;
         }
 
@@ -136,14 +167,63 @@ public sealed class BootstrapAdminSeeder : IHostedService
 
         dbContext.Roles.Add(role);
         await dbContext.SaveChangesAsync(ct);
+        _logger.LogInformation("Admin role {RoleId} created", role.Id);
     }
 
-    // Anti-lockout failsafe, not an oversight: roles.manage can only be granted by someone who
-    // holds it and there is no delete endpoint (decision U), so an Admin Rolle nobody holds locks
-    // the club out of Rollen & Rechte for good. Decision W's scope is the permission keys — those
-    // are never re-granted, which Should_LeaveTheKeysAlone_When_TheClubRemovedOneFromTheAdminRolle
-    // pins; Should_OpenAnInhaberschaft_When_TheAdminRolleLostEveryInhaber and
-    // Should_OpenAFurtherInhaberschaft_When_TheLastOneOnTheAdminRolleHasEnded pin this half.
+    private async Task ReconcileAdminRoleAsync(
+        AppDbContext dbContext,
+        UserManager<Account> userManager,
+        int adminRoleId,
+        DateOnly today,
+        CancellationToken ct
+    )
+    {
+        await ReopenAdminRoleAsync(dbContext, adminRoleId, ct);
+        await GrantEveryMissingKeyAsync(dbContext, adminRoleId, ct);
+        await EnsureAdminRoleIsHeldAsync(dbContext, userManager, adminRoleId, today, ct);
+    }
+
+    private async Task ReopenAdminRoleAsync(
+        AppDbContext dbContext,
+        int adminRoleId,
+        CancellationToken ct
+    )
+    {
+        var role = await dbContext.Roles.SingleAsync(row => row.Id == adminRoleId, ct);
+        if (role.ArchivedOn is null)
+            return;
+
+        role.ArchivedOn = null;
+        await dbContext.SaveChangesAsync(ct);
+        _logger.LogInformation("Admin role {RoleId} restored from archive", adminRoleId);
+    }
+
+    private async Task GrantEveryMissingKeyAsync(
+        AppDbContext dbContext,
+        int adminRoleId,
+        CancellationToken ct
+    )
+    {
+        var granted = await dbContext
+            .RolePermissions.Where(permission => permission.RoleId == adminRoleId)
+            .Select(permission => permission.PermissionKey)
+            .ToListAsync(ct);
+
+        var missing = FurriaPermissions.All.Except(granted).ToList();
+        if (missing.Count == 0)
+            return;
+
+        dbContext.RolePermissions.AddRange(
+            missing.Select(key => new RolePermission { RoleId = adminRoleId, PermissionKey = key })
+        );
+        await dbContext.SaveChangesAsync(ct);
+        _logger.LogInformation(
+            "Admin role {RoleId} granted {MissingPermissionCount} missing permissions",
+            adminRoleId,
+            missing.Count
+        );
+    }
+
     private async Task EnsureAdminRoleIsHeldAsync(
         AppDbContext dbContext,
         UserManager<Account> userManager,
@@ -162,15 +242,21 @@ public sealed class BootstrapAdminSeeder : IHostedService
         if (stillHeld)
             return;
 
+        var personId = await RequireBootstrapPersonIdAsync(userManager);
         dbContext.RoleHoldings.Add(
             new RoleHolding
             {
                 RoleId = adminRoleId,
-                PersonId = await RequireBootstrapPersonIdAsync(userManager),
+                PersonId = personId,
                 SinceOn = today,
             }
         );
         await dbContext.SaveChangesAsync(ct);
+        _logger.LogInformation(
+            "Admin role {RoleId} handed back to bootstrap person {PersonId}",
+            adminRoleId,
+            personId
+        );
     }
 
     private async Task<int> RequireBootstrapPersonIdAsync(UserManager<Account> userManager)
@@ -179,7 +265,7 @@ public sealed class BootstrapAdminSeeder : IHostedService
 
         return account?.PersonId
             ?? throw new InvalidOperationException(
-                $"The Admin Rolle cannot be seeded: no Account exists for {_options.Email}."
+                $"The Admin role cannot be seeded: no Account exists for {_options.Email}."
             );
     }
 

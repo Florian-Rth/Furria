@@ -1,12 +1,17 @@
+using Furria.Core.Groups;
+
 namespace Furria.Tests.Common.Builder;
 
 public sealed class GroupSeedBuilder
 {
     private static readonly DateOnly DefaultJoinedOn = new(2020, 11, 11);
 
+    private readonly List<GroupKindIntent> _groupKinds = [];
     private readonly List<GroupIntent> _groups = [];
     private readonly List<GroupMembershipIntent> _memberships = [];
     private readonly List<GroupAdminIntent> _admins = [];
+
+    internal IReadOnlyList<GroupKindIntent> GroupKinds => _groupKinds;
 
     internal IReadOnlyList<GroupIntent> Groups => _groups;
 
@@ -14,15 +19,35 @@ public sealed class GroupSeedBuilder
 
     internal IReadOnlyList<GroupAdminIntent> Admins => _admins;
 
+    public GroupSeedBuilder AddGroupKind(string alias, string name, DateOnly? archivedOn = null)
+    {
+        _groupKinds.Add(new GroupKindIntent(alias, name, archivedOn));
+        return this;
+    }
+
     public GroupSeedBuilder AddGroup(
         string alias,
         string name,
         string description = "",
         bool isRecruiting = false,
-        DateOnly? archivedOn = null
+        DateOnly? archivedOn = null,
+        string? groupKindAlias = null,
+        int? foundedYear = null,
+        GroupTone? tone = null
     )
     {
-        _groups.Add(new GroupIntent(alias, name, description, isRecruiting, archivedOn));
+        _groups.Add(
+            new GroupIntent(
+                alias,
+                name,
+                description,
+                isRecruiting,
+                archivedOn,
+                groupKindAlias,
+                foundedYear,
+                tone
+            )
+        );
         return this;
     }
 
@@ -68,12 +93,17 @@ public sealed class GroupSeedBuilder
         return this;
     }
 
+    internal sealed record GroupKindIntent(string Alias, string Name, DateOnly? ArchivedOn);
+
     internal sealed record GroupIntent(
         string Alias,
         string Name,
         string Description,
         bool IsRecruiting,
-        DateOnly? ArchivedOn
+        DateOnly? ArchivedOn,
+        string? GroupKindAlias,
+        int? FoundedYear,
+        GroupTone? Tone
     );
 
     internal sealed record GroupMembershipIntent(

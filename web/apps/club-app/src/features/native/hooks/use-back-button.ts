@@ -2,6 +2,7 @@ import { App } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import { useRouter } from '@tanstack/react-router';
 import { useEffect } from 'react';
+import { requestActiveLeave } from '@/features/write';
 
 export const useBackButton = (): void => {
   const router = useRouter();
@@ -13,6 +14,10 @@ export const useBackButton = (): void => {
 
     const listener = App.addListener('backButton', ({ canGoBack }) => {
       if (canGoBack) {
+        if (requestActiveLeave()) {
+          return;
+        }
+
         router.history.back();
         return;
       }

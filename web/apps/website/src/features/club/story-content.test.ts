@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { buildStoryStats, formatGroupStat, UNKNOWN_STAT_VALUE } from './story-content';
 
 describe('formatGroupStat', () => {
-  it('prints the counted Gruppen', () => {
+  it('prints the counted groups', () => {
     expect(formatGroupStat(6)).toBe('6');
   });
 
@@ -16,7 +16,7 @@ describe('formatGroupStat', () => {
 });
 
 describe('buildStoryStats', () => {
-  it('keeps all three stats while the Gruppen count is still missing', () => {
+  it('keeps all three stats while the groups count is still missing', () => {
     const stats = buildStoryStats(1971, '180+', null);
 
     expect(stats.map((stat) => stat.label)).toEqual(['gegründet', 'Mitglieder', 'Gruppen']);

@@ -17,7 +17,7 @@ const youth: DerivedMembership = {
 };
 
 describe('buildApplySummaryRows', () => {
-  it('echoes the derived Mitgliedschaft and Beitrag', () => {
+  it('echoes the derived membership and fee', () => {
     expect(buildApplySummaryRows(active).slice(0, 2)).toEqual([
       { label: 'MITGLIEDSCHAFT', value: 'Aktiv' },
       { label: 'BEITRAG', value: '30 € im Jahr' },
@@ -28,7 +28,7 @@ describe('buildApplySummaryRows', () => {
     ]);
   });
 
-  it('waits for the Geburtsdatum instead of guessing', () => {
+  it('waits for the birth date instead of guessing', () => {
     const rows = buildApplySummaryRows(null);
 
     expect(rows[0]?.value).toBe('steht mit dem Geburtsdatum');

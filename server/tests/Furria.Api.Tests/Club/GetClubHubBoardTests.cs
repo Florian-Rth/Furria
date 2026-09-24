@@ -22,7 +22,7 @@ public sealed class GetClubHubBoardTests
     }
 
     [Fact]
-    public async Task Should_CarryNoSeats_When_TheClubHasRecordedNoVorstand()
+    public async Task Should_CarryNoSeats_When_TheClubHasRecordedNoBoard()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -36,7 +36,7 @@ public sealed class GetClubHubBoardTests
     }
 
     [Fact]
-    public async Task Should_CarryTheSeatsInFunktionOrder_When_TheVorstandIsStaffed()
+    public async Task Should_CarryTheSeatsInOfficeOrder_When_TheBoardIsStaffed()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -68,7 +68,7 @@ public sealed class GetClubHubBoardTests
     }
 
     [Fact]
-    public async Task Should_OrderByLastName_When_TwoPeopleShareAFunktion()
+    public async Task Should_OrderByLastName_When_TwoPeopleShareAnOffice()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -107,7 +107,7 @@ public sealed class GetClubHubBoardTests
     }
 
     [Fact]
-    public async Task Should_ElideTheSeat_When_TheVorstandssitzHasEnded()
+    public async Task Should_ElideTheSeat_When_TheBoardSeatHasEnded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -135,7 +135,7 @@ public sealed class GetClubHubBoardTests
     }
 
     [Fact]
-    public async Task Should_ElideTheSeat_When_TheVorstandssitzStartsTomorrow()
+    public async Task Should_ElideTheSeat_When_TheBoardSeatStartsTomorrow()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -162,7 +162,7 @@ public sealed class GetClubHubBoardTests
     }
 
     [Fact]
-    public async Task Should_CarryTheSeat_When_TheVorstandssitzEndsToday()
+    public async Task Should_CarryTheSeat_When_TheBoardSeatEndsToday()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -191,7 +191,7 @@ public sealed class GetClubHubBoardTests
     }
 
     [Fact]
-    public async Task Should_LeaveThePortraetPrivate_When_AVorstandssitzIsRunning()
+    public async Task Should_LeaveThePortraitPrivate_When_ABoardSeatIsRunning()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -218,7 +218,7 @@ public sealed class GetClubHubBoardTests
     }
 
     [Fact]
-    public async Task Should_NameTheAushangAutorsFunktion_When_SheHoldsARunningVorstandssitz()
+    public async Task Should_NameTheAnnouncementAuthorsOffice_When_SheHoldsARunningBoardSeat()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -243,7 +243,7 @@ public sealed class GetClubHubBoardTests
     }
 
     [Fact]
-    public async Task Should_NameTheSchluesseltraegersFunktion_When_SheHoldsARunningVorstandssitz()
+    public async Task Should_NameTheKeyHoldersOffice_When_SheHoldsARunningBoardSeat()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

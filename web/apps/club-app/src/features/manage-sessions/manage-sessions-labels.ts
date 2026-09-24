@@ -1,4 +1,4 @@
-import type { KkConfirmFact } from '@furria/ui';
+import type { KkConfirmFact, KkScreenOrigin } from '@furria/ui';
 import { relevantSessionYear } from '@/lib/club';
 import { formatSessionLabel, formatSessionNumber } from '@/lib/membership-labels';
 import type { StateChip } from '@/lib/state-chips';
@@ -9,24 +9,74 @@ const QUOTE_OPEN = '„';
 const QUOTE_CLOSE = '“';
 
 export const MANAGE_SESSIONS_TITLE = 'Sessionseinträge';
-export const MANAGE_SESSIONS_CREATE_LABEL = 'Session eintragen';
+export const MANAGE_SESSIONS_CREATE_LABEL = 'Session hinzufügen';
 export const MANAGE_SESSIONS_LOADING_LABEL = 'Die Sessionseinträge werden geladen';
 export const MANAGE_SESSIONS_ERROR_TITLE = 'SESSIONSEINTRÄGE NICHT GELADEN';
 export const MANAGE_SESSIONS_RETRY_LABEL = 'Erneut laden';
 
-export const MANAGE_SESSIONS_EMPTY = {
-  title: 'NOCH KEINE SESSION EINGETRAGEN',
-  description:
-    'Trag die erste Session ein. Das Jahr reicht — Nº, Motto und Sessionslogo kommen, wenn der Verein sie belegen kann.',
+export const SESSIONS_ORIGIN: KkScreenOrigin = {
+  label: MANAGE_SESSIONS_TITLE,
+  to: '/manage/sessions',
 };
 
+const SESSION_RECORD_ID_PATTERN = /^[1-9]\d*$/;
+
+export const toSessionRecordId = (raw: string): number | null =>
+  SESSION_RECORD_ID_PATTERN.test(raw) ? Number(raw) : null;
+
+export const findSessionRecord = (
+  records: readonly SessionRecordSummary[],
+  sessionId: number | null,
+): SessionRecordSummary | null => {
+  if (sessionId === null) {
+    return null;
+  }
+
+  return records.find((record) => record.sessionId === sessionId) ?? null;
+};
+
+export const SESSION_NOT_FOUND_TITLE = 'NICHT MEHR DA';
+export const SESSION_NOT_FOUND_DESCRIPTION = 'Diesen Sessionseintrag gibt es nicht mehr.';
+
+export const SESSION_EDITOR_DENIED_MESSAGE = 'Dir fehlt die Berechtigung für Sessions und Orte.';
+
 export const MANAGE_SESSIONS_FOOTNOTE =
-  'Lücken gehören dazu: Nº, Motto und Sessionslogo stehen nur da, wo der Verein sie belegen kann. Nichts wird aus dem Nachbareintrag abgeleitet.';
+  'Trage nur ein, was belegt ist – durch Orden, Banner oder Festschrift. Nichts wird aus benachbarten Sessions abgeleitet.';
+
+export const SESSION_SECTION_TITLES = {
+  ahead: 'Aktuell',
+  past: 'Frühere Sessions',
+} as const;
+
+export const VACANT_SESSION_LINE = 'Noch kein Sessionseintrag';
+
+export interface SessionRecordPartition {
+  ahead: SessionRecordSummary[];
+  past: SessionRecordSummary[];
+  vacantYear: number | null;
+}
+
+export const partitionSessionRecords = (
+  records: readonly SessionRecordSummary[],
+  today: Date,
+): SessionRecordPartition => {
+  const relevantYear = relevantSessionYear(today);
+  const ahead = records.filter((record) => record.startYear >= relevantYear);
+  const past = records.filter((record) => record.startYear < relevantYear);
+  const relevantRecorded = ahead.some((record) => record.startYear === relevantYear);
+
+  return { ahead, past, vacantYear: relevantRecorded ? null : relevantYear };
+};
 
 export const SESSION_SPAN_LABEL = 'Session';
-export const MISSING_MOTTO_LINE = 'Motto nicht überliefert';
+const MOTTO_UNRECORDED_LINE = 'Motto nicht überliefert';
+const MOTTO_PENDING_LINE = 'Das Motto steht noch aus';
 
-const RELEVANT_SESSION_CHIP: StateChip = { label: 'diese Session', tone: 'accent', dot: true };
+export const RELEVANT_SESSION_CHIP: StateChip = {
+  label: 'diese Session',
+  tone: 'accent',
+  dot: true,
+};
 
 const written = (value: string | null): string | null => {
   if (value === null) {
@@ -49,8 +99,22 @@ export const toSessionMottoLine = (motto: string | null): string | null => {
   return spoken === null ? null : `${QUOTE_OPEN}${spoken}${QUOTE_CLOSE}`;
 };
 
-export const toSessionRowTitle = (record: SessionRecordSummary): string =>
-  toSessionMottoLine(record.motto) ?? MISSING_MOTTO_LINE;
+export interface SessionRowMotto {
+  line: string;
+  missing: boolean;
+}
+
+export const toSessionRowMotto = (record: SessionRecordSummary, today: Date): SessionRowMotto => {
+  const mottoLine = toSessionMottoLine(record.motto);
+
+  if (mottoLine !== null) {
+    return { line: mottoLine, missing: false };
+  }
+
+  const stillAhead = record.startYear >= relevantSessionYear(today);
+
+  return { line: stillAhead ? MOTTO_PENDING_LINE : MOTTO_UNRECORDED_LINE, missing: true };
+};
 
 export const toSessionRowLabel = (record: SessionRecordSummary): string => {
   const parts = [toSessionSeasonLabel(record.startYear)];
@@ -73,43 +137,19 @@ export const isRelevantSession = (record: SessionRecordSummary, today: Date): bo
 export const toSessionRowChip = (record: SessionRecordSummary, today: Date): StateChip | null =>
   isRelevantSession(record, today) ? RELEVANT_SESSION_CHIP : null;
 
-export const toSessionsIntro = (records: readonly SessionRecordSummary[], today: Date): string => {
-  const seasonLabel = toSessionSeasonLabel(relevantSessionYear(today));
-
-  if (records.length === 0) {
-    return `Noch ist keine Session eingetragen — auch ${seasonLabel} nicht.`;
-  }
-
-  const head =
-    records.length === 1
-      ? 'Ein Sessionseintrag ist festgehalten.'
-      : `${records.length} Sessionseinträge sind festgehalten.`;
-  const tail = records.some((record) => isRelevantSession(record, today))
-    ? `${seasonLabel} ist dabei.`
-    : `Für ${seasonLabel} fehlt der Eintrag noch.`;
-
-  return `${head} ${tail}`;
-};
-
-export const toSessionEditActionLabel = (record: SessionRecordSummary): string =>
-  `${toSessionRowLabel(record)} bearbeiten`;
-
-export const toSessionDeleteActionLabel = (record: SessionRecordSummary): string =>
-  `${toSessionRowLabel(record)} löschen`;
-
+export const SESSIONS_LEAD = 'Sessionsnummer, Motto und Sessionslogo jeder Session.';
 export const DELETE_EYEBROW = 'Sessionseintrag löschen';
-export const DELETE_EXPLANATION =
-  'Ein Sessionseintrag ist ein Beleg, kein Zeitraum — falsch eingetragen wird er gelöscht, nicht beendet. An der Session selbst ändert das nichts.';
+export const DELETE_EXPLANATION = 'Fehlerhafte Sessionseinträge werden gelöscht, nicht archiviert.';
 
 export const toDeleteQuestion = (record: SessionRecordSummary): string =>
   `${toSessionRowLabel(record)} löschen?`;
 
 export const toDeleteConsequence = (record: SessionRecordSummary): string =>
-  `${toSessionSeasonLabel(record.startYear)} heißt danach wieder nur nach ihren Daten — ohne Nº, ohne Motto, ohne Sessionslogo.`;
+  `${toSessionSeasonLabel(record.startYear)} wird danach ohne Sessionsnummer, Motto und Sessionslogo angezeigt.`;
 
 export const toSessionFacts = (record: SessionRecordSummary): KkConfirmFact[] => [
   { label: SESSION_SPAN_LABEL, value: toSessionSeasonLabel(record.startYear) },
-  { label: 'Nº', value: toSessionNumberLabel(record.number) ?? '—' },
+  { label: 'Sessionsnummer', value: toSessionNumberLabel(record.number) ?? '—' },
   { label: 'Motto', value: toSessionMottoLine(record.motto) ?? '—' },
   { label: 'Sessionslogo', value: written(record.logoSvg) === null ? '—' : 'hinterlegt' },
 ];
@@ -123,21 +163,17 @@ export const toSessionSavedMessage = (startYear: number): string =>
 export const toSessionDeletedMessage = (startYear: number): string =>
   `${toSessionSeasonLabel(startYear)} ist gelöscht.`;
 
-export const hasSessionLogo = (record: SessionRecordSummary): boolean =>
-  written(record.logoSvg) !== null;
-
 export const toSessionLogoLabel = (seasonLabel: string): string => `Sessionslogo ${seasonLabel}`;
 
 export const LOGO_FIELD_LABEL = 'Sessionslogo';
 export const LOGO_REMOVE_LABEL = 'Sessionslogo entfernen';
-export const LOGO_PRESENT_LINE = 'So steht es später neben der Session.';
+export const LOGO_PRESENT_LINE = 'So erscheint es neben der Session.';
 
-const LOGO_DROP_HINT =
-  'Tippen, um eine SVG-Datei zu wählen. Die Datei bleibt auf deinem Gerät — gespeichert wird nur ihr Inhalt.';
+const LOGO_DROP_HINT = 'Tippen, um eine SVG-Datei auszuwählen.';
 const LOGO_PICK_HINT = 'Tippen, um das Sessionslogo durch ein anderes SVG zu ersetzen.';
-const LOGO_RELEASE_HINT = 'Loslassen — wir lesen die Datei hier im Browser.';
+const LOGO_RELEASE_HINT = 'Zum Hochladen loslassen.';
 
-export const LOGO_DRAG_HINT = 'Oder zieh die Datei hierher.';
+export const LOGO_DRAG_HINT = 'Oder Datei hierher ziehen.';
 
 export const toLogoFieldHint = (isOver: boolean, hasLogo: boolean): string => {
   if (isOver) {

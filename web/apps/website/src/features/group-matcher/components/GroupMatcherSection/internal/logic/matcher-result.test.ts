@@ -85,7 +85,7 @@ describe('selectMatcherResult', () => {
     expect(ranking.rest.map((match) => match.group.id)).toEqual(['beta', 'delta']);
   });
 
-  it('numbers every eligible Gruppe and prints its percentage', () => {
+  it('numbers every eligible group and prints its percentage', () => {
     const ranking = rankingFor(answered);
 
     expect([ranking.top, ...ranking.rest].map((match) => [match.rank, match.percentage])).toEqual([
@@ -95,7 +95,7 @@ describe('selectMatcherResult', () => {
     ]);
   });
 
-  it('leaves a Gruppe that is not looking for new people exactly where it scored', () => {
+  it('leaves a group that is not looking for new people exactly where it scored', () => {
     const [second] = rankingFor(answered).rest;
 
     expect(second?.group.id).toBe('beta');
@@ -109,7 +109,7 @@ describe('selectMatcherResult', () => {
     expect(ranking.top.reasons.map((reason) => reason.questionId)).toEqual(['build', 'stage']);
   });
 
-  it('names every excluded Gruppe with the answer that ruled it out', () => {
+  it('names every excluded group with the answer that ruled it out', () => {
     const ranking = rankingFor(answered);
 
     expect(ranking.excluded).toHaveLength(1);
@@ -117,7 +117,7 @@ describe('selectMatcherResult', () => {
     expect(ranking.excluded[0]?.reason).toContain('12 oder älter');
   });
 
-  it('hands the Antrag the best Gruppen and says which ones', () => {
+  it('hands the application the best groups and says which ones', () => {
     const ranking = rankingFor(answered);
 
     expect(ranking.applyHref).toBe('/join/apply?groups=alpha,beta,delta');
@@ -129,7 +129,7 @@ describe('selectMatcherResult', () => {
     expect(resultFor({ 'age-band': 'old' }).kind).toBe('unanswered');
   });
 
-  it('stays honest when every Gruppe is filtered out', () => {
+  it('stays honest when every group is filtered out', () => {
     const view = resultFor({ 'age-band': 'ancient', stage: 'yes' });
 
     if (view.kind !== 'empty') {

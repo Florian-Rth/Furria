@@ -32,7 +32,7 @@ public sealed class PostFeeReductionTests
     }
 
     [Fact]
-    public async Task Should_RecordTheErmaessigung_When_AManagerGrantsOne()
+    public async Task Should_RecordTheReduction_When_AManagerGrantsOne()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithPaulaAsync(ct);
@@ -62,7 +62,7 @@ public sealed class PostFeeReductionTests
     }
 
     [Fact]
-    public async Task Should_RecordTheErmaessigung_When_ThePersonIsNoMitglied()
+    public async Task Should_RecordTheReduction_When_ThePersonIsNoMember()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -94,7 +94,7 @@ public sealed class PostFeeReductionTests
     }
 
     [Fact]
-    public async Task Should_RecordTheErmaessigung_When_ItStartsInAComingSession()
+    public async Task Should_RecordTheReduction_When_ItStartsInAComingSession()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithPaulaAsync(ct);
@@ -123,10 +123,10 @@ public sealed class PostFeeReductionTests
     }
 
     [Fact]
-    public async Task Should_RecordTheErmaessigung_When_ItFollowsAnEarlierOne()
+    public async Task Should_RecordTheReduction_When_ItFollowsAnEarlierOne()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithSchoolErmaessigungAsync(ct);
+        var ctx = await BuildWithSchoolReductionAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var (response, result) = await client.POSTAsync<
@@ -182,10 +182,10 @@ public sealed class PostFeeReductionTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheZeitraumOverlapsAnotherErmaessigung()
+    public async Task Should_ReturnConflict_When_TheSpanOverlapsAnotherReduction()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithSchoolErmaessigungAsync(ct);
+        var ctx = await BuildWithSchoolReductionAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var (response, _) = await client.POSTAsync<
@@ -339,7 +339,7 @@ public sealed class PostFeeReductionTests
             ct
         );
 
-    private Task<SeededContext> BuildWithSchoolErmaessigungAsync(CancellationToken ct) =>
+    private Task<SeededContext> BuildWithSchoolReductionAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder =>
                 builder.Identity(identity =>

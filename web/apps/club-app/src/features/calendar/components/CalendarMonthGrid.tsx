@@ -9,6 +9,7 @@ import {
   WEEKDAY_HEADERS,
 } from '@/lib/calendar-days';
 import { ALL_DAYS_LABEL, NEXT_MONTH_LABEL, PREVIOUS_MONTH_LABEL } from '../calendar-labels';
+import { toCalendarMarks } from '../calendar-tones';
 import type { CalendarBoard } from '../hooks/use-calendar-board';
 import type { CalendarEntry } from '../schemas';
 import { CalendarMonthDay } from './CalendarMonthDay';
@@ -23,13 +24,12 @@ interface CalendarMonthGridProps {
 }
 
 export const CalendarMonthGrid: FC<CalendarMonthGridProps> = ({ board, entries }) => {
-  const weeks = toMonthGridWeeks(board.monthCursor, board.today, entries, board.selectedDay);
+  const marks = toCalendarMarks(entries);
+  const weeks = toMonthGridWeeks(board.monthCursor, board.today, marks, board.selectedDay);
 
   const headers = WEEKDAY_HEADERS.map((label) => (
     <Box key={label} sx={HEADER_CELL_SX}>
-      <KkEyebrow tone="muted" size="small">
-        {label}
-      </KkEyebrow>
+      <KkEyebrow tone="muted">{label}</KkEyebrow>
     </Box>
   ));
 
@@ -69,7 +69,7 @@ export const CalendarMonthGrid: FC<CalendarMonthGridProps> = ({ board, entries }
         >
           <KkIcon name="back" size="small" />
         </KkButton>
-        <KkHeading level={5}>{toMonthLabel(board.monthCursor)}</KkHeading>
+        <KkHeading level={3}>{toMonthLabel(board.monthCursor)}</KkHeading>
         <KkButton
           variant="text"
           size="small"

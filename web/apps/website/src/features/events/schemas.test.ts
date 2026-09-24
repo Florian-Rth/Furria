@@ -57,7 +57,7 @@ const messagesFor = (values: OrderBuyerForm, field: keyof OrderBuyerForm): strin
 };
 
 describe('OrderBuyerFormSchema', () => {
-  it('accepts a name and an address to send the Bestellung to', () => {
+  it('accepts a name and an address to send the order to', () => {
     expect(OrderBuyerFormSchema.safeParse(buyer).success).toBe(true);
   });
 
@@ -86,7 +86,7 @@ describe('OrderBuyerFormSchema', () => {
     expect(result.success && result.data).toEqual(buyer);
   });
 
-  it('turns down anything that cannot receive a Bestellung', () => {
+  it('turns down anything that cannot receive an order', () => {
     for (const email of ['', 'keine-mail', 'lena@', '@example.de', 'lena brandt@example.de']) {
       expect(messagesFor({ ...buyer, email }, 'email')).toEqual([
         'Bitte trag eine E-Mail-Adresse ein, an die deine Bestellung gehen kann.',

@@ -1,5 +1,5 @@
 ---
-title: Identity-Fundament (Backend)
+title: Identity foundation (Backend)
 slug: server-identity-foundation
 route: —
 type: foundation
@@ -12,14 +12,14 @@ adrs: [0005]
 ## What & Why
 
 The first real backend slice: the identity core everything else has a foreign key into —
-Person and Mitgliedschaft as EF Core entities, ASP.NET Identity as the Account store, and
+Person and Membership as EF Core entities, ASP.NET Identity as the Account store, and
 login/refresh/me endpoints so the Club-App shell (next plan) can authenticate against
 something real. Chosen first because the locked three-layer identity model
 (`CONTEXT.md`) is the root of the whole domain, and because auth is a prerequisite of
 every Club-App feature.
 
-Deliberately **not** in this foundation: Einladung flow, public self-registration, the
-rights matrix (Ämter/Berechtigungen), Gruppen, and any Person-management endpoints. Each
+Deliberately **not** in this foundation: invitation flow, public self-registration, the
+rights matrix (roles/permissions), groups, and any Person-management endpoints. Each
 is its own plan on top of this one. This foundation ships exactly enough to log in as a
 seeded admin and know who you are.
 
@@ -42,7 +42,7 @@ seeded admin and know who you are.
 4. **Bootstrap admin seeding** — a configured admin Account (+ Person) created on startup
    only when no Account exists; without it, invite-only onboarding can never start.
 5. **Endpoint authorization pattern** (added 2026-09-03, master-plan grilling) — the
-   mechanism by which an endpoint declares its required Berechtigung (permission-key
+   mechanism by which an endpoint declares its required permission (permission-key
    constants + the FastEndpoints enforcement shape), shipped with "authenticated" as the
    only rule that exists yet. The rights-matrix data and management stay in the inventory
    (B4) — this slice exists so no endpoint ever ships with a check shape we would have to
@@ -59,10 +59,10 @@ Pinned in the 2026-09-03 backend kickoff session:
   [ADR-0005](../../docs/adr/0005-auth-aspnet-identity-bearer-tokens.md).
 - **Authorization is domain, not Identity** — the rights matrix comes in a later plan;
   this foundation knows only "authenticated" vs "not".
-- **Non-member Gruppen people are first-class** (`CONTEXT.md`, Gruppe): nothing in this
-  foundation — or ever — gates Club-App access on an existing Mitgliedschaft. `GetMe`
+- **Non-member group people are first-class** (`CONTEXT.md`, group): nothing in this
+  foundation — or ever — gates Club-App access on an existing membership. `GetMe`
   must therefore return cleanly for an Account whose Person has no membership row.
-- **Gast-Registrierung & Dubletten stays open** and does not block this foundation:
+- **Guest registration & duplicates stays open** and does not block this foundation:
   onboarding here is seed-only, and the flag's resolution is owed before
   self-registration ships, not before login exists.
 
@@ -81,7 +81,7 @@ Pinned in the 2026-09-03 backend kickoff session:
   A `ReuseGraceWindow` (30 s, configurable) keeps a client's own in-flight retry from tripping
   reuse detection and logging the honest user out.
 - **`GetMe` payload shape** — Account id + email, Person basics, and the Membership state or
-  `null`. Gruppen/Ämter are decided when the rights-matrix plan (B4) lands.
+  `null`. Groups/roles are decided when the rights-matrix plan (B4) lands.
 - **Where the entities live** — `Person` and `Membership` in `Furria.Core` as the plan says;
   `Account` and `RefreshToken` in `Furria.Infrastructure/Identity` instead, because the
   `/backend-work` rule "Core has zero external dependencies" and `IdentityUser<int>` is one.
@@ -99,7 +99,7 @@ Pinned in the 2026-09-03 backend kickoff session:
   columns.
 - **Permission-key constants** — the *shape* ships (metadata + `Definition.RequirePermission`
   + the enforcer); the `Permissions` constants file itself is created by its first caller in B2.
-  B1 has no endpoint that needs a Berechtigung, so shipping the class empty or with invented
+  B1 has no endpoint that needs a permission, so shipping the class empty or with invented
   keys would have been dead code. The frozen key format is `"{area}:{action}"`.
 
 ## Traps the code cannot state itself
@@ -111,7 +111,7 @@ here. Each is a place where the "obvious simplification" is wrong.
   redundant next to `TryDecodeFromChars` and is not: that method **throws** on malformed input
   instead of returning `false`, and `POST /auth/refresh` is anonymous — so removing the guard
   turns any garbled token into an unauthenticated 500. Applies to every future token decode
-  (Einladung, `orderCode`).
+  (invitation, `orderCode`).
 - **JWT lifetime validation is wired to the injected `TimeProvider`** (`AccessTokenLifetime`,
   wired in `Program.cs`). The framework default reads the machine clock, which would make token
   validation the one part of the API ignoring the clock MET006 exists to enforce — and would
@@ -125,8 +125,8 @@ here. Each is a place where the "obvious simplification" is wrong.
   and `Error`, exactly one of which always throws; and printing the value verbatim would put a
   live access and refresh token in the first log line about a successful login. It names the
   type, never the value.
-- **`PermissionAuthorizer` returning `false` is the correct answer, not a stub.** No Amt can be
-  held until the rights matrix exists (B4), so no Berechtigung is granted — and it is
+- **`PermissionAuthorizer` returning `false` is the correct answer, not a stub.** No role can be
+  held until the rights matrix exists (B4), so no permission is granted — and it is
   fail-closed, so an endpoint that declares a key is refused rather than waved through.
 
 ## Done When

@@ -1,22 +1,23 @@
-import { KkAvatar, KkButton, KkSinceRow } from '@furria/ui';
+import { KkAvatar, KkSinceRow } from '@furria/ui';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { toLandingKey } from '@/features/write';
 import { toInitials } from '@/lib/initials';
-import { toEndHolderLabel, toHolderSinceValue, toPersonName } from '../manage-roles-labels';
+import { toHolderSinceValue, toPersonName } from '../manage-roles-labels';
 import type { RoleHolder } from '../schemas';
 
 const SINCE_LABEL = 'seit';
-const END_LABEL = 'Beenden';
-const MEMBER_PATH = '/members/$personId';
+const HOLDING_ROUTE = '/manage/roles/$roleId/holdings/$roleHoldingId';
 
 interface RoleHolderRowProps {
+  roleId: number;
   holder: RoleHolder;
-  viewerIsAffiliated: boolean;
-  onEnd: (roleHoldingId: number) => void;
+  highlightedKey: string | null;
 }
 
-export const RoleHolderRow: FC<RoleHolderRowProps> = ({ holder, viewerIsAffiliated, onEnd }) => {
+export const RoleHolderRow: FC<RoleHolderRowProps> = ({ roleId, holder, highlightedKey }) => {
   const name = toPersonName(holder);
+  const landing = toLandingKey('role-holding', holder.roleHoldingId);
 
   const avatar = (
     <KkAvatar
@@ -26,40 +27,17 @@ export const RoleHolderRow: FC<RoleHolderRowProps> = ({ holder, viewerIsAffiliat
     />
   );
 
-  const end = (): void => {
-    onEnd(holder.roleHoldingId);
-  };
-
-  const trailing = (
-    <KkButton
-      size="small"
-      variant="text"
-      tone="danger"
-      ariaLabel={toEndHolderLabel(name)}
-      onClick={end}
-    >
-      {END_LABEL}
-    </KkButton>
-  );
-
-  const canOpen = viewerIsAffiliated && holder.isAffiliated;
-
-  const titleLink = canOpen
-    ? {
-        titleComponent: Link,
-        titleTo: MEMBER_PATH,
-        titleParams: { personId: String(holder.personId) },
-      }
-    : {};
-
   return (
     <KkSinceRow
-      {...titleLink}
       avatar={avatar}
       title={name}
       sinceLabel={SINCE_LABEL}
       sinceValue={toHolderSinceValue(holder)}
-      trailing={trailing}
+      component={Link}
+      to={HOLDING_ROUTE}
+      params={{ roleId: String(roleId), roleHoldingId: String(holder.roleHoldingId) }}
+      highlight={highlightedKey === landing}
+      landing={landing}
     />
   );
 };

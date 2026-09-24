@@ -7,23 +7,12 @@ import type { KkFilterOption } from './filter-chip-entries';
 import { toFilterChipEntries } from './filter-chip-entries';
 import { focusRing } from './internal/focus-ring';
 import { nextRovingId } from './internal/roving-focus';
+import { KkChipScroller } from './KkChipScroller';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
-const CHIP_FONT_SIZE = '0.75rem';
 const CHIP_ATTRIBUTE = 'data-kk-filter-chip';
 const SELECTED_CHIP = `[${CHIP_ATTRIBUTE}][aria-checked="true"]`;
-const FADE_WIDTH = 36;
-const EDGE_FADE = `linear-gradient(to right, #000 calc(100% - ${FADE_WIDTH}px), transparent)`;
-
-const scrollingLayout: KkSx = {
-  flexWrap: 'nowrap',
-  overflowX: 'auto',
-  maskImage: EDGE_FADE,
-  scrollbarWidth: 'none',
-  '&::-webkit-scrollbar': { display: 'none' },
-};
-
 const chipStyles = (theme: Theme): CSSObject => ({
   flexShrink: 0,
   px: 1.75,
@@ -32,8 +21,7 @@ const chipStyles = (theme: Theme): CSSObject => ({
   borderStyle: 'solid',
   borderColor: 'divider',
   borderRadius: `${kkTokens.radius.pill}px`,
-  fontFamily: kkTokens.font.body,
-  fontSize: CHIP_FONT_SIZE,
+  ...theme.typography.caption,
   fontWeight: 800,
   letterSpacing: kkTokens.type.tracking.tight,
   lineHeight: 1.2,
@@ -63,7 +51,14 @@ export const KkFilterChips: FC<KkFilterChipsProps> = ({ label, options, value, o
   const stripRef = useRef<HTMLDivElement>(null);
   const ids = entries.map((entry) => entry.id);
   const tabbableId = entries.find((entry) => entry.selected)?.id ?? ids[0];
+  const shownValue = useRef(value);
   useEffect(() => {
+    if (shownValue.current === value) {
+      return;
+    }
+
+    shownValue.current = value;
+
     const selected = stripRef.current?.querySelector(SELECTED_CHIP) ?? null;
 
     selected?.scrollIntoView({ block: 'nearest', inline: 'center' });
@@ -92,37 +87,30 @@ export const KkFilterChips: FC<KkFilterChipsProps> = ({ label, options, value, o
   };
 
   return (
-    <Stack
-      ref={stripRef}
-      direction="row"
-      role="radiogroup"
-      aria-label={label}
-      onKeyDown={moveSelection}
-      data-kk-filter-chips
-      sx={[
-        {
-          alignItems: 'center',
-          gap: 0.875,
-          minWidth: 0,
-          width: '100%',
-        },
-        scrollingLayout,
-        ...(Array.isArray(sx) ? sx : [sx]),
-      ]}
-    >
-      {entries.map((entry) => (
-        <ButtonBase
-          key={entry.id}
-          role="radio"
-          aria-checked={entry.selected}
-          tabIndex={entry.id === tabbableId ? 0 : -1}
-          onClick={selectEntry}
-          data-kk-filter-chip={entry.id}
-          sx={chipStyles}
-        >
-          {entry.text}
-        </ButtonBase>
-      ))}
-    </Stack>
+    <KkChipScroller sx={sx}>
+      <Stack
+        ref={stripRef}
+        direction="row"
+        role="radiogroup"
+        aria-label={label}
+        onKeyDown={moveSelection}
+        data-kk-filter-chips
+        sx={{ alignItems: 'center', gap: 0.875 }}
+      >
+        {entries.map((entry) => (
+          <ButtonBase
+            key={entry.id}
+            role="radio"
+            aria-checked={entry.selected}
+            tabIndex={entry.id === tabbableId ? 0 : -1}
+            onClick={selectEntry}
+            data-kk-filter-chip={entry.id}
+            sx={chipStyles}
+          >
+            {entry.text}
+          </ButtonBase>
+        ))}
+      </Stack>
+    </KkChipScroller>
   );
 };

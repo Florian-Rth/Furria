@@ -21,13 +21,16 @@ import {
   toNextPermissionKeys,
   toNoRoleMatchLine,
   toPermissionEntries,
+  toPersonIdParam,
+  toRoleHoldingChainRows,
+  toRoleHoldingId,
+  toRoleId,
   toRoleSearchTerm,
   toRoleSeed,
   toRoleStatusFilterOptions,
-  toRolesLead,
   toStartQuickChoices,
 } from './manage-roles-labels';
-import type { RoleSummary } from './schemas';
+import type { RoleDetails, RoleHolder, RoleSummary } from './schemas';
 
 const role = (overrides: Partial<RoleSummary> & { roleId: number; name: string }): RoleSummary => ({
   description: '',
@@ -73,29 +76,6 @@ describe('toHoldersMeta', () => {
         { firstName: 'Lukas', lastName: 'Schmitt' },
       ]),
     ).toBe('Heike Krämer und 2 weitere Personen');
-  });
-});
-
-describe('toRolesLead', () => {
-  it('counts the live Rollen', () => {
-    expect(
-      toRolesLead([role({ roleId: 1, name: 'Admin' }), role({ roleId: 2, name: 'Kasse' })]),
-    ).toBe('2 Rollen sagen, wer im Verein was darf.');
-  });
-
-  it('reads a single Rolle in the singular', () => {
-    expect(toRolesLead([role({ roleId: 1, name: 'Admin' })])).toBe(
-      'Eine Rolle sagt, wer im Verein was darf.',
-    );
-  });
-
-  it('counts the archived Rollen separately', () => {
-    expect(
-      toRolesLead([
-        role({ roleId: 1, name: 'Admin' }),
-        role({ roleId: 9, name: 'Chronistin', archivedOn: '2026-09-12' }),
-      ]),
-    ).toBe('Eine Rolle sagt, wer im Verein was darf. Eine weitere ist archiviert.');
   });
 });
 
@@ -187,7 +167,7 @@ describe('toRoleStatusFilterOptions', () => {
     expect(toRoleStatusFilterOptions([role({ roleId: 1, name: 'Admin' })])).toHaveLength(3);
   });
 
-  it('counts an unbesetzte Rolle on the non-archived side, so its word may not claim service', () => {
+  it('counts a vacant role on the non-archived side, so its word may not claim service', () => {
     const unheld = [role({ roleId: 4, name: 'Chronistin' })];
     const [, nonArchived] = toRoleStatusFilterOptions(unheld);
 
@@ -203,7 +183,7 @@ describe('toNoRoleMatchLine', () => {
 
   it('explains the status when only a chip narrows the list', () => {
     expect(toNoRoleMatchLine('', ARCHIVED_ROLES_FILTER_ID)).toBe(
-      'Gerade ist keine Rolle archiviert. Wähle „Alle“, um wieder alle zu sehen.',
+      'Gerade ist keine Rolle archiviert. Wähle „Alle“, um alle anzuzeigen.',
     );
   });
 
@@ -345,11 +325,11 @@ describe('isSelfLockout', () => {
     ...overrides,
   });
 
-  it('warns when the only Rolle that grants her the key is losing it', () => {
+  it('warns when the only role that grants her the key is losing it', () => {
     expect(isSelfLockout(input())).toBe(true);
   });
 
-  it('stays quiet when a second Rolle she holds still grants the key', () => {
+  it('stays quiet when a second role she holds still grants the key', () => {
     const admin = role({
       roleId: 2,
       name: 'Admin',
@@ -360,7 +340,7 @@ describe('isSelfLockout', () => {
     expect(isSelfLockout(input({ roles: [president, admin] }))).toBe(false);
   });
 
-  it('warns when the second Rolle that grants the key is archived', () => {
+  it('warns when the second role that grants the key is archived', () => {
     const archivedAdmin = role({
       roleId: 2,
       name: 'Admin',
@@ -372,7 +352,7 @@ describe('isSelfLockout', () => {
     expect(isSelfLockout(input({ roles: [president, archivedAdmin] }))).toBe(true);
   });
 
-  it('warns when the second Rolle grants the key to somebody else', () => {
+  it('warns when the second role grants the key to somebody else', () => {
     const admin = role({
       roleId: 2,
       name: 'Admin',
@@ -383,7 +363,7 @@ describe('isSelfLockout', () => {
     expect(isSelfLockout(input({ roles: [president, admin] }))).toBe(true);
   });
 
-  it('warns when the second Rolle she holds grants another key', () => {
+  it('warns when the second role she holds grants another key', () => {
     const treasurer = role({
       roleId: 2,
       name: 'Finanzen',
@@ -398,7 +378,7 @@ describe('isSelfLockout', () => {
     expect(isSelfLockout(input({ enabled: true }))).toBe(false);
   });
 
-  it('stays quiet when the viewer does not hold the edited Rolle', () => {
+  it('stays quiet when the viewer does not hold the edited role', () => {
     const heldByAnother = role({
       roleId: 1,
       name: 'Präsidentin',
@@ -409,7 +389,7 @@ describe('isSelfLockout', () => {
     expect(isSelfLockout(input({ roles: [heldByAnother] }))).toBe(false);
   });
 
-  it('stays quiet when the edited Rolle never granted the key', () => {
+  it('stays quiet when the edited role never granted the key', () => {
     const withoutTheKey = role({
       roleId: 1,
       name: 'Präsidentin',
@@ -481,16 +461,95 @@ describe('dated write messages', () => {
     );
   });
 
-  it('states the last day in the future tense when the end is scheduled', () => {
+  it('keeps the role until a scheduled last day', () => {
     expect(toEndHoldingConsequence('Heike', 'Präsidentin', '2026-11-10', '2026-09-12')).toContain(
-      'wird der letzte Tag',
+      'bis einschließlich 10.11.2026',
     );
   });
 
-  it('states the last day in the present tense when the end is today', () => {
+  it('reports the role holding as ended when the last day is today', () => {
     expect(toEndHoldingConsequence('Heike', 'Präsidentin', '2026-09-12', '2026-09-12')).toContain(
-      'ist der letzte Tag',
+      'ist zum 12.09.2026 beendet',
     );
+  });
+});
+
+describe('toRoleId', () => {
+  it.each([
+    { case: 'a positive id', raw: '3', expected: 3 },
+    { case: 'a long id', raw: '1204', expected: 1204 },
+    { case: 'zero', raw: '0', expected: null },
+    { case: 'a negative id', raw: '-3', expected: null },
+    { case: 'a word', raw: 'praesident', expected: null },
+    { case: 'a decimal', raw: '3.5', expected: null },
+    { case: 'nothing', raw: '', expected: null },
+  ])('reads $case', ({ raw, expected }) => {
+    expect(toRoleId(raw)).toBe(expected);
+  });
+});
+
+describe('toRoleHoldingId', () => {
+  it.each([
+    { case: 'a positive id', raw: '12', expected: 12 },
+    { case: 'zero', raw: '0', expected: null },
+    { case: 'a word', raw: 'neu', expected: null },
+  ])('reads $case', ({ raw, expected }) => {
+    expect(toRoleHoldingId(raw)).toBe(expected);
+  });
+});
+
+describe('toPersonIdParam', () => {
+  it.each([
+    { case: 'undefined', raw: undefined, expected: null },
+    { case: 'a positive id', raw: '9', expected: 9 },
+    { case: 'zero', raw: '0', expected: null },
+    { case: 'a word', raw: 'anna', expected: null },
+  ])('reads $case', ({ raw, expected }) => {
+    expect(toPersonIdParam(raw)).toBe(expected);
+  });
+});
+
+describe('toRoleHoldingChainRows', () => {
+  const holder = (overrides: Partial<RoleHolder> & { roleHoldingId: number }): RoleHolder => ({
+    personId: 4,
+    firstName: 'Lukas',
+    lastName: 'Schmitt',
+    sinceOn: '2020-01-01',
+    untilOn: null,
+    since: '2020-01-01',
+    isAffiliated: true,
+    ...overrides,
+  });
+
+  const details = (overrides: Partial<RoleDetails> = {}): RoleDetails => ({
+    roleId: 3,
+    name: 'Finanzen',
+    description: '',
+    archivedOn: null,
+    permissionKeys: [],
+    holders: [],
+    pastHolders: [],
+    ...overrides,
+  });
+
+  it('keeps only the picked person, running before past', () => {
+    const role = details({
+      holders: [
+        holder({ roleHoldingId: 1, personId: 4 }),
+        holder({ roleHoldingId: 2, personId: 9 }),
+      ],
+      pastHolders: [holder({ roleHoldingId: 3, personId: 4, untilOn: '2019-12-31' })],
+    });
+
+    expect(toRoleHoldingChainRows(role, 4, null).map((row) => row.key)).toEqual(['1', '3']);
+  });
+
+  it('marks the row being edited', () => {
+    const role = details({ holders: [holder({ roleHoldingId: 1, personId: 4 })] });
+
+    expect(toRoleHoldingChainRows(role, 4, 1)).toEqual([
+      { key: '1', span: '01.01.2020 – offen', isEdited: true },
+    ]);
   });
 });
 

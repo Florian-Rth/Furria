@@ -1,6 +1,6 @@
 import { KkScreen } from '@furria/ui';
 import type { FC } from 'react';
-import { MORE_SECTION } from '@/features/session';
+import { AREA_HANDOVERS, MORE_SECTION } from '@/features/session';
 import { MANAGE_TITLE } from '../manage-hub-labels';
 import { ManageBody } from './ManageBody';
 import { ManageHeader } from './ManageHeader';
@@ -11,6 +11,7 @@ export const ManagePage: FC = () => (
     section={MORE_SECTION}
     title={MANAGE_TITLE}
     header={<ManageHeader />}
+    handover={AREA_HANDOVERS.manage}
     headerKind="title"
   >
     <ManageBody />

@@ -1,9 +1,18 @@
+import { getRouteApi, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { shiftMonth, startOfMonth, toMonthWindow } from '@/lib/calendar-days';
 import type { CalendarQuery } from '../calendar-query';
-import { ALL_SCOPE_ID, toScopeChoice } from '../calendar-query';
+import {
+  ALL_SCOPE_ID,
+  parseMonthCursorParam,
+  toMonthCursorParam,
+  toScopeChoice,
+} from '../calendar-query';
+import type { CalendarBoardSearch } from '../schemas';
 
 export type CalendarViewMode = 'list' | 'month';
+
+const routeApi = getRouteApi('/_app/calendar');
 
 const NEXT_MONTH = 1;
 const PREVIOUS_MONTH = -1;
@@ -27,10 +36,22 @@ export interface CalendarBoard {
 
 export const useCalendarBoard = (): CalendarBoard => {
   const [today] = useState(() => new Date());
-  const [scopeId, setScopeId] = useState<string>(ALL_SCOPE_ID);
-  const [view, setView] = useState<CalendarViewMode>('list');
-  const [monthCursor, setMonthCursor] = useState(() => startOfMonth(today));
-  const [selectedDay, setSelectedDay] = useState<string | null>(null);
+  const search = routeApi.useSearch();
+  const navigate = useNavigate();
+
+  const scopeId = search.scope ?? ALL_SCOPE_ID;
+  const view: CalendarViewMode = search.view ?? 'list';
+  const monthCursor = parseMonthCursorParam(search.month, startOfMonth(today));
+  const selectedDay = search.day ?? null;
+
+  const patch = (next: Partial<CalendarBoardSearch>): void => {
+    void navigate({
+      to: '.',
+      search: (previous) => ({ ...previous, ...next }),
+      replace: true,
+      resetScroll: false,
+    });
+  };
 
   const dayWindow = view === 'month' ? toMonthWindow(monthCursor) : null;
   const from = dayWindow?.from ?? null;
@@ -38,34 +59,31 @@ export const useCalendarBoard = (): CalendarBoard => {
   const choice = toScopeChoice(scopeId);
 
   const selectScope = (nextScopeId: string): void => {
-    setScopeId(nextScopeId);
+    patch({ scope: nextScopeId === ALL_SCOPE_ID ? undefined : nextScopeId });
   };
 
   const showList = (): void => {
-    setView('list');
-    setSelectedDay(null);
+    patch({ view: undefined, day: undefined });
   };
 
   const showMonth = (): void => {
-    setView('month');
+    patch({ view: 'month' });
   };
 
   const showPreviousMonth = (): void => {
-    setMonthCursor(shiftMonth(monthCursor, PREVIOUS_MONTH));
-    setSelectedDay(null);
+    patch({ month: toMonthCursorParam(shiftMonth(monthCursor, PREVIOUS_MONTH)), day: undefined });
   };
 
   const showNextMonth = (): void => {
-    setMonthCursor(shiftMonth(monthCursor, NEXT_MONTH));
-    setSelectedDay(null);
+    patch({ month: toMonthCursorParam(shiftMonth(monthCursor, NEXT_MONTH)), day: undefined });
   };
 
   const selectDay = (isoDay: string): void => {
-    setSelectedDay(isoDay === selectedDay ? null : isoDay);
+    patch({ day: isoDay === selectedDay ? undefined : isoDay });
   };
 
   const clearDay = (): void => {
-    setSelectedDay(null);
+    patch({ day: undefined });
   };
 
   return {

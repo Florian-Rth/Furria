@@ -1,31 +1,48 @@
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
-import type { Theme } from '@mui/material/styles';
+import type { CSSObject, Theme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import type { FC, ReactNode, Ref } from 'react';
+import type { KkGroupTone } from './internal/group-tone';
+import { groupToneInkPaint } from './internal/group-tone';
+import { KkButton } from './KkButton';
 import { KkEyebrow } from './KkEyebrow';
+import { KkIcon } from './KkIcon';
 import type { KkSx } from './kk-sx';
+import type { KkPanelAction, KkPanelActionEmphasis } from './panel-action';
 import { kkTokens } from './tokens';
-
-type KkPanelHeaderSize = 'small' | 'medium';
 
 const MARKER_SIZE = 9;
 const RULE_BLEED = 26;
 const RULE_MIN_WIDTH = RULE_BLEED * 2;
+const ACTION_SLOT = { ml: 'auto', flexShrink: 0 } as const;
 
-const titleSizes: Record<KkPanelHeaderSize, string> = {
-  small: kkTokens.type.sectionTitle,
-  medium: kkTokens.type.blockTitle,
+const actionVariants: Record<KkPanelActionEmphasis, 'outlined' | 'text'> = {
+  strong: 'outlined',
+  quiet: 'text',
 };
 
 const ruleImage = (theme: Theme): string =>
   `linear-gradient(to right, ${(theme.vars ?? theme).palette.primary.main} 0, ${(theme.vars ?? theme).palette.divider} ${RULE_BLEED}px)`;
 
+const toneRuleImage = (theme: Theme): string =>
+  `linear-gradient(to right, currentColor 0, ${(theme.vars ?? theme).palette.divider} ${RULE_BLEED}px)`;
+
+const markerPaint = (theme: Theme, groupTone: KkGroupTone | undefined): CSSObject =>
+  groupTone === undefined
+    ? { backgroundColor: (theme.vars ?? theme).palette.primary.main }
+    : { ...groupToneInkPaint(theme, groupTone), backgroundColor: 'currentColor' };
+
+const rulePaint = (theme: Theme, groupTone: KkGroupTone | undefined): CSSObject =>
+  groupTone === undefined
+    ? { backgroundImage: ruleImage(theme) }
+    : { ...groupToneInkPaint(theme, groupTone), backgroundImage: toneRuleImage(theme) };
+
 interface KkPanelHeaderProps {
   title: string;
-  action?: ReactNode;
+  action?: KkPanelAction;
   meta?: ReactNode;
-  size?: KkPanelHeaderSize;
+  groupTone?: KkGroupTone;
   titleRef?: Ref<HTMLHeadingElement>;
   sx?: KkSx;
 }
@@ -34,17 +51,37 @@ export const KkPanelHeader: FC<KkPanelHeaderProps> = ({
   title,
   action,
   meta,
-  size = 'small',
+  groupTone,
   titleRef,
   sx,
 }) => {
   const metaContent = typeof meta === 'string' ? <KkEyebrow tone="muted">{meta}</KkEyebrow> : meta;
+  const actionSlot =
+    action === undefined ? null : (
+      <Box sx={ACTION_SLOT}>
+        <KkButton
+          size="small"
+          variant={actionVariants[action.emphasis ?? 'strong']}
+          startIcon={
+            action.icon === undefined ? undefined : <KkIcon name={action.icon} size="small" />
+          }
+          component={action.component}
+          to={action.to}
+          params={action.params}
+          onClick={action.onClick}
+          disabled={action.disabled}
+          ariaLabel={action.ariaLabel}
+        >
+          {action.label}
+        </KkButton>
+      </Box>
+    );
   const metaSlot =
     meta === undefined ? null : (
       <Stack
         direction="row"
         data-kk-panel-header-meta
-        sx={{ alignItems: 'center', flexShrink: 0, whiteSpace: 'nowrap' }}
+        sx={{ alignItems: 'center', minWidth: 0, flexShrink: 1 }}
       >
         {metaContent}
       </Stack>
@@ -57,7 +94,6 @@ export const KkPanelHeader: FC<KkPanelHeaderProps> = ({
       sx={[
         {
           alignItems: 'center',
-          justifyContent: 'flex-end',
           flexWrap: 'wrap',
           gap: 1.25,
           minWidth: 0,
@@ -67,7 +103,12 @@ export const KkPanelHeader: FC<KkPanelHeaderProps> = ({
     >
       <Box
         aria-hidden
-        sx={{ width: MARKER_SIZE, height: MARKER_SIZE, bgcolor: 'primary.main', flexShrink: 0 }}
+        sx={(theme) => ({
+          width: MARKER_SIZE,
+          height: MARKER_SIZE,
+          flexShrink: 0,
+          ...markerPaint(theme, groupTone),
+        })}
       />
       <Typography
         ref={titleRef}
@@ -75,9 +116,7 @@ export const KkPanelHeader: FC<KkPanelHeaderProps> = ({
         tabIndex={-1}
         data-kk-panel-header-title
         sx={{
-          fontFamily: kkTokens.font.display,
-          fontWeight: kkTokens.font.displayWeight,
-          fontSize: titleSizes[size],
+          typography: 'h3',
           letterSpacing: kkTokens.type.tracking.section,
           lineHeight: 1,
           color: 'text.primary',
@@ -96,10 +135,10 @@ export const KkPanelHeader: FC<KkPanelHeaderProps> = ({
           flexShrink: 0,
           minWidth: RULE_MIN_WIDTH,
           height: kkTokens.line.hair,
-          backgroundImage: ruleImage(theme),
+          ...rulePaint(theme, groupTone),
         })}
       />
-      {action}
+      {actionSlot}
     </Stack>
   );
 };

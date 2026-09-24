@@ -29,7 +29,7 @@ public sealed class GetSessionRecordsTests
     {
         var ct = TestContext.Current.CancellationToken;
 
-        var result = await ReadTheEintraegeAsAdminAsync(
+        var result = await ReadTheRecordsAsAdminAsync(
             builder =>
                 builder.Club(club =>
                     club.AddSession("aeltere", 2024)
@@ -50,7 +50,7 @@ public sealed class GetSessionRecordsTests
     {
         var ct = TestContext.Current.CancellationToken;
 
-        var result = await ReadTheEintraegeAsAdminAsync(
+        var result = await ReadTheRecordsAsAdminAsync(
             builder => builder.Club(club => club.AddSession("laufende", 2026, 53, Motto, Logo)),
             ct
         );
@@ -63,11 +63,11 @@ public sealed class GetSessionRecordsTests
     }
 
     [Fact]
-    public async Task Should_LeaveTheUnknownPartsEmpty_When_TheEintragOnlyNamesItsYear()
+    public async Task Should_LeaveTheUnknownPartsEmpty_When_TheEntryOnlyNamesItsYear()
     {
         var ct = TestContext.Current.CancellationToken;
 
-        var result = await ReadTheEintraegeAsAdminAsync(
+        var result = await ReadTheRecordsAsAdminAsync(
             builder => builder.Club(club => club.AddSession("nur-jahr", 1974)),
             ct
         );
@@ -84,7 +84,7 @@ public sealed class GetSessionRecordsTests
     {
         var ct = TestContext.Current.CancellationToken;
 
-        var result = await ReadTheEintraegeAsAdminAsync(_ => { }, ct);
+        var result = await ReadTheRecordsAsAdminAsync(_ => { }, ct);
 
         Assert.Empty(result.Sessions);
     }
@@ -115,7 +115,7 @@ public sealed class GetSessionRecordsTests
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
-    private async Task<GetSessionRecordsResponse> ReadTheEintraegeAsAdminAsync(
+    private async Task<GetSessionRecordsResponse> ReadTheRecordsAsAdminAsync(
         Action<SeedContextBuilder> arrange,
         CancellationToken ct
     )

@@ -1,5 +1,5 @@
 ---
-title: Test-Strategie Web
+title: Test Strategy Web
 slug: testing-strategy
 type: cross-cutting
 status: shipped
@@ -201,7 +201,7 @@ over-eager; the rule, applied honestly, keeps them.
 
 Also trimmed: `membership/schemas` 13 → 9 and `changelog/schemas` 6 → 2 (dropping
 required-is-required cases per the Zod rule, keeping the cross-field guardian refinements, the
-Postleitzahl regex, the birth-date bounds, the icon allow-map and the ISO-date check), and
+postal-code regex, the birth-date bounds, the icon allow-map and the ISO-date check), and
 `lib/date.test.ts` 31 → 23, consolidated into one `it.each` table for the fourteen single-argument
 formatters plus separate blocks for the timezone functions.
 
@@ -238,16 +238,16 @@ Asked what the tests prove when there is no backend, the honest split across the
 Two things worth remembering about that split:
 
 - **The matcher scoring (19 cases) is permanent frontend logic by design** —
-  `plan/website/feature-group-matcher.md`: *"the positions are authored content per Gruppe, the
-  scoring is a pure, tested function"*. The Wahl-O-Mat scale, per-Gruppe normalisation,
+  `plan/website/feature-group-matcher.md`: *"the positions are authored content per group, the
+  scoring is a pure, tested function"*. The Wahl-O-Mat scale, per-group normalisation,
   tie-breaks and divide-by-zero guards all run in the browser.
 - **`membership-derivation` (17 cases) tests a rule the server will own** —
-  `plan/website/feature-membership-funnel.md`: *"The POST body carries no Mitgliedschaftsart and
-  no Beitrag. Both stay derived on the server"*. The frontend computes Jugend/Aktiv and the
-  Beitrag only to show it back live in the form. Kept deliberately: a wrong preview is a
+  `plan/website/feature-membership-funnel.md`: *"The POST body carries no membership type and
+  no fee. Both stay derived on the server"*. The frontend computes fee reduction/active and the
+  fee only to show it back live in the form. Kept deliberately: a wrong preview is a
   user-visible bug, but it guards a preview, not the truth.
 
-Where the club has not decided (**Sitzplatzvergabe**, **Einlasskontrolle** in `CONTEXT.md`)
+Where the club has not decided (**seat allocation**, **entry check** in `CONTEXT.md`)
 there is no rule to test at all — which is exactly why `copy-guard.test.ts` exists: the only
 assertable thing about an undecided mechanic is that no surface claims it.
 
@@ -262,8 +262,8 @@ assertable thing about an undecided mechanic is that no surface claims it.
   10%-scarcity threshold and the seed-consistency guards all survive. Only `seed/groups` and
   `seed/group-matcher` were fixture-only and deleted outright.
 - **The scattered copy guards were worth keeping, but not scattered.** `EMBARGOED_MECHANICS`
-  plus the per-file editorial guards ("never names a Vorstand", "never calls a Mitgliedschaftsart
-  passiv", "never names a Gruppe the club does not have") are not change-detectors — they
+  plus the per-file editorial guards ("never names a board", "never calls a membership type
+  passive", "never names a group the club does not have") are not change-detectors — they
   catch invented club facts, the thing `CONTEXT.md` exists to prevent. They are now one file.
 
 ### The copy guard

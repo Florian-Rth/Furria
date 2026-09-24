@@ -68,7 +68,7 @@ describe('deriveTicketPanelFace', () => {
 });
 
 describe('deriveTicketPanelCta', () => {
-  it('leads into the Bestellflow of this event while Karten are sold', () => {
+  it('leads into the order flow of this event while tickets are on sale', () => {
     expect(deriveTicketPanelCta(onSale)).toEqual({
       label: 'Karten wählen →',
       to: '/events/prunksitzung-1-2027/order',
@@ -77,7 +77,7 @@ describe('deriveTicketPanelCta', () => {
     expect(deriveTicketPanelCta(almostSoldOut)?.to).toBe('/events/prunksitzung-1-2027/order');
   });
 
-  it('leads into the Kartenbörse once the evening is sold out', () => {
+  it('leads into the ticket exchange once the evening is sold out', () => {
     expect(deriveTicketPanelCta(soldOut)).toEqual({
       label: 'Zur Kartenbörse →',
       to: '/events/exchange',
@@ -100,7 +100,7 @@ describe('deriveTicketPanelNote', () => {
     expect(note).toBe('Der Vorverkauf startet am 10.01.2027 um 10:00 Uhr.');
   });
 
-  it('stays silent while Karten are on sale — the availability speaks instead', () => {
+  it('stays silent while tickets are on sale — the availability speaks instead', () => {
     expect(deriveTicketPanelNote(deriveTicketPanelFace(onSale))).toBeNull();
     expect(deriveTicketPanelNote(deriveTicketPanelFace(almostSoldOut))).toBeNull();
   });

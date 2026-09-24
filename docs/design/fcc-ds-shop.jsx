@@ -1,8 +1,8 @@
-// fcc-ds-shop.jsx — Vereins-Klamotten-Shop · Mitglied (/shop).
-// Model: Dauer-Sortiment (immer bestellbar) + saisonale SAMMELBESTELLUNG (Frist →
-// Sammel-Order beim Lieferanten → Lieferung → Ausgabe). Bezahlung: direkt über das
-// eine Zahlsystem (Stripe/PayPal) ODER bar (Amt bestätigt) — wie die Bierliste.
-// Shared data lives on window.SHOP (Amt-Datei liest es). Exports PageShop + MShop.
+// fcc-ds-shop.jsx — Club clothing shop · member (/shop).
+// Model: standing range (always orderable) + seasonal BULK ORDER (deadline →
+// consolidated order with the supplier → delivery → handout). Payment: direct via the
+// one payment system (Stripe/PayPal) OR cash (office confirms) — like the drinks kitty.
+// Shared data lives on window.SHOP (the office's page reads it). Exports PageShop + MShop.
 
 (function () {
   const { T, Ic, Card, Chip, Btn, Title, Eyebrow, Avatar } = window;

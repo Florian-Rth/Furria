@@ -4,6 +4,7 @@ using Furria.Api.Endpoints.Auth;
 using Furria.Application.Identity;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
+using Serilog.Events;
 using Xunit;
 
 namespace Furria.Api.Tests.Auth;
@@ -13,6 +14,11 @@ public sealed class RefreshTests
 {
     private static readonly TimeSpan PastTheGraceWindow = TimeSpan.FromMinutes(1);
     private static readonly TimeSpan PastTheRefreshTokenLifetime = TimeSpan.FromDays(31);
+
+    private const string ReplayDetected =
+        "Refresh token replay for account {AccountId}, family {TokenFamilyId} revoked";
+    private const string DisabledAccountRefreshed =
+        "Refresh refused for disabled account {AccountId}, session revoked";
 
     private readonly ApiTestFixture _fixture;
 
@@ -219,6 +225,50 @@ public sealed class RefreshTests
         var (response, _) = await Post("");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_WarnOfTheReplay_When_ARotatedTokenIsReplayedAfterTheGraceWindow()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (ctx, session) = await LoggedInAsync(ct);
+        await Post(session.RefreshToken);
+        var mark = _fixture.Logs.Mark();
+
+        await _fixture.AtLaterTimeAsync(PastTheGraceWindow, () => Post(session.RefreshToken));
+
+        var written = Assert.Single(_fixture.Logs.Written(ReplayDetected, mark));
+        Assert.Equal(LogEventLevel.Warning, written.Level);
+        Assert.Equal(ctx.Identity.Accounts.IdOf("alice"), written.ScalarOf("AccountId"));
+        Assert.IsType<Guid>(written.ScalarOf("TokenFamilyId"));
+    }
+
+    [Fact]
+    public async Task Should_WarnOfNoReplay_When_ARotatedTokenIsReplayedInsideTheGraceWindow()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (_, session) = await LoggedInAsync(ct);
+        await Post(session.RefreshToken);
+        var mark = _fixture.Logs.Mark();
+
+        await Post(session.RefreshToken);
+
+        Assert.Empty(_fixture.Logs.Written(ReplayDetected, mark));
+    }
+
+    [Fact]
+    public async Task Should_WarnOfTheRefusedRefresh_When_TheAccountWasDisabledMidSession()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (ctx, session) = await LoggedInAsync(ct);
+        await _fixture.DisableAccountDirectlyAsync(ctx.Identity.Accounts.IdOf("alice"), ct);
+        var mark = _fixture.Logs.Mark();
+
+        await Post(session.RefreshToken);
+
+        var written = Assert.Single(_fixture.Logs.Written(DisabledAccountRefreshed, mark));
+        Assert.Equal(LogEventLevel.Warning, written.Level);
+        Assert.Equal(ctx.Identity.Accounts.IdOf("alice"), written.ScalarOf("AccountId"));
     }
 
     private async Task<(SeededContext Context, LoginResponse Session)> LoggedInAsync(

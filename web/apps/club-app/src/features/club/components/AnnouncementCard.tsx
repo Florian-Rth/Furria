@@ -19,7 +19,7 @@ export const AnnouncementCard: FC<AnnouncementCardProps> = ({ announcement, isNe
         direction="row"
         sx={{ gap: 1, alignItems: 'flex-start', justifyContent: 'space-between', minWidth: 0 }}
       >
-        <KkHeading level={5} component="h3">
+        <KkHeading level={4} component="h3">
           {announcement.title}
         </KkHeading>
         {newChip}

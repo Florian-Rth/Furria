@@ -19,21 +19,21 @@ const group = (groupId: number, isRecruiting: boolean): PublicGroup => ({
 });
 
 describe('resolveGroupOpenness', () => {
-  it('marks a recruiting Gruppe with the live dot and the gold tone', () => {
+  it('marks a recruiting group with the live dot and the gold tone', () => {
     expect(resolveGroupOpenness(true)).toMatchObject({ tone: 'gold', dot: true });
   });
 
-  it('leaves a settled Gruppe quiet, without a dot', () => {
+  it('leaves a settled group quiet, without a dot', () => {
     expect(resolveGroupOpenness(false)).toMatchObject({ tone: 'neutral', dot: false });
   });
 
-  it('never calls a settled Gruppe complete', () => {
+  it('never calls a settled group complete', () => {
     expect(resolveGroupOpenness(false).label).not.toMatch(/team/i);
   });
 });
 
 describe('countRecruitingGroups', () => {
-  it('counts only the Gruppen that are open', () => {
+  it('counts only the groups that are open', () => {
     expect(countRecruitingGroups([group(1, true), group(2, false), group(3, true)])).toBe(2);
   });
 
@@ -52,7 +52,7 @@ describe('resolveGroupsIntroKind', () => {
     expect(resolveGroupsIntroKind(total, recruiting)).toBe(expected);
   });
 
-  it('prefers the empty-openness reading over the single-Gruppe one', () => {
+  it('prefers the empty-openness reading over the single-group one', () => {
     expect(resolveGroupsIntroKind(1, 0)).toBe('none');
   });
 });
@@ -89,7 +89,7 @@ describe('buildGroupBadge', () => {
 describe('resolveGroupTint', () => {
   const theme = createTheme();
 
-  it('cycles red, gold then ink by position and wraps to any number of Gruppen', () => {
+  it('cycles red, gold then ink by position and wraps to any number of groups', () => {
     expect(resolveGroupTint(theme, 0)).toBe(theme.palette.primary.main);
     expect(resolveGroupTint(theme, 1)).toBe(theme.palette.warning.main);
     expect(resolveGroupTint(theme, 2)).toBe(theme.palette.text.primary);

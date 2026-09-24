@@ -1,50 +1,49 @@
-import { KkButton, KkChip, KkFieldRow, KkIcon, KkPanel, KkPanelSection } from '@furria/ui';
+import type { KkPanelAction } from '@furria/ui';
+import { KkFieldRow, KkPanel, KkPanelSection, KkSwitchRow } from '@furria/ui';
+import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { toLandingKey } from '@/features/write';
 import { formatAddress, formatIsoDay } from '@/lib/membership-labels';
-import { toSwitchStateChip } from '@/lib/state-chips';
-import { usePersonFormDialog } from '../hooks/use-person-form-dialog';
-import { PERSON_SECTION_TITLES, toVisibilityPointer } from '../manage-persons-labels';
+import { useContactVisibilitySwitch } from '../hooks/use-contact-visibility-switch';
+import { PERSON_SECTION_TITLES, VISIBILITY_DESCRIPTION } from '../manage-persons-labels';
 import type { PersonDetails } from '../schemas';
-import { PersonFormDialog } from './PersonFormDialog';
 
 const EDIT_LABEL = 'Bearbeiten';
+const EDIT_ACTION_LABEL = 'Stammdaten bearbeiten';
+const EDIT_ROUTE = '/manage/persons/$personId/edit';
 const NAME_LABEL = 'Name';
 const EMAIL_LABEL = 'E-Mail';
 const PHONE_LABEL = 'Telefon';
 const ADDRESS_LABEL = 'Adresse';
 const BIRTH_DATE_LABEL = 'Geburtsdatum';
-const VISIBILITY_LABEL = 'Für Mitglieder sichtbar';
+const VISIBILITY_LABEL = 'Kontaktdaten für Mitglieder sichtbar';
 const MISSING_VALUE = 'nicht hinterlegt';
 
 interface PersonMasterDataPanelProps {
   person: PersonDetails;
+  highlightedKey: string | null;
 }
 
-export const PersonMasterDataPanel: FC<PersonMasterDataPanelProps> = ({ person }) => {
-  const dialog = usePersonFormDialog();
+export const PersonMasterDataPanel: FC<PersonMasterDataPanelProps> = ({
+  person,
+  highlightedKey,
+}) => {
+  const visibility = useContactVisibilitySwitch(person);
   const address = formatAddress(person.street, person.zip, person.city);
+  const landingKey = toLandingKey('person', person.personId);
 
-  const action = (
-    <KkButton
-      size="small"
-      variant="outlined"
-      startIcon={<KkIcon name="edit" size="small" />}
-      onClick={dialog.open}
-    >
-      {EDIT_LABEL}
-    </KkButton>
-  );
-
-  const visibility = toSwitchStateChip(person.contactVisibleToMembers);
-  const visibilityChip = (
-    <KkChip tone={visibility.tone} dot={visibility.dot}>
-      {visibility.label}
-    </KkChip>
-  );
+  const action: KkPanelAction = {
+    label: EDIT_LABEL,
+    icon: 'edit',
+    ariaLabel: EDIT_ACTION_LABEL,
+    component: Link,
+    to: EDIT_ROUTE,
+    params: { personId: String(person.personId) },
+  };
 
   return (
     <KkPanelSection title={PERSON_SECTION_TITLES.masterData} action={action}>
-      <KkPanel>
+      <KkPanel highlight={highlightedKey === landingKey} landing={landingKey}>
         <KkFieldRow label={NAME_LABEL} value={`${person.firstName} ${person.lastName}`} />
         <KkFieldRow label={EMAIL_LABEL} value={person.email ?? MISSING_VALUE} />
         <KkFieldRow label={PHONE_LABEL} value={person.phone ?? MISSING_VALUE} />
@@ -53,18 +52,14 @@ export const PersonMasterDataPanel: FC<PersonMasterDataPanelProps> = ({ person }
           label={BIRTH_DATE_LABEL}
           value={person.birthDate === null ? MISSING_VALUE : formatIsoDay(person.birthDate)}
         />
-        <KkFieldRow
+        <KkSwitchRow
           label={VISIBILITY_LABEL}
-          value={visibilityChip}
-          hint={toVisibilityPointer(person.firstName)}
+          checked={visibility.checked}
+          onChange={visibility.onChange}
+          description={VISIBILITY_DESCRIPTION}
+          busy={visibility.busy}
         />
       </KkPanel>
-      <PersonFormDialog
-        person={person}
-        open={dialog.isOpen}
-        onClose={dialog.close}
-        onSaved={dialog.close}
-      />
     </KkPanelSection>
   );
 };

@@ -24,7 +24,7 @@ public sealed class ArchiveGroupTests
     }
 
     [Fact]
-    public async Task Should_StampToday_When_TheKeyHolderArchivesTheGruppe()
+    public async Task Should_StampToday_When_TheKeyHolderArchivesTheGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -45,7 +45,7 @@ public sealed class ArchiveGroupTests
     }
 
     [Fact]
-    public async Task Should_LeaveEveryPeriodUntouched_When_TheGruppeIsArchived()
+    public async Task Should_LeaveEveryPeriodUntouched_When_TheGroupIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -91,7 +91,7 @@ public sealed class ArchiveGroupTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheGruppeIsAlreadyArchived()
+    public async Task Should_ReturnConflict_When_TheGroupIsAlreadyArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -123,7 +123,7 @@ public sealed class ArchiveGroupTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheGruppeIsUnknown()
+    public async Task Should_ReturnNotFound_When_TheGroupIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);

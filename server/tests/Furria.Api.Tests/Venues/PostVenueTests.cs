@@ -27,7 +27,7 @@ public sealed class PostVenueTests
     }
 
     [Fact]
-    public async Task Should_RecordTheAnschrift_When_TheKeyHolderLegtDenOrtAn()
+    public async Task Should_RecordTheAddress_When_TheKeyHolderCreatesTheVenue()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
@@ -62,7 +62,7 @@ public sealed class PostVenueTests
     }
 
     [Fact]
-    public async Task Should_RecordNoHinweis_When_TheOrtNeedsNone()
+    public async Task Should_RecordNoHint_When_TheVenueNeedsNone()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
@@ -88,7 +88,7 @@ public sealed class PostVenueTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_AnOrtCarriesTheNameInAnotherCase()
+    public async Task Should_ReturnConflict_When_AVenueCarriesTheNameInAnotherCase()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -114,7 +114,7 @@ public sealed class PostVenueTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_OnlyAnArchivedOrtCarriesTheName()
+    public async Task Should_ReturnConflict_When_OnlyAnArchivedVenueCarriesTheName()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -145,7 +145,7 @@ public sealed class PostVenueTests
     }
 
     [Fact]
-    public async Task Should_ReturnBadRequest_When_TheAnschriftIsMissing()
+    public async Task Should_ReturnBadRequest_When_TheAddressIsMissing()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);

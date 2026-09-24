@@ -39,7 +39,7 @@ B7, `Neu im Verein` needs B8. Nothing was mocked, so the stage carries the greet
 only — no task list, no quiet state, no bell, no badges, no red dot on the pill. Each returns
 with the phase that gives it real data.
 
-**The Übersicht sheet is deliberately empty** until B7 lands. The Person/Mitgliedschaft detail
+**The Übersicht sheet is deliberately empty** until B7 lands. The Person/membership detail
 CA-P0 put on `/` moved behind the curtain's avatar to `/profile`, where it uses the mock's own
 section-header + hairline-row language.
 
@@ -127,6 +127,6 @@ that page's own header, where it exists only when there is somewhere to go back 
 | Mock | Ruling |
 |---|---|
 | `Anna Brunner`, `Tanzgarde`, `30 €`, `48 €`, `1. Prunksitzung` | Sample data. Never ship it — the app shows the signed-in member or nothing |
-| `Tanzgarde · Aktiv` under the avatar | Gruppe needs B3. The identity line shows the Mitgliedschaftsart alone until then |
+| `Tanzgarde · Aktiv` under the avatar | Group needs B3. The identity line shows the membership type alone until then |
 | `SESSION 2025/26` hardcoded | Computed by `sessionAt` — sessions roll on 11.11. and are numbered from 1971 |
 | Badges (`3`, `48 €`, `offen`, `42 neu`) and the pill's red dot | Data claims with no backend. Omitted |

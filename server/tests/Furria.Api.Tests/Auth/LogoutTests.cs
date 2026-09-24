@@ -5,6 +5,7 @@ using Furria.Api.Endpoints.Auth;
 using Furria.Application.Identity;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
+using Serilog.Events;
 using Xunit;
 
 namespace Furria.Api.Tests.Auth;
@@ -12,6 +13,8 @@ namespace Furria.Api.Tests.Auth;
 [Collection("Api")]
 public sealed class LogoutTests
 {
+    private const string LoggedOut = "Account {AccountId} logged out";
+
     private readonly ApiTestFixture _fixture;
 
     public LogoutTests(ApiTestFixture fixture)
@@ -108,6 +111,20 @@ public sealed class LogoutTests
             );
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_ReportTheLogout_When_TheCallerLogsOut()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (ctx, session) = await LoggedInAsync(ct);
+        var mark = _fixture.Logs.Mark();
+
+        await Post(session, session.RefreshToken);
+
+        var written = Assert.Single(_fixture.Logs.Written(LoggedOut, mark));
+        Assert.Equal(LogEventLevel.Information, written.Level);
+        Assert.Equal(ctx.Identity.Accounts.IdOf("alice"), written.ScalarOf("AccountId"));
     }
 
     private async Task<(SeededContext Context, LoginResponse Session)> LoggedInAsync(

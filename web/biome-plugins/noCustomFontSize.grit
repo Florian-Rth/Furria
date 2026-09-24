@@ -1,0 +1,22 @@
+language js
+
+or {
+  JsPropertyObjectMember() as $member where {
+    $member <: `$key: $_`,
+    or {
+      $key <: r"^['\"]?(?:fontSize|font-size)['\"]?$",
+      $member <: `font: $shorthand` where {
+        $shorthand <: or {
+          JsStringLiteralExpression(),
+          JsTemplateExpression()
+        }
+      }
+    },
+    register_diagnostic(span=$member, message="No custom font size: sizes live only in the theme scale (packages/ui/src/theme.ts). Pick a typography variant instead.")
+  },
+  JsxAttribute() as $attr where {
+    $attr <: r"^fontSize(?:\s*=[\s\S]*)?$",
+    not $attr <: r"^fontSize\s*=\s*\"(?:small|medium|large|inherit)\"$",
+    register_diagnostic(span=$attr, message="No custom font size: an icon fontSize is small, medium, large or inherit; text sizes live only in the theme scale (packages/ui/src/theme.ts).")
+  }
+}

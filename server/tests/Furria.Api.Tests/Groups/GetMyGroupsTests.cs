@@ -25,7 +25,7 @@ public sealed class GetMyGroupsTests
     }
 
     [Fact]
-    public async Task Should_CarryTheGruppe_When_SheCurrentlyBelongsToIt()
+    public async Task Should_CarryTheGroup_When_SheCurrentlyBelongsToIt()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -57,7 +57,7 @@ public sealed class GetMyGroupsTests
     }
 
     [Fact]
-    public async Task Should_CarryTheGruppe_When_SheOnlyAdministersIt()
+    public async Task Should_CarryTheGroup_When_SheOnlyAdministersIt()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -89,7 +89,7 @@ public sealed class GetMyGroupsTests
     }
 
     [Fact]
-    public async Task Should_NameTheGruppeOnce_When_SheBelongsToItAndAdministersIt()
+    public async Task Should_NameTheGroupOnce_When_SheBelongsToItAndAdministersIt()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -121,7 +121,7 @@ public sealed class GetMyGroupsTests
     }
 
     [Fact]
-    public async Task Should_OmitTheGruppe_When_HerTieEndedOrLiesAhead()
+    public async Task Should_OmitTheGroup_When_HerTieEndedOrLiesAhead()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -161,7 +161,7 @@ public sealed class GetMyGroupsTests
     }
 
     [Fact]
-    public async Task Should_OmitTheGruppe_When_ItIsArchived()
+    public async Task Should_OmitTheGroup_When_ItIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -252,7 +252,7 @@ public sealed class GetMyGroupsTests
     }
 
     [Fact]
-    public async Task Should_SortTheGruppenAsGerman_When_SheBelongsToSeveral()
+    public async Task Should_SortTheGroupsAsGerman_When_SheBelongsToSeveral()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

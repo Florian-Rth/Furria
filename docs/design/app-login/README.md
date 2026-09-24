@@ -1,4 +1,4 @@
-# Handoff: FURRIA, Club-App Login & Shell (interne Club-App)
+# Handoff: FURRIA, Club-App Login & Shell (internal Club-App)
 
 Design direction for the entry point of the internal **Club-App** (`app.furria.de`): the login
 screen, the splash idea and the authenticated shell around it. This bundle arrived **without a
@@ -31,7 +31,7 @@ Three directions and their states:
 |---|---|---|
 | **A** *Bühne* | Dark stage above a light sheet that slides up | `start`, `form`, `code` (mobile); `LoginDesk` (desktop 58/42 split) |
 | **B** *Mitgliedsausweis* | The login as a paper membership card, tilted, hard offset shadow | `form`, `code` |
-| **C** *Plakat* | Full-red poster with the form printed on it | `form`, `code` |
+| **C** *poster* | Full-red poster with the form printed on it | `form`, `code` |
 
 The splash runs four phases on 120 / 780 / 1700 / 2700 ms timers: letters drop in, confetti
 bursts, the motto fades in, a footer line closes it.
@@ -87,7 +87,7 @@ this). Full reasoning lives in
   and so does the Club-App.
 - **The invented motto `»FURRA HEBT AB«`** and the **`141 TAGE BIS ZUR 1. PRUNKSITZUNG`
   countdown.** No Session motto has been decided and no Prunksitzung date exists in the system;
-  both would be a fact the app states without knowing it. The Narrenruf takes the motto's slot.
+  both would be a fact the app states without knowing it. The carnival call takes the motto's slot.
 - **`Termine, Auftritte, Bierliste, Beitrag`** as the sub-line under the heading. It advertises
   four features that do not exist yet. Ours says what is true today:
   `Der Mitgliederbereich des Furrscher Carnevals Club.`
@@ -152,7 +152,7 @@ this). Full reasoning lives in
   message when the request never reached the server, and a generic fallback.
 - **The `Übersicht` page** behind the shell: the `/auth/me` data as three cards (Zugang, Person,
   Mitgliedschaft), with `Keine Mitgliedschaft hinterlegt.` as a first-class case rather than an
-  error, because non-member Gruppen people are normal.
+  error, because non-member group people are normal.
 - **Logout**, which the mock's user block only draws.
 - **The scoped dark stage.** The mock paints hex values; ours sets `data-dark` on the stage
   container so every child resolves its own palette and the light pane beside it is unaffected.

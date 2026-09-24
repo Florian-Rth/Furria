@@ -60,31 +60,23 @@ export const GROUP_HISTORY_KIND_LABELS: Record<GroupHistoryKind, string> = {
 };
 
 export const SINCE_LABEL = 'seit';
-export const END_LABEL = 'Beenden';
 
 export const ADD_MEMBER_LABEL = 'Mitglied';
 export const ADD_MEMBER_ACTION_LABEL = 'Mitglied aufnehmen';
-export const ADD_ADMIN_LABEL = 'Admin';
-export const ADD_ADMIN_ACTION_LABEL = 'Admin eintragen';
-
-export const toEndMembershipActionLabel = (personName: string): string =>
-  `Zugehörigkeit von ${personName} beenden`;
-
-export const toEndAdminActionLabel = (personName: string): string =>
-  `Gruppen-Admin ${personName} beenden`;
 
 export const NO_MEMBERS_TITLE = 'NOCH NIEMAND DABEI';
 export const NO_ADMINS_TITLE = 'KEIN GRUPPEN-ADMIN';
 export const NO_HISTORY_TITLE = 'NOCH KEINE GESCHICHTE';
-export const NO_HISTORY_LINE = 'Beendete Zugehörigkeiten und frühere Gruppen-Admins stehen hier.';
+export const NO_HISTORY_LINE =
+  'Beendete Zugehörigkeiten und frühere Gruppen-Admins erscheinen hier.';
 
-const ADD_ANYONE_INVITE = 'Du kannst jede Person aus dem Register aufnehmen.';
+const ADD_ANYONE_INVITE = 'Jede Person aus dem Register kann aufgenommen werden.';
 
 export const toNoMembersLine = (groupName: string, canManage: boolean): string => {
-  const line = `In ${groupName} ist gerade niemand eingetragen.`;
+  const line = `In ${groupName} ist niemand eingetragen.`;
 
   return canManage ? `${line} ${ADD_ANYONE_INVITE}` : line;
 };
 
 export const toNoDescriptionLine = (groupName: string): string =>
-  `Zu ${groupName} steht noch nichts geschrieben.`;
+  `Für ${groupName} gibt es noch keine Beschreibung.`;

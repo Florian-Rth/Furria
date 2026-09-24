@@ -15,8 +15,8 @@ export const NewsCategoryChip: FC<NewsCategoryChipProps> = ({ category }) => (
     sx={(theme) => ({
       bgcolor: resolveCategoryTint(theme, category),
       color: resolveCategoryContrastText(theme, category),
+      typography: 'caption',
       fontWeight: 900,
-      fontSize: '0.6875rem',
       letterSpacing: '0.12em',
       textTransform: 'uppercase',
     })}

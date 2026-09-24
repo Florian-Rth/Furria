@@ -2,6 +2,7 @@ using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Groups;
 using Furria.Application.Authorization;
+using Furria.Core.Groups;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -23,7 +24,7 @@ public sealed class GetManagedGroupsTests
     }
 
     [Fact]
-    public async Task Should_CarryTheGruppeWithItsAdmins_When_TheKeyHolderReadsTheList()
+    public async Task Should_CarryTheGroupWithItsAdmins_When_TheKeyHolderReadsTheList()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -74,7 +75,7 @@ public sealed class GetManagedGroupsTests
     }
 
     [Fact]
-    public async Task Should_CarryTheArchivedGruppe_When_TheKeyHolderReadsTheList()
+    public async Task Should_CarryTheArchivedGroup_When_TheKeyHolderReadsTheList()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -104,7 +105,32 @@ public sealed class GetManagedGroupsTests
     }
 
     [Fact]
-    public async Task Should_CarryAnEmptyAdminList_When_TheGruppeHasNoRunningAdmin()
+    public async Task Should_CarryTheStoredTone_When_TheGroupCarriesOne()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Groups(groups =>
+                    groups
+                        .AddGroup("musikzug", "Musikzug", tone: GroupTone.Teal)
+                        .AddGroup("elferrat", "Elferrat")
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var (response, result) = await client.GETAsync<
+            GetManagedGroups,
+            GetManagedGroupsResponse
+        >();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(GroupTone.Teal, result.Groups.Single(group => group.Name == "Musikzug").Tone);
+        Assert.Null(result.Groups.Single(group => group.Name == "Elferrat").Tone);
+    }
+
+    [Fact]
+    public async Task Should_CarryAnEmptyAdminList_When_TheGroupHasNoRunningAdmin()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -132,12 +158,12 @@ public sealed class GetManagedGroupsTests
         >();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var elferrat = Assert.Single(result.Groups);
-        Assert.Empty(elferrat.Admins);
+        var councilOfEleven = Assert.Single(result.Groups);
+        Assert.Empty(councilOfEleven.Admins);
     }
 
     [Fact]
-    public async Task Should_CountOnlyRunningZugehoerigkeiten_When_TheGruppeHasHistory()
+    public async Task Should_CountOnlyRunningGroupMemberships_When_TheGroupHasHistory()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -182,7 +208,7 @@ public sealed class GetManagedGroupsTests
     }
 
     [Fact]
-    public async Task Should_SortUmlautsAsGerman_When_ListingTheGruppen()
+    public async Task Should_SortUmlautsAsGerman_When_ListingTheGroups()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -207,6 +233,58 @@ public sealed class GetManagedGroupsTests
             ["Ältestenrat", "Marschmusik", "Tanzgarde"],
             result.Groups.Select(group => group.Name)
         );
+    }
+
+    [Fact]
+    public async Task Should_CarryTheGroupKindsWithTheirGroupCount_When_TheListIsRead()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Groups(groups =>
+                    groups
+                        .AddGroupKind("garde", "Garde")
+                        .AddGroupKind("spielmannszug", "Spielmannszug", ArchivedIn2021)
+                        .AddGroup("tanzgarde", "Tanzgarde", groupKindAlias: "garde")
+                        .AddGroup("kindergarde", "Kindergarde", groupKindAlias: "garde")
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var (response, result) = await client.GETAsync<
+            GetManagedGroups,
+            GetManagedGroupsResponse
+        >();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(["Garde", "Spielmannszug"], result.Kinds.Select(kind => kind.Name));
+        var garde = result.Kinds.First();
+        Assert.Equal(ctx.Groups.GroupKinds.IdOf("garde"), garde.GroupKindId);
+        Assert.Equal(2, garde.GroupCount);
+        Assert.Null(garde.ArchivedOn);
+        var zug = result.Kinds.Last();
+        Assert.Equal(ArchivedIn2021, zug.ArchivedOn);
+        Assert.Equal(0, zug.GroupCount);
+    }
+
+    [Fact]
+    public async Task Should_CarryNoGroupKind_When_TheManagerHasNotNamedOneYet()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Groups(groups => groups.AddGroup("tanzgarde", "Tanzgarde")),
+            ct
+        );
+
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var (response, result) = await client.GETAsync<
+            GetManagedGroups,
+            GetManagedGroupsResponse
+        >();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Empty(result.Kinds);
     }
 
     [Fact]

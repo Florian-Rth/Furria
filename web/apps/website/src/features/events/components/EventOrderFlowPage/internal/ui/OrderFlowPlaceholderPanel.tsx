@@ -12,7 +12,7 @@ interface OrderFlowPlaceholderPanelProps {
 export const OrderFlowPlaceholderPanel: FC<OrderFlowPlaceholderPanelProps> = ({ placeholder }) => (
   <Stack sx={{ gap: 1, alignItems: 'flex-start' }}>
     <KkEyebrow tone="muted">{orderFlowPlaceholderKicker}</KkEyebrow>
-    <Typography variant="h3" component="h2">
+    <Typography variant="h2" component="h2">
       {placeholder.headline}
     </Typography>
     <KkNote>{placeholder.body}</KkNote>

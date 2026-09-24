@@ -20,7 +20,6 @@ const CELL_WIDTH_TOUCH = 32;
 const CELL_HEIGHT_TOUCH = 38;
 const CELL_SIZE_COMPACT = 25;
 const CELL_SIZE_RAIL = 26;
-const CELL_FONT_SIZE = '0.8125rem';
 const CELL_ATTRIBUTE = 'data-kk-letter-index-cell';
 const CURRENT_CELL = `[${CELL_ATTRIBUTE}][aria-current="location"]`;
 const UNDERLINE_WIDTH = '58%';
@@ -69,8 +68,8 @@ const cellStyles =
     flexShrink: 0,
     padding: 0,
     ...cellSizes[variant](theme),
+    ...theme.typography.body2,
     fontFamily: kkTokens.font.display,
-    fontSize: CELL_FONT_SIZE,
     fontWeight: kkTokens.font.displayWeight,
     letterSpacing: kkTokens.type.tracking.display,
     lineHeight: 1,

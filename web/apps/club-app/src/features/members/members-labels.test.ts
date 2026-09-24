@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { GroupRef, MembershipState, RoleRef } from '@/lib/api/schemas';
 import {
-  toConnectedSentence,
   toEmptyDescription,
   toLetterAnchorId,
   toMemberHeadline,
@@ -43,25 +42,25 @@ describe('toPersonRowAffiliation', () => {
       expected: { accent: undefined, meta: undefined },
     },
     {
-      case: 'one Gruppe',
+      case: 'one group',
       groups: [group('Tanzgarde')],
       roles: [],
       expected: { accent: undefined, meta: 'Tanzgarde' },
     },
     {
-      case: 'several Gruppen',
+      case: 'several groups',
       groups: [group('Tanzgarde'), group('Elferrat')],
       roles: [],
       expected: { accent: undefined, meta: 'Tanzgarde · Elferrat' },
     },
     {
-      case: 'one Rolle',
+      case: 'one role',
       groups: [],
       roles: [role('Präsidentin')],
       expected: { accent: 'Präsidentin', meta: undefined },
     },
     {
-      case: 'more Rollen than fit',
+      case: 'more roles than fit',
       groups: [group('Elferrat')],
       roles: [role('Präsidentin'), role('Zeugwartin'), role('Chronistin')],
       expected: { accent: 'Präsidentin +2', meta: 'Elferrat' },
@@ -81,24 +80,14 @@ describe('toLetterAnchorId', () => {
   });
 });
 
-describe('toConnectedSentence', () => {
-  it.each([
-    [1, '1 Person ist'],
-    [2, '2 Personen sind'],
-    [0, '0 Personen sind'],
-  ])('opens the sentence for %d with %s', (count, opening) => {
-    expect(toConnectedSentence(count).startsWith(opening)).toBe(true);
-  });
-});
-
 describe('toWithoutMembershipSentence', () => {
-  it('says nothing when everybody is a Mitglied', () => {
+  it('says nothing when everybody is a member', () => {
     expect(toWithoutMembershipSentence(0)).toBeNull();
   });
 
   it.each([
-    [1, '1 Person tanzt'],
-    [6, '6 Personen tanzen'],
+    [1, 'Darunter 1 Person '],
+    [6, 'Darunter 6 Personen '],
   ])('opens the sentence for %d with %s', (count, opening) => {
     expect(toWithoutMembershipSentence(count)?.startsWith(opening)).toBe(true);
   });

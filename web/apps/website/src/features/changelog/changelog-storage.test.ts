@@ -30,9 +30,9 @@ describe('changelog storage', () => {
   it('round-trips read entry ids', () => {
     const storage = createFakeStorage();
 
-    writeReadEntryIds(storage, ['website-p3-verein-fe', 'website-p4-news-fe']);
+    writeReadEntryIds(storage, ['website-p3-club-fe', 'website-p4-news-fe']);
 
-    expect(readReadEntryIds(storage)).toEqual(['website-p3-verein-fe', 'website-p4-news-fe']);
+    expect(readReadEntryIds(storage)).toEqual(['website-p3-club-fe', 'website-p4-news-fe']);
   });
 
   it('degrades to nothing read for a value that is not JSON', () => {

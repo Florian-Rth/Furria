@@ -56,7 +56,7 @@ Guiding constraints (all binding):
 - **ONE theme across all apps** (Corporate Identity), consumed from `@furria/ui`. No new
   colors, fonts, radii, shadows. Light + dark.
 - **Routes/IDs/props = English. Visible text = German.**
-- **Narrenruf is "Gross - Furria!"** — never Helau/Alaaf.
+- **The carnival call is "Gross - Furria!"** — never Helau/Alaaf.
 - One backend API serves all apps — but **Website v1 consumes no backend; it is fully static**.
   Public read endpoints are a deferred, post-Club-App capability (see the scope banner).
 
@@ -77,14 +77,14 @@ Guiding constraints (all binding):
 | [Ticker](feature-ticker.md) | foundation | building | Flat red/gold marquee signature chrome |
 | [Landing](feature-landing.md) | capability | shipped | Home page — composes the blocks below |
 | [Landing-Hero](feature-landing-hero.md) | capability | building | Identity centerpiece: headline, CTAs, stats, hero photo |
-| [Programm-Teaser](feature-events-teaser.md) | capability | shipped | Home "DAS PROGRAMM" upcoming-events section |
-| [Mitmachen-Band](feature-mitmachen-band.md) | capability | shipped | Home recruit CTA → membership funnel |
-| [Verein](feature-about-verein.md) | capability | shipped | Verein story, Ämter, Gruppen showcase |
-| [Events & Tickets](events/master-plan.md) | area | shipped | Veranstaltungen list, event detail, Kartenwahl, Kauf/Karte, Kartenbörse (as concept — real mechanics round later) — own area plan (absorbed the Veranstaltungskalender + Ticket-Shop stubs, 2026-08-12) |
-| [Aktuelles](feature-news.md) | capability | shipped | Meldungen (list + detail) + landing teaser |
-| [Galerie](feature-gallery.md) | capability | shipped | Public Album index + Album pages + photo viewer |
-| [Mitglied werden](feature-membership-funnel.md) | capability | shipped | Membership info + Beitrittsantrag funnel |
-| [Jeck-Check](feature-group-matcher.md) | capability | shipped | Wahl-O-Mat-style Gruppen matcher on `/join` |
+| [Events teaser](feature-events-teaser.md) | capability | shipped | Home "DAS PROGRAMM" upcoming-events section |
+| [Join-in band](feature-join-in-band.md) | capability | shipped | Home recruit CTA → membership funnel |
+| [Club](feature-about-club.md) | capability | shipped | Club story, offices, group showcase |
+| [Events & Tickets](events/master-plan.md) | area | shipped | Event list, event detail, ticket selection, purchase/ticket, ticket exchange (as concept — real mechanics round later) — own area plan (absorbed the event-calendar + ticket-shop stubs, 2026-08-12) |
+| [News](feature-news.md) | capability | shipped | News posts (list + detail) + landing teaser |
+| [Gallery](feature-gallery.md) | capability | shipped | Public Album index + Album pages + photo viewer |
+| [Become a member](feature-membership-funnel.md) | capability | shipped | Membership info + membership application funnel |
+| [Jeck-Check](feature-group-matcher.md) | capability | shipped | Wahl-O-Mat-style group matcher on `/join` |
 
 ---
 
@@ -164,24 +164,24 @@ spec):** the mock's status bar + transparent overlay nav baked into the hero —
 ### P2 — Landing complete
 **Status:** done (2026-07-23, branch `feat/website-p2-landing-complete-fe`, 3 commits `7a0e9f1`…`9abaaed`)
 The full landing page reads end-to-end — **static-final** (this build has no backend). Added the two
-remaining blocks below the shipped Hero → Ticker; final block order Hero → Ticker → Programm-Teaser
-→ Mitmachen-Band → Footer, no restructuring of P1. Both blocks live under
+remaining blocks below the shipped Hero → Ticker; final block order Hero → Ticker → Events teaser
+→ Join-in band → Footer, no restructuring of P1. Both blocks live under
 `features/landing/components/` and are composed by `LandingPage` inside a gutter-constrained
 `Container` (below the full-bleed ticker). Followed the plan closely; build-level choices worth
 knowing: `kkTokens.aspectRatio.banner` shipped as **`'2 / 1'`**; the position tint mapping is a
 shared `resolveEventTint(palette, index)` helper in `program-content.ts` (red = `primary.main`,
 gold = `warning.main`, ink = `text.primary`) consumed by both the desktop grid and the mobile list,
 with the event `.map` done in the `ProgramTeaser` assembly so the layout slots (`ProgramGrid`,
-`ProgramList`) stay pure children-only slots; the Mitmachen watermark sits at 0.1 opacity (vs the
+`ProgramList`) stay pure children-only slots; the join-in watermark sits at 0.1 opacity (vs the
 hero's 0.05) as it is white-on-red, not ink-on-cream. Final copy shipped exactly as planned.
 
-- [x] [Programm-Teaser](feature-events-teaser.md) — "DAS PROGRAMM": section header + "Alle Termine
+- [x] [Events teaser](feature-events-teaser.md) — "DAS PROGRAMM": section header + "Alle Termine
       →" (→ `/program`) + 3 event cards. **Desktop** photo-topped `ProgramCard` (3-col grid),
       **mobile** compact photo-less `EventRow` (two presentational components). **Data-driven via a
       typed `{ startsAt, title, venue }` interface + editable placeholder constant** (card derives
       day / month / time; tint assigned by position) — swapping to real data is a data-source change
       only. New token `kkTokens.aspectRatio.banner` for the card photo.
-- [x] [Mitmachen-Band](feature-mitmachen-band.md) — one **responsive** recruit band (desktop row /
+- [x] [Join-in band](feature-join-in-band.md) — one **responsive** recruit band (desktop row /
       clean mobile stack — the mock's mobile is broken and is *not* the target), reworked final copy,
       `KkBroomMark` watermark, CTA "Mitglied werden →" → `/join`.
 
@@ -193,27 +193,27 @@ hero's 0.05) as it is white-on-red, not ink-on-cream. Final copy shipped exactly
 - **Blocks are data-driven behind clean typed interfaces** fed by editable content constants, so
   the later real-data swap is a data-source change, not a rewrite.
 - **`@furria/ui` gains `kkTokens.aspectRatio.banner`** (token-pure) for the event-card photo.
-- **Glossary:** added **Programm** (public event-lineup sense vs. Club-App running-order sense) to
+- **Glossary:** added **event list** (public event-lineup sense vs. Club-App running-order sense) to
   [`CONTEXT.md`](../../CONTEXT.md).
-- **Domain fact:** the club's real Gruppen are Tanzgarde, Männerballett, Elferrat, **Büttenrede** —
-  **not** Spielmannszug (a mock error), recorded in [Mitmachen-Band](feature-mitmachen-band.md).
+- **Domain fact:** the club's real groups are Tanzgarde, Männerballett, Elferrat, **Büttenrede** —
+  **not** Spielmannszug (a mock error), recorded in [Join-in band](feature-join-in-band.md).
 - **Deferred (not P2):** event-selection logic, scarcity badge, empty state (all need live data);
-  the full Veranstaltungskalender at `/program` (stays a placeholder this build).
+  the full event calendar at `/program` (stays a placeholder this build).
 
-### P3 — Verein
+### P3 — Club
 **Status:** done (2026-07-24, branch `feat/website-p3-verein-fe`, 9 commits `013401c`…`6994ba9`)
 `/club` live — a single scrolling editorial page, **static-final** (no backend), rendered by
 `features/club/ClubPage`. Shipped as the 9 per-section vertical slices in the
-[Verein](feature-about-verein.md) Implementation plan. Followed the plan closely; build-level
+[Club](feature-about-club.md) Implementation plan. Followed the plan closely; build-level
 choices worth knowing:
 - **`ClubPage` composition:** hero + story share a gutter `Container`; the two red bands
   (`NarrenrufBand`, `RecruitBand`) are full-bleed **siblings** rendered outside the Container (not
-  negative-margin); chronik/season/gruppen/people sit in a second Container. Section order exactly
+  negative-margin); chronicle/season/groups/people sit in a second Container. Section order exactly
   as planned.
 - **`Group` interface uses English field names** `lead`/`schedule` (not the plan's `leitung`/
   `treffen` — code = English rule); the German visible labels ("Leitung"/"Treffen") live in a
   `groupsModalLabels` const. Fields: `{ title, blurb, memberMeta, fullText, lead, schedule }`.
-- **Gruppen = 6** (Tanzgarde, Männerballett, Elferrat, **Büttenrede**, Kindergarde, Organisation —
+- **Groups = 6** (Tanzgarde, Männerballett, Elferrat, **Büttenrede**, Kindergarde, Organisation —
   no Spielmannszug); the group-count stat derives from `GROUPS.length`, matching the grid.
 - **Modal (slice 7)** lives under `GruppenGrid/internal/{logic,ui}`, not a separate section folder.
   Two logic hooks: `use-group-modal` (the `openGroupId | null` state) + `use-modal-presence` (the
@@ -221,45 +221,45 @@ choices worth knowing:
   panel, `useReducedMotion`-aware.
 - **Hero mobile** is distilled via `sx` toggles — the framed photo column (incl. the `KkSeal`
   opening-date) is hidden at `xs`; the giant numeral is the single mobile anchor; ribbon
-  desktop-only. `ChapterHeader` numeral + kicker/title reused by story/chronik/season/gruppen/people.
+  desktop-only. `ChapterHeader` numeral + kicker/title reused by story/chronicle/season/groups/people.
 - **Reviews** ran per slice (`react-code-reviewer` + `react-composition-guru` on hero/grid/modal);
   fixes applied: ChapterHeader `xs` title overflow, English field rename, the mode-baked color read
   in the recruit band (→ `primary.contrastText`), and the modal-presence hook extraction. All
   gates green each slice (267 tests total: 30 ui + 237 website; typecheck/build/lint clean).
 
-- [x] [Verein](feature-about-verein.md) — hero (derived numeral + ribbon) → story+stats → narrenruf
-      → chronik → season → gruppen (grid + motion detail modal) → people (Ämter) → recruit; static
+- [x] [Club](feature-about-club.md) — hero (derived numeral + ribbon) → story+stats → carnival call
+      → chronicle → season → groups (grid + motion detail modal) → people (offices) → recruit; static
       content behind typed constants
 
 **Cross-cutting (decided in P3 grilling, 2026-07-24):**
 
-- **Mock moved** to `docs/design/verein-page/`. Its "Plakat-Kapitel" direction (hard offset-shadows
+- **Mock moved** to `docs/design/club-page/`. Its "poster chapter" direction (hard offset-shadows
   as the leading elevation, square corners, 2px ink borders everywhere) is **rejected as the
-  system** per the design README's READ FIRST — our shipped **Destillat** language wins (MUI cards,
+  system** per the design README's READ FIRST — our shipped **Distilled** language wins (MUI cards,
   `radius.base` 14, hairline borders, soft elevation). Only the **hero** keeps bold gestures
   (two-tone poster shadow + ribbon + giant *derived* session numeral).
 - **No dark ink-panels.** All sections on the normal theme background; red appears only as **two
-  full-bleed strips** (Narrenruf + Recruit). Rhythm comes from the numbered `ChapterHeader`.
-- **The Gruppen detail modal is the page's one interaction** — MUI `Modal` base (a11y) + a
+  full-bleed strips** (carnival call + Recruit). Rhythm comes from the numbered `ChapterHeader`.
+- **The group detail modal is the page's one interaction** — MUI `Modal` base (a11y) + a
   `motion.div` panel (`AnimatePresence` spring scale-fade, `useReducedMotion`-aware, `motion` already
   a dep). Uses `PreviewAccessDialog`'s a11y pattern.
-- **People wall is keyed on Ämter, never "Vorstand"** (glossary law); code field `amt`; placeholder
+- **People wall is keyed on offices, never "board"** (glossary law); code field `amt`; placeholder
   faces for v1.
 - **Single responsive components throughout** (no Desktop/Mobile forks) — every section reflows;
   the hero's mobile branch is a *distilled* variant (numeral as the single anchor, ribbon
   desktop-only). Unlike the landing hero's two-tree split.
 - **New feature folder** `features/club/`; the giant numeral + ribbon are club-hero-local (not
   promoted to `@furria/ui`, YAGNI).
-- **Glossary:** no new/sharpened term — the page reuses **Amt / Gruppe / Session / Beitrag /
-  Narrenruf** as already defined in [`CONTEXT.md`](../../CONTEXT.md).
-- **Deferred (not P3):** real Vereinsgeschichte + Chronik milestones, real Gruppen/Ämter/photos,
-  live member & group counts, and the backend **per-Amt "show on public page" flag** (seam noted,
+- **Glossary:** no new/sharpened term — the page reuses **office / group / session / fee /
+  carnival call** as already defined in [`CONTEXT.md`](../../CONTEXT.md).
+- **Deferred (not P3):** real club history + chronicle milestones, real groups/offices/photos,
+  live member & group counts, and the backend **per-office "show on public page" flag** (seam noted,
   not scaffolded) — all need the Club-App backend.
 
 ### P4 — News
 **Status:** done (2026-07-26, branch `feat/website-p4-news-fe`, 8 commits `46e8899`…`eeff7af`)
 `/news` + `/news/:slug` + a landing teaser live — the marketing site is **content-complete**.
-Static-final (no backend). Shipped as the 10 [Aktuelles](feature-news.md) slices plus the 2
+Static-final (no backend). Shipped as the 10 [News](feature-news.md) slices plus the 2
 [Tester-Changelog](feature-tester-changelog.md) slices, grouped into 8 commits. Final gates:
 typecheck clean, 214 tests (6 ui + 208 website), lint clean, build clean.
 
@@ -278,7 +278,7 @@ Followed the plan closely; build-level choices worth knowing:
   the wrapper inside `__root.tsx`. It uses **`KkConfettiRain`**: `KkConfettiScatter` no longer exists
   (dropped in `b34da0e`), and `KkConfettiBurst` is a click-fired one-shot.
 - **The archive button ships wired, with an accepted dead target** (decided during the build, see
-  [Aktuelles](feature-news.md)): `NewsListFooter` derives it from `resolveArchiveSession(posts, …)`
+  [News](feature-news.md)): `NewsListFooter` derives it from `resolveArchiveSession(posts, …)`
   and renders a plain `Button href="/news/archive"` — an untyped anchor, since a typed `Link` cannot
   compile against a route the plan forbids building. It is absent in every P4 content state and would
   degrade to the branded 404. The derivation is also load-bearing today: the footer sentence drops its
@@ -287,10 +287,10 @@ Followed the plan closely; build-level choices worth knowing:
   "ink on gold" cannot be `text.primary` (cream in the dark scheme), so contrast is read from
   `primary/warning.contrastText` + `background.default`, scheme-aware.
 - **`CtaBand` keeps the watermark call-site-owned.** The two shipped watermarks genuinely differ
-  (Narrenruf: left, −12°, 0.12, 320; Recruit: centred, −8°, 0.08, 360), so per the no-flag ruling the
+  (carnival call: left, −12°, 0.12, 320; Recruit: centred, −8°, 0.08, 360), so per the no-flag ruling the
   root exposes a `watermark` **node slot** instead of reconciling them. Band-level dev hooks were
   renamed into the compound (`data-kk-cta-band`, `…-row`, `…-column`); call-site hooks are untouched.
-- **Seed content is fuller than the mock**, which ships a `body` for only 1 of 6 Meldungen: bodies
+- **Seed content is fuller than the mock**, which ships a `body` for only 1 of 6 news posts: bodies
   were authored for the other 5 from facts already in their own teasers (`body: [teaser]` would print
   the lead twice on the article page). The mock's JHV teaser "Der **Vorstand** wurde bestätigt" became
   "Alle **Ämter** wurden bestätigt"; "der Beitrag bleibt bei 30 Euro" stays — that is the
@@ -301,23 +301,23 @@ Followed the plan closely; build-level choices worth knowing:
   scale rather than reusing `NewsSectionRule` (an `h5` component), because adding a size prop would be
   the dual-mode API the rules ban. The article page reuses the shipped component unchanged.
 - **Reviews** ran per slice (`react-code-reviewer` + `react-composition-guru` on the compound-heavy
-  ones). Real fixes applied: an invisible Aufmacher focus ring (the `Card`'s `overflow: hidden`
+  ones). Real fixes applied: an invisible lead-post focus ring (the `Card`'s `overflow: hidden`
   clipped the action area's outline → moved to `&:has(.Mui-focusVisible)`), a lying "Link kopiert"
   (the clipboard promise was discarded, so a denied write still reported success → now awaited), a
   `lib/` layering leak (`CLUB_TIME_ZONE` → `APP_TIME_ZONE`), and a missing `aria-describedby` on the
   changelog dialog. The rest were over-flags, each rejected against the real diff.
 
-- [x] [Aktuelles](feature-news.md) — list (Aufmacher + Meldungen rows + `/program` band) + detail
-      (article + share row + Weitere Meldungen) + the landing `NewsTeaser`; 4 fixed Kategorien with
-      derived tints; typographic Plakat fallback for photo-less Meldungen; static content behind
+- [x] [News](feature-news.md) — list (lead post + news-post rows + `/program` band) + detail
+      (article + share row + Weitere Meldungen) + the landing `NewsTeaser`; 4 fixed categories with
+      derived tints; typographic poster fallback for photo-less news posts; static content behind
       typed constants
 - [x] [Site-Shell](feature-site-shell.md) — the site's **first 404**: a branded, humorous
       `NotFoundPage` on `__root`'s `notFoundComponent` *(plus `_site` + `_gated` — it does not
       bubble)*, plus the shared `src/components/CtaBand/` full-bleed red-band compound (migrating
       `NarrenrufBand` + `RecruitBand`)
 - [x] [Landing](feature-landing.md) — one optional node slot (`newsTeaser`) on `LandingPage` for the
-      news teaser, wired by the `/` route; final block order Hero → Ticker → Programm-Teaser →
-      **News-Teaser** → Mitmachen-Band
+      news teaser, wired by the `/` route; final block order Hero → Ticker → Events teaser →
+      **News-Teaser** → Join-in band
 - [x] [SEO & Meta](feature-seo-meta.md) — per-post document head only (`og:type: article`,
       published time, canonical — root-relative; `RouteHead` gained an optional `links` field).
       **No prerender, no bot injection** — moved to P7 / Deferred
@@ -329,11 +329,11 @@ Followed the plan closely; build-level choices worth knowing:
 **Cross-cutting (decided in P4 grilling, 2026-07-25):**
 
 - **Standing design ruling, beyond this mock: our current design always wins; mocks are inspiration
-  only.** The news mock is the most aggressively **"Plakat"** handoff yet (radius 0 everywhere, 2px
-  ink borders, `12px 12px 0 red` offsets) — rejected as the system, exactly as in P3. **Destillat**
-  wins; `shadow.posterOffset` stays reserved for hero headlines, so the **Aufmacher earns emphasis
+  only.** The news mock is the most aggressively **"poster"** handoff yet (radius 0 everywhere, 2px
+  ink borders, `12px 12px 0 red` offsets) — rejected as the system, exactly as in P3. **Distilled**
+  wins; `shadow.posterOffset` stays reserved for hero headlines, so the **lead post earns emphasis
   through scale + layout + `shadow.raised`**, not a hard shadow. The mock's genuinely good editorial
-  *structure* (red date rail, Aufmacher hierarchy, section rule) is adopted.
+  *structure* (red date rail, lead-post hierarchy, section rule) is adopted.
 - **P4's SEO slice was wrong and is restructured.** Two findings: (a) **prerendering gated routes
   publishes the content the gate withholds** — the gate is client-side (`sessionStorage` +
   `beforeLoad`), so prerendered HTML is `curl`-readable; (b) because news content is **compile-time
@@ -354,16 +354,16 @@ Followed the plan closely; build-level choices worth knowing:
 - **Two mock defects fixed:** the per-post `tint` field is dropped (it was redundant with
   `category` *and* self-contradictory — `Verein` shipped as both `ink` and `red`) in favour of a
   derived tint map; and the band CTA's target **`/schedule` does not exist on this site** — it is
-  the Club-App's Trainingsplaner, leaked into the public mock. Corrected to `/program`.
+  the Club-App's training planner, leaked into the public mock. Corrected to `/program`.
 - **Two glossary violations fixed:** the mock's *"Ganzen **Beitrag** lesen →"* collides with
   **Beitrag** = membership fee (advertised on the same site) → **"Ganze Meldung lesen →"**; and the
   author fallback **"Vorstand"** is banned in code and copy → the byline is **omitted** when no
   author is set, rather than inventing an institutional one.
-- **Glossary:** added **Aktuelles**, **Meldung**, **Kategorie** to [`CONTEXT.md`](../../CONTEXT.md),
-  with `Beitrag` explicitly on Meldung's avoid-list. Heading chain locked to one word
+- **Glossary:** added **news**, **news post**, **news category** to [`CONTEXT.md`](../../CONTEXT.md),
+  with `Beitrag` explicitly on the news post's avoid-list. Heading chain locked to one word
   (nav *Aktuelles* → block **AKTUELLES** → H1 **AKTUELLES** → **WEITERE MELDUNGEN** on both pages);
   "Neuigkeiten"/"Alle News" dropped, *"Aus dem Verein"* demoted to flavour eyebrow.
-- **Scope trims (YAGNI):** **no archive route** (no older Session exists; the button is *derived*
+- **Scope trims (YAGNI):** **no archive route** (no older session exists; the button is *derived*
   and appears by itself when it first becomes true); **no recruit band on article pages** (it is
   already the closing CTA on `/` and `/club`, and the footer sits right below — articles end on
   *Weitere Meldungen* instead); **no `navigator.share`** (a "WhatsApp" button opening a generic
@@ -379,7 +379,7 @@ Followed the plan closely; build-level choices worth knowing:
   ~2000 icons. And its content is **JSON, deliberately unlike** the site's typed-constant content —
   justified by the mechanical append-per-branch workflow, with Zod parsing at module load buying
   back the compile-time safety TS would have given.
-- **Deferred (not P4):** real Meldungen + photos, the archive route, board publishing UI, and
+- **Deferred (not P4):** real news posts + photos, the archive route, board publishing UI, and
   body-sanitisation once content stops being compile-time.
 
 ### P4.1 — Design-system unification
@@ -398,7 +398,7 @@ was to add the missing primitives to `@furria/ui` and rebuild **every** page on 
   every hero.
 - **`KkSection`** owns section spacing; **`KkSectionHeader`** replaced `ChapterHeader`,
   `NewsSectionRule`, `NewsTeaserHeading` and `ProgramSectionHeader`.
-- **`KkCard`** replaced five card dialects (program, news, Gruppen, Chronik, Season) with
+- **`KkCard`** replaced five card dialects (program, news, groups, chronicle, season) with
   `Media`/`Badge`/`Body`/`Meta`/`Title`/`Text`/`Footer`.
 - **`KkRule`**, **`KkEyebrow`** (replacing nine hand-styled overlines); tokens gained `sectionGap`,
   `blockGap`, `bandY` and the `line` weights.
@@ -411,19 +411,19 @@ was to add the missing primitives to `@furria/ui` and rebuild **every** page on 
 exist to carry. Shipping it without recording it left two documents lying about the codebase for a
 phase and a half.
 
-### P5 — Galerie
+### P5 — Gallery
 **Status:** done (2026-07-29, branch `feat/website-p5-gallery-fe`, 11 commits `4560845`…`7945270`)
 Static-implementable, **no backend**: `/gallery` (Album index) + `/gallery/:albumSlug` (Album) + a
 full-screen photo viewer addressed by `?photo=<n>`. Photos remain placeholders — the point of the
 phase is that dropping real files in later is a **content change, not a rewrite**. Shipped as the 9
-vertical slices in the [Galerie](feature-gallery.md) Implementation plan, one commit each. Final
+vertical slices in the [Gallery](feature-gallery.md) Implementation plan, one commit each. Final
 gates: typecheck clean, **325 tests** (11 ui + 314 website), lint clean, build clean.
 
 Followed the plan closely; build-level choices worth knowing:
 - **Date-only strings must be parsed on the local calendar.** `albumSession` parses via
   `` new Date(`${album.date}T00:00`) ``, because `new Date('YYYY-MM-DD')` is **UTC** midnight while
-  `sessionAt` reads `getMonth()`/`getDate()` in **local** time. The seeded Sessionseröffnung sits
-  exactly on 11.11, so in any UTC-behind timezone it fell into the *older* Session and the required
+  `sessionAt` reads `getMonth()`/`getDate()` in **local** time. The seeded season opening sits
+  exactly on 11.11, so in any UTC-behind timezone it fell into the *older* session and the required
   4-current/2-older split broke. Any future date-derived content faces the same trap.
 - **`KkPhoto` ships flat** (`packages/ui/src/KkPhoto.tsx` + the pure `photo-frame.ts`), not in a
   folder — it has no `internal/` parts, and the precedent for a component plus a co-located pure
@@ -431,12 +431,12 @@ Followed the plan closely; build-level choices worth knowing:
   pixel dimensions from `kkTokens.aspectRatio` (portrait 960×1200, landscape 1680×1200); **no token
   was added**.
 - **Seed content is reconciled with `PROGRAM_EVENTS`** — same dates, venues and names for the same
-  occasions (the mock's "Kindersitzung" is the Programm's **Kinderfasching**; its Prunksitzung date
-  fell after Aschermittwoch 2026). No cross-feature import, just consistent content.
+  occasions (the mock's "Kindersitzung" is the event list's **children's carnival**; its Prunksitzung date
+  fell after Ash Wednesday 2026). No cross-feature import, just consistent content.
 - **Photo credits are devices, not people** (`Wegwerfkamera vom Kiosk`, `Vereinshandy mit acht
   Prozent Akku`) and the field is `photoCredit`, not `photographer` — the "unmistakably fake" ruling
   without six repetitions of one gag.
-- **The featured Album is excluded from the grid *and* from the older-Session groups**, and DIESE
+- **The featured Album is excluded from the grid *and* from the older-session groups**, and DIESE
   SESSION only renders when a non-featured Album remains — after 11.11.2026 every seeded Album
   becomes "older", and without that the banner Album would appear twice.
 - **Uniform photo-grid height without a pixel value:** `PhotoGrid.Cell` carries `aspectRatio` =
@@ -446,7 +446,7 @@ Followed the plan closely; build-level choices worth knowing:
 - **One set of viewer controls, re-placed by `grid-template-areas`** (`"prev stage next"` on desktop,
   a thumb-reachable bottom row at `xs`) — the shipped `display: { xs, desktop }` mobile switch would
   have meant two copies of every button in the DOM.
-- **The Album head title appends the derived Session** (`Prunksitzung 2025/26 · FURRIA`): two seeded
+- **The Album head title appends the derived session** (`Prunksitzung 2025/26 · FURRIA`): two seeded
   Alben are titled "Prunksitzung" and two "Rosenmontagsumzug", so a bare title would publish
   duplicate `<title>`/`og:title` for distinct canonical URLs. The visible H1 stays the bare title.
 - **No `notFoundComponent` on the Album route.** P4's "it does not bubble" note applies to the
@@ -462,9 +462,9 @@ Followed the plan closely; build-level choices worth knowing:
   byte-identical prose.
 - **Reviews** ran per slice (`react-code-reviewer`, plus `react-composition-guru` on the
   compound-heavy slices 5/7/8/9). Real fixes applied: the local-vs-UTC date defect above, the
-  Galerie/Programm naming mismatch, a `KkPhoto` folder that violated the component-structure rule, a
+  gallery/event-list naming mismatch, a `KkPhoto` folder that violated the component-structure rule, a
   hand-synced duplicate of the landscape ratio at the card call site, a dead hover transition on the
-  older-Session toggle, `kkTokens.color.dark.*` baked into every viewer leaf, and the Zod schema
+  older-session toggle, `kkTokens.color.dark.*` baked into every viewer leaf, and the Zod schema
   moved to the conventional `schemas.ts`. The rest were over-flags, each rejected against the diff.
 - **Visual verification is uneven and owes a pass.** Only the viewer (slice 8) was checked in a real
   browser (Playwright, 360/390/900/1280px, light + dark). Every other slice rests on token reuse and
@@ -480,8 +480,8 @@ Followed the plan closely; build-level choices worth knowing:
   config that defines it, and a route test asserts the dialog is inside that scope. **Lesson:** a
   "remove this dead attribute" cleanup needs the same verification as a feature change.
 
-- [x] [Galerie](feature-gallery.md) — Album index (hero + featured newest + current Session grid +
-      derived older Sessions + rights note + `/program` band), Album page (own lighter header +
+- [x] [Gallery](feature-gallery.md) — Album index (hero + featured newest + current session grid +
+      derived older sessions + rights note + `/program` band), Album page (own lighter header +
       orientation-aware photo grid + next Album), and the full-screen viewer
 - [x] `@furria/ui` — new **`KkPhoto`** primitive: the real-`<img>` seam (lazy, async decoding,
       intrinsic size, **required `alt`**) with `KkPhotoPlaceholder` as the no-source fallback
@@ -489,9 +489,9 @@ Followed the plan closely; build-level choices worth knowing:
       **`CLUB_CONTACT_EMAIL`** in `lib/club.ts`; **both** `imprint-content.ts` and
       `privacy-content.ts` now read it. Also `KK_DARK_SCHEME_ATTRIBUTE` in `@furria/ui`
 - [x] [SEO & Meta](feature-seo-meta.md) — per-Album document head (title/description/canonical),
-      no new mechanism; the title carries the **derived Session** to keep it unique
+      no new mechanism; the title carries the **derived session** to keep it unique
 - [x] [Landing-Hero](feature-landing-hero.md) — **drive-by defect fix** found in P5 grilling: the
-      hero said **12 Gruppen** while `/club` derives **6** from `GROUPS.length`. Two shipped pages
+      hero said **12 groups** while `/club` derives **6** from `GROUPS.length`. Two shipped pages
       contradicting one fact → `GROUP_COUNT_PLACEHOLDER = 6`, in the same slice that already opens
       `lib/club.ts`
 
@@ -501,8 +501,8 @@ Followed the plan closely; build-level choices worth knowing:
   closes it and a photo is linkable — the first time this site puts UI state in a search param.
   Validated with Zod via `validateSearch`; a bad param renders **closed**, only a bad *album slug* is
   a 404.
-- **`Album` is one occasion; its Session is derived** from its date via `sessionAt()`, never stored.
-  The index's older-Session block is derived too, and **absent while no older Album exists** — the
+- **`Album` is one occasion; its session is derived** from its date via `sessionAt()`, never stored.
+  The index's older-session block is derived too, and **absent while no older Album exists** — the
   P4 archive precedent, but with no dead targets this time.
 - **`@furria/ui` gains `KkPhoto`** because this is the first feature where images *are* the content.
   **No build-time image pipeline yet** (AVIF/WebP srcset, blur-up) — a spike worth doing when there
@@ -513,24 +513,24 @@ Followed the plan closely; build-level choices worth knowing:
   columns), where DOM order equals visual order.
 - **Hard offset-shadows stay rejected as the system** (third phase running). The mock leads with
   `12px 12px 0 red`; the featured Album earns emphasis through scale + layout + `shadow.raised`.
-- **The hero aside stays decorative** — a fanned Fotostapel, `aria-hidden`, not a link. Making it
+- **The hero aside stays decorative** — a fanned stack of photos, `aria-hidden`, not a link. Making it
   the newest-Album link would have duplicated that Album's cover 200px above itself and turned a
   rotated frame into a tap target.
 - **Copy rule, beyond this phase: the village is called Großfurra, and the broom mark is brand
   furniture, not a joke well.** The nickname „Großbesenstadt" shipped in masthead, footer, ticker,
-  hero, Chronik and body copy until the user struck it — it is a nickname almost nobody knows, and
+  hero, chronicle and body copy until the user struck it — it is a nickname almost nobody knows, and
   the SEO description had been naming the real village all along. Copy must not be *built on* broom
   gags either. Humour comes from the situations, as in `/news`.
 - **Photographer credits must be unmistakably fake**, extending P4's refusal to invent a "Vorstand"
-  byline — the mock's *"Foto: Anja Weber"* names a plausible real person in the **Fotograf** Amt.
+  byline — the mock's *"Foto: Anja Weber"* names a plausible real person in the **photographer** office.
   Album *titles* stay honest; they are real event types the site already advertises.
 - **No Instagram band** while every social href is `#` (P7 owns them): a headline CTA whose whole
   purpose is a dead link is worse than the footer's gracefully-degrading icon row.
-- **Glossary:** added **Galerie**, **Bildergalerie** (the Club-App's, *not* this page — the same
-  overload trap already documented for **Programm**) and **Album** to
+- **Glossary:** added **gallery**, **member photo library** (the Club-App's, *not* this page — the same
+  overload trap already documented for **event list**) and **Album** to
   [`CONTEXT.md`](../../CONTEXT.md).
 - **Deliberately no ADR.** The two-gate photo-publication idea was drafted and then **withdrawn on
-  the user's correction**: no Fotoerlaubnis rules exist, none are planned, and it is unclear the
+  the user's correction**: no photo-permission rules exist, none are planned, and it is unclear the
   area will ever be built. It sits in `CONTEXT.md` → *Flagged ambiguities* instead, since an ADR
   records a decision that was made. The website needs none of it — it renders what the club put in,
   and the printed takedown contact is the remedy.
@@ -544,11 +544,11 @@ Followed the plan closely; build-level choices worth knowing:
 ### P6 — Membership funnel
 **Status:** done (2026-07-30, branch `feat/website-p6-join-fe`, 12 commits `86018a5`…`b581d3c`)
 `/join` + `/join/apply` live — the club's growth hook. **Frontend only**; the backend stays
-[deferred and not scheduled](#antrag--und-gruppen-backend-not-scheduled), so a submission calls the
+[deferred and not scheduled](#membership-application-and-group-backend-not-scheduled), so a submission calls the
 real URL, gets a 404 and fails honestly into the form's error state, which always offers the human
 fallback. Nothing faked, nothing disabled, and zero frontend change when the endpoint lands. Only
 testers see it (gate is up until P7). Shipped as the 10 vertical slices in the
-[Mitglied werden](feature-membership-funnel.md) Implementation plan, one commit each plus two
+[Become a member](feature-membership-funnel.md) Implementation plan, one commit each plus two
 review-fix commits. Final gates: typecheck clean, **708 tests** (14 ui + 694 website), lint clean,
 build clean.
 
@@ -557,8 +557,8 @@ build clean.
 > [ADR-0004](../../docs/adr/0004-website-writes-membership-applications.md).
 
 Followed the plan closely; build-level choices worth knowing:
-- **The seed's Gruppen ids are German-transliterated kebab-case** (`tanzgarde`, `maennerballett`,
-  `buettenrede`, …), not translated English words. The Gruppen names are proper nouns, the shipped
+- **The seed's group ids are German-transliterated kebab-case** (`tanzgarde`, `maennerballett`,
+  `buettenrede`, …), not translated English words. The group names are proper nouns, the shipped
   slug convention already does this (`sessionseroeffnung-2025`), and translating them would put
   unrecognisable ids in the public `/join/apply?groups=` URL. The **English-code rule still holds** —
   these are content ids, like a slug, not identifiers.
@@ -567,18 +567,18 @@ Followed the plan closely; build-level choices worth knowing:
   constant** built by a pure `buildGroupProfiles(roster, editorial)` — no React Query on `/club`,
   exactly as ADR-0003 requires. The editorial copy (`blurb`/`memberMeta`/`fullText`/`lead`) is keyed
   by id in `GROUP_EDITORIAL`, and key completeness is asserted in **both** directions by tests.
-- **The matcher payload embeds the Gruppen.** `SEEDED_GROUP_MATCHER` carries
+- **The matcher payload embeds the groups.** `SEEDED_GROUP_MATCHER` carries
   `{ groups, questions }`, so slices 5/6 get **one** query with one loading/error path instead of a
   second groups query. This changes the deferred contract: `GET /api/group-matcher` must return the
-  Gruppen too — recorded in [Deferred](#antrag--und-gruppen-backend-not-scheduled).
-  `GET /api/groups` is still needed separately, for the Antrag's interest chips.
+  groups too — recorded in [Deferred](#membership-application-and-group-backend-not-scheduled).
+  `GET /api/groups` is still needed separately, for the membership application's interest chips.
 - **The eleven questions are 1 `filter` (age band) + 10 `weighted` theses.** Elferrat is the one
-  seeded Gruppe with `isRecruiting: false`, so both badge states are real code paths. The
+  seeded group with `isRecruiting: false`, so both badge states are real code paths. The
   roster-splitting content rule, the age-band coverage rule and "no adult ever matches Kindergarde"
   are all **unit-tested properties of the authored content**, not just of the algorithm.
 - **The ten theses are deliberate nonsense and the page says so** (added on the user's call right after
   the phase closed): the first cut shipped plausible-sounding theses, which makes a matcher look real
-  while no Gruppe has answered anything — the same lie P5 banned for photo credits and P4 for the
+  while no group has answered anything — the same lie P5 banned for photo credits and P4 for the
   "Vorstand" byline. The prompts are now openly absurd, the Jeck-Check intro names them **Platzhalter**
   (asserted by a test), and only the **age filter stays honest**, because it is load-bearing for the
   exclusion guarantee and its answer is printed back as a reason. The stances were left untouched, so
@@ -596,7 +596,7 @@ Followed the plan closely; build-level choices worth knowing:
 - **`join_.apply.tsx` needs the trailing underscore** — P4's router finding again: the dotted name
   would nest the form inside `JoinPage`, which renders no `<Outlet/>`. A route test proves it renders
   standalone.
-- **The POST payload deliberately omits the derived Mitgliedschaftsart and Beitrag.** The server
+- **The POST payload deliberately omits the derived membership type and fee.** The server
   derives them from `birthDate`; a client-asserted tier is exactly the mock defect being fixed. The
   response schema is `z.object({})` because nothing is read back — no contract was invented.
 - **RHF's own `FormProvider`/`useFormContext` replaced a hand-rolled compound context** for the form
@@ -610,7 +610,7 @@ Followed the plan closely; build-level choices worth knowing:
   `PageLayout`'s root set `overflow: hidden`, which kills `position: sticky`. It is `overflowX: clip`
   now — same bleed containment, no scroll container — so the aside sticks under the masthead on
   desktop, as `#root` had already been doing for the sticky masthead itself.
-- **Only the hero's Antrag CTA became a typed `Link`.** The Jeck-Check result CTA keeps a plain href for
+- **Only the hero's membership-application CTA became a typed `Link`.** The Jeck-Check result CTA keeps a plain href for
   two concrete reasons: `renderWithProviders` mounts no router, so a TanStack `Link` throws and would
   force 20+ component tests onto `renderAtRoute`; and a typed `search={{ groups }}` serialises through
   `URLSearchParams`, turning the documented `?groups=a,b` into `?groups=a%2Cb`.
@@ -625,7 +625,7 @@ Followed the plan closely; build-level choices worth knowing:
   *"Antrag stellen →"*, because the hero already owns that accessible name and three `findByRole`
   queries went ambiguous. The hero's secondary CTA reads *"Wo passe ich hin? ↓"* rather than naming the
   Jeck-Check (fits one line at 360px, and the arrow signals an in-page jump). The third hero stat is the
-  **Session ordinal**, so it does not repeat the eyebrow's `yearsLabel`. The FAQ shipped **eight**
+  **session ordinal**, so it does not repeat the eyebrow's `yearsLabel`. The FAQ shipped **eight**
   questions.
 - **Reviews** ran per slice (`react-code-reviewer`, plus `react-composition-guru` on slices 2/3/5/6/7/9).
   Two slices needed fixes: slice 5 had the whole step machine derived inline in a presentational part
@@ -644,20 +644,20 @@ Followed the plan closely; build-level choices worth knowing:
   because the plan's own content rule ("no age band may come back empty") means the real seed can never
   produce it. The plan's testing rule prefers that level anyway.
 
-- [x] [Mitglied werden](feature-membership-funnel.md) — `/join` info page (hero · Jeck-Check · Ticket ·
-      vier Schritte · FAQ · Kontakt · Band) and `/join/apply` (Antrag + in-place confirmation),
+- [x] [Become a member](feature-membership-funnel.md) — `/join` info page (hero · Jeck-Check · Ticket ·
+      four steps · FAQ · contact · band) and `/join/apply` (membership application + in-place confirmation),
       wired to `POST /api/membership-applications`
-- [x] [Jeck-Check](feature-group-matcher.md) — eleven questions, Gruppe-owned positions and
+- [x] [Jeck-Check](feature-group-matcher.md) — eleven questions, group-owned positions and
       weights, `weighted` + `filter` question roles, normalised scoring as a tested pure function,
       ranked result with derived «warum» and recruiting badges
 - [x] `@furria/ui` — promoted **`KkStatRow`** (slotted compound: root + `.Item`/`.Value`/`.Label`) and
       migrated `HeroStatRow` + `ClubStoryStats` onto it; `/join`'s hero is the third call site. Scale
       and colour stay at the call site — no size flag. Also **`KkSectionRoot` gained an optional `id`**
-- [x] [Verein](feature-about-verein.md) — drive-by: `/club`'s Gruppen content reads the shared seed
+- [x] [Club](feature-about-club.md) — drive-by: `/club`'s group content reads the shared seed
       (stays **synchronous**, so it stays prerenderable) instead of its own roster
 - [x] [SEO & Meta](feature-seo-meta.md) — per-route `head` for `/join` and `/join/apply`, no new
       mechanism
-- [x] [Mitmachen-Band](feature-mitmachen-band.md) — CTA already points at `/join`; nothing to do
+- [x] [Join-in band](feature-join-in-band.md) — CTA already points at `/join`; nothing to do
 
 **Cross-cutting (decided in P6 grilling, 2026-07-29):**
 
@@ -670,35 +670,35 @@ Followed the plan closely; build-level choices worth knowing:
   `queryFn` differs — it resolves from a **deletable seed module** (`src/lib/seed/`, shaped exactly
   like the future payload) instead of `apiFetch`. The later swap is one line per query.
 - **Async is not prerenderable, so the split is deliberate:** the interactive matcher fetches;
-  `/club`'s indexable Gruppen list keeps reading the same seed **synchronously**. One source of
+  `/club`'s indexable group list keeps reading the same seed **synchronously**. One source of
   truth, two access paths ([ADR-0003](../../docs/adr/0003-website-rendering-strategy.md)).
   A compile-time `GroupId` union was considered and rejected — ids come from the DB at runtime.
-- **Glossary corrections, one of them a retraction.** **`Passiv` is not a Mitgliedschaftsart** — it
-  was the word for a membership that *pauses for a Session*, i.e. a **status**. The 2026-07-16
-  "resolved" note is retracted in [`CONTEXT.md`](../../CONTEXT.md); Art is **Aktiv / Jugend /
-  Ehren**, status is **aktiv / paused / beendet**, and `docs/design/FCC-Schema.txt` is corrected
-  (`passive` removed, `inactive` → `paused`). Added **Ruhende Mitgliedschaft** and
-  **Beitrittsantrag**; extended **Gruppe** with per-Gruppe recruiting openness and the fact that
+- **Glossary corrections, one of them a retraction.** **`Passiv` is not a membership type** — it
+  was the word for a membership that *pauses for a session*, i.e. a **status**. The 2026-07-16
+  "resolved" note is retracted in [`CONTEXT.md`](../../CONTEXT.md); type is **active / youth /
+  honorary**, status is **active / paused / ended**, and `docs/design/FCC-Schema.txt` is corrected
+  (`passive` removed, `inactive` → `paused`). Added **membership pause** and
+  **membership application**; extended **group** with per-group recruiting openness and the fact that
   **no drop-in trainings exist**. *Lesson: the old note resolved the ambiguity from the handoff
   rather than from the club.*
 - **Two domain facts killed large parts of the mock.** There are **no open, drop-in trainings** and
   no recurring public training times — so *"erst vorbeikommen, dann entscheiden"*, the dated
   open-training list, the free-spot counts and the "Turnschuhe reichen" copy are all gone; the
-  low-commitment step is the Jeck-Check plus an Anfrage. And **Kostüme are not (all) club-funded**, so
+  low-commitment step is the Jeck-Check plus an inquiry. And **costumes are not (all) club-funded**, so
   that benefit claim is removed everywhere.
-- **Mitgliedschaftsart is derived from the Geburtsdatum, never asked** — the mock's form allows
-  "Aktiv" with a 2015 birth date. Only **Aktiv** and **Jugend** are joinable; **Ehren** is not
+- **Membership type is derived from the date of birth, never asked** — the mock's form allows
+  "Aktiv" with a 2015 birth date. Only **active** and **youth** are joinable; **honorary** is not
   published publicly. The mock's invented "Kind" tier does not exist.
 - **The Ticket stays, as an info flyer in the shape of a ticket** — the page's one signature object
   (gold, real perforation notches, vertical stub, slight tilt, blank `MITGLIED NR. ____`). Its
   content was rewritten from scratch; the mock's rows were partly false. **Hard offset-shadows stay
   rejected as the system — fifth phase running.**
 - **Three mock features cut:** the three named contacts with private mobile numbers (P5's
-  invented-people ban plus a real spam/DSGVO problem), the **Helfer-Liste** (dead target, P5's
-  dead-link precedent), and a **Gruppen showcase** on `/join` (the Jeck-Check result plus `/club`
+  invented-people ban plus a real spam/GDPR problem), the **helper list** (dead target, P5's
+  dead-link precedent), and a **group showcase** on `/join` (the Jeck-Check result plus `/club`
   already cover it — no third roster surface).
 - **Two form defects fixed:** the consent checkbox **defaults to checked** (legally invalid) and it
-  **bundles photo consent** into the same box (Kopplungsverbot) — on a topic `CONTEXT.md` flags as
+  **bundles photo consent** into the same box (bundling ban) — on a topic `CONTEXT.md` flags as
   unresolved. Photo consent is absent by design. Under-18s get a **guardian block** and the consent
   is worded as the guardian's (§107 BGB); the mock's promised SMS confirmation flow is not built.
 - **`Vorstand` scrubbed from copy for the third phase running** (P4 fixed it twice already): copy
@@ -707,13 +707,13 @@ Followed the plan closely; build-level choices worth knowing:
   five-card-dialects lesson. Scale and colour stay at the call site — no size flag, which is what
   P4 refused for `NewsSectionRule`.
 - **Accepted, against the recommendation (user's call):** the **Club-App is advertised** as a
-  membership benefit although it is unbuilt and unscheduled → P7 re-check; and the **Satzung is
+  membership benefit although it is unbuilt and unscheduled → P7 re-check; and the **bylaws are
   linked** with no `/satzung` route, accepting the branded 404 → it must be a plain anchor (a typed
   `Link` cannot compile against a missing route, per P4) and shipping `/satzung` becomes a **P7
   launch blocker**, since this link sits inside a legal consent.
 - **Deferred (not P6):** the **entire backend** — see
-  [Deferred → Antrag- und Gruppen-Backend](#antrag--und-gruppen-backend-not-scheduled) — a
-  privacy-preserving captcha, real Gruppen content and recruiting flags, verified Satzung facts,
+  [Deferred → Membership-application and group backend](#membership-application-and-group-backend-not-scheduled) — a
+  privacy-preserving captcha, real group content and recruiting flags, verified bylaws facts,
   and a real club contact address/phone.
 
 ### P7 — Launch
@@ -736,13 +736,13 @@ and `robots.txt` is `Disallow: /` until this phase.
       README §5 ("no icon library") for shipped UI
 - [ ] [Site-Shell](feature-site-shell.md) — real social URLs (P0 shipped `#` placeholders); real
       favicon/app-icon art (tracked asset task, placeholder since P0); `noindex` on the 404
-- [ ] [Galerie](feature-gallery.md) — the mock's **Instagram band** becomes buildable once the real
+- [ ] [Gallery](feature-gallery.md) — the mock's **Instagram band** becomes buildable once the real
       social URLs land here (held out of P5 precisely because it would have been a dead link)
 - [ ] [Site-Shell](feature-site-shell.md) — **ship `/satzung`** as a third legal page. **Launch
-      blocker:** P6 links it from inside the Antrag's legal consent, accepting a 404 in the interim
-- [ ] [Mitglied werden](feature-membership-funnel.md) — **verify every membership fact against the
-      Satzung** before the gate comes down: Beitrag 30 €/15 €, keine Aufnahmegebühr, Kündigung zum
-      Sessionende, Ruhen der Mitgliedschaft, and who decides an Aufnahme. Also **re-check the
+      blocker:** P6 links it from inside the membership application's legal consent, accepting a 404 in the interim
+- [ ] [Become a member](feature-membership-funnel.md) — **verify every membership fact against the
+      bylaws** before the gate comes down: fee 30 €/15 €, no admission fee, resignation effective at
+      the end of the session, membership pause, and who decides an admission. Also **re-check the
       Club-App promise** on the Ticket and the confirmation if the app still does not exist, and
       replace the placeholder `CLUB_CONTACT_EMAIL` with a real address (plus a phone, if there is
       one)
@@ -753,29 +753,29 @@ Detail lives in the [Events area plan](events/master-plan.md#e-phases); one line
 
 - **E1 — Events data foundation** — shipped (2026-08-13): seeded event model + `events`
   feature scaffold + teaser rewire
-- **E2 — Veranstaltungen list** — shipped (built 2026-08-14): `/events` page + the
-  repo-wide "Programm" → Veranstaltungen rename (term retired, see `CONTEXT.md`)
-- **E3 — Veranstaltungsseite** — shipped (built 2026-08-15): `/events/$eventSlug` page,
-  `/tickets` retired (masthead CTA is now the single **Veranstaltungen** entry), seat-picker
-  + Kartenbörse routes live as placeholders, model grew `performers` (order-only Ablauf) +
+- **E2 — Event list** — shipped (built 2026-08-14): `/events` page + the
+  repo-wide "Programm" → event-list rename (term retired, see `CONTEXT.md`)
+- **E3 — Event page** — shipped (built 2026-08-15): `/events/$eventSlug` page,
+  `/tickets` retired (masthead CTA is now the single **event list** entry), seat-picker
+  + ticket-exchange routes live as placeholders, model grew `performers` (order-only running order) +
   `description`
-- **E4 — Karten-Bestellflow (shell)** — shipped (built 2026-08-18): one continuous order
+- **E4 — Ticket order flow (shell)** — shipped (built 2026-08-18): one continuous order
   flow at `/events/$eventSlug/order` (`…/seats` retired), `/orders/$orderCode` capability
-  URL, Karten-language sweep; step 1's core stays a recognisable placeholder — blocked on
-  the club's Sitzplatzvergabe decision. Detail in the
-  [area plan](events/master-plan.md#e4--karten-bestellflow-shell).
-- **E5 — Kauf & Karte** — shipped (built 2026-08-20): steps 2–3 of the Bestellflow (final
-  buyer form, Bestellübersicht + Widerruf-Hinweis + placeholder payment region) and the
+  URL, ticket-language sweep; step 1's core stays a recognisable placeholder — blocked on
+  the club's seat-allocation decision. Detail in the
+  [area plan](events/master-plan.md#e4--ticket-order-flow-shell).
+- **E5 — Purchase & ticket** — shipped (built 2026-08-20): steps 2–3 of the order flow (final
+  buyer form, order summary + right-of-withdrawal notice + placeholder payment region) and the
   confirmation page at `/orders/$orderCode`; Stripe pinned as the single provider, embedded
   (so §312j is ours), both routes `noindex`. Step 3's CTA is disabled — the E4 walk into
   `/orders/demo` deliberately ends there. Detail in the
-  [area plan](events/master-plan.md#e5--kauf--karte).
-- **E6 — Kartenbörse (Konzeptseite)** — shipped (concept) (built 2026-09-01):
-  `/events/exchange` is a zero-interaction **concept page** presenting the Börse as
+  [area plan](events/master-plan.md#e5--purchase--ticket).
+- **E6 — Ticket exchange (concept page)** — shipped (concept) (built 2026-09-01):
+  `/events/exchange` is a zero-interaction **concept page** presenting the ticket exchange as
   clearly-framed plans in the making (glossary embargo amended); mechanics *and* values
   stay undecided club facts — a future real shaping round inherits the idea inventory and
   the teaser-band obligation. Detail in the
-  [area plan](events/master-plan.md#e6--kartenbörse-konzeptseite).
+  [area plan](events/master-plan.md#e6--ticket-exchange-concept-page).
 
 ---
 
@@ -785,13 +785,13 @@ Everything below is **not scheduled** in this website build; kept here for inten
 requires the internal **Club-App** (the system of record for events, tickets, members) to exist.
 When the backend lands, these become real phases.
 
-### Antrag- und Gruppen-Backend *(not scheduled)*
+### Membership-application and group backend *(not scheduled)*
 
 The one exception that does **not** need the Club-App: it serves `/join` alone, on the API we
 already deploy. **P6 shipped the frontend only** (done 2026-07-30) and the contract is fully designed
-in [Mitglied werden](feature-membership-funnel.md) and
+in [Become a member](feature-membership-funnel.md) and
 [Jeck-Check](feature-group-matcher.md) — recorded here so nothing is re-litigated later.
-Until it exists, a submitted Antrag fails honestly into the form's error state, which always offers
+Until it exists, a submitted membership application fails honestly into the form's error state, which always offers
 the human fallback.
 
 **The shipped frontend pins these shapes** — `web/apps/website/src/lib/seed/{groups,group-matcher}.ts`
@@ -799,14 +799,14 @@ holds the Zod schemas the endpoints must satisfy, and they are the executable ve
 
 - `POST /api/membership-applications` — validate, persist, notify. Per
   [ADR-0004](../../docs/adr/0004-website-writes-membership-applications.md): the row is the source of
-  truth, the mail is the notification, and a mail failure is not a lost Antrag. **The request body
-  carries no Mitgliedschaftsart and no Beitrag** — the API derives both from `birthDate`, because a
+  truth, the mail is the notification, and a mail failure is not a lost membership application. **The request body
+  carries no membership type and no fee** — the API derives both from `birthDate`, because a
   client-asserted tier is the very mock defect P6 fixed. Nothing is read back from the response.
 - `GET /api/groups` — `id` (kebab-case content slug, German-transliterated), `name`, `ageRange`
   (`from` plus `to`, where `to: null` means an open upper bound), **`isRecruiting`**, and `tagline`
-  (the result-card line). Consumed by the Antrag's interest chips.
-- `GET /api/group-matcher` — `{ groups, questions }`: the eleven questions with every Gruppe's stance
-  + weight, **plus the same Gruppen payload embedded**. The embedding is deliberate (P6 build decision)
+  (the result-card line). Consumed by the membership application's interest chips.
+- `GET /api/group-matcher` — `{ groups, questions }`: the eleven questions with every group's stance
+  + weight, **plus the same groups payload embedded**. The embedding is deliberate (P6 build decision)
   so the matcher needs one query with one loading/error path — do not split it back apart without
   reopening the matcher's data layer. Questions are a discriminated union on `role`: `weighted`
   (`positions[]` of `{ groupId, stance, importance }`) and `filter` (`options[]` plus `positions[]` of
@@ -815,7 +815,7 @@ holds the Zod schemas the endpoints must satisfy, and they are the executable ve
 - Per-IP rate limiting; decide on a privacy-preserving challenge (self-hosted **Altcha** or
   **Friendly Captcha**) — never a third-party captcha on the page where a child's data is typed.
 - Retention/deletion rule for applicant data — incl. minors and guardians — plus the matching
-  Datenschutzerklärung text.
+  privacy-policy text.
 - **Delete `src/lib/seed/`** and point the query hooks at `apiFetch` (one line each).
 - Follows `/backend-work` and `docs/server/TESTING.md` (integration tests, Testcontainers, no
   mocks — [ADR-0001](../../docs/adr/0001-no-mocks-integration-testing.md)).
@@ -827,11 +827,11 @@ thing done before P7 flips the site public — a live funnel that cannot submit 
 
 - **Events & Ticketing (real data + transactions)** — the frontend is now planned
   frontend-first with seeds in the [Events & Tickets area plan](events/master-plan.md)
-  (2026-08-12, absorbing the Veranstaltungskalender + Ticket-Shop stubs); its
+  (2026-08-12, absorbing the event-calendar + ticket-shop stubs); its
   [Deferred — backend](events/master-plan.md#deferred--backend) section is the contract
   list the eventual backend must satisfy (+ an **OpenAPI codegen decision**: types vs.
   types+Zod, likely an ADR). Still Club-App-dependent beyond that: wire the
-  [Programm-Teaser](feature-events-teaser.md) to live data + add the **scarcity badge**,
+  [Events teaser](feature-events-teaser.md) to live data + add the **scarcity badge**,
   event-selection logic, and empty state; wire the [Landing-Hero](feature-landing-hero.md)
   **stats** and the data-driven ticker to live data.
 - **Bot OG-meta injection** (edge middleware vs. a `<meta>`-serving endpoint on the API) — **only
@@ -839,8 +839,8 @@ thing done before P7 flips the site public — a live funnel that cannot submit 
   cannot be prerendered. Re-scoped out of P4 in the P4 grilling: static-in-repo pages like
   `/news/:slug` are prerenderable and need nothing. See the
   [ADR-0003](../../docs/adr/0003-website-rendering-strategy.md) amendment.
-- **News (real data)** — the Club-App becomes the publishing surface for **Meldungen** and serves
+- **News (real data)** — the Club-App becomes the publishing surface for **news posts** and serves
   them over a public read endpoint; the typed `NewsPost` interface is the swap point
-  ([Aktuelles](feature-news.md)). Brings with it body **sanitisation** (content stops being
-  compile-time), real photos, board publishing UI, and the **archive route** once an older Session
+  ([News](feature-news.md)). Brings with it body **sanitisation** (content stops being
+  compile-time), real photos, board publishing UI, and the **archive route** once an older session
   exists.

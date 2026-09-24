@@ -11,10 +11,9 @@ const LOADING_LABEL = 'Rollen werden geladen';
 
 interface RolesBodyProps {
   search: RoleSearchControl;
-  onCreate: () => void;
 }
 
-export const RolesBody: FC<RolesBodyProps> = ({ search, onCreate }) => {
+export const RolesBody: FC<RolesBodyProps> = ({ search }) => {
   const roles = useRolesQuery();
   const { roleId } = useSelectedRole();
   const errorMessage = toRolesErrorMessage(roles.error);
@@ -25,12 +24,7 @@ export const RolesBody: FC<RolesBodyProps> = ({ search, onCreate }) => {
 
   if (roles.data !== undefined) {
     return (
-      <RolesView
-        roles={roles.data.roles}
-        catalogue={roles.data.permissionKeys}
-        search={search}
-        onCreate={onCreate}
-      />
+      <RolesView roles={roles.data.roles} catalogue={roles.data.permissionKeys} search={search} />
     );
   }
   if (errorMessage !== null) {

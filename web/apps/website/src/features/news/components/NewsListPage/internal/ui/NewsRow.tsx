@@ -40,12 +40,11 @@ export const NewsRow: FC<NewsRowProps> = ({ post }) => (
   >
     <Stack direction="row" sx={{ width: '100%', gap: { xs: 2, md: 3 }, alignItems: 'flex-start' }}>
       <Typography
+        variant="h2"
         component="span"
         sx={{
           display: { xs: 'none', desktop: 'block' },
-          fontFamily: kkTokens.font.display,
           color: 'primary.main',
-          fontSize: '1.875rem',
           lineHeight: 1,
           flexShrink: 0,
           minWidth: '4.5rem',
@@ -68,11 +67,11 @@ export const NewsRow: FC<NewsRowProps> = ({ post }) => (
           </Typography>
         </Stack>
         <Typography
-          variant="h4"
+          variant="h3"
           component="h3"
           data-kk-news-row-title
           sx={(theme) => ({
-            fontSize: { xs: '1.25rem', md: '1.875rem' },
+            typography: { xs: 'h3', md: 'h2' },
             lineHeight: 1.05,
             transition: theme.transitions.create(['color'], {
               duration: theme.transitions.duration.shortest,
@@ -102,7 +101,7 @@ export const NewsRow: FC<NewsRowProps> = ({ post }) => (
           flexShrink: 0,
           width: { xs: '4.5rem', md: '10.5rem' },
           height: { xs: '4.5rem', md: '6.5rem' },
-          fontSize: { xs: '0.8125rem', md: '1.375rem' },
+          typography: { xs: 'body2', md: 'h3' },
           border: 1,
           borderColor: 'divider',
           borderRadius: `${kkTokens.radius.base}px`,

@@ -10,6 +10,7 @@ export const KkCardFooter: FC<PropsWithChildren> = ({ children }) => (
       mt: 'auto',
       pt: 1,
       gap: 1,
+      flexWrap: 'wrap',
       alignItems: 'center',
       justifyContent: 'space-between',
     }}

@@ -18,7 +18,7 @@ interface MatcherRankingProps {
 export const MatcherRanking: FC<MatcherRankingProps> = ({ view, summary }) => (
   <>
     <Stack sx={{ gap: 1.5 }}>
-      <Typography variant="h3" component="p">
+      <Typography variant="h2" component="p">
         {matcherResultLabels.rankingTitle}
       </Typography>
       <Typography variant="body1" sx={{ fontWeight: 600 }}>

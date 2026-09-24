@@ -1,25 +1,27 @@
-import type { KkConfirmFact, KkFilterOption, KkSelectOption } from '@furria/ui';
-import type { CalendarEntryKind } from '@/features/club';
+import type { KkConfirmFact, KkFilterOption, KkScreenOrigin, KkSelectOption } from '@furria/ui';
+import { CALENDAR_PATH } from '@/features/session';
+import type { AttendanceChoice } from '@/lib/calendar-copy';
+import {
+  CALENDAR_KIND_LABELS,
+  toAttendanceChoices,
+  toAttendanceSavedMessage,
+} from '@/lib/calendar-copy';
 import { toIsoDayLabel, toLocalIsoDay, toTimeSpanLabel } from '@/lib/calendar-days';
 import type { CalendarOwnerOption } from './calendar-authoring';
 import { NO_VENUE_ID, toTimeChoices } from './calendar-authoring';
 import { ALL_SCOPE_ID, CLUB_SCOPE_ID, toGroupScopeId } from './calendar-query';
-import type {
-  AttendanceAnswer,
-  CalendarEntry,
-  CalendarEntryVisibility,
-  RunningVenue,
-} from './schemas';
+import type { CalendarEntry, CalendarEntryVisibility, RunningVenue } from './schemas';
 
 export const CALENDAR_TITLE = 'Kalender';
+export const CALENDAR_ORIGIN: KkScreenOrigin = { label: CALENDAR_TITLE, to: CALENDAR_PATH };
+export const CALENDAR_LIST_SECTION_TITLE = 'Termine';
 export const CALENDAR_LOADING_LABEL = 'Der Kalender wird geladen';
 export const CALENDAR_ERROR_TITLE = 'KALENDER NICHT GELADEN';
 export const CALENDAR_RETRY_LABEL = 'Noch einmal';
 export const CALENDAR_EMPTY_TITLE = 'NICHTS IM KALENDER';
-export const CALENDAR_EMPTY_LINE =
-  'In diesem Zeitraum steht kein Termin. Wähle einen anderen Bereich oder blättere weiter.';
+export const CALENDAR_EMPTY_LINE = 'In diesem Zeitraum gibt es keine Termine.';
 export const CALENDAR_DAY_EMPTY_TITLE = 'AN DIESEM TAG NICHTS';
-export const CALENDAR_DAY_EMPTY_LINE = 'An diesem Tag steht kein Termin.';
+export const CALENDAR_DAY_EMPTY_LINE = 'An diesem Tag gibt es keine Termine.';
 export const SCOPE_FILTER_LABEL = 'Nach Bereich filtern';
 export const MONTH_VIEW_LABEL = 'Monat';
 export const LIST_VIEW_LABEL = 'Liste';
@@ -31,18 +33,13 @@ export const RUNNING_CHIP_LABEL = 'läuft gerade';
 const ALL_SCOPE_LABEL = 'Alle';
 const CLUB_SCOPE_LABEL = 'Verein';
 const META_SEPARATOR = ' · ';
-const NO_ENTRIES_LEAD = 'Gerade steht nichts im Kalender.';
-const ONE_ENTRY_LEAD = 'Ein Termin steht im Kalender.';
-const ONE_ENTRY = 1;
 
-export const CALENDAR_KIND_LABELS: Record<CalendarEntryKind, string> = {
-  training: 'Training',
-  rehearsal: 'Probe',
-  performance: 'Auftritt',
-  meeting: 'Sitzung',
-  party: 'Feier',
-  other: 'Sonstiges',
-};
+const ONE_ENTRY = 1;
+const ONE_ENTRY_LABEL = 'Ein Termin';
+const MANY_ENTRIES_LABEL = 'Termine';
+
+export type { AttendanceChoice };
+export { CALENDAR_KIND_LABELS, toAttendanceChoices, toAttendanceSavedMessage };
 
 const CLUB_OWNER_LABEL = 'Verein';
 const CLUB_REACH_LABEL = 'für alle im Verein';
@@ -62,45 +59,13 @@ const toReachLabel = (
   return null;
 };
 
-const ATTENDANCE_LABELS: Record<AttendanceAnswer, string> = {
-  yes: 'Zusage',
-  no: 'Absage',
-  maybe: 'Vielleicht',
-};
-
-const ATTENDANCE_SAVED_MESSAGES: Record<AttendanceAnswer, string> = {
-  yes: 'Deine Zusage ist notiert.',
-  no: 'Deine Absage ist notiert.',
-  maybe: 'Dein Vielleicht ist notiert.',
-};
-
-const ATTENDANCE_ORDER: readonly AttendanceAnswer[] = ['yes', 'no', 'maybe'];
-
-export interface AttendanceChoice {
-  answer: AttendanceAnswer;
-  label: string;
-  selected: boolean;
-}
-
-export const toAttendanceChoices = (viewerAnswer: AttendanceAnswer | null): AttendanceChoice[] =>
-  ATTENDANCE_ORDER.map((answer) => ({
-    answer,
-    label: ATTENDANCE_LABELS[answer],
-    selected: answer === viewerAnswer,
-  }));
-
-export const toAttendanceSavedMessage = (answer: AttendanceAnswer): string =>
-  ATTENDANCE_SAVED_MESSAGES[answer];
-
-export const toCalendarLead = (count: number): string => {
-  if (count === 0) {
-    return NO_ENTRIES_LEAD;
-  }
+export const CALENDAR_LEAD = 'Termine, Trainings und Sitzungen des Vereins.';
+export const toDayEntriesLabel = (count: number): string => {
   if (count === ONE_ENTRY) {
-    return ONE_ENTRY_LEAD;
+    return ONE_ENTRY_LABEL;
   }
 
-  return `${count} Termine stehen im Kalender.`;
+  return `${count} ${MANY_ENTRIES_LABEL}`;
 };
 
 export const toEntryMetaLine = (entry: CalendarEntry): string => {
@@ -150,9 +115,11 @@ export const toScopeOptions = (entries: readonly CalendarEntry[]): KkFilterOptio
   ];
 };
 
-export const CREATE_ENTRY_LABEL = 'Termin eintragen';
-export const EDIT_ENTRY_LABEL = 'Bearbeiten';
-export const DELETE_ENTRY_LABEL = 'Löschen';
+export const ADD_ENTRY_PILL_LABEL = 'Termin';
+export const ADD_ENTRY_ACTION_LABEL = 'Termin hinzufügen';
+export const CALENDAR_ENTRY_CREATE_TITLE = 'Termin hinzufügen';
+export const CALENDAR_ENTRY_EDIT_TITLE = 'Termin ändern';
+export const DELETE_ENTRY_DANGER_LABEL = 'Termin löschen';
 
 const CALENDAR_VISIBILITY_LABELS: Record<CalendarEntryVisibility, string> = {
   group: 'Gruppenintern',
@@ -206,10 +173,10 @@ export const toEntryFacts = (entry: CalendarEntry): KkConfirmFact[] => {
 
 export const toDeleteConsequence = (entry: CalendarEntry): string => {
   if (entry.asksForResponse) {
-    return `„${entry.title}“ verschwindet aus dem Kalender, und die schon abgegebenen Zu- und Absagen verschwinden mit.`;
+    return `„${entry.title}“ wird mit allen Zu- und Absagen gelöscht.`;
   }
 
-  return `„${entry.title}“ verschwindet aus dem Kalender. Rückgängig geht das nicht.`;
+  return `„${entry.title}“ wird endgültig gelöscht.`;
 };
 
 export const toEntryCreatedMessage = (title: string): string =>

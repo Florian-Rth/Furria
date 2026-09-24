@@ -37,9 +37,9 @@ public sealed class TestIdentity
         _password = password;
         BootstrapAdmin = bootstrapAdmin;
         People = new AliasRegistry<int>("Person", seeded.PersonIds);
-        Memberships = new AliasRegistry<int>("Mitgliedschaft", seeded.MembershipIds);
-        Pauses = new AliasRegistry<int>("Ruhezeit", seeded.PauseIds);
-        FeeReductions = new AliasRegistry<int>("Beitragsermaessigung", seeded.FeeReductionIds);
+        Memberships = new AliasRegistry<int>("Membership", seeded.MembershipIds);
+        Pauses = new AliasRegistry<int>("MembershipPause", seeded.PauseIds);
+        FeeReductions = new AliasRegistry<int>("FeeReduction", seeded.FeeReductionIds);
         Accounts = new AliasRegistry<int>("Account", seeded.AccountIds);
     }
 

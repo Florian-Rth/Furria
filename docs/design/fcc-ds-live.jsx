@@ -1,11 +1,11 @@
-// fcc-ds-live.jsx — Live-Regie (Part 4).
+// fcc-ds-live.jsx — Live show control (Part 4).
 // Runs the running order built in /events LIVE during the event. Operator advances
 // the program; the current act + queue update; performers get a push when their
-// group is up next ("in ~X Min auf die Bühne"). Real-time bridge from plan → evening.
+// group is up next ("on stage in ~X min"). Real-time bridge from plan → evening.
 // Surfaces:
-//  • PageLive (desktop, operator/Regie): JETZT auf der Bühne, Als-Nächstes-Queue,
-//    advance control, live push feed + Backstage-Bereitschaft.
-//  • MLive (mobile, performer): "macht euch bereit" countdown → "ihr seid dran".
+//  • PageLive (desktop, operator/show control): NOW on stage, up-next queue,
+//    advance control, live push feed + backstage readiness.
+//  • MLive (mobile, performer): "get ready" countdown → "you're up".
 //  • LockPush (mobile lock-screen push mock) for the canvas.
 // Composes the system shell + tokens. Exports window.PageLive + window.MLive + window.LockPush.
 

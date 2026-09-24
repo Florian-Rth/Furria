@@ -1,3 +1,4 @@
+using System.Diagnostics.Contracts;
 using Furria.Application.Identity;
 using Furria.Application.Results;
 using Furria.Core.Club;
@@ -5,6 +6,7 @@ using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Furria.Infrastructure.Identity;
 
@@ -27,6 +29,7 @@ public sealed class AccountService
     private readonly AccessTokenService _accessTokenService;
     private readonly PermissionAuthorizer _permissionAuthorizer;
     private readonly TimeProvider _timeProvider;
+    private readonly ILogger<AccountService> _logger;
 
     public AccountService(
         AppDbContext dbContext,
@@ -35,7 +38,8 @@ public sealed class AccountService
         RefreshTokenService refreshTokenService,
         AccessTokenService accessTokenService,
         PermissionAuthorizer permissionAuthorizer,
-        TimeProvider timeProvider
+        TimeProvider timeProvider,
+        ILogger<AccountService> logger
     )
     {
         _dbContext = dbContext;
@@ -45,6 +49,7 @@ public sealed class AccountService
         _accessTokenService = accessTokenService;
         _permissionAuthorizer = permissionAuthorizer;
         _timeProvider = timeProvider;
+        _logger = logger;
     }
 
     public async Task<Result<SessionTokensDetails>> LoginAsync(
@@ -56,9 +61,13 @@ public sealed class AccountService
         if (account is null || account.IsDisabled)
         {
             BurnAPasswordCheck(command.Password);
-            return Result<SessionTokensDetails>.Unauthorized(RejectedCredentialsMessage);
+            return RejectLogin(
+                command.Email,
+                account is null ? LoginFailureReason.UnknownAccount : LoginFailureReason.Disabled
+            );
         }
 
+        var wasLockedOut = await _userManager.IsLockedOutAsync(account);
         var signIn = await _signInManager.CheckPasswordSignInAsync(
             account,
             command.Password,
@@ -70,9 +79,13 @@ public sealed class AccountService
             if (signIn.IsLockedOut || signIn.IsNotAllowed)
                 BurnAPasswordCheck(command.Password);
 
-            return Result<SessionTokensDetails>.Unauthorized(RejectedCredentialsMessage);
+            if (signIn.IsLockedOut && !wasLockedOut)
+                ReportLockout(account);
+
+            return RejectLogin(command.Email, FailureReasonOf(signIn));
         }
 
+        _logger.LogInformation("Login succeeded for account {AccountId}", account.Id);
         return Result<SessionTokensDetails>.Success(await StartSessionAsync(account, ct));
     }
 
@@ -89,6 +102,10 @@ public sealed class AccountService
         if (account is null || account.IsDisabled)
         {
             await RevokeAsync(rotated.Value, RefreshTokenRevocationReason.AccountDisabled, ct);
+            _logger.LogWarning(
+                "Refresh refused for disabled account {AccountId}, session revoked",
+                rotated.Value.AccountId
+            );
             return Result<SessionTokensDetails>.Unauthorized(RejectedSessionMessage);
         }
 
@@ -109,8 +126,9 @@ public sealed class AccountService
         return Result.Success();
     }
 
-    public Task LogoutAsync(string presentedToken, int accountId, CancellationToken ct) =>
-        _refreshTokenService.RevokeFamilyAsync(
+    public async Task LogoutAsync(string presentedToken, int accountId, CancellationToken ct)
+    {
+        await _refreshTokenService.RevokeFamilyAsync(
             new RevokeRefreshTokenFamilyCommand
             {
                 PresentedToken = presentedToken,
@@ -119,6 +137,8 @@ public sealed class AccountService
             },
             ct
         );
+        _logger.LogInformation("Account {AccountId} logged out", accountId);
+    }
 
     public async Task<Result<AccountDetails>> GetDetailsAsync(int accountId, CancellationToken ct)
     {
@@ -174,6 +194,28 @@ public sealed class AccountService
             ToDetails(row, ClubClock.Today(_timeProvider), isAffiliated, Ordered(permissionKeys))
         );
     }
+
+    private Result<SessionTokensDetails> RejectLogin(string email, LoginFailureReason reason)
+    {
+        _logger.LogInformation("Login failed for {Email}: {LoginFailureReason}", email, reason);
+        return Result<SessionTokensDetails>.Unauthorized(RejectedCredentialsMessage);
+    }
+
+    private void ReportLockout(Account account) =>
+        _logger.LogWarning(
+            "Account {AccountId} locked out until {LockoutEnd}",
+            account.Id,
+            account.LockoutEnd
+        );
+
+    [Pure]
+    private static LoginFailureReason FailureReasonOf(SignInResult signIn) =>
+        signIn switch
+        {
+            { IsLockedOut: true } => LoginFailureReason.LockedOut,
+            { IsNotAllowed: true } => LoginFailureReason.NotAllowed,
+            _ => LoginFailureReason.WrongPassword,
+        };
 
     private void BurnAPasswordCheck(string password)
     {

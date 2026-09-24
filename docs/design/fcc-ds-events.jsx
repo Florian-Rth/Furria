@@ -1,8 +1,8 @@
-// fcc-ds-events.jsx — Veranstaltungsplaner (/events).
+// fcc-ds-events.jsx — Event planner (/events).
 // An event is a STATUS HUB, not a stepper: once created it opens to a board of
-// task cards (Eckdaten · Vorverkauf · Werbung · Saalplan · Programm) that can be
-// done in any order. Task set adapts to the event TYPE (eigene Sitzung / auswärts
-// / vereinsintern). Composes the system shell + tokens. No new styles.
+// task cards (basics · presale · promotion · hall plan · program) that can be
+// done in any order. Task set adapts to the event TYPE (own gala session / away
+// / internal to the club). Composes the system shell + tokens. No new styles.
 // Exports window.PageEvents (desktop) + window.MEvents (mobile).
 
 (function () {
@@ -326,7 +326,7 @@
     );
   }
 
-  // ── TASK · BASICS (Eckdaten + Website-Veröffentlichung) ───────────────────
+  // ── TASK · BASICS (core data + website publication) ───────────────────────
   function Field({ label, value, wide, edit }) {
     return (
       <div style={{ gridColumn: wide ? '1 / -1' : 'auto' }}>

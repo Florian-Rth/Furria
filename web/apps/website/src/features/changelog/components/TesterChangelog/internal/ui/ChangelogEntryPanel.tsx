@@ -29,7 +29,7 @@ export const ChangelogEntryPanel: FC<ChangelogEntryPanelProps> = ({ entry }) => 
       >
         {formatLongDate(entry.date)}
       </Typography>
-      <Typography variant="h5" component="h3" id={buildEntryHeadingId(entry.id)}>
+      <Typography variant="h3" component="h3" id={buildEntryHeadingId(entry.id)}>
         {entry.title}
       </Typography>
     </Stack>

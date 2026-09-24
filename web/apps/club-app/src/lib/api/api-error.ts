@@ -31,7 +31,7 @@ export interface ApiFieldFailure {
 
 export type RequestFailedStatus = 400 | 409 | 422;
 
-const NEUTRAL_FAILURE_MESSAGE = 'Das hat der Server so nicht angenommen.';
+const NEUTRAL_FAILURE_MESSAGE = 'Der Server hat die Anfrage abgelehnt.';
 
 export class RequestFailedError extends Error {
   readonly status: RequestFailedStatus;

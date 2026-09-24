@@ -1,7 +1,7 @@
 import type { CSSObject, Theme } from '@mui/material/styles';
 import { kkTokens } from '../tokens';
 import type { KkScheme } from './scheme-paint';
-import { applyScheme, schemeFill, schemeInk } from './scheme-paint';
+import { applyScheme, schemeEdge, schemeFill, schemeInk } from './scheme-paint';
 
 export type KkTone = 'neutral' | 'ink' | 'accent' | 'gold' | 'green' | 'blue';
 
@@ -63,8 +63,13 @@ export const toneRecipes: Record<KkTone, KkToneRecipe> = {
   },
 };
 
+const SELECTED_BOOST_LIGHT = 16;
+const SELECTED_BOOST_DARK = 14;
+
 const mix = (color: string, amount: string): string =>
   `color-mix(in srgb, ${color} ${amount}, transparent)`;
+
+const boosted = (amount: string, boost: number): string => `${Number.parseFloat(amount) + boost}%`;
 
 const toneInkScheme = (tone: KkTone): KkScheme =>
   schemeInk(toneRecipes[tone].inkLight, toneRecipes[tone].inkDark);
@@ -76,5 +81,26 @@ const toneGroundScheme = (theme: Theme, tone: KkTone): KkScheme => {
   return schemeFill(mix(source, recipe.groundLight), mix(source, recipe.groundDark));
 };
 
+const toneSelectedGroundScheme = (theme: Theme, tone: KkTone): KkScheme => {
+  const recipe = toneRecipes[tone];
+  const source = recipe.source(theme);
+
+  return schemeFill(
+    mix(source, boosted(recipe.groundLight, SELECTED_BOOST_LIGHT)),
+    mix(source, boosted(recipe.groundDark, SELECTED_BOOST_DARK)),
+  );
+};
+
+const toneEdgeScheme = (tone: KkTone): KkScheme =>
+  schemeEdge(toneRecipes[tone].inkLight, toneRecipes[tone].inkDark);
+
 export const tonePaint = (theme: Theme, tone: KkTone): CSSObject =>
   applyScheme(theme, toneInkScheme(tone), toneGroundScheme(theme, tone));
+
+export const toneSelectedPaint = (theme: Theme, tone: KkTone): CSSObject =>
+  applyScheme(
+    theme,
+    toneInkScheme(tone),
+    toneSelectedGroundScheme(theme, tone),
+    toneEdgeScheme(tone),
+  );

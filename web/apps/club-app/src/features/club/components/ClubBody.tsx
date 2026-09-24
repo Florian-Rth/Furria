@@ -1,5 +1,6 @@
 import { KkPanelStack } from '@furria/ui';
 import type { FC } from 'react';
+import { useMeQuery } from '@/features/session';
 import { useClubHubQuery } from '../api';
 import { toClubHubErrorMessage } from '../club-messages';
 import { AnnouncementsPanel } from './AnnouncementsPanel';
@@ -13,13 +14,15 @@ import { KeyPanel } from './KeyPanel';
 
 export const ClubBody: FC = () => {
   const clubHub = useClubHubQuery();
+  const me = useMeQuery();
+  const isReady = clubHub.data !== undefined && me.data !== undefined;
   const errorMessage = toClubHubErrorMessage(clubHub.error);
 
   const reload = (): void => {
     void clubHub.refetch();
   };
 
-  if (clubHub.data !== undefined) {
+  if (isReady) {
     return (
       <KkPanelStack>
         <ClubStats />

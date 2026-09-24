@@ -1,3 +1,4 @@
+import type { KkGroupTone } from '@furria/ui';
 import { KkChip, KkEmptyState, KkFactRow, KkPanel, KkPanelSection } from '@furria/ui';
 import type { FC } from 'react';
 import { GROUP_SECTION_TITLES } from '@/lib/group-sections';
@@ -13,12 +14,14 @@ interface GroupHistoryPanelProps {
   pastMembers: readonly GroupDetailMember[];
   pastAdmins: readonly GroupDetailAdmin[];
   meta?: string;
+  groupTone?: KkGroupTone;
 }
 
 export const GroupHistoryPanel: FC<GroupHistoryPanelProps> = ({
   pastMembers,
   pastAdmins,
   meta,
+  groupTone,
 }) => {
   const entries = toGroupHistoryEntries(pastMembers, pastAdmins);
 
@@ -50,7 +53,7 @@ export const GroupHistoryPanel: FC<GroupHistoryPanelProps> = ({
   );
 
   return (
-    <KkPanelSection title={GROUP_SECTION_TITLES.history} meta={meta}>
+    <KkPanelSection title={GROUP_SECTION_TITLES.history} meta={meta} groupTone={groupTone}>
       <KkPanel variant={variant}>{body}</KkPanel>
     </KkPanelSection>
   );

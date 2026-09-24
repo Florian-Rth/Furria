@@ -6,7 +6,7 @@ import type { ManagedGroupSummary } from '../schemas';
 
 interface GroupConfirmInput {
   mutation: UseMutationResult<void, Error, GroupMutationInput>;
-  group: ManagedGroupSummary | null;
+  group: ManagedGroupSummary;
   open: boolean;
   onDone: () => void;
 }
@@ -35,10 +35,6 @@ export const useGroupConfirm = ({
   }
 
   const submit = (): void => {
-    if (group === null) {
-      return;
-    }
-
     setRejection(null);
     mutation.mutate(
       { groupId: group.groupId, name: group.name },

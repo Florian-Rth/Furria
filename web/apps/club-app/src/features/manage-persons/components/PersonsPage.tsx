@@ -1,7 +1,8 @@
-import type { KkScreenAction, KkScreenIndex } from '@furria/ui';
+import type { KkScreenIndex } from '@furria/ui';
 import { KkScreen, KkSkeletonToolbar, KkTitleHeader } from '@furria/ui';
 import type { FC } from 'react';
 import {
+  AREA_HANDOVERS,
   MANAGE_ORIGIN,
   RequirePermission,
   usePermissions,
@@ -9,17 +10,13 @@ import {
 } from '@/features/session';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { usePersonsQuery } from '../api';
-import { usePersonCreateDialog } from '../hooks/use-person-create-dialog';
 import { usePersonsSearch } from '../hooks/use-persons-search';
-import { LETTER_INDEX_LABEL, PERSONS_TITLE, toPersonsLead } from '../manage-persons-labels';
+import { LETTER_INDEX_LABEL, PERSONS_LEAD, PERSONS_TITLE } from '../manage-persons-labels';
 import type { PersonSummary } from '../schemas';
-import { PersonFormDialog } from './PersonFormDialog';
 import { PersonsBody } from './PersonsBody';
 import { PersonsToolbar } from './PersonsToolbar';
 
 const SEARCH_PLACEHOLDER = 'Name, Adresse, E-Mail';
-
-const CREATE_LABEL = 'Person anlegen';
 
 const TOOLBAR_CHIPS = 5;
 
@@ -30,20 +27,9 @@ export const PersonsPage: FC = () => {
   const persons = usePersonsQuery();
   const rows = persons.data?.persons ?? NO_PERSONS;
   const search = usePersonsSearch(rows);
-  const dialog = usePersonCreateDialog();
-  const { has } = usePermissions();
+  const { has, isUndecided } = usePermissions();
   const canManage = has(PERMISSION_KEYS.personsManage);
-  const lead = persons.data === undefined ? undefined : toPersonsLead(rows.length);
-
-  const createAction: KkScreenAction = {
-    id: 'create-person',
-    label: CREATE_LABEL,
-    icon: 'add',
-    emphasis: true,
-    onSelect: dialog.open,
-  };
-
-  const actions: readonly [KkScreenAction] | undefined = canManage ? [createAction] : undefined;
+  const showsTools = isUndecided || canManage;
 
   const index: KkScreenIndex | undefined =
     !canManage || search.letters.length === 0
@@ -56,7 +42,7 @@ export const PersonsPage: FC = () => {
         };
 
   const toolRow =
-    persons.data === undefined ? (
+    persons.data === undefined || isUndecided ? (
       <KkSkeletonToolbar chips={TOOLBAR_CHIPS} />
     ) : (
       <PersonsToolbar
@@ -70,21 +56,15 @@ export const PersonsPage: FC = () => {
     <KkScreen
       kind="list"
       search={searchMode}
-      actions={actions}
-      tools={canManage ? toolRow : undefined}
+      tools={showsTools ? toolRow : undefined}
       index={index}
       title={PERSONS_TITLE}
       origin={MANAGE_ORIGIN}
-      header={<KkTitleHeader title={PERSONS_TITLE} lead={lead} />}
+      header={<KkTitleHeader title={PERSONS_TITLE} lead={PERSONS_LEAD} />}
+      handover={AREA_HANDOVERS.manage}
     >
       <RequirePermission permissionKey={PERMISSION_KEYS.personsManage}>
-        <PersonsBody search={search} onCreate={dialog.open} />
-        <PersonFormDialog
-          person={null}
-          open={dialog.isOpen}
-          onClose={dialog.close}
-          onSaved={dialog.goToCreated}
-        />
+        <PersonsBody search={search} />
       </RequirePermission>
     </KkScreen>
   );

@@ -15,8 +15,8 @@ public sealed class PutCalendarEntryTests
 {
     private const int UnknownEntryId = 999_999;
     private const string ValidationField = "request";
-    private const string GardeTraining = "Training der Tanzgarde";
-    private const string GardeAuftritt = "Auftritt der Tanzgarde";
+    private const string DanceGuardTraining = "Training der Tanzgarde";
+    private const string DanceGuardPerformance = "Auftritt der Tanzgarde";
     private const string Abendprobe = "Abendprobe";
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
@@ -77,7 +77,7 @@ public sealed class PutCalendarEntryTests
     }
 
     [Fact]
-    public async Task Should_MoveTheEintragToTheVerein_When_TheCallerMayOwnBothEigentuemer()
+    public async Task Should_MoveTheEntryToTheClub_When_TheCallerMayOwnBothOwners()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
@@ -88,7 +88,7 @@ public sealed class PutCalendarEntryTests
             PutCalendarEntry,
             PutCalendarEntryRequest,
             PutCalendarEntryResponse
-        >(ClubOwned(entryId, GardeAuftritt));
+        >(ClubOwned(entryId, DanceGuardPerformance));
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Empty(result.VenueCollisions);
@@ -96,14 +96,14 @@ public sealed class PutCalendarEntryTests
             .Expected.CalendarEntry(entryId)
             .ToBeClubOwned()
             .CalendarEntry(entryId)
-            .ToHaveTitle(GardeAuftritt)
+            .ToHaveTitle(DanceGuardPerformance)
             .CalendarEntry(entryId)
             .ToHaveVisibility(CalendarEntryVisibility.Club)
             .AssertAsync(ct);
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerMayOwnOnlyTheNewEigentuemer()
+    public async Task Should_ReturnForbidden_When_TheCallerMayOwnOnlyTheNewOwner()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
@@ -114,19 +114,19 @@ public sealed class PutCalendarEntryTests
             PutCalendarEntry,
             PutCalendarEntryRequest,
             PutCalendarEntryResponse
-        >(ClubOwned(entryId, GardeAuftritt));
+        >(ClubOwned(entryId, DanceGuardPerformance));
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         await ctx
             .Expected.CalendarEntry(entryId)
             .ToHaveOwnerGroup(ctx.Groups.Groups.IdOf("tanzgarde"))
             .CalendarEntry(entryId)
-            .ToHaveTitle(GardeTraining)
+            .ToHaveTitle(DanceGuardTraining)
             .AssertAsync(ct);
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerMayOwnOnlyTheAlteEigentuemer()
+    public async Task Should_ReturnForbidden_When_TheCallerMayOwnOnlyTheOldOwner()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
@@ -137,7 +137,7 @@ public sealed class PutCalendarEntryTests
             PutCalendarEntry,
             PutCalendarEntryRequest,
             PutCalendarEntryResponse
-        >(ClubOwned(entryId, GardeAuftritt));
+        >(ClubOwned(entryId, DanceGuardPerformance));
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         await ctx
@@ -147,7 +147,7 @@ public sealed class PutCalendarEntryTests
     }
 
     [Fact]
-    public async Task Should_SaveTheChanges_When_TheEigentuemerStaysTheSame()
+    public async Task Should_SaveTheChanges_When_TheOwnerStaysTheSame()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
@@ -163,7 +163,7 @@ public sealed class PutCalendarEntryTests
             new()
             {
                 CalendarEntryId = entryId,
-                Title = GardeAuftritt,
+                Title = DanceGuardPerformance,
                 Description = "Auftritt statt Training.",
                 OwnerGroupId = tanzgarde,
                 VenueId = null,
@@ -172,6 +172,7 @@ public sealed class PutCalendarEntryTests
                 Kind = CalendarEntryKind.Performance,
                 Visibility = CalendarEntryVisibility.Group,
                 AsksForResponse = true,
+                ParticipatingGroupIds = [],
             }
         );
 
@@ -180,7 +181,7 @@ public sealed class PutCalendarEntryTests
             .Expected.CalendarEntry(entryId)
             .ToHaveOwnerGroup(tanzgarde)
             .CalendarEntry(entryId)
-            .ToHaveTitle(GardeAuftritt)
+            .ToHaveTitle(DanceGuardPerformance)
             .CalendarEntry(entryId)
             .ToHaveKind(CalendarEntryKind.Performance)
             .CalendarEntry(entryId)
@@ -191,7 +192,7 @@ public sealed class PutCalendarEntryTests
     }
 
     [Fact]
-    public async Task Should_WarnAboutTheOrtAndStillWrite_When_TheNeueZeitClashesAtThatOrt()
+    public async Task Should_WarnAboutTheVenueAndStillWrite_When_TheNewTimeClashesAtThatVenue()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
@@ -207,7 +208,7 @@ public sealed class PutCalendarEntryTests
             new()
             {
                 CalendarEntryId = entryId,
-                Title = GardeTraining,
+                Title = DanceGuardTraining,
                 Description = null,
                 OwnerGroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
                 VenueId = buehnenhaus,
@@ -216,6 +217,7 @@ public sealed class PutCalendarEntryTests
                 Kind = CalendarEntryKind.Training,
                 Visibility = CalendarEntryVisibility.Club,
                 AsksForResponse = false,
+                ParticipatingGroupIds = [],
             }
         );
 
@@ -234,7 +236,7 @@ public sealed class PutCalendarEntryTests
     }
 
     [Fact]
-    public async Task Should_RefuseTheOrt_When_ErArchiviertIst()
+    public async Task Should_RefuseTheVenue_When_ItIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
@@ -249,7 +251,7 @@ public sealed class PutCalendarEntryTests
             new()
             {
                 CalendarEntryId = entryId,
-                Title = GardeTraining,
+                Title = DanceGuardTraining,
                 Description = null,
                 OwnerGroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
                 VenueId = ctx.Club.Venues.IdOf("altes-lager"),
@@ -258,6 +260,7 @@ public sealed class PutCalendarEntryTests
                 Kind = CalendarEntryKind.Training,
                 Visibility = CalendarEntryVisibility.Club,
                 AsksForResponse = false,
+                ParticipatingGroupIds = [],
             }
         );
 
@@ -271,7 +274,7 @@ public sealed class PutCalendarEntryTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheEintragIsUnknown()
+    public async Task Should_ReturnNotFound_When_TheEntryIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
@@ -281,7 +284,7 @@ public sealed class PutCalendarEntryTests
             PutCalendarEntry,
             PutCalendarEntryRequest,
             PutCalendarEntryResponse
-        >(ClubOwned(UnknownEntryId, GardeAuftritt));
+        >(ClubOwned(UnknownEntryId, DanceGuardPerformance));
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -299,6 +302,7 @@ public sealed class PutCalendarEntryTests
             Kind = CalendarEntryKind.Performance,
             Visibility = CalendarEntryVisibility.Club,
             AsksForResponse = false,
+            ParticipatingGroupIds = [],
         };
 
     private Task<SeededContext> BuildClubAsync(CancellationToken ct) =>
@@ -351,7 +355,7 @@ public sealed class PutCalendarEntryTests
                             .AddVenue("altes-lager", "Altes Lager", archivedOn: ArchivedIn2026)
                             .AddCalendarEntry(
                                 "garde-training",
-                                GardeTraining,
+                                DanceGuardTraining,
                                 TrainingStart,
                                 TrainingEnd,
                                 kind: CalendarEntryKind.Training,

@@ -4,9 +4,10 @@ import type { FC } from 'react';
 import { formatPublishedDay } from '@/lib/announcements';
 import {
   ANNOUNCEMENT_TITLE_FIELD_LABEL,
-  SHEET_CANCEL_LABEL,
-  SHEET_CLOSE_LABEL,
+  toWithdrawConsequence,
   toWithdrawQuestion,
+  WITHDRAW_CANCEL_LABEL,
+  WITHDRAW_CLOSE_LABEL,
   WITHDRAW_CONFIRM_LABEL,
   WITHDRAW_EXPLANATION,
   WITHDRAW_EYEBROW,
@@ -27,31 +28,28 @@ const toFacts = (announcement: Announcement): KkConfirmFact[] => [
 ];
 
 interface WithdrawAnnouncementDialogProps {
-  withdrawal: AnnouncementWithdrawal;
+  announcement: Announcement;
+  control: AnnouncementWithdrawal;
 }
 
-export const WithdrawAnnouncementDialog: FC<WithdrawAnnouncementDialogProps> = ({ withdrawal }) => {
-  const { pending } = withdrawal;
-
-  if (pending === null) {
-    return null;
-  }
-
-  return (
-    <KkConfirmDialog
-      open
-      tone="danger"
-      onClose={withdrawal.dismiss}
-      onConfirm={withdrawal.confirm}
-      eyebrow={WITHDRAW_EYEBROW}
-      question={toWithdrawQuestion(pending.title)}
-      explanation={WITHDRAW_EXPLANATION}
-      facts={toFacts(pending)}
-      error={withdrawal.rejection ?? undefined}
-      confirmLabel={WITHDRAW_CONFIRM_LABEL}
-      cancelLabel={SHEET_CANCEL_LABEL}
-      closeLabel={SHEET_CLOSE_LABEL}
-      busy={withdrawal.isWithdrawing}
-    />
-  );
-};
+export const WithdrawAnnouncementDialog: FC<WithdrawAnnouncementDialogProps> = ({
+  announcement,
+  control,
+}) => (
+  <KkConfirmDialog
+    open={control.isOpen}
+    tone="danger"
+    onClose={control.close}
+    onConfirm={control.submit}
+    eyebrow={WITHDRAW_EYEBROW}
+    question={toWithdrawQuestion(announcement.title)}
+    explanation={WITHDRAW_EXPLANATION}
+    facts={toFacts(announcement)}
+    consequence={toWithdrawConsequence(announcement.title)}
+    error={control.rejection ?? undefined}
+    confirmLabel={WITHDRAW_CONFIRM_LABEL}
+    cancelLabel={WITHDRAW_CANCEL_LABEL}
+    closeLabel={WITHDRAW_CLOSE_LABEL}
+    busy={control.isWithdrawing}
+  />
+);

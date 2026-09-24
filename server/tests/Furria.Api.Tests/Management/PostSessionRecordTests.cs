@@ -113,7 +113,7 @@ public sealed class PostSessionRecordTests
     }
 
     [Fact]
-    public async Task Should_RefuseTheEintrag_When_TheLogoIsNotReadableArtwork()
+    public async Task Should_RefuseTheEntry_When_TheLogoIsNotReadableArtwork()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
@@ -127,7 +127,7 @@ public sealed class PostSessionRecordTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheSeasonAlreadyCarriesAnEintrag()
+    public async Task Should_ReturnConflict_When_TheSeasonAlreadyCarriesAnEntry()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -148,7 +148,7 @@ public sealed class PostSessionRecordTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_AnotherSeasonAlreadyCarriesTheNummer()
+    public async Task Should_ReturnConflict_When_AnotherSeasonAlreadyCarriesTheNumber()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

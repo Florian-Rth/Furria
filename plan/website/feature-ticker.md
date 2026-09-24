@@ -10,7 +10,7 @@ adrs: []
 ## What & Why
 
 The signature **flat red bar** marquee: Anton text, gold `✶` separators, horizontal scroll,
-**no skew** (the calm "Destillat" treatment). A recognisable brand gesture. Built reusable as
+**no skew** (the calm "Distilled" treatment). A recognisable brand gesture. Built reusable as
 its own foundation because it is chrome that can appear on more than the landing page.
 
 ## Scope / Slices

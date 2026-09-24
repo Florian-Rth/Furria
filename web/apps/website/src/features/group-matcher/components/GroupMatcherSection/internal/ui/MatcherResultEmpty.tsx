@@ -16,7 +16,7 @@ interface MatcherResultEmptyProps {
 export const MatcherResultEmpty: FC<MatcherResultEmptyProps> = ({ excluded }) => (
   <>
     <Stack sx={{ gap: 1.5 }}>
-      <Typography variant="h3" component="p">
+      <Typography variant="h2" component="p">
         {matcherResultLabels.emptyTitle}
       </Typography>
       <Typography variant="body1">{matcherResultLabels.emptyText}</Typography>

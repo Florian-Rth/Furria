@@ -3,7 +3,7 @@ import Box from '@mui/material/Box';
 import type { SxProps, Theme } from '@mui/material/styles';
 import { useTheme } from '@mui/material/styles';
 import type { FC } from 'react';
-import { NewsPlakat } from '@/features/news/components/NewsPlakat';
+import { NewsPoster } from '@/features/news/components/NewsPoster';
 import type { NewsPost } from '@/features/news/news-content';
 
 interface NewsMediaProps {
@@ -17,7 +17,7 @@ export const NewsMedia: FC<NewsMediaProps> = ({ post, sx }) => {
   return (
     <Box data-kk-news-media sx={[{ width: '100%' }, ...(Array.isArray(sx) ? sx : [sx])]}>
       {post.image === null ? (
-        <NewsPlakat category={post.category} />
+        <NewsPoster category={post.category} />
       ) : (
         <KkPhotoPlaceholder
           label={post.image}

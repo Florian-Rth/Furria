@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   toAttendanceChoices,
-  toCalendarLead,
+  toDayEntriesLabel,
   toDeleteConsequence,
   toEntryFacts,
   toEntryMetaLine,
@@ -23,22 +23,14 @@ const entry = (overrides: Partial<CalendarEntry>): CalendarEntry => ({
   venueName: null,
   ownerGroupId: null,
   ownerGroupName: null,
+  ownerGroupTone: null,
+  participatingGroups: [],
   visibility: 'club',
   asksForResponse: false,
   description: null,
   viewerAnswer: null,
   isRunning: false,
   ...overrides,
-});
-
-describe('toCalendarLead', () => {
-  it.each([
-    [0, 'Gerade steht nichts im Kalender.'],
-    [1, 'Ein Termin steht im Kalender.'],
-    [4, '4 Termine stehen im Kalender.'],
-  ])('reads %i entries as %s', (count, expected) => {
-    expect(toCalendarLead(count)).toBe(expected);
-  });
 });
 
 describe('toAttendanceChoices', () => {
@@ -56,6 +48,15 @@ describe('toAttendanceChoices', () => {
     ['maybe' as const, [false, false, true]],
   ])('marks the answer %s', (answer, expected) => {
     expect(toAttendanceChoices(answer).map((choice) => choice.selected)).toEqual(expected);
+  });
+});
+
+describe('toDayEntriesLabel', () => {
+  it.each([
+    [1, 'Ein Termin'],
+    [3, '3 Termine'],
+  ])('reads %i as %s', (count, expected) => {
+    expect(toDayEntriesLabel(count)).toBe(expected);
   });
 });
 
@@ -131,19 +132,19 @@ describe('toScopeOptions', () => {
 });
 
 describe('toEntryFacts', () => {
-  it('leaves the Ort out when the Termin names none', () => {
+  it('leaves the venue out when the calendar entry names none', () => {
     const labels = toEntryFacts(entry({ venueName: null })).map((fact) => fact.label);
 
     expect(labels).not.toContain('Ort');
   });
 
-  it('names the Ort when the Termin holds one', () => {
+  it('names the venue when the calendar entry holds one', () => {
     const facts = toEntryFacts(entry({ venueId: 3, venueName: 'Bühnenhaus' }));
 
     expect(facts.find((fact) => fact.label === 'Ort')?.value).toBe('Bühnenhaus');
   });
 
-  it('reads a Gruppe as the Eigentümer and the Verein otherwise', () => {
+  it('reads a group as the owner and the club otherwise', () => {
     const owned = toEntryFacts(entry({ ownerGroupId: 7, ownerGroupName: 'Tanzgarde' }));
     const club = toEntryFacts(entry({}));
 
@@ -153,14 +154,14 @@ describe('toEntryFacts', () => {
 });
 
 describe('toDeleteConsequence', () => {
-  it('warns about the Zusagen only when the Termin collects them', () => {
+  it('warns about the responses only when the calendar entry collects them', () => {
     expect(toDeleteConsequence(entry({ asksForResponse: true }))).toContain('Absagen');
     expect(toDeleteConsequence(entry({ asksForResponse: false }))).not.toContain('Absagen');
   });
 });
 
 describe('toVenueOptions', () => {
-  it('offers no Ort ahead of the Orte the Verein holds', () => {
+  it('offers no venue ahead of the venues the club holds', () => {
     const options = toVenueOptions([
       { venueId: 4, name: 'Bühnenhaus' },
       { venueId: 9, name: 'Lager' },

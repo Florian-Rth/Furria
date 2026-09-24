@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest';
+import type { BoardOfficeEntry } from './manage-board-labels';
 import {
   isVacantOn,
   toBoardEntries,
-  toBoardLead,
+  toBoardOfficeId,
+  toBoardSeatId,
   toImpliedRoleChoices,
   toImpliedRoleId,
   toImpliedRoleValue,
+  toSeatChainRows,
   toSeatEndedMessage,
   toSeatOpenedMessage,
   toSeatPeriodLabel,
@@ -87,7 +90,7 @@ describe('toBoardEntries', () => {
     expect(ids(offices)).toEqual([1, 3, 9]);
   });
 
-  it('moves an archived Funktion behind the band it left', () => {
+  it('moves an archived board office behind the band it left', () => {
     const [, , last] = toBoardEntries(offices, TODAY);
 
     expect(last?.isArchived).toBe(true);
@@ -102,7 +105,7 @@ describe('toBoardEntries', () => {
     expect(ids(shared)).toEqual([4, 5]);
   });
 
-  it('marks a Funktion nobody sits in', () => {
+  it('marks a board office nobody sits in', () => {
     const [first, second] = toBoardEntries(offices, TODAY);
 
     expect(first?.isVacant).toBe(false);
@@ -131,69 +134,26 @@ describe('toSeatPeriodLabel', () => {
   });
 });
 
-describe('toBoardLead', () => {
-  const lead = (offices: readonly BoardOffice[]): string =>
-    toBoardLead(toBoardEntries(offices, TODAY));
-
-  it('stays silent about vacancies when every Funktion is filled', () => {
-    expect(
-      lead([
-        office({
-          boardOfficeId: 1,
-          name: 'Präsident',
-          seats: [seat({ boardSeatId: 7 })],
-        }),
-      ]),
-    ).not.toContain('unbesetzt');
-  });
-
-  it('names the vacancy, because that is the alarm', () => {
-    expect(
-      lead([
-        office({ boardOfficeId: 1, name: 'Präsident', seats: [seat({ boardSeatId: 7 })] }),
-        office({ boardOfficeId: 2, name: 'Kassenwart', sortOrder: 2 }),
-      ]),
-    ).toContain('unbesetzt');
-  });
-
-  it('counts only the Funktionen that are still in the band', () => {
-    expect(
-      lead([
-        office({ boardOfficeId: 1, name: 'Präsident', seats: [seat({ boardSeatId: 7 })] }),
-        office({ boardOfficeId: 9, name: 'Pressewart', sortOrder: 2, archivedOn: '2021-01-01' }),
-      ]),
-    ).toContain('Eine Vorstandsfunktion');
-  });
-
-  it('counts an archived Funktion as unbesetzt nowhere', () => {
-    expect(
-      lead([
-        office({ boardOfficeId: 9, name: 'Pressewart', sortOrder: 2, archivedOn: '2021-01-01' }),
-      ]),
-    ).not.toContain('unbesetzt');
-  });
-});
-
 describe('toImpliedRoleChoices', () => {
   const roles = [
     { roleId: 2, name: 'Vereinsleitung', archivedOn: null },
     { roleId: 5, name: 'Chronik', archivedOn: '2021-01-01' },
   ];
 
-  it('offers the empty choice first, so a Funktion may imply nothing', () => {
+  it('offers the empty choice first, so a board office may imply nothing', () => {
     const [first] = toImpliedRoleChoices(roles, null, null);
 
     expect(first?.value).toBe('');
   });
 
-  it('drops an archived Rolle nobody points at', () => {
+  it('drops an archived role nobody points at', () => {
     expect(toImpliedRoleChoices(roles, null, null).map((option) => option.value)).toEqual([
       '',
       '2',
     ]);
   });
 
-  it('keeps the archived Rolle the Funktion already points at, so the field is never blank', () => {
+  it('keeps the archived role the board office already points at, so the field is never blank', () => {
     expect(toImpliedRoleChoices(roles, 5, 'Chronik').map((option) => option.value)).toEqual([
       '',
       '2',
@@ -201,7 +161,7 @@ describe('toImpliedRoleChoices', () => {
     ]);
   });
 
-  it('carries a pointed-at Rolle the list never returned', () => {
+  it('carries a pointed-at role the list never returned', () => {
     expect(toImpliedRoleChoices(roles, 8, 'Vorstand').map((option) => option.value)).toEqual([
       '',
       '8',
@@ -245,5 +205,51 @@ describe('dated write messages', () => {
 
   it('speaks of an end that has arrived in the past tense', () => {
     expect(toSeatEndedMessage('Ilka Reineke', TODAY, TODAY)).toContain('ist beendet');
+  });
+});
+
+describe('toBoardOfficeId', () => {
+  it.each([
+    { case: 'a positive id', raw: '3', expected: 3 },
+    { case: 'zero', raw: '0', expected: null },
+    { case: 'a word', raw: 'praesident', expected: null },
+  ])('reads $case', ({ raw, expected }) => {
+    expect(toBoardOfficeId(raw)).toBe(expected);
+  });
+});
+
+describe('toBoardSeatId', () => {
+  it.each([
+    { case: 'a positive id', raw: '12', expected: 12 },
+    { case: 'zero', raw: '0', expected: null },
+    { case: 'a word', raw: 'neu', expected: null },
+  ])('reads $case', ({ raw, expected }) => {
+    expect(toBoardSeatId(raw)).toBe(expected);
+  });
+});
+
+describe('toSeatChainRows', () => {
+  const entry: BoardOfficeEntry = {
+    boardOfficeId: 1,
+    name: 'Präsident',
+    sortOrder: 1,
+    impliedRoleId: null,
+    impliedRoleName: null,
+    archivedOn: null,
+    isArchived: false,
+    isVacant: false,
+    seats: [seat({ boardSeatId: 7, sinceOn: '2016-11-11' })],
+    pastSeats: [seat({ boardSeatId: 3, sinceOn: '2010-11-11', untilOn: '2016-11-10' })],
+  };
+
+  it('lists the running seat before the past ones', () => {
+    expect(toSeatChainRows(entry, null).map((row) => row.key)).toEqual(['7', '3']);
+  });
+
+  it('marks the seat being edited', () => {
+    const rows = toSeatChainRows(entry, 7);
+
+    expect(rows.find((row) => row.key === '7')?.isEdited).toBe(true);
+    expect(rows.find((row) => row.key === '3')?.isEdited).toBe(false);
   });
 });

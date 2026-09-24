@@ -38,7 +38,7 @@ public sealed class RestoreBoardOfficeTests
         );
 
     [Fact]
-    public async Task Should_LetTheFunktionBackIntoTheBand_When_TheVorstandHoltSieZurueck()
+    public async Task Should_LetTheOfficeBackIntoTheBand_When_TheBoardRestoresIt()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -64,7 +64,7 @@ public sealed class RestoreBoardOfficeTests
     }
 
     [Fact]
-    public async Task Should_KeepJedenSitz_When_TheFunktionIsRestored()
+    public async Task Should_KeepEverySeat_When_TheOfficeIsRestored()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -97,7 +97,7 @@ public sealed class RestoreBoardOfficeTests
     }
 
     [Fact]
-    public async Task Should_HandTheImpliedRechteBack_When_TheFunktionSitsAgain()
+    public async Task Should_HandTheImpliedPermissionsBack_When_TheOfficeIsFilledAgain()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -151,7 +151,7 @@ public sealed class RestoreBoardOfficeTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheFunktionIsNotArchived()
+    public async Task Should_ReturnConflict_When_TheOfficeIsNotArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -172,7 +172,7 @@ public sealed class RestoreBoardOfficeTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheFunktionIsUnknown()
+    public async Task Should_ReturnNotFound_When_TheOfficeIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { toAnnouncementsLead, toValidUntilLabel } from './announcements-labels';
+import { toAnnouncementIdParam, toValidUntilLabel } from './announcements-labels';
 
 describe('toValidUntilLabel', () => {
   it.each([
@@ -11,13 +11,13 @@ describe('toValidUntilLabel', () => {
   });
 });
 
-describe('toAnnouncementsLead', () => {
+describe('toAnnouncementIdParam', () => {
   it.each([
-    { count: 0, expected: '0 Aushänge' },
-    { count: 1, expected: '1 Aushang' },
-    { count: 2, expected: '2 Aushänge' },
-    { count: 17, expected: '17 Aushänge' },
-  ])('counts $count as "$expected"', ({ count, expected }) => {
-    expect(toAnnouncementsLead(count)).toBe(expected);
+    ['11', 11],
+    ['0', null],
+    ['-3', null],
+    ['abc', null],
+  ])('reads %s as %s', (raw, expected) => {
+    expect(toAnnouncementIdParam(raw)).toBe(expected);
   });
 });

@@ -5,6 +5,8 @@ const radius = {
   bar: 3,
 } as const;
 
+const rowHighlightSeconds = 1.6;
+
 const tracking = {
   tight: '0.01em',
   display: '0.03em',
@@ -135,6 +137,7 @@ export const kkTokens = {
     keyboardMinInset: 120,
     actionHeight: 60,
     actionContextHeight: 24,
+    actionFadeHeight: 32,
     threadHeight: 2.5,
     scrollTravel: 72,
     headerDrift: 14,
@@ -144,17 +147,19 @@ export const kkTokens = {
       detailGap: 1.25,
     },
     material: {
-      blur: { rest: 2, dense: 14 },
-      shadowOffsetY: { rest: 1, dense: 10 },
-      shadowBlur: { rest: 2, dense: 26 },
+      blur: { rest: 2, dense: 12 },
+      saturation: { rest: 1, dense: 2 },
+      shadowOffsetY: { rest: 1, dense: 12 },
+      shadowBlur: { rest: 2, dense: 32 },
       shadowInk: { light: '#101216', dark: '#000000' },
+      glint: '#FFFFFF',
       light: {
-        rest: { tint: 0.4, hairline: 0.04, shadow: 0.03 },
-        dense: { tint: 0.92, hairline: 0.12, shadow: 0.1 },
+        rest: { tint: 0.2, hairline: 0.04, shadow: 0.03, glint: 0, sheen: 0, rim: 0 },
+        dense: { tint: 0.38, hairline: 0.1, shadow: 0.12, glint: 1, sheen: 0.6, rim: 0.55 },
       },
       dark: {
-        rest: { tint: 0.44, hairline: 0.06, shadow: 0.16 },
-        dense: { tint: 0.94, hairline: 0.16, shadow: 0.45 },
+        rest: { tint: 0.24, hairline: 0.06, shadow: 0.16, glint: 0, sheen: 0, rim: 0 },
+        dense: { tint: 0.44, hairline: 0.14, shadow: 0.5, glint: 0.22, sheen: 0.1, rim: 0.07 },
       },
     },
   },
@@ -168,6 +173,7 @@ export const kkTokens = {
     fieldGap: 3,
     mastheadClearance: 2,
     curtainClearance: 84,
+    groupStageCap: 300,
     stickyTop: 24,
     letterRailZ: 1,
     sheetLift: `-${radius.base}px`,
@@ -200,10 +206,6 @@ export const kkTokens = {
     section: 2,
     page: 3,
   },
-  headline: {
-    page: 'clamp(2.75rem, 6vw, 4.75rem)',
-    compact: 'clamp(2.25rem, 5vw, 3.75rem)',
-  },
   eyebrow: {
     fontWeight: 900,
     letterSpacing: tracking.eyebrow,
@@ -211,15 +213,6 @@ export const kkTokens = {
   },
   type: {
     tracking,
-    rowTitle: '0.875rem',
-    rowMeta: '0.71875rem',
-    rowValue: '1.0625rem',
-    span: '0.9375rem',
-    chip: '0.6875rem',
-    chipSmall: '0.625rem',
-    eyebrowSmall: '0.5625rem',
-    sectionTitle: '0.8125rem',
-    blockTitle: '1.1875rem',
   },
   motion: {
     breath: 'kk-breath 2.4s ease-in-out infinite',
@@ -228,7 +221,8 @@ export const kkTokens = {
     press: 'transform 120ms ease-out',
     clearance: 'padding-top 260ms cubic-bezier(0.22, 0.61, 0.36, 1)',
     label: 'opacity 180ms ease-out, transform 180ms ease-out, color 180ms ease-out',
-    rowHighlight: 'kk-row-highlight 2s ease-out forwards',
+    rowHighlightSeconds,
+    rowHighlight: `kk-row-highlight ${rowHighlightSeconds}s ease-out forwards`,
   },
   font: {
     display: "'Anton', sans-serif",

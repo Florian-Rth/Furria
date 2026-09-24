@@ -108,7 +108,7 @@ public sealed class PutPersonTests
     }
 
     [Fact]
-    public async Task Should_ShareTheContactOnHerWord_When_ThePersonHasNoKonto()
+    public async Task Should_ShareTheContactOnHerWord_When_ThePersonHasNoAccount()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

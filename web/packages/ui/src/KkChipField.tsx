@@ -15,6 +15,7 @@ interface KkChipFieldProps {
   placeholder?: string;
   hint?: string;
   maxLength?: number;
+  required?: boolean;
   error?: boolean;
   helperText?: string;
   sx?: KkSx;
@@ -29,6 +30,7 @@ export const KkChipField: FC<KkChipFieldProps> = ({
   placeholder,
   hint,
   maxLength,
+  required,
   error,
   helperText,
   sx,
@@ -53,6 +55,7 @@ export const KkChipField: FC<KkChipFieldProps> = ({
         value={value}
         onChange={change}
         placeholder={placeholder}
+        required={required}
         error={error}
         helperText={helper}
         autoComplete="off"

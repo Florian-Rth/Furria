@@ -42,7 +42,7 @@ public sealed class MembershipPausePersistenceTests
     }
 
     [Fact]
-    public async Task Should_RoundTripTheSpan_When_TheRuhezeitCoversSeveralSessions()
+    public async Task Should_RoundTripTheSpan_When_TheMembershipPauseCoversSeveralSessions()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

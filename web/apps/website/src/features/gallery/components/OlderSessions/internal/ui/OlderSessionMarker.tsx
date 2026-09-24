@@ -1,4 +1,3 @@
-import { kkTokens } from '@furria/ui';
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
 
@@ -21,8 +20,7 @@ export const OlderSessionMarker: FC<OlderSessionMarkerProps> = ({ expanded }) =>
         flexShrink: 0,
         width: '1.5rem',
         textAlign: 'center',
-        fontFamily: kkTokens.font.display,
-        fontSize: '1.5rem',
+        typography: 'h2',
         lineHeight: 1,
         color: 'primary.main',
       }}

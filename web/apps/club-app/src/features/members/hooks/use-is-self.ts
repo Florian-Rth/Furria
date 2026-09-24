@@ -1,8 +1,11 @@
 import { useMeQuery } from '@/features/session';
 
-export const useIsSelf = (personId: number | null): boolean => {
+export const useIsSelf = (personId: number | null): boolean | undefined => {
   const me = useMeQuery();
-  const viewerPersonId = me.data?.person.id;
 
-  return personId !== null && personId === viewerPersonId;
+  if (me.data === undefined) {
+    return undefined;
+  }
+
+  return personId !== null && personId === me.data.person.id;
 };

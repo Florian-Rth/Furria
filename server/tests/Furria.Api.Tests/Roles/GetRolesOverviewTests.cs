@@ -25,7 +25,7 @@ public sealed class GetRolesOverviewTests
     }
 
     [Fact]
-    public async Task Should_CarryTheRunningInhaber_When_AMitgliedOpensAllRollen()
+    public async Task Should_CarryTheRunningHolder_When_AMemberOpensAllRoles()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -59,20 +59,20 @@ public sealed class GetRolesOverviewTests
         var (response, result) = await OverviewForAsync(ctx, ct);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var notenwart = Single(result, "Notenwart");
-        Assert.Equal(ctx.Roles.Roles.IdOf("notenwart"), notenwart.RoleId);
-        Assert.Equal("Hütet die Noten.", notenwart.Description);
-        Assert.Equal(["Ärmel", "Wolters"], notenwart.Holders.Select(holder => holder.LastName));
+        var musicWarden = Single(result, "Notenwart");
+        Assert.Equal(ctx.Roles.Roles.IdOf("notenwart"), musicWarden.RoleId);
+        Assert.Equal("Hütet die Noten.", musicWarden.Description);
+        Assert.Equal(["Ärmel", "Wolters"], musicWarden.Holders.Select(holder => holder.LastName));
         Assert.Equal(
             [HeldSince2017, HeldSince2020],
-            notenwart.Holders.Select(holder => holder.SinceOn)
+            musicWarden.Holders.Select(holder => holder.SinceOn)
         );
-        Assert.Equal(ctx.Identity.People.IdOf("ilka"), notenwart.Holders[0].PersonId);
-        Assert.Equal("Ilka", notenwart.Holders[0].FirstName);
+        Assert.Equal(ctx.Identity.People.IdOf("ilka"), musicWarden.Holders[0].PersonId);
+        Assert.Equal("Ilka", musicWarden.Holders[0].FirstName);
     }
 
     [Fact]
-    public async Task Should_ElideTheRolle_When_ItIsArchived()
+    public async Task Should_ElideTheRole_When_ItIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -107,7 +107,7 @@ public sealed class GetRolesOverviewTests
     }
 
     [Fact]
-    public async Task Should_ElideTheInhaber_When_TheInhaberschaftHasEnded()
+    public async Task Should_ElideTheHolder_When_TheRoleHoldingHasEnded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -137,7 +137,7 @@ public sealed class GetRolesOverviewTests
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerHoldsNoRunningMitgliedschaft()
+    public async Task Should_ReturnForbidden_When_TheCallerHoldsNoRunningMembership()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

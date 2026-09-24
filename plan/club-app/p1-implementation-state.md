@@ -34,10 +34,10 @@ Binding coding rules, enforced by analyzers and lint, not by review:
 ### Rulings that are easy to violate by accident
 
 - **Nothing from plan §4's "Ignored" table** may enter the code, not even as a nullable column
-  "for later": no Ehrenmitgliedschaft, no Mitgliedschaftsart, no Ruhezeit-Grund, no Schlüssel,
-  no founding year, no audit author, no Beitrag amounts. The same table's extension bans the words
-  **Amt / Ämter** and **Team** anywhere in code or copy (contract §0 and §10.6).
-- **The app seeds nothing** beyond the bootstrap Account and the Admin Rolle
+  "for later": no honorary membership, no membership type, no membership pause reason, no key
+  holding, no founding year, no audit author, no fee amounts. The same table's extension bans the
+  words **Amt / Ämter** and **Team** anywhere in code or copy (contract §0 and §10.6).
+- **The app seeds nothing** beyond the bootstrap Account and the Admin role
   (contract §9, Florian's ruling 2026-09-11). No `DevelopmentDataSeeder`, no seed flag in any
   `appsettings`, no fixture data in the repository. There is **no slice 3a**.
 - **Build the end state.** Never a reduced or interim version of anything.
@@ -56,29 +56,29 @@ run, both stacks are green, and the branch is on `origin`.
 
 | Slice | Backend | Frontend |
 |---|---|---|
-| 1 Mitgliedschaft rework | ✅ `0345d20` | — |
+| 1 Membership rework | ✅ `0345d20` | — |
 | 2 Rights core | ✅ `0ab10e5`, `951058f` | — |
-| 3 Gruppen core | ✅ `d077b6a` | — |
+| 3 Group core | ✅ `d077b6a` | — |
 | — foundation review fixes | ✅ `2465819`, `38a0716` | — |
 | — `@furria/ui` primitives | — | ✅ `527bc3c`, `abf1ce9`, `9d15358`, `af21fee`, `c27c75a` |
-| 4 Mitgliederliste | ✅ `c343b43` | ✅ `c0847b6` |
-| 5 Person-Karte | ✅ `6b10ef3` | ✅ `c8bd45a` |
-| 6 Gruppen | ✅ `af71735` | ✅ `e4c9304` |
-| 7 Profil-Sichtbarkeit | ✅ `b2b7716` | ✅ `172834b` |
-| 8 Hub lesen | ✅ `d40060a` | ✅ `98aaf98` |
-| 9 Hub verwalten I | ✅ `94d6600` | ✅ `5a7b3e1` + `b60f351` (finished and verified) |
-| 10 Hub verwalten II | ✅ `aedfcf3` | ✅ `01d7da2` |
-| 11 Personenverwaltung | ✅ `0b03990` + `3ab1533` (§4.15, late) | ✅ `72018f9` |
-| 12 Person bearbeiten I | ✅ `e548b70` | ✅ `2b3df5a` |
-| 13 Person bearbeiten II | ✅ `130a6fe` | ✅ `b60faf2` |
-| 14 Gruppenverwaltung I | ✅ `4e1a95f` | ✅ `7b36527` |
-| 15 Gruppenverwaltung II | ✅ `515ab18` | ✅ `4328ea1` |
-| 16 Rollen & Rechte I | ✅ `5799e5d` | ✅ `3ea966c` |
-| 17 Rollen & Rechte II | ✅ `c1b28e9` | ✅ `3ea966c` (one commit, see below) |
+| 4 Member list | ✅ `c343b43` | ✅ `c0847b6` |
+| 5 Person card | ✅ `6b10ef3` | ✅ `c8bd45a` |
+| 6 Groups | ✅ `af71735` | ✅ `e4c9304` |
+| 7 Profile visibility | ✅ `b2b7716` | ✅ `172834b` |
+| 8 Hub read | ✅ `d40060a` | ✅ `98aaf98` |
+| 9 Hub manage I | ✅ `94d6600` | ✅ `5a7b3e1` + `b60f351` (finished and verified) |
+| 10 Hub manage II | ✅ `aedfcf3` | ✅ `01d7da2` |
+| 11 Person management | ✅ `0b03990` + `3ab1533` (§4.15, late) | ✅ `72018f9` |
+| 12 Person edit I | ✅ `e548b70` | ✅ `2b3df5a` |
+| 13 Person edit II | ✅ `130a6fe` | ✅ `b60faf2` |
+| 14 Group management I | ✅ `4e1a95f` | ✅ `7b36527` |
+| 15 Group management II | ✅ `515ab18` | ✅ `4328ea1` |
+| 16 Roles & permissions I | ✅ `5799e5d` | ✅ `3ea966c` |
+| 17 Roles & permissions II | ✅ `c1b28e9` | ✅ `3ea966c` (one commit, see below) |
 | 18 Website re-pointing | ✅ `7d0bdc3` | ✅ `644180a` |
 
 **Slice 18 followed decision S**: a separate anonymous `GET /api/public/groups`, never a widened
-`/api/groups`. The website's `/club` reads the club's Gruppen from that endpoint.
+`/api/groups`. The website's `/club` reads the club's groups from that endpoint.
 
 Slices 9–17's frontend was built by four families in parallel worktrees and replayed onto the
 branch in the order hub → persons → groups → roles. Three integration commits followed:
@@ -99,8 +99,8 @@ likewise only gate-verified at its tip; its two intermediate commits do not type
 > `5a7b3e1`, all fixed in `b60f351`: a 404 on any Hub write was completely silent
 > (`toWriteErrorMessage` returned `null`, so the dialog footer stayed empty and nothing toasted);
 > the confetti burst fired ~950 px below the fold because `HubCelebration` centred it on the whole
-> members panel; and the phone reading order put the admin-only Geschichte panel between Mitglieder
-> and Gruppen-Admins.
+> members panel; and the phone reading order put the admin-only History panel between members
+> and group admins.
 
 Everything on the branch after slice 18 is review and repair: five rounds of the UX pass (§9), a
 final server review (§8), a composition review (§11) and a contract reconciliation (`d4a86c6`).
@@ -350,19 +350,19 @@ around the pull request**, and none of it may be quietly dropped.
    folded back into `p1-registry-and-groups.md`** — that file is pinned and it is his.
    - **A** — the dot form (`persons.manage`) is the pinned spelling of a permission key; the plan
      and `identity-foundation.md` still carry the retired `persons:manage` colon form.
-   - **T** — the Verwaltung nav group appears when at least one of the **three keys that have a
+   - **T** — the management nav group appears when at least one of the **three keys that have a
      surface** is held; plan §4's navigation paragraph says „one entry per held key", and
      `persons.read_details` has no page.
-   - **AA** — `beendet` appears **wherever it occurs**, Mitglieder included; the plan's surface
+   - **AA** — `beendet` appears **wherever it occurs**, members included; the plan's surface
      table and its derived-facts list each named only half of that axis.
    Each is written into contract §12 with its reason. **Writing them back into the plan is his
    call, not an implementer's.**
 
-5. **Decision AG is flagged for him.** A Person who is only a Gruppen-Admin **is not affiliated**:
-   her Gruppen-Hub works, and `/members` answers her **403**. The predicate was deliberately left
+5. **Decision AG is flagged for him.** A person who is only a group admin **is not affiliated**:
+   her group hub works, and `/members` answers her **403**. The predicate was deliberately left
    untouched — the client now carries a per-row `isAffiliated` instead, so no surface links to a
-   Karte that will 404 (§8). **If the club wants her in the register, that is a club act — give her
-   a Mitgliedschaft — not a change to the affiliation predicate.** Only Florian widens it.
+   person card that will 404 (§8). **If the club wants her in the register, that is a club act —
+   give her a membership — not a change to the affiliation predicate.** Only Florian widens it.
 
 6. **The final review's two triage verdicts, both already taken, both worth re-reading before
    anyone reopens them.**
@@ -375,8 +375,8 @@ around the pull request**, and none of it may be quietly dropped.
      has the same shape and is shared between detail and list. Measured at **249 wire rows for 152
      Personen** — no user-visible defect, so it was **not** fixed on this branch: it reshapes two
      hot projections. Trigger to watch: list cost grows with history, and decision Z pins these
-     lists unpaged. `MembershipChainDetails` genuinely needs the full Mitgliedschaft chain — only
-     the Gruppen/Rollen collections can be narrowed.
+     lists unpaged. `MembershipChainDetails` genuinely needs the full membership chain — only
+     the group/role collections can be narrowed.
    - **The umlaut folding is judged sufficient on the server.** The two-way fold
      (`GermanFold.Expand` + `GermanFold.Strip`, both sides ILIKE'd) covers every German spelling
      the register can hold; it needs **no** migration, no `unaccent`, no `pg_trgm`. What was
@@ -421,8 +421,8 @@ around the pull request**, and none of it may be quietly dropped.
 
 12. **The shared dev database carries write-flow residue** from the families' live probes, and
     **there is no delete endpoint (decision U)**, so the extra records never go away by themselves:
-    persons **152 and 153** („Testine Überprüfung…"), **Gruppe 14 „Testgruppe Zwei"** (archived),
-    **Rolle 10 „Materialwart"**, and a changed description on Gruppe 1. `docker compose down -v`
+    persons **152 and 153** („Testine Überprüfung…"), **group 14 „Testgruppe Zwei"** (archived),
+    **role 10 „Materialwart"**, and a changed description on group 1. `docker compose down -v`
     plus a re-run of the scratchpad seeder is the only way back to the documented state. **Match
     fixtures by name, never by count.**
 
@@ -437,14 +437,14 @@ Contract §12 points here; answers to Q7 and Q8 become §12 rows.
 
 | # | Question | Ships today | The options |
 |---|---|---|---|
-| Q1 | **Is a 404 from a *write* meant to be silent?** Contract §5.0a scopes its 404 rule to detail *routes* and says nothing about a write. Slice 9 read that silence as intended and returned `null`, which made **every** Hub write fail mutely — a Gruppen-Admin whose Person had just been removed would click „Aufnehmen" forever with no feedback. | `lib/write-error.ts` answers a write 404 with one shared line: „Das gibt es so nicht mehr — jemand anderes war schneller. Lade die Seite neu." All four write surfaces use it (the four byte-identical copies were folded into one module). | **(a)** Pin `WRITE_MISSING_MESSAGE` into §5.0a as the write-path rule. **(b)** Silence really was the intent → revert it, and **say so in §5.0a** so the next implementer does not re-add it. |
+| Q1 | **Is a 404 from a *write* meant to be silent?** Contract §5.0a scopes its 404 rule to detail *routes* and says nothing about a write. Slice 9 read that silence as intended and returned `null`, which made **every** Hub write fail mutely — a group admin whose person had just been removed would click „Aufnehmen" forever with no feedback. | `lib/write-error.ts` answers a write 404 with one shared line: „Das gibt es so nicht mehr — jemand anderes war schneller. Lade die Seite neu." All four write surfaces use it (the four byte-identical copies were folded into one module). | **(a)** Pin `WRITE_MISSING_MESSAGE` into §5.0a as the write-path rule. **(b)** Silence really was the intent → revert it, and **say so in §5.0a** so the next implementer does not re-add it. |
 | Q2 | **`RequirePermission` takes a four-member union and §5.0 pins three messages.** `persons.read_details` guards no page (decision T), so a total `Record<PermissionKey, string>` cannot be written from the contract. | `Partial<Record<PermissionKey, string>>` plus a neutral fallback („Diese Seite ist an eine Rolle gebunden. Du hast sie gerade nicht.") that is **unreachable in P1**. | **(a)** Narrow the prop to the three keys that guard a page (a `GuardedPermissionKey` type), making the map total and the fallback unnecessary. **(b)** Pin a fourth message for `persons.read_details` and keep the prop wide. |
-| Q3 | **Copy that nothing pins.** Four texts were written to satisfy „build the end state" and are **not** in §10. | `/manage/roles` with no `?role=` (the `RolesGrid` / `RoleCard` column); the restore-a-Rolle dialog — §10.5's restore row says „Gruppe aktivieren" and no Rollen twin exists; the `pastHolders` panel; `toRolesLead`. Plus the new `GroupHistoryPanel` heads on `/manage/groups`. | **(a)** Ratify the shipped strings into §10 as they stand. **(b)** Rewrite them and pin the result. Either way the UX pass may still overrule — but then it overrules something pinned. |
+| Q3 | **Copy that nothing pins.** Four texts were written to satisfy „build the end state" and are **not** in §10. | `/manage/roles` with no `?role=` (the `RolesGrid` / `RoleCard` column); the restore-a-role dialog — §10.5's restore row says „Gruppe aktivieren" and no roles twin exists; the `pastHolders` panel; `toRolesLead`. Plus the new `GroupHistoryPanel` heads on `/manage/groups`. | **(a)** Ratify the shipped strings into §10 as they stand. **(b)** Rewrite them and pin the result. Either way the UX pass may still overrule — but then it overrules something pinned. |
 | Q4 | **`PageSkeleton` is pinned and cannot be mounted.** §5.0 and §11's slice-3 row list it; decision AP makes a guard render its children while `me` is pending, so the branch that would have shown it does not exist, and every page owns a skeleton already. | Not built. Nothing imports it. | **(a)** Strike it from §5.0 and the ledger — dead code is not the end state, it is a second spelling of each page's own skeleton. **(b)** Give it a real consumer and say which. |
 | Q5 | **§10.7 and §10.8 name `persons.read_details` two different ways**, and both strings ship, 800 px apart, on two surfaces. | §10.7 verbatim: „… wer das Recht „**Personendetails sehen**" hat …". §10.8's key title: „**Kontaktdaten aller Personen sehen**". | **(a)** §10.7 gives — but it is pinned *verbatim* copy and that is the point of §10.7. **(b)** §10.8 gives — the key title becomes „Personendetails sehen", and §10.8's one-liner carries the „Telefon, E-Mail und Adresse" detail. **Not an option:** a third spelling. |
 | Q6 | **Client and server fold German names differently, and the contract pins both.** §4.41's `GermanFold` maps `ue → ü`, so `/api/person-search?q=kuehn` finds Kühnel; §5.1's `normalizeForSearch` is NFD-strip only, so typing `kuehnel` into `/members` or `/manage/persons` finds nothing while `kuhnel` and `KÜHNEL` both work. Both were implemented exactly as written, and `person-filters.test.ts` **pins the divergence**. | The divergence, deliberately. | **(a)** Client follows the server: `normalizeForSearch` gains the two-way German fold; one test changes. **(b)** Server follows the client: §4.41 drops `Expand`; a German club's register stops finding „kuehnel", which is how half the members type their own name on a phone. **(c)** Ratify the split and write down *why* a local list search and a server search differ. |
-| Q7 | **The `BootstrapAdminSeeder` Admin-holding failsafe, against decision W.** `EnsureAdminRoleIsHeldAsync` runs on **every** `StartAsync`: if no `RoleHolding` on the Admin Rolle is running, it silently opens a fresh one for the bootstrap account. Decision W says the Rolle is „created once … afterwards it is ordinary data", which reads as forbidding this. **It is not an oversight** — three tests pin the split deliberately: the permission keys are never re-granted (decision W's actual stated rationale), while a lost Inhaberschaft is repaired. It is also not freely removable: `roles.manage` can only be granted by someone who holds it and there is no delete endpoint (decision U), so what it prevents is a **permanent lockout**. | The failsafe, with a comment naming it. No behaviour was changed. | **(a)** W-literal: drop the failsafe and accept that a club can lock itself out of its own rights matrix for good. **(b)** Pin the failsafe as its own §12 decision. Two things belong in the same decision either way: the predicate **ignores `SinceOn`**, so a purely *future* holding counts as „still held"; and the **lost-update policy** for `PutRolePermissions` and `PutGroupInfo` — there are no `xmin` concurrency tokens, none were added, and `PutRolePermissions` is a *declared* full replacement. |
-| Q8 | **A row lying entirely in the future can be created on a surface that cannot show it.** On `/manage/groups` such a Zugehörigkeit appears in neither `members`/`admins` nor `pastMembers`/`pastAdmins`, while Person bearbeiten shows it with a `geplant` chip (decision AF). Decision C makes the row legal, `PostGroupMembership` accepts it, and `AddMemberDialog`'s own date hint **invites** it („Darf in der Zukunft liegen"). | The row is created and then invisible on the surface that created it. | **(a)** §4.30 gains a third pair (`futureMembers`/`futureAdmins`) and §5.9 a place to render them. **(b)** The running lists include future rows, carrying the `geplant` chip, as Person bearbeiten does. **(c)** The dialogs stop inviting a future date on this surface. **Not an option:** leaving a write flow whose result vanishes. |
+| Q7 | **RESOLVED 2026-09-23 — decision W revised to *yes*: the seeder reconciles keys, archive flag, role holding and `is_disabled` on every start.** **The `BootstrapAdminSeeder` Admin-holding failsafe, against decision W.** `EnsureAdminRoleIsHeldAsync` runs on **every** `StartAsync`: if no `RoleHolding` on the Admin role is running, it silently opens a fresh one for the bootstrap account. Decision W says the role is „created once … afterwards it is ordinary data", which reads as forbidding this. **It is not an oversight** — three tests pin the split deliberately: the permission keys are never re-granted (decision W's actual stated rationale), while a lost role holding is repaired. It is also not freely removable: `roles.manage` can only be granted by someone who holds it and there is no delete endpoint (decision U), so what it prevents is a **permanent lockout**. | The failsafe, with a comment naming it. No behaviour was changed. | **(a)** W-literal: drop the failsafe and accept that a club can lock itself out of its own rights matrix for good. **(b)** Pin the failsafe as its own §12 decision. Two things belong in the same decision either way: the predicate **ignores `SinceOn`**, so a purely *future* holding counts as „still held"; and the **lost-update policy** for `PutRolePermissions` and `PutGroupInfo` — there are no `xmin` concurrency tokens, none were added, and `PutRolePermissions` is a *declared* full replacement. |
+| Q8 | **A row lying entirely in the future can be created on a surface that cannot show it.** On `/manage/groups` such a group membership appears in neither `members`/`admins` nor `pastMembers`/`pastAdmins`, while Person edit shows it with a `geplant` chip (decision AF). Decision C makes the row legal, `PostGroupMembership` accepts it, and `AddMemberDialog`'s own date hint **invites** it („Darf in der Zukunft liegen"). | The row is created and then invisible on the surface that created it. | **(a)** §4.30 gains a third pair (`futureMembers`/`futureAdmins`) and §5.9 a place to render them. **(b)** The running lists include future rows, carrying the `geplant` chip, as Person bearbeiten does. **(c)** The dialogs stop inviting a future date on this surface. **Not an option:** leaving a write flow whose result vanishes. |
 
 ---
 
@@ -516,12 +516,12 @@ line fragments; the domain map it was meant to lean on had itself been wiped wit
 All 30 fragments sit at their original line numbers and every unamended line is byte-identical to
 `07dd7a0`, but:
 
-- **~6 lines are provably missing** — one flagged bullet between "Gast-Registrierung & Dubletten"
-  and "Non-member Gruppen people have no name". The gap was measured, not papered over.
-- Whole entries are substance-sourced but **not Florian's words**: Mitgliedschaft, Ruhezeit,
-  Beitragsermäßigung, Berechtigung, Inhaberschaft, Kontaktdaten, and every `_Avoid_` line except
-  Gruppe's and Gruppen-Admin's.
-- The position of the `Kontaktdaten` entry is inferred.
+- **~6 lines are provably missing** — one flagged bullet between "Guest registration & duplicates"
+  and "Non-member group people have no name". The gap was measured, not papered over.
+- Whole entries are substance-sourced but **not Florian's words**: membership, membership pause,
+  fee reduction, permission, role holding, contact details, and every `_Avoid_` line except
+  group's and group admin's.
+- The position of the `Contact details` entry is inferred.
 
 The commit message of `4ba5a8e` lists all of this per entry.
 
@@ -552,12 +552,12 @@ to-do.** Each was sorted into one of two kinds:
 | 3 — a 404 from a *write* | **decision owed** | **Q1**. §5.0a notes it and forbids a second spelling of the message |
 | 4 — the 400 rule assumes RHF | contract wrong | §5.0a: the field mapping is conditional on the form actually being a react-hook-form |
 | 5 — §5.9's desktop row | contract wrong | §5.9: one row form at every width; `Offenheit` moves to the card and the header card |
-| 6 — §5.9's chip priority | contract wrong | §5.9: `archiviert` → `kein Admin` → none. §5.10 records that the Rollen row can show two chips, and that unifying them is UX work |
+| 6 — §5.9's chip priority | contract wrong | §5.9: `archiviert` → `kein Admin` → none. §5.10 records that the roles row can show two chips, and that unifying them is UX work |
 | 7 — §5.10's `placeholderData` | contract wrong | §5.0 and §5.10: **both** holder lists arrive late, because the two `Holders` are different DTOs |
 | 8 — §5.10's three unowned things | **decision owed** | **Q3**. §5.10 names them and says the copy is not pinned |
-| 9 — no history panel for Gruppenverwaltung | contract wrong | §5.9: §4.30's past rows render in the shared `GroupHistoryPanel`; its copy joins Q3 |
+| 9 — no history panel for Group management | contract wrong | §5.9: §4.30's past rows render in the shared `GroupHistoryPanel`; its copy joins Q3 |
 | 10 — `KkTextField`'s unions | contract wrong | §7.1 gains a `KkTextField` row: `+ 'tel'`, `+ 'numeric'` |
-| 11 — two 409s with no German | contract wrong | §4.26 and §4.29 (and their Rollen twins) now carry the strings the server already sends |
+| 11 — two 409s with no German | contract wrong | §4.26 and §4.29 (and their role twins) now carry the strings the server already sends |
 | 12 — §5.7's two halves | contract wrong | §5.7 and §4.14: the row is the link; the editor opens from §5.8's `PersonMasterDataPanel` |
 | `shared` bucket amendments 1–5 | contract wrong | folded: §5.3 (header vs „Im Verein"), §5.9 (5/7 only when selected), §7.1a.3 (the FAB breakpoint), §5.7 (the chip order is the primitive's), §5.10 (the master list split) |
 | `shared` bucket bug 1 — §10.7 vs §10.8 | **decision owed** | **Q5**. §10.8 notes it; neither string was touched |
@@ -605,7 +605,7 @@ slice, which reshapes the same files.
    Either narrow the prop type or pin a fourth message.
 3. **§5.0a's 404 rule is scoped to detail *routes* and says nothing about a 404 from a *write*.**
    Slice 9 had read the silence as intended and returned `null`, which made **every Hub write fail
-   mutely** — a Gruppen-Admin whose Person had just been removed would click „Aufnehmen" forever
+   mutely** — a group admin whose person had just been removed would click „Aufnehmen" forever
    with no feedback. The write path now has its own line
    („Das gibt es so nicht mehr — jemand anderes war schneller. Lade die Seite neu."). If silence
    really was the intent, revert `WRITE_MISSING_MESSAGE` — but then say so. **Since the pre-push
@@ -626,8 +626,8 @@ slice, which reshapes the same files.
    Offenheit in the detail header card.
 6. **§5.9 contradicts itself on chip priority** — „the most urgent of kein Admin → archiviert →
    openness", then two sentences later „archived rows render dimmed with an `archiviert` chip"
-   unconditionally. Taken literally an archived Gruppe with no admin would hide that it is
-   archived. Shipped **archiviert → kein Admin → openness**. The Rollen master list needs the same
+   unconditionally. Taken literally an archived group with no admin would hide that it is
+   archived. Shipped **archiviert → kein Admin → openness**. The roles master list needs the same
    order.
 7. **§5.10's `placeholderData` claim is half true.** §4.31's `Holders` are `PersonRefDto`, §4.32's
    are `RoleHolderDto` (+ `roleHoldingId`/`sinceOn`/`since`), so the seed cannot render a holder
@@ -636,7 +636,7 @@ slice, which reshapes the same files.
    copy; `useRestoreRoleMutation` is named with no dialog and no copy (§10.5's restore row says
    „Gruppe aktivieren"); and `GetRoleById.pastHolders` has real data but no owner. All three were
    built to the end-state rule; the copy for them is **not pinned** and the UX pass may overrule it.
-9. **§5.9 lists no history panel for the Gruppenverwaltung** while §4.30 returns `pastMembers` and
+9. **§5.9 lists no history panel for Group management** while §4.30 returns `pastMembers` and
    `pastAdmins` and says they are „always populated here". Rendering the payload and hiding half of
    it is not the end state, so an `OverrideHistoryPanel` was built.
 10. **§7.3 / §7.6 never pin `KkTextField`'s `type` / `inputMode` unions**, and §5.7's form has a
@@ -666,7 +666,7 @@ kept here as the record of why.
    **Resolution: the state chip stays in the header as the at-a-glance identity marker; the
    „Mitglied seit" subline leaves it, and `MemberClubPanel` is the one place the dates live.**
    `toMembershipLine` and `MemberHeadline.line` are deleted. `MemberView`'s right column is
-   reordered so Kontakt sits above Im Verein.
+   reordered so *Kontakt* sits above *Im Verein*.
 
 2. **§5.9's Grid 5/7 is amended to apply only to the *selected* state.** Written unconditionally it
    spent 60 % of a 1 400 px desktop on a 360 px dashed „KEINE GRUPPE GEWÄHLT" card followed by
@@ -676,7 +676,7 @@ kept here as the record of why.
    pinned. `GroupOverrideEmpty` is deleted: the empty state disappears with the state that
    required it.
 
-3. **§7.1 / §7.1a applied to the three Verwaltung surfaces.** The create action is each surface's
+3. **§7.1 / §7.1a applied to the three management surfaces.** The create action is each surface's
    one `variant="contained"` primary, in the `action` slot of its section `KkPanelHeader`. One
    gesture per screen: the header action is hidden below `desktop` and a `KkFab` carries the same
    verb there — on **all three**, so `/manage/roles` gains the `RolesCreateFab` it lacked and
@@ -686,7 +686,7 @@ kept here as the record of why.
 
 4. **§5.7's „the state chip moves to line two (after the Gruppen)" is not a call-site rule.**
    `KkPersonRow` renders `trailing` itself, so the app cannot order it; the chip sat *before* the
-   Gruppen and the meta text therefore started at a different x on every row. Fixed inside the
+   groups and the meta text therefore started at a different x on every row. Fixed inside the
    primitive. Both `MemberRow` and `PersonRow` were already correct as call sites.
 
 5. **§5.10's master list is split.** `RolesMasterList` held the search field, the rows **and** the
@@ -718,11 +718,11 @@ kept here as the record of why.
    that restates a filter must be built from the same function the filter is built from.** Both
    now map `toStateStats`, the shared occurring-state source behind `toStateFilterOptions`.
 
-4. **One list of people had three German names.** The running Zugehörigkeiten of one Gruppe were
+4. **One list of people had three German names.** The running group memberships of one group were
    headed MITGLIEDER on `/groups/$groupId`, WER IST DABEI on the Hub and ZUGEHÖRIGKEITEN on
    `/manage/groups`, and the header sublines split the same three ways. `lib/group-sections.ts`
-   now owns the titles and `toGroupSubline`; the two read surfaces say **MITGLIEDER** and only the
-   Gruppenverwaltung, where the row is edited as a record, keeps **ZUGEHÖRIGKEITEN**. The subline
+   now owns the titles and `toGroupSubline`; the two read surfaces say **MITGLIEDER** and only
+   Group management, where the row is edited as a record, keeps **ZUGEHÖRIGKEITEN**. The subline
    always names the admins, so „kein Gruppen-Admin" is said out loud everywhere. **Consequence to
    watch:** the longer subline truncates in `/manage/groups`' 5-column master row
    („18 Personen · 1 Gruppe…"); the row's primary facts (name, size, status chip) survive.
@@ -730,9 +730,9 @@ kept here as the record of why.
 ### Contract bugs the final server review found and did not work around
 
 1. **Decisions L and AG together produce a reachable dead link, and no payload could answer it.**
-   Rows on the Gruppen surfaces link to `/members/$personId`, which decision L makes **404** for a
+   Rows on the group surfaces link to `/members/$personId`, which decision L makes **404** for a
    Person who is not herself affiliated — and decision AG pins exactly such a Person as real (a
-   Person who is only a Gruppen-Admin is not affiliated; an archived Gruppe/Rolle confers nothing,
+   Person who is only a group admin is not affiliated; an archived group/role confers nothing,
    decision D). The client cannot compute the fact, so the server now carries it: a per-row
    **`isAffiliated` (bool)** on the running-row DTOs of `GetGroupById`, `GetMyGroupById`,
    `GetManagedGroupById` and `GetRoleById`. Because the past-row lists reuse the same DTO types,
@@ -743,7 +743,7 @@ kept here as the record of why.
    AG reserves widening it for Florian.
    **The client consumes it since the pre-push pass**, which also amends §5: one boolean was carrying
    two unrelated facts. `canOpenPerson` was filled at every call site with the *reader's*
-   `usePermissions().isAffiliated` and then decided a link to a *third party's* Karte. The prop is now
+   `usePermissions().isAffiliated` and then decided a link to a *third party's* person card. The prop is now
    `viewerIsAffiliated` — the reader's clearance only — and `GroupMemberRow`, `GroupAdminRow` and
    `RoleHolderRow` each compute `canOpen = viewerIsAffiliated && row.isAffiliated`, so the two facts
    no longer share a name. `GroupDetailMemberSchema`, `GroupDetailAdminSchema`, the `groups`
@@ -751,14 +751,17 @@ kept here as the record of why.
    the recruiting contact note on `/groups/$groupId` prints an unreachable admin as plain text rather
    than a link (`toOpenableAdminIds`). Nothing widened affiliation, client or server.
 
-2. **A new §12 decision is owed on the Admin-Rolle holding failsafe.** `BootstrapAdminSeeder`
-   calls `EnsureAdminRoleIsHeldAsync` unconditionally on every `StartAsync`: once the Admin Rolle
+2. **RESOLVED 2026-09-23 — Decision W was revised to *yes*, the seeder reconciles on every
+   start** (keys, archive flag, role holding, and the Account's `is_disabled`). The account below
+   is kept as the record of how the question arose. **A new §12 decision is owed on the Admin role
+   holding failsafe.** `BootstrapAdminSeeder`
+   calls `EnsureAdminRoleIsHeldAsync` unconditionally on every `StartAsync`: once the Admin role
    exists, every start checks whether any `RoleHolding` on it is still running and, if not,
-   silently opens a fresh one for the bootstrap account. Decision W's text says the Rolle is
+   silently opens a fresh one for the bootstrap account. Decision W's text says the role is
    „created once … afterwards it is ordinary data", which reads as forbidding this. It is **not**
    an oversight: three tests in `BootstrapAdminSeederTests` pin the split deliberately — the
    permission keys are never re-granted (which *is* decision W's stated rationale), while a lost
-   Inhaberschaft is repaired. It is not removable either: `roles.manage` can only be granted by
+   role holding is repaired. It is not removable either: `roles.manage` can only be granted by
    someone who holds it and there is no delete endpoint (decision U), so the failure it prevents
    is a permanent lockout. Landed as a comment naming it, no behaviour change.
    **Florian decides — written up as §5's Q7:** either W-literal (drop the failsafe, accept a
@@ -777,7 +780,7 @@ kept here as the record of why.
   finds nothing while `kuhnel` and `KÜHNEL` both work. Both were implemented exactly as written and
   the divergence is pinned in `person-filters.test.ts`. **Ratification is Q6.**
 - **A row lying entirely in the future appears in no list on `/manage/groups`** — neither in
-  `members`/`admins` nor in `pastMembers`/`pastAdmins` — while Person bearbeiten shows it with a
+  `members`/`admins` nor in `pastMembers`/`pastAdmins` — while Person edit shows it with a
   `geplant` chip (decision AF). Decision C makes such rows legal and `PostGroupMembership` accepts
   them, and `AddMemberDialog`'s own date hint invites one („Darf in der Zukunft liegen"), **so this
   surface can create a row it then cannot display.** That needs a contract decision, not a third
@@ -804,8 +807,8 @@ resolved — the red `Beenden` wall (§7.1a), the two-line phone rows, the clipp
 floating mobile dock, the missing `/manage/roles` intro, the two dashed `tone="reserved"` panels
 and `KkBroomMark`. **One item stands, and it stands because it is right:**
 
-**Decision B's inclusive end is genuinely surprising in the UI.** A Zugehörigkeit, Gruppen-Admin
-row or Inhaberschaft ended **today stays in the running list until tomorrow**, with `untilOn` set.
+**Decision B's inclusive end is genuinely surprising in the UI.** A group membership, group admin
+row or role holding ended **today stays in the running list until tomorrow**, with `untilOn` set.
 Confirmed on the wire. Do not add a client-side filter and do not read it as a broken end flow —
 the server is right and contract §2 owns the rule.
 
@@ -836,7 +839,7 @@ variant="text"` is red at REST again.** Round 2 implemented the amendment as
 `restingDangerLabel = { color: 'text.secondary', '&:hover, &:focus-visible': redInk(theme) }`,
 which put the whole affordance behind a hover query. On a touch device the red never appeared, so
 „Beenden" and „Ändern" rendered as the same `text.secondary` grey at 0.75rem — on
-`PersonMembershipRow` the benign edit and the act that ends a Mitgliedschaft became two adjacent
+`PersonMembershipRow` the benign edit and the act that ends a membership became two adjacent
 identical words. §7.1a.4 pins that the red *label* branches paint through `kkTokens.color.*.redInk`
 (6.38:1 on cream, 6.55:1 on the dark panel); the grey rest state was a regression against the
 amendment, not an implementation of it.
@@ -850,7 +853,7 @@ rest state has to say „control" without one.
 
 ### Round 1 of the UX pass — the `shared` bucket
 
-Item 3 above (the `/manage/roles` intro) is **resolved**: all three Verwaltung surfaces now share
+Item 3 above (the `/manage/roles` intro) is **resolved**: all three management surfaces now share
 `ManagePageLayout` — `KkLead` intro, accent-square section head carrying the one contained create
 action, sticky toolbar, list. Item 6 (decision B's inclusive end) is not this bucket's and stands.
 Findings S1–S12 landed across `apps/club-app` with five changes in `@furria/ui`:
@@ -894,14 +897,14 @@ sides:
 Three integration commits followed, each a disagreement the gates could not catch:
 
 1. `2b1d752` — **two buckets answered §7.1a.3 differently.** `hub` made both „+ Mitglied" and
-   „+ Admin" contained; `groups`, on the structurally identical Gruppenverwaltung panels, made one
+   „+ Admin" contained; `groups`, on the structurally identical Group management panels, made one
    contained and one outlined. The contract says exactly one contained primary per surface, so the
    Hub now matches its sibling, at the `size="small"` every other `KkPanelHeader` action uses.
 2. `e55a851` — the union merge left „Die Gruppe", „Geschichte" and „Bilder" spelled both in the
    shared module and again in the two feature label modules. Folded. `toMemberCountLabel` lost its
    last call site to G2 and survived only because its own test still imported it; deleted with it.
 3. `9226b1d` — **`features/members` was nobody's bucket**, so `/members/$personId` ended up the one
-   surface whose Gruppen and Rollen panels are dead ends while the identical panels on
+   surface whose group and role panels are dead ends while the identical panels on
    `/manage/persons/$personId` link. Both now link on the established pattern.
 
 Gate state after that round-1 integration — **historical; §2 carries the current numbers**:
@@ -974,13 +977,13 @@ duplication.
    matrix encoding three real layouts, with `ASIDE_SIZE`/`DETAIL_SIZE` declared twice per surface
    (body and skeleton) so they can drift silently. Replace with three named layouts, each owning
    its own `.Skeleton`.
-3. **The Hub's roster admin and the Gruppenverwaltung's override panel** are ~150 lines of the same
+3. **The Hub's roster admin and Group management's override panel** are ~150 lines of the same
    orchestration written twice (`use-hub-dialogs.ts` / `use-override-dialogs`), and „only one dialog
    open" has five different encodings on this branch. Collapse onto `useFactEditor`'s discriminated
    union, the one that is true by construction.
 4. **No shared app-component home.** `PersonPicker` is imported from `@/features/group-hub` by
-   manage-roles (and worded by `group-hub-messages`), and `GroupCardBody` — a Gruppen-feature name —
-   draws a Rolle. Give the app `src/components/` or non-page features, and add the missing
+   manage-roles (and worded by `group-hub-messages`), and `GroupCardBody` — a group-feature name —
+   draws a role. Give the app `src/components/` or non-page features, and add the missing
    feature-boundary rule to the frontend-work skill **by proposal only** (never edit a skill without
    Florian's explicit OK).
 5. **Six form dialogs hand-assemble the same `KkModalFrame` scaffold**; `KkConfirmDialog` proves the

@@ -50,13 +50,13 @@ const reasonsFor = (answers: MatcherAnswers): MatchReason[] =>
   buildMatchReasons(group, questions, answers);
 
 describe('buildMatchReasons', () => {
-  it('derives one reason per answered thesis the Gruppe holds a stance on', () => {
+  it('derives one reason per answered thesis the group holds a stance on', () => {
     const reasons = reasonsFor({ stage: 'yes', build: 'no', ritual: 'yes', 'age-band': 'old' });
 
     expect(reasons.map((reason) => reason.questionId)).toEqual(['build', 'stage']);
   });
 
-  it('says what you answered and what the Gruppe answered', () => {
+  it('says what you answered and what the group answered', () => {
     const [reason] = reasonsFor({ stage: 'neutral' });
 
     expect(reason).toEqual({

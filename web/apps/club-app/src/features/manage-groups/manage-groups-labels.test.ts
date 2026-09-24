@@ -1,18 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import {
-  ACTIVE_GROUPS_FILTER_ID,
-  ALL_GROUPS_FILTER_ID,
-  ARCHIVED_GROUPS_FILTER_ID,
-  filterManagedGroups,
-  findManagedGroup,
-  toArchiveConsequence,
-  toGroupStatusFilterId,
-  toGroupStatusFilterOptions,
-  toManagedGroupChips,
-  toManagedGroupsIntro,
+  findGroupKindEntry,
+  isGroupKindArchivable,
+  toGroupAdminsLine,
+  toGroupFactsLine,
+  toGroupKindEntries,
+  toGroupKindEntryId,
+  toGroupKindLockedReason,
+  toGroupKindUsageBadge,
+  toGroupKindUsageLine,
+  toGroupRegisterFlags,
   toRestoreConsequence,
 } from './manage-groups-labels';
-import type { ManagedGroupSummary } from './schemas';
+import type { ManagedGroupKind, ManagedGroupSummary } from './schemas';
 
 const admin = (personId: number): ManagedGroupSummary['admins'][number] => ({
   personId,
@@ -25,161 +25,186 @@ const group = (overrides: Partial<ManagedGroupSummary>): ManagedGroupSummary => 
   name: 'Große Garde',
   description: 'Tanzt.',
   isRecruiting: true,
+  groupKindId: null,
+  groupKindName: null,
+  tone: null,
   archivedOn: null,
   memberCount: 18,
   admins: [admin(8)],
   ...overrides,
 });
 
-const GARDE = group({ groupId: 1, name: 'Große Garde' });
-const MUSIKZUG = group({ groupId: 8, name: 'Musikzug', isRecruiting: false });
-const CHRONIK = group({ groupId: 10, name: 'Archiv und Chronik', admins: [] });
-const WIRBELWIND = group({
-  groupId: 13,
-  name: 'Tanzgruppe Wirbelwind',
-  archivedOn: '2026-09-12',
-  admins: [],
-});
-const ALL = [GARDE, MUSIKZUG, CHRONIK, WIRBELWIND];
-
-const idsOf = (groups: readonly ManagedGroupSummary[]): number[] =>
-  groups.map((found) => found.groupId);
-
-describe('filterManagedGroups', () => {
-  it('sorts archived groups last and the rest by German collation', () => {
-    expect(idsOf(filterManagedGroups(ALL, '', ALL_GROUPS_FILTER_ID))).toEqual([10, 1, 8, 13]);
+describe('toGroupAdminsLine', () => {
+  it('reports nobody as an absent line', () => {
+    expect(toGroupAdminsLine([])).toBeNull();
   });
 
-  it('keeps only active groups for the active filter', () => {
-    expect(idsOf(filterManagedGroups(ALL, '', ACTIVE_GROUPS_FILTER_ID))).toEqual([10, 1, 8]);
+  it('names a single admin', () => {
+    expect(toGroupAdminsLine([admin(1)])).toBe('Birgit Kühnel');
   });
 
-  it('keeps only archived groups for the archived filter', () => {
-    expect(idsOf(filterManagedGroups(ALL, '', ARCHIVED_GROUPS_FILTER_ID))).toEqual([13]);
+  it('counts one further admin in the singular', () => {
+    expect(toGroupAdminsLine([admin(1), admin(2)])).toBe('Birgit Kühnel und 1 weitere Person');
   });
 
-  it('folds umlauts and case when matching the name', () => {
-    expect(idsOf(filterManagedGroups(ALL, 'grosse', ALL_GROUPS_FILTER_ID))).toEqual([1]);
-  });
-
-  it('combines the query with the status filter', () => {
-    expect(idsOf(filterManagedGroups(ALL, 'tanz', ACTIVE_GROUPS_FILTER_ID))).toEqual([]);
+  it('counts several further admins in the plural', () => {
+    expect(toGroupAdminsLine([admin(1), admin(2), admin(3)])).toBe(
+      'Birgit Kühnel und 2 weitere Personen',
+    );
   });
 });
 
-describe('toGroupStatusFilterOptions', () => {
-  it('counts all, listed and archived groups under their own ids', () => {
-    expect(
-      toGroupStatusFilterOptions(ALL).map((option) => ({ id: option.id, count: option.count })),
-    ).toEqual([
-      { id: ALL_GROUPS_FILTER_ID, count: 4 },
-      { id: ACTIVE_GROUPS_FILTER_ID, count: 3 },
-      { id: ARCHIVED_GROUPS_FILTER_ID, count: 1 },
+describe('toGroupFactsLine', () => {
+  it('joins the admin line and the size line', () => {
+    expect(toGroupFactsLine(group({ memberCount: 18 }))).toBe('Birgit Kühnel · 18 Personen');
+  });
+
+  it('drops an empty group from the line', () => {
+    expect(toGroupFactsLine(group({ memberCount: 0 }))).toBe('Birgit Kühnel');
+  });
+
+  it('stays silent when neither an admin nor a person is there', () => {
+    expect(toGroupFactsLine(group({ memberCount: 0, admins: [] }))).toBeNull();
+  });
+});
+
+describe('toGroupRegisterFlags', () => {
+  it('names every gap of a running group before its group kind', () => {
+    const flags = toGroupRegisterFlags(group({ admins: [], memberCount: 0 }));
+
+    expect(flags.map((flag) => flag.id)).toEqual(['no-admin', 'no-kind', 'no-people']);
+  });
+
+  it('carries the group kind alone once nothing is missing', () => {
+    const flags = toGroupRegisterFlags(group({ groupKindId: 2, groupKindName: 'Garde' }));
+
+    expect(flags).toEqual([{ id: 'kind', label: 'Garde', tone: 'neutral', dot: false }]);
+  });
+
+  it('replaces the gaps of an archived group with its archive day', () => {
+    const flags = toGroupRegisterFlags(
+      group({ archivedOn: '2026-09-12', admins: [], memberCount: 0 }),
+    );
+
+    expect(flags).toEqual([
+      { id: 'archived', label: 'Archiviert am 12.09.2026', tone: 'neutral', dot: false },
     ]);
-  });
-
-  it('reports zero counts for an empty register', () => {
-    expect(toGroupStatusFilterOptions([]).map((option) => option.count)).toEqual([0, 0, 0]);
-  });
-});
-
-describe('toGroupStatusFilterId', () => {
-  it.each([
-    ['active', ACTIVE_GROUPS_FILTER_ID],
-    ['archived', ARCHIVED_GROUPS_FILTER_ID],
-    ['nonsense', ALL_GROUPS_FILTER_ID],
-    ['', ALL_GROUPS_FILTER_ID],
-  ])('maps %s onto %s', (raw, expected) => {
-    expect(toGroupStatusFilterId(raw)).toBe(expected);
-  });
-});
-
-describe('toManagedGroupChips', () => {
-  it('reports the archived status before the missing admin', () => {
-    expect(toManagedGroupChips(WIRBELWIND).status?.label).toBe('archiviert');
-  });
-
-  it('warns about a group without a running admin', () => {
-    expect(toManagedGroupChips(CHRONIK).status?.tone).toBe('gold');
-  });
-
-  it('reports no status for an ordinary group', () => {
-    expect(toManagedGroupChips(GARDE).status).toBeNull();
-  });
-
-  it('always reports the openness', () => {
-    expect(toManagedGroupChips(MUSIKZUG).openness.dot).toBe(false);
-  });
-});
-
-describe('toArchiveConsequence', () => {
-  it('agrees with a single Zugehörigkeit', () => {
-    expect(toArchiveConsequence('Musikzug', 1, '12.09.2026')).toContain(
-      'Die eine Zugehörigkeit bleibt bestehen.',
-    );
-  });
-
-  it('agrees with several Zugehörigkeiten', () => {
-    expect(toArchiveConsequence('Musikzug', 17, '12.09.2026')).toContain(
-      'Die 17 Zugehörigkeiten bleiben bestehen.',
-    );
-  });
-
-  it('says nobody is entered instead of counting zero', () => {
-    expect(toArchiveConsequence('Musikzug', 0, '12.09.2026')).toContain(
-      'Es ist gerade niemand eingetragen.',
-    );
-  });
-
-  it('states the stamped day rather than offering one', () => {
-    expect(toArchiveConsequence('Musikzug', 3, '12.09.2026')).toContain('Ab dem 12.09.2026');
   });
 });
 
 describe('toRestoreConsequence', () => {
-  it('agrees with a single Zugehörigkeit', () => {
+  it('agrees with a single group membership', () => {
     expect(toRestoreConsequence('Musikzug', 1, '12.09.2026')).toContain(
-      'Die eine Zugehörigkeit zählt wieder mit.',
+      '1 Zugehörigkeit zählt wieder mit.',
     );
   });
 
-  it('agrees with several Zugehörigkeiten', () => {
+  it('agrees with several group memberships', () => {
     expect(toRestoreConsequence('Musikzug', 6, '12.09.2026')).toContain(
-      'Die 6 Zugehörigkeiten zählen wieder mit.',
+      '6 Zugehörigkeiten zählen wieder mit.',
     );
   });
 });
 
-describe('toManagedGroupsIntro', () => {
-  it('counts the active groups and the archived ones separately', () => {
-    expect(toManagedGroupsIntro(ALL)).toBe(
-      '3 Gruppen stehen im Verzeichnis. Eine weitere ist archiviert.',
-    );
+const kind = (overrides: Partial<ManagedGroupKind>): ManagedGroupKind => ({
+  groupKindId: 1,
+  name: 'Garde',
+  archivedOn: null,
+  groupCount: 2,
+  ...overrides,
+});
+
+describe('toGroupKindEntries', () => {
+  it('puts the archived ones last and sorts the rest as German', () => {
+    const entries = toGroupKindEntries([
+      kind({ groupKindId: 4, name: 'Zugabteilung' }),
+      kind({ groupKindId: 3, name: 'Elferrat', archivedOn: '2026-01-01' }),
+      kind({ groupKindId: 2, name: 'Ältestenrat' }),
+      kind({ groupKindId: 1, name: 'Garde' }),
+    ]);
+
+    expect(entries.map((entry) => entry.groupKindId)).toEqual([2, 1, 4, 3]);
   });
 
-  it('drops the archived sentence when there are none', () => {
-    expect(toManagedGroupsIntro([GARDE, MUSIKZUG])).toBe('2 Gruppen stehen im Verzeichnis.');
-  });
+  it('marks an archived group kind', () => {
+    const entries = toGroupKindEntries([kind({ archivedOn: '2026-01-01' })]);
 
-  it('uses the singular for a single active group', () => {
-    expect(toManagedGroupsIntro([GARDE])).toBe('Eine Gruppe steht im Verzeichnis.');
-  });
-
-  it('has its own line for an empty register', () => {
-    expect(toManagedGroupsIntro([])).toBe('Noch steht keine Gruppe im Verzeichnis.');
+    expect(entries[0]?.isArchived).toBe(true);
   });
 });
 
-describe('findManagedGroup', () => {
-  it('finds nothing when no group is selected', () => {
-    expect(findManagedGroup(ALL, null)).toBeNull();
+describe('findGroupKindEntry', () => {
+  const entries = toGroupKindEntries([kind({ groupKindId: 1, name: 'Garde' })]);
+
+  it('finds nothing when no group kind is selected', () => {
+    expect(findGroupKindEntry(entries, null)).toBeNull();
   });
 
   it('finds nothing for an unknown id', () => {
-    expect(findManagedGroup(ALL, 999)).toBeNull();
+    expect(findGroupKindEntry(entries, 999)).toBeNull();
   });
 
-  it('finds the selected group', () => {
-    expect(findManagedGroup(ALL, 8)?.name).toBe('Musikzug');
+  it('finds the selected group kind', () => {
+    expect(findGroupKindEntry(entries, 1)?.name).toBe('Garde');
+  });
+});
+
+describe('toGroupKindEntryId', () => {
+  it.each([
+    { case: 'a positive id', raw: '3', expected: 3 },
+    { case: 'a long id', raw: '1204', expected: 1204 },
+    { case: 'zero', raw: '0', expected: null },
+    { case: 'a negative id', raw: '-3', expected: null },
+    { case: 'a word', raw: 'garde', expected: null },
+    { case: 'a decimal', raw: '3.5', expected: null },
+    { case: 'nothing', raw: '', expected: null },
+  ])('reads $case', ({ raw, expected }) => {
+    expect(toGroupKindEntryId(raw)).toBe(expected);
+  });
+});
+
+describe('isGroupKindArchivable', () => {
+  it.each([
+    [{ archivedOn: null, groupCount: 0 }, true],
+    [{ archivedOn: null, groupCount: 1 }, false],
+    [{ archivedOn: '2026-01-01', groupCount: 0 }, false],
+  ])('reads %o as %s', (overrides, expected) => {
+    const entry = toGroupKindEntries([kind(overrides)])[0];
+
+    expect(entry !== undefined && isGroupKindArchivable(entry)).toBe(expected);
+  });
+});
+
+describe('toGroupKindUsageLine', () => {
+  it.each([
+    [0, 'keine Gruppe'],
+    [1, '1 Gruppe'],
+    [4, '4 Gruppen'],
+  ])('writes %i as %s', (groupCount, expected) => {
+    expect(toGroupKindUsageLine(groupCount)).toBe(expected);
+  });
+});
+
+describe('toGroupKindUsageBadge', () => {
+  it.each([
+    [{ groupCount: 0 }, 'Ohne Gruppe', 'gold'],
+    [{ groupCount: 2 }, '2 Gruppen', 'neutral'],
+    [{ groupCount: 0, archivedOn: '2026-09-12' }, 'Archiviert am 12.09.2026', 'neutral'],
+  ])('badges %o as %s', (overrides, label, tone) => {
+    const entry = toGroupKindEntries([kind(overrides)])[0];
+
+    expect(entry === undefined ? null : toGroupKindUsageBadge(entry)).toMatchObject({
+      label,
+      tone,
+    });
+  });
+});
+
+describe('toGroupKindLockedReason', () => {
+  it.each([
+    [1, 'Einer Gruppe ist diese Art zugeordnet. Ändere zuerst die Zuordnung.'],
+    [3, '3 Gruppen ist diese Art zugeordnet. Ändere zuerst die Zuordnung.'],
+  ])('explains %i as %s', (groupCount, expected) => {
+    expect(toGroupKindLockedReason(groupCount)).toBe(expected);
   });
 });

@@ -1,6 +1,5 @@
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
-import { kkTokens } from '../../../tokens';
 
 interface KkSectionMarkerProps {
   numeral?: string;
@@ -28,9 +27,8 @@ export const KkSectionMarker: FC<KkSectionMarkerProps> = ({ numeral }) => {
       aria-hidden
       data-kk-section-numeral
       sx={{
-        fontFamily: kkTokens.font.display,
+        typography: 'poster',
         color: 'primary.main',
-        fontSize: { xs: '3.5rem', md: '7rem' },
         lineHeight: 0.74,
         flexShrink: 0,
       }}

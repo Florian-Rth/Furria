@@ -57,9 +57,7 @@ export const GroupCardBody: FC<GroupCardBodyProps> = ({
 
   const stackLabel =
     avatars === null || footNote === undefined ? null : (
-      <KkEyebrow tone="muted" size="small">
-        {footNote}
-      </KkEyebrow>
+      <KkEyebrow tone="muted">{footNote}</KkEyebrow>
     );
 
   const foot =
@@ -76,18 +74,16 @@ export const GroupCardBody: FC<GroupCardBodyProps> = ({
       <Stack sx={{ gap: 1.25, minWidth: 0, height: '100%' }}>
         <Stack direction="row" sx={{ alignItems: 'flex-start', gap: 1.5, minWidth: 0 }}>
           <Stack sx={{ gap: 0.875, minWidth: 0, flexGrow: 1, alignItems: 'flex-start' }}>
-            <KkHeading level={5} component="h3" sx={{ minWidth: 0 }}>
+            <KkHeading level={4} component="h3" sx={{ minWidth: 0 }}>
               {name}
             </KkHeading>
             {chips}
           </Stack>
           <Stack sx={{ alignItems: 'flex-end', gap: 0.25, flexShrink: 0 }}>
-            <KkHeading level={4} tone="accent" component="p">
+            <KkHeading level={2} tone="accent" component="p">
               {count}
             </KkHeading>
-            <KkEyebrow tone="muted" size="small">
-              {unitLabel}
-            </KkEyebrow>
+            <KkEyebrow tone="muted">{unitLabel}</KkEyebrow>
           </Stack>
         </Stack>
         {descriptionLine}

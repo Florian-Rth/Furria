@@ -10,8 +10,8 @@ export const FeaturedAlbumAction: FC = () => (
     sx={(theme) => ({
       alignSelf: { xs: 'flex-start', desktop: 'flex-end' },
       flexShrink: 0,
+      typography: 'body1',
       fontWeight: 900,
-      fontSize: { xs: '0.9375rem', desktop: '1rem' },
       whiteSpace: 'nowrap',
       color: kkTokens.overlay.onPhotoText,
       borderBottom: kkTokens.line.section,

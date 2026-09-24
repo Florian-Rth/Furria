@@ -1,65 +1,85 @@
 import Stack from '@mui/material/Stack';
 import type { CSSObject, Theme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
-import type { ElementType, FC, PropsWithChildren } from 'react';
+import type { ElementType, FC, PropsWithChildren, Ref } from 'react';
 import type { KkSx } from '../kk-sx';
 import { kkTokens } from '../tokens';
-import type { KkChromeMaterial } from './chrome-density';
-import { chromeMaterialAt } from './chrome-density';
+import type { KkChromeInkOpacity } from './chrome-density';
+import { CHROME_DENSITY_PROPERTY, CHROME_MATERIAL } from './chrome-density';
 import type { KkScheme } from './scheme-paint';
 import { applyScheme, schemeEdge, schemeFill } from './scheme-paint';
 
 const { material } = kkTokens.shell;
 
-const chromeShadow = (chrome: KkChromeMaterial, ink: string, opacity: number): string =>
-  `0 ${chrome.shadowOffsetY}px ${chrome.shadowBlur}px ${alpha(ink, opacity)}`;
+const inkAt = (ink: string, opacity: string): string =>
+  `color-mix(in srgb, ${ink} calc(${opacity} * 100%), transparent)`;
 
-const chromeShadowScheme = (chrome: KkChromeMaterial): KkScheme => ({
-  light: { boxShadow: chromeShadow(chrome, material.shadowInk.light, chrome.light.shadow) },
-  dark: { boxShadow: chromeShadow(chrome, material.shadowInk.dark, chrome.dark.shadow) },
-});
+const pixels = (length: string): string => `calc(${length} * 1px)`;
 
-const chromeTintScheme = (chrome: KkChromeMaterial): KkScheme =>
-  schemeFill(
-    alpha(kkTokens.color.light.bg, chrome.light.tint),
-    alpha(kkTokens.color.dark.bg, chrome.dark.tint),
-  );
+const chromeShadow = (ink: string, opacity: string): string =>
+  `0 ${pixels(CHROME_MATERIAL.shadowOffsetY)} ${pixels(CHROME_MATERIAL.shadowBlur)} ${inkAt(ink, opacity)}`;
 
-const chromeHairlineScheme = (chrome: KkChromeMaterial): KkScheme =>
-  schemeEdge(
-    alpha(kkTokens.color.light.ink, chrome.light.hairline),
-    alpha(kkTokens.color.dark.ink, chrome.dark.hairline),
-  );
+const chromeGlint = (ink: KkChromeInkOpacity): string =>
+  `inset 0 ${kkTokens.line.hair}px 0 ${inkAt(material.glint, ink.glint)}, inset 0 0 0 ${kkTokens.line.hair}px ${inkAt(material.glint, ink.rim)}`;
 
-const chromePaint = (theme: Theme, chrome: KkChromeMaterial): CSSObject => ({
+const chromeSheen = (opacity: string): string =>
+  `linear-gradient(180deg, ${inkAt(material.glint, opacity)}, ${alpha(material.glint, 0)})`;
+
+const CHROME_SHADOW: KkScheme = {
+  light: {
+    boxShadow: `${chromeGlint(CHROME_MATERIAL.light)}, ${chromeShadow(material.shadowInk.light, CHROME_MATERIAL.light.shadow)}`,
+  },
+  dark: {
+    boxShadow: `${chromeGlint(CHROME_MATERIAL.dark)}, ${chromeShadow(material.shadowInk.dark, CHROME_MATERIAL.dark.shadow)}`,
+  },
+};
+
+const CHROME_SHEEN: KkScheme = {
+  light: { backgroundImage: chromeSheen(CHROME_MATERIAL.light.sheen) },
+  dark: { backgroundImage: chromeSheen(CHROME_MATERIAL.dark.sheen) },
+};
+
+const CHROME_TINT: KkScheme = schemeFill(
+  inkAt(kkTokens.color.light.bg, CHROME_MATERIAL.light.tint),
+  inkAt(kkTokens.color.dark.bg, CHROME_MATERIAL.dark.tint),
+);
+
+const CHROME_HAIRLINE: KkScheme = schemeEdge(
+  inkAt(kkTokens.color.light.ink, CHROME_MATERIAL.light.hairline),
+  inkAt(kkTokens.color.dark.ink, CHROME_MATERIAL.dark.hairline),
+);
+
+const CHROME_BACKDROP = `blur(${pixels(CHROME_MATERIAL.blurRadius)}) saturate(${CHROME_MATERIAL.saturation})`;
+
+const chromePaint = (theme: Theme): CSSObject => ({
   minWidth: 0,
   borderWidth: kkTokens.line.hair,
   borderStyle: 'solid',
   borderRadius: `${kkTokens.radius.base}px`,
-  backdropFilter: `blur(${chrome.blurRadius}px)`,
-  WebkitBackdropFilter: `blur(${chrome.blurRadius}px)`,
-  ...applyScheme(
-    theme,
-    chromeTintScheme(chrome),
-    chromeHairlineScheme(chrome),
-    chromeShadowScheme(chrome),
-  ),
+  backdropFilter: CHROME_BACKDROP,
+  WebkitBackdropFilter: CHROME_BACKDROP,
+  ...applyScheme(theme, CHROME_TINT, CHROME_SHEEN, CHROME_HAIRLINE, CHROME_SHADOW),
 });
 
+const densityPaint = (density: number | undefined): CSSObject =>
+  density === undefined ? {} : { [CHROME_DENSITY_PROPERTY]: density };
+
 interface KkChromeProps extends PropsWithChildren {
-  density: number;
+  density?: number;
   component?: ElementType;
+  ref?: Ref<HTMLDivElement>;
   sx?: KkSx;
 }
 
-export const KkChrome: FC<KkChromeProps> = ({ density, component = 'div', sx, children }) => {
-  const chrome = chromeMaterialAt(density);
+export const KkChrome: FC<KkChromeProps> = ({ density, component = 'div', ref, sx, children }) => {
+  const densityOverride = densityPaint(density);
 
   return (
     <Stack
+      ref={ref}
       component={component}
       data-kk-chrome
-      sx={[(theme) => chromePaint(theme, chrome), ...(Array.isArray(sx) ? sx : [sx])]}
+      sx={[chromePaint, densityOverride, ...(Array.isArray(sx) ? sx : [sx])]}
     >
       {children}
     </Stack>

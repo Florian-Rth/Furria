@@ -87,7 +87,7 @@ describe('selectNextAlbum', () => {
 });
 
 describe('selectNewestAlbumForEventType', () => {
-  it('takes the newest Album of the matching Veranstaltungsart', () => {
+  it('takes the newest album of the matching event type', () => {
     const albums = [
       album('sitzung-alt', '2026-01-10', 2, 'Prunksitzung'),
       album('sitzung-neu', '2026-02-14', 2, 'Prunksitzung'),

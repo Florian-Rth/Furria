@@ -25,6 +25,12 @@ public sealed class Expected
 
     public GroupExpectations Group(int groupId) => new(this, groupId);
 
+    public GroupKindExpectations GroupKind(int groupKindId) => new(this, groupKindId);
+
+    public GroupKindSetExpectations GroupKinds() => new(this);
+
+    public GroupTrainingSlotSetExpectations TrainingSlotsOf(int groupId) => new(this, groupId);
+
     public GroupSetExpectations Groups() => new(this);
 
     public GroupMembershipExpectations GroupMembership(int groupMembershipId) =>
@@ -72,6 +78,11 @@ public sealed class Expected
 
     public AttendanceResponseExpectations AttendanceResponsesFor(int calendarEntryId) =>
         new(this, calendarEntryId);
+
+    public CalendarEntryGroupSetExpectations ParticipatingGroupsOf(int calendarEntryId) =>
+        new(this, calendarEntryId);
+
+    public TrainingSetExpectations TrainingsOf(int groupId) => new(this, groupId);
 
     public async Task AssertAsync(CancellationToken ct = default)
     {

@@ -1,12 +1,4 @@
-import {
-  KkAvatar,
-  KkButton,
-  KkChip,
-  KkFieldRow,
-  KkPanel,
-  KkPanelSection,
-  KkSheet,
-} from '@furria/ui';
+import { KkAvatar, KkChip, KkFieldRow, KkPanel, KkPanelSection, KkSheet } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
@@ -73,11 +65,14 @@ export const MemberPeekSheet: FC<MemberPeekSheetProps> = ({ members }) => {
           <MemberPeekContact member={member} isSelf={isSelf} />
         </KkPanelSection>
       </KkSheet.Body>
-      <KkSheet.Actions>
-        <KkButton component={Link} to={MEMBER_PATH} params={params} fullWidth>
-          {MEMBER_PEEK_OPEN_LABEL}
-        </KkButton>
-      </KkSheet.Actions>
+      <KkSheet.Actions
+        primary={{
+          label: MEMBER_PEEK_OPEN_LABEL,
+          component: Link,
+          to: MEMBER_PATH,
+          params,
+        }}
+      />
     </KkSheet>
   );
 };

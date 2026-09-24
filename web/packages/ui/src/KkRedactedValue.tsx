@@ -37,7 +37,7 @@ export const KkRedactedValue: FC<KkRedactedValueProps> = ({
     data-kk-redacted-value
     sx={[{ minWidth: 0, gap: 0.625 }, ...(Array.isArray(sx) ? sx : [sx])]}
   >
-    <KkEyebrow tone="muted" size="small" sx={{ whiteSpace: 'nowrap' }}>
+    <KkEyebrow tone="muted" sx={{ whiteSpace: 'nowrap' }}>
       {label}
     </KkEyebrow>
     <Stack direction="row" sx={{ alignItems: 'center', gap: 0.875, minWidth: 0 }}>
@@ -57,8 +57,7 @@ export const KkRedactedValue: FC<KkRedactedValueProps> = ({
       <Typography
         component="span"
         sx={{
-          fontFamily: kkTokens.font.body,
-          fontSize: kkTokens.type.chip,
+          typography: 'caption',
           fontWeight: 800,
           letterSpacing: kkTokens.type.tracking.tight,
           lineHeight: 1.2,

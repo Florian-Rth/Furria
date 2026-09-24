@@ -9,43 +9,43 @@ export interface RolePermissionCopy {
 const PERMISSION_COPY: Record<PermissionKey, RolePermissionCopy> = {
   [PERMISSION_KEYS.personsReadDetails]: {
     title: 'Kontaktdaten aller Personen sehen',
-    line: 'Telefon, E-Mail und Adresse — auch wenn die Person sie für Mitglieder nicht freigegeben hat.',
+    line: 'Telefon, E-Mail und Adresse, auch wenn sie nicht freigegeben sind.',
   },
   [PERMISSION_KEYS.personsManage]: {
     title: 'Personen und Mitgliedschaften pflegen',
-    line: 'Personen anlegen, Stammdaten ändern, Zeiträume, Ruhezeiten und Beitragsermäßigungen anlegen und beenden.',
+    line: 'Personen anlegen und Stammdaten ändern; Mitgliedschaften, Ruhezeiten und Beitragsermäßigungen pflegen.',
   },
   [PERMISSION_KEYS.groupsManage]: {
     title: 'Gruppen verwalten',
-    line: 'Gruppen anlegen, bearbeiten, archivieren und jede Zugehörigkeit oder Gruppen-Admin-Rolle überschreiben.',
+    line: 'Gruppen anlegen, bearbeiten und archivieren; alle Zugehörigkeiten und Gruppen-Admins verwalten.',
   },
   [PERMISSION_KEYS.rolesManage]: {
     title: 'Rollen und Rechte verwalten',
-    line: 'Rollen anlegen, ihre Rechte ändern und Inhaberschaften eintragen. Wer das hat, kann sich alles andere selbst geben.',
+    line: 'Rollen anlegen, Rechte ändern und Inhaberschaften eintragen. Schließt faktisch alle anderen Rechte ein.',
   },
   [PERMISSION_KEYS.clubRead]: {
     title: 'Den Verein sehen',
-    line: 'Ergibt sich aus einer laufenden Mitgliedschaft und lässt sich nicht über eine Rolle vergeben.',
+    line: 'Ergibt sich aus einer bestehenden Mitgliedschaft, nicht aus einer Rolle.',
   },
   [PERMISSION_KEYS.announcementsPost]: {
     title: 'Aushänge schreiben',
-    line: 'Etwas an den Aushang hängen, ändern und wieder abnehmen — auch die Aushänge anderer.',
+    line: 'Aushänge veröffentlichen, bearbeiten und abnehmen, auch die anderer.',
   },
   [PERMISSION_KEYS.clubManage]: {
     title: 'Sessionseinträge und Orte pflegen',
-    line: 'Motto, Nummer und Zeitraum einer Session eintragen und ändern, Orte anlegen, bearbeiten und archivieren.',
+    line: 'Sessionseinträge pflegen; Orte anlegen, bearbeiten und archivieren.',
   },
   [PERMISSION_KEYS.keyHoldingsManage]: {
     title: 'Schlüssel führen',
-    line: 'Ausgeben und zurücknehmen, wer für welchen Ort einen Schlüssel in der Hand hat. Gemeint ist das Metall, nicht die Berechtigung.',
+    line: 'Physische Schlüssel für Orte ausgeben und zurücknehmen.',
   },
   [PERMISSION_KEYS.boardManage]: {
     title: 'Vorstand führen',
-    line: 'Vorstandsfunktionen anlegen und archivieren, Sitze besetzen und beenden. Die Rolle, die eine Funktion mitbringt, bleibt davon unberührt.',
+    line: 'Vorstandsfunktionen anlegen und archivieren, Sitze besetzen und beenden. Die verknüpfte Rolle ist davon ausgenommen.',
   },
   [PERMISSION_KEYS.calendarManageClub]: {
     title: 'Vereinstermine führen',
-    line: 'Kalendereinträge anlegen, ändern und absagen, die dem Verein selbst gehören — nicht die einer Gruppe.',
+    line: 'Termine des Vereins anlegen, ändern und löschen, nicht die der Gruppen.',
   },
 };
 

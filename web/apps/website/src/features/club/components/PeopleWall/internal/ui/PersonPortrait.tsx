@@ -29,7 +29,7 @@ export const PersonPortrait: FC<PersonPortraitProps> = ({ person, tint }) => (
     </Box>
     <Stack sx={{ gap: 0.25, alignItems: 'flex-start' }}>
       <KkEyebrow>{person.amt}</KkEyebrow>
-      <Typography variant="h5" component="h3" sx={{ lineHeight: 1 }}>
+      <Typography variant="h3" component="h3" sx={{ lineHeight: 1 }}>
         {person.name}
       </Typography>
     </Stack>

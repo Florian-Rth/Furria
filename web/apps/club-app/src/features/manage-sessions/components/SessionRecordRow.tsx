@@ -1,96 +1,59 @@
-import { KkButton, KkChip, KkFactRow } from '@furria/ui';
+import { KkChip, KkMeta, KkSessionRow, logoSourceOf } from '@furria/ui';
+import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { toLandingKey, useLanding } from '@/features/write';
 import {
-  hasSessionLogo,
-  SESSION_SPAN_LABEL,
-  toSessionDeleteActionLabel,
-  toSessionEditActionLabel,
-  toSessionLogoLabel,
   toSessionNumberLabel,
   toSessionRowChip,
-  toSessionRowTitle,
+  toSessionRowMotto,
   toSessionSeasonLabel,
 } from '../manage-sessions-labels';
 import type { SessionRecordSummary } from '../schemas';
-import { SessionLogoMark } from './SessionLogoMark';
 
-const EDIT_LABEL = 'Bearbeiten';
-const DELETE_LABEL = 'Löschen';
-const LOGO_SIZE = 34;
+const EDIT_ROUTE = '/manage/sessions/$sessionId/edit';
 
 interface SessionRecordRowProps {
   record: SessionRecordSummary;
   today: Date;
-  onEdit: (record: SessionRecordSummary) => void;
-  onDelete: (record: SessionRecordSummary) => void;
 }
 
-export const SessionRecordRow: FC<SessionRecordRowProps> = ({
-  record,
-  today,
-  onEdit,
-  onDelete,
-}) => {
+export const SessionRecordRow: FC<SessionRecordRowProps> = ({ record, today }) => {
+  const { highlightedKey } = useLanding();
+  const landingKey = toLandingKey('session', record.sessionId);
   const seasonChip = toSessionRowChip(record, today);
+  const motto = toSessionRowMotto(record, today);
+  const numberLabel = toSessionNumberLabel(record.number);
   const seasonLabel = toSessionSeasonLabel(record.startYear);
-  const title = toSessionRowTitle(record);
-  const numberLine = toSessionNumberLabel(record.number) ?? undefined;
-
-  const edit = (): void => {
-    onEdit(record);
-  };
-
-  const remove = (): void => {
-    onDelete(record);
-  };
+  const logoSource = logoSourceOf(record.logoSvg);
+  const routeParams = { sessionId: String(record.sessionId) };
+  const highlighted = highlightedKey === landingKey;
 
   const chip =
-    seasonChip === null ? undefined : (
+    seasonChip === null ? null : (
       <KkChip tone={seasonChip.tone} dot={seasonChip.dot} size="small">
         {seasonChip.label}
       </KkChip>
     );
 
-  const logoMark = hasSessionLogo(record) ? (
-    <SessionLogoMark
-      logoSvg={record.logoSvg}
-      label={toSessionLogoLabel(seasonLabel)}
-      size={LOGO_SIZE}
-    />
-  ) : undefined;
-
-  const actions = (
-    <>
-      <KkButton
-        size="small"
-        variant="text"
-        ariaLabel={toSessionEditActionLabel(record)}
-        onClick={edit}
-      >
-        {EDIT_LABEL}
-      </KkButton>
-      <KkButton
-        size="small"
-        variant="text"
-        tone="danger"
-        ariaLabel={toSessionDeleteActionLabel(record)}
-        onClick={remove}
-      >
-        {DELETE_LABEL}
-      </KkButton>
-    </>
-  );
+  const numberLine = numberLabel === null ? null : <KkMeta>{numberLabel}</KkMeta>;
 
   return (
-    <KkFactRow
-      title={title}
-      span={seasonLabel}
-      spanLabel={SESSION_SPAN_LABEL}
-      meta={numberLine}
-      chip={chip}
-      actions={actions}
+    <KkSessionRow
+      component={Link}
+      to={EDIT_ROUTE}
+      params={routeParams}
+      highlight={highlighted}
+      landing={landingKey}
     >
-      {logoMark}
-    </KkFactRow>
+      <KkSessionRow.Emblem source={logoSource} />
+      <KkSessionRow.Body>
+        <KkSessionRow.Heading>
+          <KkSessionRow.Season>{seasonLabel}</KkSessionRow.Season>
+          {chip}
+        </KkSessionRow.Heading>
+        <KkSessionRow.Motto missing={motto.missing}>{motto.line}</KkSessionRow.Motto>
+        {numberLine}
+      </KkSessionRow.Body>
+    </KkSessionRow>
   );
 };

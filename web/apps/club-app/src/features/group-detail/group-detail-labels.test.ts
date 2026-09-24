@@ -44,7 +44,7 @@ describe('toGroupHistoryEntries', () => {
     ]);
   });
 
-  it('renders a closed Zugehörigkeit as its span, never as a seit', () => {
+  it('renders a closed group membership as its span, never as a since', () => {
     const [entry] = toGroupHistoryEntries(
       [pastMember({ groupMembershipId: 11, joinedOn: '2019-09-01', leftOn: '2022-02-28' })],
       [],
@@ -60,8 +60,8 @@ describe('toGroupHistoryEntries', () => {
   });
 
   it.each([
-    { case: 'no Funktion', adminFunction: null, expected: undefined },
-    { case: 'a Funktion', adminFunction: 'Trainerin', expected: 'Trainerin' },
+    { case: 'no function', adminFunction: null, expected: undefined },
+    { case: 'a function', adminFunction: 'Trainerin', expected: 'Trainerin' },
   ])('carries $case on a closed admin row', ({ adminFunction, expected }) => {
     const [entry] = toGroupHistoryEntries(
       [],

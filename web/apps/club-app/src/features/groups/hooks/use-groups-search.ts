@@ -1,9 +1,11 @@
 import type { KkFilterOption } from '@furria/ui';
 import { useState } from 'react';
 import { useSearchQuery } from '@/features/session';
+import type { GroupsSection } from '../groups-labels';
 import {
   ALL_GROUPS_FILTER_ID,
   filterGroups,
+  toGroupsSections,
   toNoGroupMatchLine,
   toRecruitingFilterOptions,
 } from '../groups-labels';
@@ -14,7 +16,7 @@ export interface GroupsSearch {
   status: string;
   selectStatus: (id: string) => void;
   filterOptions: KkFilterOption[];
-  visible: readonly GroupSummary[];
+  sections: readonly GroupsSection[];
   emptyDescription: string;
 }
 
@@ -27,7 +29,7 @@ export const useGroupsSearch = (groups: readonly GroupSummary[]): GroupsSearch =
     status,
     selectStatus: setStatus,
     filterOptions: toRecruitingFilterOptions(groups),
-    visible: filterGroups(groups, { query, status }),
+    sections: toGroupsSections(filterGroups(groups, { query, status })),
     emptyDescription: toNoGroupMatchLine(query, status),
   };
 };

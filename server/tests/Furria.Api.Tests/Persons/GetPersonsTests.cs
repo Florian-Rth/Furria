@@ -29,7 +29,7 @@ public sealed class GetPersonsTests
     }
 
     [Fact]
-    public async Task Should_ContainHer_When_APersonHasNoTieToTheVereinAtAll()
+    public async Task Should_ContainHer_When_APersonHasNoTieToTheClubAtAll()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -91,7 +91,7 @@ public sealed class GetPersonsTests
     }
 
     [Fact]
-    public async Task Should_ReportBeendetAndTheChainMinimum_When_AFormerMitgliedRejoinedAndLeftAgain()
+    public async Task Should_ReportEndedAndTheChainMinimum_When_AFormerMemberRejoinedAndLeftAgain()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -118,7 +118,7 @@ public sealed class GetPersonsTests
     }
 
     [Fact]
-    public async Task Should_NameOnlyTheRunningGruppenAndRollen_When_EndedAndArchivedOnesExistToo()
+    public async Task Should_NameOnlyTheRunningGroupsAndRoles_When_EndedAndArchivedOnesExistToo()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -195,9 +195,9 @@ public sealed class GetPersonsTests
         var marschmusik = Assert.Single(paula.Groups);
         Assert.Equal(ctx.Groups.Groups.IdOf("marschmusik"), marschmusik.GroupId);
         Assert.Equal("Marschmusik", marschmusik.Name);
-        var gruppenpflege = Assert.Single(paula.Roles);
-        Assert.Equal(ctx.Roles.Roles.IdOf("gruppenpflege"), gruppenpflege.RoleId);
-        Assert.Equal("Gruppenpflege", gruppenpflege.Name);
+        var groupCare = Assert.Single(paula.Roles);
+        Assert.Equal(ctx.Roles.Roles.IdOf("gruppenpflege"), groupCare.RoleId);
+        Assert.Equal("Gruppenpflege", groupCare.Name);
     }
 
     [Fact]

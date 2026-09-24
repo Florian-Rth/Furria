@@ -17,26 +17,36 @@ public sealed class GroupService
     private const string ArchivedGroupMessage =
         "Eine archivierte Gruppe kann nicht bearbeitet werden.";
     private const string UnknownPersonMessage = "Diese Person steht nicht im Register.";
-    private const string DuplicateNameMessage = WriteConflictMessages.DuplicateGruppenName;
+    private const string UnknownGroupKindMessage = "Diese Gruppenart gibt es nicht.";
+    private const string ArchivedGroupKindMessage =
+        "Eine archivierte Gruppenart lässt sich einer Gruppe nicht zuordnen.";
+    private const string ArchivedGroupKindOnRestoreMessage =
+        "Die Gruppenart dieser Gruppe ist archiviert. Hole zuerst die Gruppenart zurück.";
+    private const string FutureFoundedYearMessage =
+        "Eine Gruppe kann nicht in der Zukunft gegründet worden sein.";
+    private const string UnknownVenueMessage = "Diesen Ort gibt es nicht im Verzeichnis.";
+    private const string ArchivedVenueMessage =
+        "Ein archivierter Ort kann nicht mehr gewählt werden.";
+    private const string DuplicateNameMessage = WriteConflictMessages.DuplicateGroupName;
     private const string AlreadyArchivedMessage = "Diese Gruppe ist bereits archiviert.";
     private const string NotArchivedMessage = "Diese Gruppe ist nicht archiviert.";
-    private const string UnknownZugehoerigkeitMessage =
+    private const string UnknownGroupMembershipMessage =
         "Diese Zugehörigkeit gibt es in dieser Gruppe nicht.";
-    private const string EndedZugehoerigkeitMessage = "Diese Zugehörigkeit ist bereits beendet.";
+    private const string EndedGroupMembershipMessage = "Diese Zugehörigkeit ist bereits beendet.";
     private const string EndBeforeStartMessage =
         "Eine Zugehörigkeit kann nicht vor ihrem Beginn enden.";
-    private const string OpenZugehoerigkeitMessage = WriteConflictMessages.OpenZugehoerigkeit;
-    private const string OverlappingZugehoerigkeitMessage =
+    private const string OpenGroupMembershipMessage = WriteConflictMessages.OpenGroupMembership;
+    private const string OverlappingGroupMembershipMessage =
         "Dieser Zeitraum überschneidet sich mit einer bestehenden Zugehörigkeit. "
         + "Ein Wiedereintritt beginnt frühestens am Tag nach dem Ende der vorigen Zugehörigkeit.";
 
-    private const string OpenErnennungMessage = WriteConflictMessages.OpenErnennung;
-    private const string EndedErnennungMessage = "Diese Ernennung ist bereits beendet.";
-    private const string EndBeforeErnennungMessage =
+    private const string OpenGroupAdminMessage = WriteConflictMessages.OpenGroupAdmin;
+    private const string EndedGroupAdminMessage = "Diese Ernennung ist bereits beendet.";
+    private const string EndBeforeGroupAdminMessage =
         "Eine Ernennung kann nicht vor ihrem Beginn enden.";
-    private const string UnknownErnennungMessage =
+    private const string UnknownGroupAdminMessage =
         "Diese Ernennung gibt es in dieser Gruppe nicht.";
-    private const string OverlappingErnennungMessage =
+    private const string OverlappingGroupAdminMessage =
         "Dieser Zeitraum überschneidet sich mit einer bestehenden Ernennung. "
         + "Eine erneute Ernennung beginnt frühestens am Tag nach dem Ende der vorigen.";
 
@@ -46,7 +56,24 @@ public sealed class GroupService
             group.Name,
             group.Description,
             group.IsRecruiting,
+            group.GroupKindId,
+            group.GroupKind!.Name,
+            group.FoundedYear,
+            group.Tone,
             group.ArchivedOn,
+            group
+                .TrainingSlots.OrderBy(slot => slot.Weekday)
+                .ThenBy(slot => slot.StartsAt)
+                .ThenBy(slot => slot.Id)
+                .Select(slot => new SlotRow(
+                    slot.Id,
+                    slot.Weekday,
+                    slot.StartsAt,
+                    slot.DurationMinutes,
+                    slot.VenueId,
+                    slot.Venue!.Name
+                ))
+                .ToList(),
             group
                 .Memberships.OrderBy(membership =>
                     EF.Functions.Collate(membership.Person!.LastName, GermanCollation.Name)
@@ -104,7 +131,10 @@ public sealed class GroupService
         _timeProvider = timeProvider;
     }
 
-    public async Task<IReadOnlyList<GroupSummary>> GetGroupsAsync(CancellationToken ct)
+    public async Task<IReadOnlyList<GroupSummary>> GetGroupsAsync(
+        int viewerPersonId,
+        CancellationToken ct
+    )
     {
         var today = ClubClock.Today(_timeProvider);
 
@@ -118,6 +148,19 @@ public sealed class GroupService
                 group.Name,
                 group.Description,
                 group.IsRecruiting,
+                group.GroupKind!.Name,
+                group.FoundedYear,
+                group.Tone,
+                group.Memberships.Any(membership =>
+                    membership.PersonId == viewerPersonId
+                    && membership.JoinedOn <= today
+                    && (membership.LeftOn == null || membership.LeftOn >= today)
+                ),
+                group.Admins.Any(admin =>
+                    admin.PersonId == viewerPersonId
+                    && admin.SinceOn <= today
+                    && (admin.UntilOn == null || admin.UntilOn >= today)
+                ),
                 group
                     .Memberships.Where(membership =>
                         membership.JoinedOn <= today
@@ -175,6 +218,8 @@ public sealed class GroupService
                 Name = group.Name,
                 Description = group.Description,
                 IsRecruiting = group.IsRecruiting,
+                GroupKindName = group.GroupKind!.Name,
+                Tone = group.Tone,
             })
             .ToListAsync(ct);
 
@@ -209,25 +254,11 @@ public sealed class GroupService
             .ToListAsync(ct);
     }
 
-    public async Task<Result<MyGroupDetails>> GetMyGroupAsync(int groupId, CancellationToken ct)
-    {
-        var today = ClubClock.Today(_timeProvider);
-
-        var row = await _dbContext
-            .Groups.AsNoTracking()
-            .Where(group => group.Id == groupId && group.ArchivedOn == null)
-            .Select(GroupPageProjection)
-            .SingleOrDefaultAsync(ct);
-
-        if (row is null)
-            return Result<MyGroupDetails>.NotFound(UnknownGroupMessage);
-
-        var affiliated = await AffiliatedAmongAsync(row, today, ct);
-
-        return Result<MyGroupDetails>.Success(ToHubDetails(row, today, affiliated));
-    }
-
-    public async Task<Result<GroupDetails>> GetGroupAsync(int groupId, CancellationToken ct)
+    public async Task<Result<GroupDetails>> GetGroupAsync(
+        int groupId,
+        int? viewerPersonId,
+        CancellationToken ct
+    )
     {
         var today = ClubClock.Today(_timeProvider);
 
@@ -242,7 +273,7 @@ public sealed class GroupService
 
         var affiliated = await AffiliatedAmongAsync(row, today, ct);
 
-        return Result<GroupDetails>.Success(ToDetails(row, today, affiliated));
+        return Result<GroupDetails>.Success(ToHubDetails(row, today, affiliated, viewerPersonId));
     }
 
     public async Task<IReadOnlyList<ManagedGroupSummary>> GetManagedGroupsAsync(
@@ -260,6 +291,9 @@ public sealed class GroupService
                 group.Name,
                 group.Description,
                 group.IsRecruiting,
+                group.GroupKindId,
+                group.GroupKind!.Name,
+                group.Tone,
                 group.ArchivedOn,
                 group
                     .Memberships.Where(membership =>
@@ -297,38 +331,15 @@ public sealed class GroupService
         return [.. rows.Select(ToManagedSummary)];
     }
 
-    public async Task<Result<ManagedGroupDetails>> GetManagedGroupAsync(
-        int groupId,
-        CancellationToken ct
-    )
-    {
-        var today = ClubClock.Today(_timeProvider);
-
-        var row = await _dbContext
-            .Groups.AsNoTracking()
-            .Where(group => group.Id == groupId)
-            .Select(GroupPageProjection)
-            .SingleOrDefaultAsync(ct);
-
-        if (row is null)
-            return Result<ManagedGroupDetails>.NotFound(UnknownGroupMessage);
-
-        var affiliated = await AffiliatedAmongAsync(row, today, ct);
-
-        return Result<ManagedGroupDetails>.Success(ToManagedDetails(row, today, affiliated));
-    }
-
     public async Task<Result<int>> CreateAsync(CreateGroupCommand command, CancellationToken ct)
     {
         if (await NameIsTakenAsync(command.Name, null, ct))
             return Result<int>.Conflict(DuplicateNameMessage);
 
-        var group = new Group
-        {
-            Name = command.Name,
-            Description = command.Description,
-            IsRecruiting = command.IsRecruiting,
-        };
+        if (await GroupKindRefusalAsync(command.GroupKindId, ct) is { } kindRefusal)
+            return Result<int>.Carrying(kindRefusal);
+
+        var group = new Group { Name = command.Name, GroupKindId = command.GroupKindId };
 
         _dbContext.Groups.Add(group);
 
@@ -355,9 +366,11 @@ public sealed class GroupService
         if (await NameIsTakenAsync(command.Name, command.GroupId, ct))
             return Result.Conflict(DuplicateNameMessage);
 
+        if (await GroupKindRefusalAsync(command.GroupKindId, ct) is { } kindRefusal)
+            return kindRefusal;
+
         group.Name = command.Name;
-        group.Description = command.Description;
-        group.IsRecruiting = command.IsRecruiting;
+        group.GroupKindId = command.GroupKindId;
 
         return await _dbContext.SaveOrConflictAsync(ct);
     }
@@ -391,6 +404,9 @@ public sealed class GroupService
         if (await NameIsTakenAsync(group.Name, groupId, ct))
             return Result.Conflict(DuplicateNameMessage);
 
+        if (await GroupKindIsArchivedAsync(group.GroupKindId, ct))
+            return Result.Conflict(ArchivedGroupKindOnRestoreMessage);
+
         group.ArchivedOn = null;
 
         return await _dbContext.SaveOrConflictAsync(ct);
@@ -409,8 +425,46 @@ public sealed class GroupService
         if (group.ArchivedOn is not null)
             return Result.Conflict(ArchivedGroupMessage);
 
+        if (await GroupKindRefusalAsync(command.GroupKindId, ct) is { } kindRefusal)
+            return kindRefusal;
+
+        if (IsInTheFuture(command.FoundedYear, ClubClock.Today(_timeProvider)))
+            return Result.Validation(FutureFoundedYearMessage);
+
         group.Description = command.Description;
         group.IsRecruiting = command.IsRecruiting;
+        group.GroupKindId = command.GroupKindId;
+        group.FoundedYear = command.FoundedYear;
+        group.Tone = command.Tone;
+
+        return await _dbContext.SaveOrConflictAsync(ct);
+    }
+
+    public async Task<Result> SetTrainingSlotsAsync(
+        SetGroupTrainingSlotsCommand command,
+        CancellationToken ct
+    )
+    {
+        var group = await GroupStateAsync(command.GroupId, ct);
+
+        if (group is null)
+            return Result.NotFound(UnknownGroupMessage);
+
+        if (group.ArchivedOn is not null)
+            return Result.Conflict(ArchivedGroupMessage);
+
+        if (await VenueRefusalAsync(command.Slots, ct) is { } refusal)
+            return refusal;
+
+        var current = await _dbContext
+            .GroupTrainingSlots.Where(slot => slot.GroupId == command.GroupId)
+            .ToListAsync(ct);
+
+        _dbContext.GroupTrainingSlots.RemoveRange(current);
+        _dbContext.GroupTrainingSlots.AddRange(
+            command.Slots.Select(slot => ToSlot(command.GroupId, slot))
+        );
+
         await _dbContext.SaveChangesAsync(ct);
 
         return Result.Success();
@@ -435,10 +489,10 @@ public sealed class GroupService
         var chain = await ChainOfAsync(command.GroupId, command.PersonId, ct);
 
         if (HasOpenRow(chain))
-            return Result<int>.Conflict(OpenZugehoerigkeitMessage);
+            return Result<int>.Conflict(OpenGroupMembershipMessage);
 
         if (OverlapsChain(chain, command.JoinedOn))
-            return Result<int>.Conflict(OverlappingZugehoerigkeitMessage);
+            return Result<int>.Conflict(OverlappingGroupMembershipMessage);
 
         var membership = new GroupMembership
         {
@@ -469,13 +523,13 @@ public sealed class GroupService
             );
 
         if (membership is null)
-            return Result.NotFound(UnknownZugehoerigkeitMessage);
+            return Result.NotFound(UnknownGroupMembershipMessage);
 
         if (membership.Group!.ArchivedOn is not null)
             return Result.Conflict(ArchivedGroupMessage);
 
         if (membership.LeftOn is not null)
-            return Result.Conflict(EndedZugehoerigkeitMessage);
+            return Result.Conflict(EndedGroupMembershipMessage);
 
         if (command.EndedOn < membership.JoinedOn)
             return Result.Validation(EndBeforeStartMessage);
@@ -502,10 +556,10 @@ public sealed class GroupService
         var chain = await AdminChainOfAsync(command.GroupId, command.PersonId, ct);
 
         if (HasOpenRow(chain))
-            return Result<int>.Conflict(OpenErnennungMessage);
+            return Result<int>.Conflict(OpenGroupAdminMessage);
 
         if (OverlapsChain(chain, command.SinceOn))
-            return Result<int>.Conflict(OverlappingErnennungMessage);
+            return Result<int>.Conflict(OverlappingGroupAdminMessage);
 
         var admin = new GroupAdmin
         {
@@ -534,16 +588,16 @@ public sealed class GroupService
             );
 
         if (admin is null)
-            return Result.NotFound(UnknownErnennungMessage);
+            return Result.NotFound(UnknownGroupAdminMessage);
 
         if (admin.Group!.ArchivedOn is not null)
             return Result.Conflict(ArchivedGroupMessage);
 
         if (admin.UntilOn is not null)
-            return Result.Conflict(EndedErnennungMessage);
+            return Result.Conflict(EndedGroupAdminMessage);
 
         if (command.EndedOn < admin.SinceOn)
-            return Result.Validation(EndBeforeErnennungMessage);
+            return Result.Validation(EndBeforeGroupAdminMessage);
 
         admin.UntilOn = command.EndedOn;
         await _dbContext.SaveChangesAsync(ct);
@@ -584,6 +638,54 @@ public sealed class GroupService
             );
     }
 
+    private async Task<Result?> GroupKindRefusalAsync(int? groupKindId, CancellationToken ct)
+    {
+        if (groupKindId is not { } kindId)
+            return null;
+
+        var kind = await GroupKindStateAsync(kindId, ct);
+
+        if (kind is null)
+            return Result.NotFound(UnknownGroupKindMessage);
+
+        return kind.ArchivedOn is not null ? Result.Conflict(ArchivedGroupKindMessage) : null;
+    }
+
+    private async Task<bool> GroupKindIsArchivedAsync(int? groupKindId, CancellationToken ct) =>
+        groupKindId is { } kindId
+        && await GroupKindStateAsync(kindId, ct) is { ArchivedOn: not null };
+
+    private Task<GroupKindStateRow?> GroupKindStateAsync(int groupKindId, CancellationToken ct) =>
+        _dbContext
+            .GroupKinds.AsNoTracking()
+            .Where(kind => kind.Id == groupKindId)
+            .Select(kind => new GroupKindStateRow(kind.ArchivedOn))
+            .SingleOrDefaultAsync(ct);
+
+    private async Task<Result?> VenueRefusalAsync(
+        IReadOnlyList<GroupTrainingSlotInput> slots,
+        CancellationToken ct
+    )
+    {
+        var wanted = slots.Select(slot => slot.VenueId).OfType<int>().Distinct().ToList();
+
+        if (wanted.Count == 0)
+            return null;
+
+        var found = await _dbContext
+            .Venues.AsNoTracking()
+            .Where(venue => wanted.Contains(venue.Id))
+            .Select(venue => new VenueStateRow(venue.Id, venue.ArchivedOn))
+            .ToListAsync(ct);
+
+        if (found.Count != wanted.Count)
+            return Result.NotFound(UnknownVenueMessage);
+
+        return found.Any(venue => venue.ArchivedOn is not null)
+            ? Result.Conflict(ArchivedVenueMessage)
+            : null;
+    }
+
     private Task<bool> PersonExistsAsync(int personId, CancellationToken ct) =>
         _dbContext.People.AsNoTracking().AnyAsync(row => row.Id == personId, ct);
 
@@ -606,6 +708,21 @@ public sealed class GroupService
             .ToListAsync(ct);
 
     [Pure]
+    private static bool IsInTheFuture(int? foundedYear, DateOnly today) =>
+        foundedYear is { } year && year > today.Year;
+
+    [Pure]
+    private static GroupTrainingSlot ToSlot(int groupId, GroupTrainingSlotInput input) =>
+        new()
+        {
+            GroupId = groupId,
+            VenueId = input.VenueId,
+            Weekday = input.Weekday,
+            StartsAt = input.StartsAt,
+            DurationMinutes = input.DurationMinutes,
+        };
+
+    [Pure]
     private static bool HasOpenRow(IReadOnlyList<PeriodRow> chain) =>
         chain.Any(row => row.EndedOn is null);
 
@@ -616,31 +733,64 @@ public sealed class GroupService
         return chain.Any(row => joined.Overlaps(row.AsPeriod));
     }
 
-    private static MyGroupDetails ToHubDetails(
+    [Pure]
+    private static bool HasRunningRow(IReadOnlyList<TieRow> rows, int? personId, DateOnly today) =>
+        personId is { } viewerId
+        && rows.Any(row => row.PersonId == viewerId && IsRunningOn(row, today));
+
+    [Pure]
+    private static DateOnly? ChainStartOf(
+        IReadOnlyDictionary<int, DateOnly> chains,
+        int? personId
+    ) => personId is { } viewerId && chains.TryGetValue(viewerId, out var since) ? since : null;
+
+    [Pure]
+    private static GroupTrainingSlotDetails ToSlotDetails(SlotRow slot) =>
+        new()
+        {
+            GroupTrainingSlotId = slot.Id,
+            Weekday = slot.Weekday,
+            StartsAt = slot.StartsAt,
+            DurationMinutes = slot.DurationMinutes,
+            VenueId = slot.VenueId,
+            VenueName = slot.VenueName,
+        };
+
+    private static GroupDetails ToHubDetails(
         GroupPageRow row,
         DateOnly today,
-        IReadOnlySet<int> affiliated
+        IReadOnlySet<int> affiliated,
+        int? viewerPersonId
     )
     {
         var memberChains = ChainStarts(row.Members);
         var adminChains = ChainStarts(row.Admins);
+        var viewerIsMember = HasRunningRow(row.Members, viewerPersonId, today);
 
-        return new MyGroupDetails
+        return new GroupDetails
         {
             GroupId = row.Id,
             Name = row.Name,
             Description = row.Description,
             IsRecruiting = row.IsRecruiting,
-            Members =
-            [
-                .. RunningRows(row.Members, today)
-                    .Select(tie => ToHubMember(tie, memberChains[tie.PersonId], affiliated)),
-            ],
+            GroupKindId = row.GroupKindId,
+            GroupKindName = row.GroupKindName,
+            FoundedYear = row.FoundedYear,
+            Tone = row.Tone,
+            TrainingSlots = [.. row.TrainingSlots.Select(ToSlotDetails)],
             Admins =
             [
                 .. RunningRows(row.Admins, today)
                     .Select(tie => ToHubAdministrator(tie, adminChains[tie.PersonId], affiliated)),
             ],
+            Members =
+            [
+                .. RunningRows(row.Members, today)
+                    .Select(tie => ToHubMember(tie, memberChains[tie.PersonId], affiliated)),
+            ],
+            ViewerIsMember = viewerIsMember,
+            ViewerIsAdmin = HasRunningRow(row.Admins, viewerPersonId, today),
+            ViewerSince = viewerIsMember ? ChainStartOf(memberChains, viewerPersonId) : null,
             PastMembers =
             [
                 .. EndedRows(row.Members, today)
@@ -653,84 +803,6 @@ public sealed class GroupService
             ],
         };
     }
-
-    private static ManagedGroupDetails ToManagedDetails(
-        GroupPageRow row,
-        DateOnly today,
-        IReadOnlySet<int> affiliated
-    )
-    {
-        var memberChains = ChainStarts(row.Members);
-        var adminChains = ChainStarts(row.Admins);
-
-        return new ManagedGroupDetails
-        {
-            GroupId = row.Id,
-            Name = row.Name,
-            Description = row.Description,
-            IsRecruiting = row.IsRecruiting,
-            ArchivedOn = row.ArchivedOn,
-            Members =
-            [
-                .. RunningRows(row.Members, today)
-                    .Select(tie => ToManagedMember(tie, memberChains[tie.PersonId], affiliated)),
-            ],
-            Admins =
-            [
-                .. RunningRows(row.Admins, today)
-                    .Select(tie =>
-                        ToManagedAdministrator(tie, adminChains[tie.PersonId], affiliated)
-                    ),
-            ],
-            PastMembers =
-            [
-                .. EndedRows(row.Members, today)
-                    .Select(tie => ToManagedMember(tie, memberChains[tie.PersonId], affiliated)),
-            ],
-            PastAdmins =
-            [
-                .. EndedRows(row.Admins, today)
-                    .Select(tie =>
-                        ToManagedAdministrator(tie, adminChains[tie.PersonId], affiliated)
-                    ),
-            ],
-        };
-    }
-
-    private static ManagedMember ToManagedMember(
-        TieRow tie,
-        DateOnly since,
-        IReadOnlySet<int> affiliated
-    ) =>
-        new()
-        {
-            GroupMembershipId = tie.RowId,
-            PersonId = tie.PersonId,
-            FirstName = tie.FirstName,
-            LastName = tie.LastName,
-            JoinedOn = tie.StartedOn,
-            LeftOn = tie.EndedOn,
-            Since = since,
-            IsAffiliated = affiliated.Contains(tie.PersonId),
-        };
-
-    private static ManagedAdministrator ToManagedAdministrator(
-        TieRow tie,
-        DateOnly since,
-        IReadOnlySet<int> affiliated
-    ) =>
-        new()
-        {
-            GroupAdminId = tie.RowId,
-            PersonId = tie.PersonId,
-            FirstName = tie.FirstName,
-            LastName = tie.LastName,
-            Function = tie.Function,
-            SinceOn = tie.StartedOn,
-            UntilOn = tie.EndedOn,
-            Since = since,
-            IsAffiliated = affiliated.Contains(tie.PersonId),
-        };
 
     private static ManagedGroupSummary ToManagedSummary(ManagedGroupRow row) =>
         new()
@@ -739,6 +811,9 @@ public sealed class GroupService
             Name = row.Name,
             Description = row.Description,
             IsRecruiting = row.IsRecruiting,
+            GroupKindId = row.GroupKindId,
+            GroupKindName = row.GroupKindName,
+            Tone = row.Tone,
             ArchivedOn = row.ArchivedOn,
             MemberCount = OnePerPerson(row.Members).Count,
             Admins = OnePerPerson(row.Admins),
@@ -791,63 +866,6 @@ public sealed class GroupService
         rows.GroupBy(row => row.PersonId)
             .ToDictionary(chain => chain.Key, chain => chain.Min(row => row.StartedOn));
 
-    private static GroupDetails ToDetails(
-        GroupPageRow row,
-        DateOnly today,
-        IReadOnlySet<int> affiliated
-    ) =>
-        new()
-        {
-            GroupId = row.Id,
-            Name = row.Name,
-            Description = row.Description,
-            IsRecruiting = row.IsRecruiting,
-            Members =
-            [
-                .. RunningTies(row.Members, today)
-                    .Select(tie => new GroupMember
-                    {
-                        PersonId = tie.PersonId,
-                        FirstName = tie.FirstName,
-                        LastName = tie.LastName,
-                        Since = tie.Since,
-                        IsAffiliated = affiliated.Contains(tie.PersonId),
-                    }),
-            ],
-            Admins =
-            [
-                .. RunningTies(row.Admins, today)
-                    .Select(tie => new GroupAdministrator
-                    {
-                        PersonId = tie.PersonId,
-                        FirstName = tie.FirstName,
-                        LastName = tie.LastName,
-                        Function = tie.Function,
-                        Since = tie.Since,
-                        IsAffiliated = affiliated.Contains(tie.PersonId),
-                    }),
-            ],
-        };
-
-    private static IReadOnlyList<PersonTie> RunningTies(
-        IReadOnlyList<TieRow> rows,
-        DateOnly today
-    ) =>
-        [
-            .. rows.GroupBy(row => row.PersonId)
-                .Where(chain => chain.Any(row => IsRunningOn(row, today)))
-                .Select(chain => new PersonTie(
-                    chain.Key,
-                    chain.First().FirstName,
-                    chain.First().LastName,
-                    CurrentFunction(chain, today),
-                    chain.Min(row => row.StartedOn)
-                )),
-        ];
-
-    private static string? CurrentFunction(IEnumerable<TieRow> chain, DateOnly today) =>
-        chain.Last(row => IsRunningOn(row, today)).Function;
-
     private static bool IsRunningOn(TieRow row, DateOnly today) =>
         new DatePeriod { Start = row.StartedOn, End = row.EndedOn }.IsRunningOn(today);
 
@@ -861,9 +879,14 @@ public sealed class GroupService
             Name = row.Name,
             Description = row.Description,
             IsRecruiting = row.IsRecruiting,
+            GroupKindName = row.GroupKindName,
+            FoundedYear = row.FoundedYear,
+            Tone = row.Tone,
             MemberCount = members.Count,
             MemberPreview = [.. members.Take(MemberPreviewSize)],
             Admins = OnePerPerson(row.Admins),
+            ViewerIsMember = row.ViewerIsMember,
+            ViewerIsAdmin = row.ViewerIsAdmin,
         };
     }
 
@@ -876,6 +899,11 @@ public sealed class GroupService
         string Name,
         string Description,
         bool IsRecruiting,
+        string? GroupKindName,
+        int? FoundedYear,
+        GroupTone? Tone,
+        bool ViewerIsMember,
+        bool ViewerIsAdmin,
         IReadOnlyList<PersonReference> Members,
         IReadOnlyList<PersonReference> Admins
     );
@@ -885,9 +913,23 @@ public sealed class GroupService
         string Name,
         string Description,
         bool IsRecruiting,
+        int? GroupKindId,
+        string? GroupKindName,
+        int? FoundedYear,
+        GroupTone? Tone,
         DateOnly? ArchivedOn,
+        IReadOnlyList<SlotRow> TrainingSlots,
         IReadOnlyList<TieRow> Members,
         IReadOnlyList<TieRow> Admins
+    );
+
+    private sealed record SlotRow(
+        int Id,
+        DayOfWeek Weekday,
+        TimeOnly StartsAt,
+        int DurationMinutes,
+        int? VenueId,
+        string? VenueName
     );
 
     private sealed record ManagedGroupRow(
@@ -895,6 +937,9 @@ public sealed class GroupService
         string Name,
         string Description,
         bool IsRecruiting,
+        int? GroupKindId,
+        string? GroupKindName,
+        GroupTone? Tone,
         DateOnly? ArchivedOn,
         IReadOnlyList<PersonReference> Members,
         IReadOnlyList<PersonReference> Admins
@@ -912,16 +957,12 @@ public sealed class GroupService
 
     private sealed record GroupState(DateOnly? ArchivedOn);
 
+    private sealed record VenueStateRow(int Id, DateOnly? ArchivedOn);
+
+    private sealed record GroupKindStateRow(DateOnly? ArchivedOn);
+
     private sealed record PeriodRow(DateOnly StartedOn, DateOnly? EndedOn)
     {
         public DatePeriod AsPeriod => new() { Start = StartedOn, End = EndedOn };
     }
-
-    private sealed record PersonTie(
-        int PersonId,
-        string FirstName,
-        string LastName,
-        string? Function,
-        DateOnly Since
-    );
 }

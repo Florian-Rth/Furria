@@ -22,7 +22,7 @@ public sealed class GroupAdministrationTests
     }
 
     [Fact]
-    public async Task Should_Allow_When_TheCallerIsTheGruppenAdmin()
+    public async Task Should_Allow_When_TheCallerIsTheGroupAdmin()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -85,7 +85,7 @@ public sealed class GroupAdministrationTests
     }
 
     [Fact]
-    public async Task Should_PassTheGate_When_TheCallerHoldsGroupsManageAndTheGruppeIsUnknown()
+    public async Task Should_PassTheGate_When_TheCallerHoldsGroupsManageAndTheGroupIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -116,7 +116,7 @@ public sealed class GroupAdministrationTests
     }
 
     [Fact]
-    public async Task Should_Refuse_When_TheCallerOnlyBelongsToTheGruppe()
+    public async Task Should_Refuse_When_TheCallerOnlyBelongsToTheGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -147,7 +147,7 @@ public sealed class GroupAdministrationTests
     }
 
     [Fact]
-    public async Task Should_Refuse_When_TheCallerAdministersAnotherGruppe()
+    public async Task Should_Refuse_When_TheCallerAdministersAnotherGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -180,7 +180,7 @@ public sealed class GroupAdministrationTests
     }
 
     [Fact]
-    public async Task Should_Allow_When_TheGruppeIsArchived()
+    public async Task Should_Allow_When_TheGroupIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

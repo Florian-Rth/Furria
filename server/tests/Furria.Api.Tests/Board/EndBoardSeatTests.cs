@@ -45,10 +45,10 @@ public sealed class EndBoardSeatTests
         );
 
     [Fact]
-    public async Task Should_CloseThePeriod_When_AManagerEndsTheSitz()
+    public async Task Should_CloseThePeriod_When_AManagerEndsTheSeat()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithRunningSitzAsync(ct);
+        var ctx = await BuildWithRunningSeatAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var response = await EndSeatAsync(
@@ -69,7 +69,7 @@ public sealed class EndBoardSeatTests
     public async Task Should_CloseThePeriod_When_TheEndIsInTheFuture()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithRunningSitzAsync(ct);
+        var ctx = await BuildWithRunningSeatAsync(ct);
 
         var handsOverTomorrow = _fixture.Today.AddDays(1);
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
@@ -88,10 +88,10 @@ public sealed class EndBoardSeatTests
     }
 
     [Fact]
-    public async Task Should_EndOnItsOwnStart_When_TheSitzLastedOneDay()
+    public async Task Should_EndOnItsOwnStart_When_TheSeatLastedOneDay()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithRunningSitzAsync(ct);
+        var ctx = await BuildWithRunningSeatAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var response = await EndSeatAsync(
@@ -112,7 +112,7 @@ public sealed class EndBoardSeatTests
     public async Task Should_ReturnUnprocessableEntity_When_TheEndPrecedesTheStart()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithRunningSitzAsync(ct);
+        var ctx = await BuildWithRunningSeatAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var response = await EndSeatAsync(
@@ -132,7 +132,7 @@ public sealed class EndBoardSeatTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheSitzIsAlreadyEnded()
+    public async Task Should_ReturnConflict_When_TheSeatIsAlreadyEnded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -170,10 +170,10 @@ public sealed class EndBoardSeatTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheSitzIsUnknown()
+    public async Task Should_ReturnNotFound_When_TheSeatIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithRunningSitzAsync(ct);
+        var ctx = await BuildWithRunningSeatAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var response = await EndSeatAsync(
@@ -187,7 +187,7 @@ public sealed class EndBoardSeatTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheSitzBelongsToAnotherFunktion()
+    public async Task Should_ReturnNotFound_When_TheSeatBelongsToAnotherOffice()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -221,7 +221,7 @@ public sealed class EndBoardSeatTests
     public async Task Should_ReturnBadRequest_When_TheRouteCarriesNoUsableId()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithRunningSitzAsync(ct);
+        var ctx = await BuildWithRunningSeatAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var response = await EndSeatAsync(
@@ -276,7 +276,7 @@ public sealed class EndBoardSeatTests
     }
 
     [Fact]
-    public async Task Should_RefuseTheEnd_When_TheFunktionCarriesARolleTheCallerMayNotGrant()
+    public async Task Should_RefuseTheEnd_When_TheOfficeCarriesARoleTheCallerMayNotGrant()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -322,7 +322,7 @@ public sealed class EndBoardSeatTests
     public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithRunningSitzAsync(ct);
+        var ctx = await BuildWithRunningSeatAsync(ct);
 
         var response = await EndSeatAsync(
             _fixture.CreateClient(),
@@ -338,7 +338,7 @@ public sealed class EndBoardSeatTests
             .AssertAsync(ct);
     }
 
-    private Task<SeededContext> BuildWithRunningSitzAsync(CancellationToken ct) =>
+    private Task<SeededContext> BuildWithRunningSeatAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder =>
                 builder

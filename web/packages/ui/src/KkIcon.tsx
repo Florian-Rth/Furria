@@ -92,6 +92,12 @@ interface KkIconProps {
   sx?: KkSx;
 }
 
+const iconExtents: Record<KkIconSize, string> = {
+  small: '1.25rem',
+  medium: '1.5rem',
+  large: '2.1875rem',
+};
+
 const icons: Record<KkIconName, typeof HomeIcon> = {
   home: HomeIcon,
   logout: LogoutIcon,
@@ -138,6 +144,13 @@ const icons: Record<KkIconName, typeof HomeIcon> = {
 
 export const KkIcon: FC<KkIconProps> = ({ name, size = 'medium', sx }) => {
   const Icon = icons[name];
+  const extent = iconExtents[size];
 
-  return <Icon fontSize={size} data-kk-icon sx={sx} />;
+  return (
+    <Icon
+      fontSize="inherit"
+      data-kk-icon
+      sx={[{ width: extent, height: extent }, ...(Array.isArray(sx) ? sx : [sx])]}
+    />
+  );
 };

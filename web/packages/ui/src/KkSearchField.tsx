@@ -13,6 +13,7 @@ interface KkSearchFieldProps {
   onChange: (value: string) => void;
   placeholder?: string;
   autoFocus?: boolean;
+  required?: boolean;
   sx?: KkSx;
 }
 
@@ -24,6 +25,7 @@ export const KkSearchField: FC<KkSearchFieldProps> = ({
   onChange,
   placeholder,
   autoFocus,
+  required,
   sx,
 }) => {
   const change = (event: ChangeEvent<HTMLInputElement>): void => {
@@ -61,6 +63,7 @@ export const KkSearchField: FC<KkSearchFieldProps> = ({
       onChange={change}
       placeholder={placeholder}
       autoFocus={autoFocus}
+      required={required}
       autoComplete="off"
       variant="outlined"
       fullWidth

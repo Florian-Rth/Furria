@@ -32,10 +32,10 @@ public sealed class RestoreRoleTests
         );
 
     [Fact]
-    public async Task Should_ClearTheArchiveStamp_When_AManagerReactivatesTheRolle()
+    public async Task Should_ClearTheArchiveStamp_When_AManagerReactivatesTheRole()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithArchivedChronikAsync(ct);
+        var ctx = await BuildWithArchivedChronicleAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var response = await RestoreRoleAsync(client, ctx.Roles.Roles.IdOf("chronik"));
@@ -48,7 +48,7 @@ public sealed class RestoreRoleTests
     }
 
     [Fact]
-    public async Task Should_GrantItsKeysAgain_When_TheRolleIsReactivated()
+    public async Task Should_GrantItsKeysAgain_When_TheRoleIsReactivated()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -82,7 +82,7 @@ public sealed class RestoreRoleTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheRolleIsNotArchived()
+    public async Task Should_ReturnConflict_When_TheRoleIsNotArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -99,7 +99,7 @@ public sealed class RestoreRoleTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_AnActiveRolleNowCarriesTheName()
+    public async Task Should_ReturnConflict_When_AnActiveRoleNowCarriesTheName()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -130,7 +130,7 @@ public sealed class RestoreRoleTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheRolleIsUnknown()
+    public async Task Should_ReturnNotFound_When_TheRoleIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
@@ -194,7 +194,7 @@ public sealed class RestoreRoleTests
     public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithArchivedChronikAsync(ct);
+        var ctx = await BuildWithArchivedChronicleAsync(ct);
 
         var response = await RestoreRoleAsync(
             _fixture.CreateClient(),
@@ -208,7 +208,7 @@ public sealed class RestoreRoleTests
             .AssertAsync(ct);
     }
 
-    private Task<SeededContext> BuildWithArchivedChronikAsync(CancellationToken ct) =>
+    private Task<SeededContext> BuildWithArchivedChronicleAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder =>
                 builder.Roles(roles =>

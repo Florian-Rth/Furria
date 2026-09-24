@@ -28,7 +28,7 @@ export const KkEmptyState: FC<KkEmptyStateProps> = ({
   const isPanel = size === 'panel';
   const mark = isPanel ? null : <KkBroomMark size={MARK_SIZE} sx={{ color: 'text.disabled' }} />;
   const headline = isPanel ? null : (
-    <Typography component="p" sx={{ ...displayTitle, textWrap: 'balance' }}>
+    <Typography component="h2" sx={{ ...displayTitle, textWrap: 'balance' }}>
       {title}
     </Typography>
   );

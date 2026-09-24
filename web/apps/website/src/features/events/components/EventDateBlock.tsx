@@ -30,10 +30,7 @@ export const EventDateBlock: FC<EventDateBlockProps> = ({ startsAt, tint }) => {
         bgcolor: 'background.paper',
       }}
     >
-      <Typography
-        component="span"
-        sx={{ fontFamily: kkTokens.font.display, fontSize: '1.75rem', lineHeight: 1.1 }}
-      >
+      <Typography variant="h2" component="span" sx={{ lineHeight: 1.1 }}>
         {day}
       </Typography>
       <Typography

@@ -1,144 +1,76 @@
+import { KkPanelStack } from '@furria/ui';
 import type { FC } from 'react';
-import {
-  GroupDetailLayout,
-  GroupEventsSlot,
-  GroupHistoryPanel,
-  GroupPhotosSlot,
-} from '@/features/group-detail';
-import { usePermissions, useReturnFocus } from '@/features/session';
-import { useHubCelebration } from '../hooks/use-hub-celebration';
-import { useHubDialogs } from '../hooks/use-hub-dialogs';
-import type { HubDetails } from '../schemas';
-import { AddAdminDialog } from './AddAdminDialog';
-import { AddMemberDialog } from './AddMemberDialog';
-import { EndAdminDialog } from './EndAdminDialog';
-import { EndMembershipDialog } from './EndMembershipDialog';
-import { HubAdminsPanel } from './HubAdminsPanel';
-import { HubGroupSection } from './HubGroupSection';
-import { HubMembersPanel } from './HubMembersPanel';
+import { GroupHistoryPanel } from '@/features/group-detail';
+import { toHeldGroupKind } from '@/features/group-kinds';
+import { toGroupTone } from '@/features/groups';
+import { usePermissions } from '@/features/session';
+import { useLanding } from '@/features/write';
+import { PERMISSION_KEYS } from '@/lib/api/schemas';
+import { toHubPeople } from '../hub-people';
+import type { GroupHub } from '../schemas';
+import { HubAdministrationPanel } from './HubAdministrationPanel';
+import { HubCalendarEntriesPanel } from './HubCalendarEntriesPanel';
+import { HubCarePanel } from './HubCarePanel';
+import { HubDescriptionPanel } from './HubDescriptionPanel';
+import { HubPeoplePanel } from './HubPeoplePanel';
+import { HubRhythmPanel } from './HubRhythmPanel';
 
-const HISTORY_META = 'nur für Gruppen-Admins';
+const HISTORY_META = 'nur für die Verwaltung dieser Gruppe';
 
 interface HubViewProps {
-  hub: HubDetails;
+  hub: GroupHub;
 }
 
 export const HubView: FC<HubViewProps> = ({ hub }) => {
-  const dialogs = useHubDialogs(hub.members, hub.admins);
-  const celebration = useHubCelebration();
-  const { isAffiliated } = usePermissions();
-  const membersFocus = useReturnFocus();
-  const adminsFocus = useReturnFocus();
+  const permissions = usePermissions();
+  const { highlightedKey } = useLanding();
+  const tone = toGroupTone(hub.groupId, hub.tone);
+  const heldKind = toHeldGroupKind(hub.groupKindId, hub.groupKindName);
+  const people = toHubPeople(hub.members, hub.admins);
 
-  const closeAfterMemberEnded = (): void => {
-    dialogs.close();
-    membersFocus.returnFocus();
-  };
+  const seesCalendarEntries = hub.viewerIsMember || hub.viewerMayManage;
+  const calendarEntries = seesCalendarEntries ? (
+    <HubCalendarEntriesPanel groupId={hub.groupId} tone={tone} />
+  ) : null;
 
-  const closeAfterAdminEnded = (): void => {
-    dialogs.close();
-    adminsFocus.returnFocus();
-  };
+  const care = hub.viewerMayManage ? (
+    <HubCarePanel hub={hub} tone={tone} heldKind={heldKind} />
+  ) : null;
 
-  const onMemberAdded = (personId: number): void => {
-    dialogs.close();
-    celebration.celebrateMember(personId);
-  };
-
-  const onAdminAppointed = (personId: number): void => {
-    dialogs.close();
-    celebration.markAdmin(personId);
-  };
-
-  const history = hub.viewerIsAdmin ? (
+  const history = hub.viewerMayManage ? (
     <GroupHistoryPanel
       pastMembers={hub.pastMembers}
       pastAdmins={hub.pastAdmins}
       meta={HISTORY_META}
+      groupTone={tone}
     />
-  ) : undefined;
-
-  const tools = hub.viewerIsAdmin ? (
-    <>
-      <AddMemberDialog
-        groupId={hub.groupId}
-        groupName={hub.name}
-        open={dialogs.isAddMemberOpen}
-        onClose={dialogs.close}
-        onAdded={onMemberAdded}
-      />
-      <EndMembershipDialog
-        groupId={hub.groupId}
-        groupName={hub.name}
-        member={dialogs.endMember}
-        onClose={dialogs.close}
-        onEnded={closeAfterMemberEnded}
-      />
-      <AddAdminDialog
-        groupId={hub.groupId}
-        groupName={hub.name}
-        open={dialogs.isAddAdminOpen}
-        onClose={dialogs.close}
-        onAppointed={onAdminAppointed}
-      />
-      <EndAdminDialog
-        groupId={hub.groupId}
-        groupName={hub.name}
-        admin={dialogs.endAdmin}
-        runningAdmins={hub.admins.length}
-        onClose={dialogs.close}
-        onEnded={closeAfterAdminEnded}
-      />
-    </>
   ) : null;
 
-  const about = (
-    <HubGroupSection
-      groupId={hub.groupId}
-      name={hub.name}
-      description={hub.description}
-      isRecruiting={hub.isRecruiting}
-      canManage={hub.viewerIsAdmin}
-    />
-  );
-
-  const admins = (
-    <HubAdminsPanel
-      admins={hub.admins}
-      canManage={hub.viewerIsAdmin}
-      viewerIsAffiliated={isAffiliated}
-      newPersonId={celebration.newAdminId}
-      titleRef={adminsFocus.targetRef}
-      onAdd={dialogs.openAddAdmin}
-      onEnd={dialogs.openEndAdmin}
-    />
-  );
-
-  const members = (
-    <HubMembersPanel
-      members={hub.members}
-      groupName={hub.name}
-      canManage={hub.viewerIsAdmin}
-      viewerIsAffiliated={isAffiliated}
-      newPersonId={celebration.newMemberId}
-      fireKey={celebration.fireKey}
-      titleRef={membersFocus.targetRef}
-      onAdd={dialogs.openAddMember}
-      onEnd={dialogs.openEndMembership}
-    />
-  );
+  const administration = permissions.has(PERMISSION_KEYS.groupsManage) ? (
+    <HubAdministrationPanel hub={hub} tone={tone} />
+  ) : null;
 
   return (
-    <>
-      <GroupDetailLayout
-        about={about}
-        admins={admins}
-        members={members}
-        history={history}
-        events={<GroupEventsSlot />}
-        photos={<GroupPhotosSlot />}
+    <KkPanelStack>
+      <HubDescriptionPanel tone={tone} groupName={hub.name} description={hub.description} />
+      <HubPeoplePanel
+        tone={tone}
+        people={people}
+        groupId={hub.groupId}
+        groupName={hub.name}
+        canManage={hub.viewerMayManage}
+        highlightedKey={highlightedKey}
       />
-      {tools}
-    </>
+      {calendarEntries}
+      <HubRhythmPanel
+        groupId={hub.groupId}
+        tone={tone}
+        slots={hub.trainingSlots}
+        canManage={hub.viewerMayManage}
+      />
+      {care}
+      {history}
+      {administration}
+    </KkPanelStack>
   );
 };

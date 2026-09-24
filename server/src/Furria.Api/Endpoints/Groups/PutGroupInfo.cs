@@ -3,6 +3,7 @@ using FluentValidation;
 using Furria.Api.Authorization;
 using Furria.Api.Results;
 using Furria.Application.Groups;
+using Furria.Core.Groups;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Groups;
 
@@ -55,6 +56,9 @@ public sealed class PutGroupInfo : Endpoint<PutGroupInfoRequest>
             GroupId = req.GroupId,
             Description = req.Description,
             IsRecruiting = req.IsRecruiting,
+            GroupKindId = req.GroupKindId,
+            FoundedYear = req.FoundedYear,
+            Tone = req.Tone,
         };
 }
 
@@ -66,15 +70,32 @@ public sealed record PutGroupInfoRequest
     public required string Description { get; init; }
 
     public required bool IsRecruiting { get; init; }
+
+    public required int? GroupKindId { get; init; }
+
+    public required int? FoundedYear { get; init; }
+
+    public required GroupTone? Tone { get; init; }
 }
 
 public sealed class PutGroupInfoValidator : Validator<PutGroupInfoRequest>
 {
-    private const int DescriptionMaximumLength = 400;
+    private const string FoundedYearOutOfRangeMessage =
+        "Das Gründungsjahr liegt zwischen 1800 und 2100.";
 
     public PutGroupInfoValidator()
     {
         RuleFor(request => request.GroupId).GreaterThan(0);
-        RuleFor(request => request.Description).NotNull().MaximumLength(DescriptionMaximumLength);
+        RuleFor(request => request.Description)
+            .NotNull()
+            .MaximumLength(GroupLimits.DescriptionLength);
+        RuleFor(request => request.GroupKindId)
+            .GreaterThan(0)
+            .When(request => request.GroupKindId is not null);
+        RuleFor(request => request.FoundedYear)
+            .InclusiveBetween(GroupLimits.EarliestFoundedYear, GroupLimits.LatestFoundedYear)
+            .WithMessage(FoundedYearOutOfRangeMessage)
+            .When(request => request.FoundedYear is not null);
+        RuleFor(request => request.Tone).IsInEnum().When(request => request.Tone is not null);
     }
 }

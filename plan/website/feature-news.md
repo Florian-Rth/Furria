@@ -1,5 +1,5 @@
 ---
-title: Aktuelles
+title: News
 slug: news
 type: capability
 status: shipped
@@ -9,13 +9,13 @@ adrs: [docs/adr/0003-website-rendering-strategy.md]
 
 ## What & Why
 
-The public **Aktuelles** section (`/news`, nav label **Aktuelles**): the club's own channel for
-what is happening between events — Motto-Verkündung, competition results, calls for helpers,
+The public **News** section (`/news`, nav label **Aktuelles**): the club's own channel for
+what is happening between events — motto proclamations, competition results, calls for helpers,
 rehearsal changes. It keeps the site alive in the long stretches where the event calendar has
 nothing to show, and it is the only page a member is likely to *share* outward.
 
 **Deliberately not a blog.** The board maintains this alongside everything else, so ~10
-**Meldungen** a year is the realistic volume. No tags, filters, search, pagination, comments,
+**news posts** a year is the realistic volume. No tags, filters, search, pagination, comments,
 author pages, related-post algorithms, newsletter or RSS. The volume never justifies blog
 machinery, and building it would create a maintenance surface nobody staffs.
 
@@ -27,12 +27,12 @@ not a rewrite.
 
 Two routes plus one reusable block:
 
-1. **`/news`** — list page: page head → **Aufmacher** (the newest Meldung, given the page's
+1. **`/news`** — list page: page head → **lead post** (the newest news post, given the page's
    visual weight) → *Weitere Meldungen* rows → list footer → a red band pointing at `/program`.
 2. **`/news/:slug`** — article page: back link → meta line → H1 → Anton lead → hero image →
    body → share row → *Weitere Meldungen* (the 3 next-newest).
-3. **Landing block** — `NewsTeaser`, the 3 newest Meldungen, mounted on `/` between the
-   Programm-Teaser and the Mitmachen-Band.
+3. **Landing block** — `NewsTeaser`, the 3 newest news posts, mounted on `/` between the
+   event-list teaser and the join-in band.
 
 ### Frontend requirements
 
@@ -55,30 +55,31 @@ Two routes plus one reusable block:
 
 - **None.** Fully static.
 - **Seam (deferred, NOT scaffolded — YAGNI):** the Club-App later becomes the publishing surface
-  and supplies Meldungen over a public read endpoint. The typed `NewsPost` interface is the swap
+  and supplies news posts over a public read endpoint. The typed `NewsPost` interface is the swap
   point. Do not build a fetch, a Zod schema or an admin UI now.
 
 ## Decisions
 
-### Design language — Destillat, no exceptions
-- The mock is the most aggressively **"Plakat"** handoff yet (`border-radius: 0` everywhere,
+### Design language — Distilled, no exceptions
+- The mock is the most aggressively **"poster"** handoff yet (`border-radius: 0` everywhere,
   `2px solid ink` card borders, hard offset shadows like `12px 12px 0 red`, square chips).
-  **Rejected as the system**, same ruling as P3: our shipped **Destillat** language wins — MUI
+  **Rejected as the system**, same ruling as P3: our shipped **Distilled** language wins — MUI
   `Card`, `radius.base` (14), hairline `divider` borders, `shadow.rest`/`shadow.raised`.
   **Standing rule, beyond this mock: our current design always wins; mocks are inspiration only.**
 - **No hard offset shadow anywhere on these pages.** `kkTokens.shadow.posterOffset` stays reserved
-  for hero headlines (`KkTwoToneHeadline`), as shipped. The **Aufmacher earns its emphasis through
+  for hero headlines (`KkTwoToneHeadline`), as shipped. The **lead post earns its emphasis through
   scale, layout and `shadow.raised`** instead — one bold moment per page, achieved in-theme.
 - What we **do** take from the mock, because it is genuinely good and already our idiom: the
-  editorial **red date rail**, the Aufmacher-over-list hierarchy, and the **red square + Anton
+  editorial **red date rail**, the lead-post-over-list hierarchy, and the **red square + Anton
   label + hairline rule** section header (the shipped `ChapterHeader`/section-rule pattern).
 - **No dark ink-panels.** The mock closes the list page with a full-bleed *inverted ink* panel;
   P3 already banned those. It becomes a **red** band (see `CtaBand`).
 
 ### Vocabulary (see `CONTEXT.md`)
-- **Aktuelles** = the section. **Meldung** = one item. **Kategorie** = its one label.
+- **Aktuelles** = the news section. **Meldung** = one news post. **Kategorie** = its one category
+  label.
 - **"Beitrag" is banned for news items** — it is the membership fee in this domain, and the mock's
-  CTA *"Ganzen Beitrag lesen →"* would collide with the Beitrag tiers advertised elsewhere on the
+  CTA *"Ganzen Beitrag lesen →"* would collide with the fee tiers advertised elsewhere on the
   same site. Copy becomes **"Ganze Meldung lesen →"**.
 - **The heading chain uses one word:** nav chip *Aktuelles* → landing block **AKTUELLES** → page H1
   **AKTUELLES** → section rule **WEITERE MELDUNGEN** on *both* the list and the article page (one
@@ -96,30 +97,30 @@ Two routes plus one reusable block:
   is the *entire* richness the design supports. Parsed by one small pure function. No sanitiser
   needed: the content is compile-time, so there is no XSS surface. (When the backend becomes the
   source, sanitisation becomes a real decision — noted as a seam, not built.)
-- **`image: string | null`.** `null` is a first-class production state → the **Plakat fallback**
+- **`image: string | null`.** `null` is a first-class production state → the **poster fallback**
   (below), *not* an empty box. Non-null renders `KkPhotoPlaceholder` in v1, since no real photos
   exist yet — so both branches are exercised. Seed content keeps 2 of 6 posts photo-less.
 - **`author: string | null`; when null the byline is omitted entirely.** The mock's fallback
-  *"Vorstand"* is banned in code and copy (`CONTEXT.md`: there is no Vorstand super-role; P3
+  *"Vorstand"* is banned in code and copy (`CONTEXT.md`: there is no board super-role; P3
   recorded the same). We do not invent an institutional author.
-- **The Aufmacher is derived, never flagged:** posts are sorted by `publishedAt` descending and
+- **The lead post is derived, never flagged:** posts are sorted by `publishedAt` descending and
   the first one leads. No manual `featured` field — add one only if the club actually asks.
 - Pure, unit-tested helpers beside the content: sort-by-date-desc, find-by-slug, category-tint
   resolution, reading-time derivation, byline formatting, inline-bold parsing, WhatsApp-URL
   building.
 
-### Kategorien — 4 fixed, tint derived
+### Categories — 4 fixed, tint derived
 - Four label-only categories: **Session · Erfolge · Verein · Gruppen**. No filter UI (the mock has
   none either) — the label is for scanning, not navigation. This resolves the old open question
   ("categories or flat list?") in favour of categories.
 - **The mock's per-post `tint` field is dropped.** It was redundant with `category` *and*
   self-contradictory — `Verein` ships as `ink` on one sample post and `red` on another. Tint is
   **derived from category** by one fixed pure map, the same idiom as the shipped `resolveEventTint`
-  / `resolveGroupTint`: Session → red (flagship), Erfolge → gold (achievement), Verein and Gruppen
+  / `resolveGroupTint`: Session → red (flagship), Erfolge → gold (achievement), club and groups
   → ink (both institutional).
 - Brand accents are **red / gold / ink only** — `blue`/`green` are reserved status colours and CI
   forbids new ones, so 4 categories deliberately share 3 tints. Tint is decoration; the chip's
-  **text** identifies the Kategorie. Gold chips take ink text for contrast.
+  **text** identifies the category. Gold chips take ink text for contrast.
 
 ### Routing, sharing and not-found
 - `/news/:slug` resolves the post in a route **loader** and throws not-found for an unknown slug.
@@ -164,18 +165,18 @@ Two routes plus one reusable block:
 - **Truncation is CSS `line-clamp`**, not the mock's character counts (~72 mobile / ~90 teaser).
   Character counting breaks mid-word and cannot adapt to viewport width. Body copy keeps
   `text-wrap: pretty`; the article body never drops below 16px; tap targets stay ≥44px.
-- **`NewsPlakat` (the typographic fallback) stays news-local** — not promoted to `@furria/ui`,
+- **`NewsPoster` (the typographic fallback) stays news-local** — not promoted to `@furria/ui`,
   matching the P3 ruling that kept the club hero's numeral + ribbon local (YAGNI: one consumer,
   and its size API would be designed before a second use case could validate it). It composes
   `KkBroomMark` (watermark, ~16%, `aria-hidden`), `kkTokens.font.display` and the category tint.
-- **It must be impossible for a Meldung to look broken because the board had no picture** — this is
+- **It must be impossible for a news post to look broken because the board had no picture** — this is
   the fallback's whole point, and it is production behaviour, distinct from `KkPhotoPlaceholder`
   (which means "a real photo goes here" and dies at launch).
 - Hover: list row lifts to `paper` with the headline going red, at stable row height; cards lift
   subtly. Focus: a visible ring on **every** card link — the page is a set of large link targets.
   All transitions 120–160 ms, `prefers-reduced-motion` respected (the site already gates motion).
-- Every Aufmacher / row / teaser card is a **real link**, never a button flipping state.
-- **Empty state** (a Session with no Meldungen yet): page head + rule + one quiet hairline panel,
+- Every lead post / row / teaser card is a **real link**, never a button flipping state.
+- **Empty state** (a session with no news posts yet): page head + rule + one quiet hairline panel,
   *"Noch keine Meldungen in dieser Session."* No illustration, no spinner.
 
 ### SEO
@@ -221,7 +222,7 @@ does not "fix" them back:
 - **`categoryLabels` was not built** — all four `NewsCategory` keys already *are* their German labels,
   so the map would be a pure identity map. The chip renders the value and uppercases via CSS.
 - **`NewsMedia`** is the single place that resolves the `image` branch (`KkPhotoPlaceholder` vs.
-  `NewsPlakat`), shared by Aufmacher, rows, cards and the article hero. Feature-internal, not
+  `NewsPoster`), shared by the lead post, rows, cards and the article hero. Feature-internal, not
   exported from the barrel.
 - **The date rail is hidden at `xs`.** Rail + gaps + thumbnail left ~176px for the headline at 360px,
   and the long date already sits in the row's meta line — which is also what the mock's documented
@@ -236,13 +237,13 @@ does not "fix" them back:
 - **`NewsRelated` reads `NEWS_POSTS` internally** and takes only `currentSlug`, matching
   `NewsTeaser`/`ProgramTeaser`, so `NewsPostPage`'s prop shape stays `post`.
 - **Section guards:** both the list's *WEITERE MELDUNGEN* rule and the related/teaser blocks are
-  guarded on a non-empty result, so a Session with exactly one Meldung never renders a rule over an
+  guarded on a non-empty result, so a session with exactly one news post never renders a rule over an
   empty list. Not in the plan, but the same derived-data state the empty branch handles.
 - **Seed content is fuller than the mock.** The mock ships a `body` for only `motto-56`, so bodies
   were authored for the other five from facts already stated in their own teasers plus names already
-  in `groups-content.ts` (`body: [teaser]` would have printed the article's lead twice). The JHV
-  teaser's "Der **Vorstand** wurde bestätigt" is now "Alle **Ämter** wurden bestätigt"; "der Beitrag
-  bleibt bei 30 Euro" stays — the membership-fee sense is the glossary-correct one.
+  in `groups-content.ts` (`body: [teaser]` would have printed the article's lead twice). The annual
+  general meeting teaser's "Der **Vorstand** wurde bestätigt" is now "Alle **Ämter** wurden bestätigt";
+  "der Beitrag bleibt bei 30 Euro" stays — the membership-fee sense is the glossary-correct one.
 - **The canonical is root-relative** (`/news/{slug}`) — no production origin is configured anywhere in
   the app, and inventing a domain was out of scope. `lib/seo.ts`'s `RouteHead` gained an optional
   `links` field to carry it through the existing `head` API.
@@ -256,7 +257,7 @@ they change decisions recorded above:
 
 - **Red text stays `primary.main` — the contrast finding is NOT fixed, deliberately.** The review
   measured brand red `#E11D2A` on cream at **4.35:1**, below the 4.5:1 AA floor for normal-size text
-  (the page eyebrow, the Aufmacher CTA, the article back link, the teaser link, the copy-link hover).
+  (the page eyebrow, the lead post CTA, the article back link, the teaser link, the copy-link hover).
   The first attempt introduced a second, darker red as a `redInk` palette token; that was **reverted on
   2026-07-27** — ONE THEME means one red, and a second red is a new colour no matter which slot it
   hides in. `primary.dark` is not an escape either: it is a visibly different red in light mode, and in
@@ -266,26 +267,26 @@ they change decisions recorded above:
   (b) raise those texts to the WCAG large-text threshold (18.66px bold) so 4.35:1 passes at 3:1.
   Large display red (the `12.07.` rail, hover headlines) already clears that bar and is fine.
 - **Reading time is now derived with a 3-minute minimum.** `deriveReadingTime` returns `string | null`
-  and the Aufmacher footer renders nothing below the threshold — a one-minute estimate is noise. Every
-  seeded Meldung is 50–140 words, so **the label is invisible on the shipped page by design** and
-  self-reveals for a longer Meldung, the same idiom as the archive button. A unit case documents this.
+  and the lead post footer renders nothing below the threshold — a one-minute estimate is noise. Every
+  seeded news post is 50–140 words, so **the label is invisible on the shipped page by design** and
+  self-reveals for a longer news post, the same idiom as the archive button. A unit case documents this.
 - **The `AUFMACHER` flag is gone** (jargon, redundant with scale/position, and the one element fighting
   `radius.base`), along with `aufmacherFlagLabel` and the flag component.
 - **The eyebrow is the plain constant `AUS DEM VEREIN`** — the masthead already states the Session twice,
   and the old eyebrow claimed 2025/26 while the lead announces the 56. Session. `buildNewsEyebrow` and
   its tests were deleted rather than left as an identity function. Consequence: at `xs` the running
   Session is no longer named on this page (the masthead meta rails are `md+` only) — accepted.
-- **The Aufmacher is content-driven, not ratio-driven.** The media slot is `aspectRatio: { xs: banner,
+- **The lead post is content-driven, not ratio-driven.** The media slot is `aspectRatio: { xs: banner,
   md: 'auto' }` + `minHeight: { md: '16rem' }`, so the text column sets the card height and the media
   stretches into it — this removed ~145px of dead space between the teaser and the footer.
 - **The photo placeholder is tinted neutrally** (`text.primary`), because a red-tinted stripe box read as
-  an error state *and* pre-empted `NewsPlakat`'s meaning. `resolveCategoryTint` is now used only by the
-  Plakat and the category chip; `KkPhotoPlaceholder`'s shared default is untouched.
+  an error state *and* pre-empted `NewsPoster`'s meaning. `resolveCategoryTint` is now used only by the
+  poster and the category chip; `KkPhotoPlaceholder`'s shared default is untouched.
 - **Exactly one date per row per breakpoint** — the meta-line long date is now the complement of the rail
   (`xs` only). Accepted trade-off: at `md+` the year is absent from the reading order; a `<time
   dateTime>` element would be the proper fix.
-- **Every card link carries `aria-label={post.title}`** (Aufmacher, rows, cards) — the accessible name
-  was previously the whole card, ~40 words. `NewsAufmacherRoot` takes `post` instead of `slug`.
+- **Every card link carries `aria-label={post.title}`** (lead post, rows, cards) — the accessible name
+  was previously the whole card, ~40 words. `NewsLeadRoot` takes `post` instead of `slug`.
 - **The hover lift moved to the `Card`** — on the `CardActionArea` it was clipped by the card's own
   `overflow: hidden` (2px cut off the media top, a paper sliver at the bottom).
 - **The intro is a `subtitle1`-weight standfirst** and lost its defensive middle clause; the tester
@@ -313,17 +314,17 @@ resolves those too.
   - *Categories or flat list?* → **4 fixed, label-only categories**, tint derived.
   - *Rich text / images?* → **paragraphs + inline bold**, nothing more; `image` nullable with a
     production typographic fallback.
-- **Deferred (need real content or the Club-App backend):** real Meldungen and photos, the archive
+- **Deferred (need real content or the Club-App backend):** real news posts and photos, the archive
   route, board publishing UI, and body-sanitisation once content stops being compile-time.
 
 ## Done When
 
-- `/news` renders page head → Aufmacher → Weitere Meldungen → footer → red `/program` band, as one
+- `/news` renders page head → lead post → Weitere Meldungen → footer → red `/program` band, as one
   responsive page, light + dark, tokens only.
 - `/news/:slug` renders a readable article with a working share row; an unknown slug lands on the
-  site-wide 404; the landing shows the 3 newest Meldungen and links through.
-- No "Vorstand" and no "Beitrag" (news sense) in code or copy; the Aufmacher is derived by date;
-  every category renders a consistent tint; photo-less Meldungen never look broken.
+  site-wide 404; the landing shows the 3 newest news posts and links through.
+- No "Vorstand" and no "Beitrag" (news sense) in code or copy; the lead post is derived by date;
+  every category renders a consistent tint; photo-less news posts never look broken.
 - `NarrenrufBand` + `RecruitBand` render identically to before on the shared `CtaBand`.
 
 ## Implementation plan (phases)
@@ -333,20 +334,20 @@ leaves the app building and working. **Frontend only. Backend: none** for every 
 
 1. **Tracer bullet — content model + list skeleton.** Stand up `features/news/` with
    `news-content.ts` (typed `NewsPost`, `NewsCategory`, German `categoryLabels`, the derived tint
-   map, 6 seeded Meldungen with 2 photo-less) and `src/lib/date.ts` (long + short German dates).
+   map, 6 seeded news posts with 2 photo-less) and `src/lib/date.ts` (long + short German dates).
    Replace the `/news` placeholder with `NewsListPage`: eyebrow + H1 **AKTUELLES** + intro + rule +
    the *Weitere Meldungen* rows (red date rail, chip, headline, teaser). Page head meta.
    *Delivers (FE):* `/news` is a real, readable page, responsive, light + dark.
    *Verify:* route renders `NewsListPage`, not `PlaceholderPage`; rows come from the sorted array;
    helpers unit-tested; head asserted; `pnpm build`/`typecheck`/`test`/`lint` pass.
-2. **Aufmacher.** The lead card above the rows — newest post by derived sort, photo + flag,
+2. **Lead post.** The lead card above the rows — newest post by derived sort, photo + flag,
    category chip + date, Anton headline, teaser, "Ganze Meldung lesen →" + reading time. Emphasis
    via scale + `shadow.raised`, no hard offset.
    *Delivers (FE):* the list page's single bold moment.
-   *Verify:* the Aufmacher is the newest post and is not repeated in the rows below; both themes.
-3. **`NewsPlakat` fallback.** Tint block + broom watermark + category name in Anton, at Aufmacher,
+   *Verify:* the lead post is the newest post and is not repeated in the rows below; both themes.
+3. **`NewsPoster` fallback.** Tint block + broom watermark + category name in Anton, at lead post,
    row-thumb and (later) teaser scales.
-   *Delivers (FE):* photo-less Meldungen render as intentional posters, not empty boxes.
+   *Delivers (FE):* photo-less news posts render as intentional posters, not empty boxes.
    *Verify:* `image: null` renders the fallback and non-null renders the placeholder; gold tint
    takes ink text; watermark is `aria-hidden`.
 4. **Shared `CtaBand` + migration.** Extract the compound to `src/components/CtaBand/`; migrate
@@ -357,7 +358,7 @@ leaves the app building and working. **Frontend only. Backend: none** for every 
    *Verify:* `/club` renders identically (both bands, both themes); no boolean flag in the API;
    `features/landing` untouched.
 5. **List footer + empty state.** Footer sentence, the derived (currently hidden) archive button,
-   and the zero-Meldungen quiet panel.
+   and the zero-news-posts quiet panel.
    *Delivers (FE):* the list page is complete end-to-end.
    *Verify:* the archive button is absent with only current-Session posts; empty state renders from
    an empty array.
@@ -367,9 +368,9 @@ leaves the app building and working. **Frontend only. Backend: none** for every 
    *Verify:* an unmatched path renders it with masthead + footer; reachable while ungated; both
    themes; reduced-motion respected.
 7. **Article page.** `routes/_site/_gated/news.$slug.tsx` with a loader + not-found; back link,
-   meta line (byline omitted when null), Anton H1, Anton lead, hero image or Plakat + caption, body
+   meta line (byline omitted when null), Anton H1, Anton lead, hero image or poster + caption, body
    paragraphs with inline bold. Per-post head meta (`og:type: article`, published time, canonical).
-   *Delivers (FE):* a shareable, readable Meldung at its own URL.
+   *Delivers (FE):* a shareable, readable news post at its own URL.
    *Verify:* a known slug renders; an unknown slug hits the 404; bold parsing unit-tested; body
    ≥16px; head asserted.
 8. **Share row.** *TEILEN* + WhatsApp (`wa.me`) + *Link kopieren* with the 2 s label swap.
@@ -391,8 +392,8 @@ leaves the app building and working. **Frontend only. Backend: none** for every 
 ## References
 
 - Mock: `docs/design/news-page/` (`src/fcc-ds-news.jsx` → `NewsPage`/`NewsTeaser`; README = the
-  handoff). **Inspiration for structure and copy only — Destillat + `@furria/ui` are binding.**
-- `CONTEXT.md` (Aktuelles, Meldung, Kategorie, Beitrag, Session). `lib/club.ts` (derived facts).
+  handoff). **Inspiration for structure and copy only — Distilled + `@furria/ui` are binding.**
+- `CONTEXT.md` (News, News post, News category, Fee, Session). `lib/club.ts` (derived facts).
 - Reuse map: `ChapterHeader`/section-rule idiom, `ProgramTeaser` typed-content + tint pattern,
   `RecruitBand`/`NarrenrufBand` red-surface idiom, `SiteChrome`, `KkBroomMark`, `KkPhotoPlaceholder`,
   `KkConfettiBurst`, `program-content.ts` (typed-const precedent).

@@ -1,3 +1,4 @@
+import type { KkGroupTone } from '@furria/ui';
 import { toIsoDay } from '@/lib/day';
 import { formatIsoDay } from '@/lib/membership-labels';
 
@@ -8,6 +9,15 @@ export interface CalendarInstant {
 export interface CalendarOrdering extends CalendarInstant {
   calendarEntryId: number;
   isRunning: boolean;
+}
+
+export interface CalendarMark extends CalendarInstant {
+  tone: KkGroupTone | null;
+}
+
+export interface DayMarks {
+  entryCount: number;
+  tones: readonly KkGroupTone[];
 }
 
 export interface DayWindow {
@@ -22,12 +32,15 @@ export interface MonthGridDay {
   isToday: boolean;
   selected: boolean;
   entryCount: number;
+  tones: readonly KkGroupTone[];
 }
 
 export interface MonthGridWeek {
   key: string;
   days: MonthGridDay[];
 }
+
+export const DAY_TONE_LIMIT = 3;
 
 export const WEEKDAY_HEADERS = ['MO', 'DI', 'MI', 'DO', 'FR', 'SA', 'SO'] as const;
 
@@ -62,6 +75,7 @@ const MONDAY_FIRST_OFFSETS = [6, 0, 1, 2, 3, 4, 5] as const;
 
 const ISO_DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const DAYS_IN_WEEK = 7;
+const NO_MARKS: DayMarks = { entryCount: 0, tones: [] };
 const OPEN_END_PREFIX = 'ab ';
 const CLOCK_SUFFIX = ' Uhr';
 const TIME_SPAN_SEPARATOR = ' – ';
@@ -159,31 +173,47 @@ export const toMonthWeeks = (cursor: Date): Date[][] => {
   return weeks;
 };
 
-export const toDayCounts = (entries: readonly CalendarInstant[]): Map<string, number> => {
-  const counts = new Map<string, number>();
-
-  for (const entry of entries) {
-    const isoDay = toLocalIsoDay(entry.startsAt);
-
-    counts.set(isoDay, (counts.get(isoDay) ?? 0) + 1);
+const toKeptTones = (
+  tones: readonly KkGroupTone[],
+  tone: KkGroupTone | null,
+): readonly KkGroupTone[] => {
+  if (tone === null || tones.includes(tone) || tones.length >= DAY_TONE_LIMIT) {
+    return tones;
   }
 
-  return counts;
+  return [...tones, tone];
+};
+
+export const toDayCounts = (marks: readonly CalendarMark[]): Map<string, DayMarks> => {
+  const days = new Map<string, DayMarks>();
+
+  for (const mark of marks) {
+    const isoDay = toLocalIsoDay(mark.startsAt);
+    const seen = days.get(isoDay) ?? NO_MARKS;
+
+    days.set(isoDay, {
+      entryCount: seen.entryCount + 1,
+      tones: toKeptTones(seen.tones, mark.tone),
+    });
+  }
+
+  return days;
 };
 
 export const toMonthGridWeeks = (
   cursor: Date,
   today: Date,
-  entries: readonly CalendarInstant[],
+  marks: readonly CalendarMark[],
   selectedDay: string | null,
 ): MonthGridWeek[] => {
-  const counts = toDayCounts(entries);
+  const days = toDayCounts(marks);
   const todayIsoDay = toIsoDay(today);
   const month = cursor.getMonth();
 
   return toMonthWeeks(cursor).map((week) => {
-    const days = week.map((day) => {
+    const gridDays = week.map((day) => {
       const isoDay = toIsoDay(day);
+      const marked = days.get(isoDay) ?? NO_MARKS;
 
       return {
         isoDay,
@@ -191,11 +221,12 @@ export const toMonthGridWeeks = (
         inMonth: day.getMonth() === month,
         isToday: isoDay === todayIsoDay,
         selected: isoDay === selectedDay,
-        entryCount: counts.get(isoDay) ?? 0,
+        entryCount: marked.entryCount,
+        tones: marked.tones,
       };
     });
 
-    return { key: days[0]?.isoDay ?? NO_LABEL, days };
+    return { key: gridDays[0]?.isoDay ?? NO_LABEL, days: gridDays };
   });
 };
 

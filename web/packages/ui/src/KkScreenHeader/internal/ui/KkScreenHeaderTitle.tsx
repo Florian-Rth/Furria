@@ -16,9 +16,7 @@ export const KkScreenHeaderTitle: FC<KkScreenHeaderTitleProps> = ({
     component="h1"
     data-kk-screen-header-title
     sx={{
-      fontFamily: kkTokens.font.display,
-      fontSize: '1.875rem',
-      fontWeight: kkTokens.font.displayWeight,
+      typography: 'h1',
       lineHeight: 1.1,
       letterSpacing: kkTokens.type.tracking.display,
       color: 'text.primary',

@@ -1,0 +1,33 @@
+import { KkBandWatermark, kkTokens } from '@furria/ui';
+import Stack from '@mui/material/Stack';
+import type { FC } from 'react';
+import { JoinInCopy } from './internal/ui/JoinInCopy';
+import { JoinInCta } from './internal/ui/JoinInCta';
+
+export const JoinInBand: FC = () => (
+  <Stack
+    component="section"
+    data-kk-join-in-band
+    sx={{
+      position: 'relative',
+      borderRadius: `${kkTokens.radius.base}px`,
+      bgcolor: 'primary.main',
+      color: 'primary.contrastText',
+      px: { xs: 4, md: 7 },
+      py: { xs: 5, md: 7 },
+    }}
+  >
+    <KkBandWatermark />
+    <Stack
+      direction={{ xs: 'column', md: 'row' }}
+      sx={{
+        alignItems: { xs: 'stretch', md: 'center' },
+        justifyContent: 'space-between',
+        gap: { xs: 3, md: 6 },
+      }}
+    >
+      <JoinInCopy />
+      <JoinInCta />
+    </Stack>
+  </Stack>
+);

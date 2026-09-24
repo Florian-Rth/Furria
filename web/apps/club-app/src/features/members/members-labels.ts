@@ -54,25 +54,20 @@ export const toLetterAnchors = (sections: readonly { letter: string }[]): Letter
 
 export const LETTER_INDEX_LABEL = 'Zu einem Buchstaben springen';
 
-export const toConnectedSentence = (count: number): string => {
-  const people = count === 1 ? '1 Person ist' : `${count} Personen sind`;
-
-  return `${people} aktuell mit dem FCC verbunden. Alles hier ist Ansicht — geändert wird in der Personenverwaltung.`;
-};
-
+export const MEMBERS_LEAD = 'Kontakte, Gruppen und Rollen aller Personen im Verein.';
 export const toWithoutMembershipSentence = (count: number): string | null => {
   if (count === 0) {
     return null;
   }
   if (count === 1) {
-    return '1 Person tanzt oder hilft mit, ohne Mitglied zu sein. Sie steht mit in der Liste.';
+    return 'Darunter 1 Person ohne Mitgliedschaft.';
   }
 
-  return `${count} Personen tanzen oder helfen mit, ohne Mitglied zu sein. Sie stehen mit in der Liste.`;
+  return `Darunter ${count} Personen ohne Mitgliedschaft.`;
 };
 
-const COUNTING_FOOTNOTE = 'Gezählt wird, wer heute mit dem FCC verbunden ist.';
-const ALL_FILTER_SUGGESTION = 'Wähle „Alle“, um wieder alle zu sehen.';
+const COUNTING_FOOTNOTE = 'Gezählt werden alle, die aktuell mit dem FCC verbunden sind.';
+const ALL_FILTER_SUGGESTION = 'Wähle „Alle“, um alle anzuzeigen.';
 
 export const toStatsFootnote = (withoutMembership: number): string =>
   toWithoutMembershipSentence(withoutMembership) ?? COUNTING_FOOTNOTE;
@@ -81,13 +76,13 @@ export const toEmptyDescription = (query: string, state: string): string => {
   const needle = query.trim();
 
   if (needle !== '') {
-    return `Kein Name, keine Gruppe und keine Rolle passt zu „${needle}“. Vielleicht anders geschrieben?`;
+    return `Keine Treffer für „${needle}“.`;
   }
 
   const stateLine = toNoStateMatchLine(state);
 
   if (stateLine === null) {
-    return 'Hier steht gerade niemand.';
+    return 'Keine Einträge.';
   }
 
   return `${stateLine} ${ALL_FILTER_SUGGESTION}`;
@@ -136,25 +131,25 @@ export const toMembershipNote = (state: MembershipState, firstName: string): str
     return null;
   }
   if (state === 'paused') {
-    return `In einer Ruhezeit zählt ${firstName} nicht als aktiv. Die Gruppen bleiben bestehen.`;
+    return `${firstName} ist in einer Ruhezeit und gilt nicht als aktiv.`;
   }
   if (state === 'ended') {
-    return `Die Mitgliedschaft ist beendet. ${firstName} ist weiter mit dem FCC verbunden.`;
+    return `Die Mitgliedschaft ist beendet, ${firstName} bleibt aber mit dem FCC verbunden.`;
   }
 
-  return `${firstName} tanzt oder hilft mit, ohne Mitglied zu sein.`;
+  return `${firstName} wirkt im Verein mit, ohne Mitglied zu sein.`;
 };
 
 export const toContactHiddenExplanation = (firstName: string): string =>
-  `${firstName} hat die Anzeige für Mitglieder ausgeschaltet. Das ist eine Einstellung, keine Lücke — frag im Zweifel eine Gruppen-Admin.`;
+  `${firstName} hat die Kontaktdaten nicht für Mitglieder freigegeben.`;
 
 export const SELF_CONTACT_HIDDEN_EXPLANATION =
-  'Du hast deine Kontaktdaten für Mitglieder ausgeblendet. So sieht dich der Verein.';
+  'Deine Kontaktdaten sind für Mitglieder nicht freigegeben.';
 
 export const SELF_CONTACT_HIDDEN_LINK = 'In Mein Profil ändern';
 
 export const toNoGroupsDescription = (firstName: string): string =>
-  `${firstName} tanzt und spielt gerade in keiner Gruppe mit.`;
+  `${firstName} ist in keiner Gruppe.`;
 
 export const toNoRolesDescription = (firstName: string): string =>
-  `${firstName} trägt gerade keine Rolle im Verein.`;
+  `${firstName} hat keine Rolle im Verein.`;

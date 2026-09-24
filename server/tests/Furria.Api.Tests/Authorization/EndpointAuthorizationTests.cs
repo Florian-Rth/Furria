@@ -17,7 +17,7 @@ public sealed class EndpointAuthorizationTests
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerHoldsNoBerechtigung()
+    public async Task Should_ReturnForbidden_When_TheCallerHoldsNoPermission()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -45,7 +45,7 @@ public sealed class EndpointAuthorizationTests
     }
 
     [Fact]
-    public async Task Should_ReturnOk_When_AnEndpointDeclaresNoBerechtigungAndAllowsAnonymous()
+    public async Task Should_ReturnOk_When_AnEndpointDeclaresNoPermissionAndAllowsAnonymous()
     {
         var ct = TestContext.Current.CancellationToken;
         await _fixture.BuildAsync(ct);

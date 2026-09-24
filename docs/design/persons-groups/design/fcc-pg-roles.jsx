@@ -1,7 +1,7 @@
-// fcc-pg-roles.jsx — Screen 11 neu: Rollen & Rechte als Master-Detail.
-// Links die Rollen des Vereins, rechts genau eine Rolle: ihre Inhaber und der
-// vollständige Rechte-Katalog — ein Recht pro Zeile, mit Klartext-Beschreibung,
-// logisch gruppiert. Kein Lesen/Schreiben/Löschen-Raster.
+// fcc-pg-roles.jsx — Screen 11 new: Roles & rights as master-detail.
+// Left the club's roles, right exactly one role: its holders and the
+// full rights catalogue — one right per row, with a plain-language description,
+// logically grouped. No read/write/delete grid.
 
 const { PGP: L, PG: LD, PgRow: LR, PgEyeb: LEb, PgDisp: LDp, PgBody: LBy, PgSec: LSc, PgCd: LCd,
   PgAv: LAv, PgSw: LSw, PgSearch: LSrch, PgConfirm: LConf, PgMob: LMob, PgDesk: LDesk,
@@ -15,7 +15,7 @@ const KINDS = [
 ];
 const roleById = (id) => LD.ROLES.find(r => r.id === id) || LD.ROLES[1];
 
-// ── Master: eine Rolle in der Liste ──────────────────────────────────────
+// ── Master: one role in the list ──────────────────────────────────────────
 function PgRoleItem({ ro, on }) {
   const n = window.PG.roleRights(ro).length;
   return (
@@ -60,7 +60,7 @@ function PgRoleMaster({ sel }) {
   );
 }
 
-// ── Detail: ein Recht = eine Zeile ───────────────────────────────────────
+// ── Detail: one right = one row ───────────────────────────────────────────
 function PgRightRow({ r, on, i, locked }) {
   const others = window.PG.rightHolders(r.id) - (on ? 1 : 0);
   return (
@@ -186,7 +186,7 @@ function PgRolesDesk({ role = 'praesidentin', confirm }) {
   );
 }
 
-// ── Mobile: Liste → eine Rolle ───────────────────────────────────────────
+// ── Mobile: list → one role ───────────────────────────────────────────────
 function PgRolesMob({ role }) {
   if (!role) return (
     <LMob kicker="Verwaltung" title="ROLLEN" back={false} pill="Rollen & Rechte"

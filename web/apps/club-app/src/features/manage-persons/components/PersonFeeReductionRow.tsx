@@ -1,47 +1,29 @@
-import { KkButton, KkChip, KkFactRow } from '@furria/ui';
+import { KkChip, KkFactRow } from '@furria/ui';
+import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { toLandingKey } from '@/features/write';
 import { currentSessionYear } from '@/lib/club';
 import { toSessionPeriodChip } from '@/lib/state-chips';
-import type { FactEditor } from '../hooks/use-fact-editor';
 import {
   SESSION_SPAN_LABEL,
   toFeeReductionBasisLabel,
-  toFeeReductionEditActionLabel,
   toFeeReductionSpan,
 } from '../manage-persons-labels';
 import type { PersonFeeReduction } from '../schemas';
-import { FeeReductionEditor } from './FeeReductionEditor';
 
-const EDIT_LABEL = 'Ändern';
+const FEE_REDUCTION_ROUTE = '/manage/persons/$personId/fee-reductions/$feeReductionId';
 
 interface PersonFeeReductionRowProps {
   personId: number;
   reduction: PersonFeeReduction;
-  editor: FactEditor;
+  highlight: boolean;
 }
 
 export const PersonFeeReductionRow: FC<PersonFeeReductionRowProps> = ({
   personId,
   reduction,
-  editor,
+  highlight,
 }) => {
-  const isEditing = editor.feeReduction?.feeReductionId === reduction.feeReductionId;
-
-  const startEdit = (): void => {
-    editor.openFeeReduction(reduction.feeReductionId);
-  };
-
-  if (isEditing) {
-    return (
-      <FeeReductionEditor
-        personId={personId}
-        reduction={reduction}
-        onClose={editor.close}
-        onSaved={editor.close}
-      />
-    );
-  }
-
   const periodChip = toSessionPeriodChip(
     reduction.firstSessionYear,
     reduction.lastSessionYear,
@@ -55,24 +37,17 @@ export const PersonFeeReductionRow: FC<PersonFeeReductionRowProps> = ({
       </KkChip>
     );
 
-  const actions = (
-    <KkButton
-      size="small"
-      variant="text"
-      ariaLabel={toFeeReductionEditActionLabel(reduction)}
-      onClick={startEdit}
-    >
-      {EDIT_LABEL}
-    </KkButton>
-  );
-
   return (
     <KkFactRow
       title={toFeeReductionBasisLabel(reduction.basis)}
       span={toFeeReductionSpan(reduction)}
       spanLabel={SESSION_SPAN_LABEL}
       chip={chip}
-      actions={actions}
+      highlight={highlight}
+      landing={toLandingKey('feeReduction', reduction.feeReductionId)}
+      component={Link}
+      to={FEE_REDUCTION_ROUTE}
+      params={{ personId: String(personId), feeReductionId: String(reduction.feeReductionId) }}
     />
   );
 };

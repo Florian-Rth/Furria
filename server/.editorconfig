@@ -20,3 +20,12 @@ csharp_style_var_elsewhere = true:suggestion
 
 # MET006: production code never reads the ambient clock - inject TimeProvider.
 dotnet_diagnostic.MET006.severity = error
+
+# CA2254: log message templates are constant strings - no interpolation, no concatenation.
+dotnet_diagnostic.CA2254.severity = error
+
+# MET008-MET010: production code logs through ILogger<T>, with PascalCase placeholders that name
+# no personal data (ADR-0017).
+dotnet_diagnostic.MET008.severity = error
+dotnet_diagnostic.MET009.severity = error
+dotnet_diagnostic.MET010.severity = error

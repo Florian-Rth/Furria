@@ -23,7 +23,7 @@ public sealed class AnnouncementExpectations
                     await dbContext
                         .Announcements.AsNoTracking()
                         .AnyAsync(row => row.Id == _announcementId, ct),
-                    $"Expected no Aushang with id {_announcementId}."
+                    $"Expected no Announcement with id {_announcementId}."
                 )
         );
 

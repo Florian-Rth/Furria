@@ -18,6 +18,8 @@ const OPENING_TODAY_LABEL = 'heute um 11:11 Uhr';
 const ONE_DAY_LEFT_LABEL = 'noch 1 Tag';
 const ONE_DAY = 1;
 
+export const MOTTO_PENDING_LABEL = 'Das Motto steht noch aus';
+
 export const CLUB_LOADING_LABEL = 'Der Verein wird geladen';
 
 export const toCountdownLabel = (days: number): string => {

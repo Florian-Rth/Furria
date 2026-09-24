@@ -1,4 +1,4 @@
-import type { KkConfirmFact, KkDateQuickChoice, KkSelectOption } from '@furria/ui';
+import type { KkDateQuickChoice, KkScreenOrigin, KkSelectOption } from '@furria/ui';
 import { SESSION_OPENING_DAY, SESSION_OPENING_MONTH, sessionAt } from '@/lib/club';
 import { isFutureDay, toIsoDay } from '@/lib/day';
 import { toInitials } from '@/lib/initials';
@@ -8,8 +8,6 @@ import {
   formatPeriod,
   formatSessionLabel,
   formatSessionSpan,
-  formatSinceSession,
-  OPEN_END,
 } from '@/lib/membership-labels';
 import type { StateChip } from '@/lib/state-chips';
 import { toMembershipStateChip, toNoStateMatchLine } from '@/lib/state-chips';
@@ -31,10 +29,17 @@ const PERSON_TITLE_FALLBACK = 'Person';
 export const toPersonId = (raw: string): number | null =>
   PERSON_ID_PATTERN.test(raw) ? Number(raw) : null;
 
+export const toEntryId = (raw: string): number | null =>
+  PERSON_ID_PATTERN.test(raw) ? Number(raw) : null;
+
 export const PERSONS_TITLE = 'Personenverwaltung';
 
 export const PERSONS_STATS_NOTE =
-  'Gezählt wird jede Person — auch ohne Mitgliedschaft und ohne Gruppe.';
+  'Gezählt werden alle Personen, auch ohne Mitgliedschaft oder Gruppe.';
+
+export const PERSON_DIRECTORY_TITLE = 'Register';
+export const ADD_PERSON_LABEL = 'Person';
+export const ADD_PERSON_ACTION_LABEL = 'Person hinzufügen';
 
 export const PERSON_SECTION_TITLES = {
   masterData: 'Stammdaten',
@@ -45,11 +50,37 @@ export const PERSON_SECTION_TITLES = {
 } as const;
 
 export const GROUPS_POINTER =
-  'Gruppen pflegen die Gruppen-Admins. Überschreiben geht in der Gruppenverwaltung.';
+  'Gruppen werden von den Gruppen-Admins oder der Gruppenverwaltung gepflegt.';
 export const ROLES_POINTER = 'Rollen werden unter „Rollen & Rechte“ vergeben.';
 
-export const toVisibilityPointer = (firstName: string): string =>
-  `Diese Einstellung ändert nur ${firstName} selbst — im eigenen Profil.`;
+export const VISIBILITY_DESCRIPTION =
+  'Nur auf Wunsch der Person setzen. Mit eigenem Konto entscheidet sie selbst in „Mein Profil“.';
+
+export const PERSONS_ORIGIN: KkScreenOrigin = {
+  label: 'Personenverwaltung',
+  to: '/manage/persons',
+};
+
+export const EDITOR_DENIED_MESSAGE = 'Dir fehlt die Berechtigung für die Personenverwaltung.';
+
+export const toPersonOrigin = (person: {
+  personId: number;
+  firstName: string;
+  lastName: string;
+}): KkScreenOrigin => ({
+  label: toPersonName(person),
+  to: '/manage/persons/$personId',
+  params: { personId: String(person.personId) },
+});
+
+export const toMembershipOrigin = (
+  person: { personId: number },
+  membership: PersonMembership,
+): KkScreenOrigin => ({
+  label: `Zeitraum ${toMembershipSpan(membership)}`,
+  to: '/manage/persons/$personId/memberships/$membershipId',
+  params: { personId: String(person.personId), membershipId: String(membership.membershipId) },
+});
 
 const FEE_REDUCTION_BASIS_LABELS: Record<FeeReductionBasis, string> = {
   minor: 'Minderjährig',
@@ -106,13 +137,13 @@ export const toPersonRowAffiliation = (person: PersonSummary): PersonRowAffiliat
 
 export const LETTER_INDEX_LABEL = 'Zu einem Buchstaben springen';
 
-const ALL_FILTER_SUGGESTION = 'Wähle „Alle“, um wieder alle zu sehen.';
+const ALL_FILTER_SUGGESTION = 'Wähle „Alle“, um alle anzuzeigen.';
 
 export const toPersonsEmptyDescription = (query: string, state: string): string => {
   const needle = query.trim();
 
   if (needle !== '') {
-    return `Kein Name, keine Adresse und keine E-Mail passt zu „${needle}“. Vielleicht anders geschrieben?`;
+    return `Keine Person passt zu „${needle}“.`;
   }
 
   const stateLine = toNoStateMatchLine(state);
@@ -124,14 +155,7 @@ export const toPersonsEmptyDescription = (query: string, state: string): string 
   return `${stateLine} ${ALL_FILTER_SUGGESTION}`;
 };
 
-const REGISTER_SCOPE = 'auch ausgetretene und Leute ohne Vereinsbindung';
-
-export const toPersonsLead = (count: number): string => {
-  const counted = count === 1 ? '1 Person steht' : `${count} Personen stehen`;
-
-  return `${counted} im Register — ${REGISTER_SCOPE}.`;
-};
-
+export const PERSONS_LEAD = 'Stammdaten, Mitgliedschaften und Beitragsermäßigungen aller Personen.';
 export const PERSON_EYEBROW = 'Person';
 
 export interface PersonHeadline {
@@ -180,18 +204,79 @@ export const toPauseSpan = (pause: PersonPause): string =>
 export const toFeeReductionSpan = (reduction: PersonFeeReduction): string =>
   formatSessionSpan(reduction.firstSessionYear, reduction.lastSessionYear);
 
-export const ADD_MEMBERSHIP_ACTION_LABEL = 'Zeitraum anlegen';
-export const ADD_PAUSE_ACTION_LABEL = 'Ruhezeit anlegen';
-export const ADD_FEE_REDUCTION_ACTION_LABEL = 'Ermäßigung anlegen';
+export const ADD_MEMBERSHIP_ACTION_LABEL = 'Zeitraum eintragen';
+export const ADD_PAUSE_ACTION_LABEL = 'Ruhezeit eintragen';
+export const ADD_FEE_REDUCTION_ACTION_LABEL = 'Ermäßigung eintragen';
 
-export const toMembershipEditActionLabel = (membership: PersonMembership): string =>
-  `Zeitraum vom ${toMembershipSpan(membership)} ändern`;
+export const MEMBERSHIP_CHANGE_LABEL = 'Zeitraum ändern';
+export const MEMBERSHIP_END_LABEL = 'Mitgliedschaft beenden';
+export const PAUSE_CHANGE_LABEL = 'Ruhezeit ändern';
+export const FEE_REDUCTION_CHANGE_LABEL = 'Ermäßigung ändern';
 
-export const toPauseEditActionLabel = (pause: PersonPause): string =>
-  `Ruhezeit ${toPauseSpan(pause)} ändern`;
+export const MEMBERSHIP_CHAIN_TITLE = 'Bisherige Zeiträume';
+export const MEMBERSHIP_PAUSES_TITLE = 'Ruhezeiten in diesem Zeitraum';
+export const NO_PAUSES_NOTE = 'Für diesen Zeitraum ist noch keine Ruhezeit eingetragen.';
+export const PAUSE_CHAIN_TITLE = 'Andere Ruhezeiten in diesem Zeitraum';
+export const FEE_REDUCTION_CHAIN_TITLE = 'Andere Beitragsermäßigungen';
 
-export const toFeeReductionEditActionLabel = (reduction: PersonFeeReduction): string =>
-  `${toFeeReductionBasisLabel(reduction.basis)} ${toFeeReductionSpan(reduction)} ändern`;
+export const toContainingMembershipNote = (span: string): string =>
+  `Diese Ruhezeit gehört zum Zeitraum ${span}.`;
+
+export interface EntryChainRow {
+  key: string;
+  span: string;
+  isEdited: boolean;
+}
+
+export const toMembershipChainRows = (
+  person: PersonDetails,
+  editedMembershipId: number | null,
+): EntryChainRow[] =>
+  person.memberships.map((membership) => ({
+    key: String(membership.membershipId),
+    span: toMembershipSpan(membership),
+    isEdited: membership.membershipId === editedMembershipId,
+  }));
+
+export const toPauseChainRows = (
+  membership: PersonMembership,
+  editedPauseId: number | null,
+): EntryChainRow[] =>
+  membership.pauses.map((pause) => ({
+    key: String(pause.pauseId),
+    span: toPauseSpan(pause),
+    isEdited: pause.pauseId === editedPauseId,
+  }));
+
+export const toFeeReductionChainRows = (
+  person: PersonDetails,
+  editedFeeReductionId: number | null,
+): EntryChainRow[] =>
+  person.feeReductions.map((reduction) => ({
+    key: String(reduction.feeReductionId),
+    span: `${toFeeReductionBasisLabel(reduction.basis)} · ${toFeeReductionSpan(reduction)}`,
+    isEdited: reduction.feeReductionId === editedFeeReductionId,
+  }));
+
+export interface MembershipPauseLookup {
+  membership: PersonMembership;
+  pause: PersonPause;
+}
+
+export const findMembershipOfPause = (
+  person: PersonDetails,
+  pauseId: number,
+): MembershipPauseLookup | null => {
+  for (const membership of person.memberships) {
+    const pause = membership.pauses.find((candidate) => candidate.pauseId === pauseId);
+
+    if (pause !== undefined) {
+      return { membership, pause };
+    }
+  }
+
+  return null;
+};
 
 export const toOpenPause = (membership: PersonMembership): PersonPause | null =>
   membership.pauses.find((pause) => pause.lastSessionYear === null) ?? null;
@@ -234,13 +319,13 @@ export const toMembershipConsequence = (
   todayIsoDay: string,
 ): string => {
   if (endedOn !== null) {
-    return `Der Zeitraum steht vom ${formatIsoDay(startedOn)} bis zum ${formatIsoDay(endedOn)} im Register. Danach zählt die Person nicht mehr als Mitglied.`;
+    return `Die Mitgliedschaft gilt vom ${formatIsoDay(startedOn)} bis zum ${formatIsoDay(endedOn)}.`;
   }
   if (isFutureDay(startedOn, todayIsoDay)) {
-    return `Die Mitgliedschaft beginnt am ${formatIsoDay(startedOn)}. Bis dahin gilt die Person als kein Mitglied.`;
+    return `Die Mitgliedschaft beginnt am ${formatIsoDay(startedOn)}.`;
   }
 
-  return `Die Mitgliedschaft läuft seit dem ${formatIsoDay(startedOn)} und bleibt offen.`;
+  return `Die Mitgliedschaft besteht seit dem ${formatIsoDay(startedOn)} und ist unbefristet.`;
 };
 
 export const toPauseConsequence = (
@@ -249,10 +334,10 @@ export const toPauseConsequence = (
   lastSessionYear: number | null,
 ): string => {
   if (lastSessionYear === null) {
-    return `Ab Session ${formatSessionLabel(firstSessionYear)} zählt ${firstName} nicht als aktiv, bis die Ruhezeit ein Ende bekommt. Die Gruppen bleiben bestehen.`;
+    return `${firstName} gilt ab Session ${formatSessionLabel(firstSessionYear)} bis auf Weiteres als nicht aktiv. Gruppenzugehörigkeiten bleiben bestehen.`;
   }
 
-  return `In ${formatSessionSpan(firstSessionYear, lastSessionYear)} zählt ${firstName} nicht als aktiv. Die Gruppen bleiben bestehen.`;
+  return `${firstName} gilt in ${formatSessionSpan(firstSessionYear, lastSessionYear)} als nicht aktiv. Gruppenzugehörigkeiten bleiben bestehen.`;
 };
 
 export const toFeeReductionConsequence = (
@@ -260,56 +345,21 @@ export const toFeeReductionConsequence = (
   firstSessionYear: number,
   lastSessionYear: number,
 ): string =>
-  `${toFeeReductionBasisLabel(basis)} steht für ${formatSessionSpan(firstSessionYear, lastSessionYear)} im Register. Danach läuft die Ermäßigung aus und der Nachweis wird neu gebraucht.`;
+  `${toFeeReductionBasisLabel(basis)} gilt für ${formatSessionSpan(firstSessionYear, lastSessionYear)}. Danach ist ein neuer Nachweis nötig.`;
 
-export const END_MEMBERSHIP_EYEBROW = 'Mitgliedschaft beenden';
-export const END_MEMBERSHIP_CONFIRM_LABEL = 'Mitgliedschaft beenden';
 export const OPEN_PAUSE_SENTENCE = 'Eine offene Ruhezeit endet mit der Mitgliedschaft.';
-
-export const toEndMembershipQuestion = (firstName: string): string =>
-  `Mitgliedschaft von ${firstName} beenden?`;
-
-export const toEndMembershipExplanation = (firstName: string): string =>
-  `Der Zeitraum wird am gewählten Tag geschlossen und bleibt im Register stehen. Gelöscht wird nichts: Gruppen, Rollen und alle bisherigen Angaben von ${firstName} bleiben bestehen.`;
-
-export const toEndMembershipFacts = (
-  membership: PersonMembership,
-  personName: string,
-  endedOn: string | null,
-): KkConfirmFact[] => {
-  const facts: KkConfirmFact[] = [
-    { label: 'Person', value: personName },
-    { label: 'Dieser Zeitraum seit', value: formatIsoDay(membership.startedOn) },
-    {
-      label: 'Dieser Zeitraum bis',
-      value: membership.endedOn === null ? OPEN_END : formatIsoDay(membership.endedOn),
-    },
-    { label: 'Letzter Tag', value: endedOn === null ? 'noch offen' : formatIsoDay(endedOn) },
-  ];
-  const openPause = toOpenPause(membership);
-
-  if (openPause !== null && endedOn !== null) {
-    facts.push({
-      label: 'Offene Ruhezeit',
-      value: `endet mit ${formatSinceSession(endedOn)}`,
-    });
-  }
-
-  return facts;
-};
 
 export const toEndMembershipConsequence = (
   firstName: string,
   endedOn: string,
   hasOpenPause: boolean,
 ): string => {
-  const lead = `Ab dem ${formatIsoDay(endedOn)} zählt ${firstName} nicht mehr als Mitglied. Die Gruppen und Rollen bleiben bestehen.`;
+  const lead = `Ab dem ${formatIsoDay(endedOn)} ist ${firstName} kein Mitglied mehr. Gruppen und Rollen bleiben bestehen.`;
 
   return hasOpenPause ? `${lead} ${OPEN_PAUSE_SENTENCE}` : lead;
 };
 
-export const toPersonCreatedMessage = (personName: string): string =>
-  `${personName} steht jetzt im Register.`;
+export const toPersonCreatedMessage = (personName: string): string => `${personName} ist angelegt.`;
 
 export const toPersonSavedMessage = (personName: string): string =>
   `Die Stammdaten von ${personName} sind gespeichert.`;

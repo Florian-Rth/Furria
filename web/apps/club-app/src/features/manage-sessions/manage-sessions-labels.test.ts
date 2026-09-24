@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
+  findSessionRecord,
   isRelevantSession,
-  MISSING_MOTTO_LINE,
+  partitionSessionRecords,
+  toSessionRecordId,
   toSessionRowChip,
   toSessionRowLabel,
-  toSessionRowTitle,
-  toSessionsIntro,
+  toSessionRowMotto,
 } from './manage-sessions-labels';
 import type { SessionRecordSummary } from './schemas';
 
@@ -21,37 +22,84 @@ const record = (overrides: Partial<SessionRecordSummary>): SessionRecordSummary 
 const INSIDE_THE_SESSION = new Date(2026, 0, 15);
 const BETWEEN_SESSIONS = new Date(2026, 6, 1);
 
-describe('toSessionRowLabel', () => {
-  it('names the season, the Nº and the Motto', () => {
-    expect(toSessionRowLabel(record({}))).toBe('2025/26 · Nº 53 · „Wir sind die Narren vom Rhein“');
+describe('toSessionRecordId', () => {
+  it.each([
+    { case: 'a positive id', raw: '3', expected: 3 },
+    { case: 'a long id', raw: '1204', expected: 1204 },
+    { case: 'zero', raw: '0', expected: null },
+    { case: 'a negative id', raw: '-3', expected: null },
+    { case: 'a word', raw: 'session', expected: null },
+    { case: 'a decimal', raw: '3.5', expected: null },
+    { case: 'nothing', raw: '', expected: null },
+  ])('reads $case', ({ raw, expected }) => {
+    expect(toSessionRecordId(raw)).toBe(expected);
+  });
+});
+
+describe('findSessionRecord', () => {
+  it('finds nothing when no session record is targeted', () => {
+    expect(findSessionRecord([record({})], null)).toBeNull();
   });
 
-  it('leaves out the Nº the club never wrote down', () => {
+  it('finds nothing for an unknown id', () => {
+    expect(findSessionRecord([record({ sessionId: 7 })], 999)).toBeNull();
+  });
+
+  it('finds the targeted session record', () => {
+    expect(findSessionRecord([record({ sessionId: 7 })], 7)?.sessionId).toBe(7);
+  });
+});
+
+describe('toSessionRowLabel', () => {
+  it('names the season, the session number and the motto', () => {
+    expect(toSessionRowLabel(record({}))).toBe(
+      '2025/26 · 53. Session · „Wir sind die Narren vom Rhein“',
+    );
+  });
+
+  it('leaves out the session number the club never wrote down', () => {
     expect(toSessionRowLabel(record({ number: null }))).toBe(
       '2025/26 · „Wir sind die Narren vom Rhein“',
     );
   });
 
-  it('leaves out the Motto the club never wrote down', () => {
-    expect(toSessionRowLabel(record({ motto: null }))).toBe('2025/26 · Nº 53');
+  it('leaves out the motto the club never wrote down', () => {
+    expect(toSessionRowLabel(record({ motto: null }))).toBe('2025/26 · 53. Session');
   });
 
   it('names a season known by its year alone', () => {
     expect(toSessionRowLabel(record({ number: null, motto: null }))).toBe('2025/26');
   });
 
-  it.each(['', '   '])('treats the blank Motto %j as never written down', (motto) => {
+  it.each(['', '   '])('treats the blank motto %j as never written down', (motto) => {
     expect(toSessionRowLabel(record({ number: null, motto }))).toBe('2025/26');
   });
 });
 
-describe('toSessionRowTitle', () => {
-  it('speaks the Motto in quotes', () => {
-    expect(toSessionRowTitle(record({}))).toBe('„Wir sind die Narren vom Rhein“');
+describe('toSessionRowMotto', () => {
+  it('speaks a written motto in quotes', () => {
+    expect(toSessionRowMotto(record({}), INSIDE_THE_SESSION)).toEqual({
+      line: '„Wir sind die Narren vom Rhein“',
+      missing: false,
+    });
   });
 
-  it('says the Motto is missing rather than inventing one', () => {
-    expect(toSessionRowTitle(record({ motto: null }))).toBe(MISSING_MOTTO_LINE);
+  it.each([
+    { case: 'a past season', startYear: 2019, today: INSIDE_THE_SESSION, pending: false },
+    { case: 'the running season', startYear: 2025, today: INSIDE_THE_SESSION, pending: true },
+    { case: 'the coming season', startYear: 2026, today: BETWEEN_SESSIONS, pending: true },
+    {
+      case: 'the season that just ended',
+      startYear: 2025,
+      today: BETWEEN_SESSIONS,
+      pending: false,
+    },
+  ])('tells a missing motto of $case apart', ({ startYear, today, pending }) => {
+    const pendingLine = toSessionRowMotto(record({ startYear: 2030, motto: null }), today).line;
+    const motto = toSessionRowMotto(record({ startYear, motto: '  ' }), today);
+
+    expect(motto.missing).toBe(true);
+    expect(motto.line === pendingLine).toBe(pending);
   });
 });
 
@@ -83,32 +131,35 @@ describe('toSessionRowChip', () => {
   });
 });
 
-describe('toSessionsIntro', () => {
-  it('names the season nobody has written down yet', () => {
-    expect(toSessionsIntro([], INSIDE_THE_SESSION)).toContain('2025/26');
-  });
+describe('partitionSessionRecords', () => {
+  const idsOf = (records: readonly SessionRecordSummary[]): number[] =>
+    records.map((entry) => entry.sessionId);
 
-  it('counts a single entry in the singular', () => {
-    expect(toSessionsIntro([record({ startYear: 1974 })], INSIDE_THE_SESSION)).toContain(
-      'Ein Sessionseintrag',
+  it('splits the running and coming seasons from the past ones', () => {
+    const partition = partitionSessionRecords(
+      [
+        record({ sessionId: 1, startYear: 2026 }),
+        record({ sessionId: 2, startYear: 2025 }),
+        record({ sessionId: 3, startYear: 2024 }),
+      ],
+      INSIDE_THE_SESSION,
     );
+
+    expect(idsOf(partition.ahead)).toEqual([1, 2]);
+    expect(idsOf(partition.past)).toEqual([3]);
+    expect(partition.vacantYear).toBeNull();
   });
 
-  it('counts several entries', () => {
-    const records = [record({ startYear: 1974 }), record({ startYear: 1975 })];
-
-    expect(toSessionsIntro(records, INSIDE_THE_SESSION)).toContain('2 Sessionseinträge');
-  });
-
-  it('reports the current season as missing while it is', () => {
-    expect(toSessionsIntro([record({ startYear: 1974 })], INSIDE_THE_SESSION)).toContain(
-      'Für 2025/26 fehlt der Eintrag noch.',
+  it.each([
+    { case: 'no records at all', startYears: [], today: INSIDE_THE_SESSION, vacantYear: 2025 },
+    { case: 'only past records', startYears: [2024], today: INSIDE_THE_SESSION, vacantYear: 2025 },
+    { case: 'only a later season', startYears: [2027], today: BETWEEN_SESSIONS, vacantYear: 2026 },
+    { case: 'the season recorded', startYears: [2026], today: BETWEEN_SESSIONS, vacantYear: null },
+  ])('names the unrecorded relevant season with $case', ({ startYears, today, vacantYear }) => {
+    const records = startYears.map((startYear, index) =>
+      record({ sessionId: index + 1, startYear }),
     );
-  });
 
-  it('reports the current season as present once it is', () => {
-    const records = [record({ startYear: 1974 }), record({ startYear: 2025 })];
-
-    expect(toSessionsIntro(records, INSIDE_THE_SESSION)).toContain('2025/26 ist dabei.');
+    expect(partitionSessionRecords(records, today).vacantYear).toBe(vacantYear);
   });
 });

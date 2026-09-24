@@ -21,7 +21,7 @@ public sealed class VenueExpectations
             async (dbContext, ct) =>
                 Assert.False(
                     await dbContext.Venues.AsNoTracking().AnyAsync(row => row.Id == _venueId, ct),
-                    $"Expected no Ort with id {_venueId}."
+                    $"Expected no Venue with id {_venueId}."
                 )
         );
 

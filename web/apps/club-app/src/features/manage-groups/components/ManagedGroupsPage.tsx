@@ -1,7 +1,7 @@
-import type { KkScreenAction } from '@furria/ui';
 import { KkScreen, KkSkeletonToolbar, KkTitleHeader } from '@furria/ui';
 import type { FC } from 'react';
 import {
+  AREA_HANDOVERS,
   MANAGE_ORIGIN,
   RequirePermission,
   usePermissions,
@@ -9,80 +9,51 @@ import {
 } from '@/features/session';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { useManagedGroupsQuery } from '../api';
-import { useGroupCreateDialog } from '../hooks/use-group-create-dialog';
-import { useGroupSelection } from '../hooks/use-group-selection';
 import { useManagedGroupsListing } from '../hooks/use-managed-groups-listing';
-import { toManagedGroupsIntro } from '../manage-groups-labels';
-import type { ManagedGroupSummary } from '../schemas';
-import { GroupFormDialog } from './GroupFormDialog';
+import { MANAGE_GROUPS_TITLE } from '../manage-groups-labels';
+import { MANAGE_GROUPS_LEAD } from '../manage-groups-work';
 import { ManagedGroupsBody } from './ManagedGroupsBody';
 import { ManagedGroupsToolbar } from './ManagedGroupsToolbar';
 
-const MANAGE_GROUPS_TITLE = 'Gruppenverwaltung';
-
 const SEARCH_PLACEHOLDER = 'Name der Gruppe';
 
-const CREATE_LABEL = 'Gruppe anlegen';
+const TOOLBAR_CHIPS = 2;
 
-const TOOLBAR_CHIPS = 3;
-
-const NO_GROUPS: readonly ManagedGroupSummary[] = [];
+const MIN_OFFERED_FILTERS = 2;
 
 export const ManagedGroupsPage: FC = () => {
   const searchMode = useScreenSearch(SEARCH_PLACEHOLDER);
   const groups = useManagedGroupsQuery();
-  const rows = groups.data?.groups ?? NO_GROUPS;
-  const listing = useManagedGroupsListing(rows);
-  const create = useGroupCreateDialog();
-  const selection = useGroupSelection();
-  const { has } = usePermissions();
-  const canManage = has(PERMISSION_KEYS.groupsManage);
-  const lead = groups.data === undefined ? undefined : toManagedGroupsIntro(rows);
+  const listing = useManagedGroupsListing(groups.data?.groups);
+  const permissions = usePermissions();
+  const canManage = permissions.isUndecided || permissions.has(PERMISSION_KEYS.groupsManage);
+  const isLoading = canManage && groups.isPending;
 
-  const onCreated = (groupId: number): void => {
-    create.close();
-    selection.select(groupId);
-  };
+  const offersFilters =
+    groups.data !== undefined && listing.filterOptions.length >= MIN_OFFERED_FILTERS;
 
-  const createAction: KkScreenAction = {
-    id: 'create-group',
-    label: CREATE_LABEL,
-    icon: 'add',
-    emphasis: true,
-    onSelect: create.open,
-  };
+  const filterStrip = offersFilters ? (
+    <ManagedGroupsToolbar
+      filter={listing.filter}
+      options={listing.filterOptions}
+      onFilterChange={listing.selectFilter}
+    />
+  ) : undefined;
 
-  const actions: readonly [KkScreenAction] | undefined = canManage ? [createAction] : undefined;
-
-  const toolRow =
-    groups.data === undefined ? (
-      <KkSkeletonToolbar chips={TOOLBAR_CHIPS} />
-    ) : (
-      <ManagedGroupsToolbar
-        status={listing.status}
-        options={listing.filterOptions}
-        onStatusChange={listing.selectStatus}
-      />
-    );
+  const toolRow = isLoading ? <KkSkeletonToolbar chips={TOOLBAR_CHIPS} /> : filterStrip;
 
   return (
     <KkScreen
       kind="list"
       search={searchMode}
-      actions={actions}
       tools={canManage ? toolRow : undefined}
       title={MANAGE_GROUPS_TITLE}
       origin={MANAGE_ORIGIN}
-      header={<KkTitleHeader title={MANAGE_GROUPS_TITLE} lead={lead} />}
+      header={<KkTitleHeader title={MANAGE_GROUPS_TITLE} lead={MANAGE_GROUPS_LEAD} />}
+      handover={AREA_HANDOVERS.manage}
     >
       <RequirePermission permissionKey={PERMISSION_KEYS.groupsManage}>
         <ManagedGroupsBody listing={listing} />
-        <GroupFormDialog
-          group={null}
-          open={create.isOpen}
-          onClose={create.close}
-          onSaved={onCreated}
-        />
       </RequirePermission>
     </KkScreen>
   );

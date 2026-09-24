@@ -19,7 +19,7 @@ export const NewsPostHero: FC<NewsPostHeroProps> = ({ post }) => (
         border: 1,
         borderColor: 'divider',
         borderRadius: `${kkTokens.radius.base}px`,
-        fontSize: { xs: '2rem', md: '3.375rem' },
+        typography: { xs: 'h1', md: 'display' },
       }}
     />
     {post.image !== null && (

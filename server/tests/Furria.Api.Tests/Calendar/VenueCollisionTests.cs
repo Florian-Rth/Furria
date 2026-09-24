@@ -123,10 +123,10 @@ public sealed class VenueCollisionTests
     }
 
     [Fact]
-    public async Task Should_FindTheEintrag_When_TheWindowsOverlap()
+    public async Task Should_FindTheEntry_When_TheWindowsOverlap()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildOrteAsync(ct);
+        var ctx = await BuildVenuesAsync(ct);
 
         var collisions = await CollisionsAsync(
             ctx.Identity.People.IdOf("regine"),
@@ -145,7 +145,7 @@ public sealed class VenueCollisionTests
     public async Task Should_FindNothing_When_TheWindowsOnlyTouch()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildOrteAsync(ct);
+        var ctx = await BuildVenuesAsync(ct);
 
         var collisions = await CollisionsAsync(
             ctx.Identity.People.IdOf("regine"),
@@ -163,7 +163,7 @@ public sealed class VenueCollisionTests
     public async Task Should_FindNothing_When_TheWindowsAreDisjoint()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildOrteAsync(ct);
+        var ctx = await BuildVenuesAsync(ct);
 
         var collisions = await CollisionsAsync(
             ctx.Identity.People.IdOf("regine"),
@@ -178,10 +178,10 @@ public sealed class VenueCollisionTests
     }
 
     [Fact]
-    public async Task Should_FindTheOpenEndedEintrag_When_TheProbeFallsInsideItsThreeHours()
+    public async Task Should_FindTheOpenEndedEntry_When_TheProbeFallsInsideItsThreeHours()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildOrteAsync(ct);
+        var ctx = await BuildVenuesAsync(ct);
 
         var collisions = await CollisionsAsync(
             ctx.Identity.People.IdOf("regine"),
@@ -197,10 +197,10 @@ public sealed class VenueCollisionTests
     }
 
     [Fact]
-    public async Task Should_FindTheEintrag_When_TheProbeItselfIsOpenEnded()
+    public async Task Should_FindTheEntry_When_TheProbeItselfIsOpenEnded()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildOrteAsync(ct);
+        var ctx = await BuildVenuesAsync(ct);
 
         var collisions = await CollisionsAsync(
             ctx.Identity.People.IdOf("regine"),
@@ -216,10 +216,10 @@ public sealed class VenueCollisionTests
     }
 
     [Fact]
-    public async Task Should_FindNothing_When_TheOnlyOverlapIsTheEintragBeingEdited()
+    public async Task Should_FindNothing_When_TheOnlyOverlapIsTheEntryBeingEdited()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildOrteAsync(ct);
+        var ctx = await BuildVenuesAsync(ct);
 
         var collisions = await CollisionsAsync(
             ctx.Identity.People.IdOf("regine"),
@@ -258,7 +258,7 @@ public sealed class VenueCollisionTests
         );
     }
 
-    private Task<SeededContext> BuildOrteAsync(CancellationToken ct) =>
+    private Task<SeededContext> BuildVenuesAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder =>
                 builder

@@ -19,7 +19,7 @@ const Wrap = ({ children }) => <div style={{ padding: 28, display: 'flex', flexD
 // type colours for schedule items
 const TYPE = { training: ['ink', 'Training'], auftritt: ['red', 'Auftritt'], sitzung: ['gold', 'Sitzung'], probe: ['blue', 'Probe'] };
 
-// ════════════ ÜBERSICHT (personal dashboard) ════════════
+// ════════════ OVERVIEW (personal dashboard) ════════════
 function PageUebersicht({ go }) {
   const stat = (n, lbl, sub, tone) => (
     <Card style={{ flex: 1 }}><div style={{ fontFamily: T.display, fontSize: 40, lineHeight: 1, color: tone === 'red' ? T.red : tone === 'green' ? T.green : T.ink }}>{n}</div><div style={{ fontWeight: 800, fontSize: 14, marginTop: 8 }}>{lbl}</div><div style={{ fontSize: 12.5, fontWeight: 600, color: T.sub }}>{sub}</div></Card>

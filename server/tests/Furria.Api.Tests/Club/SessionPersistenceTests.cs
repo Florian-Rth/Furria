@@ -95,7 +95,7 @@ public sealed class SessionPersistenceTests
             builder =>
                 builder.Club(club =>
                     club.AddSession("vom-banner", 2021, motto: "Grossfurra feiert weiter")
-                        .AddSession("aus-dem-protokoll", 2022, motto: "Grossfurra hebt ab")
+                        .AddSession("from-the-minutes", 2022, motto: "Grossfurra hebt ab")
                 ),
             ct
         );
@@ -103,7 +103,7 @@ public sealed class SessionPersistenceTests
         await ctx
             .Expected.Session(ctx.Club.Sessions.IdOf("vom-banner"))
             .ToHaveNumber(null)
-            .Session(ctx.Club.Sessions.IdOf("aus-dem-protokoll"))
+            .Session(ctx.Club.Sessions.IdOf("from-the-minutes"))
             .ToHaveNumber(null)
             .AssertAsync(ct);
     }
@@ -130,18 +130,18 @@ public sealed class SessionPersistenceTests
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
-            builder => builder.Club(club => club.AddSession("nur-das-jahr", 1984)),
+            builder => builder.Club(club => club.AddSession("year-only", 1984)),
             ct
         );
 
         await ctx
-            .Expected.Session(ctx.Club.Sessions.IdOf("nur-das-jahr"))
+            .Expected.Session(ctx.Club.Sessions.IdOf("year-only"))
             .ToHaveStartYear(1984)
-            .Session(ctx.Club.Sessions.IdOf("nur-das-jahr"))
+            .Session(ctx.Club.Sessions.IdOf("year-only"))
             .ToHaveNumber(null)
-            .Session(ctx.Club.Sessions.IdOf("nur-das-jahr"))
+            .Session(ctx.Club.Sessions.IdOf("year-only"))
             .ToHaveMotto(null)
-            .Session(ctx.Club.Sessions.IdOf("nur-das-jahr"))
+            .Session(ctx.Club.Sessions.IdOf("year-only"))
             .ToHaveLogo(null)
             .AssertAsync(ct);
     }

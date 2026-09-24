@@ -1,11 +1,11 @@
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
+import { logoInk } from '../../../internal/logo-ink';
 
 const FADE = 'linear-gradient(to right, transparent 6%, #000 62%)';
 const WIDTH = { xs: '74%', desktop: '56%' };
 const LIGHT_OPACITY = 0.94;
 const DARK_OPACITY = 0.82;
-const DARK_FILTER = 'invert(1) hue-rotate(180deg)';
 
 interface KkMottoStageLogoProps {
   source: string;
@@ -37,14 +37,9 @@ export const KkMottoStageLogo: FC<KkMottoStageLogoProps> = ({ source }) => (
         objectFit: 'contain',
         objectPosition: 'right bottom',
         opacity: LIGHT_OPACITY,
-        mixBlendMode: 'multiply',
         maskImage: FADE,
         WebkitMaskImage: FADE,
-        ...theme.applyStyles('dark', {
-          opacity: DARK_OPACITY,
-          filter: DARK_FILTER,
-          mixBlendMode: 'screen',
-        }),
+        ...logoInk(theme, { opacity: DARK_OPACITY }),
       })}
     />
   </Box>

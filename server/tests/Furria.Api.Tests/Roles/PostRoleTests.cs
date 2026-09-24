@@ -33,7 +33,7 @@ public sealed class PostRoleTests
         );
 
     [Fact]
-    public async Task Should_CreateTheRolleWithoutKeys_When_AManagerAddsOne()
+    public async Task Should_CreateTheRoleWithoutKeys_When_AManagerAddsOne()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
@@ -59,7 +59,7 @@ public sealed class PostRoleTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_AnActiveRolleAlreadyCarriesTheNameInAnotherCase()
+    public async Task Should_ReturnConflict_When_AnActiveRoleAlreadyCarriesTheNameInAnotherCase()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -77,7 +77,7 @@ public sealed class PostRoleTests
     }
 
     [Fact]
-    public async Task Should_CreateTheRolle_When_TheRolleThatUsedTheNameIsArchived()
+    public async Task Should_CreateTheRole_When_TheRoleThatUsedTheNameIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

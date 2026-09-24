@@ -1,6 +1,6 @@
 import { KkHeading, KkMeta, KkNote, KkPanel } from '@furria/ui';
 import Stack from '@mui/material/Stack';
-import type { FC, ReactNode } from 'react';
+import type { ElementType, FC, ReactNode } from 'react';
 import { VENUE_WITHOUT_ADDRESS } from '../manage-venues-labels';
 
 interface VenueRecordProps {
@@ -9,7 +9,12 @@ interface VenueRecordProps {
   hint: string | null;
   note: string | null;
   dimmed: boolean;
-  actions: ReactNode;
+  actions?: ReactNode;
+  component?: ElementType;
+  to?: string;
+  params?: Record<string, string>;
+  highlight?: boolean;
+  landing?: string;
 }
 
 export const VenueRecord: FC<VenueRecordProps> = ({
@@ -19,13 +24,26 @@ export const VenueRecord: FC<VenueRecordProps> = ({
   note,
   dimmed,
   actions,
+  component,
+  to,
+  params,
+  highlight = false,
+  landing,
 }) => {
   const addressText = addressLine ?? VENUE_WITHOUT_ADDRESS;
   const hintLine = hint === null ? null : <KkMeta italic>{hint}</KkMeta>;
   const noteLine = note === null ? null : <KkNote>{note}</KkNote>;
 
   return (
-    <KkPanel variant="block" dimmed={dimmed}>
+    <KkPanel
+      variant="block"
+      dimmed={dimmed}
+      component={component}
+      to={to}
+      params={params}
+      highlight={highlight}
+      landing={landing}
+    >
       <Stack
         direction="row"
         sx={{
@@ -37,7 +55,7 @@ export const VenueRecord: FC<VenueRecordProps> = ({
         }}
       >
         <Stack sx={{ gap: 0.5, minWidth: 0, flexGrow: 1 }}>
-          <KkHeading level={5} component="h3" sx={{ minWidth: 0 }}>
+          <KkHeading level={4} component="h3" sx={{ minWidth: 0 }}>
             {name}
           </KkHeading>
           <KkMeta>{addressText}</KkMeta>

@@ -34,7 +34,7 @@ export const VenueFormSchema = z.object({
   street: z
     .string()
     .trim()
-    .min(1, 'Ohne Straße und Hausnummer findet niemand hin.')
+    .min(1, 'Straße und Hausnummer fehlen.')
     .max(VENUE_STREET_MAX_LENGTH, `Höchstens ${VENUE_STREET_MAX_LENGTH} Zeichen.`),
   zip: z
     .string()

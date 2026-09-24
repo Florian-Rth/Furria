@@ -1,3 +1,5 @@
+using Furria.Core.Groups;
+
 namespace Furria.Application.Groups;
 
 public sealed record PublicGroupSummary
@@ -9,4 +11,8 @@ public sealed record PublicGroupSummary
     public required string Description { get; init; }
 
     public required bool IsRecruiting { get; init; }
+
+    public required string? GroupKindName { get; init; }
+
+    public required GroupTone? Tone { get; init; }
 }

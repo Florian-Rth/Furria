@@ -1,9 +1,10 @@
 import { z } from 'zod';
 import { PersonRefSchema } from '@/lib/api/schemas';
+import { requiredDay, requiredPerson } from '@/lib/required-fields';
 
 const NAME_REQUIRED_MESSAGE = 'Gib der Vorstandsfunktion einen Namen.';
 const NAME_TOO_LONG_MESSAGE = 'Der Name darf höchstens 80 Zeichen haben.';
-const SORT_ORDER_MESSAGE = 'Der Platz im Vorstand ist eine Zahl zwischen 1 und 999.';
+const SORT_ORDER_MESSAGE = 'Gib eine Zahl zwischen 1 und 999 ein.';
 const SORT_ORDER_PATTERN = /^(?:[1-9]|[1-9]\d|[1-9]\d\d)$/;
 
 export const BoardSeatSchema = PersonRefSchema.extend({
@@ -52,6 +53,11 @@ export const BoardOfficeFormSchema = z.object({
 });
 export type BoardOfficeForm = z.infer<typeof BoardOfficeFormSchema>;
 
+export const BoardOfficeEditorFormSchema = BoardOfficeFormSchema.extend({
+  impliedRoleValue: z.string(),
+});
+export type BoardOfficeEditorForm = z.infer<typeof BoardOfficeEditorFormSchema>;
+
 export const OpenBoardSeatFormSchema = z.object({
   personId: z.number().int().positive(),
   sinceOn: z.iso.date(),
@@ -63,3 +69,12 @@ export const EndBoardSeatFormSchema = z.object({
   endedOn: z.iso.date(),
 });
 export type EndBoardSeatForm = z.infer<typeof EndBoardSeatFormSchema>;
+
+export const BoardSeatOpenFormSchema = z.object({
+  person: requiredPerson('Wähle die Person, die den Sitz übernimmt.'),
+  sinceOn: requiredDay('Der erste Tag fehlt.'),
+});
+
+export const BoardSeatEndFormSchema = z.object({
+  endedOn: requiredDay('Der letzte Tag fehlt.'),
+});

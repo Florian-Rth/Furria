@@ -28,7 +28,7 @@ public sealed class PostMembershipTests
     }
 
     [Fact]
-    public async Task Should_OpenTheMitgliedschaft_When_AManagerTakesAPersonIn()
+    public async Task Should_OpenTheMembership_When_AManagerTakesAPersonIn()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -85,7 +85,7 @@ public sealed class PostMembershipTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_AMitgliedschaftIsAlreadyRunning()
+    public async Task Should_ReturnConflict_When_AMembershipIsAlreadyRunning()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -125,7 +125,7 @@ public sealed class PostMembershipTests
     public async Task Should_ReturnConflict_When_TheRejoinStartsOnTheDayTheLastOneEnded()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithEndedMitgliedschaftAsync(ct);
+        var ctx = await BuildWithEndedMembershipAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var (response, _) = await client.POSTAsync<
@@ -160,7 +160,7 @@ public sealed class PostMembershipTests
     public async Task Should_ReturnUnprocessableEntity_When_ThePeriodEndsBeforeItStarts()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithEndedMitgliedschaftAsync(ct);
+        var ctx = await BuildWithEndedMembershipAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var (response, _) = await client.POSTAsync<
@@ -189,10 +189,10 @@ public sealed class PostMembershipTests
     }
 
     [Fact]
-    public async Task Should_OpenASecondMitgliedschaft_When_TheRejoinStartsAfterTheLastOne()
+    public async Task Should_OpenASecondMembership_When_TheRejoinStartsAfterTheLastOne()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithEndedMitgliedschaftAsync(ct);
+        var ctx = await BuildWithEndedMembershipAsync(ct);
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var (response, result) = await client.POSTAsync<
@@ -221,7 +221,7 @@ public sealed class PostMembershipTests
     }
 
     [Fact]
-    public async Task Should_StoreTheWholePeriod_When_AHistoricMitgliedschaftIsRecorded()
+    public async Task Should_StoreTheWholePeriod_When_AHistoricMembershipIsRecorded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -254,7 +254,7 @@ public sealed class PostMembershipTests
     }
 
     [Fact]
-    public async Task Should_StoreTheRow_When_TheMitgliedschaftStartsInTheFuture()
+    public async Task Should_StoreTheRow_When_TheMembershipStartsInTheFuture()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -383,7 +383,7 @@ public sealed class PostMembershipTests
     }
 
     [Fact]
-    public async Task Should_RecordTheHistoricPeriod_When_ALaterMitgliedschaftIsAlreadyRunning()
+    public async Task Should_RecordTheHistoricPeriod_When_ALaterMembershipIsAlreadyRunning()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -421,7 +421,7 @@ public sealed class PostMembershipTests
             .AssertAsync(ct);
     }
 
-    private Task<SeededContext> BuildWithEndedMitgliedschaftAsync(CancellationToken ct) =>
+    private Task<SeededContext> BuildWithEndedMembershipAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder =>
                 builder.Identity(identity =>

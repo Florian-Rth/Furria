@@ -1,5 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Net.Mime;
+using System.Text;
 using FastEndpoints;
 using Furria.Api.Endpoints.Groups;
 using Furria.Application.Authorization;
@@ -12,7 +14,9 @@ namespace Furria.Api.Tests.Groups;
 public sealed class PostGroupTests
 {
     private const string ConflictField = "conflict";
-    private const string Description = "Wir proben freitags im Vereinsheim.";
+    private const string GroupsRoute = "/api/manage/groups";
+    private const string BodyWithoutGroupKind =
+        "{\"name\":\"Die Biergarde\",\"description\":\"Wir proben freitags.\",\"isRecruiting\":true}";
 
     private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
 
@@ -24,7 +28,7 @@ public sealed class PostGroupTests
     }
 
     [Fact]
-    public async Task Should_CreateTheGruppe_When_TheKeyHolderAnlegtSie()
+    public async Task Should_CreateTheGroup_When_TheKeyHolderCreatesIt()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
@@ -34,30 +38,23 @@ public sealed class PostGroupTests
             PostGroup,
             PostGroupRequest,
             PostGroupResponse
-        >(
-            new()
-            {
-                Name = "Musik & Kapelle",
-                Description = Description,
-                IsRecruiting = true,
-            }
-        );
+        >(new() { Name = "Musik & Kapelle", GroupKindId = null });
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         await ctx
             .Expected.Group(result.GroupId)
             .ToHaveName("Musik & Kapelle")
             .Group(result.GroupId)
-            .ToHaveDescription(Description)
+            .ToHaveDescription("")
             .Group(result.GroupId)
-            .ToBeRecruiting(true)
+            .ToBeRecruiting(false)
             .Group(result.GroupId)
             .ToBeArchivedOn(null)
             .AssertAsync(ct);
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_AnActiveGruppeCarriesTheNameInAnotherCase()
+    public async Task Should_ReturnConflict_When_AnActiveGroupCarriesTheNameInAnotherCase()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -67,12 +64,7 @@ public sealed class PostGroupTests
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var (response, _) = await client.POSTAsync<PostGroup, PostGroupRequest, PostGroupResponse>(
-            new()
-            {
-                Name = "tanzgarde",
-                Description = Description,
-                IsRecruiting = false,
-            }
+            new() { Name = "tanzgarde", GroupKindId = null }
         );
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -81,7 +73,7 @@ public sealed class PostGroupTests
     }
 
     [Fact]
-    public async Task Should_CreateTheGruppe_When_OnlyAnArchivedGruppeCarriesTheName()
+    public async Task Should_CreateTheGroup_When_OnlyAnArchivedGroupCarriesTheName()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -103,14 +95,7 @@ public sealed class PostGroupTests
             PostGroup,
             PostGroupRequest,
             PostGroupResponse
-        >(
-            new()
-            {
-                Name = "Tanzgarde",
-                Description = Description,
-                IsRecruiting = true,
-            }
-        );
+        >(new() { Name = "Tanzgarde", GroupKindId = null });
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         await ctx
@@ -129,12 +114,7 @@ public sealed class PostGroupTests
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var (response, _) = await client.POSTAsync<PostGroup, PostGroupRequest, PostGroupResponse>(
-            new()
-            {
-                Name = "",
-                Description = Description,
-                IsRecruiting = false,
-            }
+            new() { Name = "", GroupKindId = null }
         );
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -148,31 +128,7 @@ public sealed class PostGroupTests
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         var (response, _) = await client.POSTAsync<PostGroup, PostGroupRequest, PostGroupResponse>(
-            new()
-            {
-                Name = new string('a', 81),
-                Description = Description,
-                IsRecruiting = false,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_TheDescriptionIsLongerThanTheColumn()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
-        var (response, _) = await client.POSTAsync<PostGroup, PostGroupRequest, PostGroupResponse>(
-            new()
-            {
-                Name = "Technik & Bühne",
-                Description = new string('a', 401),
-                IsRecruiting = false,
-            }
+            new() { Name = new string('a', 81), GroupKindId = null }
         );
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -202,12 +158,7 @@ public sealed class PostGroupTests
 
         var client = await ctx.Identity.ClientForAsync("ilka", ct);
         var (response, _) = await client.POSTAsync<PostGroup, PostGroupRequest, PostGroupResponse>(
-            new()
-            {
-                Name = "Technik & Bühne",
-                Description = Description,
-                IsRecruiting = false,
-            }
+            new() { Name = "Technik & Bühne", GroupKindId = null }
         );
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -222,15 +173,67 @@ public sealed class PostGroupTests
         var (response, _) = await _fixture
             .CreateClient()
             .POSTAsync<PostGroup, PostGroupRequest, PostGroupResponse>(
-                new()
-                {
-                    Name = "Technik & Bühne",
-                    Description = Description,
-                    IsRecruiting = false,
-                }
+                new() { Name = "Technik & Bühne", GroupKindId = null }
             );
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_RefuseTheGroupKind_When_ItIsArchived()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Groups(groups =>
+                    groups.AddGroupKind(
+                        "spielmannszug",
+                        "Spielmannszug",
+                        archivedOn: ArchivedIn2021
+                    )
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var (response, _) = await client.POSTAsync<PostGroup, PostGroupRequest, PostGroupResponse>(
+            new()
+            {
+                Name = "Spielmannszug",
+                GroupKindId = ctx.Groups.GroupKinds.IdOf("spielmannszug"),
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        var failures = await ReadFailuresAsync(response, ct);
+        Assert.Equal(
+            ["Eine archivierte Gruppenart lässt sich einer Gruppe nicht zuordnen."],
+            failures[ConflictField]
+        );
+    }
+
+    [Fact]
+    public async Task Should_CreateTheGroup_When_TheBodyLeavesTheGroupKindOut()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(ct);
+
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var response = await client.PostAsync(
+            GroupsRoute,
+            new StringContent(BodyWithoutGroupKind, Encoding.UTF8, MediaTypeNames.Application.Json),
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var created = await response.Content.ReadFromJsonAsync<PostGroupResponse>(ct);
+        Assert.NotNull(created);
+        await ctx
+            .Expected.Group(created.GroupId)
+            .ToHaveName("Die Biergarde")
+            .Group(created.GroupId)
+            .ToHaveGroupKind(null)
+            .AssertAsync(ct);
     }
 
     private static async Task<IDictionary<string, List<string>>> ReadFailuresAsync(

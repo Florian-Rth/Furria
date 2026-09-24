@@ -8,10 +8,10 @@ interface AlbumIntroProps {
 
 export const AlbumIntro: FC<AlbumIntroProps> = ({ album }) => (
   <Typography
+    variant="body1"
     component="p"
     data-kk-album-intro
     sx={{
-      fontSize: { xs: '1rem', md: '1.0625rem' },
       fontWeight: 500,
       lineHeight: 1.6,
       color: 'text.secondary',

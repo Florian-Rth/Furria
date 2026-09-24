@@ -64,15 +64,11 @@ export const ARCHIVED_CHIP: StateChip = { label: 'archiviert', tone: 'neutral', 
 
 export const UNARCHIVED_LABEL = 'im Verein';
 
-export const NO_ADMIN_CHIP: StateChip = { label: 'kein Admin', tone: 'gold', dot: false };
-
 export const UNHELD_CHIP: StateChip = { label: 'unbesetzt', tone: 'gold', dot: false };
 
 export const GROUP_ADMIN_CHIP: StateChip = { label: 'Gruppen-Admin', tone: 'accent', dot: false };
 
 export const MY_GROUP_CHIP: StateChip = { label: 'deine Gruppe', tone: 'ink', dot: false };
-
-export const READ_ONLY_CHIP: StateChip = { label: 'nur Ansicht', tone: 'neutral', dot: false };
 
 export const WITHHELD_CHIP: StateChip = {
   label: 'nicht freigegeben',
@@ -106,8 +102,8 @@ const STATE_FILTER_ORDER: readonly MembershipState[] = ['active', 'paused', 'end
 const NO_STATE_MATCH_LINES: Record<MembershipState, string> = {
   active: 'Gerade ist niemand aktives Mitglied.',
   paused: 'Gerade ruht keine Mitgliedschaft.',
-  ended: 'Gerade hat niemand eine beendete Mitgliedschaft.',
-  none: 'Gerade steht niemand ohne Mitgliedschaft in der Liste.',
+  ended: 'Niemand hat eine beendete Mitgliedschaft.',
+  none: 'Es gibt keine Personen ohne Mitgliedschaft.',
 };
 
 export const toNoStateMatchLine = (state: string): string | null => {

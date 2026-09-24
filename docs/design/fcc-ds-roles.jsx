@@ -1,6 +1,6 @@
-// fcc-ds-roles.jsx — Ämter & Rechte (/roles), Admin-only.
+// fcc-ds-roles.jsx — Offices & Rights (/roles), Admin-only.
 // RBAC config surface: Permissions (resource:read/write/delete) → Roles (bundles)
-// → assigned to Ämter (offices). People inherit permissions via their Amt.
+// → assigned to offices (Ämter). People inherit permissions via their office.
 // Composes the system. Exports window.PageRoles + window.MRoles.
 
 (function () {
@@ -36,7 +36,7 @@
   ];
   const ROLE_BY = {}; ROLES.forEach((r) => (ROLE_BY[r[0]] = { id: r[0], name: r[1], scoped: r[2], desc: r[3] }));
 
-  // Ämter → role ids
+  // Offices → role ids
   const AEMTER = [
     ['Admin', 'technisch', ['r_admin']],
     ['Geschäftsführer', 'einmalig', ['r_gf']],
@@ -145,7 +145,7 @@
     return <div style={{ display: 'grid', gridTemplateColumns: '290px 1fr', gap: 18, alignItems: 'start' }}>{list}{matrix}</div>;
   }
 
-  // ── ÄMTER → ROLLEN ────────────────────────────────────────────────────────
+  // ── OFFICES → ROLES ───────────────────────────────────────────────────────
   function AemterRolesView({ mobile }) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>

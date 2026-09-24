@@ -1,7 +1,8 @@
 import type { KkScreenOrigin } from '@furria/ui';
-import { KkScreen } from '@furria/ui';
+import { KkScreen, KkScreenHeaderSkeleton } from '@furria/ui';
 import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { AREA_HANDOVERS } from '@/features/session';
 import { useMemberQuery } from '../api';
 import { useIsSelf } from '../hooks/use-is-self';
 import { toMemberHeadline, toPersonId } from '../members-labels';
@@ -17,13 +18,23 @@ export const MemberPage: FC = () => {
   const member = useMemberQuery(id);
   const isSelf = useIsSelf(id);
   const headline = toMemberHeadline(member.data);
+  const hasFailed = id === null || member.error !== null;
+
+  const pendingHeader = hasFailed ? null : <KkScreenHeaderSkeleton />;
+  const header =
+    member.data === undefined || isSelf === undefined ? (
+      pendingHeader
+    ) : (
+      <MemberHeader member={member.data} isSelf={isSelf} />
+    );
 
   return (
     <KkScreen
       kind="detail"
       title={headline.title}
       origin={MEMBERS_ORIGIN}
-      header={<MemberHeader member={member.data} isSelf={isSelf} />}
+      header={header}
+      handover={AREA_HANDOVERS.members}
     >
       <MemberBody personId={id} />
     </KkScreen>

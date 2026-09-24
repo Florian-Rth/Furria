@@ -39,8 +39,7 @@ export const KkPhotoPlaceholder: FC<KkPhotoPlaceholderProps> = ({
     <Typography
       component="span"
       sx={(theme) => ({
-        fontFamily: kkTokens.font.body,
-        fontSize: kkTokens.type.chip,
+        ...theme.typography.caption,
         fontWeight: 800,
         letterSpacing: kkTokens.type.tracking.display,
         color: tint ?? (theme.vars ?? theme).palette.primary.main,

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  findMembershipOfPause,
   isContactWithheld,
   splitPersonGroups,
   toEndMembershipConsequence,
-  toEndMembershipFacts,
   toFeeReductionConsequence,
   toMembershipConsequence,
   toOpenPause,
@@ -12,9 +12,8 @@ import {
   toPersonId,
   toPersonRowAffiliation,
   toPersonsEmptyDescription,
-  toPersonsLead,
 } from './manage-persons-labels';
-import type { PersonMembership, PersonSummary } from './schemas';
+import type { PersonDetails, PersonMembership, PersonSummary } from './schemas';
 
 const person = (overrides: Partial<PersonSummary> & { personId: number }): PersonSummary => ({
   firstName: 'Anna',
@@ -73,7 +72,7 @@ describe('isContactWithheld', () => {
 });
 
 describe('toPersonRowAffiliation', () => {
-  it('names one Rolle in full and counts the rest', () => {
+  it('names one role in full and counts the rest', () => {
     const affiliation = toPersonRowAffiliation(
       person({
         personId: 1,
@@ -102,16 +101,6 @@ describe('toPersonRowAffiliation', () => {
   });
 });
 
-describe('toPersonsLead', () => {
-  it.each([
-    { count: 0, expected: '0 Personen stehen' },
-    { count: 1, expected: '1 Person steht' },
-    { count: 151, expected: '151 Personen stehen' },
-  ])('counts $count', ({ count, expected }) => {
-    expect(toPersonsLead(count)).toContain(expected);
-  });
-});
-
 describe('toPersonsEmptyDescription', () => {
   it('quotes the query that found nobody', () => {
     expect(toPersonsEmptyDescription('  Kühn ', 'all')).toContain('„Kühn“');
@@ -121,11 +110,11 @@ describe('toPersonsEmptyDescription', () => {
     expect(toPersonsEmptyDescription('Kühn', 'paused')).not.toContain('Alle');
   });
 
-  it('offers the Alle filter when a state filter hides everyone', () => {
+  it('offers the „Alle“ filter when a state filter hides everyone', () => {
     expect(toPersonsEmptyDescription('', 'paused')).toContain('Alle');
   });
 
-  it('suggests nothing when Alle is already the chosen filter', () => {
+  it('suggests nothing when „Alle“ is already the chosen filter', () => {
     expect(toPersonsEmptyDescription('', 'all')).not.toContain('Alle');
   });
 });
@@ -139,7 +128,7 @@ describe('toPersonHeadline', () => {
     });
   });
 
-  it('chips a membership that has not begun as kein Mitglied', () => {
+  it('chips a membership that has not begun as „kein Mitglied“', () => {
     const headline = toPersonHeadline({
       personId: 5,
       firstName: 'Dorothea',
@@ -196,7 +185,7 @@ describe('toMembershipConsequence', () => {
       label: 'a closed period',
       startedOn: '2009-01-11',
       endedOn: '2016-02-10',
-      expected: 'Der Zeitraum steht vom 11.01.2009 bis zum 10.02.2016 im Register.',
+      expected: 'Die Mitgliedschaft gilt vom 11.01.2009 bis zum 10.02.2016.',
     },
     {
       label: 'a future start',
@@ -208,7 +197,7 @@ describe('toMembershipConsequence', () => {
       label: 'a running period',
       startedOn: '2018-03-01',
       endedOn: null,
-      expected: 'Die Mitgliedschaft läuft seit dem 01.03.2018 und bleibt offen.',
+      expected: 'Die Mitgliedschaft besteht seit dem 01.03.2018 und ist unbefristet.',
     },
   ])('describes $label', ({ startedOn, endedOn, expected }) => {
     expect(toMembershipConsequence(startedOn, endedOn, '2026-09-12')).toContain(expected);
@@ -217,23 +206,25 @@ describe('toMembershipConsequence', () => {
 
 describe('toPauseConsequence', () => {
   it('says the pause has no end yet when it is open', () => {
-    expect(toPauseConsequence('Nicole', 2025, null)).toContain('Ab Session 2025/26');
+    expect(toPauseConsequence('Nicole', 2025, null)).toContain(
+      'ab Session 2025/26 bis auf Weiteres',
+    );
   });
 
   it('names the span when both ends are known', () => {
-    expect(toPauseConsequence('Anna', 2012, 2013)).toContain('In 2012/13 – 2013/14');
+    expect(toPauseConsequence('Anna', 2012, 2013)).toContain('in 2012/13 – 2013/14');
   });
 });
 
 describe('toFeeReductionConsequence', () => {
   it('names the German basis and the Session span', () => {
     expect(toFeeReductionConsequence('studies', 2024, 2026)).toContain(
-      'Studium steht für 2024/25 – 2026/27',
+      'Studium gilt für 2024/25 – 2026/27',
     );
   });
 
   it('collapses a one-Session span', () => {
-    expect(toFeeReductionConsequence('school', 2025, 2025)).toContain('Schule steht für 2025/26 ');
+    expect(toFeeReductionConsequence('school', 2025, 2025)).toContain('Schule gilt für 2025/26.');
   });
 });
 
@@ -246,29 +237,6 @@ describe('toEndMembershipConsequence', () => {
   });
 });
 
-describe('toEndMembershipFacts', () => {
-  it('identifies the period being closed by its own two ends', () => {
-    const facts = toEndMembershipFacts(membership({}), 'Anna Adam', null);
-
-    expect(facts).toEqual([
-      { label: 'Person', value: 'Anna Adam' },
-      { label: 'Dieser Zeitraum seit', value: '01.03.2018' },
-      { label: 'Dieser Zeitraum bis', value: 'offen' },
-      { label: 'Letzter Tag', value: 'noch offen' },
-    ]);
-  });
-
-  it('adds the clamped Ruhezeit row once a day is chosen', () => {
-    const facts = toEndMembershipFacts(
-      membership({ pauses: [{ pauseId: 2, firstSessionYear: 2024, lastSessionYear: null }] }),
-      'Nicole Oehler',
-      '2026-02-18',
-    );
-
-    expect(facts.at(-1)).toEqual({ label: 'Offene Ruhezeit', value: 'endet mit 2025/26' });
-  });
-});
-
 describe('splitPersonGroups', () => {
   it('keeps the running rows apart from the closed ones', () => {
     const split = splitPersonGroups([
@@ -278,5 +246,53 @@ describe('splitPersonGroups', () => {
 
     expect(split.running.map((row) => row.groupId)).toEqual([1]);
     expect(split.past.map((row) => row.groupId)).toEqual([2]);
+  });
+});
+
+const personDetails = (
+  overrides: Partial<PersonDetails> & { personId: number },
+): PersonDetails => ({
+  firstName: 'Anna',
+  lastName: 'Adam',
+  email: null,
+  phone: null,
+  street: null,
+  zip: null,
+  city: null,
+  birthDate: null,
+  contactVisibleToMembers: false,
+  membershipState: 'active',
+  memberSince: null,
+  memberships: [],
+  feeReductions: [],
+  groups: [],
+  roles: [],
+  ...overrides,
+});
+
+describe('findMembershipOfPause', () => {
+  it('finds the membership owning a given pause across several periods', () => {
+    const found = findMembershipOfPause(
+      personDetails({
+        personId: 1,
+        memberships: [
+          membership({ membershipId: 1, pauses: [] }),
+          membership({
+            membershipId: 2,
+            pauses: [{ pauseId: 9, firstSessionYear: 2020, lastSessionYear: null }],
+          }),
+        ],
+      }),
+      9,
+    );
+
+    expect(found?.membership.membershipId).toBe(2);
+    expect(found?.pause.pauseId).toBe(9);
+  });
+
+  it('answers null when no membership holds that pause', () => {
+    expect(
+      findMembershipOfPause(personDetails({ personId: 1, memberships: [membership({})] }), 9),
+    ).toBeNull();
   });
 });

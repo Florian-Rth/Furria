@@ -14,16 +14,16 @@ namespace Furria.Api.Tests.Calendar;
 public sealed class PostCalendarEntryTests
 {
     private const string ValidationField = "request";
-    private const string Vereinssitzung = "Vereinssitzung";
-    private const string GardeTraining = "Training der Tanzgarde";
+    private const string ClubMeeting = "Vereinssitzung";
+    private const string DanceGuardTraining = "Training der Tanzgarde";
     private const string Abendprobe = "Abendprobe";
-    private const string Krisensitzung = "Krisensitzung Kassenprüfung";
+    private const string CrisisMeeting = "Krisensitzung Kassenprüfung";
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
     private static readonly DateOnly ArchivedIn2026 = new(2026, 6, 30);
 
-    private static readonly DateTimeOffset SitzungStart = new(2027, 1, 20, 19, 0, 0, TimeSpan.Zero);
-    private static readonly DateTimeOffset SitzungEnd = new(2027, 1, 20, 22, 0, 0, TimeSpan.Zero);
+    private static readonly DateTimeOffset MeetingStart = new(2027, 1, 20, 19, 0, 0, TimeSpan.Zero);
+    private static readonly DateTimeOffset MeetingEnd = new(2027, 1, 20, 22, 0, 0, TimeSpan.Zero);
     private static readonly DateTimeOffset AbendprobeStart = new(
         2027,
         1,
@@ -60,7 +60,7 @@ public sealed class PostCalendarEntryTests
     }
 
     [Fact]
-    public async Task Should_WriteTheVereinsEintrag_When_TheCallerHoldsCalendarManageClub()
+    public async Task Should_WriteTheClubEntry_When_TheCallerHoldsCalendarManageClub()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
@@ -73,15 +73,16 @@ public sealed class PostCalendarEntryTests
         >(
             new()
             {
-                Title = Vereinssitzung,
+                Title = ClubMeeting,
                 Description = "Die erste Sitzung der Session.",
                 OwnerGroupId = null,
                 VenueId = ctx.Club.Venues.IdOf("buehnenhaus"),
-                StartsAt = SitzungStart,
-                EndsAt = SitzungEnd,
+                StartsAt = MeetingStart,
+                EndsAt = MeetingEnd,
                 Kind = CalendarEntryKind.Meeting,
                 Visibility = CalendarEntryVisibility.Club,
                 AsksForResponse = true,
+                ParticipatingGroupIds = [],
             }
         );
 
@@ -89,13 +90,13 @@ public sealed class PostCalendarEntryTests
         Assert.Empty(result.VenueCollisions);
         await ctx
             .Expected.CalendarEntry(result.CalendarEntryId)
-            .ToHaveTitle(Vereinssitzung)
+            .ToHaveTitle(ClubMeeting)
             .CalendarEntry(result.CalendarEntryId)
             .ToBeClubOwned()
             .CalendarEntry(result.CalendarEntryId)
             .ToHaveVenue(ctx.Club.Venues.IdOf("buehnenhaus"))
             .CalendarEntry(result.CalendarEntryId)
-            .ToHavePeriod(SitzungStart, SitzungEnd)
+            .ToHavePeriod(MeetingStart, MeetingEnd)
             .CalendarEntry(result.CalendarEntryId)
             .ToHaveKind(CalendarEntryKind.Meeting)
             .CalendarEntry(result.CalendarEntryId)
@@ -106,7 +107,7 @@ public sealed class PostCalendarEntryTests
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_TheVereinsEintragComesFromAGruppenAdmin()
+    public async Task Should_ReturnForbidden_When_TheClubEntryComesFromAGroupAdmin()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
@@ -116,13 +117,13 @@ public sealed class PostCalendarEntryTests
             PostCalendarEntry,
             PostCalendarEntryRequest,
             PostCalendarEntryResponse
-        >(ClubOwned(Vereinssitzung));
+        >(ClubOwned(ClubMeeting));
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
     [Fact]
-    public async Task Should_WriteTheGruppenEintrag_When_TheCallerAdministersThatGruppe()
+    public async Task Should_WriteTheGroupEntry_When_TheCallerAdministersThatGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
@@ -136,7 +137,7 @@ public sealed class PostCalendarEntryTests
         >(
             new()
             {
-                Title = GardeTraining,
+                Title = DanceGuardTraining,
                 Description = null,
                 OwnerGroupId = tanzgarde,
                 VenueId = null,
@@ -145,6 +146,7 @@ public sealed class PostCalendarEntryTests
                 Kind = CalendarEntryKind.Training,
                 Visibility = CalendarEntryVisibility.Club,
                 AsksForResponse = false,
+                ParticipatingGroupIds = [],
             }
         );
 
@@ -160,7 +162,7 @@ public sealed class PostCalendarEntryTests
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_TheGruppenAdminNamesAnotherGruppe()
+    public async Task Should_ReturnForbidden_When_TheGroupAdminNamesAnotherGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
@@ -173,7 +175,7 @@ public sealed class PostCalendarEntryTests
         >(
             new()
             {
-                Title = GardeTraining,
+                Title = DanceGuardTraining,
                 Description = null,
                 OwnerGroupId = ctx.Groups.Groups.IdOf("kindergarde"),
                 VenueId = null,
@@ -182,6 +184,7 @@ public sealed class PostCalendarEntryTests
                 Kind = CalendarEntryKind.Training,
                 Visibility = CalendarEntryVisibility.Club,
                 AsksForResponse = false,
+                ParticipatingGroupIds = [],
             }
         );
 
@@ -189,7 +192,7 @@ public sealed class PostCalendarEntryTests
     }
 
     [Fact]
-    public async Task Should_WarnAboutTheOrtAndStillWrite_When_AnotherEintragHoldsItAtThatTime()
+    public async Task Should_WarnAboutTheVenueAndStillWrite_When_AnotherEntryHoldsItAtThatTime()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -218,15 +221,16 @@ public sealed class PostCalendarEntryTests
         >(
             new()
             {
-                Title = Vereinssitzung,
+                Title = ClubMeeting,
                 Description = null,
                 OwnerGroupId = null,
                 VenueId = ctx.Club.Venues.IdOf("buehnenhaus"),
-                StartsAt = SitzungStart,
-                EndsAt = SitzungEnd,
+                StartsAt = MeetingStart,
+                EndsAt = MeetingEnd,
                 Kind = CalendarEntryKind.Meeting,
                 Visibility = CalendarEntryVisibility.Club,
                 AsksForResponse = false,
+                ParticipatingGroupIds = [],
             }
         );
 
@@ -238,14 +242,14 @@ public sealed class PostCalendarEntryTests
         Assert.Equal(AbendprobeEnd, collision.EndsAt);
         await ctx
             .Expected.CalendarEntry(result.CalendarEntryId)
-            .ToHaveTitle(Vereinssitzung)
+            .ToHaveTitle(ClubMeeting)
             .CalendarEntry(result.CalendarEntryId)
             .ToHaveVenue(ctx.Club.Venues.IdOf("buehnenhaus"))
             .AssertAsync(ct);
     }
 
     [Fact]
-    public async Task Should_LeaveTheFremdenEintragOutOfTheWarning_When_TheCallerMayNotReadIt()
+    public async Task Should_LeaveTheForeignEntryOutOfTheWarning_When_TheCallerMayNotReadIt()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -267,8 +271,8 @@ public sealed class PostCalendarEntryTests
                     .Club(club =>
                         club.AddVenue("buehnenhaus", "Bühnenhaus")
                             .AddCalendarEntry(
-                                "krisensitzung",
-                                Krisensitzung,
+                                "crisis-meeting",
+                                CrisisMeeting,
                                 AbendprobeStart,
                                 AbendprobeEnd,
                                 visibility: CalendarEntryVisibility.Group,
@@ -287,15 +291,16 @@ public sealed class PostCalendarEntryTests
         >(
             new()
             {
-                Title = GardeTraining,
+                Title = DanceGuardTraining,
                 Description = null,
                 OwnerGroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
                 VenueId = ctx.Club.Venues.IdOf("buehnenhaus"),
-                StartsAt = SitzungStart,
-                EndsAt = SitzungEnd,
+                StartsAt = MeetingStart,
+                EndsAt = MeetingEnd,
                 Kind = CalendarEntryKind.Training,
                 Visibility = CalendarEntryVisibility.Club,
                 AsksForResponse = false,
+                ParticipatingGroupIds = [],
             }
         );
 
@@ -308,7 +313,7 @@ public sealed class PostCalendarEntryTests
     }
 
     [Fact]
-    public async Task Should_RefuseTheOrt_When_ErArchiviertIst()
+    public async Task Should_RefuseTheVenue_When_ItIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -330,15 +335,16 @@ public sealed class PostCalendarEntryTests
         >(
             new()
             {
-                Title = Vereinssitzung,
+                Title = ClubMeeting,
                 Description = null,
                 OwnerGroupId = null,
                 VenueId = ctx.Club.Venues.IdOf("altes-lager"),
-                StartsAt = SitzungStart,
-                EndsAt = SitzungEnd,
+                StartsAt = MeetingStart,
+                EndsAt = MeetingEnd,
                 Kind = CalendarEntryKind.Meeting,
                 Visibility = CalendarEntryVisibility.Club,
                 AsksForResponse = false,
+                ParticipatingGroupIds = [],
             }
         );
 
@@ -359,7 +365,7 @@ public sealed class PostCalendarEntryTests
         var (response, _) = await _fixture
             .CreateClient()
             .POSTAsync<PostCalendarEntry, PostCalendarEntryRequest, PostCalendarEntryResponse>(
-                ClubOwned(Vereinssitzung)
+                ClubOwned(ClubMeeting)
             );
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -372,11 +378,12 @@ public sealed class PostCalendarEntryTests
             Description = null,
             OwnerGroupId = null,
             VenueId = null,
-            StartsAt = SitzungStart,
-            EndsAt = SitzungEnd,
+            StartsAt = MeetingStart,
+            EndsAt = MeetingEnd,
             Kind = CalendarEntryKind.Meeting,
             Visibility = CalendarEntryVisibility.Club,
             AsksForResponse = false,
+            ParticipatingGroupIds = [],
         };
 
     private static void Club(IdentitySeedBuilder identity) =>

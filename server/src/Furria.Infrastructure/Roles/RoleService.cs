@@ -14,13 +14,13 @@ public sealed class RoleService
 {
     private const int NoRoleId = 0;
     private const string UnknownRoleMessage = "Diese Rolle gibt es nicht.";
-    private const string DuplicateNameMessage = WriteConflictMessages.DuplicateRollenName;
+    private const string DuplicateNameMessage = WriteConflictMessages.DuplicateRoleName;
     private const string ArchivedRoleMessage =
         "Eine archivierte Rolle kann nicht bearbeitet werden.";
     private const string AlreadyArchivedMessage = "Diese Rolle ist bereits archiviert.";
     private const string NotArchivedMessage = "Diese Rolle ist nicht archiviert.";
     private const string UnknownPersonMessage = "Diese Person steht nicht im Register.";
-    private const string OpenHoldingMessage = WriteConflictMessages.OpenInhaberschaft;
+    private const string OpenHoldingMessage = WriteConflictMessages.OpenRoleHolding;
     private const string OverlappingHoldingMessage =
         "Dieser Zeitraum überschneidet sich mit einer bestehenden Inhaberschaft. "
         + "Eine erneute Inhaberschaft beginnt frühestens am Tag nach dem Ende der vorigen.";

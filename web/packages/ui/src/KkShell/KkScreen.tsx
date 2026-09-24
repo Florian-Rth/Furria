@@ -1,41 +1,27 @@
-import GlobalStyles from '@mui/material/GlobalStyles';
 import type { FC } from 'react';
-import { safeArea } from '../internal/safe-area';
+import { createPortal } from 'react-dom';
 import { KkLetterIndex } from '../KkLetterIndex';
 import { kkTokens } from '../tokens';
-import { KkShellChrome } from './internal/layout/KkShellChrome';
-import { KkShellFoot } from './internal/layout/KkShellFoot';
+import { HANDOVER_STAGES } from './handover/handover-stages';
+import { KkHandoverStageContext } from './handover-stage';
 import { KkShellHeader } from './internal/layout/KkShellHeader';
-import { KkShellIndex } from './internal/layout/KkShellIndex';
-import { KkShellTrack } from './internal/layout/KkShellTrack';
-import { actionBarHeightOf } from './internal/logic/action-bar-height';
+import { footClearanceOf } from './internal/logic/foot-clearance';
+import { sectionOriginOf } from './internal/logic/section-origin';
 import { useKkShell } from './internal/logic/shell-context';
+import { useFootMeasure } from './internal/logic/use-foot-measure';
+import { useScreenStance } from './internal/logic/use-screen-stance';
 import { KkShellActionBar } from './internal/ui/KkShellActionBar';
 import { KkShellBar } from './internal/ui/KkShellBar';
 import type { KkShellBarLead } from './internal/ui/KkShellBarLeading';
 import { KkShellEntrance } from './internal/ui/KkShellEntrance';
-import { KkShellNav } from './internal/ui/KkShellNav';
-import { KkShellNotice } from './internal/ui/KkShellNotice';
 import { KkShellToolRow } from './internal/ui/KkShellToolRow';
-import type { KkScreenActionBar, KkScreenProps } from './screen-declaration';
+import type { KkScreenProps } from './screen-declaration';
 
-const { gutter, chromeGap, barHeight, toolRowHeight, navHeight, indexWidth } = kkTokens.shell;
+const { gutter, barHeight, chromeGap, toolRowHeight, indexWidth } = kkTokens.shell;
 
 const BAR_CLEARANCE = gutter * 2 + barHeight;
 const TOOL_ROW_CLEARANCE = chromeGap + toolRowHeight;
-const NAV_CLEARANCE = gutter * 2 + navHeight;
 const NO_CLEARANCE = 0;
-
-const footClearanceOf = (
-  section: string | undefined,
-  action: KkScreenActionBar | undefined,
-): number => {
-  if (action !== undefined) {
-    return gutter * 2 + actionBarHeightOf(action);
-  }
-
-  return section === undefined ? gutter : NAV_CLEARANCE;
-};
 
 export const KkScreen: FC<KkScreenProps> = ({
   kind,
@@ -50,70 +36,79 @@ export const KkScreen: FC<KkScreenProps> = ({
   tools,
   index,
   thread,
+  handover,
   children,
 }) => {
-  const { keyboardInset, path, move } = useKkShell();
+  const { path, move, destinations, chromeHost, footHost, indexHost } = useKkShell();
+  const { ref: actionBarRef, measured: measuredActionHeight } = useFootMeasure(
+    action !== undefined,
+  );
+  const barOrigin = origin ?? sectionOriginOf({ section, path, destinations });
   const lead: KkShellBarLead = header === undefined ? 'title' : 'brand';
   const searching = search !== undefined && search.query !== null;
   const showsTools = tools !== undefined && !searching;
-  const toolRow = <KkShellToolRow open={showsTools}>{tools}</KkShellToolRow>;
-  const nav = section === undefined ? null : <KkShellNav section={section} />;
-  const actionBar = action === undefined ? null : <KkShellActionBar action={action} />;
-  const notice = kind === 'fullscreen' ? null : <KkShellNotice />;
   const headClearance = showsTools ? BAR_CLEARANCE + TOOL_ROW_CLEARANCE : BAR_CLEARANCE;
-  const footClearance = footClearanceOf(section, action);
+  const footClearance = footClearanceOf({ section, action, measured: measuredActionHeight });
   const indexClearance = index === undefined ? NO_CLEARANCE : indexWidth;
 
-  const scrollClearance = {
-    html: {
-      scrollPaddingTop: safeArea('top', headClearance),
-      scrollPaddingBottom: safeArea('bottom', footClearance),
-    },
-  };
+  useScreenStance({
+    kind,
+    section: section ?? null,
+    headClearance,
+    footClearance,
+    indexClearance,
+  });
+
+  const chrome =
+    chromeHost === null
+      ? null
+      : createPortal(
+          <>
+            <KkShellBar
+              kind={kind}
+              lead={lead}
+              title={title}
+              origin={barOrigin}
+              actions={actions}
+              search={search}
+              thread={thread}
+            />
+            <KkShellToolRow open={showsTools}>{tools}</KkShellToolRow>
+          </>,
+          chromeHost,
+        );
+
+  const actionBar =
+    action === undefined || footHost === null
+      ? null
+      : createPortal(<KkShellActionBar action={action} ref={actionBarRef} />, footHost);
 
   const letterIndex =
-    index === undefined ? null : (
-      <KkShellIndex headClearance={headClearance} footClearance={footClearance}>
-        <KkLetterIndex
-          variant="rail"
-          label={index.label}
-          letters={index.letters}
-          current={index.current}
-          onSelect={index.onSelect}
-        />
-      </KkShellIndex>
-    );
+    index === undefined || indexHost === null
+      ? null
+      : createPortal(
+          <KkLetterIndex
+            variant="rail"
+            label={index.label}
+            letters={index.letters}
+            current={index.current}
+            onSelect={index.onSelect}
+          />,
+          indexHost,
+        );
+
+  const stage = handover === undefined ? null : HANDOVER_STAGES[handover];
+  const Header = stage?.Header ?? KkShellHeader;
 
   return (
-    <>
-      <GlobalStyles styles={scrollClearance} />
-      <KkShellChrome>
-        <KkShellBar
-          lead={lead}
-          title={title}
-          origin={origin}
-          actions={actions}
-          search={search}
-          thread={thread}
-        />
-        {toolRow}
-      </KkShellChrome>
-      <KkShellTrack
-        headClearance={headClearance}
-        footClearance={footClearance}
-        indexClearance={indexClearance}
-      >
-        <KkShellEntrance path={path} move={move}>
-          <KkShellHeader kind={headerKind}>{header}</KkShellHeader>
-          {children}
-        </KkShellEntrance>
-      </KkShellTrack>
+    <KkHandoverStageContext.Provider value={stage}>
+      {chrome}
+      {actionBar}
       {letterIndex}
-      <KkShellFoot raise={keyboardInset}>
-        {notice}
-        {actionBar}
-        {nav}
-      </KkShellFoot>
-    </>
+      <KkShellEntrance path={path} move={move}>
+        <Header kind={headerKind}>{header}</Header>
+        {children}
+      </KkShellEntrance>
+    </KkHandoverStageContext.Provider>
   );
 };

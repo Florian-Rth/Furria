@@ -6,7 +6,7 @@ import { KkIcon } from './KkIcon';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
-const MARK_SIZE = 40;
+const MARK_SIZE = '2.5rem';
 
 interface KkErrorStateProps {
   title: string;
@@ -31,7 +31,7 @@ export const KkErrorState: FC<KkErrorStateProps> = ({ title, description, action
       ...(Array.isArray(sx) ? sx : [sx]),
     ]}
   >
-    <KkIcon name="alert" sx={{ color: 'error.main', fontSize: MARK_SIZE }} />
+    <KkIcon name="alert" sx={{ color: 'error.main', width: MARK_SIZE, height: MARK_SIZE }} />
     <Typography component="p" sx={{ ...displayTitle, textWrap: 'balance' }}>
       {title}
     </Typography>

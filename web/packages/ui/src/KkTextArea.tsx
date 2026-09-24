@@ -15,12 +15,14 @@ interface KkTextAreaProps {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  onBlur?: () => void;
   rows?: number;
   maxLength?: number;
   showCount?: boolean;
   countLabel?: (used: number, max: number) => string;
   placeholder?: string;
   hint?: string;
+  required?: boolean;
   error?: boolean;
   helperText?: string;
   sx?: KkSx;
@@ -31,12 +33,14 @@ export const KkTextArea: FC<KkTextAreaProps> = ({
   label,
   value,
   onChange,
+  onBlur,
   rows = DEFAULT_ROWS,
   maxLength,
   showCount = false,
   countLabel = defaultCountLabel,
   placeholder,
   hint,
+  required,
   error,
   helperText,
   sx,
@@ -55,7 +59,7 @@ export const KkTextArea: FC<KkTextAreaProps> = ({
         sx={{
           alignSelf: 'flex-end',
           color: 'text.secondary',
-          fontSize: kkTokens.type.chip,
+          typography: 'caption',
           fontWeight: 700,
           letterSpacing: kkTokens.type.tracking.tight,
           px: HELPER_INSET,
@@ -72,7 +76,9 @@ export const KkTextArea: FC<KkTextAreaProps> = ({
         label={label}
         value={value}
         onChange={change}
+        onBlur={onBlur}
         placeholder={placeholder}
+        required={required}
         error={error}
         helperText={helper}
         multiline

@@ -3,6 +3,7 @@ import Stack from '@mui/material/Stack';
 import { keyframes } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
+import { toSealScale } from './seal-scale';
 import { kkTokens } from './tokens';
 
 const float = keyframes`
@@ -21,82 +22,83 @@ interface KkSealProps {
   rotation?: number;
 }
 
-export const KkSeal: FC<KkSealProps> = ({ dateLabel, caption, size = 168, rotation = -8 }) => (
-  <Box
-    data-kk-seal
-    aria-hidden
-    sx={{
-      width: size,
-      height: size,
-      flexShrink: 0,
-      transform: `rotate(${rotation}deg)`,
-    }}
-  >
+export const KkSeal: FC<KkSealProps> = ({ dateLabel, caption, size = 168, rotation = -8 }) => {
+  const scale = toSealScale(size);
+
+  return (
     <Box
+      data-kk-seal
+      aria-hidden
       sx={{
-        position: 'relative',
-        width: '100%',
-        height: '100%',
-        animation: `${float} 5s ease-in-out infinite`,
-        '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
+        width: size,
+        height: size,
+        flexShrink: 0,
+        transform: `rotate(${rotation}deg)`,
       }}
     >
       <Box
-        component="svg"
-        viewBox="0 0 120 120"
-        sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
-      >
-        <Box
-          component="circle"
-          cx="60"
-          cy="60"
-          r="57"
-          sx={(theme) => ({
-            fill: theme.palette.warning.main,
-            stroke: theme.palette.text.primary,
-            strokeWidth: 3,
-          })}
-        />
-        <Box
-          component="circle"
-          cx="60"
-          cy="60"
-          r="50"
-          sx={(theme) => ({
-            fill: 'none',
-            stroke: theme.palette.text.primary,
-            strokeWidth: 1,
-            strokeDasharray: '2 3',
-          })}
-        />
-      </Box>
-      <Stack
         sx={{
-          position: 'absolute',
-          inset: 0,
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'text.primary',
+          position: 'relative',
+          width: '100%',
+          height: '100%',
+          animation: `${float} 5s ease-in-out infinite`,
+          '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
         }}
       >
-        <Typography
-          component="span"
-          sx={{ fontFamily: kkTokens.font.display, fontSize: size * 0.34, lineHeight: 0.8 }}
+        <Box
+          component="svg"
+          viewBox="0 0 120 120"
+          sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
         >
-          {dateLabel}
-        </Typography>
-        <Typography
-          component="span"
+          <Box
+            component="circle"
+            cx="60"
+            cy="60"
+            r="57"
+            sx={(theme) => ({
+              fill: theme.palette.warning.main,
+              stroke: theme.palette.text.primary,
+              strokeWidth: 3,
+            })}
+          />
+          <Box
+            component="circle"
+            cx="60"
+            cy="60"
+            r="50"
+            sx={(theme) => ({
+              fill: 'none',
+              stroke: theme.palette.text.primary,
+              strokeWidth: 1,
+              strokeDasharray: '2 3',
+            })}
+          />
+        </Box>
+        <Stack
           sx={{
-            fontWeight: 900,
-            fontSize: size * 0.08,
-            letterSpacing: kkTokens.type.tracking.section,
-            mt: `${size * 0.02}px`,
+            position: 'absolute',
+            inset: 0,
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'text.primary',
           }}
         >
-          {caption}
-        </Typography>
-      </Stack>
+          <Typography component="span" sx={{ typography: scale.dateLabel, lineHeight: 0.8 }}>
+            {dateLabel}
+          </Typography>
+          <Typography
+            component="span"
+            sx={{
+              typography: scale.caption,
+              fontWeight: 900,
+              letterSpacing: kkTokens.type.tracking.section,
+              mt: `${size * 0.02}px`,
+            }}
+          >
+            {caption}
+          </Typography>
+        </Stack>
+      </Box>
     </Box>
-  </Box>
-);
+  );
+};

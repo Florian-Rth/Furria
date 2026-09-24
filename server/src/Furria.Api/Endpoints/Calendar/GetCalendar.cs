@@ -4,6 +4,7 @@ using Furria.Api.Authorization;
 using Furria.Application.Authorization;
 using Furria.Application.Club;
 using Furria.Core.Club;
+using Furria.Core.Groups;
 using Furria.Infrastructure.Club;
 
 namespace Furria.Api.Endpoints.Calendar;
@@ -64,11 +65,21 @@ public sealed class GetCalendar : Endpoint<GetCalendarRequest, GetCalendarRespon
             VenueName = entry.VenueName,
             OwnerGroupId = entry.OwnerGroupId,
             OwnerGroupName = entry.OwnerGroupName,
+            OwnerGroupTone = entry.OwnerGroupTone,
+            ParticipatingGroups = [.. entry.ParticipatingGroups.Select(ToDto)],
             Visibility = entry.Visibility,
             AsksForResponse = entry.AsksForResponse,
             Description = entry.Description,
             ViewerAnswer = entry.ViewerAnswer,
             IsRunning = entry.IsRunning,
+        };
+
+    private static ParticipatingGroupDto ToDto(ParticipatingGroup group) =>
+        new()
+        {
+            GroupId = group.GroupId,
+            Name = group.Name,
+            Tone = group.Tone,
         };
 }
 
@@ -157,6 +168,10 @@ public sealed record CalendarEntryDto
 
     public required string? OwnerGroupName { get; init; }
 
+    public required GroupTone? OwnerGroupTone { get; init; }
+
+    public required IReadOnlyList<ParticipatingGroupDto> ParticipatingGroups { get; init; }
+
     public required CalendarEntryVisibility Visibility { get; init; }
 
     public required bool AsksForResponse { get; init; }
@@ -166,4 +181,13 @@ public sealed record CalendarEntryDto
     public required AttendanceAnswer? ViewerAnswer { get; init; }
 
     public required bool IsRunning { get; init; }
+}
+
+public sealed record ParticipatingGroupDto
+{
+    public required int GroupId { get; init; }
+
+    public required string Name { get; init; }
+
+    public required GroupTone? Tone { get; init; }
 }

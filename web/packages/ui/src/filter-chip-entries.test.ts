@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
+import type { KkFilterOption } from './filter-chip-entries';
 import { toFilterChipEntries } from './filter-chip-entries';
 
-const options = [
+const options: KkFilterOption[] = [
   { id: 'all', label: 'Alle', count: 152 },
   { id: 'active', label: 'Aktiv', count: 134 },
   { id: 'ended', label: 'Beendet', count: 0 },
+  { id: 'open', label: 'Offen', count: 7 },
 ];
 
 describe('toFilterChipEntries', () => {
@@ -13,6 +15,7 @@ describe('toFilterChipEntries', () => {
       'Alle 152',
       'Aktiv 134',
       'Beendet 0',
+      'Offen 7',
     ]);
   });
 
@@ -31,6 +34,7 @@ describe('toFilterChipEntries', () => {
       'all',
       'active',
       'ended',
+      'open',
     ]);
   });
 });

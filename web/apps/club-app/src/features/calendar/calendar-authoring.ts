@@ -1,3 +1,4 @@
+import type { KkSelectOption } from '@furria/ui';
 import type { CalendarEntryKind } from '@/features/club';
 import type { MyGroupSummary } from '@/features/group-hub';
 import { toDayNumberLabel, toTimeSpanLabel } from '@/lib/calendar-days';
@@ -19,6 +20,10 @@ const MINUTES_PER_HOUR = 60;
 const DEFAULT_START_TIME = '19:00';
 const DEFAULT_END_TIME = '21:00';
 const ONE_COLLISION = 1;
+const ARCHIVED_SUFFIX = ' — archiviert';
+const PARTICIPANTS_EMPTY = 'Keine weiteren Gruppen verfügbar.';
+const PARTICIPANTS_UNAVAILABLE =
+  'Die Gruppen konnten nicht geladen werden. Bereits zugeordnete Gruppen bleiben erhalten.';
 
 const KIND_ORDER: readonly CalendarEntryKind[] = [
   'training',
@@ -30,6 +35,11 @@ const KIND_ORDER: readonly CalendarEntryKind[] = [
 ];
 
 const VISIBILITY_ORDER: readonly CalendarEntryVisibility[] = ['group', 'club', 'public'];
+
+export interface CalendarParticipantGroup {
+  groupId: number;
+  name: string;
+}
 
 export interface CalendarOwnerOption {
   id: string;
@@ -47,6 +57,7 @@ export interface CalendarEntryPayload {
   kind: CalendarEntryKind;
   visibility: CalendarEntryVisibility;
   asksForResponse: boolean;
+  participatingGroupIds: number[];
 }
 
 export interface CalendarDayTime {
@@ -81,6 +92,50 @@ export const toOwnerOptions = (
     ...administered,
   ];
 };
+
+export type CalendarParticipantPool =
+  | { readonly state: 'failed' }
+  | { readonly state: 'ready'; readonly groups: readonly CalendarParticipantGroup[] };
+
+export const toParticipantPool = (
+  groups: readonly CalendarParticipantGroup[] | undefined,
+): CalendarParticipantPool =>
+  groups === undefined ? { state: 'failed' } : { state: 'ready', groups };
+
+export const toParticipantsEmptyLabel = (pool: CalendarParticipantPool): string =>
+  pool.state === 'failed' ? PARTICIPANTS_UNAVAILABLE : PARTICIPANTS_EMPTY;
+
+export const toParticipatingGroupOptions = (
+  pool: CalendarParticipantPool,
+  held: readonly CalendarParticipantGroup[],
+  ownerId: string,
+): KkSelectOption[] => {
+  const running = pool.state === 'ready' ? pool.groups : [];
+  const offered = running
+    .filter((group) => toOwnerId(group.groupId) !== ownerId)
+    .map((group) => ({ value: toOwnerId(group.groupId), label: group.name }));
+  const listed = new Set(offered.map((option) => option.value));
+  const kept = held
+    .filter(
+      (group) => toOwnerId(group.groupId) !== ownerId && !listed.has(toOwnerId(group.groupId)),
+    )
+    .map((group) => ({
+      value: toOwnerId(group.groupId),
+      label: pool.state === 'ready' ? `${group.name}${ARCHIVED_SUFFIX}` : group.name,
+    }));
+
+  return [...offered, ...kept].sort((left, right) => left.label.localeCompare(right.label, 'de'));
+};
+
+export const toParticipatingGroupIds = (values: readonly string[], ownerId: string): number[] => [
+  ...new Set(values.filter((value) => value !== ownerId).map((value) => Number(value))),
+];
+
+export const toParticipationKeptForOwner = (values: readonly string[], ownerId: string): string[] =>
+  values.filter((value) => value !== ownerId);
+
+export const toToggledParticipation = (values: readonly string[], value: string): string[] =>
+  values.includes(value) ? values.filter((held) => held !== value) : [...values, value];
 
 export const mayOwnCalendarEntry = (
   options: readonly CalendarOwnerOption[],
@@ -148,6 +203,7 @@ export const toEntryPayload = (form: CalendarEntryForm): CalendarEntryPayload =>
     kind: form.kind,
     visibility: form.visibility,
     asksForResponse: form.asksForResponse,
+    participatingGroupIds: toParticipatingGroupIds(form.participatingGroupIds, form.ownerId),
   };
 };
 
@@ -173,6 +229,7 @@ export const toEntryFormValues = (
       endDay: startDay,
       endTime: DEFAULT_END_TIME,
       asksForResponse: false,
+      participatingGroupIds: [],
     };
   }
 
@@ -191,6 +248,7 @@ export const toEntryFormValues = (
     endDay: end?.day ?? '',
     endTime: end?.time ?? DEFAULT_END_TIME,
     asksForResponse: entry.asksForResponse,
+    participatingGroupIds: entry.participatingGroups.map((group) => toOwnerId(group.groupId)),
   };
 };
 
@@ -222,10 +280,31 @@ export const toCollisionSentence = (names: readonly string[]): string | null => 
     return null;
   }
   if (names.length === ONE_COLLISION) {
-    return `An diesem Ort steht zur gleichen Zeit schon ${names[0]}. Gespeichert ist der Eintrag trotzdem — klärt das im Verein.`;
+    return `Der Ort ist zur selben Zeit bereits durch ${names[0]} belegt. Der Termin wurde trotzdem gespeichert.`;
   }
 
-  return `An diesem Ort stehen zur gleichen Zeit schon ${names.join(', ')}. Gespeichert ist der Eintrag trotzdem — klärt das im Verein.`;
+  return `Der Ort ist zur selben Zeit bereits durch ${names.join(', ')} belegt. Der Termin wurde trotzdem gespeichert.`;
+};
+
+const CALENDAR_ENTRY_ID_PATTERN = /^[1-9]\d*$/;
+
+export const toCalendarEntryIdParam = (raw: string): number | null =>
+  CALENDAR_ENTRY_ID_PATTERN.test(raw) ? Number(raw) : null;
+
+export interface EntryWriteNotice {
+  tone: 'success' | 'info';
+  message: string;
+}
+
+export const toEntryWriteNotice = (
+  baseMessage: string,
+  collisions: readonly CalendarCollision[],
+): EntryWriteNotice => {
+  const sentence = toCollisionSentence(collisions.map(toCollisionName));
+
+  return sentence === null
+    ? { tone: 'success', message: baseMessage }
+    : { tone: 'info', message: `${baseMessage} ${sentence}` };
 };
 
 export const findCalendarEntry = (

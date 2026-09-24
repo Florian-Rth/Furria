@@ -9,15 +9,10 @@ const GROUP_GAP = 2.5;
 
 interface ArchivedKeyVenuesProps {
   venues: readonly KeyVenue[];
-  onHandOut: (venueId: number) => void;
-  onTakeBack: (keyHoldingId: number) => void;
+  highlightedKey: string | null;
 }
 
-export const ArchivedKeyVenues: FC<ArchivedKeyVenuesProps> = ({
-  venues,
-  onHandOut,
-  onTakeBack,
-}) => {
+export const ArchivedKeyVenues: FC<ArchivedKeyVenuesProps> = ({ venues, highlightedKey }) => {
   if (venues.length === 0) {
     return null;
   }
@@ -26,12 +21,7 @@ export const ArchivedKeyVenues: FC<ArchivedKeyVenuesProps> = ({
     <Stack sx={{ gap: GROUP_GAP, minWidth: 0 }}>
       <KkEyebrow tone="muted">{KEY_SECTION_TITLES.archived}</KkEyebrow>
       {venues.map((venue) => (
-        <KeyVenuePanel
-          key={venue.venueId}
-          venue={venue}
-          onHandOut={onHandOut}
-          onTakeBack={onTakeBack}
-        />
+        <KeyVenuePanel key={venue.venueId} venue={venue} highlightedKey={highlightedKey} />
       ))}
     </Stack>
   );

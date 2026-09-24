@@ -4,6 +4,7 @@ import type { CSSObject, Theme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import type { ElementType, FC, ReactNode } from 'react';
 import { focusRing } from './internal/focus-ring';
+import { highlightMark, highlightPaint } from './internal/highlight-paint';
 import { personRowMetrics } from './internal/person-row-metrics';
 import { redInk } from './internal/red-ink';
 import { rowDividerTop } from './internal/row-divider';
@@ -32,6 +33,8 @@ interface KkPersonRowProps {
   emptyMeta?: string;
   trailing?: ReactNode;
   dimmed?: boolean;
+  highlight?: boolean;
+  landing?: string;
   component?: ElementType;
   to?: string;
   params?: Record<string, string>;
@@ -58,6 +61,8 @@ export const KkPersonRow: FC<KkPersonRowProps> = ({
   emptyMeta,
   trailing,
   dimmed = false,
+  highlight = false,
+  landing,
   component,
   to,
   params,
@@ -67,6 +72,7 @@ export const KkPersonRow: FC<KkPersonRowProps> = ({
   sx,
 }) => {
   const affiliation = resolvePersonRowAffiliation({ accent, meta, emptyMeta });
+  const highlightProps = highlightMark(highlight);
   const interactive = component !== undefined || onClick !== undefined;
   const rowComponent = component ?? (onClick === undefined ? 'div' : 'button');
   const routeProps = component === undefined ? {} : { to, params, search, resetScroll };
@@ -99,7 +105,7 @@ export const KkPersonRow: FC<KkPersonRowProps> = ({
     <Typography
       component="span"
       sx={{
-        fontSize: kkTokens.type.rowMeta,
+        typography: 'caption',
         fontWeight: 700,
         lineHeight: 1.3,
         color: 'text.secondary',
@@ -163,9 +169,11 @@ export const KkPersonRow: FC<KkPersonRowProps> = ({
       component={rowComponent}
       {...routeProps}
       {...nativeProps}
+      {...highlightProps}
       onClick={onClick}
       direction="row"
       data-kk-person-row
+      data-kk-landing={landing}
       sx={[
         (theme) => ({
           width: '100%',
@@ -186,6 +194,7 @@ export const KkPersonRow: FC<KkPersonRowProps> = ({
           ...rowDividerTop,
           ...focusRing(theme),
           ...(interactive ? hoverPaint(theme) : {}),
+          ...(highlight ? highlightPaint(theme) : {}),
         }),
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
@@ -200,7 +209,7 @@ export const KkPersonRow: FC<KkPersonRowProps> = ({
           component="span"
           data-kk-person-row-name
           sx={{
-            fontSize: kkTokens.type.rowTitle,
+            typography: 'body2',
             fontWeight: 800,
             lineHeight: 1.25,
             color: nameColor,

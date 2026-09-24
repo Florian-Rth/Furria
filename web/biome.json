@@ -72,6 +72,10 @@
   ],
   "overrides": [
     {
+      "includes": ["**", "!packages/ui/src/theme.ts"],
+      "plugins": ["./biome-plugins/noCustomFontSize.grit"]
+    },
+    {
       "includes": ["**/*.config.ts", "**/*.config.js"],
       "linter": {
         "rules": {

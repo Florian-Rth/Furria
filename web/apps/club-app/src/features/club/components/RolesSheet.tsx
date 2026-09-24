@@ -9,7 +9,7 @@ const SHEET_TITLE = 'Alle Rollen';
 const CLOSE_LABEL = 'Schließen';
 const SKELETON_ROWS = 4;
 const EMPTY_TITLE = 'KEINE ROLLEN';
-const EMPTY_DESCRIPTION = 'Der Verein hat noch keine Rolle vergeben.';
+const EMPTY_DESCRIPTION = 'Rollen werden unter „Rollen & Rechte“ vergeben.';
 
 export const RolesSheet: FC = () => {
   const roles = useRolesOverviewQuery();

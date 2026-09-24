@@ -13,7 +13,7 @@ export const FeaturedAlbumTitle: FC<FeaturedAlbumTitleProps> = ({ album }) => (
     component="h2"
     data-kk-featured-album-title
     sx={{
-      fontSize: { xs: '1.875rem', desktop: '3.5rem' },
+      typography: { xs: 'h1', desktop: 'display' },
       lineHeight: 0.96,
       overflowWrap: 'anywhere',
       color: kkTokens.overlay.onPhotoText,

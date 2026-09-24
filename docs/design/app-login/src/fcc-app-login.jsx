@@ -1,6 +1,6 @@
-// fcc-app-login.jsx — Start- & Login-Screen der Club-App (Entrypoint).
-// Drei Richtungen: A Bühne (dunkel) · B Mitgliedsausweis (Papier) · C Plakat (rot).
-// Nutzt window.T (Tokens), KK-Brandkomponenten, PhoneFrame/StatusBar/HomeIndicator.
+// fcc-app-login.jsx — Start & login screen of the Club-App (entrypoint).
+// Three directions: A Stage (dark) · B Membership card (paper) · C Poster (red).
+// Uses window.T (tokens), KK brand components, PhoneFrame/StatusBar/HomeIndicator.
 
 const LT = window.T;
 const LK = window.KK.light;
@@ -58,13 +58,13 @@ function Countdown({ dark }) {
 }
 
 // ══════════════════════════════════════════════════════════════════════
-// A — „Bühne": dunkler Vorhang, Masthead-Typo, Sheet von unten
+// A — "Stage": dark curtain, masthead typography, sheet sliding up from below
 // ══════════════════════════════════════════════════════════════════════
 function LoginStageBody({ state, setState }) {
   const s = state;
   return (
     <div style={{ flex: 1, position: 'relative', background: '#15110E', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      {/* Bühnenlicht */}
+      {/* Stage light */}
       <div style={{ position: 'absolute', top: -180, left: '50%', transform: 'translateX(-50%)', width: 640, height: 560, background: 'radial-gradient(closest-side, rgba(244,180,0,0.20), rgba(244,180,0,0))', pointerEvents: 'none' }} />
       <div style={{ position: 'relative', padding: '4px 22px 0', display: 'flex', justifyContent: 'space-between', color: 'rgba(251,244,230,0.5)', fontWeight: 900, fontSize: 10, letterSpacing: 2 }}>
         <span>Nº 128</span><span>{SESSION}</span>
@@ -125,7 +125,7 @@ function LoginStage({ start = 'start' }) {
 }
 
 // ══════════════════════════════════════════════════════════════════════
-// B — „Mitgliedsausweis": die Anmeldung ist deine Karte
+// B — "Membership card": the login is your card
 // ══════════════════════════════════════════════════════════════════════
 function LoginCardBody({ state, setState }) {
   return (
@@ -193,7 +193,7 @@ function LoginCard({ start = 'form' }) {
 }
 
 // ══════════════════════════════════════════════════════════════════════
-// C — „Plakat": knallrot, Typo bis an den Rand
+// C — "poster": knallrot, Typo bis an den Rand
 // ══════════════════════════════════════════════════════════════════════
 function LoginPosterBody({ state, setState }) {
   return (
@@ -288,8 +288,8 @@ function LoginDesk() {
 }
 
 // ══════════════════════════════════════════════════════════════════════
-// Splash — kurzer Marken-Moment: Besen fliegt ein, Konfetti platzt,
-// Schriftzug setzt sich, dann übergibt er an den (ruhigen) Login.
+// Splash — a short brand moment: the broom flies in, confetti bursts,
+// the wordmark settles, then it hands over to the (calm) login.
 // phase 0 leer · 1 Besen · 2 Konfetti + FURRIA · 3 Motto/Ruhe
 // ══════════════════════════════════════════════════════════════════════
 const BURST = Array.from({ length: 22 }).map((_, i) => {
@@ -304,7 +304,7 @@ function SplashScene({ p }) {
   return (
     <div style={{ position: 'absolute', inset: 0, background: '#15110E', overflow: 'hidden' }}>
       <div style={{ position: 'absolute', top: -200, left: '50%', transform: 'translateX(-50%)', width: 700, height: 620, background: 'radial-gradient(closest-side, rgba(244,180,0,0.22), rgba(244,180,0,0))', opacity: on(1) ? 1 : 0, transition: `opacity 700ms ${ease}` }} />
-      {/* Konfetti-Explosion aus der Mitte */}
+      {/* Confetti explosion from the center */}
       <div style={{ position: 'absolute', left: '50%', top: '44%' }}>
         {BURST.map((b, i) => (
           <div key={i} style={{ position: 'absolute', width: b.w, height: b.h, background: b.c, borderRadius: b.round ? b.w : 1.5, opacity: on(2) ? (on(3) ? 0 : 1) : 0, transform: on(2) ? `translate(${b.dx}px, ${b.dy + (on(3) ? 90 : 0)}px) rotate(${b.r + (on(3) ? 160 : 0)}deg)` : 'translate(0,0) rotate(0deg) scale(.4)', transition: `transform ${on(3) ? 900 : 780}ms ${ease} ${(i % 5) * 22}ms, opacity ${on(3) ? 700 : 260}ms linear ${(i % 5) * 22}ms` }} />
@@ -327,7 +327,7 @@ function SplashScene({ p }) {
   );
 }
 
-// Standbild eines Splash-Moments (für die Artboards)
+// Still frame of a splash moment (for the artboards)
 function LoginSplash({ phase = 3 }) {
   return (
     <window.PhoneFrame screenBg="#15110E">

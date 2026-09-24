@@ -1,34 +1,52 @@
-import type { MyGroupSummary } from '@/features/group-hub';
 import { useMyGroupsQuery } from '@/features/group-hub';
-import { usePermissions } from '@/features/session';
+import { useMeQuery, usePermissions } from '@/features/session';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
-import { useRunningVenuesQuery } from '../api';
 import type { CalendarOwnerOption } from '../calendar-authoring';
 import { mayOwnCalendarEntry, toOwnerOptions } from '../calendar-authoring';
-import type { CalendarEntry, RunningVenue } from '../schemas';
-
-const NO_GROUPS: readonly MyGroupSummary[] = [];
-const NO_VENUES: readonly RunningVenue[] = [];
+import type { CalendarEntry } from '../schemas';
 
 export interface CalendarAuthoring {
   ownerOptions: readonly CalendarOwnerOption[];
-  venues: readonly RunningVenue[];
   mayAuthor: boolean;
   mayOwn: (entry: CalendarEntry) => boolean;
 }
 
-export const useCalendarAuthoring = (): CalendarAuthoring => {
-  const { has } = usePermissions();
-  const myGroups = useMyGroupsQuery();
-  const runningVenues = useRunningVenuesQuery();
+export interface CalendarAuthoringLoad {
+  authoring: CalendarAuthoring | null;
+  error: Error | null;
+  retry: () => void;
+}
 
-  const groups = myGroups.data?.groups ?? NO_GROUPS;
-  const ownerOptions = toOwnerOptions(groups, has(PERMISSION_KEYS.calendarManageClub));
+export const useCalendarAuthoring = (): CalendarAuthoringLoad => {
+  const me = useMeQuery();
+  const { has, isUndecided } = usePermissions();
+  const myGroups = useMyGroupsQuery();
+
+  const retry = (): void => {
+    if (me.isError) {
+      void me.refetch();
+    }
+    if (myGroups.isError) {
+      void myGroups.refetch();
+    }
+  };
+
+  if (isUndecided || myGroups.data === undefined) {
+    return { authoring: null, error: me.error ?? myGroups.error, retry };
+  }
+
+  const ownerOptions = toOwnerOptions(
+    myGroups.data.groups,
+    has(PERMISSION_KEYS.calendarManageClub),
+  );
 
   return {
-    ownerOptions,
-    venues: runningVenues.data?.venues ?? NO_VENUES,
-    mayAuthor: ownerOptions.length > 0,
-    mayOwn: (entry) => mayOwnCalendarEntry(ownerOptions, entry.ownerGroupId),
+    authoring: {
+      ownerOptions,
+      mayAuthor: ownerOptions.length > 0,
+      mayOwn: (entry) => mayOwnCalendarEntry(ownerOptions, entry.ownerGroupId),
+    },
+    error: null,
+    retry,
   };
 };

@@ -1,26 +1,16 @@
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import type { FC, PropsWithChildren } from 'react';
+import type { KkChipSize } from './internal/chip-size';
+import { chipSizeMetrics } from './internal/chip-size';
 import type { KkTone } from './internal/tone';
 import { tonePaint } from './internal/tone';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
 export type KkChipTone = KkTone;
-type KkChipSize = 'small' | 'medium';
 
 const DOT_SIZE = 6;
-
-interface KkChipMetrics {
-  fontSize: string;
-  px: number;
-  py: number;
-}
-
-const sizeMetrics: Record<KkChipSize, KkChipMetrics> = {
-  medium: { fontSize: kkTokens.type.chip, px: 1.125, py: 0.5 },
-  small: { fontSize: kkTokens.type.chipSmall, px: 1, py: 0.375 },
-};
 
 interface KkChipProps extends PropsWithChildren {
   tone?: KkChipTone;
@@ -69,12 +59,12 @@ export const KkChip: FC<KkChipProps> = ({
           gap: 0.75,
           ...tonePaint(theme, tone),
           borderRadius: `${kkTokens.radius.pill}px`,
-          fontFamily: kkTokens.font.body,
+          ...theme.typography.caption,
           fontWeight: 800,
           letterSpacing: kkTokens.type.tracking.tight,
           lineHeight: 1.2,
           whiteSpace: 'nowrap',
-          ...sizeMetrics[size],
+          ...chipSizeMetrics[size],
         }),
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}

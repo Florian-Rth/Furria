@@ -1,18 +1,18 @@
-import { KkPanelStack } from '@furria/ui';
+import { KkPanelStack, KkWriteScreen } from '@furria/ui';
 import type { FC } from 'react';
-import { usePermissions, useReturnFocus } from '@/features/session';
-import { useRoleDialogs } from '../hooks/use-role-dialogs';
+import { useState } from 'react';
+import { useLanding } from '@/features/write';
 import { useRoleLifecycle } from '../hooks/use-role-lifecycle';
 import { useRolePermissions } from '../hooks/use-role-permissions';
 import type { RoleDetails } from '../schemas';
-import { AddHolderDialog } from './AddHolderDialog';
 import { ArchiveRoleDialog } from './ArchiveRoleDialog';
-import { EndHoldingDialog } from './EndHoldingDialog';
-import { RoleFormDialog } from './RoleFormDialog';
+import { RestoreRoleDialog } from './RestoreRoleDialog';
 import { RoleHeaderCard } from './RoleHeaderCard';
 import { RoleHoldersPanel } from './RoleHoldersPanel';
 import { RolePastHoldersPanel } from './RolePastHoldersPanel';
 import { RolePermissionList } from './RolePermissionList';
+
+const ARCHIVE_LABEL = 'Rolle archivieren';
 
 interface RoleDetailProps {
   role: RoleDetails;
@@ -21,50 +21,51 @@ interface RoleDetailProps {
 }
 
 export const RoleDetail: FC<RoleDetailProps> = ({ role, catalogue, holdersPending }) => {
-  const { isAffiliated } = usePermissions();
-  const holdersFocus = useReturnFocus();
-  const dialogs = useRoleDialogs(role.holders);
+  const { highlightedKey } = useLanding();
+  const [archiveOpen, setArchiveOpen] = useState(false);
+  const [restoreOpen, setRestoreOpen] = useState(false);
   const permissions = useRolePermissions(role, catalogue);
-  const lifecycle = useRoleLifecycle({ role, onArchived: dialogs.close });
+  const lifecycle = useRoleLifecycle({
+    role,
+    onArchived: () => {
+      setArchiveOpen(false);
+    },
+    onRestored: () => {
+      setRestoreOpen(false);
+    },
+  });
 
   const isArchived = role.archivedOn !== null;
 
-  const openRename = (): void => {
-    dialogs.open('rename');
-  };
-
-  const openAddHolder = (): void => {
-    dialogs.open('add-holder');
-  };
-
   const openArchive = (): void => {
-    dialogs.open('archive');
+    setArchiveOpen(true);
   };
 
-  const renamedRole = dialogs.openDialog === 'rename' ? role : null;
-
-  const closeAfterEnding = (): void => {
-    dialogs.close();
-    holdersFocus.returnFocus();
+  const closeArchive = (): void => {
+    setArchiveOpen(false);
   };
+
+  const openRestore = (): void => {
+    setRestoreOpen(true);
+  };
+
+  const closeRestore = (): void => {
+    setRestoreOpen(false);
+  };
+
+  const danger = isArchived ? null : (
+    <KkWriteScreen.Danger label={ARCHIVE_LABEL} onSelect={openArchive} />
+  );
 
   return (
     <KkPanelStack>
-      <RoleHeaderCard
-        role={role}
-        onRename={openRename}
-        onArchive={openArchive}
-        onRestore={lifecycle.restore}
-        isRestoring={lifecycle.isRestoring}
-      />
+      <RoleHeaderCard role={role} onOpenRestore={openRestore} isRestoring={lifecycle.isRestoring} />
       <RoleHoldersPanel
+        roleId={role.roleId}
         holders={role.holders}
-        viewerIsAffiliated={isAffiliated}
         canAdd={!isArchived}
         pending={holdersPending}
-        titleRef={holdersFocus.targetRef}
-        onAdd={openAddHolder}
-        onEnd={dialogs.openEndHolding}
+        highlightedKey={highlightedKey}
       />
       <RolePermissionList
         permissions={permissions}
@@ -73,30 +74,18 @@ export const RoleDetail: FC<RoleDetailProps> = ({ role, catalogue, holdersPendin
         isArchived={isArchived}
       />
       <RolePastHoldersPanel holders={role.pastHolders} />
-      <RoleFormDialog
-        open={dialogs.openDialog === 'rename'}
-        editedRole={renamedRole}
-        onClose={dialogs.close}
-        onSaved={dialogs.close}
-      />
-      <AddHolderDialog
-        roleId={role.roleId}
-        roleName={role.name}
-        open={dialogs.openDialog === 'add-holder'}
-        onClose={dialogs.close}
-      />
+      {danger}
       <ArchiveRoleDialog
         role={role}
-        open={dialogs.openDialog === 'archive'}
-        onClose={dialogs.close}
+        open={archiveOpen}
+        onClose={closeArchive}
         lifecycle={lifecycle}
       />
-      <EndHoldingDialog
-        roleId={role.roleId}
-        roleName={role.name}
-        holder={dialogs.endHolder}
-        onClose={dialogs.close}
-        onEnded={closeAfterEnding}
+      <RestoreRoleDialog
+        role={role}
+        open={restoreOpen}
+        onClose={closeRestore}
+        lifecycle={lifecycle}
       />
     </KkPanelStack>
   );

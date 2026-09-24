@@ -4,47 +4,44 @@ import { MANAGE_BANKS, MANAGE_PANELS } from './manage-hub-panels';
 import type { ManageHub } from './schemas';
 
 export const MANAGE_TITLE = 'Verein verwalten';
-export const MANAGE_EYEBROW = 'VERWALTUNG';
-export const MANAGE_LEAD =
-  'Hier hält der Verein seinen Bestand — wer dazugehört, was er führt, wer wofür einen Schlüssel hat. Geändert wird er nur hier; Verein und Kalender lesen ihn.';
+export const MANAGE_LEAD = 'Personen, Gruppen, Ämter und Schlüssel des Vereins verwalten.';
 export const MANAGE_LOADING_LABEL = 'Die Verwaltung wird geladen';
-export const MANAGE_EMPTY_NOTE =
-  'Noch ist nichts eingetragen. Alles, was Verein und Kalender zeigen, steht ab hier.';
+export const MANAGE_EMPTY_NOTE = 'Es sind noch keine Daten erfasst.';
 export const MANAGE_ERROR_TITLE = 'VERWALTUNG NICHT GELADEN';
 export const MANAGE_RETRY_LABEL = 'Erneut laden';
 
-const EMPTY_COUNT = '—';
-const ALL_SEATS_TAKEN = 'Alle besetzt';
+const EMPTY_STATUS = 'Noch leer';
+const ALL_RETURNED = 'Alle zurück';
+const SUMMARY_SEPARATOR = ' · ';
 
-export interface ManageTileModel {
+export type ManageRowStatusTone = 'gold' | 'neutral';
+
+export interface ManageRowStatus {
+  label: string;
+  tone: ManageRowStatusTone;
+}
+
+export interface ManageRowModel {
   id: ManagePanelId;
   bank: ManageBankId;
   title: string;
   icon: KkIconName;
   to: string;
-  countLabel: string;
   isEmpty: boolean;
-  footLine: string;
-  vacancyLabel: string | null;
-}
-
-export interface ManageBankTile {
-  tile: ManageTileModel;
-  isWide: boolean;
+  summary: string | undefined;
+  status: ManageRowStatus | undefined;
 }
 
 export interface ManageBankModel {
   id: ManageBankId;
   title: string;
-  tiles: readonly ManageBankTile[];
+  rows: readonly ManageRowModel[];
 }
 
-interface ManageTileFacts {
-  primaryCount: number;
-  presenceCount: number;
-  fullLine: string;
-  emptyLine: string;
-  vacancyCount: number | null;
+interface ManageRowFacts {
+  isEmpty: boolean;
+  summaryParts: readonly string[];
+  attention: string | null;
 }
 
 interface ManageFactSource {
@@ -52,148 +49,116 @@ interface ManageFactSource {
   sessionLabel: string;
 }
 
-type ManageFactReader = (source: ManageFactSource) => ManageTileFacts | null;
+type ManageFactReader = (source: ManageFactSource) => ManageRowFacts | null;
 
-const toMemberLine = (memberCount: number): string => {
-  if (memberCount > 1) {
-    return `${memberCount} Mitglieder`;
-  }
-  if (memberCount === 1) {
-    return '1 Mitglied';
-  }
+const toCount = (count: number, singular: string, plural: string): string =>
+  `${count} ${count === 1 ? singular : plural}`;
 
-  return 'Keine Mitgliedschaft';
-};
+const toArchivedParts = (archivedCount: number): string[] =>
+  archivedCount > 0 ? [`${archivedCount} archiviert`] : [];
 
-const toArchivedLine = (archivedCount: number): string => {
-  if (archivedCount > 1) {
-    return `${archivedCount} archiviert`;
-  }
-  if (archivedCount === 1) {
-    return '1 archiviert';
-  }
+const toVacancy = (vacantCount: number): string | null =>
+  vacantCount > 0 ? `${vacantCount} unbesetzt` : null;
 
-  return 'Keine archiviert';
-};
-
-const toHolderLine = (holderCount: number): string => {
-  if (holderCount > 1) {
-    return `bei ${holderCount} Personen`;
-  }
-  if (holderCount === 1) {
-    return 'bei 1 Person';
-  }
-
-  return 'Alle zurück';
-};
-
-const toSeatLine = (seatCount: number): string => {
-  if (seatCount > 1) {
-    return `${seatCount} Sitze besetzt`;
-  }
-  if (seatCount === 1) {
-    return '1 Sitz besetzt';
-  }
-
-  return 'Kein Sitz besetzt';
-};
-
-const toSessionLine = (sessionLabel: string, hasCurrentEntry: boolean): string =>
-  hasCurrentEntry ? `${sessionLabel} eingetragen` : `${sessionLabel} fehlt noch`;
+const toKeyParts = (holdingCount: number, holderCount: number): string[] =>
+  holdingCount > 0
+    ? [`${holdingCount} ausgegeben`, `bei ${toCount(holderCount, 'Person', 'Personen')}`]
+    : [ALL_RETURNED];
 
 const PANEL_FACTS: Record<ManagePanelId, ManageFactReader> = {
   persons: ({ hub }) =>
     hub.persons === null
       ? null
       : {
-          primaryCount: hub.persons.personCount,
-          presenceCount: hub.persons.personCount,
-          fullLine: toMemberLine(hub.persons.memberCount),
-          emptyLine: 'Die erste Person',
-          vacancyCount: null,
+          isEmpty: hub.persons.personCount === 0,
+          summaryParts: [
+            toCount(hub.persons.personCount, 'Person', 'Personen'),
+            toCount(hub.persons.memberCount, 'Mitglied', 'Mitglieder'),
+          ],
+          attention: null,
         },
   groups: ({ hub }) =>
     hub.groups === null
       ? null
       : {
-          primaryCount: hub.groups.groupCount,
-          presenceCount: hub.groups.groupCount,
-          fullLine: toArchivedLine(hub.groups.archivedCount),
-          emptyLine: 'Die erste Gruppe',
-          vacancyCount: null,
+          isEmpty: hub.groups.groupCount + hub.groups.archivedCount === 0,
+          summaryParts: [
+            toCount(hub.groups.groupCount, 'Gruppe', 'Gruppen'),
+            ...toArchivedParts(hub.groups.archivedCount),
+          ],
+          attention: null,
         },
   roles: ({ hub }) =>
     hub.roles === null
       ? null
       : {
-          primaryCount: hub.roles.roleCount,
-          presenceCount: hub.roles.roleCount,
-          fullLine: ALL_SEATS_TAKEN,
-          emptyLine: 'Die erste Rolle',
-          vacancyCount: hub.roles.vacantCount,
+          isEmpty: hub.roles.roleCount === 0,
+          summaryParts: [toCount(hub.roles.roleCount, 'Rolle', 'Rollen')],
+          attention: toVacancy(hub.roles.vacantCount),
         },
   board: ({ hub }) =>
     hub.board === null
       ? null
       : {
-          primaryCount: hub.board.officeCount,
-          presenceCount: hub.board.officeCount,
-          fullLine: toSeatLine(hub.board.seatCount),
-          emptyLine: 'Die erste Funktion',
-          vacancyCount: hub.board.vacantOfficeCount,
+          isEmpty: hub.board.officeCount === 0,
+          summaryParts: [
+            toCount(hub.board.officeCount, 'Funktion', 'Funktionen'),
+            toCount(hub.board.seatCount, 'Sitz besetzt', 'Sitze besetzt'),
+          ],
+          attention: toVacancy(hub.board.vacantOfficeCount),
         },
   sessions: ({ hub, sessionLabel }) =>
     hub.sessions === null
       ? null
       : {
-          primaryCount: hub.sessions.entryCount,
-          presenceCount: hub.sessions.entryCount,
-          fullLine: toSessionLine(sessionLabel, hub.sessions.hasCurrentEntry),
-          emptyLine: 'Der erste Eintrag',
-          vacancyCount: null,
+          isEmpty: hub.sessions.entryCount === 0,
+          summaryParts: [toCount(hub.sessions.entryCount, 'Eintrag', 'Einträge')],
+          attention: hub.sessions.hasCurrentEntry ? null : `${sessionLabel} fehlt`,
         },
   venues: ({ hub }) =>
     hub.venues === null
       ? null
       : {
-          primaryCount: hub.venues.venueCount,
-          presenceCount: hub.venues.venueCount,
-          fullLine: toArchivedLine(hub.venues.archivedCount),
-          emptyLine: 'Der erste Ort',
-          vacancyCount: null,
+          isEmpty: hub.venues.venueCount + hub.venues.archivedCount === 0,
+          summaryParts: [
+            toCount(hub.venues.venueCount, 'Ort', 'Orte'),
+            ...toArchivedParts(hub.venues.archivedCount),
+          ],
+          attention: null,
         },
   keys: ({ hub }) =>
     hub.keys === null
       ? null
       : {
-          primaryCount: hub.keys.holdingCount,
-          presenceCount: hub.keys.issuedCount,
-          fullLine: toHolderLine(hub.keys.holderCount),
-          emptyLine: 'Der erste Schlüssel',
-          vacancyCount: null,
+          isEmpty: hub.keys.issuedCount === 0,
+          summaryParts: toKeyParts(hub.keys.holdingCount, hub.keys.holderCount),
+          attention: null,
         },
 };
 
-const toTile = (panel: ManagePanelDefinition, facts: ManageTileFacts): ManageTileModel => {
-  const isEmpty = facts.presenceCount === 0;
-  const vacancyCount = facts.vacancyCount;
-  const vacancyLabel =
-    isEmpty || vacancyCount === null || vacancyCount === 0 ? null : `${vacancyCount} unbesetzt`;
+const toStatus = (facts: ManageRowFacts): ManageRowStatus | undefined => {
+  if (facts.isEmpty) {
+    return { label: EMPTY_STATUS, tone: 'neutral' };
+  }
+  if (facts.attention !== null) {
+    return { label: facts.attention, tone: 'gold' };
+  }
 
-  return {
-    id: panel.id,
-    bank: panel.bank,
-    title: panel.title,
-    icon: panel.icon,
-    to: panel.to,
-    countLabel: isEmpty ? EMPTY_COUNT : String(facts.primaryCount),
-    isEmpty,
-    footLine: isEmpty ? facts.emptyLine : facts.fullLine,
-    vacancyLabel,
-  };
+  return undefined;
 };
 
-export const toManageTiles = (hub: ManageHub, sessionLabel: string): ManageTileModel[] => {
+const toRow = (panel: ManagePanelDefinition, facts: ManageRowFacts): ManageRowModel => ({
+  id: panel.id,
+  bank: panel.bank,
+  title: panel.title,
+  icon: panel.icon,
+  to: panel.to,
+  isEmpty: facts.isEmpty,
+  summary: facts.isEmpty ? undefined : facts.summaryParts.join(SUMMARY_SEPARATOR),
+  status: toStatus(facts),
+});
+
+export const toManageRows = (hub: ManageHub, sessionLabel: string): ManageRowModel[] => {
   const source: ManageFactSource = { hub, sessionLabel };
 
   return MANAGE_PANELS.flatMap((panel) => {
@@ -203,29 +168,20 @@ export const toManageTiles = (hub: ManageHub, sessionLabel: string): ManageTileM
       return [];
     }
 
-    return [toTile(panel, facts)];
+    return [toRow(panel, facts)];
   });
 };
 
-export const toManageBanks = (tiles: readonly ManageTileModel[]): ManageBankModel[] =>
+export const toManageBanks = (rows: readonly ManageRowModel[]): ManageBankModel[] =>
   MANAGE_BANKS.flatMap((bank) => {
-    const bankTiles = tiles.filter((tile) => tile.bank === bank.id);
+    const bankRows = rows.filter((row) => row.bank === bank.id);
 
-    if (bankTiles.length === 0) {
+    if (bankRows.length === 0) {
       return [];
     }
 
-    const lastIndex = bankTiles.length - 1;
-    const endsOdd = bankTiles.length % 2 === 1;
-
-    return [
-      {
-        id: bank.id,
-        title: bank.title,
-        tiles: bankTiles.map((tile, index) => ({ tile, isWide: endsOdd && index === lastIndex })),
-      },
-    ];
+    return [{ id: bank.id, title: bank.title, rows: bankRows }];
   });
 
-export const isBoardEmpty = (tiles: readonly ManageTileModel[]): boolean =>
-  tiles.length > 0 && tiles.every((tile) => tile.isEmpty);
+export const isBoardEmpty = (rows: readonly ManageRowModel[]): boolean =>
+  rows.length > 0 && rows.every((row) => row.isEmpty);
