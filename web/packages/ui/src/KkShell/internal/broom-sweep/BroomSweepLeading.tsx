@@ -1,6 +1,6 @@
 import type { FC } from 'react';
-import type { KkBarMorphLeadingProps } from '../../bar-morph';
-import { KkShellBarLeading } from '../../internal/ui/KkShellBarLeading';
+import type { KkBarScene } from '../logic/bar-scene';
+import { KkShellBarLeading } from '../ui/KkShellBarLeading';
 import { BroomSweepFrame } from './layout/BroomSweepFrame';
 import { BroomSweepMarkSpot } from './layout/BroomSweepMarkSpot';
 import { BroomSweepSettled } from './layout/BroomSweepSettled';
@@ -13,8 +13,13 @@ import { BroomSweepGhostLine } from './ui/BroomSweepGhostLine';
 import { BroomSweepSweeper } from './ui/BroomSweepSweeper';
 import { BroomSweepTrail } from './ui/BroomSweepTrail';
 
-export const BroomSweepLeading: FC<KkBarMorphLeadingProps> = ({ scene }) => {
-  const { frameRef, ghostRef, plan, sweeping } = useBroomSweep(scene);
+interface BroomSweepLeadingProps {
+  scene: KkBarScene;
+  debut: boolean;
+}
+
+export const BroomSweepLeading: FC<BroomSweepLeadingProps> = ({ scene, debut }) => {
+  const { frameRef, ghostRef, plan, sweeping } = useBroomSweep(scene, debut);
   const { kind, lead, title, origin } = scene.current;
 
   const stage =

@@ -1,7 +1,6 @@
 import { KkNote, KkPageWatermark, KkPanelStack } from '@furria/ui';
 import Grid from '@mui/material/Grid';
 import type { FC } from 'react';
-import { LabEntryRow } from '@/features/lab';
 import { relevantSessionYear } from '@/lib/club';
 import { formatSessionLabel } from '@/lib/membership-labels';
 import { useManageHubQuery } from '../api';
@@ -44,7 +43,6 @@ export const ManageBody: FC = () => {
         <Grid container spacing={BANK_SPACING} sx={CELL_SX}>
           {bankCells}
         </Grid>
-        <LabEntryRow />
         <KkPageWatermark />
       </KkPanelStack>
     );

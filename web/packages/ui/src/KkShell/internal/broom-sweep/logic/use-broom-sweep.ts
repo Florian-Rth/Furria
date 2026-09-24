@@ -1,9 +1,8 @@
 import { animate } from 'motion/react';
 import type { RefObject } from 'react';
 import { useLayoutEffect, useRef, useState } from 'react';
-import type { KkBarMorphScene } from '../../../bar-morph';
 import { useKkShellScroll } from '../../../internal/logic/shell-scroll';
-import { useBarMorphDebut } from '../../../use-bar-morph-debut';
+import type { KkBarScene } from '../../logic/bar-scene';
 import type { BroomSweepMode } from './broom-sweep-frame';
 import { broomSweepFrameOf, durationOf } from './broom-sweep-frame';
 import type { BroomSweepPlan } from './broom-sweep-plan';
@@ -22,8 +21,7 @@ export interface BroomSweep {
 const modeOfDevice = (): BroomSweepMode =>
   window.matchMedia(REDUCED_MOTION_QUERY).matches ? 'fade' : 'sweep';
 
-export const useBroomSweep = (scene: KkBarMorphScene): BroomSweep => {
-  const debut = useBarMorphDebut(scene);
+export const useBroomSweep = (scene: KkBarScene, debut: boolean): BroomSweep => {
   const { scrollY, motion } = useKkShellScroll();
   const [plan] = useState<BroomSweepPlan | null>(() =>
     !debut || scene.previous === null || scene.move === 'still'

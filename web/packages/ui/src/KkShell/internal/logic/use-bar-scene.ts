@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import type { KkBarMorphScene, KkBarSnapshot } from '../../bar-morph';
 import type { KkScreenMove } from '../../screen-move';
+import type { KkBarScene, KkBarSnapshot } from './bar-scene';
 import { useKkShell } from './shell-context';
 
 interface BarRecall {
@@ -9,7 +9,7 @@ interface BarRecall {
   move: KkScreenMove;
 }
 
-export const useBarScene = (current: KkBarSnapshot): KkBarMorphScene => {
+export const useBarScene = (current: KkBarSnapshot): KkBarScene => {
   const { barMemory, move } = useKkShell();
   const [recall, setRecall] = useState<BarRecall>(() => ({
     path: current.path,

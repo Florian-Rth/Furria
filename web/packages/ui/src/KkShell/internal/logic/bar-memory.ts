@@ -1,4 +1,4 @@
-import type { KkBarSnapshot } from '../../bar-morph';
+import type { KkBarSnapshot } from './bar-scene';
 
 export interface KkBarMemory {
   last: KkBarSnapshot | null;

@@ -43,9 +43,9 @@ export const AREA_HANDOVERS = {
   members: 'sway',
   groups: 'sway',
   profile: 'sway',
-  announcements: 'fanfare',
-  manage: 'fanfare',
-  more: 'fanfare',
+  announcements: 'confetti',
+  manage: 'confetti',
+  more: 'confetti',
 } as const satisfies Record<string, KkHandoverName>;
 
 export const MANAGE_KEYS: readonly PermissionKey[] = [

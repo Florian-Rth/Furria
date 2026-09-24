@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { KkBarSnapshot } from '../../../bar-morph';
+import type { KkBarSnapshot } from '../../logic/bar-scene';
 import { directionOf, ghostOf, glyphOf, planBroomSweep, shiftOf } from './broom-sweep-plan';
 
 const home: KkBarSnapshot = {

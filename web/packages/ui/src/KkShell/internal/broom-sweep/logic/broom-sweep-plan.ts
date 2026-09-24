@@ -1,7 +1,7 @@
 import type { KkChromeMotion } from '../../../../internal/chrome-density';
-import type { KkBarSnapshot } from '../../../bar-morph';
 import { handoverAt } from '../../../internal/logic/handover';
 import type { KkScreenMove } from '../../../screen-move';
+import type { KkBarSnapshot } from '../../logic/bar-scene';
 
 export type BroomSweepGlyph = 'broom' | 'back' | 'close';
 

@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import type { KkBarMorphScene } from './bar-morph';
-import { useKkShell } from './internal/logic/shell-context';
+import type { KkBarScene } from './bar-scene';
+import { useKkShell } from './shell-context';
 
-export const useBarMorphDebut = (scene: KkBarMorphScene): boolean => {
+export const useBarDebut = (scene: KkBarScene): boolean => {
   const { barMemory } = useKkShell();
   const [debut] = useState(
     () => scene.previous !== null && scene.previous !== barMemory.playedFrom,

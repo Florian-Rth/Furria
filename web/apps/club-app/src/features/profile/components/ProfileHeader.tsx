@@ -26,7 +26,7 @@ export const ProfileHeader: FC<ProfileHeaderProps> = ({ me }) => {
       </KkScreenHeader.Visual>
       <KkScreenHeader.Text>
         <KkEyebrow tone="accent">{PROFILE_EYEBROW}</KkEyebrow>
-        <KkScreenHeader.Title transform="none">{headline.title}</KkScreenHeader.Title>
+        <KkScreenHeader.Title>{headline.title}</KkScreenHeader.Title>
         {stateRow}
       </KkScreenHeader.Text>
     </KkScreenHeader>

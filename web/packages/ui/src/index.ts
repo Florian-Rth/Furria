@@ -107,7 +107,6 @@ export { KkSheet } from './KkSheet/KkSheet';
 export { KkSheetProvider } from './KkSheet/KkSheetProvider';
 export type { KkSheetAction } from './KkSheet/sheet-actions';
 export { useKkSheet, useKkSheetCommands } from './KkSheet/sheet-store';
-export type { KkBarMorphName } from './KkShell/bar-morph';
 export type { KkHandoverName } from './KkShell/handover-stage';
 export { KkScreen } from './KkShell/KkScreen';
 export { KkShell } from './KkShell/KkShell';
