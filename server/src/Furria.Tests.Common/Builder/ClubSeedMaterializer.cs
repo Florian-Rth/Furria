@@ -25,6 +25,7 @@ internal static class ClubSeedMaterializer
         CancellationToken ct
     )
     {
+        await InsertClubRecordAsync(dbContext, recorded, ct);
         var sessions = await InsertSessionsAsync(dbContext, recorded, ct);
         var venues = await InsertVenuesAsync(dbContext, recorded, ct);
         var trainingSlots = await InsertTrainingSlotsAsync(
@@ -70,6 +71,31 @@ internal static class ClubSeedMaterializer
             calendarEntries,
             attendanceResponses
         );
+    }
+
+    private static async Task InsertClubRecordAsync(
+        AppDbContext dbContext,
+        ClubSeedBuilder recorded,
+        CancellationToken ct
+    )
+    {
+        if (recorded.ClubRecord is not { } intent)
+            return;
+
+        dbContext.ClubRecords.Add(
+            new ClubRecord
+            {
+                Name = intent.Name,
+                FoundedYear = intent.FoundedYear,
+                Street = intent.Street,
+                Zip = intent.Zip,
+                City = intent.City,
+                Email = intent.Email,
+                WebsiteUrl = intent.WebsiteUrl,
+                AgeOfConsent = intent.AgeOfConsent,
+            }
+        );
+        await dbContext.SaveChangesAsync(ct);
     }
 
     private static async Task<Dictionary<string, int>> InsertSessionsAsync(

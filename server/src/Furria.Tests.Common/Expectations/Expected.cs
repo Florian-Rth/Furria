@@ -60,6 +60,8 @@ public sealed class Expected
 
     public VenueExpectations Venue(int venueId) => new(this, venueId);
 
+    public ClubRecordExpectations ClubRecord() => new(this);
+
     public AnnouncementExpectations Announcement(int announcementId) => new(this, announcementId);
 
     public KeyHoldingExpectations KeyHolding(int keyHoldingId) => new(this, keyHoldingId);

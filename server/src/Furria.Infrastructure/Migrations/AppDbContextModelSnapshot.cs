@@ -369,6 +369,95 @@ namespace Furria.Infrastructure.Migrations
                     b.ToTable("calendar_entry_group", (string)null);
                 });
 
+            modelBuilder.Entity("Furria.Core.Club.ClubRecord", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    b.Property<int>("AgeOfConsent")
+                        .HasColumnType("integer")
+                        .HasColumnName("age_of_consent");
+
+                    b.Property<string>("City")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("city");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("email");
+
+                    b.Property<string>("FacebookUrl")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("facebook_url");
+
+                    b.Property<int?>("FoundedYear")
+                        .HasColumnType("integer")
+                        .HasColumnName("founded_year");
+
+                    b.Property<string>("InstagramUrl")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("instagram_url");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("phone");
+
+                    b.Property<string>("ShortName")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("short_name");
+
+                    b.Property<string>("Street")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("street");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("WebsiteUrl")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("website_url");
+
+                    b.Property<string>("Zip")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("zip");
+
+                    b.HasKey("Id")
+                        .HasName("pk_club_record");
+
+                    b.ToTable("club_record", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_club_record_age_of_consent", "age_of_consent BETWEEN 12 AND 21");
+
+                            t.HasCheckConstraint("ck_club_record_founded_year", "founded_year IS NULL OR founded_year >= 1800");
+
+                            t.HasCheckConstraint("ck_club_record_single", "id = 1");
+                        });
+                });
+
             modelBuilder.Entity("Furria.Core.Club.KeyHolding", b =>
                 {
                     b.Property<int>("Id")

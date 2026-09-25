@@ -15,4 +15,6 @@ public sealed record ManageHubDetails
     public required ManageHubKeys? Keys { get; init; }
 
     public required ManageHubBoard? Board { get; init; }
+
+    public required ManageHubClubRecord? ClubRecord { get; init; }
 }

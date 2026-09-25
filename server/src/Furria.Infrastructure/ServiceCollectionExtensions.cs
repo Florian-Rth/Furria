@@ -71,6 +71,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<KeyHoldingService>();
         services.AddScoped<AnnouncementService>();
         services.AddScoped<CalendarService>();
+        services.AddScoped<ClubRecordService>();
         services.AddScoped<ManagementService>();
 
         services.AddHostedService<DatabaseMigrator>();

@@ -44,11 +44,18 @@ export const ManageKeysPanelSchema = z.object({
 });
 export type ManageKeysPanel = z.infer<typeof ManageKeysPanelSchema>;
 
+export const ManageClubRecordPanelSchema = z.object({
+  name: z.string().nullable(),
+  missingFactCount: z.number().int(),
+});
+export type ManageClubRecordPanel = z.infer<typeof ManageClubRecordPanelSchema>;
+
 export const ManageHubSchema = z.object({
   persons: ManagePersonsPanelSchema.nullable(),
   groups: ManageGroupsPanelSchema.nullable(),
   roles: ManageRolesPanelSchema.nullable(),
   board: ManageBoardPanelSchema.nullable(),
+  clubRecord: ManageClubRecordPanelSchema.nullable(),
   sessions: ManageSessionsPanelSchema.nullable(),
   venues: ManageVenuesPanelSchema.nullable(),
   keys: ManageKeysPanelSchema.nullable(),

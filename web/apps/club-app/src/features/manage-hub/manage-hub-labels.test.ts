@@ -8,6 +8,7 @@ const EMPTY_HUB: ManageHub = {
   groups: null,
   roles: null,
   board: null,
+  clubRecord: null,
   sessions: null,
   venues: null,
   keys: null,
@@ -74,6 +75,13 @@ describe('toManageRows', () => {
   });
 
   it.each([
+    { name: 'GCC e.V.', expected: 'GCC e.V.' },
+    { name: null, expected: undefined },
+  ])('sums up the club record row named $name as $expected', ({ name, expected }) => {
+    expect(summaryOf(hubWith({ clubRecord: { name, missingFactCount: 0 } }))).toBe(expected);
+  });
+
+  it.each([
     { entryCount: 3, expected: '3 Einträge' },
     { entryCount: 1, expected: '1 Eintrag' },
   ])('sums up the session records row as "$expected"', ({ entryCount, expected }) => {
@@ -90,6 +98,14 @@ describe('toManageRows', () => {
       hub: hubWith({ sessions: { entryCount: 3, hasCurrentEntry: false } }),
       expected: '2025/26 fehlt',
     },
+    {
+      hub: hubWith({ clubRecord: { name: null, missingFactCount: 1 } }),
+      expected: '1 Angabe fehlt',
+    },
+    {
+      hub: hubWith({ clubRecord: { name: null, missingFactCount: 4 } }),
+      expected: '4 Angaben fehlen',
+    },
   ])('flags "$expected" as needing attention', ({ hub, expected }) => {
     expect(onlyRow(hub).status).toEqual({ label: expected, tone: 'gold' });
   });
@@ -98,6 +114,7 @@ describe('toManageRows', () => {
     { hub: hubWith({ roles: { roleCount: 12, vacantCount: 0 } }) },
     { hub: hubWith({ board: { officeCount: 7, seatCount: 7, vacantOfficeCount: 0 } }) },
     { hub: hubWith({ sessions: { entryCount: 3, hasCurrentEntry: true } }) },
+    { hub: hubWith({ clubRecord: { name: 'GCC e.V.', missingFactCount: 0 } }) },
     { hub: hubWith({ persons: { personCount: 184, memberCount: 121 } }) },
     { hub: hubWith({ keys: { issuedCount: 3, holdingCount: 3, holderCount: 2 } }) },
   ])('flags nothing on a settled row', ({ hub }) => {

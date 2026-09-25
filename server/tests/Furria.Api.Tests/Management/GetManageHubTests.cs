@@ -50,6 +50,7 @@ public sealed class GetManageHubTests
         Assert.Null(result.Venues);
         Assert.Null(result.Keys);
         Assert.Null(result.Board);
+        Assert.Null(result.ClubRecord);
     }
 
     [Fact]
@@ -65,6 +66,7 @@ public sealed class GetManageHubTests
         Assert.Null(result.Venues);
         Assert.Null(result.Keys);
         Assert.Null(result.Board);
+        Assert.Null(result.ClubRecord);
     }
 
     [Fact]
@@ -80,6 +82,7 @@ public sealed class GetManageHubTests
         Assert.Null(result.Venues);
         Assert.Null(result.Keys);
         Assert.Null(result.Board);
+        Assert.Null(result.ClubRecord);
     }
 
     [Fact]
@@ -90,6 +93,7 @@ public sealed class GetManageHubTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.NotNull(result.Sessions);
         Assert.NotNull(result.Venues);
+        Assert.NotNull(result.ClubRecord);
         Assert.Null(result.Persons);
         Assert.Null(result.Groups);
         Assert.Null(result.Roles);
@@ -110,6 +114,7 @@ public sealed class GetManageHubTests
         Assert.Null(result.Sessions);
         Assert.Null(result.Venues);
         Assert.Null(result.Board);
+        Assert.Null(result.ClubRecord);
     }
 
     [Fact]
@@ -125,6 +130,7 @@ public sealed class GetManageHubTests
         Assert.Null(result.Sessions);
         Assert.Null(result.Venues);
         Assert.Null(result.Keys);
+        Assert.Null(result.ClubRecord);
     }
 
     [Fact]
@@ -149,6 +155,7 @@ public sealed class GetManageHubTests
         Assert.NotNull(result.Venues);
         Assert.NotNull(result.Keys);
         Assert.NotNull(result.Board);
+        Assert.NotNull(result.ClubRecord);
         Assert.Equal(1, result.Groups.GroupCount);
         Assert.Equal(1, result.Venues.VenueCount);
         Assert.Equal(1, result.Sessions.EntryCount);
@@ -443,6 +450,67 @@ public sealed class GetManageHubTests
         Assert.NotNull(result.Board);
         Assert.Equal(0, result.Board.SeatCount);
         Assert.Equal(0, result.Board.VacantOfficeCount);
+    }
+
+    [Fact]
+    public async Task Should_CarryTheClubRecord_When_TheClubHasWrittenIt()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        var result = await ReadTheHubAsAdminAsync(
+            builder =>
+                builder.Club(club =>
+                    club.SetClubRecord(
+                        name: "Großfurraer Carnevals Club e.V.",
+                        foundedYear: 1971,
+                        street: "Hauptstraße 1",
+                        zip: "99706",
+                        city: "Großfurra",
+                        email: "vorstand@furria.de",
+                        ageOfConsent: 14
+                    )
+                ),
+            ct
+        );
+
+        Assert.NotNull(result.ClubRecord);
+        Assert.Equal("Großfurraer Carnevals Club e.V.", result.ClubRecord.Name);
+        Assert.Equal(0, result.ClubRecord.MissingFactCount);
+    }
+
+    [Fact]
+    public async Task Should_CountEveryFactAsMissing_When_TheClubHasWrittenNoRecord()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        var result = await ReadTheHubAsAdminAsync(_ => { }, ct);
+
+        Assert.NotNull(result.ClubRecord);
+        Assert.Null(result.ClubRecord.Name);
+        Assert.Equal(4, result.ClubRecord.MissingFactCount);
+    }
+
+    [Fact]
+    public async Task Should_CountAnIncompleteAddressAsMissing_When_TheCityIsNotRecorded()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        var result = await ReadTheHubAsAdminAsync(
+            builder =>
+                builder.Club(club =>
+                    club.SetClubRecord(
+                        name: "Großfurraer Carnevals Club e.V.",
+                        foundedYear: 1971,
+                        street: "Hauptstraße 1",
+                        zip: "99706",
+                        email: "vorstand@furria.de"
+                    )
+                ),
+            ct
+        );
+
+        Assert.NotNull(result.ClubRecord);
+        Assert.Equal(1, result.ClubRecord.MissingFactCount);
     }
 
     private async Task<GetManageHubResponse> ReadTheHubAsAdminAsync(

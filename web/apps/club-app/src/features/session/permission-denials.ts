@@ -7,7 +7,7 @@ const DENIED_MESSAGES: Partial<Record<PermissionKey, string>> = {
   [PERMISSION_KEYS.rolesManage]: 'Dir fehlt die Berechtigung für Rollen & Rechte.',
   [PERMISSION_KEYS.clubRead]: 'Dieser Bereich ist Mitgliedern vorbehalten.',
   [PERMISSION_KEYS.announcementsPost]: 'Dir fehlt die Berechtigung, Aushänge zu veröffentlichen.',
-  [PERMISSION_KEYS.clubManage]: 'Dir fehlt die Berechtigung für Sessions und Orte.',
+  [PERMISSION_KEYS.clubManage]: 'Dir fehlt die Berechtigung für Vereinsdaten, Sessions und Orte.',
   [PERMISSION_KEYS.keyHoldingsManage]: 'Dir fehlt die Berechtigung für die Schlüsselverwaltung.',
   [PERMISSION_KEYS.boardManage]: 'Dir fehlt die Berechtigung für den Vorstand.',
   [PERMISSION_KEYS.calendarManageClub]: 'Dir fehlt die Berechtigung, Vereinstermine zu verwalten.',

@@ -32,8 +32,8 @@ const PERMISSION_COPY: Record<PermissionKey, RolePermissionCopy> = {
     line: 'Aushänge veröffentlichen, bearbeiten und abnehmen, auch die anderer.',
   },
   [PERMISSION_KEYS.clubManage]: {
-    title: 'Sessionseinträge und Orte pflegen',
-    line: 'Sessionseinträge pflegen; Orte anlegen, bearbeiten und archivieren.',
+    title: 'Vereinsdaten, Sessionseinträge und Orte pflegen',
+    line: 'Vereinsdaten ändern; Sessionseinträge pflegen; Orte anlegen, bearbeiten und archivieren.',
   },
   [PERMISSION_KEYS.keyHoldingsManage]: {
     title: 'Schlüssel führen',

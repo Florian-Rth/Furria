@@ -400,10 +400,14 @@ _UI copy_: Verein; Gruppe; Verein verwalten; Kachel
 _Avoid_: association, society, admin area (for club management)
 
 **Club record**:
-The club's own facts about itself — there is exactly one: its **founded year** and its **age of
-consent** (the age from which a person may hold an account). Written in club management, read
-wherever the club describes itself (ruled 2026-09-25, accounts shaping).
-_UI copy_: Vereinsdaten; *Gründungsjahr*; *Mindestalter für einen Zugang*
+The club's own facts about itself — there is exactly one, kept in three sections, each written on
+its own: **name & founding** (official name as registered, short name, **founded year**),
+**address & contact** (address, email, phone, website and social links — what the imprint and
+every "reach the club" place show) and **access** (the **age of consent**, the age from which a
+person may hold an account, 16 unless the club says otherwise). Written in club management, read
+wherever the club describes itself (ruled 2026-09-25, accounts shaping; widened the same day).
+_UI copy_: Vereinsdaten; *Name & Gründung*; *Anschrift & Kontakt*; *Zugang zur App*;
+*Vereinsname*; *Kurzname*; *Gründungsjahr*; *Mindestalter für einen Zugang*
 _Avoid_: settings (it is the club's record, not an app's configuration)
 
 ### Club culture

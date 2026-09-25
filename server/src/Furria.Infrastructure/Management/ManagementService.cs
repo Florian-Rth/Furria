@@ -1,7 +1,10 @@
+using System.Diagnostics.Contracts;
 using Furria.Application.Authorization;
+using Furria.Application.Club;
 using Furria.Application.Management;
 using Furria.Core.Club;
 using Furria.Infrastructure.Authorization;
+using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,16 +15,19 @@ public sealed class ManagementService
     private readonly AppDbContext _dbContext;
     private readonly PermissionAuthorizer _authorizer;
     private readonly TimeProvider _timeProvider;
+    private readonly ClubRecordService _clubRecordService;
 
     public ManagementService(
         AppDbContext dbContext,
         PermissionAuthorizer authorizer,
-        TimeProvider timeProvider
+        TimeProvider timeProvider,
+        ClubRecordService clubRecordService
     )
     {
         _dbContext = dbContext;
         _authorizer = authorizer;
         _timeProvider = timeProvider;
+        _clubRecordService = clubRecordService;
     }
 
     public async Task<ManageHubDetails> HubAsync(int accountId, CancellationToken ct)
@@ -51,8 +57,30 @@ public sealed class ManagementService
             Board = granted.Contains(FurriaPermissions.BoardManage)
                 ? await BoardAsync(today, ct)
                 : null,
+            ClubRecord = managesClub ? await ClubRecordAsync(ct) : null,
         };
     }
+
+    private async Task<ManageHubClubRecord> ClubRecordAsync(CancellationToken ct)
+    {
+        var record = await _clubRecordService.GetAsync(ct);
+
+        return new ManageHubClubRecord
+        {
+            Name = record.Name,
+            MissingFactCount = MissingFactCountOf(record),
+        };
+    }
+
+    [Pure]
+    private static int MissingFactCountOf(ClubRecordDetails record) =>
+        new[]
+        {
+            record.Name is not null,
+            record.FoundedYear is not null,
+            record is { Street: not null, Zip: not null, City: not null },
+            record.Email is not null,
+        }.Count(isRecorded => !isRecorded);
 
     private async Task<ManageHubPersons> PersonsAsync(DateOnly today, CancellationToken ct) =>
         new()

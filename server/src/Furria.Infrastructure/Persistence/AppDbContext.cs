@@ -57,6 +57,8 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>
 
     public DbSet<CalendarEntryGroup> CalendarEntryGroups => Set<CalendarEntryGroup>();
 
+    public DbSet<ClubRecord> ClubRecords => Set<ClubRecord>();
+
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }
 

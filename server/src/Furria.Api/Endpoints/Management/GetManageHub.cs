@@ -52,6 +52,7 @@ public sealed class GetManageHub : EndpointWithoutRequest<GetManageHubResponse>
             Venues = hub.Venues is null ? null : ToDto(hub.Venues),
             Keys = hub.Keys is null ? null : ToDto(hub.Keys),
             Board = hub.Board is null ? null : ToDto(hub.Board),
+            ClubRecord = hub.ClubRecord is null ? null : ToDto(hub.ClubRecord),
         };
 
     private static ManageHubPersonsDto ToDto(ManageHubPersons persons) =>
@@ -89,6 +90,9 @@ public sealed class GetManageHub : EndpointWithoutRequest<GetManageHubResponse>
             SeatCount = board.SeatCount,
             VacantOfficeCount = board.VacantOfficeCount,
         };
+
+    private static ManageHubClubRecordDto ToDto(ManageHubClubRecord clubRecord) =>
+        new() { Name = clubRecord.Name, MissingFactCount = clubRecord.MissingFactCount };
 }
 
 public sealed record GetManageHubResponse
@@ -106,6 +110,8 @@ public sealed record GetManageHubResponse
     public required ManageHubKeysDto? Keys { get; init; }
 
     public required ManageHubBoardDto? Board { get; init; }
+
+    public required ManageHubClubRecordDto? ClubRecord { get; init; }
 }
 
 public sealed record ManageHubPersonsDto
@@ -161,4 +167,11 @@ public sealed record ManageHubBoardDto
     public required int SeatCount { get; init; }
 
     public required int VacantOfficeCount { get; init; }
+}
+
+public sealed record ManageHubClubRecordDto
+{
+    public required string? Name { get; init; }
+
+    public required int MissingFactCount { get; init; }
 }

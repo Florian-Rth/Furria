@@ -6,8 +6,8 @@ import type { FC, ReactNode } from 'react';
 import { KkIcon } from './KkIcon';
 import type { KkSx } from './kk-sx';
 
-type KkTextFieldType = 'text' | 'email' | 'password' | 'tel';
-type KkTextFieldInputMode = 'text' | 'email' | 'tel' | 'numeric';
+type KkTextFieldType = 'text' | 'email' | 'password' | 'tel' | 'url';
+type KkTextFieldInputMode = 'text' | 'email' | 'tel' | 'numeric' | 'url';
 
 interface KkTextFieldProps {
   name: string;
