@@ -210,6 +210,10 @@ export const signIn = async (credentials: LoginRequest): Promise<void> => {
   await adoptTokens(await requestLogin(credentials));
 };
 
+export const signInWithIssuedTokens = async (tokens: SessionTokens): Promise<void> => {
+  await adoptTokens(tokens);
+};
+
 const revokeQuietly = async (refreshToken: string): Promise<void> => {
   try {
     await withFreshAccessToken((token) => requestLogout(token, refreshToken));

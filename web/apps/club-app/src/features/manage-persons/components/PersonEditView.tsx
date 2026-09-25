@@ -1,6 +1,7 @@
 import { KkPanelStack } from '@furria/ui';
 import Grid from '@mui/material/Grid';
 import type { FC } from 'react';
+import { AccessPanel } from '@/features/account-access';
 import { useLanding } from '@/features/write';
 import type { PersonDetails } from '../schemas';
 import { PersonFeeReductionsPanel } from './PersonFeeReductionsPanel';
@@ -27,6 +28,7 @@ export const PersonEditView: FC<PersonEditViewProps> = ({ person }) => {
       <Grid size={{ xs: 12, desktop: 5 }} sx={{ minWidth: 0 }}>
         <KkPanelStack>
           <PersonMasterDataPanel person={person} highlightedKey={highlightedKey} />
+          <AccessPanel subject={person} highlightedKey={highlightedKey} />
           <PersonGroupsPanel groups={person.groups} firstName={person.firstName} />
           <PersonRolesPanel roles={person.roles} firstName={person.firstName} />
         </KkPanelStack>

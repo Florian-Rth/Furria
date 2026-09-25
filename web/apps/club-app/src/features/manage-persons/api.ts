@@ -50,6 +50,15 @@ const refreshPerson = (queryClient: QueryClient, personId: number): void => {
   void queryClient.invalidateQueries({ queryKey: PERSONS_QUERY_KEY });
 };
 
+export const useRefreshPerson = (personId: number | null): (() => void) => {
+  const queryClient = useQueryClient();
+
+  return () => {
+    void queryClient.invalidateQueries({ queryKey: personQueryKey(personId) });
+    void queryClient.invalidateQueries({ queryKey: PERSONS_QUERY_KEY });
+  };
+};
+
 export const usePersonsQuery = (): UseQueryResult<PersonsResponse, Error> =>
   useQuery({
     queryKey: PERSONS_QUERY_KEY,

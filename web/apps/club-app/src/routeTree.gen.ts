@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as InvitationRouteImport } from './routes/invitation'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppProfileRouteImport } from './routes/_app/profile'
@@ -71,6 +72,7 @@ import { Route as AppManagePersonsPersonIdPausesNewRouteImport } from './routes/
 import { Route as AppManagePersonsPersonIdPausesPauseIdRouteImport } from './routes/_app/manage.persons_.$personId_.pauses.$pauseId'
 import { Route as AppManagePersonsPersonIdMembershipsNewRouteImport } from './routes/_app/manage.persons_.$personId_.memberships.new'
 import { Route as AppManagePersonsPersonIdMembershipsMembershipIdRouteImport } from './routes/_app/manage.persons_.$personId_.memberships.$membershipId'
+import { Route as AppManagePersonsPersonIdInvitationsNewRouteImport } from './routes/_app/manage.persons_.$personId_.invitations.new'
 import { Route as AppManagePersonsPersonIdFeeReductionsNewRouteImport } from './routes/_app/manage.persons_.$personId_.fee-reductions.new'
 import { Route as AppManagePersonsPersonIdFeeReductionsFeeReductionIdRouteImport } from './routes/_app/manage.persons_.$personId_.fee-reductions.$feeReductionId'
 import { Route as AppManageKeysVenueIdHoldingsNewRouteImport } from './routes/_app/manage.keys_.$venueId_.holdings.new'
@@ -81,6 +83,11 @@ import { Route as AppManageBoardBoardOfficeIdSeatsBoardSeatIdRouteImport } from 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InvitationRoute = InvitationRouteImport.update({
+  id: '/invitation',
+  path: '/invitation',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppRoute = AppRouteImport.update({
@@ -415,6 +422,12 @@ const AppManagePersonsPersonIdMembershipsMembershipIdRoute =
     path: '/manage/persons/$personId/memberships/$membershipId',
     getParentRoute: () => AppRoute,
   } as any)
+const AppManagePersonsPersonIdInvitationsNewRoute =
+  AppManagePersonsPersonIdInvitationsNewRouteImport.update({
+    id: '/manage/persons_/$personId_/invitations/new',
+    path: '/manage/persons/$personId/invitations/new',
+    getParentRoute: () => AppRoute,
+  } as any)
 const AppManagePersonsPersonIdFeeReductionsNewRoute =
   AppManagePersonsPersonIdFeeReductionsNewRouteImport.update({
     id: '/manage/persons_/$personId_/fee-reductions/new',
@@ -454,6 +467,7 @@ const AppManageBoardBoardOfficeIdSeatsBoardSeatIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
+  '/invitation': typeof InvitationRoute
   '/login': typeof LoginRoute
   '/$': typeof AppSplatRoute
   '/announcements': typeof AppAnnouncementsRoute
@@ -513,6 +527,7 @@ export interface FileRoutesByFullPath {
   '/manage/keys/$venueId/holdings/new': typeof AppManageKeysVenueIdHoldingsNewRoute
   '/manage/persons/$personId/fee-reductions/$feeReductionId': typeof AppManagePersonsPersonIdFeeReductionsFeeReductionIdRoute
   '/manage/persons/$personId/fee-reductions/new': typeof AppManagePersonsPersonIdFeeReductionsNewRoute
+  '/manage/persons/$personId/invitations/new': typeof AppManagePersonsPersonIdInvitationsNewRoute
   '/manage/persons/$personId/memberships/$membershipId': typeof AppManagePersonsPersonIdMembershipsMembershipIdRoute
   '/manage/persons/$personId/memberships/new': typeof AppManagePersonsPersonIdMembershipsNewRoute
   '/manage/persons/$personId/pauses/$pauseId': typeof AppManagePersonsPersonIdPausesPauseIdRoute
@@ -521,6 +536,7 @@ export interface FileRoutesByFullPath {
   '/manage/roles/$roleId/holdings/new': typeof AppManageRolesRoleIdHoldingsNewRoute
 }
 export interface FileRoutesByTo {
+  '/invitation': typeof InvitationRoute
   '/login': typeof LoginRoute
   '/$': typeof AppSplatRoute
   '/': typeof AppIndexRoute
@@ -581,6 +597,7 @@ export interface FileRoutesByTo {
   '/manage/keys/$venueId/holdings/new': typeof AppManageKeysVenueIdHoldingsNewRoute
   '/manage/persons/$personId/fee-reductions/$feeReductionId': typeof AppManagePersonsPersonIdFeeReductionsFeeReductionIdRoute
   '/manage/persons/$personId/fee-reductions/new': typeof AppManagePersonsPersonIdFeeReductionsNewRoute
+  '/manage/persons/$personId/invitations/new': typeof AppManagePersonsPersonIdInvitationsNewRoute
   '/manage/persons/$personId/memberships/$membershipId': typeof AppManagePersonsPersonIdMembershipsMembershipIdRoute
   '/manage/persons/$personId/memberships/new': typeof AppManagePersonsPersonIdMembershipsNewRoute
   '/manage/persons/$personId/pauses/$pauseId': typeof AppManagePersonsPersonIdPausesPauseIdRoute
@@ -591,6 +608,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
+  '/invitation': typeof InvitationRoute
   '/login': typeof LoginRoute
   '/_app/$': typeof AppSplatRoute
   '/_app/_affiliated': typeof AppAffiliatedRouteWithChildren
@@ -652,6 +670,7 @@ export interface FileRoutesById {
   '/_app/manage/keys_/$venueId_/holdings/new': typeof AppManageKeysVenueIdHoldingsNewRoute
   '/_app/manage/persons_/$personId_/fee-reductions/$feeReductionId': typeof AppManagePersonsPersonIdFeeReductionsFeeReductionIdRoute
   '/_app/manage/persons_/$personId_/fee-reductions/new': typeof AppManagePersonsPersonIdFeeReductionsNewRoute
+  '/_app/manage/persons_/$personId_/invitations/new': typeof AppManagePersonsPersonIdInvitationsNewRoute
   '/_app/manage/persons_/$personId_/memberships/$membershipId': typeof AppManagePersonsPersonIdMembershipsMembershipIdRoute
   '/_app/manage/persons_/$personId_/memberships/new': typeof AppManagePersonsPersonIdMembershipsNewRoute
   '/_app/manage/persons_/$personId_/pauses/$pauseId': typeof AppManagePersonsPersonIdPausesPauseIdRoute
@@ -663,6 +682,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/invitation'
     | '/login'
     | '/$'
     | '/announcements'
@@ -722,6 +742,7 @@ export interface FileRouteTypes {
     | '/manage/keys/$venueId/holdings/new'
     | '/manage/persons/$personId/fee-reductions/$feeReductionId'
     | '/manage/persons/$personId/fee-reductions/new'
+    | '/manage/persons/$personId/invitations/new'
     | '/manage/persons/$personId/memberships/$membershipId'
     | '/manage/persons/$personId/memberships/new'
     | '/manage/persons/$personId/pauses/$pauseId'
@@ -730,6 +751,7 @@ export interface FileRouteTypes {
     | '/manage/roles/$roleId/holdings/new'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/invitation'
     | '/login'
     | '/$'
     | '/'
@@ -790,6 +812,7 @@ export interface FileRouteTypes {
     | '/manage/keys/$venueId/holdings/new'
     | '/manage/persons/$personId/fee-reductions/$feeReductionId'
     | '/manage/persons/$personId/fee-reductions/new'
+    | '/manage/persons/$personId/invitations/new'
     | '/manage/persons/$personId/memberships/$membershipId'
     | '/manage/persons/$personId/memberships/new'
     | '/manage/persons/$personId/pauses/$pauseId'
@@ -799,6 +822,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_app'
+    | '/invitation'
     | '/login'
     | '/_app/$'
     | '/_app/_affiliated'
@@ -860,6 +884,7 @@ export interface FileRouteTypes {
     | '/_app/manage/keys_/$venueId_/holdings/new'
     | '/_app/manage/persons_/$personId_/fee-reductions/$feeReductionId'
     | '/_app/manage/persons_/$personId_/fee-reductions/new'
+    | '/_app/manage/persons_/$personId_/invitations/new'
     | '/_app/manage/persons_/$personId_/memberships/$membershipId'
     | '/_app/manage/persons_/$personId_/memberships/new'
     | '/_app/manage/persons_/$personId_/pauses/$pauseId'
@@ -870,6 +895,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
+  InvitationRoute: typeof InvitationRoute
   LoginRoute: typeof LoginRoute
 }
 
@@ -880,6 +906,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/invitation': {
+      id: '/invitation'
+      path: '/invitation'
+      fullPath: '/invitation'
+      preLoaderRoute: typeof InvitationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app': {
@@ -1309,6 +1342,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppManagePersonsPersonIdMembershipsMembershipIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/manage/persons_/$personId_/invitations/new': {
+      id: '/_app/manage/persons_/$personId_/invitations/new'
+      path: '/manage/persons/$personId/invitations/new'
+      fullPath: '/manage/persons/$personId/invitations/new'
+      preLoaderRoute: typeof AppManagePersonsPersonIdInvitationsNewRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/manage/persons_/$personId_/fee-reductions/new': {
       id: '/_app/manage/persons_/$personId_/fee-reductions/new'
       path: '/manage/persons/$personId/fee-reductions/new'
@@ -1428,6 +1468,7 @@ interface AppRouteChildren {
   AppManageKeysVenueIdHoldingsNewRoute: typeof AppManageKeysVenueIdHoldingsNewRoute
   AppManagePersonsPersonIdFeeReductionsFeeReductionIdRoute: typeof AppManagePersonsPersonIdFeeReductionsFeeReductionIdRoute
   AppManagePersonsPersonIdFeeReductionsNewRoute: typeof AppManagePersonsPersonIdFeeReductionsNewRoute
+  AppManagePersonsPersonIdInvitationsNewRoute: typeof AppManagePersonsPersonIdInvitationsNewRoute
   AppManagePersonsPersonIdMembershipsMembershipIdRoute: typeof AppManagePersonsPersonIdMembershipsMembershipIdRoute
   AppManagePersonsPersonIdMembershipsNewRoute: typeof AppManagePersonsPersonIdMembershipsNewRoute
   AppManagePersonsPersonIdPausesPauseIdRoute: typeof AppManagePersonsPersonIdPausesPauseIdRoute
@@ -1501,6 +1542,8 @@ const AppRouteChildren: AppRouteChildren = {
     AppManagePersonsPersonIdFeeReductionsFeeReductionIdRoute,
   AppManagePersonsPersonIdFeeReductionsNewRoute:
     AppManagePersonsPersonIdFeeReductionsNewRoute,
+  AppManagePersonsPersonIdInvitationsNewRoute:
+    AppManagePersonsPersonIdInvitationsNewRoute,
   AppManagePersonsPersonIdMembershipsMembershipIdRoute:
     AppManagePersonsPersonIdMembershipsMembershipIdRoute,
   AppManagePersonsPersonIdMembershipsNewRoute:
@@ -1518,6 +1561,7 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
+  InvitationRoute: InvitationRoute,
   LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport

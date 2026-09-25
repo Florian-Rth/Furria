@@ -18,6 +18,7 @@ interface KkTextFieldProps {
   required?: boolean;
   autoFocus?: boolean;
   disabled?: boolean;
+  readOnly?: boolean;
   error?: boolean;
   helperText?: string;
   value?: string;
@@ -37,6 +38,7 @@ export const KkTextField: FC<KkTextFieldProps> = ({
   required,
   autoFocus,
   disabled,
+  readOnly,
   error,
   helperText,
   value,
@@ -77,7 +79,7 @@ export const KkTextField: FC<KkTextFieldProps> = ({
       variant="outlined"
       fullWidth
       data-kk-text-field
-      slotProps={{ htmlInput: { inputMode }, input: { endAdornment: adornment } }}
+      slotProps={{ htmlInput: { inputMode, readOnly }, input: { endAdornment: adornment } }}
       sx={sx}
     />
   );
