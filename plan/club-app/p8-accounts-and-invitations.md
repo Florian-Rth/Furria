@@ -1,5 +1,5 @@
 ---
-status: shaped 2026-09-25, slices S0–S11 planned, not yet implemented
+status: shaped 2026-09-25; S0 and S1 built 2026-09-25, S2–S11 planned
 phase: CA-P8 — Accounts & invitations
 shaped_with: Florian, grilling session 2026-09-25
 binding: docs/adr/0005 (to be amended for passkeys), docs/adr/0011, docs/adr/0016,

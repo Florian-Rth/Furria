@@ -44,6 +44,12 @@ services:
       Auth__BootstrapAdmin__Password: ${BOOTSTRAP_ADMIN_PASSWORD:-}
       Auth__BootstrapAdmin__FirstName: ${BOOTSTRAP_ADMIN_FIRST_NAME:-}
       Auth__BootstrapAdmin__LastName: ${BOOTSTRAP_ADMIN_LAST_NAME:-}
+      Mail__Host: ${MAIL_HOST:?set MAIL_HOST in .env}
+      Mail__Port: ${MAIL_PORT:-587}
+      Mail__User: ${MAIL_USER:-}
+      Mail__Password: ${MAIL_PASSWORD:-}
+      Mail__From: ${MAIL_FROM:?set MAIL_FROM in .env}
+      ClubApp__BaseUrl: ${CLUB_APP_BASE_URL:?set CLUB_APP_BASE_URL in .env}
     # Logs are JSON on stdout (ADR-0017); rotate them so `docker logs` never fills the disk.
     logging:
       driver: json-file

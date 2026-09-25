@@ -107,9 +107,10 @@ deviations from the design this section previously committed to, each deliberate
   production is a copy that drifts: mis-wire the signing key, issuer or claim shape and every
   minted-token test still passes while every real client gets a 401. Build one only when a test
   needs a token real login cannot mint (an expired one, a foreign-signed one).
-- **`Polling` and the `Doubles/` folder stay deferred** — this slice has no asynchronous side
-  effect and no in-house seam that real infrastructure cannot serve. Both return with the first
-  background worker / message bus, from git history (`git log -- '**/Polling.cs'`).
+- **`Polling` landed with the mail queue (CA-P8 S1); the `Doubles/` folder stays deferred** —
+  mail runs against a real Mailpit Testcontainer. `MailpitInbox` reads what was actually sent
+  through Mailpit's HTTP API, polling with a timeout; tests filter by a unique recipient address,
+  so the inbox is never cleared between tests.
 
 ### The shape of a test
 
@@ -351,14 +352,10 @@ public sealed class GetMeTests
 
 The pieces below have no consumer yet. Contracts stay the design commitment.
 
-1. **`Polling.WaitUntilAsync(predicate, timeout)`** — the sanctioned alternative to `Task.Delay`
-   once the first asynchronous side effect (background consumer, relay broadcast) needs waiting
-   on. Reads the real wall clock deliberately — the deadline must advance even when the host
-   injects the frozen `TestClock`.
-2. **Owned doubles** — a `Doubles/` folder is the only home for test doubles, each one reviewed:
+1. **Owned doubles** — a `Doubles/` folder is the only home for test doubles, each one reviewed:
    - Real infra exists → use real infra (never fake a `DbContext`).
    - In-house seam → an owned double is fine (e.g. `FakeMessageBus` for your own `IMessageBus`).
    - A fault the real dependency can't produce on demand → a small curated fake.
    - Doubles are behavioural, not interaction-recording.
-3. **`Expected.Outbox()`** — asserts against `FakeMessageBus`, not the DB, once messaging exists.
-4. **`JwtMinter`** — only when a test needs a token real login cannot produce.
+2. **`Expected.Outbox()`** — asserts against `FakeMessageBus`, not the DB, once messaging exists.
+3. **`JwtMinter`** — only when a test needs a token real login cannot produce.
