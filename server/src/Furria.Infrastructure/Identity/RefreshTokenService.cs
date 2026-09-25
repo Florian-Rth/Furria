@@ -129,7 +129,7 @@ public sealed class RefreshTokenService
 
     private Task<RefreshToken?> FindAsync(string presentedToken, CancellationToken ct)
     {
-        var hash = RefreshTokenSecret.HashOf(presentedToken);
+        var hash = OpaqueTokenSecret.HashOf(presentedToken);
         if (hash is null)
             return Task.FromResult<RefreshToken?>(null);
 
@@ -156,7 +156,7 @@ public sealed class RefreshTokenService
 
     private MintedRefreshToken Mint(int accountId, Guid familyId)
     {
-        var secret = RefreshTokenSecret.Generate(out var hash);
+        var secret = OpaqueTokenSecret.Generate(out var hash);
         var now = _timeProvider.GetUtcNow();
         var expiresAt = now + _options.Lifetime;
 

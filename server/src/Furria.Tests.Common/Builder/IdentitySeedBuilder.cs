@@ -43,7 +43,8 @@ public sealed class IdentitySeedBuilder
         string? zip = null,
         string? city = null,
         bool contactVisibleToMembers = false,
-        DateOnly? birthDate = null
+        DateOnly? birthDate = null,
+        bool withoutEmail = false
     )
     {
         _contacts.Add(
@@ -55,7 +56,8 @@ public sealed class IdentitySeedBuilder
                 zip,
                 city,
                 contactVisibleToMembers,
-                birthDate
+                birthDate,
+                withoutEmail
             )
         );
         return this;
@@ -117,7 +119,8 @@ public sealed class IdentitySeedBuilder
         string? Zip,
         string? City,
         bool ContactVisibleToMembers,
-        DateOnly? BirthDate
+        DateOnly? BirthDate,
+        bool WithoutEmail
     );
 
     internal sealed record MembershipIntent(

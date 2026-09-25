@@ -1,4 +1,6 @@
+using Furria.Application.ClubApp;
 using Furria.Application.Identity;
+using Furria.Application.Mail;
 using Furria.Application.PreviewAccess;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -39,6 +41,28 @@ public static class ServiceCollectionExtensions
             .AddOptions<BootstrapAdminOptions>()
             .BindConfiguration(BootstrapAdminOptions.SectionName);
 
+        services
+            .AddOptions<MailOptions>()
+            .BindConfiguration(MailOptions.SectionName)
+            .Validate(
+                options => options.Host.Length > 0 && options.Port > 0 && options.From.Length > 0,
+                $"{MailOptions.SectionName} needs a Host, a Port and a From address."
+            )
+            .ValidateOnStart();
+
+        services
+            .AddOptions<ClubAppOptions>()
+            .BindConfiguration(ClubAppOptions.SectionName)
+            .Validate(
+                options => IsAbsoluteWebUrl(options.BaseUrl),
+                $"{ClubAppOptions.SectionName}:BaseUrl must be an absolute http(s) URL."
+            )
+            .ValidateOnStart();
+
         return services;
     }
+
+    private static bool IsAbsoluteWebUrl(string value) =>
+        Uri.TryCreate(value, UriKind.Absolute, out var uri)
+        && (uri.Scheme == Uri.UriSchemeHttps || uri.Scheme == Uri.UriSchemeHttp);
 }

@@ -26,6 +26,7 @@ public static class AppDbContextExtensions
             ["ix_calendar_entry_group_calendar_entry_id_group_id"] =
                 WriteConflictMessages.DuplicateParticipation,
             ["pk_club_record"] = WriteConflictMessages.ClubRecordWrittenMeanwhile,
+            ["ix_invitation_person_id_live"] = WriteConflictMessages.InvitationIssuedMeanwhile,
         }.ToFrozenDictionary(StringComparer.Ordinal);
 
     public static async Task<Result> SaveOrConflictAsync(

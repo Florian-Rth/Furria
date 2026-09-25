@@ -1,6 +1,12 @@
+using System.Globalization;
+using DotNet.Testcontainers.Builders;
+using DotNet.Testcontainers.Containers;
 using Furria.Api.Logging;
+using Furria.Api.RateLimiting;
 using Furria.Application.Club;
+using Furria.Application.ClubApp;
 using Furria.Application.Identity;
+using Furria.Application.Mail;
 using Furria.Application.PreviewAccess;
 using Furria.Application.Results;
 using Furria.Core.Club;
@@ -37,10 +43,30 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
     public const string BootstrapAdminEmail = "bootstrap-admin@test.local";
     public const string BootstrapAdminPassword = "Bootstrap-Admin-Pw-1!";
     public const string SeededAccountPassword = "Seeded-Account-Pw-1!";
+    public const string ClubAppBaseUrl = "https://club.furria.test";
+    public const int PermitsPerInvitationToken = 5;
+
+    private const int MailpitSmtpPort = 1025;
+    private const int MailpitApiPort = 8025;
+    private const int PermitsPerIpBeyondAnySuite = 1_000_000;
 
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder(
         "postgres:18-alpine"
     ).Build();
+
+    private readonly IContainer _mailpit = new ContainerBuilder("axllent/mailpit:v1.27")
+        .WithPortBinding(MailpitSmtpPort, assignRandomHostPort: true)
+        .WithPortBinding(MailpitApiPort, assignRandomHostPort: true)
+        .WithWaitStrategy(
+            Wait.ForUnixContainer()
+                .UntilInternalTcpPortIsAvailable(MailpitSmtpPort)
+                .UntilHttpRequestIsSucceeded(request =>
+                    request.ForPort(MailpitApiPort).ForPath("/readyz")
+                )
+        )
+        .Build();
+
+    private MailpitInbox? _mailbox;
 
     private DatabaseResetService? _resetService;
     private SeededAccount? _bootstrapAdmin;
@@ -58,6 +84,8 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         _bootstrapAdmin ?? throw new InvalidOperationException(NotInitialized);
 
     public int AdminRoleId => _adminRoleId ?? throw new InvalidOperationException(NotInitialized);
+
+    public MailpitInbox Mailbox => _mailbox ?? throw new InvalidOperationException(NotInitialized);
 
     private static DateTimeOffset WholeSecondNow()
     {
@@ -124,6 +152,30 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             $"{BootstrapAdminOptions.SectionName}:{nameof(BootstrapAdminOptions.LastName)}",
             "Admin"
         );
+        builder.UseSetting(
+            $"{MailOptions.SectionName}:{nameof(MailOptions.Host)}",
+            _mailpit.Hostname
+        );
+        builder.UseSetting(
+            $"{MailOptions.SectionName}:{nameof(MailOptions.Port)}",
+            _mailpit.GetMappedPublicPort(MailpitSmtpPort).ToString(CultureInfo.InvariantCulture)
+        );
+        builder.UseSetting(
+            $"{MailOptions.SectionName}:{nameof(MailOptions.From)}",
+            "Furria Tests <no-reply@furria.test>"
+        );
+        builder.UseSetting(
+            $"{ClubAppOptions.SectionName}:{nameof(ClubAppOptions.BaseUrl)}",
+            ClubAppBaseUrl
+        );
+        builder.UseSetting(
+            $"{SignedOutRateLimitOptions.SectionName}:{nameof(SignedOutRateLimitOptions.PermitsPerIp)}",
+            PermitsPerIpBeyondAnySuite.ToString(CultureInfo.InvariantCulture)
+        );
+        builder.UseSetting(
+            $"{SignedOutRateLimitOptions.SectionName}:{nameof(SignedOutRateLimitOptions.PermitsPerToken)}",
+            PermitsPerInvitationToken.ToString(CultureInfo.InvariantCulture)
+        );
         builder.ConfigureServices(services =>
         {
             services.RemoveAll<TimeProvider>();
@@ -134,7 +186,14 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
 
     public async ValueTask InitializeAsync()
     {
-        await _postgres.StartAsync();
+        await Task.WhenAll(_postgres.StartAsync(), _mailpit.StartAsync());
+        _mailbox = new MailpitInbox(
+            new UriBuilder(
+                Uri.UriSchemeHttp,
+                _mailpit.Hostname,
+                _mailpit.GetMappedPublicPort(MailpitApiPort)
+            ).Uri
+        );
 
         await using var scope = Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -477,6 +536,8 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
     public override async ValueTask DisposeAsync()
     {
         await base.DisposeAsync();
+        _mailbox?.Dispose();
         await _postgres.DisposeAsync();
+        await _mailpit.DisposeAsync();
     }
 }

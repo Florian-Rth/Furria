@@ -89,6 +89,13 @@ public sealed class AccountService
         return Result<SessionTokensDetails>.Success(await StartSessionAsync(account, ct));
     }
 
+    public async Task<SessionTokensDetails> StartSessionAsync(Account account, CancellationToken ct)
+    {
+        var refresh = await _refreshTokenService.IssueAsync(account.Id, ct);
+        var access = _accessTokenService.Issue(account.Id, account.PersonId);
+        return Combine(access, refresh);
+    }
+
     public async Task<Result<SessionTokensDetails>> RefreshSessionAsync(
         string presentedToken,
         CancellationToken ct
@@ -284,16 +291,6 @@ public sealed class AccountService
             },
             ct
         );
-
-    private async Task<SessionTokensDetails> StartSessionAsync(
-        Account account,
-        CancellationToken ct
-    )
-    {
-        var refresh = await _refreshTokenService.IssueAsync(account.Id, ct);
-        var access = _accessTokenService.Issue(account.Id, account.PersonId);
-        return Combine(access, refresh);
-    }
 
     private sealed record AccountRow(
         int Id,

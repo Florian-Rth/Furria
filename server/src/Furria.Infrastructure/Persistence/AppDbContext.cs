@@ -39,6 +39,10 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
+    public DbSet<Invitation> Invitations => Set<Invitation>();
+
+    public DbSet<AccountEvent> AccountEvents => Set<AccountEvent>();
+
     public DbSet<Session> Sessions => Set<Session>();
 
     public DbSet<Venue> Venues => Set<Venue>();

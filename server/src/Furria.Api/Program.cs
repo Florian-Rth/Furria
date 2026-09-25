@@ -8,6 +8,7 @@ using Furria.Api.Authorization;
 using Furria.Api.Cors;
 using Furria.Api.Errors;
 using Furria.Api.Logging;
+using Furria.Api.RateLimiting;
 using Furria.Application;
 using Furria.Application.Identity;
 using Furria.Infrastructure;
@@ -50,6 +51,7 @@ try
         );
     builder.Services.AddAuthorization();
     builder.Services.AddNativeShellCors();
+    builder.Services.AddSignedOutRateLimiting();
     builder.Services.AddFastEndpoints();
     if (builder.Environment.IsDevelopment())
     {
@@ -70,6 +72,7 @@ try
     app.UseCors();
     app.UseAuthentication();
     app.UseAuthorization();
+    app.UseRateLimiter();
     app.UseFastEndpoints(c =>
     {
         c.Endpoints.RoutePrefix = "api";

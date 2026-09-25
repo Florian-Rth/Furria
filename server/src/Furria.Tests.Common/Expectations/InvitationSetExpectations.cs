@@ -1,0 +1,59 @@
+using Microsoft.EntityFrameworkCore;
+using Xunit;
+
+namespace Furria.Tests.Common.Expectations;
+
+public sealed class InvitationSetExpectations
+{
+    private readonly Expected _expected;
+    private readonly int _personId;
+
+    internal InvitationSetExpectations(Expected expected, int personId)
+    {
+        _expected = expected;
+        _personId = personId;
+    }
+
+    public Expected ToHaveCount(int count) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(
+                    count,
+                    await dbContext
+                        .Invitations.AsNoTracking()
+                        .CountAsync(invitation => invitation.PersonId == _personId, ct)
+                )
+        );
+
+    public Expected ToHaveLiveCount(int count) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(
+                    count,
+                    await dbContext
+                        .Invitations.AsNoTracking()
+                        .CountAsync(
+                            invitation =>
+                                invitation.PersonId == _personId
+                                && invitation.RedeemedAt == null
+                                && invitation.VoidedAt == null,
+                            ct
+                        )
+                )
+        );
+
+    public Expected ToHaveRedeemedCount(int count) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(
+                    count,
+                    await dbContext
+                        .Invitations.AsNoTracking()
+                        .CountAsync(
+                            invitation =>
+                                invitation.PersonId == _personId && invitation.RedeemedAt != null,
+                            ct
+                        )
+                )
+        );
+}

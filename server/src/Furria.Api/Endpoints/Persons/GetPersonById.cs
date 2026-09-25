@@ -3,10 +3,12 @@ using FluentValidation;
 using Furria.Api.Authorization;
 using Furria.Api.Results;
 using Furria.Application.Authorization;
+using Furria.Application.Groups;
 using Furria.Application.Identity;
 using Furria.Application.Registry;
 using Furria.Core.Club;
 using Furria.Core.Identity;
+using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Registry;
 
 namespace Furria.Api.Endpoints.Persons;
@@ -14,10 +16,12 @@ namespace Furria.Api.Endpoints.Persons;
 public sealed class GetPersonById : Endpoint<GetPersonByIdRequest, GetPersonByIdResponse>
 {
     private readonly PersonService _personService;
+    private readonly AccountAccessService _accountAccessService;
 
-    public GetPersonById(PersonService personService)
+    public GetPersonById(PersonService personService, AccountAccessService accountAccessService)
     {
         _personService = personService;
+        _accountAccessService = accountAccessService;
     }
 
     public override void Configure()
@@ -35,10 +39,20 @@ public sealed class GetPersonById : Endpoint<GetPersonByIdRequest, GetPersonById
             return;
         }
 
-        await Send.OkAsync(ToResponse(person.Value), cancellation: ct);
+        var access = await _accountAccessService.GetAccessAsync(req.PersonId, ct);
+        if (!access.IsSuccess)
+        {
+            await HttpContext.Response.SendFailureAsync(access.Error, ct);
+            return;
+        }
+
+        await Send.OkAsync(ToResponse(person.Value, access.Value), cancellation: ct);
     }
 
-    private static GetPersonByIdResponse ToResponse(ManagedPersonDetails person) =>
+    private static GetPersonByIdResponse ToResponse(
+        ManagedPersonDetails person,
+        AccountAccessDetails access
+    ) =>
         new()
         {
             PersonId = person.PersonId,
@@ -57,7 +71,45 @@ public sealed class GetPersonById : Endpoint<GetPersonByIdRequest, GetPersonById
             FeeReductions = [.. person.FeeReductions.Select(ToDto)],
             Groups = [.. person.Groups.Select(ToDto)],
             Roles = [.. person.Roles.Select(ToDto)],
+            Access = ToDto(access),
         };
+
+    private static PersonAccessDto ToDto(AccountAccessDetails access) =>
+        new()
+        {
+            State = access.State,
+            Reason = access.Reason,
+            Invitation = access.Invitation is { } invitation ? ToDto(invitation) : null,
+            History = [.. access.History.Select(ToDto)],
+        };
+
+    private static PersonAccessInvitationDto ToDto(LiveInvitationDetails invitation) =>
+        new()
+        {
+            Channel = invitation.Channel,
+            IssuedAt = invitation.IssuedAt,
+            IssuedBy = ToDto(invitation.IssuedBy),
+            ExpiresAt = invitation.ExpiresAt,
+            IsExpired = invitation.IsExpired,
+        };
+
+    private static PersonAccessEventDto ToDto(AccountEventDetails accountEvent) =>
+        new()
+        {
+            Kind = accountEvent.Kind,
+            At = accountEvent.At,
+            Actor = ToDto(accountEvent.Actor),
+        };
+
+    private static PersonAccessActorDto? ToDto(PersonReference? person) =>
+        person is null
+            ? null
+            : new()
+            {
+                PersonId = person.PersonId,
+                FirstName = person.FirstName,
+                LastName = person.LastName,
+            };
 
     private static PersonMembershipDto ToDto(MembershipDetails membership) =>
         new()
@@ -153,6 +205,50 @@ public sealed record GetPersonByIdResponse
     public required IReadOnlyList<PersonGroupDto> Groups { get; init; }
 
     public required IReadOnlyList<PersonRoleDto> Roles { get; init; }
+
+    public required PersonAccessDto Access { get; init; }
+}
+
+public sealed record PersonAccessDto
+{
+    public required AccountAccessState State { get; init; }
+
+    public required AccountIneligibilityReason? Reason { get; init; }
+
+    public required PersonAccessInvitationDto? Invitation { get; init; }
+
+    public required IReadOnlyList<PersonAccessEventDto> History { get; init; }
+}
+
+public sealed record PersonAccessInvitationDto
+{
+    public required InvitationChannel Channel { get; init; }
+
+    public required DateTimeOffset IssuedAt { get; init; }
+
+    public required PersonAccessActorDto? IssuedBy { get; init; }
+
+    public required DateTimeOffset ExpiresAt { get; init; }
+
+    public required bool IsExpired { get; init; }
+}
+
+public sealed record PersonAccessEventDto
+{
+    public required AccountEventKind Kind { get; init; }
+
+    public required DateTimeOffset At { get; init; }
+
+    public required PersonAccessActorDto? Actor { get; init; }
+}
+
+public sealed record PersonAccessActorDto
+{
+    public required int PersonId { get; init; }
+
+    public required string FirstName { get; init; }
+
+    public required string LastName { get; init; }
 }
 
 public sealed record PersonMembershipDto

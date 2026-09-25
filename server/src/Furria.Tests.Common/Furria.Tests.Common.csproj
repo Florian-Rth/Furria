@@ -3,6 +3,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
     <PackageReference Include="Npgsql" />
+    <PackageReference Include="Testcontainers" />
     <PackageReference Include="Testcontainers.PostgreSql" />
     <!-- NOT the xunit.v3 metapackage: that would turn this classlib into a test host. -->
     <PackageReference Include="xunit.v3.assert" />

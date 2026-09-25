@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 
 namespace Furria.Infrastructure.Identity;
 
-public static class RefreshTokenSecret
+public static class OpaqueTokenSecret
 {
     private const int ByteLength = 32;
 

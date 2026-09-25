@@ -2,6 +2,7 @@ using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Groups;
 using Furria.Infrastructure.Identity;
+using Furria.Infrastructure.Mail;
 using Furria.Infrastructure.Management;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Registry;
@@ -47,13 +48,15 @@ public static class ServiceCollectionExtensions
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
             })
             .AddEntityFrameworkStores<AppDbContext>()
-            .AddSignInManager();
+            .AddSignInManager()
+            .AddDefaultTokenProviders();
 
         services.AddAuthentication();
 
         services.AddScoped<AccessTokenService>();
         services.AddScoped<RefreshTokenService>();
         services.AddScoped<AccountService>();
+        services.AddScoped<AccountAccessService>();
         services.AddScoped<PermissionAuthorizer>();
         services.AddScoped<AffiliationLookup>();
         services.AddScoped<PersonService>();
@@ -74,8 +77,11 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ClubRecordService>();
         services.AddScoped<ManagementService>();
 
+        services.AddSingleton<MailQueue>();
+        services.AddSingleton<MailService>();
         services.AddHostedService<DatabaseMigrator>();
         services.AddHostedService<BootstrapAdminSeeder>();
+        services.AddHostedService<MailDispatcher>();
         services.AddSingleton(TimeProvider.System);
         return services;
     }
