@@ -9,6 +9,10 @@ public sealed class SignedOutMailRequestQueue
             new UnboundedChannelOptions { SingleReader = true }
         );
 
+    private int _unanswered;
+
+    public bool IsIdle => Volatile.Read(ref _unanswered) == 0;
+
     public void RequestAccess(string email) =>
         Enqueue(new SignedOutMailRequest(SignedOutMailRequestKind.AccessRequest, email));
 
@@ -18,9 +22,15 @@ public sealed class SignedOutMailRequestQueue
     public IAsyncEnumerable<SignedOutMailRequest> ReadAllAsync(CancellationToken ct) =>
         _channel.Reader.ReadAllAsync(ct);
 
+    public void MarkAnswered() => Interlocked.Decrement(ref _unanswered);
+
     private void Enqueue(SignedOutMailRequest request)
     {
-        if (!_channel.Writer.TryWrite(request))
-            throw new InvalidOperationException("The signed-out request queue no longer accepts.");
+        Interlocked.Increment(ref _unanswered);
+        if (_channel.Writer.TryWrite(request))
+            return;
+
+        MarkAnswered();
+        throw new InvalidOperationException("The signed-out request queue no longer accepts.");
     }
 }

@@ -42,6 +42,10 @@ public sealed class SignedOutMailRequestWorker : BackgroundService
                 exception.GetType().Name
             );
         }
+        finally
+        {
+            _queue.MarkAnswered();
+        }
     }
 
     private static Task AnswerInScopeAsync(

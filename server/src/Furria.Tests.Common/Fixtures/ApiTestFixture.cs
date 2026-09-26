@@ -53,6 +53,8 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
     private const int MailpitApiPort = 8025;
     private const int PermitsPerIpBeyondAnySuite = 1_000_000;
 
+    private static readonly TimeSpan SignedOutWorkTimeout = TimeSpan.FromSeconds(20);
+
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder(
         "postgres:18-alpine"
     ).Build();
@@ -538,6 +540,17 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         if (_resetService is null)
             throw new InvalidOperationException(NotInitialized);
 
+        await Polling.UntilAsync(
+            _ =>
+                Task.FromResult(
+                    Services.GetRequiredService<SignedOutMailRequestQueue>() is { IsIdle: true } queue
+                        ? queue
+                        : null
+                ),
+            SignedOutWorkTimeout,
+            "The signed-out requests of the previous test were never answered",
+            ct
+        );
         await _resetService.ResetAsync(ct);
     }
 
