@@ -37,10 +37,6 @@ public sealed class EmailConfirmationConfiguration : IEntityTypeConfiguration<Em
                     "ck_email_confirmation_single_subject",
                     "num_nonnulls(invitation_id, account_id) = 1"
                 );
-                table.HasCheckConstraint(
-                    "ck_email_confirmation_contact_email_follow",
-                    "purpose = 'LoginEmailChange' OR NOT updates_contact_email"
-                );
             }
         );
         builder.HasKey(confirmation => confirmation.Id);
