@@ -9,8 +9,11 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as RequestAccessRouteImport } from './routes/request-access'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as InvitationRouteImport } from './routes/invitation'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as InvitationCodeRouteImport } from './routes/invitation_.code'
@@ -86,6 +89,16 @@ import { Route as AppManageGroupsKindsGroupKindIdEditRouteImport } from './route
 import { Route as AppManageBoardBoardOfficeIdSeatsNewRouteImport } from './routes/_app/manage.board_.$boardOfficeId_.seats.new'
 import { Route as AppManageBoardBoardOfficeIdSeatsBoardSeatIdRouteImport } from './routes/_app/manage.board_.$boardOfficeId_.seats.$boardSeatId'
 
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RequestAccessRoute = RequestAccessRouteImport.update({
+  id: '/request-access',
+  path: '/request-access',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -94,6 +107,11 @@ const LoginRoute = LoginRouteImport.update({
 const InvitationRoute = InvitationRouteImport.update({
   id: '/invitation',
   path: '/invitation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppRoute = AppRouteImport.update({
@@ -506,8 +524,11 @@ const AppManageBoardBoardOfficeIdSeatsBoardSeatIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/invitation': typeof InvitationRoute
   '/login': typeof LoginRoute
+  '/request-access': typeof RequestAccessRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/$': typeof AppSplatRoute
   '/announcements': typeof AppAnnouncementsRoute
   '/calendar': typeof AppCalendarRoute
@@ -581,8 +602,11 @@ export interface FileRoutesByFullPath {
   '/manage/roles/$roleId/holdings/new': typeof AppManageRolesRoleIdHoldingsNewRoute
 }
 export interface FileRoutesByTo {
+  '/forgot-password': typeof ForgotPasswordRoute
   '/invitation': typeof InvitationRoute
   '/login': typeof LoginRoute
+  '/request-access': typeof RequestAccessRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/$': typeof AppSplatRoute
   '/': typeof AppIndexRoute
   '/announcements': typeof AppAnnouncementsRoute
@@ -659,8 +683,11 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
+  '/forgot-password': typeof ForgotPasswordRoute
   '/invitation': typeof InvitationRoute
   '/login': typeof LoginRoute
+  '/request-access': typeof RequestAccessRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/_app/$': typeof AppSplatRoute
   '/_app/_affiliated': typeof AppAffiliatedRouteWithChildren
   '/_app/announcements': typeof AppAnnouncementsRoute
@@ -739,8 +766,11 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/forgot-password'
     | '/invitation'
     | '/login'
+    | '/request-access'
+    | '/reset-password'
     | '/$'
     | '/announcements'
     | '/calendar'
@@ -814,8 +844,11 @@ export interface FileRouteTypes {
     | '/manage/roles/$roleId/holdings/new'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/forgot-password'
     | '/invitation'
     | '/login'
+    | '/request-access'
+    | '/reset-password'
     | '/$'
     | '/'
     | '/announcements'
@@ -891,8 +924,11 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_app'
+    | '/forgot-password'
     | '/invitation'
     | '/login'
+    | '/request-access'
+    | '/reset-password'
     | '/_app/$'
     | '/_app/_affiliated'
     | '/_app/announcements'
@@ -970,13 +1006,30 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   InvitationRoute: typeof InvitationRoute
   LoginRoute: typeof LoginRoute
+  RequestAccessRoute: typeof RequestAccessRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   InvitationCodeRoute: typeof InvitationCodeRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/request-access': {
+      id: '/request-access'
+      path: '/request-access'
+      fullPath: '/request-access'
+      preLoaderRoute: typeof RequestAccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -989,6 +1042,13 @@ declare module '@tanstack/react-router' {
       path: '/invitation'
       fullPath: '/invitation'
       preLoaderRoute: typeof InvitationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app': {
@@ -1690,8 +1750,11 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   InvitationRoute: InvitationRoute,
   LoginRoute: LoginRoute,
+  RequestAccessRoute: RequestAccessRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   InvitationCodeRoute: InvitationCodeRoute,
 }
 export const routeTree = rootRouteImport

@@ -10,6 +10,8 @@ describe('LoginSearchSchema', () => {
     ['the expiry marker', { expired: 1 }, { returnTo: undefined, expired: 1 }],
     ['a boolean expiry marker', { expired: false }, { returnTo: undefined, expired: undefined }],
     ['a truthy expiry marker', { expired: true }, { returnTo: undefined, expired: undefined }],
+    ['the password reset marker', { passwordReset: 1 }, { passwordReset: 1 }],
+    ['a foreign password reset marker', { passwordReset: 2 }, { passwordReset: undefined }],
     ['a numeric return target', { returnTo: 1 }, { returnTo: undefined, expired: undefined }],
     [
       'a relative return target',
