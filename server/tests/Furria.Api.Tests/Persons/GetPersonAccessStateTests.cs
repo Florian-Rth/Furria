@@ -185,7 +185,39 @@ public sealed class GetPersonAccessStateTests
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldPersonsManage()
+    public async Task Should_ReportTheState_When_TheCallerOnlyHoldsAccountsManage()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddAccount("anna")
+                            .AddPerson("ilka", "Ilka", "Reineke")
+                            .AddAccount("ilka")
+                    )
+                    .Roles(roles =>
+                        roles.AddRoleWithHolder(
+                            "zugangspflege",
+                            "ilka-zugangspflege",
+                            "Zugangspflege",
+                            "ilka",
+                            FurriaPermissions.AccountsManage
+                        )
+                    ),
+            ct
+        );
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+
+        var (response, result) = await ReadStateAsync(client, ctx.Identity.People.IdOf("anna"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(AccountAccessState.Active, result.State);
+    }
+
+    [Fact]
+    public async Task Should_ReturnForbidden_When_TheCallerHoldsNeitherPersonsManageNorAccountsManage()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(

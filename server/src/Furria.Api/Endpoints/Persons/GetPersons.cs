@@ -20,7 +20,10 @@ public sealed class GetPersons : Endpoint<GetPersonsRequest, GetPersonsResponse>
     public override void Configure()
     {
         Get("manage/persons");
-        Definition.RequirePermission(FurriaPermissions.PersonsManage);
+        Definition.RequireAnyPermission(
+            FurriaPermissions.PersonsManage,
+            FurriaPermissions.AccountsManage
+        );
     }
 
     public override async Task HandleAsync(GetPersonsRequest req, CancellationToken ct)

@@ -41,10 +41,11 @@ public sealed class ManagementService
         var today = ClubClock.Today(_timeProvider);
         var managesClub = granted.Contains(FurriaPermissions.ClubManage);
         var managesPersons = granted.Contains(FurriaPermissions.PersonsManage);
+        var readsPersons = managesPersons || granted.Contains(FurriaPermissions.AccountsManage);
 
         return new ManageHubDetails
         {
-            Persons = managesPersons ? await PersonsAsync(today, ct) : null,
+            Persons = readsPersons ? await PersonsAsync(today, ct) : null,
             Groups = granted.Contains(FurriaPermissions.GroupsManage)
                 ? await GroupsAsync(ct)
                 : null,

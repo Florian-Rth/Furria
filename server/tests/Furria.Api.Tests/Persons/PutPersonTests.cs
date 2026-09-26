@@ -185,6 +185,41 @@ public sealed class PutPersonTests
     }
 
     [Fact]
+    public async Task Should_ReturnForbidden_When_TheCallerOnlyHoldsAccountsManage()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddPerson("paula", "Paula", "Brendel")
+                            .AddPerson("ilka", "Ilka", "Reineke")
+                            .AddAccount("ilka")
+                    )
+                    .Roles(roles =>
+                        roles.AddRoleWithHolder(
+                            "zugangspflege",
+                            "ilka-zugangspflege",
+                            "Zugangspflege",
+                            "ilka",
+                            FurriaPermissions.AccountsManage
+                        )
+                    ),
+            ct
+        );
+        var personId = ctx.Identity.People.IdOf("paula");
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+
+        var response = await client.PUTAsync<PutPerson, PutPersonRequest>(
+            FormOf(personId, "Paula", "Falschgeschrieben")
+        );
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        await ctx.Expected.Person(personId).ToHaveName("Paula", "Brendel").AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldPersonsManage()
     {
         var ct = TestContext.Current.CancellationToken;

@@ -1,4 +1,5 @@
 import { usePermissions } from '@/features/session';
+import type { PermissionKey } from '@/lib/api/schemas';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { isForbiddenError, isNotFoundError } from '@/lib/query-error';
 import { usePersonQuery } from '../api';
@@ -12,7 +13,10 @@ export interface PersonEditorGateControl {
   retry: () => void;
 }
 
-export const usePersonEditorGate = (personId: number | null): PersonEditorGateControl => {
+export const usePersonEditorGate = (
+  personId: number | null,
+  permissionKey: PermissionKey = PERMISSION_KEYS.personsManage,
+): PersonEditorGateControl => {
   const person = usePersonQuery(personId);
   const { has, isUndecided } = usePermissions();
 
@@ -23,7 +27,7 @@ export const usePersonEditorGate = (personId: number | null): PersonEditorGateCo
   const gate = toPersonEditorGate({
     person: person.data,
     isUndecided,
-    mayManage: has(PERMISSION_KEYS.personsManage),
+    mayManage: has(permissionKey),
     isForbidden: isForbiddenError(person.error),
     isMissing: personId === null || isNotFoundError(person.error),
     errorMessage: toPersonErrorMessage(person.error),

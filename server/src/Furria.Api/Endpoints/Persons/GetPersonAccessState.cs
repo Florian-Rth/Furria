@@ -26,7 +26,10 @@ public sealed class GetPersonAccessState
     public override void Configure()
     {
         Get("manage/persons/{personId}/access-state");
-        Definition.RequirePermission(FurriaPermissions.PersonsManage);
+        Definition.RequireAnyPermission(
+            FurriaPermissions.PersonsManage,
+            FurriaPermissions.AccountsManage
+        );
     }
 
     public override async Task HandleAsync(GetPersonAccessStateRequest req, CancellationToken ct)

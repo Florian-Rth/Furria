@@ -73,6 +73,7 @@ export const PERSONS_ORIGIN: KkScreenOrigin = {
 };
 
 export const EDITOR_DENIED_MESSAGE = 'Dir fehlt die Berechtigung für die Personenverwaltung.';
+export const RECOVERY_DENIED_MESSAGE = 'Dir fehlt die Berechtigung für die Zugänge.';
 
 export const toPersonOrigin = (person: {
   personId: number;

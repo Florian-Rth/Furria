@@ -10,10 +10,16 @@ import { PersonEditorSkeleton } from './PersonEditorSkeleton';
 interface PersonEditorFallbackProps {
   hold: PersonEditorHold<PersonDetails>;
   title: string;
+  deniedMessage?: string;
   onRetry: () => void;
 }
 
-export const PersonEditorFallback: FC<PersonEditorFallbackProps> = ({ hold, title, onRetry }) => {
+export const PersonEditorFallback: FC<PersonEditorFallbackProps> = ({
+  hold,
+  title,
+  deniedMessage = EDITOR_DENIED_MESSAGE,
+  onRetry,
+}) => {
   if (hold.kind === 'missing') {
     return <PersonEditorNotFound />;
   }
@@ -23,7 +29,7 @@ export const PersonEditorFallback: FC<PersonEditorFallbackProps> = ({ hold, titl
   if (hold.kind === 'denied') {
     const origin = hold.person === undefined ? PERSONS_ORIGIN : toPersonOrigin(hold.person);
 
-    return <PersonEditorDenied title={title} origin={origin} message={EDITOR_DENIED_MESSAGE} />;
+    return <PersonEditorDenied title={title} origin={origin} message={deniedMessage} />;
   }
 
   return <PersonEditorSkeleton title={title} />;

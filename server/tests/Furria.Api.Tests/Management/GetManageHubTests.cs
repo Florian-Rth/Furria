@@ -122,13 +122,20 @@ public sealed class GetManageHubTests
     }
 
     [Fact]
-    public async Task Should_OpenTheHub_When_TheCallerOnlyHoldsAccountsManage()
+    public async Task Should_ShowThePersonsPanelOnly_When_TheCallerOnlyHoldsAccountsManage()
     {
         var (response, result) = await AskAsHolderOfAsync(FurriaPermissions.AccountsManage);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Null(result.Persons);
+        Assert.NotNull(result.Persons);
         Assert.Null(result.Accounts);
+        Assert.Null(result.Groups);
+        Assert.Null(result.Roles);
+        Assert.Null(result.Sessions);
+        Assert.Null(result.Venues);
+        Assert.Null(result.Keys);
+        Assert.Null(result.Board);
+        Assert.Null(result.ClubRecord);
     }
 
     [Fact]

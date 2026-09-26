@@ -38,7 +38,10 @@ public sealed class GetPersonById : Endpoint<GetPersonByIdRequest, GetPersonById
     public override void Configure()
     {
         Get("manage/persons/{personId}");
-        Definition.RequirePermission(FurriaPermissions.PersonsManage);
+        Definition.RequireAnyPermission(
+            FurriaPermissions.PersonsManage,
+            FurriaPermissions.AccountsManage
+        );
     }
 
     public override async Task HandleAsync(GetPersonByIdRequest req, CancellationToken ct)

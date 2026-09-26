@@ -25,16 +25,19 @@ interface PersonsViewProps {
   persons: readonly PersonSummary[];
   search: PersonsSearch;
   access: PersonsAccess;
+  canCreate: boolean;
 }
 
-export const PersonsView: FC<PersonsViewProps> = ({ persons, search, access }) => {
-  const action: KkPanelAction = {
-    label: ADD_PERSON_LABEL,
-    icon: 'add',
-    ariaLabel: ADD_PERSON_ACTION_LABEL,
-    component: Link,
-    to: CREATE_ROUTE,
-  };
+const CREATE_ACTION: KkPanelAction = {
+  label: ADD_PERSON_LABEL,
+  icon: 'add',
+  ariaLabel: ADD_PERSON_ACTION_LABEL,
+  component: Link,
+  to: CREATE_ROUTE,
+};
+
+export const PersonsView: FC<PersonsViewProps> = ({ persons, search, access, canCreate }) => {
+  const action = canCreate ? CREATE_ACTION : undefined;
 
   if (persons.length === 0 && access.filter === null) {
     return (
