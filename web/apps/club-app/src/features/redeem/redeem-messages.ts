@@ -8,6 +8,8 @@ const REDEEM_FAILURE_MESSAGES: Record<RedeemFailureKind, string> = {
   taken: 'Diese E-Mail-Adresse gehört schon zu einem Zugang. Wähle eine andere.',
   codeRejected: 'Der Code stimmt nicht oder gilt nicht mehr.',
   claimRejected: 'Das Passwort passt nicht zu diesem Zugang.',
+  claimPasskeyRejected: 'Mit dem Passkey hat es nicht geklappt. Versuch es noch einmal.',
+  passkeyCancelled: 'Die Bestätigung mit dem Passkey wurde abgebrochen.',
   throttled: 'Zu viele Versuche. Warte einen Moment und versuche es dann erneut.',
   rejected: 'Der Server hat die Anfrage abgelehnt.',
   unreachable: 'Keine Verbindung zum Server. Prüfe deine Internetverbindung.',
@@ -18,6 +20,7 @@ export interface RedeemErrorMessages {
   loginEmail: string | null;
   confirmationCode: string | null;
   claimPassword: string | null;
+  claimPasskey: string | null;
   footer: string | null;
 }
 
@@ -25,6 +28,7 @@ const NO_ERRORS: RedeemErrorMessages = {
   loginEmail: null,
   confirmationCode: null,
   claimPassword: null,
+  claimPasskey: null,
   footer: null,
 };
 
@@ -37,7 +41,7 @@ const toServerMessage = (error: Error, failure: RedeemFailureKind): string =>
 export const toRedeemErrorMessages = (error: Error | null): RedeemErrorMessages => {
   const failure = toRedeemFailureKind(error);
 
-  if (error === null || failure === null) {
+  if (error === null || failure === null || failure === 'passkeyCancelled') {
     return NO_ERRORS;
   }
   if (failure === 'taken') {
@@ -48,6 +52,9 @@ export const toRedeemErrorMessages = (error: Error | null): RedeemErrorMessages 
   }
   if (failure === 'claimRejected') {
     return { ...NO_ERRORS, claimPassword: toServerMessage(error, failure) };
+  }
+  if (failure === 'claimPasskeyRejected') {
+    return { ...NO_ERRORS, claimPasskey: toServerMessage(error, failure) };
   }
   if (failure === 'rejected') {
     return { ...NO_ERRORS, footer: toServerMessage(error, failure) };

@@ -1,17 +1,46 @@
+import type { JsonBody } from '@/lib/api/api-fetch';
 import { apiFetch } from '@/lib/api/api-fetch';
+import type { PasskeyAssertionAttempt } from '@/lib/passkey/passkey-flows';
 import type { InvitationCredential } from './invitation-credential';
 import { toCredentialBody } from './invitation-credential';
 import type { InvitationLookup, Redemption } from './schemas';
 import { InvitationLookupSchema, RedemptionSchema } from './schemas';
 
-export interface RedemptionRequest {
+export type ClaimProof = { kind: 'password'; password: string } | { kind: 'passkey' };
+
+export type ResolvedClaimProof =
+  | { kind: 'password'; password: string }
+  | { kind: 'passkey'; attempt: PasskeyAssertionAttempt };
+
+interface RedemptionFields {
   credential: InvitationCredential;
   loginEmail: string;
   password: string | null;
   confirmationCode: string | null;
-  claimPassword: string | null;
   updateContactEmail: boolean;
 }
+
+export interface RedemptionRequest extends RedemptionFields {
+  claimProof: ClaimProof | null;
+}
+
+export interface ResolvedRedemptionRequest extends RedemptionFields {
+  claimProof: ResolvedClaimProof | null;
+}
+
+export const toClaimBody = (proof: ResolvedClaimProof | null): { [key: string]: JsonBody } => {
+  if (proof?.kind === 'passkey') {
+    return {
+      claimPassword: null,
+      claimPasskey: {
+        challengeId: proof.attempt.challengeId,
+        credential: { ...proof.attempt.credential, clientExtensionResults: {} },
+      },
+    };
+  }
+
+  return { claimPassword: proof?.password ?? null, claimPasskey: null };
+};
 
 export const requestInvitationLookup = (
   credential: InvitationCredential,
@@ -27,9 +56,9 @@ export const requestInvitationRedeem = ({
   loginEmail,
   password,
   confirmationCode,
-  claimPassword,
+  claimProof,
   updateContactEmail,
-}: RedemptionRequest): Promise<Redemption> =>
+}: ResolvedRedemptionRequest): Promise<Redemption> =>
   apiFetch('/api/auth/invitations/redeem', {
     method: 'POST',
     body: {
@@ -37,7 +66,7 @@ export const requestInvitationRedeem = ({
       loginEmail,
       password,
       confirmationCode,
-      claimPassword,
+      ...toClaimBody(claimProof),
       updateContactEmail,
     },
     schema: RedemptionSchema,

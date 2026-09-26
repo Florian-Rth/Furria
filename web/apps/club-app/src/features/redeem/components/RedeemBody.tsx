@@ -38,8 +38,11 @@ export const RedeemBody: FC<RedeemBodyProps> = ({ control }) => {
         loginEmail={stage.step.loginEmail}
         isRedeeming={control.isRedeeming}
         claimPasswordError={errors.claimPassword}
+        claimPasskeyError={errors.claimPasskey}
+        offersPasskey={control.isPasskeySupported}
         footerError={errors.footer}
         onClaim={control.claim}
+        onClaimWithPasskey={control.claimWithPasskey}
         onChangeLoginEmail={control.changeLoginEmail}
         onEdit={control.clearRefusal}
       />

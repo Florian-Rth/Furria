@@ -1,9 +1,10 @@
 import type { QueryClient, UseMutationResult, UseQueryResult } from '@tanstack/react-query';
 import { skipToken, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { signInWithIssuedTokens } from '@/lib/api/session/session-store';
+import { provePasskey } from '@/lib/passkey/passkey-flows';
 import type { InvitationCredential } from './invitation-credential';
 import { toCredentialKey } from './invitation-credential';
-import type { RedemptionRequest } from './requests';
+import type { ClaimProof, RedemptionRequest, ResolvedClaimProof } from './requests';
 import { requestInvitationLookup, requestInvitationRedeem } from './requests';
 import type { InvitationLookup, Redemption } from './schemas';
 
@@ -54,6 +55,9 @@ export const useCodeLookupMutation = (): UseMutationResult<
   });
 };
 
+const resolveClaimProof = async (proof: ClaimProof | null): Promise<ResolvedClaimProof | null> =>
+  proof?.kind === 'passkey' ? { kind: 'passkey', attempt: await provePasskey() } : proof;
+
 export const useRedeemInvitationMutation = (): UseMutationResult<
   Redemption,
   Error,
@@ -61,7 +65,10 @@ export const useRedeemInvitationMutation = (): UseMutationResult<
 > =>
   useMutation({
     mutationFn: async (request: RedemptionRequest) => {
-      const redemption = await requestInvitationRedeem(request);
+      const redemption = await requestInvitationRedeem({
+        ...request,
+        claimProof: await resolveClaimProof(request.claimProof),
+      });
       if (redemption.outcome === 'redeemed') {
         await signInWithIssuedTokens(redemption.session);
       }

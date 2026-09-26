@@ -14,6 +14,7 @@ import type {
   RedeemStage,
 } from '../redeem-stage';
 import { toRedeemStage } from '../redeem-stage';
+import type { ClaimProof } from '../requests';
 import type { Redemption } from '../schemas';
 import { useInvitationCredential } from './use-invitation-credential';
 
@@ -29,10 +30,12 @@ const CLAIM_UPDATES_CONTACT_EMAIL = false;
 
 interface RedeemAttempt {
   confirmationCode: string | null;
-  claimPassword: string | null;
+  claimProof: ClaimProof | null;
 }
 
-const FIRST_ATTEMPT: RedeemAttempt = { confirmationCode: null, claimPassword: null };
+const FIRST_ATTEMPT: RedeemAttempt = { confirmationCode: null, claimProof: null };
+
+const PASSKEY_CLAIM: ClaimProof = { kind: 'passkey' };
 
 export interface RedeemScreenControl {
   stage: RedeemStage;
@@ -41,10 +44,12 @@ export interface RedeemScreenControl {
   draftLoginEmail: string | null;
   hasResentCode: boolean;
   isOfferingPasskey: boolean;
+  isPasskeySupported: boolean;
   submitDetails: (invitation: LiveInvitation, chosen: ChosenLogin) => void;
   confirm: (invitation: LiveInvitation, confirmationCode: string) => void;
   resendCode: (invitation: LiveInvitation) => void;
   claim: (invitation: LiveInvitation, loginEmail: string, claimPassword: string) => void;
+  claimWithPasskey: (invitation: LiveInvitation, loginEmail: string) => void;
   changeLoginEmail: () => void;
   clearRefusal: () => void;
   retryLookup: () => void;
@@ -88,7 +93,8 @@ export const useRedeemScreen = (): RedeemScreenControl => {
     onConfirmationRequired: () => void,
   ): void => {
     const land = (outcome: Redemption): void => {
-      if (outcome.outcome === 'redeemed' && isPasskeySupported) {
+      const offersPasskey = isPasskeySupported && attempt.claimProof?.kind !== 'passkey';
+      if (outcome.outcome === 'redeemed' && offersPasskey) {
         setIsOfferingPasskey(true);
         return;
       }
@@ -137,13 +143,25 @@ export const useRedeemScreen = (): RedeemScreenControl => {
     });
   };
 
-  const claim = (invitation: LiveInvitation, loginEmail: string, claimPassword: string): void => {
+  const sendClaim = (
+    invitation: LiveInvitation,
+    loginEmail: string,
+    claimProof: ClaimProof,
+  ): void => {
     const chosen = {
       ...(pendingClaim ?? { loginEmail, password: null }),
       updateContactEmail: CLAIM_UPDATES_CONTACT_EMAIL,
     };
 
-    send(invitation, chosen, { ...FIRST_ATTEMPT, claimPassword }, () => undefined);
+    send(invitation, chosen, { ...FIRST_ATTEMPT, claimProof }, () => undefined);
+  };
+
+  const claim = (invitation: LiveInvitation, loginEmail: string, claimPassword: string): void => {
+    sendClaim(invitation, loginEmail, { kind: 'password', password: claimPassword });
+  };
+
+  const claimWithPasskey = (invitation: LiveInvitation, loginEmail: string): void => {
+    sendClaim(invitation, loginEmail, PASSKEY_CLAIM);
   };
 
   const changeLoginEmail = (): void => {
@@ -171,10 +189,12 @@ export const useRedeemScreen = (): RedeemScreenControl => {
     draftLoginEmail,
     hasResentCode,
     isOfferingPasskey,
+    isPasskeySupported,
     submitDetails,
     confirm,
     resendCode,
     claim,
+    claimWithPasskey,
     changeLoginEmail,
     clearRefusal,
     retryLookup,

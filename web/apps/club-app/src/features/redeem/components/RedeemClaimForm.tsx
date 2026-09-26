@@ -5,6 +5,7 @@ import { usePasswordVisibility } from '@/features/login';
 import { useClaimForm } from '../hooks/use-claim-form';
 import { toGreeting } from '../redeem-messages';
 import type { LiveInvitation } from '../redeem-stage';
+import { RedeemClaimPasskey } from './RedeemClaimPasskey';
 
 const CLAIM_LINE =
   'Mit dieser Adresse gibt es schon einen Zugang. Melde dich damit an, dann wird er übernommen.';
@@ -18,8 +19,11 @@ interface RedeemClaimFormProps {
   loginEmail: string;
   isRedeeming: boolean;
   claimPasswordError: string | null;
+  claimPasskeyError: string | null;
+  offersPasskey: boolean;
   footerError: string | null;
   onClaim: (invitation: LiveInvitation, loginEmail: string, claimPassword: string) => void;
+  onClaimWithPasskey: (invitation: LiveInvitation, loginEmail: string) => void;
   onChangeLoginEmail: () => void;
   onEdit: () => void;
 }
@@ -29,13 +33,19 @@ export const RedeemClaimForm: FC<RedeemClaimFormProps> = ({
   loginEmail,
   isRedeeming,
   claimPasswordError,
+  claimPasskeyError,
+  offersPasskey,
   footerError,
   onClaim,
+  onClaimWithPasskey,
   onChangeLoginEmail,
   onEdit,
 }) => {
   const claimAccount = (claimPassword: string): void => {
     onClaim(invitation, loginEmail, claimPassword);
+  };
+  const claimAccountWithPasskey = (): void => {
+    onClaimWithPasskey(invitation, loginEmail);
   };
   const { form, submit } = useClaimForm({ onClaim: claimAccount });
   const password = usePasswordVisibility();
@@ -52,6 +62,13 @@ export const RedeemClaimForm: FC<RedeemClaimFormProps> = ({
   };
 
   const submitAlert = footerError === null ? null : <KkAlert>{footerError}</KkAlert>;
+  const passkeyClaim = offersPasskey ? (
+    <RedeemClaimPasskey
+      isRedeeming={isRedeeming}
+      error={claimPasskeyError}
+      onConfirm={claimAccountWithPasskey}
+    />
+  ) : null;
   const passwordToggle = (
     <KkIconButton
       label={password.toggleLabel}
@@ -97,6 +114,7 @@ export const RedeemClaimForm: FC<RedeemClaimFormProps> = ({
           {CLAIM_LABEL}
         </KkButton>
       </Stack>
+      {passkeyClaim}
       <KkButton variant="text" fullWidth disabled={isRedeeming} onClick={onChangeLoginEmail}>
         {CHANGE_EMAIL_LABEL}
       </KkButton>

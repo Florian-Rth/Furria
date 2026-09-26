@@ -30,6 +30,21 @@ describe('toRedeemFailureKind', () => {
       'claimRejected',
     ],
     [
+      'a passkey that does not prove the claimed account',
+      new RequestFailedError(400, [{ field: 'claimPasskey', message: 'nicht bestätigt' }]),
+      'claimPasskeyRejected',
+    ],
+    [
+      'a cancelled passkey ceremony',
+      new DOMException('cancelled', 'NotAllowedError'),
+      'passkeyCancelled',
+    ],
+    [
+      'a failed passkey ceremony',
+      new DOMException('insecure', 'SecurityError'),
+      'claimPasskeyRejected',
+    ],
+    [
       'a validation refusal',
       new RequestFailedError(400, [{ field: 'password', message: 'zu kurz' }]),
       'rejected',

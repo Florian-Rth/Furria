@@ -1,11 +1,14 @@
 import { RequestBlockedError, RequestFailedError, ServerFailureError } from '@/lib/api/api-error';
 import { toCamelCaseField } from '@/lib/api/api-failures';
+import { toPasskeyFailureKind } from '@/lib/passkey/passkey-failure';
 
 export type RedeemFailureKind =
   | 'dead'
   | 'taken'
   | 'codeRejected'
   | 'claimRejected'
+  | 'claimPasskeyRejected'
+  | 'passkeyCancelled'
   | 'throttled'
   | 'rejected'
   | 'unreachable'
@@ -16,6 +19,7 @@ const TOO_MANY_REQUESTS_STATUS = 429;
 const LOGIN_EMAIL_FIELD = 'loginEmail';
 const CONFIRMATION_CODE_FIELD = 'confirmationCode';
 const CLAIM_PASSWORD_FIELD = 'claimPassword';
+const CLAIM_PASSKEY_FIELD = 'claimPasskey';
 
 const refusesField = (error: RequestFailedError, field: string): boolean =>
   error.failures.some((failure) => toCamelCaseField(failure.field) === field);
@@ -30,6 +34,9 @@ const toRefusalKind = (error: RequestFailedError): RedeemFailureKind => {
   if (refusesField(error, CLAIM_PASSWORD_FIELD)) {
     return 'claimRejected';
   }
+  if (refusesField(error, CLAIM_PASSKEY_FIELD)) {
+    return 'claimPasskeyRejected';
+  }
 
   return error.status === CONFLICT_STATUS ? 'dead' : 'rejected';
 };
@@ -37,6 +44,11 @@ const toRefusalKind = (error: RequestFailedError): RedeemFailureKind => {
 export const toRedeemFailureKind = (error: Error | null): RedeemFailureKind | null => {
   if (error === null) {
     return null;
+  }
+  if (error instanceof DOMException) {
+    return toPasskeyFailureKind(error) === 'cancelled'
+      ? 'passkeyCancelled'
+      : 'claimPasskeyRejected';
   }
   if (error instanceof RequestBlockedError) {
     return 'unreachable';
