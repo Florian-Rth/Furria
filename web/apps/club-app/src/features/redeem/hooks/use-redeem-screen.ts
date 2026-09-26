@@ -1,6 +1,7 @@
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useSessionSnapshot } from '@/features/session';
+import { usePasskeySupport } from '@/lib/passkey/use-passkey-support';
 import { DEFAULT_RETURN_TO } from '@/lib/return-to';
 import { useInvitationLookupQuery, useRedeemInvitationMutation } from '../api';
 import { toRedeemFailureKind } from '../redeem-failure';
@@ -39,6 +40,7 @@ export interface RedeemScreenControl {
   errors: RedeemErrorMessages;
   draftLoginEmail: string | null;
   hasResentCode: boolean;
+  isOfferingPasskey: boolean;
   submitDetails: (invitation: LiveInvitation, chosen: ChosenLogin) => void;
   confirm: (invitation: LiveInvitation, confirmationCode: string) => void;
   resendCode: (invitation: LiveInvitation) => void;
@@ -46,6 +48,7 @@ export interface RedeemScreenControl {
   changeLoginEmail: () => void;
   clearRefusal: () => void;
   retryLookup: () => void;
+  enterApp: () => void;
 }
 
 export const useRedeemScreen = (): RedeemScreenControl => {
@@ -60,6 +63,12 @@ export const useRedeemScreen = (): RedeemScreenControl => {
   const [hasDeclinedClaim, setHasDeclinedClaim] = useState(false);
   const [draftLoginEmail, setDraftLoginEmail] = useState<string | null>(null);
   const [hasResentCode, setHasResentCode] = useState(false);
+  const [isOfferingPasskey, setIsOfferingPasskey] = useState(false);
+  const isPasskeySupported = usePasskeySupport();
+
+  const enterApp = (): void => {
+    void navigate({ href: DEFAULT_RETURN_TO, replace: true });
+  };
 
   const stage = toRedeemStage({
     credential,
@@ -79,8 +88,12 @@ export const useRedeemScreen = (): RedeemScreenControl => {
     onConfirmationRequired: () => void,
   ): void => {
     const land = (outcome: Redemption): void => {
+      if (outcome.outcome === 'redeemed' && isPasskeySupported) {
+        setIsOfferingPasskey(true);
+        return;
+      }
       if (outcome.outcome === 'redeemed') {
-        void navigate({ href: DEFAULT_RETURN_TO, replace: true });
+        enterApp();
         return;
       }
       if (outcome.outcome === 'claimRequired') {
@@ -157,6 +170,7 @@ export const useRedeemScreen = (): RedeemScreenControl => {
     errors: toRedeemErrorMessages(redemption.error),
     draftLoginEmail,
     hasResentCode,
+    isOfferingPasskey,
     submitDetails,
     confirm,
     resendCode,
@@ -164,5 +178,6 @@ export const useRedeemScreen = (): RedeemScreenControl => {
     changeLoginEmail,
     clearRefusal,
     retryLookup,
+    enterApp,
   };
 };

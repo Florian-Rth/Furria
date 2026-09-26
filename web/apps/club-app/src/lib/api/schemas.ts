@@ -62,6 +62,13 @@ export const MeMembershipSchema = z.object({
 });
 export type MeMembership = z.infer<typeof MeMembershipSchema>;
 
+export const MePasskeySchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  addedAt: z.iso.datetime({ offset: true }),
+});
+export type MePasskey = z.infer<typeof MePasskeySchema>;
+
 export const MeSchema = z.object({
   accountId: z.number().int(),
   email: z.string(),
@@ -70,6 +77,7 @@ export const MeSchema = z.object({
   isAffiliated: z.boolean(),
   permissionKeys: z.array(z.string()),
   lastSeenAnnouncementAt: z.iso.datetime({ offset: true }).nullable(),
+  passkeys: z.array(MePasskeySchema),
 });
 export type Me = z.infer<typeof MeSchema>;
 

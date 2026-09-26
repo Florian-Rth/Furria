@@ -6,6 +6,7 @@ import { RedeemConfirmForm } from './RedeemConfirmForm';
 import { RedeemDead } from './RedeemDead';
 import { RedeemDetailsForm } from './RedeemDetailsForm';
 import { RedeemFailed } from './RedeemFailed';
+import { RedeemPasskeyOffer } from './RedeemPasskeyOffer';
 import { RedeemSignedIn } from './RedeemSignedIn';
 
 interface RedeemBodyProps {
@@ -15,6 +16,9 @@ interface RedeemBodyProps {
 export const RedeemBody: FC<RedeemBodyProps> = ({ control }) => {
   const { stage, errors } = control;
 
+  if (control.isOfferingPasskey) {
+    return <RedeemPasskeyOffer onDone={control.enterApp} />;
+  }
   if (stage.kind === 'dead') {
     return <RedeemDead />;
   }

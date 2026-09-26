@@ -14,7 +14,7 @@ export const AccountSecurityBody: FC = () => {
   };
 
   if (me.data !== undefined) {
-    return <AccountSecurityPanels loginEmail={me.data.email} />;
+    return <AccountSecurityPanels loginEmail={me.data.email} passkeys={me.data.passkeys} />;
   }
   if (errorMessage !== null) {
     return <AccountSecurityError message={errorMessage} onRetry={reload} />;

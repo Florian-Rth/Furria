@@ -2,6 +2,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
+import { toPasskeyErrorMessage } from '@/lib/passkey/passkey-messages';
+import { usePasskeySupport } from '@/lib/passkey/use-passkey-support';
 import { useAccountDeletionMutation } from '../api';
 import { toFieldRefusals } from '../field-refusals';
 import type { AccountDeletionForm } from '../schemas';
@@ -13,15 +15,18 @@ export interface AccountDeletionControl {
   isOpen: boolean;
   isBusy: boolean;
   rejection: string | null;
+  offersPasskey: boolean;
   open: () => void;
   close: () => void;
   confirm: () => void;
+  confirmWithPasskey: () => void;
 }
 
-export const useAccountDeletion = (): AccountDeletionControl => {
+export const useAccountDeletion = (hasPasskeys: boolean): AccountDeletionControl => {
   const [isOpen, setIsOpen] = useState(false);
   const [rejection, setRejection] = useState<string | null>(null);
   const mutation = useAccountDeletionMutation();
+  const isPasskeySupported = usePasskeySupport();
 
   const form = useForm<AccountDeletionForm>({
     resolver: zodResolver(AccountDeletionFormSchema),
@@ -39,6 +44,10 @@ export const useAccountDeletion = (): AccountDeletionControl => {
     setRejection(failures.footer);
   };
 
+  const showPasskeyFailure = (error: Error): void => {
+    setRejection(toPasskeyErrorMessage(error));
+  };
+
   const open = (): void => {
     setRejection(null);
     form.reset();
@@ -51,8 +60,14 @@ export const useAccountDeletion = (): AccountDeletionControl => {
 
   const handleConfirm = form.handleSubmit((values) => {
     setRejection(null);
-    mutation.mutate(values.password, { onError: showFailure });
+    mutation.mutate({ kind: 'password', password: values.password }, { onError: showFailure });
   });
+
+  const confirmWithPasskey = (): void => {
+    setRejection(null);
+    form.clearErrors();
+    mutation.mutate({ kind: 'passkey' }, { onError: showPasskeyFailure });
+  };
 
   return {
     form,
@@ -60,10 +75,12 @@ export const useAccountDeletion = (): AccountDeletionControl => {
     isOpen,
     isBusy: mutation.isPending,
     rejection,
+    offersPasskey: hasPasskeys && isPasskeySupported,
     open,
     close,
     confirm: () => {
       void handleConfirm();
     },
+    confirmWithPasskey,
   };
 };

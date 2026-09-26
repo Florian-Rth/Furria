@@ -25,6 +25,7 @@ const me = (state: Me['membership']['state']): Me => ({
   isAffiliated: true,
   permissionKeys: [],
   lastSeenAnnouncementAt: null,
+  passkeys: [],
 });
 
 describe('toProfileHeadline', () => {

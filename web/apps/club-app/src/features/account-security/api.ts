@@ -1,20 +1,24 @@
 import type { UseMutationResult } from '@tanstack/react-query';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ME_QUERY_KEY } from '@/features/session';
+import type { MePasskey } from '@/lib/api/schemas';
 import {
   endSessionWithFarewell,
   signInWithIssuedTokens,
   signOut,
   withFreshAccessToken,
 } from '@/lib/api/session/session-store';
+import { addPasskey, provePasskey } from '@/lib/passkey/passkey-flows';
 import {
   requestAccountDeletion,
   requestLoginEmailChange,
   requestLoginEmailConfirmation,
   requestLogoutEverywhere,
+  requestPasskeyRemoval,
   requestPasswordChange,
 } from './requests';
 import type { LoginEmailChange, LoginEmailForm, PasswordForm } from './schemas';
+import type { AccountDeletionProof, ResolvedDeletionProof } from './types';
 
 export const useLoginEmailChangeMutation = (): UseMutationResult<
   LoginEmailChange,
@@ -56,10 +60,35 @@ export const useLogoutEverywhereMutation = (): UseMutationResult<void, Error, vo
     },
   });
 
-export const useAccountDeletionMutation = (): UseMutationResult<void, Error, string> =>
+const resolveDeletionProof = async (proof: AccountDeletionProof): Promise<ResolvedDeletionProof> =>
+  proof.kind === 'password' ? proof : { kind: 'passkey', attempt: await provePasskey() };
+
+export const useAccountDeletionMutation = (): UseMutationResult<
+  void,
+  Error,
+  AccountDeletionProof
+> =>
   useMutation({
-    mutationFn: async (password: string) => {
-      await withFreshAccessToken((accessToken) => requestAccountDeletion(password, accessToken));
+    mutationFn: async (proof: AccountDeletionProof) => {
+      const resolved = await resolveDeletionProof(proof);
+      await withFreshAccessToken((accessToken) => requestAccountDeletion(resolved, accessToken));
       endSessionWithFarewell('account-deleted');
     },
+  });
+
+export const useAddPasskeyMutation = (): UseMutationResult<MePasskey, Error, void> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: addPasskey,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ME_QUERY_KEY });
+    },
+  });
+};
+
+export const usePasskeyRemovalMutation = (): UseMutationResult<void, Error, string> =>
+  useMutation({
+    mutationFn: (passkeyId: string) =>
+      withFreshAccessToken((accessToken) => requestPasskeyRemoval(passkeyId, accessToken)),
   });

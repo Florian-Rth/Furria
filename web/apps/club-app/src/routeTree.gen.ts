@@ -59,6 +59,7 @@ import { Route as AppGroupsGroupIdTrainingsRouteImport } from './routes/_app/gro
 import { Route as AppGroupsGroupIdEditRouteImport } from './routes/_app/groups_.$groupId_.edit'
 import { Route as AppGroupsGroupIdAdministrationRouteImport } from './routes/_app/groups_.$groupId_.administration'
 import { Route as AppAffiliatedMembersPersonIdRouteImport } from './routes/_app/_affiliated.members_.$personId'
+import { Route as AppProfileSecurityPasskeysPasskeyIdRouteImport } from './routes/_app/profile_.security_.passkeys.$passkeyId'
 import { Route as AppManageVenuesVenueIdEditRouteImport } from './routes/_app/manage.venues_.$venueId_.edit'
 import { Route as AppManageSessionsSessionIdEditRouteImport } from './routes/_app/manage.sessions_.$sessionId.edit'
 import { Route as AppManageRolesRoleIdEditRouteImport } from './routes/_app/manage.roles_.$roleId_.edit'
@@ -349,6 +350,12 @@ const AppAffiliatedMembersPersonIdRoute =
     path: '/members/$personId',
     getParentRoute: () => AppAffiliatedRoute,
   } as any)
+const AppProfileSecurityPasskeysPasskeyIdRoute =
+  AppProfileSecurityPasskeysPasskeyIdRouteImport.update({
+    id: '/profile_/security_/passkeys/$passkeyId',
+    path: '/profile/security/passkeys/$passkeyId',
+    getParentRoute: () => AppRoute,
+  } as any)
 const AppManageVenuesVenueIdEditRoute =
   AppManageVenuesVenueIdEditRouteImport.update({
     id: '/manage/venues_/$venueId_/edit',
@@ -594,6 +601,7 @@ export interface FileRoutesByFullPath {
   '/manage/roles/$roleId/edit': typeof AppManageRolesRoleIdEditRoute
   '/manage/sessions/$sessionId/edit': typeof AppManageSessionsSessionIdEditRoute
   '/manage/venues/$venueId/edit': typeof AppManageVenuesVenueIdEditRoute
+  '/profile/security/passkeys/$passkeyId': typeof AppProfileSecurityPasskeysPasskeyIdRoute
   '/manage/board/$boardOfficeId/seats/$boardSeatId': typeof AppManageBoardBoardOfficeIdSeatsBoardSeatIdRoute
   '/manage/board/$boardOfficeId/seats/new': typeof AppManageBoardBoardOfficeIdSeatsNewRoute
   '/manage/groups/kinds/$groupKindId/edit': typeof AppManageGroupsKindsGroupKindIdEditRoute
@@ -674,6 +682,7 @@ export interface FileRoutesByTo {
   '/manage/roles/$roleId/edit': typeof AppManageRolesRoleIdEditRoute
   '/manage/sessions/$sessionId/edit': typeof AppManageSessionsSessionIdEditRoute
   '/manage/venues/$venueId/edit': typeof AppManageVenuesVenueIdEditRoute
+  '/profile/security/passkeys/$passkeyId': typeof AppProfileSecurityPasskeysPasskeyIdRoute
   '/manage/board/$boardOfficeId/seats/$boardSeatId': typeof AppManageBoardBoardOfficeIdSeatsBoardSeatIdRoute
   '/manage/board/$boardOfficeId/seats/new': typeof AppManageBoardBoardOfficeIdSeatsNewRoute
   '/manage/groups/kinds/$groupKindId/edit': typeof AppManageGroupsKindsGroupKindIdEditRoute
@@ -757,6 +766,7 @@ export interface FileRoutesById {
   '/_app/manage/roles_/$roleId_/edit': typeof AppManageRolesRoleIdEditRoute
   '/_app/manage/sessions_/$sessionId/edit': typeof AppManageSessionsSessionIdEditRoute
   '/_app/manage/venues_/$venueId_/edit': typeof AppManageVenuesVenueIdEditRoute
+  '/_app/profile_/security_/passkeys/$passkeyId': typeof AppProfileSecurityPasskeysPasskeyIdRoute
   '/_app/manage/board_/$boardOfficeId_/seats/$boardSeatId': typeof AppManageBoardBoardOfficeIdSeatsBoardSeatIdRoute
   '/_app/manage/board_/$boardOfficeId_/seats/new': typeof AppManageBoardBoardOfficeIdSeatsNewRoute
   '/_app/manage/groups_/kinds/$groupKindId_/edit': typeof AppManageGroupsKindsGroupKindIdEditRoute
@@ -839,6 +849,7 @@ export interface FileRouteTypes {
     | '/manage/roles/$roleId/edit'
     | '/manage/sessions/$sessionId/edit'
     | '/manage/venues/$venueId/edit'
+    | '/profile/security/passkeys/$passkeyId'
     | '/manage/board/$boardOfficeId/seats/$boardSeatId'
     | '/manage/board/$boardOfficeId/seats/new'
     | '/manage/groups/kinds/$groupKindId/edit'
@@ -919,6 +930,7 @@ export interface FileRouteTypes {
     | '/manage/roles/$roleId/edit'
     | '/manage/sessions/$sessionId/edit'
     | '/manage/venues/$venueId/edit'
+    | '/profile/security/passkeys/$passkeyId'
     | '/manage/board/$boardOfficeId/seats/$boardSeatId'
     | '/manage/board/$boardOfficeId/seats/new'
     | '/manage/groups/kinds/$groupKindId/edit'
@@ -1001,6 +1013,7 @@ export interface FileRouteTypes {
     | '/_app/manage/roles_/$roleId_/edit'
     | '/_app/manage/sessions_/$sessionId/edit'
     | '/_app/manage/venues_/$venueId_/edit'
+    | '/_app/profile_/security_/passkeys/$passkeyId'
     | '/_app/manage/board_/$boardOfficeId_/seats/$boardSeatId'
     | '/_app/manage/board_/$boardOfficeId_/seats/new'
     | '/_app/manage/groups_/kinds/$groupKindId_/edit'
@@ -1379,6 +1392,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAffiliatedMembersPersonIdRouteImport
       parentRoute: typeof AppAffiliatedRoute
     }
+    '/_app/profile_/security_/passkeys/$passkeyId': {
+      id: '/_app/profile_/security_/passkeys/$passkeyId'
+      path: '/profile/security/passkeys/$passkeyId'
+      fullPath: '/profile/security/passkeys/$passkeyId'
+      preLoaderRoute: typeof AppProfileSecurityPasskeysPasskeyIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/manage/venues_/$venueId_/edit': {
       id: '/_app/manage/venues_/$venueId_/edit'
       path: '/manage/venues/$venueId/edit'
@@ -1665,6 +1685,7 @@ interface AppRouteChildren {
   AppManageRolesRoleIdEditRoute: typeof AppManageRolesRoleIdEditRoute
   AppManageSessionsSessionIdEditRoute: typeof AppManageSessionsSessionIdEditRoute
   AppManageVenuesVenueIdEditRoute: typeof AppManageVenuesVenueIdEditRoute
+  AppProfileSecurityPasskeysPasskeyIdRoute: typeof AppProfileSecurityPasskeysPasskeyIdRoute
   AppManageBoardBoardOfficeIdSeatsBoardSeatIdRoute: typeof AppManageBoardBoardOfficeIdSeatsBoardSeatIdRoute
   AppManageBoardBoardOfficeIdSeatsNewRoute: typeof AppManageBoardBoardOfficeIdSeatsNewRoute
   AppManageGroupsKindsGroupKindIdEditRoute: typeof AppManageGroupsKindsGroupKindIdEditRoute
@@ -1741,6 +1762,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppManageRolesRoleIdEditRoute: AppManageRolesRoleIdEditRoute,
   AppManageSessionsSessionIdEditRoute: AppManageSessionsSessionIdEditRoute,
   AppManageVenuesVenueIdEditRoute: AppManageVenuesVenueIdEditRoute,
+  AppProfileSecurityPasskeysPasskeyIdRoute:
+    AppProfileSecurityPasskeysPasskeyIdRoute,
   AppManageBoardBoardOfficeIdSeatsBoardSeatIdRoute:
     AppManageBoardBoardOfficeIdSeatsBoardSeatIdRoute,
   AppManageBoardBoardOfficeIdSeatsNewRoute:

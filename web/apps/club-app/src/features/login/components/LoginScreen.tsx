@@ -10,6 +10,7 @@ import {
 import { LoginForm } from './LoginForm';
 import { LoginTestCredentials } from './LoginTestCredentials';
 import { LoginWaysOn } from './LoginWaysOn';
+import { PasskeySignIn } from './PasskeySignIn';
 import { SignedOutFrame } from './SignedOutFrame';
 
 const INTRO = 'Der Mitgliederbereich des FCC.';
@@ -44,6 +45,7 @@ export const LoginScreen: FC<LoginScreenProps> = ({ expired, farewell, passwordR
       {farewellNotice}
       {passwordResetNotice}
       <LoginForm />
+      <PasskeySignIn />
       <LoginWaysOn />
       <LoginTestCredentials />
     </SignedOutFrame>
