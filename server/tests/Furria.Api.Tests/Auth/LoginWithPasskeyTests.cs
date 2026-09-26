@@ -151,6 +151,35 @@ public sealed class LoginWithPasskeyTests
     }
 
     [Fact]
+    public async Task Should_SignHerIn_When_WrongPasswordsLockedHerOut()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await ArrangeAnnaAsync(ct);
+        using var authenticator = await RegisteredAuthenticatorAsync(ctx, ct);
+        for (var attempt = 0; attempt < AccountSecuritySteps.LockoutThreshold; attempt++)
+            await AccountSecuritySteps.LogInStatusAsync(
+                _fixture,
+                ctx.Identity.EmailOf("anna"),
+                AccountSecuritySteps.WrongPassword
+            );
+
+        var (response, _) = await PasskeySteps.LogInAsync(
+            _fixture,
+            await PasskeySteps.AssertAsync(_fixture, authenticator)
+        );
+
+        Assert.Equal(
+            HttpStatusCode.Unauthorized,
+            await AccountSecuritySteps.LogInStatusAsync(
+                _fixture,
+                ctx.Identity.EmailOf("anna"),
+                ApiTestFixture.SeededAccountPassword
+            )
+        );
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Should_AnswerTheSameRefusal_When_ThePasskeyIsUnknownOrItsAccountDisabled()
     {
         var ct = TestContext.Current.CancellationToken;

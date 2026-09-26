@@ -279,6 +279,32 @@ public sealed class DeleteMyAccountTests
     }
 
     [Fact]
+    public async Task Should_DeleteHerAccount_When_SheProvesItWithHerPasskeyWhileLockedOut()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await ArrangeAnnaAsync(ct);
+        var client = await ctx.Identity.ClientForAsync("anna", ct);
+        using var authenticator = new SoftwareAuthenticator();
+        await PasskeySteps.RegisterAsync(client, authenticator);
+        for (var attempt = 0; attempt < AccountSecuritySteps.LockoutThreshold; attempt++)
+            await AccountSecuritySteps.DeleteAccountAsync(
+                client,
+                AccountSecuritySteps.WrongPassword
+            );
+
+        var response = await PasskeySteps.DeleteAccountAsync(
+            client,
+            await PasskeySteps.AssertAsync(_fixture, authenticator)
+        );
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx
+            .Expected.AccountOfPerson(ctx.Identity.People.IdOf("anna"))
+            .ToNotExist()
+            .AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_RefuseOnThePasskey_When_TheAssertionIsSomeoneElses()
     {
         var ct = TestContext.Current.CancellationToken;

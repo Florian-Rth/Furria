@@ -107,9 +107,6 @@ public sealed class AccountService
         if (account.IsDisabled)
             return RejectPasskeyLogin(account.Id, LoginFailureReason.Disabled);
 
-        if (await _userManager.IsLockedOutAsync(account))
-            return RejectPasskeyLogin(account.Id, LoginFailureReason.LockedOut);
-
         _logger.LogInformation("Passkey login succeeded for account {AccountId}", account.Id);
         return Result<SessionTokensDetails>.Success(await StartSessionAsync(account, ct));
     }
