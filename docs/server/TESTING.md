@@ -345,6 +345,19 @@ public sealed class GetMeTests
    the claim-in: `AddStrayWithAccount` (a non-affiliated person with an account, on the seed
    builder), `ClaimAsync` and `GiveContactEmailAsync`, with `WrongClaimPassword`; seeded accounts
    sign in with `ApiTestFixture.SeededAccountPassword`.
+12. **The passkey toolkit (CA-P8 S7)** — `SoftwareAuthenticator` (`Furria.Tests.Common/WebAuthn`)
+   is a real ES256 platform authenticator in memory: `Create(creationOptions, origin)` answers a
+   creation with a `none` attestation, `Assert(requestOptions, origin)` signs an assertion with
+   user presence and verification, and `CredentialId` / `PasskeyId` name what it holds. No mock:
+   Identity verifies every byte. `PasskeySteps` (`Furria.Api.Tests/Auth`) walks the ceremonies over
+   the real endpoints — `RegisterAsync`, `CreationOptionsAsync` / `AddAsync`, `AssertAsync`
+   (request options plus an assertion, returned as a `PasskeyAssertionAttempt`), `LogInAsync`,
+   `RemoveAsync`, `DeleteAccountAsync` — with `WebOrigin`, `AndroidOrigin`, `ForeignOrigin`,
+   `PastTheChallengeLifetime` and the notice leads; `ClaimSteps.ClaimByPasskeyAsync` claims in with
+   an attempt. `Expected.PasskeysOfAccount(accountId)` (`ToHaveCount`, `ToHold`) and
+   `Expected.PasskeyChallenges()` (`ToHaveCount`) read the two tables.
+   `ApiTestFixture.AndroidCertFingerprint` is the one fingerprint the host accepts, so
+   `AndroidOrigin` is its `android:apk-key-hash:` origin.
 
 ### Traps worth knowing
 
@@ -385,6 +398,16 @@ public sealed class GetMeTests
   account id, five login-email codes per 15 minutes). Give every test its own address with
   `UniqueContactEmail`, and remember the bootstrap admin's account id survives every reset: a
   test that spends her per-account budget spends it for the whole collection.
+- **A per-IP limit cannot be proven by exhausting it.** The fixture sets
+  `RateLimits:SignedOut:PermitsPerIp` to a million so no suite trips it, and every test comes from
+  the same loopback IP. A signed-out route therefore proves its limit through the route's metadata:
+  `PasskeySteps.RateLimitPolicyOf(fixture, route)` reads the `EnableRateLimitingAttribute` the
+  endpoint's `RequireRateLimiting` left, and must equal `SignedOutRateLimiting.PerIpPolicy`. A route
+  that forgets the call passes every behaviour test and only this one goes red.
+- **The reset waits for the signed-out queue.** `ResetDatabaseAsync` polls
+  `SignedOutMailRequestQueue.IsIdle` before truncating: a request a previous test left unanswered
+  would otherwise hold locks while `TRUNCATE … CASCADE` takes them in another order, and
+  PostgreSQL answers `40P01 deadlock detected` in the next test's `BuildAsync`.
 - **A test that proves *nothing was sent* needs a sentinel.** Both signed-out queues run one
   request at a time, so a sentinel account's reset request queued after the act drains
   everything before it: act, `SignedOutMailSteps.SettleAsync(fixture, sentinelLoginEmail, ct)`,

@@ -568,6 +568,38 @@ memberships intact, and that a deleted person can be invited again by hand but n
 **Done when** the server tests cover attestation, assertion and challenge expiry; a device check
 on Android signs in with a passkey created on the web.
 
+**What was built — 2026-09-26**
+- Identity schema version 3 (`account_passkey`) and `passkey_challenge`; migration `Passkeys`.
+  The ceremonies run through `IPasskeyHandler<Account>`, never the cookie-bound `SignInManager`
+  passkey methods (ADR-0005 amendment, open question 1 settled).
+- `POST auth/me/passkeys/creation-options` → `{challengeId, options}`; `POST auth/me/passkeys
+  {challengeId, credential, name?}` → `{id, name, addedAt}`, `400` on a dead challenge or a failed
+  attestation, notice mail; `DELETE auth/me/passkeys/{passkeyId}` → `204`, `404` for a passkey not
+  hers, notice mail. Signed out, both per IP: `POST auth/passkeys/request-options` → `{challengeId,
+  options}`; `POST auth/login/passkey {challengeId, credential}` → the session, one identical
+  `401` for every refusal. `GetMe` gains `passkeys` (`id`, `name`, `addedAt`).
+- A challenge lives 5 minutes, is single use (the first presentation deletes it), carries its
+  purpose and, for a creation, its account; expired rows are deleted on the next issue.
+- The relying party is the host of `ClubApp:BaseUrl`; resident key and user verification are
+  required. Accepted origins: the `ClubApp:BaseUrl` origin and `android:apk-key-hash:…` for every
+  entry of `ClubApp:AndroidCertFingerprints` (an array, or one comma-separated string, so
+  `ANDROID_CERT_FINGERPRINTS` feeds the API and the club-app deploy alike). Cross-origin ceremonies
+  are refused.
+- A name left out becomes *Passkey vom 26. Sep. 2026*. **The password lockout never blocks a
+  passkey**: a user-verified passkey is not guessable, so a locked-out account still signs in,
+  re-authenticates and claims in by passkey; a disabled one never does (lead ruling).
+- `DELETE auth/me` takes `{password}` or `{passkey: {challengeId, credential}}`; the assertion must
+  be a passkey of the signed-in account, refused on `passkey`. Redeem's claim-in takes
+  `claimPasskey` beside `claimPassword` (S9).
+- Club-app: *Mit Fingerabdruck anmelden* on `/login`; the one passkey offer after redemption
+  (*Einrichten* / *Später*), skipped after a claim-in by passkey; the *Passkeys* panel in
+  *Anmeldung & Sicherheit* with *Passkey hinzufügen* and `/profile/security/passkeys/$passkeyId`
+  (*Passkey entfernen*); *Mit Passkey bestätigen* when deleting the account; *Mit Fingerabdruck
+  bestätigen* on the claim step. Everything passkey hides where WebAuthn is unavailable.
+- Android: `MainActivity` turns on `WEB_AUTHENTICATION_SUPPORT_FOR_APP` in the Capacitor WebView
+  (`androidx.webkit`); `assetlinks.json` (S10) declares `get_login_creds`.
+- Device check outstanding: Android signs in with a passkey created on the web.
+
 ---
 
 ### S8 — her contact details, and *nicht im Verein aktiv*
@@ -625,7 +657,10 @@ untouched, and that an affiliated person is never a candidate.
   lastName, hasAccount}`, `404` without one, `400` for a malformed address. Only a non-affiliated
   person is a candidate; of several, the newest `UpdatedAt` wins, then the highest id. **Adopting
   opens that person; nothing is written** (ADR-0019's reading confirmed).
-- Redeem gains `claimPassword`; `password` may be left out only together with it. A login email
+- Redeem gains `claimPassword`, and with S7 `claimPasskey {challengeId, credential}` as its
+  alternative (at most one of the two, refused on `claimPasskey`); `password` may be left out only
+  together with a claim. A claim passkey must assert the claimable account itself, or it is
+  refused on `claimPasskey` with both persons untouched. A login email
   that belongs to a **claimable** account answers `claimRequired`; a wrong claim password is
   refused on `claimPassword` with the login's lockout; a non-claimable one stays `409` *taken*.
   Lookup gains `claimableLoginEmail`. A recovery never offers claim-in.
@@ -654,6 +689,26 @@ untouched, and that an affiliated person is never a candidate.
 
 **Done when** a device check opens an invitation link from Gmail straight into the app.
 
+**What was built — 2026-09-26**
+- The club-app image writes `/.well-known/assetlinks.json` at container start
+  (`deploy/41-android-asset-links.sh`) from `ANDROID_PACKAGE_NAME` (default `de.furria.club`) and
+  `ANDROID_CERT_FINGERPRINTS` (comma-separated, upper-case keytool form), declaring
+  `handle_all_urls` and `get_login_creds` for every fingerprint. Empty fingerprints: no file,
+  `404`; a malformed entry stops the container. nginx serves it as `application/json`, no
+  redirect, and every other `/.well-known/` path `404`s instead of falling back to the SPA.
+- The manifest's `autoVerify` intent filter claims only `/invitation` and `/reset-password` on the
+  host from `CLUB_APP_HOST` / `-PclubAppHost` (Gradle `manifestPlaceholders`, not
+  `capacitor.config.ts`). A release build without it fails; a debug build gets
+  `club-app.invalid`, which never verifies.
+- In the app, `useAppLinks` routes a launch URL and every later `appUrlOpen` of the club-app
+  origin onto those two paths, fragment included; anything else stays with the browser. A second
+  link arriving while its screen is already open remounts that screen, so the new fragment is
+  read.
+- **The "confirmation links" item is void**: login-email and redemption confirmations mail a
+  6-digit code, not a link, so there is nothing more to route.
+- Setup and verification: `web/apps/club-app/README.md` → *Android App Links*. Device check
+  outstanding: an invitation link from Gmail opens straight into the app.
+
 ---
 
 ### S11 — the sweep
@@ -678,9 +733,8 @@ in-person screen; the copy pass against ADR-0016's five button words; `CONTEXT.m
 
 ## Open
 
-1. **The passkey challenge state over bearer tokens.** Decided that it is built; *how* it is
-   carried — a short-lived server-side challenge keyed by an opaque id, most likely — is settled
-   in S7 and recorded in the ADR-0005 amendment.
+1. ~~**The passkey challenge state over bearer tokens.**~~ Settled in S7: a 5-minute, single-use
+   `passkey_challenge` row keyed by an opaque id the client echoes back (ADR-0005 amendment).
 2. **Who and when on contact details.** S8 records the last change and its actor on the person.
    Whether the club wants a per-field history is Florian's; the ruling is only that it is visible.
 3. **Password length.** Ruling 20 says *at least 10 characters*, but `AddIdentityCore` already

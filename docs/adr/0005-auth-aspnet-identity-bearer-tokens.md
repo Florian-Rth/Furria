@@ -99,7 +99,9 @@ The browser is unchanged: `localStorage` behind the same port and under the same
 Passkeys join the password as a second way in — **password always, passkey optional** (CA-P8
 ruling 10). Nothing above changes: a passkey sign-in ends in the same bearer access token and
 rotated refresh token a password sign-in does, through the same session issuing and the same
-refusal of a disabled or locked-out account.
+refusal of a disabled account. **The password lockout does not apply to a passkey**: the lockout
+defends against guessing, a user-verified passkey cannot be guessed, and someone spamming wrong
+passwords must not lock her out of her passkey.
 
 **Identity does the WebAuthn work; our endpoints carry its state.** The Identity store moves to
 schema version 3 (`account_passkey`), and the ceremonies run through the handler-level
@@ -142,3 +144,5 @@ origins, checked by the options' `ValidateOrigin` hook, are exactly:
 
 A cross-origin (iframe) ceremony is refused. Re-authentication (deleting the account) accepts a
 passkey assertion in place of the password; it must assert a passkey of the signed-in account.
+Claim-in (ADR-0019) accepts one in place of the claimed account's password; it must assert a
+passkey of that account.

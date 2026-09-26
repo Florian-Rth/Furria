@@ -42,6 +42,7 @@ English rendering anywhere else, so two translations never drift apart.
 | contact details | Kontaktdaten | — |
 | portrait | Porträt | — |
 | account / invitation | Account / Einladung | `Account`, — |
+| passkey | Passkey | `account_passkey` (Identity) |
 | access recovery | Zugang wiederherstellen | `InvitationPurpose.Recovery` |
 | adoption / claim-in | Diese Person übernehmen / — | — |
 | club | Verein | — |
@@ -352,6 +353,20 @@ _UI copy_: Account; *nicht im Verein aktiv*; *Anmeldung & Sicherheit*; *Überall
 _Avoid_: user (as a table/entity name), guest account (it is the same account concept),
 username
 
+**Passkey**:
+An optional second credential on her **account**, held by one of her devices and unlocked by her
+fingerprint or screen lock (*Mit Fingerabdruck anmelden*). **The password always stays**: a
+passkey is added on top, never in its place, and removing her last passkey leaves her exactly
+where she started. She may hold several, one per device, each named by her or by default
+*Passkey vom 26. Sep. 2026*; adding or removing one tells her login email. A passkey also proves
+it is her where the password would — deleting her account, claiming in — and the password
+lockout never blocks it, because a passkey cannot be guessed; a disabled account stays shut
+either way (built 2026-09-26, CA-P8 S7).
+_UI copy_: Passkey; *Mit Fingerabdruck anmelden*; *Passkey hinzufügen*; *Passkey entfernen*;
+*Mit Passkey bestätigen*; *Mit Fingerabdruck bestätigen*
+_Avoid_: biometric login (the fingerprint never leaves her device), security key, second factor
+(it replaces the password for that sign-in, it does not add to it)
+
 **Account state**:
 What the club sees about a person's access. The state itself is derived, never stored: *no access* (with the reason
 she cannot be invited, when she cannot: no email, under age, birth date missing, not affiliated),
@@ -436,8 +451,8 @@ _Avoid_: merge, duplicate check (as something the club runs)
 A **stray person** is a person with no affiliation whose account's login email is the one an
 invitation is being redeemed with — the same human, recorded twice. **Claim-in** closes it on her
 word: redemption asks her to sign in with that account, and signing in moves the account onto the
-club's person, which absorbs the stray one; the claimed account keeps its login email and
-password. **Club data blocks the absorption**: a stray person holding any of it (a membership,
+club's person, which absorbs the stray one; she proves it with that account's password or one of
+its passkeys, and the claimed account keeps its login email, password and passkeys. **Club data blocks the absorption**: a stray person holding any of it (a membership,
 even an ended one) makes the address simply taken (built 2026-09-26, CA-P8 S9; the alternative is
 open, see the plan). A recovery never claims in.
 _UI copy_: — (redeem asks her to sign in with the existing account)
