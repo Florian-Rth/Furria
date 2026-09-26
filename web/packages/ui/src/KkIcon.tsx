@@ -13,6 +13,7 @@ import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 import EuroOutlinedIcon from '@mui/icons-material/EuroOutlined';
 import EventOutlinedIcon from '@mui/icons-material/EventOutlined';
+import FingerprintOutlinedIcon from '@mui/icons-material/FingerprintOutlined';
 import GavelOutlinedIcon from '@mui/icons-material/GavelOutlined';
 import GridViewIcon from '@mui/icons-material/GridView';
 import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined';
@@ -85,7 +86,8 @@ export type KkIconName =
   | 'alert'
   | 'offline'
   | 'archive'
-  | 'qr';
+  | 'qr'
+  | 'fingerprint';
 type KkIconSize = 'small' | 'medium' | 'large';
 
 interface KkIconProps {
@@ -143,6 +145,7 @@ const icons: Record<KkIconName, typeof HomeIcon> = {
   offline: CloudOffOutlinedIcon,
   archive: Inventory2OutlinedIcon,
   qr: QrCode2OutlinedIcon,
+  fingerprint: FingerprintOutlinedIcon,
 };
 
 export const KkIcon: FC<KkIconProps> = ({ name, size = 'medium', sx }) => {
