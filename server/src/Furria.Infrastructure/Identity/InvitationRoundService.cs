@@ -56,11 +56,8 @@ public sealed class InvitationRoundService
             InviteCount = await InviteesOf(round).CountAsync(ct),
             RemindCount = await ReminderTargetsOf(round).CountAsync(ct),
             EligibleWithoutEmailCount = await _dbContext
-                .PeopleWithoutAccount()
-                .CountAsync(
-                    AccountEligibilityQuery.LacksOnlyAnEmailOn(round.Today, round.AgeOfConsent),
-                    ct
-                ),
+                .EligibleWithoutEmail(round.Today, round.AgeOfConsent)
+                .CountAsync(ct),
         };
     }
 

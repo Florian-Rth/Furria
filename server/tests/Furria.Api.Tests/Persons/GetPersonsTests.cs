@@ -24,7 +24,7 @@ public sealed class GetPersonsTests
     private static readonly DateOnly LeftIn2023 = new(2023, 1, 1);
     private static readonly DateOnly ArchivedIn2024 = new(2024, 1, 1);
 
-    private static readonly string[] AllAccessFilters =
+    private static readonly string[] AccessStateFilters =
     [
         PersonAccessFilters.None,
         PersonAccessFilters.Invited,
@@ -359,9 +359,12 @@ public sealed class GetPersonsTests
     [Theory]
     [InlineData(PersonAccessFilters.None, "dora", "gina")]
     [InlineData(PersonAccessFilters.Invited, "carla")]
-    [InlineData(PersonAccessFilters.Active, "anna")]
+    [InlineData(PersonAccessFilters.Active, "anna", "jonas")]
     [InlineData(PersonAccessFilters.Disabled, "bea")]
     [InlineData(PersonAccessFilters.NotInvitable, "emil", "fritz", "hans", "ida")]
+    [InlineData(PersonAccessFilters.WithAccess, "anna")]
+    [InlineData(PersonAccessFilters.OpenInvitation, "carla")]
+    [InlineData(PersonAccessFilters.WithoutEmail, "emil")]
     public async Task Should_ListOnlyThePersonsInThatAccessState_When_TheRegistryIsFilteredByAccess(
         string access,
         params string[] expectedAliases
@@ -399,7 +402,7 @@ public sealed class GetPersonsTests
                 var laterClient = await ctx.Identity.BootstrapAdminClientAsync(ct);
                 await InvitationSteps.InviteAsync(laterClient, ids["carla"]);
 
-                foreach (var access in AllAccessFilters)
+                foreach (var access in AccessStateFilters)
                 {
                     var listed = await ListByAccessAsync(laterClient, access);
                     foreach (var (alias, personId) in ids)
@@ -494,6 +497,8 @@ public sealed class GetPersonsTests
                             birthDate: today.AddYears(-10)
                         )
                         .AddMembership("ida-membership", "ida", today.AddYears(-1))
+                        .AddPerson("jonas", "Jonas", "Muster")
+                        .AddAccount("jonas")
                 ),
             ct
         );
@@ -511,6 +516,7 @@ public sealed class GetPersonsTests
             ["gina"] = ctx.Identity.People.IdOf("gina"),
             ["hans"] = ctx.Identity.People.IdOf("hans"),
             ["ida"] = ctx.Identity.People.IdOf("ida"),
+            ["jonas"] = ctx.Identity.People.IdOf("jonas"),
         };
 
     private static async Task<IReadOnlySet<int>> ListByAccessAsync(HttpClient client, string access)

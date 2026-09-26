@@ -10,6 +10,9 @@ public static class PersonAccessFilters
     public const string Active = "active";
     public const string Disabled = "disabled";
     public const string NotInvitable = "not-invitable";
+    public const string WithAccess = "with-access";
+    public const string OpenInvitation = "open-invitation";
+    public const string WithoutEmail = "without-email";
 
     private static readonly IReadOnlyDictionary<string, PersonAccessFilter> ByWireName =
         new Dictionary<string, PersonAccessFilter>(StringComparer.Ordinal)
@@ -19,6 +22,9 @@ public static class PersonAccessFilters
             [Active] = PersonAccessFilter.Active,
             [Disabled] = PersonAccessFilter.Disabled,
             [NotInvitable] = PersonAccessFilter.NotInvitable,
+            [WithAccess] = PersonAccessFilter.WithAccess,
+            [OpenInvitation] = PersonAccessFilter.OpenInvitation,
+            [WithoutEmail] = PersonAccessFilter.WithoutEmail,
         };
 
     [Pure]

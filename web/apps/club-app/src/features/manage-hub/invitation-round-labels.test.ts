@@ -117,7 +117,7 @@ describe('toAccessRows', () => {
       eligibleWithoutEmailCount: 0,
     });
 
-    expect(rows.find((row) => row.id === 'invited')?.meta).toBe(expected);
+    expect(rows.find((row) => row.id === 'open-invitation')?.meta).toBe(expected);
   });
 
   it.each([
@@ -134,7 +134,7 @@ describe('toAccessRows', () => {
         eligibleWithoutEmailCount,
       });
 
-      expect(rows.find((row) => row.id === 'not-invitable')?.hint).toBe(expected);
+      expect(rows.find((row) => row.id === 'without-email')?.hint).toBe(expected);
     },
   );
 });

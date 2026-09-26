@@ -2,6 +2,7 @@ using System.Diagnostics.Contracts;
 using Furria.Application.Authorization;
 using Furria.Application.Club;
 using Furria.Application.Management;
+using Furria.Application.Registry;
 using Furria.Core.Club;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Club;
@@ -59,29 +60,29 @@ public sealed class ManagementService
                 ? await BoardAsync(today, ct)
                 : null,
             ClubRecord = managesClub ? await ClubRecordAsync(ct) : null,
-            Accounts = managesPersons ? await AccountsAsync(today, ct) : null,
+            Accounts = managesPersons ? await AccountsAsync(ct) : null,
         };
     }
 
-    private async Task<ManageHubAccounts> AccountsAsync(DateOnly today, CancellationToken ct)
+    private async Task<ManageHubAccounts> AccountsAsync(CancellationToken ct)
     {
-        var ageOfConsent = (await _clubRecordService.GetAsync(ct)).AgeOfConsent;
-        var withAccessCount = await _dbContext
-            .PeopleWithAccount(isDisabled: false)
-            .CountAsync(AffiliationQuery.IsAffiliatedOn(today), ct);
+        var now = _timeProvider.GetUtcNow();
+        var ageOfConsent = await _dbContext.AgeOfConsentAsync(ct);
+        var withAccessCount = await CountByAccessAsync(PersonAccessFilter.WithAccess);
         var invitableCount = await _dbContext
-            .EligibleWithoutAccount(today, ageOfConsent)
+            .EligibleWithoutAccount(ClubClock.DayOf(now), ageOfConsent)
             .CountAsync(ct);
 
         return new ManageHubAccounts
         {
             WithAccessCount = withAccessCount,
             OfCount = withAccessCount + invitableCount,
-            OpenInvitationCount = await _dbContext.OpenInvitations().CountAsync(ct),
-            EligibleWithoutEmailCount = await _dbContext
-                .PeopleWithoutAccount()
-                .CountAsync(AccountEligibilityQuery.LacksOnlyAnEmailOn(today, ageOfConsent), ct),
+            OpenInvitationCount = await CountByAccessAsync(PersonAccessFilter.OpenInvitation),
+            EligibleWithoutEmailCount = await CountByAccessAsync(PersonAccessFilter.WithoutEmail),
         };
+
+        Task<int> CountByAccessAsync(PersonAccessFilter filter) =>
+            _dbContext.PeopleByAccess(filter, now, ageOfConsent).CountAsync(ct);
     }
 
     private async Task<ManageHubClubRecord> ClubRecordAsync(CancellationToken ct)

@@ -1,6 +1,7 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Management;
+using Furria.Api.Endpoints.Persons;
 using Furria.Api.Tests.Auth;
 using Furria.Application.Authorization;
 using Furria.Tests.Common.Builder;
@@ -606,6 +607,135 @@ public sealed class GetManageHubTests
                 Assert.Equal(1, result.Accounts.OpenInvitationCount);
             }
         );
+    }
+
+    [Fact]
+    public async Task Should_CountEachAccessRowAsTheRegisterListsIt_When_EveryAccessCaseIsPresent()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildEveryAccessCaseAsync(ct);
+        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        await InvitationSteps.InviteAsync(admin, ctx.Identity.People.IdOf("gina"));
+
+        await _fixture.AtLaterTimeAsync(
+            TimeSpan.FromDays(20),
+            async () =>
+            {
+                var laterAdmin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+                await InvitationSteps.InviteAsync(laterAdmin, ctx.Identity.People.IdOf("carla"));
+                await InvitationSteps.InviteInPersonAsync(
+                    laterAdmin,
+                    ctx.Identity.People.IdOf("kai")
+                );
+
+                var (_, hub) = await laterAdmin.GETAsync<GetManageHub, GetManageHubResponse>();
+
+                Assert.NotNull(hub.Accounts);
+                Assert.Equal(
+                    hub.Accounts.WithAccessCount,
+                    await CountListedAsync(laterAdmin, PersonAccessFilters.WithAccess)
+                );
+                Assert.Equal(
+                    hub.Accounts.OpenInvitationCount,
+                    await CountListedAsync(laterAdmin, PersonAccessFilters.OpenInvitation)
+                );
+                Assert.Equal(
+                    hub.Accounts.EligibleWithoutEmailCount,
+                    await CountListedAsync(laterAdmin, PersonAccessFilters.WithoutEmail)
+                );
+                Assert.Equal(1 + TheBootstrapAdminPerson, hub.Accounts.WithAccessCount);
+                Assert.Equal(3, hub.Accounts.OpenInvitationCount);
+                Assert.Equal(1, hub.Accounts.EligibleWithoutEmailCount);
+            }
+        );
+    }
+
+    private Task<SeededContext> BuildEveryAccessCaseAsync(CancellationToken ct)
+    {
+        var today = _fixture.Today;
+
+        return _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddEligiblePerson(
+                            "anna",
+                            "Anna",
+                            InvitationSteps.UniqueContactEmail("anna"),
+                            today
+                        )
+                        .AddAccount("anna")
+                        .AddEligiblePerson(
+                            "bea",
+                            "Bea",
+                            InvitationSteps.UniqueContactEmail("bea"),
+                            today
+                        )
+                        .AddAccount("bea", disabled: true)
+                        .AddEligiblePerson(
+                            "carla",
+                            "Carla",
+                            InvitationSteps.UniqueContactEmail("carla"),
+                            today
+                        )
+                        .AddEligiblePerson(
+                            "dora",
+                            "Dora",
+                            InvitationSteps.UniqueContactEmail("dora"),
+                            today
+                        )
+                        .AddPerson("emil", "Emil", "Muster")
+                        .AddPersonContact(
+                            "emil",
+                            birthDate: today.AddYears(-30),
+                            withoutEmail: true
+                        )
+                        .AddMembership("emil-membership", "emil", today.AddYears(-1))
+                        .AddPerson("fritz", "Fritz", "Muster")
+                        .AddPersonContact(
+                            "fritz",
+                            InvitationSteps.UniqueContactEmail("fritz"),
+                            birthDate: today.AddYears(-30)
+                        )
+                        .AddEligiblePerson(
+                            "gina",
+                            "Gina",
+                            InvitationSteps.UniqueContactEmail("gina"),
+                            today
+                        )
+                        .AddPerson("hans", "Hans", "Muster")
+                        .AddPersonContact("hans", InvitationSteps.UniqueContactEmail("hans"))
+                        .AddMembership("hans-membership", "hans", today.AddYears(-1))
+                        .AddPerson("ida", "Ida", "Muster")
+                        .AddPersonContact(
+                            "ida",
+                            InvitationSteps.UniqueContactEmail("ida"),
+                            birthDate: today.AddYears(-10)
+                        )
+                        .AddMembership("ida-membership", "ida", today.AddYears(-1))
+                        .AddPerson("jonas", "Jonas", "Muster")
+                        .AddAccount("jonas")
+                        .AddEligiblePerson(
+                            "kai",
+                            "Kai",
+                            InvitationSteps.UniqueContactEmail("kai"),
+                            today
+                        )
+                ),
+            ct
+        );
+    }
+
+    private static async Task<int> CountListedAsync(HttpClient client, string access)
+    {
+        var (response, result) = await client.GETAsync<
+            GetPersons,
+            GetPersonsRequest,
+            GetPersonsResponse
+        >(new GetPersonsRequest { Access = access });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        return result.Persons.Count;
     }
 
     private async Task<GetManageHubResponse> ReadTheHubAsAdminAsync(

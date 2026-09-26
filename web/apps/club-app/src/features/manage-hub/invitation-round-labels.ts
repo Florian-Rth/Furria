@@ -135,21 +135,21 @@ export const toAccessShareLine = (accounts: ManageAccountsPanel): string =>
 
 export const toAccessRows = (accounts: ManageAccountsPanel): AccessRowModel[] => [
   {
-    id: 'active',
+    id: 'with-access',
     label: 'Mit Zugang',
     icon: 'key',
     meta: toAccessShareLine(accounts),
     hint: undefined,
   },
   {
-    id: 'invited',
+    id: 'open-invitation',
     label: 'Offene Einladungen',
     icon: 'mail',
     meta: toOpenInvitationsMeta(accounts.openInvitationCount),
     hint: undefined,
   },
   {
-    id: 'not-invitable',
+    id: 'without-email',
     label: 'Ohne E-Mail-Adresse',
     icon: 'info',
     meta: toWithoutEmailMeta(accounts.eligibleWithoutEmailCount),

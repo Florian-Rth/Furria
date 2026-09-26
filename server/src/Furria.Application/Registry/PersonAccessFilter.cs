@@ -7,4 +7,7 @@ public enum PersonAccessFilter
     Active = 3,
     Disabled = 4,
     NotInvitable = 5,
+    WithAccess = 6,
+    OpenInvitation = 7,
+    WithoutEmail = 8,
 }

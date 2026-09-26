@@ -7,6 +7,9 @@ export const PERSON_ACCESS_FILTERS = [
   'active',
   'disabled',
   'not-invitable',
+  'with-access',
+  'open-invitation',
+  'without-email',
 ] as const;
 
 export type PersonAccessFilter = (typeof PERSON_ACCESS_FILTERS)[number];
@@ -17,6 +20,9 @@ const ACCESS_FILTER_LABELS: Record<PersonAccessFilter, string> = {
   active: 'mit Zugang',
   disabled: 'gesperrt',
   'not-invitable': 'nicht einladbar',
+  'with-access': 'mit Zugang und im Verein aktiv',
+  'open-invitation': 'mit offener Einladung',
+  'without-email': 'einladbar, aber ohne E-Mail-Adresse',
 };
 
 const NO_ACCESS_MATCH_LINES: Record<PersonAccessFilter, string> = {
@@ -25,6 +31,9 @@ const NO_ACCESS_MATCH_LINES: Record<PersonAccessFilter, string> = {
   active: 'Noch hat niemand einen Zugang.',
   disabled: 'Kein Zugang ist gesperrt.',
   'not-invitable': 'Wer im Verein aktiv ist, kann auch eingeladen werden.',
+  'with-access': 'Noch hat niemand aus dem Verein einen Zugang.',
+  'open-invitation': 'Gerade ist keine Einladung offen.',
+  'without-email': 'Bei allen Einladbaren ist eine E-Mail-Adresse hinterlegt.',
 };
 
 export const ACCESS_FILTER_CLEAR_LABEL = 'Alle zeigen';

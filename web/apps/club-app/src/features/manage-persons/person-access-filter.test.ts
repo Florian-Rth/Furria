@@ -8,6 +8,9 @@ describe('parsePersonAccessFilter', () => {
     { value: 'active', expected: 'active' },
     { value: 'disabled', expected: 'disabled' },
     { value: 'not-invitable', expected: 'not-invitable' },
+    { value: 'with-access', expected: 'with-access' },
+    { value: 'open-invitation', expected: 'open-invitation' },
+    { value: 'without-email', expected: 'without-email' },
     { value: ' Invited ', expected: 'invited' },
     { value: 'NOT-INVITABLE', expected: 'not-invitable' },
   ])('reads "$value" as the $expected filter', ({ value, expected }) => {

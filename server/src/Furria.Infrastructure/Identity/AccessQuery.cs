@@ -3,6 +3,7 @@ using Furria.Application.Registry;
 using Furria.Core.Club;
 using Furria.Core.Identity;
 using Furria.Infrastructure.Persistence;
+using Furria.Infrastructure.Registry;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Identity;
@@ -43,6 +44,9 @@ public static class AccessQuery
             PersonAccessFilter.NotInvitable => dbContext
                 .PeopleWithoutAccount()
                 .Where(AccountEligibilityQuery.IsIneligibleOn(today, ageOfConsent)),
+            PersonAccessFilter.WithAccess => dbContext.PeopleWithAccessOn(today),
+            PersonAccessFilter.OpenInvitation => dbContext.PeopleWithOpenInvitation(),
+            PersonAccessFilter.WithoutEmail => dbContext.EligibleWithoutEmail(today, ageOfConsent),
             _ => throw new ArgumentOutOfRangeException(nameof(filter), filter, null),
         };
     }
@@ -63,6 +67,35 @@ public static class AccessQuery
                 account.PersonId == person.Id && account.IsDisabled == isDisabled
             )
         );
+
+    [Pure]
+    public static IQueryable<Person> PeopleWithAccessOn(
+        this AppDbContext dbContext,
+        DateOnly today
+    ) =>
+        dbContext
+            .PeopleWithAccount(isDisabled: false)
+            .Where(AffiliationQuery.IsAffiliatedOn(today));
+
+    [Pure]
+    public static IQueryable<Person> PeopleWithOpenInvitation(this AppDbContext dbContext)
+    {
+        var openInvitations = dbContext.OpenInvitations();
+
+        return dbContext.People.Where(person =>
+            openInvitations.Any(invitation => invitation.PersonId == person.Id)
+        );
+    }
+
+    [Pure]
+    public static IQueryable<Person> EligibleWithoutEmail(
+        this AppDbContext dbContext,
+        DateOnly today,
+        int ageOfConsent
+    ) =>
+        dbContext
+            .PeopleWithoutAccount()
+            .Where(AccountEligibilityQuery.LacksOnlyAnEmailOn(today, ageOfConsent));
 
     [Pure]
     public static IQueryable<Person> EligibleWithoutAccount(
