@@ -1,8 +1,10 @@
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Auth;
 using Furria.Application.Identity;
+using Furria.Core.Club;
 using Furria.Core.Identity;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
@@ -16,6 +18,7 @@ public sealed class RedeemInvitationTests
     private const string ConfirmationCodeField = "confirmationCode";
     private const string LoginEmailField = "loginEmail";
     private const string PasswordField = "password";
+    private const string ClaimPasswordField = "claimPassword";
 
     private readonly ApiTestFixture _fixture;
 
@@ -594,7 +597,7 @@ public sealed class RedeemInvitationTests
     }
 
     [Fact]
-    public async Task Should_RefuseAsTaken_When_TheChosenEmailIsAnotherAccountsLogin()
+    public async Task Should_RefuseAsTaken_When_TheChosenEmailIsTheLoginOfAnAffiliatedAccount()
     {
         var ct = TestContext.Current.CancellationToken;
         var annaEmail = InvitationSteps.UniqueContactEmail("anna");
@@ -605,6 +608,7 @@ public sealed class RedeemInvitationTests
                         .AddEligiblePerson("anna", "Anna", annaEmail, _fixture.Today)
                         .AddPerson("bruno", "Bruno", "Muster")
                         .AddAccount("bruno")
+                        .AddMembership("bruno-membership", "bruno", _fixture.Today.AddYears(-1))
                 ),
             ct
         );
@@ -923,6 +927,422 @@ public sealed class RedeemInvitationTests
             .Expected.AccountEventsOfPerson(annaId)
             .ToHaveKindsInOrder(AccountEventKind.Invited, AccountEventKind.Disabled)
             .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_AskHerToSignIn_When_TheChosenEmailIsTheLoginOfAnAccountOutsideTheClub()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (ctx, annaId, token) = await ArrangeClaimAsync(ct);
+        var strayId = ctx.Identity.People.IdOf("stray");
+
+        var (response, redemption) = await InvitationSteps.RedeemAsync(
+            _fixture.CreateClient(),
+            token,
+            loginEmail: ctx.Identity.EmailOf("stray")
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(RedeemInvitationOutcome.ClaimRequired, redemption.Outcome);
+        Assert.Null(redemption.Session);
+        Assert.Null(redemption.ConfirmationExpiresAt);
+        await ctx
+            .Expected.Account(ctx.Identity.Accounts.IdOf("stray"))
+            .ToBeLinkedTo(strayId)
+            .AccountOfPerson(annaId)
+            .ToNotExist()
+            .InvitationsOfPerson(annaId)
+            .ToHaveLiveCount(1)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_MoveTheAccountOntoHer_When_SheSignsInWithTheClaimedAccount()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (ctx, annaId, token) = await ArrangeClaimAsync(ct);
+        var strayId = ctx.Identity.People.IdOf("stray");
+        var strayEmail = ctx.Identity.EmailOf("stray");
+
+        var (response, redemption) = await ClaimSteps.ClaimAsync(
+            _fixture.CreateClient(),
+            token,
+            strayEmail,
+            ApiTestFixture.SeededAccountPassword
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var signedIn = InvitationSteps.SignedInClient(_fixture, redemption);
+        var (meResponse, me) = await signedIn.GETAsync<GetMe, GetMeResponse>();
+        Assert.Equal(HttpStatusCode.OK, meResponse.StatusCode);
+        Assert.Equal(annaId, me.Person.Id);
+        Assert.Equal(strayEmail, me.Email);
+        await ctx
+            .Expected.Account(ctx.Identity.Accounts.IdOf("stray"))
+            .ToBeLinkedTo(annaId)
+            .Person(strayId)
+            .ToNotExist()
+            .InvitationsOfPerson(annaId)
+            .ToHaveRedeemedCount(1)
+            .InvitationsOfPerson(annaId)
+            .ToHaveLiveCount(0)
+            .AccountEventsOfPerson(annaId)
+            .ToHaveKindsInOrder(AccountEventKind.Invited, AccountEventKind.Redeemed)
+            .AccountEventsOfPerson(annaId)
+            .ToHaveLatestActor(annaId)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_SignTheClaimedAccountInAsHer_When_ItLogsInWithItsOldPassword()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (ctx, annaId, token) = await ArrangeClaimAsync(ct);
+        var strayEmail = ctx.Identity.EmailOf("stray");
+        await ClaimSteps.ClaimAsync(
+            _fixture.CreateClient(),
+            token,
+            strayEmail,
+            ApiTestFixture.SeededAccountPassword,
+            InvitationSteps.ValidPassword
+        );
+
+        var login = await ctx.Identity.LogInAsync(
+            strayEmail,
+            ApiTestFixture.SeededAccountPassword,
+            ct
+        );
+
+        var client = _fixture.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer",
+            login.AccessToken
+        );
+        var (meResponse, me) = await client.GETAsync<GetMe, GetMeResponse>();
+        Assert.Equal(HttpStatusCode.OK, meResponse.StatusCode);
+        Assert.Equal(annaId, me.Person.Id);
+        Assert.Equal("Anna", me.Person.FirstName);
+    }
+
+    [Fact]
+    public async Task Should_EndTheClaimedAccountsEarlierSessions_When_SheClaimsIt()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (ctx, _, token) = await ArrangeClaimAsync(ct);
+        var strayAccountId = ctx.Identity.Accounts.IdOf("stray");
+        await ctx.Identity.ClientForAsync("stray", ct);
+
+        await ClaimSteps.ClaimAsync(
+            _fixture.CreateClient(),
+            token,
+            ctx.Identity.EmailOf("stray"),
+            ApiTestFixture.SeededAccountPassword
+        );
+
+        await ctx
+            .Expected.RefreshTokensOf(strayAccountId)
+            .ToHaveRevocationCount(RefreshTokenRevocationReason.AllSessionsEnded, 1)
+            .RefreshTokensOf(strayAccountId)
+            .ToHaveActiveCount(1)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RepointTheContactChangesTheStrayPersonMade_When_SheClaims()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var changedAt = _fixture.TimeProvider.GetUtcNow().AddDays(-3);
+        var (ctx, annaId, token) = await ArrangeClaimAsync(
+            ct,
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddPerson("carla", "Carla", "Muster")
+                        .AddContactChange("carla", "stray", changedAt)
+                        .AddContactChange("stray", "stray", changedAt)
+                )
+        );
+
+        await ClaimSteps.ClaimAsync(
+            _fixture.CreateClient(),
+            token,
+            ctx.Identity.EmailOf("stray"),
+            ApiTestFixture.SeededAccountPassword
+        );
+
+        await ctx
+            .Expected.Person(ctx.Identity.People.IdOf("carla"))
+            .ToHaveContactChangedBy(annaId, changedAt)
+            .Person(annaId)
+            .ToHaveNoContactChange()
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_LeaveBothPersonsAndTheAccountUntouched_When_TheClaimPasswordIsWrong()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (ctx, annaId, token) = await ArrangeClaimAsync(ct);
+        var strayId = ctx.Identity.People.IdOf("stray");
+
+        var (response, _) = await ClaimSteps.ClaimAsync(
+            _fixture.CreateClient(),
+            token,
+            ctx.Identity.EmailOf("stray"),
+            ClaimSteps.WrongClaimPassword
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await AssertRefusedOnAsync(response, ClaimPasswordField, ct);
+        await ctx
+            .Expected.Account(ctx.Identity.Accounts.IdOf("stray"))
+            .ToBeLinkedTo(strayId)
+            .Person(strayId)
+            .ToExist()
+            .Person(annaId)
+            .ToExist()
+            .AccountOfPerson(annaId)
+            .ToNotExist()
+            .InvitationsOfPerson(annaId)
+            .ToHaveLiveCount(1)
+            .AccountEventsOfPerson(annaId)
+            .ToHaveKindsInOrder(AccountEventKind.Invited)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_LockTheClaimedAccountOut_When_TheClaimPasswordIsWrongFiveTimes()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (ctx, annaId, token) = await ArrangeClaimAsync(ct);
+        var strayEmail = ctx.Identity.EmailOf("stray");
+
+        for (var attempt = 0; attempt < 5; attempt++)
+            await ClaimSteps.ClaimAsync(
+                _fixture.CreateClient(),
+                token,
+                strayEmail,
+                ClaimSteps.WrongClaimPassword
+            );
+        var (response, _) = await ClaimSteps.ClaimAsync(
+            _fixture.CreateClient(),
+            token,
+            strayEmail,
+            ApiTestFixture.SeededAccountPassword
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await AssertRefusedOnAsync(response, ClaimPasswordField, ct);
+        await ctx
+            .Expected.Account(ctx.Identity.Accounts.IdOf("stray"))
+            .ToBeLinkedTo(ctx.Identity.People.IdOf("stray"))
+            .AccountOfPerson(annaId)
+            .ToNotExist()
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseAsTaken_When_TheAccountOutsideTheClubIsDisabled()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var annaEmail = InvitationSteps.UniqueContactEmail("anna");
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddEligiblePerson("anna", "Anna", annaEmail, _fixture.Today)
+                        .AddPerson("gesperrt", "Gesa", "Muster")
+                        .AddAccount("gesperrt", disabled: true)
+                ),
+            ct
+        );
+        var annaId = ctx.Identity.People.IdOf("anna");
+        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var token = await InvitationSteps.InviteAndReadTokenAsync(
+            _fixture,
+            manager,
+            annaId,
+            annaEmail,
+            ct
+        );
+
+        var (response, _) = await ClaimSteps.ClaimAsync(
+            _fixture.CreateClient(),
+            token,
+            ctx.Identity.EmailOf("gesperrt"),
+            ApiTestFixture.SeededAccountPassword
+        );
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        await AssertRefusedOnAsync(response, LoginEmailField, ct);
+        await ctx.Expected.AccountOfPerson(annaId).ToNotExist().AssertAsync(ct);
+    }
+
+    [Theory]
+    [InlineData(StrayHolding.EndedMembership)]
+    [InlineData(StrayHolding.FeeReduction)]
+    [InlineData(StrayHolding.EndedGroupMembership)]
+    [InlineData(StrayHolding.GroupAdminship)]
+    [InlineData(StrayHolding.EndedRoleHolding)]
+    [InlineData(StrayHolding.BoardSeat)]
+    [InlineData(StrayHolding.KeyHolding)]
+    [InlineData(StrayHolding.AttendanceResponse)]
+    [InlineData(StrayHolding.Announcement)]
+    public async Task Should_RefuseAsTaken_When_TheStrayPersonHoldsClubData(StrayHolding holding)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (ctx, annaId, token) = await ArrangeClaimAsync(
+            ct,
+            builder => Hold(builder, holding, _fixture.Today, _fixture.CurrentSessionYear)
+        );
+        var strayId = ctx.Identity.People.IdOf("stray");
+
+        var (response, _) = await ClaimSteps.ClaimAsync(
+            _fixture.CreateClient(),
+            token,
+            ctx.Identity.EmailOf("stray"),
+            ApiTestFixture.SeededAccountPassword
+        );
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        await AssertRefusedOnAsync(response, LoginEmailField, ct);
+        await ctx
+            .Expected.Account(ctx.Identity.Accounts.IdOf("stray"))
+            .ToBeLinkedTo(strayId)
+            .Person(strayId)
+            .ToExist()
+            .InvitationsOfPerson(annaId)
+            .ToHaveLiveCount(1)
+            .AssertAsync(ct);
+    }
+
+    public enum StrayHolding
+    {
+        EndedMembership,
+        FeeReduction,
+        EndedGroupMembership,
+        GroupAdminship,
+        EndedRoleHolding,
+        BoardSeat,
+        KeyHolding,
+        AttendanceResponse,
+        Announcement,
+    }
+
+    private static void Hold(
+        SeedContextBuilder builder,
+        StrayHolding holding,
+        DateOnly today,
+        int sessionYear
+    )
+    {
+        var longAgo = today.AddYears(-3);
+        var lastYear = today.AddYears(-1);
+        switch (holding)
+        {
+            case StrayHolding.EndedMembership:
+                builder.Identity(identity =>
+                    identity.AddMembership("stray-membership", "stray", longAgo, lastYear)
+                );
+                break;
+            case StrayHolding.FeeReduction:
+                builder.Identity(identity =>
+                    identity.AddFeeReduction(
+                        "stray-reduction",
+                        "stray",
+                        FeeReductionBasis.Minor,
+                        sessionYear - 3,
+                        sessionYear - 2
+                    )
+                );
+                break;
+            case StrayHolding.EndedGroupMembership:
+                builder.Groups(groups =>
+                    groups
+                        .AddGroup("garde", "Tanzgarde")
+                        .AddGroupMembership("stray-garde", "garde", "stray", longAgo, lastYear)
+                );
+                break;
+            case StrayHolding.GroupAdminship:
+                builder.Groups(groups =>
+                    groups
+                        .AddGroup("garde", "Tanzgarde")
+                        .AddGroupAdmin("stray-admin", "garde", "stray")
+                );
+                break;
+            case StrayHolding.EndedRoleHolding:
+                builder.Roles(roles =>
+                    roles
+                        .AddRole("kasse", "Kasse")
+                        .AddRoleHolding("stray-kasse", "kasse", "stray", longAgo, lastYear)
+                );
+                break;
+            case StrayHolding.BoardSeat:
+                builder.Club(club =>
+                    club.AddBoardOffice("praesidium", "Präsident")
+                        .AddBoardSeat("stray-seat", "praesidium", "stray", longAgo, lastYear)
+                );
+                break;
+            case StrayHolding.KeyHolding:
+                builder.Club(club =>
+                    club.AddVenue("halle", "Sporthalle")
+                        .AddKeyHolding("stray-key", "halle", "stray", longAgo, lastYear)
+                );
+                break;
+            case StrayHolding.AttendanceResponse:
+                builder.Club(club =>
+                    club.AddCalendarEntry(
+                            "sitzung",
+                            "Sitzung",
+                            new DateTimeOffset(longAgo, TimeOnly.MinValue, TimeSpan.Zero)
+                        )
+                        .AddAttendanceResponse(
+                            "stray-answer",
+                            "sitzung",
+                            "stray",
+                            AttendanceAnswer.Yes
+                        )
+                );
+                break;
+            case StrayHolding.Announcement:
+                builder.Club(club =>
+                    club.AddAnnouncement("stray-news", "stray", "Neuigkeit", "Text")
+                );
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(holding), holding, null);
+        }
+    }
+
+    private async Task<(SeededContext Ctx, int AnnaId, string Token)> ArrangeClaimAsync(
+        CancellationToken ct,
+        Action<SeedContextBuilder>? alsoSeed = null
+    )
+    {
+        var annaEmail = InvitationSteps.UniqueContactEmail("anna");
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+            {
+                builder.Identity(identity =>
+                    identity
+                        .AddEligiblePerson("anna", "Anna", annaEmail, _fixture.Today)
+                        .AddStrayWithAccount("stray", "Anna")
+                );
+                alsoSeed?.Invoke(builder);
+            },
+            ct
+        );
+        var annaId = ctx.Identity.People.IdOf("anna");
+        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var token = await InvitationSteps.InviteAndReadTokenAsync(
+            _fixture,
+            manager,
+            annaId,
+            annaEmail,
+            ct
+        );
+
+        return (ctx, annaId, token);
     }
 
     private async Task<(SeededContext Ctx, int AnnaId, string Code)> ArrangeRecoveryAsync(

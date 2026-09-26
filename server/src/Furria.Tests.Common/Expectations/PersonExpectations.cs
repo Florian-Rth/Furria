@@ -25,6 +25,15 @@ public sealed class PersonExpectations
                 )
         );
 
+    public Expected ToNotExist() =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.False(
+                    await dbContext.People.AsNoTracking().AnyAsync(row => row.Id == _personId, ct),
+                    $"Expected no Person with id {_personId}."
+                )
+        );
+
     public Expected ToHaveName(string firstName, string lastName) =>
         _expected.Enqueue(
             async (dbContext, ct) =>

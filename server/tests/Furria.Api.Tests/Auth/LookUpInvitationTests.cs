@@ -12,7 +12,7 @@ namespace Furria.Api.Tests.Auth;
 public sealed class LookUpInvitationTests
 {
     private const string DeadBody =
-        """{"status":"dead","firstName":null,"loginEmail":null,"contactEmailTaken":null,"purpose":null}""";
+        """{"status":"dead","firstName":null,"loginEmail":null,"contactEmailTaken":null,"purpose":null,"claimableLoginEmail":null}""";
 
     private readonly ApiTestFixture _fixture;
 
@@ -354,6 +354,47 @@ public sealed class LookUpInvitationTests
         Assert.Equal("Anna", result.FirstName);
         Assert.Null(result.LoginEmail);
         Assert.True(result.ContactEmailTaken);
+        Assert.Null(result.ClaimableLoginEmail);
+    }
+
+    [Fact]
+    public async Task Should_OfferTheClaim_When_HerContactEmailIsTheLoginOfAnAccountOutsideTheClub()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var birthDate = _fixture.Today.AddYears(-30);
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddEligiblePerson(
+                            "anna",
+                            "Anna",
+                            InvitationSteps.UniqueContactEmail("anna"),
+                            _fixture.Today
+                        )
+                        .AddStrayWithAccount("stray", "Anna")
+                ),
+            ct
+        );
+        var annaId = ctx.Identity.People.IdOf("anna");
+        var strayEmail = ctx.Identity.EmailOf("stray");
+        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        await ClaimSteps.GiveContactEmailAsync(manager, annaId, "Anna", strayEmail, birthDate);
+        var token = await InvitationSteps.InviteAndReadTokenAsync(
+            _fixture,
+            manager,
+            annaId,
+            strayEmail,
+            ct
+        );
+
+        var (response, result) = await InvitationSteps.LookUpAsync(_fixture.CreateClient(), token);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(InvitationLookupStatus.Live, result.Status);
+        Assert.Null(result.LoginEmail);
+        Assert.True(result.ContactEmailTaken);
+        Assert.Equal(strayEmail, result.ClaimableLoginEmail);
     }
 
     [Fact]
