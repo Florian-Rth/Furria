@@ -1,5 +1,7 @@
 import type { KkDateQuickChoice, KkScreenOrigin, KkSelectOption } from '@furria/ui';
+import type { ContactChange } from '@/lib/api/schemas';
 import { SESSION_OPENING_DAY, SESSION_OPENING_MONTH, sessionAt } from '@/lib/club';
+import { toContactChangeLine } from '@/lib/contact-change';
 import { isFutureDay, toIsoDay } from '@/lib/day';
 import { toInitials } from '@/lib/initials';
 import {
@@ -48,6 +50,15 @@ export const PERSON_SECTION_TITLES = {
   groups: 'Gruppen',
   roles: 'Rollen',
 } as const;
+
+export const toContactChangeNote = (
+  change: ContactChange | null,
+  viewerPersonId: number | null,
+  today: Date,
+): string | undefined =>
+  change === null
+    ? undefined
+    : `Kontaktdaten ${toContactChangeLine(change, viewerPersonId, today)}`;
 
 export const GROUPS_POINTER =
   'Gruppen werden von den Gruppen-Admins oder der Gruppenverwaltung gepflegt.';

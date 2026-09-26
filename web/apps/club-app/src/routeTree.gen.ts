@@ -37,6 +37,7 @@ import { Route as AppAnnouncementsNewRouteImport } from './routes/_app/announcem
 import { Route as AppAnnouncementsAnnouncementIdRouteImport } from './routes/_app/announcements_.$announcementId'
 import { Route as AppAffiliatedMembersRouteImport } from './routes/_app/_affiliated.members'
 import { Route as AppAffiliatedGroupsRouteImport } from './routes/_app/_affiliated.groups'
+import { Route as AppProfileContactEditRouteImport } from './routes/_app/profile_.contact.edit'
 import { Route as AppManageVenuesNewRouteImport } from './routes/_app/manage.venues_.new'
 import { Route as AppManageVenuesVenueIdRouteImport } from './routes/_app/manage.venues_.$venueId'
 import { Route as AppManageSessionsNewRouteImport } from './routes/_app/manage.sessions_.new'
@@ -221,6 +222,11 @@ const AppAffiliatedGroupsRoute = AppAffiliatedGroupsRouteImport.update({
   id: '/groups',
   path: '/groups',
   getParentRoute: () => AppAffiliatedRoute,
+} as any)
+const AppProfileContactEditRoute = AppProfileContactEditRouteImport.update({
+  id: '/profile_/contact/edit',
+  path: '/profile/contact/edit',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppManageVenuesNewRoute = AppManageVenuesNewRouteImport.update({
   id: '/manage/venues_/new',
@@ -520,6 +526,7 @@ export interface FileRoutesByFullPath {
   '/manage/sessions/new': typeof AppManageSessionsNewRoute
   '/manage/venues/$venueId': typeof AppManageVenuesVenueIdRoute
   '/manage/venues/new': typeof AppManageVenuesNewRoute
+  '/profile/contact/edit': typeof AppProfileContactEditRoute
   '/groups/$groupId/admins/$adminId': typeof AppGroupsGroupIdAdminsAdminIdRoute
   '/groups/$groupId/admins/new': typeof AppGroupsGroupIdAdminsNewRoute
   '/groups/$groupId/memberships/$membershipId': typeof AppGroupsGroupIdMembershipsMembershipIdRoute
@@ -592,6 +599,7 @@ export interface FileRoutesByTo {
   '/manage/sessions/new': typeof AppManageSessionsNewRoute
   '/manage/venues/$venueId': typeof AppManageVenuesVenueIdRoute
   '/manage/venues/new': typeof AppManageVenuesNewRoute
+  '/profile/contact/edit': typeof AppProfileContactEditRoute
   '/groups/$groupId/admins/$adminId': typeof AppGroupsGroupIdAdminsAdminIdRoute
   '/groups/$groupId/admins/new': typeof AppGroupsGroupIdAdminsNewRoute
   '/groups/$groupId/memberships/$membershipId': typeof AppGroupsGroupIdMembershipsMembershipIdRoute
@@ -667,6 +675,7 @@ export interface FileRoutesById {
   '/_app/manage/sessions_/new': typeof AppManageSessionsNewRoute
   '/_app/manage/venues_/$venueId': typeof AppManageVenuesVenueIdRoute
   '/_app/manage/venues_/new': typeof AppManageVenuesNewRoute
+  '/_app/profile_/contact/edit': typeof AppProfileContactEditRoute
   '/_app/groups_/$groupId_/admins/$adminId': typeof AppGroupsGroupIdAdminsAdminIdRoute
   '/_app/groups_/$groupId_/admins/new': typeof AppGroupsGroupIdAdminsNewRoute
   '/_app/groups_/$groupId_/memberships/$membershipId': typeof AppGroupsGroupIdMembershipsMembershipIdRoute
@@ -741,6 +750,7 @@ export interface FileRouteTypes {
     | '/manage/sessions/new'
     | '/manage/venues/$venueId'
     | '/manage/venues/new'
+    | '/profile/contact/edit'
     | '/groups/$groupId/admins/$adminId'
     | '/groups/$groupId/admins/new'
     | '/groups/$groupId/memberships/$membershipId'
@@ -813,6 +823,7 @@ export interface FileRouteTypes {
     | '/manage/sessions/new'
     | '/manage/venues/$venueId'
     | '/manage/venues/new'
+    | '/profile/contact/edit'
     | '/groups/$groupId/admins/$adminId'
     | '/groups/$groupId/admins/new'
     | '/groups/$groupId/memberships/$membershipId'
@@ -887,6 +898,7 @@ export interface FileRouteTypes {
     | '/_app/manage/sessions_/new'
     | '/_app/manage/venues_/$venueId'
     | '/_app/manage/venues_/new'
+    | '/_app/profile_/contact/edit'
     | '/_app/groups_/$groupId_/admins/$adminId'
     | '/_app/groups_/$groupId_/admins/new'
     | '/_app/groups_/$groupId_/memberships/$membershipId'
@@ -1122,6 +1134,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/groups'
       preLoaderRoute: typeof AppAffiliatedGroupsRouteImport
       parentRoute: typeof AppAffiliatedRoute
+    }
+    '/_app/profile_/contact/edit': {
+      id: '/_app/profile_/contact/edit'
+      path: '/profile/contact/edit'
+      fullPath: '/profile/contact/edit'
+      preLoaderRoute: typeof AppProfileContactEditRouteImport
+      parentRoute: typeof AppRoute
     }
     '/_app/manage/venues_/new': {
       id: '/_app/manage/venues_/new'
@@ -1487,6 +1506,7 @@ interface AppRouteChildren {
   AppManageSessionsNewRoute: typeof AppManageSessionsNewRoute
   AppManageVenuesVenueIdRoute: typeof AppManageVenuesVenueIdRoute
   AppManageVenuesNewRoute: typeof AppManageVenuesNewRoute
+  AppProfileContactEditRoute: typeof AppProfileContactEditRoute
   AppGroupsGroupIdAdminsAdminIdRoute: typeof AppGroupsGroupIdAdminsAdminIdRoute
   AppGroupsGroupIdAdminsNewRoute: typeof AppGroupsGroupIdAdminsNewRoute
   AppGroupsGroupIdMembershipsMembershipIdRoute: typeof AppGroupsGroupIdMembershipsMembershipIdRoute
@@ -1555,6 +1575,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppManageSessionsNewRoute: AppManageSessionsNewRoute,
   AppManageVenuesVenueIdRoute: AppManageVenuesVenueIdRoute,
   AppManageVenuesNewRoute: AppManageVenuesNewRoute,
+  AppProfileContactEditRoute: AppProfileContactEditRoute,
   AppGroupsGroupIdAdminsAdminIdRoute: AppGroupsGroupIdAdminsAdminIdRoute,
   AppGroupsGroupIdAdminsNewRoute: AppGroupsGroupIdAdminsNewRoute,
   AppGroupsGroupIdMembershipsMembershipIdRoute:

@@ -1,9 +1,11 @@
 import { KkFieldRow, KkPanel, KkPanelSection, KkPanelStack } from '@furria/ui';
 import Grid from '@mui/material/Grid';
 import type { FC } from 'react';
+import { useLanding } from '@/features/write';
 import type { Me } from '@/lib/api/schemas';
 import { formatIsoDay } from '@/lib/membership-labels';
 import { PROFILE_SECTION_TITLES } from '../profile-labels';
+import { ProfileContactPanel } from './ProfileContactPanel';
 import { ProfileGroupsPanel } from './ProfileGroupsPanel';
 import { ProfileMembershipPanel } from './ProfileMembershipPanel';
 import { ProfileVisibilityPanel } from './ProfileVisibilityPanel';
@@ -19,12 +21,14 @@ interface ProfilePanelsProps {
 
 export const ProfilePanels: FC<ProfilePanelsProps> = ({ me }) => {
   const { person } = me;
+  const { highlightedKey } = useLanding();
   const birthDate = person.birthDate === null ? EMPTY_VALUE : formatIsoDay(person.birthDate);
 
   return (
     <Grid container spacing={{ xs: 3.5, desktop: 5 }} sx={{ minWidth: 0 }}>
       <Grid size={{ xs: 12, desktop: 7 }} sx={{ minWidth: 0 }}>
         <KkPanelStack>
+          <ProfileContactPanel person={person} highlightedKey={highlightedKey} />
           <ProfileVisibilityPanel person={person} />
           <ProfileVisibilityPreview person={person} />
         </KkPanelStack>

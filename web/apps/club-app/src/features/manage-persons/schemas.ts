@@ -1,7 +1,12 @@
 import { z } from 'zod';
 import { PersonAccessSchema } from '@/features/account-access';
 import { AppSearchSchema } from '@/features/session';
-import { GroupRefSchema, MembershipStateSchema, RoleRefSchema } from '@/lib/api/schemas';
+import {
+  ContactChangeSchema,
+  GroupRefSchema,
+  MembershipStateSchema,
+  RoleRefSchema,
+} from '@/lib/api/schemas';
 import { requiredDay, requiredSessionYear } from '@/lib/required-fields';
 
 export const FeeReductionBasisSchema = z.enum(['minor', 'school', 'apprenticeship', 'studies']);
@@ -82,6 +87,7 @@ export const PersonDetailsSchema = z
     groups: z.array(PersonGroupSchema),
     roles: z.array(PersonRoleSchema),
     access: PersonAccessSchema,
+    contactChange: ContactChangeSchema.nullable(),
   })
   .extend(PersonContactSchema.shape);
 export type PersonDetails = z.infer<typeof PersonDetailsSchema>;

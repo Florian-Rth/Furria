@@ -1,8 +1,10 @@
 import type { MemberContact } from '@/features/members';
-import type { Me, MePerson } from '@/lib/api/schemas';
+import type { ContactChange, Me, MePerson } from '@/lib/api/schemas';
+import { toContactChangeLine } from '@/lib/contact-change';
 import { toInitials } from '@/lib/initials';
 import type { StateChip } from '@/lib/state-chips';
 import { toMembershipStateChip } from '@/lib/state-chips';
+import type { ContactDetailsForm } from './schemas';
 
 export const PROFILE_EYEBROW = 'Mein Profil';
 
@@ -39,6 +41,7 @@ export const VISIBILITY_OFF_NOTE = 'Das gilt auch für deine Gruppen-Admins.';
 export const VISIBILITY_PREVIEW_CAPTION = 'So sehen andere Mitglieder deinen Kontakt.';
 
 export const PROFILE_SECTION_TITLES = {
+  contact: 'Kontaktdaten',
   data: 'Deine Daten',
   membership: 'Im Verein',
   groups: 'Deine Gruppen',
@@ -65,3 +68,24 @@ export const toVisibilitySavedMessage = (visible: boolean): string =>
   visible
     ? 'Deine Kontaktdaten sind jetzt für Mitglieder sichtbar.'
     : 'Deine Kontaktdaten sind wieder verborgen.';
+
+export const CONTACT_DETAILS_EDIT_TITLE = 'Kontaktdaten bearbeiten';
+
+export const CONTACT_DETAILS_SAVED_MESSAGE = 'Deine Kontaktdaten sind gespeichert.';
+
+export const CONTACT_DETAILS_LANDING = { kind: 'profile', id: 'contact' } as const;
+
+export const toContactDetailsForm = (person: MePerson): ContactDetailsForm => ({
+  email: person.email ?? '',
+  phone: person.phone ?? '',
+  street: person.street ?? '',
+  zip: person.zip ?? '',
+  city: person.city ?? '',
+});
+
+export const toOwnContactChangeNote = (
+  change: ContactChange | null,
+  personId: number,
+  today: Date,
+): string | undefined =>
+  change === null ? undefined : `Zuletzt ${toContactChangeLine(change, personId, today)}`;

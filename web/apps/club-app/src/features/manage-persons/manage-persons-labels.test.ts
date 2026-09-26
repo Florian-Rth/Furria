@@ -147,6 +147,7 @@ describe('toPersonHeadline', () => {
       groups: [],
       roles: [],
       access: { state: 'noAccess', reason: 'noEmail', invitation: null, history: [] },
+      contactChange: null,
     });
 
     expect(headline).toEqual({
@@ -269,6 +270,7 @@ const personDetails = (
   groups: [],
   roles: [],
   access: { state: 'noAccess', reason: 'noEmail', invitation: null, history: [] },
+  contactChange: null,
   ...overrides,
 });
 

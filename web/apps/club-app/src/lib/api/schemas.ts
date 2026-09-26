@@ -33,6 +33,12 @@ export type GroupRef = z.infer<typeof GroupRefSchema>;
 export const RoleRefSchema = z.object({ roleId: z.number().int(), name: z.string() });
 export type RoleRef = z.infer<typeof RoleRefSchema>;
 
+export const ContactChangeSchema = z.object({
+  at: z.iso.datetime({ offset: true }),
+  changedBy: PersonRefSchema,
+});
+export type ContactChange = z.infer<typeof ContactChangeSchema>;
+
 export const MePersonSchema = z.object({
   id: z.number().int(),
   firstName: z.string(),
@@ -44,6 +50,7 @@ export const MePersonSchema = z.object({
   city: z.string().nullable(),
   birthDate: z.iso.date().nullable(),
   contactVisibleToMembers: z.boolean(),
+  contactChange: ContactChangeSchema.nullable(),
 });
 export type MePerson = z.infer<typeof MePersonSchema>;
 
