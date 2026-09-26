@@ -77,6 +77,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<CalendarService>();
         services.AddScoped<ClubRecordService>();
         services.AddScoped<ManagementService>();
+        services.AddScoped<InvitationRoundService>();
 
         services.AddSingleton<MailQueue>();
         services.AddSingleton<MailService>();

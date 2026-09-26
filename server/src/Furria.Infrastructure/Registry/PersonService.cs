@@ -7,6 +7,7 @@ using Furria.Core.Club;
 using Furria.Core.Identity;
 using Furria.Core.Text;
 using Furria.Infrastructure.Authorization;
+using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -293,12 +294,19 @@ public sealed class PersonService
         return [.. rows.Select(row => ToSummary(row, today))];
     }
 
-    public async Task<IReadOnlyList<PersonSummary>> GetAllAsync(CancellationToken ct)
+    public async Task<IReadOnlyList<PersonSummary>> GetAllAsync(
+        PersonAccessFilter? access,
+        CancellationToken ct
+    )
     {
-        var today = ClubClock.Today(_timeProvider);
+        var now = _timeProvider.GetUtcNow();
+        var today = ClubClock.DayOf(now);
+        var people = access is { } filter
+            ? _dbContext.PeopleByAccess(filter, now, await _dbContext.AgeOfConsentAsync(ct))
+            : _dbContext.People;
 
-        var rows = await _dbContext
-            .People.AsNoTracking()
+        var rows = await people
+            .AsNoTracking()
             .OrderBy(person => EF.Functions.Collate(person.LastName, GermanCollation.Name))
             .ThenBy(person => EF.Functions.Collate(person.FirstName, GermanCollation.Name))
             .ThenBy(person => person.Id)

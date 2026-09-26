@@ -53,6 +53,7 @@ public sealed class GetManageHub : EndpointWithoutRequest<GetManageHubResponse>
             Keys = hub.Keys is null ? null : ToDto(hub.Keys),
             Board = hub.Board is null ? null : ToDto(hub.Board),
             ClubRecord = hub.ClubRecord is null ? null : ToDto(hub.ClubRecord),
+            Accounts = hub.Accounts is null ? null : ToDto(hub.Accounts),
         };
 
     private static ManageHubPersonsDto ToDto(ManageHubPersons persons) =>
@@ -93,6 +94,15 @@ public sealed class GetManageHub : EndpointWithoutRequest<GetManageHubResponse>
 
     private static ManageHubClubRecordDto ToDto(ManageHubClubRecord clubRecord) =>
         new() { Name = clubRecord.Name, MissingFactCount = clubRecord.MissingFactCount };
+
+    private static ManageHubAccountsDto ToDto(ManageHubAccounts accounts) =>
+        new()
+        {
+            WithAccessCount = accounts.WithAccessCount,
+            OfCount = accounts.OfCount,
+            OpenInvitationCount = accounts.OpenInvitationCount,
+            EligibleWithoutEmailCount = accounts.EligibleWithoutEmailCount,
+        };
 }
 
 public sealed record GetManageHubResponse
@@ -112,6 +122,8 @@ public sealed record GetManageHubResponse
     public required ManageHubBoardDto? Board { get; init; }
 
     public required ManageHubClubRecordDto? ClubRecord { get; init; }
+
+    public required ManageHubAccountsDto? Accounts { get; init; }
 }
 
 public sealed record ManageHubPersonsDto
@@ -174,4 +186,15 @@ public sealed record ManageHubClubRecordDto
     public required string? Name { get; init; }
 
     public required int MissingFactCount { get; init; }
+}
+
+public sealed record ManageHubAccountsDto
+{
+    public required int WithAccessCount { get; init; }
+
+    public required int OfCount { get; init; }
+
+    public required int OpenInvitationCount { get; init; }
+
+    public required int EligibleWithoutEmailCount { get; init; }
 }

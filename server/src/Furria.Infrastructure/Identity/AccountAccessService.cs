@@ -22,7 +22,6 @@ public sealed class AccountAccessService
     private const string DeadInvitationMessage = "Diese Einladung gilt nicht mehr.";
     private const string PasswordRuleMessage =
         "Das Passwort braucht mindestens 12 Zeichen, Groß- und Kleinbuchstaben, eine Ziffer und ein Sonderzeichen.";
-    private const string InvitationLinkPath = "/invitation#token=";
     private const string PasswordErrorPrefix = "Password";
 
     private static readonly IReadOnlySet<string> TakenLoginErrorCodes = new HashSet<string>(
@@ -164,7 +163,7 @@ public sealed class AccountAccessService
         return Result<IssuedInPersonInvitationDetails>.Success(
             new IssuedInPersonInvitationDetails
             {
-                Link = LinkOf(token),
+                Link = InvitationMail.LinkOf(_clubAppOptions.BaseUrl, token),
                 Code = code,
                 ExpiresAt = expiresAt,
             }
@@ -414,9 +413,6 @@ public sealed class AccountAccessService
             StringComparison.Ordinal
         );
 
-    private string LinkOf(string token) =>
-        $"{_clubAppOptions.BaseUrl.TrimEnd('/')}{InvitationLinkPath}{token}";
-
     private async Task<SubjectRow?> SubjectAsync(int personId, DateOnly today, CancellationToken ct)
     {
         var person = await _dbContext
@@ -589,7 +585,7 @@ public sealed class AccountAccessService
             To = subject.Candidate.Email!,
             FirstName = subject.FirstName,
             ClubName = terms.ClubName,
-            Link = LinkOf(token),
+            Link = InvitationMail.LinkOf(_clubAppOptions.BaseUrl, token),
             ExpiresAt = expiresAt,
         };
 

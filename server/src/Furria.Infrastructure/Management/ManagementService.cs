@@ -5,7 +5,9 @@ using Furria.Application.Management;
 using Furria.Core.Club;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Club;
+using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Persistence;
+using Furria.Infrastructure.Registry;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Management;
@@ -37,12 +39,11 @@ public sealed class ManagementService
         );
         var today = ClubClock.Today(_timeProvider);
         var managesClub = granted.Contains(FurriaPermissions.ClubManage);
+        var managesPersons = granted.Contains(FurriaPermissions.PersonsManage);
 
         return new ManageHubDetails
         {
-            Persons = granted.Contains(FurriaPermissions.PersonsManage)
-                ? await PersonsAsync(today, ct)
-                : null,
+            Persons = managesPersons ? await PersonsAsync(today, ct) : null,
             Groups = granted.Contains(FurriaPermissions.GroupsManage)
                 ? await GroupsAsync(ct)
                 : null,
@@ -58,6 +59,28 @@ public sealed class ManagementService
                 ? await BoardAsync(today, ct)
                 : null,
             ClubRecord = managesClub ? await ClubRecordAsync(ct) : null,
+            Accounts = managesPersons ? await AccountsAsync(today, ct) : null,
+        };
+    }
+
+    private async Task<ManageHubAccounts> AccountsAsync(DateOnly today, CancellationToken ct)
+    {
+        var ageOfConsent = (await _clubRecordService.GetAsync(ct)).AgeOfConsent;
+        var withAccessCount = await _dbContext
+            .PeopleWithAccount(isDisabled: false)
+            .CountAsync(AffiliationQuery.IsAffiliatedOn(today), ct);
+        var invitableCount = await _dbContext
+            .EligibleWithoutAccount(today, ageOfConsent)
+            .CountAsync(ct);
+
+        return new ManageHubAccounts
+        {
+            WithAccessCount = withAccessCount,
+            OfCount = withAccessCount + invitableCount,
+            OpenInvitationCount = await _dbContext.OpenInvitations().CountAsync(ct),
+            EligibleWithoutEmailCount = await _dbContext
+                .PeopleWithoutAccount()
+                .CountAsync(AccountEligibilityQuery.LacksOnlyAnEmailOn(today, ageOfConsent), ct),
         };
     }
 
