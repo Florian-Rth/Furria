@@ -63,6 +63,7 @@ import { Route as AppManageVenuesVenueIdEditRouteImport } from './routes/_app/ma
 import { Route as AppManageSessionsSessionIdEditRouteImport } from './routes/_app/manage.sessions_.$sessionId.edit'
 import { Route as AppManageRolesRoleIdEditRouteImport } from './routes/_app/manage.roles_.$roleId_.edit'
 import { Route as AppManagePersonsPersonIdEditRouteImport } from './routes/_app/manage.persons_.$personId_.edit'
+import { Route as AppManagePersonsPersonIdAccessRecoveryRouteImport } from './routes/_app/manage.persons_.$personId_.access-recovery'
 import { Route as AppManageKeysHoldingsKeyHoldingIdRouteImport } from './routes/_app/manage.keys_.holdings.$keyHoldingId'
 import { Route as AppManageGroupsKindsNewRouteImport } from './routes/_app/manage.groups_.kinds.new'
 import { Route as AppManageGroupsKindsGroupKindIdRouteImport } from './routes/_app/manage.groups_.kinds.$groupKindId'
@@ -372,6 +373,12 @@ const AppManagePersonsPersonIdEditRoute =
     path: '/manage/persons/$personId/edit',
     getParentRoute: () => AppRoute,
   } as any)
+const AppManagePersonsPersonIdAccessRecoveryRoute =
+  AppManagePersonsPersonIdAccessRecoveryRouteImport.update({
+    id: '/manage/persons_/$personId_/access-recovery',
+    path: '/manage/persons/$personId/access-recovery',
+    getParentRoute: () => AppRoute,
+  } as any)
 const AppManageKeysHoldingsKeyHoldingIdRoute =
   AppManageKeysHoldingsKeyHoldingIdRouteImport.update({
     id: '/manage/keys_/holdings/$keyHoldingId',
@@ -582,6 +589,7 @@ export interface FileRoutesByFullPath {
   '/manage/groups/kinds/$groupKindId': typeof AppManageGroupsKindsGroupKindIdRoute
   '/manage/groups/kinds/new': typeof AppManageGroupsKindsNewRoute
   '/manage/keys/holdings/$keyHoldingId': typeof AppManageKeysHoldingsKeyHoldingIdRoute
+  '/manage/persons/$personId/access-recovery': typeof AppManagePersonsPersonIdAccessRecoveryRoute
   '/manage/persons/$personId/edit': typeof AppManagePersonsPersonIdEditRoute
   '/manage/roles/$roleId/edit': typeof AppManageRolesRoleIdEditRoute
   '/manage/sessions/$sessionId/edit': typeof AppManageSessionsSessionIdEditRoute
@@ -661,6 +669,7 @@ export interface FileRoutesByTo {
   '/manage/groups/kinds/$groupKindId': typeof AppManageGroupsKindsGroupKindIdRoute
   '/manage/groups/kinds/new': typeof AppManageGroupsKindsNewRoute
   '/manage/keys/holdings/$keyHoldingId': typeof AppManageKeysHoldingsKeyHoldingIdRoute
+  '/manage/persons/$personId/access-recovery': typeof AppManagePersonsPersonIdAccessRecoveryRoute
   '/manage/persons/$personId/edit': typeof AppManagePersonsPersonIdEditRoute
   '/manage/roles/$roleId/edit': typeof AppManageRolesRoleIdEditRoute
   '/manage/sessions/$sessionId/edit': typeof AppManageSessionsSessionIdEditRoute
@@ -743,6 +752,7 @@ export interface FileRoutesById {
   '/_app/manage/groups_/kinds/$groupKindId': typeof AppManageGroupsKindsGroupKindIdRoute
   '/_app/manage/groups_/kinds/new': typeof AppManageGroupsKindsNewRoute
   '/_app/manage/keys_/holdings/$keyHoldingId': typeof AppManageKeysHoldingsKeyHoldingIdRoute
+  '/_app/manage/persons_/$personId_/access-recovery': typeof AppManagePersonsPersonIdAccessRecoveryRoute
   '/_app/manage/persons_/$personId_/edit': typeof AppManagePersonsPersonIdEditRoute
   '/_app/manage/roles_/$roleId_/edit': typeof AppManageRolesRoleIdEditRoute
   '/_app/manage/sessions_/$sessionId/edit': typeof AppManageSessionsSessionIdEditRoute
@@ -824,6 +834,7 @@ export interface FileRouteTypes {
     | '/manage/groups/kinds/$groupKindId'
     | '/manage/groups/kinds/new'
     | '/manage/keys/holdings/$keyHoldingId'
+    | '/manage/persons/$personId/access-recovery'
     | '/manage/persons/$personId/edit'
     | '/manage/roles/$roleId/edit'
     | '/manage/sessions/$sessionId/edit'
@@ -903,6 +914,7 @@ export interface FileRouteTypes {
     | '/manage/groups/kinds/$groupKindId'
     | '/manage/groups/kinds/new'
     | '/manage/keys/holdings/$keyHoldingId'
+    | '/manage/persons/$personId/access-recovery'
     | '/manage/persons/$personId/edit'
     | '/manage/roles/$roleId/edit'
     | '/manage/sessions/$sessionId/edit'
@@ -984,6 +996,7 @@ export interface FileRouteTypes {
     | '/_app/manage/groups_/kinds/$groupKindId'
     | '/_app/manage/groups_/kinds/new'
     | '/_app/manage/keys_/holdings/$keyHoldingId'
+    | '/_app/manage/persons_/$personId_/access-recovery'
     | '/_app/manage/persons_/$personId_/edit'
     | '/_app/manage/roles_/$roleId_/edit'
     | '/_app/manage/sessions_/$sessionId/edit'
@@ -1394,6 +1407,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppManagePersonsPersonIdEditRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/manage/persons_/$personId_/access-recovery': {
+      id: '/_app/manage/persons_/$personId_/access-recovery'
+      path: '/manage/persons/$personId/access-recovery'
+      fullPath: '/manage/persons/$personId/access-recovery'
+      preLoaderRoute: typeof AppManagePersonsPersonIdAccessRecoveryRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/manage/keys_/holdings/$keyHoldingId': {
       id: '/_app/manage/keys_/holdings/$keyHoldingId'
       path: '/manage/keys/holdings/$keyHoldingId'
@@ -1640,6 +1660,7 @@ interface AppRouteChildren {
   AppManageGroupsKindsGroupKindIdRoute: typeof AppManageGroupsKindsGroupKindIdRoute
   AppManageGroupsKindsNewRoute: typeof AppManageGroupsKindsNewRoute
   AppManageKeysHoldingsKeyHoldingIdRoute: typeof AppManageKeysHoldingsKeyHoldingIdRoute
+  AppManagePersonsPersonIdAccessRecoveryRoute: typeof AppManagePersonsPersonIdAccessRecoveryRoute
   AppManagePersonsPersonIdEditRoute: typeof AppManagePersonsPersonIdEditRoute
   AppManageRolesRoleIdEditRoute: typeof AppManageRolesRoleIdEditRoute
   AppManageSessionsSessionIdEditRoute: typeof AppManageSessionsSessionIdEditRoute
@@ -1714,6 +1735,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppManageGroupsKindsNewRoute: AppManageGroupsKindsNewRoute,
   AppManageKeysHoldingsKeyHoldingIdRoute:
     AppManageKeysHoldingsKeyHoldingIdRoute,
+  AppManagePersonsPersonIdAccessRecoveryRoute:
+    AppManagePersonsPersonIdAccessRecoveryRoute,
   AppManagePersonsPersonIdEditRoute: AppManagePersonsPersonIdEditRoute,
   AppManageRolesRoleIdEditRoute: AppManageRolesRoleIdEditRoute,
   AppManageSessionsSessionIdEditRoute: AppManageSessionsSessionIdEditRoute,

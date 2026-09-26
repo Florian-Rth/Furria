@@ -1,4 +1,5 @@
 export { PERSONS_QUERY_KEY } from './api';
+export { PersonAccessRecoveryScreen } from './components/PersonAccessRecoveryScreen';
 export { PersonEditPage } from './components/PersonEditPage';
 export { PersonEditScreen } from './components/PersonEditScreen';
 export { PersonFeeReductionNewScreen } from './components/PersonFeeReductionNewScreen';

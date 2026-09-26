@@ -1,6 +1,7 @@
 import { RequestFailedError } from '@/lib/api/api-error';
 import type { RedeemFailureKind } from './redeem-failure';
 import { toRedeemFailureKind } from './redeem-failure';
+import type { InvitationPurpose } from './redeem-stage';
 
 const REDEEM_FAILURE_MESSAGES: Record<RedeemFailureKind, string> = {
   dead: 'Diese Einladung gilt nicht mehr.',
@@ -46,6 +47,9 @@ export const toRedeemErrorMessages = (error: Error | null): RedeemErrorMessages 
 };
 
 export const toGreeting = (firstName: string): string => `HALLO ${firstName.toUpperCase()}`;
+
+export const toRedeemHeading = (purpose: InvitationPurpose, firstName: string): string =>
+  purpose === 'recovery' ? `NEUES PASSWORT FÜR ${firstName.toUpperCase()}` : toGreeting(firstName);
 
 export const toConfirmationSentLine = (loginEmail: string): string =>
   `Wir haben dir einen Code an ${loginEmail} geschickt. Gib ihn hier ein, dann ist die Adresse bestätigt.`;

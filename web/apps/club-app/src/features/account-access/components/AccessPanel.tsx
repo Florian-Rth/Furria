@@ -3,7 +3,6 @@ import { KkChip, KkFieldRow, KkHubRow, KkNote, KkPanel, KkPanelSection } from '@
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { accessActionsOf } from '../access-actions';
 import {
   ACCESS_SECTION_TITLE,
   ACCESS_STATE_LABEL,
@@ -12,28 +11,37 @@ import {
   INVITATION_LABEL,
   MAIL_ACT_LABELS,
   MAIL_PILL_LABELS,
-  toAccessBlockLine,
+  RECOVERY_ACT_LABEL,
+  RECOVERY_ROW_META,
+  toAccessBlockNote,
   toAccessLandingKey,
   toAccountStateChip,
   toInPersonHref,
   toInvitationSpan,
   toInvitationValidity,
+  toRecoveryHref,
+  toVouchLine,
 } from '../account-access-labels';
+import { useAccessActions } from '../hooks/use-access-actions';
 import type { AccessSubject } from '../types';
 import { AccessHistory } from './AccessHistory';
+import { AccountLockAction } from './AccountLockAction';
 
 const INVITE_ROUTE = '/manage/persons/$personId/invitations/new';
 
 interface AccessPanelProps {
   subject: AccessSubject;
   highlightedKey: string | null;
+  onChanged: () => void;
 }
 
-export const AccessPanel: FC<AccessPanelProps> = ({ subject, highlightedKey }) => {
+export const AccessPanel: FC<AccessPanelProps> = ({ subject, highlightedKey, onChanged }) => {
   const { access } = subject;
-  const { mailInvitation, inPersonInvitation } = accessActionsOf(access, subject.email);
+  const { mailInvitation, inPersonInvitation, vouchesForAge, recovery, lock } =
+    useAccessActions(subject);
   const chip = toAccountStateChip(access.state);
   const landingKey = toAccessLandingKey(subject.personId);
+  const vouchLine = toVouchLine(subject.firstName, access.ageOfConsent);
 
   const action: KkPanelAction | undefined =
     mailInvitation === null
@@ -63,24 +71,46 @@ export const AccessPanel: FC<AccessPanelProps> = ({ subject, highlightedKey }) =
     );
 
   const inPersonHref = toInPersonHref(subject.personId);
+  const inPersonMeta = vouchesForAge ? vouchLine : IN_PERSON_ROW_META;
   const inPersonRow = inPersonInvitation ? (
-    <KkPanel>
-      <KkHubRow
-        label={IN_PERSON_ACT_LABEL}
-        icon="qr"
-        meta={IN_PERSON_ROW_META}
-        component={Link}
-        to={inPersonHref}
-      />
-    </KkPanel>
+    <KkHubRow
+      label={IN_PERSON_ACT_LABEL}
+      icon="qr"
+      meta={inPersonMeta}
+      component={Link}
+      to={inPersonHref}
+    />
   ) : null;
 
+  const recoveryHref = toRecoveryHref(subject.personId);
+  const recoveryRow = recovery ? (
+    <KkHubRow
+      label={RECOVERY_ACT_LABEL}
+      icon="key"
+      meta={RECOVERY_ROW_META}
+      component={Link}
+      to={recoveryHref}
+    />
+  ) : null;
+
+  const handoverPanel =
+    inPersonRow === null && recoveryRow === null ? null : (
+      <KkPanel>
+        {inPersonRow}
+        {recoveryRow}
+      </KkPanel>
+    );
+
+  const blockText = toAccessBlockNote(access, subject.firstName, vouchesForAge);
   const blockLine =
-    access.reason === null ? null : (
+    blockText === null ? null : (
       <KkNote tone="hint" icon="info">
-        {toAccessBlockLine(access.reason, subject.firstName)}
+        {blockText}
       </KkNote>
     );
+
+  const lockAction =
+    lock === null ? null : <AccountLockAction subject={subject} act={lock} onLocked={onChanged} />;
 
   return (
     <KkPanelSection title={ACCESS_SECTION_TITLE} action={action}>
@@ -89,9 +119,10 @@ export const AccessPanel: FC<AccessPanelProps> = ({ subject, highlightedKey }) =
           <KkFieldRow label={ACCESS_STATE_LABEL} value={stateChip} />
           {invitationRow}
         </KkPanel>
-        {inPersonRow}
+        {handoverPanel}
         {blockLine}
         <AccessHistory history={access.history} />
+        {lockAction}
       </Stack>
     </KkPanelSection>
   );

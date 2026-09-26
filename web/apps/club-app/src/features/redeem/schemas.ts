@@ -12,6 +12,7 @@ const LiveLookupSchema = z.object({
   firstName: z.string(),
   loginEmail: z.string().nullable(),
   contactEmailTaken: z.boolean(),
+  purpose: z.enum(['onboarding', 'recovery']),
 });
 
 const DeadLookupSchema = z.object({

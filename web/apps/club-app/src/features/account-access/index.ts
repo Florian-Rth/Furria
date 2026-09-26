@@ -4,4 +4,4 @@ export { InPersonInvitationScreen } from './components/InPersonInvitationScreen'
 export { MailInvitationEditor } from './components/MailInvitationEditor';
 export type { PersonAccess } from './schemas';
 export { PersonAccessSchema } from './schemas';
-export type { AccessSubject } from './types';
+export type { AccessSubject, InPersonPurpose } from './types';

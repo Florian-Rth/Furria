@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { InPersonPhase } from './in-person-phase';
-import { inPersonPhaseOf, isCodeShowing } from './in-person-phase';
+import { inPersonPhaseOf, isCodeShowing, isHandedOver } from './in-person-phase';
+import type { AccessState } from './schemas';
+import type { InPersonPurpose } from './types';
 
 type PhaseInput = Parameters<typeof inPersonPhaseOf>[0];
 
@@ -10,7 +12,13 @@ describe('inPersonPhaseOf', () => {
   it.each<[string, PhaseInput, InPersonPhase]>([
     [
       'the first issue on its way',
-      { invitation: undefined, isIssuing: true, hasIssueFailed: false, state: undefined, now: NOW },
+      {
+        invitation: undefined,
+        isIssuing: true,
+        hasIssueFailed: false,
+        isHandedOver: false,
+        now: NOW,
+      },
       { kind: 'issuing' },
     ],
     [
@@ -19,14 +27,20 @@ describe('inPersonPhaseOf', () => {
         invitation: undefined,
         isIssuing: false,
         hasIssueFailed: false,
-        state: undefined,
+        isHandedOver: false,
         now: NOW,
       },
       { kind: 'issuing' },
     ],
     [
       'a refused issue',
-      { invitation: undefined, isIssuing: false, hasIssueFailed: true, state: undefined, now: NOW },
+      {
+        invitation: undefined,
+        isIssuing: false,
+        hasIssueFailed: true,
+        isHandedOver: false,
+        now: NOW,
+      },
       { kind: 'failed' },
     ],
     [
@@ -39,7 +53,7 @@ describe('inPersonPhaseOf', () => {
         },
         isIssuing: false,
         hasIssueFailed: false,
-        state: 'invited',
+        isHandedOver: false,
         now: NOW,
       },
       {
@@ -62,7 +76,7 @@ describe('inPersonPhaseOf', () => {
         },
         isIssuing: false,
         hasIssueFailed: false,
-        state: 'noAccess',
+        isHandedOver: false,
         now: NOW,
       },
       {
@@ -84,7 +98,7 @@ describe('inPersonPhaseOf', () => {
         },
         isIssuing: true,
         hasIssueFailed: false,
-        state: 'noAccess',
+        isHandedOver: false,
         now: NOW,
       },
       { kind: 'issuing' },
@@ -99,7 +113,7 @@ describe('inPersonPhaseOf', () => {
         },
         isIssuing: false,
         hasIssueFailed: false,
-        state: 'active',
+        isHandedOver: true,
         now: NOW,
       },
       { kind: 'redeemed' },
@@ -123,5 +137,18 @@ describe('isCodeShowing', () => {
     ['a code whose time ran out', invitation, false, new Date('2026-09-26T12:15:00Z'), false],
   ])('polls for %s', (_case, issued, isIssuing, now, expected) => {
     expect(isCodeShowing(issued, isIssuing, now)).toBe(expected);
+  });
+});
+
+describe('isHandedOver', () => {
+  it.each<[string, InPersonPurpose, AccessState | undefined, boolean]>([
+    ['an invitation before the first poll', 'onboarding', undefined, false],
+    ['an invitation still open', 'onboarding', { state: 'invited', isRecoveryOpen: false }, false],
+    ['an invitation redeemed', 'onboarding', { state: 'active', isRecoveryOpen: false }, true],
+    ['a recovery still open', 'recovery', { state: 'active', isRecoveryOpen: true }, false],
+    ['a recovery redeemed', 'recovery', { state: 'active', isRecoveryOpen: false }, true],
+    ['a recovery ended by a lock', 'recovery', { state: 'disabled', isRecoveryOpen: false }, false],
+  ])('decides for %s', (_case, purpose, accessState, expected) => {
+    expect(isHandedOver(purpose, accessState)).toBe(expected);
   });
 });

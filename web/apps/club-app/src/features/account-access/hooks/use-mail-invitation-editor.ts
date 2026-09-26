@@ -7,6 +7,7 @@ import {
   toAccessLandingKey,
   toInvitationConsequence,
   toNoMailInvitationLine,
+  toVouchLine,
 } from '../account-access-labels';
 import { useMailInvitationMutation } from '../api';
 import type { AccessSubject } from '../types';
@@ -34,7 +35,11 @@ export const useMailInvitationEditor = ({
   const [rejection, setRejection] = useState<string | null>(null);
   const mutation = useMailInvitationMutation(subject, onInvited);
   const navigate = useNavigate();
-  const { mailInvitation } = accessActionsOf(subject.access, subject.email);
+  const { mailInvitation, vouchesForAge } = accessActionsOf({
+    access: subject.access,
+    email: subject.email,
+    isOwnAccount: false,
+  });
 
   const landBack = (): void => {
     void navigate({
@@ -59,10 +64,13 @@ export const useMailInvitationEditor = ({
     });
   };
 
-  const consequence =
+  const invitationConsequence =
     mailInvitation === null || subject.email === null
       ? toNoMailInvitationLine(subject.access, subject.firstName)
       : toInvitationConsequence(subject.firstName, subject.email, mailInvitation);
+  const consequence = vouchesForAge
+    ? `${invitationConsequence} ${toVouchLine(subject.firstName, subject.access.ageOfConsent)}`
+    : invitationConsequence;
 
   return {
     actionLabel: MAIL_ACT_LABELS[mailInvitation ?? 'invite'],

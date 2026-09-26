@@ -38,11 +38,19 @@ export const AccountEventSchema = z.object({
 });
 export type AccountEvent = z.infer<typeof AccountEventSchema>;
 
+export const AccessRightsSchema = z.object({
+  canInvite: z.boolean(),
+  canManageAccount: z.boolean(),
+});
+export type AccessRights = z.infer<typeof AccessRightsSchema>;
+
 export const PersonAccessSchema = z.object({
   state: AccountStateSchema,
   reason: AccessBlockSchema.nullable(),
   invitation: LiveInvitationSchema.nullable(),
   history: z.array(AccountEventSchema),
+  rights: AccessRightsSchema,
+  ageOfConsent: z.number().int(),
 });
 export type PersonAccess = z.infer<typeof PersonAccessSchema>;
 
@@ -56,5 +64,8 @@ export const InPersonInvitationSchema = z.object({
 });
 export type InPersonInvitation = z.infer<typeof InPersonInvitationSchema>;
 
-export const AccessStateSchema = z.object({ state: AccountStateSchema });
+export const AccessStateSchema = z.object({
+  state: AccountStateSchema,
+  isRecoveryOpen: z.boolean(),
+});
 export type AccessState = z.infer<typeof AccessStateSchema>;

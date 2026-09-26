@@ -47,6 +47,10 @@ const PERMISSION_COPY: Record<PermissionKey, RolePermissionCopy> = {
     title: 'Vereinstermine führen',
     line: 'Termine des Vereins anlegen, ändern und löschen, nicht die der Gruppen.',
   },
+  [PERMISSION_KEYS.accountsManage]: {
+    title: 'Zugänge wiederherstellen und sperren',
+    line: 'Zugänge vor Ort wiederherstellen, sperren und entsperren; Personen ohne Geburtsdatum einladen und für ihr Alter bürgen. Kommt einer Übernahme jedes Zugangs gleich.',
+  },
 };
 
 const KNOWN_KEYS: readonly PermissionKey[] = Object.values(PERMISSION_KEYS);

@@ -1,5 +1,6 @@
 import { secondsUntil } from '@/lib/countdown';
-import type { AccountState, InPersonInvitation } from './schemas';
+import type { AccessState, InPersonInvitation } from './schemas';
+import type { InPersonPurpose } from './types';
 
 export type InPersonPhase =
   | { kind: 'issuing' }
@@ -12,18 +13,29 @@ interface InPersonPhaseInput {
   invitation: InPersonInvitation | undefined;
   isIssuing: boolean;
   hasIssueFailed: boolean;
-  state: AccountState | undefined;
+  isHandedOver: boolean;
   now: Date;
 }
+
+export const isHandedOver = (
+  purpose: InPersonPurpose,
+  accessState: AccessState | undefined,
+): boolean => {
+  if (accessState?.state !== 'active') {
+    return false;
+  }
+
+  return purpose === 'onboarding' || !accessState.isRecoveryOpen;
+};
 
 export const inPersonPhaseOf = ({
   invitation,
   isIssuing,
   hasIssueFailed,
-  state,
+  isHandedOver: handedOver,
   now,
 }: InPersonPhaseInput): InPersonPhase => {
-  if (state === 'active') {
+  if (handedOver) {
     return { kind: 'redeemed' };
   }
   if (isIssuing) {

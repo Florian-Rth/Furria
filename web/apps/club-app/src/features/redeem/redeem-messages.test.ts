@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { RequestBlockedError, RequestFailedError, ServerFailureError } from '@/lib/api/api-error';
 import type { RedeemErrorMessages } from './redeem-messages';
-import { toRedeemErrorMessages, toRedeemFailureMessage } from './redeem-messages';
+import { toRedeemErrorMessages, toRedeemFailureMessage, toRedeemHeading } from './redeem-messages';
+import type { InvitationPurpose } from './redeem-stage';
 
 describe('toRedeemErrorMessages', () => {
   it.each<[string, Error | null, RedeemErrorMessages]>([
@@ -41,5 +42,14 @@ describe('toRedeemErrorMessages', () => {
     ],
   ])('places the message of %s', (_case, error, expected) => {
     expect(toRedeemErrorMessages(error)).toEqual(expected);
+  });
+});
+
+describe('toRedeemHeading', () => {
+  it.each<[InvitationPurpose, string, string]>([
+    ['onboarding', 'Anna', 'HALLO ANNA'],
+    ['recovery', 'Anna', 'NEUES PASSWORT FÜR ANNA'],
+  ])('heads a %s for %s', (purpose, firstName, expected) => {
+    expect(toRedeemHeading(purpose, firstName)).toBe(expected);
   });
 });

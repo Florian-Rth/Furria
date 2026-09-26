@@ -9,14 +9,17 @@ import {
   toInPersonQrLabel,
 } from '../account-access-labels';
 import type { InPersonInvitation } from '../schemas';
+import type { InPersonPurpose } from '../types';
 
 interface InPersonCodeCardProps {
+  purpose: InPersonPurpose;
   invitation: InPersonInvitation;
   firstName: string;
   secondsLeft: number;
 }
 
 export const InPersonCodeCard: FC<InPersonCodeCardProps> = ({
+  purpose,
   invitation,
   firstName,
   secondsLeft,
@@ -27,7 +30,7 @@ export const InPersonCodeCard: FC<InPersonCodeCardProps> = ({
     : toInPersonCountdownLine(formatCountdown(secondsLeft));
   const codeTone = isExpired ? 'default' : 'accent';
   const validityTone = isExpired ? 'warning' : 'muted';
-  const qrLabel = toInPersonQrLabel(firstName);
+  const qrLabel = toInPersonQrLabel(purpose, firstName);
 
   return (
     <KkPanel variant="block">

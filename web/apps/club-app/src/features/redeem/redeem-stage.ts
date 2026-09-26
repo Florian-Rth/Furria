@@ -2,6 +2,8 @@ import type { InvitationCredential } from './invitation-credential';
 import type { RedeemFailureKind } from './redeem-failure';
 import type { InvitationLookup } from './schemas';
 
+export type InvitationPurpose = Extract<InvitationLookup, { status: 'live' }>['purpose'];
+
 export interface PendingConfirmation {
   loginEmail: string;
   password: string;
@@ -17,6 +19,7 @@ export interface LiveInvitation {
   firstName: string;
   suggestedLoginEmail: string | null;
   contactEmailTaken: boolean;
+  purpose: InvitationPurpose;
 }
 
 export type RedeemStage =
@@ -71,6 +74,7 @@ export const toRedeemStage = ({
       firstName: lookup.firstName,
       suggestedLoginEmail: lookup.loginEmail,
       contactEmailTaken: lookup.contactEmailTaken,
+      purpose: lookup.purpose,
       step: toRedeemStep(pendingConfirmation, redeemFailure),
     };
   }

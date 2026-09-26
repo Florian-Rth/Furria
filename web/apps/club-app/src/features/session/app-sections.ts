@@ -55,6 +55,7 @@ export const MANAGE_KEYS: readonly PermissionKey[] = [
   PERMISSION_KEYS.boardManage,
   PERMISSION_KEYS.clubManage,
   PERMISSION_KEYS.keyHoldingsManage,
+  PERMISSION_KEYS.accountsManage,
 ];
 
 export const APP_DESTINATIONS: readonly KkShellDestination[] = [

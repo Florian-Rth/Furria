@@ -3,12 +3,16 @@ import Stack from '@mui/material/Stack';
 import type { ChangeEvent, FC } from 'react';
 import { usePasswordVisibility } from '@/features/login';
 import { useRedeemForm } from '../hooks/use-redeem-form';
-import { toGreeting } from '../redeem-messages';
-import type { LiveInvitation } from '../redeem-stage';
+import { toRedeemHeading } from '../redeem-messages';
+import type { InvitationPurpose, LiveInvitation } from '../redeem-stage';
 import type { RedeemForm } from '../schemas';
 import { PASSWORD_MIN_LENGTH } from '../schemas';
 
-const INTRO = 'Du bist eingeladen. Leg ein Passwort fest, dann bist du im Mitgliederbereich.';
+const INTROS: Record<InvitationPurpose, string> = {
+  onboarding: 'Du bist eingeladen. Leg ein Passwort fest, dann bist du im Mitgliederbereich.',
+  recovery:
+    'Der Verein hat deinen Zugang wiederhergestellt. Leg ein neues Passwort fest – auf allen anderen Geräten wirst du dann abgemeldet.',
+};
 const TAKEN_CONTACT_LINE =
   'Die E-Mail-Adresse, die der Verein von dir hat, nutzt schon jemand anderes zum Anmelden. Gib deine eigene an – wir schicken dir einen Code, um sie zu bestätigen.';
 const LOGIN_EMAIL_LABEL = 'Deine Anmelde-E-Mail';
@@ -56,7 +60,8 @@ export const RedeemDetailsForm: FC<RedeemDetailsFormProps> = ({
   const hasPasswordError = passwordErrorText !== undefined;
   const loginEmailHint = needsConfirmation ? CONFIRMATION_HINT : LOGIN_EMAIL_HINT;
   const submitLabel = needsConfirmation ? REQUEST_CODE_LABEL : REDEEM_LABEL;
-  const greeting = toGreeting(invitation.firstName);
+  const greeting = toRedeemHeading(invitation.purpose, invitation.firstName);
+  const intro = INTROS[invitation.purpose];
   const startsOnEmail = invitation.suggestedLoginEmail === null;
 
   const editLoginEmail = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
@@ -85,7 +90,7 @@ export const RedeemDetailsForm: FC<RedeemDetailsFormProps> = ({
         <KkHeading level={1} component="h1">
           {greeting}
         </KkHeading>
-        <KkNote>{INTRO}</KkNote>
+        <KkNote>{intro}</KkNote>
       </Stack>
       {takenLine}
       <Stack component="form" noValidate onSubmit={submit} sx={{ gap: 2.5 }}>

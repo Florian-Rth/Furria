@@ -7,18 +7,19 @@ import {
   IN_PERSON_FINISH_LABEL,
   IN_PERSON_REISSUE_LABEL,
   IN_PERSON_RETRY_LABEL,
-  IN_PERSON_VALIDITY_NOTE,
+  IN_PERSON_VALIDITY_NOTES,
   toAccessLandingKey,
 } from '../account-access-labels';
 import { useAccessStateQuery, useInPersonInvitationMutation } from '../api';
 import type { InPersonPhase } from '../in-person-phase';
-import { inPersonPhaseOf, isCodeShowing } from '../in-person-phase';
-import type { AccessSubject } from '../types';
+import { inPersonPhaseOf, isCodeShowing, isHandedOver } from '../in-person-phase';
+import type { AccessSubject, InPersonPurpose } from '../types';
 
 const PERSON_ROUTE = '/manage/persons/$personId';
 const TICK_MS = 1000;
 
 interface InPersonInvitationInput {
+  purpose: InPersonPurpose;
   subject: AccessSubject;
   onRedeemed: () => void;
 }
@@ -30,16 +31,18 @@ export interface InPersonInvitationControl {
 }
 
 export const useInPersonInvitation = ({
+  purpose,
   subject,
   onRedeemed,
 }: InPersonInvitationInput): InPersonInvitationControl => {
-  const issue = useInPersonInvitationMutation(subject.personId);
+  const issue = useInPersonInvitationMutation(purpose, subject.personId);
   const { mutate: issueCode } = issue;
   const hasIssued = useRef(false);
   const hasReportedRedemption = useRef(false);
   const navigate = useNavigate();
   const now = useNow(TICK_MS, issue.data !== undefined);
   const accessState = useAccessStateQuery(
+    purpose,
     subject.personId,
     isCodeShowing(issue.data, issue.isPending, now),
   );
@@ -48,7 +51,7 @@ export const useInPersonInvitation = ({
     invitation: issue.data,
     isIssuing: issue.isPending,
     hasIssueFailed: issue.isError,
-    state: accessState.data?.state,
+    isHandedOver: isHandedOver(purpose, accessState.data),
     now,
   });
   const isRedeemed = phase.kind === 'redeemed';
@@ -90,7 +93,7 @@ export const useInPersonInvitation = ({
     }
     if (phase.kind === 'expired') {
       return {
-        context: { text: IN_PERSON_VALIDITY_NOTE, tone: 'quiet' },
+        context: { text: IN_PERSON_VALIDITY_NOTES[purpose], tone: 'quiet' },
         primary: { label: IN_PERSON_REISSUE_LABEL, icon: 'qr', onSelect: reissue },
       };
     }

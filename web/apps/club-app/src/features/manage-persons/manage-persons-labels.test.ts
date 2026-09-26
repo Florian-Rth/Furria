@@ -146,7 +146,14 @@ describe('toPersonHeadline', () => {
       feeReductions: [],
       groups: [],
       roles: [],
-      access: { state: 'noAccess', reason: 'noEmail', invitation: null, history: [] },
+      access: {
+        state: 'noAccess',
+        reason: 'noEmail',
+        invitation: null,
+        history: [],
+        rights: { canInvite: true, canManageAccount: false },
+        ageOfConsent: 16,
+      },
       contactChange: null,
     });
 
@@ -269,7 +276,14 @@ const personDetails = (
   feeReductions: [],
   groups: [],
   roles: [],
-  access: { state: 'noAccess', reason: 'noEmail', invitation: null, history: [] },
+  access: {
+    state: 'noAccess',
+    reason: 'noEmail',
+    invitation: null,
+    history: [],
+    rights: { canInvite: true, canManageAccount: false },
+    ageOfConsent: 16,
+  },
   contactChange: null,
   ...overrides,
 });
