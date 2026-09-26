@@ -13,6 +13,7 @@ const LiveLookupSchema = z.object({
   loginEmail: z.string().nullable(),
   contactEmailTaken: z.boolean(),
   purpose: z.enum(['onboarding', 'recovery']),
+  claimableLoginEmail: z.string().nullable(),
 });
 
 const DeadLookupSchema = z.object({
@@ -20,6 +21,8 @@ const DeadLookupSchema = z.object({
   firstName: z.null(),
   loginEmail: z.null(),
   contactEmailTaken: z.null(),
+  purpose: z.null(),
+  claimableLoginEmail: z.null(),
 });
 
 export const InvitationLookupSchema = z.discriminatedUnion('status', [
@@ -40,9 +43,16 @@ const ConfirmationRequiredSchema = z.object({
   confirmationExpiresAt: z.iso.datetime({ offset: true }),
 });
 
+const ClaimRequiredSchema = z.object({
+  outcome: z.literal('claimRequired'),
+  session: z.null(),
+  confirmationExpiresAt: z.null(),
+});
+
 export const RedemptionSchema = z.discriminatedUnion('outcome', [
   RedeemedSchema,
   ConfirmationRequiredSchema,
+  ClaimRequiredSchema,
 ]);
 export type Redemption = z.infer<typeof RedemptionSchema>;
 
@@ -65,3 +75,8 @@ export const ConfirmationFormSchema = z.object({
     ),
 });
 export type ConfirmationForm = z.infer<typeof ConfirmationFormSchema>;
+
+export const ClaimFormSchema = z.object({
+  claimPassword: z.string().min(1, 'Gib das Passwort dieses Zugangs ein.'),
+});
+export type ClaimForm = z.infer<typeof ClaimFormSchema>;

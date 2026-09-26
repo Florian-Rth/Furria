@@ -6,15 +6,27 @@ import { useInvitationLookupQuery, useRedeemInvitationMutation } from '../api';
 import { toRedeemFailureKind } from '../redeem-failure';
 import type { RedeemErrorMessages } from '../redeem-messages';
 import { toRedeemErrorMessages } from '../redeem-messages';
-import type { LiveInvitation, PendingConfirmation, RedeemStage } from '../redeem-stage';
+import type {
+  LiveInvitation,
+  PendingClaim,
+  PendingConfirmation,
+  RedeemStage,
+} from '../redeem-stage';
 import { toRedeemStage } from '../redeem-stage';
 import type { Redemption } from '../schemas';
 import { useInvitationCredential } from './use-invitation-credential';
 
 interface ChosenLogin {
   loginEmail: string;
-  password: string;
+  password: string | null;
 }
+
+interface RedeemAttempt {
+  confirmationCode: string | null;
+  claimPassword: string | null;
+}
+
+const FIRST_ATTEMPT: RedeemAttempt = { confirmationCode: null, claimPassword: null };
 
 export interface RedeemScreenControl {
   stage: RedeemStage;
@@ -25,6 +37,7 @@ export interface RedeemScreenControl {
   submitDetails: (invitation: LiveInvitation, chosen: ChosenLogin) => void;
   confirm: (invitation: LiveInvitation, confirmationCode: string) => void;
   resendCode: (invitation: LiveInvitation) => void;
+  claim: (invitation: LiveInvitation, loginEmail: string, claimPassword: string) => void;
   changeLoginEmail: () => void;
   clearRefusal: () => void;
   retryLookup: () => void;
@@ -38,6 +51,8 @@ export const useRedeemScreen = (): RedeemScreenControl => {
   const redemption = useRedeemInvitationMutation();
   const navigate = useNavigate();
   const [pending, setPending] = useState<PendingConfirmation | null>(null);
+  const [pendingClaim, setPendingClaim] = useState<PendingClaim | null>(null);
+  const [hasDeclinedClaim, setHasDeclinedClaim] = useState(false);
   const [draftLoginEmail, setDraftLoginEmail] = useState<string | null>(null);
   const [hasResentCode, setHasResentCode] = useState(false);
 
@@ -48,17 +63,23 @@ export const useRedeemScreen = (): RedeemScreenControl => {
     lookupFailure: toRedeemFailureKind(lookup.error),
     redeemFailure: toRedeemFailureKind(redemption.error),
     pendingConfirmation: pending,
+    pendingClaim,
+    hasDeclinedClaim,
   });
 
   const send = (
     invitation: LiveInvitation,
     chosen: ChosenLogin,
-    confirmationCode: string | null,
+    attempt: RedeemAttempt,
     onConfirmationRequired: () => void,
   ): void => {
     const land = (outcome: Redemption): void => {
       if (outcome.outcome === 'redeemed') {
         void navigate({ href: DEFAULT_RETURN_TO, replace: true });
+        return;
+      }
+      if (outcome.outcome === 'claimRequired') {
+        setPendingClaim(chosen);
         return;
       }
 
@@ -67,16 +88,17 @@ export const useRedeemScreen = (): RedeemScreenControl => {
     };
 
     redemption.mutate(
-      { credential: invitation.credential, ...chosen, confirmationCode },
+      { credential: invitation.credential, ...chosen, ...attempt },
       { onSuccess: land },
     );
   };
 
   const submitDetails = (invitation: LiveInvitation, chosen: ChosenLogin): void => {
     setPending(null);
+    setPendingClaim(null);
     setHasResentCode(false);
     setDraftLoginEmail(chosen.loginEmail);
-    send(invitation, chosen, null, () => undefined);
+    send(invitation, chosen, FIRST_ATTEMPT, () => undefined);
   };
 
   const confirm = (invitation: LiveInvitation, confirmationCode: string): void => {
@@ -84,7 +106,7 @@ export const useRedeemScreen = (): RedeemScreenControl => {
       return;
     }
 
-    send(invitation, pending, confirmationCode, () => undefined);
+    send(invitation, pending, { ...FIRST_ATTEMPT, confirmationCode }, () => undefined);
   };
 
   const resendCode = (invitation: LiveInvitation): void => {
@@ -92,13 +114,21 @@ export const useRedeemScreen = (): RedeemScreenControl => {
       return;
     }
 
-    send(invitation, pending, null, () => {
+    send(invitation, pending, FIRST_ATTEMPT, () => {
       setHasResentCode(true);
     });
   };
 
+  const claim = (invitation: LiveInvitation, loginEmail: string, claimPassword: string): void => {
+    const chosen = pendingClaim ?? { loginEmail, password: null };
+
+    send(invitation, chosen, { ...FIRST_ATTEMPT, claimPassword }, () => undefined);
+  };
+
   const changeLoginEmail = (): void => {
     setPending(null);
+    setPendingClaim(null);
+    setHasDeclinedClaim(true);
     setHasResentCode(false);
     redemption.reset();
   };
@@ -122,6 +152,7 @@ export const useRedeemScreen = (): RedeemScreenControl => {
     submitDetails,
     confirm,
     resendCode,
+    claim,
     changeLoginEmail,
     clearRefusal,
     retryLookup,

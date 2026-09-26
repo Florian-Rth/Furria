@@ -7,6 +7,7 @@ const REDEEM_FAILURE_MESSAGES: Record<RedeemFailureKind, string> = {
   dead: 'Diese Einladung gilt nicht mehr.',
   taken: 'Diese E-Mail-Adresse gehört schon zu einem Zugang. Wähle eine andere.',
   codeRejected: 'Der Code stimmt nicht oder gilt nicht mehr.',
+  claimRejected: 'Das Passwort passt nicht zu diesem Zugang.',
   throttled: 'Zu viele Versuche. Warte einen Moment und versuche es dann erneut.',
   rejected: 'Der Server hat die Anfrage abgelehnt.',
   unreachable: 'Keine Verbindung zum Server. Prüfe deine Internetverbindung.',
@@ -16,10 +17,16 @@ const REDEEM_FAILURE_MESSAGES: Record<RedeemFailureKind, string> = {
 export interface RedeemErrorMessages {
   loginEmail: string | null;
   confirmationCode: string | null;
+  claimPassword: string | null;
   footer: string | null;
 }
 
-const NO_ERRORS: RedeemErrorMessages = { loginEmail: null, confirmationCode: null, footer: null };
+const NO_ERRORS: RedeemErrorMessages = {
+  loginEmail: null,
+  confirmationCode: null,
+  claimPassword: null,
+  footer: null,
+};
 
 export const toRedeemFailureMessage = (failure: RedeemFailureKind): string =>
   REDEEM_FAILURE_MESSAGES[failure];
@@ -38,6 +45,9 @@ export const toRedeemErrorMessages = (error: Error | null): RedeemErrorMessages 
   }
   if (failure === 'codeRejected') {
     return { ...NO_ERRORS, confirmationCode: toServerMessage(error, failure) };
+  }
+  if (failure === 'claimRejected') {
+    return { ...NO_ERRORS, claimPassword: toServerMessage(error, failure) };
   }
   if (failure === 'rejected') {
     return { ...NO_ERRORS, footer: toServerMessage(error, failure) };

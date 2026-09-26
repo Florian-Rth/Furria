@@ -4,6 +4,7 @@ import { WriteScreen } from '@/features/write';
 import type { PersonFormSource } from '../hooks/use-person-editor';
 import { usePersonEditor } from '../hooks/use-person-editor';
 import { PERSONS_ORIGIN, toPersonOrigin } from '../manage-persons-labels';
+import { PersonAdoptionSuggestion } from './PersonAdoptionSuggestion';
 import { PersonFormFields } from './PersonFormFields';
 
 const EDIT_TITLE = 'Stammdaten bearbeiten';
@@ -23,6 +24,11 @@ export const PersonEditor: FC<PersonEditorProps> = ({ person }) => {
   const isEdit = person !== null;
   const origin = person === null ? PERSONS_ORIGIN : toPersonOrigin(person);
   const note = isEdit ? null : <KkNote>{CREATE_NOTE}</KkNote>;
+  const adoptionCandidate = control.adoption.candidate;
+  const emailSuggestion =
+    adoptionCandidate === null ? null : (
+      <PersonAdoptionSuggestion candidate={adoptionCandidate} onAdopt={control.adoption.adopt} />
+    );
 
   return (
     <WriteScreen
@@ -40,7 +46,11 @@ export const PersonEditor: FC<PersonEditorProps> = ({ person }) => {
       }}
     >
       {note}
-      <PersonFormFields form={control.form} errors={control.errors} />
+      <PersonFormFields
+        form={control.form}
+        errors={control.errors}
+        emailSuggestion={emailSuggestion}
+      />
       <KkDateField
         name="birthDate"
         label={BIRTH_DATE_LABEL}

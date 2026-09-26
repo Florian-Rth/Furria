@@ -1,9 +1,11 @@
+import { ServerFailureError } from '@/lib/api/api-error';
 import type { JsonBody } from '@/lib/api/api-fetch';
 import { apiFetch } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
 import type { PersonAccessFilter } from './person-access-filter';
 import { toPersonsRequestPath } from './person-access-filter';
 import type {
+  AdoptionCandidate,
   CreatedFeeReduction,
   CreatedMembership,
   CreatedPause,
@@ -16,6 +18,7 @@ import type {
   PersonsResponse,
 } from './schemas';
 import {
+  AdoptionCandidateSchema,
   CreatedFeeReductionSchema,
   CreatedMembershipSchema,
   CreatedPauseSchema,
@@ -23,6 +26,8 @@ import {
   PersonDetailsSchema,
   PersonsResponseSchema,
 } from './schemas';
+
+const NOT_FOUND_STATUS = 404;
 
 const toNullable = (value: string): string | null => (value === '' ? null : value);
 
@@ -154,3 +159,21 @@ export const requestFeeReductionUpdate = (
     schema: NoContentSchema,
     accessToken,
   });
+
+export const requestAdoptionCandidate = async (
+  email: string,
+  accessToken: string,
+): Promise<AdoptionCandidate | null> => {
+  try {
+    return await apiFetch(
+      `/api/manage/persons/adoption-candidate?email=${encodeURIComponent(email)}`,
+      { schema: AdoptionCandidateSchema, accessToken },
+    );
+  } catch (error) {
+    if (error instanceof ServerFailureError && error.status === NOT_FOUND_STATUS) {
+      return null;
+    }
+
+    throw error;
+  }
+};

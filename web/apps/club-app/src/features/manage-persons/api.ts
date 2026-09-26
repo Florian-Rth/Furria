@@ -16,6 +16,7 @@ import {
 } from './manage-persons-labels';
 import type { PersonAccessFilter } from './person-access-filter';
 import {
+  requestAdoptionCandidate,
   requestFeeReductionCreate,
   requestFeeReductionUpdate,
   requestMembershipCreate,
@@ -28,6 +29,7 @@ import {
   requestPersonUpdate,
 } from './requests';
 import type {
+  AdoptionCandidate,
   CreatedFeeReduction,
   CreatedMembership,
   CreatedPause,
@@ -265,4 +267,16 @@ export const useUpdateFeeReductionMutation = (
       refreshPerson(queryClient, personId);
     },
   });
+};
+
+export const useAdoptionCandidateQuery = (
+  email: string | null,
+): UseQueryResult<AdoptionCandidate | null, Error> => {
+  const load =
+    email === null
+      ? skipToken
+      : (): Promise<AdoptionCandidate | null> =>
+          withFreshAccessToken((accessToken) => requestAdoptionCandidate(email, accessToken));
+
+  return useQuery({ queryKey: [...PERSONS_QUERY_KEY, 'adoption-candidate', email], queryFn: load });
 };

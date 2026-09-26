@@ -7,8 +7,9 @@ import { InvitationLookupSchema, RedemptionSchema } from './schemas';
 export interface RedemptionRequest {
   credential: InvitationCredential;
   loginEmail: string;
-  password: string;
+  password: string | null;
   confirmationCode: string | null;
+  claimPassword: string | null;
 }
 
 export const requestInvitationLookup = (
@@ -25,9 +26,16 @@ export const requestInvitationRedeem = ({
   loginEmail,
   password,
   confirmationCode,
+  claimPassword,
 }: RedemptionRequest): Promise<Redemption> =>
   apiFetch('/api/auth/invitations/redeem', {
     method: 'POST',
-    body: { ...toCredentialBody(credential), loginEmail, password, confirmationCode },
+    body: {
+      ...toCredentialBody(credential),
+      loginEmail,
+      password,
+      confirmationCode,
+      claimPassword,
+    },
     schema: RedemptionSchema,
   });

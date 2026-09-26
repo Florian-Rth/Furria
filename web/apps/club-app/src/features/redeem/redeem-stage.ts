@@ -6,13 +6,19 @@ export type InvitationPurpose = Extract<InvitationLookup, { status: 'live' }>['p
 
 export interface PendingConfirmation {
   loginEmail: string;
-  password: string;
+  password: string | null;
   expiresAt: string;
+}
+
+export interface PendingClaim {
+  loginEmail: string;
+  password: string | null;
 }
 
 export type RedeemStep =
   | { kind: 'details' }
-  | { kind: 'confirm'; loginEmail: string; expiresAt: string };
+  | { kind: 'confirm'; loginEmail: string; expiresAt: string }
+  | { kind: 'claim'; loginEmail: string };
 
 export interface LiveInvitation {
   credential: InvitationCredential;
@@ -20,6 +26,7 @@ export interface LiveInvitation {
   suggestedLoginEmail: string | null;
   contactEmailTaken: boolean;
   purpose: InvitationPurpose;
+  claimableLoginEmail: string | null;
 }
 
 export type RedeemStage =
@@ -36,13 +43,35 @@ interface RedeemStageInput {
   lookupFailure: RedeemFailureKind | null;
   redeemFailure: RedeemFailureKind | null;
   pendingConfirmation: PendingConfirmation | null;
+  pendingClaim: PendingClaim | null;
+  hasDeclinedClaim: boolean;
 }
 
-const toRedeemStep = (
-  pendingConfirmation: PendingConfirmation | null,
-  redeemFailure: RedeemFailureKind | null,
-): RedeemStep => {
-  if (pendingConfirmation === null || redeemFailure === 'taken') {
+interface RedeemStepInput {
+  pendingConfirmation: PendingConfirmation | null;
+  pendingClaim: PendingClaim | null;
+  hasDeclinedClaim: boolean;
+  claimableLoginEmail: string | null;
+  redeemFailure: RedeemFailureKind | null;
+}
+
+const toRedeemStep = ({
+  pendingConfirmation,
+  pendingClaim,
+  hasDeclinedClaim,
+  claimableLoginEmail,
+  redeemFailure,
+}: RedeemStepInput): RedeemStep => {
+  if (redeemFailure === 'taken') {
+    return { kind: 'details' };
+  }
+  if (pendingClaim !== null) {
+    return { kind: 'claim', loginEmail: pendingClaim.loginEmail };
+  }
+  if (pendingConfirmation === null && claimableLoginEmail !== null && !hasDeclinedClaim) {
+    return { kind: 'claim', loginEmail: claimableLoginEmail };
+  }
+  if (pendingConfirmation === null) {
     return { kind: 'details' };
   }
 
@@ -60,6 +89,8 @@ export const toRedeemStage = ({
   lookupFailure,
   redeemFailure,
   pendingConfirmation,
+  pendingClaim,
+  hasDeclinedClaim,
 }: RedeemStageInput): RedeemStage => {
   if (credential === null || redeemFailure === 'dead' || lookup?.status === 'dead') {
     return { kind: 'dead' };
@@ -75,7 +106,14 @@ export const toRedeemStage = ({
       suggestedLoginEmail: lookup.loginEmail,
       contactEmailTaken: lookup.contactEmailTaken,
       purpose: lookup.purpose,
-      step: toRedeemStep(pendingConfirmation, redeemFailure),
+      claimableLoginEmail: lookup.claimableLoginEmail,
+      step: toRedeemStep({
+        pendingConfirmation,
+        pendingClaim,
+        hasDeclinedClaim,
+        claimableLoginEmail: lookup.claimableLoginEmail,
+        redeemFailure,
+      }),
     };
   }
   if (lookupFailure !== null) {

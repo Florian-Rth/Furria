@@ -6,21 +6,30 @@ import type { InvitationPurpose } from './redeem-stage';
 
 describe('toRedeemErrorMessages', () => {
   it.each<[string, Error | null, RedeemErrorMessages]>([
-    ['no error', null, { loginEmail: null, confirmationCode: null, footer: null }],
+    [
+      'no error',
+      null,
+      { loginEmail: null, confirmationCode: null, claimPassword: null, footer: null },
+    ],
     [
       'a taken login email',
       new RequestFailedError(409, [{ field: 'loginEmail', message: 'vergeben' }]),
-      { loginEmail: 'vergeben', confirmationCode: null, footer: null },
+      { loginEmail: 'vergeben', confirmationCode: null, claimPassword: null, footer: null },
     ],
     [
       'a rejected confirmation code',
       new RequestFailedError(400, [{ field: 'confirmationCode', message: 'falsch' }]),
-      { loginEmail: null, confirmationCode: 'falsch', footer: null },
+      { loginEmail: null, confirmationCode: 'falsch', claimPassword: null, footer: null },
+    ],
+    [
+      'a wrong password for the claimed account',
+      new RequestFailedError(400, [{ field: 'claimPassword', message: 'passt nicht' }]),
+      { loginEmail: null, confirmationCode: null, claimPassword: 'passt nicht', footer: null },
     ],
     [
       'a rejected password',
       new RequestFailedError(400, [{ field: 'password', message: 'zu schwach' }]),
-      { loginEmail: null, confirmationCode: null, footer: 'zu schwach' },
+      { loginEmail: null, confirmationCode: null, claimPassword: null, footer: 'zu schwach' },
     ],
     [
       'a rate limit',
@@ -28,6 +37,7 @@ describe('toRedeemErrorMessages', () => {
       {
         loginEmail: null,
         confirmationCode: null,
+        claimPassword: null,
         footer: toRedeemFailureMessage('throttled'),
       },
     ],
@@ -37,6 +47,7 @@ describe('toRedeemErrorMessages', () => {
       {
         loginEmail: null,
         confirmationCode: null,
+        claimPassword: null,
         footer: toRedeemFailureMessage('unreachable'),
       },
     ],

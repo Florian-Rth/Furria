@@ -93,6 +93,14 @@ export const PersonDetailsSchema = z
   .extend(PersonContactSchema.shape);
 export type PersonDetails = z.infer<typeof PersonDetailsSchema>;
 
+export const AdoptionCandidateSchema = z.object({
+  personId: z.number().int(),
+  firstName: z.string(),
+  lastName: z.string(),
+  hasAccount: z.boolean(),
+});
+export type AdoptionCandidate = z.infer<typeof AdoptionCandidateSchema>;
+
 export const CreatedPersonSchema = z.object({ personId: z.number().int() });
 export type CreatedPerson = z.infer<typeof CreatedPersonSchema>;
 

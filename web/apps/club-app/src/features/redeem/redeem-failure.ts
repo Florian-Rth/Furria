@@ -5,6 +5,7 @@ export type RedeemFailureKind =
   | 'dead'
   | 'taken'
   | 'codeRejected'
+  | 'claimRejected'
   | 'throttled'
   | 'rejected'
   | 'unreachable'
@@ -14,6 +15,7 @@ const CONFLICT_STATUS = 409;
 const TOO_MANY_REQUESTS_STATUS = 429;
 const LOGIN_EMAIL_FIELD = 'loginEmail';
 const CONFIRMATION_CODE_FIELD = 'confirmationCode';
+const CLAIM_PASSWORD_FIELD = 'claimPassword';
 
 const refusesField = (error: RequestFailedError, field: string): boolean =>
   error.failures.some((failure) => toCamelCaseField(failure.field) === field);
@@ -24,6 +26,9 @@ const toRefusalKind = (error: RequestFailedError): RedeemFailureKind => {
   }
   if (refusesField(error, CONFIRMATION_CODE_FIELD)) {
     return 'codeRejected';
+  }
+  if (refusesField(error, CLAIM_PASSWORD_FIELD)) {
+    return 'claimRejected';
   }
 
   return error.status === CONFLICT_STATUS ? 'dead' : 'rejected';

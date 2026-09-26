@@ -1,6 +1,7 @@
 import type { FC } from 'react';
 import type { RedeemScreenControl } from '../hooks/use-redeem-screen';
 import { RedeemChecking } from './RedeemChecking';
+import { RedeemClaimForm } from './RedeemClaimForm';
 import { RedeemConfirmForm } from './RedeemConfirmForm';
 import { RedeemDead } from './RedeemDead';
 import { RedeemDetailsForm } from './RedeemDetailsForm';
@@ -25,6 +26,20 @@ export const RedeemBody: FC<RedeemBodyProps> = ({ control }) => {
   }
   if (stage.kind === 'checking') {
     return <RedeemChecking />;
+  }
+  if (stage.step.kind === 'claim') {
+    return (
+      <RedeemClaimForm
+        invitation={stage}
+        loginEmail={stage.step.loginEmail}
+        isRedeeming={control.isRedeeming}
+        claimPasswordError={errors.claimPassword}
+        footerError={errors.footer}
+        onClaim={control.claim}
+        onChangeLoginEmail={control.changeLoginEmail}
+        onEdit={control.clearRefusal}
+      />
+    );
   }
   if (stage.step.kind === 'confirm') {
     return (

@@ -25,6 +25,11 @@ describe('toRedeemFailureKind', () => {
       'codeRejected',
     ],
     [
+      'a wrong password for the claimed account',
+      new RequestFailedError(400, [{ field: 'claimPassword', message: 'passt nicht' }]),
+      'claimRejected',
+    ],
+    [
       'a validation refusal',
       new RequestFailedError(400, [{ field: 'password', message: 'zu kurz' }]),
       'rejected',
