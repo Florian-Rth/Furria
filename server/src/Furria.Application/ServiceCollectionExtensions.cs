@@ -2,6 +2,7 @@ using Furria.Application.ClubApp;
 using Furria.Application.Identity;
 using Furria.Application.Mail;
 using Furria.Application.PreviewAccess;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Furria.Application;
@@ -53,6 +54,10 @@ public static class ServiceCollectionExtensions
         services
             .AddOptions<ClubAppOptions>()
             .BindConfiguration(ClubAppOptions.SectionName)
+            .Configure<IConfiguration>(
+                (options, configuration) =>
+                    options.AndroidCertFingerprints = AndroidCertFingerprintsOf(configuration)
+            )
             .Validate(
                 options => IsAbsoluteWebUrl(options.BaseUrl),
                 $"{ClubAppOptions.SectionName}:BaseUrl must be an absolute http(s) URL."
@@ -68,6 +73,17 @@ public static class ServiceCollectionExtensions
             .ValidateOnStart();
 
         return services;
+    }
+
+    private static string[] AndroidCertFingerprintsOf(IConfiguration configuration)
+    {
+        var section = configuration
+            .GetSection(ClubAppOptions.SectionName)
+            .GetSection(nameof(ClubAppOptions.AndroidCertFingerprints));
+
+        return AndroidCertFingerprint.ListOf(
+            [section.Value, .. section.GetChildren().Select(entry => entry.Value)]
+        );
     }
 
     private static bool IsAbsoluteWebUrl(string value) =>
