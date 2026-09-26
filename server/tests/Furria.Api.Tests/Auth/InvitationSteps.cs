@@ -118,7 +118,8 @@ internal static class InvitationSteps
         string code,
         string password = ValidPassword,
         string? loginEmail = null,
-        string? confirmationCode = null
+        string? confirmationCode = null,
+        bool updateContactEmail = true
     ) =>
         client.POSTAsync<RedeemInvitation, RedeemInvitationRequest, RedeemInvitationResponse>(
             new RedeemInvitationRequest
@@ -127,6 +128,7 @@ internal static class InvitationSteps
                 Password = password,
                 LoginEmail = loginEmail,
                 ConfirmationCode = confirmationCode,
+                UpdateContactEmail = updateContactEmail,
             }
         );
 

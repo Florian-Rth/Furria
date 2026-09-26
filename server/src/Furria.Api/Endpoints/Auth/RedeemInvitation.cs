@@ -117,6 +117,7 @@ public sealed class RedeemInvitation : Endpoint<RedeemInvitationRequest, RedeemI
             LoginEmail = request.LoginEmail,
             ConfirmationCode = request.ConfirmationCode,
             ClaimPassword = request.ClaimPassword,
+            UpdateContactEmail = request.UpdateContactEmail,
         };
 
     private static RedeemInvitationResponse ToResponse(RedemptionDetails redemption) =>
@@ -162,6 +163,8 @@ public sealed record RedeemInvitationRequest
     public string? ConfirmationCode { get; init; }
 
     public string? ClaimPassword { get; init; }
+
+    public bool UpdateContactEmail { get; init; } = true;
 }
 
 public sealed class RedeemInvitationValidator : Validator<RedeemInvitationRequest>

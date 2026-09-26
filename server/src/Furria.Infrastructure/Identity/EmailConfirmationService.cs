@@ -64,13 +64,18 @@ public sealed class EmailConfirmationService
     public async Task<EmailConfirmationVerdict> ConsumeAsync(
         EmailConfirmationAttempt attempt,
         CancellationToken ct
+    ) => (await ConfirmAsync(attempt, ct)).Verdict;
+
+    public async Task<ConfirmedEmailDetails> ConfirmAsync(
+        EmailConfirmationAttempt attempt,
+        CancellationToken ct
     )
     {
         var live = await LiveRowAsync(attempt.Subject, ct);
         if (live is null || !IsUsableFor(live, attempt.NormalizedEmail, _timeProvider.GetUtcNow()))
-            return EmailConfirmationVerdict.Dead;
+            return ConfirmedEmailDetails.Refused(EmailConfirmationVerdict.Dead);
 
-        return await ConsumeLiveAsync(live, attempt.Code, ct);
+        return await ConfirmedOfAsync(live, attempt.Code, ct);
     }
 
     public async Task<ConfirmedEmailDetails> ConfirmPendingAsync(
@@ -83,6 +88,15 @@ public sealed class EmailConfirmationService
         if (live is null || !IsUsableAt(live, _timeProvider.GetUtcNow()))
             return ConfirmedEmailDetails.Refused(EmailConfirmationVerdict.Dead);
 
+        return await ConfirmedOfAsync(live, code, ct);
+    }
+
+    private async Task<ConfirmedEmailDetails> ConfirmedOfAsync(
+        LiveConfirmationRow live,
+        string code,
+        CancellationToken ct
+    )
+    {
         var verdict = await ConsumeLiveAsync(live, code, ct);
         return verdict == EmailConfirmationVerdict.Confirmed
             ? ConfirmedEmailDetails.Confirmed(live.Email ?? "", live.UpdatesContactEmail)

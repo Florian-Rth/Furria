@@ -10,6 +10,7 @@ export interface RedemptionRequest {
   password: string | null;
   confirmationCode: string | null;
   claimPassword: string | null;
+  updateContactEmail: boolean;
 }
 
 export const requestInvitationLookup = (
@@ -27,6 +28,7 @@ export const requestInvitationRedeem = ({
   password,
   confirmationCode,
   claimPassword,
+  updateContactEmail,
 }: RedemptionRequest): Promise<Redemption> =>
   apiFetch('/api/auth/invitations/redeem', {
     method: 'POST',
@@ -36,6 +38,7 @@ export const requestInvitationRedeem = ({
       password,
       confirmationCode,
       claimPassword,
+      updateContactEmail,
     },
     schema: RedemptionSchema,
   });

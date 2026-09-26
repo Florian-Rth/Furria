@@ -4,6 +4,7 @@ using Furria.Application.Results;
 using Furria.Core.Club;
 using Furria.Core.Identity;
 using Furria.Infrastructure.Persistence;
+using Furria.Infrastructure.Registry;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -22,6 +23,7 @@ public sealed class AccessRecoveryService
     private readonly RefreshTokenService _refreshTokenService;
     private readonly EmailConfirmationService _emailConfirmationService;
     private readonly CredentialChangeNotifier _credentialChangeNotifier;
+    private readonly PersonService _personService;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<AccessRecoveryService> _logger;
 
@@ -32,6 +34,7 @@ public sealed class AccessRecoveryService
         RefreshTokenService refreshTokenService,
         EmailConfirmationService emailConfirmationService,
         CredentialChangeNotifier credentialChangeNotifier,
+        PersonService personService,
         TimeProvider timeProvider,
         ILogger<AccessRecoveryService> logger
     )
@@ -42,6 +45,7 @@ public sealed class AccessRecoveryService
         _refreshTokenService = refreshTokenService;
         _emailConfirmationService = emailConfirmationService;
         _credentialChangeNotifier = credentialChangeNotifier;
+        _personService = personService;
         _timeProvider = timeProvider;
         _logger = logger;
     }
@@ -124,7 +128,12 @@ public sealed class AccessRecoveryService
             return await ApplyAsync(recoverable, chosen, confirmation: null, now, ct);
 
         if (command.ConfirmationCode is not { } confirmationCode)
-            return await RequestConfirmationAsync(recoverable, chosen, ct);
+            return await RequestConfirmationAsync(
+                recoverable,
+                chosen,
+                command.UpdateContactEmail,
+                ct
+            );
 
         var confirmation = new EmailConfirmationAttempt
         {
@@ -139,6 +148,7 @@ public sealed class AccessRecoveryService
     private async Task<Result<RedemptionDetails>> RequestConfirmationAsync(
         RecoverableAccess recoverable,
         ChosenLogin chosen,
+        bool updatesContactEmail,
         CancellationToken ct
     )
     {
@@ -151,6 +161,7 @@ public sealed class AccessRecoveryService
                 PersonId = recoverable.PersonId,
                 FirstName = recoverable.FirstName,
                 ClubName = await ClubNameAsync(ct),
+                UpdatesContactEmail = updatesContactEmail,
             },
             ct
         );
@@ -167,16 +178,15 @@ public sealed class AccessRecoveryService
     )
     {
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
-        if (confirmation is not null)
+        var confirmed = confirmation is null
+            ? null
+            : await _emailConfirmationService.ConfirmAsync(confirmation, ct);
+        if (confirmed is { Verdict: not EmailConfirmationVerdict.Confirmed })
         {
-            var verdict = await _emailConfirmationService.ConsumeAsync(confirmation, ct);
-            if (verdict != EmailConfirmationVerdict.Confirmed)
-            {
-                await transaction.CommitAsync(ct);
-                return Result<RedemptionDetails>.Success(
-                    RedemptionDetails.Refused(OutcomeOf(verdict))
-                );
-            }
+            await transaction.CommitAsync(ct);
+            return Result<RedemptionDetails>.Success(
+                RedemptionDetails.Refused(OutcomeOf(confirmed.Verdict))
+            );
         }
 
         if (!await ClaimAsync(recoverable.InvitationId, now, ct))
@@ -191,9 +201,23 @@ public sealed class AccessRecoveryService
         if (!updated.Succeeded)
             return RefusalOf(updated);
 
-        var changesLoginEmail = confirmation is not null;
+        var changesLoginEmail = confirmed is not null;
         _dbContext.AccountEvents.AddRange(EventsOf(recoverable.PersonId, changesLoginEmail, now));
         await _dbContext.SaveChangesAsync(ct);
+        if (confirmed is { UpdatesContactEmail: true })
+        {
+            var followed = await _personService.UpdateOwnContactEmailAsync(
+                recoverable.PersonId,
+                chosen.Email,
+                ct
+            );
+            if (!followed.IsSuccess)
+            {
+                await transaction.RollbackAsync(ct);
+                return Result<RedemptionDetails>.Carrying(followed);
+            }
+        }
+
         await _refreshTokenService.RevokeAllAsync(account.Id, ct);
         await transaction.CommitAsync(ct);
 

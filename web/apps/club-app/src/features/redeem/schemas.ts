@@ -61,6 +61,7 @@ export const RedeemFormSchema = z.object({
   password: z
     .string()
     .min(PASSWORD_MIN_LENGTH, `Dein Passwort braucht mindestens ${PASSWORD_MIN_LENGTH} Zeichen.`),
+  updateContactEmail: z.boolean(),
 });
 export type RedeemForm = z.infer<typeof RedeemFormSchema>;
 

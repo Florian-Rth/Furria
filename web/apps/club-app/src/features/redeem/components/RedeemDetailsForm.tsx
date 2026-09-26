@@ -1,4 +1,12 @@
-import { KkAlert, KkButton, KkHeading, KkIconButton, KkNote, KkTextField } from '@furria/ui';
+import {
+  KkAlert,
+  KkButton,
+  KkCheckboxRow,
+  KkHeading,
+  KkIconButton,
+  KkNote,
+  KkTextField,
+} from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { ChangeEvent, FC } from 'react';
 import { usePasswordVisibility } from '@/features/login';
@@ -22,6 +30,9 @@ const PASSWORD_LABEL = 'Neues Passwort';
 const PASSWORD_HINT = `Mindestens ${PASSWORD_MIN_LENGTH} Zeichen.`;
 const REDEEM_LABEL = 'Passwort festlegen';
 const REQUEST_CODE_LABEL = 'Code senden';
+const CONTACT_EMAIL_LABEL = 'Kontakt-E-Mail ebenfalls ändern';
+const CONTACT_EMAIL_DESCRIPTION =
+  'Der Verein erreicht dich dann unter der neuen Adresse. Ohne Haken bleibt deine Kontakt-E-Mail, wie sie ist.';
 
 interface RedeemDetailsFormProps {
   invitation: LiveInvitation;
@@ -45,7 +56,7 @@ export const RedeemDetailsForm: FC<RedeemDetailsFormProps> = ({
   const redeemInvitation = (values: RedeemForm): void => {
     onRedeem(invitation, values);
   };
-  const { form, needsConfirmation, submit } = useRedeemForm({
+  const { form, contactEmailFollows, needsConfirmation, submit } = useRedeemForm({
     defaultLoginEmail,
     suggestedLoginEmail: invitation.suggestedLoginEmail,
     onRedeem: redeemInvitation,
@@ -63,6 +74,7 @@ export const RedeemDetailsForm: FC<RedeemDetailsFormProps> = ({
   const greeting = toRedeemHeading(invitation.purpose, invitation.firstName);
   const intro = INTROS[invitation.purpose];
   const startsOnEmail = invitation.suggestedLoginEmail === null;
+  const offersContactEmailFollow = invitation.purpose === 'recovery' && needsConfirmation;
 
   const editLoginEmail = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
     onEdit();
@@ -73,6 +85,18 @@ export const RedeemDetailsForm: FC<RedeemDetailsFormProps> = ({
     <KkNote tone="hint" icon="info">
       {TAKEN_CONTACT_LINE}
     </KkNote>
+  ) : null;
+  const toggleContactEmail = (checked: boolean): void => {
+    contactEmailFollows.field.onChange(checked);
+  };
+
+  const contactEmailFollow = offersContactEmailFollow ? (
+    <KkCheckboxRow
+      label={CONTACT_EMAIL_LABEL}
+      description={CONTACT_EMAIL_DESCRIPTION}
+      checked={contactEmailFollows.field.value}
+      onChange={toggleContactEmail}
+    />
   ) : null;
   const submitAlert = footerError === null ? null : <KkAlert>{footerError}</KkAlert>;
   const passwordToggle = (
@@ -108,6 +132,7 @@ export const RedeemDetailsForm: FC<RedeemDetailsFormProps> = ({
           onBlur={loginEmailField.onBlur}
           inputRef={loginEmailField.ref}
         />
+        {contactEmailFollow}
         <KkTextField
           name={passwordField.name}
           label={PASSWORD_LABEL}

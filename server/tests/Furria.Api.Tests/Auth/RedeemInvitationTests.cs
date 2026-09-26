@@ -879,6 +879,85 @@ public sealed class RedeemInvitationTests
     }
 
     [Fact]
+    public async Task Should_LetHerContactEmailFollow_When_ARecoveryChangesHerLoginEmail()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (ctx, annaId, code) = await ArrangeRecoveryAsync(
+            ct,
+            InvitationSteps.UniqueContactEmail("anna-kontakt")
+        );
+        var chosenEmail = InvitationSteps.UniqueContactEmail("anna-neu");
+        await InvitationSteps.RedeemByCodeAsync(
+            _fixture.CreateClient(),
+            code,
+            loginEmail: chosenEmail
+        );
+        var confirmationCode = (
+            await _fixture.Mailbox.SingleMailToAsync(chosenEmail, ct)
+        ).ConfirmationCode();
+
+        await _fixture.AtLaterTimeAsync(
+            TimeSpan.FromMinutes(1),
+            async () =>
+            {
+                var changedAt = _fixture.TimeProvider.GetUtcNow();
+
+                var (response, _) = await InvitationSteps.RedeemByCodeAsync(
+                    _fixture.CreateClient(),
+                    code,
+                    loginEmail: chosenEmail,
+                    confirmationCode: confirmationCode
+                );
+
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                await ctx
+                    .Expected.Person(annaId)
+                    .ToHaveContactDetails(chosenEmail, null, null, null, null)
+                    .Person(annaId)
+                    .ToHaveContactChangedBy(annaId, changedAt)
+                    .AccountOfPerson(annaId)
+                    .ToHaveLoginEmail(chosenEmail)
+                    .AssertAsync(ct);
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_KeepHerContactEmail_When_SheOptsOutWhileARecoveryChangesHerLoginEmail()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var contactEmail = InvitationSteps.UniqueContactEmail("anna-kontakt");
+        var (ctx, annaId, code) = await ArrangeRecoveryAsync(ct, contactEmail);
+        var chosenEmail = InvitationSteps.UniqueContactEmail("anna-neu");
+        await InvitationSteps.RedeemByCodeAsync(
+            _fixture.CreateClient(),
+            code,
+            loginEmail: chosenEmail,
+            updateContactEmail: false
+        );
+        var confirmationCode = (
+            await _fixture.Mailbox.SingleMailToAsync(chosenEmail, ct)
+        ).ConfirmationCode();
+
+        var (response, _) = await InvitationSteps.RedeemByCodeAsync(
+            _fixture.CreateClient(),
+            code,
+            loginEmail: chosenEmail,
+            confirmationCode: confirmationCode
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.Person(annaId)
+            .ToHaveContactDetails(contactEmail, null, null, null, null)
+            .Person(annaId)
+            .ToHaveNoContactChange()
+            .AccountOfPerson(annaId)
+            .ToHaveLoginEmail(chosenEmail)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_RefuseAsTaken_When_ARecoveryChoosesAnotherAccountsLogin()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -1346,13 +1425,17 @@ public sealed class RedeemInvitationTests
     }
 
     private async Task<(SeededContext Ctx, int AnnaId, string Code)> ArrangeRecoveryAsync(
-        CancellationToken ct
+        CancellationToken ct,
+        string? contactEmail = null
     )
     {
         var ctx = await _fixture.BuildAsync(
             builder =>
                 builder.Identity(identity =>
-                    identity.AddPerson("anna", "Anna", "Muster").AddAccount("anna")
+                    identity
+                        .AddPerson("anna", "Anna", "Muster")
+                        .AddPersonContact("anna", contactEmail)
+                        .AddAccount("anna")
                 ),
             ct
         );

@@ -19,7 +19,12 @@ import { useInvitationCredential } from './use-invitation-credential';
 interface ChosenLogin {
   loginEmail: string;
   password: string | null;
+  updateContactEmail: boolean;
 }
+
+type PendingRedemption = PendingConfirmation & Pick<ChosenLogin, 'updateContactEmail'>;
+
+const CLAIM_UPDATES_CONTACT_EMAIL = false;
 
 interface RedeemAttempt {
   confirmationCode: string | null;
@@ -50,7 +55,7 @@ export const useRedeemScreen = (): RedeemScreenControl => {
   const lookup = useInvitationLookupQuery(credential, isSignedIn);
   const redemption = useRedeemInvitationMutation();
   const navigate = useNavigate();
-  const [pending, setPending] = useState<PendingConfirmation | null>(null);
+  const [pending, setPending] = useState<PendingRedemption | null>(null);
   const [pendingClaim, setPendingClaim] = useState<PendingClaim | null>(null);
   const [hasDeclinedClaim, setHasDeclinedClaim] = useState(false);
   const [draftLoginEmail, setDraftLoginEmail] = useState<string | null>(null);
@@ -120,7 +125,10 @@ export const useRedeemScreen = (): RedeemScreenControl => {
   };
 
   const claim = (invitation: LiveInvitation, loginEmail: string, claimPassword: string): void => {
-    const chosen = pendingClaim ?? { loginEmail, password: null };
+    const chosen = {
+      ...(pendingClaim ?? { loginEmail, password: null }),
+      updateContactEmail: CLAIM_UPDATES_CONTACT_EMAIL,
+    };
 
     send(invitation, chosen, { ...FIRST_ATTEMPT, claimPassword }, () => undefined);
   };
