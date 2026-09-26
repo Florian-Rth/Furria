@@ -2,6 +2,7 @@ using FastEndpoints;
 using FluentValidation;
 using FluentValidation.Results;
 using Furria.Api.Authorization;
+using Furria.Api.RateLimiting;
 using Furria.Api.Results;
 using Furria.Application.Identity;
 using Furria.Application.Results;
@@ -14,10 +15,15 @@ public sealed class PutMyLoginEmail : Endpoint<PutMyLoginEmailRequest, PutMyLogi
     private const string LoginEmailField = "loginEmail";
 
     private readonly AccountSecurityService _accountSecurityService;
+    private readonly AccountRateLimiter _accountRateLimiter;
 
-    public PutMyLoginEmail(AccountSecurityService accountSecurityService)
+    public PutMyLoginEmail(
+        AccountSecurityService accountSecurityService,
+        AccountRateLimiter accountRateLimiter
+    )
     {
         _accountSecurityService = accountSecurityService;
+        _accountRateLimiter = accountRateLimiter;
     }
 
     public override void Configure()
@@ -31,6 +37,14 @@ public sealed class PutMyLoginEmail : Endpoint<PutMyLoginEmailRequest, PutMyLogi
         if (accountId is null)
         {
             await Send.UnauthorizedAsync(ct);
+            return;
+        }
+
+        if (
+            !_accountRateLimiter.TryAcquire(AccountRateLimitScope.LoginEmailChange, accountId.Value)
+        )
+        {
+            await Send.StatusCodeAsync(StatusCodes.Status429TooManyRequests, ct);
             return;
         }
 

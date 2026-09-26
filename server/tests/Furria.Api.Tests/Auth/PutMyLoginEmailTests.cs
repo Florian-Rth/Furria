@@ -10,6 +10,7 @@ namespace Furria.Api.Tests.Auth;
 public sealed class PutMyLoginEmailTests
 {
     private const string LoginEmailField = "loginEmail";
+    private const int PermitsPerAccount = 5;
 
     private readonly ApiTestFixture _fixture;
 
@@ -97,6 +98,36 @@ public sealed class PutMyLoginEmailTests
             .ToHaveCount(2)
             .EmailConfirmationsOfAccount(ctx.Identity.Accounts.IdOf("anna"))
             .ToHaveLiveCount(1)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ReturnTooManyRequests_When_SheAsksForASixthCodeWithinFifteenMinutes()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => identity.AddAccount("anna")),
+            ct
+        );
+        var client = await ctx.Identity.ClientForAsync("anna", ct);
+        for (var attempt = 0; attempt < PermitsPerAccount; attempt++)
+        {
+            var (permitted, _) = await AccountSecuritySteps.RequestLoginEmailChangeAsync(
+                client,
+                InvitationSteps.UniqueContactEmail("anna-neu")
+            );
+            Assert.Equal(HttpStatusCode.OK, permitted.StatusCode);
+        }
+
+        var (response, _) = await AccountSecuritySteps.RequestLoginEmailChangeAsync(
+            client,
+            InvitationSteps.UniqueContactEmail("anna-neu")
+        );
+
+        Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
+        await ctx
+            .Expected.EmailConfirmationsOfAccount(ctx.Identity.Accounts.IdOf("anna"))
+            .ToHaveCount(PermitsPerAccount)
             .AssertAsync(ct);
     }
 
