@@ -1,3 +1,4 @@
+using Furria.Core.Identity;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
@@ -35,6 +36,24 @@ public sealed class InvitationSetExpectations
                         .CountAsync(
                             invitation =>
                                 invitation.PersonId == _personId
+                                && invitation.RedeemedAt == null
+                                && invitation.VoidedAt == null,
+                            ct
+                        )
+                )
+        );
+
+    public Expected ToHaveLiveCountOn(InvitationChannel channel, int count) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(
+                    count,
+                    await dbContext
+                        .Invitations.AsNoTracking()
+                        .CountAsync(
+                            invitation =>
+                                invitation.PersonId == _personId
+                                && invitation.Channel == channel
                                 && invitation.RedeemedAt == null
                                 && invitation.VoidedAt == null,
                             ct

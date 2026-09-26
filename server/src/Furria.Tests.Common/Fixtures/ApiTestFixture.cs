@@ -44,7 +44,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
     public const string BootstrapAdminPassword = "Bootstrap-Admin-Pw-1!";
     public const string SeededAccountPassword = "Seeded-Account-Pw-1!";
     public const string ClubAppBaseUrl = "https://club.furria.test";
-    public const int PermitsPerInvitationToken = 5;
+    public const int PermitsPerInvitationToken = 10;
 
     private const int MailpitSmtpPort = 1025;
     private const int MailpitApiPort = 8025;

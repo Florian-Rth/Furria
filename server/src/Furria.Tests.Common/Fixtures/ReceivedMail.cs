@@ -30,6 +30,20 @@ public sealed partial record ReceivedMail
         return match.Value;
     }
 
+    public string ConfirmationCode()
+    {
+        var match = ConfirmationCodePattern().Match(Text);
+        if (!match.Success)
+            throw new InvalidOperationException(
+                $"The mail \"{Subject}\" carries no confirmation code."
+            );
+
+        return match.Value;
+    }
+
+    [GeneratedRegex(@"(?<![0-9])[0-9]{6}(?![0-9])")]
+    private static partial Regex ConfirmationCodePattern();
+
     [GeneratedRegex(@"#token=(?<token>[A-Za-z0-9_\-]+)")]
     private static partial Regex LinkTokenPattern();
 
