@@ -1,5 +1,5 @@
 ---
-status: shaped 2026-09-25; S0, S1, S2, S4, S8 built 2026-09-25/26; S3, S5–S7, S9–S11 planned
+status: shaped 2026-09-25; S0–S6, S8, S9 built 2026-09-25/26; S7, S10, S11 planned
 phase: CA-P8 — Accounts & invitations
 shaped_with: Florian, grilling session 2026-09-25
 binding: docs/adr/0005 (to be amended for passkeys), docs/adr/0011, docs/adr/0016,
@@ -114,17 +114,21 @@ not** — of a person without an account.
 
 | Field | Type | Rule |
 |---|---|---|
-| `Purpose` | `EmailConfirmationPurpose` | `InvitationRedemption` (S6 adds its own) |
-| `InvitationId` | `int?` | the invitation being redeemed; cascade on delete |
+| `Purpose` | `EmailConfirmationPurpose` | `InvitationRedemption` · `LoginEmailChange` (S6) |
+| `InvitationId` | `int?` | the invitation being redeemed; cascade on delete; `InvitationRedemption` only |
+| `AccountId` | `int?` | the account changing its login email; cascade on delete; `LoginEmailChange` only |
+| `Email` | `string?` | the address as she typed it |
 | `NormalizedEmail` | `string` | the address the code was mailed to |
+| `UpdatesContactEmail` | `bool` | the contact email follows when the code is confirmed (ruling 5) — her own change and a recovery's |
 | `CodeHash` | `string` | hash of the 6-digit code; the code itself is never stored |
 | `IssuedAt` · `ExpiresAt` | `DateTimeOffset` | 15 minutes |
 | `FailedAttempts` | `int` | dead at 5 |
-| `ConsumedAt` · `VoidedAt` | `DateTimeOffset?` | at most one set; one live row per purpose and invitation |
+| `ConsumedAt` · `VoidedAt` | `DateTimeOffset?` | at most one set; one live row per purpose, invitation and account (a unique index `NULLS NOT DISTINCT`); three check constraints tie each subject column to its purpose |
 
 **Account events** (`AccountEvent`, `Furria.Infrastructure/Identity`) — the history the *Zugang*
 panel shows: `PersonId`, `Kind` (`Invited` · `Reminded` · `Redeemed` · `Recovered` · `Disabled` ·
-`Enabled` · `Deleted` · `LoginEmailChanged`), `ActorPersonId?`, `At`. Written by the service that
+`Enabled` · `Deleted` · `LoginEmailChanged` · `RecoveryIssued`), `ActorPersonId?`, `At`. The kind
+is stored as a string, so a new kind needs no migration. Written by the service that
 performs the act, never derived after the fact. **No sign-in event exists** (ruling 22).
 
 **Contact details** gain `ContactChangedAt` and `ContactChangedByPersonId` on `Person` — the last
@@ -137,6 +141,11 @@ per-field history.
 consequences: its unique `PersonId` stays, but nothing may treat it as fixed (ADR-0019); and
 Identity schema version 3 adds the passkey table (slice S7).
 
+**Data-protection keys** (`data_protection_keys`, migration `DataProtectionKeys`) are
+infrastructure, not model: ASP.NET's key ring, persisted through `PersistKeysToDbContext` under
+the application name `Furria`, so Identity's reset tokens survive a restart. The test reset
+leaves the table alone.
+
 ---
 
 ## Permissions
@@ -146,7 +155,7 @@ One new key, grantable through the rights matrix and added to `FurriaPermissions
 | Key | Covers |
 |---|---|
 | `persons.manage` (existing) | first invitations — by mail, in person, bulk, reminder; the *Zugang* panel's read |
-| `accounts.manage` (new) | access recovery, disable/enable, inviting a person with no birth date (the vouch). By default only the Admin role holds it — `BootstrapAdminSeeder` grants it with the rest |
+| `accounts.manage` (new) | access recovery, disable/enable, inviting a person with no birth date (the vouch); reading the persons register, the person and her *Zugang* panel, so she can reach whom she recovers. By default only the Admin role holds it — `BootstrapAdminSeeder` grants it with the rest |
 | `club.manage` (existing) | the club record |
 
 **`CanSearchPersonsAsync` learns `accounts.manage`** — the same lockout P5 found: a holder of only
@@ -366,6 +375,26 @@ the taken branch, and that the code is returned by exactly one call.
 person and a person with no birth date; the shared-inbox mail carries one link per eligible
 person; the per-address throttle holds; a reset ends existing sessions.
 
+**What was built — 2026-09-26**
+- `POST auth/access/request {email}` → `202`, empty, always. `POST auth/password/request-reset
+  {email}` → `202`, always. `POST auth/password/reset {reset, password}` → `204`; a dead or
+  unknown `reset` is one neutral refusal on `reset`, a weak password one on `password`.
+- The mail work leaves the request path: `SignedOutMailRequestQueue` and its worker handle both
+  requests one at a time, so the answer's timing reveals nothing either.
+- The self-request throttle lives in the database: one mail per address per five minutes,
+  counting the non-reminder `Request` invitations of **every** person at that address. The reset
+  throttle is in memory, five minutes per login email. Both endpoints also carry the per-address
+  limiter (5 per 15 minutes) and the per-IP one.
+- The reset link carries one opaque blob (account id and Identity's token, base64url) in the
+  fragment; it lives one hour. A reset clears the lockout, ends every session and sends the
+  `PasswordReset` notice. **It does not sign her in**: the page signs out locally and lands on
+  `/login?passwordReset=1`.
+- Identity's tokens are protected by data-protection keys persisted in the database (model
+  above), so a reset link survives a restart.
+- Club-app: `/request-access`, `/forgot-password`, `/reset-password` (`#reset=`). The login's ways
+  on are *Zugang anfordern*, *Code eingeben* and *Passwort vergessen*; the old help note is gone.
+  The dead invitation offers *Neue Einladung anfordern*. `apiFetch` reads `202` like `204`.
+
 ---
 
 ### S4 — bulk invitation, reminder, the *Zugänge* panel
@@ -405,6 +434,10 @@ reminders reach only open invitations, and the preview's counts equal what is th
 - An *offene Einladung* includes an expired one: it was issued and never answered, which is
   exactly who *Erinnern* is for. An `InPerson` invitation is never reminded.
 - A reminder records the manager as its issuer, even when it re-issues a `Request` invitation.
+- **The five state filters are a partition**: account state first, then an unexpired live
+  invitation, then eligibility. `not-invitable` leaves out a person with an unexpired live
+  invitation, so a vouched, invited person without a birth date is `invited` only (fixed in the
+  wave-2 integration; `GetPersonsTests` proves every person falls in exactly one).
 
 ---
 
@@ -433,6 +466,36 @@ reminders reach only open invitations, and the preview's counts equal what is th
 **Done when** the tests prove `persons.manage` alone cannot recover, disable or vouch; recovery
 ends sessions and notifies the old address; a disabled account cannot sign in or refresh.
 
+**What was built — 2026-09-26**
+- `POST manage/persons/{id}/access-recovery` (`accounts.manage`) → `{link, code, expiresAt}`,
+  shown once; `409` when she has no account or it is disabled. It writes `RecoveryIssued`
+  (*Wiederherstellung gestartet*) with the manager as actor.
+- `PUT manage/persons/{id}/account/disabled {isDisabled}` → `204`, idempotent. **Self-disable is
+  refused** (`409`). Disabling ends every session and **voids a live recovery**; enabling restores
+  nothing. Access tokens (15 minutes) are not re-checked per request; the permission gates, `me`
+  and refresh refuse a disabled account.
+- Lookup gains `purpose` (`onboarding` · `recovery`, null when dead); a recovery pre-fills her
+  current login email and is never claimable.
+- Recovery redemption: a new password (a missing one is refused on `password`), the lockout
+  cleared, optionally a new login email confirmed by code — **the contact email follows unless she
+  opts out** (`updateContactEmail`, carried on the confirmation and written through
+  `PersonService` with her as actor, ruling 5; migration `RecoveryContactEmailFollow` drops S6's
+  check that allowed the flag on a login-email change only). Every session ends, `Recovered` (and
+  `LoginEmailChanged`) is written, the `AccessRecovered` notice goes to the **previous** login
+  email, and she is signed in.
+- `GetPersonById`'s access block gains `rights {canInvite, canManageAccount}` and
+  `ageOfConsent`; the access-state poll gains `isRecoveryOpen`.
+- The vouch: `InvitationIssuer {PersonId, VouchesForAge}`. **The vouch is recorded as the
+  `Invited` event's actor**, and **redemption does not re-check a vouched birth date**.
+- **A holder of only `accounts.manage` reaches the person**: `GetPersons`, `GetPersonById` and
+  `GetPersonAccessState` admit `persons.manage` or `accounts.manage`, and writes of the person stay
+  `persons.manage`. The hub shows her the persons panel, and the person screen shows her the
+  *Zugang* panel alone.
+- Club-app: the in-person screen takes a purpose; `/manage/persons/$personId/access-recovery`;
+  *sperren* (danger line) and *entsperren* (quiet) behind `KkConfirmDialog`; the vouch line *Du
+  bestätigst, dass Anna mindestens 16 ist.*; redeem's recovery heading *NEUES PASSWORT FÜR ANNA*;
+  the rights-matrix copy *Zugänge wiederherstellen und sperren*.
+
 ---
 
 ### S6 — her sign-in and security
@@ -453,6 +516,33 @@ ends sessions and notifies the old address; a disabled account cannot sign in or
 
 **Done when** the tests cover each write, each notice, that deletion leaves the person and her
 memberships intact, and that a deleted person can be invited again by hand but not by bulk.
+
+**What was built — 2026-09-26**
+- `PUT auth/me/login-email {loginEmail, updateContactEmail = true}` → `200
+  {confirmationExpiresAt}`; `409` taken, `400` her own address, `403` disabled, `429` past five
+  codes per account in 15 minutes (`AccountRateLimiter`, `RateLimits:Account`).
+- `POST auth/me/login-email/confirmation {code}` → `204`; `400` on `code`; `409` when the address
+  was taken meanwhile. It sets `Email` and `UserName`, writes `LoginEmailChanged` (her), lets the
+  contact email follow through `PersonService` (S8's stamp) unless she opted out, and tells the old
+  address. Her sessions stay.
+- `PUT auth/me/password {currentPassword, newPassword}` → `200` with a fresh session: **the change
+  ends every session, this device's included, and returns a new one** — the refresh family is not
+  in the access token.
+- `POST auth/me/logout-everywhere` → `204`, this device included.
+- `DELETE auth/me {password}` → `204`. Re-authentication runs through `CheckPasswordSignInAsync`
+  with the login's lockout. It voids her live invitations, writes `Deleted` (her) and deletes the
+  account with its tokens; her person and memberships stay. She reads *no access*; bulk invitation
+  skips her (she was invited before), a manager can invite her by hand.
+- `EmailConfirmation` gains the account subject (model above); migration
+  `LoginEmailChangeConfirmations`. S7's seam: `ReauthenticationProof {Password}` on
+  `DeleteAccountCommand`.
+- `BootstrapAdminSeeder` creates the bootstrap account **only while no account exists at all**,
+  so an admin who deleted hers or changed her login email is not resurrected; it still
+  reconciles the Admin role's keys on every start.
+- Club-app: `/profile/security` (*Anmeldung & Sicherheit*), `/profile/security/login-email` (two
+  steps, *Kontakt-E-Mail ebenfalls ändern*), `/profile/security/password`; *Account löschen* is a
+  danger `KkConfirmDialog` asking for the password and lands on `/login?farewell=account-deleted`.
+  `KkCheckboxRow` joins `@furria/ui`.
 
 ---
 
@@ -530,6 +620,26 @@ touches her login email.
 **Done when** the tests cover the move, the absorption, a wrong password leaving both persons
 untouched, and that an affiliated person is never a candidate.
 
+**What was built — 2026-09-26**
+- `GET manage/persons/adoption-candidate?email=` (`persons.manage`) → `{personId, firstName,
+  lastName, hasAccount}`, `404` without one, `400` for a malformed address. Only a non-affiliated
+  person is a candidate; of several, the newest `UpdatedAt` wins, then the highest id. **Adopting
+  opens that person; nothing is written** (ADR-0019's reading confirmed).
+- Redeem gains `claimPassword`; `password` may be left out only together with it. A login email
+  that belongs to a **claimable** account answers `claimRequired`; a wrong claim password is
+  refused on `claimPassword` with the login's lockout; a non-claimable one stays `409` *taken*.
+  Lookup gains `claimableLoginEmail`. A recovery never offers claim-in.
+- Claimable: the login email matches, the account is not disabled, its person is not affiliated
+  and **holds no club data** — any club data, past memberships included, refuses the claim as
+  *taken* (Open 5).
+- The claim is one transaction: the invitation redeemed, the stray person absorbed
+  (`StrayPersonAbsorption` moves the account, voids and repoints her invitations, repoints
+  `issued_by`, her account events and the contact stamps she left on others, and deletes her
+  last), `Redeemed` written, every session ended, a session returned. **A claimed account keeps
+  its login email and password.**
+- Club-app: the person editor's adopt suggestion under the email field (400 ms debounce, create
+  only, *Diese Person übernehmen* opens her screen); redeem's claim step.
+
 ---
 
 ### S10 — Android App Links
@@ -577,3 +687,5 @@ in-person screen; the copy pass against ADR-0016's five button words; `CONTEXT.m
    requires **12**. Lowering an existing rule needs Florian's word; until then S1 keeps 12.
 4. **The founded year's readers.** S0 gives it a home; the website keeps `FOUNDING_YEAR` until its
    API client (`plan/website/feature-api-client.md`, *building*) can read the club record.
+5. **A stray person holding club data (even past memberships) refuses claim-in with** *taken*; the
+   alternative is absorbing her history too, which risks overlapping memberships. Florian's call.

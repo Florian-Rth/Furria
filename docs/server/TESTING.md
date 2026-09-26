@@ -165,6 +165,9 @@ public sealed class GetMeTests
    `int Id` instead of a composite key — and none may gain a computed column; the restore
    re-inserts every column it read — so `person`'s nullable `contact_changed_at` and
    `contact_changed_by_person_id` (CA-P8 S8) round-trip with the admin row as they are.
+   `DatabaseResetService.CreateAsync` also takes the **retained** entity types, whose tables are
+   never truncated: `[typeof(DataProtectionKey)]`. `data_protection_keys` is infrastructure — the
+   host's key ring — so a reset keeps it and the tokens it protects stay readable (CA-P8).
 2. **`SeedContextBuilder` / `IdentitySeedBuilder` / `GroupSeedBuilder` / `RoleSeedBuilder` /
    `ClubSeedBuilder`** —
    pure accumulators. One sub-builder per bounded context, not per entity: `builder.Identity(…)`
@@ -249,9 +252,15 @@ public sealed class GetMeTests
    (`ToHaveCount`, `ToHaveLiveCount`, `ToHaveLiveCountOn(channel, n)`),
    `Expected.LiveInvitationOfPerson(personId)` (`ToBeIssuedAs(channel, isReminder,
    issuedByPersonId)`) and `Expected.AccountEventsOfPerson(personId)`
-   (`ToHaveKindsInOrder(kinds…)`, `ToHaveLatestActor(personId)`). A person's contact details are
+   (`ToHaveKindsInOrder(kinds…)`, `ToHaveLatestActor(personId)`, `ToHaveNoLatestActor()` for a
+   self-requested invitation). `LiveInvitationOfPerson` also takes `ToBeSelfRequested()` and
+   `ToBeRecoveryIssuedBy(issuedByPersonId)`. A login-email change is asserted on
+   `Expected.EmailConfirmationsOfAccount(accountId)` (`ToHaveCount`, `ToHaveLiveCount`) and
+   `Expected.Account(id).ToSignInAs(email)`; the key ring on
+   `Expected.DataProtectionKeys().ToHoldAKey()`. A person's contact details are
    asserted on `Expected.Person(personId)`: `ToHaveContactDetails(…)`,
-   `ToHaveContactChangedBy(personId, changedAt)` and `ToHaveNoContactChange()`.
+   `ToHaveContactChangedBy(personId, changedAt)` and `ToHaveNoContactChange()`; an absorbed stray
+   person on `Expected.Person(id).ToNotExist()` (and `ToExist()` for the one left untouched).
    The training rhythm and the trainings the generator writes are **set**-scoped and group-
    scoped, never slot-scoped, because a group states several habits and the endpoint replaces
    them wholesale: `Expected.TrainingSlotsOf(groupId)` (`ToHaveCount`, `ToBeEmpty`,
@@ -318,7 +327,24 @@ public sealed class GetMeTests
    `UnknownCode()` for credentials that match nothing. `InvitationRoundSteps`
    (`Furria.Api.Tests/Invitations`) wraps the rounds — `PreviewAsync`, `InviteAllAsync`,
    `RemindAllAsync` — and names the spans they turn on: `PastTheReminderDelay`,
-   `WithinTheReminderDelay`, `PastTheMailLifetime`.
+   `WithinTheReminderDelay`, `PastTheMailLifetime`. `InvitationSteps` also walks the
+   `accounts.manage` acts: `IssueRecoveryAsync` (the real `PostPersonAccessRecovery`; there is no
+   direct fixture shortcut for a recovery) and `SetAccountDisabledAsync`; `RedeemByCodeAsync`
+   takes `updateContactEmail` for a recovery that changes the login email.
+11. **The signed-in and signed-out toolkits (CA-P8 wave 2)** — all in `Furria.Api.Tests/Auth`.
+   `SignedOutMailSteps` drives the signed-out mail requests: `RequestAccessAsync`,
+   `RequestPasswordResetAsync`, `ResetPasswordAsync`, `RequestResetAndReadItAsync` (returns the
+   reset blob read from Mailpit), `ResetOf(link)`, `UnknownReset()`, `FingerprintOfAsync` (the
+   status, headers and body a byte-identical answer is compared by), and the pair behind every
+   *sends nothing* test, `SettleAsync` and `MailsAlreadyInAsync`. `ReceivedMail.LinkTokens()`
+   reads every invitation link of a shared-inbox mail. `AccountSecuritySteps` covers her own
+   login: `RequestLoginEmailChangeAsync` / `RequestLoginEmailCodeAsync`,
+   `ConfirmLoginEmailAsync`, `ChangePasswordAsync`, `DeleteAccountAsync`, `RefreshAsync`,
+   `LogInStatusAsync`, `ClientWith(accessToken)` and `AssertRefusedOnAsync`, with
+   `LockoutThreshold`, `NoticeSubject` and `ConfirmationSubject`. `ClaimSteps` arranges and walks
+   the claim-in: `AddStrayWithAccount` (a non-affiliated person with an account, on the seed
+   builder), `ClaimAsync` and `GiveContactEmailAsync`, with `WrongClaimPassword`; seeded accounts
+   sign in with `ApiTestFixture.SeededAccountPassword`.
 
 ### Traps worth knowing
 
@@ -354,10 +380,27 @@ public sealed class GetMeTests
   = 10` of them. A literal unknown token shared between tests spends one budget for the whole
   collection and turns later tests into `429`s — draw a fresh `UnknownToken()` / `UnknownCode()`
   in every test.
+- **Every limiter is a host singleton that outlives every reset** — the per-address limiter and
+  the reset-mail throttle (keyed by address), and the per-account `AccountRateLimiter` (keyed by
+  account id, five login-email codes per 15 minutes). Give every test its own address with
+  `UniqueContactEmail`, and remember the bootstrap admin's account id survives every reset: a
+  test that spends her per-account budget spends it for the whole collection.
+- **A test that proves *nothing was sent* needs a sentinel.** Both signed-out queues run one
+  request at a time, so a sentinel account's reset request queued after the act drains
+  everything before it: act, `SignedOutMailSteps.SettleAsync(fixture, sentinelLoginEmail, ct)`,
+  then assert `MailsAlreadyInAsync(address)` is empty. Waiting for "no mail" by time proves
+  nothing.
+- **`ToBeIssuedAs` asserts an `Onboarding` invitation.** A recovery is asserted with
+  `ToBeRecoveryIssuedBy(managerId)`, and a self-requested one with `ToBeSelfRequested()`.
+- **An account of a non-affiliated person is claimable.** A *taken* test therefore needs an
+  affiliated account (give it a membership); otherwise redemption answers `claimRequired`.
+- **The bootstrap admin holds `accounts.manage`**, so she may vouch for an unknown birth date. A
+  test proving the *no birth date* refusal needs a caller holding `persons.manage` alone.
 - **Only `person`, `account`, `role`, `role_permission` and `role_holding` survive a reset.**
   Everything else, the five group tables included (`group_kind`, `group`, `group_membership`,
   `group_admin`, `group_training_slot`), is truncated before every `BuildAsync`, so a
   test seeds every group and every group kind it needs and may never assume one from a neighbour.
+  `data_protection_keys` is never truncated at all (retained, see *The pieces* 1).
 - **`session` and `venue` start empty — in a test and in a fresh production database alike.**
   Nothing is seeded from code: a migration builds schema and nothing else, and the club's master
   data is entered through its management surface. So a test arranges every session and every venue

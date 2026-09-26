@@ -42,6 +42,8 @@ English rendering anywhere else, so two translations never drift apart.
 | contact details | Kontaktdaten | — |
 | portrait | Porträt | — |
 | account / invitation | Account / Einladung | `Account`, — |
+| access recovery | Zugang wiederherstellen | `InvitationPurpose.Recovery` |
+| adoption / claim-in | Diese Person übernehmen / — | — |
 | club | Verein | — |
 | club hub / group hub / management | Verein / Gruppe / Verein verwalten | `club`, `group-hub`, `manage` |
 | tile | Kachel | — |
@@ -334,13 +336,19 @@ account stays, showing her that she is no longer active in the club — the **ni
 aktiv** state: every club surface gives way to that one screen, and her profile stays reachable
 from it. Rejoining lights it up again without a new invitation (ruled 2026-09-25). **Only she deletes her account**; her person and
 everything the club recorded about her stays, and she can return through a new invitation. The
-club never deletes an account — it **disables** one, reversibly (ruled 2026-09-25).
+club never deletes an account — it **disables** one, reversibly (ruled 2026-09-25). Deleting
+takes her password again, keeps her person with everything the club recorded, and voids any live
+invitation of hers; nobody disables her own account (built 2026-09-26, CA-P8 S5/S6).
+Everything about her login is hers, under **Anmeldung & Sicherheit** on her profile: login email,
+password, **Überall abmelden** — which ends every session, *this device's included* — and
+*Account löschen* (built 2026-09-26, CA-P8 S6).
 **The MVP has no child
 accounts** (ruled 2026-09-21, CA-P6 shaping): nobody under the club's own age of consent gets a
 login, and no account is held on another person's behalf. A child in the children's guard is a
 person with a group membership and no account, exactly like a member who never asked for the
 app — so no surface may assume the dancer is the one reading it.
-_UI copy_: Account; *nicht im Verein aktiv*
+_UI copy_: Account; *nicht im Verein aktiv*; *Anmeldung & Sicherheit*; *Überall abmelden*;
+*Account löschen*; *Kontakt-E-Mail ebenfalls ändern*
 _Avoid_: user (as a table/entity name), guest account (it is the same account concept),
 username
 
@@ -359,7 +367,11 @@ she is **affiliated**, has no account yet, and has reached the club's **age of c
 the **club record**, 16 unless the club says otherwise). A person with **no recorded birth date** can be
 invited only by someone in the club, who vouches for her age by doing so; she can neither request
 her own invitation nor be reached by a bulk invitation (ruled 2026-09-25, accounts shaping).
-_UI copy_: — (surfaces say what she can do: *kann eingeladen werden*)
+That act is **the vouch**: a holder of the access-recovery right invites her by hand, the
+invitation's issuer is recorded as the one who vouched, and redeeming it never asks for the birth
+date again (built 2026-09-26, CA-P8 S5).
+_UI copy_: — (surfaces say what she can do: *kann eingeladen werden*); the vouch: *Geburtsdatum
+bestätigen*, *Du bestätigst, dass Anna mindestens 16 ist.*
 _Avoid_: storing an "invitable" flag, treating an unknown birth date as either adult or child
 
 **Invitation**:
@@ -371,7 +383,10 @@ the club has on record sends an invitation to that address, and **control of tha
 proof** — no one in the club approves it (ruled 2026-09-25, accounts shaping). Who redeemed it,
 and when, stays visible on the person. When several eligible persons share that address, the
 request invites each of them — whoever reads a shared inbox is entitled for everyone it serves,
-and the first to redeem takes the address as her login email. The club's invitations are
+and the first to redeem takes the address as her login email. That request, **Zugang
+anfordern**, is an invitation on the request channel with no issuer: one mail per inbox, carrying
+one link per eligible person, and at most one such mail per inbox every five minutes; the answer on
+screen is the same whether or not the address matched (built 2026-09-26, CA-P8 S3). The club's invitations are
 **never sent by the system on its own** — someone decides, for one person or for everyone
 eligible at once (**bulk invitation**, *Alle einladen*). A bulk invitation reaches only those
 **never invited**; nudging someone who let hers lie is a separate, deliberate act (**reminder**, *Erinnern*), so
@@ -400,10 +415,33 @@ different target, and a **separate right** from inviting: whoever can recover an
 it over, so the right to invite (harmless — there is no account yet) never implies it. Disabling an
 account and vouching for an unknown birth date sit with the same right (ruled 2026-09-25). It is
 **handed over in person only** — shown on the club's screen — never sent to an address
-someone names on her behalf, and her previous login email is told it happened.
-Forgetting a password is **not** access recovery — she resets it herself by mail.
-_UI copy_: Zugang wiederherstellen
+someone names on her behalf, and her previous login email is told it happened. If she picks a
+new login email while recovering, it is confirmed by code and her contact email follows unless
+she says otherwise — exactly as when she changes it herself (built 2026-09-26, CA-P8 S5).
+Forgetting a password is **not** access recovery — she resets it herself by mail
+(*Passwort vergessen*); a reset ends every session and does not sign her in.
+_UI copy_: Zugang wiederherstellen; *Wiederherstellung gestartet* (the history line)
 _Avoid_: password reset (that is the self-service path), re-invitation
+
+**Adoption** / **adoption candidate**:
+The person editor's answer to a duplicate before it exists: when the club records an email that
+belongs to a person with no affiliation, that person is the **adoption candidate**, and adopting
+her opens her record instead of creating a second — nothing is merged or written
+([ADR-0019](docs/adr/0019-duplicate-persons-are-adopted-not-merged-by-hand.md), built 2026-09-26,
+CA-P8 S9). An affiliated person is never a candidate.
+_UI copy_: *Diese Person übernehmen*
+_Avoid_: merge, duplicate check (as something the club runs)
+
+**Stray person** / **claim-in**:
+A **stray person** is a person with no affiliation whose account's login email is the one an
+invitation is being redeemed with — the same human, recorded twice. **Claim-in** closes it on her
+word: redemption asks her to sign in with that account, and signing in moves the account onto the
+club's person, which absorbs the stray one; the claimed account keeps its login email and
+password. **Club data blocks the absorption**: a stray person holding any of it (a membership,
+even an ended one) makes the address simply taken (built 2026-09-26, CA-P8 S9; the alternative is
+open, see the plan). A recovery never claims in.
+_UI copy_: — (redeem asks her to sign in with the existing account)
+_Avoid_: merge, account linking
 
 ### Club app structure
 
