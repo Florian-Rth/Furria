@@ -43,6 +43,7 @@ public static class AccessQuery
             PersonAccessFilter.Disabled => dbContext.PeopleWithAccount(isDisabled: true),
             PersonAccessFilter.NotInvitable => dbContext
                 .PeopleWithoutAccount()
+                .WithoutUnexpiredLiveInvitation(dbContext, now)
                 .Where(AccountEligibilityQuery.IsIneligibleOn(today, ageOfConsent)),
             PersonAccessFilter.WithAccess => dbContext.PeopleWithAccessOn(today),
             PersonAccessFilter.OpenInvitation => dbContext.PeopleWithOpenInvitation(),

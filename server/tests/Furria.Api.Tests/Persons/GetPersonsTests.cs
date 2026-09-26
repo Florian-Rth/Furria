@@ -397,12 +397,12 @@ public sealed class GetPersonsTests
 
     [Theory]
     [InlineData(PersonAccessFilters.None, "dora", "gina")]
-    [InlineData(PersonAccessFilters.Invited, "carla")]
+    [InlineData(PersonAccessFilters.Invited, "carla", "karl")]
     [InlineData(PersonAccessFilters.Active, "anna", "jonas")]
     [InlineData(PersonAccessFilters.Disabled, "bea")]
     [InlineData(PersonAccessFilters.NotInvitable, "emil", "fritz", "hans", "ida")]
     [InlineData(PersonAccessFilters.WithAccess, "anna")]
-    [InlineData(PersonAccessFilters.OpenInvitation, "carla")]
+    [InlineData(PersonAccessFilters.OpenInvitation, "carla", "karl")]
     [InlineData(PersonAccessFilters.WithoutEmail, "emil")]
     public async Task Should_ListOnlyThePersonsInThatAccessState_When_TheRegistryIsFilteredByAccess(
         string access,
@@ -414,6 +414,7 @@ public sealed class GetPersonsTests
         var ids = SeededAccessIdsOf(ctx);
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
         await InvitationSteps.InviteAsync(client, ids["carla"]);
+        await InvitationSteps.InviteAsync(client, ids["karl"]);
 
         var listed = await ListByAccessAsync(client, access);
 
@@ -440,6 +441,7 @@ public sealed class GetPersonsTests
             {
                 var laterClient = await ctx.Identity.BootstrapAdminClientAsync(ct);
                 await InvitationSteps.InviteAsync(laterClient, ids["carla"]);
+                await InvitationSteps.InviteAsync(laterClient, ids["karl"]);
 
                 foreach (var access in AccessStateFilters)
                 {
@@ -455,6 +457,31 @@ public sealed class GetPersonsTests
                 }
             }
         );
+    }
+
+    [Fact]
+    public async Task Should_FileEveryPersonUnderExactlyOneAccessState_When_AVouchedPersonIsInvited()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildEveryAccessStateAsync(ct);
+        var ids = SeededAccessIdsOf(ctx);
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        await InvitationSteps.InviteAsync(client, ids["carla"]);
+        await InvitationSteps.InviteAsync(client, ids["karl"]);
+
+        var everyone = await ListAllAsync(client);
+        var filings = new Dictionary<int, List<string>>();
+        foreach (var access in AccessStateFilters)
+        foreach (var personId in await ListByAccessAsync(client, access))
+        {
+            if (!filings.TryGetValue(personId, out var filed))
+                filings[personId] = filed = [];
+            filed.Add(access);
+        }
+
+        Assert.Equal(everyone.Order(), filings.Keys.Order());
+        Assert.All(filings, filing => Assert.Single(filing.Value));
+        Assert.Equal([PersonAccessFilters.Invited], filings[ids["karl"]]);
     }
 
     [Fact]
@@ -538,6 +565,9 @@ public sealed class GetPersonsTests
                         .AddMembership("ida-membership", "ida", today.AddYears(-1))
                         .AddPerson("jonas", "Jonas", "Muster")
                         .AddAccount("jonas")
+                        .AddPerson("karl", "Karl", "Muster")
+                        .AddPersonContact("karl", InvitationSteps.UniqueContactEmail("karl"))
+                        .AddMembership("karl-membership", "karl", today.AddYears(-1))
                 ),
             ct
         );
@@ -556,6 +586,7 @@ public sealed class GetPersonsTests
             ["hans"] = ctx.Identity.People.IdOf("hans"),
             ["ida"] = ctx.Identity.People.IdOf("ida"),
             ["jonas"] = ctx.Identity.People.IdOf("jonas"),
+            ["karl"] = ctx.Identity.People.IdOf("karl"),
         };
 
     private static async Task<IReadOnlySet<int>> ListByAccessAsync(HttpClient client, string access)
@@ -565,6 +596,18 @@ public sealed class GetPersonsTests
             GetPersonsRequest,
             GetPersonsResponse
         >(new GetPersonsRequest { Access = access });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        return result.Persons.Select(person => person.PersonId).ToHashSet();
+    }
+
+    private static async Task<IReadOnlySet<int>> ListAllAsync(HttpClient client)
+    {
+        var (response, result) = await client.GETAsync<
+            GetPersons,
+            GetPersonsRequest,
+            GetPersonsResponse
+        >(new GetPersonsRequest());
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         return result.Persons.Select(person => person.PersonId).ToHashSet();
