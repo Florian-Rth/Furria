@@ -20,4 +20,7 @@ public sealed record RedemptionDetails
             Outcome = RedemptionOutcome.ConfirmationRequired,
             ConfirmationExpiresAt = expiresAt,
         };
+
+    public static RedemptionDetails ClaimRequired() =>
+        new() { Outcome = RedemptionOutcome.ClaimRequired };
 }

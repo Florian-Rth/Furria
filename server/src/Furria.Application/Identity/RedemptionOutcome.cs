@@ -7,4 +7,6 @@ public enum RedemptionOutcome
     LoginEmailTaken = 3,
     ConfirmationCodeWrong = 4,
     ConfirmationCodeDead = 5,
+    ClaimRequired = 6,
+    ClaimPasswordWrong = 7,
 }

@@ -15,12 +15,15 @@ public sealed class RedeemInvitation : Endpoint<RedeemInvitationRequest, RedeemI
     private const string PasswordField = "password";
     private const string LoginEmailField = "loginEmail";
     private const string ConfirmationCodeField = "confirmationCode";
+    private const string ClaimPasswordField = "claimPassword";
     private const string TakenLoginEmailMessage =
         "Diese E-Mail-Adresse gehört schon zu einem Zugang. Wähle eine andere.";
     private const string WrongConfirmationCodeMessage =
         "Der Code stimmt nicht. Prüf die Mail und versuch es noch einmal.";
     private const string DeadConfirmationCodeMessage =
         "Dieser Code gilt nicht mehr. Lass dir einen neuen schicken.";
+    private const string WrongClaimPasswordMessage =
+        "Das Passwort passt nicht zu diesem Zugang. Nach fünf Fehlversuchen ist er 15 Minuten gesperrt.";
 
     private readonly AccountAccessService _accountAccessService;
     private readonly InvitationTokenRateLimiter _tokenRateLimiter;
@@ -98,6 +101,11 @@ public sealed class RedeemInvitation : Endpoint<RedeemInvitationRequest, RedeemI
                 DeadConfirmationCodeMessage,
                 StatusCodes.Status400BadRequest
             ),
+            RedemptionOutcome.ClaimPasswordWrong => new RedemptionRefusal(
+                ClaimPasswordField,
+                WrongClaimPasswordMessage,
+                StatusCodes.Status400BadRequest
+            ),
             _ => null,
         };
 
@@ -108,17 +116,25 @@ public sealed class RedeemInvitation : Endpoint<RedeemInvitationRequest, RedeemI
             Password = request.Password,
             LoginEmail = request.LoginEmail,
             ConfirmationCode = request.ConfirmationCode,
+            ClaimPassword = request.ClaimPassword,
         };
 
     private static RedeemInvitationResponse ToResponse(RedemptionDetails redemption) =>
         new()
         {
-            Outcome =
-                redemption.Outcome == RedemptionOutcome.Redeemed
-                    ? RedeemInvitationOutcome.Redeemed
-                    : RedeemInvitationOutcome.ConfirmationRequired,
+            Outcome = ToDto(redemption.Outcome),
             Session = redemption.Session is { } session ? ToDto(session) : null,
             ConfirmationExpiresAt = redemption.ConfirmationExpiresAt,
+        };
+
+    [Pure]
+    private static RedeemInvitationOutcome ToDto(RedemptionOutcome outcome) =>
+        outcome switch
+        {
+            RedemptionOutcome.Redeemed => RedeemInvitationOutcome.Redeemed,
+            RedemptionOutcome.ConfirmationRequired => RedeemInvitationOutcome.ConfirmationRequired,
+            RedemptionOutcome.ClaimRequired => RedeemInvitationOutcome.ClaimRequired,
+            _ => throw new ArgumentOutOfRangeException(nameof(outcome), outcome, null),
         };
 
     private static RedeemInvitationSessionDto ToDto(SessionTokensDetails session) =>
@@ -139,11 +155,13 @@ public sealed record RedeemInvitationRequest
 
     public string? Code { get; init; }
 
-    public required string Password { get; init; }
+    public string? Password { get; init; }
 
     public string? LoginEmail { get; init; }
 
     public string? ConfirmationCode { get; init; }
+
+    public string? ClaimPassword { get; init; }
 }
 
 public sealed class RedeemInvitationValidator : Validator<RedeemInvitationRequest>
@@ -175,10 +193,21 @@ public sealed class RedeemInvitationValidator : Validator<RedeemInvitationReques
                     .NotEmpty()
                     .MaximumLength(InvitationTokenLimits.CodeLength)
         );
-        RuleFor(request => request.Password)
-            .NotEmpty()
-            .MinimumLength(MinimumPasswordLength)
-            .MaximumLength(MaximumPasswordLength);
+        When(
+            request => request.ClaimPassword is null || request.Password is not null,
+            () =>
+                RuleFor(request => request.Password)
+                    .NotEmpty()
+                    .MinimumLength(MinimumPasswordLength)
+                    .MaximumLength(MaximumPasswordLength)
+        );
+        When(
+            request => request.ClaimPassword is not null,
+            () =>
+                RuleFor(request => request.ClaimPassword)
+                    .NotEmpty()
+                    .MaximumLength(MaximumPasswordLength)
+        );
         When(
             request => request.LoginEmail is not null,
             () =>
@@ -201,6 +230,7 @@ public enum RedeemInvitationOutcome
 {
     Redeemed = 1,
     ConfirmationRequired = 2,
+    ClaimRequired = 3,
 }
 
 public sealed record RedeemInvitationResponse

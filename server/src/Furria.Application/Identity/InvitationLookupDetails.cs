@@ -11,4 +11,6 @@ public sealed record InvitationLookupDetails
     public required bool ContactEmailTaken { get; init; }
 
     public required InvitationPurpose Purpose { get; init; }
+
+    public required string? ClaimableLoginEmail { get; init; }
 }

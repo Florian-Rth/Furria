@@ -16,6 +16,7 @@ public sealed class LookUpInvitation : Endpoint<LookUpInvitationRequest, LookUpI
         LoginEmail = null,
         ContactEmailTaken = null,
         Purpose = null,
+        ClaimableLoginEmail = null,
     };
 
     private readonly AccountAccessService _accountAccessService;
@@ -62,6 +63,7 @@ public sealed class LookUpInvitation : Endpoint<LookUpInvitationRequest, LookUpI
             LoginEmail = invitation.LoginEmail,
             ContactEmailTaken = invitation.ContactEmailTaken,
             Purpose = invitation.Purpose,
+            ClaimableLoginEmail = invitation.ClaimableLoginEmail,
         };
 }
 
@@ -116,4 +118,6 @@ public sealed record LookUpInvitationResponse
     public required bool? ContactEmailTaken { get; init; }
 
     public required InvitationPurpose? Purpose { get; init; }
+
+    public required string? ClaimableLoginEmail { get; init; }
 }

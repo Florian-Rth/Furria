@@ -38,6 +38,7 @@ public sealed class AccountAccessService
     private readonly MailQueue _mailQueue;
     private readonly EmailConfirmationService _emailConfirmationService;
     private readonly AccessRecoveryService _accessRecoveryService;
+    private readonly AccountClaimService _accountClaimService;
     private readonly ClubAppOptions _clubAppOptions;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<AccountAccessService> _logger;
@@ -49,6 +50,7 @@ public sealed class AccountAccessService
         MailQueue mailQueue,
         EmailConfirmationService emailConfirmationService,
         AccessRecoveryService accessRecoveryService,
+        AccountClaimService accountClaimService,
         IOptions<ClubAppOptions> clubAppOptions,
         TimeProvider timeProvider,
         ILogger<AccountAccessService> logger
@@ -60,6 +62,7 @@ public sealed class AccountAccessService
         _mailQueue = mailQueue;
         _emailConfirmationService = emailConfirmationService;
         _accessRecoveryService = accessRecoveryService;
+        _accountClaimService = accountClaimService;
         _clubAppOptions = clubAppOptions.Value;
         _timeProvider = timeProvider;
         _logger = logger;
@@ -220,6 +223,12 @@ public sealed class AccountAccessService
             NormalizedEmailOf(redeemable.ContactEmail),
             ct
         );
+        var contactEmailClaimable =
+            contactEmailTaken
+            && await _accountClaimService.IsClaimableAsync(
+                NormalizedEmailOf(redeemable.ContactEmail),
+                ct
+            );
 
         return new InvitationLookupDetails
         {
@@ -227,6 +236,7 @@ public sealed class AccountAccessService
             LoginEmail = contactEmailTaken ? null : redeemable.ContactEmail,
             ContactEmailTaken = contactEmailTaken,
             Purpose = InvitationPurpose.Onboarding,
+            ClaimableLoginEmail = contactEmailClaimable ? redeemable.ContactEmail : null,
         };
     }
 
@@ -246,11 +256,21 @@ public sealed class AccountAccessService
         var loginEmail = command.LoginEmail?.Trim() ?? redeemable.ContactEmail;
         var normalizedLoginEmail = NormalizedEmailOf(loginEmail);
         if (await IsLoginEmailTakenAsync(normalizedLoginEmail, ct))
-            return Result<RedemptionDetails>.Success(
-                RedemptionDetails.Refused(RedemptionOutcome.LoginEmailTaken)
+            return await _accountClaimService.ClaimOrRefuseAsync(
+                new AccountClaim
+                {
+                    InvitationId = redeemable.InvitationId,
+                    KeeperPersonId = redeemable.PersonId,
+                    NormalizedLoginEmail = normalizedLoginEmail,
+                    ClaimPassword = command.ClaimPassword,
+                },
+                ct
             );
 
-        var chosen = new ChosenLogin(loginEmail, normalizedLoginEmail, command.Password);
+        if (command.Password is not { } password)
+            return Result<RedemptionDetails>.Validation(PasswordRuleMessage);
+
+        var chosen = new ChosenLogin(loginEmail, normalizedLoginEmail, password);
         if (IsContactEmail(redeemable, normalizedLoginEmail))
             return await CreateAccountAsync(redeemable, chosen, confirmation: null, now, ct);
 

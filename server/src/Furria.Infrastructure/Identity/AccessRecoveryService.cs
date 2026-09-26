@@ -61,6 +61,7 @@ public sealed class AccessRecoveryService
                 LoginEmail = recoverable.LoginEmail,
                 ContactEmailTaken = false,
                 Purpose = InvitationPurpose.Recovery,
+                ClaimableLoginEmail = null,
             };
     }
 
@@ -97,8 +98,11 @@ public sealed class AccessRecoveryService
         if (recoverable is null)
             return Result<RedemptionDetails>.Conflict(DeadRecoveryMessage);
 
+        if (command.Password is not { } password)
+            return Result<RedemptionDetails>.Validation(PasswordRuleMessage);
+
         var loginEmail = command.LoginEmail?.Trim() ?? recoverable.LoginEmail;
-        var chosen = new ChosenLogin(loginEmail, NormalizedEmailOf(loginEmail), command.Password);
+        var chosen = new ChosenLogin(loginEmail, NormalizedEmailOf(loginEmail), password);
         var keepsLoginEmail = string.Equals(
             chosen.NormalizedEmail,
             recoverable.NormalizedLoginEmail,
