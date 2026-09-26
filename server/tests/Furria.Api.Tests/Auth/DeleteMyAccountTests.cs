@@ -97,7 +97,8 @@ public sealed class DeleteMyAccountTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await ArrangeAnnaAsync(ct);
         var annaId = ctx.Identity.People.IdOf("anna");
-        await _fixture.IssueRecoveryInvitationDirectlyAsync(annaId, ct);
+        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        await InvitationSteps.IssueRecoveryAsync(manager, annaId);
         var client = await ctx.Identity.ClientForAsync("anna", ct);
 
         await AccountSecuritySteps.DeleteAccountAsync(client, ApiTestFixture.SeededAccountPassword);

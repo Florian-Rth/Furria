@@ -367,6 +367,46 @@ public sealed class RequestAccessTests
     }
 
     [Fact]
+    public async Task Should_SendNothingToAnyoneOfTheInbox_When_ASharedAddressIsRequestedAgainWithinFiveMinutes()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var sharedEmail = InvitationSteps.UniqueContactEmail("familie");
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddEligiblePerson("anna", "Anna", sharedEmail, _fixture.Today)
+                        .AddEligiblePerson("ben", "Ben", sharedEmail, _fixture.Today)
+                        .AddAccount("sentinel")
+                ),
+            ct
+        );
+        await SignedOutMailSteps.RequestAccessAsync(_fixture.CreateClient(), sharedEmail);
+        await _fixture.Mailbox.SingleMailToAsync(sharedEmail, ct);
+
+        await _fixture.AtLaterTimeAsync(
+            AccessRequestService.MailInterval - TimeSpan.FromSeconds(1),
+            async () =>
+            {
+                await SignedOutMailSteps.RequestAccessAsync(_fixture.CreateClient(), sharedEmail);
+                await SignedOutMailSteps.SettleAsync(
+                    _fixture,
+                    ctx.Identity.EmailOf("sentinel"),
+                    ct
+                );
+            }
+        );
+
+        Assert.Single(await SignedOutMailSteps.MailsAlreadyInAsync(_fixture, sharedEmail, ct));
+        await ctx
+            .Expected.InvitationsOfPerson(ctx.Identity.People.IdOf("anna"))
+            .ToHaveCount(1)
+            .InvitationsOfPerson(ctx.Identity.People.IdOf("ben"))
+            .ToHaveCount(1)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_MailAgain_When_FiveMinutesHavePassed()
     {
         var ct = TestContext.Current.CancellationToken;

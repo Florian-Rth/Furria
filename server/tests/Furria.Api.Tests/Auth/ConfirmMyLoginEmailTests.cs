@@ -14,6 +14,7 @@ public sealed class ConfirmMyLoginEmailTests
     private const string CodeField = "code";
     private const string LoginEmailField = "loginEmail";
     private const string LoginEmailChangedLead = "Diese Adresse gilt dafür nicht mehr.";
+    private const int NewerCodeRequestLimit = 3;
 
     private readonly ApiTestFixture _fixture;
 
@@ -265,12 +266,15 @@ public sealed class ConfirmMyLoginEmailTests
             InvitationSteps.UniqueContactEmail("anna-erst"),
             ct
         );
-        await AccountSecuritySteps.RequestLoginEmailCodeAsync(
-            _fixture,
-            client,
-            InvitationSteps.UniqueContactEmail("anna-dann"),
-            ct
-        );
+        var newer = earlier;
+        for (var request = 0; request < NewerCodeRequestLimit && newer == earlier; request++)
+            newer = await AccountSecuritySteps.RequestLoginEmailCodeAsync(
+                _fixture,
+                client,
+                InvitationSteps.UniqueContactEmail("anna-dann"),
+                ct
+            );
+        Assert.NotEqual(earlier, newer);
 
         var response = await AccountSecuritySteps.ConfirmLoginEmailAsync(client, earlier);
 

@@ -535,32 +535,6 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         await _resetService.ResetAsync(ct);
     }
 
-    public async Task IssueRecoveryInvitationDirectlyAsync(
-        int personId,
-        CancellationToken ct = default
-    )
-    {
-        await using var scope = Services.CreateAsyncScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var now = TimeProvider.GetUtcNow();
-        OpaqueTokenSecret.Generate(out var tokenHash);
-        InvitationCode.Generate(out var codeHash);
-
-        db.Invitations.Add(
-            new Invitation
-            {
-                PersonId = personId,
-                Purpose = InvitationPurpose.Recovery,
-                Channel = InvitationChannel.InPerson,
-                TokenHash = tokenHash,
-                CodeHash = codeHash,
-                IssuedAt = now,
-                ExpiresAt = now + Invitation.InPersonLifetime,
-            }
-        );
-        await db.SaveChangesAsync(ct);
-    }
-
     public override async ValueTask DisposeAsync()
     {
         await base.DisposeAsync();
