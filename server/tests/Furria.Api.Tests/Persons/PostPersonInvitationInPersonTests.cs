@@ -209,21 +209,90 @@ public sealed class PostPersonInvitationInPersonTests
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_HerBirthDateIsUnknown()
+    public async Task Should_ReturnConflict_When_HerBirthDateIsUnknownAndTheCallerCannotVouch()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
             builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("anna", "Anna", "Muster")
-                        .AddPersonContact("anna", InvitationSteps.UniqueContactEmail("anna"))
-                        .AddMembership("anna-membership", "anna", _fixture.Today.AddYears(-1))
-                ),
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddPerson("anna", "Anna", "Muster")
+                            .AddPersonContact("anna", InvitationSteps.UniqueContactEmail("anna"))
+                            .AddMembership("anna-membership", "anna", _fixture.Today.AddYears(-1))
+                            .AddPerson("ilka", "Ilka", "Reineke")
+                            .AddAccount("ilka")
+                    )
+                    .Roles(roles =>
+                        roles.AddRoleWithHolder(
+                            "personenpflege",
+                            "ilka-personenpflege",
+                            "Personenpflege",
+                            "ilka",
+                            FurriaPermissions.PersonsManage
+                        )
+                    ),
             ct
         );
+        var annaId = ctx.Identity.People.IdOf("anna");
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
 
-        await AssertRefusedAsync(ctx, "anna", "Für Anna ist kein Geburtsdatum hinterlegt.", ct);
+        var (response, _) = await PostAsync(client, annaId);
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        var payload = await response.Content.ReadFromJsonAsync<ErrorResponse>(ct);
+        Assert.Equal(
+            ["Für Anna ist kein Geburtsdatum hinterlegt."],
+            payload?.Errors[ConflictField]
+        );
+        await ctx.Expected.InvitationsOfPerson(annaId).ToHaveCount(0).AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ShowTheCodeAndRecordTheVoucher_When_ACallerHoldingAccountsManageVouchesForHerAge()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddPerson("anna", "Anna", "Muster")
+                            .AddPersonContact("anna", InvitationSteps.UniqueContactEmail("anna"))
+                            .AddMembership("anna-membership", "anna", _fixture.Today.AddYears(-1))
+                            .AddPerson("vera", "Vera", "Vorstand")
+                            .AddAccount("vera")
+                    )
+                    .Roles(roles =>
+                        roles.AddRoleWithHolder(
+                            "zugangspflege",
+                            "vera-zugangspflege",
+                            "Zugangspflege",
+                            "vera",
+                            FurriaPermissions.PersonsManage,
+                            FurriaPermissions.AccountsManage
+                        )
+                    ),
+            ct
+        );
+        var annaId = ctx.Identity.People.IdOf("anna");
+        var veraId = ctx.Identity.People.IdOf("vera");
+        var voucher = await ctx.Identity.ClientForAsync("vera", ct);
+
+        var issued = await InvitationSteps.InviteInPersonAsync(voucher, annaId);
+
+        var (_, lookup) = await InvitationSteps.LookUpByCodeAsync(
+            _fixture.CreateClient(),
+            issued.Code
+        );
+        Assert.Equal(InvitationLookupStatus.Live, lookup.Status);
+        Assert.Equal(InvitationPurpose.Onboarding, lookup.Purpose);
+        await ctx
+            .Expected.LiveInvitationOfPerson(annaId)
+            .ToBeIssuedAs(InvitationChannel.InPerson, false, veraId)
+            .AccountEventsOfPerson(annaId)
+            .ToHaveLatestActor(veraId)
+            .AssertAsync(ct);
     }
 
     [Fact]

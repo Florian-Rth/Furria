@@ -157,7 +157,7 @@ public sealed class GetPersonAccessStateTests
     }
 
     [Fact]
-    public async Task Should_AnswerWithTheStateAlone_When_ThePayloadIsReadRaw()
+    public async Task Should_AnswerWithTheStateAndTheOpenRecoveryAlone_When_ThePayloadIsReadRaw()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -178,7 +178,10 @@ public sealed class GetPersonAccessStateTests
 
         var (response, _) = await ReadStateAsync(manager, annaId);
 
-        Assert.Equal("""{"state":"invited"}""", await response.Content.ReadAsStringAsync(ct));
+        Assert.Equal(
+            """{"state":"invited","isRecoveryOpen":false}""",
+            await response.Content.ReadAsStringAsync(ct)
+        );
     }
 
     [Fact]
@@ -227,6 +230,30 @@ public sealed class GetPersonAccessStateTests
         var (response, _) = await ReadStateAsync(manager, UnknownPersonId);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_ReportTheOpenRecovery_When_TheRecoveryScreenPolls()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => identity.AddAccount("anna")),
+            ct
+        );
+        var annaId = ctx.Identity.People.IdOf("anna");
+        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var (_, before) = await ReadStateAsync(manager, annaId);
+
+        var issued = await InvitationSteps.IssueRecoveryAsync(manager, annaId);
+        var (_, open) = await ReadStateAsync(manager, annaId);
+        await InvitationSteps.RedeemByCodeAsync(_fixture.CreateClient(), issued.Code);
+        var (_, recovered) = await ReadStateAsync(manager, annaId);
+
+        Assert.False(before.IsRecoveryOpen);
+        Assert.True(open.IsRecoveryOpen);
+        Assert.Equal(AccountAccessState.Active, open.State);
+        Assert.False(recovered.IsRecoveryOpen);
+        Assert.Equal(AccountAccessState.Active, recovered.State);
     }
 
     private static Task<TestResult<GetPersonAccessStateResponse>> ReadStateAsync(

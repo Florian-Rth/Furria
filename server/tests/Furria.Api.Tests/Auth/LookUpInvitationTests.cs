@@ -1,6 +1,7 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Auth;
+using Furria.Core.Identity;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -11,7 +12,7 @@ namespace Furria.Api.Tests.Auth;
 public sealed class LookUpInvitationTests
 {
     private const string DeadBody =
-        """{"status":"dead","firstName":null,"loginEmail":null,"contactEmailTaken":null}""";
+        """{"status":"dead","firstName":null,"loginEmail":null,"contactEmailTaken":null,"purpose":null}""";
 
     private readonly ApiTestFixture _fixture;
 
@@ -406,6 +407,82 @@ public sealed class LookUpInvitationTests
             );
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_PrefillHerCurrentLoginEmail_When_TheInvitationIsARecovery()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity.AddPerson("anna", "Anna", "Muster").AddAccount("anna")
+                ),
+            ct
+        );
+        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var issued = await InvitationSteps.IssueRecoveryAsync(
+            manager,
+            ctx.Identity.People.IdOf("anna")
+        );
+        var anonymous = _fixture.CreateClient();
+
+        var (_, byCode) = await InvitationSteps.LookUpByCodeAsync(anonymous, issued.Code);
+        var (_, byLink) = await InvitationSteps.LookUpAsync(
+            anonymous,
+            InvitationSteps.TokenOf(issued.Link)
+        );
+
+        Assert.Equal(InvitationLookupStatus.Live, byCode.Status);
+        Assert.Equal(InvitationPurpose.Recovery, byCode.Purpose);
+        Assert.Equal("Anna", byCode.FirstName);
+        Assert.Equal(ctx.Identity.EmailOf("anna"), byCode.LoginEmail);
+        Assert.False(byCode.ContactEmailTaken);
+        Assert.Equal(byCode, byLink);
+    }
+
+    [Fact]
+    public async Task Should_NameTheOnboardingPurpose_When_TheInvitationIsAFirstInvitation()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var annaEmail = InvitationSteps.UniqueContactEmail("anna");
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity.AddEligiblePerson("anna", "Anna", annaEmail, _fixture.Today)
+                ),
+            ct
+        );
+        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var issued = await InvitationSteps.InviteInPersonAsync(
+            manager,
+            ctx.Identity.People.IdOf("anna")
+        );
+
+        var (_, lookup) = await InvitationSteps.LookUpByCodeAsync(
+            _fixture.CreateClient(),
+            issued.Code
+        );
+
+        Assert.Equal(InvitationPurpose.Onboarding, lookup.Purpose);
+    }
+
+    [Fact]
+    public async Task Should_RevealNothingButDead_When_ARecoveryWasReplaced()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => identity.AddAccount("anna")),
+            ct
+        );
+        var annaId = ctx.Identity.People.IdOf("anna");
+        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var replaced = await InvitationSteps.IssueRecoveryAsync(manager, annaId);
+        await InvitationSteps.IssueRecoveryAsync(manager, annaId);
+
+        var body = await LookUpRawByCodeAsync(replaced.Code, ct);
+
+        Assert.Equal(DeadBody, body);
     }
 
     private async Task<string> LookUpRawByCodeAsync(string code, CancellationToken ct)

@@ -627,4 +627,55 @@ public sealed class GetPersonByIdTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Null(result.ContactChange);
     }
+
+    [Fact]
+    public async Task Should_LetTheViewerManageTheAccount_When_SheHoldsAccountsManage()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => identity.AddPerson("anna", "Anna", "Muster")),
+            ct
+        );
+
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("anna"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(result.Access.Rights.CanInvite);
+        Assert.True(result.Access.Rights.CanManageAccount);
+        Assert.Equal(ClubRecord.DefaultAgeOfConsent, result.Access.AgeOfConsent);
+    }
+
+    [Fact]
+    public async Task Should_LetTheViewerOnlyInvite_When_SheHoldsOnlyPersonsManage()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddPerson("anna", "Anna", "Muster")
+                            .AddPerson("ilka", "Ilka", "Reineke")
+                            .AddAccount("ilka")
+                    )
+                    .Roles(roles =>
+                        roles.AddRoleWithHolder(
+                            "personenpflege",
+                            "ilka-personenpflege",
+                            "Personenpflege",
+                            "ilka",
+                            FurriaPermissions.PersonsManage
+                        )
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("anna"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(result.Access.Rights.CanInvite);
+        Assert.False(result.Access.Rights.CanManageAccount);
+    }
 }

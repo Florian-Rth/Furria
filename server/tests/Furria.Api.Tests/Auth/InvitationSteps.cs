@@ -182,4 +182,28 @@ internal static class InvitationSteps
             .TrimEnd('=')
             .Replace('+', '-')
             .Replace('/', '_');
+
+    public static async Task<PostPersonAccessRecoveryResponse> IssueRecoveryAsync(
+        HttpClient manager,
+        int personId
+    )
+    {
+        var (response, result) = await manager.POSTAsync<
+            PostPersonAccessRecovery,
+            PostPersonAccessRecoveryRequest,
+            PostPersonAccessRecoveryResponse
+        >(new PostPersonAccessRecoveryRequest { PersonId = personId });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        return result;
+    }
+
+    public static Task<HttpResponseMessage> SetAccountDisabledAsync(
+        HttpClient manager,
+        int personId,
+        bool isDisabled
+    ) =>
+        manager.PUTAsync<PutPersonAccountDisabled, PutPersonAccountDisabledRequest>(
+            new PutPersonAccountDisabledRequest { PersonId = personId, IsDisabled = isDisabled }
+        );
 }

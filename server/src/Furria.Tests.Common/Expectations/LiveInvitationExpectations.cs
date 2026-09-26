@@ -60,4 +60,24 @@ public sealed class LiveInvitationExpectations
                 Assert.Null(invitation.IssuedByPersonId);
             }
         );
+
+    public Expected ToBeRecoveryIssuedBy(int issuedByPersonId) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var invitation = await dbContext
+                    .Invitations.AsNoTracking()
+                    .SingleAsync(
+                        row =>
+                            row.PersonId == _personId
+                            && row.RedeemedAt == null
+                            && row.VoidedAt == null,
+                        ct
+                    );
+
+                Assert.Equal(InvitationPurpose.Recovery, invitation.Purpose);
+                Assert.Equal(InvitationChannel.InPerson, invitation.Channel);
+                Assert.Equal(issuedByPersonId, invitation.IssuedByPersonId);
+            }
+        );
 }

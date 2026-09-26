@@ -122,6 +122,16 @@ public sealed class GetManageHubTests
     }
 
     [Fact]
+    public async Task Should_OpenTheHub_When_TheCallerOnlyHoldsAccountsManage()
+    {
+        var (response, result) = await AskAsHolderOfAsync(FurriaPermissions.AccountsManage);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Null(result.Persons);
+        Assert.Null(result.Accounts);
+    }
+
+    [Fact]
     public async Task Should_ShowTheBoardPanelOnly_When_TheCallerOnlyHoldsBoardManage()
     {
         var (response, result) = await AskAsHolderOfAsync(FurriaPermissions.BoardManage);

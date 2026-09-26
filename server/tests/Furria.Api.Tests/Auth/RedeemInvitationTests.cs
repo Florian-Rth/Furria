@@ -2,6 +2,8 @@ using System.Net;
 using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Auth;
+using Furria.Application.Identity;
+using Furria.Core.Identity;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -722,6 +724,234 @@ public sealed class RedeemInvitationTests
             );
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_SetTheNewPasswordEndHerSessionsAndSignHerIn_When_SheRedeemsARecovery()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (ctx, annaId, code) = await ArrangeRecoveryAsync(ct);
+        var loginEmail = ctx.Identity.EmailOf("anna");
+        var accountId = ctx.Identity.Accounts.IdOf("anna");
+        var earlier = await ctx.Identity.LogInAsync(
+            loginEmail,
+            ApiTestFixture.SeededAccountPassword,
+            ct
+        );
+
+        var (response, redemption) = await InvitationSteps.RedeemByCodeAsync(
+            _fixture.CreateClient(),
+            code
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var signedIn = InvitationSteps.SignedInClient(_fixture, redemption);
+        var (meResponse, me) = await signedIn.GETAsync<GetMe, GetMeResponse>();
+        Assert.Equal(HttpStatusCode.OK, meResponse.StatusCode);
+        Assert.Equal(annaId, me.Person.Id);
+        var (refreshResponse, _) = await _fixture
+            .CreateClient()
+            .POSTAsync<Refresh, RefreshRequest, RefreshResponse>(
+                new RefreshRequest { RefreshToken = earlier.RefreshToken }
+            );
+        Assert.Equal(HttpStatusCode.Unauthorized, refreshResponse.StatusCode);
+        Assert.Equal(
+            HttpStatusCode.Unauthorized,
+            await LogInStatusAsync(loginEmail, ApiTestFixture.SeededAccountPassword)
+        );
+        Assert.Equal(
+            HttpStatusCode.OK,
+            await LogInStatusAsync(loginEmail, InvitationSteps.ValidPassword)
+        );
+        await ctx
+            .Expected.AccountOfPerson(annaId)
+            .ToHaveLoginEmail(loginEmail)
+            .AccountEventsOfPerson(annaId)
+            .ToHaveKindsInOrder(AccountEventKind.Invited, AccountEventKind.Recovered)
+            .InvitationsOfPerson(annaId)
+            .ToHaveRedeemedCount(1)
+            .RefreshTokensOf(accountId)
+            .ToHaveRevocationCount(RefreshTokenRevocationReason.AllSessionsEnded, 1)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_TellHerLoginEmail_When_HerAccessIsRecovered()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (ctx, _, code) = await ArrangeRecoveryAsync(ct);
+
+        await InvitationSteps.RedeemByCodeAsync(_fixture.CreateClient(), code);
+
+        var notice = await _fixture.Mailbox.SingleMailToAsync(ctx.Identity.EmailOf("anna"), ct);
+        Assert.Equal("Dein Zugang zur Vereins-App wurde geändert", notice.Subject);
+        Assert.Contains(
+            "vor Ort im Verein wiederhergestellt",
+            notice.Text,
+            StringComparison.Ordinal
+        );
+    }
+
+    [Fact]
+    public async Task Should_ConfirmTheNewLoginEmailByCodeAndTellThePreviousOne_When_ARecoveryChangesIt()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (ctx, annaId, code) = await ArrangeRecoveryAsync(ct);
+        var previousEmail = ctx.Identity.EmailOf("anna");
+        var chosenEmail = InvitationSteps.UniqueContactEmail("anna-neu");
+        var (firstResponse, first) = await InvitationSteps.RedeemByCodeAsync(
+            _fixture.CreateClient(),
+            code,
+            loginEmail: chosenEmail
+        );
+        Assert.Equal(HttpStatusCode.OK, firstResponse.StatusCode);
+        Assert.Equal(RedeemInvitationOutcome.ConfirmationRequired, first.Outcome);
+        var confirmationCode = (
+            await _fixture.Mailbox.SingleMailToAsync(chosenEmail, ct)
+        ).ConfirmationCode();
+
+        var (response, redemption) = await InvitationSteps.RedeemByCodeAsync(
+            _fixture.CreateClient(),
+            code,
+            loginEmail: chosenEmail,
+            confirmationCode: confirmationCode
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(RedeemInvitationOutcome.Redeemed, redemption.Outcome);
+        Assert.Equal(
+            HttpStatusCode.OK,
+            await LogInStatusAsync(chosenEmail, InvitationSteps.ValidPassword)
+        );
+        var notice = await _fixture.Mailbox.SingleMailToAsync(previousEmail, ct);
+        Assert.Contains(
+            "vor Ort im Verein wiederhergestellt",
+            notice.Text,
+            StringComparison.Ordinal
+        );
+        await ctx
+            .Expected.AccountOfPerson(annaId)
+            .ToHaveLoginEmail(chosenEmail)
+            .AccountEventsOfPerson(annaId)
+            .ToHaveKindsInOrder(
+                AccountEventKind.Invited,
+                AccountEventKind.Recovered,
+                AccountEventKind.LoginEmailChanged
+            )
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_KeepHerLogin_When_ARecoveryIsConfirmedWithAWrongCode()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (ctx, annaId, code) = await ArrangeRecoveryAsync(ct);
+        var previousEmail = ctx.Identity.EmailOf("anna");
+        var chosenEmail = InvitationSteps.UniqueContactEmail("anna-neu");
+        await InvitationSteps.RedeemByCodeAsync(
+            _fixture.CreateClient(),
+            code,
+            loginEmail: chosenEmail
+        );
+        var confirmationCode = (
+            await _fixture.Mailbox.SingleMailToAsync(chosenEmail, ct)
+        ).ConfirmationCode();
+
+        var (response, _) = await InvitationSteps.RedeemByCodeAsync(
+            _fixture.CreateClient(),
+            code,
+            loginEmail: chosenEmail,
+            confirmationCode: InvitationSteps.WrongConfirmationCode(confirmationCode)
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await AssertRefusedOnAsync(response, ConfirmationCodeField, ct);
+        await ctx
+            .Expected.AccountOfPerson(annaId)
+            .ToHaveLoginEmail(previousEmail)
+            .InvitationsOfPerson(annaId)
+            .ToHaveLiveCount(1)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseAsTaken_When_ARecoveryChoosesAnotherAccountsLogin()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddPerson("anna", "Anna", "Muster")
+                        .AddAccount("anna")
+                        .AddAccount("bea")
+                ),
+            ct
+        );
+        var annaId = ctx.Identity.People.IdOf("anna");
+        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var issued = await InvitationSteps.IssueRecoveryAsync(manager, annaId);
+
+        var (response, _) = await InvitationSteps.RedeemByCodeAsync(
+            _fixture.CreateClient(),
+            issued.Code,
+            loginEmail: ctx.Identity.EmailOf("bea")
+        );
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        await AssertRefusedOnAsync(response, LoginEmailField, ct);
+        await ctx
+            .Expected.AccountOfPerson(annaId)
+            .ToHaveLoginEmail(ctx.Identity.EmailOf("anna"))
+            .InvitationsOfPerson(annaId)
+            .ToHaveLiveCount(1)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseTheRecovery_When_HerAccountWasDisabledMeanwhile()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (ctx, annaId, code) = await ArrangeRecoveryAsync(ct);
+        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        await InvitationSteps.SetAccountDisabledAsync(manager, annaId, isDisabled: true);
+
+        var (response, _) = await InvitationSteps.RedeemByCodeAsync(_fixture.CreateClient(), code);
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        await ctx
+            .Expected.AccountEventsOfPerson(annaId)
+            .ToHaveKindsInOrder(AccountEventKind.Invited, AccountEventKind.Disabled)
+            .AssertAsync(ct);
+    }
+
+    private async Task<(SeededContext Ctx, int AnnaId, string Code)> ArrangeRecoveryAsync(
+        CancellationToken ct
+    )
+    {
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity.AddPerson("anna", "Anna", "Muster").AddAccount("anna")
+                ),
+            ct
+        );
+        var annaId = ctx.Identity.People.IdOf("anna");
+        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var issued = await InvitationSteps.IssueRecoveryAsync(manager, annaId);
+
+        return (ctx, annaId, issued.Code);
+    }
+
+    private async Task<HttpStatusCode> LogInStatusAsync(string email, string password)
+    {
+        var (response, _) = await _fixture
+            .CreateClient()
+            .POSTAsync<Login, LoginRequest, LoginResponse>(
+                new LoginRequest { Email = email, Password = password }
+            );
+
+        return response.StatusCode;
     }
 
     private async Task<(SeededContext Ctx, int AnnaId, string Token)> ArrangeMailInvitationAsync(
