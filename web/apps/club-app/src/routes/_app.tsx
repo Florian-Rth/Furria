@@ -13,8 +13,8 @@ import { LOGIN_PATH } from '@/lib/return-to';
 
 const AppLayout: FC = () => {
   const location = useLocation();
-  const { status, expired } = useSessionSnapshot();
-  const loginSearch = buildLoginSearch(location.href, expired);
+  const { status, expired, farewell } = useSessionSnapshot();
+  const loginSearch = buildLoginSearch(location.href, expired, farewell);
 
   if (status === 'anonymous') {
     return <Navigate to={LOGIN_PATH} search={loginSearch} replace />;
@@ -30,12 +30,12 @@ const AppLayout: FC = () => {
 export const Route = createFileRoute('/_app')({
   validateSearch: AppSearchSchema,
   beforeLoad: ({ location }) => {
-    const { status, expired } = getSessionSnapshot();
+    const { status, expired, farewell } = getSessionSnapshot();
 
     if (status === 'anonymous') {
       throw redirect({
         to: LOGIN_PATH,
-        search: buildLoginSearch(location.href, expired),
+        search: buildLoginSearch(location.href, expired, farewell),
         replace: true,
       });
     }

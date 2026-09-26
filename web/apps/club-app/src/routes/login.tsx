@@ -6,7 +6,7 @@ import { getSessionSnapshot } from '@/lib/api/session/session-store';
 import { sanitizeReturnTo } from '@/lib/return-to';
 
 const LoginComponent: FC = () => {
-  const { returnTo, expired } = Route.useSearch();
+  const { returnTo, expired, farewell } = Route.useSearch();
   const isRedirecting = useAuthenticatedRedirect(sanitizeReturnTo(returnTo));
   const isExpired = expired === EXPIRED_FLAG;
 
@@ -14,7 +14,7 @@ const LoginComponent: FC = () => {
     return null;
   }
 
-  return <LoginScreen expired={isExpired} />;
+  return <LoginScreen expired={isExpired} farewell={farewell ?? null} />;
 };
 
 export const Route = createFileRoute('/login')({

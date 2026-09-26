@@ -8,12 +8,12 @@ import { PROFILE_SECTION_TITLES } from '../profile-labels';
 import { ProfileContactPanel } from './ProfileContactPanel';
 import { ProfileGroupsPanel } from './ProfileGroupsPanel';
 import { ProfileMembershipPanel } from './ProfileMembershipPanel';
+import { ProfileSecurityPanel } from './ProfileSecurityPanel';
 import { ProfileVisibilityPanel } from './ProfileVisibilityPanel';
 import { ProfileVisibilityPreview } from './ProfileVisibilityPreview';
 
 const EMPTY_VALUE = 'Nicht hinterlegt';
 const BIRTH_DATE_LABEL = 'Geburtsdatum';
-const SIGN_IN_LABEL = 'Anmeldung';
 
 interface ProfilePanelsProps {
   me: Me;
@@ -38,9 +38,9 @@ export const ProfilePanels: FC<ProfilePanelsProps> = ({ me }) => {
           <KkPanelSection title={PROFILE_SECTION_TITLES.data}>
             <KkPanel>
               <KkFieldRow label={BIRTH_DATE_LABEL} value={birthDate} />
-              <KkFieldRow label={SIGN_IN_LABEL} value={me.email} />
             </KkPanel>
           </KkPanelSection>
+          <ProfileSecurityPanel loginEmail={me.email} />
           <ProfileMembershipPanel membership={me.membership} />
           <ProfileGroupsPanel />
         </KkPanelStack>

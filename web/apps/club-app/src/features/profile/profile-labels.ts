@@ -47,6 +47,7 @@ export const PROFILE_SECTION_TITLES = {
   groups: 'Deine Gruppen',
   visibility: 'Sichtbarkeit',
   preview: 'Was andere von dir sehen',
+  signIn: 'Anmeldung',
 } as const;
 
 export const toPreviewContact = (person: MePerson, visible: boolean): MemberContact => {

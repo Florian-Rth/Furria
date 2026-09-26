@@ -22,6 +22,7 @@ import { Route as AppAnnouncementsRouteImport } from './routes/_app/announcement
 import { Route as AppAffiliatedRouteImport } from './routes/_app/_affiliated'
 import { Route as AppSplatRouteImport } from './routes/_app/$'
 import { Route as AppManageIndexRouteImport } from './routes/_app/manage.index'
+import { Route as AppProfileSecurityRouteImport } from './routes/_app/profile_.security'
 import { Route as AppManageVenuesRouteImport } from './routes/_app/manage.venues'
 import { Route as AppManageSessionsRouteImport } from './routes/_app/manage.sessions'
 import { Route as AppManageRolesRouteImport } from './routes/_app/manage.roles'
@@ -37,6 +38,8 @@ import { Route as AppAnnouncementsNewRouteImport } from './routes/_app/announcem
 import { Route as AppAnnouncementsAnnouncementIdRouteImport } from './routes/_app/announcements_.$announcementId'
 import { Route as AppAffiliatedMembersRouteImport } from './routes/_app/_affiliated.members'
 import { Route as AppAffiliatedGroupsRouteImport } from './routes/_app/_affiliated.groups'
+import { Route as AppProfileSecurityPasswordRouteImport } from './routes/_app/profile_.security_.password'
+import { Route as AppProfileSecurityLoginEmailRouteImport } from './routes/_app/profile_.security_.login-email'
 import { Route as AppProfileContactEditRouteImport } from './routes/_app/profile_.contact.edit'
 import { Route as AppManageVenuesNewRouteImport } from './routes/_app/manage.venues_.new'
 import { Route as AppManageVenuesVenueIdRouteImport } from './routes/_app/manage.venues_.$venueId'
@@ -146,6 +149,11 @@ const AppManageIndexRoute = AppManageIndexRouteImport.update({
   path: '/manage/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppProfileSecurityRoute = AppProfileSecurityRouteImport.update({
+  id: '/profile_/security',
+  path: '/profile/security',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppManageVenuesRoute = AppManageVenuesRouteImport.update({
   id: '/manage/venues',
   path: '/manage/venues',
@@ -223,6 +231,18 @@ const AppAffiliatedGroupsRoute = AppAffiliatedGroupsRouteImport.update({
   path: '/groups',
   getParentRoute: () => AppAffiliatedRoute,
 } as any)
+const AppProfileSecurityPasswordRoute =
+  AppProfileSecurityPasswordRouteImport.update({
+    id: '/profile_/security_/password',
+    path: '/profile/security/password',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppProfileSecurityLoginEmailRoute =
+  AppProfileSecurityLoginEmailRouteImport.update({
+    id: '/profile_/security_/login-email',
+    path: '/profile/security/login-email',
+    getParentRoute: () => AppRoute,
+  } as any)
 const AppProfileContactEditRoute = AppProfileContactEditRouteImport.update({
   id: '/profile_/contact/edit',
   path: '/profile/contact/edit',
@@ -510,6 +530,7 @@ export interface FileRoutesByFullPath {
   '/manage/roles': typeof AppManageRolesRoute
   '/manage/sessions': typeof AppManageSessionsRoute
   '/manage/venues': typeof AppManageVenuesRoute
+  '/profile/security': typeof AppProfileSecurityRoute
   '/manage/': typeof AppManageIndexRoute
   '/members/$personId': typeof AppAffiliatedMembersPersonIdRoute
   '/groups/$groupId/administration': typeof AppGroupsGroupIdAdministrationRoute
@@ -527,6 +548,8 @@ export interface FileRoutesByFullPath {
   '/manage/venues/$venueId': typeof AppManageVenuesVenueIdRoute
   '/manage/venues/new': typeof AppManageVenuesNewRoute
   '/profile/contact/edit': typeof AppProfileContactEditRoute
+  '/profile/security/login-email': typeof AppProfileSecurityLoginEmailRoute
+  '/profile/security/password': typeof AppProfileSecurityPasswordRoute
   '/groups/$groupId/admins/$adminId': typeof AppGroupsGroupIdAdminsAdminIdRoute
   '/groups/$groupId/admins/new': typeof AppGroupsGroupIdAdminsNewRoute
   '/groups/$groupId/memberships/$membershipId': typeof AppGroupsGroupIdMembershipsMembershipIdRoute
@@ -583,6 +606,7 @@ export interface FileRoutesByTo {
   '/manage/roles': typeof AppManageRolesRoute
   '/manage/sessions': typeof AppManageSessionsRoute
   '/manage/venues': typeof AppManageVenuesRoute
+  '/profile/security': typeof AppProfileSecurityRoute
   '/manage': typeof AppManageIndexRoute
   '/members/$personId': typeof AppAffiliatedMembersPersonIdRoute
   '/groups/$groupId/administration': typeof AppGroupsGroupIdAdministrationRoute
@@ -600,6 +624,8 @@ export interface FileRoutesByTo {
   '/manage/venues/$venueId': typeof AppManageVenuesVenueIdRoute
   '/manage/venues/new': typeof AppManageVenuesNewRoute
   '/profile/contact/edit': typeof AppProfileContactEditRoute
+  '/profile/security/login-email': typeof AppProfileSecurityLoginEmailRoute
+  '/profile/security/password': typeof AppProfileSecurityPasswordRoute
   '/groups/$groupId/admins/$adminId': typeof AppGroupsGroupIdAdminsAdminIdRoute
   '/groups/$groupId/admins/new': typeof AppGroupsGroupIdAdminsNewRoute
   '/groups/$groupId/memberships/$membershipId': typeof AppGroupsGroupIdMembershipsMembershipIdRoute
@@ -659,6 +685,7 @@ export interface FileRoutesById {
   '/_app/manage/roles': typeof AppManageRolesRoute
   '/_app/manage/sessions': typeof AppManageSessionsRoute
   '/_app/manage/venues': typeof AppManageVenuesRoute
+  '/_app/profile_/security': typeof AppProfileSecurityRoute
   '/_app/manage/': typeof AppManageIndexRoute
   '/_app/_affiliated/members_/$personId': typeof AppAffiliatedMembersPersonIdRoute
   '/_app/groups_/$groupId_/administration': typeof AppGroupsGroupIdAdministrationRoute
@@ -676,6 +703,8 @@ export interface FileRoutesById {
   '/_app/manage/venues_/$venueId': typeof AppManageVenuesVenueIdRoute
   '/_app/manage/venues_/new': typeof AppManageVenuesNewRoute
   '/_app/profile_/contact/edit': typeof AppProfileContactEditRoute
+  '/_app/profile_/security_/login-email': typeof AppProfileSecurityLoginEmailRoute
+  '/_app/profile_/security_/password': typeof AppProfileSecurityPasswordRoute
   '/_app/groups_/$groupId_/admins/$adminId': typeof AppGroupsGroupIdAdminsAdminIdRoute
   '/_app/groups_/$groupId_/admins/new': typeof AppGroupsGroupIdAdminsNewRoute
   '/_app/groups_/$groupId_/memberships/$membershipId': typeof AppGroupsGroupIdMembershipsMembershipIdRoute
@@ -734,6 +763,7 @@ export interface FileRouteTypes {
     | '/manage/roles'
     | '/manage/sessions'
     | '/manage/venues'
+    | '/profile/security'
     | '/manage/'
     | '/members/$personId'
     | '/groups/$groupId/administration'
@@ -751,6 +781,8 @@ export interface FileRouteTypes {
     | '/manage/venues/$venueId'
     | '/manage/venues/new'
     | '/profile/contact/edit'
+    | '/profile/security/login-email'
+    | '/profile/security/password'
     | '/groups/$groupId/admins/$adminId'
     | '/groups/$groupId/admins/new'
     | '/groups/$groupId/memberships/$membershipId'
@@ -807,6 +839,7 @@ export interface FileRouteTypes {
     | '/manage/roles'
     | '/manage/sessions'
     | '/manage/venues'
+    | '/profile/security'
     | '/manage'
     | '/members/$personId'
     | '/groups/$groupId/administration'
@@ -824,6 +857,8 @@ export interface FileRouteTypes {
     | '/manage/venues/$venueId'
     | '/manage/venues/new'
     | '/profile/contact/edit'
+    | '/profile/security/login-email'
+    | '/profile/security/password'
     | '/groups/$groupId/admins/$adminId'
     | '/groups/$groupId/admins/new'
     | '/groups/$groupId/memberships/$membershipId'
@@ -882,6 +917,7 @@ export interface FileRouteTypes {
     | '/_app/manage/roles'
     | '/_app/manage/sessions'
     | '/_app/manage/venues'
+    | '/_app/profile_/security'
     | '/_app/manage/'
     | '/_app/_affiliated/members_/$personId'
     | '/_app/groups_/$groupId_/administration'
@@ -899,6 +935,8 @@ export interface FileRouteTypes {
     | '/_app/manage/venues_/$venueId'
     | '/_app/manage/venues_/new'
     | '/_app/profile_/contact/edit'
+    | '/_app/profile_/security_/login-email'
+    | '/_app/profile_/security_/password'
     | '/_app/groups_/$groupId_/admins/$adminId'
     | '/_app/groups_/$groupId_/admins/new'
     | '/_app/groups_/$groupId_/memberships/$membershipId'
@@ -1030,6 +1068,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppManageIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/profile_/security': {
+      id: '/_app/profile_/security'
+      path: '/profile/security'
+      fullPath: '/profile/security'
+      preLoaderRoute: typeof AppProfileSecurityRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/manage/venues': {
       id: '/_app/manage/venues'
       path: '/manage/venues'
@@ -1134,6 +1179,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/groups'
       preLoaderRoute: typeof AppAffiliatedGroupsRouteImport
       parentRoute: typeof AppAffiliatedRoute
+    }
+    '/_app/profile_/security_/password': {
+      id: '/_app/profile_/security_/password'
+      path: '/profile/security/password'
+      fullPath: '/profile/security/password'
+      preLoaderRoute: typeof AppProfileSecurityPasswordRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/profile_/security_/login-email': {
+      id: '/_app/profile_/security_/login-email'
+      path: '/profile/security/login-email'
+      fullPath: '/profile/security/login-email'
+      preLoaderRoute: typeof AppProfileSecurityLoginEmailRouteImport
+      parentRoute: typeof AppRoute
     }
     '/_app/profile_/contact/edit': {
       id: '/_app/profile_/contact/edit'
@@ -1491,6 +1550,7 @@ interface AppRouteChildren {
   AppManageRolesRoute: typeof AppManageRolesRoute
   AppManageSessionsRoute: typeof AppManageSessionsRoute
   AppManageVenuesRoute: typeof AppManageVenuesRoute
+  AppProfileSecurityRoute: typeof AppProfileSecurityRoute
   AppManageIndexRoute: typeof AppManageIndexRoute
   AppGroupsGroupIdAdministrationRoute: typeof AppGroupsGroupIdAdministrationRoute
   AppGroupsGroupIdEditRoute: typeof AppGroupsGroupIdEditRoute
@@ -1507,6 +1567,8 @@ interface AppRouteChildren {
   AppManageVenuesVenueIdRoute: typeof AppManageVenuesVenueIdRoute
   AppManageVenuesNewRoute: typeof AppManageVenuesNewRoute
   AppProfileContactEditRoute: typeof AppProfileContactEditRoute
+  AppProfileSecurityLoginEmailRoute: typeof AppProfileSecurityLoginEmailRoute
+  AppProfileSecurityPasswordRoute: typeof AppProfileSecurityPasswordRoute
   AppGroupsGroupIdAdminsAdminIdRoute: typeof AppGroupsGroupIdAdminsAdminIdRoute
   AppGroupsGroupIdAdminsNewRoute: typeof AppGroupsGroupIdAdminsNewRoute
   AppGroupsGroupIdMembershipsMembershipIdRoute: typeof AppGroupsGroupIdMembershipsMembershipIdRoute
@@ -1560,6 +1622,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppManageRolesRoute: AppManageRolesRoute,
   AppManageSessionsRoute: AppManageSessionsRoute,
   AppManageVenuesRoute: AppManageVenuesRoute,
+  AppProfileSecurityRoute: AppProfileSecurityRoute,
   AppManageIndexRoute: AppManageIndexRoute,
   AppGroupsGroupIdAdministrationRoute: AppGroupsGroupIdAdministrationRoute,
   AppGroupsGroupIdEditRoute: AppGroupsGroupIdEditRoute,
@@ -1576,6 +1639,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppManageVenuesVenueIdRoute: AppManageVenuesVenueIdRoute,
   AppManageVenuesNewRoute: AppManageVenuesNewRoute,
   AppProfileContactEditRoute: AppProfileContactEditRoute,
+  AppProfileSecurityLoginEmailRoute: AppProfileSecurityLoginEmailRoute,
+  AppProfileSecurityPasswordRoute: AppProfileSecurityPasswordRoute,
   AppGroupsGroupIdAdminsAdminIdRoute: AppGroupsGroupIdAdminsAdminIdRoute,
   AppGroupsGroupIdAdminsNewRoute: AppGroupsGroupIdAdminsNewRoute,
   AppGroupsGroupIdMembershipsMembershipIdRoute:

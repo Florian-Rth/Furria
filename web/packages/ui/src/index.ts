@@ -25,6 +25,7 @@ export { KkBroomMark } from './KkBroomMark';
 export type { KkButtonTone } from './KkButton';
 export { KkButton } from './KkButton';
 export { KkCard } from './KkCard/KkCard';
+export { KkCheckboxRow } from './KkCheckboxRow';
 export type { KkChipTone } from './KkChip';
 export { KkChip } from './KkChip';
 export { KkChipField } from './KkChipField';

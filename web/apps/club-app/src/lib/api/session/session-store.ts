@@ -16,9 +16,12 @@ import { createLocalStorageSessionStoragePort } from './session-storage-port';
 
 export type SessionStatus = 'anonymous' | 'restoring' | 'unavailable' | 'authenticated';
 
+export type SessionFarewell = 'account-deleted';
+
 export interface SessionSnapshot {
   readonly status: SessionStatus;
   readonly expired: boolean;
+  readonly farewell: SessionFarewell | null;
 }
 
 const REFRESH_LOCK_NAME = 'furria-club-app-refresh';
@@ -31,16 +34,24 @@ let accessTokenLifetimeMs = 0;
 let pendingInTabRefresh: Promise<string> | null = null;
 let expiryPublicationSuppressed = false;
 
-let snapshot: SessionSnapshot = { status: 'restoring', expired: false };
+let snapshot: SessionSnapshot = { status: 'restoring', expired: false, farewell: null };
 
 const listeners = new Set<() => void>();
 const sessionEndListeners = new Set<() => void>();
 
-const publish = (status: SessionStatus, expired: boolean): void => {
-  if (snapshot.status === status && snapshot.expired === expired) {
+const publish = (
+  status: SessionStatus,
+  expired: boolean,
+  farewell: SessionFarewell | null = null,
+): void => {
+  if (
+    snapshot.status === status &&
+    snapshot.expired === expired &&
+    snapshot.farewell === farewell
+  ) {
     return;
   }
-  snapshot = { status, expired };
+  snapshot = { status, expired, farewell };
   for (const listener of listeners) {
     listener();
   }
@@ -59,10 +70,10 @@ const hasLiveSession = (): boolean => snapshot.status !== 'anonymous' || accessT
 const nextExpiryFlag = (expired: boolean): boolean =>
   snapshot.expired || (expired && hasLiveSession() && !expiryPublicationSuppressed);
 
-const finishSession = (nextExpired: boolean): void => {
+const finishSession = (nextExpired: boolean, farewell: SessionFarewell | null = null): void => {
   const hadSession = hasLiveSession();
   forgetTokens();
-  publish('anonymous', nextExpired);
+  publish('anonymous', nextExpired, farewell);
   if (hadSession) {
     for (const listener of sessionEndListeners) {
       listener();
@@ -253,4 +264,9 @@ export const restoreSession = async (): Promise<void> => {
     }
     publish('unavailable', false);
   }
+};
+
+export const endSessionWithFarewell = (farewell: SessionFarewell): void => {
+  broadcastSessionEnd(false);
+  finishSession(false, farewell);
 };

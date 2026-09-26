@@ -16,8 +16,11 @@ const ReturnToSchema = z.string().transform(toReturnToParam).catch(undefined).op
 
 const ExpiredFlagSchema = z.literal(EXPIRED_FLAG).optional().catch(undefined);
 
+const FarewellSchema = z.enum(['account-deleted']).optional().catch(undefined);
+
 export const LoginSearchSchema = z.object({
   returnTo: ReturnToSchema,
   expired: ExpiredFlagSchema,
+  farewell: FarewellSchema,
 });
 export type LoginSearch = z.infer<typeof LoginSearchSchema>;
