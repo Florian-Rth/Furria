@@ -119,6 +119,23 @@ public sealed class RefreshTokenService
         );
     }
 
+    public async Task RevokeAllAsync(int accountId, CancellationToken ct)
+    {
+        var now = _timeProvider.GetUtcNow();
+        await _dbContext
+            .RefreshTokens.Where(token => token.AccountId == accountId && token.RevokedAt == null)
+            .ExecuteUpdateAsync(
+                setters =>
+                    setters
+                        .SetProperty(token => token.RevokedAt, now)
+                        .SetProperty(
+                            token => token.RevokedReason,
+                            RefreshTokenRevocationReason.AllSessionsEnded
+                        ),
+                ct
+            );
+    }
+
     private bool IsReplay(
         RefreshTokenRevocationReason? reason,
         DateTimeOffset revokedAt,

@@ -5,4 +5,5 @@ public enum MailTemplate
     Invitation = 1,
     EmailConfirmation = 2,
     InvitationReminder = 3,
+    CredentialChangeNotice = 4,
 }

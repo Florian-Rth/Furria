@@ -58,6 +58,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<AccountService>();
         services.AddScoped<AccountAccessService>();
         services.AddScoped<EmailConfirmationService>();
+        services.AddScoped<CredentialChangeNotifier>();
         services.AddScoped<PermissionAuthorizer>();
         services.AddScoped<AffiliationLookup>();
         services.AddScoped<PersonService>();

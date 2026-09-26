@@ -6,4 +6,5 @@ public enum RefreshTokenRevocationReason
     LoggedOut = 2,
     ReuseDetected = 3,
     AccountDisabled = 4,
+    AllSessionsEnded = 5,
 }
