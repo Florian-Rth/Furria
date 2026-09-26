@@ -384,6 +384,7 @@ public sealed class GetPersonByIdTests
                 "city",
                 "birthDate",
                 "contactVisibleToMembers",
+                "contactChange",
                 "membershipState",
                 "memberSince",
                 "memberships",
@@ -557,5 +558,49 @@ public sealed class GetPersonByIdTests
         Assert.Equal(AccountAccessState.Disabled, result.Access.State);
         Assert.Null(result.Access.Reason);
         Assert.Null(result.Access.Invitation);
+    }
+
+    [Fact]
+    public async Task Should_ShowWhoChangedTheContactDetailsAndWhen_When_TheyWereChanged()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var changedAt = _fixture.TimeProvider.GetUtcNow().AddDays(-3);
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddPerson("paula", "Paula", "Brendel")
+                        .AddPerson("anna", "Anna", "Kessler")
+                        .AddContactChange("paula", "anna", changedAt)
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("paula"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var change = Assert.IsType<PersonContactChangeDto>(result.ContactChange);
+        Assert.Equal(changedAt, change.At);
+        Assert.Equal(ctx.Identity.People.IdOf("anna"), change.ChangedBy.PersonId);
+        Assert.Equal("Anna", change.ChangedBy.FirstName);
+        Assert.Equal("Kessler", change.ChangedBy.LastName);
+    }
+
+    [Fact]
+    public async Task Should_ShowNoContactChange_When_TheContactDetailsWereNeverChanged()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity => identity.AddPerson("paula", "Paula", "Brendel")),
+            ct
+        );
+
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("paula"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Null(result.ContactChange);
     }
 }

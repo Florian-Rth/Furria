@@ -217,6 +217,49 @@ public sealed class GetMeTests
     }
 
     [Fact]
+    public async Task Should_ShowWhoLastChangedHerContactDetails_When_AManagerChangedThem()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var changedAt = _fixture.TimeProvider.GetUtcNow().AddDays(-3);
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddAccount("alice")
+                        .AddPerson("anna", "Anna", "Kessler")
+                        .AddContactChange("alice", "anna", changedAt)
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        var (response, result) = await client.GETAsync<GetMe, GetMeResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var change = Assert.IsType<MeContactChangeDto>(result.Person.ContactChange);
+        Assert.Equal(changedAt, change.At);
+        Assert.Equal(ctx.Identity.People.IdOf("anna"), change.ChangedBy.PersonId);
+        Assert.Equal("Anna", change.ChangedBy.FirstName);
+        Assert.Equal("Kessler", change.ChangedBy.LastName);
+    }
+
+    [Fact]
+    public async Task Should_ShowNoContactChange_When_HerContactDetailsWereNeverChanged()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => identity.AddAccount("alice")),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        var (response, result) = await client.GETAsync<GetMe, GetMeResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Null(result.Person.ContactChange);
+    }
+
+    [Fact]
     public async Task Should_WriteCamelCaseStringsAndIsoDates_When_TheChainReachesTheWire()
     {
         var ct = TestContext.Current.CancellationToken;
