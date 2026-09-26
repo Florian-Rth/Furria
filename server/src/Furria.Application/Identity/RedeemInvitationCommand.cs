@@ -2,7 +2,11 @@ namespace Furria.Application.Identity;
 
 public sealed record RedeemInvitationCommand
 {
-    public required string Token { get; init; }
+    public required InvitationCredential Credential { get; init; }
 
     public required string Password { get; init; }
+
+    public required string? LoginEmail { get; init; }
+
+    public required string? ConfirmationCode { get; init; }
 }

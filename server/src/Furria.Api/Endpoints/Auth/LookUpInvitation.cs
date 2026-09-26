@@ -13,6 +13,7 @@ public sealed class LookUpInvitation : Endpoint<LookUpInvitationRequest, LookUpI
         Status = InvitationLookupStatus.Dead,
         FirstName = null,
         LoginEmail = null,
+        ContactEmailTaken = null,
     };
 
     private readonly AccountAccessService _accountAccessService;
@@ -36,16 +37,20 @@ public sealed class LookUpInvitation : Endpoint<LookUpInvitationRequest, LookUpI
 
     public override async Task HandleAsync(LookUpInvitationRequest req, CancellationToken ct)
     {
-        if (!_tokenRateLimiter.TryAcquire(req.Token))
+        var credential = ToCredential(req);
+        if (!_tokenRateLimiter.TryAcquire(credential))
         {
             await Send.StatusCodeAsync(StatusCodes.Status429TooManyRequests, ct);
             return;
         }
 
-        var invitation = await _accountAccessService.LookUpAsync(req.Token, ct);
+        var invitation = await _accountAccessService.LookUpAsync(credential, ct);
 
         await Send.OkAsync(invitation is null ? Dead : ToResponse(invitation), cancellation: ct);
     }
+
+    private static InvitationCredential ToCredential(LookUpInvitationRequest request) =>
+        new() { Token = request.Token, Code = request.Code };
 
     private static LookUpInvitationResponse ToResponse(InvitationLookupDetails invitation) =>
         new()
@@ -53,19 +58,41 @@ public sealed class LookUpInvitation : Endpoint<LookUpInvitationRequest, LookUpI
             Status = InvitationLookupStatus.Live,
             FirstName = invitation.FirstName,
             LoginEmail = invitation.LoginEmail,
+            ContactEmailTaken = invitation.ContactEmailTaken,
         };
 }
 
 public sealed record LookUpInvitationRequest
 {
-    public required string Token { get; init; }
+    public string? Token { get; init; }
+
+    public string? Code { get; init; }
 }
 
 public sealed class LookUpInvitationValidator : Validator<LookUpInvitationRequest>
 {
     public LookUpInvitationValidator()
     {
-        RuleFor(request => request.Token).NotEmpty().MaximumLength(InvitationTokenLimits.Length);
+        RuleFor(request => request)
+            .Must(request =>
+                InvitationTokenLimits.HasExactlyOneCredential(request.Token, request.Code)
+            )
+            .OverridePropertyName(InvitationTokenLimits.CredentialField)
+            .WithMessage(InvitationTokenLimits.ExactlyOneCredentialMessage);
+        When(
+            request => request.Token is not null,
+            () =>
+                RuleFor(request => request.Token)
+                    .NotEmpty()
+                    .MaximumLength(InvitationTokenLimits.Length)
+        );
+        When(
+            request => request.Code is not null,
+            () =>
+                RuleFor(request => request.Code)
+                    .NotEmpty()
+                    .MaximumLength(InvitationTokenLimits.CodeLength)
+        );
     }
 }
 
@@ -82,4 +109,6 @@ public sealed record LookUpInvitationResponse
     public required string? FirstName { get; init; }
 
     public required string? LoginEmail { get; init; }
+
+    public required bool? ContactEmailTaken { get; init; }
 }

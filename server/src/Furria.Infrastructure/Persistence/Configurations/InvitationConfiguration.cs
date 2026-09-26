@@ -42,6 +42,9 @@ public sealed class InvitationConfiguration : IEntityTypeConfiguration<Invitatio
         builder.HasIndex(invitation => invitation.PersonId);
         builder.HasIndex(invitation => invitation.IssuedByPersonId);
         builder
+            .HasIndex(invitation => invitation.CodeHash)
+            .HasFilter("code_hash IS NOT NULL AND redeemed_at IS NULL AND voided_at IS NULL");
+        builder
             .HasIndex(invitation => invitation.PersonId, LiveInvitationIndex)
             .HasDatabaseName(LiveInvitationIndex)
             .IsUnique()

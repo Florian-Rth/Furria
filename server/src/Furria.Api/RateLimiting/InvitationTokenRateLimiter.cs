@@ -3,12 +3,16 @@ using System.Diagnostics.Contracts;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.RateLimiting;
+using Furria.Application.Identity;
+using Furria.Infrastructure.Identity;
 using Microsoft.Extensions.Options;
 
 namespace Furria.Api.RateLimiting;
 
 public sealed class InvitationTokenRateLimiter : IDisposable
 {
+    private const string CodePartitionPrefix = "code:";
+
     private readonly PartitionedRateLimiter<string> _limiter;
 
     public InvitationTokenRateLimiter(IOptions<SignedOutRateLimitOptions> options)
@@ -33,7 +37,14 @@ public sealed class InvitationTokenRateLimiter : IDisposable
         return lease.IsAcquired;
     }
 
+    public bool TryAcquire(InvitationCredential credential) => TryAcquire(PartitionOf(credential));
+
     public void Dispose() => _limiter.Dispose();
+
+    [Pure]
+    private static string PartitionOf(InvitationCredential credential) =>
+        credential.Token
+        ?? $"{CodePartitionPrefix}{InvitationCode.Canonical(credential.Code ?? "")}";
 
     [Pure]
     private static string HashOf(string presentedToken) =>

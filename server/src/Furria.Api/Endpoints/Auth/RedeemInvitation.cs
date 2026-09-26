@@ -1,3 +1,4 @@
+using System.Diagnostics.Contracts;
 using FastEndpoints;
 using FluentValidation;
 using FluentValidation.Results;
@@ -12,6 +13,14 @@ namespace Furria.Api.Endpoints.Auth;
 public sealed class RedeemInvitation : Endpoint<RedeemInvitationRequest, RedeemInvitationResponse>
 {
     private const string PasswordField = "password";
+    private const string LoginEmailField = "loginEmail";
+    private const string ConfirmationCodeField = "confirmationCode";
+    private const string TakenLoginEmailMessage =
+        "Diese E-Mail-Adresse gehört schon zu einem Zugang. Wähle eine andere.";
+    private const string WrongConfirmationCodeMessage =
+        "Der Code stimmt nicht. Prüf die Mail und versuch es noch einmal.";
+    private const string DeadConfirmationCodeMessage =
+        "Dieser Code gilt nicht mehr. Lass dir einen neuen schicken.";
 
     private readonly AccountAccessService _accountAccessService;
     private readonly InvitationTokenRateLimiter _tokenRateLimiter;
@@ -34,33 +43,85 @@ public sealed class RedeemInvitation : Endpoint<RedeemInvitationRequest, RedeemI
 
     public override async Task HandleAsync(RedeemInvitationRequest req, CancellationToken ct)
     {
-        if (!_tokenRateLimiter.TryAcquire(req.Token))
+        var command = ToCommand(req);
+        if (!_tokenRateLimiter.TryAcquire(command.Credential))
         {
             await Send.StatusCodeAsync(StatusCodes.Status429TooManyRequests, ct);
             return;
         }
 
-        var session = await _accountAccessService.RedeemAsync(ToCommand(req), ct);
-        if (session.IsSuccess)
+        var redemption = await _accountAccessService.RedeemAsync(command, ct);
+        if (!redemption.IsSuccess)
         {
-            await Send.OkAsync(ToResponse(session.Value), cancellation: ct);
+            await SendRefusalAsync(redemption.Error, ct);
             return;
         }
 
-        if (session.Error.Kind == ResultErrorKind.Validation)
+        if (RefusalOf(redemption.Value.Outcome) is { } refusal)
         {
-            ValidationFailures.Add(new ValidationFailure(PasswordField, session.Error.Message));
+            ValidationFailures.Add(new ValidationFailure(refusal.Field, refusal.Message));
+            await Send.ErrorsAsync(refusal.StatusCode, ct);
+            return;
+        }
+
+        await Send.OkAsync(ToResponse(redemption.Value), cancellation: ct);
+    }
+
+    private async Task SendRefusalAsync(ResultError error, CancellationToken ct)
+    {
+        if (error.Kind == ResultErrorKind.Validation)
+        {
+            ValidationFailures.Add(new ValidationFailure(PasswordField, error.Message));
             await Send.ErrorsAsync(StatusCodes.Status400BadRequest, ct);
             return;
         }
 
-        await HttpContext.Response.SendFailureAsync(session.Error, ct);
+        await HttpContext.Response.SendFailureAsync(error, ct);
     }
 
-    private static RedeemInvitationCommand ToCommand(RedeemInvitationRequest request) =>
-        new() { Token = request.Token, Password = request.Password };
+    [Pure]
+    private static RedemptionRefusal? RefusalOf(RedemptionOutcome outcome) =>
+        outcome switch
+        {
+            RedemptionOutcome.LoginEmailTaken => new RedemptionRefusal(
+                LoginEmailField,
+                TakenLoginEmailMessage,
+                StatusCodes.Status409Conflict
+            ),
+            RedemptionOutcome.ConfirmationCodeWrong => new RedemptionRefusal(
+                ConfirmationCodeField,
+                WrongConfirmationCodeMessage,
+                StatusCodes.Status400BadRequest
+            ),
+            RedemptionOutcome.ConfirmationCodeDead => new RedemptionRefusal(
+                ConfirmationCodeField,
+                DeadConfirmationCodeMessage,
+                StatusCodes.Status400BadRequest
+            ),
+            _ => null,
+        };
 
-    private static RedeemInvitationResponse ToResponse(SessionTokensDetails session) =>
+    private static RedeemInvitationCommand ToCommand(RedeemInvitationRequest request) =>
+        new()
+        {
+            Credential = new InvitationCredential { Token = request.Token, Code = request.Code },
+            Password = request.Password,
+            LoginEmail = request.LoginEmail,
+            ConfirmationCode = request.ConfirmationCode,
+        };
+
+    private static RedeemInvitationResponse ToResponse(RedemptionDetails redemption) =>
+        new()
+        {
+            Outcome =
+                redemption.Outcome == RedemptionOutcome.Redeemed
+                    ? RedeemInvitationOutcome.Redeemed
+                    : RedeemInvitationOutcome.ConfirmationRequired,
+            Session = redemption.Session is { } session ? ToDto(session) : null,
+            ConfirmationExpiresAt = redemption.ConfirmationExpiresAt,
+        };
+
+    private static RedeemInvitationSessionDto ToDto(SessionTokensDetails session) =>
         new()
         {
             AccessToken = session.AccessToken,
@@ -68,31 +129,90 @@ public sealed class RedeemInvitation : Endpoint<RedeemInvitationRequest, RedeemI
             RefreshToken = session.RefreshToken,
             RefreshTokenExpiresAt = session.RefreshTokenExpiresAt,
         };
+
+    private sealed record RedemptionRefusal(string Field, string Message, int StatusCode);
 }
 
 public sealed record RedeemInvitationRequest
 {
-    public required string Token { get; init; }
+    public string? Token { get; init; }
+
+    public string? Code { get; init; }
 
     public required string Password { get; init; }
+
+    public string? LoginEmail { get; init; }
+
+    public string? ConfirmationCode { get; init; }
 }
 
 public sealed class RedeemInvitationValidator : Validator<RedeemInvitationRequest>
 {
     public const int MinimumPasswordLength = 12;
     public const int MaximumPasswordLength = 256;
+    public const int MaximumLoginEmailLength = 256;
+    public const int MaximumConfirmationCodeLength = 16;
 
     public RedeemInvitationValidator()
     {
-        RuleFor(request => request.Token).NotEmpty().MaximumLength(InvitationTokenLimits.Length);
+        RuleFor(request => request)
+            .Must(request =>
+                InvitationTokenLimits.HasExactlyOneCredential(request.Token, request.Code)
+            )
+            .OverridePropertyName(InvitationTokenLimits.CredentialField)
+            .WithMessage(InvitationTokenLimits.ExactlyOneCredentialMessage);
+        When(
+            request => request.Token is not null,
+            () =>
+                RuleFor(request => request.Token)
+                    .NotEmpty()
+                    .MaximumLength(InvitationTokenLimits.Length)
+        );
+        When(
+            request => request.Code is not null,
+            () =>
+                RuleFor(request => request.Code)
+                    .NotEmpty()
+                    .MaximumLength(InvitationTokenLimits.CodeLength)
+        );
         RuleFor(request => request.Password)
             .NotEmpty()
             .MinimumLength(MinimumPasswordLength)
             .MaximumLength(MaximumPasswordLength);
+        When(
+            request => request.LoginEmail is not null,
+            () =>
+                RuleFor(request => request.LoginEmail)
+                    .NotEmpty()
+                    .EmailAddress()
+                    .MaximumLength(MaximumLoginEmailLength)
+        );
+        When(
+            request => request.ConfirmationCode is not null,
+            () =>
+                RuleFor(request => request.ConfirmationCode)
+                    .NotEmpty()
+                    .MaximumLength(MaximumConfirmationCodeLength)
+        );
     }
 }
 
+public enum RedeemInvitationOutcome
+{
+    Redeemed = 1,
+    ConfirmationRequired = 2,
+}
+
 public sealed record RedeemInvitationResponse
+{
+    public required RedeemInvitationOutcome Outcome { get; init; }
+
+    public required RedeemInvitationSessionDto? Session { get; init; }
+
+    public required DateTimeOffset? ConfirmationExpiresAt { get; init; }
+}
+
+public sealed record RedeemInvitationSessionDto
 {
     public required string AccessToken { get; init; }
 

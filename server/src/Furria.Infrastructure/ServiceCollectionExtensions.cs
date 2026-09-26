@@ -57,6 +57,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<RefreshTokenService>();
         services.AddScoped<AccountService>();
         services.AddScoped<AccountAccessService>();
+        services.AddScoped<EmailConfirmationService>();
         services.AddScoped<PermissionAuthorizer>();
         services.AddScoped<AffiliationLookup>();
         services.AddScoped<PersonService>();

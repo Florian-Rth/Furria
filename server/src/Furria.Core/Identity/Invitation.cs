@@ -8,6 +8,8 @@ public sealed class Invitation
 
     public static readonly TimeSpan MailLifetime = TimeSpan.FromDays(14);
 
+    public static readonly TimeSpan InPersonLifetime = TimeSpan.FromMinutes(15);
+
     public int Id { get; set; }
 
     public int PersonId { get; set; }

@@ -1,4 +1,5 @@
 using System.Diagnostics.Contracts;
+using System.Linq.Expressions;
 using Furria.Application.ClubApp;
 using Furria.Application.Groups;
 using Furria.Application.Identity;
@@ -19,8 +20,6 @@ public sealed class AccountAccessService
 {
     private const string UnknownPersonMessage = "Diese Person steht nicht im Register.";
     private const string DeadInvitationMessage = "Diese Einladung gilt nicht mehr.";
-    private const string TakenLoginEmailMessage =
-        "Diese E-Mail-Adresse gehört schon zu einem anderen Zugang.";
     private const string PasswordRuleMessage =
         "Das Passwort braucht mindestens 12 Zeichen, Groß- und Kleinbuchstaben, eine Ziffer und ein Sonderzeichen.";
     private const string InvitationLinkPath = "/invitation#token=";
@@ -38,6 +37,7 @@ public sealed class AccountAccessService
     private readonly UserManager<Account> _userManager;
     private readonly AccountService _accountService;
     private readonly MailQueue _mailQueue;
+    private readonly EmailConfirmationService _emailConfirmationService;
     private readonly ClubAppOptions _clubAppOptions;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<AccountAccessService> _logger;
@@ -47,6 +47,7 @@ public sealed class AccountAccessService
         UserManager<Account> userManager,
         AccountService accountService,
         MailQueue mailQueue,
+        EmailConfirmationService emailConfirmationService,
         IOptions<ClubAppOptions> clubAppOptions,
         TimeProvider timeProvider,
         ILogger<AccountAccessService> logger
@@ -56,6 +57,7 @@ public sealed class AccountAccessService
         _userManager = userManager;
         _accountService = accountService;
         _mailQueue = mailQueue;
+        _emailConfirmationService = emailConfirmationService;
         _clubAppOptions = clubAppOptions.Value;
         _timeProvider = timeProvider;
         _logger = logger;
@@ -98,9 +100,7 @@ public sealed class AccountAccessService
         var token = OpaqueTokenSecret.Generate(out var tokenHash);
         var expiresAt = now + Invitation.MailLifetime;
 
-        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
-        await VoidLiveInvitationsAsync(personId, now, ct);
-        _dbContext.Invitations.Add(
+        var saved = await RecordIssuedAsync(
             new Invitation
             {
                 PersonId = personId,
@@ -110,23 +110,11 @@ public sealed class AccountAccessService
                 IssuedByPersonId = issuerPersonId,
                 IssuedAt = now,
                 ExpiresAt = expiresAt,
-            }
+            },
+            ct
         );
-        _dbContext.AccountEvents.Add(
-            new AccountEvent
-            {
-                PersonId = personId,
-                Kind = AccountEventKind.Invited,
-                ActorPersonId = issuerPersonId,
-                At = now,
-            }
-        );
-
-        var saved = await _dbContext.SaveOrConflictAsync(ct);
         if (!saved.IsSuccess)
             return Result<IssuedInvitationDetails>.Carrying(saved);
-
-        await transaction.CommitAsync(ct);
 
         _mailQueue.Enqueue(InvitationMail.Compose(ToMailContent(subject, terms, token, expiresAt)));
         _logger.LogInformation("Mail invitation issued for person {PersonId}", personId);
@@ -136,42 +124,199 @@ public sealed class AccountAccessService
         );
     }
 
-    public async Task<InvitationLookupDetails?> LookUpAsync(string token, CancellationToken ct)
+    public async Task<Result<IssuedInPersonInvitationDetails>> IssueInPersonInvitationAsync(
+        int personId,
+        int issuerPersonId,
+        CancellationToken ct
+    )
     {
-        var redeemable = await RedeemableAsync(token, _timeProvider.GetUtcNow(), ct);
+        var now = _timeProvider.GetUtcNow();
+        var subject = await SubjectAsync(personId, ClubClock.DayOf(now), ct);
+        if (subject is null)
+            return Result<IssuedInPersonInvitationDetails>.NotFound(UnknownPersonMessage);
 
-        return redeemable is null
-            ? null
-            : new InvitationLookupDetails
+        if (RefusalOf(subject, await ClubTermsAsync(ct)) is { } refusal)
+            return Result<IssuedInPersonInvitationDetails>.Conflict(refusal);
+
+        var token = OpaqueTokenSecret.Generate(out var tokenHash);
+        var (code, codeHash) = await FreshInvitationCodeAsync(now, ct);
+        var expiresAt = now + Invitation.InPersonLifetime;
+
+        var saved = await RecordIssuedAsync(
+            new Invitation
             {
-                FirstName = redeemable.FirstName,
-                LoginEmail = redeemable.LoginEmail,
-            };
+                PersonId = personId,
+                Purpose = InvitationPurpose.Onboarding,
+                Channel = InvitationChannel.InPerson,
+                TokenHash = tokenHash,
+                CodeHash = codeHash,
+                IssuedByPersonId = issuerPersonId,
+                IssuedAt = now,
+                ExpiresAt = expiresAt,
+            },
+            ct
+        );
+        if (!saved.IsSuccess)
+            return Result<IssuedInPersonInvitationDetails>.Carrying(saved);
+
+        _logger.LogInformation("In-person invitation issued for person {PersonId}", personId);
+
+        return Result<IssuedInPersonInvitationDetails>.Success(
+            new IssuedInPersonInvitationDetails
+            {
+                Link = LinkOf(token),
+                Code = code,
+                ExpiresAt = expiresAt,
+            }
+        );
     }
 
-    public async Task<Result<SessionTokensDetails>> RedeemAsync(
+    public async Task<Result<AccountAccessState>> GetAccessStateAsync(
+        int personId,
+        CancellationToken ct
+    )
+    {
+        var now = _timeProvider.GetUtcNow();
+        var row = await _dbContext
+            .People.AsNoTracking()
+            .Where(person => person.Id == personId)
+            .Select(person => new
+            {
+                AccountIsDisabled = _dbContext
+                    .Users.Where(account => account.PersonId == person.Id)
+                    .Select(account => (bool?)account.IsDisabled)
+                    .FirstOrDefault(),
+                HasUnexpiredLiveInvitation = _dbContext.Invitations.Any(invitation =>
+                    invitation.PersonId == person.Id
+                    && invitation.RedeemedAt == null
+                    && invitation.VoidedAt == null
+                    && invitation.ExpiresAt > now
+                ),
+            })
+            .SingleOrDefaultAsync(ct);
+
+        return row is null
+            ? Result<AccountAccessState>.NotFound(UnknownPersonMessage)
+            : Result<AccountAccessState>.Success(
+                AccountEligibility.StateOf(row.AccountIsDisabled, row.HasUnexpiredLiveInvitation)
+            );
+    }
+
+    public async Task<InvitationLookupDetails?> LookUpAsync(
+        InvitationCredential credential,
+        CancellationToken ct
+    )
+    {
+        var redeemable = await RedeemableAsync(credential, _timeProvider.GetUtcNow(), ct);
+        if (redeemable is null)
+            return null;
+
+        var contactEmailTaken = await IsLoginEmailTakenAsync(
+            NormalizedEmailOf(redeemable.ContactEmail),
+            ct
+        );
+
+        return new InvitationLookupDetails
+        {
+            FirstName = redeemable.FirstName,
+            LoginEmail = contactEmailTaken ? null : redeemable.ContactEmail,
+            ContactEmailTaken = contactEmailTaken,
+        };
+    }
+
+    public async Task<Result<RedemptionDetails>> RedeemAsync(
         RedeemInvitationCommand command,
         CancellationToken ct
     )
     {
         var now = _timeProvider.GetUtcNow();
-        var redeemable = await RedeemableAsync(command.Token, now, ct);
+        var redeemable = await RedeemableAsync(command.Credential, now, ct);
         if (redeemable is null)
-            return Result<SessionTokensDetails>.Conflict(DeadInvitationMessage);
+            return Result<RedemptionDetails>.Conflict(DeadInvitationMessage);
 
+        var loginEmail = command.LoginEmail?.Trim() ?? redeemable.ContactEmail;
+        var normalizedLoginEmail = NormalizedEmailOf(loginEmail);
+        if (await IsLoginEmailTakenAsync(normalizedLoginEmail, ct))
+            return Result<RedemptionDetails>.Success(
+                RedemptionDetails.Refused(RedemptionOutcome.LoginEmailTaken)
+            );
+
+        var chosen = new ChosenLogin(loginEmail, normalizedLoginEmail, command.Password);
+        if (IsContactEmail(redeemable, normalizedLoginEmail))
+            return await CreateAccountAsync(redeemable, chosen, confirmation: null, now, ct);
+
+        if (command.ConfirmationCode is not { } confirmationCode)
+            return await RequestConfirmationAsync(redeemable, chosen, ct);
+
+        var confirmation = new EmailConfirmationAttempt
+        {
+            Subject = EmailConfirmationSubject.ForRedemption(redeemable.InvitationId),
+            NormalizedEmail = normalizedLoginEmail,
+            Code = confirmationCode,
+        };
+
+        return await CreateAccountAsync(redeemable, chosen, confirmation, now, ct);
+    }
+
+    private async Task<Result<RedemptionDetails>> RequestConfirmationAsync(
+        RedeemableInvitation redeemable,
+        ChosenLogin chosen,
+        CancellationToken ct
+    )
+    {
+        if (await PasswordRefusalAsync(chosen.Password) is { } refusal)
+            return refusal;
+
+        var terms = await ClubTermsAsync(ct);
+        var expiresAt = await _emailConfirmationService.IssueAsync(
+            new EmailConfirmationIssue
+            {
+                Subject = EmailConfirmationSubject.ForRedemption(redeemable.InvitationId),
+                Email = chosen.Email,
+                NormalizedEmail = chosen.NormalizedEmail,
+                PersonId = redeemable.PersonId,
+                FirstName = redeemable.FirstName,
+                ClubName = terms.ClubName,
+            },
+            ct
+        );
+
+        return Result<RedemptionDetails>.Success(RedemptionDetails.ConfirmationRequired(expiresAt));
+    }
+
+    private async Task<Result<RedemptionDetails>> CreateAccountAsync(
+        RedeemableInvitation redeemable,
+        ChosenLogin chosen,
+        EmailConfirmationAttempt? confirmation,
+        DateTimeOffset now,
+        CancellationToken ct
+    )
+    {
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
+        if (confirmation is not null)
+        {
+            var verdict = await _emailConfirmationService.ConsumeAsync(confirmation, ct);
+            if (verdict != EmailConfirmationVerdict.Confirmed)
+            {
+                await transaction.CommitAsync(ct);
+                return Result<RedemptionDetails>.Success(
+                    RedemptionDetails.Refused(OutcomeOf(verdict))
+                );
+            }
+        }
+
         if (!await ClaimAsync(redeemable.InvitationId, now, ct))
-            return Result<SessionTokensDetails>.Conflict(DeadInvitationMessage);
+            return Result<RedemptionDetails>.Conflict(DeadInvitationMessage);
 
         var account = new Account
         {
-            UserName = redeemable.LoginEmail,
-            Email = redeemable.LoginEmail,
+            UserName = chosen.Email,
+            Email = chosen.Email,
             EmailConfirmed = true,
             PersonId = redeemable.PersonId,
         };
 
-        var created = await _userManager.CreateAsync(account, command.Password);
+        var created = await _userManager.CreateAsync(account, chosen.Password);
         if (!created.Succeeded)
             return RefusalOf(created);
 
@@ -193,10 +338,84 @@ public sealed class AccountAccessService
             redeemable.PersonId
         );
 
-        return Result<SessionTokensDetails>.Success(
-            await _accountService.StartSessionAsync(account, ct)
+        return Result<RedemptionDetails>.Success(
+            RedemptionDetails.Redeemed(await _accountService.StartSessionAsync(account, ct))
         );
     }
+
+    private async Task<Result<RedemptionDetails>?> PasswordRefusalAsync(string password)
+    {
+        var candidate = new Account();
+        foreach (var validator in _userManager.PasswordValidators)
+        {
+            var validated = await validator.ValidateAsync(_userManager, candidate, password);
+            if (!validated.Succeeded)
+                return Result<RedemptionDetails>.Validation(PasswordRuleMessage);
+        }
+
+        return null;
+    }
+
+    private Task<bool> IsLoginEmailTakenAsync(string normalizedEmail, CancellationToken ct) =>
+        _dbContext
+            .Users.AsNoTracking()
+            .AnyAsync(account => account.NormalizedEmail == normalizedEmail, ct);
+
+    private async Task<Result> RecordIssuedAsync(Invitation invitation, CancellationToken ct)
+    {
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
+        await VoidLiveInvitationsAsync(invitation.PersonId, invitation.IssuedAt, ct);
+        _dbContext.Invitations.Add(invitation);
+        _dbContext.AccountEvents.Add(
+            new AccountEvent
+            {
+                PersonId = invitation.PersonId,
+                Kind = AccountEventKind.Invited,
+                ActorPersonId = invitation.IssuedByPersonId,
+                At = invitation.IssuedAt,
+            }
+        );
+
+        var saved = await _dbContext.SaveOrConflictAsync(ct);
+        if (saved.IsSuccess)
+            await transaction.CommitAsync(ct);
+
+        return saved;
+    }
+
+    private async Task<(string Code, string CodeHash)> FreshInvitationCodeAsync(
+        DateTimeOffset now,
+        CancellationToken ct
+    )
+    {
+        while (true)
+        {
+            var code = InvitationCode.Generate(out var codeHash);
+            var isInUse = await _dbContext.Invitations.AnyAsync(
+                invitation =>
+                    invitation.CodeHash == codeHash
+                    && invitation.RedeemedAt == null
+                    && invitation.VoidedAt == null
+                    && invitation.ExpiresAt > now,
+                ct
+            );
+
+            if (!isInUse)
+                return (code, codeHash);
+        }
+    }
+
+    private string NormalizedEmailOf(string email) => _userManager.NormalizeEmail(email) ?? email;
+
+    private bool IsContactEmail(RedeemableInvitation redeemable, string normalizedLoginEmail) =>
+        string.Equals(
+            NormalizedEmailOf(redeemable.ContactEmail),
+            normalizedLoginEmail,
+            StringComparison.Ordinal
+        );
+
+    private string LinkOf(string token) =>
+        $"{_clubAppOptions.BaseUrl.TrimEnd('/')}{InvitationLinkPath}{token}";
 
     private async Task<SubjectRow?> SubjectAsync(int personId, DateOnly today, CancellationToken ct)
     {
@@ -309,19 +528,19 @@ public sealed class AccountAccessService
             .ExecuteUpdateAsync(setters => setters.SetProperty(row => row.VoidedAt, now), ct);
 
     private async Task<RedeemableInvitation?> RedeemableAsync(
-        string token,
+        InvitationCredential credential,
         DateTimeOffset now,
         CancellationToken ct
     )
     {
-        if (OpaqueTokenSecret.HashOf(token) is not { } tokenHash)
+        if (MatchOf(credential) is not { } match)
             return null;
 
         var invitation = await _dbContext
             .Invitations.AsNoTracking()
+            .Where(match)
             .Where(row =>
-                row.TokenHash == tokenHash
-                && row.Purpose == InvitationPurpose.Onboarding
+                row.Purpose == InvitationPurpose.Onboarding
                 && row.RedeemedAt == null
                 && row.VoidedAt == null
                 && row.ExpiresAt > now
@@ -370,7 +589,7 @@ public sealed class AccountAccessService
             To = subject.Candidate.Email!,
             FirstName = subject.FirstName,
             ClubName = terms.ClubName,
-            Link = $"{_clubAppOptions.BaseUrl.TrimEnd('/')}{InvitationLinkPath}{token}",
+            Link = LinkOf(token),
             ExpiresAt = expiresAt,
         };
 
@@ -406,17 +625,44 @@ public sealed class AccountAccessService
         };
 
     [Pure]
-    private static Result<SessionTokensDetails> RefusalOf(IdentityResult created)
+    private static Expression<Func<Invitation, bool>>? MatchOf(InvitationCredential credential)
+    {
+        if (credential.Token is { } token)
+            return OpaqueTokenSecret.HashOf(token) is { } tokenHash
+                ? row => row.TokenHash == tokenHash
+                : null;
+
+        if (credential.Code is { } code)
+            return InvitationCode.HashOf(code) is { } codeHash
+                ? row => row.CodeHash == codeHash && row.Channel == InvitationChannel.InPerson
+                : null;
+
+        return null;
+    }
+
+    [Pure]
+    private static RedemptionOutcome OutcomeOf(EmailConfirmationVerdict verdict) =>
+        verdict switch
+        {
+            EmailConfirmationVerdict.Wrong => RedemptionOutcome.ConfirmationCodeWrong,
+            EmailConfirmationVerdict.Dead => RedemptionOutcome.ConfirmationCodeDead,
+            _ => throw new ArgumentOutOfRangeException(nameof(verdict), verdict, null),
+        };
+
+    [Pure]
+    private static Result<RedemptionDetails> RefusalOf(IdentityResult created)
     {
         if (created.Errors.Any(error => TakenLoginErrorCodes.Contains(error.Code)))
-            return Result<SessionTokensDetails>.Conflict(TakenLoginEmailMessage);
+            return Result<RedemptionDetails>.Success(
+                RedemptionDetails.Refused(RedemptionOutcome.LoginEmailTaken)
+            );
 
         if (
             created.Errors.All(error =>
                 error.Code.StartsWith(PasswordErrorPrefix, StringComparison.Ordinal)
             )
         )
-            return Result<SessionTokensDetails>.Validation(PasswordRuleMessage);
+            return Result<RedemptionDetails>.Validation(PasswordRuleMessage);
 
         throw new InvalidOperationException(
             "The account could not be created: "
@@ -486,6 +732,8 @@ public sealed class AccountAccessService
         int InvitationId,
         int PersonId,
         string FirstName,
-        string LoginEmail
+        string ContactEmail
     );
+
+    private sealed record ChosenLogin(string Email, string NormalizedEmail, string Password);
 }

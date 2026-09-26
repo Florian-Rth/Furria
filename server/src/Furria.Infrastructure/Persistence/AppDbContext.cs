@@ -43,6 +43,8 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>
 
     public DbSet<AccountEvent> AccountEvents => Set<AccountEvent>();
 
+    public DbSet<EmailConfirmation> EmailConfirmations => Set<EmailConfirmation>();
+
     public DbSet<Session> Sessions => Set<Session>();
 
     public DbSet<Venue> Venues => Set<Venue>();
