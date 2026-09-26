@@ -282,8 +282,12 @@ herself, and a person without account is switched on her word. A permission sees
 hidden is a setting, never a gap (pinned 2026-09-10, CA-P1 fresh shaping). **A person with an
 account keeps her own contact details** — she edits phone, address and contact email herself, and
 the change shows who made it and when; her name and birth date stay with the club, because they
-are who she is, not how to reach her (ruled 2026-09-25, accounts shaping).
-_UI copy_: Kontaktdaten (Telefon, E-Mail, Adresse)
+are who she is, not how to reach her (ruled 2026-09-25, accounts shaping). **Only an actual
+change counts as a change**: saving the values that were already there records nothing. The last
+change is shown with its actor and day — *Kontaktdaten geändert von Anna am 3. Okt.*, or *von dir*
+when she made it herself (built 2026-09-26, CA-P8 S8).
+_UI copy_: Kontaktdaten (Telefon, E-Mail, Adresse); *Kontaktdaten geändert von Anna am 3. Okt.* ·
+*von dir*
 _Avoid_: contact (as a field name), showing hidden contact details as missing data
 
 **Portrait**:
@@ -326,8 +330,9 @@ contact email; never a login email. She signs in with her **password**, always a
 with a **passkey** (*Mit Fingerabdruck anmelden*) she may add on any of her devices — the passkey
 is a convenience on top, never a replacement (ruled 2026-09-25). **An account outlives
 affiliation**: when her last running relationship ends, her keys fall away by derivation and the
-account stays, showing her that she is no longer active in the club; rejoining lights it up again
-without a new invitation (ruled 2026-09-25). **Only she deletes her account**; her person and
+account stays, showing her that she is no longer active in the club — the **nicht im Verein
+aktiv** state: every club surface gives way to that one screen, and her profile stays reachable
+from it. Rejoining lights it up again without a new invitation (ruled 2026-09-25). **Only she deletes her account**; her person and
 everything the club recorded about her stays, and she can return through a new invitation. The
 club never deletes an account — it **disables** one, reversibly (ruled 2026-09-25).
 **The MVP has no child
@@ -335,7 +340,7 @@ accounts** (ruled 2026-09-21, CA-P6 shaping): nobody under the club's own age of
 login, and no account is held on another person's behalf. A child in the children's guard is a
 person with a group membership and no account, exactly like a member who never asked for the
 app — so no surface may assume the dancer is the one reading it.
-_UI copy_: Account
+_UI copy_: Account; *nicht im Verein aktiv*
 _Avoid_: user (as a table/entity name), guest account (it is the same account concept),
 username
 
@@ -374,8 +379,19 @@ pressing the button twice never mails the same person twice. A person has **at m
 invitation**: a new one, by any channel, voids the one before; each lives as long as its channel
 warrants (a mail for days, a code on a manager's screen for minutes). A **group admin** issues
 none — accounts are the club's business, never a group's (ruled 2026-09-25).
-_UI copy_: Einladung; *Zugang anfordern* (the person's own request)
+**Never invited** means she has never been sent an onboarding invitation at all, by any channel.
+An **offene Einladung** (open invitation) is a live onboarding invitation of a person who still
+has no account — neither redeemed nor voided, **expired or not**: an expired one was issued and
+never answered, which is exactly whom a reminder is for (built 2026-09-26, CA-P8 S4).
+_UI copy_: Einladung; *Zugang anfordern* (the person's own request); *offene Einladung*
 _Avoid_: sign-up, registration
+
+**Bestätigungscode** (confirmation code):
+A 6-digit code mailed to a login email she chose herself, proving she controls that inbox. It
+lives 15 minutes and dies after 5 wrong tries; a new one voids the one before (built 2026-09-26,
+CA-P8 S2).
+_UI copy_: Bestätigungscode
+_Avoid_: PIN, OTP, calling the in-person short code a confirmation code
 
 **Access recovery**:
 A one-time token, handed out by the club, that sets new credentials on an **existing** account —

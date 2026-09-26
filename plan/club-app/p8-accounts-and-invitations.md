@@ -1,5 +1,5 @@
 ---
-status: shaped 2026-09-25; S0 and S1 built 2026-09-25, S2–S11 planned
+status: shaped 2026-09-25; S0, S1, S2, S4, S8 built 2026-09-25/26; S3, S5–S7, S9–S11 planned
 phase: CA-P8 — Accounts & invitations
 shaped_with: Florian, grilling session 2026-09-25
 binding: docs/adr/0005 (to be amended for passkeys), docs/adr/0011, docs/adr/0016,
@@ -97,7 +97,7 @@ deleted. It replaces the handoff's `invitation` table in `docs/design/FCC-Schema
 | `Channel` | `InvitationChannel` | `Mail` · `InPerson` · `Request` (her own) |
 | `TokenHash` | `string` | SHA-256 of the link token; unique. The token itself is never stored |
 | `CodeHash` | `string?` | the in-person short code's hash; `InPerson` only |
-| `IssuedByPersonId` | `int?` | null for `Request` |
+| `IssuedByPersonId` | `int?` | null for `Request`; a reminder records the manager who sent it, even when it re-issues a `Request` invitation. `SetNull` when that person is deleted |
 | `IssuedAt` · `ExpiresAt` | `DateTimeOffset` | 14 days for `Mail`/`Request`, 15 minutes for `InPerson` |
 | `RedeemedAt` · `VoidedAt` | `DateTimeOffset?` | at most one set |
 | `IsReminder` | `bool` | sent by *Erinnern* |
@@ -106,6 +106,21 @@ deleted. It replaces the handoff's `invitation` table in `docs/design/FCC-Schema
 neither redeemed nor voided — expired ones included — in the same transaction, and a partial
 unique index on `PersonId` where both `RedeemedAt` and `VoidedAt` are null makes a second live row
 impossible. *Never invited* means no row with `Purpose = Onboarding` exists for the person.
+An **offene Einladung** is a live `Onboarding` row — neither redeemed nor voided, **expired or
+not** — of a person without an account.
+
+**Email confirmation** (`EmailConfirmation`, `Furria.Infrastructure/Identity`) — the
+*Bestätigungscode* that proves she controls a login email she chose (S2).
+
+| Field | Type | Rule |
+|---|---|---|
+| `Purpose` | `EmailConfirmationPurpose` | `InvitationRedemption` (S6 adds its own) |
+| `InvitationId` | `int?` | the invitation being redeemed; cascade on delete |
+| `NormalizedEmail` | `string` | the address the code was mailed to |
+| `CodeHash` | `string` | hash of the 6-digit code; the code itself is never stored |
+| `IssuedAt` · `ExpiresAt` | `DateTimeOffset` | 15 minutes |
+| `FailedAttempts` | `int` | dead at 5 |
+| `ConsumedAt` · `VoidedAt` | `DateTimeOffset?` | at most one set; one live row per purpose and invitation |
 
 **Account events** (`AccountEvent`, `Furria.Infrastructure/Identity`) — the history the *Zugang*
 panel shows: `PersonId`, `Kind` (`Invited` · `Reminded` · `Redeemed` · `Recovered` · `Disabled` ·
@@ -113,7 +128,10 @@ panel shows: `PersonId`, `Kind` (`Invited` · `Reminded` · `Redeemed` · `Recov
 performs the act, never derived after the fact. **No sign-in event exists** (ruling 22).
 
 **Contact details** gain `ContactChangedAt` and `ContactChangedByPersonId` on `Person` — the last
-change and who made it. Open question 2 decides whether it grows into a per-field history.
+change and who made it. The foreign key is `SetNull`, like `Invitation.IssuedBy`: deleting the
+person who made a change (S9's absorption of a stray person) must never be blocked by it, and a
+change whose actor is gone reads as no change. Open question 2 decides whether it grows into a
+per-field history.
 
 **Account** stays as it is (`PersonId`, `IsDisabled`, `LastSeenAnnouncementAt`), with two
 consequences: its unique `PersonId` stays, but nothing may treat it as fixed (ADR-0019); and
@@ -305,6 +323,25 @@ login email herself. Redemption becomes complete.
 **Done when** the tests cover code redemption, code expiry, confirmation-code mismatch and expiry,
 the taken branch, and that the code is returned by exactly one call.
 
+**What was built — 2026-09-26**
+- `POST manage/persons/{id}/invitations/in-person` → `{link, code, expiresAt}`, returned once;
+  `GET manage/persons/{id}/access-state` → `{state}`, the screen's poll.
+- `auth/invitations/lookup` and `auth/invitations/redeem` take `token` **or** `code`. Lookup
+  returns `contactEmailTaken`, so the redeem page opens with an empty login email when the
+  contact email is already someone's login.
+- The redeem response is an outcome union: `redeemed` (with the session) or
+  `confirmationRequired` (with the code's expiry). *Taken*, a wrong code and a dead code are
+  refusals on the field they concern.
+- `EmailConfirmation` (model above): 6-digit code, 15 minutes, 5 attempts. The mail's subject
+  comes from a per-purpose factory (`EmailConfirmationSubject`) — the seam S6 reuses for the
+  login-email change.
+- **The taken check comes first**, before any confirmation code is mailed. It is the point S9
+  branches into the claim-in.
+- Club-app: `/invitation/code` (*Code eingeben*) and the QR's `#code=` fragment, both landing on
+  the same redeem flow; the in-person screen at `/manage/persons/{id}/invitations/in-person`.
+  `KkQrCode` in `@furria/ui`, drawn over `uqr`.
+- Tests run with 10 permits per invitation token (`ApiTestFixture.PermitsPerInvitationToken`).
+
 ---
 
 ### S3 — self-request and forgotten password
@@ -353,6 +390,21 @@ person; the per-address throttle holds; a reset ends existing sessions.
 
 **Done when** the tests prove a second bulk invitation sends nothing to anyone already invited,
 reminders reach only open invitations, and the preview's counts equal what is then sent.
+
+**What was built — 2026-09-26**
+- `GET manage/invitations/preview` → `{inviteCount, remindCount, eligibleWithoutEmailCount}`;
+  `POST manage/invitations/bulk` and `POST manage/invitations/reminders` → `{sentCount}`.
+- `GetManageHub` gains the `accounts` block: `withAccessCount` (affiliated, enabled account),
+  `ofCount` (that plus the eligible without account), `openInvitationCount`,
+  `eligibleWithoutEmailCount`.
+- `GetPersons?access=` takes `none` · `invited` · `active` · `disabled` · `not-invitable` — one
+  per access state, every person in exactly one — and `with-access` · `open-invitation` ·
+  `without-email`, the sets the hub counts.
+- **Every hub count equals the list it links to.** The hub counts and the filters read the same
+  `AccessQuery` sets; `GetManageHubTests` pins it over a club holding every case.
+- An *offene Einladung* includes an expired one: it was issued and never answered, which is
+  exactly who *Erinnern* is for. An `InPerson` invitation is never reminded.
+- A reminder records the manager as its issuer, even when it re-issues a `Request` invitation.
 
 ---
 
@@ -445,6 +497,17 @@ on Android signs in with a passkey created on the web.
 
 **Done when** the tests cover her write, the actor on both writes, and that her write never
 touches her login email.
+
+**What was built — 2026-09-26**
+- `PUT auth/me/contact-details` — phone, street, zip, city, contact email.
+- The stamp is written **only on an actual change** of one of those five, by her write or by
+  `PutPerson`; saving unchanged values leaves the previous stamp.
+- `contactChange` (`at`, `changedBy`) on `GetPersonById` and `GetMe`, shown as *Kontaktdaten
+  geändert von Anna am 3. Okt.* — *von dir* when she made it.
+- Club-app: `/profile/contact/edit`. *Nicht im Verein aktiv* replaces `RequireAffiliation`'s copy
+  on the `_affiliated` routes and on `/`, with the profile reachable; rejoining shows on the next
+  `me` fetch.
+- Open question 2 stays open.
 
 ---
 
