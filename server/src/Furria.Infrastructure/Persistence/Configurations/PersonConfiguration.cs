@@ -40,6 +40,6 @@ public sealed class PersonConfiguration : IEntityTypeConfiguration<Person>
             .WithMany()
             .HasForeignKey(person => person.ContactChangedByPersonId)
             .HasConstraintName("fk_person_person_contact_changed_by_person_id")
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

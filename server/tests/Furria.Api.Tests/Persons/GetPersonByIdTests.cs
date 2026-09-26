@@ -588,6 +588,30 @@ public sealed class GetPersonByIdTests
     }
 
     [Fact]
+    public async Task Should_ShowNoContactChange_When_TheEditorWasDeleted()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var changedAt = _fixture.TimeProvider.GetUtcNow().AddDays(-3);
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddPerson("paula", "Paula", "Brendel")
+                        .AddPerson("anna", "Anna", "Kessler")
+                        .AddContactChange("paula", "anna", changedAt)
+                ),
+            ct
+        );
+        await _fixture.DeletePersonDirectlyAsync(ctx.Identity.People.IdOf("anna"), ct);
+
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("paula"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Null(result.ContactChange);
+    }
+
+    [Fact]
     public async Task Should_ShowNoContactChange_When_TheContactDetailsWereNeverChanged()
     {
         var ct = TestContext.Current.CancellationToken;
