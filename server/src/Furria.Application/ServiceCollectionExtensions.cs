@@ -81,9 +81,10 @@ public static class ServiceCollectionExtensions
             .GetSection(ClubAppOptions.SectionName)
             .GetSection(nameof(ClubAppOptions.AndroidCertFingerprints));
 
-        return AndroidCertFingerprint.ListOf(
-            [section.Value, .. section.GetChildren().Select(entry => entry.Value)]
-        );
+        return AndroidCertFingerprint.ListOf([
+            section.Value,
+            .. section.GetChildren().Select(entry => entry.Value),
+        ]);
     }
 
     private static bool IsAbsoluteWebUrl(string value) =>

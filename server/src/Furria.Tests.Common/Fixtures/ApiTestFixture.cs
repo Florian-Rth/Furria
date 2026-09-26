@@ -543,7 +543,8 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         await Polling.UntilAsync(
             _ =>
                 Task.FromResult(
-                    Services.GetRequiredService<SignedOutMailRequestQueue>() is { IsIdle: true } queue
+                    Services.GetRequiredService<SignedOutMailRequestQueue>()
+                        is { IsIdle: true } queue
                         ? queue
                         : null
                 ),
