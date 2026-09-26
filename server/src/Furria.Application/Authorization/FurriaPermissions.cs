@@ -11,6 +11,7 @@ public static class FurriaPermissions
     public const string KeyHoldingsManage = "key_holdings.manage";
     public const string BoardManage = "board.manage";
     public const string CalendarManageClub = "calendar.manage_club";
+    public const string AccountsManage = "accounts.manage";
     public const string ClubRead = "club.read";
 
     public static readonly IReadOnlyList<string> All =
@@ -24,6 +25,7 @@ public static class FurriaPermissions
         KeyHoldingsManage,
         BoardManage,
         CalendarManageClub,
+        AccountsManage,
     ];
 
     public static readonly IReadOnlyList<string> ImpliedByRelationship = [ClubRead];

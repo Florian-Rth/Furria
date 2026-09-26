@@ -4,6 +4,7 @@ using Furria.Api.Authorization;
 using Furria.Api.Results;
 using Furria.Application.Authorization;
 using Furria.Application.Identity;
+using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Identity;
 
 namespace Furria.Api.Endpoints.Persons;
@@ -12,10 +13,15 @@ public sealed class PostPersonInvitationInPerson
     : Endpoint<PostPersonInvitationInPersonRequest, PostPersonInvitationInPersonResponse>
 {
     private readonly AccountAccessService _accountAccessService;
+    private readonly PermissionAuthorizer _authorizer;
 
-    public PostPersonInvitationInPerson(AccountAccessService accountAccessService)
+    public PostPersonInvitationInPerson(
+        AccountAccessService accountAccessService,
+        PermissionAuthorizer authorizer
+    )
     {
         _accountAccessService = accountAccessService;
+        _authorizer = authorizer;
     }
 
     public override void Configure()
@@ -29,15 +35,24 @@ public sealed class PostPersonInvitationInPerson
         CancellationToken ct
     )
     {
-        if (User.PersonId() is not { } issuerPersonId)
+        if (User.PersonId() is not { } issuerPersonId || User.AccountId() is not { } accountId)
         {
             await Send.UnauthorizedAsync(ct);
             return;
         }
 
+        var issuer = new InvitationIssuer
+        {
+            PersonId = issuerPersonId,
+            VouchesForAge = await _authorizer.IsGrantedAsync(
+                accountId,
+                FurriaPermissions.AccountsManage,
+                ct
+            ),
+        };
         var issued = await _accountAccessService.IssueInPersonInvitationAsync(
             req.PersonId,
-            issuerPersonId,
+            issuer,
             ct
         );
         if (!issued.IsSuccess)

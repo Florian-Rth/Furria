@@ -37,6 +37,7 @@ public sealed class AccountAccessService
     private readonly AccountService _accountService;
     private readonly MailQueue _mailQueue;
     private readonly EmailConfirmationService _emailConfirmationService;
+    private readonly AccessRecoveryService _accessRecoveryService;
     private readonly ClubAppOptions _clubAppOptions;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<AccountAccessService> _logger;
@@ -47,6 +48,7 @@ public sealed class AccountAccessService
         AccountService accountService,
         MailQueue mailQueue,
         EmailConfirmationService emailConfirmationService,
+        AccessRecoveryService accessRecoveryService,
         IOptions<ClubAppOptions> clubAppOptions,
         TimeProvider timeProvider,
         ILogger<AccountAccessService> logger
@@ -57,6 +59,7 @@ public sealed class AccountAccessService
         _accountService = accountService;
         _mailQueue = mailQueue;
         _emailConfirmationService = emailConfirmationService;
+        _accessRecoveryService = accessRecoveryService;
         _clubAppOptions = clubAppOptions.Value;
         _timeProvider = timeProvider;
         _logger = logger;
@@ -83,7 +86,7 @@ public sealed class AccountAccessService
 
     public async Task<Result<IssuedInvitationDetails>> IssueMailInvitationAsync(
         int personId,
-        int issuerPersonId,
+        InvitationIssuer issuer,
         CancellationToken ct
     )
     {
@@ -93,7 +96,7 @@ public sealed class AccountAccessService
             return Result<IssuedInvitationDetails>.NotFound(UnknownPersonMessage);
 
         var terms = await ClubTermsAsync(ct);
-        if (RefusalOf(subject, terms) is { } refusal)
+        if (RefusalOf(subject, terms, issuer.VouchesForAge) is { } refusal)
             return Result<IssuedInvitationDetails>.Conflict(refusal);
 
         var token = OpaqueTokenSecret.Generate(out var tokenHash);
@@ -106,7 +109,7 @@ public sealed class AccountAccessService
                 Purpose = InvitationPurpose.Onboarding,
                 Channel = InvitationChannel.Mail,
                 TokenHash = tokenHash,
-                IssuedByPersonId = issuerPersonId,
+                IssuedByPersonId = issuer.PersonId,
                 IssuedAt = now,
                 ExpiresAt = expiresAt,
             },
@@ -125,7 +128,7 @@ public sealed class AccountAccessService
 
     public async Task<Result<IssuedInPersonInvitationDetails>> IssueInPersonInvitationAsync(
         int personId,
-        int issuerPersonId,
+        InvitationIssuer issuer,
         CancellationToken ct
     )
     {
@@ -134,7 +137,7 @@ public sealed class AccountAccessService
         if (subject is null)
             return Result<IssuedInPersonInvitationDetails>.NotFound(UnknownPersonMessage);
 
-        if (RefusalOf(subject, await ClubTermsAsync(ct)) is { } refusal)
+        if (RefusalOf(subject, await ClubTermsAsync(ct), issuer.VouchesForAge) is { } refusal)
             return Result<IssuedInPersonInvitationDetails>.Conflict(refusal);
 
         var token = OpaqueTokenSecret.Generate(out var tokenHash);
@@ -149,7 +152,7 @@ public sealed class AccountAccessService
                 Channel = InvitationChannel.InPerson,
                 TokenHash = tokenHash,
                 CodeHash = codeHash,
-                IssuedByPersonId = issuerPersonId,
+                IssuedByPersonId = issuer.PersonId,
                 IssuedAt = now,
                 ExpiresAt = expiresAt,
             },
@@ -206,6 +209,9 @@ public sealed class AccountAccessService
         CancellationToken ct
     )
     {
+        if (await _accessRecoveryService.LookUpAsync(credential, ct) is { } recovery)
+            return recovery;
+
         var redeemable = await RedeemableAsync(credential, _timeProvider.GetUtcNow(), ct);
         if (redeemable is null)
             return null;
@@ -220,6 +226,7 @@ public sealed class AccountAccessService
             FirstName = redeemable.FirstName,
             LoginEmail = contactEmailTaken ? null : redeemable.ContactEmail,
             ContactEmailTaken = contactEmailTaken,
+            Purpose = InvitationPurpose.Onboarding,
         };
     }
 
@@ -228,6 +235,9 @@ public sealed class AccountAccessService
         CancellationToken ct
     )
     {
+        if (await _accessRecoveryService.IsRecoveryAsync(command.Credential, ct))
+            return await _accessRecoveryService.RecoverAsync(command, ct);
+
         var now = _timeProvider.GetUtcNow();
         var redeemable = await RedeemableAsync(command.Credential, now, ct);
         if (redeemable is null)
@@ -382,7 +392,7 @@ public sealed class AccountAccessService
         return saved;
     }
 
-    private async Task<(string Code, string CodeHash)> FreshInvitationCodeAsync(
+    internal async Task<(string Code, string CodeHash)> FreshInvitationCodeAsync(
         DateTimeOffset now,
         CancellationToken ct
     )
@@ -548,7 +558,11 @@ public sealed class AccountAccessService
             return null;
 
         var subject = await SubjectAsync(invitation.PersonId, ClubClock.DayOf(now), ct);
-        if (subject is null || RefusalOf(subject, await ClubTermsAsync(ct)) is not null)
+        if (
+            subject is null
+            || RefusalOf(subject, await ClubTermsAsync(ct), admitsUnknownBirthDate: true)
+                is not null
+        )
             return null;
 
         return new RedeemableInvitation(
@@ -590,13 +604,21 @@ public sealed class AccountAccessService
         };
 
     [Pure]
-    private static string? RefusalOf(SubjectRow subject, ClubTerms terms) =>
+    private static string? RefusalOf(
+        SubjectRow subject,
+        ClubTerms terms,
+        bool admitsUnknownBirthDate
+    ) =>
         subject.AccountIsDisabled is not null
             ? $"{subject.FirstName} hat bereits einen Zugang."
-            : AccountEligibility.ReasonAgainst(
-                subject.Candidate,
-                subject.Today,
-                terms.AgeOfConsent
+            : (
+                admitsUnknownBirthDate && subject.Candidate.BirthDate is null
+                    ? AccountEligibility.ReasonAgainstWithVouchedAge(subject.Candidate)
+                    : AccountEligibility.ReasonAgainst(
+                        subject.Candidate,
+                        subject.Today,
+                        terms.AgeOfConsent
+                    )
             ) switch
             {
                 null => null,
@@ -621,7 +643,7 @@ public sealed class AccountAccessService
         };
 
     [Pure]
-    private static Expression<Func<Invitation, bool>>? MatchOf(InvitationCredential credential)
+    internal static Expression<Func<Invitation, bool>>? MatchOf(InvitationCredential credential)
     {
         if (credential.Token is { } token)
             return OpaqueTokenSecret.HashOf(token) is { } tokenHash

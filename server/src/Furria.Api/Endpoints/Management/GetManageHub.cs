@@ -24,7 +24,8 @@ public sealed class GetManageHub : EndpointWithoutRequest<GetManageHubResponse>
             FurriaPermissions.RolesManage,
             FurriaPermissions.ClubManage,
             FurriaPermissions.KeyHoldingsManage,
-            FurriaPermissions.BoardManage
+            FurriaPermissions.BoardManage,
+            FurriaPermissions.AccountsManage
         );
     }
 

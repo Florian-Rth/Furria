@@ -80,6 +80,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ManagementService>();
         services.AddScoped<InvitationRoundService>();
         services.AddScoped<AccountSecurityService>();
+        services.AddScoped<AccessRecoveryService>();
+        services.AddScoped<AccountAdministrationService>();
 
         services.AddSingleton<MailQueue>();
         services.AddSingleton<MailService>();

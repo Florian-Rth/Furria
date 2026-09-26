@@ -2,6 +2,7 @@ using FastEndpoints;
 using FluentValidation;
 using Furria.Api.RateLimiting;
 using Furria.Application.Identity;
+using Furria.Core.Identity;
 using Furria.Infrastructure.Identity;
 
 namespace Furria.Api.Endpoints.Auth;
@@ -14,6 +15,7 @@ public sealed class LookUpInvitation : Endpoint<LookUpInvitationRequest, LookUpI
         FirstName = null,
         LoginEmail = null,
         ContactEmailTaken = null,
+        Purpose = null,
     };
 
     private readonly AccountAccessService _accountAccessService;
@@ -59,6 +61,7 @@ public sealed class LookUpInvitation : Endpoint<LookUpInvitationRequest, LookUpI
             FirstName = invitation.FirstName,
             LoginEmail = invitation.LoginEmail,
             ContactEmailTaken = invitation.ContactEmailTaken,
+            Purpose = invitation.Purpose,
         };
 }
 
@@ -111,4 +114,6 @@ public sealed record LookUpInvitationResponse
     public required string? LoginEmail { get; init; }
 
     public required bool? ContactEmailTaken { get; init; }
+
+    public required InvitationPurpose? Purpose { get; init; }
 }

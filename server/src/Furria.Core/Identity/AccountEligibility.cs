@@ -21,6 +21,17 @@ public static class AccountEligibility
         };
 
     [Pure]
+    public static AccountIneligibilityReason? ReasonAgainstWithVouchedAge(
+        AccountCandidate candidate
+    ) =>
+        candidate switch
+        {
+            { IsAffiliated: false } => AccountIneligibilityReason.NotAffiliated,
+            { Email: null or "" } => AccountIneligibilityReason.NoEmail,
+            _ => null,
+        };
+
+    [Pure]
     public static AccountAccessState StateOf(
         bool? accountIsDisabled,
         bool hasUnexpiredLiveInvitation

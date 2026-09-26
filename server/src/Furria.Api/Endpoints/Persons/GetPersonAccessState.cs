@@ -12,10 +12,15 @@ public sealed class GetPersonAccessState
     : Endpoint<GetPersonAccessStateRequest, GetPersonAccessStateResponse>
 {
     private readonly AccountAccessService _accountAccessService;
+    private readonly AccessRecoveryService _accessRecoveryService;
 
-    public GetPersonAccessState(AccountAccessService accountAccessService)
+    public GetPersonAccessState(
+        AccountAccessService accountAccessService,
+        AccessRecoveryService accessRecoveryService
+    )
     {
         _accountAccessService = accountAccessService;
+        _accessRecoveryService = accessRecoveryService;
     }
 
     public override void Configure()
@@ -34,7 +39,14 @@ public sealed class GetPersonAccessState
         }
 
         await Send.OkAsync(
-            new GetPersonAccessStateResponse { State = state.Value },
+            new GetPersonAccessStateResponse
+            {
+                State = state.Value,
+                IsRecoveryOpen = await _accessRecoveryService.HasOpenRecoveryAsync(
+                    req.PersonId,
+                    ct
+                ),
+            },
             cancellation: ct
         );
     }
@@ -57,4 +69,6 @@ public sealed class GetPersonAccessStateValidator : Validator<GetPersonAccessSta
 public sealed record GetPersonAccessStateResponse
 {
     public required AccountAccessState State { get; init; }
+
+    public required bool IsRecoveryOpen { get; init; }
 }

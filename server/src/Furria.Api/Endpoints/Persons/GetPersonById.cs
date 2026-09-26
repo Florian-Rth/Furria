@@ -8,6 +8,8 @@ using Furria.Application.Identity;
 using Furria.Application.Registry;
 using Furria.Core.Club;
 using Furria.Core.Identity;
+using Furria.Infrastructure.Authorization;
+using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Registry;
 
@@ -17,11 +19,20 @@ public sealed class GetPersonById : Endpoint<GetPersonByIdRequest, GetPersonById
 {
     private readonly PersonService _personService;
     private readonly AccountAccessService _accountAccessService;
+    private readonly PermissionAuthorizer _authorizer;
+    private readonly ClubRecordService _clubRecordService;
 
-    public GetPersonById(PersonService personService, AccountAccessService accountAccessService)
+    public GetPersonById(
+        PersonService personService,
+        AccountAccessService accountAccessService,
+        PermissionAuthorizer authorizer,
+        ClubRecordService clubRecordService
+    )
     {
         _personService = personService;
         _accountAccessService = accountAccessService;
+        _authorizer = authorizer;
+        _clubRecordService = clubRecordService;
     }
 
     public override void Configure()
@@ -46,12 +57,29 @@ public sealed class GetPersonById : Endpoint<GetPersonByIdRequest, GetPersonById
             return;
         }
 
-        await Send.OkAsync(ToResponse(person.Value, access.Value), cancellation: ct);
+        var viewer = await ViewerOfAccessAsync(ct);
+
+        await Send.OkAsync(ToResponse(person.Value, access.Value, viewer), cancellation: ct);
+    }
+
+    private async Task<AccessViewer> ViewerOfAccessAsync(CancellationToken ct)
+    {
+        var granted = User.AccountId() is { } accountId
+            ? await _authorizer.GrantedKeysAsync(accountId, ct)
+            : [];
+        var club = await _clubRecordService.GetAsync(ct);
+
+        return new AccessViewer(
+            granted.Contains(FurriaPermissions.PersonsManage),
+            granted.Contains(FurriaPermissions.AccountsManage),
+            club.AgeOfConsent
+        );
     }
 
     private static GetPersonByIdResponse ToResponse(
         ManagedPersonDetails person,
-        AccountAccessDetails access
+        AccountAccessDetails access,
+        AccessViewer viewer
     ) =>
         new()
         {
@@ -72,7 +100,7 @@ public sealed class GetPersonById : Endpoint<GetPersonByIdRequest, GetPersonById
             FeeReductions = [.. person.FeeReductions.Select(ToDto)],
             Groups = [.. person.Groups.Select(ToDto)],
             Roles = [.. person.Roles.Select(ToDto)],
-            Access = ToDto(access),
+            Access = ToDto(access, viewer),
         };
 
     private static PersonContactChangeDto ToDto(ContactChangeDetails change) =>
@@ -87,13 +115,19 @@ public sealed class GetPersonById : Endpoint<GetPersonByIdRequest, GetPersonById
             },
         };
 
-    private static PersonAccessDto ToDto(AccountAccessDetails access) =>
+    private static PersonAccessDto ToDto(AccountAccessDetails access, AccessViewer viewer) =>
         new()
         {
             State = access.State,
             Reason = access.Reason,
             Invitation = access.Invitation is { } invitation ? ToDto(invitation) : null,
             History = [.. access.History.Select(ToDto)],
+            Rights = new()
+            {
+                CanInvite = viewer.CanInvite,
+                CanManageAccount = viewer.CanManageAccount,
+            },
+            AgeOfConsent = viewer.AgeOfConsent,
         };
 
     private static PersonAccessInvitationDto ToDto(LiveInvitationDetails invitation) =>
@@ -169,6 +203,8 @@ public sealed class GetPersonById : Endpoint<GetPersonByIdRequest, GetPersonById
             SinceOn = role.SinceOn,
             UntilOn = role.UntilOn,
         };
+
+    private sealed record AccessViewer(bool CanInvite, bool CanManageAccount, int AgeOfConsent);
 }
 
 public sealed record GetPersonByIdRequest
@@ -249,6 +285,17 @@ public sealed record PersonAccessDto
     public required PersonAccessInvitationDto? Invitation { get; init; }
 
     public required IReadOnlyList<PersonAccessEventDto> History { get; init; }
+
+    public required PersonAccessRightsDto Rights { get; init; }
+
+    public required int AgeOfConsent { get; init; }
+}
+
+public sealed record PersonAccessRightsDto
+{
+    public required bool CanInvite { get; init; }
+
+    public required bool CanManageAccount { get; init; }
 }
 
 public sealed record PersonAccessInvitationDto
