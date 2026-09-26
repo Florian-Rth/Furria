@@ -1,3 +1,5 @@
+using System.Net;
+using Furria.Api.Tests.Auth;
 using Furria.Application.Authorization;
 using Furria.Application.Identity;
 using Furria.Infrastructure.Identity;
@@ -153,11 +155,66 @@ public sealed class BootstrapAdminSeederTests
     }
 
     [Fact]
-    public async Task Should_CreateTheBootstrapAccountAgain_When_OnlyOtherAccountsRemain()
+    public async Task Should_CreateNoAccount_When_TheAdminDeletedHersWhileOtherAccountsRemain()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
             builder => builder.Identity(identity => identity.AddAccount("alice")),
+            ct
+        );
+        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var deleted = await AccountSecuritySteps.DeleteAccountAsync(
+            admin,
+            ApiTestFixture.BootstrapAdminPassword
+        );
+        Assert.Equal(HttpStatusCode.NoContent, deleted.StatusCode);
+
+        await _fixture.RunBootstrapSeederAsync(ct);
+
+        await ctx
+            .Expected.Accounts()
+            .ToHaveCount(1)
+            .Account(ctx.Identity.Accounts.IdOf("alice"))
+            .ToBeLinkedTo(ctx.Identity.People.IdOf("alice"))
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_CreateNoAccount_When_TheAdminChangedHerLoginEmail()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(ct);
+        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var newEmail = InvitationSteps.UniqueContactEmail("admin-neu");
+        var code = await AccountSecuritySteps.RequestLoginEmailCodeAsync(
+            _fixture,
+            admin,
+            newEmail,
+            ct
+        );
+        await AccountSecuritySteps.ConfirmLoginEmailAsync(admin, code);
+
+        await _fixture.RunBootstrapSeederAsync(ct);
+
+        await ctx
+            .Expected.Accounts()
+            .ToHaveCount(1)
+            .Account(_fixture.BootstrapAdmin.AccountId)
+            .ToHaveEmail(newEmail)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_StillGrantTheAdminRoleEveryKey_When_TheBootstrapAccountIsGone()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => identity.AddAccount("alice")),
+            ct
+        );
+        await _fixture.RemoveRolePermissionDirectlyAsync(
+            _fixture.AdminRoleId,
+            FurriaPermissions.AccountsManage,
             ct
         );
         await _fixture.DeleteAccountDirectlyAsync(_fixture.BootstrapAdmin.AccountId, ct);
@@ -165,8 +222,10 @@ public sealed class BootstrapAdminSeederTests
         await _fixture.RunBootstrapSeederAsync(ct);
 
         await ctx
-            .Expected.Accounts()
-            .ToContainEmail(ApiTestFixture.BootstrapAdminEmail)
+            .Expected.Role(_fixture.AdminRoleId)
+            .ToGrantExactly([.. FurriaPermissions.All])
+            .Accounts()
+            .ToHaveCount(1)
             .AssertAsync(ct);
     }
 

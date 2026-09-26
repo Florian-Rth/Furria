@@ -53,10 +53,15 @@ public sealed class BootstrapAdminSeeder : IHostedService
             cancellationToken
         );
 
-        await EnsureBootstrapAccountAsync(dbContext, userManager, transaction, cancellationToken);
-        await EnsureAdminRoleAsync(
+        var bootstrapPersonId = await EnsureBootstrapAccountAsync(
             dbContext,
             userManager,
+            transaction,
+            cancellationToken
+        );
+        await EnsureAdminRoleAsync(
+            dbContext,
+            bootstrapPersonId,
             scope.ServiceProvider.GetRequiredService<TimeProvider>(),
             cancellationToken
         );
@@ -66,7 +71,7 @@ public sealed class BootstrapAdminSeeder : IHostedService
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
-    private async Task EnsureBootstrapAccountAsync(
+    private async Task<int?> EnsureBootstrapAccountAsync(
         AppDbContext dbContext,
         UserManager<Account> userManager,
         IDbContextTransaction transaction,
@@ -76,8 +81,11 @@ public sealed class BootstrapAdminSeeder : IHostedService
         if (await userManager.FindByEmailAsync(_options.Email) is { } existing)
         {
             await ReopenBootstrapAccountAsync(dbContext, existing, ct);
-            return;
+            return existing.PersonId;
         }
+
+        if (await dbContext.Users.AnyAsync(ct))
+            return null;
 
         var person = new Person
         {
@@ -105,7 +113,7 @@ public sealed class BootstrapAdminSeeder : IHostedService
                 account.Id,
                 _options.Email
             );
-            return;
+            return person.Id;
         }
 
         await transaction.RollbackAsync(ct);
@@ -130,7 +138,7 @@ public sealed class BootstrapAdminSeeder : IHostedService
 
     private async Task EnsureAdminRoleAsync(
         AppDbContext dbContext,
-        UserManager<Account> userManager,
+        int? bootstrapPersonId,
         TimeProvider timeProvider,
         CancellationToken ct
     )
@@ -143,7 +151,13 @@ public sealed class BootstrapAdminSeeder : IHostedService
 
         if (adminRoleId is not null)
         {
-            await ReconcileAdminRoleAsync(dbContext, userManager, adminRoleId.Value, today, ct);
+            await ReconcileAdminRoleAsync(
+                dbContext,
+                bootstrapPersonId,
+                adminRoleId.Value,
+                today,
+                ct
+            );
             return;
         }
 
@@ -155,14 +169,9 @@ public sealed class BootstrapAdminSeeder : IHostedService
             [
                 .. FurriaPermissions.All.Select(key => new RolePermission { PermissionKey = key }),
             ],
-            Holdings =
-            [
-                new RoleHolding
-                {
-                    PersonId = await RequireBootstrapPersonIdAsync(userManager),
-                    SinceOn = today,
-                },
-            ],
+            Holdings = bootstrapPersonId is { } personId
+                ? [new RoleHolding { PersonId = personId, SinceOn = today }]
+                : [],
         };
 
         dbContext.Roles.Add(role);
@@ -172,7 +181,7 @@ public sealed class BootstrapAdminSeeder : IHostedService
 
     private async Task ReconcileAdminRoleAsync(
         AppDbContext dbContext,
-        UserManager<Account> userManager,
+        int? bootstrapPersonId,
         int adminRoleId,
         DateOnly today,
         CancellationToken ct
@@ -180,7 +189,8 @@ public sealed class BootstrapAdminSeeder : IHostedService
     {
         await ReopenAdminRoleAsync(dbContext, adminRoleId, ct);
         await GrantEveryMissingKeyAsync(dbContext, adminRoleId, ct);
-        await EnsureAdminRoleIsHeldAsync(dbContext, userManager, adminRoleId, today, ct);
+        if (bootstrapPersonId is { } personId)
+            await EnsureAdminRoleIsHeldAsync(dbContext, personId, adminRoleId, today, ct);
     }
 
     private async Task ReopenAdminRoleAsync(
@@ -226,7 +236,7 @@ public sealed class BootstrapAdminSeeder : IHostedService
 
     private async Task EnsureAdminRoleIsHeldAsync(
         AppDbContext dbContext,
-        UserManager<Account> userManager,
+        int personId,
         int adminRoleId,
         DateOnly today,
         CancellationToken ct
@@ -242,7 +252,6 @@ public sealed class BootstrapAdminSeeder : IHostedService
         if (stillHeld)
             return;
 
-        var personId = await RequireBootstrapPersonIdAsync(userManager);
         dbContext.RoleHoldings.Add(
             new RoleHolding
             {
@@ -257,16 +266,6 @@ public sealed class BootstrapAdminSeeder : IHostedService
             adminRoleId,
             personId
         );
-    }
-
-    private async Task<int> RequireBootstrapPersonIdAsync(UserManager<Account> userManager)
-    {
-        var account = await userManager.FindByEmailAsync(_options.Email);
-
-        return account?.PersonId
-            ?? throw new InvalidOperationException(
-                $"The Admin role cannot be seeded: no Account exists for {_options.Email}."
-            );
     }
 
     private static string Describe(IdentityResult result) =>
