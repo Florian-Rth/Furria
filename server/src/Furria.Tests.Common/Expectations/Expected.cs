@@ -62,6 +62,11 @@ public sealed class Expected
 
     public InvitationSetExpectations InvitationsOfPerson(int personId) => new(this, personId);
 
+    public LiveInvitationExpectations LiveInvitationOfPerson(int personId) => new(this, personId);
+
+    public PersonAccountEventExpectations AccountEventsOfPerson(int personId) =>
+        new(this, personId);
+
     public VenueExpectations Venue(int venueId) => new(this, venueId);
 
     public ClubRecordExpectations ClubRecord() => new(this);

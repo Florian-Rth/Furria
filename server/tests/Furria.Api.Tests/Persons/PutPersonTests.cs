@@ -96,7 +96,11 @@ public sealed class PutPersonTests
         );
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        var (_, registry) = await client.GETAsync<GetPersons, GetPersonsResponse>();
+        var (_, registry) = await client.GETAsync<
+            GetPersons,
+            GetPersonsRequest,
+            GetPersonsResponse
+        >(new GetPersonsRequest());
         var paula = Assert.Single(registry.Persons, person => person.PersonId == personId);
         Assert.Null(paula.Email);
         Assert.Equal("03632 123456", paula.Phone);

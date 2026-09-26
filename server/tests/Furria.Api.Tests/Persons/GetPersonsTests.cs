@@ -2,8 +2,11 @@ using System.Net;
 using System.Text.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Persons;
+using Furria.Api.Tests.Auth;
 using Furria.Application.Authorization;
 using Furria.Core.Club;
+using Furria.Core.Identity;
+using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -20,6 +23,15 @@ public sealed class GetPersonsTests
     private static readonly DateOnly RejoinedIn2021 = new(2021, 1, 1);
     private static readonly DateOnly LeftIn2023 = new(2023, 1, 1);
     private static readonly DateOnly ArchivedIn2024 = new(2024, 1, 1);
+
+    private static readonly string[] AllAccessFilters =
+    [
+        PersonAccessFilters.None,
+        PersonAccessFilters.Invited,
+        PersonAccessFilters.Active,
+        PersonAccessFilters.Disabled,
+        PersonAccessFilters.NotInvitable,
+    ];
 
     private readonly ApiTestFixture _fixture;
 
@@ -39,7 +51,11 @@ public sealed class GetPersonsTests
         );
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
-        var (response, result) = await client.GETAsync<GetPersons, GetPersonsResponse>();
+        var (response, result) = await client.GETAsync<
+            GetPersons,
+            GetPersonsRequest,
+            GetPersonsResponse
+        >(new GetPersonsRequest());
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var tom = Assert.Single(
@@ -74,7 +90,11 @@ public sealed class GetPersonsTests
         );
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
-        var (response, result) = await client.GETAsync<GetPersons, GetPersonsResponse>();
+        var (response, result) = await client.GETAsync<
+            GetPersons,
+            GetPersonsRequest,
+            GetPersonsResponse
+        >(new GetPersonsRequest());
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var alice = Assert.Single(
@@ -106,7 +126,11 @@ public sealed class GetPersonsTests
         );
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
-        var (response, result) = await client.GETAsync<GetPersons, GetPersonsResponse>();
+        var (response, result) = await client.GETAsync<
+            GetPersons,
+            GetPersonsRequest,
+            GetPersonsResponse
+        >(new GetPersonsRequest());
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var frank = Assert.Single(
@@ -185,7 +209,11 @@ public sealed class GetPersonsTests
         );
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
-        var (response, result) = await client.GETAsync<GetPersons, GetPersonsResponse>();
+        var (response, result) = await client.GETAsync<
+            GetPersons,
+            GetPersonsRequest,
+            GetPersonsResponse
+        >(new GetPersonsRequest());
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var paula = Assert.Single(
@@ -226,7 +254,11 @@ public sealed class GetPersonsTests
         );
 
         var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var (response, _) = await client.GETAsync<GetPersons, GetPersonsResponse>();
+        var (response, _) = await client.GETAsync<
+            GetPersons,
+            GetPersonsRequest,
+            GetPersonsResponse
+        >(new GetPersonsRequest());
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
@@ -239,7 +271,7 @@ public sealed class GetPersonsTests
 
         var (response, _) = await _fixture
             .CreateClient()
-            .GETAsync<GetPersons, GetPersonsResponse>();
+            .GETAsync<GetPersons, GetPersonsRequest, GetPersonsResponse>(new GetPersonsRequest());
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
@@ -261,7 +293,11 @@ public sealed class GetPersonsTests
         );
 
         var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
-        var (response, result) = await client.GETAsync<GetPersons, GetPersonsResponse>();
+        var (response, result) = await client.GETAsync<
+            GetPersons,
+            GetPersonsRequest,
+            GetPersonsResponse
+        >(new GetPersonsRequest());
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var surnames = result
@@ -318,5 +354,193 @@ public sealed class GetPersonsTests
             fields
         );
         Assert.Equal("active", person.GetProperty("membershipState").GetString());
+    }
+
+    [Theory]
+    [InlineData(PersonAccessFilters.None, "dora", "gina")]
+    [InlineData(PersonAccessFilters.Invited, "carla")]
+    [InlineData(PersonAccessFilters.Active, "anna")]
+    [InlineData(PersonAccessFilters.Disabled, "bea")]
+    [InlineData(PersonAccessFilters.NotInvitable, "emil", "fritz", "hans", "ida")]
+    public async Task Should_ListOnlyThePersonsInThatAccessState_When_TheRegistryIsFilteredByAccess(
+        string access,
+        params string[] expectedAliases
+    )
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildEveryAccessStateAsync(ct);
+        var ids = SeededAccessIdsOf(ctx);
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        await InvitationSteps.InviteAsync(client, ids["carla"]);
+
+        var listed = await ListByAccessAsync(client, access);
+
+        Assert.Equal(
+            expectedAliases.Order(StringComparer.Ordinal),
+            ids.Where(entry => listed.Contains(entry.Value))
+                .Select(entry => entry.Key)
+                .Order(StringComparer.Ordinal)
+        );
+    }
+
+    [Fact]
+    public async Task Should_AgreeWithEachPersonsAccessPanel_When_EveryStateAndReasonIsPresent()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildEveryAccessStateAsync(ct);
+        var ids = SeededAccessIdsOf(ctx);
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        await InvitationSteps.InviteAsync(client, ids["gina"]);
+
+        await _fixture.AtLaterTimeAsync(
+            TimeSpan.FromDays(20),
+            async () =>
+            {
+                var laterClient = await ctx.Identity.BootstrapAdminClientAsync(ct);
+                await InvitationSteps.InviteAsync(laterClient, ids["carla"]);
+
+                foreach (var access in AllAccessFilters)
+                {
+                    var listed = await ListByAccessAsync(laterClient, access);
+                    foreach (var (alias, personId) in ids)
+                    {
+                        var expected = await AccessFilterFromPanelAsync(laterClient, personId);
+                        Assert.True(
+                            listed.Contains(personId) == (expected == access),
+                            $"{alias} is filed under {expected}, but the {access} filter disagrees."
+                        );
+                    }
+                }
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_When_TheAccessFilterIsUnknown()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(ct);
+
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var (response, _) = await client.GETAsync<
+            GetPersons,
+            GetPersonsRequest,
+            GetPersonsResponse
+        >(new GetPersonsRequest { Access = "everyone" });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    private Task<SeededContext> BuildEveryAccessStateAsync(CancellationToken ct)
+    {
+        var today = _fixture.Today;
+
+        return _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddEligiblePerson(
+                            "anna",
+                            "Anna",
+                            InvitationSteps.UniqueContactEmail("anna"),
+                            today
+                        )
+                        .AddAccount("anna")
+                        .AddEligiblePerson(
+                            "bea",
+                            "Bea",
+                            InvitationSteps.UniqueContactEmail("bea"),
+                            today
+                        )
+                        .AddAccount("bea", disabled: true)
+                        .AddEligiblePerson(
+                            "carla",
+                            "Carla",
+                            InvitationSteps.UniqueContactEmail("carla"),
+                            today
+                        )
+                        .AddEligiblePerson(
+                            "dora",
+                            "Dora",
+                            InvitationSteps.UniqueContactEmail("dora"),
+                            today
+                        )
+                        .AddPerson("emil", "Emil", "Muster")
+                        .AddPersonContact(
+                            "emil",
+                            birthDate: today.AddYears(-30),
+                            withoutEmail: true
+                        )
+                        .AddMembership("emil-membership", "emil", today.AddYears(-1))
+                        .AddPerson("fritz", "Fritz", "Muster")
+                        .AddPersonContact(
+                            "fritz",
+                            InvitationSteps.UniqueContactEmail("fritz"),
+                            birthDate: today.AddYears(-30)
+                        )
+                        .AddEligiblePerson(
+                            "gina",
+                            "Gina",
+                            InvitationSteps.UniqueContactEmail("gina"),
+                            today
+                        )
+                        .AddPerson("hans", "Hans", "Muster")
+                        .AddPersonContact("hans", InvitationSteps.UniqueContactEmail("hans"))
+                        .AddMembership("hans-membership", "hans", today.AddYears(-1))
+                        .AddPerson("ida", "Ida", "Muster")
+                        .AddPersonContact(
+                            "ida",
+                            InvitationSteps.UniqueContactEmail("ida"),
+                            birthDate: today.AddYears(-10)
+                        )
+                        .AddMembership("ida-membership", "ida", today.AddYears(-1))
+                ),
+            ct
+        );
+    }
+
+    private static Dictionary<string, int> SeededAccessIdsOf(SeededContext ctx) =>
+        new(StringComparer.Ordinal)
+        {
+            ["anna"] = ctx.Identity.People.IdOf("anna"),
+            ["bea"] = ctx.Identity.People.IdOf("bea"),
+            ["carla"] = ctx.Identity.People.IdOf("carla"),
+            ["dora"] = ctx.Identity.People.IdOf("dora"),
+            ["emil"] = ctx.Identity.People.IdOf("emil"),
+            ["fritz"] = ctx.Identity.People.IdOf("fritz"),
+            ["gina"] = ctx.Identity.People.IdOf("gina"),
+            ["hans"] = ctx.Identity.People.IdOf("hans"),
+            ["ida"] = ctx.Identity.People.IdOf("ida"),
+        };
+
+    private static async Task<IReadOnlySet<int>> ListByAccessAsync(HttpClient client, string access)
+    {
+        var (response, result) = await client.GETAsync<
+            GetPersons,
+            GetPersonsRequest,
+            GetPersonsResponse
+        >(new GetPersonsRequest { Access = access });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        return result.Persons.Select(person => person.PersonId).ToHashSet();
+    }
+
+    private static async Task<string> AccessFilterFromPanelAsync(HttpClient client, int personId)
+    {
+        var (response, result) = await client.GETAsync<
+            GetPersonById,
+            GetPersonByIdRequest,
+            GetPersonByIdResponse
+        >(new GetPersonByIdRequest { PersonId = personId });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        return result.Access switch
+        {
+            { State: AccountAccessState.Active } => PersonAccessFilters.Active,
+            { State: AccountAccessState.Disabled } => PersonAccessFilters.Disabled,
+            { State: AccountAccessState.Invited } => PersonAccessFilters.Invited,
+            { Reason: null } => PersonAccessFilters.None,
+            _ => PersonAccessFilters.NotInvitable,
+        };
     }
 }

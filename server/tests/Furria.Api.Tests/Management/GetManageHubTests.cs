@@ -1,6 +1,7 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Management;
+using Furria.Api.Tests.Auth;
 using Furria.Application.Authorization;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
@@ -44,6 +45,7 @@ public sealed class GetManageHubTests
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.NotNull(result.Persons);
+        Assert.NotNull(result.Accounts);
         Assert.Null(result.Groups);
         Assert.Null(result.Roles);
         Assert.Null(result.Sessions);
@@ -60,6 +62,7 @@ public sealed class GetManageHubTests
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.NotNull(result.Groups);
+        Assert.Null(result.Accounts);
         Assert.Null(result.Persons);
         Assert.Null(result.Roles);
         Assert.Null(result.Sessions);
@@ -511,6 +514,98 @@ public sealed class GetManageHubTests
 
         Assert.NotNull(result.ClubRecord);
         Assert.Equal(1, result.ClubRecord.MissingFactCount);
+    }
+
+    [Fact]
+    public async Task Should_CountAccessOpenInvitationsAndMissingEmails_When_TheHubIsRead()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var today = _fixture.Today;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddEligiblePerson(
+                            "anna",
+                            "Anna",
+                            InvitationSteps.UniqueContactEmail("anna"),
+                            today
+                        )
+                        .AddAccount("anna")
+                        .AddEligiblePerson(
+                            "bea",
+                            "Bea",
+                            InvitationSteps.UniqueContactEmail("bea"),
+                            today
+                        )
+                        .AddEligiblePerson(
+                            "carla",
+                            "Carla",
+                            InvitationSteps.UniqueContactEmail("carla"),
+                            today
+                        )
+                        .AddAccount("carla", disabled: true)
+                        .AddPerson("dora", "Dora", "Muster")
+                        .AddPersonContact(
+                            "dora",
+                            birthDate: today.AddYears(-30),
+                            withoutEmail: true
+                        )
+                        .AddMembership("dora-membership", "dora", today.AddYears(-1))
+                        .AddPerson("emil", "Emil", "Muster")
+                        .AddAccount("emil")
+                        .AddEligiblePerson(
+                            "fritz",
+                            "Fritz",
+                            InvitationSteps.UniqueContactEmail("fritz"),
+                            today
+                        )
+                ),
+            ct
+        );
+        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        await InvitationSteps.InviteAsync(admin, ctx.Identity.People.IdOf("fritz"));
+
+        var (response, result) = await admin.GETAsync<GetManageHub, GetManageHubResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(result.Accounts);
+        Assert.Equal(1 + TheBootstrapAdminPerson, result.Accounts.WithAccessCount);
+        Assert.Equal(3 + TheBootstrapAdminPerson, result.Accounts.OfCount);
+        Assert.Equal(1, result.Accounts.OpenInvitationCount);
+        Assert.Equal(1, result.Accounts.EligibleWithoutEmailCount);
+    }
+
+    [Fact]
+    public async Task Should_CountAnExpiredInvitationAsOpen_When_ItWasNeitherRedeemedNorVoided()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity.AddEligiblePerson(
+                        "anna",
+                        "Anna",
+                        InvitationSteps.UniqueContactEmail("anna"),
+                        _fixture.Today
+                    )
+                ),
+            ct
+        );
+        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        await InvitationSteps.InviteAsync(admin, ctx.Identity.People.IdOf("anna"));
+
+        await _fixture.AtLaterTimeAsync(
+            TimeSpan.FromDays(20),
+            async () =>
+            {
+                var laterAdmin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+                var (_, result) = await laterAdmin.GETAsync<GetManageHub, GetManageHubResponse>();
+
+                Assert.NotNull(result.Accounts);
+                Assert.Equal(1, result.Accounts.OpenInvitationCount);
+            }
+        );
     }
 
     private async Task<GetManageHubResponse> ReadTheHubAsAdminAsync(
