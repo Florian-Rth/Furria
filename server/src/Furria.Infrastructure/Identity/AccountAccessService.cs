@@ -287,6 +287,50 @@ public sealed class AccountAccessService
         return await CreateAccountAsync(redeemable, chosen, confirmation, now, ct);
     }
 
+    internal async Task<Result> RecordIssuedAsync(Invitation invitation, CancellationToken ct)
+    {
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
+        await VoidLiveInvitationsAsync(invitation.PersonId, invitation.IssuedAt, ct);
+        _dbContext.Invitations.Add(invitation);
+        _dbContext.AccountEvents.Add(
+            new AccountEvent
+            {
+                PersonId = invitation.PersonId,
+                Kind = IssuedEventKindOf(invitation.Purpose),
+                ActorPersonId = invitation.IssuedByPersonId,
+                At = invitation.IssuedAt,
+            }
+        );
+
+        var saved = await _dbContext.SaveOrConflictAsync(ct);
+        if (saved.IsSuccess)
+            await transaction.CommitAsync(ct);
+
+        return saved;
+    }
+
+    internal async Task<(string Code, string CodeHash)> FreshInvitationCodeAsync(
+        DateTimeOffset now,
+        CancellationToken ct
+    )
+    {
+        while (true)
+        {
+            var code = InvitationCode.Generate(out var codeHash);
+            var isInUse = await _dbContext.Invitations.AnyAsync(
+                invitation =>
+                    invitation.CodeHash == codeHash
+                    && invitation.RedeemedAt == null
+                    && invitation.VoidedAt == null
+                    && invitation.ExpiresAt > now,
+                ct
+            );
+
+            if (!isInUse)
+                return (code, codeHash);
+        }
+    }
+
     private async Task<Result<RedemptionDetails>> RequestConfirmationAsync(
         RedeemableInvitation redeemable,
         ChosenLogin chosen,
@@ -389,50 +433,6 @@ public sealed class AccountAccessService
         _dbContext
             .Users.AsNoTracking()
             .AnyAsync(account => account.NormalizedEmail == normalizedEmail, ct);
-
-    internal async Task<Result> RecordIssuedAsync(Invitation invitation, CancellationToken ct)
-    {
-        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
-        await VoidLiveInvitationsAsync(invitation.PersonId, invitation.IssuedAt, ct);
-        _dbContext.Invitations.Add(invitation);
-        _dbContext.AccountEvents.Add(
-            new AccountEvent
-            {
-                PersonId = invitation.PersonId,
-                Kind = IssuedEventKindOf(invitation.Purpose),
-                ActorPersonId = invitation.IssuedByPersonId,
-                At = invitation.IssuedAt,
-            }
-        );
-
-        var saved = await _dbContext.SaveOrConflictAsync(ct);
-        if (saved.IsSuccess)
-            await transaction.CommitAsync(ct);
-
-        return saved;
-    }
-
-    internal async Task<(string Code, string CodeHash)> FreshInvitationCodeAsync(
-        DateTimeOffset now,
-        CancellationToken ct
-    )
-    {
-        while (true)
-        {
-            var code = InvitationCode.Generate(out var codeHash);
-            var isInUse = await _dbContext.Invitations.AnyAsync(
-                invitation =>
-                    invitation.CodeHash == codeHash
-                    && invitation.RedeemedAt == null
-                    && invitation.VoidedAt == null
-                    && invitation.ExpiresAt > now,
-                ct
-            );
-
-            if (!isInUse)
-                return (code, codeHash);
-        }
-    }
 
     private string NormalizedEmailOf(string email) => _userManager.NormalizeEmail(email) ?? email;
 
@@ -624,6 +624,22 @@ public sealed class AccountAccessService
         };
 
     [Pure]
+    internal static Expression<Func<Invitation, bool>>? MatchOf(InvitationCredential credential)
+    {
+        if (credential.Token is { } token)
+            return OpaqueTokenSecret.HashOf(token) is { } tokenHash
+                ? row => row.TokenHash == tokenHash
+                : null;
+
+        if (credential.Code is { } code)
+            return InvitationCode.HashOf(code) is { } codeHash
+                ? row => row.CodeHash == codeHash && row.Channel == InvitationChannel.InPerson
+                : null;
+
+        return null;
+    }
+
+    [Pure]
     private static string? RefusalOf(
         SubjectRow subject,
         ClubTerms terms,
@@ -661,22 +677,6 @@ public sealed class AccountAccessService
                 $"Für {firstName} ist keine E-Mail-Adresse hinterlegt.",
             _ => throw new ArgumentOutOfRangeException(nameof(reason), reason, null),
         };
-
-    [Pure]
-    internal static Expression<Func<Invitation, bool>>? MatchOf(InvitationCredential credential)
-    {
-        if (credential.Token is { } token)
-            return OpaqueTokenSecret.HashOf(token) is { } tokenHash
-                ? row => row.TokenHash == tokenHash
-                : null;
-
-        if (credential.Code is { } code)
-            return InvitationCode.HashOf(code) is { } codeHash
-                ? row => row.CodeHash == codeHash && row.Channel == InvitationChannel.InPerson
-                : null;
-
-        return null;
-    }
 
     [Pure]
     private static RedemptionOutcome OutcomeOf(EmailConfirmationVerdict verdict) =>
