@@ -2,6 +2,7 @@ using FastEndpoints;
 using Furria.Api.Authorization;
 using Furria.Api.Results;
 using Furria.Application.Identity;
+using Furria.Application.Registry;
 using Furria.Core.Club;
 using Furria.Infrastructure.Identity;
 
@@ -65,6 +66,19 @@ public sealed class GetMe : EndpointWithoutRequest<GetMeResponse>
             City = person.City,
             BirthDate = person.BirthDate,
             ContactVisibleToMembers = person.ContactVisibleToMembers,
+            ContactChange = person.ContactChange is { } change ? ToDto(change) : null,
+        };
+
+    private static MeContactChangeDto ToDto(ContactChangeDetails change) =>
+        new()
+        {
+            At = change.At,
+            ChangedBy = new()
+            {
+                PersonId = change.ChangedBy.PersonId,
+                FirstName = change.ChangedBy.FirstName,
+                LastName = change.ChangedBy.LastName,
+            },
         };
 
     private static MeMembershipDto ToDto(MembershipChainDetails membership) =>
@@ -115,6 +129,24 @@ public sealed record MePersonDto
     public required DateOnly? BirthDate { get; init; }
 
     public required bool ContactVisibleToMembers { get; init; }
+
+    public required MeContactChangeDto? ContactChange { get; init; }
+}
+
+public sealed record MeContactChangeDto
+{
+    public required DateTimeOffset At { get; init; }
+
+    public required MeContactChangeActorDto ChangedBy { get; init; }
+}
+
+public sealed record MeContactChangeActorDto
+{
+    public required int PersonId { get; init; }
+
+    public required string FirstName { get; init; }
+
+    public required string LastName { get; init; }
 }
 
 public sealed record MeMembershipDto

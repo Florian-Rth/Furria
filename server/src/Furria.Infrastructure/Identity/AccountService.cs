@@ -1,5 +1,7 @@
 using System.Diagnostics.Contracts;
+using Furria.Application.Groups;
 using Furria.Application.Identity;
+using Furria.Application.Registry;
 using Furria.Application.Results;
 using Furria.Core.Club;
 using Furria.Infrastructure.Authorization;
@@ -169,6 +171,20 @@ public sealed class AccountService
                     City = account.Person.City,
                     BirthDate = account.Person.BirthDate,
                     ContactVisibleToMembers = account.Person.ContactVisibleToMembers,
+                    ContactChange =
+                        account.Person.ContactChangedAt == null
+                        || account.Person.ContactChangedBy == null
+                            ? null
+                            : new ContactChangeDetails
+                            {
+                                At = account.Person.ContactChangedAt.Value,
+                                ChangedBy = new PersonReference
+                                {
+                                    PersonId = account.Person.ContactChangedBy.Id,
+                                    FirstName = account.Person.ContactChangedBy.FirstName,
+                                    LastName = account.Person.ContactChangedBy.LastName,
+                                },
+                            },
                 },
                 account
                     .Person.Memberships.Select(membership => new MembershipRow(

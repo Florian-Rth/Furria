@@ -25,6 +25,8 @@ public sealed record ManagedPersonDetails
 
     public required bool ContactVisibleToMembers { get; init; }
 
+    public required ContactChangeDetails? ContactChange { get; init; }
+
     public required MembershipState MembershipState { get; init; }
 
     public required DateOnly? MemberSince { get; init; }

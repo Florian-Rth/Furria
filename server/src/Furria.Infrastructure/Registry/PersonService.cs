@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using Furria.Application.Authorization;
+using Furria.Application.Groups;
 using Furria.Application.Identity;
 using Furria.Application.Registry;
 using Furria.Application.Results;
@@ -199,7 +200,19 @@ public sealed class PersonService
                     SinceOn = holding.SinceOn,
                     UntilOn = holding.UntilOn,
                 })
-                .ToList()
+                .ToList(),
+            person.ContactChangedAt == null || person.ContactChangedBy == null
+                ? null
+                : new ContactChangeDetails
+                {
+                    At = person.ContactChangedAt.Value,
+                    ChangedBy = new PersonReference
+                    {
+                        PersonId = person.ContactChangedBy.Id,
+                        FirstName = person.ContactChangedBy.FirstName,
+                        LastName = person.ContactChangedBy.LastName,
+                    },
+                }
         );
 
     private static readonly MemberContact WithheldContact = new()
@@ -439,13 +452,28 @@ public sealed class PersonService
 
         person.FirstName = command.FirstName;
         person.LastName = command.LastName;
-        person.Email = command.Email;
-        person.Phone = command.Phone;
-        person.Street = command.Street;
-        person.Zip = command.Zip;
-        person.City = command.City;
         person.BirthDate = command.BirthDate;
         person.ContactVisibleToMembers = command.ContactVisibleToMembers;
+        WriteContactDetails(person, ContactDetailsOf(command), command.ActorPersonId);
+        await _dbContext.SaveChangesAsync(ct);
+
+        return Result.Success();
+    }
+
+    public async Task<Result> UpdateOwnContactDetailsAsync(
+        UpdateOwnContactDetailsCommand command,
+        CancellationToken ct
+    )
+    {
+        var person = await _dbContext.People.SingleOrDefaultAsync(
+            row => row.Id == command.PersonId,
+            ct
+        );
+
+        if (person is null)
+            return Result.NotFound(MissingOwnPersonMessage);
+
+        WriteContactDetails(person, ContactDetailsOf(command), command.PersonId);
         await _dbContext.SaveChangesAsync(ct);
 
         return Result.Success();
@@ -466,6 +494,20 @@ public sealed class PersonService
         await _dbContext.SaveChangesAsync(ct);
 
         return Result.Success();
+    }
+
+    private void WriteContactDetails(Person person, ContactDetails submitted, int actorPersonId)
+    {
+        if (!submitted.DiffersFrom(ContactDetails.Of(person)))
+            return;
+
+        person.Email = submitted.Email;
+        person.Phone = submitted.Phone;
+        person.Street = submitted.Street;
+        person.Zip = submitted.Zip;
+        person.City = submitted.City;
+        person.ContactChangedAt = _timeProvider.GetUtcNow();
+        person.ContactChangedByPersonId = actorPersonId;
     }
 
     private async Task<ContactVisibility> VisibilityForAsync(
@@ -541,6 +583,7 @@ public sealed class PersonService
             City = row.Contact.City,
             BirthDate = row.BirthDate,
             ContactVisibleToMembers = row.Contact.VisibleToMembers,
+            ContactChange = row.ContactChange,
             MembershipState = chain.State,
             MemberSince = chain.MemberSince,
             Memberships = chain.All,
@@ -549,6 +592,26 @@ public sealed class PersonService
             Roles = row.Roles,
         };
     }
+
+    private static ContactDetails ContactDetailsOf(UpdatePersonCommand command) =>
+        new()
+        {
+            Email = command.Email,
+            Phone = command.Phone,
+            Street = command.Street,
+            Zip = command.Zip,
+            City = command.City,
+        };
+
+    private static ContactDetails ContactDetailsOf(UpdateOwnContactDetailsCommand command) =>
+        new()
+        {
+            Email = command.Email,
+            Phone = command.Phone,
+            Street = command.Street,
+            Zip = command.Zip,
+            City = command.City,
+        };
 
     private static MemberContact ToContact(ContactRow row, ContactVisibility visibility) =>
         visibility == ContactVisibility.Hidden
@@ -678,7 +741,8 @@ public sealed class PersonService
         IReadOnlyList<MembershipRow> Memberships,
         IReadOnlyList<PersonFeeReduction> FeeReductions,
         IReadOnlyList<PersonGroup> Groups,
-        IReadOnlyList<PersonRole> Roles
+        IReadOnlyList<PersonRole> Roles,
+        ContactChangeDetails? ContactChange
     );
 
     private sealed record MemberCardRow(

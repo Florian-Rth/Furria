@@ -22,6 +22,12 @@ public sealed class Person : ITimestamped
 
     public string? City { get; set; }
 
+    public DateTimeOffset? ContactChangedAt { get; set; }
+
+    public int? ContactChangedByPersonId { get; set; }
+
+    public Person? ContactChangedBy { get; set; }
+
     public DateOnly? BirthDate { get; set; }
 
     public bool ContactVisibleToMembers { get; set; }

@@ -52,7 +52,7 @@ public sealed class PostPerson : Endpoint<PostPersonRequest, PostPersonResponse>
     private static PostPersonResponse ToResponse(int personId) => new() { PersonId = personId };
 }
 
-public sealed record PostPersonRequest
+public sealed record PostPersonRequest : IContactDetailsRequest
 {
     public required string FirstName { get; init; }
 
@@ -79,14 +79,7 @@ public sealed class PostPersonValidator : Validator<PostPersonRequest>
     {
         RuleFor(request => request.FirstName).NotEmpty().MaximumLength(PersonLimits.NameLength);
         RuleFor(request => request.LastName).NotEmpty().MaximumLength(PersonLimits.NameLength);
-        RuleFor(request => request.Email)
-            .MaximumLength(PersonLimits.EmailLength)
-            .EmailAddress()
-            .When(request => request.Email is not (null or ""));
-        RuleFor(request => request.Phone).MaximumLength(PersonLimits.PhoneLength);
-        RuleFor(request => request.Street).MaximumLength(PersonLimits.StreetLength);
-        RuleFor(request => request.Zip).MaximumLength(PersonLimits.ZipLength);
-        RuleFor(request => request.City).MaximumLength(PersonLimits.CityLength);
+        this.RuleForContactDetails();
     }
 }
 

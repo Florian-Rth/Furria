@@ -65,6 +65,7 @@ public sealed class GetPersonById : Endpoint<GetPersonByIdRequest, GetPersonById
             City = person.City,
             BirthDate = person.BirthDate,
             ContactVisibleToMembers = person.ContactVisibleToMembers,
+            ContactChange = person.ContactChange is { } change ? ToDto(change) : null,
             MembershipState = person.MembershipState,
             MemberSince = person.MemberSince,
             Memberships = [.. person.Memberships.Select(ToDto)],
@@ -72,6 +73,18 @@ public sealed class GetPersonById : Endpoint<GetPersonByIdRequest, GetPersonById
             Groups = [.. person.Groups.Select(ToDto)],
             Roles = [.. person.Roles.Select(ToDto)],
             Access = ToDto(access),
+        };
+
+    private static PersonContactChangeDto ToDto(ContactChangeDetails change) =>
+        new()
+        {
+            At = change.At,
+            ChangedBy = new()
+            {
+                PersonId = change.ChangedBy.PersonId,
+                FirstName = change.ChangedBy.FirstName,
+                LastName = change.ChangedBy.LastName,
+            },
         };
 
     private static PersonAccessDto ToDto(AccountAccessDetails access) =>
@@ -194,6 +207,8 @@ public sealed record GetPersonByIdResponse
 
     public required bool ContactVisibleToMembers { get; init; }
 
+    public required PersonContactChangeDto? ContactChange { get; init; }
+
     public required MembershipState MembershipState { get; init; }
 
     public required DateOnly? MemberSince { get; init; }
@@ -207,6 +222,22 @@ public sealed record GetPersonByIdResponse
     public required IReadOnlyList<PersonRoleDto> Roles { get; init; }
 
     public required PersonAccessDto Access { get; init; }
+}
+
+public sealed record PersonContactChangeDto
+{
+    public required DateTimeOffset At { get; init; }
+
+    public required PersonContactChangeActorDto ChangedBy { get; init; }
+}
+
+public sealed record PersonContactChangeActorDto
+{
+    public required int PersonId { get; init; }
+
+    public required string FirstName { get; init; }
+
+    public required string LastName { get; init; }
 }
 
 public sealed record PersonAccessDto
