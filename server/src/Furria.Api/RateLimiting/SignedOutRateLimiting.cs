@@ -18,12 +18,14 @@ public static class SignedOutRateLimiting
                 options =>
                     options.PermitsPerIp > 0
                     && options.PermitsPerToken > 0
+                    && options.PermitsPerAddress > 0
                     && options.Window > TimeSpan.Zero,
                 $"{SignedOutRateLimitOptions.SectionName} needs positive permits and a window."
             )
             .ValidateOnStart();
 
         services.AddSingleton<InvitationTokenRateLimiter>();
+        services.AddSingleton<AddressRateLimiter>();
 
         return services.AddRateLimiter(options =>
         {

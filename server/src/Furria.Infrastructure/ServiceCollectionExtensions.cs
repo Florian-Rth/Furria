@@ -86,6 +86,14 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<DatabaseMigrator>();
         services.AddHostedService<BootstrapAdminSeeder>();
         services.AddHostedService<MailDispatcher>();
+        services.AddScoped<AccessRequestService>();
+        services.AddScoped<PasswordResetService>();
+        services.AddSingleton<SignedOutMailRequestQueue>();
+        services.AddSingleton<PasswordResetMailThrottle>();
+        services.AddHostedService<SignedOutMailRequestWorker>();
+        services.Configure<DataProtectionTokenProviderOptions>(options =>
+            options.TokenLifespan = PasswordResetService.LinkLifetime
+        );
         services.AddSingleton(TimeProvider.System);
         return services;
     }

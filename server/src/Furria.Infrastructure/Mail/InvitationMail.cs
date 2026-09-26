@@ -116,7 +116,7 @@ public static class InvitationMail
         content.ClubName ?? FallbackClubName;
 
     [Pure]
-    private static string GermanDateOf(DateTimeOffset instant)
+    internal static string GermanDateOf(DateTimeOffset instant)
     {
         var day = ClubClock.DayOf(instant);
         return $"{day.Day}. {GermanMonths[day.Month - 1]} {day.Year}";

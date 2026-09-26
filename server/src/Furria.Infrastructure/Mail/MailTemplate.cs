@@ -6,4 +6,6 @@ public enum MailTemplate
     EmailConfirmation = 2,
     InvitationReminder = 3,
     CredentialChangeNotice = 4,
+    AccessRequest = 5,
+    PasswordReset = 6,
 }

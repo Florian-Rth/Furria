@@ -360,7 +360,7 @@ public sealed class AccountAccessService
             .Users.AsNoTracking()
             .AnyAsync(account => account.NormalizedEmail == normalizedEmail, ct);
 
-    private async Task<Result> RecordIssuedAsync(Invitation invitation, CancellationToken ct)
+    internal async Task<Result> RecordIssuedAsync(Invitation invitation, CancellationToken ct)
     {
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
         await VoidLiveInvitationsAsync(invitation.PersonId, invitation.IssuedAt, ct);
