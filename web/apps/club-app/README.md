@@ -118,6 +118,12 @@ The deploy writes `assetlinks.json` at container start
   whose builds should open links and share passkeys (debug and release differ). Empty: no file,
   `404`. A malformed entry stops the container.
 
+The API reads the same value as `ClubApp:AndroidCertFingerprints`
+([`docker-compose.example.yml`](../../../docker-compose.example.yml) passes it on): each
+fingerprint becomes an accepted passkey origin `android:apk-key-hash:…`, so a build whose key is
+missing there opens links but cannot use a passkey. The server takes one comma-separated string,
+trimmed the same way, or an array (`ClubApp__AndroidCertFingerprints__0`, `__1`, …).
+
 Reading the fingerprints (the `SHA-256:` line, `AB:CD:…`):
 
 ```bash

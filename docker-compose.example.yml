@@ -50,6 +50,8 @@ services:
       Mail__Password: ${MAIL_PASSWORD:-}
       Mail__From: ${MAIL_FROM:?set MAIL_FROM in .env}
       ClubApp__BaseUrl: ${CLUB_APP_BASE_URL:?set CLUB_APP_BASE_URL in .env}
+      # The same fingerprints the club-app's assetlinks.json names: each one's app may use passkeys.
+      ClubApp__AndroidCertFingerprints: ${ANDROID_CERT_FINGERPRINTS:-}
     # Logs are JSON on stdout (ADR-0017); rotate them so `docker logs` never fills the disk.
     logging:
       driver: json-file
