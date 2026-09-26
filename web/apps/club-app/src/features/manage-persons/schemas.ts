@@ -7,6 +7,7 @@ import {
   MembershipStateSchema,
   RoleRefSchema,
 } from '@/lib/api/schemas';
+import { ContactFieldsFormSchema } from '@/lib/contact-fields';
 import { requiredDay, requiredSessionYear } from '@/lib/required-fields';
 
 export const FeeReductionBasisSchema = z.enum(['minor', 'school', 'apprenticeship', 'studies']);
@@ -106,27 +107,11 @@ export type CreatedFeeReduction = z.infer<typeof CreatedFeeReductionSchema>;
 
 const FIRST_NAME_MAX = 128;
 const LAST_NAME_MAX = 128;
-const EMAIL_MAX = 256;
-const PHONE_MAX = 64;
-const STREET_MAX = 256;
-const ZIP_MAX = 16;
-const CITY_MAX = 128;
-
-const isEmailOrEmpty = (value: string): boolean =>
-  value === '' || z.email().safeParse(value).success;
 
 export const PersonFormSchema = z.object({
   firstName: z.string().trim().min(1, 'Der Vorname fehlt.').max(FIRST_NAME_MAX),
   lastName: z.string().trim().min(1, 'Der Nachname fehlt.').max(LAST_NAME_MAX),
-  email: z
-    .string()
-    .trim()
-    .max(EMAIL_MAX)
-    .refine(isEmailOrEmpty, { message: 'Bitte gib eine gültige E-Mail-Adresse ein.' }),
-  phone: z.string().trim().max(PHONE_MAX),
-  street: z.string().trim().max(STREET_MAX),
-  zip: z.string().trim().max(ZIP_MAX),
-  city: z.string().trim().max(CITY_MAX),
+  ...ContactFieldsFormSchema.shape,
   birthDate: z.iso.date().nullable(),
   contactVisibleToMembers: z.boolean(),
 });
