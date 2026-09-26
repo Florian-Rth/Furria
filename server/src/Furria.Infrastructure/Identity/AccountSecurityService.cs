@@ -25,6 +25,8 @@ public sealed class AccountSecurityService
     private const string DeadConfirmationCodeMessage =
         "Dieser Code gilt nicht mehr. Lass dir einen neuen schicken.";
     private const string WrongPasswordMessage = "Das Passwort stimmt nicht.";
+    private const string RejectedPasskeyMessage =
+        "Der Passkey konnte nicht bestätigt werden. Versuch es noch einmal.";
     private const string LockedOutMessage =
         "Zu viele Fehlversuche. Versuch es in 15 Minuten noch einmal.";
     private const string PasswordRuleMessage =
@@ -47,6 +49,7 @@ public sealed class AccountSecurityService
     private readonly EmailConfirmationService _emailConfirmationService;
     private readonly CredentialChangeNotifier _credentialChangeNotifier;
     private readonly PersonService _personService;
+    private readonly PasskeyService _passkeyService;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<AccountSecurityService> _logger;
 
@@ -59,6 +62,7 @@ public sealed class AccountSecurityService
         EmailConfirmationService emailConfirmationService,
         CredentialChangeNotifier credentialChangeNotifier,
         PersonService personService,
+        PasskeyService passkeyService,
         TimeProvider timeProvider,
         ILogger<AccountSecurityService> logger
     )
@@ -71,6 +75,7 @@ public sealed class AccountSecurityService
         _emailConfirmationService = emailConfirmationService;
         _credentialChangeNotifier = credentialChangeNotifier;
         _personService = personService;
+        _passkeyService = passkeyService;
         _timeProvider = timeProvider;
         _logger = logger;
     }
@@ -185,10 +190,12 @@ public sealed class AccountSecurityService
         if (account is not { IsDisabled: false })
             return Result<SessionTokensDetails>.Carrying(RefusalOf(account));
 
-        var proof = new ReauthenticationProof { Password = command.CurrentPassword };
-        var verdict = await ReauthenticateAsync(account, proof);
+        var proof = new PasswordProof { Password = command.CurrentPassword };
+        var verdict = await ReauthenticateAsync(account, proof, ct);
         if (verdict != ReauthenticationVerdict.Proven)
-            return Result<SessionTokensDetails>.Unauthorized(ReauthenticationMessage(verdict));
+            return Result<SessionTokensDetails>.Unauthorized(
+                ReauthenticationMessage(verdict, proof)
+            );
 
         var changed = await _userManager.ChangePasswordAsync(
             account,
@@ -227,9 +234,9 @@ public sealed class AccountSecurityService
         if (account is not { IsDisabled: false })
             return RefusalOf(account);
 
-        var verdict = await ReauthenticateAsync(account, command.Proof);
+        var verdict = await ReauthenticateAsync(account, command.Proof, ct);
         if (verdict != ReauthenticationVerdict.Proven)
-            return Result.Unauthorized(ReauthenticationMessage(verdict));
+            return Result.Unauthorized(ReauthenticationMessage(verdict, command.Proof));
 
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
         await VoidLiveInvitationsAsync(account.PersonId, ct);
@@ -255,7 +262,36 @@ public sealed class AccountSecurityService
 
     private async Task<ReauthenticationVerdict> ReauthenticateAsync(
         Account account,
-        ReauthenticationProof proof
+        ReauthenticationProof proof,
+        CancellationToken ct
+    ) =>
+        proof switch
+        {
+            PasswordProof password => await ReauthenticateByPasswordAsync(account, password),
+            PasskeyProof passkey => await ReauthenticateByPasskeyAsync(account, passkey, ct),
+            _ => throw new ArgumentOutOfRangeException(nameof(proof), proof, null),
+        };
+
+    private async Task<ReauthenticationVerdict> ReauthenticateByPasskeyAsync(
+        Account account,
+        PasskeyProof proof,
+        CancellationToken ct
+    )
+    {
+        var asserted = await _passkeyService.VerifyAssertionAsync(proof.Assertion, ct);
+        if (asserted?.Id == account.Id)
+            return ReauthenticationVerdict.Proven;
+
+        _logger.LogInformation(
+            "Re-authentication by passkey failed for account {AccountId}",
+            account.Id
+        );
+        return ReauthenticationVerdict.Wrong;
+    }
+
+    private async Task<ReauthenticationVerdict> ReauthenticateByPasswordAsync(
+        Account account,
+        PasswordProof proof
     )
     {
         var wasLockedOut = await _userManager.IsLockedOutAsync(account);
@@ -388,8 +424,16 @@ public sealed class AccountSecurityService
     }
 
     [Pure]
-    private static string ReauthenticationMessage(ReauthenticationVerdict verdict) =>
-        verdict == ReauthenticationVerdict.LockedOut ? LockedOutMessage : WrongPasswordMessage;
+    private static string ReauthenticationMessage(
+        ReauthenticationVerdict verdict,
+        ReauthenticationProof proof
+    ) =>
+        (verdict, proof) switch
+        {
+            (ReauthenticationVerdict.LockedOut, _) => LockedOutMessage,
+            (_, PasskeyProof) => RejectedPasskeyMessage,
+            _ => WrongPasswordMessage,
+        };
 
     [Pure]
     private static string ConfirmationRefusalMessage(EmailConfirmationVerdict verdict) =>

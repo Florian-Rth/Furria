@@ -46,6 +46,8 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
 
     public DbSet<EmailConfirmation> EmailConfirmations => Set<EmailConfirmation>();
 
+    public DbSet<PasskeyChallenge> PasskeyChallenges => Set<PasskeyChallenge>();
+
     public DbSet<Session> Sessions => Set<Session>();
 
     public DbSet<Venue> Venues => Set<Venue>();

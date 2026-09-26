@@ -15,6 +15,7 @@ namespace Furria.Infrastructure.Identity;
 public sealed class AccountService
 {
     private const string RejectedCredentialsMessage = "Email or password is not valid.";
+    private const string RejectedPasskeyMessage = "The passkey could not be verified.";
     private const string RejectedSessionMessage = "The session could not be refreshed.";
     private const string EndedSessionMessage = "The session is no longer valid.";
     private const string MissingAccountMessage = "The account no longer exists.";
@@ -30,6 +31,7 @@ public sealed class AccountService
     private readonly RefreshTokenService _refreshTokenService;
     private readonly AccessTokenService _accessTokenService;
     private readonly PermissionAuthorizer _permissionAuthorizer;
+    private readonly PasskeyService _passkeyService;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<AccountService> _logger;
 
@@ -40,6 +42,7 @@ public sealed class AccountService
         RefreshTokenService refreshTokenService,
         AccessTokenService accessTokenService,
         PermissionAuthorizer permissionAuthorizer,
+        PasskeyService passkeyService,
         TimeProvider timeProvider,
         ILogger<AccountService> logger
     )
@@ -50,6 +53,7 @@ public sealed class AccountService
         _refreshTokenService = refreshTokenService;
         _accessTokenService = accessTokenService;
         _permissionAuthorizer = permissionAuthorizer;
+        _passkeyService = passkeyService;
         _timeProvider = timeProvider;
         _logger = logger;
     }
@@ -88,6 +92,25 @@ public sealed class AccountService
         }
 
         _logger.LogInformation("Login succeeded for account {AccountId}", account.Id);
+        return Result<SessionTokensDetails>.Success(await StartSessionAsync(account, ct));
+    }
+
+    public async Task<Result<SessionTokensDetails>> LoginWithPasskeyAsync(
+        PasskeyAssertion assertion,
+        CancellationToken ct
+    )
+    {
+        var account = await _passkeyService.VerifyAssertionAsync(assertion, ct);
+        if (account is null)
+            return RejectPasskeyLogin(accountId: null, LoginFailureReason.PasskeyRejected);
+
+        if (account.IsDisabled)
+            return RejectPasskeyLogin(account.Id, LoginFailureReason.Disabled);
+
+        if (await _userManager.IsLockedOutAsync(account))
+            return RejectPasskeyLogin(account.Id, LoginFailureReason.LockedOut);
+
+        _logger.LogInformation("Passkey login succeeded for account {AccountId}", account.Id);
         return Result<SessionTokensDetails>.Success(await StartSessionAsync(account, ct));
     }
 
@@ -212,9 +235,15 @@ public sealed class AccountService
 
         var isAffiliated = await _permissionAuthorizer.IsAffiliatedAsync(accountId, ct);
         var permissionKeys = await _permissionAuthorizer.GrantedKeysAsync(accountId, ct);
+        var passkeys = await _passkeyService.ListAsync(accountId, ct);
 
         return Result<AccountDetails>.Success(
-            ToDetails(row, ClubClock.Today(_timeProvider), isAffiliated, Ordered(permissionKeys))
+            ToDetails(
+                row,
+                ClubClock.Today(_timeProvider),
+                new AccountGrants(isAffiliated, Ordered(permissionKeys)),
+                passkeys
+            )
         );
     }
 
@@ -222,6 +251,19 @@ public sealed class AccountService
     {
         _logger.LogInformation("Login failed for {Email}: {LoginFailureReason}", email, reason);
         return Result<SessionTokensDetails>.Unauthorized(RejectedCredentialsMessage);
+    }
+
+    private Result<SessionTokensDetails> RejectPasskeyLogin(
+        int? accountId,
+        LoginFailureReason reason
+    )
+    {
+        _logger.LogInformation(
+            "Passkey login failed for account {AccountId}: {LoginFailureReason}",
+            accountId,
+            reason
+        );
+        return Result<SessionTokensDetails>.Unauthorized(RejectedPasskeyMessage);
     }
 
     private void ReportLockout(Account account) =>
@@ -250,8 +292,8 @@ public sealed class AccountService
     private static AccountDetails ToDetails(
         AccountRow row,
         DateOnly today,
-        bool isAffiliated,
-        IReadOnlyList<string> permissionKeys
+        AccountGrants grants,
+        IReadOnlyList<PasskeyDetails> passkeys
     ) =>
         new()
         {
@@ -259,9 +301,10 @@ public sealed class AccountService
             Email = row.Email,
             Person = row.Person,
             Membership = MembershipChainDetails.Of(ToPeriods(row.Memberships, today), today),
-            IsAffiliated = isAffiliated,
-            PermissionKeys = permissionKeys,
+            IsAffiliated = grants.IsAffiliated,
+            PermissionKeys = grants.PermissionKeys,
             LastSeenAnnouncementAt = row.LastSeenAnnouncementAt,
+            Passkeys = passkeys,
         };
 
     private static IReadOnlyList<string> Ordered(IReadOnlyCollection<string> permissionKeys) =>
@@ -316,6 +359,8 @@ public sealed class AccountService
         PersonDetails Person,
         IReadOnlyList<MembershipRow> Memberships
     );
+
+    private sealed record AccountGrants(bool IsAffiliated, IReadOnlyList<string> PermissionKeys);
 
     private sealed record MembershipRow(
         int Id,

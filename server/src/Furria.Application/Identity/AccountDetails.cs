@@ -15,4 +15,6 @@ public sealed record AccountDetails
     public required IReadOnlyList<string> PermissionKeys { get; init; }
 
     public required DateTimeOffset? LastSeenAnnouncementAt { get; init; }
+
+    public required IReadOnlyList<PasskeyDetails> Passkeys { get; init; }
 }

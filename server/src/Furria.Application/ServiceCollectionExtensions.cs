@@ -57,6 +57,14 @@ public static class ServiceCollectionExtensions
                 options => IsAbsoluteWebUrl(options.BaseUrl),
                 $"{ClubAppOptions.SectionName}:BaseUrl must be an absolute http(s) URL."
             )
+            .Validate(
+                options =>
+                    options.AndroidCertFingerprints.All(fingerprint =>
+                        AndroidCertFingerprint.BytesOf(fingerprint) is not null
+                    ),
+                $"{ClubAppOptions.SectionName}:AndroidCertFingerprints must be SHA-256 fingerprints "
+                    + "in the colon-separated hex form keytool prints."
+            )
             .ValidateOnStart();
 
         return services;

@@ -1,3 +1,4 @@
+using Furria.Application.ClubApp;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Groups;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Furria.Infrastructure;
 
@@ -49,10 +51,16 @@ public static class ServiceCollectionExtensions
                 options.Lockout.AllowedForNewUsers = true;
                 options.Lockout.MaxFailedAccessAttempts = 5;
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+                options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
             })
             .AddEntityFrameworkStores<AppDbContext>()
             .AddSignInManager()
             .AddDefaultTokenProviders();
+        services
+            .AddOptions<IdentityPasskeyOptions>()
+            .Configure<IOptions<ClubAppOptions>>(
+                (passkeys, clubApp) => PasskeyRelyingParty.Configure(passkeys, clubApp.Value)
+            );
 
         services
             .AddDataProtection()
@@ -66,6 +74,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<AccountAccessService>();
         services.AddScoped<EmailConfirmationService>();
         services.AddScoped<CredentialChangeNotifier>();
+        services.AddScoped<PasskeyService>();
         services.AddScoped<PermissionAuthorizer>();
         services.AddScoped<AffiliationLookup>();
         services.AddScoped<PersonService>();

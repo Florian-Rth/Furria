@@ -37,6 +37,8 @@ public static class CredentialChangeNoticeMail
                 "Dein Zugang zur Vereins-App wurde gerade vor Ort im Verein wiederhergestellt.",
             CredentialChange.PasskeyAdded =>
                 "Zu deinem Zugang zur Vereins-App wurde gerade ein neuer Passkey hinzugefügt.",
+            CredentialChange.PasskeyRemoved =>
+                "Von deinem Zugang zur Vereins-App wurde gerade ein Passkey entfernt. Mit ihm kannst du dich nicht mehr anmelden.",
             _ => throw new ArgumentOutOfRangeException(nameof(change), change, null),
         };
 

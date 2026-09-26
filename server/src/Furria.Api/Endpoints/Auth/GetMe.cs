@@ -51,6 +51,15 @@ public sealed class GetMe : EndpointWithoutRequest<GetMeResponse>
             IsAffiliated = account.IsAffiliated,
             PermissionKeys = account.PermissionKeys,
             LastSeenAnnouncementAt = account.LastSeenAnnouncementAt,
+            Passkeys = [.. account.Passkeys.Select(ToDto)],
+        };
+
+    private static MePasskeyDto ToDto(PasskeyDetails passkey) =>
+        new()
+        {
+            Id = passkey.Id,
+            Name = passkey.Name,
+            AddedAt = passkey.AddedAt,
         };
 
     private static MePersonDto ToDto(PersonDetails person) =>
@@ -106,6 +115,17 @@ public sealed record GetMeResponse
     public required IReadOnlyList<string> PermissionKeys { get; init; }
 
     public required DateTimeOffset? LastSeenAnnouncementAt { get; init; }
+
+    public required IReadOnlyList<MePasskeyDto> Passkeys { get; init; }
+}
+
+public sealed record MePasskeyDto
+{
+    public required string Id { get; init; }
+
+    public required string Name { get; init; }
+
+    public required DateTimeOffset AddedAt { get; init; }
 }
 
 public sealed record MePersonDto

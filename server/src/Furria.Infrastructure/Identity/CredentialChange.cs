@@ -7,4 +7,5 @@ public enum CredentialChange
     LoginEmailChanged = 3,
     AccessRecovered = 4,
     PasskeyAdded = 5,
+    PasskeyRemoved = 6,
 }
