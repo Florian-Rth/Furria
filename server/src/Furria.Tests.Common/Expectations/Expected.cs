@@ -98,6 +98,8 @@ public sealed class Expected
     public EmailConfirmationSetExpectations EmailConfirmationsOfAccount(int accountId) =>
         new(this, accountId);
 
+    public DataProtectionKeySetExpectations DataProtectionKeys() => new(this);
+
     public async Task AssertAsync(CancellationToken ct = default)
     {
         var pending = _reads.ToList();

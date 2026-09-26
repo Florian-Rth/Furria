@@ -41,6 +41,7 @@ public sealed class DatabaseResetService
     public static async Task<DatabaseResetService> CreateAsync(
         IReadOnlyList<DbContext> contexts,
         IReadOnlyList<Type> snapshotEntityTypes,
+        IReadOnlyList<Type> retainedEntityTypes,
         CancellationToken ct
     )
     {
@@ -49,7 +50,7 @@ public sealed class DatabaseResetService
             ?? throw new InvalidOperationException("The first DbContext has no connection string.");
 
         var models = contexts.Select(context => context.Model).ToArray();
-        var tables = BuildTruncateTableList(models);
+        var tables = BuildTruncateTableList(models, retainedEntityTypes);
         // An empty EF model would otherwise yield "TRUNCATE TABLE ;" - invalid SQL. Harmless
         // no-op guard until the first real entity lands.
         var truncate =
@@ -92,11 +93,15 @@ public sealed class DatabaseResetService
         await transaction.CommitAsync(ct);
     }
 
-    private static IReadOnlyList<string> BuildTruncateTableList(params IModel[] models)
+    private static IReadOnlyList<string> BuildTruncateTableList(
+        IReadOnlyList<IModel> models,
+        IReadOnlyList<Type> retainedEntityTypes
+    )
     {
         return models
             .SelectMany(model => model.GetEntityTypes())
             .Where(entityType => entityType.GetTableName() != MigrationsHistoryTable)
+            .Where(entityType => !retainedEntityTypes.Contains(entityType.ClrType))
             .Select(QualifiedTableName)
             .OfType<string>()
             .Distinct(StringComparer.Ordinal)

@@ -7,6 +7,7 @@ using Furria.Infrastructure.Management;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Registry;
 using Furria.Infrastructure.Roles;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -16,6 +17,8 @@ namespace Furria.Infrastructure;
 
 public static class ServiceCollectionExtensions
 {
+    public const string DataProtectionApplicationName = "Furria";
+
     public static IServiceCollection AddInfrastructure(
         this IServiceCollection services,
         IConfiguration configuration
@@ -51,6 +54,10 @@ public static class ServiceCollectionExtensions
             .AddSignInManager()
             .AddDefaultTokenProviders();
 
+        services
+            .AddDataProtection()
+            .SetApplicationName(DataProtectionApplicationName)
+            .PersistKeysToDbContext<AppDbContext>();
         services.AddAuthentication();
 
         services.AddScoped<AccessTokenService>();

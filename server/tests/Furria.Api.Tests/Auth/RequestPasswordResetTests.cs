@@ -77,6 +77,24 @@ public sealed class RequestPasswordResetTests
     }
 
     [Fact]
+    public async Task Should_KeepTheKeyThatProtectsTheResetTokenInTheDatabase_When_AResetLinkIsMailed()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => identity.AddAccount("alice")),
+            ct
+        );
+
+        await SignedOutMailSteps.RequestResetAndReadItAsync(
+            _fixture,
+            ctx.Identity.EmailOf("alice"),
+            ct
+        );
+
+        await ctx.Expected.DataProtectionKeys().ToHoldAKey().AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_SendNothing_When_TheAddressIsOnlyAContactEmail()
     {
         var ct = TestContext.Current.CancellationToken;

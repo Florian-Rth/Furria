@@ -18,6 +18,7 @@ using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Persistence;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Expectations;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -226,6 +227,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
                 typeof(RolePermission),
                 typeof(RoleHolding),
             ],
+            [typeof(DataProtectionKey)],
             CancellationToken.None
         );
     }
