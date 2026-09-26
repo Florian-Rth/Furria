@@ -13,4 +13,6 @@ public sealed record EmailConfirmationIssue
     public required string FirstName { get; init; }
 
     public required string? ClubName { get; init; }
+
+    public bool UpdatesContactEmail { get; init; }
 }

@@ -40,10 +40,13 @@ public sealed class EmailConfirmationService
             {
                 Purpose = issue.Subject.Purpose,
                 InvitationId = issue.Subject.InvitationId,
+                AccountId = issue.Subject.AccountId,
+                Email = issue.Email,
                 NormalizedEmail = issue.NormalizedEmail,
                 CodeHash = codeHash,
                 IssuedAt = now,
                 ExpiresAt = expiresAt,
+                UpdatesContactEmail = issue.UpdatesContactEmail,
             }
         );
         await _dbContext.SaveChangesAsync(ct);
@@ -63,24 +66,56 @@ public sealed class EmailConfirmationService
         CancellationToken ct
     )
     {
-        var now = _timeProvider.GetUtcNow();
-        var live = await LiveOf(attempt.Subject)
+        var live = await LiveRowAsync(attempt.Subject, ct);
+        if (live is null || !IsUsableFor(live, attempt.NormalizedEmail, _timeProvider.GetUtcNow()))
+            return EmailConfirmationVerdict.Dead;
+
+        return await ConsumeLiveAsync(live, attempt.Code, ct);
+    }
+
+    public async Task<ConfirmedEmailDetails> ConfirmPendingAsync(
+        EmailConfirmationSubject subject,
+        string code,
+        CancellationToken ct
+    )
+    {
+        var live = await LiveRowAsync(subject, ct);
+        if (live is null || !IsUsableAt(live, _timeProvider.GetUtcNow()))
+            return ConfirmedEmailDetails.Refused(EmailConfirmationVerdict.Dead);
+
+        var verdict = await ConsumeLiveAsync(live, code, ct);
+        return verdict == EmailConfirmationVerdict.Confirmed
+            ? ConfirmedEmailDetails.Confirmed(live.Email ?? "", live.UpdatesContactEmail)
+            : ConfirmedEmailDetails.Refused(verdict);
+    }
+
+    private Task<LiveConfirmationRow?> LiveRowAsync(
+        EmailConfirmationSubject subject,
+        CancellationToken ct
+    ) =>
+        LiveOf(subject)
             .AsNoTracking()
             .Select(row => new LiveConfirmationRow(
                 row.Id,
+                row.Email,
                 row.NormalizedEmail,
                 row.CodeHash,
                 row.ExpiresAt,
-                row.FailedAttempts
+                row.FailedAttempts,
+                row.UpdatesContactEmail
             ))
             .SingleOrDefaultAsync(ct);
 
-        if (live is null || !IsUsableFor(live, attempt.NormalizedEmail, now))
-            return EmailConfirmationVerdict.Dead;
-
-        if (!ConfirmationCode.Matches(attempt.Code, live.CodeHash))
+    private async Task<EmailConfirmationVerdict> ConsumeLiveAsync(
+        LiveConfirmationRow live,
+        string code,
+        CancellationToken ct
+    )
+    {
+        if (!ConfirmationCode.Matches(code, live.CodeHash))
             return await CountFailureAsync(live, ct);
 
+        var now = _timeProvider.GetUtcNow();
         var consumed = await _dbContext
             .EmailConfirmations.Where(row =>
                 row.Id == live.Id
@@ -98,6 +133,7 @@ public sealed class EmailConfirmationService
         _dbContext.EmailConfirmations.Where(row =>
             row.Purpose == subject.Purpose
             && row.InvitationId == subject.InvitationId
+            && row.AccountId == subject.AccountId
             && row.ConsumedAt == null
             && row.VoidedAt == null
         );
@@ -129,8 +165,11 @@ public sealed class EmailConfirmationService
         DateTimeOffset now
     ) =>
         string.Equals(live.NormalizedEmail, normalizedEmail, StringComparison.Ordinal)
-        && live.ExpiresAt > now
-        && live.FailedAttempts < EmailConfirmation.MaxFailedAttempts;
+        && IsUsableAt(live, now);
+
+    [Pure]
+    private static bool IsUsableAt(LiveConfirmationRow live, DateTimeOffset now) =>
+        live.ExpiresAt > now && live.FailedAttempts < EmailConfirmation.MaxFailedAttempts;
 
     [Pure]
     private static EmailConfirmationMailContent ToMailContent(
@@ -149,9 +188,11 @@ public sealed class EmailConfirmationService
 
     private sealed record LiveConfirmationRow(
         long Id,
+        string? Email,
         string NormalizedEmail,
         string CodeHash,
         DateTimeOffset ExpiresAt,
-        int FailedAttempts
+        int FailedAttempts,
+        bool UpdatesContactEmail
     );
 }

@@ -15,6 +15,10 @@ public sealed class EmailConfirmation
 
     public int? InvitationId { get; set; }
 
+    public int? AccountId { get; set; }
+
+    public string? Email { get; set; }
+
     public string NormalizedEmail { get; set; } = "";
 
     public string CodeHash { get; set; } = "";
@@ -29,5 +33,9 @@ public sealed class EmailConfirmation
 
     public DateTimeOffset? VoidedAt { get; set; }
 
+    public bool UpdatesContactEmail { get; set; }
+
     public Invitation? Invitation { get; set; }
+
+    public Account? Account { get; set; }
 }

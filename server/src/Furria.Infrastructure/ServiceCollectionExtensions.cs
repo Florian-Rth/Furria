@@ -79,6 +79,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ClubRecordService>();
         services.AddScoped<ManagementService>();
         services.AddScoped<InvitationRoundService>();
+        services.AddScoped<AccountSecurityService>();
 
         services.AddSingleton<MailQueue>();
         services.AddSingleton<MailService>();

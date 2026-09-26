@@ -29,6 +29,18 @@ public sealed class EmailConfirmationConfiguration : IEntityTypeConfiguration<Em
                     "ck_email_confirmation_redemption_subject",
                     "purpose <> 'InvitationRedemption' OR invitation_id IS NOT NULL"
                 );
+                table.HasCheckConstraint(
+                    "ck_email_confirmation_login_email_change_subject",
+                    "purpose <> 'LoginEmailChange' OR (account_id IS NOT NULL AND email IS NOT NULL)"
+                );
+                table.HasCheckConstraint(
+                    "ck_email_confirmation_single_subject",
+                    "num_nonnulls(invitation_id, account_id) = 1"
+                );
+                table.HasCheckConstraint(
+                    "ck_email_confirmation_contact_email_follow",
+                    "purpose = 'LoginEmailChange' OR NOT updates_contact_email"
+                );
             }
         );
         builder.HasKey(confirmation => confirmation.Id);
@@ -37,6 +49,7 @@ public sealed class EmailConfirmationConfiguration : IEntityTypeConfiguration<Em
             .Property(confirmation => confirmation.Purpose)
             .HasConversion<string>()
             .HasMaxLength(32);
+        builder.Property(confirmation => confirmation.Email).HasMaxLength(NormalizedEmailLength);
         builder
             .Property(confirmation => confirmation.NormalizedEmail)
             .HasMaxLength(NormalizedEmailLength)
@@ -46,19 +59,34 @@ public sealed class EmailConfirmationConfiguration : IEntityTypeConfiguration<Em
             .HasMaxLength(EmailConfirmation.CodeHashLength)
             .IsRequired();
         builder.Property(confirmation => confirmation.FailedAttempts).HasDefaultValue(0);
+        builder.Property(confirmation => confirmation.UpdatesContactEmail).HasDefaultValue(false);
 
         builder
-            .HasIndex(confirmation => new { confirmation.Purpose, confirmation.InvitationId })
+            .HasIndex(confirmation => new
+            {
+                confirmation.Purpose,
+                confirmation.InvitationId,
+                confirmation.AccountId,
+            })
             .HasDatabaseName(LiveConfirmationIndex)
             .IsUnique()
-            .HasFilter("invitation_id IS NOT NULL AND consumed_at IS NULL AND voided_at IS NULL");
+            .AreNullsDistinct(false)
+            .HasFilter("consumed_at IS NULL AND voided_at IS NULL");
         builder.HasIndex(confirmation => confirmation.InvitationId);
+        builder.HasIndex(confirmation => confirmation.AccountId);
 
         builder
             .HasOne(confirmation => confirmation.Invitation)
             .WithMany()
             .HasForeignKey(confirmation => confirmation.InvitationId)
             .HasConstraintName("fk_email_confirmation_invitation_invitation_id")
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder
+            .HasOne(confirmation => confirmation.Account)
+            .WithMany()
+            .HasForeignKey(confirmation => confirmation.AccountId)
+            .HasConstraintName("fk_email_confirmation_account_account_id")
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

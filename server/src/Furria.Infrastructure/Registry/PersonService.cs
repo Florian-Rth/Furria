@@ -479,6 +479,23 @@ public sealed class PersonService
         return Result.Success();
     }
 
+    public async Task<Result> UpdateOwnContactEmailAsync(
+        int personId,
+        string email,
+        CancellationToken ct
+    )
+    {
+        var person = await _dbContext.People.SingleOrDefaultAsync(row => row.Id == personId, ct);
+
+        if (person is null)
+            return Result.NotFound(MissingOwnPersonMessage);
+
+        WriteContactDetails(person, ContactDetails.Of(person) with { Email = email }, personId);
+        await _dbContext.SaveChangesAsync(ct);
+
+        return Result.Success();
+    }
+
     public async Task<Result> SetContactVisibilityAsync(
         int personId,
         bool visibleToMembers,
