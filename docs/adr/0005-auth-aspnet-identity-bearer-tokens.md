@@ -93,3 +93,52 @@ Two consequences belong to this ADR:
 
 The browser is unchanged: `localStorage` behind the same port and under the same key, per
 [ADR-0006](0006-browser-session-storage-and-401-handling.md).
+
+## Amendment (2026-09-26, CA-P8 slice S7)
+
+Passkeys join the password as a second way in — **password always, passkey optional** (CA-P8
+ruling 10). Nothing above changes: a passkey sign-in ends in the same bearer access token and
+rotated refresh token a password sign-in does, through the same session issuing and the same
+refusal of a disabled or locked-out account.
+
+**Identity does the WebAuthn work; our endpoints carry its state.** The Identity store moves to
+schema version 3 (`account_passkey`), and the ceremonies run through the handler-level
+`IPasskeyHandler<Account>` — `MakeCreationOptionsAsync` / `PerformAttestationAsync` to add a
+passkey, `MakeRequestOptionsAsync` / `PerformAssertionAsync` to sign in with one. The
+`SignInManager` passkey methods are not used: they keep the ceremony state (the challenge, and for
+a creation the user it is for) in an authentication cookie between the two calls, and this API has
+no cookie.
+
+**The ceremony state lives server-side, in `passkey_challenge`.** The options call stores
+Identity's state JSON under an opaque random id (32 bytes, base64url; only its SHA-256 is stored)
+and returns the id beside the WebAuthn options; the client echoes the id back with the
+credential. A challenge
+
+- lives **5 minutes**;
+- is **single use**: the first call that presents it deletes it, whether the ceremony then
+  succeeds or fails, so a replayed or retried credential always meets a dead challenge;
+- carries its **purpose** (creation or request) and, for a creation, **the account** it was issued
+  to — a creation challenge presented by another account, or a request challenge presented to the
+  creation endpoint, is refused;
+- is cleaned up **on write**: issuing a challenge first deletes every expired row.
+
+Not a cookie, because there is none to put it in and a second, cookie-carried state would bring
+back the cross-origin and WebView fragility this ADR rejected. Not memory, because a challenge
+issued by one API instance must be redeemable on another — the database is the state every
+instance already shares. Not a signed or encrypted blob handed to the client either, because a
+blob cannot be made single use without a server-side record of its use.
+
+**The relying party is the club app's host.** `IdentityPasskeyOptions.ServerDomain` is the host of
+`ClubApp:BaseUrl` (the same value the mail links are built from), resident keys are required so
+sign-in is discoverable (no email typed), and user verification is required. The accepted
+origins, checked by the options' `ValidateOrigin` hook, are exactly:
+
+- the origin of `ClubApp:BaseUrl`, and
+- `android:apk-key-hash:<base64url SHA-256 of the signing certificate>` for every entry of
+  `ClubApp:AndroidCertFingerprints` — the origin Android's Credential Manager reports when the
+  Capacitor WebView runs WebAuthn for the app. A list, because the debug and release keys differ;
+  the fingerprints are configuration, never committed, and the app's `assetlinks.json` declares
+  `get_login_creds` for the same fingerprints.
+
+A cross-origin (iframe) ceremony is refused. Re-authentication (deleting the account) accepts a
+passkey assertion in place of the password; it must assert a passkey of the signed-in account.
