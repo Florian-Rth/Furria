@@ -1,3 +1,5 @@
+using Furria.Application.Identity;
+
 namespace Furria.Infrastructure.Identity;
 
 public sealed record AccountClaim
@@ -8,5 +10,5 @@ public sealed record AccountClaim
 
     public required string NormalizedLoginEmail { get; init; }
 
-    public required string? ClaimPassword { get; init; }
+    public required ReauthenticationProof? ClaimProof { get; init; }
 }

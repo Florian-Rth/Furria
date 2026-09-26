@@ -1,4 +1,5 @@
 using System.Diagnostics.Contracts;
+using System.Text.Json;
 using FastEndpoints;
 using FluentValidation;
 using FluentValidation.Results;
@@ -16,6 +17,7 @@ public sealed class RedeemInvitation : Endpoint<RedeemInvitationRequest, RedeemI
     private const string LoginEmailField = "loginEmail";
     private const string ConfirmationCodeField = "confirmationCode";
     private const string ClaimPasswordField = "claimPassword";
+    private const string ClaimPasskeyField = "claimPasskey";
     private const string TakenLoginEmailMessage =
         "Diese E-Mail-Adresse gehört schon zu einem Zugang. Wähle eine andere.";
     private const string WrongConfirmationCodeMessage =
@@ -24,6 +26,8 @@ public sealed class RedeemInvitation : Endpoint<RedeemInvitationRequest, RedeemI
         "Dieser Code gilt nicht mehr. Lass dir einen neuen schicken.";
     private const string WrongClaimPasswordMessage =
         "Das Passwort passt nicht zu diesem Zugang. Nach fünf Fehlversuchen ist er 15 Minuten gesperrt.";
+    private const string RejectedClaimPasskeyMessage =
+        "Der Passkey konnte für diesen Zugang nicht bestätigt werden. Versuch es noch einmal.";
 
     private readonly AccountAccessService _accountAccessService;
     private readonly InvitationTokenRateLimiter _tokenRateLimiter;
@@ -106,6 +110,11 @@ public sealed class RedeemInvitation : Endpoint<RedeemInvitationRequest, RedeemI
                 WrongClaimPasswordMessage,
                 StatusCodes.Status400BadRequest
             ),
+            RedemptionOutcome.ClaimPasskeyRejected => new RedemptionRefusal(
+                ClaimPasskeyField,
+                RejectedClaimPasskeyMessage,
+                StatusCodes.Status400BadRequest
+            ),
             _ => null,
         };
 
@@ -116,8 +125,24 @@ public sealed class RedeemInvitation : Endpoint<RedeemInvitationRequest, RedeemI
             Password = request.Password,
             LoginEmail = request.LoginEmail,
             ConfirmationCode = request.ConfirmationCode,
-            ClaimPassword = request.ClaimPassword,
+            ClaimProof = ToClaimProof(request),
             UpdateContactEmail = request.UpdateContactEmail,
+        };
+
+    [Pure]
+    private static ReauthenticationProof? ToClaimProof(RedeemInvitationRequest request) =>
+        (request.ClaimPassword, request.ClaimPasskey) switch
+        {
+            (null, { } passkey) => new PasskeyProof
+            {
+                Assertion = new PasskeyAssertion
+                {
+                    ChallengeId = passkey.ChallengeId,
+                    CredentialJson = passkey.Credential.GetRawText(),
+                },
+            },
+            ({ } password, _) => new PasswordProof { Password = password },
+            _ => null,
         };
 
     private static RedeemInvitationResponse ToResponse(RedemptionDetails redemption) =>
@@ -164,11 +189,23 @@ public sealed record RedeemInvitationRequest
 
     public string? ClaimPassword { get; init; }
 
+    public RedeemInvitationPasskeyDto? ClaimPasskey { get; init; }
+
     public bool UpdateContactEmail { get; init; } = true;
+}
+
+public sealed record RedeemInvitationPasskeyDto
+{
+    public required string ChallengeId { get; init; }
+
+    public required JsonElement Credential { get; init; }
 }
 
 public sealed class RedeemInvitationValidator : Validator<RedeemInvitationRequest>
 {
+    private const string OneClaimProofMessage =
+        "Bestätige den Zugang entweder mit dem Passwort oder mit dem Passkey.";
+
     public const int MinimumPasswordLength = 12;
     public const int MaximumPasswordLength = 256;
     public const int MaximumLoginEmailLength = 256;
@@ -196,8 +233,12 @@ public sealed class RedeemInvitationValidator : Validator<RedeemInvitationReques
                     .NotEmpty()
                     .MaximumLength(InvitationTokenLimits.CodeLength)
         );
+        RuleFor(request => request)
+            .Must(request => request.ClaimPassword is null || request.ClaimPasskey is null)
+            .OverridePropertyName("claimPasskey")
+            .WithMessage(OneClaimProofMessage);
         When(
-            request => request.ClaimPassword is null || request.Password is not null,
+            request => !IsClaim(request) || request.Password is not null,
             () =>
                 RuleFor(request => request.Password)
                     .NotEmpty()
@@ -210,6 +251,19 @@ public sealed class RedeemInvitationValidator : Validator<RedeemInvitationReques
                 RuleFor(request => request.ClaimPassword)
                     .NotEmpty()
                     .MaximumLength(MaximumPasswordLength)
+        );
+        When(
+            request => request.ClaimPasskey is not null,
+            () =>
+            {
+                RuleFor(request => request.ClaimPasskey!.ChallengeId)
+                    .NotEmpty()
+                    .MaximumLength(PasskeyCeremonyLimits.ChallengeIdLength)
+                    .OverridePropertyName("claimPasskey.challengeId");
+                RuleFor(request => request.ClaimPasskey!.Credential)
+                    .Must(PasskeyCeremonyLimits.IsCredential)
+                    .OverridePropertyName("claimPasskey.credential");
+            }
         );
         When(
             request => request.LoginEmail is not null,
@@ -227,6 +281,10 @@ public sealed class RedeemInvitationValidator : Validator<RedeemInvitationReques
                     .MaximumLength(MaximumConfirmationCodeLength)
         );
     }
+
+    [Pure]
+    private static bool IsClaim(RedeemInvitationRequest request) =>
+        request.ClaimPassword is not null || request.ClaimPasskey is not null;
 }
 
 public enum RedeemInvitationOutcome

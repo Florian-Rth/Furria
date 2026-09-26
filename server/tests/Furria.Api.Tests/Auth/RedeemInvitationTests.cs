@@ -8,6 +8,7 @@ using Furria.Core.Club;
 using Furria.Core.Identity;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
+using Furria.Tests.Common.WebAuthn;
 using Xunit;
 
 namespace Furria.Api.Tests.Auth;
@@ -19,6 +20,7 @@ public sealed class RedeemInvitationTests
     private const string LoginEmailField = "loginEmail";
     private const string PasswordField = "password";
     private const string ClaimPasswordField = "claimPassword";
+    private const string ClaimPasskeyField = "claimPasskey";
 
     private readonly ApiTestFixture _fixture;
 
@@ -1155,6 +1157,121 @@ public sealed class RedeemInvitationTests
             .Person(annaId)
             .ToHaveNoContactChange()
             .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_MoveTheAccountOntoHer_When_SheConfirmsTheClaimWithItsPasskey()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (ctx, annaId, token) = await ArrangeClaimAsync(ct);
+        var strayId = ctx.Identity.People.IdOf("stray");
+        var strayEmail = ctx.Identity.EmailOf("stray");
+        using var authenticator = new SoftwareAuthenticator();
+        await PasskeySteps.RegisterAsync(
+            await ctx.Identity.ClientForAsync("stray", ct),
+            authenticator
+        );
+
+        var (response, redemption) = await ClaimSteps.ClaimByPasskeyAsync(
+            _fixture.CreateClient(),
+            token,
+            strayEmail,
+            await PasskeySteps.AssertAsync(_fixture, authenticator)
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var signedIn = InvitationSteps.SignedInClient(_fixture, redemption);
+        var (meResponse, me) = await signedIn.GETAsync<GetMe, GetMeResponse>();
+        Assert.Equal(HttpStatusCode.OK, meResponse.StatusCode);
+        Assert.Equal(annaId, me.Person.Id);
+        await ctx
+            .Expected.Account(ctx.Identity.Accounts.IdOf("stray"))
+            .ToBeLinkedTo(annaId)
+            .Person(strayId)
+            .ToNotExist()
+            .InvitationsOfPerson(annaId)
+            .ToHaveRedeemedCount(1)
+            .PasskeyChallenges()
+            .ToHaveCount(0)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_LeaveBothPersonsAndTheAccountUntouched_When_TheClaimPasskeyIsAnotherAccounts()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (ctx, annaId, token) = await ArrangeClaimAsync(
+            ct,
+            builder =>
+                builder.Identity(identity =>
+                    identity.AddPerson("berta", "Berta", "Beispiel").AddAccount("berta")
+                )
+        );
+        var strayId = ctx.Identity.People.IdOf("stray");
+        using var bertasAuthenticator = new SoftwareAuthenticator();
+        await PasskeySteps.RegisterAsync(
+            await ctx.Identity.ClientForAsync("berta", ct),
+            bertasAuthenticator
+        );
+
+        var (response, _) = await ClaimSteps.ClaimByPasskeyAsync(
+            _fixture.CreateClient(),
+            token,
+            ctx.Identity.EmailOf("stray"),
+            await PasskeySteps.AssertAsync(_fixture, bertasAuthenticator)
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await AssertRefusedOnAsync(response, ClaimPasskeyField, ct);
+        await ctx
+            .Expected.Account(ctx.Identity.Accounts.IdOf("stray"))
+            .ToBeLinkedTo(strayId)
+            .Account(ctx.Identity.Accounts.IdOf("berta"))
+            .ToBeLinkedTo(ctx.Identity.People.IdOf("berta"))
+            .Person(strayId)
+            .ToExist()
+            .Person(annaId)
+            .ToExist()
+            .AccountOfPerson(annaId)
+            .ToNotExist()
+            .InvitationsOfPerson(annaId)
+            .ToHaveLiveCount(1)
+            .AccountEventsOfPerson(annaId)
+            .ToHaveKindsInOrder(AccountEventKind.Invited)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseTheClaim_When_ItCarriesBothThePasswordAndAPasskey()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (ctx, annaId, token) = await ArrangeClaimAsync(ct);
+        using var authenticator = new SoftwareAuthenticator();
+        await PasskeySteps.RegisterAsync(
+            await ctx.Identity.ClientForAsync("stray", ct),
+            authenticator
+        );
+        var attempt = await PasskeySteps.AssertAsync(_fixture, authenticator);
+
+        var (response, _) = await _fixture
+            .CreateClient()
+            .POSTAsync<RedeemInvitation, RedeemInvitationRequest, RedeemInvitationResponse>(
+                new RedeemInvitationRequest
+                {
+                    Token = token,
+                    LoginEmail = ctx.Identity.EmailOf("stray"),
+                    ClaimPassword = ApiTestFixture.SeededAccountPassword,
+                    ClaimPasskey = new RedeemInvitationPasskeyDto
+                    {
+                        ChallengeId = attempt.ChallengeId,
+                        Credential = attempt.Credential,
+                    },
+                }
+            );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await AssertRefusedOnAsync(response, ClaimPasskeyField, ct);
+        await ctx.Expected.AccountOfPerson(annaId).ToNotExist().AssertAsync(ct);
     }
 
     [Fact]

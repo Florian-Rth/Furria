@@ -34,6 +34,25 @@ internal static class ClaimSteps
             }
         );
 
+    public static Task<TestResult<RedeemInvitationResponse>> ClaimByPasskeyAsync(
+        HttpClient client,
+        string token,
+        string loginEmail,
+        PasskeyAssertionAttempt attempt
+    ) =>
+        client.POSTAsync<RedeemInvitation, RedeemInvitationRequest, RedeemInvitationResponse>(
+            new RedeemInvitationRequest
+            {
+                Token = token,
+                LoginEmail = loginEmail,
+                ClaimPasskey = new RedeemInvitationPasskeyDto
+                {
+                    ChallengeId = attempt.ChallengeId,
+                    Credential = attempt.Credential,
+                },
+            }
+        );
+
     public static async Task GiveContactEmailAsync(
         HttpClient manager,
         int personId,

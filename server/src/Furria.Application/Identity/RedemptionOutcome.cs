@@ -9,4 +9,5 @@ public enum RedemptionOutcome
     ConfirmationCodeDead = 5,
     ClaimRequired = 6,
     ClaimPasswordWrong = 7,
+    ClaimPasskeyRejected = 8,
 }

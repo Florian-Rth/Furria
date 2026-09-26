@@ -10,7 +10,7 @@ public sealed record RedeemInvitationCommand
 
     public required string? ConfirmationCode { get; init; }
 
-    public required string? ClaimPassword { get; init; }
+    public required ReauthenticationProof? ClaimProof { get; init; }
 
     public required bool UpdateContactEmail { get; init; }
 }

@@ -262,7 +262,7 @@ public sealed class AccountAccessService
                     InvitationId = redeemable.InvitationId,
                     KeeperPersonId = redeemable.PersonId,
                     NormalizedLoginEmail = normalizedLoginEmail,
-                    ClaimPassword = command.ClaimPassword,
+                    ClaimProof = command.ClaimProof,
                 },
                 ct
             );

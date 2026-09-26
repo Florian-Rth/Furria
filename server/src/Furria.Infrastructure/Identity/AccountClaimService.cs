@@ -24,10 +24,16 @@ public sealed class AccountClaimService
             RedemptionDetails.Refused(RedemptionOutcome.ClaimPasswordWrong)
         );
 
+    private static readonly Result<RedemptionDetails> RejectedPasskey =
+        Result<RedemptionDetails>.Success(
+            RedemptionDetails.Refused(RedemptionOutcome.ClaimPasskeyRejected)
+        );
+
     private readonly AppDbContext _dbContext;
     private readonly UserManager<Account> _userManager;
     private readonly SignInManager<Account> _signInManager;
     private readonly AccountService _accountService;
+    private readonly PasskeyService _passkeyService;
     private readonly RefreshTokenService _refreshTokenService;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<AccountClaimService> _logger;
@@ -37,6 +43,7 @@ public sealed class AccountClaimService
         UserManager<Account> userManager,
         SignInManager<Account> signInManager,
         AccountService accountService,
+        PasskeyService passkeyService,
         RefreshTokenService refreshTokenService,
         TimeProvider timeProvider,
         ILogger<AccountClaimService> logger
@@ -46,6 +53,7 @@ public sealed class AccountClaimService
         _userManager = userManager;
         _signInManager = signInManager;
         _accountService = accountService;
+        _passkeyService = passkeyService;
         _refreshTokenService = refreshTokenService;
         _timeProvider = timeProvider;
         _logger = logger;
@@ -63,13 +71,17 @@ public sealed class AccountClaimService
         if (account is null)
             return Taken;
 
-        if (claim.ClaimPassword is not { } claimPassword)
-            return Result<RedemptionDetails>.Success(RedemptionDetails.ClaimRequired());
-
-        if (!await ProvesOwnershipAsync(account, claimPassword))
-            return WrongPassword;
-
-        return await MoveOntoKeeperAsync(account, claim, ct);
+        return claim.ClaimProof switch
+        {
+            null => Result<RedemptionDetails>.Success(RedemptionDetails.ClaimRequired()),
+            PasswordProof password => await ProvesOwnershipAsync(account, password.Password)
+                ? await MoveOntoKeeperAsync(account, claim, ct)
+                : WrongPassword,
+            PasskeyProof passkey => await ProvesOwnershipAsync(account, passkey, ct)
+                ? await MoveOntoKeeperAsync(account, claim, ct)
+                : RejectedPasskey,
+            _ => throw new ArgumentOutOfRangeException(nameof(claim), claim.ClaimProof, null),
+        };
     }
 
     private async Task<Result<RedemptionDetails>> MoveOntoKeeperAsync(
@@ -119,6 +131,24 @@ public sealed class AccountClaimService
         return Result<RedemptionDetails>.Success(
             RedemptionDetails.Redeemed(await _accountService.StartSessionAsync(account, ct))
         );
+    }
+
+    private async Task<bool> ProvesOwnershipAsync(
+        Account account,
+        PasskeyProof proof,
+        CancellationToken ct
+    )
+    {
+        var asserted = await _passkeyService.VerifyAssertionAsync(proof.Assertion, ct);
+        if (asserted?.Id == account.Id)
+            return true;
+
+        _logger.LogInformation(
+            "Claim refused for account {AccountId}: {LoginFailureReason}",
+            account.Id,
+            LoginFailureReason.PasskeyRejected
+        );
+        return false;
     }
 
     private async Task<bool> ProvesOwnershipAsync(Account account, string claimPassword)
