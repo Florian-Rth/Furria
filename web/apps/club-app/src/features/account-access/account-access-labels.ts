@@ -64,6 +64,7 @@ const ACCOUNT_EVENT_TITLES: Record<AccountEventKind, string> = {
   enabled: 'Entsperrt',
   deleted: 'Account gelöscht',
   loginEmailChanged: 'Anmelde-E-Mail geändert',
+  recoveryIssued: 'Wiederherstellung gestartet',
 };
 
 export const toAccountEventTitle = (kind: AccountEventKind): string => ACCOUNT_EVENT_TITLES[kind];

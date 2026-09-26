@@ -19,6 +19,7 @@ export const AccountEventKindSchema = z.enum([
   'enabled',
   'deleted',
   'loginEmailChanged',
+  'recoveryIssued',
 ]);
 export type AccountEventKind = z.infer<typeof AccountEventKindSchema>;
 

@@ -399,7 +399,7 @@ public sealed class AccountAccessService
             new AccountEvent
             {
                 PersonId = invitation.PersonId,
-                Kind = AccountEventKind.Invited,
+                Kind = IssuedEventKindOf(invitation.Purpose),
                 ActorPersonId = invitation.IssuedByPersonId,
                 At = invitation.IssuedAt,
             }
@@ -686,6 +686,12 @@ public sealed class AccountAccessService
             EmailConfirmationVerdict.Dead => RedemptionOutcome.ConfirmationCodeDead,
             _ => throw new ArgumentOutOfRangeException(nameof(verdict), verdict, null),
         };
+
+    [Pure]
+    private static AccountEventKind IssuedEventKindOf(InvitationPurpose purpose) =>
+        purpose == InvitationPurpose.Recovery
+            ? AccountEventKind.RecoveryIssued
+            : AccountEventKind.Invited;
 
     [Pure]
     private static Result<RedemptionDetails> RefusalOf(IdentityResult created)

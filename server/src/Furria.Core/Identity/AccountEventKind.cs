@@ -10,4 +10,5 @@ public enum AccountEventKind
     Enabled = 6,
     Deleted = 7,
     LoginEmailChanged = 8,
+    RecoveryIssued = 9,
 }

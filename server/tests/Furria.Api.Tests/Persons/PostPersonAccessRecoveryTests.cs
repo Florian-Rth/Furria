@@ -50,6 +50,8 @@ public sealed class PostPersonAccessRecoveryTests
             .Expected.LiveInvitationOfPerson(annaId)
             .ToBeRecoveryIssuedBy(ctx.Identity.BootstrapAdmin.PersonId)
             .AccountEventsOfPerson(annaId)
+            .ToHaveKindsInOrder(AccountEventKind.RecoveryIssued)
+            .AccountEventsOfPerson(annaId)
             .ToHaveLatestActor(ctx.Identity.BootstrapAdmin.PersonId)
             .AssertAsync(ct);
     }

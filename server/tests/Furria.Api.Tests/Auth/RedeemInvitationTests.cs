@@ -771,7 +771,7 @@ public sealed class RedeemInvitationTests
             .Expected.AccountOfPerson(annaId)
             .ToHaveLoginEmail(loginEmail)
             .AccountEventsOfPerson(annaId)
-            .ToHaveKindsInOrder(AccountEventKind.Invited, AccountEventKind.Recovered)
+            .ToHaveKindsInOrder(AccountEventKind.RecoveryIssued, AccountEventKind.Recovered)
             .InvitationsOfPerson(annaId)
             .ToHaveRedeemedCount(1)
             .RefreshTokensOf(accountId)
@@ -838,7 +838,7 @@ public sealed class RedeemInvitationTests
             .ToHaveLoginEmail(chosenEmail)
             .AccountEventsOfPerson(annaId)
             .ToHaveKindsInOrder(
-                AccountEventKind.Invited,
+                AccountEventKind.RecoveryIssued,
                 AccountEventKind.Recovered,
                 AccountEventKind.LoginEmailChanged
             )
@@ -925,7 +925,7 @@ public sealed class RedeemInvitationTests
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         await ctx
             .Expected.AccountEventsOfPerson(annaId)
-            .ToHaveKindsInOrder(AccountEventKind.Invited, AccountEventKind.Disabled)
+            .ToHaveKindsInOrder(AccountEventKind.RecoveryIssued, AccountEventKind.Disabled)
             .AssertAsync(ct);
     }
 
