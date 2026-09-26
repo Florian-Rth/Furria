@@ -37,6 +37,10 @@ public sealed class EndpointGateTests
         "/api/auth/me/last-seen-announcement",
         "/api/calendar/entries",
         "/api/calendar/entries/{calendarEntryId}",
+        "/api/auth/me/login-email",
+        "/api/auth/me/login-email/confirmation",
+        "/api/auth/me/password",
+        "/api/auth/me/logout-everywhere",
     ];
 
     private static readonly string[] InHandlerGatedProbes =

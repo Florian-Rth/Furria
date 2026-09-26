@@ -95,6 +95,9 @@ public sealed class Expected
 
     public TrainingSetExpectations TrainingsOf(int groupId) => new(this, groupId);
 
+    public EmailConfirmationSetExpectations EmailConfirmationsOfAccount(int accountId) =>
+        new(this, accountId);
+
     public async Task AssertAsync(CancellationToken ct = default)
     {
         var pending = _reads.ToList();

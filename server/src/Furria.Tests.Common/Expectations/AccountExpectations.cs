@@ -58,4 +58,18 @@ public sealed class AccountExpectations
                 Assert.Equal(disabled, account.IsDisabled);
             }
         );
+
+    public Expected ToSignInAs(string loginEmail) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var account = await dbContext
+                    .Users.AsNoTracking()
+                    .SingleAsync(row => row.Id == _accountId, ct);
+
+                Assert.Equal(loginEmail, account.Email);
+                Assert.Equal(loginEmail, account.UserName);
+                Assert.True(account.EmailConfirmed);
+            }
+        );
 }
