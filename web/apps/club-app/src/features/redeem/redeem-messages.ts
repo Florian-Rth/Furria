@@ -4,26 +4,50 @@ import { toRedeemFailureKind } from './redeem-failure';
 
 const REDEEM_FAILURE_MESSAGES: Record<RedeemFailureKind, string> = {
   dead: 'Diese Einladung gilt nicht mehr.',
+  taken: 'Diese E-Mail-Adresse gehört schon zu einem Zugang. Wähle eine andere.',
+  codeRejected: 'Der Code stimmt nicht oder gilt nicht mehr.',
   throttled: 'Zu viele Versuche. Warte einen Moment und versuche es dann erneut.',
   rejected: 'Der Server hat die Anfrage abgelehnt.',
   unreachable: 'Keine Verbindung zum Server. Prüfe deine Internetverbindung.',
   unexpected: 'Das hat nicht funktioniert. Bitte versuche es erneut.',
 };
 
+export interface RedeemErrorMessages {
+  loginEmail: string | null;
+  confirmationCode: string | null;
+  footer: string | null;
+}
+
+const NO_ERRORS: RedeemErrorMessages = { loginEmail: null, confirmationCode: null, footer: null };
+
 export const toRedeemFailureMessage = (failure: RedeemFailureKind): string =>
   REDEEM_FAILURE_MESSAGES[failure];
 
-export const toRedeemErrorMessage = (error: Error | null): string | null => {
+const toServerMessage = (error: Error, failure: RedeemFailureKind): string =>
+  error instanceof RequestFailedError ? error.firstMessage : toRedeemFailureMessage(failure);
+
+export const toRedeemErrorMessages = (error: Error | null): RedeemErrorMessages => {
   const failure = toRedeemFailureKind(error);
 
-  if (failure === null) {
-    return null;
+  if (error === null || failure === null) {
+    return NO_ERRORS;
   }
-  if (error instanceof RequestFailedError && failure === 'rejected') {
-    return error.firstMessage;
+  if (failure === 'taken') {
+    return { ...NO_ERRORS, loginEmail: toServerMessage(error, failure) };
+  }
+  if (failure === 'codeRejected') {
+    return { ...NO_ERRORS, confirmationCode: toServerMessage(error, failure) };
+  }
+  if (failure === 'rejected') {
+    return { ...NO_ERRORS, footer: toServerMessage(error, failure) };
   }
 
-  return toRedeemFailureMessage(failure);
+  return { ...NO_ERRORS, footer: toRedeemFailureMessage(failure) };
 };
 
 export const toGreeting = (firstName: string): string => `HALLO ${firstName.toUpperCase()}`;
+
+export const toConfirmationSentLine = (loginEmail: string): string =>
+  `Wir haben dir einen Code an ${loginEmail} geschickt. Gib ihn hier ein, dann ist die Adresse bestätigt.`;
+
+export const toCodeValidityLine = (countdown: string): string => `Der Code gilt noch ${countdown}.`;

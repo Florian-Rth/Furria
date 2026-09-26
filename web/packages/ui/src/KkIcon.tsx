@@ -32,6 +32,7 @@ import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 import PhotoLibraryOutlinedIcon from '@mui/icons-material/PhotoLibraryOutlined';
 import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
 import PolicyOutlinedIcon from '@mui/icons-material/PolicyOutlined';
+import QrCode2OutlinedIcon from '@mui/icons-material/QrCode2Outlined';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import SensorsOutlinedIcon from '@mui/icons-material/SensorsOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
@@ -83,7 +84,8 @@ export type KkIconName =
   | 'info'
   | 'alert'
   | 'offline'
-  | 'archive';
+  | 'archive'
+  | 'qr';
 type KkIconSize = 'small' | 'medium' | 'large';
 
 interface KkIconProps {
@@ -140,6 +142,7 @@ const icons: Record<KkIconName, typeof HomeIcon> = {
   alert: ErrorOutlineOutlinedIcon,
   offline: CloudOffOutlinedIcon,
   archive: Inventory2OutlinedIcon,
+  qr: QrCode2OutlinedIcon,
 };
 
 export const KkIcon: FC<KkIconProps> = ({ name, size = 'medium', sx }) => {

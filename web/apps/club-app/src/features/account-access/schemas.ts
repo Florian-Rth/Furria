@@ -48,3 +48,13 @@ export type PersonAccess = z.infer<typeof PersonAccessSchema>;
 
 export const IssuedInvitationSchema = z.object({ expiresAt: z.iso.datetime({ offset: true }) });
 export type IssuedInvitation = z.infer<typeof IssuedInvitationSchema>;
+
+export const InPersonInvitationSchema = z.object({
+  link: z.url(),
+  code: z.string().min(1),
+  expiresAt: z.iso.datetime({ offset: true }),
+});
+export type InPersonInvitation = z.infer<typeof InPersonInvitationSchema>;
+
+export const AccessStateSchema = z.object({ state: AccountStateSchema });
+export type AccessState = z.infer<typeof AccessStateSchema>;

@@ -272,6 +272,9 @@ catalogs:
     typescript:
       specifier: 7.0.2
       version: 7.0.2
+    uqr:
+      specifier: 0.1.3
+      version: 0.1.3
     vite:
       specifier: 8.1.5
       version: 8.1.5
@@ -501,6 +504,9 @@ importers:
       motion:
         specifier: 'catalog:'
         version: 12.42.2(@emotion/is-prop-valid@1.4.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      uqr:
+        specifier: 'catalog:'
+        version: 0.1.3
     devDependencies:
       '@types/react':
         specifier: 'catalog:'
@@ -2777,6 +2783,9 @@ packages:
     hasBin: true
     peerDependencies:
       browserslist: '>= 4.21.0'
+
+  uqr@0.1.3:
+    resolution: {integrity: sha512-0rjE8iEJe4YmT9TOhwsZtqCMRLc5DXZUI2UEYUUg63ikBkqqE5EYWaI0etFe/5KUcmcYwLih2RND1kq+hrUJXA==}
 
   use-sync-external-store@1.6.0:
     resolution: {integrity: sha512-Pp6GSwGP/NrPIrxVFAIkOQeyw8lFenOHijQWkUTrDvrF4ALqylP2C/KCkeS9dpUM3KvYRQhna5vt7IL95+ZQ9w==}
@@ -5171,6 +5180,8 @@ snapshots:
       browserslist: 4.28.6
       escalade: 3.2.0
       picocolors: 1.1.1
+
+  uqr@0.1.3: {}
 
   use-sync-external-store@1.6.0(react@19.2.7):
     dependencies:

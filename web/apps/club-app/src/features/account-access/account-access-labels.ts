@@ -118,6 +118,30 @@ export const toInvitationConsequence = (
 export const toInvitationSentMessage = (firstName: string): string =>
   `Einladung an ${firstName} ist unterwegs.`;
 
+export const IN_PERSON_ACT_LABEL = 'Vor Ort zeigen';
+export const IN_PERSON_ROW_META = 'QR-Code und Code aufs Handy, 15 Minuten gültig';
+export const IN_PERSON_INSTRUCTION =
+  'Mit der Handykamera den QR-Code scannen – oder in der App auf „Code eingeben“ tippen und den Code eintippen.';
+export const IN_PERSON_EXPIRED_LINE = 'Der Code ist abgelaufen und lässt sich nicht mehr nutzen.';
+export const IN_PERSON_REISSUE_LABEL = 'Neuer Code';
+export const IN_PERSON_RETRY_LABEL = 'Erneut versuchen';
+export const IN_PERSON_FINISH_LABEL = 'Fertig';
+export const IN_PERSON_VALIDITY_NOTE =
+  'Der Code gilt 15 Minuten. Eine offene Einladung per Mail gilt dann nicht mehr.';
+
+export const toInPersonHref = (personId: number): string =>
+  `/manage/persons/${personId}/invitations/in-person`;
+
+export const toInPersonCountdownLine = (countdown: string): string => `Gültig noch ${countdown}`;
+
+export const toInPersonQrLabel = (firstName: string): string =>
+  `QR-Code mit der Einladung für ${firstName}`;
+
+export const toRedeemedTitle = (firstName: string): string => `${firstName.toUpperCase()} IST DRIN`;
+
+export const toRedeemedLine = (firstName: string): string =>
+  `Der Zugang ist eingerichtet und ${firstName} ist angemeldet.`;
+
 const ACCESS_LANDING_KIND = 'access';
 
 export const toAccessLandingKey = (personId: number): string =>

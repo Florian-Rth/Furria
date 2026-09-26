@@ -9,7 +9,7 @@ describe('accessActionsOf', () => {
       'an eligible person never invited',
       { state: 'noAccess', reason: null, invitation: null, history: [] },
       'anna@web.de',
-      { mailInvitation: 'invite' },
+      { mailInvitation: 'invite', inPersonInvitation: true },
     ],
     [
       'a person with a live invitation',
@@ -26,7 +26,7 @@ describe('accessActionsOf', () => {
         history: [],
       },
       'anna@web.de',
-      { mailInvitation: 'reinvite' },
+      { mailInvitation: 'reinvite', inPersonInvitation: true },
     ],
     [
       'a person whose invitation expired',
@@ -43,43 +43,43 @@ describe('accessActionsOf', () => {
         history: [],
       },
       'anna@web.de',
-      { mailInvitation: 'reinvite' },
+      { mailInvitation: 'reinvite', inPersonInvitation: true },
     ],
     [
       'an invited state without an invitation block',
       { state: 'invited', reason: null, invitation: null, history: [] },
       'anna@web.de',
-      { mailInvitation: 'reinvite' },
+      { mailInvitation: 'reinvite', inPersonInvitation: true },
     ],
     [
       'a person under age',
       { state: 'noAccess', reason: 'underAge', invitation: null, history: [] },
       'anna@web.de',
-      { mailInvitation: null },
+      { mailInvitation: null, inPersonInvitation: false },
     ],
     [
       'a person without an email the server still calls eligible',
       { state: 'noAccess', reason: null, invitation: null, history: [] },
       null,
-      { mailInvitation: null },
+      { mailInvitation: null, inPersonInvitation: false },
     ],
     [
       'a person with a blank email',
       { state: 'noAccess', reason: null, invitation: null, history: [] },
       '  ',
-      { mailInvitation: null },
+      { mailInvitation: null, inPersonInvitation: false },
     ],
     [
       'an active account',
       { state: 'active', reason: null, invitation: null, history: [] },
       'anna@web.de',
-      { mailInvitation: null },
+      { mailInvitation: null, inPersonInvitation: false },
     ],
     [
       'a disabled account',
       { state: 'disabled', reason: null, invitation: null, history: [] },
       'anna@web.de',
-      { mailInvitation: null },
+      { mailInvitation: null, inPersonInvitation: false },
     ],
   ])('offers the right acts for %s', (_case, access, email, expected) => {
     expect(accessActionsOf(access, email)).toEqual(expected);

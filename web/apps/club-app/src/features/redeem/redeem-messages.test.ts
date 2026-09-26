@@ -1,0 +1,45 @@
+import { describe, expect, it } from 'vitest';
+import { RequestBlockedError, RequestFailedError, ServerFailureError } from '@/lib/api/api-error';
+import type { RedeemErrorMessages } from './redeem-messages';
+import { toRedeemErrorMessages, toRedeemFailureMessage } from './redeem-messages';
+
+describe('toRedeemErrorMessages', () => {
+  it.each<[string, Error | null, RedeemErrorMessages]>([
+    ['no error', null, { loginEmail: null, confirmationCode: null, footer: null }],
+    [
+      'a taken login email',
+      new RequestFailedError(409, [{ field: 'loginEmail', message: 'vergeben' }]),
+      { loginEmail: 'vergeben', confirmationCode: null, footer: null },
+    ],
+    [
+      'a rejected confirmation code',
+      new RequestFailedError(400, [{ field: 'confirmationCode', message: 'falsch' }]),
+      { loginEmail: null, confirmationCode: 'falsch', footer: null },
+    ],
+    [
+      'a rejected password',
+      new RequestFailedError(400, [{ field: 'password', message: 'zu schwach' }]),
+      { loginEmail: null, confirmationCode: null, footer: 'zu schwach' },
+    ],
+    [
+      'a rate limit',
+      new ServerFailureError(429),
+      {
+        loginEmail: null,
+        confirmationCode: null,
+        footer: toRedeemFailureMessage('throttled'),
+      },
+    ],
+    [
+      'an unreachable server',
+      new RequestBlockedError(),
+      {
+        loginEmail: null,
+        confirmationCode: null,
+        footer: toRedeemFailureMessage('unreachable'),
+      },
+    ],
+  ])('places the message of %s', (_case, error, expected) => {
+    expect(toRedeemErrorMessages(error)).toEqual(expected);
+  });
+});

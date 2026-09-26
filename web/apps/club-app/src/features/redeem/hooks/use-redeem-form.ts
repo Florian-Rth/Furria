@@ -1,32 +1,42 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { FormEvent } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
+import { needsEmailConfirmation } from '../redeem-stage';
 import type { RedeemForm } from '../schemas';
 import { RedeemFormSchema } from '../schemas';
 
 interface RedeemFormInput {
-  onRedeem: (password: string) => void;
+  defaultLoginEmail: string;
+  suggestedLoginEmail: string | null;
+  onRedeem: (values: RedeemForm) => void;
 }
 
 interface RedeemFormState {
   form: UseFormReturn<RedeemForm>;
+  needsConfirmation: boolean;
   submit: (event: FormEvent<HTMLFormElement>) => void;
 }
 
-export const useRedeemForm = ({ onRedeem }: RedeemFormInput): RedeemFormState => {
+export const useRedeemForm = ({
+  defaultLoginEmail,
+  suggestedLoginEmail,
+  onRedeem,
+}: RedeemFormInput): RedeemFormState => {
   const form = useForm<RedeemForm>({
     resolver: zodResolver(RedeemFormSchema),
-    defaultValues: { password: '' },
+    defaultValues: { loginEmail: defaultLoginEmail, password: '' },
     mode: 'onTouched',
   });
+  const typedLoginEmail = useWatch({ control: form.control, name: 'loginEmail' });
 
   const handleFormSubmit = form.handleSubmit((values) => {
-    onRedeem(values.password);
+    onRedeem(values);
   });
 
   return {
     form,
+    needsConfirmation: needsEmailConfirmation(typedLoginEmail, suggestedLoginEmail),
     submit: (event) => {
       void handleFormSubmit(event);
     },

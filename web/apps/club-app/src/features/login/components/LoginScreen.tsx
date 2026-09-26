@@ -6,6 +6,7 @@ import { buildLoginStageMeta } from '../stage-meta';
 import { LoginForm } from './LoginForm';
 import { LoginHelpNote } from './LoginHelpNote';
 import { LoginTestCredentials } from './LoginTestCredentials';
+import { LoginWaysOn } from './LoginWaysOn';
 
 const INTRO = 'Der Mitgliederbereich des FCC.';
 
@@ -38,6 +39,7 @@ export const LoginScreen: FC<LoginScreenProps> = ({ expired }) => {
         </Stack>
         {expiredNotice}
         <LoginForm />
+        <LoginWaysOn />
         <LoginHelpNote />
         <LoginTestCredentials />
       </KkSplitLayout.Pane>

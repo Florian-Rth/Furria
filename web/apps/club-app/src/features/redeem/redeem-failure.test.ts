@@ -10,6 +10,21 @@ describe('toRedeemFailureKind', () => {
     ['a conflict with a problem body', new RequestFailedError(409, []), 'dead'],
     ['a conflict without a problem body', new ServerFailureError(409), 'dead'],
     [
+      'a login email already taken',
+      new RequestFailedError(409, [{ field: 'loginEmail', message: 'vergeben' }]),
+      'taken',
+    ],
+    [
+      'a login email taken, named in Pascal case',
+      new RequestFailedError(409, [{ field: 'LoginEmail', message: 'vergeben' }]),
+      'taken',
+    ],
+    [
+      'a wrong confirmation code',
+      new RequestFailedError(400, [{ field: 'confirmationCode', message: 'falsch' }]),
+      'codeRejected',
+    ],
+    [
       'a validation refusal',
       new RequestFailedError(400, [{ field: 'password', message: 'zu kurz' }]),
       'rejected',

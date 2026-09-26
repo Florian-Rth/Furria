@@ -1,11 +1,13 @@
 import { useLocation, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
-import { INVITATION_PATH, readInvitationToken } from '../invitation-token';
+import type { InvitationCredential } from '../invitation-credential';
+import { readInvitationCredential } from '../invitation-credential';
+import { INVITATION_PATH } from '../invitation-token';
 
-export const useInvitationToken = (): string | null => {
+export const useInvitationCredential = (): InvitationCredential | null => {
   const { hash } = useLocation();
   const navigate = useNavigate();
-  const [token] = useState(() => readInvitationToken(hash));
+  const [credential] = useState(() => readInvitationCredential(hash));
 
   useEffect(() => {
     if (hash === '') {
@@ -15,5 +17,5 @@ export const useInvitationToken = (): string | null => {
     void navigate({ to: INVITATION_PATH, replace: true });
   }, [hash, navigate]);
 
-  return token;
+  return credential;
 };

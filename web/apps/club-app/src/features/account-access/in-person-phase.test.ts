@@ -1,0 +1,127 @@
+import { describe, expect, it } from 'vitest';
+import type { InPersonPhase } from './in-person-phase';
+import { inPersonPhaseOf, isCodeShowing } from './in-person-phase';
+
+type PhaseInput = Parameters<typeof inPersonPhaseOf>[0];
+
+const NOW = new Date('2026-09-26T12:00:00Z');
+
+describe('inPersonPhaseOf', () => {
+  it.each<[string, PhaseInput, InPersonPhase]>([
+    [
+      'the first issue on its way',
+      { invitation: undefined, isIssuing: true, hasIssueFailed: false, state: undefined, now: NOW },
+      { kind: 'issuing' },
+    ],
+    [
+      'nothing issued yet',
+      {
+        invitation: undefined,
+        isIssuing: false,
+        hasIssueFailed: false,
+        state: undefined,
+        now: NOW,
+      },
+      { kind: 'issuing' },
+    ],
+    [
+      'a refused issue',
+      { invitation: undefined, isIssuing: false, hasIssueFailed: true, state: undefined, now: NOW },
+      { kind: 'failed' },
+    ],
+    [
+      'a code with time left',
+      {
+        invitation: {
+          link: 'https://club.test/invitation#token=abc',
+          code: 'K7M4-Q2XP',
+          expiresAt: '2026-09-26T12:15:00Z',
+        },
+        isIssuing: false,
+        hasIssueFailed: false,
+        state: 'invited',
+        now: NOW,
+      },
+      {
+        kind: 'showing',
+        invitation: {
+          link: 'https://club.test/invitation#token=abc',
+          code: 'K7M4-Q2XP',
+          expiresAt: '2026-09-26T12:15:00Z',
+        },
+        secondsLeft: 900,
+      },
+    ],
+    [
+      'a code whose time ran out',
+      {
+        invitation: {
+          link: 'https://club.test/invitation#token=abc',
+          code: 'K7M4-Q2XP',
+          expiresAt: '2026-09-26T12:00:00Z',
+        },
+        isIssuing: false,
+        hasIssueFailed: false,
+        state: 'noAccess',
+        now: NOW,
+      },
+      {
+        kind: 'expired',
+        invitation: {
+          link: 'https://club.test/invitation#token=abc',
+          code: 'K7M4-Q2XP',
+          expiresAt: '2026-09-26T12:00:00Z',
+        },
+      },
+    ],
+    [
+      'a new code on its way after the old one ran out',
+      {
+        invitation: {
+          link: 'https://club.test/invitation#token=abc',
+          code: 'K7M4-Q2XP',
+          expiresAt: '2026-09-26T12:00:00Z',
+        },
+        isIssuing: true,
+        hasIssueFailed: false,
+        state: 'noAccess',
+        now: NOW,
+      },
+      { kind: 'issuing' },
+    ],
+    [
+      'her account turning active',
+      {
+        invitation: {
+          link: 'https://club.test/invitation#token=abc',
+          code: 'K7M4-Q2XP',
+          expiresAt: '2026-09-26T12:15:00Z',
+        },
+        isIssuing: false,
+        hasIssueFailed: false,
+        state: 'active',
+        now: NOW,
+      },
+      { kind: 'redeemed' },
+    ],
+  ])('decides the phase for %s', (_case, input, expected) => {
+    expect(inPersonPhaseOf(input)).toEqual(expected);
+  });
+});
+
+describe('isCodeShowing', () => {
+  const invitation = {
+    link: 'https://club.test/invitation#token=abc',
+    code: 'K7M4-Q2XP',
+    expiresAt: '2026-09-26T12:15:00Z',
+  };
+
+  it.each<[string, typeof invitation | undefined, boolean, Date, boolean]>([
+    ['nothing issued', undefined, false, NOW, false],
+    ['a code with time left', invitation, false, NOW, true],
+    ['a code being replaced', invitation, true, NOW, false],
+    ['a code whose time ran out', invitation, false, new Date('2026-09-26T12:15:00Z'), false],
+  ])('polls for %s', (_case, issued, isIssuing, now, expected) => {
+    expect(isCodeShowing(issued, isIssuing, now)).toBe(expected);
+  });
+});

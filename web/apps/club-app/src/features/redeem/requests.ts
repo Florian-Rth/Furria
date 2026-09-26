@@ -1,19 +1,33 @@
 import { apiFetch } from '@/lib/api/api-fetch';
-import type { SessionTokens } from '@/lib/api/schemas';
-import { SessionTokensSchema } from '@/lib/api/schemas';
-import type { InvitationLookup } from './schemas';
-import { InvitationLookupSchema } from './schemas';
+import type { InvitationCredential } from './invitation-credential';
+import { toCredentialBody } from './invitation-credential';
+import type { InvitationLookup, Redemption } from './schemas';
+import { InvitationLookupSchema, RedemptionSchema } from './schemas';
 
-export const requestInvitationLookup = (token: string): Promise<InvitationLookup> =>
+export interface RedemptionRequest {
+  credential: InvitationCredential;
+  loginEmail: string;
+  password: string;
+  confirmationCode: string | null;
+}
+
+export const requestInvitationLookup = (
+  credential: InvitationCredential,
+): Promise<InvitationLookup> =>
   apiFetch('/api/auth/invitations/lookup', {
     method: 'POST',
-    body: { token },
+    body: toCredentialBody(credential),
     schema: InvitationLookupSchema,
   });
 
-export const requestInvitationRedeem = (token: string, password: string): Promise<SessionTokens> =>
+export const requestInvitationRedeem = ({
+  credential,
+  loginEmail,
+  password,
+  confirmationCode,
+}: RedemptionRequest): Promise<Redemption> =>
   apiFetch('/api/auth/invitations/redeem', {
     method: 'POST',
-    body: { token, password },
-    schema: SessionTokensSchema,
+    body: { ...toCredentialBody(credential), loginEmail, password, confirmationCode },
+    schema: RedemptionSchema,
   });

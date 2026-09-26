@@ -1,5 +1,5 @@
 import type { KkPanelAction } from '@furria/ui';
-import { KkChip, KkFieldRow, KkNote, KkPanel, KkPanelSection } from '@furria/ui';
+import { KkChip, KkFieldRow, KkHubRow, KkNote, KkPanel, KkPanelSection } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
@@ -7,12 +7,15 @@ import { accessActionsOf } from '../access-actions';
 import {
   ACCESS_SECTION_TITLE,
   ACCESS_STATE_LABEL,
+  IN_PERSON_ACT_LABEL,
+  IN_PERSON_ROW_META,
   INVITATION_LABEL,
   MAIL_ACT_LABELS,
   MAIL_PILL_LABELS,
   toAccessBlockLine,
   toAccessLandingKey,
   toAccountStateChip,
+  toInPersonHref,
   toInvitationSpan,
   toInvitationValidity,
 } from '../account-access-labels';
@@ -28,7 +31,7 @@ interface AccessPanelProps {
 
 export const AccessPanel: FC<AccessPanelProps> = ({ subject, highlightedKey }) => {
   const { access } = subject;
-  const { mailInvitation } = accessActionsOf(access, subject.email);
+  const { mailInvitation, inPersonInvitation } = accessActionsOf(access, subject.email);
   const chip = toAccountStateChip(access.state);
   const landingKey = toAccessLandingKey(subject.personId);
 
@@ -59,6 +62,19 @@ export const AccessPanel: FC<AccessPanelProps> = ({ subject, highlightedKey }) =
       />
     );
 
+  const inPersonHref = toInPersonHref(subject.personId);
+  const inPersonRow = inPersonInvitation ? (
+    <KkPanel>
+      <KkHubRow
+        label={IN_PERSON_ACT_LABEL}
+        icon="qr"
+        meta={IN_PERSON_ROW_META}
+        component={Link}
+        to={inPersonHref}
+      />
+    </KkPanel>
+  ) : null;
+
   const blockLine =
     access.reason === null ? null : (
       <KkNote tone="hint" icon="info">
@@ -73,6 +89,7 @@ export const AccessPanel: FC<AccessPanelProps> = ({ subject, highlightedKey }) =
           <KkFieldRow label={ACCESS_STATE_LABEL} value={stateChip} />
           {invitationRow}
         </KkPanel>
+        {inPersonRow}
         {blockLine}
         <AccessHistory history={access.history} />
       </Stack>

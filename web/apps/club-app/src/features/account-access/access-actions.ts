@@ -4,9 +4,10 @@ export type MailInvitationAct = 'invite' | 'reinvite';
 
 export interface AccessActions {
   mailInvitation: MailInvitationAct | null;
+  inPersonInvitation: boolean;
 }
 
-const NO_ACTIONS: AccessActions = { mailInvitation: null };
+const NO_ACTIONS: AccessActions = { mailInvitation: null, inPersonInvitation: false };
 
 const hasAccount = (access: PersonAccess): boolean =>
   access.state === 'active' || access.state === 'disabled';
@@ -18,8 +19,8 @@ export const accessActionsOf = (access: PersonAccess, email: string | null): Acc
     return NO_ACTIONS;
   }
   if (access.invitation !== null || access.state === 'invited') {
-    return { mailInvitation: 'reinvite' };
+    return { mailInvitation: 'reinvite', inPersonInvitation: true };
   }
 
-  return { mailInvitation: 'invite' };
+  return { mailInvitation: 'invite', inPersonInvitation: true };
 };

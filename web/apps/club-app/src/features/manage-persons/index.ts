@@ -2,6 +2,7 @@ export { PersonEditPage } from './components/PersonEditPage';
 export { PersonEditScreen } from './components/PersonEditScreen';
 export { PersonFeeReductionNewScreen } from './components/PersonFeeReductionNewScreen';
 export { PersonFeeReductionScreen } from './components/PersonFeeReductionScreen';
+export { PersonInPersonInvitationScreen } from './components/PersonInPersonInvitationScreen';
 export { PersonInvitationNewScreen } from './components/PersonInvitationNewScreen';
 export { PersonMembershipNewScreen } from './components/PersonMembershipNewScreen';
 export { PersonMembershipScreen } from './components/PersonMembershipScreen';
