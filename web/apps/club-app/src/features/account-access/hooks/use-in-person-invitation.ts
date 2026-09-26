@@ -1,6 +1,6 @@
 import type { KkScreenActionBar } from '@furria/ui';
 import { useNavigate } from '@tanstack/react-router';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNow } from '@/lib/use-now';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import {
@@ -13,6 +13,7 @@ import {
 import { useAccessStateQuery, useInPersonInvitationMutation } from '../api';
 import type { InPersonPhase } from '../in-person-phase';
 import { inPersonPhaseOf, isCodeShowing, isHandedOver } from '../in-person-phase';
+import type { InPersonInvitation } from '../schemas';
 import type { AccessSubject, InPersonPurpose } from '../types';
 
 const PERSON_ROUTE = '/manage/persons/$personId';
@@ -23,6 +24,11 @@ interface InPersonInvitationInput {
   subject: AccessSubject;
   onRedeemed: () => void;
 }
+
+type IssueState =
+  | { status: 'issuing' }
+  | { status: 'issued'; invitation: InPersonInvitation }
+  | { status: 'failed'; error: Error };
 
 export interface InPersonInvitationControl {
   phase: InPersonPhase;
@@ -35,22 +41,32 @@ export const useInPersonInvitation = ({
   subject,
   onRedeemed,
 }: InPersonInvitationInput): InPersonInvitationControl => {
-  const issue = useInPersonInvitationMutation(purpose, subject.personId);
-  const { mutate: issueCode } = issue;
+  const { mutateAsync } = useInPersonInvitationMutation(purpose, subject.personId);
+  const [issue, setIssue] = useState<IssueState>({ status: 'issuing' });
   const hasIssued = useRef(false);
   const hasReportedRedemption = useRef(false);
   const navigate = useNavigate();
-  const now = useNow(TICK_MS, issue.data !== undefined);
+  const invitation = issue.status === 'issued' ? issue.invitation : undefined;
+  const isIssuing = issue.status === 'issuing';
+  const now = useNow(TICK_MS, invitation !== undefined);
   const accessState = useAccessStateQuery(
     purpose,
     subject.personId,
-    isCodeShowing(issue.data, issue.isPending, now),
+    isCodeShowing(invitation, isIssuing, now),
   );
 
+  const issueCode = (): void => {
+    setIssue({ status: 'issuing' });
+    mutateAsync().then(
+      (issued) => setIssue({ status: 'issued', invitation: issued }),
+      (error: Error) => setIssue({ status: 'failed', error }),
+    );
+  };
+
   const phase = inPersonPhaseOf({
-    invitation: issue.data,
-    isIssuing: issue.isPending,
-    hasIssueFailed: issue.isError,
+    invitation,
+    isIssuing,
+    hasIssueFailed: issue.status === 'failed',
     isHandedOver: isHandedOver(purpose, accessState.data),
     now,
   });
@@ -106,7 +122,7 @@ export const useInPersonInvitation = ({
 
   return {
     phase,
-    rejection: toWriteErrorMessage(issue.error),
+    rejection: toWriteErrorMessage(issue.status === 'failed' ? issue.error : null),
     action: toAction(),
   };
 };
