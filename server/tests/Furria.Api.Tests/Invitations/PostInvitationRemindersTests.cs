@@ -250,6 +250,51 @@ public sealed class PostInvitationRemindersTests
     }
 
     [Fact]
+    public async Task Should_RemindNobody_When_TheOpenInvitationWasIssuedInPerson()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity.AddEligiblePerson(
+                        "anna",
+                        "Anna",
+                        InvitationSteps.UniqueContactEmail("anna"),
+                        _fixture.Today
+                    )
+                ),
+            ct
+        );
+        var annaId = ctx.Identity.People.IdOf("anna");
+        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        await InvitationSteps.InviteInPersonAsync(manager, annaId);
+
+        await _fixture.AtLaterTimeAsync(
+            InvitationRoundSteps.PastTheReminderDelay,
+            async () =>
+            {
+                var laterManager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+                var preview = await InvitationRoundSteps.PreviewAsync(laterManager);
+                var sent = await InvitationRoundSteps.RemindAllAsync(laterManager);
+
+                Assert.Equal(0, preview.RemindCount);
+                Assert.Equal(0, sent);
+            }
+        );
+
+        await ctx
+            .Expected.InvitationsOfPerson(annaId)
+            .ToHaveCount(1)
+            .LiveInvitationOfPerson(annaId)
+            .ToBeIssuedAs(
+                InvitationChannel.InPerson,
+                isReminder: false,
+                ctx.Identity.BootstrapAdmin.PersonId
+            )
+            .AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_RemindNobodyAgain_When_TheRemindersWentOutJustNow()
     {
         var ct = TestContext.Current.CancellationToken;
