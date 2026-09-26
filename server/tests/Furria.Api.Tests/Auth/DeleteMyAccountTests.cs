@@ -6,6 +6,7 @@ using Furria.Api.Tests.Invitations;
 using Furria.Core.Identity;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
+using Furria.Tests.Common.WebAuthn;
 using Xunit;
 
 namespace Furria.Api.Tests.Auth;
@@ -14,6 +15,7 @@ namespace Furria.Api.Tests.Auth;
 public sealed class DeleteMyAccountTests
 {
     private const string PasswordField = "password";
+    private const string PasskeyField = "passkey";
 
     private readonly ApiTestFixture _fixture;
 
@@ -232,6 +234,103 @@ public sealed class DeleteMyAccountTests
             .InvitationsOfPerson(bertaId)
             .ToHaveLiveCount(0)
             .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_DeleteHerPasskeys_When_SheDeletedHerAccount()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await ArrangeAnnaAsync(ct);
+        var client = await ctx.Identity.ClientForAsync("anna", ct);
+        using var authenticator = new SoftwareAuthenticator();
+        await PasskeySteps.RegisterAsync(client, authenticator);
+
+        await AccountSecuritySteps.DeleteAccountAsync(client, ApiTestFixture.SeededAccountPassword);
+
+        await ctx
+            .Expected.PasskeysOfAccount(ctx.Identity.Accounts.IdOf("anna"))
+            .ToHaveCount(0)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_DeleteHerAccount_When_SheProvesItWithHerPasskey()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await ArrangeAnnaAsync(ct);
+        var client = await ctx.Identity.ClientForAsync("anna", ct);
+        using var authenticator = new SoftwareAuthenticator();
+        await PasskeySteps.RegisterAsync(client, authenticator);
+
+        var response = await PasskeySteps.DeleteAccountAsync(
+            client,
+            await PasskeySteps.AssertAsync(_fixture, authenticator)
+        );
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx
+            .Expected.AccountOfPerson(ctx.Identity.People.IdOf("anna"))
+            .ToNotExist()
+            .PasskeysOfAccount(ctx.Identity.Accounts.IdOf("anna"))
+            .ToHaveCount(0)
+            .AccountEventsOfPerson(ctx.Identity.People.IdOf("anna"))
+            .ToHaveKindsInOrder(AccountEventKind.Deleted)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseOnThePasskey_When_TheAssertionIsSomeoneElses()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddPerson("anna", "Anna", "Muster")
+                        .AddAccount("anna")
+                        .AddPerson("berta", "Berta", "Beispiel")
+                        .AddAccount("berta")
+                ),
+            ct
+        );
+        var anna = await ctx.Identity.ClientForAsync("anna", ct);
+        using var bertasAuthenticator = new SoftwareAuthenticator();
+        await PasskeySteps.RegisterAsync(
+            await ctx.Identity.ClientForAsync("berta", ct),
+            bertasAuthenticator
+        );
+
+        var response = await PasskeySteps.DeleteAccountAsync(
+            anna,
+            await PasskeySteps.AssertAsync(_fixture, bertasAuthenticator)
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await AccountSecuritySteps.AssertRefusedOnAsync(response, PasskeyField, ct);
+        await ctx
+            .Expected.Account(ctx.Identity.Accounts.IdOf("anna"))
+            .ToExist()
+            .Account(ctx.Identity.Accounts.IdOf("berta"))
+            .ToExist()
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseOnThePasskey_When_TheAssertionsChallengeWasUsedBefore()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await ArrangeAnnaAsync(ct);
+        var client = await ctx.Identity.ClientForAsync("anna", ct);
+        using var authenticator = new SoftwareAuthenticator();
+        await PasskeySteps.RegisterAsync(client, authenticator);
+        var attempt = await PasskeySteps.AssertAsync(_fixture, authenticator);
+        await PasskeySteps.LogInAsync(_fixture, attempt);
+
+        var response = await PasskeySteps.DeleteAccountAsync(client, attempt);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await AccountSecuritySteps.AssertRefusedOnAsync(response, PasskeyField, ct);
+        await ctx.Expected.Account(ctx.Identity.Accounts.IdOf("anna")).ToExist().AssertAsync(ct);
     }
 
     [Fact]

@@ -4,6 +4,7 @@ using Furria.Api.Endpoints.Auth;
 using Furria.Application.Authorization;
 using Furria.Core.Club;
 using Furria.Tests.Common.Fixtures;
+using Furria.Tests.Common.WebAuthn;
 using Xunit;
 
 namespace Furria.Api.Tests.Auth;
@@ -47,6 +48,57 @@ public sealed class GetMeTests
         Assert.Equal(joinedOn, result.Membership.MemberSince);
         Assert.Equal(joinedOn, result.Membership.CurrentStartedOn);
         Assert.Null(result.Membership.CurrentEndedOn);
+    }
+
+    [Fact]
+    public async Task Should_ListHerPasskeysOldestFirst_When_SheAddedSome()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => identity.AddAccount("alice")),
+            ct
+        );
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        using var phone = new SoftwareAuthenticator();
+        using var laptop = new SoftwareAuthenticator();
+        var first = await PasskeySteps.RegisterAsync(client, phone, "Handy");
+        await _fixture.AtLaterTimeAsync(
+            TimeSpan.FromMinutes(1),
+            async () => await PasskeySteps.RegisterAsync(client, laptop, "Laptop")
+        );
+
+        var (response, result) = await client.GETAsync<GetMe, GetMeResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Collection(
+            result.Passkeys,
+            passkey =>
+            {
+                Assert.Equal(phone.PasskeyId, passkey.Id);
+                Assert.Equal("Handy", passkey.Name);
+                Assert.Equal(first.AddedAt, passkey.AddedAt);
+            },
+            passkey =>
+            {
+                Assert.Equal(laptop.PasskeyId, passkey.Id);
+                Assert.Equal("Laptop", passkey.Name);
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_ListNoPasskey_When_SheHasNone()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => identity.AddAccount("alice")),
+            ct
+        );
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+
+        var (_, result) = await client.GETAsync<GetMe, GetMeResponse>();
+
+        Assert.Empty(result.Passkeys);
     }
 
     [Fact]

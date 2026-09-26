@@ -100,6 +100,10 @@ public sealed class Expected
 
     public DataProtectionKeySetExpectations DataProtectionKeys() => new(this);
 
+    public PasskeySetExpectations PasskeysOfAccount(int accountId) => new(this, accountId);
+
+    public PasskeyChallengeSetExpectations PasskeyChallenges() => new(this);
+
     public async Task AssertAsync(CancellationToken ct = default)
     {
         var pending = _reads.ToList();

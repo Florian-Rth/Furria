@@ -41,6 +41,9 @@ public sealed class EndpointGateTests
         "/api/auth/me/login-email/confirmation",
         "/api/auth/me/password",
         "/api/auth/me/logout-everywhere",
+        "/api/auth/me/passkeys",
+        "/api/auth/me/passkeys/creation-options",
+        "/api/auth/me/passkeys/{passkeyId}",
     ];
 
     private static readonly string[] InHandlerGatedProbes =
