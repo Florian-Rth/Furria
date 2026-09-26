@@ -1,3 +1,4 @@
+export { PERSONS_QUERY_KEY } from './api';
 export { PersonEditPage } from './components/PersonEditPage';
 export { PersonEditScreen } from './components/PersonEditScreen';
 export { PersonFeeReductionNewScreen } from './components/PersonFeeReductionNewScreen';
@@ -10,4 +11,5 @@ export { PersonNewScreen } from './components/PersonNewScreen';
 export { PersonPauseNewScreen } from './components/PersonPauseNewScreen';
 export { PersonPauseScreen } from './components/PersonPauseScreen';
 export { PersonsPage } from './components/PersonsPage';
-export { PauseNewSearchSchema } from './schemas';
+export type { PersonAccessFilter } from './person-access-filter';
+export { PauseNewSearchSchema, PersonsSearchSchema } from './schemas';

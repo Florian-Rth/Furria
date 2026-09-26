@@ -12,6 +12,7 @@ const EMPTY_HUB: ManageHub = {
   sessions: null,
   venues: null,
   keys: null,
+  accounts: null,
 };
 
 const hubWith = (panels: Partial<ManageHub>): ManageHub => ({ ...EMPTY_HUB, ...panels });

@@ -14,6 +14,7 @@ import {
   toPersonCreatedMessage,
   toPersonSavedMessage,
 } from './manage-persons-labels';
+import type { PersonAccessFilter } from './person-access-filter';
 import {
   requestFeeReductionCreate,
   requestFeeReductionUpdate,
@@ -59,10 +60,14 @@ export const useRefreshPerson = (personId: number | null): (() => void) => {
   };
 };
 
-export const usePersonsQuery = (): UseQueryResult<PersonsResponse, Error> =>
+const ALL_ACCESS_KEY = 'all';
+
+export const usePersonsQuery = (
+  access: PersonAccessFilter | null,
+): UseQueryResult<PersonsResponse, Error> =>
   useQuery({
-    queryKey: PERSONS_QUERY_KEY,
-    queryFn: () => withFreshAccessToken(requestPersons),
+    queryKey: [...PERSONS_QUERY_KEY, 'access', access ?? ALL_ACCESS_KEY],
+    queryFn: () => withFreshAccessToken((accessToken) => requestPersons(access, accessToken)),
   });
 
 export const usePersonQuery = (personId: number | null): UseQueryResult<PersonDetails, Error> => {

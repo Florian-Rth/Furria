@@ -137,6 +137,11 @@ export const PauseNewSearchSchema = AppSearchSchema.extend({
 });
 export type PauseNewSearch = z.infer<typeof PauseNewSearchSchema>;
 
+export const PersonsSearchSchema = AppSearchSchema.extend({
+  access: z.string().optional().catch(undefined),
+});
+export type PersonsSearch = z.infer<typeof PersonsSearchSchema>;
+
 const FIRST_SESSION_MISSING = 'Die erste Session fehlt.';
 
 export const PauseFormSchema = z.object({

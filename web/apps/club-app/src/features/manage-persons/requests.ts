@@ -1,6 +1,8 @@
 import type { JsonBody } from '@/lib/api/api-fetch';
 import { apiFetch } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
+import type { PersonAccessFilter } from './person-access-filter';
+import { toPersonsRequestPath } from './person-access-filter';
 import type {
   CreatedFeeReduction,
   CreatedMembership,
@@ -36,8 +38,11 @@ const toPersonBody = (form: PersonForm): JsonBody => ({
   contactVisibleToMembers: form.contactVisibleToMembers,
 });
 
-export const requestPersons = (accessToken: string): Promise<PersonsResponse> =>
-  apiFetch('/api/manage/persons', { schema: PersonsResponseSchema, accessToken });
+export const requestPersons = (
+  access: PersonAccessFilter | null,
+  accessToken: string,
+): Promise<PersonsResponse> =>
+  apiFetch(toPersonsRequestPath(access), { schema: PersonsResponseSchema, accessToken });
 
 export const requestPerson = (personId: number, accessToken: string): Promise<PersonDetails> =>
   apiFetch(`/api/manage/persons/${personId}`, { schema: PersonDetailsSchema, accessToken });

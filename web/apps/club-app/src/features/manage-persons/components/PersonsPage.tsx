@@ -10,6 +10,7 @@ import {
 } from '@/features/session';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { usePersonsQuery } from '../api';
+import { usePersonsAccess } from '../hooks/use-persons-access';
 import { usePersonsSearch } from '../hooks/use-persons-search';
 import { LETTER_INDEX_LABEL, PERSONS_LEAD, PERSONS_TITLE } from '../manage-persons-labels';
 import type { PersonSummary } from '../schemas';
@@ -24,7 +25,8 @@ const NO_PERSONS: readonly PersonSummary[] = [];
 
 export const PersonsPage: FC = () => {
   const searchMode = useScreenSearch(SEARCH_PLACEHOLDER);
-  const persons = usePersonsQuery();
+  const access = usePersonsAccess();
+  const persons = usePersonsQuery(access.filter);
   const rows = persons.data?.persons ?? NO_PERSONS;
   const search = usePersonsSearch(rows);
   const { has, isUndecided } = usePermissions();
