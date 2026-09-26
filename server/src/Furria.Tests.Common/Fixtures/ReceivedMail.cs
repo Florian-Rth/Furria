@@ -41,6 +41,9 @@ public sealed partial record ReceivedMail
         return match.Value;
     }
 
+    public IReadOnlyList<string> LinkTokens() =>
+        [.. LinkTokenPattern().Matches(Text).Select(match => match.Groups["token"].Value)];
+
     [GeneratedRegex(@"(?<![0-9])[0-9]{6}(?![0-9])")]
     private static partial Regex ConfirmationCodePattern();
 

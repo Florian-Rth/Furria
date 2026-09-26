@@ -42,4 +42,17 @@ public sealed class PersonAccountEventExpectations
                         .FirstAsync(ct)
                 )
         );
+
+    public Expected ToHaveNoLatestActor() =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Null(
+                    await dbContext
+                        .AccountEvents.AsNoTracking()
+                        .Where(accountEvent => accountEvent.PersonId == _personId)
+                        .OrderByDescending(accountEvent => accountEvent.Id)
+                        .Select(accountEvent => accountEvent.ActorPersonId)
+                        .FirstAsync(ct)
+                )
+        );
 }
