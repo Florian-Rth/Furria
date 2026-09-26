@@ -15,7 +15,10 @@ RUN pnpm --filter @furria/club-app build
 
 FROM nginx:1.27-alpine AS runtime
 ENV API_UPSTREAM=api:8080
+ENV ANDROID_PACKAGE_NAME=de.furria.club
+ENV ANDROID_CERT_FINGERPRINTS=
 COPY --from=build /repo/apps/club-app/dist /usr/share/nginx/html
 COPY apps/club-app/deploy/default.conf.template /etc/nginx/templates/default.conf.template
 COPY --chmod=0755 apps/club-app/deploy/40-runtime-config.sh /docker-entrypoint.d/40-runtime-config.sh
+COPY --chmod=0755 apps/club-app/deploy/41-android-asset-links.sh /docker-entrypoint.d/41-android-asset-links.sh
 EXPOSE 80

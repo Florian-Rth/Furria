@@ -84,6 +84,10 @@ services:
       # api service (API_UPSTREAM below). Set an absolute URL only for a cross-origin backend.
       API_BASE_URL: ${CLUB_APP_API_BASE_URL:-}
       API_UPSTREAM: api:8080
+      # Android App Links and passkeys: /.well-known/assetlinks.json names the app and its signing
+      # certificates. Empty fingerprints = no assetlinks.json (404); a malformed one stops the start.
+      ANDROID_PACKAGE_NAME: ${ANDROID_PACKAGE_NAME:-de.furria.club}
+      ANDROID_CERT_FINGERPRINTS: ${ANDROID_CERT_FINGERPRINTS:-}
     ports:
       - "${CLUB_APP_PORT:-8081}:80"
     labels:
