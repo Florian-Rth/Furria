@@ -20,7 +20,7 @@ const signIn = async (page: Page, baseUrl: string): Promise<void> => {
   await page
     .getByLabel('Passwort', { exact: true })
     .fill(process.env.SHOT_PASSWORD ?? DEV_PASSWORD);
-  await page.getByRole('button', { name: 'Anmelden' }).click();
+  await page.getByRole('button', { name: 'Anmelden', exact: true }).click();
   await page.waitForURL((url) => !url.pathname.startsWith('/login'));
 };
 
