@@ -67,11 +67,23 @@ else is self-service.**
 19. **Nothing is printed.** Two channels exist: mail link, and the in-person screen (QR plus a
     short typeable code, same 15 minutes).
 20. **Security defaults**: a notice to the login email on every credential change (the old address
-    for an email change), *Überall abmelden* without a device list, passwords of at least 10
-    characters and no other rule, rate limits per IP and per address on every signed-out endpoint.
+    for an email change), *Überall abmelden* without a device list, passwords of at least 8
+    characters and no composition rule (Florian, 2026-09-27: the club has many older members;
+    settles open question 3),
+    rate limits per IP and per address on every signed-out endpoint.
 21. **The club gets its own record** — the club record, holding founded year and age of consent
     (default 16), written in club management. It closes P6's open *founded year* item.
 22. **Managers see state, reason, history — never last sign-in.**
+
+Ruled on 2026-09-27 (Florian):
+
+23. **No email does not mean no invitation.** A missing contact email refuses the mail channel
+    only; the in-person invitation reaches her, and she types her own login email while redeeming
+    (ADR-0018). Mail invitation, *Alle einladen*, *Erinnern* and *Zugang anfordern* still skip her.
+24. **Contact changes keep only the latest change and its actor** — no per-field history
+    (settles open question 2).
+25. **A stray person holding any club data, past memberships included, refuses claim-in as
+    *taken*.** Her history is never absorbed (settles open question 5).
 
 ---
 
@@ -138,8 +150,8 @@ performs the act, never derived after the fact. **No sign-in event exists** (rul
 **Contact details** gain `ContactChangedAt` and `ContactChangedByPersonId` on `Person` — the last
 change and who made it. The foreign key is `SetNull`, like `Invitation.IssuedBy`: deleting the
 person who made a change (S9's absorption of a stray person) must never be blocked by it, and a
-change whose actor is gone reads as no change. Open question 2 decides whether it grows into a
-per-field history.
+change whose actor is gone reads as no change. It stays the latest change only — no per-field
+history (ruling 24).
 
 **Account** stays as it is (`PersonId`, `IsDisabled`, `LastSeenAnnouncementAt`), with two
 consequences: its unique `PersonId` stays, but nothing may treat it as fixed (ADR-0019); and
@@ -327,8 +339,9 @@ token beyond *dead*.
   by template and person id only. Links are built from `ClubApp:BaseUrl`.
 - `POST manage/persons/{id}/invitations` (`persons.manage`) → `{expiresAt}`, `409` naming the
   reason (not affiliated, no birth date, under age, no email) or that she already has an
-  account. A person without an email is not eligible for any channel — the club's one job is to
-  keep that email right.
+  account. *Amended 2026-09-27 (ruling 23):* the missing email is a refusal of the mail channel
+  only; `AccountIneligibilityReason` lost `NoEmail`, and `AccountEligibility.CanBeMailed` is the
+  mail channel's own check.
 - Signed out: `POST auth/invitations/lookup {token}` → `status` `live` (first name, login email)
   or `dead`, nothing more; `POST auth/invitations/redeem {token, password}` → the session. Both are
   rate-limited per IP and per token (`InvitationTokenRateLimiter`).
@@ -385,6 +398,12 @@ the taken branch, and that the code is returned by exactly one call.
   the same redeem flow; the in-person screen at `/manage/persons/{id}/invitations/in-person`.
   `KkQrCode` in `@furria/ui`, drawn over `uqr`.
 - Tests run with 10 permits per invitation token (`ApiTestFixture.PermitsPerInvitationToken`).
+- *Added 2026-09-27 (ruling 23):* the in-person invitation reaches a person without a contact
+  email. Lookup answers `loginEmail: null`, so she types one; redeem refuses a missing one on
+  `loginEmail` and always confirms the typed address by code (there is nothing to match). On
+  redemption her empty contact email becomes that confirmed login email, written through
+  `PersonService` with her as actor (S8's stamp). A claim-in keeps the claimed account's login
+  and fills nothing.
 
 ---
 
@@ -473,6 +492,19 @@ reminders reach only open invitations, and the preview's counts equal what is th
   invitation, then eligibility. `not-invitable` leaves out a person with an unexpired live
   invitation, so a vouched, invited person without a birth date is `invited` only (fixed in the
   wave-2 integration; `GetPersonsTests` proves every person falls in exactly one).
+- *Amended 2026-09-27:* the five state filters read one derived expression,
+  `AccessQuery.AccessStateOn` (`RegisterAccessState`: `none` · `invited` · `active` · `disabled` ·
+  `notInvitable`), and every `GetPersons` row carries it as `accessState` in the same query. While
+  an access filter is on, the register row shows that state in place of the membership chip:
+  *kein Zugang*, *eingeladen*, *Account aktiv*, *gesperrt*, *nicht einladbar*. It replaces rather
+  than joins the membership chip — at 390 px a second chip beside the withheld one crowds the
+  name, and the filter note already says the list is about access.
+- *Amended 2026-09-27 (ruling 23):* a person without email is eligible, so she files under `none`
+  (or `invited`), never `not-invitable`. `without-email` — the eligible without account and
+  without email — now means *only invitable in person*: filter note *ohne E-Mail-Adresse, nur vor
+  Ort einladbar*, hub row *3 Personen – nur vor Ort einladbar*, round dialog *3 Personen – nur vor
+  Ort*. `ofCount` counts her as invitable. *Alle einladen* and *Erinnern* select through
+  `EligibleForMailWithoutAccount`.
 
 ---
 
@@ -664,7 +696,7 @@ touches her login email.
 - Club-app: `/profile/contact/edit`. *Nicht im Verein aktiv* replaces `RequireAffiliation`'s copy
   on the `_affiliated` routes and on `/`, with the profile reachable; rejoining shows on the next
   `me` fetch.
-- Open question 2 stays open.
+- Open question 2 settled 2026-09-27: the latest change with its actor is enough (ruling 24).
 
 ---
 
@@ -701,7 +733,7 @@ untouched, and that an affiliated person is never a candidate.
   Lookup gains `claimableLoginEmail`. A recovery never offers claim-in.
 - Claimable: the login email matches, the account is not disabled, its person is not affiliated
   and **holds no club data** — any club data, past memberships included, refuses the claim as
-  *taken* (Open 5).
+  *taken*; her history is never absorbed (ruling 25).
 - The claim is one transaction: the invitation redeemed, the stray person absorbed
   (`StrayPersonAbsorption` moves the account, voids and repoints her invitations, repoints
   `issued_by`, her account events and the contact stamps she left on others, and deletes her
@@ -762,8 +794,11 @@ in-person screen; the copy pass against ADR-0016's five button words; `CONTEXT.m
 - `KkBrandStage` no longer pushes the wordmark into the stage's meta line when the sheet is tall
   (login with a notice): the brand is centred in the room between meta and sheet, and slides
   under the sheet when there is none.
-- The password hint says the whole rule Identity enforces (12 characters, upper and lower case,
-  a digit, a symbol) on redeem, reset and change alike, from one `lib/password-rule.ts`.
+- The password hint says the whole rule Identity enforces on redeem, reset and change alike,
+  from one `lib/password-rule.ts` — since 2026-09-27 *Mindestens 8 Zeichen.* (ruling 20). The
+  server holds the rule once, `PasswordRule` (`RequiredLength = 8`, every composition rule off,
+  `RequiredUniqueChars = 1`); the redeem and change validators read its length, and every
+  refusal says *Das Passwort braucht mindestens 8 Zeichen.*
 - The in-person countdown no longer opens at *15:01*: `useNow` restarts its clock when ticking
   starts.
 - A group screen refused for a viewer who is not affiliated shows *nicht im Verein aktiv*, not
@@ -791,13 +826,5 @@ in-person screen; the copy pass against ADR-0016's five button words; `CONTEXT.m
 
 1. ~~**The passkey challenge state over bearer tokens.**~~ Settled in S7: a 5-minute, single-use
    `passkey_challenge` row keyed by an opaque id the client echoes back (ADR-0005 amendment).
-2. **Who and when on contact details.** S8 records the last change and its actor on the person.
-   Whether the club wants a per-field history is Florian's; the ruling is only that it is visible.
-3. **Password rule.** Ruling 20 says *at least 10 characters and no other rule*, but
-   `AddIdentityCore` requires **12** and keeps Identity's defaults — an upper- and a lower-case
-   letter, a digit and a symbol. Loosening an existing rule needs Florian's word; until then the
-   server keeps it and every password hint states it in full (S11).
-4. **The founded year's readers.** S0 gives it a home; the website keeps `FOUNDING_YEAR` until its
+2. **The founded year's readers.** S0 gives it a home; the website keeps `FOUNDING_YEAR` until its
    API client (`plan/website/feature-api-client.md`, *building*) can read the club record.
-5. **A stray person holding club data (even past memberships) refuses claim-in with** *taken*; the
-   alternative is absorbing her history too, which risks overlapping memberships. Florian's call.

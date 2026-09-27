@@ -288,7 +288,10 @@ the change shows who made it and when; her name and birth date stay with the clu
 are who she is, not how to reach her (ruled 2026-09-25, accounts shaping). **Only an actual
 change counts as a change**: saving the values that were already there records nothing. The last
 change is shown with its actor and day — *Kontaktdaten geändert von Anna am 3. Okt.*, or *von dir*
-when she made it herself (built 2026-09-26, CA-P8 S8).
+when she made it herself (built 2026-09-26, CA-P8 S8). The latest change with its actor is all
+the club keeps — there is no per-field history (ruled 2026-09-27). A person invited in person
+without a contact email gets the login email she confirmed as her contact email, stamped as her
+own change (built 2026-09-27).
 _UI copy_: Kontaktdaten (Telefon, E-Mail, Adresse); *Kontaktdaten geändert von Anna am 3. Okt.* ·
 *von dir*
 _Avoid_: contact (as a field name), showing hidden contact details as missing data
@@ -369,11 +372,15 @@ _Avoid_: biometric login (the fingerprint never leaves her device), security key
 
 **Account state**:
 What the club sees about a person's access. The state itself is derived, never stored: *no access* (with the reason
-she cannot be invited, when she cannot: no email, under age, birth date missing, not affiliated),
+she cannot be invited, when she cannot: under age, birth date missing, not affiliated),
 *invited* (an invitation is live), *active*, or *disabled*; plus the history of who invited,
 reminded, recovered or disabled her, and when. **The club never sees when she last signed in** —
 access is recorded, use is not (ruled 2026-09-25).
-_UI copy_: *kein Zugang* · *eingeladen* · *aktiv* · *gesperrt*
+The persons register, filtered by access, shows the same state on each row — plus *nicht
+einladbar* for no access with a reason — and there an active account reads *Account aktiv*, so it
+is never mistaken for an active membership (built 2026-09-27).
+_UI copy_: *kein Zugang* · *eingeladen* · *aktiv* · *gesperrt*; in the register *Account aktiv* ·
+*nicht einladbar*
 _Avoid_: last seen, activity (as something the club watches)
 
 **Account eligibility**:
@@ -384,9 +391,13 @@ invited only by someone in the club, who vouches for her age by doing so; she ca
 her own invitation nor be reached by a bulk invitation (ruled 2026-09-25, accounts shaping).
 That act is **the vouch**: a holder of the access-recovery right invites her by hand, the
 invitation's issuer is recorded as the one who vouched, and redeeming it never asks for the birth
-date again (built 2026-09-26, CA-P8 S5).
+date again (built 2026-09-26, CA-P8 S5). **An email is not part of eligibility**: without a
+contact email she is still eligible, but only the in-person channel reaches her — no mail
+invitation, no bulk invitation, no reminder, no self-request; she types her own login email while
+redeeming and confirms it by code (ruled 2026-09-27, Florian: the club has many older members).
 _UI copy_: — (surfaces say what she can do: *kann eingeladen werden*); the vouch: *Geburtsdatum
-bestätigen*, *Du bestätigst, dass Anna mindestens 16 ist.*
+bestätigen*, *Du bestätigst, dass Anna mindestens 16 ist.*; without email: *nur vor Ort
+einladbar*
 _Avoid_: storing an "invitable" flag, treating an unknown birth date as either adult or child
 
 **Invitation**:
@@ -454,8 +465,9 @@ invitation is being redeemed with — the same human, recorded twice. **Claim-in
 word: redemption asks her to sign in with that account, and signing in moves the account onto the
 club's person, which absorbs the stray one; she proves it with that account's password or one of
 its passkeys, and the claimed account keeps its login email, password and passkeys. **Club data blocks the absorption**: a stray person holding any of it (a membership,
-even an ended one) makes the address simply taken (built 2026-09-26, CA-P8 S9; the alternative is
-open, see the plan). A recovery never claims in.
+even an ended one) makes the address simply taken — her history is never absorbed, because that
+risks overlapping memberships (built 2026-09-26, CA-P8 S9; ruled 2026-09-27). A recovery never
+claims in.
 _UI copy_: — (redeem asks her to sign in with the existing account)
 _Avoid_: merge, account linking
 
