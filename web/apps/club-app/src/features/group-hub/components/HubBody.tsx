@@ -1,9 +1,8 @@
 import type { FC } from 'react';
 import { useRunningVenuesQuery } from '@/features/calendar';
-import { AccessDenied, useMeQuery } from '@/features/session';
+import { NotAffiliatedState, useMeQuery } from '@/features/session';
 import { isForbiddenError, isNotFoundError } from '@/lib/query-error';
 import { useGroupHubQuery } from '../api';
-import { HUB_DENIED_MESSAGE } from '../group-hub-labels';
 import { toHubErrorMessage } from '../group-hub-messages';
 import { HubError } from './HubError';
 import { HubNotFound } from './HubNotFound';
@@ -33,7 +32,7 @@ export const HubBody: FC<HubBodyProps> = ({ groupId }) => {
     return <HubNotFound />;
   }
   if (isForbiddenError(hub.error)) {
-    return <AccessDenied message={HUB_DENIED_MESSAGE} />;
+    return <NotAffiliatedState />;
   }
   if (errorMessage !== null) {
     return <HubError message={errorMessage} onRetry={reload} />;

@@ -40,6 +40,7 @@ export { AppSignOutButton } from './components/AppSignOutButton';
 export { AppSkeletonRegion } from './components/AppSkeletonRegion';
 export { AppStageGreeting } from './components/AppStageGreeting';
 export { AppUserLink } from './components/AppUserLink';
+export { NotAffiliatedState } from './components/NotAffiliatedState';
 export { OverviewBody } from './components/OverviewBody';
 export { RequireAffiliation } from './components/RequireAffiliation';
 export { RequireAnyPermission } from './components/RequireAnyPermission';

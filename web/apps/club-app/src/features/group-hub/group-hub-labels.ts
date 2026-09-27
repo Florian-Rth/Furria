@@ -166,9 +166,6 @@ export const toPersonStandingLines = (person: HubPerson): string[] => {
   return lines;
 };
 
-export const HUB_DENIED_MESSAGE =
-  'Dein Konto ist noch keiner Person im Verein zugeordnet. Wende dich an die Personenverwaltung.';
-
 export const EDITOR_DENIED_MESSAGE =
   'Nur Gruppen-Admins und die Gruppenverwaltung können die Gruppe bearbeiten.';
 
