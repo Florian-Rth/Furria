@@ -76,8 +76,10 @@ public sealed class PersonService
                 .ToList()
         );
 
-    private static readonly Expression<Func<Person, PersonRegistryRow>> PersonRegistryProjection =
-        person => new PersonRegistryRow(
+    private static readonly Expression<
+        Func<Person, RegisterAccessState, PersonRegistryRow>
+    > PersonRegistryProjection = (person, accessState) =>
+        new PersonRegistryRow(
             person.Id,
             person.FirstName,
             person.LastName,
@@ -128,7 +130,8 @@ public sealed class PersonService
                     holding.SinceOn,
                     holding.UntilOn
                 ))
-                .ToList()
+                .ToList(),
+            accessState
         );
 
     private static readonly Expression<Func<Person, PersonDetailsRow>> PersonDetailsProjection =
@@ -314,8 +317,9 @@ public sealed class PersonService
     {
         var now = _timeProvider.GetUtcNow();
         var today = ClubClock.DayOf(now);
+        var ageOfConsent = await _dbContext.AgeOfConsentAsync(ct);
         var people = access is { } filter
-            ? _dbContext.PeopleByAccess(filter, now, await _dbContext.AgeOfConsentAsync(ct))
+            ? _dbContext.PeopleByAccess(filter, now, ageOfConsent)
             : _dbContext.People;
 
         var rows = await people
@@ -323,7 +327,12 @@ public sealed class PersonService
             .OrderBy(person => EF.Functions.Collate(person.LastName, GermanCollation.Name))
             .ThenBy(person => EF.Functions.Collate(person.FirstName, GermanCollation.Name))
             .ThenBy(person => person.Id)
-            .Select(PersonRegistryProjection)
+            .Select(
+                ExpressionComposition.Bind(
+                    PersonRegistryProjection,
+                    _dbContext.AccessStateOn(now, ageOfConsent)
+                )
+            )
             .ToListAsync(ct);
 
         return [.. rows.Select(row => ToSummary(row, today))];
@@ -688,6 +697,7 @@ public sealed class PersonService
                 .. RunningTies(row.Roles, today)
                     .Select(tie => new RoleReference { RoleId = tie.Id, Name = tie.Name }),
             ],
+            AccessState = row.AccessState,
         };
     }
 
@@ -746,7 +756,8 @@ public sealed class PersonService
         DateOnly? BirthDate,
         IReadOnlyList<MembershipRow> Memberships,
         IReadOnlyList<TieRow> Groups,
-        IReadOnlyList<TieRow> Roles
+        IReadOnlyList<TieRow> Roles,
+        RegisterAccessState AccessState
     );
 
     private sealed record PersonDetailsRow(

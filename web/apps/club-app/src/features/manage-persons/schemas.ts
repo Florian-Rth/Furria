@@ -23,6 +23,15 @@ const PersonContactSchema = z.object({
   contactVisibleToMembers: z.boolean(),
 });
 
+export const RegisterAccessStateSchema = z.enum([
+  'none',
+  'invited',
+  'active',
+  'disabled',
+  'notInvitable',
+]);
+export type RegisterAccessState = z.infer<typeof RegisterAccessStateSchema>;
+
 export const PersonSummarySchema = z
   .object({
     personId: z.number().int(),
@@ -32,6 +41,7 @@ export const PersonSummarySchema = z
     memberSince: z.iso.date().nullable(),
     groups: z.array(GroupRefSchema),
     roles: z.array(RoleRefSchema),
+    accessState: RegisterAccessStateSchema,
   })
   .extend(PersonContactSchema.shape);
 export type PersonSummary = z.infer<typeof PersonSummarySchema>;

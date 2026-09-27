@@ -53,7 +53,7 @@ export const PersonsView: FC<PersonsViewProps> = ({ persons, search, access, can
     search.visibleCount === 0 ? (
       <PersonsEmpty query={search.query} state={search.state} access={access.filter} />
     ) : (
-      <PersonsList sections={search.sections} />
+      <PersonsList sections={search.sections} access={access.filter} />
     );
 
   const accessNote =

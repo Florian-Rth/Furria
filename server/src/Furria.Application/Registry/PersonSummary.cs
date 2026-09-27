@@ -31,4 +31,6 @@ public sealed record PersonSummary
     public required IReadOnlyList<GroupReference> Groups { get; init; }
 
     public required IReadOnlyList<RoleReference> Roles { get; init; }
+
+    public required RegisterAccessState AccessState { get; init; }
 }

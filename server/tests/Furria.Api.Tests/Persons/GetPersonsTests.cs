@@ -4,6 +4,7 @@ using FastEndpoints;
 using Furria.Api.Endpoints.Persons;
 using Furria.Api.Tests.Auth;
 using Furria.Application.Authorization;
+using Furria.Application.Registry;
 using Furria.Core.Club;
 using Furria.Core.Identity;
 using Furria.Tests.Common.Builder;
@@ -389,10 +390,12 @@ public sealed class GetPersonsTests
                 "memberSince",
                 "groups",
                 "roles",
+                "accessState",
             ],
             fields
         );
         Assert.Equal("active", person.GetProperty("membershipState").GetString());
+        Assert.Equal("notInvitable", person.GetProperty("accessState").GetString());
     }
 
     [Theory]
@@ -424,6 +427,63 @@ public sealed class GetPersonsTests
                 .Select(entry => entry.Key)
                 .Order(StringComparer.Ordinal)
         );
+    }
+
+    [Theory]
+    [InlineData("anna", RegisterAccessState.Active)]
+    [InlineData("bea", RegisterAccessState.Disabled)]
+    [InlineData("carla", RegisterAccessState.Invited)]
+    [InlineData("dora", RegisterAccessState.None)]
+    [InlineData("emil", RegisterAccessState.None)]
+    [InlineData("fritz", RegisterAccessState.NotInvitable)]
+    [InlineData("hans", RegisterAccessState.NotInvitable)]
+    [InlineData("ida", RegisterAccessState.NotInvitable)]
+    [InlineData("jonas", RegisterAccessState.Active)]
+    [InlineData("karl", RegisterAccessState.Invited)]
+    public async Task Should_CarryHerAccessState_When_TheRegistryIsListed(
+        string alias,
+        RegisterAccessState expected
+    )
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildEveryAccessStateAsync(ct);
+        var ids = SeededAccessIdsOf(ctx);
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        await InvitationSteps.InviteAsync(client, ids["carla"]);
+        await InvitationSteps.InviteAsync(client, ids["karl"]);
+
+        var (response, result) = await client.GETAsync<
+            GetPersons,
+            GetPersonsRequest,
+            GetPersonsResponse
+        >(new GetPersonsRequest());
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(
+            expected,
+            result.Persons.Single(person => person.PersonId == ids[alias]).AccessState
+        );
+    }
+
+    [Fact]
+    public async Task Should_CarryTheStateItIsFilteredBy_When_TheRegistryIsFilteredByAnAccessState()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildEveryAccessStateAsync(ct);
+        var ids = SeededAccessIdsOf(ctx);
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        await InvitationSteps.InviteAsync(client, ids["carla"]);
+
+        var (response, result) = await client.GETAsync<
+            GetPersons,
+            GetPersonsRequest,
+            GetPersonsResponse
+        >(new GetPersonsRequest { Access = PersonAccessFilters.Disabled });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var disabled = Assert.Single(result.Persons);
+        Assert.Equal(RegisterAccessState.Disabled, disabled.AccessState);
+        Assert.Equal(MembershipState.Active, disabled.MembershipState);
     }
 
     [Fact]

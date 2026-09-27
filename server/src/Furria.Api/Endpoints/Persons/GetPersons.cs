@@ -53,6 +53,7 @@ public sealed class GetPersons : Endpoint<GetPersonsRequest, GetPersonsResponse>
             MemberSince = person.MemberSince,
             Groups = [.. person.Groups.Select(ToDto)],
             Roles = [.. person.Roles.Select(ToDto)],
+            AccessState = person.AccessState,
         };
 
     private static GroupRefDto ToDto(GroupReference group) =>
@@ -115,6 +116,8 @@ public sealed record PersonSummaryDto
     public required IReadOnlyList<GroupRefDto> Groups { get; init; }
 
     public required IReadOnlyList<RoleRefDto> Roles { get; init; }
+
+    public required RegisterAccessState AccessState { get; init; }
 }
 
 public sealed record GroupRefDto

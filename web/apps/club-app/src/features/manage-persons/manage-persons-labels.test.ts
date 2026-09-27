@@ -29,6 +29,7 @@ const person = (overrides: Partial<PersonSummary> & { personId: number }): Perso
   memberSince: null,
   groups: [],
   roles: [],
+  accessState: 'none',
   ...overrides,
 });
 

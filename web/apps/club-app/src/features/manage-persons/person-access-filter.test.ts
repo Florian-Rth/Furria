@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { parsePersonAccessFilter, toPersonsRequestPath } from './person-access-filter';
+import { toMembershipStateChip } from '@/lib/state-chips';
+import type { PersonAccessFilter } from './person-access-filter';
+import {
+  parsePersonAccessFilter,
+  toPersonRowChip,
+  toPersonsRequestPath,
+  toRegisterAccessChip,
+} from './person-access-filter';
+import type { PersonSummary } from './schemas';
 
 describe('parsePersonAccessFilter', () => {
   it.each([
@@ -32,5 +40,43 @@ describe('toPersonsRequestPath', () => {
     { filter: 'not-invitable' as const, expected: '/api/manage/persons?access=not-invitable' },
   ])('asks the register for $filter at $expected', ({ filter, expected }) => {
     expect(toPersonsRequestPath(filter)).toBe(expected);
+  });
+});
+
+describe('toPersonRowChip', () => {
+  const person: PersonSummary = {
+    personId: 7,
+    firstName: 'Bea',
+    lastName: 'Berg',
+    email: null,
+    phone: null,
+    street: null,
+    zip: null,
+    city: null,
+    birthDate: null,
+    contactVisibleToMembers: false,
+    membershipState: 'active',
+    memberSince: '2019-09-01',
+    groups: [],
+    roles: [],
+    accessState: 'disabled',
+  };
+
+  it('shows the membership while no access filter is on', () => {
+    expect(toPersonRowChip(person, null)).toEqual(toMembershipStateChip('active'));
+  });
+
+  it.each<{ access: PersonAccessFilter }>([
+    { access: 'disabled' },
+    { access: 'with-access' },
+    { access: 'without-email' },
+  ])('shows her access state while the $access filter is on', ({ access }) => {
+    expect(toPersonRowChip(person, access)).toEqual(toRegisterAccessChip('disabled'));
+  });
+
+  it('never reads an active account like an active membership', () => {
+    const activeAccount = toPersonRowChip({ ...person, accessState: 'active' }, 'active');
+
+    expect(activeAccount.label).not.toBe(toMembershipStateChip('active').label);
   });
 });

@@ -1,5 +1,7 @@
-import { ALL_STATES_FILTER_ID } from '@/lib/state-chips';
+import type { StateChip } from '@/lib/state-chips';
+import { ALL_STATES_FILTER_ID, toMembershipStateChip } from '@/lib/state-chips';
 import { toPersonsEmptyDescription } from './manage-persons-labels';
+import type { PersonSummary, RegisterAccessState } from './schemas';
 
 export const PERSON_ACCESS_FILTERS = [
   'none',
@@ -60,3 +62,22 @@ export const toPersonsEmptyLine = (
   access !== null && query.trim() === '' && state === ALL_STATES_FILTER_ID
     ? toNoAccessMatchLine(access)
     : toPersonsEmptyDescription(query, state);
+
+const REGISTER_ACCESS_CHIPS: Record<RegisterAccessState, StateChip> = {
+  none: { label: 'kein Zugang', tone: 'neutral', dot: false },
+  invited: { label: 'eingeladen', tone: 'gold', dot: true },
+  active: { label: 'Account aktiv', tone: 'green', dot: true },
+  disabled: { label: 'gesperrt', tone: 'accent', dot: false },
+  notInvitable: { label: 'nicht einladbar', tone: 'neutral', dot: false },
+};
+
+export const toRegisterAccessChip = (state: RegisterAccessState): StateChip =>
+  REGISTER_ACCESS_CHIPS[state];
+
+export const toPersonRowChip = (
+  person: PersonSummary,
+  access: PersonAccessFilter | null,
+): StateChip =>
+  access === null
+    ? toMembershipStateChip(person.membershipState)
+    : toRegisterAccessChip(person.accessState);
