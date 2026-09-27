@@ -16,20 +16,17 @@ public static class AccountEligibility
             { BirthDate: null } => AccountIneligibilityReason.NoBirthDate,
             { BirthDate: { } birthDate } when !HasReached(birthDate, ageOfConsent, today) =>
                 AccountIneligibilityReason.UnderAge,
-            { Email: null or "" } => AccountIneligibilityReason.NoEmail,
             _ => null,
         };
 
     [Pure]
     public static AccountIneligibilityReason? ReasonAgainstWithVouchedAge(
         AccountCandidate candidate
-    ) =>
-        candidate switch
-        {
-            { IsAffiliated: false } => AccountIneligibilityReason.NotAffiliated,
-            { Email: null or "" } => AccountIneligibilityReason.NoEmail,
-            _ => null,
-        };
+    ) => candidate.IsAffiliated ? null : AccountIneligibilityReason.NotAffiliated;
+
+    [Pure]
+    public static bool CanBeMailed(AccountCandidate candidate) =>
+        candidate.Email is not (null or "");
 
     [Pure]
     public static AccountAccessState StateOf(

@@ -1,4 +1,5 @@
 using System.Diagnostics.Contracts;
+using System.Linq.Expressions;
 using Furria.Application.Registry;
 using Furria.Core.Club;
 using Furria.Core.Identity;
@@ -31,25 +32,65 @@ public static class AccessQuery
     {
         var today = ClubClock.DayOf(now);
 
+        if (StateFiltered(filter) is { } state)
+            return dbContext.PeopleInAccessState(state, now, ageOfConsent);
+
         return filter switch
         {
-            PersonAccessFilter.None => dbContext
-                .EligibleWithoutAccount(today, ageOfConsent)
-                .WithoutUnexpiredLiveInvitation(dbContext, now),
-            PersonAccessFilter.Invited => dbContext
-                .PeopleWithoutAccount()
-                .WithUnexpiredLiveInvitation(dbContext, now),
-            PersonAccessFilter.Active => dbContext.PeopleWithAccount(isDisabled: false),
-            PersonAccessFilter.Disabled => dbContext.PeopleWithAccount(isDisabled: true),
-            PersonAccessFilter.NotInvitable => dbContext
-                .PeopleWithoutAccount()
-                .WithoutUnexpiredLiveInvitation(dbContext, now)
-                .Where(AccountEligibilityQuery.IsIneligibleOn(today, ageOfConsent)),
             PersonAccessFilter.WithAccess => dbContext.PeopleWithAccessOn(today),
             PersonAccessFilter.OpenInvitation => dbContext.PeopleWithOpenInvitation(),
             PersonAccessFilter.WithoutEmail => dbContext.EligibleWithoutEmail(today, ageOfConsent),
             _ => throw new ArgumentOutOfRangeException(nameof(filter), filter, null),
         };
+    }
+
+    [Pure]
+    public static Expression<Func<Person, RegisterAccessState>> AccessStateOn(
+        this AppDbContext dbContext,
+        DateTimeOffset now,
+        int ageOfConsent
+    )
+    {
+        Expression<Func<Person, bool, RegisterAccessState>> stateGivenEligibility = (
+            person,
+            isEligible
+        ) =>
+            dbContext.Users.Any(account => account.PersonId == person.Id && account.IsDisabled)
+                ? RegisterAccessState.Disabled
+            : dbContext.Users.Any(account => account.PersonId == person.Id)
+                ? RegisterAccessState.Active
+            : dbContext.Invitations.Any(invitation =>
+                invitation.PersonId == person.Id
+                && invitation.RedeemedAt == null
+                && invitation.VoidedAt == null
+                && invitation.ExpiresAt > now
+            )
+                ? RegisterAccessState.Invited
+            : isEligible ? RegisterAccessState.None
+            : RegisterAccessState.NotInvitable;
+
+        return ExpressionComposition.Bind(
+            stateGivenEligibility,
+            AccountEligibilityQuery.IsEligibleOn(ClubClock.DayOf(now), ageOfConsent)
+        );
+    }
+
+    [Pure]
+    public static IQueryable<Person> PeopleInAccessState(
+        this AppDbContext dbContext,
+        RegisterAccessState state,
+        DateTimeOffset now,
+        int ageOfConsent
+    )
+    {
+        var stateOf = dbContext.AccessStateOn(now, ageOfConsent);
+
+        return dbContext.People.Where(
+            Expression.Lambda<Func<Person, bool>>(
+                Expression.Equal(stateOf.Body, Expression.Constant(state)),
+                stateOf.Parameters
+            )
+        );
     }
 
     [Pure]
@@ -95,8 +136,8 @@ public static class AccessQuery
         int ageOfConsent
     ) =>
         dbContext
-            .PeopleWithoutAccount()
-            .Where(AccountEligibilityQuery.LacksOnlyAnEmailOn(today, ageOfConsent));
+            .EligibleWithoutAccount(today, ageOfConsent)
+            .Where(AccountEligibilityQuery.CannotBeMailed());
 
     [Pure]
     public static IQueryable<Person> EligibleWithoutAccount(
@@ -107,6 +148,16 @@ public static class AccessQuery
         dbContext
             .PeopleWithoutAccount()
             .Where(AccountEligibilityQuery.IsEligibleOn(today, ageOfConsent));
+
+    [Pure]
+    public static IQueryable<Person> EligibleForMailWithoutAccount(
+        this AppDbContext dbContext,
+        DateOnly today,
+        int ageOfConsent
+    ) =>
+        dbContext
+            .EligibleWithoutAccount(today, ageOfConsent)
+            .Where(AccountEligibilityQuery.CanBeMailed());
 
     [Pure]
     public static IQueryable<Person> NeverInvited(
@@ -121,36 +172,6 @@ public static class AccessQuery
         );
 
     [Pure]
-    public static IQueryable<Person> WithUnexpiredLiveInvitation(
-        this IQueryable<Person> people,
-        AppDbContext dbContext,
-        DateTimeOffset now
-    ) =>
-        people.Where(person =>
-            dbContext.Invitations.Any(invitation =>
-                invitation.PersonId == person.Id
-                && invitation.RedeemedAt == null
-                && invitation.VoidedAt == null
-                && invitation.ExpiresAt > now
-            )
-        );
-
-    [Pure]
-    public static IQueryable<Person> WithoutUnexpiredLiveInvitation(
-        this IQueryable<Person> people,
-        AppDbContext dbContext,
-        DateTimeOffset now
-    ) =>
-        people.Where(person =>
-            !dbContext.Invitations.Any(invitation =>
-                invitation.PersonId == person.Id
-                && invitation.RedeemedAt == null
-                && invitation.VoidedAt == null
-                && invitation.ExpiresAt > now
-            )
-        );
-
-    [Pure]
     public static IQueryable<Invitation> OpenInvitations(this AppDbContext dbContext) =>
         dbContext.Invitations.Where(invitation =>
             invitation.Purpose == InvitationPurpose.Onboarding
@@ -158,4 +179,16 @@ public static class AccessQuery
             && invitation.VoidedAt == null
             && !dbContext.Users.Any(account => account.PersonId == invitation.PersonId)
         );
+
+    [Pure]
+    private static RegisterAccessState? StateFiltered(PersonAccessFilter filter) =>
+        filter switch
+        {
+            PersonAccessFilter.None => RegisterAccessState.None,
+            PersonAccessFilter.Invited => RegisterAccessState.Invited,
+            PersonAccessFilter.Active => RegisterAccessState.Active,
+            PersonAccessFilter.Disabled => RegisterAccessState.Disabled,
+            PersonAccessFilter.NotInvitable => RegisterAccessState.NotInvitable,
+            _ => null,
+        };
 }

@@ -148,7 +148,7 @@ describe('toPersonHeadline', () => {
       roles: [],
       access: {
         state: 'noAccess',
-        reason: 'noEmail',
+        reason: null,
         invitation: null,
         history: [],
         rights: { canInvite: true, canManageAccount: false },
@@ -278,7 +278,7 @@ const personDetails = (
   roles: [],
   access: {
     state: 'noAccess',
-    reason: 'noEmail',
+    reason: null,
     invitation: null,
     history: [],
     rights: { canInvite: true, canManageAccount: false },

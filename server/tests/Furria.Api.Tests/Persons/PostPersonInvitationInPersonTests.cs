@@ -296,6 +296,40 @@ public sealed class PostPersonInvitationInPersonTests
     }
 
     [Fact]
+    public async Task Should_ShowTheCode_When_SheHasNoEmail()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddPerson("anna", "Anna", "Muster")
+                        .AddPersonContact(
+                            "anna",
+                            birthDate: _fixture.Today.AddYears(-70),
+                            withoutEmail: true
+                        )
+                        .AddMembership("anna-membership", "anna", _fixture.Today.AddYears(-1))
+                ),
+            ct
+        );
+        var annaId = ctx.Identity.People.IdOf("anna");
+        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+
+        var issued = await InvitationSteps.InviteInPersonAsync(manager, annaId);
+
+        var (_, lookup) = await InvitationSteps.LookUpByCodeAsync(
+            _fixture.CreateClient(),
+            issued.Code
+        );
+        Assert.Equal(InvitationLookupStatus.Live, lookup.Status);
+        await ctx
+            .Expected.InvitationsOfPerson(annaId)
+            .ToHaveLiveCountOn(InvitationChannel.InPerson, 1)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_ReturnConflict_When_SheIsNotAffiliated()
     {
         var ct = TestContext.Current.CancellationToken;

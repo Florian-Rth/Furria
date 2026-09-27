@@ -7,6 +7,7 @@ export type AccountLockAct = 'disable' | 'enable';
 export interface AccessActions {
   mailInvitation: MailInvitationAct | null;
   inPersonInvitation: boolean;
+  lacksMailAddress: boolean;
   vouchesForAge: boolean;
   recovery: boolean;
   lock: AccountLockAct | null;
@@ -21,6 +22,7 @@ interface AccessActionsInput {
 const NO_ACTIONS: AccessActions = {
   mailInvitation: null,
   inPersonInvitation: false,
+  lacksMailAddress: false,
   vouchesForAge: false,
   recovery: false,
   lock: null,
@@ -35,16 +37,19 @@ const isInvitable = (access: PersonAccess): boolean =>
   access.reason === null || (access.reason === 'noBirthDate' && access.rights.canManageAccount);
 
 const invitationActsOf = (access: PersonAccess, email: string | null): AccessActions => {
-  if (!access.rights.canInvite || !isInvitable(access) || !hasAddress(email)) {
+  if (!access.rights.canInvite || !isInvitable(access)) {
     return NO_ACTIONS;
   }
 
   const isReissue = access.invitation !== null || access.state === 'invited';
+  const canBeMailed = hasAddress(email);
+  const mailAct: MailInvitationAct = isReissue ? 'reinvite' : 'invite';
 
   return {
     ...NO_ACTIONS,
-    mailInvitation: isReissue ? 'reinvite' : 'invite',
+    mailInvitation: canBeMailed ? mailAct : null,
     inPersonInvitation: true,
+    lacksMailAddress: !canBeMailed,
     vouchesForAge: access.reason === 'noBirthDate',
   };
 };

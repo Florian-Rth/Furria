@@ -241,6 +241,43 @@ public sealed class LookUpInvitationTests
     }
 
     [Fact]
+    public async Task Should_NameHerWithoutALoginEmail_When_SheHasNoContactEmail()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddPerson("anna", "Anna", "Muster")
+                        .AddPersonContact(
+                            "anna",
+                            birthDate: _fixture.Today.AddYears(-70),
+                            withoutEmail: true
+                        )
+                        .AddMembership("anna-membership", "anna", _fixture.Today.AddYears(-1))
+                ),
+            ct
+        );
+        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var issued = await InvitationSteps.InviteInPersonAsync(
+            manager,
+            ctx.Identity.People.IdOf("anna")
+        );
+
+        var (response, result) = await InvitationSteps.LookUpByCodeAsync(
+            _fixture.CreateClient(),
+            issued.Code
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(InvitationLookupStatus.Live, result.Status);
+        Assert.Equal("Anna", result.FirstName);
+        Assert.Null(result.LoginEmail);
+        Assert.False(result.ContactEmailTaken);
+        Assert.Null(result.ClaimableLoginEmail);
+    }
+
+    [Fact]
     public async Task Should_AnswerOnlyDead_When_TheCodeIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;

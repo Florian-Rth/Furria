@@ -175,12 +175,14 @@ public sealed class InvitationRoundService
     }
 
     private IQueryable<Person> InviteesOf(Round round) =>
-        _dbContext.EligibleWithoutAccount(round.Today, round.AgeOfConsent).NeverInvited(_dbContext);
+        _dbContext
+            .EligibleForMailWithoutAccount(round.Today, round.AgeOfConsent)
+            .NeverInvited(_dbContext);
 
     private IQueryable<Invitation> ReminderTargetsOf(Round round)
     {
         var issuedBefore = round.Now - ReminderDelay;
-        var eligible = _dbContext.EligibleWithoutAccount(round.Today, round.AgeOfConsent);
+        var eligible = _dbContext.EligibleForMailWithoutAccount(round.Today, round.AgeOfConsent);
 
         return _dbContext
             .OpenInvitations()

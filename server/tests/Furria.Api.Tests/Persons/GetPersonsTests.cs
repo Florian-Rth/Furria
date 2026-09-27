@@ -396,11 +396,11 @@ public sealed class GetPersonsTests
     }
 
     [Theory]
-    [InlineData(PersonAccessFilters.None, "dora", "gina")]
+    [InlineData(PersonAccessFilters.None, "dora", "emil", "gina")]
     [InlineData(PersonAccessFilters.Invited, "carla", "karl")]
     [InlineData(PersonAccessFilters.Active, "anna", "jonas")]
     [InlineData(PersonAccessFilters.Disabled, "bea")]
-    [InlineData(PersonAccessFilters.NotInvitable, "emil", "fritz", "hans", "ida")]
+    [InlineData(PersonAccessFilters.NotInvitable, "fritz", "hans", "ida")]
     [InlineData(PersonAccessFilters.WithAccess, "anna")]
     [InlineData(PersonAccessFilters.OpenInvitation, "carla", "karl")]
     [InlineData(PersonAccessFilters.WithoutEmail, "emil")]

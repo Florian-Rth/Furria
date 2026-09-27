@@ -325,6 +325,61 @@ public sealed class RedeemInvitationTests
     }
 
     [Fact]
+    public async Task Should_FillHerContactEmailWithTheConfirmedLogin_When_SheHadNoneAndRedeemsInPerson()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (ctx, annaId, code) = await ArrangeInPersonInvitationWithoutEmailAsync(ct);
+        var chosenEmail = InvitationSteps.UniqueContactEmail("anna-eigene");
+
+        var (asked, askedResult) = await InvitationSteps.RedeemByCodeAsync(
+            _fixture.CreateClient(),
+            code,
+            loginEmail: chosenEmail
+        );
+        var confirmationCode = (
+            await _fixture.Mailbox.SingleMailToAsync(chosenEmail, ct)
+        ).ConfirmationCode();
+        var changedAt = _fixture.TimeProvider.GetUtcNow();
+        var (response, redemption) = await InvitationSteps.RedeemByCodeAsync(
+            _fixture.CreateClient(),
+            code,
+            loginEmail: chosenEmail,
+            confirmationCode: confirmationCode
+        );
+
+        Assert.Equal(HttpStatusCode.OK, asked.StatusCode);
+        Assert.Equal(RedeemInvitationOutcome.ConfirmationRequired, askedResult.Outcome);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(RedeemInvitationOutcome.Redeemed, redemption.Outcome);
+        await ctx
+            .Expected.AccountOfPerson(annaId)
+            .ToHaveLoginEmail(chosenEmail)
+            .Person(annaId)
+            .ToHaveContactDetails(chosenEmail, null, null, null, null)
+            .Person(annaId)
+            .ToHaveContactChangedBy(annaId, changedAt)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseOnTheLoginEmail_When_SheHasNoContactEmailAndTypesNone()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (ctx, annaId, code) = await ArrangeInPersonInvitationWithoutEmailAsync(ct);
+
+        var (response, _) = await InvitationSteps.RedeemByCodeAsync(_fixture.CreateClient(), code);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await AssertRefusedOnAsync(response, LoginEmailField, ct);
+        await ctx
+            .Expected.AccountOfPerson(annaId)
+            .ToNotExist()
+            .InvitationsOfPerson(annaId)
+            .ToHaveLiveCount(1)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_ReturnConflict_When_TheInPersonCodeHasExpired()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -1569,6 +1624,33 @@ public sealed class RedeemInvitationTests
         );
 
         return (ctx, annaId, token);
+    }
+
+    private async Task<(
+        SeededContext Ctx,
+        int AnnaId,
+        string Code
+    )> ArrangeInPersonInvitationWithoutEmailAsync(CancellationToken ct)
+    {
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddPerson("anna", "Anna", "Muster")
+                        .AddPersonContact(
+                            "anna",
+                            birthDate: _fixture.Today.AddYears(-70),
+                            withoutEmail: true
+                        )
+                        .AddMembership("anna-membership", "anna", _fixture.Today.AddYears(-1))
+                ),
+            ct
+        );
+        var annaId = ctx.Identity.People.IdOf("anna");
+        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var issued = await InvitationSteps.InviteInPersonAsync(manager, annaId);
+
+        return (ctx, annaId, issued.Code);
     }
 
     private static async Task AssertRefusedOnAsync(

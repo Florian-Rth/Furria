@@ -107,7 +107,7 @@ export const toRoundSentMessage = (kind: InvitationRoundKind, sentCount: number)
 };
 
 export const toWithoutEmailFact = (count: number): string =>
-  count === 0 ? 'bei allen hinterlegt' : `${toPersonCount(count)} – ${toReceives(count)} nichts`;
+  count === 0 ? 'bei allen hinterlegt' : `${toPersonCount(count)} – nur vor Ort`;
 
 const toOpenInvitationsMeta = (count: number): string => {
   if (count === 0) {
@@ -120,7 +120,7 @@ const toOpenInvitationsMeta = (count: number): string => {
 const toWithoutEmailMeta = (count: number): string =>
   count === 0
     ? 'Bei allen Einladbaren ist eine hinterlegt'
-    : `${toPersonCount(count)} – ohne E-Mail keine Einladung`;
+    : `${toPersonCount(count)} – nur vor Ort einladbar`;
 
 const toMissingHint = (count: number): string | undefined => {
   if (count === 0) {

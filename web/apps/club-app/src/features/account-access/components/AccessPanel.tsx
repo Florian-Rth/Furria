@@ -19,6 +19,7 @@ import {
   toInPersonHref,
   toInvitationSpan,
   toInvitationValidity,
+  toNoMailAddressLine,
   toRecoveryHref,
   toVouchLine,
 } from '../account-access-labels';
@@ -37,7 +38,7 @@ interface AccessPanelProps {
 
 export const AccessPanel: FC<AccessPanelProps> = ({ subject, highlightedKey, onChanged }) => {
   const { access } = subject;
-  const { mailInvitation, inPersonInvitation, vouchesForAge, recovery, lock } =
+  const { mailInvitation, inPersonInvitation, lacksMailAddress, vouchesForAge, recovery, lock } =
     useAccessActions(subject);
   const chip = toAccountStateChip(access.state);
   const landingKey = toAccessLandingKey(subject.personId);
@@ -109,6 +110,13 @@ export const AccessPanel: FC<AccessPanelProps> = ({ subject, highlightedKey, onC
       </KkNote>
     );
 
+  const noMailAddressText = toNoMailAddressLine(subject.firstName);
+  const noMailAddressLine = lacksMailAddress ? (
+    <KkNote tone="hint" icon="info">
+      {noMailAddressText}
+    </KkNote>
+  ) : null;
+
   const lockAction =
     lock === null ? null : <AccountLockAction subject={subject} act={lock} onLocked={onChanged} />;
 
@@ -121,6 +129,7 @@ export const AccessPanel: FC<AccessPanelProps> = ({ subject, highlightedKey, onC
         </KkPanel>
         {handoverPanel}
         {blockLine}
+        {noMailAddressLine}
         <AccessHistory history={access.history} />
         {lockAction}
       </Stack>

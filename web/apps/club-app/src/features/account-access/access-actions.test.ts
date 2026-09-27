@@ -23,6 +23,7 @@ describe('accessActionsOf', () => {
       {
         mailInvitation: 'invite',
         inPersonInvitation: true,
+        lacksMailAddress: false,
         vouchesForAge: false,
         recovery: false,
         lock: null,
@@ -51,6 +52,7 @@ describe('accessActionsOf', () => {
       {
         mailInvitation: 'reinvite',
         inPersonInvitation: true,
+        lacksMailAddress: false,
         vouchesForAge: false,
         recovery: false,
         lock: null,
@@ -79,6 +81,7 @@ describe('accessActionsOf', () => {
       {
         mailInvitation: 'reinvite',
         inPersonInvitation: true,
+        lacksMailAddress: false,
         vouchesForAge: false,
         recovery: false,
         lock: null,
@@ -101,6 +104,7 @@ describe('accessActionsOf', () => {
       {
         mailInvitation: 'reinvite',
         inPersonInvitation: true,
+        lacksMailAddress: false,
         vouchesForAge: false,
         recovery: false,
         lock: null,
@@ -123,6 +127,7 @@ describe('accessActionsOf', () => {
       {
         mailInvitation: null,
         inPersonInvitation: false,
+        lacksMailAddress: false,
         vouchesForAge: false,
         recovery: false,
         lock: null,
@@ -145,6 +150,7 @@ describe('accessActionsOf', () => {
       {
         mailInvitation: null,
         inPersonInvitation: false,
+        lacksMailAddress: false,
         vouchesForAge: false,
         recovery: false,
         lock: null,
@@ -167,6 +173,7 @@ describe('accessActionsOf', () => {
       {
         mailInvitation: 'invite',
         inPersonInvitation: true,
+        lacksMailAddress: false,
         vouchesForAge: true,
         recovery: false,
         lock: null,
@@ -188,8 +195,9 @@ describe('accessActionsOf', () => {
       },
       {
         mailInvitation: null,
-        inPersonInvitation: false,
-        vouchesForAge: false,
+        inPersonInvitation: true,
+        lacksMailAddress: true,
+        vouchesForAge: true,
         recovery: false,
         lock: null,
       },
@@ -211,13 +219,14 @@ describe('accessActionsOf', () => {
       {
         mailInvitation: null,
         inPersonInvitation: false,
+        lacksMailAddress: false,
         vouchesForAge: false,
         recovery: false,
         lock: null,
       },
     ],
     [
-      'a blank email',
+      'an eligible person with a blank email',
       {
         access: {
           state: 'noAccess',
@@ -232,7 +241,8 @@ describe('accessActionsOf', () => {
       },
       {
         mailInvitation: null,
-        inPersonInvitation: false,
+        inPersonInvitation: true,
+        lacksMailAddress: true,
         vouchesForAge: false,
         recovery: false,
         lock: null,
@@ -255,6 +265,7 @@ describe('accessActionsOf', () => {
       {
         mailInvitation: null,
         inPersonInvitation: false,
+        lacksMailAddress: false,
         vouchesForAge: false,
         recovery: false,
         lock: null,
@@ -277,6 +288,7 @@ describe('accessActionsOf', () => {
       {
         mailInvitation: null,
         inPersonInvitation: false,
+        lacksMailAddress: false,
         vouchesForAge: false,
         recovery: true,
         lock: 'disable',
@@ -299,6 +311,7 @@ describe('accessActionsOf', () => {
       {
         mailInvitation: null,
         inPersonInvitation: false,
+        lacksMailAddress: false,
         vouchesForAge: false,
         recovery: true,
         lock: null,
@@ -321,6 +334,7 @@ describe('accessActionsOf', () => {
       {
         mailInvitation: null,
         inPersonInvitation: false,
+        lacksMailAddress: false,
         vouchesForAge: false,
         recovery: false,
         lock: 'enable',
@@ -343,6 +357,7 @@ describe('accessActionsOf', () => {
       {
         mailInvitation: null,
         inPersonInvitation: false,
+        lacksMailAddress: false,
         vouchesForAge: false,
         recovery: false,
         lock: null,

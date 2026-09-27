@@ -4,7 +4,7 @@ import { PersonRefSchema } from '@/lib/api/schemas';
 export const AccountStateSchema = z.enum(['noAccess', 'invited', 'active', 'disabled']);
 export type AccountState = z.infer<typeof AccountStateSchema>;
 
-export const AccessBlockSchema = z.enum(['notAffiliated', 'noBirthDate', 'underAge', 'noEmail']);
+export const AccessBlockSchema = z.enum(['notAffiliated', 'noBirthDate', 'underAge']);
 export type AccessBlock = z.infer<typeof AccessBlockSchema>;
 
 export const InvitationChannelSchema = z.enum(['mail', 'inPerson', 'request']);

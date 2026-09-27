@@ -84,8 +84,8 @@ describe('toRoundSentMessage', () => {
 describe('toWithoutEmailFact', () => {
   it.each([
     { count: 0, expected: 'bei allen hinterlegt' },
-    { count: 1, expected: '1 Person – bekommt nichts' },
-    { count: 3, expected: '3 Personen – bekommen nichts' },
+    { count: 1, expected: '1 Person – nur vor Ort' },
+    { count: 3, expected: '3 Personen – nur vor Ort' },
   ])('states $count persons without email as "$expected"', ({ count, expected }) => {
     expect(toWithoutEmailFact(count)).toBe(expected);
   });

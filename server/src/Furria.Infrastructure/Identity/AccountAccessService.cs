@@ -37,6 +37,7 @@ public sealed class AccountAccessService
     private readonly EmailConfirmationService _emailConfirmationService;
     private readonly AccessRecoveryService _accessRecoveryService;
     private readonly AccountClaimService _accountClaimService;
+    private readonly PersonService _personService;
     private readonly ClubAppOptions _clubAppOptions;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<AccountAccessService> _logger;
@@ -49,6 +50,7 @@ public sealed class AccountAccessService
         EmailConfirmationService emailConfirmationService,
         AccessRecoveryService accessRecoveryService,
         AccountClaimService accountClaimService,
+        PersonService personService,
         IOptions<ClubAppOptions> clubAppOptions,
         TimeProvider timeProvider,
         ILogger<AccountAccessService> logger
@@ -61,6 +63,7 @@ public sealed class AccountAccessService
         _emailConfirmationService = emailConfirmationService;
         _accessRecoveryService = accessRecoveryService;
         _accountClaimService = accountClaimService;
+        _personService = personService;
         _clubAppOptions = clubAppOptions.Value;
         _timeProvider = timeProvider;
         _logger = logger;
@@ -97,7 +100,7 @@ public sealed class AccountAccessService
             return Result<IssuedInvitationDetails>.NotFound(UnknownPersonMessage);
 
         var terms = await ClubTermsAsync(ct);
-        if (RefusalOf(subject, terms, issuer.VouchesForAge) is { } refusal)
+        if (MailRefusalOf(subject, terms, issuer.VouchesForAge) is { } refusal)
             return Result<IssuedInvitationDetails>.Conflict(refusal);
 
         var token = OpaqueTokenSecret.Generate(out var tokenHash);
@@ -217,16 +220,16 @@ public sealed class AccountAccessService
         if (redeemable is null)
             return null;
 
-        var contactEmailTaken = await IsLoginEmailTakenAsync(
-            NormalizedEmailOf(redeemable.ContactEmail),
-            ct
-        );
+        var normalizedContactEmail = redeemable.ContactEmail is { } contactEmail
+            ? NormalizedEmailOf(contactEmail)
+            : null;
+        var contactEmailTaken =
+            normalizedContactEmail is not null
+            && await IsLoginEmailTakenAsync(normalizedContactEmail, ct);
         var contactEmailClaimable =
             contactEmailTaken
-            && await _accountClaimService.IsClaimableAsync(
-                NormalizedEmailOf(redeemable.ContactEmail),
-                ct
-            );
+            && normalizedContactEmail is not null
+            && await _accountClaimService.IsClaimableAsync(normalizedContactEmail, ct);
 
         return new InvitationLookupDetails
         {
@@ -251,7 +254,11 @@ public sealed class AccountAccessService
         if (redeemable is null)
             return Result<RedemptionDetails>.Conflict(DeadInvitationMessage);
 
-        var loginEmail = command.LoginEmail?.Trim() ?? redeemable.ContactEmail;
+        if ((command.LoginEmail?.Trim() ?? redeemable.ContactEmail) is not { } loginEmail)
+            return Result<RedemptionDetails>.Success(
+                RedemptionDetails.Refused(RedemptionOutcome.LoginEmailMissing)
+            );
+
         var normalizedLoginEmail = NormalizedEmailOf(loginEmail);
         if (await IsLoginEmailTakenAsync(normalizedLoginEmail, ct))
             return await _accountClaimService.ClaimOrRefuseAsync(
@@ -401,6 +408,20 @@ public sealed class AccountAccessService
             }
         );
         await _dbContext.SaveChangesAsync(ct);
+        if (redeemable.ContactEmail is null)
+        {
+            var filled = await _personService.UpdateOwnContactEmailAsync(
+                redeemable.PersonId,
+                chosen.Email,
+                ct
+            );
+            if (!filled.IsSuccess)
+            {
+                await transaction.RollbackAsync(ct);
+                return Result<RedemptionDetails>.Carrying(filled);
+            }
+        }
+
         await transaction.CommitAsync(ct);
 
         _logger.LogInformation(
@@ -435,8 +456,9 @@ public sealed class AccountAccessService
     private string NormalizedEmailOf(string email) => _userManager.NormalizeEmail(email) ?? email;
 
     private bool IsContactEmail(RedeemableInvitation redeemable, string normalizedLoginEmail) =>
-        string.Equals(
-            NormalizedEmailOf(redeemable.ContactEmail),
+        redeemable.ContactEmail is { } contactEmail
+        && string.Equals(
+            NormalizedEmailOf(contactEmail),
             normalizedLoginEmail,
             StringComparison.Ordinal
         );
@@ -587,7 +609,7 @@ public sealed class AccountAccessService
             invitation.Id,
             subject.PersonId,
             subject.FirstName,
-            subject.Candidate.Email!
+            AccountEligibility.CanBeMailed(subject.Candidate) ? subject.Candidate.Email : null
         );
     }
 
@@ -638,6 +660,19 @@ public sealed class AccountAccessService
     }
 
     [Pure]
+    private static string? MailRefusalOf(
+        SubjectRow subject,
+        ClubTerms terms,
+        bool admitsUnknownBirthDate
+    ) =>
+        RefusalOf(subject, terms, admitsUnknownBirthDate)
+        ?? (
+            AccountEligibility.CanBeMailed(subject.Candidate)
+                ? null
+                : $"Für {subject.FirstName} ist keine E-Mail-Adresse hinterlegt."
+        );
+
+    [Pure]
     private static string? RefusalOf(
         SubjectRow subject,
         ClubTerms terms,
@@ -671,8 +706,6 @@ public sealed class AccountAccessService
             AccountIneligibilityReason.NoBirthDate =>
                 $"Für {firstName} ist kein Geburtsdatum hinterlegt.",
             AccountIneligibilityReason.UnderAge => $"{firstName} ist noch nicht {ageOfConsent}.",
-            AccountIneligibilityReason.NoEmail =>
-                $"Für {firstName} ist keine E-Mail-Adresse hinterlegt.",
             _ => throw new ArgumentOutOfRangeException(nameof(reason), reason, null),
         };
 
@@ -774,7 +807,7 @@ public sealed class AccountAccessService
         int InvitationId,
         int PersonId,
         string FirstName,
-        string ContactEmail
+        string? ContactEmail
     );
 
     private sealed record ChosenLogin(string Email, string NormalizedEmail, string Password);

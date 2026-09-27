@@ -10,4 +10,5 @@ public enum RedemptionOutcome
     ClaimRequired = 6,
     ClaimPasswordWrong = 7,
     ClaimPasskeyRejected = 8,
+    LoginEmailMissing = 9,
 }

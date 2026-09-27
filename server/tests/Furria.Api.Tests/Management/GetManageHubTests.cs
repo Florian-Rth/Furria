@@ -589,7 +589,7 @@ public sealed class GetManageHubTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.NotNull(result.Accounts);
         Assert.Equal(1 + TheBootstrapAdminPerson, result.Accounts.WithAccessCount);
-        Assert.Equal(3 + TheBootstrapAdminPerson, result.Accounts.OfCount);
+        Assert.Equal(4 + TheBootstrapAdminPerson, result.Accounts.OfCount);
         Assert.Equal(1, result.Accounts.OpenInvitationCount);
         Assert.Equal(1, result.Accounts.EligibleWithoutEmailCount);
     }

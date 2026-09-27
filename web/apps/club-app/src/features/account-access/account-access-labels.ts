@@ -37,9 +37,10 @@ const ACCESS_BLOCK_LINES: Record<AccessBlock, (firstName: string) => string> = {
   noBirthDate: (firstName) =>
     `Für ${firstName} ist kein Geburtsdatum hinterlegt. Trag es in den Stammdaten ein.`,
   underAge: (firstName) => `${firstName} ist jünger als das Mindestalter für einen Zugang.`,
-  noEmail: (firstName) =>
-    `Für ${firstName} ist keine E-Mail-Adresse hinterlegt. Trag sie in den Stammdaten ein.`,
 };
+
+export const toNoMailAddressLine = (firstName: string): string =>
+  `Für ${firstName} ist keine E-Mail-Adresse hinterlegt – einladen geht nur vor Ort.`;
 
 export const toAccessBlockLine = (reason: AccessBlock, firstName: string): string =>
   ACCESS_BLOCK_LINES[reason](firstName);
@@ -52,7 +53,7 @@ export const toNoMailInvitationLine = (access: PersonAccess, firstName: string):
     return `${firstName} hat bereits einen Zugang.`;
   }
 
-  return toAccessBlockLine('noEmail', firstName);
+  return toNoMailAddressLine(firstName);
 };
 
 const ACCOUNT_EVENT_TITLES: Record<AccountEventKind, string> = {

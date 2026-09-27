@@ -22,7 +22,7 @@ const ACCESS_FILTER_LABELS: Record<PersonAccessFilter, string> = {
   'not-invitable': 'nicht einladbar',
   'with-access': 'mit Zugang',
   'open-invitation': 'mit offener Einladung',
-  'without-email': 'ohne E-Mail-Adresse, sonst einladbar',
+  'without-email': 'ohne E-Mail-Adresse, nur vor Ort einladbar',
 };
 
 const NO_ACCESS_MATCH_LINES: Record<PersonAccessFilter, string> = {
@@ -33,7 +33,7 @@ const NO_ACCESS_MATCH_LINES: Record<PersonAccessFilter, string> = {
   'not-invitable': 'Wer im Verein aktiv ist, kann auch eingeladen werden.',
   'with-access': 'Noch hat niemand aus dem Verein einen Zugang.',
   'open-invitation': 'Gerade ist keine Einladung offen.',
-  'without-email': 'Bei allen Einladbaren ist eine E-Mail-Adresse hinterlegt.',
+  'without-email': 'Alle Einladbaren haben eine E-Mail-Adresse.',
 };
 
 export const ACCESS_FILTER_CLEAR_LABEL = 'Alle zeigen';

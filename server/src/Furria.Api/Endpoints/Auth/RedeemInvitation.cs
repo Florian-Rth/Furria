@@ -20,6 +20,8 @@ public sealed class RedeemInvitation : Endpoint<RedeemInvitationRequest, RedeemI
     private const string ClaimPasskeyField = "claimPasskey";
     private const string TakenLoginEmailMessage =
         "Diese E-Mail-Adresse gehört schon zu einem Zugang. Wähle eine andere.";
+    private const string MissingLoginEmailMessage =
+        "Gib die E-Mail-Adresse ein, mit der du dich anmelden willst.";
     private const string WrongConfirmationCodeMessage =
         "Der Code stimmt nicht. Prüf die Mail und versuch es noch einmal.";
     private const string DeadConfirmationCodeMessage =
@@ -108,6 +110,11 @@ public sealed class RedeemInvitation : Endpoint<RedeemInvitationRequest, RedeemI
             RedemptionOutcome.ClaimPasswordWrong => new RedemptionRefusal(
                 ClaimPasswordField,
                 WrongClaimPasswordMessage,
+                StatusCodes.Status400BadRequest
+            ),
+            RedemptionOutcome.LoginEmailMissing => new RedemptionRefusal(
+                LoginEmailField,
+                MissingLoginEmailMessage,
                 StatusCodes.Status400BadRequest
             ),
             RedemptionOutcome.ClaimPasskeyRejected => new RedemptionRefusal(

@@ -149,7 +149,7 @@ public sealed class AccessRequestService
         CancellationToken ct
     ) =>
         await _dbContext
-            .EligibleWithoutAccount(today, ageOfConsent)
+            .EligibleForMailWithoutAccount(today, ageOfConsent)
             .AsNoTracking()
             .Where(person => person.Email!.ToUpper() == normalizedEmail)
             .OrderBy(person => person.FirstName)
