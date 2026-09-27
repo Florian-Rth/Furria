@@ -2,6 +2,14 @@ import { useEffect, useState } from 'react';
 
 export const useNow = (intervalMs: number, isTicking = true): Date => {
   const [now, setNow] = useState(() => new Date());
+  const [wasTicking, setWasTicking] = useState(isTicking);
+
+  if (isTicking !== wasTicking) {
+    setWasTicking(isTicking);
+    if (isTicking) {
+      setNow(new Date());
+    }
+  }
 
   useEffect(() => {
     if (!isTicking) {
