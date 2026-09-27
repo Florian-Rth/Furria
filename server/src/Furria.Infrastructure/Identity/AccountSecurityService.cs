@@ -29,8 +29,6 @@ public sealed class AccountSecurityService
         "Der Passkey konnte nicht bestätigt werden. Versuch es noch einmal.";
     private const string LockedOutMessage =
         "Zu viele Fehlversuche. Versuch es in 15 Minuten noch einmal.";
-    private const string PasswordRuleMessage =
-        "Das Passwort braucht mindestens 12 Zeichen, Groß- und Kleinbuchstaben, eine Ziffer und ein Sonderzeichen.";
     private const string PasswordErrorPrefix = "Password";
 
     private static readonly IReadOnlySet<string> TakenLoginErrorCodes = new HashSet<string>(
@@ -415,7 +413,7 @@ public sealed class AccountSecurityService
                 error.Code.StartsWith(PasswordErrorPrefix, StringComparison.Ordinal)
             )
         )
-            return Result.Validation(PasswordRuleMessage);
+            return Result.Validation(PasswordRule.Message);
 
         throw new InvalidOperationException(
             "The password could not be changed: "

@@ -207,34 +207,19 @@ public sealed class RedeemInvitationTests
     }
 
     [Fact]
-    public async Task Should_ReturnBadRequest_When_ThePasswordIsShorterThanTwelveCharacters()
+    public async Task Should_RefuseThePasswordAndKeepTheInvitationLive_When_ItHasSevenCharacters()
     {
         var ct = TestContext.Current.CancellationToken;
-        var annaEmail = InvitationSteps.UniqueContactEmail("anna");
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity.AddEligiblePerson("anna", "Anna", annaEmail, _fixture.Today)
-                ),
-            ct
-        );
-        var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
-        var token = await InvitationSteps.InviteAndReadTokenAsync(
-            _fixture,
-            manager,
-            annaId,
-            annaEmail,
-            ct
-        );
+        var (ctx, annaId, token) = await ArrangeMailInvitationAsync(ct);
 
         var (response, _) = await InvitationSteps.RedeemAsync(
             _fixture.CreateClient(),
             token,
-            "Kurz-1!"
+            "kurzpw1"
         );
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await AssertRefusedOnAsync(response, PasswordField, ct);
         await ctx
             .Expected.AccountOfPerson(annaId)
             .ToNotExist()
@@ -244,36 +229,23 @@ public sealed class RedeemInvitationTests
     }
 
     [Fact]
-    public async Task Should_KeepTheInvitationLive_When_IdentityRejectsThePassword()
+    public async Task Should_SignHerIn_When_ThePasswordIsEightLowercaseLetters()
     {
         var ct = TestContext.Current.CancellationToken;
-        var annaEmail = InvitationSteps.UniqueContactEmail("anna");
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity.AddEligiblePerson("anna", "Anna", annaEmail, _fixture.Today)
-                ),
-            ct
-        );
-        var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
-        var token = await InvitationSteps.InviteAndReadTokenAsync(
-            _fixture,
-            manager,
-            annaId,
-            annaEmail,
-            ct
-        );
+        var (_, annaId, token) = await ArrangeMailInvitationAsync(ct);
 
-        var (rejected, _) = await InvitationSteps.RedeemAsync(
+        var (response, redemption) = await InvitationSteps.RedeemAsync(
             _fixture.CreateClient(),
             token,
-            "nurkleinbuchstaben"
+            "tanzbein"
         );
-        var (accepted, _) = await InvitationSteps.RedeemAsync(_fixture.CreateClient(), token);
 
-        Assert.Equal(HttpStatusCode.BadRequest, rejected.StatusCode);
-        Assert.Equal(HttpStatusCode.OK, accepted.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var (_, me) = await InvitationSteps
+            .SignedInClient(_fixture, redemption)
+            .GETAsync<GetMe, GetMeResponse>();
+        Assert.Equal(annaId, me.Person.Id);
+        Assert.Equal(HttpStatusCode.OK, await LogInStatusAsync(me.Email, "tanzbein"));
     }
 
     [Fact]
@@ -695,7 +667,7 @@ public sealed class RedeemInvitationTests
     }
 
     [Fact]
-    public async Task Should_RefuseThePasswordBeforeMailingACode_When_IdentityWouldRejectIt()
+    public async Task Should_RefuseThePasswordBeforeMailingACode_When_ItIsTooShort()
     {
         var ct = TestContext.Current.CancellationToken;
         var (ctx, annaId, token) = await ArrangeMailInvitationAsync(ct);
@@ -703,7 +675,7 @@ public sealed class RedeemInvitationTests
         var (response, _) = await InvitationSteps.RedeemAsync(
             _fixture.CreateClient(),
             token,
-            "nurkleinbuchstaben",
+            "kurzpw1",
             loginEmail: InvitationSteps.UniqueContactEmail("anna-privat")
         );
 

@@ -20,8 +20,6 @@ public sealed class AccountAccessService
 {
     private const string UnknownPersonMessage = "Diese Person steht nicht im Register.";
     private const string DeadInvitationMessage = "Diese Einladung gilt nicht mehr.";
-    private const string PasswordRuleMessage =
-        "Das Passwort braucht mindestens 12 Zeichen, Groß- und Kleinbuchstaben, eine Ziffer und ein Sonderzeichen.";
     private const string PasswordErrorPrefix = "Password";
 
     private static readonly IReadOnlySet<string> TakenLoginErrorCodes = new HashSet<string>(
@@ -268,7 +266,7 @@ public sealed class AccountAccessService
             );
 
         if (command.Password is not { } password)
-            return Result<RedemptionDetails>.Validation(PasswordRuleMessage);
+            return Result<RedemptionDetails>.Validation(PasswordRule.Message);
 
         var chosen = new ChosenLogin(loginEmail, normalizedLoginEmail, password);
         if (IsContactEmail(redeemable, normalizedLoginEmail))
@@ -423,7 +421,7 @@ public sealed class AccountAccessService
         {
             var validated = await validator.ValidateAsync(_userManager, candidate, password);
             if (!validated.Succeeded)
-                return Result<RedemptionDetails>.Validation(PasswordRuleMessage);
+                return Result<RedemptionDetails>.Validation(PasswordRule.Message);
         }
 
         return null;
@@ -706,7 +704,7 @@ public sealed class AccountAccessService
                 error.Code.StartsWith(PasswordErrorPrefix, StringComparison.Ordinal)
             )
         )
-            return Result<RedemptionDetails>.Validation(PasswordRuleMessage);
+            return Result<RedemptionDetails>.Validation(PasswordRule.Message);
 
         throw new InvalidOperationException(
             "The account could not be created: "

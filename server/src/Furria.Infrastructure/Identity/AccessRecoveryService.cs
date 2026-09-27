@@ -14,8 +14,6 @@ namespace Furria.Infrastructure.Identity;
 public sealed class AccessRecoveryService
 {
     private const string DeadRecoveryMessage = "Diese Wiederherstellung gilt nicht mehr.";
-    private const string PasswordRuleMessage =
-        "Das Passwort braucht mindestens 12 Zeichen, Groß- und Kleinbuchstaben, eine Ziffer und ein Sonderzeichen.";
 
     private readonly AppDbContext _dbContext;
     private readonly UserManager<Account> _userManager;
@@ -103,7 +101,7 @@ public sealed class AccessRecoveryService
             return Result<RedemptionDetails>.Conflict(DeadRecoveryMessage);
 
         if (command.Password is not { } password)
-            return Result<RedemptionDetails>.Validation(PasswordRuleMessage);
+            return Result<RedemptionDetails>.Validation(PasswordRule.Message);
 
         var loginEmail = command.LoginEmail?.Trim() ?? recoverable.LoginEmail;
         var chosen = new ChosenLogin(loginEmail, NormalizedEmailOf(loginEmail), password);
@@ -330,7 +328,7 @@ public sealed class AccessRecoveryService
         {
             var validated = await validator.ValidateAsync(_userManager, candidate, password);
             if (!validated.Succeeded)
-                return Result<RedemptionDetails>.Validation(PasswordRuleMessage);
+                return Result<RedemptionDetails>.Validation(PasswordRule.Message);
         }
 
         return null;

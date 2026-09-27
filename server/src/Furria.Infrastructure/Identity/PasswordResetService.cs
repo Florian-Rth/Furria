@@ -17,8 +17,6 @@ public sealed class PasswordResetService
 {
     public const string DeadLinkMessage =
         "Dieser Link gilt nicht mehr. Fordere über „Passwort vergessen“ einen neuen an.";
-    public const string PasswordRuleMessage =
-        "Das Passwort braucht mindestens 12 Zeichen, Groß- und Kleinbuchstaben, eine Ziffer und ein Sonderzeichen.";
 
     public static readonly TimeSpan LinkLifetime = TimeSpan.FromHours(1);
 
@@ -130,6 +128,6 @@ public sealed class PasswordResetService
         reset.Errors.All(error =>
             error.Code.StartsWith(PasswordErrorPrefix, StringComparison.Ordinal)
         )
-            ? Result.Validation(PasswordRuleMessage)
+            ? Result.Validation(PasswordRule.Message)
             : Result.Conflict(DeadLinkMessage);
 }

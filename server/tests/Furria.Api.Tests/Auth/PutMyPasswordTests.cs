@@ -177,7 +177,7 @@ public sealed class PutMyPasswordTests
     }
 
     [Fact]
-    public async Task Should_RefuseOnTheNewPassword_When_ItBreaksThePasswordRule()
+    public async Task Should_RefuseOnTheNewPassword_When_ItHasSevenCharacters()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await ArrangeAnnaAsync(ct);
@@ -186,7 +186,7 @@ public sealed class PutMyPasswordTests
         var (response, _) = await AccountSecuritySteps.ChangePasswordAsync(
             client,
             ApiTestFixture.SeededAccountPassword,
-            "nurkleinbuchstaben"
+            "kurzpw1"
         );
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -197,6 +197,30 @@ public sealed class PutMyPasswordTests
                 _fixture,
                 ctx.Identity.EmailOf("anna"),
                 ApiTestFixture.SeededAccountPassword
+            )
+        );
+    }
+
+    [Fact]
+    public async Task Should_ChangeHerPassword_When_TheNewOneIsEightLowercaseLetters()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await ArrangeAnnaAsync(ct);
+        var client = await ctx.Identity.ClientForAsync("anna", ct);
+
+        var (response, _) = await AccountSecuritySteps.ChangePasswordAsync(
+            client,
+            ApiTestFixture.SeededAccountPassword,
+            "tanzbein"
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(
+            HttpStatusCode.OK,
+            await AccountSecuritySteps.LogInStatusAsync(
+                _fixture,
+                ctx.Identity.EmailOf("anna"),
+                "tanzbein"
             )
         );
     }

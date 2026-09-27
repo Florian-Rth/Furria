@@ -206,7 +206,6 @@ public sealed class RedeemInvitationValidator : Validator<RedeemInvitationReques
     private const string OneClaimProofMessage =
         "Bestätige den Zugang entweder mit dem Passwort oder mit dem Passkey.";
 
-    public const int MinimumPasswordLength = 12;
     public const int MaximumPasswordLength = 256;
     public const int MaximumLoginEmailLength = 256;
     public const int MaximumConfirmationCodeLength = 16;
@@ -242,7 +241,7 @@ public sealed class RedeemInvitationValidator : Validator<RedeemInvitationReques
             () =>
                 RuleFor(request => request.Password)
                     .NotEmpty()
-                    .MinimumLength(MinimumPasswordLength)
+                    .MinimumLength(PasswordRule.MinimumLength)
                     .MaximumLength(MaximumPasswordLength)
         );
         When(

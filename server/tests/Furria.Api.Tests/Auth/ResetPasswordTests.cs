@@ -201,7 +201,7 @@ public sealed class ResetPasswordTests
     }
 
     [Fact]
-    public async Task Should_KeepTheLinkLive_When_TheNewPasswordBreaksThePasswordRule()
+    public async Task Should_KeepTheLinkLive_When_TheNewPasswordHasSevenCharacters()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -214,13 +214,35 @@ public sealed class ResetPasswordTests
         var refused = await SignedOutMailSteps.ResetPasswordAsync(
             _fixture.CreateClient(),
             reset,
-            "zu-kurz"
+            "kurzpw1"
         );
         var accepted = await SignedOutMailSteps.ResetPasswordAsync(_fixture.CreateClient(), reset);
 
         Assert.Equal(HttpStatusCode.BadRequest, refused.StatusCode);
         Assert.Equal(PasswordField, (await RefusalOnAsync(refused, ct)).Field);
         Assert.Equal(HttpStatusCode.NoContent, accepted.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_LetHerLogIn_When_TheNewPasswordIsEightLowercaseLetters()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => identity.AddAccount("alice")),
+            ct
+        );
+        var aliceEmail = ctx.Identity.EmailOf("alice");
+        var reset = await SignedOutMailSteps.RequestResetAndReadItAsync(_fixture, aliceEmail, ct);
+
+        var response = await SignedOutMailSteps.ResetPasswordAsync(
+            _fixture.CreateClient(),
+            reset,
+            "tanzbein"
+        );
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        var login = await ctx.Identity.LogInAsync(aliceEmail, "tanzbein", ct);
+        Assert.NotEmpty(login.AccessToken);
     }
 
     [Fact]
