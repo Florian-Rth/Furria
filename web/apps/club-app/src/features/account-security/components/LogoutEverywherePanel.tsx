@@ -6,7 +6,7 @@ const TITLE = 'Geräte';
 const DESCRIPTION =
   'Du hast ein Gerät verloren oder dich woanders nicht abgemeldet? Dann beende hier jede Sitzung auf einmal.';
 const LOGOUT_EVERYWHERE_LABEL = 'Überall abmelden';
-const EYEBROW = 'Anmeldung';
+const EYEBROW = 'Überall abmelden';
 const QUESTION = 'Auf allen Geräten abmelden?';
 const EXPLANATION =
   'Überall, wo du in der Vereins-App angemeldet bist, endet deine Sitzung – auch auf diesem Gerät. Danach meldest du dich neu an.';

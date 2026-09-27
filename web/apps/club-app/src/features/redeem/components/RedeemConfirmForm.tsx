@@ -13,7 +13,7 @@ const CODE_EXPIRED_LINE = 'Der Code ist abgelaufen. Lass dir einen neuen schicke
 const RESENT_LINE = 'Ein neuer Code ist unterwegs. Der vorige gilt nicht mehr.';
 const CONFIRM_LABEL = 'Bestätigen';
 const RESEND_LABEL = 'Neuen Code senden';
-const CHANGE_EMAIL_LABEL = 'Andere E-Mail-Adresse';
+const CHANGE_EMAIL_LABEL = 'Andere Adresse eingeben';
 const TICK_MS = 1000;
 
 interface RedeemConfirmFormProps {

@@ -1,4 +1,4 @@
-import { KkFactRow, KkNote, KkPanel } from '@furria/ui';
+import { KkEyebrow, KkFactRow, KkPanel } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import {
@@ -29,7 +29,7 @@ export const AccessHistory: FC<AccessHistoryProps> = ({ history }) => {
 
   return (
     <Stack sx={{ gap: 0.75, minWidth: 0 }}>
-      <KkNote tone="muted">{HISTORY_TITLE}</KkNote>
+      <KkEyebrow tone="muted">{HISTORY_TITLE}</KkEyebrow>
       <KkPanel>{rows}</KkPanel>
     </Stack>
   );

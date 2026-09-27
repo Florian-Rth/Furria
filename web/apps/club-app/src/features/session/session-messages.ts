@@ -39,12 +39,12 @@ export const APP_NOT_FOUND_MESSAGE = 'Diese Seite gibt es nicht.';
 
 export const APP_START_LABEL = 'Zur Übersicht';
 
-export const ME_FAILURE_TITLE = 'KONTO NICHT GELADEN';
+export const ME_FAILURE_TITLE = 'ACCOUNT NICHT GELADEN';
 
 const ME_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
   unreachable:
-    'Dein Konto hat den Server nicht erreicht. Prüfe deine Verbindung und versuch es noch einmal.',
-  unexpected: 'Dein Konto konnte nicht geladen werden.',
+    'Der Server ist nicht erreichbar. Prüfe deine Verbindung und versuch es noch einmal.',
+  unexpected: 'Dein Account konnte nicht geladen werden.',
   rejected: 'Der Server hat diese Anfrage nicht angenommen.',
 };
 

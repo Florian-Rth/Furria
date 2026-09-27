@@ -17,7 +17,7 @@ export const PersonsAccessNote: FC<PersonsAccessNoteProps> = ({ filter, onClear 
     <KkNote tone="info" icon="info">
       {toAccessFilterNote(filter)}
     </KkNote>
-    <KkButton variant="text" size="small" onClick={onClear}>
+    <KkButton variant="text" size="small" onClick={onClear} sx={{ flexShrink: 0 }}>
       {ACCESS_FILTER_CLEAR_LABEL}
     </KkButton>
   </Stack>

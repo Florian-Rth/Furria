@@ -8,11 +8,11 @@ import type { LiveInvitation } from '../redeem-stage';
 import { RedeemClaimPasskey } from './RedeemClaimPasskey';
 
 const CLAIM_LINE =
-  'Mit dieser Adresse gibt es schon einen Zugang. Melde dich damit an, dann wird er übernommen.';
+  'Mit dieser Adresse gibt es schon einen Account. Melde dich damit an, dann wird er übernommen.';
 const LOGIN_EMAIL_LABEL = 'Anmelde-E-Mail';
-const PASSWORD_LABEL = 'Passwort dieses Zugangs';
+const PASSWORD_LABEL = 'Passwort dieses Accounts';
 const CLAIM_LABEL = 'Anmelden';
-const CHANGE_EMAIL_LABEL = 'Andere E-Mail-Adresse';
+const CHANGE_EMAIL_LABEL = 'Andere Adresse eingeben';
 
 interface RedeemClaimFormProps {
   invitation: LiveInvitation;

@@ -11,7 +11,7 @@ import {
 
 const TITLE = 'Anmelde-E-Mail';
 const DESCRIPTION =
-  'Mit dieser Adresse meldest du dich an. Hierhin schicken wir auch jeden Hinweis zu deinem Zugang.';
+  'Mit dieser Adresse meldest du dich an. Hierhin schicken wir auch jeden Hinweis zu deinem Account.';
 const EMAIL_LABEL = 'E-Mail';
 const EDIT_LABEL = 'Bearbeiten';
 

@@ -4,7 +4,7 @@ import type { MePasskey } from '@/lib/api/schemas';
 import { usePasskeyRemoval } from '../hooks/use-passkey-removal';
 
 const REMOVE_LABEL = 'Passkey entfernen';
-const EYEBROW = 'Passkey';
+const EYEBROW = 'Passkey entfernen';
 const QUESTION = 'Diesen Passkey entfernen?';
 const EXPLANATION =
   'Mit ihm meldest du dich danach nicht mehr an. Auf deinem Gerät bleibt er gespeichert, bis du ihn dort löschst.';

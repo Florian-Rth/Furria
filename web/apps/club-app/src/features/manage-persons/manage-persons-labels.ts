@@ -65,7 +65,7 @@ export const GROUPS_POINTER =
 export const ROLES_POINTER = 'Rollen werden unter „Rollen & Rechte“ vergeben.';
 
 export const VISIBILITY_DESCRIPTION =
-  'Nur auf Wunsch der Person setzen. Mit eigenem Konto entscheidet sie selbst in „Mein Profil“.';
+  'Nur auf Wunsch der Person setzen. Mit eigenem Account entscheidet sie selbst in „Mein Profil“.';
 
 export const PERSONS_ORIGIN: KkScreenOrigin = {
   label: 'Personenverwaltung',

@@ -4,7 +4,7 @@ import { useAccountDeletion } from '../hooks/use-account-deletion';
 import { AccountDeletionProofFields } from './AccountDeletionProofFields';
 
 const DELETE_LABEL = 'Account löschen';
-const EYEBROW = 'Account';
+const EYEBROW = 'Account löschen';
 const QUESTION = 'Deinen Account löschen?';
 const EXPLANATION_BY_PASSWORD =
   'Du meldest dich danach nicht mehr in der Vereins-App an. Einen neuen Zugang bekommst du nur über eine neue Einladung vom Verein. Bestätige mit deinem Passwort.';
