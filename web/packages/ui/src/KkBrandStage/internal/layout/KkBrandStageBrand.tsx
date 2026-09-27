@@ -1,27 +1,30 @@
 import Stack from '@mui/material/Stack';
+import type { CSSObject, Theme } from '@mui/material/styles';
 import type { FC, PropsWithChildren } from 'react';
 import type { KkSx } from '../../../kk-sx';
 import type { KkBrandStageVariant } from '../brand-stage-variant';
 
-const SHEET_LIFT_TRANSFORM = 'translateY(calc(var(--kk-sheet-lift, 0px) / -2))';
-
 const posterSx = {
-  flex: 1,
-  justifyContent: 'center',
   gap: 2,
-  py: 4,
-  transform: { xs: SHEET_LIFT_TRANSFORM, desktop: 'none' },
-  willChange: 'transform',
+  pt: 4,
+  pb: { desktop: 4 },
 };
 
 const bandSx = {
-  flex: 1,
-  justifyContent: 'center',
   gap: { xs: 1.25, desktop: 2 },
-  py: { xs: 0.5, desktop: 4 },
-  transform: { xs: SHEET_LIFT_TRANSFORM, desktop: 'none' },
-  willChange: 'transform',
+  pt: { xs: 0.5, desktop: 4 },
+  pb: { desktop: 4 },
 };
+
+const SHEET_CLEARANCE = { poster: 4, band: 0.5 } as const;
+
+const clearOfTheSheet =
+  (variant: KkBrandStageVariant) =>
+  (theme: Theme): CSSObject => ({
+    [theme.breakpoints.down('desktop')]: {
+      bottom: `calc(${theme.spacing(SHEET_CLEARANCE[variant])} + var(--kk-sheet-lift, 0px))`,
+    },
+  });
 
 interface KkBrandStageBrandProps extends PropsWithChildren {
   variant?: KkBrandStageVariant;
@@ -33,14 +36,26 @@ export const KkBrandStageBrand: FC<KkBrandStageBrandProps> = ({
   sx,
   children,
 }) => (
-  <Stack
-    data-kk-brand-stage-brand
-    sx={[
-      { width: '100%', alignItems: 'center', textAlign: 'center' },
-      variant === 'band' ? bandSx : posterSx,
-      ...(Array.isArray(sx) ? sx : [sx]),
-    ]}
-  >
-    {children}
+  <Stack sx={{ position: 'relative', flex: 1, minHeight: 0 }}>
+    <Stack
+      data-kk-brand-stage-brand
+      sx={[
+        {
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          alignItems: 'center',
+          justifyContent: 'safe center',
+          textAlign: 'center',
+        },
+        variant === 'band' ? bandSx : posterSx,
+        clearOfTheSheet(variant),
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
+    >
+      {children}
+    </Stack>
   </Stack>
 );
