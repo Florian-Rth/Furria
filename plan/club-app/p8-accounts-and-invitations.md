@@ -1,8 +1,8 @@
 ---
-status: shaped 2026-09-25; S0–S6, S8, S9 built 2026-09-25/26; S7, S10, S11 planned
+status: built 2026-09-25/27 — S0–S11; device checks for S7 and S10 outstanding
 phase: CA-P8 — Accounts & invitations
 shaped_with: Florian, grilling session 2026-09-25
-binding: docs/adr/0005 (to be amended for passkeys), docs/adr/0011, docs/adr/0016,
+binding: docs/adr/0005 (amended for passkeys), docs/adr/0011, docs/adr/0016,
   docs/adr/0018, docs/adr/0019, CONTEXT.md (account, account state, account eligibility,
   invitation, access recovery, contact details, club record)
 ---
@@ -80,12 +80,16 @@ else is self-service.**
 Four changes. Everything else — eligibility, account state, the reason she cannot be invited — is
 **derived at the moment it is asked** and has no column.
 
-**Club record** (`ClubRecord`, `Furria.Core/Club`) — exactly one row, seeded by migration.
+**Club record** (`ClubRecord`, `Furria.Core/Club`) — at most one row (`TheOnlyId`), created by
+its first write and never seeded; until then every read sees the defaults. Built wider than
+shaped (S0): three sections, each its own detail write.
 
 | Field | Type | Rule |
 |---|---|---|
-| `FoundedYear` | `int?` | `>= 1800`, the same check `Group.FoundedYear` carries |
-| `AgeOfConsent` | `int` | `12..21`, default `16` |
+| `Name` · `ShortName` | `string?` | *Name & Gründung* |
+| `FoundedYear` | `int?` | `>= 1800` and not in the future |
+| `Street` · `Zip` · `City` · `Email` · `Phone` · `WebsiteUrl` · `InstagramUrl` · `FacebookUrl` | `string?` | *Anschrift & Kontakt* |
+| `AgeOfConsent` | `int` | `12..21`, default `16` — *Zugang zur App* |
 
 **Invitation** (`Invitation`, `Furria.Core/Identity`) — one row per token ever issued, never
 deleted. It replaces the handoff's `invitation` table in `docs/design/FCC-Schema.txt`.
@@ -255,6 +259,19 @@ S10 are independent of one another; once S2 lands, S3, S5, S6 and S9 are.
 **Done when** `GetClubRecordTests` and `PutClubRecordTests` cover the read, the write, both range
 checks and the permission; the hub test covers the new panel's presence and absence.
 
+**What was built — 2026-09-25**
+- The record grew to the club's whole self-description (model above, `CONTEXT.md` *club record*):
+  `GET manage/club-record` and one write per section — `PUT manage/club-record/identity` (name,
+  short name, founded year), `PUT manage/club-record/contact` (address, email, phone, links) and
+  `PUT manage/club-record/access` (age of consent), all `club.manage`, one test file each.
+- No migration seed (project rule): the row is created by its first write, reads fall back to
+  the defaults. 1971 is not written anywhere; Florian enters it in the editor.
+- `GetManageHub`'s `clubRecord` panel carries `name` and `missingFactCount` (name, founded year,
+  full address, email), shown as *4 Angaben fehlen*.
+- Club-app: `/manage/club-record` with the sections *Name & Gründung*, *Anschrift & Kontakt* and
+  *Zugang zur App*, each opening its detail write at `/manage/club-record/{identity,contact,access}`;
+  the age carries the consequence line *Wer jünger ist, kann nicht eingeladen werden*.
+
 ---
 
 ### S1 — invite by mail, redeem by link (the tracer)
@@ -303,6 +320,24 @@ calls `GetMe` with the returned token; `PostPersonInvitationTests` cover eligibi
 voiding the previous invitation and the permission; `RedeemInvitationTests` cover expired, voided,
 redeemed, unknown and the happy path; `LookUpInvitationTests` never reveal anything for a dead
 token beyond *dead*.
+
+**What was built — 2026-09-25**
+- Mail: `MailService` over MailKit (`Mail:Host/Port/User/Password/From`), German plain text plus
+  HTML per template, sent by `MailDispatcher` from `MailQueue` with retry; every send is logged
+  by template and person id only. Links are built from `ClubApp:BaseUrl`.
+- `POST manage/persons/{id}/invitations` (`persons.manage`) → `{expiresAt}`, `409` naming the
+  reason (not affiliated, no birth date, under age, no email) or that she already has an
+  account. A person without an email is not eligible for any channel — the club's one job is to
+  keep that email right.
+- Signed out: `POST auth/invitations/lookup {token}` → `status` `live` (first name, login email)
+  or `dead`, nothing more; `POST auth/invitations/redeem {token, password}` → the session. Both are
+  rate-limited per IP and per token (`InvitationTokenRateLimiter`).
+- `GetPersonById` gains the `access` block (state, reason, live invitation with channel, issuer,
+  issued and expiry, history), absent without the right. `AccountEvent` history reads *Eingeladen*,
+  *Zugang eingerichtet* and so on, each with its actor.
+- Club-app: the *Zugang* panel on the person screen (*Einladen* / *Erneut einladen* pill, state,
+  invitation, *Verlauf*), the entry-shaped `/manage/persons/$personId/invitations/new` (*Per Mail
+  einladen*, *Anna bekommt eine Mail an …*), and `/invitation` reading `#token=`.
 
 ---
 
@@ -717,6 +752,27 @@ untouched, and that an affiliated person is never a candidate.
 in-person screen; the copy pass against ADR-0016's five button words; `CONTEXT.md` and this file's
 *What was built*.
 
+**What was built — 2026-09-27**
+- Every page of the set was shot at 390 px in both schemes against data created through the
+  running app and API (Mailpit for links and codes). Passkeys ran for real in headless Chrome
+  through a CDP virtual authenticator (offer after redemption, the list, a passkey's screen).
+  The claim-in step can't be reached through the app yet — only a future self-registration
+  makes a claimable account — so it was shot with the lookup answer rewritten in the browser;
+  *Erinnern* can't be shown sending, because nothing is three days old.
+- `KkBrandStage` no longer pushes the wordmark into the stage's meta line when the sheet is tall
+  (login with a notice): the brand is centred in the room between meta and sheet, and slides
+  under the sheet when there is none.
+- The password hint says the whole rule Identity enforces (12 characters, upper and lower case,
+  a digit, a symbol) on redeem, reset and change alike, from one `lib/password-rule.ts`.
+- The in-person countdown no longer opens at *15:01*: `useNow` restarts its clock when ticking
+  starts.
+- A group screen refused for a viewer who is not affiliated shows *nicht im Verein aktiv*, not
+  the stale *Dein Konto ist noch keiner Person zugeordnet*.
+- Copy: *Account* throughout for the login (CONTEXT.md), *Andere Adresse eingeben* in every code
+  step, confirmation eyebrows name the act (*Account löschen*, *Überall abmelden*, *Passkey
+  entfernen*), *Verlauf* as an eyebrow, the register filter note no longer wraps *Alle zeigen*.
+- `pnpm shot` signs in again (the passkey button made *Anmelden* ambiguous).
+
 ---
 
 ## Deliberately not in this phase
@@ -737,8 +793,10 @@ in-person screen; the copy pass against ADR-0016's five button words; `CONTEXT.m
    `passkey_challenge` row keyed by an opaque id the client echoes back (ADR-0005 amendment).
 2. **Who and when on contact details.** S8 records the last change and its actor on the person.
    Whether the club wants a per-field history is Florian's; the ruling is only that it is visible.
-3. **Password length.** Ruling 20 says *at least 10 characters*, but `AddIdentityCore` already
-   requires **12**. Lowering an existing rule needs Florian's word; until then S1 keeps 12.
+3. **Password rule.** Ruling 20 says *at least 10 characters and no other rule*, but
+   `AddIdentityCore` requires **12** and keeps Identity's defaults — an upper- and a lower-case
+   letter, a digit and a symbol. Loosening an existing rule needs Florian's word; until then the
+   server keeps it and every password hint states it in full (S11).
 4. **The founded year's readers.** S0 gives it a home; the website keeps `FOUNDING_YEAR` until its
    API client (`plan/website/feature-api-client.md`, *building*) can read the club record.
 5. **A stray person holding club data (even past memberships) refuses claim-in with** *taken*; the

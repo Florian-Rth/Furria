@@ -413,14 +413,15 @@ none — accounts are the club's business, never a group's (ruled 2026-09-25).
 An **offene Einladung** (open invitation) is a live onboarding invitation of a person who still
 has no account — neither redeemed nor voided, **expired or not**: an expired one was issued and
 never answered, which is exactly whom a reminder is for (built 2026-09-26, CA-P8 S4).
-_UI copy_: Einladung; *Zugang anfordern* (the person's own request); *offene Einladung*
+_UI copy_: Einladung; *Zugang anfordern* (the person's own request); *offene Einladung*;
+*Per Mail einladen*; *Vor Ort zeigen* and *Code eingeben* (the in-person short code)
 _Avoid_: sign-up, registration
 
 **Bestätigungscode** (confirmation code):
 A 6-digit code mailed to a login email she chose herself, proving she controls that inbox. It
 lives 15 minutes and dies after 5 wrong tries; a new one voids the one before (built 2026-09-26,
 CA-P8 S2).
-_UI copy_: Bestätigungscode
+_UI copy_: Bestätigungscode (the mail); *Code aus der Mail* (the field)
 _Avoid_: PIN, OTP, calling the in-person short code a confirmation code
 
 **Access recovery**:
