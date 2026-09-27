@@ -2,6 +2,7 @@ using System.Net;
 using System.Text.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Persons;
+using Furria.Api.Tests.Auth;
 using Furria.Application.Authorization;
 using Furria.Core.Club;
 using Furria.Core.Identity;
@@ -301,7 +302,43 @@ public sealed class GetPersonByIdTests
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldPersonsManage()
+    public async Task Should_ShowThePersonWithHerAccess_When_TheCallerOnlyHoldsAccountsManage()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddPerson("anna", "Anna", "Muster")
+                            .AddAccount("anna")
+                            .AddPerson("ilka", "Ilka", "Reineke")
+                            .AddAccount("ilka")
+                    )
+                    .Roles(roles =>
+                        roles.AddRoleWithHolder(
+                            "zugangspflege",
+                            "ilka-zugangspflege",
+                            "Zugangspflege",
+                            "ilka",
+                            FurriaPermissions.AccountsManage
+                        )
+                    ),
+            ct
+        );
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+
+        var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("anna"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("Anna", result.FirstName);
+        Assert.Equal(AccountAccessState.Active, result.Access.State);
+        Assert.False(result.Access.Rights.CanInvite);
+        Assert.True(result.Access.Rights.CanManageAccount);
+    }
+
+    [Fact]
+    public async Task Should_ReturnForbidden_When_TheCallerHoldsNeitherPersonsManageNorAccountsManage()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -383,17 +420,298 @@ public sealed class GetPersonByIdTests
                 "city",
                 "birthDate",
                 "contactVisibleToMembers",
+                "contactChange",
                 "membershipState",
                 "memberSince",
                 "memberships",
                 "feeReductions",
                 "groups",
                 "roles",
+                "access",
             ],
             fields
         );
         Assert.Equal("active", document.RootElement.GetProperty("membershipState").GetString());
         var reduction = document.RootElement.GetProperty("feeReductions").EnumerateArray().Single();
         Assert.Equal("apprenticeship", reduction.GetProperty("basis").GetString());
+    }
+
+    [Fact]
+    public async Task Should_ShowNoAccessWithTheReason_When_SheIsNotAffiliated()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddPerson("anna", "Anna", "Muster")
+                        .AddPersonContact("anna", birthDate: _fixture.Today.AddYears(-30))
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var (response, _) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("anna"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
+        var access = document.RootElement.GetProperty("access");
+        Assert.Equal("noAccess", access.GetProperty("state").GetString());
+        Assert.Equal("notAffiliated", access.GetProperty("reason").GetString());
+        Assert.Equal(JsonValueKind.Null, access.GetProperty("invitation").ValueKind);
+        Assert.Empty(access.GetProperty("history").EnumerateArray());
+    }
+
+    [Fact]
+    public async Task Should_ShowTheLiveInvitationAndWhoSentIt_When_SheWasInvitedByMail()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var annaEmail = InvitationSteps.UniqueContactEmail("anna");
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity.AddEligiblePerson("anna", "Anna", annaEmail, _fixture.Today)
+                ),
+            ct
+        );
+        var annaId = ctx.Identity.People.IdOf("anna");
+        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var issued = await InvitationSteps.InviteAsync(manager, annaId);
+
+        var (response, result) = await ReadPersonAsync(manager, annaId);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(AccountAccessState.Invited, result.Access.State);
+        Assert.Null(result.Access.Reason);
+        var invitation = Assert.IsType<PersonAccessInvitationDto>(result.Access.Invitation);
+        Assert.Equal(InvitationChannel.Mail, invitation.Channel);
+        Assert.Equal(_fixture.TimeProvider.GetUtcNow(), invitation.IssuedAt);
+        Assert.Equal(issued.ExpiresAt, invitation.ExpiresAt);
+        Assert.False(invitation.IsExpired);
+        Assert.Equal(ctx.Identity.BootstrapAdmin.PersonId, invitation.IssuedBy?.PersonId);
+        var invited = Assert.Single(result.Access.History);
+        Assert.Equal(AccountEventKind.Invited, invited.Kind);
+        Assert.Equal(ctx.Identity.BootstrapAdmin.PersonId, invited.Actor?.PersonId);
+    }
+
+    [Fact]
+    public async Task Should_ShowNoAccessWithTheExpiredInvitation_When_TheLinkRanOut()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var annaEmail = InvitationSteps.UniqueContactEmail("anna");
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity.AddEligiblePerson("anna", "Anna", annaEmail, _fixture.Today)
+                ),
+            ct
+        );
+        var annaId = ctx.Identity.People.IdOf("anna");
+        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        await InvitationSteps.InviteAsync(manager, annaId);
+
+        GetPersonByIdResponse? later = null;
+        await _fixture.AtLaterTimeAsync(
+            TimeSpan.FromDays(15),
+            async () =>
+            {
+                var laterManager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+                later = (await ReadPersonAsync(laterManager, annaId)).Result;
+            }
+        );
+
+        Assert.NotNull(later);
+        Assert.Equal(AccountAccessState.NoAccess, later.Access.State);
+        Assert.Null(later.Access.Reason);
+        Assert.True(later.Access.Invitation?.IsExpired);
+    }
+
+    [Fact]
+    public async Task Should_ShowActiveWithTheWholeHistoryNewestFirst_When_SheRedeemedTheInvitation()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var annaEmail = InvitationSteps.UniqueContactEmail("anna");
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity.AddEligiblePerson("anna", "Anna", annaEmail, _fixture.Today)
+                ),
+            ct
+        );
+        var annaId = ctx.Identity.People.IdOf("anna");
+        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var token = await InvitationSteps.InviteAndReadTokenAsync(
+            _fixture,
+            manager,
+            annaId,
+            annaEmail,
+            ct
+        );
+        await _fixture.AtLaterTimeAsync(
+            TimeSpan.FromHours(2),
+            () => InvitationSteps.RedeemAsync(_fixture.CreateClient(), token)
+        );
+
+        var (response, result) = await ReadPersonAsync(manager, annaId);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(AccountAccessState.Active, result.Access.State);
+        Assert.Null(result.Access.Reason);
+        Assert.Null(result.Access.Invitation);
+        Assert.Equal(
+            [AccountEventKind.Redeemed, AccountEventKind.Invited],
+            result.Access.History.Select(entry => entry.Kind).ToArray()
+        );
+        Assert.Equal(
+            [annaId, ctx.Identity.BootstrapAdmin.PersonId],
+            result.Access.History.Select(entry => entry.Actor?.PersonId ?? 0).ToArray()
+        );
+    }
+
+    [Fact]
+    public async Task Should_ShowDisabled_When_HerAccountIsDisabled()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddEligiblePerson(
+                            "anna",
+                            "Anna",
+                            InvitationSteps.UniqueContactEmail("anna"),
+                            _fixture.Today
+                        )
+                        .AddAccount("anna", disabled: true)
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("anna"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(AccountAccessState.Disabled, result.Access.State);
+        Assert.Null(result.Access.Reason);
+        Assert.Null(result.Access.Invitation);
+    }
+
+    [Fact]
+    public async Task Should_ShowWhoChangedTheContactDetailsAndWhen_When_TheyWereChanged()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var changedAt = _fixture.TimeProvider.GetUtcNow().AddDays(-3);
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddPerson("paula", "Paula", "Brendel")
+                        .AddPerson("anna", "Anna", "Kessler")
+                        .AddContactChange("paula", "anna", changedAt)
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("paula"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var change = Assert.IsType<PersonContactChangeDto>(result.ContactChange);
+        Assert.Equal(changedAt, change.At);
+        Assert.Equal(ctx.Identity.People.IdOf("anna"), change.ChangedBy.PersonId);
+        Assert.Equal("Anna", change.ChangedBy.FirstName);
+        Assert.Equal("Kessler", change.ChangedBy.LastName);
+    }
+
+    [Fact]
+    public async Task Should_ShowNoContactChange_When_TheEditorWasDeleted()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var changedAt = _fixture.TimeProvider.GetUtcNow().AddDays(-3);
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddPerson("paula", "Paula", "Brendel")
+                        .AddPerson("anna", "Anna", "Kessler")
+                        .AddContactChange("paula", "anna", changedAt)
+                ),
+            ct
+        );
+        await _fixture.DeletePersonDirectlyAsync(ctx.Identity.People.IdOf("anna"), ct);
+
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("paula"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Null(result.ContactChange);
+    }
+
+    [Fact]
+    public async Task Should_ShowNoContactChange_When_TheContactDetailsWereNeverChanged()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity => identity.AddPerson("paula", "Paula", "Brendel")),
+            ct
+        );
+
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("paula"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Null(result.ContactChange);
+    }
+
+    [Fact]
+    public async Task Should_LetTheViewerManageTheAccount_When_SheHoldsAccountsManage()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => identity.AddPerson("anna", "Anna", "Muster")),
+            ct
+        );
+
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("anna"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(result.Access.Rights.CanInvite);
+        Assert.True(result.Access.Rights.CanManageAccount);
+        Assert.Equal(ClubRecord.DefaultAgeOfConsent, result.Access.AgeOfConsent);
+    }
+
+    [Fact]
+    public async Task Should_LetTheViewerOnlyInvite_When_SheHoldsOnlyPersonsManage()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddPerson("anna", "Anna", "Muster")
+                            .AddPerson("ilka", "Ilka", "Reineke")
+                            .AddAccount("ilka")
+                    )
+                    .Roles(roles =>
+                        roles.AddRoleWithHolder(
+                            "personenpflege",
+                            "ilka-personenpflege",
+                            "Personenpflege",
+                            "ilka",
+                            FurriaPermissions.PersonsManage
+                        )
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("anna"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(result.Access.Rights.CanInvite);
+        Assert.False(result.Access.Rights.CanManageAccount);
     }
 }

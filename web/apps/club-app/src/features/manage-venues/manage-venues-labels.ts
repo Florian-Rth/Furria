@@ -20,7 +20,8 @@ export const toVenueId = (raw: string): number | null =>
 export const VENUE_NOT_FOUND_TITLE = 'NICHT MEHR DA';
 export const VENUE_NOT_FOUND_DESCRIPTION = 'Diesen Ort gibt es nicht mehr.';
 
-export const VENUE_EDITOR_DENIED_MESSAGE = 'Dir fehlt die Berechtigung für Sessions und Orte.';
+export const VENUE_EDITOR_DENIED_MESSAGE =
+  'Dir fehlt die Berechtigung für Vereinsdaten, Sessions und Orte.';
 
 export const VENUE_EDIT_LABEL = 'Bearbeiten';
 export const ARCHIVE_VENUE_LABEL = 'Ort archivieren';

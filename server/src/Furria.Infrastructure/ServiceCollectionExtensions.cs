@@ -1,20 +1,27 @@
+using Furria.Application.ClubApp;
+using Furria.Application.Identity;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Groups;
 using Furria.Infrastructure.Identity;
+using Furria.Infrastructure.Mail;
 using Furria.Infrastructure.Management;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Registry;
 using Furria.Infrastructure.Roles;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Furria.Infrastructure;
 
 public static class ServiceCollectionExtensions
 {
+    public const string DataProtectionApplicationName = "Furria";
+
     public static IServiceCollection AddInfrastructure(
         this IServiceCollection services,
         IConfiguration configuration
@@ -41,19 +48,39 @@ public static class ServiceCollectionExtensions
             .AddIdentityCore<Account>(options =>
             {
                 options.User.RequireUniqueEmail = true;
-                options.Password.RequiredLength = 12;
+                options.Password.RequiredLength = PasswordRule.MinimumLength;
+                options.Password.RequiredUniqueChars = 1;
+                options.Password.RequireDigit = false;
+                options.Password.RequireLowercase = false;
+                options.Password.RequireUppercase = false;
+                options.Password.RequireNonAlphanumeric = false;
                 options.Lockout.AllowedForNewUsers = true;
                 options.Lockout.MaxFailedAccessAttempts = 5;
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+                options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
             })
             .AddEntityFrameworkStores<AppDbContext>()
-            .AddSignInManager();
+            .AddSignInManager()
+            .AddDefaultTokenProviders();
+        services
+            .AddOptions<IdentityPasskeyOptions>()
+            .Configure<IOptions<ClubAppOptions>>(
+                (passkeys, clubApp) => PasskeyRelyingParty.Configure(passkeys, clubApp.Value)
+            );
 
+        services
+            .AddDataProtection()
+            .SetApplicationName(DataProtectionApplicationName)
+            .PersistKeysToDbContext<AppDbContext>();
         services.AddAuthentication();
 
         services.AddScoped<AccessTokenService>();
         services.AddScoped<RefreshTokenService>();
         services.AddScoped<AccountService>();
+        services.AddScoped<AccountAccessService>();
+        services.AddScoped<EmailConfirmationService>();
+        services.AddScoped<CredentialChangeNotifier>();
+        services.AddScoped<PasskeyService>();
         services.AddScoped<PermissionAuthorizer>();
         services.AddScoped<AffiliationLookup>();
         services.AddScoped<PersonService>();
@@ -71,10 +98,28 @@ public static class ServiceCollectionExtensions
         services.AddScoped<KeyHoldingService>();
         services.AddScoped<AnnouncementService>();
         services.AddScoped<CalendarService>();
+        services.AddScoped<ClubRecordService>();
         services.AddScoped<ManagementService>();
+        services.AddScoped<InvitationRoundService>();
+        services.AddScoped<AccountSecurityService>();
+        services.AddScoped<AccessRecoveryService>();
+        services.AddScoped<AccountAdministrationService>();
+        services.AddScoped<AccountClaimService>();
+        services.AddScoped<PersonAdoptionService>();
 
+        services.AddSingleton<MailQueue>();
+        services.AddSingleton<MailService>();
         services.AddHostedService<DatabaseMigrator>();
         services.AddHostedService<BootstrapAdminSeeder>();
+        services.AddHostedService<MailDispatcher>();
+        services.AddScoped<AccessRequestService>();
+        services.AddScoped<PasswordResetService>();
+        services.AddSingleton<SignedOutMailRequestQueue>();
+        services.AddSingleton<PasswordResetMailThrottle>();
+        services.AddHostedService<SignedOutMailRequestWorker>();
+        services.Configure<DataProtectionTokenProviderOptions>(options =>
+            options.TokenLifespan = PasswordResetService.LinkLifetime
+        );
         services.AddSingleton(TimeProvider.System);
         return services;
     }

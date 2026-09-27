@@ -19,6 +19,7 @@ public sealed class ClubSeedBuilder
     private readonly List<TrainingSlotIntent> _trainingSlots = [];
     private readonly List<CalendarEntryIntent> _calendarEntries = [];
     private readonly List<AttendanceResponseIntent> _attendanceResponses = [];
+    private ClubRecordIntent? _clubRecord;
 
     internal IReadOnlyList<SessionIntent> Sessions => _sessions;
 
@@ -37,6 +38,32 @@ public sealed class ClubSeedBuilder
     internal IReadOnlyList<CalendarEntryIntent> CalendarEntries => _calendarEntries;
 
     internal IReadOnlyList<AttendanceResponseIntent> AttendanceResponses => _attendanceResponses;
+
+    internal ClubRecordIntent? ClubRecord => _clubRecord;
+
+    public ClubSeedBuilder SetClubRecord(
+        string? name = null,
+        int? foundedYear = null,
+        string? street = null,
+        string? zip = null,
+        string? city = null,
+        string? email = null,
+        string? websiteUrl = null,
+        int ageOfConsent = Core.Club.ClubRecord.DefaultAgeOfConsent
+    )
+    {
+        _clubRecord = new ClubRecordIntent(
+            name,
+            foundedYear,
+            street,
+            zip,
+            city,
+            email,
+            websiteUrl,
+            ageOfConsent
+        );
+        return this;
+    }
 
     public ClubSeedBuilder AddSession(
         string alias,
@@ -201,6 +228,17 @@ public sealed class ClubSeedBuilder
         int? Number,
         string? Motto,
         string? LogoSvg
+    );
+
+    internal sealed record ClubRecordIntent(
+        string? Name,
+        int? FoundedYear,
+        string? Street,
+        string? Zip,
+        string? City,
+        string? Email,
+        string? WebsiteUrl,
+        int AgeOfConsent
     );
 
     internal sealed record VenueIntent(

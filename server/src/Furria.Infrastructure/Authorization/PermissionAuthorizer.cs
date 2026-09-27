@@ -20,6 +20,7 @@ public sealed class PermissionAuthorizer
         FurriaPermissions.KeyHoldingsManage,
         FurriaPermissions.BoardManage,
         FurriaPermissions.CalendarManageClub,
+        FurriaPermissions.AccountsManage,
     ];
 
     private readonly AppDbContext _dbContext;

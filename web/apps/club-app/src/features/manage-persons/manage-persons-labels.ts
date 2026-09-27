@@ -1,5 +1,7 @@
 import type { KkDateQuickChoice, KkScreenOrigin, KkSelectOption } from '@furria/ui';
+import type { ContactChange } from '@/lib/api/schemas';
 import { SESSION_OPENING_DAY, SESSION_OPENING_MONTH, sessionAt } from '@/lib/club';
+import { toContactChangeLine } from '@/lib/contact-change';
 import { isFutureDay, toIsoDay } from '@/lib/day';
 import { toInitials } from '@/lib/initials';
 import {
@@ -49,12 +51,21 @@ export const PERSON_SECTION_TITLES = {
   roles: 'Rollen',
 } as const;
 
+export const toContactChangeNote = (
+  change: ContactChange | null,
+  viewerPersonId: number | null,
+  today: Date,
+): string | undefined =>
+  change === null
+    ? undefined
+    : `Kontaktdaten ${toContactChangeLine(change, viewerPersonId, today)}`;
+
 export const GROUPS_POINTER =
   'Gruppen werden von den Gruppen-Admins oder der Gruppenverwaltung gepflegt.';
 export const ROLES_POINTER = 'Rollen werden unter „Rollen & Rechte“ vergeben.';
 
 export const VISIBILITY_DESCRIPTION =
-  'Nur auf Wunsch der Person setzen. Mit eigenem Konto entscheidet sie selbst in „Mein Profil“.';
+  'Nur auf Wunsch der Person setzen. Mit eigenem Account entscheidet sie selbst in „Mein Profil“.';
 
 export const PERSONS_ORIGIN: KkScreenOrigin = {
   label: 'Personenverwaltung',
@@ -62,6 +73,7 @@ export const PERSONS_ORIGIN: KkScreenOrigin = {
 };
 
 export const EDITOR_DENIED_MESSAGE = 'Dir fehlt die Berechtigung für die Personenverwaltung.';
+export const RECOVERY_DENIED_MESSAGE = 'Dir fehlt die Berechtigung für die Zugänge.';
 
 export const toPersonOrigin = (person: {
   personId: number;

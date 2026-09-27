@@ -1,5 +1,8 @@
 apply plugin: 'com.android.application'
 
+def clubAppHost = (findProperty('clubAppHost') ?: System.getenv('CLUB_APP_HOST'))?.toString()?.trim() ?: null
+def unverifiableClubAppHost = 'club-app.invalid'
+
 android {
     namespace = "de.furria.club"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -10,6 +13,7 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        manifestPlaceholders["clubAppHost"] = clubAppHost ?: unverifiableClubAppHost
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
              // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
@@ -24,6 +28,24 @@ android {
     }
 }
 
+if (clubAppHost != null && !(clubAppHost ==~ /[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?)+/)) {
+    throw new GradleException("CLUB_APP_HOST '${clubAppHost}' must be a bare host name like app.furria.de: no scheme, port or path.")
+}
+
+def clubAppHostIsSet = clubAppHost != null
+
+tasks.register('requireClubAppHost') {
+    doLast {
+        if (!clubAppHostIsSet) {
+            throw new GradleException("A release build needs the club-app host for its App Links: pass -PclubAppHost=<host> or set CLUB_APP_HOST (the host of ClubApp:BaseUrl, e.g. app.furria.de).")
+        }
+    }
+}
+
+tasks.matching { it.name == 'preReleaseBuild' }.configureEach {
+    dependsOn 'requireClubAppHost'
+}
+
 repositories {
     flatDir{
         dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'
@@ -35,6 +57,7 @@ dependencies {
     implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
     implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
     implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
+    implementation "androidx.webkit:webkit:$androidxWebkitVersion"
     implementation project(':capacitor-android')
     testImplementation "junit:junit:$junitVersion"
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"

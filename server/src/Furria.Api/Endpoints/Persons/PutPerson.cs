@@ -25,7 +25,14 @@ public sealed class PutPerson : Endpoint<PutPersonRequest>
 
     public override async Task HandleAsync(PutPersonRequest req, CancellationToken ct)
     {
-        var result = await _personService.UpdateAsync(ToCommand(req), ct);
+        var actorPersonId = User.PersonId();
+        if (actorPersonId is null)
+        {
+            await Send.UnauthorizedAsync(ct);
+            return;
+        }
+
+        var result = await _personService.UpdateAsync(ToCommand(req, actorPersonId.Value), ct);
         if (!result.IsSuccess)
         {
             await HttpContext.Response.SendFailureAsync(result.Error, ct);
@@ -35,7 +42,7 @@ public sealed class PutPerson : Endpoint<PutPersonRequest>
         await Send.NoContentAsync(ct);
     }
 
-    private static UpdatePersonCommand ToCommand(PutPersonRequest req) =>
+    private static UpdatePersonCommand ToCommand(PutPersonRequest req, int actorPersonId) =>
         new()
         {
             PersonId = req.PersonId,
@@ -48,10 +55,11 @@ public sealed class PutPerson : Endpoint<PutPersonRequest>
             City = req.City,
             BirthDate = req.BirthDate,
             ContactVisibleToMembers = req.ContactVisibleToMembers,
+            ActorPersonId = actorPersonId,
         };
 }
 
-public sealed record PutPersonRequest
+public sealed record PutPersonRequest : IContactDetailsRequest
 {
     [RouteParam]
     public required int PersonId { get; init; }
@@ -82,13 +90,6 @@ public sealed class PutPersonValidator : Validator<PutPersonRequest>
         RuleFor(request => request.PersonId).GreaterThan(0);
         RuleFor(request => request.FirstName).NotEmpty().MaximumLength(PersonLimits.NameLength);
         RuleFor(request => request.LastName).NotEmpty().MaximumLength(PersonLimits.NameLength);
-        RuleFor(request => request.Email)
-            .MaximumLength(PersonLimits.EmailLength)
-            .EmailAddress()
-            .When(request => request.Email is not (null or ""));
-        RuleFor(request => request.Phone).MaximumLength(PersonLimits.PhoneLength);
-        RuleFor(request => request.Street).MaximumLength(PersonLimits.StreetLength);
-        RuleFor(request => request.Zip).MaximumLength(PersonLimits.ZipLength);
-        RuleFor(request => request.City).MaximumLength(PersonLimits.CityLength);
+        this.RuleForContactDetails();
     }
 }

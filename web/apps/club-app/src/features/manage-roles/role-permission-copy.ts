@@ -32,8 +32,8 @@ const PERMISSION_COPY: Record<PermissionKey, RolePermissionCopy> = {
     line: 'Aushänge veröffentlichen, bearbeiten und abnehmen, auch die anderer.',
   },
   [PERMISSION_KEYS.clubManage]: {
-    title: 'Sessionseinträge und Orte pflegen',
-    line: 'Sessionseinträge pflegen; Orte anlegen, bearbeiten und archivieren.',
+    title: 'Vereinsdaten, Sessionseinträge und Orte pflegen',
+    line: 'Vereinsdaten ändern; Sessionseinträge pflegen; Orte anlegen, bearbeiten und archivieren.',
   },
   [PERMISSION_KEYS.keyHoldingsManage]: {
     title: 'Schlüssel führen',
@@ -46,6 +46,10 @@ const PERMISSION_COPY: Record<PermissionKey, RolePermissionCopy> = {
   [PERMISSION_KEYS.calendarManageClub]: {
     title: 'Vereinstermine führen',
     line: 'Termine des Vereins anlegen, ändern und löschen, nicht die der Gruppen.',
+  },
+  [PERMISSION_KEYS.accountsManage]: {
+    title: 'Zugänge wiederherstellen und sperren',
+    line: 'Zugänge vor Ort wiederherstellen, sperren und entsperren; Personen ohne Geburtsdatum einladen und für ihr Alter bürgen. Kommt einer Übernahme jedes Zugangs gleich.',
   },
 };
 

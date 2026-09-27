@@ -12,6 +12,7 @@ import { KkChip } from './KkChip';
 import type { KkIconName } from './KkIcon';
 import { KkIcon } from './KkIcon';
 import { KkMeta } from './KkMeta';
+import type { KkLinkSearch } from './kk-link-search';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
@@ -34,6 +35,7 @@ interface KkHubRowProps {
   landing?: string;
   component?: ElementType;
   to?: string | null;
+  search?: KkLinkSearch;
   sx?: KkSx;
 }
 
@@ -47,12 +49,14 @@ export const KkHubRow: FC<KkHubRowProps> = ({
   landing,
   component,
   to,
+  search,
   sx,
 }) => {
   const inert = to === undefined || to === null || component === undefined;
   const highlightProps = highlightMark(highlight);
   const rowComponent = inert ? 'div' : component;
-  const routeProps = inert ? {} : { to };
+  const searchProps = search === undefined ? {} : { search };
+  const routeProps = inert ? {} : { to, ...searchProps };
   const labelColor = inert ? 'text.disabled' : 'text.primary';
   const iconColor = inert ? 'text.disabled' : 'text.secondary';
 

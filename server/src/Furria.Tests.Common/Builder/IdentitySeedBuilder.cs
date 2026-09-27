@@ -8,6 +8,7 @@ public sealed class IdentitySeedBuilder
 
     private readonly List<PersonIntent> _people = [];
     private readonly List<PersonContactIntent> _contacts = [];
+    private readonly List<ContactChangeIntent> _contactChanges = [];
     private readonly List<MembershipIntent> _memberships = [];
     private readonly List<MembershipPauseIntent> _pauses = [];
     private readonly List<FeeReductionIntent> _feeReductions = [];
@@ -16,6 +17,8 @@ public sealed class IdentitySeedBuilder
     internal IReadOnlyList<PersonIntent> People => _people;
 
     internal IReadOnlyList<PersonContactIntent> Contacts => _contacts;
+
+    internal IReadOnlyList<ContactChangeIntent> ContactChanges => _contactChanges;
 
     internal IReadOnlyList<MembershipIntent> Memberships => _memberships;
 
@@ -43,7 +46,8 @@ public sealed class IdentitySeedBuilder
         string? zip = null,
         string? city = null,
         bool contactVisibleToMembers = false,
-        DateOnly? birthDate = null
+        DateOnly? birthDate = null,
+        bool withoutEmail = false
     )
     {
         _contacts.Add(
@@ -55,9 +59,20 @@ public sealed class IdentitySeedBuilder
                 zip,
                 city,
                 contactVisibleToMembers,
-                birthDate
+                birthDate,
+                withoutEmail
             )
         );
+        return this;
+    }
+
+    public IdentitySeedBuilder AddContactChange(
+        string personAlias,
+        string changedByAlias,
+        DateTimeOffset changedAt
+    )
+    {
+        _contactChanges.Add(new ContactChangeIntent(personAlias, changedByAlias, changedAt));
         return this;
     }
 
@@ -117,7 +132,14 @@ public sealed class IdentitySeedBuilder
         string? Zip,
         string? City,
         bool ContactVisibleToMembers,
-        DateOnly? BirthDate
+        DateOnly? BirthDate,
+        bool WithoutEmail
+    );
+
+    internal sealed record ContactChangeIntent(
+        string PersonAlias,
+        string ChangedByAlias,
+        DateTimeOffset ChangedAt
     );
 
     internal sealed record MembershipIntent(

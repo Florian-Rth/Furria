@@ -369,6 +369,95 @@ namespace Furria.Infrastructure.Migrations
                     b.ToTable("calendar_entry_group", (string)null);
                 });
 
+            modelBuilder.Entity("Furria.Core.Club.ClubRecord", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    b.Property<int>("AgeOfConsent")
+                        .HasColumnType("integer")
+                        .HasColumnName("age_of_consent");
+
+                    b.Property<string>("City")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("city");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("email");
+
+                    b.Property<string>("FacebookUrl")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("facebook_url");
+
+                    b.Property<int?>("FoundedYear")
+                        .HasColumnType("integer")
+                        .HasColumnName("founded_year");
+
+                    b.Property<string>("InstagramUrl")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("instagram_url");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("phone");
+
+                    b.Property<string>("ShortName")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("short_name");
+
+                    b.Property<string>("Street")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("street");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("WebsiteUrl")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("website_url");
+
+                    b.Property<string>("Zip")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("zip");
+
+                    b.HasKey("Id")
+                        .HasName("pk_club_record");
+
+                    b.ToTable("club_record", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_club_record_age_of_consent", "age_of_consent BETWEEN 12 AND 21");
+
+                            t.HasCheckConstraint("ck_club_record_founded_year", "founded_year IS NULL OR founded_year >= 1800");
+
+                            t.HasCheckConstraint("ck_club_record_single", "id = 1");
+                        });
+                });
+
             modelBuilder.Entity("Furria.Core.Club.KeyHolding", b =>
                 {
                     b.Property<int>("Id")
@@ -897,6 +986,100 @@ namespace Furria.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Furria.Core.Identity.Invitation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Channel")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("channel");
+
+                    b.Property<string>("CodeHash")
+                        .HasMaxLength(43)
+                        .HasColumnType("character varying(43)")
+                        .HasColumnName("code_hash");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<bool>("IsReminder")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_reminder");
+
+                    b.Property<DateTimeOffset>("IssuedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("issued_at");
+
+                    b.Property<int?>("IssuedByPersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("issued_by_person_id");
+
+                    b.Property<int>("PersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("person_id");
+
+                    b.Property<string>("Purpose")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("purpose");
+
+                    b.Property<DateTimeOffset?>("RedeemedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("redeemed_at");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(43)
+                        .HasColumnType("character varying(43)")
+                        .HasColumnName("token_hash");
+
+                    b.Property<DateTimeOffset?>("VoidedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("voided_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_invitation");
+
+                    b.HasIndex("CodeHash")
+                        .HasDatabaseName("ix_invitation_code_hash")
+                        .HasFilter("code_hash IS NOT NULL AND redeemed_at IS NULL AND voided_at IS NULL");
+
+                    b.HasIndex("IssuedByPersonId")
+                        .HasDatabaseName("ix_invitation_issued_by_person_id");
+
+                    b.HasIndex("PersonId")
+                        .HasDatabaseName("ix_invitation_person_id");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique()
+                        .HasDatabaseName("ix_invitation_token_hash");
+
+                    b.HasIndex(new[] { "PersonId" }, "ix_invitation_person_id_live")
+                        .IsUnique()
+                        .HasDatabaseName("ix_invitation_person_id_live")
+                        .HasFilter("redeemed_at IS NULL AND voided_at IS NULL");
+
+                    b.ToTable("invitation", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_invitation_code_in_person_only", "code_hash IS NULL OR channel = 'InPerson'");
+
+                            t.HasCheckConstraint("ck_invitation_expiry", "expires_at > issued_at");
+
+                            t.HasCheckConstraint("ck_invitation_single_ending", "redeemed_at IS NULL OR voided_at IS NULL");
+                        });
+                });
+
             modelBuilder.Entity("Furria.Core.Identity.Membership", b =>
                 {
                     b.Property<int>("Id")
@@ -1012,6 +1195,14 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("character varying(128)")
                         .HasColumnName("city");
 
+                    b.Property<DateTimeOffset?>("ContactChangedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("contact_changed_at");
+
+                    b.Property<int?>("ContactChangedByPersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("contact_changed_by_person_id");
+
                     b.Property<bool>("ContactVisibleToMembers")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
@@ -1077,6 +1268,9 @@ namespace Furria.Infrastructure.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_person");
+
+                    b.HasIndex("ContactChangedByPersonId")
+                        .HasDatabaseName("ix_person_contact_changed_by_person_id");
 
                     b.HasIndex("LastName", "FirstName")
                         .HasDatabaseName("ix_person_last_name_first_name");
@@ -1293,7 +1487,8 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnName("person_id");
 
                     b.Property<string>("PhoneNumber")
-                        .HasColumnType("text")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
                         .HasColumnName("phone_number");
 
                     b.Property<bool>("PhoneNumberConfirmed")
@@ -1329,6 +1524,204 @@ namespace Furria.Infrastructure.Migrations
                         .HasDatabaseName("ix_account_person_id");
 
                     b.ToTable("account", (string)null);
+                });
+
+            modelBuilder.Entity("Furria.Infrastructure.Identity.AccountEvent", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<int?>("ActorPersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("actor_person_id");
+
+                    b.Property<DateTimeOffset>("At")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("at");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("kind");
+
+                    b.Property<int>("PersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("person_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_account_event");
+
+                    b.HasIndex("ActorPersonId")
+                        .HasDatabaseName("ix_account_event_actor_person_id");
+
+                    b.HasIndex("PersonId", "At")
+                        .HasDatabaseName("ix_account_event_person_id_at");
+
+                    b.ToTable("account_event", (string)null);
+                });
+
+            modelBuilder.Entity("Furria.Infrastructure.Identity.EmailConfirmation", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<int?>("AccountId")
+                        .HasColumnType("integer")
+                        .HasColumnName("account_id");
+
+                    b.Property<string>("CodeHash")
+                        .IsRequired()
+                        .HasMaxLength(43)
+                        .HasColumnType("character varying(43)")
+                        .HasColumnName("code_hash");
+
+                    b.Property<DateTimeOffset?>("ConsumedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("consumed_at");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("email");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<int>("FailedAttempts")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("failed_attempts");
+
+                    b.Property<int?>("InvitationId")
+                        .HasColumnType("integer")
+                        .HasColumnName("invitation_id");
+
+                    b.Property<DateTimeOffset>("IssuedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("issued_at");
+
+                    b.Property<string>("NormalizedEmail")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("normalized_email");
+
+                    b.Property<string>("Purpose")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("purpose");
+
+                    b.Property<bool>("UpdatesContactEmail")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("updates_contact_email");
+
+                    b.Property<DateTimeOffset?>("VoidedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("voided_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_email_confirmation");
+
+                    b.HasIndex("AccountId")
+                        .HasDatabaseName("ix_email_confirmation_account_id");
+
+                    b.HasIndex("InvitationId")
+                        .HasDatabaseName("ix_email_confirmation_invitation_id");
+
+                    b.HasIndex("Purpose", "InvitationId", "AccountId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_email_confirmation_subject_live")
+                        .HasFilter("consumed_at IS NULL AND voided_at IS NULL");
+
+                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("Purpose", "InvitationId", "AccountId"), false);
+
+                    b.ToTable("email_confirmation", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_email_confirmation_expiry", "expires_at > issued_at");
+
+                            t.HasCheckConstraint("ck_email_confirmation_failed_attempts", "failed_attempts BETWEEN 0 AND 5");
+
+                            t.HasCheckConstraint("ck_email_confirmation_login_email_change_subject", "purpose <> 'LoginEmailChange' OR (account_id IS NOT NULL AND email IS NOT NULL)");
+
+                            t.HasCheckConstraint("ck_email_confirmation_redemption_subject", "purpose <> 'InvitationRedemption' OR invitation_id IS NOT NULL");
+
+                            t.HasCheckConstraint("ck_email_confirmation_single_ending", "consumed_at IS NULL OR voided_at IS NULL");
+
+                            t.HasCheckConstraint("ck_email_confirmation_single_subject", "num_nonnulls(invitation_id, account_id) = 1");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Infrastructure.Identity.PasskeyChallenge", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<int?>("AccountId")
+                        .HasColumnType("integer")
+                        .HasColumnName("account_id");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<string>("IdHash")
+                        .IsRequired()
+                        .HasMaxLength(43)
+                        .HasColumnType("character varying(43)")
+                        .HasColumnName("id_hash");
+
+                    b.Property<DateTimeOffset>("IssuedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("issued_at");
+
+                    b.Property<string>("Purpose")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("purpose");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("state");
+
+                    b.HasKey("Id")
+                        .HasName("pk_passkey_challenge");
+
+                    b.HasIndex("AccountId")
+                        .HasDatabaseName("ix_passkey_challenge_account_id");
+
+                    b.HasIndex("ExpiresAt")
+                        .HasDatabaseName("ix_passkey_challenge_expires_at");
+
+                    b.HasIndex("IdHash")
+                        .IsUnique()
+                        .HasDatabaseName("ix_passkey_challenge_id_hash");
+
+                    b.ToTable("passkey_challenge", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_passkey_challenge_creation_subject", "(purpose = 'Creation') = (account_id IS NOT NULL)");
+
+                            t.HasCheckConstraint("ck_passkey_challenge_expiry", "expires_at > issued_at");
+                        });
                 });
 
             modelBuilder.Entity("Furria.Infrastructure.Identity.RefreshToken", b =>
@@ -1400,6 +1793,29 @@ namespace Furria.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("FriendlyName")
+                        .HasColumnType("text")
+                        .HasColumnName("friendly_name");
+
+                    b.Property<string>("Xml")
+                        .HasColumnType("text")
+                        .HasColumnName("xml");
+
+                    b.HasKey("Id")
+                        .HasName("pk_data_protection_keys");
+
+                    b.ToTable("data_protection_keys", (string)null);
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
                 {
                     b.Property<int>("Id")
@@ -1433,11 +1849,13 @@ namespace Furria.Infrastructure.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
                 {
                     b.Property<string>("LoginProvider")
-                        .HasColumnType("text")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
                         .HasColumnName("login_provider");
 
                     b.Property<string>("ProviderKey")
-                        .HasColumnType("text")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
                         .HasColumnName("provider_key");
 
                     b.Property<string>("ProviderDisplayName")
@@ -1457,6 +1875,26 @@ namespace Furria.Infrastructure.Migrations
                     b.ToTable("account_login", (string)null);
                 });
 
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserPasskey<int>", b =>
+                {
+                    b.Property<byte[]>("CredentialId")
+                        .HasMaxLength(1024)
+                        .HasColumnType("bytea")
+                        .HasColumnName("credential_id");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("CredentialId")
+                        .HasName("pk_account_passkey");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_account_passkey_user_id");
+
+                    b.ToTable("account_passkey", (string)null);
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>
                 {
                     b.Property<int>("UserId")
@@ -1464,11 +1902,13 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnName("user_id");
 
                     b.Property<string>("LoginProvider")
-                        .HasColumnType("text")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
                         .HasColumnName("login_provider");
 
                     b.Property<string>("Name")
-                        .HasColumnType("text")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
                         .HasColumnName("name");
 
                     b.Property<string>("Value")
@@ -1692,6 +2132,26 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Person");
                 });
 
+            modelBuilder.Entity("Furria.Core.Identity.Invitation", b =>
+                {
+                    b.HasOne("Furria.Core.Identity.Person", "IssuedBy")
+                        .WithMany()
+                        .HasForeignKey("IssuedByPersonId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_invitation_person_issued_by_person_id");
+
+                    b.HasOne("Furria.Core.Identity.Person", "Person")
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_invitation_person_person_id");
+
+                    b.Navigation("IssuedBy");
+
+                    b.Navigation("Person");
+                });
+
             modelBuilder.Entity("Furria.Core.Identity.Membership", b =>
                 {
                     b.HasOne("Furria.Core.Identity.Person", "Person")
@@ -1714,6 +2174,17 @@ namespace Furria.Infrastructure.Migrations
                         .HasConstraintName("fk_membership_pause_membership_membership_id");
 
                     b.Navigation("Membership");
+                });
+
+            modelBuilder.Entity("Furria.Core.Identity.Person", b =>
+                {
+                    b.HasOne("Furria.Core.Identity.Person", "ContactChangedBy")
+                        .WithMany()
+                        .HasForeignKey("ContactChangedByPersonId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_person_person_contact_changed_by_person_id");
+
+                    b.Navigation("ContactChangedBy");
                 });
 
             modelBuilder.Entity("Furria.Core.Roles.RoleHolding", b =>
@@ -1761,6 +2232,56 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Person");
                 });
 
+            modelBuilder.Entity("Furria.Infrastructure.Identity.AccountEvent", b =>
+                {
+                    b.HasOne("Furria.Core.Identity.Person", "Actor")
+                        .WithMany()
+                        .HasForeignKey("ActorPersonId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_account_event_person_actor_person_id");
+
+                    b.HasOne("Furria.Core.Identity.Person", "Person")
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_account_event_person_person_id");
+
+                    b.Navigation("Actor");
+
+                    b.Navigation("Person");
+                });
+
+            modelBuilder.Entity("Furria.Infrastructure.Identity.EmailConfirmation", b =>
+                {
+                    b.HasOne("Furria.Infrastructure.Identity.Account", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_email_confirmation_account_account_id");
+
+                    b.HasOne("Furria.Core.Identity.Invitation", "Invitation")
+                        .WithMany()
+                        .HasForeignKey("InvitationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_email_confirmation_invitation_invitation_id");
+
+                    b.Navigation("Account");
+
+                    b.Navigation("Invitation");
+                });
+
+            modelBuilder.Entity("Furria.Infrastructure.Identity.PasskeyChallenge", b =>
+                {
+                    b.HasOne("Furria.Infrastructure.Identity.Account", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_passkey_challenge_account_account_id");
+
+                    b.Navigation("Account");
+                });
+
             modelBuilder.Entity("Furria.Infrastructure.Identity.RefreshToken", b =>
                 {
                     b.HasOne("Furria.Infrastructure.Identity.Account", "Account")
@@ -1791,6 +2312,59 @@ namespace Furria.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_account_login_account_user_id");
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserPasskey<int>", b =>
+                {
+                    b.HasOne("Furria.Infrastructure.Identity.Account", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_account_passkey_account_user_id");
+
+                    b.OwnsOne("Microsoft.AspNetCore.Identity.IdentityPasskeyData", "Data", b1 =>
+                        {
+                            b1.Property<byte[]>("IdentityUserPasskeyCredentialId");
+
+                            b1.Property<byte[]>("AttestationObject")
+                                .IsRequired();
+
+                            b1.Property<byte[]>("ClientDataJson")
+                                .IsRequired();
+
+                            b1.Property<DateTimeOffset>("CreatedAt");
+
+                            b1.Property<bool>("IsBackedUp");
+
+                            b1.Property<bool>("IsBackupEligible");
+
+                            b1.Property<bool>("IsUserVerified");
+
+                            b1.Property<string>("Name");
+
+                            b1.Property<byte[]>("PublicKey")
+                                .IsRequired();
+
+                            b1.Property<long>("SignCount");
+
+                            b1.PrimitiveCollection<string>("Transports");
+
+                            b1.HasKey("IdentityUserPasskeyCredentialId");
+
+                            b1.ToTable("account_passkey");
+
+                            b1
+                                .ToJson("data")
+                                .HasColumnType("jsonb");
+
+                            b1.WithOwner()
+                                .HasForeignKey("IdentityUserPasskeyCredentialId")
+                                .HasConstraintName("fk_asp_net_user_passkeys_asp_net_user_passkeys_credential_id");
+                        });
+
+                    b.Navigation("Data")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>

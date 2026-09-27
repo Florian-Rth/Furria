@@ -96,7 +96,11 @@ public sealed class PutPersonTests
         );
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        var (_, registry) = await client.GETAsync<GetPersons, GetPersonsResponse>();
+        var (_, registry) = await client.GETAsync<
+            GetPersons,
+            GetPersonsRequest,
+            GetPersonsResponse
+        >(new GetPersonsRequest());
         var paula = Assert.Single(registry.Persons, person => person.PersonId == personId);
         Assert.Null(paula.Email);
         Assert.Equal("03632 123456", paula.Phone);
@@ -181,6 +185,41 @@ public sealed class PutPersonTests
     }
 
     [Fact]
+    public async Task Should_ReturnForbidden_When_TheCallerOnlyHoldsAccountsManage()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddPerson("paula", "Paula", "Brendel")
+                            .AddPerson("ilka", "Ilka", "Reineke")
+                            .AddAccount("ilka")
+                    )
+                    .Roles(roles =>
+                        roles.AddRoleWithHolder(
+                            "zugangspflege",
+                            "ilka-zugangspflege",
+                            "Zugangspflege",
+                            "ilka",
+                            FurriaPermissions.AccountsManage
+                        )
+                    ),
+            ct
+        );
+        var personId = ctx.Identity.People.IdOf("paula");
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+
+        var response = await client.PUTAsync<PutPerson, PutPersonRequest>(
+            FormOf(personId, "Paula", "Falschgeschrieben")
+        );
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        await ctx.Expected.Person(personId).ToHaveName("Paula", "Brendel").AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldPersonsManage()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -232,5 +271,119 @@ public sealed class PutPersonTests
             );
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_RecordTheManagerAsTheOneWhoChangedThem_When_SheCorrectsTheContactDetails()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddPerson("paula", "Paula", "Brendel")
+                        .AddPersonContact("paula", "paula@example.test", "0170 1234567")
+                ),
+            ct
+        );
+
+        var personId = ctx.Identity.People.IdOf("paula");
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+
+        await _fixture.AtLaterTimeAsync(
+            TimeSpan.FromMinutes(1),
+            async () =>
+            {
+                var changedAt = _fixture.TimeProvider.GetUtcNow();
+
+                var response = await client.PUTAsync<PutPerson, PutPersonRequest>(
+                    FormOf(personId, "Paula", "Brendel") with
+                    {
+                        Email = "paula@example.test",
+                        Phone = "03632 123456",
+                    }
+                );
+
+                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+                await ctx
+                    .Expected.Person(personId)
+                    .ToHaveContactChangedBy(ctx.Identity.BootstrapAdmin.PersonId, changedAt)
+                    .AssertAsync(ct);
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_RecordNoContactChange_When_TheManagerOnlyCorrectsTheName()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddPerson("paula", "Paula", "Brendel")
+                        .AddPersonContact(
+                            "paula",
+                            "paula@example.test",
+                            "0170 1234567",
+                            "Hauptstraße 12",
+                            "99713",
+                            "Großfurra"
+                        )
+                ),
+            ct
+        );
+
+        var personId = ctx.Identity.People.IdOf("paula");
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var response = await client.PUTAsync<PutPerson, PutPersonRequest>(
+            FormOf(personId, "Paula", "Brendel-Kühnel") with
+            {
+                Email = "paula@example.test",
+                Phone = "0170 1234567",
+                Street = "Hauptstraße 12",
+                Zip = "99713",
+                City = "Großfurra",
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx
+            .Expected.Person(personId)
+            .ToHaveName("Paula", "Brendel-Kühnel")
+            .Person(personId)
+            .ToHaveNoContactChange()
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_LeaveHerLoginEmailAlone_When_TheManagerChangesHerContactEmail()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity.AddPerson("paula", "Paula", "Brendel").AddAccount("paula")
+                ),
+            ct
+        );
+
+        var personId = ctx.Identity.People.IdOf("paula");
+        var loginEmail = ctx.Identity.EmailOf("paula");
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var response = await client.PUTAsync<PutPerson, PutPersonRequest>(
+            FormOf(personId, "Paula", "Brendel") with
+            {
+                Email = "paula.neu@example.test",
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx
+            .Expected.Person(personId)
+            .ToHaveContactDetails("paula.neu@example.test", null, null, null, null)
+            .Account(ctx.Identity.Accounts.IdOf("paula"))
+            .ToHaveEmail(loginEmail)
+            .AssertAsync(ct);
     }
 }

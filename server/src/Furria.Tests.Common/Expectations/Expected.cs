@@ -58,7 +58,18 @@ public sealed class Expected
 
     public RefreshTokenExpectations RefreshTokensOf(int accountId) => new(this, accountId);
 
+    public PersonAccountExpectations AccountOfPerson(int personId) => new(this, personId);
+
+    public InvitationSetExpectations InvitationsOfPerson(int personId) => new(this, personId);
+
+    public LiveInvitationExpectations LiveInvitationOfPerson(int personId) => new(this, personId);
+
+    public PersonAccountEventExpectations AccountEventsOfPerson(int personId) =>
+        new(this, personId);
+
     public VenueExpectations Venue(int venueId) => new(this, venueId);
+
+    public ClubRecordExpectations ClubRecord() => new(this);
 
     public AnnouncementExpectations Announcement(int announcementId) => new(this, announcementId);
 
@@ -83,6 +94,15 @@ public sealed class Expected
         new(this, calendarEntryId);
 
     public TrainingSetExpectations TrainingsOf(int groupId) => new(this, groupId);
+
+    public EmailConfirmationSetExpectations EmailConfirmationsOfAccount(int accountId) =>
+        new(this, accountId);
+
+    public DataProtectionKeySetExpectations DataProtectionKeys() => new(this);
+
+    public PasskeySetExpectations PasskeysOfAccount(int accountId) => new(this, accountId);
+
+    public PasskeyChallengeSetExpectations PasskeyChallenges() => new(this);
 
     public async Task AssertAsync(CancellationToken ct = default)
     {

@@ -42,6 +42,9 @@ English rendering anywhere else, so two translations never drift apart.
 | contact details | Kontaktdaten | — |
 | portrait | Porträt | — |
 | account / invitation | Account / Einladung | `Account`, — |
+| passkey | Passkey | `account_passkey` (Identity) |
+| access recovery | Zugang wiederherstellen | `InvitationPurpose.Recovery` |
+| adoption / claim-in | Diese Person übernehmen / — | — |
 | club | Verein | — |
 | club hub / group hub / management | Verein / Gruppe / Verein verwalten | `club`, `group-hub`, `manage` |
 | tile | Kachel | — |
@@ -279,8 +282,18 @@ membership), board office (for the seat)
 **Contact details**:
 Phone, email and address of a person — **hidden from other members by default**; she opts in
 herself, and a person without account is switched on her word. A permission sees them anyway;
-hidden is a setting, never a gap (pinned 2026-09-10, CA-P1 fresh shaping).
-_UI copy_: Kontaktdaten (Telefon, E-Mail, Adresse)
+hidden is a setting, never a gap (pinned 2026-09-10, CA-P1 fresh shaping). **A person with an
+account keeps her own contact details** — she edits phone, address and contact email herself, and
+the change shows who made it and when; her name and birth date stay with the club, because they
+are who she is, not how to reach her (ruled 2026-09-25, accounts shaping). **Only an actual
+change counts as a change**: saving the values that were already there records nothing. The last
+change is shown with its actor and day — *Kontaktdaten geändert von Anna am 3. Okt.*, or *von dir*
+when she made it herself (built 2026-09-26, CA-P8 S8). The latest change with its actor is all
+the club keeps — there is no per-field history (ruled 2026-09-27). A person invited in person
+without a contact email gets the login email she confirmed as her contact email, stamped as her
+own change (built 2026-09-27).
+_UI copy_: Kontaktdaten (Telefon, E-Mail, Adresse); *Kontaktdaten geändert von Anna am 3. Okt.* ·
+*von dir*
 _Avoid_: contact (as a field name), showing hidden contact details as missing data
 
 **Portrait**:
@@ -314,19 +327,149 @@ login. Two ways in (decided 2026-08-18, order-flow shaping): member onboarding s
 buy and keep **tickets** (mail, ticket overview, history, payment methods) — this creates a
 person with **no membership**. Buying itself never requires an account. The login identifier is
 the **email address** — there are no usernames
-([ADR-0005](docs/adr/0005-auth-aspnet-identity-bearer-tokens.md)). **The MVP has no child
+([ADR-0005](docs/adr/0005-auth-aspnet-identity-bearer-tokens.md)). The **login email** is the
+account's own and is distinct from the email in her **contact details**: it starts as a copy of
+it, and when *she* changes her login email the contact email follows unless she says otherwise —
+but nobody else's edit of her contact details ever touches her login, because that would let
+whoever keeps the registry take her account over (ruled 2026-09-25). Two persons may share a
+contact email; never a login email. She signs in with her **password**, always available, or
+with a **passkey** (*Mit Fingerabdruck anmelden*) she may add on any of her devices — the passkey
+is a convenience on top, never a replacement (ruled 2026-09-25). **An account outlives
+affiliation**: when her last running relationship ends, her keys fall away by derivation and the
+account stays, showing her that she is no longer active in the club — the **nicht im Verein
+aktiv** state: every club surface gives way to that one screen, and her profile stays reachable
+from it. Rejoining lights it up again without a new invitation (ruled 2026-09-25). **Only she deletes her account**; her person and
+everything the club recorded about her stays, and she can return through a new invitation. The
+club never deletes an account — it **disables** one, reversibly (ruled 2026-09-25). Deleting
+takes her password again, keeps her person with everything the club recorded, and voids any live
+invitation of hers; nobody disables her own account (built 2026-09-26, CA-P8 S5/S6).
+Everything about her login is hers, under **Anmeldung & Sicherheit** on her profile: login email,
+password, **Überall abmelden** — which ends every session, *this device's included* — and
+*Account löschen* (built 2026-09-26, CA-P8 S6).
+**The MVP has no child
 accounts** (ruled 2026-09-21, CA-P6 shaping): nobody under the club's own age of consent gets a
 login, and no account is held on another person's behalf. A child in the children's guard is a
 person with a group membership and no account, exactly like a member who never asked for the
 app — so no surface may assume the dancer is the one reading it.
-_UI copy_: Account
+_UI copy_: Account; *nicht im Verein aktiv*; *Anmeldung & Sicherheit*; *Überall abmelden*;
+*Account löschen*; *Kontakt-E-Mail ebenfalls ändern*
 _Avoid_: user (as a table/entity name), guest account (it is the same account concept),
 username
 
+**Passkey**:
+An optional second credential on her **account**, held by one of her devices and unlocked by her
+fingerprint or screen lock (*Mit Fingerabdruck anmelden*). **The password always stays**: a
+passkey is added on top, never in its place, and removing her last passkey leaves her exactly
+where she started. She may hold several, one per device, each named by her or by default
+*Passkey vom 26. Sep. 2026*; adding or removing one tells her login email. A passkey also proves
+it is her where the password would — deleting her account, claiming in — and the password
+lockout never blocks it, because a passkey cannot be guessed; a disabled account stays shut
+either way (built 2026-09-26, CA-P8 S7).
+_UI copy_: Passkey; *Mit Fingerabdruck anmelden*; *Passkey hinzufügen*; *Passkey entfernen*;
+*Mit Passkey bestätigen*; *Mit Fingerabdruck bestätigen*
+_Avoid_: biometric login (the fingerprint never leaves her device), security key, second factor
+(it replaces the password for that sign-in, it does not add to it)
+
+**Account state**:
+What the club sees about a person's access. The state itself is derived, never stored: *no access* (with the reason
+she cannot be invited, when she cannot: under age, birth date missing, not affiliated),
+*invited* (an invitation is live), *active*, or *disabled*; plus the history of who invited,
+reminded, recovered or disabled her, and when. **The club never sees when she last signed in** —
+access is recorded, use is not (ruled 2026-09-25).
+The persons register, filtered by access, shows the same state on each row — plus *nicht
+einladbar* for no access with a reason — and there an active account reads *Account aktiv*, so it
+is never mistaken for an active membership (built 2026-09-27).
+_UI copy_: *kein Zugang* · *eingeladen* · *aktiv* · *gesperrt*; in the register *Account aktiv* ·
+*nicht einladbar*
+_Avoid_: last seen, activity (as something the club watches)
+
+**Account eligibility**:
+Whether a person may be given an **account** — derived at the moment it is asked, never stored:
+she is **affiliated**, has no account yet, and has reached the club's **age of consent** (kept on
+the **club record**, 16 unless the club says otherwise). A person with **no recorded birth date** can be
+invited only by someone in the club, who vouches for her age by doing so; she can neither request
+her own invitation nor be reached by a bulk invitation (ruled 2026-09-25, accounts shaping).
+That act is **the vouch**: a holder of the access-recovery right invites her by hand, the
+invitation's issuer is recorded as the one who vouched, and redeeming it never asks for the birth
+date again (built 2026-09-26, CA-P8 S5). **An email is not part of eligibility**: without a
+contact email she is still eligible, but only the in-person channel reaches her — no mail
+invitation, no bulk invitation, no reminder, no self-request; she types her own login email while
+redeeming and confirms it by code (ruled 2026-09-27, Florian: the club has many older members).
+_UI copy_: — (surfaces say what she can do: *kann eingeladen werden*); the vouch: *Geburtsdatum
+bestätigen*, *Du bestätigst, dass Anna mindestens 16 ist.*; without email: *nur vor Ort
+einladbar*
+_Avoid_: storing an "invitable" flag, treating an unknown birth date as either adult or child
+
 **Invitation**:
-A one-time onboarding token (link or printed QR/code) that lets a person create their account.
-_UI copy_: Einladung
+A one-time onboarding token that lets a person create their account. It reaches her one of two
+ways: **by mail** to the address the club has on record, or **in person** — a QR and a short code
+on a manager's screen, alive for minutes. Nothing is printed (ruled 2026-09-25).
+It is issued by the club **or requested by the person herself**: asking with the email address
+the club has on record sends an invitation to that address, and **control of that inbox is the
+proof** — no one in the club approves it (ruled 2026-09-25, accounts shaping). Who redeemed it,
+and when, stays visible on the person. When several eligible persons share that address, the
+request invites each of them — whoever reads a shared inbox is entitled for everyone it serves,
+and the first to redeem takes the address as her login email. That request, **Zugang
+anfordern**, is an invitation on the request channel with no issuer: one mail per inbox, carrying
+one link per eligible person, and at most one such mail per inbox every five minutes; the answer on
+screen is the same whether or not the address matched (built 2026-09-26, CA-P8 S3). The club's invitations are
+**never sent by the system on its own** — someone decides, for one person or for everyone
+eligible at once (**bulk invitation**, *Alle einladen*). A bulk invitation reaches only those
+**never invited**; nudging someone who let hers lie is a separate, deliberate act (**reminder**, *Erinnern*), so
+pressing the button twice never mails the same person twice. A person has **at most one live
+invitation**: a new one, by any channel, voids the one before; each lives as long as its channel
+warrants (a mail for days, a code on a manager's screen for minutes). A **group admin** issues
+none — accounts are the club's business, never a group's (ruled 2026-09-25).
+**Never invited** means she has never been sent an onboarding invitation at all, by any channel.
+An **offene Einladung** (open invitation) is a live onboarding invitation of a person who still
+has no account — neither redeemed nor voided, **expired or not**: an expired one was issued and
+never answered, which is exactly whom a reminder is for (built 2026-09-26, CA-P8 S4).
+_UI copy_: Einladung; *Zugang anfordern* (the person's own request); *offene Einladung*;
+*Per Mail einladen*; *Vor Ort zeigen* and *Code eingeben* (the in-person short code)
 _Avoid_: sign-up, registration
+
+**Bestätigungscode** (confirmation code):
+A 6-digit code mailed to a login email she chose herself, proving she controls that inbox. It
+lives 15 minutes and dies after 5 wrong tries; a new one voids the one before (built 2026-09-26,
+CA-P8 S2).
+_UI copy_: Bestätigungscode (the mail); *Code aus der Mail* (the field)
+_Avoid_: PIN, OTP, calling the in-person short code a confirmation code
+
+**Access recovery**:
+A one-time token, handed out by the club, that sets new credentials on an **existing** account —
+for someone who lost both her password and her mailbox. It is the invitation's mechanism with a
+different target, and a **separate right** from inviting: whoever can recover an account can take
+it over, so the right to invite (harmless — there is no account yet) never implies it. Disabling an
+account and vouching for an unknown birth date sit with the same right (ruled 2026-09-25). It is
+**handed over in person only** — shown on the club's screen — never sent to an address
+someone names on her behalf, and her previous login email is told it happened. If she picks a
+new login email while recovering, it is confirmed by code and her contact email follows unless
+she says otherwise — exactly as when she changes it herself (built 2026-09-26, CA-P8 S5).
+Forgetting a password is **not** access recovery — she resets it herself by mail
+(*Passwort vergessen*); a reset ends every session and does not sign her in.
+_UI copy_: Zugang wiederherstellen; *Wiederherstellung gestartet* (the history line)
+_Avoid_: password reset (that is the self-service path), re-invitation
+
+**Adoption** / **adoption candidate**:
+The person editor's answer to a duplicate before it exists: when the club records an email that
+belongs to a person with no affiliation, that person is the **adoption candidate**, and adopting
+her opens her record instead of creating a second — nothing is merged or written
+([ADR-0019](docs/adr/0019-duplicate-persons-are-adopted-not-merged-by-hand.md), built 2026-09-26,
+CA-P8 S9). An affiliated person is never a candidate.
+_UI copy_: *Diese Person übernehmen*
+_Avoid_: merge, duplicate check (as something the club runs)
+
+**Stray person** / **claim-in**:
+A **stray person** is a person with no affiliation whose account's login email is the one an
+invitation is being redeemed with — the same human, recorded twice. **Claim-in** closes it on her
+word: redemption asks her to sign in with that account, and signing in moves the account onto the
+club's person, which absorbs the stray one; she proves it with that account's password or one of
+its passkeys, and the claimed account keeps its login email, password and passkeys. **Club data blocks the absorption**: a stray person holding any of it (a membership,
+even an ended one) makes the address simply taken — her history is never absorbed, because that
+risks overlapping memberships (built 2026-09-26, CA-P8 S9; ruled 2026-09-27). A recovery never
+claims in.
+_UI copy_: — (redeem asks her to sign in with the existing account)
+_Avoid_: merge, account linking
 
 ### Club app structure
 
@@ -337,6 +480,17 @@ identical for every viewer ([ADR-0010](docs/adr/0010-club-app-is-a-set-of-scope-
 office) is where the club's records are written. A **tile** is one entry card on a hub.
 _UI copy_: Verein; Gruppe; Verein verwalten; Kachel
 _Avoid_: association, society, admin area (for club management)
+
+**Club record**:
+The club's own facts about itself — there is exactly one, kept in three sections, each written on
+its own: **name & founding** (official name as registered, short name, **founded year**),
+**address & contact** (address, email, phone, website and social links — what the imprint and
+every "reach the club" place show) and **access** (the **age of consent**, the age from which a
+person may hold an account, 16 unless the club says otherwise). Written in club management, read
+wherever the club describes itself (ruled 2026-09-25, accounts shaping; widened the same day).
+_UI copy_: Vereinsdaten; *Name & Gründung*; *Anschrift & Kontakt*; *Zugang zur App*;
+*Vereinsname*; *Kurzname*; *Gründungsjahr*; *Mindestalter für einen Zugang*
+_Avoid_: settings (it is the club's record, not an app's configuration)
 
 ### Club culture
 
@@ -666,11 +820,13 @@ _Avoid_: balance table, payments table (as source of truth)
   confirmation shows the purchase honestly without codes. The decision shapes `page-purchase`'s
   ticket display and the eventual event-app scanner.
 
-- **Guest registration & duplicates** — **open, 2026-08-18.** Self-registration can create a
-  second person for a human already in the registry (a member without account buys tickets
-  online). The merge/claim mechanism (e.g. an invitation claiming an existing self-registered
-  account by mail match, or an admin merge) is undecided — to be resolved when accounts are
-  actually built (club-app/backend territory).
+- **Guest registration & duplicates** — **resolved 2026-09-25 (accounts shaping).**
+  Self-registration can create a second person for a human already in the registry. Two rules
+  close it, and neither needs the club to hunt for duplicates: when the club records a person
+  whose email belongs to a person with no affiliation, it is offered that person to **adopt**
+  instead of creating a second; and whatever slips through is closed by her — redeeming an
+  invitation to an address that already has an account asks her to sign in with it, and that
+  account moves onto the club's person, which absorbs the stray one and everything it holds.
 
 - **Fee during a membership pause** — **open, 2026-09-11.** Whether a member pays while her
   membership is *paused* is a club question nobody has answered. Until it is, no copy may say a

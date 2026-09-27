@@ -4,6 +4,7 @@ import type { FC } from 'react';
 import { AppSkeletonRegion } from '@/features/session';
 import { PROFILE_SECTION_TITLES, VISIBILITY_PREVIEW_CAPTION } from '../profile-labels';
 
+const CONTACT_LINES = 3;
 const VISIBILITY_LINES = 6;
 const PREVIEW_LINES = 5;
 const DATA_LINES = 3;
@@ -16,6 +17,11 @@ export const ProfileSkeleton: FC = () => (
     <Grid container spacing={{ xs: 3.5, desktop: 5 }} sx={{ minWidth: 0 }}>
       <Grid size={{ xs: 12, desktop: 7 }} sx={{ minWidth: 0 }}>
         <KkPanelStack>
+          <KkPanelSection title={PROFILE_SECTION_TITLES.contact}>
+            <KkPanel variant="block">
+              <KkSkeletonBlock lines={CONTACT_LINES} />
+            </KkPanel>
+          </KkPanelSection>
           <KkPanelSection title={PROFILE_SECTION_TITLES.visibility}>
             <KkPanel variant="block">
               <KkSkeletonBlock lines={VISIBILITY_LINES} />

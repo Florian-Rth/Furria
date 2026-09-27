@@ -1,6 +1,7 @@
 import { KkTextField } from '@furria/ui';
 import Grid from '@mui/material/Grid';
-import type { FC } from 'react';
+import Stack from '@mui/material/Stack';
+import type { FC, ReactNode } from 'react';
 import type { FieldErrors, UseFormReturn } from 'react-hook-form';
 import type { PersonForm } from '../schemas';
 
@@ -15,9 +16,10 @@ const CITY_LABEL = 'Ort';
 interface PersonFormFieldsProps {
   form: UseFormReturn<PersonForm>;
   errors: FieldErrors<PersonForm>;
+  emailSuggestion: ReactNode;
 }
 
-export const PersonFormFields: FC<PersonFormFieldsProps> = ({ form, errors }) => {
+export const PersonFormFields: FC<PersonFormFieldsProps> = ({ form, errors, emailSuggestion }) => {
   const firstName = form.register('firstName');
   const lastName = form.register('lastName');
   const email = form.register('email');
@@ -63,18 +65,21 @@ export const PersonFormFields: FC<PersonFormFieldsProps> = ({ form, errors }) =>
         />
       </Grid>
       <Grid size={{ xs: 12, desktop: 7 }} sx={{ minWidth: 0 }}>
-        <KkTextField
-          name={email.name}
-          label={EMAIL_LABEL}
-          type="email"
-          inputMode="email"
-          autoComplete="email"
-          error={emailError !== undefined}
-          helperText={emailError}
-          onChange={email.onChange}
-          onBlur={email.onBlur}
-          inputRef={email.ref}
-        />
+        <Stack sx={{ gap: 1, minWidth: 0 }}>
+          <KkTextField
+            name={email.name}
+            label={EMAIL_LABEL}
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            error={emailError !== undefined}
+            helperText={emailError}
+            onChange={email.onChange}
+            onBlur={email.onBlur}
+            inputRef={email.ref}
+          />
+          {emailSuggestion}
+        </Stack>
       </Grid>
       <Grid size={{ xs: 12, desktop: 5 }} sx={{ minWidth: 0 }}>
         <KkTextField

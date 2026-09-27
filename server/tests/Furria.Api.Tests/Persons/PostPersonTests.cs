@@ -77,7 +77,11 @@ public sealed class PostPersonTests
         );
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var (_, registry) = await client.GETAsync<GetPersons, GetPersonsResponse>();
+        var (_, registry) = await client.GETAsync<
+            GetPersons,
+            GetPersonsRequest,
+            GetPersonsResponse
+        >(new GetPersonsRequest());
         var paula = Assert.Single(registry.Persons, person => person.PersonId == created.PersonId);
         Assert.Equal("paula@example.test", paula.Email);
         Assert.Equal("0170 1234567", paula.Phone);
@@ -122,7 +126,11 @@ public sealed class PostPersonTests
             .ToHaveCount(1)
             .AssertAsync(ct);
 
-        var (_, registry) = await client.GETAsync<GetPersons, GetPersonsResponse>();
+        var (_, registry) = await client.GETAsync<
+            GetPersons,
+            GetPersonsRequest,
+            GetPersonsResponse
+        >(new GetPersonsRequest());
         var paula = Assert.Single(registry.Persons, person => person.PersonId == created.PersonId);
         Assert.Equal(MembershipState.None, paula.MembershipState);
         Assert.Null(paula.MemberSince);

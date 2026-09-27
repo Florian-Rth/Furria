@@ -1,3 +1,5 @@
+using Furria.Application.Registry;
+
 namespace Furria.Application.Identity;
 
 public sealed record PersonDetails
@@ -21,4 +23,6 @@ public sealed record PersonDetails
     public required DateOnly? BirthDate { get; init; }
 
     public required bool ContactVisibleToMembers { get; init; }
+
+    public required ContactChangeDetails? ContactChange { get; init; }
 }

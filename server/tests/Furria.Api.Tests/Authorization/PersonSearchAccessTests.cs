@@ -302,6 +302,14 @@ public sealed class PersonSearchAccessTests
     }
 
     [Fact]
+    public async Task Should_Allow_When_TheCallerHoldsAccountsManage()
+    {
+        var response = await ProbeAsHolderOfAsync(FurriaPermissions.AccountsManage);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
     {
         var ct = TestContext.Current.CancellationToken;

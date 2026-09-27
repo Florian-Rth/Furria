@@ -13,6 +13,7 @@ const person = (overrides: Partial<MePerson> = {}): MePerson => ({
   city: 'Großfurra',
   birthDate: '1996-03-12',
   contactVisibleToMembers: true,
+  contactChange: null,
   ...overrides,
 });
 
@@ -24,6 +25,7 @@ const me = (state: Me['membership']['state']): Me => ({
   isAffiliated: true,
   permissionKeys: [],
   lastSeenAnnouncementAt: null,
+  passkeys: [],
 });
 
 describe('toProfileHeadline', () => {

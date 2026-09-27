@@ -33,5 +33,13 @@ public sealed class PersonConfiguration : IEntityTypeConfiguration<Person>
         builder.Property(person => person.UpdatedAt).HasDefaultValueSql("now()");
 
         builder.HasIndex(person => new { person.LastName, person.FirstName });
+
+        builder.HasIndex(person => person.ContactChangedByPersonId);
+        builder
+            .HasOne(person => person.ContactChangedBy)
+            .WithMany()
+            .HasForeignKey(person => person.ContactChangedByPersonId)
+            .HasConstraintName("fk_person_person_contact_changed_by_person_id")
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import type { FieldErrors, UseFormReturn } from 'react-hook-form';
-import { useController, useForm } from 'react-hook-form';
+import { useController, useForm, useWatch } from 'react-hook-form';
 import { toLandingKey } from '@/features/write';
 import { RequestFailedError } from '@/lib/api/api-error';
 import { toCamelCaseField } from '@/lib/api/api-failures';
@@ -10,6 +10,8 @@ import { toWriteErrorMessage } from '@/lib/write-error';
 import { useCreatePersonMutation, useUpdatePersonMutation } from '../api';
 import type { CreatedPerson, PersonForm } from '../schemas';
 import { PersonFormSchema } from '../schemas';
+import type { AdoptionSuggestionControl } from './use-adoption-suggestion';
+import { useAdoptionSuggestion } from './use-adoption-suggestion';
 
 export interface PersonFormSource {
   personId: number;
@@ -96,6 +98,7 @@ export interface PersonEditorControl {
   isSaving: boolean;
   rejection: string | null;
   actionLabel: string;
+  adoption: AdoptionSuggestionControl;
   submit: () => void;
 }
 
@@ -112,6 +115,8 @@ export const usePersonEditor = ({ person }: PersonEditorInput): PersonEditorCont
   });
   const { isDirty, isValid } = form.formState;
   const birthDate = useController({ control: form.control, name: 'birthDate' });
+  const typedEmail = useWatch({ control: form.control, name: 'email' });
+  const adoption = useAdoptionSuggestion(typedEmail, person === null);
 
   const reject = (error: Error): void => {
     if (error instanceof RequestFailedError && error.status === FIELD_ERROR_STATUS) {
@@ -169,6 +174,7 @@ export const usePersonEditor = ({ person }: PersonEditorInput): PersonEditorCont
     isSaving: create.isPending || update.isPending,
     rejection,
     actionLabel: person === null ? CREATE_LABEL : SAVE_LABEL,
+    adoption,
     submit: () => {
       void handleFormSubmit();
     },

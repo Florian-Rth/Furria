@@ -25,7 +25,8 @@
     "@mui/material": "catalog:",
     "@mui/x-date-pickers": "catalog:",
     "date-fns": "catalog:",
-    "motion": "catalog:"
+    "motion": "catalog:",
+    "uqr": "catalog:"
   },
   "devDependencies": {
     "@types/react": "catalog:",

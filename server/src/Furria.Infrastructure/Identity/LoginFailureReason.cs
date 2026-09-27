@@ -7,4 +7,5 @@ public enum LoginFailureReason
     WrongPassword,
     LockedOut,
     NotAllowed,
+    PasskeyRejected,
 }

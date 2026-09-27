@@ -21,3 +21,17 @@ describe('buildLoginSearch', () => {
     expect(buildLoginSearch(returnTo, expired)).toEqual(expected);
   });
 });
+
+describe('buildLoginSearch with a farewell', () => {
+  it.each<[string, string | undefined, boolean, LoginSearch]>([
+    [
+      'a deleted account on a deep page',
+      '/profile/security',
+      false,
+      { farewell: 'account-deleted' },
+    ],
+    ['a deleted account after an expiry', '/profile', true, { farewell: 'account-deleted' }],
+  ])('builds the login search for %s', (_case, returnTo, expired, expected) => {
+    expect(buildLoginSearch(returnTo, expired, 'account-deleted')).toEqual(expected);
+  });
+});

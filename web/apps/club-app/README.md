@@ -95,6 +95,58 @@ Android KeyStore, visible as `furria.club-app.refresh-token` in
 `adb shell run-as de.furria.club cat shared_prefs/WSSecureStorageSharedPreferences.xml`
 ([ADR-0005](../../../docs/adr/0005-auth-aspnet-identity-bearer-tokens.md)).
 
+### Android App Links
+
+A mailed link — `/invitation#token=…`, `/reset-password#reset=…` — opens the installed app instead
+of the browser. Three things must name the same host, the host of the server's `ClubApp:BaseUrl`:
+
+| Where | Setting |
+|---|---|
+| The app's intent filter | `CLUB_APP_HOST` (env) or `-PclubAppHost=` (Gradle), a bare host such as `app.furria.de` |
+| The in-app routing | the origin of `VITE_API_BASE_URL` in [`.env.native`](.env.native) |
+| The club-app deploy | serves `https://<host>/.well-known/assetlinks.json` |
+
+A release build without `CLUB_APP_HOST` fails. A debug build without it gets the host
+`club-app.invalid`, which never verifies, so links keep opening in the browser. Only the
+mailed paths are claimed; every other URL on the host stays with the browser.
+
+The deploy writes `assetlinks.json` at container start
+([`deploy/41-android-asset-links.sh`](deploy/41-android-asset-links.sh)) from two env vars:
+
+- `ANDROID_PACKAGE_NAME` — default `de.furria.club`
+- `ANDROID_CERT_FINGERPRINTS` — comma-separated SHA-256 fingerprints of every signing key
+  whose builds should open links and share passkeys (debug and release differ). Empty: no file,
+  `404`. A malformed entry stops the container.
+
+The API reads the same value as `ClubApp:AndroidCertFingerprints`
+([`docker-compose.example.yml`](../../../docker-compose.example.yml) passes it on): each
+fingerprint becomes an accepted passkey origin `android:apk-key-hash:…`, so a build whose key is
+missing there opens links but cannot use a passkey. The server takes one comma-separated string,
+trimmed the same way, or an array (`ClubApp__AndroidCertFingerprints__0`, `__1`, …).
+
+Reading the fingerprints (the `SHA-256:` line, `AB:CD:…`):
+
+```bash
+keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android
+keytool -list -v -keystore <release.jks> -alias <alias>
+(cd android && ./gradlew signingReport)                    # every variant's key at once
+```
+
+With Play App Signing, the release fingerprint is the *app signing key* in Play Console → *Test
+and release → App integrity*, not the upload key.
+
+Verifying, after installing a build with `CLUB_APP_HOST` set and the fingerprints deployed:
+
+```bash
+curl -si https://<host>/.well-known/assetlinks.json         # 200, application/json, no redirect
+adb shell pm verify-app-links --re-verify de.furria.club
+adb shell pm get-app-links de.furria.club                   # <host>: verified
+```
+
+Device check: send yourself an invitation, tap its link in Gmail — the app opens straight on
+the redeem screen, no browser, no chooser. Anything other than `verified` means the fingerprint
+or the host does not match; fix it and re-run `--re-verify`.
+
 ## Scope
 
 CA-P0 builds the deployable, branded, authenticated shell and no domain feature: login, boot

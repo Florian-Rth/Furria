@@ -1,5 +1,8 @@
+using Furria.Application.ClubApp;
 using Furria.Application.Identity;
+using Furria.Application.Mail;
 using Furria.Application.PreviewAccess;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Furria.Application;
@@ -39,6 +42,52 @@ public static class ServiceCollectionExtensions
             .AddOptions<BootstrapAdminOptions>()
             .BindConfiguration(BootstrapAdminOptions.SectionName);
 
+        services
+            .AddOptions<MailOptions>()
+            .BindConfiguration(MailOptions.SectionName)
+            .Validate(
+                options => options.Host.Length > 0 && options.Port > 0 && options.From.Length > 0,
+                $"{MailOptions.SectionName} needs a Host, a Port and a From address."
+            )
+            .ValidateOnStart();
+
+        services
+            .AddOptions<ClubAppOptions>()
+            .BindConfiguration(ClubAppOptions.SectionName)
+            .Configure<IConfiguration>(
+                (options, configuration) =>
+                    options.AndroidCertFingerprints = AndroidCertFingerprintsOf(configuration)
+            )
+            .Validate(
+                options => IsAbsoluteWebUrl(options.BaseUrl),
+                $"{ClubAppOptions.SectionName}:BaseUrl must be an absolute http(s) URL."
+            )
+            .Validate(
+                options =>
+                    options.AndroidCertFingerprints.All(fingerprint =>
+                        AndroidCertFingerprint.BytesOf(fingerprint) is not null
+                    ),
+                $"{ClubAppOptions.SectionName}:AndroidCertFingerprints must be SHA-256 fingerprints "
+                    + "in the colon-separated hex form keytool prints."
+            )
+            .ValidateOnStart();
+
         return services;
     }
+
+    private static string[] AndroidCertFingerprintsOf(IConfiguration configuration)
+    {
+        var section = configuration
+            .GetSection(ClubAppOptions.SectionName)
+            .GetSection(nameof(ClubAppOptions.AndroidCertFingerprints));
+
+        return AndroidCertFingerprint.ListOf([
+            section.Value,
+            .. section.GetChildren().Select(entry => entry.Value),
+        ]);
+    }
+
+    private static bool IsAbsoluteWebUrl(string value) =>
+        Uri.TryCreate(value, UriKind.Absolute, out var uri)
+        && (uri.Scheme == Uri.UriSchemeHttps || uri.Scheme == Uri.UriSchemeHttp);
 }

@@ -1,8 +1,14 @@
+using System.Diagnostics.Contracts;
 using Furria.Application.Authorization;
+using Furria.Application.Club;
 using Furria.Application.Management;
+using Furria.Application.Registry;
 using Furria.Core.Club;
 using Furria.Infrastructure.Authorization;
+using Furria.Infrastructure.Club;
+using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Persistence;
+using Furria.Infrastructure.Registry;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Management;
@@ -12,16 +18,19 @@ public sealed class ManagementService
     private readonly AppDbContext _dbContext;
     private readonly PermissionAuthorizer _authorizer;
     private readonly TimeProvider _timeProvider;
+    private readonly ClubRecordService _clubRecordService;
 
     public ManagementService(
         AppDbContext dbContext,
         PermissionAuthorizer authorizer,
-        TimeProvider timeProvider
+        TimeProvider timeProvider,
+        ClubRecordService clubRecordService
     )
     {
         _dbContext = dbContext;
         _authorizer = authorizer;
         _timeProvider = timeProvider;
+        _clubRecordService = clubRecordService;
     }
 
     public async Task<ManageHubDetails> HubAsync(int accountId, CancellationToken ct)
@@ -31,12 +40,12 @@ public sealed class ManagementService
         );
         var today = ClubClock.Today(_timeProvider);
         var managesClub = granted.Contains(FurriaPermissions.ClubManage);
+        var managesPersons = granted.Contains(FurriaPermissions.PersonsManage);
+        var readsPersons = managesPersons || granted.Contains(FurriaPermissions.AccountsManage);
 
         return new ManageHubDetails
         {
-            Persons = granted.Contains(FurriaPermissions.PersonsManage)
-                ? await PersonsAsync(today, ct)
-                : null,
+            Persons = readsPersons ? await PersonsAsync(today, ct) : null,
             Groups = granted.Contains(FurriaPermissions.GroupsManage)
                 ? await GroupsAsync(ct)
                 : null,
@@ -51,8 +60,52 @@ public sealed class ManagementService
             Board = granted.Contains(FurriaPermissions.BoardManage)
                 ? await BoardAsync(today, ct)
                 : null,
+            ClubRecord = managesClub ? await ClubRecordAsync(ct) : null,
+            Accounts = managesPersons ? await AccountsAsync(ct) : null,
         };
     }
+
+    private async Task<ManageHubAccounts> AccountsAsync(CancellationToken ct)
+    {
+        var now = _timeProvider.GetUtcNow();
+        var ageOfConsent = await _dbContext.AgeOfConsentAsync(ct);
+        var withAccessCount = await CountByAccessAsync(PersonAccessFilter.WithAccess);
+        var invitableCount = await _dbContext
+            .EligibleWithoutAccount(ClubClock.DayOf(now), ageOfConsent)
+            .CountAsync(ct);
+
+        return new ManageHubAccounts
+        {
+            WithAccessCount = withAccessCount,
+            OfCount = withAccessCount + invitableCount,
+            OpenInvitationCount = await CountByAccessAsync(PersonAccessFilter.OpenInvitation),
+            EligibleWithoutEmailCount = await CountByAccessAsync(PersonAccessFilter.WithoutEmail),
+        };
+
+        Task<int> CountByAccessAsync(PersonAccessFilter filter) =>
+            _dbContext.PeopleByAccess(filter, now, ageOfConsent).CountAsync(ct);
+    }
+
+    private async Task<ManageHubClubRecord> ClubRecordAsync(CancellationToken ct)
+    {
+        var record = await _clubRecordService.GetAsync(ct);
+
+        return new ManageHubClubRecord
+        {
+            Name = record.Name,
+            MissingFactCount = MissingFactCountOf(record),
+        };
+    }
+
+    [Pure]
+    private static int MissingFactCountOf(ClubRecordDetails record) =>
+        new[]
+        {
+            record.Name is not null,
+            record.FoundedYear is not null,
+            record is { Street: not null, Zip: not null, City: not null },
+            record.Email is not null,
+        }.Count(isRecorded => !isRecorded);
 
     private async Task<ManageHubPersons> PersonsAsync(DateOnly today, CancellationToken ct) =>
         new()

@@ -1,46 +1,53 @@
-import { KkAlert, KkBrandStage, KkEyebrow, KkHeading, KkNote, KkSplitLayout } from '@furria/ui';
+import { KkAlert, KkHeading, KkNote } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { SESSION_EXPIRED_MESSAGE } from '../login-messages';
-import { buildLoginStageMeta } from '../stage-meta';
+import type { SessionFarewell } from '@/lib/api/session/session-store';
+import {
+  ACCOUNT_DELETED_MESSAGE,
+  PASSWORD_RESET_NOTICE,
+  SESSION_EXPIRED_MESSAGE,
+} from '../login-messages';
 import { LoginForm } from './LoginForm';
-import { LoginHelpNote } from './LoginHelpNote';
 import { LoginTestCredentials } from './LoginTestCredentials';
+import { LoginWaysOn } from './LoginWaysOn';
+import { PasskeySignIn } from './PasskeySignIn';
+import { SignedOutFrame } from './SignedOutFrame';
 
 const INTRO = 'Der Mitgliederbereich des FCC.';
 
 interface LoginScreenProps {
   expired: boolean;
+  farewell: SessionFarewell | null;
+  passwordReset: boolean;
 }
 
-export const LoginScreen: FC<LoginScreenProps> = ({ expired }) => {
-  const stageMeta = buildLoginStageMeta(new Date());
+export const LoginScreen: FC<LoginScreenProps> = ({ expired, farewell, passwordReset }) => {
   const expiredNotice = expired ? (
     <KkAlert severity="warning">{SESSION_EXPIRED_MESSAGE}</KkAlert>
   ) : null;
+  const farewellNotice =
+    farewell === 'account-deleted' ? (
+      <KkAlert severity="info">{ACCOUNT_DELETED_MESSAGE}</KkAlert>
+    ) : null;
+  const passwordResetNotice = passwordReset ? (
+    <KkAlert severity="success">{PASSWORD_RESET_NOTICE}</KkAlert>
+  ) : null;
 
   return (
-    <KkSplitLayout>
-      <KkSplitLayout.Stage>
-        <KkBrandStage variant="band">
-          <KkBrandStage.Meta>
-            <KkEyebrow tone="muted">{stageMeta.place}</KkEyebrow>
-            <KkEyebrow tone="muted">{stageMeta.session}</KkEyebrow>
-          </KkBrandStage.Meta>
-        </KkBrandStage>
-      </KkSplitLayout.Stage>
-      <KkSplitLayout.Pane>
-        <Stack sx={{ gap: 1 }}>
-          <KkHeading level={1} component="h1">
-            ANMELDEN
-          </KkHeading>
-          <KkNote>{INTRO}</KkNote>
-        </Stack>
-        {expiredNotice}
-        <LoginForm />
-        <LoginHelpNote />
-        <LoginTestCredentials />
-      </KkSplitLayout.Pane>
-    </KkSplitLayout>
+    <SignedOutFrame>
+      <Stack sx={{ gap: 1 }}>
+        <KkHeading level={1} component="h1">
+          ANMELDEN
+        </KkHeading>
+        <KkNote>{INTRO}</KkNote>
+      </Stack>
+      {expiredNotice}
+      {farewellNotice}
+      {passwordResetNotice}
+      <LoginForm />
+      <PasskeySignIn />
+      <LoginWaysOn />
+      <LoginTestCredentials />
+    </SignedOutFrame>
   );
 };

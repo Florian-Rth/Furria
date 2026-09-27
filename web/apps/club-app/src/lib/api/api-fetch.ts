@@ -19,6 +19,7 @@ interface ApiFetchOptions<TResponse> {
 
 const UNAUTHORIZED_STATUS = 401;
 const NO_CONTENT_STATUS = 204;
+const ACCEPTED_STATUS = 202;
 const REQUEST_TIMEOUT_MS = 15_000;
 
 export const buildApiUrl = (baseUrl: string, path: string): string => {
@@ -77,7 +78,7 @@ export const apiFetch = async <TResponse>(
   if (!response.ok) {
     throw await toFailure(response);
   }
-  if (response.status === NO_CONTENT_STATUS) {
+  if (response.status === NO_CONTENT_STATUS || response.status === ACCEPTED_STATUS) {
     return schema.parse(undefined);
   }
 

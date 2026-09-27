@@ -14,7 +14,9 @@ import {
   toPersonCreatedMessage,
   toPersonSavedMessage,
 } from './manage-persons-labels';
+import type { PersonAccessFilter } from './person-access-filter';
 import {
+  requestAdoptionCandidate,
   requestFeeReductionCreate,
   requestFeeReductionUpdate,
   requestMembershipCreate,
@@ -27,6 +29,7 @@ import {
   requestPersonUpdate,
 } from './requests';
 import type {
+  AdoptionCandidate,
   CreatedFeeReduction,
   CreatedMembership,
   CreatedPause,
@@ -50,10 +53,23 @@ const refreshPerson = (queryClient: QueryClient, personId: number): void => {
   void queryClient.invalidateQueries({ queryKey: PERSONS_QUERY_KEY });
 };
 
-export const usePersonsQuery = (): UseQueryResult<PersonsResponse, Error> =>
+export const useRefreshPerson = (personId: number | null): (() => void) => {
+  const queryClient = useQueryClient();
+
+  return () => {
+    void queryClient.invalidateQueries({ queryKey: personQueryKey(personId) });
+    void queryClient.invalidateQueries({ queryKey: PERSONS_QUERY_KEY });
+  };
+};
+
+const ALL_ACCESS_KEY = 'all';
+
+export const usePersonsQuery = (
+  access: PersonAccessFilter | null,
+): UseQueryResult<PersonsResponse, Error> =>
   useQuery({
-    queryKey: PERSONS_QUERY_KEY,
-    queryFn: () => withFreshAccessToken(requestPersons),
+    queryKey: [...PERSONS_QUERY_KEY, 'access', access ?? ALL_ACCESS_KEY],
+    queryFn: () => withFreshAccessToken((accessToken) => requestPersons(access, accessToken)),
   });
 
 export const usePersonQuery = (personId: number | null): UseQueryResult<PersonDetails, Error> => {
@@ -251,4 +267,16 @@ export const useUpdateFeeReductionMutation = (
       refreshPerson(queryClient, personId);
     },
   });
+};
+
+export const useAdoptionCandidateQuery = (
+  email: string | null,
+): UseQueryResult<AdoptionCandidate | null, Error> => {
+  const load =
+    email === null
+      ? skipToken
+      : (): Promise<AdoptionCandidate | null> =>
+          withFreshAccessToken((accessToken) => requestAdoptionCandidate(email, accessToken));
+
+  return useQuery({ queryKey: [...PERSONS_QUERY_KEY, 'adoption-candidate', email], queryFn: load });
 };

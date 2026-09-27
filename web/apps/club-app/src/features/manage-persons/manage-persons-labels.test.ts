@@ -29,6 +29,7 @@ const person = (overrides: Partial<PersonSummary> & { personId: number }): Perso
   memberSince: null,
   groups: [],
   roles: [],
+  accessState: 'none',
   ...overrides,
 });
 
@@ -146,6 +147,15 @@ describe('toPersonHeadline', () => {
       feeReductions: [],
       groups: [],
       roles: [],
+      access: {
+        state: 'noAccess',
+        reason: null,
+        invitation: null,
+        history: [],
+        rights: { canInvite: true, canManageAccount: false },
+        ageOfConsent: 16,
+      },
+      contactChange: null,
     });
 
     expect(headline).toEqual({
@@ -267,6 +277,15 @@ const personDetails = (
   feeReductions: [],
   groups: [],
   roles: [],
+  access: {
+    state: 'noAccess',
+    reason: null,
+    invitation: null,
+    history: [],
+    rights: { canInvite: true, canManageAccount: false },
+    ageOfConsent: 16,
+  },
+  contactChange: null,
   ...overrides,
 });
 

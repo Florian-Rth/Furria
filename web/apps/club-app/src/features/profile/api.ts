@@ -4,9 +4,10 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ME_QUERY_KEY } from '@/features/session';
 import type { Me } from '@/lib/api/schemas';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
-import { toVisibilitySavedMessage } from './profile-labels';
+import { CONTACT_DETAILS_SAVED_MESSAGE, toVisibilitySavedMessage } from './profile-labels';
 import { toVisibilityErrorMessage } from './profile-messages';
-import { requestContactVisibility } from './requests';
+import { requestContactDetailsUpdate, requestContactVisibility } from './requests';
+import type { ContactDetailsForm } from './schemas';
 
 interface ContactVisibilityRollback {
   previous: Me | undefined;
@@ -52,6 +53,24 @@ export const useContactVisibilityMutation = (): UseMutationResult<
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: ME_QUERY_KEY });
+    },
+  });
+};
+
+export const useUpdateContactDetailsMutation = (): UseMutationResult<
+  void,
+  Error,
+  ContactDetailsForm
+> => {
+  const queryClient = useQueryClient();
+  const raiseNotice = useKkNotice();
+
+  return useMutation({
+    mutationFn: (form: ContactDetailsForm) =>
+      withFreshAccessToken((accessToken) => requestContactDetailsUpdate(form, accessToken)),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ME_QUERY_KEY });
+      raiseNotice({ tone: 'success', message: CONTACT_DETAILS_SAVED_MESSAGE });
     },
   });
 };

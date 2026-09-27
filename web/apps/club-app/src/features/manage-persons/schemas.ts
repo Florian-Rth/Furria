@@ -1,6 +1,13 @@
 import { z } from 'zod';
+import { PersonAccessSchema } from '@/features/account-access';
 import { AppSearchSchema } from '@/features/session';
-import { GroupRefSchema, MembershipStateSchema, RoleRefSchema } from '@/lib/api/schemas';
+import {
+  ContactChangeSchema,
+  GroupRefSchema,
+  MembershipStateSchema,
+  RoleRefSchema,
+} from '@/lib/api/schemas';
+import { ContactFieldsFormSchema } from '@/lib/contact-fields';
 import { requiredDay, requiredSessionYear } from '@/lib/required-fields';
 
 export const FeeReductionBasisSchema = z.enum(['minor', 'school', 'apprenticeship', 'studies']);
@@ -16,6 +23,15 @@ const PersonContactSchema = z.object({
   contactVisibleToMembers: z.boolean(),
 });
 
+export const RegisterAccessStateSchema = z.enum([
+  'none',
+  'invited',
+  'active',
+  'disabled',
+  'notInvitable',
+]);
+export type RegisterAccessState = z.infer<typeof RegisterAccessStateSchema>;
+
 export const PersonSummarySchema = z
   .object({
     personId: z.number().int(),
@@ -25,6 +41,7 @@ export const PersonSummarySchema = z
     memberSince: z.iso.date().nullable(),
     groups: z.array(GroupRefSchema),
     roles: z.array(RoleRefSchema),
+    accessState: RegisterAccessStateSchema,
   })
   .extend(PersonContactSchema.shape);
 export type PersonSummary = z.infer<typeof PersonSummarySchema>;
@@ -80,9 +97,19 @@ export const PersonDetailsSchema = z
     feeReductions: z.array(PersonFeeReductionSchema),
     groups: z.array(PersonGroupSchema),
     roles: z.array(PersonRoleSchema),
+    access: PersonAccessSchema,
+    contactChange: ContactChangeSchema.nullable(),
   })
   .extend(PersonContactSchema.shape);
 export type PersonDetails = z.infer<typeof PersonDetailsSchema>;
+
+export const AdoptionCandidateSchema = z.object({
+  personId: z.number().int(),
+  firstName: z.string(),
+  lastName: z.string(),
+  hasAccount: z.boolean(),
+});
+export type AdoptionCandidate = z.infer<typeof AdoptionCandidateSchema>;
 
 export const CreatedPersonSchema = z.object({ personId: z.number().int() });
 export type CreatedPerson = z.infer<typeof CreatedPersonSchema>;
@@ -98,27 +125,11 @@ export type CreatedFeeReduction = z.infer<typeof CreatedFeeReductionSchema>;
 
 const FIRST_NAME_MAX = 128;
 const LAST_NAME_MAX = 128;
-const EMAIL_MAX = 256;
-const PHONE_MAX = 64;
-const STREET_MAX = 256;
-const ZIP_MAX = 16;
-const CITY_MAX = 128;
-
-const isEmailOrEmpty = (value: string): boolean =>
-  value === '' || z.email().safeParse(value).success;
 
 export const PersonFormSchema = z.object({
   firstName: z.string().trim().min(1, 'Der Vorname fehlt.').max(FIRST_NAME_MAX),
   lastName: z.string().trim().min(1, 'Der Nachname fehlt.').max(LAST_NAME_MAX),
-  email: z
-    .string()
-    .trim()
-    .max(EMAIL_MAX)
-    .refine(isEmailOrEmpty, { message: 'Bitte gib eine gültige E-Mail-Adresse ein.' }),
-  phone: z.string().trim().max(PHONE_MAX),
-  street: z.string().trim().max(STREET_MAX),
-  zip: z.string().trim().max(ZIP_MAX),
-  city: z.string().trim().max(CITY_MAX),
+  ...ContactFieldsFormSchema.shape,
   birthDate: z.iso.date().nullable(),
   contactVisibleToMembers: z.boolean(),
 });
@@ -134,6 +145,11 @@ export const PauseNewSearchSchema = AppSearchSchema.extend({
   membership: z.string().optional().catch(undefined),
 });
 export type PauseNewSearch = z.infer<typeof PauseNewSearchSchema>;
+
+export const PersonsSearchSchema = AppSearchSchema.extend({
+  access: z.string().optional().catch(undefined),
+});
+export type PersonsSearch = z.infer<typeof PersonsSearchSchema>;
 
 const FIRST_SESSION_MISSING = 'Die erste Session fehlt.';
 

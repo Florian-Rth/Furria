@@ -14,4 +14,8 @@ public static class WriteConflictMessages
         "Für diesen Eintrag ist schon eine Antwort gespeichert.";
     public const string DuplicateGroupKind = "Diese Gruppenart gibt es schon.";
     public const string DuplicateParticipation = "Diese Gruppe wirkt bei diesem Eintrag schon mit.";
+    public const string ClubRecordWrittenMeanwhile =
+        "Die Vereinsdaten wurden gerade anderweitig gespeichert. Bitte erneut versuchen.";
+    public const string InvitationIssuedMeanwhile =
+        "Gerade wurde schon eine Einladung verschickt. Bitte erneut versuchen.";
 }

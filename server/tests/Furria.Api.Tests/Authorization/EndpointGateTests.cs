@@ -16,6 +16,7 @@ public sealed class EndpointGateTests
     [
         "/api/auth/me",
         "/api/auth/me/contact-visibility",
+        "/api/auth/me/contact-details",
         "/api/auth/logout",
         "/api/my-groups",
         "/api/group-kinds",
@@ -36,6 +37,13 @@ public sealed class EndpointGateTests
         "/api/auth/me/last-seen-announcement",
         "/api/calendar/entries",
         "/api/calendar/entries/{calendarEntryId}",
+        "/api/auth/me/login-email",
+        "/api/auth/me/login-email/confirmation",
+        "/api/auth/me/password",
+        "/api/auth/me/logout-everywhere",
+        "/api/auth/me/passkeys",
+        "/api/auth/me/passkeys/creation-options",
+        "/api/auth/me/passkeys/{passkeyId}",
     ];
 
     private static readonly string[] InHandlerGatedProbes =

@@ -38,7 +38,8 @@ export const findSessionRecord = (
 export const SESSION_NOT_FOUND_TITLE = 'NICHT MEHR DA';
 export const SESSION_NOT_FOUND_DESCRIPTION = 'Diesen Sessionseintrag gibt es nicht mehr.';
 
-export const SESSION_EDITOR_DENIED_MESSAGE = 'Dir fehlt die Berechtigung für Sessions und Orte.';
+export const SESSION_EDITOR_DENIED_MESSAGE =
+  'Dir fehlt die Berechtigung für Vereinsdaten, Sessions und Orte.';
 
 export const MANAGE_SESSIONS_FOOTNOTE =
   'Trage nur ein, was belegt ist – durch Orden, Banner oder Festschrift. Nichts wird aus benachbarten Sessions abgeleitet.';

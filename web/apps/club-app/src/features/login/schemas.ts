@@ -10,14 +10,25 @@ export const LoginFormSchema = z.object({
 });
 export type LoginForm = z.infer<typeof LoginFormSchema>;
 
+export const MailRequestFormSchema = z.object({
+  email: z.string().trim().pipe(z.email(EMAIL_MESSAGE)),
+});
+export type MailRequestForm = z.infer<typeof MailRequestFormSchema>;
+
 export const EXPIRED_FLAG = 1;
+export const PASSWORD_RESET_FLAG = 1;
 
 const ReturnToSchema = z.string().transform(toReturnToParam).catch(undefined).optional();
 
 const ExpiredFlagSchema = z.literal(EXPIRED_FLAG).optional().catch(undefined);
 
+const FarewellSchema = z.enum(['account-deleted']).optional().catch(undefined);
+const PasswordResetFlagSchema = z.literal(PASSWORD_RESET_FLAG).optional().catch(undefined);
+
 export const LoginSearchSchema = z.object({
   returnTo: ReturnToSchema,
   expired: ExpiredFlagSchema,
+  farewell: FarewellSchema,
+  passwordReset: PasswordResetFlagSchema,
 });
 export type LoginSearch = z.infer<typeof LoginSearchSchema>;

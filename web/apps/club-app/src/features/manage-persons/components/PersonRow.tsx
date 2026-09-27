@@ -4,19 +4,22 @@ import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { toInitials } from '@/lib/initials';
 import { NO_AFFILIATION_META } from '@/lib/person-rows';
-import { toMembershipStateChip, WITHHELD_CHIP } from '@/lib/state-chips';
+import { WITHHELD_CHIP } from '@/lib/state-chips';
 import { isContactWithheld, toPersonName, toPersonRowAffiliation } from '../manage-persons-labels';
+import type { PersonAccessFilter } from '../person-access-filter';
+import { toPersonRowChip } from '../person-access-filter';
 import type { PersonSummary } from '../schemas';
 
 const PERSON_PATH = '/manage/persons/$personId';
 
 interface PersonRowProps {
   person: PersonSummary;
+  access: PersonAccessFilter | null;
 }
 
-export const PersonRow: FC<PersonRowProps> = ({ person }) => {
+export const PersonRow: FC<PersonRowProps> = ({ person, access }) => {
   const { accent, meta } = toPersonRowAffiliation(person);
-  const state = toMembershipStateChip(person.membershipState);
+  const state = toPersonRowChip(person, access);
   const params = { personId: String(person.personId) };
 
   const withheldChip = isContactWithheld(person) ? (

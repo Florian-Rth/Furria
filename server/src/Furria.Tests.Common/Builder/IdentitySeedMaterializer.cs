@@ -25,6 +25,7 @@ internal static class IdentitySeedMaterializer
         );
 
         var personIds = await InsertPeopleAsync(dbContext, recorded, ct);
+        await StampContactChangesAsync(dbContext, recorded, personIds, ct);
         var membershipIds = await InsertMembershipsAsync(dbContext, recorded, personIds, ct);
         var pauseIds = await InsertPausesAsync(dbContext, recorded, membershipIds, ct);
         var feeReductionIds = await InsertFeeReductionsAsync(dbContext, recorded, personIds, ct);
@@ -75,6 +76,33 @@ internal static class IdentitySeedMaterializer
         );
     }
 
+    private static async Task StampContactChangesAsync(
+        AppDbContext dbContext,
+        IdentitySeedBuilder recorded,
+        IReadOnlyDictionary<string, int> personIds,
+        CancellationToken ct
+    )
+    {
+        if (recorded.ContactChanges.Count == 0)
+            return;
+
+        foreach (var intent in recorded.ContactChanges)
+        {
+            var personId = SeedAliases.RequireId(personIds, intent.PersonAlias, "Person");
+            var person =
+                await dbContext.People.FindAsync([personId], ct)
+                ?? throw new InvalidOperationException($"Person {personId} was not inserted.");
+            person.ContactChangedAt = intent.ChangedAt;
+            person.ContactChangedByPersonId = SeedAliases.RequireId(
+                personIds,
+                intent.ChangedByAlias,
+                "Person"
+            );
+        }
+
+        await dbContext.SaveChangesAsync(ct);
+    }
+
     private static Person Build(
         string alias,
         IdentitySeedBuilder.PersonIntent? named,
@@ -84,7 +112,9 @@ internal static class IdentitySeedMaterializer
         {
             FirstName = named?.FirstName ?? "Test",
             LastName = named?.LastName ?? "Person",
-            Email = contact?.Email ?? $"{alias}-{Guid.NewGuid():N}@test.local",
+            Email = contact is { WithoutEmail: true }
+                ? null
+                : contact?.Email ?? $"{alias}-{Guid.NewGuid():N}@test.local",
             Phone = contact?.Phone,
             Street = contact?.Street,
             Zip = contact?.Zip,

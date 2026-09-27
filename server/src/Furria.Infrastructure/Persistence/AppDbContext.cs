@@ -3,13 +3,14 @@ using Furria.Core.Groups;
 using Furria.Core.Identity;
 using Furria.Core.Roles;
 using Furria.Infrastructure.Identity;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Persistence;
 
-public sealed class AppDbContext : IdentityUserContext<Account, int>
+public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProtectionKeyContext
 {
     public const string ConnectionName = "AppDb";
 
@@ -39,6 +40,14 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
+    public DbSet<Invitation> Invitations => Set<Invitation>();
+
+    public DbSet<AccountEvent> AccountEvents => Set<AccountEvent>();
+
+    public DbSet<EmailConfirmation> EmailConfirmations => Set<EmailConfirmation>();
+
+    public DbSet<PasskeyChallenge> PasskeyChallenges => Set<PasskeyChallenge>();
+
     public DbSet<Session> Sessions => Set<Session>();
 
     public DbSet<Venue> Venues => Set<Venue>();
@@ -56,6 +65,10 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>
     public DbSet<AttendanceResponse> AttendanceResponses => Set<AttendanceResponse>();
 
     public DbSet<CalendarEntryGroup> CalendarEntryGroups => Set<CalendarEntryGroup>();
+
+    public DbSet<ClubRecord> ClubRecords => Set<ClubRecord>();
+
+    public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }

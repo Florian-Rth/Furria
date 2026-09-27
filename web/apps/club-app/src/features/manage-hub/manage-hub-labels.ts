@@ -65,6 +65,16 @@ const toKeyParts = (holdingCount: number, holderCount: number): string[] =>
     ? [`${holdingCount} ausgegeben`, `bei ${toCount(holderCount, 'Person', 'Personen')}`]
     : [ALL_RETURNED];
 
+const toNameParts = (name: string | null): string[] => (name === null ? [] : [name]);
+
+const toMissingFactsLabel = (missingFactCount: number): string | null => {
+  if (missingFactCount === 0) {
+    return null;
+  }
+
+  return missingFactCount === 1 ? '1 Angabe fehlt' : `${missingFactCount} Angaben fehlen`;
+};
+
 const PANEL_FACTS: Record<ManagePanelId, ManageFactReader> = {
   persons: ({ hub }) =>
     hub.persons === null
@@ -107,6 +117,14 @@ const PANEL_FACTS: Record<ManagePanelId, ManageFactReader> = {
           ],
           attention: toVacancy(hub.board.vacantOfficeCount),
         },
+  clubRecord: ({ hub }) =>
+    hub.clubRecord === null
+      ? null
+      : {
+          isEmpty: false,
+          summaryParts: toNameParts(hub.clubRecord.name),
+          attention: toMissingFactsLabel(hub.clubRecord.missingFactCount),
+        },
   sessions: ({ hub, sessionLabel }) =>
     hub.sessions === null
       ? null
@@ -147,6 +165,11 @@ const toStatus = (facts: ManageRowFacts): ManageRowStatus | undefined => {
   return undefined;
 };
 
+const toSummary = (facts: ManageRowFacts): string | undefined =>
+  facts.isEmpty || facts.summaryParts.length === 0
+    ? undefined
+    : facts.summaryParts.join(SUMMARY_SEPARATOR);
+
 const toRow = (panel: ManagePanelDefinition, facts: ManageRowFacts): ManageRowModel => ({
   id: panel.id,
   bank: panel.bank,
@@ -154,7 +177,7 @@ const toRow = (panel: ManagePanelDefinition, facts: ManageRowFacts): ManageRowMo
   icon: panel.icon,
   to: panel.to,
   isEmpty: facts.isEmpty,
-  summary: facts.isEmpty ? undefined : facts.summaryParts.join(SUMMARY_SEPARATOR),
+  summary: toSummary(facts),
   status: toStatus(facts),
 });
 

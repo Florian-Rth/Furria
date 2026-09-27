@@ -5,6 +5,7 @@ export type ManagePanelId =
   | 'groups'
   | 'roles'
   | 'board'
+  | 'clubRecord'
   | 'sessions'
   | 'venues'
   | 'keys';
@@ -47,6 +48,13 @@ export const MANAGE_PANELS: readonly ManagePanelDefinition[] = [
     to: '/manage/roles',
   },
   { id: 'board', bank: 'rights', title: 'Vorstand', icon: 'board', to: '/manage/board' },
+  {
+    id: 'clubRecord',
+    bank: 'record',
+    title: 'Vereinsdaten',
+    icon: 'club',
+    to: '/manage/club-record',
+  },
   {
     id: 'sessions',
     bank: 'record',

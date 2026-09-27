@@ -4,6 +4,7 @@ using Furria.Api.Endpoints.Auth;
 using Furria.Application.Authorization;
 using Furria.Core.Club;
 using Furria.Tests.Common.Fixtures;
+using Furria.Tests.Common.WebAuthn;
 using Xunit;
 
 namespace Furria.Api.Tests.Auth;
@@ -47,6 +48,57 @@ public sealed class GetMeTests
         Assert.Equal(joinedOn, result.Membership.MemberSince);
         Assert.Equal(joinedOn, result.Membership.CurrentStartedOn);
         Assert.Null(result.Membership.CurrentEndedOn);
+    }
+
+    [Fact]
+    public async Task Should_ListHerPasskeysOldestFirst_When_SheAddedSome()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => identity.AddAccount("alice")),
+            ct
+        );
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        using var phone = new SoftwareAuthenticator();
+        using var laptop = new SoftwareAuthenticator();
+        var first = await PasskeySteps.RegisterAsync(client, phone, "Handy");
+        await _fixture.AtLaterTimeAsync(
+            TimeSpan.FromMinutes(1),
+            async () => await PasskeySteps.RegisterAsync(client, laptop, "Laptop")
+        );
+
+        var (response, result) = await client.GETAsync<GetMe, GetMeResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Collection(
+            result.Passkeys,
+            passkey =>
+            {
+                Assert.Equal(phone.PasskeyId, passkey.Id);
+                Assert.Equal("Handy", passkey.Name);
+                Assert.Equal(first.AddedAt, passkey.AddedAt);
+            },
+            passkey =>
+            {
+                Assert.Equal(laptop.PasskeyId, passkey.Id);
+                Assert.Equal("Laptop", passkey.Name);
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_ListNoPasskey_When_SheHasNone()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => identity.AddAccount("alice")),
+            ct
+        );
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+
+        var (_, result) = await client.GETAsync<GetMe, GetMeResponse>();
+
+        Assert.Empty(result.Passkeys);
     }
 
     [Fact]
@@ -214,6 +266,49 @@ public sealed class GetMeTests
         Assert.Equal("Colditz", result.Person.City);
         Assert.Equal(BirthDate, result.Person.BirthDate);
         Assert.True(result.Person.ContactVisibleToMembers);
+    }
+
+    [Fact]
+    public async Task Should_ShowWhoLastChangedHerContactDetails_When_AManagerChangedThem()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var changedAt = _fixture.TimeProvider.GetUtcNow().AddDays(-3);
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddAccount("alice")
+                        .AddPerson("anna", "Anna", "Kessler")
+                        .AddContactChange("alice", "anna", changedAt)
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        var (response, result) = await client.GETAsync<GetMe, GetMeResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var change = Assert.IsType<MeContactChangeDto>(result.Person.ContactChange);
+        Assert.Equal(changedAt, change.At);
+        Assert.Equal(ctx.Identity.People.IdOf("anna"), change.ChangedBy.PersonId);
+        Assert.Equal("Anna", change.ChangedBy.FirstName);
+        Assert.Equal("Kessler", change.ChangedBy.LastName);
+    }
+
+    [Fact]
+    public async Task Should_ShowNoContactChange_When_HerContactDetailsWereNeverChanged()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => identity.AddAccount("alice")),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        var (response, result) = await client.GETAsync<GetMe, GetMeResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Null(result.Person.ContactChange);
     }
 
     [Fact]

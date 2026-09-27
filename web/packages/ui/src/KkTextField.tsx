@@ -6,8 +6,8 @@ import type { FC, ReactNode } from 'react';
 import { KkIcon } from './KkIcon';
 import type { KkSx } from './kk-sx';
 
-type KkTextFieldType = 'text' | 'email' | 'password' | 'tel';
-type KkTextFieldInputMode = 'text' | 'email' | 'tel' | 'numeric';
+type KkTextFieldType = 'text' | 'email' | 'password' | 'tel' | 'url';
+type KkTextFieldInputMode = 'text' | 'email' | 'tel' | 'numeric' | 'url';
 
 interface KkTextFieldProps {
   name: string;
@@ -18,6 +18,7 @@ interface KkTextFieldProps {
   required?: boolean;
   autoFocus?: boolean;
   disabled?: boolean;
+  readOnly?: boolean;
   error?: boolean;
   helperText?: string;
   value?: string;
@@ -37,6 +38,7 @@ export const KkTextField: FC<KkTextFieldProps> = ({
   required,
   autoFocus,
   disabled,
+  readOnly,
   error,
   helperText,
   value,
@@ -77,7 +79,7 @@ export const KkTextField: FC<KkTextFieldProps> = ({
       variant="outlined"
       fullWidth
       data-kk-text-field
-      slotProps={{ htmlInput: { inputMode }, input: { endAdornment: adornment } }}
+      slotProps={{ htmlInput: { inputMode, readOnly }, input: { endAdornment: adornment } }}
       sx={sx}
     />
   );

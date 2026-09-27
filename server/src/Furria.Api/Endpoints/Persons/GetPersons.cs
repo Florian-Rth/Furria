@@ -1,4 +1,5 @@
 using FastEndpoints;
+using FluentValidation;
 using Furria.Api.Authorization;
 using Furria.Application.Authorization;
 using Furria.Application.Registry;
@@ -7,7 +8,7 @@ using Furria.Infrastructure.Registry;
 
 namespace Furria.Api.Endpoints.Persons;
 
-public sealed class GetPersons : EndpointWithoutRequest<GetPersonsResponse>
+public sealed class GetPersons : Endpoint<GetPersonsRequest, GetPersonsResponse>
 {
     private readonly PersonService _personService;
 
@@ -19,12 +20,15 @@ public sealed class GetPersons : EndpointWithoutRequest<GetPersonsResponse>
     public override void Configure()
     {
         Get("manage/persons");
-        Definition.RequirePermission(FurriaPermissions.PersonsManage);
+        Definition.RequireAnyPermission(
+            FurriaPermissions.PersonsManage,
+            FurriaPermissions.AccountsManage
+        );
     }
 
-    public override async Task HandleAsync(CancellationToken ct)
+    public override async Task HandleAsync(GetPersonsRequest req, CancellationToken ct)
     {
-        var persons = await _personService.GetAllAsync(ct);
+        var persons = await _personService.GetAllAsync(PersonAccessFilters.Parse(req.Access), ct);
 
         await Send.OkAsync(ToResponse(persons), cancellation: ct);
     }
@@ -49,6 +53,7 @@ public sealed class GetPersons : EndpointWithoutRequest<GetPersonsResponse>
             MemberSince = person.MemberSince,
             Groups = [.. person.Groups.Select(ToDto)],
             Roles = [.. person.Roles.Select(ToDto)],
+            AccessState = person.AccessState,
         };
 
     private static GroupRefDto ToDto(GroupReference group) =>
@@ -56,6 +61,25 @@ public sealed class GetPersons : EndpointWithoutRequest<GetPersonsResponse>
 
     private static RoleRefDto ToDto(RoleReference role) =>
         new() { RoleId = role.RoleId, Name = role.Name };
+}
+
+public sealed record GetPersonsRequest
+{
+    [QueryParam]
+    public string? Access { get; init; }
+}
+
+public sealed class GetPersonsValidator : Validator<GetPersonsRequest>
+{
+    private const string UnknownAccessMessage = "Diesen Zugangsfilter gibt es nicht.";
+
+    public GetPersonsValidator()
+    {
+        RuleFor(request => request.Access)
+            .Must(PersonAccessFilters.IsKnown)
+            .When(request => request.Access is not null)
+            .WithMessage(UnknownAccessMessage);
+    }
 }
 
 public sealed record GetPersonsResponse
@@ -92,6 +116,8 @@ public sealed record PersonSummaryDto
     public required IReadOnlyList<GroupRefDto> Groups { get; init; }
 
     public required IReadOnlyList<RoleRefDto> Roles { get; init; }
+
+    public required RegisterAccessState AccessState { get; init; }
 }
 
 public sealed record GroupRefDto

@@ -2,10 +2,15 @@ import type { KkPanelAction } from '@furria/ui';
 import { KkFieldRow, KkPanel, KkPanelSection, KkSwitchRow } from '@furria/ui';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { useMeQuery } from '@/features/session';
 import { toLandingKey } from '@/features/write';
 import { formatAddress, formatIsoDay } from '@/lib/membership-labels';
 import { useContactVisibilitySwitch } from '../hooks/use-contact-visibility-switch';
-import { PERSON_SECTION_TITLES, VISIBILITY_DESCRIPTION } from '../manage-persons-labels';
+import {
+  PERSON_SECTION_TITLES,
+  toContactChangeNote,
+  VISIBILITY_DESCRIPTION,
+} from '../manage-persons-labels';
 import type { PersonDetails } from '../schemas';
 
 const EDIT_LABEL = 'Bearbeiten';
@@ -29,6 +34,12 @@ export const PersonMasterDataPanel: FC<PersonMasterDataPanelProps> = ({
   highlightedKey,
 }) => {
   const visibility = useContactVisibilitySwitch(person);
+  const me = useMeQuery();
+  const contactChangeNote = toContactChangeNote(
+    person.contactChange,
+    me.data?.person.id ?? null,
+    new Date(),
+  );
   const address = formatAddress(person.street, person.zip, person.city);
   const landingKey = toLandingKey('person', person.personId);
 
@@ -42,7 +53,11 @@ export const PersonMasterDataPanel: FC<PersonMasterDataPanelProps> = ({
   };
 
   return (
-    <KkPanelSection title={PERSON_SECTION_TITLES.masterData} action={action}>
+    <KkPanelSection
+      title={PERSON_SECTION_TITLES.masterData}
+      action={action}
+      description={contactChangeNote}
+    >
       <KkPanel highlight={highlightedKey === landingKey} landing={landingKey}>
         <KkFieldRow label={NAME_LABEL} value={`${person.firstName} ${person.lastName}`} />
         <KkFieldRow label={EMAIL_LABEL} value={person.email ?? MISSING_VALUE} />

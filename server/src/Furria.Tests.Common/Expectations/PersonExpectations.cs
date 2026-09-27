@@ -25,6 +25,15 @@ public sealed class PersonExpectations
                 )
         );
 
+    public Expected ToNotExist() =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.False(
+                    await dbContext.People.AsNoTracking().AnyAsync(row => row.Id == _personId, ct),
+                    $"Expected no Person with id {_personId}."
+                )
+        );
+
     public Expected ToHaveName(string firstName, string lastName) =>
         _expected.Enqueue(
             async (dbContext, ct) =>
@@ -55,6 +64,45 @@ public sealed class PersonExpectations
         _expected.Enqueue(
             async (dbContext, ct) =>
                 Assert.Equal(birthDate, (await SingleAsync(dbContext, ct)).BirthDate)
+        );
+
+    public Expected ToHaveContactDetails(
+        string? email,
+        string? phone,
+        string? street,
+        string? zip,
+        string? city
+    ) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var person = await SingleAsync(dbContext, ct);
+                Assert.Equal(email, person.Email);
+                Assert.Equal(phone, person.Phone);
+                Assert.Equal(street, person.Street);
+                Assert.Equal(zip, person.Zip);
+                Assert.Equal(city, person.City);
+            }
+        );
+
+    public Expected ToHaveContactChangedBy(int personId, DateTimeOffset changedAt) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var person = await SingleAsync(dbContext, ct);
+                Assert.Equal(personId, person.ContactChangedByPersonId);
+                Assert.Equal(changedAt, person.ContactChangedAt);
+            }
+        );
+
+    public Expected ToHaveNoContactChange() =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var person = await SingleAsync(dbContext, ct);
+                Assert.Null(person.ContactChangedByPersonId);
+                Assert.Null(person.ContactChangedAt);
+            }
         );
 
     public Expected ToHaveBeenTouchedAt(DateTimeOffset updatedAt) =>

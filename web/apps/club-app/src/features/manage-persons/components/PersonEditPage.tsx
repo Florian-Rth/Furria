@@ -1,10 +1,10 @@
 import { KkScreen, KkScreenHeaderSkeleton } from '@furria/ui';
 import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { AREA_HANDOVERS, RequirePermission } from '@/features/session';
-import { PERMISSION_KEYS } from '@/lib/api/schemas';
+import { AREA_HANDOVERS, RequireAnyPermission } from '@/features/session';
 import { usePersonQuery } from '../api';
 import { PERSONS_ORIGIN, toPersonHeadline, toPersonId } from '../manage-persons-labels';
+import { PERSON_READ_KEYS } from '../person-read-keys';
 import { PersonEditBody } from './PersonEditBody';
 import { PersonEditHeader } from './PersonEditHeader';
 
@@ -29,9 +29,9 @@ export const PersonEditPage: FC = () => {
       header={header}
       handover={AREA_HANDOVERS.manage}
     >
-      <RequirePermission permissionKey={PERMISSION_KEYS.personsManage}>
+      <RequireAnyPermission permissionKeys={PERSON_READ_KEYS}>
         <PersonEditBody personId={id} />
-      </RequirePermission>
+      </RequireAnyPermission>
     </KkScreen>
   );
 };
