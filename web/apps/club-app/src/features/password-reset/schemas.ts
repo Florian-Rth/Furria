@@ -1,6 +1,5 @@
 import { z } from 'zod';
-
-export const PASSWORD_MIN_LENGTH = 12;
+import { PASSWORD_MIN_LENGTH } from '@/lib/password-rule';
 
 export const ResetPasswordFormSchema = z.object({
   password: z

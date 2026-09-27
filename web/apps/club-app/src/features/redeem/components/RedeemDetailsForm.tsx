@@ -10,11 +10,11 @@ import {
 import Stack from '@mui/material/Stack';
 import type { ChangeEvent, FC } from 'react';
 import { usePasswordVisibility } from '@/features/login';
+import { PASSWORD_RULE_HINT } from '@/lib/password-rule';
 import { useRedeemForm } from '../hooks/use-redeem-form';
 import { toRedeemHeading } from '../redeem-messages';
 import type { InvitationPurpose, LiveInvitation } from '../redeem-stage';
 import type { RedeemForm } from '../schemas';
-import { PASSWORD_MIN_LENGTH } from '../schemas';
 
 const INTROS: Record<InvitationPurpose, string> = {
   onboarding: 'Du bist eingeladen. Leg ein Passwort fest, dann bist du im Mitgliederbereich.',
@@ -27,7 +27,6 @@ const LOGIN_EMAIL_LABEL = 'Deine Anmelde-E-Mail';
 const LOGIN_EMAIL_HINT = 'Damit meldest du dich künftig an.';
 const CONFIRMATION_HINT = 'An diese Adresse schicken wir dir einen Code zur Bestätigung.';
 const PASSWORD_LABEL = 'Neues Passwort';
-const PASSWORD_HINT = `Mindestens ${PASSWORD_MIN_LENGTH} Zeichen.`;
 const REDEEM_LABEL = 'Passwort festlegen';
 const REQUEST_CODE_LABEL = 'Code senden';
 const CONTACT_EMAIL_LABEL = 'Kontakt-E-Mail ebenfalls ändern';
@@ -141,7 +140,7 @@ export const RedeemDetailsForm: FC<RedeemDetailsFormProps> = ({
           autoFocus={!startsOnEmail}
           required
           error={hasPasswordError}
-          helperText={passwordErrorText ?? PASSWORD_HINT}
+          helperText={passwordErrorText ?? PASSWORD_RULE_HINT}
           endAdornment={passwordToggle}
           onChange={passwordField.onChange}
           onBlur={passwordField.onBlur}

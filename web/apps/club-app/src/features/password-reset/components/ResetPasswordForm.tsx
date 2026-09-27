@@ -3,14 +3,13 @@ import Stack from '@mui/material/Stack';
 import type { ChangeEvent, FC, FormEvent } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { usePasswordVisibility } from '@/features/login';
+import { PASSWORD_RULE_HINT } from '@/lib/password-rule';
 import type { ResetErrorMessages } from '../reset-messages';
 import type { ResetPasswordForm as ResetPasswordValues } from '../schemas';
-import { PASSWORD_MIN_LENGTH } from '../schemas';
 
 const TITLE = 'NEUES PASSWORT';
 const INTRO = 'Leg ein neues Passwort fest. Danach meldest du dich damit an.';
 const PASSWORD_LABEL = 'Neues Passwort';
-const PASSWORD_HINT = `Mindestens ${PASSWORD_MIN_LENGTH} Zeichen.`;
 const SUBMIT_LABEL = 'Passwort festlegen';
 const LOGIN_NOTICE = 'Alle Geräte, auf denen du angemeldet bist, werden dabei abgemeldet.';
 
@@ -66,7 +65,7 @@ export const ResetPasswordForm: FC<ResetPasswordFormProps> = ({
           autoFocus
           required
           error={hasPasswordError}
-          helperText={passwordErrorText ?? PASSWORD_HINT}
+          helperText={passwordErrorText ?? PASSWORD_RULE_HINT}
           endAdornment={passwordToggle}
           onChange={editPassword}
           onBlur={passwordField.onBlur}

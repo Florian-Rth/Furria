@@ -1,6 +1,6 @@
 import { z } from 'zod';
+import { PASSWORD_MIN_LENGTH } from '@/lib/password-rule';
 
-export const PASSWORD_MIN_LENGTH = 12;
 export const CONFIRMATION_CODE_LENGTH = 6;
 
 const EMAIL_MESSAGE = 'Bitte gib eine gültige E-Mail-Adresse ein.';

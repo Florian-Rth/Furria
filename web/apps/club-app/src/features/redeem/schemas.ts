@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { SessionTokensSchema } from '@/lib/api/schemas';
+import { PASSWORD_MIN_LENGTH } from '@/lib/password-rule';
 
-export const PASSWORD_MIN_LENGTH = 12;
 export const CONFIRMATION_CODE_LENGTH = 6;
 
 const EMAIL_MESSAGE = 'Bitte gib eine gültige E-Mail-Adresse ein.';
@@ -78,6 +78,6 @@ export const ConfirmationFormSchema = z.object({
 export type ConfirmationForm = z.infer<typeof ConfirmationFormSchema>;
 
 export const ClaimFormSchema = z.object({
-  claimPassword: z.string().min(1, 'Gib das Passwort dieses Zugangs ein.'),
+  claimPassword: z.string().min(1, 'Gib das Passwort dieses Accounts ein.'),
 });
 export type ClaimForm = z.infer<typeof ClaimFormSchema>;

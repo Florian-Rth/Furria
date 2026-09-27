@@ -3,14 +3,13 @@ import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { FieldErrors, UseFormReturn } from 'react-hook-form';
 import { usePasswordVisibility } from '@/features/login';
+import { PASSWORD_RULE_HINT } from '@/lib/password-rule';
 import type { PasswordForm } from '../schemas';
 
 const USERNAME_NAME = 'username';
 const USERNAME_LABEL = 'Anmelde-E-Mail';
 const CURRENT_PASSWORD_LABEL = 'Jetziges Passwort';
 const NEW_PASSWORD_LABEL = 'Neues Passwort';
-const NEW_PASSWORD_HINT =
-  'Mindestens 12 Zeichen, mit Groß- und Kleinbuchstaben, einer Ziffer und einem Sonderzeichen.';
 
 interface PasswordFieldsProps {
   form: UseFormReturn<PasswordForm>;
@@ -74,7 +73,7 @@ export const PasswordFields: FC<PasswordFieldsProps> = ({ form, errors, loginEma
         autoComplete="new-password"
         required
         error={newError !== undefined}
-        helperText={newError ?? NEW_PASSWORD_HINT}
+        helperText={newError ?? PASSWORD_RULE_HINT}
         endAdornment={newToggle}
         onChange={newPassword.onChange}
         onBlur={newPassword.onBlur}
