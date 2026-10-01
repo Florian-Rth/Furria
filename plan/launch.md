@@ -1,5 +1,5 @@
 ---
-status: agreed 2026-10-01 — L1 next
+status: agreed 2026-10-01 — L1 shaped (plan/launch/l1-production-foundation.md), S1 next
 scope: the MVP that goes live on 11.11.2026 — club app (web) and public website
 shaped_with: Florian, 2026-10-01
 supersedes: for this launch only — CLAUDE.md "Nothing ships publicly until the whole platform is
@@ -48,7 +48,7 @@ Each phase gets its own plan file, shaped when it is reached.
 
 | # | Phase | Why here |
 |---|---|---|
-| **L1** | **Production foundation** — TLS reverse proxy, `ForwardedHeaders`, CD gated on CI with pinned versions and rollback, nightly + pre-migration backups (off-site), durable mail outbox, DB-aware health check, login/refresh rate limit, production CORS | Everything after it is tested on production. **The board starts entering real data as soon as it lands**, in parallel with the build. |
+| **L1** | **Production foundation** ([plan](launch/l1-production-foundation.md)) — club domain behind the existing TLS edge, `ForwardedHeaders`, CD gated on CI with pinned versions and rollback, durable mail outbox, DB-aware health check, login/refresh rate limit. *Backups deferred out of L1 (2026-10-01).* | Everything after it is tested on production. **The board starts entering real data as soon as it lands**, in parallel with the build. |
 | **L2** | **CA-P9 — Start hub** — my next dates, responses I still owe, new announcements, my groups, the to-do item contract (open invitations, eligible persons without email). The final **default** destination set: Start · Verein · Kalender · Gruppen · Mehr | The first screen every member sees. The default set is final design ("what a new account starts with"); pinning adds to it later. |
 | **L3** | **CA-P10 — Membership applications end to end** — ADR-0004's `POST /api/membership-applications` with captcha, rate limit and retention rule; mail to the board; a to-do on Start; *accept* issues person + invitation through `AccountAccessService` | The website plan forbids leaving it last ("a live funnel that cannot submit is worse than none"). Club-app data the website needs. |
 | **L4** | **Public read API + website wiring** — public club record (founded year, contact, socials, member and group counts), public board (respecting `PortraitIsPublic`), groups payload aligned with the website, ticker from the session | Retires `FOUNDING_YEAR`, `MEMBER_COUNT_PLACEHOLDER`, `GROUP_COUNT_PLACEHOLDER` and the placeholder contact — and the hero/`/club` group-count mismatch. |
