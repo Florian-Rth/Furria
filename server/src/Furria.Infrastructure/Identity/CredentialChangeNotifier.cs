@@ -9,6 +9,10 @@ namespace Furria.Infrastructure.Identity;
 
 public sealed class CredentialChangeNotifier
 {
+    private const string OutsideTransactionMessage =
+        "A credential change notice is stored in the transaction of the change it reports; "
+        + "begin that transaction before the change.";
+
     private readonly AppDbContext _dbContext;
     private readonly MailOutbox _mailOutbox;
     private readonly ILogger<CredentialChangeNotifier> _logger;
@@ -31,6 +35,9 @@ public sealed class CredentialChangeNotifier
         CancellationToken ct
     )
     {
+        if (_dbContext.Database.CurrentTransaction is null)
+            throw new InvalidOperationException(OutsideTransactionMessage);
+
         var holder = await HolderAsync(accountId, ct);
         if (holder is null)
             return;
