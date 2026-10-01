@@ -1,5 +1,5 @@
 ---
-status: agreed 2026-10-01 — L1 built on feat/l1-production-foundation except the live-host move (S8)
+status: agreed 2026-10-01 — L1 done, L2 next
 scope: the MVP that goes live on 11.11.2026 — club app (web) and public website
 shaped_with: Florian, 2026-10-01
 supersedes: for this launch only — CLAUDE.md "Nothing ships publicly until the whole platform is
