@@ -57,8 +57,10 @@ every variable. The ones that matter most:
 2. Each image is pushed as `sha-<short>` (immutable). `:latest` then moves onto it — unless a newer
    commit already landed on `main`.
 3. Watchtower polls Docker Hub every 5 minutes and recreates a container whose `:latest` moved.
-4. The API applies pending migrations on start. `website` and `club-app` start only once the
-   `api` healthcheck (`GET /api/health`) is green.
+4. The API applies pending migrations on start; its compose healthcheck (`GET /api/health`)
+   turns green once they are applied. `website` and `club-app` never wait on it: their nginx
+   resolves `api` per request, so the public site keeps serving while the API or the database is
+   down.
 
 **Accepted:** a release that fails to start is down until rolled back. Nothing alerts on it yet
 (uptime monitoring is deferred).

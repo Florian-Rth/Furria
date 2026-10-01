@@ -69,7 +69,9 @@ services:
       # Production refuses to start without trusted proxies.
       ForwardedHeaders__TrustedProxies__0: *furria-subnet
       ForwardedHeaders__TrustedProxies__1: ${EDGE_PROXY_ADDRESS:?set EDGE_PROXY_ADDRESS in .env}
-    # Healthy once the database answers and every migration is applied (GET /api/health).
+    # Healthy once the database answers and every migration is applied (GET /api/health). Nothing
+    # waits on it: the website and club-app nginx resolve api per request, so they serve their
+    # pages - and say the API is unreachable - while it is down.
     healthcheck:
       test: ["CMD", "curl", "-fsS", "-o", "/dev/null", "http://localhost:8080/api/health"]
       interval: 10s
@@ -88,9 +90,6 @@ services:
   website:
     image: ${DOCKERHUB_USERNAME}/furria-website:latest
     restart: unless-stopped
-    depends_on:
-      api:
-        condition: service_healthy
     environment:
       # Empty = same-origin: the browser calls /api on this host and nginx proxies it to the
       # api service (API_UPSTREAM below). Set an absolute URL only for a cross-origin backend.
@@ -108,9 +107,6 @@ services:
   club-app:
     image: ${DOCKERHUB_USERNAME}/furria-club-app:latest
     restart: unless-stopped
-    depends_on:
-      api:
-        condition: service_healthy
     environment:
       # Empty = same-origin: the browser calls /api on app.furria.de and nginx proxies it to the
       # api service (API_UPSTREAM below). Set an absolute URL only for a cross-origin backend.

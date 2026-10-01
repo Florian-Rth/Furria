@@ -58,8 +58,10 @@ means something and rate-limited sign-in.
 8. **`GET /api/health` becomes DB-aware**, same route and shape: `CanConnectAsync` (2 s timeout)
    and no pending migrations → 200 `{status:"ok", version}`, else 503
    `{status:"unavailable", version}` — never which part failed. SMTP is not checked (the outbox
-   absorbs outages). The compose gains an `api` `healthcheck` (`curl` in the runtime image);
-   `website` and `club-app` wait on `service_healthy`.
+   absorbs outages). The compose gains an `api` `healthcheck` (`curl` in the runtime image).
+   *Revised in review (2026-10-01):* `website` and `club-app` do **not** wait on
+   `service_healthy` — that kept the public site down whenever the database was, and Watchtower
+   recreates containers without honouring it; their nginx resolves `api` per request.
 9. **Sign-in limits count failures, never successes**, per client IP (`RateLimits:SignIn`,
    env-configurable, built like `AddressRateLimiter`):
    - failed password logins: 20 per 15 min per IP, then 429 for password attempts from it; the
