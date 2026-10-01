@@ -17,7 +17,6 @@ public sealed class AccessRequestService
     private readonly AppDbContext _dbContext;
     private readonly AccountAccessService _accountAccessService;
     private readonly ClubRecordService _clubRecordService;
-    private readonly MailQueue _mailQueue;
     private readonly ClubAppOptions _clubAppOptions;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<AccessRequestService> _logger;
@@ -26,7 +25,6 @@ public sealed class AccessRequestService
         AppDbContext dbContext,
         AccountAccessService accountAccessService,
         ClubRecordService clubRecordService,
-        MailQueue mailQueue,
         IOptions<ClubAppOptions> clubAppOptions,
         TimeProvider timeProvider,
         ILogger<AccessRequestService> logger
@@ -35,7 +33,6 @@ public sealed class AccessRequestService
         _dbContext = dbContext;
         _accountAccessService = accountAccessService;
         _clubRecordService = clubRecordService;
-        _mailQueue = mailQueue;
         _clubAppOptions = clubAppOptions.Value;
         _timeProvider = timeProvider;
         _logger = logger;
@@ -59,43 +56,48 @@ public sealed class AccessRequestService
             return;
 
         var expiresAt = now + Invitation.MailLifetime;
-        var links = new List<AccessRequestMailLink>();
-        foreach (var requester in requesters)
-            if (await IssueAsync(requester, now, expiresAt, ct) is { } link)
-                links.Add(link);
+        var issues = requesters.Select(requester => IssueTo(requester, now, expiresAt)).ToList();
+        var addressee = requesters[0];
+        var mail = AccessRequestMail.Compose(
+            new AccessRequestMailContent
+            {
+                PersonId = addressee.PersonId,
+                To = addressee.Email,
+                ClubName = record.Name,
+                Links = issues.Select(issue => issue.Link).ToList(),
+                ExpiresAt = expiresAt,
+            }
+        );
 
-        if (links.Count == 0)
+        var saved = await _accountAccessService.RecordIssuedAsync(
+            issues.Select(issue => issue.Invitation).ToList(),
+            [mail],
+            ct
+        );
+        if (!saved.IsSuccess)
             return;
 
-        var addressee = requesters[0];
-        _mailQueue.Enqueue(
-            AccessRequestMail.Compose(
-                new AccessRequestMailContent
-                {
-                    PersonId = addressee.PersonId,
-                    To = addressee.Email,
-                    ClubName = record.Name,
-                    Links = links,
-                    ExpiresAt = expiresAt,
-                }
-            )
-        );
+        foreach (var issue in issues)
+            _logger.LogInformation(
+                "Self-requested invitation issued for person {PersonId}",
+                issue.Invitation.PersonId
+            );
         _logger.LogInformation(
             "Access request answered with {InvitationCount} invitations, addressed to person {PersonId}",
-            links.Count,
+            issues.Count,
             addressee.PersonId
         );
     }
 
-    private async Task<AccessRequestMailLink?> IssueAsync(
+    private RequesterIssue IssueTo(
         Requester requester,
         DateTimeOffset now,
-        DateTimeOffset expiresAt,
-        CancellationToken ct
+        DateTimeOffset expiresAt
     )
     {
         var token = OpaqueTokenSecret.Generate(out var tokenHash);
-        var saved = await _accountAccessService.RecordIssuedAsync(
+
+        return new RequesterIssue(
             new Invitation
             {
                 PersonId = requester.PersonId,
@@ -106,19 +108,10 @@ public sealed class AccessRequestService
                 IssuedAt = now,
                 ExpiresAt = expiresAt,
             },
-            ct
-        );
-        if (!saved.IsSuccess)
-            return null;
-
-        _logger.LogInformation(
-            "Self-requested invitation issued for person {PersonId}",
-            requester.PersonId
-        );
-
-        return new AccessRequestMailLink(
-            requester.FirstName,
-            InvitationMail.LinkOf(_clubAppOptions.BaseUrl, token)
+            new AccessRequestMailLink(
+                requester.FirstName,
+                InvitationMail.LinkOf(_clubAppOptions.BaseUrl, token)
+            )
         );
     }
 
@@ -158,4 +151,6 @@ public sealed class AccessRequestService
             .ToListAsync(ct);
 
     private sealed record Requester(int PersonId, string FirstName, string Email);
+
+    private sealed record RequesterIssue(Invitation Invitation, AccessRequestMailLink Link);
 }

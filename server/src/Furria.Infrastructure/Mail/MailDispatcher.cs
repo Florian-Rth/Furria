@@ -1,4 +1,7 @@
 using System.Diagnostics.Contracts;
+using Furria.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -6,58 +9,117 @@ namespace Furria.Infrastructure.Mail;
 
 public sealed class MailDispatcher : BackgroundService
 {
-    private static readonly IReadOnlyList<TimeSpan> RetryDelays =
-    [
-        TimeSpan.FromSeconds(5),
-        TimeSpan.FromSeconds(30),
-        TimeSpan.FromMinutes(2),
-        TimeSpan.FromMinutes(10),
-    ];
+    private static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(5);
 
-    private readonly MailQueue _queue;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly MailService _mailService;
+    private readonly MailOutboxSignal _signal;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<MailDispatcher> _logger;
 
     public MailDispatcher(
-        MailQueue queue,
+        IServiceScopeFactory scopeFactory,
         MailService mailService,
+        MailOutboxSignal signal,
         TimeProvider timeProvider,
         ILogger<MailDispatcher> logger
     )
     {
-        _queue = queue;
+        _scopeFactory = scopeFactory;
         _mailService = mailService;
+        _signal = signal;
         _timeProvider = timeProvider;
         _logger = logger;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await foreach (var mail in _queue.ReadAllAsync(stoppingToken))
-            await DispatchAsync(mail, stoppingToken);
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            await DispatchDueAsync(stoppingToken);
+            await _signal.WaitAsync(PollInterval, stoppingToken);
+        }
     }
 
-    private async Task DispatchAsync(OutgoingMail mail, CancellationToken ct)
+    private async Task DispatchDueAsync(CancellationToken ct)
     {
         try
         {
-            await _mailService.SendAsync(mail, ct);
+            while (await DispatchNextAsync(ct)) { }
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            _logger.LogWarning(
+                "Mail outbox unreachable, failure {FailureType}",
+                exception.GetType().Name
+            );
+        }
+    }
+
+    private async Task<bool> DispatchNextAsync(CancellationToken ct)
+    {
+        await using var scope = _scopeFactory.CreateAsyncScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(ct);
+
+        var now = _timeProvider.GetUtcNow();
+        var mail = await ClaimDueAsync(dbContext, now, ct);
+        if (mail is null)
+            return false;
+
+        if (await TrySendAsync(mail, ct) is { } failureType)
+            RetryOrAbandon(dbContext, mail, failureType, now);
+        else
+            dbContext.OutboxMails.Remove(mail);
+
+        await dbContext.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
+        return true;
+    }
+
+    private static Task<OutboxMail?> ClaimDueAsync(
+        AppDbContext dbContext,
+        DateTimeOffset now,
+        CancellationToken ct
+    ) =>
+        dbContext
+            .OutboxMails.FromSql(
+                $"""
+                SELECT * FROM outbox_mail
+                WHERE next_attempt_at IS NULL OR next_attempt_at <= {now}
+                ORDER BY id
+                LIMIT 1
+                FOR UPDATE SKIP LOCKED
+                """
+            )
+            .SingleOrDefaultAsync(ct);
+
+    private async Task<string?> TrySendAsync(OutboxMail mail, CancellationToken ct)
+    {
+        try
+        {
+            await _mailService.SendAsync(ToOutgoing(mail), ct);
             _logger.LogInformation(
                 "Mail {MailTemplate} sent to person {PersonId}",
                 mail.Template,
                 mail.PersonId
             );
+            return null;
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
-            ScheduleRetry(mail, exception.GetType().Name, ct);
+            return exception.GetType().Name;
         }
     }
 
-    private void ScheduleRetry(OutgoingMail mail, string failureType, CancellationToken ct)
+    private void RetryOrAbandon(
+        AppDbContext dbContext,
+        OutboxMail mail,
+        string failureType,
+        DateTimeOffset now
+    )
     {
-        if (RetryDelayAfter(mail.Attempt) is not { } delay)
+        if (MailRetrySchedule.DelayAfterFailed(mail.Attempt) is not { } delay)
         {
             _logger.LogWarning(
                 "Mail {MailTemplate} to person {PersonId} abandoned after {AttemptCount} attempts, last failure {FailureType}",
@@ -66,6 +128,7 @@ public sealed class MailDispatcher : BackgroundService
                 mail.Attempt,
                 failureType
             );
+            dbContext.OutboxMails.Remove(mail);
             return;
         }
 
@@ -77,20 +140,19 @@ public sealed class MailDispatcher : BackgroundService
             failureType,
             delay
         );
-        _ = RequeueLaterAsync(mail with { Attempt = mail.Attempt + 1 }, delay, ct);
-    }
-
-    private async Task RequeueLaterAsync(OutgoingMail mail, TimeSpan delay, CancellationToken ct)
-    {
-        try
-        {
-            await Task.Delay(delay, _timeProvider, ct);
-            _queue.Enqueue(mail);
-        }
-        catch (OperationCanceledException) { }
+        mail.Attempt++;
+        mail.NextAttemptAt = now + delay;
     }
 
     [Pure]
-    private static TimeSpan? RetryDelayAfter(int attempt) =>
-        attempt <= RetryDelays.Count ? RetryDelays[attempt - 1] : null;
+    private static OutgoingMail ToOutgoing(OutboxMail mail) =>
+        new()
+        {
+            Template = mail.Template,
+            PersonId = mail.PersonId,
+            To = mail.To,
+            Subject = mail.Subject,
+            TextBody = mail.TextBody,
+            HtmlBody = mail.HtmlBody,
+        };
 }

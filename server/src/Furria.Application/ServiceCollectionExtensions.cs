@@ -4,6 +4,7 @@ using Furria.Application.Mail;
 using Furria.Application.PreviewAccess;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Furria.Application;
 
@@ -72,6 +73,16 @@ public static class ServiceCollectionExtensions
             )
             .ValidateOnStart();
 
+        services
+            .AddOptions<PasskeyOptions>()
+            .BindConfiguration(PasskeyOptions.SectionName)
+            .Validate<IOptions<ClubAppOptions>>(
+                (passkeys, clubApp) => Covers(passkeys.RelyingPartyId, clubApp.Value.BaseUrl),
+                $"{PasskeyOptions.SectionName}:RelyingPartyId must be the club app's host or a "
+                    + "domain it lies under."
+            )
+            .ValidateOnStart();
+
         return services;
     }
 
@@ -86,6 +97,14 @@ public static class ServiceCollectionExtensions
             .. section.GetChildren().Select(entry => entry.Value),
         ]);
     }
+
+    private static bool Covers(string relyingPartyId, string clubAppBaseUrl) =>
+        Uri.CheckHostName(relyingPartyId) == UriHostNameType.Dns
+        && Uri.TryCreate(clubAppBaseUrl, UriKind.Absolute, out var clubApp)
+        && (
+            clubApp.Host.Equals(relyingPartyId, StringComparison.OrdinalIgnoreCase)
+            || clubApp.Host.EndsWith($".{relyingPartyId}", StringComparison.OrdinalIgnoreCase)
+        );
 
     private static bool IsAbsoluteWebUrl(string value) =>
         Uri.TryCreate(value, UriKind.Absolute, out var uri)

@@ -13,6 +13,4 @@ public sealed record OutgoingMail
     public required string TextBody { get; init; }
 
     public required string HtmlBody { get; init; }
-
-    public int Attempt { get; init; } = 1;
 }

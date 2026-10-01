@@ -1,0 +1,74 @@
+name: Rollback
+
+# Repoints an app's :latest (what Watchtower follows) to the image that main ran for that app as of
+# a given commit, without a rebuild. CI builds only the apps a push changed, so the commit itself
+# may have no image of this app: the newest image built at or before it on main's first-parent
+# line is taken. The running commit is the "+<sha>" suffix of GET /api/health's version. The next
+# green main that changes the app moves :latest forward again.
+
+on:
+  workflow_dispatch:
+    inputs:
+      app:
+        description: App whose :latest to repoint
+        required: true
+        type: choice
+        options: [api, website, club-app]
+      commit:
+        description: Commit on main to roll back to (7-40 hex characters, an optional sha- prefix)
+        required: true
+        type: string
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: latest-${{ inputs.app }}
+      cancel-in-progress: false
+    env:
+      IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/furria-${{ inputs.app }}
+      COMMIT: ${{ inputs.commit }}
+      SEARCH_DEPTH: 200
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Find the image main ran as of the commit
+        id: image
+        run: |
+          requested="${COMMIT#sha-}"
+          if ! [[ "$requested" =~ ^[0-9a-f]{7,40}$ ]]; then
+            echo "::error::'$COMMIT' is not a commit sha."
+            exit 1
+          fi
+          if ! commit="$(git rev-parse --verify --quiet "$requested^{commit}")"; then
+            echo "::error::$requested is no commit of this repository."
+            exit 1
+          fi
+          if ! git merge-base --is-ancestor "$commit" origin/main; then
+            echo "::error::$requested is not on main."
+            exit 1
+          fi
+          for candidate in $(git rev-list --first-parent --max-count="$SEARCH_DEPTH" "$commit"); do
+            tag="sha-${candidate::7}"
+            if docker buildx imagetools inspect "$IMAGE:$tag" > /dev/null 2>&1; then
+              echo "tag=$tag" >> "$GITHUB_OUTPUT"
+              echo "built-at=$candidate" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          done
+          echo "::error::No $IMAGE image within $SEARCH_DEPTH commits at or before $requested."
+          exit 1
+      - name: Repoint :latest
+        env:
+          TAG: ${{ steps.image.outputs.tag }}
+          BUILT_AT: ${{ steps.image.outputs.built-at }}
+        run: |
+          docker buildx imagetools create --tag "$IMAGE:latest" "$IMAGE:$TAG"
+          echo "$IMAGE:latest -> $TAG (built at $BUILT_AT, requested $COMMIT)" >> "$GITHUB_STEP_SUMMARY"

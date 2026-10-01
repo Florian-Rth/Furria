@@ -33,7 +33,7 @@ public sealed class AccountAccessService
     private readonly AppDbContext _dbContext;
     private readonly UserManager<Account> _userManager;
     private readonly AccountService _accountService;
-    private readonly MailQueue _mailQueue;
+    private readonly MailOutbox _mailOutbox;
     private readonly EmailConfirmationService _emailConfirmationService;
     private readonly AccessRecoveryService _accessRecoveryService;
     private readonly AccountClaimService _accountClaimService;
@@ -46,7 +46,7 @@ public sealed class AccountAccessService
         AppDbContext dbContext,
         UserManager<Account> userManager,
         AccountService accountService,
-        MailQueue mailQueue,
+        MailOutbox mailOutbox,
         EmailConfirmationService emailConfirmationService,
         AccessRecoveryService accessRecoveryService,
         AccountClaimService accountClaimService,
@@ -59,7 +59,7 @@ public sealed class AccountAccessService
         _dbContext = dbContext;
         _userManager = userManager;
         _accountService = accountService;
-        _mailQueue = mailQueue;
+        _mailOutbox = mailOutbox;
         _emailConfirmationService = emailConfirmationService;
         _accessRecoveryService = accessRecoveryService;
         _accountClaimService = accountClaimService;
@@ -107,22 +107,24 @@ public sealed class AccountAccessService
         var expiresAt = now + Invitation.MailLifetime;
 
         var saved = await RecordIssuedAsync(
-            new Invitation
-            {
-                PersonId = personId,
-                Purpose = InvitationPurpose.Onboarding,
-                Channel = InvitationChannel.Mail,
-                TokenHash = tokenHash,
-                IssuedByPersonId = issuer.PersonId,
-                IssuedAt = now,
-                ExpiresAt = expiresAt,
-            },
+            [
+                new Invitation
+                {
+                    PersonId = personId,
+                    Purpose = InvitationPurpose.Onboarding,
+                    Channel = InvitationChannel.Mail,
+                    TokenHash = tokenHash,
+                    IssuedByPersonId = issuer.PersonId,
+                    IssuedAt = now,
+                    ExpiresAt = expiresAt,
+                },
+            ],
+            [InvitationMail.Compose(ToMailContent(subject, terms, token, expiresAt))],
             ct
         );
         if (!saved.IsSuccess)
             return Result<IssuedInvitationDetails>.Carrying(saved);
 
-        _mailQueue.Enqueue(InvitationMail.Compose(ToMailContent(subject, terms, token, expiresAt)));
         _logger.LogInformation("Mail invitation issued for person {PersonId}", personId);
 
         return Result<IssuedInvitationDetails>.Success(
@@ -292,9 +294,30 @@ public sealed class AccountAccessService
         return await CreateAccountAsync(redeemable, chosen, confirmation, now, ct);
     }
 
-    internal async Task<Result> RecordIssuedAsync(Invitation invitation, CancellationToken ct)
+    internal Task<Result> RecordIssuedAsync(Invitation invitation, CancellationToken ct) =>
+        RecordIssuedAsync([invitation], [], ct);
+
+    internal async Task<Result> RecordIssuedAsync(
+        IReadOnlyList<Invitation> invitations,
+        IReadOnlyList<OutgoingMail> mails,
+        CancellationToken ct
+    )
     {
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
+        foreach (var invitation in invitations)
+            await StageIssuedAsync(invitation, ct);
+        foreach (var mail in mails)
+            _mailOutbox.Stage(mail);
+
+        var saved = await _dbContext.SaveOrConflictAsync(ct);
+        if (saved.IsSuccess)
+            await transaction.CommitAsync(ct);
+
+        return saved;
+    }
+
+    private async Task StageIssuedAsync(Invitation invitation, CancellationToken ct)
+    {
         await VoidLiveInvitationsAsync(invitation.PersonId, invitation.IssuedAt, ct);
         _dbContext.Invitations.Add(invitation);
         _dbContext.AccountEvents.Add(
@@ -306,12 +329,6 @@ public sealed class AccountAccessService
                 At = invitation.IssuedAt,
             }
         );
-
-        var saved = await _dbContext.SaveOrConflictAsync(ct);
-        if (saved.IsSuccess)
-            await transaction.CommitAsync(ct);
-
-        return saved;
     }
 
     internal async Task<(string Code, string CodeHash)> FreshInvitationCodeAsync(

@@ -16,8 +16,8 @@
     <Version>0.0.0.0</Version>
     <FileVersion>0.2.0.0</FileVersion>
     <InformationalVersion>0.2.0</InformationalVersion>
-    <!-- Keep InformationalVersion a clean SemVer - no "+<git-sha>" suffix from the SDK. -->
-    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <!-- CI passes the short commit as SourceRevisionId: /api/health reports "<semver>+<sha>". -->
+    <IncludeSourceRevisionInInformationalVersion>true</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
 
   <ItemGroup>

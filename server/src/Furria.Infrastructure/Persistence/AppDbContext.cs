@@ -3,6 +3,7 @@ using Furria.Core.Groups;
 using Furria.Core.Identity;
 using Furria.Core.Roles;
 using Furria.Infrastructure.Identity;
+using Furria.Infrastructure.Mail;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -69,6 +70,8 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
     public DbSet<ClubRecord> ClubRecords => Set<ClubRecord>();
 
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
+
+    public DbSet<OutboxMail> OutboxMails => Set<OutboxMail>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }

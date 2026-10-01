@@ -381,7 +381,7 @@ public sealed class BootstrapAdminSeederTests
     {
         await _fixture.BuildAsync(TestContext.Current.CancellationToken);
 
-        var written = Assert.Single(_fixture.Logs.Written(RoleCreated));
+        var written = Assert.Single(_fixture.Logs.WrittenBefore(RoleCreated, _fixture.HostStarted));
         Assert.Equal(LogEventLevel.Information, written.Level);
         Assert.Equal(_fixture.AdminRoleId, written.ScalarOf("RoleId"));
     }

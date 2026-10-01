@@ -11,8 +11,6 @@ namespace Furria.Api.Tests.Auth;
 [Collection("Api")]
 public sealed class PostPasskeyCreationOptionsTests
 {
-    private const string ClubAppDomain = "club.furria.test";
-
     private readonly ApiTestFixture _fixture;
 
     public PostPasskeyCreationOptionsTests(ApiTestFixture fixture)
@@ -21,7 +19,7 @@ public sealed class PostPasskeyCreationOptionsTests
     }
 
     [Fact]
-    public async Task Should_OfferADiscoverablePasskeyForTheClubAppDomain_When_SheIsSignedIn()
+    public async Task Should_OfferADiscoverablePasskeyForTheClubDomain_When_SheIsSignedIn()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await ArrangeAnnaAsync(ct);
@@ -31,7 +29,10 @@ public sealed class PostPasskeyCreationOptionsTests
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.NotEmpty(result.ChallengeId);
-        Assert.Equal(ClubAppDomain, result.Options.GetProperty("rp").GetProperty("id").GetString());
+        Assert.Equal(
+            ApiTestFixture.ClubDomain,
+            result.Options.GetProperty("rp").GetProperty("id").GetString()
+        );
         Assert.Equal(
             ctx.Identity.EmailOf("anna"),
             result.Options.GetProperty("user").GetProperty("name").GetString()

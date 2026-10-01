@@ -2,6 +2,7 @@ using System.Globalization;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
 using Furria.Api.Logging;
+using Furria.Api.Proxies;
 using Furria.Api.RateLimiting;
 using Furria.Application.Club;
 using Furria.Application.ClubApp;
@@ -15,18 +16,21 @@ using Furria.Core.Identity;
 using Furria.Core.Roles;
 using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Identity;
+using Furria.Infrastructure.Mail;
 using Furria.Infrastructure.Persistence;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Expectations;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Npgsql;
 using Serilog.Core;
 using Testcontainers.PostgreSql;
 using Xunit;
@@ -44,19 +48,22 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
     public const string BootstrapAdminEmail = "bootstrap-admin@test.local";
     public const string BootstrapAdminPassword = "Bootstrap-Admin-Pw-1!";
     public const string SeededAccountPassword = "Seeded-Account-Pw-1!";
+    public const string ClubDomain = "furria.test";
     public const string ClubAppBaseUrl = "https://club.furria.test";
     public const string AndroidCertFingerprint =
         "14:6D:E9:83:C5:73:06:50:D8:EE:B9:95:2F:34:FC:64:16:A0:83:42:E6:1D:BE:A8:8A:04:96:B2:3F:CF:44:E5";
     public const int PermitsPerInvitationToken = 10;
+    public const string TrustedProxyAddress = "10.10.20.1";
 
     private const int MailpitSmtpPort = 1025;
     private const int MailpitApiPort = 8025;
     private const int PermitsPerIpBeyondAnySuite = 1_000_000;
 
     private static readonly TimeSpan SignedOutWorkTimeout = TimeSpan.FromSeconds(20);
+    private static readonly TimeSpan OutboxDrainTimeout = TimeSpan.FromSeconds(20);
 
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder(
-        "postgres:18-alpine"
+        "postgres:18.6-alpine"
     ).Build();
 
     private readonly IContainer _mailpit = new ContainerBuilder("axllent/mailpit:v1.27")
@@ -80,6 +87,8 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
     public TestClock TimeProvider { get; } = new(WholeSecondNow());
 
     public CapturingLogSink Logs { get; } = new();
+
+    public LogMark HostStarted { get; private set; }
 
     public DateOnly Today => ClubClock.Today(TimeProvider);
 
@@ -174,6 +183,10 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             ClubAppBaseUrl
         );
         builder.UseSetting(
+            $"{PasskeyOptions.SectionName}:{nameof(PasskeyOptions.RelyingPartyId)}",
+            ClubDomain
+        );
+        builder.UseSetting(
             $"{ClubAppOptions.SectionName}:{nameof(ClubAppOptions.AndroidCertFingerprints)}:0",
             AndroidCertFingerprint
         );
@@ -184,6 +197,18 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         builder.UseSetting(
             $"{SignedOutRateLimitOptions.SectionName}:{nameof(SignedOutRateLimitOptions.PermitsPerToken)}",
             PermitsPerInvitationToken.ToString(CultureInfo.InvariantCulture)
+        );
+        builder.UseSetting(
+            $"{SignInRateLimitOptions.SectionName}:{nameof(SignInRateLimitOptions.FailedLoginsPerIp)}",
+            PermitsPerIpBeyondAnySuite.ToString(CultureInfo.InvariantCulture)
+        );
+        builder.UseSetting(
+            $"{SignInRateLimitOptions.SectionName}:{nameof(SignInRateLimitOptions.RejectedRefreshesPerIp)}",
+            PermitsPerIpBeyondAnySuite.ToString(CultureInfo.InvariantCulture)
+        );
+        builder.UseSetting(
+            $"{TrustedProxyOptions.SectionName}:{nameof(TrustedProxyOptions.TrustedProxies)}:0",
+            TrustedProxyAddress
         );
         builder.ConfigureServices(services =>
         {
@@ -226,6 +251,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             .Select(role => role.Id)
             .SingleAsync();
 
+        HostStarted = Logs.Mark();
         _resetService = await DatabaseResetService.CreateAsync(
             [db],
             [
@@ -238,6 +264,102 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             [typeof(DataProtectionKey)],
             CancellationToken.None
         );
+    }
+
+    public WebApplicationFactory<Program> HostWithSettings(
+        IReadOnlyDictionary<string, string> settings
+    ) =>
+        WithWebHostBuilder(builder =>
+        {
+            foreach (var (key, value) in settings)
+                builder.UseSetting(key, value);
+        });
+
+    public WebApplicationFactory<Program> HostOnDatabase(string connectionString) =>
+        WithWebHostBuilder(builder =>
+        {
+            builder.UseSetting(
+                $"ConnectionStrings:{AppDbContext.ConnectionName}",
+                connectionString
+            );
+            builder.ConfigureTestServices(RemoveDatabaseStartup);
+        });
+
+    private static void RemoveDatabaseStartup(IServiceCollection services)
+    {
+        var databaseStartup = services
+            .Where(descriptor =>
+                descriptor.ImplementationType == typeof(DatabaseMigrator)
+                || descriptor.ImplementationType == typeof(BootstrapAdminSeeder)
+            )
+            .ToList();
+        foreach (var descriptor in databaseStartup)
+            services.Remove(descriptor);
+    }
+
+    public async Task<WebApplicationFactory<Program>> HostOnOwnDatabaseAsync(
+        IReadOnlyDictionary<string, string> settings,
+        CancellationToken ct = default
+    )
+    {
+        var database = await CreateEmptyDatabaseAsync(ct);
+        return WithWebHostBuilder(builder =>
+        {
+            builder.UseSetting($"ConnectionStrings:{AppDbContext.ConnectionName}", database);
+            foreach (var (key, value) in settings)
+                builder.UseSetting(key, value);
+        });
+    }
+
+    public static async Task<IReadOnlyList<OutboxMail>> OutboxOfAsync(
+        WebApplicationFactory<Program> host,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = host.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        return await db.OutboxMails.AsNoTracking().OrderBy(mail => mail.Id).ToListAsync(ct);
+    }
+
+    public static async Task StageOutboxMailAsync(
+        WebApplicationFactory<Program> host,
+        OutboxMail mail,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = host.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        db.OutboxMails.Add(mail);
+        await db.SaveChangesAsync(ct);
+    }
+
+    public Task OutboxDrainedAsync(CancellationToken ct = default) =>
+        Polling.UntilAsync(
+            async token =>
+            {
+                await using var scope = Services.CreateAsyncScope();
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                return await db.OutboxMails.AnyAsync(token) ? null : db;
+            },
+            OutboxDrainTimeout,
+            "The mail outbox still holds mail",
+            ct
+        );
+
+    public async Task<string> CreateEmptyDatabaseAsync(CancellationToken ct = default)
+    {
+        var name = $"furria_empty_{Guid.NewGuid():N}";
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+#pragma warning disable EF1002
+        await db.Database.ExecuteSqlRawAsync($"CREATE DATABASE {name}", ct);
+#pragma warning restore EF1002
+
+        return new NpgsqlConnectionStringBuilder(_postgres.GetConnectionString())
+        {
+            Database = name,
+        }.ConnectionString;
     }
 
     public Task AtLaterTimeAsync(TimeSpan ahead, Func<Task> body) =>

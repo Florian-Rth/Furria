@@ -12,11 +12,13 @@ COPY src/Furria.Tests.Analyzers/Furria.Tests.Analyzers.csproj src/Furria.Tests.A
 RUN dotnet restore src/Furria.Api/Furria.Api.csproj
 
 COPY . .
-RUN dotnet publish src/Furria.Api/Furria.Api.csproj -c Release -o /app --no-restore
+ARG SOURCE_REVISION_ID=
+RUN dotnet publish src/Furria.Api/Furria.Api.csproj -c Release -o /app --no-restore \
+    -p:SourceRevisionId="$SOURCE_REVISION_ID"
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libgssapi-krb5-2 \
+    && apt-get install -y --no-install-recommends libgssapi-krb5-2 curl \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=build /app ./

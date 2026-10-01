@@ -211,6 +211,76 @@ public sealed class LoginTests
         Assert.Equal(LoginFailureReason.LockedOut, lastAttempt.ScalarOf("LoginFailureReason"));
     }
 
+    [Fact]
+    public async Task Should_ReturnTooManyRequests_When_HerAddressFailedTooOften()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => identity.AddAccount("alice")),
+            ct
+        );
+        await using var host = SignInLimitSteps.HostAllowingFewFailures(_fixture);
+        var client = host.CreateClientForwardedFor("203.0.113.50");
+
+        await SignInLimitSteps.FailToLogInAsync(client, ctx.Identity.EmailOf("alice"));
+        var (response, _) = await SignInLimitSteps.LogInAsync(
+            client,
+            ctx.Identity.EmailOf("alice"),
+            ApiTestFixture.SeededAccountPassword
+        );
+
+        Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_ReturnBothTokens_When_AnotherAddressFailedTooOften()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => identity.AddAccount("alice")),
+            ct
+        );
+        await using var host = SignInLimitSteps.HostAllowingFewFailures(_fixture);
+
+        await SignInLimitSteps.FailToLogInAsync(
+            host.CreateClientForwardedFor("203.0.113.51"),
+            "nobody@test.local"
+        );
+        var (response, _) = await SignInLimitSteps.LogInAsync(
+            host.CreateClientForwardedFor("203.0.113.52"),
+            ctx.Identity.EmailOf("alice"),
+            ApiTestFixture.SeededAccountPassword
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_ReturnBothTokens_When_HerAddressSignedInMoreOftenThanFailuresAreAllowed()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => identity.AddAccount("alice")),
+            ct
+        );
+        await using var host = SignInLimitSteps.HostAllowingFewFailures(_fixture);
+        var client = host.CreateClientForwardedFor("203.0.113.53");
+
+        for (var login = 0; login < SignInLimitSteps.FailuresAllowed; login++)
+            await SignInLimitSteps.LogInAsync(
+                client,
+                ctx.Identity.EmailOf("alice"),
+                ApiTestFixture.SeededAccountPassword
+            );
+        var (response, _) = await SignInLimitSteps.LogInAsync(
+            client,
+            ctx.Identity.EmailOf("alice"),
+            ApiTestFixture.SeededAccountPassword
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
     private Task<TestResult<LoginResponse>> Post(
         string email,
         string password = ApiTestFixture.SeededAccountPassword

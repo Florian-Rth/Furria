@@ -1,5 +1,6 @@
 using FastEndpoints;
 using FluentValidation;
+using Furria.Api.RateLimiting;
 using Furria.Application.Identity;
 using Furria.Infrastructure.Identity;
 
@@ -8,10 +9,12 @@ namespace Furria.Api.Endpoints.Auth;
 public sealed class Refresh : Endpoint<RefreshRequest, RefreshResponse>
 {
     private readonly AccountService _accountService;
+    private readonly SignInFailureLimiter _failureLimiter;
 
-    public Refresh(AccountService accountService)
+    public Refresh(AccountService accountService, SignInFailureLimiter failureLimiter)
     {
         _accountService = accountService;
+        _failureLimiter = failureLimiter;
     }
 
     public override void Configure()
@@ -22,9 +25,17 @@ public sealed class Refresh : Endpoint<RefreshRequest, RefreshResponse>
 
     public override async Task HandleAsync(RefreshRequest req, CancellationToken ct)
     {
+        var client = HttpContext.Connection.RemoteIpAddress;
+        if (_failureLimiter.HasFailedTooOften(SignInFailureScope.Refresh, client))
+        {
+            await Send.StatusCodeAsync(StatusCodes.Status429TooManyRequests, ct);
+            return;
+        }
+
         var session = await _accountService.RefreshSessionAsync(req.RefreshToken, ct);
         if (!session.IsSuccess)
         {
+            _failureLimiter.CountFailure(SignInFailureScope.Refresh, client);
             await Send.UnauthorizedAsync(ct);
             return;
         }

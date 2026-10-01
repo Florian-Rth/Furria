@@ -1,3 +1,10 @@
+# The TLS edge in front of this nginx states the scheme the browser used; $scheme is only the
+# fallback for a request that reached this nginx directly.
+map $http_x_forwarded_proto $forwarded_proto {
+    default $http_x_forwarded_proto;
+    ""      $scheme;
+}
+
 server {
     listen 80;
     server_name _;
@@ -7,7 +14,10 @@ server {
 
     resolver 127.0.0.11 valid=10s ipv6=off;
 
+    include /etc/nginx/snippets/security-headers.conf;
+
     location = /config.js {
+        include /etc/nginx/snippets/security-headers.conf;
         add_header Cache-Control "no-store";
         try_files $uri =404;
     }
@@ -15,6 +25,7 @@ server {
     location = /.well-known/assetlinks.json {
         types { }
         default_type application/json;
+        include /etc/nginx/snippets/security-headers.conf;
         add_header Cache-Control "public, max-age=300";
         try_files $uri =404;
     }
@@ -28,7 +39,7 @@ server {
         proxy_pass $api_upstream;
         proxy_set_header Host $host;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Proto $forwarded_proto;
     }
 
     location / {

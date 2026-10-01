@@ -211,9 +211,52 @@ public sealed class LoginWithPasskeyTests
     }
 
     [Fact]
-    public void Should_BeLimitedPerIp_When_TheRouteIsRegistered()
+    public async Task Should_ReturnTooManyRequests_When_HerAddressFailedPasswordsTooOften()
     {
-        Assert.Equal(PasskeySteps.PerIpPolicy, PasskeySteps.RateLimitPolicyOf(_fixture, Route));
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await ArrangeAnnaAsync(ct);
+        using var authenticator = await RegisteredAuthenticatorAsync(ctx, ct);
+        await using var host = SignInLimitSteps.HostAllowingFewFailures(_fixture);
+        var client = host.CreateClientForwardedFor("203.0.113.60");
+
+        await SignInLimitSteps.FailToLogInAsync(client, ctx.Identity.EmailOf("anna"));
+        var (response, _) = await SignInLimitSteps.LogInWithPasskeyAsync(
+            client,
+            await PasskeySteps.AssertAsync(_fixture, authenticator)
+        );
+
+        Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_CountTowardsTheLoginFailures_When_AnAssertionIsRefused()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await ArrangeAnnaAsync(ct);
+        await using var host = SignInLimitSteps.HostAllowingFewFailures(_fixture);
+        var client = host.CreateClientForwardedFor("203.0.113.61");
+
+        for (var attempt = 0; attempt < SignInLimitSteps.FailuresAllowed; attempt++)
+        {
+            using var unknown = new SoftwareAuthenticator();
+            await SignInLimitSteps.LogInWithPasskeyAsync(
+                client,
+                await PasskeySteps.AssertAsync(_fixture, unknown)
+            );
+        }
+        var (response, _) = await SignInLimitSteps.LogInAsync(
+            client,
+            ctx.Identity.EmailOf("anna"),
+            ApiTestFixture.SeededAccountPassword
+        );
+
+        Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
+    }
+
+    [Fact]
+    public void Should_LeaveTheSignedOutPerIpLimit_When_TheRouteIsRegistered()
+    {
+        Assert.Null(PasskeySteps.RateLimitPolicyOf(_fixture, Route));
     }
 
     private async Task<SoftwareAuthenticator> RegisteredAuthenticatorAsync(

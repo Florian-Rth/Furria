@@ -9,19 +9,19 @@ namespace Furria.Infrastructure.Identity;
 public sealed class EmailConfirmationService
 {
     private readonly AppDbContext _dbContext;
-    private readonly MailQueue _mailQueue;
+    private readonly MailOutbox _mailOutbox;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<EmailConfirmationService> _logger;
 
     public EmailConfirmationService(
         AppDbContext dbContext,
-        MailQueue mailQueue,
+        MailOutbox mailOutbox,
         TimeProvider timeProvider,
         ILogger<EmailConfirmationService> logger
     )
     {
         _dbContext = dbContext;
-        _mailQueue = mailQueue;
+        _mailOutbox = mailOutbox;
         _timeProvider = timeProvider;
         _logger = logger;
     }
@@ -49,10 +49,10 @@ public sealed class EmailConfirmationService
                 UpdatesContactEmail = issue.UpdatesContactEmail,
             }
         );
+        _mailOutbox.Stage(EmailConfirmationMail.Compose(ToMailContent(issue, code)));
         await _dbContext.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
 
-        _mailQueue.Enqueue(EmailConfirmationMail.Compose(ToMailContent(issue, code)));
         _logger.LogInformation(
             "Email confirmation code issued for person {PersonId}",
             issue.PersonId

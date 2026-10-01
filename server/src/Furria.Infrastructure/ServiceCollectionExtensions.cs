@@ -28,6 +28,8 @@ public static class ServiceCollectionExtensions
     )
     {
         services.AddSingleton<AuditTimestampInterceptor>();
+        services.AddSingleton<MailOutboxSignal>();
+        services.AddSingleton<MailOutboxWakeUp>();
         services.AddDbContext<AppDbContext>(
             (serviceProvider, options) =>
                 options
@@ -40,7 +42,8 @@ public static class ServiceCollectionExtensions
                     )
                     .UseSnakeCaseNamingConvention()
                     .AddInterceptors(
-                        serviceProvider.GetRequiredService<AuditTimestampInterceptor>()
+                        serviceProvider.GetRequiredService<AuditTimestampInterceptor>(),
+                        serviceProvider.GetRequiredService<MailOutboxWakeUp>()
                     )
         );
 
@@ -64,8 +67,9 @@ public static class ServiceCollectionExtensions
             .AddDefaultTokenProviders();
         services
             .AddOptions<IdentityPasskeyOptions>()
-            .Configure<IOptions<ClubAppOptions>>(
-                (passkeys, clubApp) => PasskeyRelyingParty.Configure(passkeys, clubApp.Value)
+            .Configure<IOptions<PasskeyOptions>, IOptions<ClubAppOptions>>(
+                (passkeys, relyingParty, clubApp) =>
+                    PasskeyRelyingParty.Configure(passkeys, relyingParty.Value, clubApp.Value)
             );
 
         services
@@ -106,8 +110,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<AccountAdministrationService>();
         services.AddScoped<AccountClaimService>();
         services.AddScoped<PersonAdoptionService>();
+        services.AddScoped<DatabaseHealthService>();
 
-        services.AddSingleton<MailQueue>();
+        services.AddScoped<MailOutbox>();
         services.AddSingleton<MailService>();
         services.AddHostedService<DatabaseMigrator>();
         services.AddHostedService<BootstrapAdminSeeder>();

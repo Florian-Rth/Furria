@@ -9,18 +9,22 @@ namespace Furria.Infrastructure.Identity;
 
 public sealed class CredentialChangeNotifier
 {
+    private const string OutsideTransactionMessage =
+        "A credential change notice is stored in the transaction of the change it reports; "
+        + "begin that transaction before the change.";
+
     private readonly AppDbContext _dbContext;
-    private readonly MailQueue _mailQueue;
+    private readonly MailOutbox _mailOutbox;
     private readonly ILogger<CredentialChangeNotifier> _logger;
 
     public CredentialChangeNotifier(
         AppDbContext dbContext,
-        MailQueue mailQueue,
+        MailOutbox mailOutbox,
         ILogger<CredentialChangeNotifier> logger
     )
     {
         _dbContext = dbContext;
-        _mailQueue = mailQueue;
+        _mailOutbox = mailOutbox;
         _logger = logger;
     }
 
@@ -31,6 +35,9 @@ public sealed class CredentialChangeNotifier
         CancellationToken ct
     )
     {
+        if (_dbContext.Database.CurrentTransaction is null)
+            throw new InvalidOperationException(OutsideTransactionMessage);
+
         var holder = await HolderAsync(accountId, ct);
         if (holder is null)
             return;
@@ -40,7 +47,8 @@ public sealed class CredentialChangeNotifier
             return;
 
         var content = ToMailContent(holder, to, await ClubNameAsync(ct), change);
-        _mailQueue.Enqueue(CredentialChangeNoticeMail.Compose(content));
+        _mailOutbox.Stage(CredentialChangeNoticeMail.Compose(content));
+        await _dbContext.SaveChangesAsync(ct);
         _logger.LogInformation(
             "Mail {MailTemplate} queued for person {PersonId}",
             MailTemplate.CredentialChangeNotice,

@@ -54,7 +54,7 @@ npx cap run android                            # or: android/gradlew assembleDeb
 
 The WebView serves the app from `https://localhost`, which is a genuinely foreign origin to the
 API — so this path needs the CORS policy from `Furria.Api/Cors/NativeShellCors.cs` to be
-**deployed**. `cd.yml` only deploys from `main`; against an older deployment every request fails
+**deployed**. CI only deploys from a green `main`; against an older deployment every request fails
 as a CORS error, not a network error.
 
 ### The device loop (live reload)
@@ -111,12 +111,17 @@ A release build without `CLUB_APP_HOST` fails. A debug build without it gets the
 mailed paths are claimed; every other URL on the host stays with the browser.
 
 The deploy writes `assetlinks.json` at container start
-([`deploy/41-android-asset-links.sh`](deploy/41-android-asset-links.sh)) from two env vars:
+([`web/deploy/41-android-asset-links.sh`](../../deploy/41-android-asset-links.sh), shared with the website) from two env vars:
 
 - `ANDROID_PACKAGE_NAME` — default `de.furria.club`
 - `ANDROID_CERT_FINGERPRINTS` — comma-separated SHA-256 fingerprints of every signing key
   whose builds should open links and share passkeys (debug and release differ). Empty: no file,
   `404`. A malformed entry stops the container.
+
+Passkeys belong to the club domain, not to the app's host
+([ADR-0020](../../../docs/adr/0020-passkeys-belong-to-the-club-domain.md)): Android checks a
+passkey against `https://<club-domain>/.well-known/assetlinks.json`, so the **website** image
+writes the same file from the same two env vars.
 
 The API reads the same value as `ClubApp:AndroidCertFingerprints`
 ([`docker-compose.example.yml`](../../../docker-compose.example.yml) passes it on): each
