@@ -1,5 +1,6 @@
 using System.Reflection;
 using FastEndpoints;
+using Furria.Infrastructure.Persistence;
 
 namespace Furria.Api.Endpoints;
 
@@ -11,6 +12,25 @@ public sealed class GetHealth : EndpointWithoutRequest<GetHealthResponse>
             ?.InformationalVersion
         ?? "unknown";
 
+    private static readonly GetHealthResponse Ready = new()
+    {
+        Status = "ok",
+        Version = InformationalVersion,
+    };
+
+    private static readonly GetHealthResponse Unavailable = new()
+    {
+        Status = "unavailable",
+        Version = InformationalVersion,
+    };
+
+    private readonly DatabaseHealthService _databaseHealthService;
+
+    public GetHealth(DatabaseHealthService databaseHealthService)
+    {
+        _databaseHealthService = databaseHealthService;
+    }
+
     public override void Configure()
     {
         Get("health");
@@ -19,8 +39,10 @@ public sealed class GetHealth : EndpointWithoutRequest<GetHealthResponse>
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var response = new GetHealthResponse { Status = "ok", Version = InformationalVersion };
-        await Send.OkAsync(response, cancellation: ct);
+        if (await _databaseHealthService.IsReadyAsync(ct))
+            await Send.OkAsync(Ready, cancellation: ct);
+        else
+            await Send.ResponseAsync(Unavailable, StatusCodes.Status503ServiceUnavailable, ct);
     }
 }
 

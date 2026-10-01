@@ -22,12 +22,14 @@ using Furria.Tests.Common.Expectations;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Npgsql;
 using Serilog.Core;
 using Testcontainers.PostgreSql;
 using Xunit;
@@ -262,6 +264,44 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             foreach (var (key, value) in settings)
                 builder.UseSetting(key, value);
         });
+
+    public WebApplicationFactory<Program> HostOnDatabase(string connectionString) =>
+        WithWebHostBuilder(builder =>
+        {
+            builder.UseSetting(
+                $"ConnectionStrings:{AppDbContext.ConnectionName}",
+                connectionString
+            );
+            builder.ConfigureTestServices(RemoveDatabaseStartup);
+        });
+
+    private static void RemoveDatabaseStartup(IServiceCollection services)
+    {
+        var databaseStartup = services
+            .Where(descriptor =>
+                descriptor.ImplementationType == typeof(DatabaseMigrator)
+                || descriptor.ImplementationType == typeof(BootstrapAdminSeeder)
+            )
+            .ToList();
+        foreach (var descriptor in databaseStartup)
+            services.Remove(descriptor);
+    }
+
+    public async Task<string> CreateEmptyDatabaseAsync(CancellationToken ct = default)
+    {
+        var name = $"furria_empty_{Guid.NewGuid():N}";
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+#pragma warning disable EF1002
+        await db.Database.ExecuteSqlRawAsync($"CREATE DATABASE {name}", ct);
+#pragma warning restore EF1002
+
+        return new NpgsqlConnectionStringBuilder(_postgres.GetConnectionString())
+        {
+            Database = name,
+        }.ConnectionString;
+    }
 
     public Task AtLaterTimeAsync(TimeSpan ahead, Func<Task> body) =>
         AtInstantAsync(TimeProvider.GetUtcNow().Add(ahead), body);

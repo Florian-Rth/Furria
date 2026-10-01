@@ -66,6 +66,13 @@ services:
       # Production refuses to start without trusted proxies.
       ForwardedHeaders__TrustedProxies__0: *furria-subnet
       ForwardedHeaders__TrustedProxies__1: ${EDGE_PROXY_ADDRESS:?set EDGE_PROXY_ADDRESS in .env}
+    # Healthy once the database answers and every migration is applied (GET /api/health).
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "-o", "/dev/null", "http://localhost:8080/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 60s
     # Logs are JSON on stdout (ADR-0017); rotate them so `docker logs` never fills the disk.
     logging:
       driver: json-file
@@ -79,7 +86,8 @@ services:
     image: ${DOCKERHUB_USERNAME}/furria-website:latest
     restart: unless-stopped
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     environment:
       # Empty = same-origin: the browser calls /api on this host and nginx proxies it to the
       # api service (API_UPSTREAM below). Set an absolute URL only for a cross-origin backend.
@@ -94,7 +102,8 @@ services:
     image: ${DOCKERHUB_USERNAME}/furria-club-app:latest
     restart: unless-stopped
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     environment:
       # Empty = same-origin: the browser calls /api on app.furria.de and nginx proxies it to the
       # api service (API_UPSTREAM below). Set an absolute URL only for a cross-origin backend.

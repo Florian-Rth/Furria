@@ -106,6 +106,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<AccountAdministrationService>();
         services.AddScoped<AccountClaimService>();
         services.AddScoped<PersonAdoptionService>();
+        services.AddScoped<DatabaseHealthService>();
 
         services.AddSingleton<MailQueue>();
         services.AddSingleton<MailService>();
