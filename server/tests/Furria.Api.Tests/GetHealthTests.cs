@@ -25,6 +25,6 @@ public sealed class GetHealthTests
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("ok", result.Status);
-        Assert.Equal("0.2.0", result.Version);
+        Assert.Matches(@"^0\.2\.0(\+[0-9a-f]{7,40})?$", result.Version);
     }
 }

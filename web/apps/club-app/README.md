@@ -54,7 +54,7 @@ npx cap run android                            # or: android/gradlew assembleDeb
 
 The WebView serves the app from `https://localhost`, which is a genuinely foreign origin to the
 API — so this path needs the CORS policy from `Furria.Api/Cors/NativeShellCors.cs` to be
-**deployed**. `cd.yml` only deploys from `main`; against an older deployment every request fails
+**deployed**. CI only deploys from a green `main`; against an older deployment every request fails
 as a CORS error, not a network error.
 
 ### The device loop (live reload)

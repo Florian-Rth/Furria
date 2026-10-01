@@ -56,7 +56,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
     private static readonly TimeSpan SignedOutWorkTimeout = TimeSpan.FromSeconds(20);
 
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder(
-        "postgres:18-alpine"
+        "postgres:18.6-alpine"
     ).Build();
 
     private readonly IContainer _mailpit = new ContainerBuilder("axllent/mailpit:v1.27")

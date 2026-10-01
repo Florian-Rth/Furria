@@ -1,5 +1,5 @@
 # Build context is the pnpm workspace root: web/
-FROM node:24-alpine AS build
+FROM node:24.21-alpine AS build
 RUN corepack enable
 WORKDIR /repo
 ENV CI=true

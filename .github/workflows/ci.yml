@@ -41,3 +41,104 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
+
+  # Which app images this push changed. Only a push to main builds images.
+  changes:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    outputs:
+      apps: ${{ steps.filter.outputs.changes }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            api:
+              - 'server/**'
+              - '.github/workflows/ci.yml'
+            website:
+              - 'web/apps/website/**'
+              - 'web/packages/**'
+              - 'web/biome-plugins/**'
+              - 'web/package.json'
+              - 'web/pnpm-workspace.yaml'
+              - 'web/pnpm-lock.yaml'
+              - 'web/biome.json'
+              - 'web/tsconfig.base.json'
+              - 'web/.dockerignore'
+              - '.github/workflows/ci.yml'
+            club-app:
+              - 'web/apps/club-app/**'
+              - '!web/apps/club-app/android/**'
+              - '!web/apps/club-app/ios/**'
+              - '!web/apps/club-app/assets/**'
+              - 'web/packages/**'
+              - 'web/biome-plugins/**'
+              - 'web/package.json'
+              - 'web/pnpm-workspace.yaml'
+              - 'web/pnpm-lock.yaml'
+              - 'web/biome.json'
+              - 'web/tsconfig.base.json'
+              - 'web/.dockerignore'
+              - '.github/workflows/ci.yml'
+
+  # Builds each changed image only after backend and web are green, pushes it as the immutable
+  # sha-<short> tag, then moves :latest (what Watchtower follows) onto it - unless a newer commit
+  # already landed on main, so an older run finishing late never moves :latest backwards.
+  images:
+    needs: [backend, web, changes]
+    if: needs.changes.outputs.apps != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app: ${{ fromJSON(needs.changes.outputs.apps) }}
+    concurrency:
+      group: latest-${{ matrix.app }}
+      cancel-in-progress: false
+    env:
+      IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/furria-${{ matrix.app }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: build
+        run: |
+          short_sha="${GITHUB_SHA::7}"
+          echo "short-sha=$short_sha" >> "$GITHUB_OUTPUT"
+          if [ "${{ matrix.app }}" = "api" ]; then
+            echo "context=server" >> "$GITHUB_OUTPUT"
+            echo "file=server/Dockerfile" >> "$GITHUB_OUTPUT"
+          else
+            echo "context=web" >> "$GITHUB_OUTPUT"
+            echo "file=web/apps/${{ matrix.app }}/Dockerfile" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE }}
+          tags: type=sha,format=short
+      - uses: docker/build-push-action@v6
+        with:
+          context: ${{ steps.build.outputs.context }}
+          file: ${{ steps.build.outputs.file }}
+          platforms: linux/amd64
+          push: true
+          build-args: SOURCE_REVISION_ID=${{ steps.build.outputs.short-sha }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.app }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.app }}
+      - name: Move :latest onto this commit
+        run: |
+          main_head="$(git ls-remote origin refs/heads/main | cut -f1)"
+          if [ "$main_head" != "$GITHUB_SHA" ]; then
+            echo "main moved on to $main_head - :latest stays where it is."
+            exit 0
+          fi
+          docker buildx imagetools create \
+            --tag "$IMAGE:latest" \
+            "$IMAGE:sha-${{ steps.build.outputs.short-sha }}"
