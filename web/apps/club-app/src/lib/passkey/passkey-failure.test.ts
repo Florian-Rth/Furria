@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { RequestBlockedError, RequestFailedError, UnauthorizedError } from '@/lib/api/api-error';
+import {
+  RequestBlockedError,
+  RequestFailedError,
+  ServerFailureError,
+  UnauthorizedError,
+} from '@/lib/api/api-error';
 import { toPasskeyFailureKind } from './passkey-failure';
 
 describe('toPasskeyFailureKind', () => {
@@ -11,6 +16,8 @@ describe('toPasskeyFailureKind', () => {
     { error: new UnauthorizedError(), kind: 'rejected' },
     { error: new RequestFailedError(400, []), kind: 'refused' },
     { error: new RequestBlockedError(), kind: 'unreachable' },
+    { error: new ServerFailureError(429), kind: 'throttled' },
+    { error: new ServerFailureError(500), kind: 'unexpected' },
     { error: new Error('boom'), kind: 'unexpected' },
   ])('reads $error.name as $kind', ({ error, kind }) => {
     expect(toPasskeyFailureKind(error)).toBe(kind);

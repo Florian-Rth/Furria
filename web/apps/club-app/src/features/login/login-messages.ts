@@ -11,6 +11,8 @@ export const PASSWORD_RESET_NOTICE =
 
 const LOGIN_ERROR_MESSAGES: Record<LoginErrorKind, string> = {
   'invalid-credentials': 'E-Mail-Adresse oder Passwort ist falsch.',
+  throttled:
+    'Zu viele fehlgeschlagene Anmeldungen aus diesem Netz. Warte ein paar Minuten und versuche es dann erneut.',
   unreachable: 'Keine Verbindung zum Server. Prüfe deine Internetverbindung.',
   unexpected: 'Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut.',
 };
