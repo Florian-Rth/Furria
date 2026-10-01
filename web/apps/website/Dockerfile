@@ -17,6 +17,7 @@ ENV ANDROID_PACKAGE_NAME=de.furria.club
 ENV ANDROID_CERT_FINGERPRINTS=
 COPY --from=build /repo/apps/website/dist /usr/share/nginx/html
 COPY apps/website/deploy/default.conf.template /etc/nginx/templates/default.conf.template
+COPY deploy/security-headers.conf /etc/nginx/snippets/security-headers.conf
 COPY --chmod=0755 apps/website/deploy/40-runtime-config.sh /docker-entrypoint.d/40-runtime-config.sh
 COPY --chmod=0755 deploy/41-android-asset-links.sh /docker-entrypoint.d/41-android-asset-links.sh
 EXPOSE 80
