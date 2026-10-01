@@ -13,6 +13,16 @@
 
 name: furria
 
+# The API trusts X-Forwarded-For / -Proto only from this network (the website and club-app nginx)
+# and from the TLS edge's address (EDGE_PROXY_ADDRESS), so per-IP limits see real clients.
+x-furria-subnet: &furria-subnet 172.30.0.0/24
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: *furria-subnet
+
 services:
   postgres:
     image: postgres:18.6-alpine
@@ -53,6 +63,9 @@ services:
       ClubApp__BaseUrl: ${CLUB_APP_BASE_URL:?set CLUB_APP_BASE_URL in .env}
       # The same fingerprints the club-app's assetlinks.json names: each one's app may use passkeys.
       ClubApp__AndroidCertFingerprints: ${ANDROID_CERT_FINGERPRINTS:-}
+      # Production refuses to start without trusted proxies.
+      ForwardedHeaders__TrustedProxies__0: *furria-subnet
+      ForwardedHeaders__TrustedProxies__1: ${EDGE_PROXY_ADDRESS:?set EDGE_PROXY_ADDRESS in .env}
     # Logs are JSON on stdout (ADR-0017); rotate them so `docker logs` never fills the disk.
     logging:
       driver: json-file

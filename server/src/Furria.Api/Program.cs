@@ -8,6 +8,7 @@ using Furria.Api.Authorization;
 using Furria.Api.Cors;
 using Furria.Api.Errors;
 using Furria.Api.Logging;
+using Furria.Api.Proxies;
 using Furria.Api.RateLimiting;
 using Furria.Application;
 using Furria.Application.Identity;
@@ -50,6 +51,7 @@ try
                     )
         );
     builder.Services.AddAuthorization();
+    builder.Services.AddTrustedProxies(builder.Environment);
     builder.Services.AddNativeShellCors();
     builder.Services.AddSignedOutRateLimiting();
     builder.Services.AddAccountRateLimiting();
@@ -68,6 +70,7 @@ try
 
     var app = builder.Build();
 
+    app.UseForwardedHeaders();
     app.UseFurriaRequestLogging();
     app.UseExceptionHandler();
     app.UseCors();
