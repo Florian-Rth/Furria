@@ -25,7 +25,7 @@ public sealed class InvitationRoundService
 
     private readonly AppDbContext _dbContext;
     private readonly ClubRecordService _clubRecordService;
-    private readonly MailQueue _mailQueue;
+    private readonly MailOutbox _mailOutbox;
     private readonly ClubAppOptions _clubAppOptions;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<InvitationRoundService> _logger;
@@ -33,7 +33,7 @@ public sealed class InvitationRoundService
     public InvitationRoundService(
         AppDbContext dbContext,
         ClubRecordService clubRecordService,
-        MailQueue mailQueue,
+        MailOutbox mailOutbox,
         IOptions<ClubAppOptions> clubAppOptions,
         TimeProvider timeProvider,
         ILogger<InvitationRoundService> logger
@@ -41,7 +41,7 @@ public sealed class InvitationRoundService
     {
         _dbContext = dbContext;
         _clubRecordService = clubRecordService;
-        _mailQueue = mailQueue;
+        _mailOutbox = mailOutbox;
         _clubAppOptions = clubAppOptions.Value;
         _timeProvider = timeProvider;
         _logger = logger;
@@ -151,15 +151,14 @@ public sealed class InvitationRoundService
 
         _dbContext.Invitations.AddRange(issues.Select(issue => ToInvitation(issue, act)));
         _dbContext.AccountEvents.AddRange(issues.Select(issue => ToEvent(issue, act)));
+        foreach (var issue in issues)
+            _mailOutbox.Stage(ToMail(issue, act.Round));
 
         var saved = await _dbContext.SaveOrConflictAsync(ct);
         if (!saved.IsSuccess)
             return Result<InvitationRoundDetails>.Carrying(saved);
 
         await transaction.CommitAsync(ct);
-
-        foreach (var issue in issues)
-            _mailQueue.Enqueue(ToMail(issue, act.Round));
 
         return Result<InvitationRoundDetails>.Success(
             new InvitationRoundDetails { SentCount = issues.Count }

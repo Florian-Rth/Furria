@@ -129,15 +129,16 @@ public sealed class PasskeyService
             PasskeyName.Chosen(command.Name, ClubClock.DayOf(now)),
             now
         );
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
         ThrowUnlessSucceeded(await _userManager.AddOrUpdatePasskeyAsync(account, passkey));
-        _logger.LogInformation("Passkey added to account {AccountId}", account.Id);
-
         await _credentialChangeNotifier.NotifyAsync(
             account.Id,
             CredentialChange.PasskeyAdded,
             toAddress: null,
             ct
         );
+        await transaction.CommitAsync(ct);
+        _logger.LogInformation("Passkey added to account {AccountId}", account.Id);
 
         return Result<PasskeyDetails>.Success(ToDetails(passkey));
     }
@@ -155,15 +156,16 @@ public sealed class PasskeyService
         )
             return Result.NotFound(MissingPasskeyMessage);
 
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
         ThrowUnlessSucceeded(await _userManager.RemovePasskeyAsync(account, credentialId));
-        _logger.LogInformation("Passkey removed from account {AccountId}", account.Id);
-
         await _credentialChangeNotifier.NotifyAsync(
             account.Id,
             CredentialChange.PasskeyRemoved,
             toAddress: null,
             ct
         );
+        await transaction.CommitAsync(ct);
+        _logger.LogInformation("Passkey removed from account {AccountId}", account.Id);
 
         return Result.Success();
     }

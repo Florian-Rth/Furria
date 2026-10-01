@@ -28,6 +28,8 @@ public static class ServiceCollectionExtensions
     )
     {
         services.AddSingleton<AuditTimestampInterceptor>();
+        services.AddSingleton<MailOutboxSignal>();
+        services.AddSingleton<MailOutboxWakeUp>();
         services.AddDbContext<AppDbContext>(
             (serviceProvider, options) =>
                 options
@@ -40,7 +42,8 @@ public static class ServiceCollectionExtensions
                     )
                     .UseSnakeCaseNamingConvention()
                     .AddInterceptors(
-                        serviceProvider.GetRequiredService<AuditTimestampInterceptor>()
+                        serviceProvider.GetRequiredService<AuditTimestampInterceptor>(),
+                        serviceProvider.GetRequiredService<MailOutboxWakeUp>()
                     )
         );
 
@@ -108,7 +111,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<PersonAdoptionService>();
         services.AddScoped<DatabaseHealthService>();
 
-        services.AddSingleton<MailQueue>();
+        services.AddScoped<MailOutbox>();
         services.AddSingleton<MailService>();
         services.AddHostedService<DatabaseMigrator>();
         services.AddHostedService<BootstrapAdminSeeder>();

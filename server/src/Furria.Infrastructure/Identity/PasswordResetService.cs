@@ -27,7 +27,7 @@ public sealed class PasswordResetService
     private readonly RefreshTokenService _refreshTokenService;
     private readonly CredentialChangeNotifier _credentialChangeNotifier;
     private readonly ClubRecordService _clubRecordService;
-    private readonly MailQueue _mailQueue;
+    private readonly MailOutbox _mailOutbox;
     private readonly PasswordResetMailThrottle _mailThrottle;
     private readonly ClubAppOptions _clubAppOptions;
     private readonly ILogger<PasswordResetService> _logger;
@@ -38,7 +38,7 @@ public sealed class PasswordResetService
         RefreshTokenService refreshTokenService,
         CredentialChangeNotifier credentialChangeNotifier,
         ClubRecordService clubRecordService,
-        MailQueue mailQueue,
+        MailOutbox mailOutbox,
         PasswordResetMailThrottle mailThrottle,
         IOptions<ClubAppOptions> clubAppOptions,
         ILogger<PasswordResetService> logger
@@ -49,7 +49,7 @@ public sealed class PasswordResetService
         _refreshTokenService = refreshTokenService;
         _credentialChangeNotifier = credentialChangeNotifier;
         _clubRecordService = clubRecordService;
-        _mailQueue = mailQueue;
+        _mailOutbox = mailOutbox;
         _mailThrottle = mailThrottle;
         _clubAppOptions = clubAppOptions.Value;
         _logger = logger;
@@ -65,7 +65,7 @@ public sealed class PasswordResetService
             return;
 
         var token = await _userManager.GeneratePasswordResetTokenAsync(account);
-        _mailQueue.Enqueue(
+        _mailOutbox.Stage(
             PasswordResetMail.Compose(
                 new PasswordResetMailContent
                 {
@@ -77,6 +77,7 @@ public sealed class PasswordResetService
                 }
             )
         );
+        await _dbContext.SaveChangesAsync(ct);
         _logger.LogInformation("Password reset link queued for account {AccountId}", account.Id);
     }
 
@@ -91,6 +92,7 @@ public sealed class PasswordResetService
         if (account is null || account.IsDisabled)
             return Result.Conflict(DeadLinkMessage);
 
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
         var reset = await _userManager.ResetPasswordAsync(
             account,
             credential.Token,
@@ -108,6 +110,7 @@ public sealed class PasswordResetService
             null,
             ct
         );
+        await transaction.CommitAsync(ct);
         _logger.LogInformation(
             "Password reset for account {AccountId}, every session ended",
             account.Id

@@ -415,6 +415,12 @@ public sealed class GetMeTests
   `SignedOutMailRequestQueue.IsIdle` before truncating: a request a previous test left unanswered
   would otherwise hold locks while `TRUNCATE … CASCADE` takes them in another order, and
   PostgreSQL answers `40P01 deadlock detected` in the next test's `BuildAsync`.
+- **Mail leaves through the outbox (L1 S5).** A mail is an `outbox_mail` row written in the
+  transaction that causes it; the host's `MailDispatcher` sends rows in id order and deletes each
+  once sent. Mailpit receives the mail before the row is gone, so a test that proves no copy of a
+  link stays behind awaits `_fixture.OutboxDrainedAsync(ct)` after the mail arrived. Every host
+  runs its own dispatcher — a second host (`HostWithSettings`, `HostOnDatabase`) may send a mail
+  the test's act staged.
 - **A test that proves *nothing was sent* needs a sentinel.** Both signed-out queues run one
   request at a time, so a sentinel account's reset request queued after the act drains
   everything before it: act, `SignedOutMailSteps.SettleAsync(fixture, sentinelLoginEmail, ct)`,

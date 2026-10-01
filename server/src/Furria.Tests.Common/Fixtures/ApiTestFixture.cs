@@ -58,6 +58,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
     private const int PermitsPerIpBeyondAnySuite = 1_000_000;
 
     private static readonly TimeSpan SignedOutWorkTimeout = TimeSpan.FromSeconds(20);
+    private static readonly TimeSpan OutboxDrainTimeout = TimeSpan.FromSeconds(20);
 
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder(
         "postgres:18.6-alpine"
@@ -286,6 +287,19 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         foreach (var descriptor in databaseStartup)
             services.Remove(descriptor);
     }
+
+    public Task OutboxDrainedAsync(CancellationToken ct = default) =>
+        Polling.UntilAsync(
+            async token =>
+            {
+                await using var scope = Services.CreateAsyncScope();
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                return await db.OutboxMails.AnyAsync(token) ? null : db;
+            },
+            OutboxDrainTimeout,
+            "The mail outbox still holds mail",
+            ct
+        );
 
     public async Task<string> CreateEmptyDatabaseAsync(CancellationToken ct = default)
     {

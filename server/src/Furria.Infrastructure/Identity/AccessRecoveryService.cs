@@ -217,18 +217,18 @@ public sealed class AccessRecoveryService
         }
 
         await _refreshTokenService.RevokeAllAsync(account.Id, ct);
+        await _credentialChangeNotifier.NotifyAsync(
+            account.Id,
+            CredentialChange.AccessRecovered,
+            recoverable.LoginEmail,
+            ct
+        );
         await transaction.CommitAsync(ct);
 
         _logger.LogInformation(
             "Access recovered for account {AccountId} of person {PersonId}",
             account.Id,
             recoverable.PersonId
-        );
-        await _credentialChangeNotifier.NotifyAsync(
-            account.Id,
-            CredentialChange.AccessRecovered,
-            recoverable.LoginEmail,
-            ct
         );
 
         return Result<RedemptionDetails>.Success(

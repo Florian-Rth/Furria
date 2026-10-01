@@ -166,15 +166,14 @@ public sealed class AccountSecurityService
             }
         }
 
-        await transaction.CommitAsync(ct);
-        _logger.LogInformation("Login email changed for account {AccountId}", accountId);
-
         await _credentialChangeNotifier.NotifyAsync(
             accountId,
             CredentialChange.LoginEmailChanged,
             previousEmail,
             ct
         );
+        await transaction.CommitAsync(ct);
+        _logger.LogInformation("Login email changed for account {AccountId}", accountId);
 
         return Result.Success();
     }
@@ -195,6 +194,7 @@ public sealed class AccountSecurityService
                 ReauthenticationMessage(verdict, proof)
             );
 
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
         var changed = await _userManager.ChangePasswordAsync(
             account,
             command.CurrentPassword,
@@ -216,6 +216,7 @@ public sealed class AccountSecurityService
             toAddress: null,
             ct
         );
+        await transaction.CommitAsync(ct);
 
         return Result<SessionTokensDetails>.Success(session);
     }

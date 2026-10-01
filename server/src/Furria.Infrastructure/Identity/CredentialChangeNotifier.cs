@@ -10,17 +10,17 @@ namespace Furria.Infrastructure.Identity;
 public sealed class CredentialChangeNotifier
 {
     private readonly AppDbContext _dbContext;
-    private readonly MailQueue _mailQueue;
+    private readonly MailOutbox _mailOutbox;
     private readonly ILogger<CredentialChangeNotifier> _logger;
 
     public CredentialChangeNotifier(
         AppDbContext dbContext,
-        MailQueue mailQueue,
+        MailOutbox mailOutbox,
         ILogger<CredentialChangeNotifier> logger
     )
     {
         _dbContext = dbContext;
-        _mailQueue = mailQueue;
+        _mailOutbox = mailOutbox;
         _logger = logger;
     }
 
@@ -40,7 +40,8 @@ public sealed class CredentialChangeNotifier
             return;
 
         var content = ToMailContent(holder, to, await ClubNameAsync(ct), change);
-        _mailQueue.Enqueue(CredentialChangeNoticeMail.Compose(content));
+        _mailOutbox.Stage(CredentialChangeNoticeMail.Compose(content));
+        await _dbContext.SaveChangesAsync(ct);
         _logger.LogInformation(
             "Mail {MailTemplate} queued for person {PersonId}",
             MailTemplate.CredentialChangeNotice,

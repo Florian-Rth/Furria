@@ -59,6 +59,26 @@ public sealed class PostPersonInvitationTests
     }
 
     [Fact]
+    public async Task Should_KeepNoCopyOfTheLink_When_TheInvitationMailWasSent()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var annaEmail = InvitationSteps.UniqueContactEmail("anna");
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity.AddEligiblePerson("anna", "Anna", annaEmail, _fixture.Today)
+                ),
+            ct
+        );
+        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+
+        await InvitationSteps.InviteAsync(manager, ctx.Identity.People.IdOf("anna"));
+
+        await _fixture.Mailbox.SingleMailToAsync(annaEmail, ct);
+        await _fixture.OutboxDrainedAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_KillTheFirstLink_When_ASecondInvitationIsIssued()
     {
         var ct = TestContext.Current.CancellationToken;
