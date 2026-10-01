@@ -35,7 +35,9 @@ public sealed class DatabaseMigrationTests
             TestContext.Current.CancellationToken
         );
 
-        var written = Assert.Single(_fixture.Logs.Written(MigrationsApplied));
+        var written = Assert.Single(
+            _fixture.Logs.WrittenBefore(MigrationsApplied, _fixture.HostStarted)
+        );
         Assert.Equal(LogEventLevel.Information, written.Level);
         Assert.Equal(appliedMigrations.Count, written.ScalarOf("MigrationCount"));
         Assert.Equal(appliedMigrations[0], written.ScalarOf("FirstMigration"));

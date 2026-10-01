@@ -88,6 +88,8 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
 
     public CapturingLogSink Logs { get; } = new();
 
+    public LogMark HostStarted { get; private set; }
+
     public DateOnly Today => ClubClock.Today(TimeProvider);
 
     public int CurrentSessionYear => ClubSession.YearOf(Today);
@@ -249,6 +251,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             .Select(role => role.Id)
             .SingleAsync();
 
+        HostStarted = Logs.Mark();
         _resetService = await DatabaseResetService.CreateAsync(
             [db],
             [

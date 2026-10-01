@@ -33,4 +33,15 @@ public sealed class CapturingLogSink : ILogEventSink
 
     public IReadOnlyList<LogEvent> Written(string messageTemplate, LogMark since) =>
         [.. Since(since).Where(logged => logged.MessageTemplate.Text == messageTemplate)];
+
+    public IReadOnlyList<LogEvent> WrittenBefore(string messageTemplate, LogMark until)
+    {
+        lock (_gate)
+            return
+            [
+                .. _events
+                    .Take(until.Position)
+                    .Where(logged => logged.MessageTemplate.Text == messageTemplate),
+            ];
+    }
 }
