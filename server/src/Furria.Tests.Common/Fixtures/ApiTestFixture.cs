@@ -16,6 +16,7 @@ using Furria.Core.Identity;
 using Furria.Core.Roles;
 using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Identity;
+using Furria.Infrastructure.Mail;
 using Furria.Infrastructure.Persistence;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Expectations;
@@ -291,6 +292,42 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             .ToList();
         foreach (var descriptor in databaseStartup)
             services.Remove(descriptor);
+    }
+
+    public async Task<WebApplicationFactory<Program>> HostOnOwnDatabaseAsync(
+        IReadOnlyDictionary<string, string> settings,
+        CancellationToken ct = default
+    )
+    {
+        var database = await CreateEmptyDatabaseAsync(ct);
+        return WithWebHostBuilder(builder =>
+        {
+            builder.UseSetting($"ConnectionStrings:{AppDbContext.ConnectionName}", database);
+            foreach (var (key, value) in settings)
+                builder.UseSetting(key, value);
+        });
+    }
+
+    public static async Task<IReadOnlyList<OutboxMail>> OutboxOfAsync(
+        WebApplicationFactory<Program> host,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = host.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        return await db.OutboxMails.AsNoTracking().OrderBy(mail => mail.Id).ToListAsync(ct);
+    }
+
+    public static async Task StageOutboxMailAsync(
+        WebApplicationFactory<Program> host,
+        OutboxMail mail,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = host.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        db.OutboxMails.Add(mail);
+        await db.SaveChangesAsync(ct);
     }
 
     public Task OutboxDrainedAsync(CancellationToken ct = default) =>
