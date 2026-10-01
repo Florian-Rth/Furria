@@ -188,6 +188,14 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             PermitsPerInvitationToken.ToString(CultureInfo.InvariantCulture)
         );
         builder.UseSetting(
+            $"{SignInRateLimitOptions.SectionName}:{nameof(SignInRateLimitOptions.FailedLoginsPerIp)}",
+            PermitsPerIpBeyondAnySuite.ToString(CultureInfo.InvariantCulture)
+        );
+        builder.UseSetting(
+            $"{SignInRateLimitOptions.SectionName}:{nameof(SignInRateLimitOptions.RejectedRefreshesPerIp)}",
+            PermitsPerIpBeyondAnySuite.ToString(CultureInfo.InvariantCulture)
+        );
+        builder.UseSetting(
             $"{TrustedProxyOptions.SectionName}:{nameof(TrustedProxyOptions.TrustedProxies)}:0",
             TrustedProxyAddress
         );
@@ -245,6 +253,15 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             CancellationToken.None
         );
     }
+
+    public WebApplicationFactory<Program> HostWithSettings(
+        IReadOnlyDictionary<string, string> settings
+    ) =>
+        WithWebHostBuilder(builder =>
+        {
+            foreach (var (key, value) in settings)
+                builder.UseSetting(key, value);
+        });
 
     public Task AtLaterTimeAsync(TimeSpan ahead, Func<Task> body) =>
         AtInstantAsync(TimeProvider.GetUtcNow().Add(ahead), body);

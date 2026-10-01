@@ -10,24 +10,33 @@ namespace Furria.Api.Endpoints.Auth;
 public sealed class LoginWithPasskey : Endpoint<LoginWithPasskeyRequest, LoginWithPasskeyResponse>
 {
     private readonly AccountService _accountService;
+    private readonly SignInFailureLimiter _failureLimiter;
 
-    public LoginWithPasskey(AccountService accountService)
+    public LoginWithPasskey(AccountService accountService, SignInFailureLimiter failureLimiter)
     {
         _accountService = accountService;
+        _failureLimiter = failureLimiter;
     }
 
     public override void Configure()
     {
         Post("auth/login/passkey");
         AllowAnonymous();
-        Options(route => route.RequireRateLimiting(SignedOutRateLimiting.PerIpPolicy));
     }
 
     public override async Task HandleAsync(LoginWithPasskeyRequest req, CancellationToken ct)
     {
+        var client = HttpContext.Connection.RemoteIpAddress;
+        if (_failureLimiter.HasFailedTooOften(SignInFailureScope.Login, client))
+        {
+            await Send.StatusCodeAsync(StatusCodes.Status429TooManyRequests, ct);
+            return;
+        }
+
         var session = await _accountService.LoginWithPasskeyAsync(ToAssertion(req), ct);
         if (!session.IsSuccess)
         {
+            _failureLimiter.CountFailure(SignInFailureScope.Login, client);
             await Send.UnauthorizedAsync(ct);
             return;
         }

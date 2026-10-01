@@ -5,7 +5,6 @@ using Furria.Api.Endpoints.Auth;
 using Furria.Api.RateLimiting;
 using Furria.Api.Tests.Auth;
 using Furria.Tests.Common.Fixtures;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
 
@@ -15,7 +14,6 @@ namespace Furria.Api.Tests.Proxies;
 public sealed class ForwardedClientAddressTests
 {
     private const int PermitsPerIp = 2;
-    private const string ForwardedFor = "X-Forwarded-For";
 
     private readonly ApiTestFixture _fixture;
 
@@ -29,8 +27,8 @@ public sealed class ForwardedClientAddressTests
     {
         await _fixture.BuildAsync(TestContext.Current.CancellationToken);
         await using var host = HostWithTightPerIpLimit();
-        var first = ClientForwardedFor(host, "203.0.113.10");
-        var second = ClientForwardedFor(host, "203.0.113.20");
+        var first = host.CreateClientForwardedFor("203.0.113.10");
+        var second = host.CreateClientForwardedFor("203.0.113.20");
 
         await UseUpThePerIpLimitAsync(first);
         var (response, _) = await LookUpAsync(second);
@@ -45,9 +43,9 @@ public sealed class ForwardedClientAddressTests
         await using var host = HostWithTightPerIpLimit();
 
         for (var attempt = 0; attempt < PermitsPerIp; attempt++)
-            await LookUpAsync(ClientForwardedFor(host, $"198.51.100.{attempt}, 203.0.113.30"));
+            await LookUpAsync(host.CreateClientForwardedFor($"198.51.100.{attempt}, 203.0.113.30"));
         var (response, _) = await LookUpAsync(
-            ClientForwardedFor(host, "198.51.100.99, 203.0.113.30")
+            host.CreateClientForwardedFor("198.51.100.99, 203.0.113.30")
         );
 
         Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
@@ -60,30 +58,22 @@ public sealed class ForwardedClientAddressTests
         await using var host = HostWithTightPerIpLimit();
 
         await UseUpThePerIpLimitAsync(
-            ClientForwardedFor(host, $"203.0.113.40, {ApiTestFixture.TrustedProxyAddress}")
+            host.CreateClientForwardedFor($"203.0.113.40, {ApiTestFixture.TrustedProxyAddress}")
         );
-        var (response, _) = await LookUpAsync(ClientForwardedFor(host, "203.0.113.40"));
+        var (response, _) = await LookUpAsync(host.CreateClientForwardedFor("203.0.113.40"));
 
         Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
     }
 
     private WebApplicationFactory<Program> HostWithTightPerIpLimit() =>
-        _fixture.WithWebHostBuilder(builder =>
-            builder.UseSetting(
-                $"{SignedOutRateLimitOptions.SectionName}:{nameof(SignedOutRateLimitOptions.PermitsPerIp)}",
-                PermitsPerIp.ToString(CultureInfo.InvariantCulture)
-            )
+        _fixture.HostWithSettings(
+            new Dictionary<string, string>
+            {
+                [
+                    $"{SignedOutRateLimitOptions.SectionName}:{nameof(SignedOutRateLimitOptions.PermitsPerIp)}"
+                ] = PermitsPerIp.ToString(CultureInfo.InvariantCulture),
+            }
         );
-
-    private static HttpClient ClientForwardedFor(
-        WebApplicationFactory<Program> host,
-        string forwardedFor
-    )
-    {
-        var client = host.CreateClient();
-        client.DefaultRequestHeaders.Add(ForwardedFor, forwardedFor);
-        return client;
-    }
 
     private static async Task UseUpThePerIpLimitAsync(HttpClient client)
     {

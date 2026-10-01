@@ -271,6 +271,39 @@ public sealed class RefreshTests
         Assert.Equal(ctx.Identity.Accounts.IdOf("alice"), written.ScalarOf("AccountId"));
     }
 
+    [Fact]
+    public async Task Should_ReturnTooManyRequests_When_HerAddressPresentedTooManyRejectedTokens()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (_, session) = await LoggedInAsync(ct);
+        await using var host = SignInLimitSteps.HostAllowingFewFailures(_fixture);
+        var client = host.CreateClientForwardedFor("203.0.113.70");
+
+        for (var attempt = 0; attempt < SignInLimitSteps.FailuresAllowed; attempt++)
+            await SignInLimitSteps.RefreshAsync(client, $"unknown-refresh-token-{attempt}");
+        var (response, _) = await SignInLimitSteps.RefreshAsync(client, session.RefreshToken);
+
+        Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_ReturnANewPair_When_HerAddressRefreshedMoreOftenThanRejectionsAreAllowed()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (_, session) = await LoggedInAsync(ct);
+        await using var host = SignInLimitSteps.HostAllowingFewFailures(_fixture);
+        var client = host.CreateClientForwardedFor("203.0.113.71");
+        var refreshToken = session.RefreshToken;
+
+        for (var refresh = 0; refresh < SignInLimitSteps.FailuresAllowed; refresh++)
+            refreshToken = (await SignInLimitSteps.RefreshAsync(client, refreshToken))
+                .Result
+                .RefreshToken;
+        var (response, _) = await SignInLimitSteps.RefreshAsync(client, refreshToken);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
     private async Task<(SeededContext Context, LoginResponse Session)> LoggedInAsync(
         CancellationToken ct
     )

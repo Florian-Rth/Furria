@@ -55,6 +55,7 @@ try
     builder.Services.AddNativeShellCors();
     builder.Services.AddSignedOutRateLimiting();
     builder.Services.AddAccountRateLimiting();
+    builder.Services.AddSignInRateLimiting();
     builder.Services.AddFastEndpoints();
     if (builder.Environment.IsDevelopment())
     {

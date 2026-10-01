@@ -398,9 +398,16 @@ public sealed class GetMeTests
   account id, five login-email codes per 15 minutes). Give every test its own address with
   `UniqueContactEmail`, and remember the bootstrap admin's account id survives every reset: a
   test that spends her per-account budget spends it for the whole collection.
-- **A per-IP limit cannot be proven by exhausting it.** The fixture sets
-  `RateLimits:SignedOut:PermitsPerIp` to a million so no suite trips it, and every test comes from
-  the same loopback IP. A signed-out route therefore proves its limit through the route's metadata:
+- **A per-IP limit is proven on a host of its own, from forwarded addresses.** The fixture sets
+  `RateLimits:SignedOut:PermitsPerIp` and both `RateLimits:SignIn` limits to a million so no suite
+  trips them, and every test comes from the same address. A test that must exhaust a per-IP limit
+  takes `_fixture.HostWithSettings(...)` — a second host on the same database with the limit
+  lowered (`SignInLimitSteps.HostAllowingFewFailures` for sign-in) — disposed with `await using`,
+  so its limiter dies with the test. Its clients come from
+  `host.CreateClientForwardedFor("203.0.113.x")`: the fixture trusts
+  `ApiTestFixture.TrustedProxyAddress`, and the test server's peer is trusted as the first hop, so
+  each test is its own client. Draw an address no other test uses (TEST-NET ranges).
+- **A signed-out route proves it sits on the per-IP policy through the route's metadata:**
   `PasskeySteps.RateLimitPolicyOf(fixture, route)` reads the `EnableRateLimitingAttribute` the
   endpoint's `RequireRateLimiting` left, and must equal `SignedOutRateLimiting.PerIpPolicy`. A route
   that forgets the call passes every behaviour test and only this one goes red.
