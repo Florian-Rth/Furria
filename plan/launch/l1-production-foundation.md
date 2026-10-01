@@ -1,5 +1,5 @@
 ---
-status: agreed 2026-10-01 — S1 next
+status: S1–S7 built on feat/l1-production-foundation (2026-10-01); S8 docs written (docs/ops/PRODUCTION.md), live-host move pending with Florian
 phase: L1 — Production foundation (plan/launch.md)
 shaped_with: Florian, grilling session 2026-10-01
 binding: docs/adr/0020
