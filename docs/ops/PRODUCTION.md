@@ -75,11 +75,13 @@ curl -s https://app.<club-domain>/api/health
 
 ## Rollback
 
-1. Find the last good commit: `git log --oneline main`, or the version `/api/health` reported
-   before the bad release. Its image tag is `sha-<first 7 characters>`.
+1. Find the last good commit on `main`: `git log --first-parent --oneline main`, or the `+<sha>`
+   `/api/health` reported before the bad release.
 2. GitHub → Actions → **Rollback** → *Run workflow*: pick the app (`api`, `website`, `club-app`)
-   and enter the tag. The workflow repoints that app's `:latest` (no rebuild) and refuses anything
-   but a `sha-<short>` tag.
+   and enter the commit (7–40 hex characters, `sha-` prefix optional). CI builds only the apps a
+   push changed, so that commit may have no image of this app: the workflow takes the newest
+   image built at or before it on `main` — what production ran for that app as of that commit —
+   and repoints `:latest` to it (no rebuild). The run summary names the image it chose.
 3. Watchtower picks it up within 5 minutes; to skip the wait, on the host:
    `docker compose pull <service> && docker compose up -d <service>`.
 4. Check `/api/health` reports the old `+<sha>`.
