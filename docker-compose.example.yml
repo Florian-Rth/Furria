@@ -60,7 +60,10 @@ services:
       Mail__User: ${MAIL_USER:-}
       Mail__Password: ${MAIL_PASSWORD:-}
       Mail__From: ${MAIL_FROM:?set MAIL_FROM in .env}
-      ClubApp__BaseUrl: ${CLUB_APP_BASE_URL:?set CLUB_APP_BASE_URL in .env}
+      # Every mailed link starts here; passkeys belong to the club domain itself (ADR-0020), and
+      # the API refuses to start unless the club app's host lies under it.
+      ClubApp__BaseUrl: https://${CLUB_APP_HOST:-app.${CLUB_DOMAIN:?set CLUB_DOMAIN in .env}}
+      Passkeys__RelyingPartyId: ${CLUB_DOMAIN:?set CLUB_DOMAIN in .env}
       # The same fingerprints the club-app's assetlinks.json names: each one's app may use passkeys.
       ClubApp__AndroidCertFingerprints: ${ANDROID_CERT_FINGERPRINTS:-}
       # Production refuses to start without trusted proxies.
@@ -93,6 +96,10 @@ services:
       # api service (API_UPSTREAM below). Set an absolute URL only for a cross-origin backend.
       API_BASE_URL: ${WEBSITE_API_BASE_URL:-}
       API_UPSTREAM: api:8080
+      # Android verifies passkeys against /.well-known/assetlinks.json at the club domain - this
+      # site. Same values as the club-app's.
+      ANDROID_PACKAGE_NAME: ${ANDROID_PACKAGE_NAME:-de.furria.club}
+      ANDROID_CERT_FINGERPRINTS: ${ANDROID_CERT_FINGERPRINTS:-}
     ports:
       - "${WEBSITE_PORT:-80}:80"
     labels:

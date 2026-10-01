@@ -67,8 +67,9 @@ public static class ServiceCollectionExtensions
             .AddDefaultTokenProviders();
         services
             .AddOptions<IdentityPasskeyOptions>()
-            .Configure<IOptions<ClubAppOptions>>(
-                (passkeys, clubApp) => PasskeyRelyingParty.Configure(passkeys, clubApp.Value)
+            .Configure<IOptions<PasskeyOptions>, IOptions<ClubAppOptions>>(
+                (passkeys, relyingParty, clubApp) =>
+                    PasskeyRelyingParty.Configure(passkeys, relyingParty.Value, clubApp.Value)
             );
 
         services

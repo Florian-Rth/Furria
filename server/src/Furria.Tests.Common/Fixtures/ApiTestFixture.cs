@@ -47,6 +47,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
     public const string BootstrapAdminEmail = "bootstrap-admin@test.local";
     public const string BootstrapAdminPassword = "Bootstrap-Admin-Pw-1!";
     public const string SeededAccountPassword = "Seeded-Account-Pw-1!";
+    public const string ClubDomain = "furria.test";
     public const string ClubAppBaseUrl = "https://club.furria.test";
     public const string AndroidCertFingerprint =
         "14:6D:E9:83:C5:73:06:50:D8:EE:B9:95:2F:34:FC:64:16:A0:83:42:E6:1D:BE:A8:8A:04:96:B2:3F:CF:44:E5";
@@ -177,6 +178,10 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         builder.UseSetting(
             $"{ClubAppOptions.SectionName}:{nameof(ClubAppOptions.BaseUrl)}",
             ClubAppBaseUrl
+        );
+        builder.UseSetting(
+            $"{PasskeyOptions.SectionName}:{nameof(PasskeyOptions.RelyingPartyId)}",
+            ClubDomain
         );
         builder.UseSetting(
             $"{ClubAppOptions.SectionName}:{nameof(ClubAppOptions.AndroidCertFingerprints)}:0",

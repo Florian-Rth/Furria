@@ -1,6 +1,7 @@
 using System.Buffers.Text;
 using System.Diagnostics.Contracts;
 using Furria.Application.ClubApp;
+using Furria.Application.Identity;
 using Microsoft.AspNetCore.Identity;
 
 namespace Furria.Infrastructure.Identity;
@@ -11,17 +12,18 @@ public static class PasskeyRelyingParty
 
     private const string RequiredResidentKey = "required";
 
-    public static void Configure(IdentityPasskeyOptions passkeys, ClubAppOptions clubApp)
+    public static void Configure(
+        IdentityPasskeyOptions passkeys,
+        PasskeyOptions relyingParty,
+        ClubAppOptions clubApp
+    )
     {
         var origins = OriginsOf(clubApp);
-        passkeys.ServerDomain = DomainOf(clubApp.BaseUrl);
+        passkeys.ServerDomain = relyingParty.RelyingPartyId;
         passkeys.ResidentKeyRequirement = RequiredResidentKey;
         passkeys.ValidateOrigin = context =>
             ValueTask.FromResult(IsAccepted(origins, context.Origin, context.CrossOrigin));
     }
-
-    [Pure]
-    public static string DomainOf(string baseUrl) => new Uri(baseUrl).Host;
 
     [Pure]
     public static IReadOnlySet<string> OriginsOf(ClubAppOptions clubApp) =>

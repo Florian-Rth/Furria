@@ -59,6 +59,7 @@ jobs:
               - '.github/workflows/ci.yml'
             website:
               - 'web/apps/website/**'
+              - 'web/deploy/**'
               - 'web/packages/**'
               - 'web/biome-plugins/**'
               - 'web/package.json'
@@ -70,6 +71,7 @@ jobs:
               - '.github/workflows/ci.yml'
             club-app:
               - 'web/apps/club-app/**'
+              - 'web/deploy/**'
               - '!web/apps/club-app/android/**'
               - '!web/apps/club-app/ios/**'
               - '!web/apps/club-app/assets/**'

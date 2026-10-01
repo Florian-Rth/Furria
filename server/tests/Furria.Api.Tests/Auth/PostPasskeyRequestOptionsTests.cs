@@ -18,7 +18,7 @@ public sealed class PostPasskeyRequestOptionsTests
     }
 
     [Fact]
-    public async Task Should_OfferADiscoverableRequestForTheClubAppDomain_When_Asked()
+    public async Task Should_OfferADiscoverableRequestForTheClubDomain_When_Asked()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
@@ -27,7 +27,7 @@ public sealed class PostPasskeyRequestOptionsTests
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.NotEmpty(result.ChallengeId);
-        Assert.Equal("club.furria.test", result.Options.GetProperty("rpId").GetString());
+        Assert.Equal(ApiTestFixture.ClubDomain, result.Options.GetProperty("rpId").GetString());
         Assert.Equal("required", result.Options.GetProperty("userVerification").GetString());
         Assert.Empty(AllowedCredentialsOf(result.Options));
         await ctx.Expected.PasskeyChallenges().ToHaveCount(1).AssertAsync(ct);

@@ -11,15 +11,6 @@ public sealed class PasskeyRelyingPartyTests
     private const string DebugOrigin =
         "android:apk-key-hash:FG3pg8VzBlDY7rmVLzT8ZBagg0LmHb6oigSWsj_PROU";
 
-    [Theory]
-    [InlineData("https://club.furria.de", "club.furria.de")]
-    [InlineData("https://Club.Furria.de/app/", "club.furria.de")]
-    [InlineData("http://localhost:3001", "localhost")]
-    public void Should_UseTheHostAsTheDomain_When_TheBaseUrlIsRead(string baseUrl, string domain)
-    {
-        Assert.Equal(domain, PasskeyRelyingParty.DomainOf(baseUrl));
-    }
-
     [Fact]
     public void Should_AcceptTheWebOriginAndEveryAndroidSigningKey_When_TheOriginsAreBuilt()
     {
