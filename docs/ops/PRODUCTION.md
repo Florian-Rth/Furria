@@ -106,6 +106,13 @@ docker compose logs api | grep -E 'Mail .* (sent|failed|abandoned)'
 
 An SMTP outage therefore delays mail; an API restart no longer loses it.
 
+**Delivery is at least once.** The dispatcher sends while it holds the row locked in a
+transaction, then deletes the row and commits. Should the database or the API go away between the
+SMTP send and that commit, the row survives and the mail goes out again: a member can receive an
+invitation, a reset link or a notice twice. Every link in them stays single-use, so a duplicate
+never grants more than the first mail did. Each SMTP exchange is capped at 30 s, which bounds how
+long a row stays locked.
+
 ## Moving the live host onto the example compose
 
 The live `~/furria/docker-compose.yml` predates L1. Bring it onto

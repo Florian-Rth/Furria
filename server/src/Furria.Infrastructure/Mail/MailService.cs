@@ -8,6 +8,8 @@ namespace Furria.Infrastructure.Mail;
 
 public sealed class MailService
 {
+    private static readonly TimeSpan SmtpTimeout = TimeSpan.FromSeconds(30);
+
     private readonly MailOptions _options;
 
     public MailService(IOptions<MailOptions> options)
@@ -17,7 +19,7 @@ public sealed class MailService
 
     public async Task SendAsync(OutgoingMail mail, CancellationToken ct)
     {
-        using var client = new SmtpClient();
+        using var client = new SmtpClient { Timeout = (int)SmtpTimeout.TotalMilliseconds };
         await client.ConnectAsync(_options.Host, _options.Port, SecureSocketOptions.Auto, ct);
 
         if (_options.User.Length > 0)
