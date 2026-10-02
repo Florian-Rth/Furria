@@ -37,6 +37,7 @@ public sealed class EndpointGateTests
         "/api/auth/me/last-seen-announcement",
         "/api/calendar/entries",
         "/api/calendar/entries/{calendarEntryId}",
+        "/api/calendar/{calendarEntryId}/response",
         "/api/auth/me/login-email",
         "/api/auth/me/login-email/confirmation",
         "/api/auth/me/password",

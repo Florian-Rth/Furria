@@ -9,4 +9,6 @@ public sealed record SetAttendanceResponseCommand
     public required int PersonId { get; init; }
 
     public required AttendanceAnswer Answer { get; init; }
+
+    public required bool HoldsClubRead { get; init; }
 }
