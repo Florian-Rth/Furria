@@ -27,6 +27,7 @@ const anEntry = (overrides: Partial<GroupCalendarEntry>): GroupCalendarEntry => 
   asksForResponse: false,
   description: null,
   viewerAnswer: null,
+  viewerMayAnswer: false,
   isRunning: false,
   ...overrides,
 });

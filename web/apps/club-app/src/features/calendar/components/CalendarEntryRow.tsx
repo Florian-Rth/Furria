@@ -6,7 +6,7 @@ import { toDayNumberLabel, toWeekdayEyebrow } from '@/lib/calendar-days';
 import { RUNNING_CHIP_LABEL, toEntryMetaLine } from '../calendar-labels';
 import { toEntryTone } from '../calendar-tones';
 import type { CalendarEntry } from '../schemas';
-import { CalendarAttendanceRow } from './CalendarAttendanceRow';
+import { CalendarAttendanceChoice } from './CalendarAttendanceChoice';
 
 const LANDING_KIND = 'calendar-entry';
 
@@ -23,7 +23,7 @@ export const CalendarEntryRow: FC<CalendarEntryRowProps> = ({ entry, owned, high
       {RUNNING_CHIP_LABEL}
     </KkChip>
   ) : undefined;
-  const actions = entry.asksForResponse ? <CalendarAttendanceRow entry={entry} /> : undefined;
+  const actions = entry.asksForResponse ? <CalendarAttendanceChoice entry={entry} /> : undefined;
   const span = toDayNumberLabel(entry.startsAt);
   const spanLabel = toWeekdayEyebrow(entry.startsAt);
   const meta = toEntryMetaLine(entry);

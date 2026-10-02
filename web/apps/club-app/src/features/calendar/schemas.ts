@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { CalendarEntryKindSchema } from '@/features/club';
 import { AppSearchSchema } from '@/features/session';
+import { ATTENDANCE_ANSWER_KEYS } from '@/lib/calendar-copy';
 import { GroupToneSchema } from '@/lib/group-tone';
 
 export const CalendarBoardSearchSchema = AppSearchSchema.extend({
@@ -14,7 +15,7 @@ export type CalendarBoardSearch = z.infer<typeof CalendarBoardSearchSchema>;
 export const CalendarEntryVisibilitySchema = z.enum(['group', 'club', 'public']);
 export type CalendarEntryVisibility = z.infer<typeof CalendarEntryVisibilitySchema>;
 
-export const AttendanceAnswerSchema = z.enum(['yes', 'no', 'maybe']);
+export const AttendanceAnswerSchema = z.enum(ATTENDANCE_ANSWER_KEYS);
 export type AttendanceAnswer = z.infer<typeof AttendanceAnswerSchema>;
 
 export const ParticipatingGroupSchema = z.object({

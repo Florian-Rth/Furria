@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import {
-  toAttendanceChoices,
   toDayEntriesLabel,
   toDeleteConsequence,
   toEntryFacts,
@@ -31,24 +30,6 @@ const entry = (overrides: Partial<CalendarEntry>): CalendarEntry => ({
   viewerAnswer: null,
   isRunning: false,
   ...overrides,
-});
-
-describe('toAttendanceChoices', () => {
-  it('marks nothing when the viewer has not answered', () => {
-    expect(toAttendanceChoices(null).map((choice) => choice.selected)).toEqual([
-      false,
-      false,
-      false,
-    ]);
-  });
-
-  it.each([
-    ['yes' as const, [true, false, false]],
-    ['no' as const, [false, true, false]],
-    ['maybe' as const, [false, false, true]],
-  ])('marks the answer %s', (answer, expected) => {
-    expect(toAttendanceChoices(answer).map((choice) => choice.selected)).toEqual(expected);
-  });
 });
 
 describe('toDayEntriesLabel', () => {

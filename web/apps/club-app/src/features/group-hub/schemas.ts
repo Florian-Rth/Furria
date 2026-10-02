@@ -268,6 +268,7 @@ export const GroupCalendarEntrySchema = z.object({
   asksForResponse: z.boolean(),
   description: z.string().nullable(),
   viewerAnswer: GroupAttendanceAnswerSchema.nullable(),
+  viewerMayAnswer: z.boolean(),
   isRunning: z.boolean(),
 });
 export type GroupCalendarEntry = z.infer<typeof GroupCalendarEntrySchema>;

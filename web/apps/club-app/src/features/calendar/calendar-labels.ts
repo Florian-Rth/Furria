@@ -1,11 +1,6 @@
 import type { KkConfirmFact, KkFilterOption, KkScreenOrigin, KkSelectOption } from '@furria/ui';
 import { CALENDAR_PATH } from '@/features/session';
-import type { AttendanceChoice } from '@/lib/calendar-copy';
-import {
-  CALENDAR_KIND_LABELS,
-  toAttendanceChoices,
-  toAttendanceSavedMessage,
-} from '@/lib/calendar-copy';
+import { CALENDAR_KIND_LABELS, toAttendanceSavedMessage } from '@/lib/calendar-copy';
 import { toIsoDayLabel, toLocalIsoDay, toTimeSpanLabel } from '@/lib/calendar-days';
 import type { CalendarOwnerOption } from './calendar-authoring';
 import { NO_VENUE_ID, toTimeChoices } from './calendar-authoring';
@@ -38,8 +33,7 @@ const ONE_ENTRY = 1;
 const ONE_ENTRY_LABEL = 'Ein Termin';
 const MANY_ENTRIES_LABEL = 'Termine';
 
-export type { AttendanceChoice };
-export { CALENDAR_KIND_LABELS, toAttendanceChoices, toAttendanceSavedMessage };
+export { CALENDAR_KIND_LABELS, toAttendanceSavedMessage };
 
 const CLUB_OWNER_LABEL = 'Verein';
 const CLUB_REACH_LABEL = 'für alle im Verein';

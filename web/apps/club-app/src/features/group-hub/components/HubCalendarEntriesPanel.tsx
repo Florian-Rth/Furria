@@ -61,12 +61,7 @@ export const HubCalendarEntriesPanel: FC<HubCalendarEntriesPanelProps> = ({ grou
   }
 
   const rows = calendarEntries.entries.map((entry) => (
-    <HubCalendarEntryRow
-      key={entry.calendarEntryId}
-      groupId={groupId}
-      entry={entry}
-      canAnswer={calendarEntries.canAnswer}
-    />
+    <HubCalendarEntryRow key={entry.calendarEntryId} groupId={groupId} entry={entry} />
   ));
   const isEmpty = rows.length === 0;
   const meta = <KkMeta>{toCalendarEntryMeta(rows.length)}</KkMeta>;
