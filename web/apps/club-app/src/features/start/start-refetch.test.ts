@@ -21,8 +21,8 @@ describe('refetchDelayOf', () => {
       reshapeAt: '2027-01-20T06:50:00.001Z',
       expected: null,
     },
-    { label: 'the reshape is now', reshapeAt: '2027-01-19T18:50:00Z', expected: null },
-    { label: 'the reshape has passed', reshapeAt: '2027-01-19T18:00:00Z', expected: null },
+    { label: 'the reshape is now', reshapeAt: '2027-01-19T18:50:00Z', expected: 0 },
+    { label: 'the reshape has passed', reshapeAt: '2027-01-19T18:00:00Z', expected: 0 },
     {
       label: 'the reshape carries an offset',
       reshapeAt: '2027-01-19T20:30:00+01:00',
