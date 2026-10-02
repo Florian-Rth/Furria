@@ -15,6 +15,26 @@ public sealed class GetMeTests
     private static readonly DateOnly BirthDate = new(1996, 4, 3);
     private static readonly TimeSpan PastTheAccessTokenLifetime = TimeSpan.FromMinutes(16);
 
+    private static readonly DateTimeOffset InsideTheSession2026 = new(
+        2027,
+        1,
+        19,
+        18,
+        50,
+        0,
+        TimeSpan.Zero
+    );
+
+    private static readonly DateTimeOffset JustPastMidnightInBerlin = new(
+        2026,
+        11,
+        10,
+        23,
+        30,
+        0,
+        TimeSpan.Zero
+    );
+
     private readonly ApiTestFixture _fixture;
 
     public GetMeTests(ApiTestFixture fixture)
@@ -490,6 +510,107 @@ public sealed class GetMeTests
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.False(result.IsAffiliated);
+    }
+
+    [Fact]
+    public async Task Should_ReturnAppSince_When_SheRedeemedAnInvitation()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var bertaEmail = InvitationSteps.UniqueContactEmail("berta");
+
+        await _fixture.AtInstantAsync(
+            JustPastMidnightInBerlin,
+            async () =>
+            {
+                var ctx = await _fixture.BuildAsync(
+                    builder =>
+                        builder.Identity(identity =>
+                            identity.AddEligiblePerson("berta", "Berta", bertaEmail, _fixture.Today)
+                        ),
+                    ct
+                );
+                var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+                var issued = await InvitationSteps.InviteInPersonAsync(
+                    manager,
+                    ctx.Identity.People.IdOf("berta")
+                );
+                var (_, redemption) = await InvitationSteps.RedeemAsync(
+                    _fixture.CreateClient(),
+                    InvitationSteps.TokenOf(issued.Link)
+                );
+                var berta = InvitationSteps.SignedInClient(_fixture, redemption);
+
+                var (response, result) = await berta.GETAsync<GetMe, GetMeResponse>();
+
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.Equal(new DateOnly(2026, 11, 11), result.AppSince);
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_ReturnNoAppSince_When_TheAccountWasSeeded()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => identity.AddAccount("alice")),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        var (response, result) = await client.GETAsync<GetMe, GetMeResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Null(result.AppSince);
+    }
+
+    [Fact]
+    public async Task Should_ReturnTheSessionOrdinal_When_SheHoldsARunningMembership()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            InsideTheSession2026,
+            async () =>
+            {
+                var ctx = await _fixture.BuildAsync(
+                    builder =>
+                        builder.Identity(identity =>
+                            identity
+                                .AddAccount("lena")
+                                .AddMembership("lena-first", "lena", new DateOnly(2015, 11, 20))
+                                .AddMembershipPause("lena-ruhezeit", "lena-first", 2019, 2019)
+                        ),
+                    ct
+                );
+
+                var client = await ctx.Identity.ClientForAsync("lena", ct);
+                var (response, result) = await client.GETAsync<GetMe, GetMeResponse>();
+
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                var relevantSession = Assert.IsType<MeRelevantSessionDto>(
+                    result.Membership.RelevantSession
+                );
+                Assert.Equal(2026, relevantSession.StartYear);
+                Assert.Equal(11, relevantSession.Ordinal);
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_ReturnNoSessionOrdinal_When_SheHoldsNoMembership()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => identity.AddAccount("gast")),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("gast", ct);
+        var (response, result) = await client.GETAsync<GetMe, GetMeResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Null(result.Membership.RelevantSession);
     }
 
     [Fact]

@@ -4,6 +4,7 @@ using Furria.Application.Identity;
 using Furria.Application.Registry;
 using Furria.Application.Results;
 using Furria.Core.Club;
+using Furria.Core.Identity;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
@@ -142,14 +143,22 @@ public sealed class AccountService
         return Result<SessionTokensDetails>.Success(Combine(access, rotated.Value));
     }
 
-    public async Task<Result> MarkAnnouncementsSeenAsync(int accountId, CancellationToken ct)
+    public async Task<Result> SetLastSeenAnnouncementAsync(
+        int accountId,
+        DateTimeOffset? seenUpTo,
+        CancellationToken ct
+    )
     {
         var account = await _dbContext.Users.SingleOrDefaultAsync(row => row.Id == accountId, ct);
 
         if (account is null)
             return Result.NotFound(MissingAccountMessage);
 
-        account.LastSeenAnnouncementAt = _timeProvider.GetUtcNow();
+        account.LastSeenAnnouncementAt = LastSeenAfter(
+            account.LastSeenAnnouncementAt,
+            seenUpTo,
+            _timeProvider.GetUtcNow()
+        );
         await _dbContext.SaveChangesAsync(ct);
 
         return Result.Success();
@@ -179,6 +188,12 @@ public sealed class AccountService
                 account.Email ?? "",
                 account.IsDisabled,
                 account.LastSeenAnnouncementAt,
+                _dbContext
+                    .AccountEvents.Where(accountEvent =>
+                        accountEvent.PersonId == account.PersonId
+                        && accountEvent.Kind == AccountEventKind.Redeemed
+                    )
+                    .Max(accountEvent => (DateTimeOffset?)accountEvent.At),
                 new PersonDetails
                 {
                     Id = account.Person!.Id,
@@ -271,6 +286,18 @@ public sealed class AccountService
         );
 
     [Pure]
+    private static DateTimeOffset LastSeenAfter(
+        DateTimeOffset? stored,
+        DateTimeOffset? seenUpTo,
+        DateTimeOffset now
+    )
+    {
+        var capped = seenUpTo is { } upTo && upTo < now ? upTo : now;
+
+        return stored is { } previous && previous > capped ? previous : capped;
+    }
+
+    [Pure]
     private static LoginFailureReason FailureReasonOf(SignInResult signIn) =>
         signIn switch
         {
@@ -301,6 +328,7 @@ public sealed class AccountService
             IsAffiliated = grants.IsAffiliated,
             PermissionKeys = grants.PermissionKeys,
             LastSeenAnnouncementAt = row.LastSeenAnnouncementAt,
+            AppSince = row.LastRedeemedAt is { } redeemedAt ? ClubClock.DayOf(redeemedAt) : null,
             Passkeys = passkeys,
         };
 
@@ -353,6 +381,7 @@ public sealed class AccountService
         string Email,
         bool IsDisabled,
         DateTimeOffset? LastSeenAnnouncementAt,
+        DateTimeOffset? LastRedeemedAt,
         PersonDetails Person,
         IReadOnlyList<MembershipRow> Memberships
     );

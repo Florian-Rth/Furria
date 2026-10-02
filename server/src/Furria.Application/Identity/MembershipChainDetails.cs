@@ -15,6 +15,8 @@ public sealed record MembershipChainDetails
 
     public required IReadOnlyList<MembershipDetails> All { get; init; }
 
+    public required RelevantSessionDetails? RelevantSession { get; init; }
+
     [Pure]
     public static MembershipChainDetails Of(
         IReadOnlyList<MembershipDetails> periods,
@@ -34,8 +36,14 @@ public sealed record MembershipChainDetails
             MemberSince = MembershipStateCalculator.MemberSince(spans, today),
             Current = current,
             All = newestFirst,
+            RelevantSession = RelevantSessionDetails.Of(spans, EveryPauseOf(newestFirst), today),
         };
     }
+
+    [Pure]
+    private static IReadOnlyCollection<SessionSpan> EveryPauseOf(
+        IReadOnlyList<MembershipDetails> periods
+    ) => periods.SelectMany(period => period.Pauses).Select(pause => pause.ToSpan()).ToList();
 
     [Pure]
     private static IReadOnlyCollection<SessionSpan> PausesOf(MembershipDetails? current) =>

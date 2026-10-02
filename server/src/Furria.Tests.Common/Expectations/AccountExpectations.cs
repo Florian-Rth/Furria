@@ -59,6 +59,18 @@ public sealed class AccountExpectations
             }
         );
 
+    public Expected ToHaveSeenAnnouncementsUpTo(DateTimeOffset? lastSeenAnnouncementAt) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var account = await dbContext
+                    .Users.AsNoTracking()
+                    .SingleAsync(row => row.Id == _accountId, ct);
+
+                Assert.Equal(lastSeenAnnouncementAt, account.LastSeenAnnouncementAt);
+            }
+        );
+
     public Expected ToSignInAs(string loginEmail) =>
         _expected.Enqueue(
             async (dbContext, ct) =>
