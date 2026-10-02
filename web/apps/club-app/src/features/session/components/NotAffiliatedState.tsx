@@ -5,7 +5,7 @@ import { PROFILE_PATH } from '../app-sections';
 
 const STATE_TITLE = 'NICHT IM VEREIN AKTIV';
 const STATE_DESCRIPTION =
-  'Du hast gerade keine Mitgliedschaft, keine Gruppe und keine Rolle im Verein. Dein Account und dein Profil bleiben dir erhalten – sobald du wieder dabei bist, ist hier alles wie gewohnt.';
+  'Gerade läuft keine Mitgliedschaft, keine Gruppenmitgliedschaft und keine Rolle auf deinen Namen. Dein Account und dein Profil bleiben dir erhalten – sobald du wieder dabei bist, ist hier alles wie gewohnt.';
 const PROFILE_LABEL = 'Zu deinem Profil';
 
 export const NotAffiliatedState: FC = () => {
