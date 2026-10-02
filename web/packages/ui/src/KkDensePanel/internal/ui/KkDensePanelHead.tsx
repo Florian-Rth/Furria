@@ -48,7 +48,15 @@ export const KkDensePanelHead: FC<KkDensePanelHeadProps> = ({ id, label, receipt
 
   return (
     <Stack direction="row" data-kk-dense-head sx={HEAD_FRAME}>
-      <Typography id={id} component="h2" variant="overline" noWrap sx={LABEL_PAINT}>
+      <Typography
+        id={id}
+        component="h2"
+        variant="overline"
+        noWrap
+        tabIndex={-1}
+        data-kk-dense-heading
+        sx={LABEL_PAINT}
+      >
         {label}
       </Typography>
       {receiptMark}

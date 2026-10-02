@@ -30,7 +30,7 @@ import { KkDensePanelLineFact } from './KkDensePanelLineFact';
 import { KkDensePanelLineProgress } from './KkDensePanelLineProgress';
 import { KkDensePanelLineTick } from './KkDensePanelLineTick';
 
-export type KkDenseLineState = 'plain' | 'live' | 'dimmed';
+export type KkDenseLineState = 'plain' | 'live' | 'read' | 'dimmed';
 
 const ENTER_OFFSET = 8;
 const ENTER_FROM = { opacity: 0, y: -ENTER_OFFSET } as const;
@@ -46,13 +46,16 @@ const ANSWER_TRAILING =
   '&:has(> [data-kk-dense-trailing] > :is([data-kk-answer-ring], [data-kk-answer-mark]))';
 const EXPANDED_LINE = '&:has(> [data-kk-dense-row] > [data-kk-dense-expanded])';
 
+const DIMMED_PAINT: CSSObject = {
+  opacity: kkTokens.opacity.dimmed,
+  '& [data-kk-dense-title]': { color: 'text.secondary' },
+};
+
 const statePaints: Record<KkDenseLineState, (theme: Theme) => CSSObject> = {
   plain: () => ({}),
   live: (theme) => accentWash(theme),
-  dimmed: () => ({
-    opacity: kkTokens.opacity.dimmed,
-    '& [data-kk-dense-title]': { color: 'text.secondary' },
-  }),
+  read: () => DIMMED_PAINT,
+  dimmed: () => DIMMED_PAINT,
 };
 
 const linePaintOf =
@@ -194,11 +197,11 @@ export const KkDensePanelLine: FC<KkDensePanelLineProps> = ({
   sx,
 }) => {
   const isExpanded = expanded !== undefined && expanded !== null;
-  const expansion = useLineExpansion(isExpanded, onCollapse);
+  const dimmed = state === 'dimmed';
+  const expansion = useLineExpansion(isExpanded, dimmed, onCollapse);
   const reduced = useReducedMotion();
   const progressWidth = toProgressWidth(progress);
   const highlightProps = highlightMark(highlight);
-  const dimmed = state === 'dimmed';
   const expandedEntry = reduced ? false : ENTER_FROM;
   const factMeta = alert ?? meta;
   const factMetaTone = alert === undefined ? 'muted' : 'alert';
@@ -224,9 +227,6 @@ export const KkDensePanelLine: FC<KkDensePanelLineProps> = ({
       initial={expandedEntry}
       animate={ENTER_TO}
       transition={kkMotion.layoutGlide}
-      onFocus={expansion.enter}
-      onBlur={expansion.leave}
-      onKeyDown={expansion.dismiss}
       data-kk-dense-expanded
       sx={EXPANDED_FRAME}
     >
@@ -238,13 +238,15 @@ export const KkDensePanelLine: FC<KkDensePanelLineProps> = ({
     <Box
       ref={expansion.lineRef}
       component="li"
-      inert={dimmed}
+      onFocus={expansion.enter}
+      onBlur={expansion.leave}
+      onKeyDown={expansion.dismiss}
       {...highlightProps}
       data-kk-dense-line={state}
       sx={[linePaintOf(state), highlight && highlightPaint, ...(Array.isArray(sx) ? sx : [sx])]}
     >
       {tickMark}
-      <Box data-kk-dense-row sx={ROW_FRAME}>
+      <Box inert={dimmed} data-kk-dense-row sx={ROW_FRAME}>
         <Stack aria-hidden data-kk-dense-spine>
           {anchor}
         </Stack>
