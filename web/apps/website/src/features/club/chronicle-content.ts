@@ -1,5 +1,4 @@
 import type { Theme } from '@mui/material/styles';
-import { FOUNDING_YEAR } from '@/lib/club';
 
 export const chronicleChapter = {
   numeral: '02',
@@ -16,7 +15,7 @@ export interface Milestone {
 
 export const MILESTONES: Milestone[] = [
   {
-    year: String(FOUNDING_YEAR),
+    year: '1971',
     title: 'Der erste Besen',
     description:
       'In Großfurra gründen elf Narren den Furrschen Carnevals Club. Überliefert ist der Beschluss — nicht, wer den Besen mitgebracht hat.',

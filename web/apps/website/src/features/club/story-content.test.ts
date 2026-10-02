@@ -1,25 +1,22 @@
 import { describe, expect, it } from 'vitest';
-import { buildStoryStats, formatGroupStat, UNKNOWN_STAT_VALUE } from './story-content';
-
-describe('formatGroupStat', () => {
-  it('prints the counted groups', () => {
-    expect(formatGroupStat(6)).toBe('6');
-  });
-
-  it('prints a dash rather than a zero while the count is unknown', () => {
-    expect(formatGroupStat(null)).toBe(UNKNOWN_STAT_VALUE);
-  });
-
-  it('prints a real zero as a zero', () => {
-    expect(formatGroupStat(0)).toBe('0');
-  });
-});
+import { buildStoryStats } from './story-content';
 
 describe('buildStoryStats', () => {
-  it('keeps all three stats while the groups count is still missing', () => {
-    const stats = buildStoryStats(1971, '180+', null);
+  const session = { startYear: 2026, label: '2026/27', motto: null };
 
-    expect(stats.map((stat) => stat.label)).toEqual(['gegründet', 'Mitglieder', 'Gruppen']);
-    expect(stats.map((stat) => stat.value)).toEqual(['1971', '180+', UNKNOWN_STAT_VALUE]);
+  it('shows every stat as unknown while the club is loading', () => {
+    expect(buildStoryStats(undefined).map((stat) => stat.value)).toEqual(['—', '—', '—']);
+  });
+
+  it('prints the founding year before the rounded members and the groups', () => {
+    const club = { name: null, foundedYear: 1971, memberCount: 183, groupCount: 0, session };
+
+    expect(buildStoryStats(club).map((stat) => stat.value)).toEqual(['1971', '180+', '0']);
+  });
+
+  it('leaves the founding year out when the club has not recorded it', () => {
+    const club = { name: null, foundedYear: null, memberCount: 7, groupCount: 3, session };
+
+    expect(buildStoryStats(club).map((stat) => stat.value)).toEqual(['7', '3']);
   });
 });

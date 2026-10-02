@@ -31,7 +31,8 @@ board and the session it advertises come from what the club app records; `FOUNDI
    exact.
 3. **The website advertises the relevant session**: the running one, and from the day after Ash
    Wednesday the coming one — `ClubSession.RelevantYearOf`, as the club hub. The label comes from
-   the API; the website's own `sessionAt` (11.11-only boundary) is deleted. The ticker reads
+   the API; the website's `currentSession` is deleted (`sessionAt` stays — it dates events and
+   news, where the 11.11 boundary is right). The ticker reads
    `GROSS FURRIA ✶ GROSSFURRA ✶ SESSION 2026/27 ✶ <MOTTO>` — the motto only once it is recorded
    (recording it is the proclamation, ADR-0012). No Nº.
 4. **A board office may be public** (`BoardOffice.IsPublic`, a setting on `/manage/board`, off by
@@ -62,7 +63,7 @@ board and the session it advertises come from what the club app records; `FOUNDI
 
 | # | Slice | Note |
 |---|---|---|
-| S1 | **Public club, the club's numbers** — `GET /api/public/club` with `name`, `foundedYear`, counts, `session`; website footer, masthead, hero stats, `/join` stats, `/club` story stats, ticker with motto; `sessionAt`, `FOUNDING_YEAR` and both count placeholders deleted (rulings 1–3) | Fixes the hero/`/club` mismatch |
+| S1 | **Public club, the club's numbers** — `GET /api/public/club` with `name`, `foundedYear`, counts, `session`; website footer, masthead, hero stats, `/join` stats, `/club` story stats, ticker with motto; `currentSession`, `FOUNDING_YEAR` and both count placeholders deleted (rulings 1–3) | Fixes the hero/`/club` mismatch |
 | S2 | **Reach the club** — `email`, `phone`, `instagramUrl`, `facebookUrl` on `public/club`; footer socials, every contact place, `CLUB_CONTACT_EMAIL` deleted except imprint/privacy (rulings 5, 6) | |
 | S3 | **Public board offices** — `BoardOffice.IsPublic` + migration dropping `Person.PortraitIsPublic`, the setting endpoint, the switch on `/manage/board` (ruling 4) | Club app |
 | S4 | **The board on the website** — `GET /api/public/board`, people chapter from it, absent when empty (ruling 4) | |

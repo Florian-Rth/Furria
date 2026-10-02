@@ -3,50 +3,57 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import { LegalLinks } from '@/components/LegalLinks';
-import { currentYear, FOUNDING_YEAR } from '@/lib/club';
 import { BroomMarkIcon } from './internal/BroomMarkIcon';
 import { SocialLinks } from './internal/SocialLinks';
+import { useFooterLines } from './internal/use-footer-lines';
 
-export const SiteFooter: FC = () => (
-  <Stack
-    component="footer"
-    sx={{
-      gap: 3,
-      px: kkTokens.layout.gutterX,
-      py: 4,
-      borderTop: 1,
-      borderColor: 'divider',
-    }}
-  >
-    <Stack direction={{ xs: 'column', sm: 'row' }} sx={{ justifyContent: 'space-between', gap: 3 }}>
-      <Stack sx={{ gap: 1.5, maxWidth: 'sm' }}>
-        <Stack direction="row" sx={{ alignItems: 'center', gap: 1.5, color: 'text.primary' }}>
-          <BroomMarkIcon />
-          <Typography variant="h3" component="span" sx={{ letterSpacing: '0.06em' }}>
-            FURRIA
-          </Typography>
-        </Stack>
-        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-          Furrscher Carnevals Club e.V. · Großfurra feiert seit {FOUNDING_YEAR}. Gross - Furria!
-        </Typography>
-      </Stack>
-      <SocialLinks />
-    </Stack>
+export const SiteFooter: FC = () => {
+  const { clubLine, copyrightLine } = useFooterLines();
+
+  return (
     <Stack
-      direction={{ xs: 'column', sm: 'row' }}
+      component="footer"
       sx={{
-        alignItems: { sm: 'center' },
-        justifyContent: 'space-between',
-        gap: 1.5,
-        pt: 2,
+        gap: 3,
+        px: kkTokens.layout.gutterX,
+        py: 4,
         borderTop: 1,
         borderColor: 'divider',
       }}
     >
-      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-        © {currentYear} Furrscher Carnevals Club e.V.
-      </Typography>
-      <LegalLinks />
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        sx={{ justifyContent: 'space-between', gap: 3 }}
+      >
+        <Stack sx={{ gap: 1.5, maxWidth: 'sm' }}>
+          <Stack direction="row" sx={{ alignItems: 'center', gap: 1.5, color: 'text.primary' }}>
+            <BroomMarkIcon />
+            <Typography variant="h3" component="span" sx={{ letterSpacing: '0.06em' }}>
+              FURRIA
+            </Typography>
+          </Stack>
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+            {clubLine}
+          </Typography>
+        </Stack>
+        <SocialLinks />
+      </Stack>
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        sx={{
+          alignItems: { sm: 'center' },
+          justifyContent: 'space-between',
+          gap: 1.5,
+          pt: 2,
+          borderTop: 1,
+          borderColor: 'divider',
+        }}
+      >
+        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+          {copyrightLine}
+        </Typography>
+        <LegalLinks />
+      </Stack>
     </Stack>
-  </Stack>
-);
+  );
+};

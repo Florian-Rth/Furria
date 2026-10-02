@@ -1,12 +1,7 @@
-export const FOUNDING_YEAR = 1971;
-
 export const SESSION_OPENING_MONTH = 11;
 export const SESSION_OPENING_DAY = 11;
 
 export const CLUB_CONTACT_EMAIL = 'contact@florianrth.com';
-
-export const MEMBER_COUNT_PLACEHOLDER = '180+';
-export const GROUP_COUNT_PLACEHOLDER = 6;
 
 export interface Session {
   startYear: number;
@@ -25,7 +20,5 @@ export const sessionAt = (date: Date): Session => {
     yearsLabel: `${startYear}/${endYearShort}`,
   };
 };
-
-export const currentSession: Session = sessionAt(new Date());
 
 export const currentYear: number = new Date().getFullYear();
