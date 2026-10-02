@@ -16,6 +16,7 @@ import {
 } from '../manage-board-labels';
 import { ArchiveBoardOfficeDialog } from './ArchiveBoardOfficeDialog';
 import { BoardOfficeChips } from './BoardOfficeChips';
+import { BoardOfficePublicationPanel } from './BoardOfficePublicationPanel';
 import { BoardPastSeatsPanel } from './BoardPastSeatsPanel';
 import { BoardSeatsPanel } from './BoardSeatsPanel';
 import { RestoreBoardOfficeDialog } from './RestoreBoardOfficeDialog';
@@ -94,6 +95,7 @@ export const BoardOfficeSection: FC<BoardOfficeSectionProps> = ({ entry, highlig
     <KkNote>{ARCHIVE_OFFICE_BLOCKED_NOTE}</KkNote>
   );
   const danger = entry.isArchived ? null : archivableFoot;
+  const publication = entry.isArchived ? null : <BoardOfficePublicationPanel entry={entry} />;
 
   return (
     <Stack sx={{ gap: BLOCK_GAP, minWidth: 0 }}>
@@ -106,6 +108,7 @@ export const BoardOfficeSection: FC<BoardOfficeSectionProps> = ({ entry, highlig
         actions={actions}
         dimmed={entry.isArchived}
       />
+      {publication}
       <BoardSeatsPanel entry={entry} highlightedKey={highlightedKey} />
       <BoardPastSeatsPanel seats={entry.pastSeats} />
       {danger}

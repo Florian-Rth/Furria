@@ -13,6 +13,15 @@ const IMPLIED_ROLE_OPTIONS_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
   rejected: 'Der Server hat diese Anfrage nicht angenommen.',
 };
 
+const PUBLICATION_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
+  unreachable: 'Keine Verbindung zum Server. Prüfe deine Internetverbindung.',
+  unexpected: 'Die Einstellung konnte nicht gespeichert werden. Bitte versuche es erneut.',
+  rejected: 'Der Server hat die Änderung abgelehnt.',
+};
+
+export const toPublicationErrorMessage = (error: Error | null): string | null =>
+  toQueryErrorMessage(error, PUBLICATION_ERROR_MESSAGES);
+
 export const toBoardErrorMessage = (error: Error | null): string | null =>
   toQueryErrorMessage(error, BOARD_ERROR_MESSAGES);
 
