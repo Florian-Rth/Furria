@@ -1,0 +1,12 @@
+namespace Furria.Application.Club;
+
+public sealed record PublicBoardSeat
+{
+    public required string OfficeName { get; init; }
+
+    public required string FirstName { get; init; }
+
+    public required string LastName { get; init; }
+
+    public required string? PortraitUrl { get; init; }
+}

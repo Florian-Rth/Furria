@@ -1,3 +1,4 @@
+using System.Diagnostics.Contracts;
 using Furria.Application.Club;
 using Furria.Core.Club;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +25,23 @@ public sealed partial class ClubService
             Session = await PublicSessionAsync(ClubSession.RelevantYearOf(today), ct),
         };
     }
+
+    public async Task<IReadOnlyList<PublicBoardSeat>> GetPublicBoardAsync(CancellationToken ct)
+    {
+        var seats = await _runningBoardSeats.SeatsAsync(ClubClock.Today(_timeProvider), ct);
+
+        return [.. seats.Where(seat => seat.OfficeIsPublic).Select(ToPublicSeat)];
+    }
+
+    [Pure]
+    private static PublicBoardSeat ToPublicSeat(RunningBoardSeat seat) =>
+        new()
+        {
+            OfficeName = seat.OfficeName,
+            FirstName = seat.FirstName,
+            LastName = seat.LastName,
+            PortraitUrl = seat.PortraitUrl,
+        };
 
     private Task<PublicRecordRow?> PublicRecordAsync(CancellationToken ct) =>
         _dbContext

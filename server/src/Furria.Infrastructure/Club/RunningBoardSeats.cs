@@ -15,7 +15,8 @@ public sealed class RunningBoardSeats
             seat.Person!.LastName,
             seat.Person!.PortraitUrl,
             seat.BoardOffice!.Name,
-            seat.BoardOffice!.SortOrder
+            seat.BoardOffice!.SortOrder,
+            seat.BoardOffice!.IsPublic
         );
 
     private readonly AppDbContext _dbContext;
@@ -74,5 +75,6 @@ public sealed record RunningBoardSeat(
     string LastName,
     string? PortraitUrl,
     string OfficeName,
-    int SortOrder
+    int SortOrder,
+    bool OfficeIsPublic
 );

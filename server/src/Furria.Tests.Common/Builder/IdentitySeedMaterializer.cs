@@ -112,6 +112,7 @@ internal static class IdentitySeedMaterializer
         {
             FirstName = named?.FirstName ?? "Test",
             LastName = named?.LastName ?? "Person",
+            PortraitUrl = named?.PortraitUrl,
             Email = contact is { WithoutEmail: true }
                 ? null
                 : contact?.Email ?? $"{alias}-{Guid.NewGuid():N}@test.local",
