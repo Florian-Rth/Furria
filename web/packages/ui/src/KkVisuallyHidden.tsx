@@ -1,18 +1,21 @@
 import Box from '@mui/material/Box';
+import type { CSSObject } from '@mui/material/styles';
 import type { FC, PropsWithChildren } from 'react';
 
-const HIDDEN_FROM_SIGHT = {
+const SINGLE_PIXEL = '1px';
+const PULLED_BACK_PIXEL = `-${SINGLE_PIXEL}`;
+
+const HIDDEN_FROM_SIGHT: CSSObject = {
   position: 'absolute',
-  width: 1,
-  height: 1,
-  p: 0,
-  m: -1,
+  width: SINGLE_PIXEL,
+  height: SINGLE_PIXEL,
+  padding: 0,
+  margin: PULLED_BACK_PIXEL,
   overflow: 'hidden',
-  clip: 'rect(0 0 0 0)',
   clipPath: 'inset(50%)',
   whiteSpace: 'nowrap',
   border: 0,
-} as const;
+};
 
 export const KkVisuallyHidden: FC<PropsWithChildren> = ({ children }) => (
   <Box component="span" data-kk-visually-hidden sx={HIDDEN_FROM_SIGHT}>
