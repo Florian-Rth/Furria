@@ -548,6 +548,9 @@ importers:
       playwright:
         specifier: 'catalog:'
         version: 1.63.0
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
