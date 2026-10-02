@@ -104,7 +104,7 @@ export const kkTokens = {
       glyphLift: 2,
       glyphScale: 1.1,
       labelDrift: 2,
-      labelRestOpacity: 0.68,
+      labelRestOpacity: 1,
       pressScale: 0.88,
       sink: 16,
       washTint: { light: 0.05, dark: 0.08 },
@@ -202,7 +202,7 @@ export const kkTokens = {
   },
   tapTarget: '2.75rem',
   densePanel: {
-    anchor: '3.5rem',
+    anchor: '3.75rem',
     cell: '3.5rem',
     cellMin: '10rem',
     gap: 1,

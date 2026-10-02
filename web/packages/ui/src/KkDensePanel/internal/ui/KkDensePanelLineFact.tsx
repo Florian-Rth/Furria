@@ -5,8 +5,12 @@ import type { ElementType, FC } from 'react';
 import { redInk } from '../../../internal/red-ink';
 import { KkVisuallyHidden } from '../../../KkVisuallyHidden';
 import type { KkLinkSearch } from '../../../kk-link-search';
-import { kkTokens } from '../../../tokens';
-import { DENSE_GAP, FACT_YIELD, factHoldPaint, insetFocusRing } from '../dense-panel-paint';
+import {
+  DENSE_LINE_STACKED,
+  FACT_YIELD,
+  factHoldPaint,
+  insetFocusRing,
+} from '../dense-panel-paint';
 import type { KkDenseMeta } from '../logic/facet-pieces';
 import { facetPiecesOf } from '../logic/facet-pieces';
 import type { KkDenseMetaTone } from './KkDensePanelLineMeta';
@@ -14,10 +18,8 @@ import { KkDensePanelLineMeta } from './KkDensePanelLineMeta';
 
 const FACT_FRAME: CSSObject = {
   flex: '1 1 0',
-  alignSelf: 'stretch',
   justifyContent: 'center',
   minWidth: 0,
-  minHeight: kkTokens.tapTarget,
   m: 0,
   p: 0,
   border: 0,
@@ -29,9 +31,10 @@ const FACT_FRAME: CSSObject = {
 };
 
 const FACT_ROW: CSSObject = {
-  alignItems: 'baseline',
-  gap: DENSE_GAP,
+  typography: 'subtitle2',
+  alignItems: 'flex-start',
   minWidth: 0,
+  [DENSE_LINE_STACKED]: { flexWrap: 'wrap' },
 };
 
 const HIDDEN_LABEL_ANCHOR: CSSObject = { position: 'relative' };
@@ -39,8 +42,16 @@ const HIDDEN_LABEL_ANCHOR: CSSObject = { position: 'relative' };
 const titlePaintOf =
   (holds: boolean) =>
   (theme: Theme): CSSObject => ({
+    alignSelf: 'last baseline',
     color: 'inherit',
     ...(holds ? factHoldPaint(theme) : FACT_YIELD),
+    [DENSE_LINE_STACKED]: {
+      flexBasis: '100%',
+      maxWidth: '100%',
+      whiteSpace: 'normal',
+      overflowWrap: 'anywhere',
+      hyphens: 'auto',
+    },
   });
 
 const reachPaint = (theme: Theme): CSSObject => ({
@@ -101,7 +112,7 @@ export const KkDensePanelLineFact: FC<KkDensePanelLineFactProps> = ({
       <Stack component="span" sx={HIDDEN_LABEL_ANCHOR}>
         <KkVisuallyHidden>{accessibleLabel}</KkVisuallyHidden>
       </Stack>
-      <Stack component="span" direction="row" aria-hidden sx={FACT_ROW}>
+      <Stack component="span" direction="row" aria-hidden data-kk-dense-fact-row sx={FACT_ROW}>
         <Typography
           component="span"
           variant="subtitle2"

@@ -43,6 +43,7 @@ export interface StartLineView {
   tick: GroupTone | null;
   title: string;
   meta: string[];
+  aside: string | null;
   target: StartLineTarget;
   accessibleName: string;
   until: string;
@@ -58,6 +59,7 @@ export interface AnnouncementLineView {
   key: string;
   title: string;
   meta: string[];
+  day: string;
   initials: string;
   portrait: string | undefined;
   accessibleName: string;
@@ -83,6 +85,7 @@ const ISO_DAY_START = 8;
 const YESTERDAY = 1;
 const WEEKDAY_REACH_DAYS = 6;
 const ELEVEN = 11;
+const ROUND = 5;
 const SINGLE = 1;
 const WEEKDAYS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'] as const;
 const TODAY_WORD = 'heute';
@@ -157,7 +160,8 @@ const yearsBefore = (isoDay: string, years: number): string => {
   return `${String(year - years).padStart(ISO_YEAR_END, '0')}${isoDay.slice(ISO_YEAR_END)}`;
 };
 
-export const isElevenFold = (value: number): boolean => value > 0 && value % ELEVEN === 0;
+export const isRoundYears = (value: number): boolean =>
+  value > 0 && (value % ROUND === 0 || value % ELEVEN === 0);
 
 const iconAnchor = (name: KkIconName, tone: StartIconTone = 'muted'): StartLineAnchor => ({
   kind: 'icon',
@@ -168,7 +172,7 @@ const iconAnchor = (name: KkIconName, tone: StartIconTone = 'muted'): StartLineA
 const numberAnchor = (value: number): StartLineAnchor => ({
   kind: 'number',
   value,
-  festive: isElevenFold(value),
+  festive: isRoundYears(value),
 });
 
 const sheetTarget = (kind: PeekKind, subjectId: number | null): StartLineTarget =>
@@ -193,7 +197,7 @@ const groupTickOf = (mine: StartMine): GroupTone | null =>
   mine.subjectId === null ? null : toGroupTone(mine.subjectId, mine.groupTone);
 
 const newSince = (mine: StartMine, context: MineLineContext): string =>
-  `neu seit ${formatPastDay(mine.on, context.today)}`;
+  `seit ${formatPastDay(mine.on, context.today)}`;
 
 const nameOf = (mine: StartMine): string => mine.name ?? '';
 
@@ -202,53 +206,57 @@ const MINE_FACES: Record<StartMineKind, (mine: StartMine, context: MineLineConte
     anchor: iconAnchor('role'),
     tick: null,
     title: `Rolle ${nameOf(mine)}`,
-    meta: [newSince(mine, context)],
+    meta: [],
+    aside: newSince(mine, context),
     target: sheetTarget('role', mine.subjectId),
   }),
   newBoardSeat: (mine, context) => ({
     anchor: iconAnchor('board'),
     tick: null,
     title: `Vorstand: ${nameOf(mine)}`,
-    meta: [newSince(mine, context)],
+    meta: [],
+    aside: newSince(mine, context),
     target: sheetTarget('office', mine.subjectId),
   }),
   newGroupAdmin: (mine, context) => ({
     anchor: iconAnchor('group'),
     tick: groupTickOf(mine),
     title: `Gruppen-Admin ${nameOf(mine)}`,
-    meta:
-      mine.function === null ? [newSince(mine, context)] : [mine.function, newSince(mine, context)],
+    meta: mine.function === null ? [] : [mine.function],
+    aside: newSince(mine, context),
     target: groupTarget(mine.subjectId),
   }),
   newGroupMembership: (mine, context) => ({
     anchor: iconAnchor('group'),
     tick: groupTickOf(mine),
     title: `Gruppe ${nameOf(mine)}`,
-    meta: [newSince(mine, context)],
+    meta: [],
+    aside: newSince(mine, context),
     target: groupTarget(mine.subjectId),
   }),
   newKey: (mine, context) => ({
     anchor: iconAnchor('key'),
     tick: null,
     title: `Schlüssel ${nameOf(mine)}`,
-    meta: [newSince(mine, context)],
+    meta: [],
+    aside: newSince(mine, context),
     target: venueTarget(mine.subjectId, context.canReadClub),
   }),
-  contactChangedByOther: (mine) => ({
+  contactChangedByOther: (mine, context) => ({
     anchor: iconAnchor('info', 'info'),
     tick: null,
     title: 'Kontaktdaten geändert',
     meta:
-      mine.changedBy === null
-        ? [formatDayMonth(mine.on)]
-        : [`von ${mine.changedBy.firstName} ${mine.changedBy.lastName}`, formatDayMonth(mine.on)],
+      mine.changedBy === null ? [] : [`von ${mine.changedBy.firstName} ${mine.changedBy.lastName}`],
+    aside: formatPastDay(mine.on, context.today),
     target: PROFILE_TARGET,
   }),
   membershipEnding: (mine) => ({
     anchor: iconAnchor('info', 'info'),
     tick: null,
     title: 'Mitgliedschaft endet',
-    meta: [`am ${formatDayMonth(mine.on)}`],
+    meta: [],
+    aside: `am ${formatDayMonth(mine.on)}`,
     target: PROFILE_TARGET,
   }),
   membershipPaused: (mine) => ({
@@ -259,6 +267,7 @@ const MINE_FACES: Record<StartMineKind, (mine: StartMine, context: MineLineConte
       mine.sessionStartYear === null
         ? []
         : [`Session ${sessionYearsLabelOf(mine.sessionStartYear)}`],
+    aside: null,
     target: PROFILE_TARGET,
   }),
   milestone: (mine, context) => {
@@ -270,6 +279,7 @@ const MINE_FACES: Record<StartMineKind, (mine: StartMine, context: MineLineConte
       tick: null,
       title: years === SINGLE ? 'Jahr seit deinem Beitritt' : 'Jahre seit deinem Beitritt',
       meta: [`Beitritt am ${formatFullDay(joinedOn)}`],
+      aside: null,
       target: PROFILE_TARGET,
     };
   },
@@ -278,8 +288,10 @@ const MINE_FACES: Record<StartMineKind, (mine: StartMine, context: MineLineConte
 const spokenLeadOf = (face: Pick<MineFace, 'anchor' | 'title'>): string =>
   face.anchor.kind === 'number' ? `${face.anchor.value} ${face.title}` : face.title;
 
-const spokenNameOf = (face: Pick<MineFace, 'anchor' | 'title' | 'meta'>): string =>
-  [spokenLeadOf(face), ...face.meta].join(NAME_SEPARATOR);
+const spokenNameOf = (face: Pick<MineFace, 'anchor' | 'title' | 'meta' | 'aside'>): string =>
+  [spokenLeadOf(face), ...face.meta, ...(face.aside === null ? [] : [face.aside])].join(
+    NAME_SEPARATOR,
+  );
 
 export const toMineLine = (mine: StartMine, context: MineLineContext): StartLineView => {
   const face = MINE_FACES[mine.kind](mine, context);
@@ -298,6 +310,7 @@ export const toGroupMomentLine = (moment: StartGroupMoment): StartLineView => {
     tick: toGroupTone(moment.groupId, moment.tone),
     title: `Jahre ${moment.name}`,
     meta: [`gegründet ${moment.foundedYear}`],
+    aside: null,
     target: groupTarget(moment.groupId),
   };
 
@@ -315,16 +328,17 @@ export const toAnnouncementLine = (
 ): AnnouncementLineView => {
   const { author } = announcement;
   const day = formatPastDay(toLocalIsoDay(announcement.publishedAt), toIsoDay(now));
-  const meta = author.officeName === null ? [day] : [day, author.officeName];
+  const meta = author.officeName === null ? [] : [author.officeName];
   const byline = `von ${author.firstName} ${author.lastName}`;
 
   return {
     key: itemKeyOf({ panel: 'announcements', ...announcement }),
     title: announcement.title,
     meta,
+    day,
     initials: toInitials(author.firstName, author.lastName),
     portrait: author.portraitUrl ?? undefined,
-    accessibleName: [announcement.title, day, byline, ...meta.slice(1)].join(NAME_SEPARATOR),
+    accessibleName: [announcement.title, day, byline, ...meta].join(NAME_SEPARATOR),
     sheetId: toPeekId('start-announcements', announcement.announcementId),
   };
 };

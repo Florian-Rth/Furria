@@ -4,7 +4,7 @@ import type { CSSObject, Theme } from '@mui/material/styles';
 import type { FC } from 'react';
 import { focusRing } from '../../../internal/focus-ring';
 import { applyScheme, schemeEdge } from '../../../internal/scheme-paint';
-import { tonePaint } from '../../../internal/tone';
+import { toneGroundScheme, tonePaint, toneSelectedPaint } from '../../../internal/tone';
 import { kkTokens } from '../../../tokens';
 
 const RING_SIZE = '1.25rem';
@@ -19,6 +19,10 @@ const buttonPaint = (theme: Theme): CSSObject => ({
   transition: kkTokens.motion.press,
   ...focusRing(theme),
   '&:active': { transform: `scale(${PRESS_SCALE})` },
+  [`&[aria-expanded="true"] ${CIRCLE}`]: {
+    ...toneSelectedPaint(theme, 'gold'),
+    borderStyle: 'solid',
+  },
   '@media (hover: hover)': {
     [`&:hover ${CIRCLE}`]: {
       ...tonePaint(theme, 'gold'),
@@ -34,7 +38,11 @@ const circlePaint = (theme: Theme): CSSObject => ({
   borderRadius: '50%',
   borderWidth: kkTokens.line.hair,
   borderStyle: 'dashed',
-  ...applyScheme(theme, schemeEdge(kkTokens.color.light.goldInk, kkTokens.color.dark.goldInk)),
+  ...applyScheme(
+    theme,
+    schemeEdge(kkTokens.color.light.goldInk, kkTokens.color.dark.goldInk),
+    toneGroundScheme(theme, 'gold'),
+  ),
 });
 
 interface KkDensePanelAnswerRingProps {

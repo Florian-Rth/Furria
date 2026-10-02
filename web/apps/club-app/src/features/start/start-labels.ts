@@ -236,10 +236,21 @@ const spokenAnswerOf = (entry: StartEntry): string[] => {
   return attendance.isOwed ? [OWED_PHRASE] : [];
 };
 
+const spokenOwnerOf = (entry: StartEntry): string[] => {
+  const owner = entry.ownerGroup;
+
+  return owner !== null &&
+    entry.viewerGroupIds.includes(owner.groupId) &&
+    !namesInTitle(entry.title, owner.name)
+    ? [owner.name]
+    : [];
+};
+
 export const toEntryAccessibleName = (entry: StartEntry, now: Date): string =>
   [
     spokenWhenOf(entry, now),
     entry.title,
+    ...spokenOwnerOf(entry),
     ...toEntryFacets(entry).map(spokenFacetOf),
     ...spokenAnswerOf(entry),
   ].join(NAME_SEPARATOR);

@@ -1,10 +1,14 @@
 import Box from '@mui/material/Box';
 import type { CSSObject } from '@mui/material/styles';
 import type { FC, PropsWithChildren } from 'react';
+import { kkTokens } from '../../../tokens';
 import { DENSE_CELLS_CONTAINER, DENSE_CELLS_TWO_UP } from '../dense-panel-paint';
 
 const CELLS_CONTAINER: CSSObject = {
   minWidth: 0,
+  borderTopWidth: kkTokens.line.hair,
+  borderTopStyle: 'solid',
+  borderTopColor: 'divider',
   containerType: 'inline-size',
   containerName: DENSE_CELLS_CONTAINER,
 };

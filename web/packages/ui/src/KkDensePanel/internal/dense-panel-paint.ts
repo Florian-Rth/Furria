@@ -16,6 +16,8 @@ export const DENSE_INNER_RADIUS = `${kkTokens.radius.base - kkTokens.line.hair}p
 export const DENSE_CELLS_CONTAINER = 'kk-dense-cells';
 export const DENSE_CELLS_TWO_UP = `@container ${DENSE_CELLS_CONTAINER} (min-width: calc(${cellMin} * 2))`;
 export const LAST_LINE_OF_PANEL = '[data-kk-dense-lines]:last-child > &:last-of-type';
+export const DENSE_LINE_CONTAINER = 'kk-dense-line';
+export const DENSE_LINE_STACKED = `@container ${DENSE_LINE_CONTAINER} (max-width: 16rem)`;
 
 const restShadow: KkScheme = {
   light: { boxShadow: kkTokens.shadow.rest },

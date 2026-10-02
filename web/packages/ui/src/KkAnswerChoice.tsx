@@ -7,6 +7,7 @@ import { useId } from 'react';
 import type { KkAnswer } from './internal/answer';
 import { answerTones, KK_ANSWERS } from './internal/answer';
 import { redInk } from './internal/red-ink';
+import { applyScheme, schemeEdge } from './internal/scheme-paint';
 import type { KkTone } from './internal/tone';
 import { toneSelectedPaint } from './internal/tone';
 import type { KkSx } from './kk-sx';
@@ -16,6 +17,7 @@ export type { KkAnswer } from './internal/answer';
 
 export type KkAnswerChoiceLabels = Record<KkAnswer, string>;
 
+const { light, dark } = kkTokens.color;
 const CHOICE_CONTAINER = 'kk-answer-choice';
 const STACKED = `@container ${CHOICE_CONTAINER} (max-width: 14rem)`;
 const FACE_HEIGHT = '2.25rem';
@@ -61,12 +63,13 @@ const segmentPaintOf =
       justifyContent: 'center',
       borderWidth: kkTokens.line.hair,
       borderStyle: 'solid',
-      borderColor: 'divider',
+      ...applyScheme(theme, schemeEdge(light.faint, dark.faint)),
       borderRadius: `${kkTokens.radius.pill}px`,
       transition: kkTokens.motion.press,
     },
     [`&:active ${FACE}`]: { transform: `scale(${PRESS_SCALE})` },
     [`&[aria-pressed="true"] ${FACE}`]: toneSelectedPaint(theme, tone),
+    [`&[aria-pressed="true"] ${FACE} > *`]: { color: 'text.primary' },
     '&.Mui-focusVisible': { outline: 'none' },
     [`&.Mui-focusVisible ${FACE}`]: faceRing(theme),
     '&.Mui-disabled': { color: 'text.disabled' },

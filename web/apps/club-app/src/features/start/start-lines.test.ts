@@ -5,7 +5,7 @@ import {
   formatDayMonth,
   formatFullDay,
   formatPastDay,
-  isElevenFold,
+  isRoundYears,
   TO_DO_LABELS,
   toAnnouncementLine,
   toCalendarTick,
@@ -84,14 +84,16 @@ describe('formatPastDay', () => {
   });
 });
 
-describe('isElevenFold', () => {
+describe('isRoundYears', () => {
   it.each([
     [11, true],
     [33, true],
-    [25, false],
+    [25, true],
+    [40, true],
+    [7, false],
     [0, false],
-  ])('treats %i as eleven-fold: %s', (value, expected) => {
-    expect(isElevenFold(value)).toBe(expected);
+  ])('celebrates %i years: %s', (value, expected) => {
+    expect(isRoundYears(value)).toBe(expected);
   });
 });
 
@@ -164,7 +166,7 @@ describe('toMineLine', () => {
       MEMBER,
     );
 
-    expect(line.anchor).toEqual({ kind: 'number', value: 25, festive: false });
+    expect(line.anchor).toEqual({ kind: 'number', value: 25, festive: true });
     expect(line.meta.join(' ')).toContain('1.3.2002');
   });
 
@@ -179,15 +181,14 @@ describe('toMineLine', () => {
     expect(toneless.tick).not.toBeNull();
   });
 
-  it('puts the function before the since day of a new group admin', () => {
+  it('names the function of a new group admin and sets the since day aside', () => {
     const line = toMineLine(
       mine({ kind: 'newGroupAdmin', subjectId: 4, function: 'Trainerin', on: '2027-01-18' }),
       MEMBER,
     );
 
-    expect(line.meta).toHaveLength(2);
-    expect(line.meta[0]).toBe('Trainerin');
-    expect(line.meta[1]).toContain('gestern');
+    expect(line.meta).toEqual(['Trainerin']);
+    expect(line.aside).toContain('gestern');
   });
 
   it('names who changed her contact details and when', () => {
@@ -201,9 +202,9 @@ describe('toMineLine', () => {
       MEMBER,
     );
 
-    expect(line.meta).toHaveLength(2);
+    expect(line.meta).toHaveLength(1);
     expect(line.meta[0]).toContain('Frank Weber');
-    expect(line.meta[1]).toBe('12.1.');
+    expect(line.aside).toBe('12.1.');
   });
 
   it('names the paused session', () => {
@@ -244,7 +245,7 @@ describe('toGroupMomentLine', () => {
       until: '2026-11-24',
     });
 
-    expect(line.anchor).toEqual({ kind: 'number', value: 25, festive: false });
+    expect(line.anchor).toEqual({ kind: 'number', value: 25, festive: true });
     expect(line.tick).toBe('teal');
     expect(line.target).toMatchObject({ kind: 'route', params: { groupId: '6' } });
     expect(line.meta.join(' ')).toContain('2001');
@@ -269,14 +270,14 @@ describe('toAnnouncementLine', () => {
   });
   const now = new Date(2027, 0, 19, 19, 50);
 
-  it('names the day and the office of the author', () => {
+  it('sets the day aside and names the office of the author', () => {
     const line = toAnnouncementLine(announcement('Schriftführerin'), now);
 
-    expect(line.meta).toEqual(['gestern', 'Schriftführerin']);
+    expect([line.day, line.meta]).toEqual(['gestern', ['Schriftführerin']]);
   });
 
-  it('names only the day when the author holds no office', () => {
-    expect(toAnnouncementLine(announcement(null), now).meta).toEqual(['gestern']);
+  it('leaves the meta empty when the author holds no office', () => {
+    expect(toAnnouncementLine(announcement(null), now).meta).toEqual([]);
   });
 
   it('falls back to initials and opens the sheet at this announcement', () => {

@@ -387,6 +387,29 @@ describe('toEntryAccessibleName', () => {
     expect(name).toContain('Festhalle Großfurra');
   });
 
+  it.each([
+    {
+      label: 'her own group that the tick shows',
+      viewerGroupIds: [4],
+      title: 'Training',
+      says: true,
+    },
+    { label: 'a group she is not in', viewerGroupIds: [], title: 'Training', says: false },
+    {
+      label: 'a group the title already names',
+      viewerGroupIds: [4],
+      title: 'Training Tanzgarde',
+      says: false,
+    },
+  ])('names the owner group for $label: $says', ({ viewerGroupIds, title, says }) => {
+    const name = toEntryAccessibleName(
+      entry({ title, ownerGroup: TANZGARDE, viewerGroupIds }),
+      new Date(2027, 0, 19, 19, 50),
+    );
+
+    expect(name.replace(title, '').includes('Tanzgarde')).toBe(says);
+  });
+
   it('speaks the start time of a running entry instead of its day', () => {
     const name = toEntryAccessibleName(
       entry({ startsAt: at(1, 19, 19, 30), endsAt: at(1, 19, 21), isRunning: true }),

@@ -8,7 +8,6 @@ import { KkIcon } from '../../../KkIcon';
 import { KkVisuallyHidden } from '../../../KkVisuallyHidden';
 import { kkTokens } from '../../../tokens';
 
-const MARK_SIZE = '1.25rem';
 const MAYBE_GLYPH = '?';
 
 const { light, dark } = kkTokens.color;
@@ -22,8 +21,8 @@ const markInks: Record<KkAnswer, (theme: Theme) => CSSObject> = {
 const markPaintOf =
   (answer: KkAnswer) =>
   (theme: Theme): CSSObject => ({
-    width: MARK_SIZE,
-    height: MARK_SIZE,
+    width: kkTokens.tapTarget,
+    height: kkTokens.tapTarget,
     flexShrink: 0,
     alignItems: 'center',
     justifyContent: 'center',

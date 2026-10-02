@@ -3,6 +3,7 @@ import { KkDensePanelLines } from './internal/layout/KkDensePanelLines';
 import { KkDensePanelRoot } from './internal/layout/KkDensePanelRoot';
 import { KkDensePanelAnswerMark } from './internal/ui/KkDensePanelAnswerMark';
 import { KkDensePanelAnswerRing } from './internal/ui/KkDensePanelAnswerRing';
+import { KkDensePanelAside } from './internal/ui/KkDensePanelAside';
 import { KkDensePanelCell } from './internal/ui/KkDensePanelCell';
 import { KkDensePanelFoot } from './internal/ui/KkDensePanelFoot';
 import { KkDensePanelHead } from './internal/ui/KkDensePanelHead';
@@ -23,4 +24,5 @@ export const KkDensePanel = Object.assign(KkDensePanelRoot, {
   Foot: KkDensePanelFoot,
   AnswerRing: KkDensePanelAnswerRing,
   AnswerMark: KkDensePanelAnswerMark,
+  Aside: KkDensePanelAside,
 });
