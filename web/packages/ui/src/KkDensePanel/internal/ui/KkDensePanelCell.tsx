@@ -5,7 +5,6 @@ import Typography from '@mui/material/Typography';
 import type { ElementType, FC } from 'react';
 import { redInk } from '../../../internal/red-ink';
 import { applyScheme, schemeFill } from '../../../internal/scheme-paint';
-import { KkIcon } from '../../../KkIcon';
 import type { KkLinkSearch } from '../../../kk-link-search';
 import { kkTokens } from '../../../tokens';
 import {
@@ -17,8 +16,6 @@ import {
 
 const { hair } = kkTokens.line;
 const { light, dark } = kkTokens.color;
-const CHEVRON_ROOM = 4;
-const CHEVRON_INSET = 1;
 
 const GROUT_PAINT: CSSObject = {
   minWidth: 0,
@@ -53,20 +50,11 @@ const CELL_FRAME: CSSObject = {
 
 const reachPaint = (theme: Theme): CSSObject => ({
   cursor: 'pointer',
-  pr: CHEVRON_ROOM,
   '&:focus-visible': insetFocusRing(theme),
   '&:active': applyScheme(theme, schemeFill(light.line2, dark.line2)),
   '@media (hover: hover)': {
     '&:hover [data-kk-dense-cell-value]': redInk(theme),
   },
-});
-
-const chevronPaint = (theme: Theme): CSSObject => ({
-  position: 'absolute',
-  top: '50%',
-  right: theme.spacing(CHEVRON_INSET),
-  transform: 'translateY(-50%)',
-  color: 'text.secondary',
 });
 
 const VALUE_PAINT: CSSObject = {
@@ -108,7 +96,6 @@ export const KkDensePanelCell: FC<KkDensePanelCellProps> = ({
   const reaches = component !== undefined && !dimmed;
   const cellComponent = reaches ? component : 'div';
   const routeProps = reaches ? { to, params, search } : {};
-  const chevron = reaches ? <KkIcon name="chevron" size="small" sx={chevronPaint} /> : null;
 
   return (
     <Box component="li" inert={dimmed} data-kk-dense-cell sx={GROUT_PAINT}>
@@ -123,7 +110,6 @@ export const KkDensePanelCell: FC<KkDensePanelCellProps> = ({
         <Typography component="span" variant="caption" noWrap sx={LABEL_PAINT}>
           {label}
         </Typography>
-        {chevron}
       </Stack>
     </Box>
   );

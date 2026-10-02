@@ -8,16 +8,21 @@ describe('facetPiecesOf', () => {
 
   it('reads a plain string as one facet without a separator', () => {
     expect(facetPiecesOf('gestern')).toEqual([
-      { key: '0:gestern', lead: '', text: 'gestern', icon: null },
+      { key: '0:gestern', lead: '', text: 'gestern', icon: null, truncates: false },
     ]);
   });
 
-  it('separates facets in the given order and keeps their icons', () => {
-    const pieces = facetPiecesOf([{ text: 'bis 21:00' }, { text: 'Sporthalle', icon: 'key' }]);
+  it('separates facets in the given order and keeps their icons and truncation', () => {
+    const pieces = facetPiecesOf([
+      { text: 'bis 21:00' },
+      { text: 'Sporthalle', icon: 'key', truncates: true },
+    ]);
 
-    expect(pieces.map((piece) => [piece.lead === '', piece.text, piece.icon])).toEqual([
-      [true, 'bis 21:00', null],
-      [false, 'Sporthalle', 'key'],
+    expect(
+      pieces.map((piece) => [piece.lead === '', piece.text, piece.icon, piece.truncates]),
+    ).toEqual([
+      [true, 'bis 21:00', null, false],
+      [false, 'Sporthalle', 'key', true],
     ]);
   });
 

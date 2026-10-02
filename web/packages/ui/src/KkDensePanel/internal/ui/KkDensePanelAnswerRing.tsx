@@ -4,7 +4,7 @@ import type { CSSObject, Theme } from '@mui/material/styles';
 import type { FC } from 'react';
 import { focusRing } from '../../../internal/focus-ring';
 import { applyScheme, schemeEdge } from '../../../internal/scheme-paint';
-import { toneGroundScheme, tonePaint, toneSelectedPaint } from '../../../internal/tone';
+import { tonePaint, toneSelectedPaint } from '../../../internal/tone';
 import { kkTokens } from '../../../tokens';
 
 const RING_SIZE = '1.25rem';
@@ -38,11 +38,7 @@ const circlePaint = (theme: Theme): CSSObject => ({
   borderRadius: '50%',
   borderWidth: kkTokens.line.hair,
   borderStyle: 'dashed',
-  ...applyScheme(
-    theme,
-    schemeEdge(kkTokens.color.light.goldInk, kkTokens.color.dark.goldInk),
-    toneGroundScheme(theme, 'gold'),
-  ),
+  ...applyScheme(theme, schemeEdge(kkTokens.color.light.goldInk, kkTokens.color.dark.goldInk)),
 });
 
 interface KkDensePanelAnswerRingProps {

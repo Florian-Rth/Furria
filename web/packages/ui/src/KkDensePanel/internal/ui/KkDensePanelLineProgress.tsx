@@ -12,7 +12,7 @@ const trackPaint = (theme: Theme): CSSObject => ({
   position: 'absolute',
   zIndex: 1,
   left: theme.spacing(DENSE_INSET),
-  right: 0,
+  right: theme.spacing(DENSE_INSET),
   bottom: -kkTokens.line.hair,
   height: kkTokens.line.section,
   pointerEvents: 'none',

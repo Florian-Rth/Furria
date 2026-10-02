@@ -5,8 +5,7 @@ import type { KkGroupTone } from '../../../internal/group-tone';
 import { groupToneEdgeScheme } from '../../../internal/group-tone';
 import { applyScheme } from '../../../internal/scheme-paint';
 import { kkTokens } from '../../../tokens';
-
-const TICK_HEIGHT = '1.75rem';
+import { DENSE_TICK_HEIGHT } from '../dense-panel-paint';
 
 const tickPaintOf =
   (tone: KkGroupTone) =>
@@ -15,7 +14,7 @@ const tickPaintOf =
     left: 0,
     top: '50%',
     width: 0,
-    height: TICK_HEIGHT,
+    height: DENSE_TICK_HEIGHT,
     transform: 'translateY(-50%)',
     borderLeftWidth: kkTokens.line.page,
     borderLeftStyle: 'solid',

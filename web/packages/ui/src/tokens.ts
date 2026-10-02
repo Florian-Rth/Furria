@@ -203,6 +203,7 @@ export const kkTokens = {
   tapTarget: '2.75rem',
   densePanel: {
     anchor: '3.75rem',
+    stackedAnchor: '1.625rem',
     cell: '3.5rem',
     cellMin: '10rem',
     gap: 1,

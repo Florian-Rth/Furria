@@ -7,11 +7,12 @@ import { kkTokens } from '../../tokens';
 export type KkDensePanelMaterial = 'own' | 'club';
 
 const { light, dark } = kkTokens.color;
-const { anchor, cellMin } = kkTokens.densePanel;
+const { anchor, stackedAnchor, cellMin } = kkTokens.densePanel;
 
 export const DENSE_INSET = 1.5;
 export const DENSE_GAP = kkTokens.densePanel.gap;
 export const DENSE_HEAD_LINE_BOX = '1.25rem';
+export const DENSE_TICK_HEIGHT = '1.75rem';
 export const DENSE_INNER_RADIUS = `${kkTokens.radius.base - kkTokens.line.hair}px`;
 export const DENSE_CELLS_CONTAINER = 'kk-dense-cells';
 export const DENSE_CELLS_TWO_UP = `@container ${DENSE_CELLS_CONTAINER} (min-width: calc(${cellMin} * 2))`;
@@ -48,11 +49,22 @@ export const densePanelMaterials: Record<KkDensePanelMaterial, (theme: Theme) =>
 export const factColumnOf = (theme: Theme): string =>
   `calc(${theme.spacing(DENSE_INSET)} + ${anchor} + ${theme.spacing(DENSE_GAP)})`;
 
+const ruleSizeFrom = (start: string): string => `calc(100% - ${start}) ${kkTokens.line.hair}px`;
+
+export const DENSE_STACKED_SPINE = `minmax(${stackedAnchor}, auto)`;
+
 export const factRulePaint = (theme: Theme): CSSObject => ({
   backgroundRepeat: 'no-repeat',
   backgroundPosition: 'right top',
-  backgroundSize: `calc(100% - ${factColumnOf(theme)}) ${kkTokens.line.hair}px`,
+  backgroundSize: ruleSizeFrom(factColumnOf(theme)),
   ...applyScheme(theme, factRuleScheme),
+});
+
+export const stackedFactRulePaint = (theme: Theme): CSSObject => ({
+  backgroundSize: ruleSizeFrom(
+    `(${theme.spacing(DENSE_INSET)} + ${stackedAnchor} + ${theme.spacing(DENSE_GAP)})`,
+  ),
+  '&:has([data-kk-dense-stamp])': { backgroundSize: ruleSizeFrom(theme.spacing(DENSE_INSET)) },
 });
 
 export const FACT_YIELD: CSSObject = { flexShrink: 1, minWidth: 0 };

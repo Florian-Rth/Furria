@@ -53,6 +53,7 @@ export const KkDensePanelStampEyebrow: FC<KkDensePanelStampEyebrowProps> = ({
 }) => {
   const flip = useEyebrowFlip(text);
   const glyphTone = glyphTones[tone];
+  const emptyMark = text.length === 0 ? '' : undefined;
   const liveDot = live ? <Box component="span" data-kk-dense-live sx={liveDotPaint} /> : null;
   const cells = flip.cells.map((cell) => (
     <KkDensePanelEyebrowCell
@@ -64,7 +65,7 @@ export const KkDensePanelStampEyebrow: FC<KkDensePanelStampEyebrowProps> = ({
   ));
 
   return (
-    <Stack direction="row" data-kk-dense-eyebrow sx={EYEBROW_FRAME}>
+    <Stack direction="row" data-kk-dense-eyebrow data-empty={emptyMark} sx={EYEBROW_FRAME}>
       {liveDot}
       <Stack component="span" direction="row" sx={LETTERS}>
         {cells}

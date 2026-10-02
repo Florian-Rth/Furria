@@ -3,6 +3,7 @@ import type { KkIconName } from '../../../KkIcon';
 export interface KkDenseFacet {
   text: string;
   icon?: KkIconName;
+  truncates?: boolean;
 }
 
 export type KkDenseMeta = string | readonly KkDenseFacet[];
@@ -12,6 +13,7 @@ export interface FacetPiece {
   lead: string;
   text: string;
   icon: KkIconName | null;
+  truncates: boolean;
 }
 
 const SEPARATOR = ' · ';
@@ -32,5 +34,6 @@ export const facetPiecesOf = (meta: KkDenseMeta | undefined): FacetPiece[] => {
       lead: index === 0 ? NO_LEAD : SEPARATOR,
       text: facet.text,
       icon: facet.icon ?? null,
+      truncates: facet.truncates ?? false,
     }));
 };

@@ -6,16 +6,20 @@ import { redInk } from '../../../internal/red-ink';
 import { KkIcon } from '../../../KkIcon';
 import { kkTokens } from '../../../tokens';
 import { DENSE_GAP, DENSE_LINE_STACKED } from '../dense-panel-paint';
+import type { FacetFit } from '../logic/facet-fit';
 import type { FacetPiece } from '../logic/facet-pieces';
+import { FACET_ICON_EM, FACET_ICON_GAP_EM, useFacetFit } from '../logic/use-facet-fit';
 
 export type KkDenseMetaTone = 'muted' | 'alert';
 
 const FACET_ICON = {
-  width: '1.25em',
-  height: '1.25em',
-  mr: 0.25,
+  width: `${FACET_ICON_EM}em`,
+  height: `${FACET_ICON_EM}em`,
+  mr: `${FACET_ICON_GAP_EM}em`,
   verticalAlign: '-0.3em',
 } as const;
+
+const WHOLE_FIT: FacetFit = { kind: 'whole' };
 
 const WHOLE_FACET: CSSObject = { flex: 'none', whiteSpace: 'pre' };
 
@@ -29,8 +33,13 @@ const YIELDING_FACET: CSSObject = {
 
 const STRUT: CSSObject = { flex: 'none', width: 0, height: '1lh' };
 
+const FITTED_FACETS: CSSObject = {
+  '& [data-kk-dense-facet][data-fit="drop"]': { display: 'none' },
+  '& [data-kk-dense-facet][data-fit="cut"] [data-kk-dense-facet-text]': { display: 'none' },
+};
+
 const metaTones: Record<KkDenseMetaTone, (theme: Theme) => CSSObject> = {
-  muted: () => ({ flex: '1 1 0', color: 'text.secondary' }),
+  muted: () => ({ flex: '1 1 0', color: 'text.secondary', ...FITTED_FACETS }),
   alert: (theme) => ({ flex: '0 1 auto', ...redInk(theme), fontWeight: 700 }),
 };
 
@@ -52,7 +61,14 @@ const metaPaintOf =
       flexBasis: '100%',
       height: 'auto',
       ml: 0,
-      '& [data-kk-dense-facet]': { flexShrink: 1, whiteSpace: 'normal' },
+      '& [data-kk-dense-facet], & [data-kk-dense-facet][data-fit]': {
+        display: 'block',
+        flexBasis: '100%',
+        flexShrink: 1,
+        whiteSpace: 'normal',
+      },
+      '& [data-kk-dense-facet][data-fit] [data-kk-dense-facet-text]': { display: 'inline' },
+      '& [data-kk-dense-facet-cut], & [data-kk-dense-facet-lead]': { display: 'none' },
     },
   });
 
@@ -62,23 +78,39 @@ interface KkDensePanelLineMetaProps {
 }
 
 export const KkDensePanelLineMeta: FC<KkDensePanelLineMetaProps> = ({ pieces, tone }) => {
-  const facetPaint = tone === 'muted' ? WHOLE_FACET : YIELDING_FACET;
-  const strut = tone === 'muted' ? <Box component="span" sx={STRUT} /> : null;
-  const facets = pieces.map((piece) => {
+  const fitting = tone === 'muted';
+  const { metaRef, fits } = useFacetFit(pieces, fitting);
+  const facetPaint = fitting ? WHOLE_FACET : YIELDING_FACET;
+  const strut = fitting ? <Box component="span" sx={STRUT} /> : null;
+  const facets = pieces.map((piece, index) => {
+    const fit = fits?.[index] ?? WHOLE_FIT;
+    const fitMark = fits === null ? undefined : fit.kind;
     const icon =
       piece.icon === null ? null : <KkIcon name={piece.icon} size="small" sx={FACET_ICON} />;
+    const cut =
+      fit.kind === 'cut' ? (
+        <Box component="span" data-kk-dense-facet-cut>
+          {fit.text}
+        </Box>
+      ) : null;
 
     return (
-      <Box key={piece.key} component="span" data-kk-dense-facet sx={facetPaint}>
-        {piece.lead}
+      <Box key={piece.key} component="span" data-kk-dense-facet data-fit={fitMark} sx={facetPaint}>
+        <Box component="span" data-kk-dense-facet-lead>
+          {piece.lead}
+        </Box>
         {icon}
-        {piece.text}
+        <Box component="span" data-kk-dense-facet-text>
+          {piece.text}
+        </Box>
+        {cut}
       </Box>
     );
   });
 
   return (
     <Typography
+      ref={metaRef}
       component="span"
       variant="caption"
       aria-hidden

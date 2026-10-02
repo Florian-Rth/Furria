@@ -17,8 +17,11 @@ import {
   DENSE_INNER_RADIUS,
   DENSE_INSET,
   DENSE_LINE_STACKED,
+  DENSE_STACKED_SPINE,
+  DENSE_TICK_HEIGHT,
   factRulePaint,
   LAST_LINE_OF_PANEL,
+  stackedFactRulePaint,
 } from '../dense-panel-paint';
 import type { KkDenseMeta } from '../logic/facet-pieces';
 import { toProgressWidth } from '../logic/progress-width';
@@ -39,6 +42,9 @@ const SPINE = '& > [data-kk-dense-spine]';
 const FACT = '& > [data-kk-dense-swap]';
 const TRAILING = '& > [data-kk-dense-trailing]';
 const EXPANDED = '& > [data-kk-dense-expanded]';
+const ANSWER_TRAILING =
+  '&:has(> [data-kk-dense-trailing] > :is([data-kk-answer-ring], [data-kk-answer-mark]))';
+const EXPANDED_LINE = '&:has(> [data-kk-dense-row] > [data-kk-dense-expanded])';
 
 const statePaints: Record<KkDenseLineState, (theme: Theme) => CSSObject> = {
   plain: () => ({}),
@@ -62,8 +68,15 @@ const linePaintOf =
         borderBottomLeftRadius: DENSE_INNER_RADIUS,
         borderBottomRightRadius: DENSE_INNER_RADIUS,
       },
-      '& [data-kk-dense-progress]': { right: DENSE_INNER_RADIUS, bottom: 0 },
+      '& [data-kk-dense-progress]': { bottom: 0 },
     },
+    [EXPANDED_LINE]: {
+      '& > [data-kk-dense-tick]': {
+        top: `calc((${kkTokens.tapTarget} - ${DENSE_TICK_HEIGHT}) / 2)`,
+        transform: 'none',
+      },
+    },
+    [DENSE_LINE_STACKED]: { '&:not(:first-of-type)': stackedFactRulePaint(theme) },
     ...statePaints[state](theme),
   });
 
@@ -76,6 +89,7 @@ const STACKED_STAMP_ROW: CSSObject = {
   '& [data-kk-answer-mark]': { justifyContent: 'center', pb: 0 },
   [EXPANDED]: { gridColumn: '1 / -1', gridRow: 3 },
   '& [data-kk-dense-stamp]': { flexDirection: 'row', alignItems: 'baseline', columnGap: 1 },
+  '& [data-kk-dense-eyebrow][data-empty]': { display: 'none' },
 };
 
 const ROW_FRAME: CSSObject = {
@@ -97,6 +111,7 @@ const ROW_FRAME: CSSObject = {
   [FACT]: { gridColumn: '2 / -1', gridRow: 1, minWidth: 0 },
   '&:has(> [data-kk-dense-trailing])': { [FACT]: { gridColumn: 2 } },
   [TRAILING]: { gridColumn: 3, gridRow: 1, alignSelf: 'center' },
+  [ANSWER_TRAILING]: { [TRAILING]: { mr: -DENSE_INSET } },
   [EXPANDED]: { gridColumn: '2 / -1', gridRow: 2, alignSelf: 'center' },
   [STAMP_ROW]: {
     alignItems: 'last baseline',
@@ -107,7 +122,7 @@ const ROW_FRAME: CSSObject = {
     '& [data-kk-answer-mark]': { justifyContent: 'flex-end', pb: MARK_DROP },
   },
   [DENSE_LINE_STACKED]: {
-    gridTemplateColumns: 'auto minmax(0, 1fr) auto',
+    gridTemplateColumns: `${DENSE_STACKED_SPINE} minmax(0, 1fr) auto`,
     alignItems: 'start',
     rowGap: 0.5,
     py: 1,
