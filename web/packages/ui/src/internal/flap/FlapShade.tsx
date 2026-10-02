@@ -3,24 +3,24 @@ import type { CSSObject, Theme } from '@mui/material/styles';
 import type { MotionValue } from 'motion/react';
 import { motion } from 'motion/react';
 import type { CSSProperties, FC } from 'react';
-import { applyScheme, schemeFill } from '../../../../internal/scheme-paint';
-import { kkTokens } from '../../../../tokens';
-import { splitFlapTileBounds } from './split-flap-tile-bounds';
+import { kkTokens } from '../../tokens';
+import { applyScheme, schemeFill } from '../scheme-paint';
+import { flapTileBounds } from './flap-tile-bounds';
 
 const { light, dark } = kkTokens.color;
 
 const FILL_STYLE: CSSProperties = { position: 'absolute', inset: 0 };
 
 const shadePaint = (theme: Theme): CSSObject => ({
-  ...splitFlapTileBounds(theme),
+  ...flapTileBounds(theme),
   ...applyScheme(theme, schemeFill(light.bg, dark.bg)),
 });
 
-interface SplitFlapShadeProps {
+interface FlapShadeProps {
   shade: MotionValue<number>;
 }
 
-export const SplitFlapShade: FC<SplitFlapShadeProps> = ({ shade }) => (
+export const FlapShade: FC<FlapShadeProps> = ({ shade }) => (
   <motion.span style={{ ...FILL_STYLE, opacity: shade }}>
     <Box component="span" sx={shadePaint} />
   </motion.span>

@@ -1,9 +1,9 @@
 import type { CSSObject, Theme } from '@mui/material/styles';
-import { kkTokens } from '../../../../tokens';
+import { kkTokens } from '../../tokens';
 
 const TILE_BLEED_Y = -0.375;
 
-export const splitFlapTileBounds = (theme: Theme): CSSObject => ({
+export const flapTileBounds = (theme: Theme): CSSObject => ({
   position: 'absolute',
   top: theme.spacing(TILE_BLEED_Y),
   bottom: theme.spacing(TILE_BLEED_Y),
