@@ -87,8 +87,7 @@ public sealed class ToDoService
             ToDoKind.KeyToTakeBack,
             await _dbContext.KeyHoldings.CountAsync(
                 holding =>
-                    holding.SinceOn <= today
-                    && (holding.UntilOn == null || holding.UntilOn >= today)
+                    holding.UntilOn == null
                     && !activePeople.Any(person => person.Id == holding.PersonId),
                 ct
             )

@@ -18,6 +18,8 @@ public sealed class GetStartToDosTests
     private static readonly DateOnly JoinedIn2015 = new(2015, 11, 11);
     private static readonly DateOnly Today = new(2027, 1, 19);
     private static readonly DateOnly Yesterday = new(2027, 1, 18);
+    private static readonly DateOnly Tomorrow = new(2027, 1, 20);
+    private static readonly DateOnly SessionEnd = new(2027, 11, 10);
 
     private static readonly DateTimeOffset TuesdayEvening = new(
         2027,
@@ -149,6 +151,30 @@ public sealed class GetStartToDosTests
     }
 
     [Fact]
+    public async Task Should_LeaveOutUnknownBirthDates_When_TheViewerManagesPersonsAlone()
+    {
+        await OnTuesdayEveningAsync(
+            identity =>
+                identity
+                    .AddEligiblePerson(
+                        "anna",
+                        "Anna",
+                        InvitationSteps.UniqueContactEmail("anna"),
+                        Today
+                    )
+                    .AddPerson("emil", "Emil", "Ohnedatum")
+                    .AddMembership("emil-member", "emil", JoinedIn2015),
+            async ctx =>
+            {
+                var toDos = ToDosOf(await StartOfAsync(ctx, "petra"));
+
+                Assert.Equal(1, CountOf(toDos, ToDoKind.NeverInvited));
+                Assert.Null(CountOf(toDos, ToDoKind.BirthDateUnknown));
+            }
+        );
+    }
+
+    [Fact]
     public async Task Should_CountAKeyToTakeBack_When_TheHoldersLastTieEnded()
     {
         await OnTuesdayEveningAsync(
@@ -163,6 +189,41 @@ public sealed class GetStartToDosTests
                 Assert.Equal(1, CountOf(toDos, ToDoKind.KeyToTakeBack));
             },
             club => club.AddKeyHolding("hanna-sporthalle", "sporthalle", "hanna", JoinedIn2015)
+        );
+    }
+
+    [Fact]
+    public async Task Should_LeaveOutTheKey_When_ItsReturnIsRecordedForToday()
+    {
+        await AssertKeyToTakeBackCountAsync(
+            expected: null,
+            club =>
+                club.AddKeyHolding("hanna-sporthalle", "sporthalle", "hanna", JoinedIn2015, Today)
+        );
+    }
+
+    [Fact]
+    public async Task Should_LeaveOutTheKey_When_ItsReturnIsDatedAhead()
+    {
+        await AssertKeyToTakeBackCountAsync(
+            expected: null,
+            club =>
+                club.AddKeyHolding(
+                    "hanna-sporthalle",
+                    "sporthalle",
+                    "hanna",
+                    JoinedIn2015,
+                    SessionEnd
+                )
+        );
+    }
+
+    [Fact]
+    public async Task Should_CountTheKey_When_ItIsHandedOutAheadToAnInactiveHolder()
+    {
+        await AssertKeyToTakeBackCountAsync(
+            expected: 1,
+            club => club.AddKeyHolding("hanna-sporthalle", "sporthalle", "hanna", Tomorrow)
         );
     }
 
@@ -273,14 +334,37 @@ public sealed class GetStartToDosTests
                         Today
                     )
                     .AddPerson("emil", "Emil", "Ohnedatum")
-                    .AddMembership("emil-member", "emil", JoinedIn2015),
+                    .AddMembership("emil-member", "emil", JoinedIn2015)
+                    .AddPerson("hanna", "Hanna", "Ausgetreten")
+                    .AddMembership("hanna-member", "hanna", JoinedIn2015, Yesterday),
             async ctx =>
             {
                 var start = await StartOfAsync(ctx, "lena");
 
                 Assert.True(start.ViewerIsActiveInClub);
                 Assert.DoesNotContain(start.Panels, panel => panel.Kind == StartPanelKind.ToDos);
-            }
+            },
+            club => club.AddKeyHolding("hanna-sporthalle", "sporthalle", "hanna", JoinedIn2015)
+        );
+    }
+
+    private async Task AssertKeyToTakeBackCountAsync(
+        int? expected,
+        Action<ClubSeedBuilder> arrangeKey
+    )
+    {
+        await OnTuesdayEveningAsync(
+            identity =>
+                identity
+                    .AddPerson("hanna", "Hanna", "Ausgetreten")
+                    .AddMembership("hanna-member", "hanna", JoinedIn2015, Yesterday),
+            async ctx =>
+            {
+                var toDos = ToDosOf(await StartOfAsync(ctx, "maik"));
+
+                Assert.Equal(expected, CountOf(toDos, ToDoKind.KeyToTakeBack));
+            },
+            arrangeKey
         );
     }
 
@@ -330,6 +414,8 @@ public sealed class GetStartToDosTests
                                         .AddAccount("maik")
                                         .AddPerson("vera", "Vera", "Zugänge")
                                         .AddAccount("vera")
+                                        .AddPerson("petra", "Petra", "Register")
+                                        .AddAccount("petra")
                                         .AddPerson("lena", "Lena", "Garde")
                                         .AddAccount("lena")
                                         .AddMembership("lena-member", "lena", JoinedIn2015)
@@ -358,6 +444,13 @@ public sealed class GetStartToDosTests
                                         "Zugänge",
                                         "vera",
                                         FurriaPermissions.AccountsManage
+                                    )
+                                    .AddRoleWithHolder(
+                                        "register",
+                                        "petra-register",
+                                        "Register",
+                                        "petra",
+                                        FurriaPermissions.PersonsManage
                                     )
                             )
                             .Groups(groups => arrangeGroups?.Invoke(groups))
