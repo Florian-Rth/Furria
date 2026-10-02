@@ -40,6 +40,12 @@ public sealed class PermissionAuthorizer
         _timeProvider = timeProvider;
     }
 
+    public Task<int?> ActivePersonIdAsync(int accountId, CancellationToken ct)
+    {
+        BindTo(accountId);
+        return PersonIdAsync(accountId, ct);
+    }
+
     public async Task<bool> IsGrantedAsync(
         int accountId,
         string permissionKey,

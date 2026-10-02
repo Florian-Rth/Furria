@@ -4,6 +4,7 @@ using Furria.Application.Management;
 using Furria.Application.Start;
 using Furria.Core.Club;
 using Furria.Core.Groups;
+using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Start;
 
 namespace Furria.Api.Endpoints.Start;
@@ -11,10 +12,12 @@ namespace Furria.Api.Endpoints.Start;
 public sealed class GetStart : EndpointWithoutRequest<GetStartResponse>
 {
     private readonly StartService _startService;
+    private readonly PermissionAuthorizer _authorizer;
 
-    public GetStart(StartService startService)
+    public GetStart(StartService startService, PermissionAuthorizer authorizer)
     {
         _startService = startService;
+        _authorizer = authorizer;
     }
 
     public override void Configure()
@@ -25,8 +28,14 @@ public sealed class GetStart : EndpointWithoutRequest<GetStartResponse>
     public override async Task HandleAsync(CancellationToken ct)
     {
         var accountId = User.AccountId();
-        var personId = User.PersonId();
-        if (accountId is null || personId is null)
+        if (accountId is null)
+        {
+            await Send.UnauthorizedAsync(ct);
+            return;
+        }
+
+        var personId = await _authorizer.ActivePersonIdAsync(accountId.Value, ct);
+        if (personId is null)
         {
             await Send.UnauthorizedAsync(ct);
             return;

@@ -374,6 +374,31 @@ public sealed class PostCalendarResponseTests
     }
 
     [Fact]
+    public async Task Should_Refuse_When_TheAccountWasDisabledAfterItsTokenWasIssued()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildCalendarAsync(ct);
+                var client = await ctx.Identity.ClientForAsync("bea", ct);
+                await _fixture.DisableAccountDirectlyAsync(ctx.Identity.Accounts.IdOf("bea"), ct);
+                var entryId = ctx.Club.CalendarEntries.IdOf("garde-training");
+
+                var response = await AnswerAsync(client, entryId, AttendanceAnswer.Yes);
+
+                Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+                await ctx
+                    .Expected.AttendanceResponsesFor(entryId)
+                    .ToCarryNoAnswerFrom(ctx.Identity.People.IdOf("bea"))
+                    .AssertAsync(ct);
+            }
+        );
+    }
+
+    [Fact]
     public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
     {
         var ct = TestContext.Current.CancellationToken;

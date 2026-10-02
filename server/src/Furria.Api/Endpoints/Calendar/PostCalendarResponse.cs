@@ -29,10 +29,16 @@ public sealed class PostCalendarResponse : Endpoint<PostCalendarResponseRequest>
     public override async Task HandleAsync(PostCalendarResponseRequest req, CancellationToken ct)
     {
         var accountId = User.AccountId();
-        var personId = User.PersonId();
-        if (accountId is null || personId is null)
+        if (accountId is null)
         {
             await Send.UnauthorizedAsync(ct);
+            return;
+        }
+
+        var personId = await _authorizer.ActivePersonIdAsync(accountId.Value, ct);
+        if (personId is null)
+        {
+            await Send.ForbiddenAsync(ct);
             return;
         }
 
