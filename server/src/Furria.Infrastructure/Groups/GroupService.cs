@@ -219,6 +219,7 @@ public sealed class GroupService
                 Description = group.Description,
                 IsRecruiting = group.IsRecruiting,
                 GroupKindName = group.GroupKind!.Name,
+                FoundedYear = group.FoundedYear,
                 Tone = group.Tone,
             })
             .ToListAsync(ct);

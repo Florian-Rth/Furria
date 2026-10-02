@@ -2,6 +2,7 @@ using System.Net;
 using System.Text.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Groups;
+using Furria.Core.Groups;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -53,6 +54,37 @@ public sealed class GetPublicGroupsTests
         Assert.Equal("Die Garde tanzt seit 1971.", tanzgarde.Description);
         Assert.True(tanzgarde.IsRecruiting);
         Assert.False(result.Groups[0].IsRecruiting);
+    }
+
+    [Fact]
+    public async Task Should_CarryTheGroupsProfile_When_TheGroupHasMaintainedIt()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await _fixture.BuildAsync(
+            builder =>
+                builder.Groups(groups =>
+                    groups
+                        .AddGroupKind("tanzgarde-art", "Tanzgarde")
+                        .AddGroup(
+                            "funken",
+                            "Funkengarde",
+                            groupKindAlias: "tanzgarde-art",
+                            foundedYear: 1998,
+                            tone: GroupTone.Teal
+                        )
+                ),
+            ct
+        );
+
+        var (response, result) = await _fixture
+            .CreateClient()
+            .GETAsync<GetPublicGroups, GetPublicGroupsResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var funken = Assert.Single(result.Groups);
+        Assert.Equal("Tanzgarde", funken.GroupKindName);
+        Assert.Equal(1998, funken.FoundedYear);
+        Assert.Equal(GroupTone.Teal, funken.Tone);
     }
 
     [Fact]
@@ -159,7 +191,15 @@ public sealed class GetPublicGroupsTests
         using var document = JsonDocument.Parse(payload);
         var tanzgarde = document.RootElement.GetProperty("groups").EnumerateArray().Single();
         Assert.Equal(
-            ["groupId", "name", "description", "isRecruiting", "groupKindName", "tone"],
+            [
+                "groupId",
+                "name",
+                "description",
+                "isRecruiting",
+                "groupKindName",
+                "foundedYear",
+                "tone",
+            ],
             tanzgarde.EnumerateObject().Select(field => field.Name)
         );
     }
