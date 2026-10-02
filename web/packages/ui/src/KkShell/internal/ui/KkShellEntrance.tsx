@@ -10,12 +10,19 @@ const TRACK_GAP = 3;
 interface KkShellEntranceProps extends PropsWithChildren {
   path: string;
   move: KkScreenMove;
+  bodyHeld?: boolean;
 }
 
-export const KkShellEntrance: FC<KkShellEntranceProps> = ({ path, move, children }) => {
+export const KkShellEntrance: FC<KkShellEntranceProps> = ({
+  path,
+  move,
+  bodyHeld = false,
+  children,
+}) => {
   const theme = useTheme();
   const reducedMotion = useReducedMotion();
   const entrance = screenEntranceOf(move, reducedMotion);
+  const heldMark = bodyHeld ? true : undefined;
 
   const trackStyle: CSSProperties = {
     display: 'flex',
@@ -29,6 +36,7 @@ export const KkShellEntrance: FC<KkShellEntranceProps> = ({ path, move, children
     <motion.div
       key={path}
       data-kk-shell-entrance
+      data-kk-body-held={heldMark}
       style={trackStyle}
       initial={entrance.from}
       animate={entrance.to}

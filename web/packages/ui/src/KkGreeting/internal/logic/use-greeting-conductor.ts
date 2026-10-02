@@ -1,6 +1,7 @@
 import { useMotionValueEvent } from 'motion/react';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { useConfettiDock } from '../../../KkShell/handover/confetti/confetti-dock-context';
+import { useScreenArrivalHold } from '../../../KkShell/internal/logic/screen-arrival';
 import { useKkShellScroll } from '../../../KkShell/internal/logic/shell-scroll';
 import { kkTokens } from '../../../tokens';
 import type { KkGreetingPlay } from './flap-schedule';
@@ -9,6 +10,7 @@ import { sameBoard } from './greeting-board';
 import type { GreetingStage } from './greeting-context';
 import type { GreetingPhase } from './greeting-cues';
 import type { GreetingPoint } from './greeting-geometry';
+import { landingAtOf } from './greeting-landing';
 import { greetingStartOf, leavesRest } from './greeting-start';
 import { burstOriginIn } from './measure-greeting';
 
@@ -54,11 +56,15 @@ export const useGreetingConductor = ({
   const [stilled, setStilled] = useState(false);
   const [board, setBoard] = useState<GreetingBoard | null>(null);
   const [shot, setShot] = useState<GreetingBurstShot | null>(null);
+  const [landed, setLanded] = useState(false);
   const { scrollY } = useKkShellScroll();
   const dock = useConfettiDock();
   const duration = board?.schedule.duration ?? null;
   const burstAt = board?.schedule.burstAt ?? null;
   const faces = board?.faces ?? null;
+  const landsAt = board === null ? null : landingAtOf(board.schedule);
+
+  useScreenArrivalHold(phase !== 'settled' && !landed);
 
   const interrupt = (): void => {
     setPhase('settled');
@@ -163,6 +169,20 @@ export const useGreetingConductor = ({
       }
     };
   }, [phase, duration, burstAt]);
+
+  useEffect(() => {
+    if (phase !== 'playing' || landsAt === null) {
+      return;
+    }
+
+    const landTimer = window.setTimeout(() => {
+      setLanded(true);
+    }, landsAt);
+
+    return () => {
+      window.clearTimeout(landTimer);
+    };
+  }, [phase, landsAt]);
 
   useEffect(() => {
     if (phase === 'settled') {

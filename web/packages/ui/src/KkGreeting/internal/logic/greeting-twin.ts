@@ -67,14 +67,23 @@ export const twinFacesOf = (run: FlapTurnRun, deal: FlapDeal, seed: number): str
   return run.faces.map((face) => (face.kind === 'text' ? face.text : (dealt[face.slot] ?? '')));
 };
 
+export const glyphToneOf = (cell: FlapCell, tone: FlapTileTone): FlapGlyphTone => {
+  if (cell.accent) {
+    return 'accent';
+  }
+
+  return tone === 'gold' && cell.role === 'name' ? 'gold' : 'ink';
+};
+
 export const twinOf = (
   id: string,
   schedule: FlapSchedule,
   cells: readonly FlapCell[],
   layout: TwinLayout,
   seed: number,
+  assembled = false,
 ): TwinBoard => {
-  const tracks = flapKeyframesOf(schedule);
+  const tracks = flapKeyframesOf(schedule, assembled);
 
   const twinCells = schedule.runs.filter(isTurnRun).flatMap((run) => {
     const box = layout.boxes[run.cell] ?? null;
@@ -91,7 +100,7 @@ export const twinOf = (
         box,
         faces: twinFacesOf(run, layout.deals[run.cell] ?? NO_DEAL, seed),
         track,
-        glyph: cell.accent ? 'accent' : 'ink',
+        glyph: glyphToneOf(cell, schedule.tone),
       } satisfies TwinCell,
     ];
   });

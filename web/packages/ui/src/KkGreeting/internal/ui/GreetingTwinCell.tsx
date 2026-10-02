@@ -15,7 +15,7 @@ interface GreetingTwinCellProps {
 
 export const GreetingTwinCell: FC<GreetingTwinCellProps> = ({ cell, tone }) => {
   const flap = useFlapCellMotion(cell.track, cell.faces);
-  const tileInk = tone === 'gold' ? 'gold' : 'inverse';
+  const tileInk = tone === 'gold' ? 'onGold' : 'inverse';
   const box: CSSProperties = {
     position: 'absolute',
     left: cell.box.left,

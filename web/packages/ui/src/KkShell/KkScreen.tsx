@@ -6,6 +6,7 @@ import { HANDOVER_STAGES } from './handover/handover-stages';
 import { KkHandoverStageContext } from './handover-stage';
 import { KkShellHeader } from './internal/layout/KkShellHeader';
 import { footClearanceOf } from './internal/logic/foot-clearance';
+import { ScreenArrivalContext, useScreenArrivalGate } from './internal/logic/screen-arrival';
 import { sectionOriginOf } from './internal/logic/section-origin';
 import { useKkShell } from './internal/logic/shell-context';
 import { useFootMeasure } from './internal/logic/use-foot-measure';
@@ -40,6 +41,7 @@ export const KkScreen: FC<KkScreenProps> = ({
   children,
 }) => {
   const { path, move, destinations, chromeHost, footHost, indexHost } = useKkShell();
+  const gate = useScreenArrivalGate();
   const { ref: actionBarRef, measured: measuredActionHeight } = useFootMeasure(
     action !== undefined,
   );
@@ -105,10 +107,12 @@ export const KkScreen: FC<KkScreenProps> = ({
       {chrome}
       {actionBar}
       {letterIndex}
-      <KkShellEntrance path={path} move={move}>
-        <Header kind={headerKind}>{header}</Header>
-        {children}
-      </KkShellEntrance>
+      <ScreenArrivalContext.Provider value={gate.arrival}>
+        <KkShellEntrance path={path} move={move} bodyHeld={gate.held}>
+          <Header kind={headerKind}>{header}</Header>
+          {children}
+        </KkShellEntrance>
+      </ScreenArrivalContext.Provider>
     </KkHandoverStageContext.Provider>
   );
 };

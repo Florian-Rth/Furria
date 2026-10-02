@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { KkGreetingPart } from './flap-cells';
-import { flapTextOf, previousFacesOf, toFlapCells } from './flap-cells';
+import { boundCellOf, flapTextOf, previousFacesOf, toFlapCells } from './flap-cells';
 
 const plain = (text: string): KkGreetingPart => ({ text, role: 'plain' });
 const value = (text: string): KkGreetingPart => ({ text, role: 'value' });
@@ -103,5 +103,26 @@ describe('previousFacesOf', () => {
 
   it('has no previous faces without a remembered board', () => {
     expect(previousFacesOf(cellsOf('40'), null)).toEqual([null, null, null, null, null]);
+  });
+});
+
+describe('boundCellOf', () => {
+  const cells = toFlapCells([
+    { text: 'Tag ', role: 'plain' },
+    { text: '13.', role: 'value' },
+    { text: ' Session, ', role: 'plain' },
+    { text: 'Lena', role: 'name' },
+    { text: '.', role: 'plain' },
+  ]);
+
+  it.each([
+    { face: '.', bound: true },
+    { face: '3', bound: false },
+    { face: 'Tag', bound: false },
+    { face: 'Lena.', bound: false },
+  ])('binds the cell $face to the digit before it: $bound', ({ face, bound }) => {
+    const index = cells.findIndex((cell) => cell.face === face);
+
+    expect(boundCellOf(cells, index)).toBe(bound ? index - 1 : null);
   });
 });

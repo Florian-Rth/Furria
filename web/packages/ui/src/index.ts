@@ -54,6 +54,7 @@ export type { KkGreetingPart, KkGreetingPartRole } from './KkGreeting/internal/l
 export { countFlapCells } from './KkGreeting/internal/logic/flap-cells';
 export type { KkGreetingPlay, KkGreetingTempo } from './KkGreeting/internal/logic/flap-schedule';
 export { KkGreeting } from './KkGreeting/KkGreeting';
+export { KkGreetingSkeleton } from './KkGreeting/KkGreetingSkeleton';
 export type { KkGroupStageAnniversary } from './KkGroupStage/internal/group-stage-anniversary';
 export { KkGroupStage } from './KkGroupStage/KkGroupStage';
 export { KkGroupTile } from './KkGroupTile';

@@ -1,7 +1,7 @@
 import { useEffect, useEffectEvent, useLayoutEffect, useState } from 'react';
 import { daySeedOf } from './deck-fit';
 import type { FlapCell, KkGreetingPart } from './flap-cells';
-import { flapFacesOf, toFlapCells } from './flap-cells';
+import { boundCellOf, flapFacesOf, toFlapCells } from './flap-cells';
 import type { FlapSchedule, KkGreetingTempo } from './flap-schedule';
 import { flapScheduleOf, isTurnRun } from './flap-schedule';
 import { sameFaces } from './greeting-board';
@@ -25,6 +25,7 @@ export interface GreetingBoardView {
   cells: FlapCell[];
   cues: GreetingCue[];
   twin: TwinBoard | null;
+  festive: boolean;
 }
 
 interface GreetingTick {
@@ -101,10 +102,11 @@ export const useGreetingBoard = ({
   const turns = active.runs.some(isTurnRun);
   const measuring = twinId !== null && turns ? twinId : null;
   const measured = layout !== null && layout.id === measuring ? layout : null;
+  const assembled = tick === null && !night && (play === 'full' || play === 'live');
   const twin =
     measuring === null || measured === null
       ? null
-      : twinOf(measuring, active, cells, measured, seed);
+      : twinOf(measuring, active, cells, measured, seed, assembled);
 
   const measure = useEffectEvent((id: string): void => {
     const root = rootRef.current;
@@ -158,8 +160,10 @@ export const useGreetingBoard = ({
   }, [tick]);
 
   const cues = cells.map((_, index) =>
-    tick !== null && twin === null ? SHOWN_CUE : inkCueOf(index, active, activePhase),
+    tick !== null && twin === null
+      ? SHOWN_CUE
+      : inkCueOf(index, active, activePhase, boundCellOf(cells, index)),
   );
 
-  return { cells, cues, twin };
+  return { cells, cues, twin, festive };
 };

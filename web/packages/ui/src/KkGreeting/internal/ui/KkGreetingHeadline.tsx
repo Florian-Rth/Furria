@@ -9,7 +9,12 @@ import { GreetingTwin } from './GreetingTwin';
 export const KkGreetingHeadline: FC<GreetingBoardProps> = (props) => {
   const board = useGreetingBoard(props);
   const ink = board.cells.map((cell, index) => (
-    <GreetingInkCell key={cell.slot} cell={cell} cue={board.cues[index] ?? SHOWN_CUE} />
+    <GreetingInkCell
+      key={cell.slot}
+      cell={cell}
+      cue={board.cues[index] ?? SHOWN_CUE}
+      festive={board.festive}
+    />
   ));
 
   return (

@@ -63,6 +63,19 @@ describe('inkCueOf', () => {
     expect(inkCueOf(cell, BOARD, phase).moving).toBe(moving);
   });
 
+  it.each([
+    { phase: 'waiting', opacity: 0, delay: 0 },
+    { phase: 'playing', opacity: 1, delay: 0.45 },
+    { phase: 'settled', opacity: 1, delay: 0 },
+  ] as const)(
+    'prints a mark bound to cell 0 with its digit while $phase',
+    ({ phase, opacity, delay }) => {
+      const cue = inkCueOf(1, BOARD, phase, 0);
+
+      expect([cue.opacity, cue.delay]).toEqual([opacity, delay]);
+    },
+  );
+
   it('fades a night word in over its own run', () => {
     expect(inkCueOf(2, BOARD, 'playing').duration).toBeCloseTo(0.24);
   });

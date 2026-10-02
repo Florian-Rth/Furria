@@ -7,7 +7,7 @@ import { applyScheme, schemeInk } from '../scheme-paint';
 import { toneRecipes } from '../tone';
 
 export type FlapGlyphVariant = 'bar' | 'h1' | 'caption';
-export type FlapGlyphTone = 'ink' | 'muted' | 'accent' | 'inverse' | 'gold';
+export type FlapGlyphTone = 'ink' | 'muted' | 'accent' | 'inverse' | 'gold' | 'onGold';
 
 const { light, dark } = kkTokens.color;
 const { tracking } = kkTokens.type;
@@ -33,7 +33,7 @@ const glyphFaces: Record<FlapGlyphVariant, CSSObject> = {
     fontWeight: kkTokens.eyebrow.fontWeight,
     letterSpacing: tracking.tight,
     textTransform: 'uppercase',
-    fontVariantNumeric: 'tabular-nums',
+    fontVariantNumeric: 'proportional-nums',
   },
 };
 
@@ -43,6 +43,7 @@ const glyphInks: Record<FlapGlyphTone, (theme: Theme) => CSSObject> = {
   accent: redInk,
   inverse: (theme) => applyScheme(theme, schemeInk(light.panel2, dark.bg)),
   gold: (theme) => applyScheme(theme, schemeInk(gold.inkLight, gold.inkDark)),
+  onGold: (theme) => applyScheme(theme, schemeInk(light.ink, light.ink)),
 };
 
 const glyphPaintOf =

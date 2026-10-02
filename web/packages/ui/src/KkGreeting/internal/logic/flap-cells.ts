@@ -111,6 +111,13 @@ export const toFlapCells = (parts: readonly KkGreetingPart[]): FlapCell[] => {
   return board.cells;
 };
 
+export const boundCellOf = (cells: readonly FlapCell[], index: number): number | null => {
+  const cell = cells[index];
+  const previous = cells[index - 1];
+
+  return cell?.kind === 'mark' && previous?.role === 'value' ? index - 1 : null;
+};
+
 export const countFlapCells = (parts: readonly KkGreetingPart[]): number =>
   toFlapCells(parts).length;
 

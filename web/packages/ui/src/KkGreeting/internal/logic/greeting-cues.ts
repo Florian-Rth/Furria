@@ -36,14 +36,29 @@ const startsOnItsFace = (run: FlapRun): boolean => {
   return first?.kind === 'text' && last?.kind === 'text' && first.text === last.text;
 };
 
+const boundCueOf = (bound: FlapRun | undefined, phase: GreetingPhase): GreetingCue => {
+  if (bound === undefined || phase === 'settled') {
+    return SHOWN_CUE;
+  }
+
+  return phase === 'waiting' ? HIDDEN : enteringAt(bound.end, 0);
+};
+
 export const inkCueOf = (
   cell: number,
   schedule: FlapSchedule,
   phase: GreetingPhase,
+  boundTo: number | null = null,
 ): GreetingCue => {
   const run = schedule.runs.find((candidate) => candidate.cell === cell);
 
-  if (phase === 'settled' || run === undefined) {
+  if (run === undefined) {
+    return boundCueOf(
+      schedule.runs.find((candidate) => boundTo !== null && candidate.cell === boundTo),
+      phase,
+    );
+  }
+  if (phase === 'settled') {
     return SHOWN_CUE;
   }
   if (phase === 'waiting' && startsOnItsFace(run)) {

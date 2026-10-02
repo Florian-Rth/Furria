@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { FlapCell } from './flap-cells';
 import type { FlapSchedule, FlapTurnRun } from './flap-schedule';
-import { dealOf, twinFaceAt, twinFacesOf, twinOf, twinPoseOf } from './greeting-twin';
+import { dealOf, glyphToneOf, twinFaceAt, twinFacesOf, twinOf, twinPoseOf } from './greeting-twin';
 
 const tenPerLetter = (face: string): number => face.length * 10;
 
@@ -64,6 +64,17 @@ describe('twinFacesOf', () => {
   });
 });
 
+describe('glyphToneOf', () => {
+  it.each([
+    { cell: cellOf('40', 'value', true), tone: 'gold', glyph: 'accent' },
+    { cell: cellOf('Gerd!', 'name'), tone: 'gold', glyph: 'gold' },
+    { cell: cellOf('Gerd!', 'name'), tone: 'ink', glyph: 'ink' },
+    { cell: cellOf('Alles', 'plain'), tone: 'gold', glyph: 'ink' },
+  ] as const)('lands $cell.face as $glyph on $tone tiles', ({ cell, tone, glyph }) => {
+    expect(glyphToneOf(cell, tone)).toBe(glyph);
+  });
+});
+
 describe('twinOf', () => {
   const schedule: FlapSchedule = {
     runs: [RATTLE, { motion: 'fade', cell: 0, start: 0, end: 240 }],
@@ -78,7 +89,7 @@ describe('twinOf', () => {
   it('boards only the turning cells it could measure', () => {
     const twin = twinOf('arrival', schedule, cells, { boxes: [box, box], deals: [] }, 11);
 
-    expect(twin.cells.map((cell) => [cell.key, cell.glyph])).toEqual([['arrival:1', 'ink']]);
+    expect(twin.cells.map((cell) => [cell.key, cell.glyph])).toEqual([['arrival:1', 'gold']]);
     expect(twin.tone).toBe('gold');
   });
 

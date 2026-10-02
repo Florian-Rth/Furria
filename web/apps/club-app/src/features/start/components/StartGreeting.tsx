@@ -1,4 +1,4 @@
-import { KkGreeting, KkScreenHeaderSkeleton } from '@furria/ui';
+import { KkGreeting, KkGreetingSkeleton } from '@furria/ui';
 import type { FC } from 'react';
 import { useGreeting } from '../hooks/use-greeting';
 
@@ -6,7 +6,7 @@ export const StartGreeting: FC = () => {
   const greeting = useGreeting();
 
   if (greeting === null) {
-    return <KkScreenHeaderSkeleton />;
+    return <KkGreetingSkeleton />;
   }
 
   const line = greeting.line === null ? null : <KkGreeting.Line>{greeting.line}</KkGreeting.Line>;
