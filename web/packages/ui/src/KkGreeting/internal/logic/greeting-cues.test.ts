@@ -36,10 +36,8 @@ const BOARD: FlapSchedule = {
 
 describe('inkCueOf', () => {
   it.each([
-    { cell: 0, phase: 'waiting', opacity: 0, delay: 0 },
     { cell: 0, phase: 'playing', opacity: 0, delay: 0 },
     { cell: 0, phase: 'settled', opacity: 1, delay: 0 },
-    { cell: 2, phase: 'waiting', opacity: 0, delay: 0 },
     { cell: 2, phase: 'playing', opacity: 1, delay: 0.06 },
     { cell: 2, phase: 'settled', opacity: 1, delay: 0 },
     { cell: 1, phase: 'waiting', opacity: 1, delay: 0 },
@@ -55,24 +53,28 @@ describe('inkCueOf', () => {
   );
 
   it.each([
-    { cell: 0, phase: 'playing', moving: true },
-    { cell: 2, phase: 'playing', moving: true },
-    { cell: 2, phase: 'settled', moving: false },
-    { cell: 1, phase: 'playing', moving: false },
-  ] as const)('marks cell $cell as moving $moving while $phase', ({ cell, phase, moving }) => {
-    expect(inkCueOf(cell, BOARD, phase).moving).toBe(moving);
+    { cell: 0, phase: 'waiting', stance: 'veiled' },
+    { cell: 0, phase: 'playing', stance: 'moving' },
+    { cell: 2, phase: 'waiting', stance: 'veiled' },
+    { cell: 2, phase: 'playing', stance: 'moving' },
+    { cell: 2, phase: 'settled', stance: 'resting' },
+    { cell: 1, phase: 'waiting', stance: 'resting' },
+    { cell: 1, phase: 'playing', stance: 'resting' },
+    { cell: 3, phase: 'waiting', stance: 'resting' },
+  ] as const)('holds cell $cell $stance while $phase', ({ cell, phase, stance }) => {
+    expect(inkCueOf(cell, BOARD, phase).stance).toBe(stance);
   });
 
   it.each([
-    { phase: 'waiting', opacity: 0, delay: 0 },
-    { phase: 'playing', opacity: 1, delay: 0.45 },
-    { phase: 'settled', opacity: 1, delay: 0 },
+    { phase: 'waiting', stance: 'veiled', delay: 0 },
+    { phase: 'playing', stance: 'moving', delay: 0.45 },
+    { phase: 'settled', stance: 'resting', delay: 0 },
   ] as const)(
     'prints a mark bound to cell 0 with its digit while $phase',
-    ({ phase, opacity, delay }) => {
+    ({ phase, stance, delay }) => {
       const cue = inkCueOf(1, BOARD, phase, 0);
 
-      expect([cue.opacity, cue.delay]).toEqual([opacity, delay]);
+      expect([cue.stance, cue.delay]).toEqual([stance, delay]);
     },
   );
 
@@ -100,11 +102,11 @@ describe('lineCueOf', () => {
   );
 
   it.each([
-    { phase: 'waiting', moving: true },
-    { phase: 'playing', moving: true },
-    { phase: 'settled', moving: false },
-  ] as const)('marks the line as moving $moving while $phase', ({ phase, moving }) => {
-    expect(lineCueOf('full', BOARD.line, phase).moving).toBe(moving);
+    { phase: 'waiting', stance: 'moving' },
+    { phase: 'playing', stance: 'moving' },
+    { phase: 'settled', stance: 'resting' },
+  ] as const)('holds the line $stance while $phase', ({ phase, stance }) => {
+    expect(lineCueOf('full', BOARD.line, phase).stance).toBe(stance);
   });
 
   it('shows the line at once when the board cues none', () => {

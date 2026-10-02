@@ -1,3 +1,4 @@
+import { textMeterOf } from '../../../internal/text-meter';
 import type { FlapFaceWidth } from './deck-fit';
 import type { GreetingPoint, GreetingRect } from './greeting-geometry';
 import { burstOriginOf, cellBoxOf } from './greeting-geometry';
@@ -10,8 +11,6 @@ export interface GreetingMeasure {
 const TITLE_SELECTOR = '[data-kk-screen-header-title]';
 const CELL_SELECTOR = '[data-kk-flap-cell]';
 const ORIGIN: GreetingRect = { left: 0, top: 0, width: 0, height: 0 };
-
-const unmeasurable: FlapFaceWidth = () => Number.POSITIVE_INFINITY;
 
 const offsetWithin = (element: HTMLElement, root: HTMLElement): GreetingRect => {
   let left = 0;
@@ -31,21 +30,6 @@ const lineHeightOf = (title: Element, fallback: number): number => {
   const lineHeight = Number.parseFloat(window.getComputedStyle(title).lineHeight);
 
   return Number.isNaN(lineHeight) ? fallback : lineHeight;
-};
-
-const meterOf = (title: Element): FlapFaceWidth => {
-  const style = window.getComputedStyle(title);
-  const context = document.createElement('canvas').getContext('2d');
-  const tracking = Number.parseFloat(style.letterSpacing);
-  const spacing = Number.isNaN(tracking) ? 0 : tracking;
-
-  if (context === null) {
-    return unmeasurable;
-  }
-
-  context.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
-
-  return (face) => context.measureText(face).width + spacing * Array.from(face).length;
 };
 
 const cellsOf = (title: Element): HTMLElement[] =>
@@ -68,7 +52,7 @@ export const measureGreeting = (root: HTMLElement): GreetingMeasure | null => {
 
   return {
     boxes: cellsOf(title).map((cell) => boxOf(cell, root, title)),
-    widthOf: meterOf(title),
+    widthOf: textMeterOf(title),
   };
 };
 

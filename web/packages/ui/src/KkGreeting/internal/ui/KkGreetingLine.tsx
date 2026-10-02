@@ -6,8 +6,6 @@ import { useGreetingStage } from '../logic/greeting-context';
 import { lineCueOf } from '../logic/greeting-cues';
 
 const ONE_LINE = 1;
-const MOVING = 'moving';
-const RESTING = 'resting';
 
 const LINE_PAINT = {
   typography: 'body2',
@@ -25,11 +23,10 @@ export const KkGreetingLine: FC<KkGreetingLineProps> = ({ children }) => {
   const cue = lineCueOf(play, board?.schedule.line ?? null, phase);
   const target = { opacity: cue.opacity, y: cue.y };
   const transition = { delay: cue.delay, duration: cue.duration, ease: 'easeOut' as const };
-  const stance = cue.moving ? MOVING : RESTING;
 
   return (
     <Typography
-      key={stance}
+      key={cue.stance}
       component={motion.p}
       data-kk-greeting-line
       initial={false}

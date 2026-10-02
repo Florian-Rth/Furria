@@ -7,7 +7,8 @@ import type { CSSProperties, FC } from 'react';
 import { kkTokens } from '../../tokens';
 import type { KkScheme } from '../scheme-paint';
 import { applyScheme } from '../scheme-paint';
-import { flapTileBounds } from './flap-tile-bounds';
+import type { FlapTileFit } from './flap-tile-bounds';
+import { flapHingeShiftOf, flapTileBoundsOf } from './flap-tile-bounds';
 
 export type FlapTileTone = 'ink' | 'gold';
 
@@ -19,40 +20,58 @@ const TOP_LIGHT_SHARE = 0.18;
 
 const FILL_STYLE: CSSProperties = { position: 'absolute', inset: 0 };
 
-const hingeOf = (ink: string): string =>
-  `linear-gradient(to bottom, transparent calc(50% - ${HINGE}px), ${ink} calc(50% - ${HINGE}px), ${ink} calc(50% + ${HINGE}px), transparent calc(50% + ${HINGE}px))`;
+const SEAM = 1;
 
-const boardScheme = (lightFill: string, darkFill: string): KkScheme => ({
+const hingeOf = (ink: string, shift: string): string =>
+  `linear-gradient(to bottom, transparent calc(50% + ${shift} - ${HINGE}px), ${ink} calc(50% + ${shift} - ${HINGE}px), ${ink} calc(50% + ${shift} + ${HINGE}px), transparent calc(50% + ${shift} + ${HINGE}px))`;
+
+const GLINT = `inset 0 ${TOP_LIGHT}px 0 ${alpha(material.glint, TOP_LIGHT_SHARE)}`;
+
+const shadowOf = (ground: string, fit: FlapTileFit): string =>
+  fit === 'line' ? `${GLINT}, 0 0 0 ${SEAM}px ${ground}` : GLINT;
+
+const boardScheme = (
+  lightFill: string,
+  darkFill: string,
+  shift: string,
+  fit: FlapTileFit,
+): KkScheme => ({
   light: {
     backgroundColor: lightFill,
-    backgroundImage: hingeOf(light.bg),
-    boxShadow: `inset 0 ${TOP_LIGHT}px 0 ${alpha(material.glint, TOP_LIGHT_SHARE)}`,
+    backgroundImage: hingeOf(light.bg, shift),
+    boxShadow: shadowOf(light.bg, fit),
   },
   dark: {
     backgroundColor: darkFill,
-    backgroundImage: hingeOf(dark.bg),
-    boxShadow: `inset 0 ${TOP_LIGHT}px 0 ${alpha(material.glint, TOP_LIGHT_SHARE)}`,
+    backgroundImage: hingeOf(dark.bg, shift),
+    boxShadow: shadowOf(dark.bg, fit),
   },
 });
 
-const tilePaints: Record<FlapTileTone, (theme: Theme) => CSSObject> = {
-  ink: (theme) => ({
-    ...flapTileBounds(theme),
-    ...applyScheme(theme, boardScheme(light.ink, dark.ink)),
-  }),
-  gold: (theme) => ({
-    ...flapTileBounds(theme),
-    ...applyScheme(theme, boardScheme(light.gold, dark.gold)),
-  }),
+const tileFills: Record<FlapTileTone, [string, string]> = {
+  ink: [light.ink, dark.ink],
+  gold: [light.gold, dark.gold],
 };
+
+const tilePaintOf =
+  (tone: FlapTileTone, fit: FlapTileFit) =>
+  (theme: Theme): CSSObject => {
+    const [lightFill, darkFill] = tileFills[tone];
+
+    return {
+      ...flapTileBoundsOf(fit)(theme),
+      ...applyScheme(theme, boardScheme(lightFill, darkFill, flapHingeShiftOf(theme, fit), fit)),
+    };
+  };
 
 interface FlapTileProps {
   presence: MotionValue<number> | number;
   tone?: FlapTileTone;
+  fit?: FlapTileFit;
 }
 
-export const FlapTile: FC<FlapTileProps> = ({ presence, tone = 'ink' }) => (
+export const FlapTile: FC<FlapTileProps> = ({ presence, tone = 'ink', fit = 'bleed' }) => (
   <motion.span style={{ ...FILL_STYLE, opacity: presence }}>
-    <Box component="span" sx={tilePaints[tone]} />
+    <Box component="span" sx={tilePaintOf(tone, fit)} />
   </motion.span>
 );

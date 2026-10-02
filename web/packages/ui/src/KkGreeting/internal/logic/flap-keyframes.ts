@@ -43,7 +43,6 @@ const PRESENCE_GAIN = 2.4;
 const SNAP_MS = 1;
 const PRECISION = 1000;
 const LAST_REBOUND_SHARE = 0.5;
-const ASSEMBLE_MS = 120;
 
 const settled = (value: number): number => Math.round(value * PRECISION) / PRECISION + 0;
 
@@ -162,18 +161,13 @@ const restingKeyOf = (at: number, face: number, presence: number): TimedKey => (
   face,
 });
 
-const waitingKeyOf = (at: number, presence: number): TimedKey => ({
-  ...keyOf(at, 0, 0, 'hold'),
-  presence,
-});
-
-const assemblyKeysOf = (lead: number): TimedKey[] =>
-  lead > 0 ? [waitingKeyOf(0, 0), waitingKeyOf(Math.min(ASSEMBLE_MS, lead), 1)] : [];
+const standingKeysOf = (lead: number): TimedKey[] =>
+  lead > 0 ? [{ ...keyOf(0, 0, 0, 'hold'), presence: 1 }] : [];
 
 const runKeysOf = (run: FlapTurnRun, assembled: boolean): TimedKey[] => {
   const count = run.flips.length;
   const lead = assembled ? run.start : 0;
-  const standing = lead > 0;
+  const standing = assembled;
 
   const keys = run.flips.flatMap((flip, index) => {
     const at = flip.at - run.start + lead;
@@ -187,7 +181,7 @@ const runKeysOf = (run: FlapTurnRun, assembled: boolean): TimedKey[] => {
     return index === 0 ? turn : [restingKeyOf(at, index - 1, 1), ...turn];
   });
 
-  return strictlyTimed([...assemblyKeysOf(lead), ...keys]);
+  return strictlyTimed([...standingKeysOf(lead), ...keys]);
 };
 
 const trackOf = (run: FlapTurnRun, assembled: boolean): FlapTrack => {

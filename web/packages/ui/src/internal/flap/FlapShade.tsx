@@ -5,23 +5,27 @@ import { motion } from 'motion/react';
 import type { CSSProperties, FC } from 'react';
 import { kkTokens } from '../../tokens';
 import { applyScheme, schemeFill } from '../scheme-paint';
-import { flapTileBounds } from './flap-tile-bounds';
+import type { FlapTileFit } from './flap-tile-bounds';
+import { flapTileBoundsOf } from './flap-tile-bounds';
 
 const { light, dark } = kkTokens.color;
 
 const FILL_STYLE: CSSProperties = { position: 'absolute', inset: 0 };
 
-const shadePaint = (theme: Theme): CSSObject => ({
-  ...flapTileBounds(theme),
-  ...applyScheme(theme, schemeFill(light.bg, dark.bg)),
-});
+const shadePaintOf =
+  (fit: FlapTileFit) =>
+  (theme: Theme): CSSObject => ({
+    ...flapTileBoundsOf(fit)(theme),
+    ...applyScheme(theme, schemeFill(light.bg, dark.bg)),
+  });
 
 interface FlapShadeProps {
   shade: MotionValue<number>;
+  fit?: FlapTileFit;
 }
 
-export const FlapShade: FC<FlapShadeProps> = ({ shade }) => (
+export const FlapShade: FC<FlapShadeProps> = ({ shade, fit = 'bleed' }) => (
   <motion.span style={{ ...FILL_STYLE, opacity: shade }}>
-    <Box component="span" sx={shadePaint} />
+    <Box component="span" sx={shadePaintOf(fit)} />
   </motion.span>
 );

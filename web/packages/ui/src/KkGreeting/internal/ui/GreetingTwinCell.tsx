@@ -5,8 +5,11 @@ import { FlapLeaf } from '../../../internal/flap/FlapLeaf';
 import { FlapShade } from '../../../internal/flap/FlapShade';
 import type { FlapTileTone } from '../../../internal/flap/FlapTile';
 import { BOTTOM_HALF_CLIP, TOP_HALF_CLIP } from '../../../internal/flap/flap-pose';
+import type { FlapTileFit } from '../../../internal/flap/flap-tile-bounds';
 import type { TwinCell } from '../logic/greeting-twin';
 import { useFlapCellMotion } from '../logic/use-flap-cell-motion';
+
+const LINE_FIT: FlapTileFit = 'line';
 
 interface GreetingTwinCellProps {
   cell: TwinCell;
@@ -47,18 +50,31 @@ export const GreetingTwinCell: FC<GreetingTwinCellProps> = ({ cell, tone }) => {
 
   return (
     <span style={box}>
-      <FlapLeaf clip={flap.revealClip} presence={flap.presence} tone={tone} inverse={toOnTile}>
+      <FlapLeaf
+        clip={flap.revealClip}
+        presence={flap.presence}
+        tone={tone}
+        fit={LINE_FIT}
+        inverse={toOnTile}
+      >
         {toGlyph}
       </FlapLeaf>
-      <FlapLeaf clip={flap.coverClip} presence={flap.presence} tone={tone} inverse={fromOnTile}>
+      <FlapLeaf
+        clip={flap.coverClip}
+        presence={flap.presence}
+        tone={tone}
+        fit={LINE_FIT}
+        inverse={fromOnTile}
+      >
         {fromGlyph}
       </FlapLeaf>
       <FlapLeaf
         clip={TOP_HALF_CLIP}
         presence={flap.presence}
         tone={tone}
+        fit={LINE_FIT}
         inverse={fromOnTile}
-        shade={<FlapShade shade={flap.fallShade} />}
+        shade={<FlapShade shade={flap.fallShade} fit={LINE_FIT} />}
         rotate={flap.fall}
       >
         {fromGlyph}
@@ -67,8 +83,9 @@ export const GreetingTwinCell: FC<GreetingTwinCellProps> = ({ cell, tone }) => {
         clip={BOTTOM_HALF_CLIP}
         presence={flap.presence}
         tone={tone}
+        fit={LINE_FIT}
         inverse={toOnTile}
-        shade={<FlapShade shade={flap.landShade} />}
+        shade={<FlapShade shade={flap.landShade} fit={LINE_FIT} />}
         rotate={flap.land}
       >
         {toGlyph}

@@ -189,6 +189,26 @@ describe('flapScheduleOf cells', () => {
     expect(Math.max(...turned)).toBe(12);
   });
 
+  it.each([
+    { name: 'a session day', cells: SESSION_DAY, festive: false, countFrom: null },
+    { name: 'the call', cells: CALL, festive: true, countFrom: null },
+    { name: 'an anniversary', cells: ANNIVERSARY, festive: true, countFrom: 28 },
+  ])(
+    'opens every arriving tile of $name on a face it can print',
+    ({ cells, festive, countFrom }) => {
+      const openings = flapScheduleOf(requestOf({ cells, festive, countFrom }))
+        .runs.filter(isTurn)
+        .map((run) => run.faces[0]);
+
+      expect(openings.length).toBeGreaterThan(0);
+      expect(
+        openings.every(
+          (face) => face?.kind === 'deck' || (face?.kind === 'text' && face.text !== ''),
+        ),
+      ).toBe(true);
+    },
+  );
+
   it('starts the cells in reading order', () => {
     const starts = flapScheduleOf(requestOf({})).runs.map((run) => run.start);
 
@@ -305,13 +325,8 @@ describe('flapScheduleOf cells', () => {
     const [tens, units] = runs;
 
     expect(tens?.start).toBe(units?.start);
-    expect(tens?.faces.map((face) => (face.kind === 'text' ? face.text : '?'))).toEqual([
-      '',
-      '2',
-      '3',
-    ]);
+    expect(tens?.faces.map((face) => (face.kind === 'text' ? face.text : '?'))).toEqual(['2', '3']);
     expect(units?.faces.map((face) => (face.kind === 'text' ? face.text : '?'))).toEqual([
-      '',
       '8',
       '9',
       '0',

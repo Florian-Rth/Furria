@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import type { CSSProperties, FC, PropsWithChildren, ReactNode } from 'react';
 import type { FlapTileTone } from './FlapTile';
 import { FlapTile } from './FlapTile';
+import type { FlapTileFit } from './flap-tile-bounds';
 
 const PERSPECTIVE = 220;
 
@@ -18,6 +19,7 @@ interface FlapLeafProps extends PropsWithChildren {
   clip: MotionValue<string> | string;
   presence: MotionValue<number> | number;
   tone?: FlapTileTone;
+  fit?: FlapTileFit;
   inverse?: ReactNode;
   shade?: ReactNode;
   rotate?: MotionValue<number>;
@@ -29,6 +31,7 @@ export const FlapLeaf: FC<FlapLeafProps> = ({
   clip,
   presence,
   tone = 'ink',
+  fit = 'bleed',
   inverse,
   shade,
   rotate,
@@ -45,7 +48,7 @@ export const FlapLeaf: FC<FlapLeafProps> = ({
       transformPerspective: perspective,
     }}
   >
-    <FlapTile presence={presence} tone={tone} />
+    <FlapTile presence={presence} tone={tone} fit={fit} />
     {children}
     <motion.span style={{ ...INVERSE_STYLE, opacity: presence }}>{inverse}</motion.span>
     {shade}

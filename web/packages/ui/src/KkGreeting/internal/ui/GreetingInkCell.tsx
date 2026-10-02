@@ -4,13 +4,27 @@ import { motion } from 'motion/react';
 import type { FC } from 'react';
 import { redInk } from '../../../internal/red-ink';
 import { applyScheme, schemeInk } from '../../../internal/scheme-paint';
+import { skeletonSurface } from '../../../internal/skeleton-shimmer';
 import { kkTokens } from '../../../tokens';
 import type { FlapCell } from '../logic/flap-cells';
 import type { GreetingCue } from '../logic/greeting-cues';
 
-const MOVING = 'moving';
-const RESTING = 'resting';
 const FESTIVE_STAR = '"✶" / ""';
+const VEIL_INSET = '1px 0';
+const UNSEEN = { opacity: 0 } as const;
+
+const veilPaint = (theme: Theme): CSSObject => ({
+  position: 'relative',
+  display: 'inline-block',
+  color: 'transparent',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    inset: VEIL_INSET,
+    borderRadius: `${kkTokens.radius.bar}px`,
+    ...skeletonSurface(theme),
+  },
+});
 
 const festiveNamePaint = (theme: Theme): CSSObject => ({
   ...applyScheme(theme, schemeInk(kkTokens.color.light.goldInk, kkTokens.color.dark.goldInk)),
@@ -35,19 +49,19 @@ interface GreetingInkCellProps {
 }
 
 export const GreetingInkCell: FC<GreetingInkCellProps> = ({ cell, cue, festive }) => {
-  const ink = inkPaintOf(cell, festive);
+  const ink = cue.stance === 'veiled' ? veilPaint : inkPaintOf(cell, festive);
   const target = { opacity: cue.opacity };
   const transition = { delay: cue.delay, duration: cue.duration, ease: 'easeOut' as const };
-  const stance = cue.moving ? MOVING : RESTING;
+  const entry = cue.stance === 'moving' ? UNSEEN : false;
 
   return (
     <>
       {cell.lead}
       <Box
-        key={stance}
+        key={cue.stance}
         component={motion.span}
         data-kk-flap-cell
-        initial={false}
+        initial={entry}
         animate={target}
         transition={transition}
         sx={ink}

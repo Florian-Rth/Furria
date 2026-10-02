@@ -2,27 +2,42 @@ import type { FlapCue, FlapRun, FlapSchedule, KkGreetingPlay } from './flap-sche
 
 export type GreetingPhase = 'waiting' | 'playing' | 'settled';
 
+export type GreetingStance = 'resting' | 'moving' | 'veiled';
+
 export interface GreetingCue {
   opacity: number;
   y: number;
   delay: number;
   duration: number;
-  moving: boolean;
+  stance: GreetingStance;
 }
 
 const MS_PER_SECOND = 1000;
 const LINE_DROP = 4;
 
-export const SHOWN_CUE: GreetingCue = { opacity: 1, y: 0, delay: 0, duration: 0, moving: false };
-const HIDDEN: GreetingCue = { opacity: 0, y: 0, delay: 0, duration: 0, moving: true };
-const LOWERED: GreetingCue = { opacity: 0, y: LINE_DROP, delay: 0, duration: 0, moving: true };
+export const SHOWN_CUE: GreetingCue = {
+  opacity: 1,
+  y: 0,
+  delay: 0,
+  duration: 0,
+  stance: 'resting',
+};
+const HIDDEN: GreetingCue = { opacity: 0, y: 0, delay: 0, duration: 0, stance: 'moving' };
+const VEILED: GreetingCue = { opacity: 1, y: 0, delay: 0, duration: 0, stance: 'veiled' };
+const LOWERED: GreetingCue = {
+  opacity: 0,
+  y: LINE_DROP,
+  delay: 0,
+  duration: 0,
+  stance: 'moving',
+};
 
 const enteringAt = (at: number, duration: number): GreetingCue => ({
   opacity: 1,
   y: 0,
   delay: at / MS_PER_SECOND,
   duration: duration / MS_PER_SECOND,
-  moving: true,
+  stance: 'moving',
 });
 
 const startsOnItsFace = (run: FlapRun): boolean => {
@@ -41,7 +56,7 @@ const boundCueOf = (bound: FlapRun | undefined, phase: GreetingPhase): GreetingC
     return SHOWN_CUE;
   }
 
-  return phase === 'waiting' ? HIDDEN : enteringAt(bound.end, 0);
+  return phase === 'waiting' ? VEILED : enteringAt(bound.end, 0);
 };
 
 export const inkCueOf = (
@@ -61,8 +76,8 @@ export const inkCueOf = (
   if (phase === 'settled') {
     return SHOWN_CUE;
   }
-  if (phase === 'waiting' && startsOnItsFace(run)) {
-    return SHOWN_CUE;
+  if (phase === 'waiting') {
+    return startsOnItsFace(run) ? SHOWN_CUE : VEILED;
   }
   if (run.motion === 'fade' && phase === 'playing') {
     return enteringAt(run.start, run.end - run.start);

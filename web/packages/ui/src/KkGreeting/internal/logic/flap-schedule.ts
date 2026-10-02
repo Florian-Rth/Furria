@@ -192,7 +192,7 @@ const countFacesOf = (
   );
 };
 
-const arrivalStepsOf = (cell: FlapCell, festive: boolean): FlapFace[] => {
+const arrivalFacesOf = (cell: FlapCell, festive: boolean): FlapFace[] => {
   const final = textFace(cell.face);
 
   if (cell.kind === 'digit') {
@@ -202,22 +202,20 @@ const arrivalStepsOf = (cell: FlapCell, festive: boolean): FlapFace[] => {
   return [...deckFaces(festive ? FESTIVE_WORD_FACES : WORD_FACES), final];
 };
 
-const stepsOf = (
-  cell: FlapCell,
-  play: FlapPlay,
-  festive: boolean,
-  counted: FlapFace[] | undefined,
-): FlapFace[] => {
+const stepsOf = (cell: FlapCell, play: FlapPlay): FlapFace[] => {
   const final = textFace(cell.face);
 
-  if (isArrival(play)) {
-    return counted ?? arrivalStepsOf(cell, festive);
-  }
   if (play === 'daily' && cell.kind === 'word') {
     return [...deckFaces(DAILY_WORD_FACES), final];
   }
 
   return [final];
+};
+
+const openingOf = (faces: readonly FlapFace[]): Pick<CellPlan, 'from' | 'steps'> => {
+  const [from = BLANK, ...steps] = faces;
+
+  return { from, steps };
 };
 
 const plansOf = (
@@ -238,14 +236,16 @@ const plansOf = (
       return [];
     }
 
-    const before = isArrival(play) ? null : (previous[index] ?? null);
     const countedSteps = counted.get(index);
+    const before = previous[index] ?? null;
+    const opening = isArrival(play)
+      ? openingOf(countedSteps ?? arrivalFacesOf(cell, festive || burst))
+      : { from: before === null ? BLANK : textFace(before), steps: stepsOf(cell, play) };
 
     return [
       {
         cell: index,
-        from: before === null ? BLANK : textFace(before),
-        steps: stepsOf(cell, play, festive || burst, countedSteps),
+        ...opening,
         landing: burst && isArrival(play) && index === lastCandidate ? 'strike' : 'final',
         counted: countedSteps !== undefined,
       },

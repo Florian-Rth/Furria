@@ -176,23 +176,25 @@ describe('flapKeyframesOf', () => {
     expect(new Set(track.face)).toEqual(new Set([0]));
   });
 
-  it('stands an assembled board up before a later cell starts to turn', () => {
+  it('stands an assembled board up whole before a later cell starts to turn', () => {
     const [track] = flapKeyframesOf(scheduleOf([SINGLE]), true);
 
     if (track === undefined) {
       throw new Error('A turn run bakes one track.');
     }
 
-    expect([track.delay, track.presence[0], valueAt(track, track.presence, 120)]).toEqual([
-      0, 0, 1,
+    expect([track.delay, track.presence[0], valueAt(track, track.presence, 100)]).toEqual([
+      0, 1, 1,
     ]);
     expect(valueAt(track, track.face, 100)).toBe(0);
     expect(track.presence.at(-1)).toBe(0);
   });
 
-  it('lets a cell that turns at once rise with its own first flip on an assembled board', () => {
+  it('stands a cell that turns at once on its tile from the first frame of an assembled board', () => {
     const [assembled] = flapKeyframesOf(scheduleOf([RATTLE]), true);
 
-    expect(assembled).toEqual(trackOf(RATTLE));
+    expect([assembled?.delay, assembled?.presence[0], assembled?.presence.at(-1)]).toEqual([
+      0, 1, 0,
+    ]);
   });
 });
