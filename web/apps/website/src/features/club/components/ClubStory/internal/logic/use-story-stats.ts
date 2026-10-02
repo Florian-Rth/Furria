@@ -1,10 +1,9 @@
-import { usePublicGroupsQuery } from '@/features/club/api';
 import type { StoryStat } from '@/features/club/story-content';
 import { buildStoryStats } from '@/features/club/story-content';
-import { FOUNDING_YEAR, MEMBER_COUNT_PLACEHOLDER } from '@/lib/club';
+import { usePublicClubQuery } from '@/lib/public-club/api';
 
 export const useStoryStats = (): StoryStat[] => {
-  const { data } = usePublicGroupsQuery();
+  const { data } = usePublicClubQuery();
 
-  return buildStoryStats(FOUNDING_YEAR, MEMBER_COUNT_PLACEHOLDER, data?.length ?? null);
+  return buildStoryStats(data);
 };

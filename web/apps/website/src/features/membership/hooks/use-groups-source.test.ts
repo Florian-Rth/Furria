@@ -1,6 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { SEEDED_GROUPS } from '@/lib/seed/groups';
+import type { PublicGroup } from '@/lib/public-groups/schemas';
 import { resolveGroupsSource, selectLoadedGroups } from './use-groups-source';
+
+const ROSTER: PublicGroup[] = [
+  {
+    groupId: 1,
+    name: 'Tanzgarde',
+    description: '',
+    isRecruiting: true,
+    groupKindName: null,
+    foundedYear: null,
+    tone: null,
+  },
+];
 
 describe('resolveGroupsSource', () => {
   it('waits while the groups are still on their way', () => {
@@ -12,14 +24,14 @@ describe('resolveGroupsSource', () => {
   });
 
   it('hands over the groups once they arrived', () => {
-    expect(resolveGroupsSource(SEEDED_GROUPS, false)).toEqual({
+    expect(resolveGroupsSource(ROSTER, false)).toEqual({
       status: 'ready',
-      groups: SEEDED_GROUPS,
+      groups: ROSTER,
     });
   });
 
   it('keeps the groups it already has, even after a later failure', () => {
-    expect(resolveGroupsSource(SEEDED_GROUPS, true).status).toBe('ready');
+    expect(resolveGroupsSource(ROSTER, true).status).toBe('ready');
   });
 });
 
@@ -30,6 +42,6 @@ describe('selectLoadedGroups', () => {
   });
 
   it('unwraps the loaded groups', () => {
-    expect(selectLoadedGroups({ status: 'ready', groups: SEEDED_GROUPS })).toEqual(SEEDED_GROUPS);
+    expect(selectLoadedGroups({ status: 'ready', groups: ROSTER })).toEqual(ROSTER);
   });
 });

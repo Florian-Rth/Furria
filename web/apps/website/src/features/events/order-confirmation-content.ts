@@ -1,4 +1,3 @@
-import { CLUB_CONTACT_EMAIL } from '@/lib/club';
 import type { PaymentStatus } from '@/lib/seed/orders';
 
 export const orderConfirmationDocumentTitle = 'Deine Bestellung';
@@ -43,9 +42,5 @@ export const orderErrorContent = {
   body: 'Vielleicht ist der Link beim Kopieren zerbrochen — nimm ihn am besten direkt aus deiner Bestellmail. Wenn das auch nicht hilft, schreib uns: es antwortet ein Mensch.',
   eventsCtaLabel: 'Zu den Veranstaltungen →',
 } as const;
-
-export const orderErrorMailHref = `mailto:${CLUB_CONTACT_EMAIL}`;
-
-export const orderErrorMailLabel = CLUB_CONTACT_EMAIL;
 
 export const orderLoadingLabel = 'Bestellung wird geladen';

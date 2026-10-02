@@ -1,11 +1,11 @@
 import FormGroup from '@mui/material/FormGroup';
 import type { FC } from 'react';
 import { useGroupInterestsField } from '@/features/membership/hooks/use-group-interests-field';
-import type { Group } from '@/lib/seed/groups';
+import type { PublicGroup } from '@/lib/public-groups/schemas';
 import { ApplyInterestChoice } from './ApplyInterestChoice';
 
 interface ApplyInterestChoicesProps {
-  groups: Group[];
+  groups: PublicGroup[];
 }
 
 export const ApplyInterestChoices: FC<ApplyInterestChoicesProps> = ({ groups }) => {
@@ -14,7 +14,12 @@ export const ApplyInterestChoices: FC<ApplyInterestChoicesProps> = ({ groups }) 
   return (
     <FormGroup data-kk-apply-interests sx={{ gap: 0.5 }}>
       {groups.map((group) => (
-        <ApplyInterestChoice key={group.id} group={group} selected={selected} onToggle={toggle} />
+        <ApplyInterestChoice
+          key={group.groupId}
+          group={group}
+          selected={selected}
+          onToggle={toggle}
+        />
       ))}
     </FormGroup>
   );

@@ -1,11 +1,19 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { PublicGroup } from '@/features/club/schemas';
+import type { PublicGroup } from '@/lib/public-groups/schemas';
 import { resolvePublicGroupsSource } from './use-public-groups-source';
 
 const retry = vi.fn();
 
 const groups: PublicGroup[] = [
-  { groupId: 1, name: 'Gruppe', description: 'Beschreibung', isRecruiting: true },
+  {
+    groupId: 1,
+    name: 'Gruppe',
+    description: 'Beschreibung',
+    isRecruiting: true,
+    groupKindName: null,
+    foundedYear: null,
+    tone: null,
+  },
 ];
 
 describe('resolvePublicGroupsSource', () => {

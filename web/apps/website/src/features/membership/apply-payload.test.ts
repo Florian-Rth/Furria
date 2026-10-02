@@ -13,7 +13,7 @@ const values: MembershipApplicationForm = {
   city: 'Großfurra',
   email: 'lena.brandt@example.de',
   phone: '0170 1234567',
-  groupInterests: ['tanzgarde', 'organisation'],
+  groupInterests: [1, 9],
   consent: true,
 };
 
@@ -28,7 +28,7 @@ describe('buildMembershipApplicationPayload', () => {
       city: 'Großfurra',
       email: 'lena.brandt@example.de',
       phone: '0170 1234567',
-      groupInterests: ['tanzgarde', 'organisation'],
+      groupInterests: [1, 9],
       guardian: null,
       consentAccepted: true,
     });

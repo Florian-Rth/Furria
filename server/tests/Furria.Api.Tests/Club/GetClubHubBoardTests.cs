@@ -191,33 +191,6 @@ public sealed class GetClubHubBoardTests
     }
 
     [Fact]
-    public async Task Should_LeaveThePortraitPrivate_When_ABoardSeatIsRunning()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        MemberNamedMira(identity).AddPerson("nadine", "Nadine", "Wolters")
-                    )
-                    .Club(club =>
-                        club.AddBoardOffice("praesident", "Präsident")
-                            .AddBoardSeat("nadine-praesident", "praesident", "nadine", SeatedIn2023)
-                    ),
-            ct
-        );
-
-        var result = await HubForAsync(ctx, ct);
-
-        var seat = Assert.Single(result.Board);
-        Assert.Null(seat.Person.PortraitUrl);
-        await ctx
-            .Expected.Person(ctx.Identity.People.IdOf("nadine"))
-            .ToHavePortrait(null, portraitIsPublic: false)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_NameTheAnnouncementAuthorsOffice_When_SheHoldsARunningBoardSeat()
     {
         var ct = TestContext.Current.CancellationToken;

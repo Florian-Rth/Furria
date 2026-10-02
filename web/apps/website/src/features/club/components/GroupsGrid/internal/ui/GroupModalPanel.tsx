@@ -1,4 +1,4 @@
-import { KkPhotoPlaceholder, kkTokens } from '@furria/ui';
+import { KkEyebrow, KkPhotoPlaceholder, kkTokens } from '@furria/ui';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -7,8 +7,13 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { Link as RouterLink } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { groupsLabels, groupsMailHref, resolveGroupOpenness } from '@/features/club/groups-content';
-import type { PublicGroup } from '@/features/club/schemas';
+import { ClubMailButton } from '@/components/ClubMailButton';
+import {
+  buildFoundedLabel,
+  groupsLabels,
+  resolveGroupOpenness,
+} from '@/features/club/groups-content';
+import type { PublicGroup } from '@/lib/public-groups/schemas';
 import { GroupOpennessChip } from './GroupOpennessChip';
 
 interface GroupModalPanelProps {
@@ -23,6 +28,15 @@ export const GroupModalPanel: FC<GroupModalPanelProps> = ({ group, tint, titleId
   const description = group.description.trim();
   const hasDescription = description !== '';
   const body = hasDescription ? description : groupsLabels.noDescription;
+  const tone = group.tone ?? undefined;
+  const kind = group.groupKindName === null ? null : <KkEyebrow>{group.groupKindName}</KkEyebrow>;
+  const foundedLabel = buildFoundedLabel(group.foundedYear);
+  const founded =
+    foundedLabel === null ? null : (
+      <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 600 }}>
+        {foundedLabel}
+      </Typography>
+    );
 
   return (
     <Card
@@ -44,6 +58,7 @@ export const GroupModalPanel: FC<GroupModalPanelProps> = ({ group, tint, titleId
         <KkPhotoPlaceholder
           label={groupsLabels.photo}
           tint={tint}
+          tone={tone}
           aspectRatio={kkTokens.aspectRatio.banner}
         />
         <IconButton
@@ -66,9 +81,11 @@ export const GroupModalPanel: FC<GroupModalPanelProps> = ({ group, tint, titleId
       </Box>
       <Stack sx={{ gap: 2.5, p: { xs: 3, md: 4 } }}>
         <Stack sx={{ gap: 1.5, alignItems: 'flex-start' }}>
+          {kind}
           <Typography id={titleId} variant="h2" component="h2">
             {group.name}
           </Typography>
+          {founded}
           <GroupOpennessChip openness={openness} />
         </Stack>
         <Typography
@@ -91,9 +108,9 @@ export const GroupModalPanel: FC<GroupModalPanelProps> = ({ group, tint, titleId
           >
             {groupsLabels.joinCta}
           </Button>
-          <Button variant="outlined" size="large" href={groupsMailHref}>
+          <ClubMailButton variant="outlined" size="large">
             {groupsLabels.askCta}
-          </Button>
+          </ClubMailButton>
         </Stack>
       </Stack>
     </Card>

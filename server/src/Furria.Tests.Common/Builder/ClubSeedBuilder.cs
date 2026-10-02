@@ -49,7 +49,10 @@ public sealed class ClubSeedBuilder
         string? city = null,
         string? email = null,
         string? websiteUrl = null,
-        int ageOfConsent = Core.Club.ClubRecord.DefaultAgeOfConsent
+        int ageOfConsent = Core.Club.ClubRecord.DefaultAgeOfConsent,
+        string? phone = null,
+        string? instagramUrl = null,
+        string? facebookUrl = null
     )
     {
         _clubRecord = new ClubRecordIntent(
@@ -60,7 +63,10 @@ public sealed class ClubSeedBuilder
             city,
             email,
             websiteUrl,
-            ageOfConsent
+            ageOfConsent,
+            phone,
+            instagramUrl,
+            facebookUrl
         );
         return this;
     }
@@ -126,11 +132,12 @@ public sealed class ClubSeedBuilder
         string name,
         int sortOrder = 1,
         string? impliedRoleAlias = null,
-        DateOnly? archivedOn = null
+        DateOnly? archivedOn = null,
+        bool isPublic = false
     )
     {
         _boardOffices.Add(
-            new BoardOfficeIntent(alias, name, sortOrder, impliedRoleAlias, archivedOn)
+            new BoardOfficeIntent(alias, name, sortOrder, impliedRoleAlias, archivedOn, isPublic)
         );
         return this;
     }
@@ -238,7 +245,10 @@ public sealed class ClubSeedBuilder
         string? City,
         string? Email,
         string? WebsiteUrl,
-        int AgeOfConsent
+        int AgeOfConsent,
+        string? Phone,
+        string? InstagramUrl,
+        string? FacebookUrl
     );
 
     internal sealed record VenueIntent(
@@ -274,7 +284,8 @@ public sealed class ClubSeedBuilder
         string Name,
         int SortOrder,
         string? ImpliedRoleAlias,
-        DateOnly? ArchivedOn
+        DateOnly? ArchivedOn,
+        bool IsPublic
     );
 
     internal sealed record BoardSeatIntent(

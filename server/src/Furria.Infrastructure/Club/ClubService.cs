@@ -61,16 +61,8 @@ public sealed partial class ClubService
     {
         var opening = ClubSession.OpeningOf(ClubSession.YearOf(today));
 
-        var memberCount = await _dbContext.People.CountAsync(
-            person =>
-                person.Memberships.Any(membership =>
-                    membership.StartedOn <= today
-                    && (membership.EndedOn == null || membership.EndedOn >= today)
-                ),
-            ct
-        );
-
-        var groupCount = await _dbContext.Groups.CountAsync(group => group.ArchivedOn == null, ct);
+        var memberCount = await MemberCountAsync(today, ct);
+        var groupCount = await GroupCountAsync(ct);
 
         var joinedThisSessionCount = await _dbContext.People.CountAsync(
             person =>
@@ -87,6 +79,19 @@ public sealed partial class ClubService
             JoinedThisSessionCount = joinedThisSessionCount,
         };
     }
+
+    private Task<int> MemberCountAsync(DateOnly today, CancellationToken ct) =>
+        _dbContext.People.CountAsync(
+            person =>
+                person.Memberships.Any(membership =>
+                    membership.StartedOn <= today
+                    && (membership.EndedOn == null || membership.EndedOn >= today)
+                ),
+            ct
+        );
+
+    private Task<int> GroupCountAsync(CancellationToken ct) =>
+        _dbContext.Groups.CountAsync(group => group.ArchivedOn == null, ct);
 
     private sealed record SessionRow(int? Number, string? Motto, string? LogoSvg);
 }

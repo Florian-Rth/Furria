@@ -50,14 +50,10 @@ public sealed class PersonExpectations
                 Assert.Equal(visible, (await SingleAsync(dbContext, ct)).ContactVisibleToMembers)
         );
 
-    public Expected ToHavePortrait(string? portraitUrl, bool portraitIsPublic) =>
+    public Expected ToHavePortrait(string? portraitUrl) =>
         _expected.Enqueue(
             async (dbContext, ct) =>
-            {
-                var person = await SingleAsync(dbContext, ct);
-                Assert.Equal(portraitUrl, person.PortraitUrl);
-                Assert.Equal(portraitIsPublic, person.PortraitIsPublic);
-            }
+                Assert.Equal(portraitUrl, (await SingleAsync(dbContext, ct)).PortraitUrl)
         );
 
     public Expected ToHaveBirthDate(DateOnly? birthDate) =>

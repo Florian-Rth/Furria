@@ -93,6 +93,9 @@ internal static class ClubSeedMaterializer
                 Email = intent.Email,
                 WebsiteUrl = intent.WebsiteUrl,
                 AgeOfConsent = intent.AgeOfConsent,
+                Phone = intent.Phone,
+                InstagramUrl = intent.InstagramUrl,
+                FacebookUrl = intent.FacebookUrl,
             }
         );
         await dbContext.SaveChangesAsync(ct);
@@ -279,6 +282,7 @@ internal static class ClubSeedMaterializer
                 Name = intent.Name,
                 SortOrder = intent.SortOrder,
                 ArchivedOn = intent.ArchivedOn,
+                IsPublic = intent.IsPublic,
                 ImpliedRoleId = intent.ImpliedRoleAlias is { } roleAlias
                     ? SeedAliases.RequireId(roleIds, roleAlias, "Role")
                     : null,

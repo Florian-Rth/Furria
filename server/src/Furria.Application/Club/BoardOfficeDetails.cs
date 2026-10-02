@@ -12,6 +12,8 @@ public sealed record BoardOfficeDetails
 
     public required string? ImpliedRoleName { get; init; }
 
+    public required bool IsPublic { get; init; }
+
     public required DateOnly? ArchivedOn { get; init; }
 
     public required IReadOnlyList<BoardSeatHolder> Seats { get; init; }

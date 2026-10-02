@@ -1,16 +1,14 @@
 import { z } from 'zod';
 
-export const PublicGroupSchema = z.object({
-  groupId: z.number().int().positive(),
-  name: z.string().min(1),
-  description: z.string(),
-  isRecruiting: z.boolean(),
+export const PublicBoardSeatSchema = z.object({
+  officeName: z.string().min(1),
+  firstName: z.string(),
+  lastName: z.string(),
+  portraitUrl: z.string().nullable(),
 });
 
-export type PublicGroup = z.infer<typeof PublicGroupSchema>;
+export type PublicBoardSeat = z.infer<typeof PublicBoardSeatSchema>;
 
-export const PublicGroupsResponseSchema = z.object({
-  groups: z.array(PublicGroupSchema),
+export const PublicBoardResponseSchema = z.object({
+  seats: z.array(PublicBoardSeatSchema),
 });
-
-export type PublicGroupsResponse = z.infer<typeof PublicGroupsResponseSchema>;

@@ -20,6 +20,7 @@ export const BoardOfficeSchema = z.object({
   sortOrder: z.number().int(),
   impliedRoleId: z.number().int().nullable(),
   impliedRoleName: z.string().nullable(),
+  isPublic: z.boolean(),
   archivedOn: z.iso.date().nullable(),
   seats: z.array(BoardSeatSchema),
   pastSeats: z.array(BoardSeatSchema),

@@ -1,21 +1,23 @@
-import { GROUP_COUNT_PLACEHOLDER, MEMBER_COUNT_PLACEHOLDER } from '@/lib/club';
+import { formatMemberCount, UNKNOWN_FACT } from '@/lib/public-club/club-facts';
+import type { PublicClub } from '@/lib/public-club/schemas';
 
 export interface JoinStat {
   value: string;
   label: string;
 }
 
-export const buildJoinStats = (memberCount: string, groupCount: number): JoinStat[] => [
-  { value: memberCount, label: 'Mitglieder' },
-  { value: String(groupCount), label: 'Garden & Gruppen' },
+const MEMBERS_LABEL = 'Mitglieder';
+const GROUPS_LABEL = 'Garden & Gruppen';
+
+export const buildJoinStats = (club: PublicClub | undefined): JoinStat[] => [
+  {
+    value: club === undefined ? UNKNOWN_FACT : formatMemberCount(club.memberCount),
+    label: MEMBERS_LABEL,
+  },
+  { value: club === undefined ? UNKNOWN_FACT : String(club.groupCount), label: GROUPS_LABEL },
 ];
 
 export const joinEyebrow = 'DU MÖCHTEST MITMACHEN?';
-
-export const joinStats: JoinStat[] = buildJoinStats(
-  MEMBER_COUNT_PLACEHOLDER,
-  GROUP_COUNT_PLACEHOLDER,
-);
 
 export const joinPageTitle = 'MITGLIED WERDEN';
 

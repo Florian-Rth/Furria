@@ -43,6 +43,7 @@ export interface BoardOfficeEntry {
   sortOrder: number;
   impliedRoleId: number | null;
   impliedRoleName: string | null;
+  isPublic: boolean;
   archivedOn: string | null;
   isArchived: boolean;
   isVacant: boolean;
@@ -56,6 +57,7 @@ const toOfficeEntry = (office: BoardOffice, todayIsoDay: string): BoardOfficeEnt
   sortOrder: office.sortOrder,
   impliedRoleId: office.impliedRoleId,
   impliedRoleName: office.impliedRoleName,
+  isPublic: office.isPublic,
   archivedOn: office.archivedOn,
   isArchived: office.archivedOn !== null,
   isVacant: isVacantOn(office.seats, todayIsoDay),
@@ -167,6 +169,14 @@ export const toImpliedRoleSavedMessage = (name: string, roleName: string | null)
   roleName === null
     ? `${name} ist mit keiner Rolle mehr verknüpft.`
     : `${name} ist jetzt mit ${roleName} verknüpft.`;
+
+export const PUBLICATION_SWITCH_LABEL = 'Auf der Website zeigen';
+
+export const PUBLICATION_EXPLANATION =
+  'Wer diese Funktion innehat, steht mit Name, Funktion und Porträt im Vorstand auf der Vereinswebsite.';
+
+export const toPublicationSavedMessage = (name: string, isPublic: boolean): string =>
+  isPublic ? `${name} steht jetzt auf der Website.` : `${name} steht nicht mehr auf der Website.`;
 
 export const toSeatOpenedMessage = (
   personName: string,

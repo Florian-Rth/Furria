@@ -1,5 +1,5 @@
-import { usePublicGroupsQuery } from '@/features/club/api';
-import type { PublicGroup } from '@/features/club/schemas';
+import { usePublicGroupsQuery } from '@/lib/public-groups/api';
+import type { PublicGroup } from '@/lib/public-groups/schemas';
 
 export type PublicGroupsSource =
   | { status: 'loading' }
