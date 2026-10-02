@@ -16,12 +16,12 @@ export const EntryVenueSection: FC<EntryVenueSectionProps> = ({ venue }) => {
 
   return (
     <KkPanelSection title={SECTION_TITLE}>
-      <Stack direction="row" sx={{ gap: 1, alignItems: 'flex-start', minWidth: 0 }}>
-        <Stack sx={{ gap: 0.25, flex: '1 1 auto', minWidth: 0 }}>
+      <Stack sx={{ gap: 0.25, minWidth: 0 }}>
+        <Stack direction="row" sx={{ gap: 1, alignItems: 'center', minWidth: 0 }}>
           <KkText variant="subtitle2">{venue.name}</KkText>
-          {lines}
+          {key}
         </Stack>
-        {key}
+        {lines}
       </Stack>
     </KkPanelSection>
   );

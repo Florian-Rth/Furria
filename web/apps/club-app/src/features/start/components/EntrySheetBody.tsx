@@ -56,10 +56,10 @@ export const EntrySheetBody: FC<EntrySheetBodyProps> = ({ entry, board }) => {
           <KkMeta>{sheet.headline}</KkMeta>
           {running}
         </Stack>
+        {description}
         {venue}
         <EntryGroupsSection owner={sheet.owner} participating={sheet.participating} />
         {runs}
-        {description}
         {choice}
       </KkSheet.Body>
       <KkSheet.Actions primary={sheet.onward} />

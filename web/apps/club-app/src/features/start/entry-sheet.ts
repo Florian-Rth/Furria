@@ -1,7 +1,12 @@
 import { CALENDAR_KIND_LABELS } from '@/lib/calendar-copy';
 import { toLocalIsoDay, toTimeLabel } from '@/lib/calendar-days';
 import type { StartEntry, StartGroupRef, StartVenue } from './schemas';
-import { formatShortDate, formatSpokenDay, isEntryRunningAt } from './start-labels';
+import {
+  formatCountdownMinutes,
+  formatShortDate,
+  formatSpokenDay,
+  isEntryRunningAt,
+} from './start-labels';
 
 export type EntryOnward =
   | { kind: 'calendar'; day: string }
@@ -25,6 +30,7 @@ const PART_SEPARATOR = ' · ';
 const SPAN_DASH = '–';
 const RUNNING_WORD = 'läuft';
 const NO_ONWARD: EntryOnward = { kind: 'none' };
+const MS_PER_MINUTE = 60_000;
 
 const trimmed = (value: string | null): string | null => {
   const text = value?.trim() ?? '';
@@ -50,17 +56,26 @@ export const formatEntrySpan = (entry: EntryTiming): string => {
   return `${day}${PART_SEPARATOR}${start}${SPAN_DASH}${endLabelOf(entry.startsAt, entry.endsAt)}`;
 };
 
-export const toEntryHeadline = (entry: StartEntry): string =>
-  `${CALENDAR_KIND_LABELS[entry.kind]}${PART_SEPARATOR}${formatEntrySpan(entry)}`;
+export const toEntryHeadline = (entry: StartEntry): string => {
+  const kind = CALENDAR_KIND_LABELS[entry.kind];
+  const span = formatEntrySpan(entry);
+
+  return kind.toLowerCase() === entry.title.trim().toLowerCase()
+    ? span
+    : `${kind}${PART_SEPARATOR}${span}`;
+};
 
 export const toRunningNote = (entry: EntryTiming, now: Date): string | null => {
   if (!isEntryRunningAt(entry, now)) {
     return null;
   }
+  if (entry.endsAt === null) {
+    return RUNNING_WORD;
+  }
 
-  return entry.endsAt === null
-    ? RUNNING_WORD
-    : `${RUNNING_WORD}${PART_SEPARATOR}bis ${toTimeLabel(entry.endsAt)}`;
+  const left = Math.max(0, Math.ceil((Date.parse(entry.endsAt) - now.getTime()) / MS_PER_MINUTE));
+
+  return `${RUNNING_WORD}${PART_SEPARATOR}noch ${formatCountdownMinutes(left)}`;
 };
 
 export const toEntryVenue = (

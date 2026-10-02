@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   formatEntrySpan,
   toEntryGroups,
+  toEntryHeadline,
   toEntryOnward,
   toEntryVenue,
   toRunningNote,
@@ -55,6 +56,17 @@ describe('formatEntrySpan', () => {
   });
 });
 
+describe('toEntryHeadline', () => {
+  it.each([
+    { label: 'a training called Training', kind: 'training', title: 'Training', spanOnly: true },
+    { label: 'a Prunksitzung', kind: 'performance', title: 'Prunksitzung', spanOnly: false },
+  ] as const)('leads $label with its kind: $spanOnly', ({ kind, title, spanOnly }) => {
+    const shown = entry({ kind, title });
+
+    expect(toEntryHeadline(shown) === formatEntrySpan(shown)).toBe(spanOnly);
+  });
+});
+
 describe('toRunningNote', () => {
   it.each([
     {
@@ -67,7 +79,13 @@ describe('toRunningNote', () => {
       label: 'while it runs',
       timing: { startsAt: at(1, 23, 19, 11), endsAt: at(1, 23, 23, 30) },
       now: new Date(2027, 0, 23, 20, 0),
-      expected: 'läuft · bis 23:30',
+      expected: 'läuft · noch 3:30',
+    },
+    {
+      label: 'in its last seconds',
+      timing: { startsAt: at(1, 23, 19, 11), endsAt: at(1, 23, 23, 30) },
+      now: new Date(2027, 0, 23, 23, 29, 30),
+      expected: 'läuft · noch 0:01',
     },
     {
       label: 'while an open-ended entry runs',

@@ -3,7 +3,7 @@ import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { EntryGroupChip } from '../hooks/use-entry-sheet';
 
-const OWNER_TITLE = 'Eigentümer';
+const OWNER_TITLE = 'Veranstaltet von';
 const PARTICIPATING_TITLE = 'Mitwirkende Gruppen';
 const CLUB_LABEL = 'Verein';
 const CHIP_ROW = { gap: 0.75, flexWrap: 'wrap', minWidth: 0 } as const;
