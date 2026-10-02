@@ -1,9 +1,12 @@
 import { useEffect, useRef } from 'react';
-import { useLastSeenAnnouncementMutation } from '../api';
+import { useAnnouncementsQuery, useLastSeenAnnouncementMutation } from '../api';
+import { toNewestPublishedAt } from '../last-seen';
 
 export const useLastSeenMark = (isRead: boolean): void => {
   const { mutate } = useLastSeenAnnouncementMutation();
+  const { data } = useAnnouncementsQuery();
   const hasMarked = useRef(false);
+  const seenUpTo = toNewestPublishedAt(data?.announcements ?? []);
 
   useEffect(() => {
     if (!isRead || hasMarked.current) {
@@ -11,6 +14,6 @@ export const useLastSeenMark = (isRead: boolean): void => {
     }
 
     hasMarked.current = true;
-    mutate();
-  }, [isRead, mutate]);
+    mutate({ seenUpTo });
+  }, [isRead, mutate, seenUpTo]);
 };

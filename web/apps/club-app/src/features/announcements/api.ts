@@ -3,6 +3,7 @@ import type { QueryClient, UseMutationResult, UseQueryResult } from '@tanstack/r
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CLUB_HUB_QUERY_KEY } from '@/features/club';
 import { ME_QUERY_KEY } from '@/features/session';
+import { START_QUERY_KEY } from '@/features/start';
 import type { Me } from '@/lib/api/schemas';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import {
@@ -10,6 +11,7 @@ import {
   ANNOUNCEMENT_POSTED_MESSAGE,
   ANNOUNCEMENT_WITHDRAWN_MESSAGE,
 } from './announcements-labels';
+import { toNextLastSeenAt } from './last-seen';
 import {
   requestAnnouncements,
   requestCreateAnnouncement,
@@ -30,8 +32,21 @@ const refreshBoard = (queryClient: QueryClient): void => {
   void queryClient.invalidateQueries({ queryKey: CLUB_HUB_QUERY_KEY });
 };
 
-const applyLastSeen = (current: Me | undefined, seenAt: string): Me | undefined =>
-  current === undefined ? undefined : { ...current, lastSeenAnnouncementAt: seenAt };
+export interface LastSeenInput {
+  seenUpTo: string | null;
+}
+
+const applyLastSeen = (
+  current: Me | undefined,
+  seenUpTo: string | null,
+  now: Date,
+): Me | undefined =>
+  current === undefined
+    ? undefined
+    : {
+        ...current,
+        lastSeenAnnouncementAt: toNextLastSeenAt(current.lastSeenAnnouncementAt, seenUpTo, now),
+      };
 
 export const useAnnouncementsQuery = (): UseQueryResult<AnnouncementsResponse, Error> =>
   useQuery({
@@ -100,19 +115,22 @@ export const useWithdrawAnnouncementMutation = (): UseMutationResult<void, Error
 export const useLastSeenAnnouncementMutation = (): UseMutationResult<
   void,
   Error,
-  void,
+  LastSeenInput,
   LastSeenRollback
 > => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => withFreshAccessToken(requestLastSeenAnnouncement),
-    onMutate: async () => {
+    mutationFn: ({ seenUpTo }: LastSeenInput) =>
+      withFreshAccessToken((accessToken) => requestLastSeenAnnouncement(seenUpTo, accessToken)),
+    onMutate: async ({ seenUpTo }: LastSeenInput) => {
       await queryClient.cancelQueries({ queryKey: ME_QUERY_KEY });
       const previous = queryClient.getQueryData<Me>(ME_QUERY_KEY);
-      const seenAt = new Date().toISOString();
+      const now = new Date();
 
-      queryClient.setQueryData<Me>(ME_QUERY_KEY, (current) => applyLastSeen(current, seenAt));
+      queryClient.setQueryData<Me>(ME_QUERY_KEY, (current) =>
+        applyLastSeen(current, seenUpTo, now),
+      );
 
       return { previous };
     },
@@ -121,6 +139,7 @@ export const useLastSeenAnnouncementMutation = (): UseMutationResult<
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: ME_QUERY_KEY });
+      void queryClient.invalidateQueries({ queryKey: START_QUERY_KEY });
     },
   });
 };
