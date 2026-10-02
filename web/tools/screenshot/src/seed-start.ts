@@ -596,7 +596,7 @@ const entrySpecsOf = (moment: Moment): EntrySpec[] => {
   );
   const generalprobeDay = addDays(moment.today, 5);
   const tuesday = nextWeekday(moment.today, 2);
-  const wednesday = nextWeekday(moment.today, 3);
+  const thursday = nextWeekday(moment.today, 4);
   const saturday = nextWeekday(moment.today, 6);
   const opening = nextMonthDay(moment.today, '11-11');
   const christmasParty = nextMonthDay(moment.today, '12-11');
@@ -675,8 +675,8 @@ const entrySpecsOf = (moment: Moment): EntrySpec[] => {
       description: 'Ablauf 11.11., Kartenvorverkauf, Helferliste für den Hallenaufbau.',
       owner: 'Elferrat',
       venue: 'Vereinsraum',
-      startsAt: at(wednesday, '19:30'),
-      endsAt: at(wednesday, '21:30'),
+      startsAt: at(thursday, '19:30'),
+      endsAt: at(thursday, '21:30'),
       kind: 'meeting',
       visibility: 'group',
       asksForResponse: true,
@@ -753,9 +753,9 @@ const announcementSpecsOf = (moment: Moment): AnnouncementSpec[] => {
       publishedAt: hoursAfter(moment.now, -27),
     },
     {
-      title: 'Neue Trainingszeiten Kindergarde',
-      body: 'Ab sofort trainiert die Kindergarde samstags von 17 bis 18 Uhr in der Sporthalle Am Ring. Bitte die Kinder pünktlich bringen und abholen.',
-      validUntil: null,
+      title: 'Ordensfest am 14.11.',
+      body: 'Nach der Sessionseröffnung verleihen wir am 14.11. ab 19:11 im Vereinsraum die neuen Sessionsorden. Alle Mitglieder und Gruppen sind eingeladen.',
+      validUntil: addDays(opening, 3),
       publishedAt: hoursAfter(moment.now, -52),
     },
     {
