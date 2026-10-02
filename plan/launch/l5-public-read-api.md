@@ -1,5 +1,5 @@
 ---
-status: shaped 2026-10-02 — S1 next
+status: built 2026-10-02 — S1–S5 on feat/l5-public-read-api, not yet merged; screens not yet looked at
 phase: L5 — Public read API + website wiring (plan/launch.md; L4 before the 2026-10-02 split)
 shaped_with: Florian, 2026-10-02 — built in a worktree parallel to L2
 ---
