@@ -21,7 +21,7 @@ const itemPaint = (theme: Theme): CSSObject => ({
   position: 'relative',
   flex: 1,
   minWidth: 0,
-  minHeight: kkTokens.tapTarget,
+  minHeight: `min(${kkTokens.tapTarget}, 100%)`,
   containerType: 'inline-size',
   containerName: NAV_ITEM_CONTAINER,
   alignItems: 'center',
