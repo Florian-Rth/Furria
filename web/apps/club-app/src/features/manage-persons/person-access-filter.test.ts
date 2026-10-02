@@ -19,18 +19,23 @@ describe('parsePersonAccessFilter', () => {
     { value: 'with-access', expected: 'with-access' },
     { value: 'open-invitation', expected: 'open-invitation' },
     { value: 'without-email', expected: 'without-email' },
+    { value: 'birth-date-unknown', expected: 'birth-date-unknown' },
     { value: ' Invited ', expected: 'invited' },
     { value: 'NOT-INVITABLE', expected: 'not-invitable' },
+    { value: 'Birth-Date-Unknown', expected: 'birth-date-unknown' },
   ])('reads "$value" as the $expected filter', ({ value, expected }) => {
     expect(parsePersonAccessFilter(value)).toBe(expected);
   });
 
-  it.each([{ value: undefined }, { value: '' }, { value: 'everyone' }, { value: 'notInvitable' }])(
-    'reads $value as no filter',
-    ({ value }) => {
-      expect(parsePersonAccessFilter(value)).toBeNull();
-    },
-  );
+  it.each([
+    { value: undefined },
+    { value: '' },
+    { value: 'everyone' },
+    { value: 'notInvitable' },
+    { value: 'birthDateUnknown' },
+  ])('reads $value as no filter', ({ value }) => {
+    expect(parsePersonAccessFilter(value)).toBeNull();
+  });
 });
 
 describe('toPersonsRequestPath', () => {
@@ -38,6 +43,10 @@ describe('toPersonsRequestPath', () => {
     { filter: null, expected: '/api/manage/persons' },
     { filter: 'invited' as const, expected: '/api/manage/persons?access=invited' },
     { filter: 'not-invitable' as const, expected: '/api/manage/persons?access=not-invitable' },
+    {
+      filter: 'birth-date-unknown' as const,
+      expected: '/api/manage/persons?access=birth-date-unknown',
+    },
   ])('asks the register for $filter at $expected', ({ filter, expected }) => {
     expect(toPersonsRequestPath(filter)).toBe(expected);
   });
@@ -70,6 +79,7 @@ describe('toPersonRowChip', () => {
     { access: 'disabled' },
     { access: 'with-access' },
     { access: 'without-email' },
+    { access: 'birth-date-unknown' },
   ])('shows her access state while the $access filter is on', ({ access }) => {
     expect(toPersonRowChip(person, access)).toEqual(toRegisterAccessChip('disabled'));
   });

@@ -1,10 +1,10 @@
-import { KkAvatar, KkSinceRow } from '@furria/ui';
+import { KkAvatar, KkChip, KkSinceRow } from '@furria/ui';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { toLandingKey } from '@/features/write';
 import { toInitials } from '@/lib/initials';
 import { formatIsoDay } from '@/lib/membership-labels';
-import { toPersonName } from '../manage-keys-labels';
+import { isKeyToTakeBack, NOT_ACTIVE_IN_CLUB_CHIP, toPersonName } from '../manage-keys-labels';
 import type { KeyHolding } from '../schemas';
 
 const SINCE_LABEL = 'seit';
@@ -27,12 +27,19 @@ export const KeyHolderRow: FC<KeyHolderRowProps> = ({ holding, highlightedKey })
     />
   );
 
+  const takeBackChip = isKeyToTakeBack(holding) ? (
+    <KkChip tone={NOT_ACTIVE_IN_CLUB_CHIP.tone} dot={NOT_ACTIVE_IN_CLUB_CHIP.dot} size="small">
+      {NOT_ACTIVE_IN_CLUB_CHIP.label}
+    </KkChip>
+  ) : null;
+
   return (
     <KkSinceRow
       avatar={avatar}
       title={name}
       sinceLabel={SINCE_LABEL}
       sinceValue={formatIsoDay(holding.sinceOn)}
+      trailing={takeBackChip}
       component={Link}
       to={HOLDING_ROUTE}
       params={{ keyHoldingId: String(holding.keyHoldingId) }}

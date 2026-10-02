@@ -2,6 +2,7 @@ import type { KkDateQuickChoice, KkScreenOrigin } from '@furria/ui';
 import { SESSION_OPENING_DAY, SESSION_OPENING_MONTH, sessionAt } from '@/lib/club';
 import { isFutureDay, toIsoDay } from '@/lib/day';
 import { formatIsoDay, formatPeriod } from '@/lib/membership-labels';
+import type { StateChip } from '@/lib/state-chips';
 import type { KeyHolding, KeyVenue } from './schemas';
 
 export const MANAGE_KEYS_TITLE = 'Schlüssel';
@@ -55,6 +56,15 @@ export const partitionKeyHoldings = (holdings: readonly KeyHolding[]): KeyHoldin
 
   return { running, ended };
 };
+
+export const NOT_ACTIVE_IN_CLUB_CHIP: StateChip = {
+  label: 'nicht im Verein aktiv',
+  tone: 'gold',
+  dot: false,
+};
+
+export const isKeyToTakeBack = (holding: KeyHolding): boolean =>
+  holding.untilOn === null && !holding.holderIsActiveInClub;
 
 export interface KeyVenuePartition {
   running: KeyVenue[];

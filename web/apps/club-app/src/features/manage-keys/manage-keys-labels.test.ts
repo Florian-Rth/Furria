@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   findKeyHolding,
+  isKeyToTakeBack,
   partitionKeyHoldings,
   partitionKeyVenues,
   toHandoutConsequence,
@@ -18,6 +19,7 @@ const holding = (overrides: Partial<KeyHolding>): KeyHolding => ({
   lastName: 'Kaiser',
   sinceOn: '2024-03-01',
   untilOn: null,
+  holderIsActiveInClub: true,
   ...overrides,
 });
 
@@ -65,6 +67,38 @@ describe('partitionKeyHoldings', () => {
 
     expect(partition.running).toEqual([]);
     expect(partition.ended).toEqual([]);
+  });
+});
+
+describe('isKeyToTakeBack', () => {
+  it.each([
+    { label: 'an active holder keeps an open key', untilOn: null, active: true, expected: false },
+    {
+      label: 'an inactive holder still has an open key',
+      untilOn: null,
+      active: false,
+      expected: true,
+    },
+    {
+      label: 'an inactive holder already returned the key',
+      untilOn: '2026-09-30',
+      active: false,
+      expected: false,
+    },
+    {
+      label: 'an inactive holder has a return dated ahead',
+      untilOn: '2026-12-31',
+      active: false,
+      expected: false,
+    },
+    {
+      label: 'an active holder returned the key',
+      untilOn: '2026-09-30',
+      active: true,
+      expected: false,
+    },
+  ])('asks for the key back: $expected when $label', ({ untilOn, active, expected }) => {
+    expect(isKeyToTakeBack(holding({ untilOn, holderIsActiveInClub: active }))).toBe(expected);
   });
 });
 
