@@ -7,7 +7,8 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { Link as RouterLink } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { groupsLabels, groupsMailHref, resolveGroupOpenness } from '@/features/club/groups-content';
+import { ClubMailButton } from '@/components/ClubMailButton';
+import { groupsLabels, resolveGroupOpenness } from '@/features/club/groups-content';
 import type { PublicGroup } from '@/features/club/schemas';
 import { GroupOpennessChip } from './GroupOpennessChip';
 
@@ -91,9 +92,9 @@ export const GroupModalPanel: FC<GroupModalPanelProps> = ({ group, tint, titleId
           >
             {groupsLabels.joinCta}
           </Button>
-          <Button variant="outlined" size="large" href={groupsMailHref}>
+          <ClubMailButton variant="outlined" size="large">
             {groupsLabels.askCta}
-          </Button>
+          </ClubMailButton>
         </Stack>
       </Stack>
     </Card>

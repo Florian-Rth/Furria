@@ -1,4 +1,3 @@
-import { CLUB_CONTACT_EMAIL } from '@/lib/club';
 import { formatLongDate } from '@/lib/date';
 import { parseBirthDate } from './membership-derivation';
 import type { MembershipApplicationForm } from './schemas';
@@ -9,6 +8,7 @@ const formatBirthDate = (birthDate: string): string =>
   parseBirthDate(birthDate) === null ? '' : formatLongDate(birthDate);
 
 export const buildFallbackMailHref = (
+  clubEmail: string,
   values: MembershipApplicationForm,
   groupLabels: string[],
 ): string => {
@@ -35,5 +35,5 @@ export const buildFallbackMailHref = (
   const subject = `Beitrittsantrag – ${values.firstName} ${values.lastName}`.trim();
   const body = [FALLBACK_INTRO, '', ...lines].join('\n');
 
-  return `mailto:${CLUB_CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  return `mailto:${clubEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 };

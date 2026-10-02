@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 import { RequestBlockedError } from '@/lib/api/errors';
+import { useClubEmail } from '@/lib/public-club/use-club-email';
 import { useSubmitMembershipApplicationMutation } from '../api';
 import { buildFallbackMailHref } from '../apply-fallback';
 import { buildMembershipApplicationPayload } from '../apply-payload';
@@ -22,7 +23,7 @@ export interface ApplyFormState {
   submit: (event: FormEvent<HTMLFormElement>) => void;
   isSubmitting: boolean;
   submitError: string | null;
-  fallbackMailHref: string;
+  fallbackMailHref: string | null;
   submittedFirstName: string | null;
 }
 
@@ -72,12 +73,17 @@ export const useApplyForm = (prefilledGroupInterests: string[]): ApplyFormState 
     );
   });
 
+  const clubEmail = useClubEmail();
   const submitError = toApplyErrorMessage(mutation.error);
   const values = form.getValues();
   const fallbackMailHref =
-    submitError === null
-      ? ''
-      : buildFallbackMailHref(values, selectGroupLabels(loadedGroups, values.groupInterests));
+    submitError === null || clubEmail === null
+      ? null
+      : buildFallbackMailHref(
+          clubEmail,
+          values,
+          selectGroupLabels(loadedGroups, values.groupInterests),
+        );
 
   return {
     form,

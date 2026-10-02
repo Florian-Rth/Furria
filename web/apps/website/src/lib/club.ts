@@ -1,8 +1,6 @@
 export const SESSION_OPENING_MONTH = 11;
 export const SESSION_OPENING_DAY = 11;
 
-export const CLUB_CONTACT_EMAIL = 'contact@florianrth.com';
-
 export interface Session {
   startYear: number;
   yearsLabel: string;

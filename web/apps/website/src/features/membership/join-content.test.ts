@@ -8,7 +8,17 @@ describe('buildJoinStats', () => {
 
   it('rounds the members and prints the groups once loaded', () => {
     const session = { startYear: 2026, label: '2026/27', motto: null };
-    const club = { name: null, foundedYear: 1971, memberCount: 183, groupCount: 7, session };
+    const club = {
+      name: null,
+      foundedYear: 1971,
+      email: null,
+      phone: null,
+      instagramUrl: null,
+      facebookUrl: null,
+      memberCount: 183,
+      groupCount: 7,
+      session,
+    };
 
     expect(buildJoinStats(club).map((stat) => stat.value)).toEqual(['180+', '7']);
   });

@@ -1,4 +1,3 @@
-import { CLUB_CONTACT_EMAIL } from '@/lib/club';
 import type { Importance, Stance } from '@/lib/seed/group-matcher';
 import type { MatchAgreement, MatchReason } from './match-reasons';
 
@@ -73,8 +72,6 @@ export const matcherResultLabels = {
   unansweredText:
     'Beantworte mindestens eine Frage, dann rechnen wir. Übersprungene Fragen zählen nicht — das hier ist keine Prüfung, sondern nur eine Richtung.',
 } as const;
-
-export const matcherMailHref = `mailto:${CLUB_CONTACT_EMAIL}`;
 
 export const matcherProgressDoneLabel = 'Alle Fragen durch';
 

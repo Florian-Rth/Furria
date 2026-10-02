@@ -1,11 +1,9 @@
 import { KkNote } from '@furria/ui';
-import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
+import { ClubMailLink } from '@/components/ClubMailLink';
 import {
-  rightsNoteContactHref,
-  rightsNoteContactLabel,
   rightsNoteCopyright,
   rightsNoteHint,
   rightsNoteQuestion,
@@ -27,9 +25,7 @@ export const GalleryRightsNote: FC = () => (
     </Typography>
     <KkNote>
       {rightsNoteQuestion} {rightsNoteHint}{' '}
-      <Link href={rightsNoteContactHref} sx={{ fontWeight: 700, wordBreak: 'break-word' }}>
-        {rightsNoteContactLabel}
-      </Link>
+      <ClubMailLink sx={{ fontWeight: 700, wordBreak: 'break-word' }} />
     </KkNote>
   </Stack>
 );

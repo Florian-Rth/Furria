@@ -4,11 +4,8 @@ import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import { Link as RouterLink } from '@tanstack/react-router';
 import type { FC } from 'react';
-import {
-  orderErrorContent,
-  orderErrorMailHref,
-  orderErrorMailLabel,
-} from '@/features/events/order-confirmation-content';
+import { ClubMailButton } from '@/components/ClubMailButton';
+import { orderErrorContent } from '@/features/events/order-confirmation-content';
 import { OrderConfirmationHeadline } from './OrderConfirmationHeadline';
 
 export const OrderConfirmationError: FC = () => (
@@ -20,9 +17,7 @@ export const OrderConfirmationError: FC = () => (
       <Button component={RouterLink} to="/events" variant="contained" color="primary" size="large">
         {orderErrorContent.eventsCtaLabel}
       </Button>
-      <Button href={orderErrorMailHref} variant="outlined" color="primary" size="large">
-        {orderErrorMailLabel}
-      </Button>
+      <ClubMailButton variant="outlined" color="primary" size="large" />
     </Stack>
   </Stack>
 );

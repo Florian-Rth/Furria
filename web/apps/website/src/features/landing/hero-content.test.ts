@@ -19,13 +19,33 @@ describe('buildHeroStats', () => {
   });
 
   it('rounds the members and prints groups and founding year once loaded', () => {
-    const club = { name: null, foundedYear: 1971, memberCount: 183, groupCount: 7, session };
+    const club = {
+      name: null,
+      foundedYear: 1971,
+      email: null,
+      phone: null,
+      instagramUrl: null,
+      facebookUrl: null,
+      memberCount: 183,
+      groupCount: 7,
+      session,
+    };
 
     expect(buildHeroStats(club).map((stat) => stat.value)).toEqual(['180+', '7', '1971']);
   });
 
   it('leaves the founding year out when the club has not recorded it', () => {
-    const club = { name: null, foundedYear: null, memberCount: 183, groupCount: 7, session };
+    const club = {
+      name: null,
+      foundedYear: null,
+      email: null,
+      phone: null,
+      instagramUrl: null,
+      facebookUrl: null,
+      memberCount: 183,
+      groupCount: 7,
+      session,
+    };
 
     expect(buildHeroStats(club).map((stat) => stat.value)).toEqual(['180+', '7']);
   });

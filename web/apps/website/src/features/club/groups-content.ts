@@ -1,6 +1,5 @@
 import type { KkChipTone } from '@furria/ui';
 import type { Theme } from '@mui/material/styles';
-import { CLUB_CONTACT_EMAIL } from '@/lib/club';
 import type { PublicGroup } from './schemas';
 
 export const groupsChapter = {
@@ -26,8 +25,6 @@ export const groupsLabels = {
   noDescription:
     'Zu dieser Gruppe steht hier noch nichts. Frag uns einfach, dann erzählen wir dir mehr.',
 } as const;
-
-export const groupsMailHref = `mailto:${CLUB_CONTACT_EMAIL}`;
 
 export interface GroupOpenness {
   label: string;
