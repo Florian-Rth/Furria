@@ -15,6 +15,8 @@ export {
   isKkGroupTone,
 } from './internal/group-tone';
 export { KkAlert } from './KkAlert';
+export type { KkAnswer, KkAnswerChoiceLabels } from './KkAnswerChoice';
+export { KkAnswerChoice } from './KkAnswerChoice';
 export { KkAvatar } from './KkAvatar';
 export { KkAvatarStack } from './KkAvatarStack';
 export { KkBandSection } from './KkBandSection/KkBandSection';
@@ -37,6 +39,11 @@ export { KkConfirmDialog } from './KkConfirmDialog';
 export { KkConsequenceNote } from './KkConsequenceNote';
 export type { KkDateQuickChoice } from './KkDateField';
 export { KkDateField } from './KkDateField';
+export type { KkDenseFacet, KkDenseMeta } from './KkDensePanel/internal/logic/facet-pieces';
+export type { KkDenseLineState } from './KkDensePanel/internal/ui/KkDensePanelLine';
+export type { KkStampTone } from './KkDensePanel/internal/ui/KkDensePanelStampEyebrow';
+export { KkDensePanel } from './KkDensePanel/KkDensePanel';
+export { KkDensePanelSkeleton } from './KkDensePanel/KkDensePanelSkeleton';
 export { KkEmptyState } from './KkEmptyState';
 export { KkErrorState } from './KkErrorState';
 export { KkEyebrow } from './KkEyebrow';

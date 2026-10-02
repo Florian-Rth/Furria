@@ -201,6 +201,12 @@ export const kkTokens = {
     settleSeconds: 0.09,
   },
   tapTarget: '2.75rem',
+  densePanel: {
+    anchor: '3.5rem',
+    cell: '3.5rem',
+    cellMin: '10rem',
+    gap: 1,
+  },
   line: {
     hair: 1.5,
     section: 2,
