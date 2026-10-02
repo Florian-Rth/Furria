@@ -23,6 +23,32 @@ public sealed class SessionOrdinalTests
     }
 
     [Fact]
+    public void Should_CountTheComingSessionAsOne_When_SheJoinedBetweenSessions()
+    {
+        Assert.Equal(
+            1,
+            SessionOrdinal.Of(
+                [Period(new DateOnly(2026, 9, 25), null)],
+                NoPauses,
+                RelevantSessionYear
+            )
+        );
+    }
+
+    [Fact]
+    public void Should_CountTheSession_When_SheJoinedOnAshWednesday()
+    {
+        Assert.Equal(
+            2,
+            SessionOrdinal.Of(
+                [Period(new DateOnly(2026, 2, 18), null)],
+                NoPauses,
+                RelevantSessionYear
+            )
+        );
+    }
+
+    [Fact]
     public void Should_SkipTheGap_When_SheRejoined()
     {
         var chain = new[]
@@ -31,7 +57,7 @@ public sealed class SessionOrdinalTests
             Period(new DateOnly(2020, 12, 1), null),
         };
 
-        Assert.Equal(12, SessionOrdinal.Of(chain, NoPauses, RelevantSessionYear));
+        Assert.Equal(11, SessionOrdinal.Of(chain, NoPauses, RelevantSessionYear));
     }
 
     [Fact]

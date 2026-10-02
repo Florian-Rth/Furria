@@ -35,6 +35,6 @@ public static class SessionOrdinal
         new()
         {
             Start = ClubSession.OpeningOf(sessionYear),
-            End = ClubSession.OpeningOf(sessionYear + 1).AddDays(-1),
+            End = ClubSession.AshWednesdayOf(sessionYear + 1),
         };
 }
