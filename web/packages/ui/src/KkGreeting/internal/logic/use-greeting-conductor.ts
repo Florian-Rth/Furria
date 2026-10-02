@@ -19,7 +19,7 @@ export interface GreetingConductorProps {
   festive: boolean;
   night: boolean;
   burst: boolean;
-  onSettled: (cells: string[]) => void;
+  onSettled: (cells: string[], burstFired: boolean) => void;
 }
 
 export interface GreetingBurstShot {
@@ -52,6 +52,7 @@ export const useGreetingConductor = ({
 }: GreetingConductorProps): GreetingConductor => {
   const rootRef = useRef<HTMLDivElement>(null);
   const reportedRef = useRef(false);
+  const burstFiredRef = useRef(false);
   const [phase, setPhase] = useState<GreetingPhase>(() => firstPhaseOf(play));
   const [stilled, setStilled] = useState(false);
   const [board, setBoard] = useState<GreetingBoard | null>(null);
@@ -96,6 +97,7 @@ export const useGreetingConductor = ({
   const fire = useEffectEvent((): void => {
     if (dock.isDocked()) {
       dock.replayLanding();
+      burstFiredRef.current = true;
 
       return;
     }
@@ -103,12 +105,13 @@ export const useGreetingConductor = ({
     const origin = burstOriginIn(rootRef.current);
 
     if (origin !== null) {
+      burstFiredRef.current = true;
       setShot({ key: Date.now(), origin });
     }
   });
 
   const report = useEffectEvent((settled: readonly string[]): void => {
-    onSettled([...settled]);
+    onSettled([...settled], burstFiredRef.current);
   });
 
   useMotionValueEvent(scrollY, 'change', (offset: number): void => {

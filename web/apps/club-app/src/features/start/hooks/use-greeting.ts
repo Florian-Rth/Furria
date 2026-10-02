@@ -20,7 +20,7 @@ export interface GreetingView extends GreetingStage {
   parts: readonly KkGreetingPart[];
   previousCells: readonly string[] | undefined;
   line: string | null;
-  onSettled: (cells: string[]) => void;
+  onSettled: (cells: string[], burstFired: boolean) => void;
 }
 
 export const useGreeting = (): GreetingView | null => {
@@ -42,8 +42,8 @@ export const useGreeting = (): GreetingView | null => {
   const copy = toGreetingCopy(act, me.data.person.firstName);
   const decision = greetingPlayOf(act, hold.memory, hold.reducedMotion, countFlapCells(copy.parts));
 
-  const onSettled = (cells: string[]): void => {
-    hold.remember(nextGreetingMemory(hold.memory, act, cells, decision.burst));
+  const onSettled = (cells: string[], burstFired: boolean): void => {
+    hold.remember(nextGreetingMemory(hold.memory, act, cells, burstFired));
   };
 
   return {

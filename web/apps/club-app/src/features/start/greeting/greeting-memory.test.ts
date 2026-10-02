@@ -38,28 +38,34 @@ describe('nextGreetingMemory', () => {
   it.each<{
     label: string;
     previous: GreetingMemory | null;
-    burst: boolean;
+    burstFired: boolean;
     expected: GreetingMemory;
   }>([
     {
       label: 'the first board settles',
       previous: null,
-      burst: false,
+      burstFired: false,
       expected: { v: 1, key: act.key, cells },
     },
     {
       label: 'the burst fired',
       previous: { v: 1, key: 'daily:2026-11-10', cells: ['MORGEN'], burstYear: 2025 },
-      burst: true,
+      burstFired: true,
       expected: { v: 1, key: act.key, cells, burstYear: 2026 },
     },
     {
-      label: 'an earlier burst is kept',
+      label: 'the call was cut short before its burst',
       previous: { v: 1, key: 'daily:2026-11-10', cells: ['MORGEN'], burstYear: 2025 },
-      burst: false,
+      burstFired: false,
       expected: { v: 1, key: act.key, cells, burstYear: 2025 },
     },
-  ])('remembers the board when $label', ({ previous, burst, expected }) => {
-    expect(nextGreetingMemory(previous, act, cells, burst)).toEqual(expected);
+    {
+      label: 'the call settled still without any burst before',
+      previous: { v: 1, key: 'daily:2026-11-10', cells: ['MORGEN'] },
+      burstFired: false,
+      expected: { v: 1, key: act.key, cells },
+    },
+  ])('remembers the board when $label', ({ previous, burstFired, expected }) => {
+    expect(nextGreetingMemory(previous, act, cells, burstFired)).toEqual(expected);
   });
 });

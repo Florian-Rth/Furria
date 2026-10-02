@@ -30,9 +30,9 @@ export const nextGreetingMemory = (
   previous: GreetingMemory | null,
   act: Pick<GreetingAct, 'key' | 'sessionYear'>,
   cells: readonly string[],
-  burst: boolean,
+  burstFired: boolean,
 ): GreetingMemory => {
-  const burstYear = burst ? act.sessionYear : previous?.burstYear;
+  const burstYear = burstFired ? act.sessionYear : previous?.burstYear;
   const memory: GreetingMemory = { v: 1, key: act.key, cells: [...cells] };
 
   return burstYear === undefined ? memory : { ...memory, burstYear };
