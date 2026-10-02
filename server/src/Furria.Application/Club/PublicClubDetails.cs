@@ -6,6 +6,14 @@ public sealed record PublicClubDetails
 
     public required int? FoundedYear { get; init; }
 
+    public required string? Email { get; init; }
+
+    public required string? Phone { get; init; }
+
+    public required string? InstagramUrl { get; init; }
+
+    public required string? FacebookUrl { get; init; }
+
     public required int MemberCount { get; init; }
 
     public required int GroupCount { get; init; }

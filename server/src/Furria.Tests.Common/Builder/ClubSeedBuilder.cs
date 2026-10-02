@@ -49,7 +49,10 @@ public sealed class ClubSeedBuilder
         string? city = null,
         string? email = null,
         string? websiteUrl = null,
-        int ageOfConsent = Core.Club.ClubRecord.DefaultAgeOfConsent
+        int ageOfConsent = Core.Club.ClubRecord.DefaultAgeOfConsent,
+        string? phone = null,
+        string? instagramUrl = null,
+        string? facebookUrl = null
     )
     {
         _clubRecord = new ClubRecordIntent(
@@ -60,7 +63,10 @@ public sealed class ClubSeedBuilder
             city,
             email,
             websiteUrl,
-            ageOfConsent
+            ageOfConsent,
+            phone,
+            instagramUrl,
+            facebookUrl
         );
         return this;
     }
@@ -238,7 +244,10 @@ public sealed class ClubSeedBuilder
         string? City,
         string? Email,
         string? WebsiteUrl,
-        int AgeOfConsent
+        int AgeOfConsent,
+        string? Phone,
+        string? InstagramUrl,
+        string? FacebookUrl
     );
 
     internal sealed record VenueIntent(

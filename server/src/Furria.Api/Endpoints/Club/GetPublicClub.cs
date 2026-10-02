@@ -31,6 +31,10 @@ public sealed class GetPublicClub : EndpointWithoutRequest<GetPublicClubResponse
         {
             Name = club.Name,
             FoundedYear = club.FoundedYear,
+            Email = club.Email,
+            Phone = club.Phone,
+            InstagramUrl = club.InstagramUrl,
+            FacebookUrl = club.FacebookUrl,
             MemberCount = club.MemberCount,
             GroupCount = club.GroupCount,
             Session = ToDto(club.Session),
@@ -50,6 +54,14 @@ public sealed record GetPublicClubResponse
     public required string? Name { get; init; }
 
     public required int? FoundedYear { get; init; }
+
+    public required string? Email { get; init; }
+
+    public required string? Phone { get; init; }
+
+    public required string? InstagramUrl { get; init; }
+
+    public required string? FacebookUrl { get; init; }
 
     public required int MemberCount { get; init; }
 

@@ -15,6 +15,10 @@ public sealed partial class ClubService
         {
             Name = record?.Name,
             FoundedYear = record?.FoundedYear,
+            Email = record?.Email,
+            Phone = record?.Phone,
+            InstagramUrl = record?.InstagramUrl,
+            FacebookUrl = record?.FacebookUrl,
             MemberCount = await MemberCountAsync(today, ct),
             GroupCount = await GroupCountAsync(ct),
             Session = await PublicSessionAsync(ClubSession.RelevantYearOf(today), ct),
@@ -25,7 +29,14 @@ public sealed partial class ClubService
         _dbContext
             .ClubRecords.AsNoTracking()
             .Where(row => row.Id == ClubRecord.TheOnlyId)
-            .Select(row => new PublicRecordRow(row.Name, row.FoundedYear))
+            .Select(row => new PublicRecordRow(
+                row.Name,
+                row.FoundedYear,
+                row.Email,
+                row.Phone,
+                row.InstagramUrl,
+                row.FacebookUrl
+            ))
             .SingleOrDefaultAsync(ct);
 
     private async Task<PublicClubSession> PublicSessionAsync(int startYear, CancellationToken ct)
@@ -44,5 +55,12 @@ public sealed partial class ClubService
         };
     }
 
-    private sealed record PublicRecordRow(string? Name, int? FoundedYear);
+    private sealed record PublicRecordRow(
+        string? Name,
+        int? FoundedYear,
+        string? Email,
+        string? Phone,
+        string? InstagramUrl,
+        string? FacebookUrl
+    );
 }

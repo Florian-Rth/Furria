@@ -93,6 +93,9 @@ internal static class ClubSeedMaterializer
                 Email = intent.Email,
                 WebsiteUrl = intent.WebsiteUrl,
                 AgeOfConsent = intent.AgeOfConsent,
+                Phone = intent.Phone,
+                InstagramUrl = intent.InstagramUrl,
+                FacebookUrl = intent.FacebookUrl,
             }
         );
         await dbContext.SaveChangesAsync(ct);

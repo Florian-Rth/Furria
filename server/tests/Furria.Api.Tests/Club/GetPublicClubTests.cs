@@ -65,7 +65,33 @@ public sealed class GetPublicClubTests
     }
 
     [Fact]
-    public async Task Should_LeaveNameAndFoundedYearEmpty_When_TheClubHasNoRecord()
+    public async Task Should_CarryHowToReachTheClub_When_TheClubHasRecordedIt()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await _fixture.BuildAsync(
+            builder =>
+                builder.Club(club =>
+                    club.SetClubRecord(
+                        RecordedName,
+                        email: "vorstand@furria.de",
+                        phone: "036334 12345",
+                        instagramUrl: "https://instagram.com/furria",
+                        facebookUrl: "https://facebook.com/furria"
+                    )
+                ),
+            ct
+        );
+
+        var result = await ReadTheClubAsync();
+
+        Assert.Equal("vorstand@furria.de", result.Email);
+        Assert.Equal("036334 12345", result.Phone);
+        Assert.Equal("https://instagram.com/furria", result.InstagramUrl);
+        Assert.Equal("https://facebook.com/furria", result.FacebookUrl);
+    }
+
+    [Fact]
+    public async Task Should_LeaveTheRecordedFactsEmpty_When_TheClubHasNoRecord()
     {
         var ct = TestContext.Current.CancellationToken;
         await _fixture.BuildAsync(ct);
@@ -74,6 +100,10 @@ public sealed class GetPublicClubTests
 
         Assert.Null(result.Name);
         Assert.Null(result.FoundedYear);
+        Assert.Null(result.Email);
+        Assert.Null(result.Phone);
+        Assert.Null(result.InstagramUrl);
+        Assert.Null(result.FacebookUrl);
     }
 
     [Fact]
@@ -201,7 +231,17 @@ public sealed class GetPublicClubTests
 
         using var document = JsonDocument.Parse(payload);
         Assert.Equal(
-            ["name", "foundedYear", "memberCount", "groupCount", "session"],
+            [
+                "name",
+                "foundedYear",
+                "email",
+                "phone",
+                "instagramUrl",
+                "facebookUrl",
+                "memberCount",
+                "groupCount",
+                "session",
+            ],
             document.RootElement.EnumerateObject().Select(field => field.Name)
         );
         Assert.Equal(
