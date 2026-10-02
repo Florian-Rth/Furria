@@ -492,6 +492,19 @@ _UI copy_: Vereinsdaten; *Name & Gründung*; *Anschrift & Kontakt*; *Zugang zur 
 *Vereinsname*; *Kurzname*; *Gründungsjahr*; *Mindestalter für einen Zugang*
 _Avoid_: settings (it is the club's record, not an app's configuration)
 
+**Start**:
+The club app's hub for *me, now* — the one hub that varies per viewer, and the default first
+destination ([ADR-0010](docs/adr/0010-club-app-is-a-set-of-scope-hubs.md)).
+
+**To-do** (`To do`):
+One piece of the club's work waiting on the viewer **because of a permission she holds** — open
+invitations for whoever manages accounts, say. Derived, never stored: it exists while the state
+behind it is unresolved and is gone the moment it resolves. The same item shows in its admin hub's
+To-do panel (where the work is done) and on **Start** (where it is discovered). It is never
+personal: what she owes as a person (an **owed response**) is not a to-do (ruled 2026-10-01, L2
+shaping).
+_Avoid_: task (that is the event planner's), notification, inbox
+
 ### Club culture
 
 **Carnival call**:
@@ -612,7 +625,13 @@ participating on an entry it owns.
 A calendar entry may optionally ask for an **attendance response** (`AttendanceResponse`, answers
 yes / no / maybe) — per entry, switched on by whoever schedules it, and available for every kind
 including a group's training (decided 2026-09-18). An entry that does not ask for one collects
-nothing.
+nothing. An **owed response** is an entry that asks for one, concerns
+her and has not yet started, which she has not answered (*vielleicht* is an answer) — personal,
+answered in place on **Start**, never a **to-do**. An entry **concerns** everyone with a running
+membership when the club owns it, and the current members of its owner group and of its
+participating groups when a group owns it — never a group admin for being one. Anyone who can see
+an entry may still answer it; *owed* only decides what Start asks for (ruled 2026-10-02, L2
+shaping).
 _UI copy_: Kalendereintrag; Eigentümer; Sichtbarkeit (Gruppe / Verein / Öffentlich); Mitwirkende
 Gruppen; Zu-/Absage
 _Avoid_: **appointment**, **group appointment**, schedule, calling it an event, collapsing

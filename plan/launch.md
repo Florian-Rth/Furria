@@ -1,5 +1,5 @@
 ---
-status: agreed 2026-10-01 — L1 done, L2 next
+status: agreed 2026-10-01 — L1 done, L2 next (L2 split into L2 + L3 on 2026-10-02)
 scope: the MVP that goes live on 11.11.2026 — club app (web) and public website
 shaped_with: Florian, 2026-10-01
 supersedes: for this launch only — CLAUDE.md "Nothing ships publicly until the whole platform is
@@ -23,7 +23,7 @@ follows in season order after launch.
   stub, a "bald" teaser or a disabled button pointing at it.
 - **An early state of a final model is not an interim version.** An event whose `salesStatus` is
   `announced` or `presaleScheduled` is the event page in its final form, before sales open.
-- **When time runs short, a phase is dropped whole, never thinned.** L6 is the designated drop.
+- **When time runs short, a phase is dropped whole, never thinned.** L7 is the designated drop.
 
 ---
 
@@ -49,20 +49,21 @@ Each phase gets its own plan file, shaped when it is reached.
 | # | Phase | Why here |
 |---|---|---|
 | **L1** | **Production foundation** ([plan](launch/l1-production-foundation.md)) — club domain behind the existing TLS edge, `ForwardedHeaders`, CD gated on CI with pinned versions and rollback, durable mail outbox, DB-aware health check, login/refresh rate limit. *Backups deferred out of L1 (2026-10-01).* | Everything after it is tested on production. **The board starts entering real data as soon as it lands**, in parallel with the build. |
-| **L2** | **CA-P9 — Start hub** — my next dates, responses I still owe, new announcements, my groups, the to-do item contract (open invitations, eligible persons without email). The final **default** destination set: Start · Verein · Kalender · Gruppen · Mehr | The first screen every member sees. The default set is final design ("what a new account starts with"); pinning adds to it later. |
-| **L3** | **CA-P10 — Membership applications end to end** — ADR-0004's `POST /api/membership-applications` with captcha, rate limit and retention rule; mail to the board; a to-do on Start; *accept* issues person + invitation through `AccountAccessService` | The website plan forbids leaving it last ("a live funnel that cannot submit is worse than none"). Club-app data the website needs. |
-| **L4** | **Public read API + website wiring** — public club record (founded year, contact, socials, member and group counts), public board (respecting `PortraitIsPublic`), groups payload aligned with the website, ticker from the session | Retires `FOUNDING_YEAR`, `MEMBER_COUNT_PLACEHOLDER`, `GROUP_COUNT_PLACEHOLDER` and the placeholder contact — and the hero/`/club` group-count mismatch. |
-| **L5** | **Events, public face** — an event as a published calendar entry with teaser, description, price, venue and `salesStatus`; the club app publishes its key facts; website `/events` reads them (current session only) | The season's dates are what members and guests want first. The order flow stays out until presale. |
-| **L6** | **Media store + news** — uploads (portraits, news images), news posts authored in the club app, website `/news` and the landing teaser | Last before launch work: a media store is the biggest new infrastructure. **Designated drop:** if behind, `/news` is absent at launch. |
-| **L7** | **Website launch (website P7)** — prerender, SEO, sitemap, `robots.txt`, remove the preview gate and tester changelog, `/satzung`, real legal texts, absent routes removed | Pure launch work, last. |
-| **L8** | **Rollout** — pilot group in the club app, device checks (CA-P8 S7 passkey on Android, S10 invitation link from Gmail), freeze, bulk invitations, go live | Invitations rehearsed on real people before 180 receive them. |
+| **L2** | **CA-P9 — Start hub** — the first screen every member sees: my next dates, responses I still owe, new announcements, my groups, and the place to-dos land. Shaped as a design pitch first (split 2026-10-02) | The first screen every member sees, and the one surface every later feature reports into. |
+| **L3** | **Navigation and the to-do contract** — the final **default** destination set (Start · Verein · Kalender · Gruppen · Mehr), the to-do item contract and its first items (open invitations, eligible persons without email) on Start and in club management's To-do panel, the "bald" panel removed from Mehr | The default set is final design ("what a new account starts with"); pinning adds to it later. The contract is what L4's application to-do plugs into. |
+| **L4** | **CA-P10 — Membership applications end to end** — ADR-0004's `POST /api/membership-applications` with captcha, rate limit and retention rule; mail to the board; a to-do on Start; *accept* issues person + invitation through `AccountAccessService` | The website plan forbids leaving it last ("a live funnel that cannot submit is worse than none"). Club-app data the website needs. |
+| **L5** | **Public read API + website wiring** — public club record (founded year, contact, socials, member and group counts), public board (respecting `PortraitIsPublic`), groups payload aligned with the website, ticker from the session | Retires `FOUNDING_YEAR`, `MEMBER_COUNT_PLACEHOLDER`, `GROUP_COUNT_PLACEHOLDER` and the placeholder contact — and the hero/`/club` group-count mismatch. |
+| **L6** | **Events, public face** — an event as a published calendar entry with teaser, description, price, venue and `salesStatus`; the club app publishes its key facts; website `/events` reads them (current session only) | The season's dates are what members and guests want first. The order flow stays out until presale. |
+| **L7** | **Media store + news** — uploads (portraits, news images), news posts authored in the club app, website `/news` and the landing teaser | Last before launch work: a media store is the biggest new infrastructure. **Designated drop:** if behind, `/news` is absent at launch. |
+| **L8** | **Website launch (website P7)** — prerender, SEO, sitemap, `robots.txt`, remove the preview gate and tester changelog, `/satzung`, real legal texts, absent routes removed | Pure launch work, last. |
+| **L9** | **Rollout** — pilot group in the club app, device checks (CA-P8 S7 passkey on Android, S10 invitation link from Gmail), freeze, bulk invitations, go live | Invitations rehearsed on real people before 180 receive them. |
 
 ---
 
 ## Live at launch
 
 **Website:** `/`, `/club`, `/events` + `/events/:slug` (no ordering), `/join` + `/join/apply`,
-`/news` (if L6 lands), `/imprint`, `/privacy`, `/satzung`.
+`/news` (if L7 lands), `/imprint`, `/privacy`, `/satzung`.
 
 **Absent at launch:** `/gallery` (blocked on photo consent), `/events/exchange`,
 `/events/:slug/order`, `/orders/*`.

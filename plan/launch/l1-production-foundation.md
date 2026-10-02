@@ -69,8 +69,8 @@ means something and rate-limited sign-in.
    - passkey login moves off `signed-out-per-ip` onto the same failure counter;
    - rejected refresh tokens (unknown, expired, reused): 20 per 15 min per IP; valid refreshes
      never count.
-   - **For L8**: invitation lookup/redeem stay on `signed-out-per-ip` (30 per 15 min); one club
-     Wi-Fi on the onboarding evening would exhaust it — raise to ~100 by config in the L8
+   - **For L9**: invitation lookup/redeem stay on `signed-out-per-ip` (30 per 15 min); one club
+     Wi-Fi on the onboarding evening would exhaust it — raise to ~100 by config in the L9
      rehearsal (the per-token limiters stay).
 10. **Trusted proxies are configured, and production refuses to start without them**:
     - `ForwardedHeaders:TrustedProxies` (IPs and CIDRs); `X-Forwarded-For` / `-Proto` are read
