@@ -13,6 +13,7 @@ public static class PersonAccessFilters
     public const string WithAccess = "with-access";
     public const string OpenInvitation = "open-invitation";
     public const string WithoutEmail = "without-email";
+    public const string BirthDateUnknown = "birth-date-unknown";
 
     private static readonly IReadOnlyDictionary<string, PersonAccessFilter> ByWireName =
         new Dictionary<string, PersonAccessFilter>(StringComparer.Ordinal)
@@ -25,6 +26,7 @@ public static class PersonAccessFilters
             [WithAccess] = PersonAccessFilter.WithAccess,
             [OpenInvitation] = PersonAccessFilter.OpenInvitation,
             [WithoutEmail] = PersonAccessFilter.WithoutEmail,
+            [BirthDateUnknown] = PersonAccessFilter.BirthDateUnknown,
         };
 
     [Pure]
