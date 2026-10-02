@@ -6,6 +6,7 @@ import { KkScreenHeaderRoot } from '../KkScreenHeader/internal/layout/KkScreenHe
 import { kkTokens } from '../tokens';
 import { useGreetingWait } from './internal/logic/use-greeting-wait';
 
+const SKELETON_FRAME: CSSObject = { minWidth: 0, maxWidth: kkTokens.measure.text };
 const LINES_FRAME: CSSObject = { minWidth: 0, flex: 1, typography: 'h1', lineHeight: 1.1 };
 const BAR_FRAME: CSSObject = { height: '1lh', py: 0.5 };
 const BAR: CSSObject = { height: '100%', borderRadius: `${kkTokens.radius.bar}px` };
@@ -16,7 +17,7 @@ export const KkGreetingSkeleton: FC = () => {
   useGreetingWait();
 
   return (
-    <Box aria-hidden data-kk-greeting-skeleton sx={{ minWidth: 0 }}>
+    <Box aria-hidden data-kk-greeting-skeleton sx={SKELETON_FRAME}>
       <KkScreenHeaderRoot>
         <Box sx={LINES_FRAME}>
           <Box sx={BAR_FRAME}>

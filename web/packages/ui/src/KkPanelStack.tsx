@@ -8,7 +8,7 @@ type KkPanelStackDensity = 'regular' | 'dense';
 
 const densityFrames: Record<KkPanelStackDensity, CSSObject> = {
   regular: { gap: kkTokens.layout.panelGap, minWidth: 0 },
-  dense: { gap: kkTokens.densePanel.gap, minWidth: 0, maxWidth: kkTokens.measure.lead },
+  dense: { gap: kkTokens.densePanel.gap, minWidth: 0, maxWidth: kkTokens.measure.text },
 };
 
 interface KkPanelStackProps extends PropsWithChildren {
