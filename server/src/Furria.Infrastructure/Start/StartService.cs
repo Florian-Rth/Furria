@@ -47,7 +47,7 @@ public sealed partial class StartService
                 Entries = await EntryCandidatesAsync(viewer, ct),
                 Announcements = await AnnouncementCandidatesAsync(viewer, ct),
                 ToDos = await _toDoService.ForAsync(accountId, ct),
-                Mine = [],
+                Mine = await MineCandidatesAsync(viewer, ct),
                 GroupMoments = [],
             },
             moment
