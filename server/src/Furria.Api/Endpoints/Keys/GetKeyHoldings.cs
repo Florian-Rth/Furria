@@ -50,6 +50,7 @@ public sealed class GetKeyHoldings : EndpointWithoutRequest<GetKeyHoldingsRespon
             LastName = holding.LastName,
             SinceOn = holding.SinceOn,
             UntilOn = holding.UntilOn,
+            HolderIsActiveInClub = holding.HolderIsActiveInClub,
         };
 }
 
@@ -82,4 +83,6 @@ public sealed record KeyHoldingSummaryDto
     public required DateOnly SinceOn { get; init; }
 
     public required DateOnly? UntilOn { get; init; }
+
+    public required bool HolderIsActiveInClub { get; init; }
 }

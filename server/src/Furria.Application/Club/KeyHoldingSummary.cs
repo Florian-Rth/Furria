@@ -13,4 +13,6 @@ public sealed record KeyHoldingSummary
     public required DateOnly SinceOn { get; init; }
 
     public required DateOnly? UntilOn { get; init; }
+
+    public required bool HolderIsActiveInClub { get; init; }
 }
