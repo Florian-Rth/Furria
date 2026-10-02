@@ -59,6 +59,11 @@ const VALUE_PAINT: CSSObject = {
   letterSpacing: kkTokens.type.tracking.display,
 };
 
+const DIMMED_PAINT: CSSObject = {
+  opacity: kkTokens.opacity.dimmed,
+  '& [data-kk-dense-cell-value]': { color: 'text.secondary' },
+};
+
 const LABEL_PAINT: CSSObject = {
   color: 'text.secondary',
   fontWeight: 700,
@@ -72,6 +77,7 @@ interface KkDensePanelCellProps {
   to?: string;
   params?: Record<string, string>;
   search?: KkLinkSearch;
+  dimmed?: boolean;
 }
 
 export const KkDensePanelCell: FC<KkDensePanelCellProps> = ({
@@ -81,14 +87,19 @@ export const KkDensePanelCell: FC<KkDensePanelCellProps> = ({
   to,
   params,
   search,
+  dimmed = false,
 }) => {
-  const reaches = component !== undefined;
-  const cellComponent = component ?? 'div';
+  const reaches = component !== undefined && !dimmed;
+  const cellComponent = reaches ? component : 'div';
   const routeProps = reaches ? { to, params, search } : {};
 
   return (
-    <Box component="li" data-kk-dense-cell sx={GROUT_PAINT}>
-      <Stack component={cellComponent} {...routeProps} sx={[CELL_FRAME, reaches && reachPaint]}>
+    <Box component="li" inert={dimmed} data-kk-dense-cell sx={GROUT_PAINT}>
+      <Stack
+        component={cellComponent}
+        {...routeProps}
+        sx={[CELL_FRAME, reaches && reachPaint, dimmed && DIMMED_PAINT]}
+      >
         <Typography component="span" variant="h2" data-kk-dense-cell-value sx={VALUE_PAINT}>
           {value}
         </Typography>
