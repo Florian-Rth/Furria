@@ -1,14 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import {
   ashWednesdayOf,
+  calendarDaysBetween,
+  carnivalDaysOf,
   daysUntilOpening,
   isBetweenSessions,
   mottoStageStateAt,
   relevantSessionYear,
   sessionAt,
   sessionClosingAt,
+  sessionDayOf,
   sessionOpeningAt,
   sessionProgressAt,
+  sessionYearsLabelOf,
 } from './club';
 
 describe('sessionAt', () => {
@@ -280,5 +284,86 @@ describe('the midnight label flip against the sealed motto stage', () => {
 
     expect(progress).toBeGreaterThan(0);
     expect(progress).toBeLessThan(0.01);
+  });
+});
+
+describe('sessionYearsLabelOf', () => {
+  it.each([
+    { startYear: 2026, expected: '2026/27' },
+    { startYear: 2008, expected: '2008/09' },
+    { startYear: 2099, expected: '2099/00' },
+  ])('labels the $startYear session $expected', ({ startYear, expected }) => {
+    expect(sessionYearsLabelOf(startYear)).toBe(expected);
+  });
+});
+
+describe('calendarDaysBetween', () => {
+  it.each([
+    { label: 'the same day', from: new Date(2026, 9, 2, 8), to: new Date(2026, 9, 2, 23), days: 0 },
+    {
+      label: 'late evening to early morning',
+      from: new Date(2026, 9, 2, 23, 59),
+      to: new Date(2026, 9, 3, 0, 1),
+      days: 1,
+    },
+    {
+      label: 'across the end of summer time',
+      from: new Date(2026, 9, 20, 12),
+      to: new Date(2026, 10, 11),
+      days: 22,
+    },
+    {
+      label: 'backwards in time',
+      from: new Date(2026, 10, 11),
+      to: new Date(2026, 10, 9),
+      days: -2,
+    },
+  ])('counts $days days for $label', ({ from, to, days }) => {
+    expect(calendarDaysBetween(from, to)).toBe(days);
+  });
+});
+
+describe('carnivalDaysOf', () => {
+  it.each([
+    {
+      startYear: 2026,
+      expected: {
+        womensCarnivalDay: new Date(2027, 1, 4),
+        roseMonday: new Date(2027, 1, 8),
+        carnivalTuesday: new Date(2027, 1, 9),
+        ashWednesday: new Date(2027, 1, 10),
+      },
+    },
+    {
+      startYear: 2024,
+      expected: {
+        womensCarnivalDay: new Date(2025, 1, 27),
+        roseMonday: new Date(2025, 2, 3),
+        carnivalTuesday: new Date(2025, 2, 4),
+        ashWednesday: new Date(2025, 2, 5),
+      },
+    },
+  ])('places the street carnival of the $startYear session', ({ startYear, expected }) => {
+    expect(carnivalDaysOf(startYear)).toEqual(expected);
+  });
+});
+
+describe('sessionDayOf', () => {
+  it.each([
+    { label: 'midnight on 11.11.', date: new Date(2026, 10, 11, 0, 0), expected: 1 },
+    { label: 'the stroke of 11:11', date: new Date(2026, 10, 11, 11, 11), expected: 1 },
+    { label: 'the Monday of launch week', date: new Date(2026, 10, 16, 8, 15), expected: 6 },
+    { label: 'a January training night', date: new Date(2027, 0, 19, 19, 50), expected: 70 },
+    { label: 'Weiberfastnacht', date: new Date(2027, 1, 4, 11, 11), expected: 86 },
+    { label: 'Aschermittwoch', date: new Date(2027, 1, 10, 23, 59), expected: 92 },
+    { label: 'the day after Aschermittwoch', date: new Date(2027, 1, 11, 0, 0), expected: null },
+    {
+      label: 'the eve of the season opening',
+      date: new Date(2026, 10, 10, 23, 59),
+      expected: null,
+    },
+    { label: 'high summer', date: new Date(2026, 6, 21), expected: null },
+  ])('is $expected on $label', ({ date, expected }) => {
+    expect(sessionDayOf(date)).toBe(expected);
   });
 });

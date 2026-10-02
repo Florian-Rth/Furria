@@ -21,10 +21,17 @@ const me = (state: Me['membership']['state']): Me => ({
   accountId: 3,
   email: 'paula@example.org',
   person: person(),
-  membership: { state, memberSince: null, currentStartedOn: null, currentEndedOn: null },
+  membership: {
+    state,
+    memberSince: null,
+    currentStartedOn: null,
+    currentEndedOn: null,
+    relevantSession: null,
+  },
   isAffiliated: true,
   permissionKeys: [],
   lastSeenAnnouncementAt: null,
+  appSince: null,
   passkeys: [],
 });
 
