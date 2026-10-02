@@ -9,6 +9,7 @@ using Furria.Infrastructure.Management;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Registry;
 using Furria.Infrastructure.Roles;
+using Furria.Infrastructure.Start;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -104,6 +105,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<CalendarService>();
         services.AddScoped<ClubRecordService>();
         services.AddScoped<ManagementService>();
+        services.AddScoped<ToDoService>();
+        services.AddScoped<StartService>();
         services.AddScoped<InvitationRoundService>();
         services.AddScoped<AccountSecurityService>();
         services.AddScoped<AccessRecoveryService>();
