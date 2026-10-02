@@ -6,11 +6,13 @@ import {
   UnauthorizedError,
 } from '@/lib/api/api-error';
 import type { Start, StartAttendance, StartEntry } from './schemas';
-import type { StartAnswerFailure } from './start-answer';
+import type { StartAnswerAttempt, StartAnswerFailure } from './start-answer';
 import {
   attendanceOf,
+  latestAnswerErrorOf,
   OfflineAnswerError,
   toAnswerFailureOf,
+  toAnswerRollbackOf,
   withEntryAttendance,
 } from './start-answer';
 
@@ -116,5 +118,75 @@ describe('withEntryAttendance', () => {
     },
   ])('updates only that entry when $label', ({ data, attendance, expected }) => {
     expect(withEntryAttendance(data, 2, attendance)).toEqual(expected);
+  });
+});
+
+describe('latestAnswerErrorOf', () => {
+  const since = 1_000;
+  const offline = new OfflineAnswerError();
+  const broken = new ServerFailureError(500);
+
+  it.each<{ label: string; attempts: StartAnswerAttempt[]; expected: Error | null }>([
+    { label: 'she never answered', attempts: [], expected: null },
+    {
+      label: 'her only answer failed here',
+      attempts: [{ submittedAt: 1_200, error: broken }],
+      expected: broken,
+    },
+    {
+      label: 'a newer answer is still on its way',
+      attempts: [
+        { submittedAt: 1_200, error: broken },
+        { submittedAt: 1_400, error: null },
+      ],
+      expected: null,
+    },
+    {
+      label: 'the newest answer failed after an older one was saved',
+      attempts: [
+        { submittedAt: 1_200, error: null },
+        { submittedAt: 1_400, error: offline },
+      ],
+      expected: offline,
+    },
+    {
+      label: 'the failure came before this surface opened',
+      attempts: [{ submittedAt: 900, error: broken }],
+      expected: null,
+    },
+  ])('is $expected when $label', ({ attempts, expected }) => {
+    expect(latestAnswerErrorOf(attempts, since)).toBe(expected);
+  });
+});
+
+describe('toAnswerRollbackOf', () => {
+  it.each<{
+    label: string;
+    pendingAnswers: number;
+    confirmed: StartAttendance | null | undefined;
+    expected: StartAttendance | null | undefined;
+  }>([
+    { label: 'her last answer failed', pendingAnswers: 1, confirmed: OWED, expected: OWED },
+    {
+      label: 'her last answer failed after an earlier one was saved',
+      pendingAnswers: 1,
+      confirmed: ANSWERED,
+      expected: ANSWERED,
+    },
+    {
+      label: 'a later answer is still pending',
+      pendingAnswers: 2,
+      confirmed: OWED,
+      expected: undefined,
+    },
+    {
+      label: 'nothing was confirmed before the answer',
+      pendingAnswers: 1,
+      confirmed: undefined,
+      expected: undefined,
+    },
+    { label: 'the entry asked nothing before', pendingAnswers: 1, confirmed: null, expected: null },
+  ])('restores $expected when $label', ({ pendingAnswers, confirmed, expected }) => {
+    expect(toAnswerRollbackOf(pendingAnswers, confirmed)).toEqual(expected);
   });
 });

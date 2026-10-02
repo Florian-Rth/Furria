@@ -35,7 +35,6 @@ export interface CalendarLineView {
   progress: number | null;
   accessibleLabel: string;
   alert: string | undefined;
-  choiceError: string | undefined;
   highlight: boolean;
   trailing: EntryTrailing;
   choosing: boolean;
@@ -98,8 +97,7 @@ export const useCalendarLine = ({
     state: toEntryLineState(running, inert),
     progress: running ? toRunningProgress(entry, now) : null,
     accessibleLabel: toEntryAccessibleName(entry, now),
-    alert: choosing ? undefined : answer.failure,
-    choiceError: choosing ? answer.failure : undefined,
+    alert: answer.failure,
     highlight,
     trailing: inert ? NO_TRAILING : toEntryTrailing(entry.attendance),
     choosing,

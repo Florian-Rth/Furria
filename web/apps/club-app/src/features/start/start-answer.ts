@@ -54,6 +54,28 @@ export const toAnswerFailureOf = (error: Error | null): StartAnswerFailure | nul
   return 'unsaved';
 };
 
+export interface StartAnswerAttempt {
+  submittedAt: number;
+  error: Error | null;
+}
+
+export const LAST_PENDING_ANSWER = 1;
+
+export const latestAnswerErrorOf = (
+  attempts: readonly StartAnswerAttempt[],
+  since: number,
+): Error | null => {
+  const latest = attempts.at(-1);
+
+  return latest === undefined || latest.submittedAt < since ? null : latest.error;
+};
+
+export const toAnswerRollbackOf = (
+  pendingAnswers: number,
+  confirmed: StartAttendance | null | undefined,
+): StartAttendance | null | undefined =>
+  pendingAnswers > LAST_PENDING_ANSWER ? undefined : confirmed;
+
 export const attendanceOf = (
   start: Start | undefined,
   calendarEntryId: number,

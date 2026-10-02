@@ -41,7 +41,6 @@ export const CalendarLine: FC<CalendarLineInput> = (props) => {
       value={line.value}
       onChange={line.choose}
       labels={ATTENDANCE_LABELS}
-      error={line.choiceError}
     />
   ) : null;
 
