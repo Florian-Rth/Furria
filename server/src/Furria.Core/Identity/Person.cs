@@ -34,8 +34,6 @@ public sealed class Person : ITimestamped
 
     public string? PortraitUrl { get; set; }
 
-    public bool PortraitIsPublic { get; set; }
-
     public DateTimeOffset CreatedAt { get; set; }
 
     public DateTimeOffset UpdatedAt { get; set; }

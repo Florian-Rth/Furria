@@ -160,6 +160,27 @@ public sealed class GetBoardTests
     }
 
     [Fact]
+    public async Task Should_TellWhichOfficesThePublicWebsiteShows_When_TheBoardIsRead()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Club(club =>
+                    club.AddBoardOffice("praesident", "Präsident", 1, isPublic: true)
+                        .AddBoardOffice("kassenwart", "Kassenwart", 2)
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var (response, result) = await ReadBoardAsync(client);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(OfficeOf(result, ctx.Club.BoardOffices.IdOf("praesident")).IsPublic);
+        Assert.False(OfficeOf(result, ctx.Club.BoardOffices.IdOf("kassenwart")).IsPublic);
+    }
+
+    [Fact]
     public async Task Should_ReadTheArchivedOffice_When_ItStillCarriesItsHistory()
     {
         var ct = TestContext.Current.CancellationToken;
