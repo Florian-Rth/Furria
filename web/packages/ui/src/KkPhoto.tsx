@@ -11,10 +11,18 @@ interface KkPhotoProps {
   orientation: KkPhotoOrientation;
   placeholderLabel: string;
   source?: string;
+  tint?: string;
   sx?: SxProps<Theme>;
 }
 
-export const KkPhoto: FC<KkPhotoProps> = ({ alt, orientation, placeholderLabel, source, sx }) => {
+export const KkPhoto: FC<KkPhotoProps> = ({
+  alt,
+  orientation,
+  placeholderLabel,
+  source,
+  tint,
+  sx,
+}) => {
   const frame = resolvePhotoFrame(orientation);
 
   return (
@@ -31,7 +39,7 @@ export const KkPhoto: FC<KkPhotoProps> = ({ alt, orientation, placeholderLabel, 
       ]}
     >
       {source === undefined ? (
-        <KkPhotoPlaceholder label={placeholderLabel} fill />
+        <KkPhotoPlaceholder label={placeholderLabel} tint={tint} fill />
       ) : (
         <Box
           component="img"
