@@ -48,6 +48,10 @@ English rendering anywhere else, so two translations never drift apart.
 | club | Verein | — |
 | club hub / group hub / management | Verein / Gruppe / Verein verwalten | `club`, `group-hub`, `manage` |
 | tile | Kachel | — |
+| Start / to-do | Übersicht / Zu erledigen | `start`, `ToDoKind` |
+| active in the club | im Verein aktiv | — (derived) |
+| her dates: concerns / runs / expected | — | `CalendarTies` |
+| session ordinal | „deine 13. Session" | `SessionOrdinal` |
 | carnival call | Narrenruf | `CarnivalCall…` |
 | join in (the "get involved" call to action) | Mitmachen | `JoinIn…` |
 | master data (a person's or club's base record) | Stammdaten | — |
@@ -107,6 +111,8 @@ as the literal name of one of the club's groups or evenings:
 | show dance | Showtanz | | carnival club | Karnevalsverein |
 | carnival speech | Büttenrede | | carnival season ("the fifth season") | Session ("die fünfte Jahreszeit") |
 | beer guard | Biergarde | | carnival | Karneval / Fasching |
+| women's carnival day | Weiberfastnacht | | Rose Monday | Rosenmontag |
+| carnival Tuesday | Fastnachtsdienstag (its night: Kehraus) | | | |
 
 Office names follow the same rule: president (Präsident), treasurer (Kassenwart / Finanzen),
 secretary (Schriftführerin), drinks warden (Getränkewart), managing director (Geschäftsführer),
@@ -494,7 +500,40 @@ _Avoid_: settings (it is the club's record, not an app's configuration)
 
 **Start**:
 The club app's hub for *me, now* — the one hub that varies per viewer, and the default first
-destination ([ADR-0010](docs/adr/0010-club-app-is-a-set-of-scope-hubs.md)).
+destination ([ADR-0010](docs/adr/0010-club-app-is-a-set-of-scope-hubs.md)). Built in L2
+(`plan/launch/l2-start-hub.md`): a split-flap **greeting** that says where her season stands in
+her own terms („40 Tage bis zu deiner 13. Session, Lena.") and a column of **panels, one per kind**
+— her dates, the Aushänge new to her, what is new on her own record, her groups' jubilees, and
+club work — each one fact line per item, detail in sheets. Which panels exist, their order and
+their caps are decided by the server per viewer and moment; an empty panel is absent, never
+zero. Nothing on Start is dismissed by hand: every item ends by itself. A **frozen visit**: after
+her first touch nothing on Start is added, removed or reordered — it only changes state in place;
+device memory may only quiet, never add (ruled 2026-10-02, L2).
+_UI copy_: Übersicht (nav, until L3); panels KALENDER · AUSHÄNGE · DU · GRUPPEN · ZU ERLEDIGEN;
+Zusage · Vielleicht · Absage, always in this order
+_Avoid_: dashboard, feed, inbox, „Termin", „Programm"
+
+**Her occasions**:
+Her own birthday and the anniversary of her joining are hers to see on Start; nobody else's
+occasions are shown anywhere. A round join anniversary (a multiple of 5 or 11 years) stays on
+Start for 30 days after the day. The **session ordinal** — „deine 13. Session" — counts the
+sessions in which her membership ran and was not paused (`SessionOrdinal`) (ruled 2026-10-02, L2).
+_Avoid_: other people's birthdays or anniversaries, age
+
+**New on her record**:
+A role, board seat, group-admin tenure, group membership or key holding is *new* on Start for 14
+days from its own since date; a change of her contact details by someone else stays for 14 days.
+New is read from the domain's own dates, never from when a record was typed in — which is why the
+rollout enters true since dates (ruled 2026-10-02, L2).
+
+**Active in the club**:
+Affiliated, or holding a running **group admin** tenure in a non-archived group, or a running
+**board seat** in a non-archived office — derived, never stored. It differs from **affiliated**,
+which governs reading the club: *active* decides only Start's *nicht im Verein aktiv* state and
+whose keys must come back, so a trainer who is not a member keeps her Start and her hall key
+(ruled 2026-10-02, L2).
+_UI copy_: *nicht im Verein aktiv*
+_Avoid_: using it for permissions, storing it
 
 **To-do** (`To do`):
 One piece of the club's work waiting on the viewer **because of a permission she holds** — open
@@ -502,8 +541,20 @@ invitations for whoever manages accounts, say. Derived, never stored: it exists 
 behind it is unresolved and is gone the moment it resolves. The same item shows in its admin hub's
 To-do panel (where the work is done) and on **Start** (where it is discovered). It is never
 personal: what she owes as a person (an **owed response**) is not a to-do (ruled 2026-10-01, L2
-shaping).
-_Avoid_: task (that is the event planner's), notification, inbox
+shaping). Start shows a to-do as a **count, never names**, and each count lands where the work is
+done. The contract is `ToDoService` / `ToDoKind` (built in L2); the kinds at launch and their
+gates (ruled 2026-10-02, L2):
+
+| Kind | UI copy | Gate |
+|---|---|---|
+| never invited | *nie eingeladen* | `persons.manage` |
+| reminder due (invitation open > 3 days) | *Erinnerung fällig* | `persons.manage` |
+| in person only (eligible, no email) | *nur vor Ort einladbar* | `persons.manage` |
+| birth date unknown (affiliated, no account, no birth date, no open invitation) | *Geburtsdatum fehlt* | `persons.manage` ∧ `accounts.manage` |
+| key to take back | *Schlüssel zurückholen* | `key_holdings.manage` |
+| club record gap | *Lücke in Vereinsdaten* | `club.manage` |
+
+_Avoid_: task (that is the event planner's), notification, inbox, names in a to-do
 
 ### Club culture
 
@@ -632,6 +683,23 @@ membership when the club owns it, and the current members of its owner group and
 participating groups when a group owns it — never a group admin for being one. Anyone who can see
 an entry may still answer it; *owed* only decides what Start asks for (ruled 2026-10-02, L2
 shaping).
+
+Made precise when L2 was built (ruled 2026-10-02):
+- **Visibility.** A *Group*-visible entry is visible to the running members and admins of its owner
+  group **and of its participating groups**. An archived group confers no concern, no running and
+  no sight.
+- **Answering.** She may answer an entry she **sees** on one of her surfaces: she holds `club.read`
+  or a tie to its owner or a participating group, and its visibility admits her. Concern always
+  grants answering; a past entry stays answerable.
+- **Pause.** A club-owned entry does not concern a member whose membership is paused for that
+  entry's session.
+- **Her dates.** An entry is one of her dates when it concerns her, when she **runs** it — she holds
+  a running group-admin tenure in its owner or a participating group, shown with her function — or
+  when she is **expected** at it: a club-owned entry in which a group she is a current member of
+  participates. Running and expected never make a response owed. An *Absage* takes an entry off
+  Start.
+- **Owed horizon.** Start asks from 14 days before a training, rehearsal or meeting and from 42
+  days before any other kind. The horizon limits what Start asks, not what is owed.
 _UI copy_: Kalendereintrag; Eigentümer; Sichtbarkeit (Gruppe / Verein / Öffentlich); Mitwirkende
 Gruppen; Zu-/Absage
 _Avoid_: **appointment**, **group appointment**, schedule, calling it an event, collapsing
@@ -673,7 +741,11 @@ club statistic — there the club names holders, never a number. The **back offi
 must: `/manage/keys` and its tile show how many handovers are currently running and to how many
 persons, because handing one out and taking one back is the whole job of that screen (clarified
 2026-09-20, CA-P5).
-_UI copy_: Schlüssel
+
+A **key to take back** is a running key holding of a person who is no longer **active in the
+club**; it is a to-do for whoever holds `key_holdings.manage` and carries the chip *nicht im Verein
+aktiv* in `/manage/keys` (ruled 2026-10-02, L2).
+_UI copy_: Schlüssel; *Schlüssel zurückholen*
 _Avoid_: key number, counting keys as a club statistic, access, access right (a key is metal, a
 **permission** is a right in the app — never the same word)
 
@@ -766,7 +838,9 @@ nothing else (settled 2026-09-19). Reactions, a news category, pinning and a **r
 ("read by 87") were each weighed and rejected: a notice board that scores its notices is a feed,
 and the club has no rule that asks anyone to prove they read one. Whether an announcement is *new
 to you* is answered by a single last-seen moment on the account, never by tracking each
-announcement against each reader.
+announcement against each reader. Opening the new Aushänge — on Start or on the board — moves that
+moment to the newest announcement shown, never backwards and never past now; Start lists an
+announcement as new for at most 60 days and never one she wrote herself (ruled 2026-10-02, L2).
 _UI copy_: Aushang; Titel, Text, Autor, Gültig bis
 _Avoid_: notice (that is the shell's live-evening layer), news post (that is public website news),
 message, chat, bulletin board, category, attachment, read receipt
