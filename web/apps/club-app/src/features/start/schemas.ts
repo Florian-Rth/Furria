@@ -1,7 +1,6 @@
 import { z } from 'zod';
-import { AttendanceAnswerSchema } from '@/features/calendar';
-import { CalendarEntryKindSchema } from '@/features/club';
 import { knownKindsOnly } from '@/lib/api/known-kinds';
+import { ATTENDANCE_ANSWER_KEYS, CALENDAR_KIND_KEYS } from '@/lib/calendar-copy';
 import { GroupToneSchema } from '@/lib/group-tone';
 
 const StartGroupRefSchema = z.object({
@@ -25,7 +24,7 @@ const StartRunSchema = z.object({ groupId: z.int(), function: z.string().nullabl
 export type StartRun = z.infer<typeof StartRunSchema>;
 
 const StartAttendanceSchema = z.object({
-  viewerAnswer: AttendanceAnswerSchema.nullable(),
+  viewerAnswer: z.enum(ATTENDANCE_ANSWER_KEYS).nullable(),
   isOwed: z.boolean(),
 });
 export type StartAttendance = z.infer<typeof StartAttendanceSchema>;
@@ -33,7 +32,7 @@ export type StartAttendance = z.infer<typeof StartAttendanceSchema>;
 export const StartEntrySchema = z.object({
   calendarEntryId: z.int(),
   title: z.string(),
-  kind: CalendarEntryKindSchema,
+  kind: z.enum(CALENDAR_KIND_KEYS),
   startsAt: z.iso.datetime({ offset: true }),
   endsAt: z.iso.datetime({ offset: true }).nullable(),
   isRunning: z.boolean(),
