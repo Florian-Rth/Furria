@@ -26,10 +26,12 @@ interface Chosen {
   nameForm: GreetingNameForm;
 }
 
-export const GREETING_MAX_LENGTH = 40;
+export const GREETING_MAX_LENGTH = 44;
 const NAME_MAX_LENGTH = 12;
 const FIRST_ORDINAL = 1;
 const WHITESPACE = /\s+/g;
+const BREAKING_SPACE = ' ';
+const NO_BREAK_SPACE = '\u00A0';
 
 const plain = (text: string): GreetingPart => ({ text, role: 'plain' });
 const value = (text: string): GreetingPart => ({ text, role: 'value' });
@@ -37,6 +39,13 @@ const named = (text: string): GreetingPart => ({ text, role: 'name' });
 
 export const toGreetingText = (parts: readonly GreetingPart[]): string =>
   parts.map((part) => part.text).join('');
+
+export const withValuesGlued = (parts: readonly GreetingPart[]): GreetingPart[] =>
+  parts.map((part, index) =>
+    parts[index - 1]?.role === 'value' && part.text.startsWith(BREAKING_SPACE)
+      ? { ...part, text: `${NO_BREAK_SPACE}${part.text.slice(BREAKING_SPACE.length)}` }
+      : part,
+  );
 
 const fits = (parts: readonly GreetingPart[]): boolean =>
   toGreetingText(parts).length <= GREETING_MAX_LENGTH;
@@ -268,7 +277,7 @@ const compositionOf = (act: GreetingAct, name: string | null): Composition => {
   }
   if (act.moment === 'birthday') {
     return {
-      title: [salutation('Alles Gute', '!')],
+      title: [salutation('Alles Gute zum Geburtstag', '!')],
       line: plainClauseOf(act.clause, act.ordinal),
     };
   }
@@ -312,7 +321,7 @@ export const toGreetingCopy = (act: GreetingAct, firstName: string): GreetingCop
   const title = choose(composition.title, name);
 
   return {
-    parts: title.parts,
+    parts: withValuesGlued(title.parts),
     line: composition.line,
     nameForm: title.nameForm,
     deck: deckOf(act),

@@ -23,7 +23,7 @@ export interface HeadlineDecks {
 
 export const HEADLINE_DECKS: Record<GreetingDeck, HeadlineDecks> = {
   carnival: { deck: CARNIVAL_DECK, nameDeck: undefined },
-  cheer: { deck: CARNIVAL_DECK, nameDeck: CHEER_DECK },
+  cheer: { deck: CHEER_DECK, nameDeck: CHEER_DECK },
   backwards: { deck: BACKWARDS_DECK, nameDeck: undefined },
   none: { deck: [], nameDeck: undefined },
 };

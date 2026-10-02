@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { GreetingAct, SeasonClause } from './greeting-act';
 import type { GreetingCopy, GreetingNameForm } from './greeting-copy';
-import { GREETING_MAX_LENGTH, toGreetingCopy, toGreetingText } from './greeting-copy';
+import {
+  GREETING_MAX_LENGTH,
+  toGreetingCopy,
+  toGreetingText,
+  withValuesGlued,
+} from './greeting-copy';
 import type { GreetingDeck } from './greeting-decks';
 
 type ClausedMoment = 'birthday' | 'welcome' | 'daily';
@@ -73,10 +78,22 @@ describe('toGreetingCopy', () => {
       expected: { values: ['70', '12.'], name: 'Lena', nameForm: 'vocative', hasLine: false },
     },
     {
-      label: 'Gerd in May, whose vocative runs past the budget',
+      label: 'Gerd in May, greeted by name',
       act: claused('daily', { kind: 'untilOpening', days: 177 }, 33),
       firstName: 'Gerd',
-      expected: { values: ['177', '33.'], name: null, nameForm: 'nameless', hasLine: false },
+      expected: { values: ['177', '33.'], name: 'Gerd', nameForm: 'vocative', hasLine: false },
+    },
+    {
+      label: 'Frank before his 42nd session, greeted by name',
+      act: claused('daily', { kind: 'untilOpening', days: 40 }, 42),
+      firstName: 'Frank',
+      expected: { values: ['40', '42.'], name: 'Frank', nameForm: 'vocative', hasLine: false },
+    },
+    {
+      label: 'a long name in May, whose vocative runs past the budget',
+      act: claused('daily', { kind: 'untilOpening', days: 277 }, 33),
+      firstName: 'Maximilian',
+      expected: { values: ['277', '33.'], name: null, nameForm: 'nameless', hasLine: false },
     },
     {
       label: 'Sabine, who holds no membership',
@@ -181,10 +198,10 @@ describe('toGreetingCopy', () => {
       expected: { values: ['1'], name: 'Lena', nameForm: 'vocative', hasLine: true },
     },
     {
-      label: 'a long anniversary with a long name',
+      label: 'a long anniversary with a twelve-letter name',
       act: anniversary(99, { kind: 'untilOpening', days: 40 }),
       firstName: 'Maximilianne',
-      expected: { values: ['99'], name: null, nameForm: 'nameless', hasLine: true },
+      expected: { values: ['99'], name: 'Maximilianne', nameForm: 'vocative', hasLine: true },
     },
     {
       label: 'Weiberfastnacht with a short name',
@@ -195,7 +212,7 @@ describe('toGreetingCopy', () => {
     {
       label: 'Weiberfastnacht with a name that breaks the budget',
       act: clauseless('womensCarnivalDay', 12),
-      firstName: 'Marianne',
+      firstName: 'Maximiliane',
       expected: { values: [], name: null, nameForm: 'nameless', hasLine: false },
     },
     {
@@ -205,10 +222,10 @@ describe('toGreetingCopy', () => {
       expected: { values: [], name: 'Maximilian', nameForm: 'vocative', hasLine: false },
     },
     {
-      label: 'Rosenmontag with an eleven-letter name',
+      label: 'Rosenmontag with a twelve-letter name',
       act: clauseless('roseMonday', 12),
-      firstName: 'Maximiliane',
-      expected: { values: [], name: null, nameForm: 'nameless', hasLine: false },
+      firstName: 'Maximilianne',
+      expected: { values: [], name: 'Maximilianne', nameForm: 'vocative', hasLine: false },
     },
     {
       label: 'Fastnachtsdienstag',
@@ -304,6 +321,41 @@ describe('toGreetingCopy', () => {
     },
   ])('rattles the $expected deck on $label', ({ act, expected }) => {
     expect(toGreetingCopy(act, 'Lena').deck).toBe(expected);
+  });
+});
+
+describe('withValuesGlued', () => {
+  it.each([
+    {
+      label: 'a countdown and its unit',
+      act: claused('daily', { kind: 'untilOpening', days: 40 }, null),
+      firstName: 'Sabine',
+    },
+    {
+      label: 'an ordinal and its session',
+      act: claused('daily', { kind: 'untilOpening', days: 40 }, 13),
+      firstName: 'Lena',
+    },
+    {
+      label: 'a session day and its ordinal',
+      act: claused('daily', { kind: 'sessionDay', day: 70 }, 12),
+      firstName: 'Lena',
+    },
+  ])('never lets a line break part $label', ({ act, firstName }) => {
+    const { parts } = toGreetingCopy(act, firstName);
+    const afterValues = parts.filter((_, index) => parts[index - 1]?.role === 'value');
+
+    expect(afterValues.length).toBeGreaterThan(0);
+    expect(afterValues.every((part) => !part.text.startsWith(' '))).toBe(true);
+  });
+
+  it('leaves a part that follows plain text alone', () => {
+    const parts = withValuesGlued([
+      { text: 'Tag', role: 'plain' },
+      { text: ' der Session', role: 'plain' },
+    ]);
+
+    expect(parts[1]?.text.startsWith(' ')).toBe(true);
   });
 });
 
