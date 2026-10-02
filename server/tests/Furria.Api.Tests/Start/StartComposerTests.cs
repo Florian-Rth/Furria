@@ -402,6 +402,34 @@ public sealed class StartComposerTests
     }
 
     [Fact]
+    public void Should_PickTheLiveEntry_When_ItStartsWithinTwoHoursAfterMidnight()
+    {
+        const int AfterMidnight = 1;
+        var lateTuesday = StartMoment.At(OnDay(0, 23, 0));
+
+        var calendar = CalendarOf(
+            StartComposer.Compose(
+                Nothing with
+                {
+                    Entries =
+                    [
+                        EntryAt(AfterMidnight, OnDay(1, 0, 30)),
+                        .. Enumerable
+                            .Range(2, 6)
+                            .Select(day => Owed(EntryAt(day + 10, OnDay(day, 19, 0)))),
+                    ],
+                },
+                lateTuesday
+            )
+        );
+
+        Assert.Contains(
+            AfterMidnight,
+            calendar.Entries!.Take(calendar.ShownCount).Select(entry => entry.CalendarEntryId)
+        );
+    }
+
+    [Fact]
     public void Should_PutPickedRowsFirstInTimeOrder_When_TheCalendarIsCapped()
     {
         var calendar = CalendarOf(StartComposer.Compose(CappedCalendar, TuesdayEvening));

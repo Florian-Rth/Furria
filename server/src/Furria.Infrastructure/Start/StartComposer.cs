@@ -280,7 +280,7 @@ public static class StartComposer
 
     [Pure]
     private static int PickRankOf(StartEntrySummary row, StartMoment moment) =>
-        row.IsRunning ? 0
+        IsLive(row, moment) ? 0
         : DayOf(row) == moment.Today ? 1
         : IsOwed(row) ? 2
         : IsOnStage(row) ? 3
@@ -288,11 +288,15 @@ public static class StartComposer
 
     [Pure]
     private static StartBand BandOf(StartEntrySummary entry, StartMoment moment) =>
-        entry.IsRunning || entry.StartsAt - moment.Now <= LiveLead ? StartBand.Live
+        IsLive(entry, moment) ? StartBand.Live
         : DayOf(entry) == moment.Today ? StartBand.Today
         : DayOf(entry) == moment.Today.AddDays(1) ? StartBand.Soon
         : IsOwed(entry) && DayOf(entry) <= moment.Today.AddDays(SoonDays) ? StartBand.Soon
         : StartBand.Later;
+
+    [Pure]
+    private static bool IsLive(StartEntrySummary entry, StartMoment moment) =>
+        entry.IsRunning || entry.StartsAt - moment.Now <= LiveLead;
 
     [Pure]
     private static StartBand BandOf(StartMineSummary item, StartMoment moment) =>
