@@ -35,11 +35,13 @@ export const useStartView = (): StartView => {
   const permissions = usePermissions();
   const now = useMinuteNow();
   const { visit, touched, touch } = useStartVisit(query.data);
-  const { memory, quiet } = useQuietMemory(me.data?.person.id ?? null);
+  const personId = me.data?.person.id ?? null;
+  const { memory, quiet } = useQuietMemory(personId);
+  const ready = visit !== null && personId !== null;
   const errorMessage = visit === null ? toStartErrorMessage(query.error) : null;
   const paused = visit === null && query.isPaused;
-  const skeletonDue = useSkeletonDelay(visit === null && errorMessage === null && !paused);
-  const start = visit === null ? null : withoutQuiet(visit.start, memory, touched);
+  const skeletonDue = useSkeletonDelay(!ready && errorMessage === null && !paused);
+  const start = ready ? withoutQuiet(visit.start, memory, touched) : null;
 
   const refetch = (): void => {
     void query.refetch();
