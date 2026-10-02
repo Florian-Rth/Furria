@@ -91,7 +91,7 @@ export const useCalendarLine = ({
   const choosing = !inert && (expanded || answer.holding);
 
   return {
-    stamp: toStampOf(entry, now, choosing ? null : previousStartsAt),
+    stamp: toStampOf(entry, now, previousStartsAt),
     running,
     meta: toEntryMeta(entry),
     tick: toCalendarTick(entry) ?? undefined,

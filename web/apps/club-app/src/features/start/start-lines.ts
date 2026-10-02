@@ -43,7 +43,6 @@ export interface StartLineView {
   tick: GroupTone | null;
   title: string;
   meta: string[];
-  aside: string | null;
   target: StartLineTarget;
   accessibleName: string;
   until: string;
@@ -59,7 +58,6 @@ export interface AnnouncementLineView {
   key: string;
   title: string;
   meta: string[];
-  day: string;
   initials: string;
   portrait: string | undefined;
   accessibleName: string;
@@ -83,11 +81,9 @@ const ISO_MONTH_START = 5;
 const ISO_MONTH_END = 7;
 const ISO_DAY_START = 8;
 const YESTERDAY = 1;
-const WEEKDAY_REACH_DAYS = 6;
 const ELEVEN = 11;
 const ROUND = 5;
 const SINGLE = 1;
-const WEEKDAYS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'] as const;
 const TODAY_WORD = 'heute';
 const YESTERDAY_WORD = 'gestern';
 const NAME_SEPARATOR = ', ';
@@ -147,9 +143,6 @@ export const formatPastDay = (isoDay: string, today: string): string => {
   if (daysAgo === YESTERDAY) {
     return YESTERDAY_WORD;
   }
-  if (daysAgo > YESTERDAY && daysAgo <= WEEKDAY_REACH_DAYS) {
-    return WEEKDAYS[day.getDay()] ?? formatDayMonth(isoDay);
-  }
 
   return formatDayMonth(isoDay);
 };
@@ -197,7 +190,7 @@ const groupTickOf = (mine: StartMine): GroupTone | null =>
   mine.subjectId === null ? null : toGroupTone(mine.subjectId, mine.groupTone);
 
 const newSince = (mine: StartMine, context: MineLineContext): string =>
-  `seit ${formatPastDay(mine.on, context.today)}`;
+  `neu seit ${formatPastDay(mine.on, context.today)}`;
 
 const nameOf = (mine: StartMine): string => mine.name ?? '';
 
@@ -206,57 +199,52 @@ const MINE_FACES: Record<StartMineKind, (mine: StartMine, context: MineLineConte
     anchor: iconAnchor('role'),
     tick: null,
     title: `Rolle ${nameOf(mine)}`,
-    meta: [],
-    aside: newSince(mine, context),
+    meta: [newSince(mine, context)],
     target: sheetTarget('role', mine.subjectId),
   }),
   newBoardSeat: (mine, context) => ({
     anchor: iconAnchor('board'),
     tick: null,
     title: `Vorstand: ${nameOf(mine)}`,
-    meta: [],
-    aside: newSince(mine, context),
+    meta: [newSince(mine, context)],
     target: sheetTarget('office', mine.subjectId),
   }),
   newGroupAdmin: (mine, context) => ({
     anchor: iconAnchor('group'),
     tick: groupTickOf(mine),
     title: `Gruppen-Admin ${nameOf(mine)}`,
-    meta: mine.function === null ? [] : [mine.function],
-    aside: newSince(mine, context),
+    meta: [...(mine.function === null ? [] : [mine.function]), newSince(mine, context)],
     target: groupTarget(mine.subjectId),
   }),
   newGroupMembership: (mine, context) => ({
     anchor: iconAnchor('group'),
     tick: groupTickOf(mine),
     title: `Gruppe ${nameOf(mine)}`,
-    meta: [],
-    aside: newSince(mine, context),
+    meta: [newSince(mine, context)],
     target: groupTarget(mine.subjectId),
   }),
   newKey: (mine, context) => ({
     anchor: iconAnchor('key'),
     tick: null,
     title: `Schlüssel ${nameOf(mine)}`,
-    meta: [],
-    aside: newSince(mine, context),
+    meta: [newSince(mine, context)],
     target: venueTarget(mine.subjectId, context.canReadClub),
   }),
   contactChangedByOther: (mine, context) => ({
     anchor: iconAnchor('info', 'info'),
     tick: null,
     title: 'Kontaktdaten geändert',
-    meta:
-      mine.changedBy === null ? [] : [`von ${mine.changedBy.firstName} ${mine.changedBy.lastName}`],
-    aside: formatPastDay(mine.on, context.today),
+    meta: [
+      ...(mine.changedBy === null ? [] : [`von ${mine.changedBy.firstName}`]),
+      formatPastDay(mine.on, context.today),
+    ],
     target: PROFILE_TARGET,
   }),
   membershipEnding: (mine) => ({
     anchor: iconAnchor('info', 'info'),
     tick: null,
     title: 'Mitgliedschaft endet',
-    meta: [],
-    aside: `am ${formatDayMonth(mine.on)}`,
+    meta: [`am ${formatDayMonth(mine.on)}`],
     target: PROFILE_TARGET,
   }),
   membershipPaused: (mine) => ({
@@ -267,7 +255,6 @@ const MINE_FACES: Record<StartMineKind, (mine: StartMine, context: MineLineConte
       mine.sessionStartYear === null
         ? []
         : [`Session ${sessionYearsLabelOf(mine.sessionStartYear)}`],
-    aside: null,
     target: PROFILE_TARGET,
   }),
   milestone: (mine, context) => {
@@ -279,7 +266,6 @@ const MINE_FACES: Record<StartMineKind, (mine: StartMine, context: MineLineConte
       tick: null,
       title: years === SINGLE ? 'Jahr seit deinem Beitritt' : 'Jahre seit deinem Beitritt',
       meta: [`Beitritt am ${formatFullDay(joinedOn)}`],
-      aside: null,
       target: PROFILE_TARGET,
     };
   },
@@ -288,10 +274,8 @@ const MINE_FACES: Record<StartMineKind, (mine: StartMine, context: MineLineConte
 const spokenLeadOf = (face: Pick<MineFace, 'anchor' | 'title'>): string =>
   face.anchor.kind === 'number' ? `${face.anchor.value} ${face.title}` : face.title;
 
-const spokenNameOf = (face: Pick<MineFace, 'anchor' | 'title' | 'meta' | 'aside'>): string =>
-  [spokenLeadOf(face), ...face.meta, ...(face.aside === null ? [] : [face.aside])].join(
-    NAME_SEPARATOR,
-  );
+const spokenNameOf = (face: Pick<MineFace, 'anchor' | 'title' | 'meta'>): string =>
+  [spokenLeadOf(face), ...face.meta].join(NAME_SEPARATOR);
 
 export const toMineLine = (mine: StartMine, context: MineLineContext): StartLineView => {
   const face = MINE_FACES[mine.kind](mine, context);
@@ -310,7 +294,6 @@ export const toGroupMomentLine = (moment: StartGroupMoment): StartLineView => {
     tick: toGroupTone(moment.groupId, moment.tone),
     title: `Jahre ${moment.name}`,
     meta: [`gegründet ${moment.foundedYear}`],
-    aside: null,
     target: groupTarget(moment.groupId),
   };
 
@@ -328,17 +311,16 @@ export const toAnnouncementLine = (
 ): AnnouncementLineView => {
   const { author } = announcement;
   const day = formatPastDay(toLocalIsoDay(announcement.publishedAt), toIsoDay(now));
-  const meta = author.officeName === null ? [] : [author.officeName];
+  const office = author.officeName === null ? [] : [author.officeName];
   const byline = `von ${author.firstName} ${author.lastName}`;
 
   return {
     key: itemKeyOf({ panel: 'announcements', ...announcement }),
     title: announcement.title,
-    meta,
-    day,
+    meta: [day, ...office],
     initials: toInitials(author.firstName, author.lastName),
     portrait: author.portraitUrl ?? undefined,
-    accessibleName: [announcement.title, day, byline, ...meta].join(NAME_SEPARATOR),
+    accessibleName: [announcement.title, day, byline, ...office].join(NAME_SEPARATOR),
     sheetId: toPeekId('start-announcements', announcement.announcementId),
   };
 };
@@ -354,13 +336,26 @@ export const toFootLabel = (hidden: number): string => `+${hidden} weitere`;
 export const toFacets = (texts: readonly string[]): KkDenseFacet[] =>
   texts.map((text) => ({ text }));
 
-export const toValidUntilLine = (validUntil: string | null): string | null =>
-  validUntil === null ? null : `Gültig bis ${formatFullDay(validUntil)}`;
+const BYLINE_SEPARATOR = ' · ';
+
+export const toAnnouncementByline = (announcement: StartAnnouncement, now: Date): string => {
+  const { author, validUntil } = announcement;
+
+  return [
+    `${author.firstName} ${author.lastName}`,
+    ...(author.officeName === null ? [] : [author.officeName]),
+    formatPastDay(toLocalIsoDay(announcement.publishedAt), toIsoDay(now)),
+    ...(validUntil === null ? [] : [`gültig bis ${formatDayMonth(validUntil)}`]),
+  ].join(BYLINE_SEPARATOR);
+};
+
+const venueFacetOf = (holdsKey: boolean, text: string): KkDenseFacet =>
+  holdsKey ? { text, icon: 'key', truncates: true } : { text, truncates: true };
 
 export const toEntryMeta = (entry: StartEntry): KkDenseFacet[] =>
   toEntryFacets(entry).map((facet) =>
-    facet.kind === 'venue' && facet.holdsKey
-      ? { text: toFacetText(facet), icon: 'key' }
+    facet.kind === 'venue'
+      ? venueFacetOf(facet.holdsKey, toFacetText(facet))
       : { text: toFacetText(facet) },
   );
 

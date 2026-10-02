@@ -15,12 +15,7 @@ export const AnnouncementsSheet: FC<AnnouncementsSheetProps> = ({ board }) => {
   const sheet = useAnnouncementsSheet(board);
 
   const blocks = sheet.blocks.map((block) => (
-    <AnnouncementBlock
-      key={block.announcement.announcementId}
-      announcement={block.announcement}
-      focused={block.focused}
-      ruled={block.ruled}
-    />
+    <AnnouncementBlock key={block.announcement.announcementId} block={block} />
   ));
 
   return (

@@ -14,14 +14,11 @@ export const StartLine: FC<StartLineInput> = (props) => {
       <KkDensePanel.Number value={line.anchor.value} festive={line.anchor.festive} />
     );
 
-  const aside = line.aside === null ? null : <KkDensePanel.Aside text={line.aside} />;
-
   return (
     <KkDensePanel.Line
       anchor={anchor}
       title={line.title}
       meta={meta}
-      trailing={aside}
       tick={tick}
       state={state}
       accessibleLabel={line.accessibleName}

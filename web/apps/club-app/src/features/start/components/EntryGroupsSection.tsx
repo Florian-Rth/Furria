@@ -6,7 +6,7 @@ import type { EntryGroupChip } from '../hooks/use-entry-sheet';
 const OWNER_TITLE = 'Veranstaltet von';
 const PARTICIPATING_TITLE = 'Mitwirkende Gruppen';
 const CLUB_LABEL = 'Verein';
-const CHIP_ROW = { gap: 0.75, flexWrap: 'wrap', minWidth: 0 } as const;
+const CHIP_ROW = { gap: 0.75, flexWrap: 'wrap', minWidth: 0, py: 0.25 } as const;
 
 interface EntryGroupsSectionProps {
   owner: EntryGroupChip | null;

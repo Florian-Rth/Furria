@@ -7,6 +7,7 @@ import {
   formatPastDay,
   isRoundYears,
   TO_DO_LABELS,
+  toAnnouncementByline,
   toAnnouncementLine,
   toCalendarTick,
   toEntryLineState,
@@ -15,7 +16,6 @@ import {
   toGroupMomentLine,
   toMineLine,
   toToDoLabel,
-  toValidUntilLine,
 } from './start-lines';
 
 const mine = (overrides: Partial<StartMine>): StartMine => ({
@@ -75,8 +75,8 @@ describe('formatPastDay', () => {
   it.each([
     ['2027-01-19', 'heute'],
     ['2027-01-18', 'gestern'],
-    ['2027-01-16', 'Sa'],
-    ['2027-01-13', 'Mi'],
+    ['2027-01-17', '17.1.'],
+    ['2027-01-13', '13.1.'],
     ['2027-01-12', '12.1.'],
     ['2026-12-31', '31.12.'],
   ])('names %s relative to Tuesday 19.1.2027 as %s', (isoDay, expected) => {
@@ -181,17 +181,18 @@ describe('toMineLine', () => {
     expect(toneless.tick).not.toBeNull();
   });
 
-  it('names the function of a new group admin and sets the since day aside', () => {
+  it('names the function of a new group admin before the day it is new since', () => {
     const line = toMineLine(
       mine({ kind: 'newGroupAdmin', subjectId: 4, function: 'Trainerin', on: '2027-01-18' }),
       MEMBER,
     );
 
-    expect(line.meta).toEqual(['Trainerin']);
-    expect(line.aside).toContain('gestern');
+    expect(line.meta).toHaveLength(2);
+    expect(line.meta[0]).toBe('Trainerin');
+    expect(line.meta[1]).toContain('gestern');
   });
 
-  it('names who changed her contact details and when', () => {
+  it('names who changed her contact details by first name before when', () => {
     const line = toMineLine(
       mine({
         kind: 'contactChangedByOther',
@@ -202,9 +203,10 @@ describe('toMineLine', () => {
       MEMBER,
     );
 
-    expect(line.meta).toHaveLength(1);
-    expect(line.meta[0]).toContain('Frank Weber');
-    expect(line.aside).toBe('12.1.');
+    expect(line.meta).toHaveLength(2);
+    expect(line.meta[0]).toContain('Frank');
+    expect(line.meta[0]).not.toContain('Weber');
+    expect(line.meta[1]).toBe('12.1.');
   });
 
   it('names the paused session', () => {
@@ -270,14 +272,14 @@ describe('toAnnouncementLine', () => {
   });
   const now = new Date(2027, 0, 19, 19, 50);
 
-  it('sets the day aside and names the office of the author', () => {
+  it('leads the meta with the day and names the office of the author', () => {
     const line = toAnnouncementLine(announcement('Schriftführerin'), now);
 
-    expect([line.day, line.meta]).toEqual(['gestern', ['Schriftführerin']]);
+    expect(line.meta).toEqual(['gestern', 'Schriftführerin']);
   });
 
-  it('leaves the meta empty when the author holds no office', () => {
-    expect(toAnnouncementLine(announcement(null), now).meta).toEqual([]);
+  it('names only the day when the author holds no office', () => {
+    expect(toAnnouncementLine(announcement(null), now).meta).toEqual(['gestern']);
   });
 
   it('falls back to initials and opens the sheet at this announcement', () => {
@@ -310,16 +312,24 @@ describe('toEntryMeta', () => {
     hint: null,
   };
 
-  it('marks the venue with the key when she holds one', () => {
+  it('marks the venue with the key when she holds one and lets its name truncate', () => {
     const [facet] = toEntryMeta(entry({ venue, viewerHoldsVenueKey: true }));
 
-    expect(facet).toEqual({ text: 'Sporthalle Am Ring', icon: 'key' });
+    expect(facet).toEqual({ text: 'Sporthalle Am Ring', icon: 'key', truncates: true });
   });
 
-  it('shows the bare venue without a key', () => {
+  it('shows the bare venue without a key and lets its name truncate', () => {
     const [facet] = toEntryMeta(entry({ venue }));
 
-    expect(facet).toEqual({ text: 'Sporthalle Am Ring' });
+    expect(facet).toEqual({ text: 'Sporthalle Am Ring', truncates: true });
+  });
+
+  it('keeps the run state whole', () => {
+    const [facet] = toEntryMeta(
+      entry({ venue, viewerRuns: { groupId: 6, function: 'Trainerin' } }),
+    );
+
+    expect(facet?.truncates).toBeUndefined();
   });
 });
 
@@ -376,11 +386,31 @@ describe('toEntryLineState', () => {
   });
 });
 
-describe('toValidUntilLine', () => {
+describe('toAnnouncementByline', () => {
+  const posted = (officeName: string | null, validUntil: string | null): StartAnnouncement => ({
+    announcementId: 12,
+    title: 'Busfahrt zum Rosenmontagsumzug',
+    body: 'Abfahrt am Rathaus.',
+    publishedAt: '2027-01-16T09:00:00Z',
+    validUntil,
+    author: {
+      personId: 1,
+      firstName: 'Karin',
+      lastName: 'Albrecht',
+      portraitUrl: null,
+      officeName,
+    },
+  });
+  const now = new Date(2027, 0, 19, 19, 50);
+
   it.each([
-    [null, null],
-    ['2027-02-09', 'Gültig bis 9.2.2027'],
-  ])('formats %s', (validUntil, expected) => {
-    expect(toValidUntilLine(validUntil)).toBe(expected);
+    {
+      officeName: 'Schriftführerin',
+      validUntil: '2027-02-08',
+      expected: 'Karin Albrecht · Schriftführerin · 16.1. · gültig bis 8.2.',
+    },
+    { officeName: null, validUntil: null, expected: 'Karin Albrecht · 16.1.' },
+  ])('formats the byline of an Aushang as $expected', ({ officeName, validUntil, expected }) => {
+    expect(toAnnouncementByline(posted(officeName, validUntil), now)).toBe(expected);
   });
 });
