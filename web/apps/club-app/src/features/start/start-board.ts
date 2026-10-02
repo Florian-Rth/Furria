@@ -156,6 +156,9 @@ export const nextVisitHold = (hold: VisitHold, fresh: Start | undefined): VisitH
   return { ...hold, source: fresh, visit: reconcileFrozenVisit(hold.visit, fresh, hold.touched) };
 };
 
+export const sheetHeldVisitHold = (hold: VisitHold, sheetOpen: boolean): VisitHold =>
+  sheetOpen && !hold.frozen && hold.visit !== null ? { ...hold, frozen: true } : hold;
+
 export const touchedVisitHold = (hold: VisitHold, key: string): VisitHold =>
   hold.touched.has(key) && hold.frozen
     ? hold

@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import type { Start, StartEntry, StartGroupMoment, StartMine, StartPanel } from './schemas';
+import type {
+  Start,
+  StartAnnouncement,
+  StartEntry,
+  StartGroupMoment,
+  StartMine,
+  StartPanel,
+} from './schemas';
 import type { StartScreenInput, VisitHold } from './start-board';
 import {
   byStartsAt,
@@ -7,6 +14,7 @@ import {
   isVisitOver,
   nextVisitHold,
   openVisitHold,
+  sheetHeldVisitHold,
   startScreenOf,
   toCalendarRows,
   toShownCount,
@@ -285,5 +293,44 @@ describe('visit hold', () => {
     const touched = touchedVisitHold(openVisitHold(first), 'calendar:1');
 
     expect(touchedVisitHold(touched, 'calendar:1')).toBe(touched);
+  });
+
+  it.each([
+    { label: 'an open sheet freezes a live visit', sheetOpen: true, data: true, frozen: true },
+    { label: 'a closed sheet leaves it live', sheetOpen: false, data: true, frozen: false },
+    { label: 'an open sheet waits for data', sheetOpen: true, data: false, frozen: false },
+  ])('$label', ({ sheetOpen, data, frozen }) => {
+    const hold = openVisitHold(data ? first : undefined);
+
+    expect(sheetHeldVisitHold(hold, sheetOpen).frozen).toBe(frozen);
+  });
+
+  it('keeps the Aushänge she is reading when marking them seen empties the panel', () => {
+    const announcement: StartAnnouncement = {
+      announcementId: 7,
+      title: 'Helfer gesucht',
+      body: 'Wer hilft beim Hallenaufbau?',
+      publishedAt: '2027-01-18T09:00:00Z',
+      validUntil: null,
+      author: {
+        personId: 3,
+        firstName: 'Frank',
+        lastName: 'Weber',
+        portraitUrl: null,
+        officeName: 'Präsident',
+      },
+    };
+    const reading = start([
+      calendar([entry(1, '2027-01-21T17:00:00Z')]),
+      { kind: 'announcements', shownCount: 1, announcements: [announcement] },
+    ]);
+    const seen = start([calendar([entry(1, '2027-01-21T17:00:00Z')])]);
+
+    const hold = nextVisitHold(sheetHeldVisitHold(openVisitHold(reading), true), seen);
+
+    expect(hold.visit?.start.panels.map((panel) => panel.kind)).toEqual([
+      'calendar',
+      'announcements',
+    ]);
   });
 });

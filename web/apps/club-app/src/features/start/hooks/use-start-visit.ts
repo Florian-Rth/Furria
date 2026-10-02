@@ -1,7 +1,14 @@
+import { useKkSheet } from '@furria/ui';
 import { useEffect, useState } from 'react';
 import type { Start } from '../schemas';
 import type { VisitHold } from '../start-board';
-import { isVisitOver, nextVisitHold, openVisitHold, touchedVisitHold } from '../start-board';
+import {
+  isVisitOver,
+  nextVisitHold,
+  openVisitHold,
+  sheetHeldVisitHold,
+  touchedVisitHold,
+} from '../start-board';
 import type { StartVisit } from '../start-visit';
 
 export interface StartVisitState {
@@ -16,10 +23,13 @@ const LISTENING: AddEventListenerOptions = { capture: true, passive: true };
 const frozenHold = (hold: VisitHold): VisitHold => (hold.frozen ? hold : { ...hold, frozen: true });
 
 export const useStartVisit = (fresh: Start | undefined): StartVisitState => {
+  const { openSheetId } = useKkSheet();
   const [hold, setHold] = useState<VisitHold>(() => openVisitHold(fresh));
+  const refreshed = fresh === hold.source ? hold : nextVisitHold(hold, fresh);
+  const next = sheetHeldVisitHold(refreshed, openSheetId !== null);
 
-  if (fresh !== hold.source) {
-    setHold(nextVisitHold(hold, fresh));
+  if (next !== hold) {
+    setHold(next);
   }
 
   useEffect(() => {
