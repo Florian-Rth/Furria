@@ -3,9 +3,10 @@ import type { RefObject } from 'react';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { kkTokens } from '../../../tokens';
 import { useKkShellScroll } from '../../internal/logic/shell-scroll';
+import { DOCK_REPLAY_EVENT } from './confetti-dock-context';
 import type { DockGeometry } from './dock-flight';
 import { DOCK_TRAVEL, dockFlightAt, dockProgressAt, dockStageAt, landingDue } from './dock-flight';
-import { measureDock } from './measure-dock';
+import { DOCK_HEADER_SELECTOR, dockHeadlineTextOf, measureDock } from './measure-dock';
 import type { DockValues } from './use-dock-values';
 import { useDockValues } from './use-dock-values';
 
@@ -14,6 +15,11 @@ const { headerDrift } = kkTokens.shell;
 const SQUASH_SECONDS = 0.46;
 const SQUASH_Y = [1, 0.78, 1.1, 0.97, 1];
 const SQUASH_X = [1, 1.1, 0.96, 1.01, 1];
+const HEADLINE_CHANGES: MutationObserverInit = {
+  characterData: true,
+  childList: true,
+  subtree: true,
+};
 
 export interface Confetti {
   slotRef: RefObject<HTMLDivElement | null>;
@@ -29,6 +35,7 @@ export const useConfetti = (): Confetti => {
   const geometryRef = useRef<DockGeometry | null>(null);
   const previousRef = useRef(0);
   const landedRef = useRef(false);
+  const headlineTextRef = useRef<string | null>(null);
   const [geometry, setGeometry] = useState<DockGeometry | null>(null);
   const [landingKey, setLandingKey] = useState(0);
 
@@ -85,17 +92,50 @@ export const useConfetti = (): Confetti => {
     follow(scrollY.get());
   });
 
+  const replayLanding = useEffectEvent((): void => {
+    if (geometryRef.current === null) {
+      remeasure();
+    }
+
+    land();
+  });
+
+  const followHeadline = useEffectEvent((): void => {
+    const text = dockHeadlineTextOf();
+
+    if (text !== headlineTextRef.current) {
+      headlineTextRef.current = text;
+      refresh();
+    }
+  });
+
   useMotionValueEvent(scrollY, 'change', follow);
 
   useEffect(() => {
     let alive = true;
+    const slot = slotRef.current;
+    const header = document.querySelector(DOCK_HEADER_SELECTOR);
+    const headlineWatch = new MutationObserver(() => {
+      followHeadline();
+    });
 
     const onResize = (): void => {
       refresh();
     };
 
+    const onReplay = (): void => {
+      replayLanding();
+    };
+
+    headlineTextRef.current = dockHeadlineTextOf();
     settle();
     window.addEventListener('resize', onResize);
+    slot?.addEventListener(DOCK_REPLAY_EVENT, onReplay);
+
+    if (header !== null) {
+      headlineWatch.observe(header, HEADLINE_CHANGES);
+    }
+
     void document.fonts.ready.then(() => {
       if (alive) {
         refresh();
@@ -104,7 +144,9 @@ export const useConfetti = (): Confetti => {
 
     return () => {
       alive = false;
+      headlineWatch.disconnect();
       window.removeEventListener('resize', onResize);
+      slot?.removeEventListener(DOCK_REPLAY_EVENT, onReplay);
     };
   }, []);
 

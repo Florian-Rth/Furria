@@ -4,6 +4,7 @@ import type { FC } from 'react';
 import { useReducedMotion } from '../../../internal/use-reduced-motion';
 import type { KkHandoverHeaderProps } from '../../handover-stage';
 import { KkShellHeader } from '../../internal/layout/KkShellHeader';
+import { ConfettiDockContext, useConfettiDockLink } from './confetti-dock-context';
 import { useDockHeaderFade } from './use-dock-header-fade';
 
 const HEADER_GAP = 1.25;
@@ -12,6 +13,7 @@ const HEADLINE_VISIBILITY = '--kk-dock-headline';
 export const ConfettiHeader: FC<KkHandoverHeaderProps> = ({ kind, children }) => {
   const reducedMotion = useReducedMotion();
   const fade = useDockHeaderFade();
+  const dock = useConfettiDockLink();
 
   const headerStyle = {
     opacity: fade.opacity,
@@ -28,17 +30,19 @@ export const ConfettiHeader: FC<KkHandoverHeaderProps> = ({ kind, children }) =>
   }
 
   return (
-    <motion.div data-kk-dock-header style={headerStyle}>
-      <Stack
-        sx={{
-          minWidth: 0,
-          gap: HEADER_GAP,
-          pointerEvents: 'none',
-          '& [data-kk-screen-header-title]': { opacity: `var(${HEADLINE_VISIBILITY})` },
-        }}
-      >
-        {children}
-      </Stack>
-    </motion.div>
+    <ConfettiDockContext.Provider value={dock}>
+      <motion.div data-kk-dock-header style={headerStyle}>
+        <Stack
+          sx={{
+            minWidth: 0,
+            gap: HEADER_GAP,
+            pointerEvents: 'none',
+            '& [data-kk-screen-header-title]': { opacity: `var(${HEADLINE_VISIBILITY})` },
+          }}
+        >
+          {children}
+        </Stack>
+      </motion.div>
+    </ConfettiDockContext.Provider>
   );
 };

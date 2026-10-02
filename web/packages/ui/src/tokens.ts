@@ -223,6 +223,21 @@ export const kkTokens = {
     label: 'opacity 180ms ease-out, transform 180ms ease-out, color 180ms ease-out',
     rowHighlightSeconds,
     rowHighlight: `kk-row-highlight ${rowHighlightSeconds}s ease-out forwards`,
+    flap: {
+      faceMs: 110,
+      finalMs: 230,
+      staggerMs: 55,
+      reboundDeg: 14,
+      maxConcurrent: 4,
+      maxLive: 24,
+      maxCells: 12,
+    },
+    greeting: {
+      startMs: 140,
+      hingeMs: 1200,
+      budgetMs: 1500,
+      holdMs: 360,
+    },
   },
   font: {
     display: "'Anton', sans-serif",
