@@ -3,7 +3,7 @@ import { useKkSheetCommands } from '@furria/ui';
 import type { StartPanelOf } from '../start-board';
 import { hiddenCountOf, shownItemsOf } from '../start-board';
 import type { AnnouncementLineView } from '../start-lines';
-import { toAnnouncementLine, toFacets } from '../start-lines';
+import { toAnnouncementLine, toAnnouncementLineState, toFacets } from '../start-lines';
 import { START_ANNOUNCEMENTS_SHEET } from '../start-sheets';
 import { useAnnouncementsSeen } from './use-announcements-seen';
 import type { PanelFoot } from './use-panel-foot';
@@ -40,7 +40,7 @@ export const useAnnouncementsPanel = (
       return {
         line,
         meta: toFacets(line.meta),
-        state: read || board.dimmedKeys.has(line.key) ? 'dimmed' : 'plain',
+        state: toAnnouncementLineState(read, board.dimmedKeys.has(line.key)),
         open: () => {
           sheet.open(line.sheetId);
         },
@@ -51,6 +51,6 @@ export const useAnnouncementsPanel = (
   return {
     rows,
     receipt: read ? RECEIPT_WORD : undefined,
-    foot: read ? null : foot,
+    foot,
   };
 };
