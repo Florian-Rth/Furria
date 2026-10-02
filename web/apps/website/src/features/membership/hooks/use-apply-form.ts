@@ -39,7 +39,7 @@ export const toApplyErrorMessage = (error: Error | null): string | null => {
   return 'Wir konnten den Antrag gerade nicht entgegennehmen.';
 };
 
-export const useApplyForm = (prefilledGroupInterests: string[]): ApplyFormState => {
+export const useApplyForm = (prefilledGroupInterests: number[]): ApplyFormState => {
   const [today] = useState(() => new Date());
   const [submittedFirstName, setSubmittedFirstName] = useState<string | null>(null);
   const mutation = useSubmitMembershipApplicationMutation();

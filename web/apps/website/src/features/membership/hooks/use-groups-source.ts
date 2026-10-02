@@ -1,13 +1,13 @@
-import type { Group } from '@/lib/seed/groups';
-import { useGroupsQuery } from '../api';
+import { usePublicGroupsQuery } from '@/lib/public-groups/api';
+import type { PublicGroup } from '@/lib/public-groups/schemas';
 
 export type GroupsSource =
   | { status: 'loading' }
   | { status: 'error' }
-  | { status: 'ready'; groups: Group[] };
+  | { status: 'ready'; groups: PublicGroup[] };
 
 export const resolveGroupsSource = (
-  groups: Group[] | undefined,
+  groups: PublicGroup[] | undefined,
   hasFailed: boolean,
 ): GroupsSource => {
   if (groups !== undefined) {
@@ -17,11 +17,11 @@ export const resolveGroupsSource = (
   return hasFailed ? { status: 'error' } : { status: 'loading' };
 };
 
-export const selectLoadedGroups = (source: GroupsSource): Group[] =>
+export const selectLoadedGroups = (source: GroupsSource): PublicGroup[] =>
   source.status === 'ready' ? source.groups : [];
 
 export const useGroupsSource = (): GroupsSource => {
-  const { data, isError } = useGroupsQuery();
+  const { data, isError } = usePublicGroupsQuery();
 
   return resolveGroupsSource(data, isError);
 };

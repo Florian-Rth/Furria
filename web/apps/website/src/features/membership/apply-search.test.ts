@@ -26,41 +26,17 @@ describe('ApplySearchSchema', () => {
 });
 
 describe('parseGroupInterestsParam', () => {
-  it('reads the comma-separated ids the Matcher wrote', () => {
-    expect(parseGroupInterestsParam('tanzgarde,organisation')).toEqual([
-      'tanzgarde',
-      'organisation',
-    ]);
-  });
-
-  it('reads a single id', () => {
-    expect(parseGroupInterestsParam('kindergarde')).toEqual(['kindergarde']);
-  });
-
-  it('prefills nothing when nobody handed anything over', () => {
-    expect(parseGroupInterestsParam(undefined)).toEqual([]);
-  });
-
-  it('prefills nothing for an empty or comma-only param', () => {
-    expect(parseGroupInterestsParam('')).toEqual([]);
-    expect(parseGroupInterestsParam(',,,')).toEqual([]);
-  });
-
-  it('trims the ids and drops the gaps between stray commas', () => {
-    expect(parseGroupInterestsParam(' tanzgarde , , organisation ')).toEqual([
-      'tanzgarde',
-      'organisation',
-    ]);
-  });
-
-  it('keeps a repeated id only once', () => {
-    expect(parseGroupInterestsParam('tanzgarde,tanzgarde')).toEqual(['tanzgarde']);
-  });
-
-  it('keeps the order the Matcher ranked them in', () => {
-    expect(parseGroupInterestsParam('organisation,tanzgarde')).toEqual([
-      'organisation',
-      'tanzgarde',
-    ]);
+  it.each([
+    ['comma-separated ids', '4,9', [4, 9]],
+    ['a single id', '4', [4]],
+    ['nothing handed over', undefined, []],
+    ['an empty param', '', []],
+    ['a comma-only param', ',,,', []],
+    ['stray spaces and commas', ' 4 , , 9 ', [4, 9]],
+    ['a repeated id', '4,4', [4]],
+    ['the ranked order', '9,4', [9, 4]],
+    ['ids that are no group ids', 'tanzgarde,0,-3,1.5,07', []],
+  ])('reads %s', (_, raw, expected) => {
+    expect(parseGroupInterestsParam(raw)).toEqual(expected);
   });
 });
