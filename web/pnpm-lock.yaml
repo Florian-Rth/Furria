@@ -245,6 +245,9 @@ catalogs:
     '@vitejs/plugin-react':
       specifier: 6.0.3
       version: 6.0.3
+    altcha:
+      specifier: 3.2.4
+      version: 3.2.4
     babel-plugin-react-compiler:
       specifier: 1.0.0
       version: 1.0.0
@@ -422,6 +425,9 @@ importers:
       '@tanstack/react-router':
         specifier: 'catalog:'
         version: 1.170.18(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      altcha:
+        specifier: 'catalog:'
+        version: 3.2.4
       motion:
         specifier: 'catalog:'
         version: 12.42.2(@emotion/is-prop-valid@1.4.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -1628,6 +1634,9 @@ packages:
     resolution: {integrity: sha512-5AXjrcMClTryPe9LgZrygpB1lj7s0S9E0+W+AHaVKAVyHanafK86iPSvG5xHVSp/jC+VH1UXu0TAEmY279xH7A==}
     engines: {node: '>=14.6'}
 
+  altcha@3.2.4:
+    resolution: {integrity: sha512-+PN+MTzDtrXn7SBkliE+EYaojwLLS2rTtyk/O/wkQWNwl7PI91fXB8yiNa07Xy8b6rGD05oB8zpMfK/oEx00Og==}
+
   ansi-regex@5.0.1:
     resolution: {integrity: sha512-quJQXlTSUGL2LH9SUXo8VwsY4soanhgo6LNSm84E1LBcE8s3O0wpdiRzyR9z/ZZJMlMWv37qOOb9pdJlMUEKFQ==}
     engines: {node: '>=8'}
@@ -2064,6 +2073,9 @@ packages:
   happy-dom@20.10.6:
     resolution: {integrity: sha512-6QD0ilzDDt93tX44y8tbmZdAcdTRYDhUP+Asgi6pC8Pp5IA3cvaZGyoVN/EGtlq9ziT65iPuBBn3ASLr6hCgVw==}
     engines: {node: '>=20.0.0'}
+
+  hash-wasm@4.12.0:
+    resolution: {integrity: sha512-+/2B2rYLb48I/evdOIhP+K/DD2ca2fgBjp6O+GBEnCDk2e4rpeXIK8GvIyRPjTezgmWn9gmKwkQjjx6BtqDHVQ==}
 
   hasown@2.0.4:
     resolution: {integrity: sha512-T2UbfbBEF32wiepXIsMlTW9+dDYC6wMh/t/vYA4tuOMKqWz/n3vr1NFSxQiyP+zk2mXsoMA/i/7qV6LKut1t1A==}
@@ -4094,6 +4106,10 @@ snapshots:
 
   '@xmldom/xmldom@0.9.12': {}
 
+  altcha@3.2.4:
+    dependencies:
+      hash-wasm: 4.12.0
+
   ansi-regex@5.0.1: {}
 
   ansi-styles@4.3.0:
@@ -4482,6 +4498,8 @@ snapshots:
       - bufferutil
       - utf-8-validate
     optional: true
+
+  hash-wasm@4.12.0: {}
 
   hasown@2.0.4:
     dependencies:

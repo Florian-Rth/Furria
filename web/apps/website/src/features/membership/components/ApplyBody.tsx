@@ -8,8 +8,8 @@ interface ApplyBodyProps {
 }
 
 export const ApplyBody: FC<ApplyBodyProps> = ({ state }) => {
-  if (state.submittedFirstName !== null) {
-    return <ApplyConfirmation firstName={state.submittedFirstName} />;
+  if (state.submitted !== null) {
+    return <ApplyConfirmation application={state.submitted} />;
   }
 
   return <ApplyFormSection state={state} />;

@@ -4,7 +4,6 @@ import {
   buildAnsweredSummary,
   buildProgressLabel,
   buildReasonAnswerLine,
-  joinGroupNames,
   resolveRecruitingBadge,
 } from './matcher-content';
 
@@ -23,16 +22,6 @@ describe('buildAnsweredSummary', () => {
   it('reports the answers given, or says outright that there were none', () => {
     expect(buildAnsweredSummary(9, 11)).toBe('Du hast 9 von 11 Fragen beantwortet.');
     expect(buildAnsweredSummary(0, 11)).toBe('Du hast jede Frage übersprungen.');
-  });
-});
-
-describe('joinGroupNames', () => {
-  it('joins the names the way German writes a list', () => {
-    expect(joinGroupNames(['Tanzgarde'])).toBe('Tanzgarde');
-    expect(joinGroupNames(['Tanzgarde', 'Elferrat'])).toBe('Tanzgarde und Elferrat');
-    expect(joinGroupNames(['Tanzgarde', 'Elferrat', 'Organisation'])).toBe(
-      'Tanzgarde, Elferrat und Organisation',
-    );
   });
 });
 

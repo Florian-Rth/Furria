@@ -117,13 +117,6 @@ describe('selectMatcherResult', () => {
     expect(ranking.excluded[0]?.reason).toContain('12 oder älter');
   });
 
-  it('hands the application the best groups and says which ones', () => {
-    const ranking = rankingFor(answered);
-
-    expect(ranking.applyHref).toBe('/join/apply?groups=alpha,beta,delta');
-    expect(ranking.handoffNote).toContain('ALPHA, BETA und DELTA');
-  });
-
   it('asks for at least one answer instead of ranking nothing', () => {
     expect(resultFor({}).kind).toBe('unanswered');
     expect(resultFor({ 'age-band': 'old' }).kind).toBe('unanswered');

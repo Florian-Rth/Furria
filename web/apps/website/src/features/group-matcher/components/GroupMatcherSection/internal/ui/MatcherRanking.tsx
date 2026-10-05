@@ -1,9 +1,10 @@
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import { Link as RouterLink } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { ClubMailButton } from '@/components/ClubMailButton';
-import { matcherResultLabels } from '@/features/group-matcher/matcher-content';
+import { matcherApplyHref, matcherResultLabels } from '@/features/group-matcher/matcher-content';
 import { MatcherRankList } from '../layout/MatcherRankList';
 import { MatcherResultActions } from '../layout/MatcherResultActions';
 import type { MatcherRankingView } from '../logic/matcher-result';
@@ -38,16 +39,19 @@ export const MatcherRanking: FC<MatcherRankingProps> = ({ view, summary }) => (
     <MatcherExcludedList excluded={view.excluded} />
     <Stack sx={{ gap: 1.5 }}>
       <MatcherResultActions>
-        <Button href={view.applyHref} variant="contained" color="primary" size="large">
+        <Button
+          component={RouterLink}
+          to={matcherApplyHref}
+          variant="contained"
+          color="primary"
+          size="large"
+        >
           {matcherResultLabels.applyCta}
         </Button>
         <ClubMailButton variant="outlined" size="large">
           {matcherResultLabels.askCta}
         </ClubMailButton>
       </MatcherResultActions>
-      <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-        {view.handoffNote}
-      </Typography>
       <Typography variant="caption" sx={{ color: 'text.secondary' }}>
         {matcherResultLabels.answersKeptHint}
       </Typography>

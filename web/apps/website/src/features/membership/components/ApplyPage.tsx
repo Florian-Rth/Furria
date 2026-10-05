@@ -3,12 +3,8 @@ import type { FC } from 'react';
 import { useApplyForm } from '@/features/membership/hooks/use-apply-form';
 import { ApplyBody } from './ApplyBody';
 
-interface ApplyPageProps {
-  prefilledGroupInterests: number[];
-}
-
-export const ApplyPage: FC<ApplyPageProps> = ({ prefilledGroupInterests }) => {
-  const state = useApplyForm(prefilledGroupInterests);
+export const ApplyPage: FC = () => {
+  const state = useApplyForm();
 
   return (
     <PageLayout>

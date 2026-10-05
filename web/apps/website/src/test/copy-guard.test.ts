@@ -12,9 +12,15 @@ import {
   deriveTicketPanelNote,
 } from '@/features/events/ticket-panel-display';
 import * as applyContent from '@/features/membership/apply-content';
+import {
+  buildApplyThanksText,
+  buildBelowAgeOfConsentMessage,
+} from '@/features/membership/apply-content';
 import * as closingContent from '@/features/membership/closing-content';
+import * as confirmationContent from '@/features/membership/confirmation-content';
 import * as contactContent from '@/features/membership/contact-content';
 import * as membershipFaqContent from '@/features/membership/faq-content';
+import { buildJoinFaq } from '@/features/membership/faq-content';
 import * as joinContent from '@/features/membership/join-content';
 import * as stepsContent from '@/features/membership/steps-content';
 import type { Event, EventFacts } from '@/lib/seed/events';
@@ -44,6 +50,7 @@ const TICKET_COPY = {
 const MEMBERSHIP_COPY = {
   'apply-content': applyContent,
   'closing-content': closingContent,
+  'confirmation-content': confirmationContent,
   'contact-content': contactContent,
   'membership/faq-content': membershipFaqContent,
   'join-content': joinContent,
@@ -53,6 +60,12 @@ const MEMBERSHIP_COPY = {
 const GROUPS_COPY = {
   'groups-content': clubGroupsContent,
 };
+
+const derivedMembershipCopy = (): string[] => [
+  ...[16, null].flatMap((ageOfConsent) => buildJoinFaq(ageOfConsent).map((entry) => entry.answer)),
+  buildBelowAgeOfConsentMessage(16),
+  buildApplyThanksText('lena.brandt@example.de'),
+];
 
 const copyOf = (modules: Record<string, object>): [string, string][] =>
   Object.entries(modules).map(([name, module]) => [name, JSON.stringify(module)]);
@@ -132,6 +145,12 @@ describe('the ticket exchange concept copy', () => {
 describe('the membership copy', () => {
   it.each(copyOf(MEMBERSHIP_COPY))('frames no undecided membership fact in %s', (_name, copy) => {
     expect(copy).not.toMatch(UNDECIDED_MEMBERSHIP_FRAMING);
+  });
+
+  it('frames no undecided membership fact in the copy it derives from the club', () => {
+    for (const copy of derivedMembershipCopy()) {
+      expect(copy).not.toMatch(UNDECIDED_MEMBERSHIP_FRAMING);
+    }
   });
 });
 

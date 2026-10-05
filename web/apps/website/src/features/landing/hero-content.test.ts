@@ -28,6 +28,7 @@ describe('buildHeroStats', () => {
       facebookUrl: null,
       memberCount: 183,
       groupCount: 7,
+      ageOfConsent: 16,
       session,
     };
 
@@ -44,6 +45,7 @@ describe('buildHeroStats', () => {
       facebookUrl: null,
       memberCount: 183,
       groupCount: 7,
+      ageOfConsent: 16,
       session,
     };
 

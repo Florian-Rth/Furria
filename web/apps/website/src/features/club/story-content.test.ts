@@ -18,6 +18,7 @@ describe('buildStoryStats', () => {
       facebookUrl: null,
       memberCount: 183,
       groupCount: 0,
+      ageOfConsent: 16,
       session,
     };
 
@@ -34,6 +35,7 @@ describe('buildStoryStats', () => {
       facebookUrl: null,
       memberCount: 7,
       groupCount: 3,
+      ageOfConsent: 16,
       session,
     };
 

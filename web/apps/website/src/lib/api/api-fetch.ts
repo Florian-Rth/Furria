@@ -1,5 +1,6 @@
 import type { ZodType } from 'zod';
 import { readApiBaseUrl } from '@/lib/runtime-config';
+import { readFieldFailures } from './api-failures';
 import { ApiError, RequestBlockedError } from './errors';
 
 export type JsonBody = string | number | boolean | null | JsonBody[] | { [key: string]: JsonBody };
@@ -39,7 +40,7 @@ export const apiFetch = async <TResponse>(
   const response = await fetchOrBlocked(url, init);
 
   if (!response.ok) {
-    throw new ApiError(response.status);
+    throw new ApiError(response.status, await readFieldFailures(response));
   }
 
   return schema.parse(await response.json());

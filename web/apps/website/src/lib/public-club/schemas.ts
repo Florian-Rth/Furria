@@ -17,6 +17,7 @@ export const PublicClubSchema = z.object({
   facebookUrl: z.string().nullable(),
   memberCount: z.number().int().nonnegative(),
   groupCount: z.number().int().nonnegative(),
+  ageOfConsent: z.number().int().positive(),
   session: PublicClubSessionSchema,
 });
 

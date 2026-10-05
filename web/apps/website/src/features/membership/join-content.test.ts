@@ -17,6 +17,7 @@ describe('buildJoinStats', () => {
       facebookUrl: null,
       memberCount: 183,
       groupCount: 7,
+      ageOfConsent: 16,
       session,
     };
 

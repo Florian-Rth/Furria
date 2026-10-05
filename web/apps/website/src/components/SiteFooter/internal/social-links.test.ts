@@ -11,6 +11,7 @@ describe('buildSocialLinks', () => {
     facebookUrl: null,
     memberCount: 0,
     groupCount: 0,
+    ageOfConsent: 16,
     session: { startYear: 2026, label: '2026/27', motto: null },
   };
 

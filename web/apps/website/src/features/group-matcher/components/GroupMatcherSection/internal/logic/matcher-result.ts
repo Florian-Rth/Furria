@@ -1,10 +1,8 @@
-import { buildApplyHref, selectHandoffGroups } from '@/features/group-matcher/apply-handoff';
 import type { MatchReason } from '@/features/group-matcher/match-reasons';
 import { buildMatchReasons } from '@/features/group-matcher/match-reasons';
 import type { MatcherRecruitingBadge } from '@/features/group-matcher/matcher-content';
 import {
   buildExclusionReason,
-  buildHandoffNote,
   resolveRecruitingBadge,
 } from '@/features/group-matcher/matcher-content';
 import type { MatcherAnswers } from '@/features/group-matcher/schemas';
@@ -40,8 +38,6 @@ export interface MatcherRankingView {
   top: MatcherMatchView;
   rest: MatcherMatchView[];
   excluded: MatcherExclusionView[];
-  applyHref: string;
-  handoffNote: string;
 }
 
 export type MatcherResultView = MatcherUnansweredView | MatcherEmptyView | MatcherRankingView;
@@ -85,14 +81,10 @@ export const selectMatcherResult = (
     return { kind: 'unanswered' };
   }
 
-  const handoffGroups = selectHandoffGroups(outcome.matches);
-
   return {
     kind: 'ranking',
     top,
     rest,
     excluded: toExclusionViews(outcome.excluded),
-    applyHref: buildApplyHref(handoffGroups.map((group) => group.id)),
-    handoffNote: buildHandoffNote(handoffGroups.map((group) => group.name)),
   };
 };

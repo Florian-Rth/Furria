@@ -32,17 +32,17 @@ const subjectOf = (href: string): string => {
 
 describe('buildFallbackMailHref', () => {
   it('addresses the club channel', () => {
-    expect(buildFallbackMailHref(CLUB_EMAIL, values, [])).toContain(`mailto:${CLUB_EMAIL}?`);
+    expect(buildFallbackMailHref(CLUB_EMAIL, values)).toContain(`mailto:${CLUB_EMAIL}?`);
   });
 
   it('names the applicant in the subject so nobody has to open the mail to sort it', () => {
-    expect(subjectOf(buildFallbackMailHref(CLUB_EMAIL, values, []))).toBe(
+    expect(subjectOf(buildFallbackMailHref(CLUB_EMAIL, values))).toBe(
       'Beitrittsantrag – Lena Brandt',
     );
   });
 
   it('carries every entered field so nothing has to be retyped', () => {
-    const body = bodyOf(buildFallbackMailHref(CLUB_EMAIL, values, []));
+    const body = bodyOf(buildFallbackMailHref(CLUB_EMAIL, values));
 
     expect(body).toContain('Vorname: Lena');
     expect(body).toContain('Nachname: Brandt');
@@ -53,57 +53,35 @@ describe('buildFallbackMailHref', () => {
   });
 
   it('spells the birth date out in German', () => {
-    expect(bodyOf(buildFallbackMailHref(CLUB_EMAIL, values, []))).toContain(
+    expect(bodyOf(buildFallbackMailHref(CLUB_EMAIL, values))).toContain(
       'Geburtsdatum: 14. März 1994',
     );
   });
 
   it('keeps an unusable birth date as it was typed', () => {
-    const body = bodyOf(buildFallbackMailHref(CLUB_EMAIL, { ...values, birthDate: '' }, []));
+    const body = bodyOf(buildFallbackMailHref(CLUB_EMAIL, { ...values, birthDate: '' }));
 
     expect(body).not.toContain('Geburtsdatum:');
   });
 
   it('leaves out what was not filled in', () => {
-    const body = bodyOf(buildFallbackMailHref(CLUB_EMAIL, values, []));
+    const body = bodyOf(buildFallbackMailHref(CLUB_EMAIL, values));
 
     expect(body).not.toContain('Telefon:');
-    expect(body).not.toContain('Gruppen');
-    expect(body).not.toContain('Vertretung');
-  });
-
-  it('lists the groups by name, not by id', () => {
-    const body = bodyOf(buildFallbackMailHref(CLUB_EMAIL, values, ['Tanzgarde', 'Organisation']));
-
-    expect(body).toContain('Gruppen-Interessen: Tanzgarde, Organisation');
-  });
-
-  it('carries the guardian when one was entered', () => {
-    const minor = {
-      ...values,
-      birthDate: '2015-05-04',
-      guardianName: 'Katrin Brandt',
-      guardianPhone: '0170 7654321',
-    };
-    const body = bodyOf(buildFallbackMailHref(CLUB_EMAIL, minor, []));
-
-    expect(body).toContain('Name der gesetzlichen Vertretung: Katrin Brandt');
-    expect(body).toContain('Telefon der gesetzlichen Vertretung: 0170 7654321');
-    expect(body).not.toContain('E-Mail der gesetzlichen Vertretung:');
   });
 
   it('records that consent was given, and only then', () => {
-    expect(bodyOf(buildFallbackMailHref(CLUB_EMAIL, values, []))).toContain(
+    expect(bodyOf(buildFallbackMailHref(CLUB_EMAIL, values))).toContain(
       'Satzung und Datenschutzhinweise gelesen: ja',
     );
-    expect(
-      bodyOf(buildFallbackMailHref(CLUB_EMAIL, { ...values, consent: false }, [])),
-    ).not.toContain('Satzung');
+    expect(bodyOf(buildFallbackMailHref(CLUB_EMAIL, { ...values, consent: false }))).not.toContain(
+      'Satzung',
+    );
   });
 
   it('never carries the honeypot', () => {
-    expect(
-      bodyOf(buildFallbackMailHref(CLUB_EMAIL, { ...values, honeypot: 'bot' }, [])),
-    ).not.toContain('bot');
+    expect(bodyOf(buildFallbackMailHref(CLUB_EMAIL, { ...values, honeypot: 'bot' }))).not.toContain(
+      'bot',
+    );
   });
 });

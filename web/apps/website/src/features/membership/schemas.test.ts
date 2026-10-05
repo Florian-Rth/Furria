@@ -4,7 +4,7 @@ import { buildMembershipApplicationFormSchema, EMPTY_MEMBERSHIP_APPLICATION } fr
 
 const today = new Date('2026-07-30T12:00');
 
-const schema = buildMembershipApplicationFormSchema(today);
+const schema = buildMembershipApplicationFormSchema(today, 16);
 
 const adult: MembershipApplicationForm = {
   ...EMPTY_MEMBERSHIP_APPLICATION,
@@ -18,14 +18,12 @@ const adult: MembershipApplicationForm = {
   consent: true,
 };
 
-const minor: MembershipApplicationForm = {
-  ...adult,
-  firstName: 'Mia',
-  birthDate: '2015-05-04',
-};
-
-const messagesFor = (values: MembershipApplicationForm, field: string): string[] => {
-  const result = schema.safeParse(values);
+const messagesFor = (
+  values: MembershipApplicationForm,
+  field: string,
+  against: typeof schema = schema,
+): string[] => {
+  const result = against.safeParse(values);
 
   if (result.success) {
     return [];
@@ -37,8 +35,8 @@ const messagesFor = (values: MembershipApplicationForm, field: string): string[]
 };
 
 describe('buildMembershipApplicationFormSchema', () => {
-  it('accepts an empty phone and no group interests', () => {
-    const result = schema.safeParse({ ...adult, phone: '', groupInterests: [] });
+  it('accepts an empty phone', () => {
+    const result = schema.safeParse({ ...adult, phone: '' });
 
     expect(result.success).toBe(true);
   });
@@ -73,22 +71,17 @@ describe('buildMembershipApplicationFormSchema', () => {
     expect(messagesFor({ ...adult, birthDate: '1880-01-01' }, 'birthDate')).toHaveLength(1);
   });
 
-  it('requires the name of a guardian for someone under 18', () => {
-    expect(messagesFor(minor, 'guardianName')).toHaveLength(1);
+  it.each([
+    ['the day before the sixteenth birthday', '2010-07-31', 1],
+    ['on the sixteenth birthday', '2010-07-30', 0],
+    ['at seventeen', '2009-05-04', 0],
+  ])('holds the birth date against the club’s age of consent %s', (_when, birthDate, issues) => {
+    expect(messagesFor({ ...adult, birthDate }, 'birthDate')).toHaveLength(issues);
   });
 
-  it('takes either an e-mail or a phone number from the guardian', () => {
-    const withName = { ...minor, guardianName: 'Katrin Brandt' };
+  it('leaves the age of consent to the API while the club has not said it yet', () => {
+    const withoutAge = buildMembershipApplicationFormSchema(today, null);
 
-    expect(messagesFor(withName, 'guardianEmail')).toHaveLength(1);
-    expect(schema.safeParse({ ...withName, guardianEmail: 'k.brandt@example.de' }).success).toBe(
-      true,
-    );
-    expect(schema.safeParse({ ...withName, guardianPhone: '0170 1234567' }).success).toBe(true);
-  });
-
-  it('never asks an adult for a guardian', () => {
-    expect(messagesFor(adult, 'guardianName')).toHaveLength(0);
-    expect(messagesFor(adult, 'guardianEmail')).toHaveLength(0);
+    expect(messagesFor({ ...adult, birthDate: '2015-05-04' }, 'birthDate', withoutAge)).toEqual([]);
   });
 });

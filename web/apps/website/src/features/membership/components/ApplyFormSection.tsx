@@ -1,8 +1,7 @@
 import { KkEyebrow, KkSection } from '@furria/ui';
 import type { FC } from 'react';
 import {
-  applyConsentLeadGuardian,
-  applyConsentLeadSelf,
+  applyConsentLead,
   applyConsentLegend,
   applyConsentNote,
   applySubmitNote,
@@ -14,10 +13,9 @@ import type { ApplyFormState } from '@/features/membership/hooks/use-apply-form'
 import { ApplyAddressFieldset } from './ApplyAddressFieldset';
 import { ApplyContactFieldset } from './ApplyContactFieldset';
 import { ApplyForm } from './ApplyForm/ApplyForm';
-import { ApplyGuardianFieldset } from './ApplyGuardianFieldset';
 import { ApplyHeader } from './ApplyHeader';
-import { ApplyInterestsFieldset } from './ApplyInterestsFieldset';
 import { ApplyPersonFieldset } from './ApplyPersonFieldset';
+import { ApplyStandingNote } from './ApplyStandingNote';
 
 interface ApplyFormSectionProps {
   state: ApplyFormState;
@@ -25,7 +23,10 @@ interface ApplyFormSectionProps {
 
 export const ApplyFormSection: FC<ApplyFormSectionProps> = ({ state }) => {
   const summaryRows = buildApplySummaryRows(state.derived);
-  const consentLead = state.requiresGuardian ? applyConsentLeadGuardian : applyConsentLeadSelf;
+  const submitError =
+    state.submitError === null ? null : (
+      <ApplyForm.Error message={state.submitError} mailHref={state.fallbackMailHref} />
+    );
 
   return (
     <KkSection>
@@ -36,13 +37,11 @@ export const ApplyFormSection: FC<ApplyFormSectionProps> = ({ state }) => {
             <ApplyPersonFieldset today={state.today} />
             <ApplyAddressFieldset />
             <ApplyContactFieldset />
-            <ApplyInterestsFieldset />
-            {state.requiresGuardian && <ApplyGuardianFieldset />}
             <ApplyForm.Block>
               <ApplyForm.Legend required>{applyConsentLegend}</ApplyForm.Legend>
               <ApplyForm.BlockBody>
                 <ApplyForm.Consent>
-                  <ApplyForm.ConsentLabel lead={consentLead} />
+                  <ApplyForm.ConsentLabel lead={applyConsentLead} />
                 </ApplyForm.Consent>
                 <ApplyForm.Note>{applyConsentNote}</ApplyForm.Note>
               </ApplyForm.BlockBody>
@@ -56,13 +55,12 @@ export const ApplyFormSection: FC<ApplyFormSectionProps> = ({ state }) => {
                 <ApplyForm.SummaryRow key={row.label} label={row.label} value={row.value} />
               ))}
               <ApplyForm.Note>{applySummaryNote}</ApplyForm.Note>
+              <ApplyStandingNote standing={state.standing} />
               <ApplyForm.Submit loading={state.isSubmitting} />
               <ApplyForm.SubmitHint />
               <ApplyForm.Note>{applySubmitNote}</ApplyForm.Note>
             </ApplyForm.Summary>
-            {state.submitError !== null && (
-              <ApplyForm.Error message={state.submitError} mailHref={state.fallbackMailHref} />
-            )}
+            {submitError}
           </ApplyForm.Aside>
         </ApplyForm.Columns>
       </ApplyForm>

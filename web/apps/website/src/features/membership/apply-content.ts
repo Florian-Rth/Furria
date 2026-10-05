@@ -14,7 +14,7 @@ export const buildApplyEyebrow = (sessionLabel: string | undefined): string =>
 export const applyTitle = 'EIN FORMULAR, ZWEI MINUTEN.';
 
 export const applyLead =
-  'Kein Kauf, kein Abo, keine Unterschrift per Post: Du stellst einen Antrag. Wir sehen ihn uns in der nächsten Sitzung an und melden uns bei dir.';
+  'Kein Kauf, kein Abo, keine Unterschrift per Post: Du stellst einen Antrag und bestätigst ihn per Mail. Wir sehen ihn uns in der nächsten Sitzung an und melden uns bei dir.';
 
 export const applyBackLabel = '← Mitglied werden';
 
@@ -29,9 +29,6 @@ export const applyFieldLabels = {
   city: 'Ort',
   email: 'E-Mail',
   phone: 'Telefon',
-  guardianName: 'Name der gesetzlichen Vertretung',
-  guardianEmail: 'E-Mail der gesetzlichen Vertretung',
-  guardianPhone: 'Telefon der gesetzlichen Vertretung',
 } as const;
 
 export const applyPersonLegend = '01 · WER BIST DU';
@@ -44,28 +41,11 @@ export const applyAddressNote =
 export const applyContactLegend = '03 · WIE ERREICHEN WIR DICH';
 
 export const applyContactNote =
-  'Die Telefonnummer ist freiwillig. Sie hilft nur, wenn eine Mail liegen bleibt.';
+  'An diese Adresse schicken wir dir gleich den Link, mit dem du den Antrag bestätigst. Die Telefonnummer ist freiwillig — sie hilft nur, wenn eine Mail liegen bleibt.';
 
-export const applyInterestsLegend = '04 · WOHIN ZIEHT ES DICH';
+export const applyConsentLegend = '04 · EINVERSTÄNDNIS';
 
-export const applyInterestsNote =
-  'Freiwillig, und ein Kreuz ist keine Zusage — bevor etwas losgeht, reden wir darüber. In keiner Gruppe zu sein ist genauso normal: viele Mitglieder sind in keiner.';
-
-export const applyInterestsLoadingLabel = 'Die Gruppen werden geladen …';
-
-export const applyInterestsErrorNote =
-  'Die Liste der Gruppen lädt gerade nicht. Kein Problem — das Feld ist freiwillig, du kannst es uns auch später sagen.';
-
-export const applyGuardianLegend = 'WEIL DU NOCH NICHT 18 BIST';
-
-export const applyGuardianNote =
-  'Unter 18 stimmt eine erwachsene Person mit zu — Mutter, Vater oder Vormund. Anders geht ein Beitritt rechtlich nicht. E-Mail oder Telefon genügt, damit wir uns melden können.';
-
-export const applyConsentLegend = '05 · EINVERSTÄNDNIS';
-
-export const applyConsentLeadSelf = 'Ich habe die';
-
-export const applyConsentLeadGuardian = 'Als gesetzliche Vertretung habe ich die';
+export const applyConsentLead = 'Ich habe die';
 
 export const applyConsentTail = 'gelesen und stimme dem Beitritt zu.';
 
@@ -89,13 +69,21 @@ export const applySummaryEyebrow = 'DEIN ANTRAG';
 export const applySummaryNote =
   'Die Mitgliedschaft ergibt sich aus dem Geburtsdatum: bis 17 Jahre Jugend, ab 18 Aktiv. Aussuchen musst du da nichts.';
 
+export const applyMinorNote =
+  'Weil du noch nicht 18 bist, brauchen wir vor der Aufnahme das Einverständnis deiner Eltern. Darum kümmern wir uns, wenn wir uns bei dir melden — im Formular musst du dafür nichts eintragen.';
+
+export const applyTooYoungMailLabel = 'Jünger? Schreib uns';
+
+export const buildBelowAgeOfConsentMessage = (ageOfConsent: number): string =>
+  `Online beantragen kann den Beitritt, wer mindestens ${ageOfConsent} Jahre alt ist. Bist du jünger, schreib uns – dann nehmen wir dich direkt auf.`;
+
 export const applySubmitLabel = 'Antrag absenden →';
 
 export const applySubmitDisabledHint =
   'Der Knopf wird aktiv, sobald alle Pflichtfelder ausgefüllt sind.';
 
 export const applySubmitNote =
-  'Der Antrag geht an den Verein. Mitglied bist du, sobald wir dir das bestätigen.';
+  'Danach bekommst du eine Mail: Erst wenn du den Antrag dort bestätigst, geht er an den Verein. Mitglied bist du, sobald wir dich aufgenommen haben.';
 
 export const applyErrorTitle = 'Der Antrag ist nicht rausgegangen.';
 
@@ -104,23 +92,35 @@ export const applyFallbackLead =
 
 export const applyFallbackLabel = 'Antrag per Mail schicken';
 
-export const applyThanksEyebrow = 'ANTRAG IST DA';
+export const applyBlockedMessage =
+  'Die Anfrage hat den Server nicht erreicht. Falls du einen Werbeblocker oder ein Schutz-Add-on nutzt, erlaube diese Seite und versuch es noch einmal.';
 
-export const buildApplyThanksHeadline = (firstName: string): string => `DANKE, ${firstName}.`;
+export const applyUnavailableMessage = 'Wir konnten den Antrag gerade nicht entgegennehmen.';
 
-export const applyThanksText =
-  'Angekommen. Ab hier sind wir dran — du musst nichts tun und nichts zahlen. Bis wir über die Aufnahme entschieden haben, bist du noch kein Mitglied, sondern jemand, auf den wir uns freuen.';
+export const applyRateLimitedMessage =
+  'Von hier kamen gerade sehr viele Anträge auf einmal. Warte eine Viertelstunde und schick ihn dann noch einmal ab — im Formular bleibt alles stehen.';
+
+export const applyProofRefusedMessage =
+  'Die automatische Sicherheitsprüfung ist abgelaufen. Schick den Antrag einfach noch einmal ab — im Formular bleibt alles stehen.';
+
+export const applyThanksEyebrow = 'FAST GESCHAFFT';
+
+export const buildApplyThanksHeadline = (firstName: string): string =>
+  `NOCH EIN KLICK, ${firstName}.`;
+
+export const buildApplyThanksText = (email: string): string =>
+  `Wir haben dir eine Mail an ${email} geschickt. Klick darin auf „Antrag bestätigen“ — erst dann kommt dein Antrag beim Verein an. Der Link gilt 48 Stunden; bestätigst du ihn nicht, löschen wir den Antrag wieder.`;
 
 export const APPLY_THANKS_STEPS: JoinStep[] = [
   {
-    title: 'Bestätigung',
+    title: 'Bestätigen',
     description:
-      'Zuerst bestätigen wir dir per Mail, dass der Antrag bei uns angekommen ist — an die Adresse, die du eingetragen hast. Falls nichts ankommt, schau kurz in den Spam-Ordner.',
+      'Öffne die Mail und bestätige den Antrag. Kommt nichts an, schau kurz in den Spam-Ordner. Steht oben eine falsche Adresse, stell den Antrag einfach noch einmal.',
   },
   {
     title: 'Aufnahme',
     description:
-      'Danach sehen wir uns den Antrag in der nächsten Sitzung an und entscheiden über die Aufnahme. Wir melden uns danach bei dir, so oder so.',
+      'Danach sehen wir uns den Antrag in der nächsten Sitzung an und entscheiden über die Aufnahme. Wir melden uns bei dir, so oder so.',
   },
   {
     title: 'Willkommen',
