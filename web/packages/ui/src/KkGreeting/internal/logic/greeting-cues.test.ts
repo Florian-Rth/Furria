@@ -1,11 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { FlapSchedule } from './flap-schedule';
-import { inkCueOf, lineCueOf } from './greeting-cues';
+import { cueShareAt, inkCueOf, lineCueOf } from './greeting-cues';
 
 const BOARD: FlapSchedule = {
   runs: [
     {
-      motion: 'flap',
       cell: 0,
       start: 0,
       end: 450,
@@ -14,18 +13,6 @@ const BOARD: FlapSchedule = {
         { kind: 'text', text: 'Tag' },
       ],
       flips: [{ kind: 'final', at: 0, duration: 230 }],
-    },
-    { motion: 'fade', cell: 2, start: 60, end: 300 },
-    {
-      motion: 'tick',
-      cell: 3,
-      start: 0,
-      end: 180,
-      faces: [
-        { kind: 'text', text: 'Lena.' },
-        { kind: 'text', text: 'Lena.' },
-      ],
-      flips: [{ kind: 'tick', at: 0, duration: 180 }],
     },
   ],
   tone: 'ink',
@@ -36,80 +23,60 @@ const BOARD: FlapSchedule = {
 
 describe('inkCueOf', () => {
   it.each([
-    { cell: 0, phase: 'playing', opacity: 0, delay: 0 },
-    { cell: 0, phase: 'settled', opacity: 1, delay: 0 },
-    { cell: 2, phase: 'playing', opacity: 1, delay: 0.06 },
-    { cell: 2, phase: 'settled', opacity: 1, delay: 0 },
-    { cell: 1, phase: 'waiting', opacity: 1, delay: 0 },
-    { cell: 3, phase: 'waiting', opacity: 1, delay: 0 },
-    { cell: 3, phase: 'playing', opacity: 0, delay: 0 },
+    { cell: 0, phase: 'playing', clock: 960, share: 0 },
+    { cell: 0, phase: 'settled', clock: 0, share: 1 },
+    { cell: 1, phase: 'waiting', clock: 0, share: 1 },
   ] as const)(
-    'shows cell $cell at opacity $opacity after $delay s while $phase',
-    ({ cell, phase, opacity, delay }) => {
-      const cue = inkCueOf(cell, BOARD, phase);
-
-      expect([cue.opacity, cue.delay]).toEqual([opacity, delay]);
+    'shows $share of cell $cell at $clock ms on the clock while $phase',
+    ({ cell, phase, clock, share }) => {
+      expect(cueShareAt(inkCueOf(cell, BOARD, phase), clock)).toBe(share);
     },
   );
 
   it.each([
     { cell: 0, phase: 'waiting', stance: 'veiled' },
     { cell: 0, phase: 'playing', stance: 'moving' },
-    { cell: 2, phase: 'waiting', stance: 'veiled' },
-    { cell: 2, phase: 'playing', stance: 'moving' },
-    { cell: 2, phase: 'settled', stance: 'resting' },
     { cell: 1, phase: 'waiting', stance: 'resting' },
     { cell: 1, phase: 'playing', stance: 'resting' },
-    { cell: 3, phase: 'waiting', stance: 'resting' },
   ] as const)('holds cell $cell $stance while $phase', ({ cell, phase, stance }) => {
     expect(inkCueOf(cell, BOARD, phase).stance).toBe(stance);
   });
 
   it.each([
-    { phase: 'waiting', stance: 'veiled', delay: 0 },
-    { phase: 'playing', stance: 'moving', delay: 0.45 },
-    { phase: 'settled', stance: 'resting', delay: 0 },
+    { phase: 'waiting', stance: 'veiled', clock: 449, share: 1 },
+    { phase: 'playing', stance: 'moving', clock: 449, share: 0 },
+    { phase: 'playing', stance: 'moving', clock: 450, share: 1 },
+    { phase: 'settled', stance: 'resting', clock: 449, share: 1 },
   ] as const)(
-    'prints a mark bound to cell 0 with its digit while $phase',
-    ({ phase, stance, delay }) => {
+    'prints a mark bound to cell 0 with its digit at $clock ms while $phase',
+    ({ phase, stance, clock, share }) => {
       const cue = inkCueOf(1, BOARD, phase, 0);
 
-      expect([cue.stance, cue.delay]).toEqual([stance, delay]);
+      expect([cue.stance, cueShareAt(cue, clock)]).toEqual([stance, share]);
     },
   );
-
-  it('fades a night word in over its own run', () => {
-    expect(inkCueOf(2, BOARD, 'playing').duration).toBeCloseTo(0.24);
-  });
 });
 
 describe('lineCueOf', () => {
   it.each([
-    { play: 'full', phase: 'waiting', opacity: 0, y: 4, delay: 0 },
-    { play: 'full', phase: 'playing', opacity: 1, y: 0, delay: 0.62 },
-    { play: 'live', phase: 'playing', opacity: 1, y: 0, delay: 0.62 },
-    { play: 'full', phase: 'settled', opacity: 1, y: 0, delay: 0 },
-    { play: 'daily', phase: 'waiting', opacity: 1, y: 0, delay: 0 },
-    { play: 'nod', phase: 'playing', opacity: 1, y: 0, delay: 0 },
-    { play: 'still', phase: 'settled', opacity: 1, y: 0, delay: 0 },
-  ] as const)(
-    'holds the line of a $play board at $opacity, $y px while $phase',
-    ({ play, phase, opacity, y, delay }) => {
-      const cue = lineCueOf(play, BOARD.line, phase);
-
-      expect([cue.opacity, cue.y, cue.delay]).toEqual([opacity, y, delay]);
-    },
-  );
+    { phase: 'waiting', clock: 960, share: 0 },
+    { phase: 'playing', clock: 619, share: 0 },
+    { phase: 'playing', clock: 700, share: 0.5 },
+    { phase: 'playing', clock: 780, share: 1 },
+    { phase: 'settled', clock: 0, share: 1 },
+  ] as const)('shows $share of the line at $clock ms while $phase', ({ phase, clock, share }) => {
+    expect(cueShareAt(lineCueOf(BOARD.line, phase), clock)).toBe(share);
+  });
 
   it.each([
     { phase: 'waiting', stance: 'moving' },
     { phase: 'playing', stance: 'moving' },
     { phase: 'settled', stance: 'resting' },
   ] as const)('holds the line $stance while $phase', ({ phase, stance }) => {
-    expect(lineCueOf('full', BOARD.line, phase).stance).toBe(stance);
+    expect(lineCueOf(BOARD.line, phase).stance).toBe(stance);
   });
 
   it('shows the line at once when the board cues none', () => {
-    expect(lineCueOf('full', null, 'playing').opacity).toBe(1);
+    expect(cueShareAt(lineCueOf(null, 'playing'), 0)).toBe(1);
   });
 });

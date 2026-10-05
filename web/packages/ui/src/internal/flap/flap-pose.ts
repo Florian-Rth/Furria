@@ -15,9 +15,15 @@ const PRESENCE_GAIN = 2.4;
 const HALF = 50;
 const SPILL = '-40%';
 const SHADE_DEPTH = 0.4;
+const BAND_REACH = 62;
+
+export const FLAT_PROGRESS = FALL_SHARE + (1 - FALL_SHARE) * LAND_SHARE;
 
 export const TOP_HALF_CLIP = `inset(${SPILL} ${SPILL} ${HALF}% ${SPILL})`;
 export const BOTTOM_HALF_CLIP = `inset(${HALF}% ${SPILL} ${SPILL} ${SPILL})`;
+const WHOLE_TILE_CLIP = `inset(${SPILL} ${SPILL} ${SPILL} ${SPILL})`;
+const UNREVEALED_CLIP = 'inset(0% 0% 100% 0%)';
+const COVERED_CLIP = 'inset(100% 0% 0% 0%)';
 
 export const ramp = (value: number, from: number, to: number): number =>
   Math.min(Math.max((value - from) / (to - from), 0), 1);
@@ -62,9 +68,21 @@ export const flapPoseAt = (progress: number): SplitFlapPose => {
 };
 
 export const revealClipOf = (pose: SplitFlapPose): string =>
-  `inset(${SPILL} ${SPILL} ${HALF + HALF * (1 - pose.reveal)}% ${SPILL})`;
+  pose.reveal <= 0
+    ? UNREVEALED_CLIP
+    : `inset(${SPILL} ${SPILL} ${HALF + HALF * (1 - pose.reveal)}% ${SPILL})`;
 
 export const coverClipOf = (pose: SplitFlapPose): string =>
-  `inset(${HALF + HALF * pose.cover}% ${SPILL} ${SPILL} ${SPILL})`;
+  pose.cover >= 1 ? COVERED_CLIP : `inset(${HALF + HALF * pose.cover}% ${SPILL} ${SPILL} ${SPILL})`;
 
 export const leafShadeOf = (degrees: number): number => SHADE_DEPTH * (1 - cosineOf(degrees));
+
+export const tileBandClipOf = (presence: number): string => {
+  if (presence >= 1) {
+    return WHOLE_TILE_CLIP;
+  }
+
+  const edge = HALF - BAND_REACH * Math.max(presence, 0);
+
+  return `inset(${edge}% ${SPILL} ${edge}% ${SPILL})`;
+};

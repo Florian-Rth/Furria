@@ -1,48 +1,28 @@
 import { describe, expect, it } from 'vitest';
-import type { GreetingBoard } from './greeting-board';
-import { sameBoard, sameFaces } from './greeting-board';
+import type { FlapSchedule } from './flap-schedule';
+import { sameFaces, sameSchedule } from './greeting-board';
 
-const BOARD: GreetingBoard = {
-  schedule: {
-    runs: [],
-    tone: 'ink',
-    line: { at: 620, duration: 160 },
-    burstAt: null,
-    duration: 960,
-  },
-  faces: ['Tag', '7', '0'],
+const SCHEDULE: FlapSchedule = {
+  runs: [],
+  tone: 'ink',
+  line: { at: 620, duration: 160 },
+  burstAt: null,
+  duration: 960,
 };
 
-describe('sameBoard', () => {
+describe('sameSchedule', () => {
   it.each([
-    { name: 'the same board', next: BOARD, same: true },
-    { name: 'new faces', next: { ...BOARD, faces: ['Tag', '7', '1'] }, same: false },
-    {
-      name: 'a longer board',
-      next: { ...BOARD, schedule: { ...BOARD.schedule, duration: 1200 } },
-      same: false,
-    },
-    {
-      name: 'a burst',
-      next: { ...BOARD, schedule: { ...BOARD.schedule, burstAt: 900 } },
-      same: false,
-    },
-    {
-      name: 'a later line',
-      next: { ...BOARD, schedule: { ...BOARD.schedule, line: { at: 700, duration: 160 } } },
-      same: false,
-    },
-    {
-      name: 'no line',
-      next: { ...BOARD, schedule: { ...BOARD.schedule, line: null } },
-      same: false,
-    },
-  ])('keeps the published board for $name: $same', ({ next, same }) => {
-    expect(sameBoard(BOARD, next)).toBe(same);
+    { name: 'the same schedule', next: SCHEDULE, same: true },
+    { name: 'a longer schedule', next: { ...SCHEDULE, duration: 1200 }, same: false },
+    { name: 'a burst', next: { ...SCHEDULE, burstAt: 900 }, same: false },
+    { name: 'a later line', next: { ...SCHEDULE, line: { at: 700, duration: 160 } }, same: false },
+    { name: 'no line', next: { ...SCHEDULE, line: null }, same: false },
+  ])('keeps the published schedule for $name: $same', ({ next, same }) => {
+    expect(sameSchedule(SCHEDULE, next)).toBe(same);
   });
 
-  it('takes the first board', () => {
-    expect(sameBoard(null, BOARD)).toBe(false);
+  it('takes the first schedule', () => {
+    expect(sameSchedule(null, SCHEDULE)).toBe(false);
   });
 });
 

@@ -4,6 +4,7 @@ import type { CSSProperties, FC, PropsWithChildren, ReactNode } from 'react';
 import type { FlapTileTone } from './FlapTile';
 import { FlapTile } from './FlapTile';
 import type { FlapTileFit } from './flap-tile-bounds';
+import { useTileBand } from './use-tile-band';
 
 const PERSPECTIVE = 220;
 
@@ -13,7 +14,7 @@ const LEAF_STYLE: CSSProperties = {
   backfaceVisibility: 'hidden',
 };
 
-const INVERSE_STYLE: CSSProperties = { position: 'absolute', inset: 0 };
+const BAND_STYLE: CSSProperties = { position: 'absolute', inset: 0 };
 
 interface FlapLeafProps extends PropsWithChildren {
   clip: MotionValue<string> | string;
@@ -38,19 +39,25 @@ export const FlapLeaf: FC<FlapLeafProps> = ({
   opacity,
   perspective = PERSPECTIVE,
   children,
-}) => (
-  <motion.span
-    style={{
-      ...LEAF_STYLE,
-      clipPath: clip,
-      rotateX: rotate,
-      opacity,
-      transformPerspective: perspective,
-    }}
-  >
-    <FlapTile presence={presence} tone={tone} fit={fit} />
-    {children}
-    <motion.span style={{ ...INVERSE_STYLE, opacity: presence }}>{inverse}</motion.span>
-    {shade}
-  </motion.span>
-);
+}) => {
+  const band = useTileBand(presence);
+
+  return (
+    <motion.span
+      style={{
+        ...LEAF_STYLE,
+        clipPath: clip,
+        rotateX: rotate,
+        opacity,
+        transformPerspective: perspective,
+      }}
+    >
+      {children}
+      <motion.span style={{ ...BAND_STYLE, clipPath: band }}>
+        <FlapTile tone={tone} fit={fit} />
+        {inverse}
+      </motion.span>
+      {shade}
+    </motion.span>
+  );
+};

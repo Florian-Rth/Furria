@@ -53,7 +53,6 @@ type GreetingOccasion =
 
 export type GreetingAct = GreetingOccasion & {
   festive: boolean;
-  night: boolean;
   key: string;
   sessionYear: number;
   ordinal: number | null;
@@ -62,8 +61,6 @@ export type GreetingAct = GreetingOccasion & {
 const MS_PER_SECOND = 1000;
 const COUNTDOWN_REACH_MS = 11 * 60 * MS_PER_SECOND;
 const WOMENS_CARNIVAL_DAY_REACH = 11;
-const NIGHT_FROM_HOUR = 23;
-const NIGHT_UNTIL_HOUR = 5;
 const LEAP_DAY = '02-29';
 const LEAP_DAY_STAND_IN = '02-28';
 const MONTH_DAY_START = 5;
@@ -228,7 +225,7 @@ const showsOrdinal = (moment: GreetingMoment, clause: SeasonClause | null): bool
   return true;
 };
 
-const isRoundYears = (years: number): boolean =>
+export const isRoundYears = (years: number): boolean =>
   ANNIVERSARY_STEPS.some((step) => years % step === 0);
 
 const isFestive = (occasion: GreetingOccasion, ordinal: number | null): boolean => {
@@ -244,11 +241,6 @@ const isFestive = (occasion: GreetingOccasion, ordinal: number | null): boolean 
   );
 };
 
-const isNight = (moment: GreetingMoment, now: Date): boolean =>
-  moment !== 'openingCountdown' &&
-  moment !== 'carnivalCall' &&
-  (now.getHours() >= NIGHT_FROM_HOUR || now.getHours() < NIGHT_UNTIL_HOUR);
-
 const ordinalFor = (viewer: GreetingViewer, sessionYear: number): number | null => {
   const session = viewer.relevantSession;
 
@@ -263,7 +255,6 @@ export const greetingActAt = (now: Date, viewer: GreetingViewer): GreetingAct =>
   return {
     ...occasion,
     festive: isFestive(occasion, ordinal),
-    night: isNight(occasion.moment, now),
     key: `${occasion.moment}:${toIsoDay(now)}`,
     sessionYear,
     ordinal,

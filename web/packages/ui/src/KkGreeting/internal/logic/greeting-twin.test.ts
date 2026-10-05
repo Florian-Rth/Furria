@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { FlapCell } from './flap-cells';
-import type { FlapSchedule, FlapTurnRun } from './flap-schedule';
+import type { FlapRun, FlapSchedule } from './flap-schedule';
 import { dealOf, glyphToneOf, twinFaceAt, twinFacesOf, twinOf, twinPoseOf } from './greeting-twin';
 
 const tenPerLetter = (face: string): number => face.length * 10;
@@ -15,8 +15,7 @@ const cellOf = (face: string, role: FlapCell['role'], accent = false): FlapCell 
   trail: '',
 });
 
-const RATTLE: FlapTurnRun = {
-  motion: 'flap',
+const RATTLE: FlapRun = {
   cell: 1,
   start: 55,
   end: 505,
@@ -77,7 +76,7 @@ describe('glyphToneOf', () => {
 
 describe('twinOf', () => {
   const schedule: FlapSchedule = {
-    runs: [RATTLE, { motion: 'fade', cell: 0, start: 0, end: 240 }],
+    runs: [RATTLE],
     tone: 'gold',
     line: null,
     burstAt: null,
@@ -86,7 +85,7 @@ describe('twinOf', () => {
   const cells = [cellOf('70', 'value', true), cellOf('Lena.', 'name')];
   const box = { left: 10, top: 0, width: 60, height: 35 };
 
-  it('boards only the turning cells it could measure', () => {
+  it('boards the turning cells it could measure', () => {
     const twin = twinOf('arrival', schedule, cells, { boxes: [box, box], deals: [] }, 11);
 
     expect(twin.cells.map((cell) => [cell.key, cell.glyph])).toEqual([['arrival:1', 'gold']]);

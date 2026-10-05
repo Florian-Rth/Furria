@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { coverClipOf, flapPoseAt, leafShadeOf, ramp, revealClipOf } from './flap-pose';
+import {
+  coverClipOf,
+  flapPoseAt,
+  leafShadeOf,
+  ramp,
+  revealClipOf,
+  tileBandClipOf,
+} from './flap-pose';
 
 describe('ramp', () => {
   it.each([
@@ -54,7 +61,7 @@ describe('flapPoseAt', () => {
 
 describe('revealClipOf', () => {
   it.each([
-    [0, 'inset(-40% -40% 100% -40%)'],
+    [0, 'inset(0% 0% 100% 0%)'],
     [0.5, 'inset(-40% -40% 75% -40%)'],
     [1, 'inset(-40% -40% 50% -40%)'],
   ])('cuts the new top at reveal %d to %s', (reveal, expected) => {
@@ -68,7 +75,7 @@ describe('coverClipOf', () => {
   it.each([
     [0, 'inset(50% -40% -40% -40%)'],
     [0.5, 'inset(75% -40% -40% -40%)'],
-    [1, 'inset(100% -40% -40% -40%)'],
+    [1, 'inset(100% 0% 0% 0%)'],
   ])('cuts the old bottom at cover %d to %s', (cover, expected) => {
     expect(coverClipOf({ fall: -90, land: 45, reveal: 1, cover, presence: 1, fallen: true })).toBe(
       expected,
@@ -84,5 +91,16 @@ describe('leafShadeOf', () => {
     [90, 0.4],
   ])('shades a leaf tilted %d degrees to %d', (degrees, expected) => {
     expect(leafShadeOf(degrees)).toBeCloseTo(expected);
+  });
+});
+
+describe('tileBandClipOf', () => {
+  it.each([
+    [-0.2, 'inset(50% -40% 50% -40%)'],
+    [0, 'inset(50% -40% 50% -40%)'],
+    [0.5, 'inset(19% -40% 19% -40%)'],
+    [1, 'inset(-40% -40% -40% -40%)'],
+  ])('opens the tile from its hinge at presence %d to %s', (presence, expected) => {
+    expect(tileBandClipOf(presence)).toBe(expected);
   });
 });

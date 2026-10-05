@@ -49,12 +49,15 @@ the viewer and the moment; nothing is ever shown as zero, teased or stubbed.
 
 ### Greeting (`@furria/ui` `KkGreeting`, `features/start/greeting/*`)
 - Act ladder `greetingActAt` (pure): 11.11 countdown from 11:00 (live m:ss) → „Gross - Furria!" at
-  11:11:00 with one burst per session → birthday → round join anniversary → Weiberfastnacht,
+  11:11:00 → birthday → round join anniversary → Weiberfastnacht,
   Rosenmontag, Fastnachtsdienstag (Kehraus), Aschermittwoch → welcome on the day she redeemed →
   daily season clause (days to 11.11 between sessions, „Tag n deiner o. Session" in session, the
   count to Weiberfastnacht in the last eleven days).
-- Play by device memory (`greetingPlayOf`): full board on first open, only changed cells on a new
-  day, a nod on a re-open, still under reduced motion. Budget ≤ 1.5 s, ≤ 4 cells turning at once.
+- Play (`greetingPlayOf`): the full board on every open of Start, live during the countdown, still
+  under reduced motion. Confetti bursts on every open of the call, her birthday, a round join
+  anniversary, Weiberfastnacht, Rosenmontag and her first day in the app. Budget ≤ 1.5 s, ≤ 4 cells
+  turning at once.
+- Labor (`/lab`, from Verein verwalten): every greeting state at its simulated moment, for review.
 - The h1 holds the final text from the first frame, so the confetti handover flies the right
   string; the flight copy is clamped to one line.
 

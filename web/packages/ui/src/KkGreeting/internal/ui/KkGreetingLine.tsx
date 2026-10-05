@@ -1,8 +1,10 @@
 import Typography from '@mui/material/Typography';
-import { motion } from 'motion/react';
+import { easeOut, motion, useTransform } from 'motion/react';
 import type { FC } from 'react';
 import { useGreetingStage } from '../logic/greeting-context';
-import { lineCueOf } from '../logic/greeting-cues';
+import { cueShareAt, lineCueOf } from '../logic/greeting-cues';
+
+const LINE_DROP = 4;
 
 const LINE_PAINT = {
   typography: 'body2',
@@ -16,22 +18,17 @@ interface KkGreetingLineProps {
 }
 
 export const KkGreetingLine: FC<KkGreetingLineProps> = ({ children }) => {
-  const { play, board, phase } = useGreetingStage();
-  const cue = lineCueOf(play, board?.schedule.line ?? null, phase);
-  const target = { opacity: cue.opacity, y: cue.y };
-  const transition = { delay: cue.delay, duration: cue.duration, ease: 'easeOut' as const };
+  const { schedule, phase, clock } = useGreetingStage();
+  const cue = lineCueOf(schedule?.line ?? null, phase);
+  const opacity = useTransform(clock, (elapsed: number): number =>
+    easeOut(cueShareAt(cue, elapsed)),
+  );
+  const y = useTransform(opacity, (shown: number): number => LINE_DROP * (1 - shown));
+  const entry = { opacity, y };
 
   return (
-    <Typography
-      key={cue.stance}
-      component={motion.p}
-      data-kk-greeting-line
-      initial={false}
-      animate={target}
-      transition={transition}
-      sx={LINE_PAINT}
-    >
-      {children}
-    </Typography>
+    <motion.div data-kk-greeting-line style={entry}>
+      <Typography sx={LINE_PAINT}>{children}</Typography>
+    </motion.div>
   );
 };

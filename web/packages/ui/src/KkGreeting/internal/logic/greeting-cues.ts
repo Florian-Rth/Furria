@@ -1,54 +1,33 @@
-import type { FlapCue, FlapRun, FlapSchedule, KkGreetingPlay } from './flap-schedule';
+import type { FlapCue, FlapRun, FlapSchedule } from './flap-schedule';
 
 export type GreetingPhase = 'waiting' | 'playing' | 'settled';
 
 export type GreetingStance = 'resting' | 'moving' | 'veiled';
 
 export interface GreetingCue {
-  opacity: number;
-  y: number;
-  delay: number;
+  at: number;
   duration: number;
   stance: GreetingStance;
 }
 
-const MS_PER_SECOND = 1000;
-const LINE_DROP = 4;
+const NEVER = Number.POSITIVE_INFINITY;
 
-export const SHOWN_CUE: GreetingCue = {
-  opacity: 1,
-  y: 0,
-  delay: 0,
-  duration: 0,
-  stance: 'resting',
-};
-const HIDDEN: GreetingCue = { opacity: 0, y: 0, delay: 0, duration: 0, stance: 'moving' };
-const VEILED: GreetingCue = { opacity: 1, y: 0, delay: 0, duration: 0, stance: 'veiled' };
-const LOWERED: GreetingCue = {
-  opacity: 0,
-  y: LINE_DROP,
-  delay: 0,
-  duration: 0,
-  stance: 'moving',
-};
+export const SHOWN_CUE: GreetingCue = { at: 0, duration: 0, stance: 'resting' };
+const HIDDEN: GreetingCue = { at: NEVER, duration: 0, stance: 'moving' };
+const VEILED: GreetingCue = { at: 0, duration: 0, stance: 'veiled' };
 
 const enteringAt = (at: number, duration: number): GreetingCue => ({
-  opacity: 1,
-  y: 0,
-  delay: at / MS_PER_SECOND,
-  duration: duration / MS_PER_SECOND,
+  at,
+  duration,
   stance: 'moving',
 });
 
-const startsOnItsFace = (run: FlapRun): boolean => {
-  if (run.motion === 'fade') {
-    return false;
+export const cueShareAt = (cue: GreetingCue, clock: number): number => {
+  if (cue.duration === 0) {
+    return clock >= cue.at ? 1 : 0;
   }
 
-  const first = run.faces[0];
-  const last = run.faces.at(-1);
-
-  return first?.kind === 'text' && last?.kind === 'text' && first.text === last.text;
+  return Math.min(Math.max((clock - cue.at) / cue.duration, 0), 1);
 };
 
 const boundCueOf = (bound: FlapRun | undefined, phase: GreetingPhase): GreetingCue => {
@@ -77,27 +56,17 @@ export const inkCueOf = (
     return SHOWN_CUE;
   }
   if (phase === 'waiting') {
-    return startsOnItsFace(run) ? SHOWN_CUE : VEILED;
+    return VEILED;
   }
-  if (run.motion === 'fade' && phase === 'playing') {
-    return enteringAt(run.start, run.end - run.start);
-  }
-
   return HIDDEN;
 };
 
-const ENTERING_PLAYS: ReadonlySet<KkGreetingPlay> = new Set(['full', 'live']);
-
-export const lineCueOf = (
-  play: KkGreetingPlay,
-  line: FlapCue | null,
-  phase: GreetingPhase,
-): GreetingCue => {
-  if (phase === 'settled' || !ENTERING_PLAYS.has(play)) {
+export const lineCueOf = (line: FlapCue | null, phase: GreetingPhase): GreetingCue => {
+  if (phase === 'settled') {
     return SHOWN_CUE;
   }
   if (phase === 'waiting') {
-    return LOWERED;
+    return HIDDEN;
   }
 
   return line === null ? SHOWN_CUE : enteringAt(line.at, line.duration);

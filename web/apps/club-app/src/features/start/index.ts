@@ -1,5 +1,13 @@
 export { START_QUERY_KEY, useStartAnswerMutation, useStartQuery } from './api';
+export { GreetingBoard } from './components/GreetingBoard';
 export { StartBody } from './components/StartBody';
 export { StartGreeting } from './components/StartGreeting';
+export type { GreetingViewer } from './greeting/greeting-act';
+export { greetingActAt } from './greeting/greeting-act';
+export { toGreetingCopy, toGreetingText } from './greeting/greeting-copy';
+export type { GreetingView } from './greeting/greeting-view';
+export { toGreetingView } from './greeting/greeting-view';
+export { useGreetingAct } from './hooks/use-greeting-act';
+export { useGreetingFollows } from './hooks/use-greeting-follows';
 export type { Start, StartPanel, ToDoKind } from './schemas';
 export { TO_DO_KINDS } from './schemas';

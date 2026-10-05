@@ -1,6 +1,5 @@
-import type { AnimationPlaybackControls, MotionValue } from 'motion/react';
-import { animate, useMotionValue, useTransform } from 'motion/react';
-import { useEffect, useEffectEvent } from 'react';
+import type { MotionValue } from 'motion/react';
+import { useTransform } from 'motion/react';
 import { coverClipOf, leafShadeOf, revealClipOf } from '../../../internal/flap/flap-pose';
 import type { FlapTrack } from './flap-keyframes';
 import { twinFaceAt, twinPoseOf } from './greeting-twin';
@@ -17,50 +16,22 @@ export interface FlapCellMotion {
   toFace: MotionValue<string>;
 }
 
-const MS_PER_SECOND = 1000;
 const RIGHT_ANGLE = 90;
 const RESTING_LAND = 0;
 const OPEN_COVER = 0;
 const CURRENT = 0;
 const NEXT = 1;
 
-const firstOf = (values: readonly number[], fallback: number): number => values[0] ?? fallback;
-
-export const useFlapCellMotion = (track: FlapTrack, faces: readonly string[]): FlapCellMotion => {
-  const fall = useMotionValue(firstOf(track.fall, 0));
-  const land = useMotionValue(firstOf(track.land, RIGHT_ANGLE));
-  const cover = useMotionValue(firstOf(track.cover, OPEN_COVER));
-  const presence = useMotionValue(firstOf(track.presence, 0));
-  const face = useMotionValue(firstOf(track.face, 0));
-
-  const play = useEffectEvent((): (() => void) => {
-    const timing = {
-      duration: track.duration / MS_PER_SECOND,
-      times: track.times,
-      ease: 'linear' as const,
-    };
-    let controls: AnimationPlaybackControls[] = [];
-
-    const timer = window.setTimeout(() => {
-      controls = [
-        animate(fall, track.fall, timing),
-        animate(land, track.land, timing),
-        animate(cover, track.cover, timing),
-        animate(presence, track.presence, timing),
-        animate(face, track.face, timing),
-      ];
-    }, track.delay);
-
-    return () => {
-      window.clearTimeout(timer);
-
-      for (const control of controls) {
-        control.stop();
-      }
-    };
-  });
-
-  useEffect(() => play(), []);
+export const useFlapCellMotion = (
+  clock: MotionValue<number>,
+  track: FlapTrack,
+  faces: readonly string[],
+): FlapCellMotion => {
+  const fall = useTransform(clock, track.at, track.fall);
+  const land = useTransform(clock, track.at, track.land);
+  const cover = useTransform(clock, track.at, track.cover);
+  const presence = useTransform(clock, track.at, track.presence);
+  const face = useTransform(clock, track.at, track.face);
 
   return {
     fall,

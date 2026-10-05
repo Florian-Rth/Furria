@@ -51,7 +51,6 @@ export { KkFactRow } from './KkFactRow';
 export { KkFieldRow } from './KkFieldRow';
 export { KkFilterChips } from './KkFilterChips';
 export type { KkGreetingPart, KkGreetingPartRole } from './KkGreeting/internal/logic/flap-cells';
-export { countFlapCells } from './KkGreeting/internal/logic/flap-cells';
 export type { KkGreetingPlay, KkGreetingTempo } from './KkGreeting/internal/logic/flap-schedule';
 export { KkGreeting } from './KkGreeting/KkGreeting';
 export { KkGreetingSkeleton } from './KkGreeting/KkGreetingSkeleton';

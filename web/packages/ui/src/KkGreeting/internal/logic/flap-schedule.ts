@@ -3,13 +3,13 @@ import { kkTokens } from '../../../tokens';
 import type { FlapCell } from './flap-cells';
 import { previousFacesOf } from './flap-cells';
 
-export type KkGreetingPlay = 'still' | 'live' | 'full' | 'nod' | 'daily';
+export type KkGreetingPlay = 'still' | 'live' | 'full';
 export type KkGreetingTempo = 'regular' | 'slow';
 export type FlapPlay = KkGreetingPlay | 'tick';
 
 export type FlapFace = { kind: 'text'; text: string } | { kind: 'deck'; slot: number };
 
-export type FlapFlipKind = 'face' | 'final' | 'strike' | 'tick';
+export type FlapFlipKind = 'face' | 'final' | 'strike';
 
 export interface FlapFlip {
   kind: FlapFlipKind;
@@ -17,23 +17,13 @@ export interface FlapFlip {
   duration: number;
 }
 
-export interface FlapTurnRun {
-  motion: 'flap' | 'tick';
+export interface FlapRun {
   cell: number;
   start: number;
   end: number;
   faces: FlapFace[];
   flips: FlapFlip[];
 }
-
-export interface FlapFadeRun {
-  motion: 'fade';
-  cell: number;
-  start: number;
-  end: number;
-}
-
-export type FlapRun = FlapTurnRun | FlapFadeRun;
 
 export interface FlapCue {
   at: number;
@@ -53,7 +43,6 @@ export interface FlapScheduleRequest {
   previousCells: readonly string[] | null;
   play: FlapPlay;
   festive: boolean;
-  night: boolean;
   burst: boolean;
   tempo: KkGreetingTempo;
   countFrom: number | null;
@@ -73,17 +62,12 @@ const { faceMs, finalMs, staggerMs, maxConcurrent, maxCells } = kkTokens.motion.
 const { budgetMs } = kkTokens.motion.greeting;
 
 const SLOW_FACE_MS = 160;
-const TICK_MS = 180;
-const NIGHT_FADE_MS = 240;
-const NIGHT_STAGGER_MS = 30;
 const LINE_MS = 160;
 const LINE_LEAD_MS = 340;
 const ARRIVAL_SETTLE_MS = 960;
 const FESTIVE_SETTLE_MS = 1450;
-const DAILY_SETTLE_MS = 600;
 const WORD_FACES = 2;
 const FESTIVE_WORD_FACES = 3;
-const DAILY_WORD_FACES = 1;
 const ROLL_FACES = 4;
 const COUNT_FACES = 6;
 const DIGITS = 10;
@@ -117,8 +101,6 @@ const isArrival = (play: FlapPlay): boolean => play === 'full' || play === 'live
 
 const isAnimatable = (cell: FlapCell): boolean => cell.kind !== 'mark';
 
-export const isTurnRun = (run: FlapRun): run is FlapTurnRun => run.motion !== 'fade';
-
 const candidatesOf = (
   cells: readonly FlapCell[],
   previous: readonly (string | null)[],
@@ -132,9 +114,6 @@ const candidatesOf = (
     }
     if (isArrival(play)) {
       return [index];
-    }
-    if (play === 'daily') {
-      return cell.role === 'name' || changed(index) ? [index] : [];
     }
     if (play === 'tick') {
       return cell.kind === 'digit' && previous[index] !== null && changed(index) ? [index] : [];
@@ -202,16 +181,6 @@ const arrivalFacesOf = (cell: FlapCell, festive: boolean): FlapFace[] => {
   return [...deckFaces(festive ? FESTIVE_WORD_FACES : WORD_FACES), final];
 };
 
-const stepsOf = (cell: FlapCell, play: FlapPlay): FlapFace[] => {
-  const final = textFace(cell.face);
-
-  if (play === 'daily' && cell.kind === 'word') {
-    return [...deckFaces(DAILY_WORD_FACES), final];
-  }
-
-  return [final];
-};
-
 const openingOf = (faces: readonly FlapFace[]): Pick<CellPlan, 'from' | 'steps'> => {
   const [from = BLANK, ...steps] = faces;
 
@@ -240,7 +209,7 @@ const plansOf = (
     const before = previous[index] ?? null;
     const opening = isArrival(play)
       ? openingOf(countedSteps ?? arrivalFacesOf(cell, festive || burst))
-      : { from: before === null ? BLANK : textFace(before), steps: stepsOf(cell, play) };
+      : { from: before === null ? BLANK : textFace(before), steps: [textFace(cell.face)] };
 
     return [
       {
@@ -327,9 +296,6 @@ const settleTargetOf = (request: FlapScheduleRequest): number => {
   if (request.tempo === 'slow') {
     return budgetMs;
   }
-  if (request.play === 'daily') {
-    return DAILY_SETTLE_MS;
-  }
   if (request.festive || request.burst) {
     return FESTIVE_SETTLE_MS;
   }
@@ -350,8 +316,7 @@ const startOf = (frees: readonly number[], earliest: number, needed: number): nu
   return Math.max(earliest, sorted[Math.min(needed, sorted.length) - 1] ?? 0);
 };
 
-const runOf = (plan: CellPlan, start: number, step: number): FlapTurnRun => ({
-  motion: 'flap',
+const runOf = (plan: CellPlan, start: number, step: number): FlapRun => ({
   cell: plan.cell,
   start,
   end: start + durationOf(plan, step),
@@ -360,7 +325,7 @@ const runOf = (plan: CellPlan, start: number, step: number): FlapTurnRun => ({
 });
 
 interface Placement {
-  runs: FlapTurnRun[];
+  runs: FlapRun[];
   frees: number[];
   previousStart: number;
 }
@@ -372,7 +337,7 @@ const placedOf = (
   stagger: number,
   step: number,
   capOf: RunCap,
-): FlapTurnRun[] =>
+): FlapRun[] =>
   units.reduce<Placement>(
     (placement, unit) => {
       const start = startOf(placement.frees, placement.previousStart + stagger, unit.length);
@@ -396,42 +361,13 @@ const placedOf = (
 
 const endOf = (runs: readonly FlapRun[]): number => Math.max(0, ...runs.map((run) => run.end));
 
-const tickRunOf = (cells: readonly FlapCell[]): FlapTurnRun[] => {
-  const last = cells.findLastIndex(isAnimatable);
-  const cell = cells[last];
-
-  if (cell === undefined) {
-    return [];
-  }
-
-  const face = textFace(cell.face);
-
-  return [
-    {
-      motion: 'tick',
-      cell: last,
-      start: 0,
-      end: TICK_MS,
-      faces: [face, face],
-      flips: [{ kind: 'tick', at: 0, duration: TICK_MS }],
-    },
-  ];
-};
-
-const fadeRunsOf = (candidates: readonly number[]): FlapFadeRun[] =>
-  candidates.map((cell, order) => {
-    const start = order * NIGHT_STAGGER_MS;
-
-    return { motion: 'fade', cell, start, end: start + NIGHT_FADE_MS };
-  });
-
 const turnRunsOf = (
   request: FlapScheduleRequest,
   previous: readonly (string | null)[],
   candidates: readonly number[],
-): FlapTurnRun[] => {
+): FlapRun[] => {
   if (candidates.length === 0) {
-    return request.play === 'nod' ? tickRunOf(request.cells) : [];
+    return [];
   }
 
   const step = faceStepOf(request.tempo);
@@ -459,9 +395,7 @@ export const flapScheduleOf = (request: FlapScheduleRequest): FlapSchedule => {
 
   const previous = previousFacesOf(request.cells, request.previousCells);
   const candidates = candidatesOf(request.cells, previous, request.play);
-  const runs: FlapRun[] = request.night
-    ? fadeRunsOf(candidates)
-    : turnRunsOf(request, previous, candidates);
+  const runs = turnRunsOf(request, previous, candidates);
   const boardEnd = endOf(runs);
   const line = lineOf(request.play, boardEnd);
   const duration = Math.max(boardEnd, line === null ? 0 : line.at + line.duration);

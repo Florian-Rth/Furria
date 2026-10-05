@@ -1,9 +1,11 @@
+import type { MotionValue } from 'motion/react';
+import { animate, useMotionValue } from 'motion/react';
 import { useEffect, useEffectEvent, useLayoutEffect, useState } from 'react';
 import { daySeedOf } from './deck-fit';
 import type { FlapCell, KkGreetingPart } from './flap-cells';
 import { boundCellOf, flapFacesOf, toFlapCells } from './flap-cells';
 import type { FlapSchedule, KkGreetingTempo } from './flap-schedule';
-import { flapScheduleOf, isTurnRun } from './flap-schedule';
+import { flapScheduleOf } from './flap-schedule';
 import { sameFaces } from './greeting-board';
 import { useGreetingStage } from './greeting-context';
 import type { GreetingCue, GreetingPhase } from './greeting-cues';
@@ -14,7 +16,6 @@ import { measureGreeting } from './measure-greeting';
 
 export interface GreetingBoardProps {
   parts: readonly KkGreetingPart[];
-  previousCells?: readonly string[];
   deck: readonly string[];
   nameDeck?: readonly string[];
   tempo: KkGreetingTempo;
@@ -25,6 +26,7 @@ export interface GreetingBoardView {
   cells: FlapCell[];
   cues: GreetingCue[];
   twin: TwinBoard | null;
+  clock: MotionValue<number>;
   festive: boolean;
 }
 
@@ -38,6 +40,8 @@ interface MeasuredLayout extends TwinLayout {
 }
 
 const ARRIVAL = 'arrival';
+const MS_PER_SECOND = 1000;
+const UNMEASURED: TwinLayout = { boxes: [], deals: [] };
 
 const twinIdOf = (tick: GreetingTick | null, phase: GreetingPhase): string | null => {
   if (tick !== null) {
@@ -49,13 +53,13 @@ const twinIdOf = (tick: GreetingTick | null, phase: GreetingPhase): string | nul
 
 export const useGreetingBoard = ({
   parts,
-  previousCells,
   deck,
   nameDeck,
   tempo,
   countFrom,
 }: GreetingBoardProps): GreetingBoardView => {
-  const { play, festive, night, burst, phase, rootRef, publish, interrupt } = useGreetingStage();
+  const { play, festive, burst, phase, clock, root, publish, run, interrupt } = useGreetingStage();
+  const tickClock = useMotionValue(0);
   const cells = toFlapCells(parts);
   const faces = flapFacesOf(cells);
   const [seed] = useState(() => daySeedOf(new Date()));
@@ -66,10 +70,9 @@ export const useGreetingBoard = ({
 
   const arrival = flapScheduleOf({
     cells,
-    previousCells: previousCells ?? null,
+    previousCells: null,
     play,
     festive,
-    night,
     burst,
     tempo,
     countFrom: countFrom ?? null,
@@ -86,7 +89,6 @@ export const useGreetingBoard = ({
               previousCells: shown,
               play: 'tick',
               festive,
-              night,
               burst: false,
               tempo,
               countFrom: null,
@@ -99,20 +101,24 @@ export const useGreetingBoard = ({
   const active = tick?.schedule ?? arrival;
   const activePhase: GreetingPhase = tick === null ? phase : 'playing';
   const twinId = twinIdOf(tick, phase);
-  const turns = active.runs.some(isTurnRun);
+  const turns = active.runs.length > 0;
   const measuring = twinId !== null && turns ? twinId : null;
   const measured = layout !== null && layout.id === measuring ? layout : null;
-  const assembled = tick === null && !night && (play === 'full' || play === 'live');
+  const boarded = measuring === null || measured !== null;
+  const arrivalReady = tick === null && phase === 'playing' && boarded;
+  const tickReady = tick !== null && boarded;
+  const assembled = tick === null;
   const twin =
-    measuring === null || measured === null
+    measuring === null || measured === null || measured.boxes.length === 0
       ? null
       : twinOf(measuring, active, cells, measured, seed, assembled);
 
-  const measure = useEffectEvent((id: string): void => {
-    const root = rootRef.current;
-    const reading = root === null ? null : measureGreeting(root);
+  const measure = useEffectEvent((id: string, within: HTMLDivElement): void => {
+    const reading = measureGreeting(within);
 
     if (reading === null) {
+      setLayout({ id, ...UNMEASURED });
+
       return;
     }
 
@@ -129,15 +135,25 @@ export const useGreetingBoard = ({
 
   const reshaped = useEffectEvent((): boolean => cells.length !== arrivalCount);
 
-  useLayoutEffect(() => {
-    publish({ schedule: arrival, faces });
+  const runArrival = useEffectEvent((): void => {
+    run(arrival.duration);
   });
 
   useLayoutEffect(() => {
-    if (measuring !== null) {
-      measure(measuring);
+    publish(arrival);
+  });
+
+  useLayoutEffect(() => {
+    if (measuring !== null && root !== null) {
+      measure(measuring, root);
     }
-  }, [measuring]);
+  }, [measuring, root]);
+
+  useLayoutEffect(() => {
+    if (arrivalReady) {
+      runArrival();
+    }
+  }, [arrivalReady]);
 
   useEffect(() => {
     if (phase === 'playing' && reshaped()) {
@@ -145,25 +161,30 @@ export const useGreetingBoard = ({
     }
   });
 
-  useEffect(() => {
-    if (tick === null) {
+  useLayoutEffect(() => {
+    if (tick === null || !tickReady) {
       return;
     }
 
-    const timer = window.setTimeout(() => {
-      setTick(null);
-    }, tick.schedule.duration);
+    tickClock.jump(0);
+    const controls = animate(tickClock, tick.schedule.duration, {
+      duration: tick.schedule.duration / MS_PER_SECOND,
+      ease: 'linear',
+      onComplete: () => {
+        setTick(null);
+      },
+    });
 
     return () => {
-      window.clearTimeout(timer);
+      controls.stop();
     };
-  }, [tick]);
+  }, [tick, tickReady, tickClock]);
 
   const cues = cells.map((_, index) =>
     tick !== null && twin === null
       ? SHOWN_CUE
-      : inkCueOf(index, active, activePhase, boundCellOf(cells, index)),
+      : inkCueOf(index, active, activePhase, tick === null ? boundCellOf(cells, index) : null),
   );
 
-  return { cells, cues, twin, festive };
+  return { cells, cues, twin, clock: tick === null ? clock : tickClock, festive };
 };

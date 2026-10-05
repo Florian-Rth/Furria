@@ -1,12 +1,12 @@
-import { useMotionValueEvent } from 'motion/react';
+import type { AnimationPlaybackControls } from 'motion/react';
+import { animate, useMotionValue, useMotionValueEvent } from 'motion/react';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { useConfettiDock } from '../../../KkShell/handover/confetti/confetti-dock-context';
 import { useScreenArrivalHold } from '../../../KkShell/internal/logic/screen-arrival';
 import { useKkShellScroll } from '../../../KkShell/internal/logic/shell-scroll';
 import { kkTokens } from '../../../tokens';
-import type { KkGreetingPlay } from './flap-schedule';
-import type { GreetingBoard } from './greeting-board';
-import { sameBoard } from './greeting-board';
+import type { FlapSchedule, KkGreetingPlay } from './flap-schedule';
+import { sameSchedule } from './greeting-board';
 import type { GreetingStage } from './greeting-context';
 import type { GreetingPhase } from './greeting-cues';
 import type { GreetingPoint } from './greeting-geometry';
@@ -17,9 +17,8 @@ import { burstOriginIn } from './measure-greeting';
 export interface GreetingConductorProps {
   play: KkGreetingPlay;
   festive: boolean;
-  night: boolean;
   burst: boolean;
-  onSettled: (cells: string[], burstFired: boolean) => void;
+  follows?: boolean;
 }
 
 export interface GreetingBurstShot {
@@ -34,36 +33,43 @@ export interface GreetingConductor {
 
 const { startMs, hingeMs } = kkTokens.motion.greeting;
 
+const MS_PER_SECOND = 1000;
 const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
 const INPUT_INTERRUPTS = ['pointerdown', 'wheel', 'keydown', 'resize'] as const;
 const LISTENING: AddEventListenerOptions = { capture: true, passive: true };
 
-const firstPhaseOf = (play: KkGreetingPlay): GreetingPhase =>
-  play === 'still' ? 'settled' : 'waiting';
-
 const isHidden = (): boolean => document.visibilityState === 'hidden';
+
+const firstPhaseOf = (play: KkGreetingPlay, follows: boolean): GreetingPhase => {
+  if (play === 'still') {
+    return 'settled';
+  }
+  if (follows) {
+    return isHidden() ? 'settled' : 'playing';
+  }
+
+  return 'waiting';
+};
 
 export const useGreetingConductor = ({
   play,
   festive,
-  night,
   burst,
-  onSettled,
+  follows = false,
 }: GreetingConductorProps): GreetingConductor => {
-  const rootRef = useRef<HTMLDivElement>(null);
-  const reportedRef = useRef(false);
-  const burstFiredRef = useRef(false);
-  const [phase, setPhase] = useState<GreetingPhase>(() => firstPhaseOf(play));
+  const burstDueRef = useRef(true);
+  const runningRef = useRef<AnimationPlaybackControls | null>(null);
+  const clock = useMotionValue(0);
+  const [root, setRoot] = useState<HTMLDivElement | null>(null);
+  const [phase, setPhase] = useState<GreetingPhase>(() => firstPhaseOf(play, follows));
   const [stilled, setStilled] = useState(false);
-  const [board, setBoard] = useState<GreetingBoard | null>(null);
+  const [schedule, setSchedule] = useState<FlapSchedule | null>(null);
   const [shot, setShot] = useState<GreetingBurstShot | null>(null);
   const [landed, setLanded] = useState(false);
   const { scrollY } = useKkShellScroll();
   const dock = useConfettiDock();
-  const duration = board?.schedule.duration ?? null;
-  const burstAt = board?.schedule.burstAt ?? null;
-  const faces = board?.faces ?? null;
-  const landsAt = board === null ? null : landingAtOf(board.schedule);
+  const burstAt = schedule?.burstAt ?? null;
+  const landsAt = schedule === null ? null : landingAtOf(schedule);
 
   useScreenArrivalHold(phase !== 'settled' && !landed);
 
@@ -71,8 +77,22 @@ export const useGreetingConductor = ({
     setPhase('settled');
   };
 
-  const publish = (next: GreetingBoard): void => {
-    setBoard((current) => (sameBoard(current, next) ? current : next));
+  const publish = (next: FlapSchedule): void => {
+    setSchedule((current) => (sameSchedule(current, next) ? current : next));
+  };
+
+  const run = (duration: number): void => {
+    if (phase !== 'playing' || runningRef.current !== null) {
+      return;
+    }
+
+    runningRef.current = animate(clock, duration, {
+      duration: duration / MS_PER_SECOND,
+      ease: 'linear',
+      onComplete: () => {
+        setPhase('settled');
+      },
+    });
   };
 
   const isWaiting = useEffectEvent((): boolean => phase === 'waiting');
@@ -94,24 +114,29 @@ export const useGreetingConductor = ({
     });
   });
 
-  const fire = useEffectEvent((): void => {
+  const fire = (): void => {
+    burstDueRef.current = false;
+
     if (dock.isDocked()) {
       dock.replayLanding();
-      burstFiredRef.current = true;
 
       return;
     }
 
-    const origin = burstOriginIn(rootRef.current);
+    const origin = burstOriginIn(root);
 
     if (origin !== null) {
-      burstFiredRef.current = true;
       setShot({ key: Date.now(), origin });
     }
-  });
+  };
 
-  const report = useEffectEvent((settled: readonly string[]): void => {
-    onSettled([...settled], burstFiredRef.current);
+  useMotionValueEvent(clock, 'change', (elapsed: number): void => {
+    if (!landed && landsAt !== null && elapsed >= landsAt) {
+      setLanded(true);
+    }
+    if (burstDueRef.current && burstAt !== null && elapsed >= burstAt) {
+      fire();
+    }
   });
 
   useMotionValueEvent(scrollY, 'change', (offset: number): void => {
@@ -155,37 +180,14 @@ export const useGreetingConductor = ({
   }, []);
 
   useEffect(() => {
-    if (phase !== 'playing' || duration === null) {
+    if (phase !== 'playing') {
       return;
     }
 
-    const burstTimer = burstAt === null ? null : window.setTimeout(fire, burstAt);
-    const settleTimer = window.setTimeout(() => {
-      setPhase('settled');
-    }, duration);
-
     return () => {
-      window.clearTimeout(settleTimer);
-
-      if (burstTimer !== null) {
-        window.clearTimeout(burstTimer);
-      }
+      runningRef.current?.stop();
     };
-  }, [phase, duration, burstAt]);
-
-  useEffect(() => {
-    if (phase !== 'playing' || landsAt === null) {
-      return;
-    }
-
-    const landTimer = window.setTimeout(() => {
-      setLanded(true);
-    }, landsAt);
-
-    return () => {
-      window.clearTimeout(landTimer);
-    };
-  }, [phase, landsAt]);
+  }, [phase]);
 
   useEffect(() => {
     if (phase === 'settled') {
@@ -215,25 +217,18 @@ export const useGreetingConductor = ({
     };
   }, [phase]);
 
-  useEffect(() => {
-    if (phase !== 'settled' || faces === null || reportedRef.current) {
-      return;
-    }
-
-    reportedRef.current = true;
-    report(faces);
-  }, [phase, faces]);
-
   return {
     stage: {
       play: stilled ? 'still' : play,
       festive,
-      night,
       burst,
       phase,
-      board,
-      rootRef,
+      schedule,
+      clock,
+      root,
+      attach: setRoot,
       publish,
+      run,
       interrupt,
     },
     shot,

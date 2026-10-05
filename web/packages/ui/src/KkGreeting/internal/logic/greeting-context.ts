@@ -1,18 +1,19 @@
-import type { RefObject } from 'react';
+import type { MotionValue } from 'motion/react';
 import { createContext, useContext } from 'react';
-import type { KkGreetingPlay } from './flap-schedule';
-import type { GreetingBoard } from './greeting-board';
+import type { FlapSchedule, KkGreetingPlay } from './flap-schedule';
 import type { GreetingPhase } from './greeting-cues';
 
 export interface GreetingStage {
   play: KkGreetingPlay;
   festive: boolean;
-  night: boolean;
   burst: boolean;
   phase: GreetingPhase;
-  board: GreetingBoard | null;
-  rootRef: RefObject<HTMLDivElement | null>;
-  publish: (board: GreetingBoard) => void;
+  schedule: FlapSchedule | null;
+  clock: MotionValue<number>;
+  root: HTMLDivElement | null;
+  attach: (root: HTMLDivElement | null) => void;
+  publish: (schedule: FlapSchedule) => void;
+  run: (duration: number) => void;
   interrupt: () => void;
 }
 

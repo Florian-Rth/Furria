@@ -1,104 +1,122 @@
 import { describe, expect, it } from 'vitest';
-import type { GreetingMoment } from './greeting-act';
-import type { GreetingMemory } from './greeting-memory';
+import type { GreetingAct } from './greeting-act';
 import type { GreetingPlayDecision } from './greeting-play';
 import { greetingPlayOf } from './greeting-play';
 
 interface PlayCase {
   label: string;
-  act: { moment: GreetingMoment; key: string; sessionYear: number };
-  memory: GreetingMemory | null;
+  act: GreetingAct;
   reducedMotion: boolean;
-  cellCount: number;
   expected: GreetingPlayDecision;
 }
 
-const TODAY_KEY = 'daily:2027-01-19';
-const YESTERDAY_KEY = 'daily:2027-01-18';
-const CALL_KEY = 'carnivalCall:2026-11-11';
-const DAILY = { moment: 'daily', key: TODAY_KEY, sessionYear: 2026 } as const;
-const CALL = { moment: 'carnivalCall', key: CALL_KEY, sessionYear: 2026 } as const;
-const COUNTDOWN = {
+const SESSION_DAY = { kind: 'sessionDay', day: 70 } as const;
+
+const DAILY: GreetingAct = {
+  moment: 'daily',
+  clause: SESSION_DAY,
+  festive: false,
+  key: 'daily:2027-01-19',
+  sessionYear: 2026,
+  ordinal: 12,
+};
+const CALL: GreetingAct = {
+  moment: 'carnivalCall',
+  clause: null,
+  festive: true,
+  key: 'carnivalCall:2026-11-11',
+  sessionYear: 2026,
+  ordinal: 12,
+};
+const COUNTDOWN: GreetingAct = {
   moment: 'openingCountdown',
+  secondsToOpening: 450,
+  clause: null,
+  festive: false,
   key: 'openingCountdown:2026-11-11',
   sessionYear: 2026,
-} as const;
+  ordinal: 12,
+};
+const BIRTHDAY: GreetingAct = {
+  moment: 'birthday',
+  clause: SESSION_DAY,
+  festive: true,
+  key: 'birthday:2027-01-19',
+  sessionYear: 2026,
+  ordinal: 12,
+};
+const ROUND_JOIN: GreetingAct = {
+  moment: 'joinAnniversary',
+  years: 11,
+  clause: SESSION_DAY,
+  festive: true,
+  key: 'joinAnniversary:2027-01-19',
+  sessionYear: 2026,
+  ordinal: 12,
+};
+const KEHRAUS: GreetingAct = {
+  moment: 'carnivalTuesday',
+  clause: null,
+  festive: true,
+  key: 'carnivalTuesday:2027-02-09',
+  sessionYear: 2026,
+  ordinal: 12,
+};
 
 describe('greetingPlayOf', () => {
   it.each<PlayCase>([
     {
       label: 'she prefers reduced motion',
       act: CALL,
-      memory: null,
       reducedMotion: true,
-      cellCount: 3,
       expected: { play: 'still', burst: false },
     },
     {
       label: 'the countdown runs',
       act: COUNTDOWN,
-      memory: { v: 1, key: COUNTDOWN.key, cells: ['NOCH', '2', ':', '3', '7'] },
       reducedMotion: false,
-      cellCount: 6,
       expected: { play: 'live', burst: false },
     },
     {
-      label: 'the device remembers nothing',
+      label: 'an ordinary day opens',
       act: DAILY,
-      memory: null,
       reducedMotion: false,
-      cellCount: 6,
       expected: { play: 'full', burst: false },
     },
     {
-      label: 'the board grew a cell since yesterday',
-      act: DAILY,
-      memory: { v: 1, key: YESTERDAY_KEY, cells: ['TAG', '9', 'DER', 'SESSION,', 'LENA.'] },
+      label: 'the call sounds',
+      act: CALL,
       reducedMotion: false,
-      cellCount: 6,
+      expected: { play: 'full', burst: true },
+    },
+    {
+      label: 'her birthday opens',
+      act: BIRTHDAY,
+      reducedMotion: false,
+      expected: { play: 'full', burst: true },
+    },
+    {
+      label: 'a round join anniversary opens',
+      act: ROUND_JOIN,
+      reducedMotion: false,
+      expected: { play: 'full', burst: true },
+    },
+    {
+      label: 'a plain join anniversary opens',
+      act: { ...ROUND_JOIN, years: 3, festive: false },
+      reducedMotion: false,
       expected: { play: 'full', burst: false },
     },
     {
-      label: 'she comes back on the same day',
-      act: DAILY,
-      memory: { v: 1, key: TODAY_KEY, cells: ['TAG', '7', '0', 'DER', 'SESSION,', 'LENA.'] },
+      label: 'Kehraus opens',
+      act: KEHRAUS,
       reducedMotion: false,
-      cellCount: 6,
-      expected: { play: 'nod', burst: false },
+      expected: { play: 'full', burst: false },
     },
-    {
-      label: 'she opens the first time today',
-      act: DAILY,
-      memory: { v: 1, key: YESTERDAY_KEY, cells: ['TAG', '6', '9', 'DER', 'SESSION,', 'LENA.'] },
-      reducedMotion: false,
-      cellCount: 6,
-      expected: { play: 'daily', burst: false },
+  ])(
+    'plays $expected.play (burst $expected.burst) when $label',
+    ({ act, reducedMotion, expected }) => {
+      expect(greetingPlayOf(act, reducedMotion)).toEqual(expected);
     },
-    {
-      label: 'the call sounds for the first time this session',
-      act: CALL,
-      memory: { v: 1, key: CALL_KEY, cells: ['GROSS', '-', 'FURRIA!'], burstYear: 2025 },
-      reducedMotion: false,
-      cellCount: 3,
-      expected: { play: 'full', burst: true },
-    },
-    {
-      label: 'the call sounds on a device that remembers nothing',
-      act: CALL,
-      memory: null,
-      reducedMotion: false,
-      cellCount: 3,
-      expected: { play: 'full', burst: true },
-    },
-    {
-      label: 'the call already burst on this device',
-      act: CALL,
-      memory: { v: 1, key: CALL_KEY, cells: ['GROSS', '-', 'FURRIA!'], burstYear: 2026 },
-      reducedMotion: false,
-      cellCount: 3,
-      expected: { play: 'nod', burst: false },
-    },
-  ])('plays $expected.play when $label', ({ act, memory, reducedMotion, cellCount, expected }) => {
-    expect(greetingPlayOf(act, memory, reducedMotion, cellCount)).toEqual(expected);
-  });
+  );
 });

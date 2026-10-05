@@ -13,6 +13,7 @@ export const KkGreetingHeadline: FC<GreetingBoardProps> = (props) => {
       key={cell.slot}
       cell={cell}
       cue={board.cues[index] ?? SHOWN_CUE}
+      clock={board.clock}
       festive={board.festive}
     />
   ));
@@ -20,7 +21,7 @@ export const KkGreetingHeadline: FC<GreetingBoardProps> = (props) => {
   return (
     <>
       <KkScreenHeader.Title>{ink}</KkScreenHeader.Title>
-      <GreetingTwin twin={board.twin} />
+      <GreetingTwin twin={board.twin} clock={board.clock} />
     </>
   );
 };

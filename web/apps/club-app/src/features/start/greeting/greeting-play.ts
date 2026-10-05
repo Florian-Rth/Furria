@@ -1,19 +1,26 @@
-import type { GreetingAct } from './greeting-act';
-import type { GreetingMemory } from './greeting-memory';
+import type { GreetingAct, GreetingMoment } from './greeting-act';
+import { isRoundYears } from './greeting-act';
 
-export type GreetingPlay = 'still' | 'live' | 'full' | 'nod' | 'daily';
+export type GreetingPlay = 'still' | 'live' | 'full';
 
 export interface GreetingPlayDecision {
   play: GreetingPlay;
   burst: boolean;
 }
 
-export const greetingPlayOf = (
-  act: Pick<GreetingAct, 'moment' | 'key' | 'sessionYear'>,
-  memory: GreetingMemory | null,
-  reducedMotion: boolean,
-  cellCount: number,
-): GreetingPlayDecision => {
+const CELEBRATED_MOMENTS: ReadonlySet<GreetingMoment> = new Set([
+  'carnivalCall',
+  'birthday',
+  'womensCarnivalDay',
+  'roseMonday',
+  'welcome',
+]);
+
+const celebrates = (act: GreetingAct): boolean =>
+  CELEBRATED_MOMENTS.has(act.moment) ||
+  (act.moment === 'joinAnniversary' && isRoundYears(act.years));
+
+export const greetingPlayOf = (act: GreetingAct, reducedMotion: boolean): GreetingPlayDecision => {
   if (reducedMotion) {
     return { play: 'still', burst: false };
   }
@@ -21,11 +28,5 @@ export const greetingPlayOf = (
     return { play: 'live', burst: false };
   }
 
-  const burst = act.moment === 'carnivalCall' && memory?.burstYear !== act.sessionYear;
-
-  if (burst || memory === null || memory.cells.length !== cellCount) {
-    return { play: 'full', burst };
-  }
-
-  return { play: memory.key === act.key ? 'nod' : 'daily', burst: false };
+  return { play: 'full', burst: celebrates(act) };
 };

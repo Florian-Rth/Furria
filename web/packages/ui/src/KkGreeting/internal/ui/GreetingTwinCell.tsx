@@ -1,3 +1,4 @@
+import type { MotionValue } from 'motion/react';
 import { motion } from 'motion/react';
 import type { CSSProperties, FC } from 'react';
 import { FlapGlyph } from '../../../internal/flap/FlapGlyph';
@@ -14,10 +15,11 @@ const LINE_FIT: FlapTileFit = 'line';
 interface GreetingTwinCellProps {
   cell: TwinCell;
   tone: FlapTileTone;
+  clock: MotionValue<number>;
 }
 
-export const GreetingTwinCell: FC<GreetingTwinCellProps> = ({ cell, tone }) => {
-  const flap = useFlapCellMotion(cell.track, cell.faces);
+export const GreetingTwinCell: FC<GreetingTwinCellProps> = ({ cell, tone, clock }) => {
+  const flap = useFlapCellMotion(clock, cell.track, cell.faces);
   const tileInk = tone === 'gold' ? 'onGold' : 'inverse';
   const box: CSSProperties = {
     position: 'absolute',

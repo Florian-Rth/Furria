@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
 import { greetingTickDelayOf } from '../greeting/greeting-stage';
 
-export const useGreetingClock = (everySecond: boolean): Date => {
-  const [now, setNow] = useState(() => new Date());
+const shiftedNow = (shiftMs: number): Date => new Date(Date.now() + shiftMs);
+
+export const useGreetingClock = (everySecond: boolean, shiftMs: number): Date => {
+  const [now, setNow] = useState(() => shiftedNow(shiftMs));
 
   useEffect(() => {
     const timer = setTimeout(
       () => {
-        setNow(new Date());
+        setNow(shiftedNow(shiftMs));
       },
       greetingTickDelayOf(now, everySecond),
     );
@@ -15,12 +17,12 @@ export const useGreetingClock = (everySecond: boolean): Date => {
     return () => {
       clearTimeout(timer);
     };
-  }, [now, everySecond]);
+  }, [now, everySecond, shiftMs]);
 
   useEffect(() => {
     const catchUp = (): void => {
       if (document.visibilityState === 'visible') {
-        setNow(new Date());
+        setNow(shiftedNow(shiftMs));
       }
     };
 
@@ -29,7 +31,7 @@ export const useGreetingClock = (everySecond: boolean): Date => {
     return () => {
       document.removeEventListener('visibilitychange', catchUp);
     };
-  }, []);
+  }, [shiftMs]);
 
   return now;
 };

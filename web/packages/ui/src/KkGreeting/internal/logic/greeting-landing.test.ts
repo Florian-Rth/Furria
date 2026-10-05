@@ -14,7 +14,6 @@ describe('landingAtOf', () => {
   it('lands when the last cell starts its final fall, not when its rebound ends', () => {
     const schedule = scheduleOf([
       {
-        motion: 'flap',
         cell: 0,
         start: 0,
         end: 450,
@@ -25,7 +24,6 @@ describe('landingAtOf', () => {
         ],
       },
       {
-        motion: 'flap',
         cell: 1,
         start: 55,
         end: 505,
@@ -40,24 +38,10 @@ describe('landingAtOf', () => {
     expect(landingAtOf(schedule)).toBe(275);
   });
 
-  it.each<[string, FlapRun[], number]>([
-    ['a night fade', [{ motion: 'fade', cell: 0, start: 30, end: 270 }], 270],
-    [
-      'a nod tick',
-      [
-        {
-          motion: 'tick',
-          cell: 3,
-          start: 0,
-          end: 180,
-          faces: [],
-          flips: [{ kind: 'tick', at: 0, duration: 180 }],
-        },
-      ],
-      180,
-    ],
-    ['an empty board', [], 0],
-  ])('waits for %s to finish', (_, runs, landing) => {
-    expect(landingAtOf(scheduleOf(runs))).toBe(landing);
-  });
+  it.each<[string, FlapRun[], number]>([['an empty board', [], 0]])(
+    'waits for %s to finish',
+    (_, runs, landing) => {
+      expect(landingAtOf(scheduleOf(runs))).toBe(landing);
+    },
+  );
 });

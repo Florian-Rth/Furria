@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { FlapTrack } from './flap-keyframes';
 import { flapKeyframesOf } from './flap-keyframes';
-import type { FlapFace, FlapSchedule, FlapTurnRun } from './flap-schedule';
+import type { FlapFace, FlapRun, FlapSchedule } from './flap-schedule';
 
 const text = (face: string): FlapFace => ({ kind: 'text', text: face });
 
@@ -13,8 +13,7 @@ const scheduleOf = (runs: FlapSchedule['runs']): FlapSchedule => ({
   duration: Math.max(0, ...runs.map((run) => run.end)),
 });
 
-const SINGLE: FlapTurnRun = {
-  motion: 'flap',
+const SINGLE: FlapRun = {
   cell: 3,
   start: 120,
   end: 350,
@@ -22,8 +21,7 @@ const SINGLE: FlapTurnRun = {
   flips: [{ kind: 'final', at: 120, duration: 230 }],
 };
 
-const RATTLE: FlapTurnRun = {
-  motion: 'flap',
+const RATTLE: FlapRun = {
   cell: 0,
   start: 0,
   end: 450,
@@ -35,8 +33,7 @@ const RATTLE: FlapTurnRun = {
   ],
 };
 
-const COUNTING: FlapTurnRun = {
-  motion: 'flap',
+const COUNTING: FlapRun = {
   cell: 0,
   start: 0,
   end: 450,
@@ -47,8 +44,7 @@ const COUNTING: FlapTurnRun = {
   ],
 };
 
-const STRIKE: FlapTurnRun = {
-  motion: 'flap',
+const STRIKE: FlapRun = {
   cell: 2,
   start: 0,
   end: 340,
@@ -56,16 +52,7 @@ const STRIKE: FlapTurnRun = {
   flips: [{ kind: 'strike', at: 0, duration: 340 }],
 };
 
-const TICK: FlapTurnRun = {
-  motion: 'tick',
-  cell: 8,
-  start: 0,
-  end: 180,
-  faces: [text('Lena.'), text('Lena.')],
-  flips: [{ kind: 'tick', at: 0, duration: 180 }],
-};
-
-const trackOf = (run: FlapTurnRun): FlapTrack => {
+const trackOf = (run: FlapRun): FlapTrack => {
   const [track] = flapKeyframesOf(scheduleOf([run]));
 
   if (track === undefined) {
@@ -76,18 +63,16 @@ const trackOf = (run: FlapTurnRun): FlapTrack => {
 };
 
 const valueAt = (track: FlapTrack, values: readonly number[], at: number): number => {
-  const index = track.times.findIndex((time) => time * track.duration >= at);
+  const index = track.at.findIndex((time) => time >= at);
 
   return values[index] ?? Number.NaN;
 };
 
 describe('flapKeyframesOf', () => {
-  it('bakes one track per turning cell and none for a fading one', () => {
-    const tracks = flapKeyframesOf(
-      scheduleOf([RATTLE, SINGLE, { motion: 'fade', cell: 5, start: 0, end: 240 }]),
-    );
+  it('bakes one track per turning cell', () => {
+    const tracks = flapKeyframesOf(scheduleOf([RATTLE, SINGLE]));
 
-    expect(tracks.map((track) => [track.cell, track.delay])).toEqual([
+    expect(tracks.map((track) => [track.cell, track.at[0]])).toEqual([
       [0, 0],
       [3, 120],
     ]);
@@ -98,13 +83,14 @@ describe('flapKeyframesOf', () => {
     ['a rattle', RATTLE],
     ['a count with a hold', COUNTING],
     ['a strike', STRIKE],
-    ['a tick', TICK],
-  ])('times %s strictly forward from 0 to 1', (_, run) => {
-    const { times } = trackOf(run);
+  ])('times %s strictly forward on the board clock from its start to its end', (_, run) => {
+    const { at } = trackOf(run);
 
-    expect(times[0]).toBe(0);
-    expect(times.at(-1)).toBe(1);
-    expect(times.slice(1).every((time, index) => time > (times[index] ?? 1))).toBe(true);
+    expect(at[0]).toBe(run.start);
+    expect(at.at(-1)).toBe(run.end);
+    expect(at.slice(1).every((time, index) => time > (at[index] ?? Number.POSITIVE_INFINITY))).toBe(
+      true,
+    );
   });
 
   it.each([
@@ -159,21 +145,21 @@ describe('flapKeyframesOf', () => {
     ]).toEqual([-90, 0, 1]);
   });
 
-  it('bounces a strike a second time after it lands', () => {
-    const track = trackOf(STRIKE);
-    const secondBounce = track.land.filter(
-      (_, index) => (track.times[index] ?? 0) * track.duration > 240,
+  it('lays a closing flip flat before its tile closes into the hinge', () => {
+    const track = trackOf(SINGLE);
+    const closing = track.land.filter(
+      (_, index) => (track.at[index] ?? 0) > 200 && (track.presence[index] ?? 1) < 1,
     );
 
-    expect(Math.max(...secondBounce)).toBeGreaterThan(0);
+    expect(closing.length).toBeGreaterThan(0);
+    expect(new Set(closing)).toEqual(new Set([0]));
   });
 
-  it('swings a tick down and back up on the same face', () => {
-    const track = trackOf(TICK);
+  it('bounces a strike a second time after it lands', () => {
+    const track = trackOf(STRIKE);
+    const secondBounce = track.land.filter((_, index) => (track.at[index] ?? 0) > 240);
 
-    expect(Math.min(...track.fall)).toBe(-90);
-    expect(track.fall.at(-1)).toBeCloseTo(0);
-    expect(new Set(track.face)).toEqual(new Set([0]));
+    expect(Math.max(...secondBounce)).toBeGreaterThan(0);
   });
 
   it('stands an assembled board up whole before a later cell starts to turn', () => {
@@ -183,7 +169,7 @@ describe('flapKeyframesOf', () => {
       throw new Error('A turn run bakes one track.');
     }
 
-    expect([track.delay, track.presence[0], valueAt(track, track.presence, 100)]).toEqual([
+    expect([track.at[0], track.presence[0], valueAt(track, track.presence, 100)]).toEqual([
       0, 1, 1,
     ]);
     expect(valueAt(track, track.face, 100)).toBe(0);
@@ -193,7 +179,7 @@ describe('flapKeyframesOf', () => {
   it('stands a cell that turns at once on its tile from the first frame of an assembled board', () => {
     const [assembled] = flapKeyframesOf(scheduleOf([RATTLE]), true);
 
-    expect([assembled?.delay, assembled?.presence[0], assembled?.presence.at(-1)]).toEqual([
+    expect([assembled?.at[0], assembled?.presence[0], assembled?.presence.at(-1)]).toEqual([
       0, 1, 0,
     ]);
   });

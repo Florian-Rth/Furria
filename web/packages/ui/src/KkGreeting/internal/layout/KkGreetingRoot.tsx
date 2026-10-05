@@ -16,7 +16,7 @@ export const KkGreetingRoot: FC<KkGreetingRootProps> = ({ children, ...conductin
 
   return (
     <GreetingStageContext.Provider value={stage}>
-      <Box ref={stage.rootRef} data-kk-greeting sx={STAGE}>
+      <Box ref={stage.attach} data-kk-greeting sx={STAGE}>
         <KkScreenHeader>
           <KkScreenHeader.Text>{children}</KkScreenHeader.Text>
         </KkScreenHeader>

@@ -3,7 +3,7 @@ import type { GreetingAct } from './greeting-act';
 import { HEADLINE_DECKS } from './greeting-decks';
 import { greetingTickDelayOf, toGreetingStage } from './greeting-stage';
 
-const STAGING = { festive: false, night: false, key: 'k', sessionYear: 2026, ordinal: 12 };
+const STAGING = { festive: false, key: 'k', sessionYear: 2026, ordinal: 12 };
 const CLAUSE = { kind: 'sessionDay', day: 70 } as const;
 
 describe('toGreetingStage', () => {

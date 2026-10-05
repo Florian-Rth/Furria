@@ -31,7 +31,7 @@ interface CopyCase {
   expected: CopySummary;
 }
 
-const STAGE = { festive: false, night: false, key: 'daily:2027-01-19', sessionYear: 2026 };
+const STAGE = { festive: false, key: 'daily:2027-01-19', sessionYear: 2026 };
 
 const claused = (
   moment: ClausedMoment,
@@ -309,16 +309,6 @@ describe('toGreetingCopy', () => {
     },
     { label: 'Aschermittwoch', act: clauseless('ashWednesday', 12), expected: 'backwards' },
     { label: 'the stroke of 11:11', act: clauseless('carnivalCall', 12), expected: 'carnival' },
-    {
-      label: 'her birthday at night',
-      act: { ...claused('birthday', { kind: 'sessionDay', day: 70 }, 12), night: true },
-      expected: 'none',
-    },
-    {
-      label: 'an ordinary night',
-      act: { ...claused('daily', { kind: 'untilOpening', days: 40 }, null), night: true },
-      expected: 'none',
-    },
   ])('rattles the $expected deck on $label', ({ act, expected }) => {
     expect(toGreetingCopy(act, 'Lena').deck).toBe(expected);
   });

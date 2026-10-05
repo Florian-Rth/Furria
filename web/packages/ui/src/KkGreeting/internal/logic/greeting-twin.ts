@@ -6,8 +6,7 @@ import { deckFacesOf, deckForCell, orderedFacesOf } from './deck-fit';
 import type { FlapCell } from './flap-cells';
 import type { FlapTrack } from './flap-keyframes';
 import { flapKeyframesOf } from './flap-keyframes';
-import type { FlapSchedule, FlapTurnRun } from './flap-schedule';
-import { isTurnRun } from './flap-schedule';
+import type { FlapRun, FlapSchedule } from './flap-schedule';
 import type { GreetingRect } from './greeting-geometry';
 
 export interface FlapDeal {
@@ -58,7 +57,7 @@ export const dealOf = (
   return { faces: deckForCell(width, source, widthOf), ordered };
 };
 
-export const twinFacesOf = (run: FlapTurnRun, deal: FlapDeal, seed: number): string[] => {
+export const twinFacesOf = (run: FlapRun, deal: FlapDeal, seed: number): string[] => {
   const count = Math.max(0, ...run.faces.map((face) => (face.kind === 'deck' ? face.slot + 1 : 0)));
   const dealt = deal.ordered
     ? orderedFacesOf(deal.faces, count)
@@ -85,7 +84,7 @@ export const twinOf = (
 ): TwinBoard => {
   const tracks = flapKeyframesOf(schedule, assembled);
 
-  const twinCells = schedule.runs.filter(isTurnRun).flatMap((run) => {
+  const twinCells = schedule.runs.flatMap((run) => {
     const box = layout.boxes[run.cell] ?? null;
     const track = tracks.find((candidate) => candidate.cell === run.cell);
     const cell = cells[run.cell];

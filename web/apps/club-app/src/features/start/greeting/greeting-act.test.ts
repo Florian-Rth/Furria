@@ -428,17 +428,6 @@ describe('greetingActAt', () => {
   });
 
   it.each([
-    { label: 'late evening', now: new Date(2026, 9, 2, 23, 30), expected: true },
-    { label: 'the small hours', now: new Date(2026, 9, 3, 4, 59), expected: true },
-    { label: 'five in the morning', now: new Date(2026, 9, 3, 5, 0), expected: false },
-    { label: 'the last evening hour', now: new Date(2026, 9, 2, 22, 59), expected: false },
-    { label: 'the night of 11.11.', now: new Date(2026, 10, 11, 23, 30), expected: false },
-    { label: 'the night after 11.11.', now: new Date(2026, 10, 12, 0, 30), expected: true },
-  ])('is night $expected at $label', ({ now, expected }) => {
-    expect(greetingActAt(now, viewer()).night).toBe(expected);
-  });
-
-  it.each([
     {
       label: 'an ordinary day',
       now: new Date(2026, 9, 2, 12, 0),

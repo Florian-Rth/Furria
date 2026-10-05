@@ -1,9 +1,7 @@
 import Box from '@mui/material/Box';
 import type { CSSObject, Theme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
-import type { MotionValue } from 'motion/react';
-import { motion } from 'motion/react';
-import type { CSSProperties, FC } from 'react';
+import type { FC } from 'react';
 import { kkTokens } from '../../tokens';
 import type { KkScheme } from '../scheme-paint';
 import { applyScheme } from '../scheme-paint';
@@ -17,8 +15,6 @@ const { material } = kkTokens.shell;
 const HINGE = kkTokens.line.hair / 2;
 const TOP_LIGHT = 1;
 const TOP_LIGHT_SHARE = 0.18;
-
-const FILL_STYLE: CSSProperties = { position: 'absolute', inset: 0 };
 
 const SEAM = 1;
 
@@ -65,13 +61,10 @@ const tilePaintOf =
   };
 
 interface FlapTileProps {
-  presence: MotionValue<number> | number;
   tone?: FlapTileTone;
   fit?: FlapTileFit;
 }
 
-export const FlapTile: FC<FlapTileProps> = ({ presence, tone = 'ink', fit = 'bleed' }) => (
-  <motion.span style={{ ...FILL_STYLE, opacity: presence }}>
-    <Box component="span" sx={tilePaintOf(tone, fit)} />
-  </motion.span>
+export const FlapTile: FC<FlapTileProps> = ({ tone = 'ink', fit = 'bleed' }) => (
+  <Box component="span" sx={tilePaintOf(tone, fit)} />
 );

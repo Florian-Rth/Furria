@@ -118,9 +118,6 @@ export const boundCellOf = (cells: readonly FlapCell[], index: number): number |
   return cell?.kind === 'mark' && previous?.role === 'value' ? index - 1 : null;
 };
 
-export const countFlapCells = (parts: readonly KkGreetingPart[]): number =>
-  toFlapCells(parts).length;
-
 export const flapFacesOf = (cells: readonly FlapCell[]): string[] => cells.map((cell) => cell.face);
 
 export const flapTextOf = (cells: readonly FlapCell[]): string =>

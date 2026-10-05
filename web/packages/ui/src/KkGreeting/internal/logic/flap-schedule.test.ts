@@ -1,14 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { FlapCell, KkGreetingPart } from './flap-cells';
 import { toFlapCells } from './flap-cells';
-import type {
-  FlapPlay,
-  FlapRun,
-  FlapSchedule,
-  FlapScheduleRequest,
-  FlapTurnRun,
-  KkGreetingTempo,
-} from './flap-schedule';
+import type { FlapPlay, FlapSchedule, FlapScheduleRequest, KkGreetingTempo } from './flap-schedule';
 import { flapScheduleOf } from './flap-schedule';
 
 const plain = (text: string): KkGreetingPart => ({ text, role: 'plain' });
@@ -49,7 +42,6 @@ const requestOf = (overrides: Partial<FlapScheduleRequest>): FlapScheduleRequest
   previousCells: null,
   play: 'full',
   festive: false,
-  night: false,
   burst: false,
   tempo: 'regular',
   countFrom: null,
@@ -58,10 +50,7 @@ const requestOf = (overrides: Partial<FlapScheduleRequest>): FlapScheduleRequest
 
 const facesOf = (cells: readonly FlapCell[]): string[] => cells.map((cell) => cell.face);
 
-const isTurn = (run: FlapRun): run is FlapTurnRun => run.motion !== 'fade';
-
 const TRACKS_PER_TURN = 5;
-const TRACKS_PER_FADE = 1;
 const TRACKS_PER_LINE = 2;
 
 const peakOf = (spans: readonly { start: number; end: number; weight: number }[]): number =>
@@ -75,16 +64,14 @@ const peakOf = (spans: readonly { start: number; end: number; weight: number }[]
   );
 
 const turningAt = (schedule: FlapSchedule): number =>
-  peakOf(
-    schedule.runs.filter(isTurn).map((run) => ({ start: run.start, end: run.end, weight: 1 })),
-  );
+  peakOf(schedule.runs.map((run) => ({ start: run.start, end: run.end, weight: 1 })));
 
 const liveAt = (schedule: FlapSchedule): number =>
   peakOf([
     ...schedule.runs.map((run) => ({
       start: run.start,
       end: run.end,
-      weight: isTurn(run) ? TRACKS_PER_TURN : TRACKS_PER_FADE,
+      weight: TRACKS_PER_TURN,
     })),
     ...(schedule.line === null
       ? []
@@ -97,7 +84,7 @@ const liveAt = (schedule: FlapSchedule): number =>
         ]),
   ]);
 
-const PLAYS: FlapPlay[] = ['live', 'full', 'nod', 'daily', 'tick'];
+const PLAYS: FlapPlay[] = ['live', 'full', 'tick'];
 const TEMPOS: KkGreetingTempo[] = ['regular', 'slow'];
 const BOARDS = [
   { name: 'a session day', cells: SESSION_DAY, previous: facesOf(LONG_BOARD) },
@@ -114,9 +101,7 @@ const VARIANTS = BOARDS.flatMap((board) =>
   PLAYS.flatMap((play) =>
     TEMPOS.flatMap((tempo) =>
       [false, true].flatMap((festive) =>
-        [false, true].flatMap((night) =>
-          [false, true].map((burst) => ({ ...board, play, tempo, festive, night, burst })),
-        ),
+        [false, true].map((burst) => ({ ...board, play, tempo, festive, burst })),
       ),
     ),
   ),
@@ -124,8 +109,8 @@ const VARIANTS = BOARDS.flatMap((board) =>
 
 describe('flapScheduleOf budget', () => {
   it.each(VARIANTS)(
-    'keeps $name within budget for $play ($tempo, festive $festive, night $night, burst $burst)',
-    ({ cells, previous, play, tempo, festive, night, burst }) => {
+    'keeps $name within budget for $play ($tempo, festive $festive, burst $burst)',
+    ({ cells, previous, play, tempo, festive, burst }) => {
       const schedule = flapScheduleOf(
         requestOf({
           cells,
@@ -133,7 +118,6 @@ describe('flapScheduleOf budget', () => {
           play,
           tempo,
           festive,
-          night,
           burst,
           countFrom: 28,
         }),
@@ -153,17 +137,6 @@ describe('flapScheduleOf budget', () => {
     expect(flapScheduleOf(requestOf({ cells: LONG_BOARD, festive })).duration).toBeLessThanOrEqual(
       settled,
     );
-  });
-
-  it('settles the daily flip by 600 ms', () => {
-    const schedule = flapScheduleOf(
-      requestOf({
-        play: 'daily',
-        previousCells: ['Tag', '6', '9', 'deiner', '1', '2', '.', 'Session,', 'Lena.'],
-      }),
-    );
-
-    expect(schedule.duration).toBeLessThanOrEqual(600);
   });
 });
 
@@ -196,9 +169,9 @@ describe('flapScheduleOf cells', () => {
   ])(
     'opens every arriving tile of $name on a face it can print',
     ({ cells, festive, countFrom }) => {
-      const openings = flapScheduleOf(requestOf({ cells, festive, countFrom }))
-        .runs.filter(isTurn)
-        .map((run) => run.faces[0]);
+      const openings = flapScheduleOf(requestOf({ cells, festive, countFrom })).runs.map(
+        (run) => run.faces[0],
+      );
 
       expect(openings.length).toBeGreaterThan(0);
       expect(
@@ -215,51 +188,6 @@ describe('flapScheduleOf cells', () => {
     expect(starts).toEqual([...starts].sort((left, right) => left - right));
   });
 
-  it('turns the name and every changed cell from its previous face on a daily board', () => {
-    const schedule = flapScheduleOf(
-      requestOf({
-        play: 'daily',
-        previousCells: ['Tag', '6', '9', 'deiner', '1', '2', '.', 'Session,', 'Lena.'],
-      }),
-    );
-
-    expect(schedule.runs.filter(isTurn).map((run) => [run.cell, run.faces[0]])).toEqual([
-      [1, { kind: 'text', text: '6' }],
-      [2, { kind: 'text', text: '9' }],
-      [8, { kind: 'text', text: 'Lena.' }],
-    ]);
-  });
-
-  it('steps a changed digit straight to its new face and gives a word one deck face', () => {
-    const runs = flapScheduleOf(
-      requestOf({
-        play: 'daily',
-        previousCells: ['Tag', '6', '9', 'deiner', '1', '2', '.', 'Session,', 'Lena.'],
-      }),
-    ).runs.filter(isTurn);
-
-    expect(runs.map((run) => run.flips.length)).toEqual([1, 1, 2]);
-  });
-
-  it('flips only the changed digits once on a nod', () => {
-    const runs = flapScheduleOf(
-      requestOf({
-        play: 'nod',
-        previousCells: ['Tag', '7', '1', 'deiner', '1', '2', '.', 'Session,', 'Lena.'],
-      }),
-    ).runs.filter(isTurn);
-
-    expect(runs.map((run) => [run.cell, run.motion, run.flips.length])).toEqual([[2, 'flap', 1]]);
-  });
-
-  it('ticks the last cell when a nod finds nothing changed', () => {
-    const runs = flapScheduleOf(
-      requestOf({ play: 'nod', previousCells: facesOf(SESSION_DAY) }),
-    ).runs;
-
-    expect(runs.map((run) => [run.cell, run.motion])).toEqual([[8, 'tick']]);
-  });
-
   it('flips only the changed digits together on a live tick', () => {
     const runs = flapScheduleOf(
       requestOf({
@@ -267,20 +195,13 @@ describe('flapScheduleOf cells', () => {
         play: 'tick',
         previousCells: ['Noch', '1', '0', ':', '0', '0', 'bis', '11:11.'],
       }),
-    ).runs.filter(isTurn);
+    ).runs;
 
     expect(runs.map((run) => [run.cell, run.start, run.faces[0]])).toEqual([
       [1, 0, { kind: 'text', text: '0' }],
       [3, 0, { kind: 'text', text: '0' }],
       [4, 0, { kind: 'text', text: '0' }],
     ]);
-  });
-
-  it('fades the words in without tiles at night', () => {
-    const runs = flapScheduleOf(requestOf({ night: true })).runs;
-
-    expect(runs.every((run) => run.motion === 'fade')).toBe(true);
-    expect(runs.map((run) => run.start)).toEqual([0, 30, 60, 90, 120, 150, 180, 210]);
   });
 
   it.each([
@@ -297,7 +218,7 @@ describe('flapScheduleOf cells', () => {
   ])(
     'rattles $faces deck faces through a short word cell (festive $festive)',
     ({ festive, faces }) => {
-      const run = flapScheduleOf(requestOf({ cells: CALL, festive })).runs.filter(isTurn)[0];
+      const run = flapScheduleOf(requestOf({ cells: CALL, festive })).runs[0];
 
       expect(run?.faces.filter((face) => face.kind === 'deck')).toHaveLength(faces);
     },
@@ -305,7 +226,7 @@ describe('flapScheduleOf cells', () => {
 
   it('lands the last cell of the call last with a double rebound and bursts then', () => {
     const schedule = flapScheduleOf(requestOf({ cells: CALL, burst: true }));
-    const runs = schedule.runs.filter(isTurn);
+    const runs = schedule.runs;
     const last = runs.at(-1);
 
     expect(last?.cell).toBe(2);
@@ -319,9 +240,7 @@ describe('flapScheduleOf cells', () => {
   });
 
   it('counts the anniversary years up from the given number', () => {
-    const runs = flapScheduleOf(requestOf({ cells: ANNIVERSARY, countFrom: 28 })).runs.filter(
-      isTurn,
-    );
+    const runs = flapScheduleOf(requestOf({ cells: ANNIVERSARY, countFrom: 28 })).runs;
     const [tens, units] = runs;
 
     expect(tens?.start).toBe(units?.start);
@@ -340,7 +259,7 @@ describe('flapScheduleOf cells', () => {
     const run = flapScheduleOf(requestOf({ cells: COUNTDOWN })).runs.find(
       (turn) => turn.cell === 1,
     );
-    const digits = run !== undefined && isTurn(run) ? run.faces.slice(1) : [];
+    const digits = run === undefined ? [] : run.faces.slice(1);
     const rolled = digits.map((face) => (face.kind === 'text' ? Number(face.text) : -1));
 
     expect(rolled.at(-1)).toBe(9);
@@ -352,8 +271,7 @@ describe('flapScheduleOf cells', () => {
   it.each([
     { play: 'full', line: true },
     { play: 'live', line: true },
-    { play: 'daily', line: false },
-    { play: 'nod', line: false },
+    { play: 'tick', line: false },
   ] as const)('cues the line on a $play board: $line', ({ play, line }) => {
     const schedule = flapScheduleOf(requestOf({ play, previousCells: facesOf(SESSION_DAY) }));
 

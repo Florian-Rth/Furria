@@ -245,9 +245,6 @@ const fixed =
   () => [plain(text)];
 
 const deckOf = (act: GreetingAct): GreetingDeck => {
-  if (act.night) {
-    return 'none';
-  }
   if (act.moment === 'birthday') {
     return 'cheer';
   }

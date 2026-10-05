@@ -1,6 +1,7 @@
 import Box from '@mui/material/Box';
 import type { CSSObject, Theme } from '@mui/material/styles';
-import { motion } from 'motion/react';
+import type { MotionValue } from 'motion/react';
+import { easeOut, motion, useTransform } from 'motion/react';
 import type { FC } from 'react';
 import { redInk } from '../../../internal/red-ink';
 import { applyScheme, schemeInk } from '../../../internal/scheme-paint';
@@ -8,10 +9,10 @@ import { skeletonSurface } from '../../../internal/skeleton-shimmer';
 import { kkTokens } from '../../../tokens';
 import type { FlapCell } from '../logic/flap-cells';
 import type { GreetingCue } from '../logic/greeting-cues';
+import { cueShareAt } from '../logic/greeting-cues';
 
 const FESTIVE_STAR = '"✶" / ""';
 const VEIL_INSET = '1px 0';
-const UNSEEN = { opacity: 0 } as const;
 
 const veilPaint = (theme: Theme): CSSObject => ({
   position: 'relative',
@@ -45,27 +46,21 @@ const inkPaintOf = (
 interface GreetingInkCellProps {
   cell: FlapCell;
   cue: GreetingCue;
+  clock: MotionValue<number>;
   festive: boolean;
 }
 
-export const GreetingInkCell: FC<GreetingInkCellProps> = ({ cell, cue, festive }) => {
+export const GreetingInkCell: FC<GreetingInkCellProps> = ({ cell, cue, clock, festive }) => {
   const ink = cue.stance === 'veiled' ? veilPaint : inkPaintOf(cell, festive);
-  const target = { opacity: cue.opacity };
-  const transition = { delay: cue.delay, duration: cue.duration, ease: 'easeOut' as const };
-  const entry = cue.stance === 'moving' ? UNSEEN : false;
+  const opacity = useTransform(clock, (elapsed: number): number =>
+    easeOut(cueShareAt(cue, elapsed)),
+  );
+  const shown = { opacity };
 
   return (
     <>
       {cell.lead}
-      <Box
-        key={cue.stance}
-        component={motion.span}
-        data-kk-flap-cell
-        initial={entry}
-        animate={target}
-        transition={transition}
-        sx={ink}
-      >
+      <Box component={motion.span} data-kk-flap-cell style={shown} sx={ink}>
         {cell.face}
       </Box>
       {cell.trail}

@@ -1,8 +1,7 @@
 import type { SplitFlapPose } from '../../../internal/flap/flap-pose';
-import { flapPoseAt } from '../../../internal/flap/flap-pose';
+import { FLAT_PROGRESS, flapPoseAt, ramp } from '../../../internal/flap/flap-pose';
 import { kkTokens } from '../../../tokens';
-import type { FlapFlip, FlapSchedule, FlapTurnRun } from './flap-schedule';
-import { isTurnRun } from './flap-schedule';
+import type { FlapFlip, FlapRun, FlapSchedule } from './flap-schedule';
 
 interface FlapPoseKey {
   fall: number;
@@ -14,9 +13,7 @@ interface FlapPoseKey {
 
 export interface FlapTrack {
   cell: number;
-  delay: number;
-  duration: number;
-  times: number[];
+  at: number[];
   fall: number[];
   land: number[];
   cover: number[];
@@ -38,8 +35,6 @@ const FINAL_FALL_MS = 80;
 const FALL_SAMPLES = 6;
 const LAND_SAMPLES = 10;
 const REBOUND_SAMPLES = 6;
-const TICK_SAMPLES = 8;
-const PRESENCE_GAIN = 2.4;
 const SNAP_MS = 1;
 const PRECISION = 1000;
 const LAST_REBOUND_SHARE = 0.5;
@@ -49,27 +44,32 @@ const settled = (value: number): number => Math.round(value * PRECISION) / PRECI
 const sampled = (count: number): number[] =>
   Array.from({ length: count + 1 }, (_, index) => index / count);
 
+const opensOn = (envelope: Envelope): boolean => envelope === 'whole' || envelope === 'rise';
+
+const closesOn = (envelope: Envelope): boolean => envelope === 'whole' || envelope === 'fade';
+
 const presenceOf = (pose: SplitFlapPose, progress: number, envelope: Envelope): number => {
-  if (envelope === 'whole') {
-    return pose.presence;
-  }
-  if (envelope === 'rise') {
-    return progress < HALF ? pose.presence : 1;
-  }
-  if (envelope === 'fade') {
-    return progress < HALF ? 1 : pose.presence;
+  if (progress < HALF) {
+    return opensOn(envelope) ? pose.presence : 1;
   }
 
-  return 1;
+  return closesOn(envelope) ? 1 - ramp(progress, FLAT_PROGRESS, 1) : 1;
 };
 
-const keyOf = (at: number, progress: number, face: number, envelope: Envelope): TimedKey => {
+const keyOf = (
+  at: number,
+  progress: number,
+  face: number,
+  envelope: Envelope,
+  rebounds: boolean,
+): TimedKey => {
   const pose = flapPoseAt(progress);
+  const liesFlat = !rebounds && closesOn(envelope) && progress >= FLAT_PROGRESS;
 
   return {
     at,
     fall: pose.fall,
-    land: pose.land,
+    land: liesFlat ? 0 : pose.land,
     cover: pose.cover,
     presence: presenceOf(pose, progress, envelope),
     face,
@@ -94,29 +94,18 @@ const reboundKeysOf = (at: number, duration: number, face: number): TimedKey[] =
     face,
   }));
 
-const tickKeysOf = (at: number, duration: number, face: number): TimedKey[] =>
-  sampled(TICK_SAMPLES).map((share) => {
-    const swing = Math.sin(Math.PI * share);
-
-    return {
-      at: at + share * duration,
-      fall: -RIGHT_ANGLE * swing,
-      land: RIGHT_ANGLE,
-      cover: 0,
-      presence: Math.min(swing * PRESENCE_GAIN, 1),
-      face,
-    };
-  });
-
 const turnKeysOf = (flip: FlapFlip, at: number, face: number, envelope: Envelope): TimedKey[] => {
   const fallMs = fallMsOf(flip);
   const landMs = landMsOf(flip);
+  const rebounds = flip.kind === 'strike';
   const falling = sampled(FALL_SAMPLES).map((share) =>
-    keyOf(at + share * fallMs, share * HALF, face, envelope),
+    keyOf(at + share * fallMs, share * HALF, face, envelope, rebounds),
   );
   const landing = sampled(LAND_SAMPLES)
     .slice(1)
-    .map((share) => keyOf(at + fallMs + share * landMs, HALF + share * HALF, face, envelope));
+    .map((share) =>
+      keyOf(at + fallMs + share * landMs, HALF + share * HALF, face, envelope, rebounds),
+    );
   const turned = [...falling, ...landing];
 
   if (flip.kind !== 'strike') {
@@ -162,20 +151,15 @@ const restingKeyOf = (at: number, face: number, presence: number): TimedKey => (
 });
 
 const standingKeysOf = (lead: number): TimedKey[] =>
-  lead > 0 ? [{ ...keyOf(0, 0, 0, 'hold'), presence: 1 }] : [];
+  lead > 0 ? [{ ...keyOf(0, 0, 0, 'hold', false), presence: 1 }] : [];
 
-const runKeysOf = (run: FlapTurnRun, assembled: boolean): TimedKey[] => {
+const runKeysOf = (run: FlapRun, assembled: boolean): TimedKey[] => {
   const count = run.flips.length;
   const lead = assembled ? run.start : 0;
   const standing = assembled;
 
   const keys = run.flips.flatMap((flip, index) => {
     const at = flip.at - run.start + lead;
-
-    if (flip.kind === 'tick') {
-      return tickKeysOf(at, flip.duration, index);
-    }
-
     const turn = turnKeysOf(flip, at, index, envelopeOf(index, count, standing));
 
     return index === 0 ? turn : [restingKeyOf(at, index - 1, 1), ...turn];
@@ -184,15 +168,13 @@ const runKeysOf = (run: FlapTurnRun, assembled: boolean): TimedKey[] => {
   return strictlyTimed([...standingKeysOf(lead), ...keys]);
 };
 
-const trackOf = (run: FlapTurnRun, assembled: boolean): FlapTrack => {
+const trackOf = (run: FlapRun, assembled: boolean): FlapTrack => {
+  const delay = assembled ? 0 : run.start;
   const keys = runKeysOf(run, assembled);
-  const duration = keys.at(-1)?.at ?? 0;
 
   return {
     cell: run.cell,
-    delay: assembled ? 0 : run.start,
-    duration,
-    times: keys.map((key) => (duration === 0 ? 0 : key.at / duration)),
+    at: keys.map((key) => delay + key.at),
     fall: keys.map((key) => settled(key.fall)),
     land: keys.map((key) => settled(key.land)),
     cover: keys.map((key) => settled(key.cover)),
@@ -202,4 +184,4 @@ const trackOf = (run: FlapTurnRun, assembled: boolean): FlapTrack => {
 };
 
 export const flapKeyframesOf = (schedule: FlapSchedule, assembled = false): FlapTrack[] =>
-  schedule.runs.filter(isTurnRun).map((run) => trackOf(run, assembled && run.motion === 'flap'));
+  schedule.runs.map((run) => trackOf(run, assembled));
