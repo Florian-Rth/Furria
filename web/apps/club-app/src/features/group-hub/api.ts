@@ -10,10 +10,10 @@ import {
 import { CALENDAR_QUERY_KEY } from '@/features/calendar';
 import { CLUB_HUB_QUERY_KEY } from '@/features/club';
 import { GROUPS_QUERY_KEY } from '@/features/groups';
+import { START_QUERY_KEY } from '@/features/start';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { toAttendanceSavedMessage } from '@/lib/calendar-copy';
 import { toIsoDay } from '@/lib/day';
-import { toWriteErrorMessage } from '@/lib/write-error';
 import type { CalendarEntryWindow } from './group-calendar-entries';
 import {
   GROUP_INFO_SAVED_MESSAGE,
@@ -159,15 +159,21 @@ export const useGroupCalendarQuery = (
   });
 };
 
-export const useGroupAttendanceMutation = (
-  groupId: number,
-): UseMutationResult<void, Error, GroupAttendanceInput> => {
+const refreshAnsweredEntries = async (queryClient: QueryClient): Promise<void> => {
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: GROUPS_QUERY_KEY }),
+    queryClient.invalidateQueries({ queryKey: CALENDAR_QUERY_KEY }),
+    queryClient.invalidateQueries({ queryKey: START_QUERY_KEY }),
+  ]);
+};
+
+export const useGroupAttendanceMutation = (): UseMutationResult<
+  void,
+  Error,
+  GroupAttendanceInput
+> => {
   const queryClient = useQueryClient();
   const raiseNotice = useKkNotice();
-
-  const refreshCalendar = (): void => {
-    void queryClient.invalidateQueries({ queryKey: groupHubQueryKey(groupId) });
-  };
 
   return useMutation({
     mutationFn: ({ calendarEntryId, answer }: GroupAttendanceInput) =>
@@ -176,16 +182,8 @@ export const useGroupAttendanceMutation = (
       ),
     onSuccess: (_saved, { answer }) => {
       raiseNotice({ tone: 'success', message: toAttendanceSavedMessage(answer) });
-      refreshCalendar();
     },
-    onError: (error) => {
-      const message = toWriteErrorMessage(error);
-
-      if (message !== null) {
-        raiseNotice({ tone: 'error', message });
-      }
-      refreshCalendar();
-    },
+    onSettled: () => refreshAnsweredEntries(queryClient),
   });
 };
 

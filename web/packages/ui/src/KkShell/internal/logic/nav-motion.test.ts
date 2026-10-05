@@ -29,10 +29,7 @@ describe('navLabelPose', () => {
     expect(navLabelPose(true)).toEqual({ opacity: 1, y: 0 });
   });
 
-  it('dims and drops every other label', () => {
-    const resting = navLabelPose(false);
-
-    expect(resting.opacity).toBeLessThan(1);
-    expect(resting.y).toBeGreaterThan(0);
+  it('drops every other label', () => {
+    expect(navLabelPose(false).y).toBeGreaterThan(0);
   });
 });

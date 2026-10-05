@@ -6,6 +6,7 @@ export const KeyHoldingSchema = PersonRefSchema.extend({
   keyHoldingId: z.number().int(),
   sinceOn: z.iso.date(),
   untilOn: z.iso.date().nullable(),
+  holderIsActiveInClub: z.boolean(),
 });
 export type KeyHolding = z.infer<typeof KeyHoldingSchema>;
 

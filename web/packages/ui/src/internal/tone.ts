@@ -74,7 +74,7 @@ const boosted = (amount: string, boost: number): string => `${Number.parseFloat(
 const toneInkScheme = (tone: KkTone): KkScheme =>
   schemeInk(toneRecipes[tone].inkLight, toneRecipes[tone].inkDark);
 
-const toneGroundScheme = (theme: Theme, tone: KkTone): KkScheme => {
+export const toneGroundScheme = (theme: Theme, tone: KkTone): KkScheme => {
   const recipe = toneRecipes[tone];
   const source = recipe.source(theme);
 

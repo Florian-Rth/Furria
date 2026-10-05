@@ -4,6 +4,7 @@ using Furria.Application.Identity;
 using Furria.Application.Registry;
 using Furria.Application.Results;
 using Furria.Core.Club;
+using Furria.Core.Identity;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
@@ -142,17 +143,26 @@ public sealed class AccountService
         return Result<SessionTokensDetails>.Success(Combine(access, rotated.Value));
     }
 
-    public async Task<Result> MarkAnnouncementsSeenAsync(int accountId, CancellationToken ct)
+    public async Task<Result> SetLastSeenAnnouncementAsync(
+        int accountId,
+        DateTimeOffset? seenUpTo,
+        CancellationToken ct
+    )
     {
-        var account = await _dbContext.Users.SingleOrDefaultAsync(row => row.Id == accountId, ct);
+        DateTimeOffset? seen = SeenUpToCappedAtNow(seenUpTo, _timeProvider.GetUtcNow());
 
-        if (account is null)
-            return Result.NotFound(MissingAccountMessage);
+        var updated = await _dbContext
+            .Users.Where(account => account.Id == accountId)
+            .ExecuteUpdateAsync(
+                setters =>
+                    setters.SetProperty(
+                        account => account.LastSeenAnnouncementAt,
+                        account => EF.Functions.Greatest(account.LastSeenAnnouncementAt, seen)
+                    ),
+                ct
+            );
 
-        account.LastSeenAnnouncementAt = _timeProvider.GetUtcNow();
-        await _dbContext.SaveChangesAsync(ct);
-
-        return Result.Success();
+        return updated == 0 ? Result.NotFound(MissingAccountMessage) : Result.Success();
     }
 
     public async Task LogoutAsync(string presentedToken, int accountId, CancellationToken ct)
@@ -179,6 +189,12 @@ public sealed class AccountService
                 account.Email ?? "",
                 account.IsDisabled,
                 account.LastSeenAnnouncementAt,
+                _dbContext
+                    .AccountEvents.Where(accountEvent =>
+                        accountEvent.PersonId == account.PersonId
+                        && accountEvent.Kind == AccountEventKind.Redeemed
+                    )
+                    .Max(accountEvent => (DateTimeOffset?)accountEvent.At),
                 new PersonDetails
                 {
                     Id = account.Person!.Id,
@@ -271,6 +287,12 @@ public sealed class AccountService
         );
 
     [Pure]
+    private static DateTimeOffset SeenUpToCappedAtNow(
+        DateTimeOffset? seenUpTo,
+        DateTimeOffset now
+    ) => seenUpTo is { } upTo && upTo < now ? upTo.ToUniversalTime() : now;
+
+    [Pure]
     private static LoginFailureReason FailureReasonOf(SignInResult signIn) =>
         signIn switch
         {
@@ -301,6 +323,7 @@ public sealed class AccountService
             IsAffiliated = grants.IsAffiliated,
             PermissionKeys = grants.PermissionKeys,
             LastSeenAnnouncementAt = row.LastSeenAnnouncementAt,
+            AppSince = row.LastRedeemedAt is { } redeemedAt ? ClubClock.DayOf(redeemedAt) : null,
             Passkeys = passkeys,
         };
 
@@ -353,6 +376,7 @@ public sealed class AccountService
         string Email,
         bool IsDisabled,
         DateTimeOffset? LastSeenAnnouncementAt,
+        DateTimeOffset? LastRedeemedAt,
         PersonDetails Person,
         IReadOnlyList<MembershipRow> Memberships
     );

@@ -12,6 +12,7 @@ namespace Furria.Infrastructure.Club;
 public sealed class CalendarService
 {
     private const string UnknownEntryMessage = "Diesen Kalendereintrag gibt es nicht.";
+    private const string NotYoursMessage = "Auf diesen Kalendereintrag kannst du nicht antworten.";
     private const string NoResponseWantedMessage = "Dieser Eintrag fragt nicht nach einer Antwort.";
     private const string DuplicateResponseMessage =
         WriteConflictMessages.DuplicateAttendanceResponse;
@@ -76,11 +77,12 @@ public sealed class CalendarService
         return [.. rows.Select(row => ToSummary(row, answers))];
     }
 
-    public async Task<IReadOnlyList<CalendarEntrySummary>> GetGroupEntriesAsync(
+    public async Task<IReadOnlyList<GroupCalendarEntrySummary>> GetGroupEntriesAsync(
         int personId,
         int groupId,
         DateOnly from,
         DateOnly to,
+        bool holdsClubRead,
         CancellationToken ct
     )
     {
@@ -108,8 +110,14 @@ public sealed class CalendarService
             [.. rows.Select(row => row.CalendarEntryId)],
             ct
         );
+        var ties = await _dbContext.CalendarTiesOfAsync(personId, today, ct);
 
-        return [.. rows.Select(row => ToSummary(row, answers))];
+        return
+        [
+            .. rows.Select(row =>
+                ToGroupSummary(row, answers, MayAnswer(row, ties, holdsClubRead))
+            ),
+        ];
     }
 
     public async Task<IReadOnlyList<CalendarEntrySummary>> FindVenueCollisionsAsync(
@@ -356,17 +364,23 @@ public sealed class CalendarService
         CancellationToken ct
     )
     {
-        var today = ClubClock.Today(_timeProvider);
-
         var entry = await _dbContext
             .CalendarEntries.AsNoTracking()
             .Where(row => row.Id == command.CalendarEntryId)
-            .Where(VisibleTo(command.PersonId, today))
-            .Select(row => new EntryStateRow(row.Id, row.AsksForResponse))
+            .Select(EntryFactsRows.Projection)
             .SingleOrDefaultAsync(ct);
+        var ties = await _dbContext.CalendarTiesOfAsync(
+            command.PersonId,
+            ClubClock.Today(_timeProvider),
+            ct
+        );
 
-        if (entry is null)
-            return Result.NotFound(UnknownEntryMessage);
+        if (entry is null || !ties.Sees(entry.ToFacts(), command.HoldsClubRead))
+        {
+            return command.HoldsClubRead
+                ? Result.NotFound(UnknownEntryMessage)
+                : Result.Forbidden(NotYoursMessage);
+        }
 
         if (!entry.AsksForResponse)
             return Result.Validation(NoResponseWantedMessage);
@@ -400,21 +414,6 @@ public sealed class CalendarService
     }
 
     [Pure]
-    private static Expression<Func<CalendarEntry, bool>> VisibleTo(int personId, DateOnly today) =>
-        entry =>
-            entry.Visibility != CalendarEntryVisibility.Group
-            || entry.OwnerGroup!.Memberships.Any(membership =>
-                membership.PersonId == personId
-                && membership.JoinedOn <= today
-                && (membership.LeftOn == null || membership.LeftOn >= today)
-            )
-            || entry.OwnerGroup!.Admins.Any(admin =>
-                admin.PersonId == personId
-                && admin.SinceOn <= today
-                && (admin.UntilOn == null || admin.UntilOn >= today)
-            );
-
-    [Pure]
     private static Expression<Func<CalendarEntry, EntryRow>> RowProjection(
         DateTimeOffset now,
         DateTimeOffset openEndedCutoff
@@ -445,6 +444,19 @@ public sealed class CalendarService
             entry.Description,
             entry.StartsAt <= now
                 && (entry.EndsAt == null ? entry.StartsAt > openEndedCutoff : entry.EndsAt > now)
+        );
+
+    [Pure]
+    private static bool MayAnswer(EntryRow row, CalendarTies ties, bool holdsClubRead) =>
+        row.AsksForResponse && ties.Sees(FactsOf(row), holdsClubRead);
+
+    [Pure]
+    private static CalendarEntryFacts FactsOf(EntryRow row) =>
+        CalendarEntryFacts.Of(
+            row.OwnerGroupId,
+            [.. row.ParticipatingGroups.Select(group => group.GroupId)],
+            row.Visibility,
+            row.StartsAt
         );
 
     [Pure]
@@ -534,6 +546,13 @@ public sealed class CalendarService
             ViewerAnswer = answers.TryGetValue(row.CalendarEntryId, out var answer) ? answer : null,
             IsRunning = row.IsRunning,
         };
+
+    [Pure]
+    private static GroupCalendarEntrySummary ToGroupSummary(
+        EntryRow row,
+        IReadOnlyDictionary<int, AttendanceAnswer> answers,
+        bool viewerMayAnswer
+    ) => new() { Entry = ToSummary(row, answers), ViewerMayAnswer = viewerMayAnswer };
 
     private async Task<CalendarEntryWriteResult> WrittenAsync(
         CalendarEntry entry,
@@ -627,6 +646,16 @@ public sealed class CalendarService
     private Task<bool> GroupExistsAsync(int groupId, CancellationToken ct) =>
         _dbContext.Groups.AsNoTracking().AnyAsync(group => group.Id == groupId, ct);
 
+    private Expression<Func<CalendarEntry, bool>> VisibleTo(int personId, DateOnly today)
+    {
+        var tiedGroupIds = _dbContext.TiedGroupIds(personId, today);
+
+        return entry =>
+            entry.Visibility != CalendarEntryVisibility.Group
+            || (entry.OwnerGroupId != null && tiedGroupIds.Contains(entry.OwnerGroupId.Value))
+            || entry.ParticipatingGroups.Any(link => tiedGroupIds.Contains(link.GroupId));
+    }
+
     private async Task<IReadOnlyDictionary<int, AttendanceAnswer>> AnswersOfAsync(
         int personId,
         IReadOnlyList<int> calendarEntryIds,
@@ -669,8 +698,6 @@ public sealed class CalendarService
     private sealed record ParticipatingGroupRow(int GroupId, string Name, GroupTone? Tone);
 
     private sealed record GroupStateRow(int GroupId, DateOnly? ArchivedOn);
-
-    private sealed record EntryStateRow(int CalendarEntryId, bool AsksForResponse);
 
     private sealed record VenueStateRow(int VenueId, DateOnly? ArchivedOn);
 

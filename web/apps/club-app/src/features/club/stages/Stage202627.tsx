@@ -1,5 +1,5 @@
 import Box from '@mui/material/Box';
-import { alpha, keyframes } from '@mui/material/styles';
+import { keyframes } from '@mui/material/styles';
 import type { FC } from 'react';
 
 const REDUCED_MOTION = '@media (prefers-reduced-motion: reduce)';
@@ -103,10 +103,13 @@ const STARS: readonly { x: string; y: string; r: string; o: number }[] = [
   { x: '97%', y: '18%', r: '1px', o: 0.8 },
 ];
 
+const faded = (color: string, share: number): string =>
+  `color-mix(in srgb, ${color} calc(${share} * 100%), transparent)`;
+
 const starfieldOf = (ink: string): string =>
   STARS.map(
     (star) =>
-      `radial-gradient(circle ${star.r} at ${star.x} ${star.y}, ${alpha(ink, star.o)} 0%, transparent 100%)`,
+      `radial-gradient(circle ${star.r} at ${star.x} ${star.y}, ${faded(ink, star.o)} 0%, transparent 100%)`,
   ).join(', ');
 
 const annulusOf = (thickness: string): string =>
@@ -133,10 +136,10 @@ export const Stage202627: FC = () => (
         position: 'absolute',
         inset: 0,
         opacity: 0.55,
-        backgroundImage: `radial-gradient(120% 150% at 80% 46%, ${alpha((theme.vars ?? theme).palette.primary.main, 0.1)} 0%, transparent 62%)`,
+        backgroundImage: `radial-gradient(120% 150% at 80% 46%, ${faded((theme.vars ?? theme).palette.primary.main, 0.1)} 0%, transparent 62%)`,
         ...theme.applyStyles('dark', {
           opacity: 1,
-          backgroundImage: `radial-gradient(120% 150% at 80% 46%, ${alpha((theme.vars ?? theme).palette.primary.main, 0.22)} 0%, transparent 64%)`,
+          backgroundImage: `radial-gradient(120% 150% at 80% 46%, ${faded((theme.vars ?? theme).palette.primary.main, 0.22)} 0%, transparent 64%)`,
         }),
       })}
     />
@@ -168,7 +171,7 @@ export const Stage202627: FC = () => (
           inset: 0,
           borderRadius: '50%',
           opacity: 0.22,
-          backgroundImage: `repeating-conic-gradient(from 0deg at 50% 50%, ${alpha((theme.vars ?? theme).palette.primary.main, 0.9)} 0deg 0.6deg, transparent 0.6deg 9deg)`,
+          backgroundImage: `repeating-conic-gradient(from 0deg at 50% 50%, ${faded((theme.vars ?? theme).palette.primary.main, 0.9)} 0deg 0.6deg, transparent 0.6deg 9deg)`,
           maskImage: 'radial-gradient(closest-side, #000 6%, transparent 54%)',
           WebkitMaskImage: 'radial-gradient(closest-side, #000 6%, transparent 54%)',
           animation: `${orbit} ${RAY_SECONDS}s linear infinite`,
@@ -199,7 +202,7 @@ export const Stage202627: FC = () => (
                 inset: 0,
                 borderRadius: '50%',
                 opacity: ring.ink,
-                backgroundImage: `conic-gradient(from 20deg, transparent 0deg, ${alpha(ink, 0.35)} 96deg, ${hue} 214deg, ${alpha(hue, 0.25)} 286deg, transparent 348deg)`,
+                backgroundImage: `conic-gradient(from 20deg, transparent 0deg, ${faded(ink, 0.35)} 96deg, ${hue} 214deg, ${faded(hue, 0.25)} 286deg, transparent 348deg)`,
                 maskImage: annulusOf(ring.thickness),
                 WebkitMaskImage: annulusOf(ring.thickness),
                 ...theme.applyStyles('dark', { opacity: ring.dark }),
@@ -220,8 +223,8 @@ export const Stage202627: FC = () => (
                 aspectRatio: '1 / 1',
                 borderRadius: '50%',
                 transform: 'translate(-50%, -50%)',
-                backgroundImage: `radial-gradient(circle at 32% 28%, ${alpha('#FFFFFF', 0.85)} 0%, ${hue} 62%, ${alpha(hue, 0.55)} 100%)`,
-                boxShadow: `0 0 12px ${alpha(hue, 0.45)}`,
+                backgroundImage: `radial-gradient(circle at 32% 28%, ${faded('#FFFFFF', 0.85)} 0%, ${hue} 62%, ${faded(hue, 0.55)} 100%)`,
+                boxShadow: `0 0 12px ${faded(hue, 0.45)}`,
                 opacity: 0.75,
                 ...theme.applyStyles('dark', { opacity: 1 }),
               };
@@ -247,12 +250,12 @@ export const Stage202627: FC = () => (
           position: 'absolute',
           inset: centredInset(CORE_DISC),
           borderRadius: '50%',
-          backgroundImage: `radial-gradient(circle at 34% 28%, ${alpha('#FFFFFF', 0.92)} 0%, ${(theme.vars ?? theme).palette.warning.main} 34%, ${(theme.vars ?? theme).palette.primary.main} 100%)`,
-          boxShadow: `0 0 26px ${alpha((theme.vars ?? theme).palette.primary.main, 0.5)}`,
+          backgroundImage: `radial-gradient(circle at 34% 28%, ${faded('#FFFFFF', 0.92)} 0%, ${(theme.vars ?? theme).palette.warning.main} 34%, ${(theme.vars ?? theme).palette.primary.main} 100%)`,
+          boxShadow: `0 0 26px ${faded((theme.vars ?? theme).palette.primary.main, 0.5)}`,
           opacity: 0.88,
           ...theme.applyStyles('dark', {
             opacity: 1,
-            boxShadow: `0 0 34px ${alpha((theme.vars ?? theme).palette.primary.main, 0.75)}`,
+            boxShadow: `0 0 34px ${faded((theme.vars ?? theme).palette.primary.main, 0.75)}`,
           }),
         })}
       />

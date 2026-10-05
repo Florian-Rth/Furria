@@ -12,16 +12,18 @@ export interface Session {
   yearsLabel: string;
 }
 
+export const sessionYearsLabelOf = (startYear: number): string =>
+  `${startYear}/${String((startYear + 1) % 100).padStart(2, '0')}`;
+
 export const sessionAt = (date: Date): Session => {
   const month = date.getMonth() + 1;
   const openingHasPassed =
     month > SESSION_OPENING_MONTH ||
     (month === SESSION_OPENING_MONTH && date.getDate() >= SESSION_OPENING_DAY);
   const startYear = openingHasPassed ? date.getFullYear() : date.getFullYear() - 1;
-  const endYearShort = String((startYear + 1) % 100).padStart(2, '0');
   return {
     startYear,
-    yearsLabel: `${startYear}/${endYearShort}`,
+    yearsLabel: sessionYearsLabelOf(startYear),
   };
 };
 
@@ -106,10 +108,44 @@ export const mottoStageStateAt = (
   return mottoIsKnown ? 'teaser' : 'resting';
 };
 
-export const daysUntilOpening = (date: Date, relevantStartYear: number): number => {
-  const from = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  const opening = sessionOpeningAt(relevantStartYear);
-  const to = new Date(opening.getFullYear(), opening.getMonth(), opening.getDate());
+const startOfDay = (date: Date): Date =>
+  new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
-  return Math.round((to.getTime() - from.getTime()) / MS_PER_DAY);
+export const calendarDaysBetween = (from: Date, to: Date): number =>
+  Math.round((startOfDay(to).getTime() - startOfDay(from).getTime()) / MS_PER_DAY);
+
+export const daysUntilOpening = (date: Date, relevantStartYear: number): number =>
+  calendarDaysBetween(date, sessionOpeningAt(relevantStartYear));
+
+export interface CarnivalDays {
+  womensCarnivalDay: Date;
+  roseMonday: Date;
+  carnivalTuesday: Date;
+  ashWednesday: Date;
+}
+
+const WOMENS_CARNIVAL_DAY_LEAD = 6;
+const ROSE_MONDAY_LEAD = 2;
+const CARNIVAL_TUESDAY_LEAD = 1;
+
+const daysBefore = (day: Date, lead: number): Date =>
+  new Date(day.getFullYear(), day.getMonth(), day.getDate() - lead);
+
+export const carnivalDaysOf = (startYear: number): CarnivalDays => {
+  const ashWednesday = ashWednesdayOf(startYear + 1);
+
+  return {
+    womensCarnivalDay: daysBefore(ashWednesday, WOMENS_CARNIVAL_DAY_LEAD),
+    roseMonday: daysBefore(ashWednesday, ROSE_MONDAY_LEAD),
+    carnivalTuesday: daysBefore(ashWednesday, CARNIVAL_TUESDAY_LEAD),
+    ashWednesday,
+  };
+};
+
+export const sessionDayOf = (date: Date): number | null => {
+  if (isBetweenSessions(date)) {
+    return null;
+  }
+
+  return calendarDaysBetween(sessionOpeningAt(sessionAt(date).startYear), date) + 1;
 };

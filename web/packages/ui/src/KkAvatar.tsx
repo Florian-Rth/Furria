@@ -9,27 +9,36 @@ import { kkTokens } from './tokens';
 type KkAvatarSize = 'small' | 'medium' | 'large';
 
 interface KkAvatarMetrics {
-  size: number;
+  size: string;
   typography: 'caption' | 'h4' | 'h2';
 }
 
 const avatarMetrics: Record<KkAvatarSize, KkAvatarMetrics> = {
-  small: { size: 26, typography: 'caption' },
-  medium: { size: 40, typography: 'h4' },
-  large: { size: 56, typography: 'h2' },
+  small: { size: '1.625rem', typography: 'caption' },
+  medium: { size: '2.5rem', typography: 'h4' },
+  large: { size: '3.5rem', typography: 'h2' },
 };
 
 interface KkAvatarProps {
   initials: string;
+  source?: string;
   size?: KkAvatarSize;
   tone?: KkGroupTone;
   component?: ElementType;
   sx?: KkSx;
 }
 
-export const KkAvatar: FC<KkAvatarProps> = ({ initials, size = 'medium', tone, component, sx }) => {
+export const KkAvatar: FC<KkAvatarProps> = ({
+  initials,
+  source,
+  size = 'medium',
+  tone,
+  component,
+  sx,
+}) => {
   const metrics = avatarMetrics[size];
   const componentProps = component === undefined ? {} : { component };
+  const portraitProps = source === undefined ? {} : { src: source, alt: initials };
 
   const paint: KkSx = (theme) =>
     tone === undefined
@@ -46,6 +55,7 @@ export const KkAvatar: FC<KkAvatarProps> = ({ initials, size = 'medium', tone, c
   return (
     <Avatar
       {...componentProps}
+      {...portraitProps}
       data-kk-avatar
       sx={[
         {

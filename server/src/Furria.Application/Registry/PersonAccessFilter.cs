@@ -10,4 +10,5 @@ public enum PersonAccessFilter
     WithAccess = 6,
     OpenInvitation = 7,
     WithoutEmail = 8,
+    BirthDateUnknown = 9,
 }

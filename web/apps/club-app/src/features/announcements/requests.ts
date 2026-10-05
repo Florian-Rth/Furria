@@ -39,9 +39,13 @@ export const requestWithdrawAnnouncement = (
     accessToken,
   });
 
-export const requestLastSeenAnnouncement = (accessToken: string): Promise<void> =>
+export const requestLastSeenAnnouncement = (
+  seenUpTo: string | null,
+  accessToken: string,
+): Promise<void> =>
   apiFetch('/api/auth/me/last-seen-announcement', {
     method: 'PUT',
+    body: { seenUpTo },
     schema: NoContentSchema,
     accessToken,
   });

@@ -1,31 +1,19 @@
 import { KkScreen } from '@furria/ui';
 import { createFileRoute } from '@tanstack/react-router';
 import type { FC } from 'react';
-import {
-  AppStageGreeting,
-  AREA_HANDOVERS,
-  OVERVIEW_SECTION,
-  OverviewBody,
-} from '@/features/session';
-import { toSessionThread } from '@/lib/session-thread';
+import { AREA_HANDOVERS, OVERVIEW_SECTION, OVERVIEW_TITLE } from '@/features/session';
+import { StartBody, StartGreeting } from '@/features/start';
 
-const OVERVIEW_TITLE = 'Übersicht';
+const StartComponent: FC = () => (
+  <KkScreen
+    kind="overview"
+    section={OVERVIEW_SECTION}
+    title={OVERVIEW_TITLE}
+    header={<StartGreeting />}
+    handover={AREA_HANDOVERS.overview}
+  >
+    <StartBody />
+  </KkScreen>
+);
 
-const OverviewComponent: FC = () => {
-  const thread = toSessionThread(new Date());
-
-  return (
-    <KkScreen
-      kind="overview"
-      section={OVERVIEW_SECTION}
-      title={OVERVIEW_TITLE}
-      header={<AppStageGreeting />}
-      handover={AREA_HANDOVERS.overview}
-      thread={thread}
-    >
-      <OverviewBody />
-    </KkScreen>
-  );
-};
-
-export const Route = createFileRoute('/_app/')({ component: OverviewComponent });
+export const Route = createFileRoute('/_app/')({ component: StartComponent });

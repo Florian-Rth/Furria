@@ -52,11 +52,18 @@ public sealed class GetGroupCalendar : Endpoint<GetGroupCalendarRequest, GetGrou
         var from = req.From ?? ClubClock.Today(_timeProvider);
         var to = req.To ?? from.AddDays(CalendarLimits.DefaultWindowDays);
 
+        var holdsClubRead = await _authorizer.IsGrantedAsync(
+            accountId.Value,
+            FurriaPermissions.ClubRead,
+            ct
+        );
+
         var entries = await _calendarService.GetGroupEntriesAsync(
             personId.Value,
             req.GroupId,
             from,
             to,
+            holdsClubRead,
             ct
         );
 
@@ -68,10 +75,13 @@ public sealed class GetGroupCalendar : Endpoint<GetGroupCalendarRequest, GetGrou
         || await _authorizer.IsGrantedAsync(accountId, FurriaPermissions.GroupsManage, ct);
 
     private static GetGroupCalendarResponse ToResponse(
-        IReadOnlyList<CalendarEntrySummary> entries
+        IReadOnlyList<GroupCalendarEntrySummary> entries
     ) => new() { Entries = [.. entries.Select(ToDto)] };
 
-    private static GroupCalendarEntryDto ToDto(CalendarEntrySummary entry) =>
+    private static GroupCalendarEntryDto ToDto(GroupCalendarEntrySummary summary) =>
+        ToDto(summary.Entry, summary.ViewerMayAnswer);
+
+    private static GroupCalendarEntryDto ToDto(CalendarEntrySummary entry, bool viewerMayAnswer) =>
         new()
         {
             CalendarEntryId = entry.CalendarEntryId,
@@ -89,6 +99,7 @@ public sealed class GetGroupCalendar : Endpoint<GetGroupCalendarRequest, GetGrou
             AsksForResponse = entry.AsksForResponse,
             Description = entry.Description,
             ViewerAnswer = entry.ViewerAnswer,
+            ViewerMayAnswer = viewerMayAnswer,
             IsRunning = entry.IsRunning,
         };
 
@@ -184,6 +195,8 @@ public sealed record GroupCalendarEntryDto
     public required string? Description { get; init; }
 
     public required AttendanceAnswer? ViewerAnswer { get; init; }
+
+    public required bool ViewerMayAnswer { get; init; }
 
     public required bool IsRunning { get; init; }
 }

@@ -67,7 +67,10 @@ public sealed class GetGroupCalendarTests
 
         var result = await ReadAsync(ctx, "bea", Window(ctx.Groups.Groups.IdOf("tanzgarde")), ct);
 
-        Assert.Equal(new[] { DanceGuardTraining, GalaSession }, TitlesOf(result));
+        Assert.Equal(
+            new[] { DanceGuardTraining, ChildrensRehearsal, GalaSession },
+            TitlesOf(result)
+        );
     }
 
     [Fact]
@@ -78,7 +81,10 @@ public sealed class GetGroupCalendarTests
 
         var result = await ReadAsync(ctx, "chris", Window(ctx.Groups.Groups.IdOf("tanzgarde")), ct);
 
-        Assert.Equal(new[] { DanceGuardTraining, GalaSession }, TitlesOf(result));
+        Assert.Equal(
+            new[] { DanceGuardTraining, ChildrensRehearsal, GalaSession },
+            TitlesOf(result)
+        );
     }
 
     [Fact]
@@ -93,14 +99,52 @@ public sealed class GetGroupCalendarTests
     }
 
     [Fact]
-    public async Task Should_LeaveOutAnotherGroupsInternalEntry_When_TheGroupOnlyParticipates()
+    public async Task Should_ListAGroupOnlyEntry_When_TheViewerIsInAParticipatingGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildCalendarAsync(ct);
 
         var result = await ReadAsync(ctx, "bea", Window(ctx.Groups.Groups.IdOf("tanzgarde")), ct);
 
-        Assert.DoesNotContain(ChildrensRehearsal, TitlesOf(result));
+        Assert.Contains(ChildrensRehearsal, TitlesOf(result));
+    }
+
+    [Fact]
+    public async Task Should_LetHerAnswer_When_SheAdministersTheGroupWithoutClubRead()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildCalendarAsync(ct);
+
+        var result = await ReadAsync(
+            ctx,
+            "sabine",
+            Window(ctx.Groups.Groups.IdOf("kindergarde")),
+            ct
+        );
+
+        Assert.True(EntryTitled(result, ChildrensRehearsal).ViewerMayAnswer);
+    }
+
+    [Fact]
+    public async Task Should_NotLetHerAnswer_When_TheEntryAsksNothing()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildCalendarAsync(ct);
+
+        var result = await ReadAsync(ctx, "bea", Window(ctx.Groups.Groups.IdOf("tanzgarde")), ct);
+
+        Assert.False(EntryTitled(result, DanceGuardTraining).ViewerMayAnswer);
+    }
+
+    [Fact]
+    public async Task Should_NotLetHerAnswer_When_SheOnlyManagesGroups()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildCalendarAsync(ct);
+
+        var result = await ReadAsync(ctx, "gerda", Window(ctx.Groups.Groups.IdOf("tanzgarde")), ct);
+
+        Assert.False(EntryTitled(result, GalaSession).ViewerMayAnswer);
     }
 
     [Fact]
@@ -230,6 +274,11 @@ public sealed class GetGroupCalendarTests
     private static string[] TitlesOf(GetGroupCalendarResponse result) =>
         [.. result.Entries.Select(entry => entry.Title)];
 
+    private static GroupCalendarEntryDto EntryTitled(
+        GetGroupCalendarResponse result,
+        string title
+    ) => result.Entries.Single(entry => entry.Title == title);
+
     private static async Task<GetGroupCalendarResponse> ReadAsync(
         SeededContext ctx,
         string alias,
@@ -261,7 +310,11 @@ public sealed class GetGroupCalendarTests
             .AddMembership("chris-first", "chris", JoinedIn2017)
             .AddPerson("ilka", "Ilka", "Gruppenpflege")
             .AddAccount("ilka")
-            .AddMembership("ilka-first", "ilka", JoinedIn2017);
+            .AddMembership("ilka-first", "ilka", JoinedIn2017)
+            .AddPerson("sabine", "Sabine", "Trainerin")
+            .AddAccount("sabine")
+            .AddPerson("gerda", "Gerda", "Gruppenpflege")
+            .AddAccount("gerda");
 
     private Task<SeededContext> BuildCalendarAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
@@ -269,13 +322,15 @@ public sealed class GetGroupCalendarTests
                 builder
                     .Identity(WholeClub)
                     .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "gruppenpflege",
-                            "ilka-gruppenpflege",
-                            "Gruppenpflege",
-                            "ilka",
-                            FurriaPermissions.GroupsManage
-                        )
+                        roles
+                            .AddRoleWithHolder(
+                                "gruppenpflege",
+                                "ilka-gruppenpflege",
+                                "Gruppenpflege",
+                                "ilka",
+                                FurriaPermissions.GroupsManage
+                            )
+                            .AddRoleHolding("gerda-gruppenpflege", "gruppenpflege", "gerda")
                     )
                     .Groups(groups =>
                         groups
@@ -287,6 +342,13 @@ public sealed class GetGroupCalendarTests
                                 "tanzgarde",
                                 "chris",
                                 "Trainer",
+                                JoinedIn2017
+                            )
+                            .AddGroupAdmin(
+                                "sabine-kindergarde",
+                                "kindergarde",
+                                "sabine",
+                                "Trainerin",
                                 JoinedIn2017
                             )
                     )
@@ -306,12 +368,14 @@ public sealed class GetGroupCalendarTests
                                 kind: CalendarEntryKind.Rehearsal,
                                 visibility: CalendarEntryVisibility.Group,
                                 ownerGroupAlias: "kindergarde",
+                                asksForResponse: true,
                                 participatingGroupAliases: ["tanzgarde"]
                             )
                             .AddCalendarEntry(
                                 "prunksitzung",
                                 GalaSession,
                                 AtTheGalaSession,
+                                asksForResponse: true,
                                 participatingGroupAliases: ["tanzgarde"]
                             )
                             .AddCalendarEntry(

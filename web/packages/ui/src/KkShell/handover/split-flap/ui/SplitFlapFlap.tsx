@@ -1,15 +1,12 @@
 import type { MotionValue } from 'motion/react';
 import { motion } from 'motion/react';
 import type { FC } from 'react';
+import { FlapGlyph } from '../../../../internal/flap/FlapGlyph';
+import { FlapLeaf } from '../../../../internal/flap/FlapLeaf';
+import { FlapShade } from '../../../../internal/flap/FlapShade';
+import { BOTTOM_HALF_CLIP, TOP_HALF_CLIP } from '../../../../internal/flap/flap-pose';
 import type { SplitFlapCell, SplitFlapWindow } from '../logic/split-flap-flaps';
-import {
-  BOTTOM_HALF_CLIP,
-  TOP_HALF_CLIP,
-  useSplitFlapFlapMotion,
-} from '../logic/use-split-flap-flap-motion';
-import { SplitFlapGlyph } from './SplitFlapGlyph';
-import { SplitFlapLeaf } from './SplitFlapLeaf';
-import { SplitFlapShade } from './SplitFlapShade';
+import { useSplitFlapFlapMotion } from '../logic/use-split-flap-flap-motion';
 
 interface SplitFlapFlapProps {
   cell: SplitFlapCell;
@@ -26,40 +23,40 @@ export const SplitFlapFlap: FC<SplitFlapFlapProps> = ({ cell, window, progress, 
     <motion.span
       style={{ position: 'absolute', left: 0, top, width: cell.width, height, x: flap.offset }}
     >
-      <SplitFlapLeaf
+      <FlapLeaf
         clip={flap.revealClip}
         presence={flap.presence}
-        inverse={<SplitFlapGlyph tone="inverse">{cell.to}</SplitFlapGlyph>}
+        inverse={<FlapGlyph tone="inverse">{cell.to}</FlapGlyph>}
       >
-        <SplitFlapGlyph>{cell.to}</SplitFlapGlyph>
-      </SplitFlapLeaf>
-      <SplitFlapLeaf
+        <FlapGlyph>{cell.to}</FlapGlyph>
+      </FlapLeaf>
+      <FlapLeaf
         clip={flap.coverClip}
         presence={flap.presence}
-        inverse={<SplitFlapGlyph tone="inverse">{cell.from}</SplitFlapGlyph>}
+        inverse={<FlapGlyph tone="inverse">{cell.from}</FlapGlyph>}
       >
-        <SplitFlapGlyph>{cell.from}</SplitFlapGlyph>
-      </SplitFlapLeaf>
-      <SplitFlapLeaf
+        <FlapGlyph>{cell.from}</FlapGlyph>
+      </FlapLeaf>
+      <FlapLeaf
         clip={TOP_HALF_CLIP}
         presence={flap.presence}
-        inverse={<SplitFlapGlyph tone="inverse">{cell.from}</SplitFlapGlyph>}
-        shade={<SplitFlapShade shade={flap.fallShade} />}
+        inverse={<FlapGlyph tone="inverse">{cell.from}</FlapGlyph>}
+        shade={<FlapShade shade={flap.fallShade} />}
         rotate={flap.fall}
         opacity={flap.fallOpacity}
       >
-        <SplitFlapGlyph>{cell.from}</SplitFlapGlyph>
-      </SplitFlapLeaf>
-      <SplitFlapLeaf
+        <FlapGlyph>{cell.from}</FlapGlyph>
+      </FlapLeaf>
+      <FlapLeaf
         clip={BOTTOM_HALF_CLIP}
         presence={flap.presence}
-        inverse={<SplitFlapGlyph tone="inverse">{cell.to}</SplitFlapGlyph>}
-        shade={<SplitFlapShade shade={flap.landShade} />}
+        inverse={<FlapGlyph tone="inverse">{cell.to}</FlapGlyph>}
+        shade={<FlapShade shade={flap.landShade} />}
         rotate={flap.land}
         opacity={flap.landOpacity}
       >
-        <SplitFlapGlyph>{cell.to}</SplitFlapGlyph>
-      </SplitFlapLeaf>
+        <FlapGlyph>{cell.to}</FlapGlyph>
+      </FlapLeaf>
     </motion.span>
   );
 };

@@ -2,8 +2,9 @@ import { useKkNotice } from '@furria/ui';
 import type { QueryClient, UseMutationResult, UseQueryResult } from '@tanstack/react-query';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CLUB_HUB_QUERY_KEY } from '@/features/club';
+import { GROUPS_QUERY_KEY } from '@/features/groups';
+import { START_QUERY_KEY } from '@/features/start';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
-import { toWriteErrorMessage } from '@/lib/write-error';
 import type { CalendarEntryPayload } from './calendar-authoring';
 import { toEntryWriteNotice } from './calendar-authoring';
 import {
@@ -48,9 +49,13 @@ export interface AttendanceResponseInput {
   answer: AttendanceAnswer;
 }
 
-const refreshCalendar = (queryClient: QueryClient): void => {
-  void queryClient.invalidateQueries({ queryKey: CALENDAR_QUERY_KEY });
-  void queryClient.invalidateQueries({ queryKey: CLUB_HUB_QUERY_KEY });
+const refreshCalendar = async (queryClient: QueryClient): Promise<void> => {
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: CALENDAR_QUERY_KEY }),
+    queryClient.invalidateQueries({ queryKey: CLUB_HUB_QUERY_KEY }),
+    queryClient.invalidateQueries({ queryKey: GROUPS_QUERY_KEY }),
+    queryClient.invalidateQueries({ queryKey: START_QUERY_KEY }),
+  ]);
 };
 
 export const useCalendarQuery = (query: CalendarQuery): UseQueryResult<CalendarResponse, Error> =>
@@ -83,16 +88,8 @@ export const useAttendanceResponseMutation = (): UseMutationResult<
       ),
     onSuccess: (_saved, { answer }) => {
       raiseNotice({ tone: 'success', message: toAttendanceSavedMessage(answer) });
-      refreshCalendar(queryClient);
     },
-    onError: (error) => {
-      const message = toWriteErrorMessage(error);
-
-      if (message !== null) {
-        raiseNotice({ tone: 'error', message });
-      }
-      refreshCalendar(queryClient);
-    },
+    onSettled: () => refreshCalendar(queryClient),
   });
 };
 
@@ -124,7 +121,7 @@ export const useCreateCalendarEntryMutation = (): UseMutationResult<
       raiseNotice(
         toEntryWriteNotice(toEntryCreatedMessage(payload.title), written.venueCollisions),
       );
-      refreshCalendar(queryClient);
+      void refreshCalendar(queryClient);
     },
   });
 };
@@ -144,7 +141,7 @@ export const useUpdateCalendarEntryMutation = (): UseMutationResult<
       ),
     onSuccess: (written, { payload }) => {
       raiseNotice(toEntryWriteNotice(toEntrySavedMessage(payload.title), written.venueCollisions));
-      refreshCalendar(queryClient);
+      void refreshCalendar(queryClient);
     },
   });
 };
@@ -164,7 +161,7 @@ export const useDeleteCalendarEntryMutation = (): UseMutationResult<
       ),
     onSuccess: (_removed, { title }) => {
       raiseNotice({ tone: 'success', message: toEntryDeletedMessage(title) });
-      refreshCalendar(queryClient);
+      void refreshCalendar(queryClient);
     },
   });
 };

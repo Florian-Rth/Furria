@@ -1,10 +1,11 @@
 import type { MotionValue } from 'motion/react';
 import type { CSSProperties, FC, PropsWithChildren } from 'react';
+import { FlapLeaf } from '../../../../internal/flap/FlapLeaf';
+import { FlapShade } from '../../../../internal/flap/FlapShade';
+import { TOP_HALF_CLIP } from '../../../../internal/flap/flap-pose';
 import type { SplitFlapCell } from '../logic/split-flap-flaps';
 import { BRAND_WINDOW } from '../logic/split-flap-flaps';
-import { TOP_HALF_CLIP, useSplitFlapFlapMotion } from '../logic/use-split-flap-flap-motion';
-import { SplitFlapLeaf } from './SplitFlapLeaf';
-import { SplitFlapShade } from './SplitFlapShade';
+import { useSplitFlapFlapMotion } from '../logic/use-split-flap-flap-motion';
 
 const BRAND_PERSPECTIVE = 420;
 const NO_TILE = 0;
@@ -45,19 +46,19 @@ export const SplitFlapBrandFlap: FC<SplitFlapBrandFlapProps> = ({ progress, chil
     <span style={FLAP_STYLE}>
       <span style={SIZER_STYLE}>{children}</span>
       <span style={LEAVES_STYLE}>
-        <SplitFlapLeaf clip={flap.coverClip} presence={NO_TILE} perspective={BRAND_PERSPECTIVE}>
+        <FlapLeaf clip={flap.coverClip} presence={NO_TILE} perspective={BRAND_PERSPECTIVE}>
           {children}
-        </SplitFlapLeaf>
-        <SplitFlapLeaf
+        </FlapLeaf>
+        <FlapLeaf
           clip={TOP_HALF_CLIP}
           presence={NO_TILE}
           rotate={flap.fall}
           opacity={flap.fallOpacity}
-          shade={<SplitFlapShade shade={flap.fallShade} />}
+          shade={<FlapShade shade={flap.fallShade} />}
           perspective={BRAND_PERSPECTIVE}
         >
           {children}
-        </SplitFlapLeaf>
+        </FlapLeaf>
       </span>
     </span>
   );

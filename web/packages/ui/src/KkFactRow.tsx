@@ -24,7 +24,7 @@ const BAR_WIDTH = 3;
 const BAR_GUTTER = 1.875;
 const GROUP_EDGE_GUTTER = 1.25;
 const RAIL_MIX = '55%';
-const ACTIONS_WIDTH = 168;
+const ACTIONS_WIDTH = '16.5rem';
 
 const softer = (color: string): string => `color-mix(in srgb, ${color} ${RAIL_MIX}, transparent)`;
 

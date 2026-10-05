@@ -54,11 +54,15 @@ export const MePersonSchema = z.object({
 });
 export type MePerson = z.infer<typeof MePersonSchema>;
 
+export const MeRelevantSessionSchema = z.object({ startYear: z.int(), ordinal: z.int() });
+export type MeRelevantSession = z.infer<typeof MeRelevantSessionSchema>;
+
 export const MeMembershipSchema = z.object({
   state: MembershipStateSchema,
   memberSince: z.iso.date().nullable(),
   currentStartedOn: z.iso.date().nullable(),
   currentEndedOn: z.iso.date().nullable(),
+  relevantSession: MeRelevantSessionSchema.nullable(),
 });
 export type MeMembership = z.infer<typeof MeMembershipSchema>;
 
@@ -77,6 +81,7 @@ export const MeSchema = z.object({
   isAffiliated: z.boolean(),
   permissionKeys: z.array(z.string()),
   lastSeenAnnouncementAt: z.iso.datetime({ offset: true }).nullable(),
+  appSince: z.iso.date().nullable(),
   passkeys: z.array(MePasskeySchema),
 });
 export type Me = z.infer<typeof MeSchema>;

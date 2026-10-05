@@ -4,6 +4,8 @@ import type { FC, PropsWithChildren } from 'react';
 import { kkTokens } from '../../../tokens';
 import { navLabelPose } from '../logic/nav-motion';
 
+const NARROW_ITEM = '@container kk-shell-nav-item (max-width: 4.5rem)';
+
 const LABEL_PAINT: CSSObject = {
   typography: 'caption',
   fontWeight: kkTokens.eyebrow.fontWeight,
@@ -12,7 +14,16 @@ const LABEL_PAINT: CSSObject = {
   textTransform: 'uppercase',
   whiteSpace: 'nowrap',
   minWidth: 0,
+  maxWidth: '100%',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
   transition: kkTokens.motion.label,
+  [NARROW_ITEM]: {
+    position: 'absolute',
+    width: '1px',
+    height: '1px',
+    clipPath: 'inset(50%)',
+  },
 };
 
 interface KkShellNavLabelProps extends PropsWithChildren {

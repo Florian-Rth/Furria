@@ -3,24 +3,10 @@ import {
   boardProgressAt,
   cellOffsetAt,
   cellWindowOf,
-  flapPoseAt,
   headerFoldAt,
   headerTravelAt,
-  ramp,
   splitFlapCellsOf,
 } from './split-flap-flaps';
-
-describe('ramp', () => {
-  it.each([
-    [-5, 0, 10, 0],
-    [0, 0, 10, 0],
-    [5, 0, 10, 0.5],
-    [10, 0, 10, 1],
-    [20, 0, 10, 1],
-  ])('ramps %d between %d and %d to %d', (value, from, to, expected) => {
-    expect(ramp(value, from, to)).toBe(expected);
-  });
-});
 
 describe('splitFlapCellsOf', () => {
   it('pairs glyphs slot by slot and blanks the shorter side at the longer side’s centre', () => {
@@ -74,45 +60,6 @@ describe('cellWindowOf', () => {
 
     expect(window.start).toBeCloseTo(start, 2);
     expect(window.end).toBeCloseTo(end, 2);
-  });
-});
-
-describe('flapPoseAt', () => {
-  it('rests with the old top up and nothing revealed', () => {
-    expect(flapPoseAt(0)).toEqual({
-      fall: -0,
-      land: 90,
-      reveal: 0,
-      cover: 0,
-      presence: 0,
-      fallen: false,
-    });
-  });
-
-  it('has the old top edge-on and the new top fully revealed at the hinge moment', () => {
-    const pose = flapPoseAt(0.5);
-
-    expect(pose.fall).toBe(-90);
-    expect(pose.land).toBe(90);
-    expect(pose.reveal).toBe(1);
-    expect(pose.fallen).toBe(true);
-    expect(pose.presence).toBeCloseTo(1);
-  });
-
-  it.each([0.6, 0.8, 0.9])('lands the new bottom before it rebounds at %d', (progress) => {
-    expect(flapPoseAt(progress).land).toBeGreaterThan(0);
-  });
-
-  it('covers the old bottom completely once the flap has struck', () => {
-    expect(flapPoseAt(0.95).cover).toBe(1);
-  });
-
-  it('settles flat and covered at the end', () => {
-    const pose = flapPoseAt(1);
-
-    expect(pose.land).toBeCloseTo(0);
-    expect(pose.cover).toBe(1);
-    expect(pose.presence).toBeCloseTo(0);
   });
 });
 

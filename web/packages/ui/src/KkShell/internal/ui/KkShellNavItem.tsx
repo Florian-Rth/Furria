@@ -15,12 +15,15 @@ import { KkShellNavWash } from './KkShellNavWash';
 const { nav } = kkTokens.shell;
 const CONTENT_ATTRIBUTE = 'data-kk-shell-nav-content';
 const GLYPH_GAP = 0.25;
+const NAV_ITEM_CONTAINER = 'kk-shell-nav-item';
 
 const itemPaint = (theme: Theme): CSSObject => ({
   position: 'relative',
   flex: 1,
   minWidth: 0,
-  minHeight: kkTokens.tapTarget,
+  minHeight: `min(${kkTokens.tapTarget}, 100%)`,
+  containerType: 'inline-size',
+  containerName: NAV_ITEM_CONTAINER,
   alignItems: 'center',
   justifyContent: 'center',
   color: 'inherit',
@@ -35,6 +38,7 @@ const CONTENT_PAINT: CSSObject = {
   alignItems: 'center',
   gap: GLYPH_GAP,
   minWidth: 0,
+  maxWidth: '100%',
   paddingBottom: `${nav.contentRise}px`,
   transition: kkTokens.motion.press,
 };

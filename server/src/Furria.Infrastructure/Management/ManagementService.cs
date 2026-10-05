@@ -1,6 +1,4 @@
-using System.Diagnostics.Contracts;
 using Furria.Application.Authorization;
-using Furria.Application.Club;
 using Furria.Application.Management;
 using Furria.Application.Registry;
 using Furria.Core.Club;
@@ -93,19 +91,9 @@ public sealed class ManagementService
         return new ManageHubClubRecord
         {
             Name = record.Name,
-            MissingFactCount = MissingFactCountOf(record),
+            MissingFactCount = ClubRecordGaps.CountOf(record),
         };
     }
-
-    [Pure]
-    private static int MissingFactCountOf(ClubRecordDetails record) =>
-        new[]
-        {
-            record.Name is not null,
-            record.FoundedYear is not null,
-            record is { Street: not null, Zip: not null, City: not null },
-            record.Email is not null,
-        }.Count(isRecorded => !isRecorded);
 
     private async Task<ManageHubPersons> PersonsAsync(DateOnly today, CancellationToken ct) =>
         new()

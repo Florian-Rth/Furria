@@ -40,6 +40,7 @@ public static class AccessQuery
             PersonAccessFilter.WithAccess => dbContext.PeopleWithAccessOn(today),
             PersonAccessFilter.OpenInvitation => dbContext.PeopleWithOpenInvitation(),
             PersonAccessFilter.WithoutEmail => dbContext.EligibleWithoutEmail(today, ageOfConsent),
+            PersonAccessFilter.BirthDateUnknown => dbContext.BirthDateUnknown(today),
             _ => throw new ArgumentOutOfRangeException(nameof(filter), filter, null),
         };
     }
@@ -158,6 +159,20 @@ public static class AccessQuery
         dbContext
             .EligibleWithoutAccount(today, ageOfConsent)
             .Where(AccountEligibilityQuery.CanBeMailed());
+
+    [Pure]
+    public static IQueryable<Person> BirthDateUnknown(this AppDbContext dbContext, DateOnly today)
+    {
+        var openInvitations = dbContext.OpenInvitations();
+
+        return dbContext
+            .PeopleWithoutAccount()
+            .Where(AffiliationQuery.IsAffiliatedOn(today))
+            .Where(person =>
+                person.BirthDate == null
+                && !openInvitations.Any(invitation => invitation.PersonId == person.Id)
+            );
+    }
 
     [Pure]
     public static IQueryable<Person> NeverInvited(

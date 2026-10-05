@@ -1,8 +1,11 @@
+using System.Diagnostics.Contracts;
 using System.Linq.Expressions;
 using Furria.Application.Club;
 using Furria.Application.Results;
 using Furria.Core.Club;
+using Furria.Core.Identity;
 using Furria.Infrastructure.Persistence;
+using Furria.Infrastructure.Registry;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Club;
@@ -18,22 +21,13 @@ public sealed class KeyHoldingService
     private const string ReturnBeforeHandoutMessage =
         "Ein Schlüssel kann nicht vor seiner Ausgabe zurückgenommen werden.";
 
-    private static readonly Expression<Func<KeyHolding, HoldingRow>> HoldingProjection =
-        holding => new HoldingRow(
-            holding.Id,
-            holding.VenueId,
-            holding.PersonId,
-            holding.Person!.FirstName,
-            holding.Person!.LastName,
-            holding.SinceOn,
-            holding.UntilOn
-        );
-
     private readonly AppDbContext _dbContext;
+    private readonly TimeProvider _timeProvider;
 
-    public KeyHoldingService(AppDbContext dbContext)
+    public KeyHoldingService(AppDbContext dbContext, TimeProvider timeProvider)
     {
         _dbContext = dbContext;
+        _timeProvider = timeProvider;
     }
 
     public async Task<IReadOnlyList<KeyHoldingVenueSummary>> GetVenuesWithHoldingsAsync(
@@ -51,6 +45,9 @@ public sealed class KeyHoldingService
         if (venues.Count == 0)
             return [];
 
+        var activePeople = _dbContext.People.Where(
+            _dbContext.IsActiveInClubOn(ClubClock.Today(_timeProvider))
+        );
         var holdings = await _dbContext
             .KeyHoldings.AsNoTracking()
             .OrderBy(holding => holding.UntilOn != null)
@@ -61,7 +58,7 @@ public sealed class KeyHoldingService
             )
             .ThenBy(holding => holding.SinceOn)
             .ThenBy(holding => holding.Id)
-            .Select(HoldingProjection)
+            .Select(HoldingProjectionAmong(activePeople))
             .ToListAsync(ct);
 
         var holdingsByVenue = holdings
@@ -137,6 +134,21 @@ public sealed class KeyHoldingService
     private static string ArchivedVenueMessage(string name) =>
         $"Der Ort „{name}“ ist archiviert. Dafür wird kein Schlüssel mehr ausgegeben.";
 
+    [Pure]
+    private static Expression<Func<KeyHolding, HoldingRow>> HoldingProjectionAmong(
+        IQueryable<Person> activePeople
+    ) =>
+        holding => new HoldingRow(
+            holding.Id,
+            holding.VenueId,
+            holding.PersonId,
+            holding.Person!.FirstName,
+            holding.Person!.LastName,
+            holding.SinceOn,
+            holding.UntilOn,
+            activePeople.Any(person => person.Id == holding.PersonId)
+        );
+
     private static IReadOnlyList<KeyHoldingSummary> ToSummaries(IEnumerable<HoldingRow> rows) =>
         [.. rows.Select(ToSummary)];
 
@@ -149,6 +161,7 @@ public sealed class KeyHoldingService
             LastName = row.LastName,
             SinceOn = row.SinceOn,
             UntilOn = row.UntilOn,
+            HolderIsActiveInClub = row.HolderIsActiveInClub,
         };
 
     private Task<VenueRow?> VenueRowAsync(int venueId, CancellationToken ct) =>
@@ -178,6 +191,7 @@ public sealed class KeyHoldingService
         string FirstName,
         string LastName,
         DateOnly SinceOn,
-        DateOnly? UntilOn
+        DateOnly? UntilOn,
+        bool HolderIsActiveInClub
     );
 }

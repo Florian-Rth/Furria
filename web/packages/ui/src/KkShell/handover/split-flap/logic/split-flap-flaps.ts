@@ -1,3 +1,4 @@
+import { ramp } from '../../../../internal/flap/flap-pose';
 import { kkTokens } from '../../../../tokens';
 
 export interface SplitFlapGlyph {
@@ -20,15 +21,6 @@ export interface SplitFlapWindow {
   end: number;
 }
 
-export interface SplitFlapPose {
-  fall: number;
-  land: number;
-  reveal: number;
-  cover: number;
-  presence: number;
-  fallen: boolean;
-}
-
 export interface SplitFlapHeaderFold {
   tilt: number;
   hold: number;
@@ -44,18 +36,10 @@ const HEADER_END = scrollTravel * 0.9;
 const BRAND_SHARE = 0.46;
 const BRAND_LEAD = 0.28;
 const STAGGER = 0.14;
-const FALL_SHARE = 0.5;
-const LAND_SHARE = 0.78;
-const REBOUND_DEGREES = 14;
-const RIGHT_ANGLE = 90;
-const PRESENCE_GAIN = 2.4;
 const HEADER_TILT_DEGREES = 74;
 const HEADER_HOLD_SHARE = 0.55;
 const HEADER_SHRINK = 0.06;
 const HEADER_FADE_EXPONENT = 2.2;
-
-export const ramp = (value: number, from: number, to: number): number =>
-  Math.min(Math.max((value - from) / (to - from), 0), 1);
 
 export const cellOffsetAt = (cell: SplitFlapCell, progress: number): number =>
   cell.fromCenter + (cell.toCenter - cell.fromCenter) * progress - cell.width / 2;
@@ -94,45 +78,6 @@ export const cellWindowOf = (index: number, count: number, lead: number): SplitF
   const start = lead + index * STAGGER * duration;
 
   return { start, end: start + duration };
-};
-
-const landAngleAt = (settling: number): number => {
-  if (settling < LAND_SHARE) {
-    return RIGHT_ANGLE * (1 - (settling / LAND_SHARE) ** 2);
-  }
-
-  return REBOUND_DEGREES * Math.sin((Math.PI * (settling - LAND_SHARE)) / (1 - LAND_SHARE));
-};
-
-const cosineOf = (degrees: number): number => Math.cos((degrees * Math.PI) / 180);
-
-export const flapPoseAt = (progress: number): SplitFlapPose => {
-  const presence = Math.min(Math.sin(Math.PI * progress) * PRESENCE_GAIN, 1);
-
-  if (progress < FALL_SHARE) {
-    const fall = -RIGHT_ANGLE * (progress / FALL_SHARE) ** 2;
-
-    return {
-      fall,
-      land: RIGHT_ANGLE,
-      reveal: 1 - cosineOf(fall),
-      cover: 0,
-      presence,
-      fallen: false,
-    };
-  }
-
-  const settling = Math.min((progress - FALL_SHARE) / (1 - FALL_SHARE), 1);
-  const land = landAngleAt(settling);
-
-  return {
-    fall: -RIGHT_ANGLE,
-    land,
-    reveal: 1,
-    cover: settling < LAND_SHARE ? cosineOf(land) : 1,
-    presence,
-    fallen: true,
-  };
 };
 
 export const headerFoldAt = (travelled: number): SplitFlapHeaderFold => ({

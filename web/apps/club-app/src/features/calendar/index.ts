@@ -4,5 +4,6 @@ export { CALENDAR_ORIGIN, CALENDAR_TITLE, toTimeOptions, toVenueOptions } from '
 export { CalendarEntryNewScreen } from './components/CalendarEntryNewScreen';
 export { CalendarEntryScreen } from './components/CalendarEntryScreen';
 export { CalendarPage } from './components/CalendarPage';
-export type { RunningVenue } from './schemas';
-export { CalendarBoardSearchSchema } from './schemas';
+export { requestAttendanceResponse } from './requests';
+export type { AttendanceAnswer, RunningVenue } from './schemas';
+export { AttendanceAnswerSchema, CalendarBoardSearchSchema } from './schemas';

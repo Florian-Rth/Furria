@@ -407,6 +407,7 @@ public sealed class GetPersonsTests
     [InlineData(PersonAccessFilters.WithAccess, "anna")]
     [InlineData(PersonAccessFilters.OpenInvitation, "carla", "karl")]
     [InlineData(PersonAccessFilters.WithoutEmail, "emil")]
+    [InlineData(PersonAccessFilters.BirthDateUnknown, "hans")]
     public async Task Should_ListOnlyThePersonsInThatAccessState_When_TheRegistryIsFilteredByAccess(
         string access,
         params string[] expectedAliases
@@ -545,6 +546,94 @@ public sealed class GetPersonsTests
     }
 
     [Fact]
+    public async Task Should_ListThePerson_When_FilteringByBirthDateUnknown()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var today = _fixture.Today;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddPerson("hans", "Hans", "Muster")
+                            .AddPersonContact("hans", InvitationSteps.UniqueContactEmail("hans"))
+                            .AddMembership("hans-membership", "hans", today.AddYears(-1))
+                            .AddPerson("lea", "Lea", "Muster")
+                            .AddPerson("tom", "Tom", "Kartenkäufer")
+                            .AddPerson("jonas", "Jonas", "Muster")
+                            .AddMembership("jonas-membership", "jonas", today.AddYears(-1))
+                            .AddAccount("jonas")
+                            .AddPerson("fritz", "Fritz", "Muster")
+                            .AddPersonContact("fritz", birthDate: today.AddYears(-30))
+                            .AddMembership("fritz-membership", "fritz", today.AddYears(-1))
+                            .AddPerson("otto", "Otto", "Muster")
+                            .AddMembership(
+                                "otto-membership",
+                                "otto",
+                                today.AddYears(-3),
+                                today.AddYears(-1)
+                            )
+                    )
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("tanzgarde", "Tanzgarde")
+                            .AddGroupMembership(
+                                "lea-tanzgarde",
+                                "tanzgarde",
+                                "lea",
+                                today.AddYears(-1)
+                            )
+                    ),
+            ct
+        );
+        var ids = new Dictionary<string, int>(StringComparer.Ordinal)
+        {
+            ["hans"] = ctx.Identity.People.IdOf("hans"),
+            ["lea"] = ctx.Identity.People.IdOf("lea"),
+            ["tom"] = ctx.Identity.People.IdOf("tom"),
+            ["jonas"] = ctx.Identity.People.IdOf("jonas"),
+            ["fritz"] = ctx.Identity.People.IdOf("fritz"),
+            ["otto"] = ctx.Identity.People.IdOf("otto"),
+        };
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+
+        var listed = await ListByAccessAsync(client, PersonAccessFilters.BirthDateUnknown);
+
+        Assert.Equal(["hans", "lea"], AliasesOf(ids, listed));
+    }
+
+    [Fact]
+    public async Task Should_LeaveOutThePerson_When_SheHasAnOpenInvitation()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var today = _fixture.Today;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddPerson("hans", "Hans", "Muster")
+                        .AddPersonContact("hans", InvitationSteps.UniqueContactEmail("hans"))
+                        .AddMembership("hans-membership", "hans", today.AddYears(-1))
+                        .AddPerson("karl", "Karl", "Muster")
+                        .AddPersonContact("karl", InvitationSteps.UniqueContactEmail("karl"))
+                        .AddMembership("karl-membership", "karl", today.AddYears(-1))
+                ),
+            ct
+        );
+        var ids = new Dictionary<string, int>(StringComparer.Ordinal)
+        {
+            ["hans"] = ctx.Identity.People.IdOf("hans"),
+            ["karl"] = ctx.Identity.People.IdOf("karl"),
+        };
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        await InvitationSteps.InviteAsync(client, ids["karl"]);
+
+        var listed = await ListByAccessAsync(client, PersonAccessFilters.BirthDateUnknown);
+
+        Assert.Equal(["hans"], AliasesOf(ids, listed));
+    }
+
+    [Fact]
     public async Task Should_ReturnBadRequest_When_TheAccessFilterIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -660,6 +749,14 @@ public sealed class GetPersonsTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         return result.Persons.Select(person => person.PersonId).ToHashSet();
     }
+
+    private static IEnumerable<string> AliasesOf(
+        IReadOnlyDictionary<string, int> ids,
+        IReadOnlySet<int> listed
+    ) =>
+        ids.Where(entry => listed.Contains(entry.Value))
+            .Select(entry => entry.Key)
+            .Order(StringComparer.Ordinal);
 
     private static async Task<IReadOnlySet<int>> ListAllAsync(HttpClient client)
     {

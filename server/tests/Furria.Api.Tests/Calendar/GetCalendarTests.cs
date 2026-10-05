@@ -17,8 +17,11 @@ public sealed class GetCalendarTests
     private const string DanceGuardPerformance = "Auftritt der Tanzgarde";
     private const string DanceGuardParty = "Gardefeier";
     private const string KinderTraining = "Training der Kindergarde";
+    private const string KinderRehearsal = "Probe der Kindergarde";
+    private const string FormerGuardReunion = "Treffen der Altgarde";
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
+    private static readonly DateOnly ArchivedLastSummer = new(2026, 6, 30);
 
     private static readonly DateTimeOffset Now = new(2027, 1, 15, 12, 0, 0, TimeSpan.Zero);
     private static readonly DateTimeOffset AtTheDanceGuardTraining = new(
@@ -152,6 +155,42 @@ public sealed class GetCalendarTests
 
                 Assert.Contains(DanceGuardTraining, TitlesOf(result));
                 Assert.DoesNotContain(KinderTraining, TitlesOf(result));
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_ListAGroupOnlyEntry_When_TheViewerIsInAParticipatingGroup()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildGroupOnlyEntriesAsync(ct);
+
+                var result = await ReadAsync(ctx, "bea", new GetCalendarRequest(), ct);
+
+                Assert.Contains(KinderRehearsal, TitlesOf(result));
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_LeaveOutAGroupOnlyEntry_When_ItsOwnerGroupIsArchived()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildGroupOnlyEntriesAsync(ct);
+
+                var result = await ReadAsync(ctx, "bea", new GetCalendarRequest(), ct);
+
+                Assert.DoesNotContain(FormerGuardReunion, TitlesOf(result));
             }
         );
     }
@@ -483,6 +522,40 @@ public sealed class GetCalendarTests
                                 "club-meeting",
                                 "bea",
                                 AttendanceAnswer.Yes
+                            )
+                    ),
+            ct
+        );
+
+    private Task<SeededContext> BuildGroupOnlyEntriesAsync(CancellationToken ct) =>
+        _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(WholeClub)
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("tanzgarde", "Tanzgarde")
+                            .AddGroup("kindergarde", "Kindergarde")
+                            .AddGroup("altgarde", "Altgarde", archivedOn: ArchivedLastSummer)
+                            .AddGroupMembership("bea-tanzgarde", "tanzgarde", "bea", JoinedIn2017)
+                            .AddGroupMembership("bea-altgarde", "altgarde", "bea", JoinedIn2017)
+                    )
+                    .Club(club =>
+                        club.AddCalendarEntry(
+                                "kinder-probe",
+                                KinderRehearsal,
+                                AtTheKinderTraining,
+                                kind: CalendarEntryKind.Rehearsal,
+                                visibility: CalendarEntryVisibility.Group,
+                                ownerGroupAlias: "kindergarde",
+                                participatingGroupAliases: ["tanzgarde"]
+                            )
+                            .AddCalendarEntry(
+                                "altgarde-treffen",
+                                FormerGuardReunion,
+                                AtTheMeeting,
+                                visibility: CalendarEntryVisibility.Group,
+                                ownerGroupAlias: "altgarde"
                             )
                     ),
             ct

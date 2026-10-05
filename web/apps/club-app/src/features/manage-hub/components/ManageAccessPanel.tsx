@@ -2,6 +2,7 @@ import { KkHubRow, KkNote, KkPanel, KkPanelSection, KkSkeletonRow } from '@furri
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { useLanding } from '@/features/write';
 import { useInvitationRoundPreviewQuery } from '../api';
 import { ACCESS_PANEL_TITLE, toAccessRows } from '../invitation-round-labels';
 import type { ManageAccountsPanel } from '../schemas';
@@ -10,6 +11,7 @@ import { InvitationRoundAction } from './InvitationRoundAction';
 const PERSONS_ROUTE = '/manage/persons';
 const PREVIEW_FAILED_NOTE = 'Die Zahlen für Alle einladen und Erinnern sind gerade nicht abrufbar.';
 const ROUND_SKELETON_ROWS = 2;
+const ACCESS_LANDING = 'access';
 
 interface ManageAccessPanelProps {
   accounts: ManageAccountsPanel;
@@ -17,6 +19,8 @@ interface ManageAccessPanelProps {
 
 export const ManageAccessPanel: FC<ManageAccessPanelProps> = ({ accounts }) => {
   const preview = useInvitationRoundPreviewQuery();
+  const { highlightedKey } = useLanding();
+  const isLanded = highlightedKey === ACCESS_LANDING;
 
   const rows = toAccessRows(accounts).map((row) => (
     <KkHubRow
@@ -53,7 +57,9 @@ export const ManageAccessPanel: FC<ManageAccessPanelProps> = ({ accounts }) => {
 
   return (
     <KkPanelSection title={ACCESS_PANEL_TITLE}>
-      <KkPanel>{rows}</KkPanel>
+      <KkPanel highlight={isLanded} landing={ACCESS_LANDING}>
+        {rows}
+      </KkPanel>
       {roundsBlock}
     </KkPanelSection>
   );

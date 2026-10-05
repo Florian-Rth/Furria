@@ -7,6 +7,8 @@ import { MAIN_ELEMENT_ID } from '../main-element-id';
 
 const TRACK_PADDING_X = 2.5;
 const ARRIVING_BLOCK = '& [data-kk-shell-entrance] > * > *';
+const HELD_BODY_BLOCK = '& [data-kk-shell-entrance][data-kk-body-held] > * ~ * > *';
+const HELD = { animationPlayState: 'paused' } as const;
 
 interface KkShellTrackProps extends PropsWithChildren {
   headClearance: number;
@@ -40,6 +42,7 @@ export const KkShellTrack: FC<KkShellTrackProps> = ({
         pr: `calc(${safeAreaInset('right')} + ${theme.spacing(TRACK_PADDING_X)} + ${indexClearance}px)`,
         transition: kkTokens.motion.clearance,
         ...arrivalCascade,
+        [HELD_BODY_BLOCK]: HELD,
       })}
     >
       {children}
