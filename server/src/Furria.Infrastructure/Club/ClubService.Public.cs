@@ -22,6 +22,7 @@ public sealed partial class ClubService
             FacebookUrl = record?.FacebookUrl,
             MemberCount = await MemberCountAsync(today, ct),
             GroupCount = await GroupCountAsync(ct),
+            AgeOfConsent = record?.AgeOfConsent ?? ClubRecord.DefaultAgeOfConsent,
             Session = await PublicSessionAsync(ClubSession.RelevantYearOf(today), ct),
         };
     }
@@ -53,7 +54,8 @@ public sealed partial class ClubService
                 row.Email,
                 row.Phone,
                 row.InstagramUrl,
-                row.FacebookUrl
+                row.FacebookUrl,
+                row.AgeOfConsent
             ))
             .SingleOrDefaultAsync(ct);
 
@@ -79,6 +81,7 @@ public sealed partial class ClubService
         string? Email,
         string? Phone,
         string? InstagramUrl,
-        string? FacebookUrl
+        string? FacebookUrl,
+        int AgeOfConsent
     );
 }

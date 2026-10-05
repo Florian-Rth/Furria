@@ -1,6 +1,7 @@
 using System.Globalization;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
+using Furria.Api.Altcha;
 using Furria.Api.Logging;
 using Furria.Api.Proxies;
 using Furria.Api.RateLimiting;
@@ -10,6 +11,7 @@ using Furria.Application.Identity;
 using Furria.Application.Mail;
 using Furria.Application.PreviewAccess;
 using Furria.Application.Results;
+using Furria.Application.Website;
 using Furria.Core.Club;
 using Furria.Core.Groups;
 using Furria.Core.Identity;
@@ -50,11 +52,16 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
     public const string SeededAccountPassword = "Seeded-Account-Pw-1!";
     public const string ClubDomain = "furria.test";
     public const string ClubAppBaseUrl = "https://club.furria.test";
+    public const string WebsiteBaseUrl = "https://furria.test";
     public const string AndroidCertFingerprint =
         "14:6D:E9:83:C5:73:06:50:D8:EE:B9:95:2F:34:FC:64:16:A0:83:42:E6:1D:BE:A8:8A:04:96:B2:3F:CF:44:E5";
     public const int PermitsPerInvitationToken = 10;
     public const string TrustedProxyAddress = "10.10.20.1";
 
+    private const string AltchaHmacKey = "furria-test-altcha-hmac-key-of-32-bytes";
+    private const int AltchaCost = 1;
+    private const int AltchaMinCounter = 1;
+    private const int AltchaMaxCounter = 50;
     private const int MailpitSmtpPort = 1025;
     private const int MailpitApiPort = 8025;
     private const int PermitsPerIpBeyondAnySuite = 1_000_000;
@@ -183,6 +190,10 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             ClubAppBaseUrl
         );
         builder.UseSetting(
+            $"{WebsiteOptions.SectionName}:{nameof(WebsiteOptions.BaseUrl)}",
+            WebsiteBaseUrl
+        );
+        builder.UseSetting(
             $"{PasskeyOptions.SectionName}:{nameof(PasskeyOptions.RelyingPartyId)}",
             ClubDomain
         );
@@ -205,6 +216,22 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         builder.UseSetting(
             $"{SignInRateLimitOptions.SectionName}:{nameof(SignInRateLimitOptions.RejectedRefreshesPerIp)}",
             PermitsPerIpBeyondAnySuite.ToString(CultureInfo.InvariantCulture)
+        );
+        builder.UseSetting(
+            $"{AltchaOptions.SectionName}:{nameof(AltchaOptions.HmacKey)}",
+            AltchaHmacKey
+        );
+        builder.UseSetting(
+            $"{AltchaOptions.SectionName}:{nameof(AltchaOptions.Cost)}",
+            AltchaCost.ToString(CultureInfo.InvariantCulture)
+        );
+        builder.UseSetting(
+            $"{AltchaOptions.SectionName}:{nameof(AltchaOptions.MinCounter)}",
+            AltchaMinCounter.ToString(CultureInfo.InvariantCulture)
+        );
+        builder.UseSetting(
+            $"{AltchaOptions.SectionName}:{nameof(AltchaOptions.MaxCounter)}",
+            AltchaMaxCounter.ToString(CultureInfo.InvariantCulture)
         );
         builder.UseSetting(
             $"{TrustedProxyOptions.SectionName}:{nameof(TrustedProxyOptions.TrustedProxies)}:0",

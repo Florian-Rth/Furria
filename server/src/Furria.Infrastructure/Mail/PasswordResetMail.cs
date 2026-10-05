@@ -18,7 +18,7 @@ public static class PasswordResetMail
         new()
         {
             Template = MailTemplate.PasswordReset,
-            PersonId = content.PersonId,
+            Recipient = MailRecipient.Person(content.PersonId),
             To = content.To,
             Subject = Subject,
             TextBody = TextOf(content),

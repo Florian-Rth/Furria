@@ -1,6 +1,7 @@
 using Furria.Core.Club;
 using Furria.Core.Groups;
 using Furria.Core.Identity;
+using Furria.Core.MembershipApplications;
 using Furria.Core.Roles;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Mail;
@@ -72,6 +73,8 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
     public DbSet<OutboxMail> OutboxMails => Set<OutboxMail>();
+
+    public DbSet<MembershipApplication> MembershipApplications => Set<MembershipApplication>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }

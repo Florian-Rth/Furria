@@ -54,6 +54,7 @@ public sealed class GetManageHubTests
         Assert.Null(result.Keys);
         Assert.Null(result.Board);
         Assert.Null(result.ClubRecord);
+        Assert.Null(result.Applications);
     }
 
     [Fact]
@@ -71,6 +72,7 @@ public sealed class GetManageHubTests
         Assert.Null(result.Keys);
         Assert.Null(result.Board);
         Assert.Null(result.ClubRecord);
+        Assert.Null(result.Applications);
     }
 
     [Fact]
@@ -87,6 +89,7 @@ public sealed class GetManageHubTests
         Assert.Null(result.Keys);
         Assert.Null(result.Board);
         Assert.Null(result.ClubRecord);
+        Assert.Null(result.Applications);
     }
 
     [Fact]
@@ -119,6 +122,7 @@ public sealed class GetManageHubTests
         Assert.Null(result.Venues);
         Assert.Null(result.Board);
         Assert.Null(result.ClubRecord);
+        Assert.Null(result.Applications);
     }
 
     [Fact]
@@ -136,6 +140,7 @@ public sealed class GetManageHubTests
         Assert.Null(result.Keys);
         Assert.Null(result.Board);
         Assert.Null(result.ClubRecord);
+        Assert.Null(result.Applications);
     }
 
     [Fact]
@@ -152,6 +157,50 @@ public sealed class GetManageHubTests
         Assert.Null(result.Venues);
         Assert.Null(result.Keys);
         Assert.Null(result.ClubRecord);
+        Assert.Null(result.Applications);
+    }
+
+    [Fact]
+    public async Task Should_ShowTheApplicationsPanelOnly_When_TheCallerOnlyDecidesApplications()
+    {
+        var (response, result) = await AskAsHolderOfAsync(
+            FurriaPermissions.MembershipApplicationsDecide
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(result.Applications);
+        Assert.Null(result.Persons);
+        Assert.Null(result.Accounts);
+        Assert.Null(result.Groups);
+        Assert.Null(result.Roles);
+        Assert.Null(result.Sessions);
+        Assert.Null(result.Venues);
+        Assert.Null(result.Keys);
+        Assert.Null(result.Board);
+        Assert.Null(result.ClubRecord);
+    }
+
+    [Fact]
+    public async Task Should_CountTheUndecidedApplicationsAndTheMinorsAmongThem_When_TheHubIsRead()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var today = _fixture.Today;
+
+        var result = await ReadTheHubAsAdminAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddMembershipApplication("mia", today.AddYears(-17))
+                        .AddMembershipApplication("lena", today.AddYears(-18))
+                        .AddMembershipApplication("nora", today.AddYears(-40))
+                        .AddMembershipApplication("olga", today.AddYears(-16), unconfirmed: true)
+                ),
+            ct
+        );
+
+        Assert.NotNull(result.Applications);
+        Assert.Equal(3, result.Applications.UndecidedCount);
+        Assert.Equal(1, result.Applications.MinorCount);
     }
 
     [Fact]
@@ -177,6 +226,7 @@ public sealed class GetManageHubTests
         Assert.NotNull(result.Keys);
         Assert.NotNull(result.Board);
         Assert.NotNull(result.ClubRecord);
+        Assert.NotNull(result.Applications);
         Assert.Equal(1, result.Groups.GroupCount);
         Assert.Equal(1, result.Venues.VenueCount);
         Assert.Equal(1, result.Sessions.EntryCount);
@@ -471,6 +521,9 @@ public sealed class GetManageHubTests
         Assert.NotNull(result.Board);
         Assert.Equal(0, result.Board.SeatCount);
         Assert.Equal(0, result.Board.VacantOfficeCount);
+        Assert.NotNull(result.Applications);
+        Assert.Equal(0, result.Applications.UndecidedCount);
+        Assert.Equal(0, result.Applications.MinorCount);
     }
 
     [Fact]

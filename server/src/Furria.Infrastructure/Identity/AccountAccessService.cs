@@ -3,6 +3,7 @@ using System.Linq.Expressions;
 using Furria.Application.ClubApp;
 using Furria.Application.Groups;
 using Furria.Application.Identity;
+using Furria.Application.MembershipApplications;
 using Furria.Application.Results;
 using Furria.Core.Club;
 using Furria.Core.Identity;
@@ -21,6 +22,8 @@ public sealed class AccountAccessService
     private const string UnknownPersonMessage = "Diese Person steht nicht im Register.";
     private const string DeadInvitationMessage = "Diese Einladung gilt nicht mehr.";
     private const string PasswordErrorPrefix = "Password";
+    private const string AdmissionOutsideTransactionMessage =
+        "An admission invites in its own transaction; begin it before inviting the admitted person.";
 
     private static readonly IReadOnlySet<string> TakenLoginErrorCodes = new HashSet<string>(
         StringComparer.Ordinal
@@ -130,6 +133,48 @@ public sealed class AccountAccessService
         return Result<IssuedInvitationDetails>.Success(
             new IssuedInvitationDetails { ExpiresAt = expiresAt }
         );
+    }
+
+    public async Task<Result<AdmissionInvitation>> InviteAdmittedAsync(
+        int personId,
+        int admitterPersonId,
+        CancellationToken ct
+    )
+    {
+        if (_dbContext.Database.CurrentTransaction is null)
+            throw new InvalidOperationException(AdmissionOutsideTransactionMessage);
+
+        var now = _timeProvider.GetUtcNow();
+        var subject =
+            await SubjectAsync(personId, ClubClock.DayOf(now), ct)
+            ?? throw new InvalidOperationException(UnknownPersonMessage);
+        var terms = await ClubTermsAsync(ct);
+        if (WithheldAdmissionInvitationOf(subject, terms) is { } withheld)
+            return Result<AdmissionInvitation>.Success(withheld);
+
+        var token = OpaqueTokenSecret.Generate(out var tokenHash);
+        var expiresAt = now + Invitation.MailLifetime;
+        await StageIssuedAsync(
+            new Invitation
+            {
+                PersonId = personId,
+                Purpose = InvitationPurpose.Onboarding,
+                Channel = InvitationChannel.Mail,
+                TokenHash = tokenHash,
+                IssuedByPersonId = admitterPersonId,
+                IssuedAt = now,
+                ExpiresAt = expiresAt,
+            },
+            ct
+        );
+        _mailOutbox.Stage(InvitationMail.Compose(ToMailContent(subject, terms, token, expiresAt)));
+        var saved = await _dbContext.SaveOrConflictAsync(ct);
+        if (!saved.IsSuccess)
+            return Result<AdmissionInvitation>.Carrying(saved);
+
+        _logger.LogInformation("Mail invitation issued for person {PersonId}", personId);
+
+        return Result<AdmissionInvitation>.Success(AdmissionInvitation.Sent);
     }
 
     public async Task<Result<IssuedInPersonInvitationDetails>> IssueInPersonInvitationAsync(
@@ -675,6 +720,27 @@ public sealed class AccountAccessService
 
         return null;
     }
+
+    [Pure]
+    private static AdmissionInvitation? WithheldAdmissionInvitationOf(
+        SubjectRow subject,
+        ClubTerms terms
+    ) =>
+        subject.AccountIsDisabled is not null
+            ? AdmissionInvitation.AlreadyHasAccount
+            : AccountEligibility.ReasonAgainst(
+                subject.Candidate,
+                subject.Today,
+                terms.AgeOfConsent
+            ) switch
+            {
+                null when AccountEligibility.CanBeMailed(subject.Candidate) => null,
+                AccountIneligibilityReason.NotAffiliated => AdmissionInvitation.NotYetAffiliated,
+                AccountIneligibilityReason.UnderAge => AdmissionInvitation.BelowAgeOfConsent,
+                var reason => throw new InvalidOperationException(
+                    $"An admitted person always has a birth date and an email, not {reason}."
+                ),
+            };
 
     [Pure]
     private static string? MailRefusalOf(

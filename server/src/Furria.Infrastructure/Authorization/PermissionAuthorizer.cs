@@ -84,12 +84,8 @@ public sealed class PermissionAuthorizer
         var today = ClubClock.Today(_timeProvider);
         var keys = await _dbContext
             .RoleHoldings.AsNoTracking()
-            .Where(holding =>
-                holding.PersonId == personId.Value
-                && holding.SinceOn <= today
-                && (holding.UntilOn == null || holding.UntilOn >= today)
-                && holding.Role!.ArchivedOn == null
-            )
+            .Where(holding => holding.PersonId == personId.Value)
+            .Where(PermissionHolderQuery.RoleHoldingGrantsOn(today))
             .SelectMany(holding => holding.Role!.Permissions.Select(row => row.PermissionKey))
             .Distinct()
             .ToListAsync(ct);
@@ -113,13 +109,8 @@ public sealed class PermissionAuthorizer
 
         var impliedKeys = await _dbContext
             .BoardSeats.AsNoTracking()
-            .Where(seat =>
-                seat.PersonId == personId.Value
-                && seat.SinceOn <= today
-                && (seat.UntilOn == null || seat.UntilOn >= today)
-                && seat.BoardOffice!.ImpliedRoleId != null
-                && seat.BoardOffice!.ImpliedRole!.ArchivedOn == null
-            )
+            .Where(seat => seat.PersonId == personId.Value)
+            .Where(PermissionHolderQuery.BoardSeatGrantsOn(today))
             .SelectMany(seat =>
                 seat.BoardOffice!.ImpliedRole!.Permissions.Select(row => row.PermissionKey)
             )

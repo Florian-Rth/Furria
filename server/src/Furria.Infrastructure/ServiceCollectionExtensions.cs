@@ -6,6 +6,7 @@ using Furria.Infrastructure.Groups;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Mail;
 using Furria.Infrastructure.Management;
+using Furria.Infrastructure.MembershipApplications;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Registry;
 using Furria.Infrastructure.Roles;
@@ -113,6 +114,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<AccountAdministrationService>();
         services.AddScoped<AccountClaimService>();
         services.AddScoped<PersonAdoptionService>();
+        services.AddScoped<MembershipApplicationService>();
+        services.AddScoped<MembershipApplicationArrivalNotifier>();
         services.AddScoped<DatabaseHealthService>();
 
         services.AddScoped<MailOutbox>();
@@ -125,6 +128,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<SignedOutMailRequestQueue>();
         services.AddSingleton<PasswordResetMailThrottle>();
         services.AddHostedService<SignedOutMailRequestWorker>();
+        services.AddHostedService<UnconfirmedApplicationPurge>();
         services.Configure<DataProtectionTokenProviderOptions>(options =>
             options.TokenLifespan = PasswordResetService.LinkLifetime
         );

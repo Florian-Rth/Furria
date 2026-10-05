@@ -4,7 +4,7 @@ public sealed record OutgoingMail
 {
     public required MailTemplate Template { get; init; }
 
-    public required int PersonId { get; init; }
+    public required MailRecipient Recipient { get; init; }
 
     public required string To { get; init; }
 

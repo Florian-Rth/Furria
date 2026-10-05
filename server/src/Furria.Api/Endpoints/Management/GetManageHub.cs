@@ -25,7 +25,8 @@ public sealed class GetManageHub : EndpointWithoutRequest<GetManageHubResponse>
             FurriaPermissions.ClubManage,
             FurriaPermissions.KeyHoldingsManage,
             FurriaPermissions.BoardManage,
-            FurriaPermissions.AccountsManage
+            FurriaPermissions.AccountsManage,
+            FurriaPermissions.MembershipApplicationsDecide
         );
     }
 
@@ -55,6 +56,7 @@ public sealed class GetManageHub : EndpointWithoutRequest<GetManageHubResponse>
             Board = hub.Board is null ? null : ToDto(hub.Board),
             ClubRecord = hub.ClubRecord is null ? null : ToDto(hub.ClubRecord),
             Accounts = hub.Accounts is null ? null : ToDto(hub.Accounts),
+            Applications = hub.Applications is null ? null : ToDto(hub.Applications),
         };
 
     private static ManageHubPersonsDto ToDto(ManageHubPersons persons) =>
@@ -104,6 +106,13 @@ public sealed class GetManageHub : EndpointWithoutRequest<GetManageHubResponse>
             OpenInvitationCount = accounts.OpenInvitationCount,
             EligibleWithoutEmailCount = accounts.EligibleWithoutEmailCount,
         };
+
+    private static ManageHubApplicationsDto ToDto(ManageHubApplications applications) =>
+        new()
+        {
+            UndecidedCount = applications.UndecidedCount,
+            MinorCount = applications.MinorCount,
+        };
 }
 
 public sealed record GetManageHubResponse
@@ -125,6 +134,8 @@ public sealed record GetManageHubResponse
     public required ManageHubClubRecordDto? ClubRecord { get; init; }
 
     public required ManageHubAccountsDto? Accounts { get; init; }
+
+    public required ManageHubApplicationsDto? Applications { get; init; }
 }
 
 public sealed record ManageHubPersonsDto
@@ -198,4 +209,11 @@ public sealed record ManageHubAccountsDto
     public required int OpenInvitationCount { get; init; }
 
     public required int EligibleWithoutEmailCount { get; init; }
+}
+
+public sealed record ManageHubApplicationsDto
+{
+    public required int UndecidedCount { get; init; }
+
+    public required int MinorCount { get; init; }
 }

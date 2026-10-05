@@ -100,9 +100,10 @@ public sealed class MailDispatcher : BackgroundService
         {
             await _mailService.SendAsync(ToOutgoing(mail), ct);
             _logger.LogInformation(
-                "Mail {MailTemplate} sent to person {PersonId}",
+                "Mail {MailTemplate} sent to {MailRecipientKind} {MailRecipientId}",
                 mail.Template,
-                mail.PersonId
+                mail.RecipientKind,
+                mail.RecipientId
             );
             return null;
         }
@@ -122,9 +123,10 @@ public sealed class MailDispatcher : BackgroundService
         if (MailRetrySchedule.DelayAfterFailed(mail.Attempt) is not { } delay)
         {
             _logger.LogWarning(
-                "Mail {MailTemplate} to person {PersonId} abandoned after {AttemptCount} attempts, last failure {FailureType}",
+                "Mail {MailTemplate} to {MailRecipientKind} {MailRecipientId} abandoned after {AttemptCount} attempts, last failure {FailureType}",
                 mail.Template,
-                mail.PersonId,
+                mail.RecipientKind,
+                mail.RecipientId,
                 mail.Attempt,
                 failureType
             );
@@ -133,9 +135,10 @@ public sealed class MailDispatcher : BackgroundService
         }
 
         _logger.LogWarning(
-            "Mail {MailTemplate} to person {PersonId} failed on attempt {AttemptNumber} with {FailureType}, retrying in {RetryDelay}",
+            "Mail {MailTemplate} to {MailRecipientKind} {MailRecipientId} failed on attempt {AttemptNumber} with {FailureType}, retrying in {RetryDelay}",
             mail.Template,
-            mail.PersonId,
+            mail.RecipientKind,
+            mail.RecipientId,
             mail.Attempt,
             failureType,
             delay
@@ -149,7 +152,7 @@ public sealed class MailDispatcher : BackgroundService
         new()
         {
             Template = mail.Template,
-            PersonId = mail.PersonId,
+            Recipient = new MailRecipient { Kind = mail.RecipientKind, Id = mail.RecipientId },
             To = mail.To,
             Subject = mail.Subject,
             TextBody = mail.TextBody,

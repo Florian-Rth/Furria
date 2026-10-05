@@ -46,6 +46,21 @@ public sealed class MembershipExpectations
             }
         );
 
+    public Expected ToRecordAdmission(
+        int admittedByPersonId,
+        DateTimeOffset admittedAt,
+        bool guardianConsentConfirmed
+    ) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var membership = await SingleAsync(dbContext, ct);
+                Assert.Equal(admittedByPersonId, membership.AdmittedByPersonId);
+                Assert.Equal(admittedAt, membership.AdmittedAt);
+                Assert.Equal(guardianConsentConfirmed, membership.GuardianConsentConfirmed);
+            }
+        );
+
     private Task<Membership> SingleAsync(AppDbContext dbContext, CancellationToken ct) =>
         dbContext.Memberships.AsNoTracking().SingleAsync(row => row.Id == _membershipId, ct);
 }

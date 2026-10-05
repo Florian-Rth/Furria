@@ -171,9 +171,14 @@ public sealed class GetMeTests
 2. **`SeedContextBuilder` / `IdentitySeedBuilder` / `GroupSeedBuilder` / `RoleSeedBuilder` /
    `ClubSeedBuilder`** —
    pure accumulators. One sub-builder per bounded context, not per entity: `builder.Identity(…)`
-   takes `AddPerson`, `AddPersonContact`, `AddMembership`, `AddMembershipPause`,
+   takes `AddPerson`, `AddPersonContact`, `AddMembership`, `AddAdmission` (stamps a seeded
+   membership as admitted: by whom, when, with or without a minor's guardian consent),
+   `AddMembershipPause`,
    `AddFeeReduction`, `AddAccount`, `AddContactChange(personAlias, changedByAlias, changedAt)`
-   (the last change of a person's contact details and who made it, both persons by alias); `builder.Groups(…)` takes `AddGroupKind`, `AddGroup`,
+   (the last change of a person's contact details and who made it, both persons by alias) and
+   `AddMembershipApplication(alias, birthDate, …)` (a confirmed application, confirmed an hour
+   before the clock's now unless `confirmedAt` says otherwise; `unconfirmed: true` leaves it
+   unconfirmed — it is inserted directly, so no Altcha has to be solved); `builder.Groups(…)` takes `AddGroupKind`, `AddGroup`,
    `AddGroupMembership`, `AddGroupAdmin`; `builder.Roles(…)` takes `AddRole`,
    `AddRoleWithDetails`, `AddRoleHolding`,
    `AddRoleWithHolder`; `builder.Club(…)` takes `AddSession`, whose every argument but the alias
@@ -214,7 +219,7 @@ public sealed class GetMeTests
    is a literal on purpose, because MET007 collects declarations syntactically.
 3. **`AliasRegistry`** — `ctx.Identity.People.IdOf("alice")`; an unknown alias throws listing the
    declared ones. `EmailOf` resolves the materialized unique email. One registry per entity kind:
-   `ctx.Identity.{People, Memberships, Pauses, FeeReductions, Accounts}`,
+   `ctx.Identity.{People, Memberships, Pauses, FeeReductions, Accounts, MembershipApplications}`,
    `ctx.Groups.{GroupKinds, Groups, GroupMemberships, GroupAdmins}`,
    `ctx.Roles.{Roles, RolePermissions, RoleHoldings}` and
    `ctx.Club.{Sessions, Venues, Announcements, KeyHoldings, BoardOffices, BoardSeats,
@@ -231,7 +236,7 @@ public sealed class GetMeTests
    `Expected`, so chaining two assertions about one entity re-selects it. This is the only legal
    way to assert database state — MET005 bans a `DbContext` in a test body. The membership
    accessors are **row**-scoped and **set**-scoped, never Person-scoped: `Expected.Membership(id)`
-   (`ToHavePeriod`, `ToBeOpen`, `ToNotExist`) and `Expected.MembershipsOfPerson(personId)`
+   (`ToHavePeriod`, `ToBeOpen`, `ToNotExist`, `ToRecordAdmission`) and `Expected.MembershipsOfPerson(personId)`
    (`ToHaveCount`, `ToHaveOpenCount`) — with several periods per Person a Person-scoped accessor is
    ambiguous. The role accessors follow the same split: `Expected.Role(roleId)`
    (`ToHaveName`, `ToHaveDescription`, `ToBeArchivedOn`, `ToGrantExactly`), `Expected.Roles()`
@@ -261,6 +266,9 @@ public sealed class GetMeTests
    asserted on `Expected.Person(personId)`: `ToHaveContactDetails(…)`,
    `ToHaveContactChangedBy(personId, changedAt)` and `ToHaveNoContactChange()`; an absorbed stray
    person on `Expected.Person(id).ToNotExist()` (and `ToExist()` for the one left untouched).
+   A declined application on `Expected.MembershipApplication(id).ToNotExist()` (`ToExist()` for
+   one a refused decline left alone); the table as a whole on `Expected.MembershipApplications()`
+   (`ToHaveCount`, `ToHaveConfirmedCount`).
    The training rhythm and the trainings the generator writes are **set**-scoped and group-
    scoped, never slot-scoped, because a group states several habits and the endpoint replaces
    them wholesale: `Expected.TrainingSlotsOf(groupId)` (`ToHaveCount`, `ToBeEmpty`,

@@ -43,6 +43,9 @@ public readonly record struct Result<TValue>
 
     public static Result<TValue> Carrying(Result refusal) => new(default, refusal.Error);
 
+    public static Result<TValue> Carrying<TOther>(Result<TOther> refusal) =>
+        new(default, refusal.Error);
+
     private static Result<TValue> Failed(ResultErrorKind kind, string message) =>
         new(default, new ResultError { Kind = kind, Message = message });
 }

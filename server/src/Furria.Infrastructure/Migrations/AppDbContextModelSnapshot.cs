@@ -1095,6 +1095,14 @@ namespace Furria.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTimeOffset?>("AdmittedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("admitted_at");
+
+                    b.Property<int?>("AdmittedByPersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("admitted_by_person_id");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -1104,6 +1112,10 @@ namespace Furria.Infrastructure.Migrations
                     b.Property<DateOnly?>("EndedOn")
                         .HasColumnType("date")
                         .HasColumnName("ended_on");
+
+                    b.Property<bool>("GuardianConsentConfirmed")
+                        .HasColumnType("boolean")
+                        .HasColumnName("guardian_consent_confirmed");
 
                     b.Property<int>("PersonId")
                         .HasColumnType("integer")
@@ -1122,6 +1134,9 @@ namespace Furria.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_membership");
 
+                    b.HasIndex("AdmittedByPersonId")
+                        .HasDatabaseName("ix_membership_admitted_by_person_id");
+
                     b.HasIndex("PersonId")
                         .HasDatabaseName("ix_membership_person_id");
 
@@ -1132,6 +1147,8 @@ namespace Furria.Infrastructure.Migrations
 
                     b.ToTable("membership", null, t =>
                         {
+                            t.HasCheckConstraint("ck_membership_admission", "admitted_at IS NOT NULL OR (admitted_by_person_id IS NULL AND NOT guardian_consent_confirmed)");
+
                             t.HasCheckConstraint("ck_membership_period", "ended_on IS NULL OR ended_on >= started_on");
                         });
                 });
@@ -1276,6 +1293,93 @@ namespace Furria.Infrastructure.Migrations
                         .HasDatabaseName("ix_person_last_name_first_name");
 
                     b.ToTable("person", (string)null);
+                });
+
+            modelBuilder.Entity("Furria.Core.MembershipApplications.MembershipApplication", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly>("BirthDate")
+                        .HasColumnType("date")
+                        .HasColumnName("birth_date");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("city");
+
+                    b.Property<string>("ConfirmationTokenHash")
+                        .IsRequired()
+                        .HasMaxLength(43)
+                        .HasColumnType("character varying(43)")
+                        .HasColumnName("confirmation_token_hash");
+
+                    b.Property<DateTimeOffset?>("ConfirmedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("confirmed_at");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)")
+                        .HasColumnName("email");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("first_name")
+                        .UseCollation("de-DE-x-icu");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("last_name")
+                        .UseCollation("de-DE-x-icu");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(31)
+                        .HasColumnType("character varying(31)")
+                        .HasColumnName("phone");
+
+                    b.Property<string>("Street")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("street");
+
+                    b.Property<DateTimeOffset>("SubmittedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("submitted_at");
+
+                    b.Property<string>("Zip")
+                        .IsRequired()
+                        .HasMaxLength(5)
+                        .HasColumnType("character varying(5)")
+                        .HasColumnName("zip");
+
+                    b.HasKey("Id")
+                        .HasName("pk_membership_application");
+
+                    b.HasIndex("ConfirmationTokenHash")
+                        .IsUnique()
+                        .HasDatabaseName("ix_membership_application_confirmation_token_hash");
+
+                    b.HasIndex("SubmittedAt")
+                        .HasDatabaseName("ix_membership_application_submitted_at")
+                        .HasFilter("confirmed_at IS NULL");
+
+                    b.ToTable("membership_application", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_membership_application_confirmed_after_submission", "confirmed_at IS NULL OR confirmed_at >= submitted_at");
+                        });
                 });
 
             modelBuilder.Entity("Furria.Core.Roles.Role", b =>
@@ -1815,9 +1919,15 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("next_attempt_at");
 
-                    b.Property<int>("PersonId")
+                    b.Property<int>("RecipientId")
                         .HasColumnType("integer")
-                        .HasColumnName("person_id");
+                        .HasColumnName("recipient_id");
+
+                    b.Property<string>("RecipientKind")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("recipient_kind");
 
                     b.Property<string>("Subject")
                         .IsRequired()
@@ -1827,8 +1937,8 @@ namespace Furria.Infrastructure.Migrations
 
                     b.Property<string>("Template")
                         .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
                         .HasColumnName("template");
 
                     b.Property<string>("TextBody")
@@ -2215,12 +2325,20 @@ namespace Furria.Infrastructure.Migrations
 
             modelBuilder.Entity("Furria.Core.Identity.Membership", b =>
                 {
+                    b.HasOne("Furria.Core.Identity.Person", "AdmittedBy")
+                        .WithMany()
+                        .HasForeignKey("AdmittedByPersonId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_membership_person_admitted_by_person_id");
+
                     b.HasOne("Furria.Core.Identity.Person", "Person")
                         .WithMany("Memberships")
                         .HasForeignKey("PersonId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_membership_person_person_id");
+
+                    b.Navigation("AdmittedBy");
 
                     b.Navigation("Person");
                 });

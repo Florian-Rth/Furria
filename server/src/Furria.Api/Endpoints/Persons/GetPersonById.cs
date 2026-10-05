@@ -99,7 +99,10 @@ public sealed class GetPersonById : Endpoint<GetPersonByIdRequest, GetPersonById
             ContactChange = person.ContactChange is { } change ? ToDto(change) : null,
             MembershipState = person.MembershipState,
             MemberSince = person.MemberSince,
-            Memberships = [.. person.Memberships.Select(ToDto)],
+            Memberships =
+            [
+                .. person.Memberships.Select(membership => ToDto(membership, person.Admissions)),
+            ],
             FeeReductions = [.. person.FeeReductions.Select(ToDto)],
             Groups = [.. person.Groups.Select(ToDto)],
             Roles = [.. person.Roles.Select(ToDto)],
@@ -161,7 +164,10 @@ public sealed class GetPersonById : Endpoint<GetPersonByIdRequest, GetPersonById
                 LastName = person.LastName,
             };
 
-    private static PersonMembershipDto ToDto(MembershipDetails membership) =>
+    private static PersonMembershipDto ToDto(
+        MembershipDetails membership,
+        IReadOnlyList<MembershipAdmissionDetails> admissions
+    ) =>
         new()
         {
             MembershipId = membership.MembershipId,
@@ -170,6 +176,25 @@ public sealed class GetPersonById : Endpoint<GetPersonByIdRequest, GetPersonById
             IsRunning = membership.IsRunning,
             IsFuture = membership.IsFuture,
             Pauses = [.. membership.Pauses.Select(ToDto)],
+            Admission = admissions
+                .Where(admission => admission.MembershipId == membership.MembershipId)
+                .Select(ToDto)
+                .SingleOrDefault(),
+        };
+
+    private static PersonMembershipAdmissionDto ToDto(MembershipAdmissionDetails admission) =>
+        new()
+        {
+            AdmittedAt = admission.AdmittedAt,
+            AdmittedBy = admission.AdmittedBy is { } admitter
+                ? new PersonMembershipAdmitterDto
+                {
+                    PersonId = admitter.PersonId,
+                    FirstName = admitter.FirstName,
+                    LastName = admitter.LastName,
+                }
+                : null,
+            GuardianConsentConfirmed = admission.GuardianConsentConfirmed,
         };
 
     private static PersonPauseDto ToDto(MembershipPauseDetails pause) =>
@@ -345,6 +370,26 @@ public sealed record PersonMembershipDto
     public required bool IsFuture { get; init; }
 
     public required IReadOnlyList<PersonPauseDto> Pauses { get; init; }
+
+    public required PersonMembershipAdmissionDto? Admission { get; init; }
+}
+
+public sealed record PersonMembershipAdmissionDto
+{
+    public required DateTimeOffset AdmittedAt { get; init; }
+
+    public required PersonMembershipAdmitterDto? AdmittedBy { get; init; }
+
+    public required bool GuardianConsentConfirmed { get; init; }
+}
+
+public sealed record PersonMembershipAdmitterDto
+{
+    public required int PersonId { get; init; }
+
+    public required string FirstName { get; init; }
+
+    public required string LastName { get; init; }
 }
 
 public sealed record PersonPauseDto

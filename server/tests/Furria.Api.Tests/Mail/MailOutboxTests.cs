@@ -14,9 +14,9 @@ namespace Furria.Api.Tests.Mail;
 public sealed class MailOutboxTests
 {
     private const string RetryScheduled =
-        "Mail {MailTemplate} to person {PersonId} failed on attempt {AttemptNumber} with {FailureType}, retrying in {RetryDelay}";
+        "Mail {MailTemplate} to {MailRecipientKind} {MailRecipientId} failed on attempt {AttemptNumber} with {FailureType}, retrying in {RetryDelay}";
     private const string Abandoned =
-        "Mail {MailTemplate} to person {PersonId} abandoned after {AttemptCount} attempts, last failure {FailureType}";
+        "Mail {MailTemplate} to {MailRecipientKind} {MailRecipientId} abandoned after {AttemptCount} attempts, last failure {FailureType}";
     private const string ClosedPort = "1";
     private const int LastAttempt = 7;
 
@@ -154,7 +154,8 @@ public sealed class MailOutboxTests
         new()
         {
             Template = MailTemplate.PasswordReset,
-            PersonId = 1,
+            RecipientKind = MailRecipientKind.Person,
+            RecipientId = 1,
             To = "outbox-retry@test.local",
             Subject = "Retry",
             TextBody = "Retry",

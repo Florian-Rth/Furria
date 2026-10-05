@@ -107,6 +107,31 @@ public sealed class GetPublicClubTests
     }
 
     [Fact]
+    public async Task Should_CarryTheRecordedAgeOfConsent_When_TheClubHasSetOne()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await _fixture.BuildAsync(
+            builder => builder.Club(club => club.SetClubRecord(RecordedName, ageOfConsent: 14)),
+            ct
+        );
+
+        var result = await ReadTheClubAsync();
+
+        Assert.Equal(14, result.AgeOfConsent);
+    }
+
+    [Fact]
+    public async Task Should_CarryTheDefaultAgeOfConsent_When_TheClubHasNoRecord()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await _fixture.BuildAsync(ct);
+
+        var result = await ReadTheClubAsync();
+
+        Assert.Equal(16, result.AgeOfConsent);
+    }
+
+    [Fact]
     public async Task Should_CountPeopleWithARunningMembershipPausedOrNot_When_TheClubIsRead()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -240,6 +265,7 @@ public sealed class GetPublicClubTests
                 "facebookUrl",
                 "memberCount",
                 "groupCount",
+                "ageOfConsent",
                 "session",
             ],
             document.RootElement.EnumerateObject().Select(field => field.Name)

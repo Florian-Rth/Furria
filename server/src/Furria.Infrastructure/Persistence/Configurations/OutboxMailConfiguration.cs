@@ -14,7 +14,14 @@ public sealed class OutboxMailConfiguration : IEntityTypeConfiguration<OutboxMai
         );
         builder.HasKey(mail => mail.Id);
 
-        builder.Property(mail => mail.Template).HasConversion<string>().HasMaxLength(32);
+        builder
+            .Property(mail => mail.Template)
+            .HasConversion<string>()
+            .HasMaxLength(OutboxMail.TemplateLength);
+        builder
+            .Property(mail => mail.RecipientKind)
+            .HasConversion<string>()
+            .HasMaxLength(OutboxMail.RecipientKindLength);
         builder.Property(mail => mail.To).HasMaxLength(OutboxMail.AddressLength).IsRequired();
         builder.Property(mail => mail.Subject).HasMaxLength(OutboxMail.SubjectLength).IsRequired();
         builder.Property(mail => mail.TextBody).IsRequired();

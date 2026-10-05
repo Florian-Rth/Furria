@@ -597,6 +597,92 @@ public sealed class GetPersonByIdTests
     }
 
     [Fact]
+    public async Task Should_ShowWhoAdmittedHerAndWhen_When_HerMembershipCameFromAnAdmission()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var admittedAt = _fixture.TimeProvider.GetUtcNow().AddDays(-3);
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddPerson("mia", "Mia", "Schwarzwälder")
+                        .AddPerson("anna", "Anna", "Kessler")
+                        .AddMembership("mia-admitted", "mia", _fixture.Today.AddDays(-3))
+                        .AddAdmission(
+                            "mia-admitted",
+                            "anna",
+                            admittedAt,
+                            guardianConsentConfirmed: true
+                        )
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("mia"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var admission = Assert.IsType<PersonMembershipAdmissionDto>(
+            Assert.Single(result.Memberships).Admission
+        );
+        Assert.Equal(admittedAt, admission.AdmittedAt);
+        var admitter = Assert.IsType<PersonMembershipAdmitterDto>(admission.AdmittedBy);
+        Assert.Equal(ctx.Identity.People.IdOf("anna"), admitter.PersonId);
+        Assert.Equal("Anna", admitter.FirstName);
+        Assert.Equal("Kessler", admitter.LastName);
+        Assert.True(admission.GuardianConsentConfirmed);
+    }
+
+    [Fact]
+    public async Task Should_KeepTheAdmissionWithoutItsAuthor_When_TheAdmitterWasDeleted()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var admittedAt = _fixture.TimeProvider.GetUtcNow().AddDays(-3);
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddPerson("mia", "Mia", "Schwarzwälder")
+                        .AddPerson("anna", "Anna", "Kessler")
+                        .AddMembership("mia-admitted", "mia", _fixture.Today.AddDays(-3))
+                        .AddAdmission("mia-admitted", "anna", admittedAt)
+                ),
+            ct
+        );
+        await _fixture.DeletePersonDirectlyAsync(ctx.Identity.People.IdOf("anna"), ct);
+
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var (_, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("mia"));
+
+        var admission = Assert.IsType<PersonMembershipAdmissionDto>(
+            Assert.Single(result.Memberships).Admission
+        );
+        Assert.Equal(admittedAt, admission.AdmittedAt);
+        Assert.Null(admission.AdmittedBy);
+        Assert.False(admission.GuardianConsentConfirmed);
+    }
+
+    [Fact]
+    public async Task Should_ShowNoAdmission_When_TheMembershipWasEnteredByHand()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddPerson("mia", "Mia", "Schwarzwälder")
+                        .AddMembership("mia-by-hand", "mia", JoinedIn2017)
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var (_, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("mia"));
+
+        Assert.Null(Assert.Single(result.Memberships).Admission);
+    }
+
+    [Fact]
     public async Task Should_ShowWhoChangedTheContactDetailsAndWhen_When_TheyWereChanged()
     {
         var ct = TestContext.Current.CancellationToken;

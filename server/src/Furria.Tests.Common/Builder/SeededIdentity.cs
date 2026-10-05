@@ -6,5 +6,6 @@ public sealed record SeededIdentity(
     IReadOnlyDictionary<string, int> PauseIds,
     IReadOnlyDictionary<string, int> FeeReductionIds,
     IReadOnlyDictionary<string, int> AccountIds,
-    IReadOnlyDictionary<string, string> AccountEmails
+    IReadOnlyDictionary<string, string> AccountEmails,
+    IReadOnlyDictionary<string, int> MembershipApplicationIds
 );

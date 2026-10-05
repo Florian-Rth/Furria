@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using FastEndpoints;
 using FastEndpoints.Security;
 using FastEndpoints.Swagger;
+using Furria.Api.Altcha;
 using Furria.Api.Authentication;
 using Furria.Api.Authorization;
 using Furria.Api.Cors;
@@ -56,6 +57,7 @@ try
     builder.Services.AddSignedOutRateLimiting();
     builder.Services.AddAccountRateLimiting();
     builder.Services.AddSignInRateLimiting();
+    builder.Services.AddAltchaProofOfWork();
     builder.Services.AddFastEndpoints();
     if (builder.Environment.IsDevelopment())
     {

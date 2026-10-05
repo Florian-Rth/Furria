@@ -2,6 +2,7 @@ using Furria.Application.ClubApp;
 using Furria.Application.Identity;
 using Furria.Application.Mail;
 using Furria.Application.PreviewAccess;
+using Furria.Application.Website;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -70,6 +71,15 @@ public static class ServiceCollectionExtensions
                     ),
                 $"{ClubAppOptions.SectionName}:AndroidCertFingerprints must be SHA-256 fingerprints "
                     + "in the colon-separated hex form keytool prints."
+            )
+            .ValidateOnStart();
+
+        services
+            .AddOptions<WebsiteOptions>()
+            .BindConfiguration(WebsiteOptions.SectionName)
+            .Validate(
+                options => IsAbsoluteWebUrl(options.BaseUrl),
+                $"{WebsiteOptions.SectionName}:BaseUrl must be an absolute http(s) URL."
             )
             .ValidateOnStart();
 

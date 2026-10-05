@@ -1,4 +1,5 @@
 using Furria.Core.Identity;
+using Furria.Core.MembershipApplications;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
@@ -8,6 +9,13 @@ namespace Furria.Tests.Common.Builder;
 
 internal static class IdentitySeedMaterializer
 {
+    private const string ApplicantStreet = "Rosenweg 12a";
+    private const string ApplicantZip = "50667";
+    private const string ApplicantCity = "Köln";
+
+    private static readonly TimeSpan ConfirmedBeforeNow = TimeSpan.FromHours(1);
+    private static readonly TimeSpan SubmittedBeforeConfirming = TimeSpan.FromMinutes(10);
+
     private static string? _cachedPasswordHash;
 
     internal static async Task<SeededIdentity> InsertAsync(
@@ -27,9 +35,16 @@ internal static class IdentitySeedMaterializer
         var personIds = await InsertPeopleAsync(dbContext, recorded, ct);
         await StampContactChangesAsync(dbContext, recorded, personIds, ct);
         var membershipIds = await InsertMembershipsAsync(dbContext, recorded, personIds, ct);
+        await StampAdmissionsAsync(dbContext, recorded, personIds, membershipIds, ct);
         var pauseIds = await InsertPausesAsync(dbContext, recorded, membershipIds, ct);
         var feeReductionIds = await InsertFeeReductionsAsync(dbContext, recorded, personIds, ct);
         var accounts = await InsertAccountsAsync(dbContext, recorded, personIds, credentials, ct);
+        var membershipApplicationIds = await InsertMembershipApplicationsAsync(
+            dbContext,
+            recorded,
+            services.GetRequiredService<TimeProvider>().GetUtcNow(),
+            ct
+        );
 
         return new SeededIdentity(
             personIds,
@@ -37,8 +52,59 @@ internal static class IdentitySeedMaterializer
             pauseIds,
             feeReductionIds,
             accounts.Ids,
-            accounts.Emails
+            accounts.Emails,
+            membershipApplicationIds
         );
+    }
+
+    private static async Task<Dictionary<string, int>> InsertMembershipApplicationsAsync(
+        AppDbContext dbContext,
+        IdentitySeedBuilder recorded,
+        DateTimeOffset now,
+        CancellationToken ct
+    )
+    {
+        var applications = recorded.MembershipApplications.ToDictionary(
+            intent => intent.Alias,
+            intent => Build(intent, now),
+            StringComparer.Ordinal
+        );
+
+        if (applications.Count > 0)
+        {
+            dbContext.MembershipApplications.AddRange(applications.Values);
+            await dbContext.SaveChangesAsync(ct);
+        }
+
+        return applications.ToDictionary(
+            entry => entry.Key,
+            entry => entry.Value.Id,
+            StringComparer.Ordinal
+        );
+    }
+
+    private static MembershipApplication Build(
+        IdentitySeedBuilder.MembershipApplicationIntent intent,
+        DateTimeOffset now
+    )
+    {
+        var confirmedAt = intent.ConfirmedAt ?? now - ConfirmedBeforeNow;
+        OpaqueTokenSecret.Generate(out var tokenHash);
+
+        return new()
+        {
+            FirstName = intent.FirstName,
+            LastName = intent.LastName,
+            BirthDate = intent.BirthDate,
+            Street = ApplicantStreet,
+            Zip = ApplicantZip,
+            City = ApplicantCity,
+            Email = intent.Email ?? $"{intent.Alias}-{Guid.NewGuid():N}@test.local",
+            Phone = intent.Phone,
+            ConfirmationTokenHash = tokenHash,
+            SubmittedAt = confirmedAt - SubmittedBeforeConfirming,
+            ConfirmedAt = intent.Unconfirmed ? null : confirmedAt,
+        };
     }
 
     private static async Task<Dictionary<string, int>> InsertPeopleAsync(
@@ -98,6 +164,41 @@ internal static class IdentitySeedMaterializer
                 intent.ChangedByAlias,
                 "Person"
             );
+        }
+
+        await dbContext.SaveChangesAsync(ct);
+    }
+
+    private static async Task StampAdmissionsAsync(
+        AppDbContext dbContext,
+        IdentitySeedBuilder recorded,
+        IReadOnlyDictionary<string, int> personIds,
+        IReadOnlyDictionary<string, int> membershipIds,
+        CancellationToken ct
+    )
+    {
+        if (recorded.Admissions.Count == 0)
+            return;
+
+        foreach (var intent in recorded.Admissions)
+        {
+            var membershipId = SeedAliases.RequireId(
+                membershipIds,
+                intent.MembershipAlias,
+                "Membership"
+            );
+            var membership =
+                await dbContext.Memberships.FindAsync([membershipId], ct)
+                ?? throw new InvalidOperationException(
+                    $"Membership {membershipId} was not inserted."
+                );
+            membership.AdmittedAt = intent.AdmittedAt;
+            membership.AdmittedByPersonId = SeedAliases.RequireId(
+                personIds,
+                intent.AdmittedByAlias,
+                "Person"
+            );
+            membership.GuardianConsentConfirmed = intent.GuardianConsentConfirmed;
         }
 
         await dbContext.SaveChangesAsync(ct);

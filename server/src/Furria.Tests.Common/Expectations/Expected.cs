@@ -104,6 +104,11 @@ public sealed class Expected
 
     public PasskeyChallengeSetExpectations PasskeyChallenges() => new(this);
 
+    public MembershipApplicationSetExpectations MembershipApplications() => new(this);
+
+    public MembershipApplicationExpectations MembershipApplication(int membershipApplicationId) =>
+        new(this, membershipApplicationId);
+
     public async Task AssertAsync(CancellationToken ct = default)
     {
         var pending = _reads.ToList();

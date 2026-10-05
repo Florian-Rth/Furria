@@ -4,4 +4,5 @@ public enum AddressRateLimitScope
 {
     AccessRequest = 1,
     PasswordResetRequest = 2,
+    MembershipApplication = 3,
 }
