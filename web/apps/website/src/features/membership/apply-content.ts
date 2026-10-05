@@ -1,5 +1,4 @@
 import type { LinkProps } from '@tanstack/react-router';
-import { currentSession } from '@/lib/club';
 import { joinHref } from './join-content';
 import type { DerivedMembership, MembershipTypeId } from './membership-derivation';
 import type { JoinStep } from './steps-content';
@@ -9,10 +8,8 @@ export interface ApplySummaryRow {
   value: string;
 }
 
-export const buildApplyEyebrow = (yearsLabel: string): string =>
-  `BEITRITTSANTRAG · SESSION ${yearsLabel}`;
-
-export const applyEyebrow: string = buildApplyEyebrow(currentSession.yearsLabel);
+export const buildApplyEyebrow = (sessionLabel: string | undefined): string =>
+  sessionLabel === undefined ? 'BEITRITTSANTRAG' : `BEITRITTSANTRAG · SESSION ${sessionLabel}`;
 
 export const applyTitle = 'EIN FORMULAR, ZWEI MINUTEN.';
 

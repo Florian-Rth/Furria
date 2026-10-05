@@ -1,6 +1,6 @@
 import type { Transition } from 'motion/react';
 import { useState } from 'react';
-import type { PublicGroup } from '@/features/club/schemas';
+import type { PublicGroup } from '@/lib/public-groups/schemas';
 
 export interface ActiveGroup {
   group: PublicGroup;

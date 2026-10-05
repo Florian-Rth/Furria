@@ -4,7 +4,7 @@ import { useApplyForm } from '@/features/membership/hooks/use-apply-form';
 import { ApplyBody } from './ApplyBody';
 
 interface ApplyPageProps {
-  prefilledGroupInterests: string[];
+  prefilledGroupInterests: number[];
 }
 
 export const ApplyPage: FC<ApplyPageProps> = ({ prefilledGroupInterests }) => {

@@ -77,6 +77,18 @@ export const requestSetImpliedRole = (
     accessToken,
   });
 
+export const requestSetOfficePublication = (
+  boardOfficeId: number,
+  isPublic: boolean,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`/api/manage/board/offices/${boardOfficeId}/publication`, {
+    method: 'PUT',
+    body: { isPublic },
+    schema: NoContentSchema,
+    accessToken,
+  });
+
 export const requestOpenBoardSeat = (
   boardOfficeId: number,
   form: OpenBoardSeatForm,

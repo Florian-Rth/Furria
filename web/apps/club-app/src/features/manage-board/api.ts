@@ -11,9 +11,11 @@ import {
   toOfficeCreatedMessage,
   toOfficeRestoredMessage,
   toOfficeSavedMessage,
+  toPublicationSavedMessage,
   toSeatEndedMessage,
   toSeatOpenedMessage,
 } from './manage-board-labels';
+import { toPublicationErrorMessage } from './manage-board-messages';
 import {
   requestArchiveBoardOffice,
   requestBoard,
@@ -23,6 +25,7 @@ import {
   requestOpenBoardSeat,
   requestRestoreBoardOffice,
   requestSetImpliedRole,
+  requestSetOfficePublication,
   requestUpdateBoardOffice,
 } from './requests';
 import type {
@@ -178,6 +181,68 @@ export const useSetImpliedRoleMutation = (
     },
     onSettled: () => {
       refreshBoard(queryClient);
+    },
+  });
+};
+
+export interface SetOfficePublicationInput {
+  officeName: string;
+  isPublic: boolean;
+}
+
+interface BoardRollback {
+  previous: BoardResponse | undefined;
+}
+
+const applyPublication = (
+  current: BoardResponse | undefined,
+  boardOfficeId: number,
+  isPublic: boolean,
+): BoardResponse | undefined =>
+  current === undefined
+    ? undefined
+    : {
+        offices: current.offices.map((office) =>
+          office.boardOfficeId === boardOfficeId ? { ...office, isPublic } : office,
+        ),
+      };
+
+export const useSetOfficePublicationMutation = (
+  boardOfficeId: number,
+): UseMutationResult<void, Error, SetOfficePublicationInput, BoardRollback> => {
+  const queryClient = useQueryClient();
+  const raiseNotice = useKkNotice();
+
+  return useMutation({
+    mutationFn: (input: SetOfficePublicationInput) =>
+      withFreshAccessToken((accessToken) =>
+        requestSetOfficePublication(boardOfficeId, input.isPublic, accessToken),
+      ),
+    onMutate: async (input) => {
+      await queryClient.cancelQueries({ queryKey: BOARD_QUERY_KEY });
+      const previous = queryClient.getQueryData<BoardResponse>(BOARD_QUERY_KEY);
+      queryClient.setQueryData<BoardResponse>(BOARD_QUERY_KEY, (current) =>
+        applyPublication(current, boardOfficeId, input.isPublic),
+      );
+
+      return { previous };
+    },
+    onSuccess: (_result, input) => {
+      raiseNotice({
+        tone: 'success',
+        message: toPublicationSavedMessage(input.officeName, input.isPublic),
+      });
+    },
+    onError: (error, _input, context) => {
+      queryClient.setQueryData(BOARD_QUERY_KEY, context?.previous);
+      const message = toPublicationErrorMessage(error);
+
+      if (message !== null) {
+        raiseNotice({ tone: 'error', message });
+      }
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: BOARD_QUERY_KEY });
     },
   });
 };

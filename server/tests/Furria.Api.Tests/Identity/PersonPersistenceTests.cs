@@ -46,7 +46,7 @@ public sealed class PersonPersistenceTests
     }
 
     [Fact]
-    public async Task Should_KeepThePortraitPrivate_When_ThePersonIsSeededAlone()
+    public async Task Should_CarryNoPortrait_When_ThePersonIsSeededAlone()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -56,7 +56,7 @@ public sealed class PersonPersistenceTests
 
         await ctx
             .Expected.Person(ctx.Identity.People.IdOf("alice"))
-            .ToHavePortrait(null, false)
+            .ToHavePortrait(null)
             .AssertAsync(ct);
     }
 

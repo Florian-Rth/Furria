@@ -38,6 +38,7 @@ public sealed class GetPublicGroups : EndpointWithoutRequest<GetPublicGroupsResp
             Description = group.Description,
             IsRecruiting = group.IsRecruiting,
             GroupKindName = group.GroupKindName,
+            FoundedYear = group.FoundedYear,
             Tone = group.Tone,
         };
 }
@@ -58,6 +59,8 @@ public sealed record PublicGroupDto
     public required bool IsRecruiting { get; init; }
 
     public required string? GroupKindName { get; init; }
+
+    public required int? FoundedYear { get; init; }
 
     public required GroupTone? Tone { get; init; }
 }

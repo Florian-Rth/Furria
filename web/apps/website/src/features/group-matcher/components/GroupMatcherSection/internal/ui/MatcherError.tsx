@@ -2,7 +2,8 @@ import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
-import { matcherLabels, matcherMailHref } from '@/features/group-matcher/matcher-content';
+import { ClubMailButton } from '@/components/ClubMailButton';
+import { matcherLabels } from '@/features/group-matcher/matcher-content';
 
 interface MatcherErrorProps {
   onRetry: () => void;
@@ -20,9 +21,7 @@ export const MatcherError: FC<MatcherErrorProps> = ({ onRetry }) => (
       <Button variant="contained" color="primary" onClick={onRetry}>
         {matcherLabels.errorRetry}
       </Button>
-      <Button variant="outlined" href={matcherMailHref}>
-        {matcherLabels.errorMail}
-      </Button>
+      <ClubMailButton variant="outlined">{matcherLabels.errorMail}</ClubMailButton>
     </Stack>
   </Stack>
 );

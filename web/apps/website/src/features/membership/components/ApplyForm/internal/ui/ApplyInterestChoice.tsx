@@ -1,12 +1,12 @@
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import type { FC } from 'react';
-import type { Group } from '@/lib/seed/groups';
+import type { PublicGroup } from '@/lib/public-groups/schemas';
 
 interface ApplyInterestChoiceProps {
-  group: Group;
-  selected: string[];
-  onToggle: (groupId: string) => void;
+  group: PublicGroup;
+  selected: number[];
+  onToggle: (groupId: number) => void;
 }
 
 export const ApplyInterestChoice: FC<ApplyInterestChoiceProps> = ({
@@ -14,9 +14,9 @@ export const ApplyInterestChoice: FC<ApplyInterestChoiceProps> = ({
   selected,
   onToggle,
 }) => {
-  const isSelected = selected.includes(group.id);
+  const isSelected = selected.includes(group.groupId);
   const handleToggle = (): void => {
-    onToggle(group.id);
+    onToggle(group.groupId);
   };
 
   return (

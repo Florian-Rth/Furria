@@ -1,16 +1,15 @@
-import { KkEyebrow, KkPhotoPlaceholder, kkTokens } from '@furria/ui';
+import { KkEyebrow, KkPhoto, kkTokens } from '@furria/ui';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
-import { type Person, personPhotoCaption } from '@/features/club/people-content';
+import type { BoardTile } from '@/features/club/people-content';
 
 interface PersonPortraitProps {
-  person: Person;
-  tint: string;
+  tile: BoardTile;
 }
 
-export const PersonPortrait: FC<PersonPortraitProps> = ({ person, tint }) => (
+export const PersonPortrait: FC<PersonPortraitProps> = ({ tile }) => (
   <Stack data-kk-person sx={{ gap: 1.5, alignItems: 'flex-start' }}>
     <Box
       sx={{
@@ -21,16 +20,18 @@ export const PersonPortrait: FC<PersonPortraitProps> = ({ person, tint }) => (
         boxShadow: kkTokens.shadow.raised,
       }}
     >
-      <KkPhotoPlaceholder
-        label={personPhotoCaption}
-        tint={tint}
-        aspectRatio={kkTokens.aspectRatio.portrait}
+      <KkPhoto
+        alt={tile.name}
+        orientation="portrait"
+        placeholderLabel={tile.initials}
+        source={tile.portraitUrl}
+        tint={tile.tint}
       />
     </Box>
     <Stack sx={{ gap: 0.25, alignItems: 'flex-start' }}>
-      <KkEyebrow>{person.amt}</KkEyebrow>
+      <KkEyebrow>{tile.officeName}</KkEyebrow>
       <Typography variant="h3" component="h3" sx={{ lineHeight: 1 }}>
-        {person.name}
+        {tile.name}
       </Typography>
     </Stack>
   </Stack>

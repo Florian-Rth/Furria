@@ -1,7 +1,6 @@
 import type { KkChipTone } from '@furria/ui';
 import type { Theme } from '@mui/material/styles';
-import { CLUB_CONTACT_EMAIL } from '@/lib/club';
-import type { PublicGroup } from './schemas';
+import type { PublicGroup } from '@/lib/public-groups/schemas';
 
 export const groupsChapter = {
   numeral: '04',
@@ -26,8 +25,6 @@ export const groupsLabels = {
   noDescription:
     'Zu dieser Gruppe steht hier noch nichts. Frag uns einfach, dann erzählen wir dir mehr.',
 } as const;
-
-export const groupsMailHref = `mailto:${CLUB_CONTACT_EMAIL}`;
 
 export interface GroupOpenness {
   label: string;
@@ -98,3 +95,44 @@ export const resolveGroupTint = (theme: Theme, index: number): string => {
 };
 
 export const buildGroupBadge = (index: number): string => String(index + 1).padStart(2, '0');
+
+export const OTHER_GROUPS_TITLE = 'Weitere Gruppen';
+
+export interface GroupKindSection {
+  kindName: string | null;
+  groups: PublicGroup[];
+}
+
+const byKindName = (left: GroupKindSection, right: GroupKindSection): number => {
+  if (left.kindName === null || right.kindName === null) {
+    return left.kindName === null ? 1 : -1;
+  }
+
+  return left.kindName.localeCompare(right.kindName, 'de');
+};
+
+export const groupByKind = (groups: PublicGroup[]): GroupKindSection[] => {
+  const sections = new Map<string | null, PublicGroup[]>();
+
+  for (const group of groups) {
+    sections.set(group.groupKindName, [...(sections.get(group.groupKindName) ?? []), group]);
+  }
+
+  return [...sections]
+    .map(([kindName, members]) => ({ kindName, groups: members }))
+    .sort(byKindName);
+};
+
+export const resolveSectionTitle = (
+  kindName: string | null,
+  sectionCount: number,
+): string | null => {
+  if (kindName !== null) {
+    return kindName;
+  }
+
+  return sectionCount > 1 ? OTHER_GROUPS_TITLE : null;
+};
+
+export const buildFoundedLabel = (foundedYear: number | null): string | null =>
+  foundedYear === null ? null : `Seit ${foundedYear}`;

@@ -1,25 +1,38 @@
-import { currentSession, SESSION_OPENING_DAY, SESSION_OPENING_MONTH } from '@/lib/club';
+import { SESSION_OPENING_DAY, SESSION_OPENING_MONTH } from '@/lib/club';
+import { formatMemberCount, UNKNOWN_FACT } from '@/lib/public-club/club-facts';
+import type { PublicClub } from '@/lib/public-club/schemas';
 
 export interface HeroStat {
   value: string;
   label: string;
 }
 
-export const buildEyebrowLabel = (yearsLabel: string, day: number, month: number): string =>
-  `★ SESSION ${yearsLabel} · ${day}.${month}. ERÖFFNUNG`;
+const openingLabel = `${SESSION_OPENING_DAY}.${SESSION_OPENING_MONTH}. ERÖFFNUNG`;
 
-export const eyebrowLabel = buildEyebrowLabel(
-  currentSession.yearsLabel,
-  SESSION_OPENING_DAY,
-  SESSION_OPENING_MONTH,
-);
+export const buildEyebrowLabel = (sessionLabel: string | undefined): string =>
+  sessionLabel === undefined ? `★ ${openingLabel}` : `★ SESSION ${sessionLabel} · ${openingLabel}`;
 
-export const buildHeroStats = (
-  memberCount: string,
-  groupCount: number,
-  foundingYear: number,
-): HeroStat[] => [
-  { value: memberCount, label: 'Mitglieder' },
-  { value: String(groupCount), label: 'Garden & Gruppen' },
-  { value: String(foundingYear), label: 'gegründet' },
+const MEMBERS_LABEL = 'Mitglieder';
+const GROUPS_LABEL = 'Garden & Gruppen';
+const FOUNDED_LABEL = 'gegründet';
+
+const pendingHeroStats: HeroStat[] = [
+  { value: UNKNOWN_FACT, label: MEMBERS_LABEL },
+  { value: UNKNOWN_FACT, label: GROUPS_LABEL },
+  { value: UNKNOWN_FACT, label: FOUNDED_LABEL },
 ];
+
+export const buildHeroStats = (club: PublicClub | undefined): HeroStat[] => {
+  if (club === undefined) {
+    return pendingHeroStats;
+  }
+
+  const counts: HeroStat[] = [
+    { value: formatMemberCount(club.memberCount), label: MEMBERS_LABEL },
+    { value: String(club.groupCount), label: GROUPS_LABEL },
+  ];
+
+  return club.foundedYear === null
+    ? counts
+    : [...counts, { value: String(club.foundedYear), label: FOUNDED_LABEL }];
+};

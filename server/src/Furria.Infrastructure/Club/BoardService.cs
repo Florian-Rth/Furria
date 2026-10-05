@@ -40,6 +40,7 @@ public sealed class BoardService
             office.SortOrder,
             office.ImpliedRoleId,
             office.ImpliedRole == null ? null : office.ImpliedRole.Name,
+            office.IsPublic,
             office.ArchivedOn
         );
 
@@ -160,6 +161,25 @@ public sealed class BoardService
         }
 
         office.ImpliedRoleId = command.ImpliedRoleId;
+        await _dbContext.SaveChangesAsync(ct);
+
+        return Result.Success();
+    }
+
+    public async Task<Result> SetPublicationAsync(
+        BoardOfficePublicationCommand command,
+        CancellationToken ct
+    )
+    {
+        var office = await TrackedOfficeAsync(command.BoardOfficeId, ct);
+
+        if (office is null)
+            return Result.NotFound(UnknownOfficeMessage);
+
+        if (office.ArchivedOn is not null)
+            return Result.Conflict(ArchivedOfficeMessage);
+
+        office.IsPublic = command.IsPublic;
         await _dbContext.SaveChangesAsync(ct);
 
         return Result.Success();
@@ -342,6 +362,7 @@ public sealed class BoardService
             SortOrder = office.SortOrder,
             ImpliedRoleId = office.ImpliedRoleId,
             ImpliedRoleName = office.ImpliedRoleName,
+            IsPublic = office.IsPublic,
             ArchivedOn = office.ArchivedOn,
             Seats = [.. held.Where(seat => !IsOverOn(seat, today)).Select(ToHolder)],
             PastSeats = [.. held.Where(seat => IsOverOn(seat, today)).Select(ToHolder)],
@@ -370,6 +391,7 @@ public sealed class BoardService
         int SortOrder,
         int? ImpliedRoleId,
         string? ImpliedRoleName,
+        bool IsPublic,
         DateOnly? ArchivedOn
     );
 

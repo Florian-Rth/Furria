@@ -3,8 +3,8 @@ import { toggleGroupInterest } from '../group-interests';
 import type { MembershipApplicationForm } from '../schemas';
 
 export interface GroupInterestsField {
-  selected: string[];
-  toggle: (groupId: string) => void;
+  selected: number[];
+  toggle: (groupId: number) => void;
 }
 
 export const useGroupInterestsField = (): GroupInterestsField => {

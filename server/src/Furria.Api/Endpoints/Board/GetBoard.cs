@@ -39,6 +39,7 @@ public sealed class GetBoard : EndpointWithoutRequest<GetBoardResponse>
             SortOrder = office.SortOrder,
             ImpliedRoleId = office.ImpliedRoleId,
             ImpliedRoleName = office.ImpliedRoleName,
+            IsPublic = office.IsPublic,
             ArchivedOn = office.ArchivedOn,
             Seats = [.. office.Seats.Select(ToDto)],
             PastSeats = [.. office.PastSeats.Select(ToDto)],
@@ -72,6 +73,8 @@ public sealed record BoardOfficeDto
     public required int? ImpliedRoleId { get; init; }
 
     public required string? ImpliedRoleName { get; init; }
+
+    public required bool IsPublic { get; init; }
 
     public required DateOnly? ArchivedOn { get; init; }
 

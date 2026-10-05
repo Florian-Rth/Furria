@@ -1,7 +1,8 @@
 import { KkButton, KkErrorState } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { groupsLabels, groupsMailHref } from '@/features/club/groups-content';
+import { ClubMailKkButton } from '@/components/ClubMailKkButton';
+import { groupsLabels } from '@/features/club/groups-content';
 
 interface GroupsErrorProps {
   onRetry: () => void;
@@ -14,9 +15,7 @@ export const GroupsError: FC<GroupsErrorProps> = ({ onRetry }) => (
     action={
       <Stack direction="row" sx={{ gap: 2, flexWrap: 'wrap', justifyContent: 'center', pt: 1 }}>
         <KkButton onClick={onRetry}>{groupsLabels.errorRetry}</KkButton>
-        <KkButton variant="outlined" href={groupsMailHref}>
-          {groupsLabels.askCta}
-        </KkButton>
+        <ClubMailKkButton variant="outlined">{groupsLabels.askCta}</ClubMailKkButton>
       </Stack>
     }
   />

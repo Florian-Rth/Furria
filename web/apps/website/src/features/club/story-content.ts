@@ -1,3 +1,6 @@
+import { formatMemberCount, UNKNOWN_FACT } from '@/lib/public-club/club-facts';
+import type { PublicClub } from '@/lib/public-club/schemas';
+
 export const storyChapter = {
   numeral: '01',
   kicker: 'WER WIR SIND',
@@ -20,17 +23,27 @@ export interface StoryStat {
   label: string;
 }
 
-export const UNKNOWN_STAT_VALUE = '—';
+const FOUNDED_LABEL = 'gegründet';
+const MEMBERS_LABEL = 'Mitglieder';
+const GROUPS_LABEL = 'Gruppen';
 
-export const formatGroupStat = (groupCount: number | null): string =>
-  groupCount === null ? UNKNOWN_STAT_VALUE : String(groupCount);
-
-export const buildStoryStats = (
-  foundingYear: number,
-  memberCount: string,
-  groupCount: number | null,
-): StoryStat[] => [
-  { value: String(foundingYear), label: 'gegründet' },
-  { value: memberCount, label: 'Mitglieder' },
-  { value: formatGroupStat(groupCount), label: 'Gruppen' },
+const pendingStoryStats: StoryStat[] = [
+  { value: UNKNOWN_FACT, label: FOUNDED_LABEL },
+  { value: UNKNOWN_FACT, label: MEMBERS_LABEL },
+  { value: UNKNOWN_FACT, label: GROUPS_LABEL },
 ];
+
+const countStatsOf = (club: PublicClub): StoryStat[] => [
+  { value: formatMemberCount(club.memberCount), label: MEMBERS_LABEL },
+  { value: String(club.groupCount), label: GROUPS_LABEL },
+];
+
+export const buildStoryStats = (club: PublicClub | undefined): StoryStat[] => {
+  if (club === undefined) {
+    return pendingStoryStats;
+  }
+
+  return club.foundedYear === null
+    ? countStatsOf(club)
+    : [{ value: String(club.foundedYear), label: FOUNDED_LABEL }, ...countStatsOf(club)];
+};

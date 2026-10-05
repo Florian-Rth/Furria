@@ -1,10 +1,10 @@
-import type { Group } from '@/lib/seed/groups';
+import type { PublicGroup } from '@/lib/public-groups/schemas';
 
-export const toggleGroupInterest = (selected: string[], groupId: string): string[] =>
+export const toggleGroupInterest = (selected: number[], groupId: number): number[] =>
   selected.includes(groupId) ? selected.filter((id) => id !== groupId) : [...selected, groupId];
 
-export const selectKnownGroupIds = (groups: Group[], selected: string[]): string[] =>
-  selected.filter((id) => groups.some((group) => group.id === id));
+export const selectKnownGroupIds = (groups: PublicGroup[], selected: number[]): number[] =>
+  selected.filter((id) => groups.some((group) => group.groupId === id));
 
-export const selectGroupLabels = (groups: Group[], selected: string[]): string[] =>
-  groups.filter((group) => selected.includes(group.id)).map((group) => group.name);
+export const selectGroupLabels = (groups: PublicGroup[], selected: number[]): string[] =>
+  groups.filter((group) => selected.includes(group.groupId)).map((group) => group.name);

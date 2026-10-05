@@ -49,6 +49,12 @@ public sealed class BoardOfficeExpectations
             async (dbContext, ct) => Assert.Null((await SingleAsync(dbContext, ct)).ImpliedRoleId)
         );
 
+    public Expected ToBePublic(bool isPublic) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(isPublic, (await SingleAsync(dbContext, ct)).IsPublic)
+        );
+
     public Expected ToBeArchivedOn(DateOnly? archivedOn) =>
         _expected.Enqueue(
             async (dbContext, ct) =>

@@ -3,31 +3,29 @@ import Stack from '@mui/material/Stack';
 import type { FC, ReactNode } from 'react';
 import { FacebookIcon } from './FacebookIcon';
 import { InstagramIcon } from './InstagramIcon';
-import { YoutubeIcon } from './YoutubeIcon';
+import type { SocialNetwork } from './social-links';
+import { useSocialLinks } from './use-social-links';
 
-interface SocialLink {
-  label: string;
-  href: string;
-  icon: ReactNode;
-}
+const networkIcons: Record<SocialNetwork, ReactNode> = {
+  facebook: <FacebookIcon />,
+  instagram: <InstagramIcon />,
+};
 
-const socialLinks: SocialLink[] = [
-  { label: 'FURRIA auf Facebook', href: '#', icon: <FacebookIcon /> },
-  { label: 'FURRIA auf Instagram', href: '#', icon: <InstagramIcon /> },
-  { label: 'FURRIA auf YouTube', href: '#', icon: <YoutubeIcon /> },
-];
+export const SocialLinks: FC = () => {
+  const socialLinks = useSocialLinks();
 
-export const SocialLinks: FC = () => (
-  <Stack direction="row" sx={{ gap: 1, alignItems: 'center' }}>
-    {socialLinks.map((social) => (
-      <IconButton
-        key={social.label}
-        aria-label={social.label}
-        href={social.href}
-        sx={{ border: 2, borderColor: 'text.primary', color: 'text.primary' }}
-      >
-        {social.icon}
-      </IconButton>
-    ))}
-  </Stack>
-);
+  return (
+    <Stack direction="row" sx={{ gap: 1, alignItems: 'center' }}>
+      {socialLinks.map((social) => (
+        <IconButton
+          key={social.network}
+          aria-label={social.label}
+          href={social.href}
+          sx={{ border: 2, borderColor: 'text.primary', color: 'text.primary' }}
+        >
+          {networkIcons[social.network]}
+        </IconButton>
+      ))}
+    </Stack>
+  );
+};

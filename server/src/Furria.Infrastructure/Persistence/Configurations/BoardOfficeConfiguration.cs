@@ -26,6 +26,8 @@ public sealed class BoardOfficeConfiguration : IEntityTypeConfiguration<BoardOff
             .IsRequired()
             .UseCollation(GermanCollation.Name);
 
+        builder.Property(office => office.IsPublic).HasDefaultValue(false);
+
         builder.HasIndex(office => office.Name).HasDatabaseName("ix_board_office_name").IsUnique();
 
         builder.Property(office => office.CreatedAt).HasDefaultValueSql("now()");

@@ -3,8 +3,9 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { Link as RouterLink } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { ClubMailButton } from '@/components/ClubMailButton';
 import { APPLY_PATH } from '@/features/group-matcher/apply-handoff';
-import { matcherMailHref, matcherResultLabels } from '@/features/group-matcher/matcher-content';
+import { matcherResultLabels } from '@/features/group-matcher/matcher-content';
 import { MatcherResultActions } from '../layout/MatcherResultActions';
 import type { MatcherExclusionView } from '../logic/matcher-result';
 import { MatcherExcludedList } from './MatcherExcludedList';
@@ -23,9 +24,9 @@ export const MatcherResultEmpty: FC<MatcherResultEmptyProps> = ({ excluded }) =>
     </Stack>
     <MatcherExcludedList excluded={excluded} />
     <MatcherResultActions>
-      <Button href={matcherMailHref} variant="contained" color="primary" size="large">
+      <ClubMailButton variant="contained" color="primary" size="large">
         {matcherResultLabels.emptyMailCta}
-      </Button>
+      </ClubMailButton>
       <Button component={RouterLink} to={APPLY_PATH} variant="outlined" size="large">
         {matcherResultLabels.emptyApplyCta}
       </Button>

@@ -1,4 +1,4 @@
-import { CLUB_CONTACT_EMAIL } from '@/lib/club';
+import { OPERATOR_EMAIL } from './operator-content';
 import type { LegalDocument } from './types';
 
 export const imprintContent: LegalDocument = {
@@ -10,7 +10,7 @@ export const imprintContent: LegalDocument = {
     },
     {
       heading: 'Kontakt',
-      paragraphs: [`E-Mail: ${CLUB_CONTACT_EMAIL}`],
+      paragraphs: [`E-Mail: ${OPERATOR_EMAIL}`],
     },
     {
       heading: 'Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV',

@@ -2,7 +2,8 @@ import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
-import { matcherMailHref, matcherResultLabels } from '@/features/group-matcher/matcher-content';
+import { ClubMailButton } from '@/components/ClubMailButton';
+import { matcherResultLabels } from '@/features/group-matcher/matcher-content';
 import { MatcherRankList } from '../layout/MatcherRankList';
 import { MatcherResultActions } from '../layout/MatcherResultActions';
 import type { MatcherRankingView } from '../logic/matcher-result';
@@ -40,9 +41,9 @@ export const MatcherRanking: FC<MatcherRankingProps> = ({ view, summary }) => (
         <Button href={view.applyHref} variant="contained" color="primary" size="large">
           {matcherResultLabels.applyCta}
         </Button>
-        <Button href={matcherMailHref} variant="outlined" size="large">
+        <ClubMailButton variant="outlined" size="large">
           {matcherResultLabels.askCta}
-        </Button>
+        </ClubMailButton>
       </MatcherResultActions>
       <Typography variant="caption" sx={{ color: 'text.secondary' }}>
         {view.handoffNote}

@@ -46,7 +46,7 @@ export const MembershipApplicationFormSchema = z.object({
     .max(EMAIL_MAX_LENGTH, 'Das sind mehr Zeichen, als eine E-Mail-Adresse haben darf.')
     .pipe(z.email('Bitte trag eine E-Mail-Adresse ein, unter der wir dich erreichen.')),
   phone: optionalPhone('Bitte trag eine Telefonnummer ein, unter der wir dich erreichen.'),
-  groupInterests: z.array(z.string().min(1)),
+  groupInterests: z.array(z.number().int().positive()),
   guardianName: z
     .string()
     .trim()
@@ -138,7 +138,7 @@ export const MembershipApplicationPayloadSchema = z.object({
   city: z.string(),
   email: z.string(),
   phone: z.string().nullable(),
-  groupInterests: z.array(z.string()),
+  groupInterests: z.array(z.number().int()),
   guardian: z
     .object({
       name: z.string(),

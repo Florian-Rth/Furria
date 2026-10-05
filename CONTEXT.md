@@ -265,8 +265,11 @@ _Avoid_: board as a permission or a super-role (see **role**), leadership, manag
 A named office within the **board** — president, treasurer, secretary. **Club-created and edited
 in the app**, never a code constant, and each may **name one role it implies**. This is the one
 function that is more than a label; the **group admin**'s function stays free text and grants
-nothing, and the two are never unified (decided 2026-09-19).
-_UI copy_: Vorstandsfunktion
+nothing, and the two are never unified (decided 2026-09-19). An office may be **public**: whoever
+holds a running seat in it appears on the public website with name, office and **portrait**. Off
+by default, a setting of the office, never of the person; with no public office held, the website
+shows no board at all (ruled 2026-10-02, L5 shaping).
+_UI copy_: Vorstandsfunktion; *Auf der Website zeigen*
 _Avoid_: office (alone — retired), post, hard-coding the offices
 
 **Board seat** (`BoardSeat`):
@@ -300,12 +303,13 @@ _Avoid_: contact (as a field name), showing hidden contact details as missing da
 The **one** picture a person has in the platform, in rectangular portrait format — her profile
 picture in the app, and the same file shown in the round wherever a list needs an avatar. A
 portrait is **provided, never taken**: the person hands it over to be shown, and that act is the
-consent — which is why it is untouched by the open question about event photography. Showing it
-publicly is a **switch she owns, off by default**, exactly as her contact details are; holding a
-**board seat** never flips it (decided 2026-09-19).
+consent — which is why it is untouched by the open question about event photography. It is
+**public exactly while she holds a seat in a public board office** and nowhere else; there is no
+per-person switch (ruled 2026-10-02, L5 shaping — reverses the 2026-09-19 "a switch she owns,
+never flipped by a board seat").
 _UI copy_: Porträt
 _Avoid_: photo (that is event photography — a different question entirely), avatar (that is how
-a portrait is *displayed*), a second picture for the website, publishing by virtue of an office
+a portrait is *displayed*), a second picture for the website, a per-person publication switch
 
 **Group admin** (`GroupAdmin`):
 The person responsible for a group — set in group management, dated, several per group possible.
@@ -517,7 +521,9 @@ A carnival season: opens on **11 November** (the **season opening**) and runs to
 and is labelled by its span (e.g. `2025/26`). The unit the public site advertises ("SESSION …",
 "die fünfte Jahreszeit"). **Which season it is now is derived from the date and never stored** —
 the 11 November boundary decides it, so no surface has a "current session" pointer anybody has to
-flip.
+flip. What a surface *advertises* is the **relevant session**: the running one, and from the day
+after Ash Wednesday the coming one — the club hub and the public website name the same season
+(ruled 2026-10-02, L5 shaping).
 
 **The session number is evidence, not arithmetic** (ruled 2026-09-18, superseding "numbered from
 the founding year, Nº 1 = 1971"). Sessions were skipped — war, crises, pandemics — so no formula

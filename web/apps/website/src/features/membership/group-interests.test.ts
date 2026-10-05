@@ -1,91 +1,77 @@
 import { describe, expect, it } from 'vitest';
-import { SEEDED_GROUPS } from '@/lib/seed/groups';
+import type { PublicGroup } from '@/lib/public-groups/schemas';
 import { selectGroupLabels, selectKnownGroupIds, toggleGroupInterest } from './group-interests';
+
+const group = (groupId: number, name: string): PublicGroup => ({
+  groupId,
+  name,
+  description: '',
+  isRecruiting: true,
+  groupKindName: null,
+  foundedYear: null,
+  tone: null,
+});
+
+const roster: PublicGroup[] = [
+  group(1, 'Tanzgarde'),
+  group(4, 'Kindergarde'),
+  group(9, 'Organisation'),
+];
 
 describe('toggleGroupInterest', () => {
   it('adds a group that was not picked yet', () => {
-    expect(toggleGroupInterest([], 'tanzgarde')).toEqual(['tanzgarde']);
+    expect(toggleGroupInterest([], 1)).toEqual([1]);
   });
 
   it('keeps several groups, because the interest is many-to-many', () => {
-    expect(toggleGroupInterest(['tanzgarde'], 'organisation')).toEqual([
-      'tanzgarde',
-      'organisation',
-    ]);
+    expect(toggleGroupInterest([1], 9)).toEqual([1, 9]);
   });
 
   it('drops a group that was picked before', () => {
-    expect(toggleGroupInterest(['tanzgarde', 'organisation'], 'tanzgarde')).toEqual([
-      'organisation',
-    ]);
+    expect(toggleGroupInterest([1, 9], 1)).toEqual([9]);
   });
 
   it('treats an empty answer as a normal answer', () => {
-    expect(toggleGroupInterest(['tanzgarde'], 'tanzgarde')).toEqual([]);
+    expect(toggleGroupInterest([1], 1)).toEqual([]);
   });
 
   it('never mutates the answer it was given', () => {
-    const selected = ['tanzgarde'];
+    const selected = [1];
 
-    toggleGroupInterest(selected, 'organisation');
+    toggleGroupInterest(selected, 9);
 
-    expect(selected).toEqual(['tanzgarde']);
+    expect(selected).toEqual([1]);
   });
 });
 
 describe('selectKnownGroupIds', () => {
-  it('keeps the ids the roster answers to', () => {
-    expect(selectKnownGroupIds(SEEDED_GROUPS, ['tanzgarde', 'organisation'])).toEqual([
-      'tanzgarde',
-      'organisation',
-    ]);
+  it('keeps the ids the roster answers to, in the order they arrived', () => {
+    expect(selectKnownGroupIds(roster, [9, 1])).toEqual([9, 1]);
   });
 
   it('drops an id no group answers to instead of passing it on', () => {
-    expect(selectKnownGroupIds(SEEDED_GROUPS, ['tanzgarde', 'showtanz'])).toEqual(['tanzgarde']);
-  });
-
-  it('drops every id when none of them is a group', () => {
-    expect(selectKnownGroupIds(SEEDED_GROUPS, ['showtanz', 'werkstatt'])).toEqual([]);
-  });
-
-  it('keeps the order the ids arrived in', () => {
-    expect(selectKnownGroupIds(SEEDED_GROUPS, ['organisation', 'tanzgarde'])).toEqual([
-      'organisation',
-      'tanzgarde',
-    ]);
+    expect(selectKnownGroupIds(roster, [1, 42])).toEqual([1]);
   });
 
   it('drops everything while no roster is loaded', () => {
-    expect(selectKnownGroupIds([], ['tanzgarde'])).toEqual([]);
+    expect(selectKnownGroupIds([], [1])).toEqual([]);
   });
 
   it('never mutates the selection it was given', () => {
-    const selected = ['tanzgarde', 'showtanz'];
+    const selected = [1, 42];
 
-    selectKnownGroupIds(SEEDED_GROUPS, selected);
+    selectKnownGroupIds(roster, selected);
 
-    expect(selected).toEqual(['tanzgarde', 'showtanz']);
+    expect(selected).toEqual([1, 42]);
   });
 });
 
 describe('selectGroupLabels', () => {
-  it('names the picked groups instead of listing ids', () => {
-    expect(selectGroupLabels(SEEDED_GROUPS, ['kindergarde'])).toEqual(['Kindergarde']);
-  });
-
-  it('keeps the roster order, not the click order', () => {
-    expect(selectGroupLabels(SEEDED_GROUPS, ['organisation', 'tanzgarde'])).toEqual([
-      'Tanzgarde',
-      'Organisation',
-    ]);
+  it('names the picked groups in roster order, not click order', () => {
+    expect(selectGroupLabels(roster, [9, 1])).toEqual(['Tanzgarde', 'Organisation']);
   });
 
   it('ignores an id no group answers to', () => {
-    expect(selectGroupLabels(SEEDED_GROUPS, ['showtanz'])).toEqual([]);
-  });
-
-  it('names nothing when nothing was picked', () => {
-    expect(selectGroupLabels(SEEDED_GROUPS, [])).toEqual([]);
+    expect(selectGroupLabels(roster, [42])).toEqual([]);
   });
 });

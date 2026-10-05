@@ -6,7 +6,9 @@ export const ApplySearchSchema = z.object({
 
 const GROUP_INTERESTS_SEPARATOR = ',';
 
-export const parseGroupInterestsParam = (raw: string | undefined): string[] => {
+const GROUP_ID_PATTERN = /^[1-9]\d*$/;
+
+export const parseGroupInterestsParam = (raw: string | undefined): number[] => {
   if (raw === undefined) {
     return [];
   }
@@ -14,7 +16,8 @@ export const parseGroupInterestsParam = (raw: string | undefined): string[] => {
   const requested = raw
     .split(GROUP_INTERESTS_SEPARATOR)
     .map((id) => id.trim())
-    .filter((id) => id.length > 0);
+    .filter((id) => GROUP_ID_PATTERN.test(id))
+    .map(Number);
 
   return [...new Set(requested)];
 };

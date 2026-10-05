@@ -14,5 +14,7 @@ public sealed record PublicGroupSummary
 
     public required string? GroupKindName { get; init; }
 
+    public required int? FoundedYear { get; init; }
+
     public required GroupTone? Tone { get; init; }
 }
