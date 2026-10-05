@@ -98,6 +98,7 @@ export const PERMISSION_KEYS = {
   boardManage: 'board.manage',
   calendarManageClub: 'calendar.manage_club',
   accountsManage: 'accounts.manage',
+  membershipApplicationsDecide: 'membership_applications.decide',
 } as const;
 
 export type PermissionKey = (typeof PERMISSION_KEYS)[keyof typeof PERMISSION_KEYS];

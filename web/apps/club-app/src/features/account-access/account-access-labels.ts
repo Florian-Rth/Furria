@@ -36,7 +36,7 @@ const ACCESS_BLOCK_LINES: Record<AccessBlock, (firstName: string) => string> = {
     `${firstName} ist nicht im Verein aktiv – ohne Mitgliedschaft, Gruppe oder Rolle gibt es keinen Zugang.`,
   noBirthDate: (firstName) =>
     `Für ${firstName} ist kein Geburtsdatum hinterlegt. Trag es in den Stammdaten ein.`,
-  underAge: (firstName) => `${firstName} ist jünger als das Mindestalter für einen Zugang.`,
+  underAge: (firstName) => `${firstName} ist jünger als das Mindestalter für die App.`,
 };
 
 export const toNoMailAddressLine = (firstName: string): string =>

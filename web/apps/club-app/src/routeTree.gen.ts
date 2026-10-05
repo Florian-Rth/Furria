@@ -35,6 +35,7 @@ import { Route as AppManageKeysRouteImport } from './routes/_app/manage.keys'
 import { Route as AppManageGroupsRouteImport } from './routes/_app/manage.groups'
 import { Route as AppManageClubRecordRouteImport } from './routes/_app/manage.club-record'
 import { Route as AppManageBoardRouteImport } from './routes/_app/manage.board'
+import { Route as AppManageApplicationsRouteImport } from './routes/_app/manage.applications'
 import { Route as AppLabGreetingRouteImport } from './routes/_app/lab_.$greeting'
 import { Route as AppGroupsGroupIdRouteImport } from './routes/_app/groups_.$groupId'
 import { Route as AppCalendarNewRouteImport } from './routes/_app/calendar_.new'
@@ -57,6 +58,7 @@ import { Route as AppManageClubRecordIdentityRouteImport } from './routes/_app/m
 import { Route as AppManageClubRecordContactRouteImport } from './routes/_app/manage.club-record_.contact'
 import { Route as AppManageClubRecordAccessRouteImport } from './routes/_app/manage.club-record_.access'
 import { Route as AppManageBoardNewRouteImport } from './routes/_app/manage.board_.new'
+import { Route as AppManageApplicationsMembershipApplicationIdRouteImport } from './routes/_app/manage.applications_.$membershipApplicationId'
 import { Route as AppGroupsGroupIdTrainingsRouteImport } from './routes/_app/groups_.$groupId_.trainings'
 import { Route as AppGroupsGroupIdEditRouteImport } from './routes/_app/groups_.$groupId_.edit'
 import { Route as AppGroupsGroupIdAdministrationRouteImport } from './routes/_app/groups_.$groupId_.administration'
@@ -71,6 +73,7 @@ import { Route as AppManageKeysHoldingsKeyHoldingIdRouteImport } from './routes/
 import { Route as AppManageGroupsKindsNewRouteImport } from './routes/_app/manage.groups_.kinds.new'
 import { Route as AppManageGroupsKindsGroupKindIdRouteImport } from './routes/_app/manage.groups_.kinds.$groupKindId'
 import { Route as AppManageBoardBoardOfficeIdEditRouteImport } from './routes/_app/manage.board_.$boardOfficeId_.edit'
+import { Route as AppManageApplicationsMembershipApplicationIdAdmissionRouteImport } from './routes/_app/manage.applications_.$membershipApplicationId_.admission'
 import { Route as AppGroupsGroupIdSlotsNewRouteImport } from './routes/_app/groups_.$groupId_.slots.new'
 import { Route as AppGroupsGroupIdSlotsSlotIdRouteImport } from './routes/_app/groups_.$groupId_.slots.$slotId'
 import { Route as AppGroupsGroupIdPeoplePersonIdRouteImport } from './routes/_app/groups_.$groupId_.people.$personId'
@@ -221,6 +224,11 @@ const AppManageBoardRoute = AppManageBoardRouteImport.update({
   path: '/manage/board',
   getParentRoute: () => AppRoute,
 } as any)
+const AppManageApplicationsRoute = AppManageApplicationsRouteImport.update({
+  id: '/manage/applications',
+  path: '/manage/applications',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppLabGreetingRoute = AppLabGreetingRouteImport.update({
   id: '/lab_/$greeting',
   path: '/lab/$greeting',
@@ -339,6 +347,12 @@ const AppManageBoardNewRoute = AppManageBoardNewRouteImport.update({
   path: '/manage/board/new',
   getParentRoute: () => AppRoute,
 } as any)
+const AppManageApplicationsMembershipApplicationIdRoute =
+  AppManageApplicationsMembershipApplicationIdRouteImport.update({
+    id: '/manage/applications_/$membershipApplicationId',
+    path: '/manage/applications/$membershipApplicationId',
+    getParentRoute: () => AppRoute,
+  } as any)
 const AppGroupsGroupIdTrainingsRoute =
   AppGroupsGroupIdTrainingsRouteImport.update({
     id: '/groups_/$groupId_/trainings',
@@ -419,6 +433,12 @@ const AppManageBoardBoardOfficeIdEditRoute =
   AppManageBoardBoardOfficeIdEditRouteImport.update({
     id: '/manage/board_/$boardOfficeId_/edit',
     path: '/manage/board/$boardOfficeId/edit',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppManageApplicationsMembershipApplicationIdAdmissionRoute =
+  AppManageApplicationsMembershipApplicationIdAdmissionRouteImport.update({
+    id: '/manage/applications_/$membershipApplicationId_/admission',
+    path: '/manage/applications/$membershipApplicationId/admission',
     getParentRoute: () => AppRoute,
   } as any)
 const AppGroupsGroupIdSlotsNewRoute =
@@ -570,6 +590,7 @@ export interface FileRoutesByFullPath {
   '/calendar/new': typeof AppCalendarNewRoute
   '/groups/$groupId': typeof AppGroupsGroupIdRoute
   '/lab/$greeting': typeof AppLabGreetingRoute
+  '/manage/applications': typeof AppManageApplicationsRoute
   '/manage/board': typeof AppManageBoardRoute
   '/manage/club-record': typeof AppManageClubRecordRoute
   '/manage/groups': typeof AppManageGroupsRoute
@@ -585,6 +606,7 @@ export interface FileRoutesByFullPath {
   '/groups/$groupId/administration': typeof AppGroupsGroupIdAdministrationRoute
   '/groups/$groupId/edit': typeof AppGroupsGroupIdEditRoute
   '/groups/$groupId/trainings': typeof AppGroupsGroupIdTrainingsRoute
+  '/manage/applications/$membershipApplicationId': typeof AppManageApplicationsMembershipApplicationIdRoute
   '/manage/board/new': typeof AppManageBoardNewRoute
   '/manage/club-record/access': typeof AppManageClubRecordAccessRoute
   '/manage/club-record/contact': typeof AppManageClubRecordContactRoute
@@ -606,6 +628,7 @@ export interface FileRoutesByFullPath {
   '/groups/$groupId/people/$personId': typeof AppGroupsGroupIdPeoplePersonIdRoute
   '/groups/$groupId/slots/$slotId': typeof AppGroupsGroupIdSlotsSlotIdRoute
   '/groups/$groupId/slots/new': typeof AppGroupsGroupIdSlotsNewRoute
+  '/manage/applications/$membershipApplicationId/admission': typeof AppManageApplicationsMembershipApplicationIdAdmissionRoute
   '/manage/board/$boardOfficeId/edit': typeof AppManageBoardBoardOfficeIdEditRoute
   '/manage/groups/kinds/$groupKindId': typeof AppManageGroupsKindsGroupKindIdRoute
   '/manage/groups/kinds/new': typeof AppManageGroupsKindsNewRoute
@@ -653,6 +676,7 @@ export interface FileRoutesByTo {
   '/calendar/new': typeof AppCalendarNewRoute
   '/groups/$groupId': typeof AppGroupsGroupIdRoute
   '/lab/$greeting': typeof AppLabGreetingRoute
+  '/manage/applications': typeof AppManageApplicationsRoute
   '/manage/board': typeof AppManageBoardRoute
   '/manage/club-record': typeof AppManageClubRecordRoute
   '/manage/groups': typeof AppManageGroupsRoute
@@ -668,6 +692,7 @@ export interface FileRoutesByTo {
   '/groups/$groupId/administration': typeof AppGroupsGroupIdAdministrationRoute
   '/groups/$groupId/edit': typeof AppGroupsGroupIdEditRoute
   '/groups/$groupId/trainings': typeof AppGroupsGroupIdTrainingsRoute
+  '/manage/applications/$membershipApplicationId': typeof AppManageApplicationsMembershipApplicationIdRoute
   '/manage/board/new': typeof AppManageBoardNewRoute
   '/manage/club-record/access': typeof AppManageClubRecordAccessRoute
   '/manage/club-record/contact': typeof AppManageClubRecordContactRoute
@@ -689,6 +714,7 @@ export interface FileRoutesByTo {
   '/groups/$groupId/people/$personId': typeof AppGroupsGroupIdPeoplePersonIdRoute
   '/groups/$groupId/slots/$slotId': typeof AppGroupsGroupIdSlotsSlotIdRoute
   '/groups/$groupId/slots/new': typeof AppGroupsGroupIdSlotsNewRoute
+  '/manage/applications/$membershipApplicationId/admission': typeof AppManageApplicationsMembershipApplicationIdAdmissionRoute
   '/manage/board/$boardOfficeId/edit': typeof AppManageBoardBoardOfficeIdEditRoute
   '/manage/groups/kinds/$groupKindId': typeof AppManageGroupsKindsGroupKindIdRoute
   '/manage/groups/kinds/new': typeof AppManageGroupsKindsNewRoute
@@ -739,6 +765,7 @@ export interface FileRoutesById {
   '/_app/calendar_/new': typeof AppCalendarNewRoute
   '/_app/groups_/$groupId': typeof AppGroupsGroupIdRoute
   '/_app/lab_/$greeting': typeof AppLabGreetingRoute
+  '/_app/manage/applications': typeof AppManageApplicationsRoute
   '/_app/manage/board': typeof AppManageBoardRoute
   '/_app/manage/club-record': typeof AppManageClubRecordRoute
   '/_app/manage/groups': typeof AppManageGroupsRoute
@@ -754,6 +781,7 @@ export interface FileRoutesById {
   '/_app/groups_/$groupId_/administration': typeof AppGroupsGroupIdAdministrationRoute
   '/_app/groups_/$groupId_/edit': typeof AppGroupsGroupIdEditRoute
   '/_app/groups_/$groupId_/trainings': typeof AppGroupsGroupIdTrainingsRoute
+  '/_app/manage/applications_/$membershipApplicationId': typeof AppManageApplicationsMembershipApplicationIdRoute
   '/_app/manage/board_/new': typeof AppManageBoardNewRoute
   '/_app/manage/club-record_/access': typeof AppManageClubRecordAccessRoute
   '/_app/manage/club-record_/contact': typeof AppManageClubRecordContactRoute
@@ -775,6 +803,7 @@ export interface FileRoutesById {
   '/_app/groups_/$groupId_/people/$personId': typeof AppGroupsGroupIdPeoplePersonIdRoute
   '/_app/groups_/$groupId_/slots/$slotId': typeof AppGroupsGroupIdSlotsSlotIdRoute
   '/_app/groups_/$groupId_/slots/new': typeof AppGroupsGroupIdSlotsNewRoute
+  '/_app/manage/applications_/$membershipApplicationId_/admission': typeof AppManageApplicationsMembershipApplicationIdAdmissionRoute
   '/_app/manage/board_/$boardOfficeId_/edit': typeof AppManageBoardBoardOfficeIdEditRoute
   '/_app/manage/groups_/kinds/$groupKindId': typeof AppManageGroupsKindsGroupKindIdRoute
   '/_app/manage/groups_/kinds/new': typeof AppManageGroupsKindsNewRoute
@@ -824,6 +853,7 @@ export interface FileRouteTypes {
     | '/calendar/new'
     | '/groups/$groupId'
     | '/lab/$greeting'
+    | '/manage/applications'
     | '/manage/board'
     | '/manage/club-record'
     | '/manage/groups'
@@ -839,6 +869,7 @@ export interface FileRouteTypes {
     | '/groups/$groupId/administration'
     | '/groups/$groupId/edit'
     | '/groups/$groupId/trainings'
+    | '/manage/applications/$membershipApplicationId'
     | '/manage/board/new'
     | '/manage/club-record/access'
     | '/manage/club-record/contact'
@@ -860,6 +891,7 @@ export interface FileRouteTypes {
     | '/groups/$groupId/people/$personId'
     | '/groups/$groupId/slots/$slotId'
     | '/groups/$groupId/slots/new'
+    | '/manage/applications/$membershipApplicationId/admission'
     | '/manage/board/$boardOfficeId/edit'
     | '/manage/groups/kinds/$groupKindId'
     | '/manage/groups/kinds/new'
@@ -907,6 +939,7 @@ export interface FileRouteTypes {
     | '/calendar/new'
     | '/groups/$groupId'
     | '/lab/$greeting'
+    | '/manage/applications'
     | '/manage/board'
     | '/manage/club-record'
     | '/manage/groups'
@@ -922,6 +955,7 @@ export interface FileRouteTypes {
     | '/groups/$groupId/administration'
     | '/groups/$groupId/edit'
     | '/groups/$groupId/trainings'
+    | '/manage/applications/$membershipApplicationId'
     | '/manage/board/new'
     | '/manage/club-record/access'
     | '/manage/club-record/contact'
@@ -943,6 +977,7 @@ export interface FileRouteTypes {
     | '/groups/$groupId/people/$personId'
     | '/groups/$groupId/slots/$slotId'
     | '/groups/$groupId/slots/new'
+    | '/manage/applications/$membershipApplicationId/admission'
     | '/manage/board/$boardOfficeId/edit'
     | '/manage/groups/kinds/$groupKindId'
     | '/manage/groups/kinds/new'
@@ -992,6 +1027,7 @@ export interface FileRouteTypes {
     | '/_app/calendar_/new'
     | '/_app/groups_/$groupId'
     | '/_app/lab_/$greeting'
+    | '/_app/manage/applications'
     | '/_app/manage/board'
     | '/_app/manage/club-record'
     | '/_app/manage/groups'
@@ -1007,6 +1043,7 @@ export interface FileRouteTypes {
     | '/_app/groups_/$groupId_/administration'
     | '/_app/groups_/$groupId_/edit'
     | '/_app/groups_/$groupId_/trainings'
+    | '/_app/manage/applications_/$membershipApplicationId'
     | '/_app/manage/board_/new'
     | '/_app/manage/club-record_/access'
     | '/_app/manage/club-record_/contact'
@@ -1028,6 +1065,7 @@ export interface FileRouteTypes {
     | '/_app/groups_/$groupId_/people/$personId'
     | '/_app/groups_/$groupId_/slots/$slotId'
     | '/_app/groups_/$groupId_/slots/new'
+    | '/_app/manage/applications_/$membershipApplicationId_/admission'
     | '/_app/manage/board_/$boardOfficeId_/edit'
     | '/_app/manage/groups_/kinds/$groupKindId'
     | '/_app/manage/groups_/kinds/new'
@@ -1248,6 +1286,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppManageBoardRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/manage/applications': {
+      id: '/_app/manage/applications'
+      path: '/manage/applications'
+      fullPath: '/manage/applications'
+      preLoaderRoute: typeof AppManageApplicationsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/lab_/$greeting': {
       id: '/_app/lab_/$greeting'
       path: '/lab/$greeting'
@@ -1402,6 +1447,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppManageBoardNewRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/manage/applications_/$membershipApplicationId': {
+      id: '/_app/manage/applications_/$membershipApplicationId'
+      path: '/manage/applications/$membershipApplicationId'
+      fullPath: '/manage/applications/$membershipApplicationId'
+      preLoaderRoute: typeof AppManageApplicationsMembershipApplicationIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/groups_/$groupId_/trainings': {
       id: '/_app/groups_/$groupId_/trainings'
       path: '/groups/$groupId/trainings'
@@ -1498,6 +1550,13 @@ declare module '@tanstack/react-router' {
       path: '/manage/board/$boardOfficeId/edit'
       fullPath: '/manage/board/$boardOfficeId/edit'
       preLoaderRoute: typeof AppManageBoardBoardOfficeIdEditRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/manage/applications_/$membershipApplicationId_/admission': {
+      id: '/_app/manage/applications_/$membershipApplicationId_/admission'
+      path: '/manage/applications/$membershipApplicationId/admission'
+      fullPath: '/manage/applications/$membershipApplicationId/admission'
+      preLoaderRoute: typeof AppManageApplicationsMembershipApplicationIdAdmissionRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/groups_/$groupId_/slots/new': {
@@ -1681,6 +1740,7 @@ interface AppRouteChildren {
   AppCalendarNewRoute: typeof AppCalendarNewRoute
   AppGroupsGroupIdRoute: typeof AppGroupsGroupIdRoute
   AppLabGreetingRoute: typeof AppLabGreetingRoute
+  AppManageApplicationsRoute: typeof AppManageApplicationsRoute
   AppManageBoardRoute: typeof AppManageBoardRoute
   AppManageClubRecordRoute: typeof AppManageClubRecordRoute
   AppManageGroupsRoute: typeof AppManageGroupsRoute
@@ -1695,6 +1755,7 @@ interface AppRouteChildren {
   AppGroupsGroupIdAdministrationRoute: typeof AppGroupsGroupIdAdministrationRoute
   AppGroupsGroupIdEditRoute: typeof AppGroupsGroupIdEditRoute
   AppGroupsGroupIdTrainingsRoute: typeof AppGroupsGroupIdTrainingsRoute
+  AppManageApplicationsMembershipApplicationIdRoute: typeof AppManageApplicationsMembershipApplicationIdRoute
   AppManageBoardNewRoute: typeof AppManageBoardNewRoute
   AppManageClubRecordAccessRoute: typeof AppManageClubRecordAccessRoute
   AppManageClubRecordContactRoute: typeof AppManageClubRecordContactRoute
@@ -1716,6 +1777,7 @@ interface AppRouteChildren {
   AppGroupsGroupIdPeoplePersonIdRoute: typeof AppGroupsGroupIdPeoplePersonIdRoute
   AppGroupsGroupIdSlotsSlotIdRoute: typeof AppGroupsGroupIdSlotsSlotIdRoute
   AppGroupsGroupIdSlotsNewRoute: typeof AppGroupsGroupIdSlotsNewRoute
+  AppManageApplicationsMembershipApplicationIdAdmissionRoute: typeof AppManageApplicationsMembershipApplicationIdAdmissionRoute
   AppManageBoardBoardOfficeIdEditRoute: typeof AppManageBoardBoardOfficeIdEditRoute
   AppManageGroupsKindsGroupKindIdRoute: typeof AppManageGroupsKindsGroupKindIdRoute
   AppManageGroupsKindsNewRoute: typeof AppManageGroupsKindsNewRoute
@@ -1757,6 +1819,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppCalendarNewRoute: AppCalendarNewRoute,
   AppGroupsGroupIdRoute: AppGroupsGroupIdRoute,
   AppLabGreetingRoute: AppLabGreetingRoute,
+  AppManageApplicationsRoute: AppManageApplicationsRoute,
   AppManageBoardRoute: AppManageBoardRoute,
   AppManageClubRecordRoute: AppManageClubRecordRoute,
   AppManageGroupsRoute: AppManageGroupsRoute,
@@ -1771,6 +1834,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppGroupsGroupIdAdministrationRoute: AppGroupsGroupIdAdministrationRoute,
   AppGroupsGroupIdEditRoute: AppGroupsGroupIdEditRoute,
   AppGroupsGroupIdTrainingsRoute: AppGroupsGroupIdTrainingsRoute,
+  AppManageApplicationsMembershipApplicationIdRoute:
+    AppManageApplicationsMembershipApplicationIdRoute,
   AppManageBoardNewRoute: AppManageBoardNewRoute,
   AppManageClubRecordAccessRoute: AppManageClubRecordAccessRoute,
   AppManageClubRecordContactRoute: AppManageClubRecordContactRoute,
@@ -1793,6 +1858,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppGroupsGroupIdPeoplePersonIdRoute: AppGroupsGroupIdPeoplePersonIdRoute,
   AppGroupsGroupIdSlotsSlotIdRoute: AppGroupsGroupIdSlotsSlotIdRoute,
   AppGroupsGroupIdSlotsNewRoute: AppGroupsGroupIdSlotsNewRoute,
+  AppManageApplicationsMembershipApplicationIdAdmissionRoute:
+    AppManageApplicationsMembershipApplicationIdAdmissionRoute,
   AppManageBoardBoardOfficeIdEditRoute: AppManageBoardBoardOfficeIdEditRoute,
   AppManageGroupsKindsGroupKindIdRoute: AppManageGroupsKindsGroupKindIdRoute,
   AppManageGroupsKindsNewRoute: AppManageGroupsKindsNewRoute,

@@ -99,6 +99,7 @@ export { KkPersonRow } from './KkPersonRow';
 export { KkPhoto } from './KkPhoto';
 export { KkPhotoPlaceholder } from './KkPhotoPlaceholder';
 export { KkQrCode } from './KkQrCode';
+export { KkRadioGroup } from './KkRadioGroup/KkRadioGroup';
 export { KkRecordName } from './KkRecordName';
 export { KkRedactedValue } from './KkRedactedValue';
 export { KkRegisterRow } from './KkRegisterRow';

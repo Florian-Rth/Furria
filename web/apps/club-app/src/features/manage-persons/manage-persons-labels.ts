@@ -15,6 +15,7 @@ import type { StateChip } from '@/lib/state-chips';
 import { toMembershipStateChip, toNoStateMatchLine } from '@/lib/state-chips';
 import type {
   FeeReductionBasis,
+  MembershipAdmission,
   PersonDetails,
   PersonFeeReduction,
   PersonGroup,
@@ -215,6 +216,21 @@ export const toPauseSpan = (pause: PersonPause): string =>
 
 export const toFeeReductionSpan = (reduction: PersonFeeReduction): string =>
   formatSessionSpan(reduction.firstSessionYear, reduction.lastSessionYear);
+
+export const toAdmissionMeta = (admission: MembershipAdmission | null): string | undefined => {
+  if (admission === null) {
+    return undefined;
+  }
+
+  const admitted = `Aufgenommen am ${formatIsoDay(toIsoDay(new Date(admission.admittedAt)))}`;
+  const admitter =
+    admission.admittedBy === null ? '' : ` von ${toPersonName(admission.admittedBy)}`;
+  const consent = admission.guardianConsentConfirmed
+    ? `${META_SEPARATOR}Einwilligung der gesetzlichen Vertretung bestätigt`
+    : '';
+
+  return `${admitted}${admitter}${consent}`;
+};
 
 export const ADD_MEMBERSHIP_ACTION_LABEL = 'Zeitraum eintragen';
 export const ADD_PAUSE_ACTION_LABEL = 'Ruhezeit eintragen';

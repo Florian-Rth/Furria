@@ -5,6 +5,7 @@ import {
   ContactChangeSchema,
   GroupRefSchema,
   MembershipStateSchema,
+  PersonRefSchema,
   RoleRefSchema,
 } from '@/lib/api/schemas';
 import { ContactFieldsFormSchema } from '@/lib/contact-fields';
@@ -56,6 +57,13 @@ export const PersonPauseSchema = z.object({
 });
 export type PersonPause = z.infer<typeof PersonPauseSchema>;
 
+export const MembershipAdmissionSchema = z.object({
+  admittedAt: z.iso.datetime({ offset: true }),
+  admittedBy: PersonRefSchema.nullable(),
+  guardianConsentConfirmed: z.boolean(),
+});
+export type MembershipAdmission = z.infer<typeof MembershipAdmissionSchema>;
+
 export const PersonMembershipSchema = z.object({
   membershipId: z.number().int(),
   startedOn: z.iso.date(),
@@ -63,6 +71,7 @@ export const PersonMembershipSchema = z.object({
   isRunning: z.boolean(),
   isFuture: z.boolean(),
   pauses: z.array(PersonPauseSchema),
+  admission: MembershipAdmissionSchema.nullable(),
 });
 export type PersonMembership = z.infer<typeof PersonMembershipSchema>;
 

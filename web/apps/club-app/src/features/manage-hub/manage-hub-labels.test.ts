@@ -13,6 +13,7 @@ const EMPTY_HUB: ManageHub = {
   venues: null,
   keys: null,
   accounts: null,
+  applications: null,
 };
 
 const hubWith = (panels: Partial<ManageHub>): ManageHub => ({ ...EMPTY_HUB, ...panels });
@@ -83,6 +84,14 @@ describe('toManageRows', () => {
   });
 
   it.each([
+    { undecidedCount: 0, minorCount: 0, expected: 'Keine offenen Anträge' },
+    { undecidedCount: 3, minorCount: 1, expected: '1 minderjährig' },
+    { undecidedCount: 2, minorCount: 0, expected: undefined },
+  ])('sums up the applications row as "$expected"', ({ undecidedCount, minorCount, expected }) => {
+    expect(summaryOf(hubWith({ applications: { undecidedCount, minorCount } }))).toBe(expected);
+  });
+
+  it.each([
     { entryCount: 3, expected: '3 Einträge' },
     { entryCount: 1, expected: '1 Eintrag' },
   ])('sums up the session records row as "$expected"', ({ entryCount, expected }) => {
@@ -107,6 +116,10 @@ describe('toManageRows', () => {
       hub: hubWith({ clubRecord: { name: null, missingFactCount: 4 } }),
       expected: '4 Angaben fehlen',
     },
+    {
+      hub: hubWith({ applications: { undecidedCount: 2, minorCount: 1 } }),
+      expected: '2 offen',
+    },
   ])('flags "$expected" as needing attention', ({ hub, expected }) => {
     expect(onlyRow(hub).status).toEqual({ label: expected, tone: 'gold' });
   });
@@ -118,6 +131,7 @@ describe('toManageRows', () => {
     { hub: hubWith({ clubRecord: { name: 'GCC e.V.', missingFactCount: 0 } }) },
     { hub: hubWith({ persons: { personCount: 184, memberCount: 121 } }) },
     { hub: hubWith({ keys: { issuedCount: 3, holdingCount: 3, holderCount: 2 } }) },
+    { hub: hubWith({ applications: { undecidedCount: 0, minorCount: 0 } }) },
   ])('flags nothing on a settled row', ({ hub }) => {
     expect(onlyRow(hub).status).toBeUndefined();
   });
@@ -144,6 +158,7 @@ describe('toManageRows', () => {
     { hub: hubWith({ groups: { groupCount: 0, archivedCount: 2 } }) },
     { hub: hubWith({ venues: { venueCount: 0, archivedCount: 1 } }) },
     { hub: hubWith({ keys: { issuedCount: 3, holdingCount: 0, holderCount: 0 } }) },
+    { hub: hubWith({ applications: { undecidedCount: 0, minorCount: 0 } }) },
   ])('keeps a register with only history as filled', ({ hub }) => {
     expect(onlyRow(hub).isEmpty).toBe(false);
   });
