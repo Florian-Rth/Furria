@@ -53,6 +53,7 @@ public sealed class StartWireNamesTests
     [InlineData(ToDoKind.BirthDateUnknown, "birthDateUnknown")]
     [InlineData(ToDoKind.KeyToTakeBack, "keyToTakeBack")]
     [InlineData(ToDoKind.ClubRecordGap, "clubRecordGap")]
+    [InlineData(ToDoKind.ApplicationWaiting, "applicationWaiting")]
     public void Should_CarryTheCamelCaseName_When_AToDoGoesOnTheWire(
         ToDoKind kind,
         string wireName
@@ -68,5 +69,5 @@ public sealed class StartWireNamesTests
 
     [Fact]
     public void Should_PinEveryValue_When_TheToDoKindsAreCounted() =>
-        Assert.Equal(6, Enum.GetValues<ToDoKind>().Length);
+        Assert.Equal(7, Enum.GetValues<ToDoKind>().Length);
 }

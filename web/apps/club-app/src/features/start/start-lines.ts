@@ -107,6 +107,7 @@ export const TO_DO_LABELS: Record<ToDoKind, CountedLabel> = {
   birthDateUnknown: { one: 'Geburtsdatum fehlt', other: 'Geburtsdaten fehlen' },
   keyToTakeBack: { one: 'Schlüssel zurückholen', other: 'Schlüssel zurückholen' },
   clubRecordGap: { one: 'Lücke in Vereinsdaten', other: 'Lücken in Vereinsdaten' },
+  applicationWaiting: { one: 'Beitrittsantrag offen', other: 'Beitrittsanträge offen' },
 };
 
 const isoPartsOf = (isoDay: string): [number, number, number] => [

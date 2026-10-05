@@ -25,7 +25,7 @@ describe('StartSchema', () => {
           kind: 'toDos',
           shownCount: 2,
           toDos: [
-            { kind: 'applicationWaiting', count: 2 },
+            { kind: 'expenseWaiting', count: 2 },
             { kind: 'clubRecordGap', count: 1 },
           ],
         },

@@ -5,6 +5,7 @@ using Furria.Core.Club;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Identity;
+using Furria.Infrastructure.MembershipApplications;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Registry;
 using Microsoft.EntityFrameworkCore;
@@ -57,6 +58,9 @@ public sealed class ToDoService
         if (granted.Contains(FurriaPermissions.ClubManage))
             toDos.Add(await ClubRecordGapsAsync(ct));
 
+        if (granted.Contains(FurriaPermissions.MembershipApplicationsDecide))
+            toDos.Add(await WaitingApplicationsAsync(ct));
+
         return [.. toDos.Where(toDo => toDo.Count > 0)];
     }
 
@@ -93,6 +97,12 @@ public sealed class ToDoService
             )
         );
     }
+
+    private async Task<ToDoSummary> WaitingApplicationsAsync(CancellationToken ct) =>
+        ToDoOf(
+            ToDoKind.ApplicationWaiting,
+            await _dbContext.UndecidedApplications().CountAsync(ct)
+        );
 
     private async Task<ToDoSummary> ClubRecordGapsAsync(CancellationToken ct) =>
         ToDoOf(

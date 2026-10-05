@@ -14,4 +14,5 @@ export const TO_DO_LINKS: Record<ToDoKind, ToDoLink> = {
   birthDateUnknown: { to: '/manage/persons', search: { access: 'birth-date-unknown' } },
   keyToTakeBack: { to: '/manage/keys', search: {} },
   clubRecordGap: { to: '/manage/club-record', search: {} },
+  applicationWaiting: { to: '/manage/applications', search: {} },
 };
