@@ -48,7 +48,7 @@ English rendering anywhere else, so two translations never drift apart.
 | club | Verein | — |
 | club hub / group hub / management | Verein / Gruppe / Verein verwalten | `club`, `group-hub`, `manage` |
 | tile | Kachel | — |
-| Start / to-do | Übersicht / Zu erledigen | `start`, `ToDoKind` |
+| Start / to-do / seen mark | Start / Zu erledigen / Gesehen | `start`, `ToDoKind`, `ToDoMark` |
 | active in the club | im Verein aktiv | — (derived) |
 | her dates: concerns / runs / expected | — | `CalendarTies` |
 | session ordinal | „deine 13. Session" | `SessionOrdinal` |
@@ -537,10 +537,11 @@ her own terms („40 Tage bis zu deiner 13. Session, Lena.") and a column of **p
 — her dates, the Aushänge new to her, what is new on her own record, her groups' jubilees, and
 club work — each one fact line per item, detail in sheets. Which panels exist, their order and
 their caps are decided by the server per viewer and moment; an empty panel is absent, never
-zero. Nothing on Start is dismissed by hand: every item ends by itself. A **frozen visit**: after
+zero. Nothing on Start is dismissed by hand: every item ends by itself — the one thing Start honours from
+elsewhere is a to-do **marked seen** where its work is done (ruled 2026-10-06, L3). A **frozen visit**: after
 her first touch nothing on Start is added, removed or reordered — it only changes state in place;
 device memory may only quiet, never add (ruled 2026-10-02, L2).
-_UI copy_: Übersicht (nav, until L3); panels KALENDER · AUSHÄNGE · DU · GRUPPEN · ZU ERLEDIGEN;
+_UI copy_: Start (nav, the first default destination since L3); panels KALENDER · AUSHÄNGE · DU · GRUPPEN · ZU ERLEDIGEN;
 Zusage · Vielleicht · Absage, always in this order
 _Avoid_: dashboard, feed, inbox, „Termin", „Programm"
 
@@ -586,7 +587,19 @@ gates (ruled 2026-10-02, L2):
 | club record gap | *Lücke in Vereinsdaten* | `club.manage` |
 | application waiting (confirmed, undecided **membership application**; added in L4) | *Beitrittsantrag offen* | `membership_applications.decide` |
 
-_Avoid_: task (that is the event planner's), notification, inbox, names in a to-do
+A to-do can be **marked seen** in its admin hub's To-do panel (*Zu erledigen*) — per account, on
+every device (ruled 2026-10-06, L3). The mark covers the items behind the to-do at that moment:
+- A to-do whose items she has all seen folds into the panel's *Gesehen · n* line, always openable,
+  and is left out of Start.
+- An item the mark did not cover is **new**: the to-do stays in the fold with an *n neu* chip (on its
+  row and on the fold line) and is back on Start. Items resolving never bring it back.
+- A mark none of whose items remain is spent — the to-do is unmarked again.
+- Marking is exact: when the items changed since the panel showed them, the mark is refused and the
+  panel reloads, so nothing is marked seen unseen.
+
+_UI copy_: *Zu erledigen*, *Gesehen · n*, *n neu*
+_Avoid_: task (that is the event planner's), notification, inbox, names in a to-do, *erledigt* for a
+seen to-do (seen is not done)
 
 ### Club culture
 
