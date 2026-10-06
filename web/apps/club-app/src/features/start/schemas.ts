@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { TO_DO_KINDS } from '@/features/to-dos';
 import { knownKindsOnly } from '@/lib/api/known-kinds';
 import { ATTENDANCE_ANSWER_KEYS, CALENDAR_KIND_KEYS } from '@/lib/calendar-copy';
 import { GroupToneSchema } from '@/lib/group-tone';
@@ -114,17 +115,6 @@ export const StartGroupMomentSchema = z.object({
   until: z.iso.date(),
 });
 export type StartGroupMoment = z.infer<typeof StartGroupMomentSchema>;
-
-export const TO_DO_KINDS = [
-  'neverInvited',
-  'reminderDue',
-  'inPersonOnly',
-  'birthDateUnknown',
-  'keyToTakeBack',
-  'clubRecordGap',
-  'applicationWaiting',
-] as const;
-export type ToDoKind = (typeof TO_DO_KINDS)[number];
 
 export const StartToDoSchema = z.object({ kind: z.enum(TO_DO_KINDS), count: z.int().positive() });
 export type StartToDo = z.infer<typeof StartToDoSchema>;

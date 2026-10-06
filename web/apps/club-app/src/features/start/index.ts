@@ -9,5 +9,4 @@ export type { GreetingView } from './greeting/greeting-view';
 export { toGreetingView } from './greeting/greeting-view';
 export { useGreetingAct } from './hooks/use-greeting-act';
 export { useGreetingFollows } from './hooks/use-greeting-follows';
-export type { Start, StartPanel, ToDoKind } from './schemas';
-export { TO_DO_KINDS } from './schemas';
+export type { Start, StartPanel } from './schemas';

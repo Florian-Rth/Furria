@@ -7,12 +7,16 @@ import type { KkSx } from './kk-sx';
 
 type KkIconButtonSize = 'small' | 'medium';
 
+const toggleInk = (pressed: boolean | undefined): string =>
+  pressed === false ? 'text.secondary' : 'text.primary';
+
 interface KkIconButtonProps {
   label: string;
   icon: KkIconName;
   size?: KkIconButtonSize;
   type?: 'button' | 'submit';
   disabled?: boolean;
+  pressed?: boolean;
   onClick?: () => void;
   component?: ElementType;
   to?: string;
@@ -26,6 +30,7 @@ export const KkIconButton: FC<KkIconButtonProps> = ({
   size = 'medium',
   type = 'button',
   disabled,
+  pressed,
   onClick,
   component,
   to,
@@ -37,6 +42,7 @@ export const KkIconButton: FC<KkIconButtonProps> = ({
   return (
     <IconButton
       aria-label={label}
+      aria-pressed={pressed}
       type={type}
       size={size}
       disabled={disabled}
@@ -44,7 +50,7 @@ export const KkIconButton: FC<KkIconButtonProps> = ({
       {...routeProps}
       data-kk-icon-button
       sx={[
-        (theme) => ({ color: 'text.primary', ...focusRing(theme) }),
+        (theme) => ({ color: toggleInk(pressed), ...focusRing(theme) }),
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >

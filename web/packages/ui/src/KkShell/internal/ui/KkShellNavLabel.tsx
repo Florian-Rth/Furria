@@ -4,7 +4,8 @@ import type { FC, PropsWithChildren } from 'react';
 import { kkTokens } from '../../../tokens';
 import { navLabelPose } from '../logic/nav-motion';
 
-const NARROW_ITEM = '@container kk-shell-nav-item (max-width: 4.5rem)';
+const SNUG_ITEM = '@container kk-shell-nav-item (max-width: 5.25rem)';
+const NARROW_ITEM = '@container kk-shell-nav-item (max-width: 3.5rem)';
 
 const LABEL_PAINT: CSSObject = {
   typography: 'caption',
@@ -18,6 +19,10 @@ const LABEL_PAINT: CSSObject = {
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   transition: kkTokens.motion.label,
+  [SNUG_ITEM]: {
+    letterSpacing: kkTokens.type.tracking.tight,
+    textTransform: 'none',
+  },
   [NARROW_ITEM]: {
     position: 'absolute',
     width: '1px',

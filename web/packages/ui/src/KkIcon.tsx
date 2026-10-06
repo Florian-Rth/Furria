@@ -1,8 +1,11 @@
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import BoltOutlinedIcon from '@mui/icons-material/BoltOutlined';
+import CakeOutlinedIcon from '@mui/icons-material/CakeOutlined';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
 import CheckOutlinedIcon from '@mui/icons-material/CheckOutlined';
 import CheckroomOutlinedIcon from '@mui/icons-material/CheckroomOutlined';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
@@ -22,6 +25,7 @@ import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined';
 import Groups2Icon from '@mui/icons-material/Groups2';
 import Groups2OutlinedIcon from '@mui/icons-material/Groups2Outlined';
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
+import HandshakeOutlinedIcon from '@mui/icons-material/HandshakeOutlined';
 import HomeIcon from '@mui/icons-material/Home';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
@@ -30,6 +34,7 @@ import KeyOutlinedIcon from '@mui/icons-material/KeyOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
 import MailOutlinedIcon from '@mui/icons-material/MailOutlined';
 import MenuIcon from '@mui/icons-material/Menu';
+import NotificationsActiveOutlinedIcon from '@mui/icons-material/NotificationsActiveOutlined';
 import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 import PhotoLibraryOutlinedIcon from '@mui/icons-material/PhotoLibraryOutlined';
@@ -37,6 +42,7 @@ import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
 import PolicyOutlinedIcon from '@mui/icons-material/PolicyOutlined';
 import QrCode2OutlinedIcon from '@mui/icons-material/QrCode2Outlined';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
+import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import SensorsOutlinedIcon from '@mui/icons-material/SensorsOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import TuneOutlinedIcon from '@mui/icons-material/TuneOutlined';
@@ -78,11 +84,17 @@ export type KkIconName =
   | 'add'
   | 'edit'
   | 'check'
+  | 'checkCircle'
+  | 'checkCircleFilled'
   | 'manage'
   | 'calendar'
   | 'calendarFilled'
   | 'phone'
   | 'mail'
+  | 'send'
+  | 'reminder'
+  | 'handshake'
+  | 'birthday'
   | 'place'
   | 'back'
   | 'bolt'
@@ -138,11 +150,17 @@ const icons: Record<KkIconName, typeof HomeIcon> = {
   add: AddOutlinedIcon,
   edit: EditOutlinedIcon,
   check: CheckOutlinedIcon,
+  checkCircle: CheckCircleOutlineOutlinedIcon,
+  checkCircleFilled: CheckCircleIcon,
   manage: TuneOutlinedIcon,
   calendar: CalendarMonthOutlinedIcon,
   calendarFilled: CalendarMonthIcon,
   phone: PhoneOutlinedIcon,
   mail: MailOutlinedIcon,
+  send: SendOutlinedIcon,
+  reminder: NotificationsActiveOutlinedIcon,
+  handshake: HandshakeOutlinedIcon,
+  birthday: CakeOutlinedIcon,
   place: PlaceOutlinedIcon,
   back: ChevronLeftIcon,
   bolt: BoltOutlinedIcon,

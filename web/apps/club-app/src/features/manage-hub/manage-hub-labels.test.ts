@@ -14,6 +14,7 @@ const EMPTY_HUB: ManageHub = {
   keys: null,
   accounts: null,
   applications: null,
+  toDos: [],
 };
 
 const hubWith = (panels: Partial<ManageHub>): ManageHub => ({ ...EMPTY_HUB, ...panels });

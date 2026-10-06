@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { TO_DO_KINDS } from '@/features/to-dos';
+import { knownKindsOnly } from '@/lib/api/known-kinds';
 
 export const ManagePersonsPanelSchema = z.object({
   personCount: z.number().int(),
@@ -64,6 +66,15 @@ export const ManageApplicationsPanelSchema = z.object({
 });
 export type ManageApplicationsPanel = z.infer<typeof ManageApplicationsPanelSchema>;
 
+export const ManageToDoSchema = z.object({
+  kind: z.enum(TO_DO_KINDS),
+  count: z.int().positive(),
+  isSeen: z.boolean(),
+  newCount: z.int().nonnegative(),
+  version: z.string(),
+});
+export type ManageToDo = z.infer<typeof ManageToDoSchema>;
+
 export const InvitationRoundPreviewSchema = z.object({
   inviteCount: z.number().int(),
   remindCount: z.number().int(),
@@ -85,5 +96,6 @@ export const ManageHubSchema = z.object({
   keys: ManageKeysPanelSchema.nullable(),
   accounts: ManageAccountsPanelSchema.nullable(),
   applications: ManageApplicationsPanelSchema.nullable(),
+  toDos: knownKindsOnly(ManageToDoSchema, TO_DO_KINDS),
 });
 export type ManageHub = z.infer<typeof ManageHubSchema>;
