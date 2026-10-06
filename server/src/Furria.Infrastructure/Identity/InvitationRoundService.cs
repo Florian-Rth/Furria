@@ -96,7 +96,7 @@ public sealed class InvitationRoundService
         var sent = await IssueAsync(
             issues,
             new RoundAct(issuerPersonId, AccountEventKind.Invited, round),
-            token => VoidLiveInvitationsOfAsync(recipients, round.Now, token),
+            token => VoidLiveRecoveriesOfAsync(recipients, round.Now, token),
             ct
         );
         if (sent.IsSuccess)
@@ -209,7 +209,7 @@ public sealed class InvitationRoundService
             );
     }
 
-    private async Task<bool> VoidLiveInvitationsOfAsync(
+    private async Task<bool> VoidLiveRecoveriesOfAsync(
         IReadOnlyList<Recipient> recipients,
         DateTimeOffset now,
         CancellationToken ct
@@ -220,6 +220,7 @@ public sealed class InvitationRoundService
         await _dbContext
             .Invitations.Where(invitation =>
                 personIds.Contains(invitation.PersonId)
+                && invitation.Purpose == InvitationPurpose.Recovery
                 && invitation.RedeemedAt == null
                 && invitation.VoidedAt == null
             )
