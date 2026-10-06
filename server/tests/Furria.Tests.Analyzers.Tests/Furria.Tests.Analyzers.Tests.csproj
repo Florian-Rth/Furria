@@ -3,6 +3,8 @@
     <TargetFramework>net10.0</TargetFramework>
     <!-- xunit.v3 runs on Microsoft.Testing.Platform; this makes `dotnet test` drive it. -->
     <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+    <!-- Names each failed test with its assertion in the build output, not only in the log file. -->
+    <TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>false</IsPackable>

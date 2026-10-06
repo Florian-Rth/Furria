@@ -2,6 +2,8 @@
   <PropertyGroup>
     <!-- xunit.v3 runs on Microsoft.Testing.Platform; this makes `dotnet test` drive it. -->
     <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+    <!-- Names each failed test with its assertion in the build output, not only in the log file. -->
+    <TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
