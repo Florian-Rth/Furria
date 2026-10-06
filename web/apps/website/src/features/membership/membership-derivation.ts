@@ -8,11 +8,12 @@ export const YOUTH_FEE_EUROS = 15;
 
 export type MembershipTypeId = 'active' | 'youth';
 
+export type ApplicantStanding = 'pending' | 'tooYoung' | 'minor' | 'adult';
+
 export interface DerivedMembership {
   age: number;
   typeId: MembershipTypeId;
   feeEuros: number;
-  requiresGuardian: boolean;
 }
 
 const DATE_ONLY_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
@@ -61,12 +62,26 @@ export const deriveMembership = (birthDate: string, today: Date): DerivedMembers
     return null;
   }
 
-  const requiresGuardian = age < MAJORITY_AGE;
+  const isMinor = age < MAJORITY_AGE;
 
   return {
     age,
-    typeId: requiresGuardian ? 'youth' : 'active',
-    feeEuros: requiresGuardian ? YOUTH_FEE_EUROS : ACTIVE_FEE_EUROS,
-    requiresGuardian,
+    typeId: isMinor ? 'youth' : 'active',
+    feeEuros: isMinor ? YOUTH_FEE_EUROS : ACTIVE_FEE_EUROS,
   };
+};
+
+export const deriveApplicantStanding = (
+  derived: DerivedMembership | null,
+  ageOfConsent: number | null,
+): ApplicantStanding => {
+  if (derived === null) {
+    return 'pending';
+  }
+
+  if (ageOfConsent !== null && derived.age < ageOfConsent) {
+    return 'tooYoung';
+  }
+
+  return derived.age < MAJORITY_AGE ? 'minor' : 'adult';
 };

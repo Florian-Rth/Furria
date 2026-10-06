@@ -4,8 +4,7 @@ import Typography from '@mui/material/Typography';
 import { Link as RouterLink } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { ClubMailButton } from '@/components/ClubMailButton';
-import { APPLY_PATH } from '@/features/group-matcher/apply-handoff';
-import { matcherResultLabels } from '@/features/group-matcher/matcher-content';
+import { matcherApplyHref, matcherResultLabels } from '@/features/group-matcher/matcher-content';
 import { MatcherResultActions } from '../layout/MatcherResultActions';
 import type { MatcherExclusionView } from '../logic/matcher-result';
 import { MatcherExcludedList } from './MatcherExcludedList';
@@ -27,7 +26,7 @@ export const MatcherResultEmpty: FC<MatcherResultEmptyProps> = ({ excluded }) =>
       <ClubMailButton variant="contained" color="primary" size="large">
         {matcherResultLabels.emptyMailCta}
       </ClubMailButton>
-      <Button component={RouterLink} to={APPLY_PATH} variant="outlined" size="large">
+      <Button component={RouterLink} to={matcherApplyHref} variant="outlined" size="large">
         {matcherResultLabels.emptyApplyCta}
       </Button>
     </MatcherResultActions>

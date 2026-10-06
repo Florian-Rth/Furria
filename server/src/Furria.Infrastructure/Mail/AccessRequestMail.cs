@@ -26,7 +26,7 @@ public static class AccessRequestMail
         new()
         {
             Template = MailTemplate.AccessRequest,
-            PersonId = content.PersonId,
+            Recipient = MailRecipient.Person(content.PersonId),
             To = content.To,
             Subject = Subject,
             TextBody = TextOf(content),

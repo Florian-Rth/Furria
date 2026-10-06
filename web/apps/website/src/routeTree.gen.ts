@@ -14,6 +14,7 @@ import { Route as SiteIndexRouteImport } from './routes/_site/index'
 import { Route as SitePrivacyRouteImport } from './routes/_site/privacy'
 import { Route as SiteImprintRouteImport } from './routes/_site/imprint'
 import { Route as SiteGatedRouteImport } from './routes/_site/_gated'
+import { Route as SiteJoinConfirmRouteImport } from './routes/_site/join_.confirm'
 import { Route as SiteGatedNewsRouteImport } from './routes/_site/_gated/news'
 import { Route as SiteGatedJoinRouteImport } from './routes/_site/_gated/join'
 import { Route as SiteGatedGalleryRouteImport } from './routes/_site/_gated/gallery'
@@ -48,6 +49,11 @@ const SiteImprintRoute = SiteImprintRouteImport.update({
 } as any)
 const SiteGatedRoute = SiteGatedRouteImport.update({
   id: '/_gated',
+  getParentRoute: () => SiteRoute,
+} as any)
+const SiteJoinConfirmRoute = SiteJoinConfirmRouteImport.update({
+  id: '/join_/confirm',
+  path: '/join/confirm',
   getParentRoute: () => SiteRoute,
 } as any)
 const SiteGatedNewsRoute = SiteGatedNewsRouteImport.update({
@@ -124,6 +130,7 @@ export interface FileRoutesByFullPath {
   '/gallery': typeof SiteGatedGalleryRoute
   '/join': typeof SiteGatedJoinRoute
   '/news': typeof SiteGatedNewsRoute
+  '/join/confirm': typeof SiteJoinConfirmRoute
   '/events/$eventSlug': typeof SiteGatedEventsEventSlugRoute
   '/events/exchange': typeof SiteGatedEventsExchangeRoute
   '/gallery/$albumSlug': typeof SiteGatedGalleryAlbumSlugRoute
@@ -141,6 +148,7 @@ export interface FileRoutesByTo {
   '/gallery': typeof SiteGatedGalleryRoute
   '/join': typeof SiteGatedJoinRoute
   '/news': typeof SiteGatedNewsRoute
+  '/join/confirm': typeof SiteJoinConfirmRoute
   '/events/$eventSlug': typeof SiteGatedEventsEventSlugRoute
   '/events/exchange': typeof SiteGatedEventsExchangeRoute
   '/gallery/$albumSlug': typeof SiteGatedGalleryAlbumSlugRoute
@@ -161,6 +169,7 @@ export interface FileRoutesById {
   '/_site/_gated/gallery': typeof SiteGatedGalleryRoute
   '/_site/_gated/join': typeof SiteGatedJoinRoute
   '/_site/_gated/news': typeof SiteGatedNewsRoute
+  '/_site/join_/confirm': typeof SiteJoinConfirmRoute
   '/_site/_gated/events_/$eventSlug': typeof SiteGatedEventsEventSlugRoute
   '/_site/_gated/events_/exchange': typeof SiteGatedEventsExchangeRoute
   '/_site/_gated/gallery_/$albumSlug': typeof SiteGatedGalleryAlbumSlugRoute
@@ -180,6 +189,7 @@ export interface FileRouteTypes {
     | '/gallery'
     | '/join'
     | '/news'
+    | '/join/confirm'
     | '/events/$eventSlug'
     | '/events/exchange'
     | '/gallery/$albumSlug'
@@ -197,6 +207,7 @@ export interface FileRouteTypes {
     | '/gallery'
     | '/join'
     | '/news'
+    | '/join/confirm'
     | '/events/$eventSlug'
     | '/events/exchange'
     | '/gallery/$albumSlug'
@@ -216,6 +227,7 @@ export interface FileRouteTypes {
     | '/_site/_gated/gallery'
     | '/_site/_gated/join'
     | '/_site/_gated/news'
+    | '/_site/join_/confirm'
     | '/_site/_gated/events_/$eventSlug'
     | '/_site/_gated/events_/exchange'
     | '/_site/_gated/gallery_/$albumSlug'
@@ -264,6 +276,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof SiteGatedRouteImport
+      parentRoute: typeof SiteRoute
+    }
+    '/_site/join_/confirm': {
+      id: '/_site/join_/confirm'
+      path: '/join/confirm'
+      fullPath: '/join/confirm'
+      preLoaderRoute: typeof SiteJoinConfirmRouteImport
       parentRoute: typeof SiteRoute
     }
     '/_site/_gated/news': {
@@ -392,6 +411,7 @@ interface SiteRouteChildren {
   SiteImprintRoute: typeof SiteImprintRoute
   SitePrivacyRoute: typeof SitePrivacyRoute
   SiteIndexRoute: typeof SiteIndexRoute
+  SiteJoinConfirmRoute: typeof SiteJoinConfirmRoute
 }
 
 const SiteRouteChildren: SiteRouteChildren = {
@@ -399,6 +419,7 @@ const SiteRouteChildren: SiteRouteChildren = {
   SiteImprintRoute: SiteImprintRoute,
   SitePrivacyRoute: SitePrivacyRoute,
   SiteIndexRoute: SiteIndexRoute,
+  SiteJoinConfirmRoute: SiteJoinConfirmRoute,
 }
 
 const SiteRouteWithChildren = SiteRoute._addFileChildren(SiteRouteChildren)

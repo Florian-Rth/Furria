@@ -35,7 +35,7 @@ English rendering anywhere else, so two translations never drift apart.
 | anniversary | Jubiläum | — (derived) |
 | group membership | Zugehörigkeit | `GroupMembership` |
 | group admin / function | Gruppen-Admin / Funktion | `GroupAdmin`, `Function` |
-| membership application | Beitrittsantrag | `MembershipApplication` |
+| membership application / admission | Beitrittsantrag / Aufnahme | `MembershipApplication`, — |
 | role / permission | Rolle / Berechtigung | `Role`, `RolePermission` |
 | role holding / holder | Inhaberschaft / Inhaber | `RoleHolding` |
 | board / board office / board seat | Vorstand / Vorstandsfunktion / Vorstandssitz | `BoardOffice`, `BoardSeat` |
@@ -217,9 +217,35 @@ _Avoid_: category, type, division, treating it as an enum in code
 **Membership application**:
 A visitor's request to become a member, submitted on the public website. It is **not** a
 membership and its sender is **not** a member — the club still decides on the admission.
-Carries no account and no invitation (see **account**: member ≠ account).
-_UI copy_: Beitrittsantrag
+Carries no account and no invitation (see **account**: member ≠ account). Only someone who has
+reached the club's **age of consent** applies, and for herself — no guardian applies on a child's
+behalf; a younger child joins by asking the club, which records her by hand. It reaches the club
+only once its sender **confirms** it from the inbox she gave — an unconfirmed one is gone after 48
+hours. A confirmed application **lives only until it is decided**: an **admission** carries its details into the registry, a
+decline — which also disposes of spam and withdrawals — deletes it, and an undecided one waits
+until someone decides (ruled 2026-10-02, L4 shaping).
+_UI copy_: Beitrittsantrag; *Antrag bestätigen*; *Ablehnen*
 _Avoid_: sign-up, registration, application (alone), calling the sender a member
+
+**Admission**:
+The club's decision to accept a **membership application**, dated by its **admission date** —
+never before she applied, and possibly still to come. Deciding applications is a **permission** of its own, apart from person
+management: its holders see the applications, are told when one arrives, and admit without
+needing any other right. An admission opens her **membership** from the admission date — on a new
+**person**, or on the one the registry already holds for her: whoever admits her is shown every
+person sharing her email, or her name and birth date, and decides which, if any, she is; nothing
+is matched on its own. On an existing person the application only fills what the registry lacks,
+and a former member keeps her *Mitglied seit*; someone whose membership is running cannot be
+admitted again. Whoever admits her also invites her, in the same act, **when she is eligible
+that day**; otherwise she is invited like anyone else once she is. An applicant who is **under 18
+on the admission date** cannot join on her own word: whoever admits her first confirms that her
+guardian has consented, and that confirmation is recorded with its author (ruled 2026-10-02, L4
+shaping). The admission is recorded on the membership it opens — when, by whom, and whether a
+minor's consent was confirmed — and outlives the application (built 2026-10-02, L4 S5).
+_UI copy_: Aufnahme; *Aufnehmen*; *Aufnahmedatum*; *Das ist sie*; *Neue Person*; *ist bereits
+Mitglied*; *minderjährig*; *Einwilligung der gesetzlichen Vertretung liegt vor*
+_Avoid_: approval, confirmation, onboarding, calling the admission date "joined" before it arrives,
+**adoption** (that is the unaffiliated-duplicate rule; an admission may land on any person)
 
 **Role** (`Role`):
 Layer C — a named office with a set of **permissions** (president, finance, drinks warden,
@@ -496,10 +522,11 @@ The club's own facts about itself — there is exactly one, kept in three sectio
 its own: **name & founding** (official name as registered, short name, **founded year**),
 **address & contact** (address, email, phone, website and social links — what the imprint and
 every "reach the club" place show) and **access** (the **age of consent**, the age from which a
-person may hold an account, 16 unless the club says otherwise). Written in club management, read
+person acts for herself on the platform — holds an account, sends a **membership application** —
+16 unless the club says otherwise; widened 2026-10-02, L4 shaping). Written in club management, read
 wherever the club describes itself (ruled 2026-09-25, accounts shaping; widened the same day).
 _UI copy_: Vereinsdaten; *Name & Gründung*; *Anschrift & Kontakt*; *Zugang zur App*;
-*Vereinsname*; *Kurzname*; *Gründungsjahr*; *Mindestalter für einen Zugang*
+*Vereinsname*; *Kurzname*; *Gründungsjahr*; *Mindestalter für App und Online-Antrag*
 _Avoid_: settings (it is the club's record, not an app's configuration)
 
 **Start**:
@@ -557,6 +584,7 @@ gates (ruled 2026-10-02, L2):
 | birth date unknown (affiliated, no account, no birth date, no open invitation) | *Geburtsdatum fehlt* | `persons.manage` ∧ `accounts.manage` |
 | key to take back | *Schlüssel zurückholen* | `key_holdings.manage` |
 | club record gap | *Lücke in Vereinsdaten* | `club.manage` |
+| application waiting (confirmed, undecided **membership application**; added in L4) | *Beitrittsantrag offen* | `membership_applications.decide` |
 
 _Avoid_: task (that is the event planner's), notification, inbox, names in a to-do
 

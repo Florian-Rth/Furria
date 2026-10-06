@@ -10,7 +10,6 @@ const formatBirthDate = (birthDate: string): string =>
 export const buildFallbackMailHref = (
   clubEmail: string,
   values: MembershipApplicationForm,
-  groupLabels: string[],
 ): string => {
   const entries: [string, string][] = [
     ['Vorname', values.firstName],
@@ -21,10 +20,6 @@ export const buildFallbackMailHref = (
     ['Ort', values.city],
     ['E-Mail', values.email],
     ['Telefon', values.phone],
-    ['Gruppen-Interessen', groupLabels.join(', ')],
-    ['Name der gesetzlichen Vertretung', values.guardianName],
-    ['E-Mail der gesetzlichen Vertretung', values.guardianEmail],
-    ['Telefon der gesetzlichen Vertretung', values.guardianPhone],
     ['Satzung und Datenschutzhinweise gelesen', values.consent ? 'ja' : ''],
   ];
 

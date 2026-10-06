@@ -47,7 +47,7 @@ export const AGE_OF_CONSENT_OPTIONS: readonly KkSelectOption[] = Array.from(
 export const toAgeOfConsentLabel = (ageOfConsent: number): string => toAgeLabel(ageOfConsent);
 
 export const toAgeConsequence = (ageOfConsent: string): string =>
-  `Wer jünger als ${ageOfConsent} ist, kann nicht eingeladen werden.`;
+  `Wer jünger als ${ageOfConsent} ist, wird nicht eingeladen und bewirbt sich nicht online, sondern wird vom Verein direkt aufgenommen.`;
 
 const toFormText = (value: string | null): string => value ?? '';
 

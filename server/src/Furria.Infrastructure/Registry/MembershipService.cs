@@ -41,39 +41,32 @@ public sealed class MembershipService
         _dbContext = dbContext;
     }
 
-    public async Task<Result<int>> AddAsync(AddMembershipCommand command, CancellationToken ct)
-    {
-        if (!await PersonExistsAsync(command.PersonId, ct))
-            return Result<int>.NotFound(UnknownPersonMessage);
+    public Task<Result<int>> AddAsync(AddMembershipCommand command, CancellationToken ct) =>
+        OpenAsync(
+            new Membership
+            {
+                PersonId = command.PersonId,
+                StartedOn = command.StartedOn,
+                EndedOn = command.EndedOn,
+            },
+            ct
+        );
 
-        var period = new DatePeriod { Start = command.StartedOn, End = command.EndedOn };
-
-        if (!period.IsWellFormed)
-            return Result<int>.Validation(EndBeforeStartMessage);
-
-        var chain = await PeriodsOfAsync(command.PersonId, NoMembershipId, ct);
-
-        if (period.IsOpen && chain.Any(row => row.EndedOn is null))
-            return Result<int>.Conflict(OpenMembershipMessage);
-
-        if (Overlaps(chain, period))
-            return Result<int>.Conflict(OverlappingMembershipMessage);
-
-        var membership = new Membership
-        {
-            PersonId = command.PersonId,
-            StartedOn = command.StartedOn,
-            EndedOn = command.EndedOn,
-        };
-
-        _dbContext.Memberships.Add(membership);
-
-        var saved = await _dbContext.SaveOrConflictAsync(ct);
-        if (!saved.IsSuccess)
-            return Result<int>.Conflict(saved.Error.Message);
-
-        return Result<int>.Success(membership.Id);
-    }
+    public Task<Result<int>> AddAdmittedAsync(
+        AddAdmittedMembershipCommand command,
+        CancellationToken ct
+    ) =>
+        OpenAsync(
+            new Membership
+            {
+                PersonId = command.PersonId,
+                StartedOn = command.AdmittedOn,
+                AdmittedAt = command.AdmittedAt,
+                AdmittedByPersonId = command.AdmittedByPersonId,
+                GuardianConsentConfirmed = command.GuardianConsentConfirmed,
+            },
+            ct
+        );
 
     public async Task<Result> UpdateAsync(UpdateMembershipCommand command, CancellationToken ct)
     {
@@ -203,6 +196,33 @@ public sealed class MembershipService
         await _dbContext.SaveChangesAsync(ct);
 
         return Result.Success();
+    }
+
+    private async Task<Result<int>> OpenAsync(Membership membership, CancellationToken ct)
+    {
+        if (!await PersonExistsAsync(membership.PersonId, ct))
+            return Result<int>.NotFound(UnknownPersonMessage);
+
+        var period = new DatePeriod { Start = membership.StartedOn, End = membership.EndedOn };
+
+        if (!period.IsWellFormed)
+            return Result<int>.Validation(EndBeforeStartMessage);
+
+        var chain = await PeriodsOfAsync(membership.PersonId, NoMembershipId, ct);
+
+        if (period.IsOpen && chain.Any(row => row.EndedOn is null))
+            return Result<int>.Conflict(OpenMembershipMessage);
+
+        if (Overlaps(chain, period))
+            return Result<int>.Conflict(OverlappingMembershipMessage);
+
+        _dbContext.Memberships.Add(membership);
+
+        var saved = await _dbContext.SaveOrConflictAsync(ct);
+        if (!saved.IsSuccess)
+            return Result<int>.Conflict(saved.Error.Message);
+
+        return Result<int>.Success(membership.Id);
     }
 
     [Pure]

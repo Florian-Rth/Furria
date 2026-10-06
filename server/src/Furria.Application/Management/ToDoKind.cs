@@ -8,4 +8,5 @@ public enum ToDoKind
     BirthDateUnknown = 4,
     KeyToTakeBack = 5,
     ClubRecordGap = 6,
+    ApplicationWaiting = 7,
 }

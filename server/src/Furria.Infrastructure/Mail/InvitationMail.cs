@@ -34,7 +34,7 @@ public static class InvitationMail
         new()
         {
             Template = MailTemplate.Invitation,
-            PersonId = content.PersonId,
+            Recipient = MailRecipient.Person(content.PersonId),
             To = content.To,
             Subject = Subject,
             TextBody = TextOf(content, InvitationLeadOf(content), null),
@@ -46,7 +46,7 @@ public static class InvitationMail
         new()
         {
             Template = MailTemplate.InvitationReminder,
-            PersonId = content.PersonId,
+            Recipient = MailRecipient.Person(content.PersonId),
             To = content.To,
             Subject = ReminderSubject,
             TextBody = TextOf(content, ReminderLeadOf(content), ReminderPostscript),

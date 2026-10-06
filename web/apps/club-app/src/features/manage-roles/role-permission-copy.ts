@@ -51,6 +51,10 @@ const PERMISSION_COPY: Record<PermissionKey, RolePermissionCopy> = {
     title: 'Zugänge wiederherstellen und sperren',
     line: 'Zugänge vor Ort wiederherstellen, sperren und entsperren; Personen ohne Geburtsdatum einladen und für ihr Alter bürgen. Kommt einer Übernahme jedes Zugangs gleich.',
   },
+  [PERMISSION_KEYS.membershipApplicationsDecide]: {
+    title: 'Über Beitrittsanträge entscheiden',
+    line: 'Beitrittsanträge sehen, bei jedem neuen eine Mail bekommen, aufnehmen oder ablehnen. Eine Aufnahme legt Person, Mitgliedschaft und Einladung an, auch ohne das Recht, Personen zu pflegen.',
+  },
 };
 
 const KNOWN_KEYS: readonly PermissionKey[] = Object.values(PERMISSION_KEYS);

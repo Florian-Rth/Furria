@@ -12,8 +12,8 @@ import { useClubAccessEditor } from '../hooks/use-club-access-editor';
 import type { ClubRecord } from '../schemas';
 
 const SAVE_LABEL = 'Speichern';
-const AGE_LABEL = 'Mindestalter für einen Zugang';
-const AGE_HINT = 'Ab diesem Alter kann eine Person die App nutzen.';
+const AGE_LABEL = 'Mindestalter für App und Online-Antrag';
+const AGE_HINT = 'Ab diesem Alter nutzt eine Person die App und bewirbt sich selbst online.';
 
 const FIELD_GAP = 2.25;
 

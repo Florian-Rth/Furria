@@ -4,15 +4,21 @@ namespace Furria.Tests.Common.Builder;
 
 public sealed class IdentitySeedBuilder
 {
+    private const string DefaultApplicantFirstName = "Mia";
+    private const string DefaultApplicantLastName = "Schwarzwälder";
+    private const string DefaultApplicantPhone = "0221 987654";
+
     private static readonly DateOnly DefaultStartedAt = new(2020, 11, 11);
 
     private readonly List<PersonIntent> _people = [];
     private readonly List<PersonContactIntent> _contacts = [];
     private readonly List<ContactChangeIntent> _contactChanges = [];
     private readonly List<MembershipIntent> _memberships = [];
+    private readonly List<AdmissionIntent> _admissions = [];
     private readonly List<MembershipPauseIntent> _pauses = [];
     private readonly List<FeeReductionIntent> _feeReductions = [];
     private readonly List<AccountIntent> _accounts = [];
+    private readonly List<MembershipApplicationIntent> _membershipApplications = [];
 
     internal IReadOnlyList<PersonIntent> People => _people;
 
@@ -22,11 +28,16 @@ public sealed class IdentitySeedBuilder
 
     internal IReadOnlyList<MembershipIntent> Memberships => _memberships;
 
+    internal IReadOnlyList<AdmissionIntent> Admissions => _admissions;
+
     internal IReadOnlyList<MembershipPauseIntent> Pauses => _pauses;
 
     internal IReadOnlyList<FeeReductionIntent> FeeReductions => _feeReductions;
 
     internal IReadOnlyList<AccountIntent> Accounts => _accounts;
+
+    internal IReadOnlyList<MembershipApplicationIntent> MembershipApplications =>
+        _membershipApplications;
 
     public IdentitySeedBuilder AddPerson(
         string alias,
@@ -96,6 +107,24 @@ public sealed class IdentitySeedBuilder
         return this;
     }
 
+    public IdentitySeedBuilder AddAdmission(
+        string membershipAlias,
+        string admittedByAlias,
+        DateTimeOffset admittedAt,
+        bool guardianConsentConfirmed = false
+    )
+    {
+        _admissions.Add(
+            new AdmissionIntent(
+                membershipAlias,
+                admittedByAlias,
+                admittedAt,
+                guardianConsentConfirmed
+            )
+        );
+        return this;
+    }
+
     public IdentitySeedBuilder AddMembershipPause(
         string alias,
         string membershipAlias,
@@ -119,6 +148,32 @@ public sealed class IdentitySeedBuilder
     {
         _feeReductions.Add(
             new FeeReductionIntent(alias, personAlias, basis, firstSessionYear, lastSessionYear)
+        );
+        return this;
+    }
+
+    public IdentitySeedBuilder AddMembershipApplication(
+        string alias,
+        DateOnly birthDate,
+        string firstName = DefaultApplicantFirstName,
+        string lastName = DefaultApplicantLastName,
+        string? email = null,
+        string? phone = DefaultApplicantPhone,
+        DateTimeOffset? confirmedAt = null,
+        bool unconfirmed = false
+    )
+    {
+        _membershipApplications.Add(
+            new MembershipApplicationIntent(
+                alias,
+                birthDate,
+                firstName,
+                lastName,
+                email,
+                phone,
+                confirmedAt,
+                unconfirmed
+            )
         );
         return this;
     }
@@ -155,6 +210,13 @@ public sealed class IdentitySeedBuilder
         DateOnly? EndedOn
     );
 
+    internal sealed record AdmissionIntent(
+        string MembershipAlias,
+        string AdmittedByAlias,
+        DateTimeOffset AdmittedAt,
+        bool GuardianConsentConfirmed
+    );
+
     internal sealed record MembershipPauseIntent(
         string Alias,
         string MembershipAlias,
@@ -171,4 +233,15 @@ public sealed class IdentitySeedBuilder
     );
 
     internal sealed record AccountIntent(string Alias, bool Disabled);
+
+    internal sealed record MembershipApplicationIntent(
+        string Alias,
+        DateOnly BirthDate,
+        string FirstName,
+        string LastName,
+        string? Email,
+        string? Phone,
+        DateTimeOffset? ConfirmedAt,
+        bool Unconfirmed
+    );
 }

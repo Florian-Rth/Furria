@@ -2,9 +2,11 @@ using Furria.Application.Authorization;
 using Furria.Application.Management;
 using Furria.Application.Registry;
 using Furria.Core.Club;
+using Furria.Core.MembershipApplications;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Identity;
+using Furria.Infrastructure.MembershipApplications;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Registry;
 using Microsoft.EntityFrameworkCore;
@@ -60,6 +62,28 @@ public sealed class ManagementService
                 : null,
             ClubRecord = managesClub ? await ClubRecordAsync(ct) : null,
             Accounts = managesPersons ? await AccountsAsync(ct) : null,
+            Applications = granted.Contains(FurriaPermissions.MembershipApplicationsDecide)
+                ? await ApplicationsAsync(today, ct)
+                : null,
+        };
+    }
+
+    private async Task<ManageHubApplications> ApplicationsAsync(
+        DateOnly today,
+        CancellationToken ct
+    )
+    {
+        var birthDates = await _dbContext
+            .UndecidedApplications()
+            .Select(application => application.BirthDate)
+            .ToListAsync(ct);
+
+        return new ManageHubApplications
+        {
+            UndecidedCount = birthDates.Count,
+            MinorCount = birthDates.Count(birthDate =>
+                ApplicantBirthDate.IsMinorOn(birthDate, today)
+            ),
         };
     }
 

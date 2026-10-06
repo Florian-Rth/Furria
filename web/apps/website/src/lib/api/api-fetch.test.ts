@@ -93,6 +93,24 @@ describe('apiFetch', () => {
     });
   });
 
+  it('carries the field failures the API names in its error body', async () => {
+    stubFetchResponse(422, JSON.stringify({ errors: { request: ['Zu jung.'] } }));
+
+    await expect(apiFetch('/api/greeting', { schema: GreetingSchema })).rejects.toMatchObject({
+      status: 422,
+      failures: [{ field: 'request', message: 'Zu jung.' }],
+    });
+  });
+
+  it('carries no field failures when the error body is not the API failure shape', async () => {
+    stubFetchResponse(502, '<html>Bad Gateway</html>');
+
+    await expect(apiFetch('/api/greeting', { schema: GreetingSchema })).rejects.toMatchObject({
+      status: 502,
+      failures: [],
+    });
+  });
+
   it('throws a RequestBlockedError when fetch itself rejects', async () => {
     vi.stubGlobal(
       'fetch',

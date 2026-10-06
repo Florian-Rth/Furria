@@ -33,6 +33,8 @@ public sealed record ManagedPersonDetails
 
     public required IReadOnlyList<MembershipDetails> Memberships { get; init; }
 
+    public required IReadOnlyList<MembershipAdmissionDetails> Admissions { get; init; }
+
     public required IReadOnlyList<PersonFeeReduction> FeeReductions { get; init; }
 
     public required IReadOnlyList<PersonGroup> Groups { get; init; }

@@ -18,6 +18,9 @@ public readonly record struct DatePeriod
     public bool IsRunningOn(DateOnly today) => Start <= today && (End is null || End >= today);
 
     [Pure]
+    public bool HasEndedBefore(DateOnly day) => End is { } end && end < day;
+
+    [Pure]
     public bool Overlaps(DatePeriod other) =>
         Start <= (other.End ?? DateOnly.MaxValue) && other.Start <= (End ?? DateOnly.MaxValue);
 }

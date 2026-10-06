@@ -16,7 +16,7 @@ public static class CredentialChangeNoticeMail
         new()
         {
             Template = MailTemplate.CredentialChangeNotice,
-            PersonId = content.PersonId,
+            Recipient = MailRecipient.Person(content.PersonId),
             To = content.To,
             Subject = Subject,
             TextBody = TextOf(content),

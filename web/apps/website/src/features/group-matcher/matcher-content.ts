@@ -51,6 +51,8 @@ export const matcherLabels = {
   errorMail: 'Schreib uns',
 } as const;
 
+export const matcherApplyHref = '/join/apply';
+
 export const matcherResultLabels = {
   rankingTitle: 'DAS PASST ZU DIR.',
   rankingCaveat:
@@ -67,7 +69,7 @@ export const matcherResultLabels = {
   emptyText:
     'Nach deinen Antworten bleibt keine unserer Gruppen übrig — meistens liegt das am Alter. Das heißt nicht, dass für dich kein Platz ist: schreib uns, dann suchen wir gemeinsam einen. Mitglied werden kannst du übrigens auch ohne Gruppe.',
   emptyMailCta: 'Schreib uns',
-  emptyApplyCta: 'Antrag ohne Gruppe stellen',
+  emptyApplyCta: 'Trotzdem Antrag stellen',
   unansweredTitle: 'NOCH KEINE ANTWORT.',
   unansweredText:
     'Beantworte mindestens eine Frage, dann rechnen wir. Übersprungene Fragen zählen nicht — das hier ist keine Prüfung, sondern nur eine Richtung.',
@@ -97,21 +99,6 @@ export const buildReasonAnswerLine = (reason: MatchReason, groupName: string): s
 
 export const buildExclusionReason = (questionPrompt: string, answerLabel: string): string =>
   `Deine Antwort „${answerLabel}“ auf „${questionPrompt}“ schließt diese Gruppe aus.`;
-
-export const joinGroupNames = (names: string[]): string => {
-  const last = names.at(-1);
-
-  if (last === undefined) {
-    return '';
-  }
-
-  const leading = names.slice(0, -1);
-
-  return leading.length === 0 ? last : `${leading.join(', ')} und ${last}`;
-};
-
-export const buildHandoffNote = (names: string[]): string =>
-  `Wir nehmen ${joinGroupNames(names)} als Interesse mit — im Antrag kannst du das ändern.`;
 
 export interface MatcherRecruitingBadge {
   label: string;

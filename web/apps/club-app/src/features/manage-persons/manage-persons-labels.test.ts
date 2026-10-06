@@ -3,6 +3,7 @@ import {
   findMembershipOfPause,
   isContactWithheld,
   splitPersonGroups,
+  toAdmissionMeta,
   toEndMembershipConsequence,
   toFeeReductionConsequence,
   toMembershipConsequence,
@@ -40,6 +41,7 @@ const membership = (overrides: Partial<PersonMembership>): PersonMembership => (
   isRunning: true,
   isFuture: false,
   pauses: [],
+  admission: null,
   ...overrides,
 });
 
@@ -186,6 +188,34 @@ describe('toOpenPause', () => {
         membership({ pauses: [{ pauseId: 1, firstSessionYear: 2012, lastSessionYear: 2013 }] }),
       ),
     ).toBeNull();
+  });
+});
+
+describe('toAdmissionMeta', () => {
+  it('says nothing about a membership entered by hand', () => {
+    expect(toAdmissionMeta(null)).toBeUndefined();
+  });
+
+  it('names who admitted her, when, and the guardian consent', () => {
+    expect(
+      toAdmissionMeta({
+        admittedAt: '2026-10-02T09:30:00+00:00',
+        admittedBy: { personId: 3, firstName: 'Anna', lastName: 'Kessler' },
+        guardianConsentConfirmed: true,
+      }),
+    ).toBe(
+      'Aufgenommen am 02.10.2026 von Anna Kessler · Einwilligung der gesetzlichen Vertretung bestätigt',
+    );
+  });
+
+  it('keeps the day when the admitter is gone', () => {
+    expect(
+      toAdmissionMeta({
+        admittedAt: '2026-10-02T09:30:00+00:00',
+        admittedBy: null,
+        guardianConsentConfirmed: false,
+      }),
+    ).toBe('Aufgenommen am 02.10.2026');
   });
 });
 

@@ -24,11 +24,16 @@ export const ApplyBirthDateField: FC<ApplyBirthDateFieldProps> = ({ today }) => 
     field.onChange(formatBirthDateValue(next));
   };
 
+  const handleAccept = (): void => {
+    field.onBlur();
+  };
+
   return (
     <DatePicker
       label={applyFieldLabels.birthDate}
       value={parseBirthDateValue(field.value)}
       onChange={handleChange}
+      onAccept={handleAccept}
       minDate={bounds.minDate}
       maxDate={bounds.maxDate}
       openTo="year"

@@ -14,7 +14,7 @@ public static class EmailConfirmationMail
         new()
         {
             Template = MailTemplate.EmailConfirmation,
-            PersonId = content.PersonId,
+            Recipient = MailRecipient.Person(content.PersonId),
             To = content.To,
             Subject = Subject,
             TextBody = TextOf(content),

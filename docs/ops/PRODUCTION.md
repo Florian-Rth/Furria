@@ -46,6 +46,12 @@ every variable. The ones that matter most:
   start unless the club app's host lies under the relying party. **Passkeys are bound to the
   domain forever** ([ADR-0020](../adr/0020-passkeys-belong-to-the-club-domain.md)): every passkey
   made before a domain change stops working after it.
+- **`WEBSITE_HOST`** — optional; the compose derives `Website__BaseUrl` (`https://<domain>`, or
+  `https://$WEBSITE_HOST`). Mails to people who are not members yet — a membership
+  application's confirmation — link to the website, not the club app.
+- **`ALTCHA_HMAC_KEY`** — signs the proof-of-work challenges of the website's membership
+  application (self-hosted Altcha, at least 32 characters). A change voids only the challenges
+  of the last 10 minutes.
 - **`EDGE_PROXY_ADDRESS`** — the API refuses to start in production without trusted proxies.
 - **`ANDROID_CERT_FINGERPRINTS`** — feeds both `assetlinks.json` files and the API's accepted
   passkey origins.
@@ -114,6 +120,22 @@ SMTP send and that commit, the row survives and the mail goes out again: a membe
 invitation, a reset link or a notice twice. Every link in them stays single-use, so a duplicate
 never grants more than the first mail did. Each SMTP exchange is capped at 30 s, which bounds how
 long a row stays locked.
+
+## Membership applications
+
+`POST /api/membership-applications` takes the website's form. It answers only to a solved
+Altcha challenge (`GET /api/membership-applications/challenge`, valid 10 minutes, each spendable
+once), within the signed-out per-IP limit and 5 applications per address in 15 minutes. Each
+application mails its sender a link to confirm it; an unconfirmed one is deleted 48 hours after
+it was sent, swept every 15 minutes. A confirmed application stays until it is decided. The
+trail:
+
+```bash
+docker compose logs api | grep -E 'Membership application|membership applications|Altcha'
+```
+
+Spent challenges and the rate limits live in memory: an API restart forgets them, so a
+challenge solved in the 10 minutes before a restart can be spent once more.
 
 ## Moving the live host onto the example compose
 

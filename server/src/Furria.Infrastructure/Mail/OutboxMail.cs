@@ -2,6 +2,8 @@ namespace Furria.Infrastructure.Mail;
 
 public sealed class OutboxMail
 {
+    public const int TemplateLength = 64;
+    public const int RecipientKindLength = 32;
     public const int AddressLength = 320;
     public const int SubjectLength = 200;
 
@@ -9,7 +11,9 @@ public sealed class OutboxMail
 
     public MailTemplate Template { get; set; }
 
-    public int PersonId { get; set; }
+    public MailRecipientKind RecipientKind { get; set; }
+
+    public int RecipientId { get; set; }
 
     public string To { get; set; } = "";
 

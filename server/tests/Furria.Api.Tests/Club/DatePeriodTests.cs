@@ -32,6 +32,24 @@ public sealed class DatePeriodTests
     }
 
     [Fact]
+    public void Should_HaveEndedBeforeToday_When_ThePeriodEndedYesterday()
+    {
+        Assert.True(Period(new DateOnly(2017, 9, 1), Today.AddDays(-1)).HasEndedBefore(Today));
+    }
+
+    [Fact]
+    public void Should_NotHaveEndedBeforeToday_When_ThePeriodEndsToday()
+    {
+        Assert.False(Period(new DateOnly(2017, 9, 1), Today).HasEndedBefore(Today));
+    }
+
+    [Fact]
+    public void Should_NotHaveEndedBeforeToday_When_ThePeriodIsOpen()
+    {
+        Assert.False(Period(new DateOnly(2017, 9, 1), null).HasEndedBefore(Today));
+    }
+
+    [Fact]
     public void Should_NotRun_When_ThePeriodStartsTomorrow()
     {
         Assert.False(Period(Today.AddDays(1), null).IsRunningOn(Today));

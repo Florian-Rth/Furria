@@ -8,4 +8,6 @@ public enum MailTemplate
     CredentialChangeNotice = 4,
     AccessRequest = 5,
     PasswordReset = 6,
+    MembershipApplicationConfirmation = 7,
+    MembershipApplicationArrival = 8,
 }

@@ -1,5 +1,6 @@
 using System.Net;
 using FastEndpoints;
+using Furria.Api.Endpoints.MembershipApplications;
 using Furria.Api.Endpoints.Start;
 using Furria.Api.Tests.Auth;
 using Furria.Api.Tests.Invitations;
@@ -268,6 +269,77 @@ public sealed class GetStartToDosTests
     }
 
     [Fact]
+    public async Task Should_CountWaitingApplications_When_TheViewerDecidesApplicationsAlone()
+    {
+        await OnTuesdayEveningAsync(
+            identity =>
+                identity
+                    .AddMembershipApplication("mia", Today.AddYears(-17))
+                    .AddMembershipApplication("nora", Today.AddYears(-40)),
+            async ctx =>
+            {
+                var toDos = ToDosOf(await StartOfAsync(ctx, "dana"));
+
+                Assert.Equal([ToDoKind.ApplicationWaiting], toDos.Select(toDo => toDo.Kind));
+                Assert.Equal(2, CountOf(toDos, ToDoKind.ApplicationWaiting));
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_LeaveOutAnApplication_When_ItIsNotYetConfirmed()
+    {
+        await OnTuesdayEveningAsync(
+            identity =>
+                identity
+                    .AddMembershipApplication("mia", Today.AddYears(-17))
+                    .AddMembershipApplication("olga", Today.AddYears(-30), unconfirmed: true),
+            async ctx =>
+            {
+                var toDos = ToDosOf(await StartOfAsync(ctx, "dana"));
+
+                Assert.Equal(1, CountOf(toDos, ToDoKind.ApplicationWaiting));
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_LeaveOutAnApplication_When_ItIsDeclined()
+    {
+        await OnTuesdayEveningAsync(
+            identity => identity.AddMembershipApplication("mia", Today.AddYears(-17)),
+            async ctx =>
+            {
+                var client = await ctx.Identity.ClientForAsync(
+                    "dana",
+                    TestContext.Current.CancellationToken
+                );
+                var before = ToDosOf(await StartOfAsync(client));
+
+                await DeclineAsync(client, ctx.Identity.MembershipApplications.IdOf("mia"));
+                var after = ToDosOf(await StartOfAsync(client));
+
+                Assert.Equal(1, CountOf(before, ToDoKind.ApplicationWaiting));
+                Assert.Null(CountOf(after, ToDoKind.ApplicationWaiting));
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_LeaveOutWaitingApplications_When_TheViewerDoesNotDecideThem()
+    {
+        await OnTuesdayEveningAsync(
+            identity => identity.AddMembershipApplication("mia", Today.AddYears(-17)),
+            async ctx =>
+            {
+                var toDos = ToDosOf(await StartOfAsync(ctx, "frank"));
+
+                Assert.Null(CountOf(toDos, ToDoKind.ApplicationWaiting));
+            }
+        );
+    }
+
+    [Fact]
     public async Task Should_ShowOnlyKeyWork_When_TheViewerManagesKeysAlone()
     {
         await OnTuesdayEveningAsync(
@@ -368,6 +440,21 @@ public sealed class GetStartToDosTests
         );
     }
 
+    private static async Task DeclineAsync(HttpClient client, int membershipApplicationId)
+    {
+        var response = await client.DELETEAsync<
+            DeleteMembershipApplicationById,
+            DeleteMembershipApplicationByIdRequest
+        >(
+            new DeleteMembershipApplicationByIdRequest
+            {
+                MembershipApplicationId = membershipApplicationId,
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+    }
+
     private static IReadOnlyList<StartToDoDto> ToDosOf(GetStartResponse start) =>
         start.Panels.SingleOrDefault(panel => panel.Kind == StartPanelKind.ToDos)?.ToDos ?? [];
 
@@ -416,6 +503,8 @@ public sealed class GetStartToDosTests
                                         .AddAccount("vera")
                                         .AddPerson("petra", "Petra", "Register")
                                         .AddAccount("petra")
+                                        .AddPerson("dana", "Dana", "Aufnahme")
+                                        .AddAccount("dana")
                                         .AddPerson("lena", "Lena", "Garde")
                                         .AddAccount("lena")
                                         .AddMembership("lena-member", "lena", JoinedIn2015)
@@ -444,6 +533,13 @@ public sealed class GetStartToDosTests
                                         "Zugänge",
                                         "vera",
                                         FurriaPermissions.AccountsManage
+                                    )
+                                    .AddRoleWithHolder(
+                                        "aufnahme",
+                                        "dana-aufnahme",
+                                        "Aufnahme",
+                                        "dana",
+                                        FurriaPermissions.MembershipApplicationsDecide
                                     )
                                     .AddRoleWithHolder(
                                         "register",

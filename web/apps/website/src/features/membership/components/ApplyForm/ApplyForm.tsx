@@ -14,9 +14,7 @@ import { ApplyErrorFallback } from './internal/ui/ApplyErrorFallback';
 import { ApplyFormField } from './internal/ui/ApplyFormField';
 import { ApplyFormLegend } from './internal/ui/ApplyFormLegend';
 import { ApplyFormNote } from './internal/ui/ApplyFormNote';
-import { ApplyFormStatus } from './internal/ui/ApplyFormStatus';
 import { ApplyHoneypotField } from './internal/ui/ApplyHoneypotField';
-import { ApplyInterestChoices } from './internal/ui/ApplyInterestChoices';
 import { ApplySubmitButton } from './internal/ui/ApplySubmitButton';
 import { ApplySubmitHint } from './internal/ui/ApplySubmitHint';
 
@@ -31,8 +29,6 @@ export const ApplyForm = Object.assign(ApplyFormRoot, {
   Field: ApplyFormField,
   BirthDate: ApplyBirthDateField,
   Note: ApplyFormNote,
-  Status: ApplyFormStatus,
-  Interests: ApplyInterestChoices,
   Consent: ApplyConsentCheckbox,
   ConsentLabel: ApplyConsentLabel,
   Honeypot: ApplyHoneypotField,

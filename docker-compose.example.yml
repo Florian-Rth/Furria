@@ -64,6 +64,12 @@ services:
       # the API refuses to start unless the club app's host lies under it.
       ClubApp__BaseUrl: https://${CLUB_APP_HOST:-app.${CLUB_DOMAIN:?set CLUB_DOMAIN in .env}}
       Passkeys__RelyingPartyId: ${CLUB_DOMAIN:?set CLUB_DOMAIN in .env}
+      # Links mailed to people who are not members yet (a membership application's confirmation)
+      # open the website on the club domain's apex.
+      Website__BaseUrl: https://${WEBSITE_HOST:-${CLUB_DOMAIN:?set CLUB_DOMAIN in .env}}
+      # Signs the proof-of-work challenges of the website's membership application (self-hosted
+      # Altcha) - at least 32 characters, the API refuses to start otherwise.
+      Altcha__HmacKey: ${ALTCHA_HMAC_KEY:?set ALTCHA_HMAC_KEY (>= 32 chars) in .env}
       # The same fingerprints the club-app's assetlinks.json names: each one's app may use passkeys.
       ClubApp__AndroidCertFingerprints: ${ANDROID_CERT_FINGERPRINTS:-}
       # Production refuses to start without trusted proxies.

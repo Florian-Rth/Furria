@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import type { ApplicantStanding, DerivedMembership } from './membership-derivation';
 import {
   ACTIVE_FEE_EUROS,
   calculateAge,
+  deriveApplicantStanding,
   deriveMembership,
   MAJORITY_AGE,
   parseBirthDate,
@@ -73,7 +75,6 @@ describe('deriveMembership', () => {
       age: 14,
       typeId: 'youth',
       feeEuros: YOUTH_FEE_EUROS,
-      requiresGuardian: true,
     });
   });
 
@@ -84,7 +85,6 @@ describe('deriveMembership', () => {
       age: 32,
       typeId: 'active',
       feeEuros: ACTIVE_FEE_EUROS,
-      requiresGuardian: false,
     });
   });
 
@@ -93,7 +93,6 @@ describe('deriveMembership', () => {
 
     expect(derived?.age).toBe(MAJORITY_AGE);
     expect(derived?.typeId).toBe('active');
-    expect(derived?.requiresGuardian).toBe(false);
   });
 
   it('is still youth the day before the eighteenth birthday', () => {
@@ -101,7 +100,6 @@ describe('deriveMembership', () => {
 
     expect(derived?.age).toBe(17);
     expect(derived?.typeId).toBe('youth');
-    expect(derived?.requiresGuardian).toBe(true);
   });
 
   it('has nothing to derive without a usable birth date', () => {
@@ -115,5 +113,22 @@ describe('deriveMembership', () => {
 
   it('refuses an implausibly old birth date', () => {
     expect(deriveMembership('1880-01-01', localDate('2026-07-30'))).toBeNull();
+  });
+});
+
+describe('deriveApplicantStanding', () => {
+  const child: DerivedMembership = { age: 14, typeId: 'youth', feeEuros: YOUTH_FEE_EUROS };
+  const teen: DerivedMembership = { age: 16, typeId: 'youth', feeEuros: YOUTH_FEE_EUROS };
+  const adult: DerivedMembership = { age: 19, typeId: 'active', feeEuros: ACTIVE_FEE_EUROS };
+
+  it.each<[string, DerivedMembership | null, number | null, ApplicantStanding]>([
+    ['nobody yet without a birth date', null, 16, 'pending'],
+    ['a child under the age of consent', child, 16, 'tooYoung'],
+    ['a minor who may apply herself', teen, 16, 'minor'],
+    ['an adult', adult, 16, 'adult'],
+    ['a child while the age of consent is unknown', child, null, 'minor'],
+    ['an adult under a raised age of consent', adult, 21, 'tooYoung'],
+  ])('ranks %s', (_case, derived, ageOfConsent, expected) => {
+    expect(deriveApplicantStanding(derived, ageOfConsent)).toBe(expected);
   });
 });

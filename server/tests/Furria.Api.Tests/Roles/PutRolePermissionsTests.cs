@@ -64,6 +64,26 @@ public sealed class PutRolePermissionsTests
     }
 
     [Fact]
+    public async Task Should_GrantDecidingApplications_When_AManagerSetsItsKey()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Roles(roles => roles.AddRole("aufnahme", "Aufnahme")),
+            ct
+        );
+        var roleId = ctx.Roles.Roles.IdOf("aufnahme");
+
+        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var response = await SetKeysAsync(client, roleId, "membership_applications.decide");
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx
+            .Expected.Role(roleId)
+            .ToGrantExactly(FurriaPermissions.MembershipApplicationsDecide)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_ClearEveryKey_When_TheNewSetIsEmpty()
     {
         var ct = TestContext.Current.CancellationToken;

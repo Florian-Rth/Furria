@@ -58,6 +58,12 @@ export const ManageAccountsPanelSchema = z.object({
 });
 export type ManageAccountsPanel = z.infer<typeof ManageAccountsPanelSchema>;
 
+export const ManageApplicationsPanelSchema = z.object({
+  undecidedCount: z.number().int(),
+  minorCount: z.number().int(),
+});
+export type ManageApplicationsPanel = z.infer<typeof ManageApplicationsPanelSchema>;
+
 export const InvitationRoundPreviewSchema = z.object({
   inviteCount: z.number().int(),
   remindCount: z.number().int(),
@@ -78,5 +84,6 @@ export const ManageHubSchema = z.object({
   venues: ManageVenuesPanelSchema.nullable(),
   keys: ManageKeysPanelSchema.nullable(),
   accounts: ManageAccountsPanelSchema.nullable(),
+  applications: ManageApplicationsPanelSchema.nullable(),
 });
 export type ManageHub = z.infer<typeof ManageHubSchema>;

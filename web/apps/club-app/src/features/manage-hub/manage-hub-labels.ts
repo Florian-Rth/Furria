@@ -12,6 +12,7 @@ export const MANAGE_RETRY_LABEL = 'Erneut laden';
 
 const EMPTY_STATUS = 'Noch leer';
 const ALL_RETURNED = 'Alle zurück';
+const NO_UNDECIDED_APPLICATION = 'Keine offenen Anträge';
 const SUMMARY_SEPARATOR = ' · ';
 
 export type ManageRowStatusTone = 'gold' | 'neutral';
@@ -65,6 +66,17 @@ const toKeyParts = (holdingCount: number, holderCount: number): string[] =>
     ? [`${holdingCount} ausgegeben`, `bei ${toCount(holderCount, 'Person', 'Personen')}`]
     : [ALL_RETURNED];
 
+const toApplicationParts = (undecidedCount: number, minorCount: number): string[] => {
+  if (undecidedCount === 0) {
+    return [NO_UNDECIDED_APPLICATION];
+  }
+
+  return minorCount > 0 ? [`${minorCount} minderjährig`] : [];
+};
+
+const toUndecided = (undecidedCount: number): string | null =>
+  undecidedCount > 0 ? `${undecidedCount} offen` : null;
+
 const toNameParts = (name: string | null): string[] => (name === null ? [] : [name]);
 
 const toMissingFactsLabel = (missingFactCount: number): string | null => {
@@ -86,6 +98,17 @@ const PANEL_FACTS: Record<ManagePanelId, ManageFactReader> = {
             toCount(hub.persons.memberCount, 'Mitglied', 'Mitglieder'),
           ],
           attention: null,
+        },
+  applications: ({ hub }) =>
+    hub.applications === null
+      ? null
+      : {
+          isEmpty: false,
+          summaryParts: toApplicationParts(
+            hub.applications.undecidedCount,
+            hub.applications.minorCount,
+          ),
+          attention: toUndecided(hub.applications.undecidedCount),
         },
   groups: ({ hub }) =>
     hub.groups === null

@@ -37,6 +37,7 @@ public sealed class GetPublicClub : EndpointWithoutRequest<GetPublicClubResponse
             FacebookUrl = club.FacebookUrl,
             MemberCount = club.MemberCount,
             GroupCount = club.GroupCount,
+            AgeOfConsent = club.AgeOfConsent,
             Session = ToDto(club.Session),
         };
 
@@ -66,6 +67,8 @@ public sealed record GetPublicClubResponse
     public required int MemberCount { get; init; }
 
     public required int GroupCount { get; init; }
+
+    public required int AgeOfConsent { get; init; }
 
     public required PublicClubSessionDto Session { get; init; }
 }

@@ -6,6 +6,7 @@ using Furria.Application.Registry;
 using Furria.Application.Results;
 using Furria.Core.Club;
 using Furria.Core.Identity;
+using Furria.Core.MembershipApplications;
 using Furria.Core.Text;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Identity;
@@ -215,7 +216,25 @@ public sealed class PersonService
                         FirstName = person.ContactChangedBy.FirstName,
                         LastName = person.ContactChangedBy.LastName,
                     },
-                }
+                },
+            person
+                .Memberships.Where(membership => membership.AdmittedAt != null)
+                .Select(membership => new MembershipAdmissionDetails
+                {
+                    MembershipId = membership.Id,
+                    AdmittedAt = membership.AdmittedAt!.Value,
+                    AdmittedBy =
+                        membership.AdmittedBy == null
+                            ? null
+                            : new PersonReference
+                            {
+                                PersonId = membership.AdmittedBy.Id,
+                                FirstName = membership.AdmittedBy.FirstName,
+                                LastName = membership.AdmittedBy.LastName,
+                            },
+                    GuardianConsentConfirmed = membership.GuardianConsentConfirmed,
+                })
+                .ToList()
         );
 
     private static readonly MemberContact WithheldContact = new()
@@ -469,6 +488,27 @@ public sealed class PersonService
         return Result.Success();
     }
 
+    public async Task<Result> FillGapsAsync(FillPersonGapsCommand command, CancellationToken ct)
+    {
+        var person = await _dbContext.People.SingleOrDefaultAsync(
+            row => row.Id == command.PersonId,
+            ct
+        );
+
+        if (person is null)
+            return Result.NotFound(UnknownPersonMessage);
+
+        person.BirthDate ??= command.BirthDate;
+        WriteContactDetails(
+            person,
+            RegistryGaps.Filled(ContactDetails.Of(person), ContactDetailsOf(command)),
+            command.ActorPersonId
+        );
+        await _dbContext.SaveChangesAsync(ct);
+
+        return Result.Success();
+    }
+
     public async Task<Result> UpdateOwnContactDetailsAsync(
         UpdateOwnContactDetailsCommand command,
         CancellationToken ct
@@ -613,6 +653,7 @@ public sealed class PersonService
             MembershipState = chain.State,
             MemberSince = chain.MemberSince,
             Memberships = chain.All,
+            Admissions = row.Admissions,
             FeeReductions = row.FeeReductions,
             Groups = row.Groups,
             Roles = row.Roles,
@@ -620,6 +661,16 @@ public sealed class PersonService
     }
 
     private static ContactDetails ContactDetailsOf(UpdatePersonCommand command) =>
+        new()
+        {
+            Email = command.Email,
+            Phone = command.Phone,
+            Street = command.Street,
+            Zip = command.Zip,
+            City = command.City,
+        };
+
+    private static ContactDetails ContactDetailsOf(FillPersonGapsCommand command) =>
         new()
         {
             Email = command.Email,
@@ -770,7 +821,8 @@ public sealed class PersonService
         IReadOnlyList<PersonFeeReduction> FeeReductions,
         IReadOnlyList<PersonGroup> Groups,
         IReadOnlyList<PersonRole> Roles,
-        ContactChangeDetails? ContactChange
+        ContactChangeDetails? ContactChange,
+        IReadOnlyList<MembershipAdmissionDetails> Admissions
     );
 
     private sealed record MemberCardRow(

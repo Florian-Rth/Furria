@@ -23,6 +23,8 @@ public sealed class TestIdentity
 
     public AliasRegistry<int> Accounts { get; }
 
+    public AliasRegistry<int> MembershipApplications { get; }
+
     public SeededAccount BootstrapAdmin { get; }
 
     internal TestIdentity(
@@ -41,6 +43,10 @@ public sealed class TestIdentity
         Pauses = new AliasRegistry<int>("MembershipPause", seeded.PauseIds);
         FeeReductions = new AliasRegistry<int>("FeeReduction", seeded.FeeReductionIds);
         Accounts = new AliasRegistry<int>("Account", seeded.AccountIds);
+        MembershipApplications = new AliasRegistry<int>(
+            "MembershipApplication",
+            seeded.MembershipApplicationIds
+        );
     }
 
     public string EmailOf(string alias)

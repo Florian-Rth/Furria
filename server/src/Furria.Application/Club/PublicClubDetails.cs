@@ -18,5 +18,7 @@ public sealed record PublicClubDetails
 
     public required int GroupCount { get; init; }
 
+    public required int AgeOfConsent { get; init; }
+
     public required PublicClubSession Session { get; init; }
 }

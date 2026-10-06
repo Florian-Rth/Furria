@@ -19,4 +19,6 @@ public sealed record ManageHubDetails
     public required ManageHubClubRecord? ClubRecord { get; init; }
 
     public required ManageHubAccounts? Accounts { get; init; }
+
+    public required ManageHubApplications? Applications { get; init; }
 }

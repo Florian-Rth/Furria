@@ -19,7 +19,8 @@ public sealed class MailOutbox
         new()
         {
             Template = mail.Template,
-            PersonId = mail.PersonId,
+            RecipientKind = mail.Recipient.Kind,
+            RecipientId = mail.Recipient.Id,
             To = mail.To,
             Subject = mail.Subject,
             TextBody = mail.TextBody,

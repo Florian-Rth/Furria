@@ -21,7 +21,7 @@ export const JOIN_STEPS: JoinStep[] = [
   {
     title: 'Antrag stellen',
     description:
-      'Ein Formular, zwei Minuten, online. Kein PDF zum Ausdrucken, keine Unterschrift per Post — und abgebucht wird dabei nichts.',
+      'Ein Formular, zwei Minuten, online — danach bestätigst du ihn mit einem Klick in der Mail. Kein PDF zum Ausdrucken, keine Unterschrift per Post, und abgebucht wird dabei nichts.',
   },
   {
     title: 'Aufnahme',

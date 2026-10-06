@@ -6,14 +6,12 @@ const active: DerivedMembership = {
   age: 32,
   typeId: 'active',
   feeEuros: 30,
-  requiresGuardian: false,
 };
 
 const youth: DerivedMembership = {
   age: 14,
   typeId: 'youth',
   feeEuros: 15,
-  requiresGuardian: true,
 };
 
 describe('buildApplySummaryRows', () => {

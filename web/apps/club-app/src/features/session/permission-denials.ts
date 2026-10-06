@@ -12,6 +12,8 @@ const DENIED_MESSAGES: Partial<Record<PermissionKey, string>> = {
   [PERMISSION_KEYS.boardManage]: 'Dir fehlt die Berechtigung für den Vorstand.',
   [PERMISSION_KEYS.calendarManageClub]: 'Dir fehlt die Berechtigung, Vereinstermine zu verwalten.',
   [PERMISSION_KEYS.accountsManage]: 'Dir fehlt die Berechtigung für die Zugänge.',
+  [PERMISSION_KEYS.membershipApplicationsDecide]:
+    'Dir fehlt die Berechtigung, über Beitrittsanträge zu entscheiden.',
 };
 
 const FALLBACK_MESSAGE = 'Dir fehlt die Berechtigung für diese Seite.';

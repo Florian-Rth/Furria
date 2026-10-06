@@ -3,99 +3,99 @@ import type { FormEvent } from 'react';
 import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
-import { RequestBlockedError } from '@/lib/api/errors';
+import { useClubAgeOfConsent } from '@/lib/public-club/use-club-age-of-consent';
 import { useClubEmail } from '@/lib/public-club/use-club-email';
-import { useSubmitMembershipApplicationMutation } from '../api';
+import { usePreparedAltchaProof, useSubmitMembershipApplicationMutation } from '../api';
+import type { ApplyFailure } from '../apply-failure';
+import { toApplyFailure } from '../apply-failure';
 import { buildFallbackMailHref } from '../apply-fallback';
-import { buildMembershipApplicationPayload } from '../apply-payload';
-import { selectGroupLabels, selectKnownGroupIds } from '../group-interests';
-import type { DerivedMembership } from '../membership-derivation';
-import { deriveMembership } from '../membership-derivation';
+import type { ApplicantStanding, DerivedMembership } from '../membership-derivation';
+import { deriveApplicantStanding, deriveMembership } from '../membership-derivation';
 import type { MembershipApplicationForm } from '../schemas';
 import { buildMembershipApplicationFormSchema, EMPTY_MEMBERSHIP_APPLICATION } from '../schemas';
-import { selectLoadedGroups, useGroupsSource } from './use-groups-source';
+
+export interface SubmittedApplication {
+  firstName: string;
+  email: string;
+}
 
 export interface ApplyFormState {
   form: UseFormReturn<MembershipApplicationForm>;
   today: Date;
   derived: DerivedMembership | null;
-  requiresGuardian: boolean;
+  standing: ApplicantStanding;
   submit: (event: FormEvent<HTMLFormElement>) => void;
   isSubmitting: boolean;
   submitError: string | null;
   fallbackMailHref: string | null;
-  submittedFirstName: string | null;
+  submitted: SubmittedApplication | null;
 }
 
-export const toApplyErrorMessage = (error: Error | null): string | null => {
-  if (error === null) {
-    return null;
-  }
-
-  if (error instanceof RequestBlockedError) {
-    return 'Die Anfrage hat den Server nicht erreicht. Falls du einen Werbeblocker oder ein Schutz-Add-on nutzt, erlaube diese Seite und versuch es noch einmal.';
-  }
-
-  return 'Wir konnten den Antrag gerade nicht entgegennehmen.';
+const markFieldFailures = (
+  form: UseFormReturn<MembershipApplicationForm>,
+  failure: ApplyFailure | null,
+): void => {
+  failure?.fields.forEach((field, index) => {
+    form.setError(
+      field.name,
+      { type: 'server', message: field.message },
+      { shouldFocus: index === 0 },
+    );
+  });
 };
 
-export const useApplyForm = (prefilledGroupInterests: number[]): ApplyFormState => {
+export const useApplyForm = (): ApplyFormState => {
   const [today] = useState(() => new Date());
-  const [submittedFirstName, setSubmittedFirstName] = useState<string | null>(null);
+  const [submitted, setSubmitted] = useState<SubmittedApplication | null>(null);
+  const ageOfConsent = useClubAgeOfConsent();
+  const clubEmail = useClubEmail();
   const mutation = useSubmitMembershipApplicationMutation();
-  const groupsSource = useGroupsSource();
-  const loadedGroups = selectLoadedGroups(groupsSource);
 
   const form = useForm<MembershipApplicationForm>({
     mode: 'onTouched',
-    resolver: zodResolver(buildMembershipApplicationFormSchema(today)),
-    defaultValues: { ...EMPTY_MEMBERSHIP_APPLICATION, groupInterests: prefilledGroupInterests },
+    resolver: zodResolver(buildMembershipApplicationFormSchema(today, ageOfConsent)),
+    defaultValues: EMPTY_MEMBERSHIP_APPLICATION,
   });
 
+  usePreparedAltchaProof(form.formState.isDirty && !mutation.isPending && submitted === null);
+
   const derived = deriveMembership(form.watch('birthDate'), today);
-  const requiresGuardian = derived?.requiresGuardian === true;
 
   const handleFormSubmit = form.handleSubmit((values) => {
+    const application: SubmittedApplication = { firstName: values.firstName, email: values.email };
+
     if (values.honeypot.length > 0) {
-      setSubmittedFirstName(values.firstName);
+      setSubmitted(application);
       return;
     }
 
-    const groupInterests = selectKnownGroupIds(loadedGroups, values.groupInterests);
-
-    mutation.mutate(
-      buildMembershipApplicationPayload({ ...values, groupInterests }, requiresGuardian),
-      {
-        onSuccess: () => {
-          setSubmittedFirstName(values.firstName);
-        },
+    mutation.mutate(values, {
+      onSuccess: () => {
+        setSubmitted(application);
       },
-    );
+      onError: (error) => {
+        markFieldFailures(form, toApplyFailure(error));
+      },
+    });
   });
 
-  const clubEmail = useClubEmail();
-  const submitError = toApplyErrorMessage(mutation.error);
-  const values = form.getValues();
+  const failure = toApplyFailure(mutation.error);
   const fallbackMailHref =
-    submitError === null || clubEmail === null
-      ? null
-      : buildFallbackMailHref(
-          clubEmail,
-          values,
-          selectGroupLabels(loadedGroups, values.groupInterests),
-        );
+    failure?.offersMail === true && clubEmail !== null
+      ? buildFallbackMailHref(clubEmail, form.getValues())
+      : null;
 
   return {
     form,
     today,
     derived,
-    requiresGuardian,
+    standing: deriveApplicantStanding(derived, ageOfConsent),
     submit: (event) => {
       void handleFormSubmit(event);
     },
     isSubmitting: mutation.isPending,
-    submitError,
+    submitError: failure?.notice ?? null,
     fallbackMailHref,
-    submittedFirstName,
+    submitted,
   };
 };
