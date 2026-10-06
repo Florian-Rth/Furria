@@ -19,18 +19,21 @@ public sealed class ManagementService
     private readonly PermissionAuthorizer _authorizer;
     private readonly TimeProvider _timeProvider;
     private readonly ClubRecordService _clubRecordService;
+    private readonly ToDoService _toDoService;
 
     public ManagementService(
         AppDbContext dbContext,
         PermissionAuthorizer authorizer,
         TimeProvider timeProvider,
-        ClubRecordService clubRecordService
+        ClubRecordService clubRecordService,
+        ToDoService toDoService
     )
     {
         _dbContext = dbContext;
         _authorizer = authorizer;
         _timeProvider = timeProvider;
         _clubRecordService = clubRecordService;
+        _toDoService = toDoService;
     }
 
     public async Task<ManageHubDetails> HubAsync(int accountId, CancellationToken ct)
@@ -65,6 +68,7 @@ public sealed class ManagementService
             Applications = granted.Contains(FurriaPermissions.MembershipApplicationsDecide)
                 ? await ApplicationsAsync(today, ct)
                 : null,
+            ToDos = await _toDoService.ForAsync(accountId, ct),
         };
     }
 

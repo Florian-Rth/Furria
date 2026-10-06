@@ -3,7 +3,9 @@ using FastEndpoints;
 using Furria.Api.Endpoints.Management;
 using Furria.Api.Endpoints.Persons;
 using Furria.Api.Tests.Auth;
+using Furria.Api.Tests.ToDos;
 using Furria.Application.Authorization;
+using Furria.Application.Management;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -719,6 +721,153 @@ public sealed class GetManageHubTests
             }
         );
     }
+
+    [Fact]
+    public async Task Should_ListHerToDosInKindOrder_When_TheHubIsRead()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        var result = await ReadTheHubAsAdminAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddMembershipApplication("mia", _fixture.Today.AddYears(-30))
+                        .AddEligiblePerson(
+                            "anna",
+                            "Anna",
+                            InvitationSteps.UniqueContactEmail("anna"),
+                            _fixture.Today
+                        )
+                ),
+            ct
+        );
+
+        Assert.Equal(
+            [ToDoKind.NeverInvited, ToDoKind.ClubRecordGap, ToDoKind.ApplicationWaiting],
+            result.ToDos.Select(toDo => toDo.Kind)
+        );
+        Assert.Equal([1, 4, 1], result.ToDos.Select(toDo => toDo.Count));
+        Assert.All(result.ToDos, toDo => Assert.False(toDo.IsSeen));
+        Assert.All(result.ToDos, toDo => Assert.Equal(0, toDo.NewCount));
+        Assert.All(result.ToDos, toDo => Assert.NotEmpty(toDo.Version));
+    }
+
+    [Fact]
+    public async Task Should_ListNoToDo_When_TheCallerOnlyHoldsGroupsManage()
+    {
+        var (response, result) = await AskAsHolderOfAsync(FurriaPermissions.GroupsManage);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Empty(result.ToDos);
+    }
+
+    [Fact]
+    public async Task Should_CountTheNewItem_When_AKeyJoinsASeenToDo()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildAKeyToTakeBackAsync(ct);
+        var keyWarden = await ctx.Identity.ClientForAsync("maik", ct);
+        await ToDoSteps.MarkShownAsSeenAsync(keyWarden, ToDoKind.KeyToTakeBack);
+
+        await ToDoSteps.HandOutKeyAsync(
+            keyWarden,
+            ctx.Club.Venues.IdOf("vereinsheim"),
+            ctx.Identity.People.IdOf("hanna"),
+            JoinedIn2017
+        );
+
+        var toDo = await ToDoSteps.ShownToDoOfAsync(keyWarden, ToDoKind.KeyToTakeBack);
+        Assert.True(toDo.IsSeen);
+        Assert.Equal(1, toDo.NewCount);
+        Assert.Equal(2, toDo.Count);
+    }
+
+    [Fact]
+    public async Task Should_KeepTheMark_When_AnItemBehindItResolves()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildAKeyToTakeBackAsync(ct);
+        var keyWarden = await ctx.Identity.ClientForAsync("maik", ct);
+        await ToDoSteps.HandOutKeyAsync(
+            keyWarden,
+            ctx.Club.Venues.IdOf("vereinsheim"),
+            ctx.Identity.People.IdOf("hanna"),
+            JoinedIn2017
+        );
+        await ToDoSteps.MarkShownAsSeenAsync(keyWarden, ToDoKind.KeyToTakeBack);
+
+        await ToDoSteps.TakeBackKeyAsync(
+            keyWarden,
+            ctx.Club.KeyHoldings.IdOf("hanna-sporthalle"),
+            _fixture.Today
+        );
+
+        var toDo = await ToDoSteps.ShownToDoOfAsync(keyWarden, ToDoKind.KeyToTakeBack);
+        Assert.True(toDo.IsSeen);
+        Assert.Equal(0, toDo.NewCount);
+        Assert.Equal(1, toDo.Count);
+    }
+
+    [Fact]
+    public async Task Should_SpendTheMark_When_NoneOfItsItemsRemain()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildAKeyToTakeBackAsync(ct);
+        var keyWarden = await ctx.Identity.ClientForAsync("maik", ct);
+        await ToDoSteps.MarkShownAsSeenAsync(keyWarden, ToDoKind.KeyToTakeBack);
+        await ToDoSteps.TakeBackKeyAsync(
+            keyWarden,
+            ctx.Club.KeyHoldings.IdOf("hanna-sporthalle"),
+            _fixture.Today
+        );
+        var resolved = await ToDoSteps.ToDoOfAsync(keyWarden, ToDoKind.KeyToTakeBack);
+
+        await ToDoSteps.HandOutKeyAsync(
+            keyWarden,
+            ctx.Club.Venues.IdOf("vereinsheim"),
+            ctx.Identity.People.IdOf("hanna"),
+            JoinedIn2017
+        );
+
+        var toDo = await ToDoSteps.ShownToDoOfAsync(keyWarden, ToDoKind.KeyToTakeBack);
+        Assert.Null(resolved);
+        Assert.False(toDo.IsSeen);
+        Assert.Equal(0, toDo.NewCount);
+        Assert.Equal(1, toDo.Count);
+    }
+
+    private Task<SeededContext> BuildAKeyToTakeBackAsync(CancellationToken ct) =>
+        _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddPerson("maik", "Maik", "Schlüsselwart")
+                            .AddAccount("maik")
+                            .AddPerson("hanna", "Hanna", "Ausgetreten")
+                            .AddMembership(
+                                "hanna-member",
+                                "hanna",
+                                JoinedIn2017,
+                                _fixture.Today.AddDays(-1)
+                            )
+                    )
+                    .Roles(roles =>
+                        roles.AddRoleWithHolder(
+                            "schluesselwart",
+                            "maik-schluesselwart",
+                            "Schlüsselwart",
+                            "maik",
+                            FurriaPermissions.KeyHoldingsManage
+                        )
+                    )
+                    .Club(club =>
+                        club.AddVenue("sporthalle", "Sporthalle Am Ring")
+                            .AddVenue("vereinsheim", "Vereinsheim")
+                            .AddKeyHolding("hanna-sporthalle", "sporthalle", "hanna", JoinedIn2017)
+                    ),
+            ct
+        );
 
     private Task<SeededContext> BuildEveryAccessCaseAsync(CancellationToken ct)
     {

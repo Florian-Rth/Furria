@@ -1,12 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import type { StartAnnouncement, StartEntry, StartMine, StartToDo } from './schemas';
+import type { StartAnnouncement, StartEntry, StartMine } from './schemas';
 import type { MineLineContext } from './start-lines';
 import {
   formatDayMonth,
   formatFullDay,
   formatPastDay,
   isRoundYears,
-  TO_DO_LABELS,
   toAnnouncementByline,
   toAnnouncementLine,
   toAnnouncementLineState,
@@ -16,7 +15,6 @@ import {
   toEntryTrailing,
   toGroupMomentLine,
   toMineLine,
-  toToDoLabel,
 } from './start-lines';
 
 const mine = (overrides: Partial<StartMine>): StartMine => ({
@@ -289,17 +287,6 @@ describe('toAnnouncementLine', () => {
     expect(line.initials).toBe('KA');
     expect(line.portrait).toBeUndefined();
     expect(line.sheetId).toBe('start-announcements-12');
-  });
-});
-
-describe('toToDoLabel', () => {
-  it.each<{ toDo: StartToDo; form: 'one' | 'other' }>([
-    { toDo: { kind: 'reminderDue', count: 1 }, form: 'one' },
-    { toDo: { kind: 'reminderDue', count: 12 }, form: 'other' },
-    { toDo: { kind: 'birthDateUnknown', count: 2 }, form: 'other' },
-    { toDo: { kind: 'clubRecordGap', count: 1 }, form: 'one' },
-  ])('uses the $form form for $toDo.count $toDo.kind', ({ toDo, form }) => {
-    expect(toToDoLabel(toDo)).toBe(TO_DO_LABELS[toDo.kind][form]);
   });
 });
 

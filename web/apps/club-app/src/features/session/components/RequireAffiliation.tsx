@@ -1,13 +1,19 @@
 import type { FC, PropsWithChildren } from 'react';
 import { usePermissions } from '../hooks/use-permissions';
+import type { ScreenFrame } from '../screen-frame';
 import { NotAffiliatedScreen } from './NotAffiliatedScreen';
 
-export const RequireAffiliation: FC<PropsWithChildren> = ({ children }) => {
+type RequireAffiliationProps = PropsWithChildren<ScreenFrame>;
+
+export const RequireAffiliation: FC<RequireAffiliationProps> = ({ section, origin, children }) => {
   const { isAffiliated, isUndecided } = usePermissions();
 
   if (isUndecided || isAffiliated) {
     return children;
   }
+  if (section === undefined) {
+    return <NotAffiliatedScreen origin={origin} />;
+  }
 
-  return <NotAffiliatedScreen />;
+  return <NotAffiliatedScreen section={section} />;
 };

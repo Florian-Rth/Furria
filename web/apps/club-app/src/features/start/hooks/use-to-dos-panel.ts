@@ -1,8 +1,7 @@
 import type { KkLinkSearchValues } from '@furria/ui';
+import { TO_DO_LINKS, toToDoLabel } from '@/features/to-dos';
 import type { StartPanelOf } from '../start-board';
-import { toToDoLabel } from '../start-lines';
 import { itemKeyOf } from '../start-visit';
-import { TO_DO_LINKS } from '../todo-links';
 import type { StartBoard } from './use-start-view';
 
 export interface ToDoCell {

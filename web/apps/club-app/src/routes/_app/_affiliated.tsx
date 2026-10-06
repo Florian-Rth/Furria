@@ -1,9 +1,9 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { RequireAffiliation } from '@/features/session';
+import { CLUB_ORIGIN, RequireAffiliation } from '@/features/session';
 
 const AffiliatedLayout: FC = () => (
-  <RequireAffiliation>
+  <RequireAffiliation origin={CLUB_ORIGIN}>
     <Outlet />
   </RequireAffiliation>
 );

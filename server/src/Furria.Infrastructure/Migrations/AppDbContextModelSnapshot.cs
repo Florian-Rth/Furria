@@ -1964,6 +1964,47 @@ namespace Furria.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Furria.Infrastructure.Management.ToDoMark", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AccountId")
+                        .HasColumnType("integer")
+                        .HasColumnName("account_id");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("kind");
+
+                    b.Property<DateTimeOffset>("SeenAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("seen_at");
+
+                    b.PrimitiveCollection<string[]>("SeenSubjects")
+                        .IsRequired()
+                        .HasColumnType("text[]")
+                        .HasColumnName("seen_subjects");
+
+                    b.HasKey("Id")
+                        .HasName("pk_to_do_mark");
+
+                    b.HasIndex("AccountId", "Kind")
+                        .IsUnique()
+                        .HasDatabaseName("ix_to_do_mark_account_id_kind");
+
+                    b.ToTable("to_do_mark", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_to_do_mark_kind", "kind IN ('NeverInvited', 'ReminderDue', 'InPersonOnly', 'BirthDateUnknown', 'KeyToTakeBack', 'ClubRecordGap', 'ApplicationWaiting')");
+                        });
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
                 {
                     b.Property<int>("Id")
@@ -2469,6 +2510,18 @@ namespace Furria.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_refresh_token_account_account_id");
+
+                    b.Navigation("Account");
+                });
+
+            modelBuilder.Entity("Furria.Infrastructure.Management.ToDoMark", b =>
+                {
+                    b.HasOne("Furria.Infrastructure.Identity.Account", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_to_do_mark_account_account_id");
 
                     b.Navigation("Account");
                 });

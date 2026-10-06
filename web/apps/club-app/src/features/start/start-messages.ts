@@ -3,7 +3,7 @@ import { toQueryErrorMessage } from '@/lib/query-error';
 
 const START_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
   unreachable: 'Keine Verbindung zum Server. Prüfe deine Internetverbindung.',
-  unexpected: 'Deine Übersicht konnte nicht geladen werden.',
+  unexpected: 'Start konnte nicht geladen werden.',
   rejected: 'Der Server hat die Anfrage abgelehnt.',
 };
 

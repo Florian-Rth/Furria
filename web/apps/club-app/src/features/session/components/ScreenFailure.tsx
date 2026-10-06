@@ -2,7 +2,7 @@ import { KkButton, KkErrorState, KkScreen } from '@furria/ui';
 import type { ErrorComponentProps } from '@tanstack/react-router';
 import { useRouter } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { OVERVIEW_ORIGIN } from '../app-sections';
+import { START_ORIGIN } from '../app-sections';
 import {
   BOOT_RETRY_LABEL,
   SCREEN_FAILURE_BAR_TITLE,
@@ -25,7 +25,7 @@ export const ScreenFailure: FC<ErrorComponentProps> = ({ reset }) => {
   );
 
   return (
-    <KkScreen kind="fullscreen" title={SCREEN_FAILURE_BAR_TITLE} origin={OVERVIEW_ORIGIN}>
+    <KkScreen kind="fullscreen" title={SCREEN_FAILURE_BAR_TITLE} origin={START_ORIGIN}>
       <KkErrorState
         title={SCREEN_FAILURE_TITLE}
         description={SCREEN_FAILURE_DESCRIPTION}

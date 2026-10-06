@@ -92,6 +92,7 @@ export type {
 export { KkNoticeProvider, useKkNotice } from './KkNotice/KkNotice';
 export { KkPageWatermark } from './KkPageWatermark';
 export { KkPanel } from './KkPanel';
+export { KkPanelFold } from './KkPanelFold/KkPanelFold';
 export { KkPanelHeader } from './KkPanelHeader';
 export { KkPanelSection } from './KkPanelSection';
 export { KkPanelStack } from './KkPanelStack';

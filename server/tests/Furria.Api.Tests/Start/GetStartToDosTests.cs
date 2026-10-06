@@ -4,6 +4,7 @@ using Furria.Api.Endpoints.MembershipApplications;
 using Furria.Api.Endpoints.Start;
 using Furria.Api.Tests.Auth;
 using Furria.Api.Tests.Invitations;
+using Furria.Api.Tests.ToDos;
 using Furria.Application.Authorization;
 using Furria.Application.Management;
 using Furria.Application.Start;
@@ -417,6 +418,84 @@ public sealed class GetStartToDosTests
                 Assert.DoesNotContain(start.Panels, panel => panel.Kind == StartPanelKind.ToDos);
             },
             club => club.AddKeyHolding("hanna-sporthalle", "sporthalle", "hanna", JoinedIn2015)
+        );
+    }
+
+    [Fact]
+    public async Task Should_LeaveOutASeenToDo_When_NothingJoinedIt()
+    {
+        await OnTuesdayEveningAsync(
+            identity =>
+                identity
+                    .AddPerson("hanna", "Hanna", "Ausgetreten")
+                    .AddMembership("hanna-member", "hanna", JoinedIn2015, Yesterday),
+            async ctx =>
+            {
+                var keyWarden = await ctx.Identity.ClientForAsync(
+                    "maik",
+                    TestContext.Current.CancellationToken
+                );
+                await ToDoSteps.MarkShownAsSeenAsync(keyWarden, ToDoKind.KeyToTakeBack);
+
+                var start = await StartOfAsync(keyWarden);
+
+                Assert.DoesNotContain(start.Panels, panel => panel.Kind == StartPanelKind.ToDos);
+            },
+            club => club.AddKeyHolding("hanna-sporthalle", "sporthalle", "hanna", JoinedIn2015)
+        );
+    }
+
+    [Fact]
+    public async Task Should_BringASeenToDoBack_When_SomethingNewJoinsIt()
+    {
+        await OnTuesdayEveningAsync(
+            identity =>
+                identity
+                    .AddPerson("hanna", "Hanna", "Ausgetreten")
+                    .AddMembership("hanna-member", "hanna", JoinedIn2015, Yesterday),
+            async ctx =>
+            {
+                var keyWarden = await ctx.Identity.ClientForAsync(
+                    "maik",
+                    TestContext.Current.CancellationToken
+                );
+                await ToDoSteps.MarkShownAsSeenAsync(keyWarden, ToDoKind.KeyToTakeBack);
+                await ToDoSteps.HandOutKeyAsync(
+                    keyWarden,
+                    ctx.Club.Venues.IdOf("vereinsheim"),
+                    ctx.Identity.People.IdOf("hanna"),
+                    JoinedIn2015
+                );
+
+                var toDos = ToDosOf(await StartOfAsync(keyWarden));
+
+                Assert.Equal(2, CountOf(toDos, ToDoKind.KeyToTakeBack));
+            },
+            club =>
+                club.AddVenue("vereinsheim", "Vereinsheim")
+                    .AddKeyHolding("hanna-sporthalle", "sporthalle", "hanna", JoinedIn2015)
+        );
+    }
+
+    [Fact]
+    public async Task Should_KeepOtherViewersToDo_When_OneViewerMarksItSeen()
+    {
+        await OnTuesdayEveningAsync(
+            identity => identity.AddMembershipApplication("mia", Today.AddYears(-17)),
+            async ctx =>
+            {
+                var ct = TestContext.Current.CancellationToken;
+                var decider = await ctx.Identity.ClientForAsync("dana", ct);
+                await ToDoSteps.MarkShownAsSeenAsync(decider, ToDoKind.ApplicationWaiting);
+
+                var mine = ToDosOf(await StartOfAsync(decider));
+                var theAdmins = ToDosOf(
+                    await StartOfAsync(await ctx.Identity.BootstrapAdminClientAsync(ct))
+                );
+
+                Assert.Null(CountOf(mine, ToDoKind.ApplicationWaiting));
+                Assert.Equal(1, CountOf(theAdmins, ToDoKind.ApplicationWaiting));
+            }
         );
     }
 

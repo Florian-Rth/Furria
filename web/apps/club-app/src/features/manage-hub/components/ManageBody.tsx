@@ -11,12 +11,14 @@ import { ManageAccessPanel } from './ManageAccessPanel';
 import { ManageBank } from './ManageBank';
 import { ManageError } from './ManageError';
 import { ManageSkeleton } from './ManageSkeleton';
+import { ManageToDosPanel } from './ManageToDosPanel';
 
 const BANK_SPACING = { xs: 3.5, desktop: 3 };
 const BANK_SIZE = { xs: 12, desktop: 4 };
 const CELL_SX = { minWidth: 0 } as const;
 const ACCESS_BANK_ID = 'belonging';
 const ACCESS_CELL_KEY = 'accounts';
+const TO_DOS_CELL_KEY = 'to-dos';
 
 export const ManageBody: FC = () => {
   const manageHub = useManageHubQuery();
@@ -30,7 +32,13 @@ export const ManageBody: FC = () => {
   if (manageHub.data !== undefined) {
     const rows = toManageRows(manageHub.data, sessionLabel);
     const banks = toManageBanks(rows);
-    const { accounts } = manageHub.data;
+    const { accounts, toDos } = manageHub.data;
+    const toDosCell =
+      toDos.length === 0 ? null : (
+        <Grid key={TO_DOS_CELL_KEY} size={BANK_SIZE} sx={CELL_SX}>
+          <ManageToDosPanel toDos={toDos} />
+        </Grid>
+      );
     const accessCell =
       accounts === null ? null : (
         <Grid key={ACCESS_CELL_KEY} size={BANK_SIZE} sx={CELL_SX}>
@@ -53,6 +61,7 @@ export const ManageBody: FC = () => {
       <KkPanelStack>
         {emptyNote}
         <Grid container spacing={BANK_SPACING} sx={CELL_SX}>
+          {toDosCell}
           {bankCells}
         </Grid>
         <LabEntryRow />

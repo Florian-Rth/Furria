@@ -15,8 +15,6 @@ import type {
   StartGroupMoment,
   StartMine,
   StartMineKind,
-  StartToDo,
-  ToDoKind,
 } from './schemas';
 import { toEntryFacets, toEntryTick, toFacetText } from './start-labels';
 import { itemKeyOf } from './start-visit';
@@ -64,11 +62,6 @@ export interface AnnouncementLineView {
   sheetId: string;
 }
 
-export interface CountedLabel {
-  one: string;
-  other: string;
-}
-
 export type EntryTrailing =
   | { kind: 'ring' }
   | { kind: 'mark'; answer: AttendanceAnswer }
@@ -99,16 +92,6 @@ const PROFILE_TARGET: StartLineTarget = {
 };
 const RING: EntryTrailing = { kind: 'ring' };
 const NO_TRAILING: EntryTrailing = { kind: 'none' };
-
-export const TO_DO_LABELS: Record<ToDoKind, CountedLabel> = {
-  neverInvited: { one: 'nie eingeladen', other: 'nie eingeladen' },
-  reminderDue: { one: 'Erinnerung fällig', other: 'Erinnerungen fällig' },
-  inPersonOnly: { one: 'nur vor Ort einladbar', other: 'nur vor Ort einladbar' },
-  birthDateUnknown: { one: 'Geburtsdatum fehlt', other: 'Geburtsdaten fehlen' },
-  keyToTakeBack: { one: 'Schlüssel zurückholen', other: 'Schlüssel zurückholen' },
-  clubRecordGap: { one: 'Lücke in Vereinsdaten', other: 'Lücken in Vereinsdaten' },
-  applicationWaiting: { one: 'Beitrittsantrag offen', other: 'Beitrittsanträge offen' },
-};
 
 const isoPartsOf = (isoDay: string): [number, number, number] => [
   Number(isoDay.slice(0, ISO_YEAR_END)),
@@ -324,12 +307,6 @@ export const toAnnouncementLine = (
     accessibleName: [announcement.title, day, byline, ...office].join(NAME_SEPARATOR),
     sheetId: toPeekId('start-announcements', announcement.announcementId),
   };
-};
-
-export const toToDoLabel = (toDo: StartToDo): string => {
-  const label = TO_DO_LABELS[toDo.kind];
-
-  return toDo.count === SINGLE ? label.one : label.other;
 };
 
 export const toFootLabel = (hidden: number): string => `+${hidden} weitere`;

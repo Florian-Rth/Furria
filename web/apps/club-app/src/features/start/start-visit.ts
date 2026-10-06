@@ -1,10 +1,10 @@
+import type { ToDoKind } from '@/features/to-dos';
 import type {
   Start,
   StartGroupMomentKind,
   StartMineKind,
   StartPanel,
   StartPanelKind,
-  ToDoKind,
 } from './schemas';
 
 export type StartItemRef =

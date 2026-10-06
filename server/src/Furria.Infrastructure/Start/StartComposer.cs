@@ -246,16 +246,20 @@ public static class StartComposer
             );
 
     [Pure]
-    private static BandedPanel? ToDosPanelOf(IReadOnlyList<ToDoSummary> toDos) =>
-        toDos.Count == 0
+    private static BandedPanel? ToDosPanelOf(IReadOnlyList<ToDoSummary> toDos)
+    {
+        var waiting = toDos.Where(toDo => !toDo.IsQuiet).OrderBy(toDo => toDo.Kind).ToList();
+
+        return waiting.Count == 0
             ? null
             : new BandedPanel(
-                PanelOf(StartPanelKind.ToDos, toDos.Count) with
+                PanelOf(StartPanelKind.ToDos, waiting.Count) with
                 {
-                    ToDos = [.. toDos.OrderBy(toDo => toDo.Kind)],
+                    ToDos = waiting,
                 },
                 StartBand.Work
             );
+    }
 
     [Pure]
     private static BandedPanel? GroupsPanelOf(IReadOnlyList<StartGroupMoment> groupMoments) =>
