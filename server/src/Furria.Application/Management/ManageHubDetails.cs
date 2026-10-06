@@ -21,4 +21,6 @@ public sealed record ManageHubDetails
     public required ManageHubAccounts? Accounts { get; init; }
 
     public required ManageHubApplications? Applications { get; init; }
+
+    public required IReadOnlyList<ToDoSummary> ToDos { get; init; }
 }

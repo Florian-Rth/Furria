@@ -57,6 +57,7 @@ public sealed class GetManageHub : EndpointWithoutRequest<GetManageHubResponse>
             ClubRecord = hub.ClubRecord is null ? null : ToDto(hub.ClubRecord),
             Accounts = hub.Accounts is null ? null : ToDto(hub.Accounts),
             Applications = hub.Applications is null ? null : ToDto(hub.Applications),
+            ToDos = [.. hub.ToDos.Select(ToDto)],
         };
 
     private static ManageHubPersonsDto ToDto(ManageHubPersons persons) =>
@@ -113,6 +114,16 @@ public sealed class GetManageHub : EndpointWithoutRequest<GetManageHubResponse>
             UndecidedCount = applications.UndecidedCount,
             MinorCount = applications.MinorCount,
         };
+
+    private static ManageHubToDoDto ToDto(ToDoSummary toDo) =>
+        new()
+        {
+            Kind = toDo.Kind,
+            Count = toDo.Count,
+            IsSeen = toDo.IsSeen,
+            NewCount = toDo.NewCount,
+            Version = toDo.Version,
+        };
 }
 
 public sealed record GetManageHubResponse
@@ -136,6 +147,8 @@ public sealed record GetManageHubResponse
     public required ManageHubAccountsDto? Accounts { get; init; }
 
     public required ManageHubApplicationsDto? Applications { get; init; }
+
+    public required IReadOnlyList<ManageHubToDoDto> ToDos { get; init; }
 }
 
 public sealed record ManageHubPersonsDto
@@ -216,4 +229,17 @@ public sealed record ManageHubApplicationsDto
     public required int UndecidedCount { get; init; }
 
     public required int MinorCount { get; init; }
+}
+
+public sealed record ManageHubToDoDto
+{
+    public required ToDoKind Kind { get; init; }
+
+    public required int Count { get; init; }
+
+    public required bool IsSeen { get; init; }
+
+    public required int NewCount { get; init; }
+
+    public required string Version { get; init; }
 }

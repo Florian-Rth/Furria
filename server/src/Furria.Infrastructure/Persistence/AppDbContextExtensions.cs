@@ -27,6 +27,7 @@ public static class AppDbContextExtensions
                 WriteConflictMessages.DuplicateParticipation,
             ["pk_club_record"] = WriteConflictMessages.ClubRecordWrittenMeanwhile,
             ["ix_invitation_person_id_live"] = WriteConflictMessages.InvitationIssuedMeanwhile,
+            ["ix_to_do_mark_account_id_kind"] = WriteConflictMessages.ToDoMarkedMeanwhile,
         }.ToFrozenDictionary(StringComparer.Ordinal);
 
     public static async Task<Result> SaveOrConflictAsync(

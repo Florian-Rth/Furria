@@ -61,6 +61,23 @@ public sealed class InvitationRoundService
         };
     }
 
+    public async Task<InvitationRoundPendingDetails> PendingAsync(CancellationToken ct)
+    {
+        var round = await RoundAsync(ct);
+
+        return new InvitationRoundPendingDetails
+        {
+            InviteePersonIds = await InviteesOf(round).Select(person => person.Id).ToListAsync(ct),
+            ReminderInvitationIds = await ReminderTargetsOf(round)
+                .Select(invitation => invitation.Id)
+                .ToListAsync(ct),
+            EligibleWithoutEmailPersonIds = await _dbContext
+                .EligibleWithoutEmail(round.Today, round.AgeOfConsent)
+                .Select(person => person.Id)
+                .ToListAsync(ct),
+        };
+    }
+
     public async Task<Result<InvitationRoundDetails>> InviteAllAsync(
         int issuerPersonId,
         CancellationToken ct

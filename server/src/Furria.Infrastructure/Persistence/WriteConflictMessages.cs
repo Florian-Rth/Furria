@@ -18,4 +18,6 @@ public static class WriteConflictMessages
         "Die Vereinsdaten wurden gerade anderweitig gespeichert. Bitte erneut versuchen.";
     public const string InvitationIssuedMeanwhile =
         "Gerade wurde schon eine Einladung verschickt. Bitte erneut versuchen.";
+    public const string ToDoMarkedMeanwhile =
+        "Dieser Punkt wurde gerade schon als gesehen markiert. Bitte erneut versuchen.";
 }

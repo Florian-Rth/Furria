@@ -5,6 +5,7 @@ using Furria.Core.MembershipApplications;
 using Furria.Core.Roles;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Mail;
+using Furria.Infrastructure.Management;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -75,6 +76,8 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
     public DbSet<OutboxMail> OutboxMails => Set<OutboxMail>();
 
     public DbSet<MembershipApplication> MembershipApplications => Set<MembershipApplication>();
+
+    public DbSet<ToDoMark> ToDoMarks => Set<ToDoMark>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }

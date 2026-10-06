@@ -525,6 +525,58 @@ public sealed class StartComposerTests
     }
 
     [Fact]
+    public void Should_LeaveOutASeenToDo_When_NothingNewJoinedIt()
+    {
+        var start = StartComposer.Compose(
+            Nothing with
+            {
+                ToDos =
+                [
+                    ToDoOf(ToDoKind.NeverInvited) with
+                    {
+                        IsSeen = true,
+                    },
+                    ToDoOf(ToDoKind.KeyToTakeBack),
+                ],
+            },
+            TuesdayEvening
+        );
+
+        var toDos = PanelOf(start, StartPanelKind.ToDos);
+        Assert.Equal(1, toDos.ShownCount);
+        Assert.Equal([ToDoKind.KeyToTakeBack], toDos.ToDos!.Select(toDo => toDo.Kind));
+    }
+
+    [Fact]
+    public void Should_ShowASeenToDo_When_SomethingNewJoinedIt()
+    {
+        var start = StartComposer.Compose(
+            Nothing with
+            {
+                ToDos = [ToDoOf(ToDoKind.NeverInvited) with { IsSeen = true, NewCount = 1 }],
+            },
+            TuesdayEvening
+        );
+
+        var toDos = PanelOf(start, StartPanelKind.ToDos);
+        Assert.Equal([ToDoKind.NeverInvited], toDos.ToDos!.Select(toDo => toDo.Kind));
+    }
+
+    [Fact]
+    public void Should_LeaveOutTheToDosPanel_When_EveryToDoIsSeen()
+    {
+        var start = StartComposer.Compose(
+            Nothing with
+            {
+                ToDos = [ToDoOf(ToDoKind.NeverInvited) with { IsSeen = true }],
+            },
+            TuesdayEvening
+        );
+
+        Assert.DoesNotContain(StartPanelKind.ToDos, KindsOf(start));
+    }
+
+    [Fact]
     public void Should_OrderHerItemsByBandThenDayThenKind_When_SheHasMoreThanTheCap()
     {
         var today = TuesdayEvening.Today;
@@ -636,7 +688,15 @@ public sealed class StartComposerTests
             IsRunning = true,
         };
 
-    private static ToDoSummary ToDoOf(ToDoKind kind) => new() { Kind = kind, Count = 3 };
+    private static ToDoSummary ToDoOf(ToDoKind kind) =>
+        new()
+        {
+            Kind = kind,
+            Count = 3,
+            IsSeen = false,
+            NewCount = 0,
+            Version = "0123456789abcdef",
+        };
 
     private static StartMineSummary MineOn(StartMineKind kind, DateOnly on) =>
         new()
