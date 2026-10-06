@@ -1,5 +1,4 @@
-import type { KkConfirmFact, KkFilterOption, KkScreenOrigin, KkSelectOption } from '@furria/ui';
-import { CALENDAR_PATH } from '@/features/session';
+import type { KkConfirmFact, KkFilterOption, KkSelectOption } from '@furria/ui';
 import { CALENDAR_KIND_LABELS, toAttendanceSavedMessage } from '@/lib/calendar-copy';
 import { toIsoDayLabel, toLocalIsoDay, toTimeSpanLabel } from '@/lib/calendar-days';
 import type { CalendarOwnerOption } from './calendar-authoring';
@@ -7,8 +6,6 @@ import { NO_VENUE_ID, toTimeChoices } from './calendar-authoring';
 import { ALL_SCOPE_ID, CLUB_SCOPE_ID, toGroupScopeId } from './calendar-query';
 import type { CalendarEntry, CalendarEntryVisibility, RunningVenue } from './schemas';
 
-export const CALENDAR_TITLE = 'Kalender';
-export const CALENDAR_ORIGIN: KkScreenOrigin = { label: CALENDAR_TITLE, to: CALENDAR_PATH };
 export const CALENDAR_LIST_SECTION_TITLE = 'Termine';
 export const CALENDAR_LOADING_LABEL = 'Der Kalender wird geladen';
 export const CALENDAR_ERROR_TITLE = 'KALENDER NICHT GELADEN';

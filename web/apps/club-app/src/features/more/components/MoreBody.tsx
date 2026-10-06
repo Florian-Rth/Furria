@@ -2,7 +2,6 @@ import { KkPanelStack } from '@furria/ui';
 import type { FC } from 'react';
 import {
   AppSignOutButton,
-  LATER_SECTIONS,
   MANAGE_SECTIONS,
   toPermittedSections,
   usePermissions,
@@ -26,7 +25,6 @@ export const MoreBody: FC = () => {
     <KkPanelStack>
       <MoreProfilePanel />
       {managePanel}
-      <MoreSectionPanel title={MORE_PANEL_TITLES.later} sections={LATER_SECTIONS} />
       <AppSignOutButton />
     </KkPanelStack>
   );

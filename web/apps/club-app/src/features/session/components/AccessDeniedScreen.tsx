@@ -1,21 +1,9 @@
-import type { KkScreenOrigin } from '@furria/ui';
 import { KkScreen } from '@furria/ui';
 import type { FC } from 'react';
+import type { ScreenFrame } from '../screen-frame';
 import { AccessDenied } from './AccessDenied';
 
-interface AccessDeniedRootFrame {
-  title: string;
-  section: string;
-  origin?: never;
-}
-
-interface AccessDeniedNestedFrame {
-  title: string;
-  origin: KkScreenOrigin;
-  section?: never;
-}
-
-export type AccessDeniedFrame = AccessDeniedRootFrame | AccessDeniedNestedFrame;
+export type AccessDeniedFrame = ScreenFrame & { title: string };
 
 type AccessDeniedScreenProps = AccessDeniedFrame & { message: string };
 

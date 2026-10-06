@@ -1,12 +1,11 @@
 import type { KkQuietScreenAction } from '@furria/ui';
 import { KkScreen, KkSkeletonToolbar, KkTitleHeader } from '@furria/ui';
 import type { FC } from 'react';
-import { AREA_HANDOVERS, CLUB_ORIGIN } from '@/features/session';
+import { AREA_HANDOVERS, CALENDAR_SECTION, CALENDAR_TITLE } from '@/features/session';
 import { useLanding } from '@/features/write';
 import { useCalendarQuery } from '../api';
 import {
   CALENDAR_LEAD,
-  CALENDAR_TITLE,
   LIST_VIEW_LABEL,
   MONTH_VIEW_LABEL,
   toScopeOptions,
@@ -53,7 +52,7 @@ export const CalendarPage: FC = () => {
     <KkScreen
       kind="list"
       title={CALENDAR_TITLE}
-      origin={CLUB_ORIGIN}
+      section={CALENDAR_SECTION}
       actions={[viewAction]}
       tools={tools}
       header={<KkTitleHeader title={CALENDAR_TITLE} lead={CALENDAR_LEAD} />}

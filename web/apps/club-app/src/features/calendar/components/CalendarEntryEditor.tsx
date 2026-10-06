@@ -10,6 +10,7 @@ import {
 } from '@furria/ui';
 import Grid from '@mui/material/Grid';
 import type { FC } from 'react';
+import { CALENDAR_ORIGIN } from '@/features/session';
 import { WriteScreen } from '@/features/write';
 import type { CalendarOwnerOption, CalendarParticipantPool } from '../calendar-authoring';
 import { toParticipantsEmptyLabel, toParticipatingGroupOptions } from '../calendar-authoring';
@@ -17,7 +18,6 @@ import {
   CALENDAR_ENTRY_CREATE_TITLE,
   CALENDAR_ENTRY_EDIT_TITLE,
   CALENDAR_KIND_OPTIONS,
-  CALENDAR_ORIGIN,
   CALENDAR_VISIBILITY_OPTIONS,
   DELETE_ENTRY_DANGER_LABEL,
   toOwnerSelectOptions,

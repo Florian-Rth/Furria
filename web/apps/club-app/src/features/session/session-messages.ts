@@ -37,7 +37,7 @@ export const APP_FAILURE_MESSAGE =
 
 export const APP_NOT_FOUND_MESSAGE = 'Diese Seite gibt es nicht.';
 
-export const APP_START_LABEL = 'Zur Übersicht';
+export const APP_START_LABEL = 'Zum Start';
 
 export const ME_FAILURE_TITLE = 'ACCOUNT NICHT GELADEN';
 

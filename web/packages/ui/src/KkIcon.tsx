@@ -1,6 +1,7 @@
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import BoltOutlinedIcon from '@mui/icons-material/BoltOutlined';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
 import CheckOutlinedIcon from '@mui/icons-material/CheckOutlined';
 import CheckroomOutlinedIcon from '@mui/icons-material/CheckroomOutlined';
@@ -8,6 +9,7 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import CloseIcon from '@mui/icons-material/Close';
 import CloudOffOutlinedIcon from '@mui/icons-material/CloudOffOutlined';
+import Diversity3Icon from '@mui/icons-material/Diversity3';
 import Diversity3OutlinedIcon from '@mui/icons-material/Diversity3Outlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
@@ -65,6 +67,7 @@ export type KkIconName =
   | 'settings'
   | 'chevron'
   | 'group'
+  | 'groupFilled'
   | 'person'
   | 'role'
   | 'board'
@@ -77,6 +80,7 @@ export type KkIconName =
   | 'check'
   | 'manage'
   | 'calendar'
+  | 'calendarFilled'
   | 'phone'
   | 'mail'
   | 'place'
@@ -123,6 +127,7 @@ const icons: Record<KkIconName, typeof HomeIcon> = {
   settings: SettingsOutlinedIcon,
   chevron: ChevronRightIcon,
   group: Diversity3OutlinedIcon,
+  groupFilled: Diversity3Icon,
   person: PersonOutlinedIcon,
   role: WorkspacePremiumOutlinedIcon,
   board: GavelOutlinedIcon,
@@ -135,6 +140,7 @@ const icons: Record<KkIconName, typeof HomeIcon> = {
   check: CheckOutlinedIcon,
   manage: TuneOutlinedIcon,
   calendar: CalendarMonthOutlinedIcon,
+  calendarFilled: CalendarMonthIcon,
   phone: PhoneOutlinedIcon,
   mail: MailOutlinedIcon,
   place: PlaceOutlinedIcon,

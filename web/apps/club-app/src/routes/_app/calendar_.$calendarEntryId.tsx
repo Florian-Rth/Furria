@@ -1,12 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import type { FC } from 'react';
-import {
-  CALENDAR_ORIGIN,
-  CALENDAR_TITLE,
-  CalendarBoardSearchSchema,
-  CalendarEntryScreen,
-} from '@/features/calendar';
-import { RequireScreenPermission } from '@/features/session';
+import { CalendarBoardSearchSchema, CalendarEntryScreen } from '@/features/calendar';
+import { CALENDAR_ORIGIN, CALENDAR_TITLE, RequireScreenPermission } from '@/features/session';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 
 const CalendarEntryRoute: FC = () => (

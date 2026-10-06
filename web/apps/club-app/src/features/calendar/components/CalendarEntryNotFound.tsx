@@ -1,6 +1,6 @@
 import { KkEmptyState, KkScreen } from '@furria/ui';
 import type { FC } from 'react';
-import { CALENDAR_ORIGIN, CALENDAR_TITLE } from '../calendar-labels';
+import { CALENDAR_ORIGIN, CALENDAR_TITLE } from '@/features/session';
 
 const NOT_FOUND_TITLE = 'NICHT MEHR DA';
 const NOT_FOUND_DESCRIPTION = 'Diesen Termin gibt es nicht mehr.';

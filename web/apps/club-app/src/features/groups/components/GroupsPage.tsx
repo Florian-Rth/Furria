@@ -1,14 +1,12 @@
 import { KkScreen, KkSkeletonToolbar, KkTitleHeader } from '@furria/ui';
 import type { FC } from 'react';
-import { AREA_HANDOVERS, CLUB_ORIGIN, useScreenSearch } from '@/features/session';
+import { AREA_HANDOVERS, GROUPS_SECTION, GROUPS_TITLE, useScreenSearch } from '@/features/session';
 import { useGroupsQuery } from '../api';
 import { GROUPS_LEAD } from '../groups-labels';
 import { useGroupsSearch } from '../hooks/use-groups-search';
 import type { GroupSummary } from '../schemas';
 import { GroupsBody } from './GroupsBody';
 import { GroupsToolbar } from './GroupsToolbar';
-
-const GROUPS_TITLE = 'Gruppen';
 
 const SEARCH_PLACEHOLDER = 'Name der Gruppe';
 
@@ -39,7 +37,7 @@ export const GroupsPage: FC = () => {
       search={searchMode}
       tools={tools}
       title={GROUPS_TITLE}
-      origin={CLUB_ORIGIN}
+      section={GROUPS_SECTION}
       header={<KkTitleHeader title={GROUPS_TITLE} lead={GROUPS_LEAD} />}
       handover={AREA_HANDOVERS.groups}
     >

@@ -19,7 +19,6 @@ export const MoreSectionPanel: FC<MoreSectionPanelProps> = ({ title, sections })
       label={section.label}
       icon={section.icon}
       meta={section.meta}
-      hint={section.hint}
       component={Link}
       to={section.to}
     />

@@ -1,7 +1,6 @@
 import { KkPanel, KkPanelStack, KkScreen, KkSkeletonBlock } from '@furria/ui';
 import type { FC } from 'react';
-import { AppSkeletonRegion } from '@/features/session';
-import { CALENDAR_ORIGIN } from '../calendar-labels';
+import { AppSkeletonRegion, CALENDAR_ORIGIN } from '@/features/session';
 
 const LOADING_LABEL = 'Wird geladen';
 const SKELETON_LINES = 4;

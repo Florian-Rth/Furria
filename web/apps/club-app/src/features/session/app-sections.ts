@@ -6,13 +6,12 @@ export interface AppSection {
   id: string;
   label: string;
   icon: KkIconName;
-  to: string | null;
+  to: string;
   meta?: string;
   permissionKeys?: readonly PermissionKey[];
-  hint?: string;
 }
 
-export const OVERVIEW_PATH = '/';
+export const START_PATH = '/';
 export const CLUB_PATH = '/club';
 export const ANNOUNCEMENTS_PATH = '/announcements';
 export const CALENDAR_PATH = '/calendar';
@@ -22,22 +21,27 @@ export const MORE_PATH = '/more';
 export const MANAGE_PATH = '/manage';
 export const PROFILE_PATH = '/profile';
 
-export const OVERVIEW_SECTION = 'overview';
+export const START_SECTION = 'start';
 export const CLUB_SECTION = 'club';
+export const CALENDAR_SECTION = 'calendar';
+export const GROUPS_SECTION = 'groups';
 export const MORE_SECTION = 'more';
 
-export const OVERVIEW_TITLE = 'Übersicht';
+export const START_TITLE = 'Start';
 export const CLUB_TITLE = 'Verein';
+export const CALENDAR_TITLE = 'Kalender';
+export const GROUPS_TITLE = 'Gruppen';
 
-export const OVERVIEW_ORIGIN: KkScreenOrigin = { label: OVERVIEW_TITLE, to: OVERVIEW_PATH };
+export const START_ORIGIN: KkScreenOrigin = { label: START_TITLE, to: START_PATH };
 export const CLUB_ORIGIN: KkScreenOrigin = { label: CLUB_TITLE, to: CLUB_PATH };
-export const GROUPS_ORIGIN: KkScreenOrigin = { label: 'Gruppen', to: GROUPS_PATH };
+export const CALENDAR_ORIGIN: KkScreenOrigin = { label: CALENDAR_TITLE, to: CALENDAR_PATH };
+export const GROUPS_ORIGIN: KkScreenOrigin = { label: GROUPS_TITLE, to: GROUPS_PATH };
 export const PROFILE_ORIGIN: KkScreenOrigin = { label: 'Profil', to: PROFILE_PATH };
 export const MORE_ORIGIN: KkScreenOrigin = { label: 'Mehr', to: MORE_PATH };
 export const MANAGE_ORIGIN: KkScreenOrigin = { label: 'Verein verwalten', to: MANAGE_PATH };
 
 export const AREA_HANDOVERS = {
-  overview: 'confetti',
+  start: 'confetti',
   club: 'confetti',
   calendar: 'splitFlap',
   members: 'sway',
@@ -60,14 +64,22 @@ export const MANAGE_KEYS: readonly PermissionKey[] = [
 ];
 
 export const APP_DESTINATIONS: readonly KkShellDestination[] = [
-  {
-    id: OVERVIEW_SECTION,
-    label: OVERVIEW_TITLE,
-    icon: 'overview',
-    activeIcon: 'home',
-    to: OVERVIEW_PATH,
-  },
+  { id: START_SECTION, label: START_TITLE, icon: 'overview', activeIcon: 'home', to: START_PATH },
   { id: CLUB_SECTION, label: CLUB_TITLE, icon: 'club', activeIcon: 'clubFilled', to: CLUB_PATH },
+  {
+    id: CALENDAR_SECTION,
+    label: CALENDAR_TITLE,
+    icon: 'calendar',
+    activeIcon: 'calendarFilled',
+    to: CALENDAR_PATH,
+  },
+  {
+    id: GROUPS_SECTION,
+    label: GROUPS_TITLE,
+    icon: 'group',
+    activeIcon: 'groupFilled',
+    to: GROUPS_PATH,
+  },
   { id: MORE_SECTION, label: 'Mehr', icon: 'more', activeIcon: 'moreFilled', to: MORE_PATH },
 ];
 
@@ -81,14 +93,14 @@ export const CLUB_SECTIONS: AppSection[] = [
   },
   {
     id: 'groups',
-    label: 'Gruppen',
+    label: GROUPS_TITLE,
     icon: 'group',
     to: GROUPS_PATH,
     meta: 'Alle Gruppen des Vereins',
   },
   {
     id: 'calendar',
-    label: 'Kalender',
+    label: CALENDAR_TITLE,
     icon: 'calendar',
     to: CALENDAR_PATH,
     meta: 'Termine, Trainings und Sitzungen',
@@ -100,16 +112,6 @@ export const CLUB_SECTIONS: AppSection[] = [
     to: ANNOUNCEMENTS_PATH,
     meta: 'Mitteilungen des Vereins',
   },
-];
-
-const LATER_HINT = 'bald';
-
-export const LATER_SECTIONS: AppSection[] = [
-  { id: 'events', label: 'Veranstaltungen', icon: 'events', to: null, hint: LATER_HINT },
-  { id: 'live', label: 'Live-Regie', icon: 'live', to: null, hint: LATER_HINT },
-  { id: 'fees', label: 'Beitrag', icon: 'fees', to: null, hint: LATER_HINT },
-  { id: 'gallery', label: 'Bildergalerie', icon: 'gallery', to: null, hint: LATER_HINT },
-  { id: 'wardrobe', label: 'Klamotten', icon: 'wardrobe', to: null, hint: LATER_HINT },
 ];
 
 export const MANAGE_SECTIONS: AppSection[] = [
