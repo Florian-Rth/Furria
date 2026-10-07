@@ -32,7 +32,7 @@ public sealed class GroupAdminConfiguration : IEntityTypeConfiguration<GroupAdmi
             .WithMany(person => person.GroupAdminships)
             .HasForeignKey(admin => admin.PersonId)
             .HasConstraintName("fk_group_admin_person_person_id")
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasIndex(admin => new { admin.GroupId, admin.PersonId });
         builder

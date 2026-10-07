@@ -30,7 +30,7 @@ public sealed class RoleHoldingConfiguration : IEntityTypeConfiguration<RoleHold
             .WithMany(person => person.RoleHoldings)
             .HasForeignKey(holding => holding.PersonId)
             .HasConstraintName("fk_role_holding_person_person_id")
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasIndex(holding => holding.PersonId);
         builder.HasIndex(holding => new { holding.RoleId, holding.PersonId });

@@ -4,6 +4,7 @@ using Furria.Application.Groups;
 using Furria.Application.Results;
 using Furria.Core.Club;
 using Furria.Core.Groups;
+using Furria.Core.Identity;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Registry;
 using Microsoft.EntityFrameworkCore;
@@ -409,6 +410,10 @@ public sealed class GroupService
             return Result.Conflict(ArchivedGroupKindOnRestoreMessage);
 
         group.ArchivedOn = null;
+        await _dbContext.LiftArchivesAsync(
+            PeopleWithUnendedTiesIn(groupId, ClubClock.Today(_timeProvider)),
+            ct
+        );
 
         return await _dbContext.SaveOrConflictAsync(ct);
     }
@@ -503,6 +508,7 @@ public sealed class GroupService
         };
 
         _dbContext.GroupMemberships.Add(membership);
+        await _dbContext.LiftArchiveOfAsync(command.PersonId, ct);
 
         var saved = await _dbContext.SaveOrConflictAsync(ct);
         if (!saved.IsSuccess)
@@ -571,6 +577,7 @@ public sealed class GroupService
         };
 
         _dbContext.GroupAdmins.Add(admin);
+        await _dbContext.LiftArchiveOfAsync(command.PersonId, ct);
 
         var saved = await _dbContext.SaveOrConflictAsync(ct);
         if (!saved.IsSuccess)
@@ -689,6 +696,17 @@ public sealed class GroupService
 
     private Task<bool> PersonExistsAsync(int personId, CancellationToken ct) =>
         _dbContext.People.AsNoTracking().AnyAsync(row => row.Id == personId, ct);
+
+    private IQueryable<Person> PeopleWithUnendedTiesIn(int groupId, DateOnly today) =>
+        _dbContext.People.Where(person =>
+            person.GroupMemberships.Any(membership =>
+                membership.GroupId == groupId
+                && (membership.LeftOn == null || membership.LeftOn >= today)
+            )
+            || person.GroupAdminships.Any(tenure =>
+                tenure.GroupId == groupId && (tenure.UntilOn == null || tenure.UntilOn >= today)
+            )
+        );
 
     private Task<List<PeriodRow>> AdminChainOfAsync(
         int groupId,

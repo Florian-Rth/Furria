@@ -8,9 +8,23 @@ public sealed class AccountConfiguration : IEntityTypeConfiguration<Account>
 {
     public void Configure(EntityTypeBuilder<Account> builder)
     {
-        builder.ToTable("account");
+        builder.ToTable(
+            "account",
+            table =>
+                table.HasCheckConstraint(
+                    "ck_account_person_unless_managing_login",
+                    "(person_id IS NULL) = is_managing_login"
+                )
+        );
 
         builder.Property(account => account.IsDisabled).HasDefaultValue(false);
+        builder.Property(account => account.IsManagingLogin).HasDefaultValue(false);
+
+        builder
+            .HasIndex(account => account.IsManagingLogin)
+            .IsUnique()
+            .HasFilter("is_managing_login")
+            .HasDatabaseName("ix_account_managing_login");
 
         builder.HasIndex(account => account.PersonId).IsUnique();
 

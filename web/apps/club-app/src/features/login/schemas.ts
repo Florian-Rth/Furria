@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { SESSION_FAREWELLS } from '@/lib/api/session/session-store';
 import { toReturnToParam } from '@/lib/return-to';
 
 const EMAIL_MESSAGE = 'Bitte gib eine gültige E-Mail-Adresse ein.';
@@ -22,7 +23,7 @@ const ReturnToSchema = z.string().transform(toReturnToParam).catch(undefined).op
 
 const ExpiredFlagSchema = z.literal(EXPIRED_FLAG).optional().catch(undefined);
 
-const FarewellSchema = z.enum(['account-deleted']).optional().catch(undefined);
+const FarewellSchema = z.enum(SESSION_FAREWELLS).optional().catch(undefined);
 const PasswordResetFlagSchema = z.literal(PASSWORD_RESET_FLAG).optional().catch(undefined);
 
 export const LoginSearchSchema = z.object({

@@ -80,7 +80,7 @@ public sealed class GetStartToDosTests
                 ),
             async ctx =>
             {
-                var manager = await ctx.Identity.BootstrapAdminClientAsync(
+                var manager = await ctx.Identity.ManagingLoginClientAsync(
                     TestContext.Current.CancellationToken
                 );
                 await InvitationSteps.InviteAsync(manager, ctx.Identity.People.IdOf("carl"));
@@ -288,6 +288,25 @@ public sealed class GetStartToDosTests
     }
 
     [Fact]
+    public async Task Should_ShowEveryToDoAndNoInactiveState_When_TheManagingLoginOpensStart()
+    {
+        await OnTuesdayEveningAsync(
+            identity => identity.AddMembershipApplication("mia", Today.AddYears(-17)),
+            async ctx =>
+            {
+                var start = await StartOfAsync(
+                    await ctx.Identity.ManagingLoginClientAsync(
+                        TestContext.Current.CancellationToken
+                    )
+                );
+
+                Assert.True(start.ViewerIsActiveInClub);
+                Assert.Equal(1, CountOf(ToDosOf(start), ToDoKind.ApplicationWaiting));
+            }
+        );
+    }
+
+    [Fact]
     public async Task Should_LeaveOutAnApplication_When_ItIsNotYetConfirmed()
     {
         await OnTuesdayEveningAsync(
@@ -490,7 +509,7 @@ public sealed class GetStartToDosTests
 
                 var mine = ToDosOf(await StartOfAsync(decider));
                 var theAdmins = ToDosOf(
-                    await StartOfAsync(await ctx.Identity.BootstrapAdminClientAsync(ct))
+                    await StartOfAsync(await ctx.Identity.ManagingLoginClientAsync(ct))
                 );
 
                 Assert.Null(CountOf(mine, ToDoKind.ApplicationWaiting));

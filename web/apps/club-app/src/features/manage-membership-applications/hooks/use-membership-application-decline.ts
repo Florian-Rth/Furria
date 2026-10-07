@@ -1,7 +1,7 @@
 import { useKkNotice } from '@furria/ui';
-import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { isNotFoundError } from '@/lib/query-error';
+import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useDeclineMembershipApplicationMutation, useForgetMembershipApplication } from '../api';
 import {
@@ -28,7 +28,7 @@ export const useMembershipApplicationDecline = (
   const mutation = useDeclineMembershipApplicationMutation();
   const forgetApplication = useForgetMembershipApplication();
   const raiseNotice = useKkNotice();
-  const navigate = useNavigate();
+  const goBackTo = useGoBackTo();
 
   const open = (): void => {
     setRejection(null);
@@ -41,7 +41,7 @@ export const useMembershipApplicationDecline = (
 
   const leave = (): void => {
     setIsOpen(false);
-    void navigate({ to: APPLICATIONS_PATH }).then(() => {
+    void goBackTo({ to: APPLICATIONS_PATH, ignoreBlocker: true }).then(() => {
       forgetApplication(application.membershipApplicationId);
     });
   };

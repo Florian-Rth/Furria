@@ -23,14 +23,16 @@ public sealed partial class StartService
             Body = row.Body,
             PublishedAt = row.PublishedAt,
             ValidUntil = row.ValidUntil,
-            Author = new StartPerson
-            {
-                PersonId = row.AuthorPersonId,
-                FirstName = row.FirstName,
-                LastName = row.LastName,
-                PortraitUrl = row.PortraitUrl,
-                OfficeName = officeNames.GetValueOrDefault(row.AuthorPersonId),
-            },
+            Author = row.Author is { } author
+                ? new StartPerson
+                {
+                    PersonId = author.PersonId,
+                    FirstName = author.FirstName,
+                    LastName = author.LastName,
+                    PortraitUrl = author.PortraitUrl,
+                    OfficeName = officeNames.GetValueOrDefault(author.PersonId),
+                }
+                : null,
         };
 
     private async Task<IReadOnlyList<StartAnnouncementSummary>> AnnouncementCandidatesAsync(

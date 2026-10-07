@@ -1,9 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { useController, useForm } from 'react-hook-form';
 import { toLandingKey } from '@/features/write';
+import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { toAnnouncementFieldErrors } from '../announcement-form-errors';
 import { useCreateAnnouncementMutation, useUpdateAnnouncementMutation } from '../api';
@@ -38,7 +38,7 @@ export const useAnnouncementEditor = ({
   const [rejection, setRejection] = useState<string | null>(null);
   const create = useCreateAnnouncementMutation();
   const update = useUpdateAnnouncementMutation(announcementId ?? NO_ANNOUNCEMENT);
-  const navigate = useNavigate();
+  const goBackTo = useGoBackTo();
 
   const form = useForm<AnnouncementForm>({
     resolver: zodResolver(AnnouncementFormSchema),
@@ -50,10 +50,10 @@ export const useAnnouncementEditor = ({
   const validUntil = useController({ control: form.control, name: 'validUntil' });
 
   const landOn = (id: number): void => {
-    void navigate({
+    void goBackTo({
       to: '/announcements',
       search: (previous) => ({ ...previous, changed: toLandingKey(LANDING_KIND, id) }),
-      replace: true,
+      ignoreBlocker: true,
     });
   };
 

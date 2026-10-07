@@ -6,5 +6,5 @@ public sealed record AccountLockCommand
 
     public required bool IsDisabled { get; init; }
 
-    public required int ActorPersonId { get; init; }
+    public required int? ActorPersonId { get; init; }
 }

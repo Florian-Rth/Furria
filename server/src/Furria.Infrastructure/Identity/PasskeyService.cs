@@ -16,6 +16,8 @@ public sealed class PasskeyService
 {
     private const string MissingAccountMessage = "Dieser Zugang besteht nicht mehr.";
     private const string DisabledAccountMessage = "Dieser Zugang ist gesperrt.";
+    private const string ManagedByEnvironmentMessage =
+        "Dieser Zugang wird über die Serverkonfiguration verwaltet.";
     private const string DeadChallengeMessage =
         "Die Einrichtung ist abgelaufen. Versuch es noch einmal.";
     private const string RejectedPasskeyMessage =
@@ -59,7 +61,7 @@ public sealed class PasskeyService
     )
     {
         var account = await FindAccountAsync(accountId);
-        if (account is not { IsDisabled: false })
+        if (account is not { IsDisabled: false, IsManagingLogin: false })
             return Result<PasskeyOptionsDetails>.Carrying(RefusalOf(account));
 
         var created = await _passkeyHandler.MakeCreationOptionsAsync(
@@ -94,7 +96,7 @@ public sealed class PasskeyService
             ct
         );
         var account = await FindAccountAsync(command.AccountId);
-        if (account is not { IsDisabled: false })
+        if (account is not { IsDisabled: false, IsManagingLogin: false })
             return Result<PasskeyDetails>.Carrying(RefusalOf(account));
 
         if (challenge is null || challenge.AccountId != account.Id)
@@ -380,9 +382,12 @@ public sealed class PasskeyService
 
     [Pure]
     private static Result RefusalOf(Account? account) =>
-        account is null
-            ? Result.NotFound(MissingAccountMessage)
-            : Result.Forbidden(DisabledAccountMessage);
+        account switch
+        {
+            null => Result.NotFound(MissingAccountMessage),
+            { IsManagingLogin: true } => Result.Forbidden(ManagedByEnvironmentMessage),
+            _ => Result.Forbidden(DisabledAccountMessage),
+        };
 
     private static void ThrowUnlessSucceeded(IdentityResult result)
     {

@@ -15,8 +15,7 @@ namespace Furria.Api.Tests.Management;
 [Collection("Api")]
 public sealed class GetManageHubTests
 {
-    private const int TheBootstrapAdminPerson = 1;
-    private const int TheAdminRole = 1;
+    private const int TheUnheldAdminRole = 1;
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
     private static readonly DateOnly LeftIn2020 = new(2020, 3, 1);
@@ -146,6 +145,24 @@ public sealed class GetManageHubTests
     }
 
     [Fact]
+    public async Task Should_ShowThePersonsPanelOnly_When_TheCallerOnlyHoldsPersonsDelete()
+    {
+        var (response, result) = await AskAsHolderOfAsync(FurriaPermissions.PersonsDelete);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(result.Persons);
+        Assert.Null(result.Accounts);
+        Assert.Null(result.Groups);
+        Assert.Null(result.Roles);
+        Assert.Null(result.Sessions);
+        Assert.Null(result.Venues);
+        Assert.Null(result.Keys);
+        Assert.Null(result.Board);
+        Assert.Null(result.ClubRecord);
+        Assert.Null(result.Applications);
+    }
+
+    [Fact]
     public async Task Should_ShowTheBoardPanelOnly_When_TheCallerOnlyHoldsBoardManage()
     {
         var (response, result) = await AskAsHolderOfAsync(FurriaPermissions.BoardManage);
@@ -206,7 +223,7 @@ public sealed class GetManageHubTests
     }
 
     [Fact]
-    public async Task Should_ShowEveryPanel_When_TheBootstrapAdminOpensTheHub()
+    public async Task Should_ShowEveryPanel_When_TheManagingLoginOpensTheHub()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -292,8 +309,30 @@ public sealed class GetManageHubTests
         );
 
         Assert.NotNull(result.Persons);
-        Assert.Equal(3 + TheBootstrapAdminPerson, result.Persons.PersonCount);
+        Assert.Equal(3, result.Persons.PersonCount);
         Assert.Equal(1, result.Persons.MemberCount);
+    }
+
+    [Fact]
+    public async Task Should_LeaveArchivedPersonsOutOfThePersonCount_When_TheHubIsRead()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        var result = await ReadTheHubAsAdminAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddPerson("bea", "Bea", "Ehemals")
+                        .AddMembership("bea-first", "bea", JoinedIn2017, LeftIn2020)
+                        .AddPerson("dora", "Dora", "Abgelegt")
+                        .AddMembership("dora-first", "dora", JoinedIn2017, LeftIn2020)
+                        .AddArchive("dora", ArchivedIn2021)
+                ),
+            ct
+        );
+
+        Assert.NotNull(result.Persons);
+        Assert.Equal(1, result.Persons.PersonCount);
     }
 
     [Fact]
@@ -350,8 +389,8 @@ public sealed class GetManageHubTests
         );
 
         Assert.NotNull(result.Roles);
-        Assert.Equal(3 + TheAdminRole, result.Roles.RoleCount);
-        Assert.Equal(2, result.Roles.VacantCount);
+        Assert.Equal(3 + TheUnheldAdminRole, result.Roles.RoleCount);
+        Assert.Equal(2 + TheUnheldAdminRole, result.Roles.VacantCount);
     }
 
     [Fact]
@@ -503,14 +542,14 @@ public sealed class GetManageHubTests
         var result = await ReadTheHubAsAdminAsync(_ => { }, ct);
 
         Assert.NotNull(result.Persons);
-        Assert.Equal(TheBootstrapAdminPerson, result.Persons.PersonCount);
+        Assert.Equal(0, result.Persons.PersonCount);
         Assert.Equal(0, result.Persons.MemberCount);
         Assert.NotNull(result.Groups);
         Assert.Equal(0, result.Groups.GroupCount);
         Assert.Equal(0, result.Groups.ArchivedCount);
         Assert.NotNull(result.Roles);
-        Assert.Equal(TheAdminRole, result.Roles.RoleCount);
-        Assert.Equal(0, result.Roles.VacantCount);
+        Assert.Equal(TheUnheldAdminRole, result.Roles.RoleCount);
+        Assert.Equal(TheUnheldAdminRole, result.Roles.VacantCount);
         Assert.NotNull(result.Sessions);
         Assert.Equal(0, result.Sessions.EntryCount);
         Assert.False(result.Sessions.HasCurrentEntry);
@@ -636,15 +675,15 @@ public sealed class GetManageHubTests
                 ),
             ct
         );
-        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
         await InvitationSteps.InviteAsync(admin, ctx.Identity.People.IdOf("fritz"));
 
         var (response, result) = await admin.GETAsync<GetManageHub, GetManageHubResponse>();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.NotNull(result.Accounts);
-        Assert.Equal(1 + TheBootstrapAdminPerson, result.Accounts.WithAccessCount);
-        Assert.Equal(4 + TheBootstrapAdminPerson, result.Accounts.OfCount);
+        Assert.Equal(1, result.Accounts.WithAccessCount);
+        Assert.Equal(4, result.Accounts.OfCount);
         Assert.Equal(1, result.Accounts.OpenInvitationCount);
         Assert.Equal(1, result.Accounts.EligibleWithoutEmailCount);
     }
@@ -665,14 +704,14 @@ public sealed class GetManageHubTests
                 ),
             ct
         );
-        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
         await InvitationSteps.InviteAsync(admin, ctx.Identity.People.IdOf("anna"));
 
         await _fixture.AtLaterTimeAsync(
             TimeSpan.FromDays(20),
             async () =>
             {
-                var laterAdmin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+                var laterAdmin = await ctx.Identity.ManagingLoginClientAsync(ct);
                 var (_, result) = await laterAdmin.GETAsync<GetManageHub, GetManageHubResponse>();
 
                 Assert.NotNull(result.Accounts);
@@ -686,14 +725,14 @@ public sealed class GetManageHubTests
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildEveryAccessCaseAsync(ct);
-        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
         await InvitationSteps.InviteAsync(admin, ctx.Identity.People.IdOf("gina"));
 
         await _fixture.AtLaterTimeAsync(
             TimeSpan.FromDays(20),
             async () =>
             {
-                var laterAdmin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+                var laterAdmin = await ctx.Identity.ManagingLoginClientAsync(ct);
                 await InvitationSteps.InviteAsync(laterAdmin, ctx.Identity.People.IdOf("carla"));
                 await InvitationSteps.InviteInPersonAsync(
                     laterAdmin,
@@ -715,7 +754,7 @@ public sealed class GetManageHubTests
                     hub.Accounts.EligibleWithoutEmailCount,
                     await CountListedAsync(laterAdmin, PersonAccessFilters.WithoutEmail)
                 );
-                Assert.Equal(1 + TheBootstrapAdminPerson, hub.Accounts.WithAccessCount);
+                Assert.Equal(1, hub.Accounts.WithAccessCount);
                 Assert.Equal(3, hub.Accounts.OpenInvitationCount);
                 Assert.Equal(1, hub.Accounts.EligibleWithoutEmailCount);
             }
@@ -964,7 +1003,7 @@ public sealed class GetManageHubTests
     {
         var ctx = await _fixture.BuildAsync(arrange, ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.GETAsync<GetManageHub, GetManageHubResponse>();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);

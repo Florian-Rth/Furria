@@ -54,7 +54,7 @@ public sealed class GetManagedGroupsTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.GETAsync<
             GetManagedGroups,
             GetManagedGroupsResponse
@@ -92,7 +92,7 @@ public sealed class GetManagedGroupsTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.GETAsync<
             GetManagedGroups,
             GetManagedGroupsResponse
@@ -118,7 +118,7 @@ public sealed class GetManagedGroupsTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.GETAsync<
             GetManagedGroups,
             GetManagedGroupsResponse
@@ -151,7 +151,7 @@ public sealed class GetManagedGroupsTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.GETAsync<
             GetManagedGroups,
             GetManagedGroupsResponse
@@ -196,7 +196,7 @@ public sealed class GetManagedGroupsTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.GETAsync<
             GetManagedGroups,
             GetManagedGroupsResponse
@@ -222,7 +222,7 @@ public sealed class GetManagedGroupsTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.GETAsync<
             GetManagedGroups,
             GetManagedGroupsResponse
@@ -251,7 +251,7 @@ public sealed class GetManagedGroupsTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.GETAsync<
             GetManagedGroups,
             GetManagedGroupsResponse
@@ -277,7 +277,7 @@ public sealed class GetManagedGroupsTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.GETAsync<
             GetManagedGroups,
             GetManagedGroupsResponse

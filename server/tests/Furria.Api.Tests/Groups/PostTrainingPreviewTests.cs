@@ -51,7 +51,7 @@ public sealed class PostTrainingPreviewTests
         Assert.Equal(3, result.Rows.Count);
         Assert.All(result.Rows, row => Assert.Equal(TrainingPreviewState.Creatable, row.State));
         Assert.Equal(
-            [firstEvening, firstEvening.AddDays(DaysPerWeek), firstEvening.AddDays(TwoWeeks)],
+            [firstEvening, TrainingWeeksAfterTheFirst(1), TrainingWeeksAfterTheFirst(2)],
             result.Rows.Select(row => row.StartsAt)
         );
         var first = result.Rows[0];
@@ -422,6 +422,9 @@ public sealed class PostTrainingPreviewTests
     }
 
     private DateTimeOffset FirstTraining() => ClubClock.At(FirstTrainingDay(), HalfPastSeven);
+
+    private DateTimeOffset TrainingWeeksAfterTheFirst(int weeks) =>
+        ClubClock.At(FirstTrainingDay().AddDays(weeks * DaysPerWeek), HalfPastSeven);
 
     private static void Trainerin(IdentitySeedBuilder identity) =>
         identity.AddPerson("anna", "Anna", "Kaiser").AddAccount("anna");

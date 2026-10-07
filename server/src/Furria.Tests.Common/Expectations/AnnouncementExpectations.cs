@@ -49,7 +49,7 @@ public sealed class AnnouncementExpectations
                 Assert.Equal(publishedAt, (await SingleAsync(dbContext, ct)).PublishedAt)
         );
 
-    public Expected ToHaveAuthor(int personId) =>
+    public Expected ToHaveAuthor(int? personId) =>
         _expected.Enqueue(
             async (dbContext, ct) =>
                 Assert.Equal(personId, (await SingleAsync(dbContext, ct)).AuthorPersonId)

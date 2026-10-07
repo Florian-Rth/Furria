@@ -1,5 +1,6 @@
 import type { KkScreenSearch } from '@furria/ui';
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, useRouter } from '@tanstack/react-router';
+import { stepOffLayer } from '@/lib/back-stack';
 import { appRouteApi } from '../app-route';
 
 const OPEN_LABEL = 'Suchen';
@@ -8,6 +9,7 @@ const CANCEL_LABEL = 'Suche beenden';
 export const useScreenSearch = (placeholder: string): KkScreenSearch => {
   const { q } = appRouteApi.useSearch();
   const navigate = useNavigate();
+  const router = useRouter();
 
   const go = (next: string | undefined, replace: boolean): void => {
     void navigate({
@@ -30,7 +32,11 @@ export const useScreenSearch = (placeholder: string): KkScreenSearch => {
       go(value, true);
     },
     onClose: () => {
-      go(undefined, false);
+      if (q === undefined || stepOffLayer(router.history)) {
+        return;
+      }
+
+      go(undefined, true);
     },
   };
 };

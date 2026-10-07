@@ -40,7 +40,7 @@ public sealed class PutPersonAccountDisabledTests
             ct
         );
         var signedIn = ClientCarrying(session.AccessToken);
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var response = await InvitationSteps.SetAccountDisabledAsync(manager, annaId, true);
 
@@ -66,7 +66,7 @@ public sealed class PutPersonAccountDisabledTests
             .AccountEventsOfPerson(annaId)
             .ToHaveKindsInOrder(AccountEventKind.Disabled)
             .AccountEventsOfPerson(annaId)
-            .ToHaveLatestActor(ctx.Identity.BootstrapAdmin.PersonId)
+            .ToHaveNoLatestActor()
             .AssertAsync(ct);
     }
 
@@ -79,7 +79,7 @@ public sealed class PutPersonAccountDisabledTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var recovery = await InvitationSteps.IssueRecoveryAsync(manager, annaId);
 
         await InvitationSteps.SetAccountDisabledAsync(manager, annaId, true);
@@ -107,7 +107,7 @@ public sealed class PutPersonAccountDisabledTests
             ApiTestFixture.SeededAccountPassword,
             ct
         );
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         await InvitationSteps.SetAccountDisabledAsync(manager, annaId, true);
 
         var response = await InvitationSteps.SetAccountDisabledAsync(manager, annaId, false);
@@ -142,7 +142,7 @@ public sealed class PutPersonAccountDisabledTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var response = await InvitationSteps.SetAccountDisabledAsync(
             manager,
@@ -163,11 +163,11 @@ public sealed class PutPersonAccountDisabledTests
     public async Task Should_ReturnConflict_When_AManagerDisablesHerOwnAccount()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-        var admin = ctx.Identity.BootstrapAdmin;
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var ctx = await ArrangeHolderOfAsync(FurriaPermissions.AccountsManage, ct);
+        var ilkaId = ctx.Identity.People.IdOf("ilka");
+        var ilka = await ctx.Identity.ClientForAsync("ilka", ct);
 
-        var response = await InvitationSteps.SetAccountDisabledAsync(manager, admin.PersonId, true);
+        var response = await InvitationSteps.SetAccountDisabledAsync(ilka, ilkaId, true);
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         var payload = await response.Content.ReadFromJsonAsync<ErrorResponse>(ct);
@@ -176,9 +176,9 @@ public sealed class PutPersonAccountDisabledTests
             payload?.Errors[ConflictField]
         );
         await ctx
-            .Expected.Account(admin.AccountId)
+            .Expected.Account(ctx.Identity.Accounts.IdOf("ilka"))
             .ToBeDisabled(false)
-            .AccountEventsOfPerson(admin.PersonId)
+            .AccountEventsOfPerson(ilkaId)
             .ToHaveKindsInOrder()
             .AssertAsync(ct);
     }
@@ -191,7 +191,7 @@ public sealed class PutPersonAccountDisabledTests
             builder => builder.Identity(identity => identity.AddPerson("anna", "Anna", "Muster")),
             ct
         );
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var response = await InvitationSteps.SetAccountDisabledAsync(
             manager,
@@ -251,7 +251,7 @@ public sealed class PutPersonAccountDisabledTests
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var response = await InvitationSteps.SetAccountDisabledAsync(
             manager,

@@ -16,7 +16,7 @@ interface PersonsBodyProps {
 
 export const PersonsBody: FC<PersonsBodyProps> = ({ search, canCreate }) => {
   const access = usePersonsAccess();
-  const persons = usePersonsQuery(access.filter);
+  const persons = usePersonsQuery(access.filter, search.isArchivedView);
   const errorMessage = toPersonsErrorMessage(persons.error);
 
   const reload = (): void => {
@@ -24,14 +24,7 @@ export const PersonsBody: FC<PersonsBodyProps> = ({ search, canCreate }) => {
   };
 
   if (persons.data !== undefined) {
-    return (
-      <PersonsView
-        persons={persons.data.persons}
-        search={search}
-        access={access}
-        canCreate={canCreate}
-      />
-    );
+    return <PersonsView search={search} access={access} canCreate={canCreate} />;
   }
   if (errorMessage !== null) {
     return <PersonsError message={errorMessage} onRetry={reload} />;

@@ -1,5 +1,6 @@
 using System.Net;
 using FastEndpoints;
+using Furria.Application.Authorization;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -39,9 +40,27 @@ public sealed class PermissionEnforcerTests
     public async Task Should_Allow_When_AnEndpointCarriesBothGatesAndTheCallerSatisfiesEach()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddAccount("alice")
+                            .AddMembership("alice-first", "alice", JoinedIn2017)
+                    )
+                    .Roles(roles =>
+                        roles.AddRoleWithHolder(
+                            "rollenpflege",
+                            "alice-rollenpflege",
+                            "Rollenpflege",
+                            "alice",
+                            FurriaPermissions.RolesManage
+                        )
+                    ),
+            ct
+        );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
         var (response, _) = await client.GETAsync<BothGatesProbe, EmptyResponse>();
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);

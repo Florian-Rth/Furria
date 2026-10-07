@@ -1,15 +1,15 @@
-import { useNavigate } from '@tanstack/react-router';
+import { useGoBackTo } from '@/lib/use-go-back-to';
 import type { ClubRecordSection } from '../club-record-labels';
 import { toSectionLandingKey } from '../club-record-labels';
 
 export const useClubRecordLanding = (): ((section: ClubRecordSection) => void) => {
-  const navigate = useNavigate();
+  const goBackTo = useGoBackTo();
 
   return (section: ClubRecordSection): void => {
-    void navigate({
+    void goBackTo({
       to: '/manage/club-record',
       search: (previous) => ({ ...previous, changed: toSectionLandingKey(section) }),
-      replace: true,
+      ignoreBlocker: true,
     });
   };
 };

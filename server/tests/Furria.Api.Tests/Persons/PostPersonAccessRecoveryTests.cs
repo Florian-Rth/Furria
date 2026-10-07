@@ -35,7 +35,7 @@ public sealed class PostPersonAccessRecoveryTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var issued = await InvitationSteps.IssueRecoveryAsync(manager, annaId);
 
@@ -48,11 +48,11 @@ public sealed class PostPersonAccessRecoveryTests
         Assert.Equal(_fixture.TimeProvider.GetUtcNow().AddMinutes(15), issued.ExpiresAt);
         await ctx
             .Expected.LiveInvitationOfPerson(annaId)
-            .ToBeRecoveryIssuedBy(ctx.Identity.BootstrapAdmin.PersonId)
+            .ToBeRecoveryIssuedBy(null)
             .AccountEventsOfPerson(annaId)
             .ToHaveKindsInOrder(AccountEventKind.RecoveryIssued)
             .AccountEventsOfPerson(annaId)
-            .ToHaveLatestActor(ctx.Identity.BootstrapAdmin.PersonId)
+            .ToHaveNoLatestActor()
             .AssertAsync(ct);
     }
 
@@ -65,7 +65,7 @@ public sealed class PostPersonAccessRecoveryTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var first = await InvitationSteps.IssueRecoveryAsync(manager, annaId);
         var second = await InvitationSteps.IssueRecoveryAsync(manager, annaId);
@@ -197,7 +197,7 @@ public sealed class PostPersonAccessRecoveryTests
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var (response, _) = await PostAsync(manager, UnknownPersonId);
 
@@ -222,7 +222,7 @@ public sealed class PostPersonAccessRecoveryTests
     )
     {
         var personId = ctx.Identity.People.IdOf(alias);
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var (response, _) = await PostAsync(manager, personId);
 

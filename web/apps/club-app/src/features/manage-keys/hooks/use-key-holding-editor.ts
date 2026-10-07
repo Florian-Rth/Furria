@@ -1,10 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useController, useForm } from 'react-hook-form';
 import { toLandingKey } from '@/features/write';
 import type { PersonRef } from '@/lib/api/schemas';
 import { toIsoDay } from '@/lib/day';
+import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useHandOutKeyMutation, useTakeBackKeyMutation } from '../api';
 import { toHandoutConsequence, toPersonName, toReturnConsequence } from '../manage-keys-labels';
@@ -52,7 +52,7 @@ export const useKeyHoldingEditor = ({
 
   const handoutMutation = useHandOutKeyMutation();
   const returnMutation = useTakeBackKeyMutation();
-  const navigate = useNavigate();
+  const goBackTo = useGoBackTo();
 
   const handoutForm = useForm({
     resolver: zodResolver(KeyHandoutFormSchema),
@@ -78,10 +78,10 @@ export const useKeyHoldingEditor = ({
   const personName = person === null ? '' : toPersonName(person);
 
   const landBack = (keyHoldingId: number): void => {
-    void navigate({
+    void goBackTo({
       to: KEYS_ROUTE,
       search: (previous) => ({ ...previous, changed: toLandingKey('keyHolding', keyHoldingId) }),
-      replace: true,
+      ignoreBlocker: true,
     });
   };
 

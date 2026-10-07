@@ -44,7 +44,7 @@ public sealed class GetMembershipApplicationByIdTests
                 ),
             ct
         );
-        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var (response, application) = await ReadAsync(
             admin,
@@ -71,6 +71,35 @@ public sealed class GetMembershipApplicationByIdTests
     }
 
     [Fact]
+    public async Task Should_ListAnArchivedPerson_When_SheSharesHerEmail()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var email = InvitationSteps.UniqueContactEmail("mia");
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddPerson("mia-registry", "Mia", "Schwarzwälder")
+                        .AddPersonContact("mia-registry", email: email)
+                        .AddArchive("mia-registry", _fixture.Today.AddYears(-2))
+                        .AddMembershipApplication("mia", _fixture.Today.AddYears(-30), email: email)
+                ),
+            ct
+        );
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
+
+        var (_, application) = await ReadAsync(
+            admin,
+            ctx.Identity.MembershipApplications.IdOf("mia")
+        );
+
+        Assert.Equal(
+            [ctx.Identity.People.IdOf("mia-registry")],
+            application.Candidates.Select(candidate => candidate.PersonId)
+        );
+    }
+
+    [Fact]
     public async Task Should_MarkTheApplicantMinor_When_SheIsUnder18Today()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -85,7 +114,7 @@ public sealed class GetMembershipApplicationByIdTests
                 ),
             ct
         );
-        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var (_, application) = await ReadAsync(
             admin,
@@ -113,7 +142,7 @@ public sealed class GetMembershipApplicationByIdTests
                 ),
             ct
         );
-        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var (_, application) = await ReadAsync(
             admin,
@@ -146,7 +175,7 @@ public sealed class GetMembershipApplicationByIdTests
                 ),
             ct
         );
-        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var (_, application) = await ReadAsync(
             admin,
@@ -195,7 +224,7 @@ public sealed class GetMembershipApplicationByIdTests
                     ),
             ct
         );
-        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var (_, application) = await ReadAsync(
             admin,
@@ -234,7 +263,7 @@ public sealed class GetMembershipApplicationByIdTests
                 ),
             ct
         );
-        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var (_, application) = await ReadAsync(
             admin,
@@ -262,7 +291,7 @@ public sealed class GetMembershipApplicationByIdTests
                 ),
             ct
         );
-        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var (response, _) = await ReadAsync(admin, ctx.Identity.MembershipApplications.IdOf("mia"));
 
@@ -274,7 +303,7 @@ public sealed class GetMembershipApplicationByIdTests
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
-        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var (response, _) = await ReadAsync(admin, UnknownApplicationId);
 

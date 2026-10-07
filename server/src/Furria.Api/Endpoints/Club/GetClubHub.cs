@@ -73,7 +73,7 @@ public sealed class GetClubHub : EndpointWithoutRequest<GetClubHubResponse>
             Body = announcement.Body,
             PublishedAt = announcement.PublishedAt,
             ValidUntil = announcement.ValidUntil,
-            Author = ToDto(announcement.Author),
+            Author = announcement.Author is { } author ? ToDto(author) : null,
         };
 
     private static ClubPersonDto ToDto(ClubHubPerson person) =>
@@ -175,7 +175,7 @@ public sealed record ClubAnnouncementDto
 
     public required DateOnly? ValidUntil { get; init; }
 
-    public required ClubPersonDto Author { get; init; }
+    public required ClubPersonDto? Author { get; init; }
 }
 
 public sealed record ClubPersonDto

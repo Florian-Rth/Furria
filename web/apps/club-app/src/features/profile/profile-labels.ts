@@ -1,5 +1,5 @@
 import type { MemberContact } from '@/features/members';
-import type { ContactChange, Me, MePerson } from '@/lib/api/schemas';
+import type { ContactChange, MePerson, PersonalMe } from '@/lib/api/schemas';
 import { toContactChangeLine } from '@/lib/contact-change';
 import { toInitials } from '@/lib/initials';
 import type { StateChip } from '@/lib/state-chips';
@@ -16,7 +16,7 @@ export interface ProfileHeadline {
   state: StateChip | null;
 }
 
-export const toProfileHeadline = (me: Me | undefined): ProfileHeadline => {
+export const toProfileHeadline = (me: PersonalMe | undefined): ProfileHeadline => {
   if (me === undefined) {
     return { title: PROFILE_TITLE_FALLBACK, initials: '', state: null };
   }

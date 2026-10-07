@@ -8,7 +8,7 @@ public sealed record AddAdmittedMembershipCommand
 
     public required DateTimeOffset AdmittedAt { get; init; }
 
-    public required int AdmittedByPersonId { get; init; }
+    public required int? AdmittedByPersonId { get; init; }
 
     public required bool GuardianConsentConfirmed { get; init; }
 }

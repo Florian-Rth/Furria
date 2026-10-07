@@ -6,6 +6,7 @@ export interface Permissions {
   keys: readonly PermissionKey[];
   has: (key: PermissionKey) => boolean;
   isAffiliated: boolean;
+  isManagingLogin: boolean;
   isUndecided: boolean;
 }
 
@@ -24,6 +25,7 @@ export const usePermissions = (): Permissions => {
     keys,
     has: (key) => keys.includes(key),
     isAffiliated: me.data?.isAffiliated ?? false,
+    isManagingLogin: me.data?.person === null,
     isUndecided,
   };
 };

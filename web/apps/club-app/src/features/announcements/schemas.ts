@@ -23,7 +23,7 @@ export const AnnouncementSchema = z.object({
   body: z.string(),
   publishedAt: z.iso.datetime({ offset: true }),
   validUntil: z.iso.date().nullable(),
-  author: AnnouncementAuthorSchema,
+  author: AnnouncementAuthorSchema.nullable(),
   viewerMayEdit: z.boolean(),
 });
 export type Announcement = z.infer<typeof AnnouncementSchema>;

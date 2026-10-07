@@ -45,7 +45,7 @@ public sealed class PutVenueTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutVenue, PutVenueRequest>(
             new()
             {
@@ -81,7 +81,7 @@ public sealed class PutVenueTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutVenue, PutVenueRequest>(
             new()
             {
@@ -112,7 +112,7 @@ public sealed class PutVenueTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutVenue, PutVenueRequest>(
             new()
             {
@@ -144,7 +144,7 @@ public sealed class PutVenueTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutVenue, PutVenueRequest>(
             new()
             {
@@ -175,7 +175,7 @@ public sealed class PutVenueTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutVenue, PutVenueRequest>(
             new()
             {

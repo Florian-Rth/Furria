@@ -13,6 +13,7 @@ public sealed class IdentitySeedBuilder
     private readonly List<PersonIntent> _people = [];
     private readonly List<PersonContactIntent> _contacts = [];
     private readonly List<ContactChangeIntent> _contactChanges = [];
+    private readonly List<ArchiveIntent> _archives = [];
     private readonly List<MembershipIntent> _memberships = [];
     private readonly List<AdmissionIntent> _admissions = [];
     private readonly List<MembershipPauseIntent> _pauses = [];
@@ -25,6 +26,8 @@ public sealed class IdentitySeedBuilder
     internal IReadOnlyList<PersonContactIntent> Contacts => _contacts;
 
     internal IReadOnlyList<ContactChangeIntent> ContactChanges => _contactChanges;
+
+    internal IReadOnlyList<ArchiveIntent> Archives => _archives;
 
     internal IReadOnlyList<MembershipIntent> Memberships => _memberships;
 
@@ -85,6 +88,16 @@ public sealed class IdentitySeedBuilder
     )
     {
         _contactChanges.Add(new ContactChangeIntent(personAlias, changedByAlias, changedAt));
+        return this;
+    }
+
+    public IdentitySeedBuilder AddArchive(
+        string personAlias,
+        DateOnly archivedOn,
+        string? archivedByAlias = null
+    )
+    {
+        _archives.Add(new ArchiveIntent(personAlias, archivedOn, archivedByAlias));
         return this;
     }
 
@@ -201,6 +214,12 @@ public sealed class IdentitySeedBuilder
         string PersonAlias,
         string ChangedByAlias,
         DateTimeOffset ChangedAt
+    );
+
+    internal sealed record ArchiveIntent(
+        string PersonAlias,
+        DateOnly ArchivedOn,
+        string? ArchivedByAlias
     );
 
     internal sealed record MembershipIntent(

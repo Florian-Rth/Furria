@@ -16,6 +16,17 @@ public sealed class FeeReductionExpectations
         _feeReductionId = feeReductionId;
     }
 
+    public Expected ToNotExist() =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.False(
+                    await dbContext
+                        .FeeReductions.AsNoTracking()
+                        .AnyAsync(row => row.Id == _feeReductionId, ct),
+                    $"Expected no FeeReduction with id {_feeReductionId}."
+                )
+        );
+
     public Expected ToHaveBasis(FeeReductionBasis basis) =>
         _expected.Enqueue(
             async (dbContext, ct) => Assert.Equal(basis, (await SingleAsync(dbContext, ct)).Basis)

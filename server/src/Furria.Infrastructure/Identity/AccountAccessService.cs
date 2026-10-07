@@ -137,7 +137,7 @@ public sealed class AccountAccessService
 
     public async Task<Result<AdmissionInvitation>> InviteAdmittedAsync(
         int personId,
-        int admitterPersonId,
+        int? admitterPersonId,
         CancellationToken ct
     )
     {

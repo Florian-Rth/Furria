@@ -41,8 +41,8 @@ public static class ServiceCollectionExtensions
             .ValidateOnStart();
 
         services
-            .AddOptions<BootstrapAdminOptions>()
-            .BindConfiguration(BootstrapAdminOptions.SectionName);
+            .AddOptions<ManagingLoginOptions>()
+            .BindConfiguration(ManagingLoginOptions.SectionName);
 
         services
             .AddOptions<MailOptions>()

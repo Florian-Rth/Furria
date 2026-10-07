@@ -1,4 +1,4 @@
-import { useMeQuery } from '@/features/session';
+import { usePersonalMe } from '@/features/session';
 import { toGreetingViewer } from '../greeting/greeting-act';
 import type { GreetingView } from '../greeting/greeting-view';
 import { toGreetingView } from '../greeting/greeting-view';
@@ -9,7 +9,7 @@ import { useReducedMotionPreference } from './use-reduced-motion-preference';
 const ON_TIME = 0;
 
 export const useGreeting = (): GreetingView | null => {
-  const me = useMeQuery();
+  const me = usePersonalMe();
   const act = useGreetingAct(me.data === undefined ? null : toGreetingViewer(me.data), ON_TIME);
   const follows = useGreetingFollows(act?.key ?? null);
   const reducedMotion = useReducedMotionPreference();

@@ -38,12 +38,12 @@ export const PasswordFormSchema = z.object({
 });
 export type PasswordForm = z.infer<typeof PasswordFormSchema>;
 
-export const AccountDeletionFormSchema = z.object({
+export const ReauthenticationFormSchema = z.object({
   password: z.string().min(1, PASSWORD_MESSAGE),
 });
-export type AccountDeletionForm = z.infer<typeof AccountDeletionFormSchema>;
+export type ReauthenticationForm = z.infer<typeof ReauthenticationFormSchema>;
 
 export const LOGIN_EMAIL_FIELD_NAMES = ['loginEmail'] as const;
 export const LOGIN_EMAIL_CODE_FIELD_NAMES = ['code', 'loginEmail'] as const;
 export const PASSWORD_FIELD_NAMES = ['currentPassword', 'newPassword'] as const;
-export const ACCOUNT_DELETION_FIELD_NAMES = ['password'] as const;
+export const REAUTHENTICATION_FIELD_NAMES = ['password'] as const;

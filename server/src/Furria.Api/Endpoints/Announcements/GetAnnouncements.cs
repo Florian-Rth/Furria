@@ -73,8 +73,10 @@ public sealed class GetAnnouncements : EndpointWithoutRequest<GetAnnouncementsRe
             Body = announcement.Body,
             PublishedAt = announcement.PublishedAt,
             ValidUntil = announcement.ValidUntil,
-            Author = ToDto(announcement.Author),
-            ViewerMayEdit = viewerMayPost || announcement.Author.PersonId == viewerPersonId,
+            Author = announcement.Author is { } author ? ToDto(author) : null,
+            ViewerMayEdit =
+                viewerMayPost
+                || announcement.Author is { } writtenBy && writtenBy.PersonId == viewerPersonId,
         };
 
     private static AnnouncementAuthorDto ToDto(AnnouncementAuthorReference author) =>
@@ -105,7 +107,7 @@ public sealed record AnnouncementDto
 
     public required DateOnly? ValidUntil { get; init; }
 
-    public required AnnouncementAuthorDto Author { get; init; }
+    public required AnnouncementAuthorDto? Author { get; init; }
 
     public required bool ViewerMayEdit { get; init; }
 }

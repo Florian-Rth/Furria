@@ -42,7 +42,7 @@ public sealed class RedeemInvitationTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var token = await InvitationSteps.InviteAndReadTokenAsync(
             _fixture,
             manager,
@@ -60,7 +60,7 @@ public sealed class RedeemInvitationTests
         var signedIn = InvitationSteps.SignedInClient(_fixture, redemption);
         var (meResponse, me) = await signedIn.GETAsync<GetMe, GetMeResponse>();
         Assert.Equal(HttpStatusCode.OK, meResponse.StatusCode);
-        Assert.Equal(annaId, me.Person.Id);
+        Assert.Equal(annaId, me.Person?.Id);
         Assert.Equal(annaEmail, me.Email);
         await ctx
             .Expected.AccountOfPerson(annaId)
@@ -84,7 +84,7 @@ public sealed class RedeemInvitationTests
                 ),
             ct
         );
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var token = await InvitationSteps.InviteAndReadTokenAsync(
             _fixture,
             manager,
@@ -112,7 +112,7 @@ public sealed class RedeemInvitationTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var token = await InvitationSteps.InviteAndReadTokenAsync(
             _fixture,
             manager,
@@ -147,7 +147,7 @@ public sealed class RedeemInvitationTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         await InvitationSteps.InviteAsync(manager, annaId);
         await InvitationSteps.InviteAsync(manager, annaId);
         var mails = await _fixture.Mailbox.MailsToAsync(annaEmail, 2, ct);
@@ -173,7 +173,7 @@ public sealed class RedeemInvitationTests
                 ),
             ct
         );
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var token = await InvitationSteps.InviteAndReadTokenAsync(
             _fixture,
             manager,
@@ -244,7 +244,7 @@ public sealed class RedeemInvitationTests
         var (_, me) = await InvitationSteps
             .SignedInClient(_fixture, redemption)
             .GETAsync<GetMe, GetMeResponse>();
-        Assert.Equal(annaId, me.Person.Id);
+        Assert.Equal(annaId, me.Person?.Id);
         Assert.Equal(HttpStatusCode.OK, await LogInStatusAsync(me.Email, "tanzbein"));
     }
 
@@ -276,7 +276,7 @@ public sealed class RedeemInvitationTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var issued = await InvitationSteps.InviteInPersonAsync(manager, annaId);
 
         var (response, redemption) = await InvitationSteps.RedeemByCodeAsync(
@@ -289,7 +289,7 @@ public sealed class RedeemInvitationTests
         var signedIn = InvitationSteps.SignedInClient(_fixture, redemption);
         var (meResponse, me) = await signedIn.GETAsync<GetMe, GetMeResponse>();
         Assert.Equal(HttpStatusCode.OK, meResponse.StatusCode);
-        Assert.Equal(annaId, me.Person.Id);
+        Assert.Equal(annaId, me.Person?.Id);
         await ctx
             .Expected.AccountOfPerson(annaId)
             .ToHaveLoginEmail(annaEmail)
@@ -311,7 +311,7 @@ public sealed class RedeemInvitationTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var issued = await InvitationSteps.InviteInPersonAsync(manager, annaId);
 
         var (response, redemption) = await InvitationSteps.RedeemAsync(
@@ -396,7 +396,7 @@ public sealed class RedeemInvitationTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var issued = await InvitationSteps.InviteInPersonAsync(manager, annaId);
 
         HttpStatusCode status = default;
@@ -642,7 +642,7 @@ public sealed class RedeemInvitationTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var token = await InvitationSteps.InviteAndReadTokenAsync(
             _fixture,
             manager,
@@ -682,7 +682,7 @@ public sealed class RedeemInvitationTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var bruno = await InvitationSteps.InviteInPersonAsync(
             manager,
             ctx.Identity.People.IdOf("bruno")
@@ -781,7 +781,7 @@ public sealed class RedeemInvitationTests
         var signedIn = InvitationSteps.SignedInClient(_fixture, redemption);
         var (meResponse, me) = await signedIn.GETAsync<GetMe, GetMeResponse>();
         Assert.Equal(HttpStatusCode.OK, meResponse.StatusCode);
-        Assert.Equal(annaId, me.Person.Id);
+        Assert.Equal(annaId, me.Person?.Id);
         var (refreshResponse, _) = await _fixture
             .CreateClient()
             .POSTAsync<Refresh, RefreshRequest, RefreshResponse>(
@@ -1001,7 +1001,7 @@ public sealed class RedeemInvitationTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var issued = await InvitationSteps.IssueRecoveryAsync(manager, annaId);
 
         var (response, _) = await InvitationSteps.RedeemByCodeAsync(
@@ -1025,7 +1025,7 @@ public sealed class RedeemInvitationTests
     {
         var ct = TestContext.Current.CancellationToken;
         var (ctx, annaId, code) = await ArrangeRecoveryAsync(ct);
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         await InvitationSteps.SetAccountDisabledAsync(manager, annaId, isDisabled: true);
 
         var (response, _) = await InvitationSteps.RedeemByCodeAsync(_fixture.CreateClient(), code);
@@ -1083,7 +1083,7 @@ public sealed class RedeemInvitationTests
         var signedIn = InvitationSteps.SignedInClient(_fixture, redemption);
         var (meResponse, me) = await signedIn.GETAsync<GetMe, GetMeResponse>();
         Assert.Equal(HttpStatusCode.OK, meResponse.StatusCode);
-        Assert.Equal(annaId, me.Person.Id);
+        Assert.Equal(annaId, me.Person?.Id);
         Assert.Equal(strayEmail, me.Email);
         await ctx
             .Expected.Account(ctx.Identity.Accounts.IdOf("stray"))
@@ -1128,8 +1128,8 @@ public sealed class RedeemInvitationTests
         );
         var (meResponse, me) = await client.GETAsync<GetMe, GetMeResponse>();
         Assert.Equal(HttpStatusCode.OK, meResponse.StatusCode);
-        Assert.Equal(annaId, me.Person.Id);
-        Assert.Equal("Anna", me.Person.FirstName);
+        Assert.Equal(annaId, me.Person?.Id);
+        Assert.Equal("Anna", me.Person?.FirstName);
     }
 
     [Fact]
@@ -1210,7 +1210,7 @@ public sealed class RedeemInvitationTests
         var signedIn = InvitationSteps.SignedInClient(_fixture, redemption);
         var (meResponse, me) = await signedIn.GETAsync<GetMe, GetMeResponse>();
         Assert.Equal(HttpStatusCode.OK, meResponse.StatusCode);
-        Assert.Equal(annaId, me.Person.Id);
+        Assert.Equal(annaId, me.Person?.Id);
         await ctx
             .Expected.Account(ctx.Identity.Accounts.IdOf("stray"))
             .ToBeLinkedTo(annaId)
@@ -1380,7 +1380,7 @@ public sealed class RedeemInvitationTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var token = await InvitationSteps.InviteAndReadTokenAsync(
             _fixture,
             manager,
@@ -1399,6 +1399,45 @@ public sealed class RedeemInvitationTests
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         await AssertRefusedOnAsync(response, LoginEmailField, ct);
         await ctx.Expected.AccountOfPerson(annaId).ToNotExist().AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseAsTaken_When_TheChosenEmailIsTheManagingLogins()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var annaEmail = InvitationSteps.UniqueContactEmail("anna");
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity.AddEligiblePerson("anna", "Anna", annaEmail, _fixture.Today)
+                ),
+            ct
+        );
+        var annaId = ctx.Identity.People.IdOf("anna");
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var token = await InvitationSteps.InviteAndReadTokenAsync(
+            _fixture,
+            manager,
+            annaId,
+            annaEmail,
+            ct
+        );
+
+        var (response, _) = await ClaimSteps.ClaimAsync(
+            _fixture.CreateClient(),
+            token,
+            ApiTestFixture.ManagingLoginEmail,
+            ApiTestFixture.ManagingLoginPassword
+        );
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        await AssertRefusedOnAsync(response, LoginEmailField, ct);
+        await ctx
+            .Expected.AccountOfPerson(annaId)
+            .ToNotExist()
+            .Account(_fixture.ManagingLogin.AccountId)
+            .ToBeTheManagingLogin()
+            .AssertAsync(ct);
     }
 
     [Theory]
@@ -1556,7 +1595,7 @@ public sealed class RedeemInvitationTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var token = await InvitationSteps.InviteAndReadTokenAsync(
             _fixture,
             manager,
@@ -1584,7 +1623,7 @@ public sealed class RedeemInvitationTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var issued = await InvitationSteps.IssueRecoveryAsync(manager, annaId);
 
         return (ctx, annaId, issued.Code);
@@ -1614,7 +1653,7 @@ public sealed class RedeemInvitationTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var token = await InvitationSteps.InviteAndReadTokenAsync(
             _fixture,
             manager,
@@ -1647,7 +1686,7 @@ public sealed class RedeemInvitationTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var issued = await InvitationSteps.InviteInPersonAsync(manager, annaId);
 
         return (ctx, annaId, issued.Code);

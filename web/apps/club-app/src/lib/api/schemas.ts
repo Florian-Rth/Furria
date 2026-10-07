@@ -35,7 +35,7 @@ export type RoleRef = z.infer<typeof RoleRefSchema>;
 
 export const ContactChangeSchema = z.object({
   at: z.iso.datetime({ offset: true }),
-  changedBy: PersonRefSchema,
+  changedBy: PersonRefSchema.nullable(),
 });
 export type ContactChange = z.infer<typeof ContactChangeSchema>;
 
@@ -76,7 +76,7 @@ export type MePasskey = z.infer<typeof MePasskeySchema>;
 export const MeSchema = z.object({
   accountId: z.number().int(),
   email: z.string(),
-  person: MePersonSchema,
+  person: MePersonSchema.nullable(),
   membership: MeMembershipSchema,
   isAffiliated: z.boolean(),
   permissionKeys: z.array(z.string()),
@@ -86,9 +86,13 @@ export const MeSchema = z.object({
 });
 export type Me = z.infer<typeof MeSchema>;
 
+export const PersonalMeSchema = MeSchema.extend({ person: MePersonSchema });
+export type PersonalMe = z.infer<typeof PersonalMeSchema>;
+
 export const PERMISSION_KEYS = {
   personsReadDetails: 'persons.read_details',
   personsManage: 'persons.manage',
+  personsDelete: 'persons.delete',
   groupsManage: 'groups.manage',
   rolesManage: 'roles.manage',
   clubRead: 'club.read',

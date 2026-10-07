@@ -60,7 +60,7 @@ public sealed class GetPersonByIdTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("alice"));
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -73,6 +73,75 @@ public sealed class GetPersonByIdTests
         Assert.Equal("Großfurra", result.City);
         Assert.Equal(BornIn1996, result.BirthDate);
         Assert.True(result.ContactVisibleToMembers);
+    }
+
+    [Fact]
+    public async Task Should_SayWhoArchivedHerAndWhen_When_SheIsArchived()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddPerson("paula", "Paula", "Brendel")
+                        .AddPerson("anna", "Anna", "Kessler")
+                        .AddArchive("paula", ArchivedIn2024, "anna")
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("paula"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var archive = Assert.IsType<PersonArchiveDto>(result.Archive);
+        Assert.Equal(ArchivedIn2024, archive.ArchivedOn);
+        Assert.NotNull(archive.ArchivedBy);
+        Assert.Equal(ctx.Identity.People.IdOf("anna"), archive.ArchivedBy.PersonId);
+        Assert.Equal("Anna", archive.ArchivedBy.FirstName);
+        Assert.Equal("Kessler", archive.ArchivedBy.LastName);
+    }
+
+    [Fact]
+    public async Task Should_ShowTheArchiveNamingNobody_When_TheArchiverWasDeleted()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddPerson("paula", "Paula", "Brendel")
+                        .AddPerson("anna", "Anna", "Kessler")
+                        .AddArchive("paula", ArchivedIn2024, "anna")
+                ),
+            ct
+        );
+        await _fixture.DeletePersonDirectlyAsync(ctx.Identity.People.IdOf("anna"), ct);
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("paula"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var archive = Assert.IsType<PersonArchiveDto>(result.Archive);
+        Assert.Equal(ArchivedIn2024, archive.ArchivedOn);
+        Assert.Null(archive.ArchivedBy);
+    }
+
+    [Fact]
+    public async Task Should_ShowNoArchive_When_SheIsNotArchived()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity => identity.AddPerson("paula", "Paula", "Brendel")),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("paula"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Null(result.Archive);
     }
 
     [Fact]
@@ -90,7 +159,7 @@ public sealed class GetPersonByIdTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("frank"));
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -120,7 +189,7 @@ public sealed class GetPersonByIdTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("rita"));
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -146,7 +215,7 @@ public sealed class GetPersonByIdTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("nora"));
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -178,7 +247,7 @@ public sealed class GetPersonByIdTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("bea"));
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -228,7 +297,7 @@ public sealed class GetPersonByIdTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("paula"));
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -281,7 +350,7 @@ public sealed class GetPersonByIdTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("paula"));
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -290,12 +359,293 @@ public sealed class GetPersonByIdTests
     }
 
     [Fact]
+    public async Task Should_NameWhatStillRuns_When_SheRunsAGroupSitsOnTheBoardAndHoldsAKey()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddPerson("paula", "Paula", "Brendel"))
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("tanzgarde", "Tanzgarde")
+                            .AddGroupAdmin(
+                                "paula-tanzgarde",
+                                "tanzgarde",
+                                "paula",
+                                "Trainerin",
+                                JoinedIn2017
+                            )
+                    )
+                    .Club(club =>
+                        club.AddBoardOffice("kassenwart", "Kassenwart")
+                            .AddBoardSeat("paula-kassenwart", "kassenwart", "paula", RejoinedIn2021)
+                            .AddVenue("lager", "Requisitenlager")
+                            .AddKeyHolding("paula-lager", "lager", "paula", RejoinedIn2021)
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("paula"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var tenure = Assert.Single(result.UnendedGroupAdminTenures);
+        Assert.Equal(ctx.Groups.Groups.IdOf("tanzgarde"), tenure.GroupId);
+        Assert.Equal("Tanzgarde", tenure.Name);
+        Assert.Equal("Trainerin", tenure.Function);
+        Assert.Equal(JoinedIn2017, tenure.SinceOn);
+        Assert.Null(tenure.UntilOn);
+        var seat = Assert.Single(result.UnendedBoardSeats);
+        Assert.Equal(ctx.Club.BoardOffices.IdOf("kassenwart"), seat.BoardOfficeId);
+        Assert.Equal("Kassenwart", seat.Name);
+        Assert.Equal(RejoinedIn2021, seat.SinceOn);
+        Assert.Null(seat.UntilOn);
+        var key = Assert.Single(result.UnendedKeyHoldings);
+        Assert.Equal(ctx.Club.Venues.IdOf("lager"), key.VenueId);
+        Assert.Equal("Requisitenlager", key.Name);
+        Assert.Equal(RejoinedIn2021, key.SinceOn);
+        Assert.Null(key.UntilOn);
+    }
+
+    [Fact]
+    public async Task Should_LeaveOutOnlyTheEndedOnes_When_SomeEndedYesterdayAndSomeEndToday()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var today = _fixture.Today;
+        var yesterday = today.AddDays(-1);
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddPerson("paula", "Paula", "Brendel"))
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("tanzgarde", "Tanzgarde")
+                            .AddGroup("elferrat", "Elferrat")
+                            .AddGroupAdmin(
+                                "paula-tanzgarde",
+                                "tanzgarde",
+                                "paula",
+                                sinceOn: JoinedIn2017,
+                                untilOn: yesterday
+                            )
+                            .AddGroupAdmin(
+                                "paula-elferrat",
+                                "elferrat",
+                                "paula",
+                                sinceOn: JoinedIn2017,
+                                untilOn: today
+                            )
+                    )
+                    .Club(club =>
+                        club.AddBoardOffice("kassenwart", "Kassenwart")
+                            .AddBoardOffice("praesidium", "Praesidium")
+                            .AddBoardSeat(
+                                "paula-kassenwart",
+                                "kassenwart",
+                                "paula",
+                                JoinedIn2017,
+                                yesterday
+                            )
+                            .AddBoardSeat(
+                                "paula-praesidium",
+                                "praesidium",
+                                "paula",
+                                JoinedIn2017,
+                                today
+                            )
+                            .AddVenue("lager", "Requisitenlager")
+                            .AddVenue("halle", "Sporthalle")
+                            .AddKeyHolding("paula-lager", "lager", "paula", JoinedIn2017, yesterday)
+                            .AddKeyHolding("paula-halle", "halle", "paula", JoinedIn2017, today)
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("paula"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var tenure = Assert.Single(result.UnendedGroupAdminTenures);
+        Assert.Equal(ctx.Groups.Groups.IdOf("elferrat"), tenure.GroupId);
+        Assert.Equal(today, tenure.UntilOn);
+        var seat = Assert.Single(result.UnendedBoardSeats);
+        Assert.Equal(ctx.Club.BoardOffices.IdOf("praesidium"), seat.BoardOfficeId);
+        Assert.Equal(today, seat.UntilOn);
+        var key = Assert.Single(result.UnendedKeyHoldings);
+        Assert.Equal(ctx.Club.Venues.IdOf("halle"), key.VenueId);
+        Assert.Equal(today, key.UntilOn);
+    }
+
+    [Fact]
+    public async Task Should_NameTheFutureOnesToo_When_TheyBeginOnlyTomorrow()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var tomorrow = _fixture.Today.AddDays(1);
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddPerson("paula", "Paula", "Brendel"))
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("tanzgarde", "Tanzgarde")
+                            .AddGroupAdmin(
+                                "paula-tanzgarde",
+                                "tanzgarde",
+                                "paula",
+                                sinceOn: tomorrow
+                            )
+                    )
+                    .Club(club =>
+                        club.AddBoardOffice("kassenwart", "Kassenwart")
+                            .AddBoardSeat("paula-kassenwart", "kassenwart", "paula", tomorrow)
+                            .AddVenue("lager", "Requisitenlager")
+                            .AddKeyHolding("paula-lager", "lager", "paula", tomorrow)
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("paula"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(tomorrow, Assert.Single(result.UnendedGroupAdminTenures).SinceOn);
+        Assert.Equal(tomorrow, Assert.Single(result.UnendedBoardSeats).SinceOn);
+        Assert.Equal(tomorrow, Assert.Single(result.UnendedKeyHoldings).SinceOn);
+    }
+
+    [Fact]
+    public async Task Should_LeaveOutTheTenureAndTheSeat_When_TheirGroupAndOfficeAreArchived()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddPerson("paula", "Paula", "Brendel"))
+                    .Groups(groups =>
+                        groups
+                            .AddGroup(
+                                "showtanz",
+                                "Showtanz",
+                                "Aufgeloest.",
+                                isRecruiting: false,
+                                ArchivedIn2024
+                            )
+                            .AddGroupAdmin(
+                                "paula-showtanz",
+                                "showtanz",
+                                "paula",
+                                sinceOn: JoinedIn2017
+                            )
+                    )
+                    .Club(club =>
+                        club.AddBoardOffice("beisitz", "Beisitz", archivedOn: ArchivedIn2024)
+                            .AddBoardSeat("paula-beisitz", "beisitz", "paula", JoinedIn2017)
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("paula"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Empty(result.UnendedGroupAdminTenures);
+        Assert.Empty(result.UnendedBoardSeats);
+    }
+
+    [Fact]
+    public async Task Should_StillNameTheKey_When_ItsVenueIsArchived()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddPerson("paula", "Paula", "Brendel"))
+                    .Club(club =>
+                        club.AddVenue("altes-lager", "Altes Lager", archivedOn: ArchivedIn2024)
+                            .AddKeyHolding(
+                                "paula-altes-lager",
+                                "altes-lager",
+                                "paula",
+                                JoinedIn2017
+                            )
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("paula"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var key = Assert.Single(result.UnendedKeyHoldings);
+        Assert.Equal(ctx.Club.Venues.IdOf("altes-lager"), key.VenueId);
+    }
+
+    [Fact]
+    public async Task Should_OrderWhatStillRunsTheWayTheClubDoes_When_SheHoldsSeveralOfEach()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddPerson("paula", "Paula", "Brendel"))
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("tanzgarde", "Tanzgarde")
+                            .AddGroup("elferrat", "Elferrat")
+                            .AddGroupAdmin(
+                                "paula-tanzgarde",
+                                "tanzgarde",
+                                "paula",
+                                sinceOn: JoinedIn2017
+                            )
+                            .AddGroupAdmin(
+                                "paula-elferrat",
+                                "elferrat",
+                                "paula",
+                                sinceOn: RejoinedIn2021
+                            )
+                    )
+                    .Club(club =>
+                        club.AddBoardOffice("kassenwart", "Kassenwart", sortOrder: 2)
+                            .AddBoardOffice("praesidium", "Praesidium", sortOrder: 1)
+                            .AddBoardSeat("paula-kassenwart", "kassenwart", "paula", JoinedIn2017)
+                            .AddBoardSeat("paula-praesidium", "praesidium", "paula", RejoinedIn2021)
+                            .AddVenue("halle", "Sporthalle", sortOrder: 2)
+                            .AddVenue("lager", "Requisitenlager", sortOrder: 3)
+                            .AddVenue("buero", "Vereinsbuero", sortOrder: 1)
+                            .AddKeyHolding("paula-halle", "halle", "paula", JoinedIn2017)
+                            .AddKeyHolding("paula-lager", "lager", "paula", JoinedIn2017)
+                            .AddKeyHolding("paula-buero", "buero", "paula", RejoinedIn2021)
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("paula"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(
+            ["Elferrat", "Tanzgarde"],
+            result.UnendedGroupAdminTenures.Select(tenure => tenure.Name)
+        );
+        Assert.Equal(
+            ["Praesidium", "Kassenwart"],
+            result.UnendedBoardSeats.Select(seat => seat.Name)
+        );
+        Assert.Equal(
+            ["Vereinsbuero", "Sporthalle", "Requisitenlager"],
+            result.UnendedKeyHoldings.Select(key => key.Name)
+        );
+    }
+
+    [Fact]
     public async Task Should_ReturnNotFound_When_ThePersonDoesNotExist()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await ReadPersonAsync(client, 999_999);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -335,6 +685,41 @@ public sealed class GetPersonByIdTests
         Assert.Equal(AccountAccessState.Active, result.Access.State);
         Assert.False(result.Access.Rights.CanInvite);
         Assert.True(result.Access.Rights.CanManageAccount);
+    }
+
+    [Fact]
+    public async Task Should_ShowThePersonWithoutAccessRights_When_TheCallerOnlyHoldsPersonsDelete()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddPerson("anna", "Anna", "Muster")
+                            .AddAccount("anna")
+                            .AddPerson("ilka", "Ilka", "Reineke")
+                            .AddAccount("ilka")
+                    )
+                    .Roles(roles =>
+                        roles.AddRoleWithHolder(
+                            "loeschung",
+                            "ilka-loeschung",
+                            "Löschung",
+                            "ilka",
+                            FurriaPermissions.PersonsDelete
+                        )
+                    ),
+            ct
+        );
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+
+        var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("anna"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("Anna", result.FirstName);
+        Assert.False(result.Access.Rights.CanInvite);
+        Assert.False(result.Access.Rights.CanManageAccount);
     }
 
     [Fact]
@@ -400,7 +785,7 @@ public sealed class GetPersonByIdTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var payload = await client.GetStringAsync(
             $"{PersonsRoute}/{ctx.Identity.People.IdOf("bea")}",
             ct
@@ -421,12 +806,16 @@ public sealed class GetPersonByIdTests
                 "birthDate",
                 "contactVisibleToMembers",
                 "contactChange",
+                "archive",
                 "membershipState",
                 "memberSince",
                 "memberships",
                 "feeReductions",
                 "groups",
                 "roles",
+                "unendedGroupAdminTenures",
+                "unendedBoardSeats",
+                "unendedKeyHoldings",
                 "access",
             ],
             fields
@@ -450,7 +839,7 @@ public sealed class GetPersonByIdTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("anna"));
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -475,7 +864,7 @@ public sealed class GetPersonByIdTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var issued = await InvitationSteps.InviteAsync(manager, annaId);
 
         var (response, result) = await ReadPersonAsync(manager, annaId);
@@ -488,10 +877,10 @@ public sealed class GetPersonByIdTests
         Assert.Equal(_fixture.TimeProvider.GetUtcNow(), invitation.IssuedAt);
         Assert.Equal(issued.ExpiresAt, invitation.ExpiresAt);
         Assert.False(invitation.IsExpired);
-        Assert.Equal(ctx.Identity.BootstrapAdmin.PersonId, invitation.IssuedBy?.PersonId);
+        Assert.Null(invitation.IssuedBy);
         var invited = Assert.Single(result.Access.History);
         Assert.Equal(AccountEventKind.Invited, invited.Kind);
-        Assert.Equal(ctx.Identity.BootstrapAdmin.PersonId, invited.Actor?.PersonId);
+        Assert.Null(invited.Actor);
     }
 
     [Fact]
@@ -507,7 +896,7 @@ public sealed class GetPersonByIdTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         await InvitationSteps.InviteAsync(manager, annaId);
 
         GetPersonByIdResponse? later = null;
@@ -515,7 +904,7 @@ public sealed class GetPersonByIdTests
             TimeSpan.FromDays(15),
             async () =>
             {
-                var laterManager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+                var laterManager = await ctx.Identity.ManagingLoginClientAsync(ct);
                 later = (await ReadPersonAsync(laterManager, annaId)).Result;
             }
         );
@@ -539,7 +928,7 @@ public sealed class GetPersonByIdTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var token = await InvitationSteps.InviteAndReadTokenAsync(
             _fixture,
             manager,
@@ -563,8 +952,8 @@ public sealed class GetPersonByIdTests
             result.Access.History.Select(entry => entry.Kind).ToArray()
         );
         Assert.Equal(
-            [annaId, ctx.Identity.BootstrapAdmin.PersonId],
-            result.Access.History.Select(entry => entry.Actor?.PersonId ?? 0).ToArray()
+            [annaId, (int?)null],
+            result.Access.History.Select(entry => entry.Actor?.PersonId).ToArray()
         );
     }
 
@@ -587,7 +976,7 @@ public sealed class GetPersonByIdTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("anna"));
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -618,7 +1007,7 @@ public sealed class GetPersonByIdTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("mia"));
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -651,7 +1040,7 @@ public sealed class GetPersonByIdTests
         );
         await _fixture.DeletePersonDirectlyAsync(ctx.Identity.People.IdOf("anna"), ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (_, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("mia"));
 
         var admission = Assert.IsType<PersonMembershipAdmissionDto>(
@@ -676,7 +1065,7 @@ public sealed class GetPersonByIdTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (_, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("mia"));
 
         Assert.Null(Assert.Single(result.Memberships).Admission);
@@ -698,19 +1087,20 @@ public sealed class GetPersonByIdTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("paula"));
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var change = Assert.IsType<PersonContactChangeDto>(result.ContactChange);
         Assert.Equal(changedAt, change.At);
+        Assert.NotNull(change.ChangedBy);
         Assert.Equal(ctx.Identity.People.IdOf("anna"), change.ChangedBy.PersonId);
         Assert.Equal("Anna", change.ChangedBy.FirstName);
         Assert.Equal("Kessler", change.ChangedBy.LastName);
     }
 
     [Fact]
-    public async Task Should_ShowNoContactChange_When_TheEditorWasDeleted()
+    public async Task Should_ShowTheContactChangeNamingNobody_When_TheEditorWasDeleted()
     {
         var ct = TestContext.Current.CancellationToken;
         var changedAt = _fixture.TimeProvider.GetUtcNow().AddDays(-3);
@@ -726,11 +1116,13 @@ public sealed class GetPersonByIdTests
         );
         await _fixture.DeletePersonDirectlyAsync(ctx.Identity.People.IdOf("anna"), ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("paula"));
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Null(result.ContactChange);
+        var change = Assert.IsType<PersonContactChangeDto>(result.ContactChange);
+        Assert.Equal(changedAt, change.At);
+        Assert.Null(change.ChangedBy);
     }
 
     [Fact]
@@ -743,7 +1135,7 @@ public sealed class GetPersonByIdTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("paula"));
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -759,7 +1151,7 @@ public sealed class GetPersonByIdTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("anna"));
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);

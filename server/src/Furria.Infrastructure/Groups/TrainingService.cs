@@ -158,7 +158,7 @@ public sealed class TrainingService
         IReadOnlyDictionary<VenueCollisionQuery, IReadOnlyList<CalendarEntrySummary>>
     > CollisionsOfAsync(
         IReadOnlyList<TrainingCandidate> candidates,
-        int viewerPersonId,
+        int? viewerPersonId,
         CancellationToken ct
     ) =>
         _calendarService.FindVenueCollisionsAsync(
@@ -264,7 +264,7 @@ public sealed class TrainingService
             .ToDictionary(slot => slot.VenueId ?? 0, slot => slot.Venue?.Name ?? "");
 
     [Pure]
-    private static VenueCollisionQuery ToProbe(TrainingCandidate candidate, int viewerPersonId) =>
+    private static VenueCollisionQuery ToProbe(TrainingCandidate candidate, int? viewerPersonId) =>
         new()
         {
             ViewerPersonId = viewerPersonId,
@@ -277,7 +277,7 @@ public sealed class TrainingService
     [Pure]
     private static IReadOnlyList<CalendarEntrySummary> FoundFor(
         TrainingCandidate candidate,
-        int viewerPersonId,
+        int? viewerPersonId,
         IReadOnlyDictionary<VenueCollisionQuery, IReadOnlyList<CalendarEntrySummary>> found
     )
     {

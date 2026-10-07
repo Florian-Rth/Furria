@@ -14,6 +14,8 @@ public sealed class PutMembershipPauseTests
 {
     private const string ConflictField = "conflict";
     private const string ValidationField = "request";
+    private const string ArchivedPersonMessage =
+        "Paula ist archiviert – Ruhezeiten lassen sich erst nach dem Wiederherstellen festhalten.";
     private const int PausedFrom2018 = 2018;
     private const int PausedUntil2019 = 2019;
     private const int BeforeTheMembership = 2015;
@@ -21,6 +23,7 @@ public sealed class PutMembershipPauseTests
     private const int PausedUntil2023 = 2023;
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
+    private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
     private static readonly DateOnly LeftIn2020 = new(2020, 3, 1);
     private static readonly DateOnly RejoinedIn2022 = new(2022, 1, 1);
 
@@ -37,7 +40,7 @@ public sealed class PutMembershipPauseTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithClosedMembershipPauseAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutMembershipPause, PutMembershipPauseRequest>(
             new()
             {
@@ -57,12 +60,54 @@ public sealed class PutMembershipPauseTests
     }
 
     [Fact]
+    public async Task Should_RefuseAndKeepTheSpan_When_SheIsArchived()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddPerson("paula", "Paula", "Brendel")
+                        .AddMembership("paula-erste", "paula", JoinedIn2017, LeftIn2020)
+                        .AddMembershipPause(
+                            "paula-ruhte",
+                            "paula-erste",
+                            PausedFrom2018,
+                            PausedUntil2019
+                        )
+                        .AddArchive("paula", ArchivedIn2021)
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var response = await client.PUTAsync<PutMembershipPause, PutMembershipPauseRequest>(
+            new()
+            {
+                PersonId = ctx.Identity.People.IdOf("paula"),
+                MembershipId = ctx.Identity.Memberships.IdOf("paula-erste"),
+                PauseId = ctx.Identity.Pauses.IdOf("paula-ruhte"),
+                FirstSessionYear = PausedFrom2018,
+                LastSessionYear = PausedFrom2018,
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        var failures = await ReadFailuresAsync(response, ct);
+        Assert.Equal([ArchivedPersonMessage], failures[ConflictField]);
+        await ctx
+            .Expected.MembershipPause(ctx.Identity.Pauses.IdOf("paula-ruhte"))
+            .ToHaveSpan(PausedFrom2018, PausedUntil2019)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_ReturnUnprocessableEntity_When_TheSpanLeavesTheMembership()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithClosedMembershipPauseAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutMembershipPause, PutMembershipPauseRequest>(
             new()
             {
@@ -112,7 +157,7 @@ public sealed class PutMembershipPauseTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutMembershipPause, PutMembershipPauseRequest>(
             new()
             {
@@ -151,7 +196,7 @@ public sealed class PutMembershipPauseTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutMembershipPause, PutMembershipPauseRequest>(
             new()
             {
@@ -176,7 +221,7 @@ public sealed class PutMembershipPauseTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithClosedMembershipPauseAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutMembershipPause, PutMembershipPauseRequest>(
             new()
             {
@@ -216,7 +261,7 @@ public sealed class PutMembershipPauseTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutMembershipPause, PutMembershipPauseRequest>(
             new()
             {
@@ -264,7 +309,7 @@ public sealed class PutMembershipPauseTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutMembershipPause, PutMembershipPauseRequest>(
             new()
             {
@@ -289,7 +334,7 @@ public sealed class PutMembershipPauseTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithClosedMembershipPauseAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutMembershipPause, PutMembershipPauseRequest>(
             new()
             {
@@ -411,7 +456,7 @@ public sealed class PutMembershipPauseTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutMembershipPause, PutMembershipPauseRequest>(
             new()
             {

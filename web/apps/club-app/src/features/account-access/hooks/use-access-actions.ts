@@ -9,6 +9,6 @@ export const useAccessActions = (subject: AccessSubject): AccessActions => {
   return accessActionsOf({
     access: subject.access,
     email: subject.email,
-    isOwnAccount: me.data?.person.id === subject.personId,
+    isOwnAccount: me.data?.person?.id === subject.personId,
   });
 };

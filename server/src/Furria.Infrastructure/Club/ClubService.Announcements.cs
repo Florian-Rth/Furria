@@ -52,13 +52,15 @@ public sealed partial class ClubService
             Body = row.Body,
             PublishedAt = row.PublishedAt,
             ValidUntil = row.ValidUntil,
-            Author = new ClubHubPerson
-            {
-                PersonId = row.AuthorPersonId,
-                FirstName = row.FirstName,
-                LastName = row.LastName,
-                PortraitUrl = row.PortraitUrl,
-                OfficeName = officeNames.GetValueOrDefault(row.AuthorPersonId),
-            },
+            Author = row.Author is { } author
+                ? new ClubHubPerson
+                {
+                    PersonId = author.PersonId,
+                    FirstName = author.FirstName,
+                    LastName = author.LastName,
+                    PortraitUrl = author.PortraitUrl,
+                    OfficeName = officeNames.GetValueOrDefault(author.PersonId),
+                }
+                : null,
         };
 }

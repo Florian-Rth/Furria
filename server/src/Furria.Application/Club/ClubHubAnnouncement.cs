@@ -12,5 +12,5 @@ public sealed record ClubHubAnnouncement
 
     public required DateOnly? ValidUntil { get; init; }
 
-    public required ClubHubPerson Author { get; init; }
+    public required ClubHubPerson? Author { get; init; }
 }

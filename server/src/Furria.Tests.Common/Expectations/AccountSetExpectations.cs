@@ -23,6 +23,19 @@ public sealed class AccountSetExpectations
                 )
         );
 
+    public Expected ToHoldOneManagingLoginAt(string email) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var managingLogin = await dbContext
+                    .Users.AsNoTracking()
+                    .SingleAsync(account => account.IsManagingLogin, ct);
+
+                Assert.Equal(email, managingLogin.Email);
+                Assert.Null(managingLogin.PersonId);
+            }
+        );
+
     public Expected ToHaveCount(int count) =>
         _expected.Enqueue(
             async (dbContext, ct) =>

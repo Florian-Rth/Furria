@@ -44,7 +44,10 @@ public sealed class ManagementService
         var today = ClubClock.Today(_timeProvider);
         var managesClub = granted.Contains(FurriaPermissions.ClubManage);
         var managesPersons = granted.Contains(FurriaPermissions.PersonsManage);
-        var readsPersons = managesPersons || granted.Contains(FurriaPermissions.AccountsManage);
+        var readsPersons =
+            managesPersons
+            || granted.Contains(FurriaPermissions.AccountsManage)
+            || granted.Contains(FurriaPermissions.PersonsDelete);
 
         return new ManageHubDetails
         {
@@ -126,7 +129,10 @@ public sealed class ManagementService
     private async Task<ManageHubPersons> PersonsAsync(DateOnly today, CancellationToken ct) =>
         new()
         {
-            PersonCount = await _dbContext.People.CountAsync(ct),
+            PersonCount = await _dbContext.People.CountAsync(
+                person => person.ArchivedOn == null,
+                ct
+            ),
             MemberCount = await _dbContext.People.CountAsync(
                 person =>
                     person.Memberships.Any(membership =>

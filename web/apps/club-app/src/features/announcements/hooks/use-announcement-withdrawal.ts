@@ -1,5 +1,5 @@
-import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
+import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useWithdrawAnnouncementMutation } from '../api';
 import type { Announcement } from '../schemas';
@@ -19,7 +19,7 @@ export const useAnnouncementWithdrawal = (
   const [isOpen, setIsOpen] = useState(false);
   const [rejection, setRejection] = useState<string | null>(null);
   const withdraw = useWithdrawAnnouncementMutation();
-  const navigate = useNavigate();
+  const goBackTo = useGoBackTo();
 
   const open = (): void => {
     setRejection(null);
@@ -39,7 +39,7 @@ export const useAnnouncementWithdrawal = (
     withdraw.mutate(announcement.announcementId, {
       onSuccess: () => {
         setIsOpen(false);
-        void navigate({ to: '/announcements' });
+        void goBackTo({ to: '/announcements', ignoreBlocker: true });
       },
       onError: (error) => {
         setRejection(toWriteErrorMessage(error));

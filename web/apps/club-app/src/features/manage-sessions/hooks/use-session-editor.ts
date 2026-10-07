@@ -1,10 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 import { toLandingKey } from '@/features/write';
 import { relevantSessionYear } from '@/lib/club';
+import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useCreateSessionRecordMutation, useUpdateSessionRecordMutation } from '../api';
 import type { SessionRecordForm, SessionRecordSummary } from '../schemas';
@@ -36,7 +36,7 @@ export const useSessionEditor = (
   const [logoRejection, setLogoRejection] = useState<string | null>(null);
   const createMutation = useCreateSessionRecordMutation();
   const updateMutation = useUpdateSessionRecordMutation();
-  const navigate = useNavigate();
+  const goBackTo = useGoBackTo();
 
   const form = useForm<SessionRecordForm>({
     resolver: zodResolver(SessionRecordFormSchema),
@@ -89,10 +89,10 @@ export const useSessionEditor = (
   };
 
   const landOn = (sessionId: number): void => {
-    void navigate({
+    void goBackTo({
       to: '/manage/sessions',
       search: (previous) => ({ ...previous, changed: toLandingKey('session', sessionId) }),
-      replace: true,
+      ignoreBlocker: true,
     });
   };
 

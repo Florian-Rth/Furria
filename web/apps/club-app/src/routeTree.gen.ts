@@ -17,17 +17,16 @@ import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as InvitationCodeRouteImport } from './routes/invitation_.code'
-import { Route as AppProfileRouteImport } from './routes/_app/profile'
 import { Route as AppMoreRouteImport } from './routes/_app/more'
 import { Route as AppGroupsRouteImport } from './routes/_app/groups'
 import { Route as AppClubRouteImport } from './routes/_app/club'
 import { Route as AppCalendarRouteImport } from './routes/_app/calendar'
 import { Route as AppAnnouncementsRouteImport } from './routes/_app/announcements'
+import { Route as AppPersonalRouteImport } from './routes/_app/_personal'
 import { Route as AppAffiliatedRouteImport } from './routes/_app/_affiliated'
 import { Route as AppSplatRouteImport } from './routes/_app/$'
 import { Route as AppManageIndexRouteImport } from './routes/_app/manage.index'
 import { Route as AppLabIndexRouteImport } from './routes/_app/lab.index'
-import { Route as AppProfileSecurityRouteImport } from './routes/_app/profile_.security'
 import { Route as AppManageVenuesRouteImport } from './routes/_app/manage.venues'
 import { Route as AppManageSessionsRouteImport } from './routes/_app/manage.sessions'
 import { Route as AppManageRolesRouteImport } from './routes/_app/manage.roles'
@@ -43,10 +42,8 @@ import { Route as AppCalendarNewRouteImport } from './routes/_app/calendar_.new'
 import { Route as AppCalendarCalendarEntryIdRouteImport } from './routes/_app/calendar_.$calendarEntryId'
 import { Route as AppAnnouncementsNewRouteImport } from './routes/_app/announcements_.new'
 import { Route as AppAnnouncementsAnnouncementIdRouteImport } from './routes/_app/announcements_.$announcementId'
+import { Route as AppPersonalProfileRouteImport } from './routes/_app/_personal.profile'
 import { Route as AppAffiliatedMembersRouteImport } from './routes/_app/_affiliated.members'
-import { Route as AppProfileSecurityPasswordRouteImport } from './routes/_app/profile_.security_.password'
-import { Route as AppProfileSecurityLoginEmailRouteImport } from './routes/_app/profile_.security_.login-email'
-import { Route as AppProfileContactEditRouteImport } from './routes/_app/profile_.contact.edit'
 import { Route as AppManageVenuesNewRouteImport } from './routes/_app/manage.venues_.new'
 import { Route as AppManageVenuesVenueIdRouteImport } from './routes/_app/manage.venues_.$venueId'
 import { Route as AppManageSessionsNewRouteImport } from './routes/_app/manage.sessions_.new'
@@ -62,8 +59,8 @@ import { Route as AppManageApplicationsMembershipApplicationIdRouteImport } from
 import { Route as AppGroupsGroupIdTrainingsRouteImport } from './routes/_app/groups_.$groupId_.trainings'
 import { Route as AppGroupsGroupIdEditRouteImport } from './routes/_app/groups_.$groupId_.edit'
 import { Route as AppGroupsGroupIdAdministrationRouteImport } from './routes/_app/groups_.$groupId_.administration'
+import { Route as AppPersonalProfileSecurityRouteImport } from './routes/_app/_personal.profile_.security'
 import { Route as AppAffiliatedMembersPersonIdRouteImport } from './routes/_app/_affiliated.members_.$personId'
-import { Route as AppProfileSecurityPasskeysPasskeyIdRouteImport } from './routes/_app/profile_.security_.passkeys.$passkeyId'
 import { Route as AppManageVenuesVenueIdEditRouteImport } from './routes/_app/manage.venues_.$venueId_.edit'
 import { Route as AppManageSessionsSessionIdEditRouteImport } from './routes/_app/manage.sessions_.$sessionId.edit'
 import { Route as AppManageRolesRoleIdEditRouteImport } from './routes/_app/manage.roles_.$roleId_.edit'
@@ -81,6 +78,9 @@ import { Route as AppGroupsGroupIdMembershipsNewRouteImport } from './routes/_ap
 import { Route as AppGroupsGroupIdMembershipsMembershipIdRouteImport } from './routes/_app/groups_.$groupId_.memberships.$membershipId'
 import { Route as AppGroupsGroupIdAdminsNewRouteImport } from './routes/_app/groups_.$groupId_.admins.new'
 import { Route as AppGroupsGroupIdAdminsAdminIdRouteImport } from './routes/_app/groups_.$groupId_.admins.$adminId'
+import { Route as AppPersonalProfileSecurityPasswordRouteImport } from './routes/_app/_personal.profile_.security_.password'
+import { Route as AppPersonalProfileSecurityLoginEmailRouteImport } from './routes/_app/_personal.profile_.security_.login-email'
+import { Route as AppPersonalProfileContactEditRouteImport } from './routes/_app/_personal.profile_.contact.edit'
 import { Route as AppManageRolesRoleIdHoldingsNewRouteImport } from './routes/_app/manage.roles_.$roleId_.holdings.new'
 import { Route as AppManageRolesRoleIdHoldingsRoleHoldingIdRouteImport } from './routes/_app/manage.roles_.$roleId_.holdings.$roleHoldingId'
 import { Route as AppManagePersonsPersonIdPausesNewRouteImport } from './routes/_app/manage.persons_.$personId_.pauses.new'
@@ -95,6 +95,7 @@ import { Route as AppManageKeysVenueIdHoldingsNewRouteImport } from './routes/_a
 import { Route as AppManageGroupsKindsGroupKindIdEditRouteImport } from './routes/_app/manage.groups_.kinds.$groupKindId_.edit'
 import { Route as AppManageBoardBoardOfficeIdSeatsNewRouteImport } from './routes/_app/manage.board_.$boardOfficeId_.seats.new'
 import { Route as AppManageBoardBoardOfficeIdSeatsBoardSeatIdRouteImport } from './routes/_app/manage.board_.$boardOfficeId_.seats.$boardSeatId'
+import { Route as AppPersonalProfileSecurityPasskeysPasskeyIdRouteImport } from './routes/_app/_personal.profile_.security_.passkeys.$passkeyId'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -135,11 +136,6 @@ const InvitationCodeRoute = InvitationCodeRouteImport.update({
   path: '/invitation/code',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppProfileRoute = AppProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppMoreRoute = AppMoreRouteImport.update({
   id: '/more',
   path: '/more',
@@ -165,6 +161,10 @@ const AppAnnouncementsRoute = AppAnnouncementsRouteImport.update({
   path: '/announcements',
   getParentRoute: () => AppRoute,
 } as any)
+const AppPersonalRoute = AppPersonalRouteImport.update({
+  id: '/_personal',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAffiliatedRoute = AppAffiliatedRouteImport.update({
   id: '/_affiliated',
   getParentRoute: () => AppRoute,
@@ -182,11 +182,6 @@ const AppManageIndexRoute = AppManageIndexRouteImport.update({
 const AppLabIndexRoute = AppLabIndexRouteImport.update({
   id: '/lab/',
   path: '/lab/',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppProfileSecurityRoute = AppProfileSecurityRouteImport.update({
-  id: '/profile_/security',
-  path: '/profile/security',
   getParentRoute: () => AppRoute,
 } as any)
 const AppManageVenuesRoute = AppManageVenuesRouteImport.update({
@@ -266,27 +261,15 @@ const AppAnnouncementsAnnouncementIdRoute =
     path: '/announcements/$announcementId',
     getParentRoute: () => AppRoute,
   } as any)
+const AppPersonalProfileRoute = AppPersonalProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AppPersonalRoute,
+} as any)
 const AppAffiliatedMembersRoute = AppAffiliatedMembersRouteImport.update({
   id: '/members',
   path: '/members',
   getParentRoute: () => AppAffiliatedRoute,
-} as any)
-const AppProfileSecurityPasswordRoute =
-  AppProfileSecurityPasswordRouteImport.update({
-    id: '/profile_/security_/password',
-    path: '/profile/security/password',
-    getParentRoute: () => AppRoute,
-  } as any)
-const AppProfileSecurityLoginEmailRoute =
-  AppProfileSecurityLoginEmailRouteImport.update({
-    id: '/profile_/security_/login-email',
-    path: '/profile/security/login-email',
-    getParentRoute: () => AppRoute,
-  } as any)
-const AppProfileContactEditRoute = AppProfileContactEditRouteImport.update({
-  id: '/profile_/contact/edit',
-  path: '/profile/contact/edit',
-  getParentRoute: () => AppRoute,
 } as any)
 const AppManageVenuesNewRoute = AppManageVenuesNewRouteImport.update({
   id: '/manage/venues_/new',
@@ -370,17 +353,17 @@ const AppGroupsGroupIdAdministrationRoute =
     path: '/groups/$groupId/administration',
     getParentRoute: () => AppRoute,
   } as any)
+const AppPersonalProfileSecurityRoute =
+  AppPersonalProfileSecurityRouteImport.update({
+    id: '/profile_/security',
+    path: '/profile/security',
+    getParentRoute: () => AppPersonalRoute,
+  } as any)
 const AppAffiliatedMembersPersonIdRoute =
   AppAffiliatedMembersPersonIdRouteImport.update({
     id: '/members_/$personId',
     path: '/members/$personId',
     getParentRoute: () => AppAffiliatedRoute,
-  } as any)
-const AppProfileSecurityPasskeysPasskeyIdRoute =
-  AppProfileSecurityPasskeysPasskeyIdRouteImport.update({
-    id: '/profile_/security_/passkeys/$passkeyId',
-    path: '/profile/security/passkeys/$passkeyId',
-    getParentRoute: () => AppRoute,
   } as any)
 const AppManageVenuesVenueIdEditRoute =
   AppManageVenuesVenueIdEditRouteImport.update({
@@ -483,6 +466,24 @@ const AppGroupsGroupIdAdminsAdminIdRoute =
     path: '/groups/$groupId/admins/$adminId',
     getParentRoute: () => AppRoute,
   } as any)
+const AppPersonalProfileSecurityPasswordRoute =
+  AppPersonalProfileSecurityPasswordRouteImport.update({
+    id: '/profile_/security_/password',
+    path: '/profile/security/password',
+    getParentRoute: () => AppPersonalRoute,
+  } as any)
+const AppPersonalProfileSecurityLoginEmailRoute =
+  AppPersonalProfileSecurityLoginEmailRouteImport.update({
+    id: '/profile_/security_/login-email',
+    path: '/profile/security/login-email',
+    getParentRoute: () => AppPersonalRoute,
+  } as any)
+const AppPersonalProfileContactEditRoute =
+  AppPersonalProfileContactEditRouteImport.update({
+    id: '/profile_/contact/edit',
+    path: '/profile/contact/edit',
+    getParentRoute: () => AppPersonalRoute,
+  } as any)
 const AppManageRolesRoleIdHoldingsNewRoute =
   AppManageRolesRoleIdHoldingsNewRouteImport.update({
     id: '/manage/roles_/$roleId_/holdings/new',
@@ -567,6 +568,12 @@ const AppManageBoardBoardOfficeIdSeatsBoardSeatIdRoute =
     path: '/manage/board/$boardOfficeId/seats/$boardSeatId',
     getParentRoute: () => AppRoute,
   } as any)
+const AppPersonalProfileSecurityPasskeysPasskeyIdRoute =
+  AppPersonalProfileSecurityPasskeysPasskeyIdRouteImport.update({
+    id: '/profile_/security_/passkeys/$passkeyId',
+    path: '/profile/security/passkeys/$passkeyId',
+    getParentRoute: () => AppPersonalRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
@@ -581,9 +588,9 @@ export interface FileRoutesByFullPath {
   '/club': typeof AppClubRoute
   '/groups': typeof AppGroupsRoute
   '/more': typeof AppMoreRoute
-  '/profile': typeof AppProfileRoute
   '/invitation/code': typeof InvitationCodeRoute
   '/members': typeof AppAffiliatedMembersRoute
+  '/profile': typeof AppPersonalProfileRoute
   '/announcements/$announcementId': typeof AppAnnouncementsAnnouncementIdRoute
   '/announcements/new': typeof AppAnnouncementsNewRoute
   '/calendar/$calendarEntryId': typeof AppCalendarCalendarEntryIdRoute
@@ -599,10 +606,10 @@ export interface FileRoutesByFullPath {
   '/manage/roles': typeof AppManageRolesRoute
   '/manage/sessions': typeof AppManageSessionsRoute
   '/manage/venues': typeof AppManageVenuesRoute
-  '/profile/security': typeof AppProfileSecurityRoute
   '/lab/': typeof AppLabIndexRoute
   '/manage/': typeof AppManageIndexRoute
   '/members/$personId': typeof AppAffiliatedMembersPersonIdRoute
+  '/profile/security': typeof AppPersonalProfileSecurityRoute
   '/groups/$groupId/administration': typeof AppGroupsGroupIdAdministrationRoute
   '/groups/$groupId/edit': typeof AppGroupsGroupIdEditRoute
   '/groups/$groupId/trainings': typeof AppGroupsGroupIdTrainingsRoute
@@ -618,9 +625,9 @@ export interface FileRoutesByFullPath {
   '/manage/sessions/new': typeof AppManageSessionsNewRoute
   '/manage/venues/$venueId': typeof AppManageVenuesVenueIdRoute
   '/manage/venues/new': typeof AppManageVenuesNewRoute
-  '/profile/contact/edit': typeof AppProfileContactEditRoute
-  '/profile/security/login-email': typeof AppProfileSecurityLoginEmailRoute
-  '/profile/security/password': typeof AppProfileSecurityPasswordRoute
+  '/profile/contact/edit': typeof AppPersonalProfileContactEditRoute
+  '/profile/security/login-email': typeof AppPersonalProfileSecurityLoginEmailRoute
+  '/profile/security/password': typeof AppPersonalProfileSecurityPasswordRoute
   '/groups/$groupId/admins/$adminId': typeof AppGroupsGroupIdAdminsAdminIdRoute
   '/groups/$groupId/admins/new': typeof AppGroupsGroupIdAdminsNewRoute
   '/groups/$groupId/memberships/$membershipId': typeof AppGroupsGroupIdMembershipsMembershipIdRoute
@@ -638,7 +645,7 @@ export interface FileRoutesByFullPath {
   '/manage/roles/$roleId/edit': typeof AppManageRolesRoleIdEditRoute
   '/manage/sessions/$sessionId/edit': typeof AppManageSessionsSessionIdEditRoute
   '/manage/venues/$venueId/edit': typeof AppManageVenuesVenueIdEditRoute
-  '/profile/security/passkeys/$passkeyId': typeof AppProfileSecurityPasskeysPasskeyIdRoute
+  '/profile/security/passkeys/$passkeyId': typeof AppPersonalProfileSecurityPasskeysPasskeyIdRoute
   '/manage/board/$boardOfficeId/seats/$boardSeatId': typeof AppManageBoardBoardOfficeIdSeatsBoardSeatIdRoute
   '/manage/board/$boardOfficeId/seats/new': typeof AppManageBoardBoardOfficeIdSeatsNewRoute
   '/manage/groups/kinds/$groupKindId/edit': typeof AppManageGroupsKindsGroupKindIdEditRoute
@@ -667,9 +674,9 @@ export interface FileRoutesByTo {
   '/club': typeof AppClubRoute
   '/groups': typeof AppGroupsRoute
   '/more': typeof AppMoreRoute
-  '/profile': typeof AppProfileRoute
   '/invitation/code': typeof InvitationCodeRoute
   '/members': typeof AppAffiliatedMembersRoute
+  '/profile': typeof AppPersonalProfileRoute
   '/announcements/$announcementId': typeof AppAnnouncementsAnnouncementIdRoute
   '/announcements/new': typeof AppAnnouncementsNewRoute
   '/calendar/$calendarEntryId': typeof AppCalendarCalendarEntryIdRoute
@@ -685,10 +692,10 @@ export interface FileRoutesByTo {
   '/manage/roles': typeof AppManageRolesRoute
   '/manage/sessions': typeof AppManageSessionsRoute
   '/manage/venues': typeof AppManageVenuesRoute
-  '/profile/security': typeof AppProfileSecurityRoute
   '/lab': typeof AppLabIndexRoute
   '/manage': typeof AppManageIndexRoute
   '/members/$personId': typeof AppAffiliatedMembersPersonIdRoute
+  '/profile/security': typeof AppPersonalProfileSecurityRoute
   '/groups/$groupId/administration': typeof AppGroupsGroupIdAdministrationRoute
   '/groups/$groupId/edit': typeof AppGroupsGroupIdEditRoute
   '/groups/$groupId/trainings': typeof AppGroupsGroupIdTrainingsRoute
@@ -704,9 +711,9 @@ export interface FileRoutesByTo {
   '/manage/sessions/new': typeof AppManageSessionsNewRoute
   '/manage/venues/$venueId': typeof AppManageVenuesVenueIdRoute
   '/manage/venues/new': typeof AppManageVenuesNewRoute
-  '/profile/contact/edit': typeof AppProfileContactEditRoute
-  '/profile/security/login-email': typeof AppProfileSecurityLoginEmailRoute
-  '/profile/security/password': typeof AppProfileSecurityPasswordRoute
+  '/profile/contact/edit': typeof AppPersonalProfileContactEditRoute
+  '/profile/security/login-email': typeof AppPersonalProfileSecurityLoginEmailRoute
+  '/profile/security/password': typeof AppPersonalProfileSecurityPasswordRoute
   '/groups/$groupId/admins/$adminId': typeof AppGroupsGroupIdAdminsAdminIdRoute
   '/groups/$groupId/admins/new': typeof AppGroupsGroupIdAdminsNewRoute
   '/groups/$groupId/memberships/$membershipId': typeof AppGroupsGroupIdMembershipsMembershipIdRoute
@@ -724,7 +731,7 @@ export interface FileRoutesByTo {
   '/manage/roles/$roleId/edit': typeof AppManageRolesRoleIdEditRoute
   '/manage/sessions/$sessionId/edit': typeof AppManageSessionsSessionIdEditRoute
   '/manage/venues/$venueId/edit': typeof AppManageVenuesVenueIdEditRoute
-  '/profile/security/passkeys/$passkeyId': typeof AppProfileSecurityPasskeysPasskeyIdRoute
+  '/profile/security/passkeys/$passkeyId': typeof AppPersonalProfileSecurityPasskeysPasskeyIdRoute
   '/manage/board/$boardOfficeId/seats/$boardSeatId': typeof AppManageBoardBoardOfficeIdSeatsBoardSeatIdRoute
   '/manage/board/$boardOfficeId/seats/new': typeof AppManageBoardBoardOfficeIdSeatsNewRoute
   '/manage/groups/kinds/$groupKindId/edit': typeof AppManageGroupsKindsGroupKindIdEditRoute
@@ -750,15 +757,16 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_app/$': typeof AppSplatRoute
   '/_app/_affiliated': typeof AppAffiliatedRouteWithChildren
+  '/_app/_personal': typeof AppPersonalRouteWithChildren
   '/_app/announcements': typeof AppAnnouncementsRoute
   '/_app/calendar': typeof AppCalendarRoute
   '/_app/club': typeof AppClubRoute
   '/_app/groups': typeof AppGroupsRoute
   '/_app/more': typeof AppMoreRoute
-  '/_app/profile': typeof AppProfileRoute
   '/invitation_/code': typeof InvitationCodeRoute
   '/_app/': typeof AppIndexRoute
   '/_app/_affiliated/members': typeof AppAffiliatedMembersRoute
+  '/_app/_personal/profile': typeof AppPersonalProfileRoute
   '/_app/announcements_/$announcementId': typeof AppAnnouncementsAnnouncementIdRoute
   '/_app/announcements_/new': typeof AppAnnouncementsNewRoute
   '/_app/calendar_/$calendarEntryId': typeof AppCalendarCalendarEntryIdRoute
@@ -774,10 +782,10 @@ export interface FileRoutesById {
   '/_app/manage/roles': typeof AppManageRolesRoute
   '/_app/manage/sessions': typeof AppManageSessionsRoute
   '/_app/manage/venues': typeof AppManageVenuesRoute
-  '/_app/profile_/security': typeof AppProfileSecurityRoute
   '/_app/lab/': typeof AppLabIndexRoute
   '/_app/manage/': typeof AppManageIndexRoute
   '/_app/_affiliated/members_/$personId': typeof AppAffiliatedMembersPersonIdRoute
+  '/_app/_personal/profile_/security': typeof AppPersonalProfileSecurityRoute
   '/_app/groups_/$groupId_/administration': typeof AppGroupsGroupIdAdministrationRoute
   '/_app/groups_/$groupId_/edit': typeof AppGroupsGroupIdEditRoute
   '/_app/groups_/$groupId_/trainings': typeof AppGroupsGroupIdTrainingsRoute
@@ -793,9 +801,9 @@ export interface FileRoutesById {
   '/_app/manage/sessions_/new': typeof AppManageSessionsNewRoute
   '/_app/manage/venues_/$venueId': typeof AppManageVenuesVenueIdRoute
   '/_app/manage/venues_/new': typeof AppManageVenuesNewRoute
-  '/_app/profile_/contact/edit': typeof AppProfileContactEditRoute
-  '/_app/profile_/security_/login-email': typeof AppProfileSecurityLoginEmailRoute
-  '/_app/profile_/security_/password': typeof AppProfileSecurityPasswordRoute
+  '/_app/_personal/profile_/contact/edit': typeof AppPersonalProfileContactEditRoute
+  '/_app/_personal/profile_/security_/login-email': typeof AppPersonalProfileSecurityLoginEmailRoute
+  '/_app/_personal/profile_/security_/password': typeof AppPersonalProfileSecurityPasswordRoute
   '/_app/groups_/$groupId_/admins/$adminId': typeof AppGroupsGroupIdAdminsAdminIdRoute
   '/_app/groups_/$groupId_/admins/new': typeof AppGroupsGroupIdAdminsNewRoute
   '/_app/groups_/$groupId_/memberships/$membershipId': typeof AppGroupsGroupIdMembershipsMembershipIdRoute
@@ -813,7 +821,7 @@ export interface FileRoutesById {
   '/_app/manage/roles_/$roleId_/edit': typeof AppManageRolesRoleIdEditRoute
   '/_app/manage/sessions_/$sessionId/edit': typeof AppManageSessionsSessionIdEditRoute
   '/_app/manage/venues_/$venueId_/edit': typeof AppManageVenuesVenueIdEditRoute
-  '/_app/profile_/security_/passkeys/$passkeyId': typeof AppProfileSecurityPasskeysPasskeyIdRoute
+  '/_app/_personal/profile_/security_/passkeys/$passkeyId': typeof AppPersonalProfileSecurityPasskeysPasskeyIdRoute
   '/_app/manage/board_/$boardOfficeId_/seats/$boardSeatId': typeof AppManageBoardBoardOfficeIdSeatsBoardSeatIdRoute
   '/_app/manage/board_/$boardOfficeId_/seats/new': typeof AppManageBoardBoardOfficeIdSeatsNewRoute
   '/_app/manage/groups_/kinds/$groupKindId_/edit': typeof AppManageGroupsKindsGroupKindIdEditRoute
@@ -844,9 +852,9 @@ export interface FileRouteTypes {
     | '/club'
     | '/groups'
     | '/more'
-    | '/profile'
     | '/invitation/code'
     | '/members'
+    | '/profile'
     | '/announcements/$announcementId'
     | '/announcements/new'
     | '/calendar/$calendarEntryId'
@@ -862,10 +870,10 @@ export interface FileRouteTypes {
     | '/manage/roles'
     | '/manage/sessions'
     | '/manage/venues'
-    | '/profile/security'
     | '/lab/'
     | '/manage/'
     | '/members/$personId'
+    | '/profile/security'
     | '/groups/$groupId/administration'
     | '/groups/$groupId/edit'
     | '/groups/$groupId/trainings'
@@ -930,9 +938,9 @@ export interface FileRouteTypes {
     | '/club'
     | '/groups'
     | '/more'
-    | '/profile'
     | '/invitation/code'
     | '/members'
+    | '/profile'
     | '/announcements/$announcementId'
     | '/announcements/new'
     | '/calendar/$calendarEntryId'
@@ -948,10 +956,10 @@ export interface FileRouteTypes {
     | '/manage/roles'
     | '/manage/sessions'
     | '/manage/venues'
-    | '/profile/security'
     | '/lab'
     | '/manage'
     | '/members/$personId'
+    | '/profile/security'
     | '/groups/$groupId/administration'
     | '/groups/$groupId/edit'
     | '/groups/$groupId/trainings'
@@ -1012,15 +1020,16 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_app/$'
     | '/_app/_affiliated'
+    | '/_app/_personal'
     | '/_app/announcements'
     | '/_app/calendar'
     | '/_app/club'
     | '/_app/groups'
     | '/_app/more'
-    | '/_app/profile'
     | '/invitation_/code'
     | '/_app/'
     | '/_app/_affiliated/members'
+    | '/_app/_personal/profile'
     | '/_app/announcements_/$announcementId'
     | '/_app/announcements_/new'
     | '/_app/calendar_/$calendarEntryId'
@@ -1036,10 +1045,10 @@ export interface FileRouteTypes {
     | '/_app/manage/roles'
     | '/_app/manage/sessions'
     | '/_app/manage/venues'
-    | '/_app/profile_/security'
     | '/_app/lab/'
     | '/_app/manage/'
     | '/_app/_affiliated/members_/$personId'
+    | '/_app/_personal/profile_/security'
     | '/_app/groups_/$groupId_/administration'
     | '/_app/groups_/$groupId_/edit'
     | '/_app/groups_/$groupId_/trainings'
@@ -1055,9 +1064,9 @@ export interface FileRouteTypes {
     | '/_app/manage/sessions_/new'
     | '/_app/manage/venues_/$venueId'
     | '/_app/manage/venues_/new'
-    | '/_app/profile_/contact/edit'
-    | '/_app/profile_/security_/login-email'
-    | '/_app/profile_/security_/password'
+    | '/_app/_personal/profile_/contact/edit'
+    | '/_app/_personal/profile_/security_/login-email'
+    | '/_app/_personal/profile_/security_/password'
     | '/_app/groups_/$groupId_/admins/$adminId'
     | '/_app/groups_/$groupId_/admins/new'
     | '/_app/groups_/$groupId_/memberships/$membershipId'
@@ -1075,7 +1084,7 @@ export interface FileRouteTypes {
     | '/_app/manage/roles_/$roleId_/edit'
     | '/_app/manage/sessions_/$sessionId/edit'
     | '/_app/manage/venues_/$venueId_/edit'
-    | '/_app/profile_/security_/passkeys/$passkeyId'
+    | '/_app/_personal/profile_/security_/passkeys/$passkeyId'
     | '/_app/manage/board_/$boardOfficeId_/seats/$boardSeatId'
     | '/_app/manage/board_/$boardOfficeId_/seats/new'
     | '/_app/manage/groups_/kinds/$groupKindId_/edit'
@@ -1160,13 +1169,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InvitationCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_app/profile': {
-      id: '/_app/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof AppProfileRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/more': {
       id: '/_app/more'
       path: '/more'
@@ -1202,6 +1204,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAnnouncementsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/_personal': {
+      id: '/_app/_personal'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppPersonalRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/_affiliated': {
       id: '/_app/_affiliated'
       path: ''
@@ -1228,13 +1237,6 @@ declare module '@tanstack/react-router' {
       path: '/lab'
       fullPath: '/lab/'
       preLoaderRoute: typeof AppLabIndexRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/profile_/security': {
-      id: '/_app/profile_/security'
-      path: '/profile/security'
-      fullPath: '/profile/security'
-      preLoaderRoute: typeof AppProfileSecurityRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/manage/venues': {
@@ -1342,33 +1344,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAnnouncementsAnnouncementIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/_personal/profile': {
+      id: '/_app/_personal/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AppPersonalProfileRouteImport
+      parentRoute: typeof AppPersonalRoute
+    }
     '/_app/_affiliated/members': {
       id: '/_app/_affiliated/members'
       path: '/members'
       fullPath: '/members'
       preLoaderRoute: typeof AppAffiliatedMembersRouteImport
       parentRoute: typeof AppAffiliatedRoute
-    }
-    '/_app/profile_/security_/password': {
-      id: '/_app/profile_/security_/password'
-      path: '/profile/security/password'
-      fullPath: '/profile/security/password'
-      preLoaderRoute: typeof AppProfileSecurityPasswordRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/profile_/security_/login-email': {
-      id: '/_app/profile_/security_/login-email'
-      path: '/profile/security/login-email'
-      fullPath: '/profile/security/login-email'
-      preLoaderRoute: typeof AppProfileSecurityLoginEmailRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/profile_/contact/edit': {
-      id: '/_app/profile_/contact/edit'
-      path: '/profile/contact/edit'
-      fullPath: '/profile/contact/edit'
-      preLoaderRoute: typeof AppProfileContactEditRouteImport
-      parentRoute: typeof AppRoute
     }
     '/_app/manage/venues_/new': {
       id: '/_app/manage/venues_/new'
@@ -1475,19 +1463,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppGroupsGroupIdAdministrationRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/_personal/profile_/security': {
+      id: '/_app/_personal/profile_/security'
+      path: '/profile/security'
+      fullPath: '/profile/security'
+      preLoaderRoute: typeof AppPersonalProfileSecurityRouteImport
+      parentRoute: typeof AppPersonalRoute
+    }
     '/_app/_affiliated/members_/$personId': {
       id: '/_app/_affiliated/members_/$personId'
       path: '/members/$personId'
       fullPath: '/members/$personId'
       preLoaderRoute: typeof AppAffiliatedMembersPersonIdRouteImport
       parentRoute: typeof AppAffiliatedRoute
-    }
-    '/_app/profile_/security_/passkeys/$passkeyId': {
-      id: '/_app/profile_/security_/passkeys/$passkeyId'
-      path: '/profile/security/passkeys/$passkeyId'
-      fullPath: '/profile/security/passkeys/$passkeyId'
-      preLoaderRoute: typeof AppProfileSecurityPasskeysPasskeyIdRouteImport
-      parentRoute: typeof AppRoute
     }
     '/_app/manage/venues_/$venueId_/edit': {
       id: '/_app/manage/venues_/$venueId_/edit'
@@ -1608,6 +1596,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppGroupsGroupIdAdminsAdminIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/_personal/profile_/security_/password': {
+      id: '/_app/_personal/profile_/security_/password'
+      path: '/profile/security/password'
+      fullPath: '/profile/security/password'
+      preLoaderRoute: typeof AppPersonalProfileSecurityPasswordRouteImport
+      parentRoute: typeof AppPersonalRoute
+    }
+    '/_app/_personal/profile_/security_/login-email': {
+      id: '/_app/_personal/profile_/security_/login-email'
+      path: '/profile/security/login-email'
+      fullPath: '/profile/security/login-email'
+      preLoaderRoute: typeof AppPersonalProfileSecurityLoginEmailRouteImport
+      parentRoute: typeof AppPersonalRoute
+    }
+    '/_app/_personal/profile_/contact/edit': {
+      id: '/_app/_personal/profile_/contact/edit'
+      path: '/profile/contact/edit'
+      fullPath: '/profile/contact/edit'
+      preLoaderRoute: typeof AppPersonalProfileContactEditRouteImport
+      parentRoute: typeof AppPersonalRoute
+    }
     '/_app/manage/roles_/$roleId_/holdings/new': {
       id: '/_app/manage/roles_/$roleId_/holdings/new'
       path: '/manage/roles/$roleId/holdings/new'
@@ -1706,6 +1715,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppManageBoardBoardOfficeIdSeatsBoardSeatIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/_personal/profile_/security_/passkeys/$passkeyId': {
+      id: '/_app/_personal/profile_/security_/passkeys/$passkeyId'
+      path: '/profile/security/passkeys/$passkeyId'
+      fullPath: '/profile/security/passkeys/$passkeyId'
+      preLoaderRoute: typeof AppPersonalProfileSecurityPasskeysPasskeyIdRouteImport
+      parentRoute: typeof AppPersonalRoute
+    }
   }
 }
 
@@ -1723,15 +1739,40 @@ const AppAffiliatedRouteWithChildren = AppAffiliatedRoute._addFileChildren(
   AppAffiliatedRouteChildren,
 )
 
+interface AppPersonalRouteChildren {
+  AppPersonalProfileRoute: typeof AppPersonalProfileRoute
+  AppPersonalProfileSecurityRoute: typeof AppPersonalProfileSecurityRoute
+  AppPersonalProfileContactEditRoute: typeof AppPersonalProfileContactEditRoute
+  AppPersonalProfileSecurityLoginEmailRoute: typeof AppPersonalProfileSecurityLoginEmailRoute
+  AppPersonalProfileSecurityPasswordRoute: typeof AppPersonalProfileSecurityPasswordRoute
+  AppPersonalProfileSecurityPasskeysPasskeyIdRoute: typeof AppPersonalProfileSecurityPasskeysPasskeyIdRoute
+}
+
+const AppPersonalRouteChildren: AppPersonalRouteChildren = {
+  AppPersonalProfileRoute: AppPersonalProfileRoute,
+  AppPersonalProfileSecurityRoute: AppPersonalProfileSecurityRoute,
+  AppPersonalProfileContactEditRoute: AppPersonalProfileContactEditRoute,
+  AppPersonalProfileSecurityLoginEmailRoute:
+    AppPersonalProfileSecurityLoginEmailRoute,
+  AppPersonalProfileSecurityPasswordRoute:
+    AppPersonalProfileSecurityPasswordRoute,
+  AppPersonalProfileSecurityPasskeysPasskeyIdRoute:
+    AppPersonalProfileSecurityPasskeysPasskeyIdRoute,
+}
+
+const AppPersonalRouteWithChildren = AppPersonalRoute._addFileChildren(
+  AppPersonalRouteChildren,
+)
+
 interface AppRouteChildren {
   AppSplatRoute: typeof AppSplatRoute
   AppAffiliatedRoute: typeof AppAffiliatedRouteWithChildren
+  AppPersonalRoute: typeof AppPersonalRouteWithChildren
   AppAnnouncementsRoute: typeof AppAnnouncementsRoute
   AppCalendarRoute: typeof AppCalendarRoute
   AppClubRoute: typeof AppClubRoute
   AppGroupsRoute: typeof AppGroupsRoute
   AppMoreRoute: typeof AppMoreRoute
-  AppProfileRoute: typeof AppProfileRoute
   AppIndexRoute: typeof AppIndexRoute
   AppAnnouncementsAnnouncementIdRoute: typeof AppAnnouncementsAnnouncementIdRoute
   AppAnnouncementsNewRoute: typeof AppAnnouncementsNewRoute
@@ -1748,7 +1789,6 @@ interface AppRouteChildren {
   AppManageRolesRoute: typeof AppManageRolesRoute
   AppManageSessionsRoute: typeof AppManageSessionsRoute
   AppManageVenuesRoute: typeof AppManageVenuesRoute
-  AppProfileSecurityRoute: typeof AppProfileSecurityRoute
   AppLabIndexRoute: typeof AppLabIndexRoute
   AppManageIndexRoute: typeof AppManageIndexRoute
   AppGroupsGroupIdAdministrationRoute: typeof AppGroupsGroupIdAdministrationRoute
@@ -1766,9 +1806,6 @@ interface AppRouteChildren {
   AppManageSessionsNewRoute: typeof AppManageSessionsNewRoute
   AppManageVenuesVenueIdRoute: typeof AppManageVenuesVenueIdRoute
   AppManageVenuesNewRoute: typeof AppManageVenuesNewRoute
-  AppProfileContactEditRoute: typeof AppProfileContactEditRoute
-  AppProfileSecurityLoginEmailRoute: typeof AppProfileSecurityLoginEmailRoute
-  AppProfileSecurityPasswordRoute: typeof AppProfileSecurityPasswordRoute
   AppGroupsGroupIdAdminsAdminIdRoute: typeof AppGroupsGroupIdAdminsAdminIdRoute
   AppGroupsGroupIdAdminsNewRoute: typeof AppGroupsGroupIdAdminsNewRoute
   AppGroupsGroupIdMembershipsMembershipIdRoute: typeof AppGroupsGroupIdMembershipsMembershipIdRoute
@@ -1786,7 +1823,6 @@ interface AppRouteChildren {
   AppManageRolesRoleIdEditRoute: typeof AppManageRolesRoleIdEditRoute
   AppManageSessionsSessionIdEditRoute: typeof AppManageSessionsSessionIdEditRoute
   AppManageVenuesVenueIdEditRoute: typeof AppManageVenuesVenueIdEditRoute
-  AppProfileSecurityPasskeysPasskeyIdRoute: typeof AppProfileSecurityPasskeysPasskeyIdRoute
   AppManageBoardBoardOfficeIdSeatsBoardSeatIdRoute: typeof AppManageBoardBoardOfficeIdSeatsBoardSeatIdRoute
   AppManageBoardBoardOfficeIdSeatsNewRoute: typeof AppManageBoardBoardOfficeIdSeatsNewRoute
   AppManageGroupsKindsGroupKindIdEditRoute: typeof AppManageGroupsKindsGroupKindIdEditRoute
@@ -1806,12 +1842,12 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppSplatRoute: AppSplatRoute,
   AppAffiliatedRoute: AppAffiliatedRouteWithChildren,
+  AppPersonalRoute: AppPersonalRouteWithChildren,
   AppAnnouncementsRoute: AppAnnouncementsRoute,
   AppCalendarRoute: AppCalendarRoute,
   AppClubRoute: AppClubRoute,
   AppGroupsRoute: AppGroupsRoute,
   AppMoreRoute: AppMoreRoute,
-  AppProfileRoute: AppProfileRoute,
   AppIndexRoute: AppIndexRoute,
   AppAnnouncementsAnnouncementIdRoute: AppAnnouncementsAnnouncementIdRoute,
   AppAnnouncementsNewRoute: AppAnnouncementsNewRoute,
@@ -1828,7 +1864,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppManageRolesRoute: AppManageRolesRoute,
   AppManageSessionsRoute: AppManageSessionsRoute,
   AppManageVenuesRoute: AppManageVenuesRoute,
-  AppProfileSecurityRoute: AppProfileSecurityRoute,
   AppLabIndexRoute: AppLabIndexRoute,
   AppManageIndexRoute: AppManageIndexRoute,
   AppGroupsGroupIdAdministrationRoute: AppGroupsGroupIdAdministrationRoute,
@@ -1847,9 +1882,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppManageSessionsNewRoute: AppManageSessionsNewRoute,
   AppManageVenuesVenueIdRoute: AppManageVenuesVenueIdRoute,
   AppManageVenuesNewRoute: AppManageVenuesNewRoute,
-  AppProfileContactEditRoute: AppProfileContactEditRoute,
-  AppProfileSecurityLoginEmailRoute: AppProfileSecurityLoginEmailRoute,
-  AppProfileSecurityPasswordRoute: AppProfileSecurityPasswordRoute,
   AppGroupsGroupIdAdminsAdminIdRoute: AppGroupsGroupIdAdminsAdminIdRoute,
   AppGroupsGroupIdAdminsNewRoute: AppGroupsGroupIdAdminsNewRoute,
   AppGroupsGroupIdMembershipsMembershipIdRoute:
@@ -1871,8 +1903,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppManageRolesRoleIdEditRoute: AppManageRolesRoleIdEditRoute,
   AppManageSessionsSessionIdEditRoute: AppManageSessionsSessionIdEditRoute,
   AppManageVenuesVenueIdEditRoute: AppManageVenuesVenueIdEditRoute,
-  AppProfileSecurityPasskeysPasskeyIdRoute:
-    AppProfileSecurityPasskeysPasskeyIdRoute,
   AppManageBoardBoardOfficeIdSeatsBoardSeatIdRoute:
     AppManageBoardBoardOfficeIdSeatsBoardSeatIdRoute,
   AppManageBoardBoardOfficeIdSeatsNewRoute:

@@ -8,6 +8,6 @@ const PasskeyComponent: FC = () => {
   return <PasskeyScreen passkeyId={passkeyId} />;
 };
 
-export const Route = createFileRoute('/_app/profile_/security_/passkeys/$passkeyId')({
+export const Route = createFileRoute('/_app/_personal/profile_/security_/passkeys/$passkeyId')({
   component: PasskeyComponent,
 });

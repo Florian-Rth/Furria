@@ -10,4 +10,5 @@ public enum MailTemplate
     PasswordReset = 6,
     MembershipApplicationConfirmation = 7,
     MembershipApplicationArrival = 8,
+    PersonErasureNotice = 9,
 }

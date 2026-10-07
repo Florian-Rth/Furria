@@ -34,7 +34,7 @@ public sealed class DeleteMembershipApplicationByIdTests
                 ),
             ct
         );
-        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var response = await DeclineAsync(admin, ctx.Identity.MembershipApplications.IdOf("mia"));
 
@@ -65,7 +65,7 @@ public sealed class DeleteMembershipApplicationByIdTests
                 ),
             ct
         );
-        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         await DeclineAsync(admin, ctx.Identity.MembershipApplications.IdOf("mia"));
         await SignedOutMailSteps.SettleAsync(_fixture, ctx.Identity.EmailOf("sentinel"), ct);
@@ -88,7 +88,7 @@ public sealed class DeleteMembershipApplicationByIdTests
                 ),
             ct
         );
-        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var response = await DeclineAsync(admin, ctx.Identity.MembershipApplications.IdOf("mia"));
 
@@ -104,7 +104,7 @@ public sealed class DeleteMembershipApplicationByIdTests
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
-        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var response = await DeclineAsync(admin, UnknownApplicationId);
 

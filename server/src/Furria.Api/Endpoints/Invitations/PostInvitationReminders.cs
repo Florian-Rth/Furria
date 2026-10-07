@@ -25,13 +25,7 @@ public sealed class PostInvitationReminders
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        if (User.PersonId() is not { } issuerPersonId)
-        {
-            await Send.UnauthorizedAsync(ct);
-            return;
-        }
-
-        var sent = await _invitationRoundService.RemindAllAsync(issuerPersonId, ct);
+        var sent = await _invitationRoundService.RemindAllAsync(User.PersonId(), ct);
         if (!sent.IsSuccess)
         {
             await HttpContext.Response.SendFailureAsync(sent.Error, ct);

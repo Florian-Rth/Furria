@@ -1,9 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useController, useForm } from 'react-hook-form';
 import { toLandingKey } from '@/features/write';
 import { sessionAt } from '@/lib/club';
+import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useCreateFeeReductionMutation, useUpdateFeeReductionMutation } from '../api';
 import {
@@ -48,7 +48,7 @@ export const usePersonFeeReductionEditor = ({
   const [rejection, setRejection] = useState<string | null>(null);
   const create = useCreateFeeReductionMutation(personId);
   const update = useUpdateFeeReductionMutation(personId);
-  const navigate = useNavigate();
+  const goBackTo = useGoBackTo();
 
   const form = useForm({
     resolver: zodResolver(FeeReductionFormSchema),
@@ -69,14 +69,14 @@ export const usePersonFeeReductionEditor = ({
   };
 
   const landBack = (feeReductionId: number): void => {
-    void navigate({
+    void goBackTo({
       to: '/manage/persons/$personId',
       params: { personId: String(personId) },
       search: (previous) => ({
         ...previous,
         changed: toLandingKey('feeReduction', feeReductionId),
       }),
-      replace: true,
+      ignoreBlocker: true,
     });
   };
 

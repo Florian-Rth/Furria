@@ -18,7 +18,7 @@ public sealed class LiveInvitationExpectations
     public Expected ToBeIssuedAs(
         InvitationChannel channel,
         bool isReminder,
-        int issuedByPersonId
+        int? issuedByPersonId
     ) =>
         _expected.Enqueue(
             async (dbContext, ct) =>
@@ -61,7 +61,7 @@ public sealed class LiveInvitationExpectations
             }
         );
 
-    public Expected ToBeRecoveryIssuedBy(int issuedByPersonId) =>
+    public Expected ToBeRecoveryIssuedBy(int? issuedByPersonId) =>
         _expected.Enqueue(
             async (dbContext, ct) =>
             {

@@ -25,19 +25,19 @@ public sealed class TestIdentity
 
     public AliasRegistry<int> MembershipApplications { get; }
 
-    public SeededAccount BootstrapAdmin { get; }
+    public SeededManagingLogin ManagingLogin { get; }
 
     internal TestIdentity(
         Func<HttpClient> clientFactory,
         SeededIdentity seeded,
-        SeededAccount bootstrapAdmin,
+        SeededManagingLogin managingLogin,
         string password
     )
     {
         _clientFactory = clientFactory;
         _emails = seeded.AccountEmails;
         _password = password;
-        BootstrapAdmin = bootstrapAdmin;
+        ManagingLogin = managingLogin;
         People = new AliasRegistry<int>("Person", seeded.PersonIds);
         Memberships = new AliasRegistry<int>("Membership", seeded.MembershipIds);
         Pauses = new AliasRegistry<int>("MembershipPause", seeded.PauseIds);
@@ -70,8 +70,8 @@ public sealed class TestIdentity
         return client;
     }
 
-    public Task<HttpClient> BootstrapAdminClientAsync(CancellationToken ct = default) =>
-        AuthenticateAsync(BootstrapAdmin.Email, BootstrapAdmin.Password, ct);
+    public Task<HttpClient> ManagingLoginClientAsync(CancellationToken ct = default) =>
+        AuthenticateAsync(ManagingLogin.Email, ManagingLogin.Password, ct);
 
     public async Task<LoginResponse> LogInAsync(
         string email,

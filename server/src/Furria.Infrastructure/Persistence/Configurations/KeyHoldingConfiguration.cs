@@ -30,7 +30,7 @@ public sealed class KeyHoldingConfiguration : IEntityTypeConfiguration<KeyHoldin
             .WithMany()
             .HasForeignKey(holding => holding.PersonId)
             .HasConstraintName("fk_key_holding_person_person_id")
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasIndex(holding => holding.PersonId);
         builder.HasIndex(holding => holding.VenueId);

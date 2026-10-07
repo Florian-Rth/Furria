@@ -28,8 +28,7 @@ public sealed class PermissionAuthorizer
     private readonly Dictionary<int, GroupTies> _groupTiesCache = [];
 
     private int? _boundAccountId;
-    private int? _personId;
-    private bool _personResolved;
+    private AccountIdentity? _identity;
     private HashSet<string>? _grantedKeys;
     private bool? _isAffiliated;
     private bool? _canSearchPersons;
@@ -44,6 +43,12 @@ public sealed class PermissionAuthorizer
     {
         BindTo(accountId);
         return PersonIdAsync(accountId, ct);
+    }
+
+    public async Task<bool> IsManagingLoginAsync(int accountId, CancellationToken ct)
+    {
+        BindTo(accountId);
+        return (await IdentityAsync(accountId, ct)).IsManagingLogin;
     }
 
     public async Task<bool> IsGrantedAsync(
@@ -77,14 +82,17 @@ public sealed class PermissionAuthorizer
         if (_grantedKeys is not null)
             return _grantedKeys;
 
-        var personId = await PersonIdAsync(accountId, ct);
-        if (personId is null)
+        var identity = await IdentityAsync(accountId, ct);
+        if (identity.IsManagingLogin)
+            return _grantedKeys = FurriaPermissions.All.ToHashSet(StringComparer.Ordinal);
+
+        if (identity.PersonId is not { } personId)
             return _grantedKeys = [];
 
         var today = ClubClock.Today(_timeProvider);
         var keys = await _dbContext
             .RoleHoldings.AsNoTracking()
-            .Where(holding => holding.PersonId == personId.Value)
+            .Where(holding => holding.PersonId == personId)
             .Where(PermissionHolderQuery.RoleHoldingGrantsOn(today))
             .SelectMany(holding => holding.Role!.Permissions.Select(row => row.PermissionKey))
             .Distinct()
@@ -94,7 +102,7 @@ public sealed class PermissionAuthorizer
 
         var isMember = await _dbContext
             .People.AsNoTracking()
-            .Where(person => person.Id == personId.Value)
+            .Where(person => person.Id == personId)
             .AnyAsync(
                 person =>
                     person.Memberships.Any(membership =>
@@ -109,7 +117,7 @@ public sealed class PermissionAuthorizer
 
         var impliedKeys = await _dbContext
             .BoardSeats.AsNoTracking()
-            .Where(seat => seat.PersonId == personId.Value)
+            .Where(seat => seat.PersonId == personId)
             .Where(PermissionHolderQuery.BoardSeatGrantsOn(today))
             .SelectMany(seat =>
                 seat.BoardOffice!.ImpliedRole!.Permissions.Select(row => row.PermissionKey)
@@ -186,7 +194,8 @@ public sealed class PermissionAuthorizer
     {
         BindTo(accountId);
         return await IsAffiliatedAsync(accountId, ct)
-            || await AdministersAnyGroupAsync(accountId, ct);
+            || await AdministersAnyGroupAsync(accountId, ct)
+            || await IsGrantedAsync(accountId, FurriaPermissions.GroupsManage, ct);
     }
 
     private void BindTo(int accountId)
@@ -245,20 +254,22 @@ public sealed class PermissionAuthorizer
         return _groupTiesCache[groupId] = ties;
     }
 
-    private async Task<int?> PersonIdAsync(int accountId, CancellationToken ct)
-    {
-        if (_personResolved)
-            return _personId;
+    private async Task<int?> PersonIdAsync(int accountId, CancellationToken ct) =>
+        (await IdentityAsync(accountId, ct)).PersonId;
 
-        _personResolved = true;
-        _personId = await _dbContext
-            .Users.AsNoTracking()
-            .Where(account => account.Id == accountId && !account.IsDisabled)
-            .Select(account => (int?)account.PersonId)
-            .SingleOrDefaultAsync(ct);
-
-        return _personId;
-    }
+    private async Task<AccountIdentity> IdentityAsync(int accountId, CancellationToken ct) =>
+        _identity ??=
+            await _dbContext
+                .Users.AsNoTracking()
+                .Where(account => account.Id == accountId && !account.IsDisabled)
+                .Select(account => new AccountIdentity(account.PersonId, account.IsManagingLogin))
+                .SingleOrDefaultAsync(ct)
+            ?? AccountIdentity.Unknown;
 
     private readonly record struct GroupTies(bool IsAdmin, bool IsMember);
+
+    private sealed record AccountIdentity(int? PersonId, bool IsManagingLogin)
+    {
+        public static readonly AccountIdentity Unknown = new(null, false);
+    }
 }

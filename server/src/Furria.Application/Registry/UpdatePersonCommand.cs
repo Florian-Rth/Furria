@@ -22,5 +22,5 @@ public sealed record UpdatePersonCommand
 
     public required bool ContactVisibleToMembers { get; init; }
 
-    public required int ActorPersonId { get; init; }
+    public required int? ActorPersonId { get; init; }
 }

@@ -1,10 +1,10 @@
 import { useKkNotice } from '@furria/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useController, useForm } from 'react-hook-form';
 import { toIsoDay } from '@/lib/day';
 import { isNotFoundError } from '@/lib/query-error';
+import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import {
   findChosenCandidate,
@@ -50,7 +50,7 @@ export const useAdmissionEditor = (
   const mutation = useAdmitMembershipApplicationMutation();
   const forgetApplication = useForgetMembershipApplication();
   const raiseNotice = useKkNotice();
-  const navigate = useNavigate();
+  const goBackTo = useGoBackTo();
 
   const form = useForm({
     resolver: zodResolver(AdmissionFormSchema),
@@ -73,7 +73,7 @@ export const useAdmissionEditor = (
   const isChosen = choice === NEW_PERSON_CHOICE || chosenCandidate !== null;
 
   const leave = (): void => {
-    void navigate({ to: APPLICATIONS_PATH, replace: true, ignoreBlocker: true }).then(() => {
+    void goBackTo({ to: APPLICATIONS_PATH, ignoreBlocker: true }).then(() => {
       forgetApplication(application.membershipApplicationId);
     });
   };

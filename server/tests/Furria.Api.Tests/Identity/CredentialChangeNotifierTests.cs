@@ -25,7 +25,7 @@ public sealed class CredentialChangeNotifierTests
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             notifier.NotifyAsync(
-                _fixture.BootstrapAdmin.AccountId,
+                _fixture.ManagingLogin.AccountId,
                 CredentialChange.PasswordChanged,
                 toAddress: null,
                 ct

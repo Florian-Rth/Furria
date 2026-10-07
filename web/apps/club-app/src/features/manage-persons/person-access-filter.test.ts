@@ -3,7 +3,9 @@ import { toMembershipStateChip } from '@/lib/state-chips';
 import type { PersonAccessFilter } from './person-access-filter';
 import {
   parsePersonAccessFilter,
+  toNoAccessMatchLine,
   toPersonRowChip,
+  toPersonsEmptyLine,
   toPersonsRequestPath,
   toRegisterAccessChip,
 } from './person-access-filter';
@@ -39,17 +41,31 @@ describe('parsePersonAccessFilter', () => {
 });
 
 describe('toPersonsRequestPath', () => {
-  it.each([
-    { filter: null, expected: '/api/manage/persons' },
-    { filter: 'invited' as const, expected: '/api/manage/persons?access=invited' },
-    { filter: 'not-invitable' as const, expected: '/api/manage/persons?access=not-invitable' },
+  it.each<{ filter: PersonAccessFilter | null; archived: boolean; expected: string }>([
+    { filter: null, archived: false, expected: '/api/manage/persons' },
+    { filter: 'invited', archived: false, expected: '/api/manage/persons?access=invited' },
     {
-      filter: 'birth-date-unknown' as const,
+      filter: 'not-invitable',
+      archived: false,
+      expected: '/api/manage/persons?access=not-invitable',
+    },
+    {
+      filter: 'birth-date-unknown',
+      archived: false,
       expected: '/api/manage/persons?access=birth-date-unknown',
     },
-  ])('asks the register for $filter at $expected', ({ filter, expected }) => {
-    expect(toPersonsRequestPath(filter)).toBe(expected);
-  });
+    { filter: null, archived: true, expected: '/api/manage/persons?archived=true' },
+    {
+      filter: 'with-access',
+      archived: true,
+      expected: '/api/manage/persons?access=with-access&archived=true',
+    },
+  ])(
+    'asks the register for $filter, archived $archived, at $expected',
+    ({ filter, archived, expected }) => {
+      expect(toPersonsRequestPath(filter, archived)).toBe(expected);
+    },
+  );
 });
 
 describe('toPersonRowChip', () => {
@@ -88,5 +104,19 @@ describe('toPersonRowChip', () => {
     const activeAccount = toPersonRowChip({ ...person, accessState: 'active' }, 'active');
 
     expect(activeAccount.label).not.toBe(toMembershipStateChip('active').label);
+  });
+});
+
+describe('toPersonsEmptyLine', () => {
+  it('quotes the query that found no archived person', () => {
+    expect(toPersonsEmptyLine('  Kühn ', 'all', null, true)).toContain('„Kühn“');
+  });
+
+  it('never blames the access filter for an empty archive', () => {
+    expect(toPersonsEmptyLine('', 'all', 'invited', true)).not.toBe(toNoAccessMatchLine('invited'));
+  });
+
+  it('blames the access filter in the default view', () => {
+    expect(toPersonsEmptyLine('', 'all', 'invited', false)).toBe(toNoAccessMatchLine('invited'));
   });
 });

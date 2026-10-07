@@ -63,7 +63,7 @@ public sealed class GetMeTests
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal(ctx.Identity.Accounts.IdOf("alice"), result.AccountId);
-        Assert.Equal("Alice", result.Person.FirstName);
+        Assert.Equal("Alice", result.Person?.FirstName);
         Assert.Equal(MembershipState.Active, result.Membership.State);
         Assert.Equal(joinedOn, result.Membership.MemberSince);
         Assert.Equal(joinedOn, result.Membership.CurrentStartedOn);
@@ -137,7 +137,7 @@ public sealed class GetMeTests
         Assert.Equal(MembershipState.None, result.Membership.State);
         Assert.Null(result.Membership.MemberSince);
         Assert.Null(result.Membership.CurrentStartedOn);
-        Assert.Equal(ctx.Identity.People.IdOf("alice"), result.Person.Id);
+        Assert.Equal(ctx.Identity.People.IdOf("alice"), result.Person?.Id);
         await ctx
             .Expected.MembershipsOfPerson(ctx.Identity.People.IdOf("alice"))
             .ToHaveCount(0)
@@ -280,12 +280,12 @@ public sealed class GetMeTests
         var (response, result) = await client.GETAsync<GetMe, GetMeResponse>();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal("0171 1234567", result.Person.Phone);
-        Assert.Equal("Marktplatz 1", result.Person.Street);
-        Assert.Equal("04680", result.Person.Zip);
-        Assert.Equal("Colditz", result.Person.City);
-        Assert.Equal(BirthDate, result.Person.BirthDate);
-        Assert.True(result.Person.ContactVisibleToMembers);
+        Assert.Equal("0171 1234567", result.Person?.Phone);
+        Assert.Equal("Marktplatz 1", result.Person?.Street);
+        Assert.Equal("04680", result.Person?.Zip);
+        Assert.Equal("Colditz", result.Person?.City);
+        Assert.Equal(BirthDate, result.Person?.BirthDate);
+        Assert.True(result.Person?.ContactVisibleToMembers);
     }
 
     [Fact]
@@ -308,11 +308,38 @@ public sealed class GetMeTests
         var (response, result) = await client.GETAsync<GetMe, GetMeResponse>();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var change = Assert.IsType<MeContactChangeDto>(result.Person.ContactChange);
+        var change = Assert.IsType<MeContactChangeDto>(result.Person?.ContactChange);
         Assert.Equal(changedAt, change.At);
+        Assert.NotNull(change.ChangedBy);
         Assert.Equal(ctx.Identity.People.IdOf("anna"), change.ChangedBy.PersonId);
         Assert.Equal("Anna", change.ChangedBy.FirstName);
         Assert.Equal("Kessler", change.ChangedBy.LastName);
+    }
+
+    [Fact]
+    public async Task Should_ShowTheContactChangeNamingNobody_When_TheEditorWasDeleted()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var changedAt = _fixture.TimeProvider.GetUtcNow().AddDays(-3);
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddAccount("alice")
+                        .AddPerson("anna", "Anna", "Kessler")
+                        .AddContactChange("alice", "anna", changedAt)
+                ),
+            ct
+        );
+        await _fixture.DeletePersonDirectlyAsync(ctx.Identity.People.IdOf("anna"), ct);
+
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        var (response, result) = await client.GETAsync<GetMe, GetMeResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var change = Assert.IsType<MeContactChangeDto>(result.Person?.ContactChange);
+        Assert.Equal(changedAt, change.At);
+        Assert.Null(change.ChangedBy);
     }
 
     [Fact]
@@ -328,6 +355,7 @@ public sealed class GetMeTests
         var (response, result) = await client.GETAsync<GetMe, GetMeResponse>();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(result.Person);
         Assert.Null(result.Person.ContactChange);
     }
 
@@ -497,6 +525,28 @@ public sealed class GetMeTests
     }
 
     [Fact]
+    public async Task Should_ReportNoPersonButEveryKey_When_TheManagingLoginAsks()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(ct);
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (response, result) = await client.GETAsync<GetMe, GetMeResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(ApiTestFixture.ManagingLoginEmail, result.Email);
+        Assert.Null(result.Person);
+        Assert.Equal(MembershipState.None, result.Membership.State);
+        Assert.False(result.IsAffiliated);
+        Assert.Equal(
+            FurriaPermissions.All.Order(StringComparer.Ordinal),
+            result.PermissionKeys.Order(StringComparer.Ordinal)
+        );
+        Assert.Empty(result.Passkeys);
+        Assert.Null(result.AppSince);
+    }
+
+    [Fact]
     public async Task Should_ReportNotAffiliated_When_ThePersonHoldsNoTieAtAll()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -529,7 +579,7 @@ public sealed class GetMeTests
                         ),
                     ct
                 );
-                var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+                var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
                 var issued = await InvitationSteps.InviteInPersonAsync(
                     manager,
                     ctx.Identity.People.IdOf("berta")
@@ -631,7 +681,7 @@ public sealed class GetMeTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheAccountBehindTheTokenNoLongerExists()
+    public async Task Should_ReturnUnauthorized_When_TheAccountBehindTheTokenNoLongerExists()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -644,7 +694,7 @@ public sealed class GetMeTests
 
         var (response, _) = await client.GETAsync<GetMe, GetMeResponse>();
 
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Fact]

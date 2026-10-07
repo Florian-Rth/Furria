@@ -1,7 +1,7 @@
-import type { KkLetterIndexEntry } from '@furria/ui';
+import type { KkFilterOption, KkLetterIndexEntry } from '@furria/ui';
 import type { MembershipState } from '@/lib/api/schemas';
 import { formatAddress } from '@/lib/membership-labels';
-import { ALL_STATES_FILTER_ID } from '@/lib/state-chips';
+import { ALL_STATES_FILTER_ID, ARCHIVED_CHIP, toStateFilterOptions } from '@/lib/state-chips';
 import { normalizeForSearch, OTHER_INDEX_LETTER, toIndexLetter } from '@/lib/text';
 import type { PersonSummary } from './schemas';
 
@@ -53,6 +53,30 @@ export const countPersonsByState = (
   }
 
   return counts;
+};
+
+export const ARCHIVED_PERSONS_FILTER_ID = 'archived';
+
+export interface ArchivedPersonsCount {
+  total: number;
+  matching: number;
+}
+
+export const toPersonFilterOptions = (
+  stateCounts: Record<MembershipState, number>,
+  archived: ArchivedPersonsCount,
+  isArchivedView: boolean,
+): KkFilterOption[] => {
+  const stateOptions = toStateFilterOptions(stateCounts);
+
+  if (archived.total === 0 && !isArchivedView) {
+    return stateOptions;
+  }
+
+  return [
+    ...stateOptions,
+    { id: ARCHIVED_PERSONS_FILTER_ID, label: ARCHIVED_CHIP.label, count: archived.matching },
+  ];
 };
 
 export const groupPersonsByLetter = (persons: readonly PersonSummary[]): PersonLetterSection[] => {

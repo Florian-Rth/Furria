@@ -14,6 +14,7 @@ import {
   toMembershipQuickChoices,
   toPersonOrigin,
 } from '../manage-persons-labels';
+import { toClosedHistoryLine } from '../person-archive';
 import type { PersonDetails, PersonMembership } from '../schemas';
 import { PersonPauseRow } from './PersonPauseRow';
 
@@ -36,6 +37,10 @@ export const PersonMembershipEditor: FC<PersonMembershipEditorProps> = ({ person
   const { highlightedKey } = useLanding();
   const navigate = useNavigate();
   const today = new Date();
+  const isArchived = person.archive !== null;
+  const closedPausesNote = isArchived
+    ? toClosedHistoryLine(person.firstName, 'Ruhezeiten')
+    : undefined;
 
   const chainRows = toMembershipChainRows(person, membership?.membershipId ?? null);
   const chain =
@@ -66,6 +71,8 @@ export const PersonMembershipEditor: FC<PersonMembershipEditorProps> = ({ person
     onClick: startPause,
   };
 
+  const pausesSectionAction = isArchived ? undefined : pausesAction;
+
   const pausesBody =
     membership === null || membership.pauses.length === 0 ? (
       <KkNote tone="muted">{NO_PAUSES_NOTE}</KkNote>
@@ -76,6 +83,7 @@ export const PersonMembershipEditor: FC<PersonMembershipEditorProps> = ({ person
             key={pause.pauseId}
             personId={person.personId}
             pause={pause}
+            linked={!isArchived}
             highlight={highlightedKey === toLandingKey('pause', pause.pauseId)}
           />
         ))}
@@ -84,7 +92,11 @@ export const PersonMembershipEditor: FC<PersonMembershipEditorProps> = ({ person
 
   const pausesSection =
     membership === null ? null : (
-      <KkPanelSection title={MEMBERSHIP_PAUSES_TITLE} action={pausesAction}>
+      <KkPanelSection
+        title={MEMBERSHIP_PAUSES_TITLE}
+        action={pausesSectionAction}
+        description={closedPausesNote}
+      >
         {pausesBody}
       </KkPanelSection>
     );

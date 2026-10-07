@@ -1,6 +1,8 @@
-import { KkAvatar, KkChip, KkEyebrow, KkScreenHeader } from '@furria/ui';
+import { KkAvatar, KkChip, KkEyebrow, KkMeta, KkScreenHeader } from '@furria/ui';
 import type { FC } from 'react';
+import { useMeQuery } from '@/features/session';
 import { PERSON_EYEBROW, toPersonHeadline } from '../manage-persons-labels';
+import { toArchiveNote } from '../person-archive';
 import type { PersonDetails } from '../schemas';
 
 interface PersonEditHeaderProps {
@@ -9,6 +11,14 @@ interface PersonEditHeaderProps {
 
 export const PersonEditHeader: FC<PersonEditHeaderProps> = ({ person }) => {
   const headline = toPersonHeadline(person);
+  const me = useMeQuery();
+  const archiveNote = toArchiveNote(
+    person?.archive ?? null,
+    me.data?.person?.id ?? null,
+    new Date(),
+  );
+
+  const archiveMeta = archiveNote === null ? null : <KkMeta>{archiveNote}</KkMeta>;
 
   const stateRow =
     headline.state === null ? null : (
@@ -16,6 +26,7 @@ export const PersonEditHeader: FC<PersonEditHeaderProps> = ({ person }) => {
         <KkChip tone={headline.state.tone} dot={headline.state.dot}>
           {headline.state.label}
         </KkChip>
+        {archiveMeta}
       </KkScreenHeader.Meta>
     );
 

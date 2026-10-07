@@ -1,4 +1,4 @@
-import type { Me, MembershipState, MeRelevantSession } from '@/lib/api/schemas';
+import type { MembershipState, MeRelevantSession, PersonalMe } from '@/lib/api/schemas';
 import {
   calendarDaysBetween,
   carnivalDaysOf,
@@ -83,7 +83,7 @@ const ORDINAL_MOMENTS: ReadonlySet<GreetingMoment> = new Set([
 ]);
 const RUNNING_STATES: ReadonlySet<MembershipState> = new Set(['active', 'paused']);
 
-export const toGreetingViewer = (me: Me): GreetingViewer => ({
+export const toGreetingViewer = (me: PersonalMe): GreetingViewer => ({
   birthDate: me.person.birthDate,
   membershipState: me.membership.state,
   memberSince: me.membership.memberSince,

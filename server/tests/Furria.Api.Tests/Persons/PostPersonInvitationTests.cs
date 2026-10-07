@@ -38,7 +38,7 @@ public sealed class PostPersonInvitationTests
             ct
         );
 
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var issued = await InvitationSteps.InviteAsync(manager, ctx.Identity.People.IdOf("anna"));
 
         Assert.Equal(_fixture.TimeProvider.GetUtcNow().AddDays(14), issued.ExpiresAt);
@@ -70,7 +70,7 @@ public sealed class PostPersonInvitationTests
                 ),
             ct
         );
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         await InvitationSteps.InviteAsync(manager, ctx.Identity.People.IdOf("anna"));
 
@@ -91,7 +91,7 @@ public sealed class PostPersonInvitationTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         await InvitationSteps.InviteAsync(manager, annaId);
         await InvitationSteps.InviteAsync(manager, annaId);
@@ -123,14 +123,14 @@ public sealed class PostPersonInvitationTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         await InvitationSteps.InviteAsync(manager, annaId);
 
         await _fixture.AtLaterTimeAsync(
             TimeSpan.FromDays(20),
             async () =>
             {
-                var laterManager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+                var laterManager = await ctx.Identity.ManagingLoginClientAsync(ct);
                 await InvitationSteps.InviteAsync(laterManager, annaId);
             }
         );
@@ -325,7 +325,7 @@ public sealed class PostPersonInvitationTests
             ct
         );
 
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         await InvitationSteps.InviteAsync(manager, ctx.Identity.People.IdOf("anna"));
 
         await _fixture.Mailbox.SingleMailToAsync(annaEmail, ct);
@@ -425,7 +425,7 @@ public sealed class PostPersonInvitationTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await manager.POSTAsync<
             PostPersonInvitation,
             PostPersonInvitationRequest,
@@ -443,7 +443,7 @@ public sealed class PostPersonInvitationTests
     )
     {
         var personId = ctx.Identity.People.IdOf(alias);
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var (response, _) = await manager.POSTAsync<
             PostPersonInvitation,

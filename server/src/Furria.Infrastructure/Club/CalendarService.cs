@@ -78,7 +78,7 @@ public sealed class CalendarService
     }
 
     public async Task<IReadOnlyList<GroupCalendarEntrySummary>> GetGroupEntriesAsync(
-        int personId,
+        int? personId,
         int groupId,
         DateOnly from,
         DateOnly to,
@@ -556,7 +556,7 @@ public sealed class CalendarService
 
     private async Task<CalendarEntryWriteResult> WrittenAsync(
         CalendarEntry entry,
-        int viewerPersonId,
+        int? viewerPersonId,
         CancellationToken ct
     ) =>
         new()
@@ -567,7 +567,7 @@ public sealed class CalendarService
 
     private async Task<IReadOnlyList<CalendarEntrySummary>> CollisionsOfAsync(
         CalendarEntry entry,
-        int viewerPersonId,
+        int? viewerPersonId,
         CancellationToken ct
     )
     {
@@ -646,7 +646,7 @@ public sealed class CalendarService
     private Task<bool> GroupExistsAsync(int groupId, CancellationToken ct) =>
         _dbContext.Groups.AsNoTracking().AnyAsync(group => group.Id == groupId, ct);
 
-    private Expression<Func<CalendarEntry, bool>> VisibleTo(int personId, DateOnly today)
+    private Expression<Func<CalendarEntry, bool>> VisibleTo(int? personId, DateOnly today)
     {
         var tiedGroupIds = _dbContext.TiedGroupIds(personId, today);
 
@@ -657,7 +657,7 @@ public sealed class CalendarService
     }
 
     private async Task<IReadOnlyDictionary<int, AttendanceAnswer>> AnswersOfAsync(
-        int personId,
+        int? personId,
         IReadOnlyList<int> calendarEntryIds,
         CancellationToken ct
     )

@@ -27,6 +27,7 @@ export {
   MORE_SECTION,
   PROFILE_ORIGIN,
   PROFILE_PATH,
+  PROFILE_TITLE,
   START_ORIGIN,
   START_PATH,
   START_SECTION,
@@ -48,12 +49,14 @@ export { RequireAffiliation } from './components/RequireAffiliation';
 export { RequireAnyPermission } from './components/RequireAnyPermission';
 export { RequireAnyScreenPermission } from './components/RequireAnyScreenPermission';
 export { RequirePermission } from './components/RequirePermission';
+export { RequirePerson } from './components/RequirePerson';
 export { RequireScreenPermission } from './components/RequireScreenPermission';
 export { ScreenFailure } from './components/ScreenFailure';
 export { ScreenNotFound } from './components/ScreenNotFound';
 export { SessionBoot } from './components/SessionBoot';
 export { useAuthenticatedRedirect } from './hooks/use-authenticated-redirect';
 export { usePermissions } from './hooks/use-permissions';
+export { usePersonalMe } from './hooks/use-personal-me';
 export { useScreenSearch } from './hooks/use-screen-search';
 export { useScreenTrail } from './hooks/use-screen-trail';
 export { useSearchQuery } from './hooks/use-search-query';

@@ -135,6 +135,30 @@ public sealed class RequestPasswordResetTests
     }
 
     [Fact]
+    public async Task Should_SendNothing_When_TheAddressIsTheManagingLogins()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => identity.AddAccount("sentinel")),
+            ct
+        );
+
+        await SignedOutMailSteps.RequestPasswordResetAsync(
+            _fixture.CreateClient(),
+            ApiTestFixture.ManagingLoginEmail
+        );
+        await SignedOutMailSteps.SettleAsync(_fixture, ctx.Identity.EmailOf("sentinel"), ct);
+
+        Assert.Empty(
+            await SignedOutMailSteps.MailsAlreadyInAsync(
+                _fixture,
+                ApiTestFixture.ManagingLoginEmail,
+                ct
+            )
+        );
+    }
+
+    [Fact]
     public async Task Should_SendOneMail_When_TheLoginEmailIsRequestedAgainWithinFiveMinutes()
     {
         var ct = TestContext.Current.CancellationToken;

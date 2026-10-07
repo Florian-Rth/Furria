@@ -1,5 +1,5 @@
 import Stack from '@mui/material/Stack';
-import type { FC } from 'react';
+import type { FC, MouseEvent } from 'react';
 import { focusRing } from '../../../internal/focus-ring';
 import { KkEyebrow } from '../../../KkEyebrow';
 import { KkIcon } from '../../../KkIcon';
@@ -17,13 +17,19 @@ interface KkShellBarCloseProps {
 }
 
 export const KkShellBarClose: FC<KkShellBarCloseProps> = ({ origin, title }) => {
-  const { link } = useKkShell();
+  const { link, goBackTo } = useKkShell();
   const routeProps = { to: origin.to, params: origin.params };
+
+  const goBack = (event: MouseEvent): void => {
+    event.preventDefault();
+    goBackTo(origin);
+  };
 
   return (
     <Stack
       component={link}
       {...routeProps}
+      onClick={goBack}
       aria-label={CLOSE_LABEL}
       direction="row"
       data-kk-shell-bar-close

@@ -9,3 +9,5 @@ const START_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
 
 export const toStartErrorMessage = (error: Error | null): string | null =>
   toQueryErrorMessage(error, START_ERROR_MESSAGES);
+
+export const START_MANAGING_LEAD = 'Was in der Verwaltung ansteht.';

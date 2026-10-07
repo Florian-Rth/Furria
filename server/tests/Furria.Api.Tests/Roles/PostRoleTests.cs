@@ -38,7 +38,7 @@ public sealed class PostRoleTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await CreateRoleAsync(
             client,
             "Zeugwart",
@@ -67,7 +67,7 @@ public sealed class PostRoleTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await CreateRoleAsync(client, "zeugwart", "Noch einmal dasselbe.");
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -93,7 +93,7 @@ public sealed class PostRoleTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await CreateRoleAsync(client, "Zeugwart", "Die neue Rolle.");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -107,7 +107,7 @@ public sealed class PostRoleTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await CreateRoleAsync(client, "", "Ohne Namen.");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -119,7 +119,7 @@ public sealed class PostRoleTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await CreateRoleAsync(client, new string('A', 81), "Zu lang.");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);

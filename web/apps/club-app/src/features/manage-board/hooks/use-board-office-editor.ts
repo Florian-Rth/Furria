@@ -1,12 +1,12 @@
 import type { KkSelectOption } from '@furria/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { useController, useForm } from 'react-hook-form';
 import { usePermissions } from '@/features/session';
 import { toLandingKey } from '@/features/write';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
+import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import {
   useCreateBoardOfficeMutation,
@@ -72,7 +72,7 @@ export const useBoardOfficeEditor = (entry: BoardOfficeEntry | null): BoardOffic
   const create = useCreateBoardOfficeMutation();
   const update = useUpdateBoardOfficeMutation(boardOfficeId ?? NO_BOARD_OFFICE);
   const setImpliedRole = useSetImpliedRoleMutation(boardOfficeId ?? NO_BOARD_OFFICE);
-  const navigate = useNavigate();
+  const goBackTo = useGoBackTo();
 
   const form = useForm<BoardOfficeEditorForm>({
     resolver: zodResolver(BoardOfficeEditorFormSchema),
@@ -84,10 +84,10 @@ export const useBoardOfficeEditor = (entry: BoardOfficeEntry | null): BoardOffic
   const impliedRoleValue = impliedRole.field.value;
 
   const landBack = (id: number): void => {
-    void navigate({
+    void goBackTo({
       to: '/manage/board',
       search: (previous) => ({ ...previous, changed: toLandingKey('board-office', id) }),
-      replace: true,
+      ignoreBlocker: true,
     });
   };
 

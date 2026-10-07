@@ -29,15 +29,9 @@ public sealed class PostPersonAccessRecovery
         CancellationToken ct
     )
     {
-        if (User.PersonId() is not { } issuerPersonId)
-        {
-            await Send.UnauthorizedAsync(ct);
-            return;
-        }
-
         var issued = await _accountAdministrationService.IssueRecoveryAsync(
             req.PersonId,
-            issuerPersonId,
+            User.PersonId(),
             ct
         );
         if (!issued.IsSuccess)

@@ -1,7 +1,7 @@
 export { START_QUERY_KEY, useStartAnswerMutation, useStartQuery } from './api';
 export { GreetingBoard } from './components/GreetingBoard';
 export { StartBody } from './components/StartBody';
-export { StartGreeting } from './components/StartGreeting';
+export { StartHeader } from './components/StartHeader';
 export type { GreetingViewer } from './greeting/greeting-act';
 export { greetingActAt } from './greeting/greeting-act';
 export { toGreetingCopy, toGreetingText } from './greeting/greeting-copy';

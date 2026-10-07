@@ -99,7 +99,7 @@ public sealed class DeleteMyAccountTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await ArrangeAnnaAsync(ct);
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         await InvitationSteps.IssueRecoveryAsync(manager, annaId);
         var client = await ctx.Identity.ClientForAsync("anna", ct);
 
@@ -140,7 +140,7 @@ public sealed class DeleteMyAccountTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await ArrangeAnnaAsync(ct);
         var client = await ctx.Identity.ClientForAsync("anna", ct);
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         await AccountSecuritySteps.DeleteAccountAsync(client, ApiTestFixture.SeededAccountPassword);
 
@@ -202,7 +202,7 @@ public sealed class DeleteMyAccountTests
     {
         var ct = TestContext.Current.CancellationToken;
         var (ctx, bertaId) = await RedeemedAndDeletedAsync(ct);
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var (response, _) = await manager.POSTAsync<
             PostPersonInvitation,
@@ -224,7 +224,7 @@ public sealed class DeleteMyAccountTests
     {
         var ct = TestContext.Current.CancellationToken;
         var (ctx, bertaId) = await RedeemedAndDeletedAsync(ct);
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         await InvitationRoundSteps.InviteAllAsync(manager);
 
@@ -360,6 +360,25 @@ public sealed class DeleteMyAccountTests
     }
 
     [Fact]
+    public async Task Should_ReturnForbidden_When_TheManagingLoginDeletesItself()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+
+        var response = await AccountSecuritySteps.DeleteAccountAsync(
+            client,
+            ApiTestFixture.ManagingLoginPassword
+        );
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        await ctx
+            .Expected.Account(_fixture.ManagingLogin.AccountId)
+            .ToBeTheManagingLogin()
+            .AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_ReturnUnauthorized_When_NoAccessTokenIsSent()
     {
         var response = await AccountSecuritySteps.DeleteAccountAsync(
@@ -395,7 +414,7 @@ public sealed class DeleteMyAccountTests
             ct
         );
         var bertaId = ctx.Identity.People.IdOf("berta");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var token = await InvitationSteps.InviteAndReadTokenAsync(
             _fixture,
             manager,

@@ -43,7 +43,7 @@ public sealed class AccountAdministrationService
 
     public async Task<Result<IssuedInPersonInvitationDetails>> IssueRecoveryAsync(
         int personId,
-        int issuerPersonId,
+        int? issuerPersonId,
         CancellationToken ct
     )
     {

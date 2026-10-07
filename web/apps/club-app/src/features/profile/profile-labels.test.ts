@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Me, MePerson } from '@/lib/api/schemas';
+import type { MePerson, PersonalMe } from '@/lib/api/schemas';
 import { toPreviewContact, toProfileHeadline } from './profile-labels';
 
 const person = (overrides: Partial<MePerson> = {}): MePerson => ({
@@ -17,7 +17,7 @@ const person = (overrides: Partial<MePerson> = {}): MePerson => ({
   ...overrides,
 });
 
-const me = (state: Me['membership']['state']): Me => ({
+const me = (state: PersonalMe['membership']['state']): PersonalMe => ({
   accountId: 3,
   email: 'paula@example.org',
   person: person(),

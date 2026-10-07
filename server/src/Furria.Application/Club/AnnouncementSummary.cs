@@ -12,5 +12,5 @@ public sealed record AnnouncementSummary
 
     public required DateOnly? ValidUntil { get; init; }
 
-    public required AnnouncementAuthorReference Author { get; init; }
+    public required AnnouncementAuthorReference? Author { get; init; }
 }

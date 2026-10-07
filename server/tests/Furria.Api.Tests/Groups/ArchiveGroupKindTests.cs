@@ -42,7 +42,7 @@ public sealed class ArchiveGroupKindTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await ArchiveKindAsync(client, ctx.Groups.GroupKinds.IdOf("spielmannszug"));
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -73,7 +73,7 @@ public sealed class ArchiveGroupKindTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await ArchiveKindAsync(client, ctx.Groups.GroupKinds.IdOf("spielmannszug"));
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -99,7 +99,7 @@ public sealed class ArchiveGroupKindTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await ArchiveKindAsync(client, ctx.Groups.GroupKinds.IdOf("garde"));
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -123,7 +123,7 @@ public sealed class ArchiveGroupKindTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await ArchiveKindAsync(client, ctx.Groups.GroupKinds.IdOf("spielmannszug"));
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -141,7 +141,7 @@ public sealed class ArchiveGroupKindTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await ArchiveKindAsync(client, UnknownGroupKindId);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);

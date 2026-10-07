@@ -10,7 +10,7 @@ public static class CalendarTiesQuery
 {
     public static async Task<CalendarTies> CalendarTiesOfAsync(
         this AppDbContext dbContext,
-        int personId,
+        int? personId,
         DateOnly today,
         CancellationToken ct
     )
@@ -58,7 +58,7 @@ public static class CalendarTiesQuery
     [Pure]
     public static IQueryable<int> TiedGroupIds(
         this AppDbContext dbContext,
-        int personId,
+        int? personId,
         DateOnly today
     ) =>
         dbContext
@@ -71,7 +71,7 @@ public static class CalendarTiesQuery
     [Pure]
     private static IQueryable<GroupMembership> RunningGroupMemberships(
         this AppDbContext dbContext,
-        int personId,
+        int? personId,
         DateOnly today
     ) =>
         dbContext.GroupMemberships.Where(membership =>
@@ -84,7 +84,7 @@ public static class CalendarTiesQuery
     [Pure]
     private static IQueryable<GroupAdmin> RunningGroupAdminTenures(
         this AppDbContext dbContext,
-        int personId,
+        int? personId,
         DateOnly today
     ) =>
         dbContext.GroupAdmins.Where(admin =>

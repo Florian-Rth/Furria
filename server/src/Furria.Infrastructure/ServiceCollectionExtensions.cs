@@ -109,11 +109,14 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ToDoService>();
         services.AddScoped<StartService>();
         services.AddScoped<InvitationRoundService>();
+        services.AddScoped<ReauthenticationService>();
         services.AddScoped<AccountSecurityService>();
         services.AddScoped<AccessRecoveryService>();
         services.AddScoped<AccountAdministrationService>();
         services.AddScoped<AccountClaimService>();
         services.AddScoped<PersonAdoptionService>();
+        services.AddScoped<PersonArchiveService>();
+        services.AddScoped<PersonErasureService>();
         services.AddScoped<MembershipApplicationService>();
         services.AddScoped<MembershipApplicationArrivalNotifier>();
         services.AddScoped<DatabaseHealthService>();
@@ -121,7 +124,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<MailOutbox>();
         services.AddSingleton<MailService>();
         services.AddHostedService<DatabaseMigrator>();
-        services.AddHostedService<BootstrapAdminSeeder>();
+        services.AddHostedService<ManagingLoginSeeder>();
         services.AddHostedService<MailDispatcher>();
         services.AddScoped<AccessRequestService>();
         services.AddScoped<PasswordResetService>();

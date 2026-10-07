@@ -195,35 +195,43 @@ public sealed class AccountService
                         && accountEvent.Kind == AccountEventKind.Redeemed
                     )
                     .Max(accountEvent => (DateTimeOffset?)accountEvent.At),
-                new PersonDetails
-                {
-                    Id = account.Person!.Id,
-                    FirstName = account.Person.FirstName,
-                    LastName = account.Person.LastName,
-                    Email = account.Person.Email,
-                    Phone = account.Person.Phone,
-                    Street = account.Person.Street,
-                    Zip = account.Person.Zip,
-                    City = account.Person.City,
-                    BirthDate = account.Person.BirthDate,
-                    ContactVisibleToMembers = account.Person.ContactVisibleToMembers,
-                    ContactChange =
-                        account.Person.ContactChangedAt == null
-                        || account.Person.ContactChangedBy == null
-                            ? null
-                            : new ContactChangeDetails
-                            {
-                                At = account.Person.ContactChangedAt.Value,
-                                ChangedBy = new PersonReference
+                account.Person == null
+                    ? null
+                    : new PersonDetails
+                    {
+                        Id = account.Person.Id,
+                        FirstName = account.Person.FirstName,
+                        LastName = account.Person.LastName,
+                        Email = account.Person.Email,
+                        Phone = account.Person.Phone,
+                        Street = account.Person.Street,
+                        Zip = account.Person.Zip,
+                        City = account.Person.City,
+                        BirthDate = account.Person.BirthDate,
+                        ContactVisibleToMembers = account.Person.ContactVisibleToMembers,
+                        ContactChange =
+                            account.Person.ContactChangedAt == null
+                                ? null
+                                : new ContactChangeDetails
                                 {
-                                    PersonId = account.Person.ContactChangedBy.Id,
-                                    FirstName = account.Person.ContactChangedBy.FirstName,
-                                    LastName = account.Person.ContactChangedBy.LastName,
+                                    At = account.Person.ContactChangedAt.Value,
+                                    ChangedBy =
+                                        account.Person.ContactChangedBy == null
+                                            ? null
+                                            : new PersonReference
+                                            {
+                                                PersonId = account.Person.ContactChangedBy.Id,
+                                                FirstName = account
+                                                    .Person
+                                                    .ContactChangedBy
+                                                    .FirstName,
+                                                LastName = account.Person.ContactChangedBy.LastName,
+                                            },
                                 },
-                            },
-                },
-                account
-                    .Person.Memberships.Select(membership => new MembershipRow(
+                    },
+                _dbContext
+                    .Memberships.Where(membership => membership.PersonId == account.PersonId)
+                    .Select(membership => new MembershipRow(
                         membership.Id,
                         membership.StartedOn,
                         membership.EndedOn,
@@ -240,10 +248,7 @@ public sealed class AccountService
             ))
             .SingleOrDefaultAsync(ct);
 
-        if (row is null)
-            return Result<AccountDetails>.NotFound("The account no longer exists.");
-
-        if (row.IsDisabled)
+        if (row is not { IsDisabled: false })
             return Result<AccountDetails>.Unauthorized(EndedSessionMessage);
 
         var isAffiliated = await _permissionAuthorizer.IsAffiliatedAsync(accountId, ct);
@@ -377,7 +382,7 @@ public sealed class AccountService
         bool IsDisabled,
         DateTimeOffset? LastSeenAnnouncementAt,
         DateTimeOffset? LastRedeemedAt,
-        PersonDetails Person,
+        PersonDetails? Person,
         IReadOnlyList<MembershipRow> Memberships
     );
 

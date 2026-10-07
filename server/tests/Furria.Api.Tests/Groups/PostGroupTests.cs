@@ -33,7 +33,7 @@ public sealed class PostGroupTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.POSTAsync<
             PostGroup,
             PostGroupRequest,
@@ -62,7 +62,7 @@ public sealed class PostGroupTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await client.POSTAsync<PostGroup, PostGroupRequest, PostGroupResponse>(
             new() { Name = "tanzgarde", GroupKindId = null }
         );
@@ -90,7 +90,7 @@ public sealed class PostGroupTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.POSTAsync<
             PostGroup,
             PostGroupRequest,
@@ -112,7 +112,7 @@ public sealed class PostGroupTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await client.POSTAsync<PostGroup, PostGroupRequest, PostGroupResponse>(
             new() { Name = "", GroupKindId = null }
         );
@@ -126,7 +126,7 @@ public sealed class PostGroupTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await client.POSTAsync<PostGroup, PostGroupRequest, PostGroupResponse>(
             new() { Name = new string('a', 81), GroupKindId = null }
         );
@@ -195,7 +195,7 @@ public sealed class PostGroupTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await client.POSTAsync<PostGroup, PostGroupRequest, PostGroupResponse>(
             new()
             {
@@ -218,7 +218,7 @@ public sealed class PostGroupTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PostAsync(
             GroupsRoute,
             new StringContent(BodyWithoutGroupKind, Encoding.UTF8, MediaTypeNames.Application.Json),

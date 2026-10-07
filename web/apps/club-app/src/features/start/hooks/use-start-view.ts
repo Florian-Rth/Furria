@@ -35,9 +35,9 @@ export const useStartView = (): StartView => {
   const permissions = usePermissions();
   const now = useMinuteNow();
   const { visit, touched, touch } = useStartVisit(query.data);
-  const personId = me.data?.person.id ?? null;
+  const personId = me.data?.person?.id ?? null;
   const { memory, quiet } = useQuietMemory(personId);
-  const ready = visit !== null && personId !== null;
+  const ready = visit !== null && me.data !== undefined;
   const errorMessage = visit === null ? toStartErrorMessage(query.error) : null;
   const paused = visit === null && query.isPaused;
   const skeletonDue = useSkeletonDelay(!ready && errorMessage === null && !paused);

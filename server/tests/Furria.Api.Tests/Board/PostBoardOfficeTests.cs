@@ -39,7 +39,7 @@ public sealed class PostBoardOfficeTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await CreateOfficeAsync(client, "Präsident", 1);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -64,7 +64,7 @@ public sealed class PostBoardOfficeTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await CreateOfficeAsync(client, "präsident", 2);
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -84,7 +84,7 @@ public sealed class PostBoardOfficeTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await CreateOfficeAsync(client, "Pressewart", 5);
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -100,7 +100,7 @@ public sealed class PostBoardOfficeTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await CreateOfficeAsync(client, "", 1);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -112,7 +112,7 @@ public sealed class PostBoardOfficeTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await CreateOfficeAsync(client, "Präsident", 0);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);

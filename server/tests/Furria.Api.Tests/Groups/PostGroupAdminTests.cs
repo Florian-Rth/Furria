@@ -73,6 +73,44 @@ public sealed class PostGroupAdminTests
     }
 
     [Fact]
+    public async Task Should_LiftHerArchive_When_AnArchivedPersonBecomesGroupAdmin()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddPerson("paula", "Paula", "Brendel")
+                            .AddArchive("paula", ArchivedIn2021)
+                    )
+                    .Groups(groups => groups.AddGroup("tanzgarde", "Tanzgarde")),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (response, _) = await client.POSTAsync<
+            PostGroupAdmin,
+            PostGroupAdminRequest,
+            PostGroupAdminResponse
+        >(
+            new()
+            {
+                GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
+                PersonId = ctx.Identity.People.IdOf("paula"),
+                Function = "Trainerin",
+                SinceOn = AppointedIn2023,
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.Person(ctx.Identity.People.IdOf("paula"))
+            .ToNotBeArchived()
+            .AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_ReturnConflict_When_ThePersonIsAlreadyGroupAdmin()
     {
         var ct = TestContext.Current.CancellationToken;

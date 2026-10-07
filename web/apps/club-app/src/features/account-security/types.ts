@@ -1,7 +1,7 @@
 import type { PasskeyAssertionAttempt } from '@/lib/passkey/passkey-flows';
 
-export type AccountDeletionProof = { kind: 'password'; password: string } | { kind: 'passkey' };
+export type ReauthenticationProof = { kind: 'password'; password: string } | { kind: 'passkey' };
 
-export type ResolvedDeletionProof =
+export type ResolvedReauthenticationProof =
   | { kind: 'password'; password: string }
   | { kind: 'passkey'; attempt: PasskeyAssertionAttempt };

@@ -122,6 +122,7 @@ public sealed class GetClubHubAnnouncementsTests
                 Assert.Equal(Body, newest.Body);
                 Assert.Equal(PublishedInJanuary, newest.PublishedAt);
                 Assert.Equal(ValidIntoTheSession, newest.ValidUntil);
+                Assert.NotNull(newest.Author);
                 Assert.Equal(ctx.Identity.People.IdOf("alice"), newest.Author.PersonId);
                 Assert.Equal("Alice", newest.Author.FirstName);
                 Assert.Equal("Muster", newest.Author.LastName);

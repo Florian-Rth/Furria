@@ -1,9 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useController, useForm } from 'react-hook-form';
 import type { Weekday } from '@/features/groups';
 import { toLandingKey } from '@/features/write';
+import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useSetTrainingSlotsMutation } from '../api';
 import { toSlotFormValues, toSlotPayload, toSlotPayloadOf } from '../rhythm-labels';
@@ -50,7 +50,7 @@ export const useGroupSlotEditor = ({
 }: GroupSlotEditorInput): GroupSlotEditorControl => {
   const [rejection, setRejection] = useState<string | null>(null);
   const mutation = useSetTrainingSlotsMutation(groupId);
-  const navigate = useNavigate();
+  const goBackTo = useGoBackTo();
 
   const form = useForm({
     resolver: zodResolver(TrainingSlotFormSchema),
@@ -72,15 +72,19 @@ export const useGroupSlotEditor = ({
   };
 
   const leave = (): void => {
-    void navigate({ to: '/groups/$groupId', params: { groupId: String(groupId) }, replace: true });
+    void goBackTo({
+      to: '/groups/$groupId',
+      params: { groupId: String(groupId) },
+      ignoreBlocker: true,
+    });
   };
 
   const landOnEdited = (slotId: number): void => {
-    void navigate({
+    void goBackTo({
       to: '/groups/$groupId',
       params: { groupId: String(groupId) },
       search: (previous) => ({ ...previous, changed: toLandingKey('training-slot', slotId) }),
-      replace: true,
+      ignoreBlocker: true,
     });
   };
 

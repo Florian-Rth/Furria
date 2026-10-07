@@ -1,5 +1,5 @@
 import Stack from '@mui/material/Stack';
-import type { FC, PropsWithChildren } from 'react';
+import type { FC, MouseEvent, PropsWithChildren } from 'react';
 import { focusRing } from '../../../internal/focus-ring';
 import { KkIcon } from '../../../KkIcon';
 import { kkTokens } from '../../../tokens';
@@ -14,13 +14,19 @@ interface KkShellBarBackProps extends PropsWithChildren {
 }
 
 export const KkShellBarBack: FC<KkShellBarBackProps> = ({ origin, children }) => {
-  const { link } = useKkShell();
+  const { link, goBackTo } = useKkShell();
   const routeProps = { to: origin.to, params: origin.params };
+
+  const goBack = (event: MouseEvent): void => {
+    event.preventDefault();
+    goBackTo(origin);
+  };
 
   return (
     <Stack
       component={link}
       {...routeProps}
+      onClick={goBack}
       aria-label={`${BACK_PREFIX}${origin.label}`}
       direction="row"
       data-kk-shell-bar-back

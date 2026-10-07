@@ -8,7 +8,8 @@ import {
   signOut,
   withFreshAccessToken,
 } from '@/lib/api/session/session-store';
-import { addPasskey, provePasskey } from '@/lib/passkey/passkey-flows';
+import { addPasskey } from '@/lib/passkey/passkey-flows';
+import { resolveReauthenticationProof } from './reauthentication';
 import {
   requestAccountDeletion,
   requestLoginEmailChange,
@@ -18,7 +19,7 @@ import {
   requestPasswordChange,
 } from './requests';
 import type { LoginEmailChange, LoginEmailForm, PasswordForm } from './schemas';
-import type { AccountDeletionProof, ResolvedDeletionProof } from './types';
+import type { ReauthenticationProof } from './types';
 
 export const useLoginEmailChangeMutation = (): UseMutationResult<
   LoginEmailChange,
@@ -60,17 +61,14 @@ export const useLogoutEverywhereMutation = (): UseMutationResult<void, Error, vo
     },
   });
 
-const resolveDeletionProof = async (proof: AccountDeletionProof): Promise<ResolvedDeletionProof> =>
-  proof.kind === 'password' ? proof : { kind: 'passkey', attempt: await provePasskey() };
-
 export const useAccountDeletionMutation = (): UseMutationResult<
   void,
   Error,
-  AccountDeletionProof
+  ReauthenticationProof
 > =>
   useMutation({
-    mutationFn: async (proof: AccountDeletionProof) => {
-      const resolved = await resolveDeletionProof(proof);
+    mutationFn: async (proof: ReauthenticationProof) => {
+      const resolved = await resolveReauthenticationProof(proof);
       await withFreshAccessToken((accessToken) => requestAccountDeletion(resolved, accessToken));
       endSessionWithFarewell('account-deleted');
     },

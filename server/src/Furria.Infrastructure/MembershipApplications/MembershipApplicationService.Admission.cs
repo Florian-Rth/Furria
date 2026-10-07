@@ -84,7 +84,7 @@ public sealed partial class MembershipApplicationService
 
     private async Task<Result<int>> FilledCandidateAsync(
         int personId,
-        int admitterPersonId,
+        int? admitterPersonId,
         UndecidedApplicationRow applicant,
         CancellationToken ct
     )
@@ -166,7 +166,7 @@ public sealed partial class MembershipApplicationService
     private static FillPersonGapsCommand ToGapFill(
         int personId,
         UndecidedApplicationRow applicant,
-        int admitterPersonId
+        int? admitterPersonId
     ) =>
         new()
         {

@@ -48,7 +48,7 @@ public sealed class PutRoleTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithEquipmentWardenAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await RenameRoleAsync(
             client,
             ctx.Roles.Roles.IdOf("zeugwart"),
@@ -71,7 +71,7 @@ public sealed class PutRoleTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithEquipmentWardenAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await RenameRoleAsync(
             client,
             ctx.Roles.Roles.IdOf("zeugwart"),
@@ -98,7 +98,7 @@ public sealed class PutRoleTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await RenameRoleAsync(
             client,
             ctx.Roles.Roles.IdOf("gruppenpflege"),
@@ -125,7 +125,7 @@ public sealed class PutRoleTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await RenameRoleAsync(
             client,
             ctx.Roles.Roles.IdOf("chronik"),
@@ -159,7 +159,7 @@ public sealed class PutRoleTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await RenameRoleAsync(
             client,
             ctx.Roles.Roles.IdOf("chronik"),
@@ -182,7 +182,7 @@ public sealed class PutRoleTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await RenameRoleAsync(client, UnknownRoleId, "Zeugwart", "Gibt es nicht.");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -194,7 +194,7 @@ public sealed class PutRoleTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await RenameRoleAsync(client, 0, "Zeugwart", "Ohne Id.");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);

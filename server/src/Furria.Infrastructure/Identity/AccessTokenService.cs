@@ -1,3 +1,4 @@
+using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Text;
 using Furria.Application.Identity;
@@ -25,7 +26,7 @@ public sealed class AccessTokenService
         );
     }
 
-    public AccessTokenDetails Issue(int accountId, int personId)
+    public AccessTokenDetails Issue(int accountId, int? personId)
     {
         var issuedAt = _timeProvider.GetUtcNow();
         var expiresAt = issuedAt + _options.Lifetime;
@@ -39,15 +40,24 @@ public sealed class AccessTokenService
                 NotBefore = issuedAt.UtcDateTime,
                 Expires = expiresAt.UtcDateTime,
                 SigningCredentials = _signingCredentials,
-                Claims = new Dictionary<string, object>(StringComparer.Ordinal)
-                {
-                    [FurriaClaimTypes.AccountId] = Format(accountId),
-                    [FurriaClaimTypes.PersonId] = Format(personId),
-                },
+                Claims = ClaimsOf(accountId, personId),
             }
         );
 
         return new AccessTokenDetails { Token = token, ExpiresAt = expiresAt };
+    }
+
+    [Pure]
+    private static Dictionary<string, object> ClaimsOf(int accountId, int? personId)
+    {
+        var claims = new Dictionary<string, object>(StringComparer.Ordinal)
+        {
+            [FurriaClaimTypes.AccountId] = Format(accountId),
+        };
+        if (personId is { } person)
+            claims[FurriaClaimTypes.PersonId] = Format(person);
+
+        return claims;
     }
 
     private static string Format(int value) => value.ToString(CultureInfo.InvariantCulture);

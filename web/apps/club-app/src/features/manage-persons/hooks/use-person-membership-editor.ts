@@ -1,9 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useController, useForm } from 'react-hook-form';
 import { toLandingKey } from '@/features/write';
 import { toIsoDay } from '@/lib/day';
+import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useCreateMembershipMutation, useUpdateMembershipMutation } from '../api';
 import {
@@ -14,6 +14,11 @@ import {
   toMembershipConsequence,
   toOpenPause,
 } from '../manage-persons-labels';
+import {
+  toArchiveLiftedSentence,
+  toClosedHistoryLine,
+  toMembershipArchiveEffect,
+} from '../person-archive';
 import type { CreatedMembership, PersonDetails, PersonMembership } from '../schemas';
 import { MembershipFormSchema } from '../schemas';
 
@@ -48,7 +53,7 @@ export const usePersonMembershipEditor = ({
   const [rejection, setRejection] = useState<string | null>(null);
   const create = useCreateMembershipMutation(person.personId);
   const update = useUpdateMembershipMutation(person.personId);
-  const navigate = useNavigate();
+  const goBackTo = useGoBackTo();
 
   const form = useForm({
     resolver: zodResolver(MembershipFormSchema),
@@ -71,11 +76,11 @@ export const usePersonMembershipEditor = ({
   };
 
   const landBack = (membershipId: number): void => {
-    void navigate({
+    void goBackTo({
       to: '/manage/persons/$personId',
       params: { personId: String(person.personId) },
       search: (previous) => ({ ...previous, changed: toLandingKey('membership', membershipId) }),
-      replace: true,
+      ignoreBlocker: true,
     });
   };
 
@@ -97,12 +102,21 @@ export const usePersonMembershipEditor = ({
     );
   });
 
-  const consequence =
+  const archiveEffect = toMembershipArchiveEffect(person.archive !== null, endedOn, today);
+
+  const periodConsequence =
     startedOn === null
       ? null
       : isClosingNow && endedOn !== null && membership !== null
         ? toEndMembershipConsequence(person.firstName, endedOn, toOpenPause(membership) !== null)
         : toMembershipConsequence(startedOn, endedOn, today);
+
+  const consequence =
+    archiveEffect === 'refused'
+      ? toClosedHistoryLine(person.firstName, 'beendete Mitgliedschaften')
+      : archiveEffect === 'lifted' && periodConsequence !== null
+        ? `${periodConsequence} ${toArchiveLiftedSentence(person.firstName)}`
+        : periodConsequence;
 
   return {
     startedOn,
@@ -114,7 +128,7 @@ export const usePersonMembershipEditor = ({
     rejection,
     isSaving: create.isPending || update.isPending,
     isDirty,
-    canSubmit: isValid,
+    canSubmit: isValid && archiveEffect !== 'refused',
     actionLabel:
       membership === null
         ? ADD_MEMBERSHIP_ACTION_LABEL

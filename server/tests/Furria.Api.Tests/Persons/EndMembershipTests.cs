@@ -43,7 +43,7 @@ public sealed class EndMembershipTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.POSTAsync<EndMembership, EndMembershipRequest>(
             new()
             {
@@ -76,7 +76,7 @@ public sealed class EndMembershipTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.POSTAsync<EndMembership, EndMembershipRequest>(
             new()
             {
@@ -109,7 +109,7 @@ public sealed class EndMembershipTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.POSTAsync<EndMembership, EndMembershipRequest>(
             new()
             {
@@ -146,7 +146,7 @@ public sealed class EndMembershipTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.POSTAsync<EndMembership, EndMembershipRequest>(
             new()
             {
@@ -185,7 +185,7 @@ public sealed class EndMembershipTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.POSTAsync<EndMembership, EndMembershipRequest>(
             new()
             {
@@ -229,7 +229,7 @@ public sealed class EndMembershipTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.POSTAsync<EndMembership, EndMembershipRequest>(
             new()
             {
@@ -261,7 +261,7 @@ public sealed class EndMembershipTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.POSTAsync<EndMembership, EndMembershipRequest>(
             new()
             {
@@ -292,7 +292,7 @@ public sealed class EndMembershipTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.POSTAsync<EndMembership, EndMembershipRequest>(
             new()
             {

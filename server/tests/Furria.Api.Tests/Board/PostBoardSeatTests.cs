@@ -55,7 +55,7 @@ public sealed class PostBoardSeatTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithFreeOfficeAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await OpenSeatAsync(
             client,
             ctx.Club.BoardOffices.IdOf("praesident"),
@@ -71,6 +71,37 @@ public sealed class PostBoardSeatTests
             .ToBeHeldBy(ctx.Identity.People.IdOf("ilka"))
             .BoardSeat(result.BoardSeatId)
             .ToHavePeriod(Elected2016, null)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_LiftHerArchive_When_AnArchivedPersonTakesASeat()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddPerson("paula", "Paula", "Brendel")
+                            .AddArchive("paula", ArchivedIn2021)
+                    )
+                    .Club(club => club.AddBoardOffice("kassenwart", "Kassenwart", 3)),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (response, _) = await OpenSeatAsync(
+            client,
+            ctx.Club.BoardOffices.IdOf("kassenwart"),
+            ctx.Identity.People.IdOf("paula"),
+            Elected2016
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.Person(ctx.Identity.People.IdOf("paula"))
+            .ToNotBeArchived()
             .AssertAsync(ct);
     }
 
@@ -93,7 +124,7 @@ public sealed class PostBoardSeatTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await OpenSeatAsync(
             client,
             ctx.Club.BoardOffices.IdOf("beisitzer"),
@@ -118,7 +149,7 @@ public sealed class PostBoardSeatTests
         var ctx = await BuildWithFreeOfficeAsync(ct);
 
         var takesOverTomorrow = _fixture.Today.AddDays(1);
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await OpenSeatAsync(
             client,
             ctx.Club.BoardOffices.IdOf("praesident"),
@@ -139,7 +170,7 @@ public sealed class PostBoardSeatTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithHandedOverOfficeAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await OpenSeatAsync(
             client,
             ctx.Club.BoardOffices.IdOf("praesident"),
@@ -161,7 +192,7 @@ public sealed class PostBoardSeatTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithHandedOverOfficeAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await OpenSeatAsync(
             client,
             ctx.Club.BoardOffices.IdOf("praesident"),
@@ -189,7 +220,7 @@ public sealed class PostBoardSeatTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await OpenSeatAsync(
             client,
             ctx.Club.BoardOffices.IdOf("praesident"),
@@ -220,7 +251,7 @@ public sealed class PostBoardSeatTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await OpenSeatAsync(
             client,
             ctx.Club.BoardOffices.IdOf("pressewart"),
@@ -239,7 +270,7 @@ public sealed class PostBoardSeatTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithFreeOfficeAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await OpenSeatAsync(
             client,
             UnknownBoardOfficeId,
@@ -256,7 +287,7 @@ public sealed class PostBoardSeatTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithFreeOfficeAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await OpenSeatAsync(
             client,
             ctx.Club.BoardOffices.IdOf("praesident"),
@@ -273,7 +304,7 @@ public sealed class PostBoardSeatTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithFreeOfficeAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await OpenSeatAsync(
             client,
             ctx.Club.BoardOffices.IdOf("praesident"),
@@ -347,7 +378,7 @@ public sealed class PostBoardSeatTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithPoweredOfficeAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await OpenSeatAsync(
             client,
             ctx.Club.BoardOffices.IdOf("praesident"),

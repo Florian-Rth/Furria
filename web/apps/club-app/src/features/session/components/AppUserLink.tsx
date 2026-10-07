@@ -3,14 +3,14 @@ import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { toInitials } from '@/lib/initials';
 import { toMembershipStateChip } from '@/lib/state-chips';
-import { useMeQuery } from '../api';
 import { PROFILE_PATH } from '../app-sections';
+import { usePersonalMe } from '../hooks/use-personal-me';
 
 const PROFILE_META = 'Deine Daten und ihre Sichtbarkeit';
 const SKELETON_ROWS = 1;
 
 export const AppUserLink: FC = () => {
-  const me = useMeQuery();
+  const me = usePersonalMe();
 
   if (me.data === undefined) {
     return <KkSkeletonRow count={SKELETON_ROWS} />;

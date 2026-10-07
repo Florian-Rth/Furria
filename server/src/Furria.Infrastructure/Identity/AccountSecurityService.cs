@@ -16,6 +16,8 @@ public sealed class AccountSecurityService
 {
     private const string MissingAccountMessage = "Dieser Zugang besteht nicht mehr.";
     private const string DisabledAccountMessage = "Dieser Zugang ist gesperrt.";
+    private const string ManagedByEnvironmentMessage =
+        "Dieser Zugang wird über die Serverkonfiguration verwaltet.";
     private const string SameLoginEmailMessage =
         "Mit dieser E-Mail-Adresse meldest du dich schon an.";
     private const string TakenLoginEmailMessage =
@@ -24,11 +26,6 @@ public sealed class AccountSecurityService
         "Der Code stimmt nicht. Prüf die Mail und versuch es noch einmal.";
     private const string DeadConfirmationCodeMessage =
         "Dieser Code gilt nicht mehr. Lass dir einen neuen schicken.";
-    private const string WrongPasswordMessage = "Das Passwort stimmt nicht.";
-    private const string RejectedPasskeyMessage =
-        "Der Passkey konnte nicht bestätigt werden. Versuch es noch einmal.";
-    private const string LockedOutMessage =
-        "Zu viele Fehlversuche. Versuch es in 15 Minuten noch einmal.";
     private const string PasswordErrorPrefix = "Password";
 
     private static readonly IReadOnlySet<string> TakenLoginErrorCodes = new HashSet<string>(
@@ -41,39 +38,36 @@ public sealed class AccountSecurityService
 
     private readonly AppDbContext _dbContext;
     private readonly UserManager<Account> _userManager;
-    private readonly SignInManager<Account> _signInManager;
     private readonly AccountService _accountService;
     private readonly RefreshTokenService _refreshTokenService;
     private readonly EmailConfirmationService _emailConfirmationService;
     private readonly CredentialChangeNotifier _credentialChangeNotifier;
     private readonly PersonService _personService;
-    private readonly PasskeyService _passkeyService;
+    private readonly ReauthenticationService _reauthenticationService;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<AccountSecurityService> _logger;
 
     public AccountSecurityService(
         AppDbContext dbContext,
         UserManager<Account> userManager,
-        SignInManager<Account> signInManager,
         AccountService accountService,
         RefreshTokenService refreshTokenService,
         EmailConfirmationService emailConfirmationService,
         CredentialChangeNotifier credentialChangeNotifier,
         PersonService personService,
-        PasskeyService passkeyService,
+        ReauthenticationService reauthenticationService,
         TimeProvider timeProvider,
         ILogger<AccountSecurityService> logger
     )
     {
         _dbContext = dbContext;
         _userManager = userManager;
-        _signInManager = signInManager;
         _accountService = accountService;
         _refreshTokenService = refreshTokenService;
         _emailConfirmationService = emailConfirmationService;
         _credentialChangeNotifier = credentialChangeNotifier;
         _personService = personService;
-        _passkeyService = passkeyService;
+        _reauthenticationService = reauthenticationService;
         _timeProvider = timeProvider;
         _logger = logger;
     }
@@ -90,6 +84,9 @@ public sealed class AccountSecurityService
         if (holder.IsDisabled)
             return Result<DateTimeOffset>.Forbidden(DisabledAccountMessage);
 
+        if (holder is not { PersonId: { } personId, FirstName: { } firstName })
+            return Result<DateTimeOffset>.Forbidden(ManagedByEnvironmentMessage);
+
         var loginEmail = command.LoginEmail.Trim();
         var normalizedLoginEmail = NormalizedEmailOf(loginEmail);
         if (string.Equals(holder.NormalizedEmail, normalizedLoginEmail, StringComparison.Ordinal))
@@ -104,8 +101,8 @@ public sealed class AccountSecurityService
                 Subject = EmailConfirmationSubject.ForLoginEmailChange(command.AccountId),
                 Email = loginEmail,
                 NormalizedEmail = normalizedLoginEmail,
-                PersonId = holder.PersonId,
-                FirstName = holder.FirstName,
+                PersonId = personId,
+                FirstName = firstName,
                 ClubName = await ClubNameAsync(ct),
                 UpdatesContactEmail = command.UpdateContactEmail,
             },
@@ -126,7 +123,7 @@ public sealed class AccountSecurityService
     )
     {
         var account = await FindAccountAsync(accountId);
-        if (account is not { IsDisabled: false })
+        if (account is not { IsDisabled: false, PersonId: { } personId })
             return RefusalOf(account);
 
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
@@ -149,16 +146,12 @@ public sealed class AccountSecurityService
             return changed;
         }
 
-        RecordEvent(account.PersonId, AccountEventKind.LoginEmailChanged);
+        RecordEvent(personId, AccountEventKind.LoginEmailChanged);
         await _dbContext.SaveChangesAsync(ct);
 
         if (confirmed.UpdatesContactEmail)
         {
-            var followed = await _personService.UpdateOwnContactEmailAsync(
-                account.PersonId,
-                email,
-                ct
-            );
+            var followed = await _personService.UpdateOwnContactEmailAsync(personId, email, ct);
             if (!followed.IsSuccess)
             {
                 await transaction.RollbackAsync(ct);
@@ -184,15 +177,16 @@ public sealed class AccountSecurityService
     )
     {
         var account = await FindAccountAsync(command.AccountId);
-        if (account is not { IsDisabled: false })
+        if (account is not { IsDisabled: false, IsManagingLogin: false })
             return Result<SessionTokensDetails>.Carrying(RefusalOf(account));
 
-        var proof = new PasswordProof { Password = command.CurrentPassword };
-        var verdict = await ReauthenticateAsync(account, proof, ct);
-        if (verdict != ReauthenticationVerdict.Proven)
-            return Result<SessionTokensDetails>.Unauthorized(
-                ReauthenticationMessage(verdict, proof)
-            );
+        var proven = await _reauthenticationService.ProveAsync(
+            account,
+            new PasswordProof { Password = command.CurrentPassword },
+            ct
+        );
+        if (!proven.IsSuccess)
+            return Result<SessionTokensDetails>.Carrying(proven);
 
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
         var changed = await _userManager.ChangePasswordAsync(
@@ -230,16 +224,16 @@ public sealed class AccountSecurityService
     public async Task<Result> DeleteAccountAsync(DeleteAccountCommand command, CancellationToken ct)
     {
         var account = await FindAccountAsync(command.AccountId);
-        if (account is not { IsDisabled: false })
+        if (account is not { IsDisabled: false, PersonId: { } personId })
             return RefusalOf(account);
 
-        var verdict = await ReauthenticateAsync(account, command.Proof, ct);
-        if (verdict != ReauthenticationVerdict.Proven)
-            return Result.Unauthorized(ReauthenticationMessage(verdict, command.Proof));
+        var proven = await _reauthenticationService.ProveAsync(account, command.Proof, ct);
+        if (!proven.IsSuccess)
+            return proven;
 
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
-        await VoidLiveInvitationsAsync(account.PersonId, ct);
-        RecordEvent(account.PersonId, AccountEventKind.Deleted);
+        await VoidLiveInvitationsAsync(personId, ct);
+        RecordEvent(personId, AccountEventKind.Deleted);
         await _dbContext.SaveChangesAsync(ct);
 
         var deleted = await _userManager.DeleteAsync(account);
@@ -257,69 +251,6 @@ public sealed class AccountSecurityService
         );
 
         return Result.Success();
-    }
-
-    private async Task<ReauthenticationVerdict> ReauthenticateAsync(
-        Account account,
-        ReauthenticationProof proof,
-        CancellationToken ct
-    ) =>
-        proof switch
-        {
-            PasswordProof password => await ReauthenticateByPasswordAsync(account, password),
-            PasskeyProof passkey => await ReauthenticateByPasskeyAsync(account, passkey, ct),
-            _ => throw new ArgumentOutOfRangeException(nameof(proof), proof, null),
-        };
-
-    private async Task<ReauthenticationVerdict> ReauthenticateByPasskeyAsync(
-        Account account,
-        PasskeyProof proof,
-        CancellationToken ct
-    )
-    {
-        var asserted = await _passkeyService.VerifyAssertionAsync(proof.Assertion, ct);
-        if (asserted?.Id == account.Id)
-            return ReauthenticationVerdict.Proven;
-
-        _logger.LogInformation(
-            "Re-authentication by passkey failed for account {AccountId}",
-            account.Id
-        );
-        return ReauthenticationVerdict.Wrong;
-    }
-
-    private async Task<ReauthenticationVerdict> ReauthenticateByPasswordAsync(
-        Account account,
-        PasswordProof proof
-    )
-    {
-        var wasLockedOut = await _userManager.IsLockedOutAsync(account);
-        var signIn = await _signInManager.CheckPasswordSignInAsync(
-            account,
-            proof.Password,
-            lockoutOnFailure: true
-        );
-
-        if (signIn.Succeeded)
-            return ReauthenticationVerdict.Proven;
-
-        if (signIn.IsLockedOut && !wasLockedOut)
-            _logger.LogWarning(
-                "Account {AccountId} locked out until {LockoutEnd}",
-                account.Id,
-                account.LockoutEnd
-            );
-
-        var verdict = signIn.IsLockedOut
-            ? ReauthenticationVerdict.LockedOut
-            : ReauthenticationVerdict.Wrong;
-        _logger.LogInformation(
-            "Re-authentication failed for account {AccountId}: {ReauthenticationVerdict}",
-            account.Id,
-            verdict
-        );
-
-        return verdict;
     }
 
     private async Task<Result> ChangeLoginAsync(Account account, string email)
@@ -402,9 +333,12 @@ public sealed class AccountSecurityService
 
     [Pure]
     private static Result RefusalOf(Account? account) =>
-        account is null
-            ? Result.NotFound(MissingAccountMessage)
-            : Result.Forbidden(DisabledAccountMessage);
+        account switch
+        {
+            null => Result.NotFound(MissingAccountMessage),
+            { IsManagingLogin: true } => Result.Forbidden(ManagedByEnvironmentMessage),
+            _ => Result.Forbidden(DisabledAccountMessage),
+        };
 
     [Pure]
     private static Result PasswordRefusalOf(IdentityResult changed)
@@ -423,26 +357,14 @@ public sealed class AccountSecurityService
     }
 
     [Pure]
-    private static string ReauthenticationMessage(
-        ReauthenticationVerdict verdict,
-        ReauthenticationProof proof
-    ) =>
-        (verdict, proof) switch
-        {
-            (ReauthenticationVerdict.LockedOut, _) => LockedOutMessage,
-            (_, PasskeyProof) => RejectedPasskeyMessage,
-            _ => WrongPasswordMessage,
-        };
-
-    [Pure]
     private static string ConfirmationRefusalMessage(EmailConfirmationVerdict verdict) =>
         verdict == EmailConfirmationVerdict.Wrong
             ? WrongConfirmationCodeMessage
             : DeadConfirmationCodeMessage;
 
     private sealed record AccountHolder(
-        int PersonId,
-        string FirstName,
+        int? PersonId,
+        string? FirstName,
         string? NormalizedEmail,
         bool IsDisabled
     );

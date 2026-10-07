@@ -70,7 +70,7 @@ public sealed class GetRoleByIdTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await ReadRoleAsync(client, ctx.Roles.Roles.IdOf("gruppenpflege"));
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -113,7 +113,7 @@ public sealed class GetRoleByIdTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await ReadRoleAsync(client, ctx.Roles.Roles.IdOf("chronistin"));
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -148,7 +148,7 @@ public sealed class GetRoleByIdTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await ReadRoleAsync(client, ctx.Roles.Roles.IdOf("gruppenpflege"));
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -174,7 +174,7 @@ public sealed class GetRoleByIdTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await ReadRoleAsync(client, ctx.Roles.Roles.IdOf("chronik"));
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -190,7 +190,7 @@ public sealed class GetRoleByIdTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await ReadRoleAsync(client, ctx.Roles.Roles.IdOf("zeugwart"));
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -204,7 +204,7 @@ public sealed class GetRoleByIdTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await ReadRoleAsync(client, UnknownRoleId);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -216,7 +216,7 @@ public sealed class GetRoleByIdTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await ReadRoleAsync(client, 0);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);

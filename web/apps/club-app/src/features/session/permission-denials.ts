@@ -20,5 +20,7 @@ const FALLBACK_MESSAGE = 'Dir fehlt die Berechtigung für diese Seite.';
 
 export const MANAGE_DENIED_MESSAGE = 'Dir fehlt die Berechtigung für die Verwaltung.';
 
+export const NO_PERSON_MESSAGE = 'Dieser Zugang gehört zu keiner Person und hat kein Profil.';
+
 export const deniedMessageOf = (permissionKey: PermissionKey): string =>
   DENIED_MESSAGES[permissionKey] ?? FALLBACK_MESSAGE;

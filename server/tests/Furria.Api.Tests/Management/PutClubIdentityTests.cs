@@ -28,7 +28,7 @@ public sealed class PutClubIdentityTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutClubIdentity, PutClubIdentityRequest>(
             new()
             {
@@ -67,7 +67,7 @@ public sealed class PutClubIdentityTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutClubIdentity, PutClubIdentityRequest>(
             new()
             {
@@ -97,7 +97,7 @@ public sealed class PutClubIdentityTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutClubIdentity, PutClubIdentityRequest>(
             new()
             {
@@ -122,7 +122,7 @@ public sealed class PutClubIdentityTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutClubIdentity, PutClubIdentityRequest>(
             new()
             {
@@ -142,7 +142,7 @@ public sealed class PutClubIdentityTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutClubIdentity, PutClubIdentityRequest>(
             new()
             {
@@ -169,7 +169,7 @@ public sealed class PutClubIdentityTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutClubIdentity, PutClubIdentityRequest>(
             new()
             {
@@ -197,7 +197,7 @@ public sealed class PutClubIdentityTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutClubIdentity, PutClubIdentityRequest>(
             new()
             {

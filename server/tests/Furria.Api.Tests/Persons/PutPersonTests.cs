@@ -30,7 +30,7 @@ public sealed class PutPersonTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutPerson, PutPersonRequest>(
             FormOf(ctx.Identity.People.IdOf("paula"), "Paula", "Brendel-Kühnel")
         );
@@ -81,7 +81,7 @@ public sealed class PutPersonTests
         );
 
         var personId = ctx.Identity.People.IdOf("paula");
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutPerson, PutPersonRequest>(
             FormOf(personId, "Paula", "Brendel") with
             {
@@ -122,7 +122,7 @@ public sealed class PutPersonTests
         );
 
         var personId = ctx.Identity.People.IdOf("paula");
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutPerson, PutPersonRequest>(
             FormOf(personId, "Paula", "Brendel") with
             {
@@ -144,7 +144,7 @@ public sealed class PutPersonTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutPerson, PutPersonRequest>(
             FormOf(ctx.Identity.People.IdOf("paula") + 1_000, "Paula", "Brendel")
         );
@@ -158,7 +158,7 @@ public sealed class PutPersonTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutPerson, PutPersonRequest>(
             FormOf(0, "Paula", "Brendel")
         );
@@ -176,7 +176,7 @@ public sealed class PutPersonTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutPerson, PutPersonRequest>(
             FormOf(ctx.Identity.People.IdOf("paula"), "Paula", "")
         );
@@ -288,7 +288,7 @@ public sealed class PutPersonTests
         );
 
         var personId = ctx.Identity.People.IdOf("paula");
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         await _fixture.AtLaterTimeAsync(
             TimeSpan.FromMinutes(1),
@@ -307,7 +307,7 @@ public sealed class PutPersonTests
                 Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
                 await ctx
                     .Expected.Person(personId)
-                    .ToHaveContactChangedBy(ctx.Identity.BootstrapAdmin.PersonId, changedAt)
+                    .ToHaveContactChangedBy(null, changedAt)
                     .AssertAsync(ct);
             }
         );
@@ -335,7 +335,7 @@ public sealed class PutPersonTests
         );
 
         var personId = ctx.Identity.People.IdOf("paula");
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutPerson, PutPersonRequest>(
             FormOf(personId, "Paula", "Brendel-Kühnel") with
             {
@@ -370,7 +370,7 @@ public sealed class PutPersonTests
 
         var personId = ctx.Identity.People.IdOf("paula");
         var loginEmail = ctx.Identity.EmailOf("paula");
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutPerson, PutPersonRequest>(
             FormOf(personId, "Paula", "Brendel") with
             {

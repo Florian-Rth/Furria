@@ -10,5 +10,5 @@ public sealed record AdmitMembershipApplicationCommand
 
     public required bool GuardianConsentConfirmed { get; init; }
 
-    public required int AdmitterPersonId { get; init; }
+    public required int? AdmitterPersonId { get; init; }
 }

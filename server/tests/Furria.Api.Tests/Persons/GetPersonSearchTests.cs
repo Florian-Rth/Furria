@@ -59,6 +59,31 @@ public sealed class GetPersonSearchTests
     }
 
     [Fact]
+    public async Task Should_LeaveOutAnArchivedPerson_When_HerNameMatches()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddPerson("paula", "Paula", "Brendel")
+                        .AddPerson("pia", "Pia", "Brendel")
+                        .AddArchive("pia", new DateOnly(2021, 1, 1))
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (response, result) = await SearchAsync(client, "bren");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(
+            [ctx.Identity.People.IdOf("paula")],
+            result.Persons.Select(person => person.PersonId)
+        );
+    }
+
+    [Fact]
     public async Task Should_FindTheUmlautName_When_TheQueryArrivesFolded()
     {
         var ct = TestContext.Current.CancellationToken;

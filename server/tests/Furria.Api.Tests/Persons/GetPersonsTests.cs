@@ -51,7 +51,7 @@ public sealed class GetPersonsTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.GETAsync<
             GetPersons,
             GetPersonsRequest,
@@ -66,6 +66,66 @@ public sealed class GetPersonsTests
         Assert.Equal("Tom", tom.FirstName);
         Assert.Equal("Kartenkäufer", tom.LastName);
     }
+
+    [Fact]
+    public async Task Should_LeaveOutArchivedPersons_When_TheRegisterIsReadUnfiltered()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildWithOneArchivedPersonAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+
+        var listed = await ListAllAsync(client);
+
+        Assert.Contains(ctx.Identity.People.IdOf("paula"), listed);
+        Assert.DoesNotContain(ctx.Identity.People.IdOf("pia"), listed);
+    }
+
+    [Fact]
+    public async Task Should_LeaveOutArchivedPersons_When_TheRegisterIsFilteredByAccess()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildWithOneArchivedPersonAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+
+        var listed = await ListByAccessAsync(client, PersonAccessFilters.NotInvitable);
+
+        Assert.Contains(ctx.Identity.People.IdOf("paula"), listed);
+        Assert.DoesNotContain(ctx.Identity.People.IdOf("pia"), listed);
+    }
+
+    [Fact]
+    public async Task Should_ListOnlyArchivedPersons_When_TheArchivedFilterIsSet()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildWithOneArchivedPersonAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+
+        var (response, result) = await client.GETAsync<
+            GetPersons,
+            GetPersonsRequest,
+            GetPersonsResponse
+        >(new GetPersonsRequest { Archived = true });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(
+            [ctx.Identity.People.IdOf("pia")],
+            result.Persons.Select(person => person.PersonId)
+        );
+    }
+
+    private Task<SeededContext> BuildWithOneArchivedPersonAsync(CancellationToken ct) =>
+        _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddPerson("paula", "Paula", "Brendel")
+                        .AddMembership("paula-erste", "paula", JoinedIn2017, LeftIn2020)
+                        .AddPerson("pia", "Pia", "Brendel")
+                        .AddMembership("pia-erste", "pia", JoinedIn2017, LeftIn2020)
+                        .AddArchive("pia", ArchivedIn2024)
+                ),
+            ct
+        );
 
     [Fact]
     public async Task Should_CarryTheAddressAndTheBirthDate_When_TheRegistryIsRead()
@@ -90,7 +150,7 @@ public sealed class GetPersonsTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.GETAsync<
             GetPersons,
             GetPersonsRequest,
@@ -126,7 +186,7 @@ public sealed class GetPersonsTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.GETAsync<
             GetPersons,
             GetPersonsRequest,
@@ -209,7 +269,7 @@ public sealed class GetPersonsTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.GETAsync<
             GetPersons,
             GetPersonsRequest,
@@ -249,6 +309,45 @@ public sealed class GetPersonsTests
                             "Zugangspflege",
                             "ilka",
                             FurriaPermissions.AccountsManage
+                        )
+                    ),
+            ct
+        );
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+
+        var (response, result) = await client.GETAsync<
+            GetPersons,
+            GetPersonsRequest,
+            GetPersonsResponse
+        >(new GetPersonsRequest());
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains(
+            result.Persons,
+            person => person.PersonId == ctx.Identity.People.IdOf("anna")
+        );
+    }
+
+    [Fact]
+    public async Task Should_ListThePersons_When_TheCallerOnlyHoldsPersonsDelete()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddPerson("anna", "Anna", "Muster")
+                            .AddPerson("ilka", "Ilka", "Reineke")
+                            .AddAccount("ilka")
+                    )
+                    .Roles(roles =>
+                        roles.AddRoleWithHolder(
+                            "loeschung",
+                            "ilka-loeschung",
+                            "Löschung",
+                            "ilka",
+                            FurriaPermissions.PersonsDelete
                         )
                     ),
             ct
@@ -332,7 +431,7 @@ public sealed class GetPersonsTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.GETAsync<
             GetPersons,
             GetPersonsRequest,
@@ -345,10 +444,6 @@ public sealed class GetPersonsTests
             .Where(name => name is "Kuhn" or "Kühnel" or "Österreicher" or "Zimmermann")
             .ToArray();
         Assert.Equal(["Kuhn", "Kühnel", "Österreicher", "Zimmermann"], surnames);
-        Assert.Contains(
-            result.Persons,
-            person => person.PersonId == ctx.Identity.BootstrapAdmin.PersonId
-        );
     }
 
     [Fact]
@@ -365,7 +460,7 @@ public sealed class GetPersonsTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var payload = await client.GetStringAsync(PersonsRoute, ct);
 
         using var document = JsonDocument.Parse(payload);
@@ -416,7 +511,7 @@ public sealed class GetPersonsTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildEveryAccessStateAsync(ct);
         var ids = SeededAccessIdsOf(ctx);
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         await InvitationSteps.InviteAsync(client, ids["carla"]);
         await InvitationSteps.InviteAsync(client, ids["karl"]);
 
@@ -449,7 +544,7 @@ public sealed class GetPersonsTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildEveryAccessStateAsync(ct);
         var ids = SeededAccessIdsOf(ctx);
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         await InvitationSteps.InviteAsync(client, ids["carla"]);
         await InvitationSteps.InviteAsync(client, ids["karl"]);
 
@@ -472,7 +567,7 @@ public sealed class GetPersonsTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildEveryAccessStateAsync(ct);
         var ids = SeededAccessIdsOf(ctx);
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         await InvitationSteps.InviteAsync(client, ids["carla"]);
 
         var (response, result) = await client.GETAsync<
@@ -493,14 +588,14 @@ public sealed class GetPersonsTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildEveryAccessStateAsync(ct);
         var ids = SeededAccessIdsOf(ctx);
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         await InvitationSteps.InviteAsync(client, ids["gina"]);
 
         await _fixture.AtLaterTimeAsync(
             TimeSpan.FromDays(20),
             async () =>
             {
-                var laterClient = await ctx.Identity.BootstrapAdminClientAsync(ct);
+                var laterClient = await ctx.Identity.ManagingLoginClientAsync(ct);
                 await InvitationSteps.InviteAsync(laterClient, ids["carla"]);
                 await InvitationSteps.InviteAsync(laterClient, ids["karl"]);
 
@@ -526,7 +621,7 @@ public sealed class GetPersonsTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildEveryAccessStateAsync(ct);
         var ids = SeededAccessIdsOf(ctx);
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         await InvitationSteps.InviteAsync(client, ids["carla"]);
         await InvitationSteps.InviteAsync(client, ids["karl"]);
 
@@ -595,7 +690,7 @@ public sealed class GetPersonsTests
             ["fritz"] = ctx.Identity.People.IdOf("fritz"),
             ["otto"] = ctx.Identity.People.IdOf("otto"),
         };
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var listed = await ListByAccessAsync(client, PersonAccessFilters.BirthDateUnknown);
 
@@ -625,7 +720,7 @@ public sealed class GetPersonsTests
             ["hans"] = ctx.Identity.People.IdOf("hans"),
             ["karl"] = ctx.Identity.People.IdOf("karl"),
         };
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         await InvitationSteps.InviteAsync(client, ids["karl"]);
 
         var listed = await ListByAccessAsync(client, PersonAccessFilters.BirthDateUnknown);
@@ -639,7 +734,7 @@ public sealed class GetPersonsTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await client.GETAsync<
             GetPersons,
             GetPersonsRequest,

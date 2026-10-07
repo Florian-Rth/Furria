@@ -1,10 +1,10 @@
 import { useKkNotice } from '@furria/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import type { FieldErrors, UseFormReturn } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 import { toLandingKey } from '@/features/write';
+import { useGoBackTo } from '@/lib/use-go-back-to';
 import {
   PASSWORD_SAVED_MESSAGE,
   SECURITY_LANDINGS,
@@ -28,7 +28,7 @@ export interface PasswordEditorControl {
 export const usePasswordEditor = (): PasswordEditorControl => {
   const [rejection, setRejection] = useState<string | null>(null);
   const mutation = usePasswordChangeMutation();
-  const navigate = useNavigate();
+  const goBackTo = useGoBackTo();
   const raiseNotice = useKkNotice();
 
   const form = useForm<PasswordForm>({
@@ -50,13 +50,13 @@ export const usePasswordEditor = (): PasswordEditorControl => {
 
   const landOnSecurity = (): void => {
     raiseNotice({ tone: 'success', message: PASSWORD_SAVED_MESSAGE });
-    void navigate({
+    void goBackTo({
       to: SECURITY_PATH,
       search: (previous) => ({
         ...previous,
         changed: toLandingKey(SECURITY_LANDINGS.password.kind, SECURITY_LANDINGS.password.id),
       }),
-      replace: true,
+      ignoreBlocker: true,
     });
   };
 

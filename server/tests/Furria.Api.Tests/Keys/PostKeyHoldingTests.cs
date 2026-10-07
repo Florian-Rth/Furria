@@ -41,7 +41,7 @@ public sealed class PostKeyHoldingTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.POSTAsync<
             PostKeyHolding,
             PostKeyHoldingRequest,
@@ -67,6 +67,43 @@ public sealed class PostKeyHoldingTests
     }
 
     [Fact]
+    public async Task Should_LiftHerArchive_When_AnArchivedPersonIsHandedAKey()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddPerson("paula", "Paula", "Brendel")
+                            .AddArchive("paula", ArchivedIn2021)
+                    )
+                    .Club(club => club.AddVenue("lager", "Lager")),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (response, _) = await client.POSTAsync<
+            PostKeyHolding,
+            PostKeyHoldingRequest,
+            PostKeyHoldingResponse
+        >(
+            new()
+            {
+                VenueId = ctx.Club.Venues.IdOf("lager"),
+                PersonId = ctx.Identity.People.IdOf("paula"),
+                SinceOn = HeldSince2024,
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.Person(ctx.Identity.People.IdOf("paula"))
+            .ToNotBeArchived()
+            .AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_ReturnValidationNamingTheVenue_When_TheVenueIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -80,7 +117,7 @@ public sealed class PostKeyHoldingTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await client.POSTAsync<
             PostKeyHolding,
             PostKeyHoldingRequest,
@@ -118,7 +155,7 @@ public sealed class PostKeyHoldingTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await client.POSTAsync<
             PostKeyHolding,
             PostKeyHoldingRequest,
@@ -161,7 +198,7 @@ public sealed class PostKeyHoldingTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.POSTAsync<
             PostKeyHolding,
             PostKeyHoldingRequest,
@@ -195,7 +232,7 @@ public sealed class PostKeyHoldingTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await client.POSTAsync<
             PostKeyHolding,
             PostKeyHoldingRequest,
@@ -221,7 +258,7 @@ public sealed class PostKeyHoldingTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await client.POSTAsync<
             PostKeyHolding,
             PostKeyHoldingRequest,

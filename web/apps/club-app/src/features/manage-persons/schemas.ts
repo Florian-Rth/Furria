@@ -95,6 +95,37 @@ export const PersonRoleSchema = RoleRefSchema.extend({
 });
 export type PersonRole = z.infer<typeof PersonRoleSchema>;
 
+export const PersonGroupAdminTenureSchema = z.object({
+  groupId: z.number().int(),
+  name: z.string(),
+  function: z.string().nullable(),
+  sinceOn: z.iso.date(),
+  untilOn: z.iso.date().nullable(),
+});
+export type PersonGroupAdminTenure = z.infer<typeof PersonGroupAdminTenureSchema>;
+
+export const PersonBoardSeatSchema = z.object({
+  boardOfficeId: z.number().int(),
+  name: z.string(),
+  sinceOn: z.iso.date(),
+  untilOn: z.iso.date().nullable(),
+});
+export type PersonBoardSeat = z.infer<typeof PersonBoardSeatSchema>;
+
+export const PersonKeyHoldingSchema = z.object({
+  venueId: z.number().int(),
+  name: z.string(),
+  sinceOn: z.iso.date(),
+  untilOn: z.iso.date().nullable(),
+});
+export type PersonKeyHolding = z.infer<typeof PersonKeyHoldingSchema>;
+
+export const PersonArchiveSchema = z.object({
+  archivedOn: z.iso.date(),
+  archivedBy: PersonRefSchema.nullable(),
+});
+export type PersonArchive = z.infer<typeof PersonArchiveSchema>;
+
 export const PersonDetailsSchema = z
   .object({
     personId: z.number().int(),
@@ -106,8 +137,12 @@ export const PersonDetailsSchema = z
     feeReductions: z.array(PersonFeeReductionSchema),
     groups: z.array(PersonGroupSchema),
     roles: z.array(PersonRoleSchema),
+    unendedGroupAdminTenures: z.array(PersonGroupAdminTenureSchema),
+    unendedBoardSeats: z.array(PersonBoardSeatSchema),
+    unendedKeyHoldings: z.array(PersonKeyHoldingSchema),
     access: PersonAccessSchema,
     contactChange: ContactChangeSchema.nullable(),
+    archive: PersonArchiveSchema.nullable(),
   })
   .extend(PersonContactSchema.shape);
 export type PersonDetails = z.infer<typeof PersonDetailsSchema>;
@@ -157,6 +192,7 @@ export type PauseNewSearch = z.infer<typeof PauseNewSearchSchema>;
 
 export const PersonsSearchSchema = AppSearchSchema.extend({
   access: z.string().optional().catch(undefined),
+  archived: z.boolean().optional().catch(undefined),
 });
 export type PersonsSearch = z.infer<typeof PersonsSearchSchema>;
 

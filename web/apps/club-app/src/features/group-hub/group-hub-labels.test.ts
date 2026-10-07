@@ -293,15 +293,19 @@ describe('toGroupInfoFormValues', () => {
 
 describe('toHubOrigin', () => {
   it('sends an affiliated viewer back to the group directory', () => {
-    expect(toHubOrigin(true).to).toBe('/groups');
+    expect(toHubOrigin(true, false).to).toBe('/groups');
+  });
+
+  it('sends the managing login back to the club management', () => {
+    expect(toHubOrigin(false, true).to).toBe('/manage');
   });
 
   it('sends an unaffiliated viewer somewhere she may go', () => {
-    expect(toHubOrigin(false).to).toBe('/profile');
+    expect(toHubOrigin(false, false).to).toBe('/profile');
   });
 
   it('keeps the group directory while affiliation is still undecided', () => {
-    expect(toHubOrigin(null).to).toBe('/groups');
+    expect(toHubOrigin(null, false).to).toBe('/groups');
   });
 });
 

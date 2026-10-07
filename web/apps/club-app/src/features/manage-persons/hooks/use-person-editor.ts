@@ -1,11 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import type { FieldErrors, UseFormReturn } from 'react-hook-form';
 import { useController, useForm, useWatch } from 'react-hook-form';
 import { toLandingKey } from '@/features/write';
 import { RequestFailedError } from '@/lib/api/api-error';
 import { toCamelCaseField } from '@/lib/api/api-failures';
+import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useCreatePersonMutation, useUpdatePersonMutation } from '../api';
 import type { CreatedPerson, PersonForm } from '../schemas';
@@ -106,7 +106,7 @@ export const usePersonEditor = ({ person }: PersonEditorInput): PersonEditorCont
   const [rejection, setRejection] = useState<string | null>(null);
   const create = useCreatePersonMutation();
   const update = useUpdatePersonMutation(person?.personId ?? UNSAVED_PERSON_ID);
-  const navigate = useNavigate();
+  const goBackTo = useGoBackTo();
 
   const form = useForm<PersonForm>({
     resolver: zodResolver(PersonFormSchema),
@@ -141,11 +141,11 @@ export const usePersonEditor = ({ person }: PersonEditorInput): PersonEditorCont
   };
 
   const landOnPerson = (personId: number): void => {
-    void navigate({
+    void goBackTo({
       to: '/manage/persons/$personId',
       params: { personId: String(personId) },
       search: (previous) => ({ ...previous, changed: toLandingKey('person', personId) }),
-      replace: true,
+      ignoreBlocker: true,
     });
   };
 

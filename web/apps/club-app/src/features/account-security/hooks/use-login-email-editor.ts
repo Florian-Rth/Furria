@@ -1,10 +1,10 @@
 import { useKkNotice } from '@furria/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import type { UseControllerReturn, UseFormReturn } from 'react-hook-form';
 import { useController, useForm } from 'react-hook-form';
 import { toLandingKey } from '@/features/write';
+import { useGoBackTo } from '@/lib/use-go-back-to';
 import {
   SECURITY_LANDINGS,
   SECURITY_PATH,
@@ -48,7 +48,7 @@ export const useLoginEmailEditor = (currentLoginEmail: string): LoginEmailEditor
   const [rejection, setRejection] = useState<string | null>(null);
   const change = useLoginEmailChangeMutation();
   const confirmation = useLoginEmailConfirmationMutation();
-  const navigate = useNavigate();
+  const goBackTo = useGoBackTo();
   const raiseNotice = useKkNotice();
 
   const addressForm = useForm<LoginEmailForm>({
@@ -109,18 +109,18 @@ export const useLoginEmailEditor = (currentLoginEmail: string): LoginEmailEditor
       tone: 'success',
       message: toLoginEmailSavedMessage(confirmed.loginEmail, confirmed.updateContactEmail),
     });
-    void navigate({
+    void goBackTo({
       to: SECURITY_PATH,
       search: (previous) => ({
         ...previous,
         changed: toLandingKey(SECURITY_LANDINGS.loginEmail.kind, SECURITY_LANDINGS.loginEmail.id),
       }),
-      replace: true,
+      ignoreBlocker: true,
     });
   };
 
   const closeUnchanged = (): void => {
-    void navigate({ to: SECURITY_PATH, replace: true });
+    void goBackTo({ to: SECURITY_PATH });
   };
 
   const submitAddress = addressForm.handleSubmit((values) => {

@@ -33,6 +33,17 @@ public sealed class RoleExpectations
                 Assert.Equal(archivedOn, (await SingleAsync(dbContext, ct)).ArchivedOn)
         );
 
+    public Expected ToHaveHoldingCount(int count) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(
+                    count,
+                    await dbContext
+                        .RoleHoldings.AsNoTracking()
+                        .CountAsync(row => row.RoleId == _roleId, ct)
+                )
+        );
+
     public Expected ToGrantExactly(params string[] permissionKeys) =>
         _expected.Enqueue(
             async (dbContext, ct) =>

@@ -127,12 +127,12 @@ public sealed class PermissionAuthorizerTests
     }
 
     [Fact]
-    public async Task Should_Allow_When_TheBootstrapAdminCalls()
+    public async Task Should_Allow_When_TheManagingLoginCalls()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await client.GETAsync<PermissionProbe, EmptyResponse>();
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);

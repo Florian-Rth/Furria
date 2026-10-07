@@ -1,12 +1,12 @@
 import { KkScreen, KkScreenHeaderSkeleton } from '@furria/ui';
 import type { FC } from 'react';
-import { AREA_HANDOVERS, MORE_ORIGIN, useMeQuery } from '@/features/session';
+import { AREA_HANDOVERS, MORE_ORIGIN, usePersonalMe } from '@/features/session';
 import { toProfileHeadline } from '../profile-labels';
 import { ProfileBody } from './ProfileBody';
 import { ProfileHeader } from './ProfileHeader';
 
 export const ProfilePage: FC = () => {
-  const me = useMeQuery();
+  const me = usePersonalMe();
   const headline = toProfileHeadline(me.data);
 
   const pendingHeader = me.error === null ? <KkScreenHeaderSkeleton /> : null;

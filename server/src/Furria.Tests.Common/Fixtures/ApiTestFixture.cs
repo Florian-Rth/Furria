@@ -45,10 +45,28 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
     private const string Issuer = "furria-api-tests";
     private const string Audience = "furria-clients";
     private const string NotInitialized = "ApiTestFixture has not been initialized yet.";
+    private const string AdminRoleName = "Admin";
+    private const string ForeignKeysQuery = """
+        SELECT constraint_row.conname,
+               referencing.relname,
+               referenced.relname,
+               CASE constraint_row.confdeltype
+                   WHEN 'c' THEN 'CASCADE'
+                   WHEN 'n' THEN 'SET NULL'
+                   WHEN 'd' THEN 'SET DEFAULT'
+                   WHEN 'r' THEN 'RESTRICT'
+                   ELSE 'NO ACTION'
+               END
+        FROM pg_constraint constraint_row
+        JOIN pg_class referencing ON referencing.oid = constraint_row.conrelid
+        JOIN pg_class referenced ON referenced.oid = constraint_row.confrelid
+        JOIN pg_namespace schema_row ON schema_row.oid = constraint_row.connamespace
+        WHERE constraint_row.contype = 'f' AND schema_row.nspname = current_schema()
+        """;
 
     public const string PreviewPassword = "test-preview-password";
-    public const string BootstrapAdminEmail = "bootstrap-admin@test.local";
-    public const string BootstrapAdminPassword = "Bootstrap-Admin-Pw-1!";
+    public const string ManagingLoginEmail = "managing-login@test.local";
+    public const string ManagingLoginPassword = "Managing-Login-Pw-1!";
     public const string SeededAccountPassword = "Seeded-Account-Pw-1!";
     public const string ClubDomain = "furria.test";
     public const string ClubAppBaseUrl = "https://club.furria.test";
@@ -88,7 +106,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
     private MailpitInbox? _mailbox;
 
     private DatabaseResetService? _resetService;
-    private SeededAccount? _bootstrapAdmin;
+    private SeededManagingLogin? _managingLogin;
     private int? _adminRoleId;
 
     public TestClock TimeProvider { get; } = new(WholeSecondNow());
@@ -101,8 +119,8 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
 
     public int CurrentSessionYear => ClubSession.YearOf(Today);
 
-    public SeededAccount BootstrapAdmin =>
-        _bootstrapAdmin ?? throw new InvalidOperationException(NotInitialized);
+    public SeededManagingLogin ManagingLogin =>
+        _managingLogin ?? throw new InvalidOperationException(NotInitialized);
 
     public int AdminRoleId => _adminRoleId ?? throw new InvalidOperationException(NotInitialized);
 
@@ -158,20 +176,12 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             Audience
         );
         builder.UseSetting(
-            $"{BootstrapAdminOptions.SectionName}:{nameof(BootstrapAdminOptions.Email)}",
-            BootstrapAdminEmail
+            $"{ManagingLoginOptions.SectionName}:{nameof(ManagingLoginOptions.Email)}",
+            ManagingLoginEmail
         );
         builder.UseSetting(
-            $"{BootstrapAdminOptions.SectionName}:{nameof(BootstrapAdminOptions.Password)}",
-            BootstrapAdminPassword
-        );
-        builder.UseSetting(
-            $"{BootstrapAdminOptions.SectionName}:{nameof(BootstrapAdminOptions.FirstName)}",
-            "Bootstrap"
-        );
-        builder.UseSetting(
-            $"{BootstrapAdminOptions.SectionName}:{nameof(BootstrapAdminOptions.LastName)}",
-            "Admin"
+            $"{ManagingLoginOptions.SectionName}:{nameof(ManagingLoginOptions.Password)}",
+            ManagingLoginPassword
         );
         builder.UseSetting(
             $"{MailOptions.SectionName}:{nameof(MailOptions.Host)}",
@@ -259,35 +269,28 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         await using var scope = Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        var admin = await db
+        var managingLoginId = await db
             .Users.AsNoTracking()
-            .Where(account => account.Email == BootstrapAdminEmail)
-            .Select(account => new { account.Id, account.PersonId })
+            .Where(account => account.IsManagingLogin)
+            .Select(account => account.Id)
             .SingleAsync();
 
-        _bootstrapAdmin = new SeededAccount(
-            admin.Id,
-            admin.PersonId,
-            BootstrapAdminEmail,
-            BootstrapAdminPassword
+        _managingLogin = new SeededManagingLogin(
+            managingLoginId,
+            ManagingLoginEmail,
+            ManagingLoginPassword
         );
 
         _adminRoleId = await db
             .Roles.AsNoTracking()
-            .Where(role => role.Holdings.Any(holding => holding.PersonId == admin.PersonId))
+            .Where(role => role.Name == AdminRoleName)
             .Select(role => role.Id)
             .SingleAsync();
 
         HostStarted = Logs.Mark();
         _resetService = await DatabaseResetService.CreateAsync(
             [db],
-            [
-                typeof(Person),
-                typeof(Account),
-                typeof(Role),
-                typeof(RolePermission),
-                typeof(RoleHolding),
-            ],
+            [typeof(Account), typeof(Role), typeof(RolePermission)],
             [typeof(DataProtectionKey)],
             CancellationToken.None
         );
@@ -317,7 +320,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         var databaseStartup = services
             .Where(descriptor =>
                 descriptor.ImplementationType == typeof(DatabaseMigrator)
-                || descriptor.ImplementationType == typeof(BootstrapAdminSeeder)
+                || descriptor.ImplementationType == typeof(ManagingLoginSeeder)
             )
             .ToList();
         foreach (var descriptor in databaseStartup)
@@ -336,6 +339,24 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             foreach (var (key, value) in settings)
                 builder.UseSetting(key, value);
         });
+    }
+
+    public static async Task<string> SeedAccountOnAsync(
+        WebApplicationFactory<Program> host,
+        string alias,
+        CancellationToken ct = default
+    )
+    {
+        var recorded = new SeedContextBuilder();
+        recorded.Identity(identity => identity.AddAccount(alias));
+
+        var seeded = await SeedMaterializer.MaterializeAsync(
+            host.Services.GetRequiredService<IServiceScopeFactory>(),
+            recorded,
+            SeededAccountPassword,
+            ct
+        );
+        return seeded.Identity.AccountEmails[alias];
     }
 
     public static async Task<IReadOnlyList<OutboxMail>> OutboxOfAsync(
@@ -430,7 +451,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         var identity = new TestIdentity(
             CreateClient,
             seeded.Identity,
-            BootstrapAdmin,
+            ManagingLogin,
             SeededAccountPassword
         );
         return new SeededContext(
@@ -442,23 +463,23 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         );
     }
 
-    public async Task RunBootstrapSeederAsync(CancellationToken ct = default)
+    public async Task RunManagingLoginSeederAsync(CancellationToken ct = default)
     {
-        var seeder = Services.GetServices<IHostedService>().OfType<BootstrapAdminSeeder>().Single();
+        var seeder = Services.GetServices<IHostedService>().OfType<ManagingLoginSeeder>().Single();
         await seeder.StartAsync(ct);
     }
 
     public Task RunDatabaseMigratorAsync(CancellationToken ct = default) =>
         Services.GetServices<IHostedService>().OfType<DatabaseMigrator>().Single().StartAsync(ct);
 
-    public Task RunBootstrapSeederAsync(
-        BootstrapAdminOptions options,
+    public Task RunManagingLoginSeederAsync(
+        ManagingLoginOptions options,
         CancellationToken ct = default
     ) =>
-        new BootstrapAdminSeeder(
+        new ManagingLoginSeeder(
             Services.GetRequiredService<IServiceScopeFactory>(),
             Options.Create(options),
-            Services.GetRequiredService<ILogger<BootstrapAdminSeeder>>()
+            Services.GetRequiredService<ILogger<ManagingLoginSeeder>>()
         ).StartAsync(ct);
 
     public async Task DeleteAccountDirectlyAsync(int accountId, CancellationToken ct = default)
@@ -490,29 +511,6 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             new RolePermission { RoleId = roleId, PermissionKey = permissionKey }
         );
         await db.SaveChangesAsync(ct);
-    }
-
-    public async Task RemoveRoleHoldingsDirectlyAsync(int roleId, CancellationToken ct = default)
-    {
-        await using var scope = Services.CreateAsyncScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-        await db.Database.ExecuteSqlAsync($"DELETE FROM role_holding WHERE role_id = {roleId}", ct);
-    }
-
-    public async Task EndRoleHoldingsDirectlyAsync(
-        int roleId,
-        DateOnly untilOn,
-        CancellationToken ct = default
-    )
-    {
-        await using var scope = Services.CreateAsyncScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-        await db.Database.ExecuteSqlAsync(
-            $"UPDATE role_holding SET until_on = {untilOn} WHERE role_id = {roleId}",
-            ct
-        );
     }
 
     public async Task RemoveRolePermissionDirectlyAsync(
@@ -682,6 +680,32 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var applied = await db.Database.GetAppliedMigrationsAsync(ct);
         return applied.ToList();
+    }
+
+    public async Task<IReadOnlyList<SchemaForeignKey>> ForeignKeysAsync(
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var connection = db.Database.GetDbConnection();
+        await connection.OpenAsync(ct);
+        await using var command = connection.CreateCommand();
+        command.CommandText = ForeignKeysQuery;
+        await using var reader = await command.ExecuteReaderAsync(ct);
+
+        var foreignKeys = new List<SchemaForeignKey>();
+        while (await reader.ReadAsync(ct))
+            foreignKeys.Add(
+                new SchemaForeignKey(
+                    reader.GetString(0),
+                    reader.GetString(1),
+                    reader.GetString(2),
+                    reader.GetString(3)
+                )
+            );
+
+        return foreignKeys;
     }
 
     public async Task ResetDatabaseAsync(CancellationToken ct = default)

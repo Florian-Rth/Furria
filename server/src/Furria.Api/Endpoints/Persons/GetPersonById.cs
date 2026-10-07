@@ -40,7 +40,8 @@ public sealed class GetPersonById : Endpoint<GetPersonByIdRequest, GetPersonById
         Get("manage/persons/{personId}");
         Definition.RequireAnyPermission(
             FurriaPermissions.PersonsManage,
-            FurriaPermissions.AccountsManage
+            FurriaPermissions.AccountsManage,
+            FurriaPermissions.PersonsDelete
         );
     }
 
@@ -97,6 +98,7 @@ public sealed class GetPersonById : Endpoint<GetPersonByIdRequest, GetPersonById
             BirthDate = person.BirthDate,
             ContactVisibleToMembers = person.ContactVisibleToMembers,
             ContactChange = person.ContactChange is { } change ? ToDto(change) : null,
+            Archive = person.Archive is { } archive ? ToDto(archive) : null,
             MembershipState = person.MembershipState,
             MemberSince = person.MemberSince,
             Memberships =
@@ -106,6 +108,9 @@ public sealed class GetPersonById : Endpoint<GetPersonByIdRequest, GetPersonById
             FeeReductions = [.. person.FeeReductions.Select(ToDto)],
             Groups = [.. person.Groups.Select(ToDto)],
             Roles = [.. person.Roles.Select(ToDto)],
+            UnendedGroupAdminTenures = [.. person.UnendedGroupAdminTenures.Select(ToDto)],
+            UnendedBoardSeats = [.. person.UnendedBoardSeats.Select(ToDto)],
+            UnendedKeyHoldings = [.. person.UnendedKeyHoldings.Select(ToDto)],
             Access = ToDto(access, viewer),
         };
 
@@ -113,12 +118,28 @@ public sealed class GetPersonById : Endpoint<GetPersonByIdRequest, GetPersonById
         new()
         {
             At = change.At,
-            ChangedBy = new()
-            {
-                PersonId = change.ChangedBy.PersonId,
-                FirstName = change.ChangedBy.FirstName,
-                LastName = change.ChangedBy.LastName,
-            },
+            ChangedBy = change.ChangedBy is { } changedBy
+                ? new()
+                {
+                    PersonId = changedBy.PersonId,
+                    FirstName = changedBy.FirstName,
+                    LastName = changedBy.LastName,
+                }
+                : null,
+        };
+
+    private static PersonArchiveDto ToDto(PersonArchiveDetails archive) =>
+        new()
+        {
+            ArchivedOn = archive.ArchivedOn,
+            ArchivedBy = archive.ArchivedBy is { } archivedBy
+                ? new()
+                {
+                    PersonId = archivedBy.PersonId,
+                    FirstName = archivedBy.FirstName,
+                    LastName = archivedBy.LastName,
+                }
+                : null,
         };
 
     private static PersonAccessDto ToDto(AccountAccessDetails access, AccessViewer viewer) =>
@@ -232,6 +253,34 @@ public sealed class GetPersonById : Endpoint<GetPersonByIdRequest, GetPersonById
             UntilOn = role.UntilOn,
         };
 
+    private static PersonGroupAdminTenureDto ToDto(PersonGroupAdminTenure tenure) =>
+        new()
+        {
+            GroupId = tenure.GroupId,
+            Name = tenure.Name,
+            Function = tenure.Function,
+            SinceOn = tenure.SinceOn,
+            UntilOn = tenure.UntilOn,
+        };
+
+    private static PersonBoardSeatDto ToDto(PersonBoardSeat seat) =>
+        new()
+        {
+            BoardOfficeId = seat.BoardOfficeId,
+            Name = seat.Name,
+            SinceOn = seat.SinceOn,
+            UntilOn = seat.UntilOn,
+        };
+
+    private static PersonKeyHoldingDto ToDto(PersonKeyHolding holding) =>
+        new()
+        {
+            VenueId = holding.VenueId,
+            Name = holding.Name,
+            SinceOn = holding.SinceOn,
+            UntilOn = holding.UntilOn,
+        };
+
     private sealed record AccessViewer(bool CanInvite, bool CanManageAccount, int AgeOfConsent);
 }
 
@@ -273,6 +322,8 @@ public sealed record GetPersonByIdResponse
 
     public required PersonContactChangeDto? ContactChange { get; init; }
 
+    public required PersonArchiveDto? Archive { get; init; }
+
     public required MembershipState MembershipState { get; init; }
 
     public required DateOnly? MemberSince { get; init; }
@@ -285,6 +336,12 @@ public sealed record GetPersonByIdResponse
 
     public required IReadOnlyList<PersonRoleDto> Roles { get; init; }
 
+    public required IReadOnlyList<PersonGroupAdminTenureDto> UnendedGroupAdminTenures { get; init; }
+
+    public required IReadOnlyList<PersonBoardSeatDto> UnendedBoardSeats { get; init; }
+
+    public required IReadOnlyList<PersonKeyHoldingDto> UnendedKeyHoldings { get; init; }
+
     public required PersonAccessDto Access { get; init; }
 }
 
@@ -292,10 +349,26 @@ public sealed record PersonContactChangeDto
 {
     public required DateTimeOffset At { get; init; }
 
-    public required PersonContactChangeActorDto ChangedBy { get; init; }
+    public required PersonContactChangeActorDto? ChangedBy { get; init; }
 }
 
 public sealed record PersonContactChangeActorDto
+{
+    public required int PersonId { get; init; }
+
+    public required string FirstName { get; init; }
+
+    public required string LastName { get; init; }
+}
+
+public sealed record PersonArchiveDto
+{
+    public required DateOnly ArchivedOn { get; init; }
+
+    public required PersonArchiveActorDto? ArchivedBy { get; init; }
+}
+
+public sealed record PersonArchiveActorDto
 {
     public required int PersonId { get; init; }
 
@@ -426,6 +499,41 @@ public sealed record PersonGroupDto
 public sealed record PersonRoleDto
 {
     public required int RoleId { get; init; }
+
+    public required string Name { get; init; }
+
+    public required DateOnly SinceOn { get; init; }
+
+    public required DateOnly? UntilOn { get; init; }
+}
+
+public sealed record PersonGroupAdminTenureDto
+{
+    public required int GroupId { get; init; }
+
+    public required string Name { get; init; }
+
+    public required string? Function { get; init; }
+
+    public required DateOnly SinceOn { get; init; }
+
+    public required DateOnly? UntilOn { get; init; }
+}
+
+public sealed record PersonBoardSeatDto
+{
+    public required int BoardOfficeId { get; init; }
+
+    public required string Name { get; init; }
+
+    public required DateOnly SinceOn { get; init; }
+
+    public required DateOnly? UntilOn { get; init; }
+}
+
+public sealed record PersonKeyHoldingDto
+{
+    public required int VenueId { get; init; }
 
     public required string Name { get; init; }
 

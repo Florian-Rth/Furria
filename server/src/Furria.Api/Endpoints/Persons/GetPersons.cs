@@ -22,13 +22,18 @@ public sealed class GetPersons : Endpoint<GetPersonsRequest, GetPersonsResponse>
         Get("manage/persons");
         Definition.RequireAnyPermission(
             FurriaPermissions.PersonsManage,
-            FurriaPermissions.AccountsManage
+            FurriaPermissions.AccountsManage,
+            FurriaPermissions.PersonsDelete
         );
     }
 
     public override async Task HandleAsync(GetPersonsRequest req, CancellationToken ct)
     {
-        var persons = await _personService.GetAllAsync(PersonAccessFilters.Parse(req.Access), ct);
+        var persons = await _personService.GetAllAsync(
+            PersonAccessFilters.Parse(req.Access),
+            req.Archived,
+            ct
+        );
 
         await Send.OkAsync(ToResponse(persons), cancellation: ct);
     }
@@ -67,6 +72,9 @@ public sealed record GetPersonsRequest
 {
     [QueryParam]
     public string? Access { get; init; }
+
+    [QueryParam]
+    public bool Archived { get; init; }
 }
 
 public sealed class GetPersonsValidator : Validator<GetPersonsRequest>

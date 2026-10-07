@@ -83,6 +83,7 @@ public sealed class GetAnnouncementsTests
             )
             .Author;
 
+        Assert.NotNull(author);
         Assert.Equal(ctx.Identity.People.IdOf("alice"), author.PersonId);
         Assert.Equal("Alice", author.FirstName);
         Assert.Equal("Muster", author.LastName);
@@ -114,6 +115,7 @@ public sealed class GetAnnouncementsTests
         var result = await ReadAsync(ctx, "alice", ct);
 
         var author = Assert.Single(result.Announcements).Author;
+        Assert.NotNull(author);
         Assert.Equal(ctx.Identity.People.IdOf("alice"), author.PersonId);
         Assert.Equal("Präsident", author.OfficeName);
     }

@@ -101,6 +101,7 @@ public sealed class KeyHoldingService
         };
 
         _dbContext.KeyHoldings.Add(holding);
+        await _dbContext.LiftArchiveOfAsync(command.PersonId, ct);
 
         var saved = await _dbContext.SaveOrConflictAsync(ct);
         if (!saved.IsSuccess)

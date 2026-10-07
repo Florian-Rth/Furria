@@ -1,6 +1,6 @@
 import type { KkScreenActionBar } from '@furria/ui';
-import { useNavigate } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
+import { useGoBackTo } from '@/lib/use-go-back-to';
 import { useNow } from '@/lib/use-now';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import {
@@ -45,7 +45,7 @@ export const useInPersonInvitation = ({
   const [issue, setIssue] = useState<IssueState>({ status: 'issuing' });
   const hasIssued = useRef(false);
   const hasReportedRedemption = useRef(false);
-  const navigate = useNavigate();
+  const goBackTo = useGoBackTo();
   const invitation = issue.status === 'issued' ? issue.invitation : undefined;
   const isIssuing = issue.status === 'issuing';
   const now = useNow(TICK_MS, invitation !== undefined);
@@ -95,11 +95,11 @@ export const useInPersonInvitation = ({
   };
 
   const finish = (): void => {
-    void navigate({
+    void goBackTo({
       to: PERSON_ROUTE,
       params: { personId: String(subject.personId) },
       search: (previous) => ({ ...previous, changed: toAccessLandingKey(subject.personId) }),
-      replace: true,
+      ignoreBlocker: true,
     });
   };
 

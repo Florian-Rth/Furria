@@ -5,7 +5,9 @@ namespace Furria.Infrastructure.Identity;
 
 public sealed class Account : IdentityUser<int>
 {
-    public int PersonId { get; set; }
+    public int? PersonId { get; set; }
+
+    public bool IsManagingLogin { get; set; }
 
     public bool IsDisabled { get; set; }
 

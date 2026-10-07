@@ -59,9 +59,9 @@ public sealed class CredentialChangeNotifier
     private Task<AccountHolder?> HolderAsync(int accountId, CancellationToken ct) =>
         _dbContext
             .Users.AsNoTracking()
-            .Where(account => account.Id == accountId)
+            .Where(account => account.Id == accountId && account.PersonId != null)
             .Select(account => new AccountHolder(
-                account.PersonId,
+                account.PersonId!.Value,
                 account.Person!.FirstName,
                 account.Email
             ))

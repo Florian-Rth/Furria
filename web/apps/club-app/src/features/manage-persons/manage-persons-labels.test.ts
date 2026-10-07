@@ -149,6 +149,9 @@ describe('toPersonHeadline', () => {
       feeReductions: [],
       groups: [],
       roles: [],
+      unendedGroupAdminTenures: [],
+      unendedBoardSeats: [],
+      unendedKeyHoldings: [],
       access: {
         state: 'noAccess',
         reason: null,
@@ -158,6 +161,7 @@ describe('toPersonHeadline', () => {
         ageOfConsent: 16,
       },
       contactChange: null,
+      archive: null,
     });
 
     expect(headline).toEqual({
@@ -307,6 +311,9 @@ const personDetails = (
   feeReductions: [],
   groups: [],
   roles: [],
+  unendedGroupAdminTenures: [],
+  unendedBoardSeats: [],
+  unendedKeyHoldings: [],
   access: {
     state: 'noAccess',
     reason: null,
@@ -316,6 +323,7 @@ const personDetails = (
     ageOfConsent: 16,
   },
   contactChange: null,
+  archive: null,
   ...overrides,
 });
 

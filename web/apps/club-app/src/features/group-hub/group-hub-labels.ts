@@ -7,7 +7,7 @@ import type {
 import type { GroupDetailAdmin, GroupDetailMember } from '@/features/group-detail';
 import { toGroupKindId, toGroupKindValue } from '@/features/group-kinds';
 import { toAnniversary, toFoundedLine } from '@/features/groups';
-import { GROUPS_ORIGIN, PROFILE_ORIGIN } from '@/features/session';
+import { GROUPS_ORIGIN, MANAGE_ORIGIN, PROFILE_ORIGIN } from '@/features/session';
 import { SESSION_OPENING_DAY, SESSION_OPENING_MONTH, sessionAt } from '@/lib/club';
 import { isFutureDay, toIsoDay } from '@/lib/day';
 import { toGroupAdminsLabel, toGroupMembersLabel } from '@/lib/group-sections';
@@ -42,8 +42,16 @@ export const toPersonIdParam = (raw: string | undefined): number | null => {
 export const toHubTitle = (hub: GroupHub | undefined): string =>
   hub === undefined ? HUB_TITLE_FALLBACK : hub.name;
 
-export const toHubOrigin = (viewerIsAffiliated: boolean | null): KkScreenOrigin =>
-  viewerIsAffiliated === false ? PROFILE_ORIGIN : GROUPS_ORIGIN;
+export const toHubOrigin = (
+  viewerIsAffiliated: boolean | null,
+  viewerIsManagingLogin: boolean,
+): KkScreenOrigin => {
+  if (viewerIsManagingLogin) {
+    return MANAGE_ORIGIN;
+  }
+
+  return viewerIsAffiliated === false ? PROFILE_ORIGIN : GROUPS_ORIGIN;
+};
 
 const HUB_ROUTE = '/groups/$groupId';
 

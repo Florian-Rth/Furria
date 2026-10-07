@@ -1,10 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import type { UseFormRegisterReturn } from 'react-hook-form';
 import { useController, useForm } from 'react-hook-form';
 import { toLandingKey } from '@/features/write';
 import type { GroupTone } from '@/lib/group-tone';
+import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useUpdateGroupInfoMutation } from '../api';
 import { toGroupInfoFormValues } from '../group-hub-labels';
@@ -32,7 +32,7 @@ export interface GroupInfoEditorControl {
 export const useGroupInfoEditor = (hub: GroupHub): GroupInfoEditorControl => {
   const [rejection, setRejection] = useState<string | null>(null);
   const mutation = useUpdateGroupInfoMutation(hub.groupId);
-  const navigate = useNavigate();
+  const goBackTo = useGoBackTo();
 
   const form = useForm({
     resolver: zodResolver(GroupInfoFormSchema),
@@ -50,14 +50,14 @@ export const useGroupInfoEditor = (hub: GroupHub): GroupInfoEditorControl => {
       { ...values, isRecruiting: hub.isRecruiting },
       {
         onSuccess: () => {
-          void navigate({
+          void goBackTo({
             to: '/groups/$groupId',
             params: { groupId: String(hub.groupId) },
             search: (previous) => ({
               ...previous,
               changed: toLandingKey('group-info', hub.groupId),
             }),
-            replace: true,
+            ignoreBlocker: true,
           });
         },
         onError: (error) => {

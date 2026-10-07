@@ -27,13 +27,18 @@ const NO_PERSONS: readonly PersonSummary[] = [];
 export const PersonsPage: FC = () => {
   const searchMode = useScreenSearch(SEARCH_PLACEHOLDER);
   const access = usePersonsAccess();
-  const persons = usePersonsQuery(access.filter);
-  const rows = persons.data?.persons ?? NO_PERSONS;
-  const search = usePersonsSearch(rows);
+  const listed = usePersonsQuery(access.filter, false);
+  const archived = usePersonsQuery(access.filter, true);
+  const search = usePersonsSearch(
+    listed.data?.persons ?? NO_PERSONS,
+    archived.data?.persons ?? NO_PERSONS,
+  );
   const { has, isUndecided } = usePermissions();
   const canRead = PERSON_READ_KEYS.some((key) => has(key));
   const canCreate = has(PERMISSION_KEYS.personsManage);
   const showsTools = isUndecided || canRead;
+  const isArchiveSettled = archived.data !== undefined || archived.error !== null;
+  const isToolbarPending = listed.data === undefined || !isArchiveSettled || isUndecided;
 
   const index: KkScreenIndex | undefined =
     !canRead || search.letters.length === 0
@@ -45,16 +50,15 @@ export const PersonsPage: FC = () => {
           onSelect: search.jumpTo,
         };
 
-  const toolRow =
-    persons.data === undefined || isUndecided ? (
-      <KkSkeletonToolbar chips={TOOLBAR_CHIPS} />
-    ) : (
-      <PersonsToolbar
-        state={search.state}
-        options={search.filterOptions}
-        onStateChange={search.selectState}
-      />
-    );
+  const toolRow = isToolbarPending ? (
+    <KkSkeletonToolbar chips={TOOLBAR_CHIPS} />
+  ) : (
+    <PersonsToolbar
+      filter={search.filter}
+      options={search.filterOptions}
+      onFilterChange={search.selectFilter}
+    />
+  );
 
   return (
     <KkScreen

@@ -26,6 +26,7 @@ public sealed class GetManageHub : EndpointWithoutRequest<GetManageHubResponse>
             FurriaPermissions.KeyHoldingsManage,
             FurriaPermissions.BoardManage,
             FurriaPermissions.AccountsManage,
+            FurriaPermissions.PersonsDelete,
             FurriaPermissions.MembershipApplicationsDecide
         );
     }

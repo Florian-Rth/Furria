@@ -33,7 +33,7 @@ public sealed class LookUpInvitationTests
                 ),
             ct
         );
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var token = await InvitationSteps.InviteAndReadTokenAsync(
             _fixture,
             manager,
@@ -84,7 +84,7 @@ public sealed class LookUpInvitationTests
                 ),
             ct
         );
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var token = await InvitationSteps.InviteAndReadTokenAsync(
             _fixture,
             manager,
@@ -115,7 +115,7 @@ public sealed class LookUpInvitationTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         await InvitationSteps.InviteAsync(manager, annaId);
         await InvitationSteps.InviteAsync(manager, annaId);
         var mails = await _fixture.Mailbox.MailsToAsync(annaEmail, 2, ct);
@@ -137,7 +137,7 @@ public sealed class LookUpInvitationTests
                 ),
             ct
         );
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var token = await InvitationSteps.InviteAndReadTokenAsync(
             _fixture,
             manager,
@@ -176,7 +176,7 @@ public sealed class LookUpInvitationTests
                 ),
             ct
         );
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var token = await InvitationSteps.InviteAndReadTokenAsync(
             _fixture,
             manager,
@@ -221,7 +221,7 @@ public sealed class LookUpInvitationTests
                 ),
             ct
         );
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var issued = await InvitationSteps.InviteInPersonAsync(
             manager,
             ctx.Identity.People.IdOf("anna")
@@ -258,7 +258,7 @@ public sealed class LookUpInvitationTests
                 ),
             ct
         );
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var issued = await InvitationSteps.InviteInPersonAsync(
             manager,
             ctx.Identity.People.IdOf("anna")
@@ -315,7 +315,7 @@ public sealed class LookUpInvitationTests
                 ),
             ct
         );
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var issued = await InvitationSteps.InviteInPersonAsync(
             manager,
             ctx.Identity.People.IdOf("anna")
@@ -347,7 +347,7 @@ public sealed class LookUpInvitationTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var first = await InvitationSteps.InviteInPersonAsync(manager, annaId);
         await InvitationSteps.InviteInPersonAsync(manager, annaId);
 
@@ -370,7 +370,7 @@ public sealed class LookUpInvitationTests
                 ),
             ct
         );
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var brunoIssued = await InvitationSteps.InviteInPersonAsync(
             manager,
             ctx.Identity.People.IdOf("bruno")
@@ -415,7 +415,7 @@ public sealed class LookUpInvitationTests
         );
         var annaId = ctx.Identity.People.IdOf("anna");
         var strayEmail = ctx.Identity.EmailOf("stray");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         await ClaimSteps.GiveContactEmailAsync(manager, annaId, "Anna", strayEmail, birthDate);
         var token = await InvitationSteps.InviteAndReadTokenAsync(
             _fixture,
@@ -498,7 +498,7 @@ public sealed class LookUpInvitationTests
                 ),
             ct
         );
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var issued = await InvitationSteps.IssueRecoveryAsync(
             manager,
             ctx.Identity.People.IdOf("anna")
@@ -531,7 +531,7 @@ public sealed class LookUpInvitationTests
                 ),
             ct
         );
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var issued = await InvitationSteps.InviteInPersonAsync(
             manager,
             ctx.Identity.People.IdOf("anna")
@@ -554,7 +554,7 @@ public sealed class LookUpInvitationTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var replaced = await InvitationSteps.IssueRecoveryAsync(manager, annaId);
         await InvitationSteps.IssueRecoveryAsync(manager, annaId);
 

@@ -1,10 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { useController, useForm } from 'react-hook-form';
 import { toLandingKey } from '@/features/write';
 import { toFormFailures } from '@/lib/api/api-failures';
+import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useCreateGroupMutation } from '../api';
 import type { GroupForm } from '../schemas';
@@ -28,7 +28,7 @@ export interface GroupCreateEditorControl {
 export const useGroupCreateEditor = (): GroupCreateEditorControl => {
   const [rejection, setRejection] = useState<string | null>(null);
   const mutation = useCreateGroupMutation();
-  const navigate = useNavigate();
+  const goBackTo = useGoBackTo();
 
   const form = useForm<GroupForm>({
     resolver: zodResolver(GroupFormSchema),
@@ -42,13 +42,13 @@ export const useGroupCreateEditor = (): GroupCreateEditorControl => {
     setRejection(null);
     mutation.mutate(values, {
       onSuccess: (created) => {
-        void navigate({
+        void goBackTo({
           to: '/manage/groups',
           search: (previous) => ({
             ...previous,
             changed: toLandingKey('group', created.groupId),
           }),
-          replace: true,
+          ignoreBlocker: true,
         });
       },
       onError: (error) => {

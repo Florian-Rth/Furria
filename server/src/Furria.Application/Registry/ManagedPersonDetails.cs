@@ -27,6 +27,8 @@ public sealed record ManagedPersonDetails
 
     public required ContactChangeDetails? ContactChange { get; init; }
 
+    public required PersonArchiveDetails? Archive { get; init; }
+
     public required MembershipState MembershipState { get; init; }
 
     public required DateOnly? MemberSince { get; init; }
@@ -40,4 +42,10 @@ public sealed record ManagedPersonDetails
     public required IReadOnlyList<PersonGroup> Groups { get; init; }
 
     public required IReadOnlyList<PersonRole> Roles { get; init; }
+
+    public required IReadOnlyList<PersonGroupAdminTenure> UnendedGroupAdminTenures { get; init; }
+
+    public required IReadOnlyList<PersonBoardSeat> UnendedBoardSeats { get; init; }
+
+    public required IReadOnlyList<PersonKeyHolding> UnendedKeyHoldings { get; init; }
 }

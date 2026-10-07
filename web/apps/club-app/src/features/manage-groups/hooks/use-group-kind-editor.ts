@@ -1,10 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 import { toLandingKey } from '@/features/write';
 import { toFormFailures } from '@/lib/api/api-failures';
+import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useCreateGroupKindMutation, useUpdateGroupKindMutation } from '../api';
 import type { GroupKindEntry } from '../manage-groups-labels';
@@ -26,7 +26,7 @@ export const useGroupKindEditor = (entry: GroupKindEntry | null): GroupKindEdito
   const [rejection, setRejection] = useState<string | null>(null);
   const create = useCreateGroupKindMutation();
   const update = useUpdateGroupKindMutation();
-  const navigate = useNavigate();
+  const goBackTo = useGoBackTo();
 
   const form = useForm<GroupKindForm>({
     resolver: zodResolver(GroupKindFormSchema),
@@ -53,13 +53,13 @@ export const useGroupKindEditor = (entry: GroupKindEntry | null): GroupKindEdito
     if (entry === null) {
       create.mutate(values, {
         onSuccess: (created) => {
-          void navigate({
+          void goBackTo({
             to: '/manage/groups',
             search: (previous) => ({
               ...previous,
               changed: toLandingKey('group-kind', created.groupKindId),
             }),
-            replace: true,
+            ignoreBlocker: true,
           });
         },
         onError: showFailure,
@@ -71,14 +71,14 @@ export const useGroupKindEditor = (entry: GroupKindEntry | null): GroupKindEdito
       { groupKindId: entry.groupKindId, form: values },
       {
         onSuccess: () => {
-          void navigate({
+          void goBackTo({
             to: '/manage/groups/kinds/$groupKindId',
             params: { groupKindId: String(entry.groupKindId) },
             search: (previous) => ({
               ...previous,
               changed: toLandingKey('group-kind', entry.groupKindId),
             }),
-            replace: true,
+            ignoreBlocker: true,
           });
         },
         onError: showFailure,

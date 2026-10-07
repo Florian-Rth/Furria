@@ -1,14 +1,10 @@
 namespace Furria.Application.Identity;
 
-public sealed class BootstrapAdminOptions
+public sealed class ManagingLoginOptions
 {
     public const string SectionName = "Auth:BootstrapAdmin";
 
     public string Email { get; set; } = "";
 
     public string Password { get; set; } = "";
-
-    public string FirstName { get; set; } = "";
-
-    public string LastName { get; set; } = "";
 }

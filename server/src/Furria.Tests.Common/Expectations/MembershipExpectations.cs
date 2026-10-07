@@ -47,7 +47,7 @@ public sealed class MembershipExpectations
         );
 
     public Expected ToRecordAdmission(
-        int admittedByPersonId,
+        int? admittedByPersonId,
         DateTimeOffset admittedAt,
         bool guardianConsentConfirmed
     ) =>

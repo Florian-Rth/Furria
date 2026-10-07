@@ -43,7 +43,7 @@ public sealed class PutBoardOfficePublicationTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await PublishAsync(client, ctx.Club.BoardOffices.IdOf("praesident"), true);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -65,7 +65,7 @@ public sealed class PutBoardOfficePublicationTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await PublishAsync(client, ctx.Club.BoardOffices.IdOf("praesident"), false);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -87,7 +87,7 @@ public sealed class PutBoardOfficePublicationTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await PublishAsync(client, ctx.Club.BoardOffices.IdOf("pressewart"), true);
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -103,7 +103,7 @@ public sealed class PutBoardOfficePublicationTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await PublishAsync(client, UnknownBoardOfficeId, true);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -115,7 +115,7 @@ public sealed class PutBoardOfficePublicationTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await PublishAsync(client, 0, true);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);

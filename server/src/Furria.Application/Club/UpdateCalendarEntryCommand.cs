@@ -4,7 +4,7 @@ namespace Furria.Application.Club;
 
 public sealed record UpdateCalendarEntryCommand
 {
-    public required int ViewerPersonId { get; init; }
+    public required int? ViewerPersonId { get; init; }
 
     public required int CalendarEntryId { get; init; }
 

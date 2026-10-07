@@ -13,7 +13,11 @@ const PERMISSION_COPY: Record<PermissionKey, RolePermissionCopy> = {
   },
   [PERMISSION_KEYS.personsManage]: {
     title: 'Personen und Mitgliedschaften pflegen',
-    line: 'Personen anlegen und Stammdaten ändern; Mitgliedschaften, Ruhezeiten und Beitragsermäßigungen pflegen.',
+    line: 'Personen anlegen und Stammdaten ändern; Mitgliedschaften, Ruhezeiten und Beitragsermäßigungen pflegen. Personen archivieren und wiederherstellen.',
+  },
+  [PERMISSION_KEYS.personsDelete]: {
+    title: 'Personen endgültig löschen',
+    line: 'Eine Person mit allem, was der Verein über sie festgehalten hat, unwiderruflich löschen, auch wenn noch etwas läuft.',
   },
   [PERMISSION_KEYS.groupsManage]: {
     title: 'Gruppen verwalten',
