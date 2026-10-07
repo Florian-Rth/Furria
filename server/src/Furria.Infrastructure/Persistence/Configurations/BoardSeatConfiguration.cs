@@ -30,7 +30,7 @@ public sealed class BoardSeatConfiguration : IEntityTypeConfiguration<BoardSeat>
             .WithMany()
             .HasForeignKey(seat => seat.PersonId)
             .HasConstraintName("fk_board_seat_person_person_id")
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasIndex(seat => seat.PersonId);
         builder.HasIndex(seat => seat.BoardOfficeId);

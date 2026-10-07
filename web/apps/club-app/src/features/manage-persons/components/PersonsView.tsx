@@ -11,7 +11,6 @@ import {
   PERSON_DIRECTORY_TITLE,
   PERSONS_STATS_NOTE,
 } from '../manage-persons-labels';
-import type { PersonSummary } from '../schemas';
 import { PersonsAccessNote } from './PersonsAccessNote';
 import { PersonsColdEmpty } from './PersonsColdEmpty';
 import { PersonsEmpty } from './PersonsEmpty';
@@ -22,7 +21,6 @@ const VIEW_GAP = 3.5;
 const CREATE_ROUTE = '/manage/persons/new';
 
 interface PersonsViewProps {
-  persons: readonly PersonSummary[];
   search: PersonsSearch;
   access: PersonsAccess;
   canCreate: boolean;
@@ -36,10 +34,10 @@ const CREATE_ACTION: KkPanelAction = {
   to: CREATE_ROUTE,
 };
 
-export const PersonsView: FC<PersonsViewProps> = ({ persons, search, access, canCreate }) => {
+export const PersonsView: FC<PersonsViewProps> = ({ search, access, canCreate }) => {
   const action = canCreate ? CREATE_ACTION : undefined;
 
-  if (persons.length === 0 && access.filter === null) {
+  if (search.isRegisterEmpty && access.filter === null && !search.isArchivedView) {
     return (
       <KkPanelSection title={PERSON_DIRECTORY_TITLE} action={action}>
         <KkPanel variant="block">
@@ -51,7 +49,12 @@ export const PersonsView: FC<PersonsViewProps> = ({ persons, search, access, can
 
   const list =
     search.visibleCount === 0 ? (
-      <PersonsEmpty query={search.query} state={search.state} access={access.filter} />
+      <PersonsEmpty
+        query={search.query}
+        state={search.state}
+        access={access.filter}
+        isArchivedView={search.isArchivedView}
+      />
     ) : (
       <PersonsList sections={search.sections} access={access.filter} />
     );
@@ -61,13 +64,17 @@ export const PersonsView: FC<PersonsViewProps> = ({ persons, search, access, can
       <PersonsAccessNote filter={access.filter} onClear={access.clear} />
     );
 
+  const stats = search.isArchivedView ? null : (
+    <PersonsStats totals={search.totals} note={PERSONS_STATS_NOTE} />
+  );
+
   return (
     <Stack sx={{ gap: VIEW_GAP, minWidth: 0 }}>
       <KkPanelSection title={PERSON_DIRECTORY_TITLE} action={action}>
         {accessNote}
         {list}
       </KkPanelSection>
-      <PersonsStats totals={search.totals} note={PERSONS_STATS_NOTE} />
+      {stats}
     </Stack>
   );
 };

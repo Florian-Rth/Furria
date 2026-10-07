@@ -11,10 +11,10 @@ const HUB_ROUTE_ID = '/_app/groups_/$groupId';
 
 export const HubPage: FC = () => {
   const { groupId } = useParams({ from: HUB_ROUTE_ID });
-  const { isAffiliated, isUndecided } = usePermissions();
+  const { isAffiliated, isManagingLogin, isUndecided } = usePermissions();
   const id = toHubId(groupId);
   const hub = useGroupHubQuery(id);
-  const origin = toHubOrigin(isUndecided ? null : isAffiliated);
+  const origin = toHubOrigin(isUndecided ? null : isAffiliated, isManagingLogin);
 
   return (
     <KkScreen

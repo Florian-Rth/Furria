@@ -84,7 +84,7 @@ public sealed class GetBulkInvitationPreviewTests
             ct
         );
 
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var preview = await InvitationRoundSteps.PreviewAsync(manager);
 
         Assert.Equal(2, preview.InviteCount);
@@ -128,7 +128,7 @@ public sealed class GetBulkInvitationPreviewTests
                     ct
                 );
 
-                var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+                var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
                 var preview = await InvitationRoundSteps.PreviewAsync(manager);
 
                 Assert.Equal(1, preview.InviteCount);
@@ -159,7 +159,7 @@ public sealed class GetBulkInvitationPreviewTests
                 ),
             ct
         );
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         await InvitationSteps.InviteAsync(manager, ctx.Identity.People.IdOf("anna"));
 
         var preview = await InvitationRoundSteps.PreviewAsync(manager);
@@ -184,14 +184,14 @@ public sealed class GetBulkInvitationPreviewTests
                 ),
             ct
         );
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         await InvitationSteps.InviteAsync(manager, ctx.Identity.People.IdOf("anna"));
 
         await _fixture.AtLaterTimeAsync(
             InvitationRoundSteps.PastTheReminderDelay,
             async () =>
             {
-                var laterManager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+                var laterManager = await ctx.Identity.ManagingLoginClientAsync(ct);
                 var preview = await InvitationRoundSteps.PreviewAsync(laterManager);
 
                 Assert.Equal(0, preview.InviteCount);
@@ -216,14 +216,14 @@ public sealed class GetBulkInvitationPreviewTests
                 ),
             ct
         );
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         await InvitationSteps.InviteAsync(manager, ctx.Identity.People.IdOf("anna"));
 
         await _fixture.AtLaterTimeAsync(
             InvitationRoundSteps.PastTheMailLifetime,
             async () =>
             {
-                var laterManager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+                var laterManager = await ctx.Identity.ManagingLoginClientAsync(ct);
                 var preview = await InvitationRoundSteps.PreviewAsync(laterManager);
 
                 Assert.Equal(0, preview.InviteCount);
@@ -256,14 +256,14 @@ public sealed class GetBulkInvitationPreviewTests
                 ),
             ct
         );
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         await InvitationSteps.InviteAsync(manager, ctx.Identity.People.IdOf("anna"));
 
         await _fixture.AtLaterTimeAsync(
             InvitationRoundSteps.PastTheReminderDelay,
             async () =>
             {
-                var laterManager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+                var laterManager = await ctx.Identity.ManagingLoginClientAsync(ct);
                 var preview = await InvitationRoundSteps.PreviewAsync(laterManager);
 
                 Assert.Equal(0, preview.RemindCount);

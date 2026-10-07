@@ -34,17 +34,18 @@ public sealed class MailOutboxTests
     {
         var ct = TestContext.Current.CancellationToken;
         await using var host = await HostWithoutMailServerAsync(ct);
-        var admin = await BootstrapAdminClientAsync(host);
+        var annaEmail = await ApiTestFixture.SeedAccountOnAsync(host, "anna", ct);
+        var anna = await SignedInClientAsync(host, annaEmail);
 
         var (response, _) = await AccountSecuritySteps.ChangePasswordAsync(
-            admin,
-            ApiTestFixture.BootstrapAdminPassword
+            anna,
+            ApiTestFixture.SeededAccountPassword
         );
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var notice = Assert.Single(await ApiTestFixture.OutboxOfAsync(host, ct));
         Assert.Equal(MailTemplate.CredentialChangeNotice, notice.Template);
-        Assert.Equal(ApiTestFixture.BootstrapAdminEmail, notice.To);
+        Assert.Equal(annaEmail, notice.To);
     }
 
     [Fact]
@@ -52,21 +53,22 @@ public sealed class MailOutboxTests
     {
         var ct = TestContext.Current.CancellationToken;
         await using var host = await HostWithoutMailServerAsync(ct);
-        var admin = await BootstrapAdminClientAsync(host);
+        var annaEmail = await ApiTestFixture.SeedAccountOnAsync(host, "anna", ct);
+        var anna = await SignedInClientAsync(host, annaEmail);
 
         await using (await RejectedWrites.OnAsync(host, "outbox_mail", ct))
         {
             var (refused, _) = await AccountSecuritySteps.ChangePasswordAsync(
-                admin,
-                ApiTestFixture.BootstrapAdminPassword
+                anna,
+                ApiTestFixture.SeededAccountPassword
             );
             Assert.Equal(HttpStatusCode.InternalServerError, refused.StatusCode);
         }
 
         var (login, _) = await SignInLimitSteps.LogInAsync(
             host.CreateClient(),
-            ApiTestFixture.BootstrapAdminEmail,
-            ApiTestFixture.BootstrapAdminPassword
+            annaEmail,
+            ApiTestFixture.SeededAccountPassword
         );
         Assert.Equal(HttpStatusCode.OK, login.StatusCode);
         Assert.Empty(await ApiTestFixture.OutboxOfAsync(host, ct));
@@ -118,14 +120,15 @@ public sealed class MailOutboxTests
             ct
         );
 
-    private static async Task<HttpClient> BootstrapAdminClientAsync(
-        WebApplicationFactory<Program> host
+    private static async Task<HttpClient> SignedInClientAsync(
+        WebApplicationFactory<Program> host,
+        string loginEmail
     )
     {
         var (response, session) = await SignInLimitSteps.LogInAsync(
             host.CreateClient(),
-            ApiTestFixture.BootstrapAdminEmail,
-            ApiTestFixture.BootstrapAdminPassword
+            loginEmail,
+            ApiTestFixture.SeededAccountPassword
         );
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 

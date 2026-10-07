@@ -25,14 +25,7 @@ public sealed class PutPerson : Endpoint<PutPersonRequest>
 
     public override async Task HandleAsync(PutPersonRequest req, CancellationToken ct)
     {
-        var actorPersonId = User.PersonId();
-        if (actorPersonId is null)
-        {
-            await Send.UnauthorizedAsync(ct);
-            return;
-        }
-
-        var result = await _personService.UpdateAsync(ToCommand(req, actorPersonId.Value), ct);
+        var result = await _personService.UpdateAsync(ToCommand(req, User.PersonId()), ct);
         if (!result.IsSuccess)
         {
             await HttpContext.Response.SendFailureAsync(result.Error, ct);
@@ -42,7 +35,7 @@ public sealed class PutPerson : Endpoint<PutPersonRequest>
         await Send.NoContentAsync(ct);
     }
 
-    private static UpdatePersonCommand ToCommand(PutPersonRequest req, int actorPersonId) =>
+    private static UpdatePersonCommand ToCommand(PutPersonRequest req, int? actorPersonId) =>
         new()
         {
             PersonId = req.PersonId,

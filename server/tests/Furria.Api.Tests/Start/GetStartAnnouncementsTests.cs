@@ -63,6 +63,7 @@ public sealed class GetStartAnnouncementsTests
                 Assert.Equal("Busfahrt zum Rosenmontagsumzug", announcement.Title);
                 Assert.Equal("Abfahrt 9 Uhr am Markt.", announcement.Body);
                 Assert.Equal(TuesdayEvening.AddDays(-1), announcement.PublishedAt);
+                Assert.NotNull(announcement.Author);
                 Assert.Equal(ctx.Identity.People.IdOf("karin"), announcement.Author.PersonId);
                 Assert.Equal("Karin", announcement.Author.FirstName);
                 Assert.Equal("Aushang", announcement.Author.LastName);
@@ -277,6 +278,7 @@ public sealed class GetStartAnnouncementsTests
                 var start = await StartOfAsync(client);
 
                 var announcement = Assert.Single(AnnouncementsOf(start));
+                Assert.NotNull(announcement.Author);
                 Assert.Equal(ctx.Identity.People.IdOf("frank"), announcement.Author.PersonId);
                 Assert.Equal("Präsident", announcement.Author.OfficeName);
             }

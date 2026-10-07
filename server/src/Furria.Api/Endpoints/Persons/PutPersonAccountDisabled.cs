@@ -28,18 +28,12 @@ public sealed class PutPersonAccountDisabled : Endpoint<PutPersonAccountDisabled
         CancellationToken ct
     )
     {
-        if (User.PersonId() is not { } actorPersonId)
-        {
-            await Send.UnauthorizedAsync(ct);
-            return;
-        }
-
         var result = await _accountAdministrationService.SetDisabledAsync(
             new AccountLockCommand
             {
                 PersonId = req.PersonId,
                 IsDisabled = req.IsDisabled,
-                ActorPersonId = actorPersonId,
+                ActorPersonId = User.PersonId(),
             },
             ct
         );

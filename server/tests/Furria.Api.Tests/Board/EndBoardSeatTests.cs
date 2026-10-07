@@ -50,7 +50,7 @@ public sealed class EndBoardSeatTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithRunningSeatAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await EndSeatAsync(
             client,
             ctx.Club.BoardOffices.IdOf("praesident"),
@@ -72,7 +72,7 @@ public sealed class EndBoardSeatTests
         var ctx = await BuildWithRunningSeatAsync(ct);
 
         var handsOverTomorrow = _fixture.Today.AddDays(1);
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await EndSeatAsync(
             client,
             ctx.Club.BoardOffices.IdOf("praesident"),
@@ -93,7 +93,7 @@ public sealed class EndBoardSeatTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithRunningSeatAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await EndSeatAsync(
             client,
             ctx.Club.BoardOffices.IdOf("praesident"),
@@ -114,7 +114,7 @@ public sealed class EndBoardSeatTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithRunningSeatAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await EndSeatAsync(
             client,
             ctx.Club.BoardOffices.IdOf("praesident"),
@@ -152,7 +152,7 @@ public sealed class EndBoardSeatTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await EndSeatAsync(
             client,
             ctx.Club.BoardOffices.IdOf("praesident"),
@@ -175,7 +175,7 @@ public sealed class EndBoardSeatTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithRunningSeatAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await EndSeatAsync(
             client,
             ctx.Club.BoardOffices.IdOf("praesident"),
@@ -202,7 +202,7 @@ public sealed class EndBoardSeatTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await EndSeatAsync(
             client,
             ctx.Club.BoardOffices.IdOf("kassenwart"),
@@ -223,7 +223,7 @@ public sealed class EndBoardSeatTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithRunningSeatAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await EndSeatAsync(
             client,
             ctx.Club.BoardOffices.IdOf("praesident"),

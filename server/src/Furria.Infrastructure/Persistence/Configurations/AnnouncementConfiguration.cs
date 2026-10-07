@@ -23,7 +23,7 @@ public sealed class AnnouncementConfiguration : IEntityTypeConfiguration<Announc
             .WithMany()
             .HasForeignKey(announcement => announcement.AuthorPersonId)
             .HasConstraintName("fk_announcement_person_author_person_id")
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.SetNull);
 
         builder.HasIndex(announcement => announcement.PublishedAt);
         builder.HasIndex(announcement => announcement.AuthorPersonId);

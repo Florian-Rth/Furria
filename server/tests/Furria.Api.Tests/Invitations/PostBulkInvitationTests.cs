@@ -51,8 +51,7 @@ public sealed class PostBulkInvitationTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var adminId = ctx.Identity.BootstrapAdmin.PersonId;
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var sent = await InvitationRoundSteps.InviteAllAsync(manager);
 
@@ -71,11 +70,11 @@ public sealed class PostBulkInvitationTests
             .Expected.InvitationsOfPerson(annaId)
             .ToHaveCount(1)
             .LiveInvitationOfPerson(annaId)
-            .ToBeIssuedAs(InvitationChannel.Mail, isReminder: false, adminId)
+            .ToBeIssuedAs(InvitationChannel.Mail, isReminder: false, issuedByPersonId: null)
             .AccountEventsOfPerson(annaId)
             .ToHaveKindsInOrder(AccountEventKind.Invited)
             .AccountEventsOfPerson(annaId)
-            .ToHaveLatestActor(adminId)
+            .ToHaveNoLatestActor()
             .InvitationsOfPerson(ctx.Identity.People.IdOf("bea"))
             .ToHaveLiveCount(1)
             .InvitationsOfPerson(ctx.Identity.People.IdOf("carla"))
@@ -104,7 +103,7 @@ public sealed class PostBulkInvitationTests
                 ),
             ct
         );
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var first = await InvitationRoundSteps.InviteAllAsync(manager);
 
         var second = await InvitationRoundSteps.InviteAllAsync(manager);
@@ -144,7 +143,7 @@ public sealed class PostBulkInvitationTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         await InvitationSteps.InviteAsync(manager, annaId);
 
         var sent = await InvitationRoundSteps.InviteAllAsync(manager);
@@ -175,14 +174,14 @@ public sealed class PostBulkInvitationTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         await InvitationSteps.InviteAsync(manager, annaId);
 
         await _fixture.AtLaterTimeAsync(
             InvitationRoundSteps.PastTheMailLifetime,
             async () =>
             {
-                var laterManager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+                var laterManager = await ctx.Identity.ManagingLoginClientAsync(ct);
                 var sent = await InvitationRoundSteps.InviteAllAsync(laterManager);
 
                 Assert.Equal(0, sent);
@@ -228,7 +227,7 @@ public sealed class PostBulkInvitationTests
                 ),
             ct
         );
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         await InvitationSteps.InviteAsync(manager, ctx.Identity.People.IdOf("carla"));
         var preview = await InvitationRoundSteps.PreviewAsync(manager);
 
@@ -254,7 +253,7 @@ public sealed class PostBulkInvitationTests
                 ),
             ct
         );
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         await InvitationRoundSteps.InviteAllAsync(manager);
         var mail = await _fixture.Mailbox.SingleMailToAsync(annaEmail, ct);
 
@@ -293,7 +292,7 @@ public sealed class PostBulkInvitationTests
                 ),
             ct
         );
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var rounds = await Task.WhenAll(
             manager.POSTAsync<PostBulkInvitation, PostBulkInvitationResponse>(),

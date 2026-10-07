@@ -42,7 +42,7 @@ public sealed class PostSessionRecordTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await RecordAsync(client, 2026, 53, Motto, Logo);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -64,7 +64,7 @@ public sealed class PostSessionRecordTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await RecordAsync(client, 1974, null, null, null);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -87,7 +87,7 @@ public sealed class PostSessionRecordTests
         var ctx = await _fixture.BuildAsync(ct);
         var comingSeason = _fixture.CurrentSessionYear + 1;
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await RecordAsync(client, comingSeason, null, Motto, null);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -105,7 +105,7 @@ public sealed class PostSessionRecordTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await RecordAsync(client, 2026, null, null, LogoCarryingAScript);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -118,7 +118,7 @@ public sealed class PostSessionRecordTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await RecordAsync(client, 2026, null, null, TornArtwork);
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
@@ -135,7 +135,7 @@ public sealed class PostSessionRecordTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await RecordAsync(client, 2026, null, Motto, null);
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -156,7 +156,7 @@ public sealed class PostSessionRecordTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await RecordAsync(client, 2026, 53, null, null);
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);

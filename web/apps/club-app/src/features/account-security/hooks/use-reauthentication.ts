@@ -1,16 +1,17 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import type { UseMutationResult } from '@tanstack/react-query';
 import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 import { toPasskeyErrorMessage } from '@/lib/passkey/passkey-messages';
 import { usePasskeySupport } from '@/lib/passkey/use-passkey-support';
-import { useAccountDeletionMutation } from '../api';
 import { toFieldRefusals } from '../field-refusals';
-import type { AccountDeletionForm } from '../schemas';
-import { ACCOUNT_DELETION_FIELD_NAMES, AccountDeletionFormSchema } from '../schemas';
+import type { ReauthenticationForm } from '../schemas';
+import { REAUTHENTICATION_FIELD_NAMES, ReauthenticationFormSchema } from '../schemas';
+import type { ReauthenticationProof } from '../types';
 
-export interface AccountDeletionControl {
-  form: UseFormReturn<AccountDeletionForm>;
+export interface ReauthenticationControl {
+  form: UseFormReturn<ReauthenticationForm>;
   passwordError: string | undefined;
   isOpen: boolean;
   isBusy: boolean;
@@ -22,20 +23,23 @@ export interface AccountDeletionControl {
   confirmWithPasskey: () => void;
 }
 
-export const useAccountDeletion = (hasPasskeys: boolean): AccountDeletionControl => {
+export const useReauthentication = <TResult>(
+  hasPasskeys: boolean,
+  mutation: UseMutationResult<TResult, Error, ReauthenticationProof>,
+  onProven?: (result: TResult) => void,
+): ReauthenticationControl => {
   const [isOpen, setIsOpen] = useState(false);
   const [rejection, setRejection] = useState<string | null>(null);
-  const mutation = useAccountDeletionMutation();
   const isPasskeySupported = usePasskeySupport();
 
-  const form = useForm<AccountDeletionForm>({
-    resolver: zodResolver(AccountDeletionFormSchema),
+  const form = useForm<ReauthenticationForm>({
+    resolver: zodResolver(ReauthenticationFormSchema),
     defaultValues: { password: '' },
     mode: 'onTouched',
   });
 
   const showFailure = (error: Error): void => {
-    const failures = toFieldRefusals(error, ACCOUNT_DELETION_FIELD_NAMES);
+    const failures = toFieldRefusals(error, REAUTHENTICATION_FIELD_NAMES);
 
     for (const failure of failures.fields) {
       form.setError(failure.name, { message: failure.message });
@@ -46,6 +50,11 @@ export const useAccountDeletion = (hasPasskeys: boolean): AccountDeletionControl
 
   const showPasskeyFailure = (error: Error): void => {
     setRejection(toPasskeyErrorMessage(error));
+  };
+
+  const finish = (result: TResult): void => {
+    setIsOpen(false);
+    onProven?.(result);
   };
 
   const open = (): void => {
@@ -60,13 +69,16 @@ export const useAccountDeletion = (hasPasskeys: boolean): AccountDeletionControl
 
   const handleConfirm = form.handleSubmit((values) => {
     setRejection(null);
-    mutation.mutate({ kind: 'password', password: values.password }, { onError: showFailure });
+    mutation.mutate(
+      { kind: 'password', password: values.password },
+      { onSuccess: finish, onError: showFailure },
+    );
   });
 
   const confirmWithPasskey = (): void => {
     setRejection(null);
     form.clearErrors();
-    mutation.mutate({ kind: 'passkey' }, { onError: showPasskeyFailure });
+    mutation.mutate({ kind: 'passkey' }, { onSuccess: finish, onError: showPasskeyFailure });
   };
 
   return {

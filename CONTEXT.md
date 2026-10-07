@@ -393,6 +393,20 @@ _UI copy_: Account; *nicht im Verein aktiv*; *Anmeldung & Sicherheit*; *Überall
 _Avoid_: user (as a table/entity name), guest account (it is the same account concept),
 username
 
+**Managing login**:
+The one **account** with no person: the club's way in, configured wholly by the server's
+environment (login email and password) and brought in line with it on every start — recreated
+when gone, the same account following a changed email. It holds every **permission** by itself,
+without a **role**, and no relationship: it manages the club, it does not take part, so it sees
+Start and the club management and never *nicht im Verein aktiv*. Nothing in the app shows it —
+no register row, count, picker or role holder — and where it acts on someone's record the act
+names nobody. Its login is not editable in the app: no login email, password, passkey or
+*Account löschen*; only signing out. Persons made admin-like by the club hold the seeded *Admin*
+role instead, which every start keeps granting every key (ruled 2026-10-07,
+[ADR-0022](docs/adr/0022-the-bootstrap-admin-is-a-personless-managing-login.md)).
+_UI copy_: — (it is never named)
+_Avoid_: bootstrap admin (the retired person-backed account), super user, root
+
 **Passkey**:
 An optional second credential on her **account**, held by one of her devices and unlocked by her
 fingerprint or screen lock (*Mit Fingerabdruck anmelden*). **The password always stays**: a
@@ -514,8 +528,8 @@ memberships, role holdings, board seats, key holdings, her account and its invit
 attendance responses — are gone. Nothing is anonymised and kept, because in a club this size an
 anonymous history still names her. Where she acted on someone else's record (an announcement she
 wrote, an admission she made, an invitation she issued, a contact change she made) the act stays
-and its actor reads *gelöschte Person*. It is the one exception to "ended, never deleted", cannot be
-undone, and is a **permission** of its own, apart from person management, which only archives — it
+and names nobody — no *von …*, exactly like an act of the **managing login**. It is the one
+exception to "ended, never deleted", cannot be undone, and is a **permission** of its own, apart from person management, which only archives — it
 reaches the register and a person's screen on its own, as the access-recovery right does. It
 is possible **at any time**, whatever still runs — she need not be archived first, and a holder
 may delete herself; its
@@ -527,22 +541,24 @@ she was deleted: a trace naming her would keep what was erased. The one thing de
 money record the law obliges the club to keep — it stays until its retention period ends, and the
 **ledger** inherits that rule (ruled 2026-10-07,
 [ADR-0021](docs/adr/0021-a-person-is-erased-never-anonymised.md)).
-_UI copy_: *gelöschte Person*; *Person löschen*
+_UI copy_: *Person löschen*
 _Avoid_: anonymising, soft delete, archiving (a different act)
 
 **Archived person**:
 A person the club has filed away, record whole — the person-management counterpart of
-**deletion**. Only a person who is not **active in the club** and holds no running **key
-holding** can be archived: archiving ends nothing, so whatever still runs is ended first, each on
-its own date. She leaves the register's default view and every picker that opens a chain, but
-**admission** matching and the **adoption candidate** still find her — a former member who returns
-is exactly who they are for. Archived and running exclude each other: opening any chain on her
-lifts the archive by itself, and her own screen restores her by hand. Her **account** is untouched
-— it is hers, and already shows *nicht im Verein aktiv*. Her screen says when and by whom she was
-archived; only the latest archiving is kept, and restoring clears it. Archiving is the club's
-decision that she is done, not a state — *nothing running* is derived, *archived* is chosen — so it
-happens one person at a time on her own screen: never in bulk, never a **to-do** (ruled
-2026-10-07).
+**deletion**. Only a person who is not **active in the club**, holds no running **key holding**
+and has nothing of either dated to begin later can be archived: archiving ends nothing, so
+whatever still runs is ended first, each on its own date. She leaves the register's default view
+and every picker that opens a chain, but **admission** matching and the **adoption candidate**
+still find her — a former member who returns is exactly who they are for. Archived and running
+exclude each other: opening any chain on her lifts the archive by itself — so does restoring the
+group, role or office an open tie of hers sits in — and her own screen restores her by hand.
+While she is archived her history is closed: an ended membership, a membership pause or a fee
+reduction cannot be recorded or corrected on her until she is restored. Her **account** is untouched — it is hers,
+and already shows *nicht im Verein aktiv*. Her screen says when and by whom she was archived;
+only the latest archiving is kept, and restoring clears it. Archiving is the club's decision that
+she is done, not a state — *nothing running* is derived, *archived* is chosen — so it happens one
+person at a time on her own screen: never in bulk, never a **to-do** (ruled 2026-10-07).
 _UI copy_: *Archivieren*; *Archiviert* (the register filter); *Archiviert von Anna am 7. Okt.*;
 *Wiederherstellen*
 _Avoid_: deactivated, inactive (that is **active in the club**, derived), deleting

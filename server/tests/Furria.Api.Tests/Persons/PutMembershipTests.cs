@@ -14,6 +14,9 @@ public sealed class PutMembershipTests
 {
     private const string ConflictField = "conflict";
     private const string ValidationField = "request";
+    private const string ArchivedPersonMessage =
+        "Paula ist archiviert – beendete Mitgliedschaften lassen sich erst nach dem "
+        + "Wiederherstellen festhalten.";
     private const int PausedFrom2018 = 2018;
     private const int PausedUntil2019 = 2019;
     private const int PausedFrom2024 = 2024;
@@ -25,6 +28,7 @@ public sealed class PutMembershipTests
     private static readonly DateOnly RejoinedIn2022 = new(2022, 1, 1);
     private static readonly DateOnly LeftIn2023 = new(2023, 1, 1);
     private static readonly DateOnly LeftIn2026 = new(2026, 3, 1);
+    private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
 
     private readonly ApiTestFixture _fixture;
 
@@ -47,7 +51,7 @@ public sealed class PutMembershipTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutMembership, PutMembershipRequest>(
             new()
             {
@@ -66,12 +70,82 @@ public sealed class PutMembershipTests
     }
 
     [Fact]
+    public async Task Should_LiftHerArchive_When_HerEndedMembershipIsReopened()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddPerson("paula", "Paula", "Brendel")
+                        .AddMembership("paula-erste", "paula", JoinedIn2017, LeftIn2020)
+                        .AddArchive("paula", ArchivedIn2021)
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var response = await client.PUTAsync<PutMembership, PutMembershipRequest>(
+            new()
+            {
+                PersonId = ctx.Identity.People.IdOf("paula"),
+                MembershipId = ctx.Identity.Memberships.IdOf("paula-erste"),
+                StartedOn = JoinedIn2017,
+                EndedOn = null,
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx
+            .Expected.Person(ctx.Identity.People.IdOf("paula"))
+            .ToNotBeArchived()
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseAndKeepHerArchived_When_HerEndedMembershipStaysEnded()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddPerson("paula", "Paula", "Brendel")
+                        .AddMembership("paula-erste", "paula", JoinedIn2017, LeftIn2020)
+                        .AddArchive("paula", ArchivedIn2021)
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var response = await client.PUTAsync<PutMembership, PutMembershipRequest>(
+            new()
+            {
+                PersonId = ctx.Identity.People.IdOf("paula"),
+                MembershipId = ctx.Identity.Memberships.IdOf("paula-erste"),
+                StartedOn = CorrectedStart,
+                EndedOn = LeftIn2020,
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        var failures = await ReadFailuresAsync(response, ct);
+        Assert.Equal([ArchivedPersonMessage], failures[ConflictField]);
+        await ctx
+            .Expected.Membership(ctx.Identity.Memberships.IdOf("paula-erste"))
+            .ToHavePeriod(JoinedIn2017, LeftIn2020)
+            .Person(ctx.Identity.People.IdOf("paula"))
+            .ToBeArchived(ArchivedIn2021, null)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_ReturnConflict_When_TheCorrectedPeriodOverlapsAnother()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithTwoClosedPeriodsAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutMembership, PutMembershipRequest>(
             new()
             {
@@ -112,7 +186,7 @@ public sealed class PutMembershipTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutMembership, PutMembershipRequest>(
             new()
             {
@@ -140,7 +214,7 @@ public sealed class PutMembershipTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithTwoClosedPeriodsAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutMembership, PutMembershipRequest>(
             new()
             {
@@ -183,7 +257,7 @@ public sealed class PutMembershipTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutMembership, PutMembershipRequest>(
             new()
             {
@@ -221,7 +295,7 @@ public sealed class PutMembershipTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutMembership, PutMembershipRequest>(
             new()
             {
@@ -255,7 +329,7 @@ public sealed class PutMembershipTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutMembership, PutMembershipRequest>(
             new()
             {
@@ -290,7 +364,7 @@ public sealed class PutMembershipTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutMembership, PutMembershipRequest>(
             new()
             {
@@ -322,7 +396,7 @@ public sealed class PutMembershipTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutMembership, PutMembershipRequest>(
             new()
             {

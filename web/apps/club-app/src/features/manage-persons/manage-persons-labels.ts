@@ -38,7 +38,7 @@ export const toEntryId = (raw: string): number | null =>
 export const PERSONS_TITLE = 'Personenverwaltung';
 
 export const PERSONS_STATS_NOTE =
-  'Gezählt werden alle Personen, auch ohne Mitgliedschaft oder Gruppe.';
+  'Gezählt werden alle Personen, auch ohne Mitgliedschaft oder Gruppe – archivierte nicht.';
 
 export const PERSON_DIRECTORY_TITLE = 'Register';
 export const ADD_PERSON_LABEL = 'Person';

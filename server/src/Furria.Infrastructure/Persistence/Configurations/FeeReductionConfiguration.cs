@@ -38,7 +38,7 @@ public sealed class FeeReductionConfiguration : IEntityTypeConfiguration<FeeRedu
             .WithMany(person => person.FeeReductions)
             .HasForeignKey(reduction => reduction.PersonId)
             .HasConstraintName("fk_fee_reduction_person_person_id")
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasIndex(reduction => reduction.PersonId);
 

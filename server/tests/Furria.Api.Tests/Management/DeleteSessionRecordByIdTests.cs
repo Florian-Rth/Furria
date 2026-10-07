@@ -33,7 +33,7 @@ public sealed class DeleteSessionRecordByIdTests
         );
         var wrongEntry = ctx.Club.Sessions.IdOf("falsche");
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await DiscardAsync(client, wrongEntry);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -51,7 +51,7 @@ public sealed class DeleteSessionRecordByIdTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await DiscardAsync(client, UnknownSessionId);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);

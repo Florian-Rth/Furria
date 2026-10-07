@@ -1,10 +1,10 @@
 import { KkAvatar, KkChip, KkEyebrow, KkScreenHeader } from '@furria/ui';
 import type { FC } from 'react';
-import type { Me } from '@/lib/api/schemas';
+import type { PersonalMe } from '@/lib/api/schemas';
 import { PROFILE_EYEBROW, toProfileHeadline } from '../profile-labels';
 
 interface ProfileHeaderProps {
-  me: Me | undefined;
+  me: PersonalMe | undefined;
 }
 
 export const ProfileHeader: FC<ProfileHeaderProps> = ({ me }) => {

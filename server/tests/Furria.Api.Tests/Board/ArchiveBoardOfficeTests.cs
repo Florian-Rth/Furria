@@ -46,7 +46,7 @@ public sealed class ArchiveBoardOfficeTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await ArchiveOfficeAsync(client, ctx.Club.BoardOffices.IdOf("pressewart"));
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -77,7 +77,7 @@ public sealed class ArchiveBoardOfficeTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await ArchiveOfficeAsync(client, ctx.Club.BoardOffices.IdOf("pressewart"));
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -105,7 +105,7 @@ public sealed class ArchiveBoardOfficeTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await ArchiveOfficeAsync(client, ctx.Club.BoardOffices.IdOf("praesident"));
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -139,7 +139,7 @@ public sealed class ArchiveBoardOfficeTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await ArchiveOfficeAsync(client, ctx.Club.BoardOffices.IdOf("praesident"));
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -161,7 +161,7 @@ public sealed class ArchiveBoardOfficeTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await ArchiveOfficeAsync(client, ctx.Club.BoardOffices.IdOf("pressewart"));
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -179,7 +179,7 @@ public sealed class ArchiveBoardOfficeTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await ArchiveOfficeAsync(client, UnknownBoardOfficeId);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);

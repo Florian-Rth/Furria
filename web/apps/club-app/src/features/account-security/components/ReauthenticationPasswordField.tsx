@@ -2,16 +2,16 @@ import { KkIconButton, KkTextField } from '@furria/ui';
 import type { FC } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { usePasswordVisibility } from '@/features/login';
-import type { AccountDeletionForm } from '../schemas';
+import type { ReauthenticationForm } from '../schemas';
 
 const PASSWORD_LABEL = 'Dein Passwort';
 
-interface AccountDeletionPasswordFieldProps {
-  form: UseFormReturn<AccountDeletionForm>;
+interface ReauthenticationPasswordFieldProps {
+  form: UseFormReturn<ReauthenticationForm>;
   error: string | undefined;
 }
 
-export const AccountDeletionPasswordField: FC<AccountDeletionPasswordFieldProps> = ({
+export const ReauthenticationPasswordField: FC<ReauthenticationPasswordFieldProps> = ({
   form,
   error,
 }) => {

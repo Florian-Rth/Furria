@@ -61,7 +61,10 @@ public sealed class PasswordResetService
             return;
 
         var account = await _userManager.FindByEmailAsync(loginEmail.Trim());
-        if (account is null || account.IsDisabled || account.Email is not { } to)
+        if (
+            account is not { IsDisabled: false, PersonId: { } personId }
+            || account.Email is not { } to
+        )
             return;
 
         var token = await _userManager.GeneratePasswordResetTokenAsync(account);
@@ -69,9 +72,9 @@ public sealed class PasswordResetService
             PasswordResetMail.Compose(
                 new PasswordResetMailContent
                 {
-                    PersonId = account.PersonId,
+                    PersonId = personId,
                     To = to,
-                    FirstName = await FirstNameAsync(account.PersonId, ct),
+                    FirstName = await FirstNameAsync(personId, ct),
                     ClubName = (await _clubRecordService.GetAsync(ct)).Name,
                     Link = PasswordResetLink.LinkOf(_clubAppOptions.BaseUrl, account.Id, token),
                 }
@@ -89,7 +92,7 @@ public sealed class PasswordResetService
         var account = await _userManager.FindByIdAsync(
             credential.AccountId.ToString(CultureInfo.InvariantCulture)
         );
-        if (account is null || account.IsDisabled)
+        if (account is not { IsDisabled: false, IsManagingLogin: false })
             return Result.Conflict(DeadLinkMessage);
 
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);

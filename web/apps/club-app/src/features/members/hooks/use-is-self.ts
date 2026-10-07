@@ -7,5 +7,5 @@ export const useIsSelf = (personId: number | null): boolean | undefined => {
     return undefined;
   }
 
-  return personId !== null && personId === me.data.person.id;
+  return personId !== null && personId === me.data.person?.id;
 };

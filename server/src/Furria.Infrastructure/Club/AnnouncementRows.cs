@@ -12,10 +12,14 @@ internal static class AnnouncementRows
             announcement.Body,
             announcement.PublishedAt,
             announcement.ValidUntil,
-            announcement.AuthorPersonId,
-            announcement.Author!.FirstName,
-            announcement.Author!.LastName,
-            announcement.Author!.PortraitUrl
+            announcement.Author == null
+                ? null
+                : new AnnouncementAuthorRow(
+                    announcement.Author.Id,
+                    announcement.Author.FirstName,
+                    announcement.Author.LastName,
+                    announcement.Author.PortraitUrl
+                )
         );
 }
 
@@ -25,7 +29,11 @@ internal sealed record AnnouncementRow(
     string Body,
     DateTimeOffset PublishedAt,
     DateOnly? ValidUntil,
-    int AuthorPersonId,
+    AnnouncementAuthorRow? Author
+);
+
+internal sealed record AnnouncementAuthorRow(
+    int PersonId,
     string FirstName,
     string LastName,
     string? PortraitUrl

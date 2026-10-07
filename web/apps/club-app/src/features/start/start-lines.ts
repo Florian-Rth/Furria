@@ -15,6 +15,7 @@ import type {
   StartGroupMoment,
   StartMine,
   StartMineKind,
+  StartPerson,
 } from './schemas';
 import { toEntryFacets, toEntryTick, toFacetText } from './start-labels';
 import { itemKeyOf } from './start-visit';
@@ -289,22 +290,31 @@ export const toGroupMomentLine = (moment: StartGroupMoment): StartLineView => {
   };
 };
 
+const authorNamesOf = (author: StartPerson | null): string[] =>
+  author === null ? [] : [`${author.firstName} ${author.lastName}`];
+
+const officesOf = (author: StartPerson | null): string[] =>
+  author === null || author.officeName === null ? [] : [author.officeName];
+
+export const toAuthorInitials = (author: StartPerson | null): string =>
+  author === null ? '' : toInitials(author.firstName, author.lastName);
+
 export const toAnnouncementLine = (
   announcement: StartAnnouncement,
   now: Date,
 ): AnnouncementLineView => {
   const { author } = announcement;
   const day = formatPastDay(toLocalIsoDay(announcement.publishedAt), toIsoDay(now));
-  const office = author.officeName === null ? [] : [author.officeName];
-  const byline = `von ${author.firstName} ${author.lastName}`;
+  const office = officesOf(author);
+  const byline = authorNamesOf(author).map((name) => `von ${name}`);
 
   return {
     key: itemKeyOf({ panel: 'announcements', ...announcement }),
     title: announcement.title,
     meta: [day, ...office],
-    initials: toInitials(author.firstName, author.lastName),
-    portrait: author.portraitUrl ?? undefined,
-    accessibleName: [announcement.title, day, byline, ...office].join(NAME_SEPARATOR),
+    initials: toAuthorInitials(author),
+    portrait: author?.portraitUrl ?? undefined,
+    accessibleName: [announcement.title, day, ...byline, ...office].join(NAME_SEPARATOR),
     sheetId: toPeekId('start-announcements', announcement.announcementId),
   };
 };
@@ -320,8 +330,8 @@ export const toAnnouncementByline = (announcement: StartAnnouncement, now: Date)
   const { author, validUntil } = announcement;
 
   return [
-    `${author.firstName} ${author.lastName}`,
-    ...(author.officeName === null ? [] : [author.officeName]),
+    ...authorNamesOf(author),
+    ...officesOf(author),
     formatPastDay(toLocalIsoDay(announcement.publishedAt), toIsoDay(now)),
     ...(validUntil === null ? [] : [`gültig bis ${formatDayMonth(validUntil)}`]),
   ].join(BYLINE_SEPARATOR);

@@ -29,7 +29,7 @@ public sealed class PostTrainings : Endpoint<PostTrainingsRequest, PostTrainings
     {
         var accountId = User.AccountId();
         var personId = User.PersonId();
-        if (accountId is null || personId is null)
+        if (accountId is null)
         {
             await Send.UnauthorizedAsync(ct);
             return;
@@ -41,7 +41,7 @@ public sealed class PostTrainings : Endpoint<PostTrainingsRequest, PostTrainings
             return;
         }
 
-        var result = await _trainingService.GenerateAsync(ToCommand(req, personId.Value), ct);
+        var result = await _trainingService.GenerateAsync(ToCommand(req, personId), ct);
         if (!result.IsSuccess)
         {
             await HttpContext.Response.SendFailureAsync(result.Error, ct);
@@ -53,7 +53,7 @@ public sealed class PostTrainings : Endpoint<PostTrainingsRequest, PostTrainings
 
     private static GenerateTrainingsCommand ToCommand(
         PostTrainingsRequest req,
-        int viewerPersonId
+        int? viewerPersonId
     ) =>
         new()
         {

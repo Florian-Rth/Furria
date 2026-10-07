@@ -14,8 +14,8 @@ interface ContactVisibilityRollback {
 }
 
 const applyVisibility = (current: Me | undefined, visible: boolean): Me | undefined => {
-  if (current === undefined) {
-    return undefined;
+  if (current === undefined || current.person === null) {
+    return current;
   }
 
   return { ...current, person: { ...current.person, contactVisibleToMembers: visible } };

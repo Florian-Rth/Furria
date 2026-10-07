@@ -300,6 +300,32 @@ public sealed class GetStartMineTests
     }
 
     [Fact]
+    public async Task Should_TellHerOfAContactChangeNamingNobody_When_TheEditorWasDeleted()
+    {
+        await OnTuesdayEveningAsync(
+            "lena",
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddPerson("frank", "Frank", "Präsident")
+                        .AddContactChange("lena", "frank", LastWeeksChange)
+                ),
+            async (ctx, ct) =>
+                await _fixture.DeletePersonDirectlyAsync(ctx.Identity.People.IdOf("frank"), ct),
+            (_, mine) =>
+            {
+                var change = Assert.Single(
+                    mine,
+                    item => item.Kind == StartMineKind.ContactChangedByOther
+                );
+
+                Assert.Equal(LastWeek, change.On);
+                Assert.Null(change.ChangedBy);
+            }
+        );
+    }
+
+    [Fact]
     public async Task Should_StayQuiet_When_SheChangedHerOwnDetails()
     {
         await OnTuesdayEveningAsync(
@@ -475,10 +501,25 @@ public sealed class GetStartMineTests
         Action<SeededContext, IReadOnlyList<StartMineDto>> assert
     ) => AtAsync(TuesdayEvening, viewerAlias, arrange, assert);
 
+    private Task OnTuesdayEveningAsync(
+        string viewerAlias,
+        Action<SeedContextBuilder> arrange,
+        Func<SeededContext, CancellationToken, Task> alter,
+        Action<SeededContext, IReadOnlyList<StartMineDto>> assert
+    ) => AtAsync(TuesdayEvening, viewerAlias, arrange, alter, assert);
+
+    private Task AtAsync(
+        DateTimeOffset instant,
+        string viewerAlias,
+        Action<SeedContextBuilder> arrange,
+        Action<SeededContext, IReadOnlyList<StartMineDto>> assert
+    ) => AtAsync(instant, viewerAlias, arrange, (_, _) => Task.CompletedTask, assert);
+
     private async Task AtAsync(
         DateTimeOffset instant,
         string viewerAlias,
         Action<SeedContextBuilder> arrange,
+        Func<SeededContext, CancellationToken, Task> alter,
         Action<SeededContext, IReadOnlyList<StartMineDto>> assert
     )
     {
@@ -501,6 +542,7 @@ public sealed class GetStartMineTests
                     },
                     ct
                 );
+                await alter(ctx, ct);
                 var client = await ctx.Identity.ClientForAsync(viewerAlias, ct);
 
                 var (response, start) = await client.GETAsync<GetStart, GetStartResponse>();

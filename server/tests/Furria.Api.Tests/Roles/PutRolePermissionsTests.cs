@@ -48,7 +48,7 @@ public sealed class PutRolePermissionsTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await SetKeysAsync(
             client,
             ctx.Roles.Roles.IdOf("gruppenpflege"),
@@ -73,7 +73,7 @@ public sealed class PutRolePermissionsTests
         );
         var roleId = ctx.Roles.Roles.IdOf("aufnahme");
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await SetKeysAsync(client, roleId, "membership_applications.decide");
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -100,7 +100,7 @@ public sealed class PutRolePermissionsTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await SetKeysAsync(client, ctx.Roles.Roles.IdOf("gruppenpflege"));
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -122,7 +122,7 @@ public sealed class PutRolePermissionsTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await SetKeysAsync(
             client,
             ctx.Roles.Roles.IdOf("gruppenpflege"),
@@ -171,7 +171,7 @@ public sealed class PutRolePermissionsTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithGroupCareAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await SetKeysAsync(
             client,
             ctx.Roles.Roles.IdOf("gruppenpflege"),
@@ -192,7 +192,7 @@ public sealed class PutRolePermissionsTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithGroupCareAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await SetKeysAsync(
             client,
             ctx.Roles.Roles.IdOf("gruppenpflege"),
@@ -213,7 +213,7 @@ public sealed class PutRolePermissionsTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await SetKeysAsync(client, UnknownRoleId, FurriaPermissions.PersonsManage);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -237,7 +237,7 @@ public sealed class PutRolePermissionsTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await SetKeysAsync(
             client,
             ctx.Roles.Roles.IdOf("chronik"),
@@ -259,7 +259,7 @@ public sealed class PutRolePermissionsTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await SetKeysAsync(client, 0, FurriaPermissions.PersonsManage);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);

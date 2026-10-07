@@ -14,6 +14,11 @@ import {
   toMembershipConsequence,
   toOpenPause,
 } from '../manage-persons-labels';
+import {
+  toArchiveLiftedSentence,
+  toClosedHistoryLine,
+  toMembershipArchiveEffect,
+} from '../person-archive';
 import type { CreatedMembership, PersonDetails, PersonMembership } from '../schemas';
 import { MembershipFormSchema } from '../schemas';
 
@@ -97,12 +102,21 @@ export const usePersonMembershipEditor = ({
     );
   });
 
-  const consequence =
+  const archiveEffect = toMembershipArchiveEffect(person.archive !== null, endedOn, today);
+
+  const periodConsequence =
     startedOn === null
       ? null
       : isClosingNow && endedOn !== null && membership !== null
         ? toEndMembershipConsequence(person.firstName, endedOn, toOpenPause(membership) !== null)
         : toMembershipConsequence(startedOn, endedOn, today);
+
+  const consequence =
+    archiveEffect === 'refused'
+      ? toClosedHistoryLine(person.firstName, 'beendete Mitgliedschaften')
+      : archiveEffect === 'lifted' && periodConsequence !== null
+        ? `${periodConsequence} ${toArchiveLiftedSentence(person.firstName)}`
+        : periodConsequence;
 
   return {
     startedOn,
@@ -114,7 +128,7 @@ export const usePersonMembershipEditor = ({
     rejection,
     isSaving: create.isPending || update.isPending,
     isDirty,
-    canSubmit: isValid,
+    canSubmit: isValid && archiveEffect !== 'refused',
     actionLabel:
       membership === null
         ? ADD_MEMBERSHIP_ACTION_LABEL

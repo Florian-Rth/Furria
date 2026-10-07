@@ -49,7 +49,7 @@ public sealed class RestoreBoardOfficeTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await RestoreOfficeAsync(client, ctx.Club.BoardOffices.IdOf("beisitzer"));
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -60,6 +60,46 @@ public sealed class RestoreBoardOfficeTests
             .ToHaveName("Beisitzer")
             .BoardOffice(ctx.Club.BoardOffices.IdOf("beisitzer"))
             .ToHaveSortOrder(3)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_LiftTheArchiveOfEveryoneWhoseSeatRunsAgain_When_TheOfficeIsRestored()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddPerson("paula", "Paula", "Brendel")
+                            .AddArchive("paula", ArchivedIn2021)
+                            .AddPerson("anna", "Anna", "Vogt")
+                            .AddArchive("anna", ArchivedIn2021)
+                    )
+                    .Club(club =>
+                        club.AddBoardOffice("archivar", "Archivar", archivedOn: ArchivedIn2021)
+                            .AddBoardSeat("paula-archivar", "archivar", "paula", Elected2016)
+                            .AddBoardSeat(
+                                "anna-archivar",
+                                "archivar",
+                                "anna",
+                                Elected2016,
+                                HandedOver2020
+                            )
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var response = await RestoreOfficeAsync(client, ctx.Club.BoardOffices.IdOf("archivar"));
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx
+            .Expected.Person(ctx.Identity.People.IdOf("paula"))
+            .ToNotBeArchived()
+            .Person(ctx.Identity.People.IdOf("anna"))
+            .ToBeArchived(ArchivedIn2021, null)
             .AssertAsync(ct);
     }
 
@@ -84,7 +124,7 @@ public sealed class RestoreBoardOfficeTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await RestoreOfficeAsync(client, ctx.Club.BoardOffices.IdOf("pressewart"));
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -123,7 +163,7 @@ public sealed class RestoreBoardOfficeTests
             ct
         );
 
-        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await RestoreOfficeAsync(admin, ctx.Club.BoardOffices.IdOf("praesident"));
         var (seated, _) = await admin.POSTAsync<
             PostBoardSeat,
@@ -159,7 +199,7 @@ public sealed class RestoreBoardOfficeTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await RestoreOfficeAsync(client, ctx.Club.BoardOffices.IdOf("kassenwart"));
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -177,7 +217,7 @@ public sealed class RestoreBoardOfficeTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await RestoreOfficeAsync(client, UnknownBoardOfficeId);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);

@@ -15,6 +15,9 @@ public sealed class PostFeeReductionTests
 {
     private const string ConflictField = "conflict";
     private const string ValidationField = "request";
+    private const string ArchivedPersonMessage =
+        "Paula ist archiviert – Beitragsermäßigungen lassen sich erst nach dem "
+        + "Wiederherstellen festhalten.";
     private const int ReducedFrom2018 = 2018;
     private const int ReducedUntil2019 = 2019;
     private const int ReducedFrom2021 = 2021;
@@ -23,6 +26,8 @@ public sealed class PostFeeReductionTests
     private const int UnknownPersonId = 987654;
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
+    private static readonly DateOnly LeftIn2020 = new(2020, 3, 1);
+    private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
 
     private readonly ApiTestFixture _fixture;
 
@@ -37,7 +42,7 @@ public sealed class PostFeeReductionTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithPaulaAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.POSTAsync<
             PostFeeReduction,
             PostFeeReductionRequest,
@@ -62,6 +67,45 @@ public sealed class PostFeeReductionTests
     }
 
     [Fact]
+    public async Task Should_RefuseAndKeepHerArchived_When_SheIsArchived()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddPerson("paula", "Paula", "Brendel")
+                        .AddMembership("paula-erste", "paula", JoinedIn2017, LeftIn2020)
+                        .AddArchive("paula", ArchivedIn2021)
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (response, _) = await client.POSTAsync<
+            PostFeeReduction,
+            PostFeeReductionRequest,
+            PostFeeReductionResponse
+        >(
+            new()
+            {
+                PersonId = ctx.Identity.People.IdOf("paula"),
+                Basis = FeeReductionBasis.Studies,
+                FirstSessionYear = ReducedFrom2018,
+                LastSessionYear = ReducedUntil2019,
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        var failures = await ReadFailuresAsync(response, ct);
+        Assert.Equal([ArchivedPersonMessage], failures[ConflictField]);
+        await ctx
+            .Expected.Person(ctx.Identity.People.IdOf("paula"))
+            .ToBeArchived(ArchivedIn2021, null)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_RecordTheReduction_When_ThePersonIsNoMember()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -71,7 +115,7 @@ public sealed class PostFeeReductionTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.POSTAsync<
             PostFeeReduction,
             PostFeeReductionRequest,
@@ -100,7 +144,7 @@ public sealed class PostFeeReductionTests
         var ctx = await BuildWithPaulaAsync(ct);
 
         var firstSessionYear = _fixture.CurrentSessionYear + 1;
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.POSTAsync<
             PostFeeReduction,
             PostFeeReductionRequest,
@@ -128,7 +172,7 @@ public sealed class PostFeeReductionTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithSchoolReductionAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.POSTAsync<
             PostFeeReduction,
             PostFeeReductionRequest,
@@ -158,7 +202,7 @@ public sealed class PostFeeReductionTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithPaulaAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await client.POSTAsync<
             PostFeeReduction,
             PostFeeReductionRequest,
@@ -187,7 +231,7 @@ public sealed class PostFeeReductionTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithSchoolReductionAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await client.POSTAsync<
             PostFeeReduction,
             PostFeeReductionRequest,
@@ -222,7 +266,7 @@ public sealed class PostFeeReductionTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithPaulaAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await client.POSTAsync<
             PostFeeReduction,
             PostFeeReductionRequest,
@@ -246,7 +290,7 @@ public sealed class PostFeeReductionTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithPaulaAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await client.POSTAsync<
             PostFeeReduction,
             PostFeeReductionRequest,

@@ -67,31 +67,35 @@ public sealed class AccountClaimService
         CancellationToken ct
     )
     {
-        var account = await ClaimableAccountAsync(claim.NormalizedLoginEmail, ct);
-        if (account is null)
+        var claimable = await ClaimableAccountAsync(claim.NormalizedLoginEmail, ct);
+        if (claimable is null)
             return Taken;
 
         return claim.ClaimProof switch
         {
             null => Result<RedemptionDetails>.Success(RedemptionDetails.ClaimRequired()),
-            PasswordProof password => await ProvesOwnershipAsync(account, password.Password)
-                ? await MoveOntoKeeperAsync(account, claim, ct)
+            PasswordProof password => await ProvesOwnershipAsync(
+                claimable.Account,
+                password.Password
+            )
+                ? await MoveOntoKeeperAsync(claimable, claim, ct)
                 : WrongPassword,
-            PasskeyProof passkey => await ProvesOwnershipAsync(account, passkey, ct)
-                ? await MoveOntoKeeperAsync(account, claim, ct)
+            PasskeyProof passkey => await ProvesOwnershipAsync(claimable.Account, passkey, ct)
+                ? await MoveOntoKeeperAsync(claimable, claim, ct)
                 : RejectedPasskey,
             _ => throw new ArgumentOutOfRangeException(nameof(claim), claim.ClaimProof, null),
         };
     }
 
     private async Task<Result<RedemptionDetails>> MoveOntoKeeperAsync(
-        Account account,
+        ClaimableAccount claimable,
         AccountClaim claim,
         CancellationToken ct
     )
     {
         var now = _timeProvider.GetUtcNow();
-        var strayPersonId = account.PersonId;
+        var account = claimable.Account;
+        var strayPersonId = claimable.StrayPersonId;
 
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
         if (!await RedeemInvitationAsync(claim.InvitationId, now, ct))
@@ -177,7 +181,7 @@ public sealed class AccountClaimService
         return false;
     }
 
-    private async Task<Account?> ClaimableAccountAsync(
+    private async Task<ClaimableAccount?> ClaimableAccountAsync(
         string normalizedLoginEmail,
         CancellationToken ct
     )
@@ -193,12 +197,12 @@ public sealed class AccountClaimService
             )
             .SingleOrDefaultAsync(ct);
 
-        if (account is null)
+        if (account is not { PersonId: { } strayPersonId })
             return null;
 
-        return await StrayPersonAbsorption.HoldsClubDataAsync(_dbContext, account.PersonId, ct)
+        return await StrayPersonAbsorption.HoldsClubDataAsync(_dbContext, strayPersonId, ct)
             ? null
-            : account;
+            : new ClaimableAccount(account, strayPersonId);
     }
 
     private async Task<bool> RedeemInvitationAsync(
@@ -224,4 +228,6 @@ public sealed class AccountClaimService
             { IsNotAllowed: true } => LoginFailureReason.NotAllowed,
             _ => LoginFailureReason.WrongPassword,
         };
+
+    private sealed record ClaimableAccount(Account Account, int StrayPersonId);
 }

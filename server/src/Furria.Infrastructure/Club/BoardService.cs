@@ -3,7 +3,9 @@ using System.Linq.Expressions;
 using Furria.Application.Club;
 using Furria.Application.Results;
 using Furria.Core.Club;
+using Furria.Core.Identity;
 using Furria.Infrastructure.Persistence;
+using Furria.Infrastructure.Registry;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Club;
@@ -216,6 +218,10 @@ public sealed class BoardService
             return Result.Conflict(NotArchivedMessage);
 
         office.ArchivedOn = null;
+        await _dbContext.LiftArchivesAsync(
+            PeopleWithUnendedSeatsIn(boardOfficeId, ClubClock.Today(_timeProvider)),
+            ct
+        );
         await _dbContext.SaveChangesAsync(ct);
 
         return Result.Success();
@@ -250,6 +256,7 @@ public sealed class BoardService
         };
 
         _dbContext.BoardSeats.Add(seat);
+        await _dbContext.LiftArchiveOfAsync(command.PersonId, ct);
 
         var saved = await _dbContext.SaveOrConflictAsync(ct);
         if (!saved.IsSuccess)
@@ -308,6 +315,15 @@ public sealed class BoardService
 
     private Task<bool> PersonExistsAsync(int personId, CancellationToken ct) =>
         _dbContext.People.AsNoTracking().AnyAsync(row => row.Id == personId, ct);
+
+    private IQueryable<Person> PeopleWithUnendedSeatsIn(int boardOfficeId, DateOnly today) =>
+        _dbContext.People.Where(person =>
+            _dbContext.BoardSeats.Any(seat =>
+                seat.PersonId == person.Id
+                && seat.BoardOfficeId == boardOfficeId
+                && (seat.UntilOn == null || seat.UntilOn >= today)
+            )
+        );
 
     private Task<bool> HasUnendedSeatAsync(
         int boardOfficeId,

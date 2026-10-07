@@ -226,6 +226,29 @@ public sealed class PutMyPasswordTests
     }
 
     [Fact]
+    public async Task Should_ReturnForbidden_When_TheManagingLoginChangesIt()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+
+        var (response, _) = await AccountSecuritySteps.ChangePasswordAsync(
+            client,
+            ApiTestFixture.ManagingLoginPassword
+        );
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Equal(
+            HttpStatusCode.OK,
+            await AccountSecuritySteps.LogInStatusAsync(
+                _fixture,
+                ApiTestFixture.ManagingLoginEmail,
+                ApiTestFixture.ManagingLoginPassword
+            )
+        );
+    }
+
+    [Fact]
     public async Task Should_ReturnUnauthorized_When_NoAccessTokenIsSent()
     {
         var (response, _) = await AccountSecuritySteps.ChangePasswordAsync(

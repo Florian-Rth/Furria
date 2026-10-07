@@ -37,7 +37,7 @@ export const PersonMasterDataPanel: FC<PersonMasterDataPanelProps> = ({
   const me = useMeQuery();
   const contactChangeNote = toContactChangeNote(
     person.contactChange,
-    me.data?.person.id ?? null,
+    me.data?.person?.id ?? null,
     new Date(),
   );
   const address = formatAddress(person.street, person.zip, person.city);

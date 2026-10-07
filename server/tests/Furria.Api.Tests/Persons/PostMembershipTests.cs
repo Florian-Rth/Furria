@@ -14,11 +14,15 @@ public sealed class PostMembershipTests
 {
     private const string ConflictField = "conflict";
     private const string ValidationField = "request";
+    private const string ArchivedPersonMessage =
+        "Paula ist archiviert – beendete Mitgliedschaften lassen sich erst nach dem "
+        + "Wiederherstellen festhalten.";
     private const int UnknownPersonId = 999_999;
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
     private static readonly DateOnly LeftIn2020 = new(2020, 3, 1);
     private static readonly DateOnly RejoinedIn2023 = new(2023, 9, 1);
+    private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
 
     private readonly ApiTestFixture _fixture;
 
@@ -37,7 +41,7 @@ public sealed class PostMembershipTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.POSTAsync<
             PostMembership,
             PostMembershipRequest,
@@ -61,12 +65,87 @@ public sealed class PostMembershipTests
     }
 
     [Fact]
+    public async Task Should_LiftHerArchive_When_AnArchivedPersonRejoins()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddPerson("paula", "Paula", "Brendel")
+                        .AddMembership("paula-erste", "paula", JoinedIn2017, LeftIn2020)
+                        .AddArchive("paula", ArchivedIn2021)
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (response, _) = await client.POSTAsync<
+            PostMembership,
+            PostMembershipRequest,
+            PostMembershipResponse
+        >(
+            new()
+            {
+                PersonId = ctx.Identity.People.IdOf("paula"),
+                StartedOn = RejoinedIn2023,
+                EndedOn = null,
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.Person(ctx.Identity.People.IdOf("paula"))
+            .ToNotBeArchived()
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseAndKeepHerArchived_When_TheRecordedMembershipHasAlreadyEnded()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddPerson("paula", "Paula", "Brendel")
+                        .AddArchive("paula", ArchivedIn2021)
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (response, _) = await client.POSTAsync<
+            PostMembership,
+            PostMembershipRequest,
+            PostMembershipResponse
+        >(
+            new()
+            {
+                PersonId = ctx.Identity.People.IdOf("paula"),
+                StartedOn = JoinedIn2017,
+                EndedOn = LeftIn2020,
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        var failures = await ReadFailuresAsync(response, ct);
+        Assert.Equal([ArchivedPersonMessage], failures[ConflictField]);
+        await ctx
+            .Expected.Person(ctx.Identity.People.IdOf("paula"))
+            .ToBeArchived(ArchivedIn2021, null)
+            .MembershipsOfPerson(ctx.Identity.People.IdOf("paula"))
+            .ToHaveCount(0)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_ReturnNotFound_When_ThePersonIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await client.POSTAsync<
             PostMembership,
             PostMembershipRequest,
@@ -98,7 +177,7 @@ public sealed class PostMembershipTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await client.POSTAsync<
             PostMembership,
             PostMembershipRequest,
@@ -127,7 +206,7 @@ public sealed class PostMembershipTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithEndedMembershipAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await client.POSTAsync<
             PostMembership,
             PostMembershipRequest,
@@ -162,7 +241,7 @@ public sealed class PostMembershipTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithEndedMembershipAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await client.POSTAsync<
             PostMembership,
             PostMembershipRequest,
@@ -194,7 +273,7 @@ public sealed class PostMembershipTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithEndedMembershipAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.POSTAsync<
             PostMembership,
             PostMembershipRequest,
@@ -230,7 +309,7 @@ public sealed class PostMembershipTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.POSTAsync<
             PostMembership,
             PostMembershipRequest,
@@ -264,7 +343,7 @@ public sealed class PostMembershipTests
         );
 
         var joinsTomorrow = _fixture.Today.AddDays(1);
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.POSTAsync<
             PostMembership,
             PostMembershipRequest,
@@ -291,7 +370,7 @@ public sealed class PostMembershipTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await client.POSTAsync<
             PostMembership,
             PostMembershipRequest,
@@ -396,7 +475,7 @@ public sealed class PostMembershipTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.POSTAsync<
             PostMembership,
             PostMembershipRequest,

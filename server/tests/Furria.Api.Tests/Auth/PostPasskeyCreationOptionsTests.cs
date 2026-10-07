@@ -99,6 +99,19 @@ public sealed class PostPasskeyCreationOptionsTests
     }
 
     [Fact]
+    public async Task Should_ReturnForbidden_When_TheManagingLoginAsks()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+
+        var (response, _) = await PasskeySteps.CreationOptionsAsync(client);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        await ctx.Expected.PasskeyChallenges().ToHaveCount(0).AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_ReturnUnauthorized_When_NoAccessTokenIsSent()
     {
         var (response, _) = await _fixture

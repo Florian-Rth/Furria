@@ -32,7 +32,7 @@ public sealed class PostVenueTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.POSTAsync<
             PostVenue,
             PostVenueRequest,
@@ -67,7 +67,7 @@ public sealed class PostVenueTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.POSTAsync<
             PostVenue,
             PostVenueRequest,
@@ -96,7 +96,7 @@ public sealed class PostVenueTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await client.POSTAsync<PostVenue, PostVenueRequest, PostVenueResponse>(
             new()
             {
@@ -125,7 +125,7 @@ public sealed class PostVenueTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await client.POSTAsync<PostVenue, PostVenueRequest, PostVenueResponse>(
             new()
             {
@@ -150,7 +150,7 @@ public sealed class PostVenueTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await client.POSTAsync<PostVenue, PostVenueRequest, PostVenueResponse>(
             new()
             {

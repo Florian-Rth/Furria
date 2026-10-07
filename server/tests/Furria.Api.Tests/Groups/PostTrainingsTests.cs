@@ -65,11 +65,7 @@ public sealed class PostTrainingsTests
                 Instants =
                 [
                     new() { GroupTrainingSlotId = slot, StartsAt = firstEvening },
-                    new()
-                    {
-                        GroupTrainingSlotId = slot,
-                        StartsAt = firstEvening.AddDays(DaysPerWeek),
-                    },
+                    new() { GroupTrainingSlotId = slot, StartsAt = TrainingWeeksAfterTheFirst(1) },
                 ],
             }
         );
@@ -91,8 +87,8 @@ public sealed class PostTrainingsTests
             .TrainingsOf(tanzgarde)
             .ToCarryTraining(
                 TrainingTitle,
-                firstEvening.AddDays(DaysPerWeek),
-                firstEvening.AddDays(DaysPerWeek).AddMinutes(TrainingMinutes),
+                TrainingWeeksAfterTheFirst(1),
+                TrainingWeeksAfterTheFirst(1).AddMinutes(TrainingMinutes),
                 ctx.Club.Venues.IdOf("sporthalle")
             )
             .AssertAsync(ct);
@@ -404,6 +400,9 @@ public sealed class PostTrainingsTests
     }
 
     private DateTimeOffset FirstTraining() => ClubClock.At(FirstTrainingDay(), HalfPastSeven);
+
+    private DateTimeOffset TrainingWeeksAfterTheFirst(int weeks) =>
+        ClubClock.At(FirstTrainingDay().AddDays(weeks * DaysPerWeek), HalfPastSeven);
 
     private static void Trainerin(IdentitySeedBuilder identity) =>
         identity.AddPerson("anna", "Anna", "Kaiser").AddAccount("anna");

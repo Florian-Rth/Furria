@@ -79,7 +79,7 @@ public sealed class InvitationRoundService
     }
 
     public async Task<Result<InvitationRoundDetails>> InviteAllAsync(
-        int issuerPersonId,
+        int? issuerPersonId,
         CancellationToken ct
     )
     {
@@ -110,7 +110,7 @@ public sealed class InvitationRoundService
     }
 
     public async Task<Result<InvitationRoundDetails>> RemindAllAsync(
-        int issuerPersonId,
+        int? issuerPersonId,
         CancellationToken ct
     )
     {
@@ -317,7 +317,7 @@ public sealed class InvitationRoundService
 
     private sealed record Recipient(int PersonId, string FirstName, string Email);
 
-    private sealed record RoundAct(int IssuerPersonId, AccountEventKind EventKind, Round Round);
+    private sealed record RoundAct(int? IssuerPersonId, AccountEventKind EventKind, Round Round);
 
     private sealed record ReminderTarget(
         int InvitationId,

@@ -63,7 +63,7 @@ export const StartAnnouncementSchema = z.object({
   body: z.string(),
   publishedAt: z.iso.datetime({ offset: true }),
   validUntil: z.iso.date().nullable(),
-  author: StartPersonSchema,
+  author: StartPersonSchema.nullable(),
 });
 export type StartAnnouncement = z.infer<typeof StartAnnouncementSchema>;
 

@@ -35,15 +35,14 @@ public sealed class PostInvitationRemindersTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var adminId = ctx.Identity.BootstrapAdmin.PersonId;
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         await InvitationSteps.InviteAsync(manager, annaId);
 
         await _fixture.AtLaterTimeAsync(
             InvitationRoundSteps.PastTheReminderDelay,
             async () =>
             {
-                var laterManager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+                var laterManager = await ctx.Identity.ManagingLoginClientAsync(ct);
                 var sent = await InvitationRoundSteps.RemindAllAsync(laterManager);
 
                 Assert.Equal(1, sent);
@@ -67,11 +66,11 @@ public sealed class PostInvitationRemindersTests
             .InvitationsOfPerson(annaId)
             .ToHaveLiveCount(1)
             .LiveInvitationOfPerson(annaId)
-            .ToBeIssuedAs(InvitationChannel.Mail, isReminder: true, adminId)
+            .ToBeIssuedAs(InvitationChannel.Mail, isReminder: true, issuedByPersonId: null)
             .AccountEventsOfPerson(annaId)
             .ToHaveKindsInOrder(AccountEventKind.Invited, AccountEventKind.Reminded)
             .AccountEventsOfPerson(annaId)
-            .ToHaveLatestActor(adminId)
+            .ToHaveNoLatestActor()
             .AssertAsync(ct);
     }
 
@@ -92,14 +91,14 @@ public sealed class PostInvitationRemindersTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         await InvitationSteps.InviteAsync(manager, annaId);
 
         await _fixture.AtLaterTimeAsync(
             InvitationRoundSteps.WithinTheReminderDelay,
             async () =>
             {
-                var laterManager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+                var laterManager = await ctx.Identity.ManagingLoginClientAsync(ct);
                 var sent = await InvitationRoundSteps.RemindAllAsync(laterManager);
 
                 Assert.Equal(0, sent);
@@ -122,14 +121,14 @@ public sealed class PostInvitationRemindersTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         await InvitationSteps.InviteAsync(manager, annaId);
 
         await _fixture.AtLaterTimeAsync(
             InvitationRoundSteps.PastTheMailLifetime,
             async () =>
             {
-                var laterManager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+                var laterManager = await ctx.Identity.ManagingLoginClientAsync(ct);
                 var sent = await InvitationRoundSteps.RemindAllAsync(laterManager);
 
                 Assert.Equal(1, sent);
@@ -168,14 +167,14 @@ public sealed class PostInvitationRemindersTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         await InvitationSteps.InviteAsync(manager, annaId);
 
         await _fixture.AtLaterTimeAsync(
             InvitationRoundSteps.PastTheReminderDelay,
             async () =>
             {
-                var laterManager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+                var laterManager = await ctx.Identity.ManagingLoginClientAsync(ct);
                 var sent = await InvitationRoundSteps.RemindAllAsync(laterManager);
 
                 Assert.Equal(0, sent);
@@ -198,7 +197,7 @@ public sealed class PostInvitationRemindersTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var token = await InvitationSteps.InviteAndReadTokenAsync(
             _fixture,
             manager,
@@ -212,7 +211,7 @@ public sealed class PostInvitationRemindersTests
             InvitationRoundSteps.PastTheReminderDelay,
             async () =>
             {
-                var laterManager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+                var laterManager = await ctx.Identity.ManagingLoginClientAsync(ct);
                 var sent = await InvitationRoundSteps.RemindAllAsync(laterManager);
 
                 Assert.Equal(0, sent);
@@ -238,7 +237,7 @@ public sealed class PostInvitationRemindersTests
                 ),
             ct
         );
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var sent = await InvitationRoundSteps.RemindAllAsync(manager);
 
@@ -266,14 +265,14 @@ public sealed class PostInvitationRemindersTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         await InvitationSteps.InviteInPersonAsync(manager, annaId);
 
         await _fixture.AtLaterTimeAsync(
             InvitationRoundSteps.PastTheReminderDelay,
             async () =>
             {
-                var laterManager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+                var laterManager = await ctx.Identity.ManagingLoginClientAsync(ct);
                 var preview = await InvitationRoundSteps.PreviewAsync(laterManager);
                 var sent = await InvitationRoundSteps.RemindAllAsync(laterManager);
 
@@ -286,11 +285,7 @@ public sealed class PostInvitationRemindersTests
             .Expected.InvitationsOfPerson(annaId)
             .ToHaveCount(1)
             .LiveInvitationOfPerson(annaId)
-            .ToBeIssuedAs(
-                InvitationChannel.InPerson,
-                isReminder: false,
-                ctx.Identity.BootstrapAdmin.PersonId
-            )
+            .ToBeIssuedAs(InvitationChannel.InPerson, isReminder: false, issuedByPersonId: null)
             .AssertAsync(ct);
     }
 
@@ -311,14 +306,14 @@ public sealed class PostInvitationRemindersTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         await InvitationSteps.InviteAsync(manager, annaId);
 
         await _fixture.AtLaterTimeAsync(
             InvitationRoundSteps.PastTheReminderDelay,
             async () =>
             {
-                var laterManager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+                var laterManager = await ctx.Identity.ManagingLoginClientAsync(ct);
                 var first = await InvitationRoundSteps.RemindAllAsync(laterManager);
                 var second = await InvitationRoundSteps.RemindAllAsync(laterManager);
 
@@ -372,7 +367,7 @@ public sealed class PostInvitationRemindersTests
                 ),
             ct
         );
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         await InvitationSteps.InviteAsync(manager, ctx.Identity.People.IdOf("anna"));
         await InvitationSteps.InviteAsync(manager, ctx.Identity.People.IdOf("bea"));
         await InvitationSteps.InviteAsync(manager, ctx.Identity.People.IdOf("dora"));
@@ -381,7 +376,7 @@ public sealed class PostInvitationRemindersTests
             InvitationRoundSteps.PastTheReminderDelay,
             async () =>
             {
-                var laterManager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+                var laterManager = await ctx.Identity.ManagingLoginClientAsync(ct);
                 await InvitationSteps.InviteAsync(laterManager, ctx.Identity.People.IdOf("carla"));
                 var preview = await InvitationRoundSteps.PreviewAsync(laterManager);
 

@@ -48,7 +48,7 @@ public sealed class PutBoardOfficeImpliedRoleTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithOfficeAndRoleAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await SetImpliedRoleAsync(
             client,
             ctx.Club.BoardOffices.IdOf("praesident"),
@@ -76,7 +76,7 @@ public sealed class PutBoardOfficeImpliedRoleTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await SetImpliedRoleAsync(
             client,
             ctx.Club.BoardOffices.IdOf("praesident"),
@@ -153,7 +153,7 @@ public sealed class PutBoardOfficeImpliedRoleTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithOfficeAndRoleAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await SetImpliedRoleAsync(
             client,
             ctx.Club.BoardOffices.IdOf("praesident"),
@@ -186,7 +186,7 @@ public sealed class PutBoardOfficeImpliedRoleTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await SetImpliedRoleAsync(
             client,
             ctx.Club.BoardOffices.IdOf("praesident"),
@@ -216,7 +216,7 @@ public sealed class PutBoardOfficeImpliedRoleTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await SetImpliedRoleAsync(
             client,
             ctx.Club.BoardOffices.IdOf("pressewart"),
@@ -236,7 +236,7 @@ public sealed class PutBoardOfficeImpliedRoleTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithOfficeAndRoleAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await SetImpliedRoleAsync(
             client,
             UnknownBoardOfficeId,
@@ -252,7 +252,7 @@ public sealed class PutBoardOfficeImpliedRoleTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithOfficeAndRoleAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await SetImpliedRoleAsync(client, 0, ctx.Roles.Roles.IdOf("vereinsleitung"));
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);

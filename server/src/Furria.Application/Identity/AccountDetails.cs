@@ -6,7 +6,7 @@ public sealed record AccountDetails
 
     public required string Email { get; init; }
 
-    public required PersonDetails Person { get; init; }
+    public required PersonDetails? Person { get; init; }
 
     public required MembershipChainDetails Membership { get; init; }
 

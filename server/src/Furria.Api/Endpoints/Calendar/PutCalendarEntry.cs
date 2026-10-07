@@ -29,7 +29,7 @@ public sealed class PutCalendarEntry : Endpoint<PutCalendarEntryRequest, PutCale
     {
         var accountId = User.AccountId();
         var personId = User.PersonId();
-        if (accountId is null || personId is null)
+        if (accountId is null)
         {
             await Send.UnauthorizedAsync(ct);
             return;
@@ -48,7 +48,7 @@ public sealed class PutCalendarEntry : Endpoint<PutCalendarEntryRequest, PutCale
             return;
         }
 
-        var result = await _calendarService.UpdateAsync(ToCommand(req, personId.Value), ct);
+        var result = await _calendarService.UpdateAsync(ToCommand(req, personId), ct);
         if (!result.IsSuccess)
         {
             await HttpContext.Response.SendFailureAsync(result.Error, ct);
@@ -69,7 +69,7 @@ public sealed class PutCalendarEntry : Endpoint<PutCalendarEntryRequest, PutCale
 
     private static UpdateCalendarEntryCommand ToCommand(
         PutCalendarEntryRequest req,
-        int viewerPersonId
+        int? viewerPersonId
     ) =>
         new()
         {

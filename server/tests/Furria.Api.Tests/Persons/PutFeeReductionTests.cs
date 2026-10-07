@@ -15,6 +15,9 @@ public sealed class PutFeeReductionTests
 {
     private const string ConflictField = "conflict";
     private const string ValidationField = "request";
+    private const string ArchivedPersonMessage =
+        "Paula ist archiviert – Beitragsermäßigungen lassen sich erst nach dem "
+        + "Wiederherstellen festhalten.";
     private const int ReducedFrom2018 = 2018;
     private const int ReducedUntil2019 = 2019;
     private const int ReducedFrom2021 = 2021;
@@ -22,6 +25,8 @@ public sealed class PutFeeReductionTests
     private const int BeforeTheFounding = 1970;
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
+    private static readonly DateOnly LeftIn2020 = new(2020, 3, 1);
+    private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
 
     private readonly ApiTestFixture _fixture;
 
@@ -36,7 +41,7 @@ public sealed class PutFeeReductionTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithSchoolReductionAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutFeeReduction, PutFeeReductionRequest>(
             new()
             {
@@ -56,12 +61,55 @@ public sealed class PutFeeReductionTests
     }
 
     [Fact]
+    public async Task Should_RefuseAndKeepTheSpan_When_SheIsArchived()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddPerson("paula", "Paula", "Brendel")
+                        .AddMembership("paula-erste", "paula", JoinedIn2017, LeftIn2020)
+                        .AddFeeReduction(
+                            "paula-schule",
+                            "paula",
+                            FeeReductionBasis.School,
+                            ReducedFrom2018,
+                            ReducedUntil2019
+                        )
+                        .AddArchive("paula", ArchivedIn2021)
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var response = await client.PUTAsync<PutFeeReduction, PutFeeReductionRequest>(
+            new()
+            {
+                PersonId = ctx.Identity.People.IdOf("paula"),
+                FeeReductionId = ctx.Identity.FeeReductions.IdOf("paula-schule"),
+                Basis = FeeReductionBasis.School,
+                FirstSessionYear = ReducedFrom2018,
+                LastSessionYear = ReducedFrom2018,
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        var failures = await ReadFailuresAsync(response, ct);
+        Assert.Equal([ArchivedPersonMessage], failures[ConflictField]);
+        await ctx
+            .Expected.FeeReduction(ctx.Identity.FeeReductions.IdOf("paula-schule"))
+            .ToHaveSpan(ReducedFrom2018, ReducedUntil2019)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_ChangeTheBasis_When_AManagerCorrectsIt()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithSchoolReductionAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutFeeReduction, PutFeeReductionRequest>(
             new()
             {
@@ -88,7 +136,7 @@ public sealed class PutFeeReductionTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithSchoolReductionAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutFeeReduction, PutFeeReductionRequest>(
             new()
             {
@@ -140,7 +188,7 @@ public sealed class PutFeeReductionTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutFeeReduction, PutFeeReductionRequest>(
             new()
             {
@@ -185,7 +233,7 @@ public sealed class PutFeeReductionTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutFeeReduction, PutFeeReductionRequest>(
             new()
             {
@@ -212,7 +260,7 @@ public sealed class PutFeeReductionTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithSchoolReductionAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutFeeReduction, PutFeeReductionRequest>(
             new()
             {

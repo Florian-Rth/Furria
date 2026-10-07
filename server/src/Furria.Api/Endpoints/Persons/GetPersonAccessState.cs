@@ -28,7 +28,8 @@ public sealed class GetPersonAccessState
         Get("manage/persons/{personId}/access-state");
         Definition.RequireAnyPermission(
             FurriaPermissions.PersonsManage,
-            FurriaPermissions.AccountsManage
+            FurriaPermissions.AccountsManage,
+            FurriaPermissions.PersonsDelete
         );
     }
 

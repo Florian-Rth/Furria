@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+  ARCHIVED_PERSONS_FILTER_ID,
   availablePersonLetters,
   countPersonsByState,
   filterPersons,
   groupPersonsByLetter,
+  toPersonFilterOptions,
 } from './person-filters';
 import type { PersonSummary } from './schemas';
 
@@ -116,5 +118,51 @@ describe('availablePersonLetters', () => {
 
     expect(letters).toHaveLength(27);
     expect(letters.filter((cell) => cell.enabled).map((cell) => cell.letter)).toEqual(['A', '#']);
+  });
+});
+
+describe('toPersonFilterOptions', () => {
+  const counts = { active: 3, paused: 0, ended: 1, none: 0 };
+
+  it.each([
+    {
+      case: 'once anyone is archived',
+      total: 2,
+      matching: 2,
+      isArchivedView: false,
+      offered: true,
+    },
+    {
+      case: 'while the search finds no archived person',
+      total: 2,
+      matching: 0,
+      isArchivedView: false,
+      offered: true,
+    },
+    {
+      case: 'while the archived view is open on an empty archive',
+      total: 0,
+      matching: 0,
+      isArchivedView: true,
+      offered: true,
+    },
+    {
+      case: 'never while nobody is archived',
+      total: 0,
+      matching: 0,
+      isArchivedView: false,
+      offered: false,
+    },
+  ])('offers the archived filter $case', ({ total, matching, isArchivedView, offered }) => {
+    const options = toPersonFilterOptions(counts, { total, matching }, isArchivedView);
+    const archived = options.find((option) => option.id === ARCHIVED_PERSONS_FILTER_ID);
+
+    expect(archived === undefined ? null : archived.count).toBe(offered ? matching : null);
+  });
+
+  it('puts the archived filter after every membership state', () => {
+    const options = toPersonFilterOptions(counts, { total: 1, matching: 1 }, false);
+
+    expect(options.map((option) => option.id)).toEqual(['all', 'active', 'ended', 'archived']);
   });
 });

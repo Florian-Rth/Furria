@@ -175,6 +175,25 @@ public sealed class GetRunningVenuesTests
     }
 
     [Fact]
+    public async Task Should_ListTheVenues_When_TheManagingLoginReadsThePicker()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Club(club => club.AddVenue("halle", "Turnhalle")),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (response, result) = await client.GETAsync<
+            GetRunningVenues,
+            GetRunningVenuesResponse
+        >();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("Turnhalle", Assert.Single(result.Venues).Name);
+    }
+
+    [Fact]
     public async Task Should_ReturnForbidden_When_TheCallerIsNotAffiliated()
     {
         var ct = TestContext.Current.CancellationToken;

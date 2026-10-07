@@ -34,6 +34,7 @@ internal static class IdentitySeedMaterializer
 
         var personIds = await InsertPeopleAsync(dbContext, recorded, ct);
         await StampContactChangesAsync(dbContext, recorded, personIds, ct);
+        await StampArchivesAsync(dbContext, recorded, personIds, ct);
         var membershipIds = await InsertMembershipsAsync(dbContext, recorded, personIds, ct);
         await StampAdmissionsAsync(dbContext, recorded, personIds, membershipIds, ct);
         var pauseIds = await InsertPausesAsync(dbContext, recorded, membershipIds, ct);
@@ -164,6 +165,31 @@ internal static class IdentitySeedMaterializer
                 intent.ChangedByAlias,
                 "Person"
             );
+        }
+
+        await dbContext.SaveChangesAsync(ct);
+    }
+
+    private static async Task StampArchivesAsync(
+        AppDbContext dbContext,
+        IdentitySeedBuilder recorded,
+        IReadOnlyDictionary<string, int> personIds,
+        CancellationToken ct
+    )
+    {
+        if (recorded.Archives.Count == 0)
+            return;
+
+        foreach (var intent in recorded.Archives)
+        {
+            var personId = SeedAliases.RequireId(personIds, intent.PersonAlias, "Person");
+            var person =
+                await dbContext.People.FindAsync([personId], ct)
+                ?? throw new InvalidOperationException($"Person {personId} was not inserted.");
+            person.ArchivedOn = intent.ArchivedOn;
+            person.ArchivedByPersonId = intent.ArchivedByAlias is { } archivedByAlias
+                ? SeedAliases.RequireId(personIds, archivedByAlias, "Person")
+                : null;
         }
 
         await dbContext.SaveChangesAsync(ct);

@@ -3,9 +3,8 @@ import { useKkSheet } from '@furria/ui';
 import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
 import { ANNOUNCEMENTS_PATH } from '@/features/session';
-import { toInitials } from '@/lib/initials';
 import type { StartAnnouncement } from '../schemas';
-import { toAnnouncementByline } from '../start-lines';
+import { toAnnouncementByline, toAuthorInitials } from '../start-lines';
 import {
   announcementsOf,
   focusedAnnouncementOf,
@@ -47,8 +46,8 @@ export const useAnnouncementsSheet = (board: StartBoard): AnnouncementsSheetView
     blocks: newestFirst(announcementsOf(board.start)).map((announcement, index) => ({
       announcement,
       byline: toAnnouncementByline(announcement, board.now),
-      initials: toInitials(announcement.author.firstName, announcement.author.lastName),
-      portrait: announcement.author.portraitUrl ?? undefined,
+      initials: toAuthorInitials(announcement.author),
+      portrait: announcement.author?.portraitUrl ?? undefined,
       focused: announcement.announcementId === focusedId,
       ruled: index > 0,
     })),

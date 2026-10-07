@@ -35,13 +35,13 @@ public sealed class GetStart : EndpointWithoutRequest<GetStartResponse>
         }
 
         var personId = await _authorizer.ActivePersonIdAsync(accountId.Value, ct);
-        if (personId is null)
+        if (personId is null && !await _authorizer.IsManagingLoginAsync(accountId.Value, ct))
         {
             await Send.UnauthorizedAsync(ct);
             return;
         }
 
-        var start = await _startService.GetAsync(accountId.Value, personId.Value, ct);
+        var start = await _startService.GetAsync(accountId.Value, personId, ct);
 
         await Send.OkAsync(ToResponse(start), cancellation: ct);
     }
@@ -120,7 +120,7 @@ public sealed class GetStart : EndpointWithoutRequest<GetStartResponse>
             Body = announcement.Body,
             PublishedAt = announcement.PublishedAt,
             ValidUntil = announcement.ValidUntil,
-            Author = ToDto(announcement.Author),
+            Author = announcement.Author is { } author ? ToDto(author) : null,
         };
 
     private static StartPersonDto ToDto(StartPerson person) =>
@@ -284,7 +284,7 @@ public sealed record StartAnnouncementDto
 
     public required DateOnly? ValidUntil { get; init; }
 
-    public required StartPersonDto Author { get; init; }
+    public required StartPersonDto? Author { get; init; }
 }
 
 public sealed record StartPersonDto

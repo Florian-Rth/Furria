@@ -66,12 +66,7 @@ public sealed partial class StartService
             on.AddDays(ContactChangeReachDays)
         ) with
         {
-            ChangedBy = new StartPersonRef
-            {
-                PersonId = row.ChangedByPersonId,
-                FirstName = row.ChangedByFirstName,
-                LastName = row.ChangedByLastName,
-            },
+            ChangedBy = row.ChangedBy,
         };
     }
 
@@ -364,14 +359,21 @@ public sealed partial class StartService
             .Where(person =>
                 person.Id == personId
                 && person.ContactChangedAt >= changedSince
-                && person.ContactChangedBy != null
-                && person.ContactChangedBy.Id != personId
+                && (
+                    person.ContactChangedByPersonId == null
+                    || person.ContactChangedByPersonId != personId
+                )
             )
             .Select(person => new ContactChangeRow(
                 person.ContactChangedAt!.Value,
-                person.ContactChangedBy!.Id,
-                person.ContactChangedBy.FirstName,
-                person.ContactChangedBy.LastName
+                person.ContactChangedBy == null
+                    ? null
+                    : new StartPersonRef
+                    {
+                        PersonId = person.ContactChangedBy.Id,
+                        FirstName = person.ContactChangedBy.FirstName,
+                        LastName = person.ContactChangedBy.LastName,
+                    }
             ))
             .ToListAsync(ct);
     }
@@ -404,12 +406,7 @@ public sealed partial class StartService
         IReadOnlyList<string>? PermissionKeys
     );
 
-    private sealed record ContactChangeRow(
-        DateTimeOffset ChangedAt,
-        int ChangedByPersonId,
-        string ChangedByFirstName,
-        string ChangedByLastName
-    );
+    private sealed record ContactChangeRow(DateTimeOffset ChangedAt, StartPersonRef? ChangedBy);
 
     private sealed record MembershipRow(
         int Id,

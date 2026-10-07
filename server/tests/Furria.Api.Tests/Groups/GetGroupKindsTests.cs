@@ -154,6 +154,22 @@ public sealed class GetGroupKindsTests
     }
 
     [Fact]
+    public async Task Should_ListTheGroupKinds_When_TheManagingLoginReadsThePicker()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Groups(groups => groups.AddGroupKind("garde", "Garde")),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (response, result) = await client.GETAsync<GetGroupKinds, GetGroupKindsResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("Garde", Assert.Single(result.Kinds).Name);
+    }
+
+    [Fact]
     public async Task Should_ReturnForbidden_When_TheCallerIsNotAffiliated()
     {
         var ct = TestContext.Current.CancellationToken;

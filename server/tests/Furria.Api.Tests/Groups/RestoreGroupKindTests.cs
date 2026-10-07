@@ -43,7 +43,7 @@ public sealed class RestoreGroupKindTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await RestoreKindAsync(client, ctx.Groups.GroupKinds.IdOf("spielmannszug"));
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -69,7 +69,7 @@ public sealed class RestoreGroupKindTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await RestoreKindAsync(client, ctx.Groups.GroupKinds.IdOf("alter-zug"));
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -90,7 +90,7 @@ public sealed class RestoreGroupKindTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await RestoreKindAsync(client, ctx.Groups.GroupKinds.IdOf("garde"));
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -108,7 +108,7 @@ public sealed class RestoreGroupKindTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await RestoreKindAsync(client, UnknownGroupKindId);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);

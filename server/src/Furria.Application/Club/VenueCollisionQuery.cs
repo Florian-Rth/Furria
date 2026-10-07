@@ -2,7 +2,7 @@ namespace Furria.Application.Club;
 
 public sealed record VenueCollisionQuery
 {
-    public required int ViewerPersonId { get; init; }
+    public required int? ViewerPersonId { get; init; }
 
     public required int VenueId { get; init; }
 

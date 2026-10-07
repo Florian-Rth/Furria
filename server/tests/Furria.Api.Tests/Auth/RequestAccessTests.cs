@@ -198,7 +198,7 @@ public sealed class RequestAccessTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         await InvitationSteps.InviteAsync(manager, annaId);
         var managersToken = (await _fixture.Mailbox.SingleMailToAsync(annaEmail, ct)).LinkToken();
 

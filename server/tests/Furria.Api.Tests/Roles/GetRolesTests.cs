@@ -49,7 +49,7 @@ public sealed class GetRolesTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.GETAsync<GetRoles, GetRolesResponse>();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -70,7 +70,7 @@ public sealed class GetRolesTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.GETAsync<GetRoles, GetRolesResponse>();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -94,7 +94,7 @@ public sealed class GetRolesTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.GETAsync<GetRoles, GetRolesResponse>();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -133,7 +133,7 @@ public sealed class GetRolesTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.GETAsync<GetRoles, GetRolesResponse>();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -150,7 +150,7 @@ public sealed class GetRolesTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.GETAsync<GetRoles, GetRolesResponse>();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -173,7 +173,7 @@ public sealed class GetRolesTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.GETAsync<GetRoles, GetRolesResponse>();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);

@@ -42,7 +42,7 @@ public sealed class AttendanceResponseConfiguration : IEntityTypeConfiguration<A
             .WithMany()
             .HasForeignKey(response => response.PersonId)
             .HasConstraintName("fk_attendance_response_person_person_id")
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder
             .HasIndex(response => new { response.CalendarEntryId, response.PersonId })

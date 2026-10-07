@@ -50,7 +50,7 @@ public sealed class EndRoleHoldingTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithRunningRoleHoldingAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await EndHoldingAsync(
             client,
             ctx.Roles.Roles.IdOf("chronik"),
@@ -74,7 +74,7 @@ public sealed class EndRoleHoldingTests
         var ctx = await BuildWithRunningRoleHoldingAsync(ct);
 
         var handsOverTomorrow = _fixture.Today.AddDays(1);
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await EndHoldingAsync(
             client,
             ctx.Roles.Roles.IdOf("chronik"),
@@ -95,7 +95,7 @@ public sealed class EndRoleHoldingTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithRunningRoleHoldingAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await EndHoldingAsync(
             client,
             ctx.Roles.Roles.IdOf("chronik"),
@@ -132,7 +132,7 @@ public sealed class EndRoleHoldingTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await EndHoldingAsync(
             client,
             ctx.Roles.Roles.IdOf("chronik"),
@@ -155,7 +155,7 @@ public sealed class EndRoleHoldingTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithRunningRoleHoldingAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await EndHoldingAsync(
             client,
             ctx.Roles.Roles.IdOf("chronik"),
@@ -178,7 +178,7 @@ public sealed class EndRoleHoldingTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithRunningRoleHoldingAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await EndHoldingAsync(
             client,
             ctx.Roles.Roles.IdOf("chronik"),
@@ -206,7 +206,7 @@ public sealed class EndRoleHoldingTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await EndHoldingAsync(
             client,
             ctx.Roles.Roles.IdOf("zeugwart"),
@@ -227,7 +227,7 @@ public sealed class EndRoleHoldingTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithRunningRoleHoldingAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await EndHoldingAsync(
             client,
             ctx.Roles.Roles.IdOf("chronik"),

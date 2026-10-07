@@ -3,6 +3,7 @@ using System.Linq.Expressions;
 using Furria.Application.Results;
 using Furria.Application.Roles;
 using Furria.Core.Club;
+using Furria.Core.Identity;
 using Furria.Core.Roles;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Registry;
@@ -192,6 +193,10 @@ public sealed class RoleService
             return Result.Conflict(DuplicateNameMessage);
 
         role.ArchivedOn = null;
+        await _dbContext.LiftArchivesAsync(
+            PeopleWithUnendedHoldingsOf(roleId, ClubClock.Today(_timeProvider)),
+            ct
+        );
 
         return await _dbContext.SaveOrConflictAsync(ct);
     }
@@ -249,6 +254,7 @@ public sealed class RoleService
         };
 
         _dbContext.RoleHoldings.Add(holding);
+        await _dbContext.LiftArchiveOfAsync(command.PersonId, ct);
 
         var saved = await _dbContext.SaveOrConflictAsync(ct);
         if (!saved.IsSuccess)
@@ -328,6 +334,13 @@ public sealed class RoleService
 
     private Task<bool> PersonExistsAsync(int personId, CancellationToken ct) =>
         _dbContext.People.AsNoTracking().AnyAsync(row => row.Id == personId, ct);
+
+    private IQueryable<Person> PeopleWithUnendedHoldingsOf(int roleId, DateOnly today) =>
+        _dbContext.People.Where(person =>
+            person.RoleHoldings.Any(holding =>
+                holding.RoleId == roleId && (holding.UntilOn == null || holding.UntilOn >= today)
+            )
+        );
 
     private Task<List<PeriodRow>> ChainOfAsync(int roleId, int personId, CancellationToken ct) =>
         _dbContext

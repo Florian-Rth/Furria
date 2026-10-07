@@ -16,12 +16,14 @@ const FEE_REDUCTION_ROUTE = '/manage/persons/$personId/fee-reductions/$feeReduct
 interface PersonFeeReductionRowProps {
   personId: number;
   reduction: PersonFeeReduction;
+  linked: boolean;
   highlight: boolean;
 }
 
 export const PersonFeeReductionRow: FC<PersonFeeReductionRowProps> = ({
   personId,
   reduction,
+  linked,
   highlight,
 }) => {
   const periodChip = toSessionPeriodChip(
@@ -29,6 +31,17 @@ export const PersonFeeReductionRow: FC<PersonFeeReductionRowProps> = ({
     reduction.lastSessionYear,
     currentSessionYear(),
   );
+
+  const linkProps = linked
+    ? {
+        component: Link,
+        to: FEE_REDUCTION_ROUTE,
+        params: {
+          personId: String(personId),
+          feeReductionId: String(reduction.feeReductionId),
+        },
+      }
+    : {};
 
   const chip =
     periodChip === null ? undefined : (
@@ -45,9 +58,7 @@ export const PersonFeeReductionRow: FC<PersonFeeReductionRowProps> = ({
       chip={chip}
       highlight={highlight}
       landing={toLandingKey('feeReduction', reduction.feeReductionId)}
-      component={Link}
-      to={FEE_REDUCTION_ROUTE}
-      params={{ personId: String(personId), feeReductionId: String(reduction.feeReductionId) }}
+      {...linkProps}
     />
   );
 };

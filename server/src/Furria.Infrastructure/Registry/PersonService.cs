@@ -1,3 +1,4 @@
+using System.Diagnostics.Contracts;
 using System.Linq.Expressions;
 using Furria.Application.Authorization;
 using Furria.Application.Groups;
@@ -135,8 +136,10 @@ public sealed class PersonService
             accessState
         );
 
-    private static readonly Expression<Func<Person, PersonDetailsRow>> PersonDetailsProjection =
-        person => new PersonDetailsRow(
+    private static readonly Expression<
+        Func<Person, UnendedTiesRow, PersonDetailsRow>
+    > PersonDetailsProjection = (person, unendedTies) =>
+        new PersonDetailsRow(
             person.Id,
             person.FirstName,
             person.LastName,
@@ -205,17 +208,20 @@ public sealed class PersonService
                     UntilOn = holding.UntilOn,
                 })
                 .ToList(),
-            person.ContactChangedAt == null || person.ContactChangedBy == null
+            person.ContactChangedAt == null
                 ? null
                 : new ContactChangeDetails
                 {
                     At = person.ContactChangedAt.Value,
-                    ChangedBy = new PersonReference
-                    {
-                        PersonId = person.ContactChangedBy.Id,
-                        FirstName = person.ContactChangedBy.FirstName,
-                        LastName = person.ContactChangedBy.LastName,
-                    },
+                    ChangedBy =
+                        person.ContactChangedBy == null
+                            ? null
+                            : new PersonReference
+                            {
+                                PersonId = person.ContactChangedBy.Id,
+                                FirstName = person.ContactChangedBy.FirstName,
+                                LastName = person.ContactChangedBy.LastName,
+                            },
                 },
             person
                 .Memberships.Where(membership => membership.AdmittedAt != null)
@@ -234,7 +240,23 @@ public sealed class PersonService
                             },
                     GuardianConsentConfirmed = membership.GuardianConsentConfirmed,
                 })
-                .ToList()
+                .ToList(),
+            person.ArchivedOn == null
+                ? null
+                : new PersonArchiveDetails
+                {
+                    ArchivedOn = person.ArchivedOn.Value,
+                    ArchivedBy =
+                        person.ArchivedBy == null
+                            ? null
+                            : new PersonReference
+                            {
+                                PersonId = person.ArchivedBy.Id,
+                                FirstName = person.ArchivedBy.FirstName,
+                                LastName = person.ArchivedBy.LastName,
+                            },
+                },
+            unendedTies
         );
 
     private static readonly MemberContact WithheldContact = new()
@@ -331,6 +353,7 @@ public sealed class PersonService
 
     public async Task<IReadOnlyList<PersonSummary>> GetAllAsync(
         PersonAccessFilter? access,
+        bool archived,
         CancellationToken ct
     )
     {
@@ -341,7 +364,7 @@ public sealed class PersonService
             ? _dbContext.PeopleByAccess(filter, now, ageOfConsent)
             : _dbContext.People;
 
-        var rows = await people
+        var rows = await FiledAs(people, archived)
             .AsNoTracking()
             .OrderBy(person => EF.Functions.Collate(person.LastName, GermanCollation.Name))
             .ThenBy(person => EF.Functions.Collate(person.FirstName, GermanCollation.Name))
@@ -367,7 +390,7 @@ public sealed class PersonService
         var row = await _dbContext
             .People.AsNoTracking()
             .Where(person => person.Id == personId)
-            .Select(PersonDetailsProjection)
+            .Select(ExpressionComposition.Bind(PersonDetailsProjection, UnendedTiesOn(today)))
             .SingleOrDefaultAsync(ct);
 
         if (row is null)
@@ -410,6 +433,7 @@ public sealed class PersonService
 
         return await _dbContext
             .People.AsNoTracking()
+            .Where(person => person.ArchivedOn == null)
             .Where(person =>
                 // keep in sync with GermanFold.Expand / GermanFold.Strip — EF cannot translate
                 // the method onto the column side.
@@ -562,7 +586,7 @@ public sealed class PersonService
         return Result.Success();
     }
 
-    private void WriteContactDetails(Person person, ContactDetails submitted, int actorPersonId)
+    private void WriteContactDetails(Person person, ContactDetails submitted, int? actorPersonId)
     {
         if (!submitted.DiffersFrom(ContactDetails.Of(person)))
             return;
@@ -575,6 +599,68 @@ public sealed class PersonService
         person.ContactChangedAt = _timeProvider.GetUtcNow();
         person.ContactChangedByPersonId = actorPersonId;
     }
+
+    [Pure]
+    private static IQueryable<Person> FiledAs(IQueryable<Person> people, bool archived) =>
+        archived
+            ? people.Where(person => person.ArchivedOn != null)
+            : people.Where(person => person.ArchivedOn == null);
+
+    private Expression<Func<Person, UnendedTiesRow>> UnendedTiesOn(DateOnly today) =>
+        person => new UnendedTiesRow(
+            person
+                .GroupAdminships.Where(tenure =>
+                    (tenure.UntilOn == null || tenure.UntilOn >= today)
+                    && tenure.Group!.ArchivedOn == null
+                )
+                .OrderBy(tenure => EF.Functions.Collate(tenure.Group!.Name, GermanCollation.Name))
+                .ThenBy(tenure => tenure.SinceOn)
+                .ThenBy(tenure => tenure.Id)
+                .Select(tenure => new PersonGroupAdminTenure
+                {
+                    GroupId = tenure.GroupId,
+                    Name = tenure.Group!.Name,
+                    Function = tenure.Function,
+                    SinceOn = tenure.SinceOn,
+                    UntilOn = tenure.UntilOn,
+                })
+                .ToList(),
+            _dbContext
+                .BoardSeats.Where(seat =>
+                    seat.PersonId == person.Id
+                    && (seat.UntilOn == null || seat.UntilOn >= today)
+                    && seat.BoardOffice!.ArchivedOn == null
+                )
+                .OrderBy(seat => seat.BoardOffice!.SortOrder)
+                .ThenBy(seat => EF.Functions.Collate(seat.BoardOffice!.Name, GermanCollation.Name))
+                .ThenBy(seat => seat.SinceOn)
+                .ThenBy(seat => seat.Id)
+                .Select(seat => new PersonBoardSeat
+                {
+                    BoardOfficeId = seat.BoardOfficeId,
+                    Name = seat.BoardOffice!.Name,
+                    SinceOn = seat.SinceOn,
+                    UntilOn = seat.UntilOn,
+                })
+                .ToList(),
+            _dbContext
+                .KeyHoldings.Where(holding =>
+                    holding.PersonId == person.Id
+                    && (holding.UntilOn == null || holding.UntilOn >= today)
+                )
+                .OrderBy(holding => holding.Venue!.SortOrder)
+                .ThenBy(holding => EF.Functions.Collate(holding.Venue!.Name, GermanCollation.Name))
+                .ThenBy(holding => holding.SinceOn)
+                .ThenBy(holding => holding.Id)
+                .Select(holding => new PersonKeyHolding
+                {
+                    VenueId = holding.VenueId,
+                    Name = holding.Venue!.Name,
+                    SinceOn = holding.SinceOn,
+                    UntilOn = holding.UntilOn,
+                })
+                .ToList()
+        );
 
     private async Task<ContactVisibility> VisibilityForAsync(
         ContactRow contact,
@@ -650,6 +736,7 @@ public sealed class PersonService
             BirthDate = row.BirthDate,
             ContactVisibleToMembers = row.Contact.VisibleToMembers,
             ContactChange = row.ContactChange,
+            Archive = row.Archive,
             MembershipState = chain.State,
             MemberSince = chain.MemberSince,
             Memberships = chain.All,
@@ -657,6 +744,9 @@ public sealed class PersonService
             FeeReductions = row.FeeReductions,
             Groups = row.Groups,
             Roles = row.Roles,
+            UnendedGroupAdminTenures = row.UnendedTies.GroupAdminTenures,
+            UnendedBoardSeats = row.UnendedTies.BoardSeats,
+            UnendedKeyHoldings = row.UnendedTies.KeyHoldings,
         };
     }
 
@@ -822,7 +912,15 @@ public sealed class PersonService
         IReadOnlyList<PersonGroup> Groups,
         IReadOnlyList<PersonRole> Roles,
         ContactChangeDetails? ContactChange,
-        IReadOnlyList<MembershipAdmissionDetails> Admissions
+        IReadOnlyList<MembershipAdmissionDetails> Admissions,
+        PersonArchiveDetails? Archive,
+        UnendedTiesRow UnendedTies
+    );
+
+    private sealed record UnendedTiesRow(
+        IReadOnlyList<PersonGroupAdminTenure> GroupAdminTenures,
+        IReadOnlyList<PersonBoardSeat> BoardSeats,
+        IReadOnlyList<PersonKeyHolding> KeyHoldings
     );
 
     private sealed record MemberCardRow(

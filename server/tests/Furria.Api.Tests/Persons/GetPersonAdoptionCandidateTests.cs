@@ -33,7 +33,7 @@ public sealed class GetPersonAdoptionCandidateTests
                 ),
             ct
         );
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var (response, candidate) = await FindCandidateAsync(
             manager,
@@ -48,6 +48,29 @@ public sealed class GetPersonAdoptionCandidateTests
     }
 
     [Fact]
+    public async Task Should_NameAnArchivedPerson_When_SheHoldsTheTypedEmail()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var annaEmail = InvitationSteps.UniqueContactEmail("anna");
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddPerson("anna", "Anna", "Muster")
+                        .AddPersonContact("anna", annaEmail)
+                        .AddArchive("anna", _fixture.Today.AddYears(-1))
+                ),
+            ct
+        );
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
+
+        var (response, candidate) = await FindCandidateAsync(manager, annaEmail);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(ctx.Identity.People.IdOf("anna"), candidate.PersonId);
+    }
+
+    [Fact]
     public async Task Should_ReportNoAccount_When_TheCandidateHasNone()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -59,7 +82,7 @@ public sealed class GetPersonAdoptionCandidateTests
                 ),
             ct
         );
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var (response, candidate) = await FindCandidateAsync(manager, annaEmail);
 
@@ -73,7 +96,7 @@ public sealed class GetPersonAdoptionCandidateTests
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var (response, _) = await FindCandidateAsync(
             manager,
@@ -95,7 +118,7 @@ public sealed class GetPersonAdoptionCandidateTests
                 ),
             ct
         );
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var (response, _) = await FindCandidateAsync(manager, annaEmail);
 
@@ -117,7 +140,7 @@ public sealed class GetPersonAdoptionCandidateTests
                 ),
             ct
         );
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var (response, candidate) = await FindCandidateAsync(manager, sharedEmail);
 
@@ -142,7 +165,7 @@ public sealed class GetPersonAdoptionCandidateTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         await _fixture.AtLaterTimeAsync(
             TimeSpan.FromMinutes(5),
             () => _fixture.EditPersonNameDirectlyAsync(annaId, "Anna", "Muster-Neu", ct)
@@ -160,7 +183,7 @@ public sealed class GetPersonAdoptionCandidateTests
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var (response, _) = await FindCandidateAsync(manager, "keine-adresse");
 

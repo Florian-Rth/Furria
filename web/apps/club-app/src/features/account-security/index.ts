@@ -4,3 +4,8 @@ export { AccountSecurityScreen } from './components/AccountSecurityScreen';
 export { LoginEmailEditScreen } from './components/LoginEmailEditScreen';
 export { PasskeyScreen } from './components/PasskeyScreen';
 export { PasswordEditScreen } from './components/PasswordEditScreen';
+export { ReauthenticationProofFields } from './components/ReauthenticationProofFields';
+export type { ReauthenticationControl } from './hooks/use-reauthentication';
+export { useReauthentication } from './hooks/use-reauthentication';
+export { resolveReauthenticationProof, toReauthenticationBody } from './reauthentication';
+export type { ReauthenticationProof, ResolvedReauthenticationProof } from './types';

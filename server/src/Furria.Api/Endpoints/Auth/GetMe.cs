@@ -46,7 +46,7 @@ public sealed class GetMe : EndpointWithoutRequest<GetMeResponse>
         {
             AccountId = account.Id,
             Email = account.Email,
-            Person = ToDto(account.Person),
+            Person = account.Person is { } person ? ToDto(person) : null,
             Membership = ToDto(account.Membership),
             IsAffiliated = account.IsAffiliated,
             PermissionKeys = account.PermissionKeys,
@@ -83,12 +83,14 @@ public sealed class GetMe : EndpointWithoutRequest<GetMeResponse>
         new()
         {
             At = change.At,
-            ChangedBy = new()
-            {
-                PersonId = change.ChangedBy.PersonId,
-                FirstName = change.ChangedBy.FirstName,
-                LastName = change.ChangedBy.LastName,
-            },
+            ChangedBy = change.ChangedBy is { } changedBy
+                ? new()
+                {
+                    PersonId = changedBy.PersonId,
+                    FirstName = changedBy.FirstName,
+                    LastName = changedBy.LastName,
+                }
+                : null,
         };
 
     private static MeMembershipDto ToDto(MembershipChainDetails membership) =>
@@ -111,7 +113,7 @@ public sealed record GetMeResponse
 
     public required string Email { get; init; }
 
-    public required MePersonDto Person { get; init; }
+    public required MePersonDto? Person { get; init; }
 
     public required MeMembershipDto Membership { get; init; }
 
@@ -164,7 +166,7 @@ public sealed record MeContactChangeDto
 {
     public required DateTimeOffset At { get; init; }
 
-    public required MeContactChangeActorDto ChangedBy { get; init; }
+    public required MeContactChangeActorDto? ChangedBy { get; init; }
 }
 
 public sealed record MeContactChangeActorDto

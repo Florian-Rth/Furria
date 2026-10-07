@@ -29,7 +29,7 @@ public sealed class RequestLoggingTests
             ct
         );
         var groupId = ctx.Groups.Groups.IdOf("tanzgarde");
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var (response, _) = await ReadGroupAsync(client, groupId);
 
@@ -50,12 +50,12 @@ public sealed class RequestLoggingTests
             ct
         );
         var groupId = ctx.Groups.Groups.IdOf("tanzgarde");
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         await ReadGroupAsync(client, groupId);
 
         var written = RequestEventFor(groupId);
-        Assert.Equal(ctx.Identity.BootstrapAdmin.AccountId, written.ScalarOf("AccountId"));
+        Assert.Equal(ctx.Identity.ManagingLogin.AccountId, written.ScalarOf("AccountId"));
     }
 
     [Fact]

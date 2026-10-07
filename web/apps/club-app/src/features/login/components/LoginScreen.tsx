@@ -3,7 +3,7 @@ import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { SessionFarewell } from '@/lib/api/session/session-store';
 import {
-  ACCOUNT_DELETED_MESSAGE,
+  FAREWELL_MESSAGES,
   PASSWORD_RESET_NOTICE,
   SESSION_EXPIRED_MESSAGE,
 } from '../login-messages';
@@ -26,9 +26,7 @@ export const LoginScreen: FC<LoginScreenProps> = ({ expired, farewell, passwordR
     <KkAlert severity="warning">{SESSION_EXPIRED_MESSAGE}</KkAlert>
   ) : null;
   const farewellNotice =
-    farewell === 'account-deleted' ? (
-      <KkAlert severity="info">{ACCOUNT_DELETED_MESSAGE}</KkAlert>
-    ) : null;
+    farewell === null ? null : <KkAlert severity="info">{FAREWELL_MESSAGES[farewell]}</KkAlert>;
   const passwordResetNotice = passwordReset ? (
     <KkAlert severity="success">{PASSWORD_RESET_NOTICE}</KkAlert>
   ) : null;

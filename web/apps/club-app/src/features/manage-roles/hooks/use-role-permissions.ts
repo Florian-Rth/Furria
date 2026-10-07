@@ -58,7 +58,7 @@ export const useRolePermissions = (
   const mutation = useSetRolePermissionsMutation(role.roleId);
 
   const entries = toPermissionEntries(catalogue, role.permissionKeys);
-  const viewerPersonId = me.data?.person.id;
+  const viewerPersonId = me.data?.person?.id;
 
   const readRoles = (): readonly RoleSummary[] =>
     queryClient.getQueryData<RolesResponse>(ROLES_QUERY_KEY)?.roles ?? NO_ROLES;

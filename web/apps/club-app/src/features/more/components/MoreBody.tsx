@@ -12,7 +12,7 @@ import { MoreSectionPanel } from './MoreSectionPanel';
 import { MoreSectionSkeleton } from './MoreSectionSkeleton';
 
 export const MoreBody: FC = () => {
-  const { keys, isUndecided } = usePermissions();
+  const { keys, isManagingLogin, isUndecided } = usePermissions();
   const manageSections = toPermittedSections(MANAGE_SECTIONS, keys);
 
   const managePanel = isUndecided ? (
@@ -21,9 +21,11 @@ export const MoreBody: FC = () => {
     <MoreSectionPanel title={MORE_PANEL_TITLES.manage} sections={manageSections} />
   );
 
+  const profilePanel = isManagingLogin ? null : <MoreProfilePanel />;
+
   return (
     <KkPanelStack>
-      <MoreProfilePanel />
+      {profilePanel}
       {managePanel}
       <AppSignOutButton />
     </KkPanelStack>

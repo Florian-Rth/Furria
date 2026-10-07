@@ -2,7 +2,7 @@ import { KkFieldRow, KkPanel, KkPanelSection, KkPanelStack } from '@furria/ui';
 import Grid from '@mui/material/Grid';
 import type { FC } from 'react';
 import { useLanding } from '@/features/write';
-import type { Me } from '@/lib/api/schemas';
+import type { PersonalMe } from '@/lib/api/schemas';
 import { formatIsoDay } from '@/lib/membership-labels';
 import { PROFILE_SECTION_TITLES } from '../profile-labels';
 import { ProfileContactPanel } from './ProfileContactPanel';
@@ -16,7 +16,7 @@ const EMPTY_VALUE = 'Nicht hinterlegt';
 const BIRTH_DATE_LABEL = 'Geburtsdatum';
 
 interface ProfilePanelsProps {
-  me: Me;
+  me: PersonalMe;
 }
 
 export const ProfilePanels: FC<ProfilePanelsProps> = ({ me }) => {

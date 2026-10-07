@@ -40,5 +40,13 @@ public sealed class PersonConfiguration : IEntityTypeConfiguration<Person>
             .HasForeignKey(person => person.ContactChangedByPersonId)
             .HasConstraintName("fk_person_person_contact_changed_by_person_id")
             .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasIndex(person => person.ArchivedByPersonId);
+        builder
+            .HasOne(person => person.ArchivedBy)
+            .WithMany()
+            .HasForeignKey(person => person.ArchivedByPersonId)
+            .HasConstraintName("fk_person_person_archived_by_person_id")
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

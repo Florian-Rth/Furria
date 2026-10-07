@@ -1,3 +1,5 @@
+import type { ResolvedReauthenticationProof } from '@/features/account-security';
+import { toReauthenticationBody } from '@/features/account-security';
 import { ServerFailureError } from '@/lib/api/api-error';
 import type { JsonBody } from '@/lib/api/api-fetch';
 import { apiFetch } from '@/lib/api/api-fetch';
@@ -45,9 +47,10 @@ const toPersonBody = (form: PersonForm): JsonBody => ({
 
 export const requestPersons = (
   access: PersonAccessFilter | null,
+  archived: boolean,
   accessToken: string,
 ): Promise<PersonsResponse> =>
-  apiFetch(toPersonsRequestPath(access), { schema: PersonsResponseSchema, accessToken });
+  apiFetch(toPersonsRequestPath(access, archived), { schema: PersonsResponseSchema, accessToken });
 
 export const requestPerson = (personId: number, accessToken: string): Promise<PersonDetails> =>
   apiFetch(`/api/manage/persons/${personId}`, { schema: PersonDetailsSchema, accessToken });
@@ -71,6 +74,30 @@ export const requestPersonUpdate = (
   apiFetch(`/api/manage/persons/${personId}`, {
     method: 'PUT',
     body: toPersonBody(form),
+    schema: NoContentSchema,
+    accessToken,
+  });
+
+export const requestPersonArchived = (
+  personId: number,
+  isArchived: boolean,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`/api/manage/persons/${personId}/archived`, {
+    method: 'PUT',
+    body: { isArchived },
+    schema: NoContentSchema,
+    accessToken,
+  });
+
+export const requestPersonErasure = (
+  personId: number,
+  proof: ResolvedReauthenticationProof,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`/api/manage/persons/${personId}`, {
+    method: 'DELETE',
+    body: toReauthenticationBody(proof),
     schema: NoContentSchema,
     accessToken,
   });

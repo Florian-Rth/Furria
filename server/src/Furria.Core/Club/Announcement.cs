@@ -6,7 +6,7 @@ public sealed class Announcement : ITimestamped
 {
     public int Id { get; set; }
 
-    public int AuthorPersonId { get; set; }
+    public int? AuthorPersonId { get; set; }
 
     public string Title { get; set; } = "";
 

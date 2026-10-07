@@ -53,19 +53,53 @@ export const toAccessFilterNote = (filter: PersonAccessFilter): string =>
 export const toNoAccessMatchLine = (filter: PersonAccessFilter): string =>
   NO_ACCESS_MATCH_LINES[filter];
 
-export const toPersonsRequestPath = (filter: PersonAccessFilter | null): string =>
-  filter === null
-    ? '/api/manage/persons'
-    : `/api/manage/persons?access=${encodeURIComponent(filter)}`;
+const PERSONS_REQUEST_PATH = '/api/manage/persons';
+
+export const toPersonsRequestPath = (
+  filter: PersonAccessFilter | null,
+  archived: boolean,
+): string => {
+  const params = new URLSearchParams();
+
+  if (filter !== null) {
+    params.set('access', filter);
+  }
+  if (archived) {
+    params.set('archived', 'true');
+  }
+
+  const query = params.toString();
+
+  return query === '' ? PERSONS_REQUEST_PATH : `${PERSONS_REQUEST_PATH}?${query}`;
+};
+
+const toNoArchivedMatchLine = (query: string, access: PersonAccessFilter | null): string => {
+  const needle = query.trim();
+
+  if (needle !== '') {
+    return `Keine archivierte Person passt zu „${needle}“.`;
+  }
+  if (access !== null) {
+    return 'Keine archivierte Person passt zu diesem Filter.';
+  }
+
+  return 'Gerade ist niemand archiviert.';
+};
 
 export const toPersonsEmptyLine = (
   query: string,
   state: string,
   access: PersonAccessFilter | null,
-): string =>
-  access !== null && query.trim() === '' && state === ALL_STATES_FILTER_ID
+  isArchivedView: boolean,
+): string => {
+  if (isArchivedView) {
+    return toNoArchivedMatchLine(query, access);
+  }
+
+  return access !== null && query.trim() === '' && state === ALL_STATES_FILTER_ID
     ? toNoAccessMatchLine(access)
     : toPersonsEmptyDescription(query, state);
+};
 
 const REGISTER_ACCESS_CHIPS: Record<RegisterAccessState, StateChip> = {
   none: { label: 'kein Zugang', tone: 'neutral', dot: false },

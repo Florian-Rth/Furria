@@ -38,7 +38,7 @@ public sealed class PostGroupKindTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await CreateKindAsync(client, "Garde");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -59,7 +59,7 @@ public sealed class PostGroupKindTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await CreateKindAsync(client, "garde");
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -79,7 +79,7 @@ public sealed class PostGroupKindTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await CreateKindAsync(client, "Spielmannszug");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -97,7 +97,7 @@ public sealed class PostGroupKindTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await CreateKindAsync(client, "");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);

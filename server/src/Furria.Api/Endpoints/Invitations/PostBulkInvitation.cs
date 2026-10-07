@@ -24,13 +24,7 @@ public sealed class PostBulkInvitation : EndpointWithoutRequest<PostBulkInvitati
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        if (User.PersonId() is not { } issuerPersonId)
-        {
-            await Send.UnauthorizedAsync(ct);
-            return;
-        }
-
-        var sent = await _invitationRoundService.InviteAllAsync(issuerPersonId, ct);
+        var sent = await _invitationRoundService.InviteAllAsync(User.PersonId(), ct);
         if (!sent.IsSuccess)
         {
             await HttpContext.Response.SendFailureAsync(sent.Error, ct);

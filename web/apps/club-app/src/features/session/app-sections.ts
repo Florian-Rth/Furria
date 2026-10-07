@@ -31,12 +31,13 @@ export const START_TITLE = 'Start';
 export const CLUB_TITLE = 'Verein';
 export const CALENDAR_TITLE = 'Kalender';
 export const GROUPS_TITLE = 'Gruppen';
+export const PROFILE_TITLE = 'Profil';
 
 export const START_ORIGIN: KkScreenOrigin = { label: START_TITLE, to: START_PATH };
 export const CLUB_ORIGIN: KkScreenOrigin = { label: CLUB_TITLE, to: CLUB_PATH };
 export const CALENDAR_ORIGIN: KkScreenOrigin = { label: CALENDAR_TITLE, to: CALENDAR_PATH };
 export const GROUPS_ORIGIN: KkScreenOrigin = { label: GROUPS_TITLE, to: GROUPS_PATH };
-export const PROFILE_ORIGIN: KkScreenOrigin = { label: 'Profil', to: PROFILE_PATH };
+export const PROFILE_ORIGIN: KkScreenOrigin = { label: PROFILE_TITLE, to: PROFILE_PATH };
 export const MORE_ORIGIN: KkScreenOrigin = { label: 'Mehr', to: MORE_PATH };
 export const MANAGE_ORIGIN: KkScreenOrigin = { label: 'Verein verwalten', to: MANAGE_PATH };
 
@@ -60,6 +61,7 @@ export const MANAGE_KEYS: readonly PermissionKey[] = [
   PERMISSION_KEYS.clubManage,
   PERMISSION_KEYS.keyHoldingsManage,
   PERMISSION_KEYS.accountsManage,
+  PERMISSION_KEYS.personsDelete,
   PERMISSION_KEYS.membershipApplicationsDecide,
 ];
 
@@ -82,6 +84,12 @@ export const APP_DESTINATIONS: readonly KkShellDestination[] = [
   },
   { id: MORE_SECTION, label: 'Mehr', icon: 'more', activeIcon: 'moreFilled', to: MORE_PATH },
 ];
+
+const MANAGING_LOGIN_SECTIONS: ReadonlySet<string> = new Set([START_SECTION, MORE_SECTION]);
+
+export const MANAGING_LOGIN_DESTINATIONS: readonly KkShellDestination[] = APP_DESTINATIONS.filter(
+  (destination) => MANAGING_LOGIN_SECTIONS.has(destination.id),
+);
 
 export const CLUB_SECTIONS: AppSection[] = [
   {

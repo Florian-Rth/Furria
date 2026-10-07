@@ -23,6 +23,8 @@ public sealed class MembershipService
     private const string EndBeforeStartMessage =
         "Eine Mitgliedschaft kann nicht vor ihrem Beginn enden.";
     private const string OpenSpanLabel = "offen";
+    private const string EndedMembershipsLabel = "beendete Mitgliedschaften";
+    private const string PausesLabel = "Ruhezeiten";
     private const string PauseEndBeforeStartMessage =
         "Eine Ruhezeit kann nicht vor ihrer ersten Session enden.";
     private const string OverlappingPauseMessage =
@@ -35,10 +37,14 @@ public sealed class MembershipService
         + "Ein Wiedereintritt beginnt frühestens am Tag nach dem Ende der vorigen Mitgliedschaft.";
 
     private readonly AppDbContext _dbContext;
+    private readonly TimeProvider _timeProvider;
 
-    public MembershipService(AppDbContext dbContext)
+    private DateOnly Today => ClubClock.Today(_timeProvider);
+
+    public MembershipService(AppDbContext dbContext, TimeProvider timeProvider)
     {
         _dbContext = dbContext;
+        _timeProvider = timeProvider;
     }
 
     public Task<Result<int>> AddAsync(AddMembershipCommand command, CancellationToken ct) =>
@@ -91,6 +97,10 @@ public sealed class MembershipService
         if (MisplacedPause(membership, SpanOf(period.Start, period.End)) is { } stray)
             return Result.Validation(StrandedPauseMessage(stray));
 
+        if (ArchiveRefusalOf(membership.Person!, period, Today) is { } refusal)
+            return Result.Conflict(refusal);
+
+        membership.Person!.LiftArchive();
         membership.StartedOn = command.StartedOn;
         membership.EndedOn = command.EndedOn;
 
@@ -132,6 +142,11 @@ public sealed class MembershipService
 
         if (membership is null)
             return Result<int>.NotFound(UnknownMembershipMessage);
+
+        if (ArchivedHistory.IsClosed(membership.Person!))
+            return Result<int>.Conflict(
+                ArchivedHistory.RefusalFor(membership.Person!, PausesLabel)
+            );
 
         var span = SpanOf(command.FirstSessionYear, command.LastSessionYear);
 
@@ -177,6 +192,9 @@ public sealed class MembershipService
         if (pause is null)
             return Result.NotFound(UnknownPauseMessage);
 
+        if (ArchivedHistory.IsClosed(membership.Person!))
+            return Result.Conflict(ArchivedHistory.RefusalFor(membership.Person!, PausesLabel));
+
         var span = SpanOf(command.FirstSessionYear, command.LastSessionYear);
 
         if (!span.IsWellFormed)
@@ -200,7 +218,9 @@ public sealed class MembershipService
 
     private async Task<Result<int>> OpenAsync(Membership membership, CancellationToken ct)
     {
-        if (!await PersonExistsAsync(membership.PersonId, ct))
+        var person = await TrackedPersonAsync(membership.PersonId, ct);
+
+        if (person is null)
             return Result<int>.NotFound(UnknownPersonMessage);
 
         var period = new DatePeriod { Start = membership.StartedOn, End = membership.EndedOn };
@@ -216,6 +236,10 @@ public sealed class MembershipService
         if (Overlaps(chain, period))
             return Result<int>.Conflict(OverlappingMembershipMessage);
 
+        if (ArchiveRefusalOf(person, period, Today) is { } refusal)
+            return Result<int>.Conflict(refusal);
+
+        person.LiftArchive();
         _dbContext.Memberships.Add(membership);
 
         var saved = await _dbContext.SaveOrConflictAsync(ct);
@@ -295,10 +319,17 @@ public sealed class MembershipService
     ) =>
         _dbContext
             .Memberships.Include(row => row.Pauses)
+            .Include(row => row.Person)
             .SingleOrDefaultAsync(row => row.Id == membershipId && row.PersonId == personId, ct);
 
-    private Task<bool> PersonExistsAsync(int personId, CancellationToken ct) =>
-        _dbContext.People.AsNoTracking().AnyAsync(row => row.Id == personId, ct);
+    private Task<Person?> TrackedPersonAsync(int personId, CancellationToken ct) =>
+        _dbContext.People.SingleOrDefaultAsync(row => row.Id == personId, ct);
+
+    [Pure]
+    private static string? ArchiveRefusalOf(Person person, DatePeriod period, DateOnly today) =>
+        ArchivedHistory.IsClosed(person) && period.HasEndedBefore(today)
+            ? ArchivedHistory.RefusalFor(person, EndedMembershipsLabel)
+            : null;
 
     [Pure]
     private static bool Overlaps(IReadOnlyList<PeriodRow> chain, DatePeriod period) =>

@@ -114,7 +114,7 @@ public sealed class AnnouncementService
     }
 
     [Pure]
-    private static bool MayChange(int authorPersonId, int actorPersonId, bool actorMayPost) =>
+    private static bool MayChange(int? authorPersonId, int actorPersonId, bool actorMayPost) =>
         actorMayPost || authorPersonId == actorPersonId;
 
     [Pure]
@@ -129,14 +129,16 @@ public sealed class AnnouncementService
             Body = row.Body,
             PublishedAt = row.PublishedAt,
             ValidUntil = row.ValidUntil,
-            Author = new AnnouncementAuthorReference
-            {
-                PersonId = row.AuthorPersonId,
-                FirstName = row.FirstName,
-                LastName = row.LastName,
-                PortraitUrl = row.PortraitUrl,
-                OfficeName = officeNames.GetValueOrDefault(row.AuthorPersonId),
-            },
+            Author = row.Author is { } author
+                ? new AnnouncementAuthorReference
+                {
+                    PersonId = author.PersonId,
+                    FirstName = author.FirstName,
+                    LastName = author.LastName,
+                    PortraitUrl = author.PortraitUrl,
+                    OfficeName = officeNames.GetValueOrDefault(author.PersonId),
+                }
+                : null,
         };
 
     private Task<Announcement?> FindAsync(int announcementId, CancellationToken ct) =>

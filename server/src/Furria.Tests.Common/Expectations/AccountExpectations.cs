@@ -47,6 +47,19 @@ public sealed class AccountExpectations
             }
         );
 
+    public Expected ToBeTheManagingLogin() =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var account = await dbContext
+                    .Users.AsNoTracking()
+                    .SingleAsync(row => row.Id == _accountId, ct);
+
+                Assert.True(account.IsManagingLogin);
+                Assert.Null(account.PersonId);
+            }
+        );
+
     public Expected ToBeDisabled(bool disabled) =>
         _expected.Enqueue(
             async (dbContext, ct) =>

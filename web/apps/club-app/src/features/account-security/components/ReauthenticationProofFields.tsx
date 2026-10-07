@@ -1,16 +1,16 @@
 import { KkButton, KkIcon } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import type { AccountDeletionControl } from '../hooks/use-account-deletion';
-import { AccountDeletionPasswordField } from './AccountDeletionPasswordField';
+import type { ReauthenticationControl } from '../hooks/use-reauthentication';
+import { ReauthenticationPasswordField } from './ReauthenticationPasswordField';
 
 const PASSKEY_PROOF_LABEL = 'Mit Passkey bestätigen';
 
-interface AccountDeletionProofFieldsProps {
-  control: AccountDeletionControl;
+interface ReauthenticationProofFieldsProps {
+  control: ReauthenticationControl;
 }
 
-export const AccountDeletionProofFields: FC<AccountDeletionProofFieldsProps> = ({ control }) => {
+export const ReauthenticationProofFields: FC<ReauthenticationProofFieldsProps> = ({ control }) => {
   const fingerprintIcon = <KkIcon name="fingerprint" size="small" />;
   const passkeyProof = control.offersPasskey ? (
     <KkButton
@@ -27,7 +27,7 @@ export const AccountDeletionProofFields: FC<AccountDeletionProofFieldsProps> = (
 
   return (
     <Stack sx={{ gap: 1, minWidth: 0 }}>
-      <AccountDeletionPasswordField form={control.form} error={control.passwordError} />
+      <ReauthenticationPasswordField form={control.form} error={control.passwordError} />
       {passkeyProof}
     </Stack>
   );

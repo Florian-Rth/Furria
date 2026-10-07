@@ -33,7 +33,7 @@ public sealed class ArchiveVenueTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.POSTAsync<ArchiveVenue, ArchiveVenueRequest>(
             new() { VenueId = ctx.Club.Venues.IdOf("altes-lager") }
         );
@@ -66,7 +66,7 @@ public sealed class ArchiveVenueTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.POSTAsync<ArchiveVenue, ArchiveVenueRequest>(
             new() { VenueId = ctx.Club.Venues.IdOf("altes-lager") }
         );
@@ -94,7 +94,7 @@ public sealed class ArchiveVenueTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.POSTAsync<ArchiveVenue, ArchiveVenueRequest>(
             new() { VenueId = ctx.Club.Venues.IdOf("altes-lager") }
         );
@@ -114,7 +114,7 @@ public sealed class ArchiveVenueTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.POSTAsync<ArchiveVenue, ArchiveVenueRequest>(
             new() { VenueId = UnknownVenueId }
         );

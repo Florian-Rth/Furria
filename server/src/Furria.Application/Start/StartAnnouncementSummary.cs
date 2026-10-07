@@ -12,5 +12,5 @@ public sealed record StartAnnouncementSummary
 
     public required DateOnly? ValidUntil { get; init; }
 
-    public required StartPerson Author { get; init; }
+    public required StartPerson? Author { get; init; }
 }

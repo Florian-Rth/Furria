@@ -146,3 +146,9 @@ A cross-origin (iframe) ceremony is refused. Re-authentication (deleting the acc
 passkey assertion in place of the password; it must assert a passkey of the signed-in account.
 Claim-in (ADR-0019) accepts one in place of the claimed account's password; it must assert a
 passkey of that account.
+
+## Amendment (2026-10-07, L5b slice S1)
+
+The bootstrap admin is no longer seeded once "when no Account exists": it is the **managing
+login**, an account without a person that every start brings in line with the environment and
+recreates when gone ([ADR-0022](0022-the-bootstrap-admin-is-a-personless-managing-login.md)).

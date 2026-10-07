@@ -31,7 +31,7 @@ export const ClubAnnouncementSchema = z.object({
   body: z.string(),
   publishedAt: z.iso.datetime({ offset: true }),
   validUntil: z.iso.date().nullable(),
-  author: ClubPersonSchema,
+  author: ClubPersonSchema.nullable(),
 });
 export type ClubAnnouncement = z.infer<typeof ClubAnnouncementSchema>;
 

@@ -13,4 +13,14 @@ public sealed record StartCandidates
     public required IReadOnlyList<StartMineSummary> Mine { get; init; }
 
     public required IReadOnlyList<StartGroupMoment> GroupMoments { get; init; }
+
+    public static StartCandidates OnlyToDos(IReadOnlyList<ToDoSummary> toDos) =>
+        new()
+        {
+            Entries = [],
+            Announcements = [],
+            ToDos = toDos,
+            Mine = [],
+            GroupMoments = [],
+        };
 }

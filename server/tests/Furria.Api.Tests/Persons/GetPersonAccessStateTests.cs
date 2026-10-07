@@ -37,7 +37,7 @@ public sealed class GetPersonAccessStateTests
                 ),
             ct
         );
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var (response, result) = await ReadStateAsync(manager, ctx.Identity.People.IdOf("anna"));
 
@@ -62,7 +62,7 @@ public sealed class GetPersonAccessStateTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         await InvitationSteps.InviteInPersonAsync(manager, annaId);
 
         var (_, result) = await ReadStateAsync(manager, annaId);
@@ -87,7 +87,7 @@ public sealed class GetPersonAccessStateTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var issued = await InvitationSteps.InviteInPersonAsync(manager, annaId);
         var (_, before) = await ReadStateAsync(manager, annaId);
 
@@ -115,7 +115,7 @@ public sealed class GetPersonAccessStateTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         await InvitationSteps.InviteInPersonAsync(manager, annaId);
 
         AccountAccessState? state = null;
@@ -123,7 +123,7 @@ public sealed class GetPersonAccessStateTests
             TimeSpan.FromMinutes(15),
             async () =>
             {
-                var laterManager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+                var laterManager = await ctx.Identity.ManagingLoginClientAsync(ct);
                 state = (await ReadStateAsync(laterManager, annaId)).Result.State;
             }
         );
@@ -149,7 +149,7 @@ public sealed class GetPersonAccessStateTests
                 ),
             ct
         );
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var (_, result) = await ReadStateAsync(manager, ctx.Identity.People.IdOf("anna"));
 
@@ -173,7 +173,7 @@ public sealed class GetPersonAccessStateTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         await InvitationSteps.InviteInPersonAsync(manager, annaId);
 
         var (response, _) = await ReadStateAsync(manager, annaId);
@@ -204,6 +204,38 @@ public sealed class GetPersonAccessStateTests
                             "Zugangspflege",
                             "ilka",
                             FurriaPermissions.AccountsManage
+                        )
+                    ),
+            ct
+        );
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+
+        var (response, result) = await ReadStateAsync(client, ctx.Identity.People.IdOf("anna"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(AccountAccessState.Active, result.State);
+    }
+
+    [Fact]
+    public async Task Should_ReportTheState_When_TheCallerOnlyHoldsPersonsDelete()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddAccount("anna")
+                            .AddPerson("ilka", "Ilka", "Reineke")
+                            .AddAccount("ilka")
+                    )
+                    .Roles(roles =>
+                        roles.AddRoleWithHolder(
+                            "loeschung",
+                            "ilka-loeschung",
+                            "Löschung",
+                            "ilka",
+                            FurriaPermissions.PersonsDelete
                         )
                     ),
             ct
@@ -257,7 +289,7 @@ public sealed class GetPersonAccessStateTests
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var (response, _) = await ReadStateAsync(manager, UnknownPersonId);
 
@@ -273,7 +305,7 @@ public sealed class GetPersonAccessStateTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (_, before) = await ReadStateAsync(manager, annaId);
 
         var issued = await InvitationSteps.IssueRecoveryAsync(manager, annaId);

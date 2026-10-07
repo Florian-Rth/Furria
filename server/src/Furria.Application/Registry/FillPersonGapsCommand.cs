@@ -16,5 +16,5 @@ public sealed record FillPersonGapsCommand
 
     public required string City { get; init; }
 
-    public required int ActorPersonId { get; init; }
+    public required int? ActorPersonId { get; init; }
 }

@@ -122,7 +122,7 @@ public sealed class GetSessionRecordsTests
     {
         var ctx = await _fixture.BuildAsync(arrange, ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.GETAsync<
             GetSessionRecords,
             GetSessionRecordsResponse

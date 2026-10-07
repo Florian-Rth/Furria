@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isFutureDay, toIsoDay } from './day';
+import { fromIsoDay, isFutureDay, toIsoDay } from './day';
 
 describe('toIsoDay', () => {
   it.each([
@@ -13,6 +13,18 @@ describe('toIsoDay', () => {
   it('reads the local calendar day, not UTC', () => {
     expect(toIsoDay(new Date(2026, 2, 1, 0, 30))).toBe('2026-03-01');
   });
+});
+
+describe('fromIsoDay', () => {
+  it.each([{ isoDay: '2026-03-01' }, { isoDay: '2025-12-31' }, { isoDay: '2026-10-07' }])(
+    'reads $isoDay as that local calendar day at midnight',
+    ({ isoDay }) => {
+      const day = fromIsoDay(isoDay);
+
+      expect(toIsoDay(day)).toBe(isoDay);
+      expect(day.getHours()).toBe(0);
+    },
+  );
 });
 
 describe('isFutureDay', () => {

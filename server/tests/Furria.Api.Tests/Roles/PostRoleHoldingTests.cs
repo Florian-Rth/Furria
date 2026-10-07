@@ -54,7 +54,7 @@ public sealed class PostRoleHoldingTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithFreeRoleAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await AddHolderAsync(
             client,
             ctx.Roles.Roles.IdOf("chronik"),
@@ -72,13 +72,44 @@ public sealed class PostRoleHoldingTests
     }
 
     [Fact]
+    public async Task Should_LiftHerArchive_When_AnArchivedPersonTakesTheRole()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddPerson("paula", "Paula", "Brendel")
+                            .AddArchive("paula", ArchivedIn2021)
+                    )
+                    .Roles(roles => roles.AddRole("kassenpruefung", "Kassenprüfung")),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (response, _) = await AddHolderAsync(
+            client,
+            ctx.Roles.Roles.IdOf("kassenpruefung"),
+            ctx.Identity.People.IdOf("paula"),
+            HeldSince2017
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.Person(ctx.Identity.People.IdOf("paula"))
+            .ToNotBeArchived()
+            .AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_StoreTheRow_When_TheRoleHoldingStartsInTheFuture()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithFreeRoleAsync(ct);
 
         var takesOverTomorrow = _fixture.Today.AddDays(1);
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await AddHolderAsync(
             client,
             ctx.Roles.Roles.IdOf("chronik"),
@@ -99,7 +130,7 @@ public sealed class PostRoleHoldingTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithHandedOverRoleAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await AddHolderAsync(
             client,
             ctx.Roles.Roles.IdOf("chronik"),
@@ -123,7 +154,7 @@ public sealed class PostRoleHoldingTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithHandedOverRoleAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await AddHolderAsync(
             client,
             ctx.Roles.Roles.IdOf("chronik"),
@@ -156,7 +187,7 @@ public sealed class PostRoleHoldingTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await AddHolderAsync(
             client,
             ctx.Roles.Roles.IdOf("chronik"),
@@ -192,7 +223,7 @@ public sealed class PostRoleHoldingTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await AddHolderAsync(
             client,
             ctx.Roles.Roles.IdOf("chronik"),
@@ -215,7 +246,7 @@ public sealed class PostRoleHoldingTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithFreeRoleAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await AddHolderAsync(
             client,
             UnknownRoleId,
@@ -236,7 +267,7 @@ public sealed class PostRoleHoldingTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithFreeRoleAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await AddHolderAsync(
             client,
             ctx.Roles.Roles.IdOf("chronik"),
@@ -254,7 +285,7 @@ public sealed class PostRoleHoldingTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithFreeRoleAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, _) = await AddHolderAsync(
             client,
             ctx.Roles.Roles.IdOf("chronik"),

@@ -32,10 +32,25 @@ public sealed partial class StartService
         _timeProvider = timeProvider;
     }
 
-    public async Task<StartDetails> GetAsync(int accountId, int personId, CancellationToken ct)
+    public async Task<StartDetails> GetAsync(int accountId, int? personId, CancellationToken ct)
     {
         var moment = StartMoment.Of(_timeProvider);
 
+        return personId is { } viewerPersonId
+            ? await PersonsStartAsync(accountId, viewerPersonId, moment, ct)
+            : StartComposer.Compose(
+                StartCandidates.OnlyToDos(await _toDoService.ForAsync(accountId, ct)),
+                moment
+            );
+    }
+
+    private async Task<StartDetails> PersonsStartAsync(
+        int accountId,
+        int personId,
+        StartMoment moment,
+        CancellationToken ct
+    )
+    {
         if (!await IsActiveInClubAsync(personId, moment.Today, ct))
             return StartComposer.Inactive(moment);
 

@@ -47,7 +47,7 @@ public sealed class PutSessionRecordTests
         );
         var sessionId = ctx.Club.Sessions.IdOf("laufende");
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await EditAsync(client, sessionId, 2026, 53, Motto, null);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -69,7 +69,7 @@ public sealed class PutSessionRecordTests
         );
         var sessionId = ctx.Club.Sessions.IdOf("laufende");
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await EditAsync(client, sessionId, 2026, 53, null, null);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -86,7 +86,7 @@ public sealed class PutSessionRecordTests
         );
         var sessionId = ctx.Club.Sessions.IdOf("laufende");
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await EditAsync(client, sessionId, 2026, null, null, LogoCarryingAScript);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -103,7 +103,7 @@ public sealed class PutSessionRecordTests
         );
         var sessionId = ctx.Club.Sessions.IdOf("laufende");
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await EditAsync(client, sessionId, 2026, 53, WrongMotto, TornArtwork);
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
@@ -128,7 +128,7 @@ public sealed class PutSessionRecordTests
         );
         var sessionId = ctx.Club.Sessions.IdOf("laufende");
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await EditAsync(client, sessionId, 2025, null, null, null);
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -143,7 +143,7 @@ public sealed class PutSessionRecordTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await EditAsync(client, UnknownSessionId, 2026, null, Motto, null);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);

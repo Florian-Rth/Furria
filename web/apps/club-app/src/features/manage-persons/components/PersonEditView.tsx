@@ -8,6 +8,8 @@ import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { useRefreshPerson } from '../api';
 import type { PersonDetails } from '../schemas';
 import { PersonAccessView } from './PersonAccessView';
+import { PersonArchiveFoot } from './PersonArchiveFoot';
+import { PersonDeletionLine } from './PersonDeletionLine';
 import { PersonFeeReductionsPanel } from './PersonFeeReductionsPanel';
 import { PersonGroupsPanel } from './PersonGroupsPanel';
 import { PersonMasterDataPanel } from './PersonMasterDataPanel';
@@ -23,8 +25,12 @@ export const PersonEditView: FC<PersonEditViewProps> = ({ person }) => {
   const refreshPerson = useRefreshPerson(person.personId);
   const { has } = usePermissions();
 
+  const deletionLine = has(PERMISSION_KEYS.personsDelete) ? (
+    <PersonDeletionLine person={person} />
+  ) : null;
+
   if (!has(PERMISSION_KEYS.personsManage)) {
-    return <PersonAccessView person={person} />;
+    return <PersonAccessView person={person} deletionLine={deletionLine} />;
   }
 
   return (
@@ -41,6 +47,8 @@ export const PersonEditView: FC<PersonEditViewProps> = ({ person }) => {
           <AccessPanel subject={person} highlightedKey={highlightedKey} onChanged={refreshPerson} />
           <PersonGroupsPanel groups={person.groups} firstName={person.firstName} />
           <PersonRolesPanel roles={person.roles} firstName={person.firstName} />
+          <PersonArchiveFoot person={person} />
+          {deletionLine}
         </KkPanelStack>
       </Grid>
     </Grid>

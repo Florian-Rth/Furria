@@ -30,7 +30,7 @@ public sealed class GroupMembershipConfiguration : IEntityTypeConfiguration<Grou
             .WithMany(person => person.GroupMemberships)
             .HasForeignKey(membership => membership.PersonId)
             .HasConstraintName("fk_group_membership_person_person_id")
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasIndex(membership => new { membership.GroupId, membership.PersonId });
         builder.HasIndex(membership => membership.PersonId);

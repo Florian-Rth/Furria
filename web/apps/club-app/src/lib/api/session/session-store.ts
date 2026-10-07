@@ -16,7 +16,9 @@ import { createLocalStorageSessionStoragePort } from './session-storage-port';
 
 export type SessionStatus = 'anonymous' | 'restoring' | 'unavailable' | 'authenticated';
 
-export type SessionFarewell = 'account-deleted';
+export const SESSION_FAREWELLS = ['account-deleted', 'person-erased'] as const;
+
+export type SessionFarewell = (typeof SESSION_FAREWELLS)[number];
 
 export interface SessionSnapshot {
   readonly status: SessionStatus;

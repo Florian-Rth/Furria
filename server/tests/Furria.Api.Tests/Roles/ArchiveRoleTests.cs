@@ -40,7 +40,7 @@ public sealed class ArchiveRoleTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await ArchiveRoleAsync(client, ctx.Roles.Roles.IdOf("chronik"));
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -66,7 +66,7 @@ public sealed class ArchiveRoleTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await ArchiveRoleAsync(client, ctx.Roles.Roles.IdOf("chronik"));
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -102,7 +102,7 @@ public sealed class ArchiveRoleTests
         var (granted, _) = await ilka.GETAsync<GetRoles, GetRolesResponse>();
         Assert.Equal(HttpStatusCode.OK, granted.StatusCode);
 
-        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
         var archived = await ArchiveRoleAsync(admin, ctx.Roles.Roles.IdOf("rollenpflege"));
         Assert.Equal(HttpStatusCode.NoContent, archived.StatusCode);
 
@@ -127,7 +127,7 @@ public sealed class ArchiveRoleTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await ArchiveRoleAsync(client, ctx.Roles.Roles.IdOf("chronik"));
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -145,7 +145,7 @@ public sealed class ArchiveRoleTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await ArchiveRoleAsync(client, UnknownRoleId);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -157,7 +157,7 @@ public sealed class ArchiveRoleTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await ArchiveRoleAsync(client, 0);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);

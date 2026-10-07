@@ -100,7 +100,7 @@ public sealed class PutMyContactVisibilityTests
         var (response, me) = await client.GETAsync<GetMe, GetMeResponse>();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.True(me.Person.ContactVisibleToMembers);
+        Assert.True(me.Person?.ContactVisibleToMembers);
     }
 
     [Fact]

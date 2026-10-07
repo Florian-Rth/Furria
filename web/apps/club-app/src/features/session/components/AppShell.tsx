@@ -2,7 +2,7 @@ import type { KkNoticeLabels } from '@furria/ui';
 import { KkNoticeProvider, KkSheetProvider, KkShell } from '@furria/ui';
 import { Link } from '@tanstack/react-router';
 import type { FC, PropsWithChildren } from 'react';
-import { APP_DESTINATIONS } from '../app-sections';
+import { useAppDestinations } from '../hooks/use-app-destinations';
 import { useOriginReturn } from '../hooks/use-origin-return';
 import { useScreenTrail } from '../hooks/use-screen-trail';
 import { useSheetManager } from '../hooks/use-sheet-manager';
@@ -25,6 +25,7 @@ export const AppShell: FC<PropsWithChildren> = ({ children }) => {
   const sheets = useSheetManager();
   const returnToOrigin = useOriginReturn();
   const systemNotice = useSystemNotice();
+  const destinations = useAppDestinations();
 
   return (
     <KkNoticeProvider labels={NOTICE_LABELS} systemNotice={systemNotice}>
@@ -36,7 +37,7 @@ export const AppShell: FC<PropsWithChildren> = ({ children }) => {
         <KkShell
           link={Link}
           goBackTo={returnToOrigin}
-          destinations={APP_DESTINATIONS}
+          destinations={destinations}
           path={journey.path}
           move={journey.move}
         >

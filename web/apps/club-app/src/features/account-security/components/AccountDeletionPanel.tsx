@@ -1,7 +1,8 @@
 import { KkConfirmDialog, KkWriteScreen } from '@furria/ui';
 import type { FC } from 'react';
-import { useAccountDeletion } from '../hooks/use-account-deletion';
-import { AccountDeletionProofFields } from './AccountDeletionProofFields';
+import { useAccountDeletionMutation } from '../api';
+import { useReauthentication } from '../hooks/use-reauthentication';
+import { ReauthenticationProofFields } from './ReauthenticationProofFields';
 
 const DELETE_LABEL = 'Account löschen';
 const EYEBROW = 'Account löschen';
@@ -20,8 +21,9 @@ interface AccountDeletionPanelProps {
 }
 
 export const AccountDeletionPanel: FC<AccountDeletionPanelProps> = ({ hasPasskeys }) => {
-  const control = useAccountDeletion(hasPasskeys);
-  const proofFields = <AccountDeletionProofFields control={control} />;
+  const mutation = useAccountDeletionMutation();
+  const control = useReauthentication(hasPasskeys, mutation);
+  const proofFields = <ReauthenticationProofFields control={control} />;
   const explanation = control.offersPasskey ? EXPLANATION_BY_EITHER : EXPLANATION_BY_PASSWORD;
 
   return (

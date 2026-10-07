@@ -39,7 +39,7 @@ public sealed class PutGroupTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutGroup, PutGroupRequest>(
             new()
             {
@@ -70,7 +70,7 @@ public sealed class PutGroupTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutGroup, PutGroupRequest>(
             new()
             {
@@ -101,7 +101,7 @@ public sealed class PutGroupTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutGroup, PutGroupRequest>(
             new()
             {
@@ -140,7 +140,7 @@ public sealed class PutGroupTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutGroup, PutGroupRequest>(
             new()
             {
@@ -177,7 +177,7 @@ public sealed class PutGroupTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutGroup, PutGroupRequest>(
             new()
             {
@@ -205,7 +205,7 @@ public sealed class PutGroupTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutGroup, PutGroupRequest>(
             new()
             {
@@ -228,7 +228,7 @@ public sealed class PutGroupTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutGroup, PutGroupRequest>(
             new()
             {
@@ -323,7 +323,7 @@ public sealed class PutGroupTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutGroup, PutGroupRequest>(
             new()
             {
@@ -362,7 +362,7 @@ public sealed class PutGroupTests
         );
         var tanzgarde = ctx.Groups.Groups.IdOf("tanzgarde");
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PutAsync(
             $"{GroupsRoute}/{tanzgarde}",
             new StringContent(BodyWithoutGroupKind, Encoding.UTF8, MediaTypeNames.Application.Json),

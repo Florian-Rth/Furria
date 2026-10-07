@@ -35,7 +35,7 @@ public sealed class PutClubAccessTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutClubAccess, PutClubAccessRequest>(
             new() { AgeOfConsent = 18 }
         );
@@ -59,7 +59,7 @@ public sealed class PutClubAccessTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutClubAccess, PutClubAccessRequest>(
             new() { AgeOfConsent = ageOfConsent }
         );
@@ -76,7 +76,7 @@ public sealed class PutClubAccessTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutClubAccess, PutClubAccessRequest>(
             new() { AgeOfConsent = ageOfConsent }
         );

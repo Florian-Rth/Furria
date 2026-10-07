@@ -99,6 +99,23 @@ public sealed class GetGroupCalendarTests
     }
 
     [Fact]
+    public async Task Should_CarryTheCalendar_When_TheManagingLoginReadsIt()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildCalendarAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+
+        var (response, result) = await client.GETAsync<
+            GetGroupCalendar,
+            GetGroupCalendarRequest,
+            GetGroupCalendarResponse
+        >(Window(ctx.Groups.Groups.IdOf("tanzgarde")));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains(GalaSession, TitlesOf(result));
+    }
+
+    [Fact]
     public async Task Should_ListAGroupOnlyEntry_When_TheViewerIsInAParticipatingGroup()
     {
         var ct = TestContext.Current.CancellationToken;

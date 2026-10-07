@@ -13,17 +13,19 @@ import {
   WITHDRAW_EYEBROW,
 } from '../announcements-labels';
 import type { AnnouncementWithdrawal } from '../hooks/use-announcement-withdrawal';
-import type { Announcement } from '../schemas';
+import type { Announcement, AnnouncementAuthor } from '../schemas';
 
 const AUTHOR_FACT_LABEL = 'Autor';
 const PUBLISHED_FACT_LABEL = 'Ausgehängt';
 
+const toAuthorFacts = (author: AnnouncementAuthor | null): KkConfirmFact[] =>
+  author === null
+    ? []
+    : [{ label: AUTHOR_FACT_LABEL, value: `${author.firstName} ${author.lastName}` }];
+
 const toFacts = (announcement: Announcement): KkConfirmFact[] => [
   { label: ANNOUNCEMENT_TITLE_FIELD_LABEL, value: announcement.title },
-  {
-    label: AUTHOR_FACT_LABEL,
-    value: `${announcement.author.firstName} ${announcement.author.lastName}`,
-  },
+  ...toAuthorFacts(announcement.author),
   { label: PUBLISHED_FACT_LABEL, value: formatPublishedDay(announcement.publishedAt) },
 ];
 

@@ -37,7 +37,7 @@ public sealed class GetGroupCalendar : Endpoint<GetGroupCalendarRequest, GetGrou
     {
         var accountId = User.AccountId();
         var personId = User.PersonId();
-        if (accountId is null || personId is null)
+        if (accountId is null)
         {
             await Send.UnauthorizedAsync(ct);
             return;
@@ -59,7 +59,7 @@ public sealed class GetGroupCalendar : Endpoint<GetGroupCalendarRequest, GetGrou
         );
 
         var entries = await _calendarService.GetGroupEntriesAsync(
-            personId.Value,
+            personId,
             req.GroupId,
             from,
             to,

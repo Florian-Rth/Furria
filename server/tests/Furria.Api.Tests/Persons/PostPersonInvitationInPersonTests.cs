@@ -43,7 +43,7 @@ public sealed class PostPersonInvitationInPersonTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var issued = await InvitationSteps.InviteInPersonAsync(manager, annaId);
 
@@ -74,7 +74,7 @@ public sealed class PostPersonInvitationInPersonTests
                 ),
             ct
         );
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var issued = await InvitationSteps.InviteInPersonAsync(
             manager,
             ctx.Identity.People.IdOf("anna")
@@ -104,7 +104,7 @@ public sealed class PostPersonInvitationInPersonTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var mailedToken = await InvitationSteps.InviteAndReadTokenAsync(
             _fixture,
             manager,
@@ -147,7 +147,7 @@ public sealed class PostPersonInvitationInPersonTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var first = await InvitationSteps.InviteInPersonAsync(manager, annaId);
         var second = await InvitationSteps.InviteInPersonAsync(manager, annaId);
@@ -178,7 +178,7 @@ public sealed class PostPersonInvitationInPersonTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
         var issued = await InvitationSteps.InviteInPersonAsync(manager, annaId);
         var token = InvitationSteps.TokenOf(issued.Link);
         var bareCode = issued.Code.Replace("-", "", StringComparison.Ordinal);
@@ -314,7 +314,7 @@ public sealed class PostPersonInvitationInPersonTests
             ct
         );
         var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var issued = await InvitationSteps.InviteInPersonAsync(manager, annaId);
 
@@ -415,7 +415,7 @@ public sealed class PostPersonInvitationInPersonTests
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var (response, _) = await PostAsync(manager, UnknownPersonId);
 
@@ -440,7 +440,7 @@ public sealed class PostPersonInvitationInPersonTests
     )
     {
         var personId = ctx.Identity.People.IdOf(alias);
-        var manager = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var (response, _) = await PostAsync(manager, personId);
 

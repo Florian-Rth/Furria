@@ -63,7 +63,7 @@ export const useGroupAdminEditor = ({
   const today = toIsoDay(new Date());
   const isEditing = admin !== null;
   const me = useMeQuery();
-  const isSelf = admin !== null && admin.personId === me.data?.person.id;
+  const isSelf = admin !== null && admin.personId === me.data?.person?.id;
   const [rejection, setRejection] = useState<string | null>(null);
 
   const addMutation = useAddGroupAdminMutation(groupId);

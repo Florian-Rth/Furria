@@ -202,7 +202,13 @@ public sealed class GetMembersTests
         var ctx = await _fixture.BuildAsync(
             builder =>
                 builder
-                    .Identity(identity => identity.AddPerson("ilka", "Ilka", "Reineke"))
+                    .Identity(identity =>
+                        identity
+                            .AddPerson("ilka", "Ilka", "Reineke")
+                            .AddPerson("anna", "Anna", "Muster")
+                            .AddAccount("anna")
+                            .AddMembership("anna-membership", "anna")
+                    )
                     .Roles(roles =>
                         roles.AddRoleWithHolder(
                             "gruppenpflege",
@@ -215,7 +221,7 @@ public sealed class GetMembersTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ClientForAsync("anna", ct);
         var (response, result) = await client.GETAsync<GetMembers, GetMembersResponse>();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -226,10 +232,6 @@ public sealed class GetMembersTests
         var groupCare = Assert.Single(ilka.Roles);
         Assert.Equal(ctx.Roles.Roles.IdOf("gruppenpflege"), groupCare.RoleId);
         Assert.Equal("Gruppenpflege", groupCare.Name);
-        Assert.Contains(
-            result.Members,
-            member => member.PersonId == ctx.Identity.BootstrapAdmin.PersonId
-        );
     }
 
     [Fact]

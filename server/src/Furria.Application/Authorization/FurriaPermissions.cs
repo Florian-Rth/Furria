@@ -4,6 +4,7 @@ public static class FurriaPermissions
 {
     public const string PersonsReadDetails = "persons.read_details";
     public const string PersonsManage = "persons.manage";
+    public const string PersonsDelete = "persons.delete";
     public const string GroupsManage = "groups.manage";
     public const string RolesManage = "roles.manage";
     public const string AnnouncementsPost = "announcements.post";
@@ -19,6 +20,7 @@ public static class FurriaPermissions
     [
         PersonsReadDetails,
         PersonsManage,
+        PersonsDelete,
         GroupsManage,
         RolesManage,
         AnnouncementsPost,

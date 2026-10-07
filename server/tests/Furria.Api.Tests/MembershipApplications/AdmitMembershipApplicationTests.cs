@@ -35,7 +35,7 @@ public sealed class AdmitMembershipApplicationTests
                 ),
             ct
         );
-        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
         var applicationId = ctx.Identity.MembershipApplications.IdOf("mia");
 
         var (response, admission) = await AdmitAsync(
@@ -61,6 +61,42 @@ public sealed class AdmitMembershipApplicationTests
     }
 
     [Fact]
+    public async Task Should_LiftHerArchive_When_SheIsAdmittedOnAnArchivedFormerMember()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var email = InvitationSteps.UniqueContactEmail("mia");
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddPerson("mia-registry", "Mia", "Schwarzwälder")
+                        .AddPersonContact("mia-registry", email: email)
+                        .AddMembership(
+                            "mia-before",
+                            "mia-registry",
+                            _fixture.Today.AddYears(-8),
+                            _fixture.Today.AddYears(-3)
+                        )
+                        .AddArchive("mia-registry", _fixture.Today.AddYears(-2))
+                        .AddMembershipApplication("mia", _fixture.Today.AddYears(-30), email: email)
+                ),
+            ct
+        );
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var personId = ctx.Identity.People.IdOf("mia-registry");
+
+        var (response, _) = await AdmitAsync(
+            admin,
+            ctx.Identity.MembershipApplications.IdOf("mia"),
+            personId,
+            _fixture.Today.AddMonths(1)
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx.Expected.Person(personId).ToNotBeArchived().AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_RecordWhoAdmittedHerAndWhen_When_SheIsAdmitted()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -71,7 +107,7 @@ public sealed class AdmitMembershipApplicationTests
                 ),
             ct
         );
-        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var (_, admission) = await AdmitAsync(
             admin,
@@ -83,7 +119,7 @@ public sealed class AdmitMembershipApplicationTests
         await ctx
             .Expected.Membership(admission.MembershipId)
             .ToRecordAdmission(
-                ctx.Identity.BootstrapAdmin.PersonId,
+                null,
                 _fixture.TimeProvider.GetUtcNow(),
                 guardianConsentConfirmed: false
             )
@@ -106,7 +142,7 @@ public sealed class AdmitMembershipApplicationTests
                 ),
             ct
         );
-        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var (_, admission) = await AdmitAsync(
             admin,
@@ -118,11 +154,7 @@ public sealed class AdmitMembershipApplicationTests
         Assert.Equal(AdmissionInvitation.Sent, admission.Invitation);
         await ctx
             .Expected.LiveInvitationOfPerson(admission.PersonId)
-            .ToBeIssuedAs(
-                InvitationChannel.Mail,
-                isReminder: false,
-                ctx.Identity.BootstrapAdmin.PersonId
-            )
+            .ToBeIssuedAs(InvitationChannel.Mail, isReminder: false, issuedByPersonId: null)
             .AssertAsync(ct);
         var mail = await _fixture.Mailbox.SingleMailToAsync(email, ct);
         Assert.False(string.IsNullOrEmpty(mail.LinkToken()));
@@ -139,7 +171,7 @@ public sealed class AdmitMembershipApplicationTests
                 ),
             ct
         );
-        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
         var startsOn = _fixture.Today.AddDays(40);
 
         var (response, admission) = await AdmitAsync(
@@ -175,7 +207,7 @@ public sealed class AdmitMembershipApplicationTests
                 ),
             ct
         );
-        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
         var applicationId = ctx.Identity.MembershipApplications.IdOf("mia");
 
         var (response, _) = await AdmitAsync(
@@ -200,7 +232,7 @@ public sealed class AdmitMembershipApplicationTests
                 ),
             ct
         );
-        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
         var applicationId = ctx.Identity.MembershipApplications.IdOf("mia");
 
         var (response, _) = await AdmitAsync(admin, applicationId, personId: null, _fixture.Today);
@@ -220,7 +252,7 @@ public sealed class AdmitMembershipApplicationTests
                 ),
             ct
         );
-        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var (response, admission) = await AdmitAsync(
             admin,
@@ -234,7 +266,7 @@ public sealed class AdmitMembershipApplicationTests
         await ctx
             .Expected.Membership(admission.MembershipId)
             .ToRecordAdmission(
-                ctx.Identity.BootstrapAdmin.PersonId,
+                null,
                 _fixture.TimeProvider.GetUtcNow(),
                 guardianConsentConfirmed: true
             )
@@ -255,7 +287,7 @@ public sealed class AdmitMembershipApplicationTests
                 ),
             ct
         );
-        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var (response, admission) = await AdmitAsync(
             admin,
@@ -269,7 +301,7 @@ public sealed class AdmitMembershipApplicationTests
         await ctx
             .Expected.Membership(admission.MembershipId)
             .ToRecordAdmission(
-                ctx.Identity.BootstrapAdmin.PersonId,
+                null,
                 _fixture.TimeProvider.GetUtcNow(),
                 guardianConsentConfirmed: false
             )
@@ -298,7 +330,7 @@ public sealed class AdmitMembershipApplicationTests
                 ),
             ct
         );
-        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
         var personId = ctx.Identity.People.IdOf("mia-registry");
 
         var (response, admission) = await AdmitAsync(
@@ -318,10 +350,7 @@ public sealed class AdmitMembershipApplicationTests
             .Person(personId)
             .ToHaveContactDetails(email, "0221 987654", "Rosenweg 12a", "50667", "Köln")
             .Person(personId)
-            .ToHaveContactChangedBy(
-                ctx.Identity.BootstrapAdmin.PersonId,
-                _fixture.TimeProvider.GetUtcNow()
-            )
+            .ToHaveContactChangedBy(null, _fixture.TimeProvider.GetUtcNow())
             .Membership(ctx.Identity.Memberships.IdOf("mia-before"))
             .ToHavePeriod(_fixture.Today.AddYears(-8), _fixture.Today.AddYears(-3))
             .Membership(admission.MembershipId)
@@ -351,7 +380,7 @@ public sealed class AdmitMembershipApplicationTests
                 ),
             ct
         );
-        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
         var personId = ctx.Identity.People.IdOf("mia-registry");
 
         var (response, _) = await AdmitAsync(
@@ -385,7 +414,7 @@ public sealed class AdmitMembershipApplicationTests
                 ),
             ct
         );
-        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
         var applicationId = ctx.Identity.MembershipApplications.IdOf("mia");
         var personId = ctx.Identity.People.IdOf("mia-registry");
 
@@ -415,7 +444,7 @@ public sealed class AdmitMembershipApplicationTests
                 ),
             ct
         );
-        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
         var applicationId = ctx.Identity.MembershipApplications.IdOf("mia");
         var personId = ctx.Identity.People.IdOf("lena");
 
@@ -445,7 +474,7 @@ public sealed class AdmitMembershipApplicationTests
                 ),
             ct
         );
-        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
         var personId = ctx.Identity.People.IdOf("mia-registry");
 
         var (response, admission) = await AdmitAsync(
@@ -474,7 +503,7 @@ public sealed class AdmitMembershipApplicationTests
                 ),
             ct
         );
-        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
         var personId = ctx.Identity.People.IdOf("mia-registry");
 
         var (response, admission) = await AdmitAsync(
@@ -519,7 +548,7 @@ public sealed class AdmitMembershipApplicationTests
                     ),
             ct
         );
-        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var (_, admission) = await AdmitAsync(
             admin,
@@ -547,7 +576,7 @@ public sealed class AdmitMembershipApplicationTests
                 ),
             ct
         );
-        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
         var applicationId = ctx.Identity.MembershipApplications.IdOf("mia");
 
         var (response, _) = await AdmitAsync(admin, applicationId, personId: null, _fixture.Today);
@@ -561,7 +590,7 @@ public sealed class AdmitMembershipApplicationTests
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
-        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var (response, _) = await AdmitAsync(
             admin,

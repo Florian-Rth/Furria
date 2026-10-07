@@ -81,7 +81,7 @@ public sealed class PersonExpectations
             }
         );
 
-    public Expected ToHaveContactChangedBy(int personId, DateTimeOffset changedAt) =>
+    public Expected ToHaveContactChangedBy(int? personId, DateTimeOffset changedAt) =>
         _expected.Enqueue(
             async (dbContext, ct) =>
             {
@@ -98,6 +98,26 @@ public sealed class PersonExpectations
                 var person = await SingleAsync(dbContext, ct);
                 Assert.Null(person.ContactChangedByPersonId);
                 Assert.Null(person.ContactChangedAt);
+            }
+        );
+
+    public Expected ToBeArchived(DateOnly archivedOn, int? archivedByPersonId) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var person = await SingleAsync(dbContext, ct);
+                Assert.Equal(archivedOn, person.ArchivedOn);
+                Assert.Equal(archivedByPersonId, person.ArchivedByPersonId);
+            }
+        );
+
+    public Expected ToNotBeArchived() =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var person = await SingleAsync(dbContext, ct);
+                Assert.Null(person.ArchivedOn);
+                Assert.Null(person.ArchivedByPersonId);
             }
         );
 

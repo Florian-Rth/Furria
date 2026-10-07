@@ -9,7 +9,7 @@ import type { AnnouncementAuthor } from '../schemas';
 const PORTRAIT_SPACING = 9;
 
 interface AnnouncementAuthorLineProps {
-  author: AnnouncementAuthor;
+  author: AnnouncementAuthor | null;
   publishedAt: string;
   children?: ReactNode;
 }
@@ -19,6 +19,17 @@ export const AnnouncementAuthorLine: FC<AnnouncementAuthorLineProps> = ({
   publishedAt,
   children,
 }) => {
+  const publishedLine = <KkMeta>{formatPublishedDay(publishedAt)}</KkMeta>;
+
+  if (author === null) {
+    return (
+      <Stack sx={{ gap: 0.25, minWidth: 0 }}>
+        {publishedLine}
+        {children}
+      </Stack>
+    );
+  }
+
   const authorName = `${author.firstName} ${author.lastName}`;
   const initials = toInitials(author.firstName, author.lastName);
   const officeLine =
@@ -37,7 +48,7 @@ export const AnnouncementAuthorLine: FC<AnnouncementAuthorLineProps> = ({
       <Stack sx={{ gap: 0.25, minWidth: 0 }}>
         <KkText variant="subtitle2">{authorName}</KkText>
         {officeLine}
-        <KkMeta>{formatPublishedDay(publishedAt)}</KkMeta>
+        {publishedLine}
         {children}
       </Stack>
     </Stack>

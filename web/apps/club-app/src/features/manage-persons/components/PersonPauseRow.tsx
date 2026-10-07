@@ -12,15 +12,24 @@ const PAUSE_ROUTE = '/manage/persons/$personId/pauses/$pauseId';
 interface PersonPauseRowProps {
   personId: number;
   pause: PersonPause;
-  highlight?: boolean;
+  linked: boolean;
+  highlight: boolean;
 }
 
-export const PersonPauseRow: FC<PersonPauseRowProps> = ({ personId, pause, highlight = false }) => {
+export const PersonPauseRow: FC<PersonPauseRowProps> = ({ personId, pause, linked, highlight }) => {
   const periodChip = toSessionPeriodChip(
     pause.firstSessionYear,
     pause.lastSessionYear,
     currentSessionYear(),
   );
+
+  const linkProps = linked
+    ? {
+        component: Link,
+        to: PAUSE_ROUTE,
+        params: { personId: String(personId), pauseId: String(pause.pauseId) },
+      }
+    : {};
 
   const chip =
     periodChip === null ? undefined : (
@@ -38,9 +47,7 @@ export const PersonPauseRow: FC<PersonPauseRowProps> = ({ personId, pause, highl
       tone="gold"
       highlight={highlight}
       landing={toLandingKey('pause', pause.pauseId)}
-      component={Link}
-      to={PAUSE_ROUTE}
-      params={{ personId: String(personId), pauseId: String(pause.pauseId) }}
+      {...linkProps}
     />
   );
 };

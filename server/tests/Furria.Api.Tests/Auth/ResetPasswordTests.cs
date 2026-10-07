@@ -155,6 +155,44 @@ public sealed class ResetPasswordTests
     }
 
     [Fact]
+    public async Task Should_RefuseNeutrally_When_TheAccountBecameTheManagingLogin()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => identity.AddAccount("alice")),
+            ct
+        );
+        var aliceEmail = ctx.Identity.EmailOf("alice");
+        var reset = await SignedOutMailSteps.RequestResetAndReadItAsync(_fixture, aliceEmail, ct);
+        await _fixture.DeleteAccountDirectlyAsync(_fixture.ManagingLogin.AccountId, ct);
+        await _fixture.RunManagingLoginSeederAsync(
+            new ManagingLoginOptions
+            {
+                Email = aliceEmail,
+                Password = ApiTestFixture.SeededAccountPassword,
+            },
+            ct
+        );
+
+        var response = await SignedOutMailSteps.ResetPasswordAsync(_fixture.CreateClient(), reset);
+        var unknown = await SignedOutMailSteps.ResetPasswordAsync(
+            _fixture.CreateClient(),
+            SignedOutMailSteps.UnknownReset()
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(await RefusalOnAsync(unknown, ct), await RefusalOnAsync(response, ct));
+        Assert.Equal(
+            HttpStatusCode.OK,
+            await AccountSecuritySteps.LogInStatusAsync(
+                _fixture,
+                aliceEmail,
+                ApiTestFixture.SeededAccountPassword
+            )
+        );
+    }
+
+    [Fact]
     public async Task Should_RefuseNeutrally_When_TheResetLinkIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;

@@ -5,11 +5,11 @@ import type { FC } from 'react';
 const FILTER_LABEL = 'Nach Mitgliedschaft filtern';
 
 interface PersonsToolbarProps {
-  state: string;
+  filter: string;
   options: readonly KkFilterOption[];
-  onStateChange: (id: string) => void;
+  onFilterChange: (id: string) => void;
 }
 
-export const PersonsToolbar: FC<PersonsToolbarProps> = ({ state, options, onStateChange }) => (
-  <KkFilterChips label={FILTER_LABEL} options={options} value={state} onChange={onStateChange} />
+export const PersonsToolbar: FC<PersonsToolbarProps> = ({ filter, options, onFilterChange }) => (
+  <KkFilterChips label={FILTER_LABEL} options={options} value={filter} onChange={onFilterChange} />
 );

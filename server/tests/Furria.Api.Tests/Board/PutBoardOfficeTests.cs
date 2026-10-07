@@ -48,7 +48,7 @@ public sealed class PutBoardOfficeTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithBandAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await RenameOfficeAsync(
             client,
             ctx.Club.BoardOffices.IdOf("praesident"),
@@ -71,7 +71,7 @@ public sealed class PutBoardOfficeTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithBandAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await RenameOfficeAsync(
             client,
             ctx.Club.BoardOffices.IdOf("kassenwart"),
@@ -101,7 +101,7 @@ public sealed class PutBoardOfficeTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await RenameOfficeAsync(
             client,
             ctx.Club.BoardOffices.IdOf("praesident"),
@@ -124,7 +124,7 @@ public sealed class PutBoardOfficeTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithBandAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await RenameOfficeAsync(
             client,
             ctx.Club.BoardOffices.IdOf("kassenwart"),
@@ -151,7 +151,7 @@ public sealed class PutBoardOfficeTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await RenameOfficeAsync(
             client,
             ctx.Club.BoardOffices.IdOf("pressewart"),
@@ -174,7 +174,7 @@ public sealed class PutBoardOfficeTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithBandAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await RenameOfficeAsync(client, UnknownBoardOfficeId, "Präsidentin", 1);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -186,7 +186,7 @@ public sealed class PutBoardOfficeTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithBandAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await RenameOfficeAsync(client, 0, "Präsidentin", 1);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);

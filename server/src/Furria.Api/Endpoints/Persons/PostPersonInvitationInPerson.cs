@@ -35,7 +35,7 @@ public sealed class PostPersonInvitationInPerson
         CancellationToken ct
     )
     {
-        if (User.PersonId() is not { } issuerPersonId || User.AccountId() is not { } accountId)
+        if (User.AccountId() is not { } accountId)
         {
             await Send.UnauthorizedAsync(ct);
             return;
@@ -43,7 +43,7 @@ public sealed class PostPersonInvitationInPerson
 
         var issuer = new InvitationIssuer
         {
-            PersonId = issuerPersonId,
+            PersonId = User.PersonId(),
             VouchesForAge = await _authorizer.IsGrantedAsync(
                 accountId,
                 FurriaPermissions.AccountsManage,

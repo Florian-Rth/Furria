@@ -30,7 +30,7 @@ public sealed class PostCalendarEntry
     {
         var accountId = User.AccountId();
         var personId = User.PersonId();
-        if (accountId is null || personId is null)
+        if (accountId is null)
         {
             await Send.UnauthorizedAsync(ct);
             return;
@@ -42,7 +42,7 @@ public sealed class PostCalendarEntry
             return;
         }
 
-        var result = await _calendarService.CreateAsync(ToCommand(req, personId.Value), ct);
+        var result = await _calendarService.CreateAsync(ToCommand(req, personId), ct);
         if (!result.IsSuccess)
         {
             await HttpContext.Response.SendFailureAsync(result.Error, ct);
@@ -54,7 +54,7 @@ public sealed class PostCalendarEntry
 
     private static CreateCalendarEntryCommand ToCommand(
         PostCalendarEntryRequest req,
-        int viewerPersonId
+        int? viewerPersonId
     ) =>
         new()
         {

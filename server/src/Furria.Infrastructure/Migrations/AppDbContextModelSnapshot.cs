@@ -31,7 +31,7 @@ namespace Furria.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AuthorPersonId")
+                    b.Property<int?>("AuthorPersonId")
                         .HasColumnType("integer")
                         .HasColumnName("author_person_id");
 
@@ -1209,6 +1209,14 @@ namespace Furria.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("ArchivedByPersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("archived_by_person_id");
+
+                    b.Property<DateOnly?>("ArchivedOn")
+                        .HasColumnType("date")
+                        .HasColumnName("archived_on");
+
                     b.Property<DateOnly?>("BirthDate")
                         .HasColumnType("date")
                         .HasColumnName("birth_date");
@@ -1285,6 +1293,9 @@ namespace Furria.Infrastructure.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_person");
+
+                    b.HasIndex("ArchivedByPersonId")
+                        .HasDatabaseName("ix_person_archived_by_person_id");
 
                     b.HasIndex("ContactChangedByPersonId")
                         .HasDatabaseName("ix_person_contact_changed_by_person_id");
@@ -1560,6 +1571,12 @@ namespace Furria.Infrastructure.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("is_disabled");
 
+                    b.Property<bool>("IsManagingLogin")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_managing_login");
+
                     b.Property<DateTimeOffset?>("LastSeenAnnouncementAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_seen_announcement_at");
@@ -1586,7 +1603,7 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("password_hash");
 
-                    b.Property<int>("PersonId")
+                    b.Property<int?>("PersonId")
                         .HasColumnType("integer")
                         .HasColumnName("person_id");
 
@@ -1615,6 +1632,11 @@ namespace Furria.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_account");
 
+                    b.HasIndex("IsManagingLogin")
+                        .IsUnique()
+                        .HasDatabaseName("ix_account_managing_login")
+                        .HasFilter("is_managing_login");
+
                     b.HasIndex("NormalizedEmail")
                         .IsUnique()
                         .HasDatabaseName("ix_account_normalized_email");
@@ -1627,7 +1649,10 @@ namespace Furria.Infrastructure.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_account_person_id");
 
-                    b.ToTable("account", (string)null);
+                    b.ToTable("account", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_account_person_unless_managing_login", "(person_id IS NULL) = is_managing_login");
+                        });
                 });
 
             modelBuilder.Entity("Furria.Infrastructure.Identity.AccountEvent", b =>
@@ -2138,8 +2163,7 @@ namespace Furria.Infrastructure.Migrations
                     b.HasOne("Furria.Core.Identity.Person", "Author")
                         .WithMany()
                         .HasForeignKey("AuthorPersonId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
+                        .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_announcement_person_author_person_id");
 
                     b.Navigation("Author");
@@ -2157,7 +2181,7 @@ namespace Furria.Infrastructure.Migrations
                     b.HasOne("Furria.Core.Identity.Person", "Person")
                         .WithMany()
                         .HasForeignKey("PersonId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_attendance_response_person_person_id");
 
@@ -2189,7 +2213,7 @@ namespace Furria.Infrastructure.Migrations
                     b.HasOne("Furria.Core.Identity.Person", "Person")
                         .WithMany()
                         .HasForeignKey("PersonId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_board_seat_person_person_id");
 
@@ -2243,7 +2267,7 @@ namespace Furria.Infrastructure.Migrations
                     b.HasOne("Furria.Core.Identity.Person", "Person")
                         .WithMany()
                         .HasForeignKey("PersonId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_key_holding_person_person_id");
 
@@ -2282,7 +2306,7 @@ namespace Furria.Infrastructure.Migrations
                     b.HasOne("Furria.Core.Identity.Person", "Person")
                         .WithMany("GroupAdminships")
                         .HasForeignKey("PersonId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_group_admin_person_person_id");
 
@@ -2303,7 +2327,7 @@ namespace Furria.Infrastructure.Migrations
                     b.HasOne("Furria.Core.Identity.Person", "Person")
                         .WithMany("GroupMemberships")
                         .HasForeignKey("PersonId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_group_membership_person_person_id");
 
@@ -2337,7 +2361,7 @@ namespace Furria.Infrastructure.Migrations
                     b.HasOne("Furria.Core.Identity.Person", "Person")
                         .WithMany("FeeReductions")
                         .HasForeignKey("PersonId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_fee_reduction_person_person_id");
 
@@ -2375,7 +2399,7 @@ namespace Furria.Infrastructure.Migrations
                     b.HasOne("Furria.Core.Identity.Person", "Person")
                         .WithMany("Memberships")
                         .HasForeignKey("PersonId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_membership_person_person_id");
 
@@ -2398,11 +2422,19 @@ namespace Furria.Infrastructure.Migrations
 
             modelBuilder.Entity("Furria.Core.Identity.Person", b =>
                 {
+                    b.HasOne("Furria.Core.Identity.Person", "ArchivedBy")
+                        .WithMany()
+                        .HasForeignKey("ArchivedByPersonId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_person_person_archived_by_person_id");
+
                     b.HasOne("Furria.Core.Identity.Person", "ContactChangedBy")
                         .WithMany()
                         .HasForeignKey("ContactChangedByPersonId")
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_person_person_contact_changed_by_person_id");
+
+                    b.Navigation("ArchivedBy");
 
                     b.Navigation("ContactChangedBy");
                 });
@@ -2412,7 +2444,7 @@ namespace Furria.Infrastructure.Migrations
                     b.HasOne("Furria.Core.Identity.Person", "Person")
                         .WithMany("RoleHoldings")
                         .HasForeignKey("PersonId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_role_holding_person_person_id");
 
@@ -2446,7 +2478,6 @@ namespace Furria.Infrastructure.Migrations
                         .WithOne()
                         .HasForeignKey("Furria.Infrastructure.Identity.Account", "PersonId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
                         .HasConstraintName("fk_account_person_person_id");
 
                     b.Navigation("Person");

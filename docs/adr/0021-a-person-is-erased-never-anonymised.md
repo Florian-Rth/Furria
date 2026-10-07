@@ -11,7 +11,8 @@ It is the one exception to "ended, never deleted", and a permission of its own, 
 apart from `persons.manage`, which only **archives** — reversibly, and only once nothing runs.
 
 - Where she acted on someone else's record — an announcement, an admission, an invitation, a contact
-  change, an archiving — the act stays and its actor becomes *gelöschte Person*.
+  change, an archiving — the act stays and names nobody, exactly as an act of the managing login
+  (ADR-0022).
 - The one deleting proves it is her with her password or a passkey; the confirmation names
   everything still running. A holder may delete herself.
 - The club keeps no trace that she was deleted. A person with an account is told at her login email.
@@ -26,13 +27,18 @@ apart from `persons.manage`, which only **archives** — reversibly, and only on
 - **Delete only an archived person.** Safer — nothing running vanishes, two steps by possibly two
   people. Rejected by Florian: deletion must always be possible; the consequence line carries the
   safety instead.
-- **No self-deletion, to keep the club from losing its last admin.** Rejected: the bootstrap admin
-  seeder recreates the configured admin whenever its email has no account, so restarting heals it.
+- **No self-deletion, to keep the club from losing its last admin.** Rejected: the managing login
+  (ADR-0022) always exists and holds every key, so the club never loses its way in.
+- **Name the actor *gelöschte Person*.** Rejected on 2026-10-07 once the managing login came: its
+  acts carry no actor either, and an act naming nobody keeps less of her.
 
 ## Consequences
 
 - The chains' foreign keys to the person cascade; actor references set null. A new chain or actor
-  reference must pick one of the two — there is no third.
+  reference must pick one of the two — there is no third. A schema test enforces it on every
+  foreign key the erasure reaches, through any cascade (L5b S5).
+- Mail still queued for her is dropped with her. The notice of her erasure is the one row that
+  names her afterwards, and only until it is sent.
 - The ledger, when built, is the first table that blocks nothing and yet is not erased: its rows
   outlive the person until their retention ends.
 - Erased data survives in database backups until they rotate; the privacy policy must say so.

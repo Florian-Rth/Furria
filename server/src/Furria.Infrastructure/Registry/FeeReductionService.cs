@@ -19,6 +19,7 @@ public sealed class FeeReductionService
         "Eine Beitragsermäßigung kann nicht vor ihrer ersten Session enden.";
     private const string OverlappingFeeReductionMessage =
         "Dieser Zeitraum überschneidet sich mit einer bestehenden Beitragsermäßigung.";
+    private const string FeeReductionsLabel = "Beitragsermäßigungen";
 
     private readonly AppDbContext _dbContext;
 
@@ -29,8 +30,13 @@ public sealed class FeeReductionService
 
     public async Task<Result<int>> AddAsync(AddFeeReductionCommand command, CancellationToken ct)
     {
-        if (!await PersonExistsAsync(command.PersonId, ct))
+        var person = await PersonAsync(command.PersonId, ct);
+
+        if (person is null)
             return Result<int>.NotFound(UnknownPersonMessage);
+
+        if (ArchivedHistory.IsClosed(person))
+            return Result<int>.Conflict(ArchivedHistory.RefusalFor(person, FeeReductionsLabel));
 
         var span = SpanOf(command.FirstSessionYear, command.LastSessionYear);
 
@@ -65,6 +71,11 @@ public sealed class FeeReductionService
         if (reduction is null)
             return Result.NotFound(UnknownFeeReductionMessage);
 
+        if (ArchivedHistory.IsClosed(reduction.Person!))
+            return Result.Conflict(
+                ArchivedHistory.RefusalFor(reduction.Person!, FeeReductionsLabel)
+            );
+
         var span = SpanOf(command.FirstSessionYear, command.LastSessionYear);
 
         if (!span.IsWellFormed)
@@ -90,13 +101,12 @@ public sealed class FeeReductionService
         int feeReductionId,
         CancellationToken ct
     ) =>
-        _dbContext.FeeReductions.SingleOrDefaultAsync(
-            row => row.Id == feeReductionId && row.PersonId == personId,
-            ct
-        );
+        _dbContext
+            .FeeReductions.Include(row => row.Person)
+            .SingleOrDefaultAsync(row => row.Id == feeReductionId && row.PersonId == personId, ct);
 
-    private Task<bool> PersonExistsAsync(int personId, CancellationToken ct) =>
-        _dbContext.People.AsNoTracking().AnyAsync(row => row.Id == personId, ct);
+    private Task<Person?> PersonAsync(int personId, CancellationToken ct) =>
+        _dbContext.People.AsNoTracking().SingleOrDefaultAsync(row => row.Id == personId, ct);
 
     private async Task<bool> OverlapsAnotherAsync(
         int personId,

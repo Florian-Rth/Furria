@@ -105,3 +105,10 @@ Two things this deliberately is **not**:
 
 Consequence for the resolver: a fourth source, resolving role → keys through the same path the
 role-holding source already uses.
+
+## Amendment 2026-10-07 — the managing login is a fifth source
+
+The managing login ([ADR-0022](0022-the-bootstrap-admin-is-a-personless-managing-login.md)) has
+no person, so no role holding or relationship can reach it. `GrantedKeysAsync` answers it with
+`FurriaPermissions.All` — a source of its own, still behind `has(key)`, never an
+`if (isAdmin)` at a call site. Persons still reach every key only through the *Admin* role.

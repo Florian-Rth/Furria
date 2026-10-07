@@ -27,7 +27,7 @@ public sealed class PutClubContactTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutClubContact, PutClubContactRequest>(FullContact());
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -63,7 +63,7 @@ public sealed class PutClubContactTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutClubContact, PutClubContactRequest>(FullContact());
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -95,7 +95,7 @@ public sealed class PutClubContactTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutClubContact, PutClubContactRequest>(
             new()
             {
@@ -127,7 +127,7 @@ public sealed class PutClubContactTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutClubContact, PutClubContactRequest>(
             FullContact() with
             {
@@ -150,7 +150,7 @@ public sealed class PutClubContactTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await client.PUTAsync<PutClubContact, PutClubContactRequest>(
             FullContact() with
             {

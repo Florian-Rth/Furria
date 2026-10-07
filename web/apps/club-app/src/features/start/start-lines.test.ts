@@ -281,6 +281,14 @@ describe('toAnnouncementLine', () => {
     expect(toAnnouncementLine(announcement(null), now).meta).toEqual(['gestern']);
   });
 
+  it('names nobody and keeps the day when the author is gone', () => {
+    const line = toAnnouncementLine({ ...announcement('Schriftführerin'), author: null }, now);
+
+    expect(line.meta).toEqual(['gestern']);
+    expect(line.initials).toBe('');
+    expect(line.accessibleName).toBe('Busfahrt zum Rosenmontagsumzug, gestern');
+  });
+
   it('falls back to initials and opens the sheet at this announcement', () => {
     const line = toAnnouncementLine(announcement(null), now);
 
@@ -416,5 +424,11 @@ describe('toAnnouncementByline', () => {
     { officeName: null, validUntil: null, expected: 'Karin Albrecht · 16.1.' },
   ])('formats the byline of an Aushang as $expected', ({ officeName, validUntil, expected }) => {
     expect(toAnnouncementByline(posted(officeName, validUntil), now)).toBe(expected);
+  });
+
+  it('names nobody when the author is gone', () => {
+    const authorless = { ...posted('Schriftführerin', '2027-02-08'), author: null };
+
+    expect(toAnnouncementByline(authorless, now)).toBe('16.1. · gültig bis 8.2.');
   });
 });

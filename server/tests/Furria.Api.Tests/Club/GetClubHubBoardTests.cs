@@ -211,6 +211,7 @@ public sealed class GetClubHubBoardTests
         var result = await HubForAsync(ctx, ct);
 
         var newest = Assert.Single(result.Announcements.Newest);
+        Assert.NotNull(newest.Author);
         Assert.Equal(ctx.Identity.People.IdOf("nadine"), newest.Author.PersonId);
         Assert.Equal("Präsident", newest.Author.OfficeName);
     }

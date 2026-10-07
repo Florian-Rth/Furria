@@ -45,7 +45,7 @@ public sealed class GetMembershipApplicationsTests
                 ),
             ct
         );
-        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var (response, result) = await admin.GETAsync<
             GetMembershipApplications,
@@ -81,7 +81,7 @@ public sealed class GetMembershipApplicationsTests
                 ),
             ct
         );
-        var admin = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
 
         var (_, result) = await admin.GETAsync<
             GetMembershipApplications,

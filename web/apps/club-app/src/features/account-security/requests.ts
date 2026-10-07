@@ -1,10 +1,10 @@
-import type { JsonBody } from '@/lib/api/api-fetch';
 import { apiFetch } from '@/lib/api/api-fetch';
 import type { SessionTokens } from '@/lib/api/schemas';
 import { NoContentSchema, SessionTokensSchema } from '@/lib/api/schemas';
+import { toReauthenticationBody } from './reauthentication';
 import type { LoginEmailChange, LoginEmailForm, PasswordForm } from './schemas';
 import { LoginEmailChangeSchema } from './schemas';
-import type { ResolvedDeletionProof } from './types';
+import type { ResolvedReauthenticationProof } from './types';
 
 export const requestLoginEmailChange = (
   form: LoginEmailForm,
@@ -43,23 +43,13 @@ export const requestLogoutEverywhere = (accessToken: string): Promise<void> =>
     accessToken,
   });
 
-const toDeletionBody = (proof: ResolvedDeletionProof): JsonBody =>
-  proof.kind === 'password'
-    ? { password: proof.password }
-    : {
-        passkey: {
-          challengeId: proof.attempt.challengeId,
-          credential: { ...proof.attempt.credential, clientExtensionResults: {} },
-        },
-      };
-
 export const requestAccountDeletion = (
-  proof: ResolvedDeletionProof,
+  proof: ResolvedReauthenticationProof,
   accessToken: string,
 ): Promise<void> =>
   apiFetch('/api/auth/me', {
     method: 'DELETE',
-    body: toDeletionBody(proof),
+    body: toReauthenticationBody(proof),
     schema: NoContentSchema,
     accessToken,
   });

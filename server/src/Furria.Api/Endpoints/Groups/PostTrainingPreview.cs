@@ -31,7 +31,7 @@ public sealed class PostTrainingPreview
     {
         var accountId = User.AccountId();
         var personId = User.PersonId();
-        if (accountId is null || personId is null)
+        if (accountId is null)
         {
             await Send.UnauthorizedAsync(ct);
             return;
@@ -43,7 +43,7 @@ public sealed class PostTrainingPreview
             return;
         }
 
-        var result = await _trainingService.PreviewAsync(ToQuery(req, personId.Value), ct);
+        var result = await _trainingService.PreviewAsync(ToQuery(req, personId), ct);
         if (!result.IsSuccess)
         {
             await HttpContext.Response.SendFailureAsync(result.Error, ct);
@@ -55,7 +55,7 @@ public sealed class PostTrainingPreview
 
     private static TrainingPreviewQuery ToQuery(
         PostTrainingPreviewRequest req,
-        int viewerPersonId
+        int? viewerPersonId
     ) =>
         new()
         {

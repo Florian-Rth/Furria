@@ -45,7 +45,7 @@ public sealed class PutGroupKindTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await RenameKindAsync(
             client,
             ctx.Groups.GroupKinds.IdOf("garde"),
@@ -73,7 +73,7 @@ public sealed class PutGroupKindTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await RenameKindAsync(client, ctx.Groups.GroupKinds.IdOf("garde"), "Garden");
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -95,7 +95,7 @@ public sealed class PutGroupKindTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await RenameKindAsync(
             client,
             ctx.Groups.GroupKinds.IdOf("elferrat"),
@@ -123,7 +123,7 @@ public sealed class PutGroupKindTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await RenameKindAsync(
             client,
             ctx.Groups.GroupKinds.IdOf("spielmannszug"),
@@ -145,7 +145,7 @@ public sealed class PutGroupKindTests
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await RenameKindAsync(client, UnknownGroupKindId, "Garde");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -160,7 +160,7 @@ public sealed class PutGroupKindTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var response = await RenameKindAsync(client, ctx.Groups.GroupKinds.IdOf("garde"), "");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);

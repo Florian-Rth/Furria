@@ -30,14 +30,8 @@ public sealed class AdmitMembershipApplication
         CancellationToken ct
     )
     {
-        if (User.PersonId() is not { } admitterPersonId)
-        {
-            await Send.UnauthorizedAsync(ct);
-            return;
-        }
-
         var admission = await _membershipApplicationService.AdmitAsync(
-            ToCommand(req, admitterPersonId),
+            ToCommand(req, User.PersonId()),
             ct
         );
         if (!admission.IsSuccess)
@@ -51,7 +45,7 @@ public sealed class AdmitMembershipApplication
 
     private static AdmitMembershipApplicationCommand ToCommand(
         AdmitMembershipApplicationRequest req,
-        int admitterPersonId
+        int? admitterPersonId
     ) =>
         new()
         {

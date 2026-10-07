@@ -37,7 +37,7 @@ public sealed class GetKeyHoldingsTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.GETAsync<GetKeyHoldings, GetKeyHoldingsResponse>();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -54,7 +54,7 @@ public sealed class GetKeyHoldingsTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.GETAsync<GetKeyHoldings, GetKeyHoldingsResponse>();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -82,7 +82,7 @@ public sealed class GetKeyHoldingsTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.GETAsync<GetKeyHoldings, GetKeyHoldingsResponse>();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -120,7 +120,7 @@ public sealed class GetKeyHoldingsTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.GETAsync<GetKeyHoldings, GetKeyHoldingsResponse>();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -156,7 +156,7 @@ public sealed class GetKeyHoldingsTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (response, result) = await client.GETAsync<GetKeyHoldings, GetKeyHoldingsResponse>();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -188,7 +188,7 @@ public sealed class GetKeyHoldingsTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var holding = await ReadHoldingAsync(client, ctx.Club.KeyHoldings.IdOf("maik-lager"));
 
         Assert.True(holding.HolderIsActiveInClub);
@@ -242,7 +242,7 @@ public sealed class GetKeyHoldingsTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var holding = await ReadHoldingAsync(client, ctx.Club.KeyHoldings.IdOf("maik-lager"));
 
         Assert.False(holding.HolderIsActiveInClub);
@@ -280,7 +280,7 @@ public sealed class GetKeyHoldingsTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var holding = await ReadHoldingAsync(
             client,
             ctx.Club.KeyHoldings.IdOf("sabine-sporthalle")
@@ -317,7 +317,7 @@ public sealed class GetKeyHoldingsTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var holding = await ReadHoldingAsync(
             client,
             ctx.Club.KeyHoldings.IdOf("frank-vereinsraum")
@@ -358,7 +358,7 @@ public sealed class GetKeyHoldingsTests
             ct
         );
 
-        var client = await ctx.Identity.BootstrapAdminClientAsync(ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var holding = await ReadHoldingAsync(
             client,
             ctx.Club.KeyHoldings.IdOf("sabine-sporthalle")

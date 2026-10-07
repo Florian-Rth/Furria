@@ -30,7 +30,7 @@ public sealed class MembershipConfiguration : IEntityTypeConfiguration<Membershi
             .WithMany(person => person.Memberships)
             .HasForeignKey(membership => membership.PersonId)
             .HasConstraintName("fk_membership_person_person_id")
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder
             .HasOne(membership => membership.AdmittedBy)
