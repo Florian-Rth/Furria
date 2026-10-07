@@ -1,5 +1,5 @@
-import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
+import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { accessActionsOf } from '../access-actions';
 import {
@@ -34,7 +34,7 @@ export const useMailInvitationEditor = ({
 }: MailInvitationEditorInput): MailInvitationEditorControl => {
   const [rejection, setRejection] = useState<string | null>(null);
   const mutation = useMailInvitationMutation(subject, onInvited);
-  const navigate = useNavigate();
+  const goBackTo = useGoBackTo();
   const { mailInvitation, vouchesForAge } = accessActionsOf({
     access: subject.access,
     email: subject.email,
@@ -42,11 +42,11 @@ export const useMailInvitationEditor = ({
   });
 
   const landBack = (): void => {
-    void navigate({
+    void goBackTo({
       to: PERSON_ROUTE,
       params: { personId: String(subject.personId) },
       search: (previous) => ({ ...previous, changed: toAccessLandingKey(subject.personId) }),
-      replace: true,
+      ignoreBlocker: true,
     });
   };
 

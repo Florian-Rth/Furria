@@ -1,10 +1,10 @@
 import { useKkNotice } from '@furria/ui';
-import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { toLandingKey } from '@/features/write';
 import type { MePasskey } from '@/lib/api/schemas';
 import { toPasskeyErrorMessage } from '@/lib/passkey/passkey-messages';
 import { usePasskeySupport } from '@/lib/passkey/use-passkey-support';
+import { useGoBackTo } from '@/lib/use-go-back-to';
 import {
   PASSKEY_ADDED_MESSAGE,
   PASSKEY_LANDING_KIND,
@@ -22,19 +22,19 @@ export interface PasskeyAdditionControl {
 export const usePasskeyAddition = (): PasskeyAdditionControl => {
   const isAvailable = usePasskeySupport();
   const mutation = useAddPasskeyMutation();
-  const navigate = useNavigate();
+  const goBackTo = useGoBackTo();
   const raiseNotice = useKkNotice();
   const [rejection, setRejection] = useState<string | null>(null);
 
   const landOnPasskey = (passkey: MePasskey): void => {
     raiseNotice({ tone: 'success', message: PASSKEY_ADDED_MESSAGE });
-    void navigate({
+    void goBackTo({
       to: SECURITY_PATH,
       search: (previous) => ({
         ...previous,
         changed: toLandingKey(PASSKEY_LANDING_KIND, passkey.id),
       }),
-      replace: true,
+      ignoreBlocker: true,
     });
   };
 

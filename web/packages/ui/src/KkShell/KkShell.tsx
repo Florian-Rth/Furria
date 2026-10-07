@@ -22,6 +22,7 @@ import { useShellHost } from './internal/logic/use-shell-host';
 import { KkShellNav } from './internal/ui/KkShellNav';
 import { KkShellNotice } from './internal/ui/KkShellNotice';
 import { KkShellSkipLink } from './internal/ui/KkShellSkipLink';
+import type { KkScreenOrigin } from './screen-declaration';
 import type { KkScreenMove } from './screen-move';
 import type { KkShellDestination } from './shell-destination';
 
@@ -33,13 +34,22 @@ const FIRST_ARRIVAL_BLOCK = 1;
 
 interface KkShellProps extends PropsWithChildren {
   link: ElementType;
+  goBackTo: (origin: KkScreenOrigin) => void;
   destinations: readonly KkShellDestination[];
   path: string;
   move: KkScreenMove;
   sx?: KkSx;
 }
 
-export const KkShell: FC<KkShellProps> = ({ link, destinations, path, move, sx, children }) => {
+export const KkShell: FC<KkShellProps> = ({
+  link,
+  goBackTo,
+  destinations,
+  path,
+  move,
+  sx,
+  children,
+}) => {
   const { scrollY } = useScroll();
   const keyboardInset = useKeyboardInset();
   const reducedMotion = useReducedMotion();
@@ -73,6 +83,7 @@ export const KkShell: FC<KkShellProps> = ({ link, destinations, path, move, sx, 
     <KkShellContext.Provider
       value={{
         link,
+        goBackTo,
         destinations,
         keyboardInset,
         path,

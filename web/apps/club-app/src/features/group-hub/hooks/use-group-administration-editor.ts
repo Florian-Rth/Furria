@@ -1,11 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import type { UseFormRegisterReturn } from 'react-hook-form';
 import { useController, useForm } from 'react-hook-form';
 import { toGroupKindValue } from '@/features/group-kinds';
 import { toLandingKey } from '@/features/write';
 import { toFormFailures } from '@/lib/api/api-failures';
+import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useUpdateGroupAdministrationMutation } from '../api';
 import type { GroupHub } from '../schemas';
@@ -28,7 +28,7 @@ export interface GroupAdministrationEditorControl {
 export const useGroupAdministrationEditor = (hub: GroupHub): GroupAdministrationEditorControl => {
   const [rejection, setRejection] = useState<string | null>(null);
   const mutation = useUpdateGroupAdministrationMutation(hub.groupId);
-  const navigate = useNavigate();
+  const goBackTo = useGoBackTo();
 
   const form = useForm({
     resolver: zodResolver(GroupAdministrationFormSchema),
@@ -42,14 +42,14 @@ export const useGroupAdministrationEditor = (hub: GroupHub): GroupAdministration
     setRejection(null);
     mutation.mutate(values, {
       onSuccess: () => {
-        void navigate({
+        void goBackTo({
           to: '/groups/$groupId',
           params: { groupId: String(hub.groupId) },
           search: (previous) => ({
             ...previous,
             changed: toLandingKey('group-administration', hub.groupId),
           }),
-          replace: true,
+          ignoreBlocker: true,
         });
       },
       onError: (error) => {

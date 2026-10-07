@@ -1,6 +1,6 @@
 import type { KkDateQuickChoice } from '@furria/ui';
-import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
+import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useGenerateTrainingsMutation, useTrainingPreviewQuery } from '../api';
 import { GENERATOR_SESSION_CHOICE, GENERATOR_TITLE_DEFAULT } from '../rhythm-labels';
@@ -42,7 +42,7 @@ export const useTrainingGenerator = (groupId: number): TrainingGeneratorControl 
   const [endsOn, setEndsOn] = useState<string | null>(null);
   const preview = useTrainingPreviewQuery(groupId, endsOn, true);
   const generate = useGenerateTrainingsMutation(groupId);
-  const navigate = useNavigate();
+  const goBackTo = useGoBackTo();
 
   const rows = preview.data?.rows ?? [];
   const stamp = preview.dataUpdatedAt;
@@ -80,10 +80,10 @@ export const useTrainingGenerator = (groupId: number): TrainingGeneratorControl 
       { title, instants: toTickedInstants(entries) },
       {
         onSuccess: () => {
-          void navigate({
+          void goBackTo({
             to: '/groups/$groupId',
             params: { groupId: String(groupId) },
-            replace: true,
+            ignoreBlocker: true,
           });
         },
       },

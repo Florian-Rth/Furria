@@ -1,5 +1,5 @@
-import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
+import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useArchiveGroupKindMutation } from '../api';
 import type { GroupKindEntry } from '../manage-groups-labels';
@@ -17,7 +17,7 @@ export const useGroupKindArchive = (entry: GroupKindEntry): GroupKindArchiveCont
   const [isOpen, setIsOpen] = useState(false);
   const [rejection, setRejection] = useState<string | null>(null);
   const mutation = useArchiveGroupKindMutation(entry.groupKindId);
-  const navigate = useNavigate();
+  const goBackTo = useGoBackTo();
 
   const open = (): void => {
     setRejection(null);
@@ -35,7 +35,7 @@ export const useGroupKindArchive = (entry: GroupKindEntry): GroupKindArchiveCont
       {
         onSuccess: () => {
           setIsOpen(false);
-          void navigate({ to: '/manage/groups' });
+          void goBackTo({ to: '/manage/groups', ignoreBlocker: true });
         },
         onError: (error) => {
           setRejection(toWriteErrorMessage(error));

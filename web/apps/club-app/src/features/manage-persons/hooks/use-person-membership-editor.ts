@@ -1,9 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useController, useForm } from 'react-hook-form';
 import { toLandingKey } from '@/features/write';
 import { toIsoDay } from '@/lib/day';
+import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useCreateMembershipMutation, useUpdateMembershipMutation } from '../api';
 import {
@@ -48,7 +48,7 @@ export const usePersonMembershipEditor = ({
   const [rejection, setRejection] = useState<string | null>(null);
   const create = useCreateMembershipMutation(person.personId);
   const update = useUpdateMembershipMutation(person.personId);
-  const navigate = useNavigate();
+  const goBackTo = useGoBackTo();
 
   const form = useForm({
     resolver: zodResolver(MembershipFormSchema),
@@ -71,11 +71,11 @@ export const usePersonMembershipEditor = ({
   };
 
   const landBack = (membershipId: number): void => {
-    void navigate({
+    void goBackTo({
       to: '/manage/persons/$personId',
       params: { personId: String(person.personId) },
       search: (previous) => ({ ...previous, changed: toLandingKey('membership', membershipId) }),
-      replace: true,
+      ignoreBlocker: true,
     });
   };
 

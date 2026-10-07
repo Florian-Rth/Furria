@@ -1,4 +1,5 @@
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, useRouter } from '@tanstack/react-router';
+import { stepOffLayer } from '@/lib/back-stack';
 import { appRouteApi } from '../app-route';
 
 export interface SheetManager {
@@ -10,11 +11,14 @@ export interface SheetManager {
 export const useSheetManager = (): SheetManager => {
   const { sheet } = appRouteApi.useSearch();
   const navigate = useNavigate();
+  const router = useRouter();
+  const sheetIsOpen = sheet !== undefined;
 
-  const go = (next: string | undefined): void => {
+  const go = (next: string | undefined, replace: boolean): void => {
     void navigate({
       to: '.',
       search: (previous) => ({ ...previous, sheet: next }),
+      replace,
       resetScroll: false,
     });
   };
@@ -22,10 +26,14 @@ export const useSheetManager = (): SheetManager => {
   return {
     openSheetId: sheet ?? null,
     onOpen: (sheetId) => {
-      go(sheetId);
+      go(sheetId, sheetIsOpen);
     },
     onClose: () => {
-      go(undefined);
+      if (!sheetIsOpen || stepOffLayer(router.history)) {
+        return;
+      }
+
+      go(undefined, true);
     },
   };
 };

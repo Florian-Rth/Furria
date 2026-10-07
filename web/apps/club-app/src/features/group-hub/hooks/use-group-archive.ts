@@ -1,5 +1,5 @@
-import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
+import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useArchiveGroupFromHubMutation } from '../api';
 import type { GroupHub } from '../schemas';
@@ -17,7 +17,7 @@ export const useGroupArchive = (hub: GroupHub): GroupArchiveControl => {
   const [isOpen, setIsOpen] = useState(false);
   const [rejection, setRejection] = useState<string | null>(null);
   const mutation = useArchiveGroupFromHubMutation(hub.groupId);
-  const navigate = useNavigate();
+  const goBackTo = useGoBackTo();
 
   const open = (): void => {
     setRejection(null);
@@ -35,7 +35,7 @@ export const useGroupArchive = (hub: GroupHub): GroupArchiveControl => {
       {
         onSuccess: () => {
           setIsOpen(false);
-          void navigate({ to: '/groups' });
+          void goBackTo({ to: '/groups', ignoreBlocker: true });
         },
         onError: (error) => {
           setRejection(toWriteErrorMessage(error));

@@ -1,10 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useController, useForm } from 'react-hook-form';
 import { toLandingKey } from '@/features/write';
 import type { PersonRef } from '@/lib/api/schemas';
 import { toIsoDay } from '@/lib/day';
+import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useEndBoardSeatMutation, useOpenBoardSeatMutation } from '../api';
 import { toEndSeatConsequence, toPersonName, toSeatConsequence } from '../manage-board-labels';
@@ -52,7 +52,7 @@ export const useBoardSeatEditor = ({
 
   const openMutation = useOpenBoardSeatMutation(boardOfficeId, officeName);
   const endMutation = useEndBoardSeatMutation(boardOfficeId);
-  const navigate = useNavigate();
+  const goBackTo = useGoBackTo();
 
   const openForm = useForm({
     resolver: zodResolver(BoardSeatOpenFormSchema),
@@ -79,10 +79,10 @@ export const useBoardSeatEditor = ({
   const seatPersonName = seat === null ? '' : toPersonName(seat);
 
   const landBack = (boardSeatId: number): void => {
-    void navigate({
+    void goBackTo({
       to: '/manage/board',
       search: (previous) => ({ ...previous, changed: toLandingKey('board-seat', boardSeatId) }),
-      replace: true,
+      ignoreBlocker: true,
     });
   };
 

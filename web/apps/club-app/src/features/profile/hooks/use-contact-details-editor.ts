@@ -1,5 +1,4 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import type { FieldErrors, UseFormReturn } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
@@ -7,6 +6,7 @@ import { PROFILE_PATH } from '@/features/session';
 import { toLandingKey } from '@/features/write';
 import { toFormFailures } from '@/lib/api/api-failures';
 import type { MePerson } from '@/lib/api/schemas';
+import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useUpdateContactDetailsMutation } from '../api';
 import { CONTACT_DETAILS_LANDING, toContactDetailsForm } from '../profile-labels';
@@ -26,7 +26,7 @@ export interface ContactDetailsEditorControl {
 export const useContactDetailsEditor = (person: MePerson): ContactDetailsEditorControl => {
   const [rejection, setRejection] = useState<string | null>(null);
   const mutation = useUpdateContactDetailsMutation();
-  const navigate = useNavigate();
+  const goBackTo = useGoBackTo();
 
   const form = useForm<ContactDetailsForm>({
     resolver: zodResolver(ContactDetailsFormSchema),
@@ -48,18 +48,18 @@ export const useContactDetailsEditor = (person: MePerson): ContactDetailsEditorC
   };
 
   const landOnProfile = (): void => {
-    void navigate({
+    void goBackTo({
       to: PROFILE_PATH,
       search: (previous) => ({
         ...previous,
         changed: toLandingKey(CONTACT_DETAILS_LANDING.kind, CONTACT_DETAILS_LANDING.id),
       }),
-      replace: true,
+      ignoreBlocker: true,
     });
   };
 
   const closeUnchanged = (): void => {
-    void navigate({ to: PROFILE_PATH, replace: true });
+    void goBackTo({ to: PROFILE_PATH });
   };
 
   const handleFormSubmit = form.handleSubmit((values) => {

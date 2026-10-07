@@ -1,9 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useController, useForm } from 'react-hook-form';
 import { toLandingKey } from '@/features/write';
 import { sessionAt } from '@/lib/club';
+import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useCreatePauseMutation, useUpdatePauseMutation } from '../api';
 import {
@@ -47,7 +47,7 @@ export const usePersonPauseEditor = ({
   const [rejection, setRejection] = useState<string | null>(null);
   const create = useCreatePauseMutation(personId);
   const update = useUpdatePauseMutation(personId);
-  const navigate = useNavigate();
+  const goBackTo = useGoBackTo();
 
   const form = useForm({
     resolver: zodResolver(PauseFormSchema),
@@ -66,11 +66,11 @@ export const usePersonPauseEditor = ({
   };
 
   const landBack = (pauseId: number): void => {
-    void navigate({
+    void goBackTo({
       to: '/manage/persons/$personId/memberships/$membershipId',
       params: { personId: String(personId), membershipId: String(membership.membershipId) },
       search: (previous) => ({ ...previous, changed: toLandingKey('pause', pauseId) }),
-      replace: true,
+      ignoreBlocker: true,
     });
   };
 

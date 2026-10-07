@@ -1,5 +1,5 @@
-import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
+import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useRemoveSessionRecordMutation } from '../api';
 import type { SessionRecordSummary } from '../schemas';
@@ -17,7 +17,7 @@ export const useSessionRemoval = (record: SessionRecordSummary | null): SessionR
   const [isOpen, setIsOpen] = useState(false);
   const [rejection, setRejection] = useState<string | null>(null);
   const mutation = useRemoveSessionRecordMutation();
-  const navigate = useNavigate();
+  const goBackTo = useGoBackTo();
 
   const open = (): void => {
     setRejection(null);
@@ -39,7 +39,7 @@ export const useSessionRemoval = (record: SessionRecordSummary | null): SessionR
       {
         onSuccess: () => {
           setIsOpen(false);
-          void navigate({ to: '/manage/sessions' });
+          void goBackTo({ to: '/manage/sessions', ignoreBlocker: true });
         },
         onError: (error) => {
           setRejection(toWriteErrorMessage(error));

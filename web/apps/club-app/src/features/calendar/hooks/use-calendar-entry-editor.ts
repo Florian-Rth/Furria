@@ -1,10 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 import { toLandingKey } from '@/features/write';
 import { toFormFailures } from '@/lib/api/api-failures';
+import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useCreateCalendarEntryMutation, useUpdateCalendarEntryMutation } from '../api';
 import type { CalendarDayTime, CalendarOwnerOption } from '../calendar-authoring';
@@ -60,7 +60,7 @@ export const useCalendarEntryEditor = ({
   const [rejection, setRejection] = useState<string | null>(null);
   const createMutation = useCreateCalendarEntryMutation();
   const updateMutation = useUpdateCalendarEntryMutation();
-  const navigate = useNavigate();
+  const goBackTo = useGoBackTo();
 
   const form = useForm<CalendarEntryForm>({
     resolver: zodResolver(CalendarEntryFormSchema),
@@ -72,13 +72,13 @@ export const useCalendarEntryEditor = ({
   const values = form.watch();
 
   const landOn = (calendarEntryId: number): void => {
-    void navigate({
+    void goBackTo({
       to: '/calendar',
       search: (previous) => ({
         ...previous,
         changed: toLandingKey(LANDING_KIND, calendarEntryId),
       }),
-      replace: true,
+      ignoreBlocker: true,
     });
   };
 

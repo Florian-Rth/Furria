@@ -1,5 +1,5 @@
-import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
+import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useDeleteCalendarEntryMutation } from '../api';
 import type { CalendarEntry } from '../schemas';
@@ -19,7 +19,7 @@ export const useCalendarEntryRemoval = (
   const [isOpen, setIsOpen] = useState(false);
   const [rejection, setRejection] = useState<string | null>(null);
   const mutation = useDeleteCalendarEntryMutation();
-  const navigate = useNavigate();
+  const goBackTo = useGoBackTo();
 
   const open = (): void => {
     setRejection(null);
@@ -41,7 +41,7 @@ export const useCalendarEntryRemoval = (
       {
         onSuccess: () => {
           setIsOpen(false);
-          void navigate({ to: '/calendar', search: (previous) => previous });
+          void goBackTo({ to: '/calendar', search: (previous) => previous, ignoreBlocker: true });
         },
         onError: (error) => {
           setRejection(toWriteErrorMessage(error));

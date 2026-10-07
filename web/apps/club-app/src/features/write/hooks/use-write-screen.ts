@@ -1,6 +1,7 @@
 import type { KkScreenOrigin } from '@furria/ui';
 import { useBlocker, useRouter } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
+import { useGoBackTo } from '@/lib/use-go-back-to';
 import { registerActiveLeaveGuard } from '../active-guard';
 import { blocksLeaving } from '../leave-guard';
 import { toOriginHref } from '../origin-href';
@@ -25,6 +26,7 @@ interface WriteScreenInput {
 
 export const useWriteScreen = ({ origin, isDirty }: WriteScreenInput): WriteScreenControl => {
   const router = useRouter();
+  const goBackTo = useGoBackTo();
   const [nativeBackBlocked, setNativeBackBlocked] = useState(false);
 
   const blocker = useBlocker({
@@ -61,7 +63,7 @@ export const useWriteScreen = ({ origin, isDirty }: WriteScreenInput): WriteScre
         : { open: false, discard: NOOP, keepEditing: NOOP };
 
   const leave = (): void => {
-    void router.navigate({ href: toOriginHref(origin) });
+    void goBackTo({ href: toOriginHref(origin) });
   };
 
   return { guard, leave };

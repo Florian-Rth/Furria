@@ -1,7 +1,7 @@
 import { KkAlert, KkDateField, KkScreen, KkTextField } from '@furria/ui';
 import Stack from '@mui/material/Stack';
-import { useNavigate } from '@tanstack/react-router';
 import type { ChangeEvent, FC } from 'react';
+import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toHubEditorOrigin } from '../group-hub-labels';
 import { useTrainingGenerator } from '../hooks/use-training-generator';
 import {
@@ -23,7 +23,7 @@ interface TrainingGeneratorPageProps {
 
 export const TrainingGeneratorPage: FC<TrainingGeneratorPageProps> = ({ hub }) => {
   const control = useTrainingGenerator(hub.groupId);
-  const navigate = useNavigate();
+  const goBackTo = useGoBackTo();
   const hasRhythm = hub.trainingSlots.length > 0;
 
   const changeTitle = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
@@ -31,10 +31,9 @@ export const TrainingGeneratorPage: FC<TrainingGeneratorPageProps> = ({ hub }) =
   };
 
   const cancel = (): void => {
-    void navigate({
+    void goBackTo({
       to: '/groups/$groupId',
       params: { groupId: String(hub.groupId) },
-      replace: true,
     });
   };
 

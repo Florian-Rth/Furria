@@ -1,5 +1,4 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useController, useForm } from 'react-hook-form';
 import type { GroupDetailAdmin } from '@/features/group-detail';
@@ -7,6 +6,7 @@ import { useMeQuery } from '@/features/session';
 import { toLandingKey } from '@/features/write';
 import type { PersonRef } from '@/lib/api/schemas';
 import { toIsoDay } from '@/lib/day';
+import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useAddGroupAdminMutation, useEndGroupAdminMutation } from '../api';
 import {
@@ -68,7 +68,7 @@ export const useGroupAdminEditor = ({
 
   const addMutation = useAddGroupAdminMutation(groupId);
   const endMutation = useEndGroupAdminMutation(groupId);
-  const navigate = useNavigate();
+  const goBackTo = useGoBackTo();
 
   const appointForm = useForm({
     resolver: zodResolver(GroupAdminAppointFormSchema),
@@ -96,11 +96,11 @@ export const useGroupAdminEditor = ({
   const adminName = toPersonName(admin);
 
   const landBack = (adminId: number): void => {
-    void navigate({
+    void goBackTo({
       to: '/groups/$groupId',
       params: { groupId: String(groupId) },
       search: (previous) => ({ ...previous, changed: toLandingKey('admin', adminId) }),
-      replace: true,
+      ignoreBlocker: true,
     });
   };
 

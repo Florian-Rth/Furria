@@ -1,11 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useController, useForm } from 'react-hook-form';
 import type { GroupDetailMember } from '@/features/group-detail';
 import { toLandingKey } from '@/features/write';
 import type { PersonRef } from '@/lib/api/schemas';
 import { toIsoDay } from '@/lib/day';
+import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useAddGroupMembershipMutation, useEndGroupMembershipMutation } from '../api';
 import {
@@ -63,7 +63,7 @@ export const useGroupMembershipEditor = ({
 
   const addMutation = useAddGroupMembershipMutation(groupId);
   const endMutation = useEndGroupMembershipMutation(groupId);
-  const navigate = useNavigate();
+  const goBackTo = useGoBackTo();
 
   const joinForm = useForm({
     resolver: zodResolver(GroupMembershipJoinFormSchema),
@@ -93,11 +93,11 @@ export const useGroupMembershipEditor = ({
   const memberName = toPersonName(membership);
 
   const landBack = (membershipId: number): void => {
-    void navigate({
+    void goBackTo({
       to: '/groups/$groupId',
       params: { groupId: String(groupId) },
       search: (previous) => ({ ...previous, changed: toLandingKey('membership', membershipId) }),
-      replace: true,
+      ignoreBlocker: true,
     });
   };
 

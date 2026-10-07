@@ -169,6 +169,13 @@ An open sheet and an active search are search params, so the browser gesture and
 hardware back button close the sheet or leave search instead of abandoning the screen. A global
 **sheet manager** (provider + `useSheet()` hook) guarantees exactly one open sheet.
 
+**Back never revisits what the user dismissed** (ruled 2026-10-07). Opening a sheet or search
+pushes one entry over its screen; closing it steps back off that entry rather than pushing a new
+one. A second sheet replaces the first, and a link out of a sheet takes the sheet's entry, so back
+returns to the screen, not the sheet. The bar's back or close affordance and every return after a
+save, cancel or removal step back when the origin is the page directly behind, and otherwise
+replace the current page with it — they never push.
+
 ### Dialogs become sheets or wizards
 
 Today's six dialogs split: pickers and confirmations become **sheets**; anything more complex
