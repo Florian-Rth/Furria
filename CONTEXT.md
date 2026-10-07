@@ -376,7 +376,8 @@ account stays, showing her that she is no longer active in the club — the **ni
 aktiv** state: every club surface gives way to that one screen, and her profile stays reachable
 from it. Rejoining lights it up again without a new invitation (ruled 2026-09-25). **Only she deletes her account**; her person and
 everything the club recorded about her stays, and she can return through a new invitation. The
-club never deletes an account — it **disables** one, reversibly (ruled 2026-09-25). Deleting
+club never deletes an account — it **disables** one, reversibly (ruled 2026-09-25); the one way an
+account goes without her is **person deletion**, which takes everything (ruled 2026-10-07). Deleting
 takes her password again, keeps her person with everything the club recorded, and voids any live
 invitation of hers; nobody disables her own account (built 2026-09-26, CA-P8 S5/S6).
 Everything about her login is hers, under **Anmeldung & Sicherheit** on her profile: login email,
@@ -506,6 +507,45 @@ risks overlapping memberships (built 2026-09-26, CA-P8 S9; ruled 2026-09-27). A 
 claims in.
 _UI copy_: — (redeem asks her to sign in with the existing account)
 _Avoid_: merge, account linking
+
+**Person deletion** (`persons.delete`):
+Erasing a person for good: her record and every chain about her — memberships, group
+memberships, role holdings, board seats, key holdings, her account and its invitations, her
+attendance responses — are gone. Nothing is anonymised and kept, because in a club this size an
+anonymous history still names her. Where she acted on someone else's record (an announcement she
+wrote, an admission she made, an invitation she issued, a contact change she made) the act stays
+and its actor reads *gelöschte Person*. It is the one exception to "ended, never deleted", cannot be
+undone, and is a **permission** of its own, apart from person management, which only archives — it
+reaches the register and a person's screen on its own, as the access-recovery right does. It
+is possible **at any time**, whatever still runs — she need not be archived first, and a holder
+may delete herself; its
+confirmation names everything still running, so a key never vanishes unseen, and the one deleting
+proves it is her with her password or a passkey, exactly as deleting her own account does. A
+person with an account is told at her login email, and her sessions end; one without is told
+nothing — whoever answers an erasure request confirms it herself. The club keeps **no trace** that
+she was deleted: a trace naming her would keep what was erased. The one thing deletion spares is a
+money record the law obliges the club to keep — it stays until its retention period ends, and the
+**ledger** inherits that rule (ruled 2026-10-07,
+[ADR-0021](docs/adr/0021-a-person-is-erased-never-anonymised.md)).
+_UI copy_: *gelöschte Person*; *Person löschen*
+_Avoid_: anonymising, soft delete, archiving (a different act)
+
+**Archived person**:
+A person the club has filed away, record whole — the person-management counterpart of
+**deletion**. Only a person who is not **active in the club** and holds no running **key
+holding** can be archived: archiving ends nothing, so whatever still runs is ended first, each on
+its own date. She leaves the register's default view and every picker that opens a chain, but
+**admission** matching and the **adoption candidate** still find her — a former member who returns
+is exactly who they are for. Archived and running exclude each other: opening any chain on her
+lifts the archive by itself, and her own screen restores her by hand. Her **account** is untouched
+— it is hers, and already shows *nicht im Verein aktiv*. Her screen says when and by whom she was
+archived; only the latest archiving is kept, and restoring clears it. Archiving is the club's
+decision that she is done, not a state — *nothing running* is derived, *archived* is chosen — so it
+happens one person at a time on her own screen: never in bulk, never a **to-do** (ruled
+2026-10-07).
+_UI copy_: *Archivieren*; *Archiviert* (the register filter); *Archiviert von Anna am 7. Okt.*;
+*Wiederherstellen*
+_Avoid_: deactivated, inactive (that is **active in the club**, derived), deleting
 
 ### Club app structure
 
