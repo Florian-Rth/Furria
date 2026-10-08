@@ -82,7 +82,7 @@ English rendering anywhere else, so two translations never drift apart.
 | lead post (the news post opening the page) | Aufmacher | `NewsLead…` |
 | announcement | Aushang | `Announcement` |
 | gallery / album | Galerie / Album | `Gallery`, `Album` |
-| member photo library | Bildergalerie | — |
+| media store / media item | — | `MediaItem` |
 | fee | Beitrag | — |
 | ledger | — | — |
 | general meeting | Mitgliederversammlung | — |
@@ -989,28 +989,61 @@ _UI copy_: Aushang; Titel, Text, Autor, Gültig bis
 _Avoid_: notice (that is the shell's live-evening layer), news post (that is public website news),
 message, chat, bulletin board, category, attachment, read receipt
 
-### Photos
+### Photos and videos
+
+**Media store**:
+The platform's one store for uploaded pictures and videos, with no screen of its own. It holds
+**media items**; every use (a **portrait**, a **group picture**, the **gallery**) owns its items.
+_Avoid_: media library, file store, uploads (as a noun)
+
+**Media item** (`MediaItem`):
+One uploaded photo or video together with everything derived from it. It has **exactly one
+owner** — a person (her **portrait**), a group (its **group picture**) or the **gallery**. Using
+one owner's picture for another *copies* it into a new media item, so a takedown or deletion in
+one use never breaks another.
+_Avoid_: file, asset, attachment, media (as a countable noun)
 
 **Gallery** (`Gallery`):
-The public website's photo section — a handful of curated **albums**, view-only. Deliberately not
-an archive: no uploads, no downloads, no endless feed; each album shows a hand-picked selection,
-not everything that was shot.
+The club's collection of photos and videos, organised in **albums** and kept in the club app.
+**Published** albums are its **public face** on the website — one gallery, not two: the website
+page is a view of it, not a separate thing. Replaces the retired *member photo library*
+(2026-10-08, L7a shaping).
 _UI copy_: Galerie
-_Avoid_: **member photo library** (that is the club app's surface — see below), photo archive,
-media library
-
-**Member photo library**:
-The **club app's** planned member-facing photo surface (upload + browse). Not built, and not the
-name of the public page.
-_UI copy_: Bildergalerie
-_Avoid_: gallery (that is the public **gallery**)
+_Avoid_: member photo library, photo library, media library, photo archive
 
 **Album** (`Album`):
-The curated photo set of exactly **one** club occasion (gala session, parade, season opening).
-Not bound to the retired **programme** — an album may cover an unticketed occasion the event list
-doesn't show. Carries its own date; its **session** is *derived* from that date, never stored.
+Everything the **gallery** holds of exactly **one** club occasion (gala session, parade, season
+opening) or one theme (*Archiv Session 1985*) — every photo and video, not a selection. Not bound to the retired **programme** — an
+album may cover an unticketed occasion the event list doesn't show. **It has no date of its
+own** (ruled 2026-10-08, L7a shaping): it is linked to a **calendar entry** — its date and session
+come from the entry — or, for what the calendar never held (*Archiv Session 1985*), to a
+**session** directly; or to neither, a **free album**. Only an album with a session can appear on
+the public face; a free album stays in the club app. Widened the same day from "the curated set";
+the curation now lives in its **public selection**.
 _UI copy_: Album
 _Avoid_: gallery (for a single album), folder, collection
+
+**Inbox**:
+The **gallery** media items one uploader has not yet placed in an **album** — her workbench for
+deleting rejects and sorting the rest. **One per uploader**; those who manage the gallery see and
+sort every inbox. Members see nothing in it. An item is in **at most one album**, and in none
+exactly while it sits in its uploader's inbox; placing it in an album takes it out. Deleting from
+the inbox is final. Uploading straight into an album skips it.
+_UI copy_: Eingang
+_Avoid_: unsorted, drafts, uploads, staging
+
+**Bin**:
+Where gallery items deleted from an **album**, and whole albums, wait **30 days** before they are
+gone for good — restorable until then. The **inbox** has no bin: deleting a reject is final.
+_UI copy_: Papierkorb
+_Avoid_: trash, archive (an archived thing is kept, not on its way out)
+
+**Public selection**:
+The hand-picked photos of an **album** — roughly a dozen — that its public face shows once the
+album is **published**. Publishing releases the selection, never the whole album; videos are not
+in it.
+_UI copy_: Auswahl
+_Avoid_: public flag, highlights, favourites
 
 ### Money
 
@@ -1077,14 +1110,13 @@ _Avoid_: balance table, payments table (as source of truth)
   insurance covers non-member group participants — if it only covers members, that gap is a club
   decision, not a software one.
 
-- **Who decides a photo is public** — **open, 2026-07-28.** No rules exist yet, and it is not
-  settled whether any of this gets built. The public **gallery** needs none of it today: it shows
-  the pictures the club put into it, and the only real-world remedy is the takedown contact printed
-  on the page. Two *candidate* senses have surfaced, from the club-app handoff, and they are not the
-  same thing — if this is ever modelled, do not collapse them into one `is_public` flag: a
-  **per-photo** release ("release for website") is about *photos*, while a **person**-level consent
-  to being photographed at all is about *people*. Neither implies the other. Until someone actually
-  decides, neither term is canonical language.
+- **Who decides a photo is public** — **resolved 2026-10-08 (L7a shaping).** A photo is public
+  **only while it is in the public selection of a published album** — there is no public flag on the photo itself. Publishing
+  an album is a deliberate act under its own permission, and that act is the **release** (as a board
+  seat is what makes a portrait public). There is **no per-person consent** to being photographed:
+  the remedy is the takedown contact on the **gallery**, answered by taking the photo out of its
+  public selection (or deleting it) — no separate takedown act and no lasting mark. The two senses stay apart as before — if
+  per-person consent is ever modelled, it is about *people* and is not a photo flag.
 
 - **Membership type "passive"** — **retracted 2026-07-29.** The 2026-07-16 note declared the
   handoff's four types (active / passive / youth / honorary) authoritative and added `passive` to

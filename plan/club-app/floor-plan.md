@@ -301,7 +301,7 @@ Ordered by how much they block.
    reader only. A child in the children's guard is a person with a group membership and no
    account. The consequence to carry: a group whose dancers cannot log in is reached through its
    group admin, so no surface may assume the dancer is the one reading it.
-2. **Photo consent** — blocks the member photo library.
+2. **Photo consent** — resolved 2026-10-08 (L7a): a photo is public only in a published album's public selection; the member photo library became the **gallery** hub (`plan/launch/l7a-media-store.md`).
 3. **Non-member group people still have no word** — affects roster copy.
 
 ---
