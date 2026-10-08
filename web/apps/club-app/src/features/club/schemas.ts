@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { CALENDAR_KIND_KEYS } from '@/lib/calendar-copy';
 
 export const ClubPersonSchema = z.object({
   personId: z.number().int(),
@@ -41,14 +42,7 @@ export const ClubAnnouncementsSchema = z.object({
 });
 export type ClubAnnouncements = z.infer<typeof ClubAnnouncementsSchema>;
 
-export const CalendarEntryKindSchema = z.enum([
-  'training',
-  'rehearsal',
-  'performance',
-  'meeting',
-  'party',
-  'other',
-]);
+export const CalendarEntryKindSchema = z.enum(CALENDAR_KIND_KEYS);
 export type CalendarEntryKind = z.infer<typeof CalendarEntryKindSchema>;
 
 export const ClubCalendarEntrySchema = z.object({

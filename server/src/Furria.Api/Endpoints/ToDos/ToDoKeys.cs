@@ -10,5 +10,6 @@ internal static class ToDoKeys
         FurriaPermissions.KeyHoldingsManage,
         FurriaPermissions.ClubManage,
         FurriaPermissions.MembershipApplicationsDecide,
+        FurriaPermissions.TicketRequestsHandle,
     ];
 }

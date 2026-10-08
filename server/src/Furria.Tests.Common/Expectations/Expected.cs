@@ -93,6 +93,10 @@ public sealed class Expected
     public CalendarEntryGroupSetExpectations ParticipatingGroupsOf(int calendarEntryId) =>
         new(this, calendarEntryId);
 
+    public EventExpectations Event(int eventId) => new(this, eventId);
+
+    public TicketRequestSetExpectations TicketRequests() => new(this);
+
     public TrainingSetExpectations TrainingsOf(int groupId) => new(this, groupId);
 
     public EmailConfirmationSetExpectations EmailConfirmationsOfAccount(int accountId) =>

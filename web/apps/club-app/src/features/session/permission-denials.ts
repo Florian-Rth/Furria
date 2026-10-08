@@ -14,6 +14,9 @@ const DENIED_MESSAGES: Partial<Record<PermissionKey, string>> = {
   [PERMISSION_KEYS.accountsManage]: 'Dir fehlt die Berechtigung für die Zugänge.',
   [PERMISSION_KEYS.membershipApplicationsDecide]:
     'Dir fehlt die Berechtigung, über Beitrittsanträge zu entscheiden.',
+  [PERMISSION_KEYS.eventsManage]: 'Dir fehlt die Berechtigung, Veranstaltungen zu pflegen.',
+  [PERMISSION_KEYS.ticketRequestsHandle]:
+    'Dir fehlt die Berechtigung, Kartenanfragen zu bearbeiten.',
 };
 
 const FALLBACK_MESSAGE = 'Dir fehlt die Berechtigung für diese Seite.';

@@ -62,8 +62,6 @@ export const applyPrivacyHref = '/privacy';
 export const applyConsentNote =
   'Jetzt wird nichts abgebucht. Der Beitrag wird erst fällig, wenn wir dich aufgenommen haben.';
 
-export const applyHoneypotLabel = 'Dieses Feld bitte leer lassen';
-
 export const applySummaryEyebrow = 'DEIN ANTRAG';
 
 export const applySummaryNote =

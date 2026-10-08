@@ -4,6 +4,9 @@ import {
   applyConsentLead,
   applyConsentLegend,
   applyConsentNote,
+  applyErrorTitle,
+  applySubmitDisabledHint,
+  applySubmitLabel,
   applySubmitNote,
   applySummaryEyebrow,
   applySummaryNote,
@@ -25,7 +28,11 @@ export const ApplyFormSection: FC<ApplyFormSectionProps> = ({ state }) => {
   const summaryRows = buildApplySummaryRows(state.derived);
   const submitError =
     state.submitError === null ? null : (
-      <ApplyForm.Error message={state.submitError} mailHref={state.fallbackMailHref} />
+      <ApplyForm.Error
+        title={applyErrorTitle}
+        message={state.submitError}
+        fallback={state.fallback}
+      />
     );
 
   return (
@@ -56,8 +63,8 @@ export const ApplyFormSection: FC<ApplyFormSectionProps> = ({ state }) => {
               ))}
               <ApplyForm.Note>{applySummaryNote}</ApplyForm.Note>
               <ApplyStandingNote standing={state.standing} />
-              <ApplyForm.Submit loading={state.isSubmitting} />
-              <ApplyForm.SubmitHint />
+              <ApplyForm.Submit loading={state.isSubmitting}>{applySubmitLabel}</ApplyForm.Submit>
+              <ApplyForm.SubmitHint>{applySubmitDisabledHint}</ApplyForm.SubmitHint>
               <ApplyForm.Note>{applySubmitNote}</ApplyForm.Note>
             </ApplyForm.Summary>
             {submitError}

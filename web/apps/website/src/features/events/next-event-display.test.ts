@@ -1,102 +1,66 @@
 import { describe, expect, it } from 'vitest';
-import type { Event, EventFacts } from '@/lib/seed/events';
-import { buildCancelledEvent, buildEvent } from '@/lib/seed/events';
+import type { Event } from '@/lib/public-events/schemas';
 import { deriveNextEventFace, selectNextEvent } from './next-event-display';
 
-const SNAPSHOT_AT = new Date('2026-12-01T12:00');
 const NOW = new Date('2026-12-15T12:00');
 
-const baseFacts: EventFacts = {
-  id: 'prunksitzung-1-2027',
+const seasonEvent = (overrides: Partial<Event>): Event => ({
+  eventId: 1,
   title: '1. Prunksitzung',
-  type: 'Prunksitzung',
-  venue: 'Dorfgemeindehaus Großfurra',
   startsAt: '2027-01-23T19:11',
+  endsAt: null,
   doorsOpenAt: '2027-01-23T18:11',
+  venue: { name: 'Dorfgemeindehaus', street: '', zip: '', city: '', hint: null },
   teaser: 'Ein voller Abend.',
-  description: null,
-  performers: null,
-  ageHint: 'ab 12 Jahren empfohlen',
+  ageHint: null,
   priceCents: 1400,
-  capacity: 260,
   presaleStartsAt: '2026-11-11T11:11',
-  presaleEndsAt: null,
-  freeCount: 74,
-};
-
-const seasonEvent = (overrides: Partial<EventFacts>): Event =>
-  buildEvent({ ...baseFacts, ...overrides }, SNAPSHOT_AT);
+  status: 'available',
+  ...overrides,
+});
 
 describe('selectNextEvent', () => {
   it('prefers the earliest evening with tickets over an earlier sold-out one', () => {
     const events = [
-      seasonEvent({ id: 'sold-out', startsAt: '2027-01-16T19:11', freeCount: 0 }),
-      seasonEvent({ id: 'with-tickets', startsAt: '2027-01-30T19:11' }),
-      seasonEvent({ id: 'later-tickets', startsAt: '2027-02-06T19:11' }),
+      seasonEvent({ eventId: 1, startsAt: '2027-01-16T19:11', status: 'soldOut' }),
+      seasonEvent({ eventId: 2, startsAt: '2027-01-30T19:11', status: 'fewLeft' }),
+      seasonEvent({ eventId: 3, startsAt: '2027-02-06T19:11' }),
     ];
 
-    expect(selectNextEvent(events, NOW)?.id).toBe('with-tickets');
+    expect(selectNextEvent(events, NOW)?.eventId).toBe(2);
   });
 
-  it('falls back to the earliest upcoming evening when nothing is on sale', () => {
+  it('falls back to the earliest upcoming evening when no evening has tickets', () => {
     const events = [
-      seasonEvent({ id: 'sold-out', startsAt: '2027-01-16T19:11', freeCount: 0 }),
-      seasonEvent({
-        id: 'announced',
-        startsAt: '2027-02-06T19:11',
-        presaleStartsAt: null,
-        priceCents: null,
-        capacity: null,
-        freeCount: null,
-      }),
+      seasonEvent({ eventId: 1, startsAt: '2027-02-06T19:11', status: 'announced' }),
+      seasonEvent({ eventId: 2, startsAt: '2027-01-16T19:11', status: 'soldOut' }),
     ];
 
-    expect(selectNextEvent(events, NOW)?.id).toBe('sold-out');
+    expect(selectNextEvent(events, NOW)?.eventId).toBe(2);
   });
 
-  it('skips evenings that already happened', () => {
-    const events = [seasonEvent({ id: 'past' })];
-
-    expect(selectNextEvent(events, new Date('2027-03-01T12:00'))).toBeNull();
+  it('skips an evening that has already begun', () => {
+    expect(selectNextEvent([seasonEvent({})], new Date('2027-01-23T20:00'))).toBeNull();
   });
 
   it('never picks a cancelled evening', () => {
-    const events = [buildCancelledEvent(baseFacts)];
-
-    expect(selectNextEvent(events, NOW)).toBeNull();
+    expect(selectNextEvent([seasonEvent({ status: 'cancelled' })], NOW)).toBeNull();
   });
 });
 
 describe('deriveNextEventFace', () => {
-  it('shows the tickets face while seats are on sale', () => {
-    expect(deriveNextEventFace(seasonEvent({}))).toEqual({ kind: 'tickets' });
-    expect(deriveNextEventFace(seasonEvent({ freeCount: 18 }))).toEqual({ kind: 'tickets' });
-  });
-
-  it('counts down to a scheduled presale', () => {
-    const event = seasonEvent({ presaleStartsAt: '2027-01-10T10:00', freeCount: null });
-
-    expect(deriveNextEventFace(event)).toEqual({
-      kind: 'presale',
-      presaleStartsAt: '2027-01-10T10:00',
-    });
-  });
-
-  it('stays announced while no presale date exists', () => {
-    const event = seasonEvent({
-      presaleStartsAt: null,
-      priceCents: null,
-      capacity: null,
-      freeCount: null,
-    });
-
-    expect(deriveNextEventFace(event)).toEqual({ kind: 'announced' });
-  });
-
-  it('shows the honest unavailable face for sold-out and closed evenings', () => {
-    expect(deriveNextEventFace(seasonEvent({ freeCount: 0 }))).toEqual({ kind: 'unavailable' });
-    expect(deriveNextEventFace(seasonEvent({ presaleEndsAt: '2026-11-30T18:00' }))).toEqual({
-      kind: 'unavailable',
-    });
+  it.each<[Partial<Event>, ReturnType<typeof deriveNextEventFace>]>([
+    [{ status: 'available' }, { kind: 'tickets' }],
+    [{ status: 'fewLeft' }, { kind: 'tickets' }],
+    [
+      { status: 'presaleScheduled', presaleStartsAt: '2027-01-10T10:00' },
+      { kind: 'presale', presaleStartsAt: '2027-01-10T10:00' },
+    ],
+    [{ status: 'presaleScheduled', presaleStartsAt: null }, { kind: 'announced' }],
+    [{ status: 'announced', presaleStartsAt: null }, { kind: 'announced' }],
+    [{ status: 'soldOut' }, { kind: 'unavailable' }],
+    [{ status: 'cancelled' }, { kind: 'unavailable' }],
+  ])('shows the face for %j', (overrides, face) => {
+    expect(deriveNextEventFace(seasonEvent(overrides))).toEqual(face);
   });
 });

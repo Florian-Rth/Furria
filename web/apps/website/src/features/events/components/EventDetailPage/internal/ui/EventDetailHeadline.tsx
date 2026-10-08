@@ -1,6 +1,6 @@
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
-import type { Event } from '@/lib/seed/events';
+import type { Event } from '@/lib/public-events/schemas';
 
 interface EventDetailHeadlineProps {
   event: Event;

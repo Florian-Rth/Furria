@@ -11,4 +11,7 @@ public sealed record MailRecipient
 
     public static MailRecipient MembershipApplication(int membershipApplicationId) =>
         new() { Kind = MailRecipientKind.MembershipApplication, Id = membershipApplicationId };
+
+    public static MailRecipient TicketRequest(int ticketRequestId) =>
+        new() { Kind = MailRecipientKind.TicketRequest, Id = ticketRequestId };
 }

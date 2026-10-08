@@ -1,4 +1,5 @@
 using Furria.Core.Club;
+using Furria.Core.Events;
 using Furria.Core.Groups;
 using Furria.Core.Identity;
 using Furria.Core.MembershipApplications;
@@ -68,6 +69,10 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
     public DbSet<AttendanceResponse> AttendanceResponses => Set<AttendanceResponse>();
 
     public DbSet<CalendarEntryGroup> CalendarEntryGroups => Set<CalendarEntryGroup>();
+
+    public DbSet<Event> Events => Set<Event>();
+
+    public DbSet<TicketRequest> TicketRequests => Set<TicketRequest>();
 
     public DbSet<ClubRecord> ClubRecords => Set<ClubRecord>();
 

@@ -20,13 +20,11 @@ import { Route as SiteGatedJoinRouteImport } from './routes/_site/_gated/join'
 import { Route as SiteGatedGalleryRouteImport } from './routes/_site/_gated/gallery'
 import { Route as SiteGatedEventsRouteImport } from './routes/_site/_gated/events'
 import { Route as SiteGatedClubRouteImport } from './routes/_site/_gated/club'
-import { Route as SiteGatedOrdersOrderCodeRouteImport } from './routes/_site/_gated/orders.$orderCode'
 import { Route as SiteGatedNewsSlugRouteImport } from './routes/_site/_gated/news_.$slug'
 import { Route as SiteGatedJoinApplyRouteImport } from './routes/_site/_gated/join_.apply'
 import { Route as SiteGatedGalleryAlbumSlugRouteImport } from './routes/_site/_gated/gallery_.$albumSlug'
-import { Route as SiteGatedEventsExchangeRouteImport } from './routes/_site/_gated/events_.exchange'
 import { Route as SiteGatedEventsEventSlugRouteImport } from './routes/_site/_gated/events_.$eventSlug'
-import { Route as SiteGatedEventsEventSlugOrderRouteImport } from './routes/_site/_gated/events_.$eventSlug_.order'
+import { Route as SiteGatedEventsEventSlugAnfrageRouteImport } from './routes/_site/_gated/events_.$eventSlug_.anfrage'
 
 const SiteRoute = SiteRouteImport.update({
   id: '/_site',
@@ -81,12 +79,6 @@ const SiteGatedClubRoute = SiteGatedClubRouteImport.update({
   path: '/club',
   getParentRoute: () => SiteGatedRoute,
 } as any)
-const SiteGatedOrdersOrderCodeRoute =
-  SiteGatedOrdersOrderCodeRouteImport.update({
-    id: '/orders/$orderCode',
-    path: '/orders/$orderCode',
-    getParentRoute: () => SiteGatedRoute,
-  } as any)
 const SiteGatedNewsSlugRoute = SiteGatedNewsSlugRouteImport.update({
   id: '/news_/$slug',
   path: '/news/$slug',
@@ -103,21 +95,16 @@ const SiteGatedGalleryAlbumSlugRoute =
     path: '/gallery/$albumSlug',
     getParentRoute: () => SiteGatedRoute,
   } as any)
-const SiteGatedEventsExchangeRoute = SiteGatedEventsExchangeRouteImport.update({
-  id: '/events_/exchange',
-  path: '/events/exchange',
-  getParentRoute: () => SiteGatedRoute,
-} as any)
 const SiteGatedEventsEventSlugRoute =
   SiteGatedEventsEventSlugRouteImport.update({
     id: '/events_/$eventSlug',
     path: '/events/$eventSlug',
     getParentRoute: () => SiteGatedRoute,
   } as any)
-const SiteGatedEventsEventSlugOrderRoute =
-  SiteGatedEventsEventSlugOrderRouteImport.update({
-    id: '/events_/$eventSlug_/order',
-    path: '/events/$eventSlug/order',
+const SiteGatedEventsEventSlugAnfrageRoute =
+  SiteGatedEventsEventSlugAnfrageRouteImport.update({
+    id: '/events_/$eventSlug_/anfrage',
+    path: '/events/$eventSlug/anfrage',
     getParentRoute: () => SiteGatedRoute,
   } as any)
 
@@ -132,12 +119,10 @@ export interface FileRoutesByFullPath {
   '/news': typeof SiteGatedNewsRoute
   '/join/confirm': typeof SiteJoinConfirmRoute
   '/events/$eventSlug': typeof SiteGatedEventsEventSlugRoute
-  '/events/exchange': typeof SiteGatedEventsExchangeRoute
   '/gallery/$albumSlug': typeof SiteGatedGalleryAlbumSlugRoute
   '/join/apply': typeof SiteGatedJoinApplyRoute
   '/news/$slug': typeof SiteGatedNewsSlugRoute
-  '/orders/$orderCode': typeof SiteGatedOrdersOrderCodeRoute
-  '/events/$eventSlug/order': typeof SiteGatedEventsEventSlugOrderRoute
+  '/events/$eventSlug/anfrage': typeof SiteGatedEventsEventSlugAnfrageRoute
 }
 export interface FileRoutesByTo {
   '/': typeof SiteIndexRoute
@@ -150,12 +135,10 @@ export interface FileRoutesByTo {
   '/news': typeof SiteGatedNewsRoute
   '/join/confirm': typeof SiteJoinConfirmRoute
   '/events/$eventSlug': typeof SiteGatedEventsEventSlugRoute
-  '/events/exchange': typeof SiteGatedEventsExchangeRoute
   '/gallery/$albumSlug': typeof SiteGatedGalleryAlbumSlugRoute
   '/join/apply': typeof SiteGatedJoinApplyRoute
   '/news/$slug': typeof SiteGatedNewsSlugRoute
-  '/orders/$orderCode': typeof SiteGatedOrdersOrderCodeRoute
-  '/events/$eventSlug/order': typeof SiteGatedEventsEventSlugOrderRoute
+  '/events/$eventSlug/anfrage': typeof SiteGatedEventsEventSlugAnfrageRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -171,12 +154,10 @@ export interface FileRoutesById {
   '/_site/_gated/news': typeof SiteGatedNewsRoute
   '/_site/join_/confirm': typeof SiteJoinConfirmRoute
   '/_site/_gated/events_/$eventSlug': typeof SiteGatedEventsEventSlugRoute
-  '/_site/_gated/events_/exchange': typeof SiteGatedEventsExchangeRoute
   '/_site/_gated/gallery_/$albumSlug': typeof SiteGatedGalleryAlbumSlugRoute
   '/_site/_gated/join_/apply': typeof SiteGatedJoinApplyRoute
   '/_site/_gated/news_/$slug': typeof SiteGatedNewsSlugRoute
-  '/_site/_gated/orders/$orderCode': typeof SiteGatedOrdersOrderCodeRoute
-  '/_site/_gated/events_/$eventSlug_/order': typeof SiteGatedEventsEventSlugOrderRoute
+  '/_site/_gated/events_/$eventSlug_/anfrage': typeof SiteGatedEventsEventSlugAnfrageRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -191,12 +172,10 @@ export interface FileRouteTypes {
     | '/news'
     | '/join/confirm'
     | '/events/$eventSlug'
-    | '/events/exchange'
     | '/gallery/$albumSlug'
     | '/join/apply'
     | '/news/$slug'
-    | '/orders/$orderCode'
-    | '/events/$eventSlug/order'
+    | '/events/$eventSlug/anfrage'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -209,12 +188,10 @@ export interface FileRouteTypes {
     | '/news'
     | '/join/confirm'
     | '/events/$eventSlug'
-    | '/events/exchange'
     | '/gallery/$albumSlug'
     | '/join/apply'
     | '/news/$slug'
-    | '/orders/$orderCode'
-    | '/events/$eventSlug/order'
+    | '/events/$eventSlug/anfrage'
   id:
     | '__root__'
     | '/_site'
@@ -229,12 +206,10 @@ export interface FileRouteTypes {
     | '/_site/_gated/news'
     | '/_site/join_/confirm'
     | '/_site/_gated/events_/$eventSlug'
-    | '/_site/_gated/events_/exchange'
     | '/_site/_gated/gallery_/$albumSlug'
     | '/_site/_gated/join_/apply'
     | '/_site/_gated/news_/$slug'
-    | '/_site/_gated/orders/$orderCode'
-    | '/_site/_gated/events_/$eventSlug_/order'
+    | '/_site/_gated/events_/$eventSlug_/anfrage'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -320,13 +295,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SiteGatedClubRouteImport
       parentRoute: typeof SiteGatedRoute
     }
-    '/_site/_gated/orders/$orderCode': {
-      id: '/_site/_gated/orders/$orderCode'
-      path: '/orders/$orderCode'
-      fullPath: '/orders/$orderCode'
-      preLoaderRoute: typeof SiteGatedOrdersOrderCodeRouteImport
-      parentRoute: typeof SiteGatedRoute
-    }
     '/_site/_gated/news_/$slug': {
       id: '/_site/_gated/news_/$slug'
       path: '/news/$slug'
@@ -348,13 +316,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SiteGatedGalleryAlbumSlugRouteImport
       parentRoute: typeof SiteGatedRoute
     }
-    '/_site/_gated/events_/exchange': {
-      id: '/_site/_gated/events_/exchange'
-      path: '/events/exchange'
-      fullPath: '/events/exchange'
-      preLoaderRoute: typeof SiteGatedEventsExchangeRouteImport
-      parentRoute: typeof SiteGatedRoute
-    }
     '/_site/_gated/events_/$eventSlug': {
       id: '/_site/_gated/events_/$eventSlug'
       path: '/events/$eventSlug'
@@ -362,11 +323,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SiteGatedEventsEventSlugRouteImport
       parentRoute: typeof SiteGatedRoute
     }
-    '/_site/_gated/events_/$eventSlug_/order': {
-      id: '/_site/_gated/events_/$eventSlug_/order'
-      path: '/events/$eventSlug/order'
-      fullPath: '/events/$eventSlug/order'
-      preLoaderRoute: typeof SiteGatedEventsEventSlugOrderRouteImport
+    '/_site/_gated/events_/$eventSlug_/anfrage': {
+      id: '/_site/_gated/events_/$eventSlug_/anfrage'
+      path: '/events/$eventSlug/anfrage'
+      fullPath: '/events/$eventSlug/anfrage'
+      preLoaderRoute: typeof SiteGatedEventsEventSlugAnfrageRouteImport
       parentRoute: typeof SiteGatedRoute
     }
   }
@@ -379,12 +340,10 @@ interface SiteGatedRouteChildren {
   SiteGatedJoinRoute: typeof SiteGatedJoinRoute
   SiteGatedNewsRoute: typeof SiteGatedNewsRoute
   SiteGatedEventsEventSlugRoute: typeof SiteGatedEventsEventSlugRoute
-  SiteGatedEventsExchangeRoute: typeof SiteGatedEventsExchangeRoute
   SiteGatedGalleryAlbumSlugRoute: typeof SiteGatedGalleryAlbumSlugRoute
   SiteGatedJoinApplyRoute: typeof SiteGatedJoinApplyRoute
   SiteGatedNewsSlugRoute: typeof SiteGatedNewsSlugRoute
-  SiteGatedOrdersOrderCodeRoute: typeof SiteGatedOrdersOrderCodeRoute
-  SiteGatedEventsEventSlugOrderRoute: typeof SiteGatedEventsEventSlugOrderRoute
+  SiteGatedEventsEventSlugAnfrageRoute: typeof SiteGatedEventsEventSlugAnfrageRoute
 }
 
 const SiteGatedRouteChildren: SiteGatedRouteChildren = {
@@ -394,12 +353,10 @@ const SiteGatedRouteChildren: SiteGatedRouteChildren = {
   SiteGatedJoinRoute: SiteGatedJoinRoute,
   SiteGatedNewsRoute: SiteGatedNewsRoute,
   SiteGatedEventsEventSlugRoute: SiteGatedEventsEventSlugRoute,
-  SiteGatedEventsExchangeRoute: SiteGatedEventsExchangeRoute,
   SiteGatedGalleryAlbumSlugRoute: SiteGatedGalleryAlbumSlugRoute,
   SiteGatedJoinApplyRoute: SiteGatedJoinApplyRoute,
   SiteGatedNewsSlugRoute: SiteGatedNewsSlugRoute,
-  SiteGatedOrdersOrderCodeRoute: SiteGatedOrdersOrderCodeRoute,
-  SiteGatedEventsEventSlugOrderRoute: SiteGatedEventsEventSlugOrderRoute,
+  SiteGatedEventsEventSlugAnfrageRoute: SiteGatedEventsEventSlugAnfrageRoute,
 }
 
 const SiteGatedRouteWithChildren = SiteGatedRoute._addFileChildren(

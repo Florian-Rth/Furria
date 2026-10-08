@@ -1,17 +1,17 @@
 import { sessionAt } from '@/lib/club';
 import { formatClockTime, formatLongDate, parseBerlinDateTime } from '@/lib/date';
 import { formatEuros } from '@/lib/money';
-import type { Event } from '@/lib/seed/events';
+import type { Event, EventDetail, EventVenue } from '@/lib/public-events/schemas';
 
 export interface EventStat {
   value: string;
   label: string;
 }
 
-export const deriveEventSessionLabel = (event: Event): string =>
+export const deriveEventSessionLabel = (event: Pick<Event, 'startsAt'>): string =>
   sessionAt(parseBerlinDateTime(event.startsAt)).yearsLabel;
 
-export const buildEventDocumentTitle = (event: Event): string =>
+export const buildEventDocumentTitle = (event: Pick<Event, 'title' | 'startsAt'>): string =>
   `${event.title} ${deriveEventSessionLabel(event)}`;
 
 export const deriveEventStats = (event: Event): EventStat[] => {
@@ -25,19 +25,34 @@ export const deriveEventStats = (event: Event): EventStat[] => {
   if (event.priceCents !== null) {
     stats.push({ value: formatEuros(event.priceCents), label: 'pro Karte' });
   }
+  if (event.ageHint !== null) {
+    stats.push({ value: event.ageHint, label: 'Alter' });
+  }
 
   return stats;
 };
 
-export interface LineupAct {
-  position: string;
-  act: string;
+export const deriveEventIntroParagraphs = (event: EventDetail): string[] =>
+  event.description ?? [event.teaser];
+
+export interface VenueFact {
+  label: string;
+  value: string;
 }
 
-export const deriveEventLineup = (event: Event): LineupAct[] | null =>
-  event.performers === null
-    ? null
-    : event.performers.map((act, index) => ({ position: String(index + 1), act }));
+const joinPresent = (parts: string[], separator: string): string =>
+  parts.filter((part) => part.length > 0).join(separator);
 
-export const deriveEventIntroParagraphs = (event: Event): string[] =>
-  event.description ?? [event.teaser];
+export const deriveVenueFacts = (venue: EventVenue): VenueFact[] => {
+  const address = joinPresent([venue.street, joinPresent([venue.zip, venue.city], ' ')], ', ');
+  const facts: VenueFact[] = [];
+
+  if (address.length > 0) {
+    facts.push({ label: 'ADRESSE', value: address });
+  }
+  if (venue.hint !== null) {
+    facts.push({ label: 'HINWEIS', value: venue.hint });
+  }
+
+  return facts;
+};

@@ -36,4 +36,6 @@ public sealed record CalendarEntrySummary
     public required AttendanceAnswer? ViewerAnswer { get; init; }
 
     public required bool IsRunning { get; init; }
+
+    public required CalendarEventFacts? Event { get; init; }
 }

@@ -13,6 +13,7 @@ import {
   formatWeekdayAndFullDate,
   formatWeekdayLong,
   parseBerlinDateTime,
+  toBerlinWallClock,
 } from './date';
 
 type FormatterCase = [string, (isoDate: string) => string, string, string];
@@ -96,5 +97,15 @@ describe('berlinDayNumber', () => {
 
   it('places a real instant on the Berlin calendar', () => {
     expect(berlinDayNumber(new Date('2027-01-23T23:30:00Z'))).toBe(berlinDayNumber('2027-01-24'));
+  });
+});
+
+describe('toBerlinWallClock', () => {
+  it.each([
+    ['2027-01-23T18:11:00+00:00', '2027-01-23T19:11'],
+    ['2026-07-01T10:00:00Z', '2026-07-01T12:00'],
+    ['2027-01-23T23:30:00+00:00', '2027-01-24T00:30'],
+  ])('reads %s as the Berlin wall clock %s', (instant, wallClock) => {
+    expect(toBerlinWallClock(instant)).toBe(wallClock);
   });
 });

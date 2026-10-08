@@ -2,6 +2,7 @@ using Furria.Application.ClubApp;
 using Furria.Application.Identity;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Club;
+using Furria.Infrastructure.Events;
 using Furria.Infrastructure.Groups;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Mail;
@@ -104,6 +105,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<KeyHoldingService>();
         services.AddScoped<AnnouncementService>();
         services.AddScoped<CalendarService>();
+        services.AddScoped<EventService>();
+        services.AddScoped<TicketRequestService>();
+        services.AddScoped<TicketRequestArrivalNotifier>();
         services.AddScoped<ClubRecordService>();
         services.AddScoped<ManagementService>();
         services.AddScoped<ToDoService>();
@@ -132,6 +136,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<PasswordResetMailThrottle>();
         services.AddHostedService<SignedOutMailRequestWorker>();
         services.AddHostedService<UnconfirmedApplicationPurge>();
+        services.AddHostedService<PastTicketRequestPurge>();
         services.Configure<DataProtectionTokenProviderOptions>(options =>
             options.TokenLifespan = PasswordResetService.LinkLifetime
         );

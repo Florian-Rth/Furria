@@ -2,7 +2,7 @@ import { KkHeroSection } from '@furria/ui';
 import Box from '@mui/material/Box';
 import type { FC, ReactNode } from 'react';
 import { deriveHeroIntro, deriveSessionEyebrow } from '@/features/events/hero-display';
-import type { Event } from '@/lib/seed/events';
+import type { Event } from '@/lib/public-events/schemas';
 import { EventsHeroStats } from './EventsHeroStats';
 
 interface EventsHeroProps {

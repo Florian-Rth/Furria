@@ -360,6 +360,37 @@ public sealed class GetStartToDosTests
     }
 
     [Fact]
+    public async Task Should_CountWaitingTicketRequests_When_TheViewerHandlesThem()
+    {
+        await OnTuesdayEveningAsync(
+            identity => identity,
+            async ctx =>
+            {
+                var toDos = ToDosOf(await StartOfAsync(ctx, "tina"));
+
+                Assert.Equal([ToDoKind.TicketRequestWaiting], toDos.Select(toDo => toDo.Kind));
+                Assert.Equal(2, CountOf(toDos, ToDoKind.TicketRequestWaiting));
+            },
+            WithTwoTicketRequests
+        );
+    }
+
+    [Fact]
+    public async Task Should_LeaveOutWaitingTicketRequests_When_TheViewerDoesNotHandleThem()
+    {
+        await OnTuesdayEveningAsync(
+            identity => identity,
+            async ctx =>
+            {
+                var toDos = ToDosOf(await StartOfAsync(ctx, "frank"));
+
+                Assert.Null(CountOf(toDos, ToDoKind.TicketRequestWaiting));
+            },
+            WithTwoTicketRequests
+        );
+    }
+
+    [Fact]
     public async Task Should_ShowOnlyKeyWork_When_TheViewerManagesKeysAlone()
     {
         await OnTuesdayEveningAsync(
@@ -553,6 +584,11 @@ public sealed class GetStartToDosTests
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
 
+    private static void WithTwoTicketRequests(ClubSeedBuilder club) =>
+        club.AddEvent("gala", "1. Prunksitzung", TuesdayEvening.AddDays(4), "sporthalle")
+            .AddTicketRequest("mia-gala", "gala", "Mia Gast", "mia@guest.test")
+            .AddTicketRequest("ole-gala", "gala", "Ole Gast", "ole@guest.test");
+
     private static IReadOnlyList<StartToDoDto> ToDosOf(GetStartResponse start) =>
         start.Panels.SingleOrDefault(panel => panel.Kind == StartPanelKind.ToDos)?.ToDos ?? [];
 
@@ -603,6 +639,8 @@ public sealed class GetStartToDosTests
                                         .AddAccount("petra")
                                         .AddPerson("dana", "Dana", "Aufnahme")
                                         .AddAccount("dana")
+                                        .AddPerson("tina", "Tina", "Kartenanfragen")
+                                        .AddAccount("tina")
                                         .AddPerson("lena", "Lena", "Garde")
                                         .AddAccount("lena")
                                         .AddMembership("lena-member", "lena", JoinedIn2015)
@@ -638,6 +676,13 @@ public sealed class GetStartToDosTests
                                         "Aufnahme",
                                         "dana",
                                         FurriaPermissions.MembershipApplicationsDecide
+                                    )
+                                    .AddRoleWithHolder(
+                                        "kartenanfragen",
+                                        "tina-kartenanfragen",
+                                        "Kartenanfragen",
+                                        "tina",
+                                        FurriaPermissions.TicketRequestsHandle
                                     )
                                     .AddRoleWithHolder(
                                         "register",

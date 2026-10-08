@@ -59,6 +59,14 @@ const PERMISSION_COPY: Record<PermissionKey, RolePermissionCopy> = {
     title: 'Über Beitrittsanträge entscheiden',
     line: 'Beitrittsanträge sehen, bei jedem neuen eine Mail bekommen, aufnehmen oder ablehnen. Eine Aufnahme legt Person, Mitgliedschaft und Einladung an, auch ohne das Recht, Personen zu pflegen.',
   },
+  [PERMISSION_KEYS.eventsManage]: {
+    title: 'Veranstaltungen pflegen',
+    line: 'Veranstaltungen anlegen, ihre Eckdaten für die Website pflegen, die Kartenlage setzen und absagen.',
+  },
+  [PERMISSION_KEYS.ticketRequestsHandle]: {
+    title: 'Kartenanfragen bearbeiten',
+    line: 'Kartenanfragen von der Website sehen und erledigen.',
+  },
 };
 
 const KNOWN_KEYS: readonly PermissionKey[] = Object.values(PERMISSION_KEYS);

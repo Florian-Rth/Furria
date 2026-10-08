@@ -1,42 +1,38 @@
 import { describe, expect, it } from 'vitest';
-import type { Event, EventFacts } from '@/lib/seed/events';
-import { buildCancelledEvent, buildEvent } from '@/lib/seed/events';
+import type { Event } from '@/lib/public-events/schemas';
 import { deriveHeroIntro, deriveHeroStats, deriveSessionEyebrow } from './hero-display';
 
-const SNAPSHOT_AT = new Date('2026-12-01T12:00');
-
-const baseFacts: EventFacts = {
-  id: 'prunksitzung-1-2027',
+const seasonEvent = (overrides: Partial<Event>): Event => ({
+  eventId: 1,
   title: '1. Prunksitzung',
-  type: 'Prunksitzung',
-  venue: 'Dorfgemeindehaus Großfurra',
   startsAt: '2027-01-23T19:11',
+  endsAt: null,
   doorsOpenAt: '2027-01-23T18:11',
+  venue: {
+    name: 'Dorfgemeindehaus Großfurra',
+    street: 'Schulstraße 4',
+    zip: '99713',
+    city: 'Großfurra',
+    hint: null,
+  },
   teaser: 'Ein voller Abend.',
-  description: null,
-  performers: null,
-  ageHint: 'ab 12 Jahren empfohlen',
+  ageHint: null,
   priceCents: 1400,
-  capacity: 260,
   presaleStartsAt: '2026-11-11T11:11',
-  presaleEndsAt: null,
-  freeCount: 74,
-};
-
-const seasonEvent = (overrides: Partial<EventFacts>): Event =>
-  buildEvent({ ...baseFacts, ...overrides }, SNAPSHOT_AT);
+  status: 'available',
+  ...overrides,
+});
 
 const threeEvenings = (): Event[] => [
-  seasonEvent({ id: 'first' }),
-  seasonEvent({ id: 'second', startsAt: '2027-01-30T19:11', priceCents: 1000, freeCount: 155 }),
+  seasonEvent({}),
+  seasonEvent({ eventId: 2, startsAt: '2027-01-30T19:11', priceCents: 1000 }),
   seasonEvent({
-    id: 'third',
+    eventId: 3,
     startsAt: '2027-02-07T14:11',
     doorsOpenAt: null,
     priceCents: null,
-    capacity: null,
-    freeCount: null,
     presaleStartsAt: null,
+    status: 'announced',
   }),
 ];
 
@@ -68,7 +64,13 @@ describe('deriveHeroIntro', () => {
   });
 
   it('drops the venue clause when the venues differ', () => {
-    const events = [seasonEvent({}), seasonEvent({ id: 'second', venue: 'Festplatz' })];
+    const events = [
+      seasonEvent({}),
+      seasonEvent({
+        eventId: 2,
+        venue: { name: 'Festplatz', street: '', zip: '', city: 'Großfurra', hint: null },
+      }),
+    ];
 
     expect(deriveHeroIntro(events)).toBe(
       'Zwei Abende, vom 23. Januar 2027 bis zum 23. Januar 2027.',
@@ -81,24 +83,21 @@ describe('deriveHeroIntro', () => {
 });
 
 describe('deriveHeroStats', () => {
-  it('derives count, cheapest known price and remaining tickets', () => {
+  it('derives the count and the cheapest known price', () => {
     expect(deriveHeroStats(threeEvenings())).toEqual([
       { value: '3', label: 'Abende' },
       { value: 'ab 10 €', label: 'pro Karte' },
-      { value: '229', label: 'Karten noch frei' },
     ]);
   });
 
-  it('omits price and free seats while nothing is published', () => {
-    const unpublished = [
-      seasonEvent({ priceCents: null, capacity: null, freeCount: null, presaleStartsAt: null }),
-    ];
+  it('omits the price while none is published', () => {
+    const unpublished = [seasonEvent({ priceCents: null })];
 
     expect(deriveHeroStats(unpublished)).toEqual([{ value: '1', label: 'Abend' }]);
   });
 
   it('ignores cancelled evenings entirely', () => {
-    const events = [buildCancelledEvent({ ...baseFacts, freeCount: null })];
+    const events = [seasonEvent({ status: 'cancelled' })];
 
     expect(deriveHeroStats(events)).toEqual([]);
   });

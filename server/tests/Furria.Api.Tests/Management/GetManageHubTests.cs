@@ -792,6 +792,27 @@ public sealed class GetManageHubTests
     }
 
     [Fact]
+    public async Task Should_LeaveOutWaitingTicketRequests_When_TheHubIsRead()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        var result = await ReadTheHubAsAdminAsync(
+            builder =>
+                builder.Club(club =>
+                    club.AddVenue("buergerhaus", "Bürgerhaus")
+                        .AddEvent("gala", "1. Prunksitzung", InTheMeantime, "buergerhaus")
+                        .AddTicketRequest("mia-gala", "gala", "Mia Gast", "mia@guest.test")
+                ),
+            ct
+        );
+
+        Assert.DoesNotContain(
+            ToDoKind.TicketRequestWaiting,
+            result.ToDos.Select(toDo => toDo.Kind)
+        );
+    }
+
+    [Fact]
     public async Task Should_ListNoToDo_When_TheCallerOnlyHoldsGroupsManage()
     {
         var (response, result) = await AskAsHolderOfAsync(FurriaPermissions.GroupsManage);

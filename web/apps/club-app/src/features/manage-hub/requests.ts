@@ -1,6 +1,4 @@
-import type { ToDoKind } from '@/features/to-dos';
 import { apiFetch } from '@/lib/api/api-fetch';
-import { NoContentSchema } from '@/lib/api/schemas';
 import type { InvitationRoundPreview, InvitationRoundSent, ManageHub } from './schemas';
 import {
   InvitationRoundPreviewSchema,
@@ -32,20 +30,3 @@ export const requestInvitationReminders = (accessToken: string): Promise<Invitat
     schema: InvitationRoundSentSchema,
     accessToken,
   });
-
-const toDoSeenPath = (kind: ToDoKind): string => `/api/to-dos/${kind}/seen`;
-
-export const requestToDoSeen = (
-  kind: ToDoKind,
-  version: string,
-  accessToken: string,
-): Promise<void> =>
-  apiFetch(toDoSeenPath(kind), {
-    method: 'PUT',
-    body: { version },
-    schema: NoContentSchema,
-    accessToken,
-  });
-
-export const requestToDoUnseen = (kind: ToDoKind, accessToken: string): Promise<void> =>
-  apiFetch(toDoSeenPath(kind), { method: 'DELETE', schema: NoContentSchema, accessToken });

@@ -137,6 +137,20 @@ docker compose logs api | grep -E 'Membership application|membership application
 Spent challenges and the rate limits live in memory: an API restart forgets them, so a
 challenge solved in the 10 minutes before a restart can be spent once more.
 
+## Ticket requests
+
+`POST /api/ticket-requests` takes the website's request for tickets to one event. The same guards
+as applications: a solved Altcha challenge (`GET /api/ticket-requests/challenge`), the signed-out
+per-IP limit and 5 requests per address in 15 minutes. There is no confirmation step — the guest
+gets a receipt, every holder of `ticket_requests.handle` with an email a notice. A request is
+taken only while its event's presale runs, it is neither sold out nor cancelled and it has not
+begun. It lives until someone marks it done (*Erledigt* deletes it); one still open is deleted
+the day after its evening, swept every 15 minutes. The trail:
+
+```bash
+docker compose logs api | grep -E 'Ticket request|ticket requests|Altcha'
+```
+
 ## Moving the live host onto the example compose
 
 The live `~/furria/docker-compose.yml` predates L1. Bring it onto

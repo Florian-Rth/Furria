@@ -1,3 +1,4 @@
+using Furria.Core.Events;
 using Furria.Core.Groups;
 
 namespace Furria.Core.Club;
@@ -31,6 +32,8 @@ public sealed class CalendarEntry : ITimestamped
     public Venue? Venue { get; set; }
 
     public Group? OwnerGroup { get; set; }
+
+    public Event? Event { get; set; }
 
     public ICollection<CalendarEntryGroup> ParticipatingGroups { get; set; } = [];
 }

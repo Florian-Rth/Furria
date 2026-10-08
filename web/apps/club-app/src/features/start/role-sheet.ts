@@ -1,6 +1,7 @@
 import type { RolePermissionCopy } from '@/features/manage-roles';
 import { isPermissionKey, toPermissionCopy } from '@/features/manage-roles';
-import { MANAGE_KEYS } from '@/features/session';
+import type { AppSection } from '@/features/session';
+import { MANAGE_SECTIONS, toPermittedSections } from '@/features/session';
 import type { StartMine } from './schemas';
 
 export type RoleSheetVariant = 'role' | 'office';
@@ -8,7 +9,7 @@ export type RoleSheetVariant = 'role' | 'office';
 export interface RoleSheetView {
   title: string;
   permissions: RolePermissionCopy[];
-  manages: boolean;
+  workbench: AppSection | null;
 }
 
 export const ROLE_SHEET_KINDS: Record<RoleSheetVariant, StartMine['kind']> = {
@@ -23,6 +24,6 @@ export const toRoleSheet = (mine: StartMine): RoleSheetView => {
   return {
     title: mine.kind === 'newBoardSeat' ? `Vorstand: ${name}` : `Rolle ${name}`,
     permissions: keys.map(toPermissionCopy),
-    manages: keys.some((key) => MANAGE_KEYS.includes(key)),
+    workbench: toPermittedSections(MANAGE_SECTIONS, keys)[0] ?? null,
   };
 };

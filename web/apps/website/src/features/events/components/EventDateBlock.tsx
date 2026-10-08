@@ -6,10 +6,9 @@ import { formatDayOfMonth, formatMonthAbbreviation } from '@/lib/date';
 
 interface EventDateBlockProps {
   startsAt: string;
-  tint: string;
 }
 
-export const EventDateBlock: FC<EventDateBlockProps> = ({ startsAt, tint }) => {
+export const EventDateBlock: FC<EventDateBlockProps> = ({ startsAt }) => {
   const day = formatDayOfMonth(startsAt);
   const month = formatMonthAbbreviation(startsAt);
 
@@ -25,7 +24,7 @@ export const EventDateBlock: FC<EventDateBlockProps> = ({ startsAt, tint }) => {
         border: 1.5,
         borderColor: 'divider',
         borderTop: 3,
-        borderTopColor: tint,
+        borderTopColor: 'primary.main',
         borderRadius: `${kkTokens.radius.base}px`,
         bgcolor: 'background.paper',
       }}

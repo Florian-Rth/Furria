@@ -8,4 +8,5 @@ public enum CalendarEntryKind
     Meeting = 4,
     Party = 5,
     Other = 6,
+    Event = 7,
 }

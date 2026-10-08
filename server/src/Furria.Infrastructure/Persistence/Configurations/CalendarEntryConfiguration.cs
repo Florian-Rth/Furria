@@ -40,6 +40,10 @@ public sealed class CalendarEntryConfiguration : IEntityTypeConfiguration<Calend
                     "ck_calendar_entry_owner_visibility",
                     "owner_group_id IS NOT NULL OR visibility <> 'Group'"
                 );
+                table.HasCheckConstraint(
+                    "ck_calendar_entry_event_public",
+                    "kind <> 'Event' OR (visibility = 'Public' AND owner_group_id IS NULL)"
+                );
             }
         );
         builder.HasKey(entry => entry.Id);

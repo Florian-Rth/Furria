@@ -4,6 +4,7 @@ using Furria.Api.Authorization;
 using Furria.Application.Authorization;
 using Furria.Application.Club;
 using Furria.Core.Club;
+using Furria.Core.Events;
 using Furria.Core.Groups;
 using Furria.Infrastructure.Club;
 
@@ -72,6 +73,18 @@ public sealed class GetCalendar : Endpoint<GetCalendarRequest, GetCalendarRespon
             Description = entry.Description,
             ViewerAnswer = entry.ViewerAnswer,
             IsRunning = entry.IsRunning,
+            Event = entry.Event is { } facts ? ToDto(facts) : null,
+        };
+
+    private static CalendarEventFactsDto ToDto(CalendarEventFacts facts) =>
+        new()
+        {
+            DoorsOpenAt = facts.DoorsOpenAt,
+            Teaser = facts.Teaser,
+            AgeHint = facts.AgeHint,
+            PriceCents = facts.PriceCents,
+            PresaleStartsAt = facts.PresaleStartsAt,
+            Status = facts.Status,
         };
 
     private static ParticipatingGroupDto ToDto(ParticipatingGroup group) =>
@@ -181,6 +194,23 @@ public sealed record CalendarEntryDto
     public required AttendanceAnswer? ViewerAnswer { get; init; }
 
     public required bool IsRunning { get; init; }
+
+    public required CalendarEventFactsDto? Event { get; init; }
+}
+
+public sealed record CalendarEventFactsDto
+{
+    public required TimeOnly? DoorsOpenAt { get; init; }
+
+    public required string Teaser { get; init; }
+
+    public required string? AgeHint { get; init; }
+
+    public required int? PriceCents { get; init; }
+
+    public required DateTimeOffset? PresaleStartsAt { get; init; }
+
+    public required EventSalesStatus Status { get; init; }
 }
 
 public sealed record ParticipatingGroupDto

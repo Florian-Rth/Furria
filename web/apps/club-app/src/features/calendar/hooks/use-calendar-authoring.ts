@@ -1,14 +1,15 @@
 import { useMyGroupsQuery } from '@/features/group-hub';
 import { useMeQuery, usePermissions } from '@/features/session';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
-import type { CalendarOwnerOption } from '../calendar-authoring';
-import { mayOwnCalendarEntry, toOwnerOptions } from '../calendar-authoring';
+import type { CalendarEntryLink, CalendarOwnerOption } from '../calendar-authoring';
+import { mayOwnCalendarEntry, toEntryLink, toOwnerOptions } from '../calendar-authoring';
 import type { CalendarEntry } from '../schemas';
 
 export interface CalendarAuthoring {
   ownerOptions: readonly CalendarOwnerOption[];
   mayAuthor: boolean;
   mayOwn: (entry: CalendarEntry) => boolean;
+  linkOf: (entry: CalendarEntry) => CalendarEntryLink | null;
 }
 
 export interface CalendarAuthoringLoad {
@@ -40,11 +41,15 @@ export const useCalendarAuthoring = (): CalendarAuthoringLoad => {
     has(PERMISSION_KEYS.calendarManageClub),
   );
 
+  const managesEvents = has(PERMISSION_KEYS.eventsManage);
+  const mayOwn = (entry: CalendarEntry): boolean => mayOwnCalendarEntry(ownerOptions, entry);
+
   return {
     authoring: {
       ownerOptions,
       mayAuthor: ownerOptions.length > 0,
-      mayOwn: (entry) => mayOwnCalendarEntry(ownerOptions, entry.ownerGroupId),
+      mayOwn,
+      linkOf: (entry) => toEntryLink(entry, mayOwn(entry), managesEvents),
     },
     error: null,
     retry,

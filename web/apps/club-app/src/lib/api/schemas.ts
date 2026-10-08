@@ -103,6 +103,17 @@ export const PERMISSION_KEYS = {
   calendarManageClub: 'calendar.manage_club',
   accountsManage: 'accounts.manage',
   membershipApplicationsDecide: 'membership_applications.decide',
+  eventsManage: 'events.manage',
+  ticketRequestsHandle: 'ticket_requests.handle',
 } as const;
 
 export type PermissionKey = (typeof PERMISSION_KEYS)[keyof typeof PERMISSION_KEYS];
+
+const CLOCK_TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d(\.\d+)?)?$/;
+const CLOCK_TIME_LENGTH = 5;
+
+export const ClockTimeSchema = z
+  .string()
+  .regex(CLOCK_TIME_PATTERN)
+  .transform((value) => value.slice(0, CLOCK_TIME_LENGTH));
+export type ClockTime = z.infer<typeof ClockTimeSchema>;

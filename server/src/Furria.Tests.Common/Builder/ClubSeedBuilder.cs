@@ -1,4 +1,5 @@
 using Furria.Core.Club;
+using Furria.Core.Events;
 
 namespace Furria.Tests.Common.Builder;
 
@@ -7,6 +8,8 @@ public sealed class ClubSeedBuilder
     private const string DefaultStreet = "Schulstraße 4";
     private const string DefaultZip = "99713";
     private const string DefaultCity = "Großfurra";
+    private const string DefaultTeaser = "Der Abend, auf den die Session hinfiebert.";
+    private const string DefaultGuestPhone = "0171 2345678";
 
     private static readonly DateOnly DefaultSinceOn = new(2020, 11, 11);
 
@@ -19,6 +22,8 @@ public sealed class ClubSeedBuilder
     private readonly List<TrainingSlotIntent> _trainingSlots = [];
     private readonly List<CalendarEntryIntent> _calendarEntries = [];
     private readonly List<AttendanceResponseIntent> _attendanceResponses = [];
+    private readonly List<EventIntent> _events = [];
+    private readonly List<TicketRequestIntent> _ticketRequests = [];
     private ClubRecordIntent? _clubRecord;
 
     internal IReadOnlyList<SessionIntent> Sessions => _sessions;
@@ -38,6 +43,10 @@ public sealed class ClubSeedBuilder
     internal IReadOnlyList<CalendarEntryIntent> CalendarEntries => _calendarEntries;
 
     internal IReadOnlyList<AttendanceResponseIntent> AttendanceResponses => _attendanceResponses;
+
+    internal IReadOnlyList<EventIntent> Events => _events;
+
+    internal IReadOnlyList<TicketRequestIntent> TicketRequests => _ticketRequests;
 
     internal ClubRecordIntent? ClubRecord => _clubRecord;
 
@@ -229,6 +238,68 @@ public sealed class ClubSeedBuilder
         return this;
     }
 
+    public ClubSeedBuilder AddEvent(
+        string alias,
+        string title,
+        DateTimeOffset startsAt,
+        string venueAlias,
+        string teaser = DefaultTeaser,
+        DateTimeOffset? endsAt = null,
+        TimeOnly? doorsOpenAt = null,
+        string? description = null,
+        string? ageHint = null,
+        int? priceCents = null,
+        DateTimeOffset? presaleStartsAt = null,
+        TicketAvailability ticketAvailability = TicketAvailability.Available,
+        DateTimeOffset? cancelledAt = null
+    )
+    {
+        _events.Add(
+            new EventIntent(
+                alias,
+                title,
+                startsAt,
+                venueAlias,
+                teaser,
+                endsAt,
+                doorsOpenAt,
+                description,
+                ageHint,
+                priceCents,
+                presaleStartsAt,
+                ticketAvailability,
+                cancelledAt
+            )
+        );
+        return this;
+    }
+
+    public ClubSeedBuilder AddTicketRequest(
+        string alias,
+        string eventAlias,
+        string name,
+        string email,
+        int ticketCount = 2,
+        string phone = DefaultGuestPhone,
+        string? message = null,
+        DateTimeOffset? requestedAt = null
+    )
+    {
+        _ticketRequests.Add(
+            new TicketRequestIntent(
+                alias,
+                eventAlias,
+                name,
+                email,
+                ticketCount,
+                phone,
+                message,
+                requestedAt
+            )
+        );
+        return this;
+    }
+
     internal sealed record SessionIntent(
         string Alias,
         int StartYear,
@@ -324,5 +395,32 @@ public sealed class ClubSeedBuilder
         string CalendarEntryAlias,
         string PersonAlias,
         AttendanceAnswer Answer
+    );
+
+    internal sealed record EventIntent(
+        string Alias,
+        string Title,
+        DateTimeOffset StartsAt,
+        string VenueAlias,
+        string Teaser,
+        DateTimeOffset? EndsAt,
+        TimeOnly? DoorsOpenAt,
+        string? Description,
+        string? AgeHint,
+        int? PriceCents,
+        DateTimeOffset? PresaleStartsAt,
+        TicketAvailability TicketAvailability,
+        DateTimeOffset? CancelledAt
+    );
+
+    internal sealed record TicketRequestIntent(
+        string Alias,
+        string EventAlias,
+        string Name,
+        string Email,
+        int TicketCount,
+        string Phone,
+        string? Message,
+        DateTimeOffset? RequestedAt
     );
 }

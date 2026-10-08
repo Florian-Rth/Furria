@@ -119,6 +119,9 @@ public sealed class ToDoService
         if (granted.Contains(FurriaPermissions.MembershipApplicationsDecide))
             work.Add(await WaitingApplicationsAsync(ct));
 
+        if (granted.Contains(FurriaPermissions.TicketRequestsHandle))
+            work.Add(await WaitingTicketRequestsAsync(ct));
+
         return [.. work.Where(item => item.Subjects.Count > 0).OrderBy(item => item.Kind)];
     }
 
@@ -196,6 +199,12 @@ public sealed class ToDoService
                 .UndecidedApplications()
                 .Select(application => application.Id)
                 .ToListAsync(ct)
+        );
+
+    private async Task<ToDoWork> WaitingTicketRequestsAsync(CancellationToken ct) =>
+        WorkOf(
+            ToDoKind.TicketRequestWaiting,
+            await _dbContext.TicketRequests.Select(request => request.Id).ToListAsync(ct)
         );
 
     private async Task<ToDoWork> ClubRecordGapsAsync(CancellationToken ct) =>

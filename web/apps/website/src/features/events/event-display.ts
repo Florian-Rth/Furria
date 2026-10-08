@@ -4,22 +4,27 @@ import {
   formatLongDateRange,
   formatWeekdayLong,
 } from '@/lib/date';
-import type { Event } from '@/lib/seed/events';
+import { buildEventSlug } from '@/lib/public-events/event-slug';
+import type { Event } from '@/lib/public-events/schemas';
 
-export const buildEventHref = (eventId: string): string => `/events/${eventId}`;
+export interface EventAddress {
+  eventId: number;
+  title: string;
+}
 
-export const buildOrderFlowHref = (eventId: string): string => `${buildEventHref(eventId)}/order`;
+export const buildEventHref = ({ eventId, title }: EventAddress): string =>
+  `/events/${buildEventSlug(eventId, title)}`;
 
-export const buildExchangeHref = (): string => '/events/exchange';
+export const buildTicketRequestHref = (address: EventAddress): string =>
+  `${buildEventHref(address)}/anfrage`;
 
-export const findEventBySlug = (events: Event[], slug: string): Event | undefined =>
-  events.find((event) => event.id === slug);
+export const buildEventAnchorId = (eventId: number): string => `event-${eventId}`;
 
-export const selectEventsByDate = (events: Event[]): Event[] =>
+export const selectEventsByDate = <TEvent extends Event>(events: TEvent[]): TEvent[] =>
   [...events].sort((first, second) => first.startsAt.localeCompare(second.startsAt));
 
 export const selectOfferedEventsByDate = (events: Event[]): Event[] =>
-  selectEventsByDate(events).filter((event) => event.salesStatus !== 'cancelled');
+  selectEventsByDate(events).filter((event) => event.status !== 'cancelled');
 
 export const deriveScheduleRangeLabel = (events: Event[]): string | null => {
   const ordered = selectEventsByDate(events);
@@ -47,7 +52,7 @@ export const deriveProximityLabel = (startsAt: string, now: Date): string | null
   return null;
 };
 
-export const deriveTimesLabel = (event: Event): string =>
+export const deriveTimesLabel = (event: Pick<Event, 'startsAt' | 'doorsOpenAt'>): string =>
   event.doorsOpenAt !== null
     ? `Einlass ${formatClockTime(event.doorsOpenAt)} · Beginn ${formatClockTime(event.startsAt)} Uhr`
     : `Beginn ${formatClockTime(event.startsAt)} Uhr`;

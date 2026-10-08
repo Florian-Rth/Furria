@@ -1,5 +1,4 @@
 import { kkTokens } from '@furria/ui';
-import Box from '@mui/material/Box';
 import CardActionArea from '@mui/material/CardActionArea';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
@@ -7,35 +6,31 @@ import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { CapacityBar } from '@/features/events/components/CapacityBar';
 import { EventDateBlock } from '@/features/events/components/EventDateBlock';
 import { SalesStatusBadge } from '@/features/events/components/SalesStatusBadge';
 import {
+  buildEventAnchorId,
   buildEventHref,
   deriveProximityLabel,
   deriveTimesLabel,
 } from '@/features/events/event-display';
-import {
-  deriveCapacityBarColor,
-  deriveSalesStatusLabel,
-  isLiveSaleStatus,
-} from '@/features/events/sales-status-display';
+import { deriveSalesStatusLabel } from '@/features/events/sales-status-display';
 import { formatLongDate } from '@/lib/date';
-import { resolveEventTypeTint } from '@/lib/event-tint';
-import type { Event } from '@/lib/seed/events';
+import type { Event } from '@/lib/public-events/schemas';
 
 interface EventListRowProps {
   event: Event;
   now: Date;
-  highlighted: boolean;
+  highlightedAnchorId: string | null;
 }
 
-export const EventListRow: FC<EventListRowProps> = ({ event, now, highlighted }) => {
+export const EventListRow: FC<EventListRowProps> = ({ event, now, highlightedAnchorId }) => {
   const theme = useTheme();
-  const tint = resolveEventTypeTint(theme, event.type);
+  const anchorId = buildEventAnchorId(event.eventId);
+  const highlighted = anchorId === highlightedAnchorId;
   const timesLabel = deriveTimesLabel(event);
   const proximityLabel =
-    event.salesStatus === 'cancelled' ? null : deriveProximityLabel(event.startsAt, now);
+    event.status === 'cancelled' ? null : deriveProximityLabel(event.startsAt, now);
   const rowLabel = `${event.title} · ${formatLongDate(event.startsAt)} · ${deriveSalesStatusLabel(event)}`;
 
   const ageHintChip =
@@ -58,23 +53,12 @@ export const EventListRow: FC<EventListRowProps> = ({ event, now, highlighted })
       />
     );
 
-  const capacityBar =
-    isLiveSaleStatus(event.salesStatus) && event.freeCount !== null && event.capacity !== null ? (
-      <Box sx={{ display: { xs: 'none', md: 'block' }, width: '100%' }}>
-        <CapacityBar
-          freeCount={event.freeCount}
-          capacity={event.capacity}
-          color={deriveCapacityBarColor(event.salesStatus)}
-        />
-      </Box>
-    ) : null;
-
   return (
     <CardActionArea
-      id={event.id}
+      id={anchorId}
       data-kk-event-row
       component={Link}
-      to={buildEventHref(event.id)}
+      to={buildEventHref(event)}
       aria-label={rowLabel}
       sx={{
         borderRadius: `${kkTokens.radius.base}px`,
@@ -104,7 +88,7 @@ export const EventListRow: FC<EventListRowProps> = ({ event, now, highlighted })
           flexWrap: { xs: 'wrap', desktop: 'nowrap' },
         }}
       >
-        <EventDateBlock startsAt={event.startsAt} tint={tint} />
+        <EventDateBlock startsAt={event.startsAt} />
         <Stack sx={{ gap: 0.75, minWidth: 0, flexGrow: 1, flexBasis: '12rem' }}>
           <Stack direction="row" sx={{ gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
             <Typography
@@ -150,7 +134,6 @@ export const EventListRow: FC<EventListRowProps> = ({ event, now, highlighted })
             {proximityChip}
             <SalesStatusBadge event={event} />
           </Stack>
-          {capacityBar}
         </Stack>
       </Stack>
     </CardActionArea>

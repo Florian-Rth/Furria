@@ -2,6 +2,7 @@ using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Calendar;
 using Furria.Core.Club;
+using Furria.Core.Events;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -19,6 +20,7 @@ public sealed class GetCalendarTests
     private const string KinderTraining = "Training der Kindergarde";
     private const string KinderRehearsal = "Probe der Kindergarde";
     private const string FormerGuardReunion = "Treffen der Altgarde";
+    private const string Gala = "1. Prunksitzung";
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
     private static readonly DateOnly ArchivedLastSummer = new(2026, 6, 30);
@@ -62,6 +64,16 @@ public sealed class GetCalendarTests
         TimeSpan.Zero
     );
     private static readonly DateTimeOffset AtTheParade = new(2027, 2, 10, 11, 0, 0, TimeSpan.Zero);
+
+    private static readonly DateTimeOffset PresaleOpenedLastWeek = new(
+        2027,
+        1,
+        8,
+        10,
+        0,
+        0,
+        TimeSpan.Zero
+    );
 
     private static readonly DateOnly TheAuftrittDay = new(2027, 1, 19);
     private static readonly DateOnly TheMeetingDay = new(2027, 1, 20);
@@ -438,6 +450,123 @@ public sealed class GetCalendarTests
 
     private static string[] TitlesOf(GetCalendarResponse result) =>
         [.. result.Entries.Select(entry => entry.Title)];
+
+    [Fact]
+    public async Task Should_CarryTheEventInTheClubCalendar_When_AnyMemberReadsIt()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await _fixture.BuildAsync(
+                    builder =>
+                        builder
+                            .Identity(WholeClub)
+                            .Club(club =>
+                                club.AddVenue("buergerhaus", "Bürgerhaus")
+                                    .AddEvent("gala", Gala, AtTheMeeting, "buergerhaus")
+                            ),
+                    ct
+                );
+
+                var result = await ReadAsync(
+                    ctx,
+                    "alice",
+                    new GetCalendarRequest { Scope = CalendarScope.Club },
+                    ct
+                );
+
+                var gala = Assert.Single(result.Entries);
+                Assert.Equal(ctx.Club.Events.IdOf("gala"), gala.CalendarEntryId);
+                Assert.Equal(CalendarEntryKind.Event, gala.Kind);
+                Assert.Equal(CalendarEntryVisibility.Public, gala.Visibility);
+                Assert.Null(gala.OwnerGroupId);
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_CarryTheEventsOwnFacts_When_AnEntryIsAnEvent()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await _fixture.BuildAsync(
+                    builder =>
+                        builder
+                            .Identity(WholeClub)
+                            .Club(club =>
+                                club.AddVenue("buergerhaus", "Bürgerhaus")
+                                    .AddEvent(
+                                        "gala",
+                                        Gala,
+                                        AtTheMeeting,
+                                        "buergerhaus",
+                                        teaser: "Der Abend der Session.",
+                                        doorsOpenAt: new TimeOnly(18, 30),
+                                        ageHint: "ab 16",
+                                        priceCents: 2_200,
+                                        presaleStartsAt: PresaleOpenedLastWeek,
+                                        ticketAvailability: TicketAvailability.FewLeft
+                                    )
+                            ),
+                    ct
+                );
+
+                var result = await ReadAsync(
+                    ctx,
+                    "alice",
+                    new GetCalendarRequest { Scope = CalendarScope.Club },
+                    ct
+                );
+
+                var facts = Assert.Single(result.Entries).Event;
+                Assert.NotNull(facts);
+                Assert.Equal("Der Abend der Session.", facts.Teaser);
+                Assert.Equal(new TimeOnly(18, 30), facts.DoorsOpenAt);
+                Assert.Equal("ab 16", facts.AgeHint);
+                Assert.Equal(2_200, facts.PriceCents);
+                Assert.Equal(PresaleOpenedLastWeek, facts.PresaleStartsAt);
+                Assert.Equal(EventSalesStatus.FewLeft, facts.Status);
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_CarryNoEventFacts_When_AnEntryIsNoEvent()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await _fixture.BuildAsync(
+                    builder =>
+                        builder
+                            .Identity(WholeClub)
+                            .Club(club =>
+                                club.AddCalendarEntry("meeting", ClubMeeting, AtTheMeeting)
+                            ),
+                    ct
+                );
+
+                var result = await ReadAsync(
+                    ctx,
+                    "alice",
+                    new GetCalendarRequest { Scope = CalendarScope.Club },
+                    ct
+                );
+
+                Assert.Null(Assert.Single(result.Entries).Event);
+            }
+        );
+    }
 
     private static void WholeClub(IdentitySeedBuilder identity) =>
         identity

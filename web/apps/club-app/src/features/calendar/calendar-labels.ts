@@ -1,10 +1,21 @@
-import type { KkConfirmFact, KkFilterOption, KkSelectOption } from '@furria/ui';
+import type { KkChipTone, KkConfirmFact, KkFilterOption, KkSelectOption } from '@furria/ui';
 import { CALENDAR_KIND_LABELS, toAttendanceSavedMessage } from '@/lib/calendar-copy';
 import { toIsoDayLabel, toLocalIsoDay, toTimeSpanLabel } from '@/lib/calendar-days';
+import {
+  EVENT_STATUS_TONES,
+  formatPriceCents,
+  toDoorsOpenLabel,
+  toEventStatusShortLabel,
+} from '@/lib/event-copy';
 import type { CalendarOwnerOption } from './calendar-authoring';
 import { NO_VENUE_ID, toTimeChoices } from './calendar-authoring';
 import { ALL_SCOPE_ID, CLUB_SCOPE_ID, toGroupScopeId } from './calendar-query';
-import type { CalendarEntry, CalendarEntryVisibility, RunningVenue } from './schemas';
+import type {
+  CalendarEntry,
+  CalendarEntryVisibility,
+  CalendarEventFacts,
+  RunningVenue,
+} from './schemas';
 
 export const CALENDAR_LIST_SECTION_TITLE = 'Termine';
 export const CALENDAR_LOADING_LABEL = 'Der Kalender wird geladen';
@@ -177,3 +188,29 @@ export const toEntrySavedMessage = (title: string): string => `„${title}“ is
 
 export const toEntryDeletedMessage = (title: string): string =>
   `„${title}“ ist aus dem Kalender gelöscht.`;
+
+export const toEventFactsLine = (facts: CalendarEventFacts): string | null => {
+  const parts: string[] = [];
+
+  if (facts.doorsOpenAt !== null) {
+    parts.push(toDoorsOpenLabel(facts.doorsOpenAt));
+  }
+  if (facts.priceCents !== null) {
+    parts.push(formatPriceCents(facts.priceCents));
+  }
+  if (facts.ageHint !== null) {
+    parts.push(facts.ageHint);
+  }
+
+  return parts.length === 0 ? null : parts.join(META_SEPARATOR);
+};
+
+export interface EntrySales {
+  tone: KkChipTone;
+  label: string;
+}
+
+export const toEntrySales = (entry: CalendarEntry): EntrySales | null =>
+  entry.event === null
+    ? null
+    : { tone: EVENT_STATUS_TONES[entry.event.status], label: toEventStatusShortLabel(entry.event) };

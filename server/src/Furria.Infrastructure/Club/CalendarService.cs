@@ -3,6 +3,7 @@ using System.Linq.Expressions;
 using Furria.Application.Club;
 using Furria.Application.Results;
 using Furria.Core.Club;
+using Furria.Core.Events;
 using Furria.Core.Groups;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +23,8 @@ public sealed class CalendarService
     private const string UnknownOwnerGroupMessage = "Diese Gruppe gibt es nicht.";
     private const string ArchivedParticipatingGroupMessage =
         "Eine archivierte Gruppe kann nicht mitwirken.";
+    private const string EventsLiveInTheWorkbenchMessage =
+        "Eine Veranstaltung wird in den Veranstaltungen gepflegt.";
     private const string ClubEntryCannotBeGroupOnlyMessage =
         "Ein Eintrag des Vereins kann nicht gruppenintern sein.";
 
@@ -74,7 +77,7 @@ public sealed class CalendarService
             ct
         );
 
-        return [.. rows.Select(row => ToSummary(row, answers))];
+        return [.. rows.Select(row => ToSummary(row, answers, now))];
     }
 
     public async Task<IReadOnlyList<GroupCalendarEntrySummary>> GetGroupEntriesAsync(
@@ -115,7 +118,7 @@ public sealed class CalendarService
         return
         [
             .. rows.Select(row =>
-                ToGroupSummary(row, answers, MayAnswer(row, ties, holdsClubRead))
+                ToGroupSummary(row, answers, MayAnswer(row, ties, holdsClubRead), now)
             ),
         ];
     }
@@ -173,7 +176,7 @@ public sealed class CalendarService
                 found[probe] =
                 [
                     .. rows.Where(row => Collides(row, probe))
-                        .Select(row => ToSummary(row, NoAnswers)),
+                        .Select(row => ToSummary(row, NoAnswers, now)),
                 ];
             }
         }
@@ -308,6 +311,9 @@ public sealed class CalendarService
         if (entry is null)
             return Result<CalendarEntryWriteResult>.NotFound(UnknownEntryMessage);
 
+        if (entry.Kind == CalendarEntryKind.Event)
+            return Result<CalendarEntryWriteResult>.Conflict(EventsLiveInTheWorkbenchMessage);
+
         var participatingGroupIds = ParticipationOf(
             command.ParticipatingGroupIds,
             command.OwnerGroupId
@@ -352,6 +358,9 @@ public sealed class CalendarService
 
         if (entry is null)
             return Result.NotFound(UnknownEntryMessage);
+
+        if (entry.Kind == CalendarEntryKind.Event)
+            return Result.Conflict(EventsLiveInTheWorkbenchMessage);
 
         _dbContext.CalendarEntries.Remove(entry);
         await _dbContext.SaveChangesAsync(ct);
@@ -443,7 +452,18 @@ public sealed class CalendarService
             entry.AsksForResponse,
             entry.Description,
             entry.StartsAt <= now
-                && (entry.EndsAt == null ? entry.StartsAt > openEndedCutoff : entry.EndsAt > now)
+                && (entry.EndsAt == null ? entry.StartsAt > openEndedCutoff : entry.EndsAt > now),
+            entry.Event == null
+                ? null
+                : new EventFactsRow(
+                    entry.Event.DoorsOpenAt,
+                    entry.Event.Teaser,
+                    entry.Event.AgeHint,
+                    entry.Event.PriceCents,
+                    entry.Event.PresaleStartsAt,
+                    entry.Event.TicketAvailability,
+                    entry.Event.CancelledAt
+                )
         );
 
     [Pure]
@@ -525,7 +545,8 @@ public sealed class CalendarService
     [Pure]
     private static CalendarEntrySummary ToSummary(
         EntryRow row,
-        IReadOnlyDictionary<int, AttendanceAnswer> answers
+        IReadOnlyDictionary<int, AttendanceAnswer> answers,
+        DateTimeOffset now
     ) =>
         new()
         {
@@ -545,14 +566,33 @@ public sealed class CalendarService
             Description = row.Description,
             ViewerAnswer = answers.TryGetValue(row.CalendarEntryId, out var answer) ? answer : null,
             IsRunning = row.IsRunning,
+            Event = row.Event is { } facts ? ToEventFacts(facts, now) : null,
+        };
+
+    [Pure]
+    private static CalendarEventFacts ToEventFacts(EventFactsRow row, DateTimeOffset now) =>
+        new()
+        {
+            DoorsOpenAt = row.DoorsOpenAt,
+            Teaser = row.Teaser,
+            AgeHint = row.AgeHint,
+            PriceCents = row.PriceCents,
+            PresaleStartsAt = row.PresaleStartsAt,
+            Status = EventSales.StatusOf(
+                row.PresaleStartsAt,
+                row.TicketAvailability,
+                row.CancelledAt is not null,
+                now
+            ),
         };
 
     [Pure]
     private static GroupCalendarEntrySummary ToGroupSummary(
         EntryRow row,
         IReadOnlyDictionary<int, AttendanceAnswer> answers,
-        bool viewerMayAnswer
-    ) => new() { Entry = ToSummary(row, answers), ViewerMayAnswer = viewerMayAnswer };
+        bool viewerMayAnswer,
+        DateTimeOffset now
+    ) => new() { Entry = ToSummary(row, answers, now), ViewerMayAnswer = viewerMayAnswer };
 
     private async Task<CalendarEntryWriteResult> WrittenAsync(
         CalendarEntry entry,
@@ -692,7 +732,18 @@ public sealed class CalendarService
         CalendarEntryVisibility Visibility,
         bool AsksForResponse,
         string? Description,
-        bool IsRunning
+        bool IsRunning,
+        EventFactsRow? Event
+    );
+
+    private sealed record EventFactsRow(
+        TimeOnly? DoorsOpenAt,
+        string Teaser,
+        string? AgeHint,
+        int? PriceCents,
+        DateTimeOffset? PresaleStartsAt,
+        TicketAvailability TicketAvailability,
+        DateTimeOffset? CancelledAt
     );
 
     private sealed record ParticipatingGroupRow(int GroupId, string Name, GroupTone? Tone);

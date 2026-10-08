@@ -1,5 +1,5 @@
 import { formatBerlinIsoWithOffset } from '@/lib/date';
-import type { Event, SalesStatus } from '@/lib/seed/events';
+import type { Event, SalesStatus } from '@/lib/public-events/schemas';
 
 const SCHEMA_ORG = 'https://schema.org';
 
@@ -10,6 +10,14 @@ export interface EventJsonLdOffer {
   availability: string;
 }
 
+export interface EventJsonLdAddress {
+  '@type': 'PostalAddress';
+  streetAddress: string;
+  postalCode: string;
+  addressLocality: string;
+  addressCountry: 'DE';
+}
+
 export interface EventJsonLd {
   '@context': typeof SCHEMA_ORG;
   '@type': 'Event';
@@ -17,7 +25,7 @@ export interface EventJsonLd {
   startDate: string;
   doorTime?: string;
   eventStatus: string;
-  location: { '@type': 'Place'; name: string };
+  location: { '@type': 'Place'; name: string; address: EventJsonLdAddress };
   offers?: EventJsonLdOffer;
 }
 
@@ -25,23 +33,22 @@ const CENTS_PER_EURO = 100;
 
 const deriveAvailability = (status: SalesStatus): string | null => {
   switch (status) {
-    case 'onSale':
+    case 'available':
       return `${SCHEMA_ORG}/InStock`;
-    case 'almostSoldOut':
+    case 'fewLeft':
       return `${SCHEMA_ORG}/LimitedAvailability`;
     case 'soldOut':
       return `${SCHEMA_ORG}/SoldOut`;
     case 'presaleScheduled':
       return `${SCHEMA_ORG}/PreOrder`;
     case 'announced':
-    case 'salesClosed':
     case 'cancelled':
       return null;
   }
 };
 
 const deriveOffer = (event: Event): EventJsonLdOffer | undefined => {
-  const availability = deriveAvailability(event.salesStatus);
+  const availability = deriveAvailability(event.status);
   if (event.priceCents === null || availability === null) {
     return undefined;
   }
@@ -64,10 +71,20 @@ export const buildEventJsonLd = (event: Event): EventJsonLd => {
       ? {}
       : { doorTime: formatBerlinIsoWithOffset(event.doorsOpenAt) }),
     eventStatus:
-      event.salesStatus === 'cancelled'
+      event.status === 'cancelled'
         ? `${SCHEMA_ORG}/EventCancelled`
         : `${SCHEMA_ORG}/EventScheduled`,
-    location: { '@type': 'Place', name: event.venue },
+    location: {
+      '@type': 'Place',
+      name: event.venue.name,
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: event.venue.street,
+        postalCode: event.venue.zip,
+        addressLocality: event.venue.city,
+        addressCountry: 'DE',
+      },
+    },
     ...(offer === undefined ? {} : { offers: offer }),
   };
 };

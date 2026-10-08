@@ -8,4 +8,4 @@ export const nextEventAnnouncedNote = 'Der Vorverkauf wird noch angekündigt.';
 
 export const nextEventDetailLabel = 'Zum Abend →';
 
-export const almostSoldOutTagLabel = 'FAST WEG';
+export const fewLeftTagLabel = 'FAST WEG';

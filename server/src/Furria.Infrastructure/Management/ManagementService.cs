@@ -71,7 +71,12 @@ public sealed class ManagementService
             Applications = granted.Contains(FurriaPermissions.MembershipApplicationsDecide)
                 ? await ApplicationsAsync(today, ct)
                 : null,
-            ToDos = await _toDoService.ForAsync(accountId, ct),
+            ToDos =
+            [
+                .. (await _toDoService.ForAsync(accountId, ct)).Where(toDo =>
+                    !ToDoSurfaces.EventsWorkbench.Contains(toDo.Kind)
+                ),
+            ],
         };
     }
 

@@ -137,10 +137,40 @@ export const toParticipationKeptForOwner = (values: readonly string[], ownerId: 
 export const toToggledParticipation = (values: readonly string[], value: string): string[] =>
   values.includes(value) ? values.filter((held) => held !== value) : [...values, value];
 
+export interface CalendarEntryOwnership {
+  ownerGroupId: number | null;
+  kind: CalendarEntryKind;
+}
+
+export type CalendarEntryLink =
+  | { to: '/calendar/$calendarEntryId'; params: { calendarEntryId: string } }
+  | { to: '/events/$eventId'; params: { eventId: string } };
+
+export const toEntryLink = (
+  entry: CalendarEntryOwnership & { calendarEntryId: number },
+  owned: boolean,
+  managesEvents: boolean,
+): CalendarEntryLink | null => {
+  if (entry.kind === 'event') {
+    return managesEvents
+      ? { to: '/events/$eventId', params: { eventId: String(entry.calendarEntryId) } }
+      : null;
+  }
+  if (!owned) {
+    return null;
+  }
+
+  return {
+    to: '/calendar/$calendarEntryId',
+    params: { calendarEntryId: String(entry.calendarEntryId) },
+  };
+};
+
 export const mayOwnCalendarEntry = (
   options: readonly CalendarOwnerOption[],
-  ownerGroupId: number | null,
-): boolean => options.some((option) => option.ownerGroupId === ownerGroupId);
+  entry: CalendarEntryOwnership,
+): boolean =>
+  entry.kind !== 'event' && options.some((option) => option.ownerGroupId === entry.ownerGroupId);
 
 export const toDefaultVisibility = (
   ownerGroupId: number | null,

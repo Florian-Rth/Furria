@@ -4,7 +4,7 @@ import {
   nextEventAnnouncedNote,
   nextEventUpcomingKicker,
 } from '@/features/events/next-event-content';
-import type { Event } from '@/lib/seed/events';
+import type { Event } from '@/lib/public-events/schemas';
 import { NextEventShell } from '../layout/NextEventShell';
 import { NextEventDetailLink } from './NextEventDetailLink';
 import { NextEventIntro } from './NextEventIntro';
@@ -19,6 +19,6 @@ export const NextEventAnnouncedFace: FC<NextEventAnnouncedFaceProps> = ({ event 
     <Typography variant="body2" sx={{ color: 'text.secondary' }}>
       {nextEventAnnouncedNote}
     </Typography>
-    <NextEventDetailLink eventId={event.id} emphasis="outlined" />
+    <NextEventDetailLink event={event} emphasis="outlined" />
   </NextEventShell>
 );

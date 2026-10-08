@@ -1,56 +1,53 @@
 import { describe, expect, it } from 'vitest';
-import { buildCancelledEvent, SEEDED_EVENTS } from '@/lib/seed/events';
+import type { Event, SalesStatus } from '@/lib/public-events/schemas';
 import { selectTeaserEvents, TEASER_EVENT_COUNT } from './use-teaser-events';
 
-const cancelledFirstEvening = buildCancelledEvent({
-  id: 'ordensfest-2027',
-  title: 'Ordensfest',
-  type: 'Ordensfest',
-  venue: 'Dorfgemeindehaus Großfurra',
-  startsAt: '2027-01-09T19:11',
+const evening = (eventId: number, startsAt: string, status: SalesStatus): Event => ({
+  eventId,
+  title: `Abend ${eventId}`,
+  startsAt,
+  endsAt: null,
   doorsOpenAt: null,
-  teaser: 'Ein abgesagter Abend.',
-  description: null,
-  performers: null,
+  venue: { name: 'Dorfgemeindehaus', street: '', zip: '', city: '', hint: null },
+  teaser: 'Ein Abend.',
   ageHint: null,
   priceCents: null,
-  capacity: null,
   presaleStartsAt: null,
-  presaleEndsAt: null,
-  freeCount: null,
+  status,
 });
 
 describe('selectTeaserEvents', () => {
   it('picks the three earliest evenings in chronological order', () => {
-    const shuffled = [...SEEDED_EVENTS].reverse();
+    const events = [
+      evening(4, '2027-02-06T14:11', 'announced'),
+      evening(2, '2027-01-30T19:11', 'available'),
+      evening(3, '2027-02-04T19:11', 'soldOut'),
+      evening(1, '2027-01-23T19:11', 'fewLeft'),
+    ];
 
-    const teaser = selectTeaserEvents(shuffled);
+    const teaser = selectTeaserEvents(events);
 
     expect(teaser).toHaveLength(TEASER_EVENT_COUNT);
-    expect(teaser.map((event) => event.title)).toEqual([
-      '1. Prunksitzung',
-      '2. Prunksitzung',
-      'Weiberfasching',
-    ]);
+    expect(teaser.map((event) => event.eventId)).toEqual([1, 2, 3]);
   });
 
   it('never teases a cancelled evening, however early it lies', () => {
-    const teaser = selectTeaserEvents([cancelledFirstEvening, ...SEEDED_EVENTS]);
+    const events = [
+      evening(1, '2027-01-09T19:11', 'cancelled'),
+      evening(2, '2027-01-23T19:11', 'available'),
+    ];
 
-    expect(teaser.map((event) => event.title)).not.toContain('Ordensfest');
+    expect(selectTeaserEvents(events).map((event) => event.eventId)).toEqual([2]);
   });
 
   it('leaves the given list untouched', () => {
-    const events = [...SEEDED_EVENTS].reverse();
-    const order = events.map((event) => event.id);
+    const events = [
+      evening(2, '2027-01-30T19:11', 'available'),
+      evening(1, '2027-01-23T19:11', 'available'),
+    ];
 
     selectTeaserEvents(events);
 
-    expect(events.map((event) => event.id)).toEqual(order);
-  });
-
-  it('returns fewer evenings when fewer exist', () => {
-    expect(selectTeaserEvents(SEEDED_EVENTS.slice(0, 1))).toHaveLength(1);
-    expect(selectTeaserEvents([])).toEqual([]);
+    expect(events.map((event) => event.eventId)).toEqual([2, 1]);
   });
 });

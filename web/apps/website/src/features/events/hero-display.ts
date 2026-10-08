@@ -1,7 +1,7 @@
 import { sessionAt } from '@/lib/club';
 import { formatLongDate, parseBerlinDateTime } from '@/lib/date';
 import { formatEuros } from '@/lib/money';
-import type { Event } from '@/lib/seed/events';
+import type { Event } from '@/lib/public-events/schemas';
 import { selectOfferedEventsByDate } from './event-display';
 
 export interface HeroStat {
@@ -41,8 +41,8 @@ export const deriveHeroIntro = (events: Event[]): string | null => {
     return null;
   }
 
-  const venues = new Set(offered.map((event) => event.venue));
-  const venueClause = venues.size === 1 ? ` im ${first.venue}` : '';
+  const venues = new Set(offered.map((event) => event.venue.name));
+  const venueClause = venues.size === 1 ? ` im ${first.venue.name}` : '';
 
   if (offered.length === 1) {
     return `Ein Abend${venueClause}, am ${formatLongDate(first.startsAt)}.`;
@@ -65,14 +65,6 @@ export const deriveHeroStats = (events: Event[]): HeroStat[] => {
     .filter((price): price is number => price !== null);
   if (knownPrices.length > 0) {
     stats.push({ value: `ab ${formatEuros(Math.min(...knownPrices))}`, label: 'pro Karte' });
-  }
-
-  const knownFreeCounts = offered
-    .map((event) => event.freeCount)
-    .filter((count): count is number => count !== null);
-  if (knownFreeCounts.length > 0) {
-    const freeTotal = knownFreeCounts.reduce((sum, count) => sum + count, 0);
-    stats.push({ value: String(freeTotal), label: 'Karten noch frei' });
   }
 
   return stats;

@@ -1,11 +1,9 @@
-import type { FC } from 'react';
-import { TicketCtaButton } from '@/features/events/components/TicketCtaButton';
+import type { FC, ReactNode } from 'react';
 import {
-  deriveTicketPanelCta,
   deriveTicketPanelFace,
   deriveTicketPanelNote,
 } from '@/features/events/ticket-panel-display';
-import type { Event } from '@/lib/seed/events';
+import type { Event } from '@/lib/public-events/schemas';
 import { TicketPanelShell } from './internal/layout/TicketPanelShell';
 import { TicketPanelAvailability } from './internal/ui/TicketPanelAvailability';
 import { TicketPanelCountdown } from './internal/ui/TicketPanelCountdown';
@@ -14,11 +12,11 @@ import { TicketPanelPrice } from './internal/ui/TicketPanelPrice';
 
 interface EventTicketPanelProps {
   event: Event;
+  action?: ReactNode;
 }
 
-export const EventTicketPanel: FC<EventTicketPanelProps> = ({ event }) => {
+export const EventTicketPanel: FC<EventTicketPanelProps> = ({ event, action }) => {
   const face = deriveTicketPanelFace(event);
-  const cta = deriveTicketPanelCta(event);
   const note = deriveTicketPanelNote(face);
   const priceCents = face.kind === 'cancelled' ? null : event.priceCents;
 
@@ -26,11 +24,9 @@ export const EventTicketPanel: FC<EventTicketPanelProps> = ({ event }) => {
     face.kind === 'presale' ? <TicketPanelCountdown targetIso={face.presaleStartsAt} /> : null;
 
   const availability =
-    face.kind === 'onSale' ? <TicketPanelAvailability event={event} scarce={face.scarce} /> : null;
+    face.kind === 'tickets' ? <TicketPanelAvailability event={event} scarce={face.scarce} /> : null;
 
   const noteLine = note === null ? null : <TicketPanelNote>{note}</TicketPanelNote>;
-
-  const ctaButton = cta === null ? null : <TicketCtaButton cta={cta} />;
 
   return (
     <TicketPanelShell>
@@ -38,7 +34,7 @@ export const EventTicketPanel: FC<EventTicketPanelProps> = ({ event }) => {
       {countdown}
       {availability}
       {noteLine}
-      {ctaButton}
+      {action}
     </TicketPanelShell>
   );
 };

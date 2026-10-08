@@ -1,6 +1,7 @@
-import TextField from '@mui/material/TextField';
 import type { FC } from 'react';
 import { useFormContext } from 'react-hook-form';
+import { SiteForm } from '@/components/SiteForm/SiteForm';
+import type { SiteFormTextFieldType } from '@/components/SiteForm/site-form-types';
 import type { MembershipApplicationForm } from '@/features/membership/schemas';
 
 type TextFieldName = Exclude<
@@ -16,7 +17,7 @@ interface ApplyFormFieldProps {
   name: TextFieldName;
   label: string;
   required: boolean;
-  type?: 'text' | 'date' | 'email' | 'tel';
+  type?: SiteFormTextFieldType;
   autoComplete?: string;
 }
 
@@ -24,26 +25,19 @@ export const ApplyFormField: FC<ApplyFormFieldProps> = ({
   name,
   label,
   required,
-  type = 'text',
+  type,
   autoComplete,
 }) => {
   const { register, formState } = useFormContext<MembershipApplicationForm>();
-  const { ref, ...field } = register(name);
-  const error = formState.errors[name];
-  const shrinkLabel = type === 'date' ? true : undefined;
 
   return (
-    <TextField
-      {...field}
-      inputRef={ref}
-      type={type}
+    <SiteForm.TextField
+      registration={register(name)}
+      error={formState.errors[name]}
       label={label}
       required={required}
+      type={type}
       autoComplete={autoComplete}
-      fullWidth
-      error={error !== undefined}
-      helperText={error?.message}
-      slotProps={{ inputLabel: { shrink: shrinkLabel } }}
     />
   );
 };

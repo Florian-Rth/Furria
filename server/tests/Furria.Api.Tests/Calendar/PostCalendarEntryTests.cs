@@ -357,6 +357,28 @@ public sealed class PostCalendarEntryTests
     }
 
     [Fact]
+    public async Task Should_ReturnBadRequest_When_TheKindIsEvent()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, _) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(
+            ClubOwned(ClubMeeting) with
+            {
+                Kind = CalendarEntryKind.Event,
+                Visibility = CalendarEntryVisibility.Public,
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
     {
         var ct = TestContext.Current.CancellationToken;

@@ -20,6 +20,10 @@ public sealed class TestClub
 
     public AliasRegistry<int> AttendanceResponses { get; }
 
+    public AliasRegistry<int> Events { get; }
+
+    public AliasRegistry<int> TicketRequests { get; }
+
     internal TestClub(SeededClub seeded)
     {
         Sessions = new AliasRegistry<int>("Session", seeded.SessionIds);
@@ -34,5 +38,7 @@ public sealed class TestClub
             "AttendanceResponse",
             seeded.AttendanceResponseIds
         );
+        Events = new AliasRegistry<int>("Event", seeded.EventIds);
+        TicketRequests = new AliasRegistry<int>("TicketRequest", seeded.TicketRequestIds);
     }
 }
