@@ -49,6 +49,26 @@ dotnet run --project tests/Furria.Api.Tests --no-build -- -class <FQN> [-class <
 `dotnet test -- --filter-class` from `server/` also runs the analyzer tests with zero matches and
 fails; the VSTest `--filter`/`--treenode-filter` flags are ignored and run the whole suite.
 
+### Container reuse
+
+Postgres and Mailpit are started with Testcontainers `WithReuse(true)` and stay running after a
+run, so the next run skips container start and template migration (a warm one-class run takes
+~5 s instead of ~14 s). CI starts on fresh runners and simply finds nothing to reuse.
+
+- **Template.** Named after `MigrationFingerprint` — a hash of every migration id and its `Up`
+  operations — so any added or edited migration builds a new template; an unchanged set reuses it.
+- **Isolation.** Every run holds a lease connection (`application_name`
+  `furria-tests:<run>:<fingerprint>`) and names its databases `furria_lane|empty|build_<run>_<guid>`.
+  Concurrent runs, also from worktrees with other migrations, never touch each other's databases.
+- **Cleanup.** At start, under a Postgres advisory lock, a run drops every database whose run has
+  no live lease (crashed or killed runs) and every template no live run uses.
+
+Reset everything (also removes the rare duplicate two cold runs started at the same moment):
+
+```bash
+docker rm -f $(docker ps -aq --filter label=furria.tests)
+```
+
 ## The base harness
 
 ### The shape of a test
@@ -83,12 +103,12 @@ public sealed class UnlockPreviewTests : IClassFixture<ApiTestFixture> // own ho
 ### The pieces
 
 1. **`ApiTestInfrastructure`** — the one assembly fixture (`[assembly: AssemblyFixture]` in
-   `ApiTestAssembly.cs`): one `Testcontainers.PostgreSql` container and one Mailpit container per
-   run. On start it creates `furria_template` and migrates it through the production
-   `AddInfrastructure` registration — schema only, no seeded rows — then hands out databases:
-   `CreateDatabaseFromTemplateAsync` (`CREATE DATABASE … TEMPLATE furria_template`, a copy of the
-   migrated schema) and `CreateEmptyDatabaseAsync`. Postgres runs with `max_connections=1000`,
-   because every parallel host keeps its own connection pool.
+   `ApiTestAssembly.cs`): one Postgres and one Mailpit Testcontainer, **reused across runs** (see
+   *Container reuse*). `TestDatabaseCatalog` keeps a migrated template
+   `furria_template_<fingerprint>` (the production `AddInfrastructure` migrations — schema only, no
+   seeded rows) and hands out databases: `CreateDatabaseFromTemplateAsync` (`CREATE DATABASE …
+   TEMPLATE`, a copy of the migrated schema) and `CreateEmptyDatabaseAsync`. Postgres runs with
+   `max_connections=1000`, because every parallel host keeps its own connection pool.
 2. **`ApiTestFixture`** — a `WebApplicationFactory<Program>` owned by **one test class**
    (`IClassFixture<ApiTestFixture>`); it takes `ApiTestInfrastructure` through its constructor. On
    init: clone a database from the template, start the host on it (the migrator finds the schema
