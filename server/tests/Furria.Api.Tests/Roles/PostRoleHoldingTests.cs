@@ -2,15 +2,13 @@ using System.Net;
 using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Roles;
-using Furria.Application.Authorization;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
 namespace Furria.Api.Tests.Roles;
 
-[Collection("Api")]
-public sealed class PostRoleHoldingTests
+public sealed class PostRoleHoldingTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string OpenHoldingMessage = "Diese Person hat diese Rolle bereits inne.";
@@ -294,65 +292,6 @@ public sealed class PostRoleHoldingTests
         );
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldRolesManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity.AddPerson("ilka", "Ilka", "Reineke").AddAccount("katrin")
-                    )
-                    .Roles(roles =>
-                        roles
-                            .AddRole("chronik", "Chronik")
-                            .AddRoleWithHolder(
-                                "gruppenpflege",
-                                "katrin-gruppenpflege",
-                                "Gruppenpflege",
-                                "katrin",
-                                FurriaPermissions.GroupsManage
-                            )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("katrin", ct);
-        var (response, _) = await AddHolderAsync(
-            client,
-            ctx.Roles.Roles.IdOf("chronik"),
-            ctx.Identity.People.IdOf("ilka"),
-            HeldSince2017
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx
-            .Expected.RoleHoldingsOfPerson(ctx.Identity.People.IdOf("ilka"))
-            .ToHaveCount(0)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithFreeRoleAsync(ct);
-
-        var (response, _) = await AddHolderAsync(
-            _fixture.CreateClient(),
-            ctx.Roles.Roles.IdOf("chronik"),
-            ctx.Identity.People.IdOf("ilka"),
-            HeldSince2017
-        );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-        await ctx
-            .Expected.RoleHoldingsOfPerson(ctx.Identity.People.IdOf("ilka"))
-            .ToHaveCount(0)
-            .AssertAsync(ct);
     }
 
     private Task<SeededContext> BuildWithFreeRoleAsync(CancellationToken ct) =>

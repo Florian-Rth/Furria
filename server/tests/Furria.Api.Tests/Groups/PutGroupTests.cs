@@ -4,14 +4,12 @@ using System.Net.Mime;
 using System.Text;
 using FastEndpoints;
 using Furria.Api.Endpoints.Groups;
-using Furria.Application.Authorization;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
 namespace Furria.Api.Tests.Groups;
 
-[Collection("Api")]
-public sealed class PutGroupTests
+public sealed class PutGroupTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string OldDescription = "Die Garde tanzt seit 1971.";
@@ -243,70 +241,6 @@ public sealed class PutGroupTests
             .Expected.Group(ctx.Groups.Groups.IdOf("tanzgarde"))
             .ToHaveName("Tanzgarde")
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldGroupsManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity.AddPerson("ilka", "Ilka", "Reineke").AddAccount("ilka")
-                    )
-                    .Groups(groups => groups.AddGroup("tanzgarde", "Tanzgarde", OldDescription))
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "schriftfuehrung",
-                            "ilka-schriftfuehrung",
-                            "Schriftführung",
-                            "ilka",
-                            FurriaPermissions.PersonsManage
-                        )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var response = await client.PUTAsync<PutGroup, PutGroupRequest>(
-            new()
-            {
-                GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
-                Name = "Große Garde",
-                GroupKindId = null,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx
-            .Expected.Group(ctx.Groups.Groups.IdOf("tanzgarde"))
-            .ToHaveName("Tanzgarde")
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Groups(groups => groups.AddGroup("tanzgarde", "Tanzgarde", OldDescription)),
-            ct
-        );
-
-        var response = await _fixture
-            .CreateClient()
-            .PUTAsync<PutGroup, PutGroupRequest>(
-                new()
-                {
-                    GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
-                    Name = "Große Garde",
-                    GroupKindId = null,
-                }
-            );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Fact]

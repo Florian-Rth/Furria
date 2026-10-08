@@ -5,11 +5,6 @@ describe('toNewestPublishedAt', () => {
   it.each([
     { label: 'the board is empty', published: [], expected: null },
     {
-      label: 'one announcement hangs',
-      published: ['2027-01-12T09:00:00Z'],
-      expected: '2027-01-12T09:00:00Z',
-    },
-    {
       label: 'the newest is not listed first',
       published: ['2027-01-10T09:00:00Z', '2027-01-12T09:00:00Z', '2027-01-11T09:00:00Z'],
       expected: '2027-01-12T09:00:00Z',

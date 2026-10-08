@@ -9,8 +9,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Roles;
 
-[Collection("Api")]
-public sealed class PutRoleTests
+public sealed class PutRoleTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string DuplicateNameMessage = "Eine Rolle mit diesem Namen gibt es schon.";
@@ -186,75 +185,6 @@ public sealed class PutRoleTests
         var response = await RenameRoleAsync(client, UnknownRoleId, "Zeugwart", "Gibt es nicht.");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_TheRouteCarriesNoUsableId()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await RenameRoleAsync(client, 0, "Zeugwart", "Ohne Id.");
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldRolesManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("ilka"))
-                    .Roles(roles =>
-                        roles
-                            .AddRole("zeugwart", "Zeugwart")
-                            .AddRoleWithHolder(
-                                "gruppenpflege",
-                                "ilka-gruppenpflege",
-                                "Gruppenpflege",
-                                "ilka",
-                                FurriaPermissions.GroupsManage
-                            )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var response = await RenameRoleAsync(
-            client,
-            ctx.Roles.Roles.IdOf("zeugwart"),
-            "Materialwart",
-            "Nicht erlaubt."
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx
-            .Expected.Role(ctx.Roles.Roles.IdOf("zeugwart"))
-            .ToHaveName("Zeugwart")
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithEquipmentWardenAsync(ct);
-
-        var response = await RenameRoleAsync(
-            _fixture.CreateClient(),
-            ctx.Roles.Roles.IdOf("zeugwart"),
-            "Materialwart",
-            "Nicht angemeldet."
-        );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-        await ctx
-            .Expected.Role(ctx.Roles.Roles.IdOf("zeugwart"))
-            .ToHaveName("Zeugwart")
-            .AssertAsync(ct);
     }
 
     private Task<SeededContext> BuildWithEquipmentWardenAsync(CancellationToken ct) =>

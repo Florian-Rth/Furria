@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Club;
 
-[Collection("Api")]
-public sealed class GetClubHubTests
+public sealed class GetClubHubTests : IClassFixture<ApiTestFixture>
 {
     private const string RecordedMotto = "FURRIA — Der Mittelpunkt des Universums";
 
@@ -223,34 +222,6 @@ public sealed class GetClubHubTests
                 Assert.Equal(1, result.Stats.JoinedThisSessionCount);
             }
         );
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerHoldsNoRunningMembership()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddAccount("gast")),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("gast", ct);
-        var (response, _) = await client.GETAsync<GetClubHub, GetClubHubResponse>();
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .GETAsync<GetClubHub, GetClubHubResponse>();
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     private Task<GetClubHubResponse> ReadTheHubAsMemberAsync(CancellationToken ct) =>

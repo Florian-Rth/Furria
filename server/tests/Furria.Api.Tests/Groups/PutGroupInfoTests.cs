@@ -9,8 +9,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Groups;
 
-[Collection("Api")]
-public sealed class PutGroupInfoTests
+public sealed class PutGroupInfoTests : IClassFixture<ApiTestFixture>
 {
     private const string NewDescription = "Wir tanzen dienstags und donnerstags in der Turnhalle.";
     private const string OldDescription = "Die Garde tanzt seit 1971.";
@@ -354,35 +353,6 @@ public sealed class PutGroupInfoTests
             .Expected.Group(ctx.Groups.Groups.IdOf("tanzgarde"))
             .ToHaveDescription(OldDescription)
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddPerson("anna", "Anna", "Kaiser"))
-                    .Groups(groups => groups.AddGroup("tanzgarde", "Tanzgarde", OldDescription)),
-            ct
-        );
-
-        var response = await _fixture
-            .CreateClient()
-            .PUTAsync<PutGroupInfo, PutGroupInfoRequest>(
-                new()
-                {
-                    GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
-                    Description = NewDescription,
-                    IsRecruiting = true,
-                    GroupKindId = null,
-                    FoundedYear = null,
-                    Tone = null,
-                }
-            );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Fact]

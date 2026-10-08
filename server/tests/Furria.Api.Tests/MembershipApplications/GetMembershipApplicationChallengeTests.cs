@@ -6,8 +6,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.MembershipApplications;
 
-[Collection("Api")]
-public sealed class GetMembershipApplicationChallengeTests
+public sealed class GetMembershipApplicationChallengeTests : IClassFixture<ApiTestFixture>
 {
     private const string Algorithm = "PBKDF2/SHA-256";
 

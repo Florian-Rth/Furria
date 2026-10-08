@@ -6,8 +6,7 @@ using Xunit;
 
 namespace Furria.Api.Tests;
 
-[Collection("Api")]
-public sealed class UnlockPreviewTests
+public sealed class UnlockPreviewTests : IClassFixture<ApiTestFixture>
 {
     private readonly ApiTestFixture _fixture;
 

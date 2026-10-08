@@ -64,6 +64,7 @@ description: Mandatory rules for all React/TypeScript frontend work. Invoke befo
 ### Code Style
 - Biome for linting and formatting — not Prettier, not ESLint
 - Zero warnings policy — treat all lint and TypeScript warnings as errors
+- Run checks per the Validation policy in `CLAUDE.md`: affected test files and touched packages only (`pnpm --filter @furria/<pkg> test <file>`), never the full suite in the inner loop; `pnpm build`/`pnpm shot` only for bundling or chrome changes; CI runs everything
 - Many rules here are machine-enforced by Biome — suppression is NEVER allowed; never add a `biome-ignore`, never weaken or disable a rule to make code pass; fix the code instead
 - Never use deprecated APIs from any library — migrate to replacements immediately
 - Never write code comments — make the code itself read like the comment through naming and extraction; the only allowed comment-syntax lines are functional directives (triple-slash references, @ts-expect-error) — never `biome-ignore`
@@ -73,6 +74,8 @@ description: Mandatory rules for all React/TypeScript frontend work. Invoke befo
 - Never write a `*.test.tsx`; never use `renderHook`
 - Never add a rendering or DOM test library
 - Assert only the return value of a pure function for explicit inputs
+- Never test the implementation — assert observable behaviour through the public function, never internals, call order or structure
+- Never assert text — no German copy, labels, sentences or wording-carrying strings; logic that selects a text returns a discriminant (key, variant, structured result) and the test asserts that
 - Never assert a module constant
 - Never assert user-facing copy; assert the decision behind it
 - Assert a formatter's output

@@ -198,12 +198,12 @@ None — all resolved 2026-08-15 (see Decisions).
 - `/tickets` is gone: no route, no link, no "Tickets" label anywhere in `web/`.
 - `VenueBlock` has one home and both pages consume it.
 - Per-event JSON-LD with `offers` validates; head comes from `loaderData`.
-- Full gates pass: typecheck, tests, lint, build.
+- Gates green per the Validation policy in `CLAUDE.md`.
 
 ## Implementation plan (E-phases)
 
 - **E3 — Event page** (this file, four slices, one phase; per-slice reviews and
-  full gates as in E1/E2):
+  gates per the Validation policy in `CLAUDE.md`):
   1. **Model + entry sweep** — `performers` + `description` on the event seed (placeholder
      values), `eventType` on Album; `/tickets` retired (masthead chip + desktop button +
      landing hero → `/events`, label "Karten"); `/events/$eventSlug/seats` and
@@ -215,7 +215,7 @@ None — all resolved 2026-08-15 (see Decisions).
      matched by `eventType`, `VenueBlock` promoted to feature-shared and rendered on both
      pages.
   4. **Closing + assembly** — "Auch noch in dieser Session", closing band with countdown,
-     `EventDetailPage` assembly, page tests, full gates.
+     `EventDetailPage` assembly, page tests, gates.
 
 ## As-built (E3, 2026-08-15)
 

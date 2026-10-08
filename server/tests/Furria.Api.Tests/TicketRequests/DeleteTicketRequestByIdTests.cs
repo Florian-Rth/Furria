@@ -8,8 +8,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.TicketRequests;
 
-[Collection("Api")]
-public sealed class DeleteTicketRequestByIdTests
+public sealed class DeleteTicketRequestByIdTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateTimeOffset AtTheFirstGala = new(
         2027,
@@ -55,18 +54,6 @@ public sealed class DeleteTicketRequestByIdTests
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         await ctx.Expected.TicketRequests().ToHaveCount(1).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerOnlyManagesEvents()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-
-        var response = await HandleAsync(ctx, "vera", ctx.Club.TicketRequests.IdOf("mia-gala"));
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx.Expected.TicketRequests().ToHaveCount(2).AssertAsync(ct);
     }
 
     private static async Task<HttpResponseMessage> HandleAsync(

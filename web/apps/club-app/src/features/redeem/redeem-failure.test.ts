@@ -15,11 +15,6 @@ describe('toRedeemFailureKind', () => {
       'taken',
     ],
     [
-      'a login email taken, named in Pascal case',
-      new RequestFailedError(409, [{ field: 'LoginEmail', message: 'vergeben' }]),
-      'taken',
-    ],
-    [
       'a wrong confirmation code',
       new RequestFailedError(400, [{ field: 'confirmationCode', message: 'falsch' }]),
       'codeRejected',
@@ -51,7 +46,6 @@ describe('toRedeemFailureKind', () => {
     ],
     ['a rate limit', new ServerFailureError(429), 'throttled'],
     ['a server failure', new ServerFailureError(500), 'unexpected'],
-    ['a foreign error', new Error('boom'), 'unexpected'],
   ])('classifies %s', (_case, error, expected) => {
     expect(toRedeemFailureKind(error)).toBe(expected);
   });

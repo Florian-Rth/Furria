@@ -2,6 +2,7 @@ import type { MotionValue } from 'motion/react';
 import { useAnimationFrame, useMotionValue, useMotionValueEvent } from 'motion/react';
 import type { RefObject } from 'react';
 import { useEffectEvent, useLayoutEffect, useRef, useState } from 'react';
+import { ramp } from '../../../../internal/ramp';
 import { kkTokens } from '../../../../tokens';
 import { useKkShellScroll } from '../../../internal/logic/shell-scroll';
 import type { SwayKick, SwayState } from './letter-swing';
@@ -22,7 +23,6 @@ import {
   letterPoseAt,
   lowerDueAt,
   lowerMixOf,
-  ramp,
   restPoseAt,
   swapsCase,
 } from './sway-pose';

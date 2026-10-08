@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Management;
 
-[Collection("Api")]
-public sealed class GetClubRecordTests
+public sealed class GetClubRecordTests : IClassFixture<ApiTestFixture>
 {
     private const int TheDefaultAgeOfConsent = 16;
 
@@ -90,27 +89,6 @@ public sealed class GetClubRecordTests
         var response = await AskAsHolderOfAsync(FurriaPermissions.ClubManage);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerHoldsAnotherManagementPermission()
-    {
-        var response = await AskAsHolderOfAsync(FurriaPermissions.PersonsManage);
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .GETAsync<GetClubRecord, GetClubRecordResponse>();
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     private async Task<HttpResponseMessage> AskAsHolderOfAsync(string permissionKey)

@@ -5,9 +5,9 @@ import type {
   KkScreenOrigin,
 } from '@furria/ui';
 import type { GroupDetailAdmin, GroupDetailMember } from '@/features/group-detail';
-import { toGroupKindId, toGroupKindValue } from '@/features/group-kinds';
-import { toAnniversary, toFoundedLine } from '@/features/groups';
-import { GROUPS_ORIGIN, MANAGE_ORIGIN, PROFILE_ORIGIN } from '@/features/session';
+import { toGroupKindId, toGroupKindValue } from '@/features/group-kinds/group-kinds-labels';
+import { toAnniversary, toFoundedLine } from '@/features/groups/group-identity';
+import { GROUPS_ORIGIN, MANAGE_ORIGIN, PROFILE_ORIGIN } from '@/features/session/app-sections';
 import { SESSION_OPENING_DAY, SESSION_OPENING_MONTH, sessionAt } from '@/lib/club';
 import { isFutureDay, toIsoDay } from '@/lib/day';
 import { toGroupAdminsLabel, toGroupMembersLabel } from '@/lib/group-sections';
@@ -18,26 +18,11 @@ import { toRecruitingChip } from '@/lib/state-chips';
 import type { HubPerson } from './hub-people';
 import type { GroupHub, GroupInfoForm } from './schemas';
 
-const GROUP_ID_PATTERN = /^[1-9]\d*$/;
 const HUB_TITLE_FALLBACK = 'Gruppe';
 
 const MEMBER_LINE_PREFIX = 'Du bist Mitglied seit ';
 const LEADING_LINE = 'Du leitest diese Gruppe';
 const ANNIVERSARY_CAPTION = 'JAHRE';
-
-export const toHubId = (raw: string): number | null =>
-  GROUP_ID_PATTERN.test(raw) ? Number(raw) : null;
-
-export const toEntryId = (raw: string): number | null =>
-  GROUP_ID_PATTERN.test(raw) ? Number(raw) : null;
-
-export const toPersonIdParam = (raw: string | undefined): number | null => {
-  if (raw === undefined || !GROUP_ID_PATTERN.test(raw)) {
-    return null;
-  }
-
-  return Number(raw);
-};
 
 export const toHubTitle = (hub: GroupHub | undefined): string =>
   hub === undefined ? HUB_TITLE_FALLBACK : hub.name;
@@ -61,15 +46,29 @@ export const toHubEditorOrigin = (hub: GroupHub): KkScreenOrigin => ({
   params: { groupId: String(hub.groupId) },
 });
 
-export const toStandingLine = (hub: GroupHub): string | null => {
+export type ViewerStanding = { kind: 'member'; since: string } | { kind: 'leading' };
+
+export const viewerStandingOf = (hub: GroupHub): ViewerStanding | null => {
   if (hub.viewerSince !== null) {
-    return `${MEMBER_LINE_PREFIX}${formatSinceSession(hub.viewerSince)}`;
+    return { kind: 'member', since: hub.viewerSince };
   }
   if (hub.viewerIsAdmin) {
-    return LEADING_LINE;
+    return { kind: 'leading' };
   }
 
   return null;
+};
+
+export const toStandingLine = (hub: GroupHub): string | null => {
+  const standing = viewerStandingOf(hub);
+
+  if (standing === null) {
+    return null;
+  }
+
+  return standing.kind === 'member'
+    ? `${MEMBER_LINE_PREFIX}${formatSinceSession(standing.since)}`
+    : LEADING_LINE;
 };
 
 export const toHubMetaFacts = (hub: GroupHub): string[] => {
@@ -147,18 +146,32 @@ export const toPersonAccent = (person: HubPerson): string | undefined => {
   return person.adminFunction ?? GROUP_ADMIN_ACCENT;
 };
 
-export const toPersonMetaLine = (person: HubPerson, canManage: boolean): string | undefined => {
+export type PersonMeta = { kind: 'member'; since: string } | { kind: 'leading'; since: string };
+
+export const personMetaOf = (person: HubPerson, canManage: boolean): PersonMeta | null => {
   if (!canManage) {
-    return undefined;
+    return null;
   }
   if (person.memberSince !== null) {
-    return toMemberSinceLine(person.memberSince);
+    return { kind: 'member', since: person.memberSince };
   }
   if (person.adminSince !== null) {
-    return `leitet seit ${formatSinceSession(person.adminSince)}`;
+    return { kind: 'leading', since: person.adminSince };
   }
 
-  return undefined;
+  return null;
+};
+
+export const toPersonMetaLine = (person: HubPerson, canManage: boolean): string | undefined => {
+  const meta = personMetaOf(person, canManage);
+
+  if (meta === null) {
+    return undefined;
+  }
+
+  return meta.kind === 'member'
+    ? toMemberSinceLine(meta.since)
+    : `leitet seit ${formatSinceSession(meta.since)}`;
 };
 
 export const toPersonStandingLines = (person: HubPerson): string[] => {

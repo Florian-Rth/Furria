@@ -38,18 +38,31 @@ export const deriveScheduleRangeLabel = (events: Event[]): string | null => {
 
 const PROXIMITY_WINDOW_DAYS = 7;
 
-export const deriveProximityLabel = (startsAt: string, now: Date): string | null => {
+export type EventProximity = 'today' | 'tomorrow' | 'thisWeek';
+
+export const eventProximityOf = (startsAt: string, now: Date): EventProximity | null => {
   const daysAhead = berlinDayNumber(startsAt) - berlinDayNumber(now);
   if (daysAhead === 0) {
-    return 'Heute';
+    return 'today';
   }
   if (daysAhead === 1) {
-    return 'Morgen';
+    return 'tomorrow';
   }
   if (daysAhead > 1 && daysAhead < PROXIMITY_WINDOW_DAYS) {
-    return `Diesen ${formatWeekdayLong(startsAt)}`;
+    return 'thisWeek';
   }
   return null;
+};
+
+const PROXIMITY_LABELS: Record<EventProximity, (startsAt: string) => string> = {
+  today: () => 'Heute',
+  tomorrow: () => 'Morgen',
+  thisWeek: (startsAt) => `Diesen ${formatWeekdayLong(startsAt)}`,
+};
+
+export const deriveProximityLabel = (startsAt: string, now: Date): string | null => {
+  const proximity = eventProximityOf(startsAt, now);
+  return proximity === null ? null : PROXIMITY_LABELS[proximity](startsAt);
 };
 
 export const deriveTimesLabel = (event: Pick<Event, 'startsAt' | 'doorsOpenAt'>): string =>

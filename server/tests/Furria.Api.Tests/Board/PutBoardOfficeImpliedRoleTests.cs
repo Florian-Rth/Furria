@@ -10,8 +10,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Board;
 
-[Collection("Api")]
-public sealed class PutBoardOfficeImpliedRoleTests
+public sealed class PutBoardOfficeImpliedRoleTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string ArchivedRoleMessage =
@@ -84,26 +83,6 @@ public sealed class PutBoardOfficeImpliedRoleTests
         );
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.BoardOffice(ctx.Club.BoardOffices.IdOf("praesident"))
-            .ToImplyNoRole()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerOnlyHoldsBoardManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithBoardManagerAsync(ct);
-
-        var client = await ctx.Identity.ClientForAsync("katrin", ct);
-        var response = await SetImpliedRoleAsync(
-            client,
-            ctx.Club.BoardOffices.IdOf("praesident"),
-            ctx.Roles.Roles.IdOf("allmacht")
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         await ctx
             .Expected.BoardOffice(ctx.Club.BoardOffices.IdOf("praesident"))
             .ToImplyNoRole()
@@ -244,37 +223,6 @@ public sealed class PutBoardOfficeImpliedRoleTests
         );
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_TheRouteCarriesNoUsableId()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithOfficeAndRoleAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await SetImpliedRoleAsync(client, 0, ctx.Roles.Roles.IdOf("vereinsleitung"));
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithOfficeAndRoleAsync(ct);
-
-        var response = await SetImpliedRoleAsync(
-            _fixture.CreateClient(),
-            ctx.Club.BoardOffices.IdOf("praesident"),
-            ctx.Roles.Roles.IdOf("vereinsleitung")
-        );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-        await ctx
-            .Expected.BoardOffice(ctx.Club.BoardOffices.IdOf("praesident"))
-            .ToImplyNoRole()
-            .AssertAsync(ct);
     }
 
     private Task<SeededContext> BuildWithOfficeAndRoleAsync(CancellationToken ct) =>

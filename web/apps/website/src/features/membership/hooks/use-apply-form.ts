@@ -9,7 +9,7 @@ import { useClubEmail } from '@/lib/public-club/use-club-email';
 import { usePreparedMembershipAltchaProof, useSubmitMembershipApplicationMutation } from '../api';
 import { applyFallbackLabel, applyFallbackLead } from '../apply-content';
 import type { ApplyFailure } from '../apply-failure';
-import { toApplyFailure } from '../apply-failure';
+import { toApplyFailure, toApplyNotice } from '../apply-failure';
 import { buildFallbackMailHref } from '../apply-fallback';
 import type { ApplicantStanding, DerivedMembership } from '../membership-derivation';
 import { deriveApplicantStanding, deriveMembership } from '../membership-derivation';
@@ -102,7 +102,7 @@ export const useApplyForm = (): ApplyFormState => {
       void handleFormSubmit(event);
     },
     isSubmitting: mutation.isPending,
-    submitError: failure?.notice ?? null,
+    submitError: toApplyNotice(failure),
     fallback,
     submitted,
   };

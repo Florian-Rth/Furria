@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.TicketRequests;
 
-[Collection("Api")]
-public sealed class PastTicketRequestPurgeTests
+public sealed class PastTicketRequestPurgeTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateTimeOffset AtTheGala = new(2027, 1, 16, 18, 11, 0, TimeSpan.Zero);
     private static readonly DateTimeOffset PastMidnight = new(2027, 1, 17, 1, 30, 0, TimeSpan.Zero);

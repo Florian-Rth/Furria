@@ -9,8 +9,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Start;
 
-[Collection("Api")]
-public sealed class GetStartAnnouncementsTests
+public sealed class GetStartAnnouncementsTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateOnly JoinedIn2015 = new(2015, 11, 11);
     private static readonly DateOnly Yesterday = new(2027, 1, 18);

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { RequestBlockedError, RequestFailedError } from '@/lib/api/api-error';
-import { refusesField, toFieldRefusals } from './field-refusals';
+import { toFieldRefusals } from './field-refusals';
 
 const NAMES = ['code', 'loginEmail'] as const;
 
@@ -36,19 +36,5 @@ describe('toFieldRefusals', () => {
 
     expect(refusals.fields).toEqual([]);
     expect(refusals.footer).not.toBeNull();
-  });
-});
-
-describe('refusesField', () => {
-  it.each([
-    ['the refused field', 'loginEmail' as const, true],
-    ['another field', 'code' as const, false],
-  ])('reports %s as refused: %s', (_case, name, expected) => {
-    const refusals = {
-      fields: [{ name: 'loginEmail' as const, message: 'Vergeben.' }],
-      footer: null,
-    };
-
-    expect(refusesField(refusals, name)).toBe(expected);
   });
 });

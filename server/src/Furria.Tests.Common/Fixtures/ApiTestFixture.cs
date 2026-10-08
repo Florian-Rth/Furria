@@ -1,6 +1,4 @@
 using System.Globalization;
-using DotNet.Testcontainers.Builders;
-using DotNet.Testcontainers.Containers;
 using Furria.Api.Altcha;
 using Furria.Api.Logging;
 using Furria.Api.Proxies;
@@ -24,6 +22,7 @@ using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Expectations;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
@@ -32,9 +31,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Npgsql;
 using Serilog.Core;
-using Testcontainers.PostgreSql;
 using Xunit;
 
 namespace Furria.Tests.Common.Fixtures;
@@ -80,34 +77,20 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
     private const int AltchaCost = 1;
     private const int AltchaMinCounter = 1;
     private const int AltchaMaxCounter = 50;
-    private const int MailpitSmtpPort = 1025;
-    private const int MailpitApiPort = 8025;
     private const int PermitsPerIpBeyondAnySuite = 1_000_000;
+    private const int PasswordHashIterations = 1;
 
     private static readonly TimeSpan SignedOutWorkTimeout = TimeSpan.FromSeconds(20);
     private static readonly TimeSpan OutboxDrainTimeout = TimeSpan.FromSeconds(20);
 
-    private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder(
-        "postgres:18.6-alpine"
-    ).Build();
+    private readonly ApiTestInfrastructure _infrastructure;
 
-    private readonly IContainer _mailpit = new ContainerBuilder("axllent/mailpit:v1.27")
-        .WithPortBinding(MailpitSmtpPort, assignRandomHostPort: true)
-        .WithPortBinding(MailpitApiPort, assignRandomHostPort: true)
-        .WithWaitStrategy(
-            Wait.ForUnixContainer()
-                .UntilInternalTcpPortIsAvailable(MailpitSmtpPort)
-                .UntilHttpRequestIsSucceeded(request =>
-                    request.ForPort(MailpitApiPort).ForPath("/readyz")
-                )
-        )
-        .Build();
-
-    private MailpitInbox? _mailbox;
-
+    private string? _database;
     private DatabaseResetService? _resetService;
     private SeededManagingLogin? _managingLogin;
     private int? _adminRoleId;
+
+    private string Database => _database ?? throw new InvalidOperationException(NotInitialized);
 
     public TestClock TimeProvider { get; } = new(WholeSecondNow());
 
@@ -124,7 +107,12 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
 
     public int AdminRoleId => _adminRoleId ?? throw new InvalidOperationException(NotInitialized);
 
-    public MailpitInbox Mailbox => _mailbox ?? throw new InvalidOperationException(NotInitialized);
+    public MailpitInbox Mailbox => _infrastructure.Mailbox;
+
+    public ApiTestFixture(ApiTestInfrastructure infrastructure)
+    {
+        _infrastructure = infrastructure;
+    }
 
     private static DateTimeOffset WholeSecondNow()
     {
@@ -155,10 +143,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             $"{ConsoleLogOptions.SectionName}:{nameof(ConsoleLogOptions.Format)}",
             nameof(ConsoleLogFormat.Off)
         );
-        builder.UseSetting(
-            $"ConnectionStrings:{AppDbContext.ConnectionName}",
-            _postgres.GetConnectionString()
-        );
+        builder.UseSetting($"ConnectionStrings:{AppDbContext.ConnectionName}", Database);
         builder.UseSetting(
             $"{PreviewAccessOptions.SectionName}:{nameof(PreviewAccessOptions.Password)}",
             PreviewPassword
@@ -185,11 +170,11 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         );
         builder.UseSetting(
             $"{MailOptions.SectionName}:{nameof(MailOptions.Host)}",
-            _mailpit.Hostname
+            _infrastructure.MailpitHost
         );
         builder.UseSetting(
             $"{MailOptions.SectionName}:{nameof(MailOptions.Port)}",
-            _mailpit.GetMappedPublicPort(MailpitSmtpPort).ToString(CultureInfo.InvariantCulture)
+            _infrastructure.MailpitSmtpPublicPort.ToString(CultureInfo.InvariantCulture)
         );
         builder.UseSetting(
             $"{MailOptions.SectionName}:{nameof(MailOptions.From)}",
@@ -252,19 +237,15 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             services.RemoveAll<TimeProvider>();
             services.AddSingleton<TimeProvider>(TimeProvider);
             services.AddSingleton<ILogEventSink>(Logs);
+            services.Configure<PasswordHasherOptions>(options =>
+                options.IterationCount = PasswordHashIterations
+            );
         });
     }
 
     public async ValueTask InitializeAsync()
     {
-        await Task.WhenAll(_postgres.StartAsync(), _mailpit.StartAsync());
-        _mailbox = new MailpitInbox(
-            new UriBuilder(
-                Uri.UriSchemeHttp,
-                _mailpit.Hostname,
-                _mailpit.GetMappedPublicPort(MailpitApiPort)
-            ).Uri
-        );
+        _database = await _infrastructure.CreateDatabaseFromTemplateAsync();
 
         await using var scope = Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -394,21 +375,8 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             ct
         );
 
-    public async Task<string> CreateEmptyDatabaseAsync(CancellationToken ct = default)
-    {
-        var name = $"furria_empty_{Guid.NewGuid():N}";
-        await using var scope = Services.CreateAsyncScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-#pragma warning disable EF1002
-        await db.Database.ExecuteSqlRawAsync($"CREATE DATABASE {name}", ct);
-#pragma warning restore EF1002
-
-        return new NpgsqlConnectionStringBuilder(_postgres.GetConnectionString())
-        {
-            Database = name,
-        }.ConnectionString;
-    }
+    public Task<string> CreateEmptyDatabaseAsync(CancellationToken ct = default) =>
+        _infrastructure.CreateEmptyDatabaseAsync(ct);
 
     public Task AtLaterTimeAsync(TimeSpan ahead, Func<Task> body) =>
         AtInstantAsync(TimeProvider.GetUtcNow().Add(ahead), body);
@@ -672,11 +640,15 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         );
     }
 
-    public async Task<IReadOnlyList<string>> GetAppliedMigrationsAsync(
+    public Task<IReadOnlyList<string>> GetAppliedMigrationsAsync(CancellationToken ct = default) =>
+        AppliedMigrationsOfAsync(this, ct);
+
+    public static async Task<IReadOnlyList<string>> AppliedMigrationsOfAsync(
+        WebApplicationFactory<Program> host,
         CancellationToken ct = default
     )
     {
-        await using var scope = Services.CreateAsyncScope();
+        await using var scope = host.Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var applied = await db.Database.GetAppliedMigrationsAsync(ct);
         return applied.ToList();
@@ -731,8 +703,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
     public override async ValueTask DisposeAsync()
     {
         await base.DisposeAsync();
-        _mailbox?.Dispose();
-        await _postgres.DisposeAsync();
-        await _mailpit.DisposeAsync();
+        if (_database is not null)
+            await _infrastructure.DropDatabaseAsync(_database);
     }
 }

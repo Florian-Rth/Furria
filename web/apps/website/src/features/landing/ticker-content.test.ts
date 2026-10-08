@@ -9,10 +9,4 @@ describe('buildTickerPhrases', () => {
   ])('carries %s sessions in %i phrases', (_, session, expected) => {
     expect(buildTickerPhrases(session)).toHaveLength(expected);
   });
-
-  it('shouts the proclaimed motto', () => {
-    const session = { startYear: 2026, label: '2026/27', motto: 'Furria — Großes Theater' };
-
-    expect(buildTickerPhrases(session).at(-1)).toBe('FURRIA — GROSSES THEATER');
-  });
 });

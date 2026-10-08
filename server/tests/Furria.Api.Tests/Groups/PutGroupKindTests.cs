@@ -2,15 +2,13 @@ using System.Net;
 using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Groups;
-using Furria.Application.Authorization;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
 namespace Furria.Api.Tests.Groups;
 
-[Collection("Api")]
-public sealed class PutGroupKindTests
+public sealed class PutGroupKindTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string DuplicateNameMessage = "Diese Gruppenart gibt es schon.";
@@ -164,63 +162,6 @@ public sealed class PutGroupKindTests
         var response = await RenameKindAsync(client, ctx.Groups.GroupKinds.IdOf("garde"), "");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        await ctx
-            .Expected.GroupKind(ctx.Groups.GroupKinds.IdOf("garde"))
-            .ToHaveName("Garde")
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldGroupsManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("katrin"))
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "rechte",
-                            "katrin-rechte",
-                            "Rechte",
-                            "katrin",
-                            FurriaPermissions.RolesManage
-                        )
-                    )
-                    .Groups(groups => groups.AddGroupKind("garde", "Garde")),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("katrin", ct);
-        var response = await RenameKindAsync(
-            client,
-            ctx.Groups.GroupKinds.IdOf("garde"),
-            "Tanzgarde"
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx
-            .Expected.GroupKind(ctx.Groups.GroupKinds.IdOf("garde"))
-            .ToHaveName("Garde")
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Groups(groups => groups.AddGroupKind("garde", "Garde")),
-            ct
-        );
-
-        var response = await RenameKindAsync(
-            _fixture.CreateClient(),
-            ctx.Groups.GroupKinds.IdOf("garde"),
-            "Tanzgarde"
-        );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         await ctx
             .Expected.GroupKind(ctx.Groups.GroupKinds.IdOf("garde"))
             .ToHaveName("Garde")

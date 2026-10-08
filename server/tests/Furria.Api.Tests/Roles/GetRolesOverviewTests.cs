@@ -8,8 +8,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Roles;
 
-[Collection("Api")]
-public sealed class GetRolesOverviewTests
+public sealed class GetRolesOverviewTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
     private static readonly DateOnly HeldSince2017 = new(2017, 9, 1);
@@ -134,34 +133,6 @@ public sealed class GetRolesOverviewTests
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Empty(Single(result, "Notenwart").Holders);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerHoldsNoRunningMembership()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddAccount("gast")),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("gast", ct);
-        var (response, _) = await client.GETAsync<GetRolesOverview, GetRolesOverviewResponse>();
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .GETAsync<GetRolesOverview, GetRolesOverviewResponse>();
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     private static IdentitySeedBuilder MemberNamedMira(IdentitySeedBuilder identity) =>

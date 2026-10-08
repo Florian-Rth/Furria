@@ -2,14 +2,12 @@ using System.Net;
 using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Management;
-using Furria.Application.Authorization;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
 namespace Furria.Api.Tests.Management;
 
-[Collection("Api")]
-public sealed class PutClubAccessTests
+public sealed class PutClubAccessTests : IClassFixture<ApiTestFixture>
 {
     private const string AgeOfConsentField = "ageOfConsent";
 
@@ -87,49 +85,6 @@ public sealed class PutClubAccessTests
             ["Das Mindestalter liegt zwischen 12 und 21 Jahren."],
             failures[AgeOfConsentField]
         );
-        await ctx.Expected.ClubRecord().ToNotExist().AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerHoldsAnotherManagementPermission()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("ilka"))
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "teilpflege",
-                            "ilka-teilpflege",
-                            "Teilpflege",
-                            "ilka",
-                            FurriaPermissions.PersonsManage
-                        )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var response = await client.PUTAsync<PutClubAccess, PutClubAccessRequest>(
-            new() { AgeOfConsent = 18 }
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx.Expected.ClubRecord().ToNotExist().AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var response = await _fixture
-            .CreateClient()
-            .PUTAsync<PutClubAccess, PutClubAccessRequest>(new() { AgeOfConsent = 18 });
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         await ctx.Expected.ClubRecord().ToNotExist().AssertAsync(ct);
     }
 

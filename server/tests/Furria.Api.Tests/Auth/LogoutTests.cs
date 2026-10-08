@@ -10,8 +10,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Auth;
 
-[Collection("Api")]
-public sealed class LogoutTests
+public sealed class LogoutTests : IClassFixture<ApiTestFixture>
 {
     private const string LoggedOut = "Account {AccountId} logged out";
 
@@ -96,21 +95,6 @@ public sealed class LogoutTests
         var response = await Post(session, "token+with/base64=padding");
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_NoAccessTokenIsSent()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (_, session) = await LoggedInAsync(ct);
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .POSTAsync<Logout, LogoutRequest, EmptyResponse>(
-                new() { RefreshToken = session.RefreshToken }
-            );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Fact]

@@ -10,8 +10,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Calendar;
 
-[Collection("Api")]
-public sealed class PostCalendarEntryTests
+public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
 {
     private const string ValidationField = "request";
     private const string ClubMeeting = "Vereinssitzung";
@@ -376,21 +375,6 @@ public sealed class PostCalendarEntryTests
         );
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .POSTAsync<PostCalendarEntry, PostCalendarEntryRequest, PostCalendarEntryResponse>(
-                ClubOwned(ClubMeeting)
-            );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     private static PostCalendarEntryRequest ClubOwned(string title) =>

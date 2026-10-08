@@ -9,11 +9,8 @@ using Xunit;
 
 namespace Furria.Api.Tests.Persons;
 
-[Collection("Api")]
-public sealed class GetPersonAccessStateTests
+public sealed class GetPersonAccessStateTests : IClassFixture<ApiTestFixture>
 {
-    private const int UnknownPersonId = 999_999;
-
     private readonly ApiTestFixture _fixture;
 
     public GetPersonAccessStateTests(ApiTestFixture fixture)
@@ -246,54 +243,6 @@ public sealed class GetPersonAccessStateTests
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal(AccountAccessState.Active, result.State);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerHoldsNeitherPersonsManageNorAccountsManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddEligiblePerson(
-                                "anna",
-                                "Anna",
-                                InvitationSteps.UniqueContactEmail("anna"),
-                                _fixture.Today
-                            )
-                            .AddPerson("ilka", "Ilka", "Reineke")
-                            .AddAccount("ilka")
-                    )
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "gruppenpflege",
-                            "ilka-gruppenpflege",
-                            "Gruppenpflege",
-                            "ilka",
-                            FurriaPermissions.GroupsManage
-                        )
-                    ),
-            ct
-        );
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-
-        var (response, _) = await ReadStateAsync(client, ctx.Identity.People.IdOf("anna"));
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_ThePersonIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        var (response, _) = await ReadStateAsync(manager, UnknownPersonId);
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     [Fact]

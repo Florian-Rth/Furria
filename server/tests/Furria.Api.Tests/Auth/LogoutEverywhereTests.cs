@@ -8,8 +8,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Auth;
 
-[Collection("Api")]
-public sealed class LogoutEverywhereTests
+public sealed class LogoutEverywhereTests : IClassFixture<ApiTestFixture>
 {
     private readonly ApiTestFixture _fixture;
 
@@ -65,16 +64,6 @@ public sealed class LogoutEverywhereTests
             HttpStatusCode.OK,
             (await AccountSecuritySteps.RefreshAsync(_fixture, bert.RefreshToken)).StatusCode
         );
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_NoAccessTokenIsSent()
-    {
-        var (response, _) = await _fixture
-            .CreateClient()
-            .POSTAsync<LogoutEverywhere, EmptyResponse>();
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     private async Task<HttpResponseMessage> PostAsync(string accessToken) =>

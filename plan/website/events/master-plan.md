@@ -38,8 +38,7 @@ Frontmatter `status`: `skeleton → shaping → ready → building → shipped`.
    mock README, resolved terms land in `CONTEXT.md`, and the page's future API contract is
    pinned under [Deferred — backend](#deferred--backend).
 3. **ready** — the user approved the plan; phases are defined.
-4. **building** — one E-phase at a time, per-slice reviews and full gates (typecheck,
-   tests, lint, build) exactly as in website P0–P6. As-built notes land in the page plan;
+4. **building** — one E-phase at a time, per-slice reviews and gates per the Validation policy in `CLAUDE.md`. As-built notes land in the page plan;
    the index row here updates.
 5. **shipped** — done; deviations from the plan are recorded, never silent.
 

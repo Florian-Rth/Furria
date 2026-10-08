@@ -189,12 +189,12 @@ under "Awaiting facts" and block nothing.
 - `NextEventCard`'s four faces each have a test; the empty seed array renders the
   end-of-season state; row anchors scroll-and-highlight; the route emits schema.org/Event
   JSON-LD.
-- Full gates pass: typecheck, tests, lint, build.
+- Gates green per the Validation policy in `CLAUDE.md`.
 
 ## Implementation plan (E-phases)
 
 - **E2 — Event list** (this file, four slices, one phase; per-slice reviews and
-  full gates as in E1/P0–P6):
+  gates per the Validation policy in `CLAUDE.md`):
   1. **Rename sweep** — `/program` → `/events`, `/events/$eventSlug` placeholder route,
      nav/teaser/gallery copy + identifiers, tests, `feature-program-teaser.md` →
      `feature-events-teaser.md`.
@@ -206,7 +206,7 @@ under "Awaiting facts" and block nothing.
   3. **Hero + hero card** — eyebrow (derived session), H1, derived intro, three honest
      stats; `NextEventCard` with the four-face ladder and adaptive countdown.
   4. **Lower bands + assembly** — venue block, FAQ, ticket-exchange concept teaser,
-     filmstrip, `EventListPage` assembly, route head with JSON-LD, page tests, full gates.
+     filmstrip, `EventListPage` assembly, route head with JSON-LD, page tests, gates.
 
 ## As-built (E2, 2026-08-14)
 

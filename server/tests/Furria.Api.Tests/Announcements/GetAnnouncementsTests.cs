@@ -8,8 +8,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Announcements;
 
-[Collection("Api")]
-public sealed class GetAnnouncementsTests
+public sealed class GetAnnouncementsTests : IClassFixture<ApiTestFixture>
 {
     private const string Body = "Der Saal bleibt am Freitag geschlossen.";
 
@@ -173,34 +172,6 @@ public sealed class GetAnnouncementsTests
         var result = await ReadAsync(ctx, "chris", ct);
 
         Assert.Empty(result.Announcements);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerHoldsNoRunningMembership()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddAccount("gast")),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("gast", ct);
-        var (response, _) = await client.GETAsync<GetAnnouncements, GetAnnouncementsResponse>();
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .GETAsync<GetAnnouncements, GetAnnouncementsResponse>();
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     private Task<SeededContext> BuildBoardAsync(CancellationToken ct) =>

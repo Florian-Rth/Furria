@@ -19,6 +19,16 @@ export interface EntryVenueView {
   holdsKey: boolean;
 }
 
+export type EntryRunning =
+  | { kind: 'idle' }
+  | { kind: 'openEnded' }
+  | { kind: 'ending'; minutesLeft: number };
+
+export interface EntryRuns {
+  groupName: string | null;
+  duty: string | null;
+}
+
 export interface EntryGroupsView {
   owner: StartGroupRef | null;
   participating: StartGroupRef[];
@@ -65,17 +75,31 @@ export const toEntryHeadline = (entry: StartEntry): string => {
     : `${kind}${PART_SEPARATOR}${span}`;
 };
 
-export const toRunningNote = (entry: EntryTiming, now: Date): string | null => {
+export const entryRunningOf = (entry: EntryTiming, now: Date): EntryRunning => {
   if (!isEntryRunningAt(entry, now)) {
-    return null;
+    return { kind: 'idle' };
   }
   if (entry.endsAt === null) {
+    return { kind: 'openEnded' };
+  }
+
+  return {
+    kind: 'ending',
+    minutesLeft: Math.max(0, Math.ceil((Date.parse(entry.endsAt) - now.getTime()) / MS_PER_MINUTE)),
+  };
+};
+
+export const toRunningNote = (entry: EntryTiming, now: Date): string | null => {
+  const running = entryRunningOf(entry, now);
+
+  if (running.kind === 'idle') {
+    return null;
+  }
+  if (running.kind === 'openEnded') {
     return RUNNING_WORD;
   }
 
-  const left = Math.max(0, Math.ceil((Date.parse(entry.endsAt) - now.getTime()) / MS_PER_MINUTE));
-
-  return `${RUNNING_WORD}${PART_SEPARATOR}noch ${formatCountdownMinutes(left)}`;
+  return `${RUNNING_WORD}${PART_SEPARATOR}noch ${formatCountdownMinutes(running.minutesLeft)}`;
 };
 
 export const toEntryVenue = (
@@ -107,19 +131,32 @@ export const toEntryGroups = (entry: StartEntry): EntryGroupsView => ({
   ),
 });
 
-export const toRunsLine = (entry: StartEntry): string | null => {
+export const entryRunsOf = (entry: StartEntry): EntryRuns | null => {
   const runs = entry.viewerRuns;
 
   if (runs === null) {
     return null;
   }
 
-  const group = groupRefOf(entry, runs.groupId);
-  const role =
-    group === null ? 'Du bist Gruppen-Admin' : `Du bist Gruppen-Admin der Gruppe ${group.name}`;
-  const duty = trimmed(runs.function);
+  return {
+    groupName: groupRefOf(entry, runs.groupId)?.name ?? null,
+    duty: trimmed(runs.function),
+  };
+};
 
-  return duty === null ? role : `${role}${PART_SEPARATOR}${duty}`;
+export const toRunsLine = (entry: StartEntry): string | null => {
+  const runs = entryRunsOf(entry);
+
+  if (runs === null) {
+    return null;
+  }
+
+  const role =
+    runs.groupName === null
+      ? 'Du bist Gruppen-Admin'
+      : `Du bist Gruppen-Admin der Gruppe ${runs.groupName}`;
+
+  return runs.duty === null ? role : `${role}${PART_SEPARATOR}${runs.duty}`;
 };
 
 export const toEntryOnward = (entry: StartEntry, canReadClub: boolean): EntryOnward => {

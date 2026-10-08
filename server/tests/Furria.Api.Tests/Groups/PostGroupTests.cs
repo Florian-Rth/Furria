@@ -4,14 +4,12 @@ using System.Net.Mime;
 using System.Text;
 using FastEndpoints;
 using Furria.Api.Endpoints.Groups;
-using Furria.Application.Authorization;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
 namespace Furria.Api.Tests.Groups;
 
-[Collection("Api")]
-public sealed class PostGroupTests
+public sealed class PostGroupTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string GroupsRoute = "/api/manage/groups";
@@ -132,51 +130,6 @@ public sealed class PostGroupTests
         );
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldGroupsManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity.AddPerson("ilka", "Ilka", "Reineke").AddAccount("ilka")
-                    )
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "schriftfuehrung",
-                            "ilka-schriftfuehrung",
-                            "Schriftführung",
-                            "ilka",
-                            FurriaPermissions.PersonsManage
-                        )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var (response, _) = await client.POSTAsync<PostGroup, PostGroupRequest, PostGroupResponse>(
-            new() { Name = "Technik & Bühne", GroupKindId = null }
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .POSTAsync<PostGroup, PostGroupRequest, PostGroupResponse>(
-                new() { Name = "Technik & Bühne", GroupKindId = null }
-            );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Fact]

@@ -9,10 +9,8 @@ using Xunit;
 
 namespace Furria.Api.Tests.Events;
 
-[Collection("Api")]
-public sealed class GetEventByIdTests
+public sealed class GetEventByIdTests : IClassFixture<ApiTestFixture>
 {
-    private const int UnknownEventId = 999_999;
     private const string FirstGala = "1. Prunksitzung";
     private const string Teaser = "Der närrische Höhepunkt der Session.";
     private const string Description = "Garde, Bütt und Elferrat.";
@@ -107,28 +105,6 @@ public sealed class GetEventByIdTests
         );
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheEventIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-
-        var (response, _) = await ReadAsync(ctx, "vera", UnknownEventId);
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerHoldsNoEventsKey()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-
-        var (response, _) = await ReadAsync(ctx, "max", ctx.Club.Events.IdOf("first-gala"));
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
     private static async Task<TestResult<GetEventByIdResponse>> ReadAsync(

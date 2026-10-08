@@ -10,8 +10,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.MembershipApplications;
 
-[Collection("Api")]
-public sealed class PostMembershipApplicationTests
+public sealed class PostMembershipApplicationTests : IClassFixture<ApiTestFixture>
 {
     private readonly ApiTestFixture _fixture;
 

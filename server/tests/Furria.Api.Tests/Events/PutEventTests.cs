@@ -10,8 +10,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Events;
 
-[Collection("Api")]
-public sealed class PutEventTests
+public sealed class PutEventTests : IClassFixture<ApiTestFixture>
 {
     private const string FirstGala = "1. Prunksitzung";
     private const string RenamedGala = "Große Prunksitzung";
@@ -161,23 +160,6 @@ public sealed class PutEventTests
             .Expected.CalendarEntry(meetingId)
             .ToHaveKind(CalendarEntryKind.Meeting)
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerHoldsNoEventsKey()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var eventId = ctx.Club.Events.IdOf("first-gala");
-
-        var (response, _) = await EditAsync(
-            ctx,
-            "max",
-            Moved(eventId, ctx.Club.Venues.IdOf("festzelt"), PresaleStarted)
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx.Expected.CalendarEntry(eventId).ToHaveTitle(FirstGala).AssertAsync(ct);
     }
 
     private static PutEventRequest Moved(

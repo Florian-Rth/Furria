@@ -1,4 +1,5 @@
 import type { KkChromeMotion } from '../../../internal/chrome-density';
+import { ramp } from '../../../internal/ramp';
 import { kkTokens } from '../../../tokens';
 
 export interface KkHandover {
@@ -28,9 +29,6 @@ const HANDED_OVER: KkHandover = {
   titleOpacity: 1,
   titleRise: 0,
 };
-
-const ramp = (value: number, from: number, to: number): number =>
-  Math.min(Math.max((value - from) / (to - from), 0), 1);
 
 export const handoverAt = (scrollOffset: number, motion: KkChromeMotion = 'ramped'): KkHandover => {
   if (scrollOffset <= 0) {

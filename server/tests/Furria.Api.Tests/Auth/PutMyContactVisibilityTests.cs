@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Auth;
 
-[Collection("Api")]
-public sealed class PutMyContactVisibilityTests
+public sealed class PutMyContactVisibilityTests : IClassFixture<ApiTestFixture>
 {
     private const string ContactVisibilityRoute = "/api/auth/me/contact-visibility";
 

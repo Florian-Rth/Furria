@@ -1,5 +1,5 @@
-import type { KkGroupTone } from '@furria/ui';
-import { GROUP_TONES } from '@furria/ui';
+import type { KkGroupTone } from '@furria/ui/group-tone';
+import { GROUP_TONES } from '@furria/ui/group-tone';
 
 export type GroupTone = KkGroupTone;
 
@@ -96,9 +96,20 @@ export const toAnniversary = (
 export const toFoundedLine = (foundedYear: number | null): string | null =>
   foundedYear === null ? null : `${FOUNDED_PREFIX}${foundedYear}`;
 
+export interface ClockSpan {
+  readonly from: string;
+  readonly to: string;
+}
+
+export const toClockSpan = (startsAt: string, durationMinutes: number): ClockSpan => {
+  const startMinute = toMinuteOfDay(startsAt);
+
+  return { from: toClockLabel(startMinute), to: toClockLabel(startMinute + durationMinutes) };
+};
+
 export const toTrainingSlotLine = (slot: TrainingSlotFacts): string => {
-  const startsAt = toMinuteOfDay(slot.startsAt);
-  const span = `${toClockLabel(startsAt)}${TIME_SPAN_SEPARATOR}${toClockLabel(startsAt + slot.durationMinutes)}${CLOCK_SUFFIX}`;
+  const clock = toClockSpan(slot.startsAt, slot.durationMinutes);
+  const span = `${clock.from}${TIME_SPAN_SEPARATOR}${clock.to}${CLOCK_SUFFIX}`;
   const venue = slot.venueName === null ? '' : `${VENUE_SEPARATOR}${slot.venueName}`;
 
   return `${WEEKDAY_ADVERBS[slot.weekday]} ${span}${venue}`;

@@ -7,13 +7,6 @@ describe('leavesSheetOverScreen', () => {
       label: 'a link in a sheet over its screen opens another page',
       current: { pathname: '/start', search: '?sheet=entry-5' },
       behind: '/start',
-      nextHref: '/groups/3',
-      expected: true,
-    },
-    {
-      label: 'a link in a sheet over its screen opens another page with a query',
-      current: { pathname: '/start', search: '?sheet=entry-5' },
-      behind: '/start',
       nextHref: '/calendar?view=list&day=2026-10-07',
       expected: true,
     },

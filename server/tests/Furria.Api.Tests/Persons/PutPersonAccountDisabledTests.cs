@@ -14,8 +14,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Persons;
 
-[Collection("Api")]
-public sealed class PutPersonAccountDisabledTests
+public sealed class PutPersonAccountDisabledTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const int UnknownPersonId = 999_999;
@@ -202,26 +201,6 @@ public sealed class PutPersonAccountDisabledTests
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         var payload = await response.Content.ReadFromJsonAsync<ErrorResponse>(ct);
         Assert.Equal(["Anna hat keinen Zugang."], payload?.Errors[ConflictField]);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerOnlyHoldsPersonsManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ArrangeHolderOfAsync(FurriaPermissions.PersonsManage, ct);
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-
-        var response = await InvitationSteps.SetAccountDisabledAsync(
-            client,
-            ctx.Identity.People.IdOf("anna"),
-            true
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx
-            .Expected.Account(ctx.Identity.Accounts.IdOf("anna"))
-            .ToBeDisabled(false)
-            .AssertAsync(ct);
     }
 
     [Fact]

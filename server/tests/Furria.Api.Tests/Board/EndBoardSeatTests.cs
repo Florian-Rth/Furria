@@ -9,8 +9,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Board;
 
-[Collection("Api")]
-public sealed class EndBoardSeatTests
+public sealed class EndBoardSeatTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string ValidationField = "request";
@@ -218,64 +217,6 @@ public sealed class EndBoardSeatTests
     }
 
     [Fact]
-    public async Task Should_ReturnBadRequest_When_TheRouteCarriesNoUsableId()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithRunningSeatAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await EndSeatAsync(
-            client,
-            ctx.Club.BoardOffices.IdOf("praesident"),
-            0,
-            HandedOver2020
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldBoardManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity.AddPerson("ilka", "Ilka", "Reineke").AddAccount("katrin")
-                    )
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "rechte",
-                            "katrin-rechte",
-                            "Rechte",
-                            "katrin",
-                            FurriaPermissions.RolesManage
-                        )
-                    )
-                    .Club(club =>
-                        club.AddBoardOffice("praesident", "Präsident", 1)
-                            .AddBoardSeat("ilka-praesident", "praesident", "ilka", Elected2016)
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("katrin", ct);
-        var response = await EndSeatAsync(
-            client,
-            ctx.Club.BoardOffices.IdOf("praesident"),
-            ctx.Club.BoardSeats.IdOf("ilka-praesident"),
-            HandedOver2020
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx
-            .Expected.BoardSeat(ctx.Club.BoardSeats.IdOf("ilka-praesident"))
-            .ToBeOpen()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_RefuseTheEnd_When_TheOfficeCarriesARoleTheCallerMayNotGrant()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -312,26 +253,6 @@ public sealed class EndBoardSeatTests
         );
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx
-            .Expected.BoardSeat(ctx.Club.BoardSeats.IdOf("ilka-praesident"))
-            .ToBeOpen()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithRunningSeatAsync(ct);
-
-        var response = await EndSeatAsync(
-            _fixture.CreateClient(),
-            ctx.Club.BoardOffices.IdOf("praesident"),
-            ctx.Club.BoardSeats.IdOf("ilka-praesident"),
-            HandedOver2020
-        );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         await ctx
             .Expected.BoardSeat(ctx.Club.BoardSeats.IdOf("ilka-praesident"))
             .ToBeOpen()

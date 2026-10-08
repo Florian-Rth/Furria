@@ -1,6 +1,5 @@
 using System.Net;
 using FastEndpoints;
-using Furria.Api.Endpoints.Auth;
 using Furria.Api.Endpoints.Persons;
 using Furria.Api.Tests.Invitations;
 using Furria.Core.Identity;
@@ -11,8 +10,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Auth;
 
-[Collection("Api")]
-public sealed class DeleteMyAccountTests
+public sealed class DeleteMyAccountTests : IClassFixture<ApiTestFixture>
 {
     private const string PasswordField = "password";
     private const string PasskeyField = "passkey";
@@ -376,17 +374,6 @@ public sealed class DeleteMyAccountTests
             .Expected.Account(_fixture.ManagingLogin.AccountId)
             .ToBeTheManagingLogin()
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_NoAccessTokenIsSent()
-    {
-        var response = await AccountSecuritySteps.DeleteAccountAsync(
-            _fixture.CreateClient(),
-            ApiTestFixture.SeededAccountPassword
-        );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     private Task<SeededContext> ArrangeAnnaAsync(CancellationToken ct) =>

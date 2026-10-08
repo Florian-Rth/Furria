@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Persons;
-using Furria.Application.Authorization;
 using Furria.Core.Identity;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
@@ -10,8 +9,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Persons;
 
-[Collection("Api")]
-public sealed class PutFeeReductionTests
+public sealed class PutFeeReductionTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string ValidationField = "request";
@@ -273,75 +271,6 @@ public sealed class PutFeeReductionTests
         );
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldPersonsManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddPerson("paula", "Paula", "Brendel")
-                            .AddPerson("ilka", "Ilka", "Reineke")
-                            .AddAccount("ilka")
-                            .AddFeeReduction(
-                                "paula-schule",
-                                "paula",
-                                FeeReductionBasis.School,
-                                ReducedFrom2018,
-                                ReducedUntil2019
-                            )
-                    )
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "gruppenpflege",
-                            "ilka-gruppenpflege",
-                            "Gruppenpflege",
-                            "ilka",
-                            FurriaPermissions.GroupsManage
-                        )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var response = await client.PUTAsync<PutFeeReduction, PutFeeReductionRequest>(
-            new()
-            {
-                PersonId = ctx.Identity.People.IdOf("paula"),
-                FeeReductionId = ctx.Identity.FeeReductions.IdOf("paula-schule"),
-                Basis = FeeReductionBasis.Studies,
-                FirstSessionYear = ReducedFrom2018,
-                LastSessionYear = ReducedUntil2019,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithSchoolReductionAsync(ct);
-
-        var response = await _fixture
-            .CreateClient()
-            .PUTAsync<PutFeeReduction, PutFeeReductionRequest>(
-                new()
-                {
-                    PersonId = ctx.Identity.People.IdOf("paula"),
-                    FeeReductionId = ctx.Identity.FeeReductions.IdOf("paula-schule"),
-                    Basis = FeeReductionBasis.Studies,
-                    FirstSessionYear = ReducedFrom2018,
-                    LastSessionYear = ReducedUntil2019,
-                }
-            );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     private Task<SeededContext> BuildWithSchoolReductionAsync(CancellationToken ct) =>

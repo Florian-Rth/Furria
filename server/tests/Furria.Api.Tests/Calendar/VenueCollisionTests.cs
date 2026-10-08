@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Calendar;
 
-[Collection("Api")]
-public sealed class VenueCollisionTests
+public sealed class VenueCollisionTests : IClassFixture<ApiTestFixture>
 {
     private const string Abendprobe = "Abendprobe";
     private const string OffeneWerkstatt = "Offene Werkstatt";

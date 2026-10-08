@@ -59,26 +59,39 @@ export interface EventSales {
 export const toPresaleStartLabel = (presaleStartsAt: string): string =>
   `${formatIsoDay(toLocalIsoDay(presaleStartsAt))}, ${toTimeLabel(presaleStartsAt)}${CLOCK_SUFFIX}`;
 
-export const toEventStatusLabel = (sales: EventSales): string => {
+export type EventStatusVariant =
+  | { kind: Exclude<EventSalesStatusKey, 'presaleScheduled'> }
+  | { kind: 'presaleScheduled'; presaleStartsAt: string };
+
+export const toEventStatusVariant = (sales: EventSales): EventStatusVariant => {
   if (sales.status !== 'presaleScheduled') {
-    return STATUS_LABELS[sales.status];
+    return { kind: sales.status };
   }
   if (sales.presaleStartsAt === null) {
-    return STATUS_LABELS.announced;
+    return { kind: 'announced' };
   }
 
-  return `Vorverkauf startet am ${toPresaleStartLabel(sales.presaleStartsAt)}`;
+  return { kind: 'presaleScheduled', presaleStartsAt: sales.presaleStartsAt };
+};
+
+export const toEventStatusLabel = (sales: EventSales): string => {
+  const variant = toEventStatusVariant(sales);
+
+  if (variant.kind === 'presaleScheduled') {
+    return `Vorverkauf startet am ${toPresaleStartLabel(variant.presaleStartsAt)}`;
+  }
+
+  return STATUS_LABELS[variant.kind];
 };
 
 export const toEventStatusShortLabel = (sales: EventSales): string => {
-  if (sales.status !== 'presaleScheduled') {
-    return SHORT_STATUS_LABELS[sales.status];
-  }
-  if (sales.presaleStartsAt === null) {
-    return SHORT_STATUS_LABELS.announced;
+  const variant = toEventStatusVariant(sales);
+
+  if (variant.kind === 'presaleScheduled') {
+    return `VVK ab ${toDayNumberLabel(variant.presaleStartsAt)}`;
   }
 
-  return `VVK ab ${toDayNumberLabel(sales.presaleStartsAt)}`;
+  return SHORT_STATUS_LABELS[variant.kind];
 };
 
 export const formatPriceCents = (priceCents: number): string => {

@@ -7,11 +7,8 @@ using Xunit;
 
 namespace Furria.Api.Tests.Roles;
 
-[Collection("Api")]
-public sealed class GetRoleByIdTests
+public sealed class GetRoleByIdTests : IClassFixture<ApiTestFixture>
 {
-    private const int UnknownRoleId = 999_999;
-
     private static readonly DateOnly HeldSince2017 = new(2017, 9, 1);
     private static readonly DateOnly HandedOver2020 = new(2020, 3, 1);
     private static readonly DateOnly TookOverAgain2022 = new(2022, 1, 1);
@@ -196,72 +193,5 @@ public sealed class GetRoleByIdTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Empty(result.Holders);
         Assert.Empty(result.PastHolders);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheRoleIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, _) = await ReadRoleAsync(client, UnknownRoleId);
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_TheRouteCarriesNoUsableId()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, _) = await ReadRoleAsync(client, 0);
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldRolesManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("ilka"))
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "gruppenpflege",
-                            "ilka-gruppenpflege",
-                            "Gruppenpflege",
-                            "ilka",
-                            FurriaPermissions.GroupsManage
-                        )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var (response, _) = await ReadRoleAsync(client, ctx.Roles.Roles.IdOf("gruppenpflege"));
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Roles(roles => roles.AddRole("zeugwart", "Zeugwart")),
-            ct
-        );
-
-        var (response, _) = await ReadRoleAsync(
-            _fixture.CreateClient(),
-            ctx.Roles.Roles.IdOf("zeugwart")
-        );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 }

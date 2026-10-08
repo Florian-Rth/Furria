@@ -4311,9 +4311,8 @@ public sealed class EndGroupMembershipTests
 }
 ```
 
-Run one class with `dotnet test -- --filter-class Furria.Api.Tests.Groups.EndGroupMembershipTests`
-— the VSTest `--filter` flag is silently ignored under Microsoft.Testing.Platform and runs the
-whole suite. Docker must be up.
+Run one class with `dotnet run --project tests/Furria.Api.Tests --no-build -- -class Furria.Api.Tests.Groups.EndGroupMembershipTests`
+(see the Validation policy in `CLAUDE.md`). Docker must be up.
 
 ### 8.8 The gate guard test
 
@@ -4632,18 +4631,8 @@ sees *before* opening the PR.
 
 ### The gate commands
 
-```bash
-# B — backend (Docker must be running)
-cd /home/florian/sources/furria/server && docker compose up -d
-dotnet build && dotnet test && dotnet csharpier format .
-
-# F — frontend
-cd /home/florian/sources/furria/web
-pnpm lint && pnpm typecheck && pnpm test && pnpm build
-
-# S — screenshots (needs pnpm dev:club-app on :3001 and dotnet run --project src/Furria.Api on :5100)
-cd /home/florian/sources/furria/web && pnpm shot <route>
-```
+Scope and commands per the Validation policy in `CLAUDE.md`. Screenshots need `pnpm dev:club-app` on :3001 and
+`dotnet run --project src/Furria.Api` on :5100.
 `pnpm lint` is `biome check .` with a zero-warning policy; **no `biome-ignore`, ever**.
 `dotnet build` fails on any warning (`TreatWarningsAsErrors`) and on any MET violation.
 

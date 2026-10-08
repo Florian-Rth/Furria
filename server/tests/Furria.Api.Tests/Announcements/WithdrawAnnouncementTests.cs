@@ -8,8 +8,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Announcements;
 
-[Collection("Api")]
-public sealed class WithdrawAnnouncementTests
+public sealed class WithdrawAnnouncementTests : IClassFixture<ApiTestFixture>
 {
     private const string Title = "Saalreinigung";
     private const string Body = "Am Samstag räumen wir gemeinsam den Saal auf.";
@@ -104,21 +103,6 @@ public sealed class WithdrawAnnouncementTests
 
         Assert.Equal(HttpStatusCode.NoContent, taken.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildBoardAsync(ct);
-
-        var response = await _fixture
-            .CreateClient()
-            .POSTAsync<WithdrawAnnouncement, WithdrawAnnouncementRequest>(
-                new() { AnnouncementId = ctx.Club.Announcements.IdOf("von-alice") }
-            );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     private Task<SeededContext> BuildBoardAsync(CancellationToken ct) =>

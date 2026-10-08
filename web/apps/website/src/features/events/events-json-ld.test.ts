@@ -54,34 +54,35 @@ describe('buildEventsJsonLd', () => {
     ]);
   });
 
-  it('marks scarce and sold-out evenings honestly', () => {
-    const [scarce, soldOut] = buildEventsJsonLd([
-      seasonEvent({ status: 'fewLeft' }),
-      seasonEvent({ eventId: 2, status: 'soldOut' }),
-    ]);
+  it.each<[Partial<Event>, string | undefined, string]>([
+    [
+      { status: 'fewLeft' },
+      'https://schema.org/LimitedAvailability',
+      'https://schema.org/EventScheduled',
+    ],
+    [{ status: 'soldOut' }, 'https://schema.org/SoldOut', 'https://schema.org/EventScheduled'],
+    [
+      { status: 'presaleScheduled' },
+      'https://schema.org/PreOrder',
+      'https://schema.org/EventScheduled',
+    ],
+    [{ status: 'available', priceCents: null }, undefined, 'https://schema.org/EventScheduled'],
+    [{ status: 'cancelled' }, undefined, 'https://schema.org/EventCancelled'],
+  ])(
+    'states the offer and status of an evening with %j',
+    (overrides, availability, eventStatus) => {
+      const [jsonLd] = buildEventsJsonLd([seasonEvent(overrides)]);
 
-    expect(scarce?.offers?.availability).toBe('https://schema.org/LimitedAvailability');
-    expect(soldOut?.offers?.availability).toBe('https://schema.org/SoldOut');
-  });
+      expect([jsonLd?.offers?.availability, jsonLd?.eventStatus]).toEqual([
+        availability,
+        eventStatus,
+      ]);
+    },
+  );
 
-  it('omits the offer and door time while nothing is published', () => {
-    const [announced] = buildEventsJsonLd([
-      seasonEvent({
-        doorsOpenAt: null,
-        priceCents: null,
-        presaleStartsAt: null,
-        status: 'announced',
-      }),
-    ]);
-
-    expect(announced).not.toHaveProperty('offers');
-    expect(announced).not.toHaveProperty('doorTime');
-  });
-
-  it('flags a cancelled evening as EventCancelled without an offer', () => {
-    const [cancelled] = buildEventsJsonLd([seasonEvent({ status: 'cancelled' })]);
-
-    expect(cancelled?.eventStatus).toBe('https://schema.org/EventCancelled');
-    expect(cancelled).not.toHaveProperty('offers');
+  it('omits the door time while it is not published', () => {
+    expect(buildEventsJsonLd([seasonEvent({ doorsOpenAt: null })])[0]).not.toHaveProperty(
+      'doorTime',
+    );
   });
 });

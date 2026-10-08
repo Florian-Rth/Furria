@@ -1,5 +1,7 @@
-import { sortEntriesByDateDesc } from './changelog-content';
 import type { ChangelogEntry } from './schemas';
+
+export const sortEntriesByDateDesc = (entries: ChangelogEntry[]): ChangelogEntry[] =>
+  [...entries].sort((first, second) => second.date.localeCompare(first.date));
 
 export const isEntryRead = (readEntryIds: string[], entryId: string): boolean =>
   readEntryIds.includes(entryId);

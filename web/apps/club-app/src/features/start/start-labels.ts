@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { de } from 'date-fns/locale';
+import { de } from 'date-fns/locale/de';
 import { ATTENDANCE_LABELS } from '@/lib/calendar-copy';
 import { toLocalIsoDay, toTimeLabel, toWeekdayEyebrow } from '@/lib/calendar-days';
 import { calendarDaysBetween } from '@/lib/club';
@@ -184,20 +184,22 @@ export const toEntryFacets = (entry: StartEntry): EntryFacet[] => {
   return [...(state === null ? [] : [state]), ...withFacetsOf(entry), ...venue];
 };
 
-export const toEntryTick = (entry: StartEntry): GroupTone | null => {
+export const viewerOwnerOf = (entry: StartEntry): StartGroupRef | null => {
   const owner = entry.ownerGroup;
 
   if (
     owner === null ||
-    owner.tone === null ||
     !entry.viewerGroupIds.includes(owner.groupId) ||
     namesInTitle(entry.title, owner.name)
   ) {
     return null;
   }
 
-  return owner.tone;
+  return owner;
 };
+
+export const toEntryTick = (entry: StartEntry): GroupTone | null =>
+  viewerOwnerOf(entry)?.tone ?? null;
 
 export const toFacetText = (facet: EntryFacet): string => {
   if (facet.kind === 'until') {
@@ -237,13 +239,9 @@ const spokenAnswerOf = (entry: StartEntry): string[] => {
 };
 
 const spokenOwnerOf = (entry: StartEntry): string[] => {
-  const owner = entry.ownerGroup;
+  const owner = viewerOwnerOf(entry);
 
-  return owner !== null &&
-    entry.viewerGroupIds.includes(owner.groupId) &&
-    !namesInTitle(entry.title, owner.name)
-    ? [owner.name]
-    : [];
+  return owner === null ? [] : [owner.name];
 };
 
 export const toEntryAccessibleName = (entry: StartEntry, now: Date): string =>

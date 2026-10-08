@@ -176,7 +176,7 @@ public sealed class MetAnalyzerTests
     }
 
     [Fact]
-    public async Task Should_FlagMissingCollection_When_ClassInjectsApiFixture()
+    public async Task Should_FlagMissingClassFixture_When_ClassInjectsApiFixture()
     {
         const string source = """
             namespace N
@@ -190,7 +190,7 @@ public sealed class MetAnalyzerTests
             """;
 
         var diagnostics = await AnalyzerHarness.RunForRuleAsync(
-            new IntegrationCollectionMarkerAnalyzer(),
+            new IntegrationClassFixtureAnalyzer(),
             "MET004",
             source
         );
@@ -199,18 +199,19 @@ public sealed class MetAnalyzerTests
     }
 
     [Fact]
-    public async Task Should_NotFlag_When_ClassHasApiCollectionMarker()
+    public async Task Should_FlagSharedCollection_When_ClassJoinsOneBesideItsClassFixture()
     {
         const string source = """
             namespace N
             {
                 class ApiTestFixture { }
+                interface IClassFixture<T> { }
                 class CollectionAttribute : System.Attribute
                 {
                     public CollectionAttribute(string name) { }
                 }
                 [Collection("Api")]
-                class CloseTicketTests
+                class CloseTicketTests : IClassFixture<ApiTestFixture>
                 {
                     public CloseTicketTests(ApiTestFixture fixture) { }
                 }
@@ -218,7 +219,56 @@ public sealed class MetAnalyzerTests
             """;
 
         var diagnostics = await AnalyzerHarness.RunForRuleAsync(
-            new IntegrationCollectionMarkerAnalyzer(),
+            new IntegrationClassFixtureAnalyzer(),
+            "MET004",
+            source
+        );
+
+        Assert.Single(diagnostics);
+    }
+
+    [Fact]
+    public async Task Should_FlagOtherClassFixture_When_ClassOwnsADifferentFixture()
+    {
+        const string source = """
+            namespace N
+            {
+                class ApiTestFixture { }
+                class OtherFixture { }
+                interface IClassFixture<T> { }
+                class CloseTicketTests : IClassFixture<OtherFixture>
+                {
+                    public CloseTicketTests(ApiTestFixture fixture) { }
+                }
+            }
+            """;
+
+        var diagnostics = await AnalyzerHarness.RunForRuleAsync(
+            new IntegrationClassFixtureAnalyzer(),
+            "MET004",
+            source
+        );
+
+        Assert.Single(diagnostics);
+    }
+
+    [Fact]
+    public async Task Should_NotFlag_When_ClassOwnsApiFixtureAsClassFixture()
+    {
+        const string source = """
+            namespace N
+            {
+                class ApiTestFixture { }
+                interface IClassFixture<T> { }
+                class CloseTicketTests : IClassFixture<ApiTestFixture>
+                {
+                    public CloseTicketTests(ApiTestFixture fixture) { }
+                }
+            }
+            """;
+
+        var diagnostics = await AnalyzerHarness.RunForRuleAsync(
+            new IntegrationClassFixtureAnalyzer(),
             "MET004",
             source
         );

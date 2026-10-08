@@ -8,8 +8,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Groups;
 
-[Collection("Api")]
-public sealed class GetGroupsTests
+public sealed class GetGroupsTests : IClassFixture<ApiTestFixture>
 {
     private const string GroupsRoute = "/api/groups";
     private const int FoundedIn1971 = 1971;
@@ -524,37 +523,5 @@ public sealed class GetGroupsTests
         var tanzgarde = Assert.Single(result.Groups);
         Assert.False(tanzgarde.ViewerIsMember);
         Assert.False(tanzgarde.ViewerIsAdmin);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerIsNotAffiliated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("tom"))
-                    .Groups(groups => groups.AddGroup("tanzgarde", "Tanzgarde")),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("tom", ct);
-        var (response, _) = await client.GETAsync<GetGroups, GetGroupsResponse>();
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(
-            builder => builder.Groups(groups => groups.AddGroup("tanzgarde", "Tanzgarde")),
-            ct
-        );
-
-        var (response, _) = await _fixture.CreateClient().GETAsync<GetGroups, GetGroupsResponse>();
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 }

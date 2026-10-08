@@ -10,11 +10,6 @@ describe('toOriginHref', () => {
       expected: '/club',
     },
     {
-      label: 'a single path param',
-      origin: { label: 'Annika Adam', to: '/groups/$groupId', params: { groupId: '4' } },
-      expected: '/groups/4',
-    },
-    {
       label: 'two path params',
       origin: {
         label: 'Zeitraum',

@@ -1,45 +1,14 @@
-import type { GroupRef, MembershipState, RoleRef } from '@/lib/api/schemas';
+import type { MembershipState } from '@/lib/api/schemas';
 import { toInitials } from '@/lib/initials';
 import type { StateChip } from '@/lib/state-chips';
 import { toMembershipStateChip, toNoStateMatchLine } from '@/lib/state-chips';
 import type { LetterAnchor } from '@/lib/use-letter-position';
 import type { MemberDetails } from './schemas';
 
-export interface PersonRowAffiliation {
-  accent?: string;
-  meta?: string;
-}
-
 const META_SEPARATOR = ' · ';
 const LETTER_ANCHOR_PREFIX = 'letter-';
 const OTHER_LETTER_ANCHOR = `${LETTER_ANCHOR_PREFIX}other`;
 const LATIN_LETTER = /^[A-Z]$/;
-
-const toAccent = (roles: readonly RoleRef[]): string | undefined => {
-  const [first, ...further] = roles;
-
-  if (first === undefined) {
-    return undefined;
-  }
-  if (further.length === 0) {
-    return first.name;
-  }
-
-  return `${first.name} +${further.length}`;
-};
-
-const toMeta = (groups: readonly GroupRef[]): string | undefined => {
-  if (groups.length === 0) {
-    return undefined;
-  }
-
-  return groups.map((group) => group.name).join(META_SEPARATOR);
-};
-
-export const toPersonRowAffiliation = (
-  groups: readonly GroupRef[],
-  roles: readonly RoleRef[],
-): PersonRowAffiliation => ({ accent: toAccent(roles), meta: toMeta(groups) });
 
 export const toLetterAnchorId = (letter: string): string =>
   LATIN_LETTER.test(letter)
@@ -72,20 +41,34 @@ const ALL_FILTER_SUGGESTION = 'Wähle „Alle“, um alle anzuzeigen.';
 export const toStatsFootnote = (withoutMembership: number): string =>
   toWithoutMembershipSentence(withoutMembership) ?? COUNTING_FOOTNOTE;
 
-export const toEmptyDescription = (query: string, state: string): string => {
+export type MembersEmptyCause =
+  | { kind: 'query'; needle: string }
+  | { kind: 'filtered'; stateLine: string }
+  | { kind: 'empty' };
+
+export const membersEmptyCauseOf = (query: string, state: string): MembersEmptyCause => {
   const needle = query.trim();
 
   if (needle !== '') {
-    return `Keine Treffer für „${needle}“.`;
+    return { kind: 'query', needle };
   }
 
   const stateLine = toNoStateMatchLine(state);
 
-  if (stateLine === null) {
+  return stateLine === null ? { kind: 'empty' } : { kind: 'filtered', stateLine };
+};
+
+export const toEmptyDescription = (query: string, state: string): string => {
+  const cause = membersEmptyCauseOf(query, state);
+
+  if (cause.kind === 'query') {
+    return `Keine Treffer für „${cause.needle}“.`;
+  }
+  if (cause.kind === 'empty') {
     return 'Keine Einträge.';
   }
 
-  return `${stateLine} ${ALL_FILTER_SUGGESTION}`;
+  return `${cause.stateLine} ${ALL_FILTER_SUGGESTION}`;
 };
 
 export interface MemberHeadline {
@@ -109,10 +92,6 @@ export const MEMBER_SECTION_TITLES = {
 } as const;
 
 const MEMBER_TITLE_FALLBACK = 'Person';
-const PERSON_ID_PATTERN = /^[1-9]\d*$/;
-
-export const toPersonId = (raw: string): number | null =>
-  PERSON_ID_PATTERN.test(raw) ? Number(raw) : null;
 
 export const toMemberHeadline = (member: MemberDetails | undefined): MemberHeadline => {
   if (member === undefined) {

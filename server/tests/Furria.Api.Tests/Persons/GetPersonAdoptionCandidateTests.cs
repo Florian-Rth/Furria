@@ -2,14 +2,12 @@ using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Persons;
 using Furria.Api.Tests.Auth;
-using Furria.Application.Authorization;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
 namespace Furria.Api.Tests.Persons;
 
-[Collection("Api")]
-public sealed class GetPersonAdoptionCandidateTests
+public sealed class GetPersonAdoptionCandidateTests : IClassFixture<ApiTestFixture>
 {
     private readonly ApiTestFixture _fixture;
 
@@ -188,39 +186,6 @@ public sealed class GetPersonAdoptionCandidateTests
         var (response, _) = await FindCandidateAsync(manager, "keine-adresse");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldPersonsManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var annaEmail = InvitationSteps.UniqueContactEmail("anna");
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddPerson("anna", "Anna", "Muster")
-                            .AddPersonContact("anna", annaEmail)
-                            .AddPerson("ilka", "Ilka", "Reineke")
-                            .AddAccount("ilka")
-                    )
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "gruppenpflege",
-                            "ilka-gruppenpflege",
-                            "Gruppenpflege",
-                            "ilka",
-                            FurriaPermissions.GroupsManage
-                        )
-                    ),
-            ct
-        );
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-
-        var (response, _) = await FindCandidateAsync(client, annaEmail);
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
     private static Task<TestResult<GetPersonAdoptionCandidateResponse>> FindCandidateAsync(

@@ -1,7 +1,7 @@
-import type { RolePermissionCopy } from '@/features/manage-roles';
-import { isPermissionKey, toPermissionCopy } from '@/features/manage-roles';
-import type { AppSection } from '@/features/session';
-import { MANAGE_SECTIONS, toPermittedSections } from '@/features/session';
+import type { RolePermissionCopy } from '@/features/manage-roles/role-permission-copy';
+import { isPermissionKey, toPermissionCopy } from '@/features/manage-roles/role-permission-copy';
+import type { AppSection } from '@/features/session/app-sections';
+import { MANAGE_SECTIONS, toPermittedSections } from '@/features/session/app-sections';
 import type { StartMine } from './schemas';
 
 export type RoleSheetVariant = 'role' | 'office';

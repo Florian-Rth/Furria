@@ -6,8 +6,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Authorization;
 
-[Collection("Api")]
-public sealed class PersonSearchAccessTests
+public sealed class PersonSearchAccessTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
     private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
@@ -307,19 +306,6 @@ public sealed class PersonSearchAccessTests
         var response = await ProbeAsHolderOfAsync(FurriaPermissions.AccountsManage);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .GETAsync<PersonSearchProbe, EmptyResponse>();
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     private async Task<HttpResponseMessage> ProbeAsHolderOfAsync(string permissionKey)

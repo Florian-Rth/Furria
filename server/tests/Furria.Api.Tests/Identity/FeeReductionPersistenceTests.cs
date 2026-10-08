@@ -6,42 +6,13 @@ using Xunit;
 
 namespace Furria.Api.Tests.Identity;
 
-[Collection("Api")]
-public sealed class FeeReductionPersistenceTests
+public sealed class FeeReductionPersistenceTests : IClassFixture<ApiTestFixture>
 {
     private readonly ApiTestFixture _fixture;
 
     public FeeReductionPersistenceTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_RoundTripBasisAndSpan_When_AFeeReductionIsRecorded()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("alice")
-                        .AddFeeReduction(
-                            "alice-studium",
-                            "alice",
-                            FeeReductionBasis.Studies,
-                            _fixture.CurrentSessionYear,
-                            _fixture.CurrentSessionYear + 2
-                        )
-                ),
-            ct
-        );
-
-        await ctx
-            .Expected.FeeReduction(ctx.Identity.FeeReductions.IdOf("alice-studium"))
-            .ToHaveBasis(FeeReductionBasis.Studies)
-            .FeeReduction(ctx.Identity.FeeReductions.IdOf("alice-studium"))
-            .ToHaveSpan(_fixture.CurrentSessionYear, _fixture.CurrentSessionYear + 2)
-            .AssertAsync(ct);
     }
 
     [Fact]

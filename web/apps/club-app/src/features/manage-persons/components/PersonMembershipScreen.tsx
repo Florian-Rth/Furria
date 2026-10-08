@@ -1,7 +1,7 @@
 import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { parsePositiveId } from '@/lib/positive-id';
 import { usePersonEditorGate } from '../hooks/use-person-editor-gate';
-import { toEntryId, toPersonId } from '../manage-persons-labels';
 import { PersonEditorFallback } from './PersonEditorFallback';
 import { PersonEditorNotFound } from './PersonEditorNotFound';
 import { PersonMembershipEditor } from './PersonMembershipEditor';
@@ -11,8 +11,8 @@ const TITLE = 'Zeitraum ändern';
 
 export const PersonMembershipScreen: FC = () => {
   const { personId, membershipId } = useParams({ from: ROUTE_ID });
-  const entryId = toEntryId(membershipId);
-  const { gate, retry } = usePersonEditorGate(toPersonId(personId));
+  const entryId = parsePositiveId(membershipId);
+  const { gate, retry } = usePersonEditorGate(parsePositiveId(personId));
 
   if (gate.kind !== 'ready') {
     return <PersonEditorFallback hold={gate} title={TITLE} onRetry={retry} />;

@@ -2,9 +2,9 @@ import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { usePermissions } from '@/features/session';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
+import { parsePositiveId } from '@/lib/positive-id';
 import { isNotFoundError } from '@/lib/query-error';
 import { useRoleQuery } from '../api';
-import { toRoleHoldingId, toRoleId } from '../manage-roles-labels';
 import { toRoleErrorMessage } from '../manage-roles-messages';
 import { RoleEditorDenied } from './RoleEditorDenied';
 import { RoleEditorError } from './RoleEditorError';
@@ -18,8 +18,8 @@ const TITLE = 'Inhaberschaft beenden';
 export const RoleHoldingScreen: FC = () => {
   const { roleId, roleHoldingId } = useParams({ from: ROUTE_ID });
   const { has, isUndecided } = usePermissions();
-  const id = toRoleId(roleId);
-  const holdingId = toRoleHoldingId(roleHoldingId);
+  const id = parsePositiveId(roleId);
+  const holdingId = parsePositiveId(roleHoldingId);
   const role = useRoleQuery(id);
   const errorMessage = toRoleErrorMessage(role.error);
 

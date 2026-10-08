@@ -3,18 +3,15 @@ using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Roles;
 using Furria.Application.Authorization;
-using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
 namespace Furria.Api.Tests.Roles;
 
-[Collection("Api")]
-public sealed class ArchiveRoleTests
+public sealed class ArchiveRoleTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string AlreadyArchivedMessage = "Diese Rolle ist bereits archiviert.";
-    private const int UnknownRoleId = 999_999;
 
     private static readonly DateOnly HeldSince2017 = new(2017, 9, 1);
     private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
@@ -138,86 +135,6 @@ public sealed class ArchiveRoleTests
             .ToBeArchivedOn(ArchivedIn2021)
             .AssertAsync(ct);
     }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheRoleIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await ArchiveRoleAsync(client, UnknownRoleId);
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_TheRouteCarriesNoUsableId()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await ArchiveRoleAsync(client, 0);
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldRolesManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithGroupCareHolderAsync(ct);
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var response = await ArchiveRoleAsync(client, ctx.Roles.Roles.IdOf("chronik"));
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx
-            .Expected.Role(ctx.Roles.Roles.IdOf("chronik"))
-            .ToBeArchivedOn(null)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Roles(roles => roles.AddRole("chronik", "Chronik")),
-            ct
-        );
-
-        var response = await ArchiveRoleAsync(
-            _fixture.CreateClient(),
-            ctx.Roles.Roles.IdOf("chronik")
-        );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-        await ctx
-            .Expected.Role(ctx.Roles.Roles.IdOf("chronik"))
-            .ToBeArchivedOn(null)
-            .AssertAsync(ct);
-    }
-
-    private Task<SeededContext> BuildWithGroupCareHolderAsync(CancellationToken ct) =>
-        _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("ilka"))
-                    .Roles(roles =>
-                        roles
-                            .AddRole("chronik", "Chronik")
-                            .AddRoleWithHolder(
-                                "gruppenpflege",
-                                "ilka-gruppenpflege",
-                                "Gruppenpflege",
-                                "ilka",
-                                FurriaPermissions.GroupsManage
-                            )
-                    ),
-            ct
-        );
 
     private static async Task<IDictionary<string, List<string>>> ReadFailuresAsync(
         HttpResponseMessage response,

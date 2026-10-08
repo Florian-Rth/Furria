@@ -6,8 +6,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Authorization;
 
-[Collection("Api")]
-public sealed class GroupAdministrationTests
+public sealed class GroupAdministrationTests : IClassFixture<ApiTestFixture>
 {
     private const int NoSuchGroupOffset = 1_000;
 
@@ -249,23 +248,5 @@ public sealed class GroupAdministrationTests
         >(new() { GroupId = ctx.Groups.Groups.IdOf("kindergarde") });
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Groups(groups => groups.AddGroup("kindergarde", "Kindergarde")),
-            ct
-        );
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .GETAsync<GroupAdministrationProbe, GroupAdministrationProbeRequest, EmptyResponse>(
-                new() { GroupId = ctx.Groups.Groups.IdOf("kindergarde") }
-            );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 }

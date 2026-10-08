@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { CHANGELOG_ICON_KEYS } from './changelog-icons';
+import { CHANGELOG_ICON_KEYS } from './changelog-icon-keys';
 
 export const ChangelogEntrySchema = z.object({
   id: z.string().min(1),

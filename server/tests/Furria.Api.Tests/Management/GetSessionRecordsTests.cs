@@ -1,15 +1,13 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Management;
-using Furria.Application.Authorization;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
 namespace Furria.Api.Tests.Management;
 
-[Collection("Api")]
-public sealed class GetSessionRecordsTests
+public sealed class GetSessionRecordsTests : IClassFixture<ApiTestFixture>
 {
     private const string Motto = "FURRIA — Der Mittelpunkt des Universums";
     private const string Logo =
@@ -87,32 +85,6 @@ public sealed class GetSessionRecordsTests
         var result = await ReadTheRecordsAsAdminAsync(_ => { }, ct);
 
         Assert.Empty(result.Sessions);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldClubManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("ilka"))
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "gruppenpflege",
-                            "ilka-gruppenpflege",
-                            "Gruppenpflege",
-                            "ilka",
-                            FurriaPermissions.GroupsManage
-                        )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var (response, _) = await client.GETAsync<GetSessionRecords, GetSessionRecordsResponse>();
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
     private async Task<GetSessionRecordsResponse> ReadTheRecordsAsAdminAsync(

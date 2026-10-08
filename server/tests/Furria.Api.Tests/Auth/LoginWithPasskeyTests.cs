@@ -8,8 +8,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Auth;
 
-[Collection("Api")]
-public sealed class LoginWithPasskeyTests
+public sealed class LoginWithPasskeyTests : IClassFixture<ApiTestFixture>
 {
     private const string Route = "/api/auth/login/passkey";
 

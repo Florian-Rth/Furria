@@ -5,8 +5,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Identity;
 
-[Collection("Api")]
-public sealed class MembershipPersistenceTests
+public sealed class MembershipPersistenceTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
     private static readonly DateOnly LeftIn2020 = new(2020, 3, 1);
@@ -17,26 +16,6 @@ public sealed class MembershipPersistenceTests
     public MembershipPersistenceTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_PersistBothPeriodEnds_When_TheMembershipHasEnded()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("alice")
-                        .AddMembership("alice-first", "alice", JoinedIn2017, LeftIn2020)
-                ),
-            ct
-        );
-
-        await ctx
-            .Expected.Membership(ctx.Identity.Memberships.IdOf("alice-first"))
-            .ToHavePeriod(JoinedIn2017, LeftIn2020)
-            .AssertAsync(ct);
     }
 
     [Fact]

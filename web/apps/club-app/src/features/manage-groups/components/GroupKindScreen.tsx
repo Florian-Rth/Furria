@@ -4,13 +4,13 @@ import type { FC, ReactNode } from 'react';
 import { AccessDenied, usePermissions } from '@/features/session';
 import { toLandingKey, useLanding } from '@/features/write';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
+import { parsePositiveId } from '@/lib/positive-id';
 import { useManagedGroupsQuery } from '../api';
 import {
   findGroupKindEntry,
   GROUP_KIND_SECTION_TITLE,
   MANAGE_GROUPS_ORIGIN,
   toGroupKindEntries,
-  toGroupKindEntryId,
 } from '../manage-groups-labels';
 import { toManagedGroupsErrorMessage } from '../manage-groups-messages';
 import { GroupKindPage } from './GroupKindPage';
@@ -24,7 +24,7 @@ const DENIED_MESSAGE = 'Dir fehlt die Berechtigung für die Gruppenverwaltung.';
 
 export const GroupKindScreen: FC = () => {
   const { groupKindId } = useParams({ from: ROUTE_ID });
-  const id = toGroupKindEntryId(groupKindId);
+  const id = parsePositiveId(groupKindId);
   const groups = useManagedGroupsQuery();
   const permissions = usePermissions();
   const { highlightedKey } = useLanding();

@@ -1,7 +1,8 @@
 import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { parsePositiveId } from '@/lib/positive-id';
 import { useCalendarQuery } from '../api';
-import { findCalendarEntry, toCalendarEntryIdParam } from '../calendar-authoring';
+import { findCalendarEntry } from '../calendar-authoring';
 import { toCalendarErrorMessage } from '../calendar-messages';
 import { ALL_CALENDAR_ENTRIES_QUERY } from '../calendar-query';
 import { useCalendarAuthoring } from '../hooks/use-calendar-authoring';
@@ -18,7 +19,7 @@ const DENIED_MESSAGE = 'Nur der Eigentümer kann diesen Termin bearbeiten.';
 
 export const CalendarEntryScreen: FC = () => {
   const { calendarEntryId } = useParams({ from: ROUTE_ID });
-  const id = toCalendarEntryIdParam(calendarEntryId);
+  const id = parsePositiveId(calendarEntryId);
   const entries = useCalendarQuery(ALL_CALENDAR_ENTRIES_QUERY);
   const { authoring, error: authoringError, retry: retryAuthoring } = useCalendarAuthoring();
   const { supplies, error: suppliesError, retry: retrySupplies } = useCalendarEntrySupplies();

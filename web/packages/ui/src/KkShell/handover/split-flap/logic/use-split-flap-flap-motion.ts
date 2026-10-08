@@ -5,9 +5,9 @@ import {
   coverClipOf,
   flapPoseAt,
   leafShadeOf,
-  ramp,
   revealClipOf,
 } from '../../../../internal/flap/flap-pose';
+import { ramp } from '../../../../internal/ramp';
 import type { SplitFlapCell, SplitFlapWindow } from './split-flap-flaps';
 import { cellOffsetAt } from './split-flap-flaps';
 

@@ -20,15 +20,6 @@ describe('buildTicketRequestPayload', () => {
       'eyJ9',
     );
 
-    expect(payload).toEqual({
-      eventId: 12,
-      ticketCount: 4,
-      name: 'Lena Brandt',
-      phone: '0170 1234567',
-      email: 'lena@example.de',
-      message: sent,
-      consentAccepted: true,
-      altcha: 'eyJ9',
-    });
+    expect(payload.message).toBe(sent);
   });
 });

@@ -69,17 +69,10 @@ const visit = (frozen: Start, dimmed: string[] = []): StartVisit => ({
 describe('itemKeyOf', () => {
   it.each<{ ref: StartItemRef; expected: string }>([
     { ref: { panel: 'calendar', calendarEntryId: 811 }, expected: 'calendar:811' },
-    { ref: { panel: 'announcements', announcementId: 19 }, expected: 'announcements:19' },
-    {
-      ref: { panel: 'mine', kind: 'newRole', subjectId: 4, on: '2027-01-12' },
-      expected: 'mine:newRole:4:2027-01-12',
-    },
     {
       ref: { panel: 'mine', kind: 'membershipEnding', subjectId: null, on: '2027-01-31' },
       expected: 'mine:membershipEnding:0:2027-01-31',
     },
-    { ref: { panel: 'groups', kind: 'jubilee', groupId: 6 }, expected: 'groups:jubilee:6' },
-    { ref: { panel: 'toDos', kind: 'keyToTakeBack' }, expected: 'toDos:keyToTakeBack' },
   ])('keys $ref.panel as $expected', ({ ref, expected }) => {
     expect(itemKeyOf(ref)).toBe(expected);
   });

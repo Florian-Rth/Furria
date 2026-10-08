@@ -5,8 +5,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Identity;
 
-[Collection("Api")]
-public sealed class CredentialChangeNotifierTests
+public sealed class CredentialChangeNotifierTests : IClassFixture<ApiTestFixture>
 {
     private readonly ApiTestFixture _fixture;
 

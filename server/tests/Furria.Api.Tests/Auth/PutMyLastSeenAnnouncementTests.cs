@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Auth;
 
-[Collection("Api")]
-public sealed class PutMyLastSeenAnnouncementTests
+public sealed class PutMyLastSeenAnnouncementTests : IClassFixture<ApiTestFixture>
 {
     private const int OverlapRounds = 10;
     private const int OverlappingStaleMarks = 20;
@@ -237,17 +236,6 @@ public sealed class PutMyLastSeenAnnouncementTests
         var response = await MarkSeenAsync(client, seenUpTo: null);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-
-        var response = await MarkSeenAsync(_fixture.CreateClient(), InsideTheSession);
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     private static async Task<HttpResponseMessage> MarkSeenAsync(

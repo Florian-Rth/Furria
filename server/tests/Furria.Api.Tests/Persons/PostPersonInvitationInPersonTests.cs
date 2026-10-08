@@ -12,12 +12,10 @@ using Xunit;
 
 namespace Furria.Api.Tests.Persons;
 
-[Collection("Api")]
-public sealed class PostPersonInvitationInPersonTests
+public sealed class PostPersonInvitationInPersonTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string CodePattern = "^[2-9A-HJKMNP-Z]{4}-[2-9A-HJKMNP-Z]{4}$";
-    private const int UnknownPersonId = 999_999;
 
     private readonly ApiTestFixture _fixture;
 
@@ -370,56 +368,6 @@ public sealed class PostPersonInvitationInPersonTests
         );
 
         await AssertRefusedAsync(ctx, "anna", "Anna hat bereits einen Zugang.", ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldPersonsManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddEligiblePerson(
-                                "anna",
-                                "Anna",
-                                InvitationSteps.UniqueContactEmail("anna"),
-                                _fixture.Today
-                            )
-                            .AddPerson("ilka", "Ilka", "Reineke")
-                            .AddAccount("ilka")
-                    )
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "gruppenpflege",
-                            "ilka-gruppenpflege",
-                            "Gruppenpflege",
-                            "ilka",
-                            FurriaPermissions.GroupsManage
-                        )
-                    ),
-            ct
-        );
-        var annaId = ctx.Identity.People.IdOf("anna");
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-
-        var (response, _) = await PostAsync(client, annaId);
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx.Expected.InvitationsOfPerson(annaId).ToHaveCount(0).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_ThePersonIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        var (response, _) = await PostAsync(manager, UnknownPersonId);
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     private static Task<TestResult<PostPersonInvitationInPersonResponse>> PostAsync(

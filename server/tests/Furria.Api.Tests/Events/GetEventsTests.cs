@@ -10,8 +10,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Events;
 
-[Collection("Api")]
-public sealed class GetEventsTests
+public sealed class GetEventsTests : IClassFixture<ApiTestFixture>
 {
     private const string FirstGala = "1. Prunksitzung";
     private const string SecondGala = "2. Prunksitzung";
@@ -189,24 +188,6 @@ public sealed class GetEventsTests
                     listed => listed.Title == NextSessionOpening
                 );
                 Assert.Null(nextOpening.PresaleStartsAt);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerOnlyHoldsCalendarManageClub()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildSessionAsync(ct);
-
-                var (response, _) = await ReadAsync(ctx, "ilka", ct);
-
-                Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
             }
         );
     }

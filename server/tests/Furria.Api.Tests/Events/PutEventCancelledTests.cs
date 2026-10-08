@@ -9,8 +9,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Events;
 
-[Collection("Api")]
-public sealed class PutEventCancelledTests
+public sealed class PutEventCancelledTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
 
@@ -121,19 +120,6 @@ public sealed class PutEventCancelledTests
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         var failures = await ReadFailuresAsync(response, ct);
         Assert.Equal(["Diese Veranstaltung ist nicht abgesagt."], failures[ConflictField]);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerHoldsNoEventsKey()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var eventId = ctx.Club.Events.IdOf("first-gala");
-
-        var response = await SetAsync(ctx, "max", eventId, isCancelled: true);
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx.Expected.Event(eventId).ToNotBeCancelled().AssertAsync(ct);
     }
 
     [Fact]

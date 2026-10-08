@@ -1,7 +1,8 @@
 import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { parsePositiveId } from '@/lib/positive-id';
 import { useGroupHubQuery } from '../api';
-import { EDITOR_DENIED_MESSAGE, toEntryId, toHubId } from '../group-hub-labels';
+import { EDITOR_DENIED_MESSAGE } from '../group-hub-labels';
 import { GroupEditorNotFound } from './GroupEditorNotFound';
 import { GroupEditorUnloaded } from './GroupEditorUnloaded';
 import { GroupSlotEditor } from './GroupSlotEditor';
@@ -12,8 +13,8 @@ const TITLE = 'Trainingszeit ändern';
 
 export const GroupSlotScreen: FC = () => {
   const { groupId, slotId } = useParams({ from: ROUTE_ID });
-  const id = toHubId(groupId);
-  const entryId = toEntryId(slotId);
+  const id = parsePositiveId(groupId);
+  const entryId = parsePositiveId(slotId);
   const hub = useGroupHubQuery(id);
 
   if (hub.data === undefined) {

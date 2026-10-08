@@ -9,8 +9,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Auth;
 
-[Collection("Api")]
-public sealed class GetMeTests
+public sealed class GetMeTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateOnly BirthDate = new(1996, 4, 3);
     private static readonly TimeSpan PastTheAccessTokenLifetime = TimeSpan.FromMinutes(16);
@@ -693,17 +692,6 @@ public sealed class GetMeTests
         await _fixture.ResetDatabaseAsync(ct);
 
         var (response, _) = await client.GETAsync<GetMe, GetMeResponse>();
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_NoAccessTokenIsSent()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-
-        var (response, _) = await _fixture.CreateClient().GETAsync<GetMe, GetMeResponse>();
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }

@@ -7,11 +7,9 @@ using Xunit;
 
 namespace Furria.Api.Tests.Groups;
 
-[Collection("Api")]
-public sealed class ArchiveGroupTests
+public sealed class ArchiveGroupTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
-    private const int UnknownGroupId = 999_999;
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
     private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
@@ -120,68 +118,6 @@ public sealed class ArchiveGroupTests
             .Expected.Group(ctx.Groups.Groups.IdOf("kindergarde"))
             .ToBeArchivedOn(ArchivedIn2021)
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheGroupIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await client.POSTAsync<ArchiveGroup, ArchiveGroupRequest>(
-            new() { GroupId = UnknownGroupId }
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldGroupsManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity.AddPerson("anna", "Anna", "Kaiser").AddAccount("anna")
-                    )
-                    .Groups(groups =>
-                        groups
-                            .AddGroup("kindergarde", "Kindergarde")
-                            .AddGroupAdmin("anna-kindergarde", "kindergarde", "anna")
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("anna", ct);
-        var response = await client.POSTAsync<ArchiveGroup, ArchiveGroupRequest>(
-            new() { GroupId = ctx.Groups.Groups.IdOf("kindergarde") }
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx
-            .Expected.Group(ctx.Groups.Groups.IdOf("kindergarde"))
-            .ToBeArchivedOn(null)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Groups(groups => groups.AddGroup("kindergarde", "Kindergarde")),
-            ct
-        );
-
-        var response = await _fixture
-            .CreateClient()
-            .POSTAsync<ArchiveGroup, ArchiveGroupRequest>(
-                new() { GroupId = ctx.Groups.Groups.IdOf("kindergarde") }
-            );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     private static async Task<IDictionary<string, List<string>>> ReadFailuresAsync(

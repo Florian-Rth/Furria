@@ -224,12 +224,7 @@ Plus the club record's detail write in club management (founded year, age of con
 
 Twelve slices, each complete and shippable, each shipping a page **with** the endpoints it calls
 — no endpoint before its caller, no dead route. Every backend behaviour is test-first (`/tdd`),
-one test file per endpoint. **Gates run once, at the end of a slice** — never between its steps.
-
-```bash
-cd web    && pnpm lint && pnpm typecheck && pnpm test && pnpm build
-cd server && dotnet csharpier format . && dotnet build && dotnet test
-```
+one test file per endpoint. **Gates run once, at the end of a slice** — never between its steps; scope and commands per the Validation policy in `CLAUDE.md`.
 
 | # | Slice | Stacks | Depends on |
 |---|---|---|---|

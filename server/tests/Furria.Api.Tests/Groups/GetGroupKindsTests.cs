@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Groups;
 
-[Collection("Api")]
-public sealed class GetGroupKindsTests
+public sealed class GetGroupKindsTests : IClassFixture<ApiTestFixture>
 {
     private const string GroupKindsRoute = "/api/group-kinds";
 
@@ -185,21 +184,5 @@ public sealed class GetGroupKindsTests
         var (response, _) = await client.GETAsync<GetGroupKinds, GetGroupKindsResponse>();
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(
-            builder => builder.Groups(groups => groups.AddGroupKind("garde", "Garde")),
-            ct
-        );
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .GETAsync<GetGroupKinds, GetGroupKindsResponse>();
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 }

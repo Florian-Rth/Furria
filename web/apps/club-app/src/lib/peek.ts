@@ -1,3 +1,5 @@
+import { parsePositiveId } from './positive-id';
+
 export type PeekKind =
   | 'member'
   | 'group'
@@ -8,7 +10,6 @@ export type PeekKind =
   | 'start-announcements';
 
 const SEPARATOR = '-';
-const ID_PATTERN = /^[1-9]\d*$/;
 
 export const toPeekId = (kind: PeekKind, id: number): string => `${kind}${SEPARATOR}${id}`;
 
@@ -23,7 +24,5 @@ export const toPeekedId = (sheetId: string | null, kind: PeekKind): number | nul
     return null;
   }
 
-  const raw = sheetId.slice(prefix.length);
-
-  return ID_PATTERN.test(raw) ? Number(raw) : null;
+  return parsePositiveId(sheetId.slice(prefix.length));
 };

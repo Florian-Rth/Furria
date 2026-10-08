@@ -115,12 +115,7 @@ lockout, not a nicety.
 ## The slices
 
 Seven slices, each complete and shippable, each shipping a panel **with** its screen so no dead
-route ever exists. **Gates run once, at the end of a slice** — never between its steps.
-
-```bash
-cd web    && pnpm lint && pnpm typecheck && pnpm test && pnpm build
-cd server && dotnet csharpier format . && dotnet build && dotnet test
-```
+route ever exists. **Gates run once, at the end of a slice** — never between its steps; scope and commands per the Validation policy in `CLAUDE.md`.
 
 | # | Slice | Stacks | Depends on |
 |---|---|---|---|
@@ -152,7 +147,7 @@ E4 and E6 both need E3's venue.
   `/manage/keys` to mean metal.
 - ADR-0012 gains a dated terminology note; its filename and decision text stay.
 
-**Done when** both gates are green under the existing tests. No test is added — nothing changes
+**Done when** the gates are green under the existing tests. No test is added — nothing changes
 behaviour.
 
 ---
@@ -179,7 +174,7 @@ behaviour.
 - `/manage/persons`, `/manage/groups`, `/manage/roles` keep their routes, screens and design.
   Their `KkScreenOrigin` becomes the hub, so back goes to `/manage` rather than `Mehr`.
 
-**Done when** both gates are green and the hub's integration tests pin: each key shows exactly its
+**Done when** the gates are green and the hub's integration tests pin: each key shows exactly its
 panel, no key gives 403, and the counts are right.
 
 ---

@@ -9,8 +9,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Authorization;
 
-[Collection("Api")]
-public sealed class PermissionAuthorizerTests
+public sealed class PermissionAuthorizerTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateOnly HeldSince2017 = new(2017, 9, 1);
     private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);

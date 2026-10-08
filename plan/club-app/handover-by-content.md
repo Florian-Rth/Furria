@@ -97,7 +97,7 @@ User-facing copy stays German, because that is the product's language.
 
 ## Checks
 
-- `pnpm lint`, `pnpm typecheck`, `pnpm test`.
+- Gates per the Validation policy in `CLAUDE.md`.
 - React DevTools "highlight updates" while scrolling Members: nothing highlights.
 - `pnpm shot` on one screen per stage (phone/desktop × light/dark).
 

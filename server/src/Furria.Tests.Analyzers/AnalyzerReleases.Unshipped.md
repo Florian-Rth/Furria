@@ -8,7 +8,7 @@ Rule ID | Category | Severity | Notes
 MET001 | TestInfrastructure | Warning | NoMockingFrameworkAnalyzer
 MET002 | TestInfrastructure | Warning | NoInMemoryDatabaseAnalyzer
 MET003 | TestInfrastructure | Warning | TestMethodNamingAnalyzer
-MET004 | TestInfrastructure | Warning | IntegrationCollectionMarkerAnalyzer
+MET004 | TestInfrastructure | Warning | IntegrationClassFixtureAnalyzer
 MET005 | TestInfrastructure | Warning | NoDbContextInTestBodyAnalyzer
 MET006 | TestInfrastructure | Warning | NoAmbientClockAnalyzer
 MET007 | TestInfrastructure | Warning | DanglingAliasAnalyzer

@@ -51,15 +51,12 @@ describe('selectNextEvent', () => {
 describe('deriveNextEventFace', () => {
   it.each<[Partial<Event>, ReturnType<typeof deriveNextEventFace>]>([
     [{ status: 'available' }, { kind: 'tickets' }],
-    [{ status: 'fewLeft' }, { kind: 'tickets' }],
     [
       { status: 'presaleScheduled', presaleStartsAt: '2027-01-10T10:00' },
       { kind: 'presale', presaleStartsAt: '2027-01-10T10:00' },
     ],
     [{ status: 'presaleScheduled', presaleStartsAt: null }, { kind: 'announced' }],
-    [{ status: 'announced', presaleStartsAt: null }, { kind: 'announced' }],
     [{ status: 'soldOut' }, { kind: 'unavailable' }],
-    [{ status: 'cancelled' }, { kind: 'unavailable' }],
   ])('shows the face for %j', (overrides, face) => {
     expect(deriveNextEventFace(seasonEvent(overrides))).toEqual(face);
   });

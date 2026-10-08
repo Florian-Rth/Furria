@@ -46,16 +46,17 @@ RIGHT (vertical):
 
 Before writing any code:
 
-- [ ] Confirm with user what interface changes are needed
-- [ ] Confirm with user which behaviors to test (prioritize)
+- [ ] Settle what interface changes are needed
+- [ ] Settle which behaviors to test (prioritize)
 - [ ] Identify opportunities for [deep modules](deep-modules.md) (small interface, deep implementation)
 - [ ] Design interfaces for [testability](interface-design.md)
 - [ ] List the behaviors to test (not implementation steps)
-- [ ] Get user approval on the plan
 
-Ask: "What should the public interface look like? Which behaviors are most important to test?"
+Ask the user only when the interface or behavior is genuinely ambiguous (no plan, spec or existing pattern decides it). Routine changes proceed without a confirmation stop.
 
-**You can't test everything.** Confirm with the user exactly which behaviors matter most. Focus testing effort on critical paths and complex logic, not every possible edge case.
+**You can't test everything.** Focus testing effort on critical paths and complex logic, not every possible edge case.
+
+**Running tests:** every RED/GREEN/refactor run executes only the targeted test class/file(s) — never the full suite. See the Validation policy in `CLAUDE.md`.
 
 ### 2. Tracer Bullet
 
@@ -92,7 +93,7 @@ After all tests pass, look for [refactor candidates](refactoring.md):
 - [ ] Deepen modules (move complexity behind simple interfaces)
 - [ ] Apply SOLID principles where natural
 - [ ] Consider what new code reveals about existing code
-- [ ] Run tests after each refactor step
+- [ ] Run the targeted tests after each refactor step
 
 **Never refactor while RED.** Get to GREEN first.
 

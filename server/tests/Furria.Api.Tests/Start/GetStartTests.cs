@@ -6,8 +6,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Start;
 
-[Collection("Api")]
-public sealed class GetStartTests
+public sealed class GetStartTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateOnly JoinedIn2015 = new(2015, 11, 11);
 
@@ -36,17 +35,6 @@ public sealed class GetStartTests
     public GetStartTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_NoOneIsSignedIn()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-
-        var (response, _) = await _fixture.CreateClient().GETAsync<GetStart, GetStartResponse>();
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Fact]

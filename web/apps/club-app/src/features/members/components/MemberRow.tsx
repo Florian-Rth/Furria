@@ -2,9 +2,8 @@ import { KkChip, KkPersonRow, useKkSheetCommands } from '@furria/ui';
 import type { FC } from 'react';
 import { toInitials } from '@/lib/initials';
 import { toPeekId } from '@/lib/peek';
-import { NO_AFFILIATION_META } from '@/lib/person-rows';
+import { NO_AFFILIATION_META, toPersonRowAffiliation } from '@/lib/person-rows';
 import { toMembershipStateChip } from '@/lib/state-chips';
-import { toPersonRowAffiliation } from '../members-labels';
 import type { MemberSummary } from '../schemas';
 
 interface MemberRowProps {

@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.MembershipApplications;
 
-[Collection("Api")]
-public sealed class ConfirmMembershipApplicationTests
+public sealed class ConfirmMembershipApplicationTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
 

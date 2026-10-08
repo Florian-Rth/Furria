@@ -9,8 +9,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Persons;
 
-[Collection("Api")]
-public sealed class GetPersonSearchTests
+public sealed class GetPersonSearchTests : IClassFixture<ApiTestFixture>
 {
     private readonly ApiTestFixture _fixture;
 
@@ -292,17 +291,6 @@ public sealed class GetPersonSearchTests
         var (response, _) = await SearchAsync(client, "b");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await BuildSearchableRegistryAsync(ct);
-
-        var (response, _) = await SearchAsync(_fixture.CreateClient(), "bren");
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Fact]

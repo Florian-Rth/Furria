@@ -3,9 +3,10 @@ import { KkScreen, KkScreenHeaderSkeleton } from '@furria/ui';
 import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { AREA_HANDOVERS } from '@/features/session';
+import { parsePositiveId } from '@/lib/positive-id';
 import { useMemberQuery } from '../api';
 import { useIsSelf } from '../hooks/use-is-self';
-import { toMemberHeadline, toPersonId } from '../members-labels';
+import { toMemberHeadline } from '../members-labels';
 import { MemberBody } from './MemberBody';
 import { MemberHeader } from './MemberHeader';
 
@@ -14,7 +15,7 @@ const MEMBERS_ORIGIN: KkScreenOrigin = { label: 'Mitglieder', to: '/members' };
 
 export const MemberPage: FC = () => {
   const { personId } = useParams({ from: MEMBER_ROUTE_ID });
-  const id = toPersonId(personId);
+  const id = parsePositiveId(personId);
   const member = useMemberQuery(id);
   const isSelf = useIsSelf(id);
   const headline = toMemberHeadline(member.data);

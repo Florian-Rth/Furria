@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import type { MePerson, PersonalMe } from '@/lib/api/schemas';
-import { toPreviewContact, toProfileHeadline } from './profile-labels';
+import type { MemberContact } from '@/features/members';
+import type { MePerson } from '@/lib/api/schemas';
+import { toPreviewContact } from './profile-labels';
 
-const person = (overrides: Partial<MePerson> = {}): MePerson => ({
+const PAULA: MePerson = {
   id: 7,
   firstName: 'Paula',
   lastName: 'Brendel',
@@ -14,78 +15,28 @@ const person = (overrides: Partial<MePerson> = {}): MePerson => ({
   birthDate: '1996-03-12',
   contactVisibleToMembers: true,
   contactChange: null,
-  ...overrides,
-});
-
-const me = (state: PersonalMe['membership']['state']): PersonalMe => ({
-  accountId: 3,
-  email: 'paula@example.org',
-  person: person(),
-  membership: {
-    state,
-    memberSince: null,
-    currentStartedOn: null,
-    currentEndedOn: null,
-    relevantSession: null,
-  },
-  isAffiliated: true,
-  permissionKeys: [],
-  lastSeenAnnouncementAt: null,
-  appSince: null,
-  passkeys: [],
-});
-
-describe('toProfileHeadline', () => {
-  it('falls back to the route noun while the query is pending', () => {
-    expect(toProfileHeadline(undefined)).toEqual({ title: 'Profil', initials: '', state: null });
-  });
-
-  it('names the viewer and paints her own state chip', () => {
-    expect(toProfileHeadline(me('paused'))).toEqual({
-      title: 'Paula Brendel',
-      initials: 'PB',
-      state: { label: 'ruht', tone: 'gold', dot: true },
-    });
-  });
-});
+};
 
 describe('toPreviewContact', () => {
-  it('shares every contact field when the switch is on', () => {
-    expect(toPreviewContact(person(), true)).toEqual({
-      visibility: 'shared',
-      phone: '0170 44 21 883',
-      email: 'paula@example.org',
-      street: 'Am Anger 7',
-      zip: '99713',
-      city: 'Großfurra',
-    });
-  });
-
-  it('withholds every contact field when the switch is off', () => {
-    expect(toPreviewContact(person(), false)).toEqual({
-      visibility: 'hidden',
-      phone: null,
-      email: null,
-      street: null,
-      zip: null,
-      city: null,
-    });
-  });
-
-  it('shares an unset field as unset, not as withheld', () => {
-    const sparse = person({ phone: null, street: null, zip: null, city: null });
-
-    expect(toPreviewContact(sparse, true)).toEqual({
-      visibility: 'shared',
-      phone: null,
-      email: 'paula@example.org',
-      street: null,
-      zip: null,
-      city: null,
-    });
-  });
-
-  it('never carries the birth date into the preview', () => {
-    expect(toPreviewContact(person(), true)).not.toHaveProperty('birthDate');
+  it.each<[string, boolean, MemberContact]>([
+    [
+      'shares every contact field when the switch is on',
+      true,
+      {
+        visibility: 'shared',
+        phone: '0170 44 21 883',
+        email: 'paula@example.org',
+        street: 'Am Anger 7',
+        zip: '99713',
+        city: 'Großfurra',
+      },
+    ],
+    [
+      'withholds every contact field when the switch is off',
+      false,
+      { visibility: 'hidden', phone: null, email: null, street: null, zip: null, city: null },
+    ],
+  ])('%s', (_case, visible, expected) => {
+    expect(toPreviewContact(PAULA, visible)).toEqual(expected);
   });
 });

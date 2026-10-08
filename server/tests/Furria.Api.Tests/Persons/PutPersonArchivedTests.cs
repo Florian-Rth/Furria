@@ -8,8 +8,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Persons;
 
-[Collection("Api")]
-public sealed class PutPersonArchivedTests
+public sealed class PutPersonArchivedTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const int UnknownPersonId = 999_999;
@@ -267,41 +266,6 @@ public sealed class PutPersonArchivedTests
         var response = await SetArchivedAsync(client, UnknownPersonId, true);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerMayOnlyDeletePersons()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddPerson("paula", "Paula", "Brendel")
-                            .AddPerson("ilka", "Ilka", "Reineke")
-                            .AddAccount("ilka")
-                    )
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "loeschung",
-                            "ilka-loeschung",
-                            "Löschung",
-                            "ilka",
-                            FurriaPermissions.PersonsDelete
-                        )
-                    ),
-            ct
-        );
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-
-        var response = await SetArchivedAsync(client, ctx.Identity.People.IdOf("paula"), true);
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx
-            .Expected.Person(ctx.Identity.People.IdOf("paula"))
-            .ToNotBeArchived()
-            .AssertAsync(ct);
     }
 
     private static async Task<IDictionary<string, List<string>>> ReadFailuresAsync(

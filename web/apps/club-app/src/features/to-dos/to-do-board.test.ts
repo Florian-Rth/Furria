@@ -29,49 +29,29 @@ describe('toToDoBoard', () => {
     entry: ToDo;
     tone: 'gold' | 'neutral';
     pressed: boolean;
-    flag: string | undefined;
+    flagged: boolean;
   }>([
-    { entry: toDo({ isSeen: false }), tone: 'gold', pressed: false, flag: undefined },
-    { entry: toDo({ isSeen: true, newCount: 0 }), tone: 'neutral', pressed: true, flag: undefined },
-    { entry: toDo({ isSeen: true, newCount: 2 }), tone: 'gold', pressed: false, flag: '2 neu' },
+    { entry: toDo({ isSeen: false, newCount: 2 }), tone: 'gold', pressed: false, flagged: false },
+    { entry: toDo({ isSeen: true, newCount: 0 }), tone: 'neutral', pressed: true, flagged: false },
+    { entry: toDo({ isSeen: true, newCount: 2 }), tone: 'gold', pressed: false, flagged: true },
   ])(
     'paints a to-do seen $entry.isSeen with $entry.newCount new as $tone',
-    ({ entry, tone, pressed, flag }) => {
+    ({ entry, tone, pressed, flagged }) => {
       const board = toToDoBoard([entry]);
       const [row] = [...board.open, ...board.seen];
 
       expect(row?.countTone).toBe(tone);
       expect(row?.isSeenWhole).toBe(pressed);
-      expect(row?.flag).toBe(flag);
+      expect(row?.flag !== undefined).toBe(flagged);
     },
   );
 
-  it.each<{ toDos: ToDo[]; label: string; flag: string | undefined }>([
-    { toDos: [toDo({ isSeen: false })], label: 'Gesehen · 0', flag: undefined },
-    {
-      toDos: [
-        toDo({ kind: 'keyToTakeBack', isSeen: true, newCount: 1 }),
-        toDo({ kind: 'clubRecordGap', isSeen: true, newCount: 2 }),
-        toDo({ kind: 'neverInvited', isSeen: true }),
-      ],
-      label: 'Gesehen · 3',
-      flag: '3 neu',
-    },
-  ])('counts the fold as $label and its news as $flag', ({ toDos, label, flag }) => {
-    const board = toToDoBoard(toDos);
-
-    expect(board.seenLabel).toBe(label);
-    expect(board.seenFlag).toBe(flag);
-  });
-});
-
-describe('toToDoBoard labels', () => {
-  it.each<{ entry: ToDo; label: string }>([
-    { entry: toDo({ kind: 'neverInvited', count: 4 }), label: 'Nie eingeladen' },
-    { entry: toDo({ kind: 'inPersonOnly', count: 1 }), label: 'Nur vor Ort einladbar' },
-    { entry: toDo({ kind: 'applicationWaiting', count: 2 }), label: 'Beitrittsanträge offen' },
-  ])('starts the $entry.kind row as a sentence', ({ entry, label }) => {
-    expect(toToDoBoard([entry]).open[0]?.label).toBe(label);
+  it.each<{ toDos: ToDo[]; flagged: boolean }>([
+    { toDos: [toDo({ isSeen: false, newCount: 4 })], flagged: false },
+    { toDos: [toDo({ isSeen: true, newCount: 0 })], flagged: false },
+    { toDos: [toDo({ isSeen: true, newCount: 1 })], flagged: true },
+  ])('flags the fold $flagged when its to-dos carry news', ({ toDos, flagged }) => {
+    expect(toToDoBoard(toDos).seenFlag !== undefined).toBe(flagged);
   });
 });
 
@@ -114,15 +94,5 @@ describe('withToDoMark', () => {
       toDo({ kind: 'clubRecordGap', isSeen: true, newCount: 0 }),
       toDo({ kind: 'keyToTakeBack', isSeen: true, newCount: 1 }),
     ]);
-  });
-
-  it('returns an unmarked to-do to the top', () => {
-    expect(
-      withToDoMark(toDo({ kind: 'keyToTakeBack', isSeen: true }), {
-        kind: 'keyToTakeBack',
-        version: 'v1',
-        seen: false,
-      }),
-    ).toEqual(toDo({ kind: 'keyToTakeBack', isSeen: false }));
   });
 });

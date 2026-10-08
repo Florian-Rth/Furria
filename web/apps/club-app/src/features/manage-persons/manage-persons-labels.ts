@@ -25,15 +25,8 @@ import type {
   PersonSummary,
 } from './schemas';
 
-const PERSON_ID_PATTERN = /^[1-9]\d*$/;
 const META_SEPARATOR = ' · ';
 const PERSON_TITLE_FALLBACK = 'Person';
-
-export const toPersonId = (raw: string): number | null =>
-  PERSON_ID_PATTERN.test(raw) ? Number(raw) : null;
-
-export const toEntryId = (raw: string): number | null =>
-  PERSON_ID_PATTERN.test(raw) ? Number(raw) : null;
 
 export const PERSONS_TITLE = 'Personenverwaltung';
 
@@ -127,45 +120,38 @@ export const hasContactOnRecord = (person: PersonSummary): boolean =>
 export const isContactWithheld = (person: PersonSummary): boolean =>
   !person.contactVisibleToMembers && hasContactOnRecord(person);
 
-export interface PersonRowAffiliation {
-  accent?: string;
-  meta?: string;
-}
-
-export const toPersonRowAffiliation = (person: PersonSummary): PersonRowAffiliation => {
-  const [firstRole, ...furtherRoles] = person.roles;
-  const accent =
-    firstRole === undefined
-      ? undefined
-      : furtherRoles.length === 0
-        ? firstRole.name
-        : `${firstRole.name} +${furtherRoles.length}`;
-  const meta =
-    person.groups.length === 0
-      ? undefined
-      : person.groups.map((group) => group.name).join(META_SEPARATOR);
-
-  return { accent, meta };
-};
-
 export const LETTER_INDEX_LABEL = 'Zu einem Buchstaben springen';
 
 const ALL_FILTER_SUGGESTION = 'Wähle „Alle“, um alle anzuzeigen.';
 
-export const toPersonsEmptyDescription = (query: string, state: string): string => {
+export type RegisterEmptyCase =
+  | { kind: 'query'; needle: string }
+  | { kind: 'state-filter'; stateLine: string }
+  | { kind: 'nobody' };
+
+export const registerEmptyCaseOf = (query: string, state: string): RegisterEmptyCase => {
   const needle = query.trim();
 
   if (needle !== '') {
-    return `Keine Person passt zu „${needle}“.`;
+    return { kind: 'query', needle };
   }
 
   const stateLine = toNoStateMatchLine(state);
 
-  if (stateLine === null) {
-    return 'Im Register steht gerade niemand.';
-  }
+  return stateLine === null ? { kind: 'nobody' } : { kind: 'state-filter', stateLine };
+};
 
-  return `${stateLine} ${ALL_FILTER_SUGGESTION}`;
+export const toPersonsEmptyDescription = (query: string, state: string): string => {
+  const emptyCase = registerEmptyCaseOf(query, state);
+
+  switch (emptyCase.kind) {
+    case 'query':
+      return `Keine Person passt zu „${emptyCase.needle}“.`;
+    case 'state-filter':
+      return `${emptyCase.stateLine} ${ALL_FILTER_SUGGESTION}`;
+    case 'nobody':
+      return 'Im Register steht gerade niemand.';
+  }
 };
 
 export const PERSONS_LEAD = 'Stammdaten, Mitgliedschaften und Beitragsermäßigungen aller Personen.';
@@ -341,19 +327,39 @@ export const toMembershipEndQuickChoices = (today: Date): KkDateQuickChoice[] =>
   return choices;
 };
 
+export type MembershipPeriod =
+  | { kind: 'closed'; endedOn: string }
+  | { kind: 'upcoming' }
+  | { kind: 'running' };
+
+export const membershipPeriodOf = (
+  startedOn: string,
+  endedOn: string | null,
+  todayIsoDay: string,
+): MembershipPeriod => {
+  if (endedOn !== null) {
+    return { kind: 'closed', endedOn };
+  }
+
+  return isFutureDay(startedOn, todayIsoDay) ? { kind: 'upcoming' } : { kind: 'running' };
+};
+
 export const toMembershipConsequence = (
   startedOn: string,
   endedOn: string | null,
   todayIsoDay: string,
 ): string => {
-  if (endedOn !== null) {
-    return `Die Mitgliedschaft gilt vom ${formatIsoDay(startedOn)} bis zum ${formatIsoDay(endedOn)}.`;
-  }
-  if (isFutureDay(startedOn, todayIsoDay)) {
-    return `Die Mitgliedschaft beginnt am ${formatIsoDay(startedOn)}.`;
-  }
+  const started = formatIsoDay(startedOn);
+  const period = membershipPeriodOf(startedOn, endedOn, todayIsoDay);
 
-  return `Die Mitgliedschaft besteht seit dem ${formatIsoDay(startedOn)} und ist unbefristet.`;
+  switch (period.kind) {
+    case 'closed':
+      return `Die Mitgliedschaft gilt vom ${started} bis zum ${formatIsoDay(period.endedOn)}.`;
+    case 'upcoming':
+      return `Die Mitgliedschaft beginnt am ${started}.`;
+    case 'running':
+      return `Die Mitgliedschaft besteht seit dem ${started} und ist unbefristet.`;
+  }
 };
 
 export const toPauseConsequence = (

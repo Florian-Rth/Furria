@@ -27,13 +27,24 @@ const COUNT_WORDS = [
 
 const countWord = (count: number): string => COUNT_WORDS[count] ?? String(count);
 
-export const deriveSessionEyebrow = (events: Event[], now: Date): string => {
+export interface HeroFacts {
+  eveningCount: number;
+  sharedVenueName: string | null;
+  firstStartsAt: string;
+  lastStartsAt: string;
+  cheapestPriceCents: number | null;
+}
+
+export const deriveHeroSessionLabel = (events: Event[], now: Date): string => {
   const earliest = selectOfferedEventsByDate(events).at(0);
   const sessionDate = earliest === undefined ? now : parseBerlinDateTime(earliest.startsAt);
-  return `TERMINE & KARTEN · SESSION ${sessionAt(sessionDate).yearsLabel}`;
+  return sessionAt(sessionDate).yearsLabel;
 };
 
-export const deriveHeroIntro = (events: Event[]): string | null => {
+export const deriveSessionEyebrow = (events: Event[], now: Date): string =>
+  `TERMINE & KARTEN · SESSION ${deriveHeroSessionLabel(events, now)}`;
+
+export const deriveHeroFacts = (events: Event[]): HeroFacts | null => {
   const offered = selectOfferedEventsByDate(events);
   const first = offered.at(0);
   const last = offered.at(-1);
@@ -42,29 +53,45 @@ export const deriveHeroIntro = (events: Event[]): string | null => {
   }
 
   const venues = new Set(offered.map((event) => event.venue.name));
-  const venueClause = venues.size === 1 ? ` im ${first.venue.name}` : '';
+  const knownPrices = offered
+    .map((event) => event.priceCents)
+    .filter((price): price is number => price !== null);
 
-  if (offered.length === 1) {
-    return `Ein Abend${venueClause}, am ${formatLongDate(first.startsAt)}.`;
+  return {
+    eveningCount: offered.length,
+    sharedVenueName: venues.size === 1 ? first.venue.name : null,
+    firstStartsAt: first.startsAt,
+    lastStartsAt: last.startsAt,
+    cheapestPriceCents: knownPrices.length > 0 ? Math.min(...knownPrices) : null,
+  };
+};
+
+export const deriveHeroIntro = (events: Event[]): string | null => {
+  const facts = deriveHeroFacts(events);
+  if (facts === null) {
+    return null;
   }
-  return `${countWord(offered.length)} Abende${venueClause}, vom ${formatLongDate(first.startsAt)} bis zum ${formatLongDate(last.startsAt)}.`;
+
+  const venueClause = facts.sharedVenueName === null ? '' : ` im ${facts.sharedVenueName}`;
+
+  if (facts.eveningCount === 1) {
+    return `Ein Abend${venueClause}, am ${formatLongDate(facts.firstStartsAt)}.`;
+  }
+  return `${countWord(facts.eveningCount)} Abende${venueClause}, vom ${formatLongDate(facts.firstStartsAt)} bis zum ${formatLongDate(facts.lastStartsAt)}.`;
 };
 
 export const deriveHeroStats = (events: Event[]): HeroStat[] => {
-  const offered = selectOfferedEventsByDate(events);
-  if (offered.length === 0) {
+  const facts = deriveHeroFacts(events);
+  if (facts === null) {
     return [];
   }
 
   const stats: HeroStat[] = [
-    { value: String(offered.length), label: offered.length === 1 ? 'Abend' : 'Abende' },
+    { value: String(facts.eveningCount), label: facts.eveningCount === 1 ? 'Abend' : 'Abende' },
   ];
 
-  const knownPrices = offered
-    .map((event) => event.priceCents)
-    .filter((price): price is number => price !== null);
-  if (knownPrices.length > 0) {
-    stats.push({ value: `ab ${formatEuros(Math.min(...knownPrices))}`, label: 'pro Karte' });
+  if (facts.cheapestPriceCents !== null) {
+    stats.push({ value: `ab ${formatEuros(facts.cheapestPriceCents)}`, label: 'pro Karte' });
   }
 
   return stats;

@@ -68,7 +68,6 @@ describe('cellOffsetAt', () => {
 
   it.each([
     [0, 0],
-    [0.5, 10],
     [1, 20],
   ])('slides the cell at progress %d to %d', (progress, expected) => {
     expect(cellOffsetAt(cell, progress)).toBe(expected);
@@ -77,7 +76,6 @@ describe('cellOffsetAt', () => {
 
 describe('boardProgressAt', () => {
   it.each([
-    [0, false, 0],
     [-30, false, 0],
     [400, false, 1],
     [1, true, 1],
@@ -106,7 +104,6 @@ describe('headerTravelAt', () => {
 
 describe('headerFoldAt', () => {
   it.each([
-    [0, 0, 0, 1, 1],
     [0.5, 37, 17.82, 0.97, 0.78],
     [1, 74, 35.64, 0.94, 0],
   ])('folds the header at travel %d', (travelled, tilt, hold, scale, opacity) => {

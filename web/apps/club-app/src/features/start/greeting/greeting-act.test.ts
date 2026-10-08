@@ -48,24 +48,9 @@ describe('seasonClauseAt', () => {
       expected: { kind: 'openingToday' },
     },
     {
-      label: 'the minute before the countdown',
-      now: new Date(2026, 10, 11, 10, 59, 59),
-      expected: { kind: 'openingToday' },
-    },
-    {
       label: 'the afternoon of 11.11.',
       now: new Date(2026, 10, 11, 15, 0),
       expected: { kind: 'sessionDay', day: 1 },
-    },
-    {
-      label: 'the day after the opening',
-      now: new Date(2026, 10, 12, 9, 0),
-      expected: { kind: 'sessionDay', day: 2 },
-    },
-    {
-      label: 'a January training night',
-      now: new Date(2027, 0, 19, 19, 50),
-      expected: { kind: 'sessionDay', day: 70 },
     },
     {
       label: 'twelve days before Weiberfastnacht',
@@ -86,16 +71,6 @@ describe('seasonClauseAt', () => {
       label: 'Weiberfastnacht itself',
       now: new Date(2027, 1, 4, 11, 11),
       expected: { kind: 'sessionDay', day: 86 },
-    },
-    {
-      label: 'the Friday after Weiberfastnacht',
-      now: new Date(2027, 1, 5, 12, 0),
-      expected: { kind: 'sessionDay', day: 87 },
-    },
-    {
-      label: 'Aschermittwoch',
-      now: new Date(2027, 1, 10, 12, 0),
-      expected: { kind: 'sessionDay', day: 92 },
     },
     {
       label: 'the day after Aschermittwoch',
@@ -128,12 +103,6 @@ describe('greetingActAt', () => {
       expected: { moment: 'openingCountdown', secondsToOpening: 660, clause: null },
     },
     {
-      label: 'mid countdown',
-      now: new Date(2026, 10, 11, 11, 8, 23),
-      overrides: {},
-      expected: { moment: 'openingCountdown', secondsToOpening: 157 },
-    },
-    {
       label: 'the last half second of the countdown',
       now: new Date(2026, 10, 11, 11, 10, 59, 500),
       overrides: {},
@@ -144,12 +113,6 @@ describe('greetingActAt', () => {
       now: new Date(2026, 10, 11, 11, 11, 0),
       overrides: {},
       expected: { moment: 'carnivalCall', clause: null },
-    },
-    {
-      label: 'the last second of 11.11.',
-      now: new Date(2026, 10, 11, 23, 59, 59),
-      overrides: {},
-      expected: { moment: 'carnivalCall' },
     },
     {
       label: 'her birthday on 11.11. after 11:11',
@@ -174,12 +137,6 @@ describe('greetingActAt', () => {
       now: new Date(2027, 1, 28, 10, 0),
       overrides: { birthDate: '2000-02-29' },
       expected: { moment: 'birthday' },
-    },
-    {
-      label: 'the day after a leap-day birthday in a common year',
-      now: new Date(2027, 2, 1, 10, 0),
-      overrides: { birthDate: '2000-02-29' },
-      expected: { moment: 'daily' },
     },
     {
       label: 'a leap-day birthday in a leap year',
@@ -240,18 +197,6 @@ describe('greetingActAt', () => {
       expected: { moment: 'womensCarnivalDay', clause: null },
     },
     {
-      label: 'Rosenmontag',
-      now: new Date(2027, 1, 8, 12, 0),
-      overrides: {},
-      expected: { moment: 'roseMonday' },
-    },
-    {
-      label: 'Fastnachtsdienstag',
-      now: new Date(2027, 1, 9, 12, 0),
-      overrides: {},
-      expected: { moment: 'carnivalTuesday' },
-    },
-    {
       label: 'Aschermittwoch',
       now: new Date(2027, 1, 10, 12, 0),
       overrides: {},
@@ -262,12 +207,6 @@ describe('greetingActAt', () => {
       now: new Date(2026, 9, 2, 12, 0),
       overrides: { appSince: '2026-10-02' },
       expected: { moment: 'welcome', clause: { kind: 'untilOpening', days: 40 } },
-    },
-    {
-      label: 'her second day in the app',
-      now: new Date(2026, 9, 3, 12, 0),
-      overrides: { appSince: '2026-10-02' },
-      expected: { moment: 'daily' },
     },
     {
       label: 'her first day in the app on Rosenmontag',
@@ -346,12 +285,6 @@ describe('greetingActAt', () => {
       expected: false,
     },
     {
-      label: 'an ordinary autumn day',
-      now: new Date(2026, 9, 2, 12, 0),
-      overrides: {},
-      expected: false,
-    },
-    {
       label: 'her birthday',
       now: new Date(2026, 2, 12, 12, 0),
       overrides: {},
@@ -364,52 +297,16 @@ describe('greetingActAt', () => {
       expected: true,
     },
     {
-      label: 'her 22nd year in the club',
-      now: new Date(2026, 9, 2, 12, 0),
-      overrides: { memberSince: '2004-10-02' },
-      expected: true,
-    },
-    {
       label: 'her seventh year in the club',
       now: new Date(2026, 9, 2, 12, 0),
       overrides: { memberSince: '2019-10-02' },
       expected: false,
     },
     {
-      label: 'Weiberfastnacht',
-      now: new Date(2027, 1, 4, 12, 0),
-      overrides: {},
-      expected: true,
-    },
-    {
-      label: 'the stroke of 11:11',
-      now: new Date(2026, 10, 11, 11, 11),
-      overrides: {},
-      expected: true,
-    },
-    {
       label: 'the countdown to her 11th session',
       now: new Date(2026, 10, 11, 11, 5),
       overrides: { relevantSession: { startYear: 2026, ordinal: 11 } },
       expected: true,
-    },
-    {
-      label: 'the countdown to her 10th session',
-      now: new Date(2026, 10, 11, 11, 5),
-      overrides: { relevantSession: { startYear: 2026, ordinal: 10 } },
-      expected: false,
-    },
-    {
-      label: 'Aschermittwoch of her 33rd session',
-      now: new Date(2027, 1, 10, 12, 0),
-      overrides: { relevantSession: { startYear: 2026, ordinal: 33 } },
-      expected: true,
-    },
-    {
-      label: 'Aschermittwoch of her 10th session',
-      now: new Date(2027, 1, 10, 12, 0),
-      overrides: { relevantSession: { startYear: 2026, ordinal: 10 } },
-      expected: false,
     },
     {
       label: 'the morning of 11.11. before her 44th session',
@@ -425,35 +322,5 @@ describe('greetingActAt', () => {
     },
   ])('is festive $expected on $label', ({ now, overrides, expected }) => {
     expect(greetingActAt(now, viewer(overrides)).festive).toBe(expected);
-  });
-
-  it.each([
-    {
-      label: 'an ordinary day',
-      now: new Date(2026, 9, 2, 12, 0),
-      expected: { key: 'daily:2026-10-02', sessionYear: 2026 },
-    },
-    {
-      label: 'the countdown',
-      now: new Date(2026, 10, 11, 11, 3),
-      expected: { key: 'openingCountdown:2026-11-11', sessionYear: 2026 },
-    },
-    {
-      label: 'the stroke of 11:11',
-      now: new Date(2026, 10, 11, 11, 11),
-      expected: { key: 'carnivalCall:2026-11-11', sessionYear: 2026 },
-    },
-    {
-      label: 'January',
-      now: new Date(2027, 0, 19, 19, 50),
-      expected: { key: 'daily:2027-01-19', sessionYear: 2026 },
-    },
-    {
-      label: 'the day after Aschermittwoch',
-      now: new Date(2027, 1, 11, 8, 0),
-      expected: { key: 'daily:2027-02-11', sessionYear: 2027 },
-    },
-  ])('keys $label as $expected.key', ({ now, expected }) => {
-    expect(greetingActAt(now, viewer())).toMatchObject(expected);
   });
 });

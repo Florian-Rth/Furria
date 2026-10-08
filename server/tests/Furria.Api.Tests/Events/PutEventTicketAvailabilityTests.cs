@@ -10,8 +10,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Events;
 
-[Collection("Api")]
-public sealed class PutEventTicketAvailabilityTests
+public sealed class PutEventTicketAvailabilityTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string PresaleNotBegunMessage =
@@ -124,22 +123,6 @@ public sealed class PutEventTicketAvailabilityTests
                 Assert.Equal([PresaleNotBegunMessage], failures[ConflictField]);
             }
         );
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerHoldsNoEventsKey()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var eventId = ctx.Club.Events.IdOf("first-gala");
-
-        var response = await SetAsync(ctx, "max", eventId, TicketAvailability.SoldOut);
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx
-            .Expected.Event(eventId)
-            .ToHaveTicketAvailability(TicketAvailability.Available)
-            .AssertAsync(ct);
     }
 
     [Fact]

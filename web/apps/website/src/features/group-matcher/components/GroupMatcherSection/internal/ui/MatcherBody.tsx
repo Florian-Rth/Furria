@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import type { MatcherSource } from '../logic/use-matcher-source';
+import type { MatcherSource } from '../logic/matcher-source';
 import { MatcherError } from './MatcherError';
 import { MatcherLoading } from './MatcherLoading';
 import { MatcherStepper } from './MatcherStepper';

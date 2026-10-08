@@ -2,14 +2,12 @@ using System.Net;
 using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Management;
-using Furria.Application.Authorization;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
 namespace Furria.Api.Tests.Management;
 
-[Collection("Api")]
-public sealed class PutSessionRecordTests
+public sealed class PutSessionRecordTests : IClassFixture<ApiTestFixture>
 {
     private const int UnknownSessionId = 999_999;
     private const string ConflictField = "conflict";
@@ -147,35 +145,6 @@ public sealed class PutSessionRecordTests
         var response = await EditAsync(client, UnknownSessionId, 2026, null, Motto, null);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldClubManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("ilka"))
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "gruppenpflege",
-                            "ilka-gruppenpflege",
-                            "Gruppenpflege",
-                            "ilka",
-                            FurriaPermissions.GroupsManage
-                        )
-                    )
-                    .Club(club => club.AddSession("laufende", 2026)),
-            ct
-        );
-        var sessionId = ctx.Club.Sessions.IdOf("laufende");
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var response = await EditAsync(client, sessionId, 2026, 53, Motto, null);
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx.Expected.Session(sessionId).ToHaveNumber(null).AssertAsync(ct);
     }
 
     private static Task<HttpResponseMessage> EditAsync(

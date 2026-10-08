@@ -1,3 +1,4 @@
+import { lerp, ramp } from '../../../../internal/ramp';
 export interface SwayGlyph {
   char: string;
   left: number;
@@ -58,11 +59,6 @@ const HEADER_SHARE = 0.5;
 const ARRIVAL_FROM = 0.5;
 const ARRIVAL_STAGGER = 0.35;
 const ARRIVAL_SHIFT = 18;
-
-const lerp = (from: number, to: number, amount: number): number => from + (to - from) * amount;
-
-export const ramp = (value: number, from: number, to: number): number =>
-  Math.min(Math.max((value - from) / (to - from), 0), 1);
 
 const glideOf = (progress: number): number =>
   GLIDE_MOMENTUM * progress + (1 - GLIDE_MOMENTUM) * (1 - (1 - progress) ** 2);

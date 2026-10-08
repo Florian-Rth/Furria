@@ -1,14 +1,16 @@
 import { describe, expect, it } from 'vitest';
+import type { EntryRunning, EntryRuns } from './entry-sheet';
 import {
+  entryRunningOf,
+  entryRunsOf,
   formatEntrySpan,
   toEntryGroups,
-  toEntryHeadline,
   toEntryOnward,
   toEntryVenue,
-  toRunningNote,
-  toRunsLine,
 } from './entry-sheet';
 import type { StartEntry } from './schemas';
+
+type EntryTiming = Pick<StartEntry, 'startsAt' | 'endsAt'>;
 
 const at = (month: number, day: number, hour: number, minute = 0): string =>
   new Date(2027, month - 1, day, hour, minute).toISOString();
@@ -56,45 +58,34 @@ describe('formatEntrySpan', () => {
   });
 });
 
-describe('toEntryHeadline', () => {
-  it.each([
-    { label: 'a training called Training', kind: 'training', title: 'Training', spanOnly: true },
-    { label: 'a Prunksitzung', kind: 'performance', title: 'Prunksitzung', spanOnly: false },
-  ] as const)('leads $label with its kind: $spanOnly', ({ kind, title, spanOnly }) => {
-    const shown = entry({ kind, title });
-
-    expect(toEntryHeadline(shown) === formatEntrySpan(shown)).toBe(spanOnly);
-  });
-});
-
-describe('toRunningNote', () => {
-  it.each([
+describe('entryRunningOf', () => {
+  it.each<{ label: string; timing: EntryTiming; now: Date; expected: EntryRunning }>([
     {
       label: 'before the start',
       timing: { startsAt: at(1, 23, 19, 11), endsAt: at(1, 23, 23, 30) },
       now: new Date(2027, 0, 23, 19, 0),
-      expected: null,
+      expected: { kind: 'idle' },
     },
     {
       label: 'while it runs',
       timing: { startsAt: at(1, 23, 19, 11), endsAt: at(1, 23, 23, 30) },
       now: new Date(2027, 0, 23, 20, 0),
-      expected: 'läuft · noch 3:30',
+      expected: { kind: 'ending', minutesLeft: 210 },
     },
     {
       label: 'in its last seconds',
       timing: { startsAt: at(1, 23, 19, 11), endsAt: at(1, 23, 23, 30) },
       now: new Date(2027, 0, 23, 23, 29, 30),
-      expected: 'läuft · noch 0:01',
+      expected: { kind: 'ending', minutesLeft: 1 },
     },
     {
       label: 'while an open-ended entry runs',
       timing: { startsAt: at(1, 23, 19, 11), endsAt: null },
       now: new Date(2027, 0, 23, 20, 0),
-      expected: 'läuft',
+      expected: { kind: 'openEnded' },
     },
-  ])('notes $expected $label', ({ timing, now, expected }) => {
-    expect(toRunningNote(timing, now)).toBe(expected);
+  ])('is $expected.kind $label', ({ timing, now, expected }) => {
+    expect(entryRunningOf(timing, now)).toEqual(expected);
   });
 });
 
@@ -118,10 +109,6 @@ describe('toEntryVenue', () => {
       holdsKey: true,
     });
   });
-
-  it('shows no venue for an entry without one', () => {
-    expect(toEntryVenue(null, false)).toBeNull();
-  });
 });
 
 describe('toEntryGroups', () => {
@@ -134,26 +121,26 @@ describe('toEntryGroups', () => {
   });
 });
 
-describe('toRunsLine', () => {
-  it('names nothing when she does not run the entry', () => {
-    expect(toRunsLine(entry({}))).toBeNull();
-  });
-
-  it('names the group she runs it for and her function', () => {
-    const line = toRunsLine(
-      entry({ ownerGroup: KINDERGARDE, viewerRuns: { groupId: 6, function: 'Trainerin' } }),
-    );
-
-    expect(line).toContain('Kindergarde');
-    expect(line?.endsWith('Trainerin')).toBe(true);
-  });
-
-  it('leaves out a blank function', () => {
-    const line = toRunsLine(
-      entry({ participatingGroups: [TANZGARDE], viewerRuns: { groupId: 4, function: ' ' } }),
-    );
-
-    expect(line?.endsWith('Tanzgarde')).toBe(true);
+describe('entryRunsOf', () => {
+  it.each<{ label: string; shown: StartEntry; expected: EntryRuns | null }>([
+    { label: 'she does not run the entry', shown: entry({}), expected: null },
+    {
+      label: 'she runs it for its owner with a function',
+      shown: entry({ ownerGroup: KINDERGARDE, viewerRuns: { groupId: 6, function: 'Trainerin' } }),
+      expected: { groupName: 'Kindergarde', duty: 'Trainerin' },
+    },
+    {
+      label: 'she runs it for a participating group with a blank function',
+      shown: entry({ participatingGroups: [TANZGARDE], viewerRuns: { groupId: 4, function: ' ' } }),
+      expected: { groupName: 'Tanzgarde', duty: null },
+    },
+    {
+      label: 'she runs it for a group the entry does not name',
+      shown: entry({ viewerRuns: { groupId: 9, function: null } }),
+      expected: { groupName: null, duty: null },
+    },
+  ])('reads $label', ({ shown, expected }) => {
+    expect(entryRunsOf(shown)).toEqual(expected);
   });
 });
 

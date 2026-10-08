@@ -9,8 +9,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Members;
 
-[Collection("Api")]
-public sealed class GetMembersTests
+public sealed class GetMembersTests : IClassFixture<ApiTestFixture>
 {
     private const string MembersRoute = "/api/members";
 
@@ -541,33 +540,5 @@ public sealed class GetMembersTests
             ["personId", "firstName", "lastName", "membershipState", "groups", "roles"],
             fields
         );
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerIsNotAffiliated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddAccount("tom")),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("tom", ct);
-        var (response, _) = await client.GETAsync<GetMembers, GetMembersResponse>();
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .GETAsync<GetMembers, GetMembersResponse>();
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 }

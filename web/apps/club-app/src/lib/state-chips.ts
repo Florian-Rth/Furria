@@ -39,19 +39,36 @@ export const toPeriodChip = (isRunning: boolean, isFuture: boolean): StateChip |
   return null;
 };
 
+export type SessionPeriodState = 'running' | 'planned';
+
+const SESSION_PERIOD_CHIPS: Record<SessionPeriodState, StateChip> = {
+  running: RUNNING_PERIOD_CHIP,
+  planned: PLANNED_PERIOD_CHIP,
+};
+
+export const toSessionPeriodState = (
+  firstSessionYear: number,
+  lastSessionYear: number | null,
+  currentSessionYear: number,
+): SessionPeriodState | null => {
+  if (currentSessionYear < firstSessionYear) {
+    return 'planned';
+  }
+  if (lastSessionYear === null || currentSessionYear <= lastSessionYear) {
+    return 'running';
+  }
+
+  return null;
+};
+
 export const toSessionPeriodChip = (
   firstSessionYear: number,
   lastSessionYear: number | null,
   currentSessionYear: number,
 ): StateChip | null => {
-  if (currentSessionYear < firstSessionYear) {
-    return PLANNED_PERIOD_CHIP;
-  }
-  if (lastSessionYear === null || currentSessionYear <= lastSessionYear) {
-    return RUNNING_PERIOD_CHIP;
-  }
+  const state = toSessionPeriodState(firstSessionYear, lastSessionYear, currentSessionYear);
 
-  return null;
+  return state === null ? null : SESSION_PERIOD_CHIPS[state];
 };
 
 const RECRUITING_CHIP: StateChip = { label: 'sucht Verstärkung', tone: 'gold', dot: true };

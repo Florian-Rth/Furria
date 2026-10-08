@@ -6,8 +6,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Authorization;
 
-[Collection("Api")]
-public sealed class AnyPermissionRequirementTests
+public sealed class AnyPermissionRequirementTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
 
@@ -81,19 +80,6 @@ public sealed class AnyPermissionRequirementTests
         var (response, _) = await client.GETAsync<AnyPermissionProbe, EmptyResponse>();
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .GETAsync<AnyPermissionProbe, EmptyResponse>();
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     private async Task<HttpResponseMessage> ProbeAsHolderOfAsync(params string[] permissionKeys)

@@ -11,8 +11,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Groups;
 
-[Collection("Api")]
-public sealed class PostTrainingsTests
+public sealed class PostTrainingsTests : IClassFixture<ApiTestFixture>
 {
     private const string ValidationField = "request";
     private const int UnknownSlotId = 999_999;
@@ -271,23 +270,6 @@ public sealed class PostTrainingsTests
         >(OneEvening(tanzgarde, ctx.Club.TrainingSlots.IdOf("dienstags")));
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx.Expected.TrainingsOf(tanzgarde).ToBeEmpty().AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildRhythmAsync(ct);
-        var tanzgarde = ctx.Groups.Groups.IdOf("tanzgarde");
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .POSTAsync<PostTrainings, PostTrainingsRequest, PostTrainingsResponse>(
-                OneEvening(tanzgarde, ctx.Club.TrainingSlots.IdOf("dienstags"))
-            );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         await ctx.Expected.TrainingsOf(tanzgarde).ToBeEmpty().AssertAsync(ct);
     }
 

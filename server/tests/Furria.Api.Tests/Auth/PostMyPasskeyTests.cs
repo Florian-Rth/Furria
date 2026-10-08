@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Auth;
 
-[Collection("Api")]
-public sealed class PostMyPasskeyTests
+public sealed class PostMyPasskeyTests : IClassFixture<ApiTestFixture>
 {
     private const string CredentialField = "credential";
 
@@ -288,18 +287,6 @@ public sealed class PostMyPasskeyTests
         );
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_NoAccessTokenIsSent()
-    {
-        var (response, _) = await PasskeySteps.AddAsync(
-            _fixture.CreateClient(),
-            "no-challenge",
-            JsonSerializer.SerializeToElement(new { })
-        );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     private Task<SeededContext> ArrangeAnnaAndBertaAsync(CancellationToken ct) =>

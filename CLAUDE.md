@@ -73,6 +73,29 @@ pnpm typecheck
 pnpm shot /members                    # Screenshots phone/desktop × light/dark → web/tools/screenshot/out (needs dev server + API)
 ```
 
+## Validation — When to Run What
+
+Single source of truth; skills and plans point here. CI (`.github/workflows/ci.yml`) runs every
+full suite on every PR and is the authority.
+
+1. **Inner loop (TDD red/green/refactor):** only the targeted test class/file(s). Never a full suite.
+2. **End of a slice/task:** only the stack(s) touched.
+   - Backend: `dotnet csharpier format .` + `dotnet build` (zero warnings) + the test classes of the touched features.
+   - Web: `pnpm lint` + `typecheck` of the touched packages + the affected test files.
+3. **Full suite locally** only before opening/updating a PR with a cross-cutting change (shared
+   infra, test fixtures, analyzers, `@furria/ui`, configs/catalog), or to reproduce a CI failure.
+4. **Never rerun** a suite that just passed with no code change in between.
+5. **`pnpm build` / `pnpm shot`** only when the change affects bundling (routes, configs, deps)
+   or chrome/layout — see `docs/web/TESTING.md`.
+
+Targeted commands:
+```bash
+cd server && dotnet run --project tests/Furria.Api.Tests --no-build -- -class <FQN> [-class <FQN>]  # after dotnet build
+cd web && pnpm --filter @furria/<pkg> test <path/to/file.test.ts>
+cd web && pnpm --filter @furria/<pkg> typecheck
+```
+`dotnet test -- --filter-class` from `server/` also runs `Furria.Tests.Analyzers.Tests` with zero matches and fails; VSTest `--filter` is ignored and runs everything.
+
 ## Versioning
 
 ### Server (`server/Directory.Build.props`)

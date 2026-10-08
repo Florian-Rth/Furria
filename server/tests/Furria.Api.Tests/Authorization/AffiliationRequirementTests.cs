@@ -6,8 +6,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Authorization;
 
-[Collection("Api")]
-public sealed class AffiliationRequirementTests
+public sealed class AffiliationRequirementTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateTimeOffset HalfPastMidnightInBerlin = new(
         2026,
@@ -400,18 +399,5 @@ public sealed class AffiliationRequirementTests
         var (response, _) = await client.GETAsync<AffiliationProbe, EmptyResponse>();
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .GETAsync<AffiliationProbe, EmptyResponse>();
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 }

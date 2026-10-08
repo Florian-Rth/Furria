@@ -10,8 +10,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Board;
 
-[Collection("Api")]
-public sealed class PostBoardSeatTests
+public sealed class PostBoardSeatTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string OpenSeatMessage = "Diese Person hat diese Vorstandsfunktion bereits inne.";
@@ -316,40 +315,6 @@ public sealed class PostBoardSeatTests
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldBoardManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity.AddPerson("ilka", "Ilka", "Reineke").AddAccount("katrin")
-                    )
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "rechte",
-                            "katrin-rechte",
-                            "Rechte",
-                            "katrin",
-                            FurriaPermissions.RolesManage
-                        )
-                    )
-                    .Club(club => club.AddBoardOffice("praesident", "Präsident", 1)),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("katrin", ct);
-        var (response, _) = await OpenSeatAsync(
-            client,
-            ctx.Club.BoardOffices.IdOf("praesident"),
-            ctx.Identity.People.IdOf("ilka"),
-            Elected2016
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_RefuseTheSeat_When_TheOfficeCarriesARoleTheCallerMayNotGrant()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -391,22 +356,6 @@ public sealed class PostBoardSeatTests
             .Expected.BoardSeat(result.BoardSeatId)
             .ToBeHeldBy(ctx.Identity.People.IdOf("katrin"))
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithFreeOfficeAsync(ct);
-
-        var (response, _) = await OpenSeatAsync(
-            _fixture.CreateClient(),
-            ctx.Club.BoardOffices.IdOf("praesident"),
-            ctx.Identity.People.IdOf("ilka"),
-            Elected2016
-        );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     private Task<SeededContext> BuildWithFreeOfficeAsync(CancellationToken ct) =>

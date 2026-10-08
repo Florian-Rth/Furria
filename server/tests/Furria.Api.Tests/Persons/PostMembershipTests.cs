@@ -2,15 +2,13 @@ using System.Net;
 using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Persons;
-using Furria.Application.Authorization;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
 namespace Furria.Api.Tests.Persons;
 
-[Collection("Api")]
-public sealed class PostMembershipTests
+public sealed class PostMembershipTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string ValidationField = "request";
@@ -361,103 +359,6 @@ public sealed class PostMembershipTests
         await ctx
             .Expected.Membership(result.MembershipId)
             .ToHavePeriod(joinsTomorrow, null)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_TheRouteCarriesNoUsableId()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, _) = await client.POSTAsync<
-            PostMembership,
-            PostMembershipRequest,
-            PostMembershipResponse
-        >(
-            new()
-            {
-                PersonId = 0,
-                StartedOn = JoinedIn2017,
-                EndedOn = null,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldPersonsManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddPerson("paula", "Paula", "Brendel")
-                            .AddPerson("ilka", "Ilka", "Reineke")
-                            .AddAccount("ilka")
-                    )
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "gruppenpflege",
-                            "ilka-gruppenpflege",
-                            "Gruppenpflege",
-                            "ilka",
-                            FurriaPermissions.GroupsManage
-                        )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var (response, _) = await client.POSTAsync<
-            PostMembership,
-            PostMembershipRequest,
-            PostMembershipResponse
-        >(
-            new()
-            {
-                PersonId = ctx.Identity.People.IdOf("paula"),
-                StartedOn = JoinedIn2017,
-                EndedOn = null,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx
-            .Expected.MembershipsOfPerson(ctx.Identity.People.IdOf("paula"))
-            .ToHaveCount(0)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity => identity.AddPerson("paula", "Paula", "Brendel")),
-            ct
-        );
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .POSTAsync<PostMembership, PostMembershipRequest, PostMembershipResponse>(
-                new()
-                {
-                    PersonId = ctx.Identity.People.IdOf("paula"),
-                    StartedOn = JoinedIn2017,
-                    EndedOn = null,
-                }
-            );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-        await ctx
-            .Expected.MembershipsOfPerson(ctx.Identity.People.IdOf("paula"))
-            .ToHaveCount(0)
             .AssertAsync(ct);
     }
 

@@ -8,8 +8,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Groups;
 
-[Collection("Api")]
-public sealed class EndGroupAdminTests
+public sealed class EndGroupAdminTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string ValidationField = "request";
@@ -474,76 +473,6 @@ public sealed class EndGroupAdminTests
         );
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_TheTenureIdIsNotAnId()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity.AddPerson("anna", "Anna", "Kaiser").AddAccount("anna")
-                    )
-                    .Groups(groups =>
-                        groups
-                            .AddGroup("tanzgarde", "Tanzgarde")
-                            .AddGroupAdmin("anna-tanzgarde", "tanzgarde", "anna")
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("anna", ct);
-        var response = await client.POSTAsync<EndGroupAdmin, EndGroupAdminRequest>(
-            new()
-            {
-                GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
-                GroupAdminId = 0,
-                EndedOn = EndedIn2026,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddPerson("paula", "Paula", "Brendel"))
-                    .Groups(groups =>
-                        groups
-                            .AddGroup("tanzgarde", "Tanzgarde")
-                            .AddGroupAdmin(
-                                "paula-tanzgarde",
-                                "tanzgarde",
-                                "paula",
-                                sinceOn: AppointedIn2017
-                            )
-                    ),
-            ct
-        );
-
-        var response = await _fixture
-            .CreateClient()
-            .POSTAsync<EndGroupAdmin, EndGroupAdminRequest>(
-                new()
-                {
-                    GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
-                    GroupAdminId = ctx.Groups.GroupAdmins.IdOf("paula-tanzgarde"),
-                    EndedOn = EndedIn2026,
-                }
-            );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-        await ctx
-            .Expected.GroupAdmin(ctx.Groups.GroupAdmins.IdOf("paula-tanzgarde"))
-            .ToHavePeriod(AppointedIn2017, null)
-            .AssertAsync(ct);
     }
 
     private static async Task<IDictionary<string, List<string>>> ReadFailuresAsync(

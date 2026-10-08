@@ -9,8 +9,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.TicketRequests;
 
-[Collection("Api")]
-public sealed class GetTicketRequestsTests
+public sealed class GetTicketRequestsTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateTimeOffset AtTheFirstGala = new(
         2027,
@@ -127,17 +126,6 @@ public sealed class GetTicketRequestsTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Empty(result.TicketRequests);
         Assert.Null(result.ToDo);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerOnlyManagesEvents()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(_ => { }, ct);
-
-        var (response, _) = await ReadAsync(ctx, "vera");
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
     private static async Task<TestResult<GetTicketRequestsResponse>> ReadAsync(

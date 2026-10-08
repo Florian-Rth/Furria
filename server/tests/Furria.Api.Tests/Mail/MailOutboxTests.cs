@@ -10,8 +10,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Mail;
 
-[Collection("Api")]
-public sealed class MailOutboxTests
+public sealed class MailOutboxTests : IClassFixture<ApiTestFixture>
 {
     private const string RetryScheduled =
         "Mail {MailTemplate} to {MailRecipientKind} {MailRecipientId} failed on attempt {AttemptNumber} with {FailureType}, retrying in {RetryDelay}";

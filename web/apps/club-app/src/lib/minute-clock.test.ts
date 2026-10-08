@@ -8,12 +8,6 @@ describe('msUntilNextMinute', () => {
       now: new Date(2026, 10, 11, 11, 10, 0, 0),
       expected: 60_000,
     },
-    {
-      label: 'one millisecond past it',
-      now: new Date(2026, 10, 11, 11, 10, 0, 1),
-      expected: 59_999,
-    },
-    { label: 'half way through', now: new Date(2026, 10, 11, 11, 10, 30, 0), expected: 30_000 },
     { label: 'the last instant', now: new Date(2026, 10, 11, 11, 10, 59, 999), expected: 1 },
   ])('waits $expected ms when $label', ({ now, expected }) => {
     expect(msUntilNextMinute(now)).toBe(expected);

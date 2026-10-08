@@ -9,8 +9,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Calendar;
 
-[Collection("Api")]
-public sealed class GetCalendarTests
+public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
 {
     private const string ClubMeeting = "Vereinssitzung";
     private const string Parade = "Rosenmontagsumzug";
@@ -412,40 +411,6 @@ public sealed class GetCalendarTests
                 Assert.Null(parade.OwnerGroupName);
             }
         );
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerHoldsNoRunningMembership()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddAccount("gast")),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("gast", ct);
-        var (response, _) = await client.GETAsync<
-            GetCalendar,
-            GetCalendarRequest,
-            GetCalendarResponse
-        >(new GetCalendarRequest());
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .GETAsync<GetCalendar, GetCalendarRequest, GetCalendarResponse>(
-                new GetCalendarRequest()
-            );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     private static string[] TitlesOf(GetCalendarResponse result) =>

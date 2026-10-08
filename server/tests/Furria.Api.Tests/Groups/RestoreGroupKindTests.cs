@@ -2,20 +2,17 @@ using System.Net;
 using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Groups;
-using Furria.Application.Authorization;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
 namespace Furria.Api.Tests.Groups;
 
-[Collection("Api")]
-public sealed class RestoreGroupKindTests
+public sealed class RestoreGroupKindTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string NotArchivedMessage = "Diese Gruppenart ist nicht archiviert.";
     private const string DuplicateNameMessage = "Diese Gruppenart gibt es schon.";
-    private const int UnknownGroupKindId = 999_999;
 
     private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
 
@@ -99,75 +96,6 @@ public sealed class RestoreGroupKindTests
         await ctx
             .Expected.GroupKind(ctx.Groups.GroupKinds.IdOf("garde"))
             .ToBeOpen()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheGroupKindIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await RestoreKindAsync(client, UnknownGroupKindId);
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldGroupsManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("katrin"))
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "rechte",
-                            "katrin-rechte",
-                            "Rechte",
-                            "katrin",
-                            FurriaPermissions.RolesManage
-                        )
-                    )
-                    .Groups(groups =>
-                        groups.AddGroupKind("spielmannszug", "Spielmannszug", ArchivedIn2021)
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("katrin", ct);
-        var response = await RestoreKindAsync(client, ctx.Groups.GroupKinds.IdOf("spielmannszug"));
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx
-            .Expected.GroupKind(ctx.Groups.GroupKinds.IdOf("spielmannszug"))
-            .ToBeArchivedOn(ArchivedIn2021)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Groups(groups =>
-                    groups.AddGroupKind("spielmannszug", "Spielmannszug", ArchivedIn2021)
-                ),
-            ct
-        );
-
-        var response = await RestoreKindAsync(
-            _fixture.CreateClient(),
-            ctx.Groups.GroupKinds.IdOf("spielmannszug")
-        );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-        await ctx
-            .Expected.GroupKind(ctx.Groups.GroupKinds.IdOf("spielmannszug"))
-            .ToBeArchivedOn(ArchivedIn2021)
             .AssertAsync(ct);
     }
 

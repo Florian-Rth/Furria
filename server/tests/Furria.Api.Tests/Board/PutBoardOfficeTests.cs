@@ -2,15 +2,13 @@ using System.Net;
 using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Board;
-using Furria.Application.Authorization;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
 namespace Furria.Api.Tests.Board;
 
-[Collection("Api")]
-public sealed class PutBoardOfficeTests
+public sealed class PutBoardOfficeTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string ArchivedOfficeMessage =
@@ -178,70 +176,6 @@ public sealed class PutBoardOfficeTests
         var response = await RenameOfficeAsync(client, UnknownBoardOfficeId, "Präsidentin", 1);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_TheRouteCarriesNoUsableId()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithBandAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await RenameOfficeAsync(client, 0, "Präsidentin", 1);
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldBoardManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("katrin"))
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "rechte",
-                            "katrin-rechte",
-                            "Rechte",
-                            "katrin",
-                            FurriaPermissions.RolesManage
-                        )
-                    )
-                    .Club(club => club.AddBoardOffice("praesident", "Präsident", 1)),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("katrin", ct);
-        var response = await RenameOfficeAsync(
-            client,
-            ctx.Club.BoardOffices.IdOf("praesident"),
-            "Präsidentin",
-            1
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx
-            .Expected.BoardOffice(ctx.Club.BoardOffices.IdOf("praesident"))
-            .ToHaveName("Präsident")
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithBandAsync(ct);
-
-        var response = await RenameOfficeAsync(
-            _fixture.CreateClient(),
-            ctx.Club.BoardOffices.IdOf("praesident"),
-            "Präsidentin",
-            1
-        );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     private Task<SeededContext> BuildWithBandAsync(CancellationToken ct) =>

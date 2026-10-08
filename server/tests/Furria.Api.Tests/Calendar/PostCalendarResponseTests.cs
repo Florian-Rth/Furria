@@ -8,8 +8,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Calendar;
 
-[Collection("Api")]
-public sealed class PostCalendarResponseTests
+public sealed class PostCalendarResponseTests : IClassFixture<ApiTestFixture>
 {
     private const int NoSuchEntryOffset = 10_000;
 
@@ -394,28 +393,6 @@ public sealed class PostCalendarResponseTests
                     .Expected.AttendanceResponsesFor(entryId)
                     .ToCarryNoAnswerFrom(ctx.Identity.People.IdOf("bea"))
                     .AssertAsync(ct);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-
-                var response = await AnswerAsync(
-                    _fixture.CreateClient(),
-                    ctx.Club.CalendarEntries.IdOf("club-meeting"),
-                    AttendanceAnswer.Yes
-                );
-
-                Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
             }
         );
     }

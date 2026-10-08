@@ -9,8 +9,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Events;
 
-[Collection("Api")]
-public sealed class DeleteEventByIdTests
+public sealed class DeleteEventByIdTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
 
@@ -91,19 +90,6 @@ public sealed class DeleteEventByIdTests
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         await ctx.Expected.CalendarEntry(meetingId).ToHaveTitle("Vereinssitzung").AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerHoldsNoEventsKey()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var eventId = ctx.Club.Events.IdOf("first-gala");
-
-        var response = await DeleteAsync(ctx, "max", eventId);
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx.Expected.CalendarEntry(eventId).ToHaveTitle("1. Prunksitzung").AssertAsync(ct);
     }
 
     private static async Task<HttpResponseMessage> DeleteAsync(

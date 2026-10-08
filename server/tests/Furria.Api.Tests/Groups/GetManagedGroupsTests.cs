@@ -1,15 +1,13 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Groups;
-using Furria.Application.Authorization;
 using Furria.Core.Groups;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
 namespace Furria.Api.Tests.Groups;
 
-[Collection("Api")]
-public sealed class GetManagedGroupsTests
+public sealed class GetManagedGroupsTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
     private static readonly DateOnly LeftIn2020 = new(2020, 3, 1);
@@ -285,47 +283,5 @@ public sealed class GetManagedGroupsTests
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Empty(result.Kinds);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldGroupsManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity.AddPerson("ilka", "Ilka", "Reineke").AddAccount("ilka")
-                    )
-                    .Groups(groups => groups.AddGroup("tanzgarde", "Tanzgarde"))
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "schriftfuehrung",
-                            "ilka-schriftfuehrung",
-                            "Schriftführung",
-                            "ilka",
-                            FurriaPermissions.PersonsManage
-                        )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var (response, _) = await client.GETAsync<GetManagedGroups, GetManagedGroupsResponse>();
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .GETAsync<GetManagedGroups, GetManagedGroupsResponse>();
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 }

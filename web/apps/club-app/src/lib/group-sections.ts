@@ -14,18 +14,29 @@ export const GROUP_SECTION_TITLES = {
 export const GROUP_ADMINS_NOTE =
   'Gruppen-Admins verwalten die Gruppe und müssen ihr nicht selbst angehören.';
 
-export const NO_ADMINS_LINE =
-  'Diese Gruppe hat keinen Gruppen-Admin. Sie wird von der Gruppenverwaltung gepflegt.';
+export type GroupPeopleNoteKind = 'no-admins' | 'admins-first';
 
-export const GROUP_PEOPLE_NOTE =
-  'Gruppen-Admins stehen oben. Sie müssen der Gruppe nicht selbst angehören.';
+const GROUP_PEOPLE_NOTES: Record<GroupPeopleNoteKind, string> = {
+  'no-admins':
+    'Diese Gruppe hat keinen Gruppen-Admin. Sie wird von der Gruppenverwaltung gepflegt.',
+  'admins-first': 'Gruppen-Admins stehen oben. Sie müssen der Gruppe nicht selbst angehören.',
+};
 
-export const toGroupPeopleNote = (people: number, admins: number): string | undefined => {
+export const toGroupPeopleNoteKind = (
+  people: number,
+  admins: number,
+): GroupPeopleNoteKind | undefined => {
   if (people === 0) {
     return undefined;
   }
 
-  return admins === 0 ? NO_ADMINS_LINE : GROUP_PEOPLE_NOTE;
+  return admins === 0 ? 'no-admins' : 'admins-first';
+};
+
+export const toGroupPeopleNote = (people: number, admins: number): string | undefined => {
+  const kind = toGroupPeopleNoteKind(people, admins);
+
+  return kind === undefined ? undefined : GROUP_PEOPLE_NOTES[kind];
 };
 
 const SUBLINE_SEPARATOR = ' · ';

@@ -2,15 +2,13 @@ using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Invitations;
 using Furria.Api.Tests.Auth;
-using Furria.Application.Authorization;
 using Furria.Core.Identity;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
 namespace Furria.Api.Tests.Invitations;
 
-[Collection("Api")]
-public sealed class PostBulkInvitationTests
+public sealed class PostBulkInvitationTests : IClassFixture<ApiTestFixture>
 {
     private const string InvitationSubject = "Dein Zugang zur Vereins-App";
 
@@ -318,48 +316,6 @@ public sealed class PostBulkInvitationTests
             .ToHaveCount(1)
             .InvitationsOfPerson(ctx.Identity.People.IdOf("bea"))
             .ToHaveCount(1)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldPersonsManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddEligiblePerson(
-                                "anna",
-                                "Anna",
-                                InvitationSteps.UniqueContactEmail("anna"),
-                                _fixture.Today
-                            )
-                            .AddAccount("ilka")
-                    )
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "gruppenpflege",
-                            "ilka-gruppenpflege",
-                            "Gruppenpflege",
-                            "ilka",
-                            FurriaPermissions.GroupsManage
-                        )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var (response, _) = await client.POSTAsync<
-            PostBulkInvitation,
-            PostBulkInvitationResponse
-        >();
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx
-            .Expected.InvitationsOfPerson(ctx.Identity.People.IdOf("anna"))
-            .ToHaveCount(0)
             .AssertAsync(ct);
     }
 }

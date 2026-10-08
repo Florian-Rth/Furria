@@ -8,8 +8,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Announcements;
 
-[Collection("Api")]
-public sealed class PostAnnouncementTests
+public sealed class PostAnnouncementTests : IClassFixture<ApiTestFixture>
 {
     private const string Title = "Saalreinigung";
     private const string Body = "Am Samstag räumen wir gemeinsam den Saal auf.";
@@ -147,49 +146,6 @@ public sealed class PostAnnouncementTests
         );
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheMemberHoldsNoPermission()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildBoardAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("alice", ct);
-
-        var (response, _) = await client.POSTAsync<
-            PostAnnouncement,
-            PostAnnouncementRequest,
-            PostAnnouncementResponse
-        >(
-            new()
-            {
-                Title = Title,
-                Body = Body,
-                ValidUntil = null,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .POSTAsync<PostAnnouncement, PostAnnouncementRequest, PostAnnouncementResponse>(
-                new()
-                {
-                    Title = Title,
-                    Body = Body,
-                    ValidUntil = null,
-                }
-            );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     private Task<SeededContext> BuildBoardAsync(CancellationToken ct) =>

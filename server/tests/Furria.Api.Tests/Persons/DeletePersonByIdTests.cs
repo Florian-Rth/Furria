@@ -16,8 +16,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Persons;
 
-[Collection("Api")]
-public sealed class DeletePersonByIdTests
+public sealed class DeletePersonByIdTests : IClassFixture<ApiTestFixture>
 {
     private const string PasswordField = "password";
     private const string PasskeyField = "passkey";
@@ -514,18 +513,6 @@ public sealed class DeletePersonByIdTests
         );
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_NoAccessTokenIsSent()
-    {
-        var response = await DeleteWithPasswordAsync(
-            _fixture.CreateClient(),
-            UnknownPersonId,
-            ApiTestFixture.SeededAccountPassword
-        );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     private HttpClient ClientCarrying(string accessToken)

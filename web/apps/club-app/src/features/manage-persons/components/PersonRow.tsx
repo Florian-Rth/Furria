@@ -3,9 +3,9 @@ import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { toInitials } from '@/lib/initials';
-import { NO_AFFILIATION_META } from '@/lib/person-rows';
+import { NO_AFFILIATION_META, toPersonRowAffiliation } from '@/lib/person-rows';
 import { WITHHELD_CHIP } from '@/lib/state-chips';
-import { isContactWithheld, toPersonName, toPersonRowAffiliation } from '../manage-persons-labels';
+import { isContactWithheld, toPersonName } from '../manage-persons-labels';
 import type { PersonAccessFilter } from '../person-access-filter';
 import { toPersonRowChip } from '../person-access-filter';
 import type { PersonSummary } from '../schemas';
@@ -18,7 +18,7 @@ interface PersonRowProps {
 }
 
 export const PersonRow: FC<PersonRowProps> = ({ person, access }) => {
-  const { accent, meta } = toPersonRowAffiliation(person);
+  const { accent, meta } = toPersonRowAffiliation(person.groups, person.roles);
   const state = toPersonRowChip(person, access);
   const params = { personId: String(person.personId) };
 

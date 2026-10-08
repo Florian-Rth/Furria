@@ -44,42 +44,6 @@ describe('toGroupHistoryEntries', () => {
     ]);
   });
 
-  it('renders a closed group membership as its span, never as a since', () => {
-    const [entry] = toGroupHistoryEntries(
-      [pastMember({ groupMembershipId: 11, joinedOn: '2019-09-01', leftOn: '2022-02-28' })],
-      [],
-    );
-
-    expect(entry).toEqual({
-      key: 'membership-11',
-      title: 'Mara Lenz',
-      span: '01.09.2019 – 28.02.2022',
-      kind: 'membership',
-      meta: undefined,
-    });
-  });
-
-  it.each([
-    { case: 'no function', adminFunction: null, expected: undefined },
-    { case: 'a function', adminFunction: 'Trainerin', expected: 'Trainerin' },
-  ])('carries $case on a closed admin row', ({ adminFunction, expected }) => {
-    const [entry] = toGroupHistoryEntries(
-      [],
-      [
-        pastAdmin({
-          groupAdminId: 21,
-          function: adminFunction,
-          sinceOn: '2016-09-01',
-          untilOn: '2018-06-30',
-        }),
-      ],
-    );
-
-    expect(entry?.kind).toBe('admin');
-    expect(entry?.meta).toBe(expected);
-    expect(entry?.span).toBe('01.09.2016 – 30.06.2018');
-  });
-
   it('orders two rows that started on the same day by their own identity', () => {
     const entries = toGroupHistoryEntries(
       [pastMember({ groupMembershipId: 11, joinedOn: '2019-09-01', leftOn: '2022-02-28' })],
@@ -87,9 +51,5 @@ describe('toGroupHistoryEntries', () => {
     );
 
     expect(entries.map((entry) => entry.key)).toEqual(['admin-21', 'membership-11']);
-  });
-
-  it('has nothing to show when no row has ended', () => {
-    expect(toGroupHistoryEntries([], [])).toEqual([]);
   });
 });

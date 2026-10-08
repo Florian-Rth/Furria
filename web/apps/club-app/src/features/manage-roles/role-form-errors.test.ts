@@ -5,9 +5,7 @@ import { toFieldName, toRoleFieldErrors } from './role-form-errors';
 describe('toFieldName', () => {
   it.each([
     ['Name', 'name'],
-    ['Description', 'description'],
     ['PermissionKeys[0]', 'permissionKeys'],
-    ['name', 'name'],
     ['', ''],
   ])('maps %j to %j', (raw, expected) => {
     expect(toFieldName(raw)).toBe(expected);

@@ -9,21 +9,7 @@ import PhotoLibrary from '@mui/icons-material/PhotoLibrary';
 import Smartphone from '@mui/icons-material/Smartphone';
 import SwapHoriz from '@mui/icons-material/SwapHoriz';
 import type SvgIcon from '@mui/material/SvgIcon';
-
-export const CHANGELOG_ICON_KEYS = [
-  'palette',
-  'campaign',
-  'smartphone',
-  'home',
-  'groups',
-  'newspaper',
-  'photos',
-  'membership',
-  'tickets',
-  'exchange',
-] as const;
-
-export type ChangelogIconKey = (typeof CHANGELOG_ICON_KEYS)[number];
+import type { ChangelogIconKey } from './changelog-icon-keys';
 
 export const CHANGELOG_ICONS: Record<ChangelogIconKey, typeof SvgIcon> = {
   palette: Palette,

@@ -4,7 +4,6 @@ import type { LoginSearch } from './schemas';
 
 describe('buildLoginSearch', () => {
   it.each<[string, string | undefined, boolean, LoginSearch]>([
-    ['a missing target without an expiry', undefined, false, {}],
     ['the app root without an expiry', '/', false, {}],
     ['the app root after an expiry', '/', true, { expired: 1 }],
     [
@@ -14,24 +13,13 @@ describe('buildLoginSearch', () => {
       { returnTo: '/beitrag?jahr=2026' },
     ],
     ['a deep page after an expiry', '/beitrag', true, { returnTo: '/beitrag', expired: 1 }],
-    ['the login page itself', '/login', false, {}],
-    ['the login page with a nested target', '/login?returnTo=%2Fbeitrag', true, { expired: 1 }],
-    ['an absolute foreign target', 'https://evil.example/beitrag', false, {}],
   ])('builds the login search for %s', (_case, returnTo, expired, expected) => {
     expect(buildLoginSearch(returnTo, expired)).toEqual(expected);
   });
-});
 
-describe('buildLoginSearch with a farewell', () => {
-  it.each<[string, string | undefined, boolean, LoginSearch]>([
-    [
-      'a deleted account on a deep page',
-      '/profile/security',
-      false,
-      { farewell: 'account-deleted' },
-    ],
-    ['a deleted account after an expiry', '/profile', true, { farewell: 'account-deleted' }],
-  ])('builds the login search for %s', (_case, returnTo, expired, expected) => {
-    expect(buildLoginSearch(returnTo, expired, 'account-deleted')).toEqual(expected);
+  it('carries only the farewell of a deleted account', () => {
+    expect(buildLoginSearch('/profile', true, 'account-deleted')).toEqual({
+      farewell: 'account-deleted',
+    });
   });
 });

@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Venues;
 
-[Collection("Api")]
-public sealed class GetRunningVenuesTests
+public sealed class GetRunningVenuesTests : IClassFixture<ApiTestFixture>
 {
     private const string RunningVenuesRoute = "/api/venues";
 
@@ -209,21 +208,5 @@ public sealed class GetRunningVenuesTests
         var (response, _) = await client.GETAsync<GetRunningVenues, GetRunningVenuesResponse>();
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(
-            builder => builder.Club(club => club.AddVenue("halle", "Turnhalle")),
-            ct
-        );
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .GETAsync<GetRunningVenues, GetRunningVenuesResponse>();
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 }

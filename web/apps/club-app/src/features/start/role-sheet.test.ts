@@ -33,12 +33,6 @@ describe('toRoleSheet', () => {
       workbench: '/manage',
     },
     {
-      label: 'only manages events',
-      keys: ['club.read', 'events.manage'],
-      permissions: 2,
-      workbench: '/events',
-    },
-    {
       label: 'only handles ticket requests',
       keys: ['ticket_requests.handle'],
       permissions: 1,
@@ -61,13 +55,5 @@ describe('toRoleSheet', () => {
 
     expect(sheet.permissions).toHaveLength(permissions);
     expect(sheet.workbench?.to ?? null).toBe(workbench);
-  });
-
-  it('titles a board seat by its office', () => {
-    const role = toRoleSheet(mine({ kind: 'newRole', name: 'Kassenwart' }));
-    const office = toRoleSheet(mine({ kind: 'newBoardSeat', name: 'Kassenwart' }));
-
-    expect(office.title).not.toBe(role.title);
-    expect(office.title).toContain('Kassenwart');
   });
 });

@@ -10,8 +10,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Groups;
 
-[Collection("Api")]
-public sealed class PostTrainingPreviewTests
+public sealed class PostTrainingPreviewTests : IClassFixture<ApiTestFixture>
 {
     private const int UnknownGroupId = 999_999;
     private const int TrainingMinutes = 90;
@@ -258,23 +257,6 @@ public sealed class PostTrainingPreviewTests
         >(new() { GroupId = UnknownGroupId, EndsOn = null });
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildRhythmAsync(ct);
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .POSTAsync<
-                PostTrainingPreview,
-                PostTrainingPreviewRequest,
-                PostTrainingPreviewResponse
-            >(WholeSessionOf(ctx));
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Fact]

@@ -16,17 +16,65 @@ live here, not as dead code.
   EF InMemory are banned.
 - **Test observable behaviour, not interactions.** Assert what the system did (rows, responses,
   published messages) — never that "method X was called".
-- **Only write tests for real scenarios.** No tests that merely validate implementation details.
+- **Only write tests for real scenarios.** No tests that merely validate implementation details
+  — no seed-then-read-back round trips, no copies of the serializer configuration.
+- **Endpoint tests cover business behaviour only.** The gates every endpoint shares are proven
+  once, for every registered route, by `Authorization/EndpointConventionTests`, which reads the
+  running host's endpoint metadata — a new endpoint is covered the moment it is mapped:
+  - no token → `401` on every route that is not `AllowAnonymous`;
+  - a caller holding every permission *except* the declared one (`RequirePermission`, or the whole
+    `RequireAnyPermission` set) → `403`, and an unaffiliated caller on `RequireAffiliation` → `403`;
+  - an `int` route id of `0` → `400` naming that id;
+  - an unknown id on an endpoint addressed by its route ids alone (no body, no query) → `404`.
+
+  So **never write a per-endpoint test for any of these.** Keep 403/404 tests where the *handler*
+  decides — ownership, group-admin scope, in-handler gates (`EndpointGateTests.InHandlerGated`),
+  archived/hidden/foreign-parent entities, an unknown id inside a request body.
+- **Wire names the clients parse are pinned once.** `EnumWireNamesTests` serializes every value of
+  each client-parsed enum through the host's own serializer options against one pinned line per
+  enum; add an enum there when a client starts parsing it, never a per-value test.
 - **YAGNI applies to test infra too.** A helper exists only once a test needs it; until then its
   contract is specced below under *Still planned*.
+
+## Running
+
+When to run what is the Validation policy in `CLAUDE.md`: targeted classes locally, the full
+suite in CI. One class (after `dotnet build`, Docker running):
+
+```bash
+cd server
+dotnet run --project tests/Furria.Api.Tests --no-build -- -class <FQN> [-class <FQN>]
+```
+
+`dotnet test -- --filter-class` from `server/` also runs the analyzer tests with zero matches and
+fails; the VSTest `--filter`/`--treenode-filter` flags are ignored and run the whole suite.
+
+### Container reuse
+
+Postgres and Mailpit are started with Testcontainers `WithReuse(true)` and stay running after a
+run, so the next run skips container start and template migration (a warm one-class run takes
+~5 s instead of ~14 s). CI starts on fresh runners and simply finds nothing to reuse.
+
+- **Template.** Named after `MigrationFingerprint` — a hash of every migration id and its `Up`
+  operations — so any added or edited migration builds a new template; an unchanged set reuses it.
+- **Isolation.** Every run holds a lease connection (`application_name`
+  `furria-tests:<run>:<fingerprint>`) and names its databases `furria_lane|empty|build_<run>_<guid>`.
+  Concurrent runs, also from worktrees with other migrations, never touch each other's databases.
+- **Cleanup.** At start, under a Postgres advisory lock, a run drops every database whose run has
+  no live lease (crashed or killed runs) and every template no live run uses.
+
+Reset everything (also removes the rare duplicate two cold runs started at the same moment):
+
+```bash
+docker rm -f $(docker ps -aq --filter label=furria.tests)
+```
 
 ## The base harness
 
 ### The shape of a test
 
 ```csharp
-[Collection("Api")]                       // shares the one Postgres container per assembly
-public sealed class UnlockPreviewTests
+public sealed class UnlockPreviewTests : IClassFixture<ApiTestFixture> // own host, own database
 {
     private readonly ApiTestFixture _fixture;
 
@@ -54,18 +102,35 @@ public sealed class UnlockPreviewTests
 
 ### The pieces
 
-1. **`ApiTestFixture`** — `WebApplicationFactory<Program>` + one `Testcontainers.PostgreSql`
-   container per assembly, shared via `[CollectionDefinition("Api")]`. On init: start container,
-   run EF migrations, create the reset service. Repoints the connection string and preview
+1. **`ApiTestInfrastructure`** — the one assembly fixture (`[assembly: AssemblyFixture]` in
+   `ApiTestAssembly.cs`): one Postgres and one Mailpit Testcontainer, **reused across runs** (see
+   *Container reuse*). `TestDatabaseCatalog` keeps a migrated template
+   `furria_template_<fingerprint>` (the production `AddInfrastructure` migrations — schema only, no
+   seeded rows) and hands out databases: `CreateDatabaseFromTemplateAsync` (`CREATE DATABASE …
+   TEMPLATE`, a copy of the migrated schema) and `CreateEmptyDatabaseAsync`. Postgres runs with
+   `max_connections=1000`, because every parallel host keeps its own connection pool.
+2. **`ApiTestFixture`** — a `WebApplicationFactory<Program>` owned by **one test class**
+   (`IClassFixture<ApiTestFixture>`); it takes `ApiTestInfrastructure` through its constructor. On
+   init: clone a database from the template, start the host on it (the migrator finds the schema
+   up to date, the managing-login seeder seeds the clone), create the reset service. On dispose:
+   stop the host, clear its connection pool and `DROP DATABASE … WITH (FORCE)`. Repoints the
+   connection string and preview
    password via the constants the production code itself uses (`AppDbContext.ConnectionName`,
    `PreviewAccessOptions.SectionName`), and swaps `TimeProvider` for the project-owned
    `TestClock`, anchored at real "now" truncated to the whole second and reporting UTC as its
    local zone — so nothing in the suite depends on the developer's machine time zone.
-2. **`DatabaseResetService`** — owned reset instead of Respawn: one `TRUNCATE … CASCADE` over
-   the EF-model table list, **without** `RESTART IDENTITY`, then re-inserts snapshotted
-   singleton rows in the same transaction. Milliseconds per reset. Wired in the fixture; it
+   **Test classes run in parallel; the tests inside one class run one after another.** Every
+   class has its own host, so every host singleton — the clock, the limiters, the signed-out
+   queues, the outbox dispatcher, the log sink — is shared only by the tests of that class. Mailpit
+   is the one thing all classes share (see *Traps*).
+3. **`DatabaseResetService`** — owned reset instead of Respawn: one batched round trip, one
+   transaction — `SET LOCAL session_replication_role = replica` (FK triggers off, so order does
+   not matter), a `DELETE FROM` per EF-model table, then one multi-row `INSERT` per snapshotted
+   singleton table. `DELETE` on the mostly empty tables costs far less than `TRUNCATE`, which
+   creates new files for every table: ~5 ms per reset instead of ~70 ms. Sequences are never
+   reset, so domain ids stay non-deterministic. Wired in the fixture; it
    snapshot-restores the managing login and the unheld Admin role (`Account`, `Role`,
-   `RolePermission` — parents before children) after every truncate.
+   `RolePermission` — parents before children) after every reset.
 
 ### The rules (analyzer-enforced)
 
@@ -74,7 +139,7 @@ public sealed class UnlockPreviewTests
 | MET001 | No mocking framework — owned `Fake*`/`Capturing*` doubles only. |
 | MET002 | No EF Core InMemory — every test runs against real Postgres. |
 | MET003 | Test methods are named `Should_<Expected>_When_<Scenario>`. |
-| MET004 | A class injecting `ApiTestFixture` carries `[Collection("Api")]`. |
+| MET004 | A class injecting `ApiTestFixture` implements `IClassFixture<ApiTestFixture>` and joins no `[Collection]`. |
 | MET005 | No `DbContext` in a test body — seed and assert through the harness. |
 | MET006 | Production code never reads `DateTime.Now/UtcNow` — inject `TimeProvider`. |
 | MET007 | Every builder alias resolved by `IdOf`/`EmailOf`/`ClientFor`/`ClientForAsync`/`NameOf` is declared by an `Add*` call in the same class. |
@@ -114,16 +179,15 @@ deviations from the design this section previously committed to, each deliberate
   needs a token real login cannot mint (an expired one, a foreign-signed one).
 - **`Polling` landed with the mail queue (CA-P8 S1); the `Doubles/` folder stays deferred** —
   mail runs against a real Mailpit Testcontainer. `MailpitInbox` reads what was actually sent
-  through Mailpit's HTTP API, polling with a timeout; tests filter by a unique recipient address,
-  so the inbox is never cleared between tests. A `ReceivedMail` reads what a test needs out of
+  through Mailpit's search API (`to:"<recipient>"`), polling with a timeout; tests filter by a
+  unique recipient address, so the inbox is never cleared between tests. A `ReceivedMail` reads what a test needs out of
   the real mail: `LinkToken()` the invitation link's token, `ConfirmationCode()` the 6-digit
   *Bestätigungscode* (CA-P8 S2).
 
 ### The shape of a test
 
 ```csharp
-[Collection("Api")]
-public sealed class GetMeTests
+public sealed class GetMeTests : IClassFixture<ApiTestFixture>
 {
     private readonly ApiTestFixture _fixture;
 
@@ -165,7 +229,7 @@ public sealed class GetMeTests
    `int Id` instead of a composite key — and none may gain a computed column; the restore
    re-inserts every column it read, so `account.is_managing_login` round-trips as it is.
    `DatabaseResetService.CreateAsync` also takes the **retained** entity types, whose tables are
-   never truncated: `[typeof(DataProtectionKey)]`. `data_protection_keys` is infrastructure — the
+   never cleared: `[typeof(DataProtectionKey)]`. `data_protection_keys` is infrastructure — the
    host's key ring — so a reset keeps it and the tokens it protects stay readable (CA-P8).
 2. **`SeedContextBuilder` / `IdentitySeedBuilder` / `GroupSeedBuilder` / `RoleSeedBuilder` /
    `ClubSeedBuilder`** —
@@ -228,7 +292,9 @@ public sealed class GetMeTests
    own — it is registered under `"{roleAlias}:{permissionKey}"`.
 4. **Identity shortcut** — Account rows are inserted directly, not through `UserManager`: the
    harness owns normalization and the password hash, and the hash is computed once per run and
-   cached (Identity's PBKDF2 would otherwise dominate the suite). `ctx.Identity.ManagingLogin`
+   cached. Every test host sets `PasswordHasherOptions.IterationCount` to 1: logins still run the
+   real HTTP flow and the real PBKDF2 verification, but cost ~15 ms instead of ~85 ms. Production
+   keeps Identity's default. `ctx.Identity.ManagingLogin`
    and `_fixture.AdminRoleId` are aliasless, because production code seeds both.
    **`ctx.Identity.ManagingLoginClientAsync(ct)` is how a test gets a caller holding every
    permission** — the managing login holds `FurriaPermissions.All` by itself. It has no person, so
@@ -311,8 +377,8 @@ public sealed class GetMeTests
    before any endpoint edits them.
 7. **`ApiTestFixture.Today` / `.CurrentSessionYear`** — both read the fixture's `TestClock`
    **live**, through `ClubClock`/`ClubSession`, so they always name the day the server itself is
-   reading. They are deliberately *not* frozen at construction: the clock is shared by the whole
-   collection and earlier classes advance it (`RefreshTests` by 31 days), so a value captured in
+   reading. They are deliberately *not* frozen at construction: the clock is shared by every test of
+   the class and earlier tests may advance it (`RefreshTests` by 31 days), so a value captured in
    the constructor would drift a month behind the running host and
    `Should_ReportNoMembership_When_TheOnlyMembershipStartsTomorrow` would seed a date that is
    already in the past. Seed every membership pause and fee reduction span relative to
@@ -373,13 +439,22 @@ public sealed class GetMeTests
 
 ### Traps worth knowing
 
-- **The `TestClock` is one singleton shared by the whole collection.** Moving it is safe because
+- **Mailpit is shared by every class running in parallel.** Never read mail by a fixed
+  address — a literal recipient, or `ApiTestFixture.ManagingLoginEmail`, which every class's
+  managing login carries — because another class may send to it at the same moment. Read by an
+  address no other test uses: a seeded alias's `EmailOf` (uniquified behind the alias) or
+  `UniqueContactEmail`.
+- **A fresh database is a host of its own.** The fixture's database is cloned from the migrated
+  template, so its host finds nothing to migrate. A test about migrating an empty database starts
+  `HostOnOwnDatabaseAsync` after a `Logs.Mark()` — that host logs into the class's sink.
+
+- **The `TestClock` is one singleton shared by every test of the class.** Moving it is safe because
   JWT lifetime validation was wired to the same injected clock (`AccessTokenLifetime`); remove
   that wiring and every test which moves time starts poisoning the ones after it.
   `GetMeTests.Should_ReturnUnauthorized_When_TheAccessTokenHasExpired` is the guard — it goes red
   the moment the wiring does. Move it **only** inside `AtLaterTimeAsync` / `AtInstantAsync`: a
-  raw `Advance` or `SetUtcNow` in a test body leaks into every class that runs after it, which is
-  what makes a suite order-dependent. `AtInstantAsync` also moves *backwards*, which is how the
+  raw `Advance` or `SetUtcNow` in a test body leaks into every test of the class that runs after
+  it, which is what makes a class order-dependent. `AtInstantAsync` also moves *backwards*, which is how the
   Berlin-vs-UTC midnight tests seed a literal instant.
 - **A membership is a period, and a Person may hold several.** Two `AddMembership` calls for
   one Person just work; two *open* ones are rejected by the partial unique index
@@ -403,13 +478,13 @@ public sealed class GetMeTests
 - **The invitation-token rate limiter is a host singleton that outlives every reset.** Its permits
   are counted per token or code, and the fixture grants `ApiTestFixture.PermitsPerInvitationToken
   = 10` of them. A literal unknown token shared between tests spends one budget for the whole
-  collection and turns later tests into `429`s — draw a fresh `UnknownToken()` / `UnknownCode()`
+  class and turns later tests into `429`s — draw a fresh `UnknownToken()` / `UnknownCode()`
   in every test.
 - **Every limiter is a host singleton that outlives every reset** — the per-address limiter and
   the reset-mail throttle (keyed by address), and the per-account `AccountRateLimiter` (keyed by
   account id, five login-email codes per 15 minutes). Give every test its own address with
   `UniqueContactEmail`, and remember the managing login's account id survives every reset: a
-  test that spends its per-account budget spends it for the whole collection.
+  test that spends its per-account budget spends it for the whole class.
 - **A per-IP limit is proven on a host of its own, from forwarded addresses.** The fixture sets
   `RateLimits:SignedOut:PermitsPerIp` and both `RateLimits:SignIn` limits to a million so no suite
   trips them, and every test comes from the same address. A test that must exhaust a per-IP limit
@@ -424,8 +499,8 @@ public sealed class GetMeTests
   endpoint's `RequireRateLimiting` left, and must equal `SignedOutRateLimiting.PerIpPolicy`. A route
   that forgets the call passes every behaviour test and only this one goes red.
 - **The reset waits for the signed-out queue.** `ResetDatabaseAsync` polls
-  `SignedOutMailRequestQueue.IsIdle` before truncating: a request a previous test left unanswered
-  would otherwise hold locks while `TRUNCATE … CASCADE` takes them in another order, and
+  `SignedOutMailRequestQueue.IsIdle` before clearing: a request a previous test left unanswered
+  would otherwise hold row locks while the reset's deletes take them in another order, and
   PostgreSQL answers `40P01 deadlock detected` in the next test's `BuildAsync`.
 - **Mail leaves through the outbox (L1 S5).** A mail is an `outbox_mail` row written in the
   transaction that causes it; the host's `MailDispatcher` sends rows in id order and deletes each
@@ -446,9 +521,9 @@ public sealed class GetMeTests
   test proving the *no birth date* refusal needs a caller holding `persons.manage` alone.
 - **Only `account`, `role` and `role_permission` survive a reset.**
   Everything else, the five group tables included (`group_kind`, `group`, `group_membership`,
-  `group_admin`, `group_training_slot`), is truncated before every `BuildAsync`, so a
+  `group_admin`, `group_training_slot`), is cleared before every `BuildAsync`, so a
   test seeds every group and every group kind it needs and may never assume one from a neighbour.
-  `data_protection_keys` is never truncated at all (retained, see *The pieces* 1).
+  `data_protection_keys` is never cleared at all (retained, see *The pieces* 1).
 - **`session` and `venue` start empty — in a test and in a fresh production database alike.**
   Nothing is seeded from code: a migration builds schema and nothing else, and the club's master
   data is entered through its management surface. So a test arranges every session and every venue
@@ -457,12 +532,13 @@ public sealed class GetMeTests
 - **`EndpointGateTests` proves less than its name suggests, by construction.** It enumerates
   `RouteEndpoint`s and reads their metadata; `PermissionEnforcer` is wired through FastEndpoints'
   `Endpoints.Configurator`, which reaches **FastEndpoints endpoints only**. A hand-mapped
-  minimal-API route carrying `PermissionRequirement` would therefore satisfy the guard and run
-  **unenforced** — map endpoints through FastEndpoints, or the guard is lying. Anything served by
-  middleware is not a route at all and the guard cannot see it: that is why the OpenAPI document
-  is registered only when `IsDevelopment()`, pinned by `OpenApiExposureTests`, which is also the
-  one test in the suite that may use a raw URL instead of the typed client — there is no endpoint
-  type to name.
+  minimal-API route carrying `PermissionRequirement` would satisfy this guard and run
+  **unenforced**; only `EndpointConventionTests`, which actually calls every route, would go red.
+  Map endpoints through FastEndpoints. Anything served by middleware is not a route at all and
+  neither class can see it: that is why the OpenAPI document is registered only when
+  `IsDevelopment()`, pinned by `OpenApiExposureTests`. Both it and `EndpointConventionTests` use
+  raw URLs instead of the typed client — there is no endpoint type to name, or the routes come
+  from metadata.
 
 - **The audit timestamps come from the injected clock, not from `now()`.**
   `AuditTimestampInterceptor` stamps `created_at` + `updated_at` on insert and `updated_at` on

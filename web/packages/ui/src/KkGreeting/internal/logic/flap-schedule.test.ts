@@ -85,7 +85,10 @@ const liveAt = (schedule: FlapSchedule): number =>
   ]);
 
 const PLAYS: FlapPlay[] = ['live', 'full', 'tick'];
-const TEMPOS: KkGreetingTempo[] = ['regular', 'slow'];
+const MOODS: { tempo: KkGreetingTempo; festive: boolean; burst: boolean }[] = [
+  { tempo: 'regular', festive: false, burst: false },
+  { tempo: 'slow', festive: true, burst: true },
+];
 const BOARDS = [
   { name: 'a session day', cells: SESSION_DAY, previous: facesOf(LONG_BOARD) },
   { name: 'a long board', cells: LONG_BOARD, previous: facesOf(SESSION_DAY) },
@@ -98,13 +101,7 @@ const BOARDS = [
   { name: 'an anniversary', cells: ANNIVERSARY, previous: ['28', 'Jahre'] },
 ];
 const VARIANTS = BOARDS.flatMap((board) =>
-  PLAYS.flatMap((play) =>
-    TEMPOS.flatMap((tempo) =>
-      [false, true].flatMap((festive) =>
-        [false, true].map((burst) => ({ ...board, play, tempo, festive, burst })),
-      ),
-    ),
-  ),
+  PLAYS.flatMap((play) => MOODS.map((mood) => ({ ...board, play, ...mood }))),
 );
 
 describe('flapScheduleOf budget', () => {
@@ -145,14 +142,11 @@ describe('flapScheduleOf cells', () => {
     expect(flapScheduleOf(requestOf({ play: 'still' })).runs).toEqual([]);
   });
 
-  it.each(['full', 'live'] as const)(
-    'turns every cell but the static marks on a %s board',
-    (play) => {
-      const turned = flapScheduleOf(requestOf({ play })).runs.map((run) => run.cell);
+  it('turns every cell but the static marks on an arriving board', () => {
+    const turned = flapScheduleOf(requestOf({ play: 'live' })).runs.map((run) => run.cell);
 
-      expect(turned).toEqual([0, 1, 2, 3, 4, 5, 7, 8]);
-    },
-  );
+    expect(turned).toEqual([0, 1, 2, 3, 4, 5, 7, 8]);
+  });
 
   it('prints the cells after the twelfth at rest', () => {
     const turned = flapScheduleOf(requestOf({ cells: LONG_BOARD })).runs.map((run) => run.cell);
@@ -270,7 +264,6 @@ describe('flapScheduleOf cells', () => {
 
   it.each([
     { play: 'full', line: true },
-    { play: 'live', line: true },
     { play: 'tick', line: false },
   ] as const)('cues the line on a $play board: $line', ({ play, line }) => {
     const schedule = flapScheduleOf(requestOf({ play, previousCells: facesOf(SESSION_DAY) }));

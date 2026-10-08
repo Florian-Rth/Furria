@@ -8,8 +8,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Auth;
 
-[Collection("Api")]
-public sealed class LoginTests
+public sealed class LoginTests : IClassFixture<ApiTestFixture>
 {
     private const string LoginSucceeded = "Login succeeded for account {AccountId}";
     private const string LoginFailed = "Login failed for {Email}: {LoginFailureReason}";

@@ -1,6 +1,6 @@
 import type { KkSelectOption } from '@furria/ui';
-import type { Weekday } from '@/features/groups';
-import { WEEKDAY_VALUES } from '@/features/groups';
+import type { Weekday } from '@/features/groups/group-identity';
+import { WEEKDAY_VALUES } from '@/features/groups/group-identity';
 import type { TrainingSlot, TrainingSlotForm } from './schemas';
 
 export const RHYTHM_EMPTY_TITLE = 'NOCH KEIN RHYTHMUS';
@@ -74,19 +74,35 @@ export const WEEKDAY_OPTIONS: readonly KkSelectOption[] = WEEKDAY_VALUES.map((we
   label: WEEKDAY_LABELS[weekday],
 }));
 
-export const toDurationLabel = (minutes: number): string => {
+export type DurationParts =
+  | { kind: 'minutes'; minutes: number }
+  | { kind: 'hours'; hours: number }
+  | { kind: 'hoursAndMinutes'; hours: number; minutes: number };
+
+export const durationPartsOf = (minutes: number): DurationParts => {
   if (minutes < MINUTES_PER_HOUR) {
-    return `${minutes} Minuten`;
+    return { kind: 'minutes', minutes };
   }
 
   const hours = Math.floor(minutes / MINUTES_PER_HOUR);
   const rest = minutes % MINUTES_PER_HOUR;
 
-  if (rest === 0) {
-    return hours === 1 ? '1 Stunde' : `${hours} Stunden`;
+  return rest === 0 ? { kind: 'hours', hours } : { kind: 'hoursAndMinutes', hours, minutes: rest };
+};
+
+const toHoursLabel = (hours: number): string => (hours === 1 ? '1 Stunde' : `${hours} Stunden`);
+
+export const toDurationLabel = (minutes: number): string => {
+  const parts = durationPartsOf(minutes);
+
+  if (parts.kind === 'minutes') {
+    return `${parts.minutes} Minuten`;
+  }
+  if (parts.kind === 'hours') {
+    return toHoursLabel(parts.hours);
   }
 
-  return `${hours}:${pad(rest)} Stunden`;
+  return `${parts.hours}:${pad(parts.minutes)} Stunden`;
 };
 
 export const toDurationOptions = (): KkSelectOption[] =>
@@ -111,6 +127,19 @@ export const toHeldVenue = (slot: TrainingSlot | null): RhythmVenueRef | null =>
     ? null
     : { venueId: slot.venueId, name: slot.venueName };
 
+export type HeldVenueState = 'offered' | 'archived' | 'unlisted';
+
+export const heldVenueStateOf = (
+  venues: readonly RhythmVenueRef[] | null,
+  held: RhythmVenueRef,
+): HeldVenueState => {
+  if (venues === null) {
+    return 'unlisted';
+  }
+
+  return venues.some((venue) => venue.venueId === held.venueId) ? 'offered' : 'archived';
+};
+
 export const toRhythmVenueOptions = (
   venues: readonly RhythmVenueRef[] | null,
   held: RhythmVenueRef | null,
@@ -119,18 +148,21 @@ export const toRhythmVenueOptions = (
     value: String(venue.venueId),
     label: venue.name,
   }));
+  const options = [{ value: NO_VENUE_VALUE, label: NO_VENUE_LABEL }, ...offered];
 
-  if (held === null || offered.some((option) => option.value === String(held.venueId))) {
-    return [{ value: NO_VENUE_VALUE, label: NO_VENUE_LABEL }, ...offered];
+  if (held === null) {
+    return options;
   }
 
-  const label = venues === null ? held.name : `${held.name}${ARCHIVED_VENUE_SUFFIX}`;
+  const state = heldVenueStateOf(venues, held);
 
-  return [
-    { value: NO_VENUE_VALUE, label: NO_VENUE_LABEL },
-    ...offered,
-    { value: String(held.venueId), label },
-  ];
+  if (state === 'offered') {
+    return options;
+  }
+
+  const label = state === 'unlisted' ? held.name : `${held.name}${ARCHIVED_VENUE_SUFFIX}`;
+
+  return [...options, { value: String(held.venueId), label }];
 };
 
 export const toUnavailableVenueIds = (

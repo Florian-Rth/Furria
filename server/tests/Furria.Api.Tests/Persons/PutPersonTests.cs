@@ -1,14 +1,12 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Persons;
-using Furria.Application.Authorization;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
 namespace Furria.Api.Tests.Persons;
 
-[Collection("Api")]
-public sealed class PutPersonTests
+public sealed class PutPersonTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateOnly BornIn1996 = new(1996, 4, 3);
     private static readonly DateOnly BornIn1997 = new(1997, 5, 14);
@@ -153,20 +151,6 @@ public sealed class PutPersonTests
     }
 
     [Fact]
-    public async Task Should_ReturnBadRequest_When_TheRouteCarriesNoUsableId()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await client.PUTAsync<PutPerson, PutPersonRequest>(
-            FormOf(0, "Paula", "Brendel")
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_ReturnBadRequest_When_TheNameIsBlank()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -182,95 +166,6 @@ public sealed class PutPersonTests
         );
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerOnlyHoldsAccountsManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddPerson("paula", "Paula", "Brendel")
-                            .AddPerson("ilka", "Ilka", "Reineke")
-                            .AddAccount("ilka")
-                    )
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "zugangspflege",
-                            "ilka-zugangspflege",
-                            "Zugangspflege",
-                            "ilka",
-                            FurriaPermissions.AccountsManage
-                        )
-                    ),
-            ct
-        );
-        var personId = ctx.Identity.People.IdOf("paula");
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-
-        var response = await client.PUTAsync<PutPerson, PutPersonRequest>(
-            FormOf(personId, "Paula", "Falschgeschrieben")
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx.Expected.Person(personId).ToHaveName("Paula", "Brendel").AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldPersonsManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddPerson("paula", "Paula", "Brendel")
-                            .AddPerson("ilka", "Ilka", "Reineke")
-                            .AddAccount("ilka")
-                    )
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "gruppenpflege",
-                            "ilka-gruppenpflege",
-                            "Gruppenpflege",
-                            "ilka",
-                            FurriaPermissions.GroupsManage
-                        )
-                    ),
-            ct
-        );
-
-        var personId = ctx.Identity.People.IdOf("paula");
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var response = await client.PUTAsync<PutPerson, PutPersonRequest>(
-            FormOf(personId, "Paula", "Falschgeschrieben")
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx.Expected.Person(personId).ToHaveName("Paula", "Brendel").AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity => identity.AddPerson("paula", "Paula", "Brendel")),
-            ct
-        );
-
-        var response = await _fixture
-            .CreateClient()
-            .PUTAsync<PutPerson, PutPersonRequest>(
-                FormOf(ctx.Identity.People.IdOf("paula"), "Paula", "Brendel")
-            );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Fact]

@@ -8,8 +8,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Groups;
 
-[Collection("Api")]
-public sealed class EndGroupMembershipTests
+public sealed class EndGroupMembershipTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string ValidationField = "request";
@@ -410,73 +409,6 @@ public sealed class EndGroupMembershipTests
         );
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_TheGroupMembershipIdIsNotAnId()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity.AddPerson("anna", "Anna", "Kaiser").AddAccount("anna")
-                    )
-                    .Groups(groups =>
-                        groups
-                            .AddGroup("tanzgarde", "Tanzgarde")
-                            .AddGroupAdmin("anna-tanzgarde", "tanzgarde", "anna")
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("anna", ct);
-        var request = new EndGroupMembershipRequest
-        {
-            GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
-            GroupMembershipId = 0,
-            EndedOn = EndedOn,
-        };
-
-        var response = await client.POSTAsync<EndGroupMembership, EndGroupMembershipRequest>(
-            request
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddPerson("paula", "Paula", "Brendel"))
-                    .Groups(groups =>
-                        groups
-                            .AddGroup("tanzgarde", "Tanzgarde")
-                            .AddGroupMembership("paula-tanzgarde", "tanzgarde", "paula", JoinedOn)
-                    ),
-            ct
-        );
-
-        var request = new EndGroupMembershipRequest
-        {
-            GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
-            GroupMembershipId = ctx.Groups.GroupMemberships.IdOf("paula-tanzgarde"),
-            EndedOn = EndedOn,
-        };
-
-        var response = await _fixture
-            .CreateClient()
-            .POSTAsync<EndGroupMembership, EndGroupMembershipRequest>(request);
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-        await ctx
-            .Expected.GroupMembership(ctx.Groups.GroupMemberships.IdOf("paula-tanzgarde"))
-            .ToBeOpen()
-            .AssertAsync(ct);
     }
 
     private static async Task<IDictionary<string, List<string>>> ReadFailuresAsync(

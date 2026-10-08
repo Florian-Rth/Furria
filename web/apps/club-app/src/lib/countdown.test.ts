@@ -5,7 +5,6 @@ describe('secondsUntil', () => {
   it.each<[string, string, string, number]>([
     ['a quarter of an hour ahead', '2026-09-26T12:15:00Z', '2026-09-26T12:00:00Z', 900],
     ['a part second rounds up', '2026-09-26T12:00:01.200Z', '2026-09-26T12:00:00Z', 2],
-    ['the very instant', '2026-09-26T12:00:00Z', '2026-09-26T12:00:00Z', 0],
     ['an instant already past', '2026-09-26T11:59:00Z', '2026-09-26T12:00:00Z', 0],
     ['an offset expiry', '2026-09-26T14:15:00+02:00', '2026-09-26T12:00:00Z', 900],
   ])('counts %s', (_case, expiresAt, now, expected) => {
@@ -16,11 +15,7 @@ describe('secondsUntil', () => {
 describe('formatCountdown', () => {
   it.each<[number, string]>([
     [900, '15:00'],
-    [899, '14:59'],
     [65, '1:05'],
-    [59, '0:59'],
-    [5, '0:05'],
-    [0, '0:00'],
     [-3, '0:00'],
     [4.2, '0:05'],
   ])('writes %d seconds as %s', (seconds, expected) => {
