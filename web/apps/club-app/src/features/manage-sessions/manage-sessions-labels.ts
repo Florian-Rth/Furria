@@ -19,11 +19,6 @@ export const SESSIONS_ORIGIN: KkScreenOrigin = {
   to: '/manage/sessions',
 };
 
-const SESSION_RECORD_ID_PATTERN = /^[1-9]\d*$/;
-
-export const toSessionRecordId = (raw: string): number | null =>
-  SESSION_RECORD_ID_PATTERN.test(raw) ? Number(raw) : null;
-
 export const findSessionRecord = (
   records: readonly SessionRecordSummary[],
   sessionId: number | null,
@@ -105,16 +100,37 @@ export interface SessionRowMotto {
   missing: boolean;
 }
 
-export const toSessionRowMotto = (record: SessionRecordSummary, today: Date): SessionRowMotto => {
+export type SessionMottoState =
+  | { kind: 'written'; line: string }
+  | { kind: 'pending' }
+  | { kind: 'unrecorded' };
+
+export const sessionMottoStateOf = (
+  record: SessionRecordSummary,
+  today: Date,
+): SessionMottoState => {
   const mottoLine = toSessionMottoLine(record.motto);
 
   if (mottoLine !== null) {
-    return { line: mottoLine, missing: false };
+    return { kind: 'written', line: mottoLine };
   }
 
-  const stillAhead = record.startYear >= relevantSessionYear(today);
+  return record.startYear >= relevantSessionYear(today)
+    ? { kind: 'pending' }
+    : { kind: 'unrecorded' };
+};
 
-  return { line: stillAhead ? MOTTO_PENDING_LINE : MOTTO_UNRECORDED_LINE, missing: true };
+export const toSessionRowMotto = (record: SessionRecordSummary, today: Date): SessionRowMotto => {
+  const motto = sessionMottoStateOf(record, today);
+
+  switch (motto.kind) {
+    case 'written':
+      return { line: motto.line, missing: false };
+    case 'pending':
+      return { line: MOTTO_PENDING_LINE, missing: true };
+    case 'unrecorded':
+      return { line: MOTTO_UNRECORDED_LINE, missing: true };
+  }
 };
 
 export const toSessionRowLabel = (record: SessionRecordSummary): string => {

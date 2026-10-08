@@ -1,4 +1,4 @@
-import { toNewestPublishedAt } from '@/features/announcements';
+import { toNewestPublishedAt } from '@/features/announcements/last-seen';
 import type { StartAnnouncement } from './schemas';
 
 export const toSeenUpTo = (

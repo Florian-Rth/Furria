@@ -4,10 +4,8 @@ import {
   broomSweepFrameOf,
   clipAheadOf,
   clipBehindOf,
-  durationOf,
   foldPoseOf,
   motePoseOf,
-  ramp,
   sweepPathOf,
   wipeAt,
 } from './broom-sweep-frame';
@@ -21,25 +19,6 @@ const planOf = (overrides: Partial<BroomSweepPlan>): BroomSweepPlan => ({
   from: 'broom',
   ghost: { text: 'FURRIA', wordmark: true },
   ...overrides,
-});
-
-describe('ramp', () => {
-  it.each([
-    [0, 0.2, 0.6, 0],
-    [0.4, 0.2, 0.6, 0.5],
-    [0.9, 0.2, 0.6, 1],
-  ])('maps %d between %d and %d to %d', (value, from, to, expected) => {
-    expect(ramp(value, from, to)).toBeCloseTo(expected);
-  });
-});
-
-describe('durationOf', () => {
-  it.each([
-    ['sweep', 1.05],
-    ['fade', 0.22],
-  ] as const)('plays %s for %d seconds', (mode, seconds) => {
-    expect(durationOf(mode)).toBe(seconds);
-  });
 });
 
 describe('foldPoseOf', () => {

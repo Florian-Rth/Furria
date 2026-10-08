@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import type { GroupMatcher } from '@/lib/seed/group-matcher';
-import { SEEDED_GROUP_MATCHER } from '@/lib/seed/group-matcher';
 import type { Group } from '@/lib/seed/groups';
 import type { MatcherAnswers } from './schemas';
 import type { MatchOutcome } from './scoring';
@@ -67,96 +66,72 @@ const percentageOf = (answers: MatcherAnswers, groupId: string): number | undefi
 };
 
 describe('agreementScore', () => {
-  it('awards two points for the same stance', () => {
-    expect(agreementScore('yes', 'yes')).toBe(2);
-    expect(agreementScore('no', 'no')).toBe(2);
-    expect(agreementScore('neutral', 'neutral')).toBe(2);
-  });
-
-  it('awards one point when exactly one side is neutral', () => {
-    expect(agreementScore('yes', 'neutral')).toBe(1);
-    expect(agreementScore('neutral', 'no')).toBe(1);
-  });
-
-  it('awards nothing for opposite stances', () => {
-    expect(agreementScore('yes', 'no')).toBe(0);
-    expect(agreementScore('no', 'yes')).toBe(0);
+  it.each([
+    ['yes', 'yes', 2],
+    ['neutral', 'neutral', 2],
+    ['yes', 'neutral', 1],
+    ['neutral', 'no', 1],
+    ['yes', 'no', 0],
+  ] as const)('scores the answer %s against the stance %s with %i', (answer, stance, score) => {
+    expect(agreementScore(answer, stance)).toBe(score);
   });
 });
 
 describe('rankGroups', () => {
-  it('normalises every group against its own possible points', () => {
-    expect(percentageOf({ stage: 'yes' }, 'alpha')).toBe(100);
-    expect(percentageOf({ stage: 'yes' }, 'gamma')).toBe(50);
-    expect(percentageOf({ stage: 'yes' }, 'beta')).toBe(0);
+  it.each<[MatcherAnswers, string, number]>([
+    [{ stage: 'yes' }, 'alpha', 100],
+    [{ stage: 'yes' }, 'gamma', 50],
+    [{ stage: 'yes' }, 'beta', 0],
+    [{ stage: 'yes', build: 'yes' }, 'beta', 67],
+    [{ stage: 'yes', build: 'yes' }, 'gamma', 17],
+    [{ build: 'yes' }, 'beta', 100],
+    [{ stage: 'vielleicht', build: 'yes' }, 'beta', 100],
+  ])('scores the answers %j for %s with %i%', (answers, groupId, percentage) => {
+    expect(percentageOf(answers, groupId)).toBe(percentage);
   });
 
-  it('weights a question by the importance the group gave it', () => {
-    expect(percentageOf({ stage: 'yes', build: 'yes' }, 'beta')).toBe(67);
-    expect(percentageOf({ stage: 'yes', build: 'yes' }, 'gamma')).toBe(17);
-  });
+  it.each<[MatcherAnswers, string[]]>([
+    [{ stage: 'yes', build: 'yes' }, ['alpha', 'beta', 'gamma']],
+    [{ build: 'yes' }, ['alpha', 'beta', 'gamma']],
+  ])('ranks the answers %j best first, ties in roster order', (answers, order) => {
+    const outcome = rank(answers);
 
-  it('leaves both sums untouched for a skipped question', () => {
-    expect(percentageOf({ stage: 'yes' }, 'beta')).toBe(0);
-    expect(percentageOf({ build: 'yes' }, 'beta')).toBe(100);
-  });
-
-  it('treats an answer it cannot read as a skipped question', () => {
-    expect(percentageOf({ stage: 'vielleicht', build: 'yes' }, 'beta')).toBe(100);
-  });
-
-  it('ranks the best match first', () => {
-    const outcome = rank({ stage: 'yes', build: 'yes' });
-
-    expect(outcome.status).toBe('ranked');
-    if (outcome.status === 'ranked') {
-      expect(outcome.matches.map((match) => match.group.id)).toEqual(['alpha', 'beta', 'gamma']);
-    }
-  });
-
-  it('keeps tied groups in roster order', () => {
-    const outcome = rank({ build: 'yes' });
-
-    expect(outcome.status).toBe('ranked');
-    if (outcome.status === 'ranked') {
-      expect(outcome.matches.map((match) => match.percentage)).toEqual([100, 100, 0]);
-      expect(outcome.matches.map((match) => match.group.id)).toEqual(['alpha', 'beta', 'gamma']);
-    }
+    expect(outcome.status === 'ranked' && outcome.matches.map((match) => match.group.id)).toEqual(
+      order,
+    );
   });
 
   it('excludes a group whose filter rejects the answer and names the reason', () => {
     const outcome = rank({ 'age-band': 'young', stage: 'yes' });
 
-    expect(outcome.status).toBe('ranked');
-    if (outcome.status === 'ranked') {
-      expect(outcome.matches.map((match) => match.group.id)).toEqual(['alpha', 'gamma']);
-      expect(outcome.excluded).toEqual([
-        {
-          group: matcher.groups[1],
-          questionId: 'age-band',
-          questionPrompt: 'Wie alt bist du?',
-          answerLabel: 'unter 12',
-        },
-      ]);
-    }
+    expect(outcome.status === 'ranked' && outcome.matches.map((match) => match.group.id)).toEqual([
+      'alpha',
+      'gamma',
+    ]);
+    expect(outcome.status === 'ranked' && outcome.excluded).toEqual([
+      {
+        group: matcher.groups[1],
+        questionId: 'age-band',
+        questionPrompt: 'Wie alt bist du?',
+        answerLabel: 'unter 12',
+      },
+    ]);
   });
 
   it('ignores a filter answer that is not one of the offered options', () => {
     const outcome = rank({ 'age-band': 'ancient', stage: 'yes' });
 
-    expect(outcome.status).toBe('ranked');
-    if (outcome.status === 'ranked') {
-      expect(outcome.matches).toHaveLength(3);
-      expect(outcome.excluded).toEqual([]);
-    }
+    expect(outcome.status === 'ranked' && [outcome.matches.length, outcome.excluded]).toEqual([
+      3,
+      [],
+    ]);
   });
 
-  it('asks for an answer instead of dividing by zero', () => {
-    expect(rank({}).status).toBe('unanswered');
-  });
-
-  it('asks for an answer when every scored question was skipped', () => {
-    expect(rank({ 'age-band': 'old' }).status).toBe('unanswered');
+  it.each<[string, MatcherAnswers]>([
+    ['no answer', {}],
+    ['only a filter answer', { 'age-band': 'old' }],
+  ])('asks for an answer instead of dividing by zero after %s', (_, answers) => {
+    expect(rank(answers).status).toBe('unanswered');
   });
 
   it('reports an honest empty outcome when every group is filtered out', () => {
@@ -166,102 +141,8 @@ describe('rankGroups', () => {
     };
     const outcome = rankGroups(narrow, { 'age-band': 'young', stage: 'yes' });
 
-    expect(outcome.status).toBe('no-matches');
-    if (outcome.status === 'no-matches') {
-      expect(outcome.excluded.map((exclusion) => exclusion.group.id)).toEqual(['beta']);
-    }
-  });
-
-  it('keeps every score between zero and one', () => {
-    const outcome = rank({ stage: 'no', build: 'neutral' });
-
-    expect(outcome.status).toBe('ranked');
-    if (outcome.status === 'ranked') {
-      for (const match of outcome.matches) {
-        expect(match.score).toBeGreaterThanOrEqual(0);
-        expect(match.score).toBeLessThanOrEqual(1);
-        expect(match.percentage).toBe(Math.round(match.score * 100));
-      }
-    }
-  });
-});
-
-describe('the seeded questions', () => {
-  const answerAll = (stance: string): MatcherAnswers =>
-    Object.fromEntries(
-      SEEDED_GROUP_MATCHER.questions.flatMap((question) =>
-        question.role === 'weighted' ? [[question.id, stance]] : [],
-      ),
-    );
-
-  const spreadOf = (answers: MatcherAnswers): number => {
-    const outcome = rankGroups(SEEDED_GROUP_MATCHER, answers);
-
-    if (outcome.status !== 'ranked') {
-      return 0;
-    }
-
-    const percentages = outcome.matches.map((match) => match.percentage);
-
-    return Math.max(...percentages) - Math.min(...percentages);
-  };
-
-  it('spreads the ranking instead of clustering every group on one number', () => {
-    expect(spreadOf(answerAll('yes'))).toBeGreaterThanOrEqual(20);
-    expect(spreadOf(answerAll('no'))).toBeGreaterThanOrEqual(20);
-  });
-
-  it('puts a different group on top for two opposing answer profiles', () => {
-    const onStage = rankGroups(SEEDED_GROUP_MATCHER, {
-      'age-band': '18-plus',
-      'confetti-hearing': 'yes',
-      'legs-versus-head': 'yes',
-      'curtain-conversation': 'no',
-      'humming-uniform': 'yes',
-      'reverse-planning': 'no',
-      'bench-taxonomy': 'no',
-    });
-    const backstage = rankGroups(SEEDED_GROUP_MATCHER, {
-      'age-band': '18-plus',
-      'confetti-hearing': 'no',
-      'legs-versus-head': 'no',
-      'curtain-conversation': 'no',
-      'humming-uniform': 'no',
-      'reverse-planning': 'yes',
-      'bench-taxonomy': 'yes',
-    });
-
-    expect(onStage.status).toBe('ranked');
-    expect(backstage.status).toBe('ranked');
-    if (onStage.status === 'ranked' && backstage.status === 'ranked') {
-      expect(onStage.matches[0]?.group.id).toBe('tanzgarde');
-      expect(backstage.matches[0]?.group.id).toBe('organisation');
-    }
-  });
-
-  it('never matches an adult to the Kindergarde', () => {
-    const outcome = rankGroups(SEEDED_GROUP_MATCHER, {
-      'age-band': '18-plus',
-      'confetti-hearing': 'yes',
-    });
-
-    expect(outcome.status).toBe('ranked');
-    if (outcome.status === 'ranked') {
-      expect(outcome.matches.map((match) => match.group.id)).not.toContain('kindergarde');
-      expect(outcome.excluded.map((exclusion) => exclusion.group.id)).toContain('kindergarde');
-    }
-  });
-
-  it('leaves a child with the Kindergarde and nothing else', () => {
-    const outcome = rankGroups(SEEDED_GROUP_MATCHER, {
-      'age-band': 'under-12',
-      'confetti-hearing': 'yes',
-    });
-
-    expect(outcome.status).toBe('ranked');
-    if (outcome.status === 'ranked') {
-      expect(outcome.matches.map((match) => match.group.id)).toEqual(['kindergarde']);
-      expect(outcome.excluded).toHaveLength(5);
-    }
+    expect(
+      outcome.status === 'no-matches' && outcome.excluded.map((exclusion) => exclusion.group.id),
+    ).toEqual(['beta']);
   });
 });

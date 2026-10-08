@@ -7,34 +7,17 @@ const KINDS = ['fee', 'key'] as const;
 const ItemsSchema = knownKindsOnly(z.object({ kind: z.enum(KINDS), count: z.int() }), KINDS);
 
 describe('knownKindsOnly', () => {
-  it.each([
-    {
-      label: 'every kind is known',
-      raw: [
+  it('drops the kinds that arrived after this app was built, keeping the known ones in order', () => {
+    expect(
+      ItemsSchema.parse([
+        { kind: 'key', count: 2 },
+        { kind: 'photos', album: { id: 3 } },
         { kind: 'fee', count: 1 },
-        { kind: 'key', count: 2 },
-      ],
-      expected: [
-        { kind: 'fee', count: 1 },
-        { kind: 'key', count: 2 },
-      ],
-    },
-    {
-      label: 'a kind arrived after this app was built',
-      raw: [
-        { kind: 'stockLow', count: 9 },
-        { kind: 'key', count: 2 },
-      ],
-      expected: [{ kind: 'key', count: 2 }],
-    },
-    {
-      label: 'an unknown kind carries a payload of its own',
-      raw: [{ kind: 'photos', album: { id: 3 } }],
-      expected: [],
-    },
-    { label: 'nothing arrived', raw: [], expected: [] },
-  ])('keeps the known items in order when $label', ({ raw, expected }) => {
-    expect(ItemsSchema.parse(raw)).toEqual(expected);
+      ]),
+    ).toEqual([
+      { kind: 'key', count: 2 },
+      { kind: 'fee', count: 1 },
+    ]);
   });
 
   it('refuses a known kind whose payload is broken', () => {

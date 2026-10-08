@@ -73,6 +73,8 @@ description: Mandatory rules for all React/TypeScript frontend work. Invoke befo
 - Never write a `*.test.tsx`; never use `renderHook`
 - Never add a rendering or DOM test library
 - Assert only the return value of a pure function for explicit inputs
+- Never test the implementation — assert observable behaviour through the public function, never internals, call order or structure
+- Never assert text — no German copy, labels, sentences or wording-carrying strings; logic that selects a text returns a discriminant (key, variant, structured result) and the test asserts that
 - Never assert a module constant
 - Never assert user-facing copy; assert the decision behind it
 - Assert a formatter's output

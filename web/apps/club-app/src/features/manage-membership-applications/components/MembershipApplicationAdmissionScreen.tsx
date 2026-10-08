@@ -3,12 +3,10 @@ import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { RequirePermission } from '@/features/session';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
+import { parsePositiveId } from '@/lib/positive-id';
 import { ADMISSION_ACTION_LABEL } from '../admission-labels';
 import { useMembershipApplicationQuery } from '../api';
-import {
-  APPLICATIONS_ORIGIN,
-  toMembershipApplicationId,
-} from '../manage-membership-applications-labels';
+import { APPLICATIONS_ORIGIN } from '../manage-membership-applications-labels';
 import { AdmissionEditor } from './AdmissionEditor';
 import { MembershipApplicationHold } from './MembershipApplicationHold';
 
@@ -16,7 +14,7 @@ const ADMISSION_ROUTE_ID = '/_app/manage/applications_/$membershipApplicationId_
 
 export const MembershipApplicationAdmissionScreen: FC = () => {
   const { membershipApplicationId } = useParams({ from: ADMISSION_ROUTE_ID });
-  const id = toMembershipApplicationId(membershipApplicationId);
+  const id = parsePositiveId(membershipApplicationId);
   const application = useMembershipApplicationQuery(id);
 
   if (application.data !== undefined) {

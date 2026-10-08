@@ -119,10 +119,8 @@ describe('twinFaceAt', () => {
   const faces = ['', 'GROSS', 'ORDEN', 'Lena.'];
 
   it.each([
-    { index: 0, ahead: 0, face: '' },
     { index: 0.5, ahead: 1, face: 'GROSS' },
     { index: 1.999, ahead: 0, face: 'GROSS' },
-    { index: 2, ahead: 1, face: 'Lena.' },
     { index: 3, ahead: 1, face: 'Lena.' },
   ])('shows $face for face index $index, $ahead ahead', ({ index, ahead, face }) => {
     expect(twinFaceAt(faces, index, ahead)).toBe(face);

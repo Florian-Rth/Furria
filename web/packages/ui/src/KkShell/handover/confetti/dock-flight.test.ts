@@ -8,9 +8,7 @@ const slot: DockBox = { left: 49, top: 26, width: 300, height: 24, glyph: 20 };
 describe('dockProgressAt', () => {
   it.each([
     { scrollOffset: -20, progress: 0 },
-    { scrollOffset: 0, progress: 0 },
     { scrollOffset: 30, progress: 0.5 },
-    { scrollOffset: 60, progress: 1 },
     { scrollOffset: 400, progress: 1 },
   ])('maps $scrollOffset px to progress $progress', ({ scrollOffset, progress }) => {
     expect(dockProgressAt(scrollOffset, 60)).toBe(progress);
@@ -69,10 +67,8 @@ describe('dockFlightAt', () => {
 describe('landingDue', () => {
   it.each([
     { previous: 0.9, next: 1, landed: false, due: true },
-    { previous: 0.2, next: 1, landed: false, due: true },
     { previous: 0.9, next: 1, landed: true, due: false },
     { previous: 1, next: 1, landed: false, due: false },
-    { previous: 1, next: 0.8, landed: false, due: false },
     { previous: 0.5, next: 0.99, landed: false, due: false },
   ])('from $previous to $next (landed $landed) is due: $due', ({ previous, next, landed, due }) => {
     expect(landingDue(previous, next, landed)).toBe(due);

@@ -1,7 +1,7 @@
 # Web Testing Conventions
 
 This file defines how every test in `web/` is written. It is short on purpose: the policy is
-one rule, eight corollaries, and a list of what that leaves in and out.
+one rule, two binding limits, ten corollaries, and a list of what that leaves in and out.
 
 ## The rule
 
@@ -9,6 +9,22 @@ one rule, eight corollaries, and a list of what that leaves in and out.
 
 The UI is not tested. There are no component tests, no route tests, no rendering, no Testing
 Library, no DOM. `vitest` runs on `environment: 'node'` with no setup file.
+
+## The two binding limits
+
+1. **Never test the implementation.** A test sees observable behaviour of logic through its
+   public function — inputs in, result out. It never reaches into internals, never asserts
+   call order, call counts or which helper ran, and never pins the structure of the code.
+   A refactor that keeps behaviour must keep every test green.
+2. **Never test text.** No assertion on German copy, labels, sentences or a formatted string
+   whose value is its wording. Logic that *selects* between texts is tested by asserting the
+   selected key, variant or structured result — never the wording. If the selection is real
+   logic and the function returns the wording, restructure it to return a discriminant first
+   (a `…Kind`/`…Variant` function plus a copy map) and test the discriminant; if it is not
+   worth restructuring, it is not tested.
+
+What survives is real logic: branching, arithmetic, date math, parsing, scoring, state
+machines, motion and geometry maths.
 
 ## Why
 
@@ -37,9 +53,9 @@ speed, but so the suite only fails when behaviour is wrong.
    — copy, a label, a list, a `SEEDED_*` fixture — delete the test. TypeScript already
    guarantees its shape.
 3. **Never assert German copy.** Assert the decision, not the wording:
-   `deriveOrderFlowAction(1, false).kind === 'step'`, never its label string. The exception is
-   a **formatter**, whose output is computed rather than written — `formatLongDate`,
-   `deriveReadingTime`, `deriveSalesStatusLabel`. Pin those.
+   `deriveOrderFlowAction(1, false).kind === 'step'`, never its label string. A **formatter**
+   whose output is computed — a date, a time, an amount, a session year such as `2026/27` —
+   is pinned; the computed part is the subject, not surrounding words.
 4. **Don't test a function with no branch.** If the body has no conditional, loop, arithmetic
    or date math (a bare template string such as `buildEventHref`) — there is nothing to get wrong
    that the type system misses. The test is noise.
@@ -60,6 +76,15 @@ speed, but so the suite only fails when behaviour is wrong.
    `KkScreen`; it renders no bar, no navigation, no tool row, no action bar of its own. What a
    screen kind may and may not declare is a union in `KkShell/screen-declaration.ts`, so a
    forbidden layer is a type error, not a failing assertion. See *The shell* below.
+9. **A tested module is a leaf.** It imports no React, MUI, motion, React Query or router at
+   runtime and never the `@furria/ui` barrel — only `import type`, or a leaf subpath
+   (`@furria/ui/tokens`, `@furria/ui/group-tone`, `@furria/ui/theme`). One runtime barrel
+   import drags 126 components into the test worker. Pure logic a hook uses lives in its own
+   module; the hook imports it, the test imports it.
+10. **One concept, one implementation, one test.** When the same rule exists twice (an id
+   parser, a row affiliation, a motion ramp), the copies are merged into one shared module
+   and that module is tested once — `lib/positive-id.ts`, `lib/person-rows.ts`,
+   `internal/ramp.ts`.
 
 ## What we test
 
@@ -67,13 +92,14 @@ Date, money and session formatting · sales-status and capacity derivation · th
 step machine · matcher scoring, progress and exclusion · membership derivation from a birth
 date · form payload building and search-param parsing · Zod coercion and normalisation ·
 storage read/write helpers · geometry, layout and motion math · the shell's chrome maths
-(below) · the copy guard (below).
+(below).
 
 ## What we never test
 
 Rendering · routing and redirects · a11y roles and labels · MUI wiring · React Query wiring ·
-React Hook Form wiring · that a constant equals itself · that placeholder seed data has N
-entries · that a required Zod field is required · that a screen declares the right layers.
+React Hook Form wiring · copy, labels and sentences · that a constant equals itself · that
+placeholder seed data has N entries · that a required Zod field is required · that a screen
+declares the right layers · a template string, a trim, a zero-pad or a lookup.
 
 ## The shell
 
@@ -97,8 +123,7 @@ module a test imports directly, never inside a component:
 | `internal/chrome-density.ts` | `chromeDensityAt(scrollOffset, motion)` → 0…1, and `chromeMaterialAt(density)` → tint, blur, hairline and shadow at that density, both schemes |
 | `KkShell/internal/logic/handover.ts` | `handoverAt(scrollOffset, motion)` → the header's fade and drift against the bar title's rise |
 | `KkShell/internal/logic/keyboard-inset.ts` | `keyboardInsetOf(metrics)` → the occluded pixels, `0` below the threshold |
-| `KkShell/internal/logic/action-bar-height.ts` | `actionBarHeightOf(action)` → the card height, which is also the track's foot clearance |
-| `lib/use-letter-position.ts` | `hasPassedTheToolbar(clearance)` → whether a letter divider has taken the chrome line |
+| `lib/letter-position.ts` | `hasPassedTheToolbar(clearance)` → whether a letter divider has taken the chrome line |
 
 `motion` is the argument that makes reduced motion testable: under
 `prefers-reduced-motion` the shell passes `'instant'` and both ramps collapse to their end
@@ -122,31 +147,26 @@ The rule is a constraint on the code, not just the tests. When logic is worth te
 must already be a pure function in a module a test can import — never inline in a component
 or trapped inside a hook body. This is the same split the `frontend-work` skill requires:
 extract logic into pure functions, keep hooks as thin wiring around them, keep components as
-hook composition plus JSX. A hook file may export the pure functions it uses (see
-`use-order-source.ts`, `use-matcher-progress.ts`); the test imports those directly and never
-renders the hook.
+hook composition plus JSX. The pure functions a hook uses live in their own leaf module
+(corollary 9); the test imports that module and never the hook file, which would load React.
 
 If a behaviour cannot be tested under this rule, that is a signal the logic is in the wrong
 place — extract it, don't reach for a renderer.
 
-## The copy guard
+## The test runner
 
-`apps/website/src/test/copy-guard.test.ts` is the one sanctioned exception to corollary 2. It
-sweeps named copy modules for facts the club has **not decided** — seat plans, payment
-methods, QR codes, door sales, a board framing, a `passive` membership, a group that
-does not exist — and also checks the copy those modules *derive* per lifecycle state, plus the
-messages a rejected buyer form produces.
-
-It passes when copy changes and fails only when a forbidden fact appears, which is why it does
-not violate the rule's intent. Its scopes are explicit module lists, not globs: a pattern that
-is forbidden in the ticket copy (`Reihe 3`) may be ordinary German prose elsewhere. Add a
-module to a scope deliberately; never widen a scope to silence a failure.
+Each package runs vitest from its own `vitest.config.ts`, never from `vite.config.ts`: the dev
+config carries the TanStack Router plugin (which regenerates `routeTree.gen.ts`), the React
+plugin and the React Compiler Babel preset, none of which a pure-function test needs. The
+test config holds only the `@` alias, `environment: 'node'`, `pool: 'threads'` and
+`isolate: false` — pure modules share no state, so one module graph per worker is safe and
+skips re-importing it per file. A test that stubs a global must restore it in `afterEach`.
 
 ## Running
 
 ```bash
 cd web
-pnpm test          # every package, ~30s
+pnpm test          # every package, ~15s
 pnpm typecheck     # this and pnpm build are what catch wiring breaks
 pnpm shot /route   # needs a dev server and the API; the only gate that sees the layout
 ```

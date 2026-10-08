@@ -35,32 +35,56 @@ const NO_ERRORS: RedeemErrorMessages = {
 export const toRedeemFailureMessage = (failure: RedeemFailureKind): string =>
   REDEEM_FAILURE_MESSAGES[failure];
 
-const toServerMessage = (error: Error, failure: RedeemFailureKind): string =>
-  error instanceof RequestFailedError ? error.firstMessage : toRedeemFailureMessage(failure);
+export type RedeemErrorSlot = keyof RedeemErrorMessages;
 
-export const toRedeemErrorMessages = (error: Error | null): RedeemErrorMessages => {
+export interface RedeemErrorPlacement {
+  slot: RedeemErrorSlot;
+  failure: RedeemFailureKind;
+  fromServer: boolean;
+}
+
+const FIELD_SLOTS: Partial<Record<RedeemFailureKind, RedeemErrorSlot>> = {
+  taken: 'loginEmail',
+  codeRejected: 'confirmationCode',
+  claimRejected: 'claimPassword',
+  claimPasskeyRejected: 'claimPasskey',
+};
+
+const SERVER_WORDED_FAILURES: ReadonlySet<RedeemFailureKind> = new Set<RedeemFailureKind>([
+  'taken',
+  'codeRejected',
+  'claimRejected',
+  'claimPasskeyRejected',
+  'rejected',
+]);
+
+export const redeemErrorPlacementOf = (error: Error | null): RedeemErrorPlacement | null => {
   const failure = toRedeemFailureKind(error);
 
-  if (error === null || failure === null || failure === 'passkeyCancelled') {
-    return NO_ERRORS;
-  }
-  if (failure === 'taken') {
-    return { ...NO_ERRORS, loginEmail: toServerMessage(error, failure) };
-  }
-  if (failure === 'codeRejected') {
-    return { ...NO_ERRORS, confirmationCode: toServerMessage(error, failure) };
-  }
-  if (failure === 'claimRejected') {
-    return { ...NO_ERRORS, claimPassword: toServerMessage(error, failure) };
-  }
-  if (failure === 'claimPasskeyRejected') {
-    return { ...NO_ERRORS, claimPasskey: toServerMessage(error, failure) };
-  }
-  if (failure === 'rejected') {
-    return { ...NO_ERRORS, footer: toServerMessage(error, failure) };
+  if (failure === null || failure === 'passkeyCancelled') {
+    return null;
   }
 
-  return { ...NO_ERRORS, footer: toRedeemFailureMessage(failure) };
+  return {
+    slot: FIELD_SLOTS[failure] ?? 'footer',
+    failure,
+    fromServer: SERVER_WORDED_FAILURES.has(failure) && error instanceof RequestFailedError,
+  };
+};
+
+const toPlacedMessage = (error: Error | null, placement: RedeemErrorPlacement): string =>
+  placement.fromServer && error instanceof RequestFailedError
+    ? error.firstMessage
+    : toRedeemFailureMessage(placement.failure);
+
+export const toRedeemErrorMessages = (error: Error | null): RedeemErrorMessages => {
+  const placement = redeemErrorPlacementOf(error);
+
+  if (placement === null) {
+    return NO_ERRORS;
+  }
+
+  return { ...NO_ERRORS, [placement.slot]: toPlacedMessage(error, placement) };
 };
 
 export const toGreeting = (firstName: string): string => `HALLO ${firstName.toUpperCase()}`;

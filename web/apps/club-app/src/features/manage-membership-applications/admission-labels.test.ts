@@ -1,11 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
-  toAdmissionConsequence,
+  admissionMembershipShapeOf,
+  candidateStandingKindOf,
   toAdmissionQuickChoices,
-  toCandidateDescription,
-  toCandidateStanding,
-  toCandidatesContext,
-  toGapNote,
 } from './admission-labels';
 import type { AdmissionCandidate, MembershipApplicationDetails } from './schemas';
 
@@ -49,56 +46,15 @@ const candidate = (overrides: Partial<AdmissionCandidate>): AdmissionCandidate =
   ...overrides,
 });
 
-describe('toCandidateStanding', () => {
+describe('candidateStandingKindOf', () => {
   it.each([
-    {
-      standing: candidate({ isMember: true, membershipState: 'active' }),
-      expected: 'ist bereits Mitglied',
-    },
-    {
-      standing: candidate({ membershipState: 'ended', groups: ['Tanzgarde'] }),
-      expected: 'Mitglied beendet · in Tanzgarde',
-    },
-    {
-      standing: candidate({ groups: ['Tanzgarde', 'Elferrat'], roles: ['Kassenwartin'] }),
-      expected: 'in Tanzgarde, Elferrat · Kassenwartin',
-    },
-    { standing: candidate({}), expected: 'kein Verein' },
-  ])('reads "$expected"', ({ standing, expected }) => {
-    expect(toCandidateStanding(standing)).toBe(expected);
-  });
-});
-
-describe('toCandidateDescription', () => {
-  it('lists what identifies her, then where she stands', () => {
-    expect(
-      toCandidateDescription(
-        candidate({
-          birthDate: '1996-04-03',
-          email: 'mia@example.com',
-          city: 'Bonn',
-          membershipState: 'ended',
-        }),
-      ),
-    ).toBe('geb. 03.04.1996 · mia@example.com · Bonn · Mitglied beendet');
-  });
-
-  it('leaves out what the registry does not hold', () => {
-    expect(toCandidateDescription(candidate({ email: '' }))).toBe('kein Verein');
-  });
-});
-
-describe('toGapNote', () => {
-  it('names what the application fills in', () => {
-    expect(toGapNote(candidate({ gaps: ['birthDate', 'address'] }))).toBe(
-      'Aus dem Antrag ergänzt: Geburtsdatum, Anschrift. Alles andere bleibt, wie es im Register steht.',
-    );
-  });
-
-  it('says so when the registry already holds everything', () => {
-    expect(toGapNote(candidate({ gaps: [] }))).toBe(
-      'Der Antrag ergänzt nichts – alles steht schon im Register.',
-    );
+    { standing: candidate({ isMember: true, membershipState: 'active' }), expected: 'member' },
+    { standing: candidate({ membershipState: 'ended' }), expected: 'tied' },
+    { standing: candidate({ groups: ['Tanzgarde'] }), expected: 'tied' },
+    { standing: candidate({ roles: ['Kassenwartin'] }), expected: 'tied' },
+    { standing: candidate({}), expected: 'unaffiliated' },
+  ])('reads a candidate as $expected', ({ standing, expected }) => {
+    expect(candidateStandingKindOf(standing)).toBe(expected);
   });
 });
 
@@ -112,63 +68,37 @@ describe('toAdmissionQuickChoices', () => {
   });
 });
 
-describe('toAdmissionConsequence', () => {
+describe('admissionMembershipShapeOf', () => {
   const today = '2026-10-02';
 
-  it('names a new person, her first day and where the invitation goes', () => {
+  it.each([
+    {
+      scenario: 'a new person admitted today',
+      candidate: null,
+      admittedOn: today,
+      expected: { startsLater: false, record: { kind: 'new' } },
+    },
+    {
+      scenario: 'a known person admitted later',
+      candidate: candidate({}),
+      admittedOn: '2026-11-11',
+      expected: { startsLater: true, record: { kind: 'existing' } },
+    },
+    {
+      scenario: 'a former member who keeps her Mitglied seit',
+      candidate: candidate({ memberSince: '2017-09-01' }),
+      admittedOn: today,
+      expected: { startsLater: false, record: { kind: 'continuing', memberSince: '2017-09-01' } },
+    },
+  ])('shapes $scenario', ({ candidate: chosen, admittedOn, expected }) => {
     expect(
-      toAdmissionConsequence({
+      admissionMembershipShapeOf({
         application: application({}),
-        candidate: null,
-        admittedOn: today,
+        candidate: chosen,
+        admittedOn,
         today,
         invitation: 'sent',
       }),
-    ).toBe(
-      'Mia wird neu angelegt und ist ab dem 02.10.2026 Mitglied. Die Einladung zur App geht gleich an mia@example.com. Der Antrag wird danach gelöscht.',
-    );
-  });
-
-  it('keeps a former member her Mitglied seit and dates the invitation', () => {
-    expect(
-      toAdmissionConsequence({
-        application: application({}),
-        candidate: candidate({ memberSince: '2017-09-01' }),
-        admittedOn: '2026-11-11',
-        today,
-        invitation: 'notYetAffiliated',
-      }),
-    ).toBe(
-      'Mia wird am 11.11.2026 Mitglied, Mitglied seit 01.09.2017 bleibt. Einladen kannst du sie ab dem 11.11.2026. Der Antrag wird danach gelöscht.',
-    );
-  });
-
-  it.each([
-    { invitation: 'alreadyHasAccount', expected: 'Einen Zugang zur App hat sie schon.' },
-    { invitation: 'belowAgeOfConsent', expected: 'Eine Einladung zur App gibt es erst ab 16.' },
-  ] as const)('explains why no invitation goes out: $invitation', ({ invitation, expected }) => {
-    expect(
-      toAdmissionConsequence({
-        application: application({}),
-        candidate: candidate({}),
-        admittedOn: today,
-        today,
-        invitation,
-      }),
-    ).toBe(`Mia ist ab dem 02.10.2026 Mitglied. ${expected} Der Antrag wird danach gelöscht.`);
-  });
-});
-
-describe('toCandidatesContext', () => {
-  it.each([
-    { count: 0, expected: 'Niemand im Register passt zu Mia.' },
-    { count: 1, expected: '1 Person im Register passt zu Mia.' },
-    { count: 2, expected: '2 Personen im Register passen zu Mia.' },
-  ])('counts $count matches', ({ count, expected }) => {
-    const candidates = Array.from({ length: count }, (_, index) =>
-      candidate({ personId: index + 1 }),
-    );
-
-    expect(toCandidatesContext(application({ candidates }))).toBe(expected);
+    ).toEqual(expected);
   });
 });

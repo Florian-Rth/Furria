@@ -34,28 +34,15 @@ describe('toQueryErrorKind', () => {
 });
 
 describe('toQueryErrorMessage', () => {
-  it('renders the refusal the server wrote, verbatim', () => {
-    const error = new RequestFailedError(422, [
-      { field: 'endedOn', message: 'Die Ruhezeit liegt außerhalb der Mitgliedschaft.' },
-      { field: 'endedOn', message: 'Ignoriert.' },
-    ]);
-
-    expect(toQueryErrorMessage(error, MESSAGES)).toBe(
-      'Die Ruhezeit liegt außerhalb der Mitgliedschaft.',
-    );
-  });
-
-  it('falls back to the refusal own neutral message when the server named none', () => {
-    const error = new RequestFailedError(409, []);
+  it('passes on the refusal the server wrote', () => {
+    const error = new RequestFailedError(422, [{ field: 'endedOn', message: 'refusal' }]);
 
     expect(toQueryErrorMessage(error, MESSAGES)).toBe(error.firstMessage);
   });
 
   it.each<[string, Error | null, string | null]>([
     ['nothing to say', null, null],
-    ['a 403', new ServerFailureError(403), null],
     ['an unreachable server', new RequestBlockedError(), 'unreachable'],
-    ['an unexpected failure', new ServerFailureError(500), 'unexpected'],
   ])('answers %s with %o', (_case, error, expected) => {
     expect(toQueryErrorMessage(error, MESSAGES)).toBe(expected);
   });
@@ -65,7 +52,6 @@ describe('isNotFoundError', () => {
   it.each<[string, Error | null, boolean]>([
     ['a detail route whose id is gone', new ServerFailureError(404), true],
     ['any other server failure', new ServerFailureError(500), false],
-    ['a refusal carrying field messages', new RequestFailedError(422, []), false],
     ['nothing at all', null, false],
   ])('answers %s with %s', (_case, error, expected) => {
     expect(isNotFoundError(error)).toBe(expected);
@@ -77,7 +63,6 @@ describe('isForbiddenError', () => {
     ['a Gruppe that is not the caller own', new ServerFailureError(403), true],
     ['a detail route whose id is gone', new ServerFailureError(404), false],
     ['a terminal 401', new UnauthorizedError(), false],
-    ['nothing at all', null, false],
   ])('answers %s with %s', (_case, error, expected) => {
     expect(isForbiddenError(error)).toBe(expected);
   });

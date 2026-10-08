@@ -3,9 +3,9 @@ import type { FC } from 'react';
 import { useRunningVenuesQuery } from '@/features/calendar';
 import { EVENTS_ORIGIN, usePermissions } from '@/features/session';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
+import { parsePositiveId } from '@/lib/positive-id';
 import { isNotFoundError } from '@/lib/query-error';
 import { useEventQuery } from '../api';
-import { toEventId } from '../events-labels';
 import { toEventErrorMessage } from '../events-messages';
 import { EventEditor } from './EventEditor';
 import { EventEditorDenied } from './EventEditorDenied';
@@ -18,7 +18,7 @@ const TITLE = 'Veranstaltung bearbeiten';
 
 export const EventEditScreen: FC = () => {
   const { eventId } = useParams({ from: ROUTE_ID });
-  const id = toEventId(eventId);
+  const id = parsePositiveId(eventId);
   const permissions = usePermissions();
   const event = useEventQuery(id);
   const venues = useRunningVenuesQuery();

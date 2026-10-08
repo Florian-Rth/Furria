@@ -186,26 +186,36 @@ const TEASER_POSTS_LIMIT = 3;
 export const selectTeaserPosts = (posts: NewsPost[]): NewsPost[] =>
   sortPostsByDateDesc(posts).slice(0, TEASER_POSTS_LIMIT);
 
-export const resolveCategoryTint = (theme: Theme, category: NewsCategory): string => {
-  const palette = (theme.vars ?? theme).palette;
+export type CategoryTone = 'red' | 'gold' | 'ink';
+
+export const categoryToneOf = (category: NewsCategory): CategoryTone => {
   if (category === 'Session') {
-    return palette.primary.main;
+    return 'red';
   }
   if (category === 'Erfolge') {
-    return palette.warning.main;
+    return 'gold';
   }
-  return palette.text.primary;
+  return 'ink';
+};
+
+export const resolveCategoryTint = (theme: Theme, category: NewsCategory): string => {
+  const palette = (theme.vars ?? theme).palette;
+  const tints: Record<CategoryTone, string> = {
+    red: palette.primary.main,
+    gold: palette.warning.main,
+    ink: palette.text.primary,
+  };
+  return tints[categoryToneOf(category)];
 };
 
 export const resolveCategoryContrastText = (theme: Theme, category: NewsCategory): string => {
   const palette = (theme.vars ?? theme).palette;
-  if (category === 'Session') {
-    return palette.primary.contrastText;
-  }
-  if (category === 'Erfolge') {
-    return palette.warning.contrastText;
-  }
-  return palette.background.default;
+  const contrastTexts: Record<CategoryTone, string> = {
+    red: palette.primary.contrastText,
+    gold: palette.warning.contrastText,
+    ink: palette.background.default,
+  };
+  return contrastTexts[categoryToneOf(category)];
 };
 
 export const resolveArchiveSession = (posts: NewsPost[], reference: Date): Session | null => {
@@ -234,18 +244,20 @@ const WORDS_PER_MINUTE = 180;
 
 const READING_TIME_MINIMUM_MINUTES = 3;
 
-export const deriveReadingTime = (body: string[]): string | null => {
+export const readingMinutesOf = (body: string[]): number | null => {
   const wordCount = body
     .join(' ')
     .split(/\s+/)
     .filter((word) => word !== '').length;
   const minutes = Math.ceil(wordCount / WORDS_PER_MINUTE);
 
-  if (minutes < READING_TIME_MINIMUM_MINUTES) {
-    return null;
-  }
+  return minutes < READING_TIME_MINIMUM_MINUTES ? null : minutes;
+};
 
-  return `${minutes} Min. Lesezeit`;
+export const deriveReadingTime = (body: string[]): string | null => {
+  const minutes = readingMinutesOf(body);
+
+  return minutes === null ? null : `${minutes} Min. Lesezeit`;
 };
 
 export const buildPostByline = (post: NewsPost): string =>

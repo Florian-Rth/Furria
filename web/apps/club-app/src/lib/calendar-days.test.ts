@@ -4,93 +4,35 @@ import {
   entriesOnDay,
   sortRunningFirst,
   toDayCounts,
-  toDayNumberLabel,
-  toIsoDayLabel,
-  toLocalIsoDay,
   toMonthGridWeeks,
-  toMonthLabel,
   toMonthWeeks,
   toMonthWindow,
-  toTimeSpanLabel,
-  toWeekdayEyebrow,
+  toTimeSpan,
 } from './calendar-days';
 
 const at = (year: number, month: number, day: number, hour = 0, minute = 0): string =>
   new Date(year, month - 1, day, hour, minute).toISOString();
 
-describe('toLocalIsoDay', () => {
+describe('toTimeSpan', () => {
   it.each([
-    [at(2026, 2, 14, 19, 30), '2026-02-14'],
-    [at(2026, 2, 14, 0, 0), '2026-02-14'],
-    [at(2026, 2, 14, 23, 59), '2026-02-14'],
-    [at(2026, 12, 31, 23, 0), '2026-12-31'],
-  ])('reads %s as the local day %s', (instant, expected) => {
-    expect(toLocalIsoDay(instant)).toBe(expected);
-  });
-});
-
-describe('toDayNumberLabel', () => {
-  it.each([
-    [at(2026, 2, 14, 19), '14.02.'],
-    [at(2026, 11, 1, 8), '01.11.'],
-  ])('pads %s to %s', (instant, expected) => {
-    expect(toDayNumberLabel(instant)).toBe(expected);
-  });
-});
-
-describe('toWeekdayEyebrow', () => {
-  it.each([
-    [at(2026, 2, 14, 12), 'SA'],
-    [at(2026, 2, 15, 12), 'SO'],
-    [at(2026, 2, 16, 12), 'MO'],
-  ])('names the weekday of %s as %s', (instant, expected) => {
-    expect(toWeekdayEyebrow(instant)).toBe(expected);
-  });
-});
-
-describe('toTimeSpanLabel', () => {
-  it('reads an open-ended entry as a start time', () => {
-    expect(toTimeSpanLabel(at(2026, 2, 14, 19, 0), null)).toBe('ab 19:00 Uhr');
-  });
-
-  it('reads an entry that ends the same day as a span', () => {
-    expect(toTimeSpanLabel(at(2026, 2, 14, 19, 0), at(2026, 2, 14, 23, 30))).toBe(
-      '19:00 – 23:30 Uhr',
-    );
-  });
-
-  it('names the closing day when the entry runs past midnight', () => {
-    expect(toTimeSpanLabel(at(2026, 2, 14, 19, 0), at(2026, 2, 15, 2, 0))).toBe(
-      '19:00 Uhr – 15.02. 02:00 Uhr',
-    );
-  });
-});
-
-describe('toIsoDayLabel', () => {
-  it.each([
-    ['2026-02-14', 'Samstag, 14.02.2026'],
-    ['2026-11-11', 'Mittwoch, 11.11.2026'],
-  ])('reads %s as %s', (isoDay, expected) => {
-    expect(toIsoDayLabel(isoDay)).toBe(expected);
-  });
-
-  it('hands back an unparseable day unchanged', () => {
-    expect(toIsoDayLabel('irgendwann')).toBe('irgendwann');
-  });
-});
-
-describe('toMonthLabel', () => {
-  it.each([
-    [new Date(2026, 1, 1), 'Februar 2026'],
-    [new Date(2026, 10, 1), 'November 2026'],
-  ])('names the month of %s', (cursor, expected) => {
-    expect(toMonthLabel(cursor)).toBe(expected);
+    { label: 'an open-ended entry', endsAt: null, expected: 'open-ended' },
+    {
+      label: 'an entry that ends the same day',
+      endsAt: at(2026, 2, 14, 23, 30),
+      expected: 'same-day',
+    },
+    {
+      label: 'an entry that runs past midnight',
+      endsAt: at(2026, 2, 15, 2, 0),
+      expected: 'overnight',
+    },
+  ])('reads $label as $expected', ({ endsAt, expected }) => {
+    expect(toTimeSpan(at(2026, 2, 14, 19, 0), endsAt).kind).toBe(expected);
   });
 });
 
 describe('toMonthWindow', () => {
   it.each([
-    [new Date(2026, 1, 17), '2026-02-01', '2026-02-28'],
     [new Date(2024, 1, 17), '2024-02-01', '2024-02-29'],
     [new Date(2026, 11, 3), '2026-12-01', '2026-12-31'],
   ])('spans the whole month of %s', (cursor, from, to) => {
@@ -99,29 +41,20 @@ describe('toMonthWindow', () => {
 });
 
 describe('toMonthWeeks', () => {
-  it('opens every week on a Monday', () => {
-    const weeks = toMonthWeeks(new Date(2026, 1, 1));
-
-    expect(weeks.map((week) => week[0]?.getDay())).toEqual(weeks.map(() => 1));
-  });
-
-  it('leads a month that opens on a Sunday with a full week', () => {
+  it('leads a month that opens on a Sunday with a full week opening on Monday', () => {
     const [firstWeek] = toMonthWeeks(new Date(2026, 1, 1));
 
+    expect(firstWeek?.[0]?.getDay()).toBe(1);
     expect(firstWeek?.[0]?.getDate()).toBe(26);
     expect(firstWeek?.[6]?.getDate()).toBe(1);
   });
 
-  it('uses five rows for a 28-day February that opens on a Sunday', () => {
-    expect(toMonthWeeks(new Date(2026, 1, 1))).toHaveLength(5);
-  });
-
-  it('uses four rows for a 28-day February that opens on a Monday', () => {
-    expect(toMonthWeeks(new Date(2021, 1, 1))).toHaveLength(4);
-  });
-
-  it('uses six rows for a 31-day month that opens on a Sunday', () => {
-    expect(toMonthWeeks(new Date(2026, 2, 1))).toHaveLength(6);
+  it.each([
+    { label: 'a 28-day February that opens on a Sunday', cursor: new Date(2026, 1, 1), rows: 5 },
+    { label: 'a 28-day February that opens on a Monday', cursor: new Date(2021, 1, 1), rows: 4 },
+    { label: 'a 31-day month that opens on a Sunday', cursor: new Date(2026, 2, 1), rows: 6 },
+  ])('uses $rows rows for $label', ({ cursor, rows }) => {
+    expect(toMonthWeeks(cursor)).toHaveLength(rows);
   });
 });
 
@@ -133,11 +66,6 @@ interface ToneCase {
 
 const toneCases: readonly ToneCase[] = [
   { case: 'keeps a club-only day without a tone', tones: [null, null], expected: [] },
-  {
-    case: 'keeps the first-seen order of the tones',
-    tones: ['rose', 'teal'],
-    expected: ['rose', 'teal'],
-  },
   {
     case: 'drops a tone the day already carries',
     tones: ['teal', 'rose', 'teal'],

@@ -1,9 +1,13 @@
-import { SESSION_LOGO_MAX_LENGTH } from './schemas';
+export const SESSION_LOGO_MAX_LENGTH = 200_000;
 
 const SVG_MIME_TYPE = 'image/svg+xml';
 
-const WRONG_TYPE_MESSAGE = 'Das Sessionslogo muss eine SVG-Datei sein.';
-const TOO_LARGE_MESSAGE = 'Diese SVG-Datei ist zu groß für einen Sessionseintrag.';
+export type LogoFileRejection = 'wrong-type' | 'too-large';
+
+const REJECTION_MESSAGES: Record<LogoFileRejection, string> = {
+  'wrong-type': 'Das Sessionslogo muss eine SVG-Datei sein.',
+  'too-large': 'Diese SVG-Datei ist zu groß für einen Sessionseintrag.',
+};
 
 export const UNREADABLE_FILE_MESSAGE = 'Die Datei konnte nicht gelesen werden.';
 
@@ -12,13 +16,19 @@ export interface PickedLogoFile {
   size: number;
 }
 
-export const toLogoFileRejection = (file: PickedLogoFile): string | null => {
+export const logoFileRejectionOf = (file: PickedLogoFile): LogoFileRejection | null => {
   if (file.type !== SVG_MIME_TYPE) {
-    return WRONG_TYPE_MESSAGE;
+    return 'wrong-type';
   }
   if (file.size > SESSION_LOGO_MAX_LENGTH) {
-    return TOO_LARGE_MESSAGE;
+    return 'too-large';
   }
 
   return null;
+};
+
+export const toLogoFileRejection = (file: PickedLogoFile): string | null => {
+  const rejection = logoFileRejectionOf(file);
+
+  return rejection === null ? null : REJECTION_MESSAGES[rejection];
 };

@@ -3,11 +3,11 @@ import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { AccessDenied, AppSkeletonRegion, usePermissions } from '@/features/session';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
+import { parsePositiveId } from '@/lib/positive-id';
 import { isForbiddenError } from '@/lib/query-error';
 import { useManagedVenuesQuery } from '../api';
 import {
   findManagedVenue,
-  toVenueId,
   VENUE_EDITOR_DENIED_MESSAGE,
   VENUE_NOT_FOUND_DESCRIPTION,
   VENUE_NOT_FOUND_TITLE,
@@ -23,7 +23,7 @@ const SKELETON_LINES = 4;
 
 export const VenueScreen: FC = () => {
   const { venueId } = useParams({ from: ROUTE_ID });
-  const id = toVenueId(venueId);
+  const id = parsePositiveId(venueId);
   const venues = useManagedVenuesQuery();
   const permissions = usePermissions();
   const errorMessage = toManagedVenuesErrorMessage(venues.error);

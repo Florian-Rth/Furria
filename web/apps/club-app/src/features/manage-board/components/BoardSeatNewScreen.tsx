@@ -3,8 +3,9 @@ import type { FC } from 'react';
 import { usePermissions } from '@/features/session';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { toIsoDay } from '@/lib/day';
+import { parsePositiveId } from '@/lib/positive-id';
 import { useBoardQuery } from '../api';
-import { toBoardEntries, toBoardOfficeId } from '../manage-board-labels';
+import { toBoardEntries } from '../manage-board-labels';
 import { toBoardErrorMessage } from '../manage-board-messages';
 import { BoardEditorDenied } from './BoardEditorDenied';
 import { BoardEditorError } from './BoardEditorError';
@@ -18,7 +19,7 @@ const TITLE = 'Vorstandssitz eintragen';
 export const BoardSeatNewScreen: FC = () => {
   const { boardOfficeId } = useParams({ from: ROUTE_ID });
   const { has, isUndecided } = usePermissions();
-  const id = toBoardOfficeId(boardOfficeId);
+  const id = parsePositiveId(boardOfficeId);
   const board = useBoardQuery();
   const errorMessage = toBoardErrorMessage(board.error);
 

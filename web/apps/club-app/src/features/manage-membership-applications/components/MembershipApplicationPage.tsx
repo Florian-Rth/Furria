@@ -4,13 +4,10 @@ import { useNavigate, useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { AREA_HANDOVERS, RequirePermission } from '@/features/session';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
+import { parsePositiveId } from '@/lib/positive-id';
 import { ADMIT_LABEL, toCandidatesContext } from '../admission-labels';
 import { useMembershipApplicationQuery } from '../api';
-import {
-  APPLICATIONS_ORIGIN,
-  toApplicationTitle,
-  toMembershipApplicationId,
-} from '../manage-membership-applications-labels';
+import { APPLICATIONS_ORIGIN, toApplicationTitle } from '../manage-membership-applications-labels';
 import { MembershipApplicationBody } from './MembershipApplicationBody';
 import { MembershipApplicationHeader } from './MembershipApplicationHeader';
 
@@ -19,7 +16,7 @@ const ADMISSION_ROUTE = '/manage/applications/$membershipApplicationId/admission
 
 export const MembershipApplicationPage: FC = () => {
   const { membershipApplicationId } = useParams({ from: APPLICATION_ROUTE_ID });
-  const id = toMembershipApplicationId(membershipApplicationId);
+  const id = parsePositiveId(membershipApplicationId);
   const application = useMembershipApplicationQuery(id);
   const title = toApplicationTitle(application.data);
   const hasFailed = id === null || application.error !== null;

@@ -20,7 +20,7 @@ export const schemeEdge = (light: string, dark: string): KkScheme => ({
   dark: { borderColor: dark },
 });
 
-export const applyScheme = (theme: Theme, ...schemes: readonly KkScheme[]): CSSObject => {
+export const mergeSchemes = (schemes: readonly KkScheme[]): KkScheme => {
   const light: CSSObject = {};
   const dark: CSSObject = {};
 
@@ -28,6 +28,12 @@ export const applyScheme = (theme: Theme, ...schemes: readonly KkScheme[]): CSSO
     Object.assign(light, scheme.light);
     Object.assign(dark, scheme.dark);
   }
+
+  return { light, dark };
+};
+
+export const applyScheme = (theme: Theme, ...schemes: readonly KkScheme[]): CSSObject => {
+  const { light, dark } = mergeSchemes(schemes);
 
   return { ...light, ...theme.applyStyles('dark', dark) };
 };

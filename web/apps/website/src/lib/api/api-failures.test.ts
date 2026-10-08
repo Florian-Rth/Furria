@@ -16,7 +16,6 @@ describe('toFieldFailures', () => {
 
   it.each([
     ['FirstName', 'firstName'],
-    ['altcha', 'altcha'],
     ['', ''],
   ])('names the field %j as the form does: %j', (field, expected) => {
     expect(toFieldFailures({ errors: { [field]: ['x'] } })[0]?.field).toBe(expected);

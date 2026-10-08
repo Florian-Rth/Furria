@@ -5,9 +5,9 @@ import {
   buildGroupsIntro,
   countRecruitingGroups,
   groupByKind,
-  resolveGroupTint,
   resolveSectionTitle,
 } from '@/features/club/groups-content';
+import { resolveCycleTint } from '@/features/club/tint-cycle';
 import type { PublicGroup } from '@/lib/public-groups/schemas';
 import type { ActiveGroup } from './use-group-modal';
 import { useGroupModal } from './use-group-modal';
@@ -44,7 +44,7 @@ export const useGroupGallery = (groups: PublicGroup[]): GroupGallery => {
 
     return {
       group,
-      tint: resolveGroupTint(theme, index),
+      tint: resolveCycleTint(theme, index),
       tone: group.tone ?? undefined,
       badge: buildGroupBadge(index),
       open: (): void => openGroup(group.groupId),

@@ -1,3 +1,4 @@
+import { lerp, ramp } from '../../../internal/ramp';
 import { kkTokens } from '../../../tokens';
 
 export interface DockBox {
@@ -47,11 +48,6 @@ const PLAIN_TITLE_FROM = 0.55;
 const SHOVE_X = 10;
 const SHOVE_Y = -12;
 const LANDING_MOMENTUM = 0.4;
-
-const lerp = (from: number, to: number, amount: number): number => from + (to - from) * amount;
-
-const ramp = (value: number, from: number, to: number): number =>
-  Math.min(Math.max((value - from) / (to - from), 0), 1);
 
 const glideOf = (progress: number): number =>
   LANDING_MOMENTUM * progress + (1 - LANDING_MOMENTUM) * (1 - (1 - progress) ** 2);

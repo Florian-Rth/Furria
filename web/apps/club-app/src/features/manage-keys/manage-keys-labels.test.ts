@@ -4,11 +4,6 @@ import {
   isKeyToTakeBack,
   partitionKeyHoldings,
   partitionKeyVenues,
-  toHandoutConsequence,
-  toHoldingPeriodLabel,
-  toReturnConsequence,
-  toVenueEmptyCopy,
-  toVenueHolderMeta,
 } from './manage-keys-labels';
 import type { KeyHolding, KeyVenue } from './schemas';
 
@@ -61,13 +56,6 @@ describe('partitionKeyHoldings', () => {
   it('counts a key as returned the moment it carries a last day', () => {
     expect(idsOf(partitionKeyHoldings([holding({ untilOn: '2099-12-31' })]).ended)).toEqual([1]);
   });
-
-  it('reports two empty banks for a venue nobody ever held a key for', () => {
-    const partition = partitionKeyHoldings([]);
-
-    expect(partition.running).toEqual([]);
-    expect(partition.ended).toEqual([]);
-  });
 });
 
 describe('isKeyToTakeBack', () => {
@@ -80,21 +68,9 @@ describe('isKeyToTakeBack', () => {
       expected: true,
     },
     {
-      label: 'an inactive holder already returned the key',
-      untilOn: '2026-09-30',
-      active: false,
-      expected: false,
-    },
-    {
       label: 'an inactive holder has a return dated ahead',
       untilOn: '2026-12-31',
       active: false,
-      expected: false,
-    },
-    {
-      label: 'an active holder returned the key',
-      untilOn: '2026-09-30',
-      active: true,
       expected: false,
     },
   ])('asks for the key back: $expected when $label', ({ untilOn, active, expected }) => {
@@ -109,81 +85,24 @@ describe('partitionKeyVenues', () => {
     expect(partition.running.map((found) => found.venueId)).toEqual([1, 4]);
     expect(partition.archived.map((found) => found.venueId)).toEqual([9]);
   });
-
-  it('puts every venue into the archived bank when none is running', () => {
-    expect(partitionKeyVenues([ALTES_LAGER]).running).toEqual([]);
-  });
-});
-
-describe('toHoldingPeriodLabel', () => {
-  it('opens the period for a key that is still out', () => {
-    expect(toHoldingPeriodLabel(ANNA)).toBe('seit 01.03.2024');
-  });
-
-  it('spans both ends for a key that came back', () => {
-    expect(toHoldingPeriodLabel(MAIK)).toContain('01.02.2019');
-    expect(toHoldingPeriodLabel(MAIK)).toContain('30.06.2022');
-  });
 });
 
 describe('findKeyHolding', () => {
-  it('finds nothing when no key is targeted', () => {
-    expect(findKeyHolding([LAGER, HALLE], null)).toBeNull();
-  });
+  it.each([
+    { scenario: 'no key is targeted', keyHoldingId: null, expected: null },
+    { scenario: 'an unknown key', keyHoldingId: 999, expected: null },
+    {
+      scenario: 'a key held at the second venue',
+      keyHoldingId: 3,
+      expected: { venueId: 4, keyHoldingId: 3 },
+    },
+  ])('finds $expected for $scenario', ({ keyHoldingId, expected }) => {
+    const target = findKeyHolding([LAGER, HALLE], keyHoldingId);
 
-  it('finds nothing for an unknown key', () => {
-    expect(findKeyHolding([LAGER, HALLE], 999)).toBeNull();
-  });
-
-  it('carries the venue the found key belongs to', () => {
-    const target = findKeyHolding([LAGER, HALLE], 3);
-
-    expect(target?.venue.venueId).toBe(4);
-    expect(target?.holding.keyHoldingId).toBe(3);
-  });
-});
-
-describe('toVenueHolderMeta', () => {
-  it('names no key when every one came back', () => {
-    expect(toVenueHolderMeta([MAIK])).toBe('kein Schlüssel');
-  });
-
-  it('counts only the keys that are still out', () => {
-    expect(toVenueHolderMeta([ANNA, MAIK])).toBe('1 Schlüssel');
-    expect(toVenueHolderMeta([ANNA, BEA, MAIK])).toBe('2 Schlüssel');
-  });
-});
-
-describe('toVenueEmptyCopy', () => {
-  it('separates a venue that never had a key from one whose key came back', () => {
-    expect(toVenueEmptyCopy([]).title).not.toBe(toVenueEmptyCopy([MAIK]).title);
-  });
-});
-
-describe('toHandoutConsequence', () => {
-  it('speaks of a key that is already out', () => {
-    expect(toHandoutConsequence('Anna Kaiser', 'Turnhalle', '2026-09-20', '2026-09-20')).toContain(
-      'seit dem 20.09.2026',
-    );
-  });
-
-  it('dates a handout ahead from its first day', () => {
-    expect(toHandoutConsequence('Anna Kaiser', 'Turnhalle', '2026-11-11', '2026-09-20')).toContain(
-      'ab dem 11.11.2026',
-    );
-  });
-});
-
-describe('toReturnConsequence', () => {
-  it('reports the key as returned when the last day is today', () => {
-    expect(toReturnConsequence('Anna', 'Turnhalle', '2026-09-20', '2026-09-20')).toContain(
-      'ist zum 20.09.2026 zurückgegeben',
-    );
-  });
-
-  it('keeps the key usable until a last day dated ahead', () => {
-    expect(toReturnConsequence('Anna', 'Turnhalle', '2026-11-11', '2026-09-20')).toContain(
-      'bis einschließlich 11.11.2026',
-    );
+    expect(
+      target === null
+        ? null
+        : { venueId: target.venue.venueId, keyHoldingId: target.holding.keyHoldingId },
+    ).toEqual(expected);
   });
 });

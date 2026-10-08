@@ -1,6 +1,9 @@
 import type { KkIconName, KkSummaryFact } from '@furria/ui';
-import type { GreetingView, GreetingViewer } from '@/features/start';
-import { greetingActAt, toGreetingCopy, toGreetingText, toGreetingView } from '@/features/start';
+import type { GreetingViewer } from '@/features/start/greeting/greeting-act';
+import { greetingActAt } from '@/features/start/greeting/greeting-act';
+import { toGreetingCopy, toGreetingText } from '@/features/start/greeting/greeting-copy';
+import type { GreetingView } from '@/features/start/greeting/greeting-view';
+import { toGreetingView } from '@/features/start/greeting/greeting-view';
 import type { MembershipState } from '@/lib/api/schemas';
 import { relevantSessionYear } from '@/lib/club';
 

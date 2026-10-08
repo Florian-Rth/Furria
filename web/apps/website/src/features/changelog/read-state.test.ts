@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { addReadEntryId, countUnreadEntries, isEntryRead, isNewestEntryUnread } from './read-state';
+import {
+  addReadEntryId,
+  countUnreadEntries,
+  isNewestEntryUnread,
+  sortEntriesByDateDesc,
+} from './read-state';
 import type { ChangelogEntry } from './schemas';
 
 const entry = (id: string, date: string): ChangelogEntry => ({
@@ -16,58 +21,41 @@ const entries = [
   entry('middle', '2026-07-23'),
 ];
 
-describe('isEntryRead', () => {
-  it('treats an unknown id as unread', () => {
-    expect(isEntryRead(['newest'], 'middle')).toBe(false);
-  });
-
-  it('reports a stored id as read', () => {
-    expect(isEntryRead(['newest'], 'newest')).toBe(true);
+describe('sortEntriesByDateDesc', () => {
+  it('sorts a copy of the log, newest first', () => {
+    expect(sortEntriesByDateDesc(entries).map((sorted) => sorted.id)).toEqual([
+      'newest',
+      'middle',
+      'oldest',
+    ]);
+    expect(entries.map((untouched) => untouched.id)).toEqual(['oldest', 'newest', 'middle']);
   });
 });
 
 describe('countUnreadEntries', () => {
-  it('counts every entry when nothing has been read', () => {
-    expect(countUnreadEntries(entries, [])).toBe(3);
-  });
-
-  it('counts only the entries that are still unread', () => {
-    expect(countUnreadEntries(entries, ['newest', 'oldest'])).toBe(1);
-  });
-
-  it('ignores read ids that no longer exist in the log', () => {
-    expect(countUnreadEntries(entries, ['website-p0-frontend'])).toBe(3);
+  it.each([
+    [[], 3],
+    [['newest', 'oldest'], 1],
+  ])('counts the entries left unread after reading %j: %i', (readEntryIds, unread) => {
+    expect(countUnreadEntries(entries, readEntryIds)).toBe(unread);
   });
 });
 
 describe('isNewestEntryUnread', () => {
-  it('is true while the entry with the newest date is unread', () => {
-    expect(isNewestEntryUnread(entries, ['oldest', 'middle'])).toBe(true);
-  });
-
-  it('is false once the newest entry is read, even with older ones unread', () => {
-    expect(isNewestEntryUnread(entries, ['newest'])).toBe(false);
-  });
-
-  it('is false for an empty log', () => {
-    expect(isNewestEntryUnread([], [])).toBe(false);
+  it.each<[string, ChangelogEntry[], string[], boolean]>([
+    ['the newest entry is unread', entries, ['oldest', 'middle'], true],
+    ['only older entries are unread', entries, ['newest'], false],
+    ['the log is empty', [], [], false],
+  ])('when %s: %s', (_, log, readEntryIds, unread) => {
+    expect(isNewestEntryUnread(log, readEntryIds)).toBe(unread);
   });
 });
 
 describe('addReadEntryId', () => {
-  it('appends an id that was not read yet', () => {
-    expect(addReadEntryId(['newest'], 'middle')).toEqual(['newest', 'middle']);
-  });
-
-  it('stays unchanged for an already read id', () => {
-    expect(addReadEntryId(['newest'], 'newest')).toEqual(['newest']);
-  });
-
-  it('leaves the input array untouched', () => {
-    const readEntryIds = ['newest'];
-
-    addReadEntryId(readEntryIds, 'middle');
-
-    expect(readEntryIds).toEqual(['newest']);
+  it.each([
+    ['middle', ['newest', 'middle']],
+    ['newest', ['newest']],
+  ])('marks %s as read', (entryId, expected) => {
+    expect(addReadEntryId(['newest'], entryId)).toEqual(expected);
   });
 });

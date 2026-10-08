@@ -1,8 +1,9 @@
 import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { useMeQuery } from '@/features/session';
+import { parsePositiveId } from '@/lib/positive-id';
 import { useGroupHubQuery } from '../api';
-import { EDITOR_DENIED_MESSAGE, toEntryId, toHubId } from '../group-hub-labels';
+import { EDITOR_DENIED_MESSAGE } from '../group-hub-labels';
 import { GroupAdminEditor } from './GroupAdminEditor';
 import { GroupEditorNotFound } from './GroupEditorNotFound';
 import { GroupEditorSkeleton } from './GroupEditorSkeleton';
@@ -14,8 +15,8 @@ const TITLE = 'Gruppen-Admin beenden';
 
 export const GroupAdminScreen: FC = () => {
   const { groupId, adminId } = useParams({ from: ROUTE_ID });
-  const id = toHubId(groupId);
-  const entryId = toEntryId(adminId);
+  const id = parsePositiveId(groupId);
+  const entryId = parsePositiveId(adminId);
   const hub = useGroupHubQuery(id);
   const me = useMeQuery();
 

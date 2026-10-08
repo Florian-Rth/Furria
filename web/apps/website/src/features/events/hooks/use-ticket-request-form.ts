@@ -18,7 +18,7 @@ import { ticketRequestFallbackLabel, ticketRequestFallbackLead } from '../ticket
 import type { TicketRequestSummaryRow } from '../ticket-request-display';
 import { buildTicketRequestSummaryRows } from '../ticket-request-display';
 import type { TicketRequestFailure } from '../ticket-request-failure';
-import { toTicketRequestFailure } from '../ticket-request-failure';
+import { toTicketRequestFailure, toTicketRequestNotice } from '../ticket-request-failure';
 import { buildTicketRequestFallbackHref } from '../ticket-request-fallback';
 import { isTicketRequestWindowOpen } from '../ticket-request-window';
 
@@ -117,7 +117,7 @@ export const useTicketRequestForm = (event: EventDetail): TicketRequestFormState
       void handleFormSubmit(formEvent);
     },
     isSubmitting: mutation.isPending,
-    submitError: failure?.notice ?? null,
+    submitError: toTicketRequestNotice(failure),
     fallback,
     submitted,
   };

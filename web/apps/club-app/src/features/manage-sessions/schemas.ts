@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { AppSearchSchema } from '@/features/session';
+import { SESSION_LOGO_MAX_LENGTH } from './session-logo-file';
 
 export const SESSION_MOTTO_MAX_LENGTH = 160;
-export const SESSION_LOGO_MAX_LENGTH = 200_000;
 export const EARLIEST_SESSION_YEAR = 1900;
 export const LATEST_SESSION_YEAR = 2100;
 

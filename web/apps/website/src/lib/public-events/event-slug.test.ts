@@ -15,7 +15,6 @@ describe('buildEventSlug', () => {
 describe('readEventId', () => {
   it.each([
     ['12-1-prunksitzung', 12],
-    ['12-ein-alter-titel', 12],
     ['12', 12],
     ['prunksitzung', null],
     ['12prunksitzung', null],

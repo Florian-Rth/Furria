@@ -55,15 +55,35 @@ const toTies = (candidate: AdmissionCandidate): string[] => {
   return [...groups, ...candidate.roles];
 };
 
-export const toCandidateStanding = (candidate: AdmissionCandidate): string => {
+export type CandidateStandingKind = 'member' | 'tied' | 'unaffiliated';
+
+const toFormerMembership = (candidate: AdmissionCandidate): string[] =>
+  candidate.membershipState === 'ended' ? ['Mitglied beendet'] : [];
+
+const toStandingParts = (candidate: AdmissionCandidate): string[] => [
+  ...toFormerMembership(candidate),
+  ...toTies(candidate),
+];
+
+export const candidateStandingKindOf = (candidate: AdmissionCandidate): CandidateStandingKind => {
   if (candidate.isMember) {
-    return ALREADY_MEMBER_LABEL;
+    return 'member';
   }
 
-  const membership = candidate.membershipState === 'ended' ? ['Mitglied beendet'] : [];
-  const standing = [...membership, ...toTies(candidate)];
+  return toStandingParts(candidate).length === 0 ? 'unaffiliated' : 'tied';
+};
 
-  return standing.length === 0 ? 'kein Verein' : standing.join(META_SEPARATOR);
+export const toCandidateStanding = (candidate: AdmissionCandidate): string => {
+  const kind = candidateStandingKindOf(candidate);
+
+  if (kind === 'member') {
+    return ALREADY_MEMBER_LABEL;
+  }
+  if (kind === 'unaffiliated') {
+    return 'kein Verein';
+  }
+
+  return toStandingParts(candidate).join(META_SEPARATOR);
 };
 
 export const toCandidateDescription = (candidate: AdmissionCandidate): string => {
@@ -102,26 +122,50 @@ export interface AdmissionConsequenceInput {
   invitation: AdmissionInvitation;
 }
 
-const toMembershipSentence = ({
-  application,
+export type AdmittedRecord =
+  | { kind: 'new' }
+  | { kind: 'existing' }
+  | { kind: 'continuing'; memberSince: string };
+
+export interface AdmissionMembershipShape {
+  startsLater: boolean;
+  record: AdmittedRecord;
+}
+
+const toAdmittedRecord = (candidate: AdmissionCandidate | null): AdmittedRecord => {
+  if (candidate === null) {
+    return { kind: 'new' };
+  }
+  if (candidate.memberSince === null) {
+    return { kind: 'existing' };
+  }
+
+  return { kind: 'continuing', memberSince: candidate.memberSince };
+};
+
+export const admissionMembershipShapeOf = ({
   candidate,
   admittedOn,
   today,
-}: AdmissionConsequenceInput): string => {
-  const { firstName } = application;
-  const day = formatIsoDay(admittedOn);
-  const starts = isFutureDay(admittedOn, today)
-    ? `wird am ${day} Mitglied`
-    : `ist ab dem ${day} Mitglied`;
+}: AdmissionConsequenceInput): AdmissionMembershipShape => ({
+  startsLater: isFutureDay(admittedOn, today),
+  record: toAdmittedRecord(candidate),
+});
 
-  if (candidate === null) {
+const toMembershipSentence = (input: AdmissionConsequenceInput): string => {
+  const { firstName } = input.application;
+  const { startsLater, record } = admissionMembershipShapeOf(input);
+  const day = formatIsoDay(input.admittedOn);
+  const starts = startsLater ? `wird am ${day} Mitglied` : `ist ab dem ${day} Mitglied`;
+
+  if (record.kind === 'new') {
     return `${firstName} wird neu angelegt und ${starts}.`;
   }
-  if (candidate.memberSince === null) {
+  if (record.kind === 'existing') {
     return `${firstName} ${starts}.`;
   }
 
-  return `${firstName} ${starts}, Mitglied seit ${formatIsoDay(candidate.memberSince)} bleibt.`;
+  return `${firstName} ${starts}, Mitglied seit ${formatIsoDay(record.memberSince)} bleibt.`;
 };
 
 const toInvitationSentence = ({

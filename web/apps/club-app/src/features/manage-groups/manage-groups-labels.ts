@@ -1,12 +1,11 @@
 import type { KkChipTone, KkConfirmFact, KkScreenOrigin } from '@furria/ui';
-import { toGroupKindLabel } from '@/features/groups';
+import { toGroupKindLabel } from '@/features/groups/groups-labels';
 import type { PersonRef } from '@/lib/api/schemas';
 import { toGroupMembersLabel } from '@/lib/group-sections';
 import { formatIsoDay } from '@/lib/membership-labels';
 import type { ManagedGroupKind, ManagedGroupSummary } from './schemas';
 
 const MANAGE_GROUPS_PATH = '/manage/groups';
-const GROUP_KIND_ID_PATTERN = /^[1-9]\d*$/;
 
 export const MANAGE_GROUPS_TITLE = 'Gruppenverwaltung';
 
@@ -14,9 +13,6 @@ export const MANAGE_GROUPS_ORIGIN: KkScreenOrigin = {
   label: MANAGE_GROUPS_TITLE,
   to: MANAGE_GROUPS_PATH,
 };
-
-export const toGroupKindEntryId = (raw: string): number | null =>
-  GROUP_KIND_ID_PATTERN.test(raw) ? Number(raw) : null;
 
 export interface ManagedGroupsEmptyCopy {
   title: string;
@@ -246,15 +242,39 @@ export interface GroupKindUsageBadge {
 
 const UNUSED_KIND_LABEL = 'Ohne Gruppe';
 
-export const toGroupKindUsageBadge = (entry: GroupKindEntry): GroupKindUsageBadge => {
+export type GroupKindUsage = 'archived' | 'unused' | 'used';
+
+export const groupKindUsageOf = (entry: GroupKindEntry): GroupKindUsage => {
   if (entry.archivedOn !== null) {
-    return { label: toArchivedOnLabel(entry.archivedOn), tone: 'neutral', dot: false };
+    return 'archived';
   }
   if (entry.groupCount === 0) {
-    return { label: UNUSED_KIND_LABEL, tone: 'gold', dot: true };
+    return 'unused';
   }
 
-  return { label: toGroupKindUsageLine(entry.groupCount), tone: 'neutral', dot: false };
+  return 'used';
+};
+
+const toGroupKindUsageLabel = (entry: GroupKindEntry, usage: GroupKindUsage): string => {
+  if (usage === 'unused') {
+    return UNUSED_KIND_LABEL;
+  }
+  if (usage === 'archived' && entry.archivedOn !== null) {
+    return toArchivedOnLabel(entry.archivedOn);
+  }
+
+  return toGroupKindUsageLine(entry.groupCount);
+};
+
+export const toGroupKindUsageBadge = (entry: GroupKindEntry): GroupKindUsageBadge => {
+  const usage = groupKindUsageOf(entry);
+  const isUnused = usage === 'unused';
+
+  return {
+    label: toGroupKindUsageLabel(entry, usage),
+    tone: isUnused ? 'gold' : 'neutral',
+    dot: isUnused,
+  };
 };
 
 export const GROUP_KINDS_LEAD = 'Einordnung der Gruppen.';

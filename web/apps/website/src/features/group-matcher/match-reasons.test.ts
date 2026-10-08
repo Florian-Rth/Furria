@@ -50,39 +50,37 @@ const reasonsFor = (answers: MatcherAnswers): MatchReason[] =>
   buildMatchReasons(group, questions, answers);
 
 describe('buildMatchReasons', () => {
-  it('derives one reason per answered thesis the group holds a stance on', () => {
+  it('derives one reason per answered thesis the group holds a stance on, strongest first', () => {
     const reasons = reasonsFor({ stage: 'yes', build: 'no', ritual: 'yes', 'age-band': 'old' });
 
     expect(reasons.map((reason) => reason.questionId)).toEqual(['build', 'stage']);
   });
 
   it('says what you answered and what the group answered', () => {
-    const [reason] = reasonsFor({ stage: 'neutral' });
-
-    expect(reason).toEqual({
-      questionId: 'stage',
-      prompt: 'Ich will auf die Bühne.',
-      agreement: 'partial',
-      answer: 'neutral',
-      stance: 'yes',
-      importance: 1,
-    });
+    expect(reasonsFor({ stage: 'neutral' })).toEqual([
+      {
+        questionId: 'stage',
+        prompt: 'Ich will auf die Bühne.',
+        agreement: 'partial',
+        answer: 'neutral',
+        stance: 'yes',
+        importance: 1,
+      },
+    ]);
   });
 
-  it('classifies full agreement and plain disagreement', () => {
-    expect(reasonsFor({ stage: 'yes' })[0]?.agreement).toBe('agree');
-    expect(reasonsFor({ stage: 'no' })[0]?.agreement).toBe('disagree');
+  it.each([
+    ['yes', 'agree'],
+    ['no', 'disagree'],
+  ])('classifies the answer %s to a yes-thesis as %s', (answer, agreement) => {
+    expect(reasonsFor({ stage: answer })[0]?.agreement).toBe(agreement);
   });
 
-  it('stays silent about skipped and unreadable answers', () => {
-    expect(reasonsFor({})).toEqual([]);
-    expect(reasonsFor({ stage: 'vielleicht' })).toEqual([]);
-  });
-
-  it('puts the strongest reason first', () => {
-    const reasons = reasonsFor({ stage: 'yes', build: 'no' });
-
-    expect(reasons.map((reason) => reason.questionId)).toEqual(['build', 'stage']);
+  it.each<[string, MatcherAnswers]>([
+    ['skipped', {}],
+    ['unreadable', { stage: 'vielleicht' }],
+  ])('stays silent about %s answers', (_, answers) => {
+    expect(reasonsFor(answers)).toEqual([]);
   });
 
   it('keeps equally strong reasons in question order', () => {

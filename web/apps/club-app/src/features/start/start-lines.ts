@@ -1,6 +1,6 @@
 import type { KkDenseFacet, KkDenseLineState, KkIconName, KkLinkSearchValues } from '@furria/ui';
 import type { AttendanceAnswer } from '@/features/calendar';
-import { toGroupTone } from '@/features/groups';
+import { toGroupTone } from '@/features/groups/group-identity';
 import { toLocalIsoDay } from '@/lib/calendar-days';
 import { calendarDaysBetween, sessionYearsLabelOf } from '@/lib/club';
 import { toIsoDay } from '@/lib/day';
@@ -63,6 +63,8 @@ export interface AnnouncementLineView {
   sheetId: string;
 }
 
+export type PastDayKind = 'today' | 'yesterday' | 'earlier';
+
 export type EntryTrailing =
   | { kind: 'ring' }
   | { kind: 'mark'; answer: AttendanceAnswer }
@@ -118,14 +120,26 @@ export const formatFullDay = (isoDay: string): string => {
   return `${day}.${month}.${year}`;
 };
 
-export const formatPastDay = (isoDay: string, today: string): string => {
-  const day = localDayOf(isoDay);
-  const daysAgo = calendarDaysBetween(day, localDayOf(today));
+export const pastDayKindOf = (isoDay: string, today: string): PastDayKind => {
+  const daysAgo = calendarDaysBetween(localDayOf(isoDay), localDayOf(today));
 
   if (daysAgo === 0) {
-    return TODAY_WORD;
+    return 'today';
   }
   if (daysAgo === YESTERDAY) {
+    return 'yesterday';
+  }
+
+  return 'earlier';
+};
+
+export const formatPastDay = (isoDay: string, today: string): string => {
+  const kind = pastDayKindOf(isoDay, today);
+
+  if (kind === 'today') {
+    return TODAY_WORD;
+  }
+  if (kind === 'yesterday') {
     return YESTERDAY_WORD;
   }
 
@@ -137,6 +151,9 @@ const yearsBefore = (isoDay: string, years: number): string => {
 
   return `${String(year - years).padStart(ISO_YEAR_END, '0')}${isoDay.slice(ISO_YEAR_END)}`;
 };
+
+export const joinDayOf = (mine: StartMine, memberSince: string | null): string =>
+  memberSince ?? yearsBefore(mine.on, mine.years ?? 0);
 
 export const isRoundYears = (value: number): boolean =>
   value > 0 && (value % ROUND === 0 || value % ELEVEN === 0);
@@ -244,7 +261,7 @@ const MINE_FACES: Record<StartMineKind, (mine: StartMine, context: MineLineConte
   }),
   milestone: (mine, context) => {
     const years = mine.years ?? 0;
-    const joinedOn = context.memberSince ?? yearsBefore(mine.on, years);
+    const joinedOn = joinDayOf(mine, context.memberSince);
 
     return {
       anchor: numberAnchor(years),

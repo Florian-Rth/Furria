@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { LabGreeting } from './lab-greetings';
-import { labShiftOf, labTileOf, nextLabGreetingOf } from './lab-greetings';
+import { labShiftOf, nextLabGreetingOf } from './lab-greetings';
 
 const greetingOf = (slug: string): LabGreeting => ({
   slug,
@@ -31,16 +31,6 @@ describe('nextLabGreetingOf', () => {
 
   it('finds nothing in an empty lab', () => {
     expect(nextLabGreetingOf([], 'a')).toBeNull();
-  });
-});
-
-describe('labTileOf', () => {
-  it.each([
-    { festive: true, burst: false, tile: 'gold' },
-    { festive: false, burst: true, tile: 'gold' },
-    { festive: false, burst: false, tile: 'ink' },
-  ] as const)('lays $tile tiles (festive $festive, burst $burst)', ({ tile, ...view }) => {
-    expect(labTileOf(view)).toBe(tile);
   });
 });
 

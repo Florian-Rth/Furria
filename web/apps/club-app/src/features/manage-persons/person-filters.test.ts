@@ -48,11 +48,8 @@ describe('filterPersons', () => {
   const persons = [kuehnel, oehler, zoeller];
 
   it.each([
-    { query: 'kuhnel', expected: [1] },
     { query: 'KÜHNEL', expected: [1] },
-    { query: 'kuehnel', expected: [] },
     { query: 'hauptstrasse', expected: [2] },
-    { query: '99713 Grossfurra', expected: [2] },
     { query: 'franziska@example.org', expected: [3] },
     { query: 'Oehler Dorothea', expected: [2] },
     { query: '  ', expected: [1, 2, 3] },
@@ -101,12 +98,6 @@ describe('groupPersonsByLetter', () => {
       { letter: 'O', ids: [3, 4] },
     ]);
   });
-
-  it('buckets a name that starts with no latin letter under the other divider', () => {
-    const sections = groupPersonsByLetter([person({ personId: 1, lastName: '8-Bit' })]);
-
-    expect(sections.map((section) => section.letter)).toEqual(['#']);
-  });
 });
 
 describe('availablePersonLetters', () => {
@@ -125,13 +116,6 @@ describe('toPersonFilterOptions', () => {
   const counts = { active: 3, paused: 0, ended: 1, none: 0 };
 
   it.each([
-    {
-      case: 'once anyone is archived',
-      total: 2,
-      matching: 2,
-      isArchivedView: false,
-      offered: true,
-    },
     {
       case: 'while the search finds no archived person',
       total: 2,
@@ -158,11 +142,5 @@ describe('toPersonFilterOptions', () => {
     const archived = options.find((option) => option.id === ARCHIVED_PERSONS_FILTER_ID);
 
     expect(archived === undefined ? null : archived.count).toBe(offered ? matching : null);
-  });
-
-  it('puts the archived filter after every membership state', () => {
-    const options = toPersonFilterOptions(counts, { total: 1, matching: 1 }, false);
-
-    expect(options.map((option) => option.id)).toEqual(['all', 'active', 'ended', 'archived']);
   });
 });

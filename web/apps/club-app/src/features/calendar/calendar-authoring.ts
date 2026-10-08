@@ -105,27 +105,36 @@ export const toParticipantPool = (
 export const toParticipantsEmptyLabel = (pool: CalendarParticipantPool): string =>
   pool.state === 'failed' ? PARTICIPANTS_UNAVAILABLE : PARTICIPANTS_EMPTY;
 
+export interface CalendarParticipantChoice extends CalendarParticipantGroup {
+  isArchived: boolean;
+}
+
+export const toParticipatingGroupChoices = (
+  pool: CalendarParticipantPool,
+  held: readonly CalendarParticipantGroup[],
+  ownerId: string,
+): CalendarParticipantChoice[] => {
+  const running = pool.state === 'ready' ? pool.groups : [];
+  const offered = running
+    .filter((group) => toOwnerId(group.groupId) !== ownerId)
+    .map((group) => ({ ...group, isArchived: false }));
+  const listed = new Set(offered.map((choice) => choice.groupId));
+  const kept = held
+    .filter((group) => toOwnerId(group.groupId) !== ownerId && !listed.has(group.groupId))
+    .map((group) => ({ ...group, isArchived: pool.state === 'ready' }));
+
+  return [...offered, ...kept].sort((left, right) => left.name.localeCompare(right.name, 'de'));
+};
+
 export const toParticipatingGroupOptions = (
   pool: CalendarParticipantPool,
   held: readonly CalendarParticipantGroup[],
   ownerId: string,
-): KkSelectOption[] => {
-  const running = pool.state === 'ready' ? pool.groups : [];
-  const offered = running
-    .filter((group) => toOwnerId(group.groupId) !== ownerId)
-    .map((group) => ({ value: toOwnerId(group.groupId), label: group.name }));
-  const listed = new Set(offered.map((option) => option.value));
-  const kept = held
-    .filter(
-      (group) => toOwnerId(group.groupId) !== ownerId && !listed.has(toOwnerId(group.groupId)),
-    )
-    .map((group) => ({
-      value: toOwnerId(group.groupId),
-      label: pool.state === 'ready' ? `${group.name}${ARCHIVED_SUFFIX}` : group.name,
-    }));
-
-  return [...offered, ...kept].sort((left, right) => left.label.localeCompare(right.label, 'de'));
-};
+): KkSelectOption[] =>
+  toParticipatingGroupChoices(pool, held, ownerId).map((choice) => ({
+    value: toOwnerId(choice.groupId),
+    label: choice.isArchived ? `${choice.name}${ARCHIVED_SUFFIX}` : choice.name,
+  }));
 
 export const toParticipatingGroupIds = (values: readonly string[], ownerId: string): number[] => [
   ...new Set(values.filter((value) => value !== ownerId).map((value) => Number(value))),
@@ -315,11 +324,6 @@ export const toCollisionSentence = (names: readonly string[]): string | null => 
 
   return `Der Ort ist zur selben Zeit bereits durch ${names.join(', ')} belegt. Der Termin wurde trotzdem gespeichert.`;
 };
-
-const CALENDAR_ENTRY_ID_PATTERN = /^[1-9]\d*$/;
-
-export const toCalendarEntryIdParam = (raw: string): number | null =>
-  CALENDAR_ENTRY_ID_PATTERN.test(raw) ? Number(raw) : null;
 
 export interface EntryWriteNotice {
   tone: 'success' | 'info';

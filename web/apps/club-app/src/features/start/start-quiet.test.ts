@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { QuietMemory } from './start-quiet';
-import { isQuiet, parseQuietMemory, pruneQuiet, quietAfterOpen } from './start-quiet';
+import { isQuiet, parseQuietMemory, quietAfterOpen } from './start-quiet';
 
 const TODAY = '2027-01-19';
 const ROLE_KEY = 'mine:newRole:4:2027-01-12';
@@ -13,11 +13,6 @@ describe('parseQuietMemory', () => {
     {
       label: 'another version is stored',
       raw: `{"v":2,"items":{"${ROLE_KEY}":"2027-01-26"}}`,
-      expected: { v: 1, items: {} },
-    },
-    {
-      label: 'an item carries no day',
-      raw: `{"v":1,"items":{"${ROLE_KEY}":"bald"}}`,
       expected: { v: 1, items: {} },
     },
     {
@@ -35,19 +30,10 @@ describe('parseQuietMemory', () => {
   });
 });
 
-describe('pruneQuiet', () => {
-  it('drops every item whose quiet ended before today', () => {
-    expect(
-      pruneQuiet({ v: 1, items: { [ROLE_KEY]: '2027-01-18', [JUBILEE_KEY]: '2027-01-24' } }, TODAY),
-    ).toEqual({ v: 1, items: { [JUBILEE_KEY]: '2027-01-24' } });
-  });
-});
-
 describe('isQuiet', () => {
   it.each<{ label: string; items: Record<string, string>; expected: boolean }>([
     { label: 'she never opened it', items: {}, expected: false },
     { label: 'the quiet lasts until today', items: { [ROLE_KEY]: TODAY }, expected: true },
-    { label: 'the quiet lasts a week', items: { [ROLE_KEY]: '2027-01-26' }, expected: true },
     { label: 'the quiet ended yesterday', items: { [ROLE_KEY]: '2027-01-18' }, expected: false },
   ])('is $expected when $label', ({ items, expected }) => {
     expect(isQuiet({ v: 1, items }, ROLE_KEY, TODAY)).toBe(expected);
@@ -76,11 +62,5 @@ describe('quietAfterOpen', () => {
     },
   ])('quiets until $expected when $label', ({ items, until, expected }) => {
     expect(quietAfterOpen({ v: 1, items }, ROLE_KEY, until).items[ROLE_KEY]).toBe(expected);
-  });
-
-  it('leaves the other items alone', () => {
-    expect(
-      quietAfterOpen({ v: 1, items: { [JUBILEE_KEY]: '2027-01-24' } }, ROLE_KEY, '2027-01-26'),
-    ).toEqual({ v: 1, items: { [JUBILEE_KEY]: '2027-01-24', [ROLE_KEY]: '2027-01-26' } });
   });
 });

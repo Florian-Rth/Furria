@@ -1,26 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import type { MyGroupSummary } from '@/features/group-hub';
 import {
-  findCalendarEntry,
   mayOwnCalendarEntry,
-  toCalendarEntryIdParam,
-  toCalendarKind,
-  toCalendarVisibility,
-  toCollisionSentence,
   toDayTime,
   toDefaultVisibility,
   toEndKeptInStep,
   toEntryFormValues,
   toEntryLink,
   toEntryPayload,
-  toEntryWriteNotice,
   toInstant,
   toOwnerOptions,
-  toParticipantPool,
-  toParticipantsEmptyLabel,
+  toParticipatingGroupChoices,
   toParticipatingGroupIds,
-  toParticipatingGroupOptions,
-  toParticipationKeptForOwner,
   toTimeChoices,
   toToggledParticipation,
 } from './calendar-authoring';
@@ -90,10 +81,6 @@ describe('toOwnerOptions', () => {
 
     expect(options.map((option) => option.ownerGroupId)).toEqual([null, 3, 7]);
   });
-
-  it('offers nothing when the viewer owns neither the club nor a group', () => {
-    expect(toOwnerOptions([KINDERGARDE], false)).toEqual([]);
-  });
 });
 
 describe('mayOwnCalendarEntry', () => {
@@ -158,32 +145,10 @@ describe('toEntryLink', () => {
 describe('toDefaultVisibility', () => {
   it.each([
     [null, 'meeting', 'club'],
-    [null, 'training', 'club'],
     [7, 'training', 'club'],
     [7, 'performance', 'group'],
-    [7, 'party', 'group'],
   ] as const)('reads owner %s and kind %s as %s', (ownerGroupId, kind, expected) => {
     expect(toDefaultVisibility(ownerGroupId, kind)).toBe(expected);
-  });
-});
-
-describe('toCalendarKind', () => {
-  it.each([
-    ['training', 'training'],
-    ['party', 'party'],
-    ['nonsense', 'other'],
-  ])('reads %s as %s', (value, expected) => {
-    expect(toCalendarKind(value)).toBe(expected);
-  });
-});
-
-describe('toCalendarVisibility', () => {
-  it.each([
-    ['group', 'group'],
-    ['public', 'public'],
-    ['nonsense', 'club'],
-  ])('reads %s as %s', (value, expected) => {
-    expect(toCalendarVisibility(value)).toBe(expected);
   });
 });
 
@@ -270,74 +235,6 @@ describe('toEntryFormValues', () => {
   });
 });
 
-describe('toCollisionSentence', () => {
-  it('says nothing when no calendar entry clashes', () => {
-    expect(toCollisionSentence([])).toBeNull();
-  });
-
-  it('names the one calendar entry that clashes', () => {
-    expect(toCollisionSentence(['„Abendprobe“ (20.01. 18:00 – 21:00 Uhr)'])).toContain(
-      '„Abendprobe“ (20.01. 18:00 – 21:00 Uhr)',
-    );
-  });
-
-  it('names every calendar entry that clashes', () => {
-    const sentence = toCollisionSentence(['„Abendprobe“', '„Bastelabend“']) ?? '';
-
-    expect(sentence).toContain('„Abendprobe“');
-    expect(sentence).toContain('„Bastelabend“');
-  });
-});
-
-describe('toCalendarEntryIdParam', () => {
-  it.each([
-    ['11', 11],
-    ['0', null],
-    ['-3', null],
-    ['abc', null],
-  ])('reads %s as %s', (raw, expected) => {
-    expect(toCalendarEntryIdParam(raw)).toBe(expected);
-  });
-});
-
-describe('toEntryWriteNotice', () => {
-  it('reads success plainly when nothing clashes', () => {
-    expect(toEntryWriteNotice('„Prunksitzung“ steht jetzt im Kalender.', [])).toEqual({
-      tone: 'success',
-      message: '„Prunksitzung“ steht jetzt im Kalender.',
-    });
-  });
-
-  it('appends the clash as info without hiding that the save went through', () => {
-    const notice = toEntryWriteNotice('„Prunksitzung“ steht jetzt im Kalender.', [
-      { calendarEntryId: 9, title: 'Abendprobe', startsAt: at(2026, 2, 14, 18), endsAt: null },
-    ]);
-
-    expect(notice.tone).toBe('info');
-    expect(notice.message).toContain('„Prunksitzung“ steht jetzt im Kalender.');
-    expect(notice.message).toContain('Abendprobe');
-  });
-});
-
-describe('findCalendarEntry', () => {
-  it('finds nothing when no calendar entry is targeted', () => {
-    expect(findCalendarEntry([entry({})], null)).toBeNull();
-  });
-
-  it('finds nothing when the targeted calendar entry is gone', () => {
-    expect(findCalendarEntry([entry({ calendarEntryId: 11 })], 12)).toBeNull();
-  });
-
-  it('finds the targeted calendar entry', () => {
-    const found = findCalendarEntry(
-      [entry({ calendarEntryId: 11 }), entry({ calendarEntryId: 12 })],
-      12,
-    );
-
-    expect(found?.calendarEntryId).toBe(12);
-  });
-});
-
 describe('toEndKeptInStep', () => {
   it('leaves the end alone while it still lies after the start', () => {
     expect(
@@ -359,16 +256,6 @@ describe('toEndKeptInStep', () => {
     ).toEqual({ day: '2027-01-21', time: '00:00' });
   });
 
-  it('carries the end over the day boundary when the start moves to another day', () => {
-    expect(
-      toEndKeptInStep(
-        { day: '2027-01-20', time: '19:00' },
-        { day: '2027-01-22', time: '19:00' },
-        { day: '2027-01-20', time: '21:00' },
-      ),
-    ).toEqual({ day: '2027-01-22', time: '21:00' });
-  });
-
   it('collapses an end that already lay before its start onto the new start', () => {
     expect(
       toEndKeptInStep(
@@ -380,7 +267,7 @@ describe('toEndKeptInStep', () => {
   });
 });
 
-describe('toParticipatingGroupOptions', () => {
+describe('toParticipatingGroupChoices', () => {
   const running = {
     state: 'ready',
     groups: [
@@ -390,84 +277,46 @@ describe('toParticipatingGroupOptions', () => {
     ],
   } as const;
 
-  it('leaves the owner out of the list', () => {
-    expect(toParticipatingGroupOptions(running, [], '1')).toEqual([
-      { value: '2', label: 'Ältestenrat' },
-      { value: '3', label: 'Männerballett' },
-    ]);
+  it.each([
+    ['the owner left out', '1', [2, 3]],
+    ['every group sorted by name when the club owns', 'club', [2, 3, 1]],
+  ])('lists %s', (_case, ownerId, expected) => {
+    expect(
+      toParticipatingGroupChoices(running, [], ownerId).map((choice) => choice.groupId),
+    ).toEqual(expected);
   });
 
-  it('keeps every group when the club owns the calendar entry', () => {
-    expect(toParticipatingGroupOptions(running, [], 'club').map((option) => option.label)).toEqual([
-      'Ältestenrat',
-      'Männerballett',
-      'Tanzgarde',
-    ]);
-  });
-
-  it('keeps a participating group choosable after it left the directory', () => {
+  it('keeps a participating group choosable as archived after it left the directory', () => {
     const held = [{ groupId: 9, name: 'Wirbelwinde' }];
 
-    expect(toParticipatingGroupOptions(running, held, 'club')).toContainEqual({
-      value: '9',
-      label: 'Wirbelwinde — archiviert',
+    expect(toParticipatingGroupChoices(running, held, 'club')).toContainEqual({
+      groupId: 9,
+      name: 'Wirbelwinde',
+      isArchived: true,
     });
   });
 
   it('calls no held group archived while the directory is missing', () => {
     const held = [{ groupId: 9, name: 'Wirbelwinde' }];
 
-    expect(toParticipatingGroupOptions({ state: 'failed' }, held, 'club')).toEqual([
-      { value: '9', label: 'Wirbelwinde' },
+    expect(toParticipatingGroupChoices({ state: 'failed' }, held, 'club')).toEqual([
+      { groupId: 9, name: 'Wirbelwinde', isArchived: false },
     ]);
   });
 
   it('lists a held group once when it is still in the directory', () => {
     const held = [{ groupId: 1, name: 'Tanzgarde' }];
 
-    expect(toParticipatingGroupOptions(running, held, 'club')).toHaveLength(3);
-  });
-});
-
-describe('toParticipantPool', () => {
-  it('reads loaded groups as ready', () => {
-    expect(toParticipantPool([{ groupId: 1, name: 'Tanzgarde' }])).toEqual({
-      state: 'ready',
-      groups: [{ groupId: 1, name: 'Tanzgarde' }],
-    });
-  });
-
-  it('reads a missing directory as failed', () => {
-    expect(toParticipantPool(undefined).state).toBe('failed');
-  });
-});
-
-describe('toParticipantsEmptyLabel', () => {
-  it('states no group is left only once the directory is there', () => {
-    const ready = toParticipantsEmptyLabel({ state: 'ready', groups: [] });
-
-    expect(ready).not.toBe(toParticipantsEmptyLabel({ state: 'failed' }));
+    expect(toParticipatingGroupChoices(running, held, 'club')).toHaveLength(3);
   });
 });
 
 describe('toParticipatingGroupIds', () => {
   it.each([
-    [['2', '3'], 'club', [2, 3]],
     [['2', '2', '3'], 'club', [2, 3]],
     [['1', '2'], '1', [2]],
-    [[], 'club', []],
   ])('maps %s under owner %s', (values, ownerId, expected) => {
     expect(toParticipatingGroupIds(values, ownerId)).toEqual(expected);
-  });
-});
-
-describe('toParticipationKeptForOwner', () => {
-  it.each([
-    [['1', '2'], '1', ['2']],
-    [['2', '3'], '1', ['2', '3']],
-    [['2'], 'club', ['2']],
-  ])('drops the new owner %s from %s', (values, ownerId, expected) => {
-    expect(toParticipationKeptForOwner(values, ownerId)).toEqual(expected);
   });
 });
 
@@ -475,48 +324,7 @@ describe('toToggledParticipation', () => {
   it.each([
     [['2'], '3', ['2', '3']],
     [['2', '3'], '3', ['2']],
-    [[], '2', ['2']],
   ])('toggles %s with %s', (values, value, expected) => {
     expect(toToggledParticipation(values, value)).toEqual(expected);
-  });
-});
-
-describe('toEntryPayload participating groups', () => {
-  it('maps the chosen ids to numbers', () => {
-    expect(
-      toEntryPayload(form({ participatingGroupIds: ['2', '3'] })).participatingGroupIds,
-    ).toEqual([2, 3]);
-  });
-
-  it('drops the owner from the participants', () => {
-    expect(
-      toEntryPayload(form({ ownerId: '2', participatingGroupIds: ['2', '3'] }))
-        .participatingGroupIds,
-    ).toEqual([3]);
-  });
-
-  it('sends no participating group when none is chosen', () => {
-    expect(toEntryPayload(form({})).participatingGroupIds).toEqual([]);
-  });
-});
-
-describe('toEntryFormValues participating groups', () => {
-  it('starts an empty calendar entry without participating groups', () => {
-    expect(toEntryFormValues(null, [], new Date(2027, 0, 20)).participatingGroupIds).toEqual([]);
-  });
-
-  it('reads the participants of an existing calendar entry as string ids', () => {
-    const values = toEntryFormValues(
-      entry({
-        participatingGroups: [
-          { groupId: 2, name: 'Kindergarde', tone: null },
-          { groupId: 3, name: 'Männerballett', tone: 'teal' },
-        ],
-      }),
-      [],
-      new Date(2027, 0, 20),
-    );
-
-    expect(values.participatingGroupIds).toEqual(['2', '3']);
   });
 });

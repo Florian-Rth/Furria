@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { hasPassedTheToolbar } from './letter-position';
 
 export interface LetterAnchor {
   letter: string;
@@ -9,23 +10,6 @@ export interface LetterPosition {
   letter: string | undefined;
   markLetter: (letter: string) => void;
 }
-
-export interface LetterClearance {
-  dividerTop: number;
-  dividerHeight: number;
-  barClearance: number;
-}
-
-/**
- * The letter the reader is in is the one whose *rows* sit under the toolbar, so a divider
- * counts as passed one divider-height early: at that point the section above it has been
- * pushed out completely and this one is taking the clearance line.
- */
-export const hasPassedTheToolbar = ({
-  dividerTop,
-  dividerHeight,
-  barClearance,
-}: LetterClearance): boolean => dividerTop <= barClearance + dividerHeight;
 
 /**
  * The shell publishes its head clearance as the document's `scroll-padding-top`, so every

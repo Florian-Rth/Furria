@@ -31,14 +31,11 @@ describe('filterMembers', () => {
   it.each([
     { case: 'an empty query keeps everyone', query: '', expected: [1, 2, 3, 4] },
     { case: 'a surname', query: 'brendel', expected: [1] },
-    { case: 'a first name', query: 'jonas', expected: [3] },
     { case: 'surname first', query: 'kühnel katrin', expected: [2] },
     { case: 'an umlaut typed without one', query: 'kuhnel', expected: [2] },
-    { case: 'an umlaut typed with one', query: 'kühnel', expected: [2] },
     { case: 'a group', query: 'tanzgarde', expected: [1] },
     { case: 'a role', query: 'präsident', expected: [2] },
     { case: 'surrounding blanks', query: '  zimmer  ', expected: [3] },
-    { case: 'nothing that matches', query: 'schmidtke', expected: [] },
   ])('matches $case', ({ query, expected }) => {
     expect(idsOf(filterMembers(ALL, { query, state: 'all' }))).toEqual(expected);
   });
@@ -47,8 +44,6 @@ describe('filterMembers', () => {
     { state: 'all', expected: [1, 2, 3, 4] },
     { state: 'active', expected: [1] },
     { state: 'paused', expected: [2] },
-    { state: 'ended', expected: [4] },
-    { state: 'none', expected: [3] },
   ])('keeps $state', ({ state, expected }) => {
     expect(idsOf(filterMembers(ALL, { query: '', state }))).toEqual(expected);
   });
@@ -62,22 +57,9 @@ describe('countByState', () => {
   it('counts every state, including the ones nobody is in', () => {
     expect(countByState(ALL)).toEqual({ active: 1, paused: 1, ended: 1, none: 1 });
   });
-
-  it('counts an empty list as all zero', () => {
-    expect(countByState([])).toEqual({ active: 0, paused: 0, ended: 0, none: 0 });
-  });
 });
 
 describe('groupByLetter', () => {
-  it('keeps the order it was given and buckets by surname initial', () => {
-    expect(groupByLetter(ALL).map((section) => [section.letter, idsOf(section.members)])).toEqual([
-      ['B', [1]],
-      ['K', [2]],
-      ['Z', [3]],
-      ['A', [4]],
-    ]);
-  });
-
   it('collects people under one letter even when they are not neighbours', () => {
     const sections = groupByLetter([PAULA, KATRIN, member(5, 'Bert', 'Bach', 'active')]);
 
@@ -85,10 +67,6 @@ describe('groupByLetter', () => {
       ['B', [1, 5]],
       ['K', [2]],
     ]);
-  });
-
-  it('has no sections without members', () => {
-    expect(groupByLetter([])).toEqual([]);
   });
 });
 

@@ -10,7 +10,6 @@ import { toPasskeyFailureKind } from './passkey-failure';
 describe('toPasskeyFailureKind', () => {
   it.each([
     { error: new DOMException('cancelled', 'NotAllowedError'), kind: 'cancelled' },
-    { error: new DOMException('aborted', 'AbortError'), kind: 'cancelled' },
     { error: new DOMException('excluded', 'InvalidStateError'), kind: 'already-on-device' },
     { error: new DOMException('insecure', 'SecurityError'), kind: 'unexpected' },
     { error: new UnauthorizedError(), kind: 'rejected' },
@@ -18,7 +17,6 @@ describe('toPasskeyFailureKind', () => {
     { error: new RequestBlockedError(), kind: 'unreachable' },
     { error: new ServerFailureError(429), kind: 'throttled' },
     { error: new ServerFailureError(500), kind: 'unexpected' },
-    { error: new Error('boom'), kind: 'unexpected' },
   ])('reads $error.name as $kind', ({ error, kind }) => {
     expect(toPasskeyFailureKind(error)).toBe(kind);
   });

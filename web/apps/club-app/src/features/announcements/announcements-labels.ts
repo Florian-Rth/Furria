@@ -49,10 +49,6 @@ export const toValidUntilLabel = (validUntil: string | null): string | null =>
   validUntil === null ? null : `${VALID_UNTIL_PREFIX} ${formatIsoDay(validUntil)}`;
 
 export const ANNOUNCEMENTS_LEAD = 'Mitteilungen des Vereins an alle Mitglieder.';
-const ANNOUNCEMENT_ID_PATTERN = /^[1-9]\d*$/;
-
-export const toAnnouncementIdParam = (raw: string): number | null =>
-  ANNOUNCEMENT_ID_PATTERN.test(raw) ? Number(raw) : null;
 
 export const toWithdrawQuestion = (title: string): string => `„${title}“ abnehmen?`;
 

@@ -2,9 +2,10 @@ import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { usePermissions } from '@/features/session';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
+import { parsePositiveId } from '@/lib/positive-id';
 import { isForbiddenError } from '@/lib/query-error';
 import { useManagedVenuesQuery } from '../api';
-import { findManagedVenue, toVenueId, VENUES_ORIGIN } from '../manage-venues-labels';
+import { findManagedVenue, VENUES_ORIGIN } from '../manage-venues-labels';
 import { toManagedVenuesErrorMessage } from '../manage-venues-messages';
 import { VenueEditor } from './VenueEditor';
 import { VenueEditorDenied } from './VenueEditorDenied';
@@ -17,7 +18,7 @@ const TITLE = 'Ort bearbeiten';
 
 export const VenueEditScreen: FC = () => {
   const { venueId } = useParams({ from: ROUTE_ID });
-  const id = toVenueId(venueId);
+  const id = parsePositiveId(venueId);
   const venues = useManagedVenuesQuery();
   const permissions = usePermissions();
   const errorMessage = toManagedVenuesErrorMessage(venues.error);

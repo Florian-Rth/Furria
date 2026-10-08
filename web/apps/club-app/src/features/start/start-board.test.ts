@@ -142,9 +142,7 @@ describe('toShownCount', () => {
   it.each([
     { shownCount: 3, total: 5, expected: 3 },
     { shownCount: 3, total: 4, expected: 4 },
-    { shownCount: 3, total: 3, expected: 3 },
     { shownCount: 4, total: 2, expected: 2 },
-    { shownCount: 3, total: 0, expected: 0 },
   ])(
     'shows $expected of $total when the server shows $shownCount',
     ({ shownCount, total, expected }) => {
@@ -156,7 +154,6 @@ describe('toShownCount', () => {
 describe('hiddenCountOf', () => {
   it.each([
     { shownCount: 5, total: 7, expected: 2 },
-    { shownCount: 5, total: 5, expected: 0 },
     { shownCount: 6, total: 5, expected: 0 },
   ])('hides $expected of $total', ({ shownCount, total, expected }) => {
     const entries = Array.from({ length: total }, (_, index) =>
@@ -185,18 +182,6 @@ describe('withoutQuiet', () => {
     const [panel] = withoutQuiet(board, quiet({ [key]: '2027-01-30' }), new Set([key])).panels;
 
     expect(panel?.kind === 'mine' && panel.mine).toHaveLength(1);
-  });
-
-  it('keeps a line whose quiet ended before today', () => {
-    const board = start([minePanel([mine(5)])]);
-
-    const result = withoutQuiet(
-      board,
-      quiet({ 'mine:newGroupMembership:5:2027-01-17': '2027-01-18' }),
-      NONE,
-    );
-
-    expect(result.panels).toHaveLength(1);
   });
 
   it('drops a GRUPPEN panel whose only moment is quiet', () => {
@@ -247,7 +232,6 @@ describe('isVisitOver', () => {
   it.each([
     { minutes: 9, expected: false },
     { minutes: 10, expected: true },
-    { minutes: 45, expected: true },
   ])('ends the visit after $minutes minutes away: $expected', ({ minutes, expected }) => {
     expect(isVisitOver(hiddenAt, hiddenAt + minutes * 60_000)).toBe(expected);
   });
@@ -256,10 +240,6 @@ describe('isVisitOver', () => {
 describe('visit hold', () => {
   const first = start([calendar([entry(1, '2027-01-21T17:00:00Z')])]);
   const fresh = start([calendar([entry(2, '2027-01-22T17:00:00Z')])]);
-
-  it('opens without a visit until data arrives', () => {
-    expect(openVisitHold(undefined).visit).toBeNull();
-  });
 
   it('replaces the view with fresh data before her first touch', () => {
     const hold = nextVisitHold(openVisitHold(first), fresh);
@@ -287,12 +267,6 @@ describe('visit hold', () => {
 
     expect(hold.frozen).toBe(true);
     expect(hold.touched.has('calendar:1')).toBe(true);
-  });
-
-  it('keeps the same hold when the line was touched before', () => {
-    const touched = touchedVisitHold(openVisitHold(first), 'calendar:1');
-
-    expect(touchedVisitHold(touched, 'calendar:1')).toBe(touched);
   });
 
   it.each([

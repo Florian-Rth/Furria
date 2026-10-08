@@ -33,11 +33,6 @@ const OVER_FOLD_LABEL = 'Vorbei';
 const LABEL_SEPARATOR = ' · ';
 const NO_VENUE_LABEL = 'Ohne Ort';
 
-const EVENT_ID_PATTERN = /^[1-9]\d*$/;
-
-export const toEventId = (raw: string): number | null =>
-  EVENT_ID_PATTERN.test(raw) ? Number(raw) : null;
-
 export interface EventsPartition {
   upcoming: EventSummary[];
   over: EventSummary[];

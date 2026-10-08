@@ -2,10 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { TicketRequest, TicketRequestsResponse } from './schemas';
 import {
   groupTicketRequests,
-  requestsOfEvent,
-  toPhoneHref,
-  toRequestsTally,
-  toTicketUnitLabel,
+  toRequestsTotals,
   withTicketRequestToDoMark,
 } from './ticket-requests-labels';
 
@@ -40,41 +37,12 @@ describe('groupTicketRequests', () => {
   });
 });
 
-describe('requestsOfEvent', () => {
-  it('keeps only the requests of one evening', () => {
-    const requests = [
-      request({ ticketRequestId: 1, eventId: 12 }),
-      request({ ticketRequestId: 2, eventId: 14 }),
-    ];
-
-    expect(requestsOfEvent(requests, 14).map((r) => r.ticketRequestId)).toEqual([2]);
-  });
-});
-
-describe('toRequestsTally', () => {
-  it.each([
-    [[request({ ticketCount: 1 })], '1 Anfrage · 1 Karte'],
-    [[request({ ticketCount: 4 }), request({ ticketCount: 2 })], '2 Anfragen · 6 Karten'],
-  ])('counts %j as %s', (requests, tally) => {
-    expect(toRequestsTally(requests)).toBe(tally);
-  });
-});
-
-describe('toTicketUnitLabel', () => {
-  it.each([
-    [1, 'Karte'],
-    [3, 'Karten'],
-  ])('names %i tickets %s', (count, unit) => {
-    expect(toTicketUnitLabel(count)).toBe(unit);
-  });
-});
-
-describe('toPhoneHref', () => {
-  it.each([
-    ['0171 1234567', 'tel:01711234567'],
-    ['+49 (171) 123-45/67', 'tel:+491711234567'],
-  ])('dials %s as %s', (phone, href) => {
-    expect(toPhoneHref(phone)).toBe(href);
+describe('toRequestsTotals', () => {
+  it('counts the requests and adds up their tickets', () => {
+    expect(toRequestsTotals([request({ ticketCount: 4 }), request({ ticketCount: 2 })])).toEqual({
+      requestCount: 2,
+      ticketCount: 6,
+    });
   });
 });
 

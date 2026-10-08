@@ -54,20 +54,38 @@ export const toPreviewRows = (
 export const toTickedCount = (entries: readonly TrainingPreviewEntry[]): number =>
   entries.filter((entry) => entry.checked).length;
 
-export const toPreviewSummary = (entries: readonly TrainingPreviewEntry[]): string => {
+export type PreviewSummary =
+  | { kind: 'empty' }
+  | { kind: 'noneTicked' }
+  | { kind: 'ticked'; count: number };
+
+export const previewSummaryOf = (entries: readonly TrainingPreviewEntry[]): PreviewSummary => {
   const ticked = toTickedCount(entries);
 
   if (entries.length === 0) {
-    return 'Im gewählten Zeitraum gibt es keine Termine.';
+    return { kind: 'empty' };
   }
   if (ticked === 0) {
-    return 'Keine Termine ausgewählt.';
-  }
-  if (ticked === 1) {
-    return '1 Training entsteht.';
+    return { kind: 'noneTicked' };
   }
 
-  return `${ticked} Trainings entstehen.`;
+  return { kind: 'ticked', count: ticked };
+};
+
+const toTickedLine = (count: number): string =>
+  count === 1 ? '1 Training entsteht.' : `${count} Trainings entstehen.`;
+
+export const toPreviewSummary = (entries: readonly TrainingPreviewEntry[]): string => {
+  const summary = previewSummaryOf(entries);
+
+  if (summary.kind === 'empty') {
+    return 'Im gewählten Zeitraum gibt es keine Termine.';
+  }
+  if (summary.kind === 'noneTicked') {
+    return 'Keine Termine ausgewählt.';
+  }
+
+  return toTickedLine(summary.count);
 };
 
 export const toTickedInstants = (

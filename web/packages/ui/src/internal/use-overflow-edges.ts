@@ -1,21 +1,7 @@
 import type { RefObject } from 'react';
 import { useLayoutEffect, useRef, useState } from 'react';
-
-const subpixelTolerance = 1;
-
-export interface OverflowEdges {
-  start: boolean;
-  end: boolean;
-}
-
-export const computeOverflowEdges = (
-  scrollLeft: number,
-  clientWidth: number,
-  scrollWidth: number,
-): OverflowEdges => ({
-  start: scrollLeft > subpixelTolerance,
-  end: scrollLeft + clientWidth < scrollWidth - subpixelTolerance,
-});
+import type { OverflowEdges } from './overflow-edges';
+import { computeOverflowEdges } from './overflow-edges';
 
 interface OverflowEdgesState {
   ref: RefObject<HTMLDivElement | null>;

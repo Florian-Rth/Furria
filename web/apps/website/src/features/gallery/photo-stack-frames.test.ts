@@ -1,89 +1,42 @@
 import { describe, expect, it } from 'vitest';
 import type { PhotoStackFrameSpec } from './photo-stack-frames';
-import {
-  fannedPhotoStackFrames,
-  leadPhotoStackFrame,
-  photoStackHeightPercent,
-  resolveFrameBottomPercent,
-  resolveFrameHeightPercent,
-  resolvePhotoStackEntrance,
-} from './photo-stack-frames';
+import { resolveFrameBottomPercent, resolvePhotoStackEntrance } from './photo-stack-frames';
 
-const allFrames = [leadPhotoStackFrame, ...fannedPhotoStackFrames];
+const frame = (overrides: Partial<PhotoStackFrameSpec>): PhotoStackFrameSpec => ({
+  label: 'foto',
+  orientation: 'portrait',
+  leftPercent: 0,
+  topPercent: 10,
+  widthPercent: 40,
+  rotation: -6,
+  depth: 3,
+  ...overrides,
+});
 
-const rotatedHorizontalSpan = (spec: PhotoStackFrameSpec): { left: number; right: number } => {
-  const radians = (Math.abs(spec.rotation) * Math.PI) / 180;
-  const halfWidth = spec.widthPercent / 2;
-  const halfHeight = resolveFrameHeightPercent(spec) / 2;
-  const rotatedHalfWidth = halfWidth * Math.cos(radians) + halfHeight * Math.sin(radians);
-  const centre = spec.leftPercent + halfWidth;
-
-  return { left: centre - rotatedHalfWidth, right: centre + rotatedHalfWidth };
-};
-
-const delayOf = (spec: PhotoStackFrameSpec): number => {
-  const { transition } = resolvePhotoStackEntrance(spec, false);
-
-  return typeof transition.delay === 'number' ? transition.delay : Number.NaN;
-};
-
-describe('photo stack frames', () => {
-  it('gives every frame a unique label and depth', () => {
-    expect(new Set(allFrames.map((spec) => spec.label)).size).toBe(allFrames.length);
-    expect(new Set(allFrames.map((spec) => spec.depth)).size).toBe(allFrames.length);
-  });
-
-  it('fans the frames by tilting each one', () => {
-    for (const spec of allFrames) {
-      expect(spec.rotation).not.toBe(0);
-    }
-  });
-
-  it('keeps the lead frame in front of the fanned ones', () => {
-    for (const spec of fannedPhotoStackFrames) {
-      expect(leadPhotoStackFrame.depth).toBeGreaterThan(spec.depth);
-    }
-  });
-
-  it('keeps every tilted frame inside the stack width', () => {
-    for (const spec of allFrames) {
-      const span = rotatedHorizontalSpan(spec);
-      expect(span.left).toBeGreaterThanOrEqual(0);
-      expect(span.right).toBeLessThanOrEqual(100);
-    }
-  });
-
-  it('keeps every tilted frame inside the stack height', () => {
-    for (const spec of allFrames) {
-      expect(resolveFrameBottomPercent(spec)).toBeLessThanOrEqual(photoStackHeightPercent);
-    }
-  });
-
-  it('leaves no empty band under the lowest frame', () => {
-    const lowestBottom = Math.max(...allFrames.map(resolveFrameBottomPercent));
-
-    expect(photoStackHeightPercent).toBe(lowestBottom);
+describe('resolveFrameBottomPercent', () => {
+  it.each<[PhotoStackFrameSpec, number]>([
+    [frame({ orientation: 'portrait', topPercent: 10, widthPercent: 40 }), 60],
+    [frame({ orientation: 'landscape', topPercent: 0, widthPercent: 70 }), 50],
+  ])('places the bottom edge of %j at %d%', (spec, bottom) => {
+    expect(resolveFrameBottomPercent(spec)).toBeCloseTo(bottom);
   });
 });
 
 describe('resolvePhotoStackEntrance', () => {
-  it('settles a frame at its own rotation', () => {
-    const entrance = resolvePhotoStackEntrance(leadPhotoStackFrame, false);
+  it.each([
+    [1, 0],
+    [3, 0.18],
+  ])('delays a frame at depth %i by %ds so the back frames settle first', (depth, delay) => {
+    const { transition } = resolvePhotoStackEntrance(frame({ depth }), false);
 
-    expect(entrance.animate).toEqual({ opacity: 1, rotate: leadPhotoStackFrame.rotation, y: 0 });
-    expect(entrance.initial).toEqual({ opacity: 0, rotate: 0, y: 18 });
+    expect(transition.delay).toBeCloseTo(delay);
   });
 
-  it('lets the fanned frames settle before the lead frame', () => {
-    for (const spec of fannedPhotoStackFrames) {
-      expect(delayOf(spec)).toBeLessThan(delayOf(leadPhotoStackFrame));
-    }
-  });
-
-  it('starts a reduced-motion stack already settled', () => {
-    const entrance = resolvePhotoStackEntrance(leadPhotoStackFrame, true);
-
-    expect(entrance.initial).toEqual(entrance.animate);
-    expect(entrance.transition).toEqual({ duration: 0 });
+  it('starts a reduced-motion stack already settled at its own rotation', () => {
+    expect(resolvePhotoStackEntrance(frame({ rotation: -6 }), true)).toEqual({
+      initial: { opacity: 1, rotate: -6, y: 0 },
+      animate: { opacity: 1, rotate: -6, y: 0 },
+      transition: { duration: 0 },
+    });
   });
 });

@@ -3,36 +3,22 @@ import { arrivalCascadeOf } from './arrival-cascade';
 
 const SELECTOR = '& > *';
 
+const delayOf = (cascade: ReturnType<typeof arrivalCascadeOf>, nth: string): number =>
+  Number.parseFloat(String(cascade[`${SELECTOR}:nth-of-type(${nth})`]?.animationDelay));
+
 describe('arrivalCascadeOf', () => {
-  it('animates every block it is pointed at', () => {
-    expect(arrivalCascadeOf(SELECTOR, 3)[SELECTOR]).toHaveProperty('animation');
-  });
-
-  it('lets the first block arrive without waiting', () => {
-    const cascade = arrivalCascadeOf(SELECTOR, 3);
-
-    expect(cascade[`${SELECTOR}:nth-of-type(1)`]).toEqual({ animationDelay: '0.000s' });
-  });
-
-  it('delays each following block by one more step than the one before it', () => {
+  it('delays each block by one more step, starting at zero', () => {
     const cascade = arrivalCascadeOf(SELECTOR, 4);
-    const delays = [1, 2, 3, 4].map((block) =>
-      Number.parseFloat(String(cascade[`${SELECTOR}:nth-of-type(${block})`]?.animationDelay)),
-    );
+    const delays = ['1', '2', '3', '4'].map((nth) => delayOf(cascade, nth));
 
-    expect(delays).toEqual([...delays].sort((first, second) => first - second));
+    expect(delays[0]).toBe(0);
     expect(new Set(delays).size).toBe(delays.length);
+    expect(delays).toEqual([...delays].sort((first, second) => first - second));
   });
 
-  it('holds every block past the cascade at the last delay, so a long page still arrives', () => {
-    const blocks = 4;
-    const cascade = arrivalCascadeOf(SELECTOR, blocks);
-    const last = cascade[`${SELECTOR}:nth-of-type(${blocks})`];
+  it('holds every block past the cascade at the last delay', () => {
+    const cascade = arrivalCascadeOf(SELECTOR, 4);
 
-    expect(cascade[`${SELECTOR}:nth-of-type(n + ${blocks + 1})`]).toEqual(last);
-  });
-
-  it('writes one rule per block plus the animation and the tail', () => {
-    expect(Object.keys(arrivalCascadeOf(SELECTOR, 5))).toHaveLength(7);
+    expect(delayOf(cascade, 'n + 5')).toBe(delayOf(cascade, '4'));
   });
 });

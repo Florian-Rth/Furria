@@ -1,7 +1,7 @@
 import { useParams, useSearch } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { parsePositiveId } from '@/lib/positive-id';
 import { usePersonEditorGate } from '../hooks/use-person-editor-gate';
-import { toEntryId, toPersonId } from '../manage-persons-labels';
 import { PersonEditorFallback } from './PersonEditorFallback';
 import { PersonEditorNotFound } from './PersonEditorNotFound';
 import { PersonPauseEditor } from './PersonPauseEditor';
@@ -12,13 +12,13 @@ const TITLE = 'Ruhezeit eintragen';
 export const PersonPauseNewScreen: FC = () => {
   const { personId } = useParams({ from: ROUTE_ID });
   const { membership: membershipParam } = useSearch({ from: ROUTE_ID });
-  const { gate, retry } = usePersonEditorGate(toPersonId(personId));
+  const { gate, retry } = usePersonEditorGate(parsePositiveId(personId));
 
   if (gate.kind !== 'ready') {
     return <PersonEditorFallback hold={gate} title={TITLE} onRetry={retry} />;
   }
 
-  const membershipId = membershipParam === undefined ? null : toEntryId(membershipParam);
+  const membershipId = membershipParam === undefined ? null : parsePositiveId(membershipParam);
   const membership =
     membershipId === null
       ? null

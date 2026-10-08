@@ -1,12 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { readReadEntryIds, writeReadEntryIds } from './changelog-storage';
 
-const createFakeStorage = (initialValue?: string): Pick<Storage, 'getItem' | 'setItem'> => {
+const createFakeStorage = (): Pick<Storage, 'getItem' | 'setItem'> => {
   const values = new Map<string, string>();
-
-  if (initialValue !== undefined) {
-    values.set('furria.changelog.read', initialValue);
-  }
 
   return {
     getItem: (key: string) => values.get(key) ?? null,
@@ -16,17 +12,11 @@ const createFakeStorage = (initialValue?: string): Pick<Storage, 'getItem' | 'se
   };
 };
 
-const createThrowingStorage = (): Pick<Storage, 'getItem'> => ({
-  getItem: () => {
-    throw new Error('storage is not available');
-  },
+const storageHolding = (stored: string | null): Pick<Storage, 'getItem'> => ({
+  getItem: () => stored,
 });
 
 describe('changelog storage', () => {
-  it('reports nothing read for an empty storage', () => {
-    expect(readReadEntryIds(createFakeStorage())).toEqual([]);
-  });
-
   it('round-trips read entry ids', () => {
     const storage = createFakeStorage();
 
@@ -35,19 +25,22 @@ describe('changelog storage', () => {
     expect(readReadEntryIds(storage)).toEqual(['website-p3-club-fe', 'website-p4-news-fe']);
   });
 
-  it('degrades to nothing read for a value that is not JSON', () => {
-    expect(readReadEntryIds(createFakeStorage('{ website-p4'))).toEqual([]);
-  });
-
-  it('degrades to nothing read for JSON of the wrong shape', () => {
-    expect(readReadEntryIds(createFakeStorage('{"read":["website-p4-news-fe"]}'))).toEqual([]);
-  });
-
-  it('degrades to nothing read for a list that is not made of strings', () => {
-    expect(readReadEntryIds(createFakeStorage('[1,2,3]'))).toEqual([]);
+  it.each([
+    ['nothing stored', null],
+    ['a value that is not JSON', '{ website-p4'],
+    ['JSON of the wrong shape', '{"read":["website-p4-news-fe"]}'],
+    ['a list that is not made of strings', '[1,2,3]'],
+  ])('degrades to nothing read for %s', (_, stored) => {
+    expect(readReadEntryIds(storageHolding(stored))).toEqual([]);
   });
 
   it('degrades to nothing read when storage access throws', () => {
-    expect(readReadEntryIds(createThrowingStorage())).toEqual([]);
+    const throwingStorage: Pick<Storage, 'getItem'> = {
+      getItem: () => {
+        throw new Error('storage is not available');
+      },
+    };
+
+    expect(readReadEntryIds(throwingStorage)).toEqual([]);
   });
 });

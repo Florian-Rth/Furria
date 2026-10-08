@@ -73,17 +73,39 @@ export const toPersonsRequestPath = (
   return query === '' ? PERSONS_REQUEST_PATH : `${PERSONS_REQUEST_PATH}?${query}`;
 };
 
-const toNoArchivedMatchLine = (query: string, access: PersonAccessFilter | null): string => {
+export type PersonsEmptyCase =
+  | { kind: 'archived-query'; needle: string }
+  | { kind: 'archived-filter' }
+  | { kind: 'archived-none' }
+  | { kind: 'access-filter'; access: PersonAccessFilter }
+  | { kind: 'register' };
+
+const archivedEmptyCaseOf = (
+  needle: string,
+  access: PersonAccessFilter | null,
+): PersonsEmptyCase => {
+  if (needle !== '') {
+    return { kind: 'archived-query', needle };
+  }
+
+  return access === null ? { kind: 'archived-none' } : { kind: 'archived-filter' };
+};
+
+export const personsEmptyCaseOf = (
+  query: string,
+  state: string,
+  access: PersonAccessFilter | null,
+  isArchivedView: boolean,
+): PersonsEmptyCase => {
   const needle = query.trim();
 
-  if (needle !== '') {
-    return `Keine archivierte Person passt zu „${needle}“.`;
-  }
-  if (access !== null) {
-    return 'Keine archivierte Person passt zu diesem Filter.';
+  if (isArchivedView) {
+    return archivedEmptyCaseOf(needle, access);
   }
 
-  return 'Gerade ist niemand archiviert.';
+  return access !== null && needle === '' && state === ALL_STATES_FILTER_ID
+    ? { kind: 'access-filter', access }
+    : { kind: 'register' };
 };
 
 export const toPersonsEmptyLine = (
@@ -92,13 +114,20 @@ export const toPersonsEmptyLine = (
   access: PersonAccessFilter | null,
   isArchivedView: boolean,
 ): string => {
-  if (isArchivedView) {
-    return toNoArchivedMatchLine(query, access);
-  }
+  const emptyCase = personsEmptyCaseOf(query, state, access, isArchivedView);
 
-  return access !== null && query.trim() === '' && state === ALL_STATES_FILTER_ID
-    ? toNoAccessMatchLine(access)
-    : toPersonsEmptyDescription(query, state);
+  switch (emptyCase.kind) {
+    case 'archived-query':
+      return `Keine archivierte Person passt zu „${emptyCase.needle}“.`;
+    case 'archived-filter':
+      return 'Keine archivierte Person passt zu diesem Filter.';
+    case 'archived-none':
+      return 'Gerade ist niemand archiviert.';
+    case 'access-filter':
+      return toNoAccessMatchLine(emptyCase.access);
+    case 'register':
+      return toPersonsEmptyDescription(query, state);
+  }
 };
 
 const REGISTER_ACCESS_CHIPS: Record<RegisterAccessState, StateChip> = {

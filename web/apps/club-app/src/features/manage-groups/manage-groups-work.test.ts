@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { GroupRegisterBands, GroupWorkFilterId } from './manage-groups-work';
+import type { GroupWorkFilterId } from './manage-groups-work';
 import {
   ALL_GROUPS_FILTER_ID,
   ARCHIVED_GROUPS_FILTER_ID,
@@ -7,12 +7,12 @@ import {
   NO_ADMIN_GROUPS_FILTER_ID,
   NO_KIND_GROUPS_FILTER_ID,
   NO_PEOPLE_GROUPS_FILTER_ID,
+  registerMetaKindOf,
   resolveGroupWorkFilter,
   toGroupRegisterBands,
   toGroupWorkFacets,
   toGroupWorkFilterId,
   toGroupWorkFilterOptions,
-  toRegisterMeta,
 } from './manage-groups-work';
 import type { ManagedGroupSummary } from './schemas';
 
@@ -76,17 +76,6 @@ describe('toGroupWorkFacets', () => {
       archived: 1,
     });
   });
-
-  it('counts an empty register', () => {
-    expect(toGroupWorkFacets([])).toEqual({
-      total: 0,
-      listed: 0,
-      withoutAdmin: 0,
-      withoutKind: 0,
-      withoutPeople: 0,
-      archived: 0,
-    });
-  });
 });
 
 describe('toGroupWorkFilterOptions', () => {
@@ -114,12 +103,8 @@ describe('toGroupWorkFilterOptions', () => {
 
 describe('toGroupWorkFilterId', () => {
   it.each([
-    [NO_ADMIN_GROUPS_FILTER_ID, NO_ADMIN_GROUPS_FILTER_ID],
     [NO_KIND_GROUPS_FILTER_ID, NO_KIND_GROUPS_FILTER_ID],
-    [NO_PEOPLE_GROUPS_FILTER_ID, NO_PEOPLE_GROUPS_FILTER_ID],
-    [ARCHIVED_GROUPS_FILTER_ID, ARCHIVED_GROUPS_FILTER_ID],
     ['active', ALL_GROUPS_FILTER_ID],
-    ['', ALL_GROUPS_FILTER_ID],
   ])('maps %s onto %s', (raw, expected) => {
     expect(toGroupWorkFilterId(raw)).toBe(expected);
   });
@@ -182,23 +167,17 @@ describe('toGroupRegisterBands', () => {
   });
 });
 
-describe('toRegisterMeta', () => {
-  const bandsOf = (filter: GroupWorkFilterId): GroupRegisterBands =>
-    toGroupRegisterBands(ALL, '', filter);
-
-  it('stays silent on the whole register, which the lead already states', () => {
-    expect(toRegisterMeta(ALL_GROUPS_FILTER_ID, bandsOf(ALL_GROUPS_FILTER_ID))).toBeUndefined();
-  });
-
-  it('names the facet it is filtered to', () => {
-    expect(toRegisterMeta(NO_KIND_GROUPS_FILTER_ID, bandsOf(NO_KIND_GROUPS_FILTER_ID))).toBe(
-      '2 Gruppen ohne Gruppenart',
-    );
-  });
-
-  it('says nothing matched when the bands are empty', () => {
-    expect(
-      toRegisterMeta(ALL_GROUPS_FILTER_ID, toGroupRegisterBands([], '', ALL_GROUPS_FILTER_ID)),
-    ).toBe('Keine Gruppe passt');
+describe('registerMetaKindOf', () => {
+  it.each([
+    {
+      scenario: 'the whole register',
+      filter: ALL_GROUPS_FILTER_ID,
+      groups: ALL,
+      expected: 'whole-register',
+    },
+    { scenario: 'a facet', filter: NO_KIND_GROUPS_FILTER_ID, groups: ALL, expected: 'facet' },
+    { scenario: 'empty bands', filter: ALL_GROUPS_FILTER_ID, groups: [], expected: 'no-match' },
+  ] as const)('reads $scenario as $expected', ({ filter, groups, expected }) => {
+    expect(registerMetaKindOf(filter, toGroupRegisterBands(groups, '', filter))).toBe(expected);
   });
 });

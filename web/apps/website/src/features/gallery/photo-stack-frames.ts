@@ -1,4 +1,4 @@
-import { kkTokens } from '@furria/ui';
+import { kkTokens } from '@furria/ui/tokens';
 import type { TargetAndTransition, Transition } from 'motion/react';
 import type { PhotoOrientation } from '@/features/gallery/gallery-content';
 

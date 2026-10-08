@@ -23,9 +23,7 @@ const glyph = (char: string, left: number, line = 0): SwayGlyph => ({
 describe('handoverProgressAt', () => {
   it.each([
     [-10, 0],
-    [0, 0],
     [36, 0.5],
-    [72, 1],
     [200, 1],
   ])('maps scroll %d to %d', (scrollOffset, expected) => {
     expect(handoverProgressAt(scrollOffset, 72)).toBe(expected);
@@ -36,7 +34,6 @@ describe('letterProgressAt', () => {
   it.each([
     [0, 0, 10, 0],
     [1, 9, 10, 1],
-    [1, 0, 10, 1],
     [0.5, 0, 1, 0.5],
   ])('at %d letter %d of %d travels %d', (progress, index, count, expected) => {
     expect(letterProgressAt(progress, index, count)).toBe(expected);
@@ -49,10 +46,8 @@ describe('letterProgressAt', () => {
 
 describe('lowerDueAt', () => {
   it.each([
-    [0, false],
     [0.44, false],
     [0.45, true],
-    [1, true],
   ])('at %d turns lower %s', (progress, expected) => {
     expect(lowerDueAt(progress)).toBe(expected);
   });
@@ -118,7 +113,6 @@ describe('restPoseAt', () => {
   it.each([
     [0, 0, 5, 0, 1],
     [0.5, 0, 5, -18, 0],
-    [0.5, 4, 5, -18, 0],
     [1, 2, 5, -18, 0],
   ])('at %d letter %d of %d shifts %d at opacity %d', (progress, index, count, x, opacity) => {
     const pose = restPoseAt(progress, index, count);

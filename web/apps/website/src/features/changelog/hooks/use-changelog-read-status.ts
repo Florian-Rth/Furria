@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { CHANGELOG_ENTRIES, sortEntriesByDateDesc } from '../changelog-content';
+import { CHANGELOG_ENTRIES } from '../changelog-content';
 import { readReadEntryIds, writeReadEntryIds } from '../changelog-storage';
 import {
   addReadEntryId,
   countUnreadEntries,
   isEntryRead,
   isNewestEntryUnread,
+  sortEntriesByDateDesc,
 } from '../read-state';
 import type { ChangelogEntry } from '../schemas';
 

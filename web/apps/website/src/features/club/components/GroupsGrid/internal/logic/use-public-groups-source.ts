@@ -1,22 +1,6 @@
 import { usePublicGroupsQuery } from '@/lib/public-groups/api';
-import type { PublicGroup } from '@/lib/public-groups/schemas';
-
-export type PublicGroupsSource =
-  | { status: 'loading' }
-  | { status: 'error'; retry: () => void }
-  | { status: 'ready'; groups: PublicGroup[] };
-
-export const resolvePublicGroupsSource = (
-  groups: PublicGroup[] | undefined,
-  hasFailed: boolean,
-  retry: () => void,
-): PublicGroupsSource => {
-  if (groups !== undefined) {
-    return { status: 'ready', groups };
-  }
-
-  return hasFailed ? { status: 'error', retry } : { status: 'loading' };
-};
+import type { PublicGroupsSource } from './public-groups-source';
+import { resolvePublicGroupsSource } from './public-groups-source';
 
 export const usePublicGroupsSource = (): PublicGroupsSource => {
   const { data, isError, refetch } = usePublicGroupsQuery();

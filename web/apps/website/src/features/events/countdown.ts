@@ -30,18 +30,31 @@ export const deriveCountdown = (targetIso: string, now: Date): Countdown | null 
   };
 };
 
-export const formatCountdownLabel = (countdown: Countdown): string => {
+export type CountdownLabelKind = 'days' | 'oneDay' | 'hours' | 'minutes' | 'seconds';
+
+export const countdownLabelKindOf = (countdown: Countdown): CountdownLabelKind => {
   if (countdown.days > 1) {
-    return `in ${countdown.days} Tagen ${countdown.hours} Std.`;
+    return 'days';
   }
   if (countdown.days === 1) {
-    return `in 1 Tag ${countdown.hours} Std.`;
+    return 'oneDay';
   }
   if (countdown.hours > 0) {
-    return `in ${countdown.hours} Std. ${countdown.minutes} Min.`;
+    return 'hours';
   }
   if (countdown.minutes > 0) {
-    return `in ${countdown.minutes} Min. ${countdown.seconds} Sek.`;
+    return 'minutes';
   }
-  return `in ${countdown.seconds} Sek.`;
+  return 'seconds';
 };
+
+const COUNTDOWN_LABELS: Record<CountdownLabelKind, (countdown: Countdown) => string> = {
+  days: (countdown) => `in ${countdown.days} Tagen ${countdown.hours} Std.`,
+  oneDay: (countdown) => `in 1 Tag ${countdown.hours} Std.`,
+  hours: (countdown) => `in ${countdown.hours} Std. ${countdown.minutes} Min.`,
+  minutes: (countdown) => `in ${countdown.minutes} Min. ${countdown.seconds} Sek.`,
+  seconds: (countdown) => `in ${countdown.seconds} Sek.`,
+};
+
+export const formatCountdownLabel = (countdown: Countdown): string =>
+  COUNTDOWN_LABELS[countdownLabelKindOf(countdown)](countdown);

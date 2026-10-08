@@ -1,4 +1,4 @@
-import { GROUP_TONES } from '@furria/ui';
+import { GROUP_TONES } from '@furria/ui/group-tone';
 import { z } from 'zod';
 
 export const PublicGroupSchema = z.object({

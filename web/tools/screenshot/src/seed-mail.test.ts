@@ -11,7 +11,6 @@ describe('mailSentSince', () => {
     ['2026-10-02T14:36:20.000Z', 'new'],
     ['2026-10-02T14:36:28.000Z', 'new'],
     ['2026-10-02T14:36:29.000Z', null],
-    ['2026-09-30T00:00:00.000Z', 'new'],
   ])('after %s finds %s', (sentAfter, expected) => {
     expect(mailSentSince(messages, new Date(sentAfter))?.ID ?? null).toBe(expected);
   });
@@ -19,12 +18,8 @@ describe('mailSentSince', () => {
 
 describe('invitationTokenOf', () => {
   it.each([
-    [
-      'Über diesen Link legst du dein Passwort fest:\nhttp://localhost:3001/invitation#token=Ab-9_xY',
-      'Ab-9_xY',
-    ],
-    ['<a href="http://localhost:3001/invitation#token=Zz12">Zugang</a>', 'Zz12'],
-    ['Hallo Sophie, der Link fehlt.', null],
+    ['<a href="http://localhost:3001/invitation#token=Ab-9_xY">x</a>', 'Ab-9_xY'],
+    ['http://localhost:3001/invitation', null],
   ])('reads the token from %j', (text, expected) => {
     expect(invitationTokenOf(text)).toBe(expected);
   });

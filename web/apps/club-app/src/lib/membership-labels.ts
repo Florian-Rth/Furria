@@ -1,5 +1,5 @@
 import type { MembershipState } from '@/lib/api/schemas';
-import { sessionAt } from '@/lib/club';
+import { sessionAt, sessionYearsLabelOf } from '@/lib/club';
 
 const MEMBERSHIP_STATE_LABELS: Record<MembershipState, string> = {
   none: 'kein Mitglied',
@@ -53,11 +53,7 @@ export const formatSinceSession = (isoDay: string): string => {
   return sessionAt(day).yearsLabel;
 };
 
-export const formatSessionLabel = (sessionYear: number): string => {
-  const endYearShort = String((sessionYear + 1) % 100).padStart(2, '0');
-
-  return `${sessionYear}/${endYearShort}`;
-};
+export const formatSessionLabel = (sessionYear: number): string => sessionYearsLabelOf(sessionYear);
 
 export const formatSessionNumber = (sessionNumber: number): string => `${sessionNumber}. Session`;
 

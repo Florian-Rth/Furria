@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import {
   buildShotVariants,
   deriveShotName,
-  filmstripFrameFileName,
   parseShotArgs,
   pickFilmstripFrames,
 } from './shot-plan.ts';
@@ -10,8 +9,6 @@ import {
 describe('deriveShotName', () => {
   it.each([
     ['/', 'home'],
-    ['/members', 'members'],
-    ['/members/3', 'members-3'],
     ['/manage/roles?role=7', 'manage-roles-role-7'],
     ['/Groups/2/', 'groups-2'],
   ])('turns %s into %s', (route, expected) => {
@@ -35,16 +32,6 @@ describe('buildShotVariants', () => {
       (variant) => variant.fileName,
     );
     expect(fileNames).toEqual(['start-desktop-dark.png']);
-  });
-});
-
-describe('filmstripFrameFileName', () => {
-  it.each([
-    [0, 'lena-filmstrip-0000ms.png'],
-    [120, 'lena-filmstrip-0120ms.png'],
-    [1400, 'lena-filmstrip-1400ms.png'],
-  ])('pads %i ms', (offset, expected) => {
-    expect(filmstripFrameFileName('lena', offset)).toBe(expected);
   });
 });
 

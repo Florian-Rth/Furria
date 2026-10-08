@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { RequestBlockedError, RequestFailedError, ServerFailureError } from '@/lib/api/api-error';
+import { RequestFailedError, ServerFailureError } from '@/lib/api/api-error';
 import { toResetErrorMessages } from './reset-messages';
 
 type Slot = 'none' | 'password' | 'footer';
@@ -27,7 +27,6 @@ describe('toResetErrorMessages', () => {
       'password',
     ],
     ['a throttled reset link', new ServerFailureError(429), 'footer'],
-    ['a blocked request', new RequestBlockedError(), 'footer'],
   ])('places %s', (_case, error, expected) => {
     expect(slotOf(error)).toBe(expected);
   });

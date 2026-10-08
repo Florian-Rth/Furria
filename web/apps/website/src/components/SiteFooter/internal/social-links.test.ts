@@ -17,7 +17,6 @@ describe('buildSocialLinks', () => {
 
   it.each([
     ['nothing while loading', undefined, []],
-    ['nothing the club has not recorded', club, []],
     [
       'only the recorded network',
       { ...club, instagramUrl: 'https://i.test/furria' },

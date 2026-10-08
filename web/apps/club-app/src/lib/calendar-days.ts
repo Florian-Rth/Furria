@@ -113,17 +113,31 @@ export const toTimeLabel = (isoInstant: string): string => {
   return `${pad(moment.getHours())}:${pad(moment.getMinutes())}`;
 };
 
-export const toTimeSpanLabel = (startsAt: string, endsAt: string | null): string => {
-  const start = toTimeLabel(startsAt);
+export type TimeSpan = { kind: 'open-ended' } | { kind: 'overnight' | 'same-day'; endsAt: string };
 
+export const toTimeSpan = (startsAt: string, endsAt: string | null): TimeSpan => {
   if (endsAt === null) {
-    return `${OPEN_END_PREFIX}${start}${CLOCK_SUFFIX}`;
+    return { kind: 'open-ended' };
   }
   if (toLocalIsoDay(endsAt) !== toLocalIsoDay(startsAt)) {
-    return `${start}${CLOCK_SUFFIX}${TIME_SPAN_SEPARATOR}${toDayNumberLabel(endsAt)} ${toTimeLabel(endsAt)}${CLOCK_SUFFIX}`;
+    return { kind: 'overnight', endsAt };
   }
 
-  return `${start}${TIME_SPAN_SEPARATOR}${toTimeLabel(endsAt)}${CLOCK_SUFFIX}`;
+  return { kind: 'same-day', endsAt };
+};
+
+export const toTimeSpanLabel = (startsAt: string, endsAt: string | null): string => {
+  const start = toTimeLabel(startsAt);
+  const span = toTimeSpan(startsAt, endsAt);
+
+  if (span.kind === 'open-ended') {
+    return `${OPEN_END_PREFIX}${start}${CLOCK_SUFFIX}`;
+  }
+  if (span.kind === 'overnight') {
+    return `${start}${CLOCK_SUFFIX}${TIME_SPAN_SEPARATOR}${toDayNumberLabel(span.endsAt)} ${toTimeLabel(span.endsAt)}${CLOCK_SUFFIX}`;
+  }
+
+  return `${start}${TIME_SPAN_SEPARATOR}${toTimeLabel(span.endsAt)}${CLOCK_SUFFIX}`;
 };
 
 export const toIsoDayLabel = (isoDay: string): string => {

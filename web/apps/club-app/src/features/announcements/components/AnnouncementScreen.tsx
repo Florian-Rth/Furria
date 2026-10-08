@@ -1,6 +1,6 @@
 import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { toAnnouncementIdParam } from '../announcements-labels';
+import { parsePositiveId } from '@/lib/positive-id';
 import { toAnnouncementsErrorMessage } from '../announcements-messages';
 import { useAnnouncementsQuery } from '../api';
 import { AnnouncementDenied } from './AnnouncementDenied';
@@ -14,7 +14,7 @@ const TITLE = 'Aushang ändern';
 
 export const AnnouncementScreen: FC = () => {
   const { announcementId } = useParams({ from: ROUTE_ID });
-  const id = toAnnouncementIdParam(announcementId);
+  const id = parsePositiveId(announcementId);
   const announcements = useAnnouncementsQuery();
   const errorMessage = toAnnouncementsErrorMessage(announcements.error);
 

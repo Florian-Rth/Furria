@@ -1,11 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import {
-  clearAnswersInSession,
-  readAnswersFromSession,
-  writeAnswersToSession,
-} from './session-storage';
+import { readAnswersFromSession, writeAnswersToSession } from './session-storage';
 
-const createFakeStorage = (): Pick<Storage, 'getItem' | 'setItem' | 'removeItem'> => {
+const createFakeStorage = (): Pick<Storage, 'getItem' | 'setItem'> => {
   const entries = new Map<string, string>();
 
   return {
@@ -13,17 +9,14 @@ const createFakeStorage = (): Pick<Storage, 'getItem' | 'setItem' | 'removeItem'
     setItem: (key: string, value: string) => {
       entries.set(key, value);
     },
-    removeItem: (key: string) => {
-      entries.delete(key);
-    },
   };
 };
 
-describe('group-matcher session storage', () => {
-  it('reads no answers from an empty session', () => {
-    expect(readAnswersFromSession(createFakeStorage())).toEqual({});
-  });
+const storageHolding = (stored: string | null): Pick<Storage, 'getItem'> => ({
+  getItem: () => stored,
+});
 
+describe('group-matcher session storage', () => {
   it('round-trips the answers through the session', () => {
     const storage = createFakeStorage();
 
@@ -32,28 +25,11 @@ describe('group-matcher session storage', () => {
     expect(readAnswersFromSession(storage)).toEqual({ 'age-band': '18-plus', stage: 'yes' });
   });
 
-  it('forgets the answers again', () => {
-    const storage = createFakeStorage();
-
-    writeAnswersToSession(storage, { stage: 'yes' });
-    clearAnswersInSession(storage);
-
-    expect(readAnswersFromSession(storage)).toEqual({});
-  });
-
-  it('ignores a session entry that is not readable as answers', () => {
-    const storage = createFakeStorage();
-
-    storage.setItem('furria.matcher.answers', 'nicht mal JSON');
-
-    expect(readAnswersFromSession(storage)).toEqual({});
-  });
-
-  it('ignores a session entry of the wrong shape', () => {
-    const storage = createFakeStorage();
-
-    storage.setItem('furria.matcher.answers', JSON.stringify({ stage: 3 }));
-
-    expect(readAnswersFromSession(storage)).toEqual({});
+  it.each([
+    ['nothing stored', null],
+    ['an entry that is not JSON', 'nicht mal JSON'],
+    ['an entry of the wrong shape', JSON.stringify({ stage: 3 })],
+  ])('reads no answers from %s', (_, stored) => {
+    expect(readAnswersFromSession(storageHolding(stored))).toEqual({});
   });
 });

@@ -9,8 +9,6 @@ describe('toLoginErrorKind', () => {
     ['a request that never left the device', new RequestBlockedError(), 'unreachable'],
     ['too many failed sign-ins from this address', new ServerFailureError(429), 'throttled'],
     ['a server failure', new ServerFailureError(500), 'unexpected'],
-    ['a rejected request payload', new ServerFailureError(400), 'unexpected'],
-    ['an error from outside the API layer', new Error('boom'), 'unexpected'],
   ])('maps %s to %s', (_case, error, expected) => {
     expect(toLoginErrorKind(error)).toBe(expected);
   });

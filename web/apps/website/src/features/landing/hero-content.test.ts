@@ -1,54 +1,27 @@
 import { describe, expect, it } from 'vitest';
-import { buildEyebrowLabel, buildHeroStats } from './hero-content';
+import { UNKNOWN_FACT } from '@/lib/public-club/club-facts';
+import type { PublicClub } from '@/lib/public-club/schemas';
+import { buildHeroStats } from './hero-content';
 
-describe('buildEyebrowLabel', () => {
-  it('names the advertised session before the opening', () => {
-    expect(buildEyebrowLabel('2026/27')).toBe('★ SESSION 2026/27 · 11.11. ERÖFFNUNG');
-  });
-
-  it('names only the opening while the session is still loading', () => {
-    expect(buildEyebrowLabel(undefined)).toBe('★ 11.11. ERÖFFNUNG');
-  });
+const clubOf = (foundedYear: number | null): PublicClub => ({
+  name: null,
+  foundedYear,
+  email: null,
+  phone: null,
+  instagramUrl: null,
+  facebookUrl: null,
+  memberCount: 183,
+  groupCount: 7,
+  ageOfConsent: 16,
+  session: { startYear: 2026, label: '2026/27', motto: null },
 });
 
 describe('buildHeroStats', () => {
-  const session = { startYear: 2026, label: '2026/27', motto: null };
-
-  it('shows every stat as unknown while the club is loading', () => {
-    expect(buildHeroStats(undefined).map((stat) => stat.value)).toEqual(['—', '—', '—']);
-  });
-
-  it('rounds the members and prints groups and founding year once loaded', () => {
-    const club = {
-      name: null,
-      foundedYear: 1971,
-      email: null,
-      phone: null,
-      instagramUrl: null,
-      facebookUrl: null,
-      memberCount: 183,
-      groupCount: 7,
-      ageOfConsent: 16,
-      session,
-    };
-
-    expect(buildHeroStats(club).map((stat) => stat.value)).toEqual(['180+', '7', '1971']);
-  });
-
-  it('leaves the founding year out when the club has not recorded it', () => {
-    const club = {
-      name: null,
-      foundedYear: null,
-      email: null,
-      phone: null,
-      instagramUrl: null,
-      facebookUrl: null,
-      memberCount: 183,
-      groupCount: 7,
-      ageOfConsent: 16,
-      session,
-    };
-
-    expect(buildHeroStats(club).map((stat) => stat.value)).toEqual(['180+', '7']);
+  it.each<[string, PublicClub | undefined, string[]]>([
+    ['the club is loading', undefined, [UNKNOWN_FACT, UNKNOWN_FACT, UNKNOWN_FACT]],
+    ['the founding year is recorded', clubOf(1971), ['180+', '7', '1971']],
+    ['the founding year is not recorded', clubOf(null), ['180+', '7']],
+  ])('shows the stats while %s', (_, club, values) => {
+    expect(buildHeroStats(club).map((stat) => stat.value)).toEqual(values);
   });
 });

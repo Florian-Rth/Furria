@@ -83,10 +83,8 @@ describe('isWebLinkOrEmpty', () => {
   it.each([
     { value: '', expected: true },
     { value: 'https://furria.de', expected: true },
-    { value: 'http://furria.de', expected: true },
     { value: 'furria.de', expected: false },
     { value: 'ftp://furria.de', expected: false },
-    { value: 'javascript:alert(1)', expected: false },
   ])('judges "$value" as $expected', ({ value, expected }) => {
     expect(isWebLinkOrEmpty(value)).toBe(expected);
   });

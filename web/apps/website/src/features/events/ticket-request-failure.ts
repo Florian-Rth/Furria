@@ -18,9 +18,17 @@ export interface TicketRequestFieldFailure {
   message: string;
 }
 
+export type TicketRequestNoticeKind =
+  | 'unavailable'
+  | 'blocked'
+  | 'rateLimited'
+  | 'proofRefused'
+  | 'closed'
+  | 'gone';
+
 export interface TicketRequestFailure {
   fields: TicketRequestFieldFailure[];
-  notice: string | null;
+  noticeKind: TicketRequestNoticeKind | null;
   offersMail: boolean;
   closesWindow: boolean;
 }
@@ -39,18 +47,27 @@ const FORM_FIELD_OF_API_FIELD = new Map<string, TicketRequestFieldName>([
   ['consentAccepted', 'consent'],
 ]);
 
+const TICKET_REQUEST_NOTICES: Record<TicketRequestNoticeKind, string> = {
+  unavailable: ticketRequestUnavailableMessage,
+  blocked: ticketRequestBlockedMessage,
+  rateLimited: ticketRequestRateLimitedMessage,
+  proofRefused: ticketRequestProofRefusedMessage,
+  closed: ticketRequestClosedMessage,
+  gone: ticketRequestGoneMessage,
+};
+
 const noticeOnly = (
-  notice: string,
+  noticeKind: TicketRequestNoticeKind,
   offersMail: boolean,
   closesWindow: boolean,
-): TicketRequestFailure => ({ fields: [], notice, offersMail, closesWindow });
+): TicketRequestFailure => ({ fields: [], noticeKind, offersMail, closesWindow });
 
-const UNAVAILABLE = noticeOnly(ticketRequestUnavailableMessage, true, false);
-const BLOCKED = noticeOnly(ticketRequestBlockedMessage, true, false);
-const RATE_LIMITED = noticeOnly(ticketRequestRateLimitedMessage, false, false);
-const PROOF_REFUSED = noticeOnly(ticketRequestProofRefusedMessage, true, false);
-const CLOSED = noticeOnly(ticketRequestClosedMessage, false, true);
-const GONE = noticeOnly(ticketRequestGoneMessage, false, true);
+const UNAVAILABLE = noticeOnly('unavailable', true, false);
+const BLOCKED = noticeOnly('blocked', true, false);
+const RATE_LIMITED = noticeOnly('rateLimited', false, false);
+const PROOF_REFUSED = noticeOnly('proofRefused', true, false);
+const CLOSED = noticeOnly('closed', false, true);
+const GONE = noticeOnly('gone', false, true);
 
 const toFormField = (failure: ApiFieldFailure): TicketRequestFieldFailure[] => {
   const name = FORM_FIELD_OF_API_FIELD.get(failure.field);
@@ -67,7 +84,7 @@ const toFieldRefusal = (failures: readonly ApiFieldFailure[]): TicketRequestFail
 
   return fields.length === 0
     ? UNAVAILABLE
-    : { fields, notice: null, offersMail: false, closesWindow: false };
+    : { fields, noticeKind: null, offersMail: false, closesWindow: false };
 };
 
 const toApiFailure = (error: ApiError): TicketRequestFailure => {
@@ -96,3 +113,8 @@ export const toTicketRequestFailure = (error: Error | null): TicketRequestFailur
 
   return error instanceof ApiError ? toApiFailure(error) : UNAVAILABLE;
 };
+
+export const toTicketRequestNotice = (failure: TicketRequestFailure | null): string | null =>
+  failure === null || failure.noticeKind === null
+    ? null
+    : TICKET_REQUEST_NOTICES[failure.noticeKind];

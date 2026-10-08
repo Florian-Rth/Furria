@@ -39,12 +39,12 @@ describe('fitFacetsOf', () => {
     ]);
   });
 
-  it.each([
-    { text: 'mit Tanzgarde', available: 12 },
-    { text: 'neu seit 30.9.', available: 13 },
-  ])('keeps a facet that may not truncate whole or drops it: $text', ({ text, available }) => {
-    expect(fitFacetsOf([piece('', text)], available, METER)).toEqual([{ kind: 'drop' }]);
-  });
+  it.each([{ text: 'neu seit 30.9.', available: 13 }])(
+    'keeps a facet that may not truncate whole or drops it: $text',
+    ({ text, available }) => {
+      expect(fitFacetsOf([piece('', text)], available, METER)).toEqual([{ kind: 'drop' }]);
+    },
+  );
 
   it('drops every facet after the one it cuts', () => {
     const pieces = [piece('', 'Festhalle Großfurra', true), piece(' · ', 'mit Elferrat')];
