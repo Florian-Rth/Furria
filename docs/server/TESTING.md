@@ -46,6 +46,12 @@ cd server
 dotnet run --project tests/Furria.Api.Tests --no-build -- -class <FQN> [-class <FQN>]
 ```
 
+The media worker's tests (`PhotoRenditionTests`, `VideoRenditionTests`, `MediaJobTests`) render
+real files and need **libvips** (with the HEIC plugin) and **ffmpeg** on the machine — CI installs
+`libvips42t64 libheif-plugin-libde265 ffmpeg`. Without them locally, run the built test assembly in
+`mcr.microsoft.com/dotnet/sdk:10.0` with those packages added, the worktree mounted at its own path,
+`--network host` and the Docker socket mounted, so Testcontainers reaches its containers.
+
 `dotnet test -- --filter-class` from `server/` also runs the analyzer tests with zero matches and
 fails; the VSTest `--filter`/`--treenode-filter` flags are ignored and run the whole suite.
 
@@ -437,6 +443,29 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
    `ApiTestFixture.AndroidCertFingerprint` is the one fingerprint the host accepts, so
    `AndroidOrigin` is its `android:apk-key-hash:` origin.
 
+13. **The media toolkit (L7a S1)** — every fixture gets its own media root under the temp
+   directory (`ApiTestFixture.MediaRoot`, deleted on dispose) and its own signing key.
+   `TusUploadSteps` (`Furria.Api.Tests/Media`) speaks tus over the real middleware —
+   `CreateAsync` / `CreatedAsync`, `PatchAsync`, `HeadAsync`, and `UploadAsync`, which uploads in
+   chunks and returns the new item's id from the last answer's `Media-Item-Id`; owners are
+   `GalleryOwner`, `PersonOwner(id)`, `GroupOwner(id)`. `MediaSamples` builds JPEG / MP4 / GIF
+   bytes behind a real head. The worker's output is arranged with
+   `PlaceRenditionAsync(itemId, rendition, bytes)`, a URL with `SignedMediaUrl(itemId, owner,
+   rendition)` (the production signer, on the fixture's clock), the staging sweep run with
+   `SweepAbandonedUploads()`, and `MediaFileOfAsync` names where a rendition lives.
+   `Expected.MediaItem(id)` (`ToAwaitItsRenditions(kind, contentType)` — *processing* with one
+   unclaimed job, `ToBeOwnedBy`, `ToBeUploadedAs`) and `Expected.MediaItems()` (`ToHaveCount`).
+14. **The media worker (L7a S2)** — `RunMediaWorkerAsync` drives the production `MediaJobRunner`
+   (composed by `AddMediaWorker` against the fixture's database, media root and clock) until no
+   photo or video job is claimable; `ClaimMediaJobAsync(kind)` claims one and abandons it (a
+   worker that died), `RegenerateMediaAsync(command)` is the `regenerate` command,
+   `CropMediaItemDirectlyAsync` stands in for the crop frame until S3. Retries and lost leases are
+   reached with `AtLaterTimeAsync`. `MediaSamples.Sample(name)` reads the committed photos in
+   `Media/Samples` (EXIF orientation, GPS, capture time, an iPhone HEIC); `JpegOfSize`,
+   `VideoAsync(ffmpegArgs)` and `RotatedAsync` make the rest at test time. `RenditionProbe` reads
+   what was rendered. `Expected.MediaItem(id)` adds `ToBeReady(width, height)`, `ToBeIn(state)`,
+   `ToBeCapturedAt`, `ToLastAbout`, `ToAwaitARetry(notBefore)` and `ToHaveFailedWith(fragment)`.
+
 ### Traps worth knowing
 
 - **Mailpit is shared by every class running in parallel.** Never read mail by a fixed
@@ -539,6 +568,12 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
   `IsDevelopment()`, pinned by `OpenApiExposureTests`. Both it and `EndpointConventionTests` use
   raw URLs instead of the typed client — there is no endpoint type to name, or the routes come
   from metadata.
+
+- **Uploads are middleware, not a route.** tus (`/api/media/uploads`) runs through `tusdotnet`
+  ahead of FastEndpoints, so neither `EndpointGateTests` nor `EndpointConventionTests` sees it.
+  Its gates — signed in, owner permission, an upload hidden from every other account — are proven
+  in `MediaUploadTests` and nowhere else. A staged upload's age is its files' write time (real
+  time): the sweep tests move the clock a day ahead of it, never back.
 
 - **The audit timestamps come from the injected clock, not from `now()`.**
   `AuditTimestampInterceptor` stamps `created_at` + `updated_at` on insert and `updated_at` on

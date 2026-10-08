@@ -16,6 +16,9 @@ public static class FurriaPermissions
     public const string MembershipApplicationsDecide = "membership_applications.decide";
     public const string EventsManage = "events.manage";
     public const string TicketRequestsHandle = "ticket_requests.handle";
+    public const string GalleryUpload = "gallery.upload";
+    public const string GalleryManage = "gallery.manage";
+    public const string GalleryPublish = "gallery.publish";
     public const string ClubRead = "club.read";
 
     public static readonly IReadOnlyList<string> All =
@@ -34,6 +37,9 @@ public static class FurriaPermissions
         MembershipApplicationsDecide,
         EventsManage,
         TicketRequestsHandle,
+        GalleryUpload,
+        GalleryManage,
+        GalleryPublish,
     ];
 
     public static readonly IReadOnlyList<string> ImpliedByRelationship = [ClubRead];

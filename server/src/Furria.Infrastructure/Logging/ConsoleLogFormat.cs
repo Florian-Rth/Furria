@@ -1,4 +1,4 @@
-namespace Furria.Api.Logging;
+namespace Furria.Infrastructure.Logging;
 
 public enum ConsoleLogFormat
 {

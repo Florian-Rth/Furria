@@ -1,23 +1,28 @@
 using System.Globalization;
 using Furria.Api.Altcha;
-using Furria.Api.Logging;
 using Furria.Api.Proxies;
 using Furria.Api.RateLimiting;
 using Furria.Application.Club;
 using Furria.Application.ClubApp;
 using Furria.Application.Identity;
 using Furria.Application.Mail;
+using Furria.Application.Media;
 using Furria.Application.PreviewAccess;
 using Furria.Application.Results;
 using Furria.Application.Website;
 using Furria.Core.Club;
 using Furria.Core.Groups;
 using Furria.Core.Identity;
+using Furria.Core.Media;
 using Furria.Core.Roles;
 using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Identity;
+using Furria.Infrastructure.Logging;
 using Furria.Infrastructure.Mail;
+using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
+using Furria.MediaWorker;
+using Furria.MediaWorker.Jobs;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Expectations;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
@@ -26,6 +31,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -74,6 +80,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
     public const string TrustedProxyAddress = "10.10.20.1";
 
     private const string AltchaHmacKey = "furria-test-altcha-hmac-key-of-32-bytes";
+    private const string MediaSigningKey = "furria-test-media-signing-key-of-32-bytes";
     private const int AltchaCost = 1;
     private const int AltchaMinCounter = 1;
     private const int AltchaMaxCounter = 50;
@@ -85,12 +92,21 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
 
     private readonly ApiTestInfrastructure _infrastructure;
 
+    private readonly string _mediaRoot = Path.Combine(
+        Path.GetTempPath(),
+        "furria-tests-media",
+        Guid.NewGuid().ToString("N")
+    );
+
     private string? _database;
+    private ServiceProvider? _mediaWorker;
     private DatabaseResetService? _resetService;
     private SeededManagingLogin? _managingLogin;
     private int? _adminRoleId;
 
     private string Database => _database ?? throw new InvalidOperationException(NotInitialized);
+
+    private ServiceProvider MediaWorker => _mediaWorker ??= BuildMediaWorker();
 
     public TestClock TimeProvider { get; } = new(WholeSecondNow());
 
@@ -109,9 +125,22 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
 
     public MailpitInbox Mailbox => _infrastructure.Mailbox;
 
+    public string MediaRoot => _mediaRoot;
+
     public ApiTestFixture(ApiTestInfrastructure infrastructure)
     {
         _infrastructure = infrastructure;
+    }
+
+    private ServiceProvider BuildMediaWorker()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        var configuration = Services.GetRequiredService<IConfiguration>();
+        services.AddSingleton(configuration);
+        services.AddSingleton<TimeProvider>(TimeProvider);
+        services.AddMediaWorker(configuration);
+        return services.BuildServiceProvider();
     }
 
     private static DateTimeOffset WholeSecondNow()
@@ -227,6 +256,14 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         builder.UseSetting(
             $"{AltchaOptions.SectionName}:{nameof(AltchaOptions.MaxCounter)}",
             AltchaMaxCounter.ToString(CultureInfo.InvariantCulture)
+        );
+        builder.UseSetting(
+            $"{MediaOptions.SectionName}:{nameof(MediaOptions.RootPath)}",
+            _mediaRoot
+        );
+        builder.UseSetting(
+            $"{MediaOptions.SectionName}:{nameof(MediaOptions.SigningKey)}",
+            MediaSigningKey
         );
         builder.UseSetting(
             $"{TrustedProxyOptions.SectionName}:{nameof(TrustedProxyOptions.TrustedProxies)}:0",
@@ -457,6 +494,88 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
 
         await db.Database.ExecuteSqlAsync($"DELETE FROM account WHERE id = {accountId}", ct);
     }
+
+    public async Task DeleteMediaItemDirectlyAsync(int mediaItemId, CancellationToken ct = default)
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        await db.Database.ExecuteSqlAsync($"DELETE FROM media_item WHERE id = {mediaItemId}", ct);
+    }
+
+    public async Task<string> MediaFileOfAsync(
+        int mediaItemId,
+        MediaRendition rendition,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var storageKey = await db
+            .MediaItems.Where(item => item.Id == mediaItemId)
+            .Select(item => item.StorageKey)
+            .SingleAsync(ct);
+        return Path.Combine(_mediaRoot, MediaPaths.RenditionOf(storageKey, rendition));
+    }
+
+    public async Task PlaceRenditionAsync(
+        int mediaItemId,
+        MediaRendition rendition,
+        byte[] content,
+        CancellationToken ct = default
+    )
+    {
+        var path = await MediaFileOfAsync(mediaItemId, rendition, ct);
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        await File.WriteAllBytesAsync(path, content, ct);
+    }
+
+    public async Task RunMediaWorkerAsync(CancellationToken ct = default)
+    {
+        var runner = MediaWorker.GetRequiredService<MediaJobRunner>();
+        while (
+            await runner.RunNextAsync(MediaKind.Photo, ct)
+            | await runner.RunNextAsync(MediaKind.Video, ct)
+        ) { }
+    }
+
+    public async Task<bool> ClaimMediaJobAsync(MediaKind kind, CancellationToken ct = default)
+    {
+        await using var scope = MediaWorker.CreateAsyncScope();
+        var queue = scope.ServiceProvider.GetRequiredService<MediaJobQueue>();
+        return await queue.ClaimAsync(kind, ct) is not null;
+    }
+
+    public async Task<int> RegenerateMediaAsync(
+        RegenerateMediaCommand command,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = MediaWorker.CreateAsyncScope();
+        var queue = scope.ServiceProvider.GetRequiredService<MediaJobQueue>();
+        return await queue.RegenerateAsync(command, ct);
+    }
+
+    public async Task CropMediaItemDirectlyAsync(
+        int mediaItemId,
+        MediaCrop crop,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var item = await db.MediaItems.SingleAsync(row => row.Id == mediaItemId, ct);
+        item.Crop = crop;
+        await db.SaveChangesAsync(ct);
+    }
+
+    public void SweepAbandonedUploads() =>
+        Services.GetServices<IHostedService>().OfType<AbandonedUploadSweep>().Single().Sweep();
+
+    public string SignedMediaUrl(int mediaItemId, MediaOwner owner, MediaRendition rendition) =>
+        Services.GetRequiredService<MediaUrlSigner>().UrlOf(mediaItemId, owner, rendition);
 
     public async Task DeletePersonDirectlyAsync(int personId, CancellationToken ct = default)
     {
@@ -702,8 +821,12 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
 
     public override async ValueTask DisposeAsync()
     {
+        if (_mediaWorker is not null)
+            await _mediaWorker.DisposeAsync();
         await base.DisposeAsync();
         if (_database is not null)
             await _infrastructure.DropDatabaseAsync(_database);
+        if (Directory.Exists(_mediaRoot))
+            Directory.Delete(_mediaRoot, recursive: true);
     }
 }

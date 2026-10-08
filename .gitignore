@@ -4,6 +4,7 @@ obj/
 *.user
 .vs/
 artifacts/
+server/src/Furria.Api/.media/
 
 # Node
 node_modules/

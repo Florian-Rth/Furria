@@ -1429,6 +1429,191 @@ namespace Furria.Infrastructure.Migrations
                     b.ToTable("person", (string)null);
                 });
 
+            modelBuilder.Entity("Furria.Core.Media.MediaItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<long>("ByteSize")
+                        .HasColumnType("bigint")
+                        .HasColumnName("byte_size");
+
+                    b.Property<string>("Camera")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("camera");
+
+                    b.Property<DateTimeOffset?>("CapturedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("captured_at");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("content_type");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<double?>("DurationSeconds")
+                        .HasColumnType("double precision")
+                        .HasColumnName("duration_seconds");
+
+                    b.Property<string>("FailureReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("failure_reason");
+
+                    b.Property<int?>("Height")
+                        .HasColumnType("integer")
+                        .HasColumnName("height");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("OriginalFileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("original_file_name");
+
+                    b.Property<int?>("OwnerGroupId")
+                        .HasColumnType("integer")
+                        .HasColumnName("owner_group_id");
+
+                    b.Property<string>("OwnerKind")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("owner_kind");
+
+                    b.Property<int?>("OwnerPersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("owner_person_id");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("state");
+
+                    b.Property<Guid>("StorageKey")
+                        .HasColumnType("uuid")
+                        .HasColumnName("storage_key");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateTimeOffset>("UploadedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("uploaded_at");
+
+                    b.Property<int?>("UploadedByPersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("uploaded_by_person_id");
+
+                    b.Property<int?>("Width")
+                        .HasColumnType("integer")
+                        .HasColumnName("width");
+
+                    b.HasKey("Id")
+                        .HasName("pk_media_item");
+
+                    b.HasIndex("OwnerGroupId")
+                        .HasDatabaseName("ix_media_item_owner_group_id");
+
+                    b.HasIndex("OwnerPersonId")
+                        .HasDatabaseName("ix_media_item_owner_person_id");
+
+                    b.HasIndex("StorageKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_media_item_storage_key");
+
+                    b.HasIndex("UploadedByPersonId")
+                        .HasDatabaseName("ix_media_item_uploaded_by_person_id");
+
+                    b.ToTable("media_item", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_media_item_byte_size", "byte_size > 0");
+
+                            t.HasCheckConstraint("ck_media_item_kind", "kind IN ('Photo', 'Video')");
+
+                            t.HasCheckConstraint("ck_media_item_owner", "(owner_kind = 'Person' AND owner_person_id IS NOT NULL AND owner_group_id IS NULL)\nOR (owner_kind = 'Group' AND owner_group_id IS NOT NULL AND owner_person_id IS NULL)\nOR (owner_kind = 'Gallery' AND owner_person_id IS NULL AND owner_group_id IS NULL)");
+
+                            t.HasCheckConstraint("ck_media_item_owner_kind", "owner_kind IN ('Person', 'Group', 'Gallery')");
+
+                            t.HasCheckConstraint("ck_media_item_state", "state IN ('Processing', 'Ready', 'Failed')");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.Media.MediaJob", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<int>("Attempts")
+                        .HasColumnType("integer")
+                        .HasColumnName("attempts");
+
+                    b.Property<DateTimeOffset>("AvailableAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("available_at");
+
+                    b.Property<DateTimeOffset?>("ClaimedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("claimed_at");
+
+                    b.Property<DateTimeOffset>("EnqueuedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("enqueued_at");
+
+                    b.Property<DateTimeOffset?>("LeaseExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("lease_expires_at");
+
+                    b.Property<Guid?>("LeaseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("lease_id");
+
+                    b.Property<int>("MediaItemId")
+                        .HasColumnType("integer")
+                        .HasColumnName("media_item_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_media_job");
+
+                    b.HasIndex("MediaItemId")
+                        .HasDatabaseName("ix_media_job_media_item_id");
+
+                    b.HasIndex("AvailableAt", "Id")
+                        .HasDatabaseName("ix_media_job_available_at_id");
+
+                    b.ToTable("media_job", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_media_job_attempts", "attempts >= 0");
+
+                            t.HasCheckConstraint("ck_media_job_lease", "(claimed_at IS NULL AND lease_id IS NULL AND lease_expires_at IS NULL)\nOR (claimed_at IS NOT NULL AND lease_id IS NOT NULL AND lease_expires_at IS NOT NULL)");
+                        });
+                });
+
             modelBuilder.Entity("Furria.Core.MembershipApplications.MembershipApplication", b =>
                 {
                     b.Property<int>("Id")
@@ -2584,6 +2769,78 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("ArchivedBy");
 
                     b.Navigation("ContactChangedBy");
+                });
+
+            modelBuilder.Entity("Furria.Core.Media.MediaItem", b =>
+                {
+                    b.HasOne("Furria.Core.Groups.Group", "OwnerGroup")
+                        .WithMany()
+                        .HasForeignKey("OwnerGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_media_item_group_owner_group_id");
+
+                    b.HasOne("Furria.Core.Identity.Person", "OwnerPerson")
+                        .WithMany()
+                        .HasForeignKey("OwnerPersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_media_item_person_owner_person_id");
+
+                    b.HasOne("Furria.Core.Identity.Person", "UploadedBy")
+                        .WithMany()
+                        .HasForeignKey("UploadedByPersonId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_media_item_person_uploaded_by_person_id");
+
+                    b.OwnsOne("Furria.Core.Media.MediaCrop", "Crop", b1 =>
+                        {
+                            b1.Property<int>("MediaItemId")
+                                .HasColumnType("integer")
+                                .HasColumnName("id");
+
+                            b1.Property<double>("Height")
+                                .HasColumnType("double precision")
+                                .HasColumnName("crop_height");
+
+                            b1.Property<double>("Left")
+                                .HasColumnType("double precision")
+                                .HasColumnName("crop_left");
+
+                            b1.Property<double>("Top")
+                                .HasColumnType("double precision")
+                                .HasColumnName("crop_top");
+
+                            b1.Property<double>("Width")
+                                .HasColumnType("double precision")
+                                .HasColumnName("crop_width");
+
+                            b1.HasKey("MediaItemId");
+
+                            b1.ToTable("media_item");
+
+                            b1.WithOwner()
+                                .HasForeignKey("MediaItemId")
+                                .HasConstraintName("fk_media_item_media_item_id");
+                        });
+
+                    b.Navigation("Crop");
+
+                    b.Navigation("OwnerGroup");
+
+                    b.Navigation("OwnerPerson");
+
+                    b.Navigation("UploadedBy");
+                });
+
+            modelBuilder.Entity("Furria.Core.Media.MediaJob", b =>
+                {
+                    b.HasOne("Furria.Core.Media.MediaItem", "MediaItem")
+                        .WithMany()
+                        .HasForeignKey("MediaItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_media_job_media_item_media_item_id");
+
+                    b.Navigation("MediaItem");
                 });
 
             modelBuilder.Entity("Furria.Core.Roles.RoleHolding", b =>

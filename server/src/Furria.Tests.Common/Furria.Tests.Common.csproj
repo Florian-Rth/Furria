@@ -12,5 +12,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Furria.Api\Furria.Api.csproj" />
+    <ProjectReference Include="..\Furria.MediaWorker\Furria.MediaWorker.csproj" />
   </ItemGroup>
 </Project>

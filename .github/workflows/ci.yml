@@ -16,6 +16,10 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
+      - name: Install libvips and ffmpeg (the media worker's tests render real photos and videos)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libvips42t64 libheif-plugin-libde265 ffmpeg
       - run: dotnet tool restore
       - run: dotnet build
       - run: dotnet csharpier check .
@@ -55,6 +59,9 @@ jobs:
         with:
           filters: |
             api:
+              - 'server/**'
+              - '.github/workflows/ci.yml'
+            media-worker:
               - 'server/**'
               - '.github/workflows/ci.yml'
             website:
@@ -109,6 +116,9 @@ jobs:
           if [ "${{ matrix.app }}" = "api" ]; then
             echo "context=server" >> "$GITHUB_OUTPUT"
             echo "file=server/Dockerfile" >> "$GITHUB_OUTPUT"
+          elif [ "${{ matrix.app }}" = "media-worker" ]; then
+            echo "context=server" >> "$GITHUB_OUTPUT"
+            echo "file=server/src/Furria.MediaWorker/Dockerfile" >> "$GITHUB_OUTPUT"
           else
             echo "context=web" >> "$GITHUB_OUTPUT"
             echo "file=web/apps/${{ matrix.app }}/Dockerfile" >> "$GITHUB_OUTPUT"

@@ -1,8 +1,9 @@
+using Microsoft.Extensions.Configuration;
 using Serilog;
 using Serilog.Configuration;
 using Serilog.Formatting.Compact;
 
-namespace Furria.Api.Logging;
+namespace Furria.Infrastructure.Logging;
 
 public static class ConsoleLogSinkExtensions
 {

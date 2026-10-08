@@ -14,6 +14,7 @@ browser ──HTTPS──▶ edge nginx (Hetzner, outside this repo)
                      ├─ website   :WEBSITE_PORT  ─┐  /api same-origin
                      ├─ club-app  :CLUB_APP_PORT ─┤
                      ├─ api       :8080 (internal) ◀┘
+                     ├─ media-worker (no port; renditions, ADR-0024)
                      ├─ postgres  (internal)
                      └─ watchtower
 ```
@@ -52,6 +53,16 @@ every variable. The ones that matter most:
 - **`ALTCHA_HMAC_KEY`** — signs the proof-of-work challenges of the website's membership
   application (self-hosted Altcha, at least 32 characters). A change voids only the challenges
   of the last 10 minutes.
+- **`MEDIA_SIGNING_KEY`** — signs every media URL the API hands out
+  ([ADR-0025](../adr/0025-media-is-fetched-by-signed-urls.md), at least 32 characters). A change
+  voids the media URLs of the last 48 hours; clients fetch fresh ones.
+- **`MEDIA_PATH`** — where photos and videos live
+  ([ADR-0023](../adr/0023-media-lives-under-one-mounted-path.md)); empty keeps the named volume
+  `media`. Restore it together with the database, from the same point.
+- **`MEDIA_WORKER_HWACCEL`** — where the media worker encodes videos: `none` (CPU, default),
+  `vaapi` or `qsv` (an Intel iGPU; also map `/dev/dri` into `media-worker`, see the compose file;
+  `MEDIA_WORKER_DEVICE` names the render node). Decoding, scaling and HDR tone mapping stay on the
+  CPU either way. One video encodes at a time per worker; photos run beside it.
 - **`EDGE_PROXY_ADDRESS`** — the API refuses to start in production without trusted proxies.
 - **`ANDROID_CERT_FINGERPRINTS`** — feeds both `assetlinks.json` files and the API's accepted
   passkey origins.
@@ -85,7 +96,7 @@ curl -s https://app.<club-domain>/api/health
 
 1. Find the last good commit on `main`: `git log --first-parent --oneline main`, or the `+<sha>`
    `/api/health` reported before the bad release.
-2. GitHub → Actions → **Rollback** → *Run workflow*: pick the app (`api`, `website`, `club-app`)
+2. GitHub → Actions → **Rollback** → *Run workflow*: pick the app (`api`, `media-worker`, `website`, `club-app`)
    and enter the commit (7–40 hex characters, `sha-` prefix optional). CI builds only the apps a
    push changed, so that commit may have no image of this app: the workflow takes the newest
    image built at or before it on `main` — what production ran for that app as of that commit —
@@ -100,6 +111,20 @@ The rolled-back app stays there until the next green `main` that changes **that 
 **A rollback across a migration has nothing to restore from**: the old API starts on the newer
 schema (it sees no pending migration), but what the migration changed stays changed. Backups are
 deferred out of L1.
+
+## Media renditions
+
+Renditions are cache (ADR-0024): the worker rebuilds them from the originals. After restoring the
+media path without them, or to retry items that ended *failed*, queue them again on the host:
+
+```bash
+docker compose run --rm media-worker regenerate failed    # only the failed items
+docker compose run --rm media-worker regenerate all       # every item
+docker compose run --rm media-worker regenerate 42 43     # these media items
+```
+
+A failing item is retried after 1 and 10 minutes, then marked *failed* with its reason. A worker
+that dies mid-job loses its claim after 5 minutes; another (or its restart) takes the item over.
 
 ## Mail
 

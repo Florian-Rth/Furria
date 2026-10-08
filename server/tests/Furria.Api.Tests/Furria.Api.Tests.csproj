@@ -15,6 +15,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="Media/Samples/**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Furria.Api\Furria.Api.csproj" />
     <ProjectReference Include="..\..\src\Furria.Tests.Common\Furria.Tests.Common.csproj" />
   </ItemGroup>

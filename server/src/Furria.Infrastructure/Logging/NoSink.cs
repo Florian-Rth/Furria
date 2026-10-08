@@ -1,7 +1,7 @@
 using Serilog.Core;
 using Serilog.Events;
 
-namespace Furria.Api.Logging;
+namespace Furria.Infrastructure.Logging;
 
 internal sealed class NoSink : ILogEventSink
 {
