@@ -10,8 +10,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Events;
 
-[Collection("Api")]
-public sealed class PutEventTicketAvailabilityTests
+public sealed class PutEventTicketAvailabilityTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string PresaleNotBegunMessage =

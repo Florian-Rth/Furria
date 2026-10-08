@@ -6,8 +6,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Invitations;
 
-[Collection("Api")]
-public sealed class GetBulkInvitationPreviewTests
+public sealed class GetBulkInvitationPreviewTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateTimeOffset TheTwentyEighthOfANonLeapFebruary = new(
         2027,

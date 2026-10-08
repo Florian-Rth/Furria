@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Logging;
 
-[Collection("Api")]
-public sealed class UnhandledExceptionTests
+public sealed class UnhandledExceptionTests : IClassFixture<ApiTestFixture>
 {
     private const string ProblemJson = "application/problem+json";
 

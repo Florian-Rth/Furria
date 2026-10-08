@@ -12,8 +12,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Management;
 
-[Collection("Api")]
-public sealed class GetManageHubTests
+public sealed class GetManageHubTests : IClassFixture<ApiTestFixture>
 {
     private const int TheUnheldAdminRole = 1;
 

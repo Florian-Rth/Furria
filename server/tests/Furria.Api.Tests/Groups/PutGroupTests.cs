@@ -9,8 +9,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Groups;
 
-[Collection("Api")]
-public sealed class PutGroupTests
+public sealed class PutGroupTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string OldDescription = "Die Garde tanzt seit 1971.";

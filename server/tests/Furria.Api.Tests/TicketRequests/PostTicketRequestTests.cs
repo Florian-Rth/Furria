@@ -9,8 +9,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.TicketRequests;
 
-[Collection("Api")]
-public sealed class PostTicketRequestTests
+public sealed class PostTicketRequestTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string WindowClosedMessage =

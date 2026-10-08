@@ -9,8 +9,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Groups;
 
-[Collection("Api")]
-public sealed class PostGroupTests
+public sealed class PostGroupTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string GroupsRoute = "/api/manage/groups";

@@ -5,8 +5,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Auth;
 
-[Collection("Api")]
-public sealed class PostPasskeyRequestOptionsTests
+public sealed class PostPasskeyRequestOptionsTests : IClassFixture<ApiTestFixture>
 {
     private const string Route = "/api/auth/passkeys/request-options";
 

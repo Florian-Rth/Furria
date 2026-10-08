@@ -9,8 +9,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Auth;
 
-[Collection("Api")]
-public sealed class ResetPasswordTests
+public sealed class ResetPasswordTests : IClassFixture<ApiTestFixture>
 {
     private const string ResetField = "reset";
     private const string PasswordField = "password";

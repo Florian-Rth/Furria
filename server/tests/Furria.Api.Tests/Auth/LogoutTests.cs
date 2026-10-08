@@ -10,8 +10,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Auth;
 
-[Collection("Api")]
-public sealed class LogoutTests
+public sealed class LogoutTests : IClassFixture<ApiTestFixture>
 {
     private const string LoggedOut = "Account {AccountId} logged out";
 

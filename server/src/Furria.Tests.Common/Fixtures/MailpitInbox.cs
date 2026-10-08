@@ -1,3 +1,4 @@
+using System.Diagnostics.Contracts;
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 
@@ -5,7 +6,7 @@ namespace Furria.Tests.Common.Fixtures;
 
 public sealed class MailpitInbox : IDisposable
 {
-    private const string MessagesRoute = "api/v1/messages?limit=1000";
+    private const string SearchRoute = "api/v1/search?limit=100&query=";
     private const string MessageRoute = "api/v1/message/";
 
     private static readonly TimeSpan ArrivalTimeout = TimeSpan.FromSeconds(20);
@@ -60,7 +61,7 @@ public sealed class MailpitInbox : IDisposable
     )
     {
         var page =
-            await _http.GetFromJsonAsync<MessagesPage>(MessagesRoute, ct)
+            await _http.GetFromJsonAsync<MessagesPage>(SearchFor(recipient), ct)
             ?? throw new InvalidOperationException("Mailpit returned an empty message list.");
 
         return
@@ -72,6 +73,10 @@ public sealed class MailpitInbox : IDisposable
             ),
         ];
     }
+
+    [Pure]
+    private static string SearchFor(string recipient) =>
+        $"{SearchRoute}{Uri.EscapeDataString($"to:\"{recipient}\"")}";
 
     private async Task<ReceivedMail> ReadAsync(string id, CancellationToken ct)
     {

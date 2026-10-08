@@ -9,8 +9,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Board;
 
-[Collection("Api")]
-public sealed class RestoreBoardOfficeTests
+public sealed class RestoreBoardOfficeTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string NotArchivedMessage = "Diese Vorstandsfunktion ist nicht archiviert.";

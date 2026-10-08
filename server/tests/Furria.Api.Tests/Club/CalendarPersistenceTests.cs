@@ -6,8 +6,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Club;
 
-[Collection("Api")]
-public sealed class CalendarPersistenceTests
+public sealed class CalendarPersistenceTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateTimeOffset AtTheBall = new(2026, 11, 11, 11, 11, 0, TimeSpan.Zero);
     private static readonly DateTimeOffset BeforeTheBall = new(

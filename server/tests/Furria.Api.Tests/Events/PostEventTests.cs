@@ -11,8 +11,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Events;
 
-[Collection("Api")]
-public sealed class PostEventTests
+public sealed class PostEventTests : IClassFixture<ApiTestFixture>
 {
     private const string ValidationField = "request";
     private const string FirstGala = "1. Prunksitzung";

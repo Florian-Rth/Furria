@@ -5,8 +5,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Auth;
 
-[Collection("Api")]
-public sealed class PutMyLoginEmailTests
+public sealed class PutMyLoginEmailTests : IClassFixture<ApiTestFixture>
 {
     private const string LoginEmailField = "loginEmail";
     private const int PermitsPerAccount = 5;

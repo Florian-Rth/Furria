@@ -16,8 +16,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Persons;
 
-[Collection("Api")]
-public sealed class DeletePersonByIdTests
+public sealed class DeletePersonByIdTests : IClassFixture<ApiTestFixture>
 {
     private const string PasswordField = "password";
     private const string PasskeyField = "passkey";

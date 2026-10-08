@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Club;
 
-[Collection("Api")]
-public sealed class GetClubHubVenuesTests
+public sealed class GetClubHubVenuesTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateTimeOffset InsideTheSession = new(
         2027,

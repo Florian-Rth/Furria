@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Auth;
 
-[Collection("Api")]
-public sealed class PostPasskeyCreationOptionsTests
+public sealed class PostPasskeyCreationOptionsTests : IClassFixture<ApiTestFixture>
 {
     private readonly ApiTestFixture _fixture;
 

@@ -8,8 +8,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Auth;
 
-[Collection("Api")]
-public sealed class PutMyPasswordTests
+public sealed class PutMyPasswordTests : IClassFixture<ApiTestFixture>
 {
     private const string CurrentPasswordField = "currentPassword";
     private const string NewPasswordField = "newPassword";

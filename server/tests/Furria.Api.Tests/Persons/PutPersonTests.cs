@@ -6,8 +6,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Persons;
 
-[Collection("Api")]
-public sealed class PutPersonTests
+public sealed class PutPersonTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateOnly BornIn1996 = new(1996, 4, 3);
     private static readonly DateOnly BornIn1997 = new(1997, 5, 14);

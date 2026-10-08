@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Auth;
 
-[Collection("Api")]
-public sealed class PostMyPasskeyTests
+public sealed class PostMyPasskeyTests : IClassFixture<ApiTestFixture>
 {
     private const string CredentialField = "credential";
 

@@ -13,8 +13,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Identity;
 
-[Collection("Api")]
-public sealed class ManagingLoginSeederTests
+public sealed class ManagingLoginSeederTests : IClassFixture<ApiTestFixture>
 {
     private const string SeedingSkipped = "Managing login not configured, seeding skipped";
     private const string LoginCreated = "Managing login {AccountId} created";

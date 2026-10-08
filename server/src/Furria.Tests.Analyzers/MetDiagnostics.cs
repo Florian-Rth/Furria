@@ -27,10 +27,10 @@ internal static class MetDiagnostics
         "Test method '{0}' must match the Should_X_When_Y naming convention"
     );
 
-    public static readonly DiagnosticDescriptor IntegrationCollectionMarker = Create(
+    public static readonly DiagnosticDescriptor IntegrationClassFixture = Create(
         "MET004",
-        "Integration test collection marker",
-        "Integration test class '{0}' injects ApiTestFixture but is missing the [Collection(\"Api\")] marker"
+        "Integration test class fixture",
+        "Integration test class '{0}' injects ApiTestFixture but does not own it as IClassFixture<ApiTestFixture> outside any [Collection]"
     );
 
     public static readonly DiagnosticDescriptor NoDbContextInTestBody = Create(

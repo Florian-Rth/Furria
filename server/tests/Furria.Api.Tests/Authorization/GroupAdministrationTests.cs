@@ -6,8 +6,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Authorization;
 
-[Collection("Api")]
-public sealed class GroupAdministrationTests
+public sealed class GroupAdministrationTests : IClassFixture<ApiTestFixture>
 {
     private const int NoSuchGroupOffset = 1_000;
 

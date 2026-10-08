@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Management;
 
-[Collection("Api")]
-public sealed class PutClubContactTests
+public sealed class PutClubContactTests : IClassFixture<ApiTestFixture>
 {
     private const string EmailField = "email";
     private const string WebsiteUrlField = "websiteUrl";

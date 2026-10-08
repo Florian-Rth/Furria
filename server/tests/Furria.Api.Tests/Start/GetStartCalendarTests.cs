@@ -11,8 +11,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Start;
 
-[Collection("Api")]
-public sealed class GetStartCalendarTests
+public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
 {
     private const string Coach = "Trainerin";
     private const int PausedSessionYear = 2026;

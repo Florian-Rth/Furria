@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.ToDos;
 
-[Collection("Api")]
-public sealed class PutToDoSeenTests
+public sealed class PutToDoSeenTests : IClassFixture<ApiTestFixture>
 {
     private const string AVersionNeverShown = "0000000000000000";
 

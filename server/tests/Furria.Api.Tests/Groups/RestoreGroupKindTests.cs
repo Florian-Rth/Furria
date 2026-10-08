@@ -8,8 +8,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Groups;
 
-[Collection("Api")]
-public sealed class RestoreGroupKindTests
+public sealed class RestoreGroupKindTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string NotArchivedMessage = "Diese Gruppenart ist nicht archiviert.";

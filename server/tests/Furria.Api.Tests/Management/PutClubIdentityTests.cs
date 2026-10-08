@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Management;
 
-[Collection("Api")]
-public sealed class PutClubIdentityTests
+public sealed class PutClubIdentityTests : IClassFixture<ApiTestFixture>
 {
     private const string ValidationField = "request";
     private const string FoundedYearField = "foundedYear";

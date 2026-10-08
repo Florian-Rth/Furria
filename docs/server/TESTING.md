@@ -41,8 +41,7 @@ live here, not as dead code.
 ### The shape of a test
 
 ```csharp
-[Collection("Api")]                       // shares the one Postgres container per assembly
-public sealed class UnlockPreviewTests
+public sealed class UnlockPreviewTests : IClassFixture<ApiTestFixture> // own host, own database
 {
     private readonly ApiTestFixture _fixture;
 
@@ -70,14 +69,28 @@ public sealed class UnlockPreviewTests
 
 ### The pieces
 
-1. **`ApiTestFixture`** — `WebApplicationFactory<Program>` + one `Testcontainers.PostgreSql`
-   container per assembly, shared via `[CollectionDefinition("Api")]`. On init: start container,
-   run EF migrations, create the reset service. Repoints the connection string and preview
+1. **`ApiTestInfrastructure`** — the one assembly fixture (`[assembly: AssemblyFixture]` in
+   `ApiTestAssembly.cs`): one `Testcontainers.PostgreSql` container and one Mailpit container per
+   run. On start it creates `furria_template` and migrates it through the production
+   `AddInfrastructure` registration — schema only, no seeded rows — then hands out databases:
+   `CreateDatabaseFromTemplateAsync` (`CREATE DATABASE … TEMPLATE furria_template`, a copy of the
+   migrated schema) and `CreateEmptyDatabaseAsync`. Postgres runs with `max_connections=1000`,
+   because every parallel host keeps its own connection pool.
+2. **`ApiTestFixture`** — a `WebApplicationFactory<Program>` owned by **one test class**
+   (`IClassFixture<ApiTestFixture>`); it takes `ApiTestInfrastructure` through its constructor. On
+   init: clone a database from the template, start the host on it (the migrator finds the schema
+   up to date, the managing-login seeder seeds the clone), create the reset service. On dispose:
+   stop the host, clear its connection pool and `DROP DATABASE … WITH (FORCE)`. Repoints the
+   connection string and preview
    password via the constants the production code itself uses (`AppDbContext.ConnectionName`,
    `PreviewAccessOptions.SectionName`), and swaps `TimeProvider` for the project-owned
    `TestClock`, anchored at real "now" truncated to the whole second and reporting UTC as its
    local zone — so nothing in the suite depends on the developer's machine time zone.
-2. **`DatabaseResetService`** — owned reset instead of Respawn: one `TRUNCATE … CASCADE` over
+   **Test classes run in parallel; the tests inside one class run one after another.** Every
+   class has its own host, so every host singleton — the clock, the limiters, the signed-out
+   queues, the outbox dispatcher, the log sink — is shared only by the tests of that class. Mailpit
+   is the one thing all classes share (see *Traps*).
+3. **`DatabaseResetService`** — owned reset instead of Respawn: one `TRUNCATE … CASCADE` over
    the EF-model table list, **without** `RESTART IDENTITY`, then re-inserts snapshotted
    singleton rows in the same transaction. Milliseconds per reset. Wired in the fixture; it
    snapshot-restores the managing login and the unheld Admin role (`Account`, `Role`,
@@ -90,7 +103,7 @@ public sealed class UnlockPreviewTests
 | MET001 | No mocking framework — owned `Fake*`/`Capturing*` doubles only. |
 | MET002 | No EF Core InMemory — every test runs against real Postgres. |
 | MET003 | Test methods are named `Should_<Expected>_When_<Scenario>`. |
-| MET004 | A class injecting `ApiTestFixture` carries `[Collection("Api")]`. |
+| MET004 | A class injecting `ApiTestFixture` implements `IClassFixture<ApiTestFixture>` and joins no `[Collection]`. |
 | MET005 | No `DbContext` in a test body — seed and assert through the harness. |
 | MET006 | Production code never reads `DateTime.Now/UtcNow` — inject `TimeProvider`. |
 | MET007 | Every builder alias resolved by `IdOf`/`EmailOf`/`ClientFor`/`ClientForAsync`/`NameOf` is declared by an `Add*` call in the same class. |
@@ -130,16 +143,15 @@ deviations from the design this section previously committed to, each deliberate
   needs a token real login cannot mint (an expired one, a foreign-signed one).
 - **`Polling` landed with the mail queue (CA-P8 S1); the `Doubles/` folder stays deferred** —
   mail runs against a real Mailpit Testcontainer. `MailpitInbox` reads what was actually sent
-  through Mailpit's HTTP API, polling with a timeout; tests filter by a unique recipient address,
-  so the inbox is never cleared between tests. A `ReceivedMail` reads what a test needs out of
+  through Mailpit's search API (`to:"<recipient>"`), polling with a timeout; tests filter by a
+  unique recipient address, so the inbox is never cleared between tests. A `ReceivedMail` reads what a test needs out of
   the real mail: `LinkToken()` the invitation link's token, `ConfirmationCode()` the 6-digit
   *Bestätigungscode* (CA-P8 S2).
 
 ### The shape of a test
 
 ```csharp
-[Collection("Api")]
-public sealed class GetMeTests
+public sealed class GetMeTests : IClassFixture<ApiTestFixture>
 {
     private readonly ApiTestFixture _fixture;
 
@@ -327,8 +339,8 @@ public sealed class GetMeTests
    before any endpoint edits them.
 7. **`ApiTestFixture.Today` / `.CurrentSessionYear`** — both read the fixture's `TestClock`
    **live**, through `ClubClock`/`ClubSession`, so they always name the day the server itself is
-   reading. They are deliberately *not* frozen at construction: the clock is shared by the whole
-   collection and earlier classes advance it (`RefreshTests` by 31 days), so a value captured in
+   reading. They are deliberately *not* frozen at construction: the clock is shared by every test of
+   the class and earlier tests may advance it (`RefreshTests` by 31 days), so a value captured in
    the constructor would drift a month behind the running host and
    `Should_ReportNoMembership_When_TheOnlyMembershipStartsTomorrow` would seed a date that is
    already in the past. Seed every membership pause and fee reduction span relative to
@@ -389,13 +401,22 @@ public sealed class GetMeTests
 
 ### Traps worth knowing
 
-- **The `TestClock` is one singleton shared by the whole collection.** Moving it is safe because
+- **Mailpit is shared by every class running in parallel.** Never read mail by a fixed
+  address — a literal recipient, or `ApiTestFixture.ManagingLoginEmail`, which every class's
+  managing login carries — because another class may send to it at the same moment. Read by an
+  address no other test uses: a seeded alias's `EmailOf` (uniquified behind the alias) or
+  `UniqueContactEmail`.
+- **A fresh database is a host of its own.** The fixture's database is cloned from the migrated
+  template, so its host finds nothing to migrate. A test about migrating an empty database starts
+  `HostOnOwnDatabaseAsync` after a `Logs.Mark()` — that host logs into the class's sink.
+
+- **The `TestClock` is one singleton shared by every test of the class.** Moving it is safe because
   JWT lifetime validation was wired to the same injected clock (`AccessTokenLifetime`); remove
   that wiring and every test which moves time starts poisoning the ones after it.
   `GetMeTests.Should_ReturnUnauthorized_When_TheAccessTokenHasExpired` is the guard — it goes red
   the moment the wiring does. Move it **only** inside `AtLaterTimeAsync` / `AtInstantAsync`: a
-  raw `Advance` or `SetUtcNow` in a test body leaks into every class that runs after it, which is
-  what makes a suite order-dependent. `AtInstantAsync` also moves *backwards*, which is how the
+  raw `Advance` or `SetUtcNow` in a test body leaks into every test of the class that runs after
+  it, which is what makes a class order-dependent. `AtInstantAsync` also moves *backwards*, which is how the
   Berlin-vs-UTC midnight tests seed a literal instant.
 - **A membership is a period, and a Person may hold several.** Two `AddMembership` calls for
   one Person just work; two *open* ones are rejected by the partial unique index
@@ -419,13 +440,13 @@ public sealed class GetMeTests
 - **The invitation-token rate limiter is a host singleton that outlives every reset.** Its permits
   are counted per token or code, and the fixture grants `ApiTestFixture.PermitsPerInvitationToken
   = 10` of them. A literal unknown token shared between tests spends one budget for the whole
-  collection and turns later tests into `429`s — draw a fresh `UnknownToken()` / `UnknownCode()`
+  class and turns later tests into `429`s — draw a fresh `UnknownToken()` / `UnknownCode()`
   in every test.
 - **Every limiter is a host singleton that outlives every reset** — the per-address limiter and
   the reset-mail throttle (keyed by address), and the per-account `AccountRateLimiter` (keyed by
   account id, five login-email codes per 15 minutes). Give every test its own address with
   `UniqueContactEmail`, and remember the managing login's account id survives every reset: a
-  test that spends its per-account budget spends it for the whole collection.
+  test that spends its per-account budget spends it for the whole class.
 - **A per-IP limit is proven on a host of its own, from forwarded addresses.** The fixture sets
   `RateLimits:SignedOut:PermitsPerIp` and both `RateLimits:SignIn` limits to a million so no suite
   trips them, and every test comes from the same address. A test that must exhaust a per-IP limit

@@ -10,8 +10,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Proxies;
 
-[Collection("Api")]
-public sealed class ForwardedClientAddressTests
+public sealed class ForwardedClientAddressTests : IClassFixture<ApiTestFixture>
 {
     private const int PermitsPerIp = 2;
 

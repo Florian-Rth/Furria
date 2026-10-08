@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Club;
 
-[Collection("Api")]
-public sealed class GetPublicBoardTests
+public sealed class GetPublicBoardTests : IClassFixture<ApiTestFixture>
 {
     private const string PublicBoardRoute = "/api/public/board";
     private const string NadinesPortrait = "https://media.furria.test/portraits/nadine.jpg";

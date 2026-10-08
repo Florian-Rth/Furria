@@ -9,8 +9,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Auth;
 
-[Collection("Api")]
-public sealed class RequestAccessTests
+public sealed class RequestAccessTests : IClassFixture<ApiTestFixture>
 {
     private static readonly TimeSpan PastTheMailInterval =
         AccessRequestService.MailInterval + TimeSpan.FromSeconds(1);

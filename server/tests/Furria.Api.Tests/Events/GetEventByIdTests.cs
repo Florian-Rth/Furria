@@ -9,8 +9,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Events;
 
-[Collection("Api")]
-public sealed class GetEventByIdTests
+public sealed class GetEventByIdTests : IClassFixture<ApiTestFixture>
 {
     private const string FirstGala = "1. Prunksitzung";
     private const string Teaser = "Der närrische Höhepunkt der Session.";

@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Management;
 
-[Collection("Api")]
-public sealed class GetSessionRecordsTests
+public sealed class GetSessionRecordsTests : IClassFixture<ApiTestFixture>
 {
     private const string Motto = "FURRIA — Der Mittelpunkt des Universums";
     private const string Logo =

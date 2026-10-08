@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Management;
 
-[Collection("Api")]
-public sealed class PutClubAccessTests
+public sealed class PutClubAccessTests : IClassFixture<ApiTestFixture>
 {
     private const string AgeOfConsentField = "ageOfConsent";
 

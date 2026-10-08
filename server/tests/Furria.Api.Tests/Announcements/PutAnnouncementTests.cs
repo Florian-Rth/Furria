@@ -8,8 +8,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Announcements;
 
-[Collection("Api")]
-public sealed class PutAnnouncementTests
+public sealed class PutAnnouncementTests : IClassFixture<ApiTestFixture>
 {
     private const string Title = "Saalreinigung";
     private const string Body = "Am Samstag räumen wir gemeinsam den Saal auf.";

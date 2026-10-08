@@ -9,8 +9,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Events;
 
-[Collection("Api")]
-public sealed class PutEventCancelledTests
+public sealed class PutEventCancelledTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
 

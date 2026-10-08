@@ -14,8 +14,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Persons;
 
-[Collection("Api")]
-public sealed class PutPersonAccountDisabledTests
+public sealed class PutPersonAccountDisabledTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const int UnknownPersonId = 999_999;

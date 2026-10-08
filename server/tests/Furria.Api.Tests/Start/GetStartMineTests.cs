@@ -10,8 +10,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Start;
 
-[Collection("Api")]
-public sealed class GetStartMineTests
+public sealed class GetStartMineTests : IClassFixture<ApiTestFixture>
 {
     private const int PausedSessionYear = 2026;
 

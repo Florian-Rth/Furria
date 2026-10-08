@@ -9,8 +9,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Auth;
 
-[Collection("Api")]
-public sealed class GetMeTests
+public sealed class GetMeTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateOnly BirthDate = new(1996, 4, 3);
     private static readonly TimeSpan PastTheAccessTokenLifetime = TimeSpan.FromMinutes(16);

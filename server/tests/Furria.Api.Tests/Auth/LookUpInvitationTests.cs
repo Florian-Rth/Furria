@@ -8,8 +8,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Auth;
 
-[Collection("Api")]
-public sealed class LookUpInvitationTests
+public sealed class LookUpInvitationTests : IClassFixture<ApiTestFixture>
 {
     private const string DeadBody =
         """{"status":"dead","firstName":null,"loginEmail":null,"contactEmailTaken":null,"purpose":null,"claimableLoginEmail":null}""";

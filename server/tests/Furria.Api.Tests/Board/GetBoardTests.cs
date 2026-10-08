@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Board;
 
-[Collection("Api")]
-public sealed class GetBoardTests
+public sealed class GetBoardTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateOnly Elected2016 = new(2016, 11, 11);
     private static readonly DateOnly Elected2020 = new(2020, 11, 11);
