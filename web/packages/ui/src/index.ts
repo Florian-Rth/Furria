@@ -37,6 +37,8 @@ export { KkConfettiRain } from './KkConfettiRain';
 export type { KkConfirmFact } from './KkConfirmDialog';
 export { KkConfirmDialog } from './KkConfirmDialog';
 export { KkConsequenceNote } from './KkConsequenceNote';
+export type { KkContactStripFrame } from './KkContactStrip';
+export { KkContactStrip } from './KkContactStrip';
 export type { KkDateQuickChoice } from './KkDateField';
 export { KkDateField } from './KkDateField';
 export type { KkDenseFacet, KkDenseMeta } from './KkDensePanel/internal/logic/facet-pieces';
@@ -46,10 +48,21 @@ export { KkDensePanel } from './KkDensePanel/KkDensePanel';
 export { KkDensePanelSkeleton } from './KkDensePanel/KkDensePanelSkeleton';
 export { KkEmptyState } from './KkEmptyState';
 export { KkErrorState } from './KkErrorState';
+export { KkExposureSweep } from './KkExposureSweep';
 export { KkEyebrow } from './KkEyebrow';
 export { KkFactRow } from './KkFactRow';
 export { KkFieldRow } from './KkFieldRow';
+export type { KkFilmEdgeTone } from './KkFilmEdge';
+export { KkFilmEdge } from './KkFilmEdge';
 export { KkFilterChips } from './KkFilterChips';
+export type { KkFlapCountTone } from './KkFlapCount';
+export { KkFlapCount } from './KkFlapCount';
+export type { KkFrameMark, KkFrameState } from './KkFrame';
+export { KkFrame } from './KkFrame';
+export type { KkFrameGridDensity } from './KkFrameGrid';
+export { KkFrameGrid } from './KkFrameGrid';
+export type { KkGreaseMarkKind } from './KkGreaseMark';
+export { KkGreaseMark } from './KkGreaseMark';
 export type { KkGreetingPart, KkGreetingPartRole } from './KkGreeting/internal/logic/flap-cells';
 export type { KkGreetingPlay, KkGreetingTempo } from './KkGreeting/internal/logic/flap-schedule';
 export { KkGreeting } from './KkGreeting/KkGreeting';
@@ -72,6 +85,17 @@ export { KkInlineLink } from './KkInlineLink';
 export { KkLead } from './KkLead';
 export { KkLetterDivider } from './KkLetterDivider';
 export { KkLetterIndex } from './KkLetterIndex';
+export type {
+  KkLightTableDeparture,
+  KkLightTableDone,
+  KkLightTableFrame,
+  KkLightTableLabels,
+  KkLightTableStripFrame,
+  KkLightTableTarget,
+} from './KkLightTable/KkLightTable';
+export { KkLightTable } from './KkLightTable/KkLightTable';
+export type { KkLoupeLabels, KkLoupeStripFrame } from './KkLoupe/KkLoupe';
+export { KkLoupe } from './KkLoupe/KkLoupe';
 export type { KkMetaTone } from './KkMeta';
 export { KkMeta } from './KkMeta';
 export { logoSourceOf } from './KkMottoStage/internal/logic/logo-source';
@@ -163,6 +187,8 @@ export { KkThemeColorMeta } from './KkThemeColorMeta';
 export { KkThemeProvider } from './KkThemeProvider';
 export { KkTicker } from './KkTicker';
 export { KkTickRow } from './KkTickRow';
+export type { KkTimeRailScene } from './KkTimeRail';
+export { KkTimeRail } from './KkTimeRail';
 export { KkTitleHeader } from './KkTitleHeader';
 export { KkTwoToneHeadline } from './KkTwoToneHeadline';
 export { KkVisuallyHidden } from './KkVisuallyHidden';

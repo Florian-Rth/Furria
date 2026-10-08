@@ -277,6 +277,31 @@ export const kkTokens = {
     placeholderSurface: '#D5D8DD',
     placeholderSurfaceDark: '#23262C',
   },
+  gallery: {
+    gutter: 2,
+    edgeHeight: 14,
+    edgeSprocket: 3,
+    edgeSprocketGap: 9,
+    stripHeight: { xs: 92, desktop: 132 },
+    columns: { xs: 4, sm: 6, desktop: 10 },
+    darkroom: '#050608',
+    darkroomEdge: '#0E1013',
+    latent: '#2A2D33',
+    grease: { stroke: 3.2, circleMs: 420, crossMs: 120 },
+    sweep: { seconds: 1.15, band: 0.22, staggerSeconds: 0.06, rows: 7 },
+    rail: { width: 30, previewWidth: 156 },
+    loupe: { openSeconds: 0.24, closeSeconds: 0.2, glowSeconds: 0.6 },
+    cull: {
+      rejectStrokeMs: 120,
+      rejectDropMs: 160,
+      stampMs: 80,
+      fileFlightMs: 200,
+      nextMs: 140,
+      hurriedMs: 90,
+      tiltDeg: 3,
+    },
+    target: { minHeight: 64 },
+  },
 } as const;
 
 export type KkColorTokens = (typeof kkTokens.color)[keyof typeof kkTokens.color];
