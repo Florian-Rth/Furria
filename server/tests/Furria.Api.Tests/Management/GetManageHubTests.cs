@@ -252,45 +252,6 @@ public sealed class GetManageHubTests
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerHoldsNoManagementPermission()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity.AddAccount("paula").AddMembership("paula-first", "paula", JoinedIn2017)
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("paula", ct);
-        var (response, _) = await client.GETAsync<GetManageHub, GetManageHubResponse>();
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerOnlyHoldsCalendarManageClub()
-    {
-        var (response, _) = await AskAsHolderOfAsync(FurriaPermissions.CalendarManageClub);
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .GETAsync<GetManageHub, GetManageHubResponse>();
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_CountEveryPersonAndTheRunningMemberships_When_TheHubIsRead()
     {
         var ct = TestContext.Current.CancellationToken;

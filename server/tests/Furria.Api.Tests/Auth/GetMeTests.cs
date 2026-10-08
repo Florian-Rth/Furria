@@ -698,17 +698,6 @@ public sealed class GetMeTests
     }
 
     [Fact]
-    public async Task Should_ReturnUnauthorized_When_NoAccessTokenIsSent()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-
-        var (response, _) = await _fixture.CreateClient().GETAsync<GetMe, GetMeResponse>();
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_ReturnUnauthorized_When_TheAccessTokenHasExpired()
     {
         var ct = TestContext.Current.CancellationToken;

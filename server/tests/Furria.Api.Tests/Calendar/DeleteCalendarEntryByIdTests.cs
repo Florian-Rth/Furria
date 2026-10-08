@@ -13,7 +13,6 @@ namespace Furria.Api.Tests.Calendar;
 [Collection("Api")]
 public sealed class DeleteCalendarEntryByIdTests
 {
-    private const int UnknownEntryId = 999_999;
     private const string ConflictField = "conflict";
     private const string Gala = "1. Prunksitzung";
     private const string ClubMeeting = "Vereinssitzung";
@@ -106,18 +105,6 @@ public sealed class DeleteCalendarEntryByIdTests
             failures[ConflictField]
         );
         await ctx.Expected.CalendarEntry(galaId).ToHaveTitle(Gala).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheEntryIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var response = await DiscardAsync(client, UnknownEntryId);
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     private static Task<HttpResponseMessage> DiscardAsync(HttpClient client, int calendarEntryId) =>

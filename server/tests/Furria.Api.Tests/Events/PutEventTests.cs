@@ -163,23 +163,6 @@ public sealed class PutEventTests
             .AssertAsync(ct);
     }
 
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerHoldsNoEventsKey()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var eventId = ctx.Club.Events.IdOf("first-gala");
-
-        var (response, _) = await EditAsync(
-            ctx,
-            "max",
-            Moved(eventId, ctx.Club.Venues.IdOf("festzelt"), PresaleStarted)
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx.Expected.CalendarEntry(eventId).ToHaveTitle(FirstGala).AssertAsync(ct);
-    }
-
     private static PutEventRequest Moved(
         int eventId,
         int venueId,

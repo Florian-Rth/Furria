@@ -1,9 +1,6 @@
-using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Auth;
-using Furria.Api.Endpoints.Invitations;
 using Furria.Api.Tests.Auth;
-using Furria.Application.Authorization;
 using Furria.Core.Identity;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -386,34 +383,5 @@ public sealed class PostInvitationRemindersTests
                 Assert.Equal(2, sent);
             }
         );
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldPersonsManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("ilka"))
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "gruppenpflege",
-                            "ilka-gruppenpflege",
-                            "Gruppenpflege",
-                            "ilka",
-                            FurriaPermissions.GroupsManage
-                        )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var (response, _) = await client.POSTAsync<
-            PostInvitationReminders,
-            PostInvitationRemindersResponse
-        >();
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 }

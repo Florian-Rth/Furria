@@ -1,5 +1,4 @@
 using System.Net;
-using FastEndpoints;
 using Furria.Api.Endpoints.Auth;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -212,20 +211,5 @@ public sealed class PutMyLoginEmailTests
             .Expected.EmailConfirmationsOfAccount(_fixture.ManagingLogin.AccountId)
             .ToHaveCount(0)
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_NoAccessTokenIsSent()
-    {
-        var (response, _) = await _fixture
-            .CreateClient()
-            .PUTAsync<PutMyLoginEmail, PutMyLoginEmailRequest, PutMyLoginEmailResponse>(
-                new PutMyLoginEmailRequest
-                {
-                    LoginEmail = InvitationSteps.UniqueContactEmail("niemand"),
-                }
-            );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 }

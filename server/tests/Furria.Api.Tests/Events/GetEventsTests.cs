@@ -193,24 +193,6 @@ public sealed class GetEventsTests
         );
     }
 
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerOnlyHoldsCalendarManageClub()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildSessionAsync(ct);
-
-                var (response, _) = await ReadAsync(ctx, "ilka", ct);
-
-                Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-            }
-        );
-    }
-
     private static async Task<TestResult<GetEventsResponse>> ReadAsync(
         SeededContext ctx,
         string alias,

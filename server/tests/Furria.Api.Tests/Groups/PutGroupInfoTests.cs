@@ -357,35 +357,6 @@ public sealed class PutGroupInfoTests
     }
 
     [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddPerson("anna", "Anna", "Kaiser"))
-                    .Groups(groups => groups.AddGroup("tanzgarde", "Tanzgarde", OldDescription)),
-            ct
-        );
-
-        var response = await _fixture
-            .CreateClient()
-            .PUTAsync<PutGroupInfo, PutGroupInfoRequest>(
-                new()
-                {
-                    GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
-                    Description = NewDescription,
-                    IsRecruiting = true,
-                    GroupKindId = null,
-                    FoundedYear = null,
-                    Tone = null,
-                }
-            );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_WriteTheProfile_When_TheGroupAdminNamesKindYearAndTone()
     {
         var ct = TestContext.Current.CancellationToken;

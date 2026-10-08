@@ -412,22 +412,4 @@ public sealed class GroupAccessTests
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Groups(groups => groups.AddGroup("tanzgarde", "Tanzgarde")),
-            ct
-        );
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .GETAsync<GroupAccessProbe, GroupAccessProbeRequest, GroupAccessProbeResponse>(
-                new() { GroupId = ctx.Groups.Groups.IdOf("tanzgarde") }
-            );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
 }

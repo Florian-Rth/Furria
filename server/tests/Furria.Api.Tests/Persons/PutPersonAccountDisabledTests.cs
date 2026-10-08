@@ -205,26 +205,6 @@ public sealed class PutPersonAccountDisabledTests
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerOnlyHoldsPersonsManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ArrangeHolderOfAsync(FurriaPermissions.PersonsManage, ct);
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-
-        var response = await InvitationSteps.SetAccountDisabledAsync(
-            client,
-            ctx.Identity.People.IdOf("anna"),
-            true
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx
-            .Expected.Account(ctx.Identity.Accounts.IdOf("anna"))
-            .ToBeDisabled(false)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_DisableTheAccount_When_TheCallerOnlyHoldsAccountsManage()
     {
         var ct = TestContext.Current.CancellationToken;

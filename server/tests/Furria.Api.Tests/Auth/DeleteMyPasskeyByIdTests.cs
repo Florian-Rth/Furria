@@ -94,17 +94,6 @@ public sealed class DeleteMyPasskeyByIdTests
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_NoAccessTokenIsSent()
-    {
-        var response = await PasskeySteps.RemoveAsync(
-            _fixture.CreateClient(),
-            Base64Url.EncodeToString(RandomNumberGenerator.GetBytes(16))
-        );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
     private Task<SeededContext> ArrangeAnnaAndBertaAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder =>

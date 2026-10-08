@@ -1,7 +1,6 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Venues;
-using Furria.Application.Authorization;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -107,48 +106,5 @@ public sealed class GetVenuesTests
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Null(Assert.Single(result.Venues).Hint);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldClubManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity.AddPerson("anna", "Anna", "Kaiser").AddAccount("anna")
-                    )
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "gruppenpflege",
-                            "gruppenpflege-holding",
-                            "Gruppenpflege",
-                            "anna",
-                            FurriaPermissions.GroupsManage
-                        )
-                    )
-                    .Club(club => club.AddVenue("halle", "Turnhalle")),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("anna", ct);
-        var (response, _) = await client.GETAsync<GetVenues, GetVenuesResponse>();
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(
-            builder => builder.Club(club => club.AddVenue("halle", "Turnhalle")),
-            ct
-        );
-
-        var (response, _) = await _fixture.CreateClient().GETAsync<GetVenues, GetVenuesResponse>();
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 }

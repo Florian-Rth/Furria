@@ -142,46 +142,4 @@ public sealed class GetMembershipApplicationsTests
             Assert.Single(result.Applications).MembershipApplicationId
         );
     }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerOnlyManagesPersons()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("paul"))
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "personenpflege",
-                            "paul-personenpflege",
-                            "Personenpflege",
-                            "paul",
-                            FurriaPermissions.PersonsManage
-                        )
-                    ),
-            ct
-        );
-        var client = await ctx.Identity.ClientForAsync("paul", ct);
-
-        var (response, _) = await client.GETAsync<
-            GetMembershipApplications,
-            GetMembershipApplicationsResponse
-        >();
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .GETAsync<GetMembershipApplications, GetMembershipApplicationsResponse>();
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
 }

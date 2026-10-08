@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Persons;
-using Furria.Application.Authorization;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -351,83 +350,6 @@ public sealed class PostMembershipPauseTests
         );
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldPersonsManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddPerson("paula", "Paula", "Brendel")
-                            .AddPerson("ilka", "Ilka", "Reineke")
-                            .AddAccount("ilka")
-                            .AddMembership("paula-erste", "paula", JoinedIn2017)
-                    )
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "gruppenpflege",
-                            "ilka-gruppenpflege",
-                            "Gruppenpflege",
-                            "ilka",
-                            FurriaPermissions.GroupsManage
-                        )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var (response, _) = await client.POSTAsync<
-            PostMembershipPause,
-            PostMembershipPauseRequest,
-            PostMembershipPauseResponse
-        >(
-            new()
-            {
-                PersonId = ctx.Identity.People.IdOf("paula"),
-                MembershipId = ctx.Identity.Memberships.IdOf("paula-erste"),
-                FirstSessionYear = PausedFrom2018,
-                LastSessionYear = PausedUntil2019,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("paula", "Paula", "Brendel")
-                        .AddMembership("paula-erste", "paula", JoinedIn2017)
-                ),
-            ct
-        );
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .POSTAsync<
-                PostMembershipPause,
-                PostMembershipPauseRequest,
-                PostMembershipPauseResponse
-            >(
-                new()
-                {
-                    PersonId = ctx.Identity.People.IdOf("paula"),
-                    MembershipId = ctx.Identity.Memberships.IdOf("paula-erste"),
-                    FirstSessionYear = PausedFrom2018,
-                    LastSessionYear = PausedUntil2019,
-                }
-            );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     private Task<SeededContext> BuildWithEndedMembershipAsync(CancellationToken ct) =>

@@ -129,17 +129,6 @@ public sealed class GetTicketRequestsTests
         Assert.Null(result.ToDo);
     }
 
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerOnlyManagesEvents()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(_ => { }, ct);
-
-        var (response, _) = await ReadAsync(ctx, "vera");
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
     private static async Task<TestResult<GetTicketRequestsResponse>> ReadAsync(
         SeededContext ctx,
         string alias

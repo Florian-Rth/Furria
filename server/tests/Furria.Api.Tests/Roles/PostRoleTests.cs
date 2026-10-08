@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Roles;
-using Furria.Application.Authorization;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -123,49 +122,6 @@ public sealed class PostRoleTests
         var (response, _) = await CreateRoleAsync(client, new string('A', 81), "Zu lang.");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldRolesManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("ilka"))
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "gruppenpflege",
-                            "ilka-gruppenpflege",
-                            "Gruppenpflege",
-                            "ilka",
-                            FurriaPermissions.GroupsManage
-                        )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var (response, _) = await CreateRoleAsync(client, "Zeugwart", "Neue Rolle.");
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx.Expected.Roles().ToHaveNameCount("Zeugwart", 0).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var (response, _) = await CreateRoleAsync(
-            _fixture.CreateClient(),
-            "Zeugwart",
-            "Neue Rolle."
-        );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-        await ctx.Expected.Roles().ToHaveNameCount("Zeugwart", 0).AssertAsync(ct);
     }
 
     private static async Task<IDictionary<string, List<string>>> ReadFailuresAsync(

@@ -11,8 +11,6 @@ namespace Furria.Api.Tests.MembershipApplications;
 [Collection("Api")]
 public sealed class DeleteMembershipApplicationByIdTests
 {
-    private const int UnknownApplicationId = 999_999;
-
     private readonly ApiTestFixture _fixture;
 
     public DeleteMembershipApplicationByIdTests(ApiTestFixture fixture)
@@ -100,18 +98,6 @@ public sealed class DeleteMembershipApplicationByIdTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheApplicationIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        var response = await DeclineAsync(admin, UnknownApplicationId);
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_DeclineTheApplication_When_TheCallerOnlyDecidesApplications()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -142,40 +128,6 @@ public sealed class DeleteMembershipApplicationByIdTests
         await ctx
             .Expected.MembershipApplication(ctx.Identity.MembershipApplications.IdOf("mia"))
             .ToNotExist()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerOnlyManagesPersons()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddAccount("paul")
-                            .AddMembershipApplication("mia", _fixture.Today.AddYears(-30))
-                    )
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "personenpflege",
-                            "paul-personenpflege",
-                            "Personenpflege",
-                            "paul",
-                            FurriaPermissions.PersonsManage
-                        )
-                    ),
-            ct
-        );
-        var client = await ctx.Identity.ClientForAsync("paul", ct);
-
-        var response = await DeclineAsync(client, ctx.Identity.MembershipApplications.IdOf("mia"));
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx
-            .Expected.MembershipApplication(ctx.Identity.MembershipApplications.IdOf("mia"))
-            .ToExist()
             .AssertAsync(ct);
     }
 

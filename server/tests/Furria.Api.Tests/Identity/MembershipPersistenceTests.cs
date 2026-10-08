@@ -20,26 +20,6 @@ public sealed class MembershipPersistenceTests
     }
 
     [Fact]
-    public async Task Should_PersistBothPeriodEnds_When_TheMembershipHasEnded()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("alice")
-                        .AddMembership("alice-first", "alice", JoinedIn2017, LeftIn2020)
-                ),
-            ct
-        );
-
-        await ctx
-            .Expected.Membership(ctx.Identity.Memberships.IdOf("alice-first"))
-            .ToHavePeriod(JoinedIn2017, LeftIn2020)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_AcceptASecondMembership_When_TheFirstOneEnded()
     {
         var ct = TestContext.Current.CancellationToken;

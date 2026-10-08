@@ -1,5 +1,4 @@
 using System.Net;
-using FastEndpoints;
 using Furria.Api.Endpoints.Auth;
 using Furria.Core.Identity;
 using Furria.Tests.Common.Builder;
@@ -339,18 +338,6 @@ public sealed class ConfirmMyLoginEmailTests
             HttpStatusCode.OK,
             (await AccountSecuritySteps.RefreshAsync(_fixture, session.RefreshToken)).StatusCode
         );
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_NoAccessTokenIsSent()
-    {
-        var (response, _) = await _fixture
-            .CreateClient()
-            .POSTAsync<ConfirmMyLoginEmail, ConfirmMyLoginEmailRequest, EmptyResponse>(
-                new ConfirmMyLoginEmailRequest { Code = "123456" }
-            );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     private Task<SeededContext> ArrangeAnnaAsync(CancellationToken ct) =>

@@ -248,17 +248,6 @@ public sealed class PutMyPasswordTests
         );
     }
 
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_NoAccessTokenIsSent()
-    {
-        var (response, _) = await AccountSecuritySteps.ChangePasswordAsync(
-            _fixture.CreateClient(),
-            ApiTestFixture.SeededAccountPassword
-        );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
     private Task<SeededContext> ArrangeAnnaAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder => builder.Identity(identity => identity.AddAccount("anna")),

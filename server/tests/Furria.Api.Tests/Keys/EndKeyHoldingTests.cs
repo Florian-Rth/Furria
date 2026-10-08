@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Keys;
-using Furria.Application.Authorization;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -16,7 +15,6 @@ public sealed class EndKeyHoldingTests
     private const int UnknownKeyHoldingId = 999_999;
 
     private static readonly DateOnly HeldSince2019 = new(2019, 2, 1);
-    private static readonly DateOnly HeldSince2024 = new(2024, 3, 1);
     private static readonly DateOnly ReturnedIn2022 = new(2022, 6, 30);
     private static readonly DateOnly ReturnedIn2025 = new(2025, 5, 14);
     private static readonly DateOnly BeforeTheHandout = new(2018, 12, 24);
@@ -143,79 +141,6 @@ public sealed class EndKeyHoldingTests
         );
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldKeyHoldingsManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddPerson("anna", "Anna", "Kaiser")
-                            .AddAccount("anna")
-                            .AddPerson("maik", "Maik", "Perlberg")
-                    )
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "ortspflege",
-                            "ortspflege-holding",
-                            "Ortspflege",
-                            "anna",
-                            FurriaPermissions.ClubManage
-                        )
-                    )
-                    .Club(club =>
-                        club.AddVenue("lager", "Requisitenlager")
-                            .AddKeyHolding("maik-lager", "lager", "maik", HeldSince2024)
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("anna", ct);
-        var response = await client.POSTAsync<EndKeyHolding, EndKeyHoldingRequest>(
-            new()
-            {
-                KeyHoldingId = ctx.Club.KeyHoldings.IdOf("maik-lager"),
-                UntilOn = ReturnedIn2025,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx
-            .Expected.KeyHolding(ctx.Club.KeyHoldings.IdOf("maik-lager"))
-            .ToBeOpen()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddPerson("maik", "Maik", "Perlberg"))
-                    .Club(club =>
-                        club.AddVenue("lager", "Requisitenlager")
-                            .AddKeyHolding("maik-lager", "lager", "maik", HeldSince2024)
-                    ),
-            ct
-        );
-
-        var response = await _fixture
-            .CreateClient()
-            .POSTAsync<EndKeyHolding, EndKeyHoldingRequest>(
-                new()
-                {
-                    KeyHoldingId = ctx.Club.KeyHoldings.IdOf("maik-lager"),
-                    UntilOn = ReturnedIn2025,
-                }
-            );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     private static async Task<IDictionary<string, List<string>>> ReadFailuresAsync(

@@ -99,21 +99,6 @@ public sealed class LogoutTests
     }
 
     [Fact]
-    public async Task Should_ReturnUnauthorized_When_NoAccessTokenIsSent()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (_, session) = await LoggedInAsync(ct);
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .POSTAsync<Logout, LogoutRequest, EmptyResponse>(
-                new() { RefreshToken = session.RefreshToken }
-            );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_ReportTheLogout_When_TheCallerLogsOut()
     {
         var ct = TestContext.Current.CancellationToken;

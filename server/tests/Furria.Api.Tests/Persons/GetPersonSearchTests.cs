@@ -295,17 +295,6 @@ public sealed class GetPersonSearchTests
     }
 
     [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await BuildSearchableRegistryAsync(ct);
-
-        var (response, _) = await SearchAsync(_fixture.CreateClient(), "bren");
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_CarryTheNameAndTheIdOnly_When_ThePayloadIsRead()
     {
         var ct = TestContext.Current.CancellationToken;

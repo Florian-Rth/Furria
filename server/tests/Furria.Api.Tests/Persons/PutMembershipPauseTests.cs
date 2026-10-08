@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Persons;
-using Furria.Application.Authorization;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -322,108 +321,6 @@ public sealed class PutMembershipPauseTests
         );
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-        await ctx
-            .Expected.MembershipPause(ctx.Identity.Pauses.IdOf("paula-ruhte"))
-            .ToHaveSpan(PausedFrom2018, PausedUntil2019)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_TheRouteCarriesNoUsableId()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithClosedMembershipPauseAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await client.PUTAsync<PutMembershipPause, PutMembershipPauseRequest>(
-            new()
-            {
-                PersonId = ctx.Identity.People.IdOf("paula"),
-                MembershipId = ctx.Identity.Memberships.IdOf("paula-erste"),
-                PauseId = 0,
-                FirstSessionYear = PausedFrom2018,
-                LastSessionYear = PausedFrom2018,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        await ctx
-            .Expected.MembershipPause(ctx.Identity.Pauses.IdOf("paula-ruhte"))
-            .ToHaveSpan(PausedFrom2018, PausedUntil2019)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldPersonsManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddPerson("paula", "Paula", "Brendel")
-                            .AddPerson("ilka", "Ilka", "Reineke")
-                            .AddAccount("ilka")
-                            .AddMembership("paula-erste", "paula", JoinedIn2017)
-                            .AddMembershipPause(
-                                "paula-ruhte",
-                                "paula-erste",
-                                PausedFrom2018,
-                                PausedUntil2019
-                            )
-                    )
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "gruppenpflege",
-                            "ilka-gruppenpflege",
-                            "Gruppenpflege",
-                            "ilka",
-                            FurriaPermissions.GroupsManage
-                        )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var response = await client.PUTAsync<PutMembershipPause, PutMembershipPauseRequest>(
-            new()
-            {
-                PersonId = ctx.Identity.People.IdOf("paula"),
-                MembershipId = ctx.Identity.Memberships.IdOf("paula-erste"),
-                PauseId = ctx.Identity.Pauses.IdOf("paula-ruhte"),
-                FirstSessionYear = PausedFrom2018,
-                LastSessionYear = PausedFrom2018,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx
-            .Expected.MembershipPause(ctx.Identity.Pauses.IdOf("paula-ruhte"))
-            .ToHaveSpan(PausedFrom2018, PausedUntil2019)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithClosedMembershipPauseAsync(ct);
-
-        var response = await _fixture
-            .CreateClient()
-            .PUTAsync<PutMembershipPause, PutMembershipPauseRequest>(
-                new()
-                {
-                    PersonId = ctx.Identity.People.IdOf("paula"),
-                    MembershipId = ctx.Identity.Memberships.IdOf("paula-erste"),
-                    PauseId = ctx.Identity.Pauses.IdOf("paula-ruhte"),
-                    FirstSessionYear = PausedFrom2018,
-                    LastSessionYear = PausedFrom2018,
-                }
-            );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         await ctx
             .Expected.MembershipPause(ctx.Identity.Pauses.IdOf("paula-ruhte"))
             .ToHaveSpan(PausedFrom2018, PausedUntil2019)

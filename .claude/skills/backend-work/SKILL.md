@@ -39,6 +39,7 @@ description: Mandatory rules for all C#/.NET backend work. Invoke before writing
 - Use xUnit v3 `Assert.*` only — FluentAssertions is banned
 - Test naming: `Should_Expected_When_Scenario`
 - One test file per endpoint, file name mirrors endpoint name
+- Endpoint tests cover business behaviour only — never write a per-endpoint 401 (no token), 403 (caller lacks the declared permission/affiliation), 400 (route id not positive) or 404 (unknown id on a body-less endpoint) test; `EndpointConventionTests` proves those for every registered endpoint from its metadata. Still test 403/404 where the handler decides (ownership, group-admin scope, archived/hidden/foreign-parent entities, unknown ids inside a body)
 - Never use Task.Delay to wait for async operations in tests — poll for the expected condition with a timeout instead
 - Run tests per the Validation policy in `CLAUDE.md`: targeted classes only (`dotnet run --project tests/Furria.Api.Tests --no-build -- -class <FQN>`), never the full suite in the inner loop; CI runs the full suite
 - When a test mutates host-singleton state that survives the per-test database reset (a monitor, cache, or background-service registry shared across the test collection), undo that mutation in a finally block so later suites in the collection are not contaminated

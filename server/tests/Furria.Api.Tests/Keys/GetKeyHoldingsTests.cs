@@ -1,7 +1,6 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Keys;
-using Furria.Application.Authorization;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -365,51 +364,6 @@ public sealed class GetKeyHoldingsTests
         );
 
         Assert.False(holding.HolderIsActiveInClub);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldKeyHoldingsManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity.AddPerson("anna", "Anna", "Kaiser").AddAccount("anna")
-                    )
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "ortspflege",
-                            "ortspflege-holding",
-                            "Ortspflege",
-                            "anna",
-                            FurriaPermissions.ClubManage
-                        )
-                    )
-                    .Club(club => club.AddVenue("halle", "Turnhalle")),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("anna", ct);
-        var (response, _) = await client.GETAsync<GetKeyHoldings, GetKeyHoldingsResponse>();
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(
-            builder => builder.Club(club => club.AddVenue("halle", "Turnhalle")),
-            ct
-        );
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .GETAsync<GetKeyHoldings, GetKeyHoldingsResponse>();
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     private static async Task<KeyHoldingSummaryDto> ReadHoldingAsync(

@@ -261,23 +261,6 @@ public sealed class PostTrainingPreviewTests
     }
 
     [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildRhythmAsync(ct);
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .POSTAsync<
-                PostTrainingPreview,
-                PostTrainingPreviewRequest,
-                PostTrainingPreviewResponse
-            >(WholeSessionOf(ctx));
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_MarkEveryEvening_When_TheTrainingSlotsVenueWasArchived()
     {
         var ct = TestContext.Current.CancellationToken;

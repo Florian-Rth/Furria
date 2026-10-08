@@ -13,8 +13,6 @@ namespace Furria.Api.Tests.Members;
 [Collection("Api")]
 public sealed class GetMemberByIdTests
 {
-    private const int UnknownPersonId = 999_999;
-
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
     private static readonly DateOnly LeftIn2020 = new(2020, 3, 1);
     private static readonly DateOnly RejoinedIn2023 = new(2023, 9, 1);
@@ -612,25 +610,6 @@ public sealed class GetMemberByIdTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_ThePersonDoesNotExist()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity.AddAccount("alice").AddMembership("alice-first", "alice", JoinedIn2017)
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("alice", ct);
-
-        var (response, _) = await ReadCardAsync(client, UnknownPersonId);
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_ReturnNotFound_When_ThePersonIsNoLongerAffiliated()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -722,69 +701,6 @@ public sealed class GetMemberByIdTests
             "shared",
             document.RootElement.GetProperty("contact").GetProperty("visibility").GetString()
         );
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerIsNotAffiliated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("paula", "Paula", "Brendel")
-                        .AddMembership("paula-first", "paula", JoinedIn2017)
-                        .AddAccount("tom")
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("tom", ct);
-
-        var (response, _) = await ReadCardAsync(client, ctx.Identity.People.IdOf("paula"));
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("paula", "Paula", "Brendel")
-                        .AddMembership("paula-first", "paula", JoinedIn2017)
-                ),
-            ct
-        );
-
-        var (response, _) = await ReadCardAsync(
-            _fixture.CreateClient(),
-            ctx.Identity.People.IdOf("paula")
-        );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_ThePersonIdIsNotPositive()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity.AddAccount("alice").AddMembership("alice-first", "alice", JoinedIn2017)
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("alice", ct);
-
-        var (response, _) = await ReadCardAsync(client, 0);
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]

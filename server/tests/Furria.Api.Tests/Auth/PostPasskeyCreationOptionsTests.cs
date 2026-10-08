@@ -1,5 +1,4 @@
 using System.Net;
-using FastEndpoints;
 using Furria.Api.Endpoints.Auth;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
@@ -109,16 +108,6 @@ public sealed class PostPasskeyCreationOptionsTests
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         await ctx.Expected.PasskeyChallenges().ToHaveCount(0).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_NoAccessTokenIsSent()
-    {
-        var (response, _) = await _fixture
-            .CreateClient()
-            .POSTAsync<PostPasskeyCreationOptions, EmptyResponse>();
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     private Task<SeededContext> ArrangeAnnaAsync(CancellationToken ct) =>

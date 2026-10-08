@@ -265,21 +265,6 @@ public sealed class GetGroupCalendarTests
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .GETAsync<GetGroupCalendar, GetGroupCalendarRequest, GetGroupCalendarResponse>(
-                Window(UnknownGroupId)
-            );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
     private static GetGroupCalendarRequest Window(int groupId) =>
         new()
         {

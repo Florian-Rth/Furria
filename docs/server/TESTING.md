@@ -16,7 +16,23 @@ live here, not as dead code.
   EF InMemory are banned.
 - **Test observable behaviour, not interactions.** Assert what the system did (rows, responses,
   published messages) — never that "method X was called".
-- **Only write tests for real scenarios.** No tests that merely validate implementation details.
+- **Only write tests for real scenarios.** No tests that merely validate implementation details
+  — no seed-then-read-back round trips, no copies of the serializer configuration.
+- **Endpoint tests cover business behaviour only.** The gates every endpoint shares are proven
+  once, for every registered route, by `Authorization/EndpointConventionTests`, which reads the
+  running host's endpoint metadata — a new endpoint is covered the moment it is mapped:
+  - no token → `401` on every route that is not `AllowAnonymous`;
+  - a caller holding every permission *except* the declared one (`RequirePermission`, or the whole
+    `RequireAnyPermission` set) → `403`, and an unaffiliated caller on `RequireAffiliation` → `403`;
+  - an `int` route id of `0` → `400` naming that id;
+  - an unknown id on an endpoint addressed by its route ids alone (no body, no query) → `404`.
+
+  So **never write a per-endpoint test for any of these.** Keep 403/404 tests where the *handler*
+  decides — ownership, group-admin scope, in-handler gates (`EndpointGateTests.InHandlerGated`),
+  archived/hidden/foreign-parent entities, an unknown id inside a request body.
+- **Wire names the clients parse are pinned once.** `EnumWireNamesTests` serializes every value of
+  each client-parsed enum through the host's own serializer options against one pinned line per
+  enum; add an enum there when a client starts parsing it, never a per-value test.
 - **YAGNI applies to test infra too.** A helper exists only once a test needs it; until then its
   contract is specced below under *Still planned*.
 
@@ -470,12 +486,13 @@ public sealed class GetMeTests
 - **`EndpointGateTests` proves less than its name suggests, by construction.** It enumerates
   `RouteEndpoint`s and reads their metadata; `PermissionEnforcer` is wired through FastEndpoints'
   `Endpoints.Configurator`, which reaches **FastEndpoints endpoints only**. A hand-mapped
-  minimal-API route carrying `PermissionRequirement` would therefore satisfy the guard and run
-  **unenforced** — map endpoints through FastEndpoints, or the guard is lying. Anything served by
-  middleware is not a route at all and the guard cannot see it: that is why the OpenAPI document
-  is registered only when `IsDevelopment()`, pinned by `OpenApiExposureTests`, which is also the
-  one test in the suite that may use a raw URL instead of the typed client — there is no endpoint
-  type to name.
+  minimal-API route carrying `PermissionRequirement` would satisfy this guard and run
+  **unenforced**; only `EndpointConventionTests`, which actually calls every route, would go red.
+  Map endpoints through FastEndpoints. Anything served by middleware is not a route at all and
+  neither class can see it: that is why the OpenAPI document is registered only when
+  `IsDevelopment()`, pinned by `OpenApiExposureTests`. Both it and `EndpointConventionTests` use
+  raw URLs instead of the typed client — there is no endpoint type to name, or the routes come
+  from metadata.
 
 - **The audit timestamps come from the injected clock, not from `now()`.**
   `AuditTimestampInterceptor` stamps `created_at` + `updated_at` on insert and `updated_at` on

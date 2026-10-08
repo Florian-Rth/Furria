@@ -501,37 +501,6 @@ public sealed class PutGroupTrainingSlotsTests
             .AssertAsync(ct);
     }
 
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Groups(groups => groups.AddGroup("tanzgarde", "Tanzgarde")),
-            ct
-        );
-
-        var response = await _fixture
-            .CreateClient()
-            .PUTAsync<PutGroupTrainingSlots, PutGroupTrainingSlotsRequest>(
-                new()
-                {
-                    GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
-                    Slots =
-                    [
-                        new()
-                        {
-                            Weekday = DayOfWeek.Tuesday,
-                            StartsAt = HalfPastSeven,
-                            DurationMinutes = TrainingMinutes,
-                            VenueId = null,
-                        },
-                    ],
-                }
-            );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
     private static async Task<IDictionary<string, List<string>>> ReadFailuresAsync(
         HttpResponseMessage response,
         CancellationToken ct

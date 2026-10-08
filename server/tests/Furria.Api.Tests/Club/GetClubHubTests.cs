@@ -225,34 +225,6 @@ public sealed class GetClubHubTests
         );
     }
 
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerHoldsNoRunningMembership()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddAccount("gast")),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("gast", ct);
-        var (response, _) = await client.GETAsync<GetClubHub, GetClubHubResponse>();
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .GETAsync<GetClubHub, GetClubHubResponse>();
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
     private Task<GetClubHubResponse> ReadTheHubAsMemberAsync(CancellationToken ct) =>
         ReadTheHubAsMemberAsync(_ => { }, ct);
 
