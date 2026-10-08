@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Calendar;
 using Furria.Application.Authorization;
@@ -13,6 +14,8 @@ namespace Furria.Api.Tests.Calendar;
 public sealed class DeleteCalendarEntryByIdTests
 {
     private const int UnknownEntryId = 999_999;
+    private const string ConflictField = "conflict";
+    private const string Gala = "1. Prunksitzung";
     private const string ClubMeeting = "Vereinssitzung";
     private const string DanceGuardTraining = "Training der Tanzgarde";
 
@@ -87,6 +90,25 @@ public sealed class DeleteCalendarEntryByIdTests
     }
 
     [Fact]
+    public async Task Should_ReturnConflict_When_TheEntryIsAnEvent()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var galaId = ctx.Club.Events.IdOf("gala");
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var response = await DiscardAsync(client, galaId);
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        var failures = await ReadFailuresAsync(response, ct);
+        Assert.Equal(
+            ["Eine Veranstaltung wird in den Veranstaltungen gepflegt."],
+            failures[ConflictField]
+        );
+        await ctx.Expected.CalendarEntry(galaId).ToHaveTitle(Gala).AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_ReturnNotFound_When_TheEntryIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -151,6 +173,8 @@ public sealed class DeleteCalendarEntryByIdTests
                                 visibility: CalendarEntryVisibility.Club,
                                 ownerGroupAlias: "tanzgarde"
                             )
+                            .AddVenue("buergerhaus", "Bürgerhaus")
+                            .AddEvent("gala", Gala, MeetingStart, "buergerhaus")
                             .AddAttendanceResponse(
                                 "chris-says-yes",
                                 "club-meeting",
@@ -160,4 +184,14 @@ public sealed class DeleteCalendarEntryByIdTests
                     ),
             ct
         );
+
+    private static async Task<IDictionary<string, List<string>>> ReadFailuresAsync(
+        HttpResponseMessage response,
+        CancellationToken ct
+    )
+    {
+        var payload = await response.Content.ReadFromJsonAsync<ErrorResponse>(ct);
+        return payload?.Errors
+            ?? throw new InvalidOperationException("The failure response carried no errors.");
+    }
 }

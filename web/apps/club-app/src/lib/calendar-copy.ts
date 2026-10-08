@@ -5,6 +5,7 @@ export const CALENDAR_KIND_KEYS = [
   'meeting',
   'party',
   'other',
+  'event',
 ] as const;
 export type CalendarKindKey = (typeof CALENDAR_KIND_KEYS)[number];
 
@@ -15,6 +16,7 @@ export const CALENDAR_KIND_LABELS: Record<CalendarKindKey, string> = {
   meeting: 'Sitzung',
   party: 'Feier',
   other: 'Sonstiges',
+  event: 'Veranstaltung',
 };
 
 export const ATTENDANCE_ANSWER_KEYS = ['yes', 'maybe', 'no'] as const;

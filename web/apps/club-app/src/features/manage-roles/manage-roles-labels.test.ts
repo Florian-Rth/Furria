@@ -209,7 +209,7 @@ describe('toHolderUnitLabel', () => {
 describe('toPermissionEntries', () => {
   it('follows the catalogue order and drops unknown keys', () => {
     const entries = toPermissionEntries(
-      [PERMISSION_KEYS.groupsManage, 'events.manage', PERMISSION_KEYS.personsManage],
+      [PERMISSION_KEYS.groupsManage, 'drinks.manage', PERMISSION_KEYS.personsManage],
       [PERMISSION_KEYS.personsManage],
     );
 

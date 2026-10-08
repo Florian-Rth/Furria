@@ -1,14 +1,11 @@
 import { z } from 'zod';
+import { EMAIL_MAX_LENGTH, PHONE_PATTERN } from '@/lib/contact-fields';
 import { buildBelowAgeOfConsentMessage } from './apply-content';
 import { deriveMembership } from './membership-derivation';
 
 export const NAME_MAX_LENGTH = 80;
 
 export const STREET_MAX_LENGTH = 120;
-
-export const EMAIL_MAX_LENGTH = 254;
-
-export const PHONE_PATTERN = /^[+0][\d\s()/.-]{5,30}$/;
 
 export const GERMAN_POSTAL_CODE_PATTERN = /^(?:0[1-9]|[1-9]\d)\d{3}$/;
 
@@ -117,22 +114,6 @@ export type MembershipApplicationPayload = z.infer<typeof MembershipApplicationP
 export const MembershipApplicationResponseSchema = z.object({});
 
 export type MembershipApplicationResponse = z.infer<typeof MembershipApplicationResponseSchema>;
-
-export const AltchaChallengeSchema = z.object({
-  parameters: z.object({
-    algorithm: z.string(),
-    cost: z.number().int().positive(),
-    expiresAt: z.number().int().positive(),
-    keyLength: z.number().int().positive(),
-    keyPrefix: z.string(),
-    keySignature: z.string(),
-    nonce: z.string(),
-    salt: z.string(),
-  }),
-  signature: z.string(),
-});
-
-export type AltchaChallenge = z.infer<typeof AltchaChallengeSchema>;
 
 export const ConfirmationOutcomeSchema = z.enum(['confirmed', 'alreadyConfirmed', 'expired']);
 

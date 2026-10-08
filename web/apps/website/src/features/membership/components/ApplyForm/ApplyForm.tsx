@@ -1,40 +1,28 @@
-import { SummaryRow } from '@/components/SummaryRow';
-import { ApplyFormAside } from './internal/layout/ApplyFormAside';
-import { ApplyFormBlock } from './internal/layout/ApplyFormBlock';
-import { ApplyFormBlockBody } from './internal/layout/ApplyFormBlockBody';
-import { ApplyFormColumns } from './internal/layout/ApplyFormColumns';
-import { ApplyFormFields } from './internal/layout/ApplyFormFields';
-import { ApplyFormMain } from './internal/layout/ApplyFormMain';
+import { SiteForm } from '@/components/SiteForm/SiteForm';
 import { ApplyFormRoot } from './internal/layout/ApplyFormRoot';
-import { ApplySummaryPanel } from './internal/layout/ApplySummaryPanel';
 import { ApplyBirthDateField } from './internal/ui/ApplyBirthDateField';
 import { ApplyConsentCheckbox } from './internal/ui/ApplyConsentCheckbox';
 import { ApplyConsentLabel } from './internal/ui/ApplyConsentLabel';
-import { ApplyErrorFallback } from './internal/ui/ApplyErrorFallback';
 import { ApplyFormField } from './internal/ui/ApplyFormField';
-import { ApplyFormLegend } from './internal/ui/ApplyFormLegend';
-import { ApplyFormNote } from './internal/ui/ApplyFormNote';
 import { ApplyHoneypotField } from './internal/ui/ApplyHoneypotField';
-import { ApplySubmitButton } from './internal/ui/ApplySubmitButton';
-import { ApplySubmitHint } from './internal/ui/ApplySubmitHint';
 
 export const ApplyForm = Object.assign(ApplyFormRoot, {
-  Columns: ApplyFormColumns,
-  Main: ApplyFormMain,
-  Aside: ApplyFormAside,
-  Block: ApplyFormBlock,
-  BlockBody: ApplyFormBlockBody,
-  Legend: ApplyFormLegend,
-  Fields: ApplyFormFields,
+  Columns: SiteForm.Columns,
+  Main: SiteForm.Main,
+  Aside: SiteForm.Aside,
+  Block: SiteForm.Block,
+  BlockBody: SiteForm.BlockBody,
+  Legend: SiteForm.Legend,
+  Fields: SiteForm.Fields,
   Field: ApplyFormField,
   BirthDate: ApplyBirthDateField,
-  Note: ApplyFormNote,
+  Note: SiteForm.Note,
   Consent: ApplyConsentCheckbox,
   ConsentLabel: ApplyConsentLabel,
   Honeypot: ApplyHoneypotField,
-  Summary: ApplySummaryPanel,
-  SummaryRow,
-  Submit: ApplySubmitButton,
-  SubmitHint: ApplySubmitHint,
-  Error: ApplyErrorFallback,
+  Summary: SiteForm.Summary,
+  SummaryRow: SiteForm.SummaryRow,
+  Submit: SiteForm.Submit,
+  SubmitHint: SiteForm.SubmitHint,
+  Error: SiteForm.Error,
 });

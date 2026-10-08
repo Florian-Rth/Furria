@@ -1,6 +1,6 @@
+import { ALTCHA_FIELD } from '@/lib/altcha/altcha-proof';
 import type { ApiFieldFailure } from '@/lib/api/errors';
 import { ApiError, RequestBlockedError } from '@/lib/api/errors';
-import { ALTCHA_FIELD } from './altcha-proof';
 import {
   applyBlockedMessage,
   applyProofRefusedMessage,

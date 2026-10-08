@@ -7,7 +7,7 @@ import { KkIcon } from './KkIcon';
 import type { KkSx } from './kk-sx';
 
 type KkTextFieldType = 'text' | 'email' | 'password' | 'tel' | 'url';
-type KkTextFieldInputMode = 'text' | 'email' | 'tel' | 'numeric' | 'url';
+type KkTextFieldInputMode = 'text' | 'email' | 'tel' | 'numeric' | 'decimal' | 'url';
 
 interface KkTextFieldProps {
   name: string;

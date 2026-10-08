@@ -1,15 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { Album } from './gallery-content';
 import {
-  albumPreviewPhotoCount,
   buildAlbumCountLabel,
   buildAlbumPhotoEntries,
-  buildAlbumPreviewEntries,
   buildPhotoCountLabel,
   buildPhotoPlaceholderLabel,
   countPhotos,
   selectCurrentSessionAlbums,
-  selectNewestAlbumForEventType,
   selectNextAlbum,
   selectOlderSessionGroups,
   sortAlbumsByDateDesc,
@@ -17,12 +14,11 @@ import {
 
 const INSIDE_CURRENT_SESSION = new Date(2026, 6, 28);
 
-const album = (slug: string, date: string, photoCount: number, eventType?: string): Album => ({
+const album = (slug: string, date: string, photoCount: number): Album => ({
   slug,
   title: slug,
   date,
   venue: 'Festhalle',
-  eventType,
   intro: 'Intro',
   photoCredit: 'Wegwerfkamera vom Kiosk',
   photos: Array.from({ length: photoCount }, (_, index) => ({
@@ -86,19 +82,6 @@ describe('selectNextAlbum', () => {
   });
 });
 
-describe('selectNewestAlbumForEventType', () => {
-  it('takes the newest album of the matching event type', () => {
-    const albums = [
-      album('sitzung-alt', '2026-01-10', 2, 'Prunksitzung'),
-      album('sitzung-neu', '2026-02-14', 2, 'Prunksitzung'),
-      album('umzug', '2026-03-01', 2, 'Umzug'),
-    ];
-
-    expect(selectNewestAlbumForEventType(albums, 'Prunksitzung')?.slug).toBe('sitzung-neu');
-    expect(selectNewestAlbumForEventType(albums, 'Ordensfest')).toBeUndefined();
-  });
-});
-
 describe('selectCurrentSessionAlbums', () => {
   it('keeps only the Alben of the open Session, newest first', () => {
     const albums = [
@@ -154,17 +137,5 @@ describe('buildAlbumPhotoEntries', () => {
       'umzug-02',
       'umzug-03',
     ]);
-  });
-});
-
-describe('buildAlbumPreviewEntries', () => {
-  it('caps the preview at the preview photo count', () => {
-    expect(buildAlbumPreviewEntries(album('umzug', '2026-02-14', 12))).toHaveLength(
-      albumPreviewPhotoCount,
-    );
-  });
-
-  it('shows fewer photos instead of padding a short Album', () => {
-    expect(buildAlbumPreviewEntries(album('umzug', '2026-02-14', 2))).toHaveLength(2);
   });
 });

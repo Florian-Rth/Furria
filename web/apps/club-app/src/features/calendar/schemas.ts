@@ -1,7 +1,9 @@
 import { z } from 'zod';
 import { CalendarEntryKindSchema } from '@/features/club';
 import { AppSearchSchema } from '@/features/session';
+import { ClockTimeSchema } from '@/lib/api/schemas';
 import { ATTENDANCE_ANSWER_KEYS } from '@/lib/calendar-copy';
+import { EVENT_SALES_STATUS_KEYS } from '@/lib/event-copy';
 import { GroupToneSchema } from '@/lib/group-tone';
 
 export const CalendarBoardSearchSchema = AppSearchSchema.extend({
@@ -25,6 +27,16 @@ export const ParticipatingGroupSchema = z.object({
 });
 export type ParticipatingGroup = z.infer<typeof ParticipatingGroupSchema>;
 
+export const CalendarEventFactsSchema = z.object({
+  doorsOpenAt: ClockTimeSchema.nullable(),
+  teaser: z.string(),
+  ageHint: z.string().nullable(),
+  priceCents: z.number().int().nullable(),
+  presaleStartsAt: z.iso.datetime({ offset: true }).nullable(),
+  status: z.enum(EVENT_SALES_STATUS_KEYS),
+});
+export type CalendarEventFacts = z.infer<typeof CalendarEventFactsSchema>;
+
 export const CalendarEntrySchema = z.object({
   calendarEntryId: z.number().int(),
   title: z.string(),
@@ -42,6 +54,7 @@ export const CalendarEntrySchema = z.object({
   description: z.string().nullable(),
   viewerAnswer: AttendanceAnswerSchema.nullable(),
   isRunning: z.boolean(),
+  event: CalendarEventFactsSchema.nullable(),
 });
 export type CalendarEntry = z.infer<typeof CalendarEntrySchema>;
 

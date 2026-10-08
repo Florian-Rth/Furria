@@ -1,6 +1,6 @@
 import type { FC } from 'react';
 import { deriveNextEventFace, selectNextEvent } from '@/features/events/next-event-display';
-import type { Event } from '@/lib/seed/events';
+import type { Event } from '@/lib/public-events/schemas';
 import { NextEventAnnouncedFace } from './internal/ui/NextEventAnnouncedFace';
 import { NextEventPresaleFace } from './internal/ui/NextEventPresaleFace';
 import { NextEventTicketsFace } from './internal/ui/NextEventTicketsFace';

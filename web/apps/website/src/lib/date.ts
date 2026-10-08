@@ -134,6 +134,14 @@ export const berlinDayNumber = (value: string | Date): number => {
   return Math.floor(Date.parse(`${dayIso}T00:00Z`) / MS_PER_DAY);
 };
 
+const WALL_CLOCK_MINUTES_LENGTH = 16;
+
+export const toBerlinWallClock = (instant: string): string =>
+  berlinClockFormat
+    .format(new Date(instant))
+    .replace(', ', 'T')
+    .slice(0, WALL_CLOCK_MINUTES_LENGTH);
+
 export const parseBerlinDateTime = (isoDate: string): Date => {
   const wallClockAsUtc = toWallClockDate(isoDate);
   const berlinViewAsUtc = Date.parse(

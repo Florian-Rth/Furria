@@ -1,6 +1,5 @@
 import type { KkSheetAction } from '@furria/ui';
 import { Link } from '@tanstack/react-router';
-import { MANAGE_PATH } from '@/features/session';
 import { toPeekId } from '@/lib/peek';
 import { usePeek } from '@/lib/use-peek';
 import type { RoleSheetVariant, RoleSheetView } from '../role-sheet';
@@ -14,7 +13,6 @@ export interface RoleSheetState extends RoleSheetView {
   action: KkSheetAction | undefined;
 }
 
-const MANAGE_LABEL = 'Verein verwalten';
 const NO_SUBJECT = 0;
 
 const subjectOf = (mine: StartMine): number => mine.subjectId ?? NO_SUBJECT;
@@ -39,6 +37,9 @@ export const useRoleSheet = (
   return {
     ...view,
     sheetId: toPeekId(variant, subjectOf(mine)),
-    action: view.manages ? { label: MANAGE_LABEL, component: Link, to: MANAGE_PATH } : undefined,
+    action:
+      view.workbench === null
+        ? undefined
+        : { label: view.workbench.label, component: Link, to: view.workbench.to },
   };
 };

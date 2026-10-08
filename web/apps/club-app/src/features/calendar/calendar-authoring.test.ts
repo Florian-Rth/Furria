@@ -11,6 +11,7 @@ import {
   toDefaultVisibility,
   toEndKeptInStep,
   toEntryFormValues,
+  toEntryLink,
   toEntryPayload,
   toEntryWriteNotice,
   toInstant,
@@ -53,6 +54,7 @@ const entry = (overrides: Partial<CalendarEntry>): CalendarEntry => ({
   description: null,
   viewerAnswer: null,
   isRunning: false,
+  event: null,
   ...overrides,
 });
 
@@ -98,9 +100,58 @@ describe('mayOwnCalendarEntry', () => {
   it('answers for the club and for one group apart', () => {
     const options = toOwnerOptions([TANZGARDE], false);
 
-    expect(mayOwnCalendarEntry(options, 7)).toBe(true);
-    expect(mayOwnCalendarEntry(options, null)).toBe(false);
-    expect(mayOwnCalendarEntry(options, 3)).toBe(false);
+    expect(mayOwnCalendarEntry(options, { ownerGroupId: 7, kind: 'training' })).toBe(true);
+    expect(mayOwnCalendarEntry(options, { ownerGroupId: null, kind: 'meeting' })).toBe(false);
+    expect(mayOwnCalendarEntry(options, { ownerGroupId: 3, kind: 'training' })).toBe(false);
+  });
+
+  it('never hands an event to the calendar editor, not even to the club calendar', () => {
+    const options = toOwnerOptions([TANZGARDE], true);
+
+    expect(mayOwnCalendarEntry(options, { ownerGroupId: null, kind: 'meeting' })).toBe(true);
+    expect(mayOwnCalendarEntry(options, { ownerGroupId: null, kind: 'event' })).toBe(false);
+  });
+});
+
+describe('toEntryLink', () => {
+  it.each<{
+    label: string;
+    kind: 'meeting' | 'event';
+    owned: boolean;
+    managesEvents: boolean;
+    to: string | null;
+  }>([
+    {
+      label: 'an owned entry',
+      kind: 'meeting',
+      owned: true,
+      managesEvents: false,
+      to: '/calendar/$calendarEntryId',
+    },
+    { label: 'a foreign entry', kind: 'meeting', owned: false, managesEvents: true, to: null },
+    {
+      label: 'an event for its keeper',
+      kind: 'event',
+      owned: false,
+      managesEvents: true,
+      to: '/events/$eventId',
+    },
+    { label: 'an event for a member', kind: 'event', owned: false, managesEvents: false, to: null },
+    {
+      label: 'an event for the club calendar',
+      kind: 'event',
+      owned: true,
+      managesEvents: false,
+      to: null,
+    },
+  ])('opens $label', ({ kind, owned, managesEvents, to }) => {
+    const link = toEntryLink(
+      { calendarEntryId: 4, ownerGroupId: null, kind },
+      owned,
+      managesEvents,
+    );
+
+    expect(link?.to ?? null).toBe(to);
   });
 });
 

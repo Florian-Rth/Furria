@@ -19,6 +19,7 @@ export const MEMBERS_PATH = '/members';
 export const GROUPS_PATH = '/groups';
 export const MORE_PATH = '/more';
 export const MANAGE_PATH = '/manage';
+export const EVENTS_PATH = '/events';
 export const PROFILE_PATH = '/profile';
 
 export const START_SECTION = 'start';
@@ -32,6 +33,7 @@ export const CLUB_TITLE = 'Verein';
 export const CALENDAR_TITLE = 'Kalender';
 export const GROUPS_TITLE = 'Gruppen';
 export const PROFILE_TITLE = 'Profil';
+export const EVENTS_TITLE = 'Veranstaltungen';
 
 export const START_ORIGIN: KkScreenOrigin = { label: START_TITLE, to: START_PATH };
 export const CLUB_ORIGIN: KkScreenOrigin = { label: CLUB_TITLE, to: CLUB_PATH };
@@ -40,6 +42,7 @@ export const GROUPS_ORIGIN: KkScreenOrigin = { label: GROUPS_TITLE, to: GROUPS_P
 export const PROFILE_ORIGIN: KkScreenOrigin = { label: PROFILE_TITLE, to: PROFILE_PATH };
 export const MORE_ORIGIN: KkScreenOrigin = { label: 'Mehr', to: MORE_PATH };
 export const MANAGE_ORIGIN: KkScreenOrigin = { label: 'Verein verwalten', to: MANAGE_PATH };
+export const EVENTS_ORIGIN: KkScreenOrigin = { label: EVENTS_TITLE, to: EVENTS_PATH };
 
 export const AREA_HANDOVERS = {
   start: 'confetti',
@@ -50,6 +53,7 @@ export const AREA_HANDOVERS = {
   profile: 'sway',
   announcements: 'confetti',
   manage: 'confetti',
+  events: 'confetti',
   more: 'confetti',
 } as const satisfies Record<string, KkHandoverName>;
 
@@ -63,6 +67,11 @@ export const MANAGE_KEYS: readonly PermissionKey[] = [
   PERMISSION_KEYS.accountsManage,
   PERMISSION_KEYS.personsDelete,
   PERMISSION_KEYS.membershipApplicationsDecide,
+];
+
+export const EVENTS_KEYS: readonly [PermissionKey, ...PermissionKey[]] = [
+  PERMISSION_KEYS.eventsManage,
+  PERMISSION_KEYS.ticketRequestsHandle,
 ];
 
 export const APP_DESTINATIONS: readonly KkShellDestination[] = [
@@ -130,6 +139,14 @@ export const MANAGE_SECTIONS: AppSection[] = [
     to: MANAGE_PATH,
     meta: 'Daten des Vereins pflegen',
     permissionKeys: MANAGE_KEYS,
+  },
+  {
+    id: 'events',
+    label: EVENTS_TITLE,
+    icon: 'events',
+    to: EVENTS_PATH,
+    meta: 'Abende mit Karten für die Website',
+    permissionKeys: EVENTS_KEYS,
   },
 ];
 

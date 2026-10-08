@@ -114,6 +114,8 @@ public sealed record PostCalendarEntryRequest
 public sealed class PostCalendarEntryValidator : Validator<PostCalendarEntryRequest>
 {
     private const string UnknownKindMessage = "Diese Art von Eintrag gibt es nicht.";
+    private const string EventsLiveInTheWorkbenchMessage =
+        "Eine Veranstaltung wird in den Veranstaltungen gepflegt.";
     private const string UnknownVisibilityMessage = "Diese Sichtbarkeit gibt es nicht.";
     private const string UnknownGroupMessage = "Diese Gruppe gibt es nicht.";
     private const string UnknownVenueMessage = "Diesen Ort gibt es nicht im Verzeichnis.";
@@ -137,6 +139,9 @@ public sealed class PostCalendarEntryValidator : Validator<PostCalendarEntryRequ
             .When(request => request.VenueId is not null)
             .WithMessage(UnknownVenueMessage);
         RuleFor(request => request.Kind).IsInEnum().WithMessage(UnknownKindMessage);
+        RuleFor(request => request.Kind)
+            .NotEqual(CalendarEntryKind.Event)
+            .WithMessage(EventsLiveInTheWorkbenchMessage);
         RuleFor(request => request.Visibility).IsInEnum().WithMessage(UnknownVisibilityMessage);
         RuleFor(request => request.EndsAt)
             .GreaterThanOrEqualTo(request => request.StartsAt)

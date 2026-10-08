@@ -4,4 +4,5 @@ public enum MailRecipientKind
 {
     Person = 1,
     MembershipApplication = 2,
+    TicketRequest = 3,
 }

@@ -21,3 +21,12 @@ export const endOfSeasonContent: EndOfSeasonContent = {
   newsLabel: 'Zu den Meldungen →',
   newsTo: '/news',
 };
+
+export const eventsSourceLabels = {
+  loading: 'Die Termine kommen gleich.',
+  errorTitle: 'DIE TERMINE KOMMEN NICHT DURCH.',
+  errorText:
+    'Das liegt an uns, nicht an dir. Versuch es gleich noch einmal — oder schreib uns, dann antwortet ein Mensch.',
+  errorRetry: 'Nochmal versuchen',
+  askCta: 'Schreib uns',
+} as const;

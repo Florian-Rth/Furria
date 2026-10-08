@@ -15,6 +15,10 @@ public sealed class PutCalendarEntryTests
 {
     private const int UnknownEntryId = 999_999;
     private const string ValidationField = "request";
+    private const string ConflictField = "conflict";
+    private const string Gala = "1. Prunksitzung";
+    private const string EventsLiveInTheWorkbench =
+        "Eine Veranstaltung wird in den Veranstaltungen gepflegt.";
     private const string DanceGuardTraining = "Training der Tanzgarde";
     private const string DanceGuardPerformance = "Auftritt der Tanzgarde";
     private const string Abendprobe = "Abendprobe";
@@ -274,6 +278,58 @@ public sealed class PutCalendarEntryTests
     }
 
     [Fact]
+    public async Task Should_ReturnConflict_When_TheEntryIsAnEvent()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var galaId = ctx.Club.Events.IdOf("gala");
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, _) = await client.PUTAsync<
+            PutCalendarEntry,
+            PutCalendarEntryRequest,
+            PutCalendarEntryResponse
+        >(ClubOwned(galaId, DanceGuardPerformance));
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        var failures = await ReadFailuresAsync(response, ct);
+        Assert.Equal([EventsLiveInTheWorkbench], failures[ConflictField]);
+        await ctx
+            .Expected.CalendarEntry(galaId)
+            .ToHaveTitle(Gala)
+            .CalendarEntry(galaId)
+            .ToHaveKind(CalendarEntryKind.Event)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_When_TheEntryWouldBecomeAnEvent()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var entryId = ctx.Club.CalendarEntries.IdOf("abendprobe");
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, _) = await client.PUTAsync<
+            PutCalendarEntry,
+            PutCalendarEntryRequest,
+            PutCalendarEntryResponse
+        >(
+            ClubOwned(entryId, Abendprobe) with
+            {
+                Kind = CalendarEntryKind.Event,
+                Visibility = CalendarEntryVisibility.Public,
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await ctx
+            .Expected.CalendarEntry(entryId)
+            .ToHaveKind(CalendarEntryKind.Meeting)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_ReturnNotFound_When_TheEntryIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -369,6 +425,7 @@ public sealed class PutCalendarEntryTests
                                 AbendprobeEnd,
                                 venueAlias: "buehnenhaus"
                             )
+                            .AddEvent("gala", Gala, AfterTheAbendprobe, "buehnenhaus")
                     ),
             ct
         );

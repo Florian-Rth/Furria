@@ -1,16 +1,16 @@
-import type { Event } from '@/lib/seed/events';
-import { useLandingEventsQuery } from '../api';
+import { usePublicEventsQuery } from '@/lib/public-events/api';
+import type { Event } from '@/lib/public-events/schemas';
 
 export const TEASER_EVENT_COUNT = 3;
 
 export const selectTeaserEvents = (events: Event[]): Event[] =>
   events
-    .filter((event) => event.salesStatus !== 'cancelled')
+    .filter((event) => event.status !== 'cancelled')
     .sort((first, second) => first.startsAt.localeCompare(second.startsAt))
     .slice(0, TEASER_EVENT_COUNT);
 
 export const useTeaserEvents = (): Event[] => {
-  const { data } = useLandingEventsQuery();
+  const { data } = usePublicEventsQuery();
 
   return selectTeaserEvents(data ?? []);
 };

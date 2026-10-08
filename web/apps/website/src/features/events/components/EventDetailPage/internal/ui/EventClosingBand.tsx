@@ -2,15 +2,13 @@ import { KkBandSection, KkBandWatermark, KkEyebrow, kkTokens } from '@furria/ui'
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
-import { BandCta } from '@/components/BandCta';
 import { closingBandBeginsPrefix, closingBandKicker } from '@/features/events/event-detail-content';
 import { useCountdown } from '@/features/events/hooks/use-countdown';
 import {
-  deriveTicketPanelCta,
   deriveTicketPanelFace,
   deriveTicketPanelNote,
 } from '@/features/events/ticket-panel-display';
-import type { Event } from '@/lib/seed/events';
+import type { Event } from '@/lib/public-events/schemas';
 
 interface EventClosingBandProps {
   event: Event;
@@ -18,7 +16,6 @@ interface EventClosingBandProps {
 
 export const EventClosingBand: FC<EventClosingBandProps> = ({ event }) => {
   const countdownLabel = useCountdown(event.startsAt);
-  const cta = deriveTicketPanelCta(event);
   const note = deriveTicketPanelNote(deriveTicketPanelFace(event));
 
   const beginsLabel =
@@ -36,13 +33,6 @@ export const EventClosingBand: FC<EventClosingBandProps> = ({ event }) => {
       <Typography variant="body1" sx={{ opacity: kkTokens.opacity.onAccent }}>
         {note}
       </Typography>
-    );
-
-  const ctaButton =
-    cta === null ? null : (
-      <BandCta to={cta.to} emphasis="solid">
-        {cta.label}
-      </BandCta>
     );
 
   return (
@@ -64,7 +54,6 @@ export const EventClosingBand: FC<EventClosingBandProps> = ({ event }) => {
           {countdownLine}
           {noteLine}
         </Stack>
-        {ctaButton}
       </KkBandSection.Row>
     </KkBandSection>
   );

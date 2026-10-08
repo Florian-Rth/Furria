@@ -1,5 +1,5 @@
 import { parseBerlinDateTime } from '@/lib/date';
-import type { Event, SalesStatus } from '@/lib/seed/events';
+import type { Event, SalesStatus } from '@/lib/public-events/schemas';
 import { selectOfferedEventsByDate } from './event-display';
 
 export type NextEventFace =
@@ -8,20 +8,20 @@ export type NextEventFace =
   | { kind: 'announced' }
   | { kind: 'unavailable' };
 
-const TICKET_SALE_STATUSES: readonly SalesStatus[] = ['onSale', 'almostSoldOut'];
+const TICKET_STATUSES: readonly SalesStatus[] = ['available', 'fewLeft'];
 
 export const selectNextEvent = (events: Event[], now: Date): Event | null => {
   const upcoming = selectOfferedEventsByDate(events).filter(
     (event) => parseBerlinDateTime(event.startsAt).getTime() >= now.getTime(),
   );
-  const nextOnSale = upcoming.find((event) => TICKET_SALE_STATUSES.includes(event.salesStatus));
-  return nextOnSale ?? upcoming.at(0) ?? null;
+  const nextWithTickets = upcoming.find((event) => TICKET_STATUSES.includes(event.status));
+  return nextWithTickets ?? upcoming.at(0) ?? null;
 };
 
 export const deriveNextEventFace = (event: Event): NextEventFace => {
-  switch (event.salesStatus) {
-    case 'onSale':
-    case 'almostSoldOut':
+  switch (event.status) {
+    case 'available':
+    case 'fewLeft':
       return { kind: 'tickets' };
     case 'presaleScheduled':
       return event.presaleStartsAt === null
@@ -30,7 +30,6 @@ export const deriveNextEventFace = (event: Event): NextEventFace => {
     case 'announced':
       return { kind: 'announced' };
     case 'soldOut':
-    case 'salesClosed':
     case 'cancelled':
       return { kind: 'unavailable' };
   }

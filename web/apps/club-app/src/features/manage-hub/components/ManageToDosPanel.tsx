@@ -1,38 +1,14 @@
-import { KkPanel, KkPanelFold, KkPanelSection } from '@furria/ui';
 import type { FC } from 'react';
-import { useManageToDos } from '../hooks/use-manage-to-dos';
-import { TO_DOS_PANEL_TITLE } from '../manage-to-dos';
-import type { ManageToDo } from '../schemas';
-import { ManageToDoRow } from './ManageToDoRow';
+import type { ToDo } from '@/features/to-dos';
+import { ToDosPanel, useToDosBoard } from '@/features/to-dos';
+import { MANAGE_TO_DO_SURFACE } from '../api';
 
 interface ManageToDosPanelProps {
-  toDos: readonly ManageToDo[];
+  toDos: readonly ToDo[];
 }
 
 export const ManageToDosPanel: FC<ManageToDosPanelProps> = ({ toDos }) => {
-  const { board, toggleSeen } = useManageToDos(toDos);
+  const view = useToDosBoard(toDos, MANAGE_TO_DO_SURFACE);
 
-  const openRows = board.open.map((row) => (
-    <ManageToDoRow key={row.kind} row={row} onToggleSeen={toggleSeen} />
-  ));
-
-  const seenRows = board.seen.map((row) => (
-    <ManageToDoRow key={row.kind} row={row} onToggleSeen={toggleSeen} />
-  ));
-
-  const seenFold =
-    seenRows.length === 0 ? null : (
-      <KkPanelFold label={board.seenLabel} flag={board.seenFlag}>
-        {seenRows}
-      </KkPanelFold>
-    );
-
-  return (
-    <KkPanelSection title={TO_DOS_PANEL_TITLE}>
-      <KkPanel>
-        {openRows}
-        {seenFold}
-      </KkPanel>
-    </KkPanelSection>
-  );
+  return <ToDosPanel view={view} />;
 };

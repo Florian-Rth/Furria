@@ -3,7 +3,7 @@ import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import { deriveScheduleRangeLabel, selectEventsByDate } from '@/features/events/event-display';
 import { scheduleHeading } from '@/features/events/list-content';
-import type { Event } from '@/lib/seed/events';
+import type { Event } from '@/lib/public-events/schemas';
 import { EventRowList } from './internal/layout/EventRowList';
 import { useAnchorHighlight } from './internal/logic/use-anchor-highlight';
 import { EventEndOfSeason } from './internal/ui/EventEndOfSeason';
@@ -15,7 +15,7 @@ interface EventListProps {
 }
 
 export const EventList: FC<EventListProps> = ({ events, now }) => {
-  const highlightedEventId = useAnchorHighlight();
+  const highlightedAnchorId = useAnchorHighlight();
   const orderedEvents = selectEventsByDate(events);
   const rangeLabel = deriveScheduleRangeLabel(events);
 
@@ -39,10 +39,10 @@ export const EventList: FC<EventListProps> = ({ events, now }) => {
       <EventRowList>
         {orderedEvents.map((event) => (
           <EventListRow
-            key={event.id}
+            key={event.eventId}
             event={event}
             now={now}
-            highlighted={event.id === highlightedEventId}
+            highlightedAnchorId={highlightedAnchorId}
           />
         ))}
       </EventRowList>

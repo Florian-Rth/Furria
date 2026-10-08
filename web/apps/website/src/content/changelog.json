@@ -120,5 +120,16 @@
       "Zeigt, wie wir uns Rückgabe, Warteliste und Abend-Tausch vorstellen",
       "Was noch offen ist, steht ehrlich mit dabei"
     ]
+  },
+  {
+    "id": "website-l6-events-from-the-club",
+    "date": "2026-10-07",
+    "title": "Echte Termine",
+    "icon": "tickets",
+    "description": [
+      "Die Veranstaltungen kommen jetzt aus der Vereins-App — was der Verein dort einträgt, steht hier",
+      "Jeder Abend zeigt, wie es um die Karten steht, und wo er stattfindet",
+      "Kartenbestellung und Kartenbörse sind vorerst wieder raus"
+    ]
   }
 ]

@@ -1,19 +1,19 @@
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import { StickyActionBar } from '@/features/events/components/StickyActionBar';
-import { TicketCtaButton } from '@/features/events/components/TicketCtaButton';
+import { TicketRequestCta } from '@/features/events/components/TicketRequestCta';
 import { ticketPanelPriceLabel } from '@/features/events/event-detail-content';
-import { deriveTicketPanelCta } from '@/features/events/ticket-panel-display';
+import { useTicketRequestWindow } from '@/features/events/hooks/use-ticket-request-window';
 import { formatEuros } from '@/lib/money';
-import type { Event } from '@/lib/seed/events';
+import type { Event } from '@/lib/public-events/schemas';
 
 interface EventStickyCtaProps {
   event: Event;
 }
 
 export const EventStickyCta: FC<EventStickyCtaProps> = ({ event }) => {
-  const cta = deriveTicketPanelCta(event);
-  if (cta === null) {
+  const isWindowOpen = useTicketRequestWindow(event);
+  if (!isWindowOpen) {
     return null;
   }
 
@@ -30,7 +30,7 @@ export const EventStickyCta: FC<EventStickyCtaProps> = ({ event }) => {
   return (
     <StickyActionBar sx={{ display: { desktop: 'none' }, justifyContent: 'space-between' }}>
       {priceLine}
-      <TicketCtaButton cta={cta} sx={{ flexGrow: 1, maxWidth: '14rem' }} />
+      <TicketRequestCta event={event} sx={{ flexGrow: 1, maxWidth: '14rem' }} />
     </StickyActionBar>
   );
 };

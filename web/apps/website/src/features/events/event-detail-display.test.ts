@@ -1,91 +1,83 @@
 import { describe, expect, it } from 'vitest';
 import { formatEuros } from '@/lib/money';
-import type { EventFacts } from '@/lib/seed/events';
-import { buildEvent } from '@/lib/seed/events';
+import type { EventDetail, EventVenue } from '@/lib/public-events/schemas';
+import type { VenueFact } from './event-detail-display';
 import {
   deriveEventIntroParagraphs,
-  deriveEventLineup,
   deriveEventStats,
+  deriveVenueFacts,
 } from './event-detail-display';
 
-const midPresale = new Date('2026-12-01T12:00');
-
-const baseFacts: EventFacts = {
-  id: 'prunksitzung-1-2027',
+const eveningWith = (overrides: Partial<EventDetail>): EventDetail => ({
+  eventId: 1,
   title: '1. Prunksitzung',
-  type: 'Prunksitzung',
-  venue: 'Dorfgemeindehaus Großfurra',
   startsAt: '2027-01-23T19:11',
+  endsAt: null,
   doorsOpenAt: '2027-01-23T18:11',
+  venue: { name: 'Dorfgemeindehaus', street: '', zip: '', city: '', hint: null },
   teaser: 'Ein voller Abend.',
   description: ['Erster Absatz.', 'Zweiter Absatz.'],
-  performers: null,
-  ageHint: 'ab 12 Jahren empfohlen',
+  ageHint: 'ab 12 Jahren',
   priceCents: 1400,
-  capacity: 260,
   presaleStartsAt: '2026-11-11T11:11',
-  presaleEndsAt: null,
-  freeCount: 100,
-};
-
-const event = buildEvent(baseFacts, midPresale);
+  status: 'available',
+  ...overrides,
+});
 
 describe('deriveEventStats', () => {
-  it('states the date, doors and start time, and price — never an end time', () => {
-    expect(deriveEventStats(event)).toEqual([
+  it('states the date, doors, start, price and age hint — never an end time', () => {
+    expect(deriveEventStats(eveningWith({ endsAt: '2027-01-24T01:00' }))).toEqual([
       { value: '23. Januar 2027', label: 'Termin' },
       { value: '18:11 Uhr', label: 'Einlass' },
       { value: '19:11 Uhr', label: 'Beginn' },
       { value: formatEuros(1400), label: 'pro Karte' },
+      { value: 'ab 12 Jahren', label: 'Alter' },
     ]);
   });
 
-  it('omits doors and price while they are unknown', () => {
-    const sparse = buildEvent(
-      {
-        ...baseFacts,
-        doorsOpenAt: null,
-        priceCents: null,
-        capacity: null,
-        presaleStartsAt: null,
-        freeCount: null,
-      },
-      midPresale,
-    );
+  it('omits doors, price and age hint while they are unknown', () => {
+    const sparse = eveningWith({ doorsOpenAt: null, priceCents: null, ageHint: null });
 
     expect(deriveEventStats(sparse).map((stat) => stat.label)).toEqual(['Termin', 'Beginn']);
   });
 });
 
 describe('deriveEventIntroParagraphs', () => {
-  it('prints the longer description when one exists', () => {
-    expect(deriveEventIntroParagraphs(event)).toEqual(['Erster Absatz.', 'Zweiter Absatz.']);
-  });
-
-  it('falls back to the teaser so the page still reads complete', () => {
-    const withoutDescription = buildEvent({ ...baseFacts, description: null }, midPresale);
-
-    expect(deriveEventIntroParagraphs(withoutDescription)).toEqual(['Ein voller Abend.']);
-  });
-});
-
-describe('deriveEventLineup', () => {
-  it('numbers the acts in the order the running order states them', () => {
-    const withLineup = buildEvent(
-      { ...baseFacts, performers: ['Elferrat', 'Tanzgarde', 'Büttenrede'] },
-      midPresale,
-    );
-
-    expect(deriveEventLineup(withLineup)).toEqual([
-      { position: '1', act: 'Elferrat' },
-      { position: '2', act: 'Tanzgarde' },
-      { position: '3', act: 'Büttenrede' },
+  it('prints the description when one exists', () => {
+    expect(deriveEventIntroParagraphs(eveningWith({}))).toEqual([
+      'Erster Absatz.',
+      'Zweiter Absatz.',
     ]);
   });
 
-  it('stays absent while no Ablauf has been assembled', () => {
-    expect(
-      deriveEventLineup(buildEvent({ ...baseFacts, performers: null }, midPresale)),
-    ).toBeNull();
+  it('falls back to the teaser so the page still reads complete', () => {
+    expect(deriveEventIntroParagraphs(eveningWith({ description: null }))).toEqual([
+      'Ein voller Abend.',
+    ]);
+  });
+});
+
+describe('deriveVenueFacts', () => {
+  it.each<[EventVenue, VenueFact[]]>([
+    [
+      {
+        name: 'Dorfgemeindehaus',
+        street: 'Schulstraße 4',
+        zip: '99713',
+        city: 'Großfurra',
+        hint: 'Eingang über den Hof',
+      },
+      [
+        { label: 'ADRESSE', value: 'Schulstraße 4, 99713 Großfurra' },
+        { label: 'HINWEIS', value: 'Eingang über den Hof' },
+      ],
+    ],
+    [
+      { name: 'Festplatz', street: '', zip: '', city: 'Großfurra', hint: null },
+      [{ label: 'ADRESSE', value: 'Großfurra' }],
+    ],
+    [{ name: 'Irgendwo', street: '', zip: '', city: '', hint: null }, []],
+  ])('lists the facts of %j', (venue, facts) => {
+    expect(deriveVenueFacts(venue)).toEqual(facts);
   });
 });

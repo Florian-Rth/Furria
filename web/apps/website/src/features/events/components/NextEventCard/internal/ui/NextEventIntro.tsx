@@ -4,7 +4,7 @@ import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import { deriveTimesLabel } from '@/features/events/event-display';
 import { formatLongDate, formatWeekdayLong } from '@/lib/date';
-import type { Event } from '@/lib/seed/events';
+import type { Event } from '@/lib/public-events/schemas';
 
 interface NextEventIntroProps {
   kicker: string;

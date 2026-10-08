@@ -1,7 +1,7 @@
 import { KkStatRow } from '@furria/ui';
 import type { FC } from 'react';
 import { deriveEventStats } from '@/features/events/event-detail-display';
-import type { Event } from '@/lib/seed/events';
+import type { Event } from '@/lib/public-events/schemas';
 
 interface EventDetailStatsProps {
   event: Event;

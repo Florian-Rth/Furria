@@ -4,6 +4,7 @@ import {
   toDeleteConsequence,
   toEntryFacts,
   toEntryMetaLine,
+  toEventFactsLine,
   toScopeOptions,
   toVenueOptions,
 } from './calendar-labels';
@@ -29,6 +30,7 @@ const entry = (overrides: Partial<CalendarEntry>): CalendarEntry => ({
   description: null,
   viewerAnswer: null,
   isRunning: false,
+  event: null,
   ...overrides,
 });
 
@@ -149,5 +151,30 @@ describe('toVenueOptions', () => {
     ]);
 
     expect(options.map((option) => option.value)).toEqual(['', '4', '9']);
+  });
+});
+
+describe('toEventFactsLine', () => {
+  const facts = {
+    doorsOpenAt: null,
+    teaser: 'Der Abend der Session.',
+    ageHint: null,
+    priceCents: null,
+    presaleStartsAt: null,
+    status: 'announced' as const,
+  };
+
+  it('joins the doors, the price and the age hint', () => {
+    expect(
+      toEventFactsLine({ ...facts, doorsOpenAt: '18:30', priceCents: 2_200, ageHint: 'ab 16' }),
+    ).toBe('Einlass 18:30 Uhr · 22,00 € · ab 16');
+  });
+
+  it('leaves out what the club has not set', () => {
+    expect(toEventFactsLine({ ...facts, priceCents: 0 })).toBe('Eintritt frei');
+  });
+
+  it('has no line when nothing is set', () => {
+    expect(toEventFactsLine(facts)).toBeNull();
   });
 });

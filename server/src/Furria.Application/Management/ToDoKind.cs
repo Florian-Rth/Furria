@@ -9,4 +9,5 @@ public enum ToDoKind
     KeyToTakeBack = 5,
     ClubRecordGap = 6,
     ApplicationWaiting = 7,
+    TicketRequestWaiting = 8,
 }

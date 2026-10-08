@@ -1,4 +1,5 @@
 using Furria.Core.Club;
+using Furria.Core.Events;
 using Furria.Core.Groups;
 using Furria.Infrastructure.Persistence;
 
@@ -60,6 +61,9 @@ internal static class ClubSeedMaterializer
             ct
         );
 
+        var events = await InsertEventsAsync(dbContext, recorded, venues, ct);
+        var ticketRequests = await InsertTicketRequestsAsync(dbContext, recorded, events, ct);
+
         return new SeededClub(
             sessions,
             venues,
@@ -69,7 +73,9 @@ internal static class ClubSeedMaterializer
             boardSeats,
             trainingSlots,
             calendarEntries,
-            attendanceResponses
+            attendanceResponses,
+            events,
+            ticketRequests
         );
     }
 
@@ -385,6 +391,87 @@ internal static class ClubSeedMaterializer
         return entries.ToDictionary(
             entry => entry.Key,
             entry => entry.Value.Id,
+            StringComparer.Ordinal
+        );
+    }
+
+    private static async Task<Dictionary<string, int>> InsertEventsAsync(
+        AppDbContext dbContext,
+        ClubSeedBuilder recorded,
+        IReadOnlyDictionary<string, int> venueIds,
+        CancellationToken ct
+    )
+    {
+        var entries = recorded.Events.ToDictionary(
+            intent => intent.Alias,
+            intent => new CalendarEntry
+            {
+                Title = intent.Title,
+                Description = intent.Description,
+                StartsAt = intent.StartsAt,
+                EndsAt = intent.EndsAt,
+                Kind = CalendarEntryKind.Event,
+                Visibility = CalendarEntryVisibility.Public,
+                AsksForResponse = false,
+                VenueId = SeedAliases.RequireId(venueIds, intent.VenueAlias, "Venue"),
+                Event = new Event
+                {
+                    Teaser = intent.Teaser,
+                    DoorsOpenAt = intent.DoorsOpenAt,
+                    AgeHint = intent.AgeHint,
+                    PriceCents = intent.PriceCents,
+                    PresaleStartsAt = intent.PresaleStartsAt,
+                    TicketAvailability = intent.TicketAvailability,
+                    CancelledAt = intent.CancelledAt,
+                },
+            },
+            StringComparer.Ordinal
+        );
+
+        if (entries.Count > 0)
+        {
+            dbContext.CalendarEntries.AddRange(entries.Values);
+            await dbContext.SaveChangesAsync(ct);
+        }
+
+        return entries.ToDictionary(
+            entry => entry.Key,
+            entry => entry.Value.Id,
+            StringComparer.Ordinal
+        );
+    }
+
+    private static async Task<Dictionary<string, int>> InsertTicketRequestsAsync(
+        AppDbContext dbContext,
+        ClubSeedBuilder recorded,
+        IReadOnlyDictionary<string, int> eventIds,
+        CancellationToken ct
+    )
+    {
+        var requests = recorded.TicketRequests.ToDictionary(
+            intent => intent.Alias,
+            intent => new TicketRequest
+            {
+                EventId = SeedAliases.RequireId(eventIds, intent.EventAlias, "Event"),
+                TicketCount = intent.TicketCount,
+                Name = intent.Name,
+                Phone = intent.Phone,
+                Email = intent.Email,
+                Message = intent.Message,
+                RequestedAt = intent.RequestedAt ?? DefaultPublishedAt,
+            },
+            StringComparer.Ordinal
+        );
+
+        if (requests.Count > 0)
+        {
+            dbContext.TicketRequests.AddRange(requests.Values);
+            await dbContext.SaveChangesAsync(ct);
+        }
+
+        return requests.ToDictionary(
+            request => request.Key,
+            request => request.Value.Id,
             StringComparer.Ordinal
         );
     }

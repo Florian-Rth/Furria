@@ -33,6 +33,7 @@ export const CalendarView: FC<CalendarViewProps> = ({
         entries={visible}
         dayFiltered={selectedDay !== null}
         isOwned={authoring.mayOwn}
+        linkOf={authoring.linkOf}
         mayAuthor={authoring.mayAuthor}
         highlightedKey={highlightedKey}
       />

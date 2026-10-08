@@ -18,26 +18,49 @@ const mine = (overrides: Partial<StartMine>): StartMine => ({
 });
 
 describe('toRoleSheet', () => {
-  it.each<{ label: string; keys: string[] | null; permissions: number; manages: boolean }>([
-    { label: 'grants nothing', keys: null, permissions: 0, manages: false },
-    { label: 'only reads the club', keys: ['club.read'], permissions: 1, manages: false },
+  it.each<{
+    label: string;
+    keys: string[] | null;
+    permissions: number;
+    workbench: string | null;
+  }>([
+    { label: 'grants nothing', keys: null, permissions: 0, workbench: null },
+    { label: 'only reads the club', keys: ['club.read'], permissions: 1, workbench: null },
     {
       label: 'manages persons',
       keys: ['club.read', 'persons.manage'],
       permissions: 2,
-      manages: true,
+      workbench: '/manage',
+    },
+    {
+      label: 'only manages events',
+      keys: ['club.read', 'events.manage'],
+      permissions: 2,
+      workbench: '/events',
+    },
+    {
+      label: 'only handles ticket requests',
+      keys: ['ticket_requests.handle'],
+      permissions: 1,
+      workbench: '/events',
+    },
+    {
+      label: 'manages persons and events',
+      keys: ['events.manage', 'persons.manage'],
+      permissions: 2,
+      workbench: '/manage',
     },
     {
       label: 'carries a key the app does not know',
       keys: ['club.read', 'drinks.manage'],
       permissions: 1,
-      manages: false,
+      workbench: null,
     },
-  ])('explains a role that $label', ({ keys, permissions, manages }) => {
+  ])('explains a role that $label', ({ keys, permissions, workbench }) => {
     const sheet = toRoleSheet(mine({ permissionKeys: keys }));
 
     expect(sheet.permissions).toHaveLength(permissions);
-    expect(sheet.manages).toBe(manages);
+    expect(sheet.workbench?.to ?? null).toBe(workbench);
   });
 
   it('titles a board seat by its office', () => {

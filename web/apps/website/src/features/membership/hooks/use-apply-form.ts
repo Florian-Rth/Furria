@@ -3,9 +3,11 @@ import type { FormEvent } from 'react';
 import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
+import type { SiteFormFallback } from '@/components/SiteForm/site-form-types';
 import { useClubAgeOfConsent } from '@/lib/public-club/use-club-age-of-consent';
 import { useClubEmail } from '@/lib/public-club/use-club-email';
-import { usePreparedAltchaProof, useSubmitMembershipApplicationMutation } from '../api';
+import { usePreparedMembershipAltchaProof, useSubmitMembershipApplicationMutation } from '../api';
+import { applyFallbackLabel, applyFallbackLead } from '../apply-content';
 import type { ApplyFailure } from '../apply-failure';
 import { toApplyFailure } from '../apply-failure';
 import { buildFallbackMailHref } from '../apply-fallback';
@@ -27,7 +29,7 @@ export interface ApplyFormState {
   submit: (event: FormEvent<HTMLFormElement>) => void;
   isSubmitting: boolean;
   submitError: string | null;
-  fallbackMailHref: string | null;
+  fallback: SiteFormFallback | null;
   submitted: SubmittedApplication | null;
 }
 
@@ -57,7 +59,9 @@ export const useApplyForm = (): ApplyFormState => {
     defaultValues: EMPTY_MEMBERSHIP_APPLICATION,
   });
 
-  usePreparedAltchaProof(form.formState.isDirty && !mutation.isPending && submitted === null);
+  usePreparedMembershipAltchaProof(
+    form.formState.isDirty && !mutation.isPending && submitted === null,
+  );
 
   const derived = deriveMembership(form.watch('birthDate'), today);
 
@@ -80,9 +84,13 @@ export const useApplyForm = (): ApplyFormState => {
   });
 
   const failure = toApplyFailure(mutation.error);
-  const fallbackMailHref =
+  const fallback: SiteFormFallback | null =
     failure?.offersMail === true && clubEmail !== null
-      ? buildFallbackMailHref(clubEmail, form.getValues())
+      ? {
+          lead: applyFallbackLead,
+          label: applyFallbackLabel,
+          href: buildFallbackMailHref(clubEmail, form.getValues()),
+        }
       : null;
 
   return {
@@ -95,7 +103,7 @@ export const useApplyForm = (): ApplyFormState => {
     },
     isSubmitting: mutation.isPending,
     submitError: failure?.notice ?? null,
-    fallbackMailHref,
+    fallback,
     submitted,
   };
 };

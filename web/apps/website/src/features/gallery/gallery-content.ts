@@ -17,7 +17,6 @@ export interface Album {
   title: string;
   date: string;
   venue: string;
-  eventType?: string;
   intro: string;
   photoCredit: string;
   photos: Photo[];
@@ -45,10 +44,6 @@ export const albumPhotoCountCaption = 'AUSGEWÄHLTE FOTOS';
 export const albumViewerHint = 'Bild antippen für die große Ansicht';
 
 export const featuredAlbumFlag = 'NEUESTES ALBUM';
-
-export const albumPreviewKicker = 'AUS DER GALERIE';
-
-export const albumPreviewHeading = 'SO WAR ES BEIM LETZTEN MAL';
 
 export const photoViewerLabels = {
   close: 'Große Ansicht schließen',
@@ -83,7 +78,6 @@ export const ALBUMS: Album[] = [
     title: 'Prunksitzung',
     date: '2026-02-14',
     venue: 'Festhalle',
-    eventType: 'Prunksitzung',
     intro:
       'Vier Stunden Bühne, vierzehn Auftritte, ein Saal bis in die letzte Reihe. Die Technik fiel dreimal aus — gemerkt hat es niemand.',
     photoCredit: 'Wegwerfkamera vom Kiosk',
@@ -129,7 +123,6 @@ export const ALBUMS: Album[] = [
     title: 'Kinderfasching',
     date: '2026-02-08',
     venue: 'Sporthalle',
-    eventType: 'Kinderfasching',
     intro:
       'Der Nachmittag der Kleinsten: Kinderprinzenpaar, Polonaise durch den ganzen Saal und eine Zuckerwattemaschine, die um 15 Uhr aufgab.',
     photoCredit: 'Vereinshandy mit acht Prozent Akku',
@@ -188,7 +181,6 @@ export const ALBUMS: Album[] = [
     title: 'Prunksitzung',
     date: '2025-02-22',
     venue: 'Festhalle',
-    eventType: 'Prunksitzung',
     intro:
       'Zehn Bilder, die ein Jahr lang in einer Keksdose im Vereinsheim lagen und erst beim Aufräumen wieder auftauchten.',
     photoCredit: 'Fotoapparat aus dem Fundus',
@@ -248,13 +240,6 @@ export const selectNextAlbum = (albums: Album[], currentSlug: string): Album | u
   return ordered[(currentIndex + 1) % ordered.length];
 };
 
-export const selectNewestAlbumForEventType = (
-  albums: Album[],
-  eventType: string,
-): Album | undefined => sortAlbumsByDateDesc(albums).find((album) => album.eventType === eventType);
-
-export const albumPreviewPhotoCount = 4;
-
 export const buildAlbumCreditLabel = (album: Album): string => `Fotos: ${album.photoCredit}`;
 
 export const buildPhotoViewerMetaLabel = (album: Album): string =>
@@ -269,8 +254,6 @@ export const buildAlbumDocumentTitle = (album: Album): string =>
   `${album.title} ${albumSession(album).yearsLabel}`;
 
 export const albumCoverOrientation: PhotoOrientation = 'landscape';
-
-export const albumPreviewOrientation: PhotoOrientation = 'landscape';
 
 export const buildAlbumCoverAlt = (album: Album): string => `Titelbild vom Album ${album.title}`;
 
@@ -336,6 +319,3 @@ export const buildAlbumPhotoEntries = (album: Album): AlbumPhotoEntry[] =>
     index,
     placeholderLabel: buildPhotoPlaceholderLabel(album, index),
   }));
-
-export const buildAlbumPreviewEntries = (album: Album): AlbumPhotoEntry[] =>
-  buildAlbumPhotoEntries(album).slice(0, albumPreviewPhotoCount);

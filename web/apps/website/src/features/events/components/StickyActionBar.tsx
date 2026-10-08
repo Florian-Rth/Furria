@@ -3,12 +3,7 @@ import Stack from '@mui/material/Stack';
 import type { SxProps, Theme } from '@mui/material/styles';
 import type { FC, PropsWithChildren } from 'react';
 
-export const STICKY_ACTION_BAR_HEIGHT = '4.5rem';
-
-export const STICKY_ACTION_BAR_STACKED_HEIGHT = {
-  xs: '9rem',
-  sm: STICKY_ACTION_BAR_HEIGHT,
-};
+const STICKY_ACTION_BAR_HEIGHT = '4.5rem';
 
 interface StickyActionBarProps extends PropsWithChildren {
   sx?: SxProps<Theme>;

@@ -2,10 +2,10 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import { deriveEventIntroParagraphs } from '@/features/events/event-detail-display';
-import type { Event } from '@/lib/seed/events';
+import type { EventDetail } from '@/lib/public-events/schemas';
 
 interface EventDetailIntroProps {
-  event: Event;
+  event: EventDetail;
 }
 
 export const EventDetailIntro: FC<EventDetailIntroProps> = ({ event }) => {

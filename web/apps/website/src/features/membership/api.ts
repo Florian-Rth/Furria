@@ -1,16 +1,10 @@
 import type { QueryClient, UseMutationResult, UseQueryResult } from '@tanstack/react-query';
-import {
-  queryOptions,
-  skipToken,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query';
+import { skipToken, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { AltchaProof } from '@/lib/altcha/altcha-proof';
+import type { AltchaProofSource } from '@/lib/altcha/proof-source';
+import { submitWithFreshProof, usePreparedAltchaProof } from '@/lib/altcha/proof-source';
 import { apiFetch } from '@/lib/api/api-fetch';
 import { ApiError } from '@/lib/api/errors';
-import type { AltchaProof } from './altcha-proof';
-import { isProofRefusal, proofFreshFor } from './altcha-proof';
-import { solveAltchaChallenge } from './altcha-solver';
 import { buildMembershipApplicationPayload } from './apply-payload';
 import type {
   ConfirmationOutcome,
@@ -18,7 +12,6 @@ import type {
   MembershipApplicationResponse,
 } from './schemas';
 import {
-  AltchaChallengeSchema,
   MembershipApplicationConfirmationResponseSchema,
   MembershipApplicationResponseSchema,
 } from './schemas';
@@ -36,25 +29,13 @@ export const membershipApplicationKeys = {
   ],
 };
 
-const fetchAltchaProof = async ({ signal }: { signal: AbortSignal }): Promise<AltchaProof> => {
-  const challenge = await apiFetch('/api/membership-applications/challenge', {
-    schema: AltchaChallengeSchema,
-  });
-
-  return {
-    payload: await solveAltchaChallenge(challenge, signal),
-    expiresAt: challenge.parameters.expiresAt,
-  };
+const altchaProofSource: AltchaProofSource = {
+  challengePath: '/api/membership-applications/challenge',
+  queryKey: membershipApplicationKeys.altchaProof,
 };
 
-const altchaProofQuery = queryOptions({
-  queryKey: membershipApplicationKeys.altchaProof,
-  queryFn: fetchAltchaProof,
-  staleTime: (query) => proofFreshFor(query.state.data, query.state.dataUpdatedAt),
-});
-
-export const usePreparedAltchaProof = (isNeeded: boolean): void => {
-  useQuery({ ...altchaProofQuery, enabled: isNeeded });
+export const usePreparedMembershipAltchaProof = (isNeeded: boolean): void => {
+  usePreparedAltchaProof(altchaProofSource, isNeeded);
 };
 
 const postMembershipApplication = (
@@ -67,26 +48,13 @@ const postMembershipApplication = (
     schema: MembershipApplicationResponseSchema,
   });
 
-const spendFreshProof = async (queryClient: QueryClient): Promise<AltchaProof> => {
-  const proof = await queryClient.fetchQuery(altchaProofQuery);
-  queryClient.removeQueries({ queryKey: altchaProofQuery.queryKey, exact: true });
-
-  return proof;
-};
-
-const submitMembershipApplication = async (
+const submitMembershipApplication = (
   queryClient: QueryClient,
   values: MembershipApplicationForm,
-): Promise<MembershipApplicationResponse> => {
-  try {
-    return await postMembershipApplication(values, await spendFreshProof(queryClient));
-  } catch (error) {
-    if (error instanceof Error && isProofRefusal(error)) {
-      return postMembershipApplication(values, await spendFreshProof(queryClient));
-    }
-    throw error;
-  }
-};
+): Promise<MembershipApplicationResponse> =>
+  submitWithFreshProof(queryClient, altchaProofSource, (proof) =>
+    postMembershipApplication(values, proof),
+  );
 
 export const useSubmitMembershipApplicationMutation = (): UseMutationResult<
   MembershipApplicationResponse,

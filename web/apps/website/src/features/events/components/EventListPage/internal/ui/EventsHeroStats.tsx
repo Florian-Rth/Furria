@@ -1,7 +1,7 @@
 import { KkStatRow } from '@furria/ui';
 import type { FC } from 'react';
 import { deriveHeroStats } from '@/features/events/hero-display';
-import type { Event } from '@/lib/seed/events';
+import type { Event } from '@/lib/public-events/schemas';
 
 interface EventsHeroStatsProps {
   events: Event[];

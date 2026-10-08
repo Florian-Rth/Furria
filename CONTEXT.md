@@ -47,6 +47,7 @@ English rendering anywhere else, so two translations never drift apart.
 | adoption / claim-in | Diese Person übernehmen / — | — |
 | club | Verein | — |
 | club hub / group hub / management | Verein / Gruppe / Verein verwalten | `club`, `group-hub`, `manage` |
+| events workbench | Veranstaltungen | — |
 | tile | Kachel | — |
 | Start / to-do / seen mark | Start / Zu erledigen / Gesehen | `start`, `ToDoKind`, `ToDoMark` |
 | active in the club | im Verein aktiv | — (derived) |
@@ -74,6 +75,7 @@ English rendering anywhere else, so two translations never drift apart.
 | wardrobe | Klamotten | — |
 | ticket | Karte | `Ticket…` |
 | order | Bestellung | `Order` |
+| online sales / ticket request | Online-Kartenverkauf / Kartenanfrage | — |
 | presale | Vorverkauf (VVK) | — |
 | ticket exchange | Kartenbörse | — |
 | news / news post / news category | Aktuelles / Meldung / Kategorie | `NewsPost`, `NewsCategory` |
@@ -573,6 +575,14 @@ office) is where the club's records are written. A **tile** is one entry card on
 _UI copy_: Verein; Gruppe; Verein verwalten; Kachel
 _Avoid_: association, society, admin area (for club management)
 
+**Events workbench**:
+The administrative hub for the club's **events**, beside club management
+([ADR-0010](docs/adr/0010-club-app-is-a-set-of-scope-hubs.md)): the session's events and, per
+event, its own page, where later the running order, seats and presale join its key facts — the
+same hub growing, never replaced (ruled 2026-10-07, L6 shaping).
+_UI copy_: Veranstaltungen
+_Avoid_: event hub, event admin, a management page for events
+
 **Club record**:
 The club's own facts about itself — there is exactly one, kept in three sections, each written on
 its own: **name & founding** (official name as registered, short name, **founded year**),
@@ -737,9 +747,15 @@ thing the public website's event list shows. The German word is broader in every
 is **narrow**: unticketed happenings (e.g. the Rose Monday parade) are not events in this sense
 and are not listed on the website (the 2026-08-13 narrowing, carried over from the retired
 "programme").
+
+An event is a **calendar entry** of the kind *event* and is **always public** — its visibility is
+not chosen. Public is not the same as event: a public calendar entry of another kind (the Rose
+Monday parade) stays off the website. An event is kept, whole, in the **events workbench** —
+its date and venue as much as what the website says about it — and nowhere else (ruled
+2026-10-07, L6 shaping).
 _UI copy_: Veranstaltung
 _Avoid_: **programme** (retired — see flagged note), appointment (as the entity name), "Event" (in
-German copy)
+German copy), **public event** (an event is public by definition; "public" alone is a visibility)
 
 **Running order**:
 The order of acts within a single event — a per-event ordering the club app manages. Not a list
@@ -884,12 +900,37 @@ self-registering an account to keep orders is optional. Pinned 2026-08-18 (order
 _UI copy_: Bestellung
 _Avoid_: "Order" (in German copy), cart (there is no persistent cart), booking
 
+**Online sales**:
+Whether an **event**'s tickets can be bought on the website — a channel, chosen per event, never a
+synonym for **presale** (an event without online sales still has a presale, just not on the web).
+An event without online sales takes **ticket requests** instead (ruled 2026-10-07, L6 shaping).
+_UI copy_: Online-Kartenverkauf
+_Avoid_: online presale (presale is the window, not the channel)
+
+**Ticket request**:
+A guest's request, sent from the website, for a number of **tickets** to one **event** that has no
+**online sales**. It is **not an order** — nothing is paid, reserved or issued — and it is answered
+outside the app (phone, WhatsApp), where the guest gets her physical tickets. A ticket request
+**lives only until it is handled**: handling it deletes it, and the club keeps no list of who
+asked (ruled 2026-10-07, L6 shaping).
+_UI copy_: Kartenanfrage
+_Avoid_: order, reservation, booking, ticket order
+
 **Presale** (short **VVK** in copy):
 The window in which tickets for an event can be bought, before the evening itself. An event's
 public sales lifecycle is announced → presale announced → presale running → sold out / presale
 ended. Not every event has a presale date from the start — it is announced when the club sets it.
 _UI copy_: Vorverkauf (VVK); angekündigt / läuft / ausverkauft / beendet
 _Avoid_: ticket sale, "Presale" (in German copy)
+
+**Ticket availability**:
+How many tickets an event **without online sales** still has, in the club's rough words —
+*available*, *few left*, *sold out* — set by hand once its **presale** has begun; before that the
+presale date alone speaks. The date decides *when*, the person decides *how much*, so the two never
+contradict (ruled 2026-10-07, L6 shaping). **Cancelling** an event is not an availability: it is
+the event's own act, whatever its channel.
+_UI copy_: Karten verfügbar / Nur noch wenige Karten / Ausverkauft; *Abgesagt*
+_Avoid_: free count, stock, capacity (those are counted, this is said)
 
 **Ticket exchange**:
 The planned place where a ticket for a sold-out evening can change hands — the club's answer to

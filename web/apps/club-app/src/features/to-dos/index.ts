@@ -1,5 +1,10 @@
-export type { ToDoKind } from './schemas';
-export { TO_DO_KINDS } from './schemas';
+export type { ToDoMarkSurface } from './api';
+export { ToDosPanel } from './components/ToDosPanel';
+export { useToDosBoard } from './hooks/use-to-dos-board';
+export type { ToDo, ToDoKind } from './schemas';
+export { TO_DO_KINDS, ToDoSchema } from './schemas';
+export type { ToDoMark } from './to-do-board';
+export { withToDoMark } from './to-do-board';
 export type { ToDoCount } from './to-do-labels';
 export { TO_DO_ICONS, toToDoLabel } from './to-do-labels';
 export type { ToDoLink } from './to-do-links';
