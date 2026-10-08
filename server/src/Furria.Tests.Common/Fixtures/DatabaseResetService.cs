@@ -1,40 +1,28 @@
 using System.Data.Common;
+using System.Diagnostics.Contracts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Npgsql;
 
 namespace Furria.Tests.Common.Fixtures;
 
-// Owned database reset — replaces Respawn. The truncate set is derived from the EF model (never
-// information_schema, which would surface TimescaleDB chunk tables and anything else EF doesn't
-// own) and run as a single TRUNCATE ... CASCADE *without* RESTART IDENTITY, so sequences keep
-// climbing and domain ids stay non-deterministic. Rows of the snapshot entity types (seeded
-// singletons such as identity roles, role-claims, a protected admin and its child rows) are
-// captured once at init and re-inserted verbatim after each truncate — no live reseed, no
-// password hashing, so a reset costs a few milliseconds. Truncate and restore run in one
-// transaction so an interrupted reset can never leave a half-restored baseline.
-//
-// Pass every DbContext whose tables must be truncated (all are assumed to share one connection
-// string — one container, one database) plus the CLR entity types whose rows are
-// snapshot-restored, in FK-safe order (parents before children).
-// Capture the snapshot at fixture init, when the database holds exactly the seeded singletons
-// and no test data — an unfiltered SELECT then captures only those rows.
 public sealed class DatabaseResetService
 {
     private const string MigrationsHistoryTable = "__EFMigrationsHistory";
+    private const string SkipForeignKeyChecks = "SET LOCAL session_replication_role = replica";
 
     private readonly string _connectionString;
-    private readonly string _truncateStatement;
+    private readonly IReadOnlyList<string> _clearStatements;
     private readonly IReadOnlyList<SingletonTable> _singletons;
 
     private DatabaseResetService(
         string connectionString,
-        string truncateStatement,
+        IReadOnlyList<string> clearStatements,
         IReadOnlyList<SingletonTable> singletons
     )
     {
         _connectionString = connectionString;
-        _truncateStatement = truncateStatement;
+        _clearStatements = clearStatements;
         _singletons = singletons;
     }
 
@@ -50,14 +38,7 @@ public sealed class DatabaseResetService
             ?? throw new InvalidOperationException("The first DbContext has no connection string.");
 
         var models = contexts.Select(context => context.Model).ToArray();
-        var tables = BuildTruncateTableList(models, retainedEntityTypes);
-        // An empty EF model would otherwise yield "TRUNCATE TABLE ;" - invalid SQL. Harmless
-        // no-op guard until the first real entity lands.
-        var truncate =
-            tables.Count == 0
-                ? string.Empty
-                : $"TRUNCATE TABLE {string.Join(", ", tables)} CASCADE;";
-
+        var tables = ClearedTables(models, retainedEntityTypes);
         var singletons = await CaptureSingletonsAsync(
             models,
             connectionString,
@@ -65,40 +46,31 @@ public sealed class DatabaseResetService
             ct
         );
 
-        return new DatabaseResetService(connectionString, truncate, singletons);
+        return new DatabaseResetService(connectionString, ClearStatements(tables), singletons);
     }
 
     public async Task ResetAsync(CancellationToken ct)
     {
-        if (_truncateStatement.Length == 0 && _singletons.Count == 0)
-            return;
-
         await using var connection = new NpgsqlConnection(_connectionString);
         await connection.OpenAsync(ct);
         await using var transaction = await connection.BeginTransactionAsync(ct);
+        await using var batch = new NpgsqlBatch(connection, transaction);
 
-        if (_truncateStatement.Length > 0)
-        {
-            await using var truncate = connection.CreateCommand();
-            truncate.Transaction = transaction;
-            truncate.CommandText = _truncateStatement;
-            await truncate.ExecuteNonQueryAsync(ct);
-        }
+        foreach (var statement in _clearStatements)
+            batch.BatchCommands.Add(new NpgsqlBatchCommand(statement));
+        foreach (var table in _singletons.Where(table => table.Rows.Count > 0))
+            batch.BatchCommands.Add(RestoreCommand(table));
 
-        foreach (var table in _singletons)
-        {
-            await RestoreAsync(connection, transaction, table, ct);
-        }
-
+        await batch.ExecuteNonQueryAsync(ct);
         await transaction.CommitAsync(ct);
     }
 
-    private static IReadOnlyList<string> BuildTruncateTableList(
+    [Pure]
+    private static IReadOnlyList<string> ClearedTables(
         IReadOnlyList<IModel> models,
         IReadOnlyList<Type> retainedEntityTypes
-    )
-    {
-        return models
+    ) =>
+        models
             .SelectMany(model => model.GetEntityTypes())
             .Where(entityType => entityType.GetTableName() != MigrationsHistoryTable)
             .Where(entityType => !retainedEntityTypes.Contains(entityType.ClrType))
@@ -106,8 +78,12 @@ public sealed class DatabaseResetService
             .OfType<string>()
             .Distinct(StringComparer.Ordinal)
             .ToList();
-    }
 
+    [Pure]
+    private static IReadOnlyList<string> ClearStatements(IReadOnlyList<string> tables) =>
+        [SkipForeignKeyChecks, .. tables.Select(table => $"DELETE FROM {table}")];
+
+    [Pure]
     private static string? QualifiedTableName(IEntityType entityType)
     {
         var table = entityType.GetTableName();
@@ -147,9 +123,6 @@ public sealed class DatabaseResetService
     )
     {
         await using var command = connection.CreateCommand();
-        // SELECT * is intentional: this is a generic row copier that must round-trip every column
-        // (including any not on the CLR model). Snapshot tables must have no GENERATED ALWAYS or
-        // computed columns, so every column read back is also insertable.
         command.CommandText = $"SELECT * FROM {table};";
 
         await using var reader = await command.ExecuteReaderAsync(ct);
@@ -166,35 +139,23 @@ public sealed class DatabaseResetService
         return new SingletonTable(table, columns, rows);
     }
 
-    private static async Task RestoreAsync(
-        DbConnection connection,
-        DbTransaction transaction,
-        SingletonTable table,
-        CancellationToken ct
-    )
+    [Pure]
+    private static NpgsqlBatchCommand RestoreCommand(SingletonTable table)
     {
-        if (table.Rows.Count == 0)
-            return;
-
         var columnList = string.Join(", ", table.Columns.Select(column => $"\"{column}\""));
+        var width = table.Columns.Count;
+        var rowLists = table.Rows.Select(
+            (_, row) =>
+                $"({string.Join(", ", Enumerable.Range(row * width + 1, width).Select(index => $"${index}"))})"
+        );
 
-        foreach (var row in table.Rows)
-        {
-            await using var command = connection.CreateCommand();
-            command.Transaction = transaction;
-            var parameters = row.Select((_, index) => $"@p{index}");
-            command.CommandText =
-                $"INSERT INTO {table.Name} ({columnList}) VALUES ({string.Join(", ", parameters)});";
+        var command = new NpgsqlBatchCommand(
+            $"INSERT INTO {table.Name} ({columnList}) VALUES {string.Join(", ", rowLists)}"
+        );
+        foreach (var value in table.Rows.SelectMany(row => row))
+            command.Parameters.Add(new NpgsqlParameter { Value = value ?? DBNull.Value });
 
-            for (var index = 0; index < row.Length; index++)
-            {
-                command.Parameters.Add(
-                    new NpgsqlParameter($"p{index}", row[index] ?? DBNull.Value)
-                );
-            }
-
-            await command.ExecuteNonQueryAsync(ct);
-        }
+        return command;
     }
 
     private static IEntityType RequireEntityType(IReadOnlyList<IModel> models, Type clrType) =>

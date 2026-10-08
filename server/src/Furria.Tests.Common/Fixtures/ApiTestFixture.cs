@@ -22,6 +22,7 @@ using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Expectations;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
@@ -77,6 +78,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
     private const int AltchaMinCounter = 1;
     private const int AltchaMaxCounter = 50;
     private const int PermitsPerIpBeyondAnySuite = 1_000_000;
+    private const int PasswordHashIterations = 1;
 
     private static readonly TimeSpan SignedOutWorkTimeout = TimeSpan.FromSeconds(20);
     private static readonly TimeSpan OutboxDrainTimeout = TimeSpan.FromSeconds(20);
@@ -235,6 +237,9 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             services.RemoveAll<TimeProvider>();
             services.AddSingleton<TimeProvider>(TimeProvider);
             services.AddSingleton<ILogEventSink>(Logs);
+            services.Configure<PasswordHasherOptions>(options =>
+                options.IterationCount = PasswordHashIterations
+            );
         });
     }
 

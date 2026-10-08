@@ -123,11 +123,14 @@ public sealed class UnlockPreviewTests : IClassFixture<ApiTestFixture> // own ho
    class has its own host, so every host singleton — the clock, the limiters, the signed-out
    queues, the outbox dispatcher, the log sink — is shared only by the tests of that class. Mailpit
    is the one thing all classes share (see *Traps*).
-3. **`DatabaseResetService`** — owned reset instead of Respawn: one `TRUNCATE … CASCADE` over
-   the EF-model table list, **without** `RESTART IDENTITY`, then re-inserts snapshotted
-   singleton rows in the same transaction. Milliseconds per reset. Wired in the fixture; it
+3. **`DatabaseResetService`** — owned reset instead of Respawn: one batched round trip, one
+   transaction — `SET LOCAL session_replication_role = replica` (FK triggers off, so order does
+   not matter), a `DELETE FROM` per EF-model table, then one multi-row `INSERT` per snapshotted
+   singleton table. `DELETE` on the mostly empty tables costs far less than `TRUNCATE`, which
+   creates new files for every table: ~5 ms per reset instead of ~70 ms. Sequences are never
+   reset, so domain ids stay non-deterministic. Wired in the fixture; it
    snapshot-restores the managing login and the unheld Admin role (`Account`, `Role`,
-   `RolePermission` — parents before children) after every truncate.
+   `RolePermission` — parents before children) after every reset.
 
 ### The rules (analyzer-enforced)
 
@@ -226,7 +229,7 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
    `int Id` instead of a composite key — and none may gain a computed column; the restore
    re-inserts every column it read, so `account.is_managing_login` round-trips as it is.
    `DatabaseResetService.CreateAsync` also takes the **retained** entity types, whose tables are
-   never truncated: `[typeof(DataProtectionKey)]`. `data_protection_keys` is infrastructure — the
+   never cleared: `[typeof(DataProtectionKey)]`. `data_protection_keys` is infrastructure — the
    host's key ring — so a reset keeps it and the tokens it protects stay readable (CA-P8).
 2. **`SeedContextBuilder` / `IdentitySeedBuilder` / `GroupSeedBuilder` / `RoleSeedBuilder` /
    `ClubSeedBuilder`** —
@@ -289,7 +292,9 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
    own — it is registered under `"{roleAlias}:{permissionKey}"`.
 4. **Identity shortcut** — Account rows are inserted directly, not through `UserManager`: the
    harness owns normalization and the password hash, and the hash is computed once per run and
-   cached (Identity's PBKDF2 would otherwise dominate the suite). `ctx.Identity.ManagingLogin`
+   cached. Every test host sets `PasswordHasherOptions.IterationCount` to 1: logins still run the
+   real HTTP flow and the real PBKDF2 verification, but cost ~15 ms instead of ~85 ms. Production
+   keeps Identity's default. `ctx.Identity.ManagingLogin`
    and `_fixture.AdminRoleId` are aliasless, because production code seeds both.
    **`ctx.Identity.ManagingLoginClientAsync(ct)` is how a test gets a caller holding every
    permission** — the managing login holds `FurriaPermissions.All` by itself. It has no person, so
@@ -494,8 +499,8 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
   endpoint's `RequireRateLimiting` left, and must equal `SignedOutRateLimiting.PerIpPolicy`. A route
   that forgets the call passes every behaviour test and only this one goes red.
 - **The reset waits for the signed-out queue.** `ResetDatabaseAsync` polls
-  `SignedOutMailRequestQueue.IsIdle` before truncating: a request a previous test left unanswered
-  would otherwise hold locks while `TRUNCATE … CASCADE` takes them in another order, and
+  `SignedOutMailRequestQueue.IsIdle` before clearing: a request a previous test left unanswered
+  would otherwise hold row locks while the reset's deletes take them in another order, and
   PostgreSQL answers `40P01 deadlock detected` in the next test's `BuildAsync`.
 - **Mail leaves through the outbox (L1 S5).** A mail is an `outbox_mail` row written in the
   transaction that causes it; the host's `MailDispatcher` sends rows in id order and deletes each
@@ -516,9 +521,9 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
   test proving the *no birth date* refusal needs a caller holding `persons.manage` alone.
 - **Only `account`, `role` and `role_permission` survive a reset.**
   Everything else, the five group tables included (`group_kind`, `group`, `group_membership`,
-  `group_admin`, `group_training_slot`), is truncated before every `BuildAsync`, so a
+  `group_admin`, `group_training_slot`), is cleared before every `BuildAsync`, so a
   test seeds every group and every group kind it needs and may never assume one from a neighbour.
-  `data_protection_keys` is never truncated at all (retained, see *The pieces* 1).
+  `data_protection_keys` is never cleared at all (retained, see *The pieces* 1).
 - **`session` and `venue` start empty — in a test and in a fresh production database alike.**
   Nothing is seeded from code: a migration builds schema and nothing else, and the club's master
   data is entered through its management surface. So a test arranges every session and every venue
