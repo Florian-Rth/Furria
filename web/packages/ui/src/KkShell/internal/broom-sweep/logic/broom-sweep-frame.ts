@@ -1,3 +1,4 @@
+import { lerp, ramp } from '../../../../internal/ramp';
 import type { BroomSweepPlan } from './broom-sweep-plan';
 import { moteOpacityVar, moteVar, SWEEP_VAR } from './broom-sweep-vars';
 
@@ -61,13 +62,6 @@ const GLYPH_BLEED = '-12px';
 
 export const durationOf = (mode: BroomSweepMode): number =>
   mode === 'fade' ? FADE_SECONDS : SWEEP_SECONDS;
-
-const clamp01 = (value: number): number => Math.min(Math.max(value, 0), 1);
-
-export const ramp = (value: number, from: number, to: number): number =>
-  clamp01((value - from) / (to - from));
-
-const lerp = (from: number, to: number, amount: number): number => from + (to - from) * amount;
 
 const easeInOut = (amount: number): number =>
   amount < 0.5 ? 4 * amount ** 3 : 1 - (-2 * amount + 2) ** 3 / 2;

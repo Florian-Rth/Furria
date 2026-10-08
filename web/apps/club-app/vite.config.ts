@@ -1,4 +1,3 @@
-/// <reference types="vitest/config" />
 import { fileURLToPath, URL } from 'node:url';
 import babel from '@rolldown/plugin-babel';
 import { tanstackRouter } from '@tanstack/router-plugin/vite';
@@ -37,8 +36,5 @@ export default defineConfig({
         changeOrigin: true,
       },
     },
-  },
-  test: {
-    environment: 'node',
   },
 });

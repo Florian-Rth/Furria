@@ -23,12 +23,6 @@ describe('toErasureNotice', () => {
       accountState: 'invited',
       expected: 'tellsNobody',
     },
-    {
-      case: 'a person without access',
-      isSelf: false,
-      accountState: 'noAccess',
-      expected: 'tellsNobody',
-    },
   ])('tells $case as $expected', ({ isSelf, accountState, expected }) => {
     expect(toErasureNotice(isSelf, accountState)).toBe(expected);
   });

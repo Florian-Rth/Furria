@@ -1,7 +1,8 @@
 import { useParams, useSearch } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { parsePositiveId } from '@/lib/positive-id';
 import { useGroupHubQuery } from '../api';
-import { EDITOR_DENIED_MESSAGE, toHubId, toPersonIdParam } from '../group-hub-labels';
+import { EDITOR_DENIED_MESSAGE } from '../group-hub-labels';
 import { GroupEditorUnloaded } from './GroupEditorUnloaded';
 import { GroupMembershipEditor } from './GroupMembershipEditor';
 import { HubEditorDenied } from './HubEditorDenied';
@@ -12,7 +13,7 @@ const TITLE = 'Mitglied aufnehmen';
 export const GroupMembershipNewScreen: FC = () => {
   const { groupId } = useParams({ from: ROUTE_ID });
   const { person } = useSearch({ from: ROUTE_ID });
-  const id = toHubId(groupId);
+  const id = parsePositiveId(groupId);
   const hub = useGroupHubQuery(id);
 
   if (hub.data === undefined) {
@@ -26,7 +27,7 @@ export const GroupMembershipNewScreen: FC = () => {
     <GroupMembershipEditor
       hub={hub.data}
       membership={null}
-      prefillPersonId={toPersonIdParam(person)}
+      prefillPersonId={parsePositiveId(person)}
     />
   );
 };

@@ -189,18 +189,34 @@ const FACET_META: Record<GroupWorkFilterId, (count: number) => string> = {
 
 const NO_MATCH_META = 'Keine Gruppe passt';
 
+export type RegisterMetaKind = 'no-match' | 'whole-register' | 'facet';
+
+export const registerMetaKindOf = (
+  filter: GroupWorkFilterId,
+  bands: GroupRegisterBands,
+): RegisterMetaKind => {
+  if (countBandedGroups(bands) === 0) {
+    return 'no-match';
+  }
+  if (filter === ALL_GROUPS_FILTER_ID) {
+    return 'whole-register';
+  }
+
+  return 'facet';
+};
+
 export const toRegisterMeta = (
   filter: GroupWorkFilterId,
   bands: GroupRegisterBands,
 ): string | undefined => {
-  const shown = countBandedGroups(bands);
+  const kind = registerMetaKindOf(filter, bands);
 
-  if (shown === 0) {
+  if (kind === 'no-match') {
     return NO_MATCH_META;
   }
-  if (filter === ALL_GROUPS_FILTER_ID) {
+  if (kind === 'whole-register') {
     return undefined;
   }
 
-  return FACET_META[filter](shown);
+  return FACET_META[filter](countBandedGroups(bands));
 };

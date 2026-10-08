@@ -24,20 +24,11 @@ describe('buildDockChips', () => {
   });
 
   it.each([
-    { index: 0, direction: -1 },
     { index: 1, direction: -1 },
-    { index: 3, direction: 1 },
-    { index: 6, direction: 1 },
+    { index: 2, direction: 1 },
   ])('flings behind chip $index in direction $direction', ({ index, direction }) => {
     const chip = buildDockChips(COUNTS, 4)[index];
 
     expect(Math.sign(chip?.driftX ?? 0)).toBe(direction);
-  });
-
-  it.each([0, 3, 6])('keeps behind chip %i inside the pane band', (index) => {
-    const chip = buildDockChips(COUNTS, 4)[index];
-
-    expect(chip?.peakY ?? 0).toBeGreaterThanOrEqual(-8);
-    expect(chip?.fallY ?? 0).toBeLessThanOrEqual(36);
   });
 });

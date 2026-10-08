@@ -12,11 +12,6 @@ export const VENUE_SECTION_TITLES = {
   archived: 'Archiviert',
 } as const;
 
-const VENUE_ID_PATTERN = /^[1-9]\d*$/;
-
-export const toVenueId = (raw: string): number | null =>
-  VENUE_ID_PATTERN.test(raw) ? Number(raw) : null;
-
 export const VENUE_NOT_FOUND_TITLE = 'NICHT MEHR DA';
 export const VENUE_NOT_FOUND_DESCRIPTION = 'Diesen Ort gibt es nicht mehr.';
 

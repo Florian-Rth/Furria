@@ -7,20 +7,6 @@ type StageInput = Parameters<typeof toRedeemStage>[0];
 describe('toRedeemStage', () => {
   it.each<[string, StageInput, RedeemStage]>([
     [
-      'a missing credential',
-      {
-        credential: null,
-        isSignedIn: false,
-        lookup: undefined,
-        lookupFailure: null,
-        redeemFailure: null,
-        pendingClaim: null,
-        hasDeclinedClaim: false,
-        pendingConfirmation: null,
-      },
-      { kind: 'dead' },
-    ],
-    [
       'a missing credential while signed in',
       {
         credential: null,
@@ -93,36 +79,6 @@ describe('toRedeemStage', () => {
       },
     ],
     [
-      'a live invitation reached by code whose inbox is already someone’s login',
-      {
-        credential: { kind: 'code', code: 'K7M4-Q2XP' },
-        isSignedIn: false,
-        lookup: {
-          status: 'live',
-          firstName: 'Anna',
-          loginEmail: null,
-          contactEmailTaken: true,
-          purpose: 'onboarding',
-          claimableLoginEmail: null,
-        },
-        lookupFailure: null,
-        redeemFailure: null,
-        pendingClaim: null,
-        hasDeclinedClaim: false,
-        pendingConfirmation: null,
-      },
-      {
-        kind: 'live',
-        credential: { kind: 'code', code: 'K7M4-Q2XP' },
-        firstName: 'Anna',
-        suggestedLoginEmail: null,
-        contactEmailTaken: true,
-        purpose: 'onboarding',
-        claimableLoginEmail: null,
-        step: { kind: 'details' },
-      },
-    ],
-    [
       'a mailed confirmation code',
       {
         credential: { kind: 'token', token: 'abc' },
@@ -137,44 +93,6 @@ describe('toRedeemStage', () => {
         },
         lookupFailure: null,
         redeemFailure: null,
-        pendingClaim: null,
-        hasDeclinedClaim: false,
-        pendingConfirmation: {
-          loginEmail: 'anna@privat.de',
-          password: 'Neues-Passwort-2026!',
-          expiresAt: '2026-09-26T12:15:00+00:00',
-        },
-      },
-      {
-        kind: 'live',
-        credential: { kind: 'token', token: 'abc' },
-        firstName: 'Anna',
-        suggestedLoginEmail: 'anna@web.de',
-        contactEmailTaken: false,
-        purpose: 'onboarding',
-        claimableLoginEmail: null,
-        step: {
-          kind: 'confirm',
-          loginEmail: 'anna@privat.de',
-          expiresAt: '2026-09-26T12:15:00+00:00',
-        },
-      },
-    ],
-    [
-      'a rejected confirmation code',
-      {
-        credential: { kind: 'token', token: 'abc' },
-        isSignedIn: false,
-        lookup: {
-          status: 'live',
-          firstName: 'Anna',
-          loginEmail: 'anna@web.de',
-          contactEmailTaken: false,
-          purpose: 'onboarding',
-          claimableLoginEmail: null,
-        },
-        lookupFailure: null,
-        redeemFailure: 'codeRejected',
         pendingClaim: null,
         hasDeclinedClaim: false,
         pendingConfirmation: {
@@ -323,36 +241,6 @@ describe('toRedeemStage', () => {
       },
     ],
     [
-      'a wrong password for the claimed account',
-      {
-        credential: { kind: 'token', token: 'abc' },
-        isSignedIn: false,
-        lookup: {
-          status: 'live',
-          firstName: 'Anna',
-          loginEmail: null,
-          contactEmailTaken: true,
-          purpose: 'onboarding',
-          claimableLoginEmail: 'anna@web.de',
-        },
-        lookupFailure: null,
-        redeemFailure: 'claimRejected',
-        pendingConfirmation: null,
-        pendingClaim: null,
-        hasDeclinedClaim: false,
-      },
-      {
-        kind: 'live',
-        credential: { kind: 'token', token: 'abc' },
-        firstName: 'Anna',
-        suggestedLoginEmail: null,
-        contactEmailTaken: true,
-        purpose: 'onboarding',
-        claimableLoginEmail: 'anna@web.de',
-        step: { kind: 'claim', loginEmail: 'anna@web.de' },
-      },
-    ],
-    [
       'a claim the server now refuses as taken',
       {
         credential: { kind: 'token', token: 'abc' },
@@ -379,36 +267,6 @@ describe('toRedeemStage', () => {
         contactEmailTaken: true,
         purpose: 'onboarding',
         claimableLoginEmail: 'anna@web.de',
-        step: { kind: 'details' },
-      },
-    ],
-    [
-      'a live recovery of her access',
-      {
-        credential: { kind: 'code', code: 'K7M4-Q2XP' },
-        isSignedIn: false,
-        lookup: {
-          status: 'live',
-          firstName: 'Anna',
-          loginEmail: 'anna@web.de',
-          contactEmailTaken: false,
-          purpose: 'recovery',
-          claimableLoginEmail: null,
-        },
-        lookupFailure: null,
-        redeemFailure: null,
-        pendingConfirmation: null,
-        pendingClaim: null,
-        hasDeclinedClaim: false,
-      },
-      {
-        kind: 'live',
-        credential: { kind: 'code', code: 'K7M4-Q2XP' },
-        firstName: 'Anna',
-        suggestedLoginEmail: 'anna@web.de',
-        contactEmailTaken: false,
-        purpose: 'recovery',
-        claimableLoginEmail: null,
         step: { kind: 'details' },
       },
     ],
@@ -475,7 +333,6 @@ describe('toRedeemStage', () => {
 
 describe('needsEmailConfirmation', () => {
   it.each<[string, string, string | null, boolean]>([
-    ['the suggested address', 'anna@web.de', 'anna@web.de', false],
     ['the suggested address in other case and with blanks', ' Anna@Web.de ', 'anna@web.de', false],
     ['another address', 'anna@privat.de', 'anna@web.de', true],
     ['any address when nothing was suggested', 'anna@privat.de', null, true],

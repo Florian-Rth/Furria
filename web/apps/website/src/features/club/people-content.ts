@@ -1,5 +1,6 @@
 import type { Theme } from '@mui/material/styles';
 import type { PublicBoardSeat } from './schemas';
+import { resolveCycleTint } from './tint-cycle';
 
 export const peopleChapter = {
   numeral: '05',
@@ -16,12 +17,6 @@ export interface BoardTile {
   tint: string;
 }
 
-export const resolvePersonTint = (theme: Theme, index: number): string => {
-  const palette = (theme.vars ?? theme).palette;
-  const tints = [palette.primary.main, palette.warning.main, palette.text.primary];
-  return tints[index % tints.length] ?? palette.primary.main;
-};
-
 const initialOf = (name: string): string => name.trim().charAt(0).toLocaleUpperCase('de-DE');
 
 export const toInitials = (firstName: string, lastName: string): string =>
@@ -34,5 +29,5 @@ export const toBoardTiles = (seats: PublicBoardSeat[], theme: Theme): BoardTile[
     name: `${seat.firstName} ${seat.lastName}`,
     initials: toInitials(seat.firstName, seat.lastName),
     portraitUrl: seat.portraitUrl ?? undefined,
-    tint: resolvePersonTint(theme, index),
+    tint: resolveCycleTint(theme, index),
   }));

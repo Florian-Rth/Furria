@@ -38,10 +38,10 @@ describe('landingAtOf', () => {
     expect(landingAtOf(schedule)).toBe(275);
   });
 
-  it.each<[string, FlapRun[], number]>([['an empty board', [], 0]])(
-    'waits for %s to finish',
-    (_, runs, landing) => {
-      expect(landingAtOf(scheduleOf(runs))).toBe(landing);
-    },
-  );
+  it.each<{ runs: FlapRun[]; landing: number }>([
+    { runs: [], landing: 0 },
+    { runs: [{ cell: 0, start: 0, end: 300, faces: [], flips: [] }], landing: 300 },
+  ])('lands at $landing when no cell has a final fall', ({ runs, landing }) => {
+    expect(landingAtOf(scheduleOf(runs))).toBe(landing);
+  });
 });

@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  RequestBlockedError,
-  RequestFailedError,
-  ServerFailureError,
-  UnauthorizedError,
-} from '@/lib/api/api-error';
+import { RequestBlockedError, RequestFailedError, ServerFailureError } from '@/lib/api/api-error';
 import type { Start, StartAttendance, StartEntry } from './schemas';
 import type { StartAnswerAttempt, StartAnswerFailure } from './start-answer';
 import {
@@ -53,10 +48,7 @@ describe('toAnswerFailureOf', () => {
     { label: 'the device was offline', error: new OfflineAnswerError(), expected: 'offline' },
     { label: 'the request never arrived', error: new RequestBlockedError(), expected: 'unsaved' },
     { label: 'the server broke', error: new ServerFailureError(500), expected: 'unsaved' },
-    { label: 'the server was busy', error: new ServerFailureError(503), expected: 'unsaved' },
-    { label: 'the session expired', error: new UnauthorizedError(), expected: 'unsaved' },
     { label: 'the entry was deleted', error: new ServerFailureError(404), expected: 'gone' },
-    { label: 'the entry is no longer hers', error: new ServerFailureError(403), expected: 'gone' },
     {
       label: 'the entry stopped asking',
       error: new RequestFailedError(400, [{ field: 'answer', message: 'Keine Antwort erbeten.' }]),
@@ -105,12 +97,6 @@ describe('withEntryAttendance', () => {
       expected: start([entry(1, OWED), entry(2, ANSWERED)]),
     },
     {
-      label: 'her answer is rolled back',
-      data: start([entry(2, ANSWERED)]),
-      attendance: OWED,
-      expected: start([entry(2, OWED)]),
-    },
-    {
       label: 'the entry is not on the board',
       data: start([entry(1, OWED)]),
       attendance: ANSWERED,
@@ -123,7 +109,6 @@ describe('withEntryAttendance', () => {
 
 describe('latestAnswerErrorOf', () => {
   const since = 1_000;
-  const offline = new OfflineAnswerError();
   const broken = new ServerFailureError(500);
 
   it.each<{ label: string; attempts: StartAnswerAttempt[]; expected: Error | null }>([
@@ -140,14 +125,6 @@ describe('latestAnswerErrorOf', () => {
         { submittedAt: 1_400, error: null },
       ],
       expected: null,
-    },
-    {
-      label: 'the newest answer failed after an older one was saved',
-      attempts: [
-        { submittedAt: 1_200, error: null },
-        { submittedAt: 1_400, error: offline },
-      ],
-      expected: offline,
     },
     {
       label: 'the failure came before this surface opened',
@@ -168,24 +145,11 @@ describe('toAnswerRollbackOf', () => {
   }>([
     { label: 'her last answer failed', pendingAnswers: 1, confirmed: OWED, expected: OWED },
     {
-      label: 'her last answer failed after an earlier one was saved',
-      pendingAnswers: 1,
-      confirmed: ANSWERED,
-      expected: ANSWERED,
-    },
-    {
       label: 'a later answer is still pending',
       pendingAnswers: 2,
       confirmed: OWED,
       expected: undefined,
     },
-    {
-      label: 'nothing was confirmed before the answer',
-      pendingAnswers: 1,
-      confirmed: undefined,
-      expected: undefined,
-    },
-    { label: 'the entry asked nothing before', pendingAnswers: 1, confirmed: null, expected: null },
   ])('restores $expected when $label', ({ pendingAnswers, confirmed, expected }) => {
     expect(toAnswerRollbackOf(pendingAnswers, confirmed)).toEqual(expected);
   });

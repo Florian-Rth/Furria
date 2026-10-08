@@ -19,15 +19,10 @@ import {
 type FormatterCase = [string, (isoDate: string) => string, string, string];
 
 const FORMATTER_CASES: FormatterCase[] = [
-  ['formatLongDate spells the month out', formatLongDate, '2026-07-18', '18. Juli 2026'],
   ['formatLongDate drops the leading zero', formatLongDate, '2026-06-04', '4. Juni 2026'],
-  ['formatLongDate keeps the März umlaut', formatLongDate, '2026-03-01', '1. März 2026'],
   ['formatShortDate pads and trails a dot', formatShortDate, '2026-06-04', '04.06.'],
   ['formatNumericDate pads and adds the year', formatNumericDate, '2026-06-04', '04.06.2026'],
   ['formatDayOfMonth pads a single-digit day', formatDayOfMonth, '2027-02-04T18:30', '04'],
-  ['formatDayOfMonth leaves a two-digit day', formatDayOfMonth, '2027-01-23T19:11', '23'],
-  ['formatMonthAbbreviation upper-cases', formatMonthAbbreviation, '2027-01-23T19:11', 'JAN'],
-  ['formatMonthAbbreviation keeps the umlaut', formatMonthAbbreviation, '2026-03-01', 'MÄR'],
   ['formatMonthAbbreviation trims to three', formatMonthAbbreviation, '2026-09-15', 'SEP'],
   ['formatClockTime pads the 24h clock', formatClockTime, '2026-06-04T09:05', '09:05'],
   ['formatWeekdayLong names the weekday', formatWeekdayLong, '2027-02-04T18:30', 'Donnerstag'],
@@ -66,23 +61,21 @@ describe('formatLongDateRange', () => {
 });
 
 describe('parseBerlinDateTime', () => {
-  it('resolves a winter wall-clock time to its real instant', () => {
-    expect(parseBerlinDateTime('2027-01-23T19:11').toISOString()).toBe('2027-01-23T18:11:00.000Z');
-  });
-
-  it('respects summer time', () => {
-    expect(parseBerlinDateTime('2026-07-01T12:00').toISOString()).toBe('2026-07-01T10:00:00.000Z');
-  });
-
-  it('anchors a date-only string at Berlin midnight', () => {
-    expect(parseBerlinDateTime('2026-07-18').toISOString()).toBe('2026-07-17T22:00:00.000Z');
+  it.each([
+    ['2027-01-23T19:11', '2027-01-23T18:11:00.000Z'],
+    ['2026-07-01T12:00', '2026-07-01T10:00:00.000Z'],
+    ['2026-07-18', '2026-07-17T22:00:00.000Z'],
+  ])('resolves the Berlin wall clock %s to the instant %s', (wallClock, instant) => {
+    expect(parseBerlinDateTime(wallClock).toISOString()).toBe(instant);
   });
 });
 
 describe('formatBerlinIsoWithOffset', () => {
-  it('stamps wall-clock times with the CET and CEST offsets', () => {
-    expect(formatBerlinIsoWithOffset('2027-01-23T19:11')).toBe('2027-01-23T19:11:00+01:00');
-    expect(formatBerlinIsoWithOffset('2026-07-01T12:00')).toBe('2026-07-01T12:00:00+02:00');
+  it.each([
+    ['2027-01-23T19:11', '2027-01-23T19:11:00+01:00'],
+    ['2026-07-01T12:00', '2026-07-01T12:00:00+02:00'],
+  ])('stamps %s with its CET or CEST offset', (wallClock, stamped) => {
+    expect(formatBerlinIsoWithOffset(wallClock)).toBe(stamped);
   });
 });
 

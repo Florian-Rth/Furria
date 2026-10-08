@@ -1,6 +1,6 @@
 import type { KkConfirmFact } from '@furria/ui';
-import type { ToDoMark } from '@/features/to-dos';
-import { withToDoMark } from '@/features/to-dos';
+import type { ToDoMark } from '@/features/to-dos/to-do-board';
+import { withToDoMark } from '@/features/to-dos/to-do-board';
 import { toDayNumberLabel, toIsoDayLabel, toLocalIsoDay, toTimeLabel } from '@/lib/calendar-days';
 import type { TicketRequest, TicketRequestsResponse } from './schemas';
 
@@ -51,8 +51,15 @@ export const requestsOfEvent = (
   eventId: number,
 ): TicketRequest[] => requests.filter((request) => request.eventId === eventId);
 
-const countTickets = (requests: readonly TicketRequest[]): number =>
-  requests.reduce((sum, request) => sum + request.ticketCount, 0);
+export interface RequestsTotals {
+  requestCount: number;
+  ticketCount: number;
+}
+
+export const toRequestsTotals = (requests: readonly TicketRequest[]): RequestsTotals => ({
+  requestCount: requests.length,
+  ticketCount: requests.reduce((sum, request) => sum + request.ticketCount, 0),
+});
 
 export const toTicketUnitLabel = (ticketCount: number): string =>
   ticketCount === SINGLE ? 'Karte' : 'Karten';
@@ -63,10 +70,13 @@ const toTicketCountLabel = (ticketCount: number): string =>
 const toRequestCountLabel = (requestCount: number): string =>
   requestCount === SINGLE ? '1 Anfrage' : `${requestCount} Anfragen`;
 
-export const toRequestsTally = (requests: readonly TicketRequest[]): string =>
-  [toRequestCountLabel(requests.length), toTicketCountLabel(countTickets(requests))].join(
+export const toRequestsTally = (requests: readonly TicketRequest[]): string => {
+  const totals = toRequestsTotals(requests);
+
+  return [toRequestCountLabel(totals.requestCount), toTicketCountLabel(totals.ticketCount)].join(
     SEPARATOR,
   );
+};
 
 export const toRequestedAtLabel = (request: TicketRequest): string =>
   `Eingegangen ${toDayNumberLabel(request.requestedAt)}, ${toTimeLabel(request.requestedAt)}${CLOCK_SUFFIX}`;

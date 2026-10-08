@@ -4,9 +4,7 @@ import { EventSchema, toParagraphs } from './schemas';
 describe('toParagraphs', () => {
   it.each([
     [null, null],
-    ['', null],
     ['  \n\n ', null],
-    ['Ein Absatz.', ['Ein Absatz.']],
     ['Erster.\n\nZweiter.', ['Erster.', 'Zweiter.']],
     ['Erster.\n  \n\nZweiter.\nNoch zweiter.', ['Erster.', 'Zweiter.\nNoch zweiter.']],
   ])('splits %j into its paragraphs', (text, paragraphs) => {

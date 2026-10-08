@@ -1,5 +1,4 @@
 import type { KkChipTone } from '@furria/ui';
-import type { Theme } from '@mui/material/styles';
 import type { PublicGroup } from '@/lib/public-groups/schemas';
 
 export const groupsChapter = {
@@ -87,12 +86,6 @@ export const buildGroupsIntro = (total: number, recruiting: number): string => {
 };
 
 export const buildGroupOpenLabel = (groupName: string): string => `${groupName} — mehr erfahren`;
-
-export const resolveGroupTint = (theme: Theme, index: number): string => {
-  const palette = (theme.vars ?? theme).palette;
-  const tints = [palette.primary.main, palette.warning.main, palette.text.primary];
-  return tints[index % tints.length] ?? palette.primary.main;
-};
 
 export const buildGroupBadge = (index: number): string => String(index + 1).padStart(2, '0');
 

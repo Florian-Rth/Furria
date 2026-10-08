@@ -1,5 +1,5 @@
-import type { GroupTone } from '@/features/groups';
-import { toGroupTone } from '@/features/groups';
+import type { GroupTone } from '@/features/groups/group-identity';
+import { toGroupTone } from '@/features/groups/group-identity';
 import { CALENDAR_KIND_LABELS } from '@/lib/calendar-copy';
 import { toTimeSpanLabel } from '@/lib/calendar-days';
 import { toIsoDay } from '@/lib/day';

@@ -4,7 +4,7 @@ import Stack from '@mui/material/Stack';
 import { useTheme } from '@mui/material/styles';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import type { FC } from 'react';
-import { resolveGroupTint } from '@/features/club/groups-content';
+import { resolveCycleTint } from '@/features/club/tint-cycle';
 import type { ActiveGroup } from '../logic/use-group-modal';
 import { resolveModalTransition } from '../logic/use-group-modal';
 import { useModalPresence } from '../logic/use-modal-presence';
@@ -23,7 +23,7 @@ export const GroupModal: FC<GroupModalProps> = ({ active, onClose }) => {
   const { shown, isOpen, clear } = useModalPresence(active);
 
   const transition = resolveModalTransition(reducedMotion);
-  const tint = shown === null ? undefined : resolveGroupTint(theme, shown.index);
+  const tint = shown === null ? undefined : resolveCycleTint(theme, shown.index);
 
   return (
     <Modal

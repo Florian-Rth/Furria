@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import type { GreetingAct } from './greeting-act';
-import { HEADLINE_DECKS } from './greeting-decks';
 import { greetingTickDelayOf, toGreetingStage } from './greeting-stage';
 
 const STAGING = { festive: false, key: 'k', sessionYear: 2026, ordinal: 12 };
@@ -37,16 +36,6 @@ describe('toGreetingStage', () => {
 
     expect(stage.tempo).toBe(tempo);
     expect(stage.countFrom).toBe(countFrom);
-  });
-
-  it('deals the decks of the copy', () => {
-    const stage = toGreetingStage(
-      { ...STAGING, moment: 'birthday', clause: CLAUSE },
-      { deck: 'cheer' },
-    );
-
-    expect(stage.deck).toBe(HEADLINE_DECKS.cheer.deck);
-    expect(stage.nameDeck).toBe(HEADLINE_DECKS.cheer.nameDeck);
   });
 });
 

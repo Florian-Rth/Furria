@@ -22,16 +22,27 @@ export const MOTTO_PENDING_LABEL = 'Das Motto steht noch aus';
 
 export const CLUB_LOADING_LABEL = 'Der Verein wird geladen';
 
-export const toCountdownLabel = (days: number): string => {
+export type CountdownKind = 'today' | 'oneDay' | 'days';
+
+export const countdownKindOf = (days: number): CountdownKind => {
   if (days <= 0) {
-    return OPENING_TODAY_LABEL;
+    return 'today';
   }
   if (days === ONE_DAY) {
-    return ONE_DAY_LEFT_LABEL;
+    return 'oneDay';
   }
 
-  return `noch ${days} Tage`;
+  return 'days';
 };
+
+const COUNTDOWN_LABELS: Record<CountdownKind, (days: number) => string> = {
+  today: () => OPENING_TODAY_LABEL,
+  oneDay: () => ONE_DAY_LEFT_LABEL,
+  days: (days) => `noch ${days} Tage`,
+};
+
+export const toCountdownLabel = (days: number): string =>
+  COUNTDOWN_LABELS[countdownKindOf(days)](days);
 
 export const toNumberLabel = (sessionNumber: number | null): string | null =>
   sessionNumber === null ? null : formatSessionNumber(sessionNumber);

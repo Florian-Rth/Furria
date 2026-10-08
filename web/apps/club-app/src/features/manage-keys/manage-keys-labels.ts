@@ -18,14 +18,6 @@ export const toKeyEditorOrigin = (venueName: string): KkScreenOrigin => ({
   to: KEYS_PATH,
 });
 
-const KEY_ID_PATTERN = /^[1-9]\d*$/;
-
-export const toVenueIdParam = (raw: string): number | null =>
-  KEY_ID_PATTERN.test(raw) ? Number(raw) : null;
-
-export const toKeyHoldingIdParam = (raw: string): number | null =>
-  KEY_ID_PATTERN.test(raw) ? Number(raw) : null;
-
 export const KEY_SECTION_TITLES = {
   ended: 'Zurückgenommen',
   archived: 'Archivierte Orte',

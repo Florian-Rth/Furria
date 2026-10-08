@@ -1,12 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   findSessionRecord,
-  isRelevantSession,
   partitionSessionRecords,
-  toSessionRecordId,
-  toSessionRowChip,
-  toSessionRowLabel,
-  toSessionRowMotto,
+  sessionMottoStateOf,
 } from './manage-sessions-labels';
 import type { SessionRecordSummary } from './schemas';
 
@@ -22,112 +18,57 @@ const record = (overrides: Partial<SessionRecordSummary>): SessionRecordSummary 
 const INSIDE_THE_SESSION = new Date(2026, 0, 15);
 const BETWEEN_SESSIONS = new Date(2026, 6, 1);
 
-describe('toSessionRecordId', () => {
-  it.each([
-    { case: 'a positive id', raw: '3', expected: 3 },
-    { case: 'a long id', raw: '1204', expected: 1204 },
-    { case: 'zero', raw: '0', expected: null },
-    { case: 'a negative id', raw: '-3', expected: null },
-    { case: 'a word', raw: 'session', expected: null },
-    { case: 'a decimal', raw: '3.5', expected: null },
-    { case: 'nothing', raw: '', expected: null },
-  ])('reads $case', ({ raw, expected }) => {
-    expect(toSessionRecordId(raw)).toBe(expected);
-  });
-});
-
 describe('findSessionRecord', () => {
-  it('finds nothing when no session record is targeted', () => {
-    expect(findSessionRecord([record({})], null)).toBeNull();
-  });
-
-  it('finds nothing for an unknown id', () => {
-    expect(findSessionRecord([record({ sessionId: 7 })], 999)).toBeNull();
-  });
-
-  it('finds the targeted session record', () => {
-    expect(findSessionRecord([record({ sessionId: 7 })], 7)?.sessionId).toBe(7);
-  });
-});
-
-describe('toSessionRowLabel', () => {
-  it('names the season, the session number and the motto', () => {
-    expect(toSessionRowLabel(record({}))).toBe(
-      '2025/26 · 53. Session · „Wir sind die Narren vom Rhein“',
-    );
-  });
-
-  it('leaves out the session number the club never wrote down', () => {
-    expect(toSessionRowLabel(record({ number: null }))).toBe(
-      '2025/26 · „Wir sind die Narren vom Rhein“',
-    );
-  });
-
-  it('leaves out the motto the club never wrote down', () => {
-    expect(toSessionRowLabel(record({ motto: null }))).toBe('2025/26 · 53. Session');
-  });
-
-  it('names a season known by its year alone', () => {
-    expect(toSessionRowLabel(record({ number: null, motto: null }))).toBe('2025/26');
-  });
-
-  it.each(['', '   '])('treats the blank motto %j as never written down', (motto) => {
-    expect(toSessionRowLabel(record({ number: null, motto }))).toBe('2025/26');
-  });
-});
-
-describe('toSessionRowMotto', () => {
-  it('speaks a written motto in quotes', () => {
-    expect(toSessionRowMotto(record({}), INSIDE_THE_SESSION)).toEqual({
-      line: '„Wir sind die Narren vom Rhein“',
-      missing: false,
-    });
-  });
-
   it.each([
-    { case: 'a past season', startYear: 2019, today: INSIDE_THE_SESSION, pending: false },
-    { case: 'the running season', startYear: 2025, today: INSIDE_THE_SESSION, pending: true },
-    { case: 'the coming season', startYear: 2026, today: BETWEEN_SESSIONS, pending: true },
+    { scenario: 'no session record is targeted', sessionId: null, expected: null },
+    { scenario: 'an unknown id', sessionId: 999, expected: null },
+    { scenario: 'the targeted session record', sessionId: 7, expected: 7 },
+  ])('finds $expected for $scenario', ({ sessionId, expected }) => {
+    expect(findSessionRecord([record({ sessionId: 7 })], sessionId)?.sessionId ?? null).toBe(
+      expected,
+    );
+  });
+});
+
+describe('sessionMottoStateOf', () => {
+  it.each([
     {
-      case: 'the season that just ended',
+      scenario: 'a written motto',
+      motto: 'Helau',
+      startYear: 2019,
+      today: INSIDE_THE_SESSION,
+      expected: 'written',
+    },
+    {
+      scenario: 'a blank motto of a past season',
+      motto: '  ',
+      startYear: 2019,
+      today: INSIDE_THE_SESSION,
+      expected: 'unrecorded',
+    },
+    {
+      scenario: 'no motto for the running season',
+      motto: null,
+      startYear: 2025,
+      today: INSIDE_THE_SESSION,
+      expected: 'pending',
+    },
+    {
+      scenario: 'no motto for the coming season',
+      motto: null,
+      startYear: 2026,
+      today: BETWEEN_SESSIONS,
+      expected: 'pending',
+    },
+    {
+      scenario: 'no motto for the season that just ended',
+      motto: null,
       startYear: 2025,
       today: BETWEEN_SESSIONS,
-      pending: false,
+      expected: 'unrecorded',
     },
-  ])('tells a missing motto of $case apart', ({ startYear, today, pending }) => {
-    const pendingLine = toSessionRowMotto(record({ startYear: 2030, motto: null }), today).line;
-    const motto = toSessionRowMotto(record({ startYear, motto: '  ' }), today);
-
-    expect(motto.missing).toBe(true);
-    expect(motto.line === pendingLine).toBe(pending);
-  });
-});
-
-describe('isRelevantSession', () => {
-  it('marks the season the day falls into', () => {
-    expect(isRelevantSession(record({ startYear: 2025 }), INSIDE_THE_SESSION)).toBe(true);
-  });
-
-  it('leaves the season before it unmarked', () => {
-    expect(isRelevantSession(record({ startYear: 2024 }), INSIDE_THE_SESSION)).toBe(false);
-  });
-
-  it('marks the coming season between two of them', () => {
-    expect(isRelevantSession(record({ startYear: 2026 }), BETWEEN_SESSIONS)).toBe(true);
-  });
-
-  it('leaves the season that just ended unmarked', () => {
-    expect(isRelevantSession(record({ startYear: 2025 }), BETWEEN_SESSIONS)).toBe(false);
-  });
-});
-
-describe('toSessionRowChip', () => {
-  it('chips only the season the day falls into', () => {
-    expect(toSessionRowChip(record({ startYear: 2025 }), INSIDE_THE_SESSION)).not.toBeNull();
-  });
-
-  it('leaves every other season without a chip', () => {
-    expect(toSessionRowChip(record({ startYear: 2019 }), INSIDE_THE_SESSION)).toBeNull();
+  ])('reads $scenario as $expected', ({ motto, startYear, today, expected }) => {
+    expect(sessionMottoStateOf(record({ startYear, motto }), today).kind).toBe(expected);
   });
 });
 
@@ -145,13 +86,14 @@ describe('partitionSessionRecords', () => {
       INSIDE_THE_SESSION,
     );
 
-    expect(idsOf(partition.ahead)).toEqual([1, 2]);
-    expect(idsOf(partition.past)).toEqual([3]);
-    expect(partition.vacantYear).toBeNull();
+    expect({
+      ahead: idsOf(partition.ahead),
+      past: idsOf(partition.past),
+      vacantYear: partition.vacantYear,
+    }).toEqual({ ahead: [1, 2], past: [3], vacantYear: null });
   });
 
   it.each([
-    { case: 'no records at all', startYears: [], today: INSIDE_THE_SESSION, vacantYear: 2025 },
     { case: 'only past records', startYears: [2024], today: INSIDE_THE_SESSION, vacantYear: 2025 },
     { case: 'only a later season', startYears: [2027], today: BETWEEN_SESSIONS, vacantYear: 2026 },
     { case: 'the season recorded', startYears: [2026], today: BETWEEN_SESSIONS, vacantYear: null },

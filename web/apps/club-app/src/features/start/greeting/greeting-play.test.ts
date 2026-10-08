@@ -37,28 +37,12 @@ const COUNTDOWN: GreetingAct = {
   sessionYear: 2026,
   ordinal: 12,
 };
-const BIRTHDAY: GreetingAct = {
-  moment: 'birthday',
-  clause: SESSION_DAY,
-  festive: true,
-  key: 'birthday:2027-01-19',
-  sessionYear: 2026,
-  ordinal: 12,
-};
 const ROUND_JOIN: GreetingAct = {
   moment: 'joinAnniversary',
   years: 11,
   clause: SESSION_DAY,
   festive: true,
   key: 'joinAnniversary:2027-01-19',
-  sessionYear: 2026,
-  ordinal: 12,
-};
-const KEHRAUS: GreetingAct = {
-  moment: 'carnivalTuesday',
-  clause: null,
-  festive: true,
-  key: 'carnivalTuesday:2027-02-09',
   sessionYear: 2026,
   ordinal: 12,
 };
@@ -90,12 +74,6 @@ describe('greetingPlayOf', () => {
       expected: { play: 'full', burst: true },
     },
     {
-      label: 'her birthday opens',
-      act: BIRTHDAY,
-      reducedMotion: false,
-      expected: { play: 'full', burst: true },
-    },
-    {
       label: 'a round join anniversary opens',
       act: ROUND_JOIN,
       reducedMotion: false,
@@ -104,12 +82,6 @@ describe('greetingPlayOf', () => {
     {
       label: 'a plain join anniversary opens',
       act: { ...ROUND_JOIN, years: 3, festive: false },
-      reducedMotion: false,
-      expected: { play: 'full', burst: false },
-    },
-    {
-      label: 'Kehraus opens',
-      act: KEHRAUS,
       reducedMotion: false,
       expected: { play: 'full', burst: false },
     },

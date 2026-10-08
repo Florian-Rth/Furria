@@ -47,15 +47,22 @@ const CLUB_OWNER_LABEL = 'Verein';
 const CLUB_REACH_LABEL = 'für alle im Verein';
 const PUBLIC_REACH_LABEL = 'öffentlich';
 
-const toReachLabel = (
+export type EntryReach = 'public' | 'wholeClub';
+
+const ENTRY_REACH_LABELS: Record<EntryReach, string> = {
+  public: PUBLIC_REACH_LABEL,
+  wholeClub: CLUB_REACH_LABEL,
+};
+
+export const entryReachOf = (
   visibility: CalendarEntryVisibility,
   ownerGroupName: string | null,
-): string | null => {
+): EntryReach | null => {
   if (visibility === 'public') {
-    return PUBLIC_REACH_LABEL;
+    return 'public';
   }
   if (visibility === 'club' && ownerGroupName !== null) {
-    return CLUB_REACH_LABEL;
+    return 'wholeClub';
   }
 
   return null;
@@ -78,10 +85,10 @@ export const toEntryMetaLine = (entry: CalendarEntry): string => {
   }
   parts.push(entry.ownerGroupName ?? CLUB_OWNER_LABEL);
 
-  const reachLabel = toReachLabel(entry.visibility, entry.ownerGroupName);
+  const reach = entryReachOf(entry.visibility, entry.ownerGroupName);
 
-  if (reachLabel !== null) {
-    parts.push(reachLabel);
+  if (reach !== null) {
+    parts.push(ENTRY_REACH_LABELS[reach]);
   }
 
   return parts.join(META_SEPARATOR);

@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import type { PublicGroupsSource } from '../logic/use-public-groups-source';
+import type { PublicGroupsSource } from '../logic/public-groups-source';
 import { GroupsEmpty } from './GroupsEmpty';
 import { GroupsError } from './GroupsError';
 import { GroupsGallery } from './GroupsGallery';

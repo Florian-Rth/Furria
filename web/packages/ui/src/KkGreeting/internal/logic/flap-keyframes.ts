@@ -1,5 +1,6 @@
 import type { SplitFlapPose } from '../../../internal/flap/flap-pose';
-import { FLAT_PROGRESS, flapPoseAt, ramp } from '../../../internal/flap/flap-pose';
+import { FLAT_PROGRESS, flapPoseAt } from '../../../internal/flap/flap-pose';
+import { ramp } from '../../../internal/ramp';
 import { kkTokens } from '../../../tokens';
 import type { FlapFlip, FlapRun, FlapSchedule } from './flap-schedule';
 

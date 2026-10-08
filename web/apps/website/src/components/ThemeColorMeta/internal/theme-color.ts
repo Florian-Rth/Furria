@@ -1,4 +1,4 @@
-import { kkTokens } from '@furria/ui';
+import { kkTokens } from '@furria/ui/tokens';
 import type { ResolvedColorMode } from '@/lib/color-mode';
 
 export const themeColorForScheme = (resolved: ResolvedColorMode): string =>

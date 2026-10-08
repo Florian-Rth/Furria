@@ -24,19 +24,14 @@ describe('toSessionRecordPayload', () => {
     expect(toSessionRecordPayload(form({ startYear: null }))).toBeNull();
   });
 
-  it('sends the session number as a number', () => {
-    expect(toSessionRecordPayload(form({ number: '53' }))?.number).toBe(53);
-  });
-
   it.each([
-    ['', null],
     ['   ', null],
     ['53', 53],
   ])('turns the typed session number %j into %j', (typed, expected) => {
     expect(toSessionRecordPayload(form({ number: typed }))?.number).toBe(expected);
   });
 
-  it.each(['', '   '])('reports a blank motto %j as unknown', (typed) => {
+  it.each(['   '])('reports a blank motto %j as unknown', (typed) => {
     expect(toSessionRecordPayload(form({ motto: typed }))?.motto).toBeNull();
   });
 
@@ -46,22 +41,15 @@ describe('toSessionRecordPayload', () => {
     );
   });
 
-  it.each([null, '', '  \n '])('reports a blank session logo %j as unknown', (typed) => {
+  it.each([null, '  \n '])('reports a blank session logo %j as unknown', (typed) => {
     expect(toSessionRecordPayload(form({ logoSvg: typed }))?.logoSvg).toBeNull();
-  });
-
-  it('keeps a future season', () => {
-    expect(toSessionRecordPayload(form({ startYear: 2031 }))?.startYear).toBe(2031);
   });
 });
 
 describe('toSessionRecordForm', () => {
-  it.each([
-    { case: 'without a year', draftYear: null },
-    { case: 'on the year it was asked for', draftYear: 2026 },
-  ])('opens empty without a record, $case', ({ draftYear }) => {
-    expect(toSessionRecordForm(null, draftYear)).toEqual({
-      startYear: draftYear,
+  it('opens empty without a record, on the year it was asked for', () => {
+    expect(toSessionRecordForm(null, 2026)).toEqual({
+      startYear: 2026,
       number: '',
       motto: '',
       logoSvg: null,

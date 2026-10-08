@@ -1,7 +1,7 @@
 import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { parsePositiveId } from '@/lib/positive-id';
 import { usePersonEditorGate } from '../hooks/use-person-editor-gate';
-import { toEntryId, toPersonId } from '../manage-persons-labels';
 import { PersonEditorFallback } from './PersonEditorFallback';
 import { PersonEditorNotFound } from './PersonEditorNotFound';
 import { PersonFeeReductionEditor } from './PersonFeeReductionEditor';
@@ -11,8 +11,8 @@ const TITLE = 'Ermäßigung ändern';
 
 export const PersonFeeReductionScreen: FC = () => {
   const { personId, feeReductionId } = useParams({ from: ROUTE_ID });
-  const entryId = toEntryId(feeReductionId);
-  const { gate, retry } = usePersonEditorGate(toPersonId(personId));
+  const entryId = parsePositiveId(feeReductionId);
+  const { gate, retry } = usePersonEditorGate(parsePositiveId(personId));
 
   if (gate.kind !== 'ready') {
     return <PersonEditorFallback hold={gate} title={TITLE} onRetry={retry} />;

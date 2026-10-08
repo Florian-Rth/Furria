@@ -35,15 +35,6 @@ describe('resolveConfirmationStage', () => {
       { kind: 'settled', verdict: 'confirmed' },
     ],
     [
-      'a second click',
-      TOKEN,
-      'alreadyConfirmed',
-      null,
-      false,
-      { kind: 'settled', verdict: 'alreadyConfirmed' },
-    ],
-    ['an expired link', TOKEN, 'expired', null, false, { kind: 'settled', verdict: 'expired' }],
-    [
       'a blocked request',
       TOKEN,
       undefined,

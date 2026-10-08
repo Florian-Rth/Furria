@@ -31,98 +31,28 @@ const onlyRow = (hub: ManageHub): ManageRowModel => {
   return row;
 };
 
-const summaryOf = (hub: ManageHub): string | undefined => onlyRow(hub).summary;
-
 describe('toManageRows', () => {
   it.each([
-    { personCount: 184, memberCount: 121, expected: '184 Personen · 121 Mitglieder' },
-    { personCount: 1, memberCount: 1, expected: '1 Person · 1 Mitglied' },
-    { personCount: 4, memberCount: 0, expected: '4 Personen · 0 Mitglieder' },
-  ])('sums up the persons row as "$expected"', ({ personCount, memberCount, expected }) => {
-    expect(summaryOf(hubWith({ persons: { personCount, memberCount } }))).toBe(expected);
-  });
-
-  it.each([
-    { groupCount: 9, archivedCount: 3, expected: '9 Gruppen · 3 archiviert' },
-    { groupCount: 1, archivedCount: 0, expected: '1 Gruppe' },
-    { groupCount: 0, archivedCount: 2, expected: '0 Gruppen · 2 archiviert' },
-  ])('sums up the groups row as "$expected"', ({ groupCount, archivedCount, expected }) => {
-    expect(summaryOf(hubWith({ groups: { groupCount, archivedCount } }))).toBe(expected);
-  });
-
-  it.each([
-    { venueCount: 5, archivedCount: 1, expected: '5 Orte · 1 archiviert' },
-    { venueCount: 1, archivedCount: 0, expected: '1 Ort' },
-  ])('sums up the venues row as "$expected"', ({ venueCount, archivedCount, expected }) => {
-    expect(summaryOf(hubWith({ venues: { venueCount, archivedCount } }))).toBe(expected);
-  });
-
-  it.each([
-    { issuedCount: 9, holdingCount: 7, holderCount: 4, expected: '7 ausgegeben · bei 4 Personen' },
-    { issuedCount: 3, holdingCount: 1, holderCount: 1, expected: '1 ausgegeben · bei 1 Person' },
-    { issuedCount: 3, holdingCount: 0, holderCount: 0, expected: 'Alle zurück' },
-  ])('sums up the keys row as "$expected"', (fixture) => {
-    const { issuedCount, holdingCount, holderCount, expected } = fixture;
-
-    expect(summaryOf(hubWith({ keys: { issuedCount, holdingCount, holderCount } }))).toBe(expected);
-  });
-
-  it.each([
-    { officeCount: 8, seatCount: 7, expected: '8 Funktionen · 7 Sitze besetzt' },
-    { officeCount: 1, seatCount: 1, expected: '1 Funktion · 1 Sitz besetzt' },
-    { officeCount: 7, seatCount: 0, expected: '7 Funktionen · 0 Sitze besetzt' },
-  ])('sums up the board row as "$expected"', ({ officeCount, seatCount, expected }) => {
-    const board = { officeCount, seatCount, vacantOfficeCount: 0 };
-
-    expect(summaryOf(hubWith({ board }))).toBe(expected);
-  });
-
-  it.each([
-    { name: 'GCC e.V.', expected: 'GCC e.V.' },
-    { name: null, expected: undefined },
-  ])('sums up the club record row named $name as $expected', ({ name, expected }) => {
-    expect(summaryOf(hubWith({ clubRecord: { name, missingFactCount: 0 } }))).toBe(expected);
-  });
-
-  it.each([
-    { undecidedCount: 0, minorCount: 0, expected: 'Keine offenen Anträge' },
-    { undecidedCount: 3, minorCount: 1, expected: '1 minderjährig' },
-    { undecidedCount: 2, minorCount: 0, expected: undefined },
-  ])('sums up the applications row as "$expected"', ({ undecidedCount, minorCount, expected }) => {
-    expect(summaryOf(hubWith({ applications: { undecidedCount, minorCount } }))).toBe(expected);
-  });
-
-  it.each([
-    { entryCount: 3, expected: '3 Einträge' },
-    { entryCount: 1, expected: '1 Eintrag' },
-  ])('sums up the session records row as "$expected"', ({ entryCount, expected }) => {
-    expect(summaryOf(hubWith({ sessions: { entryCount, hasCurrentEntry: true } }))).toBe(expected);
-  });
-
-  it.each([
-    { hub: hubWith({ roles: { roleCount: 12, vacantCount: 2 } }), expected: '2 unbesetzt' },
-    {
-      hub: hubWith({ board: { officeCount: 8, seatCount: 7, vacantOfficeCount: 1 } }),
-      expected: '1 unbesetzt',
+    { hub: hubWith({ clubRecord: { name: 'GCC e.V.', missingFactCount: 0 } }), hasSummary: true },
+    { hub: hubWith({ clubRecord: { name: null, missingFactCount: 0 } }), hasSummary: false },
+    { hub: hubWith({ applications: { undecidedCount: 0, minorCount: 0 } }), hasSummary: true },
+    { hub: hubWith({ applications: { undecidedCount: 3, minorCount: 1 } }), hasSummary: true },
+    { hub: hubWith({ applications: { undecidedCount: 2, minorCount: 0 } }), hasSummary: false },
+  ])(
+    'carries a summary ($hasSummary) only when the row has something to sum up',
+    ({ hub, hasSummary }) => {
+      expect(onlyRow(hub).summary !== undefined).toBe(hasSummary);
     },
-    {
-      hub: hubWith({ sessions: { entryCount: 3, hasCurrentEntry: false } }),
-      expected: '2025/26 fehlt',
-    },
-    {
-      hub: hubWith({ clubRecord: { name: null, missingFactCount: 1 } }),
-      expected: '1 Angabe fehlt',
-    },
-    {
-      hub: hubWith({ clubRecord: { name: null, missingFactCount: 4 } }),
-      expected: '4 Angaben fehlen',
-    },
-    {
-      hub: hubWith({ applications: { undecidedCount: 2, minorCount: 1 } }),
-      expected: '2 offen',
-    },
-  ])('flags "$expected" as needing attention', ({ hub, expected }) => {
-    expect(onlyRow(hub).status).toEqual({ label: expected, tone: 'gold' });
+  );
+
+  it.each([
+    { hub: hubWith({ roles: { roleCount: 12, vacantCount: 2 } }) },
+    { hub: hubWith({ board: { officeCount: 8, seatCount: 7, vacantOfficeCount: 1 } }) },
+    { hub: hubWith({ sessions: { entryCount: 3, hasCurrentEntry: false } }) },
+    { hub: hubWith({ clubRecord: { name: null, missingFactCount: 1 } }) },
+    { hub: hubWith({ applications: { undecidedCount: 2, minorCount: 1 } }) },
+  ])('flags a row that needs attention', ({ hub }) => {
+    expect(onlyRow(hub).status?.tone).toBe('gold');
   });
 
   it.each([

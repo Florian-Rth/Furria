@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { PersonRef } from '@/lib/api/schemas';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
-import { UNARCHIVED_LABEL } from '@/lib/state-chips';
 import type { SelfLockoutInput } from './manage-roles-labels';
 import {
   ACTIVE_ROLES_FILTER_ID,
@@ -9,22 +8,12 @@ import {
   ARCHIVED_ROLES_FILTER_ID,
   isPermissionHandover,
   isSelfLockout,
-  toArchivedMeta,
-  toEndHoldingConsequence,
+  noRoleMatchCaseOf,
   toEndQuickChoices,
-  toHolderAddedMessage,
-  toHolderCountLabel,
-  toHoldersMeta,
-  toHolderUnitLabel,
-  toHoldingEndedMessage,
   toMasterEntries,
   toNextPermissionKeys,
-  toNoRoleMatchLine,
   toPermissionEntries,
-  toPersonIdParam,
   toRoleHoldingChainRows,
-  toRoleHoldingId,
-  toRoleId,
   toRoleSearchTerm,
   toRoleSeed,
   toRoleStatusFilterOptions,
@@ -42,40 +31,10 @@ const role = (overrides: Partial<RoleSummary> & { roleId: number; name: string }
 
 describe('toRoleSearchTerm', () => {
   it.each([
-    ['', null],
     ['   ', null],
     ['  Kasse ', 'Kasse'],
   ])('maps %j to %j', (raw, expected) => {
     expect(toRoleSearchTerm(raw)).toBe(expected);
-  });
-});
-
-describe('toHoldersMeta', () => {
-  it('says nothing about an unheld role — the chip carries that', () => {
-    expect(toHoldersMeta([])).toBeNull();
-  });
-
-  it('names the single holder', () => {
-    expect(toHoldersMeta([{ firstName: 'Heike', lastName: 'Krämer' }])).toBe('Heike Krämer');
-  });
-
-  it('counts a single further holder with the same numeral as several', () => {
-    expect(
-      toHoldersMeta([
-        { firstName: 'Jörg', lastName: 'Krüger' },
-        { firstName: 'Heike', lastName: 'Krämer' },
-      ]),
-    ).toBe('Jörg Krüger und 1 weitere Person');
-  });
-
-  it('reads the plural noun for several further holders', () => {
-    expect(
-      toHoldersMeta([
-        { firstName: 'Heike', lastName: 'Krämer' },
-        { firstName: 'Jörg', lastName: 'Krüger' },
-        { firstName: 'Lukas', lastName: 'Schmitt' },
-      ]),
-    ).toBe('Heike Krämer und 2 weitere Personen');
   });
 });
 
@@ -96,30 +55,6 @@ describe('toMasterEntries', () => {
 
   it('keeps the server order but moves archived roles last', () => {
     expect(ids('', ALL_ROLES_FILTER_ID)).toEqual([1, 3, 9]);
-  });
-
-  it('marks the archived row', () => {
-    const archived = toMasterEntries(roles, '', ALL_ROLES_FILTER_ID).find(
-      (entry) => entry.roleId === 9,
-    );
-
-    expect(archived?.isArchived).toBe(true);
-  });
-
-  it('marks a row nobody holds', () => {
-    const unheld = toMasterEntries(roles, '', ALL_ROLES_FILTER_ID).find(
-      (entry) => entry.roleId === 1,
-    );
-
-    expect(unheld?.isUnheld).toBe(true);
-  });
-
-  it('carries the holder count the card paints as its numeral', () => {
-    const held = toMasterEntries(roles, '', ALL_ROLES_FILTER_ID).find(
-      (entry) => entry.roleId === 3,
-    );
-
-    expect(held?.holderCount).toBe(1);
   });
 
   it('folds umlauts when matching the name', () => {
@@ -162,47 +97,38 @@ describe('toRoleStatusFilterOptions', () => {
       [ARCHIVED_ROLES_FILTER_ID, 1],
     ]);
   });
-
-  it('offers the axis even when nothing is archived', () => {
-    expect(toRoleStatusFilterOptions([role({ roleId: 1, name: 'Admin' })])).toHaveLength(3);
-  });
-
-  it('counts a vacant role on the non-archived side, so its word may not claim service', () => {
-    const unheld = [role({ roleId: 4, name: 'Chronistin' })];
-    const [, nonArchived] = toRoleStatusFilterOptions(unheld);
-
-    expect(nonArchived?.count).toBe(1);
-    expect(nonArchived?.label).toBe(UNARCHIVED_LABEL);
-  });
 });
 
-describe('toNoRoleMatchLine', () => {
-  it('names the query when there is one', () => {
-    expect(toNoRoleMatchLine('  Kasse ', ALL_ROLES_FILTER_ID)).toContain('Kasse');
-  });
-
-  it('explains the status when only a chip narrows the list', () => {
-    expect(toNoRoleMatchLine('', ARCHIVED_ROLES_FILTER_ID)).toBe(
-      'Gerade ist keine Rolle archiviert. Wähle „Alle“, um alle anzuzeigen.',
-    );
-  });
-
-  it('explains the non-archived chip with the same axis word the chip carries', () => {
-    expect(toNoRoleMatchLine('', ACTIVE_ROLES_FILTER_ID)).toContain(UNARCHIVED_LABEL);
-  });
-
-  it('falls back to the cold case under Alle', () => {
-    expect(toNoRoleMatchLine('', ALL_ROLES_FILTER_ID)).toBe('Es gibt noch keine Rolle.');
-  });
-});
-
-describe('toHolderUnitLabel', () => {
+describe('noRoleMatchCaseOf', () => {
   it.each([
-    { count: 0, expected: 'Inhaberschaften' },
-    { count: 1, expected: 'Inhaberschaft' },
-    { count: 4, expected: 'Inhaberschaften' },
-  ])('names the unit for $count', ({ count, expected }) => {
-    expect(toHolderUnitLabel(count)).toBe(expected);
+    {
+      scenario: 'a query under a status',
+      query: '  Kasse ',
+      status: ARCHIVED_ROLES_FILTER_ID,
+      expected: 'query',
+    },
+    {
+      scenario: 'the archived chip alone',
+      query: '',
+      status: ARCHIVED_ROLES_FILTER_ID,
+      expected: 'status',
+    },
+    {
+      scenario: 'the non-archived chip alone',
+      query: '',
+      status: ACTIVE_ROLES_FILTER_ID,
+      expected: 'status',
+    },
+    { scenario: 'Alle', query: ' ', status: ALL_ROLES_FILTER_ID, expected: 'cold' },
+  ])('reads $scenario as $expected', ({ query, status, expected }) => {
+    expect(noRoleMatchCaseOf(query, status).kind).toBe(expected);
+  });
+
+  it('carries the trimmed query', () => {
+    expect(noRoleMatchCaseOf('  Kasse ', ALL_ROLES_FILTER_ID)).toEqual({
+      kind: 'query',
+      term: 'Kasse',
+    });
   });
 });
 
@@ -247,16 +173,6 @@ describe('toNextPermissionKeys', () => {
       ),
     ).toEqual([PERMISSION_KEYS.rolesManage]);
   });
-
-  it('de-duplicates the keys it keeps', () => {
-    expect(
-      toNextPermissionKeys(
-        [PERMISSION_KEYS.groupsManage, PERMISSION_KEYS.groupsManage],
-        PERMISSION_KEYS.rolesManage,
-        false,
-      ),
-    ).toEqual([PERMISSION_KEYS.groupsManage]);
-  });
 });
 
 describe('toRoleSeed', () => {
@@ -286,16 +202,6 @@ describe('toRoleSeed', () => {
 
   it('yields nothing before the list has loaded', () => {
     expect(toRoleSeed(undefined, 2)).toBeUndefined();
-  });
-});
-
-describe('count labels', () => {
-  it.each([
-    [0, 'unbesetzt'],
-    [1, '1 Inhaberschaft'],
-    [4, '4 Inhaberschaften'],
-  ])('renders %i holdings', (count, expected) => {
-    expect(toHolderCountLabel(count)).toBe(expected);
   });
 });
 
@@ -426,89 +332,6 @@ describe('isPermissionHandover', () => {
   });
 });
 
-describe('toArchivedMeta', () => {
-  it('renders the archive date as a day', () => {
-    expect(toArchivedMeta('2026-09-12')).toBe('Archiviert am 12.09.2026');
-  });
-
-  it('says nothing for a live role', () => {
-    expect(toArchivedMeta(null)).toBeUndefined();
-  });
-});
-
-describe('dated write messages', () => {
-  it('announces a future holding by its first day', () => {
-    expect(toHolderAddedMessage('Heike Krämer', 'Präsidentin', '2026-11-11', '2026-09-12')).toBe(
-      'Heike Krämer hat Präsidentin ab dem 11.11.2026 inne.',
-    );
-  });
-
-  it('announces a holding that already runs without a date', () => {
-    expect(toHolderAddedMessage('Heike Krämer', 'Präsidentin', '2026-09-12', '2026-09-12')).toBe(
-      'Heike Krämer hat Präsidentin inne.',
-    );
-  });
-
-  it('announces a future end in the future tense', () => {
-    expect(toHoldingEndedMessage('Heike Krämer', '2026-11-10', '2026-09-12')).toBe(
-      'Die Inhaberschaft von Heike Krämer endet am 10.11.2026.',
-    );
-  });
-
-  it('announces an end that has arrived in the past tense', () => {
-    expect(toHoldingEndedMessage('Heike Krämer', '2026-09-12', '2026-09-12')).toBe(
-      'Die Inhaberschaft von Heike Krämer ist beendet.',
-    );
-  });
-
-  it('keeps the role until a scheduled last day', () => {
-    expect(toEndHoldingConsequence('Heike', 'Präsidentin', '2026-11-10', '2026-09-12')).toContain(
-      'bis einschließlich 10.11.2026',
-    );
-  });
-
-  it('reports the role holding as ended when the last day is today', () => {
-    expect(toEndHoldingConsequence('Heike', 'Präsidentin', '2026-09-12', '2026-09-12')).toContain(
-      'ist zum 12.09.2026 beendet',
-    );
-  });
-});
-
-describe('toRoleId', () => {
-  it.each([
-    { case: 'a positive id', raw: '3', expected: 3 },
-    { case: 'a long id', raw: '1204', expected: 1204 },
-    { case: 'zero', raw: '0', expected: null },
-    { case: 'a negative id', raw: '-3', expected: null },
-    { case: 'a word', raw: 'praesident', expected: null },
-    { case: 'a decimal', raw: '3.5', expected: null },
-    { case: 'nothing', raw: '', expected: null },
-  ])('reads $case', ({ raw, expected }) => {
-    expect(toRoleId(raw)).toBe(expected);
-  });
-});
-
-describe('toRoleHoldingId', () => {
-  it.each([
-    { case: 'a positive id', raw: '12', expected: 12 },
-    { case: 'zero', raw: '0', expected: null },
-    { case: 'a word', raw: 'neu', expected: null },
-  ])('reads $case', ({ raw, expected }) => {
-    expect(toRoleHoldingId(raw)).toBe(expected);
-  });
-});
-
-describe('toPersonIdParam', () => {
-  it.each([
-    { case: 'undefined', raw: undefined, expected: null },
-    { case: 'a positive id', raw: '9', expected: 9 },
-    { case: 'zero', raw: '0', expected: null },
-    { case: 'a word', raw: 'anna', expected: null },
-  ])('reads $case', ({ raw, expected }) => {
-    expect(toPersonIdParam(raw)).toBe(expected);
-  });
-});
-
 describe('toRoleHoldingChainRows', () => {
   const holder = (overrides: Partial<RoleHolder> & { roleHoldingId: number }): RoleHolder => ({
     personId: 4,
@@ -543,40 +366,39 @@ describe('toRoleHoldingChainRows', () => {
 
     expect(toRoleHoldingChainRows(role, 4, null).map((row) => row.key)).toEqual(['1', '3']);
   });
-
-  it('marks the row being edited', () => {
-    const role = details({ holders: [holder({ roleHoldingId: 1, personId: 4 })] });
-
-    expect(toRoleHoldingChainRows(role, 4, 1)).toEqual([
-      { key: '1', span: '01.01.2020 – offen', isEdited: true },
-    ]);
-  });
 });
 
 describe('quick choices', () => {
-  it('offers today and the opening of the running session', () => {
-    expect(toStartQuickChoices(new Date(2026, 8, 12))).toEqual([
-      { label: 'Heute', value: '2026-09-12' },
-      { label: 'Sessionbeginn', value: '2025-11-11' },
-    ]);
+  const valuesOf = (choices: readonly { value: string | null }[]): (string | null)[] =>
+    choices.map((choice) => choice.value);
+
+  it.each([
+    {
+      scenario: 'the opening of the running session',
+      today: new Date(2026, 8, 12),
+      expected: ['2026-09-12', '2025-11-11'],
+    },
+    {
+      scenario: 'today only on the opening day',
+      today: new Date(2026, 10, 11),
+      expected: ['2026-11-11'],
+    },
+  ])('starts with today and $scenario', ({ today, expected }) => {
+    expect(valuesOf(toStartQuickChoices(today))).toEqual(expected);
   });
 
-  it('offers today only when today is the opening day', () => {
-    expect(toStartQuickChoices(new Date(2026, 10, 11))).toEqual([
-      { label: 'Heute', value: '2026-11-11' },
-    ]);
-  });
-
-  it('offers today and the last day of the running session', () => {
-    expect(toEndQuickChoices(new Date(2026, 8, 12))).toEqual([
-      { label: 'Heute', value: '2026-09-12' },
-      { label: 'Sessionende', value: '2026-11-10' },
-    ]);
-  });
-
-  it('offers today only when today is the closing day', () => {
-    expect(toEndQuickChoices(new Date(2026, 10, 10))).toEqual([
-      { label: 'Heute', value: '2026-11-10' },
-    ]);
+  it.each([
+    {
+      scenario: 'the last day of the running session',
+      today: new Date(2026, 8, 12),
+      expected: ['2026-09-12', '2026-11-10'],
+    },
+    {
+      scenario: 'today only on the closing day',
+      today: new Date(2026, 10, 10),
+      expected: ['2026-11-10'],
+    },
+  ])('ends with today and $scenario', ({ today, expected }) => {
+    expect(valuesOf(toEndQuickChoices(today))).toEqual(expected);
   });
 });

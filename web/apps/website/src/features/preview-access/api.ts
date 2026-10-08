@@ -4,13 +4,7 @@ import { apiFetch } from '@/lib/api/api-fetch';
 import { ApiError } from '@/lib/api/errors';
 import type { UnlockPreviewResponse } from './schemas';
 import { UnlockPreviewResponseSchema } from './schemas';
-
-export class WrongPasswordError extends Error {
-  constructor() {
-    super('The preview password was rejected by the API.');
-    this.name = 'WrongPasswordError';
-  }
-}
+import { WrongPasswordError } from './unlock-failure';
 
 const unlockPreview = async (password: string): Promise<UnlockPreviewResponse> => {
   try {

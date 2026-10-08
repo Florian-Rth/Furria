@@ -7,14 +7,6 @@ export const BOARD_TITLE = 'Vorstand';
 
 export const BOARD_ORIGIN: KkScreenOrigin = { label: BOARD_TITLE, to: '/manage/board' };
 
-const ID_PATTERN = /^[1-9]\d*$/;
-
-export const toBoardOfficeId = (raw: string): number | null =>
-  ID_PATTERN.test(raw) ? Number(raw) : null;
-
-export const toBoardSeatId = (raw: string): number | null =>
-  ID_PATTERN.test(raw) ? Number(raw) : null;
-
 export const OFFICE_EYEBROW = 'Vorstandsfunktion';
 
 export const PAST_SEATS_LABEL = 'Frühere Sitze';
@@ -106,15 +98,30 @@ export const toSeatChainRows = (
   return [...entry.seats.map(toRow), ...entry.pastSeats.map(toRow)];
 };
 
-export const toSeatPeriodLabel = (seat: BoardSeat, todayIsoDay: string): string => {
+export type SeatPeriodKind = 'span' | 'upcoming' | 'running';
+
+export const seatPeriodKindOf = (seat: BoardSeat, todayIsoDay: string): SeatPeriodKind => {
   if (seat.untilOn !== null) {
-    return formatPeriod(seat.sinceOn, seat.untilOn);
+    return 'span';
   }
   if (isFutureDay(seat.sinceOn, todayIsoDay)) {
-    return `ab ${formatIsoDay(seat.sinceOn)}`;
+    return 'upcoming';
   }
 
-  return `seit ${formatIsoDay(seat.sinceOn)}`;
+  return 'running';
+};
+
+const SEAT_PERIOD_PREFIXES: Record<Exclude<SeatPeriodKind, 'span'>, string> = {
+  upcoming: 'ab',
+  running: 'seit',
+};
+
+export const toSeatPeriodLabel = (seat: BoardSeat, todayIsoDay: string): string => {
+  const kind = seatPeriodKindOf(seat, todayIsoDay);
+
+  return kind === 'span'
+    ? formatPeriod(seat.sinceOn, seat.untilOn)
+    : `${SEAT_PERIOD_PREFIXES[kind]} ${formatIsoDay(seat.sinceOn)}`;
 };
 
 export const BOARD_LEAD = 'Vorstandsfunktionen und ihre Besetzung.';

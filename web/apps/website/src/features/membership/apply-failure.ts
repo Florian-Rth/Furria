@@ -16,9 +16,11 @@ export interface ApplyFieldFailure {
   message: string;
 }
 
+export type ApplyNoticeKind = 'unavailable' | 'blocked' | 'rateLimited' | 'proofRefused';
+
 export interface ApplyFailure {
   fields: ApplyFieldFailure[];
-  notice: string | null;
+  noticeKind: ApplyNoticeKind | null;
   offersMail: boolean;
 }
 
@@ -38,21 +40,20 @@ const FORM_FIELD_OF_API_FIELD = new Map<string, ApplyFieldName>([
   ['consentAccepted', 'consent'],
 ]);
 
-const UNAVAILABLE: ApplyFailure = { fields: [], notice: applyUnavailableMessage, offersMail: true };
-
-const BLOCKED: ApplyFailure = { fields: [], notice: applyBlockedMessage, offersMail: true };
-
-const RATE_LIMITED: ApplyFailure = {
-  fields: [],
-  notice: applyRateLimitedMessage,
-  offersMail: false,
+const APPLY_NOTICES: Record<ApplyNoticeKind, string> = {
+  unavailable: applyUnavailableMessage,
+  blocked: applyBlockedMessage,
+  rateLimited: applyRateLimitedMessage,
+  proofRefused: applyProofRefusedMessage,
 };
 
-const PROOF_REFUSED: ApplyFailure = {
-  fields: [],
-  notice: applyProofRefusedMessage,
-  offersMail: true,
-};
+const UNAVAILABLE: ApplyFailure = { fields: [], noticeKind: 'unavailable', offersMail: true };
+
+const BLOCKED: ApplyFailure = { fields: [], noticeKind: 'blocked', offersMail: true };
+
+const RATE_LIMITED: ApplyFailure = { fields: [], noticeKind: 'rateLimited', offersMail: false };
+
+const PROOF_REFUSED: ApplyFailure = { fields: [], noticeKind: 'proofRefused', offersMail: true };
 
 const toFormField = (failure: ApiFieldFailure): ApplyFieldFailure[] => {
   const name = FORM_FIELD_OF_API_FIELD.get(failure.field);
@@ -67,7 +68,7 @@ const toBirthDateRefusal = (failures: readonly ApiFieldFailure[]): ApplyFailure 
     ? UNAVAILABLE
     : {
         fields: [{ name: 'birthDate', message: refusal.message }],
-        notice: null,
+        noticeKind: null,
         offersMail: false,
       };
 };
@@ -79,7 +80,7 @@ const toFieldRefusal = (failures: readonly ApiFieldFailure[]): ApplyFailure => {
 
   const fields = failures.flatMap(toFormField);
 
-  return fields.length === 0 ? UNAVAILABLE : { fields, notice: null, offersMail: false };
+  return fields.length === 0 ? UNAVAILABLE : { fields, noticeKind: null, offersMail: false };
 };
 
 const toApiFailure = (error: ApiError): ApplyFailure => {
@@ -105,3 +106,6 @@ export const toApplyFailure = (error: Error | null): ApplyFailure | null => {
 
   return error instanceof ApiError ? toApiFailure(error) : UNAVAILABLE;
 };
+
+export const toApplyNotice = (failure: ApplyFailure | null): string | null =>
+  failure === null || failure.noticeKind === null ? null : APPLY_NOTICES[failure.noticeKind];

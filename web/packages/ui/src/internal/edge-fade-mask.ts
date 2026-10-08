@@ -1,4 +1,4 @@
-import type { OverflowEdges } from './use-overflow-edges';
+import type { OverflowEdges } from './overflow-edges';
 
 export const edgeFadeMaskImage =
   'linear-gradient(to right, transparent 0, black var(--kk-edge-fade-start), black calc(100% - var(--kk-edge-fade-end)), transparent 100%)';

@@ -19,7 +19,6 @@ describe('footClearanceOf', () => {
   it.each<{ label: string; measured: number | null; expected: number }>([
     { label: 'no measurement yet', measured: null, expected: gutter * 2 + actionHeight },
     { label: 'a measurement of zero', measured: 0, expected: gutter * 2 + actionHeight },
-    { label: 'a negative measurement', measured: -4, expected: gutter * 2 + actionHeight },
     { label: 'a real measured height', measured: 96.4, expected: gutter * 2 + 97 },
   ])('with an action bar, is $expected for $label', ({ measured, expected }) => {
     expect(footClearanceOf({ section: undefined, action, measured })).toBe(expected);

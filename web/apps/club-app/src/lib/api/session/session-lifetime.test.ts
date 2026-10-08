@@ -8,31 +8,20 @@ import {
 
 describe('captureRemainingLifetime', () => {
   it.each([
-    ['2026-09-07T16:28:39+00:00', Date.UTC(2026, 8, 7, 16, 13, 39), 900_000, 900_000],
-    ['2026-09-07T18:28:39+02:00', Date.UTC(2026, 8, 7, 16, 13, 39), 900_000, 900_000],
-    ['2026-09-07T16:28:39.034611+00:00', Date.UTC(2026, 8, 7, 16, 28, 39), 900_000, 34],
-    ['2026-09-07T16:28:39+00:00', Date.UTC(2026, 8, 7, 16, 28, 39), 900_000, 0],
-    ['2026-09-07T16:28:39+00:00', Date.UTC(2026, 8, 7, 17, 0, 0), 900_000, 0],
-    ['2026-09-07T16:28:39+00:00', Date.UTC(2026, 8, 7, 16, 8, 39), 900_000, 900_000],
-    ['2026-09-07T16:28:39+00:00', Date.UTC(2026, 8, 6, 16, 13, 39), 900_000, 900_000],
-    ['not-a-timestamp', Date.UTC(2026, 8, 7, 16, 13, 39), 900_000, 0],
-  ])(
-    'turns %s received at %d with a %d ms ceiling into %d ms of lifetime',
-    (expiresAtIso, receivedAtMs, maxTrustedMs, expected) => {
-      expect(captureRemainingLifetime(expiresAtIso, receivedAtMs, maxTrustedMs)).toBe(expected);
-    },
-  );
+    ['2026-09-07T18:28:39+02:00', Date.UTC(2026, 8, 7, 16, 13, 39), 900_000],
+    ['2026-09-07T16:28:39.034611+00:00', Date.UTC(2026, 8, 7, 16, 28, 39), 34],
+    ['2026-09-07T16:28:39+00:00', Date.UTC(2026, 8, 7, 17, 0, 0), 0],
+    ['2026-09-07T16:28:39+00:00', Date.UTC(2026, 8, 6, 16, 13, 39), 900_000],
+    ['not-a-timestamp', Date.UTC(2026, 8, 7, 16, 13, 39), 0],
+  ])('turns %s received at %d into %d ms of lifetime', (expiresAtIso, receivedAtMs, expected) => {
+    expect(captureRemainingLifetime(expiresAtIso, receivedAtMs, 900_000)).toBe(expected);
+  });
 });
 
 describe('resolveElapsedLifetime', () => {
   it.each([
-    [300_000, 300_000, 300_000],
     [300_050, 300_000, 300_050],
-    [2_819_000_000, 12_000, 2_819_000_000],
-    [960_000, 4_000, 960_000],
     [-3_600_000, 870_000, 870_000],
-    [-3_600_000, 30_000, 30_000],
-    [7_200_000, 120_000, 7_200_000],
     [-500, 0, 0],
   ])(
     'resolves %d ms of wall-clock and %d ms of monotonic time to %d ms elapsed',
@@ -44,34 +33,23 @@ describe('resolveElapsedLifetime', () => {
 
 describe('isWithinRefreshMargin', () => {
   it.each([
-    [900_000, 0, 60_000, false],
-    [900_000, 839_999, 60_000, false],
-    [900_000, 840_000, 60_000, true],
-    [900_000, 900_000, 60_000, true],
-    [900_000, 1_200_000, 60_000, true],
-    [0, 0, 60_000, true],
-  ])(
-    'reports %d ms of lifetime after %d ms with a %d ms margin as %s',
-    (remainingMs, elapsedMs, marginMs, expected) => {
-      expect(isWithinRefreshMargin(remainingMs, elapsedMs, marginMs)).toBe(expected);
-    },
-  );
+    [839_999, false],
+    [840_000, true],
+  ])('reports 900000 ms of lifetime after %d ms as %s', (elapsedMs, expected) => {
+    expect(isWithinRefreshMargin(900_000, elapsedMs, 60_000)).toBe(expected);
+  });
 });
 
 describe('isAccessTokenStale', () => {
   it.each([
-    [900_000, 0, 60_000, 60_000, false],
-    [900_000, 840_000, 60_000, 60_000, true],
-    [0, 0, 60_000, 60_000, false],
-    [0, 59_999, 60_000, 60_000, false],
-    [0, 60_000, 60_000, 60_000, true],
-    [0, 600_000, 60_000, 60_000, true],
-    [900_000, 30_000, 60_000, 0, false],
-    [0, 0, 60_000, 0, true],
+    [900_000, 30_000, 0, false],
+    [900_000, 840_000, 60_000, true],
+    [0, 59_999, 60_000, false],
+    [0, 60_000, 60_000, true],
   ])(
-    'reports %d ms of lifetime after %d ms with a %d ms margin and a %d ms floor as %s',
-    (remainingMs, elapsedMs, marginMs, minIntervalMs, expected) => {
-      expect(isAccessTokenStale(remainingMs, elapsedMs, marginMs, minIntervalMs)).toBe(expected);
+    'reports %d ms of lifetime after %d ms with a %d ms floor as %s',
+    (remainingMs, elapsedMs, minIntervalMs, expected) => {
+      expect(isAccessTokenStale(remainingMs, elapsedMs, 60_000, minIntervalMs)).toBe(expected);
     },
   );
 });

@@ -1,53 +1,44 @@
 import { describe, expect, it } from 'vitest';
-import { readStoredToken, writeStoredToken } from './session-storage-port';
+import { normalizeStoredToken, writeStoredToken } from './session-storage-port';
 
-const buildFakeStorage = (initial: Record<string, string>): Storage => {
-  const entries = { ...initial };
+const buildFakeStorage = (keepsWrites: boolean): Storage => {
+  const entries = new Map<string, string>();
 
   return {
     get length(): number {
-      return Object.keys(entries).length;
+      return entries.size;
     },
     clear: (): void => {
-      for (const key of Object.keys(entries)) {
-        delete entries[key];
-      }
+      entries.clear();
     },
-    getItem: (key: string): string | null => entries[key] ?? null,
-    key: (index: number): string | null => Object.keys(entries)[index] ?? null,
+    getItem: (key: string): string | null => entries.get(key) ?? null,
+    key: (index: number): string | null => [...entries.keys()][index] ?? null,
     removeItem: (key: string): void => {
-      delete entries[key];
+      entries.delete(key);
     },
     setItem: (key: string, value: string): void => {
-      entries[key] = value;
+      if (keepsWrites) {
+        entries.set(key, value);
+      }
     },
   };
 };
 
-describe('readStoredToken', () => {
+describe('normalizeStoredToken', () => {
   it.each([
-    ['no entry at all', {}, null],
-    ['an empty string', { 'furria.club-app.refresh-token': '' }, null],
-    ['a real token', { 'furria.club-app.refresh-token': 'refresh-abc' }, 'refresh-abc'],
-  ])('reads %s as %s', (_case, initial, expected) => {
-    expect(readStoredToken(buildFakeStorage(initial))).toBe(expected);
+    ['no entry at all', null, null],
+    ['an empty string', '', null],
+    ['a real token', 'refresh-abc', 'refresh-abc'],
+  ])('reads %s as %s', (_case, stored, expected) => {
+    expect(normalizeStoredToken(stored)).toBe(expected);
   });
 });
 
 describe('writeStoredToken', () => {
-  it('confirms the write when the read-back matches', () => {
-    const storage = buildFakeStorage({});
-
-    expect(writeStoredToken(storage, 'refresh-abc')).toBe(true);
-  });
-
-  it('reports a failed write when the read-back does not match', () => {
-    const storage = buildFakeStorage({});
-    const droppingStorage: Storage = {
-      ...storage,
-      setItem: (): void => {},
-    };
-
-    expect(writeStoredToken(droppingStorage, 'refresh-abc')).toBe(false);
+  it.each([
+    ['keeps the write', true, true],
+    ['silently drops the write', false, false],
+  ])('confirms the write when the storage %s: %s', (_case, keepsWrites, expected) => {
+    expect(writeStoredToken(buildFakeStorage(keepsWrites), 'refresh-abc')).toBe(expected);
   });
 });

@@ -4,7 +4,6 @@ import { formatAddress, formatIsoDay } from '@/lib/membership-labels';
 import type { StateChip } from '@/lib/state-chips';
 import type { MembershipApplicationDetails, MembershipApplicationSummary } from './schemas';
 
-const MEMBERSHIP_APPLICATION_ID_PATTERN = /^[1-9]\d*$/;
 const MILLISECONDS_PER_DAY = 86_400_000;
 const META_SEPARATOR = ' · ';
 
@@ -43,9 +42,6 @@ export const DECLINE_EXPLANATION =
   'Der Antrag wird sofort gelöscht – so erledigst du auch Spam und zurückgezogene Anträge. Es geht keine Mail raus: Eine Absage überbringt ihr persönlich.';
 export const ALREADY_DECIDED_MESSAGE = 'Über diesen Antrag hat inzwischen jemand entschieden.';
 
-export const toMembershipApplicationId = (raw: string): number | null =>
-  MEMBERSHIP_APPLICATION_ID_PATTERN.test(raw) ? Number(raw) : null;
-
 export const toApplicantName = (applicant: { firstName: string; lastName: string }): string =>
   `${applicant.firstName} ${applicant.lastName}`;
 
@@ -63,10 +59,13 @@ export const toApplicationTitle = (details: MembershipApplicationDetails | undef
 const toDayNumber = (date: Date): number =>
   Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / MILLISECONDS_PER_DAY;
 
-export const toWaitingSince = (confirmedAt: string, now: Date): string => {
-  const days = toDayNumber(now) - toDayNumber(new Date(confirmedAt));
+export const waitingDaysOf = (confirmedAt: string, now: Date): number =>
+  Math.max(0, toDayNumber(now) - toDayNumber(new Date(confirmedAt)));
 
-  if (days <= 0) {
+export const toWaitingSince = (confirmedAt: string, now: Date): string => {
+  const days = waitingDaysOf(confirmedAt, now);
+
+  if (days === 0) {
     return 'seit heute';
   }
   if (days === 1) {

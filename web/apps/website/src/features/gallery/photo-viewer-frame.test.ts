@@ -16,29 +16,15 @@ const album = (photoCount: number): Album => ({
 });
 
 describe('resolvePhotoViewerFrame', () => {
-  it('describes the shown photo with a one-based position', () => {
-    const frame = resolvePhotoViewerFrame(album(12), 4);
-
-    expect(frame).toMatchObject({
-      placeholderLabel: 'prunksitzung-05',
-      position: 5,
-      countSuffix: ' von 12',
-      previousDisabled: false,
-      nextDisabled: false,
-    });
-    expect(frame?.photo.alt).toBe('Bild 5');
+  it.each([
+    [4, { position: 5, previousDisabled: false, nextDisabled: false }],
+    [0, { position: 1, previousDisabled: true, nextDisabled: false }],
+    [11, { position: 12, previousDisabled: false, nextDisabled: true }],
+  ])('frames the photo at index %i of twelve', (shownIndex, frame) => {
+    expect(resolvePhotoViewerFrame(album(12), shownIndex)).toMatchObject(frame);
   });
 
-  it('disables stepping past the first and the last photo', () => {
-    expect(resolvePhotoViewerFrame(album(3), 0)?.previousDisabled).toBe(true);
-    expect(resolvePhotoViewerFrame(album(3), 2)?.nextDisabled).toBe(true);
-  });
-
-  it('has no frame while the viewer is closed', () => {
-    expect(resolvePhotoViewerFrame(album(3), null)).toBeNull();
-  });
-
-  it('has no frame for a photo the Album does not hold', () => {
-    expect(resolvePhotoViewerFrame(album(3), 7)).toBeNull();
+  it.each([null, 12])('has no frame for the index %s', (shownIndex) => {
+    expect(resolvePhotoViewerFrame(album(12), shownIndex)).toBeNull();
   });
 });

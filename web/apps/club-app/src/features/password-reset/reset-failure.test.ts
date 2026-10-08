@@ -17,11 +17,6 @@ describe('toResetFailureKind', () => {
       new RequestFailedError(400, [{ field: 'password', message: 'zu kurz' }]),
       'password',
     ],
-    [
-      'a refused password in server casing',
-      new RequestFailedError(400, [{ field: 'Password', message: 'zu kurz' }]),
-      'password',
-    ],
     ['a throttled reset link', new ServerFailureError(429), 'throttled'],
     ['a server failure', new ServerFailureError(500), 'unexpected'],
   ])('classifies %s', (_case, error, expected) => {

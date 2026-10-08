@@ -4,27 +4,13 @@ import { actionContextOf } from './action-context';
 
 describe('actionContextOf', () => {
   it.each<{
-    label: string;
     context: KkScreenActionBar['context'];
     expected: KkScreenActionContext | null;
   }>([
-    { label: 'nothing at all', context: undefined, expected: null },
-    {
-      label: 'a bare string',
-      context: '3 ausgewählt',
-      expected: { text: '3 ausgewählt', tone: 'quiet' },
-    },
-    {
-      label: 'an empty string, which is still a line',
-      context: '',
-      expected: { text: '', tone: 'quiet' },
-    },
-    {
-      label: 'a stated consequence',
-      context: { text: 'Ab 2020/21 zählt Annika nicht mehr als aktiv.', tone: 'consequence' },
-      expected: { text: 'Ab 2020/21 zählt Annika nicht mehr als aktiv.', tone: 'consequence' },
-    },
-  ])('resolves $label', ({ context, expected }) => {
+    { context: undefined, expected: null },
+    { context: '', expected: { text: '', tone: 'quiet' } },
+    { context: { text: 'c', tone: 'consequence' }, expected: { text: 'c', tone: 'consequence' } },
+  ])('resolves $context', ({ context, expected }) => {
     expect(actionContextOf(context)).toEqual(expected);
   });
 });

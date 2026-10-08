@@ -25,9 +25,6 @@ const WHOLE_TILE_CLIP = `inset(${SPILL} ${SPILL} ${SPILL} ${SPILL})`;
 const UNREVEALED_CLIP = 'inset(0% 0% 100% 0%)';
 const COVERED_CLIP = 'inset(100% 0% 0% 0%)';
 
-export const ramp = (value: number, from: number, to: number): number =>
-  Math.min(Math.max((value - from) / (to - from), 0), 1);
-
 const landAngleAt = (settling: number): number => {
   if (settling < LAND_SHARE) {
     return RIGHT_ANGLE * (1 - (settling / LAND_SHARE) ** 2);

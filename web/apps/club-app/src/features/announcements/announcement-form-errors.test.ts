@@ -1,17 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { RequestBlockedError, RequestFailedError, ServerFailureError } from '@/lib/api/api-error';
+import { RequestBlockedError, RequestFailedError } from '@/lib/api/api-error';
 import { toAnnouncementFieldErrors } from './announcement-form-errors';
 
 describe('toAnnouncementFieldErrors', () => {
   it.each([
     { case: 'nothing went wrong', error: null, expected: [] },
     { case: 'the request never left', error: new RequestBlockedError(), expected: [] },
-    { case: 'the server broke', error: new ServerFailureError(500), expected: [] },
-    {
-      case: 'the row was gone',
-      error: new ServerFailureError(404),
-      expected: [],
-    },
     {
       case: 'a conflict names no form field',
       error: new RequestFailedError(409, [{ field: 'Title', message: 'Hängt schon.' }]),

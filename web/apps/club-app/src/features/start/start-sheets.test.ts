@@ -78,12 +78,9 @@ describe('parseStartSheet', () => {
     { sheetId: 'start-calendar', expected: { kind: 'calendar' } },
     { sheetId: 'start-announcements', expected: { kind: 'announcements', announcementId: null } },
     { sheetId: 'start-announcements-12', expected: { kind: 'announcements', announcementId: 12 } },
-    { sheetId: 'start-mine', expected: { kind: 'mine' } },
-    { sheetId: 'start-groups', expected: { kind: 'groups' } },
     { sheetId: 'entry-811', expected: { kind: 'entry', calendarEntryId: 811 } },
     { sheetId: 'role-7', expected: { kind: 'role', roleId: 7 } },
     { sheetId: 'office-3', expected: { kind: 'office', boardOfficeId: 3 } },
-    { sheetId: 'entry-0', expected: { kind: 'foreign' } },
     { sheetId: 'club-roles', expected: { kind: 'foreign' } },
   ])('reads $sheetId', ({ sheetId, expected }) => {
     expect(parseStartSheet(sheetId)).toEqual(expected);
@@ -113,7 +110,6 @@ describe('isStrayStartSheet', () => {
 describe('isAnnouncementsSheet', () => {
   it.each([
     ['start-announcements', true],
-    ['start-announcements-12', true],
     ['start-calendar', false],
     [null, false],
   ])('treats %s as the AUSHÄNGE sheet: %s', (sheetId, expected) => {

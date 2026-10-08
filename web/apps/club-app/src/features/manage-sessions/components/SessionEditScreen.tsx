@@ -2,8 +2,9 @@ import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { useMeQuery, usePermissions } from '@/features/session';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
+import { parsePositiveId } from '@/lib/positive-id';
 import { useSessionRecordsQuery } from '../api';
-import { findSessionRecord, toSessionRecordId } from '../manage-sessions-labels';
+import { findSessionRecord } from '../manage-sessions-labels';
 import { toSessionRecordsErrorMessage } from '../manage-sessions-messages';
 import { SessionEditor } from './SessionEditor';
 import { SessionEditorDenied } from './SessionEditorDenied';
@@ -16,7 +17,7 @@ const TITLE = 'Sessionseintrag bearbeiten';
 
 export const SessionEditScreen: FC = () => {
   const { sessionId } = useParams({ from: ROUTE_ID });
-  const id = toSessionRecordId(sessionId);
+  const id = parsePositiveId(sessionId);
   const sessions = useSessionRecordsQuery();
   const me = useMeQuery();
   const permissions = usePermissions();

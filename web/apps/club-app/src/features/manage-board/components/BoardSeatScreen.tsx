@@ -3,8 +3,9 @@ import type { FC } from 'react';
 import { usePermissions } from '@/features/session';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { toIsoDay } from '@/lib/day';
+import { parsePositiveId } from '@/lib/positive-id';
 import { useBoardQuery } from '../api';
-import { toBoardEntries, toBoardOfficeId, toBoardSeatId } from '../manage-board-labels';
+import { toBoardEntries } from '../manage-board-labels';
 import { toBoardErrorMessage } from '../manage-board-messages';
 import { BoardEditorDenied } from './BoardEditorDenied';
 import { BoardEditorError } from './BoardEditorError';
@@ -18,8 +19,8 @@ const TITLE = 'Vorstandssitz beenden';
 export const BoardSeatScreen: FC = () => {
   const { boardOfficeId, boardSeatId } = useParams({ from: ROUTE_ID });
   const { has, isUndecided } = usePermissions();
-  const id = toBoardOfficeId(boardOfficeId);
-  const seatId = toBoardSeatId(boardSeatId);
+  const id = parsePositiveId(boardOfficeId);
+  const seatId = parsePositiveId(boardSeatId);
   const board = useBoardQuery();
   const errorMessage = toBoardErrorMessage(board.error);
 

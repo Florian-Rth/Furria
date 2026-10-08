@@ -9,6 +9,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./tokens": "./src/tokens.ts",
+    "./group-tone": "./src/internal/group-tone.ts",
     "./theme": "./src/theme.ts",
     "./fonts": "./src/fonts.ts"
   },

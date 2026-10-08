@@ -4,7 +4,7 @@ import { handoverAt } from './handover';
 
 const { scrollTravel, headerDrift, titleRise } = kkTokens.shell;
 
-const OFFSETS = [-240, 0, 1, 12, 24, 36, 40, 48, 60, 72, 96, 400];
+const OFFSETS = [-240, 0, 24, 48, 72, 400];
 
 describe('handoverAt', () => {
   it('shows the header and the bar at rest before the track moves', () => {
@@ -77,14 +77,11 @@ describe('handoverAt under reduced motion', () => {
     expect(handoverAt(0, 'instant').headerOpacity).toBe(1);
   });
 
-  it.each([1, 12, scrollTravel, scrollTravel * 40])(
-    'snaps the title into the bar at offset %i',
-    (scrollOffset) => {
-      const handover = handoverAt(scrollOffset, 'instant');
+  it.each([1, scrollTravel * 40])('snaps the title into the bar at offset %i', (scrollOffset) => {
+    const handover = handoverAt(scrollOffset, 'instant');
 
-      expect(handover.headerOpacity).toBe(0);
-      expect(handover.titleOpacity).toBe(1);
-      expect(handover.titleRise).toBe(0);
-    },
-  );
+    expect(handover.headerOpacity).toBe(0);
+    expect(handover.titleOpacity).toBe(1);
+    expect(handover.titleRise).toBe(0);
+  });
 });

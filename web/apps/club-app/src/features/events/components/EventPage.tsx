@@ -7,8 +7,8 @@ import {
   EVENTS_ORIGIN,
   RequireAnyPermission,
 } from '@/features/session';
+import { parsePositiveId } from '@/lib/positive-id';
 import { useEventQuery } from '../api';
-import { toEventId } from '../events-labels';
 import { EventBody } from './EventBody';
 import { EventHeader } from './EventHeader';
 
@@ -16,7 +16,7 @@ const EVENT_ROUTE_ID = '/_app/events_/$eventId';
 
 export const EventPage: FC = () => {
   const { eventId } = useParams({ from: EVENT_ROUTE_ID });
-  const id = toEventId(eventId);
+  const id = parsePositiveId(eventId);
   const event = useEventQuery(id);
   const hasFailed = id === null || event.error !== null;
   const title = event.data?.title ?? EVENTS_ORIGIN.label;

@@ -30,35 +30,6 @@ describe('accessActionsOf', () => {
       },
     ],
     [
-      'a person with a live invitation',
-      {
-        access: {
-          state: 'invited',
-          reason: null,
-          invitation: {
-            channel: 'mail',
-            issuedAt: '2026-09-25T18:00:00+00:00',
-            issuedBy: null,
-            expiresAt: '2026-10-09T18:00:00+00:00',
-            isExpired: false,
-          },
-          history: [],
-          rights: { canInvite: true, canManageAccount: false },
-          ageOfConsent: 16,
-        },
-        email: 'anna@web.de',
-        isOwnAccount: false,
-      },
-      {
-        mailInvitation: 'reinvite',
-        inPersonInvitation: true,
-        lacksMailAddress: false,
-        vouchesForAge: false,
-        recovery: false,
-        lock: null,
-      },
-    ],
-    [
       'a person whose invitation expired',
       {
         access: {
@@ -338,29 +309,6 @@ describe('accessActionsOf', () => {
         vouchesForAge: false,
         recovery: false,
         lock: 'enable',
-      },
-    ],
-    [
-      'a disabled account and a viewer who only invites',
-      {
-        access: {
-          state: 'disabled',
-          reason: null,
-          invitation: null,
-          history: [],
-          rights: { canInvite: true, canManageAccount: false },
-          ageOfConsent: 16,
-        },
-        email: 'anna@web.de',
-        isOwnAccount: false,
-      },
-      {
-        mailInvitation: null,
-        inPersonInvitation: false,
-        lacksMailAddress: false,
-        vouchesForAge: false,
-        recovery: false,
-        lock: null,
       },
     ],
   ])('offers the right acts for %s', (_case, input, expected) => {

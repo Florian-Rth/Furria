@@ -20,7 +20,7 @@ export const VenueBlock: FC<VenueBlockProps> = ({ venue }) => {
       <KkSection.Header kicker={VENUE_KICKER} title={title} />
       <Stack component="dl" sx={{ gap: 2, maxWidth: '36rem', m: 0 }}>
         {facts.map((fact) => (
-          <Stack key={fact.label} direction="row" sx={{ gap: 2, alignItems: 'baseline' }}>
+          <Stack key={fact.kind} direction="row" sx={{ gap: 2, alignItems: 'baseline' }}>
             <Typography
               variant="caption"
               component="dt"

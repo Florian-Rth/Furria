@@ -295,6 +295,23 @@ export const selectOlderSessionGroups = (albums: Album[], reference: Date): Albu
   );
 };
 
+export interface GalleryAlbums {
+  featuredAlbum: Album | undefined;
+  currentSessionAlbums: Album[];
+  olderSessionGroups: AlbumSessionGroup[];
+}
+
+export const selectGalleryAlbums = (albums: Album[], reference: Date): GalleryAlbums => {
+  const featuredAlbum = selectFeaturedAlbum(albums);
+  const remainingAlbums = excludeAlbum(albums, featuredAlbum);
+
+  return {
+    featuredAlbum,
+    currentSessionAlbums: selectCurrentSessionAlbums(remainingAlbums, reference),
+    olderSessionGroups: selectOlderSessionGroups(remainingAlbums, reference),
+  };
+};
+
 export const buildAlbumCountLabel = (count: number): string =>
   count === 1 ? '1 Album' : `${count} Alben`;
 

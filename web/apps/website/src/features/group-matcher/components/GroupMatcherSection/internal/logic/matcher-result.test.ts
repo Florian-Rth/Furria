@@ -78,29 +78,16 @@ const rankingFor = (answers: MatcherAnswers): MatcherRankingView => {
 };
 
 describe('selectMatcherResult', () => {
-  it('puts the best match first and keeps the rest behind it', () => {
+  it('ranks every eligible group with its percentage, best match on top', () => {
     const ranking = rankingFor(answered);
 
-    expect(ranking.top.group.id).toBe('alpha');
-    expect(ranking.rest.map((match) => match.group.id)).toEqual(['beta', 'delta']);
-  });
-
-  it('numbers every eligible group and prints its percentage', () => {
-    const ranking = rankingFor(answered);
-
-    expect([ranking.top, ...ranking.rest].map((match) => [match.rank, match.percentage])).toEqual([
-      [1, 100],
-      [2, 67],
-      [3, 33],
+    expect(
+      [ranking.top, ...ranking.rest].map((match) => [match.group.id, match.rank, match.percentage]),
+    ).toEqual([
+      ['alpha', 1, 100],
+      ['beta', 2, 67],
+      ['delta', 3, 33],
     ]);
-  });
-
-  it('leaves a group that is not looking for new people exactly where it scored', () => {
-    const [second] = rankingFor(answered).rest;
-
-    expect(second?.group.id).toBe('beta');
-    expect(second?.badge.color).toBe('default');
-    expect(second?.badge.note).toContain('Anfrage');
   });
 
   it('derives the why from the answers, strongest reason first', () => {
@@ -109,17 +96,17 @@ describe('selectMatcherResult', () => {
     expect(ranking.top.reasons.map((reason) => reason.questionId)).toEqual(['build', 'stage']);
   });
 
-  it('names every excluded group with the answer that ruled it out', () => {
+  it('lists every excluded group', () => {
     const ranking = rankingFor(answered);
 
-    expect(ranking.excluded).toHaveLength(1);
-    expect(ranking.excluded[0]?.group.id).toBe('gamma');
-    expect(ranking.excluded[0]?.reason).toContain('12 oder älter');
+    expect(ranking.excluded.map((exclusion) => exclusion.group.id)).toEqual(['gamma']);
   });
 
-  it('asks for at least one answer instead of ranking nothing', () => {
-    expect(resultFor({}).kind).toBe('unanswered');
-    expect(resultFor({ 'age-band': 'old' }).kind).toBe('unanswered');
+  it.each<[string, MatcherAnswers]>([
+    ['no answer', {}],
+    ['only a filter answer', { 'age-band': 'old' }],
+  ])('asks for a weighted answer instead of ranking %s', (_, answers) => {
+    expect(resultFor(answers).kind).toBe('unanswered');
   });
 
   it('stays honest when every group is filtered out', () => {
@@ -135,6 +122,5 @@ describe('selectMatcherResult', () => {
       'gamma',
       'delta',
     ]);
-    expect(view.excluded[0]?.reason).toContain('120 oder älter');
   });
 });

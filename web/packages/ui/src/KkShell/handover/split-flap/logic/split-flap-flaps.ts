@@ -1,4 +1,4 @@
-import { ramp } from '../../../../internal/flap/flap-pose';
+import { ramp } from '../../../../internal/ramp';
 import { kkTokens } from '../../../../tokens';
 
 export interface SplitFlapGlyph {

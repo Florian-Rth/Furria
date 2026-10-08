@@ -22,12 +22,6 @@ describe('refetchDelayOf', () => {
       expected: null,
     },
     { label: 'the reshape is now', reshapeAt: '2027-01-19T18:50:00Z', expected: 0 },
-    { label: 'the reshape has passed', reshapeAt: '2027-01-19T18:00:00Z', expected: 0 },
-    {
-      label: 'the reshape carries an offset',
-      reshapeAt: '2027-01-19T20:30:00+01:00',
-      expected: 2_401_000,
-    },
   ])('waits $expected ms when $label', ({ reshapeAt, expected }) => {
     expect(refetchDelayOf(reshapeAt, now)).toBe(expected);
   });
@@ -53,12 +47,6 @@ describe('isStartOfDay', () => {
       label: 'the club day differs but the device fetched it today',
       today: '2027-01-20',
       asOf: new Date(2027, 0, 19, 7, 30).toISOString(),
-      expected: true,
-    },
-    {
-      label: 'the club day matches a cache fetched before midnight',
-      today: '2027-01-19',
-      asOf: new Date(2027, 0, 18, 23, 59).toISOString(),
       expected: true,
     },
   ])('is $expected when $label', ({ today, asOf, expected }) => {

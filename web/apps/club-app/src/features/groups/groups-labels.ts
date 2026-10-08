@@ -88,22 +88,44 @@ const NAMED_LEAD = 1;
 
 const toFullName = (person: PersonRef): string => `${person.firstName} ${person.lastName}`;
 
-export const toGroupLeadLine = (admins: readonly PersonRef[]): string => {
+export type AdminRoster =
+  | { kind: 'none' }
+  | { kind: 'one'; first: PersonRef }
+  | { kind: 'two'; first: PersonRef; second: PersonRef }
+  | { kind: 'more'; first: PersonRef; second: PersonRef; furtherCount: number };
+
+export const adminRosterOf = (admins: readonly PersonRef[]): AdminRoster => {
   const [first, second, ...further] = admins;
 
   if (first === undefined) {
-    return NO_LEAD_LINE;
+    return { kind: 'none' };
   }
   if (second === undefined) {
-    return `${LED_BY_PREFIX}${toFullName(first)}`;
+    return { kind: 'one', first };
   }
   if (further.length === 0) {
-    return `${LED_BY_PREFIX}${toFullName(first)}${LED_BY_PAIR}${toFullName(second)}`;
+    return { kind: 'two', first, second };
   }
 
-  const rest = further.length + NAMED_LEAD;
+  return { kind: 'more', first, second, furtherCount: further.length };
+};
 
-  return `${LED_BY_PREFIX}${toFullName(first)}${LED_BY_PAIR}${rest}${FURTHER_LEADS_SUFFIX}`;
+export const toGroupLeadLine = (admins: readonly PersonRef[]): string => {
+  const roster = adminRosterOf(admins);
+
+  if (roster.kind === 'none') {
+    return NO_LEAD_LINE;
+  }
+  if (roster.kind === 'one') {
+    return `${LED_BY_PREFIX}${toFullName(roster.first)}`;
+  }
+  if (roster.kind === 'two') {
+    return `${LED_BY_PREFIX}${toFullName(roster.first)}${LED_BY_PAIR}${toFullName(roster.second)}`;
+  }
+
+  const rest = roster.furtherCount + NAMED_LEAD;
+
+  return `${LED_BY_PREFIX}${toFullName(roster.first)}${LED_BY_PAIR}${rest}${FURTHER_LEADS_SUFFIX}`;
 };
 
 export const toPersonUnitLabel = (count: number): string => (count === 1 ? 'Person' : 'Personen');
@@ -142,23 +164,29 @@ const NO_CONTACT_LINE = 'Diese Gruppe hat noch keine Ansprechperson.';
 export const toRecruitingContactSegments = (
   admins: readonly PersonRef[],
 ): RecruitingContactSegment[] => {
-  const [first, second, ...further] = admins;
+  const roster = adminRosterOf(admins);
 
-  if (first === undefined) {
+  if (roster.kind === 'none') {
     return [text(NO_CONTACT_LINE)];
   }
-  if (second === undefined) {
-    return [text(CONTACT_OPENING), name(first), text('.')];
+  if (roster.kind === 'one') {
+    return [text(CONTACT_OPENING), name(roster.first), text('.')];
   }
-  if (further.length === 0) {
-    return [text(CONTACT_OPENING), name(first), text(' oder '), name(second), text('.')];
+  if (roster.kind === 'two') {
+    return [
+      text(CONTACT_OPENING),
+      name(roster.first),
+      text(' oder '),
+      name(roster.second),
+      text('.'),
+    ];
   }
 
   return [
     text(CONTACT_OPENING),
-    name(first),
+    name(roster.first),
     text(', '),
-    name(second),
+    name(roster.second),
     text(' oder einer der anderen Gruppen-Admins.'),
   ];
 };
@@ -244,20 +272,34 @@ const NO_GROUP_MATCH_LINES: Record<string, string> = {
   [SETTLED_FILTER_ID]: 'Alle Gruppen suchen Verstärkung.',
 };
 
-export const toNoGroupMatchLine = (query: string, status: string): string => {
+export type NoGroupMatch =
+  | { kind: 'query'; needle: string }
+  | { kind: 'status'; line: string }
+  | { kind: 'noGroups' };
+
+export const noGroupMatchOf = (query: string, status: string): NoGroupMatch => {
   const needle = query.trim();
 
   if (needle !== '') {
-    return `Keine Gruppe passt zu „${needle}“.`;
+    return { kind: 'query', needle };
   }
 
   const statusLine = NO_GROUP_MATCH_LINES[status];
 
-  if (statusLine === undefined) {
+  return statusLine === undefined ? { kind: 'noGroups' } : { kind: 'status', line: statusLine };
+};
+
+export const toNoGroupMatchLine = (query: string, status: string): string => {
+  const match = noGroupMatchOf(query, status);
+
+  if (match.kind === 'query') {
+    return `Keine Gruppe passt zu „${match.needle}“.`;
+  }
+  if (match.kind === 'noGroups') {
     return 'Es sind noch keine Gruppen angelegt.';
   }
 
-  return `${statusLine} ${ALL_GROUPS_SUGGESTION}`;
+  return `${match.line} ${ALL_GROUPS_SUGGESTION}`;
 };
 
 export const NO_GROUP_MATCH_TITLE = 'KEINE GRUPPE GEFUNDEN';

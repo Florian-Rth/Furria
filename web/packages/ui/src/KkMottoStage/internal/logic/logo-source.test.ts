@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { logoSourceOf } from './logo-source';
 
 describe('logoSourceOf', () => {
-  it.each([null, '', '   ', '\n\t '])('keeps the stage bare for %j', (logoSvg) => {
+  it.each([null, '\n\t '])('keeps the stage bare for %j', (logoSvg) => {
     expect(logoSourceOf(logoSvg)).toBeNull();
   });
 

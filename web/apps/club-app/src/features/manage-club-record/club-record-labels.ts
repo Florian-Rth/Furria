@@ -1,5 +1,5 @@
 import type { KkScreenOrigin, KkSelectOption } from '@furria/ui';
-import { toLandingKey } from '@/features/write';
+import { toLandingKey } from '@/features/write/landing-target';
 import type {
   ClubAccessForm,
   ClubContact,

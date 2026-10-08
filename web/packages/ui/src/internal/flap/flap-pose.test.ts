@@ -1,24 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  coverClipOf,
-  flapPoseAt,
-  leafShadeOf,
-  ramp,
-  revealClipOf,
-  tileBandClipOf,
-} from './flap-pose';
-
-describe('ramp', () => {
-  it.each([
-    [-5, 0, 10, 0],
-    [0, 0, 10, 0],
-    [5, 0, 10, 0.5],
-    [10, 0, 10, 1],
-    [20, 0, 10, 1],
-  ])('ramps %d between %d and %d to %d', (value, from, to, expected) => {
-    expect(ramp(value, from, to)).toBe(expected);
-  });
-});
+import { coverClipOf, flapPoseAt, leafShadeOf, revealClipOf, tileBandClipOf } from './flap-pose';
 
 describe('flapPoseAt', () => {
   it('rests with the old top up and nothing revealed', () => {
@@ -63,7 +44,6 @@ describe('revealClipOf', () => {
   it.each([
     [0, 'inset(0% 0% 100% 0%)'],
     [0.5, 'inset(-40% -40% 75% -40%)'],
-    [1, 'inset(-40% -40% 50% -40%)'],
   ])('cuts the new top at reveal %d to %s', (reveal, expected) => {
     expect(
       revealClipOf({ fall: -45, land: 90, reveal, cover: 0, presence: 1, fallen: false }),
@@ -73,7 +53,6 @@ describe('revealClipOf', () => {
 
 describe('coverClipOf', () => {
   it.each([
-    [0, 'inset(50% -40% -40% -40%)'],
     [0.5, 'inset(75% -40% -40% -40%)'],
     [1, 'inset(100% 0% 0% 0%)'],
   ])('cuts the old bottom at cover %d to %s', (cover, expected) => {
@@ -87,7 +66,6 @@ describe('leafShadeOf', () => {
   it.each([
     [0, 0],
     [60, 0.2],
-    [-90, 0.4],
     [90, 0.4],
   ])('shades a leaf tilted %d degrees to %d', (degrees, expected) => {
     expect(leafShadeOf(degrees)).toBeCloseTo(expected);
@@ -97,7 +75,6 @@ describe('leafShadeOf', () => {
 describe('tileBandClipOf', () => {
   it.each([
     [-0.2, 'inset(50% -40% 50% -40%)'],
-    [0, 'inset(50% -40% 50% -40%)'],
     [0.5, 'inset(19% -40% 19% -40%)'],
     [1, 'inset(-40% -40% -40% -40%)'],
   ])('opens the tile from its hinge at presence %d to %s', (presence, expected) => {

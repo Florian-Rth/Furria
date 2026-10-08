@@ -3,7 +3,6 @@ import { toQrPath } from './qr-modules';
 
 describe('toQrPath', () => {
   it.each<[string, boolean[][], string]>([
-    ['an empty matrix', [], ''],
     ['an all-light matrix', [[false, false]], ''],
     ['a single dark module', [[true]], 'M0 0h1v1h-1z'],
     [

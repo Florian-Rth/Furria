@@ -13,21 +13,6 @@ import type { RoleDetails, RoleHolder, RoleSummary, RolesResponse } from './sche
 export const toPersonName = (person: { firstName: string; lastName: string }): string =>
   `${person.firstName} ${person.lastName}`;
 
-const ID_PATTERN = /^[1-9]\d*$/;
-
-export const toRoleId = (raw: string): number | null => (ID_PATTERN.test(raw) ? Number(raw) : null);
-
-export const toRoleHoldingId = (raw: string): number | null =>
-  ID_PATTERN.test(raw) ? Number(raw) : null;
-
-export const toPersonIdParam = (raw: string | undefined): number | null => {
-  if (raw === undefined || !ID_PATTERN.test(raw)) {
-    return null;
-  }
-
-  return Number(raw);
-};
-
 export const ROLES_ORIGIN: KkScreenOrigin = { label: 'Rollen & Rechte', to: '/manage/roles' };
 
 export const toRoleOrigin = (role: { roleId: number; name: string }): KkScreenOrigin => ({
@@ -254,20 +239,34 @@ const NO_ROLE_MATCH_LINES: Record<string, string> = {
   [ARCHIVED_ROLES_FILTER_ID]: 'Gerade ist keine Rolle archiviert.',
 };
 
-export const toNoRoleMatchLine = (query: string, status: string): string => {
+export type NoRoleMatchCase =
+  | { kind: 'query'; term: string }
+  | { kind: 'status'; statusLine: string }
+  | { kind: 'cold' };
+
+export const noRoleMatchCaseOf = (query: string, status: string): NoRoleMatchCase => {
   const term = toRoleSearchTerm(query);
 
   if (term !== null) {
-    return `Keine Rolle passt zu „${term}“.`;
+    return { kind: 'query', term };
   }
 
   const statusLine = NO_ROLE_MATCH_LINES[status];
 
-  if (statusLine === undefined) {
-    return 'Es gibt noch keine Rolle.';
-  }
+  return statusLine === undefined ? { kind: 'cold' } : { kind: 'status', statusLine };
+};
 
-  return `${statusLine} ${ALL_ROLES_SUGGESTION}`;
+export const toNoRoleMatchLine = (query: string, status: string): string => {
+  const noMatch = noRoleMatchCaseOf(query, status);
+
+  switch (noMatch.kind) {
+    case 'query':
+      return `Keine Rolle passt zu „${noMatch.term}“.`;
+    case 'status':
+      return `${noMatch.statusLine} ${ALL_ROLES_SUGGESTION}`;
+    case 'cold':
+      return 'Es gibt noch keine Rolle.';
+  }
 };
 
 export const toNoDescriptionLine = (name: string): string =>

@@ -2,14 +2,10 @@ import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { usePermissions } from '@/features/session';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
+import { parsePositiveId } from '@/lib/positive-id';
 import { isForbiddenError } from '@/lib/query-error';
 import { useManagedKeysQuery } from '../api';
-import {
-  findKeyVenue,
-  KEYS_ORIGIN,
-  toKeyEditorOrigin,
-  toVenueIdParam,
-} from '../manage-keys-labels';
+import { findKeyVenue, KEYS_ORIGIN, toKeyEditorOrigin } from '../manage-keys-labels';
 import { toManagedKeysErrorMessage } from '../manage-keys-messages';
 import { KeyEditorDenied } from './KeyEditorDenied';
 import { KeyEditorError } from './KeyEditorError';
@@ -41,7 +37,7 @@ export const KeyHoldingNewScreen: FC = () => {
     return <KeyEditorSkeleton />;
   }
 
-  const id = toVenueIdParam(venueId);
+  const id = parsePositiveId(venueId);
   const venue = id === null ? null : findKeyVenue(keys.data.venues, id);
 
   if (venue === null) {
