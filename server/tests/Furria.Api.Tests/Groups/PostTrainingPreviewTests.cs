@@ -10,8 +10,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Groups;
 
-[Collection("Api")]
-public sealed class PostTrainingPreviewTests
+public sealed class PostTrainingPreviewTests : IClassFixture<ApiTestFixture>
 {
     private const int UnknownGroupId = 999_999;
     private const int TrainingMinutes = 90;

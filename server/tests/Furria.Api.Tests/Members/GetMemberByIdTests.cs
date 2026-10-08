@@ -10,8 +10,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Members;
 
-[Collection("Api")]
-public sealed class GetMemberByIdTests
+public sealed class GetMemberByIdTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
     private static readonly DateOnly LeftIn2020 = new(2020, 3, 1);

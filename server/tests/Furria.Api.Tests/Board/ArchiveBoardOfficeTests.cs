@@ -8,8 +8,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Board;
 
-[Collection("Api")]
-public sealed class ArchiveBoardOfficeTests
+public sealed class ArchiveBoardOfficeTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string OccupiedOfficeMessage =

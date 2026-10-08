@@ -8,8 +8,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Board;
 
-[Collection("Api")]
-public sealed class PostBoardOfficeTests
+public sealed class PostBoardOfficeTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string DuplicateNameMessage = "Diese Vorstandsfunktion gibt es schon.";

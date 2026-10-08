@@ -6,8 +6,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Authorization;
 
-[Collection("Api")]
-public sealed class AffiliationRequirementTests
+public sealed class AffiliationRequirementTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateTimeOffset HalfPastMidnightInBerlin = new(
         2026,

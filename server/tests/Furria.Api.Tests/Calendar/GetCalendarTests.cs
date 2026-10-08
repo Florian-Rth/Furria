@@ -9,8 +9,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Calendar;
 
-[Collection("Api")]
-public sealed class GetCalendarTests
+public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
 {
     private const string ClubMeeting = "Vereinssitzung";
     private const string Parade = "Rosenmontagsumzug";

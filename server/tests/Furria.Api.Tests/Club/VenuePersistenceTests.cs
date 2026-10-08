@@ -5,8 +5,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Club;
 
-[Collection("Api")]
-public sealed class VenuePersistenceTests
+public sealed class VenuePersistenceTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateOnly ArchivedOn = new(2024, 2, 14);
 

@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Auth;
 
-[Collection("Api")]
-public sealed class PutMyLastSeenAnnouncementTests
+public sealed class PutMyLastSeenAnnouncementTests : IClassFixture<ApiTestFixture>
 {
     private const int OverlapRounds = 10;
     private const int OverlappingStaleMarks = 20;

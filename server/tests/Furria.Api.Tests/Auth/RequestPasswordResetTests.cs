@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Auth;
 
-[Collection("Api")]
-public sealed class RequestPasswordResetTests
+public sealed class RequestPasswordResetTests : IClassFixture<ApiTestFixture>
 {
     private const string ResetSubject = "Neues Passwort für die Vereins-App";
 

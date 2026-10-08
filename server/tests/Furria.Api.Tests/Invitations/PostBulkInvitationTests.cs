@@ -8,8 +8,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Invitations;
 
-[Collection("Api")]
-public sealed class PostBulkInvitationTests
+public sealed class PostBulkInvitationTests : IClassFixture<ApiTestFixture>
 {
     private const string InvitationSubject = "Dein Zugang zur Vereins-App";
 

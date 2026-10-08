@@ -6,8 +6,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Management;
 
-[Collection("Api")]
-public sealed class DeleteSessionRecordByIdTests
+public sealed class DeleteSessionRecordByIdTests : IClassFixture<ApiTestFixture>
 {
     private const string Motto = "Vom Festzelt ins All";
 

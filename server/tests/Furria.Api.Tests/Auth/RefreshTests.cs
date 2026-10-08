@@ -9,8 +9,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Auth;
 
-[Collection("Api")]
-public sealed class RefreshTests
+public sealed class RefreshTests : IClassFixture<ApiTestFixture>
 {
     private static readonly TimeSpan PastTheGraceWindow = TimeSpan.FromMinutes(1);
     private static readonly TimeSpan PastTheRefreshTokenLifetime = TimeSpan.FromDays(31);

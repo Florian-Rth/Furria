@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Invitations;
 
-[Collection("Api")]
-public sealed class PostInvitationRemindersTests
+public sealed class PostInvitationRemindersTests : IClassFixture<ApiTestFixture>
 {
     private const string ReminderSubject = "Erinnerung: Dein Zugang zur Vereins-App";
 

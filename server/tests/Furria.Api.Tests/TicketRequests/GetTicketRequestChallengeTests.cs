@@ -6,8 +6,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.TicketRequests;
 
-[Collection("Api")]
-public sealed class GetTicketRequestChallengeTests
+public sealed class GetTicketRequestChallengeTests : IClassFixture<ApiTestFixture>
 {
     private readonly ApiTestFixture _fixture;
 

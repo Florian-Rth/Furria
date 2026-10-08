@@ -11,8 +11,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Groups;
 
-[Collection("Api")]
-public sealed class PostTrainingsTests
+public sealed class PostTrainingsTests : IClassFixture<ApiTestFixture>
 {
     private const string ValidationField = "request";
     private const int UnknownSlotId = 999_999;

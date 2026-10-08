@@ -10,8 +10,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Board;
 
-[Collection("Api")]
-public sealed class PostBoardSeatTests
+public sealed class PostBoardSeatTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string OpenSeatMessage = "Diese Person hat diese Vorstandsfunktion bereits inne.";

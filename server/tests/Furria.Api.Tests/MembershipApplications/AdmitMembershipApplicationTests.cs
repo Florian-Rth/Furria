@@ -10,8 +10,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.MembershipApplications;
 
-[Collection("Api")]
-public sealed class AdmitMembershipApplicationTests
+public sealed class AdmitMembershipApplicationTests : IClassFixture<ApiTestFixture>
 {
     private const int UnknownApplicationId = 999_999;
 

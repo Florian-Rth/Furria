@@ -8,8 +8,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Groups;
 
-[Collection("Api")]
-public sealed class GetPublicGroupsTests
+public sealed class GetPublicGroupsTests : IClassFixture<ApiTestFixture>
 {
     private const string PublicGroupsRoute = "/api/public/groups";
 

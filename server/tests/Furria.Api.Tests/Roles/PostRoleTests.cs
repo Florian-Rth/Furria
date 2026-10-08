@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Roles;
 
-[Collection("Api")]
-public sealed class PostRoleTests
+public sealed class PostRoleTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string DuplicateNameMessage = "Eine Rolle mit diesem Namen gibt es schon.";

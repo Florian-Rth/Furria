@@ -9,8 +9,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Roles;
 
-[Collection("Api")]
-public sealed class PutRolePermissionsTests
+public sealed class PutRolePermissionsTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string UnknownKeyMessage = "Unbekannter Berechtigungs-Key.";

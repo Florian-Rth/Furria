@@ -10,8 +10,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Calendar;
 
-[Collection("Api")]
-public sealed class PostCalendarEntryTests
+public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
 {
     private const string ValidationField = "request";
     private const string ClubMeeting = "Vereinssitzung";

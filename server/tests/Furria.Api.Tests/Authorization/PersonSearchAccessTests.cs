@@ -6,8 +6,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Authorization;
 
-[Collection("Api")]
-public sealed class PersonSearchAccessTests
+public sealed class PersonSearchAccessTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
     private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);

@@ -8,8 +8,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Roles;
 
-[Collection("Api")]
-public sealed class PostRoleHoldingTests
+public sealed class PostRoleHoldingTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string OpenHoldingMessage = "Diese Person hat diese Rolle bereits inne.";

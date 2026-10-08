@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Results;
 
-[Collection("Api")]
-public sealed class ResultResponseExtensionsTests
+public sealed class ResultResponseExtensionsTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string ValidationField = "request";

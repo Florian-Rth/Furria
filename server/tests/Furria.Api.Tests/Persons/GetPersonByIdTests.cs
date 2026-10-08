@@ -11,8 +11,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Persons;
 
-[Collection("Api")]
-public sealed class GetPersonByIdTests
+public sealed class GetPersonByIdTests : IClassFixture<ApiTestFixture>
 {
     private const string PersonsRoute = "/api/manage/persons";
 

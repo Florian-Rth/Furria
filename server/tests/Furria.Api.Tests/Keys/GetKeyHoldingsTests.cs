@@ -6,8 +6,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Keys;
 
-[Collection("Api")]
-public sealed class GetKeyHoldingsTests
+public sealed class GetKeyHoldingsTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
     private static readonly DateOnly HeldSince2019 = new(2019, 2, 1);

@@ -9,8 +9,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Roles;
 
-[Collection("Api")]
-public sealed class RestoreRoleTests
+public sealed class RestoreRoleTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string NotArchivedMessage = "Diese Rolle ist nicht archiviert.";

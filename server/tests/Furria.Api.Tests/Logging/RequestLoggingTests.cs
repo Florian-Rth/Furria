@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Logging;
 
-[Collection("Api")]
-public sealed class RequestLoggingTests
+public sealed class RequestLoggingTests : IClassFixture<ApiTestFixture>
 {
     private const string RequestCompleted =
         "HTTP {RequestMethod} {RoutePattern} responded {StatusCode} in {Elapsed:0} ms";

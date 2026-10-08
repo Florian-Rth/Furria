@@ -8,8 +8,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.MembershipApplications;
 
-[Collection("Api")]
-public sealed class DeleteMembershipApplicationByIdTests
+public sealed class DeleteMembershipApplicationByIdTests : IClassFixture<ApiTestFixture>
 {
     private readonly ApiTestFixture _fixture;
 

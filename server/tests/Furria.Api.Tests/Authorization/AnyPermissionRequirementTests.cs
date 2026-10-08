@@ -6,8 +6,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Authorization;
 
-[Collection("Api")]
-public sealed class AnyPermissionRequirementTests
+public sealed class AnyPermissionRequirementTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
 

@@ -10,8 +10,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Auth;
 
-[Collection("Api")]
-public sealed class DeleteMyAccountTests
+public sealed class DeleteMyAccountTests : IClassFixture<ApiTestFixture>
 {
     private const string PasswordField = "password";
     private const string PasskeyField = "passkey";

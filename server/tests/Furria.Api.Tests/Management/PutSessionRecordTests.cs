@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Management;
 
-[Collection("Api")]
-public sealed class PutSessionRecordTests
+public sealed class PutSessionRecordTests : IClassFixture<ApiTestFixture>
 {
     private const int UnknownSessionId = 999_999;
     private const string ConflictField = "conflict";

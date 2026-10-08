@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Auth;
 
-[Collection("Api")]
-public sealed class ConfirmMyLoginEmailTests
+public sealed class ConfirmMyLoginEmailTests : IClassFixture<ApiTestFixture>
 {
     private const string CodeField = "code";
     private const string LoginEmailField = "loginEmail";

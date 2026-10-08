@@ -13,8 +13,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Auth;
 
-[Collection("Api")]
-public sealed class RedeemInvitationTests
+public sealed class RedeemInvitationTests : IClassFixture<ApiTestFixture>
 {
     private const string ConfirmationCodeField = "confirmationCode";
     private const string LoginEmailField = "loginEmail";

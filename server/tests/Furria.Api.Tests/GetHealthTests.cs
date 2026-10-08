@@ -6,8 +6,7 @@ using Xunit;
 
 namespace Furria.Api.Tests;
 
-[Collection("Api")]
-public sealed class GetHealthTests
+public sealed class GetHealthTests : IClassFixture<ApiTestFixture>
 {
     private const string UnreachableDatabase =
         "Host=127.0.0.1;Port=1;Database=furria;Username=furria;Password=furria;Timeout=1";

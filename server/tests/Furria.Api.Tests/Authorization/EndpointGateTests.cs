@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Authorization;
 
-[Collection("Api")]
-public sealed class EndpointGateTests
+public sealed class EndpointGateTests : IClassFixture<ApiTestFixture>
 {
     private const string HarnessUrlCacheRoute = "_test_url_cache_";
 

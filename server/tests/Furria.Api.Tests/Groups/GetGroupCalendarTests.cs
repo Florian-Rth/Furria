@@ -9,8 +9,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Groups;
 
-[Collection("Api")]
-public sealed class GetGroupCalendarTests
+public sealed class GetGroupCalendarTests : IClassFixture<ApiTestFixture>
 {
     private const string DanceGuardTraining = "Training der Tanzgarde";
     private const string GalaSession = "Prunksitzung";

@@ -8,8 +8,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.TicketRequests;
 
-[Collection("Api")]
-public sealed class DeleteTicketRequestByIdTests
+public sealed class DeleteTicketRequestByIdTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateTimeOffset AtTheFirstGala = new(
         2027,

@@ -10,8 +10,7 @@ using Xunit;
 
 namespace Furria.Api.Tests;
 
-[Collection("Api")]
-public sealed class EnumWireNamesTests
+public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
 {
     private static readonly IReadOnlyDictionary<Type, string> NamesTheClientsParse = new Dictionary<
         Type,

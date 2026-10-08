@@ -8,8 +8,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Auth;
 
-[Collection("Api")]
-public sealed class DeleteMyPasskeyByIdTests
+public sealed class DeleteMyPasskeyByIdTests : IClassFixture<ApiTestFixture>
 {
     private readonly ApiTestFixture _fixture;
 

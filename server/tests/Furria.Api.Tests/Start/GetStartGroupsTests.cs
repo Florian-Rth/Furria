@@ -9,8 +9,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Start;
 
-[Collection("Api")]
-public sealed class GetStartGroupsTests
+public sealed class GetStartGroupsTests : IClassFixture<ApiTestFixture>
 {
     private const int TanzgardeFounded = 2001;
     private const int KindergardeFounded = 2016;

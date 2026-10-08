@@ -10,8 +10,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Calendar;
 
-[Collection("Api")]
-public sealed class DeleteCalendarEntryByIdTests
+public sealed class DeleteCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string Gala = "1. Prunksitzung";

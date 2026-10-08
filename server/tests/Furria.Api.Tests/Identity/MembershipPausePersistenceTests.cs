@@ -6,8 +6,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Identity;
 
-[Collection("Api")]
-public sealed class MembershipPausePersistenceTests
+public sealed class MembershipPausePersistenceTests : IClassFixture<ApiTestFixture>
 {
     private readonly ApiTestFixture _fixture;
 

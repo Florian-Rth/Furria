@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.MembershipApplications;
 
-[Collection("Api")]
-public sealed class GetMembershipApplicationsTests
+public sealed class GetMembershipApplicationsTests : IClassFixture<ApiTestFixture>
 {
     private readonly ApiTestFixture _fixture;
 

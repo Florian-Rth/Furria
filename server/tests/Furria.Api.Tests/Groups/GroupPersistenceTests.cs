@@ -5,8 +5,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Groups;
 
-[Collection("Api")]
-public sealed class GroupPersistenceTests
+public sealed class GroupPersistenceTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
     private static readonly DateOnly LeftIn2020 = new(2020, 3, 1);

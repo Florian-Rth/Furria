@@ -6,8 +6,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Start;
 
-[Collection("Api")]
-public sealed class GetStartTests
+public sealed class GetStartTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateOnly JoinedIn2015 = new(2015, 11, 11);
 

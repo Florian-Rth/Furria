@@ -9,8 +9,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Keys;
 
-[Collection("Api")]
-public sealed class PostKeyHoldingTests
+public sealed class PostKeyHoldingTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string ValidationField = "request";

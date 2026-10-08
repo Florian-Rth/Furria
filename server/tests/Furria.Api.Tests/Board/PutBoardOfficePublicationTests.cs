@@ -6,8 +6,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Board;
 
-[Collection("Api")]
-public sealed class PutBoardOfficePublicationTests
+public sealed class PutBoardOfficePublicationTests : IClassFixture<ApiTestFixture>
 {
     private const int UnknownBoardOfficeId = 999_999;
 

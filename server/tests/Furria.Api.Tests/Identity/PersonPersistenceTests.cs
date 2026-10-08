@@ -3,8 +3,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Identity;
 
-[Collection("Api")]
-public sealed class PersonPersistenceTests
+public sealed class PersonPersistenceTests : IClassFixture<ApiTestFixture>
 {
     private const string PersonTable = "person";
     private const string MembershipPauseTable = "membership_pause";

@@ -4,8 +4,7 @@ using Xunit;
 
 namespace Furria.Api.Tests;
 
-[Collection("Api")]
-public sealed class DatabaseMigrationTests
+public sealed class DatabaseMigrationTests : IClassFixture<ApiTestFixture>
 {
     private const string MigrationsApplied =
         "Applied {MigrationCount} migrations from {FirstMigration} to {LastMigration} in {ElapsedMs} ms";
@@ -31,13 +30,16 @@ public sealed class DatabaseMigrationTests
     [Fact]
     public async Task Should_ReportEveryAppliedMigrationOnce_When_TheHostMigratesAFreshDatabase()
     {
-        var appliedMigrations = await _fixture.GetAppliedMigrationsAsync(
-            TestContext.Current.CancellationToken
+        var ct = TestContext.Current.CancellationToken;
+        var mark = _fixture.Logs.Mark();
+        await using var host = await _fixture.HostOnOwnDatabaseAsync(
+            new Dictionary<string, string>(),
+            ct
         );
 
-        var written = Assert.Single(
-            _fixture.Logs.WrittenBefore(MigrationsApplied, _fixture.HostStarted)
-        );
+        var appliedMigrations = await ApiTestFixture.AppliedMigrationsOfAsync(host, ct);
+
+        var written = Assert.Single(_fixture.Logs.Written(MigrationsApplied, mark));
         Assert.Equal(LogEventLevel.Information, written.Level);
         Assert.Equal(appliedMigrations.Count, written.ScalarOf("MigrationCount"));
         Assert.Equal(appliedMigrations[0], written.ScalarOf("FirstMigration"));

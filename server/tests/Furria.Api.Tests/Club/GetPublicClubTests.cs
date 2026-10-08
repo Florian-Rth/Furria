@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Club;
 
-[Collection("Api")]
-public sealed class GetPublicClubTests
+public sealed class GetPublicClubTests : IClassFixture<ApiTestFixture>
 {
     private const string PublicClubRoute = "/api/public/club";
     private const string RecordedName = "Furrscher Carnevals Club e.V.";

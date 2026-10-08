@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Club;
 
-[Collection("Api")]
-public sealed class GetClubHubAnnouncementsTests
+public sealed class GetClubHubAnnouncementsTests : IClassFixture<ApiTestFixture>
 {
     private const string Body = "Der Saal bleibt am Freitag geschlossen.";
 

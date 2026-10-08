@@ -10,8 +10,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Board;
 
-[Collection("Api")]
-public sealed class PutBoardOfficeImpliedRoleTests
+public sealed class PutBoardOfficeImpliedRoleTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string ArchivedRoleMessage =

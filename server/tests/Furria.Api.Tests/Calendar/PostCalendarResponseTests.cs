@@ -8,8 +8,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Calendar;
 
-[Collection("Api")]
-public sealed class PostCalendarResponseTests
+public sealed class PostCalendarResponseTests : IClassFixture<ApiTestFixture>
 {
     private const int NoSuchEntryOffset = 10_000;
 

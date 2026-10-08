@@ -9,8 +9,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Persons;
 
-[Collection("Api")]
-public sealed class GetPersonAccessStateTests
+public sealed class GetPersonAccessStateTests : IClassFixture<ApiTestFixture>
 {
     private readonly ApiTestFixture _fixture;
 

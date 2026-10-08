@@ -5,8 +5,7 @@ using Xunit;
 
 namespace Furria.Api.Tests;
 
-[Collection("Api")]
-public sealed class CollationTests
+public sealed class CollationTests : IClassFixture<ApiTestFixture>
 {
     private readonly ApiTestFixture _fixture;
 

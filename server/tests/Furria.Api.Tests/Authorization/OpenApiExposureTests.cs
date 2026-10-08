@@ -4,8 +4,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Authorization;
 
-[Collection("Api")]
-public sealed class OpenApiExposureTests
+public sealed class OpenApiExposureTests : IClassFixture<ApiTestFixture>
 {
     private const string OpenApiDocumentPath = "/swagger/v1/swagger.json";
 

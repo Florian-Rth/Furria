@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Venues;
 
-[Collection("Api")]
-public sealed class ArchiveVenueTests
+public sealed class ArchiveVenueTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
 

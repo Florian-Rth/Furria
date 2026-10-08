@@ -9,8 +9,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Groups;
 
-[Collection("Api")]
-public sealed class PutGroupInfoTests
+public sealed class PutGroupInfoTests : IClassFixture<ApiTestFixture>
 {
     private const string NewDescription = "Wir tanzen dienstags und donnerstags in der Turnhalle.";
     private const string OldDescription = "Die Garde tanzt seit 1971.";

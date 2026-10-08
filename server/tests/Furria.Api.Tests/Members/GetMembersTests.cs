@@ -9,8 +9,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Members;
 
-[Collection("Api")]
-public sealed class GetMembersTests
+public sealed class GetMembersTests : IClassFixture<ApiTestFixture>
 {
     private const string MembersRoute = "/api/members";
 

@@ -12,8 +12,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Persons;
 
-[Collection("Api")]
-public sealed class PostPersonAccessRecoveryTests
+public sealed class PostPersonAccessRecoveryTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string CodePattern = "^[2-9A-HJKMNP-Z]{4}-[2-9A-HJKMNP-Z]{4}$";

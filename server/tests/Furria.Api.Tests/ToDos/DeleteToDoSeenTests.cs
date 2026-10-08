@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.ToDos;
 
-[Collection("Api")]
-public sealed class DeleteToDoSeenTests
+public sealed class DeleteToDoSeenTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateOnly JoinedIn2015 = new(2015, 11, 11);
 

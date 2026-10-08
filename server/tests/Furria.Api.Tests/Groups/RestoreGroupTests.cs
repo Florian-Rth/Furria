@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Groups;
 
-[Collection("Api")]
-public sealed class RestoreGroupTests
+public sealed class RestoreGroupTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string RetiredDescription = "Die alte Garde.";

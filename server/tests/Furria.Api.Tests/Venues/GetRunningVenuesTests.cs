@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Venues;
 
-[Collection("Api")]
-public sealed class GetRunningVenuesTests
+public sealed class GetRunningVenuesTests : IClassFixture<ApiTestFixture>
 {
     private const string RunningVenuesRoute = "/api/venues";
 

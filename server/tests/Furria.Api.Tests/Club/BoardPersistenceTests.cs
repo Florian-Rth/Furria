@@ -5,8 +5,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Club;
 
-[Collection("Api")]
-public sealed class BoardPersistenceTests
+public sealed class BoardPersistenceTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateOnly SeatedIn2023 = new(2023, 3, 1);
     private static readonly DateOnly HandedOverIn2025 = new(2025, 3, 1);

@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Management;
 
-[Collection("Api")]
-public sealed class PostSessionRecordTests
+public sealed class PostSessionRecordTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string ValidationField = "request";

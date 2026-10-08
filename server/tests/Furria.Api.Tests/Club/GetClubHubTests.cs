@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Club;
 
-[Collection("Api")]
-public sealed class GetClubHubTests
+public sealed class GetClubHubTests : IClassFixture<ApiTestFixture>
 {
     private const string RecordedMotto = "FURRIA — Der Mittelpunkt des Universums";
 

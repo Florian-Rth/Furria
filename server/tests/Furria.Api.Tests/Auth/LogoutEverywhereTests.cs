@@ -8,8 +8,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Auth;
 
-[Collection("Api")]
-public sealed class LogoutEverywhereTests
+public sealed class LogoutEverywhereTests : IClassFixture<ApiTestFixture>
 {
     private readonly ApiTestFixture _fixture;
 

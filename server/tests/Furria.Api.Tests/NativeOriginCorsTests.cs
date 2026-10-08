@@ -3,8 +3,7 @@ using Xunit;
 
 namespace Furria.Api.Tests;
 
-[Collection("Api")]
-public sealed class NativeOriginCorsTests
+public sealed class NativeOriginCorsTests : IClassFixture<ApiTestFixture>
 {
     private const string AndroidOrigin = "https://localhost";
     private const string IosOrigin = "capacitor://localhost";

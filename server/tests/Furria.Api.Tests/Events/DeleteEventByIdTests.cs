@@ -9,8 +9,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Events;
 
-[Collection("Api")]
-public sealed class DeleteEventByIdTests
+public sealed class DeleteEventByIdTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
 

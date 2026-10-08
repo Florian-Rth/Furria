@@ -7,8 +7,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Roles;
 
-[Collection("Api")]
-public sealed class GetRolesTests
+public sealed class GetRolesTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateOnly HeldSince2017 = new(2017, 9, 1);
     private static readonly DateOnly HandedOver2020 = new(2020, 3, 1);

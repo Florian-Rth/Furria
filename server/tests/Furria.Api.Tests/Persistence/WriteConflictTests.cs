@@ -5,8 +5,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Persistence;
 
-[Collection("Api")]
-public sealed class WriteConflictTests
+public sealed class WriteConflictTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
     private static readonly DateTimeOffset GalaSessionStart = new(
