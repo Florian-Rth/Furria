@@ -144,10 +144,13 @@ module to a scope deliberately; never widen a scope to silence a failure.
 
 ## Running
 
+When to run what is the Validation policy in `CLAUDE.md`; in short, affected files and touched
+packages locally, full suites in CI.
+
 ```bash
 cd web
-pnpm test          # every package, ~30s
-pnpm typecheck     # this and pnpm build are what catch wiring breaks
+pnpm --filter @furria/<pkg> test <file>   # inner loop and end of slice
+pnpm --filter @furria/<pkg> typecheck     # this and pnpm build are what catch wiring breaks
 pnpm shot /route   # needs a dev server and the API; the only gate that sees the layout
 ```
 

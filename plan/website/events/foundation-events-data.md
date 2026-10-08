@@ -132,12 +132,12 @@ unit (euro cents vs decimal euros — check what the Ledger design assumes) and 
   with counts anywhere.
 - All 7 public states have tested German label derivations; `cancelled` is exercised in
   tests only, never seeded.
-- Full gates pass: typecheck, tests, lint, build.
+- Gates green per the Validation policy in `CLAUDE.md`.
 
 ## Implementation plan (E-phases)
 
 - **E1 — Events data foundation** (this file, all three slices): seed module → feature
-  scaffold → teaser rewire. One phase; per-slice reviews and full gates as in P0–P6.
+  scaffold → teaser rewire. One phase; per-slice reviews and gates per the Validation policy in `CLAUDE.md`.
 
 ## As built (E1, 2026-08-13)
 

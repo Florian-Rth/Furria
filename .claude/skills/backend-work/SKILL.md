@@ -40,7 +40,7 @@ description: Mandatory rules for all C#/.NET backend work. Invoke before writing
 - Test naming: `Should_Expected_When_Scenario`
 - One test file per endpoint, file name mirrors endpoint name
 - Never use Task.Delay to wait for async operations in tests — poll for the expected condition with a timeout instead
-- Filter xUnit v3 tests with `dotnet test -- --filter-class <FullyQualifiedName>`; the VSTest `--filter`/`--treenode-filter` flags are silently ignored under Microsoft.Testing.Platform and run the whole suite
+- Run tests per the Validation policy in `CLAUDE.md`: targeted classes only (`dotnet run --project tests/Furria.Api.Tests --no-build -- -class <FQN>`), never the full suite in the inner loop; CI runs the full suite
 - When a test mutates host-singleton state that survives the per-test database reset (a monitor, cache, or background-service registry shared across the test collection), undo that mutation in a finally block so later suites in the collection are not contaminated
 
 ### Formatting

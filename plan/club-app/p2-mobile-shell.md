@@ -29,7 +29,7 @@ Anything beyond this boundary is CA-P3.
 
 ## Vertical slices
 
-Each slice ends green on `pnpm lint && pnpm typecheck && pnpm test && pnpm build`, and from
+Each slice ends green per the Validation policy in `CLAUDE.md`, and from
 slice 2 on, the app runs on the new shell so every slice can be opened and looked at.
 
 ### Slice 1 — tokens and the floating-card material

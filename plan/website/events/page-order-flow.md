@@ -108,11 +108,11 @@ shapeable (all embargoed until then, none may appear on any surface):
   the entitlement is "Karten" everywhere.
 - No shipped surface claims seat mechanics, holds, caps, payment methods or ticket-exchange
   mechanics; placeholder panels are recognisably placeholder.
-- Full gates green (typecheck, tests, lint, build); as-built notes recorded here.
+- Gates green per the Validation policy in `CLAUDE.md`; as-built notes recorded here.
 
 ## Implementation plan (E4)
 
-Three slices, per-slice review + full gates:
+Three slices, per-slice review + gates:
 
 1. **S1 — Routes & rename sweep**: delete the `/events/$eventSlug/seats` route, create
    `/events/$eventSlug/order` (step search-param validation) and `/orders/$orderCode`

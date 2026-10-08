@@ -44,15 +44,7 @@ ADR-0011.
 Eight slices, run **one at a time**. Each is a complete, shippable step that leaves both stacks
 green — no slice depends on a later one to compile or to make sense.
 
-**Gates run once, at the end of a slice** — never between its steps.
-
-```bash
-cd web    && pnpm lint && pnpm typecheck && pnpm test && pnpm build
-cd server && dotnet csharpier format . && dotnet build && dotnet test
-```
-
-`dotnet test` needs Docker running (Testcontainers). Screenshot proof is
-`pnpm shot <route>` and needs a dev server plus the API.
+**Gates run once, at the end of a slice** — never between its steps; scope and commands per the Validation policy in `CLAUDE.md`.
 
 | # | Slice | Stack | Touches | Depends on |
 |---|---|---|---|---|

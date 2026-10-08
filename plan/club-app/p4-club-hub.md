@@ -88,12 +88,7 @@ elides like its siblings.
 ## The slices
 
 Five slices, run **one at a time**, each complete and shippable. **Gates run once, at the end of a
-slice** — never between its steps.
-
-```bash
-cd web    && pnpm lint && pnpm typecheck && pnpm test && pnpm build
-cd server && dotnet csharpier format . && dotnet build && dotnet test
-```
+slice** — never between its steps; scope and commands per the Validation policy in `CLAUDE.md`.
 
 | # | Slice | Stacks | Depends on |
 |---|---|---|---|
@@ -138,7 +133,7 @@ D2, D3 and D4 are independent of one another. D5 needs D3's venue.
   members and groups).
 - The hub skeleton ruled in CA-P3 and deferred: opener instantly, three generic placeholders.
 
-**Done when** both gates are green and D1's integration tests pass. A fresh database holds no
+**Done when** the gates are green and D1's integration tests pass. A fresh database holds no
 Session, so the opener resolves to **Resting**, not the teaser, and `pnpm shot /club` proves nothing
 until a Session is typed into the dev database by hand — an optional check afterwards, never the
 criterion (ruling 14 as amended).
@@ -165,7 +160,7 @@ criterion (ruling 14 as amended).
 - A panel action to post, gated on `announcements.post` — a sheet with title, body, valid until.
 - The "new" marker compares `publishedAt` against the session payload's `lastSeenAnnouncementAt`.
 
-**Done when** both gates are green and `pnpm shot /club` shows two announcements.
+**Done when** the gates are green and `pnpm shot /club` shows two announcements.
 
 ---
 
@@ -186,7 +181,7 @@ criterion (ruling 14 as amended).
 - The key holdings panel: one tile per venue with a `KkAvatarStack`. Tapping opens a sheet with the
   holders, *holder since*, and the route to their contact details.
 
-**Done when** both gates are green and D3's integration tests pass. A fresh database holds no
+**Done when** the gates are green and D3's integration tests pass. A fresh database holds no
 venue, so `venues[]` is empty and the key holdings panel elides; `pnpm shot /club` shows tiles only
 after the venues are typed into the dev database by hand — an optional check afterwards, never the
 criterion (ruling 14 as amended).
@@ -225,7 +220,7 @@ criterion (ruling 14 as amended).
 - The *Who does what* panel: the band (rectangular portraits, `KkPhotoPlaceholder` until the media
   store), then *All roles* into a sheet listing roles with their running holders.
 
-**Done when** both gates are green and the derivation tests pass.
+**Done when** the gates are green and the derivation tests pass.
 
 ---
 
@@ -252,7 +247,7 @@ criterion (ruling 14 as amended).
 - `KkFilterChips` for scope; the page defaults to club + the viewer's groups.
 - Attendance response inline on an entry that asks for one.
 
-**Done when** both gates are green and D5's integration tests pass. `calendar_entry` starts
+**Done when** the gates are green and D5's integration tests pass. `calendar_entry` starts
 empty, so `pnpm shot /calendar` shows both views only after entries are typed into the dev
 database by hand — an optional check afterwards, never the criterion (ruling 14 as amended).
 

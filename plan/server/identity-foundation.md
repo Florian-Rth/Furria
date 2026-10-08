@@ -142,8 +142,8 @@ here. Each is a place where the "obvious simplification" is wrong.
 
 ## Implementation plan
 
-- **B1 — Identity foundation** (this file, slices 1–5 in order). Per-slice review, full
-  gates after each slice, as established in the website phases.
+- **B1 — Identity foundation** (this file, slices 1–5 in order). Per-slice review, gates
+  after each slice per the Validation policy in `CLAUDE.md`.
 - B1 is the **only** backend-first work: the backend is demand-driven — everything after
   B1 is pulled by a Club-App or website feature when it needs it. The inventory and its
   expected pull order live in the [backend master plan](master-plan.md); work moves to the

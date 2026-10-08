@@ -129,7 +129,7 @@ Not decisions. Logged so the real shaping round starts from them:
   work.
 - Copy lives in `exchange-content.ts`; the embargo/copy-guard sweep covers it (banned
   terms: Zweitmarkt, Resale …; rejected specifics: SMS, Vorkaufsrecht hours).
-- Full gates green (typecheck, tests, lint, build); as-built notes recorded here; statuses
+- Gates green per the Validation policy in `CLAUDE.md`; as-built notes recorded here; statuses
   flipped to `shipped (concept)`.
 
 ## As-built (E6, 2026-09-01)

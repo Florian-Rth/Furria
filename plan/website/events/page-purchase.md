@@ -126,11 +126,11 @@ Rulings per item live in the [mock README](../../../docs/design/events-page/READ
 - The confirmation renders both payment faces (bezahlt / in Bearbeitung), shows buyer
   name + email, no codes; cross-sell and ticket exchange teaser link correctly.
 - Both routes carry `noindex`; the E4 honesty test grows the new banned claims.
-- Full gates green (typecheck, tests, lint, build); as-built notes recorded here.
+- Gates green per the Validation policy in `CLAUDE.md`; as-built notes recorded here.
 
 ## Implementation plan (E5)
 
-Four slices, per-slice review + full gates:
+Four slices, per-slice review + gates:
 
 1. **S1 — Order model + seed + route hygiene**: `lib/seed/orders.ts` (Zod schema:
    event ref, ticket count/price/total, buyer, `paymentStatus`; the visibly-fake demo

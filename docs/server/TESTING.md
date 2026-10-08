@@ -20,6 +20,19 @@ live here, not as dead code.
 - **YAGNI applies to test infra too.** A helper exists only once a test needs it; until then its
   contract is specced below under *Still planned*.
 
+## Running
+
+When to run what is the Validation policy in `CLAUDE.md`: targeted classes locally, the full
+suite in CI. One class (after `dotnet build`, Docker running):
+
+```bash
+cd server
+dotnet run --project tests/Furria.Api.Tests --no-build -- -class <FQN> [-class <FQN>]
+```
+
+`dotnet test -- --filter-class` from `server/` also runs the analyzer tests with zero matches and
+fails; the VSTest `--filter`/`--treenode-filter` flags are ignored and run the whole suite.
+
 ## The base harness
 
 ### The shape of a test

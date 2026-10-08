@@ -64,6 +64,7 @@ description: Mandatory rules for all React/TypeScript frontend work. Invoke befo
 ### Code Style
 - Biome for linting and formatting — not Prettier, not ESLint
 - Zero warnings policy — treat all lint and TypeScript warnings as errors
+- Run checks per the Validation policy in `CLAUDE.md`: affected test files and touched packages only (`pnpm --filter @furria/<pkg> test <file>`), never the full suite in the inner loop; `pnpm build`/`pnpm shot` only for bundling or chrome changes; CI runs everything
 - Many rules here are machine-enforced by Biome — suppression is NEVER allowed; never add a `biome-ignore`, never weaken or disable a rule to make code pass; fix the code instead
 - Never use deprecated APIs from any library — migrate to replacements immediately
 - Never write code comments — make the code itself read like the comment through naming and extraction; the only allowed comment-syntax lines are functional directives (triple-slash references, @ts-expect-error) — never `biome-ignore`
