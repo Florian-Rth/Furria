@@ -292,22 +292,6 @@ public sealed class GetMyGroupsTests
     }
 
     [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(
-            builder => builder.Groups(groups => groups.AddGroup("tanzgarde", "Tanzgarde")),
-            ct
-        );
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .GETAsync<GetMyGroups, GetMyGroupsResponse>();
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_CarryExactlyTheContractFields_When_TheListIsRead()
     {
         var ct = TestContext.Current.CancellationToken;

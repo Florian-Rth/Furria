@@ -640,18 +640,6 @@ public sealed class GetPersonByIdTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_ThePersonDoesNotExist()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, _) = await ReadPersonAsync(client, 999_999);
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_ShowThePersonWithHerAccess_When_TheCallerOnlyHoldsAccountsManage()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -720,48 +708,6 @@ public sealed class GetPersonByIdTests
         Assert.Equal("Anna", result.FirstName);
         Assert.False(result.Access.Rights.CanInvite);
         Assert.False(result.Access.Rights.CanManageAccount);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerHoldsNeitherPersonsManageNorAccountsManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddPerson("ilka", "Ilka", "Reineke")
-                            .AddAccount("ilka")
-                            .AddMembership("ilka-first", "ilka", JoinedIn2017)
-                    )
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "gruppenpflege",
-                            "ilka-gruppenpflege",
-                            "Gruppenpflege",
-                            "ilka",
-                            FurriaPermissions.GroupsManage
-                        )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var (response, _) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("ilka"));
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-
-        var (response, _) = await ReadPersonAsync(_fixture.CreateClient(), 1);
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Fact]

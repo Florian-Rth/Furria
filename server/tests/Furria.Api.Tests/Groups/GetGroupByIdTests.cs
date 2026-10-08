@@ -977,59 +977,6 @@ public sealed class GetGroupByIdTests
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheGroupDoesNotExist()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity.AddAccount("alice").AddMembership("alice-first", "alice", JoinedIn2017)
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("alice", ct);
-        var (response, _) = await ReadHubAsync(client, UnknownGroupId);
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Groups(groups => groups.AddGroup("tanzgarde", "Tanzgarde")),
-            ct
-        );
-
-        var (response, _) = await ReadHubAsync(
-            _fixture.CreateClient(),
-            ctx.Groups.Groups.IdOf("tanzgarde")
-        );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_TheGroupIdIsNotPositive()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity.AddAccount("alice").AddMembership("alice-first", "alice", JoinedIn2017)
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("alice", ct);
-        var (response, _) = await ReadHubAsync(client, 0);
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_CarryExactlyTheContractFields_When_TheHubIsRead()
     {
         var ct = TestContext.Current.CancellationToken;

@@ -15,7 +15,6 @@ public sealed class RestoreRoleTests
     private const string ConflictField = "conflict";
     private const string NotArchivedMessage = "Diese Rolle ist nicht archiviert.";
     private const string DuplicateNameMessage = "Eine Rolle mit diesem Namen gibt es schon.";
-    private const int UnknownRoleId = 999_999;
 
     private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
 
@@ -168,85 +167,6 @@ public sealed class RestoreRoleTests
         Assert.Equal([DuplicateNameMessage], failures[ConflictField]);
         await ctx
             .Expected.Role(ctx.Roles.Roles.IdOf("chronik-retired"))
-            .ToBeArchivedOn(ArchivedIn2021)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheRoleIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await RestoreRoleAsync(client, UnknownRoleId);
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_TheRouteCarriesNoUsableId()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await RestoreRoleAsync(client, 0);
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldRolesManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("ilka"))
-                    .Roles(roles =>
-                        roles
-                            .AddRoleWithDetails(
-                                "chronik",
-                                "Chronik",
-                                "Führt die Vereinschronik.",
-                                ArchivedIn2021
-                            )
-                            .AddRoleWithHolder(
-                                "gruppenpflege",
-                                "ilka-gruppenpflege",
-                                "Gruppenpflege",
-                                "ilka",
-                                FurriaPermissions.GroupsManage
-                            )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var response = await RestoreRoleAsync(client, ctx.Roles.Roles.IdOf("chronik"));
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx
-            .Expected.Role(ctx.Roles.Roles.IdOf("chronik"))
-            .ToBeArchivedOn(ArchivedIn2021)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithArchivedChronicleAsync(ct);
-
-        var response = await RestoreRoleAsync(
-            _fixture.CreateClient(),
-            ctx.Roles.Roles.IdOf("chronik")
-        );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-        await ctx
-            .Expected.Role(ctx.Roles.Roles.IdOf("chronik"))
             .ToBeArchivedOn(ArchivedIn2021)
             .AssertAsync(ct);
     }

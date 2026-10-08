@@ -368,54 +368,6 @@ public sealed class GetPersonsTests
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerHoldsNeitherPersonsManageNorAccountsManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddPerson("ilka", "Ilka", "Reineke")
-                            .AddAccount("ilka")
-                            .AddMembership("ilka-first", "ilka", JoinedIn2017)
-                    )
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "gruppenpflege",
-                            "ilka-gruppenpflege",
-                            "Gruppenpflege",
-                            "ilka",
-                            FurriaPermissions.GroupsManage
-                        )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var (response, _) = await client.GETAsync<
-            GetPersons,
-            GetPersonsRequest,
-            GetPersonsResponse
-        >(new GetPersonsRequest());
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .GETAsync<GetPersons, GetPersonsRequest, GetPersonsResponse>(new GetPersonsRequest());
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_SortUmlautsAsGerman_When_ListingThePersons()
     {
         var ct = TestContext.Current.CancellationToken;

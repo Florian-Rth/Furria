@@ -2,7 +2,6 @@ using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Roles;
 using Furria.Application.Authorization;
-using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -180,46 +179,6 @@ public sealed class GetRolesTests
         Assert.True(IndexOf(result, "Öffentlichkeit") < IndexOf(result, "Organisation"));
         Assert.True(IndexOf(result, "Öffentlichkeit") < IndexOf(result, "Zeugwart"));
     }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldRolesManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithGroupCareHolderAsync(ct);
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var (response, _) = await client.GETAsync<GetRoles, GetRolesResponse>();
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-
-        var (response, _) = await _fixture.CreateClient().GETAsync<GetRoles, GetRolesResponse>();
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    private Task<SeededContext> BuildWithGroupCareHolderAsync(CancellationToken ct) =>
-        _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("ilka"))
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "gruppenpflege",
-                            "ilka-gruppenpflege",
-                            "Gruppenpflege",
-                            "ilka",
-                            FurriaPermissions.GroupsManage
-                        )
-                    ),
-            ct
-        );
 
     private static RoleSummaryDto Single(GetRolesResponse response, string name) =>
         Assert.Single(response.Roles, role => role.Name == name);

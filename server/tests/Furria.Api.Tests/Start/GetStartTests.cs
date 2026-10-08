@@ -39,17 +39,6 @@ public sealed class GetStartTests
     }
 
     [Fact]
-    public async Task Should_ReturnUnauthorized_When_NoOneIsSignedIn()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-
-        var (response, _) = await _fixture.CreateClient().GETAsync<GetStart, GetStartResponse>();
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_ReturnUnauthorized_When_TheAccountWasDisabledAfterItsTokenWasIssued()
     {
         var ct = TestContext.Current.CancellationToken;

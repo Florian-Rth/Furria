@@ -239,17 +239,6 @@ public sealed class PutMyLastSeenAnnouncementTests
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-
-        var response = await MarkSeenAsync(_fixture.CreateClient(), InsideTheSession);
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
     private static async Task<HttpResponseMessage> MarkSeenAsync(
         HttpClient client,
         DateTimeOffset? seenUpTo

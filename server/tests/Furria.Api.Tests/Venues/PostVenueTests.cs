@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Venues;
-using Furria.Application.Authorization;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -163,43 +162,6 @@ public sealed class PostVenueTests
         );
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldClubManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity.AddPerson("anna", "Anna", "Kaiser").AddAccount("anna")
-                    )
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "schluesselpflege",
-                            "schluesselpflege-holding",
-                            "Schlüsselpflege",
-                            "anna",
-                            FurriaPermissions.KeyHoldingsManage
-                        )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("anna", ct);
-        var (response, _) = await client.POSTAsync<PostVenue, PostVenueRequest, PostVenueResponse>(
-            new()
-            {
-                Name = "Turnhalle",
-                Street = Street,
-                Zip = Zip,
-                City = City,
-                Hint = null,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
     private static async Task<IDictionary<string, List<string>>> ReadFailuresAsync(

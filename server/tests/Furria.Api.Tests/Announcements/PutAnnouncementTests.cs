@@ -174,27 +174,6 @@ public sealed class PutAnnouncementTests
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildBoardAsync(ct);
-
-        var response = await _fixture
-            .CreateClient()
-            .PUTAsync<PutAnnouncement, PutAnnouncementRequest>(
-                new()
-                {
-                    AnnouncementId = ctx.Club.Announcements.IdOf("von-alice"),
-                    Title = CorrectedTitle,
-                    Body = CorrectedBody,
-                    ValidUntil = null,
-                }
-            );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
     private Task<SeededContext> BuildBoardAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder =>

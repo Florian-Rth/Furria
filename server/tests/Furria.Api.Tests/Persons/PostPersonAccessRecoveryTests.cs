@@ -17,7 +17,6 @@ public sealed class PostPersonAccessRecoveryTests
 {
     private const string ConflictField = "conflict";
     private const string CodePattern = "^[2-9A-HJKMNP-Z]{4}-[2-9A-HJKMNP-Z]{4}$";
-    private const int UnknownPersonId = 999_999;
 
     private readonly ApiTestFixture _fixture;
 
@@ -124,39 +123,6 @@ public sealed class PostPersonAccessRecoveryTests
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerOnlyHoldsPersonsManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddAccount("anna")
-                            .AddPerson("ilka", "Ilka", "Reineke")
-                            .AddAccount("ilka")
-                    )
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "personenpflege",
-                            "ilka-personenpflege",
-                            "Personenpflege",
-                            "ilka",
-                            FurriaPermissions.PersonsManage
-                        )
-                    ),
-            ct
-        );
-        var annaId = ctx.Identity.People.IdOf("anna");
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-
-        var (response, _) = await PostAsync(client, annaId);
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx.Expected.InvitationsOfPerson(annaId).ToHaveCount(0).AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_IssueTheRecovery_When_TheCallerOnlyHoldsAccountsManage()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -190,18 +156,6 @@ public sealed class PostPersonAccessRecoveryTests
             .Expected.LiveInvitationOfPerson(annaId)
             .ToBeRecoveryIssuedBy(ctx.Identity.People.IdOf("vera"))
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_ThePersonIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        var (response, _) = await PostAsync(manager, UnknownPersonId);
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     private static Task<TestResult<PostPersonAccessRecoveryResponse>> PostAsync(

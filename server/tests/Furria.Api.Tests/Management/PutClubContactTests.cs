@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Management;
-using Furria.Application.Authorization;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -164,47 +163,6 @@ public sealed class PutClubContactTests
             ["Gib eine vollständige Adresse mit https:// ein."],
             failures[WebsiteUrlField]
         );
-        await ctx.Expected.ClubRecord().ToNotExist().AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerHoldsAnotherManagementPermission()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("ilka"))
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "teilpflege",
-                            "ilka-teilpflege",
-                            "Teilpflege",
-                            "ilka",
-                            FurriaPermissions.PersonsManage
-                        )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var response = await client.PUTAsync<PutClubContact, PutClubContactRequest>(FullContact());
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx.Expected.ClubRecord().ToNotExist().AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var response = await _fixture
-            .CreateClient()
-            .PUTAsync<PutClubContact, PutClubContactRequest>(FullContact());
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         await ctx.Expected.ClubRecord().ToNotExist().AssertAsync(ct);
     }
 

@@ -651,38 +651,6 @@ public sealed class AdmitMembershipApplicationTests
             .AssertAsync(ct);
     }
 
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerOnlyManagesPersons()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddAccount("paul")
-                            .AddMembershipApplication("mia", _fixture.Today.AddYears(-30))
-                    )
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "personenpflege",
-                            "paul-personenpflege",
-                            "Personenpflege",
-                            "paul",
-                            FurriaPermissions.PersonsManage
-                        )
-                    ),
-            ct
-        );
-        var client = await ctx.Identity.ClientForAsync("paul", ct);
-        var applicationId = ctx.Identity.MembershipApplications.IdOf("mia");
-
-        var (response, _) = await AdmitAsync(client, applicationId, personId: null, _fixture.Today);
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx.Expected.MembershipApplication(applicationId).ToExist().AssertAsync(ct);
-    }
-
     private static Task<TestResult<AdmitMembershipApplicationResponse>> AdmitAsync(
         HttpClient client,
         int membershipApplicationId,

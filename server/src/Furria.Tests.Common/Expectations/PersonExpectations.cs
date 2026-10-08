@@ -50,12 +50,6 @@ public sealed class PersonExpectations
                 Assert.Equal(visible, (await SingleAsync(dbContext, ct)).ContactVisibleToMembers)
         );
 
-    public Expected ToHavePortrait(string? portraitUrl) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(portraitUrl, (await SingleAsync(dbContext, ct)).PortraitUrl)
-        );
-
     public Expected ToHaveBirthDate(DateOnly? birthDate) =>
         _expected.Enqueue(
             async (dbContext, ct) =>

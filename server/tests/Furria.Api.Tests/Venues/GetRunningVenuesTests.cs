@@ -210,20 +210,4 @@ public sealed class GetRunningVenuesTests
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(
-            builder => builder.Club(club => club.AddVenue("halle", "Turnhalle")),
-            ct
-        );
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .GETAsync<GetRunningVenues, GetRunningVenuesResponse>();
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
 }

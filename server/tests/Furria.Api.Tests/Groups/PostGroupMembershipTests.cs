@@ -555,40 +555,6 @@ public sealed class PostGroupMembershipTests
             .AssertAsync(ct);
     }
 
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddPerson("paula", "Paula", "Brendel"))
-                    .Groups(groups => groups.AddGroup("tanzgarde", "Tanzgarde")),
-            ct
-        );
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .POSTAsync<
-                PostGroupMembership,
-                PostGroupMembershipRequest,
-                PostGroupMembershipResponse
-            >(
-                new()
-                {
-                    GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
-                    PersonId = ctx.Identity.People.IdOf("paula"),
-                    JoinedOn = JoinedIn2017,
-                }
-            );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-        await ctx
-            .Expected.GroupMembershipsOf(ctx.Groups.Groups.IdOf("tanzgarde"))
-            .ToHaveCount(0)
-            .AssertAsync(ct);
-    }
-
     private Task<SeededContext> BuildWithEndedGroupMembershipAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder =>

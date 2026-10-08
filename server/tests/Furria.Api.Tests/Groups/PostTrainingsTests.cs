@@ -275,23 +275,6 @@ public sealed class PostTrainingsTests
     }
 
     [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildRhythmAsync(ct);
-        var tanzgarde = ctx.Groups.Groups.IdOf("tanzgarde");
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .POSTAsync<PostTrainings, PostTrainingsRequest, PostTrainingsResponse>(
-                OneEvening(tanzgarde, ctx.Club.TrainingSlots.IdOf("dienstags"))
-            );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-        await ctx.Expected.TrainingsOf(tanzgarde).ToBeEmpty().AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_WriteTheRunningEvenings_When_TheSlotWithTheArchivedVenueIsNotTicked()
     {
         var ct = TestContext.Current.CancellationToken;

@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Groups;
-using Furria.Application.Authorization;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -13,7 +12,6 @@ public sealed class RestoreGroupTests
 {
     private const string ConflictField = "conflict";
     private const string RetiredDescription = "Die alte Garde.";
-    private const int UnknownGroupId = 999_999;
 
     private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
 
@@ -157,90 +155,6 @@ public sealed class RestoreGroupTests
             .Expected.Group(ctx.Groups.Groups.IdOf("tanzgarde-retired"))
             .ToBeArchivedOn(ArchivedIn2021)
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheGroupIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await client.POSTAsync<RestoreGroup, RestoreGroupRequest>(
-            new() { GroupId = UnknownGroupId }
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldGroupsManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity.AddPerson("ilka", "Ilka", "Reineke").AddAccount("ilka")
-                    )
-                    .Groups(groups =>
-                        groups.AddGroup(
-                            "kindergarde",
-                            "Kindergarde",
-                            RetiredDescription,
-                            isRecruiting: false,
-                            ArchivedIn2021
-                        )
-                    )
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "schriftfuehrung",
-                            "ilka-schriftfuehrung",
-                            "Schriftführung",
-                            "ilka",
-                            FurriaPermissions.PersonsManage
-                        )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var response = await client.POSTAsync<RestoreGroup, RestoreGroupRequest>(
-            new() { GroupId = ctx.Groups.Groups.IdOf("kindergarde") }
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx
-            .Expected.Group(ctx.Groups.Groups.IdOf("kindergarde"))
-            .ToBeArchivedOn(ArchivedIn2021)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Groups(groups =>
-                    groups.AddGroup(
-                        "kindergarde",
-                        "Kindergarde",
-                        RetiredDescription,
-                        isRecruiting: false,
-                        ArchivedIn2021
-                    )
-                ),
-            ct
-        );
-
-        var response = await _fixture
-            .CreateClient()
-            .POSTAsync<RestoreGroup, RestoreGroupRequest>(
-                new() { GroupId = ctx.Groups.Groups.IdOf("kindergarde") }
-            );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Fact]

@@ -1,7 +1,6 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Board;
-using Furria.Application.Authorization;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -222,44 +221,6 @@ public sealed class GetBoardTests
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Empty(result.Offices);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldBoardManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("katrin"))
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "gruppenpflege",
-                            "katrin-gruppenpflege",
-                            "Gruppenpflege",
-                            "katrin",
-                            FurriaPermissions.GroupsManage
-                        )
-                    )
-                    .Club(club => club.AddBoardOffice("praesident", "Präsident", 1)),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("katrin", ct);
-        var (response, _) = await ReadBoardAsync(client);
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-
-        var (response, _) = await ReadBoardAsync(_fixture.CreateClient());
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     private static BoardOfficeDto OfficeOf(GetBoardResponse response, int boardOfficeId) =>

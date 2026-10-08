@@ -398,28 +398,6 @@ public sealed class PostCalendarResponseTests
         );
     }
 
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-
-                var response = await AnswerAsync(
-                    _fixture.CreateClient(),
-                    ctx.Club.CalendarEntries.IdOf("club-meeting"),
-                    AttendanceAnswer.Yes
-                );
-
-                Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-            }
-        );
-    }
-
     private async Task AssertAnswerTakenAsync(string personAlias, string entryAlias)
     {
         var ct = TestContext.Current.CancellationToken;

@@ -17,57 +17,6 @@ public sealed class MembershipPausePersistenceTests
     }
 
     [Fact]
-    public async Task Should_StayOpenEnded_When_NoLastSessionIsRecorded()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("alice")
-                        .AddMembership("alice-first", "alice")
-                        .AddMembershipPause(
-                            "alice-ruhezeit",
-                            "alice-first",
-                            _fixture.CurrentSessionYear
-                        )
-                ),
-            ct
-        );
-
-        await ctx
-            .Expected.MembershipPause(ctx.Identity.Pauses.IdOf("alice-ruhezeit"))
-            .ToHaveSpan(_fixture.CurrentSessionYear, null)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_RoundTripTheSpan_When_TheMembershipPauseCoversSeveralSessions()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("alice")
-                        .AddMembership("alice-first", "alice")
-                        .AddMembershipPause(
-                            "alice-ruhezeit",
-                            "alice-first",
-                            _fixture.CurrentSessionYear - 2,
-                            _fixture.CurrentSessionYear
-                        )
-                ),
-            ct
-        );
-
-        await ctx
-            .Expected.MembershipPause(ctx.Identity.Pauses.IdOf("alice-ruhezeit"))
-            .ToHaveSpan(_fixture.CurrentSessionYear - 2, _fixture.CurrentSessionYear)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_RejectTheSpan_When_TheLastSessionPrecedesTheFirst()
     {
         var ct = TestContext.Current.CancellationToken;

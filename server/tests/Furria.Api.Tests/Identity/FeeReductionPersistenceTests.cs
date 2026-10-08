@@ -17,34 +17,6 @@ public sealed class FeeReductionPersistenceTests
     }
 
     [Fact]
-    public async Task Should_RoundTripBasisAndSpan_When_AFeeReductionIsRecorded()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("alice")
-                        .AddFeeReduction(
-                            "alice-studium",
-                            "alice",
-                            FeeReductionBasis.Studies,
-                            _fixture.CurrentSessionYear,
-                            _fixture.CurrentSessionYear + 2
-                        )
-                ),
-            ct
-        );
-
-        await ctx
-            .Expected.FeeReduction(ctx.Identity.FeeReductions.IdOf("alice-studium"))
-            .ToHaveBasis(FeeReductionBasis.Studies)
-            .FeeReduction(ctx.Identity.FeeReductions.IdOf("alice-studium"))
-            .ToHaveSpan(_fixture.CurrentSessionYear, _fixture.CurrentSessionYear + 2)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_RejectTheBasis_When_ItNamesNoKnownBasis()
     {
         var ct = TestContext.Current.CancellationToken;

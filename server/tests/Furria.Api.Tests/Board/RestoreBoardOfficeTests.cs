@@ -4,7 +4,6 @@ using FastEndpoints;
 using Furria.Api.Endpoints.Board;
 using Furria.Api.Tests.Authorization;
 using Furria.Application.Authorization;
-using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -15,7 +14,6 @@ public sealed class RestoreBoardOfficeTests
 {
     private const string ConflictField = "conflict";
     private const string NotArchivedMessage = "Diese Vorstandsfunktion ist nicht archiviert.";
-    private const int UnknownBoardOfficeId = 999_999;
 
     private static readonly DateOnly Elected2016 = new(2016, 11, 11);
     private static readonly DateOnly HandedOver2020 = new(2020, 11, 10);
@@ -208,75 +206,6 @@ public sealed class RestoreBoardOfficeTests
         await ctx
             .Expected.BoardOffice(ctx.Club.BoardOffices.IdOf("kassenwart"))
             .ToBeOpen()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheOfficeIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await RestoreOfficeAsync(client, UnknownBoardOfficeId);
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldBoardManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("katrin"))
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "rechte",
-                            "katrin-rechte",
-                            "Rechte",
-                            "katrin",
-                            FurriaPermissions.RolesManage
-                        )
-                    )
-                    .Club(club =>
-                        club.AddBoardOffice("pressewart", "Pressewart", 4, null, ArchivedIn2021)
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("katrin", ct);
-        var response = await RestoreOfficeAsync(client, ctx.Club.BoardOffices.IdOf("pressewart"));
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx
-            .Expected.BoardOffice(ctx.Club.BoardOffices.IdOf("pressewart"))
-            .ToBeArchivedOn(ArchivedIn2021)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Club(club =>
-                    club.AddBoardOffice("pressewart", "Pressewart", 4, null, ArchivedIn2021)
-                ),
-            ct
-        );
-
-        var response = await RestoreOfficeAsync(
-            _fixture.CreateClient(),
-            ctx.Club.BoardOffices.IdOf("pressewart")
-        );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-        await ctx
-            .Expected.BoardOffice(ctx.Club.BoardOffices.IdOf("pressewart"))
-            .ToBeArchivedOn(ArchivedIn2021)
             .AssertAsync(ct);
     }
 

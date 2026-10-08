@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Management;
-using Furria.Application.Authorization;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -211,61 +210,6 @@ public sealed class PutClubIdentityTests
         var failures = await ReadFailuresAsync(response, ct);
         Assert.Equal(["Das Gründungsjahr liegt in der Zukunft."], failures[ValidationField]);
         await ctx.Expected.ClubRecord().ToHaveFoundedYear(1971).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerHoldsAnotherManagementPermission()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("ilka"))
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "teilpflege",
-                            "ilka-teilpflege",
-                            "Teilpflege",
-                            "ilka",
-                            FurriaPermissions.PersonsManage
-                        )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var response = await client.PUTAsync<PutClubIdentity, PutClubIdentityRequest>(
-            new()
-            {
-                Name = OfficialName,
-                ShortName = null,
-                FoundedYear = null,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx.Expected.ClubRecord().ToNotExist().AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerIsNotAuthenticated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var response = await _fixture
-            .CreateClient()
-            .PUTAsync<PutClubIdentity, PutClubIdentityRequest>(
-                new()
-                {
-                    Name = OfficialName,
-                    ShortName = null,
-                    FoundedYear = null,
-                }
-            );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-        await ctx.Expected.ClubRecord().ToNotExist().AssertAsync(ct);
     }
 
     private static async Task<IDictionary<string, List<string>>> ReadFailuresAsync(

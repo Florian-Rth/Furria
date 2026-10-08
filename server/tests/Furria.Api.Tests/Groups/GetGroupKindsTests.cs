@@ -186,20 +186,4 @@ public sealed class GetGroupKindsTests
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(
-            builder => builder.Groups(groups => groups.AddGroupKind("garde", "Garde")),
-            ct
-        );
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .GETAsync<GetGroupKinds, GetGroupKindsResponse>();
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
 }

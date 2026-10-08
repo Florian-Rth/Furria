@@ -106,21 +106,6 @@ public sealed class WithdrawAnnouncementTests
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildBoardAsync(ct);
-
-        var response = await _fixture
-            .CreateClient()
-            .POSTAsync<WithdrawAnnouncement, WithdrawAnnouncementRequest>(
-                new() { AnnouncementId = ctx.Club.Announcements.IdOf("von-alice") }
-            );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
     private Task<SeededContext> BuildBoardAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder =>

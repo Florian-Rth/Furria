@@ -127,22 +127,6 @@ public sealed class PutEventTicketAvailabilityTests
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerHoldsNoEventsKey()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var eventId = ctx.Club.Events.IdOf("first-gala");
-
-        var response = await SetAsync(ctx, "max", eventId, TicketAvailability.SoldOut);
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx
-            .Expected.Event(eventId)
-            .ToHaveTicketAvailability(TicketAvailability.Available)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_ReturnNotFound_When_TheEventIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;

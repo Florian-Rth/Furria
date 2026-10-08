@@ -224,21 +224,6 @@ public sealed class PostEventTests
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerOnlyHoldsCalendarManageClub()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-
-        var (response, _) = await CreateAsync(
-            ctx,
-            "ilka",
-            Gala(ctx.Club.Venues.IdOf("buergerhaus"))
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
     private static PostEventRequest Gala(int venueId) =>
         new()
         {

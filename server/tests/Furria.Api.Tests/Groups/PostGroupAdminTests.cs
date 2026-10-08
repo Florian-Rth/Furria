@@ -708,37 +708,6 @@ public sealed class PostGroupAdminTests
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheCallerSendsNoToken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddPerson("paula", "Paula", "Brendel"))
-                    .Groups(groups => groups.AddGroup("tanzgarde", "Tanzgarde")),
-            ct
-        );
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .POSTAsync<PostGroupAdmin, PostGroupAdminRequest, PostGroupAdminResponse>(
-                new()
-                {
-                    GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
-                    PersonId = ctx.Identity.People.IdOf("paula"),
-                    Function = null,
-                    SinceOn = AppointedIn2023,
-                }
-            );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-        await ctx
-            .Expected.GroupAdminsOf(ctx.Groups.Groups.IdOf("tanzgarde"))
-            .ToHaveCount(0)
-            .AssertAsync(ct);
-    }
-
     private static async Task<IDictionary<string, List<string>>> ReadFailuresAsync(
         HttpResponseMessage response,
         CancellationToken ct

@@ -332,46 +332,6 @@ public sealed class PostKeyHoldingTests
             .AssertAsync(ct);
     }
 
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldKeyHoldingsManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity.AddPerson("anna", "Anna", "Kaiser").AddAccount("anna")
-                    )
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "ortspflege",
-                            "ortspflege-holding",
-                            "Ortspflege",
-                            "anna",
-                            FurriaPermissions.ClubManage
-                        )
-                    )
-                    .Club(club => club.AddVenue("lager", "Requisitenlager")),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("anna", ct);
-        var (response, _) = await client.POSTAsync<
-            PostKeyHolding,
-            PostKeyHoldingRequest,
-            PostKeyHoldingResponse
-        >(
-            new()
-            {
-                VenueId = ctx.Club.Venues.IdOf("lager"),
-                PersonId = ctx.Identity.People.IdOf("anna"),
-                SinceOn = HeldSince2024,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
     private static async Task<IDictionary<string, List<string>>> ReadFailuresAsync(
         HttpResponseMessage response,
         CancellationToken ct

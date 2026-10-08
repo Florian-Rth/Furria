@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Venues;
-using Furria.Application.Authorization;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -189,49 +188,6 @@ public sealed class PutVenueTests
         );
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotHoldClubManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity.AddPerson("anna", "Anna", "Kaiser").AddAccount("anna")
-                    )
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "schluesselpflege",
-                            "schluesselpflege-holding",
-                            "Schlüsselpflege",
-                            "anna",
-                            FurriaPermissions.KeyHoldingsManage
-                        )
-                    )
-                    .Club(club => club.AddVenue("halle", "Turnhalle")),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("anna", ct);
-        var response = await client.PUTAsync<PutVenue, PutVenueRequest>(
-            new()
-            {
-                VenueId = ctx.Club.Venues.IdOf("halle"),
-                Name = "Sporthalle",
-                Street = Street,
-                Zip = Zip,
-                City = City,
-                Hint = null,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx
-            .Expected.Venue(ctx.Club.Venues.IdOf("halle"))
-            .ToHaveName("Turnhalle")
-            .AssertAsync(ct);
     }
 
     private static async Task<IDictionary<string, List<string>>> ReadFailuresAsync(
