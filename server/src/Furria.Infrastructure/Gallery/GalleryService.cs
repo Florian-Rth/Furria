@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using Furria.Application.Gallery;
 using Furria.Core.Gallery;
 using Furria.Core.Media;
+using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
 
@@ -47,12 +48,19 @@ public sealed partial class GalleryService
         item.SelectionPosition != null;
 
     private readonly AppDbContext _dbContext;
+    private readonly PermissionAuthorizer _authorizer;
     private readonly MediaFiles _mediaFiles;
     private readonly TimeProvider _timeProvider;
 
-    public GalleryService(AppDbContext dbContext, MediaFiles mediaFiles, TimeProvider timeProvider)
+    public GalleryService(
+        AppDbContext dbContext,
+        PermissionAuthorizer authorizer,
+        MediaFiles mediaFiles,
+        TimeProvider timeProvider
+    )
     {
         _dbContext = dbContext;
+        _authorizer = authorizer;
         _mediaFiles = mediaFiles;
         _timeProvider = timeProvider;
     }

@@ -3,7 +3,6 @@ using FluentValidation;
 using Furria.Api.Authorization;
 using Furria.Api.Results;
 using Furria.Application.Gallery;
-using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Gallery;
 
 namespace Furria.Api.Endpoints.Gallery;
@@ -11,12 +10,10 @@ namespace Furria.Api.Endpoints.Gallery;
 public sealed class DeleteGalleryItems : Endpoint<DeleteGalleryItemsRequest>
 {
     private readonly GalleryService _galleryService;
-    private readonly PermissionAuthorizer _authorizer;
 
-    public DeleteGalleryItems(GalleryService galleryService, PermissionAuthorizer authorizer)
+    public DeleteGalleryItems(GalleryService galleryService)
     {
         _galleryService = galleryService;
-        _authorizer = authorizer;
     }
 
     public override void Configure()
@@ -30,7 +27,7 @@ public sealed class DeleteGalleryItems : Endpoint<DeleteGalleryItemsRequest>
         var result = await _galleryService.DeleteItemsAsync(
             new DeleteGalleryItemsCommand
             {
-                Actor = await _authorizer.GalleryActorAsync(User.AccountId()!.Value, ct),
+                ActorAccountId = User.AccountId()!.Value,
                 MediaItemIds = req.MediaItemIds,
             },
             ct
