@@ -39,6 +39,12 @@ public sealed class PermissionAuthorizer
         _timeProvider = timeProvider;
     }
 
+    public async Task<bool> IsActiveAccountAsync(int accountId, CancellationToken ct)
+    {
+        BindTo(accountId);
+        return (await IdentityAsync(accountId, ct)).IsActive;
+    }
+
     public Task<int?> ActivePersonIdAsync(int accountId, CancellationToken ct)
     {
         BindTo(accountId);
@@ -262,14 +268,18 @@ public sealed class PermissionAuthorizer
             await _dbContext
                 .Users.AsNoTracking()
                 .Where(account => account.Id == accountId && !account.IsDisabled)
-                .Select(account => new AccountIdentity(account.PersonId, account.IsManagingLogin))
+                .Select(account => new AccountIdentity(
+                    true,
+                    account.PersonId,
+                    account.IsManagingLogin
+                ))
                 .SingleOrDefaultAsync(ct)
             ?? AccountIdentity.Unknown;
 
     private readonly record struct GroupTies(bool IsAdmin, bool IsMember);
 
-    private sealed record AccountIdentity(int? PersonId, bool IsManagingLogin)
+    private sealed record AccountIdentity(bool IsActive, int? PersonId, bool IsManagingLogin)
     {
-        public static readonly AccountIdentity Unknown = new(null, false);
+        public static readonly AccountIdentity Unknown = new(false, null, false);
     }
 }

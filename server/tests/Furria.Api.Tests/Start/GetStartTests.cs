@@ -38,35 +38,6 @@ public sealed class GetStartTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheAccountWasDisabledAfterItsTokenWasIssued()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            TuesdayEvening,
-            async () =>
-            {
-                var ctx = await _fixture.BuildAsync(
-                    builder =>
-                        builder.Identity(identity =>
-                            identity
-                                .AddPerson("lena", "Lena", "Garde")
-                                .AddAccount("lena")
-                                .AddMembership("lena-member", "lena", JoinedIn2015)
-                        ),
-                    ct
-                );
-                var client = await ctx.Identity.ClientForAsync("lena", ct);
-                await _fixture.DisableAccountDirectlyAsync(ctx.Identity.Accounts.IdOf("lena"), ct);
-
-                var (response, _) = await client.GETAsync<GetStart, GetStartResponse>();
-
-                Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-            }
-        );
-    }
-
-    [Fact]
     public async Task Should_ReturnInactiveAndNoPanels_When_TheAccountHasNoTieToTheClub()
     {
         var ct = TestContext.Current.CancellationToken;

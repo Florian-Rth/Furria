@@ -1101,6 +1101,46 @@ public sealed class RedeemInvitationTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_ActAsHer_When_AnAccessTokenIssuedBeforeTheClaimIsStillUsed()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (ctx, annaId, token) = await ArrangeClaimAsync(ct);
+        var signedInBeforeTheClaim = await ctx.Identity.ClientForAsync("stray", ct);
+        await ClaimSteps.ClaimAsync(
+            _fixture.CreateClient(),
+            token,
+            ctx.Identity.EmailOf("stray"),
+            ApiTestFixture.SeededAccountPassword
+        );
+
+        var response = await signedInBeforeTheClaim.PUTAsync<
+            PutMyContactDetails,
+            PutMyContactDetailsRequest
+        >(
+            new()
+            {
+                Email = "anna@example.test",
+                Phone = "03632 123456",
+                Street = "Am Anger 3",
+                Zip = "99706",
+                City = "Sondershausen",
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx
+            .Expected.Person(annaId)
+            .ToHaveContactDetails(
+                "anna@example.test",
+                "03632 123456",
+                "Am Anger 3",
+                "99706",
+                "Sondershausen"
+            )
+            .AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_SignTheClaimedAccountInAsHer_When_ItLogsInWithItsOldPassword()
     {
         var ct = TestContext.Current.CancellationToken;

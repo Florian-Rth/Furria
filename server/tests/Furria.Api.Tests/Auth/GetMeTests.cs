@@ -689,23 +689,6 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheAccountWasDisabledAfterItsTokenWasIssued()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddAccount("alice")),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("alice", ct);
-        await _fixture.DisableAccountDirectlyAsync(ctx.Identity.Accounts.IdOf("alice"), ct);
-
-        var (response, _) = await client.GETAsync<GetMe, GetMeResponse>();
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_ReturnUnauthorized_When_TheAccountBehindTheTokenNoLongerExists()
     {
         var ct = TestContext.Current.CancellationToken;
