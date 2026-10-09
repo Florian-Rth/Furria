@@ -1,16 +1,15 @@
 import { kkTokens } from '@furria/ui';
 import ButtonBase from '@mui/material/ButtonBase';
 import type { FC, PropsWithChildren } from 'react';
-import type { Photo } from '@/features/gallery/gallery-content';
 import { buildPhotoOpenLabel } from '@/features/gallery/gallery-content';
 
 interface PhotoTileActionProps extends PropsWithChildren {
-  photo: Photo;
+  alt: string;
   onOpen: () => void;
 }
 
-export const PhotoTileAction: FC<PhotoTileActionProps> = ({ photo, onOpen, children }) => {
-  const openLabel = buildPhotoOpenLabel(photo);
+export const PhotoTileAction: FC<PhotoTileActionProps> = ({ alt, onOpen, children }) => {
+  const openLabel = buildPhotoOpenLabel(alt);
 
   return (
     <ButtonBase

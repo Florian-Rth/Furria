@@ -1,19 +1,24 @@
 import { describe, expect, it } from 'vitest';
-import type { Album } from './gallery-content';
+import type { AlbumPhotoEntry } from './gallery-content';
 import { resolvePhotoViewerFrame } from './photo-viewer-frame';
 
-const album = (photoCount: number): Album => ({
-  slug: 'prunksitzung',
-  title: 'Prunksitzung',
-  date: '2026-02-14',
-  venue: 'Festhalle',
-  intro: 'Intro',
-  photoCredit: 'Wegwerfkamera vom Kiosk',
-  photos: Array.from({ length: photoCount }, (_, index) => ({
-    orientation: 'landscape' as const,
+const entries = (photoCount: number): AlbumPhotoEntry[] =>
+  Array.from({ length: photoCount }, (_, index) => ({
+    photo: {
+      mediaItemId: index + 1,
+      width: 1600,
+      height: 1200,
+      aspect: 4 / 3,
+      orientation: 'landscape' as const,
+      caption: null,
+      smallUrl: '/s',
+      mediumUrl: '/m',
+      largeUrl: '/l',
+    },
+    index,
     alt: `Bild ${index + 1}`,
-  })),
-});
+    sourceSet: '/s 400w',
+  }));
 
 describe('resolvePhotoViewerFrame', () => {
   it.each([
@@ -21,10 +26,10 @@ describe('resolvePhotoViewerFrame', () => {
     [0, { position: 1, previousDisabled: true, nextDisabled: false }],
     [11, { position: 12, previousDisabled: false, nextDisabled: true }],
   ])('frames the photo at index %i of twelve', (shownIndex, frame) => {
-    expect(resolvePhotoViewerFrame(album(12), shownIndex)).toMatchObject(frame);
+    expect(resolvePhotoViewerFrame(entries(12), shownIndex)).toMatchObject(frame);
   });
 
   it.each([null, 12])('has no frame for the index %s', (shownIndex) => {
-    expect(resolvePhotoViewerFrame(album(12), shownIndex)).toBeNull();
+    expect(resolvePhotoViewerFrame(entries(12), shownIndex)).toBeNull();
   });
 });

@@ -11,6 +11,7 @@ public static class StartComposer
     private const int AnnouncementsCap = 3;
     private const int MineCap = 3;
     private const int GroupsCap = 3;
+    private const int GalleryCap = 3;
     private const int LiveLeadHours = 2;
     private const int RecentDays = 2;
     private const int SoonDays = 7;
@@ -53,6 +54,7 @@ public static class StartComposer
                     AnnouncementsPanelOf(candidates.Announcements),
                     ToDosPanelOf(candidates.ToDos),
                     GroupsPanelOf(candidates.GroupMoments),
+                    GalleryPanelOf(candidates.Albums),
                 }.OfType<BandedPanel>(),
             ]),
         };
@@ -170,7 +172,8 @@ public static class StartComposer
             StartPanelKind.Announcements => 2,
             StartPanelKind.ToDos => 3,
             StartPanelKind.Groups => 4,
-            _ => 5,
+            StartPanelKind.Gallery => 5,
+            _ => 6,
         };
 
     [Pure]
@@ -279,6 +282,23 @@ public static class StartComposer
             );
 
     [Pure]
+    private static BandedPanel? GalleryPanelOf(IReadOnlyList<StartAlbumSummary> albums) =>
+        albums.Count == 0
+            ? null
+            : new BandedPanel(
+                PanelOf(StartPanelKind.Gallery, ShownCountOf(GalleryCap, albums.Count)) with
+                {
+                    Albums =
+                    [
+                        .. albums
+                            .OrderByDescending(album => album.CreatedAt)
+                            .ThenByDescending(album => album.AlbumId),
+                    ],
+                },
+                StartBand.New
+            );
+
+    [Pure]
     private static int ShownCountOf(int cap, int total) =>
         total == cap + 1 ? total : Math.Min(cap, total);
 
@@ -324,6 +344,7 @@ public static class StartComposer
             Mine = null,
             GroupMoments = null,
             ToDos = null,
+            Albums = null,
         };
 
     private sealed record BandedPanel(StartPanel Panel, StartBand Band);

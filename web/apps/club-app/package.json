@@ -31,6 +31,7 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-hook-form": "catalog:",
+    "tus-js-client": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

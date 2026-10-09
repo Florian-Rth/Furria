@@ -1,4 +1,4 @@
-import { KkEyebrow, KkPhotoPlaceholder, kkTokens } from '@furria/ui';
+import { KkCoverPicture, KkEyebrow, KkPhotoPlaceholder, kkTokens } from '@furria/ui';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -13,8 +13,11 @@ import {
   groupsLabels,
   resolveGroupOpenness,
 } from '@/features/club/groups-content';
+import { GROUP_PICTURE_ASPECT, toPictureSources } from '@/lib/api/picture';
 import type { PublicGroup } from '@/lib/public-groups/schemas';
 import { GroupOpennessChip } from './GroupOpennessChip';
+
+const BANNER_SIZES = '(min-width: 600px) 40rem, 100vw';
 
 interface GroupModalPanelProps {
   group: PublicGroup;
@@ -31,6 +34,24 @@ export const GroupModalPanel: FC<GroupModalPanelProps> = ({ group, tint, titleId
   const tone = group.tone ?? undefined;
   const kind = group.groupKindName === null ? null : <KkEyebrow>{group.groupKindName}</KkEyebrow>;
   const foundedLabel = buildFoundedLabel(group.foundedYear);
+  const picture = toPictureSources(group.picture, GROUP_PICTURE_ASPECT);
+  const banner =
+    picture.source === undefined ? (
+      <KkPhotoPlaceholder
+        label={groupsLabels.photo}
+        tint={tint}
+        tone={tone}
+        aspectRatio={kkTokens.aspectRatio.banner}
+      />
+    ) : (
+      <KkCoverPicture
+        source={picture.source}
+        sourceSet={picture.sourceSet}
+        sizes={BANNER_SIZES}
+        alt={group.name}
+        sx={{ aspectRatio: kkTokens.aspectRatio.banner, height: 'auto' }}
+      />
+    );
   const founded =
     foundedLabel === null ? null : (
       <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 600 }}>
@@ -55,12 +76,7 @@ export const GroupModalPanel: FC<GroupModalPanelProps> = ({ group, tint, titleId
       }}
     >
       <Box sx={{ position: 'relative' }}>
-        <KkPhotoPlaceholder
-          label={groupsLabels.photo}
-          tint={tint}
-          tone={tone}
-          aspectRatio={kkTokens.aspectRatio.banner}
-        />
+        {banner}
         <IconButton
           aria-label={groupsLabels.close}
           onClick={onClose}

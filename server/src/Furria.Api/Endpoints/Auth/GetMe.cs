@@ -1,20 +1,26 @@
 using FastEndpoints;
 using Furria.Api.Authorization;
+using Furria.Api.Media;
 using Furria.Api.Results;
 using Furria.Application.Identity;
+using Furria.Application.Media;
 using Furria.Application.Registry;
 using Furria.Core.Club;
+using Furria.Core.Media;
 using Furria.Infrastructure.Identity;
+using Furria.Infrastructure.Media;
 
 namespace Furria.Api.Endpoints.Auth;
 
 public sealed class GetMe : EndpointWithoutRequest<GetMeResponse>
 {
     private readonly AccountService _accountService;
+    private readonly PictureService _pictureService;
 
-    public GetMe(AccountService accountService)
+    public GetMe(AccountService accountService, PictureService pictureService)
     {
         _accountService = accountService;
+        _pictureService = pictureService;
     }
 
     public override void Configure()
@@ -38,15 +44,22 @@ public sealed class GetMe : EndpointWithoutRequest<GetMeResponse>
             return;
         }
 
-        await Send.OkAsync(ToResponse(account.Value), cancellation: ct);
+        var portrait = account.Value.Person is { } person
+            ? await _pictureService.EditingOfAsync(MediaOwner.Person(person.Id), ct)
+            : null;
+
+        await Send.OkAsync(ToResponse(account.Value, portrait), cancellation: ct);
     }
 
-    private static GetMeResponse ToResponse(AccountDetails account) =>
+    private static GetMeResponse ToResponse(
+        AccountDetails account,
+        PictureEditingDetails? portrait
+    ) =>
         new()
         {
             AccountId = account.Id,
             Email = account.Email,
-            Person = account.Person is { } person ? ToDto(person) : null,
+            Person = account.Person is { } person ? ToDto(person, portrait) : null,
             Membership = ToDto(account.Membership),
             IsAffiliated = account.IsAffiliated,
             PermissionKeys = account.PermissionKeys,
@@ -63,7 +76,7 @@ public sealed class GetMe : EndpointWithoutRequest<GetMeResponse>
             AddedAt = passkey.AddedAt,
         };
 
-    private static MePersonDto ToDto(PersonDetails person) =>
+    private static MePersonDto ToDto(PersonDetails person, PictureEditingDetails? portrait) =>
         new()
         {
             Id = person.Id,
@@ -77,6 +90,7 @@ public sealed class GetMe : EndpointWithoutRequest<GetMeResponse>
             BirthDate = person.BirthDate,
             ContactVisibleToMembers = person.ContactVisibleToMembers,
             ContactChange = person.ContactChange is { } change ? ToDto(change) : null,
+            Portrait = PictureEditingDto.From(portrait),
         };
 
     private static MeContactChangeDto ToDto(ContactChangeDetails change) =>
@@ -160,6 +174,8 @@ public sealed record MePersonDto
     public required bool ContactVisibleToMembers { get; init; }
 
     public required MeContactChangeDto? ContactChange { get; init; }
+
+    public required PictureEditingDto? Portrait { get; init; }
 }
 
 public sealed record MeContactChangeDto

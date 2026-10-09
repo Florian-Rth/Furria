@@ -67,6 +67,18 @@ const PERMISSION_COPY: Record<PermissionKey, RolePermissionCopy> = {
     title: 'Kartenanfragen bearbeiten',
     line: 'Kartenanfragen von der Website sehen und erledigen.',
   },
+  [PERMISSION_KEYS.galleryUpload]: {
+    title: 'Fotos und Videos hochladen',
+    line: 'In den eigenen Eingang hochladen, ihn sichten und Alben anlegen. Was im Eingang liegt, sieht niemand sonst.',
+  },
+  [PERMISSION_KEYS.galleryManage]: {
+    title: 'Die Galerie führen',
+    line: 'Jeden Eingang sichten, Alben bearbeiten, zusammenlegen und löschen, Bilder verschieben und löschen, den Papierkorb leeren und wiederherstellen.',
+  },
+  [PERMISSION_KEYS.galleryPublish]: {
+    title: 'Alben auf der Website zeigen',
+    line: 'Die Auswahl eines Albums zusammenstellen, Bildunterschriften setzen, auf der Website veröffentlichen und zurückziehen.',
+  },
 };
 
 const KNOWN_KEYS: readonly PermissionKey[] = Object.values(PERMISSION_KEYS);

@@ -86,7 +86,7 @@ public sealed class GetAnnouncementsTests : IClassFixture<ApiTestFixture>
         Assert.Equal(ctx.Identity.People.IdOf("alice"), author.PersonId);
         Assert.Equal("Alice", author.FirstName);
         Assert.Equal("Muster", author.LastName);
-        Assert.Null(author.PortraitUrl);
+        Assert.Null(author.Portrait);
         Assert.Null(author.OfficeName);
     }
 

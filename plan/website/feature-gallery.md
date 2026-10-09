@@ -9,6 +9,11 @@ adrs: []
 
 ## What & Why
 
+> **Superseded in part by L7a (2026-10-08, `plan/launch/l7a-media-store.md`):** the gallery is now
+> one concept — the club app's collection is the gallery, this page its public face; an album holds
+> everything of an occasion and this page shows its **public selection**; albums have no date of
+> their own; addresses are `/gallery/{id}-{slug}`. *Member photo library* is retired.
+
 The club's celebratory face: visitors relive an evening, and prospective members get the atmosphere
 no amount of prose delivers. **Gallery** (public, curated, view-only) is deliberately *not* the
 Club-App's **member photo library** (member upload + browse) — see [`CONTEXT.md`](../../CONTEXT.md); the nav

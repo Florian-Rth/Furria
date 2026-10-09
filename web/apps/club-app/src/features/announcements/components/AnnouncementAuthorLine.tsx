@@ -4,9 +4,11 @@ import Stack from '@mui/material/Stack';
 import type { FC, ReactNode } from 'react';
 import { formatPublishedDay } from '@/lib/announcements';
 import { toInitials } from '@/lib/initials';
+import { PORTRAIT_ASPECT, toPictureSources } from '@/lib/pictures';
 import type { AnnouncementAuthor } from '../schemas';
 
 const PORTRAIT_SPACING = 9;
+const PORTRAIT_SIZES = '4.5rem';
 
 interface AnnouncementAuthorLineProps {
   author: AnnouncementAuthor | null;
@@ -32,6 +34,7 @@ export const AnnouncementAuthorLine: FC<AnnouncementAuthorLineProps> = ({
 
   const authorName = `${author.firstName} ${author.lastName}`;
   const initials = toInitials(author.firstName, author.lastName);
+  const portrait = toPictureSources(author.portrait, PORTRAIT_ASPECT);
   const officeLine =
     author.officeName === null ? null : <KkMeta tone="accent">{author.officeName}</KkMeta>;
 
@@ -42,7 +45,9 @@ export const AnnouncementAuthorLine: FC<AnnouncementAuthorLineProps> = ({
           alt={authorName}
           orientation="portrait"
           placeholderLabel={initials}
-          source={author.portraitUrl ?? undefined}
+          source={portrait.source}
+          sourceSet={portrait.sourceSet}
+          sizes={PORTRAIT_SIZES}
         />
       </Box>
       <Stack sx={{ gap: 0.25, minWidth: 0 }}>

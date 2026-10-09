@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { readApiBaseUrl } from '@/lib/runtime-config';
+import { buildApiUrl } from './api-fetch';
 
 export const SessionTokensSchema = z.object({
   accessToken: z.string().min(1),
@@ -20,12 +22,48 @@ export type NoContent = z.infer<typeof NoContentSchema>;
 export const MembershipStateSchema = z.enum(['none', 'ended', 'paused', 'active']);
 export type MembershipState = z.infer<typeof MembershipStateSchema>;
 
+export const MediaUrlSchema = z
+  .string()
+  .min(1)
+  .transform((path) => buildApiUrl(readApiBaseUrl(), path));
+
+export const PictureSchema = z.object({
+  smallUrl: MediaUrlSchema,
+  mediumUrl: MediaUrlSchema,
+  largeUrl: MediaUrlSchema,
+});
+export type Picture = z.infer<typeof PictureSchema>;
+
+export const PictureCropSchema = z.object({
+  left: z.number(),
+  top: z.number(),
+  width: z.number(),
+  height: z.number(),
+});
+export type PictureCrop = z.infer<typeof PictureCropSchema>;
+
+export const MediaItemStateSchema = z.enum(['processing', 'ready', 'failed']);
+export type MediaItemState = z.infer<typeof MediaItemStateSchema>;
+
+export const PictureEditingSchema = z.object({
+  state: MediaItemStateSchema,
+  picture: PictureSchema.nullable(),
+  uncroppedUrl: MediaUrlSchema.nullable(),
+  crop: PictureCropSchema.nullable(),
+});
+export type PictureEditing = z.infer<typeof PictureEditingSchema>;
+
 export const PersonRefSchema = z.object({
   personId: z.number().int(),
   firstName: z.string(),
   lastName: z.string(),
 });
 export type PersonRef = z.infer<typeof PersonRefSchema>;
+
+export const PortraitPersonRefSchema = PersonRefSchema.extend({
+  portrait: PictureSchema.nullable(),
+});
+export type PortraitPersonRef = z.infer<typeof PortraitPersonRefSchema>;
 
 export const GroupRefSchema = z.object({ groupId: z.number().int(), name: z.string() });
 export type GroupRef = z.infer<typeof GroupRefSchema>;
@@ -51,6 +89,7 @@ export const MePersonSchema = z.object({
   birthDate: z.iso.date().nullable(),
   contactVisibleToMembers: z.boolean(),
   contactChange: ContactChangeSchema.nullable(),
+  portrait: PictureEditingSchema.nullable(),
 });
 export type MePerson = z.infer<typeof MePersonSchema>;
 
@@ -105,6 +144,9 @@ export const PERMISSION_KEYS = {
   membershipApplicationsDecide: 'membership_applications.decide',
   eventsManage: 'events.manage',
   ticketRequestsHandle: 'ticket_requests.handle',
+  galleryUpload: 'gallery.upload',
+  galleryManage: 'gallery.manage',
+  galleryPublish: 'gallery.publish',
 } as const;
 
 export type PermissionKey = (typeof PERMISSION_KEYS)[keyof typeof PERMISSION_KEYS];

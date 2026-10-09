@@ -20,6 +20,7 @@ const admin = (personId: number): ManagedGroupSummary['admins'][number] => ({
   personId,
   firstName: 'Birgit',
   lastName: 'Kühnel',
+  portrait: null,
 });
 
 const group = (overrides: Partial<ManagedGroupSummary>): ManagedGroupSummary => ({

@@ -2,6 +2,7 @@ using System.Diagnostics.Contracts;
 using Furria.Application.Club;
 using Furria.Application.Results;
 using Furria.Core.Club;
+using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,16 +16,19 @@ public sealed class AnnouncementService
 
     private readonly AppDbContext _dbContext;
     private readonly RunningBoardSeats _runningBoardSeats;
+    private readonly MediaPictures _pictures;
     private readonly TimeProvider _timeProvider;
 
     public AnnouncementService(
         AppDbContext dbContext,
         RunningBoardSeats runningBoardSeats,
+        MediaPictures pictures,
         TimeProvider timeProvider
     )
     {
         _dbContext = dbContext;
         _runningBoardSeats = runningBoardSeats;
+        _pictures = pictures;
         _timeProvider = timeProvider;
     }
 
@@ -43,7 +47,7 @@ public sealed class AnnouncementService
 
         var officeNames = await _runningBoardSeats.OfficeNamesAsync(today, ct);
 
-        return [.. rows.Select(row => ToSummary(row, officeNames))];
+        return [.. rows.Select(row => ToSummary(row, officeNames, _pictures))];
     }
 
     public async Task<Result<int>> CreateAsync(
@@ -117,10 +121,10 @@ public sealed class AnnouncementService
     private static bool MayChange(int? authorPersonId, int actorPersonId, bool actorMayPost) =>
         actorMayPost || authorPersonId == actorPersonId;
 
-    [Pure]
     private static AnnouncementSummary ToSummary(
         AnnouncementRow row,
-        IReadOnlyDictionary<int, string> officeNames
+        IReadOnlyDictionary<int, string> officeNames,
+        MediaPictures pictures
     ) =>
         new()
         {
@@ -135,7 +139,11 @@ public sealed class AnnouncementService
                     PersonId = author.PersonId,
                     FirstName = author.FirstName,
                     LastName = author.LastName,
-                    PortraitUrl = author.PortraitUrl,
+                    Portrait = pictures.PortraitOf(
+                        author.PersonId,
+                        author.PortraitId,
+                        author.PortraitRenderedAt
+                    ),
                     OfficeName = officeNames.GetValueOrDefault(author.PersonId),
                 }
                 : null,

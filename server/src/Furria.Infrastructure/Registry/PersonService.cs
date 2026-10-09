@@ -11,6 +11,7 @@ using Furria.Core.MembershipApplications;
 using Furria.Core.Text;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Identity;
+using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -271,16 +272,19 @@ public sealed class PersonService
 
     private readonly AppDbContext _dbContext;
     private readonly PermissionAuthorizer _authorizer;
+    private readonly PictureLookup _pictures;
     private readonly TimeProvider _timeProvider;
 
     public PersonService(
         AppDbContext dbContext,
         PermissionAuthorizer authorizer,
+        PictureLookup pictures,
         TimeProvider timeProvider
     )
     {
         _dbContext = dbContext;
         _authorizer = authorizer;
+        _pictures = pictures;
         _timeProvider = timeProvider;
     }
 
@@ -347,8 +351,17 @@ public sealed class PersonService
                     .ToList()
             ))
             .ToListAsync(ct);
+        var portraits = await _pictures.PortraitsOfAsync([.. rows.Select(row => row.Id)], ct);
 
-        return [.. rows.Select(row => ToSummary(row, today))];
+        return
+        [
+            .. rows.Select(row =>
+                ToSummary(row, today) with
+                {
+                    Portrait = portraits.GetValueOrDefault(row.Id),
+                }
+            ),
+        ];
     }
 
     public async Task<IReadOnlyList<PersonSummary>> GetAllAsync(
@@ -376,8 +389,17 @@ public sealed class PersonService
                 )
             )
             .ToListAsync(ct);
+        var portraits = await _pictures.PortraitsOfAsync([.. rows.Select(row => row.Id)], ct);
 
-        return [.. rows.Select(row => ToSummary(row, today))];
+        return
+        [
+            .. rows.Select(row =>
+                ToSummary(row, today) with
+                {
+                    Portrait = portraits.GetValueOrDefault(row.Id),
+                }
+            ),
+        ];
     }
 
     public async Task<Result<ManagedPersonDetails>> GetPersonAsync(
@@ -419,7 +441,12 @@ public sealed class PersonService
 
         var visibility = await VisibilityForAsync(row.Contact, viewerAccountId, ct);
 
-        return Result<MemberDetails>.Success(ToDetails(row, visibility, today));
+        return Result<MemberDetails>.Success(
+            ToDetails(row, visibility, today) with
+            {
+                Portrait = await _pictures.PortraitOfAsync(personId, ct),
+            }
+        );
     }
 
     public async Task<IReadOnlyList<PersonSearchSummary>> SearchPersonsAsync(

@@ -9,6 +9,7 @@ interface ProfileHeaderProps {
 
 export const ProfileHeader: FC<ProfileHeaderProps> = ({ me }) => {
   const headline = toProfileHeadline(me);
+  const portrait = me?.person.portrait?.picture?.smallUrl;
 
   const stateRow =
     headline.state === null ? null : (
@@ -22,7 +23,7 @@ export const ProfileHeader: FC<ProfileHeaderProps> = ({ me }) => {
   return (
     <KkScreenHeader>
       <KkScreenHeader.Visual>
-        <KkAvatar initials={headline.initials} size="large" />
+        <KkAvatar initials={headline.initials} source={portrait} size="large" />
       </KkScreenHeader.Visual>
       <KkScreenHeader.Text>
         <KkEyebrow tone="accent">{PROFILE_EYEBROW}</KkEyebrow>

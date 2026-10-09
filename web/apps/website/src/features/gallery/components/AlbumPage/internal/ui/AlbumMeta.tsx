@@ -1,10 +1,10 @@
 import { KkEyebrow } from '@furria/ui';
 import type { FC } from 'react';
-import type { Album } from '@/features/gallery/gallery-content';
 import { buildAlbumMeta } from '@/features/gallery/gallery-content';
+import type { AlbumDetail } from '@/lib/public-gallery/schemas';
 
 interface AlbumMetaProps {
-  album: Album;
+  album: AlbumDetail;
 }
 
 export const AlbumMeta: FC<AlbumMetaProps> = ({ album }) => {

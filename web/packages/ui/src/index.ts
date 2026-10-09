@@ -2,6 +2,7 @@ export type { BurstPiece } from './burst-pieces';
 export { buildBurstPieces } from './burst-pieces';
 export type { ConfettiPiece } from './confetti-pieces';
 export { buildConfettiPieces } from './confetti-pieces';
+export type { KkCrop } from './crop-frame';
 export type { KkFilterOption } from './filter-chip-entries';
 export type { KkGroupTone, KkGroupToneRecipe } from './internal/group-tone';
 export {
@@ -14,6 +15,8 @@ export {
   groupToneRecipes,
   isKkGroupTone,
 } from './internal/group-tone';
+export type { KkAlbumShelfAlbum } from './KkAlbumShelf';
+export { KkAlbumShelf } from './KkAlbumShelf';
 export { KkAlert } from './KkAlert';
 export type { KkAnswer, KkAnswerChoiceLabels } from './KkAnswerChoice';
 export { KkAnswerChoice } from './KkAnswerChoice';
@@ -37,6 +40,11 @@ export { KkConfettiRain } from './KkConfettiRain';
 export type { KkConfirmFact } from './KkConfirmDialog';
 export { KkConfirmDialog } from './KkConfirmDialog';
 export { KkConsequenceNote } from './KkConsequenceNote';
+export type { KkContactStripFrame } from './KkContactStrip';
+export { KkContactStrip } from './KkContactStrip';
+export { KkCoverPicture } from './KkCoverPicture';
+export type { KkCropFrameLabels, KkCropGuide } from './KkCropFrame/KkCropFrame';
+export { KkCropFrame } from './KkCropFrame/KkCropFrame';
 export type { KkDateQuickChoice } from './KkDateField';
 export { KkDateField } from './KkDateField';
 export type { KkDenseFacet, KkDenseMeta } from './KkDensePanel/internal/logic/facet-pieces';
@@ -44,12 +52,24 @@ export type { KkDenseLineState } from './KkDensePanel/internal/ui/KkDensePanelLi
 export type { KkStampTone } from './KkDensePanel/internal/ui/KkDensePanelStampEyebrow';
 export { KkDensePanel } from './KkDensePanel/KkDensePanel';
 export { KkDensePanelSkeleton } from './KkDensePanel/KkDensePanelSkeleton';
+export { KkDropZone } from './KkDropZone';
 export { KkEmptyState } from './KkEmptyState';
 export { KkErrorState } from './KkErrorState';
+export { KkExposureSweep } from './KkExposureSweep';
 export { KkEyebrow } from './KkEyebrow';
 export { KkFactRow } from './KkFactRow';
 export { KkFieldRow } from './KkFieldRow';
+export type { KkFilmEdgeTone } from './KkFilmEdge';
+export { KkFilmEdge } from './KkFilmEdge';
 export { KkFilterChips } from './KkFilterChips';
+export type { KkFlapCountTone } from './KkFlapCount';
+export { KkFlapCount } from './KkFlapCount';
+export type { KkFrameMark, KkFrameState } from './KkFrame';
+export { KkFrame } from './KkFrame';
+export type { KkFrameGridDensity } from './KkFrameGrid';
+export { KkFrameGrid } from './KkFrameGrid';
+export type { KkGreaseMarkKind } from './KkGreaseMark';
+export { KkGreaseMark } from './KkGreaseMark';
 export type { KkGreetingPart, KkGreetingPartRole } from './KkGreeting/internal/logic/flap-cells';
 export type { KkGreetingPlay, KkGreetingTempo } from './KkGreeting/internal/logic/flap-schedule';
 export { KkGreeting } from './KkGreeting/KkGreeting';
@@ -72,6 +92,18 @@ export { KkInlineLink } from './KkInlineLink';
 export { KkLead } from './KkLead';
 export { KkLetterDivider } from './KkLetterDivider';
 export { KkLetterIndex } from './KkLetterIndex';
+export type {
+  KkLightTableCommit,
+  KkLightTableDeparture,
+  KkLightTableDone,
+  KkLightTableFrame,
+  KkLightTableLabels,
+  KkLightTableStripFrame,
+  KkLightTableTarget,
+} from './KkLightTable/KkLightTable';
+export { KkLightTable } from './KkLightTable/KkLightTable';
+export type { KkLoupeLabels, KkLoupeStripFrame, KkLoupeVideo } from './KkLoupe/KkLoupe';
+export { KkLoupe } from './KkLoupe/KkLoupe';
 export type { KkMetaTone } from './KkMeta';
 export { KkMeta } from './KkMeta';
 export { logoSourceOf } from './KkMottoStage/internal/logic/logo-source';
@@ -115,6 +147,7 @@ export { KkSection } from './KkSection/KkSection';
 export { KkSectionHeader } from './KkSectionHeader/KkSectionHeader';
 export type { KkSelectOption } from './KkSelectField';
 export { KkSelectField } from './KkSelectField';
+export { KkSelectionBar } from './KkSelectionBar';
 export { KkSelectRow } from './KkSelectRow';
 export { KkSessionField } from './KkSessionField';
 export { KkSessionRow } from './KkSessionRow/KkSessionRow';
@@ -145,6 +178,9 @@ export type {
 } from './KkShell/screen-declaration';
 export type { KkScreenMove } from './KkShell/screen-move';
 export type { KkShellDestination } from './KkShell/shell-destination';
+export type { KkShowcasePieceData } from './KkShowcase/internal/KkShowcasePiece';
+export type { KkShowcaseLabels } from './KkShowcase/KkShowcase';
+export { KkShowcase } from './KkShowcase/KkShowcase';
 export { KkSinceRow } from './KkSinceRow';
 export { KkSkeletonBlock } from './KkSkeletonBlock';
 export { KkSkeletonRow } from './KkSkeletonRow';
@@ -163,6 +199,8 @@ export { KkThemeColorMeta } from './KkThemeColorMeta';
 export { KkThemeProvider } from './KkThemeProvider';
 export { KkTicker } from './KkTicker';
 export { KkTickRow } from './KkTickRow';
+export type { KkTimeRailScene } from './KkTimeRail';
+export { KkTimeRail } from './KkTimeRail';
 export { KkTitleHeader } from './KkTitleHeader';
 export { KkTwoToneHeadline } from './KkTwoToneHeadline';
 export { KkVisuallyHidden } from './KkVisuallyHidden';
@@ -177,6 +215,8 @@ export type { KkLetterPace } from './letter-pace';
 export { PageLayout } from './PageLayout/PageLayout';
 export type { KkPanelAction } from './panel-action';
 export type { KkPhotoOrientation } from './photo-frame';
+export type { KkPictureUrls } from './picture-sources';
+export { toPictureSourceSet } from './picture-sources';
 export { KK_DARK_SCHEME_ATTRIBUTE, KK_DESKTOP_BREAKPOINT, kkTheme } from './theme';
 export type { KkColorSchemeMode, KkResolvedColorScheme } from './theme-color';
 export { kkThemeColorForScheme, resolveKkColorScheme } from './theme-color';

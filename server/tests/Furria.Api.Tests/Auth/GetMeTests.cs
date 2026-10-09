@@ -1,6 +1,8 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Auth;
+using Furria.Api.Media;
+using Furria.Api.Tests.Media;
 using Furria.Application.Authorization;
 using Furria.Core.Club;
 using Furria.Tests.Common.Fixtures;
@@ -103,6 +105,30 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
                 Assert.Equal("Laptop", passkey.Name);
             }
         );
+    }
+
+    [Fact]
+    public async Task Should_OfferHerWholePortraitAndItsCut_When_SheReadsHerself()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => identity.AddAccount("alice")),
+            ct
+        );
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        await PictureSteps.RenderedPortraitAsync(
+            _fixture,
+            client,
+            ctx.Identity.People.IdOf("alice"),
+            ct
+        );
+
+        var (_, result) = await client.GETAsync<GetMe, GetMeResponse>();
+
+        var portrait = Assert.IsType<PictureEditingDto>(result.Person?.Portrait);
+        Assert.NotNull(portrait.Picture);
+        Assert.NotNull(portrait.UncroppedUrl);
+        Assert.NotNull(portrait.Crop);
     }
 
     [Fact]

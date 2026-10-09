@@ -1,6 +1,7 @@
 using FastEndpoints;
 using FluentValidation;
 using Furria.Api.Authorization;
+using Furria.Api.Media;
 using Furria.Application.Authorization;
 using Furria.Application.Registry;
 using Furria.Core.Club;
@@ -47,6 +48,7 @@ public sealed class GetPersons : Endpoint<GetPersonsRequest, GetPersonsResponse>
             PersonId = person.PersonId,
             FirstName = person.FirstName,
             LastName = person.LastName,
+            Portrait = PictureDto.From(person.Portrait),
             Email = person.Email,
             Phone = person.Phone,
             Street = person.Street,
@@ -102,6 +104,8 @@ public sealed record PersonSummaryDto
     public required string FirstName { get; init; }
 
     public required string LastName { get; init; }
+
+    public required PictureDto? Portrait { get; init; }
 
     public required string? Email { get; init; }
 

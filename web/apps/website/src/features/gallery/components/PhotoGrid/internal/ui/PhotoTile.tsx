@@ -1,23 +1,29 @@
 import { KkPhoto, kkTokens } from '@furria/ui';
 import type { FC } from 'react';
-import type { Photo } from '@/features/gallery/gallery-content';
+import type { AlbumPhotoEntry } from '@/features/gallery/gallery-content';
+import { photoTileSizes } from '@/features/gallery/gallery-content';
 
 interface PhotoTileProps {
-  photo: Photo;
-  placeholderLabel: string;
+  entry: AlbumPhotoEntry;
 }
 
-export const PhotoTile: FC<PhotoTileProps> = ({ photo, placeholderLabel }) => (
-  <KkPhoto
-    alt={photo.alt}
-    orientation={photo.orientation}
-    placeholderLabel={placeholderLabel}
-    source={photo.source}
-    sx={{
-      height: '100%',
-      border: `${kkTokens.line.hair}px solid`,
-      borderColor: 'divider',
-      boxShadow: kkTokens.shadow.rest,
-    }}
-  />
-);
+export const PhotoTile: FC<PhotoTileProps> = ({ entry }) => {
+  const placeholderLabel = String(entry.photo.mediaItemId);
+
+  return (
+    <KkPhoto
+      alt={entry.alt}
+      orientation={entry.photo.orientation}
+      placeholderLabel={placeholderLabel}
+      source={entry.photo.mediumUrl}
+      sourceSet={entry.sourceSet}
+      sizes={photoTileSizes}
+      sx={{
+        height: '100%',
+        border: `${kkTokens.line.hair}px solid`,
+        borderColor: 'divider',
+        boxShadow: kkTokens.shadow.rest,
+      }}
+    />
+  );
+};

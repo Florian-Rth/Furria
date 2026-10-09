@@ -1,7 +1,9 @@
 using Furria.Core.Club;
 using Furria.Core.Events;
+using Furria.Core.Gallery;
 using Furria.Core.Groups;
 using Furria.Core.Identity;
+using Furria.Core.Media;
 using Furria.Core.MembershipApplications;
 using Furria.Core.Roles;
 using Furria.Infrastructure.Identity;
@@ -83,6 +85,12 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
     public DbSet<MembershipApplication> MembershipApplications => Set<MembershipApplication>();
 
     public DbSet<ToDoMark> ToDoMarks => Set<ToDoMark>();
+
+    public DbSet<MediaItem> MediaItems => Set<MediaItem>();
+
+    public DbSet<MediaJob> MediaJobs => Set<MediaJob>();
+
+    public DbSet<Album> Albums => Set<Album>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }

@@ -18,7 +18,7 @@ const group = (overrides: Partial<ManagedGroupSummary>): ManagedGroupSummary => 
   tone: null,
   archivedOn: null,
   memberCount: 18,
-  admins: [{ personId: 8, firstName: 'Birgit', lastName: 'Kühnel' }],
+  admins: [{ personId: 8, firstName: 'Birgit', lastName: 'Kühnel', portrait: null }],
   ...overrides,
 });
 

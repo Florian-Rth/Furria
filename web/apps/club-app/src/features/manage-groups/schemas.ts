@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { GroupDetailAdminSchema, GroupDetailMemberSchema } from '@/features/group-detail';
 import { AppSearchSchema } from '@/features/session';
-import { PersonRefSchema } from '@/lib/api/schemas';
+import { PortraitPersonRefSchema } from '@/lib/api/schemas';
 import { GroupToneSchema } from '@/lib/group-tone';
 
 export const GROUP_NAME_MAX_LENGTH = 80;
@@ -26,7 +26,7 @@ export const ManagedGroupSummarySchema = z.object({
   tone: GroupToneSchema.nullable().default(null),
   archivedOn: z.iso.date().nullable(),
   memberCount: z.number().int(),
-  admins: z.array(PersonRefSchema),
+  admins: z.array(PortraitPersonRefSchema),
 });
 export type ManagedGroupSummary = z.infer<typeof ManagedGroupSummarySchema>;
 

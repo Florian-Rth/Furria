@@ -1,3 +1,4 @@
+using Furria.Application.Media;
 using Furria.Core.Club;
 
 namespace Furria.Application.Registry;
@@ -9,6 +10,8 @@ public sealed record PersonSummary
     public required string FirstName { get; init; }
 
     public required string LastName { get; init; }
+
+    public PictureDetails? Portrait { get; init; }
 
     public required string? Email { get; init; }
 

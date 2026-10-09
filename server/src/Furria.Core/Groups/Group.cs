@@ -1,4 +1,5 @@
 using Furria.Core.Club;
+using Furria.Core.Media;
 
 namespace Furria.Core.Groups;
 
@@ -18,6 +19,8 @@ public sealed class Group : ITimestamped
 
     public GroupTone? Tone { get; set; }
 
+    public int? PictureId { get; set; }
+
     public DateOnly? ArchivedOn { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }
@@ -29,6 +32,8 @@ public sealed class Group : ITimestamped
     public ICollection<GroupAdmin> Admins { get; set; } = [];
 
     public GroupKind? GroupKind { get; set; }
+
+    public MediaItem? Picture { get; set; }
 
     public ICollection<GroupTrainingSlot> TrainingSlots { get; set; } = [];
 }

@@ -9,8 +9,11 @@ import { kkTokens } from './tokens';
 interface KkPhotoProps {
   alt: string;
   orientation: KkPhotoOrientation;
+  aspectRatio?: string;
   placeholderLabel: string;
   source?: string;
+  sourceSet?: string;
+  sizes?: string;
   tint?: string;
   sx?: SxProps<Theme>;
 }
@@ -18,8 +21,11 @@ interface KkPhotoProps {
 export const KkPhoto: FC<KkPhotoProps> = ({
   alt,
   orientation,
+  aspectRatio,
   placeholderLabel,
   source,
+  sourceSet,
+  sizes,
   tint,
   sx,
 }) => {
@@ -31,7 +37,7 @@ export const KkPhoto: FC<KkPhotoProps> = ({
       sx={[
         {
           width: '100%',
-          aspectRatio: frame.aspectRatio,
+          aspectRatio: aspectRatio ?? frame.aspectRatio,
           borderRadius: `${kkTokens.radius.base}px`,
           overflow: 'hidden',
         },
@@ -44,6 +50,8 @@ export const KkPhoto: FC<KkPhotoProps> = ({
         <Box
           component="img"
           src={source}
+          srcSet={sourceSet}
+          sizes={sizes}
           alt={alt}
           width={frame.width}
           height={frame.height}

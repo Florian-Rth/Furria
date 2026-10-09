@@ -1,93 +1,128 @@
 import { describe, expect, it } from 'vitest';
-import type { Album } from './gallery-content';
+import type { AlbumPhoto, AlbumSummary, GallerySection } from '@/lib/public-gallery/schemas';
 import {
-  countPhotos,
-  selectCurrentSessionAlbums,
+  buildAlbumMeta,
+  buildPhotoAlt,
+  buildSessionLabel,
   selectGalleryAlbums,
   selectNextAlbum,
-  selectOlderSessionGroups,
 } from './gallery-content';
 
-const INSIDE_CURRENT_SESSION = new Date(2026, 6, 28);
+const INSIDE_SESSION_2025 = new Date(2026, 6, 28);
 
-const album = (slug: string, date: string, photoCount = 1): Album => ({
-  slug,
-  title: slug,
-  date,
-  venue: 'Festhalle',
-  intro: 'Intro',
-  photoCredit: 'Wegwerfkamera vom Kiosk',
-  photos: Array.from({ length: photoCount }, () => ({ orientation: 'landscape', alt: 'Bild' })),
+const session = (startYear: number, number: number | null = null): GallerySection['session'] => ({
+  startYear,
+  yearsLabel: `${startYear}/${String((startYear + 1) % 100).padStart(2, '0')}`,
+  number,
 });
 
-describe('countPhotos', () => {
-  it('sums the photos across every Album', () => {
-    expect(countPhotos([album('a', '2026-01-10', 3), album('b', '2026-02-14', 4)])).toBe(7);
+const album = (albumId: number, startYear: number, photoCount = 1): AlbumSummary => ({
+  albumId,
+  title: `Album ${albumId}`,
+  entryStartsAt: null,
+  photoCount,
+  cover: {
+    mediaItemId: albumId * 10,
+    width: 1600,
+    height: 1200,
+    aspect: 4 / 3,
+    orientation: 'landscape',
+    smallUrl: '/s',
+    mediumUrl: '/m',
+    largeUrl: '/l',
+  },
+  session: session(startYear),
+});
+
+const section = (startYear: number, albumIds: number[]): GallerySection => ({
+  session: session(startYear),
+  albums: albumIds.map((albumId) => album(albumId, startYear)),
+});
+
+const ids = (albums: AlbumSummary[]): number[] => albums.map((entry) => entry.albumId);
+
+describe('selectGalleryAlbums', () => {
+  it('features the first Album and keeps it out of the sections below', () => {
+    const { featuredAlbum, currentSessionAlbums, olderSessionGroups } = selectGalleryAlbums(
+      [section(2025, [3, 2]), section(2024, [1])],
+      INSIDE_SESSION_2025,
+    );
+
+    expect(featuredAlbum?.albumId).toBe(3);
+    expect(ids(currentSessionAlbums)).toEqual([2]);
+    expect(olderSessionGroups.map((group) => [group.session.startYear, ids(group.albums)])).toEqual(
+      [[2024, [1]]],
+    );
+  });
+
+  it('drops an older Session left empty by the featured Album', () => {
+    const { featuredAlbum, currentSessionAlbums, olderSessionGroups } = selectGalleryAlbums(
+      [section(2023, [5]), section(2022, [4])],
+      INSIDE_SESSION_2025,
+    );
+
+    expect(featuredAlbum?.albumId).toBe(5);
+    expect(currentSessionAlbums).toEqual([]);
+    expect(olderSessionGroups.map((group) => group.session.startYear)).toEqual([2022]);
+  });
+
+  it('has nothing to feature in an empty gallery', () => {
+    expect(selectGalleryAlbums([], INSIDE_SESSION_2025)).toEqual({
+      featuredAlbum: undefined,
+      currentSessionAlbums: [],
+      olderSessionGroups: [],
+    });
   });
 });
 
 describe('selectNextAlbum', () => {
-  const albums = [
-    album('erstes', '2026-01-10'),
-    album('zweites', '2026-02-14'),
-    album('drittes', '2026-03-01'),
-  ];
+  const sections = [section(2025, [3, 2]), section(2024, [1])];
 
   it.each([
-    ['walks to the next older Album', albums, 'drittes', 'zweites'],
-    ['wraps from the oldest Album back to the newest', albums, 'erstes', 'drittes'],
-    ['has none for an unknown slug', albums, 'gibt-es-nicht', undefined],
-    ['has none for a lone Album', [album('einzeln', '2026-01-10')], 'einzeln', undefined],
-  ])('%s', (_, subject, currentSlug, nextSlug) => {
-    expect(selectNextAlbum(subject, currentSlug)?.slug).toBe(nextSlug);
+    ['walks to the next older Album across Sessions', sections, 2, 1],
+    ['wraps from the oldest Album back to the newest', sections, 1, 3],
+    ['has none for an unknown Album', sections, 99, undefined],
+    ['has none for a lone Album', [section(2025, [7])], 7, undefined],
+  ])('%s', (_, subject, currentAlbumId, nextAlbumId) => {
+    expect(selectNextAlbum(subject, currentAlbumId)?.albumId).toBe(nextAlbumId);
   });
 });
 
-describe('selectCurrentSessionAlbums', () => {
-  it('keeps only the Alben of the open Session, newest first', () => {
-    const albums = [
-      album('vorsession', '2025-02-10'),
-      album('session-frueh', '2025-12-20'),
-      album('session-spaet', '2026-02-14'),
-    ];
-
-    expect(
-      selectCurrentSessionAlbums(albums, INSIDE_CURRENT_SESSION).map((entry) => entry.slug),
-    ).toEqual(['session-spaet', 'session-frueh']);
+describe('buildSessionLabel', () => {
+  it.each([
+    [session(2025, 67), '67. Session 2025/26'],
+    [session(2099), 'Session 2099/00'],
+  ])('labels %j', (subject, label) => {
+    expect(buildSessionLabel(subject)).toBe(label);
   });
 });
 
-describe('selectOlderSessionGroups', () => {
-  it('groups the older Alben per Session, newest Session first', () => {
-    const albums = [
-      album('sehr-alt', '2024-02-05'),
-      album('alt-frueh', '2025-01-10'),
-      album('alt-spaet', '2025-02-20'),
-      album('offen', '2026-02-14'),
-    ];
-
-    const groups = selectOlderSessionGroups(albums, INSIDE_CURRENT_SESSION);
-
-    expect(groups.map((group) => group.session.startYear)).toEqual([2024, 2023]);
-    expect(groups[0]?.albums.map((entry) => entry.slug)).toEqual(['alt-spaet', 'alt-frueh']);
+describe('buildAlbumMeta', () => {
+  it.each([
+    ['2026-02-14T19:11', '14. Februar 2026 · Session 2025/26'],
+    [null, 'Session 2025/26'],
+  ])('dates an Album on %s', (entryStartsAt, meta) => {
+    expect(buildAlbumMeta({ entryStartsAt, session: session(2025) })).toBe(meta);
   });
 });
 
-describe('selectGalleryAlbums', () => {
-  it('features the newest Album and keeps it out of the sections below', () => {
-    const albums = [
-      album('umzug', '2026-02-15'),
-      album('prunksitzung', '2026-02-14'),
-      album('kappenabend', '2025-02-08'),
-    ];
+describe('buildPhotoAlt', () => {
+  const photo = (caption: string | null): AlbumPhoto => ({
+    mediaItemId: 1,
+    width: 1200,
+    height: 1600,
+    aspect: 3 / 4,
+    orientation: 'portrait',
+    caption,
+    smallUrl: '/s',
+    mediumUrl: '/m',
+    largeUrl: '/l',
+  });
 
-    const { featuredAlbum, currentSessionAlbums, olderSessionGroups } = selectGalleryAlbums(
-      albums,
-      INSIDE_CURRENT_SESSION,
-    );
-
-    expect(featuredAlbum?.slug).toBe('umzug');
-    expect(currentSessionAlbums.map((entry) => entry.slug)).toEqual(['prunksitzung']);
-    expect(olderSessionGroups.map((group) => group.session.startYear)).toEqual([2024]);
+  it.each([
+    ['Finale mit allen Gruppen', 'Finale mit allen Gruppen'],
+    [null, 'Prunksitzung, Foto 3'],
+  ])('describes a photo captioned %s', (caption, alt) => {
+    expect(buildPhotoAlt('Prunksitzung', photo(caption), 2)).toBe(alt);
   });
 });

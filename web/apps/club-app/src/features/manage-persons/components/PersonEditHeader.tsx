@@ -12,6 +12,7 @@ interface PersonEditHeaderProps {
 export const PersonEditHeader: FC<PersonEditHeaderProps> = ({ person }) => {
   const headline = toPersonHeadline(person);
   const me = useMeQuery();
+  const portrait = person?.portrait?.picture?.smallUrl;
   const archiveNote = toArchiveNote(
     person?.archive ?? null,
     me.data?.person?.id ?? null,
@@ -33,7 +34,7 @@ export const PersonEditHeader: FC<PersonEditHeaderProps> = ({ person }) => {
   return (
     <KkScreenHeader>
       <KkScreenHeader.Visual>
-        <KkAvatar initials={headline.initials} size="large" />
+        <KkAvatar initials={headline.initials} source={portrait} size="large" />
       </KkScreenHeader.Visual>
       <KkScreenHeader.Text>
         <KkEyebrow tone="accent">{PERSON_EYEBROW}</KkEyebrow>

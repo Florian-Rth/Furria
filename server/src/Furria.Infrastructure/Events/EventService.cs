@@ -4,6 +4,7 @@ using Furria.Application.Events;
 using Furria.Application.Results;
 using Furria.Core.Club;
 using Furria.Core.Events;
+using Furria.Infrastructure.Gallery;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -238,6 +239,7 @@ public sealed class EventService
         if (openRequests > 0)
             return Result.Conflict(OpenRequestsMessage(openRequests));
 
+        await _dbContext.KeepSessionOfAlbumsOnAsync(entry, ct);
         _dbContext.CalendarEntries.Remove(entry);
         await _dbContext.SaveChangesAsync(ct);
 

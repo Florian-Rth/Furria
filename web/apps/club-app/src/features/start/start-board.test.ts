@@ -290,7 +290,7 @@ describe('visit hold', () => {
         personId: 3,
         firstName: 'Frank',
         lastName: 'Weber',
-        portraitUrl: null,
+        portrait: null,
         officeName: 'Präsident',
       },
     };

@@ -1,4 +1,9 @@
-export { CALENDAR_QUERY_KEY, RUNNING_VENUES_QUERY_KEY, useRunningVenuesQuery } from './api';
+export {
+  CALENDAR_QUERY_KEY,
+  RUNNING_VENUES_QUERY_KEY,
+  useCalendarQuery,
+  useRunningVenuesQuery,
+} from './api';
 export type { CalendarDayTime } from './calendar-authoring';
 export {
   toDayTime,

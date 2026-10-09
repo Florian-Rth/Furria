@@ -1,16 +1,20 @@
 using FastEndpoints;
 using FluentValidation;
 using Furria.Api.Authorization;
+using Furria.Api.Media;
 using Furria.Api.Results;
 using Furria.Application.Authorization;
 using Furria.Application.Groups;
 using Furria.Application.Identity;
+using Furria.Application.Media;
 using Furria.Application.Registry;
 using Furria.Core.Club;
 using Furria.Core.Identity;
+using Furria.Core.Media;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Identity;
+using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Registry;
 
 namespace Furria.Api.Endpoints.Persons;
@@ -21,18 +25,21 @@ public sealed class GetPersonById : Endpoint<GetPersonByIdRequest, GetPersonById
     private readonly AccountAccessService _accountAccessService;
     private readonly PermissionAuthorizer _authorizer;
     private readonly ClubRecordService _clubRecordService;
+    private readonly PictureService _pictureService;
 
     public GetPersonById(
         PersonService personService,
         AccountAccessService accountAccessService,
         PermissionAuthorizer authorizer,
-        ClubRecordService clubRecordService
+        ClubRecordService clubRecordService,
+        PictureService pictureService
     )
     {
         _personService = personService;
         _accountAccessService = accountAccessService;
         _authorizer = authorizer;
         _clubRecordService = clubRecordService;
+        _pictureService = pictureService;
     }
 
     public override void Configure()
@@ -62,8 +69,12 @@ public sealed class GetPersonById : Endpoint<GetPersonByIdRequest, GetPersonById
         }
 
         var viewer = await ViewerOfAccessAsync(ct);
+        var portrait = await _pictureService.EditingOfAsync(MediaOwner.Person(req.PersonId), ct);
 
-        await Send.OkAsync(ToResponse(person.Value, access.Value, viewer), cancellation: ct);
+        await Send.OkAsync(
+            ToResponse(person.Value, access.Value, viewer, portrait),
+            cancellation: ct
+        );
     }
 
     private async Task<AccessViewer> ViewerOfAccessAsync(CancellationToken ct)
@@ -83,13 +94,15 @@ public sealed class GetPersonById : Endpoint<GetPersonByIdRequest, GetPersonById
     private static GetPersonByIdResponse ToResponse(
         ManagedPersonDetails person,
         AccountAccessDetails access,
-        AccessViewer viewer
+        AccessViewer viewer,
+        PictureEditingDetails? portrait
     ) =>
         new()
         {
             PersonId = person.PersonId,
             FirstName = person.FirstName,
             LastName = person.LastName,
+            Portrait = PictureEditingDto.From(portrait),
             Email = person.Email,
             Phone = person.Phone,
             Street = person.Street,
@@ -305,6 +318,8 @@ public sealed record GetPersonByIdResponse
     public required string FirstName { get; init; }
 
     public required string LastName { get; init; }
+
+    public required PictureEditingDto? Portrait { get; init; }
 
     public required string? Email { get; init; }
 

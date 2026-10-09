@@ -1,11 +1,12 @@
 import { z } from 'zod';
+import { PictureSchema } from '@/lib/api/schemas';
 import { CALENDAR_KIND_KEYS } from '@/lib/calendar-copy';
 
 export const ClubPersonSchema = z.object({
   personId: z.number().int(),
   firstName: z.string(),
   lastName: z.string(),
-  portraitUrl: z.string().nullable(),
+  portrait: PictureSchema.nullable(),
   officeName: z.string().nullable(),
 });
 export type ClubPerson = z.infer<typeof ClubPersonSchema>;

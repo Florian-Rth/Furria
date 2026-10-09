@@ -5,6 +5,7 @@ using Furria.Application.Results;
 using Furria.Core.Club;
 using Furria.Core.Events;
 using Furria.Core.Groups;
+using Furria.Infrastructure.Gallery;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -362,6 +363,7 @@ public sealed class CalendarService
         if (entry.Kind == CalendarEntryKind.Event)
             return Result.Conflict(EventsLiveInTheWorkbenchMessage);
 
+        await _dbContext.KeepSessionOfAlbumsOnAsync(entry, ct);
         _dbContext.CalendarEntries.Remove(entry);
         await _dbContext.SaveChangesAsync(ct);
 

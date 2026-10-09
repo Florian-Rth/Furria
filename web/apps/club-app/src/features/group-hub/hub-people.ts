@@ -5,6 +5,7 @@ export interface HubPerson {
   personId: number;
   firstName: string;
   lastName: string;
+  portrait: string | undefined;
   isAffiliated: boolean;
   groupMembershipId: number | null;
   memberSince: string | null;
@@ -17,6 +18,7 @@ const fromAdmin = (admin: GroupDetailAdmin, member: GroupDetailMember | null): H
   personId: admin.personId,
   firstName: admin.firstName,
   lastName: admin.lastName,
+  portrait: admin.portrait?.smallUrl,
   isAffiliated: admin.isAffiliated,
   groupMembershipId: member === null ? null : member.groupMembershipId,
   memberSince: member === null ? null : member.since,
@@ -29,6 +31,7 @@ const fromMember = (member: GroupDetailMember): HubPerson => ({
   personId: member.personId,
   firstName: member.firstName,
   lastName: member.lastName,
+  portrait: member.portrait?.smallUrl,
   isAffiliated: member.isAffiliated,
   groupMembershipId: member.groupMembershipId,
   memberSince: member.since,
@@ -54,6 +57,11 @@ export const toHubPeople = (
 
 export const countGroupAdmins = (people: readonly HubPerson[]): number =>
   people.filter((person) => person.groupAdminId !== null).length;
+
+export const toHubPortrait = (
+  people: readonly HubPerson[],
+  personId: number | null,
+): string | undefined => people.find((person) => person.personId === personId)?.portrait;
 
 export const toPrefillPerson = (
   people: readonly HubPerson[],

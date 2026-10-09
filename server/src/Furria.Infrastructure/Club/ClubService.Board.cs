@@ -1,4 +1,3 @@
-using System.Diagnostics.Contracts;
 using Furria.Application.Club;
 
 namespace Furria.Infrastructure.Club;
@@ -15,8 +14,7 @@ public sealed partial class ClubService
         return [.. seats.Select(ToBoardSeat)];
     }
 
-    [Pure]
-    private static ClubHubBoardSeat ToBoardSeat(RunningBoardSeat seat) =>
+    private ClubHubBoardSeat ToBoardSeat(RunningBoardSeat seat) =>
         new()
         {
             Person = new ClubHubPerson
@@ -24,7 +22,11 @@ public sealed partial class ClubService
                 PersonId = seat.PersonId,
                 FirstName = seat.FirstName,
                 LastName = seat.LastName,
-                PortraitUrl = seat.PortraitUrl,
+                Portrait = _pictures.PortraitOf(
+                    seat.PersonId,
+                    seat.PortraitId,
+                    seat.PortraitRenderedAt
+                ),
                 OfficeName = seat.OfficeName,
             },
             OfficeName = seat.OfficeName,

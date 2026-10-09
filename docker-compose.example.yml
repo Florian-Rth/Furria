@@ -1,5 +1,5 @@
-# Example full-stack deployment: PostgreSQL + API + website + club-app, kept up to date by
-# Watchtower.
+# Example full-stack deployment: PostgreSQL + API + media worker + website + club-app, kept up to
+# date by Watchtower.
 #
 # Usage on the host that runs the app:
 #   cp docker-compose.example.yml docker-compose.yml
@@ -7,8 +7,8 @@
 #   docker compose up -d
 #
 # The API auto-applies EF Core migrations on startup, so a fresh database is provisioned
-# automatically. Watchtower polls Docker Hub every 5 minutes and redeploys the api/website/
-# club-app containers whenever :latest moves - only a green CI run on main moves it, and the
+# automatically. Watchtower polls Docker Hub every 5 minutes and redeploys the api/media-worker/
+# website/club-app containers whenever :latest moves - only a green CI run on main moves it, and the
 # Rollback workflow repoints it to an earlier sha-<short> image.
 
 name: furria
@@ -34,6 +34,10 @@ services:
     volumes:
       # postgres:18 keeps PGDATA in a versioned subdir - mount the parent.
       - postgres-data:/var/lib/postgresql
+    # Only for a media worker on another host (docs/ops/PRODUCTION.md, "Media"): publish the
+    # database on this host's LAN address alone, with a strong POSTGRES_PASSWORD.
+    # ports:
+    #   - "10.10.20.12:5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-furria} -d ${POSTGRES_DB:-furria}"]
       interval: 5s
@@ -68,11 +72,20 @@ services:
       # Signs the proof-of-work challenges of the website's membership application (self-hosted
       # Altcha) - at least 32 characters, the API refuses to start otherwise.
       Altcha__HmacKey: ${ALTCHA_HMAC_KEY:?set ALTCHA_HMAC_KEY (>= 32 chars) in .env}
+      # Every photo and video lives under this one path (ADR-0023); media URLs carry an HMAC
+      # signed with this key (ADR-0025) - at least 32 characters, the API refuses to start otherwise.
+      Media__RootPath: /media
+      Media__SigningKey: ${MEDIA_SIGNING_KEY:?set MEDIA_SIGNING_KEY (>= 32 chars) in .env}
       # The same fingerprints the club-app's assetlinks.json names: each one's app may use passkeys.
       ClubApp__AndroidCertFingerprints: ${ANDROID_CERT_FINGERPRINTS:-}
       # Production refuses to start without trusted proxies.
       ForwardedHeaders__TrustedProxies__0: *furria-subnet
       ForwardedHeaders__TrustedProxies__1: ${EDGE_PROXY_ADDRESS:?set EDGE_PROXY_ADDRESS in .env}
+    volumes:
+      # A named volume by default; set MEDIA_PATH to a host path (NAS mount, mounted bucket) to
+      # put the media elsewhere - owned by uid 1654, the containers' user. Back it up together
+      # with the database (backup.example.sh, ADR-0023).
+      - ${MEDIA_PATH:-media}:/media
     # Healthy once the database answers and every migration is applied (GET /api/health). Nothing
     # waits on it: the website and club-app nginx resolve api per request, so they serve their
     # pages - and say the API is unreachable - while it is down.
@@ -83,6 +96,43 @@ services:
       retries: 6
       start_period: 60s
     # Logs are JSON on stdout (ADR-0017); rotate them so `docker logs` never fills the disk.
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
+
+  # Makes every rendition (ADR-0024): photos as WebP, videos as 1080p H.264 MP4 plus poster. It
+  # claims jobs the API queues in Postgres; while it is stopped uploads still succeed and wait in
+  # "processing". More workers - also on another host with the media path mounted - may share the
+  # queue. On a machine with an Intel iGPU set MEDIA_WORKER_HWACCEL=vaapi (or qsv) and uncomment
+  # the devices/group_add lines below.
+  media-worker:
+    image: ${DOCKERHUB_USERNAME}/furria-media-worker:latest
+    restart: unless-stopped
+    # 0 when the worker runs on another host instead (the iGPU VM); `docker compose run --rm
+    # media-worker regenerate ...` still works here.
+    deploy:
+      replicas: ${MEDIA_WORKER_REPLICAS:-1}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__AppDb: Host=postgres;Port=5432;Database=${POSTGRES_DB:-furria};Username=${POSTGRES_USER:-furria};Password=${POSTGRES_PASSWORD:-furria}
+      Media__RootPath: /media
+      MediaWorker__HardwareAcceleration: ${MEDIA_WORKER_HWACCEL:-none}
+      MediaWorker__HardwareDevice: ${MEDIA_WORKER_DEVICE:-/dev/dri/renderD128}
+    volumes:
+      # The same media path as the api's (ADR-0023): originals are read, renditions written beside.
+      - ${MEDIA_PATH:-media}:/media
+    # devices:
+    #   - /dev/dri:/dev/dri
+    # group_add:
+    #   - "${MEDIA_WORKER_RENDER_GID:-render}"
+    # A stop hands the running job back to the queue; give a transcode time to let go.
+    stop_grace_period: 30s
     logging:
       driver: json-file
       options:
@@ -136,3 +186,4 @@ services:
 
 volumes:
   postgres-data:
+  media:

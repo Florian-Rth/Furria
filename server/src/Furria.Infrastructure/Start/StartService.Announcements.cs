@@ -3,6 +3,7 @@ using Furria.Application.Authorization;
 using Furria.Application.Start;
 using Furria.Core.Club;
 using Furria.Infrastructure.Club;
+using Furria.Infrastructure.Media;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Start;
@@ -11,10 +12,10 @@ public sealed partial class StartService
 {
     private const int AnnouncementReachDays = 60;
 
-    [Pure]
     private static StartAnnouncementSummary ToAnnouncementSummary(
         AnnouncementRow row,
-        IReadOnlyDictionary<int, string> officeNames
+        IReadOnlyDictionary<int, string> officeNames,
+        MediaPictures pictures
     ) =>
         new()
         {
@@ -29,7 +30,11 @@ public sealed partial class StartService
                     PersonId = author.PersonId,
                     FirstName = author.FirstName,
                     LastName = author.LastName,
-                    PortraitUrl = author.PortraitUrl,
+                    Portrait = pictures.PortraitOf(
+                        author.PersonId,
+                        author.PortraitId,
+                        author.PortraitRenderedAt
+                    ),
                     OfficeName = officeNames.GetValueOrDefault(author.PersonId),
                 }
                 : null,
@@ -54,7 +59,7 @@ public sealed partial class StartService
 
         var officeNames = await _runningBoardSeats.OfficeNamesAsync(viewer.Moment.Today, ct);
 
-        return [.. rows.Select(row => ToAnnouncementSummary(row, officeNames))];
+        return [.. rows.Select(row => ToAnnouncementSummary(row, officeNames, _pictures))];
     }
 
     private IQueryable<Announcement> UnseenAnnouncements(Viewer viewer)

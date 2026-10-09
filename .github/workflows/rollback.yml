@@ -13,7 +13,7 @@ on:
         description: App whose :latest to repoint
         required: true
         type: choice
-        options: [api, website, club-app]
+        options: [api, media-worker, website, club-app]
       commit:
         description: Commit on main to roll back to (7-40 hex characters, an optional sha- prefix)
         required: true

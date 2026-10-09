@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { GroupDetailAdminSchema, GroupDetailMemberSchema } from '@/features/group-detail';
 import { AppSearchSchema } from '@/features/session';
-import { PersonRefSchema } from '@/lib/api/schemas';
+import { PersonRefSchema, PictureEditingSchema, PictureSchema } from '@/lib/api/schemas';
 import { ATTENDANCE_ANSWER_KEYS, CALENDAR_KIND_KEYS } from '@/lib/calendar-copy';
 import { GroupToneSchema } from '@/lib/group-tone';
 import { requiredDay, requiredPerson } from '@/lib/required-fields';
@@ -92,6 +92,8 @@ export type GeneratedTrainings = z.infer<typeof GeneratedTrainingsSchema>;
 export const GroupHubSchema = z.object({
   groupId: z.number().int(),
   name: z.string(),
+  picture: PictureSchema.nullable(),
+  pictureEditing: PictureEditingSchema.nullable(),
   description: z.string(),
   isRecruiting: z.boolean(),
   groupKindId: z.number().int().nullable(),

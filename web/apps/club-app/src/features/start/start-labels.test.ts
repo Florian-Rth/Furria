@@ -6,6 +6,7 @@ import {
   formatShortDate,
   formatSpokenTime,
   toEntryFacets,
+  toGalleryShelfEdge,
   toRunningProgress,
   toStampOf,
   viewerOwnerOf,
@@ -298,5 +299,15 @@ describe('viewerOwnerOf', () => {
     },
   ])('is $expected.name when $label', ({ overrides, expected }) => {
     expect(viewerOwnerOf(entry(overrides))).toEqual(expected);
+  });
+});
+
+describe('toGalleryShelfEdge', () => {
+  it.each([
+    [1, '1 Bild'],
+    [0, '0 Bilder'],
+    [1204, '1.204 Bilder'],
+  ])('formats %i items', (itemCount, expected) => {
+    expect(toGalleryShelfEdge(itemCount)).toBe(expected);
   });
 });

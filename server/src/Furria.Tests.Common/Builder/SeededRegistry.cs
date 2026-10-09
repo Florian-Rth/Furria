@@ -4,5 +4,6 @@ internal sealed record SeededRegistry(
     SeededIdentity Identity,
     SeededGroups Groups,
     SeededRoles Roles,
-    SeededClub Club
+    SeededClub Club,
+    SeededGallery Gallery
 );

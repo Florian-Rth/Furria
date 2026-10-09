@@ -11,6 +11,7 @@ export { PersonMembershipScreen } from './components/PersonMembershipScreen';
 export { PersonNewScreen } from './components/PersonNewScreen';
 export { PersonPauseNewScreen } from './components/PersonPauseNewScreen';
 export { PersonPauseScreen } from './components/PersonPauseScreen';
+export { PersonPortraitScreen } from './components/PersonPortraitScreen';
 export { PersonsPage } from './components/PersonsPage';
 export type { PersonAccessFilter } from './person-access-filter';
 export { PauseNewSearchSchema, PersonsSearchSchema } from './schemas';

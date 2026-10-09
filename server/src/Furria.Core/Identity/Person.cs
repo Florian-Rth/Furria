@@ -1,5 +1,6 @@
 using Furria.Core.Club;
 using Furria.Core.Groups;
+using Furria.Core.Media;
 using Furria.Core.Roles;
 
 namespace Furria.Core.Identity;
@@ -32,7 +33,9 @@ public sealed class Person : ITimestamped
 
     public bool ContactVisibleToMembers { get; set; }
 
-    public string? PortraitUrl { get; set; }
+    public int? PortraitId { get; set; }
+
+    public MediaItem? Portrait { get; set; }
 
     public DateOnly? ArchivedOn { get; set; }
 

@@ -1,12 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router';
-import type { FC } from 'react';
-import { ALBUMS, GalleryPage } from '@/features/gallery';
+import { GalleryScreen } from '@/features/gallery';
+import { ensurePublicGallery } from '@/lib/public-gallery/api';
+import type { GallerySection } from '@/lib/public-gallery/schemas';
 import type { RouteHead } from '@/lib/seo';
 import { pageTitle } from '@/lib/seo';
 
-const GalleryComponent: FC = () => <GalleryPage albums={ALBUMS} />;
-
 export const Route = createFileRoute('/_site/_gated/gallery')({
+  loader: (): Promise<GallerySection[] | null> => ensurePublicGallery().catch((): null => null),
   head: (): RouteHead => ({ meta: [{ title: pageTitle('Galerie') }] }),
-  component: GalleryComponent,
+  component: GalleryScreen,
 });

@@ -1,4 +1,5 @@
 using FastEndpoints;
+using Furria.Api.Media;
 using Furria.Application.Groups;
 using Furria.Core.Groups;
 using Furria.Infrastructure.Groups;
@@ -35,6 +36,7 @@ public sealed class GetPublicGroups : EndpointWithoutRequest<GetPublicGroupsResp
         {
             GroupId = group.GroupId,
             Name = group.Name,
+            Picture = PictureDto.From(group.Picture),
             Description = group.Description,
             IsRecruiting = group.IsRecruiting,
             GroupKindName = group.GroupKindName,
@@ -53,6 +55,8 @@ public sealed record PublicGroupDto
     public required int GroupId { get; init; }
 
     public required string Name { get; init; }
+
+    public required PictureDto? Picture { get; init; }
 
     public required string Description { get; init; }
 

@@ -44,6 +44,15 @@ internal static class SeedMaterializer
             ct
         );
 
-        return new SeededRegistry(identity, groups, roles, club);
+        var gallery = await GallerySeedMaterializer.InsertAsync(
+            dbContext,
+            recorded.RecordedGallery,
+            identity.PersonIds,
+            club.CalendarEntryIds,
+            scope.ServiceProvider.GetRequiredService<TimeProvider>().GetUtcNow(),
+            ct
+        );
+
+        return new SeededRegistry(identity, groups, roles, club, gallery);
     }
 }

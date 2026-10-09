@@ -47,7 +47,7 @@ export const useAnnouncementsSheet = (board: StartBoard): AnnouncementsSheetView
       announcement,
       byline: toAnnouncementByline(announcement, board.now),
       initials: toAuthorInitials(announcement.author),
-      portrait: announcement.author?.portraitUrl ?? undefined,
+      portrait: announcement.author?.portrait?.smallUrl,
       focused: announcement.announcementId === focusedId,
       ruled: index > 0,
     })),

@@ -1,4 +1,5 @@
 using FastEndpoints;
+using Furria.Api.Media;
 using Furria.Application.Club;
 using Furria.Infrastructure.Club;
 
@@ -35,7 +36,7 @@ public sealed class GetPublicBoard : EndpointWithoutRequest<GetPublicBoardRespon
             OfficeName = seat.OfficeName,
             FirstName = seat.FirstName,
             LastName = seat.LastName,
-            PortraitUrl = seat.PortraitUrl,
+            Portrait = PictureDto.From(seat.Portrait),
         };
 }
 
@@ -52,5 +53,5 @@ public sealed record PublicBoardSeatDto
 
     public required string LastName { get; init; }
 
-    public required string? PortraitUrl { get; init; }
+    public required PictureDto? Portrait { get; init; }
 }

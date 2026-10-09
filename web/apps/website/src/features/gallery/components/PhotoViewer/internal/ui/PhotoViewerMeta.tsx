@@ -1,14 +1,14 @@
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
-import type { Album } from '@/features/gallery/gallery-content';
-import { buildPhotoViewerMetaLabel } from '@/features/gallery/gallery-content';
+import { buildAlbumMeta } from '@/features/gallery/gallery-content';
+import type { AlbumDetail } from '@/lib/public-gallery/schemas';
 
 interface PhotoViewerMetaProps {
-  album: Album;
+  album: AlbumDetail;
 }
 
 export const PhotoViewerMeta: FC<PhotoViewerMetaProps> = ({ album }) => {
-  const metaLabel = buildPhotoViewerMetaLabel(album);
+  const metaLabel = buildAlbumMeta(album);
 
   return (
     <Typography

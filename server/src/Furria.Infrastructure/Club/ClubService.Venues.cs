@@ -18,7 +18,8 @@ public sealed partial class ClubService
             holding.PersonId,
             holding.Person!.FirstName,
             holding.Person!.LastName,
-            holding.Person!.PortraitUrl,
+            holding.Person!.PortraitId,
+            holding.Person!.Portrait!.RenderedAt,
             holding.SinceOn
         );
 
@@ -74,8 +75,7 @@ public sealed partial class ClubService
         ];
     }
 
-    [Pure]
-    private static IReadOnlyList<ClubHubKeyHolder> ToHolders(
+    private IReadOnlyList<ClubHubKeyHolder> ToHolders(
         IEnumerable<KeyHoldingRow> holdings,
         IReadOnlyDictionary<int, string> officeNames
     ) =>
@@ -90,7 +90,11 @@ public sealed partial class ClubService
                         PersonId = holding.PersonId,
                         FirstName = holding.FirstName,
                         LastName = holding.LastName,
-                        PortraitUrl = holding.PortraitUrl,
+                        Portrait = _pictures.PortraitOf(
+                            holding.PersonId,
+                            holding.PortraitId,
+                            holding.PortraitRenderedAt
+                        ),
                         OfficeName = officeNames.GetValueOrDefault(holding.PersonId),
                     },
                     SinceOn = holding.SinceOn,
@@ -104,7 +108,8 @@ public sealed partial class ClubService
         int PersonId,
         string FirstName,
         string LastName,
-        string? PortraitUrl,
+        int? PortraitId,
+        DateTimeOffset? PortraitRenderedAt,
         DateOnly SinceOn
     );
 }

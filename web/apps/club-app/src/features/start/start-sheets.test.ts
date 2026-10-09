@@ -35,7 +35,7 @@ const announcement = (announcementId: number, publishedAt: string): StartAnnounc
     personId: 1,
     firstName: 'Karin',
     lastName: 'Albrecht',
-    portraitUrl: null,
+    portrait: null,
     officeName: null,
   },
 });

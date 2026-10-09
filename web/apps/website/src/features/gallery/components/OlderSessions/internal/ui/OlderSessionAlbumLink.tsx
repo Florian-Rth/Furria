@@ -3,15 +3,15 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import type { Album } from '@/features/gallery/gallery-content';
 import { buildAlbumHref, buildAlbumRowMeta } from '@/features/gallery/gallery-content';
+import type { AlbumSummary } from '@/lib/public-gallery/schemas';
 
 interface OlderSessionAlbumLinkProps {
-  album: Album;
+  album: AlbumSummary;
 }
 
 export const OlderSessionAlbumLink: FC<OlderSessionAlbumLinkProps> = ({ album }) => {
-  const albumHref = buildAlbumHref(album.slug);
+  const albumHref = buildAlbumHref(album);
   const rowMeta = buildAlbumRowMeta(album);
 
   return (

@@ -45,11 +45,10 @@ public sealed class IdentitySeedBuilder
     public IdentitySeedBuilder AddPerson(
         string alias,
         string firstName = "Test",
-        string lastName = "Person",
-        string? portraitUrl = null
+        string lastName = "Person"
     )
     {
-        _people.Add(new PersonIntent(alias, firstName, lastName, portraitUrl));
+        _people.Add(new PersonIntent(alias, firstName, lastName));
         return this;
     }
 
@@ -191,12 +190,7 @@ public sealed class IdentitySeedBuilder
         return this;
     }
 
-    internal sealed record PersonIntent(
-        string Alias,
-        string FirstName,
-        string LastName,
-        string? PortraitUrl
-    );
+    internal sealed record PersonIntent(string Alias, string FirstName, string LastName);
 
     internal sealed record PersonContactIntent(
         string Alias,

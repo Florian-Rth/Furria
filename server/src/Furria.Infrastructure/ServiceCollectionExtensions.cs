@@ -3,10 +3,12 @@ using Furria.Application.Identity;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Events;
+using Furria.Infrastructure.Gallery;
 using Furria.Infrastructure.Groups;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Mail;
 using Furria.Infrastructure.Management;
+using Furria.Infrastructure.Media;
 using Furria.Infrastructure.MembershipApplications;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Registry;
@@ -17,6 +19,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace Furria.Infrastructure;
@@ -30,25 +33,7 @@ public static class ServiceCollectionExtensions
         IConfiguration configuration
     )
     {
-        services.AddSingleton<AuditTimestampInterceptor>();
-        services.AddSingleton<MailOutboxSignal>();
-        services.AddSingleton<MailOutboxWakeUp>();
-        services.AddDbContext<AppDbContext>(
-            (serviceProvider, options) =>
-                options
-                    .UseNpgsql(
-                        configuration.GetConnectionString(AppDbContext.ConnectionName),
-                        npgsql =>
-                            npgsql
-                                .MigrationsHistoryTable("__ef_migrations_history")
-                                .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
-                    )
-                    .UseSnakeCaseNamingConvention()
-                    .AddInterceptors(
-                        serviceProvider.GetRequiredService<AuditTimestampInterceptor>(),
-                        serviceProvider.GetRequiredService<MailOutboxWakeUp>()
-                    )
-        );
+        services.AddFurriaPersistence(configuration);
 
         services
             .AddIdentityCore<Account>(options =>
@@ -63,7 +48,6 @@ public static class ServiceCollectionExtensions
                 options.Lockout.AllowedForNewUsers = true;
                 options.Lockout.MaxFailedAccessAttempts = 5;
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
-                options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
             })
             .AddEntityFrameworkStores<AppDbContext>()
             .AddSignInManager()
@@ -124,11 +108,24 @@ public static class ServiceCollectionExtensions
         services.AddScoped<MembershipApplicationService>();
         services.AddScoped<MembershipApplicationArrivalNotifier>();
         services.AddScoped<DatabaseHealthService>();
+        services.AddSingleton<MediaRoot>();
+        services.AddSingleton<MediaUrlSigner>();
+        services.AddScoped<MediaStore>();
+        services.AddScoped<MediaOwnerAccess>();
+        services.AddSingleton<MediaFiles>();
+        services.AddSingleton<MediaPictures>();
+        services.AddScoped<PictureService>();
+        services.AddScoped<PictureLookup>();
+        services.AddScoped<PublicMediaService>();
+        services.AddScoped<MediaJobQueue>();
+        services.AddHostedService<AbandonedUploadSweep>();
+        services.AddScoped<GalleryService>();
 
         services.AddScoped<MailOutbox>();
         services.AddSingleton<MailService>();
         services.AddHostedService<DatabaseMigrator>();
         services.AddHostedService<ManagingLoginSeeder>();
+        services.AddHostedService<GalleryBinPurge>();
         services.AddHostedService<MailDispatcher>();
         services.AddScoped<AccessRequestService>();
         services.AddScoped<PasswordResetService>();
@@ -140,7 +137,37 @@ public static class ServiceCollectionExtensions
         services.Configure<DataProtectionTokenProviderOptions>(options =>
             options.TokenLifespan = PasswordResetService.LinkLifetime
         );
-        services.AddSingleton(TimeProvider.System);
+        return services;
+    }
+
+    public static IServiceCollection AddFurriaPersistence(
+        this IServiceCollection services,
+        IConfiguration configuration
+    )
+    {
+        services.Configure<IdentityOptions>(options =>
+            options.Stores.SchemaVersion = IdentitySchemaVersions.Version3
+        );
+        services.AddSingleton<AuditTimestampInterceptor>();
+        services.AddSingleton<MailOutboxSignal>();
+        services.AddSingleton<MailOutboxWakeUp>();
+        services.AddDbContext<AppDbContext>(
+            (serviceProvider, options) =>
+                options
+                    .UseNpgsql(
+                        configuration.GetConnectionString(AppDbContext.ConnectionName),
+                        npgsql =>
+                            npgsql
+                                .MigrationsHistoryTable("__ef_migrations_history")
+                                .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
+                    )
+                    .UseSnakeCaseNamingConvention()
+                    .AddInterceptors(
+                        serviceProvider.GetRequiredService<AuditTimestampInterceptor>(),
+                        serviceProvider.GetRequiredService<MailOutboxWakeUp>()
+                    )
+        );
+        services.TryAddSingleton(TimeProvider.System);
         return services;
     }
 }

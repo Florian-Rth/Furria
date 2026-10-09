@@ -2,7 +2,8 @@ import { KkPhoto, kkTokens } from '@furria/ui';
 import type { PanInfo, TargetAndTransition, Transition } from 'motion/react';
 import { motion, useReducedMotion } from 'motion/react';
 import type { CSSProperties, FC } from 'react';
-import type { Photo } from '@/features/gallery/gallery-content';
+import type { AlbumPhotoEntry } from '@/features/gallery/gallery-content';
+import { viewerPhotoSizes } from '@/features/gallery/gallery-content';
 import type { PhotoStepDirection } from '@/features/gallery/photo-viewer-steps';
 import { resolveSwipeStep } from '@/features/gallery/photo-viewer-steps';
 
@@ -33,16 +34,14 @@ const AREA_STYLE: CSSProperties = {
 };
 
 interface PhotoViewerPhotoProps {
-  photo: Photo;
-  placeholderLabel: string;
+  entry: AlbumPhotoEntry;
   onStep: (direction: PhotoStepDirection) => void;
 }
 
-export const PhotoViewerPhoto: FC<PhotoViewerPhotoProps> = ({
-  photo,
-  placeholderLabel,
-  onStep,
-}) => {
+export const PhotoViewerPhoto: FC<PhotoViewerPhotoProps> = ({ entry, onStep }) => {
+  const { photo } = entry;
+  const placeholderLabel = String(photo.mediaItemId);
+  const aspectRatio = `${photo.width} / ${photo.height}`;
   const reducedMotion = useReducedMotion();
   const swipeMotion = resolvePhotoSwipeMotion(reducedMotion);
 
@@ -67,10 +66,13 @@ export const PhotoViewerPhoto: FC<PhotoViewerPhotoProps> = ({
       style={AREA_STYLE}
     >
       <KkPhoto
-        alt={photo.alt}
+        alt={entry.alt}
         orientation={photo.orientation}
+        aspectRatio={aspectRatio}
         placeholderLabel={placeholderLabel}
-        source={photo.source}
+        source={photo.largeUrl}
+        sourceSet={entry.sourceSet}
+        sizes={viewerPhotoSizes}
         sx={{
           width: { xs: '100%', desktop: 'auto' },
           height: { xs: 'auto', desktop: '100%' },

@@ -537,7 +537,7 @@ public sealed class GetMembersTests : IClassFixture<ApiTestFixture>
         var member = document.RootElement.GetProperty("members").EnumerateArray().First();
         var fields = member.EnumerateObject().Select(field => field.Name).ToArray();
         Assert.Equal(
-            ["personId", "firstName", "lastName", "membershipState", "groups", "roles"],
+            ["personId", "firstName", "lastName", "portrait", "membershipState", "groups", "roles"],
             fields
         );
     }

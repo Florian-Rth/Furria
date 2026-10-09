@@ -5,9 +5,11 @@ using Furria.Api.Endpoints.Auth;
 using Furria.Api.Endpoints.Management;
 using Furria.Api.Endpoints.Persons;
 using Furria.Api.Tests.Auth;
+using Furria.Api.Tests.Media;
 using Furria.Application.Authorization;
 using Furria.Core.Club;
 using Furria.Core.Identity;
+using Furria.Core.Media;
 using Furria.Infrastructure.Mail;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
@@ -70,6 +72,64 @@ public sealed class DeletePersonByIdTests : IClassFixture<ApiTestFixture>
             .MembershipsOfPerson(paulaId)
             .ToHaveCount(0)
             .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_KeepHerGalleryUploadsWithNoUploaderAndHerInboxOwnerless_When_SheIsErased()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await ArrangePaulaAndIlkaAsync(
+            ct,
+            builder =>
+                builder.Gallery(gallery =>
+                    gallery
+                        .AddAlbum("gala", "Prunksitzung")
+                        .AddGalleryItem("paula-placed", "paula", "gala")
+                        .AddGalleryItem("paula-unsorted", "paula")
+                )
+        );
+        var paulaId = ctx.Identity.People.IdOf("paula");
+        var ilka = await ctx.Identity.ClientForAsync("ilka", ct);
+
+        var response = await DeleteWithPasswordAsync(
+            ilka,
+            paulaId,
+            ApiTestFixture.SeededAccountPassword
+        );
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx
+            .Expected.GalleryItem(ctx.Gallery.Items.IdOf("paula-unsorted"))
+            .ToSitInTheInboxOf(null)
+            .GalleryItem(ctx.Gallery.Items.IdOf("paula-placed"))
+            .ToBePlacedIn(ctx.Gallery.Albums.IdOf("gala"), _fixture.TimeProvider.GetUtcNow())
+            .MediaItem(ctx.Gallery.Items.IdOf("paula-placed"))
+            .ToBeUploadedAs(null, "paula-placed.jpg", 4096)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_TakeHerPortraitAndItsFilesWithHer_When_SheIsErased()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await ArrangePaulaAndIlkaAsync(ct);
+        var paulaId = ctx.Identity.People.IdOf("paula");
+        var portraitId = await PictureSteps.RenderedPortraitAsync(
+            _fixture,
+            await ctx.Identity.ManagingLoginClientAsync(ct),
+            paulaId,
+            ct
+        );
+        var original = await _fixture.MediaFileOfAsync(portraitId, MediaRendition.Original, ct);
+
+        await DeleteWithPasswordAsync(
+            await ctx.Identity.ClientForAsync("ilka", ct),
+            paulaId,
+            ApiTestFixture.SeededAccountPassword
+        );
+
+        await ctx.Expected.MediaItem(portraitId).ToBeGone().AssertAsync(ct);
+        Assert.False(File.Exists(original));
     }
 
     [Fact]

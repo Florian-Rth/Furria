@@ -1,5 +1,6 @@
 using System.Diagnostics.Contracts;
 using Furria.Application.Club;
+using Furria.Infrastructure.Media;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Club;
@@ -35,15 +36,15 @@ public sealed partial class ClubService
 
         return new ClubHubAnnouncements
         {
-            Newest = [.. rows.Select(row => ToHubAnnouncement(row, officeNames))],
+            Newest = [.. rows.Select(row => ToHubAnnouncement(row, officeNames, _pictures))],
             TotalCount = totalCount,
         };
     }
 
-    [Pure]
     private static ClubHubAnnouncement ToHubAnnouncement(
         AnnouncementRow row,
-        IReadOnlyDictionary<int, string> officeNames
+        IReadOnlyDictionary<int, string> officeNames,
+        MediaPictures pictures
     ) =>
         new()
         {
@@ -58,7 +59,11 @@ public sealed partial class ClubService
                     PersonId = author.PersonId,
                     FirstName = author.FirstName,
                     LastName = author.LastName,
-                    PortraitUrl = author.PortraitUrl,
+                    Portrait = pictures.PortraitOf(
+                        author.PersonId,
+                        author.PortraitId,
+                        author.PortraitRenderedAt
+                    ),
                     OfficeName = officeNames.GetValueOrDefault(author.PersonId),
                 }
                 : null,

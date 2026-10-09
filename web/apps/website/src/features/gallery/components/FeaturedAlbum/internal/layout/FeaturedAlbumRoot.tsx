@@ -2,16 +2,16 @@ import { kkTokens } from '@furria/ui';
 import CardActionArea from '@mui/material/CardActionArea';
 import { Link } from '@tanstack/react-router';
 import type { FC, PropsWithChildren } from 'react';
-import type { Album } from '@/features/gallery/gallery-content';
 import { buildAlbumHref } from '@/features/gallery/gallery-content';
+import type { AlbumSummary } from '@/lib/public-gallery/schemas';
 import { FeaturedAlbumScrim } from '../ui/FeaturedAlbumScrim';
 
 interface FeaturedAlbumRootProps extends PropsWithChildren {
-  album: Album;
+  album: AlbumSummary;
 }
 
 export const FeaturedAlbumRoot: FC<FeaturedAlbumRootProps> = ({ album, children }) => {
-  const albumHref = buildAlbumHref(album.slug);
+  const albumHref = buildAlbumHref(album);
 
   return (
     <CardActionArea

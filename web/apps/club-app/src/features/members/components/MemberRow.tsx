@@ -30,6 +30,7 @@ export const MemberRow: FC<MemberRowProps> = ({ member }) => {
   return (
     <KkPersonRow
       initials={toInitials(member.firstName, member.lastName)}
+      portrait={member.portrait?.smallUrl}
       name={name}
       accent={accent}
       meta={meta}

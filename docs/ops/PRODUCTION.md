@@ -14,6 +14,7 @@ browser ──HTTPS──▶ edge nginx (Hetzner, outside this repo)
                      ├─ website   :WEBSITE_PORT  ─┐  /api same-origin
                      ├─ club-app  :CLUB_APP_PORT ─┤
                      ├─ api       :8080 (internal) ◀┘
+                     ├─ media-worker (no port; renditions, ADR-0024)
                      ├─ postgres  (internal)
                      └─ watchtower
 ```
@@ -32,9 +33,22 @@ The edge is Florian's Hetzner nginx and is not in this repo. It must:
 | Set `X-Forwarded-For` (`$proxy_add_x_forwarded_for`) and `X-Forwarded-Proto` (`$scheme`) | The API's per-IP limits and the app nginx's scheme come from them |
 | Reach the homelab through the gateway `EDGE_PROXY_ADDRESS` (`10.10.20.1`) | The API trusts forwarded headers only from that address and the compose network |
 | Pass `/.well-known/assetlinks.json` through without redirect, on both hosts | Android App Links (`app.`) and passkeys (apex) |
+| On `app.`: `client_max_body_size 20m`, `proxy_request_buffering off`, `proxy_buffering off` | Uploads travel by tus in 16 MB chunks — nginx's default 1 MB answers 413; buffering would spool every chunk, and every original (videos up to 20 GB), video seek and album ZIP, to the edge's disk |
+| Pass `Range` through and never cache `/api/media/…` or `/api/public/…` — no `proxy_cache`, no `proxy_ignore_headers Cache-Control` | Video seeking needs range requests; a public picture must 404 the moment it leaves the public face ([ADR-0025](../adr/0025-media-is-fetched-by-signed-urls.md)) |
 
 The app nginx adds HSTS (`includeSubDomains`, no `preload`), the CSP and the other security
-headers itself; the edge must not override them.
+headers itself; the edge must not override them. The club-app nginx streams the upload route
+and the media/ZIP routes the same way, so a chunk is limited and streamed at both hops.
+
+The edge is the nginx plugin of OPNsense (*Services → Nginx → Configuration*). On the `/`
+**Location** of the `app.` HTTP server: *Maximum Body Size* `20m`, *Request Buffering* off,
+*Proxy Buffering* off, no cache path. The API sets its own size limits, so the larger body limit
+for the whole host is harmless; the apex (website) needs none of it — no uploads, no large
+downloads. No location of either host may set a cache path. The plugin sends `X-Forwarded-For` /
+`-Proto` and passes `Range` by itself.
+
+Check after a change: an upload of a phone video in the gallery's *Entwicklerbad* finishes, and
+`curl -sI -H 'Range: bytes=0-1' '<a media URL from the app>'` answers `206`.
 
 ## Configuration
 
@@ -52,6 +66,16 @@ every variable. The ones that matter most:
 - **`ALTCHA_HMAC_KEY`** — signs the proof-of-work challenges of the website's membership
   application (self-hosted Altcha, at least 32 characters). A change voids only the challenges
   of the last 10 minutes.
+- **`MEDIA_SIGNING_KEY`** — signs every media URL the API hands out
+  ([ADR-0025](../adr/0025-media-is-fetched-by-signed-urls.md), at least 32 characters). A change
+  voids the media URLs of the last 48 hours; clients fetch fresh ones.
+- **`MEDIA_PATH`** — where photos and videos live
+  ([ADR-0023](../adr/0023-media-lives-under-one-mounted-path.md)); empty keeps the named volume
+  `media`. A host path must be owned by uid 1654 (the api's and worker's user). See [Media](#media).
+- **`MEDIA_WORKER_HWACCEL`** — where the media worker encodes videos: `none` (CPU, default),
+  `vaapi` or `qsv` (an Intel iGPU; also map `/dev/dri` into `media-worker`, see the compose file;
+  `MEDIA_WORKER_DEVICE` names the render node). Decoding, scaling and HDR tone mapping stay on the
+  CPU either way. One video encodes at a time per worker; photos run beside it.
 - **`EDGE_PROXY_ADDRESS`** — the API refuses to start in production without trusted proxies.
 - **`ANDROID_CERT_FINGERPRINTS`** — feeds both `assetlinks.json` files and the API's accepted
   passkey origins.
@@ -85,7 +109,7 @@ curl -s https://app.<club-domain>/api/health
 
 1. Find the last good commit on `main`: `git log --first-parent --oneline main`, or the `+<sha>`
    `/api/health` reported before the bad release.
-2. GitHub → Actions → **Rollback** → *Run workflow*: pick the app (`api`, `website`, `club-app`)
+2. GitHub → Actions → **Rollback** → *Run workflow*: pick the app (`api`, `media-worker`, `website`, `club-app`)
    and enter the commit (7–40 hex characters, `sha-` prefix optional). CI builds only the apps a
    push changed, so that commit may have no image of this app: the workflow takes the newest
    image built at or before it on `main` — what production ran for that app as of that commit —
@@ -97,9 +121,142 @@ curl -s https://app.<club-domain>/api/health
 The rolled-back app stays there until the next green `main` that changes **that app** moves its
 `:latest` forward — so fix forward before pushing more changes to it.
 
-**A rollback across a migration has nothing to restore from**: the old API starts on the newer
-schema (it sees no pending migration), but what the migration changed stays changed. Backups are
-deferred out of L1.
+**A rollback across a migration does not undo it**: the old API starts on the newer schema (it
+sees no pending migration), but what the migration changed stays changed. The only way back is
+[restoring](#backup-and-restore) the last backup before the release — losing everything written
+since.
+
+## Media
+
+### The media path
+
+One path holds every byte ([ADR-0023](../adr/0023-media-lives-under-one-mounted-path.md)), mounted
+at `/media` in `api` and `media-worker`:
+
+| Directory | What | Backup |
+|---|---|---|
+| `originals/` | Every upload as it arrived, written once, never changed; deleted with its item | **Yes** — with the database |
+| `renditions/` | WebP sizes, video MP4, posters ([ADR-0024](../adr/0024-a-media-worker-makes-renditions-off-the-api.md)) | No — the worker rebuilds them |
+| `staging/` | tus uploads in flight; abandoned ones are swept after 24 h | No |
+
+Size: originals grow ~0.2–0.3 TB per season; renditions add roughly a tenth; staging holds at
+most a day's unfinished uploads. `staging/` and `originals/` must be one file system — finishing
+an upload is a rename. Any mount works (volume, NAS share, an S3 bucket mounted as a file
+system), as long as `api` and every worker see the same files. To move from the named volume to a
+host path: stop `api` and `media-worker`, copy the volume's content there (`docker volume inspect
+furria_media` names it), `chown -R 1654`, set `MEDIA_PATH`, `docker compose up -d`.
+
+### Where the media worker runs
+
+**Default: beside the API on the homelab host, on the CPU** (`MEDIA_WORKER_HWACCEL=none`). A video
+that is already H.264 ≤ 1080p is only remuxed; any other is transcoded on the CPU — one at a time,
+photos never wait behind it.
+
+**On the iGPU VM**, when videos pile up: the worker encodes there with VA-API or QSV.
+
+1. `MEDIA_PATH` on the homelab host must be a host path (above); share it to the VM (NFS) or put
+   it on a NAS both mount. The VM mounts it read-write; uid 1654 must be able to write.
+2. On the homelab host: uncomment the `postgres` `ports:` line in the compose file (the host's LAN
+   address only), set `MEDIA_WORKER_REPLICAS=0`, `docker compose up -d`. Allow `5432/tcp` from the
+   VM alone.
+3. On the VM, a compose of its own beside a `.env` (same `DOCKERHUB_USERNAME`, `POSTGRES_*`):
+
+   ```yaml
+   name: furria-media
+   services:
+     media-worker:
+       image: ${DOCKERHUB_USERNAME}/furria-media-worker:latest
+       restart: unless-stopped
+       environment:
+         ConnectionStrings__AppDb: Host=10.10.20.12;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+         Media__RootPath: /media
+         MediaWorker__HardwareAcceleration: vaapi          # or qsv
+         MediaWorker__HardwareDevice: /dev/dri/renderD128
+       volumes:
+         - /mnt/furria-media:/media                        # the shared media path
+       devices:
+         - /dev/dri:/dev/dri
+       group_add:
+         - "${MEDIA_WORKER_RENDER_GID}"                    # stat -c %g /dev/dri/renderD128
+       stop_grace_period: 30s
+       labels:
+         com.centurylinklabs.watchtower.enable: "true"
+     watchtower:
+       image: containrrr/watchtower:1.7.1
+       restart: unless-stopped
+       volumes:
+         - /var/run/docker.sock:/var/run/docker.sock
+       command: --interval 300 --label-enable --cleanup
+   ```
+
+4. Upload a phone video; `docker compose logs media-worker` on the VM shows it encoded with the
+   chosen acceleration.
+
+Several workers may share the queue (each claims its own jobs), so a worker on both hosts also
+works — but then the CPU one takes videos too. A worker that cannot reach the database or the
+path stops nothing: uploads still succeed and wait in *processing*.
+
+### Rebuilding renditions
+
+Renditions are cache (ADR-0024): the worker rebuilds them from the originals. After restoring the
+media path without them, or to retry items that ended *failed*, queue them again on the host:
+
+```bash
+docker compose run --rm media-worker regenerate failed    # only the failed items
+docker compose run --rm media-worker regenerate all       # every item
+docker compose run --rm media-worker regenerate 42 43     # these media items
+```
+
+A failing item is retried after 1 and 10 minutes, then marked *failed* with its reason. A worker
+that dies mid-job loses its claim after 5 minutes; another (or its restart) takes the item over.
+
+## Backup and restore
+
+The database and the media originals are backed up **together, from the same point**
+(ADR-0023): a database without its originals has items whose files are gone, originals without
+their database rows are dead weight. Renditions and staging are left out.
+
+[`backup.example.sh`](../../backup.example.sh) does it, on the host beside the compose file, as
+root (it reads the media path; needs `rsync`):
+
+```bash
+cp backup.example.sh backup.sh && chmod +x backup.sh
+BACKUP_DIR=/mnt/backup/furria ./backup.sh
+# root's crontab, nightly:
+30 3 * * * cd /home/<user>/furria && BACKUP_DIR=/mnt/backup/furria ./backup.sh >> backup.log 2>&1
+```
+
+Each run is a snapshot `$BACKUP_DIR/<UTC time>/` with `database.dump` (`pg_dump -Fc`) and
+`originals/`. It copies the originals while everything runs, then **stops `api`** for the dump
+and a last pass over the originals (only what changed since the first pass), then starts it
+again — the website and club app keep serving their pages meanwhile, an upload in flight resumes
+afterwards. Unchanged originals are hard links into the previous snapshot, so a snapshot costs
+only the night's new uploads. `BACKUP_KEEP` (default 14) snapshots are kept. Put `BACKUP_DIR` on
+another disk than the media path; a copy off the host is the operator's (`rsync -aH` of
+`BACKUP_DIR` keeps the hard links).
+
+**Restore** a snapshot `S`, with Florian on the host:
+
+```bash
+docker compose stop api media-worker
+docker compose exec -T postgres sh -c 'dropdb -U "$POSTGRES_USER" --force "$POSTGRES_DB" && createdb -U "$POSTGRES_USER" "$POSTGRES_DB"'
+docker compose exec -T postgres sh -c 'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --no-owner --exit-on-error' < S/database.dump
+M=<the media path>   # MEDIA_PATH, or: docker volume inspect -f '{{ .Mountpoint }}' furria_media
+rsync -a --delete S/originals/ "$M/originals/"
+rm -rf "$M/renditions" "$M/staging"
+docker compose up -d
+docker compose run --rm media-worker regenerate all
+```
+
+The API restarts on the restored schema and applies any newer migration itself — restore with
+the image that wrote the backup, or newer. Until the worker has rebuilt an item it is
+*processing*: the club app shows it as such, the website leaves the photo out. Photos are back within
+minutes, videos take as long as their transcodes. Media URLs signed before the restore keep
+working (same `MEDIA_SIGNING_KEY`).
+
+Drill it once before launch and after a change to the media path: restore the latest snapshot
+into a scratch compose project (`name: furria-restore`, other ports, its own volumes) and open a
+gallery album.
 
 ## Mail
 
@@ -173,6 +330,6 @@ interim website runs on a `florianrth.com` host, its HSTS covers that host's sub
 
 ## Not covered yet
 
-- **Backups** — pre-migration dump, nightly backups, off-site copy, restore drill (deferred out
-  of L1).
+- **Backups** — a dump before each migration (a release with a migration is backed up only by
+  the nightly run), the copy off the host, alerting on a failed run.
 - **Uptime monitoring** — nothing alerts when `/api/health` fails.

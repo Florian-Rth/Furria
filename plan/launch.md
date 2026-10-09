@@ -23,7 +23,8 @@ follows in season order after launch.
   stub, a "bald" teaser or a disabled button pointing at it.
 - **An early state of a final model is not an interim version.** An event whose `salesStatus` is
   `announced` or `presaleScheduled` is the event page in its final form, before sales open.
-- **When time runs short, a phase is dropped whole, never thinned.** L7 is the designated drop.
+- **When time runs short, a phase is dropped whole, never thinned.** L7 is the designated drop
+  (since the split: L7b news first, then L7a along its own drop order).
 
 ---
 
@@ -55,7 +56,8 @@ Each phase gets its own plan file, shaped when it is reached.
 | **L5** | **Public read API + website wiring** — public club record (founded year, contact, socials, member and group counts), public board (respecting `PortraitIsPublic`), groups payload aligned with the website, ticker from the session | Retires `FOUNDING_YEAR`, `MEMBER_COUNT_PLACEHOLDER`, `GROUP_COUNT_PLACEHOLDER` and the placeholder contact — and the hero/`/club` group-count mismatch. |
 | **L5b** | **Person archive and deletion** ([plan](launch/l5b-person-archive-and-deletion.md)) — `persons.manage` archives a person once nothing runs; the new key `persons.delete` erases one at any time ([ADR-0021](../docs/adr/0021-a-person-is-erased-never-anonymised.md)); the bootstrap admin becomes a personless managing login configured by the environment ([ADR-0022](../docs/adr/0022-the-bootstrap-admin-is-a-personless-managing-login.md)). Added 2026-10-07 | Real people are in the registry since L1, so an erasure request can arrive any day. |
 | **L6** | **Events, public face** ([plan](launch/l6-public-events.md)) — an event as a calendar entry of the kind *event*, always public, kept in a new **events workbench** (`events.manage`); website `/events` reads it (current session only). No online sales at launch: an event takes **ticket requests** from the website, worked as a to-do under `ticket_requests.handle` and answered outside the app. Shaped 2026-10-07 | The season's dates are what members and guests want first. The order flow stays out until presale. |
-| **L7** | **Media store + news** — uploads (portraits, news images), news posts authored in the club app, website `/news` and the landing teaser | Last before launch work: a media store is the biggest new infrastructure. **Designated drop:** if behind, `/news` is absent at launch. |
+| **L7a** | **Media store + gallery** ([plan](launch/l7a-media-store.md)) — one media store under a mounted path, a media worker for renditions, portraits and group pictures, the club app's *Galerie* hub (inbox, albums, bin, photos and videos) and published albums on the website `/gallery`. Split from L7 and shaped 2026-10-08 | A media store is the biggest new infrastructure; portraits and group pictures need it. **Drop order:** videos → gallery → core + portraits + group pictures stay. |
+| **L7b** | **News** — news posts authored in the club app (images from the media store), website `/news` and the landing teaser. Not shaped yet | **Designated drop:** if behind, `/news` is absent at launch. |
 | **L8** | **Website launch (website P7)** — prerender, SEO, sitemap, `robots.txt`, remove the preview gate and tester changelog, `/satzung`, real legal texts, absent routes removed | Pure launch work, last. |
 | **L9** | **Rollout** — pilot group in the club app, device checks (CA-P8 S7 passkey on Android, S10 invitation link from Gmail), freeze, **true since dates entered for roles, board seats, group ties and keys** (Start reads "new" from them), bulk invitations, go live | Invitations rehearsed on real people before 180 receive them. |
 
@@ -64,9 +66,9 @@ Each phase gets its own plan file, shaped when it is reached.
 ## Live at launch
 
 **Website:** `/`, `/club`, `/events` + `/events/:slug` (no ordering), `/join` + `/join/apply`,
-`/news` (if L7 lands), `/imprint`, `/privacy`, `/satzung`.
+`/gallery` + `/gallery/:slug` (if L7a's gallery lands), `/news` (if L7b lands), `/imprint`, `/privacy`, `/satzung`.
 
-**Absent at launch:** `/gallery` (blocked on photo consent), `/events/exchange`,
+**Absent at launch:** `/events/exchange`,
 `/events/:slug/order`, `/orders/*`.
 
 **Club app:** delivered as the **web app only**. Native stores follow after launch.
@@ -81,7 +83,7 @@ Each phase gets its own plan file, shaped when it is reached.
 3. **Drinks till.**
 4. **Fees and ledger.**
 5. **Wardrobe.**
-6. Global search · pinning · gallery and member photo library · iOS and store releases.
+6. Global search · pinning · iOS and store releases.
 
 ---
 

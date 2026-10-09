@@ -425,6 +425,7 @@ public sealed class GetPersonsTests : IClassFixture<ApiTestFixture>
                 "personId",
                 "firstName",
                 "lastName",
+                "portrait",
                 "email",
                 "phone",
                 "street",

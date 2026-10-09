@@ -35,6 +35,8 @@ export const MemberPeekSheet: FC<MemberPeekSheetProps> = ({ members }) => {
   }
 
   const name = `${member.firstName} ${member.lastName}`;
+  const initials = toInitials(member.firstName, member.lastName);
+  const portrait = member.portrait?.smallUrl;
   const state = toMembershipStateChip(member.membershipState);
   const params = { personId: String(member.personId) };
 
@@ -46,7 +48,7 @@ export const MemberPeekSheet: FC<MemberPeekSheetProps> = ({ members }) => {
     >
       <KkSheet.Body>
         <Stack direction="row" sx={{ alignItems: 'center', gap: HEAD_GAP, minWidth: 0 }}>
-          <KkAvatar initials={toInitials(member.firstName, member.lastName)} />
+          <KkAvatar initials={initials} source={portrait} />
           <KkChip tone={state.tone} dot={state.dot}>
             {state.label}
           </KkChip>

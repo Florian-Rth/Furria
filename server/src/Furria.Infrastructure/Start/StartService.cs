@@ -3,6 +3,7 @@ using Furria.Core.Club;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Management;
+using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Registry;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +15,7 @@ public sealed partial class StartService
     private readonly AppDbContext _dbContext;
     private readonly PermissionAuthorizer _authorizer;
     private readonly RunningBoardSeats _runningBoardSeats;
+    private readonly MediaPictures _pictures;
     private readonly ToDoService _toDoService;
     private readonly TimeProvider _timeProvider;
 
@@ -22,12 +24,14 @@ public sealed partial class StartService
         PermissionAuthorizer authorizer,
         RunningBoardSeats runningBoardSeats,
         ToDoService toDoService,
+        MediaPictures pictures,
         TimeProvider timeProvider
     )
     {
         _dbContext = dbContext;
         _authorizer = authorizer;
         _runningBoardSeats = runningBoardSeats;
+        _pictures = pictures;
         _toDoService = toDoService;
         _timeProvider = timeProvider;
     }
@@ -64,6 +68,7 @@ public sealed partial class StartService
                 ToDos = await _toDoService.ForAsync(accountId, ct),
                 Mine = await MineCandidatesAsync(viewer, ct),
                 GroupMoments = await GroupMomentCandidatesAsync(viewer, ct),
+                Albums = await NewInGalleryAsync(viewer, ct),
             },
             moment
         );

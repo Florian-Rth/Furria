@@ -113,6 +113,14 @@ public sealed class Expected
     public MembershipApplicationExpectations MembershipApplication(int membershipApplicationId) =>
         new(this, membershipApplicationId);
 
+    public MediaItemExpectations MediaItem(int mediaItemId) => new(this, mediaItemId);
+
+    public MediaItemSetExpectations MediaItems() => new(this);
+
+    public AlbumExpectations Album(int albumId) => new(this, albumId);
+
+    public GalleryItemExpectations GalleryItem(int mediaItemId) => new(this, mediaItemId);
+
     public async Task AssertAsync(CancellationToken ct = default)
     {
         var pending = _reads.ToList();

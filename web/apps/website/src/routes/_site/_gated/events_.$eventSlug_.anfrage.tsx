@@ -2,8 +2,8 @@ import { createFileRoute, notFound, redirect, useRouter } from '@tanstack/react-
 import type { FC } from 'react';
 import { buildTicketRequestHref, EventsUnavailable, TicketRequestPage } from '@/features/events';
 import { ApiError } from '@/lib/api/errors';
+import { buildIdSlug, readSlugId } from '@/lib/id-slug';
 import { ensurePublicEvent } from '@/lib/public-events/api';
-import { buildEventSlug, readEventId } from '@/lib/public-events/event-slug';
 import type { EventDetail } from '@/lib/public-events/schemas';
 import type { RouteHead } from '@/lib/seo';
 import { pageTitle } from '@/lib/seo';
@@ -54,13 +54,13 @@ const loadEvent = async (eventId: number): Promise<EventDetail> => {
 
 export const Route = createFileRoute('/_site/_gated/events_/$eventSlug_/anfrage')({
   loader: async ({ params }): Promise<EventDetail> => {
-    const eventId = readEventId(params.eventSlug);
+    const eventId = readSlugId(params.eventSlug);
     if (eventId === null) {
       throw notFound();
     }
 
     const event = await loadEvent(eventId);
-    const canonicalSlug = buildEventSlug(event.eventId, event.title);
+    const canonicalSlug = buildIdSlug(event.eventId, event.title);
     if (params.eventSlug !== canonicalSlug) {
       throw redirect({
         to: '/events/$eventSlug/anfrage',

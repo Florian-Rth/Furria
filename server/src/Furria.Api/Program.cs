@@ -9,11 +9,13 @@ using Furria.Api.Authorization;
 using Furria.Api.Cors;
 using Furria.Api.Errors;
 using Furria.Api.Logging;
+using Furria.Api.Media;
 using Furria.Api.Proxies;
 using Furria.Api.RateLimiting;
 using Furria.Application;
 using Furria.Application.Identity;
 using Furria.Infrastructure;
+using Furria.Infrastructure.Logging;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Serilog;
 
@@ -80,6 +82,7 @@ try
     app.UseAuthentication();
     app.UseAuthorization();
     app.UseRateLimiter();
+    app.UseMediaUploads();
     app.UseFastEndpoints(c =>
     {
         c.Endpoints.RoutePrefix = "api";

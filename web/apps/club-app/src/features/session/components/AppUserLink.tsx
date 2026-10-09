@@ -28,6 +28,7 @@ export const AppUserLink: FC = () => {
   return (
     <KkPersonRow
       initials={toInitials(person.firstName, person.lastName)}
+      portrait={person.portrait?.picture?.smallUrl}
       name={`${person.firstName} ${person.lastName}`}
       meta={PROFILE_META}
       trailing={chip}

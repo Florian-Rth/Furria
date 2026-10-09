@@ -1,8 +1,9 @@
 import type { FC, KeyboardEvent } from 'react';
-import type { Album } from '@/features/gallery/gallery-content';
+import type { AlbumPhotoEntry } from '@/features/gallery/gallery-content';
 import { resolvePhotoViewerFrame } from '@/features/gallery/photo-viewer-frame';
 import type { PhotoStepDirection } from '@/features/gallery/photo-viewer-steps';
 import { resolveArrowStep } from '@/features/gallery/photo-viewer-steps';
+import type { AlbumDetail } from '@/lib/public-gallery/schemas';
 import { PhotoViewerFooter } from './internal/layout/PhotoViewerFooter';
 import { PhotoViewerHeader } from './internal/layout/PhotoViewerHeader';
 import { PhotoViewerHeaderActions } from './internal/layout/PhotoViewerHeaderActions';
@@ -21,15 +22,16 @@ import { PhotoViewerStepButton } from './internal/ui/PhotoViewerStepButton';
 const PHOTO_VIEWER_TITLE_ID = 'photo-viewer-title';
 
 interface PhotoViewerProps {
-  album: Album;
+  album: AlbumDetail;
+  entries: AlbumPhotoEntry[];
   index: number | null;
   onStep: (direction: PhotoStepDirection) => void;
   onClose: () => void;
 }
 
-export const PhotoViewer: FC<PhotoViewerProps> = ({ album, index, onStep, onClose }) => {
+export const PhotoViewer: FC<PhotoViewerProps> = ({ album, entries, index, onStep, onClose }) => {
   const shownIndex = useShownPhotoIndex(index);
-  const frame = resolvePhotoViewerFrame(album, shownIndex);
+  const frame = resolvePhotoViewerFrame(entries, shownIndex);
 
   if (frame === null) {
     return null;
@@ -62,14 +64,10 @@ export const PhotoViewer: FC<PhotoViewerProps> = ({ album, index, onStep, onClos
           </PhotoViewerHeaderActions>
         </PhotoViewerHeader>
         <PhotoViewerStage>
-          <PhotoViewerPhoto
-            photo={frame.photo}
-            placeholderLabel={frame.placeholderLabel}
-            onStep={onStep}
-          />
+          <PhotoViewerPhoto entry={frame.entry} onStep={onStep} />
         </PhotoViewerStage>
         <PhotoViewerFooter>
-          <PhotoViewerCaption photo={frame.photo} />
+          <PhotoViewerCaption caption={frame.entry.photo.caption} />
           <PhotoViewerMeta album={album} />
         </PhotoViewerFooter>
         <PhotoViewerStepButton

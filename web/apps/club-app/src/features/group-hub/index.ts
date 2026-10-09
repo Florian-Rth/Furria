@@ -11,6 +11,7 @@ export { GroupAdminScreen } from './components/GroupAdminScreen';
 export { GroupInfoScreen } from './components/GroupInfoScreen';
 export { GroupMembershipNewScreen } from './components/GroupMembershipNewScreen';
 export { GroupMembershipScreen } from './components/GroupMembershipScreen';
+export { GroupPictureScreen } from './components/GroupPictureScreen';
 export { GroupSlotNewScreen } from './components/GroupSlotNewScreen';
 export { GroupSlotScreen } from './components/GroupSlotScreen';
 export { HubPage } from './components/HubPage';

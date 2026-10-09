@@ -330,7 +330,7 @@ export const toAnnouncementLine = (
     title: announcement.title,
     meta: [day, ...office],
     initials: toAuthorInitials(author),
-    portrait: author?.portraitUrl ?? undefined,
+    portrait: author?.portrait?.smallUrl,
     accessibleName: [announcement.title, day, ...byline, ...office].join(NAME_SEPARATOR),
     sheetId: toPeekId('start-announcements', announcement.announcementId),
   };

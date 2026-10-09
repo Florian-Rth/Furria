@@ -1,6 +1,7 @@
 using Furria.Application.ClubApp;
 using Furria.Application.Identity;
 using Furria.Application.Mail;
+using Furria.Application.Media;
 using Furria.Application.PreviewAccess;
 using Furria.Application.Website;
 using Microsoft.Extensions.Configuration;
@@ -90,6 +91,18 @@ public static class ServiceCollectionExtensions
                 (passkeys, clubApp) => Covers(passkeys.RelyingPartyId, clubApp.Value.BaseUrl),
                 $"{PasskeyOptions.SectionName}:RelyingPartyId must be the club app's host or a "
                     + "domain it lies under."
+            )
+            .ValidateOnStart();
+
+        services
+            .AddOptions<MediaOptions>()
+            .BindConfiguration(MediaOptions.SectionName)
+            .Validate(
+                options =>
+                    options.RootPath.Length > 0
+                    && options.SigningKey.Length >= MediaOptions.MinimumSigningKeyLength,
+                $"{MediaOptions.SectionName} needs a RootPath and a SigningKey of at least "
+                    + $"{MediaOptions.MinimumSigningKeyLength} characters."
             )
             .ValidateOnStart();
 

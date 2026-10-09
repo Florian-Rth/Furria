@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+  <ItemGroup>
+    <PackageReference Include="NetVips" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Furria.Application\Furria.Application.csproj" />
+    <ProjectReference Include="..\Furria.Infrastructure\Furria.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

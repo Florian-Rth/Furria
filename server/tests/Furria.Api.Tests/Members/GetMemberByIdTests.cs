@@ -682,6 +682,7 @@ public sealed class GetMemberByIdTests : IClassFixture<ApiTestFixture>
                 "personId",
                 "firstName",
                 "lastName",
+                "portrait",
                 "membershipState",
                 "memberSince",
                 "groups",

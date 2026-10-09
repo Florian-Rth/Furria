@@ -48,7 +48,15 @@ public sealed class GroupConfiguration : IEntityTypeConfiguration<Group>
             .HasConstraintName("fk_group_group_kind_group_kind_id")
             .OnDelete(DeleteBehavior.SetNull);
 
+        builder
+            .HasOne(group => group.Picture)
+            .WithMany()
+            .HasForeignKey(group => group.PictureId)
+            .HasConstraintName("fk_group_media_item_picture_id")
+            .OnDelete(DeleteBehavior.SetNull);
+
         builder.HasIndex(group => group.Name).HasDatabaseName("ix_group_name_lookup");
+        builder.HasIndex(group => group.PictureId).IsUnique();
         builder.HasIndex(group => group.GroupKindId).HasDatabaseName("ix_group_group_kind_id");
 
         builder.Property(group => group.CreatedAt).HasDefaultValueSql("now()");

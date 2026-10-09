@@ -22,6 +22,7 @@ const hubMember = (overrides: Partial<GroupDetailMember>): GroupDetailMember => 
   personId: 12,
   firstName: 'Mara',
   lastName: 'Lenz',
+  portrait: null,
   joinedOn: '2017-09-01',
   leftOn: null,
   since: '2017-09-01',
@@ -34,6 +35,7 @@ const hubAdmin = (overrides: Partial<GroupDetailAdmin>): GroupDetailAdmin => ({
   personId: 9,
   firstName: 'Anna',
   lastName: 'Kaiser',
+  portrait: null,
   function: null,
   sinceOn: '2019-01-01',
   untilOn: null,
@@ -44,6 +46,8 @@ const hubAdmin = (overrides: Partial<GroupDetailAdmin>): GroupDetailAdmin => ({
 
 const groupHub = (overrides: Partial<GroupHub>): GroupHub => ({
   groupId: 3,
+  picture: null,
+  pictureEditing: null,
   name: 'Tanzgarde',
   description: 'Die Garde tanzt seit 1971.',
   isRecruiting: false,
@@ -67,6 +71,7 @@ const groupPerson = (overrides: Partial<HubPerson>): HubPerson => ({
   personId: 12,
   firstName: 'Mara',
   lastName: 'Lenz',
+  portrait: undefined,
   isAffiliated: true,
   groupMembershipId: 7,
   memberSince: '2017-09-01',
