@@ -1,9 +1,17 @@
 import type { KkPanelAction } from '@furria/ui';
-import { KkConfirmDialog, KkFieldRow, KkPanel, KkPanelSection, KkWriteScreen } from '@furria/ui';
+import {
+  KkConfirmDialog,
+  KkFieldRow,
+  KkHubRow,
+  KkPanel,
+  KkPanelSection,
+  KkWriteScreen,
+} from '@furria/ui';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { GROUP_KIND_FIELD_LABEL, NO_GROUP_KIND_LABEL } from '@/features/group-kinds';
 import type { GroupTone } from '@/features/groups';
+import { toGroupPictureStatusLine } from '@/features/pictures';
 import { toIsoDay } from '@/lib/day';
 import { GROUP_SECTION_TITLES } from '@/lib/group-sections';
 import { formatIsoDay } from '@/lib/membership-labels';
@@ -24,6 +32,7 @@ const ARCHIVE_LABEL = 'Gruppe archivieren';
 const CANCEL_LABEL = 'Abbrechen';
 const CLOSE_LABEL = 'Schließen';
 const ADMINISTRATION_ROUTE = '/groups/$groupId/administration';
+const PICTURE_LABEL = 'Gruppenbild';
 
 interface HubAdministrationPanelProps {
   hub: GroupHub;
@@ -34,6 +43,9 @@ export const HubAdministrationPanel: FC<HubAdministrationPanelProps> = ({ hub, t
   const archive = useGroupArchive(hub);
   const today = formatIsoDay(toIsoDay(new Date()));
   const kindLine = hub.groupKindName ?? NO_GROUP_KIND_LABEL;
+  const pictureLine = toGroupPictureStatusLine(hub.pictureEditing);
+  const picturePath = `/groups/${hub.groupId}/picture`;
+  const params = { groupId: String(hub.groupId) };
 
   const action: KkPanelAction = {
     label: EDIT_LABEL,
@@ -41,7 +53,7 @@ export const HubAdministrationPanel: FC<HubAdministrationPanelProps> = ({ hub, t
     ariaLabel: EDIT_ACTION_LABEL,
     component: Link,
     to: ADMINISTRATION_ROUTE,
-    params: { groupId: String(hub.groupId) },
+    params,
   };
 
   return (
@@ -49,6 +61,13 @@ export const HubAdministrationPanel: FC<HubAdministrationPanelProps> = ({ hub, t
       <KkPanel>
         <KkFieldRow label={NAME_LABEL} value={hub.name} />
         <KkFieldRow label={GROUP_KIND_FIELD_LABEL} value={kindLine} />
+        <KkHubRow
+          label={PICTURE_LABEL}
+          icon="gallery"
+          meta={pictureLine}
+          component={Link}
+          to={picturePath}
+        />
       </KkPanel>
       <KkWriteScreen.Danger label={ARCHIVE_LABEL} onSelect={archive.open} />
       <KkConfirmDialog

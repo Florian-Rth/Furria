@@ -1,9 +1,9 @@
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
-import type { Album } from '@/features/gallery/gallery-content';
+import type { AlbumDetail } from '@/lib/public-gallery/schemas';
 
 interface PhotoViewerAlbumTitleProps {
-  album: Album;
+  album: AlbumDetail;
   titleId: string;
 }
 

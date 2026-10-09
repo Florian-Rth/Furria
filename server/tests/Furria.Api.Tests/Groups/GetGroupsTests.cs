@@ -395,6 +395,7 @@ public sealed class GetGroupsTests : IClassFixture<ApiTestFixture>
             [
                 "groupId",
                 "name",
+                "picture",
                 "description",
                 "isRecruiting",
                 "groupKindName",
@@ -410,7 +411,7 @@ public sealed class GetGroupsTests : IClassFixture<ApiTestFixture>
         );
         var paula = tanzgarde.GetProperty("memberPreview").EnumerateArray().Single();
         Assert.Equal(
-            ["personId", "firstName", "lastName"],
+            ["personId", "firstName", "lastName", "portrait"],
             paula.EnumerateObject().Select(field => field.Name)
         );
     }

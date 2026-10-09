@@ -1,10 +1,12 @@
 using System.Diagnostics.Contracts;
 using System.Linq.Expressions;
 using Furria.Application.Groups;
+using Furria.Application.Media;
 using Furria.Application.Results;
 using Furria.Core.Club;
 using Furria.Core.Groups;
 using Furria.Core.Identity;
+using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Registry;
 using Microsoft.EntityFrameworkCore;
@@ -119,16 +121,19 @@ public sealed class GroupService
 
     private readonly AppDbContext _dbContext;
     private readonly AffiliationLookup _affiliationLookup;
+    private readonly PictureLookup _pictures;
     private readonly TimeProvider _timeProvider;
 
     public GroupService(
         AppDbContext dbContext,
         AffiliationLookup affiliationLookup,
+        PictureLookup pictures,
         TimeProvider timeProvider
     )
     {
         _dbContext = dbContext;
         _affiliationLookup = affiliationLookup;
+        _pictures = pictures;
         _timeProvider = timeProvider;
     }
 
@@ -202,15 +207,14 @@ public sealed class GroupService
             ))
             .ToListAsync(ct);
 
-        return [.. rows.Select(ToSummary)];
+        return await WithPicturesAsync([.. rows.Select(ToSummary)], ct);
     }
 
-    public async Task<IReadOnlyList<PublicGroupSummary>> GetPublicGroupsAsync(
-        CancellationToken ct
-    ) =>
-        await _dbContext
+    public async Task<IReadOnlyList<PublicGroupSummary>> GetPublicGroupsAsync(CancellationToken ct)
+    {
+        var groups = await _dbContext
             .Groups.AsNoTracking()
-            .Where(group => group.ArchivedOn == null)
+            .Where(PublicGroups.IsShown)
             .OrderBy(group => EF.Functions.Collate(group.Name, GermanCollation.Name))
             .ThenBy(group => group.Id)
             .Select(group => new PublicGroupSummary
@@ -224,6 +228,21 @@ public sealed class GroupService
                 Tone = group.Tone,
             })
             .ToListAsync(ct);
+        var pictures = await _pictures.PublicGroupPicturesOfAsync(
+            [.. groups.Select(group => group.GroupId)],
+            ct
+        );
+
+        return
+        [
+            .. groups.Select(group =>
+                group with
+                {
+                    Picture = pictures.GetValueOrDefault(group.GroupId),
+                }
+            ),
+        ];
+    }
 
     public async Task<IReadOnlyList<MyGroupSummary>> GetMyGroupsAsync(
         int personId,
@@ -275,8 +294,108 @@ public sealed class GroupService
 
         var affiliated = await AffiliatedAmongAsync(row, today, ct);
 
-        return Result<GroupDetails>.Success(ToHubDetails(row, today, affiliated, viewerPersonId));
+        return Result<GroupDetails>.Success(
+            await WithPicturesAsync(ToHubDetails(row, today, affiliated, viewerPersonId), ct)
+        );
     }
+
+    private async Task<IReadOnlyList<GroupSummary>> WithPicturesAsync(
+        IReadOnlyList<GroupSummary> groups,
+        CancellationToken ct
+    )
+    {
+        var pictures = await _pictures.GroupPicturesOfAsync(
+            [.. groups.Select(group => group.GroupId)],
+            ct
+        );
+        var portraits = await _pictures.PortraitsOfAsync(
+            [
+                .. groups
+                    .SelectMany(group => group.MemberPreview.Concat(group.Admins))
+                    .Select(person => person.PersonId)
+                    .Distinct(),
+            ],
+            ct
+        );
+
+        return
+        [
+            .. groups.Select(group =>
+                group with
+                {
+                    Picture = pictures.GetValueOrDefault(group.GroupId),
+                    MemberPreview = WithPortraits(group.MemberPreview, portraits),
+                    Admins = WithPortraits(group.Admins, portraits),
+                }
+            ),
+        ];
+    }
+
+    private async Task<GroupDetails> WithPicturesAsync(GroupDetails group, CancellationToken ct)
+    {
+        var portraits = await _pictures.PortraitsOfAsync(
+            [
+                .. group
+                    .Members.Select(member => member.PersonId)
+                    .Concat(group.PastMembers.Select(member => member.PersonId))
+                    .Concat(group.Admins.Select(admin => admin.PersonId))
+                    .Concat(group.PastAdmins.Select(admin => admin.PersonId))
+                    .Distinct(),
+            ],
+            ct
+        );
+
+        return group with
+        {
+            Picture = await _pictures.GroupPictureOfAsync(group.GroupId, ct),
+            Members = WithPortraits(group.Members, portraits),
+            PastMembers = WithPortraits(group.PastMembers, portraits),
+            Admins = WithPortraits(group.Admins, portraits),
+            PastAdmins = WithPortraits(group.PastAdmins, portraits),
+        };
+    }
+
+    [Pure]
+    private static IReadOnlyList<PersonReference> WithPortraits(
+        IReadOnlyList<PersonReference> people,
+        IReadOnlyDictionary<int, PictureDetails> portraits
+    ) =>
+        [
+            .. people.Select(person =>
+                person with
+                {
+                    Portrait = portraits.GetValueOrDefault(person.PersonId),
+                }
+            ),
+        ];
+
+    [Pure]
+    private static IReadOnlyList<HubMember> WithPortraits(
+        IReadOnlyList<HubMember> members,
+        IReadOnlyDictionary<int, PictureDetails> portraits
+    ) =>
+        [
+            .. members.Select(member =>
+                member with
+                {
+                    Portrait = portraits.GetValueOrDefault(member.PersonId),
+                }
+            ),
+        ];
+
+    [Pure]
+    private static IReadOnlyList<HubAdministrator> WithPortraits(
+        IReadOnlyList<HubAdministrator> admins,
+        IReadOnlyDictionary<int, PictureDetails> portraits
+    ) =>
+        [
+            .. admins.Select(admin =>
+                admin with
+                {
+                    Portrait = portraits.GetValueOrDefault(admin.PersonId),
+                }
+            ),
+        ];
 
     public async Task<IReadOnlyList<ManagedGroupSummary>> GetManagedGroupsAsync(
         CancellationToken ct
@@ -330,7 +449,26 @@ public sealed class GroupService
             ))
             .ToListAsync(ct);
 
-        return [.. rows.Select(ToManagedSummary)];
+        var summaries = rows.Select(ToManagedSummary).ToList();
+        var portraits = await _pictures.PortraitsOfAsync(
+            [
+                .. summaries
+                    .SelectMany(group => group.Admins)
+                    .Select(admin => admin.PersonId)
+                    .Distinct(),
+            ],
+            ct
+        );
+
+        return
+        [
+            .. summaries.Select(group =>
+                group with
+                {
+                    Admins = WithPortraits(group.Admins, portraits),
+                }
+            ),
+        ];
     }
 
     public async Task<Result<int>> CreateAsync(CreateGroupCommand command, CancellationToken ct)

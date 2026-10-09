@@ -1,3 +1,5 @@
+using Furria.Application.Media;
+
 namespace Furria.Application.Groups;
 
 public sealed record HubMember
@@ -9,6 +11,8 @@ public sealed record HubMember
     public required string FirstName { get; init; }
 
     public required string LastName { get; init; }
+
+    public PictureDetails? Portrait { get; init; }
 
     public required DateOnly JoinedOn { get; init; }
 

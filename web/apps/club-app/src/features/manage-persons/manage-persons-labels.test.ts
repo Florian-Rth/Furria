@@ -12,6 +12,7 @@ import type { PersonDetails, PersonMembership, PersonSummary } from './schemas';
 const person = (overrides: Partial<PersonSummary> & { personId: number }): PersonSummary => ({
   firstName: 'Anna',
   lastName: 'Adam',
+  portrait: null,
   email: null,
   phone: null,
   street: null,
@@ -43,6 +44,7 @@ const personDetails = (
 ): PersonDetails => ({
   firstName: 'Anna',
   lastName: 'Adam',
+  portrait: null,
   email: null,
   phone: null,
   street: null,

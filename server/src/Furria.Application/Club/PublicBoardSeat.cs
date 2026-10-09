@@ -1,3 +1,5 @@
+using Furria.Application.Media;
+
 namespace Furria.Application.Club;
 
 public sealed record PublicBoardSeat
@@ -8,5 +10,5 @@ public sealed record PublicBoardSeat
 
     public required string LastName { get; init; }
 
-    public required string? PortraitUrl { get; init; }
+    public required PictureDetails? Portrait { get; init; }
 }

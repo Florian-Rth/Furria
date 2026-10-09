@@ -38,6 +38,7 @@ const ringSchemes: Record<KkAvatarStackRing, (theme: Theme) => KkScheme> = {
 
 interface KkAvatarStackProps {
   initials: readonly string[];
+  portraits?: readonly (string | undefined)[];
   max?: number;
   total?: number;
   ringOn?: KkAvatarStackRing;
@@ -46,12 +47,14 @@ interface KkAvatarStackProps {
 
 export const KkAvatarStack: FC<KkAvatarStackProps> = ({
   initials,
+  portraits = [],
   max = DEFAULT_MAX,
   total,
   ringOn = 'paper',
   sx,
 }) => {
   const plan = buildAvatarStack(initials, max, total);
+  const circles = plan.circles.map((circle, index) => ({ ...circle, portrait: portraits[index] }));
 
   const overflowBubble =
     plan.overflowLabel === null ? null : (
@@ -98,7 +101,7 @@ export const KkAvatarStack: FC<KkAvatarStackProps> = ({
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >
-      {plan.circles.map((circle) => (
+      {circles.map((circle) => (
         <Box
           key={circle.key}
           component="span"
@@ -110,7 +113,12 @@ export const KkAvatarStack: FC<KkAvatarStackProps> = ({
             ...applyScheme(theme, ringSchemes[ringOn](theme)),
           })}
         >
-          <KkAvatar initials={circle.initials} size="small" component="span" />
+          <KkAvatar
+            initials={circle.initials}
+            source={circle.portrait}
+            size="small"
+            component="span"
+          />
         </Box>
       ))}
       {overflowBubble}

@@ -74,6 +74,7 @@ interface KkFrameProps {
   glow?: boolean;
   focal?: string;
   fill?: boolean;
+  frameId?: string;
   onSelect?: () => void;
   sx?: KkSx;
 }
@@ -91,6 +92,7 @@ export const KkFrame: FC<KkFrameProps> = ({
   glow = false,
   focal = 'center',
   fill = false,
+  frameId,
   onSelect,
   sx,
 }) => {
@@ -104,6 +106,7 @@ export const KkFrame: FC<KkFrameProps> = ({
   return (
     <Stack
       data-kk-frame
+      data-kk-frame-id={frameId}
       data-kk-frame-state={state}
       sx={[{ minWidth: 0, minHeight: 0, position: 'relative' }, ...(Array.isArray(sx) ? sx : [sx])]}
     >

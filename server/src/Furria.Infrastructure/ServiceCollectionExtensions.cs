@@ -3,6 +3,7 @@ using Furria.Application.Identity;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Events;
+using Furria.Infrastructure.Gallery;
 using Furria.Infrastructure.Groups;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Mail;
@@ -47,7 +48,6 @@ public static class ServiceCollectionExtensions
                 options.Lockout.AllowedForNewUsers = true;
                 options.Lockout.MaxFailedAccessAttempts = 5;
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
-                options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
             })
             .AddEntityFrameworkStores<AppDbContext>()
             .AddSignInManager()
@@ -112,12 +112,20 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<MediaUrlSigner>();
         services.AddScoped<MediaStore>();
         services.AddScoped<MediaOwnerAccess>();
+        services.AddSingleton<MediaFiles>();
+        services.AddSingleton<MediaPictures>();
+        services.AddScoped<PictureService>();
+        services.AddScoped<PictureLookup>();
+        services.AddScoped<PublicMediaService>();
+        services.AddScoped<MediaJobQueue>();
         services.AddHostedService<AbandonedUploadSweep>();
+        services.AddScoped<GalleryService>();
 
         services.AddScoped<MailOutbox>();
         services.AddSingleton<MailService>();
         services.AddHostedService<DatabaseMigrator>();
         services.AddHostedService<ManagingLoginSeeder>();
+        services.AddHostedService<GalleryBinPurge>();
         services.AddHostedService<MailDispatcher>();
         services.AddScoped<AccessRequestService>();
         services.AddScoped<PasswordResetService>();
@@ -137,6 +145,9 @@ public static class ServiceCollectionExtensions
         IConfiguration configuration
     )
     {
+        services.Configure<IdentityOptions>(options =>
+            options.Stores.SchemaVersion = IdentitySchemaVersions.Version3
+        );
         services.AddSingleton<AuditTimestampInterceptor>();
         services.AddSingleton<MailOutboxSignal>();
         services.AddSingleton<MailOutboxWakeUp>();

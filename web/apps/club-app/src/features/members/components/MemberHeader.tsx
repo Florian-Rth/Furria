@@ -14,6 +14,7 @@ interface MemberHeaderProps {
 export const MemberHeader: FC<MemberHeaderProps> = ({ member, isSelf }) => {
   const headline = toMemberHeadline(member);
   const eyebrow = isSelf ? SELF_EYEBROW : EYEBROW;
+  const portrait = member?.portrait?.smallUrl;
 
   const stateRow =
     headline.state === null ? null : (
@@ -27,7 +28,7 @@ export const MemberHeader: FC<MemberHeaderProps> = ({ member, isSelf }) => {
   return (
     <KkScreenHeader>
       <KkScreenHeader.Visual>
-        <KkAvatar initials={headline.initials} size="large" />
+        <KkAvatar initials={headline.initials} source={portrait} size="large" />
       </KkScreenHeader.Visual>
       <KkScreenHeader.Text>
         <KkEyebrow tone="accent">{eyebrow}</KkEyebrow>

@@ -17,6 +17,7 @@ import CloudUploadOutlinedIcon from '@mui/icons-material/CloudUploadOutlined';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import Diversity3Icon from '@mui/icons-material/Diversity3';
 import Diversity3OutlinedIcon from '@mui/icons-material/Diversity3Outlined';
+import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 import EuroOutlinedIcon from '@mui/icons-material/EuroOutlined';
@@ -119,7 +120,8 @@ export type KkIconName =
   | 'undo'
   | 'zoom'
   | 'zip'
-  | 'select';
+  | 'select'
+  | 'drag';
 type KkIconSize = 'small' | 'medium' | 'large';
 
 interface KkIconProps {
@@ -194,6 +196,7 @@ const icons: Record<KkIconName, typeof HomeIcon> = {
   zoom: ZoomInOutlinedIcon,
   zip: FolderZipOutlinedIcon,
   select: ChecklistOutlinedIcon,
+  drag: DragIndicatorIcon,
 };
 
 export const KkIcon: FC<KkIconProps> = ({ name, size = 'medium', sx }) => {

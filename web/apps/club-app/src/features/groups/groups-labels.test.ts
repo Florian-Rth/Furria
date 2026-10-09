@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { PersonRef } from '@/lib/api/schemas';
+import type { PortraitPersonRef } from '@/lib/api/schemas';
 import type { AdminRoster } from './groups-labels';
 import {
   ALL_GROUPS_FILTER_ID,
@@ -13,14 +13,16 @@ import {
 } from './groups-labels';
 import type { GroupSummary } from './schemas';
 
-const person = (personId: number, firstName: string): PersonRef => ({
+const person = (personId: number, firstName: string): PortraitPersonRef => ({
   personId,
   firstName,
   lastName: 'Kaiser',
+  portrait: null,
 });
 
 const summary = (overrides: Partial<GroupSummary> & { groupId: number }): GroupSummary => ({
   name: 'Große Garde',
+  picture: null,
   description: '',
   isRecruiting: false,
   groupKindName: null,
@@ -38,7 +40,7 @@ describe('adminRosterOf', () => {
   const anna = person(18, 'Anna');
   const katrin = person(19, 'Katrin');
 
-  it.each<[string, PersonRef[], AdminRoster]>([
+  it.each<[string, PortraitPersonRef[], AdminRoster]>([
     ['no admin', [], { kind: 'none' }],
     ['one admin', [anna], { kind: 'one', first: anna }],
     ['two admins', [anna, katrin], { kind: 'two', first: anna, second: katrin }],

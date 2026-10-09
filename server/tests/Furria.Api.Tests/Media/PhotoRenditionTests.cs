@@ -144,6 +144,61 @@ public sealed class PhotoRenditionTests : IClassFixture<ApiTestFixture>
         Assert.Equal((320, 400), await RenditionSizeAsync(mediaItemId, MediaRendition.Small, ct));
     }
 
+    [Fact]
+    public async Task Should_FrameThePortraitInTheMiddleAndKeepTheWholePhoto_When_ItArrivesUncropped()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => identity.AddPerson("alice")),
+            ct
+        );
+        var mediaItemId = await TusUploadSteps.UploadAsync(
+            await ctx.Identity.ManagingLoginClientAsync(ct),
+            TusUploadSteps.PersonOwner(ctx.Identity.People.IdOf("alice")),
+            "Urlaub.jpg",
+            MediaSamples.JpegOfSize(4000, 3000),
+            ChunkLength,
+            ct
+        );
+
+        await _fixture.RunMediaWorkerAsync(ct);
+
+        await ctx
+            .Expected.MediaItem(mediaItemId)
+            .ToBeReady(4000, 3000)
+            .MediaItem(mediaItemId)
+            .ToBeCroppedTo(new PictureCrop(0.2, 0, 0.6, 1))
+            .AssertAsync(ct);
+        Assert.Equal((320, 400), await RenditionSizeAsync(mediaItemId, MediaRendition.Small, ct));
+        Assert.Equal(
+            (1600, 1200),
+            await RenditionSizeAsync(mediaItemId, MediaRendition.Uncropped, ct)
+        );
+    }
+
+    [Fact]
+    public async Task Should_HoldTheGroupPictureAtThreeByTwo_When_TheChosenCutMissesIt()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Groups(groups => groups.AddGroup("tanzgarde", "Tanzgarde")),
+            ct
+        );
+        var mediaItemId = await TusUploadSteps.UploadAsync(
+            await ctx.Identity.ManagingLoginClientAsync(ct),
+            TusUploadSteps.GroupOwner(ctx.Groups.Groups.IdOf("tanzgarde")),
+            "Garde.jpg",
+            MediaSamples.JpegOfSize(3000, 3000),
+            ChunkLength,
+            new PictureCrop(0, 0, 1, 1).Token,
+            ct
+        );
+
+        await _fixture.RunMediaWorkerAsync(ct);
+
+        Assert.Equal((2560, 1707), await RenditionSizeAsync(mediaItemId, MediaRendition.Large, ct));
+    }
+
     private async Task<int> UploadAsync(
         SeededContext ctx,
         string fileName,

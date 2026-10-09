@@ -1,11 +1,11 @@
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
-import type { Album } from '@/features/gallery/gallery-content';
 import { albumPhotoCountCaption } from '@/features/gallery/gallery-content';
+import type { AlbumDetail } from '@/lib/public-gallery/schemas';
 
 interface AlbumPhotoCountProps {
-  album: Album;
+  album: AlbumDetail;
 }
 
 export const AlbumPhotoCount: FC<AlbumPhotoCountProps> = ({ album }) => (

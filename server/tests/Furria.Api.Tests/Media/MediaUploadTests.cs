@@ -163,7 +163,100 @@ public sealed class MediaUploadTests : IClassFixture<ApiTestFixture>
         await ctx
             .Expected.MediaItem(mediaItemId)
             .ToBeOwnedBy(MediaOwner.Person(aliceId))
+            .MediaItem(mediaItemId)
+            .ToBeThePortraitOf(aliceId)
             .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_DropTheFormerPortraitWithItsFiles_When_SheUploadsANewOne()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => identity.AddAccount("alice")),
+            ct
+        );
+        var aliceId = ctx.Identity.People.IdOf("alice");
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        var formerId = await PictureSteps.RenderedPortraitAsync(_fixture, client, aliceId, ct);
+        var formerOriginal = await _fixture.MediaFileOfAsync(formerId, MediaRendition.Original, ct);
+
+        var portraitId = await PictureSteps.UploadedPortraitAsync(client, aliceId, ct);
+
+        await ctx
+            .Expected.MediaItem(portraitId)
+            .ToBeThePortraitOf(aliceId)
+            .MediaItem(formerId)
+            .ToBeGone()
+            .AssertAsync(ct);
+        Assert.False(File.Exists(formerOriginal));
+    }
+
+    [Fact]
+    public async Task Should_KeepTheChosenCrop_When_APortraitArrivesCropped()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => identity.AddAccount("alice")),
+            ct
+        );
+        var aliceId = ctx.Identity.People.IdOf("alice");
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        var crop = new PictureCrop(0.25, 0, 0.5, 0.9375);
+
+        var mediaItemId = await TusUploadSteps.UploadAsync(
+            client,
+            TusUploadSteps.PersonOwner(aliceId),
+            "ich.jpg",
+            MediaSamples.Jpeg(ChunkLength),
+            ChunkLength,
+            crop.Token,
+            ct
+        );
+
+        await ctx.Expected.MediaItem(mediaItemId).ToBeCroppedTo(crop).AssertAsync(ct);
+    }
+
+    [Theory]
+    [InlineData("gallery", "0,0,0.5,0.5")]
+    [InlineData("person", "0.75,0,0.5,0.5")]
+    public async Task Should_RefuseTheCrop_When_ItIsNoCutOfAPortraitOrGroupPicture(
+        string ownerKind,
+        string crop
+    )
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddAccount("ilka"))
+                    .Roles(roles =>
+                        roles.AddRoleWithHolder(
+                            "galerie",
+                            "ilka-galerie",
+                            "Galerie",
+                            "ilka",
+                            FurriaPermissions.GalleryUpload
+                        )
+                    ),
+            ct
+        );
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var owner =
+            ownerKind == "gallery"
+                ? TusUploadSteps.GalleryOwner
+                : TusUploadSteps.PersonOwner(ctx.Identity.People.IdOf("ilka"));
+
+        var response = await TusUploadSteps.CreateAsync(
+            client,
+            owner,
+            "foto.jpg",
+            ChunkLength,
+            crop,
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]
@@ -250,6 +343,8 @@ public sealed class MediaUploadTests : IClassFixture<ApiTestFixture>
         await ctx
             .Expected.MediaItem(mediaItemId)
             .ToBeOwnedBy(MediaOwner.Group(groupId))
+            .MediaItem(mediaItemId)
+            .ToBeThePictureOfGroup(groupId)
             .AssertAsync(ct);
     }
 

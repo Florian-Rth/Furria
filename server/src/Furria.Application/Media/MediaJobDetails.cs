@@ -14,5 +14,7 @@ public sealed record MediaJobDetails
 
     public required MediaCropDetails? Crop { get; init; }
 
+    public required double? PictureAspect { get; init; }
+
     public required int Attempt { get; init; }
 }

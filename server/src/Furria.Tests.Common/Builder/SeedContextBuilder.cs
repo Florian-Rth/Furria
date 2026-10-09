@@ -6,6 +6,7 @@ public sealed class SeedContextBuilder
     private readonly GroupSeedBuilder _groups = new();
     private readonly RoleSeedBuilder _roles = new();
     private readonly ClubSeedBuilder _club = new();
+    private readonly GallerySeedBuilder _gallery = new();
 
     internal IdentitySeedBuilder RecordedIdentity => _identity;
 
@@ -14,6 +15,8 @@ public sealed class SeedContextBuilder
     internal RoleSeedBuilder RecordedRoles => _roles;
 
     internal ClubSeedBuilder RecordedClub => _club;
+
+    internal GallerySeedBuilder RecordedGallery => _gallery;
 
     public SeedContextBuilder Identity(Action<IdentitySeedBuilder> configure)
     {
@@ -36,6 +39,12 @@ public sealed class SeedContextBuilder
     public SeedContextBuilder Club(Action<ClubSeedBuilder> configure)
     {
         configure(_club);
+        return this;
+    }
+
+    public SeedContextBuilder Gallery(Action<GallerySeedBuilder> configure)
+    {
+        configure(_gallery);
         return this;
     }
 }

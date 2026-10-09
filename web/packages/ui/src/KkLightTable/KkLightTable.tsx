@@ -27,6 +27,10 @@ const MILLISECONDS = 1000;
 const STRIP_FRAME = 44;
 const SLOT_SHIFT = 33;
 
+const focusOnMount = (node: HTMLDivElement | null): void => {
+  node?.focus();
+};
+
 export interface KkLightTableFrame {
   id: string;
   label: string;
@@ -60,6 +64,12 @@ export interface KkLightTableLabels {
   reject: string;
   confirm: string;
   cancel: string;
+  settings?: string;
+}
+
+export interface KkLightTableCommit {
+  label: string;
+  busy: boolean;
 }
 
 export interface KkLightTableDone {
@@ -81,9 +91,12 @@ interface KkLightTableProps extends KkLightTableIntents {
   confirmQuestion: string | null;
   hurried: boolean;
   done: KkLightTableDone | null;
+  commit?: KkLightTableCommit | null;
   labels: KkLightTableLabels;
   onClose: () => void;
   onStripSelect: (id: string) => void;
+  onCommit?: () => void;
+  onSettings?: () => void;
 }
 
 const seconds = (milliseconds: number, hurried: boolean): number =>
@@ -136,9 +149,12 @@ export const KkLightTable: FC<KkLightTableProps> = ({
   confirmQuestion,
   hurried,
   done,
+  commit = null,
   labels,
   onClose,
   onStripSelect,
+  onCommit,
+  onSettings,
   ...intents
 }) => {
   const reducedMotion = useReducedMotion();
@@ -250,6 +266,7 @@ export const KkLightTable: FC<KkLightTableProps> = ({
 
   return (
     <Stack
+      ref={focusOnMount}
       role="application"
       aria-label={labels.dialog}
       tabIndex={0}
@@ -291,6 +308,9 @@ export const KkLightTable: FC<KkLightTableProps> = ({
             {tally}
           </Typography>
         </Stack>
+        {onSettings === undefined || labels.settings === undefined ? null : (
+          <KkIconButton label={labels.settings} icon="settings" onClick={onSettings} />
+        )}
         <KkIconButton label={labels.undo} icon="undo" onClick={intents.onUndo} />
       </Stack>
       <KkFilmEdge
@@ -434,6 +454,36 @@ export const KkLightTable: FC<KkLightTableProps> = ({
       >
         {stripFrames}
       </Stack>
+      {commit === null || onCommit === undefined ? null : (
+        <ButtonBase
+          onClick={onCommit}
+          disabled={commit.busy}
+          sx={(theme: Theme) => ({
+            mt: 1,
+            mx: 1,
+            minHeight: kkTokens.tapTarget,
+            columnGap: 1,
+            borderRadius: `${kkTokens.radius.base}px`,
+            bgcolor: 'warning.main',
+            color: 'warning.contrastText',
+            opacity: commit.busy ? 0.6 : 1,
+            ...focusRing(theme),
+          })}
+        >
+          <KkIcon name="check" size="small" />
+          <Typography
+            component="span"
+            sx={(theme) => ({
+              ...theme.typography.overline,
+              fontWeight: 900,
+              letterSpacing: kkTokens.type.tracking.label,
+              textTransform: 'uppercase',
+            })}
+          >
+            {commit.label}
+          </Typography>
+        </ButtonBase>
+      )}
       <Stack direction="row" sx={{ columnGap: 0.75, px: 1, pt: 1 }}>
         {targetButtons}
       </Stack>

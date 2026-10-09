@@ -24,16 +24,36 @@ public static class TusUploadSteps
         string owner,
         string fileName,
         long length,
-        CancellationToken ct
+        CancellationToken ct,
+        int? albumId = null
+    ) => CreateAsync(client, owner, fileName, length, null, ct, albumId);
+
+    public static Task<HttpResponseMessage> CreateAsync(
+        HttpClient client,
+        string owner,
+        string fileName,
+        long length,
+        string? crop,
+        CancellationToken ct,
+        int? albumId = null
     )
     {
         var request = new HttpRequestMessage(HttpMethod.Post, MediaUploads.UrlPath);
         request.Headers.Add(TusResumable, TusVersion);
         request.Headers.Add("Upload-Length", length.ToString(CultureInfo.InvariantCulture));
+        var cropMetadata = crop is null
+            ? ""
+            : $",{MediaUploadEvents.CropMetadataKey} {Base64(crop)}";
         request.Headers.Add(
             "Upload-Metadata",
             $"{MediaUploadEvents.OwnerMetadataKey} {Base64(owner)},"
                 + $"{MediaUploadEvents.FileNameMetadataKey} {Base64(fileName)}"
+                + (
+                    albumId is { } album
+                        ? $",{MediaUploadEvents.AlbumMetadataKey} {Base64(album.ToString(CultureInfo.InvariantCulture))}"
+                        : ""
+                )
+                + cropMetadata
         );
         return client.SendAsync(request, ct);
     }
@@ -43,10 +63,21 @@ public static class TusUploadSteps
         string owner,
         string fileName,
         long length,
-        CancellationToken ct
+        CancellationToken ct,
+        int? albumId = null
+    ) => await CreatedAsync(client, owner, fileName, length, null, ct, albumId);
+
+    public static async Task<Uri> CreatedAsync(
+        HttpClient client,
+        string owner,
+        string fileName,
+        long length,
+        string? crop,
+        CancellationToken ct,
+        int? albumId = null
     )
     {
-        var response = await CreateAsync(client, owner, fileName, length, ct);
+        var response = await CreateAsync(client, owner, fileName, length, crop, ct, albumId);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         return response.Headers.Location!;
     }
@@ -80,16 +111,28 @@ public static class TusUploadSteps
         return client.SendAsync(request, ct);
     }
 
+    public static Task<int> UploadAsync(
+        HttpClient client,
+        string owner,
+        string fileName,
+        byte[] content,
+        int chunkLength,
+        CancellationToken ct,
+        int? albumId = null
+    ) => UploadAsync(client, owner, fileName, content, chunkLength, null, ct, albumId);
+
     public static async Task<int> UploadAsync(
         HttpClient client,
         string owner,
         string fileName,
         byte[] content,
         int chunkLength,
-        CancellationToken ct
+        string? crop,
+        CancellationToken ct,
+        int? albumId = null
     )
     {
-        var upload = await CreatedAsync(client, owner, fileName, content.Length, ct);
+        var upload = await CreatedAsync(client, owner, fileName, content.Length, crop, ct, albumId);
         HttpResponseMessage? last = null;
         for (var offset = 0; offset < content.Length; offset += chunkLength)
         {

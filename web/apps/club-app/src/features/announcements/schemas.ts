@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { PictureSchema } from '@/lib/api/schemas';
 
 export const ANNOUNCEMENT_TITLE_MAX_LENGTH = 120;
 export const ANNOUNCEMENT_BODY_MAX_LENGTH = 4_000;
@@ -12,7 +13,7 @@ export const AnnouncementAuthorSchema = z.object({
   personId: z.number().int(),
   firstName: z.string(),
   lastName: z.string(),
-  portraitUrl: z.string().nullable(),
+  portrait: PictureSchema.nullable(),
   officeName: z.string().nullable(),
 });
 export type AnnouncementAuthor = z.infer<typeof AnnouncementAuthorSchema>;

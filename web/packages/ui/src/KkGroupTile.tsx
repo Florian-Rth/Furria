@@ -20,6 +20,7 @@ const ACCENT_LINES = 2;
 interface KkGroupTileProps {
   tone: KkGroupTone;
   initials: string;
+  portrait?: string;
   name: string;
   accent?: string;
   meta?: string;
@@ -33,6 +34,7 @@ interface KkGroupTileProps {
 export const KkGroupTile: FC<KkGroupTileProps> = ({
   tone,
   initials,
+  portrait,
   name,
   accent,
   meta,
@@ -101,6 +103,7 @@ export const KkGroupTile: FC<KkGroupTileProps> = ({
     >
       <KkAvatar
         initials={initials}
+        source={portrait}
         size="large"
         component="span"
         tone={isAccented ? tone : undefined}

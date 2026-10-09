@@ -21,6 +21,7 @@ export const MORE_PATH = '/more';
 export const MANAGE_PATH = '/manage';
 export const EVENTS_PATH = '/events';
 export const PROFILE_PATH = '/profile';
+export const GALLERY_PATH = '/gallery';
 
 export const START_SECTION = 'start';
 export const CLUB_SECTION = 'club';
@@ -34,6 +35,7 @@ export const CALENDAR_TITLE = 'Kalender';
 export const GROUPS_TITLE = 'Gruppen';
 export const PROFILE_TITLE = 'Profil';
 export const EVENTS_TITLE = 'Veranstaltungen';
+export const GALLERY_TITLE = 'Galerie';
 
 export const START_ORIGIN: KkScreenOrigin = { label: START_TITLE, to: START_PATH };
 export const CLUB_ORIGIN: KkScreenOrigin = { label: CLUB_TITLE, to: CLUB_PATH };
@@ -43,6 +45,7 @@ export const PROFILE_ORIGIN: KkScreenOrigin = { label: PROFILE_TITLE, to: PROFIL
 export const MORE_ORIGIN: KkScreenOrigin = { label: 'Mehr', to: MORE_PATH };
 export const MANAGE_ORIGIN: KkScreenOrigin = { label: 'Verein verwalten', to: MANAGE_PATH };
 export const EVENTS_ORIGIN: KkScreenOrigin = { label: EVENTS_TITLE, to: EVENTS_PATH };
+export const GALLERY_ORIGIN: KkScreenOrigin = { label: GALLERY_TITLE, to: GALLERY_PATH };
 
 export const AREA_HANDOVERS = {
   start: 'confetti',
@@ -54,6 +57,7 @@ export const AREA_HANDOVERS = {
   announcements: 'confetti',
   manage: 'confetti',
   events: 'confetti',
+  gallery: 'confetti',
   more: 'confetti',
 } as const satisfies Record<string, KkHandoverName>;
 
@@ -73,6 +77,27 @@ export const EVENTS_KEYS: readonly [PermissionKey, ...PermissionKey[]] = [
   PERMISSION_KEYS.eventsManage,
   PERMISSION_KEYS.ticketRequestsHandle,
 ];
+
+export const GALLERY_KEYS: readonly [PermissionKey, ...PermissionKey[]] = [
+  PERMISSION_KEYS.clubRead,
+  PERMISSION_KEYS.galleryUpload,
+  PERMISSION_KEYS.galleryManage,
+  PERMISSION_KEYS.galleryPublish,
+];
+
+export const GALLERY_SORT_KEYS: readonly [PermissionKey, ...PermissionKey[]] = [
+  PERMISSION_KEYS.galleryUpload,
+  PERMISSION_KEYS.galleryManage,
+];
+
+export const GALLERY_SECTION: AppSection = {
+  id: 'gallery',
+  label: GALLERY_TITLE,
+  icon: 'gallery',
+  to: GALLERY_PATH,
+  meta: 'Fotos und Videos des Vereins',
+  permissionKeys: GALLERY_KEYS,
+};
 
 export const APP_DESTINATIONS: readonly KkShellDestination[] = [
   { id: START_SECTION, label: START_TITLE, icon: 'overview', activeIcon: 'home', to: START_PATH },

@@ -73,6 +73,9 @@ public sealed class MediaJobQueue
         item.CapturedAt = command.CapturedAt;
         item.Camera = Truncated(command.Camera, MediaItem.CameraLength);
         item.FailureReason = null;
+        item.RenderedAt = _timeProvider.GetUtcNow();
+        if (item.Crop is null && command.AppliedCrop is { } appliedCrop)
+            item.Crop = MediaCrops.ToEntity(appliedCrop);
         item.State = await HasFurtherJobsAsync(job, ct)
             ? MediaItemState.Processing
             : MediaItemState.Ready;
@@ -213,9 +216,8 @@ public sealed class MediaJobQueue
             MediaItemId = item.Id,
             StorageKey = item.StorageKey,
             Kind = item.Kind,
-            Crop = item.Crop is { } crop
-                ? new MediaCropDetails(crop.Left, crop.Top, crop.Width, crop.Height)
-                : null,
+            Crop = item.Crop is { } crop ? MediaCrops.ToDetails(crop) : null,
+            PictureAspect = MediaOwner.Of(item).PictureAspect,
             Attempt = job.Attempts,
         };
 

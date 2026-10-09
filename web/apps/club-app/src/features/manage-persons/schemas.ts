@@ -6,6 +6,8 @@ import {
   GroupRefSchema,
   MembershipStateSchema,
   PersonRefSchema,
+  PictureEditingSchema,
+  PictureSchema,
   RoleRefSchema,
 } from '@/lib/api/schemas';
 import { ContactFieldsFormSchema } from '@/lib/contact-fields';
@@ -38,6 +40,7 @@ export const PersonSummarySchema = z
     personId: z.number().int(),
     firstName: z.string(),
     lastName: z.string(),
+    portrait: PictureSchema.nullable(),
     membershipState: MembershipStateSchema,
     memberSince: z.iso.date().nullable(),
     groups: z.array(GroupRefSchema),
@@ -131,6 +134,7 @@ export const PersonDetailsSchema = z
     personId: z.number().int(),
     firstName: z.string(),
     lastName: z.string(),
+    portrait: PictureEditingSchema.nullable(),
     membershipState: MembershipStateSchema,
     memberSince: z.iso.date().nullable(),
     memberships: z.array(PersonMembershipSchema),

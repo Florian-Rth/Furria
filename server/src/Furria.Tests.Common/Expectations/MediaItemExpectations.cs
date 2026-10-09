@@ -111,6 +111,49 @@ public sealed class MediaItemExpectations
             }
         );
 
+    public Expected ToBeThePortraitOf(int personId) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(
+                    _mediaItemId,
+                    await dbContext
+                        .People.Where(person => person.Id == personId)
+                        .Select(person => person.PortraitId)
+                        .SingleAsync(ct)
+                )
+        );
+
+    public Expected ToBeThePictureOfGroup(int groupId) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(
+                    _mediaItemId,
+                    await dbContext
+                        .Groups.Where(group => group.Id == groupId)
+                        .Select(group => group.PictureId)
+                        .SingleAsync(ct)
+                )
+        );
+
+    public Expected ToBeCroppedTo(PictureCrop crop) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var stored = (await SingleAsync(dbContext, ct)).Crop;
+                Assert.NotNull(stored);
+                Assert.Equal(
+                    crop,
+                    new PictureCrop(stored.Left, stored.Top, stored.Width, stored.Height)
+                );
+            }
+        );
+
+    public Expected ToBeGone() =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.False(await dbContext.MediaItems.AnyAsync(row => row.Id == _mediaItemId, ct))
+        );
+
     private IQueryable<MediaJob> JobsOf(AppDbContext dbContext) =>
         dbContext.MediaJobs.AsNoTracking().Where(job => job.MediaItemId == _mediaItemId);
 

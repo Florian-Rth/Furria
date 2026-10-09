@@ -73,6 +73,9 @@ export const panelSizeOf = (panel: StartPanel): number => {
   if (panel.kind === 'groups') {
     return panel.groupMoments.length;
   }
+  if (panel.kind === 'gallery') {
+    return panel.albums.length;
+  }
 
   return panel.toDos.length;
 };

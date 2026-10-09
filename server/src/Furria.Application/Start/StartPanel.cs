@@ -17,4 +17,6 @@ public sealed record StartPanel
     public required IReadOnlyList<StartGroupMoment>? GroupMoments { get; init; }
 
     public required IReadOnlyList<ToDoSummary>? ToDos { get; init; }
+
+    public required IReadOnlyList<StartAlbumSummary>? Albums { get; init; }
 }

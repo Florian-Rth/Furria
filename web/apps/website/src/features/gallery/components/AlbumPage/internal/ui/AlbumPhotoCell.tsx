@@ -12,8 +12,8 @@ export const AlbumPhotoCell: FC<AlbumPhotoCellProps> = ({ entry, onOpen }) => {
 
   return (
     <PhotoGrid.Cell orientation={entry.photo.orientation}>
-      <PhotoGrid.Action photo={entry.photo} onOpen={handleOpen}>
-        <PhotoGrid.Tile photo={entry.photo} placeholderLabel={entry.placeholderLabel} />
+      <PhotoGrid.Action alt={entry.alt} onOpen={handleOpen}>
+        <PhotoGrid.Tile entry={entry} />
       </PhotoGrid.Action>
     </PhotoGrid.Cell>
   );

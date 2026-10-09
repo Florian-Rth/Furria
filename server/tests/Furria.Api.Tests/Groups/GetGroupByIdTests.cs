@@ -2,8 +2,12 @@ using System.Net;
 using System.Text.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Groups;
+using Furria.Api.Media;
+using Furria.Api.Tests.Media;
 using Furria.Application.Authorization;
 using Furria.Core.Groups;
+using Furria.Core.Media;
+using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -1041,6 +1045,8 @@ public sealed class GetGroupByIdTests : IClassFixture<ApiTestFixture>
             [
                 "groupId",
                 "name",
+                "picture",
+                "pictureEditing",
                 "description",
                 "isRecruiting",
                 "groupKindId",
@@ -1082,6 +1088,7 @@ public sealed class GetGroupByIdTests : IClassFixture<ApiTestFixture>
                 "personId",
                 "firstName",
                 "lastName",
+                "portrait",
                 "joinedOn",
                 "leftOn",
                 "since",
@@ -1098,6 +1105,7 @@ public sealed class GetGroupByIdTests : IClassFixture<ApiTestFixture>
                 "personId",
                 "firstName",
                 "lastName",
+                "portrait",
                 "function",
                 "sinceOn",
                 "untilOn",
@@ -1109,5 +1117,69 @@ public sealed class GetGroupByIdTests : IClassFixture<ApiTestFixture>
         var katrin = document.RootElement.GetProperty("pastMembers").EnumerateArray().Single();
         Assert.Equal("2020-03-01", katrin.GetProperty("leftOn").GetString());
         Assert.Empty(document.RootElement.GetProperty("pastAdmins").EnumerateArray());
+    }
+
+    [Fact]
+    public async Task Should_ShowThePictureAndPortraitsButNoCutting_When_AMemberOpensTheHub()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await GardeWithPicturesAsync(ct);
+
+        var (_, result) = await ReadHubAsync(
+            await ctx.Identity.ClientForAsync("mara", ct),
+            ctx.Groups.Groups.IdOf("tanzgarde")
+        );
+
+        Assert.NotNull(result.Picture);
+        Assert.Null(result.PictureEditing);
+        Assert.NotNull(Assert.Single(result.Admins).Portrait);
+        Assert.Null(Assert.Single(result.Members).Portrait);
+    }
+
+    [Fact]
+    public async Task Should_OfferTheWholePictureAndItsCut_When_TheGroupAdminOpensTheHub()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await GardeWithPicturesAsync(ct);
+
+        var (_, result) = await ReadHubAsync(
+            await ctx.Identity.ClientForAsync("anna", ct),
+            ctx.Groups.Groups.IdOf("tanzgarde")
+        );
+
+        var editing = Assert.IsType<PictureEditingDto>(result.PictureEditing);
+        Assert.Equal(MediaItemState.Ready, editing.State);
+        Assert.NotNull(editing.UncroppedUrl);
+        Assert.NotNull(editing.Crop);
+    }
+
+    private async Task<SeededContext> GardeWithPicturesAsync(CancellationToken ct)
+    {
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddAccount("anna").AddAccount("mara"))
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("tanzgarde", "Tanzgarde")
+                            .AddGroupAdmin("anna-tanzgarde", "tanzgarde", "anna")
+                            .AddGroupMembership("mara-tanzgarde", "tanzgarde", "mara", JoinedIn2017)
+                    ),
+            ct
+        );
+        var anna = await ctx.Identity.ClientForAsync("anna", ct);
+        await PictureSteps.RenderedGroupPictureAsync(
+            _fixture,
+            anna,
+            ctx.Groups.Groups.IdOf("tanzgarde"),
+            ct
+        );
+        await PictureSteps.RenderedPortraitAsync(
+            _fixture,
+            anna,
+            ctx.Identity.People.IdOf("anna"),
+            ct
+        );
+        return ctx;
     }
 }

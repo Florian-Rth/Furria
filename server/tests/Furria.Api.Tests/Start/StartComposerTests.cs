@@ -31,6 +31,7 @@ public sealed class StartComposerTests
         ToDos = [],
         Mine = [],
         GroupMoments = [],
+        Albums = [],
     };
 
     private static readonly StartCandidates CappedCalendar = Nothing with
@@ -745,7 +746,7 @@ public sealed class StartComposerTests
                 PersonId = 1,
                 FirstName = "Karin",
                 LastName = "Autorin",
-                PortraitUrl = null,
+                Portrait = null,
                 OfficeName = null,
             },
         };

@@ -1,9 +1,9 @@
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
-import type { Album } from '@/features/gallery/gallery-content';
+import type { AlbumDetail } from '@/lib/public-gallery/schemas';
 
 interface AlbumHeadlineProps {
-  album: Album;
+  album: AlbumDetail;
 }
 
 export const AlbumHeadline: FC<AlbumHeadlineProps> = ({ album }) => (

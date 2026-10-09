@@ -16,6 +16,7 @@ using Furria.Core.Identity;
 using Furria.Core.Media;
 using Furria.Core.Roles;
 using Furria.Infrastructure.Club;
+using Furria.Infrastructure.Gallery;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Logging;
 using Furria.Infrastructure.Mail;
@@ -464,6 +465,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             new TestGroups(seeded.Groups),
             new TestRoles(seeded.Roles),
             new TestClub(seeded.Club),
+            new TestGallery(seeded.Gallery),
             new Expected(scopeFactory)
         );
     }
@@ -571,8 +573,32 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         await db.SaveChangesAsync(ct);
     }
 
+    public async Task RenderMediaItemDirectlyAsync(int mediaItemId, CancellationToken ct = default)
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var item = await db.MediaItems.SingleAsync(row => row.Id == mediaItemId, ct);
+        item.State = MediaItemState.Ready;
+        item.Width = 800;
+        item.Height = 1000;
+        item.RenderedAt = TimeProvider.GetUtcNow();
+        item.Crop ??= new MediaCrop
+        {
+            Left = 0,
+            Top = 0,
+            Width = 1,
+            Height = 1,
+        };
+        db.MediaJobs.RemoveRange(db.MediaJobs.Where(job => job.MediaItemId == mediaItemId));
+        await db.SaveChangesAsync(ct);
+    }
+
     public void SweepAbandonedUploads() =>
         Services.GetServices<IHostedService>().OfType<AbandonedUploadSweep>().Single().Sweep();
+
+    public Task PurgeGalleryBinAsync(CancellationToken ct = default) =>
+        Services.GetServices<IHostedService>().OfType<GalleryBinPurge>().Single().PurgeAsync(ct);
 
     public string SignedMediaUrl(int mediaItemId, MediaOwner owner, MediaRendition rendition) =>
         Services.GetRequiredService<MediaUrlSigner>().UrlOf(mediaItemId, owner, rendition);

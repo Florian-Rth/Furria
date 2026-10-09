@@ -30,7 +30,7 @@ const announcement = (announcementId: number, title: string): StartAnnouncement 
     personId: 1,
     firstName: 'Karin',
     lastName: 'Albrecht',
-    portraitUrl: null,
+    portrait: null,
     officeName: null,
   },
 });

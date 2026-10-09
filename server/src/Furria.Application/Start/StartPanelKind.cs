@@ -7,4 +7,5 @@ public enum StartPanelKind
     Mine = 3,
     Groups = 4,
     ToDos = 5,
+    Gallery = 6,
 }

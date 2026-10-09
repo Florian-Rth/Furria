@@ -55,6 +55,9 @@ export const panelItemKeysOf = (panel: StartPanel): string[] => {
   if (panel.kind === 'groups') {
     return panel.groupMoments.map((moment) => itemKeyOf({ panel: 'groups', ...moment }));
   }
+  if (panel.kind === 'gallery') {
+    return [];
+  }
 
   return panel.toDos.map((toDo) => itemKeyOf({ panel: 'toDos', ...toDo }));
 };
@@ -115,6 +118,9 @@ const reconcilePanel = (panel: StartPanel, fresh: Start): StartPanel => {
         (moment) => itemKeyOf({ panel: 'groups', ...moment }),
       ),
     };
+  }
+  if (panel.kind === 'gallery') {
+    return freshPanelOf(fresh, 'gallery') ?? panel;
   }
 
   return {

@@ -4,6 +4,7 @@ import type { ElementType, FC, PropsWithChildren, ReactNode } from 'react';
 import { focusRing } from './internal/focus-ring';
 import { inertLabel, labelSignifier, signifierCommitted } from './internal/label-signifier';
 import { redInk } from './internal/red-ink';
+import type { KkLinkSearch } from './kk-link-search';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
@@ -90,6 +91,7 @@ interface KkButtonProps extends PropsWithChildren {
   component?: ElementType;
   to?: string;
   params?: Record<string, string>;
+  search?: KkLinkSearch;
   href?: string;
   ariaLabel?: string;
   sx?: KkSx;
@@ -108,6 +110,7 @@ export const KkButton: FC<KkButtonProps> = ({
   component,
   to,
   params,
+  search,
   href,
   ariaLabel,
   sx,
@@ -115,7 +118,7 @@ export const KkButton: FC<KkButtonProps> = ({
 }) => {
   const ariaDisabled = disabled === true ? true : undefined;
   const componentProps = component === undefined ? {} : { component };
-  const routeProps = component === undefined ? {} : { to, params };
+  const routeProps = component === undefined ? {} : { to, params, search };
   const variantStyle = toneVariantStyles[tone][variant];
 
   return (

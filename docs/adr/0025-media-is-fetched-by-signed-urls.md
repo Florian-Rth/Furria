@@ -16,9 +16,16 @@ original's file name).
 - **The API serves the files itself** (range requests, `sendfile`); no nginx needs the media mount.
 - **The API checks the item still exists and still belongs where the URL says before serving**,
   so deletion and takedown take effect at once; a leaked URL to a living item works at most 48 h.
-- **The public face is unsigned**: renditions in a published album's public selection have stable
-  URLs under `/api/public/gallery/…` that answer 404 the moment the photo leaves the selection.
-  The edge must not cache them.
+- **The public face is unsigned**: the website's pictures have stable URLs under `/api/public/…`
+  that are served only while the picture is on the public face and answer 404 the moment it
+  leaves it — board portraits (`/api/public/board/portraits/…`, while the person holds a public
+  office), group pictures (`/api/public/groups/pictures/…`, while the group is shown publicly)
+  and the renditions in a published album's public selection (`/api/public/gallery/…`, while the
+  photo is in the selection). Only the small/medium/large renditions are served, never the
+  original or the uncropped one. Existence is checked on every fetch; the edge must not cache
+  them (`Cache-Control: private, no-cache`); `v={renderedAt}` busts the browser cache after a
+  re-crop. Amended 2026-10-09 with Florian: board portraits and group pictures joined the
+  unsigned public face instead of carrying signed URLs that outlive the office by up to 48 h.
 
 ## Considered options
 

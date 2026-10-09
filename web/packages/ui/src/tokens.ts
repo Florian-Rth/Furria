@@ -263,6 +263,11 @@ export const kkTokens = {
     portrait: '4 / 5',
     landscape: '7 / 5',
     banner: '2 / 1',
+    groupPicture: '3 / 2',
+  },
+  crop: {
+    veil: 'rgba(12,13,16,0.55)',
+    guide: 'rgba(255,255,255,0.9)',
   },
   overlay: {
     onPhotoText: '#FFFFFF',
@@ -286,6 +291,7 @@ export const kkTokens = {
     columns: { xs: 4, sm: 6, desktop: 10 },
     darkroom: '#050608',
     darkroomEdge: '#0E1013',
+    scrim: 'rgba(5,6,8,0.6)',
     latent: '#2A2D33',
     grease: { stroke: 3.2, circleMs: 420, crossMs: 120 },
     sweep: { seconds: 1.15, band: 0.22, staggerSeconds: 0.06, rows: 7 },
@@ -301,6 +307,11 @@ export const kkTokens = {
       tiltDeg: 3,
     },
     target: { minHeight: 64 },
+    showcase: {
+      sheen: 'rgba(255,255,255,0.09)',
+      columns: { xs: 3, sm: 4, desktop: 6 },
+      settleSeconds: 0.42,
+    },
   },
 } as const;
 

@@ -1,7 +1,7 @@
 import { KkAvatarStack, KkMeta } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import type { PersonRef } from '@/lib/api/schemas';
+import type { PortraitPersonRef } from '@/lib/api/schemas';
 import { toInitials } from '@/lib/initials';
 
 const AVATAR_MAX = 2;
@@ -17,7 +17,7 @@ const CLAMPED_LINE = {
 } as const;
 
 interface GroupRegisterFactsProps {
-  admins: readonly PersonRef[];
+  admins: readonly PortraitPersonRef[];
   line: string | null;
 }
 
@@ -27,9 +27,16 @@ export const GroupRegisterFacts: FC<GroupRegisterFactsProps> = ({ admins, line }
   }
 
   const initials = admins.map((person) => toInitials(person.firstName, person.lastName));
+  const portraits = admins.map((person) => person.portrait?.smallUrl);
   const avatars =
     initials.length === 0 ? null : (
-      <KkAvatarStack initials={initials} max={AVATAR_MAX} total={admins.length} sx={AVATARS} />
+      <KkAvatarStack
+        initials={initials}
+        portraits={portraits}
+        max={AVATAR_MAX}
+        total={admins.length}
+        sx={AVATARS}
+      />
     );
 
   return (

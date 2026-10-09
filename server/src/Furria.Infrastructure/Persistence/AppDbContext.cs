@@ -1,5 +1,6 @@
 using Furria.Core.Club;
 using Furria.Core.Events;
+using Furria.Core.Gallery;
 using Furria.Core.Groups;
 using Furria.Core.Identity;
 using Furria.Core.Media;
@@ -88,6 +89,8 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
     public DbSet<MediaItem> MediaItems => Set<MediaItem>();
 
     public DbSet<MediaJob> MediaJobs => Set<MediaJob>();
+
+    public DbSet<Album> Albums => Set<Album>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }

@@ -1,9 +1,9 @@
 import type { FC } from 'react';
 import { FeaturedAlbum } from '@/features/gallery/components/FeaturedAlbum/FeaturedAlbum';
-import type { Album } from '@/features/gallery/gallery-content';
+import type { AlbumSummary } from '@/lib/public-gallery/schemas';
 
 interface FeaturedAlbumBannerProps {
-  album: Album | undefined;
+  album: AlbumSummary | undefined;
 }
 
 export const FeaturedAlbumBanner: FC<FeaturedAlbumBannerProps> = ({ album }) => {

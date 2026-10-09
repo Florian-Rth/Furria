@@ -23,6 +23,8 @@ public sealed class MediaStore
     {
         var now = _timeProvider.GetUtcNow();
         var item = NewItem(command, now);
+        var replaced = await PicturesOfAsync(command.Owner, ct);
+        _dbContext.MediaItems.RemoveRange(replaced);
         _dbContext.MediaItems.Add(item);
         _dbContext.MediaJobs.Add(
             new MediaJob
@@ -35,8 +37,12 @@ public sealed class MediaStore
 
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
         await _dbContext.SaveChangesAsync(ct);
+        await LinkPictureAsync(command.Owner, item.Id, ct);
         _root.MoveInto(command.StagedFilePath, MediaPaths.OriginalOf(item.StorageKey));
         await transaction.CommitAsync(ct);
+
+        foreach (var picture in replaced)
+            _root.DeleteFilesOf(picture.StorageKey);
 
         return item.Id;
     }
@@ -69,6 +75,43 @@ public sealed class MediaStore
         };
     }
 
+    private async Task<IReadOnlyList<MediaItem>> PicturesOfAsync(
+        MediaOwner owner,
+        CancellationToken ct
+    ) =>
+        owner.Kind switch
+        {
+            MediaOwnerKind.Person => await _dbContext
+                .MediaItems.Where(item =>
+                    item.OwnerKind == MediaOwnerKind.Person && item.OwnerPersonId == owner.Id
+                )
+                .ToListAsync(ct),
+            MediaOwnerKind.Group => await _dbContext
+                .MediaItems.Where(item =>
+                    item.OwnerKind == MediaOwnerKind.Group && item.OwnerGroupId == owner.Id
+                )
+                .ToListAsync(ct),
+            _ => [],
+        };
+
+    private Task LinkPictureAsync(MediaOwner owner, int mediaItemId, CancellationToken ct) =>
+        owner.Kind switch
+        {
+            MediaOwnerKind.Person => _dbContext
+                .People.Where(person => person.Id == owner.Id)
+                .ExecuteUpdateAsync(
+                    setters => setters.SetProperty(person => person.PortraitId, mediaItemId),
+                    ct
+                ),
+            MediaOwnerKind.Group => _dbContext
+                .Groups.Where(group => group.Id == owner.Id)
+                .ExecuteUpdateAsync(
+                    setters => setters.SetProperty(group => group.PictureId, mediaItemId),
+                    ct
+                ),
+            _ => Task.CompletedTask,
+        };
+
     [Pure]
     private static MediaItem NewItem(AdoptUploadCommand command, DateTimeOffset now) =>
         new()
@@ -84,6 +127,9 @@ public sealed class MediaStore
             ByteSize = command.ByteSize,
             UploadedByPersonId = command.UploadedByPersonId,
             UploadedAt = now,
+            AlbumId = command.AlbumId,
+            PlacedAt = command.AlbumId is null ? null : now,
+            Crop = command.Crop is { } crop ? MediaCrops.ToEntity(crop) : null,
         };
 
     [Pure]

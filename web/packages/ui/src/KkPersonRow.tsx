@@ -27,6 +27,7 @@ const clampedLine = {
 
 interface KkPersonRowProps {
   initials: string;
+  portrait?: string;
   name: string;
   accent?: string;
   meta?: string;
@@ -55,6 +56,7 @@ const hoverPaint = (theme: Theme): CSSObject => ({
 
 export const KkPersonRow: FC<KkPersonRowProps> = ({
   initials,
+  portrait,
   name,
   accent,
   meta,
@@ -201,6 +203,7 @@ export const KkPersonRow: FC<KkPersonRowProps> = ({
     >
       <KkAvatar
         initials={initials}
+        source={portrait}
         component="span"
         sx={{ flexShrink: 0, opacity: dimmed ? kkTokens.opacity.dimmed : 1 }}
       />

@@ -16,6 +16,7 @@ const group = (
 ): PublicGroup => ({
   groupId,
   name: `Gruppe ${groupId}`,
+  picture: null,
   description: 'Beschreibung',
   isRecruiting,
   groupKindName,

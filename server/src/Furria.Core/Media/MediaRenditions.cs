@@ -19,6 +19,7 @@ public static class MediaRenditions
         MediaRendition.Small,
         MediaRendition.Medium,
         MediaRendition.Large,
+        MediaRendition.Uncropped,
     ];
 
     private static readonly HashSet<MediaRendition> VideoRenditions =

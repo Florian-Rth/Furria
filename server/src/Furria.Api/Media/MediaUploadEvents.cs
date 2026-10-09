@@ -6,6 +6,7 @@ using Furria.Application.Media;
 using Furria.Application.Results;
 using Furria.Core.Media;
 using Furria.Infrastructure.Authorization;
+using Furria.Infrastructure.Gallery;
 using Furria.Infrastructure.Media;
 using tusdotnet.Interfaces;
 using tusdotnet.Models;
@@ -17,6 +18,8 @@ public sealed class MediaUploadEvents
 {
     public const string OwnerMetadataKey = "owner";
     public const string FileNameMetadataKey = "filename";
+    public const string AlbumMetadataKey = "album";
+    public const string CropMetadataKey = "crop";
     public const string MediaItemIdHeader = "Media-Item-Id";
 
     private const string ConcatenationRefused = "Uploads are not concatenated.";
@@ -28,6 +31,10 @@ public sealed class MediaUploadEvents
     private const string NotAcceptedMedia =
         "Only photos (JPEG, HEIC, PNG, WebP) and videos (MP4, MOV) are accepted.";
     private const string NotAcceptedByOwner = "This owner accepts photos only.";
+    private const string AlbumOfGalleryOnly = "Only a gallery upload goes into an album.";
+    private const string AlbumUnknown = "There is no such album.";
+    private const string CropRefused =
+        "A crop is left, top, width and height as fractions of a portrait or group picture.";
 
     private readonly HttpContext _http;
     private readonly int? _accountId;
@@ -73,14 +80,36 @@ public sealed class MediaUploadEvents
             context.FailRequest(HttpStatusCode.BadRequest, OwnerRequired);
         else if (fileName is null)
             context.FailRequest(HttpStatusCode.BadRequest, FileNameRequired);
+        else if (!CropFits(owner.Value, TextOf(context.Metadata, CropMetadataKey)))
+            context.FailRequest(HttpStatusCode.BadRequest, CropRefused);
         else if (context.UploadLength > owner.Value.MaxBytes)
             context.FailRequest(HttpStatusCode.RequestEntityTooLarge, TooLarge);
-        else
-            FailOn(
-                context,
-                await Access()
-                    .MayUploadAsync(_accountId!.Value, owner.Value, context.CancellationToken)
-            );
+        else if (!await FailsOnAccessAsync(context, owner.Value))
+            await CheckAlbumAsync(context, owner.Value);
+    }
+
+    private async Task<bool> FailsOnAccessAsync(BeforeCreateContext context, MediaOwner owner)
+    {
+        var access = await Access()
+            .MayUploadAsync(_accountId!.Value, owner, context.CancellationToken);
+        FailOn(context, access);
+        return !access.IsSuccess;
+    }
+
+    private async Task CheckAlbumAsync(BeforeCreateContext context, MediaOwner owner)
+    {
+        if (TextOf(context.Metadata, AlbumMetadataKey) is null)
+            return;
+
+        var albumId = AlbumIdOf(context.Metadata);
+        if (owner.Kind != MediaOwnerKind.Gallery || albumId is null)
+            context.FailRequest(HttpStatusCode.BadRequest, AlbumOfGalleryOnly);
+        else if (
+            !await _http
+                .RequestServices.GetRequiredService<GalleryService>()
+                .IsLiveAlbumAsync(albumId.Value, context.CancellationToken)
+        )
+            context.FailRequest(HttpStatusCode.NotFound, AlbumUnknown);
     }
 
     private async Task BeforeWriteAsync(BeforeWriteContext context)
@@ -118,12 +147,14 @@ public sealed class MediaUploadEvents
                     Format = await FormatOfAsync(file, ct),
                     Owner = MediaOwner.Parse(TextOf(metadata, OwnerMetadataKey))!.Value,
                     OriginalFileName = FileNameOf(metadata)!,
+                    AlbumId = AlbumIdOf(metadata),
                     ByteSize = (
                         await context.Store.GetUploadLengthAsync(context.FileId, ct)
                     )!.Value,
                     UploadedByPersonId = await _http
                         .RequestServices.GetRequiredService<PermissionAuthorizer>()
                         .ActivePersonIdAsync(_accountId!.Value, ct),
+                    Crop = PictureCrop.Parse(TextOf(metadata, CropMetadataKey)),
                 },
                 ct
             );
@@ -169,6 +200,9 @@ public sealed class MediaUploadEvents
         );
     }
 
+    private static bool CropFits(MediaOwner owner, string? crop) =>
+        crop is null || (owner.PictureAspect is not null && PictureCrop.Parse(crop) is not null);
+
     private static string? FileNameOf(Dictionary<string, Metadata> metadata)
     {
         var fileName = Path.GetFileName(TextOf(metadata, FileNameMetadataKey)?.Trim());
@@ -176,6 +210,17 @@ public sealed class MediaUploadEvents
             ? null
             : fileName;
     }
+
+    private static int? AlbumIdOf(Dictionary<string, Metadata> metadata) =>
+        int.TryParse(
+            TextOf(metadata, AlbumMetadataKey),
+            NumberStyles.None,
+            CultureInfo.InvariantCulture,
+            out var albumId
+        )
+        && albumId > 0
+            ? albumId
+            : null;
 
     private static string? TextOf(Dictionary<string, Metadata> metadata, string key) =>
         metadata.TryGetValue(key, out var value) && !value.HasEmptyValue

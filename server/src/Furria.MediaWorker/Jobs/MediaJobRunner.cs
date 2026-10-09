@@ -80,7 +80,7 @@ public sealed class MediaJobRunner
         var rendered =
             job.Kind == MediaKind.Video
                 ? await _videoRenderer.RenderAsync(files, ct)
-                : _photoRenderer.Render(files, job.Crop);
+                : _photoRenderer.Render(files, job.Crop, job.PictureAspect);
 
         var itemExists = await WithQueueAsync(queue =>
             queue.CompleteAsync(CompletionOf(job, rendered), ct)
@@ -126,6 +126,7 @@ public sealed class MediaJobRunner
             DurationSeconds = rendered.DurationSeconds,
             CapturedAt = rendered.CapturedAt,
             Camera = rendered.Camera,
+            AppliedCrop = rendered.AppliedCrop,
         };
 
     private static string ReasonOf(Exception exception) =>

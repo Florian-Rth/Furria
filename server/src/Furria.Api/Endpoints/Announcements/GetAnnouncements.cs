@@ -1,5 +1,6 @@
 using FastEndpoints;
 using Furria.Api.Authorization;
+using Furria.Api.Media;
 using Furria.Application.Authorization;
 using Furria.Application.Club;
 using Furria.Infrastructure.Authorization;
@@ -85,7 +86,7 @@ public sealed class GetAnnouncements : EndpointWithoutRequest<GetAnnouncementsRe
             PersonId = author.PersonId,
             FirstName = author.FirstName,
             LastName = author.LastName,
-            PortraitUrl = author.PortraitUrl,
+            Portrait = PictureDto.From(author.Portrait),
             OfficeName = author.OfficeName,
         };
 }
@@ -120,7 +121,7 @@ public sealed record AnnouncementAuthorDto
 
     public required string LastName { get; init; }
 
-    public required string? PortraitUrl { get; init; }
+    public required PictureDto? Portrait { get; init; }
 
     public required string? OfficeName { get; init; }
 }

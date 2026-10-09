@@ -1,11 +1,11 @@
 import { kkTokens } from '@furria/ui';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
-import type { Album } from '@/features/gallery/gallery-content';
 import { buildFeaturedAlbumMeta } from '@/features/gallery/gallery-content';
+import type { AlbumSummary } from '@/lib/public-gallery/schemas';
 
 interface FeaturedAlbumMetaProps {
-  album: Album;
+  album: AlbumSummary;
 }
 
 export const FeaturedAlbumMeta: FC<FeaturedAlbumMetaProps> = ({ album }) => {

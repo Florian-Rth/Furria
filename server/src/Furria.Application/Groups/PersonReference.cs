@@ -1,3 +1,5 @@
+using Furria.Application.Media;
+
 namespace Furria.Application.Groups;
 
 public sealed record PersonReference
@@ -7,4 +9,6 @@ public sealed record PersonReference
     public required string FirstName { get; init; }
 
     public required string LastName { get; init; }
+
+    public PictureDetails? Portrait { get; init; }
 }

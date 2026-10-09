@@ -27,7 +27,6 @@ public sealed class PersonConfiguration : IEntityTypeConfiguration<Person>
         builder.Property(person => person.Zip).HasMaxLength(16);
         builder.Property(person => person.City).HasMaxLength(128);
         builder.Property(person => person.ContactVisibleToMembers).HasDefaultValue(false);
-        builder.Property(person => person.PortraitUrl).HasMaxLength(512);
         builder.Property(person => person.CreatedAt).HasDefaultValueSql("now()");
         builder.Property(person => person.UpdatedAt).HasDefaultValueSql("now()");
 
@@ -39,6 +38,14 @@ public sealed class PersonConfiguration : IEntityTypeConfiguration<Person>
             .WithMany()
             .HasForeignKey(person => person.ContactChangedByPersonId)
             .HasConstraintName("fk_person_person_contact_changed_by_person_id")
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasIndex(person => person.PortraitId).IsUnique();
+        builder
+            .HasOne(person => person.Portrait)
+            .WithMany()
+            .HasForeignKey(person => person.PortraitId)
+            .HasConstraintName("fk_person_media_item_portrait_id")
             .OnDelete(DeleteBehavior.SetNull);
 
         builder.HasIndex(person => person.ArchivedByPersonId);

@@ -1,5 +1,6 @@
 using FastEndpoints;
 using Furria.Api.Authorization;
+using Furria.Api.Media;
 using Furria.Application.Registry;
 using Furria.Core.Club;
 using Furria.Infrastructure.Registry;
@@ -37,6 +38,7 @@ public sealed class GetMembers : EndpointWithoutRequest<GetMembersResponse>
             PersonId = member.PersonId,
             FirstName = member.FirstName,
             LastName = member.LastName,
+            Portrait = PictureDto.From(member.Portrait),
             MembershipState = member.MembershipState,
             Groups = [.. member.Groups.Select(ToDto)],
             Roles = [.. member.Roles.Select(ToDto)],
@@ -61,6 +63,8 @@ public sealed record MemberSummaryDto
     public required string FirstName { get; init; }
 
     public required string LastName { get; init; }
+
+    public required PictureDto? Portrait { get; init; }
 
     public required MembershipState MembershipState { get; init; }
 

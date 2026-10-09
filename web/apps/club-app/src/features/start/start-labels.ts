@@ -252,3 +252,12 @@ export const toEntryAccessibleName = (entry: StartEntry, now: Date): string =>
     ...toEntryFacets(entry).map(spokenFacetOf),
     ...spokenAnswerOf(entry),
   ].join(NAME_SEPARATOR);
+
+export const START_GALLERY_LABEL = 'NEU IN DER GALERIE';
+
+export const START_GALLERY_FOOT = 'Zur Galerie';
+
+const GALLERY_COUNT = new Intl.NumberFormat('de-DE');
+
+export const toGalleryShelfEdge = (itemCount: number): string =>
+  `${GALLERY_COUNT.format(itemCount)} ${itemCount === 1 ? 'Bild' : 'Bilder'}`;

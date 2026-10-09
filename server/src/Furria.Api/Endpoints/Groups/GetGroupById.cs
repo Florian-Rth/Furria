@@ -1,12 +1,16 @@
 using FastEndpoints;
 using FluentValidation;
 using Furria.Api.Authorization;
+using Furria.Api.Media;
 using Furria.Api.Results;
 using Furria.Application.Authorization;
 using Furria.Application.Groups;
+using Furria.Application.Media;
 using Furria.Core.Groups;
+using Furria.Core.Media;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Groups;
+using Furria.Infrastructure.Media;
 
 namespace Furria.Api.Endpoints.Groups;
 
@@ -14,11 +18,17 @@ public sealed class GetGroupById : Endpoint<GetGroupByIdRequest, GetGroupByIdRes
 {
     private readonly GroupService _groupService;
     private readonly PermissionAuthorizer _authorizer;
+    private readonly PictureService _pictureService;
 
-    public GetGroupById(GroupService groupService, PermissionAuthorizer authorizer)
+    public GetGroupById(
+        GroupService groupService,
+        PermissionAuthorizer authorizer,
+        PictureService pictureService
+    )
     {
         _groupService = groupService;
         _authorizer = authorizer;
+        _pictureService = pictureService;
     }
 
     public override void Configure()
@@ -56,18 +66,31 @@ public sealed class GetGroupById : Endpoint<GetGroupByIdRequest, GetGroupByIdRes
                 ct
             );
 
-        await Send.OkAsync(ToResponse(group.Value, viewerMayManage), cancellation: ct);
+        var pictureEditing = viewerMayManage
+            ? await _pictureService.EditingOfAsync(MediaOwner.Group(req.GroupId), ct)
+            : null;
+
+        await Send.OkAsync(
+            ToResponse(group.Value, viewerMayManage, pictureEditing),
+            cancellation: ct
+        );
     }
 
     private async Task<bool> MayReadAsync(int accountId, int groupId, CancellationToken ct) =>
         await _authorizer.IsAffiliatedAsync(accountId, ct)
         || await _authorizer.CanAdministerGroupAsync(accountId, groupId, ct);
 
-    private static GetGroupByIdResponse ToResponse(GroupDetails group, bool viewerMayManage) =>
+    private static GetGroupByIdResponse ToResponse(
+        GroupDetails group,
+        bool viewerMayManage,
+        PictureEditingDetails? pictureEditing
+    ) =>
         new()
         {
             GroupId = group.GroupId,
             Name = group.Name,
+            Picture = PictureDto.From(group.Picture),
+            PictureEditing = PictureEditingDto.From(pictureEditing),
             Description = group.Description,
             IsRecruiting = group.IsRecruiting,
             GroupKindId = group.GroupKindId,
@@ -103,6 +126,7 @@ public sealed class GetGroupById : Endpoint<GetGroupByIdRequest, GetGroupByIdRes
             PersonId = member.PersonId,
             FirstName = member.FirstName,
             LastName = member.LastName,
+            Portrait = PictureDto.From(member.Portrait),
             JoinedOn = member.JoinedOn,
             LeftOn = member.LeftOn,
             Since = member.Since,
@@ -116,6 +140,7 @@ public sealed class GetGroupById : Endpoint<GetGroupByIdRequest, GetGroupByIdRes
             PersonId = admin.PersonId,
             FirstName = admin.FirstName,
             LastName = admin.LastName,
+            Portrait = PictureDto.From(admin.Portrait),
             Function = admin.Function,
             SinceOn = admin.SinceOn,
             UntilOn = admin.UntilOn,
@@ -143,6 +168,10 @@ public sealed record GetGroupByIdResponse
     public required int GroupId { get; init; }
 
     public required string Name { get; init; }
+
+    public required PictureDto? Picture { get; init; }
+
+    public required PictureEditingDto? PictureEditing { get; init; }
 
     public required string Description { get; init; }
 
@@ -200,6 +229,8 @@ public sealed record HubMemberDto
 
     public required string LastName { get; init; }
 
+    public required PictureDto? Portrait { get; init; }
+
     public required DateOnly JoinedOn { get; init; }
 
     public required DateOnly? LeftOn { get; init; }
@@ -218,6 +249,8 @@ public sealed record HubAdminDto
     public required string FirstName { get; init; }
 
     public required string LastName { get; init; }
+
+    public required PictureDto? Portrait { get; init; }
 
     public required string? Function { get; init; }
 

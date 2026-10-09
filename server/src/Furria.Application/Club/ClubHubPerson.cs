@@ -1,3 +1,5 @@
+using Furria.Application.Media;
+
 namespace Furria.Application.Club;
 
 public sealed record ClubHubPerson
@@ -8,7 +10,7 @@ public sealed record ClubHubPerson
 
     public required string LastName { get; init; }
 
-    public required string? PortraitUrl { get; init; }
+    public required PictureDetails? Portrait { get; init; }
 
     public required string? OfficeName { get; init; }
 }

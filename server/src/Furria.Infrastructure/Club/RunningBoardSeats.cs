@@ -13,7 +13,8 @@ public sealed class RunningBoardSeats
             seat.PersonId,
             seat.Person!.FirstName,
             seat.Person!.LastName,
-            seat.Person!.PortraitUrl,
+            seat.Person!.PortraitId,
+            seat.Person!.Portrait!.RenderedAt,
             seat.BoardOffice!.Name,
             seat.BoardOffice!.SortOrder,
             seat.BoardOffice!.IsPublic
@@ -39,7 +40,7 @@ public sealed class RunningBoardSeats
 
         _seats = await _dbContext
             .BoardSeats.AsNoTracking()
-            .Where(seat => seat.SinceOn <= today && (seat.UntilOn == null || seat.UntilOn >= today))
+            .Where(RunningOn(today))
             .OrderBy(seat => seat.BoardOffice!.SortOrder)
             .ThenBy(seat => EF.Functions.Collate(seat.Person!.LastName, GermanCollation.Name))
             .ThenBy(seat => EF.Functions.Collate(seat.Person!.FirstName, GermanCollation.Name))
@@ -55,6 +56,10 @@ public sealed class RunningBoardSeats
         DateOnly today,
         CancellationToken ct
     ) => ToOfficeNames(await SeatsAsync(today, ct));
+
+    [Pure]
+    public static Expression<Func<BoardSeat, bool>> RunningOn(DateOnly today) =>
+        seat => seat.SinceOn <= today && (seat.UntilOn == null || seat.UntilOn >= today);
 
     [Pure]
     private static IReadOnlyDictionary<int, string> ToOfficeNames(
@@ -73,7 +78,8 @@ public sealed record RunningBoardSeat(
     int PersonId,
     string FirstName,
     string LastName,
-    string? PortraitUrl,
+    int? PortraitId,
+    DateTimeOffset? PortraitRenderedAt,
     string OfficeName,
     int SortOrder,
     bool OfficeIsPublic

@@ -2,28 +2,31 @@ import { KkCard, KkPhoto, kkTokens } from '@furria/ui';
 import Typography from '@mui/material/Typography';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import type { Album } from '@/features/gallery/gallery-content';
 import {
   albumCoverOrientation,
   albumLinkLabel,
   buildAlbumCoverAlt,
-  buildAlbumCoverSource,
   buildAlbumHref,
   buildAlbumMeta,
+  buildAlbumSlug,
   buildPhotoCountLabel,
+  buildPhotoSourceSet,
+  galleryCoverSizes,
 } from '@/features/gallery/gallery-content';
+import type { AlbumSummary } from '@/lib/public-gallery/schemas';
 
 interface AlbumCardProps {
-  album: Album;
+  album: AlbumSummary;
 }
 
 export const AlbumCard: FC<AlbumCardProps> = ({ album }) => {
-  const albumHref = buildAlbumHref(album.slug);
+  const albumHref = buildAlbumHref(album);
+  const albumSlug = buildAlbumSlug(album);
   const coverAspectRatio = kkTokens.aspectRatio[albumCoverOrientation];
   const coverAlt = buildAlbumCoverAlt(album);
-  const coverSource = buildAlbumCoverSource(album);
+  const coverSourceSet = buildPhotoSourceSet(album.cover);
   const albumMeta = buildAlbumMeta(album);
-  const photoCountLabel = buildPhotoCountLabel(album.photos.length);
+  const photoCountLabel = buildPhotoCountLabel(album.photoCount);
 
   return (
     <KkCard>
@@ -32,8 +35,10 @@ export const AlbumCard: FC<AlbumCardProps> = ({ album }) => {
           <KkPhoto
             alt={coverAlt}
             orientation={albumCoverOrientation}
-            placeholderLabel={album.slug}
-            source={coverSource}
+            placeholderLabel={albumSlug}
+            source={album.cover.mediumUrl}
+            sourceSet={coverSourceSet}
+            sizes={galleryCoverSizes}
             sx={{ height: '100%', borderRadius: 0 }}
           />
         </KkCard.Media>
@@ -47,7 +52,6 @@ export const AlbumCard: FC<AlbumCardProps> = ({ album }) => {
             </Typography>
           </KkCard.Meta>
           <KkCard.Title clamp={2}>{album.title}</KkCard.Title>
-          <KkCard.Text clamp={3}>{album.intro}</KkCard.Text>
           <KkCard.Footer>
             <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary' }}>
               {photoCountLabel}

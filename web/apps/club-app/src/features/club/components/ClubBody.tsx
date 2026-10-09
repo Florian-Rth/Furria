@@ -10,6 +10,7 @@ import { ClubError } from './ClubError';
 import { ClubLinks } from './ClubLinks';
 import { ClubSkeleton } from './ClubSkeleton';
 import { ClubStats } from './ClubStats';
+import { GalleryPanel } from './GalleryPanel';
 import { KeyPanel } from './KeyPanel';
 
 export const ClubBody: FC = () => {
@@ -28,6 +29,7 @@ export const ClubBody: FC = () => {
         <ClubStats />
         <AnnouncementsPanel />
         <CalendarPanel />
+        <GalleryPanel />
         <BoardPanel />
         <KeyPanel />
         <ClubLinks />

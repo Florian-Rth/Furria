@@ -8,4 +8,5 @@ public enum MediaRendition
     Large = 4,
     Poster = 5,
     Video = 6,
+    Uncropped = 7,
 }

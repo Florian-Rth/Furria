@@ -1,13 +1,9 @@
-import type { Album, Photo } from '@/features/gallery/gallery-content';
-import {
-  buildPhotoCountSuffix,
-  buildPhotoPlaceholderLabel,
-} from '@/features/gallery/gallery-content';
+import type { AlbumPhotoEntry } from '@/features/gallery/gallery-content';
+import { buildPhotoCountSuffix } from '@/features/gallery/gallery-content';
 import { canStepPhoto } from '@/features/gallery/photo-viewer-steps';
 
 export interface PhotoViewerFrame {
-  photo: Photo;
-  placeholderLabel: string;
+  entry: AlbumPhotoEntry;
   position: number;
   countSuffix: string;
   previousDisabled: boolean;
@@ -15,23 +11,22 @@ export interface PhotoViewerFrame {
 }
 
 export const resolvePhotoViewerFrame = (
-  album: Album,
+  entries: AlbumPhotoEntry[],
   shownIndex: number | null,
 ): PhotoViewerFrame | null => {
   if (shownIndex === null) {
     return null;
   }
 
-  const photo = album.photos[shownIndex];
-  if (photo === undefined) {
+  const entry = entries[shownIndex];
+  if (entry === undefined) {
     return null;
   }
 
-  const photoCount = album.photos.length;
+  const photoCount = entries.length;
 
   return {
-    photo,
-    placeholderLabel: buildPhotoPlaceholderLabel(album, shownIndex),
+    entry,
     position: shownIndex + 1,
     countSuffix: buildPhotoCountSuffix(photoCount),
     previousDisabled: !canStepPhoto(shownIndex, -1, photoCount),

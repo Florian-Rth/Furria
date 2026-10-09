@@ -18,7 +18,8 @@ internal static class AnnouncementRows
                     announcement.Author.Id,
                     announcement.Author.FirstName,
                     announcement.Author.LastName,
-                    announcement.Author.PortraitUrl
+                    announcement.Author.PortraitId,
+                    announcement.Author.Portrait!.RenderedAt
                 )
         );
 }
@@ -36,5 +37,6 @@ internal sealed record AnnouncementAuthorRow(
     int PersonId,
     string FirstName,
     string LastName,
-    string? PortraitUrl
+    int? PortraitId,
+    DateTimeOffset? PortraitRenderedAt
 );

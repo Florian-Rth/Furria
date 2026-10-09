@@ -15,4 +15,6 @@ public sealed record CompleteMediaJobCommand
     public required DateTimeOffset? CapturedAt { get; init; }
 
     public required string? Camera { get; init; }
+
+    public MediaCropDetails? AppliedCrop { get; init; }
 }

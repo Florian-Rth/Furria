@@ -13,6 +13,9 @@ interface KeyHolderRowProps {
 
 export const KeyHolderRow: FC<KeyHolderRowProps> = ({ entry }) => {
   const params = { personId: String(entry.personId) };
+  const avatar = (
+    <KkAvatar initials={entry.initials} source={entry.portrait} size="small" component="span" />
+  );
 
   const contactLink = (
     <KkButton component={Link} to={MEMBER_PATH} params={params} variant="text" size="small">
@@ -22,7 +25,7 @@ export const KeyHolderRow: FC<KeyHolderRowProps> = ({ entry }) => {
 
   return (
     <KkSinceRow
-      avatar={<KkAvatar initials={entry.initials} size="small" component="span" />}
+      avatar={avatar}
       title={entry.name}
       sinceLabel={KEY_HOLDER_SINCE_LABEL}
       sinceValue={entry.sinceValue}

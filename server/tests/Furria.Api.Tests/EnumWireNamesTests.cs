@@ -5,6 +5,7 @@ using Furria.Application.Management;
 using Furria.Application.Start;
 using Furria.Core.Events;
 using Furria.Core.Groups;
+using Furria.Core.Media;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -17,7 +18,7 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         string
     >
     {
-        [typeof(StartPanelKind)] = "calendar announcements mine groups toDos",
+        [typeof(StartPanelKind)] = "calendar announcements mine groups toDos gallery",
         [typeof(StartMineKind)] =
             "newRole newBoardSeat newGroupAdmin newGroupMembership newKey "
             + "contactChangedByOther membershipEnding membershipPaused milestone",
@@ -30,6 +31,7 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(TrainingPreviewState)] = "creatable venueTaken alreadyExists venueArchived",
         [typeof(EventSalesStatus)] =
             "announced presaleScheduled available fewLeft soldOut cancelled",
+        [typeof(MediaItemState)] = "processing ready failed",
     };
 
     private readonly ApiTestFixture _fixture;

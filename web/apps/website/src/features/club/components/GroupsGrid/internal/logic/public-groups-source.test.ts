@@ -8,6 +8,7 @@ const groups: PublicGroup[] = [
   {
     groupId: 1,
     name: 'Gruppe',
+    picture: null,
     description: 'Beschreibung',
     isRecruiting: true,
     groupKindName: null,

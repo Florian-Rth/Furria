@@ -25,6 +25,7 @@ export const KeyVenueTile: FC<KeyVenueTileProps> = ({ venue, sx }) => {
     summary.emptyLine === null ? (
       <KkAvatarStack
         initials={summary.initials}
+        portraits={summary.portraits}
         max={FACES_MAX}
         total={summary.holderCount}
         ringOn="paper"

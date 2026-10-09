@@ -1,6 +1,7 @@
 using System.Diagnostics.Contracts;
 using Furria.Application.Club;
 using Furria.Core.Club;
+using Furria.Infrastructure.Media;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Club;
@@ -41,7 +42,10 @@ public sealed partial class ClubService
             OfficeName = seat.OfficeName,
             FirstName = seat.FirstName,
             LastName = seat.LastName,
-            PortraitUrl = seat.PortraitUrl,
+            Portrait = MediaPictures.PublicBoardPortraitOf(
+                seat.PortraitId,
+                seat.PortraitRenderedAt
+            ),
         };
 
     private Task<PublicRecordRow?> PublicRecordAsync(CancellationToken ct) =>

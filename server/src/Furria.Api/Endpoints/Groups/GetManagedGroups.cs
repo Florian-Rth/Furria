@@ -1,5 +1,6 @@
 using FastEndpoints;
 using Furria.Api.Authorization;
+using Furria.Api.Media;
 using Furria.Application.Authorization;
 using Furria.Application.Groups;
 using Furria.Core.Groups;
@@ -67,6 +68,7 @@ public sealed class GetManagedGroups : EndpointWithoutRequest<GetManagedGroupsRe
             PersonId = person.PersonId,
             FirstName = person.FirstName,
             LastName = person.LastName,
+            Portrait = PictureDto.From(person.Portrait),
         };
 }
 

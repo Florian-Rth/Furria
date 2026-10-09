@@ -1,16 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EventSchema, toParagraphs } from './schemas';
-
-describe('toParagraphs', () => {
-  it.each([
-    [null, null],
-    ['  \n\n ', null],
-    ['Erster.\n\nZweiter.', ['Erster.', 'Zweiter.']],
-    ['Erster.\n  \n\nZweiter.\nNoch zweiter.', ['Erster.', 'Zweiter.\nNoch zweiter.']],
-  ])('splits %j into its paragraphs', (text, paragraphs) => {
-    expect(toParagraphs(text)).toEqual(paragraphs);
-  });
-});
+import { EventSchema } from './schemas';
 
 describe('EventSchema', () => {
   it('reads the instants of an event as Berlin wall-clock times', () => {

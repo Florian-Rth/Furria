@@ -1,4 +1,5 @@
 using Furria.Core.Club;
+using Furria.Core.Gallery;
 using Furria.Core.Groups;
 using Furria.Core.Identity;
 
@@ -10,6 +11,7 @@ public sealed class MediaItem : ITimestamped
     public const int ContentTypeLength = 64;
     public const int CameraLength = 120;
     public const int FailureReasonLength = 500;
+    public const int CaptionLength = 300;
 
     public int Id { get; set; }
 
@@ -45,9 +47,21 @@ public sealed class MediaItem : ITimestamped
 
     public MediaCrop? Crop { get; set; }
 
+    public DateTimeOffset? RenderedAt { get; set; }
+
     public int? UploadedByPersonId { get; set; }
 
     public DateTimeOffset UploadedAt { get; set; }
+
+    public int? AlbumId { get; set; }
+
+    public DateTimeOffset? PlacedAt { get; set; }
+
+    public DateTimeOffset? BinnedAt { get; set; }
+
+    public int? SelectionPosition { get; set; }
+
+    public string? Caption { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }
 
@@ -58,4 +72,6 @@ public sealed class MediaItem : ITimestamped
     public Group? OwnerGroup { get; set; }
 
     public Person? UploadedBy { get; set; }
+
+    public Album? Album { get; set; }
 }

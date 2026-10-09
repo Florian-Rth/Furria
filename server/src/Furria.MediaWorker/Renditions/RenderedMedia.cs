@@ -1,3 +1,5 @@
+using Furria.Application.Media;
+
 namespace Furria.MediaWorker.Renditions;
 
 public sealed record RenderedMedia
@@ -11,4 +13,6 @@ public sealed record RenderedMedia
     public DateTimeOffset? CapturedAt { get; init; }
 
     public string? Camera { get; init; }
+
+    public MediaCropDetails? AppliedCrop { get; init; }
 }

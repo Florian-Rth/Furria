@@ -40,7 +40,8 @@ English rendering anywhere else, so two translations never drift apart.
 | role holding / holder | Inhaberschaft / Inhaber | `RoleHolding` |
 | board / board office / board seat | Vorstand / Vorstandsfunktion / Vorstandssitz | `BoardOffice`, `BoardSeat` |
 | contact details | Kontaktdaten | — |
-| portrait | Porträt | — |
+| portrait | Porträt | `Person.Portrait` (`MediaItem`) |
+| group picture | Gruppenbild | `Group.Picture` (`MediaItem`) |
 | account / invitation | Account / Einladung | `Account`, — |
 | passkey | Passkey | `account_passkey` (Identity) |
 | access recovery | Zugang wiederherstellen | `InvitationPurpose.Recovery` |
@@ -340,10 +341,21 @@ portrait is **provided, never taken**: the person hands it over to be shown, and
 consent — which is why it is untouched by the open question about event photography. It is
 **public exactly while she holds a seat in a public board office** and nowhere else; there is no
 per-person switch (ruled 2026-10-02, L5 shaping — reverses the 2026-09-19 "a switch she owns,
-never flipped by a board seat").
+never flipped by a board seat"). It is a **media item** she owns, cut to **4:5** and cut
+non-destructively — the item keeps the crop, a new cut needs no new upload; the avatar is the
+centred circle of that cut. She sets it herself, or `persons.manage` does; it goes with her when
+she is erased (built 2026-10-08, L7a S3).
 _UI copy_: Porträt
 _Avoid_: photo (that is event photography — a different question entirely), avatar (that is how
 a portrait is *displayed*), a second picture for the website, a per-person publication switch
+
+**Group picture**:
+The **one** picture of a **group**, a **media item** the group owns, cut to **3:2** the same
+non-destructive way as a portrait. It fills the group hub's opener and the group's card on the
+website; without one the group shows its **group tone**. Its group admin or `groups.manage` sets
+it (built 2026-10-08, L7a S3).
+_UI copy_: Gruppenbild
+_Avoid_: group photo, cover, banner
 
 **Group admin** (`GroupAdmin`):
 The person responsible for a group — set in group management, dated, several per group possible.

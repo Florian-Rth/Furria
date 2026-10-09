@@ -9,6 +9,9 @@ public readonly record struct MediaOwner
     private const string PersonPrefix = "person:";
     private const string GroupPrefix = "group:";
 
+    public const double PortraitAspect = 4.0 / 5;
+    public const double GroupPictureAspect = 3.0 / 2;
+
     public MediaOwnerKind Kind { get; }
 
     public int? Id { get; }
@@ -25,6 +28,14 @@ public readonly record struct MediaOwner
         Accepts(MediaKind.Video)
             ? MediaLimits.MaxBytesOf(MediaKind.Video)
             : MediaLimits.MaxBytesOf(MediaKind.Photo);
+
+    public double? PictureAspect =>
+        Kind switch
+        {
+            MediaOwnerKind.Person => PortraitAspect,
+            MediaOwnerKind.Group => GroupPictureAspect,
+            _ => null,
+        };
 
     private MediaOwner(MediaOwnerKind kind, int? id)
     {

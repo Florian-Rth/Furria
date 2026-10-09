@@ -14,6 +14,8 @@ import { KkIcon } from '../KkIcon';
 import { KkIconButton } from '../KkIconButton';
 import { KK_DARK_SCHEME_ATTRIBUTE } from '../theme';
 import { kkTokens } from '../tokens';
+import { KkLoupeFilm } from './KkLoupeFilm';
+import { KkLoupeLatent } from './KkLoupeLatent';
 import type { KkLoupeIntents } from './use-loupe-gestures';
 import { useLoupeGestures } from './use-loupe-gestures';
 
@@ -21,10 +23,14 @@ const { gallery } = kkTokens;
 const darkScheme = { [KK_DARK_SCHEME_ATTRIBUTE]: '' };
 const STRIP_FRAME = 52;
 
+const focusOnMount = (node: HTMLDivElement | null): void => {
+  node?.focus();
+};
+
 export interface KkLoupeStripFrame {
   id: string;
   label: string;
-  source: string;
+  source?: string;
   current: boolean;
 }
 
@@ -34,16 +40,24 @@ export interface KkLoupeLabels {
   download: string;
   previousScene: string;
   nextScene: string;
+  play: string;
+  developing: string;
+}
+
+export interface KkLoupeVideo {
+  source: string;
+  duration: string;
 }
 
 interface KkLoupeProps extends KkLoupeIntents {
-  source: string;
+  source?: string;
   alt: string;
   counter: string;
   time: string;
   scene: string;
   facts: string;
-  video?: string;
+  video?: KkLoupeVideo;
+  caption?: string;
   strip: readonly KkLoupeStripFrame[];
   labels: KkLoupeLabels;
   onStripSelect: (id: string) => void;
@@ -57,6 +71,7 @@ export const KkLoupe: FC<KkLoupeProps> = ({
   scene,
   facts,
   video,
+  caption,
   strip,
   labels,
   onStripSelect,
@@ -87,14 +102,23 @@ export const KkLoupe: FC<KkLoupeProps> = ({
         ...focusRing(theme),
       })}
     >
-      <Box
-        component="img"
-        src={frame.source}
-        alt=""
-        sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-      />
+      {frame.source === undefined ? null : (
+        <Box
+          component="img"
+          src={frame.source}
+          alt=""
+          sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+        />
+      )}
     </ButtonBase>
   ));
+
+  const captionLine =
+    caption === undefined ? null : (
+      <Typography variant="body2" component="p" sx={{ color: 'text.primary' }}>
+        {caption}
+      </Typography>
+    );
 
   return (
     <Stack
@@ -105,6 +129,7 @@ export const KkLoupe: FC<KkLoupeProps> = ({
       onKeyDown={gestures.onKeyDown}
       {...darkScheme}
       data-kk-loupe
+      ref={focusOnMount}
       sx={{
         position: 'fixed',
         inset: 0,
@@ -145,54 +170,37 @@ export const KkLoupe: FC<KkLoupeProps> = ({
         sx={{ flex: 1, minHeight: 0, position: 'relative', touchAction: 'none' }}
       >
         <motion.div
-          key={source}
+          key={source ?? alt}
           initial={opening}
           animate={opened}
           transition={{ duration: gallery.loupe.openSeconds, ease: [0.2, 0.8, 0.2, 1] }}
           style={{ position: 'absolute', inset: 0, ...photoShift }}
         >
-          <Box
-            component="img"
-            src={source}
-            alt={alt}
-            draggable={false}
-            sx={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'contain',
-              display: 'block',
-              userSelect: 'none',
-            }}
-          />
-          {video === undefined ? null : (
-            <Stack
+          {source === undefined ? (
+            <KkLoupeLatent label={labels.developing} />
+          ) : (
+            <Box
+              component="img"
+              src={source}
+              alt={alt}
+              draggable={false}
               sx={{
-                position: 'absolute',
-                inset: 0,
-                alignItems: 'center',
-                justifyContent: 'center',
-                rowGap: 1,
-                color: kkTokens.overlay.onPhotoText,
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain',
+                display: 'block',
+                userSelect: 'none',
               }}
-            >
-              <Box
-                sx={{
-                  display: 'grid',
-                  placeItems: 'center',
-                  width: 72,
-                  height: 72,
-                  borderRadius: '50%',
-                  bgcolor: 'rgba(5,6,8,0.6)',
-                  border: `${kkTokens.line.section}px solid`,
-                  borderColor: 'warning.main',
-                }}
-              >
-                <KkIcon name="play" size="large" />
-              </Box>
-              <Typography variant="h3" component="span">
-                {video}
-              </Typography>
-            </Stack>
+            />
+          )}
+          {video === undefined || source === undefined ? null : (
+            <KkLoupeFilm
+              key={video.source}
+              source={video.source}
+              poster={source}
+              duration={video.duration}
+              playLabel={labels.play}
+            />
           )}
         </motion.div>
       </Box>
@@ -214,6 +222,7 @@ export const KkLoupe: FC<KkLoupeProps> = ({
             {facts}
           </Typography>
         </Stack>
+        {captionLine}
         <Stack direction="row" sx={{ alignItems: 'center', columnGap: 0.5 }}>
           <KkIconButton
             label={labels.previousScene}

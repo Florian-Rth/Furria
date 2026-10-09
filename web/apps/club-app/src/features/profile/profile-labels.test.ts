@@ -7,6 +7,7 @@ const PAULA: MePerson = {
   id: 7,
   firstName: 'Paula',
   lastName: 'Brendel',
+  portrait: null,
   email: 'paula@example.org',
   phone: '0170 44 21 883',
   street: 'Am Anger 7',

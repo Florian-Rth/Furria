@@ -43,7 +43,7 @@ export const OlderSessionEntry: FC<OlderSessionEntryProps> = ({
       >
         <OlderSessionAlbumList>
           {group.albums.map((album) => (
-            <OlderSessionAlbumLink key={album.slug} album={album} />
+            <OlderSessionAlbumLink key={album.albumId} album={album} />
           ))}
         </OlderSessionAlbumList>
       </OlderSessionPanel>

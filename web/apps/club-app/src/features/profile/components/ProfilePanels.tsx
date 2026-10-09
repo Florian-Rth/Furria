@@ -8,6 +8,7 @@ import { PROFILE_SECTION_TITLES } from '../profile-labels';
 import { ProfileContactPanel } from './ProfileContactPanel';
 import { ProfileGroupsPanel } from './ProfileGroupsPanel';
 import { ProfileMembershipPanel } from './ProfileMembershipPanel';
+import { ProfilePortraitPanel } from './ProfilePortraitPanel';
 import { ProfileSecurityPanel } from './ProfileSecurityPanel';
 import { ProfileVisibilityPanel } from './ProfileVisibilityPanel';
 import { ProfileVisibilityPreview } from './ProfileVisibilityPreview';
@@ -35,6 +36,7 @@ export const ProfilePanels: FC<ProfilePanelsProps> = ({ me }) => {
       </Grid>
       <Grid size={{ xs: 12, desktop: 5 }} sx={{ minWidth: 0 }}>
         <KkPanelStack>
+          <ProfilePortraitPanel person={person} />
           <KkPanelSection title={PROFILE_SECTION_TITLES.data}>
             <KkPanel>
               <KkFieldRow label={BIRTH_DATE_LABEL} value={birthDate} />

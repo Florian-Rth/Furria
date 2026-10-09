@@ -193,6 +193,7 @@ public sealed class GetPublicGroupsTests : IClassFixture<ApiTestFixture>
             [
                 "groupId",
                 "name",
+                "picture",
                 "description",
                 "isRecruiting",
                 "groupKindName",

@@ -60,6 +60,30 @@ public sealed class DeleteCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_KeepItsAlbumInTheEntrysSession_When_TheEntryIsDeleted()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Club(club => club.AddCalendarEntry("club-meeting", ClubMeeting, MeetingStart))
+                    .Gallery(gallery =>
+                        gallery.AddAlbum("meeting-album", ClubMeeting, "club-meeting")
+                    ),
+            ct
+        );
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+
+        var response = await DiscardAsync(client, ctx.Club.CalendarEntries.IdOf("club-meeting"));
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx
+            .Expected.Album(ctx.Gallery.Albums.IdOf("meeting-album"))
+            .ToBeLinkedTo(null, MeetingStart.Year - 1)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_LetTheGroupAdminDelete_When_HerGroupOwnsTheEntry()
     {
         var ct = TestContext.Current.CancellationToken;

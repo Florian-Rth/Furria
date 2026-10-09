@@ -1,3 +1,4 @@
+using Furria.Application.Media;
 using Furria.Core.Groups;
 
 namespace Furria.Application.Groups;
@@ -7,6 +8,8 @@ public sealed record GroupDetails
     public required int GroupId { get; init; }
 
     public required string Name { get; init; }
+
+    public PictureDetails? Picture { get; init; }
 
     public required string Description { get; init; }
 

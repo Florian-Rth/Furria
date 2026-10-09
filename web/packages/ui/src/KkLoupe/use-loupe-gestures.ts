@@ -30,13 +30,22 @@ const KEY_INTENTS: Record<string, (intents: KkLoupeIntents) => void> = {
 
 const AT_REST = { x: 0, y: 0 };
 
+export const LOUPE_CONTROL_ATTRIBUTE = 'data-kk-loupe-control';
+
+const isOnControl = (target: EventTarget): boolean =>
+  target instanceof Element && target.closest(`[${LOUPE_CONTROL_ATTRIBUTE}]`) !== null;
+
 export const useLoupeGestures = (intents: KkLoupeIntents): KkLoupeGestures => {
   const [origin, setOrigin] = useState<{ x: number; y: number } | null>(null);
   const [drag, setDrag] = useState(AT_REST);
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>): void => {
     const intent = KEY_INTENTS[event.key];
-    if (intent === undefined || event.repeat) {
+    if (
+      intent === undefined ||
+      event.repeat ||
+      (event.key !== 'Escape' && isOnControl(event.target))
+    ) {
       return;
     }
     event.preventDefault();
@@ -44,6 +53,9 @@ export const useLoupeGestures = (intents: KkLoupeIntents): KkLoupeGestures => {
   };
 
   const onPointerDown = (event: PointerEvent<HTMLDivElement>): void => {
+    if (isOnControl(event.target)) {
+      return;
+    }
     event.currentTarget.setPointerCapture(event.pointerId);
     setOrigin({ x: event.clientX, y: event.clientY });
   };

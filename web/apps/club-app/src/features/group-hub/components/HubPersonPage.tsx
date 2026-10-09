@@ -21,7 +21,7 @@ import {
   PERSON_SCREEN_UNREACHABLE_NOTE,
   toHubEditorOrigin,
 } from '../group-hub-labels';
-import { toHubPeople, toPrefillPerson } from '../hub-people';
+import { toHubPeople, toHubPortrait, toPrefillPerson } from '../hub-people';
 import type { GroupHub } from '../schemas';
 
 const MEMBER_PATH = '/members/$personId';
@@ -42,6 +42,7 @@ export const HubPersonPage: FC<HubPersonPageProps> = ({ hub, personId }) => {
   const { isAffiliated } = usePermissions();
   const people = toHubPeople(hub.members, hub.admins);
   const person = toPrefillPerson(people, personId);
+  const portrait = toHubPortrait(people, personId);
   const name = person === null ? '' : `${person.firstName} ${person.lastName}`;
   const canOpenProfile = isAffiliated && hub.members.some((member) => member.personId === personId);
 
@@ -146,6 +147,7 @@ export const HubPersonPage: FC<HubPersonPageProps> = ({ hub, personId }) => {
         <Stack direction="row" sx={{ alignItems: 'center', gap: HEAD_GAP, minWidth: 0 }}>
           <KkAvatar
             initials={toInitials(person?.firstName ?? '', person?.lastName ?? '')}
+            source={portrait}
             size="large"
           />
           {openProfile}

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { toBerlinWallClock } from '@/lib/date';
+import { toParagraphs } from '@/lib/paragraphs';
 
 export const SALES_STATUSES = [
   'announced',
@@ -15,16 +16,6 @@ export const SalesStatusSchema = z.enum(SALES_STATUSES);
 export type SalesStatus = z.infer<typeof SalesStatusSchema>;
 
 const WallClockSchema = z.iso.datetime({ offset: true }).transform(toBerlinWallClock);
-
-const PARAGRAPH_BREAK = /\n\s*\n/;
-
-export const toParagraphs = (text: string | null): string[] | null => {
-  const paragraphs = (text ?? '')
-    .split(PARAGRAPH_BREAK)
-    .map((paragraph) => paragraph.trim())
-    .filter((paragraph) => paragraph.length > 0);
-  return paragraphs.length === 0 ? null : paragraphs;
-};
 
 export const EventVenueSchema = z.object({
   name: z.string().min(1),

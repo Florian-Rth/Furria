@@ -125,7 +125,7 @@ public sealed class GetClubHubAnnouncementsTests : IClassFixture<ApiTestFixture>
                 Assert.Equal(ctx.Identity.People.IdOf("alice"), newest.Author.PersonId);
                 Assert.Equal("Alice", newest.Author.FirstName);
                 Assert.Equal("Muster", newest.Author.LastName);
-                Assert.Null(newest.Author.PortraitUrl);
+                Assert.Null(newest.Author.Portrait);
                 Assert.Null(newest.Author.OfficeName);
             }
         );

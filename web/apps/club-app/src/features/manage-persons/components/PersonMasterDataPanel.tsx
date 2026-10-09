@@ -1,9 +1,11 @@
 import type { KkPanelAction } from '@furria/ui';
-import { KkFieldRow, KkPanel, KkPanelSection, KkSwitchRow } from '@furria/ui';
+import { KkFieldRow, KkHubRow, KkPanel, KkPanelSection, KkSwitchRow } from '@furria/ui';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { useMeQuery } from '@/features/session';
+import { toPortraitStatusLine } from '@/features/pictures';
+import { useMeQuery, usePermissions } from '@/features/session';
 import { toLandingKey } from '@/features/write';
+import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { formatAddress, formatIsoDay } from '@/lib/membership-labels';
 import { useContactVisibilitySwitch } from '../hooks/use-contact-visibility-switch';
 import {
@@ -23,6 +25,7 @@ const ADDRESS_LABEL = 'Adresse';
 const BIRTH_DATE_LABEL = 'Geburtsdatum';
 const VISIBILITY_LABEL = 'Kontaktdaten für Mitglieder sichtbar';
 const MISSING_VALUE = 'nicht hinterlegt';
+const PORTRAIT_LABEL = 'Porträt';
 
 interface PersonMasterDataPanelProps {
   person: PersonDetails;
@@ -35,6 +38,7 @@ export const PersonMasterDataPanel: FC<PersonMasterDataPanelProps> = ({
 }) => {
   const visibility = useContactVisibilitySwitch(person);
   const me = useMeQuery();
+  const { has } = usePermissions();
   const contactChangeNote = toContactChangeNote(
     person.contactChange,
     me.data?.person?.id ?? null,
@@ -42,6 +46,17 @@ export const PersonMasterDataPanel: FC<PersonMasterDataPanelProps> = ({
   );
   const address = formatAddress(person.street, person.zip, person.city);
   const landingKey = toLandingKey('person', person.personId);
+  const portraitPath = `/manage/persons/${person.personId}/portrait`;
+  const portraitLine = toPortraitStatusLine(person.portrait);
+  const portraitRow = has(PERMISSION_KEYS.personsManage) ? (
+    <KkHubRow
+      label={PORTRAIT_LABEL}
+      icon="person"
+      meta={portraitLine}
+      component={Link}
+      to={portraitPath}
+    />
+  ) : null;
 
   const action: KkPanelAction = {
     label: EDIT_LABEL,
@@ -74,6 +89,7 @@ export const PersonMasterDataPanel: FC<PersonMasterDataPanelProps> = ({
           description={VISIBILITY_DESCRIPTION}
           busy={visibility.busy}
         />
+        {portraitRow}
       </KkPanel>
     </KkPanelSection>
   );

@@ -8,7 +8,6 @@ import {
 } from '@furria/ui';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { GALLERY_LAB_ENTRY, GALLERY_LAB_META, GALLERY_PATH } from '@/features/gallery-lab';
 import { MANAGE_ORIGIN } from '@/features/session';
 import {
   LAB_GREETINGS,
@@ -43,20 +42,7 @@ export const LabHubPage: FC = () => {
 
   return (
     <KkScreen kind="detail" title={LAB_TITLE} origin={MANAGE_ORIGIN} header={header}>
-      <KkPanelStack>
-        <KkPanelSection title={GALLERY_LAB_ENTRY}>
-          <KkPanel>
-            <KkHubRow
-              label={GALLERY_LAB_ENTRY}
-              icon="gallery"
-              meta={GALLERY_LAB_META}
-              component={Link}
-              to={GALLERY_PATH}
-            />
-          </KkPanel>
-        </KkPanelSection>
-        {sections}
-      </KkPanelStack>
+      <KkPanelStack>{sections}</KkPanelStack>
     </KkScreen>
   );
 };

@@ -278,7 +278,7 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
    opens the one scope and inserts Person → Membership → MembershipPause → FeeReduction → Account
    → GroupKind → Group → GroupMembership → GroupAdmin → Role → RolePermission → RoleHolding →
    Session → Announcement → Venue → TrainingSlot → KeyHolding → BoardOffice → BoardSeat →
-   CalendarEntry → AttendanceResponse, one
+   CalendarEntry → AttendanceResponse → Album → GalleryItem (→ album covers), one
    `SaveChanges` per layer, and uniquifies emails behind the alias so unique indexes never
    collide. A sub-builder records its parents by alias, not by order: `AddGroupAdmin` may name a
    group a later `AddGroup` call declares.
@@ -459,12 +459,31 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
    (composed by `AddMediaWorker` against the fixture's database, media root and clock) until no
    photo or video job is claimable; `ClaimMediaJobAsync(kind)` claims one and abandons it (a
    worker that died), `RegenerateMediaAsync(command)` is the `regenerate` command,
-   `CropMediaItemDirectlyAsync` stands in for the crop frame until S3. Retries and lost leases are
+   `CropMediaItemDirectlyAsync` sets a crop beside the endpoints. Retries and lost leases are
    reached with `AtLaterTimeAsync`. `MediaSamples.Sample(name)` reads the committed photos in
    `Media/Samples` (EXIF orientation, GPS, capture time, an iPhone HEIC); `JpegOfSize`,
    `VideoAsync(ffmpegArgs)` and `RotatedAsync` make the rest at test time. `RenditionProbe` reads
    what was rendered. `Expected.MediaItem(id)` adds `ToBeReady(width, height)`, `ToBeIn(state)`,
    `ToBeCapturedAt`, `ToLastAbout`, `ToAwaitARetry(notBefore)` and `ToHaveFailedWith(fragment)`.
+15. **The gallery toolkit (L7a S4)** — `builder.Gallery(…)` takes `AddAlbum(alias, title,
+   calendarEntryAlias, sessionStartYear, publishedAt, binnedAt, coverItemAlias)` and
+   `AddGalleryItem(alias, uploaderAlias, albumAlias, kind, capturedAt, uploadedAt, placedAt,
+   binnedAt, selectionPosition, caption, state, fileName)`. A gallery item is inserted as a ready
+   (unless `state` says otherwise) gallery-owned media item **without files** — a test that needs
+   bytes places them with `PlaceRenditionAsync`. No `albumAlias` puts it in its uploader's inbox, no
+   `uploaderAlias` in the ownerless one; `placedAt` defaults to the upload time, which defaults to
+   the clock's now. Aliases resolve through `ctx.Gallery.{Albums, Items}`. `Expected.Album(id)`
+   (`ToBeTitled`, `ToBeLinkedTo`, `ToHaveChosenCover`, `ToBePublishedAt`, `ToBeUnpublished`,
+   `ToBeBinnedAt`, `ToBeOutOfTheBin`, `ToNotExist`) and `Expected.GalleryItem(id)`
+   (`ToSitInTheInboxOf(personId | null)`, `ToBePlacedIn`, `ToBeBinnedFrom`, `ToBeSelectedAt`,
+   `ToBeUnselected`, `ToNotExist`) read the result; `PurgeGalleryBinAsync` runs the bin's purge once.
+16. **Portraits and group pictures (L7a S3)** — `PictureSteps` (`Furria.Api.Tests/Media`) uploads
+   a picture over tus (`UploadedPortraitAsync`) or uploads it and stands in for the worker
+   (`RenderedPortraitAsync`, `RenderedGroupPictureAsync` → `RenderMediaItemDirectlyAsync`: *ready*,
+   rendered now, 800×1000, the whole photo as crop, no job), so read surfaces carry picture URLs
+   without libvips. `TusUploadSteps` takes a crop token (`PictureCrop.Token`) on `CreateAsync` /
+   `UploadAsync`. `Expected.MediaItem(id)` adds `ToBeThePortraitOf(personId)`,
+   `ToBeThePictureOfGroup(groupId)`, `ToBeCroppedTo(crop)` and `ToBeGone()`.
 
 ### Traps worth knowing
 

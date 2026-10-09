@@ -5,6 +5,8 @@ import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import type { BoardTile } from '@/features/club/people-content';
 
+const PORTRAIT_SIZES = '(min-width: 900px) 18rem, 50vw';
+
 interface PersonPortraitProps {
   tile: BoardTile;
 }
@@ -25,6 +27,8 @@ export const PersonPortrait: FC<PersonPortraitProps> = ({ tile }) => (
         orientation="portrait"
         placeholderLabel={tile.initials}
         source={tile.portraitUrl}
+        sourceSet={tile.portraitSourceSet}
+        sizes={PORTRAIT_SIZES}
         tint={tile.tint}
       />
     </Box>

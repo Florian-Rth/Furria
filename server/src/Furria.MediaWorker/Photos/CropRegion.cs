@@ -1,12 +1,12 @@
 using System.Diagnostics.Contracts;
-using Furria.Application.Media;
+using Furria.Core.Media;
 
 namespace Furria.MediaWorker.Photos;
 
 public readonly record struct CropRegion(int Left, int Top, int Width, int Height)
 {
     [Pure]
-    public static CropRegion Of(MediaCropDetails crop, int imageWidth, int imageHeight)
+    public static CropRegion Of(PictureCrop crop, int imageWidth, int imageHeight)
     {
         var left = Math.Clamp(Pixel(crop.Left, imageWidth), 0, imageWidth - 1);
         var top = Math.Clamp(Pixel(crop.Top, imageHeight), 0, imageHeight - 1);

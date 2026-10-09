@@ -33,6 +33,29 @@ public sealed class MediaItemConfiguration : IEntityTypeConfiguration<MediaItem>
                     """
                 );
                 table.HasCheckConstraint("ck_media_item_byte_size", "byte_size > 0");
+                table.HasCheckConstraint(
+                    "ck_media_item_album_owner",
+                    $"album_id IS NULL OR owner_kind = '{MediaOwnerKind.Gallery}'"
+                );
+                table.HasCheckConstraint(
+                    "ck_media_item_placed",
+                    "(album_id IS NULL) = (placed_at IS NULL)"
+                );
+                table.HasCheckConstraint(
+                    "ck_media_item_binned",
+                    "binned_at IS NULL OR album_id IS NOT NULL"
+                );
+                table.HasCheckConstraint(
+                    "ck_media_item_selection",
+                    $"""
+                    selection_position IS NULL
+                    OR (selection_position > 0 AND album_id IS NOT NULL AND binned_at IS NULL AND kind = '{MediaKind.Photo}')
+                    """
+                );
+                table.HasCheckConstraint(
+                    "ck_media_item_caption",
+                    "caption IS NULL OR selection_position IS NOT NULL"
+                );
             }
         );
         builder.HasKey(item => item.Id);
@@ -71,7 +94,17 @@ public sealed class MediaItemConfiguration : IEntityTypeConfiguration<MediaItem>
             .HasConstraintName("fk_media_item_person_uploaded_by_person_id")
             .OnDelete(DeleteBehavior.SetNull);
 
+        builder.Property(item => item.Caption).HasMaxLength(MediaItem.CaptionLength);
+        builder
+            .HasOne(item => item.Album)
+            .WithMany(album => album.Items)
+            .HasForeignKey(item => item.AlbumId)
+            .HasConstraintName("fk_media_item_album_album_id")
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasIndex(item => item.StorageKey).IsUnique();
+        builder.HasIndex(item => item.AlbumId);
+        builder.HasIndex(item => item.PlacedAt);
         builder.HasIndex(item => item.OwnerPersonId);
         builder.HasIndex(item => item.OwnerGroupId);
         builder.HasIndex(item => item.UploadedByPersonId);

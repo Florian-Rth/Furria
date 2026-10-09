@@ -1,10 +1,14 @@
 using FastEndpoints;
 using Furria.Api.Authorization;
+using Furria.Api.Endpoints.Gallery;
+using Furria.Api.Media;
 using Furria.Application.Management;
 using Furria.Application.Start;
 using Furria.Core.Club;
 using Furria.Core.Groups;
+using Furria.Core.Media;
 using Furria.Infrastructure.Authorization;
+using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Start;
 
 namespace Furria.Api.Endpoints.Start;
@@ -13,11 +17,17 @@ public sealed class GetStart : EndpointWithoutRequest<GetStartResponse>
 {
     private readonly StartService _startService;
     private readonly PermissionAuthorizer _authorizer;
+    private readonly MediaUrlSigner _signer;
 
-    public GetStart(StartService startService, PermissionAuthorizer authorizer)
+    public GetStart(
+        StartService startService,
+        PermissionAuthorizer authorizer,
+        MediaUrlSigner signer
+    )
     {
         _startService = startService;
         _authorizer = authorizer;
+        _signer = signer;
     }
 
     public override void Configure()
@@ -46,7 +56,7 @@ public sealed class GetStart : EndpointWithoutRequest<GetStartResponse>
         await Send.OkAsync(ToResponse(start), cancellation: ct);
     }
 
-    private static GetStartResponse ToResponse(StartDetails start) =>
+    private GetStartResponse ToResponse(StartDetails start) =>
         new()
         {
             AsOf = start.AsOf,
@@ -56,7 +66,7 @@ public sealed class GetStart : EndpointWithoutRequest<GetStartResponse>
             Panels = [.. start.Panels.Select(ToDto)],
         };
 
-    private static StartPanelDto ToDto(StartPanel panel) =>
+    private StartPanelDto ToDto(StartPanel panel) =>
         new()
         {
             Kind = panel.Kind,
@@ -66,6 +76,28 @@ public sealed class GetStart : EndpointWithoutRequest<GetStartResponse>
             Mine = panel.Mine?.Select(ToDto).ToList(),
             GroupMoments = panel.GroupMoments?.Select(ToDto).ToList(),
             ToDos = panel.ToDos?.Select(ToDto).ToList(),
+            Albums = panel.Albums?.Select(ToDto).ToList(),
+        };
+
+    private StartAlbumDto ToDto(StartAlbumSummary album) =>
+        new()
+        {
+            AlbumId = album.AlbumId,
+            Title = album.Title,
+            ItemCount = album.ItemCount,
+            CreatedAt = album.CreatedAt,
+            Cover = album.Cover is { } cover
+                ? new StartAlbumCoverDto
+                {
+                    MediaItemId = cover.MediaItemId,
+                    Kind = cover.Kind,
+                    State = cover.State,
+                    Width = cover.Width,
+                    Height = cover.Height,
+                    CapturedAt = cover.CapturedAt,
+                    Urls = GalleryMediaUrls.Of(_signer, cover.MediaItemId, cover.Kind),
+                }
+                : null,
         };
 
     private static StartEntryDto ToDto(StartEntrySummary entry) =>
@@ -129,7 +161,7 @@ public sealed class GetStart : EndpointWithoutRequest<GetStartResponse>
             PersonId = person.PersonId,
             FirstName = person.FirstName,
             LastName = person.LastName,
-            PortraitUrl = person.PortraitUrl,
+            Portrait = PictureDto.From(person.Portrait),
             OfficeName = person.OfficeName,
         };
 
@@ -201,6 +233,38 @@ public sealed record StartPanelDto
     public required IReadOnlyList<StartGroupMomentDto>? GroupMoments { get; init; }
 
     public required IReadOnlyList<StartToDoDto>? ToDos { get; init; }
+
+    public required IReadOnlyList<StartAlbumDto>? Albums { get; init; }
+}
+
+public sealed record StartAlbumDto
+{
+    public required int AlbumId { get; init; }
+
+    public required string Title { get; init; }
+
+    public required int ItemCount { get; init; }
+
+    public required DateTimeOffset CreatedAt { get; init; }
+
+    public required StartAlbumCoverDto? Cover { get; init; }
+}
+
+public sealed record StartAlbumCoverDto
+{
+    public required int MediaItemId { get; init; }
+
+    public required MediaKind Kind { get; init; }
+
+    public required MediaItemState State { get; init; }
+
+    public required int? Width { get; init; }
+
+    public required int? Height { get; init; }
+
+    public required DateTimeOffset? CapturedAt { get; init; }
+
+    public required GalleryMediaUrlsDto Urls { get; init; }
 }
 
 public sealed record StartEntryDto
@@ -295,7 +359,7 @@ public sealed record StartPersonDto
 
     public required string LastName { get; init; }
 
-    public required string? PortraitUrl { get; init; }
+    public required PictureDto? Portrait { get; init; }
 
     public required string? OfficeName { get; init; }
 }

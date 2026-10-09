@@ -2,6 +2,9 @@ using System.Net;
 using System.Text.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Club;
+using Furria.Api.Tests.Media;
+using Furria.Core.Media;
+using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -10,7 +13,6 @@ namespace Furria.Api.Tests.Club;
 public sealed class GetPublicBoardTests : IClassFixture<ApiTestFixture>
 {
     private const string PublicBoardRoute = "/api/public/board";
-    private const string NadinesPortrait = "https://media.furria.test/portraits/nadine.jpg";
 
     private static readonly DateOnly SeatedIn2023 = new(2023, 11, 11);
     private static readonly DateOnly SeatedIn2016 = new(2016, 11, 11);
@@ -48,7 +50,7 @@ public sealed class GetPublicBoardTests : IClassFixture<ApiTestFixture>
                         builder
                             .Identity(identity =>
                                 identity
-                                    .AddPerson("nadine", "Nadine", "Wolters", NadinesPortrait)
+                                    .AddPerson("nadine", "Nadine", "Wolters")
                                     .AddPerson("tom", "Tom", "Kasse")
                             )
                             .Club(club =>
@@ -66,9 +68,43 @@ public sealed class GetPublicBoardTests : IClassFixture<ApiTestFixture>
                 Assert.Equal("Präsident", seat.OfficeName);
                 Assert.Equal("Nadine", seat.FirstName);
                 Assert.Equal("Wolters", seat.LastName);
-                Assert.Equal(NadinesPortrait, seat.PortraitUrl);
             }
         );
+    }
+
+    [Fact]
+    public async Task Should_ShowThePortraitToAnyone_When_ItsHolderSitsInAPublicOffice()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await SeatNadineInAPublicOfficeAsync(ct);
+        var portraitId = await PictureSteps.RenderedPortraitAsync(
+            _fixture,
+            await ctx.Identity.ManagingLoginClientAsync(ct),
+            ctx.Identity.People.IdOf("nadine"),
+            ct
+        );
+        await _fixture.PlaceRenditionAsync(portraitId, MediaRendition.Small, [1, 2, 3], ct);
+
+        var seat = Assert.Single((await ReadTheBoardAsync()).Seats);
+        var portrait = await _fixture.CreateClient().GetAsync(seat.Portrait!.SmallUrl, ct);
+
+        Assert.Equal(HttpStatusCode.OK, portrait.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_ShowNoPortraitYet_When_ItsFirstRenditionsAreStillBeingMade()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await SeatNadineInAPublicOfficeAsync(ct);
+        await PictureSteps.UploadedPortraitAsync(
+            await ctx.Identity.ManagingLoginClientAsync(ct),
+            ctx.Identity.People.IdOf("nadine"),
+            ct
+        );
+
+        var seat = Assert.Single((await ReadTheBoardAsync()).Seats);
+
+        Assert.Null(seat.Portrait);
     }
 
     [Fact]
@@ -175,12 +211,24 @@ public sealed class GetPublicBoardTests : IClassFixture<ApiTestFixture>
                 using var document = JsonDocument.Parse(payload);
                 var seat = document.RootElement.GetProperty("seats").EnumerateArray().Single();
                 Assert.Equal(
-                    ["officeName", "firstName", "lastName", "portraitUrl"],
+                    ["officeName", "firstName", "lastName", "portrait"],
                     seat.EnumerateObject().Select(field => field.Name)
                 );
             }
         );
     }
+
+    private Task<SeededContext> SeatNadineInAPublicOfficeAsync(CancellationToken ct) =>
+        _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddPerson("nadine", "Nadine", "Wolters"))
+                    .Club(club =>
+                        club.AddBoardOffice("praesident", "Präsident", 1, isPublic: true)
+                            .AddBoardSeat("nadine-p", "praesident", "nadine", SeatedIn2023)
+                    ),
+            ct
+        );
 
     private async Task<GetPublicBoardResponse> ReadTheBoardAsync()
     {

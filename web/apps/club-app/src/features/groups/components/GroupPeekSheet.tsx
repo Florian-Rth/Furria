@@ -56,6 +56,7 @@ export const GroupPeekSheet: FC<GroupPeekSheetProps> = ({ groups }) => {
     toInitials(person.firstName, person.lastName),
   );
 
+  const portraits = group.memberPreview.map((person) => person.portrait?.smallUrl);
   const kindLabel = toGroupKindLabel(group.groupKindName);
 
   const kindEyebrow =
@@ -92,7 +93,7 @@ export const GroupPeekSheet: FC<GroupPeekSheetProps> = ({ groups }) => {
         </KkPanelSection>
         <KkPanelSection title={GROUP_SECTION_TITLES.members} groupTone={tone}>
           <Stack direction="row" sx={{ alignItems: 'center', gap: MEMBERS_GAP, minWidth: 0 }}>
-            <KkAvatarStack initials={initials} total={group.memberCount} />
+            <KkAvatarStack initials={initials} portraits={portraits} total={group.memberCount} />
             <KkMeta>{toGroupSizeLine(group.memberCount)}</KkMeta>
           </Stack>
         </KkPanelSection>

@@ -766,6 +766,75 @@ namespace Furria.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Furria.Core.Gallery.Album", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset?>("BinnedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("binned_at");
+
+                    b.Property<int?>("CalendarEntryId")
+                        .HasColumnType("integer")
+                        .HasColumnName("calendar_entry_id");
+
+                    b.Property<int?>("CoverMediaItemId")
+                        .HasColumnType("integer")
+                        .HasColumnName("cover_media_item_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("description");
+
+                    b.Property<DateTimeOffset?>("PublishedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("published_at");
+
+                    b.Property<int?>("SessionStartYear")
+                        .HasColumnType("integer")
+                        .HasColumnName("session_start_year");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_album");
+
+                    b.HasIndex("CalendarEntryId")
+                        .HasDatabaseName("ix_album_calendar_entry_id");
+
+                    b.HasIndex("CoverMediaItemId")
+                        .HasDatabaseName("ix_album_cover_media_item_id");
+
+                    b.ToTable("album", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_album_one_link", "calendar_entry_id IS NULL OR session_start_year IS NULL");
+
+                            t.HasCheckConstraint("ck_album_title", "length(btrim(title)) > 0");
+                        });
+                });
+
             modelBuilder.Entity("Furria.Core.Groups.Group", b =>
                 {
                     b.Property<int>("Id")
@@ -812,6 +881,10 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnName("name")
                         .UseCollation("de-DE-x-icu");
 
+                    b.Property<int?>("PictureId")
+                        .HasColumnType("integer")
+                        .HasColumnName("picture_id");
+
                     b.Property<string>("Tone")
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)")
@@ -831,6 +904,10 @@ namespace Furria.Infrastructure.Migrations
 
                     b.HasIndex("Name")
                         .HasDatabaseName("ix_group_name_lookup");
+
+                    b.HasIndex("PictureId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_group_picture_id");
 
                     b.ToTable("group", null, t =>
                         {
@@ -1393,10 +1470,9 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("character varying(64)")
                         .HasColumnName("phone");
 
-                    b.Property<string>("PortraitUrl")
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)")
-                        .HasColumnName("portrait_url");
+                    b.Property<int?>("PortraitId")
+                        .HasColumnType("integer")
+                        .HasColumnName("portrait_id");
 
                     b.Property<string>("Street")
                         .HasMaxLength(256)
@@ -1423,6 +1499,10 @@ namespace Furria.Infrastructure.Migrations
                     b.HasIndex("ContactChangedByPersonId")
                         .HasDatabaseName("ix_person_contact_changed_by_person_id");
 
+                    b.HasIndex("PortraitId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_person_portrait_id");
+
                     b.HasIndex("LastName", "FirstName")
                         .HasDatabaseName("ix_person_last_name_first_name");
 
@@ -1438,6 +1518,14 @@ namespace Furria.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("AlbumId")
+                        .HasColumnType("integer")
+                        .HasColumnName("album_id");
+
+                    b.Property<DateTimeOffset?>("BinnedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("binned_at");
+
                     b.Property<long>("ByteSize")
                         .HasColumnType("bigint")
                         .HasColumnName("byte_size");
@@ -1446,6 +1534,11 @@ namespace Furria.Infrastructure.Migrations
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)")
                         .HasColumnName("camera");
+
+                    b.Property<string>("Caption")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("caption");
 
                     b.Property<DateTimeOffset?>("CapturedAt")
                         .HasColumnType("timestamp with time zone")
@@ -1502,6 +1595,18 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("owner_person_id");
 
+                    b.Property<DateTimeOffset?>("PlacedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("placed_at");
+
+                    b.Property<DateTimeOffset?>("RenderedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("rendered_at");
+
+                    b.Property<int?>("SelectionPosition")
+                        .HasColumnType("integer")
+                        .HasColumnName("selection_position");
+
                     b.Property<string>("State")
                         .IsRequired()
                         .HasMaxLength(32)
@@ -1533,11 +1638,17 @@ namespace Furria.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_media_item");
 
+                    b.HasIndex("AlbumId")
+                        .HasDatabaseName("ix_media_item_album_id");
+
                     b.HasIndex("OwnerGroupId")
                         .HasDatabaseName("ix_media_item_owner_group_id");
 
                     b.HasIndex("OwnerPersonId")
                         .HasDatabaseName("ix_media_item_owner_person_id");
+
+                    b.HasIndex("PlacedAt")
+                        .HasDatabaseName("ix_media_item_placed_at");
 
                     b.HasIndex("StorageKey")
                         .IsUnique()
@@ -1548,13 +1659,23 @@ namespace Furria.Infrastructure.Migrations
 
                     b.ToTable("media_item", null, t =>
                         {
+                            t.HasCheckConstraint("ck_media_item_album_owner", "album_id IS NULL OR owner_kind = 'Gallery'");
+
+                            t.HasCheckConstraint("ck_media_item_binned", "binned_at IS NULL OR album_id IS NOT NULL");
+
                             t.HasCheckConstraint("ck_media_item_byte_size", "byte_size > 0");
+
+                            t.HasCheckConstraint("ck_media_item_caption", "caption IS NULL OR selection_position IS NOT NULL");
 
                             t.HasCheckConstraint("ck_media_item_kind", "kind IN ('Photo', 'Video')");
 
                             t.HasCheckConstraint("ck_media_item_owner", "(owner_kind = 'Person' AND owner_person_id IS NOT NULL AND owner_group_id IS NULL)\nOR (owner_kind = 'Group' AND owner_group_id IS NOT NULL AND owner_person_id IS NULL)\nOR (owner_kind = 'Gallery' AND owner_person_id IS NULL AND owner_group_id IS NULL)");
 
                             t.HasCheckConstraint("ck_media_item_owner_kind", "owner_kind IN ('Person', 'Group', 'Gallery')");
+
+                            t.HasCheckConstraint("ck_media_item_placed", "(album_id IS NULL) = (placed_at IS NULL)");
+
+                            t.HasCheckConstraint("ck_media_item_selection", "selection_position IS NULL\nOR (selection_position > 0 AND album_id IS NOT NULL AND binned_at IS NULL AND kind = 'Photo')");
 
                             t.HasCheckConstraint("ck_media_item_state", "state IN ('Processing', 'Ready', 'Failed')");
                         });
@@ -2615,6 +2736,25 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Event");
                 });
 
+            modelBuilder.Entity("Furria.Core.Gallery.Album", b =>
+                {
+                    b.HasOne("Furria.Core.Club.CalendarEntry", "CalendarEntry")
+                        .WithMany()
+                        .HasForeignKey("CalendarEntryId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_album_calendar_entry_calendar_entry_id");
+
+                    b.HasOne("Furria.Core.Media.MediaItem", "CoverMediaItem")
+                        .WithMany()
+                        .HasForeignKey("CoverMediaItemId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_album_media_item_cover_media_item_id");
+
+                    b.Navigation("CalendarEntry");
+
+                    b.Navigation("CoverMediaItem");
+                });
+
             modelBuilder.Entity("Furria.Core.Groups.Group", b =>
                 {
                     b.HasOne("Furria.Core.Groups.GroupKind", "GroupKind")
@@ -2623,7 +2763,15 @@ namespace Furria.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_group_group_kind_group_kind_id");
 
+                    b.HasOne("Furria.Core.Media.MediaItem", "Picture")
+                        .WithMany()
+                        .HasForeignKey("PictureId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_group_media_item_picture_id");
+
                     b.Navigation("GroupKind");
+
+                    b.Navigation("Picture");
                 });
 
             modelBuilder.Entity("Furria.Core.Groups.GroupAdmin", b =>
@@ -2766,13 +2914,27 @@ namespace Furria.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_person_person_contact_changed_by_person_id");
 
+                    b.HasOne("Furria.Core.Media.MediaItem", "Portrait")
+                        .WithMany()
+                        .HasForeignKey("PortraitId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_person_media_item_portrait_id");
+
                     b.Navigation("ArchivedBy");
 
                     b.Navigation("ContactChangedBy");
+
+                    b.Navigation("Portrait");
                 });
 
             modelBuilder.Entity("Furria.Core.Media.MediaItem", b =>
                 {
+                    b.HasOne("Furria.Core.Gallery.Album", "Album")
+                        .WithMany("Items")
+                        .HasForeignKey("AlbumId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_media_item_album_album_id");
+
                     b.HasOne("Furria.Core.Groups.Group", "OwnerGroup")
                         .WithMany()
                         .HasForeignKey("OwnerGroupId")
@@ -2821,6 +2983,8 @@ namespace Furria.Infrastructure.Migrations
                                 .HasForeignKey("MediaItemId")
                                 .HasConstraintName("fk_media_item_media_item_id");
                         });
+
+                    b.Navigation("Album");
 
                     b.Navigation("Crop");
 
@@ -3049,6 +3213,11 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Event");
 
                     b.Navigation("ParticipatingGroups");
+                });
+
+            modelBuilder.Entity("Furria.Core.Gallery.Album", b =>
+                {
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("Furria.Core.Groups.Group", b =>

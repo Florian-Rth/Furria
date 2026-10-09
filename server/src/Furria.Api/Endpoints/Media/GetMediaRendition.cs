@@ -1,5 +1,6 @@
 using FastEndpoints;
 using FluentValidation;
+using Furria.Api.Media;
 using Furria.Application.Media;
 using Furria.Core.Media;
 using Furria.Infrastructure.Media;
@@ -46,15 +47,7 @@ public sealed class GetMediaRendition : Endpoint<GetMediaRenditionRequest>
         }
 
         HttpContext.Response.Headers.CacheControl = CacheControlUntil(req.Exp);
-        await Send.ResultAsync(
-            TypedResults.PhysicalFile(
-                file.FullPath,
-                file.ContentType,
-                req.Download is null ? null : file.DownloadName,
-                file.LastModified,
-                enableRangeProcessing: true
-            )
-        );
+        await Send.ResultAsync(MediaFileResults.Of(file, asDownload: req.Download is not null));
     }
 
     private string CacheControlUntil(long expiresAt) =>

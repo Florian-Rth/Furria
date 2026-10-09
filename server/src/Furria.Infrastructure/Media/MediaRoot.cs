@@ -19,6 +19,17 @@ public sealed class MediaRoot
 
     public void PrepareStaging() => Directory.CreateDirectory(StagingPath);
 
+    public void DeleteFilesOf(Guid storageKey)
+    {
+        var original = FullPathOf(MediaPaths.OriginalOf(storageKey));
+        if (File.Exists(original))
+            File.Delete(original);
+
+        var renditions = FullPathOf(MediaPaths.RenditionsOf(storageKey));
+        if (Directory.Exists(renditions))
+            Directory.Delete(renditions, recursive: true);
+    }
+
     public void MoveInto(string sourcePath, string relativePath)
     {
         var destination = FullPathOf(relativePath);

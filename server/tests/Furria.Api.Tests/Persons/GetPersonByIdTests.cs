@@ -743,6 +743,7 @@ public sealed class GetPersonByIdTests : IClassFixture<ApiTestFixture>
                 "personId",
                 "firstName",
                 "lastName",
+                "portrait",
                 "email",
                 "phone",
                 "street",

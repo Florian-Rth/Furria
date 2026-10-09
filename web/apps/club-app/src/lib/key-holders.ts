@@ -1,3 +1,4 @@
+import type { Picture } from '@/lib/api/schemas';
 import { formatIsoDay } from '@/lib/membership-labels';
 import { toInitials } from './initials';
 
@@ -9,6 +10,7 @@ interface KeyHolderPerson {
   personId: number;
   firstName: string;
   lastName: string;
+  portrait?: Picture | null;
 }
 
 interface KeyHolding {
@@ -20,11 +22,13 @@ export interface KeyHolderEntry {
   personId: number;
   name: string;
   initials: string;
+  portrait: string | undefined;
   sinceValue: string;
 }
 
 export interface KeyVenueSummary {
   initials: string[];
+  portraits: (string | undefined)[];
   holderCount: number;
   emptyLine: string | null;
 }
@@ -36,6 +40,7 @@ export const toKeyHolderEntries = (holdings: readonly KeyHolding[]): KeyHolderEn
     personId: holding.person.personId,
     name: toName(holding.person),
     initials: toInitials(holding.person.firstName, holding.person.lastName),
+    portrait: holding.person.portrait?.smallUrl,
     sinceValue: formatIsoDay(holding.sinceOn),
   }));
 
@@ -46,6 +51,7 @@ export const toKeyVenueSummary = (holdings: readonly KeyHolding[]): KeyVenueSumm
 
   return {
     initials,
+    portraits: holdings.map((holding) => holding.person.portrait?.smallUrl),
     holderCount: initials.length,
     emptyLine: initials.length === 0 ? NO_KEY_HOLDER_LINE : null,
   };

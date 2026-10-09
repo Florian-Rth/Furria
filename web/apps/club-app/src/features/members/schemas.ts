@@ -1,10 +1,16 @@
 import { z } from 'zod';
-import { GroupRefSchema, MembershipStateSchema, RoleRefSchema } from '@/lib/api/schemas';
+import {
+  GroupRefSchema,
+  MembershipStateSchema,
+  PictureSchema,
+  RoleRefSchema,
+} from '@/lib/api/schemas';
 
 export const MemberSummarySchema = z.object({
   personId: z.number().int(),
   firstName: z.string(),
   lastName: z.string(),
+  portrait: PictureSchema.nullable(),
   membershipState: MembershipStateSchema,
   groups: z.array(GroupRefSchema),
   roles: z.array(RoleRefSchema),
@@ -37,6 +43,7 @@ export const MemberDetailsSchema = z.object({
   personId: z.number().int(),
   firstName: z.string(),
   lastName: z.string(),
+  portrait: PictureSchema.nullable(),
   membershipState: MembershipStateSchema,
   memberSince: z.iso.date().nullable(),
   groups: z.array(MemberGroupSchema),

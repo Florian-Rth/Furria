@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { TO_DO_KINDS } from '@/features/to-dos/schemas';
 import { knownKindsOnly } from '@/lib/api/known-kinds';
+import { MediaItemStateSchema, MediaUrlSchema, PictureSchema } from '@/lib/api/schemas';
 import { ATTENDANCE_ANSWER_KEYS, CALENDAR_KIND_KEYS } from '@/lib/calendar-copy';
 import { GroupToneSchema } from '@/lib/group-tone';
 
@@ -52,7 +53,7 @@ const StartPersonSchema = z.object({
   personId: z.int(),
   firstName: z.string(),
   lastName: z.string(),
-  portraitUrl: z.string().nullable(),
+  portrait: PictureSchema.nullable(),
   officeName: z.string().nullable(),
 });
 export type StartPerson = z.infer<typeof StartPersonSchema>;
@@ -119,7 +120,29 @@ export type StartGroupMoment = z.infer<typeof StartGroupMomentSchema>;
 export const StartToDoSchema = z.object({ kind: z.enum(TO_DO_KINDS), count: z.int().positive() });
 export type StartToDo = z.infer<typeof StartToDoSchema>;
 
-export const START_PANEL_KINDS = ['calendar', 'announcements', 'mine', 'groups', 'toDos'] as const;
+export const StartAlbumSchema = z.object({
+  albumId: z.int().positive(),
+  title: z.string(),
+  itemCount: z.int().nonnegative(),
+  createdAt: z.iso.datetime({ offset: true }),
+  cover: z
+    .object({
+      mediaItemId: z.int().positive(),
+      state: MediaItemStateSchema,
+      urls: z.object({ small: MediaUrlSchema }),
+    })
+    .nullable(),
+});
+export type StartAlbum = z.infer<typeof StartAlbumSchema>;
+
+export const START_PANEL_KINDS = [
+  'calendar',
+  'announcements',
+  'mine',
+  'groups',
+  'toDos',
+  'gallery',
+] as const;
 
 const Base = { shownCount: z.int().nonnegative() };
 
@@ -145,6 +168,7 @@ export const StartPanelSchema = z.discriminatedUnion('kind', [
     ...Base,
     toDos: knownKindsOnly(StartToDoSchema, TO_DO_KINDS),
   }),
+  z.object({ kind: z.literal('gallery'), ...Base, albums: z.array(StartAlbumSchema) }),
 ]);
 export type StartPanel = z.infer<typeof StartPanelSchema>;
 export type StartPanelKind = StartPanel['kind'];

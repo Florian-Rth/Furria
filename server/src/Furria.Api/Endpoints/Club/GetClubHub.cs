@@ -1,5 +1,6 @@
 using FastEndpoints;
 using Furria.Api.Authorization;
+using Furria.Api.Media;
 using Furria.Application.Authorization;
 using Furria.Application.Club;
 using Furria.Core.Club;
@@ -82,7 +83,7 @@ public sealed class GetClubHub : EndpointWithoutRequest<GetClubHubResponse>
             PersonId = person.PersonId,
             FirstName = person.FirstName,
             LastName = person.LastName,
-            PortraitUrl = person.PortraitUrl,
+            Portrait = PictureDto.From(person.Portrait),
             OfficeName = person.OfficeName,
         };
 
@@ -186,7 +187,7 @@ public sealed record ClubPersonDto
 
     public required string LastName { get; init; }
 
-    public required string? PortraitUrl { get; init; }
+    public required PictureDto? Portrait { get; init; }
 
     public required string? OfficeName { get; init; }
 }
