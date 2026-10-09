@@ -1,5 +1,6 @@
 using Furria.Application.Authorization;
 using Furria.Core.Club;
+using Furria.Core.Ties;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Registry;
 using Microsoft.EntityFrameworkCore;
@@ -93,7 +94,7 @@ public sealed class PermissionAuthorizer
         var keys = await _dbContext
             .RoleHoldings.AsNoTracking()
             .Where(holding => holding.PersonId == personId)
-            .Where(PermissionHolderQuery.RoleHoldingGrantsOn(today))
+            .Where(Conferring.RoleHoldings(today))
             .SelectMany(holding => holding.Role!.Permissions.Select(row => row.PermissionKey))
             .Distinct()
             .ToListAsync(ct);
@@ -104,11 +105,7 @@ public sealed class PermissionAuthorizer
             .People.AsNoTracking()
             .Where(person => person.Id == personId)
             .AnyAsync(
-                person =>
-                    person.Memberships.Any(membership =>
-                        membership.StartedOn <= today
-                        && (membership.EndedOn == null || membership.EndedOn >= today)
-                    ),
+                person => person.Memberships.AsQueryable().Any(Running.Memberships(today)),
                 ct
             );
 
@@ -118,7 +115,7 @@ public sealed class PermissionAuthorizer
         var impliedKeys = await _dbContext
             .BoardSeats.AsNoTracking()
             .Where(seat => seat.PersonId == personId)
-            .Where(PermissionHolderQuery.BoardSeatGrantsOn(today))
+            .Where(Conferring.BoardSeatRoles(today))
             .SelectMany(seat =>
                 seat.BoardOffice!.ImpliedRole!.Permissions.Select(row => row.PermissionKey)
             )
@@ -215,13 +212,8 @@ public sealed class PermissionAuthorizer
         var today = ClubClock.Today(_timeProvider);
         return await _dbContext
             .GroupAdmins.AsNoTracking()
-            .AnyAsync(
-                admin =>
-                    admin.PersonId == personId.Value
-                    && admin.SinceOn <= today
-                    && (admin.UntilOn == null || admin.UntilOn >= today),
-                ct
-            );
+            .Where(Running.GroupAdmins(today))
+            .AnyAsync(admin => admin.PersonId == personId.Value, ct);
     }
 
     private async Task<GroupTies> GroupTiesAsync(int accountId, int groupId, CancellationToken ct)
@@ -238,16 +230,14 @@ public sealed class PermissionAuthorizer
             .Groups.AsNoTracking()
             .Where(group => group.Id == groupId)
             .Select(group => new GroupTies(
-                group.Admins.Any(admin =>
-                    admin.PersonId == personId.Value
-                    && admin.SinceOn <= today
-                    && (admin.UntilOn == null || admin.UntilOn >= today)
-                ),
-                group.Memberships.Any(membership =>
-                    membership.PersonId == personId.Value
-                    && membership.JoinedOn <= today
-                    && (membership.LeftOn == null || membership.LeftOn >= today)
-                )
+                group
+                    .Admins.AsQueryable()
+                    .Where(Running.GroupAdmins(today))
+                    .Any(admin => admin.PersonId == personId.Value),
+                group
+                    .Memberships.AsQueryable()
+                    .Where(Running.GroupMemberships(today))
+                    .Any(membership => membership.PersonId == personId.Value)
             ))
             .SingleOrDefaultAsync(ct);
 

@@ -2,6 +2,7 @@ using System.Collections.Frozen;
 using Furria.Application.Media;
 using Furria.Core.Club;
 using Furria.Core.Media;
+using Furria.Core.Ties;
 using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Gallery;
 using Furria.Infrastructure.Groups;
@@ -64,7 +65,7 @@ public sealed class PublicMediaService
     private Task<bool> IsOnThePublicBoardAsync(int mediaItemId, CancellationToken ct) =>
         _dbContext
             .BoardSeats.AsNoTracking()
-            .Where(RunningBoardSeats.RunningOn(ClubClock.Today(_timeProvider)))
+            .Where(Conferring.BoardSeats(ClubClock.Today(_timeProvider)))
             .AnyAsync(
                 seat => seat.BoardOffice!.IsPublic && seat.Person!.PortraitId == mediaItemId,
                 ct

@@ -1,6 +1,7 @@
 using System.Diagnostics.Contracts;
 using System.Linq.Expressions;
 using Furria.Core.Club;
+using Furria.Core.Ties;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -40,7 +41,7 @@ public sealed class RunningBoardSeats
 
         _seats = await _dbContext
             .BoardSeats.AsNoTracking()
-            .Where(RunningOn(today))
+            .Where(Conferring.BoardSeats(today))
             .OrderBy(seat => seat.BoardOffice!.SortOrder)
             .ThenBy(seat => EF.Functions.Collate(seat.Person!.LastName, GermanCollation.Name))
             .ThenBy(seat => EF.Functions.Collate(seat.Person!.FirstName, GermanCollation.Name))
@@ -56,10 +57,6 @@ public sealed class RunningBoardSeats
         DateOnly today,
         CancellationToken ct
     ) => ToOfficeNames(await SeatsAsync(today, ct));
-
-    [Pure]
-    public static Expression<Func<BoardSeat, bool>> RunningOn(DateOnly today) =>
-        seat => seat.SinceOn <= today && (seat.UntilOn == null || seat.UntilOn >= today);
 
     [Pure]
     private static IReadOnlyDictionary<int, string> ToOfficeNames(

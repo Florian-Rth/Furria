@@ -1,6 +1,7 @@
 using System.Diagnostics.Contracts;
 using System.Linq.Expressions;
 using Furria.Core.Identity;
+using Furria.Core.Ties;
 using Furria.Infrastructure.Persistence;
 
 namespace Furria.Infrastructure.Registry;
@@ -15,17 +16,10 @@ public static class ClubActivityQuery
     {
         Expression<Func<Person, bool, bool>> activeGivenAffiliation = (person, isAffiliated) =>
             isAffiliated
-            || person.GroupAdminships.Any(tenure =>
-                tenure.SinceOn <= today
-                && (tenure.UntilOn == null || tenure.UntilOn >= today)
-                && tenure.Group!.ArchivedOn == null
-            )
-            || dbContext.BoardSeats.Any(seat =>
-                seat.PersonId == person.Id
-                && seat.SinceOn <= today
-                && (seat.UntilOn == null || seat.UntilOn >= today)
-                && seat.BoardOffice!.ArchivedOn == null
-            );
+            || person.GroupAdminships.AsQueryable().Any(Conferring.GroupAdmins(today))
+            || dbContext
+                .BoardSeats.Where(Conferring.BoardSeats(today))
+                .Any(seat => seat.PersonId == person.Id);
 
         return ExpressionComposition.Bind(
             activeGivenAffiliation,
