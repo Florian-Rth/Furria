@@ -1,10 +1,12 @@
 using System.Diagnostics.Contracts;
 using System.Linq.Expressions;
+using Furria.Application.Authorization;
 using Furria.Application.Club;
 using Furria.Application.Results;
 using Furria.Core.Club;
 using Furria.Core.Events;
 using Furria.Core.Groups;
+using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Gallery;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +17,7 @@ public sealed class CalendarService
 {
     private const string UnknownEntryMessage = "Diesen Kalendereintrag gibt es nicht.";
     private const string NotYoursMessage = "Auf diesen Kalendereintrag kannst du nicht antworten.";
+    private const string NotOwnedMessage = "Diesen Kalendereintrag darfst du nicht pflegen.";
     private const string NoResponseWantedMessage = "Dieser Eintrag fragt nicht nach einer Antwort.";
     private const string DuplicateResponseMessage =
         WriteConflictMessages.DuplicateAttendanceResponse;
@@ -38,11 +41,17 @@ public sealed class CalendarService
     > NoCollisions = new Dictionary<VenueCollisionQuery, IReadOnlyList<CalendarEntrySummary>>();
 
     private readonly AppDbContext _dbContext;
+    private readonly PermissionAuthorizer _authorizer;
     private readonly TimeProvider _timeProvider;
 
-    public CalendarService(AppDbContext dbContext, TimeProvider timeProvider)
+    public CalendarService(
+        AppDbContext dbContext,
+        PermissionAuthorizer authorizer,
+        TimeProvider timeProvider
+    )
     {
         _dbContext = dbContext;
+        _authorizer = authorizer;
         _timeProvider = timeProvider;
     }
 
@@ -236,25 +245,14 @@ public sealed class CalendarService
         return Result<int>.Success(entries.Count);
     }
 
-    public Task<CalendarEntryOwnership?> OwnershipOfAsync(
-        int calendarEntryId,
-        CancellationToken ct
-    ) =>
-        _dbContext
-            .CalendarEntries.AsNoTracking()
-            .Where(entry => entry.Id == calendarEntryId)
-            .Select(entry => new CalendarEntryOwnership
-            {
-                CalendarEntryId = entry.Id,
-                OwnerGroupId = entry.OwnerGroupId,
-            })
-            .SingleOrDefaultAsync(ct);
-
     public async Task<Result<CalendarEntryWriteResult>> CreateAsync(
         CreateCalendarEntryCommand command,
         CancellationToken ct
     )
     {
+        if (!await MayOwnAsync(command.ActorAccountId, command.OwnerGroupId, ct))
+            return Result<CalendarEntryWriteResult>.Forbidden(NotOwnedMessage);
+
         var participatingGroupIds = ParticipationOf(
             command.ParticipatingGroupIds,
             command.OwnerGroupId
@@ -305,12 +303,17 @@ public sealed class CalendarService
         CancellationToken ct
     )
     {
-        var entry = await _dbContext
-            .CalendarEntries.Include(row => row.ParticipatingGroups)
-            .SingleOrDefaultAsync(row => row.Id == command.CalendarEntryId, ct);
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
+        var entry = await LockedEntryAsync(command.CalendarEntryId, ct);
 
         if (entry is null)
             return Result<CalendarEntryWriteResult>.NotFound(UnknownEntryMessage);
+
+        if (
+            !await MayOwnAsync(command.ActorAccountId, entry.OwnerGroupId, ct)
+            || !await MayOwnAsync(command.ActorAccountId, command.OwnerGroupId, ct)
+        )
+            return Result<CalendarEntryWriteResult>.Forbidden(NotOwnedMessage);
 
         if (entry.Kind == CalendarEntryKind.Event)
             return Result<CalendarEntryWriteResult>.Conflict(EventsLiveInTheWorkbenchMessage);
@@ -345,20 +348,26 @@ public sealed class CalendarService
         if (!saved.IsSuccess)
             return Result<CalendarEntryWriteResult>.Carrying(saved);
 
+        await transaction.CommitAsync(ct);
         return Result<CalendarEntryWriteResult>.Success(
             await WrittenAsync(entry, command.ViewerPersonId, ct)
         );
     }
 
-    public async Task<Result> DeleteAsync(int calendarEntryId, CancellationToken ct)
+    public async Task<Result> DeleteAsync(
+        int actorAccountId,
+        int calendarEntryId,
+        CancellationToken ct
+    )
     {
-        var entry = await _dbContext.CalendarEntries.SingleOrDefaultAsync(
-            row => row.Id == calendarEntryId,
-            ct
-        );
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
+        var entry = await LockedEntryAsync(calendarEntryId, ct);
 
         if (entry is null)
             return Result.NotFound(UnknownEntryMessage);
+
+        if (!await MayOwnAsync(actorAccountId, entry.OwnerGroupId, ct))
+            return Result.Forbidden(NotOwnedMessage);
 
         if (entry.Kind == CalendarEntryKind.Event)
             return Result.Conflict(EventsLiveInTheWorkbenchMessage);
@@ -366,6 +375,7 @@ public sealed class CalendarService
         await _dbContext.KeepSessionOfAlbumsOnAsync(entry, ct);
         _dbContext.CalendarEntries.Remove(entry);
         await _dbContext.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
 
         return Result.Success();
     }
@@ -375,20 +385,28 @@ public sealed class CalendarService
         CancellationToken ct
     )
     {
+        if (await _authorizer.ActivePersonIdAsync(command.ActorAccountId, ct) is not { } personId)
+            return Result.Forbidden(NotYoursMessage);
+
+        var holdsClubRead = await _authorizer.IsGrantedAsync(
+            command.ActorAccountId,
+            FurriaPermissions.ClubRead,
+            ct
+        );
         var entry = await _dbContext
             .CalendarEntries.AsNoTracking()
             .Where(row => row.Id == command.CalendarEntryId)
             .Select(EntryFactsRows.Projection)
             .SingleOrDefaultAsync(ct);
         var ties = await _dbContext.CalendarTiesOfAsync(
-            command.PersonId,
+            personId,
             ClubClock.Today(_timeProvider),
             ct
         );
 
-        if (entry is null || !ties.Sees(entry.ToFacts(), command.HoldsClubRead))
+        if (entry is null || !ties.Sees(entry.ToFacts(), holdsClubRead))
         {
-            return command.HoldsClubRead
+            return holdsClubRead
                 ? Result.NotFound(UnknownEntryMessage)
                 : Result.Forbidden(NotYoursMessage);
         }
@@ -399,7 +417,7 @@ public sealed class CalendarService
         var recorded = await _dbContext.AttendanceResponses.SingleOrDefaultAsync(
             response =>
                 response.CalendarEntryId == command.CalendarEntryId
-                && response.PersonId == command.PersonId,
+                && response.PersonId == personId,
             ct
         );
 
@@ -409,7 +427,7 @@ public sealed class CalendarService
                 new AttendanceResponse
                 {
                     CalendarEntryId = command.CalendarEntryId,
-                    PersonId = command.PersonId,
+                    PersonId = personId,
                     Answer = command.Answer,
                 }
             );
@@ -595,6 +613,23 @@ public sealed class CalendarService
         bool viewerMayAnswer,
         DateTimeOffset now
     ) => new() { Entry = ToSummary(row, answers, now), ViewerMayAnswer = viewerMayAnswer };
+
+    private Task<bool> MayOwnAsync(int actorAccountId, int? ownerGroupId, CancellationToken ct) =>
+        ownerGroupId is { } groupId
+            ? _authorizer.CanAdministerGroupAsync(actorAccountId, groupId, ct)
+            : _authorizer.IsGrantedAsync(actorAccountId, FurriaPermissions.CalendarManageClub, ct);
+
+    private async Task<CalendarEntry?> LockedEntryAsync(int calendarEntryId, CancellationToken ct)
+    {
+        await _dbContext.Database.ExecuteSqlAsync(
+            $"SELECT 1 FROM calendar_entry WHERE id = {calendarEntryId} FOR UPDATE",
+            ct
+        );
+
+        return await _dbContext
+            .CalendarEntries.Include(row => row.ParticipatingGroups)
+            .SingleOrDefaultAsync(row => row.Id == calendarEntryId, ct);
+    }
 
     private async Task<CalendarEntryWriteResult> WrittenAsync(
         CalendarEntry entry,

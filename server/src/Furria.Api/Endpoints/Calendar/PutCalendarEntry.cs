@@ -4,7 +4,6 @@ using Furria.Api.Authorization;
 using Furria.Api.Results;
 using Furria.Application.Club;
 using Furria.Core.Club;
-using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Club;
 
 namespace Furria.Api.Endpoints.Calendar;
@@ -12,12 +11,10 @@ namespace Furria.Api.Endpoints.Calendar;
 public sealed class PutCalendarEntry : Endpoint<PutCalendarEntryRequest, PutCalendarEntryResponse>
 {
     private readonly CalendarService _calendarService;
-    private readonly PermissionAuthorizer _authorizer;
 
-    public PutCalendarEntry(CalendarService calendarService, PermissionAuthorizer authorizer)
+    public PutCalendarEntry(CalendarService calendarService)
     {
         _calendarService = calendarService;
-        _authorizer = authorizer;
     }
 
     public override void Configure()
@@ -35,20 +32,10 @@ public sealed class PutCalendarEntry : Endpoint<PutCalendarEntryRequest, PutCale
             return;
         }
 
-        var ownership = await _calendarService.OwnershipOfAsync(req.CalendarEntryId, ct);
-        if (ownership is null)
-        {
-            await Send.NotFoundAsync(ct);
-            return;
-        }
-
-        if (!await MayMoveAsync(accountId.Value, ownership.OwnerGroupId, req.OwnerGroupId, ct))
-        {
-            await Send.ForbiddenAsync(ct);
-            return;
-        }
-
-        var result = await _calendarService.UpdateAsync(ToCommand(req, personId), ct);
+        var result = await _calendarService.UpdateAsync(
+            ToCommand(req, accountId.Value, personId),
+            ct
+        );
         if (!result.IsSuccess)
         {
             await HttpContext.Response.SendFailureAsync(result.Error, ct);
@@ -58,21 +45,14 @@ public sealed class PutCalendarEntry : Endpoint<PutCalendarEntryRequest, PutCale
         await Send.OkAsync(ToResponse(result.Value), cancellation: ct);
     }
 
-    private async Task<bool> MayMoveAsync(
-        int accountId,
-        int? heldOwnerGroupId,
-        int? wantedOwnerGroupId,
-        CancellationToken ct
-    ) =>
-        await _authorizer.MayOwnCalendarEntryAsync(accountId, heldOwnerGroupId, ct)
-        && await _authorizer.MayOwnCalendarEntryAsync(accountId, wantedOwnerGroupId, ct);
-
     private static UpdateCalendarEntryCommand ToCommand(
         PutCalendarEntryRequest req,
+        int actorAccountId,
         int? viewerPersonId
     ) =>
         new()
         {
+            ActorAccountId = actorAccountId,
             ViewerPersonId = viewerPersonId,
             CalendarEntryId = req.CalendarEntryId,
             Title = req.Title,
