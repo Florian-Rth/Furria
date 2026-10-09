@@ -16,7 +16,6 @@ const PERSON_ROUTE = '/manage/persons/$personId';
 
 interface MailInvitationEditorInput {
   subject: AccessSubject;
-  onInvited: () => void;
 }
 
 export interface MailInvitationEditorControl {
@@ -30,10 +29,9 @@ export interface MailInvitationEditorControl {
 
 export const useMailInvitationEditor = ({
   subject,
-  onInvited,
 }: MailInvitationEditorInput): MailInvitationEditorControl => {
   const [rejection, setRejection] = useState<string | null>(null);
-  const mutation = useMailInvitationMutation(subject, onInvited);
+  const mutation = useMailInvitationMutation(subject);
   const goBackTo = useGoBackTo();
   const { mailInvitation, vouchesForAge } = accessActionsOf({
     access: subject.access,

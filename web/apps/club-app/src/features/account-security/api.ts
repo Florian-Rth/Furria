@@ -1,6 +1,5 @@
 import type { UseMutationResult } from '@tanstack/react-query';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ME_QUERY_KEY } from '@/features/session';
+import { useMutation } from '@tanstack/react-query';
 import type { MePasskey } from '@/lib/api/schemas';
 import {
   endSessionWithFarewell,
@@ -32,14 +31,10 @@ export const useLoginEmailChangeMutation = (): UseMutationResult<
   });
 
 export const useLoginEmailConfirmationMutation = (): UseMutationResult<void, Error, string> => {
-  const queryClient = useQueryClient();
-
   return useMutation({
+    meta: { changes: ['account'], settlesWhenFresh: true },
     mutationFn: (code: string) =>
       withFreshAccessToken((accessToken) => requestLoginEmailConfirmation(code, accessToken)),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ME_QUERY_KEY });
-    },
   });
 };
 
@@ -75,13 +70,9 @@ export const useAccountDeletionMutation = (): UseMutationResult<
   });
 
 export const useAddPasskeyMutation = (): UseMutationResult<MePasskey, Error, void> => {
-  const queryClient = useQueryClient();
-
   return useMutation({
+    meta: { changes: ['account'], settlesWhenFresh: true },
     mutationFn: addPasskey,
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ME_QUERY_KEY });
-    },
   });
 };
 

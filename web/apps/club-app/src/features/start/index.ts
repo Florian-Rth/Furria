@@ -1,4 +1,4 @@
-export { START_QUERY_KEY, useStartAnswerMutation, useStartQuery } from './api';
+export { useStartQuery } from './api';
 export { GreetingBoard } from './components/GreetingBoard';
 export { StartBody } from './components/StartBody';
 export { StartHeader } from './components/StartHeader';

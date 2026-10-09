@@ -1,10 +1,11 @@
 import { useKkNotice } from '@furria/ui';
-import type { QueryClient, UseMutationResult, UseQueryResult } from '@tanstack/react-query';
+import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
 import { skipToken, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ReauthenticationProof } from '@/features/account-security';
 import { resolveReauthenticationProof } from '@/features/account-security';
 import { endSessionWithFarewell, withFreshAccessToken } from '@/lib/api/session/session-store';
 import { toIsoDay } from '@/lib/day';
+import { queryKeys } from '@/lib/query/reads';
 import { isNotFoundError } from '@/lib/query-error';
 import {
   FEE_REDUCTION_ADDED_MESSAGE,
@@ -48,46 +49,12 @@ import type {
   PersonsResponse,
 } from './schemas';
 
-export const PERSONS_QUERY_KEY = ['manage', 'persons'] as const;
-
-export const personQueryKey = (
-  personId: number | null,
-): readonly [string, string, number | null] => ['manage', 'persons', personId];
-
-const MANAGE_HUB_QUERY_KEY = ['manage-hub'] as const;
-const PERSON_SEARCH_QUERY_KEY = ['person-search'] as const;
-
-const refreshPerson = (queryClient: QueryClient, personId: number): void => {
-  void queryClient.invalidateQueries({ queryKey: personQueryKey(personId) });
-  void queryClient.invalidateQueries({ queryKey: PERSONS_QUERY_KEY });
-  void queryClient.invalidateQueries({ queryKey: MANAGE_HUB_QUERY_KEY });
-  void queryClient.invalidateQueries({ queryKey: PERSON_SEARCH_QUERY_KEY });
-};
-
-export const useRefreshPerson = (personId: number | null): (() => void) => {
-  const queryClient = useQueryClient();
-
-  return () => {
-    void queryClient.invalidateQueries({ queryKey: personQueryKey(personId) });
-    void queryClient.invalidateQueries({ queryKey: PERSONS_QUERY_KEY });
-  };
-};
-
-const ALL_ACCESS_KEY = 'all';
-const ARCHIVED_KEY = 'archived';
-const LISTED_KEY = 'listed';
-
 export const usePersonsQuery = (
   access: PersonAccessFilter | null,
   archived: boolean,
 ): UseQueryResult<PersonsResponse, Error> =>
   useQuery({
-    queryKey: [
-      ...PERSONS_QUERY_KEY,
-      'access',
-      access ?? ALL_ACCESS_KEY,
-      archived ? ARCHIVED_KEY : LISTED_KEY,
-    ],
+    queryKey: queryKeys.persons(access, archived),
     queryFn: () =>
       withFreshAccessToken((accessToken) => requestPersons(access, archived, accessToken)),
   });
@@ -99,14 +66,14 @@ export const usePersonQuery = (personId: number | null): UseQueryResult<PersonDe
       : (): Promise<PersonDetails> =>
           withFreshAccessToken((accessToken) => requestPerson(personId, accessToken));
 
-  return useQuery({ queryKey: personQueryKey(personId), queryFn: load });
+  return useQuery({ queryKey: queryKeys.person(personId), queryFn: load });
 };
 
 export const useCreatePersonMutation = (): UseMutationResult<CreatedPerson, Error, PersonForm> => {
-  const queryClient = useQueryClient();
   const raiseNotice = useKkNotice();
 
   return useMutation({
+    meta: { changes: ['person'] },
     mutationFn: (form: PersonForm) =>
       withFreshAccessToken((accessToken) => requestPersonCreate(form, accessToken)),
     onSuccess: (_created, form) => {
@@ -114,7 +81,6 @@ export const useCreatePersonMutation = (): UseMutationResult<CreatedPerson, Erro
         tone: 'success',
         message: toPersonCreatedMessage(`${form.firstName} ${form.lastName}`),
       });
-      void queryClient.invalidateQueries({ queryKey: PERSONS_QUERY_KEY });
     },
   });
 };
@@ -122,10 +88,10 @@ export const useCreatePersonMutation = (): UseMutationResult<CreatedPerson, Erro
 export const useUpdatePersonMutation = (
   personId: number,
 ): UseMutationResult<void, Error, PersonForm> => {
-  const queryClient = useQueryClient();
   const raiseNotice = useKkNotice();
 
   return useMutation({
+    meta: { changes: ['person'] },
     mutationFn: (form: PersonForm) =>
       withFreshAccessToken((accessToken) => requestPersonUpdate(personId, form, accessToken)),
     onSuccess: (_result, form) => {
@@ -133,7 +99,6 @@ export const useUpdatePersonMutation = (
         tone: 'success',
         message: toPersonSavedMessage(`${form.firstName} ${form.lastName}`),
       });
-      refreshPerson(queryClient, personId);
     },
   });
 };
@@ -146,10 +111,10 @@ export interface PersonArchivedInput {
 export const useSetPersonArchivedMutation = (
   personId: number,
 ): UseMutationResult<void, Error, PersonArchivedInput> => {
-  const queryClient = useQueryClient();
   const raiseNotice = useKkNotice();
 
   return useMutation({
+    meta: { changes: ['person'] },
     mutationFn: (input: PersonArchivedInput) =>
       withFreshAccessToken((accessToken) =>
         requestPersonArchived(personId, input.isArchived, accessToken),
@@ -161,7 +126,6 @@ export const useSetPersonArchivedMutation = (
           ? toPersonArchivedMessage(input.personName)
           : toPersonRestoredMessage(input.personName),
       });
-      refreshPerson(queryClient, personId);
     },
   });
 };
@@ -207,7 +171,7 @@ export const useForgetErasedPerson = (): ((personId: number) => void) => {
   const queryClient = useQueryClient();
 
   return (personId) => {
-    queryClient.removeQueries({ queryKey: personQueryKey(personId), exact: true });
+    queryClient.removeQueries({ queryKey: queryKeys.person(personId), exact: true });
     void queryClient.invalidateQueries();
   };
 };
@@ -215,15 +179,14 @@ export const useForgetErasedPerson = (): ((personId: number) => void) => {
 export const useCreateMembershipMutation = (
   personId: number,
 ): UseMutationResult<CreatedMembership, Error, MembershipForm> => {
-  const queryClient = useQueryClient();
   const raiseNotice = useKkNotice();
 
   return useMutation({
+    meta: { changes: ['membership'] },
     mutationFn: (form: MembershipForm) =>
       withFreshAccessToken((accessToken) => requestMembershipCreate(personId, form, accessToken)),
     onSuccess: () => {
       raiseNotice({ tone: 'success', message: MEMBERSHIP_ADDED_MESSAGE });
-      refreshPerson(queryClient, personId);
     },
   });
 };
@@ -236,10 +199,10 @@ export interface MembershipUpdateInput extends MembershipForm {
 export const useUpdateMembershipMutation = (
   personId: number,
 ): UseMutationResult<void, Error, MembershipUpdateInput> => {
-  const queryClient = useQueryClient();
   const raiseNotice = useKkNotice();
 
   return useMutation({
+    meta: { changes: ['membership'] },
     mutationFn: (input: MembershipUpdateInput) =>
       withFreshAccessToken((accessToken) =>
         requestMembershipUpdate(
@@ -256,7 +219,6 @@ export const useUpdateMembershipMutation = (
           : MEMBERSHIP_SAVED_MESSAGE;
 
       raiseNotice({ tone: 'success', message });
-      refreshPerson(queryClient, personId);
     },
   });
 };
@@ -268,10 +230,10 @@ export interface PauseCreateInput extends PauseForm {
 export const useCreatePauseMutation = (
   personId: number,
 ): UseMutationResult<CreatedPause, Error, PauseCreateInput> => {
-  const queryClient = useQueryClient();
   const raiseNotice = useKkNotice();
 
   return useMutation({
+    meta: { changes: ['membership'] },
     mutationFn: (input: PauseCreateInput) =>
       withFreshAccessToken((accessToken) =>
         requestPauseCreate(
@@ -283,7 +245,6 @@ export const useCreatePauseMutation = (
       ),
     onSuccess: () => {
       raiseNotice({ tone: 'success', message: PAUSE_ADDED_MESSAGE });
-      refreshPerson(queryClient, personId);
     },
   });
 };
@@ -295,10 +256,10 @@ export interface PauseUpdateInput extends PauseCreateInput {
 export const useUpdatePauseMutation = (
   personId: number,
 ): UseMutationResult<void, Error, PauseUpdateInput> => {
-  const queryClient = useQueryClient();
   const raiseNotice = useKkNotice();
 
   return useMutation({
+    meta: { changes: ['membership'] },
     mutationFn: (input: PauseUpdateInput) =>
       withFreshAccessToken((accessToken) =>
         requestPauseUpdate(
@@ -311,7 +272,6 @@ export const useUpdatePauseMutation = (
       ),
     onSuccess: () => {
       raiseNotice({ tone: 'success', message: PAUSE_SAVED_MESSAGE });
-      refreshPerson(queryClient, personId);
     },
   });
 };
@@ -319,15 +279,14 @@ export const useUpdatePauseMutation = (
 export const useCreateFeeReductionMutation = (
   personId: number,
 ): UseMutationResult<CreatedFeeReduction, Error, FeeReductionForm> => {
-  const queryClient = useQueryClient();
   const raiseNotice = useKkNotice();
 
   return useMutation({
+    meta: { changes: ['membership'] },
     mutationFn: (form: FeeReductionForm) =>
       withFreshAccessToken((accessToken) => requestFeeReductionCreate(personId, form, accessToken)),
     onSuccess: () => {
       raiseNotice({ tone: 'success', message: FEE_REDUCTION_ADDED_MESSAGE });
-      refreshPerson(queryClient, personId);
     },
   });
 };
@@ -339,10 +298,10 @@ export interface FeeReductionUpdateInput extends FeeReductionForm {
 export const useUpdateFeeReductionMutation = (
   personId: number,
 ): UseMutationResult<void, Error, FeeReductionUpdateInput> => {
-  const queryClient = useQueryClient();
   const raiseNotice = useKkNotice();
 
   return useMutation({
+    meta: { changes: ['membership'] },
     mutationFn: (input: FeeReductionUpdateInput) =>
       withFreshAccessToken((accessToken) =>
         requestFeeReductionUpdate(
@@ -358,7 +317,6 @@ export const useUpdateFeeReductionMutation = (
       ),
     onSuccess: () => {
       raiseNotice({ tone: 'success', message: FEE_REDUCTION_SAVED_MESSAGE });
-      refreshPerson(queryClient, personId);
     },
   });
 };
@@ -372,5 +330,5 @@ export const useAdoptionCandidateQuery = (
       : (): Promise<AdoptionCandidate | null> =>
           withFreshAccessToken((accessToken) => requestAdoptionCandidate(email, accessToken));
 
-  return useQuery({ queryKey: [...PERSONS_QUERY_KEY, 'adoption-candidate', email], queryFn: load });
+  return useQuery({ queryKey: queryKeys.adoptionCandidate(email), queryFn: load });
 };

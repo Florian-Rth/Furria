@@ -1,8 +1,9 @@
 import type { KkCrop } from '@furria/ui';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import type { PictureEditing } from '@/lib/api/schemas';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
+import { useRefreshAfter } from '@/lib/query/use-refresh-after';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { toUploadFailureMessage } from '../picture-labels';
 import type { PictureTarget } from '../picture-target';
@@ -73,14 +74,14 @@ export const usePictureEditor = ({
       withFreshAccessToken((accessToken) => requestPictureRemoval(target, accessToken)),
   });
 
-  const queryClient = useQueryClient();
+  const refreshAfter = useRefreshAfter();
   const isProcessing = editing?.state === 'processing';
   const wasProcessing = useRef(isProcessing);
   const pollWhileProcessing = useEffectEvent((): void => {
     refresh();
   });
   const refreshEveryView = useEffectEvent((): void => {
-    void queryClient.invalidateQueries();
+    void refreshAfter(['picture']);
   });
   useEffect(() => {
     const finishedProcessing = wasProcessing.current && !isProcessing;
@@ -102,7 +103,7 @@ export const usePictureEditor = ({
   );
 
   const finish = async (): Promise<void> => {
-    await queryClient.invalidateQueries();
+    await refreshAfter(['picture']);
     setPhase({ kind: 'view' });
     setCrop(null);
   };
@@ -188,7 +189,7 @@ export const usePictureEditor = ({
       removalMutation.mutate(undefined, {
         onSuccess: () => {
           setIsRemoving(false);
-          void queryClient.invalidateQueries();
+          void refreshAfter(['picture']);
         },
         onError: (error) => {
           setRemovalRejection(toWriteErrorMessage(error));

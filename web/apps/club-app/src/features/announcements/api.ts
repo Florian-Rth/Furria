@@ -1,11 +1,9 @@
 import { useKkNotice } from '@furria/ui';
-import type { QueryClient, UseMutationResult, UseQueryResult } from '@tanstack/react-query';
+import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CLUB_HUB_QUERY_KEY } from '@/features/club';
-import { ME_QUERY_KEY } from '@/features/session';
-import { START_QUERY_KEY } from '@/features/start';
 import type { Me } from '@/lib/api/schemas';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
+import { queryKeys } from '@/lib/query/reads';
 import {
   ANNOUNCEMENT_CHANGED_MESSAGE,
   ANNOUNCEMENT_POSTED_MESSAGE,
@@ -21,16 +19,9 @@ import {
 } from './requests';
 import type { AnnouncementForm, AnnouncementsResponse, CreatedAnnouncement } from './schemas';
 
-export const ANNOUNCEMENTS_QUERY_KEY = ['announcements'] as const;
-
 interface LastSeenRollback {
   previous: Me | undefined;
 }
-
-const refreshBoard = (queryClient: QueryClient): void => {
-  void queryClient.invalidateQueries({ queryKey: ANNOUNCEMENTS_QUERY_KEY });
-  void queryClient.invalidateQueries({ queryKey: CLUB_HUB_QUERY_KEY });
-};
 
 export interface LastSeenInput {
   seenUpTo: string | null;
@@ -50,7 +41,7 @@ const applyLastSeen = (
 
 export const useAnnouncementsQuery = (): UseQueryResult<AnnouncementsResponse, Error> =>
   useQuery({
-    queryKey: ANNOUNCEMENTS_QUERY_KEY,
+    queryKey: queryKeys.announcements,
     queryFn: () => withFreshAccessToken(requestAnnouncements),
   });
 
@@ -59,17 +50,14 @@ export const useCreateAnnouncementMutation = (): UseMutationResult<
   Error,
   AnnouncementForm
 > => {
-  const queryClient = useQueryClient();
   const raiseNotice = useKkNotice();
 
   return useMutation({
+    meta: { changes: ['announcement'] },
     mutationFn: (form: AnnouncementForm) =>
       withFreshAccessToken((accessToken) => requestCreateAnnouncement(form, accessToken)),
     onSuccess: () => {
       raiseNotice({ tone: 'success', message: ANNOUNCEMENT_POSTED_MESSAGE });
-    },
-    onSettled: () => {
-      refreshBoard(queryClient);
     },
   });
 };
@@ -77,10 +65,10 @@ export const useCreateAnnouncementMutation = (): UseMutationResult<
 export const useUpdateAnnouncementMutation = (
   announcementId: number,
 ): UseMutationResult<void, Error, AnnouncementForm> => {
-  const queryClient = useQueryClient();
   const raiseNotice = useKkNotice();
 
   return useMutation({
+    meta: { changes: ['announcement'] },
     mutationFn: (form: AnnouncementForm) =>
       withFreshAccessToken((accessToken) =>
         requestUpdateAnnouncement(announcementId, form, accessToken),
@@ -88,26 +76,20 @@ export const useUpdateAnnouncementMutation = (
     onSuccess: () => {
       raiseNotice({ tone: 'success', message: ANNOUNCEMENT_CHANGED_MESSAGE });
     },
-    onSettled: () => {
-      refreshBoard(queryClient);
-    },
   });
 };
 
 export const useWithdrawAnnouncementMutation = (): UseMutationResult<void, Error, number> => {
-  const queryClient = useQueryClient();
   const raiseNotice = useKkNotice();
 
   return useMutation({
+    meta: { changes: ['announcement'] },
     mutationFn: (announcementId: number) =>
       withFreshAccessToken((accessToken) =>
         requestWithdrawAnnouncement(announcementId, accessToken),
       ),
     onSuccess: () => {
       raiseNotice({ tone: 'success', message: ANNOUNCEMENT_WITHDRAWN_MESSAGE });
-    },
-    onSettled: () => {
-      refreshBoard(queryClient);
     },
   });
 };
@@ -121,25 +103,22 @@ export const useLastSeenAnnouncementMutation = (): UseMutationResult<
   const queryClient = useQueryClient();
 
   return useMutation({
+    meta: { changes: ['announcementSeen'] },
     mutationFn: ({ seenUpTo }: LastSeenInput) =>
       withFreshAccessToken((accessToken) => requestLastSeenAnnouncement(seenUpTo, accessToken)),
     onMutate: async ({ seenUpTo }: LastSeenInput) => {
-      await queryClient.cancelQueries({ queryKey: ME_QUERY_KEY });
-      const previous = queryClient.getQueryData<Me>(ME_QUERY_KEY);
+      await queryClient.cancelQueries({ queryKey: queryKeys.me });
+      const previous = queryClient.getQueryData<Me>(queryKeys.me);
       const now = new Date();
 
-      queryClient.setQueryData<Me>(ME_QUERY_KEY, (current) =>
+      queryClient.setQueryData<Me>(queryKeys.me, (current) =>
         applyLastSeen(current, seenUpTo, now),
       );
 
       return { previous };
     },
     onError: (_error, _variables, context) => {
-      queryClient.setQueryData(ME_QUERY_KEY, context?.previous);
-    },
-    onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: ME_QUERY_KEY });
-      void queryClient.invalidateQueries({ queryKey: START_QUERY_KEY });
+      queryClient.setQueryData(queryKeys.me, context?.previous);
     },
   });
 };

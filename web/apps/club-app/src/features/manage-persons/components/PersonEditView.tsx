@@ -5,7 +5,6 @@ import { AccessPanel } from '@/features/account-access';
 import { usePermissions } from '@/features/session';
 import { useLanding } from '@/features/write';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
-import { useRefreshPerson } from '../api';
 import type { PersonDetails } from '../schemas';
 import { PersonAccessView } from './PersonAccessView';
 import { PersonArchiveFoot } from './PersonArchiveFoot';
@@ -22,7 +21,6 @@ interface PersonEditViewProps {
 
 export const PersonEditView: FC<PersonEditViewProps> = ({ person }) => {
   const { highlightedKey } = useLanding();
-  const refreshPerson = useRefreshPerson(person.personId);
   const { has } = usePermissions();
 
   const deletionLine = has(PERMISSION_KEYS.personsDelete) ? (
@@ -44,7 +42,7 @@ export const PersonEditView: FC<PersonEditViewProps> = ({ person }) => {
       <Grid size={{ xs: 12, desktop: 5 }} sx={{ minWidth: 0 }}>
         <KkPanelStack>
           <PersonMasterDataPanel person={person} highlightedKey={highlightedKey} />
-          <AccessPanel subject={person} highlightedKey={highlightedKey} onChanged={refreshPerson} />
+          <AccessPanel subject={person} highlightedKey={highlightedKey} />
           <PersonGroupsPanel groups={person.groups} firstName={person.firstName} />
           <PersonRolesPanel roles={person.roles} firstName={person.firstName} />
           <PersonArchiveFoot person={person} />

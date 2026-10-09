@@ -9,7 +9,6 @@ import { toToDoMarkErrorMessage } from './to-do-messages';
 export interface ToDoMarkSurface<TData> {
   queryKey: QueryKey;
   withMark: (current: TData | undefined, mark: ToDoMark) => TData | undefined;
-  alsoRefresh: readonly QueryKey[];
 }
 
 interface ToDoMarkRollback<TData> {
@@ -23,6 +22,7 @@ export const useToDoMarkMutation = <TData>(
   const raiseNotice = useKkNotice();
 
   return useMutation({
+    meta: { changes: ['toDoMark'] },
     mutationFn: (mark: ToDoMark) =>
       withFreshAccessToken((accessToken) => requestToDoMark(mark, accessToken)),
     onMutate: async (mark) => {
@@ -40,12 +40,6 @@ export const useToDoMarkMutation = <TData>(
 
       if (message !== null) {
         raiseNotice({ tone: 'error', message });
-      }
-    },
-    onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: surface.queryKey });
-      for (const queryKey of surface.alsoRefresh) {
-        void queryClient.invalidateQueries({ queryKey });
       }
     },
   });

@@ -1,19 +1,9 @@
 import { useKkNotice } from '@furria/ui';
-import type { QueryClient, UseMutationResult, UseQueryResult } from '@tanstack/react-query';
-import {
-  keepPreviousData,
-  skipToken,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query';
-import { CALENDAR_QUERY_KEY } from '@/features/calendar';
-import { CLUB_HUB_QUERY_KEY } from '@/features/club';
-import { GROUPS_QUERY_KEY } from '@/features/groups';
-import { START_QUERY_KEY } from '@/features/start';
+import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
+import { keepPreviousData, skipToken, useMutation, useQuery } from '@tanstack/react-query';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
-import { toAttendanceSavedMessage } from '@/lib/calendar-copy';
 import { toIsoDay } from '@/lib/day';
+import { queryKeys } from '@/lib/query/reads';
 import type { CalendarEntryWindow } from './group-calendar-entries';
 import {
   GROUP_INFO_SAVED_MESSAGE,
@@ -34,7 +24,6 @@ import {
   requestGeneratedTrainings,
   requestGroupAdministrationUpdate,
   requestGroupArchivalFromHub,
-  requestGroupAttendanceResponse,
   requestGroupCalendar,
   requestGroupHub,
   requestGroupInfoUpdate,
@@ -50,7 +39,6 @@ import type {
   AddedGroupMembership,
   GeneratedTrainings,
   GroupAdministrationForm,
-  GroupAttendanceAnswer,
   GroupCalendarResponse,
   GroupHub,
   GroupInfoForm,
@@ -58,37 +46,6 @@ import type {
   PersonSearchResponse,
   TrainingPreview,
 } from './schemas';
-
-const MANAGED_GROUPS_QUERY_KEY = ['manage', 'groups'] as const;
-
-export const MY_GROUPS_QUERY_KEY = ['my-groups'] as const;
-
-export const groupHubQueryKey = (groupId: number | null): readonly [string, number | null] => [
-  'groups',
-  groupId,
-];
-
-export const groupCalendarQueryKey = (
-  groupId: number | null,
-  from: string,
-  to: string,
-): readonly [string, number | null, string, string, string] => [
-  'groups',
-  groupId,
-  'calendar',
-  from,
-  to,
-];
-
-export const personSearchQueryKey = (term: string): readonly [string, string] => [
-  'person-search',
-  term,
-];
-
-export interface GroupAttendanceInput {
-  calendarEntryId: number;
-  answer: GroupAttendanceAnswer;
-}
 
 export interface AdminAppointment {
   function: string | null;
@@ -122,14 +79,9 @@ export interface EndAdminInput {
   endedOn: string;
 }
 
-const refreshHub = (queryClient: QueryClient, groupId: number): void => {
-  void queryClient.invalidateQueries({ queryKey: groupHubQueryKey(groupId) });
-  void queryClient.invalidateQueries({ queryKey: MY_GROUPS_QUERY_KEY });
-};
-
 export const useMyGroupsQuery = (): UseQueryResult<MyGroupsResponse, Error> =>
   useQuery({
-    queryKey: MY_GROUPS_QUERY_KEY,
+    queryKey: queryKeys.myGroups,
     queryFn: () => withFreshAccessToken(requestMyGroups),
   });
 
@@ -140,7 +92,7 @@ export const useGroupHubQuery = (groupId: number | null): UseQueryResult<GroupHu
       : (): Promise<GroupHub> =>
           withFreshAccessToken((accessToken) => requestGroupHub(groupId, accessToken));
 
-  return useQuery({ queryKey: groupHubQueryKey(groupId), queryFn: load });
+  return useQuery({ queryKey: queryKeys.groupHub(groupId), queryFn: load });
 };
 
 export const useGroupCalendarQuery = (
@@ -154,36 +106,8 @@ export const useGroupCalendarQuery = (
           withFreshAccessToken((accessToken) => requestGroupCalendar(groupId, window, accessToken));
 
   return useQuery({
-    queryKey: groupCalendarQueryKey(groupId, window.from, window.to),
+    queryKey: queryKeys.groupCalendar(groupId, window.from, window.to),
     queryFn: load,
-  });
-};
-
-const refreshAnsweredEntries = async (queryClient: QueryClient): Promise<void> => {
-  await Promise.all([
-    queryClient.invalidateQueries({ queryKey: GROUPS_QUERY_KEY }),
-    queryClient.invalidateQueries({ queryKey: CALENDAR_QUERY_KEY }),
-    queryClient.invalidateQueries({ queryKey: START_QUERY_KEY }),
-  ]);
-};
-
-export const useGroupAttendanceMutation = (): UseMutationResult<
-  void,
-  Error,
-  GroupAttendanceInput
-> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: ({ calendarEntryId, answer }: GroupAttendanceInput) =>
-      withFreshAccessToken((accessToken) =>
-        requestGroupAttendanceResponse(calendarEntryId, answer, accessToken),
-      ),
-    onSuccess: (_saved, { answer }) => {
-      raiseNotice({ tone: 'success', message: toAttendanceSavedMessage(answer) });
-    },
-    onSettled: () => refreshAnsweredEntries(queryClient),
   });
 };
 
@@ -197,7 +121,7 @@ export const usePersonSearchQuery = (
           withFreshAccessToken((accessToken) => requestPersonSearch(term, accessToken));
 
   return useQuery({
-    queryKey: personSearchQueryKey(term ?? ''),
+    queryKey: queryKeys.personSearch(term ?? ''),
     queryFn: load,
     placeholderData: keepPreviousData,
   });
@@ -206,18 +130,14 @@ export const usePersonSearchQuery = (
 export const useUpdateGroupInfoMutation = (
   groupId: number,
 ): UseMutationResult<void, Error, GroupInfoForm> => {
-  const queryClient = useQueryClient();
   const raiseNotice = useKkNotice();
 
   return useMutation({
+    meta: { changes: ['group'] },
     mutationFn: (form: GroupInfoForm) =>
       withFreshAccessToken((accessToken) => requestGroupInfoUpdate(groupId, form, accessToken)),
     onSuccess: () => {
       raiseNotice({ tone: 'success', message: GROUP_INFO_SAVED_MESSAGE });
-      refreshHub(queryClient, groupId);
-    },
-    onError: () => {
-      refreshHub(queryClient, groupId);
     },
   });
 };
@@ -225,22 +145,16 @@ export const useUpdateGroupInfoMutation = (
 export const useUpdateGroupAdministrationMutation = (
   groupId: number,
 ): UseMutationResult<void, Error, GroupAdministrationForm> => {
-  const queryClient = useQueryClient();
   const raiseNotice = useKkNotice();
 
   return useMutation({
+    meta: { changes: ['group'] },
     mutationFn: (form: GroupAdministrationForm) =>
       withFreshAccessToken((accessToken) =>
         requestGroupAdministrationUpdate(groupId, form, accessToken),
       ),
     onSuccess: (_result, form) => {
       raiseNotice({ tone: 'success', message: toGroupAdministrationSavedMessage(form.name) });
-      refreshHub(queryClient, groupId);
-      void queryClient.invalidateQueries({ queryKey: MANAGED_GROUPS_QUERY_KEY });
-      void queryClient.invalidateQueries({ queryKey: GROUPS_QUERY_KEY });
-    },
-    onError: () => {
-      refreshHub(queryClient, groupId);
     },
   });
 };
@@ -252,18 +166,14 @@ export interface ArchiveGroupFromHubInput {
 export const useArchiveGroupFromHubMutation = (
   groupId: number,
 ): UseMutationResult<void, Error, ArchiveGroupFromHubInput> => {
-  const queryClient = useQueryClient();
   const raiseNotice = useKkNotice();
 
   return useMutation({
+    meta: { changes: ['group'] },
     mutationFn: () =>
       withFreshAccessToken((accessToken) => requestGroupArchivalFromHub(groupId, accessToken)),
     onSuccess: (_result, input) => {
       raiseNotice({ tone: 'success', message: toGroupArchivedFromHubMessage(input.name) });
-      void queryClient.invalidateQueries({ queryKey: groupHubQueryKey(groupId) });
-      void queryClient.invalidateQueries({ queryKey: MY_GROUPS_QUERY_KEY });
-      void queryClient.invalidateQueries({ queryKey: MANAGED_GROUPS_QUERY_KEY });
-      void queryClient.invalidateQueries({ queryKey: GROUPS_QUERY_KEY });
     },
   });
 };
@@ -271,10 +181,10 @@ export const useArchiveGroupFromHubMutation = (
 export const useAddGroupMembershipMutation = (
   groupId: number,
 ): UseMutationResult<AddedGroupMembership, Error, AddMemberInput> => {
-  const queryClient = useQueryClient();
   const raiseNotice = useKkNotice();
 
   return useMutation({
+    meta: { changes: ['groupMembership', 'groupAdmin'] },
     mutationFn: (input: AddMemberInput) =>
       withFreshAccessToken(async (accessToken) => {
         const added = await requestAddGroupMembership(
@@ -301,10 +211,6 @@ export const useAddGroupMembershipMutation = (
           : toMemberAddedAsAdminMessage(input.personName, input.joinedOn, today);
 
       raiseNotice({ tone: 'success', message });
-      refreshHub(queryClient, groupId);
-    },
-    onError: () => {
-      refreshHub(queryClient, groupId);
     },
   });
 };
@@ -312,10 +218,10 @@ export const useAddGroupMembershipMutation = (
 export const useEndGroupMembershipMutation = (
   groupId: number,
 ): UseMutationResult<void, Error, EndMembershipInput> => {
-  const queryClient = useQueryClient();
   const raiseNotice = useKkNotice();
 
   return useMutation({
+    meta: { changes: ['groupMembership'] },
     mutationFn: (input: EndMembershipInput) =>
       withFreshAccessToken((accessToken) =>
         requestEndGroupMembership(
@@ -332,10 +238,6 @@ export const useEndGroupMembershipMutation = (
       );
 
       raiseNotice({ tone: 'success', message });
-      refreshHub(queryClient, groupId);
-    },
-    onError: () => {
-      refreshHub(queryClient, groupId);
     },
   });
 };
@@ -343,10 +245,10 @@ export const useEndGroupMembershipMutation = (
 export const useAddGroupAdminMutation = (
   groupId: number,
 ): UseMutationResult<AddedGroupAdmin, Error, AddAdminInput> => {
-  const queryClient = useQueryClient();
   const raiseNotice = useKkNotice();
 
   return useMutation({
+    meta: { changes: ['groupAdmin'] },
     mutationFn: (input: AddAdminInput) =>
       withFreshAccessToken((accessToken) =>
         requestAddGroupAdmin(
@@ -363,10 +265,6 @@ export const useAddGroupAdminMutation = (
       );
 
       raiseNotice({ tone: 'success', message });
-      refreshHub(queryClient, groupId);
-    },
-    onError: () => {
-      refreshHub(queryClient, groupId);
     },
   });
 };
@@ -374,10 +272,10 @@ export const useAddGroupAdminMutation = (
 export const useEndGroupAdminMutation = (
   groupId: number,
 ): UseMutationResult<void, Error, EndAdminInput> => {
-  const queryClient = useQueryClient();
   const raiseNotice = useKkNotice();
 
   return useMutation({
+    meta: { changes: ['groupAdmin'] },
     mutationFn: (input: EndAdminInput) =>
       withFreshAccessToken((accessToken) =>
         requestEndGroupAdmin(
@@ -400,50 +298,26 @@ export const useEndGroupAdminMutation = (
           message: toAdminEndedMessage(input.personName, input.endedOn, today),
         });
       }
-      refreshHub(queryClient, groupId);
-    },
-    onError: () => {
-      refreshHub(queryClient, groupId);
     },
   });
 };
-
-export const trainingPreviewQueryKey = (
-  groupId: number,
-  endsOn: string | null,
-): readonly [string, number, string, string | null] => [
-  'groups',
-  groupId,
-  'training-preview',
-  endsOn,
-];
 
 export interface GenerateTrainingsInput {
   title: string;
   instants: readonly { groupTrainingSlotId: number; startsAt: string }[];
 }
 
-const refreshCalendarEntries = (queryClient: QueryClient, groupId: number): void => {
-  void queryClient.invalidateQueries({ queryKey: groupHubQueryKey(groupId) });
-  void queryClient.invalidateQueries({ queryKey: CALENDAR_QUERY_KEY });
-  void queryClient.invalidateQueries({ queryKey: CLUB_HUB_QUERY_KEY });
-};
-
 export const useSetTrainingSlotsMutation = (
   groupId: number,
 ): UseMutationResult<void, Error, readonly TrainingSlotPayload[]> => {
-  const queryClient = useQueryClient();
   const raiseNotice = useKkNotice();
 
   return useMutation({
+    meta: { changes: ['trainingSlot'] },
     mutationFn: (slots: readonly TrainingSlotPayload[]) =>
       withFreshAccessToken((accessToken) => requestSetTrainingSlots(groupId, slots, accessToken)),
     onSuccess: () => {
       raiseNotice({ tone: 'success', message: RHYTHM_SAVED_MESSAGE });
-      refreshHub(queryClient, groupId);
-    },
-    onError: () => {
-      refreshHub(queryClient, groupId);
     },
   });
 };
@@ -459,7 +333,7 @@ export const useTrainingPreviewQuery = (
     : skipToken;
 
   return useQuery({
-    queryKey: trainingPreviewQueryKey(groupId, endsOn),
+    queryKey: queryKeys.trainingPreview(groupId, endsOn),
     queryFn: load,
     placeholderData: keepPreviousData,
   });
@@ -468,10 +342,10 @@ export const useTrainingPreviewQuery = (
 export const useGenerateTrainingsMutation = (
   groupId: number,
 ): UseMutationResult<GeneratedTrainings, Error, GenerateTrainingsInput> => {
-  const queryClient = useQueryClient();
   const raiseNotice = useKkNotice();
 
   return useMutation({
+    meta: { changes: ['calendarEntry'] },
     mutationFn: (input: GenerateTrainingsInput) =>
       withFreshAccessToken((accessToken) =>
         requestGeneratedTrainings(groupId, input.title, input.instants, accessToken),
@@ -481,7 +355,6 @@ export const useGenerateTrainingsMutation = (
         tone: 'success',
         message: toTrainingsCreatedMessage(written.createdCount, written.skippedCount),
       });
-      refreshCalendarEntries(queryClient, groupId);
     },
   });
 };

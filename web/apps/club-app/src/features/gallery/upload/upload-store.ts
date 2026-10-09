@@ -1,9 +1,9 @@
 import { DetailedError, Upload } from 'tus-js-client';
 import { buildApiUrl } from '@/lib/api/api-fetch';
 import { ensureFreshAccessToken } from '@/lib/api/session/session-store';
+import { refreshAfter } from '@/lib/query/refresh-after';
 import { queryClient } from '@/lib/query-client';
 import { readApiBaseUrl } from '@/lib/runtime-config';
-import { refreshGallery } from '../api';
 import { captureTimeOf, localStampOf } from './exif-capture';
 import type { ThroughputSample, UploadEntry, UploadFailure } from './upload-queue';
 import {
@@ -72,7 +72,7 @@ const refreshSoon = (): void => {
   }
   refreshTimer = window.setTimeout(() => {
     refreshTimer = null;
-    void refreshGallery(queryClient);
+    void refreshAfter(queryClient, ['media']);
   }, REFRESH_MS);
 };
 

@@ -1,13 +1,12 @@
 import type { UseQueryResult } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
+import { queryKeys } from '@/lib/query/reads';
 import { requestRolesOverview } from './requests';
 import type { RolesOverviewResponse } from './schemas';
 
-export const ROLES_OVERVIEW_QUERY_KEY = ['roles-overview'] as const;
-
 export const useRolesOverviewQuery = (): UseQueryResult<RolesOverviewResponse, Error> =>
   useQuery({
-    queryKey: ROLES_OVERVIEW_QUERY_KEY,
+    queryKey: queryKeys.rolesOverview,
     queryFn: () => withFreshAccessToken(requestRolesOverview),
   });

@@ -1,15 +1,12 @@
 import { useKkNotice } from '@furria/ui';
-import type { QueryClient, UseMutationResult, UseQueryResult } from '@tanstack/react-query';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CLUB_HUB_QUERY_KEY } from '@/features/club';
-import { MANAGE_HUB_QUERY_KEY } from '@/features/manage-hub';
+import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { toIsoDay } from '@/lib/day';
+import { queryKeys } from '@/lib/query/reads';
 import { toKeyHandedOutMessage, toKeyTakenBackMessage } from './manage-keys-labels';
 import { requestKeyHandout, requestKeyHoldings, requestKeyReturn } from './requests';
 import type { CreatedKeyHolding, KeyHoldingsResponse } from './schemas';
-
-export const MANAGED_KEYS_QUERY_KEY = ['manage', 'keys'] as const;
 
 export interface KeyHandoutInput {
   venueId: number;
@@ -25,15 +22,9 @@ export interface KeyReturnInput {
   untilOn: string;
 }
 
-const refreshKeys = (queryClient: QueryClient): void => {
-  void queryClient.invalidateQueries({ queryKey: MANAGED_KEYS_QUERY_KEY });
-  void queryClient.invalidateQueries({ queryKey: MANAGE_HUB_QUERY_KEY });
-  void queryClient.invalidateQueries({ queryKey: CLUB_HUB_QUERY_KEY });
-};
-
 export const useManagedKeysQuery = (): UseQueryResult<KeyHoldingsResponse, Error> =>
   useQuery({
-    queryKey: MANAGED_KEYS_QUERY_KEY,
+    queryKey: queryKeys.managedKeys,
     queryFn: () => withFreshAccessToken(requestKeyHoldings),
   });
 
@@ -42,10 +33,10 @@ export const useHandOutKeyMutation = (): UseMutationResult<
   Error,
   KeyHandoutInput
 > => {
-  const queryClient = useQueryClient();
   const raiseNotice = useKkNotice();
 
   return useMutation({
+    meta: { changes: ['keyHolding'] },
     mutationFn: (input: KeyHandoutInput) =>
       withFreshAccessToken((accessToken) =>
         requestKeyHandout(
@@ -63,16 +54,15 @@ export const useHandOutKeyMutation = (): UseMutationResult<
           toIsoDay(new Date()),
         ),
       });
-      refreshKeys(queryClient);
     },
   });
 };
 
 export const useTakeBackKeyMutation = (): UseMutationResult<void, Error, KeyReturnInput> => {
-  const queryClient = useQueryClient();
   const raiseNotice = useKkNotice();
 
   return useMutation({
+    meta: { changes: ['keyHolding'] },
     mutationFn: (input: KeyReturnInput) =>
       withFreshAccessToken((accessToken) =>
         requestKeyReturn(input.keyHoldingId, input.untilOn, accessToken),
@@ -82,7 +72,6 @@ export const useTakeBackKeyMutation = (): UseMutationResult<void, Error, KeyRetu
         tone: 'success',
         message: toKeyTakenBackMessage(input.personName, input.untilOn, toIsoDay(new Date())),
       });
-      refreshKeys(queryClient);
     },
   });
 };

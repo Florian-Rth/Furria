@@ -1,5 +1,6 @@
 import type { KkScreenActionBar } from '@furria/ui';
 import { useEffect, useRef, useState } from 'react';
+import { useRefreshAfter } from '@/lib/query/use-refresh-after';
 import { useGoBackTo } from '@/lib/use-go-back-to';
 import { useNow } from '@/lib/use-now';
 import { toWriteErrorMessage } from '@/lib/write-error';
@@ -22,7 +23,6 @@ const TICK_MS = 1000;
 interface InPersonInvitationInput {
   purpose: InPersonPurpose;
   subject: AccessSubject;
-  onRedeemed: () => void;
 }
 
 type IssueState =
@@ -39,13 +39,13 @@ export interface InPersonInvitationControl {
 export const useInPersonInvitation = ({
   purpose,
   subject,
-  onRedeemed,
 }: InPersonInvitationInput): InPersonInvitationControl => {
   const { mutateAsync } = useInPersonInvitationMutation(purpose, subject.personId);
   const [issue, setIssue] = useState<IssueState>({ status: 'issuing' });
   const hasIssued = useRef(false);
   const hasReportedRedemption = useRef(false);
   const goBackTo = useGoBackTo();
+  const refreshAfter = useRefreshAfter();
   const invitation = issue.status === 'issued' ? issue.invitation : undefined;
   const isIssuing = issue.status === 'issuing';
   const now = useNow(TICK_MS, invitation !== undefined);
@@ -87,8 +87,8 @@ export const useInPersonInvitation = ({
     }
 
     hasReportedRedemption.current = true;
-    onRedeemed();
-  }, [isRedeemed, onRedeemed]);
+    void refreshAfter(['account']);
+  }, [isRedeemed, refreshAfter]);
 
   const reissue = (): void => {
     issueCode();

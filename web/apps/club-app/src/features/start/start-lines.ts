@@ -1,5 +1,5 @@
 import type { KkDenseFacet, KkDenseLineState, KkIconName, KkLinkSearchValues } from '@furria/ui';
-import type { AttendanceAnswer } from '@/features/calendar';
+import type { AttendanceAnswer } from '@/features/attendance';
 import { toGroupTone } from '@/features/groups/group-identity';
 import { toLocalIsoDay } from '@/lib/calendar-days';
 import { calendarDaysBetween, sessionYearsLabelOf } from '@/lib/club';

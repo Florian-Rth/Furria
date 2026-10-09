@@ -1,8 +1,8 @@
 import { useKkNotice } from '@furria/ui';
 import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { MANAGE_HUB_QUERY_KEY } from '@/features/manage-hub';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
+import { queryKeys } from '@/lib/query/reads';
 import { CLUB_RECORD_SAVED_MESSAGE } from './club-record-labels';
 import {
   requestClubAccessUpdate,
@@ -12,27 +12,23 @@ import {
 } from './requests';
 import type { ClubContact, ClubIdentity, ClubRecord } from './schemas';
 
-export const CLUB_RECORD_QUERY_KEY = ['manage', 'club-record'] as const;
-
 export const useClubRecordQuery = (): UseQueryResult<ClubRecord, Error> =>
   useQuery({
-    queryKey: CLUB_RECORD_QUERY_KEY,
+    queryKey: queryKeys.clubRecord,
     queryFn: () => withFreshAccessToken(requestClubRecord),
   });
 
 const useClubRecordWrite = <TChange>(
   write: (change: TChange, accessToken: string) => Promise<void>,
 ): UseMutationResult<void, Error, TChange> => {
-  const queryClient = useQueryClient();
   const raiseNotice = useKkNotice();
 
   return useMutation({
+    meta: { changes: ['clubRecord'] },
     mutationFn: (change: TChange) =>
       withFreshAccessToken((accessToken) => write(change, accessToken)),
     onSuccess: () => {
       raiseNotice({ tone: 'success', message: CLUB_RECORD_SAVED_MESSAGE });
-      void queryClient.invalidateQueries({ queryKey: CLUB_RECORD_QUERY_KEY });
-      void queryClient.invalidateQueries({ queryKey: MANAGE_HUB_QUERY_KEY });
     },
   });
 };

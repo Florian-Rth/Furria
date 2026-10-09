@@ -1,4 +1,4 @@
-export { ME_QUERY_KEY, useMeQuery } from './api';
+export { useMeQuery } from './api';
 export type { AppSection } from './app-sections';
 export {
   ANNOUNCEMENTS_PATH,

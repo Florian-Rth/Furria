@@ -1,4 +1,4 @@
-import type { QueryClient, UseMutationResult, UseQueryResult } from '@tanstack/react-query';
+import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
 import {
   keepPreviousData,
   queryOptions,
@@ -7,8 +7,8 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import { START_QUERY_KEY } from '@/features/start';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
+import { queryKeys } from '@/lib/query/reads';
 import type { AlbumFilter } from './requests';
 import {
   requestAlbum,
@@ -38,43 +38,20 @@ import type {
 import type { AlbumPayload, AlbumUpdatePayload, InboxOwner, SelectionPhoto } from './types';
 import type { DevelopedItem } from './upload/upload-tiles';
 
-export const GALLERY_QUERY_KEY = ['gallery'] as const;
-export const GALLERY_HUB_QUERY_KEY = ['gallery', 'hub'] as const;
-export const GALLERY_INBOXES_QUERY_KEY = ['gallery', 'inboxes'] as const;
-export const GALLERY_BIN_QUERY_KEY = ['gallery', 'bin'] as const;
-
-export const albumQueryKey = (
-  albumId: number,
-  filter: AlbumFilter,
-): readonly [string, string, number, AlbumFilter] => ['gallery', 'album', albumId, filter];
-
-export const inboxQueryKey = (owner: InboxOwner): readonly [string, string, InboxOwner] => [
-  'gallery',
-  'inbox',
-  owner,
-];
-
 const PROCESSING_POLL_MS = 4_000;
 
 const isProcessing = (items: readonly { state: string }[] | undefined): boolean =>
   items?.some((item) => item.state === 'processing') ?? false;
 
-export const refreshGallery = async (queryClient: QueryClient): Promise<void> => {
-  await Promise.all([
-    queryClient.invalidateQueries({ queryKey: GALLERY_QUERY_KEY }),
-    queryClient.invalidateQueries({ queryKey: START_QUERY_KEY }),
-  ]);
-};
-
 export const useGalleryHubQuery = (): UseQueryResult<GalleryHub, Error> =>
   useQuery({
-    queryKey: GALLERY_HUB_QUERY_KEY,
+    queryKey: queryKeys.galleryHub,
     queryFn: () => withFreshAccessToken(requestGalleryHub),
   });
 
 const albumQueryOptions = (albumId: number, filter: AlbumFilter) =>
   queryOptions({
-    queryKey: albumQueryKey(albumId, filter),
+    queryKey: queryKeys.album(albumId, filter),
     queryFn: () => withFreshAccessToken((token) => requestAlbum(albumId, filter, token)),
     refetchInterval: (query) =>
       isProcessing(query.state.data?.items) ? PROCESSING_POLL_MS : false,
@@ -82,7 +59,7 @@ const albumQueryOptions = (albumId: number, filter: AlbumFilter) =>
 
 const inboxQueryOptions = (owner: InboxOwner) =>
   queryOptions({
-    queryKey: inboxQueryKey(owner),
+    queryKey: queryKeys.inbox(owner),
     queryFn: () => withFreshAccessToken((token) => requestInbox(owner, token)),
     refetchInterval: (query) =>
       isProcessing(query.state.data?.items) ? PROCESSING_POLL_MS : false,
@@ -124,24 +101,23 @@ export const useDevelopedItems = (
 
 export const useInboxesQuery = (enabled: boolean): UseQueryResult<InboxesResponse, Error> =>
   useQuery({
-    queryKey: GALLERY_INBOXES_QUERY_KEY,
+    queryKey: queryKeys.inboxes,
     queryFn: () => withFreshAccessToken(requestInboxes),
     enabled,
   });
 
 export const useGalleryBinQuery = (): UseQueryResult<GalleryBin, Error> =>
   useQuery({
-    queryKey: GALLERY_BIN_QUERY_KEY,
+    queryKey: queryKeys.galleryBin,
     queryFn: () => withFreshAccessToken(requestBin),
   });
 
 const useGalleryMutation = <TInput, TResult>(
   write: (input: TInput, accessToken: string) => Promise<TResult>,
 ): UseMutationResult<TResult, Error, TInput> => {
-  const queryClient = useQueryClient();
   return useMutation({
+    meta: { changes: ['media'], settlesWhenFresh: true },
     mutationFn: (input: TInput) => withFreshAccessToken((token) => write(input, token)),
-    onSettled: () => refreshGallery(queryClient),
   });
 };
 
@@ -200,7 +176,7 @@ export const useFullAlbumFetch = (): ((albumId: number) => Promise<AlbumDetails>
   const queryClient = useQueryClient();
   return (albumId: number) =>
     queryClient.fetchQuery({
-      queryKey: albumQueryKey(albumId, UNFILTERED),
+      queryKey: queryKeys.album(albumId, UNFILTERED),
       queryFn: () => withFreshAccessToken((token) => requestAlbum(albumId, UNFILTERED, token)),
     });
 };

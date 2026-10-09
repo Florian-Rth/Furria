@@ -1,15 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { RequestBlockedError, RequestFailedError, ServerFailureError } from '@/lib/api/api-error';
+import type { AttendanceAnswer } from '@/features/attendance/schemas';
 import type { Start, StartAttendance, StartEntry } from './schemas';
-import type { StartAnswerAttempt, StartAnswerFailure } from './start-answer';
-import {
-  attendanceOf,
-  latestAnswerErrorOf,
-  OfflineAnswerError,
-  toAnswerFailureOf,
-  toAnswerRollbackOf,
-  withEntryAttendance,
-} from './start-answer';
+import { withPendingAnswers } from './start-answer';
 
 const entry = (calendarEntryId: number, attendance: StartAttendance | null): StartEntry => ({
   calendarEntryId,
@@ -29,7 +21,8 @@ const entry = (calendarEntryId: number, attendance: StartAttendance | null): Sta
 });
 
 const OWED: StartAttendance = { viewerAnswer: null, isOwed: true };
-const ANSWERED: StartAttendance = { viewerAnswer: 'yes', isOwed: false };
+const SAID_YES: StartAttendance = { viewerAnswer: 'yes', isOwed: false };
+const SAID_NO: StartAttendance = { viewerAnswer: 'no', isOwed: false };
 
 const start = (entries: StartEntry[]): Start => ({
   asOf: '2027-01-19T18:50:00Z',
@@ -42,115 +35,44 @@ const start = (entries: StartEntry[]): Start => ({
   ],
 });
 
-describe('toAnswerFailureOf', () => {
-  it.each<{ label: string; error: Error | null; expected: StartAnswerFailure | null }>([
-    { label: 'nothing failed', error: null, expected: null },
-    { label: 'the device was offline', error: new OfflineAnswerError(), expected: 'offline' },
-    { label: 'the request never arrived', error: new RequestBlockedError(), expected: 'unsaved' },
-    { label: 'the server broke', error: new ServerFailureError(500), expected: 'unsaved' },
-    { label: 'the entry was deleted', error: new ServerFailureError(404), expected: 'gone' },
-    {
-      label: 'the entry stopped asking',
-      error: new RequestFailedError(400, [{ field: 'answer', message: 'Keine Antwort erbeten.' }]),
-      expected: 'notAsked',
-    },
-    {
-      label: 'the entry stopped asking without details',
-      error: new ServerFailureError(400),
-      expected: 'notAsked',
-    },
-    { label: 'the answer collided', error: new RequestFailedError(409, []), expected: 'conflict' },
-  ])('is $expected when $label', ({ error, expected }) => {
-    expect(toAnswerFailureOf(error)).toBe(expected);
-  });
-});
-
-describe('attendanceOf', () => {
+describe('withPendingAnswers', () => {
   it.each<{
     label: string;
-    data: Start | undefined;
-    expected: StartAttendance | null | undefined;
+    data: Start;
+    pending: [number, AttendanceAnswer][];
+    expected: Start;
   }>([
-    { label: 'nothing is cached', data: undefined, expected: undefined },
-    { label: 'the entry is not on the board', data: start([entry(1, OWED)]), expected: undefined },
     {
-      label: 'the entry asks nothing',
-      data: start([entry(1, OWED), entry(2, null)]),
-      expected: null,
-    },
-    {
-      label: 'the entry is owed',
-      data: start([entry(1, ANSWERED), entry(2, OWED)]),
-      expected: OWED,
-    },
-  ])('reads $expected when $label', ({ data, expected }) => {
-    expect(attendanceOf(data, 2)).toEqual(expected);
-  });
-});
-
-describe('withEntryAttendance', () => {
-  it.each([
-    {
-      label: 'she answers the owed entry',
-      data: start([entry(1, OWED), entry(2, OWED)]),
-      attendance: ANSWERED,
-      expected: start([entry(1, OWED), entry(2, ANSWERED)]),
-    },
-    {
-      label: 'the entry is not on the board',
+      label: 'nothing is pending',
       data: start([entry(1, OWED)]),
-      attendance: ANSWERED,
+      pending: [],
       expected: start([entry(1, OWED)]),
     },
-  ])('updates only that entry when $label', ({ data, attendance, expected }) => {
-    expect(withEntryAttendance(data, 2, attendance)).toEqual(expected);
-  });
-});
-
-describe('latestAnswerErrorOf', () => {
-  const since = 1_000;
-  const broken = new ServerFailureError(500);
-
-  it.each<{ label: string; attempts: StartAnswerAttempt[]; expected: Error | null }>([
-    { label: 'she never answered', attempts: [], expected: null },
     {
-      label: 'her only answer failed here',
-      attempts: [{ submittedAt: 1_200, error: broken }],
-      expected: broken,
+      label: 'she answers an owed entry',
+      data: start([entry(1, OWED), entry(2, OWED)]),
+      pending: [[2, 'yes']],
+      expected: start([entry(1, OWED), entry(2, SAID_YES)]),
     },
     {
-      label: 'a newer answer is still on its way',
-      attempts: [
-        { submittedAt: 1_200, error: broken },
-        { submittedAt: 1_400, error: null },
-      ],
-      expected: null,
+      label: 'she changes her answer',
+      data: start([entry(1, SAID_YES)]),
+      pending: [[1, 'no']],
+      expected: start([entry(1, SAID_NO)]),
     },
     {
-      label: 'the failure came before this surface opened',
-      attempts: [{ submittedAt: 900, error: broken }],
-      expected: null,
+      label: 'the entry asks nothing',
+      data: start([entry(1, null)]),
+      pending: [[1, 'yes']],
+      expected: start([entry(1, null)]),
     },
-  ])('is $expected when $label', ({ attempts, expected }) => {
-    expect(latestAnswerErrorOf(attempts, since)).toBe(expected);
-  });
-});
-
-describe('toAnswerRollbackOf', () => {
-  it.each<{
-    label: string;
-    pendingAnswers: number;
-    confirmed: StartAttendance | null | undefined;
-    expected: StartAttendance | null | undefined;
-  }>([
-    { label: 'her last answer failed', pendingAnswers: 1, confirmed: OWED, expected: OWED },
     {
-      label: 'a later answer is still pending',
-      pendingAnswers: 2,
-      confirmed: OWED,
-      expected: undefined,
+      label: 'the answered entry is not on the board',
+      data: start([entry(1, OWED)]),
+      pending: [[7, 'maybe']],
+      expected: start([entry(1, OWED)]),
     },
-  ])('restores $expected when $label', ({ pendingAnswers, confirmed, expected }) => {
-    expect(toAnswerRollbackOf(pendingAnswers, confirmed)).toEqual(expected);
+  ])('shows the pending answer when $label', ({ data, pending, expected }) => {
+    expect(withPendingAnswers(data, new Map(pending))).toEqual(expected);
   });
 });

@@ -1,10 +1,10 @@
 import { useKkNotice } from '@furria/ui';
-import type { QueryClient, UseMutationResult, UseQueryResult } from '@tanstack/react-query';
+import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
 import { skipToken, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ME_QUERY_KEY } from '@/features/session';
 import type { PermissionKey } from '@/lib/api/schemas';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { toIsoDay } from '@/lib/day';
+import { queryKeys } from '@/lib/query/reads';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import {
   toHolderAddedMessage,
@@ -36,14 +36,6 @@ import type {
   RolesResponse,
 } from './schemas';
 
-export const ROLES_QUERY_KEY = ['manage', 'roles'] as const;
-
-export const roleQueryKey = (roleId: number | null): readonly [string, string, number | null] => [
-  'manage',
-  'roles',
-  roleId,
-];
-
 export interface RoleNameInput {
   roleName: string;
 }
@@ -71,11 +63,6 @@ interface RolePermissionsRollback {
   roles: RolesResponse | undefined;
 }
 
-const refreshRoles = (queryClient: QueryClient): void => {
-  void queryClient.invalidateQueries({ queryKey: ROLES_QUERY_KEY });
-  void queryClient.invalidateQueries({ queryKey: ME_QUERY_KEY });
-};
-
 const applyRolePermissions = (
   current: RoleDetails | undefined,
   permissionKeys: readonly string[],
@@ -101,7 +88,7 @@ const applyListPermissions = (
 
 export const useRolesQuery = (): UseQueryResult<RolesResponse, Error> =>
   useQuery({
-    queryKey: ROLES_QUERY_KEY,
+    queryKey: queryKeys.roles,
     queryFn: () => withFreshAccessToken(requestRoles),
   });
 
@@ -115,43 +102,35 @@ export const useRoleQuery = (roleId: number | null): UseQueryResult<RoleDetails,
           withFreshAccessToken((accessToken) => requestRole(roleId, accessToken));
 
   return useQuery({
-    queryKey: roleQueryKey(roleId),
+    queryKey: queryKeys.role(roleId),
     queryFn: load,
     placeholderData: () =>
-      toRoleSeed(queryClient.getQueryData<RolesResponse>(ROLES_QUERY_KEY), roleId),
+      toRoleSeed(queryClient.getQueryData<RolesResponse>(queryKeys.roles), roleId),
   });
 };
 
 export const useCreateRoleMutation = (): UseMutationResult<CreatedRole, Error, RoleForm> => {
-  const queryClient = useQueryClient();
   const raiseNotice = useKkNotice();
 
   return useMutation({
+    meta: { changes: ['role'] },
     mutationFn: (form: RoleForm) =>
       withFreshAccessToken((accessToken) => requestCreateRole(form, accessToken)),
     onSuccess: (_created, form) => {
       raiseNotice({ tone: 'success', message: toRoleCreatedMessage(form.name) });
-      refreshRoles(queryClient);
-    },
-    onError: () => {
-      refreshRoles(queryClient);
     },
   });
 };
 
 export const useUpdateRoleMutation = (roleId: number): UseMutationResult<void, Error, RoleForm> => {
-  const queryClient = useQueryClient();
   const raiseNotice = useKkNotice();
 
   return useMutation({
+    meta: { changes: ['role'] },
     mutationFn: (form: RoleForm) =>
       withFreshAccessToken((accessToken) => requestUpdateRole(roleId, form, accessToken)),
     onSuccess: (_result, form) => {
       raiseNotice({ tone: 'success', message: toRoleSavedMessage(form.name) });
-      refreshRoles(queryClient);
-    },
-    onError: () => {
-      refreshRoles(queryClient);
     },
   });
 };
@@ -159,17 +138,14 @@ export const useUpdateRoleMutation = (roleId: number): UseMutationResult<void, E
 export const useArchiveRoleMutation = (
   roleId: number,
 ): UseMutationResult<void, Error, RoleNameInput> => {
-  const queryClient = useQueryClient();
   const raiseNotice = useKkNotice();
 
   return useMutation({
+    meta: { changes: ['role'] },
     mutationFn: () =>
       withFreshAccessToken((accessToken) => requestArchiveRole(roleId, accessToken)),
     onSuccess: (_result, input) => {
       raiseNotice({ tone: 'success', message: toRoleArchivedMessage(input.roleName) });
-    },
-    onSettled: () => {
-      refreshRoles(queryClient);
     },
   });
 };
@@ -177,10 +153,10 @@ export const useArchiveRoleMutation = (
 export const useRestoreRoleMutation = (
   roleId: number,
 ): UseMutationResult<void, Error, RoleNameInput> => {
-  const queryClient = useQueryClient();
   const raiseNotice = useKkNotice();
 
   return useMutation({
+    meta: { changes: ['role'] },
     mutationFn: () =>
       withFreshAccessToken((accessToken) => requestRestoreRole(roleId, accessToken)),
     onSuccess: (_result, input) => {
@@ -193,9 +169,6 @@ export const useRestoreRoleMutation = (
         raiseNotice({ tone: 'error', message });
       }
     },
-    onSettled: () => {
-      refreshRoles(queryClient);
-    },
   });
 };
 
@@ -206,19 +179,23 @@ export const useSetRolePermissionsMutation = (
   const raiseNotice = useKkNotice();
 
   return useMutation({
+    meta: { changes: ['role'] },
     mutationFn: (input: SetRolePermissionsInput) =>
       withFreshAccessToken((accessToken) =>
         requestSetRolePermissions(roleId, input.permissionKeys, accessToken),
       ),
     onMutate: async (input) => {
-      await queryClient.cancelQueries({ queryKey: ROLES_QUERY_KEY });
-      const role = queryClient.getQueryData<RoleDetails>(roleQueryKey(roleId));
-      const roles = queryClient.getQueryData<RolesResponse>(ROLES_QUERY_KEY);
+      await Promise.all([
+        queryClient.cancelQueries({ queryKey: queryKeys.roles }),
+        queryClient.cancelQueries({ queryKey: queryKeys.role(roleId) }),
+      ]);
+      const role = queryClient.getQueryData<RoleDetails>(queryKeys.role(roleId));
+      const roles = queryClient.getQueryData<RolesResponse>(queryKeys.roles);
 
-      queryClient.setQueryData<RoleDetails>(roleQueryKey(roleId), (current) =>
+      queryClient.setQueryData<RoleDetails>(queryKeys.role(roleId), (current) =>
         applyRolePermissions(current, input.permissionKeys),
       );
-      queryClient.setQueryData<RolesResponse>(ROLES_QUERY_KEY, (current) =>
+      queryClient.setQueryData<RolesResponse>(queryKeys.roles, (current) =>
         applyListPermissions(current, roleId, input.permissionKeys),
       );
 
@@ -230,16 +207,13 @@ export const useSetRolePermissionsMutation = (
       raiseNotice({ tone: 'success', message });
     },
     onError: (error, _input, context) => {
-      queryClient.setQueryData(roleQueryKey(roleId), context?.role);
-      queryClient.setQueryData(ROLES_QUERY_KEY, context?.roles);
+      queryClient.setQueryData(queryKeys.role(roleId), context?.role);
+      queryClient.setQueryData(queryKeys.roles, context?.roles);
       const message = toWriteErrorMessage(error);
 
       if (message !== null) {
         raiseNotice({ tone: 'error', message });
       }
-    },
-    onSettled: () => {
-      refreshRoles(queryClient);
     },
   });
 };
@@ -248,10 +222,10 @@ export const useAddRoleHoldingMutation = (
   roleId: number,
   roleName: string,
 ): UseMutationResult<CreatedRoleHolding, Error, AddRoleHoldingInput> => {
-  const queryClient = useQueryClient();
   const raiseNotice = useKkNotice();
 
   return useMutation({
+    meta: { changes: ['roleHolding'] },
     mutationFn: (input: AddRoleHoldingInput) =>
       withFreshAccessToken((accessToken) =>
         requestAddRoleHolding(
@@ -270,19 +244,16 @@ export const useAddRoleHoldingMutation = (
 
       raiseNotice({ tone: 'success', message });
     },
-    onSettled: () => {
-      refreshRoles(queryClient);
-    },
   });
 };
 
 export const useEndRoleHoldingMutation = (
   roleId: number,
 ): UseMutationResult<void, Error, EndRoleHoldingInput> => {
-  const queryClient = useQueryClient();
   const raiseNotice = useKkNotice();
 
   return useMutation({
+    meta: { changes: ['roleHolding'] },
     mutationFn: (input: EndRoleHoldingInput) =>
       withFreshAccessToken((accessToken) =>
         requestEndRoleHolding(
@@ -295,9 +266,6 @@ export const useEndRoleHoldingMutation = (
       const message = toHoldingEndedMessage(input.personName, input.endedOn, toIsoDay(new Date()));
 
       raiseNotice({ tone: 'success', message });
-    },
-    onSettled: () => {
-      refreshRoles(queryClient);
     },
   });
 };
