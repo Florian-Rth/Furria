@@ -182,7 +182,7 @@ public sealed partial class GalleryService
                         (name, row) =>
                             new AlbumZipEntry(
                                 name,
-                                _mediaFiles.OriginalPathOf(row.StorageKey),
+                                _mediaRoot.OriginalPathOf(row.StorageKey),
                                 row.ModifiedAt
                             )
                     ),

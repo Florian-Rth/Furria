@@ -9,6 +9,7 @@ using Furria.Core.Roles;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Mail;
 using Furria.Infrastructure.Management;
+using Furria.Infrastructure.Media;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -91,6 +92,8 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
     public DbSet<MediaJob> MediaJobs => Set<MediaJob>();
 
     public DbSet<Album> Albums => Set<Album>();
+
+    public DbSet<MediaFileTombstone> MediaFileTombstones => Set<MediaFileTombstone>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }

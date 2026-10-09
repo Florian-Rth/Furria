@@ -1,21 +1,21 @@
 using System.Data.Common;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
-namespace Furria.Infrastructure.Mail;
+namespace Furria.Infrastructure.Persistence;
 
-public sealed class MailOutboxWakeUp : DbTransactionInterceptor, ISaveChangesInterceptor
+public sealed class OutboxWakeUp : DbTransactionInterceptor, ISaveChangesInterceptor
 {
-    private readonly MailOutboxSignal _signal;
+    private readonly IReadOnlyList<OutboxSignal> _signals;
 
-    public MailOutboxWakeUp(MailOutboxSignal signal)
+    public OutboxWakeUp(IEnumerable<OutboxSignal> signals)
     {
-        _signal = signal;
+        _signals = [.. signals];
     }
 
     public override void TransactionCommitted(
         DbTransaction transaction,
         TransactionEndEventData eventData
-    ) => _signal.Ring();
+    ) => RingAll();
 
     public override Task TransactionCommittedAsync(
         DbTransaction transaction,
@@ -23,13 +23,13 @@ public sealed class MailOutboxWakeUp : DbTransactionInterceptor, ISaveChangesInt
         CancellationToken cancellationToken = default
     )
     {
-        _signal.Ring();
+        RingAll();
         return Task.CompletedTask;
     }
 
     public int SavedChanges(SaveChangesCompletedEventData eventData, int result)
     {
-        _signal.Ring();
+        RingAll();
         return result;
     }
 
@@ -39,7 +39,13 @@ public sealed class MailOutboxWakeUp : DbTransactionInterceptor, ISaveChangesInt
         CancellationToken cancellationToken = default
     )
     {
-        _signal.Ring();
+        RingAll();
         return ValueTask.FromResult(result);
+    }
+
+    private void RingAll()
+    {
+        foreach (var signal in _signals)
+            signal.Ring();
     }
 }

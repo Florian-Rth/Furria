@@ -115,7 +115,6 @@ public sealed partial class GalleryService
             [.. binned.Select(item => item.AlbumId!.Value).Distinct()],
             ct
         );
-        _mediaFiles.Discard(rejects.Select(item => item.StorageKey));
 
         return Result.Success();
     }

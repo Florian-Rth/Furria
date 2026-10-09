@@ -413,6 +413,19 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             ct
         );
 
+    public Task MediaFilesReapedAsync(CancellationToken ct = default) =>
+        Polling.UntilAsync(
+            async token =>
+            {
+                await using var scope = Services.CreateAsyncScope();
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                return await db.MediaFileTombstones.AnyAsync(token) ? null : db;
+            },
+            OutboxDrainTimeout,
+            "Files of deleted media items are still on disk",
+            ct
+        );
+
     public Task<string> CreateEmptyDatabaseAsync(CancellationToken ct = default) =>
         _infrastructure.CreateEmptyDatabaseAsync(ct);
 

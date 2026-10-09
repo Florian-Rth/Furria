@@ -50,6 +50,7 @@ public sealed class GalleryBinPurgeTests : IClassFixture<ApiTestFixture>
 
         await _fixture.PurgeGalleryBinAsync(ct);
 
+        await _fixture.MediaFilesReapedAsync(ct);
         Assert.False(File.Exists(original));
         Assert.False(File.Exists(large));
         await ctx

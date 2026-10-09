@@ -1,4 +1,6 @@
 using System.Net;
+using FastEndpoints;
+using Furria.Api.Endpoints.Gallery;
 using Furria.Api.Tests.Media;
 using Furria.Application.Authorization;
 using Furria.Tests.Common.Builder;
@@ -63,6 +65,38 @@ public sealed class GalleryUploadTests : IClassFixture<ApiTestFixture>
 
         await ctx
             .Expected.GalleryItem(mediaItemId)
+            .ToSitInTheInboxOf(ctx.Identity.People.IdOf("ilka"))
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_LandInHerInbox_When_TheAlbumIsBinnedWhileSheUploads()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(Uploader(), ct);
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var albumId = ctx.Gallery.Albums.IdOf("gala");
+        var content = MediaSamples.Jpeg(ChunkLength);
+        var upload = await TusUploadSteps.CreatedAsync(
+            client,
+            TusUploadSteps.GalleryOwner,
+            FileName,
+            content.Length,
+            ct,
+            albumId
+        );
+        var binned = await manager.DELETEAsync<
+            DeleteGalleryAlbumById,
+            DeleteGalleryAlbumByIdRequest
+        >(new DeleteGalleryAlbumByIdRequest { AlbumId = albumId });
+        Assert.Equal(HttpStatusCode.NoContent, binned.StatusCode);
+
+        var completed = await TusUploadSteps.PatchAsync(client, upload, 0, content, ct);
+
+        Assert.Equal(HttpStatusCode.NoContent, completed.StatusCode);
+        await ctx
+            .Expected.GalleryItem(TusUploadSteps.MediaItemIdOf(completed))
             .ToSitInTheInboxOf(ctx.Identity.People.IdOf("ilka"))
             .AssertAsync(ct);
     }

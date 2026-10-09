@@ -129,6 +129,7 @@ public sealed class DeletePersonByIdTests : IClassFixture<ApiTestFixture>
         );
 
         await ctx.Expected.MediaItem(portraitId).ToBeGone().AssertAsync(ct);
+        await _fixture.MediaFilesReapedAsync(ct);
         Assert.False(File.Exists(original));
     }
 

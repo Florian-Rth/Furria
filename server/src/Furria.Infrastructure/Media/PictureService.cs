@@ -11,19 +11,12 @@ public sealed class PictureService
     private const string NoPicture = "There is no picture.";
 
     private readonly AppDbContext _dbContext;
-    private readonly MediaRoot _root;
     private readonly MediaPictures _pictures;
     private readonly MediaJobQueue _jobQueue;
 
-    public PictureService(
-        AppDbContext dbContext,
-        MediaRoot root,
-        MediaPictures pictures,
-        MediaJobQueue jobQueue
-    )
+    public PictureService(AppDbContext dbContext, MediaPictures pictures, MediaJobQueue jobQueue)
     {
         _dbContext = dbContext;
-        _root = root;
         _pictures = pictures;
         _jobQueue = jobQueue;
     }
@@ -66,7 +59,6 @@ public sealed class PictureService
 
         _dbContext.MediaItems.Remove(picture);
         await _dbContext.SaveChangesAsync(ct);
-        _root.DeleteFilesOf(picture.StorageKey);
 
         return Result.Success();
     }

@@ -47,13 +47,13 @@ public sealed partial class GalleryService
         item.SelectionPosition != null;
 
     private readonly AppDbContext _dbContext;
-    private readonly MediaFiles _mediaFiles;
+    private readonly MediaRoot _mediaRoot;
     private readonly TimeProvider _timeProvider;
 
-    public GalleryService(AppDbContext dbContext, MediaFiles mediaFiles, TimeProvider timeProvider)
+    public GalleryService(AppDbContext dbContext, MediaRoot mediaRoot, TimeProvider timeProvider)
     {
         _dbContext = dbContext;
-        _mediaFiles = mediaFiles;
+        _mediaRoot = mediaRoot;
         _timeProvider = timeProvider;
     }
 

@@ -17,6 +17,8 @@ public sealed class MediaRoot
 
     public string FullPathOf(string relativePath) => Path.Combine(_fullPath, relativePath);
 
+    public string OriginalPathOf(Guid storageKey) => FullPathOf(MediaPaths.OriginalOf(storageKey));
+
     public void PrepareStaging() => Directory.CreateDirectory(StagingPath);
 
     public void DeleteFilesOf(Guid storageKey)
