@@ -103,12 +103,7 @@ public sealed class AccountClaimService
 
         await StrayPersonAbsorption.AbsorbAsync(
             _dbContext,
-            new StrayPersonAbsorption.Absorption(
-                account.Id,
-                strayPersonId,
-                claim.KeeperPersonId,
-                now
-            ),
+            new StrayPersonAbsorption.Absorption(strayPersonId, claim.KeeperPersonId, now),
             ct
         );
         _dbContext.AccountEvents.Add(

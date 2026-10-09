@@ -531,7 +531,9 @@ word: redemption asks her to sign in with that account, and signing in moves the
 club's person, which absorbs the stray one; she proves it with that account's password or one of
 its passkeys, and the claimed account keeps its login email, password and passkeys. **Club data blocks the absorption**: a stray person holding any of it (a membership,
 even an ended one) makes the address simply taken — her history is never absorbed, because that
-risks overlapping memberships (built 2026-09-26, CA-P8 S9; ruled 2026-09-27). A recovery never
+risks overlapping memberships (built 2026-09-26, CA-P8 S9; ruled 2026-09-27). Her **portrait**
+moves onto the club's person unless that one already has her own, which wins; whatever she
+issued, changed or uploaded names the club's person from then on (built 2026-10-09). A recovery never
 claims in.
 _UI copy_: — (redeem asks her to sign in with the existing account)
 _Avoid_: merge, account linking

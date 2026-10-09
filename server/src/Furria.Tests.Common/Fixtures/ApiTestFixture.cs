@@ -22,6 +22,7 @@ using Furria.Infrastructure.Logging;
 using Furria.Infrastructure.Mail;
 using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
+using Furria.Infrastructure.Registry;
 using Furria.MediaWorker;
 using Furria.MediaWorker.Jobs;
 using Furria.Tests.Common.Builder;
@@ -412,6 +413,13 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             "The mail outbox still holds mail",
             ct
         );
+
+    public IReadOnlyList<string> ReferencesToPersonDisagreements()
+    {
+        using var scope = Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        return ReferencesToPerson.DisagreementsWith(db.Model);
+    }
 
     public Task MediaFilesReapedAsync(CancellationToken ct = default) =>
         Polling.UntilAsync(
