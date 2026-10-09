@@ -34,6 +34,10 @@ services:
     volumes:
       # postgres:18 keeps PGDATA in a versioned subdir - mount the parent.
       - postgres-data:/var/lib/postgresql
+    # Only for a media worker on another host (docs/ops/PRODUCTION.md, "Media"): publish the
+    # database on this host's LAN address alone, with a strong POSTGRES_PASSWORD.
+    # ports:
+    #   - "10.10.20.12:5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-furria} -d ${POSTGRES_DB:-furria}"]
       interval: 5s
@@ -79,7 +83,8 @@ services:
       ForwardedHeaders__TrustedProxies__1: ${EDGE_PROXY_ADDRESS:?set EDGE_PROXY_ADDRESS in .env}
     volumes:
       # A named volume by default; set MEDIA_PATH to a host path (NAS mount, mounted bucket) to
-      # put the media elsewhere. Back it up together with the database (ADR-0023).
+      # put the media elsewhere - owned by uid 1654, the containers' user. Back it up together
+      # with the database (backup.example.sh, ADR-0023).
       - ${MEDIA_PATH:-media}:/media
     # Healthy once the database answers and every migration is applied (GET /api/health). Nothing
     # waits on it: the website and club-app nginx resolve api per request, so they serve their
@@ -107,6 +112,10 @@ services:
   media-worker:
     image: ${DOCKERHUB_USERNAME}/furria-media-worker:latest
     restart: unless-stopped
+    # 0 when the worker runs on another host instead (the iGPU VM); `docker compose run --rm
+    # media-worker regenerate ...` still works here.
+    deploy:
+      replicas: ${MEDIA_WORKER_REPLICAS:-1}
     depends_on:
       postgres:
         condition: service_healthy
