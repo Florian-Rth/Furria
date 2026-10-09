@@ -1,4 +1,5 @@
 using Furria.Application.Authorization;
+using Furria.Application.Registry;
 using Furria.Core.Club;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Registry;
@@ -10,18 +11,6 @@ public sealed class PermissionAuthorizer
 {
     private const string SecondAccountMessage =
         "PermissionAuthorizer answers for one Account per scope; ask about a second Account through its own scope.";
-
-    private static readonly IReadOnlyList<string> PersonSearchKeys =
-    [
-        FurriaPermissions.PersonsManage,
-        FurriaPermissions.GroupsManage,
-        FurriaPermissions.RolesManage,
-        FurriaPermissions.ClubManage,
-        FurriaPermissions.KeyHoldingsManage,
-        FurriaPermissions.BoardManage,
-        FurriaPermissions.CalendarManageClub,
-        FurriaPermissions.AccountsManage,
-    ];
 
     private readonly AppDbContext _dbContext;
     private readonly TimeProvider _timeProvider;
@@ -189,7 +178,7 @@ public sealed class PermissionAuthorizer
         if (_canSearchPersons is not null)
             return _canSearchPersons.Value;
 
-        var managesAnything = await IsGrantedAnyAsync(accountId, PersonSearchKeys, ct);
+        var managesAnything = await IsGrantedAnyAsync(accountId, PersonSearchKeys.Searchers, ct);
 
         return (
             _canSearchPersons = managesAnything || await AdministersAnyGroupAsync(accountId, ct)

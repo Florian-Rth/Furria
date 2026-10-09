@@ -19,7 +19,7 @@ public sealed class PutToDoSeen : Endpoint<PutToDoSeenRequest>
     public override void Configure()
     {
         Put("to-dos/{kind}/seen");
-        Definition.RequireAnyPermission(ToDoKeys.All);
+        Definition.RequireAnyPermission(ToDoKeys.Openers);
     }
 
     public override async Task HandleAsync(PutToDoSeenRequest req, CancellationToken ct)
