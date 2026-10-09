@@ -1,7 +1,7 @@
+import { shouldRetryRequest } from '@furria/api-client';
 import type { UseQueryResult } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api/api-fetch';
-import { shouldRetryPublicRead } from '@/lib/api/public-read-retry';
 import { queryClient } from '@/lib/query-client';
 import type { Event, EventDetail } from './schemas';
 import { EventDetailSchema, EventsResponseSchema } from './schemas';
@@ -28,7 +28,7 @@ export const ensurePublicEvent = (eventId: number): Promise<EventDetail> =>
   queryClient.ensureQueryData({
     queryKey: publicEventKeys.detail(eventId),
     queryFn: (): Promise<EventDetail> => fetchPublicEvent(eventId),
-    retry: shouldRetryPublicRead,
+    retry: shouldRetryRequest,
   });
 
 export const ensurePublicEvents = (): Promise<Event[]> =>

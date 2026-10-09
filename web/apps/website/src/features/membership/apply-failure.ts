@@ -1,6 +1,6 @@
+import type { ApiFailure, ApiFieldFailure } from '@furria/api-client';
+import { apiFailureOf } from '@furria/api-client';
 import { ALTCHA_FIELD } from '@/lib/altcha/altcha-proof';
-import type { ApiFieldFailure } from '@/lib/api/errors';
-import { ApiError, RequestBlockedError } from '@/lib/api/errors';
 import {
   applyBlockedMessage,
   applyProofRefusedMessage,
@@ -26,7 +26,6 @@ export interface ApplyFailure {
 
 const FIELD_FAILURE_STATUS = 400;
 const REFUSED_STATUS = 422;
-const RATE_LIMITED_STATUS = 429;
 
 const FORM_FIELD_OF_API_FIELD = new Map<string, ApplyFieldName>([
   ['firstName', 'firstName'],
@@ -83,16 +82,20 @@ const toFieldRefusal = (failures: readonly ApiFieldFailure[]): ApplyFailure => {
   return fields.length === 0 ? UNAVAILABLE : { fields, noticeKind: null, offersMail: false };
 };
 
-const toApiFailure = (error: ApiError): ApplyFailure => {
-  if (error.status === RATE_LIMITED_STATUS) {
-    return RATE_LIMITED;
+const toApiFailure = (failure: ApiFailure): ApplyFailure => {
+  switch (failure.kind) {
+    case 'unreachable':
+      return BLOCKED;
+    case 'throttled':
+      return RATE_LIMITED;
+    case 'refused':
+      if (failure.status === REFUSED_STATUS) {
+        return toBirthDateRefusal(failure.fields);
+      }
+      return failure.status === FIELD_FAILURE_STATUS ? toFieldRefusal(failure.fields) : UNAVAILABLE;
+    default:
+      return UNAVAILABLE;
   }
-
-  if (error.status === REFUSED_STATUS) {
-    return toBirthDateRefusal(error.failures);
-  }
-
-  return error.status === FIELD_FAILURE_STATUS ? toFieldRefusal(error.failures) : UNAVAILABLE;
 };
 
 export const toApplyFailure = (error: Error | null): ApplyFailure | null => {
@@ -100,11 +103,9 @@ export const toApplyFailure = (error: Error | null): ApplyFailure | null => {
     return null;
   }
 
-  if (error instanceof RequestBlockedError) {
-    return BLOCKED;
-  }
+  const failure = apiFailureOf(error);
 
-  return error instanceof ApiError ? toApiFailure(error) : UNAVAILABLE;
+  return failure === null ? UNAVAILABLE : toApiFailure(failure);
 };
 
 export const toApplyNotice = (failure: ApplyFailure | null): string | null =>

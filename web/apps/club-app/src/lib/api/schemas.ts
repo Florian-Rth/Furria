@@ -1,6 +1,6 @@
+import { createMediaSchemas } from '@furria/api-client';
 import { z } from 'zod';
-import { readApiBaseUrl } from '@/lib/runtime-config';
-import { buildApiUrl } from './api-fetch';
+import { apiUrlOf } from './api-fetch';
 
 export const SessionTokensSchema = z.object({
   accessToken: z.string().min(1),
@@ -22,17 +22,8 @@ export type NoContent = z.infer<typeof NoContentSchema>;
 export const MembershipStateSchema = z.enum(['none', 'ended', 'paused', 'active']);
 export type MembershipState = z.infer<typeof MembershipStateSchema>;
 
-export const MediaUrlSchema = z
-  .string()
-  .min(1)
-  .transform((path) => buildApiUrl(readApiBaseUrl(), path));
-
-export const PictureSchema = z.object({
-  smallUrl: MediaUrlSchema,
-  mediumUrl: MediaUrlSchema,
-  largeUrl: MediaUrlSchema,
-});
-export type Picture = z.infer<typeof PictureSchema>;
+export const { MediaUrlSchema, PictureSchema } = createMediaSchemas(apiUrlOf);
+export type { Picture } from '@furria/api-client';
 
 export const PictureCropSchema = z.object({
   left: z.number(),

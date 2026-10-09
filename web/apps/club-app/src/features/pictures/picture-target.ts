@@ -1,5 +1,5 @@
 import type { KkCrop } from '@furria/ui';
-import { GROUP_PICTURE_ASPECT, PORTRAIT_ASPECT } from '@/lib/pictures';
+import { GROUP_PICTURE_ASPECT, PORTRAIT_ASPECT } from '@furria/ui/picture-sources';
 
 export type PictureKind = 'portrait' | 'groupPicture';
 

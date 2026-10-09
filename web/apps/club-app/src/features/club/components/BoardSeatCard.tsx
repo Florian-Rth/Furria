@@ -1,8 +1,7 @@
-import { KkHeading, KkMeta, KkPhoto } from '@furria/ui';
+import { KkHeading, KkMeta, KkPhoto, PORTRAIT_ASPECT, toPictureSources } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { toInitials } from '@/lib/initials';
-import { PORTRAIT_ASPECT, toPictureSources } from '@/lib/pictures';
 import type { ClubBoardSeat } from '../schemas';
 
 const PORTRAIT_SIZES = '(min-width: 900px) 12rem, 45vw';

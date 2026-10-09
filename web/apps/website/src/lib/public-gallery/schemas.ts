@@ -1,6 +1,6 @@
 import type { KkPhotoOrientation } from '@furria/ui';
 import { z } from 'zod';
-import { PictureSchema } from '@/lib/api/picture';
+import { PictureSchema } from '@/lib/api/schemas';
 import type { Session } from '@/lib/club';
 import { sessionStartingIn } from '@/lib/club';
 import { toBerlinWallClock } from '@/lib/date';

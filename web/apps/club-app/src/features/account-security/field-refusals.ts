@@ -1,6 +1,5 @@
-import { RequestFailedError } from '@/lib/api/api-error';
+import { refusalOf } from '@furria/api-client';
 import type { FormFailures, FormFieldFailure } from '@/lib/api/api-failures';
-import { toCamelCaseField } from '@/lib/api/api-failures';
 import { toWriteErrorMessage } from '@/lib/write-error';
 
 const FIELD_REFUSAL_STATUSES: readonly number[] = [400, 409];
@@ -9,16 +8,17 @@ export const toFieldRefusals = <TName extends string>(
   error: Error,
   names: readonly TName[],
 ): FormFailures<TName> => {
-  if (!(error instanceof RequestFailedError) || !FIELD_REFUSAL_STATUSES.includes(error.status)) {
+  const refusal = refusalOf(error);
+
+  if (refusal === null || !FIELD_REFUSAL_STATUSES.includes(refusal.status)) {
     return { fields: [], footer: toWriteErrorMessage(error) };
   }
 
   const fields: FormFieldFailure<TName>[] = [];
   const unmatched: string[] = [];
 
-  for (const failure of error.failures) {
-    const candidate = toCamelCaseField(failure.field);
-    const name = names.find((known) => known === candidate);
+  for (const failure of refusal.fields) {
+    const name = names.find((known) => known === failure.field);
 
     if (name === undefined) {
       unmatched.push(failure.message);

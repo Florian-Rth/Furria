@@ -1,4 +1,4 @@
-import { RequestFailedError } from '@/lib/api/api-error';
+import { refusalOf } from '@furria/api-client';
 
 const FIELD_ERROR_STATUS = 400;
 
@@ -11,17 +11,7 @@ export interface RoleFieldError {
 
 const ROLE_FORM_FIELDS: readonly RoleFormField[] = ['name', 'description'];
 
-export const toFieldName = (raw: string): string => {
-  const [base] = raw.split('[');
-
-  if (base === undefined) {
-    return raw;
-  }
-
-  const [first] = base;
-
-  return first === undefined ? base : `${first.toLowerCase()}${base.slice(1)}`;
-};
+const withoutIndex = (field: string): string => field.split('[')[0] ?? field;
 
 const isRoleFormField = (value: string): value is RoleFormField =>
   ROLE_FORM_FIELDS.some((field) => field === value);
@@ -35,11 +25,13 @@ const isRoleFieldError = (failure: NamedFailure): failure is RoleFieldError =>
   isRoleFormField(failure.field);
 
 export const toRoleFieldErrors = (error: Error | null): RoleFieldError[] => {
-  if (!(error instanceof RequestFailedError) || error.status !== FIELD_ERROR_STATUS) {
+  const refusal = refusalOf(error);
+
+  if (refusal === null || refusal.status !== FIELD_ERROR_STATUS) {
     return [];
   }
 
-  return error.failures
-    .map((failure) => ({ field: toFieldName(failure.field), message: failure.message }))
+  return refusal.fields
+    .map((failure) => ({ field: withoutIndex(failure.field), message: failure.message }))
     .filter(isRoleFieldError);
 };

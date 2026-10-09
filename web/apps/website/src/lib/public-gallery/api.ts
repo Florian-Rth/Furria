@@ -1,7 +1,7 @@
+import { shouldRetryRequest } from '@furria/api-client';
 import type { UseQueryResult } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api/api-fetch';
-import { shouldRetryPublicRead } from '@/lib/api/public-read-retry';
 import { queryClient } from '@/lib/query-client';
 import type { AlbumDetail, GallerySection } from './schemas';
 import { AlbumDetailSchema, GalleryResponseSchema } from './schemas';
@@ -30,5 +30,5 @@ export const ensurePublicAlbum = (albumId: number): Promise<AlbumDetail> =>
   queryClient.ensureQueryData({
     queryKey: publicGalleryKeys.album(albumId),
     queryFn: (): Promise<AlbumDetail> => fetchPublicAlbum(albumId),
-    retry: shouldRetryPublicRead,
+    retry: shouldRetryRequest,
   });

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { PictureSchema } from '@/lib/api/picture';
+import { PictureSchema } from '@/lib/api/schemas';
 
 export const PublicBoardSeatSchema = z.object({
   officeName: z.string().min(1),

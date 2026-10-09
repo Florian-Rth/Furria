@@ -1,8 +1,12 @@
-import { DetailedError, Upload } from 'tus-js-client';
-import { buildApiUrl } from '@/lib/api/api-fetch';
-import { ensureFreshAccessToken } from '@/lib/api/session/session-store';
+import { Upload } from 'tus-js-client';
+import {
+  authorizeUploadRequest,
+  endSessionOnRejectedUpload,
+  mediaUploadEndpoint,
+  uploadStatusOf,
+} from '@/lib/api/media-upload';
+import { subscribeToSessionEnd } from '@/lib/api/session/session-store';
 import { queryClient } from '@/lib/query-client';
-import { readApiBaseUrl } from '@/lib/runtime-config';
 import { refreshGallery } from '../api';
 import { captureTimeOf, localStampOf } from './exif-capture';
 import type { ThroughputSample, UploadEntry, UploadFailure } from './upload-queue';
@@ -23,7 +27,6 @@ export interface UploadSnapshot {
   bytesPerSecond: number;
 }
 
-const UPLOADS_PATH = '/api/media/uploads';
 const MEDIA_ITEM_HEADER = 'Media-Item-Id';
 const CHUNK_BYTES = 16 * 1024 * 1024;
 const RETRY_DELAYS_MS = [0, 1_000, 3_000, 5_000, 10_000];
@@ -87,9 +90,6 @@ const patch = (key: number, change: Partial<UploadEntry>): void => {
 const entryOf = (key: number): UploadEntry | undefined =>
   snapshot.entries.find((entry) => entry.key === key);
 
-const statusOf = (error: Error): number | null =>
-  error instanceof DetailedError ? (error.originalResponse?.getStatus() ?? null) : null;
-
 const metadataOf = (file: File, albumId: number | null): Record<string, string> =>
   albumId === null
     ? { owner: 'gallery', filename: file.name }
@@ -120,15 +120,14 @@ const start = (key: number): void => {
     return;
   }
   const upload = new Upload(held.file, {
-    endpoint: buildApiUrl(readApiBaseUrl(), UPLOADS_PATH),
+    endpoint: mediaUploadEndpoint(),
     chunkSize: CHUNK_BYTES,
     retryDelays: RETRY_DELAYS_MS,
     metadata: metadataOf(held.file, entry.albumId),
     removeFingerprintOnSuccess: true,
-    onBeforeRequest: async (request) => {
-      request.setHeader('Authorization', `Bearer ${await ensureFreshAccessToken()}`);
-    },
+    onBeforeRequest: authorizeUploadRequest,
     onAfterResponse: (_request, response) => {
+      endSessionOnRejectedUpload(response);
       const mediaItemId = Number(response.getHeader(MEDIA_ITEM_HEADER));
       if (Number.isInteger(mediaItemId) && mediaItemId > 0) {
         patch(key, { mediaItemId });
@@ -144,7 +143,7 @@ const start = (key: number): void => {
       pump();
     },
     onError: (error) => {
-      fail(key, failureOfStatus(statusOf(error)));
+      fail(key, failureOfStatus(uploadStatusOf(error)));
     },
   });
   held.upload = upload;
@@ -345,6 +344,26 @@ export const clearFinishedUploads = (): void => {
   };
   notify();
 };
+
+const discardUploads = (): void => {
+  for (const [key, held] of live) {
+    if (held.upload !== null) {
+      void held.upload.abort(false);
+    }
+    live.delete(key);
+  }
+  for (const entry of snapshot.entries) {
+    if (entry.preview !== undefined) {
+      URL.revokeObjectURL(entry.preview);
+    }
+  }
+  previewQueue.length = 0;
+  samples = [];
+  snapshot = { entries: [], paused: snapshot.paused, bytesPerSecond: 0 };
+  notify();
+};
+
+subscribeToSessionEnd(discardUploads);
 
 export const subscribeToUploads = (listener: () => void): (() => void) => {
   listeners.add(listener);

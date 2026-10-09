@@ -1,10 +1,5 @@
+import { ApiError } from '@furria/api-client';
 import { describe, expect, it } from 'vitest';
-import {
-  RequestBlockedError,
-  RequestFailedError,
-  ServerFailureError,
-  UnauthorizedError,
-} from '@/lib/api/api-error';
 import {
   isForbiddenError,
   isNotFoundError,
@@ -22,11 +17,16 @@ const MESSAGES: Record<QueryErrorKind, string> = {
 describe('toQueryErrorKind', () => {
   it.each<[string, Error | null, QueryErrorKind | null]>([
     ['no error at all', null, null],
-    ['a terminal 401 the session layer already handled', new UnauthorizedError(), null],
-    ['a 403 a guard is about to answer', new ServerFailureError(403), null],
-    ['a request that never left the device', new RequestBlockedError(), 'unreachable'],
-    ['a server failure', new ServerFailureError(500), 'unexpected'],
-    ['a refused write', new RequestFailedError(409, []), 'rejected'],
+    [
+      'a terminal 401 the session layer already handled',
+      new ApiError({ kind: 'unauthorized' }),
+      null,
+    ],
+    ['a 403 a guard is about to answer', new ApiError({ kind: 'status', status: 403 }), null],
+    ['a request that never left the device', new ApiError({ kind: 'unreachable' }), 'unreachable'],
+    ['a server failure', new ApiError({ kind: 'status', status: 500 }), 'unexpected'],
+    ['a refused write', new ApiError({ kind: 'refused', status: 409, fields: [] }), 'rejected'],
+    ['a body that drifted from the schema', new ApiError({ kind: 'mismatch' }), 'unexpected'],
     ['an error from outside the API layer', new Error('boom'), 'unexpected'],
   ])('maps %s to %s', (_case, error, expected) => {
     expect(toQueryErrorKind(error)).toBe(expected);
@@ -35,14 +35,18 @@ describe('toQueryErrorKind', () => {
 
 describe('toQueryErrorMessage', () => {
   it('passes on the refusal the server wrote', () => {
-    const error = new RequestFailedError(422, [{ field: 'endedOn', message: 'refusal' }]);
+    const error = new ApiError({
+      kind: 'refused',
+      status: 422,
+      fields: [{ field: 'endedOn', message: 'refusal' }],
+    });
 
-    expect(toQueryErrorMessage(error, MESSAGES)).toBe(error.firstMessage);
+    expect(toQueryErrorMessage(error, MESSAGES)).toBe('refusal');
   });
 
   it.each<[string, Error | null, string | null]>([
     ['nothing to say', null, null],
-    ['an unreachable server', new RequestBlockedError(), 'unreachable'],
+    ['an unreachable server', new ApiError({ kind: 'unreachable' }), 'unreachable'],
   ])('answers %s with %o', (_case, error, expected) => {
     expect(toQueryErrorMessage(error, MESSAGES)).toBe(expected);
   });
@@ -50,8 +54,8 @@ describe('toQueryErrorMessage', () => {
 
 describe('isNotFoundError', () => {
   it.each<[string, Error | null, boolean]>([
-    ['a detail route whose id is gone', new ServerFailureError(404), true],
-    ['any other server failure', new ServerFailureError(500), false],
+    ['a detail route whose id is gone', new ApiError({ kind: 'status', status: 404 }), true],
+    ['any other server failure', new ApiError({ kind: 'status', status: 500 }), false],
     ['nothing at all', null, false],
   ])('answers %s with %s', (_case, error, expected) => {
     expect(isNotFoundError(error)).toBe(expected);
@@ -60,9 +64,9 @@ describe('isNotFoundError', () => {
 
 describe('isForbiddenError', () => {
   it.each<[string, Error | null, boolean]>([
-    ['a Gruppe that is not the caller own', new ServerFailureError(403), true],
-    ['a detail route whose id is gone', new ServerFailureError(404), false],
-    ['a terminal 401', new UnauthorizedError(), false],
+    ['a Gruppe that is not the caller own', new ApiError({ kind: 'status', status: 403 }), true],
+    ['a detail route whose id is gone', new ApiError({ kind: 'status', status: 404 }), false],
+    ['a terminal 401', new ApiError({ kind: 'unauthorized' }), false],
   ])('answers %s with %s', (_case, error, expected) => {
     expect(isForbiddenError(error)).toBe(expected);
   });

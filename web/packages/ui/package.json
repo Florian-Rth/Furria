@@ -11,6 +11,7 @@
     "./tokens": "./src/tokens.ts",
     "./group-tone": "./src/internal/group-tone.ts",
     "./theme": "./src/theme.ts",
+    "./picture-sources": "./src/picture-sources.ts",
     "./fonts": "./src/fonts.ts"
   },
   "scripts": {

@@ -1,3 +1,4 @@
+import { ApiError, apiStatusOf } from '@furria/api-client';
 import { createFileRoute, notFound, redirect, useRouter } from '@tanstack/react-router';
 import type { FC } from 'react';
 import {
@@ -9,7 +10,6 @@ import {
   buildAlbumSlug,
   GalleryUnavailable,
 } from '@/features/gallery';
-import { ApiError } from '@/lib/api/errors';
 import { readSlugId } from '@/lib/id-slug';
 import { ensurePublicAlbum, ensurePublicGallery } from '@/lib/public-gallery/api';
 import type { AlbumDetail } from '@/lib/public-gallery/schemas';
@@ -53,7 +53,7 @@ const loadAlbum = async (albumId: number): Promise<AlbumDetail> => {
   try {
     return await ensurePublicAlbum(albumId);
   } catch (error) {
-    if (error instanceof ApiError && error.status === NOT_FOUND_STATUS) {
+    if (error instanceof ApiError && apiStatusOf(error) === NOT_FOUND_STATUS) {
       throw notFound();
     }
     throw error;

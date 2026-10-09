@@ -1,32 +1,52 @@
+import { ApiError } from '@furria/api-client';
 import { describe, expect, it } from 'vitest';
-import { RequestBlockedError, RequestFailedError, ServerFailureError } from '@/lib/api/api-error';
 import type { RedeemFailureKind } from './redeem-failure';
 import { toRedeemFailureKind } from './redeem-failure';
 
 describe('toRedeemFailureKind', () => {
   it.each<[string, Error | null, RedeemFailureKind | null]>([
     ['no error', null, null],
-    ['a blocked request', new RequestBlockedError(), 'unreachable'],
-    ['a conflict with a problem body', new RequestFailedError(409, []), 'dead'],
-    ['a conflict without a problem body', new ServerFailureError(409), 'dead'],
+    ['a blocked request', new ApiError({ kind: 'unreachable' }), 'unreachable'],
+    [
+      'a conflict with a problem body',
+      new ApiError({ kind: 'refused', status: 409, fields: [] }),
+      'dead',
+    ],
+    ['a conflict without a problem body', new ApiError({ kind: 'status', status: 409 }), 'dead'],
     [
       'a login email already taken',
-      new RequestFailedError(409, [{ field: 'loginEmail', message: 'vergeben' }]),
+      new ApiError({
+        kind: 'refused',
+        status: 409,
+        fields: [{ field: 'loginEmail', message: 'vergeben' }],
+      }),
       'taken',
     ],
     [
       'a wrong confirmation code',
-      new RequestFailedError(400, [{ field: 'confirmationCode', message: 'falsch' }]),
+      new ApiError({
+        kind: 'refused',
+        status: 400,
+        fields: [{ field: 'confirmationCode', message: 'falsch' }],
+      }),
       'codeRejected',
     ],
     [
       'a wrong password for the claimed account',
-      new RequestFailedError(400, [{ field: 'claimPassword', message: 'passt nicht' }]),
+      new ApiError({
+        kind: 'refused',
+        status: 400,
+        fields: [{ field: 'claimPassword', message: 'passt nicht' }],
+      }),
       'claimRejected',
     ],
     [
       'a passkey that does not prove the claimed account',
-      new RequestFailedError(400, [{ field: 'claimPasskey', message: 'nicht bestätigt' }]),
+      new ApiError({
+        kind: 'refused',
+        status: 400,
+        fields: [{ field: 'claimPasskey', message: 'nicht bestätigt' }],
+      }),
       'claimPasskeyRejected',
     ],
     [
@@ -41,11 +61,15 @@ describe('toRedeemFailureKind', () => {
     ],
     [
       'a validation refusal',
-      new RequestFailedError(400, [{ field: 'password', message: 'zu kurz' }]),
+      new ApiError({
+        kind: 'refused',
+        status: 400,
+        fields: [{ field: 'password', message: 'zu kurz' }],
+      }),
       'rejected',
     ],
-    ['a rate limit', new ServerFailureError(429), 'throttled'],
-    ['a server failure', new ServerFailureError(500), 'unexpected'],
+    ['a rate limit', new ApiError({ kind: 'throttled' }), 'throttled'],
+    ['a server failure', new ApiError({ kind: 'status', status: 500 }), 'unexpected'],
   ])('classifies %s', (_case, error, expected) => {
     expect(toRedeemFailureKind(error)).toBe(expected);
   });

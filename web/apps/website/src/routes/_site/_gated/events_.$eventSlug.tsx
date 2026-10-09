@@ -1,3 +1,4 @@
+import { ApiError, apiStatusOf } from '@furria/api-client';
 import { createFileRoute, notFound, redirect, useRouter } from '@tanstack/react-router';
 import type { FC } from 'react';
 import {
@@ -7,7 +8,6 @@ import {
   EventDetailPage,
   EventsUnavailable,
 } from '@/features/events';
-import { ApiError } from '@/lib/api/errors';
 import { buildIdSlug, readSlugId } from '@/lib/id-slug';
 import { ensurePublicEvent } from '@/lib/public-events/api';
 import type { EventDetail } from '@/lib/public-events/schemas';
@@ -47,7 +47,7 @@ const loadEvent = async (eventId: number): Promise<EventDetail> => {
   try {
     return await ensurePublicEvent(eventId);
   } catch (error) {
-    if (error instanceof ApiError && error.status === NOT_FOUND_STATUS) {
+    if (error instanceof ApiError && apiStatusOf(error) === NOT_FOUND_STATUS) {
       throw notFound();
     }
     throw error;

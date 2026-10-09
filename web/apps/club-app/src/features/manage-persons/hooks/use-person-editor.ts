@@ -1,10 +1,9 @@
+import { refusalOf } from '@furria/api-client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import type { FieldErrors, UseFormReturn } from 'react-hook-form';
 import { useController, useForm, useWatch } from 'react-hook-form';
 import { toLandingKey } from '@/features/write';
-import { RequestFailedError } from '@/lib/api/api-error';
-import { toCamelCaseField } from '@/lib/api/api-failures';
 import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useCreatePersonMutation, useUpdatePersonMutation } from '../api';
@@ -119,15 +118,15 @@ export const usePersonEditor = ({ person }: PersonEditorInput): PersonEditorCont
   const adoption = useAdoptionSuggestion(typedEmail, person === null);
 
   const reject = (error: Error): void => {
-    if (error instanceof RequestFailedError && error.status === FIELD_ERROR_STATUS) {
-      const unmatched = error.failures.filter((failure) => {
-        const field = toCamelCaseField(failure.field);
+    const refusal = refusalOf(error);
 
+    if (refusal !== null && refusal.status === FIELD_ERROR_STATUS) {
+      const unmatched = refusal.fields.filter(({ field, message }) => {
         if (!isPersonFieldName(field)) {
           return true;
         }
 
-        form.setError(field, { message: failure.message });
+        form.setError(field, { message });
 
         return false;
       });

@@ -1,0 +1,172 @@
+import type { ZodType } from 'zod';
+import { z } from 'zod';
+import type { ApiFailure, ApiFieldFailure } from './api-failure';
+import { ApiError, failureOfStatus, isRefusalStatus } from './api-failure';
+
+export type JsonBody = string | number | boolean | null | JsonBody[] | { [key: string]: JsonBody };
+
+export type ApiMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
+
+export interface ApiRequest<TResponse> {
+  schema: ZodType<TResponse>;
+  method?: ApiMethod;
+  body?: JsonBody;
+  accessToken?: string;
+}
+
+export interface ResponseMismatch {
+  method: ApiMethod;
+  path: string;
+  issues: readonly z.core.$ZodIssue[];
+}
+
+export type ApiFetch = <TResponse>(
+  path: string,
+  request: ApiRequest<TResponse>,
+) => Promise<TResponse>;
+
+export interface ApiClientConfig {
+  readBaseUrl: () => string;
+  timeoutMs: number;
+  send?: (url: string, init: RequestInit) => Promise<Response>;
+  reportMismatch?: (mismatch: ResponseMismatch) => void;
+}
+
+export interface ApiClient {
+  apiFetch: ApiFetch;
+  apiUrlOf: (path: string) => string;
+}
+
+const FailurePayloadSchema = z.object({ errors: z.record(z.string(), z.array(z.string())) });
+
+const NO_CONTENT_STATUS = 204;
+const ACCEPTED_STATUS = 202;
+
+export const buildApiUrl = (baseUrl: string, path: string): string => {
+  const base = baseUrl.replace(/\/+$/, '');
+  const suffix = path.startsWith('/') ? path : `/${path}`;
+  return `${base}${suffix}`;
+};
+
+const toCamelCaseField = (field: string): string =>
+  field.length === 0 ? field : `${field.charAt(0).toLowerCase()}${field.slice(1)}`;
+
+const readFieldFailures = async (response: Response): Promise<ApiFieldFailure[] | null> => {
+  try {
+    const parsed = FailurePayloadSchema.safeParse(await response.json());
+
+    return parsed.success
+      ? Object.entries(parsed.data.errors).flatMap(([field, messages]) =>
+          messages.map((message) => ({ field: toCamelCaseField(field), message })),
+        )
+      : null;
+  } catch {
+    return null;
+  }
+};
+
+const failureOfResponse = async (response: Response): Promise<ApiFailure> =>
+  failureOfStatus(
+    response.status,
+    isRefusalStatus(response.status) ? await readFieldFailures(response) : null,
+  );
+
+type BodyReading<TResponse> =
+  | { readable: true; value: TResponse }
+  | { readable: false; issues: readonly z.core.$ZodIssue[] };
+
+const parseBody = <TResponse>(
+  schema: ZodType<TResponse>,
+  body: JsonBody | undefined,
+): BodyReading<TResponse> => {
+  const parsed = schema.safeParse(body);
+
+  return parsed.success
+    ? { readable: true, value: parsed.data }
+    : { readable: false, issues: parsed.error.issues };
+};
+
+const readBody = async <TResponse>(
+  response: Response,
+  schema: ZodType<TResponse>,
+): Promise<BodyReading<TResponse>> => {
+  if (response.status === NO_CONTENT_STATUS || response.status === ACCEPTED_STATUS) {
+    return parseBody(schema, undefined);
+  }
+  try {
+    return parseBody(schema, await response.json());
+  } catch {
+    return { readable: false, issues: [] };
+  }
+};
+
+const toRequestInit = (
+  method: ApiMethod,
+  body: JsonBody | undefined,
+  accessToken: string | undefined,
+  timeoutMs: number,
+): RequestInit => {
+  const headers: Record<string, string> = {};
+  const init: RequestInit = { method, signal: AbortSignal.timeout(timeoutMs) };
+
+  if (body !== undefined) {
+    headers['Content-Type'] = 'application/json';
+    init.body = JSON.stringify(body);
+  }
+  if (accessToken !== undefined) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
+  if (Object.keys(headers).length > 0) {
+    init.headers = headers;
+  }
+
+  return init;
+};
+
+const sendThroughFetch = (url: string, init: RequestInit): Promise<Response> => fetch(url, init);
+
+const reportToConsole = (mismatch: ResponseMismatch): void => {
+  console.error(
+    `The API answered ${mismatch.method} ${mismatch.path} in an unknown shape.`,
+    mismatch.issues,
+  );
+};
+
+export const createApiClient = ({
+  readBaseUrl,
+  timeoutMs,
+  send = sendThroughFetch,
+  reportMismatch = reportToConsole,
+}: ApiClientConfig): ApiClient => {
+  const apiUrlOf = (path: string): string => buildApiUrl(readBaseUrl(), path);
+
+  const sendOrUnreachable = async (url: string, init: RequestInit): Promise<Response> => {
+    try {
+      return await send(url, init);
+    } catch {
+      throw new ApiError({ kind: 'unreachable' });
+    }
+  };
+
+  const apiFetch: ApiFetch = async (path, { schema, method = 'GET', body, accessToken }) => {
+    const response = await sendOrUnreachable(
+      apiUrlOf(path),
+      toRequestInit(method, body, accessToken, timeoutMs),
+    );
+
+    if (!response.ok) {
+      throw new ApiError(await failureOfResponse(response));
+    }
+
+    const reading = await readBody(response, schema);
+
+    if (!reading.readable) {
+      reportMismatch({ method, path, issues: reading.issues });
+      throw new ApiError({ kind: 'mismatch' });
+    }
+
+    return reading.value;
+  };
+
+  return { apiFetch, apiUrlOf };
+};

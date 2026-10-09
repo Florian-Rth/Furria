@@ -1,5 +1,5 @@
-import { RequestBlockedError, RequestFailedError, ServerFailureError } from '@/lib/api/api-error';
-import { toCamelCaseField } from '@/lib/api/api-failures';
+import type { Refusal } from '@furria/api-client';
+import { apiFailureOf } from '@furria/api-client';
 import { toPasskeyFailureKind } from '@/lib/passkey/passkey-failure';
 
 export type RedeemFailureKind =
@@ -15,30 +15,29 @@ export type RedeemFailureKind =
   | 'unexpected';
 
 const CONFLICT_STATUS = 409;
-const TOO_MANY_REQUESTS_STATUS = 429;
 const LOGIN_EMAIL_FIELD = 'loginEmail';
 const CONFIRMATION_CODE_FIELD = 'confirmationCode';
 const CLAIM_PASSWORD_FIELD = 'claimPassword';
 const CLAIM_PASSKEY_FIELD = 'claimPasskey';
 
-const refusesField = (error: RequestFailedError, field: string): boolean =>
-  error.failures.some((failure) => toCamelCaseField(failure.field) === field);
+const refusesField = (refusal: Refusal, field: string): boolean =>
+  refusal.fields.some((failure) => failure.field === field);
 
-const toRefusalKind = (error: RequestFailedError): RedeemFailureKind => {
-  if (refusesField(error, LOGIN_EMAIL_FIELD)) {
+const toRefusalKind = (refusal: Refusal): RedeemFailureKind => {
+  if (refusesField(refusal, LOGIN_EMAIL_FIELD)) {
     return 'taken';
   }
-  if (refusesField(error, CONFIRMATION_CODE_FIELD)) {
+  if (refusesField(refusal, CONFIRMATION_CODE_FIELD)) {
     return 'codeRejected';
   }
-  if (refusesField(error, CLAIM_PASSWORD_FIELD)) {
+  if (refusesField(refusal, CLAIM_PASSWORD_FIELD)) {
     return 'claimRejected';
   }
-  if (refusesField(error, CLAIM_PASSKEY_FIELD)) {
+  if (refusesField(refusal, CLAIM_PASSKEY_FIELD)) {
     return 'claimPasskeyRejected';
   }
 
-  return error.status === CONFLICT_STATUS ? 'dead' : 'rejected';
+  return refusal.status === CONFLICT_STATUS ? 'dead' : 'rejected';
 };
 
 export const toRedeemFailureKind = (error: Error | null): RedeemFailureKind | null => {
@@ -50,18 +49,19 @@ export const toRedeemFailureKind = (error: Error | null): RedeemFailureKind | nu
       ? 'passkeyCancelled'
       : 'claimPasskeyRejected';
   }
-  if (error instanceof RequestBlockedError) {
-    return 'unreachable';
-  }
-  if (error instanceof RequestFailedError) {
-    return toRefusalKind(error);
-  }
-  if (error instanceof ServerFailureError && error.status === CONFLICT_STATUS) {
-    return 'dead';
-  }
-  if (error instanceof ServerFailureError && error.status === TOO_MANY_REQUESTS_STATUS) {
-    return 'throttled';
-  }
 
-  return 'unexpected';
+  const failure = apiFailureOf(error);
+
+  switch (failure?.kind) {
+    case 'unreachable':
+      return 'unreachable';
+    case 'refused':
+      return toRefusalKind(failure);
+    case 'throttled':
+      return 'throttled';
+    case 'status':
+      return failure.status === CONFLICT_STATUS ? 'dead' : 'unexpected';
+    default:
+      return 'unexpected';
+  }
 };
