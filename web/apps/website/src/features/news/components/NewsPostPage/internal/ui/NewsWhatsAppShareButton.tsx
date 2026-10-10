@@ -1,8 +1,8 @@
 import { kkTokens } from '@furria/ui';
 import Button from '@mui/material/Button';
 import type { FC } from 'react';
-import type { NewsPost } from '@/features/news/news-content';
 import { buildWhatsAppShareUrl, whatsAppShareLabel } from '@/features/news/news-content';
+import type { NewsPost } from '@/lib/public-news/schemas';
 
 interface NewsWhatsAppShareButtonProps {
   post: NewsPost;

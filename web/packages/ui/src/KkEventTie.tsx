@@ -7,9 +7,10 @@ interface KkEventTieProps {
   month: string;
   title: string;
   line: string;
+  wrapsLine?: boolean;
 }
 
-export const KkEventTie: FC<KkEventTieProps> = ({ day, month, title, line }) => (
+export const KkEventTie: FC<KkEventTieProps> = ({ day, month, title, line, wrapsLine = false }) => (
   <Stack direction="row" data-kk-event-tie sx={{ gap: 1.5, alignItems: 'center', minWidth: 0 }}>
     <Stack
       sx={{
@@ -37,7 +38,7 @@ export const KkEventTie: FC<KkEventTieProps> = ({ day, month, title, line }) => 
       <Typography variant="body2" noWrap sx={{ fontWeight: 800 }}>
         {title}
       </Typography>
-      <Typography variant="caption" noWrap sx={{ color: 'text.secondary' }}>
+      <Typography variant="caption" noWrap={!wrapsLine} sx={{ color: 'text.secondary' }}>
         {line}
       </Typography>
     </Stack>

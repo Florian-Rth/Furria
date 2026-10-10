@@ -2,7 +2,8 @@ import { KkSection } from '@furria/ui';
 import Grid from '@mui/material/Grid';
 import type { FC } from 'react';
 import { NewsCard } from '@/features/news/components/NewsCard';
-import { moreNewsLabel, NEWS_POSTS, selectRelatedPosts } from '@/features/news/news-content';
+import { useRelatedPosts } from '@/features/news/hooks/use-related-posts';
+import { moreNewsLabel } from '@/features/news/news-content';
 import { NewsRelatedGrid } from './internal/layout/NewsRelatedGrid';
 
 interface NewsRelatedProps {
@@ -12,7 +13,7 @@ interface NewsRelatedProps {
 const COMPACT_VISIBLE_COUNT = 2;
 
 export const NewsRelated: FC<NewsRelatedProps> = ({ currentSlug }) => {
-  const relatedPosts = selectRelatedPosts(NEWS_POSTS, currentSlug);
+  const relatedPosts = useRelatedPosts(currentSlug);
 
   if (relatedPosts.length === 0) {
     return null;

@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { ClubPage } from '@/features/club';
+import { ClubPage, ClubSearchSchema } from '@/features/club';
 import type { RouteHead } from '@/lib/seo';
 import { pageTitle } from '@/lib/seo';
 
@@ -11,6 +11,7 @@ const CLUB_DESCRIPTION =
 const ClubComponent: FC = () => <ClubPage />;
 
 export const Route = createFileRoute('/_site/_gated/club')({
+  validateSearch: ClubSearchSchema,
   head: (): RouteHead => ({
     meta: [
       { title: CLUB_TITLE },

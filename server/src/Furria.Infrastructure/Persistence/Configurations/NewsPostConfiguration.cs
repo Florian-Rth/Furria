@@ -7,7 +7,6 @@ namespace Furria.Infrastructure.Persistence.Configurations;
 public sealed class NewsPostConfiguration : IEntityTypeConfiguration<NewsPost>
 {
     private const int EnumLength = 32;
-    private const int SlugLength = NewsSlug.MaxLength + 12;
 
     private static readonly string KnownCategories = string.Join(
         ", ",
@@ -62,7 +61,7 @@ public sealed class NewsPostConfiguration : IEntityTypeConfiguration<NewsPost>
             .Property(post => post.PendingCategory)
             .HasConversion<string>()
             .HasMaxLength(EnumLength);
-        builder.Property(post => post.Slug).HasMaxLength(SlugLength);
+        builder.Property(post => post.Slug).HasMaxLength(NewsSlug.StoredLength);
         builder.Property(post => post.PictureCaption).HasMaxLength(NewsPost.PictureCaptionLength);
         builder
             .Property(post => post.PendingPictureCaption)

@@ -140,6 +140,9 @@ export { KkNewsCard } from './KkNewsCard/KkNewsCard';
 export { KkNewsCategoryChip } from './KkNewsCategoryChip';
 export { KkNewsLead } from './KkNewsLead/KkNewsLead';
 export { KkNewsMedia } from './KkNewsMedia';
+export { KkNewsMention } from './KkNewsMention';
+export type { KkNewsMentionCardFace } from './KkNewsMentionCard/KkNewsMentionCard';
+export { KkNewsMentionCard } from './KkNewsMentionCard/KkNewsMentionCard';
 export { KkNewsPoster } from './KkNewsPoster';
 export { KkNewsImposition } from './KkNewsProof/KkNewsImposition';
 export { KkNewsProofPanels } from './KkNewsProof/KkNewsProofPanels';
@@ -156,6 +159,9 @@ export type {
   KkNewsTextMentionProps,
   KkNewsTextMentionView,
 } from './KkNewsText/news-text-mention-view';
+export type { KkNewsStripPhoto } from './KkNewsTie/internal/ui/KkNewsTieStrip';
+export { KkNewsAlbumCard } from './KkNewsTie/KkNewsAlbumCard';
+export { KkNewsEventCard } from './KkNewsTie/KkNewsEventCard';
 export { KkNote } from './KkNote';
 export type {
   KkNoticeAction,

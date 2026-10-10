@@ -13,3 +13,9 @@ export type PublicBoardSeat = z.infer<typeof PublicBoardSeatSchema>;
 export const PublicBoardResponseSchema = z.object({
   seats: z.array(PublicBoardSeatSchema),
 });
+
+export const ClubSearchSchema = z.object({
+  group: z.coerce.number().int().positive().optional().catch(undefined),
+});
+
+export type ClubSearch = z.infer<typeof ClubSearchSchema>;

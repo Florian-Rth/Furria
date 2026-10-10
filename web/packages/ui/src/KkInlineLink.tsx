@@ -11,6 +11,7 @@ interface KkInlineLinkProps extends PropsWithChildren {
   component?: ElementType;
   to?: string;
   params?: Record<string, string>;
+  search?: Record<string, string | number>;
   href?: string;
   sx?: KkSx;
 }
@@ -19,11 +20,12 @@ export const KkInlineLink: FC<KkInlineLinkProps> = ({
   component,
   to,
   params,
+  search,
   href,
   sx,
   children,
 }) => {
-  const routeProps = component === undefined ? { href } : { component, to, params };
+  const routeProps = component === undefined ? { href } : { component, to, params, search };
 
   return (
     <Link

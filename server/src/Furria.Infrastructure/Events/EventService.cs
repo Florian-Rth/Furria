@@ -132,7 +132,7 @@ public sealed class EventService
     {
         var now = _timeProvider.GetUtcNow();
 
-        var rows = await PublicEvents(now)
+        var rows = await ShownEvents(now)
             .OrderBy(row => row.CalendarEntry!.StartsAt)
             .ThenBy(row => row.CalendarEntryId)
             .Select(PublicRowOf)
@@ -145,7 +145,7 @@ public sealed class EventService
     {
         var now = _timeProvider.GetUtcNow();
 
-        var row = await PublicEvents(now)
+        var row = await ShownEvents(now)
             .Where(row => row.CalendarEntryId == eventId)
             .Select(PublicRowOf)
             .SingleOrDefaultAsync(ct);
@@ -367,22 +367,8 @@ public sealed class EventService
             now
         );
 
-    [Pure]
-    private static Expression<Func<Event, bool>> IsNotOverAt(DateTimeOffset now)
-    {
-        var openEndedCutoff = now.AddHours(-CalendarDefaults.OpenEndedHours);
-
-        return row =>
-            row.CalendarEntry!.EndsAt == null
-                ? row.CalendarEntry.StartsAt > openEndedCutoff
-                : row.CalendarEntry.EndsAt > now;
-    }
-
-    private IQueryable<Event> PublicEvents(DateTimeOffset now) =>
-        _dbContext
-            .Events.AsNoTracking()
-            .Where(row => row.CalendarEntry!.Venue != null)
-            .Where(IsNotOverAt(now));
+    private IQueryable<Event> ShownEvents(DateTimeOffset now) =>
+        _dbContext.Events.AsNoTracking().Where(PublicEvents.IsShownAt(now));
 
     private Task<CalendarEntry?> TrackedEventEntryAsync(int eventId, CancellationToken ct) =>
         _dbContext

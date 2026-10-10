@@ -10,6 +10,7 @@ public sealed class MediaPictures
     public const string PublicBoardPortraitRoute = "/api/public/board/portraits";
     public const string PublicGroupPictureRoute = "/api/public/groups/pictures";
     public const string PublicGalleryPhotoRoute = "/api/public/gallery/photos";
+    public const string PublicNewsPictureRoute = "/api/public/news/pictures";
 
     private readonly MediaUrlSigner _signer;
 
@@ -72,6 +73,17 @@ public sealed class MediaPictures
             mediaItemId,
             renderedAt,
             (id, rendition) => PublicUrlOf(PublicGroupPictureRoute, id, rendition)
+        );
+
+    [Pure]
+    public static PictureDetails? PublicNewsPictureOf(
+        int? mediaItemId,
+        DateTimeOffset? renderedAt
+    ) =>
+        PictureOf(
+            mediaItemId,
+            renderedAt,
+            (id, rendition) => PublicUrlOf(PublicNewsPictureRoute, id, rendition)
         );
 
     [Pure]
