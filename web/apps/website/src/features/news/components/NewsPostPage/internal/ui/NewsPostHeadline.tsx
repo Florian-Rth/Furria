@@ -1,6 +1,6 @@
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
-import type { NewsPost } from '@/features/news/news-content';
+import type { NewsPost } from '@/lib/public-news/schemas';
 
 interface NewsPostHeadlineProps {
   post: NewsPost;

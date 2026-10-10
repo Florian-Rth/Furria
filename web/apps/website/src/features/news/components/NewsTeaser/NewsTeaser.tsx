@@ -3,16 +3,12 @@ import Grid from '@mui/material/Grid';
 import type { FC } from 'react';
 import { SectionActionLink } from '@/components/SectionActionLink';
 import { NewsCard } from '@/features/news/components/NewsCard';
-import {
-  allNewsLabel,
-  NEWS_POSTS,
-  newsHeading,
-  selectTeaserPosts,
-} from '@/features/news/news-content';
+import { useTeaserPosts } from '@/features/news/hooks/use-teaser-posts';
+import { allNewsLabel, newsHeading } from '@/features/news/news-content';
 import { NewsTeaserGrid } from './internal/layout/NewsTeaserGrid';
 
 export const NewsTeaser: FC = () => {
-  const teaserPosts = selectTeaserPosts(NEWS_POSTS);
+  const teaserPosts = useTeaserPosts();
 
   if (teaserPosts.length === 0) {
     return null;

@@ -8,6 +8,7 @@ namespace Furria.Core.News;
 public static class NewsSlug
 {
     public const int MaxLength = 80;
+    public const int StoredLength = MaxLength + 12;
 
     private const string Fallback = "meldung";
     private const char Separator = '-';

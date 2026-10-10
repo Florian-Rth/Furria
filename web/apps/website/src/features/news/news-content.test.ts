@@ -1,80 +1,109 @@
 import type { KkNewsTone } from '@furria/ui';
 import { describe, expect, it } from 'vitest';
-import type { NewsCategory, NewsPost } from './news-content';
+import type { NewsCategory, NewsEvent, NewsPost, NewsSection } from '@/lib/public-news/schemas';
 import {
+  arrangeNewsFront,
+  buildEventTieLine,
+  buildSessionLabel,
   categoryToneOf,
-  resolveArchiveSession,
-  selectFollowingPosts,
-  selectLeadPost,
   selectRelatedPosts,
+  selectTeaserPosts,
 } from './news-content';
 
-const post = (slug: string, publishedAt: string): NewsPost => ({
+const post = (slug: string): NewsPost => ({
   slug,
   title: slug,
-  category: 'Verein',
-  publishedAt,
   teaser: 'Teaser',
   text: 'Absatz',
-  image: null,
-  author: null,
+  category: 'club',
+  publishedAt: '2026-07-18T11:11',
+  picture: null,
 });
 
-describe('selectLeadPost and selectFollowingPosts', () => {
-  it('partitions the Meldungen into the newest and the rest', () => {
-    const posts = [
-      post('older', '2026-05-30'),
-      post('newest', '2026-07-18'),
-      post('middle', '2026-06-14'),
-    ];
+const section = (startYear: number, slugs: string[]): NewsSection => ({
+  session: { startYear, yearsLabel: `${startYear}/xx`, number: null },
+  posts: slugs.map(post),
+});
 
-    expect(selectLeadPost(posts)?.slug).toBe('newest');
-    expect(selectFollowingPosts(posts).map((entry) => entry.slug)).toEqual(['middle', 'older']);
+const slugsOf = (posts: NewsPost[]): string[] => posts.map((entry) => entry.slug);
+
+describe('arrangeNewsFront', () => {
+  it('leads with the newest post and keeps older sessions apart', () => {
+    const front = arrangeNewsFront([
+      section(2025, ['newest', 'middle']),
+      section(2024, ['old']),
+      section(2023, ['oldest']),
+    ]);
+
+    expect([
+      front?.lead.slug,
+      slugsOf(front?.following ?? []),
+      front?.olderSections.map((older) => older.session.startYear),
+    ]).toEqual(['newest', ['middle'], [2024, 2023]]);
+  });
+
+  it('has no front while nothing is published', () => {
+    expect(arrangeNewsFront([])).toBeNull();
   });
 });
 
 describe('selectRelatedPosts', () => {
-  it('excludes the open Meldung and caps the rest at three, newest first', () => {
-    const related = selectRelatedPosts(
-      [
-        post('oldest', '2026-05-30'),
-        post('open', '2026-07-18'),
-        post('middle', '2026-06-14'),
-        post('newer', '2026-07-04'),
-        post('older', '2026-06-01'),
-      ],
-      'open',
-    );
+  it('reaches into older sessions, skips the open post and caps at three', () => {
+    const sections = [
+      section(2025, ['open', 'second']),
+      section(2024, ['third', 'fourth', 'fifth']),
+    ];
 
-    expect(related.map((entry) => entry.slug)).toEqual(['newer', 'middle', 'older']);
+    expect(slugsOf(selectRelatedPosts(sections, 'open'))).toEqual(['second', 'third', 'fourth']);
+  });
+});
+
+describe('selectTeaserPosts', () => {
+  it('takes the three newest posts across sessions', () => {
+    const sections = [section(2025, ['first']), section(2024, ['second', 'third', 'fourth'])];
+
+    expect(slugsOf(selectTeaserPosts(sections))).toEqual(['first', 'second', 'third']);
   });
 });
 
 describe('categoryToneOf', () => {
   it.each<[NewsCategory, KkNewsTone]>([
-    ['Session', 'red'],
-    ['Erfolge', 'gold'],
-    ['Verein', 'ink'],
+    ['session', 'red'],
+    ['achievements', 'gold'],
+    ['club', 'ink'],
+    ['groups', 'ink'],
   ])('tones the category %s %s', (category, tone) => {
     expect(categoryToneOf(category)).toBe(tone);
   });
 });
 
-describe('resolveArchiveSession', () => {
-  const duringOpenSession = new Date('2026-07-26T12:00:00');
+describe('buildSessionLabel', () => {
+  it.each<[number | null, string]>([
+    [67, '67. SESSION 2025/26'],
+    [null, 'SESSION 2025/26'],
+  ])('labels session number %s as %s', (number, label) => {
+    expect(buildSessionLabel({ startYear: 2025, yearsLabel: '2025/26', number })).toBe(label);
+  });
+});
 
-  it.each<[string, NewsPost[], number | null]>([
+describe('buildEventTieLine', () => {
+  const event: NewsEvent = {
+    eventId: 4,
+    title: 'Prunksitzung',
+    startsAt: '2027-01-23T19:11',
+    endsAt: null,
+    venueName: 'Dorfgemeindehaus',
+    isCancelled: false,
+  };
+
+  it.each<[string, NewsEvent, string]>([
+    ['a held event', event, 'Sa., 23. Januar 2027 · 19:11 Uhr · Dorfgemeindehaus'],
     [
-      'every Meldung belongs to the open Session',
-      [post('sommer', '2026-07-18'), post('winter', '2026-01-20')],
-      null,
+      'a cancelled event without venue',
+      { ...event, venueName: null, isCancelled: true },
+      'Sa., 23. Januar 2027 · 19:11 Uhr · Abgesagt',
     ],
-    [
-      'older Meldungen exist',
-      [post('uralt', '2024-02-05'), post('alt', '2025-03-10'), post('aktuell', '2026-07-18')],
-      2024,
-    ],
-  ])('names the newest older Session when %s', (_, posts, startYear) => {
-    expect(resolveArchiveSession(posts, duringOpenSession)?.startYear ?? null).toBe(startYear);
+  ])('lines up %s', (_, tied, line) => {
+    expect(buildEventTieLine(tied)).toBe(line);
   });
 });
