@@ -1,7 +1,9 @@
 import Box from '@mui/material/Box';
 import { keyframes } from '@mui/material/styles';
 import type { FC } from 'react';
-import { buildConfettiPieces } from './confetti-pieces';
+import type { KkConfettiColor } from './confetti-pieces';
+import { buildConfettiPieces, KK_CONFETTI_COLORS } from './confetti-pieces';
+import { keepsPlaying } from './internal/motion-override';
 
 const fall = keyframes`
   from { transform: translateY(-10vh); }
@@ -22,6 +24,8 @@ const tumble = keyframes`
   }
 `;
 
+const REDUCED_MOTION = '@media (prefers-reduced-motion: reduce)';
+
 const PIECE_COLOR = {
   red: 'primary.main',
   gold: 'warning.main',
@@ -36,6 +40,8 @@ interface KkConfettiRainProps {
   seed?: number;
   paused?: boolean;
   fadeOut?: boolean;
+  colors?: readonly KkConfettiColor[];
+  alwaysPlays?: boolean;
 }
 
 export const KkConfettiRain: FC<KkConfettiRainProps> = ({
@@ -43,8 +49,10 @@ export const KkConfettiRain: FC<KkConfettiRainProps> = ({
   seed = 11,
   paused = false,
   fadeOut = false,
+  colors = KK_CONFETTI_COLORS,
+  alwaysPlays = false,
 }) => {
-  const pieces = buildConfettiPieces(count, seed);
+  const pieces = buildConfettiPieces(count, seed, colors);
   const playState = paused ? 'paused' : 'running';
 
   return (
@@ -56,7 +64,7 @@ export const KkConfettiRain: FC<KkConfettiRainProps> = ({
         overflow: 'hidden',
         pointerEvents: 'none',
         zIndex: -1,
-        '@media (prefers-reduced-motion: reduce)': { display: 'none' },
+        [REDUCED_MOTION]: { display: alwaysPlays ? undefined : 'none' },
       }}
     >
       <Box
@@ -75,6 +83,7 @@ export const KkConfettiRain: FC<KkConfettiRainProps> = ({
               top: 0,
               left: `${piece.leftPercent}%`,
               animation: `${fall} ${piece.durationSeconds}s linear infinite`,
+              ...keepsPlaying(alwaysPlays, piece.durationSeconds, 'infinite'),
               animationDelay: `${piece.delaySeconds}s`,
               animationPlayState: playState,
             }}
@@ -82,6 +91,7 @@ export const KkConfettiRain: FC<KkConfettiRainProps> = ({
             <Box
               sx={{
                 animation: `${sway} ${piece.swayDurationSeconds}s ease-in-out infinite alternate`,
+                ...keepsPlaying(alwaysPlays, piece.swayDurationSeconds, 'infinite'),
                 animationDelay: `${piece.swayDelaySeconds}s`,
                 animationPlayState: playState,
                 '--kk-confetti-sway': `${piece.swayVw}vw`,
@@ -97,6 +107,7 @@ export const KkConfettiRain: FC<KkConfettiRainProps> = ({
                   bgcolor: PIECE_COLOR[piece.color],
                   opacity: 0.85,
                   animation: `${tumble} ${piece.durationSeconds}s linear infinite`,
+                  ...keepsPlaying(alwaysPlays, piece.durationSeconds, 'infinite'),
                   animationDelay: `${piece.delaySeconds}s`,
                   animationPlayState: playState,
                   '--kk-confetti-spin': `${piece.spinDegrees}deg`,

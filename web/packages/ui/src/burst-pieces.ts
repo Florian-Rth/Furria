@@ -1,4 +1,5 @@
-import { pseudoRandom } from './confetti-pieces';
+import type { KkConfettiColor } from './confetti-pieces';
+import { KK_CONFETTI_COLORS, pseudoRandom } from './confetti-pieces';
 
 export interface BurstPiece {
   id: number;
@@ -7,14 +8,12 @@ export interface BurstPiece {
   size: number;
   isRound: boolean;
   isSlim: boolean;
-  color: 'red' | 'gold' | 'ink';
+  color: KkConfettiColor;
   durationSeconds: number;
   spinDegrees: number;
   flipXDegrees: number;
   flipYDegrees: number;
 }
-
-const COLORS: BurstPiece['color'][] = ['red', 'gold', 'ink'];
 
 const resolveTurnDirection = (value: number): number => (value > 0.5 ? 1 : -1);
 
@@ -24,7 +23,11 @@ const resolveSpinDegrees = (direction: number, extra: number): number =>
 const resolveFlipDegrees = (direction: number, extra: number): number =>
   resolveTurnDirection(direction) * (60 + extra * 120);
 
-export const buildBurstPieces = (count: number, seed: number): BurstPiece[] =>
+export const buildBurstPieces = (
+  count: number,
+  seed: number,
+  colors: readonly KkConfettiColor[] = KK_CONFETTI_COLORS,
+): BurstPiece[] =>
   Array.from({ length: count }, (_, index) => {
     const rng = (offset: number): number => pseudoRandom(seed, index * 11 + offset);
     const angle = rng(0) * Math.PI * 2;
@@ -37,7 +40,7 @@ export const buildBurstPieces = (count: number, seed: number): BurstPiece[] =>
       size: 6 + rng(2) * 6,
       isRound: index % 3 === 0,
       isSlim: index % 2 === 1,
-      color: COLORS[index % COLORS.length] ?? 'red',
+      color: colors[index % colors.length] ?? 'red',
       durationSeconds: 0.6 + rng(3) * 0.3,
       spinDegrees: resolveSpinDegrees(rng(4), rng(5)),
       flipXDegrees: resolveFlipDegrees(rng(6), rng(7)),

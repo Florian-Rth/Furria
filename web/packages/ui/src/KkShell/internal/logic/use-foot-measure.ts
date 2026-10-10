@@ -1,18 +1,15 @@
-import type { RefObject } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export interface KkFootMeasure {
-  ref: RefObject<HTMLDivElement | null>;
+  ref: (node: HTMLDivElement | null) => void;
   measured: number | null;
 }
 
 export const useFootMeasure = (active: boolean): KkFootMeasure => {
-  const ref = useRef<HTMLDivElement | null>(null);
+  const [node, setNode] = useState<HTMLDivElement | null>(null);
   const [measured, setMeasured] = useState<number | null>(null);
 
   useEffect(() => {
-    const node = ref.current;
-
     if (!active || node === null) {
       setMeasured(null);
       return;
@@ -31,7 +28,7 @@ export const useFootMeasure = (active: boolean): KkFootMeasure => {
     return () => {
       observer.disconnect();
     };
-  }, [active]);
+  }, [active, node]);
 
-  return { ref, measured };
+  return { ref: setNode, measured };
 };

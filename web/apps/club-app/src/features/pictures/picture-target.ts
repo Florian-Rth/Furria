@@ -32,20 +32,26 @@ export const toPicturePath = (target: PictureTarget): string =>
     ? `/api/persons/${target.ownerId}/portrait`
     : `/api/groups/${target.ownerId}/picture`;
 
-const toUploadOwner = (target: PictureTarget): string =>
+export const toUploadOwner = (target: PictureTarget): string =>
   target.kind === 'portrait' ? `person:${target.ownerId}` : `group:${target.ownerId}`;
 
 export const toCropToken = (crop: KkCrop): string =>
   [crop.left, crop.top, crop.width, crop.height].join(',');
 
-export const toUploadMetadata = (
-  target: PictureTarget,
+export const toOwnerMetadata = (
+  owner: string,
   fileName: string,
   crop: KkCrop | null,
 ): Record<string, string> =>
   crop === null
-    ? { owner: toUploadOwner(target), filename: fileName }
-    : { owner: toUploadOwner(target), filename: fileName, crop: toCropToken(crop) };
+    ? { owner, filename: fileName }
+    : { owner, filename: fileName, crop: toCropToken(crop) };
+
+export const toUploadMetadata = (
+  target: PictureTarget,
+  fileName: string,
+  crop: KkCrop | null,
+): Record<string, string> => toOwnerMetadata(toUploadOwner(target), fileName, crop);
 
 export const toUploadFailure = (status: number | null): PictureUploadFailure =>
   (status === null ? undefined : FAILURE_BY_STATUS[status]) ?? 'interrupted';

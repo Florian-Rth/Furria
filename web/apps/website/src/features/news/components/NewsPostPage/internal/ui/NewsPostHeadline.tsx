@@ -7,7 +7,7 @@ interface NewsPostHeadlineProps {
 }
 
 export const NewsPostHeadline: FC<NewsPostHeadlineProps> = ({ post }) => (
-  <Typography variant="display" component="h1" sx={{ lineHeight: 0.96 }}>
+  <Typography variant="display" component="h1" sx={{ lineHeight: 0.96, hyphens: 'auto' }}>
     {post.title}
   </Typography>
 );

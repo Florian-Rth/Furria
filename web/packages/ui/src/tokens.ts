@@ -278,6 +278,10 @@ export const kkTokens = {
     tintOpacity: 0.7,
     blur: '6px',
   },
+  banner: {
+    developingFilter: 'grayscale(1) contrast(0.8)',
+    revealMs: 900,
+  },
   photo: {
     placeholderSurface: '#D5D8DD',
     placeholderSurfaceDark: '#23262C',

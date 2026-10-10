@@ -1,10 +1,14 @@
+export type KkConfettiColor = 'red' | 'gold' | 'ink';
+
+export const KK_CONFETTI_COLORS: readonly KkConfettiColor[] = ['red', 'gold', 'ink'];
+
 export interface ConfettiPiece {
   id: number;
   leftPercent: number;
   size: number;
   isRound: boolean;
   isSlim: boolean;
-  color: 'red' | 'gold' | 'ink';
+  color: KkConfettiColor;
   durationSeconds: number;
   delaySeconds: number;
   swayVw: number;
@@ -15,19 +19,21 @@ export interface ConfettiPiece {
   flipYDegrees: number;
 }
 
-const COLORS: ConfettiPiece['color'][] = ['red', 'gold', 'ink'];
-
 export const pseudoRandom = (seed: number, k: number): number => {
   const value = Math.sin(seed * 53.3 + k * 12.9) * 10_000;
   return value - Math.floor(value);
 };
 
-export const buildConfettiPieces = (count: number, seed: number): ConfettiPiece[] =>
+export const buildConfettiPieces = (
+  count: number,
+  seed: number,
+  colors: readonly KkConfettiColor[] = KK_CONFETTI_COLORS,
+): ConfettiPiece[] =>
   Array.from({ length: count }, (_, index) => {
     const rng = (offset: number): number => pseudoRandom(seed, index * 13 + offset);
     const durationSeconds = 6 + rng(1) * 6;
     const swayDurationSeconds = 1.5 + rng(11) * 1.5;
-    const color = COLORS[index % COLORS.length] ?? 'red';
+    const color = colors[index % colors.length] ?? 'red';
 
     return {
       id: index,

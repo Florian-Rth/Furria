@@ -18,7 +18,7 @@ export const KkSheetTitle: FC<KkSheetTitleProps> = ({ id, children }) => (
       lineHeight: 1.2,
       color: 'text.primary',
       px: 2.5,
-      pb: 1.5,
+      pb: 0.5,
     }}
   >
     {children}

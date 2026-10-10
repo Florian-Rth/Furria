@@ -17,6 +17,7 @@ import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as InvitationCodeRouteImport } from './routes/invitation_.code'
+import { Route as AppNewsRouteImport } from './routes/_app/news'
 import { Route as AppMoreRouteImport } from './routes/_app/more'
 import { Route as AppGroupsRouteImport } from './routes/_app/groups'
 import { Route as AppGalleryRouteImport } from './routes/_app/gallery'
@@ -29,6 +30,7 @@ import { Route as AppAffiliatedRouteImport } from './routes/_app/_affiliated'
 import { Route as AppSplatRouteImport } from './routes/_app/$'
 import { Route as AppManageIndexRouteImport } from './routes/_app/manage.index'
 import { Route as AppLabIndexRouteImport } from './routes/_app/lab.index'
+import { Route as AppNewsPostIdRouteImport } from './routes/_app/news_.$postId'
 import { Route as AppManageVenuesRouteImport } from './routes/_app/manage.venues'
 import { Route as AppManageSessionsRouteImport } from './routes/_app/manage.sessions'
 import { Route as AppManageRolesRouteImport } from './routes/_app/manage.roles'
@@ -151,6 +153,11 @@ const InvitationCodeRoute = InvitationCodeRouteImport.update({
   path: '/invitation/code',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppNewsRoute = AppNewsRouteImport.update({
+  id: '/news',
+  path: '/news',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppMoreRoute = AppMoreRouteImport.update({
   id: '/more',
   path: '/more',
@@ -207,6 +214,11 @@ const AppManageIndexRoute = AppManageIndexRouteImport.update({
 const AppLabIndexRoute = AppLabIndexRouteImport.update({
   id: '/lab/',
   path: '/lab/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNewsPostIdRoute = AppNewsPostIdRouteImport.update({
+  id: '/news_/$postId',
+  path: '/news/$postId',
   getParentRoute: () => AppRoute,
 } as any)
 const AppManageVenuesRoute = AppManageVenuesRouteImport.update({
@@ -683,6 +695,7 @@ export interface FileRoutesByFullPath {
   '/gallery': typeof AppGalleryRoute
   '/groups': typeof AppGroupsRoute
   '/more': typeof AppMoreRoute
+  '/news': typeof AppNewsRoute
   '/invitation/code': typeof InvitationCodeRoute
   '/members': typeof AppAffiliatedMembersRoute
   '/profile': typeof AppPersonalProfileRoute
@@ -708,6 +721,7 @@ export interface FileRoutesByFullPath {
   '/manage/roles': typeof AppManageRolesRoute
   '/manage/sessions': typeof AppManageSessionsRoute
   '/manage/venues': typeof AppManageVenuesRoute
+  '/news/$postId': typeof AppNewsPostIdRoute
   '/lab/': typeof AppLabIndexRoute
   '/manage/': typeof AppManageIndexRoute
   '/members/$personId': typeof AppAffiliatedMembersPersonIdRoute
@@ -784,6 +798,7 @@ export interface FileRoutesByTo {
   '/gallery': typeof AppGalleryRoute
   '/groups': typeof AppGroupsRoute
   '/more': typeof AppMoreRoute
+  '/news': typeof AppNewsRoute
   '/invitation/code': typeof InvitationCodeRoute
   '/members': typeof AppAffiliatedMembersRoute
   '/profile': typeof AppPersonalProfileRoute
@@ -809,6 +824,7 @@ export interface FileRoutesByTo {
   '/manage/roles': typeof AppManageRolesRoute
   '/manage/sessions': typeof AppManageSessionsRoute
   '/manage/venues': typeof AppManageVenuesRoute
+  '/news/$postId': typeof AppNewsPostIdRoute
   '/lab': typeof AppLabIndexRoute
   '/manage': typeof AppManageIndexRoute
   '/members/$personId': typeof AppAffiliatedMembersPersonIdRoute
@@ -888,6 +904,7 @@ export interface FileRoutesById {
   '/_app/gallery': typeof AppGalleryRoute
   '/_app/groups': typeof AppGroupsRoute
   '/_app/more': typeof AppMoreRoute
+  '/_app/news': typeof AppNewsRoute
   '/invitation_/code': typeof InvitationCodeRoute
   '/_app/': typeof AppIndexRoute
   '/_app/_affiliated/members': typeof AppAffiliatedMembersRoute
@@ -914,6 +931,7 @@ export interface FileRoutesById {
   '/_app/manage/roles': typeof AppManageRolesRoute
   '/_app/manage/sessions': typeof AppManageSessionsRoute
   '/_app/manage/venues': typeof AppManageVenuesRoute
+  '/_app/news_/$postId': typeof AppNewsPostIdRoute
   '/_app/lab/': typeof AppLabIndexRoute
   '/_app/manage/': typeof AppManageIndexRoute
   '/_app/_affiliated/members_/$personId': typeof AppAffiliatedMembersPersonIdRoute
@@ -992,6 +1010,7 @@ export interface FileRouteTypes {
     | '/gallery'
     | '/groups'
     | '/more'
+    | '/news'
     | '/invitation/code'
     | '/members'
     | '/profile'
@@ -1017,6 +1036,7 @@ export interface FileRouteTypes {
     | '/manage/roles'
     | '/manage/sessions'
     | '/manage/venues'
+    | '/news/$postId'
     | '/lab/'
     | '/manage/'
     | '/members/$personId'
@@ -1093,6 +1113,7 @@ export interface FileRouteTypes {
     | '/gallery'
     | '/groups'
     | '/more'
+    | '/news'
     | '/invitation/code'
     | '/members'
     | '/profile'
@@ -1118,6 +1139,7 @@ export interface FileRouteTypes {
     | '/manage/roles'
     | '/manage/sessions'
     | '/manage/venues'
+    | '/news/$postId'
     | '/lab'
     | '/manage'
     | '/members/$personId'
@@ -1196,6 +1218,7 @@ export interface FileRouteTypes {
     | '/_app/gallery'
     | '/_app/groups'
     | '/_app/more'
+    | '/_app/news'
     | '/invitation_/code'
     | '/_app/'
     | '/_app/_affiliated/members'
@@ -1222,6 +1245,7 @@ export interface FileRouteTypes {
     | '/_app/manage/roles'
     | '/_app/manage/sessions'
     | '/_app/manage/venues'
+    | '/_app/news_/$postId'
     | '/_app/lab/'
     | '/_app/manage/'
     | '/_app/_affiliated/members_/$personId'
@@ -1352,6 +1376,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InvitationCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/news': {
+      id: '/_app/news'
+      path: '/news'
+      fullPath: '/news'
+      preLoaderRoute: typeof AppNewsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/more': {
       id: '/_app/more'
       path: '/more'
@@ -1434,6 +1465,13 @@ declare module '@tanstack/react-router' {
       path: '/lab'
       fullPath: '/lab/'
       preLoaderRoute: typeof AppLabIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/news_/$postId': {
+      id: '/_app/news_/$postId'
+      path: '/news/$postId'
+      fullPath: '/news/$postId'
+      preLoaderRoute: typeof AppNewsPostIdRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/manage/venues': {
@@ -2065,6 +2103,7 @@ interface AppRouteChildren {
   AppGalleryRoute: typeof AppGalleryRoute
   AppGroupsRoute: typeof AppGroupsRoute
   AppMoreRoute: typeof AppMoreRoute
+  AppNewsRoute: typeof AppNewsRoute
   AppIndexRoute: typeof AppIndexRoute
   AppAnnouncementsAnnouncementIdRoute: typeof AppAnnouncementsAnnouncementIdRoute
   AppAnnouncementsNewRoute: typeof AppAnnouncementsNewRoute
@@ -2088,6 +2127,7 @@ interface AppRouteChildren {
   AppManageRolesRoute: typeof AppManageRolesRoute
   AppManageSessionsRoute: typeof AppManageSessionsRoute
   AppManageVenuesRoute: typeof AppManageVenuesRoute
+  AppNewsPostIdRoute: typeof AppNewsPostIdRoute
   AppLabIndexRoute: typeof AppLabIndexRoute
   AppManageIndexRoute: typeof AppManageIndexRoute
   AppEventsEventIdEditRoute: typeof AppEventsEventIdEditRoute
@@ -2154,6 +2194,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppGalleryRoute: AppGalleryRoute,
   AppGroupsRoute: AppGroupsRoute,
   AppMoreRoute: AppMoreRoute,
+  AppNewsRoute: AppNewsRoute,
   AppIndexRoute: AppIndexRoute,
   AppAnnouncementsAnnouncementIdRoute: AppAnnouncementsAnnouncementIdRoute,
   AppAnnouncementsNewRoute: AppAnnouncementsNewRoute,
@@ -2177,6 +2218,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppManageRolesRoute: AppManageRolesRoute,
   AppManageSessionsRoute: AppManageSessionsRoute,
   AppManageVenuesRoute: AppManageVenuesRoute,
+  AppNewsPostIdRoute: AppNewsPostIdRoute,
   AppLabIndexRoute: AppLabIndexRoute,
   AppManageIndexRoute: AppManageIndexRoute,
   AppEventsEventIdEditRoute: AppEventsEventIdEditRoute,

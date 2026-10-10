@@ -2,6 +2,9 @@ import Box from '@mui/material/Box';
 import { keyframes } from '@mui/material/styles';
 import type { FC } from 'react';
 import { buildBurstPieces } from './burst-pieces';
+import type { KkConfettiColor } from './confetti-pieces';
+import { KK_CONFETTI_COLORS } from './confetti-pieces';
+import { keepsPlaying } from './internal/motion-override';
 
 const fling = keyframes`
   from {
@@ -23,6 +26,8 @@ const tumble = keyframes`
   }
 `;
 
+const REDUCED_MOTION = '@media (prefers-reduced-motion: reduce)';
+
 const PIECE_COLOR = {
   red: 'primary.main',
   gold: 'warning.main',
@@ -33,14 +38,22 @@ interface KkConfettiBurstProps {
   fireKey: number;
   count?: number;
   seed?: number;
+  colors?: readonly KkConfettiColor[];
+  alwaysPlays?: boolean;
 }
 
-export const KkConfettiBurst: FC<KkConfettiBurstProps> = ({ fireKey, count = 12, seed = 11 }) => {
+export const KkConfettiBurst: FC<KkConfettiBurstProps> = ({
+  fireKey,
+  count = 12,
+  seed = 11,
+  colors = KK_CONFETTI_COLORS,
+  alwaysPlays = false,
+}) => {
   if (fireKey === 0) {
     return null;
   }
 
-  const pieces = buildBurstPieces(count, seed + fireKey);
+  const pieces = buildBurstPieces(count, seed + fireKey, colors);
 
   return (
     <Box
@@ -53,7 +66,7 @@ export const KkConfettiBurst: FC<KkConfettiBurstProps> = ({ fireKey, count = 12,
         width: 0,
         height: 0,
         pointerEvents: 'none',
-        '@media (prefers-reduced-motion: reduce)': { display: 'none' },
+        [REDUCED_MOTION]: { display: alwaysPlays ? undefined : 'none' },
       }}
     >
       {pieces.map((piece) => (
@@ -66,6 +79,7 @@ export const KkConfettiBurst: FC<KkConfettiBurstProps> = ({ fireKey, count = 12,
             top: 0,
             opacity: 0,
             animation: `${fling} ${piece.durationSeconds}s ease-out forwards`,
+            ...keepsPlaying(alwaysPlays, piece.durationSeconds, 1),
             '--kk-burst-x': `${piece.offsetX}px`,
             '--kk-burst-y': `${piece.offsetY}px`,
           }}
@@ -79,6 +93,7 @@ export const KkConfettiBurst: FC<KkConfettiBurstProps> = ({ fireKey, count = 12,
               borderRadius: piece.isRound ? '50%' : '2px',
               bgcolor: PIECE_COLOR[piece.color],
               animation: `${tumble} ${piece.durationSeconds}s ease-out forwards`,
+              ...keepsPlaying(alwaysPlays, piece.durationSeconds, 1),
               '--kk-burst-spin': `${piece.spinDegrees}deg`,
               '--kk-burst-flip-x': `${piece.flipXDegrees}deg`,
               '--kk-burst-flip-y': `${piece.flipYDegrees}deg`,

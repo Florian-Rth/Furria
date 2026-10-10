@@ -22,6 +22,7 @@ export const MANAGE_PATH = '/manage';
 export const EVENTS_PATH = '/events';
 export const PROFILE_PATH = '/profile';
 export const GALLERY_PATH = '/gallery';
+export const NEWS_PATH = '/news';
 
 export const START_SECTION = 'start';
 export const CLUB_SECTION = 'club';
@@ -36,6 +37,7 @@ export const GROUPS_TITLE = 'Gruppen';
 export const PROFILE_TITLE = 'Profil';
 export const EVENTS_TITLE = 'Veranstaltungen';
 export const GALLERY_TITLE = 'Galerie';
+export const NEWS_TITLE = 'Aktuelles';
 
 export const START_ORIGIN: KkScreenOrigin = { label: START_TITLE, to: START_PATH };
 export const CLUB_ORIGIN: KkScreenOrigin = { label: CLUB_TITLE, to: CLUB_PATH };
@@ -46,6 +48,7 @@ export const MORE_ORIGIN: KkScreenOrigin = { label: 'Mehr', to: MORE_PATH };
 export const MANAGE_ORIGIN: KkScreenOrigin = { label: 'Verein verwalten', to: MANAGE_PATH };
 export const EVENTS_ORIGIN: KkScreenOrigin = { label: EVENTS_TITLE, to: EVENTS_PATH };
 export const GALLERY_ORIGIN: KkScreenOrigin = { label: GALLERY_TITLE, to: GALLERY_PATH };
+export const NEWS_ORIGIN: KkScreenOrigin = { label: NEWS_TITLE, to: NEWS_PATH };
 
 export const AREA_HANDOVERS = {
   start: 'confetti',
@@ -58,6 +61,7 @@ export const AREA_HANDOVERS = {
   manage: 'confetti',
   events: 'confetti',
   gallery: 'confetti',
+  news: 'confetti',
   more: 'confetti',
 } as const satisfies Record<string, KkHandoverName>;
 
@@ -84,6 +88,8 @@ export const GALLERY_KEYS: readonly [PermissionKey, ...PermissionKey[]] = [
   PERMISSION_KEYS.galleryManage,
   PERMISSION_KEYS.galleryPublish,
 ];
+
+export const NEWS_KEYS: readonly [PermissionKey, ...PermissionKey[]] = [PERMISSION_KEYS.newsManage];
 
 export const GALLERY_SORT_KEYS: readonly [PermissionKey, ...PermissionKey[]] = [
   PERMISSION_KEYS.galleryUpload,
@@ -172,6 +178,14 @@ export const MANAGE_SECTIONS: AppSection[] = [
     to: EVENTS_PATH,
     meta: 'Abende mit Karten für die Website',
     permissionKeys: EVENTS_KEYS,
+  },
+  {
+    id: 'news',
+    label: NEWS_TITLE,
+    icon: 'news',
+    to: NEWS_PATH,
+    meta: 'Meldungen für die Website schreiben',
+    permissionKeys: NEWS_KEYS,
   },
 ];
 

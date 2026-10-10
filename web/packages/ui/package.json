@@ -11,7 +11,8 @@
     "./tokens": "./src/tokens.ts",
     "./group-tone": "./src/internal/group-tone.ts",
     "./theme": "./src/theme.ts",
-    "./fonts": "./src/fonts.ts"
+    "./fonts": "./src/fonts.ts",
+    "./news-text": "./src/news-text/index.ts"
   },
   "scripts": {
     "test": "vitest run",
