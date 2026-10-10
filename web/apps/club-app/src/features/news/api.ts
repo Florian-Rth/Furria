@@ -24,6 +24,7 @@ import {
   requestPendingChangesDiscard,
   requestPendingChangesPublication,
 } from './requests';
+import { newsSavesSettled } from './saves-in-flight';
 import type {
   CreatedNewsPost,
   GalleryAlbumPhotos,
@@ -77,7 +78,11 @@ export const useNewsPostQuery = (
     queryFn:
       newsPostId === null
         ? skipToken
-        : () => withFreshAccessToken((token) => requestNewsPost(newsPostId, token)),
+        : async () => {
+            await newsSavesSettled(newsPostId);
+            return withFreshAccessToken((token) => requestNewsPost(newsPostId, token));
+          },
+    refetchOnMount: 'always',
     refetchOnWindowFocus: false,
     refetchInterval: (query) => (isDeveloping(query.state.data) ? PROCESSING_POLL_MS : false),
   });

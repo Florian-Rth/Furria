@@ -126,7 +126,8 @@ export const useNewsEditor = (routePostId: string): NewsEditor => {
   const postId = postIdOf(routePostId) ?? createdId;
   const query = useNewsPostQuery(postId);
   const [heldPost, setHeldPost] = useState<NewsPostDetails | null>(null);
-  const post = heldPost ?? query.data ?? null;
+  const freshPost = query.isFetchedAfterMount ? query.data : undefined;
+  const post = heldPost ?? freshPost ?? null;
   const [seededId, setSeededId] = useState<number | null>(null);
   const [seededSavedAt, setSeededSavedAt] = useState<string | null>(null);
   const [fields, setFields] = useState<NewsFields>(EMPTY_FIELDS);

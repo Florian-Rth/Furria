@@ -3,6 +3,7 @@ import { isNotFoundError } from '@/lib/query-error';
 import { useNewsPostFetch, useNewsPostSave } from '../api';
 import { contentPayloadOf, isRestorableSave, nextRetryDelayOf } from '../news-saving';
 import type { SaveState } from '../press-bar-facts';
+import { trackNewsSave } from '../saves-in-flight';
 import type { ForeignSave } from '../schemas';
 import type { NewsFields, NewsSaver } from '../types';
 
@@ -142,6 +143,9 @@ export const useNewsAutosave = (options: NewsAutosaveOptions): NewsAutosave => {
       snapshot === null ? previousSaved && pending.current === null : saveSnapshot(snapshot),
     );
     inFlight.current = next;
+    if (snapshot !== null) {
+      trackNewsSave(snapshot.postId, next);
+    }
     return next;
   };
 
