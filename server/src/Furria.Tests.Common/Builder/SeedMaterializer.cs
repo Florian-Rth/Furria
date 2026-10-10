@@ -53,6 +53,19 @@ internal static class SeedMaterializer
             ct
         );
 
-        return new SeededRegistry(identity, groups, roles, club, gallery);
+        var news = await NewsSeedMaterializer.InsertAsync(
+            dbContext,
+            recorded.RecordedNews,
+            new NewsSeedReferences(
+                identity.PersonIds,
+                groups.GroupIds,
+                club.EventIds,
+                gallery.AlbumIds
+            ),
+            scope.ServiceProvider.GetRequiredService<TimeProvider>().GetUtcNow(),
+            ct
+        );
+
+        return new SeededRegistry(identity, groups, roles, club, gallery, news);
     }
 }

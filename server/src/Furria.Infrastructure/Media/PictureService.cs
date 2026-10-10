@@ -32,10 +32,10 @@ public sealed class PictureService
     {
         var picture = await PictureOf(owner)
             .AsNoTracking()
-            .Select(item => new EditingRow(item.Id, item.State, item.RenderedAt, item.Crop))
+            .Select(item => new MediaPictureRow(item.Id, item.State, item.RenderedAt, item.Crop))
             .SingleOrDefaultAsync(ct);
 
-        return picture is null ? null : EditingOf(owner, picture);
+        return picture is null ? null : _pictures.EditingOf(owner, picture);
     }
 
     public async Task<Result> CropAsync(MediaOwner owner, PictureCrop crop, CancellationToken ct)
@@ -82,20 +82,4 @@ public sealed class PictureService
                 .Select(group => group.Picture!),
             _ => _dbContext.MediaItems.Where(_ => false),
         };
-
-    private PictureEditingDetails EditingOf(MediaOwner owner, EditingRow picture) =>
-        new()
-        {
-            State = picture.State,
-            Picture = _pictures.Of(owner, picture.MediaItemId, picture.RenderedAt),
-            UncroppedUrl = _pictures.UncroppedUrlOf(owner, picture.MediaItemId, picture.RenderedAt),
-            Crop = picture.Crop is { } crop ? MediaCrops.ToDetails(crop) : null,
-        };
-
-    private sealed record EditingRow(
-        int MediaItemId,
-        MediaItemState State,
-        DateTimeOffset? RenderedAt,
-        MediaCrop? Crop
-    );
 }

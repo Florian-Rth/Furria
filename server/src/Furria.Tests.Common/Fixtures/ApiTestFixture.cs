@@ -466,6 +466,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             new TestRoles(seeded.Roles),
             new TestClub(seeded.Club),
             new TestGallery(seeded.Gallery),
+            new TestNews(seeded.News),
             new Expected(scopeFactory)
         );
     }
@@ -503,6 +504,17 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         await db.Database.ExecuteSqlAsync($"DELETE FROM media_item WHERE id = {mediaItemId}", ct);
+    }
+
+    public async Task<int> PendingNewsPictureOfAsync(int newsPostId, CancellationToken ct = default)
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        return await db
+            .NewsPosts.Where(post => post.Id == newsPostId)
+            .Select(post => post.PendingPictureId!.Value)
+            .SingleAsync(ct);
     }
 
     public async Task<string> MediaFileOfAsync(

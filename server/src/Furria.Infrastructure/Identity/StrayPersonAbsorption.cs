@@ -24,7 +24,8 @@ internal static class StrayPersonAbsorption
                     || dbContext.AttendanceResponses.Any(response => response.PersonId == person.Id)
                     || dbContext.Announcements.Any(announcement =>
                         announcement.AuthorPersonId == person.Id
-                    ),
+                    )
+                    || dbContext.NewsPosts.Any(post => post.AuthorPersonId == person.Id),
                 ct
             );
 
@@ -95,6 +96,12 @@ internal static class StrayPersonAbsorption
             .AccountEvents.Where(accountEvent => accountEvent.ActorPersonId == stray)
             .ExecuteUpdateAsync(
                 setters => setters.SetProperty(row => row.ActorPersonId, keeper),
+                ct
+            );
+        await dbContext
+            .NewsPosts.Where(post => post.LastSavedByPersonId == stray)
+            .ExecuteUpdateAsync(
+                setters => setters.SetProperty(row => row.LastSavedByPersonId, keeper),
                 ct
             );
         await dbContext

@@ -30,6 +30,13 @@ public sealed class MediaRoot
             Directory.Delete(renditions, recursive: true);
     }
 
+    public void CopyInto(string sourceRelativePath, string relativePath)
+    {
+        var destination = FullPathOf(relativePath);
+        Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+        File.Copy(FullPathOf(sourceRelativePath), destination);
+    }
+
     public void MoveInto(string sourcePath, string relativePath)
     {
         var destination = FullPathOf(relativePath);

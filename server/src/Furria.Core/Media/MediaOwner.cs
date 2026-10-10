@@ -8,9 +8,11 @@ public readonly record struct MediaOwner
     private const string GalleryToken = "gallery";
     private const string PersonPrefix = "person:";
     private const string GroupPrefix = "group:";
+    private const string NewsPostPrefix = "news:";
 
     public const double PortraitAspect = 4.0 / 5;
     public const double GroupPictureAspect = 3.0 / 2;
+    public const double NewsPictureAspect = 2.0 / 1;
 
     public MediaOwnerKind Kind { get; }
 
@@ -21,6 +23,7 @@ public readonly record struct MediaOwner
         {
             MediaOwnerKind.Person => $"{PersonPrefix}{Id}",
             MediaOwnerKind.Group => $"{GroupPrefix}{Id}",
+            MediaOwnerKind.NewsPost => $"{NewsPostPrefix}{Id}",
             _ => GalleryToken,
         };
 
@@ -34,6 +37,7 @@ public readonly record struct MediaOwner
         {
             MediaOwnerKind.Person => PortraitAspect,
             MediaOwnerKind.Group => GroupPictureAspect,
+            MediaOwnerKind.NewsPost => NewsPictureAspect,
             _ => null,
         };
 
@@ -49,11 +53,14 @@ public readonly record struct MediaOwner
 
     public static MediaOwner Group(int groupId) => new(MediaOwnerKind.Group, groupId);
 
+    public static MediaOwner NewsPost(int newsPostId) => new(MediaOwnerKind.NewsPost, newsPostId);
+
     public static MediaOwner Of(MediaItem item) =>
         item.OwnerKind switch
         {
             MediaOwnerKind.Person => Person(item.OwnerPersonId!.Value),
             MediaOwnerKind.Group => Group(item.OwnerGroupId!.Value),
+            MediaOwnerKind.NewsPost => NewsPost(item.OwnerNewsPostId!.Value),
             _ => Gallery,
         };
 
@@ -68,6 +75,7 @@ public readonly record struct MediaOwner
             GalleryToken => Gallery,
             _ when IdAfter(token, PersonPrefix) is { } personId => Person(personId),
             _ when IdAfter(token, GroupPrefix) is { } groupId => Group(groupId),
+            _ when IdAfter(token, NewsPostPrefix) is { } newsPostId => NewsPost(newsPostId),
             _ => null,
         };
 

@@ -19,6 +19,8 @@ public static class TusUploadSteps
 
     public static string GroupOwner(int groupId) => $"group:{groupId}";
 
+    public static string NewsPostOwner(int newsPostId) => $"news:{newsPostId}";
+
     public static Task<HttpResponseMessage> CreateAsync(
         HttpClient client,
         string owner,

@@ -1,6 +1,8 @@
 using System.Diagnostics.Contracts;
 using Furria.Application.Media;
+using Furria.Application.News;
 using Furria.Core.Media;
+using Furria.Infrastructure.News;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,12 +12,19 @@ public sealed class MediaStore
 {
     private readonly AppDbContext _dbContext;
     private readonly MediaRoot _root;
+    private readonly NewsPictures _newsPictures;
     private readonly TimeProvider _timeProvider;
 
-    public MediaStore(AppDbContext dbContext, MediaRoot root, TimeProvider timeProvider)
+    public MediaStore(
+        AppDbContext dbContext,
+        MediaRoot root,
+        NewsPictures newsPictures,
+        TimeProvider timeProvider
+    )
     {
         _dbContext = dbContext;
         _root = root;
+        _newsPictures = newsPictures;
         _timeProvider = timeProvider;
     }
 
@@ -37,12 +46,12 @@ public sealed class MediaStore
 
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
         await _dbContext.SaveChangesAsync(ct);
-        await LinkPictureAsync(command.Owner, item.Id, ct);
+        var dropped = await LinkPictureAsync(command, item.Id, ct);
         _root.MoveInto(command.StagedFilePath, MediaPaths.OriginalOf(item.StorageKey));
         await transaction.CommitAsync(ct);
 
-        foreach (var picture in replaced)
-            _root.DeleteFilesOf(picture.StorageKey);
+        foreach (var storageKey in replaced.Select(picture => picture.StorageKey).Concat(dropped))
+            _root.DeleteFilesOf(storageKey);
 
         return item.Id;
     }
@@ -94,23 +103,45 @@ public sealed class MediaStore
             _ => [],
         };
 
-    private Task LinkPictureAsync(MediaOwner owner, int mediaItemId, CancellationToken ct) =>
-        owner.Kind switch
+    private async Task<IReadOnlyList<Guid>> LinkPictureAsync(
+        AdoptUploadCommand command,
+        int mediaItemId,
+        CancellationToken ct
+    )
+    {
+        var owner = command.Owner;
+        switch (owner.Kind)
         {
-            MediaOwnerKind.Person => _dbContext
-                .People.Where(person => person.Id == owner.Id)
-                .ExecuteUpdateAsync(
-                    setters => setters.SetProperty(person => person.PortraitId, mediaItemId),
+            case MediaOwnerKind.Person:
+                await _dbContext
+                    .People.Where(person => person.Id == owner.Id)
+                    .ExecuteUpdateAsync(
+                        setters => setters.SetProperty(person => person.PortraitId, mediaItemId),
+                        ct
+                    );
+                return [];
+            case MediaOwnerKind.Group:
+                await _dbContext
+                    .Groups.Where(group => group.Id == owner.Id)
+                    .ExecuteUpdateAsync(
+                        setters => setters.SetProperty(group => group.PictureId, mediaItemId),
+                        ct
+                    );
+                return [];
+            case MediaOwnerKind.NewsPost:
+                return await _newsPictures.PlaceAsync(
+                    new PlaceNewsPictureCommand
+                    {
+                        NewsPostId = owner.Id!.Value,
+                        MediaItemId = mediaItemId,
+                        PlacedByPersonId = command.UploadedByPersonId,
+                    },
                     ct
-                ),
-            MediaOwnerKind.Group => _dbContext
-                .Groups.Where(group => group.Id == owner.Id)
-                .ExecuteUpdateAsync(
-                    setters => setters.SetProperty(group => group.PictureId, mediaItemId),
-                    ct
-                ),
-            _ => Task.CompletedTask,
-        };
+                );
+            default:
+                return [];
+        }
+    }
 
     [Pure]
     private static MediaItem NewItem(AdoptUploadCommand command, DateTimeOffset now) =>
@@ -120,6 +151,8 @@ public sealed class MediaStore
             OwnerKind = command.Owner.Kind,
             OwnerPersonId = command.Owner.Kind == MediaOwnerKind.Person ? command.Owner.Id : null,
             OwnerGroupId = command.Owner.Kind == MediaOwnerKind.Group ? command.Owner.Id : null,
+            OwnerNewsPostId =
+                command.Owner.Kind == MediaOwnerKind.NewsPost ? command.Owner.Id : null,
             Kind = command.Format.Kind,
             State = MediaItemState.Processing,
             OriginalFileName = command.OriginalFileName,

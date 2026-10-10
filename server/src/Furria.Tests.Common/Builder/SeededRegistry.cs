@@ -5,5 +5,6 @@ internal sealed record SeededRegistry(
     SeededGroups Groups,
     SeededRoles Roles,
     SeededClub Club,
-    SeededGallery Gallery
+    SeededGallery Gallery,
+    SeededNews News
 );

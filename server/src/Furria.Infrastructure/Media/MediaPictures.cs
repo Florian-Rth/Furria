@@ -30,6 +30,23 @@ public sealed class MediaPictures
     public PictureDetails? Of(MediaOwner owner, int? mediaItemId, DateTimeOffset? renderedAt) =>
         PictureOf(mediaItemId, renderedAt, (id, rendition) => _signer.UrlOf(id, owner, rendition));
 
+    public PictureDetails GalleryPhotoOf(int mediaItemId) =>
+        new()
+        {
+            SmallUrl = _signer.UrlOf(mediaItemId, MediaOwner.Gallery, MediaRendition.Small),
+            MediumUrl = _signer.UrlOf(mediaItemId, MediaOwner.Gallery, MediaRendition.Medium),
+            LargeUrl = _signer.UrlOf(mediaItemId, MediaOwner.Gallery, MediaRendition.Large),
+        };
+
+    public PictureEditingDetails EditingOf(MediaOwner owner, MediaPictureRow picture) =>
+        new()
+        {
+            State = picture.State,
+            Picture = Of(owner, picture.MediaItemId, picture.RenderedAt),
+            UncroppedUrl = UncroppedUrlOf(owner, picture.MediaItemId, picture.RenderedAt),
+            Crop = picture.Crop is { } crop ? MediaCrops.ToDetails(crop) : null,
+        };
+
     public string? UncroppedUrlOf(MediaOwner owner, int mediaItemId, DateTimeOffset? renderedAt) =>
         renderedAt is { } rendered
             ? Versioned(_signer.UrlOf(mediaItemId, owner, MediaRendition.Uncropped), rendered)

@@ -2,6 +2,7 @@ using Furria.Core.Club;
 using Furria.Core.Gallery;
 using Furria.Core.Groups;
 using Furria.Core.Identity;
+using Furria.Core.News;
 
 namespace Furria.Core.Media;
 
@@ -22,6 +23,8 @@ public sealed class MediaItem : ITimestamped
     public int? OwnerPersonId { get; set; }
 
     public int? OwnerGroupId { get; set; }
+
+    public int? OwnerNewsPostId { get; set; }
 
     public MediaKind Kind { get; set; }
 
@@ -70,6 +73,8 @@ public sealed class MediaItem : ITimestamped
     public Person? OwnerPerson { get; set; }
 
     public Group? OwnerGroup { get; set; }
+
+    public NewsPost? OwnerNewsPost { get; set; }
 
     public Person? UploadedBy { get; set; }
 
