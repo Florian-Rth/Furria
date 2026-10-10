@@ -90,6 +90,7 @@ export interface KkScreenSearch {
 
 interface KkScreenShared {
   title: string;
+  sceneKey?: string;
   header?: ReactNode;
   headerKind?: KkScreenHeaderKind;
   thread?: KkScreenThread;
@@ -124,6 +125,7 @@ interface KkOverviewScreen extends KkRootScreen {
   tools?: never;
   action?: never;
   index?: never;
+  foot?: never;
 }
 
 interface KkRootListScreen extends KkRootScreen {
@@ -131,6 +133,7 @@ interface KkRootListScreen extends KkRootScreen {
   tools?: ReactNode;
   action?: never;
   index?: KkScreenIndex;
+  foot?: never;
 }
 
 interface KkNestedListScreen extends KkNestedScreen {
@@ -138,6 +141,7 @@ interface KkNestedListScreen extends KkNestedScreen {
   tools?: ReactNode;
   action?: never;
   index?: KkScreenIndex;
+  foot?: never;
 }
 
 interface KkDetailScreen extends KkNestedScreen {
@@ -145,6 +149,7 @@ interface KkDetailScreen extends KkNestedScreen {
   tools?: never;
   action?: KkScreenActionBar;
   index?: never;
+  foot?: never;
 }
 
 interface KkWorkingScreen extends KkNestedScreen {
@@ -152,6 +157,7 @@ interface KkWorkingScreen extends KkNestedScreen {
   tools?: ReactNode;
   action?: KkScreenActionBar;
   index?: never;
+  foot?: ReactNode;
 }
 
 interface KkFullscreenScreen extends KkScreenShared {
@@ -163,6 +169,7 @@ interface KkFullscreenScreen extends KkScreenShared {
   tools?: never;
   action?: KkScreenActionBar;
   index?: never;
+  foot?: never;
 }
 
 type KkNarrowableScreen = KkRootListScreen | KkNestedListScreen | KkWorkingScreen;

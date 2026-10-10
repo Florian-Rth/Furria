@@ -80,6 +80,9 @@ English rendering anywhere else, so two translations never drift apart.
 | presale | Vorverkauf (VVK) | — |
 | ticket exchange | Kartenbörse | — |
 | news / news post / news category | Aktuelles / Meldung / Kategorie | `NewsPost`, `NewsCategory` |
+| news workbench | Aktuelles (club app) | — |
+| draft / published / withdrawn (news post) | Entwurf / veröffentlicht / zurückgezogen | — |
+| pending changes (news post) | Änderungen offen | — |
 | lead post (the news post opening the page) | Aufmacher | `NewsLead…` |
 | announcement | Aushang | `Announcement` |
 | gallery / album | Galerie / Album | `Gallery`, `Album` |
@@ -960,22 +963,59 @@ _Avoid_: exchange (alone — ambiguous), resale, secondary market
 
 **News**:
 The public website's news section — the chronological stream of **news posts**. Deliberately not
-a blog: no tags, comments, author pages or search.
+a blog: no tags, comments, author pages or search — and no archive: older sessions follow the
+current one on the same page.
 _UI copy_: Aktuelles
 _Avoid_: blog, updates
 
 **News post**:
 One dated announcement in **news** — a short notice or report (the motto proclamation, a result,
-a call for helpers). Carries exactly one **news category**.
+a call for helpers). Carries exactly one **news category**. It is a **draft** (seen only in the
+**news workbench**) until **published**, which dates it; a published news post can be
+**withdrawn** — gone from the website, kept in the workbench — and published again (ruled
+2026-10-09, L7b shaping). Its **author** is whoever started the draft — editing or publishing it
+changes nothing — and its byline names her; a news post started by the **managing login**, or
+whose author was erased, names nobody. It shows at most one **news picture** — uploaded, or
+picked from the **gallery** as a copy — with an optional caption that also carries the photo
+credit; never pictures inside its text. It may be tied to one **event** and to one **published**
+**album**, each optional; a tie the website can no longer show — the album unpublished, the event
+deleted — simply drops from its public face. Its address and its date are fixed at its first
+publication: a later title change or republishing after a withdrawal changes neither. Edits to a
+published news post — its **news picture**, its cut and its caption included — are its **pending
+changes** — one shared working copy, invisible on the website until published, or discarded. Only a draft or a withdrawn news post can be deleted —
+for good, its **news picture** with it.
 _UI copy_: Meldung
 _Avoid_: **fee** (German *Beitrag* means both a post and the membership fee — in this domain it
 is only ever the fee), article, post
+
+**Mention** (news post):
+A name in a **news post**'s text that points at a **group** shown publicly or a person holding a
+seat in a **public board office** — only those can be mentioned. While that stays true, the
+website opens a small card in place: the group's picture and description, or her **portrait** and
+office. When it ends — she leaves the board, the group is hidden, she is erased — the mention
+falls back to the name as written, plain text; erasure never rewrites authored text (ruled
+2026-10-09, L7b shaping).
+_UI copy_: Erwähnung
+_Avoid_: tag, link (for a mention)
+
+**Teaser** (news post):
+The one or two plain sentences that open a **news post** and stand for it wherever it is not read
+whole — its card, the lead post, a shared link.
+_UI copy_: Vorspann
+_Avoid_: excerpt, summary, lead (that is the **lead post**)
 
 **News category**:
 The one label a **news post** carries, from a fixed set. Label only — the public site offers no
 filtering by it.
 _UI copy_: Kategorie
 _Avoid_: tag, section
+
+**News workbench**:
+The club app's own hub for **news**, beside club management, where news posts are written,
+published and withdrawn; open to whoever may manage news. Members read news on the website, never
+in the club app (ruled 2026-10-09, L7b shaping).
+_UI copy_: Aktuelles
+_Avoid_: news admin, CMS, editor (for the hub)
 
 ### Internal communication
 
@@ -1005,12 +1045,14 @@ message, chat, bulletin board, category, attachment, read receipt
 
 **Media store**:
 The platform's one store for uploaded pictures and videos, with no screen of its own. It holds
-**media items**; every use (a **portrait**, a **group picture**, the **gallery**) owns its items.
+**media items**; every use (a **portrait**, a **group picture**, a **news picture**, the
+**gallery**) owns its items.
 _Avoid_: media library, file store, uploads (as a noun)
 
 **Media item** (`MediaItem`):
 One uploaded photo or video together with everything derived from it. It has **exactly one
-owner** — a person (her **portrait**), a group (its **group picture**) or the **gallery**. Using
+owner** — a person (her **portrait**), a group (its **group picture**), a **news post** (its
+**news picture**) or the **gallery**. Using
 one owner's picture for another *copies* it into a new media item, so a takedown or deletion in
 one use never breaks another.
 _Avoid_: file, asset, attachment, media (as a countable noun)

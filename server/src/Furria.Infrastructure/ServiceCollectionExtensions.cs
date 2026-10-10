@@ -10,6 +10,7 @@ using Furria.Infrastructure.Mail;
 using Furria.Infrastructure.Management;
 using Furria.Infrastructure.Media;
 using Furria.Infrastructure.MembershipApplications;
+using Furria.Infrastructure.News;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Registry;
 using Furria.Infrastructure.Roles;
@@ -120,6 +121,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<MediaJobQueue>();
         services.AddHostedService<AbandonedUploadSweep>();
         services.AddScoped<GalleryService>();
+        services.AddScoped<NewsService>();
+        services.AddScoped<NewsPictures>();
 
         services.AddScoped<MailOutbox>();
         services.AddSingleton<MailService>();

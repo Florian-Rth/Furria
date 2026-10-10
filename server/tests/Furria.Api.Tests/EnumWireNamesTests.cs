@@ -6,6 +6,7 @@ using Furria.Application.Start;
 using Furria.Core.Events;
 using Furria.Core.Groups;
 using Furria.Core.Media;
+using Furria.Core.News;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -32,6 +33,9 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(EventSalesStatus)] =
             "announced presaleScheduled available fewLeft soldOut cancelled",
         [typeof(MediaItemState)] = "processing ready failed",
+        [typeof(NewsCategory)] = "session achievements club groups",
+        [typeof(NewsPostState)] = "draft published withdrawn",
+        [typeof(NewsPublicationRequirement)] = "category title teaser text",
     };
 
     private readonly ApiTestFixture _fixture;

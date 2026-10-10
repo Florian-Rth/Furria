@@ -61,6 +61,15 @@ public sealed class PublicMediaService
             ? await _mediaStore.FileOfAsync(mediaItemId, rendition, ct)
             : null;
 
+    public async Task<MediaFileDetails?> NewsPictureFileAsync(
+        int mediaItemId,
+        MediaRendition rendition,
+        CancellationToken ct
+    ) =>
+        PictureRenditions.Contains(rendition) && await IsShownWithALivePostAsync(mediaItemId, ct)
+            ? await _mediaStore.FileOfAsync(mediaItemId, rendition, ct)
+            : null;
+
     private Task<bool> IsOnThePublicBoardAsync(int mediaItemId, CancellationToken ct) =>
         _dbContext
             .BoardSeats.AsNoTracking()
@@ -75,6 +84,17 @@ public sealed class PublicMediaService
             .Groups.AsNoTracking()
             .Where(PublicGroups.IsShown)
             .AnyAsync(group => group.PictureId == mediaItemId, ct);
+
+    private Task<bool> IsShownWithALivePostAsync(int mediaItemId, CancellationToken ct) =>
+        _dbContext
+            .NewsPosts.AsNoTracking()
+            .AnyAsync(
+                post =>
+                    post.PictureId == mediaItemId
+                    && post.PublishedAt != null
+                    && post.WithdrawnAt == null,
+                ct
+            );
 
     private Task<bool> IsInAPublicSelectionAsync(int mediaItemId, CancellationToken ct) =>
         _dbContext

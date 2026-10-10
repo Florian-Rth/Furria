@@ -109,6 +109,41 @@ public sealed class DeletePersonByIdTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_KeepHerNewsPostsUnsignedAndDropHerMentions_When_SheIsErased()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await ArrangePaulaAndIlkaAsync(
+            ct,
+            builder =>
+                builder.News(news =>
+                    news.AddNewsPost(
+                        "thanks",
+                        "Danke",
+                        text: "Dank an @[Paula](person:{paula})",
+                        authorAlias: "paula"
+                    )
+                )
+        );
+        var paulaId = ctx.Identity.People.IdOf("paula");
+        var thanksId = ctx.News.Posts.IdOf("thanks");
+
+        await DeleteWithPasswordAsync(
+            await ctx.Identity.ClientForAsync("ilka", ct),
+            paulaId,
+            ApiTestFixture.SeededAccountPassword
+        );
+
+        await ctx
+            .Expected.NewsPost(thanksId)
+            .ToRead("Danke", "", $"Dank an @[Paula](person:{paulaId})", null)
+            .NewsPost(thanksId)
+            .ToBeAuthoredBy(null)
+            .NewsPost(thanksId)
+            .ToMention()
+            .AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_TakeHerPortraitAndItsFilesWithHer_When_SheIsErased()
     {
         var ct = TestContext.Current.CancellationToken;

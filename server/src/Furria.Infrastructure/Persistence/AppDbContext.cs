@@ -5,6 +5,7 @@ using Furria.Core.Groups;
 using Furria.Core.Identity;
 using Furria.Core.Media;
 using Furria.Core.MembershipApplications;
+using Furria.Core.News;
 using Furria.Core.Roles;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Mail;
@@ -91,6 +92,10 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
     public DbSet<MediaJob> MediaJobs => Set<MediaJob>();
 
     public DbSet<Album> Albums => Set<Album>();
+
+    public DbSet<NewsPost> NewsPosts => Set<NewsPost>();
+
+    public DbSet<NewsPostMention> NewsPostMentions => Set<NewsPostMention>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }

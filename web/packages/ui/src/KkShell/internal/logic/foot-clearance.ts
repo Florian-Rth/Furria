@@ -10,10 +10,19 @@ const NO_HEIGHT = 0;
 interface FootClearanceInput {
   section: string | undefined;
   action: KkScreenActionBar | undefined;
+  hasFoot: boolean;
   measured: number | null;
 }
 
-export const footClearanceOf = ({ section, action, measured }: FootClearanceInput): number => {
+export const footClearanceOf = ({
+  section,
+  action,
+  hasFoot,
+  measured,
+}: FootClearanceInput): number => {
+  if (hasFoot) {
+    return measured === null || measured <= NO_HEIGHT ? gutter : gutter * 2 + Math.ceil(measured);
+  }
   if (action !== undefined) {
     const height =
       measured === null || measured <= NO_HEIGHT ? actionBarHeightOf(action) : measured;

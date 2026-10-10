@@ -1186,6 +1186,31 @@ public sealed class RedeemInvitationTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_RepointTheNewsPostsTheStrayPersonSavedLast_When_SheClaims()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (ctx, annaId, token) = await ArrangeClaimAsync(
+            ct,
+            builder =>
+                builder.News(news =>
+                    news.AddNewsPost("probenzeiten", "Probenzeiten", lastSavedByAlias: "stray")
+                )
+        );
+
+        await ClaimSteps.ClaimAsync(
+            _fixture.CreateClient(),
+            token,
+            ctx.Identity.EmailOf("stray"),
+            ApiTestFixture.SeededAccountPassword
+        );
+
+        await ctx
+            .Expected.NewsPost(ctx.News.Posts.IdOf("probenzeiten"))
+            .ToBeLastSavedBy(annaId)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_MoveTheAccountOntoHer_When_SheConfirmsTheClaimWithItsPasskey()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -1449,6 +1474,7 @@ public sealed class RedeemInvitationTests : IClassFixture<ApiTestFixture>
     [InlineData(StrayHolding.KeyHolding)]
     [InlineData(StrayHolding.AttendanceResponse)]
     [InlineData(StrayHolding.Announcement)]
+    [InlineData(StrayHolding.NewsPost)]
     public async Task Should_RefuseAsTaken_When_TheStrayPersonHoldsClubData(StrayHolding holding)
     {
         var ct = TestContext.Current.CancellationToken;
@@ -1488,6 +1514,7 @@ public sealed class RedeemInvitationTests : IClassFixture<ApiTestFixture>
         KeyHolding,
         AttendanceResponse,
         Announcement,
+        NewsPost,
     }
 
     private static void Hold(
@@ -1568,6 +1595,11 @@ public sealed class RedeemInvitationTests : IClassFixture<ApiTestFixture>
             case StrayHolding.Announcement:
                 builder.Club(club =>
                     club.AddAnnouncement("stray-news", "stray", "Neuigkeit", "Text")
+                );
+                break;
+            case StrayHolding.NewsPost:
+                builder.News(news =>
+                    news.AddNewsPost("stray-post", "Entwurf", authorAlias: "stray")
                 );
                 break;
             default:

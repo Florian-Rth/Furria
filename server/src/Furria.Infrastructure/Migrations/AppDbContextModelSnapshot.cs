@@ -1591,6 +1591,10 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("character varying(32)")
                         .HasColumnName("owner_kind");
 
+                    b.Property<int?>("OwnerNewsPostId")
+                        .HasColumnType("integer")
+                        .HasColumnName("owner_news_post_id");
+
                     b.Property<int?>("OwnerPersonId")
                         .HasColumnType("integer")
                         .HasColumnName("owner_person_id");
@@ -1644,6 +1648,9 @@ namespace Furria.Infrastructure.Migrations
                     b.HasIndex("OwnerGroupId")
                         .HasDatabaseName("ix_media_item_owner_group_id");
 
+                    b.HasIndex("OwnerNewsPostId")
+                        .HasDatabaseName("ix_media_item_owner_news_post_id");
+
                     b.HasIndex("OwnerPersonId")
                         .HasDatabaseName("ix_media_item_owner_person_id");
 
@@ -1669,9 +1676,9 @@ namespace Furria.Infrastructure.Migrations
 
                             t.HasCheckConstraint("ck_media_item_kind", "kind IN ('Photo', 'Video')");
 
-                            t.HasCheckConstraint("ck_media_item_owner", "(owner_kind = 'Person' AND owner_person_id IS NOT NULL AND owner_group_id IS NULL)\nOR (owner_kind = 'Group' AND owner_group_id IS NOT NULL AND owner_person_id IS NULL)\nOR (owner_kind = 'Gallery' AND owner_person_id IS NULL AND owner_group_id IS NULL)");
+                            t.HasCheckConstraint("ck_media_item_owner", "(owner_kind = 'Person' AND owner_person_id IS NOT NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL)\nOR (owner_kind = 'Group' AND owner_group_id IS NOT NULL AND owner_person_id IS NULL AND owner_news_post_id IS NULL)\nOR (owner_kind = 'NewsPost' AND owner_news_post_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL)\nOR (owner_kind = 'Gallery' AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL)");
 
-                            t.HasCheckConstraint("ck_media_item_owner_kind", "owner_kind IN ('Person', 'Group', 'Gallery')");
+                            t.HasCheckConstraint("ck_media_item_owner_kind", "owner_kind IN ('Person', 'Group', 'Gallery', 'NewsPost')");
 
                             t.HasCheckConstraint("ck_media_item_placed", "(album_id IS NULL) = (placed_at IS NULL)");
 
@@ -1819,6 +1826,234 @@ namespace Furria.Infrastructure.Migrations
                     b.ToTable("membership_application", null, t =>
                         {
                             t.HasCheckConstraint("ck_membership_application_confirmed_after_submission", "confirmed_at IS NULL OR confirmed_at >= submitted_at");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.News.NewsPost", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("AlbumId")
+                        .HasColumnType("integer")
+                        .HasColumnName("album_id");
+
+                    b.Property<int?>("AuthorPersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("author_person_id");
+
+                    b.Property<string>("Category")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("category");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int?>("EventId")
+                        .HasColumnType("integer")
+                        .HasColumnName("event_id");
+
+                    b.Property<int?>("LastSavedByPersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("last_saved_by_person_id");
+
+                    b.Property<int?>("PendingAlbumId")
+                        .HasColumnType("integer")
+                        .HasColumnName("pending_album_id");
+
+                    b.Property<string>("PendingCategory")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("pending_category");
+
+                    b.Property<int?>("PendingEventId")
+                        .HasColumnType("integer")
+                        .HasColumnName("pending_event_id");
+
+                    b.Property<string>("PendingPictureCaption")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("pending_picture_caption");
+
+                    b.Property<int?>("PendingPictureId")
+                        .HasColumnType("integer")
+                        .HasColumnName("pending_picture_id");
+
+                    b.Property<DateTimeOffset?>("PendingSavedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("pending_saved_at");
+
+                    b.Property<string>("PendingTeaser")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("pending_teaser");
+
+                    b.Property<string>("PendingText")
+                        .IsRequired()
+                        .HasMaxLength(20000)
+                        .HasColumnType("character varying(20000)")
+                        .HasColumnName("pending_text");
+
+                    b.Property<string>("PendingTitle")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("pending_title");
+
+                    b.Property<string>("PictureCaption")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("picture_caption");
+
+                    b.Property<int?>("PictureId")
+                        .HasColumnType("integer")
+                        .HasColumnName("picture_id");
+
+                    b.Property<DateTimeOffset?>("PublishedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("published_at");
+
+                    b.Property<int>("Revision")
+                        .HasColumnType("integer")
+                        .HasColumnName("revision");
+
+                    b.Property<string>("Slug")
+                        .HasMaxLength(92)
+                        .HasColumnType("character varying(92)")
+                        .HasColumnName("slug");
+
+                    b.Property<string>("Teaser")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("teaser");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(20000)
+                        .HasColumnType("character varying(20000)")
+                        .HasColumnName("text");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateTimeOffset?>("WithdrawnAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("withdrawn_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_news_post");
+
+                    b.HasIndex("AlbumId")
+                        .HasDatabaseName("ix_news_post_album_id");
+
+                    b.HasIndex("AuthorPersonId")
+                        .HasDatabaseName("ix_news_post_author_person_id");
+
+                    b.HasIndex("EventId")
+                        .HasDatabaseName("ix_news_post_event_id");
+
+                    b.HasIndex("LastSavedByPersonId")
+                        .HasDatabaseName("ix_news_post_last_saved_by_person_id");
+
+                    b.HasIndex("PendingAlbumId")
+                        .HasDatabaseName("ix_news_post_pending_album_id");
+
+                    b.HasIndex("PendingEventId")
+                        .HasDatabaseName("ix_news_post_pending_event_id");
+
+                    b.HasIndex("PendingPictureId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_news_post_pending_picture_id");
+
+                    b.HasIndex("PictureId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_news_post_picture_id");
+
+                    b.HasIndex("PublishedAt")
+                        .HasDatabaseName("ix_news_post_published_at");
+
+                    b.HasIndex("Slug")
+                        .IsUnique()
+                        .HasDatabaseName("ix_news_post_slug");
+
+                    b.ToTable("news_post", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_news_post_category", "category IS NULL OR category IN ('Session', 'Achievements', 'Club', 'Groups')");
+
+                            t.HasCheckConstraint("ck_news_post_pending", "pending_saved_at IS NULL OR (published_at IS NOT NULL AND withdrawn_at IS NULL)");
+
+                            t.HasCheckConstraint("ck_news_post_pending_category", "pending_category IS NULL OR pending_category IN ('Session', 'Achievements', 'Club', 'Groups')");
+
+                            t.HasCheckConstraint("ck_news_post_pending_picture", "pending_saved_at IS NOT NULL OR (pending_picture_id IS NULL AND pending_picture_caption IS NULL)");
+
+                            t.HasCheckConstraint("ck_news_post_published", "(published_at IS NULL) = (slug IS NULL)");
+
+                            t.HasCheckConstraint("ck_news_post_withdrawn", "withdrawn_at IS NULL OR published_at IS NOT NULL");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.News.NewsPostMention", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("GroupId")
+                        .HasColumnType("integer")
+                        .HasColumnName("group_id");
+
+                    b.Property<int>("NewsPostId")
+                        .HasColumnType("integer")
+                        .HasColumnName("news_post_id");
+
+                    b.Property<int?>("PersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("person_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_news_post_mention");
+
+                    b.HasIndex("GroupId")
+                        .HasDatabaseName("ix_news_post_mention_group_id");
+
+                    b.HasIndex("PersonId")
+                        .HasDatabaseName("ix_news_post_mention_person_id");
+
+                    b.HasIndex("NewsPostId", "GroupId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_news_post_mention_news_post_id_group_id")
+                        .HasFilter("group_id IS NOT NULL");
+
+                    b.HasIndex("NewsPostId", "PersonId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_news_post_mention_news_post_id_person_id")
+                        .HasFilter("person_id IS NOT NULL");
+
+                    b.ToTable("news_post_mention", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_news_post_mention_one_target", "(group_id IS NULL) <> (person_id IS NULL)");
                         });
                 });
 
@@ -2941,6 +3176,12 @@ namespace Furria.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .HasConstraintName("fk_media_item_group_owner_group_id");
 
+                    b.HasOne("Furria.Core.News.NewsPost", "OwnerNewsPost")
+                        .WithMany()
+                        .HasForeignKey("OwnerNewsPostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_media_item_news_post_owner_news_post_id");
+
                     b.HasOne("Furria.Core.Identity.Person", "OwnerPerson")
                         .WithMany()
                         .HasForeignKey("OwnerPersonId")
@@ -2990,6 +3231,8 @@ namespace Furria.Infrastructure.Migrations
 
                     b.Navigation("OwnerGroup");
 
+                    b.Navigation("OwnerNewsPost");
+
                     b.Navigation("OwnerPerson");
 
                     b.Navigation("UploadedBy");
@@ -3005,6 +3248,101 @@ namespace Furria.Infrastructure.Migrations
                         .HasConstraintName("fk_media_job_media_item_media_item_id");
 
                     b.Navigation("MediaItem");
+                });
+
+            modelBuilder.Entity("Furria.Core.News.NewsPost", b =>
+                {
+                    b.HasOne("Furria.Core.Gallery.Album", "Album")
+                        .WithMany()
+                        .HasForeignKey("AlbumId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_news_post_album_album_id");
+
+                    b.HasOne("Furria.Core.Identity.Person", "Author")
+                        .WithMany()
+                        .HasForeignKey("AuthorPersonId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_news_post_person_author_person_id");
+
+                    b.HasOne("Furria.Core.Events.Event", "Event")
+                        .WithMany()
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_news_post_event_event_id");
+
+                    b.HasOne("Furria.Core.Identity.Person", "LastSavedBy")
+                        .WithMany()
+                        .HasForeignKey("LastSavedByPersonId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_news_post_person_last_saved_by_person_id");
+
+                    b.HasOne("Furria.Core.Gallery.Album", "PendingAlbum")
+                        .WithMany()
+                        .HasForeignKey("PendingAlbumId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_news_post_album_pending_album_id");
+
+                    b.HasOne("Furria.Core.Events.Event", "PendingEvent")
+                        .WithMany()
+                        .HasForeignKey("PendingEventId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_news_post_event_pending_event_id");
+
+                    b.HasOne("Furria.Core.Media.MediaItem", "PendingPicture")
+                        .WithMany()
+                        .HasForeignKey("PendingPictureId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_news_post_media_item_pending_picture_id");
+
+                    b.HasOne("Furria.Core.Media.MediaItem", "Picture")
+                        .WithMany()
+                        .HasForeignKey("PictureId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_news_post_media_item_picture_id");
+
+                    b.Navigation("Album");
+
+                    b.Navigation("Author");
+
+                    b.Navigation("Event");
+
+                    b.Navigation("LastSavedBy");
+
+                    b.Navigation("PendingAlbum");
+
+                    b.Navigation("PendingEvent");
+
+                    b.Navigation("PendingPicture");
+
+                    b.Navigation("Picture");
+                });
+
+            modelBuilder.Entity("Furria.Core.News.NewsPostMention", b =>
+                {
+                    b.HasOne("Furria.Core.Groups.Group", "Group")
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_news_post_mention_group_group_id");
+
+                    b.HasOne("Furria.Core.News.NewsPost", "NewsPost")
+                        .WithMany("Mentions")
+                        .HasForeignKey("NewsPostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_news_post_mention_news_post_news_post_id");
+
+                    b.HasOne("Furria.Core.Identity.Person", "Person")
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_news_post_mention_person_person_id");
+
+                    b.Navigation("Group");
+
+                    b.Navigation("NewsPost");
+
+                    b.Navigation("Person");
                 });
 
             modelBuilder.Entity("Furria.Core.Roles.RoleHolding", b =>
@@ -3245,6 +3583,11 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Memberships");
 
                     b.Navigation("RoleHoldings");
+                });
+
+            modelBuilder.Entity("Furria.Core.News.NewsPost", b =>
+                {
+                    b.Navigation("Mentions");
                 });
 
             modelBuilder.Entity("Furria.Core.Roles.Role", b =>

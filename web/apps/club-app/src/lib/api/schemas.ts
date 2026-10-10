@@ -147,6 +147,7 @@ export const PERMISSION_KEYS = {
   galleryUpload: 'gallery.upload',
   galleryManage: 'gallery.manage',
   galleryPublish: 'gallery.publish',
+  newsManage: 'news.manage',
 } as const;
 
 export type PermissionKey = (typeof PERMISSION_KEYS)[keyof typeof PERMISSION_KEYS];

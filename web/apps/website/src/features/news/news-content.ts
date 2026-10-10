@@ -1,4 +1,5 @@
-import type { Theme } from '@mui/material/styles';
+import type { KkNewsCategory, KkNewsTone } from '@furria/ui';
+import { newsReadingMinutesOf } from '@furria/ui/news-text';
 import type { LinkProps } from '@tanstack/react-router';
 import type { Session } from '@/lib/club';
 import { sessionAt } from '@/lib/club';
@@ -12,7 +13,7 @@ export interface NewsPost {
   category: NewsCategory;
   publishedAt: string;
   teaser: string;
-  body: string[];
+  text: string;
   image: string | null;
   author: string | null;
 }
@@ -37,6 +38,8 @@ export const shareLabel = 'TEILEN';
 export const whatsAppShareLabel = 'WhatsApp';
 
 export const copyLinkLabel = 'Link kopieren';
+
+export const newTabNote = 'öffnet in neuem Tab';
 
 export const copiedLinkLabel = 'Link kopiert ✓';
 
@@ -74,12 +77,7 @@ export const NEWS_POSTS: NewsPost[] = [
     publishedAt: '2026-07-18',
     teaser:
       'Im Keller des Vereinsheims lagern 4,2 Tonnen Konfetti. Zwei Physiker raten dringend davon ab, dort das Licht anzuschalten.',
-    body: [
-      'Was 1998 als Restposten begann, ist außer Kontrolle geraten: Im Keller des Vereinsheims lagern nach aktueller Zählung **4,2 Tonnen Konfetti**. Der Stapel hat inzwischen eine eigene Statik und wirft einen Schatten.',
-      'Zwei zufällig anwesende Physiker sprechen von einer „kritischen Masse“. Ab 4,5 Tonnen sei eine Kettenreaktion nicht mehr auszuschließen — jedes Schnipsel löse dann das nächste aus, bis das halbe Dorf bis zum ersten Stock gefüllt wäre.',
-      'Der Elferrat hat sich in einer Sondersitzung für die einzige verantwortungsvolle Lösung entschieden: **alles auf einmal werfen**. Termin ist der 11.11., Ort ist überall.',
-      'Wer einen Staubsauger besitzt, wird gebeten, ihn ab dem 12.11. bereitzuhalten.',
-    ],
+    text: 'Was 1998 als Restposten begann, ist außer Kontrolle geraten: Im Keller des Vereinsheims lagern nach aktueller Zählung **4,2 Tonnen Konfetti**. Der Stapel hat inzwischen eine eigene Statik und wirft einen Schatten.\n\nZwei zufällig anwesende Physiker sprechen von einer „kritischen Masse“. Ab 4,5 Tonnen sei eine Kettenreaktion nicht mehr auszuschließen — jedes Schnipsel löse dann das nächste aus, bis das halbe Dorf bis zum ersten Stock gefüllt wäre.\n\nDer Elferrat hat sich in einer Sondersitzung für die einzige verantwortungsvolle Lösung entschieden: **alles auf einmal werfen**. Termin ist der 11.11., Ort ist überall.\n\nWer einen Staubsauger besitzt, wird gebeten, ihn ab dem 12.11. bereitzuhalten.\n\n## Was jetzt passiert\n\n- Termin: 11.11., Ort: überall\n- Mitbringen: ein Schirm und **gute Laune**\n\nDie Physiker haben ihre Rechnung [beim Deutschen Museum](https://www.deutsches-museum.de) hinterlegt. Die Aufsicht übernimmt der @[Elferrat](group:1).',
     image: 'konfetti-kritische-masse',
     author: 'Albert Einstein',
   },
@@ -90,12 +88,7 @@ export const NEWS_POSTS: NewsPost[] = [
     publishedAt: '2026-07-12',
     teaser:
       'Eine verwechselte E-Mail, ein ausverkauftes Haus, drei Zugaben. Die Scala hat den Abend bis heute nicht dementiert.',
-    body: [
-      'Es begann mit einer verwechselten E-Mail und endete mit **drei Zugaben**: Das Männerballett hat an der Mailänder Scala Schwanensee getanzt. Eingeladen war eigentlich ein Ensemble aus Sankt Petersburg.',
-      'Aufgefallen ist der Unterschied niemandem. Tschaikowski wurde vorsichtshalber in **Marschtakt** umgeschrieben, die Tutus saßen, und der zweite Akt kam ganz ohne Sprung über den Bühnenrand aus.',
-      'Das Publikum stand nach elf Minuten. Die Scala hat den Auftritt seither weder bestätigt noch dementiert.',
-      'Geprobt wird weiter mittwochs im Vereinsheim, zwischen Getränkekisten.',
-    ],
+    text: 'Es begann mit einer verwechselten E-Mail und endete mit **drei Zugaben**: Das Männerballett hat an der Mailänder Scala Schwanensee getanzt. Eingeladen war eigentlich ein Ensemble aus Sankt Petersburg.\n\nAufgefallen ist der Unterschied niemandem. Tschaikowski wurde vorsichtshalber in **Marschtakt** umgeschrieben, die Tutus saßen, und der zweite Akt kam ganz ohne Sprung über den Bühnenrand aus.\n\nDas Publikum stand nach elf Minuten. Die Scala hat den Auftritt seither weder bestätigt noch dementiert.\n\nGeprobt wird weiter mittwochs im Vereinsheim, zwischen Getränkekisten.',
     image: 'maennerballett-scala',
     author: null,
   },
@@ -106,11 +99,7 @@ export const NEWS_POSTS: NewsPost[] = [
     publishedAt: '2026-07-04',
     teaser:
       'Ab sofort gilt im Vereinsheim UTC+11:11. Alles passiert um 11:11 Uhr — auch das, was schon vorbei ist.',
-    body: [
-      'Der Vorstand hat beschlossen, was längst gelebte Praxis war: Im Vereinsheim gilt ab sofort die eigene Zeitzone **UTC+11:11**.',
-      'Die Regel ist einfach. Alles beginnt um 11:11 Uhr. Auch Dinge, die um 20:00 Uhr beginnen, beginnen um 11:11 Uhr. Wer zu spät kommt, kommt pünktlich, denn es ist immer 11:11 Uhr.',
-      'Ein Antrag auf Anerkennung ist gestellt. Die Deutsche Bahn hat mitgeteilt, dass sie ohnehin nach einem anderen System arbeitet.',
-    ],
+    text: 'Der Vorstand hat beschlossen, was längst gelebte Praxis war: Im Vereinsheim gilt ab sofort die eigene Zeitzone **UTC+11:11**.\n\nDie Regel ist einfach. Alles beginnt um 11:11 Uhr. Auch Dinge, die um 20:00 Uhr beginnen, beginnen um 11:11 Uhr. Wer zu spät kommt, kommt pünktlich, denn es ist immer 11:11 Uhr.\n\nEin Antrag auf Anerkennung ist gestellt. Die Deutsche Bahn hat mitgeteilt, dass sie ohnehin nach einem anderen System arbeitet.',
     image: null,
     author: null,
   },
@@ -121,12 +110,7 @@ export const NEWS_POSTS: NewsPost[] = [
     publishedAt: '2026-06-26',
     teaser:
       'Im Aktenschrank lag ein Blatt, das niemand einordnen konnte. Der Vorstand hat es einstimmig als Mitgliedsantrag angenommen.',
-    body: [
-      'Beim Aufräumen des Aktenschranks tauchte ein Blatt auf, das niemand einordnen konnte. Der Vorstand hat es zur Sicherheit als Mitgliedsantrag gewertet und einstimmig angenommen: **Johann Wolfgang von Goethe** ist Ehrenmitglied.',
-      'Dass er den Antrag nie gestellt hat, wurde in der Aussprache als „Formsache“ abgetan. Auch der Umstand, dass er **194 Jahre** zu spät kommt, gilt satzungsgemäß als entschuldigt.',
-      'Der Beitrag wird ihm erlassen. Im Gegenzug wird „Faust“ ab dieser Session als Büttenrede aufgeführt — gekürzt auf elf Minuten, in Reimen und mit Tusch.',
-      'Eine Anfrage in Weimar blieb unbeantwortet.',
-    ],
+    text: 'Beim Aufräumen des Aktenschranks tauchte ein Blatt auf, das niemand einordnen konnte. Der Vorstand hat es zur Sicherheit als Mitgliedsantrag gewertet und einstimmig angenommen: **Johann Wolfgang von Goethe** ist Ehrenmitglied.\n\nDass er den Antrag nie gestellt hat, wurde in der Aussprache als „Formsache“ abgetan. Auch der Umstand, dass er **194 Jahre** zu spät kommt, gilt satzungsgemäß als entschuldigt.\n\nDer Beitrag wird ihm erlassen. Im Gegenzug wird „Faust“ ab dieser Session als Büttenrede aufgeführt — gekürzt auf elf Minuten, in Reimen und mit Tusch.\n\nEine Anfrage in Weimar blieb unbeantwortet.',
     image: 'goethe-ehrenmitglied',
     author: null,
   },
@@ -137,11 +121,7 @@ export const NEWS_POSTS: NewsPost[] = [
     publishedAt: '2026-06-14',
     teaser:
       'Der Wurf landete im Nachbardorf, im Vorgarten eines völlig Unbeteiligten. Der Verband spricht von Rückenwind.',
-    body: [
-      'Beim Trainingswurf hinter der Bauhalle ist ein Wurf über **1.400 Meter** gelungen. Das Bonbon landete im Nachbardorf, im Vorgarten eines völlig Unbeteiligten, der es pflichtbewusst fotografierte.',
-      'Der Verband erkennt den Rekord nicht an. Begründung: **Rückenwind**. Gemessen wurden 0,3 km/h.',
-      'Ein zweiter Wurf vom selben Nachmittag ist bis heute nicht wieder aufgetaucht. Wer ihn findet, möge sich im Vereinsheim melden.',
-    ],
+    text: 'Beim Trainingswurf hinter der Bauhalle ist ein Wurf über **1.400 Meter** gelungen. Das Bonbon landete im Nachbardorf, im Vorgarten eines völlig Unbeteiligten, der es pflichtbewusst fotografierte.\n\nDer Verband erkennt den Rekord nicht an. Begründung: **Rückenwind**. Gemessen wurden 0,3 km/h.\n\nEin zweiter Wurf vom selben Nachmittag ist bis heute nicht wieder aufgetaucht. Wer ihn findet, möge sich im Vereinsheim melden.',
     image: 'kamelle-weltrekord',
     author: null,
   },
@@ -152,11 +132,7 @@ export const NEWS_POSTS: NewsPost[] = [
     publishedAt: '2026-05-30',
     teaser:
       'Der Wagen misst in der Spitze 11,11 Meter. Das Luftfahrtbundesamt hat einen Flugplan angefordert.',
-    body: [
-      'Der Wagen für den Rosenmontagszug ist fertig und misst in der Spitze **11,11 Meter**. Damit ist er nach Auskunft des Wagenbaus „vielleicht einen Meter zu hoch“.',
-      'Das **Luftfahrtbundesamt** hat daraufhin einen Flugplan angefordert. Eingereicht wurde einer, in dem als Reiseflughöhe „Marktstraße“ und als Ziel „zurück“ angegeben ist.',
-      'Bis zur Klärung wird der Wagen liegend gelagert. Das erfordert eine Halle von 11,11 Metern Länge, die ebenfalls noch nicht existiert.',
-    ],
+    text: 'Der Wagen für den Rosenmontagszug ist fertig und misst in der Spitze **11,11 Meter**. Damit ist er nach Auskunft des Wagenbaus „vielleicht einen Meter zu hoch“.\n\nDas **Luftfahrtbundesamt** hat daraufhin einen Flugplan angefordert. Eingereicht wurde einer, in dem als Reiseflughöhe „Marktstraße“ und als Ziel „zurück“ angegeben ist.\n\nBis zur Klärung wird der Wagen liegend gelagert. Das erfordert eine Halle von 11,11 Metern Länge, die ebenfalls noch nicht existiert.',
     image: null,
     author: null,
   },
@@ -186,9 +162,7 @@ const TEASER_POSTS_LIMIT = 3;
 export const selectTeaserPosts = (posts: NewsPost[]): NewsPost[] =>
   sortPostsByDateDesc(posts).slice(0, TEASER_POSTS_LIMIT);
 
-export type CategoryTone = 'red' | 'gold' | 'ink';
-
-export const categoryToneOf = (category: NewsCategory): CategoryTone => {
+export const categoryToneOf = (category: NewsCategory): KkNewsTone => {
   if (category === 'Session') {
     return 'red';
   }
@@ -198,25 +172,10 @@ export const categoryToneOf = (category: NewsCategory): CategoryTone => {
   return 'ink';
 };
 
-export const resolveCategoryTint = (theme: Theme, category: NewsCategory): string => {
-  const palette = (theme.vars ?? theme).palette;
-  const tints: Record<CategoryTone, string> = {
-    red: palette.primary.main,
-    gold: palette.warning.main,
-    ink: palette.text.primary,
-  };
-  return tints[categoryToneOf(category)];
-};
-
-export const resolveCategoryContrastText = (theme: Theme, category: NewsCategory): string => {
-  const palette = (theme.vars ?? theme).palette;
-  const contrastTexts: Record<CategoryTone, string> = {
-    red: palette.primary.contrastText,
-    gold: palette.warning.contrastText,
-    ink: palette.background.default,
-  };
-  return contrastTexts[categoryToneOf(category)];
-};
+export const newsCategoryOf = (category: NewsCategory): KkNewsCategory => ({
+  label: category,
+  tone: categoryToneOf(category),
+});
 
 export const resolveArchiveSession = (posts: NewsPost[], reference: Date): Session | null => {
   const openSession = sessionAt(reference);
@@ -240,22 +199,8 @@ export const buildNewsListFooterNote = (archiveSession: Session | null): string 
     ? sessionClosingSentence
     : `${sessionClosingSentence} ${archiveHintSentence}`;
 
-const WORDS_PER_MINUTE = 180;
-
-const READING_TIME_MINIMUM_MINUTES = 3;
-
-export const readingMinutesOf = (body: string[]): number | null => {
-  const wordCount = body
-    .join(' ')
-    .split(/\s+/)
-    .filter((word) => word !== '').length;
-  const minutes = Math.ceil(wordCount / WORDS_PER_MINUTE);
-
-  return minutes < READING_TIME_MINIMUM_MINUTES ? null : minutes;
-};
-
-export const deriveReadingTime = (body: string[]): string | null => {
-  const minutes = readingMinutesOf(body);
+export const deriveReadingTime = (text: string): string | null => {
+  const minutes = newsReadingMinutesOf(text);
 
   return minutes === null ? null : `${minutes} Min. Lesezeit`;
 };
@@ -264,27 +209,6 @@ export const buildPostByline = (post: NewsPost): string =>
   post.author === null
     ? formatLongDate(post.publishedAt)
     : `${formatLongDate(post.publishedAt)} · von ${post.author}`;
-
-export interface InlineSegment {
-  text: string;
-  bold: boolean;
-}
-
-const BOLD_MARKER = '**';
-
-export const parseInlineBold = (paragraph: string): InlineSegment[] => {
-  const parts = paragraph.split(BOLD_MARKER);
-  const hasUnmatchedMarker = parts.length % 2 === 0;
-
-  return parts.flatMap((part, index) => {
-    const isTrailingRemainder = hasUnmatchedMarker && index === parts.length - 1;
-    const text = isTrailingRemainder ? `${BOLD_MARKER}${part}` : part;
-    if (text === '') {
-      return [];
-    }
-    return [{ text, bold: index % 2 === 1 && !isTrailingRemainder }];
-  });
-};
 
 const WHATSAPP_SHARE_BASE = 'https://wa.me/?text=';
 

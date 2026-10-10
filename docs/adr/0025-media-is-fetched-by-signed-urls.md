@@ -20,12 +20,14 @@ original's file name).
   that are served only while the picture is on the public face and answer 404 the moment it
   leaves it — board portraits (`/api/public/board/portraits/…`, while the person holds a public
   office), group pictures (`/api/public/groups/pictures/…`, while the group is shown publicly)
-  and the renditions in a published album's public selection (`/api/public/gallery/…`, while the
-  photo is in the selection). Only the small/medium/large renditions are served, never the
+  the renditions in a published album's public selection (`/api/public/gallery/…`, while the
+  photo is in the selection) and news pictures (`/api/public/news/pictures/…`, while the picture
+  is the live picture of a published news post — never a pending one). Only the small/medium/large renditions are served, never the
   original or the uncropped one. Existence is checked on every fetch; the edge must not cache
   them (`Cache-Control: private, no-cache`); `v={renderedAt}` busts the browser cache after a
   re-crop. Amended 2026-10-09 with Florian: board portraits and group pictures joined the
-  unsigned public face instead of carrying signed URLs that outlive the office by up to 48 h.
+  unsigned public face instead of carrying signed URLs that outlive the office by up to 48 h. Amended
+  again 2026-10-09 (L7b S2): news pictures joined it as its fourth member.
 
 ## Considered options
 

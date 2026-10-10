@@ -14,6 +14,7 @@ import { useScreenStance } from './internal/logic/use-screen-stance';
 import { KkShellActionBar } from './internal/ui/KkShellActionBar';
 import { KkShellBar } from './internal/ui/KkShellBar';
 import type { KkShellBarLead } from './internal/ui/KkShellBarLeading';
+import { KkShellCustomFoot } from './internal/ui/KkShellCustomFoot';
 import { KkShellEntrance } from './internal/ui/KkShellEntrance';
 import { KkShellToolRow } from './internal/ui/KkShellToolRow';
 import type { KkScreenProps } from './screen-declaration';
@@ -27,12 +28,14 @@ const NO_CLEARANCE = 0;
 export const KkScreen: FC<KkScreenProps> = ({
   kind,
   title,
+  sceneKey,
   header,
   headerKind = 'title',
   origin,
   section,
   actions,
   action,
+  foot,
   search,
   tools,
   index,
@@ -43,14 +46,19 @@ export const KkScreen: FC<KkScreenProps> = ({
   const { path, move, destinations, chromeHost, footHost, indexHost } = useKkShell();
   const gate = useScreenArrivalGate();
   const { ref: actionBarRef, measured: measuredActionHeight } = useFootMeasure(
-    action !== undefined,
+    action !== undefined || foot !== undefined,
   );
   const barOrigin = origin ?? sectionOriginOf({ section, path, destinations });
   const lead: KkShellBarLead = header === undefined ? 'title' : 'brand';
   const searching = search !== undefined && search.query !== null;
   const showsTools = tools !== undefined && !searching;
   const headClearance = showsTools ? BAR_CLEARANCE + TOOL_ROW_CLEARANCE : BAR_CLEARANCE;
-  const footClearance = footClearanceOf({ section, action, measured: measuredActionHeight });
+  const footClearance = footClearanceOf({
+    section,
+    action,
+    hasFoot: foot !== undefined,
+    measured: measuredActionHeight,
+  });
   const indexClearance = index === undefined ? NO_CLEARANCE : indexWidth;
 
   useScreenStance({
@@ -85,6 +93,11 @@ export const KkScreen: FC<KkScreenProps> = ({
       ? null
       : createPortal(<KkShellActionBar action={action} ref={actionBarRef} />, footHost);
 
+  const customFoot =
+    foot === undefined || footHost === null
+      ? null
+      : createPortal(<KkShellCustomFoot ref={actionBarRef}>{foot}</KkShellCustomFoot>, footHost);
+
   const letterIndex =
     index === undefined || indexHost === null
       ? null
@@ -106,9 +119,10 @@ export const KkScreen: FC<KkScreenProps> = ({
     <KkHandoverStageContext.Provider value={stage}>
       {chrome}
       {actionBar}
+      {customFoot}
       {letterIndex}
       <ScreenArrivalContext.Provider value={gate.arrival}>
-        <KkShellEntrance path={path} move={move} bodyHeld={gate.held}>
+        <KkShellEntrance path={sceneKey ?? path} move={move} bodyHeld={gate.held}>
           <Header kind={headerKind}>{header}</Header>
           {children}
         </KkShellEntrance>

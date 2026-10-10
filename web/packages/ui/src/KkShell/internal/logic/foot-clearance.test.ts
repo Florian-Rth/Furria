@@ -13,7 +13,9 @@ describe('footClearanceOf', () => {
     { label: 'no section and no action', section: undefined, expected: gutter },
     { label: 'a section and no action', section: 'members', expected: gutter * 2 + navHeight },
   ])('is $expected for $label', ({ section, expected }) => {
-    expect(footClearanceOf({ section, action: undefined, measured: null })).toBe(expected);
+    expect(footClearanceOf({ section, action: undefined, hasFoot: false, measured: null })).toBe(
+      expected,
+    );
   });
 
   it.each<{ label: string; measured: number | null; expected: number }>([
@@ -21,14 +23,30 @@ describe('footClearanceOf', () => {
     { label: 'a measurement of zero', measured: 0, expected: gutter * 2 + actionHeight },
     { label: 'a real measured height', measured: 96.4, expected: gutter * 2 + 97 },
   ])('with an action bar, is $expected for $label', ({ measured, expected }) => {
-    expect(footClearanceOf({ section: undefined, action, measured })).toBe(expected);
+    expect(footClearanceOf({ section: undefined, action, hasFoot: false, measured })).toBe(
+      expected,
+    );
+  });
+
+  it.each<{ label: string; measured: number | null; expected: number }>([
+    { label: 'no measurement yet', measured: null, expected: gutter },
+    { label: 'a real measured height', measured: 120.2, expected: gutter * 2 + 121 },
+  ])('with a custom foot, is $expected for $label', ({ measured, expected }) => {
+    expect(
+      footClearanceOf({ section: 'members', action: undefined, hasFoot: true, measured }),
+    ).toBe(expected);
   });
 
   it('falls back to the wrapping consequence height before the first measurement', () => {
     const withContext: KkScreenActionBar = { context: 'Ab 2020/21 zählt Annika nicht', primary };
 
-    expect(footClearanceOf({ section: undefined, action: withContext, measured: null })).toBe(
-      gutter * 2 + actionHeight + actionContextHeight,
-    );
+    expect(
+      footClearanceOf({
+        section: undefined,
+        action: withContext,
+        hasFoot: false,
+        measured: null,
+      }),
+    ).toBe(gutter * 2 + actionHeight + actionContextHeight);
   });
 });

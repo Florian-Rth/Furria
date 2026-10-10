@@ -79,6 +79,10 @@ const PERMISSION_COPY: Record<PermissionKey, RolePermissionCopy> = {
     title: 'Alben auf der Website zeigen',
     line: 'Die Auswahl eines Albums zusammenstellen, Bildunterschriften setzen, auf der Website veröffentlichen und zurückziehen.',
   },
+  [PERMISSION_KEYS.newsManage]: {
+    title: 'Meldungen für Aktuelles schreiben',
+    line: 'Meldungen schreiben, auf der Website veröffentlichen, ändern, zurückziehen und löschen.',
+  },
 };
 
 const KNOWN_KEYS: readonly PermissionKey[] = Object.values(PERMISSION_KEYS);

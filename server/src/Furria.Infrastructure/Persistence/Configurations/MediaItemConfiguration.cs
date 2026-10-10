@@ -27,9 +27,10 @@ public sealed class MediaItemConfiguration : IEntityTypeConfiguration<MediaItem>
                 table.HasCheckConstraint(
                     "ck_media_item_owner",
                     $"""
-                    (owner_kind = '{MediaOwnerKind.Person}' AND owner_person_id IS NOT NULL AND owner_group_id IS NULL)
-                    OR (owner_kind = '{MediaOwnerKind.Group}' AND owner_group_id IS NOT NULL AND owner_person_id IS NULL)
-                    OR (owner_kind = '{MediaOwnerKind.Gallery}' AND owner_person_id IS NULL AND owner_group_id IS NULL)
+                    (owner_kind = '{MediaOwnerKind.Person}' AND owner_person_id IS NOT NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL)
+                    OR (owner_kind = '{MediaOwnerKind.Group}' AND owner_group_id IS NOT NULL AND owner_person_id IS NULL AND owner_news_post_id IS NULL)
+                    OR (owner_kind = '{MediaOwnerKind.NewsPost}' AND owner_news_post_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL)
+                    OR (owner_kind = '{MediaOwnerKind.Gallery}' AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL)
                     """
                 );
                 table.HasCheckConstraint("ck_media_item_byte_size", "byte_size > 0");
@@ -88,6 +89,12 @@ public sealed class MediaItemConfiguration : IEntityTypeConfiguration<MediaItem>
             .HasConstraintName("fk_media_item_group_owner_group_id")
             .OnDelete(DeleteBehavior.Cascade);
         builder
+            .HasOne(item => item.OwnerNewsPost)
+            .WithMany()
+            .HasForeignKey(item => item.OwnerNewsPostId)
+            .HasConstraintName("fk_media_item_news_post_owner_news_post_id")
+            .OnDelete(DeleteBehavior.Cascade);
+        builder
             .HasOne(item => item.UploadedBy)
             .WithMany()
             .HasForeignKey(item => item.UploadedByPersonId)
@@ -107,6 +114,7 @@ public sealed class MediaItemConfiguration : IEntityTypeConfiguration<MediaItem>
         builder.HasIndex(item => item.PlacedAt);
         builder.HasIndex(item => item.OwnerPersonId);
         builder.HasIndex(item => item.OwnerGroupId);
+        builder.HasIndex(item => item.OwnerNewsPostId);
         builder.HasIndex(item => item.UploadedByPersonId);
 
         builder.Property(item => item.CreatedAt).HasDefaultValueSql("now()");

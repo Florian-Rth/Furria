@@ -19,6 +19,7 @@ public static class FurriaPermissions
     public const string GalleryUpload = "gallery.upload";
     public const string GalleryManage = "gallery.manage";
     public const string GalleryPublish = "gallery.publish";
+    public const string NewsManage = "news.manage";
     public const string ClubRead = "club.read";
 
     public static readonly IReadOnlyList<string> All =
@@ -40,6 +41,7 @@ public static class FurriaPermissions
         GalleryUpload,
         GalleryManage,
         GalleryPublish,
+        NewsManage,
     ];
 
     public static readonly IReadOnlyList<string> ImpliedByRelationship = [ClubRead];

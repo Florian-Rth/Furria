@@ -4,7 +4,7 @@ import { buildApiUrl } from '@/lib/api/api-fetch';
 import { ensureFreshAccessToken } from '@/lib/api/session/session-store';
 import { readApiBaseUrl } from '@/lib/runtime-config';
 import type { PictureTarget, PictureUploadFailure } from './picture-target';
-import { toUploadFailure, toUploadMetadata } from './picture-target';
+import { toOwnerMetadata, toUploadFailure, toUploadOwner } from './picture-target';
 
 const UPLOADS_PATH = '/api/media/uploads';
 const CHUNK_BYTES = 16 * 1024 * 1024;
@@ -29,13 +29,27 @@ interface PictureUpload {
   onProgress: (share: number) => void;
 }
 
-export const uploadPicture = ({ file, target, crop, onProgress }: PictureUpload): Promise<void> =>
+export interface OwnedPictureUpload {
+  file: File;
+  owner: string;
+  crop: KkCrop | null;
+  onProgress: (share: number) => void;
+  signal?: AbortSignal;
+}
+
+export const uploadOwnedPicture = ({
+  file,
+  owner,
+  crop,
+  onProgress,
+  signal,
+}: OwnedPictureUpload): Promise<void> =>
   new Promise((resolve, reject) => {
     const upload = new Upload(file, {
       endpoint: buildApiUrl(readApiBaseUrl(), UPLOADS_PATH),
       chunkSize: CHUNK_BYTES,
       retryDelays: RETRY_DELAYS_MS,
-      metadata: toUploadMetadata(target, file.name, crop),
+      metadata: toOwnerMetadata(owner, file.name, crop),
       removeFingerprintOnSuccess: true,
       onBeforeRequest: async (request) => {
         request.setHeader('Authorization', `Bearer ${await ensureFreshAccessToken()}`);
@@ -50,5 +64,12 @@ export const uploadPicture = ({ file, target, crop, onProgress }: PictureUpload)
         reject(new PictureUploadError(toUploadFailure(statusOf(error))));
       },
     });
+    signal?.addEventListener('abort', () => {
+      void upload.abort(true);
+      reject(new PictureUploadError('interrupted'));
+    });
     upload.start();
   });
+
+export const uploadPicture = ({ file, target, crop, onProgress }: PictureUpload): Promise<void> =>
+  uploadOwnedPicture({ file, owner: toUploadOwner(target), crop, onProgress });

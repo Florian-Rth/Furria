@@ -1,9 +1,8 @@
+import type { KkNewsTone } from '@furria/ui';
 import { describe, expect, it } from 'vitest';
-import type { CategoryTone, InlineSegment, NewsCategory, NewsPost } from './news-content';
+import type { NewsCategory, NewsPost } from './news-content';
 import {
   categoryToneOf,
-  parseInlineBold,
-  readingMinutesOf,
   resolveArchiveSession,
   selectFollowingPosts,
   selectLeadPost,
@@ -16,12 +15,10 @@ const post = (slug: string, publishedAt: string): NewsPost => ({
   category: 'Verein',
   publishedAt,
   teaser: 'Teaser',
-  body: ['Absatz'],
+  text: 'Absatz',
   image: null,
   author: null,
 });
-
-const words = (count: number): string => Array.from({ length: count }, () => 'Wort').join(' ');
 
 describe('selectLeadPost and selectFollowingPosts', () => {
   it('partitions the Meldungen into the newest and the rest', () => {
@@ -54,7 +51,7 @@ describe('selectRelatedPosts', () => {
 });
 
 describe('categoryToneOf', () => {
-  it.each<[NewsCategory, CategoryTone]>([
+  it.each<[NewsCategory, KkNewsTone]>([
     ['Session', 'red'],
     ['Erfolge', 'gold'],
     ['Verein', 'ink'],
@@ -79,40 +76,5 @@ describe('resolveArchiveSession', () => {
     ],
   ])('names the newest older Session when %s', (_, posts, startYear) => {
     expect(resolveArchiveSession(posts, duringOpenSession)?.startYear ?? null).toBe(startYear);
-  });
-});
-
-describe('readingMinutesOf', () => {
-  it.each([
-    [[words(360)], null],
-    [[words(361)], 3],
-    [[words(200), words(200), words(200)], 4],
-  ])('reads %#. body in %s minutes', (body, minutes) => {
-    expect(readingMinutesOf(body)).toBe(minutes);
-  });
-});
-
-describe('parseInlineBold', () => {
-  it.each<[string, InlineSegment[]]>([
-    ['Ganz ohne Auszeichnung.', [{ text: 'Ganz ohne Auszeichnung.', bold: false }]],
-    [
-      'Motto: **Groß Furria hebt ab**, ab November.',
-      [
-        { text: 'Motto: ', bold: false },
-        { text: 'Groß Furria hebt ab', bold: true },
-        { text: ', ab November.', bold: false },
-      ],
-    ],
-    [
-      '**fett** und **offen',
-      [
-        { text: 'fett', bold: true },
-        { text: ' und ', bold: false },
-        { text: '**offen', bold: false },
-      ],
-    ],
-    ['****', []],
-  ])('parses %j', (paragraph, segments) => {
-    expect(parseInlineBold(paragraph)).toEqual(segments);
   });
 });

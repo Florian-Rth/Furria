@@ -1,4 +1,5 @@
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
+import AlternateEmailOutlinedIcon from '@mui/icons-material/AlternateEmailOutlined';
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import BoltOutlinedIcon from '@mui/icons-material/BoltOutlined';
 import CakeOutlinedIcon from '@mui/icons-material/CakeOutlined';
@@ -14,6 +15,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import CloseIcon from '@mui/icons-material/Close';
 import CloudOffOutlinedIcon from '@mui/icons-material/CloudOffOutlined';
 import CloudUploadOutlinedIcon from '@mui/icons-material/CloudUploadOutlined';
+import CropOutlinedIcon from '@mui/icons-material/CropOutlined';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import Diversity3Icon from '@mui/icons-material/Diversity3';
 import Diversity3OutlinedIcon from '@mui/icons-material/Diversity3Outlined';
@@ -25,6 +27,9 @@ import EventOutlinedIcon from '@mui/icons-material/EventOutlined';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import FingerprintOutlinedIcon from '@mui/icons-material/FingerprintOutlined';
 import FolderZipOutlinedIcon from '@mui/icons-material/FolderZipOutlined';
+import FormatBoldIcon from '@mui/icons-material/FormatBold';
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
+import FormatSizeOutlinedIcon from '@mui/icons-material/FormatSizeOutlined';
 import GavelOutlinedIcon from '@mui/icons-material/GavelOutlined';
 import GridViewIcon from '@mui/icons-material/GridView';
 import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined';
@@ -34,13 +39,20 @@ import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
 import HandshakeOutlinedIcon from '@mui/icons-material/HandshakeOutlined';
 import HomeIcon from '@mui/icons-material/Home';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
+import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import KeyOutlinedIcon from '@mui/icons-material/KeyOutlined';
+import LinkOutlinedIcon from '@mui/icons-material/LinkOutlined';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
 import MailOutlinedIcon from '@mui/icons-material/MailOutlined';
 import MenuIcon from '@mui/icons-material/Menu';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import NewspaperOutlinedIcon from '@mui/icons-material/NewspaperOutlined';
+import NotesOutlinedIcon from '@mui/icons-material/NotesOutlined';
 import NotificationsActiveOutlinedIcon from '@mui/icons-material/NotificationsActiveOutlined';
+import OpenInNewOutlinedIcon from '@mui/icons-material/OpenInNewOutlined';
 import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 import PhotoLibraryOutlinedIcon from '@mui/icons-material/PhotoLibraryOutlined';
@@ -73,6 +85,7 @@ export type KkIconName =
   | 'clubFilled'
   | 'more'
   | 'moreFilled'
+  | 'actions'
   | 'events'
   | 'live'
   | 'members'
@@ -121,7 +134,18 @@ export type KkIconName =
   | 'zoom'
   | 'zip'
   | 'select'
-  | 'drag';
+  | 'drag'
+  | 'news'
+  | 'bold'
+  | 'link'
+  | 'list'
+  | 'heading'
+  | 'paragraph'
+  | 'mention'
+  | 'crop'
+  | 'image'
+  | 'lock'
+  | 'external';
 type KkIconSize = 'small' | 'medium' | 'large';
 
 interface KkIconProps {
@@ -148,6 +172,7 @@ const icons: Record<KkIconName, typeof HomeIcon> = {
   clubFilled: Groups2Icon,
   more: GridViewOutlinedIcon,
   moreFilled: GridViewIcon,
+  actions: MoreHorizIcon,
   events: EventOutlinedIcon,
   live: SensorsOutlinedIcon,
   members: GroupsOutlinedIcon,
@@ -197,6 +222,17 @@ const icons: Record<KkIconName, typeof HomeIcon> = {
   zip: FolderZipOutlinedIcon,
   select: ChecklistOutlinedIcon,
   drag: DragIndicatorIcon,
+  news: NewspaperOutlinedIcon,
+  bold: FormatBoldIcon,
+  link: LinkOutlinedIcon,
+  list: FormatListBulletedIcon,
+  heading: FormatSizeOutlinedIcon,
+  paragraph: NotesOutlinedIcon,
+  mention: AlternateEmailOutlinedIcon,
+  crop: CropOutlinedIcon,
+  image: ImageOutlinedIcon,
+  lock: LockOutlinedIcon,
+  external: OpenInNewOutlinedIcon,
 };
 
 export const KkIcon: FC<KkIconProps> = ({ name, size = 'medium', sx }) => {
