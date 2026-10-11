@@ -1,7 +1,8 @@
-import { useKkNotice } from '@furria/ui';
-import type { QueryClient, UseMutationResult, UseQueryResult } from '@tanstack/react-query';
-import { skipToken, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
+import { skipToken, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ME_QUERY_KEY } from '@/features/session';
+import { useApiMutation } from '@/lib/api/api-mutation';
+import { optimisticPatch } from '@/lib/api/optimistic-patch';
 import type { PermissionKey } from '@/lib/api/schemas';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { toIsoDay } from '@/lib/day';
@@ -44,6 +45,8 @@ export const roleQueryKey = (roleId: number | null): readonly [string, string, n
   roleId,
 ];
 
+const ROLES_SCOPE = [ROLES_QUERY_KEY, ME_QUERY_KEY] as const;
+
 export interface RoleNameInput {
   roleName: string;
 }
@@ -65,16 +68,6 @@ export interface EndRoleHoldingInput {
   personName: string;
   endedOn: string;
 }
-
-interface RolePermissionsRollback {
-  role: RoleDetails | undefined;
-  roles: RolesResponse | undefined;
-}
-
-const refreshRoles = (queryClient: QueryClient): void => {
-  void queryClient.invalidateQueries({ queryKey: ROLES_QUERY_KEY });
-  void queryClient.invalidateQueries({ queryKey: ME_QUERY_KEY });
-};
 
 const applyRolePermissions = (
   current: RoleDetails | undefined,
@@ -122,182 +115,94 @@ export const useRoleQuery = (roleId: number | null): UseQueryResult<RoleDetails,
   });
 };
 
-export const useCreateRoleMutation = (): UseMutationResult<CreatedRole, Error, RoleForm> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: (form: RoleForm) =>
-      withFreshAccessToken((accessToken) => requestCreateRole(form, accessToken)),
-    onSuccess: (_created, form) => {
-      raiseNotice({ tone: 'success', message: toRoleCreatedMessage(form.name) });
-      refreshRoles(queryClient);
-    },
-    onError: () => {
-      refreshRoles(queryClient);
-    },
+export const useCreateRoleMutation = (): UseMutationResult<CreatedRole, Error, RoleForm> =>
+  useApiMutation({
+    request: requestCreateRole,
+    invalidates: ROLES_SCOPE,
+    notice: { success: (form) => toRoleCreatedMessage(form.name) },
   });
-};
 
-export const useUpdateRoleMutation = (roleId: number): UseMutationResult<void, Error, RoleForm> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: (form: RoleForm) =>
-      withFreshAccessToken((accessToken) => requestUpdateRole(roleId, form, accessToken)),
-    onSuccess: (_result, form) => {
-      raiseNotice({ tone: 'success', message: toRoleSavedMessage(form.name) });
-      refreshRoles(queryClient);
-    },
-    onError: () => {
-      refreshRoles(queryClient);
-    },
+export const useUpdateRoleMutation = (roleId: number): UseMutationResult<void, Error, RoleForm> =>
+  useApiMutation({
+    request: (form: RoleForm, accessToken) => requestUpdateRole(roleId, form, accessToken),
+    invalidates: ROLES_SCOPE,
+    notice: { success: (form) => toRoleSavedMessage(form.name) },
   });
-};
 
 export const useArchiveRoleMutation = (
   roleId: number,
-): UseMutationResult<void, Error, RoleNameInput> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: () =>
-      withFreshAccessToken((accessToken) => requestArchiveRole(roleId, accessToken)),
-    onSuccess: (_result, input) => {
-      raiseNotice({ tone: 'success', message: toRoleArchivedMessage(input.roleName) });
-    },
-    onSettled: () => {
-      refreshRoles(queryClient);
-    },
+): UseMutationResult<void, Error, RoleNameInput> =>
+  useApiMutation({
+    request: (_input: RoleNameInput, accessToken) => requestArchiveRole(roleId, accessToken),
+    invalidates: ROLES_SCOPE,
+    notice: { success: (input) => toRoleArchivedMessage(input.roleName) },
   });
-};
 
 export const useRestoreRoleMutation = (
   roleId: number,
-): UseMutationResult<void, Error, RoleNameInput> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: () =>
-      withFreshAccessToken((accessToken) => requestRestoreRole(roleId, accessToken)),
-    onSuccess: (_result, input) => {
-      raiseNotice({ tone: 'success', message: toRoleRestoredMessage(input.roleName) });
-    },
-    onError: (error) => {
-      const message = toWriteErrorMessage(error);
-
-      if (message !== null) {
-        raiseNotice({ tone: 'error', message });
-      }
-    },
-    onSettled: () => {
-      refreshRoles(queryClient);
+): UseMutationResult<void, Error, RoleNameInput> =>
+  useApiMutation({
+    request: (_input: RoleNameInput, accessToken) => requestRestoreRole(roleId, accessToken),
+    invalidates: ROLES_SCOPE,
+    notice: {
+      success: (input) => toRoleRestoredMessage(input.roleName),
+      failure: toWriteErrorMessage,
     },
   });
-};
 
 export const useSetRolePermissionsMutation = (
   roleId: number,
-): UseMutationResult<void, Error, SetRolePermissionsInput, RolePermissionsRollback> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: (input: SetRolePermissionsInput) =>
-      withFreshAccessToken((accessToken) =>
-        requestSetRolePermissions(roleId, input.permissionKeys, accessToken),
-      ),
-    onMutate: async (input) => {
-      await queryClient.cancelQueries({ queryKey: ROLES_QUERY_KEY });
-      const role = queryClient.getQueryData<RoleDetails>(roleQueryKey(roleId));
-      const roles = queryClient.getQueryData<RolesResponse>(ROLES_QUERY_KEY);
-
-      queryClient.setQueryData<RoleDetails>(roleQueryKey(roleId), (current) =>
+): UseMutationResult<void, Error, SetRolePermissionsInput> =>
+  useApiMutation({
+    request: (input: SetRolePermissionsInput, accessToken) =>
+      requestSetRolePermissions(roleId, input.permissionKeys, accessToken),
+    optimistic: [
+      optimisticPatch(roleQueryKey(roleId), (current: RoleDetails | undefined, input) =>
         applyRolePermissions(current, input.permissionKeys),
-      );
-      queryClient.setQueryData<RolesResponse>(ROLES_QUERY_KEY, (current) =>
+      ),
+      optimisticPatch(ROLES_QUERY_KEY, (current: RolesResponse | undefined, input) =>
         applyListPermissions(current, roleId, input.permissionKeys),
-      );
-
-      return { role, roles };
-    },
-    onSuccess: (_result, input) => {
-      const message = toPermissionSavedMessage(toPermissionCopy(input.key).title, input.enabled);
-
-      raiseNotice({ tone: 'success', message });
-    },
-    onError: (error, _input, context) => {
-      queryClient.setQueryData(roleQueryKey(roleId), context?.role);
-      queryClient.setQueryData(ROLES_QUERY_KEY, context?.roles);
-      const message = toWriteErrorMessage(error);
-
-      if (message !== null) {
-        raiseNotice({ tone: 'error', message });
-      }
-    },
-    onSettled: () => {
-      refreshRoles(queryClient);
+      ),
+    ],
+    invalidates: [ME_QUERY_KEY],
+    notice: {
+      success: (input) =>
+        toPermissionSavedMessage(toPermissionCopy(input.key).title, input.enabled),
+      failure: toWriteErrorMessage,
     },
   });
-};
 
 export const useAddRoleHoldingMutation = (
   roleId: number,
   roleName: string,
-): UseMutationResult<CreatedRoleHolding, Error, AddRoleHoldingInput> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: (input: AddRoleHoldingInput) =>
-      withFreshAccessToken((accessToken) =>
-        requestAddRoleHolding(
-          roleId,
-          { personId: input.personId, sinceOn: input.sinceOn },
-          accessToken,
-        ),
+): UseMutationResult<CreatedRoleHolding, Error, AddRoleHoldingInput> =>
+  useApiMutation({
+    request: (input: AddRoleHoldingInput, accessToken) =>
+      requestAddRoleHolding(
+        roleId,
+        { personId: input.personId, sinceOn: input.sinceOn },
+        accessToken,
       ),
-    onSuccess: (_created, input) => {
-      const message = toHolderAddedMessage(
-        input.personName,
-        roleName,
-        input.sinceOn,
-        toIsoDay(new Date()),
-      );
-
-      raiseNotice({ tone: 'success', message });
-    },
-    onSettled: () => {
-      refreshRoles(queryClient);
+    invalidates: ROLES_SCOPE,
+    notice: {
+      success: (input) =>
+        toHolderAddedMessage(input.personName, roleName, input.sinceOn, toIsoDay(new Date())),
     },
   });
-};
 
 export const useEndRoleHoldingMutation = (
   roleId: number,
-): UseMutationResult<void, Error, EndRoleHoldingInput> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: (input: EndRoleHoldingInput) =>
-      withFreshAccessToken((accessToken) =>
-        requestEndRoleHolding(
-          roleId,
-          { roleHoldingId: input.roleHoldingId, endedOn: input.endedOn },
-          accessToken,
-        ),
+): UseMutationResult<void, Error, EndRoleHoldingInput> =>
+  useApiMutation({
+    request: (input: EndRoleHoldingInput, accessToken) =>
+      requestEndRoleHolding(
+        roleId,
+        { roleHoldingId: input.roleHoldingId, endedOn: input.endedOn },
+        accessToken,
       ),
-    onSuccess: (_result, input) => {
-      const message = toHoldingEndedMessage(input.personName, input.endedOn, toIsoDay(new Date()));
-
-      raiseNotice({ tone: 'success', message });
-    },
-    onSettled: () => {
-      refreshRoles(queryClient);
+    invalidates: ROLES_SCOPE,
+    notice: {
+      success: (input) =>
+        toHoldingEndedMessage(input.personName, input.endedOn, toIsoDay(new Date())),
     },
   });
-};

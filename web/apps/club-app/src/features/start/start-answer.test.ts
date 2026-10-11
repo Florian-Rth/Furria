@@ -1,15 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { RequestBlockedError, RequestFailedError, ServerFailureError } from '@/lib/api/api-error';
+import {
+  OfflineWriteError,
+  RequestBlockedError,
+  RequestFailedError,
+  ServerFailureError,
+} from '@/lib/api/api-error';
 import type { Start, StartAttendance, StartEntry } from './schemas';
 import type { StartAnswerAttempt, StartAnswerFailure } from './start-answer';
-import {
-  attendanceOf,
-  latestAnswerErrorOf,
-  OfflineAnswerError,
-  toAnswerFailureOf,
-  toAnswerRollbackOf,
-  withEntryAttendance,
-} from './start-answer';
+import { latestAnswerErrorOf, toAnswerFailureOf, withEntryAttendance } from './start-answer';
 
 const entry = (calendarEntryId: number, attendance: StartAttendance | null): StartEntry => ({
   calendarEntryId,
@@ -45,7 +43,7 @@ const start = (entries: StartEntry[]): Start => ({
 describe('toAnswerFailureOf', () => {
   it.each<{ label: string; error: Error | null; expected: StartAnswerFailure | null }>([
     { label: 'nothing failed', error: null, expected: null },
-    { label: 'the device was offline', error: new OfflineAnswerError(), expected: 'offline' },
+    { label: 'the device was offline', error: new OfflineWriteError(), expected: 'offline' },
     { label: 'the request never arrived', error: new RequestBlockedError(), expected: 'unsaved' },
     { label: 'the server broke', error: new ServerFailureError(500), expected: 'unsaved' },
     { label: 'the entry was deleted', error: new ServerFailureError(404), expected: 'gone' },
@@ -62,29 +60,6 @@ describe('toAnswerFailureOf', () => {
     { label: 'the answer collided', error: new RequestFailedError(409, []), expected: 'conflict' },
   ])('is $expected when $label', ({ error, expected }) => {
     expect(toAnswerFailureOf(error)).toBe(expected);
-  });
-});
-
-describe('attendanceOf', () => {
-  it.each<{
-    label: string;
-    data: Start | undefined;
-    expected: StartAttendance | null | undefined;
-  }>([
-    { label: 'nothing is cached', data: undefined, expected: undefined },
-    { label: 'the entry is not on the board', data: start([entry(1, OWED)]), expected: undefined },
-    {
-      label: 'the entry asks nothing',
-      data: start([entry(1, OWED), entry(2, null)]),
-      expected: null,
-    },
-    {
-      label: 'the entry is owed',
-      data: start([entry(1, ANSWERED), entry(2, OWED)]),
-      expected: OWED,
-    },
-  ])('reads $expected when $label', ({ data, expected }) => {
-    expect(attendanceOf(data, 2)).toEqual(expected);
   });
 });
 
@@ -133,24 +108,5 @@ describe('latestAnswerErrorOf', () => {
     },
   ])('is $expected when $label', ({ attempts, expected }) => {
     expect(latestAnswerErrorOf(attempts, since)).toBe(expected);
-  });
-});
-
-describe('toAnswerRollbackOf', () => {
-  it.each<{
-    label: string;
-    pendingAnswers: number;
-    confirmed: StartAttendance | null | undefined;
-    expected: StartAttendance | null | undefined;
-  }>([
-    { label: 'her last answer failed', pendingAnswers: 1, confirmed: OWED, expected: OWED },
-    {
-      label: 'a later answer is still pending',
-      pendingAnswers: 2,
-      confirmed: OWED,
-      expected: undefined,
-    },
-  ])('restores $expected when $label', ({ pendingAnswers, confirmed, expected }) => {
-    expect(toAnswerRollbackOf(pendingAnswers, confirmed)).toEqual(expected);
   });
 });

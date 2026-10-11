@@ -1,5 +1,6 @@
-import type { QueryClient, UseMutationResult, UseQueryResult } from '@tanstack/react-query';
-import { skipToken, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
+import { skipToken, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useApiMutation } from '@/lib/api/api-mutation';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import type {
   GalleryPickPayload,
@@ -60,12 +61,6 @@ const isDeveloping = (post: NewsPostDetails | undefined): boolean =>
     (picture) => picture?.state === 'processing',
   );
 
-const refreshNews = (queryClient: QueryClient): Promise<void> =>
-  queryClient.invalidateQueries({ queryKey: NEWS_QUERY_KEY });
-
-const refreshHub = (queryClient: QueryClient): Promise<void> =>
-  queryClient.invalidateQueries({ queryKey: NEWS_HUB_QUERY_KEY });
-
 export const useNewsHubQuery = (): UseQueryResult<NewsHub, Error> =>
   useQuery({ queryKey: NEWS_HUB_QUERY_KEY, queryFn: () => withFreshAccessToken(requestNewsHub) });
 
@@ -98,36 +93,18 @@ export const useNewsTieCandidatesQuery = (
   });
 
 const useNewsMutation = <TInput, TResult>(
-  write: (input: TInput, accessToken: string) => Promise<TResult>,
-): UseMutationResult<TResult, Error, TInput> => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input: TInput) => withFreshAccessToken((token) => write(input, token)),
-    onSettled: () => refreshNews(queryClient),
-  });
-};
+  request: (input: TInput, accessToken: string) => Promise<TResult>,
+): UseMutationResult<TResult, Error, TInput> =>
+  useApiMutation({ request, invalidates: [NEWS_QUERY_KEY] });
 
 export const useNewsPostCreation = (): UseMutationResult<
   CreatedNewsPost,
   Error,
   NewsContentPayload
-> => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (content: NewsContentPayload) =>
-      withFreshAccessToken((token) => requestNewsPostCreation(content, token)),
-    onSettled: () => refreshHub(queryClient),
-  });
-};
+> => useApiMutation({ request: requestNewsPostCreation, invalidates: [NEWS_HUB_QUERY_KEY] });
 
-export const useNewsPostSave = (): UseMutationResult<SavedNewsPost, Error, NewsSavePayload> => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (payload: NewsSavePayload) =>
-      withFreshAccessToken((token) => requestNewsPostSave(payload, token)),
-    onSettled: () => refreshHub(queryClient),
-  });
-};
+export const useNewsPostSave = (): UseMutationResult<SavedNewsPost, Error, NewsSavePayload> =>
+  useApiMutation({ request: requestNewsPostSave, invalidates: [NEWS_HUB_QUERY_KEY] });
 
 export const useNewsPublication = (): UseMutationResult<PublishedNewsPost, Error, number> =>
   useNewsMutation(requestNewsPublication);
@@ -144,17 +121,12 @@ export const usePendingChangesDiscard = (): UseMutationResult<void, Error, numbe
 export const useNewsWithdrawal = (): UseMutationResult<void, Error, number> =>
   useNewsMutation(requestNewsWithdrawal);
 
-export const useNewsPostDeletion = (): UseMutationResult<void, Error, number> => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (newsPostId: number) =>
-      withFreshAccessToken((token) => requestNewsPostDeletion(newsPostId, token)),
-    onSuccess: (_, newsPostId) => {
-      queryClient.removeQueries({ queryKey: newsPostQueryKey(newsPostId) });
-    },
-    onSettled: () => refreshHub(queryClient),
+export const useNewsPostDeletion = (): UseMutationResult<void, Error, number> =>
+  useApiMutation({
+    request: requestNewsPostDeletion,
+    invalidates: [NEWS_HUB_QUERY_KEY],
+    forgets: (newsPostId) => [newsPostQueryKey(newsPostId)],
   });
-};
 
 export const useNewsPictureCrop = (): UseMutationResult<void, Error, NewsCropPayload> =>
   useNewsMutation(requestNewsPictureCrop);

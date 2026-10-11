@@ -1,9 +1,9 @@
-import { useKkNotice } from '@furria/ui';
-import type { QueryClient, UseMutationResult, UseQueryResult } from '@tanstack/react-query';
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { CLUB_HUB_QUERY_KEY } from '@/features/club';
 import { GROUPS_QUERY_KEY } from '@/features/groups';
 import { START_QUERY_KEY } from '@/features/start';
+import { useApiMutation } from '@/lib/api/api-mutation';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import type { CalendarEntryPayload } from './calendar-authoring';
 import { toEntryWriteNotice } from './calendar-authoring';
@@ -49,14 +49,12 @@ export interface AttendanceResponseInput {
   answer: AttendanceAnswer;
 }
 
-const refreshCalendar = async (queryClient: QueryClient): Promise<void> => {
-  await Promise.all([
-    queryClient.invalidateQueries({ queryKey: CALENDAR_QUERY_KEY }),
-    queryClient.invalidateQueries({ queryKey: CLUB_HUB_QUERY_KEY }),
-    queryClient.invalidateQueries({ queryKey: GROUPS_QUERY_KEY }),
-    queryClient.invalidateQueries({ queryKey: START_QUERY_KEY }),
-  ]);
-};
+const CALENDAR_SCOPE = [
+  CALENDAR_QUERY_KEY,
+  CLUB_HUB_QUERY_KEY,
+  GROUPS_QUERY_KEY,
+  START_QUERY_KEY,
+] as const;
 
 export const useCalendarQuery = (query: CalendarQuery): UseQueryResult<CalendarResponse, Error> =>
   useQuery({
@@ -77,21 +75,13 @@ export const useAttendanceResponseMutation = (): UseMutationResult<
   void,
   Error,
   AttendanceResponseInput
-> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: ({ calendarEntryId, answer }: AttendanceResponseInput) =>
-      withFreshAccessToken((accessToken) =>
-        requestAttendanceResponse(calendarEntryId, answer, accessToken),
-      ),
-    onSuccess: (_saved, { answer }) => {
-      raiseNotice({ tone: 'success', message: toAttendanceSavedMessage(answer) });
-    },
-    onSettled: () => refreshCalendar(queryClient),
+> =>
+  useApiMutation({
+    request: ({ calendarEntryId, answer }: AttendanceResponseInput, accessToken) =>
+      requestAttendanceResponse(calendarEntryId, answer, accessToken),
+    invalidates: CALENDAR_SCOPE,
+    notice: { success: ({ answer }) => toAttendanceSavedMessage(answer) },
   });
-};
 
 export interface CalendarEntryInput {
   payload: CalendarEntryPayload;
@@ -110,58 +100,40 @@ export const useCreateCalendarEntryMutation = (): UseMutationResult<
   WrittenCalendarEntry,
   Error,
   CalendarEntryInput
-> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: ({ payload }: CalendarEntryInput) =>
-      withFreshAccessToken((accessToken) => requestCalendarEntryCreation(payload, accessToken)),
-    onSuccess: (written, { payload }) => {
-      raiseNotice(
+> =>
+  useApiMutation({
+    request: ({ payload }: CalendarEntryInput, accessToken) =>
+      requestCalendarEntryCreation(payload, accessToken),
+    invalidates: CALENDAR_SCOPE,
+    notice: {
+      success: ({ payload }, written) =>
         toEntryWriteNotice(toEntryCreatedMessage(payload.title), written.venueCollisions),
-      );
-      void refreshCalendar(queryClient);
     },
   });
-};
 
 export const useUpdateCalendarEntryMutation = (): UseMutationResult<
   WrittenCalendarEntry,
   Error,
   CalendarEntryUpdateInput
-> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: ({ calendarEntryId, payload }: CalendarEntryUpdateInput) =>
-      withFreshAccessToken((accessToken) =>
-        requestCalendarEntryUpdate(calendarEntryId, payload, accessToken),
-      ),
-    onSuccess: (written, { payload }) => {
-      raiseNotice(toEntryWriteNotice(toEntrySavedMessage(payload.title), written.venueCollisions));
-      void refreshCalendar(queryClient);
+> =>
+  useApiMutation({
+    request: ({ calendarEntryId, payload }: CalendarEntryUpdateInput, accessToken) =>
+      requestCalendarEntryUpdate(calendarEntryId, payload, accessToken),
+    invalidates: CALENDAR_SCOPE,
+    notice: {
+      success: ({ payload }, written) =>
+        toEntryWriteNotice(toEntrySavedMessage(payload.title), written.venueCollisions),
     },
   });
-};
 
 export const useDeleteCalendarEntryMutation = (): UseMutationResult<
   void,
   Error,
   CalendarEntryDeletionInput
-> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: ({ calendarEntryId }: CalendarEntryDeletionInput) =>
-      withFreshAccessToken((accessToken) =>
-        requestCalendarEntryDeletion(calendarEntryId, accessToken),
-      ),
-    onSuccess: (_removed, { title }) => {
-      raiseNotice({ tone: 'success', message: toEntryDeletedMessage(title) });
-      void refreshCalendar(queryClient);
-    },
+> =>
+  useApiMutation({
+    request: ({ calendarEntryId }: CalendarEntryDeletionInput, accessToken) =>
+      requestCalendarEntryDeletion(calendarEntryId, accessToken),
+    invalidates: CALENDAR_SCOPE,
+    notice: { success: ({ title }) => toEntryDeletedMessage(title) },
   });
-};
