@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { FlapCell } from './flap-cells';
 import type { FlapRun, FlapSchedule } from './flap-schedule';
-import { dealOf, glyphToneOf, twinFaceAt, twinFacesOf, twinOf, twinPoseOf } from './greeting-twin';
+import { dealOf, glyphToneOf, twinFaceAt, twinFacesOf, twinOf } from './greeting-twin';
 
 const tenPerLetter = (face: string): number => face.length * 10;
 
@@ -97,22 +97,6 @@ describe('twinOf', () => {
       [],
     );
   });
-});
-
-describe('twinPoseOf', () => {
-  it.each([
-    { fall: 0, reveal: 0, fallen: false },
-    { fall: -60, reveal: 0.5, fallen: false },
-    { fall: -90, reveal: 1, fallen: true },
-  ])(
-    'reveals $reveal of the next face behind a leaf at $fall degrees',
-    ({ fall, reveal, fallen }) => {
-      const pose = twinPoseOf(fall, 90, 0);
-
-      expect(pose.reveal).toBeCloseTo(reveal);
-      expect(pose.fallen).toBe(fallen);
-    },
-  );
 });
 
 describe('twinFaceAt', () => {

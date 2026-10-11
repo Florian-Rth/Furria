@@ -1,5 +1,6 @@
-import type { SplitFlapPose } from '../../../internal/flap/flap-pose';
-import { FLAT_PROGRESS, flapPoseAt } from '../../../internal/flap/flap-pose';
+import { interpolate } from 'motion/react';
+import type { FlapPoseAt, SplitFlapPose } from '../../../internal/flap/flap-pose';
+import { FLAT_PROGRESS, flapPoseAt, turnedPoseOf } from '../../../internal/flap/flap-pose';
 import { ramp } from '../../../internal/ramp';
 import { kkTokens } from '../../../tokens';
 import type { FlapFlip, FlapRun, FlapSchedule } from './flap-schedule';
@@ -186,3 +187,13 @@ const trackOf = (run: FlapRun, assembled: boolean): FlapTrack => {
 
 export const flapKeyframesOf = (schedule: FlapSchedule, assembled = false): FlapTrack[] =>
   schedule.runs.map((run) => trackOf(run, assembled));
+
+export const trackPoseOf = (track: FlapTrack): FlapPoseAt => {
+  const fallAt = interpolate(track.at, track.fall);
+  const landAt = interpolate(track.at, track.land);
+  const coverAt = interpolate(track.at, track.cover);
+  const presenceAt = interpolate(track.at, track.presence);
+
+  return (elapsed: number): SplitFlapPose =>
+    turnedPoseOf(fallAt(elapsed), landAt(elapsed), coverAt(elapsed), presenceAt(elapsed));
+};

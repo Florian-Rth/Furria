@@ -5,7 +5,7 @@ import { FlapGlyph } from '../../../internal/flap/FlapGlyph';
 import { FlapLeaf } from '../../../internal/flap/FlapLeaf';
 import { FlapShade } from '../../../internal/flap/FlapShade';
 import { BOTTOM_HALF_CLIP, TOP_HALF_CLIP } from '../../../internal/flap/flap-pose';
-import { useEyebrowFlapMotion } from '../logic/use-eyebrow-flap-motion';
+import { useFlapLeaf } from '../../../internal/flap/use-flap-leaf';
 
 const FLAP_STYLE: CSSProperties = { position: 'absolute', inset: 0 };
 
@@ -22,7 +22,7 @@ export const KkDensePanelEyebrowFlap: FC<KkDensePanelEyebrowFlapProps> = ({
   tone,
   progress,
 }) => {
-  const flap = useEyebrowFlapMotion(progress);
+  const flap = useFlapLeaf(progress);
   const fromInverse = (
     <FlapGlyph variant="caption" tone="inverse">
       {from}
