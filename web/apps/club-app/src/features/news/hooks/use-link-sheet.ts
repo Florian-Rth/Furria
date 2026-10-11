@@ -25,10 +25,10 @@ export const useLinkSheet = (text: ProseText): LinkSheet => {
   });
 
   useEffect(() => {
-    if (text.linkRequestKey > 0) {
+    if (text.linkRequests > 0) {
       openSheet();
     }
-  }, [text.linkRequestKey]);
+  }, [text.linkRequests]);
 
   return {
     href,
@@ -39,7 +39,7 @@ export const useLinkSheet = (text: ProseText): LinkSheet => {
       setIsInvalid(false);
     },
     apply: () => {
-      if (text.setLink(href.trim())) {
+      if (text.run({ kind: 'link', href: href.trim() })) {
         sheet.close();
         return;
       }
@@ -47,7 +47,7 @@ export const useLinkSheet = (text: ProseText): LinkSheet => {
     },
     remove: () => {
       sheet.close();
-      text.unlink();
+      text.run({ kind: 'unlink' });
     },
   };
 };

@@ -1,22 +1,26 @@
-import type { NewsBlock, NewsInline, NewsMention, NewsMentionKind } from '@furria/ui/news-text';
-import { isWebAddress, readNewsText, writeNewsText } from '@furria/ui/news-text';
+import type { NewsBlock, NewsInline, NewsMention } from '@furria/ui/news-text';
+import {
+  isWebAddress,
+  NEWS_MENTION_KEY_ATTRIBUTE,
+  newsMentionKeyOf,
+  newsMentionTargetOf,
+  readNewsText,
+  writeNewsText,
+} from '@furria/ui/news-text';
 import type { Mark, MarkType, Node as ProseNode } from 'prosemirror-model';
 import { Schema } from 'prosemirror-model';
 
-const TEASER_WHITESPACE = /\s+/g;
-
-export const newsMentionKeyOf = (kind: NewsMentionKind, id: number): string => `${kind}:${id}`;
-
-const MENTION_KEY_PATTERN = /^(group|person):(\d+)$/;
-
 const mentionAttrsOf = (dom: HTMLElement): NewsMention | false => {
-  const match = MENTION_KEY_PATTERN.exec(dom.dataset.kkMentionId ?? '');
+  const target = newsMentionTargetOf(dom.getAttribute(NEWS_MENTION_KEY_ATTRIBUTE) ?? '');
   const label = dom.textContent?.trim() ?? '';
-  if (match === null || label.length === 0) {
-    return false;
-  }
-  return { kind: match[1] === 'person' ? 'person' : 'group', id: Number(match[2]), label };
+  return target === null || label.length === 0 ? false : { ...target, label };
 };
+
+export const mentionOf = (node: ProseNode): NewsMention => ({
+  kind: node.attrs.kind === 'person' ? 'person' : 'group',
+  id: Number(node.attrs.id),
+  label: String(node.attrs.label),
+});
 
 const linkAttrsOf = (dom: HTMLElement): { href: string } | false => {
   const href = dom.getAttribute('href') ?? '';
@@ -58,13 +62,10 @@ export const newsTextSchema = new Schema({
       atom: true,
       selectable: true,
       attrs: { kind: { default: 'group' }, id: { default: 0 }, label: { default: '' } },
-      parseDOM: [{ tag: 'span[data-kk-mention-id]', getAttrs: mentionAttrsOf }],
+      parseDOM: [{ tag: `span[${NEWS_MENTION_KEY_ATTRIBUTE}]`, getAttrs: mentionAttrsOf }],
       toDOM: (node) => [
         'span',
-        {
-          'data-kk-mention': node.attrs.kind,
-          'data-kk-mention-id': newsMentionKeyOf(node.attrs.kind, node.attrs.id),
-        },
+        { [NEWS_MENTION_KEY_ATTRIBUTE]: newsMentionKeyOf(mentionOf(node)) },
         node.attrs.label,
       ],
     },
@@ -93,15 +94,10 @@ export const newsTextSchema = new Schema({
   },
 });
 
-export const newsTeaserSchema = new Schema({
-  nodes: {
-    doc: { content: 'paragraph' },
-    paragraph: { content: 'text*', toDOM: () => ['p', 0] },
-    text: {},
-  },
-});
+export const { nodes, marks } = newsTextSchema;
 
-const { nodes, marks } = newsTextSchema;
+export const isMentionNode = (node: ProseNode | null): boolean =>
+  node !== null && node.type === nodes.mention;
 
 const proseInlineOf = (inline: NewsInline): ProseNode => {
   const strong = inline.bold ? [marks.strong.create()] : [];
@@ -139,18 +135,12 @@ export const newsDocOf = (text: string): ProseNode => {
   return nodes.doc.create(null, blocks.length === 0 ? [nodes.paragraph.create()] : blocks);
 };
 
-const mentionOf = (node: ProseNode): NewsMention => ({
-  kind: node.attrs.kind === 'person' ? 'person' : 'group',
-  id: Number(node.attrs.id),
-  label: String(node.attrs.label),
-});
-
 const markOf = (node: ProseNode, type: MarkType): Mark | undefined =>
   node.marks.find((mark) => mark.type === type);
 
 const newsInlineOf = (node: ProseNode): NewsInline => {
   const bold = markOf(node, marks.strong) !== undefined;
-  if (node.type === nodes.mention) {
+  if (isMentionNode(node)) {
     return { kind: 'mention', mention: mentionOf(node), bold };
   }
   const link = markOf(node, marks.link);
@@ -162,21 +152,15 @@ const newsInlineOf = (node: ProseNode): NewsInline => {
   };
 };
 
-const inlinesOf = (node: ProseNode | null): NewsInline[] => {
-  const inlines: NewsInline[] = [];
-  node?.forEach((child) => {
-    inlines.push(newsInlineOf(child));
-  });
-  return inlines;
-};
-
-const childrenOf = (node: ProseNode): ProseNode[] => {
+const childrenOf = (node: ProseNode | null): ProseNode[] => {
   const children: ProseNode[] = [];
-  node.forEach((child) => {
+  node?.forEach((child) => {
     children.push(child);
   });
   return children;
 };
+
+const inlinesOf = (node: ProseNode | null): NewsInline[] => childrenOf(node).map(newsInlineOf);
 
 const newsBlockOf = (node: ProseNode): NewsBlock => {
   if (node.type === nodes.heading) {
@@ -188,18 +172,7 @@ const newsBlockOf = (node: ProseNode): NewsBlock => {
   return { kind: 'paragraph', inlines: inlinesOf(node) };
 };
 
-export const newsTextOf = (doc: ProseNode): string =>
+export const newsTextOfDoc = (doc: ProseNode): string =>
   writeNewsText(childrenOf(doc).map(newsBlockOf));
 
 export const newsBlockTextOf = (block: ProseNode): string => writeNewsText([newsBlockOf(block)]);
-
-export const teaserDocOf = (teaser: string): ProseNode =>
-  newsTeaserSchema.nodes.doc.create(
-    null,
-    newsTeaserSchema.nodes.paragraph.create(
-      null,
-      teaser.length === 0 ? [] : [newsTeaserSchema.text(teaser)],
-    ),
-  );
-
-export const teaserOf = (doc: ProseNode): string => doc.textContent.replace(TEASER_WHITESPACE, ' ');

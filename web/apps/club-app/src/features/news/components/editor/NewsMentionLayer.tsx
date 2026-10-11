@@ -28,10 +28,6 @@ const EDITOR_LABELS: KkMentionEditorLabels = {
 
 export const NewsMentionLayer: FC<NewsMentionLayerProps> = ({ text, mentionables, listId }) => {
   const layer = useMentionLayer(text, mentionables);
-  const selected = text.selectedMention;
-  const label = selected?.label ?? '';
-  const targetName = layer.target?.name ?? label;
-  const targetLine = layer.target?.line ?? '';
 
   return (
     <>
@@ -39,21 +35,21 @@ export const NewsMentionLayer: FC<NewsMentionLayerProps> = ({ text, mentionables
         listId={listId}
         label={MENTION_LIST_LABEL}
         emptyLabel={MENTION_EMPTY}
-        anchor={text.mentionAnchor}
+        anchor={layer.pickerAnchor}
         sections={layer.sections}
-        activeId={text.activeChoiceId}
-        onChoose={text.chooseMention}
+        activeId={layer.activeId}
+        onChoose={layer.choose}
       />
       <KkMentionEditor
-        anchor={text.mentionElement}
-        label={label}
-        targetName={targetName}
-        targetLine={targetLine}
+        anchor={layer.editorAnchor}
+        label={layer.label}
+        targetName={layer.targetName}
+        targetLine={layer.targetLine}
         note={layer.targetNote}
         labels={EDITOR_LABELS}
-        onLabelChange={text.relabelMention}
-        onRemove={text.removeMention}
-        onClose={text.closeMention}
+        onLabelChange={layer.relabel}
+        onRemove={layer.remove}
+        onClose={layer.close}
       />
     </>
   );
