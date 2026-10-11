@@ -1,6 +1,5 @@
 import type { FlapGlyphTone } from '../../../internal/flap/FlapGlyph';
 import type { FlapTileTone } from '../../../internal/flap/FlapTile';
-import type { SplitFlapPose } from '../../../internal/flap/flap-pose';
 import type { FlapFaceWidth } from './deck-fit';
 import { deckFacesOf, deckForCell, orderedFacesOf } from './deck-fit';
 import type { FlapCell } from './flap-cells';
@@ -36,9 +35,6 @@ export interface GreetingDecks {
   deck: readonly string[];
   nameDeck: readonly string[] | null;
 }
-
-const RIGHT_ANGLE = 90;
-const DEGREES_PER_HALF_TURN = 180;
 
 const NO_DEAL: FlapDeal = { faces: [], ordered: false };
 
@@ -109,12 +105,3 @@ export const twinOf = (
 
 export const twinFaceAt = (faces: readonly string[], index: number, ahead: number): string =>
   faces[Math.min(Math.max(Math.floor(index) + ahead, 0), faces.length - 1)] ?? '';
-
-export const twinPoseOf = (fall: number, land: number, cover: number): SplitFlapPose => ({
-  fall,
-  land,
-  reveal: 1 - Math.cos((fall * Math.PI) / DEGREES_PER_HALF_TURN),
-  cover,
-  presence: 0,
-  fallen: fall <= -RIGHT_ANGLE,
-});

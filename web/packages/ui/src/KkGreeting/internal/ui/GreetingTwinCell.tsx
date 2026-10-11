@@ -7,8 +7,10 @@ import { FlapShade } from '../../../internal/flap/FlapShade';
 import type { FlapTileTone } from '../../../internal/flap/FlapTile';
 import { BOTTOM_HALF_CLIP, TOP_HALF_CLIP } from '../../../internal/flap/flap-pose';
 import type { FlapTileFit } from '../../../internal/flap/flap-tile-bounds';
+import { useFlapLeaf } from '../../../internal/flap/use-flap-leaf';
+import { trackPoseOf } from '../logic/flap-keyframes';
 import type { TwinCell } from '../logic/greeting-twin';
-import { useFlapCellMotion } from '../logic/use-flap-cell-motion';
+import { useTwinFaces } from '../logic/use-twin-faces';
 
 const LINE_FIT: FlapTileFit = 'line';
 
@@ -19,7 +21,8 @@ interface GreetingTwinCellProps {
 }
 
 export const GreetingTwinCell: FC<GreetingTwinCellProps> = ({ cell, tone, clock }) => {
-  const flap = useFlapCellMotion(clock, cell.track, cell.faces);
+  const flap = useFlapLeaf(clock, trackPoseOf(cell.track));
+  const faces = useTwinFaces(clock, cell.track, cell.faces);
   const tileInk = tone === 'gold' ? 'onGold' : 'inverse';
   const box: CSSProperties = {
     position: 'absolute',
@@ -31,22 +34,22 @@ export const GreetingTwinCell: FC<GreetingTwinCellProps> = ({ cell, tone, clock 
 
   const fromGlyph = (
     <FlapGlyph variant="h1" tone={cell.glyph}>
-      <motion.span>{flap.fromFace}</motion.span>
+      <motion.span>{faces.fromFace}</motion.span>
     </FlapGlyph>
   );
   const fromOnTile = (
     <FlapGlyph variant="h1" tone={tileInk}>
-      <motion.span>{flap.fromFace}</motion.span>
+      <motion.span>{faces.fromFace}</motion.span>
     </FlapGlyph>
   );
   const toGlyph = (
     <FlapGlyph variant="h1" tone={cell.glyph}>
-      <motion.span>{flap.toFace}</motion.span>
+      <motion.span>{faces.toFace}</motion.span>
     </FlapGlyph>
   );
   const toOnTile = (
     <FlapGlyph variant="h1" tone={tileInk}>
-      <motion.span>{flap.toFace}</motion.span>
+      <motion.span>{faces.toFace}</motion.span>
     </FlapGlyph>
   );
 

@@ -5,8 +5,10 @@ import { FlapGlyph } from '../../../../internal/flap/FlapGlyph';
 import { FlapLeaf } from '../../../../internal/flap/FlapLeaf';
 import { FlapShade } from '../../../../internal/flap/FlapShade';
 import { BOTTOM_HALF_CLIP, TOP_HALF_CLIP } from '../../../../internal/flap/flap-pose';
+import { useFlapLeaf } from '../../../../internal/flap/use-flap-leaf';
 import type { SplitFlapCell, SplitFlapWindow } from '../logic/split-flap-flaps';
-import { useSplitFlapFlapMotion } from '../logic/use-split-flap-flap-motion';
+import { useSplitFlapClock } from '../logic/use-split-flap-clock';
+import { useSplitFlapOffset } from '../logic/use-split-flap-offset';
 
 interface SplitFlapFlapProps {
   cell: SplitFlapCell;
@@ -17,11 +19,13 @@ interface SplitFlapFlapProps {
 }
 
 export const SplitFlapFlap: FC<SplitFlapFlapProps> = ({ cell, window, progress, top, height }) => {
-  const flap = useSplitFlapFlapMotion(progress, window, cell);
+  const flipped = useSplitFlapClock(progress, window);
+  const flap = useFlapLeaf(flipped);
+  const offset = useSplitFlapOffset(flipped, cell);
 
   return (
     <motion.span
-      style={{ position: 'absolute', left: 0, top, width: cell.width, height, x: flap.offset }}
+      style={{ position: 'absolute', left: 0, top, width: cell.width, height, x: offset }}
     >
       <FlapLeaf
         clip={flap.revealClip}

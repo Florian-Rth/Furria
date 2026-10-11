@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import type { FlapLeafFrame } from '../../../internal/flap/flap-pose';
+import { flapLeafOf } from '../../../internal/flap/flap-pose';
 import type { FlapTrack } from './flap-keyframes';
-import { flapKeyframesOf } from './flap-keyframes';
+import { flapKeyframesOf, trackPoseOf } from './flap-keyframes';
 import type { FlapFace, FlapRun, FlapSchedule } from './flap-schedule';
 
 const text = (face: string): FlapFace => ({ kind: 'text', text: face });
@@ -62,6 +64,12 @@ const trackOf = (run: FlapRun): FlapTrack => {
   return track;
 };
 
+const COVERED = 'inset(100% 0% 0% 0%)';
+const UNREVEALED = 'inset(0% 0% 100% 0%)';
+
+const leafAt = (track: FlapTrack, elapsed: number): FlapLeafFrame =>
+  flapLeafOf(trackPoseOf(track)(elapsed));
+
 const valueAt = (track: FlapTrack, values: readonly number[], at: number): number => {
   const index = track.at.findIndex((time) => time >= at);
 
@@ -99,24 +107,33 @@ describe('flapKeyframesOf', () => {
     ['a count with a hold', COUNTING, 1],
   ])('rests %s on its final face with the tile gone', (_, run, face) => {
     const track = trackOf(run);
+    const leaf = leafAt(track, run.end + 100);
 
-    expect(track.fall.at(-1)).toBe(-90);
-    expect(track.land.at(-1)).toBe(0);
-    expect(track.cover.at(-1)).toBe(1);
-    expect(track.presence.at(-1)).toBe(0);
+    expect([leaf.fall, leaf.land, leaf.coverClip, leaf.presence]).toEqual([-90, 0, COVERED, 0]);
+    expect([leaf.fallOpacity, leaf.landOpacity]).toEqual([0, 1]);
     expect(track.face.at(-1)).toBe(face);
   });
 
   it('starts every cell flat, blank-tiled and on its first face', () => {
     const track = trackOf(RATTLE);
+    const leaf = leafAt(track, -50);
 
-    expect([
-      track.fall[0],
-      track.land[0],
-      track.cover[0],
-      track.presence[0],
-      track.face[0],
-    ]).toEqual([expect.closeTo(0), 90, 0, 0, 0]);
+    expect([leaf.fall, leaf.land, leaf.revealClip, leaf.presence, leaf.fallOpacity]).toEqual([
+      expect.closeTo(0),
+      90,
+      UNREVEALED,
+      0,
+      1,
+    ]);
+    expect(track.face[0]).toBe(0);
+  });
+
+  it('turns a leaf smoothly between two baked keys', () => {
+    const track = trackOf(SINGLE);
+    const [first = 0, second = 0] = track.at;
+    const [fromFall = 0, toFall = 0] = track.fall;
+
+    expect(leafAt(track, (first + second) / 2).fall).toBeCloseTo((fromFall + toFall) / 2);
   });
 
   it.each([
@@ -136,13 +153,9 @@ describe('flapKeyframesOf', () => {
   });
 
   it('holds the landed face during a pause in a count', () => {
-    const track = trackOf(COUNTING);
+    const leaf = leafAt(trackOf(COUNTING), 150);
 
-    expect([
-      valueAt(track, track.fall, 150),
-      valueAt(track, track.land, 150),
-      valueAt(track, track.cover, 150),
-    ]).toEqual([-90, 0, 1]);
+    expect([leaf.fall, leaf.land, leaf.coverClip, leaf.fallOpacity]).toEqual([-90, 0, COVERED, 0]);
   });
 
   it('lays a closing flip flat before its tile closes into the hinge', () => {

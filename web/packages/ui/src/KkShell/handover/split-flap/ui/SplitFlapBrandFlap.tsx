@@ -3,21 +3,12 @@ import type { CSSProperties, FC, PropsWithChildren } from 'react';
 import { FlapLeaf } from '../../../../internal/flap/FlapLeaf';
 import { FlapShade } from '../../../../internal/flap/FlapShade';
 import { TOP_HALF_CLIP } from '../../../../internal/flap/flap-pose';
-import type { SplitFlapCell } from '../logic/split-flap-flaps';
+import { useFlapLeaf } from '../../../../internal/flap/use-flap-leaf';
 import { BRAND_WINDOW } from '../logic/split-flap-flaps';
-import { useSplitFlapFlapMotion } from '../logic/use-split-flap-flap-motion';
+import { useSplitFlapClock } from '../logic/use-split-flap-clock';
 
 const BRAND_PERSPECTIVE = 420;
 const NO_TILE = 0;
-
-const BRAND_CELL: SplitFlapCell = {
-  slot: 'brand',
-  from: '',
-  to: '',
-  fromCenter: 0,
-  toCenter: 0,
-  width: 0,
-};
 
 const FLAP_STYLE: CSSProperties = {
   position: 'absolute',
@@ -40,7 +31,8 @@ interface SplitFlapBrandFlapProps extends PropsWithChildren {
 }
 
 export const SplitFlapBrandFlap: FC<SplitFlapBrandFlapProps> = ({ progress, children }) => {
-  const flap = useSplitFlapFlapMotion(progress, BRAND_WINDOW, BRAND_CELL);
+  const flipped = useSplitFlapClock(progress, BRAND_WINDOW);
+  const flap = useFlapLeaf(flipped);
 
   return (
     <span style={FLAP_STYLE}>
