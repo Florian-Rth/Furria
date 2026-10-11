@@ -1,24 +1,38 @@
 import { describe, expect, it } from 'vitest';
-import type { LandingTarget } from './landing-target';
-import { parseLandingKey } from './landing-target';
+import type { LandingNavigation, WriteLanding } from './landing-target';
+import { toLandingNavigation } from './landing-target';
 
-describe('parseLandingKey', () => {
-  it.each<{ label: string; key: string | undefined; expected: LandingTarget | null }>([
-    { label: 'nothing at all', key: undefined, expected: null },
+describe('toLandingNavigation', () => {
+  it.each<{ label: string; landing: WriteLanding; expected: LandingNavigation }>([
     {
-      label: 'a well-formed key',
-      key: 'membership:42',
-      expected: { kind: 'membership', id: '42' },
+      label: 'a plain return that leaves the search alone',
+      landing: { to: '/groups/$groupId', params: { groupId: 4 } },
+      expected: { to: '/groups/$groupId', params: { groupId: '4' }, search: undefined },
     },
     {
-      label: 'an id that itself contains the separator',
-      key: 'membership:42:1',
-      expected: { kind: 'membership', id: '42:1' },
+      label: 'a marked landing that names the changed row',
+      landing: {
+        to: '/manage/venues/$venueId',
+        params: { venueId: 12 },
+        mark: { kind: 'venue', id: 12 },
+      },
+      expected: {
+        to: '/manage/venues/$venueId',
+        params: { venueId: '12' },
+        search: { changed: 'venue:12' },
+      },
     },
-    { label: 'no separator at all', key: 'membership', expected: null },
-    { label: 'an empty kind', key: ':42', expected: null },
-    { label: 'an empty id', key: 'membership:', expected: null },
-  ])('resolves $label', ({ key, expected }) => {
-    expect(parseLandingKey(key)).toEqual(expected);
+    {
+      label: 'a marked landing that keeps the target search beside the mark',
+      landing: { to: '/manage/roles', search: { role: 3 }, mark: { kind: 'role-holding', id: 9 } },
+      expected: { to: '/manage/roles', params: {}, search: { role: 3, changed: 'role-holding:9' } },
+    },
+    {
+      label: 'an unmarked landing with a target search',
+      landing: { to: '/manage/roles', search: { role: 3 } },
+      expected: { to: '/manage/roles', params: {}, search: { role: 3 } },
+    },
+  ])('resolves $label', ({ landing, expected }) => {
+    expect(toLandingNavigation(landing)).toEqual(expected);
   });
 });

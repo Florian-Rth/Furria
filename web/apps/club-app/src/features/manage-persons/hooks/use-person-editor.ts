@@ -1,14 +1,8 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
 import type { FieldErrors, UseFormReturn } from 'react-hook-form';
-import { useController, useForm, useWatch } from 'react-hook-form';
-import { toLandingKey } from '@/features/write';
-import { RequestFailedError } from '@/lib/api/api-error';
-import { toCamelCaseField } from '@/lib/api/api-failures';
-import { useGoBackTo } from '@/lib/use-go-back-to';
-import { toWriteErrorMessage } from '@/lib/write-error';
+import { useController, useWatch } from 'react-hook-form';
+import { useWriteForm } from '@/features/write';
 import { useCreatePersonMutation, useUpdatePersonMutation } from '../api';
-import type { CreatedPerson, PersonForm } from '../schemas';
+import type { PersonForm } from '../schemas';
 import { PersonFormSchema } from '../schemas';
 import type { AdoptionSuggestionControl } from './use-adoption-suggestion';
 import { useAdoptionSuggestion } from './use-adoption-suggestion';
@@ -26,26 +20,9 @@ export interface PersonFormSource {
   contactVisibleToMembers: boolean;
 }
 
-const FIELD_ERROR_STATUS = 400;
 const UNSAVED_PERSON_ID = 0;
 const CREATE_LABEL = 'Hinzufügen';
 const SAVE_LABEL = 'Speichern';
-
-const PERSON_FIELD_NAMES = [
-  'firstName',
-  'lastName',
-  'email',
-  'phone',
-  'street',
-  'zip',
-  'city',
-  'birthDate',
-] as const;
-
-type PersonFieldName = (typeof PERSON_FIELD_NAMES)[number];
-
-const isPersonFieldName = (value: string): value is PersonFieldName =>
-  PERSON_FIELD_NAMES.some((name) => name === value);
 
 const EMPTY_PERSON: PersonForm = {
   firstName: '',
@@ -103,80 +80,32 @@ export interface PersonEditorControl {
 }
 
 export const usePersonEditor = ({ person }: PersonEditorInput): PersonEditorControl => {
-  const [rejection, setRejection] = useState<string | null>(null);
   const create = useCreatePersonMutation();
   const update = useUpdatePersonMutation(person?.personId ?? UNSAVED_PERSON_ID);
-  const goBackTo = useGoBackTo();
 
-  const form = useForm<PersonForm>({
-    resolver: zodResolver(PersonFormSchema),
-    defaultValues: toPersonFormValues(person),
-    mode: 'onTouched',
+  const write = useWriteForm({
+    schema: PersonFormSchema,
+    defaults: toPersonFormValues(person),
+    mutate: (values) =>
+      person === null
+        ? create.mutateAsync(values).then((created) => created.personId)
+        : update.mutateAsync(values).then(() => person.personId),
+    landing: (personId) => ({
+      to: '/manage/persons/$personId',
+      params: { personId },
+      mark: { kind: 'person', id: personId },
+    }),
   });
-  const { isDirty, isValid } = form.formState;
-  const birthDate = useController({ control: form.control, name: 'birthDate' });
-  const typedEmail = useWatch({ control: form.control, name: 'email' });
+  const birthDate = useController({ control: write.form.control, name: 'birthDate' });
+  const typedEmail = useWatch({ control: write.form.control, name: 'email' });
   const adoption = useAdoptionSuggestion(typedEmail, person === null);
 
-  const reject = (error: Error): void => {
-    if (error instanceof RequestFailedError && error.status === FIELD_ERROR_STATUS) {
-      const unmatched = error.failures.filter((failure) => {
-        const field = toCamelCaseField(failure.field);
-
-        if (!isPersonFieldName(field)) {
-          return true;
-        }
-
-        form.setError(field, { message: failure.message });
-
-        return false;
-      });
-
-      setRejection(unmatched[0]?.message ?? null);
-
-      return;
-    }
-
-    setRejection(toWriteErrorMessage(error));
-  };
-
-  const landOnPerson = (personId: number): void => {
-    void goBackTo({
-      to: '/manage/persons/$personId',
-      params: { personId: String(personId) },
-      search: (previous) => ({ ...previous, changed: toLandingKey('person', personId) }),
-      ignoreBlocker: true,
-    });
-  };
-
-  const handleFormSubmit = form.handleSubmit((values) => {
-    setRejection(null);
-
-    if (person === null) {
-      create.mutate(values, {
-        onSuccess: (created: CreatedPerson) => landOnPerson(created.personId),
-        onError: reject,
-      });
-
-      return;
-    }
-
-    update.mutate(values, { onSuccess: () => landOnPerson(person.personId), onError: reject });
-  });
-
   return {
-    form,
-    errors: form.formState.errors,
+    ...write,
+    errors: write.form.formState.errors,
     birthDate: birthDate.field.value,
     setBirthDate: birthDate.field.onChange,
-    isDirty,
-    canSubmit: isValid,
-    isSaving: create.isPending || update.isPending,
-    rejection,
     actionLabel: person === null ? CREATE_LABEL : SAVE_LABEL,
     adoption,
-    submit: () => {
-      void handleFormSubmit();
-    },
   };
 };

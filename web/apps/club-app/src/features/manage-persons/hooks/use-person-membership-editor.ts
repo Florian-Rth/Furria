@@ -1,10 +1,6 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
-import { useController, useForm } from 'react-hook-form';
-import { toLandingKey } from '@/features/write';
+import { useController } from 'react-hook-form';
+import { useWriteForm } from '@/features/write';
 import { toIsoDay } from '@/lib/day';
-import { useGoBackTo } from '@/lib/use-go-back-to';
-import { toWriteErrorMessage } from '@/lib/write-error';
 import { useCreateMembershipMutation, useUpdateMembershipMutation } from '../api';
 import {
   ADD_MEMBERSHIP_ACTION_LABEL,
@@ -19,7 +15,7 @@ import {
   toClosedHistoryLine,
   toMembershipArchiveEffect,
 } from '../person-archive';
-import type { CreatedMembership, PersonDetails, PersonMembership } from '../schemas';
+import type { PersonDetails, PersonMembership } from '../schemas';
 import { MembershipFormSchema } from '../schemas';
 
 interface PersonMembershipEditorInput {
@@ -50,57 +46,33 @@ export const usePersonMembershipEditor = ({
   const today = toIsoDay(new Date());
   const wasOpen = membership !== null && membership.endedOn === null;
 
-  const [rejection, setRejection] = useState<string | null>(null);
   const create = useCreateMembershipMutation(person.personId);
   const update = useUpdateMembershipMutation(person.personId);
-  const goBackTo = useGoBackTo();
 
-  const form = useForm({
-    resolver: zodResolver(MembershipFormSchema),
-    defaultValues: {
+  const write = useWriteForm({
+    schema: MembershipFormSchema,
+    defaults: {
       startedOn: membership?.startedOn ?? today,
       endedOn: membership?.endedOn ?? null,
     },
-    mode: 'onTouched',
+    mutate: (submitted) =>
+      membership === null
+        ? create.mutateAsync(submitted).then((created) => created.membershipId)
+        : update
+            .mutateAsync({ membershipId: membership.membershipId, ...submitted, wasOpen })
+            .then(() => membership.membershipId),
+    landing: (membershipId) => ({
+      to: '/manage/persons/$personId',
+      params: { personId: person.personId },
+      mark: { kind: 'membership', id: membershipId },
+    }),
   });
-  const { isDirty, isValid, errors } = form.formState;
-  const startedOnField = useController({ control: form.control, name: 'startedOn' });
-  const endedOnField = useController({ control: form.control, name: 'endedOn' });
+  const startedOnField = useController({ control: write.form.control, name: 'startedOn' });
+  const endedOnField = useController({ control: write.form.control, name: 'endedOn' });
   const startedOn = startedOnField.field.value;
   const endedOn = endedOnField.field.value;
 
   const isClosingNow = wasOpen && endedOn !== null;
-
-  const fail = (error: Error): void => {
-    setRejection(toWriteErrorMessage(error));
-  };
-
-  const landBack = (membershipId: number): void => {
-    void goBackTo({
-      to: '/manage/persons/$personId',
-      params: { personId: String(person.personId) },
-      search: (previous) => ({ ...previous, changed: toLandingKey('membership', membershipId) }),
-      ignoreBlocker: true,
-    });
-  };
-
-  const handleFormSubmit = form.handleSubmit((submitted) => {
-    setRejection(null);
-
-    if (membership === null) {
-      create.mutate(submitted, {
-        onSuccess: (created: CreatedMembership) => landBack(created.membershipId),
-        onError: fail,
-      });
-
-      return;
-    }
-
-    update.mutate(
-      { membershipId: membership.membershipId, ...submitted, wasOpen },
-      { onSuccess: () => landBack(membership.membershipId), onError: fail },
-    );
-  });
 
   const archiveEffect = toMembershipArchiveEffect(person.archive !== null, endedOn, today);
 
@@ -121,14 +93,14 @@ export const usePersonMembershipEditor = ({
   return {
     startedOn,
     setStartedOn: startedOnField.field.onChange,
-    startedOnError: errors.startedOn?.message,
+    startedOnError: write.form.formState.errors.startedOn?.message,
     endedOn,
     setEndedOn: endedOnField.field.onChange,
     consequence,
-    rejection,
-    isSaving: create.isPending || update.isPending,
-    isDirty,
-    canSubmit: isValid && archiveEffect !== 'refused',
+    rejection: write.rejection,
+    isSaving: write.isSaving,
+    isDirty: write.isDirty,
+    canSubmit: write.canSubmit && archiveEffect !== 'refused',
     actionLabel:
       membership === null
         ? ADD_MEMBERSHIP_ACTION_LABEL
@@ -136,8 +108,6 @@ export const usePersonMembershipEditor = ({
           ? MEMBERSHIP_END_LABEL
           : MEMBERSHIP_CHANGE_LABEL,
     actionTone: isClosingNow ? 'danger' : undefined,
-    submit: () => {
-      void handleFormSubmit();
-    },
+    submit: write.submit,
   };
 };
