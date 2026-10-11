@@ -70,8 +70,7 @@ export const useEventEditor = (event: EventDetails | null): EventEditorControl =
       mark: { kind: LANDING_KIND, id: eventId },
     }),
   });
-  const { form } = write;
-  const values = form.watch();
+  const { form, values } = write;
 
   const keepEndInStep = (nextStart: CalendarDayTime): void => {
     const endDay = form.getValues('endDay');

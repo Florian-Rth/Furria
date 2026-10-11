@@ -69,8 +69,7 @@ export const useCalendarEntryEditor = ({
       mark: { kind: LANDING_KIND, id: calendarEntryId },
     }),
   });
-  const { form } = write;
-  const values = form.watch();
+  const { form, values } = write;
 
   const ownerGroupIdOf = (ownerId: string): number | null =>
     ownerOptions.find((option) => option.id === ownerId)?.ownerGroupId ?? null;

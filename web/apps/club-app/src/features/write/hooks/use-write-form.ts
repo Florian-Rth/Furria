@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState } from 'react';
 import type { DefaultValues, FieldValues, Path, UseFormReturn } from 'react-hook-form';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import type { z } from 'zod';
 import { useGoBackTo } from '@/lib/use-go-back-to';
 import type { WriteLanding } from '../landing-target';
@@ -22,6 +22,7 @@ export interface WriteFormInput<TValues extends FieldValues, TSubmitted, TResult
 
 export interface WriteFormControl<TValues extends FieldValues, TSubmitted> {
   form: UseFormReturn<TValues, WriteFormContext, TSubmitted>;
+  values: TValues;
   submit: () => void;
   run: <TResult>(
     task: () => WriteTask<TResult>,
@@ -50,6 +51,7 @@ export const useWriteForm = <TValues extends FieldValues, TSubmitted, TResult>({
     mode: 'onTouched',
   });
   const { isDirty, isValid } = form.formState;
+  const values = useWatch({ control: form.control, compute: (all: TValues) => all });
 
   useEffect(() => {
     const edits = form.watch(() => {
@@ -116,6 +118,7 @@ export const useWriteForm = <TValues extends FieldValues, TSubmitted, TResult>({
 
   return {
     form,
+    values,
     submit: () => {
       void handleSubmit();
     },

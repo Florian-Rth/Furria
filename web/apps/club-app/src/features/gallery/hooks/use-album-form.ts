@@ -46,8 +46,7 @@ export const useAlbumForm = (
             .then(() => album.albumId),
     landing: (albumId) => ({ to: ALBUM_ROUTE, params: { albumId } }),
   });
-  const { form } = write;
-  const values = form.watch();
+  const { form, values } = write;
 
   return {
     form,
