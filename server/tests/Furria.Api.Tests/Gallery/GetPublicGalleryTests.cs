@@ -66,7 +66,7 @@ public sealed class GetPublicGalleryTests : IClassFixture<ApiTestFixture>
             (1, (DateTimeOffset?)null, ctx.Gallery.Items.IdOf("parade-chosen")),
             (parade.PhotoCount, parade.EntryStartsAt, parade.Cover.MediaItemId)
         );
-        Assert.StartsWith("/api/public/gallery/photos/", gala.Cover.MediumUrl);
+        Assert.StartsWith("/api/public/gallery/pictures/", gala.Cover.MediumUrl);
     }
 
     private static Action<SeedContextBuilder> Gallery() =>

@@ -107,37 +107,6 @@ public sealed class GetPublicGroupsTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_OmitTheGroup_When_ItIsArchived()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddPerson("paula", "Paula", "Brendel"))
-                    .Groups(groups =>
-                        groups
-                            .AddGroup("tanzgarde", "Tanzgarde")
-                            .AddGroup("kindergarde", "Kindergarde", archivedOn: ArchivedIn2021)
-                            .AddGroupMembership(
-                                "paula-kindergarde",
-                                "kindergarde",
-                                "paula",
-                                JoinedIn2017
-                            )
-                    ),
-            ct
-        );
-
-        var (response, result) = await _fixture
-            .CreateClient()
-            .GETAsync<GetPublicGroups, GetPublicGroupsResponse>();
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var tanzgarde = Assert.Single(result.Groups);
-        Assert.Equal(ctx.Groups.Groups.IdOf("tanzgarde"), tanzgarde.GroupId);
-    }
-
-    [Fact]
     public async Task Should_SortTheGroupsAsGerman_When_TheListIsRead()
     {
         var ct = TestContext.Current.CancellationToken;

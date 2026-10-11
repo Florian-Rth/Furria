@@ -84,7 +84,7 @@ public sealed class GetPublicNewsPostBySlugTests : IClassFixture<ApiTestFixture>
         Assert.Equal(paulaId, paula.PersonId);
         Assert.Equal("Präsidentin", paula.OfficeName);
         Assert.StartsWith(
-            $"/api/public/board/portraits/{portraitId}/small?v=",
+            $"/api/public/board/pictures/{portraitId}/small?v=",
             paula.Portrait?.SmallUrl
         );
     }
@@ -166,7 +166,10 @@ public sealed class GetPublicNewsPostBySlugTests : IClassFixture<ApiTestFixture>
             ],
             result.Album?.Photos.Select(photo => photo.MediaItemId)
         );
-        Assert.Equal($"/api/public/gallery/photos/{first}/small", result.Album?.Photos[0].SmallUrl);
+        Assert.Equal(
+            $"/api/public/gallery/pictures/{first}/small",
+            result.Album?.Photos[0].SmallUrl
+        );
     }
 
     [Theory]

@@ -17,12 +17,11 @@ original's file name).
 - **The API checks the item still exists and still belongs where the URL says before serving**,
   so deletion and takedown take effect at once; a leaked URL to a living item works at most 48 h.
 - **The public face is unsigned**: the website's pictures have stable URLs under `/api/public/…`
-  that are served only while the picture is on the public face and answer 404 the moment it
-  leaves it — board portraits (`/api/public/board/portraits/…`, while the person holds a public
-  office), group pictures (`/api/public/groups/pictures/…`, while the group is shown publicly)
-  the renditions in a published album's public selection (`/api/public/gallery/…`, while the
-  photo is in the selection) and news pictures (`/api/public/news/pictures/…`, while the picture
-  is the live picture of a published news post — never a pending one). Only the small/medium/large renditions are served, never the
+  of one shape, `/api/public/{kind}/pictures/{id}/{rendition}`, that are served only while the
+  picture is on the public face and answer 404 the moment it leaves it — board portraits
+  (`board`, while the person holds a public office), group pictures (`groups`, while the group is
+  shown publicly), the renditions in a published album's public selection (`gallery`, while the
+  photo is in the selection) and news pictures (`news`, while the picture is the live picture of a published news post — never a pending one). Only the small/medium/large renditions are served, never the
   original or the uncropped one. Existence is checked on every fetch; the edge must not cache
   them (`Cache-Control: private, no-cache`); `v={renderedAt}` busts the browser cache after a
   re-crop. Amended 2026-10-09 with Florian: board portraits and group pictures joined the

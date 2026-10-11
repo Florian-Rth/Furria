@@ -45,39 +45,29 @@ public sealed class PictureLookup
     public async Task<IReadOnlyDictionary<int, PictureDetails>> GroupPicturesOfAsync(
         IReadOnlyCollection<int> groupIds,
         CancellationToken ct
-    ) =>
-        (await GroupPictureStampsOfAsync(groupIds, ct)).ToDictionary(
+    )
+    {
+        if (groupIds.Count == 0)
+            return new Dictionary<int, PictureDetails>();
+
+        var stamps = await _dbContext
+            .Groups.AsNoTracking()
+            .Where(group => groupIds.Contains(group.Id) && group.Picture!.RenderedAt != null)
+            .Select(group => new PictureStamp(
+                group.Id,
+                group.PictureId!.Value,
+                group.Picture!.RenderedAt!.Value
+            ))
+            .ToListAsync(ct);
+
+        return stamps.ToDictionary(
             stamp => stamp.OwnerId,
             stamp => _pictures.GroupPictureOf(stamp.OwnerId, stamp.MediaItemId, stamp.RenderedAt)!
         );
-
-    public async Task<IReadOnlyDictionary<int, PictureDetails>> PublicGroupPicturesOfAsync(
-        IReadOnlyCollection<int> groupIds,
-        CancellationToken ct
-    ) =>
-        (await GroupPictureStampsOfAsync(groupIds, ct)).ToDictionary(
-            stamp => stamp.OwnerId,
-            stamp => MediaPictures.PublicGroupPictureOf(stamp.MediaItemId, stamp.RenderedAt)!
-        );
+    }
 
     public async Task<PictureDetails?> GroupPictureOfAsync(int groupId, CancellationToken ct) =>
         (await GroupPicturesOfAsync([groupId], ct)).GetValueOrDefault(groupId);
-
-    private async Task<IReadOnlyList<PictureStamp>> GroupPictureStampsOfAsync(
-        IReadOnlyCollection<int> groupIds,
-        CancellationToken ct
-    ) =>
-        groupIds.Count == 0
-            ? []
-            : await _dbContext
-                .Groups.AsNoTracking()
-                .Where(group => groupIds.Contains(group.Id) && group.Picture!.RenderedAt != null)
-                .Select(group => new PictureStamp(
-                    group.Id,
-                    group.PictureId!.Value,
-                    group.Picture!.RenderedAt!.Value
-                ))
-                .ToListAsync(ct);
 
     private sealed record PictureStamp(int OwnerId, int MediaItemId, DateTimeOffset RenderedAt);
 }

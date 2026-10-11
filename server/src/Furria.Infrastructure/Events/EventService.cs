@@ -6,6 +6,7 @@ using Furria.Core.Club;
 using Furria.Core.Events;
 using Furria.Infrastructure.Gallery;
 using Furria.Infrastructure.Persistence;
+using Furria.Infrastructure.Public;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Events;
@@ -45,11 +46,13 @@ public sealed class EventService
     );
 
     private readonly AppDbContext _dbContext;
+    private readonly PublicFace _publicFace;
     private readonly TimeProvider _timeProvider;
 
-    public EventService(AppDbContext dbContext, TimeProvider timeProvider)
+    public EventService(AppDbContext dbContext, PublicFace publicFace, TimeProvider timeProvider)
     {
         _dbContext = dbContext;
+        _publicFace = publicFace;
         _timeProvider = timeProvider;
     }
 
@@ -132,8 +135,8 @@ public sealed class EventService
     {
         var now = _timeProvider.GetUtcNow();
 
-        var rows = await ShownEvents(now)
-            .OrderBy(row => row.CalendarEntry!.StartsAt)
+        var rows = await _publicFace
+            .Events.OrderBy(row => row.CalendarEntry!.StartsAt)
             .ThenBy(row => row.CalendarEntryId)
             .Select(PublicRowOf)
             .ToListAsync(ct);
@@ -145,8 +148,8 @@ public sealed class EventService
     {
         var now = _timeProvider.GetUtcNow();
 
-        var row = await ShownEvents(now)
-            .Where(row => row.CalendarEntryId == eventId)
+        var row = await _publicFace
+            .Events.Where(row => row.CalendarEntryId == eventId)
             .Select(PublicRowOf)
             .SingleOrDefaultAsync(ct);
 
@@ -366,9 +369,6 @@ public sealed class EventService
             row.CancelledAt is not null,
             now
         );
-
-    private IQueryable<Event> ShownEvents(DateTimeOffset now) =>
-        _dbContext.Events.AsNoTracking().Where(PublicEvents.IsShownAt(now));
 
     private Task<CalendarEntry?> TrackedEventEntryAsync(int eventId, CancellationToken ct) =>
         _dbContext

@@ -5,9 +5,9 @@ const photo = (width: number, height: number) => ({
   mediaItemId: 7,
   width,
   height,
-  smallUrl: '/api/public/gallery/photos/7/small',
-  mediumUrl: '/api/public/gallery/photos/7/medium',
-  largeUrl: '/api/public/gallery/photos/7/large',
+  smallUrl: '/api/public/gallery/pictures/7/small',
+  mediumUrl: '/api/public/gallery/pictures/7/medium',
+  largeUrl: '/api/public/gallery/pictures/7/large',
 });
 
 describe('AlbumDetailSchema', () => {

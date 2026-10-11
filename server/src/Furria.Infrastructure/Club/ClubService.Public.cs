@@ -1,7 +1,7 @@
 using System.Diagnostics.Contracts;
 using Furria.Application.Club;
 using Furria.Core.Club;
-using Furria.Infrastructure.Media;
+using Furria.Infrastructure.Public;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Club;
@@ -22,7 +22,7 @@ public sealed partial class ClubService
             InstagramUrl = record?.InstagramUrl,
             FacebookUrl = record?.FacebookUrl,
             MemberCount = await MemberCountAsync(today, ct),
-            GroupCount = await GroupCountAsync(ct),
+            GroupCount = await _publicFace.Groups.CountAsync(ct),
             AgeOfConsent = record?.AgeOfConsent ?? ClubRecord.DefaultAgeOfConsent,
             Session = await PublicSessionAsync(ClubSession.RelevantYearOf(today), ct),
         };
@@ -30,9 +30,9 @@ public sealed partial class ClubService
 
     public async Task<IReadOnlyList<PublicBoardSeat>> GetPublicBoardAsync(CancellationToken ct)
     {
-        var seats = await _runningBoardSeats.SeatsAsync(ClubClock.Today(_timeProvider), ct);
+        var seats = await RunningBoardSeats.InBoardOrder(_publicFace.BoardSeats).ToListAsync(ct);
 
-        return [.. seats.Where(seat => seat.OfficeIsPublic).Select(ToPublicSeat)];
+        return [.. seats.Select(ToPublicSeat)];
     }
 
     [Pure]
@@ -42,7 +42,8 @@ public sealed partial class ClubService
             OfficeName = seat.OfficeName,
             FirstName = seat.FirstName,
             LastName = seat.LastName,
-            Portrait = MediaPictures.PublicBoardPortraitOf(
+            Portrait = PublicPictures.Of(
+                PublicPictureKind.BoardPortrait,
                 seat.PortraitId,
                 seat.PortraitRenderedAt
             ),

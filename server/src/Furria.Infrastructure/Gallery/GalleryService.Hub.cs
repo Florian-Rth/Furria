@@ -12,6 +12,7 @@ public sealed partial class GalleryService
 
     public async Task<IReadOnlyList<GallerySection>> GetHubAsync(CancellationToken ct)
     {
+        var publishedAlbums = _publicFace.Albums;
         var albums = await LiveAlbums()
             .AsNoTracking()
             .Select(album => new HubAlbumRow(
@@ -19,7 +20,7 @@ public sealed partial class GalleryService
                 album.Title,
                 album.CalendarEntry == null ? null : album.CalendarEntry.StartsAt,
                 album.SessionStartYear,
-                album.PublishedAt != null,
+                publishedAlbums.Any(published => published.Id == album.Id),
                 album.Items.Count(item => item.BinnedAt == null && item.Kind == MediaKind.Photo),
                 album.Items.Count(item => item.BinnedAt == null && item.Kind == MediaKind.Video),
                 album.Items.Count(item => item.BinnedAt == null && item.SelectionPosition != null),

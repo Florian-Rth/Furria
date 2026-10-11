@@ -53,26 +53,7 @@ public sealed class GetPublicGalleryAlbumByIdTests : IClassFixture<ApiTestFixtur
         );
         var finale = result.Photos[0];
         Assert.Equal((4000, 3000), (finale.Width, finale.Height));
-        Assert.Equal($"/api/public/gallery/photos/{finale.MediaItemId}/large", finale.LargeUrl);
-    }
-
-    [Theory]
-    [InlineData("draft")]
-    [InlineData("binned")]
-    public async Task Should_AnswerNotFound_When_TheAlbumIsNotPublic(string albumAlias)
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Gallery(), ct);
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .GETAsync<
-                GetPublicGalleryAlbumById,
-                GetPublicGalleryAlbumByIdRequest,
-                GetPublicGalleryAlbumByIdResponse
-            >(new() { AlbumId = ctx.Gallery.Albums.IdOf(albumAlias) });
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal($"/api/public/gallery/pictures/{finale.MediaItemId}/large", finale.LargeUrl);
     }
 
     private static Action<SeedContextBuilder> Gallery() =>

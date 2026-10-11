@@ -7,11 +7,6 @@ namespace Furria.Infrastructure.Media;
 
 public sealed class MediaPictures
 {
-    public const string PublicBoardPortraitRoute = "/api/public/board/portraits";
-    public const string PublicGroupPictureRoute = "/api/public/groups/pictures";
-    public const string PublicGalleryPhotoRoute = "/api/public/gallery/photos";
-    public const string PublicNewsPictureRoute = "/api/public/news/pictures";
-
     private readonly MediaUrlSigner _signer;
 
     public MediaPictures(MediaUrlSigner signer)
@@ -54,48 +49,7 @@ public sealed class MediaPictures
             : null;
 
     [Pure]
-    public static PictureDetails? PublicBoardPortraitOf(
-        int? mediaItemId,
-        DateTimeOffset? renderedAt
-    ) =>
-        PictureOf(
-            mediaItemId,
-            renderedAt,
-            (id, rendition) => PublicUrlOf(PublicBoardPortraitRoute, id, rendition)
-        );
-
-    [Pure]
-    public static PictureDetails? PublicGroupPictureOf(
-        int? mediaItemId,
-        DateTimeOffset? renderedAt
-    ) =>
-        PictureOf(
-            mediaItemId,
-            renderedAt,
-            (id, rendition) => PublicUrlOf(PublicGroupPictureRoute, id, rendition)
-        );
-
-    [Pure]
-    public static PictureDetails? PublicNewsPictureOf(
-        int? mediaItemId,
-        DateTimeOffset? renderedAt
-    ) =>
-        PictureOf(
-            mediaItemId,
-            renderedAt,
-            (id, rendition) => PublicUrlOf(PublicNewsPictureRoute, id, rendition)
-        );
-
-    [Pure]
-    public static PictureDetails PublicGalleryPhotoOf(int mediaItemId) =>
-        new()
-        {
-            SmallUrl = PublicUrlOf(PublicGalleryPhotoRoute, mediaItemId, MediaRendition.Small),
-            MediumUrl = PublicUrlOf(PublicGalleryPhotoRoute, mediaItemId, MediaRendition.Medium),
-            LargeUrl = PublicUrlOf(PublicGalleryPhotoRoute, mediaItemId, MediaRendition.Large),
-        };
-
-    private static PictureDetails? PictureOf(
+    internal static PictureDetails? PictureOf(
         int? mediaItemId,
         DateTimeOffset? renderedAt,
         Func<int, MediaRendition, string> urlOf
@@ -108,10 +62,6 @@ public sealed class MediaPictures
                 LargeUrl = Versioned(urlOf(id, MediaRendition.Large), rendered),
             }
             : null;
-
-    [Pure]
-    private static string PublicUrlOf(string route, int mediaItemId, MediaRendition rendition) =>
-        $"{route}/{mediaItemId.ToString(CultureInfo.InvariantCulture)}/{MediaUrlSigner.WireNameOf(rendition)}";
 
     [Pure]
     private static string Versioned(string url, DateTimeOffset renderedAt) =>

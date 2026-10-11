@@ -2,7 +2,7 @@ using System.Diagnostics.Contracts;
 using Furria.Application.Gallery;
 using Furria.Core.Gallery;
 using Furria.Core.Media;
-using Furria.Infrastructure.Media;
+using Furria.Infrastructure.Public;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Gallery;
@@ -13,8 +13,8 @@ public sealed partial class GalleryService
         CancellationToken ct
     )
     {
-        var albums = await PublicAlbumRowsOf(_dbContext.Albums).ToListAsync(ct);
-        var photos = (await PublicPhotoRowsOf(_dbContext.MediaItems).ToListAsync(ct)).ToLookup(
+        var albums = await PublicAlbumRowsOf(_publicFace.Albums).ToListAsync(ct);
+        var photos = (await PublicPhotoRowsOf(_publicFace.SelectedPhotos).ToListAsync(ct)).ToLookup(
             photo => photo.AlbumId
         );
         var sessionNumbers = await SessionNumbersAsync(ct);
@@ -28,10 +28,10 @@ public sealed partial class GalleryService
 
     public async Task<PublicAlbumDetails?> GetPublicAlbumAsync(int albumId, CancellationToken ct)
     {
-        var album = await PublicAlbumRowsOf(_dbContext.Albums.Where(row => row.Id == albumId))
+        var album = await PublicAlbumRowsOf(_publicFace.Albums.Where(row => row.Id == albumId))
             .SingleOrDefaultAsync(ct);
         var photos = await PublicPhotoRowsOf(
-                _dbContext.MediaItems.Where(item => item.AlbumId == albumId)
+                _publicFace.SelectedPhotos.Where(item => item.AlbumId == albumId)
             )
             .ToListAsync(ct);
         if (album is not { SessionStartYear: { } sessionStartYear } || photos.Count == 0)
@@ -51,30 +51,24 @@ public sealed partial class GalleryService
     }
 
     private static IQueryable<PublicAlbumRow> PublicAlbumRowsOf(IQueryable<Album> albums) =>
-        albums
-            .AsNoTracking()
-            .Where(PublicGallery.IsPublished)
-            .Select(album => new PublicAlbumRow(
-                album.Id,
-                album.Title,
-                album.Description,
-                album.CalendarEntry == null ? null : album.CalendarEntry.StartsAt,
-                album.SessionStartYear,
-                album.CoverMediaItemId
-            ));
+        albums.Select(album => new PublicAlbumRow(
+            album.Id,
+            album.Title,
+            album.Description,
+            album.CalendarEntry == null ? null : album.CalendarEntry.StartsAt,
+            album.SessionStartYear,
+            album.CoverMediaItemId
+        ));
 
     private static IQueryable<PublicPhotoRow> PublicPhotoRowsOf(IQueryable<MediaItem> items) =>
-        items
-            .AsNoTracking()
-            .Where(PublicGallery.IsInAPublicSelection)
-            .Select(item => new PublicPhotoRow(
-                item.AlbumId!.Value,
-                item.Id,
-                item.SelectionPosition!.Value,
-                item.Width ?? 0,
-                item.Height ?? 0,
-                item.Caption
-            ));
+        items.Select(item => new PublicPhotoRow(
+            item.AlbumId!.Value,
+            item.Id,
+            item.SelectionPosition!.Value,
+            item.Width ?? 0,
+            item.Height ?? 0,
+            item.Caption
+        ));
 
     [Pure]
     private static IReadOnlyList<PublicGallerySection> PublicSectionsOf(
@@ -132,7 +126,7 @@ public sealed partial class GalleryService
             Width = photo.Width,
             Height = photo.Height,
             Caption = photo.Caption,
-            Picture = MediaPictures.PublicGalleryPhotoOf(photo.MediaItemId),
+            Picture = PublicPictures.PhotoOf(photo.MediaItemId),
         };
 
     private sealed record PublicAlbumRow(

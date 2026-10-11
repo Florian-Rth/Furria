@@ -4,6 +4,7 @@ using Furria.Core.Gallery;
 using Furria.Core.Media;
 using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
+using Furria.Infrastructure.Public;
 
 namespace Furria.Infrastructure.Gallery;
 
@@ -48,12 +49,19 @@ public sealed partial class GalleryService
 
     private readonly AppDbContext _dbContext;
     private readonly MediaFiles _mediaFiles;
+    private readonly PublicFace _publicFace;
     private readonly TimeProvider _timeProvider;
 
-    public GalleryService(AppDbContext dbContext, MediaFiles mediaFiles, TimeProvider timeProvider)
+    public GalleryService(
+        AppDbContext dbContext,
+        MediaFiles mediaFiles,
+        PublicFace publicFace,
+        TimeProvider timeProvider
+    )
     {
         _dbContext = dbContext;
         _mediaFiles = mediaFiles;
+        _publicFace = publicFace;
         _timeProvider = timeProvider;
     }
 

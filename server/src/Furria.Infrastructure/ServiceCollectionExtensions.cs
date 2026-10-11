@@ -12,6 +12,7 @@ using Furria.Infrastructure.Media;
 using Furria.Infrastructure.MembershipApplications;
 using Furria.Infrastructure.News;
 using Furria.Infrastructure.Persistence;
+using Furria.Infrastructure.Public;
 using Furria.Infrastructure.Registry;
 using Furria.Infrastructure.Roles;
 using Furria.Infrastructure.Start;
@@ -117,7 +118,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<MediaPictures>();
         services.AddScoped<PictureService>();
         services.AddScoped<PictureLookup>();
-        services.AddScoped<PublicMediaService>();
+        services.AddScoped<PublicFace>();
+        services.AddScoped<PublicPictures>();
         services.AddScoped<MediaJobQueue>();
         services.AddHostedService<AbandonedUploadSweep>();
         services.AddScoped<GalleryService>();

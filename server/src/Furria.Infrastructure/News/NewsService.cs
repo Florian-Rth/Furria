@@ -2,9 +2,9 @@ using System.Diagnostics.Contracts;
 using Furria.Application.News;
 using Furria.Application.Results;
 using Furria.Core.News;
-using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
+using Furria.Infrastructure.Public;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.News;
@@ -17,23 +17,23 @@ public sealed partial class NewsService
         "Eine Meldung zeigt nur ein Album, das auf der Website veröffentlicht ist.";
 
     private readonly AppDbContext _dbContext;
-    private readonly RunningBoardSeats _runningBoardSeats;
     private readonly NewsPictures _newsPictures;
     private readonly MediaPictures _pictures;
+    private readonly PublicFace _publicFace;
     private readonly TimeProvider _timeProvider;
 
     public NewsService(
         AppDbContext dbContext,
-        RunningBoardSeats runningBoardSeats,
         NewsPictures newsPictures,
         MediaPictures pictures,
+        PublicFace publicFace,
         TimeProvider timeProvider
     )
     {
         _dbContext = dbContext;
-        _runningBoardSeats = runningBoardSeats;
         _newsPictures = newsPictures;
         _pictures = pictures;
+        _publicFace = publicFace;
         _timeProvider = timeProvider;
     }
 
@@ -61,10 +61,7 @@ public sealed partial class NewsService
         if (
             content.AlbumId is { } albumId
             && albumId != replaced?.AlbumId
-            && !await _dbContext.Albums.AnyAsync(
-                album => album.Id == albumId && album.BinnedAt == null && album.PublishedAt != null,
-                ct
-            )
+            && !await _publicFace.Albums.AnyAsync(album => album.Id == albumId, ct)
         )
             return Result.Validation(UntieableAlbumMessage);
 
