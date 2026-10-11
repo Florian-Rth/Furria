@@ -1,0 +1,97 @@
+import type { KkNoticePublisher, KkNoticeRequest } from '@furria/ui';
+import type { MutationKey, MutationOptions, QueryClient, QueryKey } from '@tanstack/react-query';
+import { hashKey, onlineManager } from '@tanstack/react-query';
+import { OfflineWriteError } from './api-error';
+import type { OptimisticPatch } from './optimistic-patch';
+import { closePatch, openPatch } from './optimistic-patch';
+
+export type MutationKeys<TInput> = readonly QueryKey[] | ((input: TInput) => readonly QueryKey[]);
+
+export interface ApiMutationNotice<TInput, TResult> {
+  success?: (input: TInput, result: TResult) => string | KkNoticeRequest;
+  failure?: (error: Error, input: TInput) => string | KkNoticeRequest | null;
+}
+
+export interface ApiMutation<TInput, TResult> {
+  request: (input: TInput, accessToken: string) => Promise<TResult>;
+  invalidates: MutationKeys<TInput>;
+  optimistic?: readonly OptimisticPatch<TInput>[];
+  forgets?: MutationKeys<TInput>;
+  notice?: ApiMutationNotice<TInput, TResult>;
+  afterSuccess?: (result: TResult, input: TInput) => void;
+  key?: MutationKey;
+  offline?: 'fail';
+}
+
+export type Authorize = <TResult>(
+  call: (accessToken: string) => Promise<TResult>,
+) => Promise<TResult>;
+
+export interface ApiMutationRuntime {
+  queryClient: QueryClient;
+  raiseNotice: KkNoticePublisher;
+  authorize: Authorize;
+}
+
+type OpenedPatches<TInput> = readonly OptimisticPatch<TInput>[];
+
+const keysFor = <TInput>(
+  keys: MutationKeys<TInput> | undefined,
+  input: TInput,
+): readonly QueryKey[] => (typeof keys === 'function' ? keys(input) : (keys ?? []));
+
+const toNotice = (
+  notice: string | KkNoticeRequest,
+  tone: KkNoticeRequest['tone'],
+): KkNoticeRequest => (typeof notice === 'string' ? { tone, message: notice } : notice);
+
+const isHeldOffline = (definition: { offline?: 'fail' }): boolean =>
+  definition.offline === 'fail' && !onlineManager.isOnline();
+
+export const toApiMutationOptions = <TInput, TResult>(
+  { queryClient, raiseNotice, authorize }: ApiMutationRuntime,
+  definition: ApiMutation<TInput, TResult>,
+): MutationOptions<TResult, Error, TInput, OpenedPatches<TInput>> => {
+  const { request, invalidates, optimistic = [], forgets, notice, afterSuccess, key } = definition;
+
+  return {
+    mutationKey: key,
+    scope: key === undefined ? undefined : { id: hashKey(key) },
+    networkMode: definition.offline === 'fail' ? 'always' : 'online',
+    mutationFn: (input) =>
+      isHeldOffline(definition)
+        ? Promise.reject(new OfflineWriteError())
+        : authorize((accessToken) => request(input, accessToken)),
+    onMutate: async (input) => {
+      const opened = isHeldOffline(definition) ? [] : optimistic;
+
+      await Promise.all(opened.map((patch) => openPatch(queryClient, patch, input)));
+
+      return opened;
+    },
+    onSuccess: (result, input) => {
+      for (const queryKey of keysFor(forgets, input)) {
+        queryClient.removeQueries({ queryKey, exact: true });
+      }
+      if (notice?.success !== undefined) {
+        raiseNotice(toNotice(notice.success(input, result), 'success'));
+      }
+      afterSuccess?.(result, input);
+    },
+    onError: (error, input) => {
+      const failure = notice?.failure?.(error, input) ?? null;
+
+      if (failure !== null) {
+        raiseNotice(toNotice(failure, 'error'));
+      }
+    },
+    onSettled: async (_result, error, input, opened) => {
+      const closed = (opened ?? []).filter((patch) =>
+        closePatch(queryClient, patch, input, error === null),
+      );
+      const stale = [...keysFor(invalidates, input), ...closed.map((patch) => patch.key)];
+
+      await Promise.all(stale.map((queryKey) => queryClient.invalidateQueries({ queryKey })));
+    },
+  };
+};

@@ -1,12 +1,5 @@
-import { RequestFailedError, ServerFailureError } from '@/lib/api/api-error';
+import { OfflineWriteError, RequestFailedError, ServerFailureError } from '@/lib/api/api-error';
 import type { Start, StartAttendance } from './schemas';
-
-export class OfflineAnswerError extends Error {
-  constructor() {
-    super('The answer was not sent because the device is offline.');
-    this.name = 'OfflineAnswerError';
-  }
-}
 
 export type StartAnswerFailure = 'unsaved' | 'gone' | 'notAsked' | 'conflict' | 'offline';
 
@@ -35,7 +28,7 @@ export const toAnswerFailureOf = (error: Error | null): StartAnswerFailure | nul
   if (error === null) {
     return null;
   }
-  if (error instanceof OfflineAnswerError) {
+  if (error instanceof OfflineWriteError) {
     return 'offline';
   }
 
@@ -59,8 +52,6 @@ export interface StartAnswerAttempt {
   error: Error | null;
 }
 
-export const LAST_PENDING_ANSWER = 1;
-
 export const latestAnswerErrorOf = (
   attempts: readonly StartAnswerAttempt[],
   since: number,
@@ -68,31 +59,6 @@ export const latestAnswerErrorOf = (
   const latest = attempts.at(-1);
 
   return latest === undefined || latest.submittedAt < since ? null : latest.error;
-};
-
-export const toAnswerRollbackOf = (
-  pendingAnswers: number,
-  confirmed: StartAttendance | null | undefined,
-): StartAttendance | null | undefined =>
-  pendingAnswers > LAST_PENDING_ANSWER ? undefined : confirmed;
-
-export const attendanceOf = (
-  start: Start | undefined,
-  calendarEntryId: number,
-): StartAttendance | null | undefined => {
-  for (const panel of start?.panels ?? []) {
-    if (panel.kind === 'calendar') {
-      const entry = panel.entries.find(
-        (candidate) => candidate.calendarEntryId === calendarEntryId,
-      );
-
-      if (entry !== undefined) {
-        return entry.attendance;
-      }
-    }
-  }
-
-  return undefined;
 };
 
 export const withEntryAttendance = (

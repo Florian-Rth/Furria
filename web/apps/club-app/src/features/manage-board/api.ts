@@ -1,7 +1,8 @@
-import { useKkNotice } from '@furria/ui';
-import type { QueryClient, UseMutationResult, UseQueryResult } from '@tanstack/react-query';
-import { skipToken, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
+import { skipToken, useQuery } from '@tanstack/react-query';
 import { ME_QUERY_KEY } from '@/features/session';
+import { useApiMutation } from '@/lib/api/api-mutation';
+import { optimisticPatch } from '@/lib/api/optimistic-patch';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { toIsoDay } from '@/lib/day';
 import { toWriteErrorMessage } from '@/lib/write-error';
@@ -39,6 +40,8 @@ import type {
 export const BOARD_QUERY_KEY = ['manage', 'board'] as const;
 export const BOARD_ROLE_OPTIONS_QUERY_KEY = ['manage', 'board-role-options'] as const;
 
+const BOARD_SCOPE = [BOARD_QUERY_KEY, ME_QUERY_KEY] as const;
+
 export interface OfficeNameInput {
   officeName: string;
 }
@@ -61,10 +64,23 @@ export interface EndBoardSeatInput {
   endedOn: string;
 }
 
-const refreshBoard = (queryClient: QueryClient): void => {
-  void queryClient.invalidateQueries({ queryKey: BOARD_QUERY_KEY });
-  void queryClient.invalidateQueries({ queryKey: ME_QUERY_KEY });
-};
+export interface SetOfficePublicationInput {
+  officeName: string;
+  isPublic: boolean;
+}
+
+const applyPublication = (
+  current: BoardResponse | undefined,
+  boardOfficeId: number,
+  isPublic: boolean,
+): BoardResponse | undefined =>
+  current === undefined
+    ? undefined
+    : {
+        offices: current.offices.map((office) =>
+          office.boardOfficeId === boardOfficeId ? { ...office, isPublic } : office,
+        ),
+      };
 
 export const useBoardQuery = (): UseQueryResult<BoardResponse, Error> =>
   useQuery({
@@ -84,223 +100,104 @@ export const useCreateBoardOfficeMutation = (): UseMutationResult<
   CreatedBoardOffice,
   Error,
   BoardOfficeForm
-> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: (form: BoardOfficeForm) =>
-      withFreshAccessToken((accessToken) => requestCreateBoardOffice(form, accessToken)),
-    onSuccess: (_created, form) => {
-      raiseNotice({ tone: 'success', message: toOfficeCreatedMessage(form.name) });
-    },
-    onSettled: () => {
-      refreshBoard(queryClient);
-    },
+> =>
+  useApiMutation({
+    request: requestCreateBoardOffice,
+    invalidates: BOARD_SCOPE,
+    notice: { success: (form) => toOfficeCreatedMessage(form.name) },
   });
-};
 
 export const useUpdateBoardOfficeMutation = (
   boardOfficeId: number,
-): UseMutationResult<void, Error, BoardOfficeForm> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: (form: BoardOfficeForm) =>
-      withFreshAccessToken((accessToken) =>
-        requestUpdateBoardOffice(boardOfficeId, form, accessToken),
-      ),
-    onSuccess: (_result, form) => {
-      raiseNotice({ tone: 'success', message: toOfficeSavedMessage(form.name) });
-    },
-    onSettled: () => {
-      refreshBoard(queryClient);
-    },
+): UseMutationResult<void, Error, BoardOfficeForm> =>
+  useApiMutation({
+    request: (form: BoardOfficeForm, accessToken) =>
+      requestUpdateBoardOffice(boardOfficeId, form, accessToken),
+    invalidates: BOARD_SCOPE,
+    notice: { success: (form) => toOfficeSavedMessage(form.name) },
   });
-};
 
 export const useArchiveBoardOfficeMutation = (
   boardOfficeId: number,
-): UseMutationResult<void, Error, OfficeNameInput> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: () =>
-      withFreshAccessToken((accessToken) => requestArchiveBoardOffice(boardOfficeId, accessToken)),
-    onSuccess: (_result, input) => {
-      raiseNotice({ tone: 'success', message: toOfficeArchivedMessage(input.officeName) });
-    },
-    onSettled: () => {
-      refreshBoard(queryClient);
-    },
+): UseMutationResult<void, Error, OfficeNameInput> =>
+  useApiMutation({
+    request: (_input: OfficeNameInput, accessToken) =>
+      requestArchiveBoardOffice(boardOfficeId, accessToken),
+    invalidates: BOARD_SCOPE,
+    notice: { success: (input) => toOfficeArchivedMessage(input.officeName) },
   });
-};
 
 export const useRestoreBoardOfficeMutation = (
   boardOfficeId: number,
-): UseMutationResult<void, Error, OfficeNameInput> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: () =>
-      withFreshAccessToken((accessToken) => requestRestoreBoardOffice(boardOfficeId, accessToken)),
-    onSuccess: (_result, input) => {
-      raiseNotice({ tone: 'success', message: toOfficeRestoredMessage(input.officeName) });
-    },
-    onSettled: () => {
-      refreshBoard(queryClient);
-    },
+): UseMutationResult<void, Error, OfficeNameInput> =>
+  useApiMutation({
+    request: (_input: OfficeNameInput, accessToken) =>
+      requestRestoreBoardOffice(boardOfficeId, accessToken),
+    invalidates: BOARD_SCOPE,
+    notice: { success: (input) => toOfficeRestoredMessage(input.officeName) },
   });
-};
 
 export const useSetImpliedRoleMutation = (
   boardOfficeId: number,
-): UseMutationResult<void, Error, SetImpliedRoleInput> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: (input: SetImpliedRoleInput) =>
-      withFreshAccessToken((accessToken) =>
-        requestSetImpliedRole(boardOfficeId, input.impliedRoleId, accessToken),
-      ),
-    onSuccess: (_result, input) => {
-      const message = toImpliedRoleSavedMessage(input.officeName, input.impliedRoleName);
-
-      raiseNotice({ tone: 'success', message });
-    },
-    onError: (error) => {
-      const message = toWriteErrorMessage(error);
-
-      if (message !== null) {
-        raiseNotice({ tone: 'error', message });
-      }
-    },
-    onSettled: () => {
-      refreshBoard(queryClient);
+): UseMutationResult<void, Error, SetImpliedRoleInput> =>
+  useApiMutation({
+    request: (input: SetImpliedRoleInput, accessToken) =>
+      requestSetImpliedRole(boardOfficeId, input.impliedRoleId, accessToken),
+    invalidates: BOARD_SCOPE,
+    notice: {
+      success: (input) => toImpliedRoleSavedMessage(input.officeName, input.impliedRoleName),
+      failure: toWriteErrorMessage,
     },
   });
-};
-
-export interface SetOfficePublicationInput {
-  officeName: string;
-  isPublic: boolean;
-}
-
-interface BoardRollback {
-  previous: BoardResponse | undefined;
-}
-
-const applyPublication = (
-  current: BoardResponse | undefined,
-  boardOfficeId: number,
-  isPublic: boolean,
-): BoardResponse | undefined =>
-  current === undefined
-    ? undefined
-    : {
-        offices: current.offices.map((office) =>
-          office.boardOfficeId === boardOfficeId ? { ...office, isPublic } : office,
-        ),
-      };
 
 export const useSetOfficePublicationMutation = (
   boardOfficeId: number,
-): UseMutationResult<void, Error, SetOfficePublicationInput, BoardRollback> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: (input: SetOfficePublicationInput) =>
-      withFreshAccessToken((accessToken) =>
-        requestSetOfficePublication(boardOfficeId, input.isPublic, accessToken),
-      ),
-    onMutate: async (input) => {
-      await queryClient.cancelQueries({ queryKey: BOARD_QUERY_KEY });
-      const previous = queryClient.getQueryData<BoardResponse>(BOARD_QUERY_KEY);
-      queryClient.setQueryData<BoardResponse>(BOARD_QUERY_KEY, (current) =>
+): UseMutationResult<void, Error, SetOfficePublicationInput> =>
+  useApiMutation({
+    request: (input: SetOfficePublicationInput, accessToken) =>
+      requestSetOfficePublication(boardOfficeId, input.isPublic, accessToken),
+    optimistic: [
+      optimisticPatch(BOARD_QUERY_KEY, (current: BoardResponse | undefined, input) =>
         applyPublication(current, boardOfficeId, input.isPublic),
-      );
-
-      return { previous };
-    },
-    onSuccess: (_result, input) => {
-      raiseNotice({
-        tone: 'success',
-        message: toPublicationSavedMessage(input.officeName, input.isPublic),
-      });
-    },
-    onError: (error, _input, context) => {
-      queryClient.setQueryData(BOARD_QUERY_KEY, context?.previous);
-      const message = toPublicationErrorMessage(error);
-
-      if (message !== null) {
-        raiseNotice({ tone: 'error', message });
-      }
-    },
-    onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: BOARD_QUERY_KEY });
+      ),
+    ],
+    invalidates: [],
+    notice: {
+      success: (input) => toPublicationSavedMessage(input.officeName, input.isPublic),
+      failure: toPublicationErrorMessage,
     },
   });
-};
 
 export const useOpenBoardSeatMutation = (
   boardOfficeId: number,
   officeName: string,
-): UseMutationResult<CreatedBoardSeat, Error, OpenBoardSeatInput> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: (input: OpenBoardSeatInput) =>
-      withFreshAccessToken((accessToken) =>
-        requestOpenBoardSeat(
-          boardOfficeId,
-          { personId: input.personId, sinceOn: input.sinceOn },
-          accessToken,
-        ),
+): UseMutationResult<CreatedBoardSeat, Error, OpenBoardSeatInput> =>
+  useApiMutation({
+    request: (input: OpenBoardSeatInput, accessToken) =>
+      requestOpenBoardSeat(
+        boardOfficeId,
+        { personId: input.personId, sinceOn: input.sinceOn },
+        accessToken,
       ),
-    onSuccess: (_created, input) => {
-      const message = toSeatOpenedMessage(
-        input.personName,
-        officeName,
-        input.sinceOn,
-        toIsoDay(new Date()),
-      );
-
-      raiseNotice({ tone: 'success', message });
-    },
-    onSettled: () => {
-      refreshBoard(queryClient);
+    invalidates: BOARD_SCOPE,
+    notice: {
+      success: (input) =>
+        toSeatOpenedMessage(input.personName, officeName, input.sinceOn, toIsoDay(new Date())),
     },
   });
-};
 
 export const useEndBoardSeatMutation = (
   boardOfficeId: number,
-): UseMutationResult<void, Error, EndBoardSeatInput> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: (input: EndBoardSeatInput) =>
-      withFreshAccessToken((accessToken) =>
-        requestEndBoardSeat(
-          boardOfficeId,
-          { boardSeatId: input.boardSeatId, endedOn: input.endedOn },
-          accessToken,
-        ),
+): UseMutationResult<void, Error, EndBoardSeatInput> =>
+  useApiMutation({
+    request: (input: EndBoardSeatInput, accessToken) =>
+      requestEndBoardSeat(
+        boardOfficeId,
+        { boardSeatId: input.boardSeatId, endedOn: input.endedOn },
+        accessToken,
       ),
-    onSuccess: (_result, input) => {
-      const message = toSeatEndedMessage(input.personName, input.endedOn, toIsoDay(new Date()));
-
-      raiseNotice({ tone: 'success', message });
-    },
-    onSettled: () => {
-      refreshBoard(queryClient);
+    invalidates: BOARD_SCOPE,
+    notice: {
+      success: (input) => toSeatEndedMessage(input.personName, input.endedOn, toIsoDay(new Date())),
     },
   });
-};

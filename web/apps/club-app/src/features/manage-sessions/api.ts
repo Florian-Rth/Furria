@@ -1,8 +1,8 @@
-import { useKkNotice } from '@furria/ui';
-import type { QueryClient, UseMutationResult, UseQueryResult } from '@tanstack/react-query';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { CLUB_HUB_QUERY_KEY } from '@/features/club';
 import { MANAGE_HUB_QUERY_KEY } from '@/features/manage-hub';
+import { useApiMutation } from '@/lib/api/api-mutation';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import {
   toSessionCreatedMessage,
@@ -30,11 +30,11 @@ export interface RemoveSessionRecordInput {
   startYear: number;
 }
 
-const refreshSessions = (queryClient: QueryClient): void => {
-  void queryClient.invalidateQueries({ queryKey: SESSION_RECORDS_QUERY_KEY });
-  void queryClient.invalidateQueries({ queryKey: MANAGE_HUB_QUERY_KEY });
-  void queryClient.invalidateQueries({ queryKey: CLUB_HUB_QUERY_KEY });
-};
+const SESSIONS_SCOPE = [
+  SESSION_RECORDS_QUERY_KEY,
+  MANAGE_HUB_QUERY_KEY,
+  CLUB_HUB_QUERY_KEY,
+] as const;
 
 export const useSessionRecordsQuery = (): UseQueryResult<SessionRecordsResponse, Error> =>
   useQuery({
@@ -46,56 +46,33 @@ export const useCreateSessionRecordMutation = (): UseMutationResult<
   CreatedSessionRecord,
   Error,
   SessionRecordPayload
-> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: (payload: SessionRecordPayload) =>
-      withFreshAccessToken((accessToken) => requestSessionRecordCreation(payload, accessToken)),
-    onSuccess: (_created, payload) => {
-      raiseNotice({ tone: 'success', message: toSessionCreatedMessage(payload.startYear) });
-      refreshSessions(queryClient);
-    },
+> =>
+  useApiMutation({
+    request: requestSessionRecordCreation,
+    invalidates: SESSIONS_SCOPE,
+    notice: { success: (payload) => toSessionCreatedMessage(payload.startYear) },
   });
-};
 
 export const useUpdateSessionRecordMutation = (): UseMutationResult<
   void,
   Error,
   UpdateSessionRecordInput
-> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: (input: UpdateSessionRecordInput) =>
-      withFreshAccessToken((accessToken) =>
-        requestSessionRecordUpdate(input.sessionId, input.payload, accessToken),
-      ),
-    onSuccess: (_result, input) => {
-      raiseNotice({ tone: 'success', message: toSessionSavedMessage(input.payload.startYear) });
-      refreshSessions(queryClient);
-    },
+> =>
+  useApiMutation({
+    request: (input: UpdateSessionRecordInput, accessToken) =>
+      requestSessionRecordUpdate(input.sessionId, input.payload, accessToken),
+    invalidates: SESSIONS_SCOPE,
+    notice: { success: (input) => toSessionSavedMessage(input.payload.startYear) },
   });
-};
 
 export const useRemoveSessionRecordMutation = (): UseMutationResult<
   void,
   Error,
   RemoveSessionRecordInput
-> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: (input: RemoveSessionRecordInput) =>
-      withFreshAccessToken((accessToken) =>
-        requestSessionRecordRemoval(input.sessionId, accessToken),
-      ),
-    onSuccess: (_result, input) => {
-      raiseNotice({ tone: 'success', message: toSessionDeletedMessage(input.startYear) });
-      refreshSessions(queryClient);
-    },
+> =>
+  useApiMutation({
+    request: (input: RemoveSessionRecordInput, accessToken) =>
+      requestSessionRecordRemoval(input.sessionId, accessToken),
+    invalidates: SESSIONS_SCOPE,
+    notice: { success: (input) => toSessionDeletedMessage(input.startYear) },
   });
-};

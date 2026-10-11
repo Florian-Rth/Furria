@@ -1,9 +1,9 @@
-import { useKkNotice } from '@furria/ui';
 import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { PERSONS_QUERY_KEY } from '@/features/manage-persons';
 import { START_QUERY_KEY } from '@/features/start';
 import type { ToDoMarkSurface } from '@/features/to-dos';
+import { useApiMutation } from '@/lib/api/api-mutation';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import type { InvitationRoundKind } from './invitation-round-labels';
 import { toRoundSentMessage } from './invitation-round-labels';
@@ -42,20 +42,12 @@ const ROUND_REQUESTS: Record<
 
 export const useInvitationRoundMutation = (
   kind: InvitationRoundKind,
-): UseMutationResult<InvitationRoundSent, Error, void> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: () => withFreshAccessToken(ROUND_REQUESTS[kind]),
-    onSuccess: (sent) => {
-      raiseNotice({ tone: 'success', message: toRoundSentMessage(kind, sent.sentCount) });
-      void queryClient.invalidateQueries({ queryKey: MANAGE_HUB_QUERY_KEY });
-      void queryClient.invalidateQueries({ queryKey: INVITATION_ROUND_PREVIEW_QUERY_KEY });
-      void queryClient.invalidateQueries({ queryKey: PERSONS_QUERY_KEY });
-    },
+): UseMutationResult<InvitationRoundSent, Error, void> =>
+  useApiMutation({
+    request: (_input, accessToken) => ROUND_REQUESTS[kind](accessToken),
+    invalidates: [MANAGE_HUB_QUERY_KEY, INVITATION_ROUND_PREVIEW_QUERY_KEY, PERSONS_QUERY_KEY],
+    notice: { success: (_input, sent) => toRoundSentMessage(kind, sent.sentCount) },
   });
-};
 
 export const MANAGE_TO_DO_SURFACE: ToDoMarkSurface<ManageHub> = {
   queryKey: MANAGE_HUB_QUERY_KEY,

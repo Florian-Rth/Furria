@@ -1,8 +1,8 @@
-import { useKkNotice } from '@furria/ui';
-import type { QueryClient, UseMutationResult, UseQueryResult } from '@tanstack/react-query';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { CLUB_HUB_QUERY_KEY } from '@/features/club';
 import { MANAGE_HUB_QUERY_KEY } from '@/features/manage-hub';
+import { useApiMutation } from '@/lib/api/api-mutation';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import {
   toVenueArchivedMessage,
@@ -31,11 +31,7 @@ export interface UpdateVenueInput {
   form: VenueForm;
 }
 
-const refreshVenues = (queryClient: QueryClient): void => {
-  void queryClient.invalidateQueries({ queryKey: MANAGED_VENUES_QUERY_KEY });
-  void queryClient.invalidateQueries({ queryKey: MANAGE_HUB_QUERY_KEY });
-  void queryClient.invalidateQueries({ queryKey: CLUB_HUB_QUERY_KEY });
-};
+const VENUES_SCOPE = [MANAGED_VENUES_QUERY_KEY, MANAGE_HUB_QUERY_KEY, CLUB_HUB_QUERY_KEY] as const;
 
 export const useManagedVenuesQuery = (): UseQueryResult<ManagedVenuesResponse, Error> =>
   useQuery({
@@ -43,60 +39,33 @@ export const useManagedVenuesQuery = (): UseQueryResult<ManagedVenuesResponse, E
     queryFn: () => withFreshAccessToken(requestManagedVenues),
   });
 
-export const useCreateVenueMutation = (): UseMutationResult<CreatedVenue, Error, VenueForm> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: (form: VenueForm) =>
-      withFreshAccessToken((accessToken) => requestVenueCreation(form, accessToken)),
-    onSuccess: (_created, form) => {
-      raiseNotice({ tone: 'success', message: toVenueCreatedMessage(form.name) });
-      refreshVenues(queryClient);
-    },
+export const useCreateVenueMutation = (): UseMutationResult<CreatedVenue, Error, VenueForm> =>
+  useApiMutation({
+    request: requestVenueCreation,
+    invalidates: VENUES_SCOPE,
+    notice: { success: (form) => toVenueCreatedMessage(form.name) },
   });
-};
 
-export const useUpdateVenueMutation = (): UseMutationResult<void, Error, UpdateVenueInput> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: (input: UpdateVenueInput) =>
-      withFreshAccessToken((accessToken) =>
-        requestVenueUpdate(input.venueId, input.form, accessToken),
-      ),
-    onSuccess: (_result, input) => {
-      raiseNotice({ tone: 'success', message: toVenueSavedMessage(input.form.name) });
-      refreshVenues(queryClient);
-    },
+export const useUpdateVenueMutation = (): UseMutationResult<void, Error, UpdateVenueInput> =>
+  useApiMutation({
+    request: (input: UpdateVenueInput, accessToken) =>
+      requestVenueUpdate(input.venueId, input.form, accessToken),
+    invalidates: VENUES_SCOPE,
+    notice: { success: (input) => toVenueSavedMessage(input.form.name) },
   });
-};
 
-export const useArchiveVenueMutation = (): UseMutationResult<void, Error, VenueMutationInput> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: (input: VenueMutationInput) =>
-      withFreshAccessToken((accessToken) => requestVenueArchival(input.venueId, accessToken)),
-    onSuccess: (_result, input) => {
-      raiseNotice({ tone: 'success', message: toVenueArchivedMessage(input.name) });
-      refreshVenues(queryClient);
-    },
+export const useArchiveVenueMutation = (): UseMutationResult<void, Error, VenueMutationInput> =>
+  useApiMutation({
+    request: (input: VenueMutationInput, accessToken) =>
+      requestVenueArchival(input.venueId, accessToken),
+    invalidates: VENUES_SCOPE,
+    notice: { success: (input) => toVenueArchivedMessage(input.name) },
   });
-};
 
-export const useRestoreVenueMutation = (): UseMutationResult<void, Error, VenueMutationInput> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: (input: VenueMutationInput) =>
-      withFreshAccessToken((accessToken) => requestVenueRestoration(input.venueId, accessToken)),
-    onSuccess: (_result, input) => {
-      raiseNotice({ tone: 'success', message: toVenueRestoredMessage(input.name) });
-      refreshVenues(queryClient);
-    },
+export const useRestoreVenueMutation = (): UseMutationResult<void, Error, VenueMutationInput> =>
+  useApiMutation({
+    request: (input: VenueMutationInput, accessToken) =>
+      requestVenueRestoration(input.venueId, accessToken),
+    invalidates: VENUES_SCOPE,
+    notice: { success: (input) => toVenueRestoredMessage(input.name) },
   });
-};

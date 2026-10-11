@@ -5,6 +5,13 @@ export class RequestBlockedError extends Error {
   }
 }
 
+export class OfflineWriteError extends Error {
+  constructor() {
+    super('The write was not sent because the device is offline.');
+    this.name = 'OfflineWriteError';
+  }
+}
+
 export class UnauthorizedError extends Error {
   readonly status = 401;
 

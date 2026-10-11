@@ -1,5 +1,6 @@
 import type { QueryClient, UseMutationResult, UseQueryResult } from '@tanstack/react-query';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
+import { useApiMutation } from '@/lib/api/api-mutation';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import type { NewsDraftRequests } from './news-draft-session';
 import type { GalleryPickPayload, NewsCropPayload } from './requests';
@@ -58,14 +59,9 @@ export const useNewsTieCandidatesQuery = (
   });
 
 const useNewsMutation = <TInput, TResult>(
-  write: (input: TInput, accessToken: string) => Promise<TResult>,
-): UseMutationResult<TResult, Error, TInput> => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input: TInput) => withFreshAccessToken((token) => write(input, token)),
-    onSettled: () => refreshNews(queryClient),
-  });
-};
+  request: (input: TInput, accessToken: string) => Promise<TResult>,
+): UseMutationResult<TResult, Error, TInput> =>
+  useApiMutation({ request, invalidates: [NEWS_QUERY_KEY] });
 
 export const useNewsPictureCrop = (): UseMutationResult<void, Error, NewsCropPayload> =>
   useNewsMutation(requestNewsPictureCrop);

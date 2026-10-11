@@ -1,16 +1,11 @@
-import { useKkNotice } from '@furria/ui';
-import type { QueryClient, UseMutationResult, UseQueryResult } from '@tanstack/react-query';
-import {
-  keepPreviousData,
-  skipToken,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query';
+import type { KkNoticeRequest } from '@furria/ui';
+import type { QueryKey, UseMutationResult, UseQueryResult } from '@tanstack/react-query';
+import { keepPreviousData, skipToken, useQuery } from '@tanstack/react-query';
 import { CALENDAR_QUERY_KEY } from '@/features/calendar';
 import { CLUB_HUB_QUERY_KEY } from '@/features/club';
 import { GROUPS_QUERY_KEY } from '@/features/groups';
 import { START_QUERY_KEY } from '@/features/start';
+import { useApiMutation } from '@/lib/api/api-mutation';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { toAttendanceSavedMessage } from '@/lib/calendar-copy';
 import { toIsoDay } from '@/lib/day';
@@ -122,10 +117,10 @@ export interface EndAdminInput {
   endedOn: string;
 }
 
-const refreshHub = (queryClient: QueryClient, groupId: number): void => {
-  void queryClient.invalidateQueries({ queryKey: groupHubQueryKey(groupId) });
-  void queryClient.invalidateQueries({ queryKey: MY_GROUPS_QUERY_KEY });
-};
+const hubScope = (groupId: number): readonly QueryKey[] => [
+  groupHubQueryKey(groupId),
+  MY_GROUPS_QUERY_KEY,
+];
 
 export const useMyGroupsQuery = (): UseQueryResult<MyGroupsResponse, Error> =>
   useQuery({
@@ -159,33 +154,17 @@ export const useGroupCalendarQuery = (
   });
 };
 
-const refreshAnsweredEntries = async (queryClient: QueryClient): Promise<void> => {
-  await Promise.all([
-    queryClient.invalidateQueries({ queryKey: GROUPS_QUERY_KEY }),
-    queryClient.invalidateQueries({ queryKey: CALENDAR_QUERY_KEY }),
-    queryClient.invalidateQueries({ queryKey: START_QUERY_KEY }),
-  ]);
-};
-
 export const useGroupAttendanceMutation = (): UseMutationResult<
   void,
   Error,
   GroupAttendanceInput
-> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: ({ calendarEntryId, answer }: GroupAttendanceInput) =>
-      withFreshAccessToken((accessToken) =>
-        requestGroupAttendanceResponse(calendarEntryId, answer, accessToken),
-      ),
-    onSuccess: (_saved, { answer }) => {
-      raiseNotice({ tone: 'success', message: toAttendanceSavedMessage(answer) });
-    },
-    onSettled: () => refreshAnsweredEntries(queryClient),
+> =>
+  useApiMutation({
+    request: ({ calendarEntryId, answer }: GroupAttendanceInput, accessToken) =>
+      requestGroupAttendanceResponse(calendarEntryId, answer, accessToken),
+    invalidates: [GROUPS_QUERY_KEY, CALENDAR_QUERY_KEY, START_QUERY_KEY],
+    notice: { success: ({ answer }) => toAttendanceSavedMessage(answer) },
   });
-};
 
 export const usePersonSearchQuery = (
   term: string | null,
@@ -205,45 +184,23 @@ export const usePersonSearchQuery = (
 
 export const useUpdateGroupInfoMutation = (
   groupId: number,
-): UseMutationResult<void, Error, GroupInfoForm> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: (form: GroupInfoForm) =>
-      withFreshAccessToken((accessToken) => requestGroupInfoUpdate(groupId, form, accessToken)),
-    onSuccess: () => {
-      raiseNotice({ tone: 'success', message: GROUP_INFO_SAVED_MESSAGE });
-      refreshHub(queryClient, groupId);
-    },
-    onError: () => {
-      refreshHub(queryClient, groupId);
-    },
+): UseMutationResult<void, Error, GroupInfoForm> =>
+  useApiMutation({
+    request: (form: GroupInfoForm, accessToken) =>
+      requestGroupInfoUpdate(groupId, form, accessToken),
+    invalidates: hubScope(groupId),
+    notice: { success: () => GROUP_INFO_SAVED_MESSAGE },
   });
-};
 
 export const useUpdateGroupAdministrationMutation = (
   groupId: number,
-): UseMutationResult<void, Error, GroupAdministrationForm> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: (form: GroupAdministrationForm) =>
-      withFreshAccessToken((accessToken) =>
-        requestGroupAdministrationUpdate(groupId, form, accessToken),
-      ),
-    onSuccess: (_result, form) => {
-      raiseNotice({ tone: 'success', message: toGroupAdministrationSavedMessage(form.name) });
-      refreshHub(queryClient, groupId);
-      void queryClient.invalidateQueries({ queryKey: MANAGED_GROUPS_QUERY_KEY });
-      void queryClient.invalidateQueries({ queryKey: GROUPS_QUERY_KEY });
-    },
-    onError: () => {
-      refreshHub(queryClient, groupId);
-    },
+): UseMutationResult<void, Error, GroupAdministrationForm> =>
+  useApiMutation({
+    request: (form: GroupAdministrationForm, accessToken) =>
+      requestGroupAdministrationUpdate(groupId, form, accessToken),
+    invalidates: [...hubScope(groupId), MANAGED_GROUPS_QUERY_KEY, GROUPS_QUERY_KEY],
+    notice: { success: (form) => toGroupAdministrationSavedMessage(form.name) },
   });
-};
 
 export interface ArchiveGroupFromHubInput {
   name: string;
@@ -251,162 +208,109 @@ export interface ArchiveGroupFromHubInput {
 
 export const useArchiveGroupFromHubMutation = (
   groupId: number,
-): UseMutationResult<void, Error, ArchiveGroupFromHubInput> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: () =>
-      withFreshAccessToken((accessToken) => requestGroupArchivalFromHub(groupId, accessToken)),
-    onSuccess: (_result, input) => {
-      raiseNotice({ tone: 'success', message: toGroupArchivedFromHubMessage(input.name) });
-      void queryClient.invalidateQueries({ queryKey: groupHubQueryKey(groupId) });
-      void queryClient.invalidateQueries({ queryKey: MY_GROUPS_QUERY_KEY });
-      void queryClient.invalidateQueries({ queryKey: MANAGED_GROUPS_QUERY_KEY });
-      void queryClient.invalidateQueries({ queryKey: GROUPS_QUERY_KEY });
-    },
+): UseMutationResult<void, Error, ArchiveGroupFromHubInput> =>
+  useApiMutation({
+    request: (_input: ArchiveGroupFromHubInput, accessToken) =>
+      requestGroupArchivalFromHub(groupId, accessToken),
+    invalidates: [...hubScope(groupId), MANAGED_GROUPS_QUERY_KEY, GROUPS_QUERY_KEY],
+    notice: { success: (input) => toGroupArchivedFromHubMessage(input.name) },
   });
+
+const requestMembershipWithAdmin = async (
+  groupId: number,
+  input: AddMemberInput,
+  accessToken: string,
+): Promise<AddedGroupMembership> => {
+  const added = await requestAddGroupMembership(
+    groupId,
+    { personId: input.personId, joinedOn: input.joinedOn },
+    accessToken,
+  );
+
+  if (input.admin !== null) {
+    await requestAddGroupAdmin(
+      groupId,
+      { personId: input.personId, function: input.admin.function, sinceOn: input.joinedOn },
+      accessToken,
+    );
+  }
+
+  return added;
+};
+
+const toMemberAddedNotice = (input: AddMemberInput): string => {
+  const today = toIsoDay(new Date());
+
+  return input.admin === null
+    ? toMemberAddedMessage(input.personName, input.joinedOn, today)
+    : toMemberAddedAsAdminMessage(input.personName, input.joinedOn, today);
+};
+
+const toAdminEndedNotice = (input: EndAdminInput): KkNoticeRequest => {
+  const today = toIsoDay(new Date());
+
+  return input.isSelf
+    ? { tone: 'info', message: toSelfAdminEndedMessage(input.groupName, input.endedOn, today) }
+    : { tone: 'success', message: toAdminEndedMessage(input.personName, input.endedOn, today) };
 };
 
 export const useAddGroupMembershipMutation = (
   groupId: number,
-): UseMutationResult<AddedGroupMembership, Error, AddMemberInput> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: (input: AddMemberInput) =>
-      withFreshAccessToken(async (accessToken) => {
-        const added = await requestAddGroupMembership(
-          groupId,
-          { personId: input.personId, joinedOn: input.joinedOn },
-          accessToken,
-        );
-
-        if (input.admin !== null) {
-          await requestAddGroupAdmin(
-            groupId,
-            { personId: input.personId, function: input.admin.function, sinceOn: input.joinedOn },
-            accessToken,
-          );
-        }
-
-        return added;
-      }),
-    onSuccess: (_added, input) => {
-      const today = toIsoDay(new Date());
-      const message =
-        input.admin === null
-          ? toMemberAddedMessage(input.personName, input.joinedOn, today)
-          : toMemberAddedAsAdminMessage(input.personName, input.joinedOn, today);
-
-      raiseNotice({ tone: 'success', message });
-      refreshHub(queryClient, groupId);
-    },
-    onError: () => {
-      refreshHub(queryClient, groupId);
-    },
+): UseMutationResult<AddedGroupMembership, Error, AddMemberInput> =>
+  useApiMutation({
+    request: (input: AddMemberInput, accessToken) =>
+      requestMembershipWithAdmin(groupId, input, accessToken),
+    invalidates: hubScope(groupId),
+    notice: { success: toMemberAddedNotice },
   });
-};
 
 export const useEndGroupMembershipMutation = (
   groupId: number,
-): UseMutationResult<void, Error, EndMembershipInput> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: (input: EndMembershipInput) =>
-      withFreshAccessToken((accessToken) =>
-        requestEndGroupMembership(
-          groupId,
-          { groupMembershipId: input.groupMembershipId, endedOn: input.endedOn },
-          accessToken,
-        ),
+): UseMutationResult<void, Error, EndMembershipInput> =>
+  useApiMutation({
+    request: (input: EndMembershipInput, accessToken) =>
+      requestEndGroupMembership(
+        groupId,
+        { groupMembershipId: input.groupMembershipId, endedOn: input.endedOn },
+        accessToken,
       ),
-    onSuccess: (_result, input) => {
-      const message = toMembershipEndedMessage(
-        input.personName,
-        input.endedOn,
-        toIsoDay(new Date()),
-      );
-
-      raiseNotice({ tone: 'success', message });
-      refreshHub(queryClient, groupId);
-    },
-    onError: () => {
-      refreshHub(queryClient, groupId);
+    invalidates: hubScope(groupId),
+    notice: {
+      success: (input) =>
+        toMembershipEndedMessage(input.personName, input.endedOn, toIsoDay(new Date())),
     },
   });
-};
 
 export const useAddGroupAdminMutation = (
   groupId: number,
-): UseMutationResult<AddedGroupAdmin, Error, AddAdminInput> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: (input: AddAdminInput) =>
-      withFreshAccessToken((accessToken) =>
-        requestAddGroupAdmin(
-          groupId,
-          { personId: input.personId, function: input.function, sinceOn: input.sinceOn },
-          accessToken,
-        ),
+): UseMutationResult<AddedGroupAdmin, Error, AddAdminInput> =>
+  useApiMutation({
+    request: (input: AddAdminInput, accessToken) =>
+      requestAddGroupAdmin(
+        groupId,
+        { personId: input.personId, function: input.function, sinceOn: input.sinceOn },
+        accessToken,
       ),
-    onSuccess: (_added, input) => {
-      const message = toAdminAppointedMessage(
-        input.personName,
-        input.sinceOn,
-        toIsoDay(new Date()),
-      );
-
-      raiseNotice({ tone: 'success', message });
-      refreshHub(queryClient, groupId);
-    },
-    onError: () => {
-      refreshHub(queryClient, groupId);
+    invalidates: hubScope(groupId),
+    notice: {
+      success: (input) =>
+        toAdminAppointedMessage(input.personName, input.sinceOn, toIsoDay(new Date())),
     },
   });
-};
 
 export const useEndGroupAdminMutation = (
   groupId: number,
-): UseMutationResult<void, Error, EndAdminInput> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: (input: EndAdminInput) =>
-      withFreshAccessToken((accessToken) =>
-        requestEndGroupAdmin(
-          groupId,
-          { groupAdminId: input.groupAdminId, endedOn: input.endedOn },
-          accessToken,
-        ),
+): UseMutationResult<void, Error, EndAdminInput> =>
+  useApiMutation({
+    request: (input: EndAdminInput, accessToken) =>
+      requestEndGroupAdmin(
+        groupId,
+        { groupAdminId: input.groupAdminId, endedOn: input.endedOn },
+        accessToken,
       ),
-    onSuccess: (_result, input) => {
-      const today = toIsoDay(new Date());
-
-      if (input.isSelf) {
-        raiseNotice({
-          tone: 'info',
-          message: toSelfAdminEndedMessage(input.groupName, input.endedOn, today),
-        });
-      } else {
-        raiseNotice({
-          tone: 'success',
-          message: toAdminEndedMessage(input.personName, input.endedOn, today),
-        });
-      }
-      refreshHub(queryClient, groupId);
-    },
-    onError: () => {
-      refreshHub(queryClient, groupId);
-    },
+    invalidates: hubScope(groupId),
+    notice: { success: toAdminEndedNotice },
   });
-};
 
 export const trainingPreviewQueryKey = (
   groupId: number,
@@ -423,30 +327,15 @@ export interface GenerateTrainingsInput {
   instants: readonly { groupTrainingSlotId: number; startsAt: string }[];
 }
 
-const refreshCalendarEntries = (queryClient: QueryClient, groupId: number): void => {
-  void queryClient.invalidateQueries({ queryKey: groupHubQueryKey(groupId) });
-  void queryClient.invalidateQueries({ queryKey: CALENDAR_QUERY_KEY });
-  void queryClient.invalidateQueries({ queryKey: CLUB_HUB_QUERY_KEY });
-};
-
 export const useSetTrainingSlotsMutation = (
   groupId: number,
-): UseMutationResult<void, Error, readonly TrainingSlotPayload[]> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: (slots: readonly TrainingSlotPayload[]) =>
-      withFreshAccessToken((accessToken) => requestSetTrainingSlots(groupId, slots, accessToken)),
-    onSuccess: () => {
-      raiseNotice({ tone: 'success', message: RHYTHM_SAVED_MESSAGE });
-      refreshHub(queryClient, groupId);
-    },
-    onError: () => {
-      refreshHub(queryClient, groupId);
-    },
+): UseMutationResult<void, Error, readonly TrainingSlotPayload[]> =>
+  useApiMutation({
+    request: (slots: readonly TrainingSlotPayload[], accessToken) =>
+      requestSetTrainingSlots(groupId, slots, accessToken),
+    invalidates: hubScope(groupId),
+    notice: { success: () => RHYTHM_SAVED_MESSAGE },
   });
-};
 
 export const useTrainingPreviewQuery = (
   groupId: number,
@@ -467,21 +356,13 @@ export const useTrainingPreviewQuery = (
 
 export const useGenerateTrainingsMutation = (
   groupId: number,
-): UseMutationResult<GeneratedTrainings, Error, GenerateTrainingsInput> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: (input: GenerateTrainingsInput) =>
-      withFreshAccessToken((accessToken) =>
-        requestGeneratedTrainings(groupId, input.title, input.instants, accessToken),
-      ),
-    onSuccess: (written) => {
-      raiseNotice({
-        tone: 'success',
-        message: toTrainingsCreatedMessage(written.createdCount, written.skippedCount),
-      });
-      refreshCalendarEntries(queryClient, groupId);
+): UseMutationResult<GeneratedTrainings, Error, GenerateTrainingsInput> =>
+  useApiMutation({
+    request: (input: GenerateTrainingsInput, accessToken) =>
+      requestGeneratedTrainings(groupId, input.title, input.instants, accessToken),
+    invalidates: [groupHubQueryKey(groupId), CALENDAR_QUERY_KEY, CLUB_HUB_QUERY_KEY],
+    notice: {
+      success: (_input, written) =>
+        toTrainingsCreatedMessage(written.createdCount, written.skippedCount),
     },
   });
-};

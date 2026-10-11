@@ -1,6 +1,6 @@
-import { useKkNotice } from '@furria/ui';
 import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
-import { skipToken, useMutation, useQuery } from '@tanstack/react-query';
+import { skipToken, useQuery } from '@tanstack/react-query';
+import { useApiMutation } from '@/lib/api/api-mutation';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import type { AccountLockAct } from './access-actions';
 import { ACCOUNT_LOCK_COPY, toInvitationSentMessage } from './account-access-labels';
@@ -19,49 +19,36 @@ const ACCESS_STATE_POLL_MS = 2000;
 export const useMailInvitationMutation = (
   subject: AccessSubject,
   onInvited: () => void,
-): UseMutationResult<IssuedInvitation, Error, void> => {
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: () =>
-      withFreshAccessToken((accessToken) => requestMailInvitation(subject.personId, accessToken)),
-    onSuccess: () => {
-      raiseNotice({ tone: 'success', message: toInvitationSentMessage(subject.firstName) });
-      onInvited();
-    },
+): UseMutationResult<IssuedInvitation, Error, void> =>
+  useApiMutation({
+    request: (_input, accessToken) => requestMailInvitation(subject.personId, accessToken),
+    invalidates: [],
+    notice: { success: () => toInvitationSentMessage(subject.firstName) },
+    afterSuccess: onInvited,
   });
-};
 
 export const useInPersonInvitationMutation = (
   purpose: InPersonPurpose,
   personId: number,
 ): UseMutationResult<InPersonInvitation, Error, void> =>
-  useMutation({
-    mutationFn: () =>
-      withFreshAccessToken((accessToken) =>
-        requestInPersonInvitation(purpose, personId, accessToken),
-      ),
+  useApiMutation({
+    request: (_input, accessToken) => requestInPersonInvitation(purpose, personId, accessToken),
+    invalidates: [],
   });
 
 export const useAccountLockMutation = (
   subject: AccessSubject,
   act: AccountLockAct,
   onLocked: () => void,
-): UseMutationResult<void, Error, void> => {
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: async () => {
-      await withFreshAccessToken((accessToken) =>
-        requestAccountDisabled(subject.personId, act === 'disable', accessToken),
-      );
+): UseMutationResult<void, Error, void> =>
+  useApiMutation({
+    request: async (_input, accessToken) => {
+      await requestAccountDisabled(subject.personId, act === 'disable', accessToken);
     },
-    onSuccess: () => {
-      raiseNotice({ tone: 'success', message: ACCOUNT_LOCK_COPY[act].done(subject.firstName) });
-      onLocked();
-    },
+    invalidates: [],
+    notice: { success: () => ACCOUNT_LOCK_COPY[act].done(subject.firstName) },
+    afterSuccess: onLocked,
   });
-};
 
 const accessStateQueryKey = (personId: number): readonly [string, string, number, string] => [
   'manage',
