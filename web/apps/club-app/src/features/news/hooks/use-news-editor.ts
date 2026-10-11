@@ -2,7 +2,7 @@ import { useKkNotice } from '@furria/ui';
 import { useNavigate } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
-import { NEWS_PATH, useMeQuery } from '@/features/session';
+import { MANAGING_LOGIN_NAME, NEWS_PATH, useMeQuery } from '@/features/session';
 import { isNotFoundError, toQueryErrorMessage } from '@/lib/query-error';
 import {
   useNewsPostCreation,
@@ -16,7 +16,7 @@ import {
 } from '../api';
 import { ACTION_FAILED, PUBLISH_FAILED } from '../editor-copy';
 import { HUB_ERROR_MESSAGES } from '../hub-copy';
-import { MANAGING_LOGIN_NAME, NEW_POST_ID, NEWS_EDITOR_ROUTE } from '../news-copy';
+import { NEW_POST_ID, NEWS_EDITOR_ROUTE } from '../news-copy';
 import { revealNewsField } from '../news-fields';
 import {
   changedPartsOf,
@@ -30,7 +30,7 @@ import {
 } from '../news-lifecycle';
 import { latestMomentOf, SaveFailedError } from '../news-saving';
 import type { SaveState } from '../press-bar-facts';
-import { isPressBusy, pressKindOf } from '../press-run';
+import { pressKindOf } from '../press-kind';
 import type { NewsPostDetails } from '../schemas';
 import type {
   NewsFields,
@@ -43,8 +43,8 @@ import type {
   NewsVersionPart,
 } from '../types';
 import { useNewsAutosave } from './use-news-autosave';
-import type { PressRun } from './use-press-run';
-import { usePressRun } from './use-press-run';
+import type { NewsPress } from './use-news-press';
+import { useNewsPress } from './use-news-press';
 
 export type EditorDialog = 'withdraw' | 'discard' | 'delete';
 
@@ -78,7 +78,7 @@ export interface NewsEditor {
   liveKey: number;
   withdrawKey: number;
   dialog: EditorDialogState | null;
-  press: PressRun;
+  press: NewsPress;
   update: (patch: Partial<NewsFields>) => void;
   showUpload: (picture: NewsPicture | null) => void;
   settlePicture: (job: (newsPostId: number) => Promise<void>) => Promise<void>;
@@ -265,7 +265,8 @@ export const useNewsEditor = (routePostId: string): NewsEditor => {
     autosave.forgetSavedWhileLive();
   };
 
-  const press = usePressRun({
+  const press = useNewsPress({
+    signer: signerName,
     onPublished: () => {
       setHeldPost(null);
       if (postId !== null) {
@@ -297,7 +298,7 @@ export const useNewsEditor = (routePostId: string): NewsEditor => {
       }
       return;
     }
-    if (postId === null || isSettling(version.picture) || isPressBusy(press.phase)) {
+    if (postId === null || isSettling(version.picture) || press.isBusy) {
       return;
     }
     setFlagged([]);
@@ -335,7 +336,7 @@ export const useNewsEditor = (routePostId: string): NewsEditor => {
   };
 
   const shown = showsLive && live !== null ? live : version;
-  const isPressing = isPressBusy(press.phase);
+  const isPressing = press.isBusy;
 
   return {
     sceneKey: `news-editor-${editSession}`,

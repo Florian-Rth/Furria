@@ -1,4 +1,5 @@
 import type { KkBannerState, KkProseMentionTone } from '@furria/ui';
+import { WEBSITE_HOST } from '@/lib/publish-copy';
 import {
   ADDRESS_FIXED,
   ADDRESS_PENDING,
@@ -7,7 +8,7 @@ import {
   BYLINE_DRAFT,
 } from '../editor-copy';
 import { mentionTonesOf } from '../mentionables';
-import { CHANGED_MARK, MISSING_MARK, PUBLIC_NEWS_PATH, WEBSITE_HOST } from '../news-copy';
+import { CHANGED_MARK, MISSING_MARK, PUBLIC_NEWS_PATH } from '../news-copy';
 import { longDateOf } from '../news-dates';
 import type { PartMark } from '../part-marks';
 import { partMarkOf } from '../part-marks';

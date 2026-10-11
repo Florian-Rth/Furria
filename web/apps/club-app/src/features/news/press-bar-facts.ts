@@ -1,6 +1,6 @@
 import type { KkPressLineTone, KkReadinessSlot, KkRegisterMarkState } from '@furria/ui';
-import type { PressKind } from './press-run';
-import { STAGE_BEFORE_PRESS } from './press-run';
+import type { PressKind } from './press-kind';
+import { STAGE_BEFORE_PRESS } from './press-kind';
 import type { NewsRequirement, NewsStage } from './types';
 
 export const REGISTER_STATES: Record<NewsStage, KkRegisterMarkState> = {

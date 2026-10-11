@@ -8,7 +8,9 @@ export const KK_PRESS_BEATS_MS = {
   stamp: 900,
   slip: 420,
   rain: 2400,
-  hold: 700,
+  rainFade: 700,
+  stampShown: 2800,
+  stampLeave: 450,
 } as const;
 
 export const isKkPressBusy = (phase: KkPressPhase): boolean =>

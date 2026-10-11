@@ -3,7 +3,7 @@ import type { CSSObject, Theme } from '@mui/material/styles';
 import { motion } from 'motion/react';
 import type { FC } from 'react';
 import { kkTokens } from '../../../tokens';
-import type { KkPressPhase } from '../../press-beats';
+import type { KkPressPhase } from '../logic/press-beats';
 import { ROLL_TRANSITION } from '../logic/press-motion';
 
 const rollerPaint = (theme: Theme): CSSObject => {

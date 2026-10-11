@@ -1,16 +1,20 @@
+import type { KkPublishCeremonyRun, KkPublishStamp } from '@furria/ui';
+import { useKkPublishCeremony } from '@furria/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 import type { CalendarDayTime } from '@/features/calendar';
 import { toEndKeptInStep } from '@/features/calendar';
+import { useSignerName } from '@/features/session';
 import { toLandingKey } from '@/features/write';
 import { toFormFailures } from '@/lib/api/api-failures';
+import { PUBLISHED_STAMP, websiteAddressOf } from '@/lib/publish-copy';
 import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useCreateEventMutation, useUpdateEventMutation } from '../api';
 import { toEventFormValues, toEventPayload } from '../event-form';
-import type { EventDetails, EventForm } from '../schemas';
+import type { EventDetails, EventForm, WrittenEvent } from '../schemas';
 import { EventFormSchema } from '../schemas';
 
 const FIELD_NAMES = [
@@ -24,6 +28,7 @@ const FIELD_NAMES = [
 const LANDING_KIND = 'event';
 const FIELD_EDIT = { shouldDirty: true, shouldValidate: true } as const;
 const NO_DAY = '';
+const PUBLIC_EVENTS_PATH = '/events/';
 
 export interface EventEditorControl {
   form: UseFormReturn<EventForm>;
@@ -42,6 +47,7 @@ export interface EventEditorControl {
   isDirty: boolean;
   canSubmit: boolean;
   isSaving: boolean;
+  ceremony: KkPublishCeremonyRun<WrittenEvent>;
   rejection: string | null;
   submit: () => void;
 }
@@ -52,6 +58,7 @@ export const useEventEditor = (event: EventDetails | null): EventEditorControl =
   const createMutation = useCreateEventMutation();
   const updateMutation = useUpdateEventMutation();
   const goBackTo = useGoBackTo();
+  const signer = useSignerName();
 
   const form = useForm<EventForm>({
     resolver: zodResolver(EventFormSchema),
@@ -82,15 +89,27 @@ export const useEventEditor = (event: EventDetails | null): EventEditorControl =
     setRejection(failures.footer ?? fallback);
   };
 
+  const stampOf = (written: WrittenEvent, stampedAt: string): KkPublishStamp => ({
+    title: PUBLISHED_STAMP,
+    signer,
+    at: stampedAt,
+    address: websiteAddressOf(`${PUBLIC_EVENTS_PATH}${written.eventId}`),
+  });
+
+  const ceremony = useKkPublishCeremony({
+    stampOf,
+    onFinished: (written) => landOn(written.eventId),
+    onFailed: showFailure,
+  });
+
+  const isPublished = ceremony.stamp !== null;
+
   const handleSubmit = form.handleSubmit((submitted) => {
     setRejection(null);
     const payload = toEventPayload(submitted);
 
     if (event === null) {
-      createMutation.mutate(payload, {
-        onSuccess: (written) => landOn(written.eventId),
-        onError: showFailure,
-      });
+      ceremony.start(() => createMutation.mutateAsync(payload));
       return;
     }
 
@@ -156,7 +175,8 @@ export const useEventEditor = (event: EventDetails | null): EventEditorControl =
     isEditing: event !== null,
     isDirty,
     canSubmit: isValid,
-    isSaving: createMutation.isPending || updateMutation.isPending,
+    isSaving: ceremony.isBusy || isPublished || updateMutation.isPending,
+    ceremony,
     rejection,
     submit: () => {
       void handleSubmit();

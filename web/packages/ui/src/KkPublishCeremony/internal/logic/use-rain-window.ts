@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
-import { KK_PRESS_BEATS_MS } from '../../press-beats';
-
-const FADE_MS = 700;
+import { KK_PRESS_BEATS_MS } from './press-beats';
 
 export type RainState = 'dry' | 'raining' | 'fading';
 
@@ -18,7 +16,7 @@ export const useRainWindow = (fireKey: number): RainState => {
     }, KK_PRESS_BEATS_MS.rain);
     const stop = window.setTimeout(() => {
       setRain('dry');
-    }, KK_PRESS_BEATS_MS.rain + FADE_MS);
+    }, KK_PRESS_BEATS_MS.rain + KK_PRESS_BEATS_MS.rainFade);
     return () => {
       window.clearTimeout(fade);
       window.clearTimeout(stop);

@@ -3,7 +3,7 @@ import type { CSSObject, Theme } from '@mui/material/styles';
 import { motion } from 'motion/react';
 import type { FC } from 'react';
 import { kkTokens } from '../../../tokens';
-import { KK_PRESS_BEATS_MS } from '../../press-beats';
+import { KK_PRESS_BEATS_MS } from '../logic/press-beats';
 
 export type CutEdge = 'top' | 'right' | 'bottom' | 'left';
 

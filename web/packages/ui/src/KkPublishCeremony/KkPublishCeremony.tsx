@@ -2,37 +2,37 @@ import Box from '@mui/material/Box';
 import { motion } from 'motion/react';
 import type { FC, ReactNode } from 'react';
 import { KkVisuallyHidden } from '../KkVisuallyHidden';
+import { announcementOf } from './internal/logic/ceremony-announcement';
+import { isKkPressBusy } from './internal/logic/press-beats';
 import { sheetMotionOf } from './internal/logic/press-motion';
 import { KkPressConfetti } from './internal/ui/KkPressConfetti';
 import { KkPressCut } from './internal/ui/KkPressCut';
 import { KkPressPlates } from './internal/ui/KkPressPlates';
 import { KkPressRoller } from './internal/ui/KkPressRoller';
-import type { KkPressPhase } from './press-beats';
-import { isKkPressBusy } from './press-beats';
+import { KkPressStamp } from './internal/ui/KkPressStamp';
+import type { KkPublishAnnouncements } from './publish-stamp';
+import type { KkPublishCeremonyStage } from './use-publish-ceremony';
 
-interface KkPressStageProps {
-  phase: KkPressPhase;
-  failed: boolean;
-  runKey: number;
-  announcement: string;
-  stamp?: ReactNode;
+interface KkPublishCeremonyProps {
+  stage: KkPublishCeremonyStage;
+  announcements: KkPublishAnnouncements;
   children: ReactNode;
 }
 
-export const KkPressStage: FC<KkPressStageProps> = ({
-  phase,
-  failed,
-  runKey,
-  announcement,
-  stamp,
+export const KkPublishCeremony: FC<KkPublishCeremonyProps> = ({
+  stage,
+  announcements,
   children,
 }) => {
+  const { phase, failed, runKey } = stage;
   const busy = isKkPressBusy(phase);
+  const announcement = announcementOf(stage, announcements);
+  const stamp = stage.stamp === null ? null : <KkPressStamp key={runKey} stamp={stage.stamp} />;
 
   return (
     <Box
       component={motion.div}
-      data-kk-press-stage
+      data-kk-publish-ceremony
       animate={sheetMotionOf(phase, failed)}
       sx={{ position: 'relative', minWidth: 0 }}
     >

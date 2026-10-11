@@ -1,7 +1,7 @@
 import Box from '@mui/material/Box';
 import { motion } from 'motion/react';
 import type { FC } from 'react';
-import type { KkPressPhase } from '../../press-beats';
+import type { KkPressPhase } from '../logic/press-beats';
 import type { CutEdge } from './KkPressCutEdge';
 import { KkPressCutEdge } from './KkPressCutEdge';
 
