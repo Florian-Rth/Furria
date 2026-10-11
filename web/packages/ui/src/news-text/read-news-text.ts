@@ -1,3 +1,4 @@
+import { newsMentionTargetOf } from './news-mention-key';
 import type { NewsBlock, NewsInline } from './news-text-model';
 import {
   BOLD_MARKER,
@@ -6,7 +7,6 @@ import {
   isEscapeAt,
   isWebAddress,
   LINE_BREAK,
-  mentionTargetOf,
   opensTagAt,
 } from './news-text-syntax';
 
@@ -119,7 +119,7 @@ const stepAt = (
   }
   if (source[index] === '@' && source[index + 1] === '[') {
     const bracket = bracketAt(source, index + 1);
-    const target = bracket === null ? null : mentionTargetOf(bracket.target);
+    const target = bracket === null ? null : newsMentionTargetOf(bracket.target);
     if (bracket !== null && target !== null) {
       inlines.push({ kind: 'mention', mention: { ...target, label: bracket.label }, bold });
       return { next: bracket.end, bold };

@@ -1,5 +1,5 @@
+import type { NewsTextBlockKind } from './news-text-editor';
 import type { TeaserSurface } from './teaser-cuts';
-import type { TextBlockKind } from './text-commands';
 import type { NewsMentionKind } from './types';
 
 export const NEW_POST_TITLE = 'Neue Meldung';
@@ -27,7 +27,7 @@ export const TEASER_CUT_WORDS: Record<TeaserSurface, string> = {
 };
 
 export const RAIL_LABEL = 'Format';
-export const BLOCK_WORDS: Record<TextBlockKind, string> = {
+export const BLOCK_WORDS: Record<NewsTextBlockKind, string> = {
   paragraph: 'Absatz',
   heading: 'Zwischenüberschrift',
   list: 'Liste',

@@ -1,3 +1,4 @@
+import { newsMentionKeyOf } from './news-mention-key';
 import type { NewsBlock, NewsInline } from './news-text-model';
 import {
   BOLD_MARKER,
@@ -65,8 +66,7 @@ const guardBracketOpener = (line: string): string =>
 
 const markupOf = (inline: NewsInline): string => {
   if (inline.kind === 'mention') {
-    const { kind, id, label } = inline.mention;
-    return `@[${escapeMarkup(label)}](${kind}:${id})`;
+    return `@[${escapeMarkup(inline.mention.label)}](${newsMentionKeyOf(inline.mention)})`;
   }
   if (inline.href === null) {
     return escapeMarkup(inline.text);
