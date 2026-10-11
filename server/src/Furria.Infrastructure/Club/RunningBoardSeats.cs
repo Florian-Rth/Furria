@@ -38,14 +38,7 @@ public sealed class RunningBoardSeats
         if (_readFor == today)
             return _seats;
 
-        _seats = await _dbContext
-            .BoardSeats.AsNoTracking()
-            .Where(RunningOn(today))
-            .OrderBy(seat => seat.BoardOffice!.SortOrder)
-            .ThenBy(seat => EF.Functions.Collate(seat.Person!.LastName, GermanCollation.Name))
-            .ThenBy(seat => EF.Functions.Collate(seat.Person!.FirstName, GermanCollation.Name))
-            .ThenBy(seat => seat.PersonId)
-            .Select(SeatProjection)
+        _seats = await InBoardOrder(_dbContext.BoardSeats.AsNoTracking().Where(RunningOn(today)))
             .ToListAsync(ct);
         _readFor = today;
 
@@ -60,6 +53,15 @@ public sealed class RunningBoardSeats
     [Pure]
     public static Expression<Func<BoardSeat, bool>> RunningOn(DateOnly today) =>
         seat => seat.SinceOn <= today && (seat.UntilOn == null || seat.UntilOn >= today);
+
+    [Pure]
+    public static IQueryable<RunningBoardSeat> InBoardOrder(IQueryable<BoardSeat> seats) =>
+        seats
+            .OrderBy(seat => seat.BoardOffice!.SortOrder)
+            .ThenBy(seat => EF.Functions.Collate(seat.Person!.LastName, GermanCollation.Name))
+            .ThenBy(seat => EF.Functions.Collate(seat.Person!.FirstName, GermanCollation.Name))
+            .ThenBy(seat => seat.PersonId)
+            .Select(SeatProjection);
 
     [Pure]
     private static IReadOnlyDictionary<int, string> ToOfficeNames(

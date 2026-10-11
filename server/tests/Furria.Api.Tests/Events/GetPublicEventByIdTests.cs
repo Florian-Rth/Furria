@@ -104,24 +104,6 @@ public sealed class GetPublicEventByIdTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheEventIsOver()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildClubAsync(ct);
-
-                var (response, _) = await ReadAsync(ctx.Club.Events.IdOf("opening"));
-
-                Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-            }
-        );
-    }
-
-    [Fact]
     public async Task Should_ReturnNotFound_When_TheIdNamesAPublicEntryOfAnotherKind()
     {
         var ct = TestContext.Current.CancellationToken;

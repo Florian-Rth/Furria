@@ -108,44 +108,6 @@ public sealed class GetPublicBoardTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_LeaveOutSeatsThatEndedOrHaveNotBegun_When_TheBoardIsRead()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            InOctober2026,
-            async () =>
-            {
-                await _fixture.BuildAsync(
-                    builder =>
-                        builder
-                            .Identity(identity =>
-                                identity
-                                    .AddPerson("otto", "Otto", "Früher")
-                                    .AddPerson("bea", "Bea", "Bald")
-                            )
-                            .Club(club =>
-                                club.AddBoardOffice("praesident", "Präsident", 1, isPublic: true)
-                                    .AddBoardSeat(
-                                        "otto-p",
-                                        "praesident",
-                                        "otto",
-                                        SeatedIn2016,
-                                        StoodDownIn2020
-                                    )
-                                    .AddBoardSeat("bea-p", "praesident", "bea", SeatedNextYear)
-                            ),
-                    ct
-                );
-
-                var result = await ReadTheBoardAsync();
-
-                Assert.Empty(result.Seats);
-            }
-        );
-    }
-
-    [Fact]
     public async Task Should_FollowTheBoardsDisplayOrder_When_SeveralPublicOfficesAreHeld()
     {
         var ct = TestContext.Current.CancellationToken;

@@ -6,6 +6,7 @@ using Furria.Core.Club;
 using Furria.Core.Events;
 using Furria.Infrastructure.Gallery;
 using Furria.Infrastructure.Persistence;
+using Furria.Infrastructure.Public;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Events;
@@ -22,11 +23,13 @@ public sealed class EventService
     private const string NotCancelledMessage = "Diese Veranstaltung ist nicht abgesagt.";
 
     private readonly AppDbContext _dbContext;
+    private readonly PublicFace _publicFace;
     private readonly TimeProvider _timeProvider;
 
-    public EventService(AppDbContext dbContext, TimeProvider timeProvider)
+    public EventService(AppDbContext dbContext, PublicFace publicFace, TimeProvider timeProvider)
     {
         _dbContext = dbContext;
+        _publicFace = publicFace;
         _timeProvider = timeProvider;
     }
 
@@ -109,8 +112,8 @@ public sealed class EventService
     {
         var now = _timeProvider.GetUtcNow();
 
-        return await ShownEvents(now)
-            .OrderBy(row => row.CalendarEntry!.StartsAt)
+        return await _publicFace
+            .Events.OrderBy(row => row.CalendarEntry!.StartsAt)
             .ThenBy(row => row.CalendarEntryId)
             .Select(PublicSummaryAt(now))
             .ToListAsync(ct);
@@ -120,8 +123,8 @@ public sealed class EventService
     {
         var now = _timeProvider.GetUtcNow();
 
-        return await ShownEvents(now)
-            .Where(row => row.CalendarEntryId == eventId)
+        return await _publicFace
+            .Events.Where(row => row.CalendarEntryId == eventId)
             .Select(PublicDetailsAt(now))
             .SingleOrDefaultAsync(ct);
     }
@@ -358,9 +361,6 @@ public sealed class EventService
         DateTimeOffset startsAt,
         TimeOnly? doorsOpenAt
     ) => doorsOpenAt is { } time ? ClubClock.At(ClubClock.DayOf(startsAt), time) : null;
-
-    private IQueryable<Event> ShownEvents(DateTimeOffset now) =>
-        _dbContext.Events.AsNoTracking().Where(PublicEvents.IsShownAt(now));
 
     private Task<CalendarEntry?> TrackedEventEntryAsync(int eventId, CancellationToken ct) =>
         _dbContext

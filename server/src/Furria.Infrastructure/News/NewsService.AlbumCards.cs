@@ -16,10 +16,16 @@ public sealed partial class NewsService
         if (albumIds.Count == 0)
             return new Dictionary<int, AlbumCard>();
 
-        var chosenCovers = await _dbContext
+        var publishedAlbums = _publicFace.Albums;
+        var albums = await _dbContext
             .Albums.AsNoTracking()
             .Where(album => albumIds.Contains(album.Id))
-            .ToDictionaryAsync(album => album.Id, album => album.CoverMediaItemId, ct);
+            .Select(album => new CardAlbumRow(
+                album.Id,
+                album.CoverMediaItemId,
+                publishedAlbums.Any(published => published.Id == album.Id)
+            ))
+            .ToListAsync(ct);
         var selection = (
             await _dbContext
                 .MediaItems.AsNoTracking()
@@ -40,16 +46,17 @@ public sealed partial class NewsService
                 .ToListAsync(ct)
         ).ToLookup(photo => photo.AlbumId);
 
-        return chosenCovers.ToDictionary(
-            album => album.Key,
-            album => CardOf(album.Value, [.. selection[album.Key]])
+        return albums.ToDictionary(
+            album => album.AlbumId,
+            album => CardOf(album, [.. selection[album.AlbumId]])
         );
     }
 
-    private AlbumCard CardOf(int? chosenCoverId, IReadOnlyList<SelectedPhoto> selection) =>
+    private AlbumCard CardOf(CardAlbumRow album, IReadOnlyList<SelectedPhoto> selection) =>
         new(
+            album.IsPublished,
             selection.Count,
-            CoverIdOf(chosenCoverId, selection) is { } coverId
+            CoverIdOf(album.CoverMediaItemId, selection) is { } coverId
                 ? _pictures.GalleryPhotoOf(coverId)
                 : null
         );
@@ -70,14 +77,16 @@ public sealed partial class NewsService
             : new NewsAlbumTie(
                 album.AlbumId,
                 album.Title,
-                album.IsPublished,
+                cards.GetValueOrDefault(album.AlbumId)?.IsPublished ?? false,
                 cards.GetValueOrDefault(album.AlbumId)?.PhotoCount ?? 0,
                 cards.GetValueOrDefault(album.AlbumId)?.Cover
             );
 
-    private sealed record AlbumRef(int AlbumId, string Title, bool IsPublished);
+    private sealed record AlbumRef(int AlbumId, string Title);
 
-    private sealed record AlbumCard(int PhotoCount, PictureDetails? Cover);
+    private sealed record CardAlbumRow(int AlbumId, int? CoverMediaItemId, bool IsPublished);
+
+    private sealed record AlbumCard(bool IsPublished, int PhotoCount, PictureDetails? Cover);
 
     private sealed record SelectedPhoto(int AlbumId, int MediaItemId, int Position);
 }

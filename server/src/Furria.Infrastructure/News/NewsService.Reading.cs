@@ -31,13 +31,7 @@ public sealed partial class NewsService
                         : post.Event.CalendarEntry.Venue.Name,
                     post.Event.CancelledAt != null
                 ),
-            post.Album == null
-                ? null
-                : new AlbumRef(
-                    post.Album.Id,
-                    post.Album.Title,
-                    post.Album.PublishedAt != null && post.Album.BinnedAt == null
-                ),
+            post.Album == null ? null : new AlbumRef(post.Album.Id, post.Album.Title),
             post.Picture == null
                 ? null
                 : new MediaPictureRow(
@@ -66,11 +60,7 @@ public sealed partial class NewsService
                 ),
             post.PendingAlbum == null
                 ? null
-                : new AlbumRef(
-                    post.PendingAlbum.Id,
-                    post.PendingAlbum.Title,
-                    post.PendingAlbum.PublishedAt != null && post.PendingAlbum.BinnedAt == null
-                ),
+                : new AlbumRef(post.PendingAlbum.Id, post.PendingAlbum.Title),
             post.PendingPicture == null
                 ? null
                 : new MediaPictureRow(
