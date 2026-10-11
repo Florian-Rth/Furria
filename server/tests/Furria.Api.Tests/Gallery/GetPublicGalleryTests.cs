@@ -22,7 +22,7 @@ public sealed class GetPublicGalleryTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ListOnlyPublishedAlbumsBySessionNewestFirst_When_AVisitorAsks()
+    public async Task Should_ListOnlyPublishedAlbumsNewestFirst_When_AVisitorAsks()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(Gallery(), ct);
@@ -33,15 +33,12 @@ public sealed class GetPublicGalleryTests : IClassFixture<ApiTestFixture>
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal(
-            [(2025, 67), (2024, (int?)null)],
-            result.Sessions.Select(session => (session.SessionStartYear, session.SessionNumber))
-        );
-        Assert.Equal(
             [
-                [ctx.Gallery.Albums.IdOf("gala"), ctx.Gallery.Albums.IdOf("parade")],
-                [ctx.Gallery.Albums.IdOf("old")],
+                ctx.Gallery.Albums.IdOf("gala"),
+                ctx.Gallery.Albums.IdOf("parade"),
+                ctx.Gallery.Albums.IdOf("old"),
             ],
-            result.Sessions.Select(session => session.Albums.Select(album => album.AlbumId))
+            result.Sessions.SelectMany(session => session.Albums).Select(album => album.AlbumId)
         );
     }
 
@@ -73,8 +70,7 @@ public sealed class GetPublicGalleryTests : IClassFixture<ApiTestFixture>
         builder =>
             builder
                 .Club(club =>
-                    club.AddSession("2025", 2025, number: 67)
-                        .AddCalendarEntry("gala", "Prunksitzung", Gala)
+                    club.AddCalendarEntry("gala", "Prunksitzung", Gala)
                         .AddCalendarEntry("parade", "Umzug", Parade)
                 )
                 .Gallery(gallery =>

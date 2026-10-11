@@ -1,6 +1,7 @@
 import type { KkPhotoOrientation } from '@furria/ui';
 import { toPictureSourceSet } from '@furria/ui';
 import type { LinkProps } from '@tanstack/react-router';
+import type { NumberedSession } from '@/lib/api/session-section';
 import { sessionAt } from '@/lib/club';
 import { formatLongDate } from '@/lib/date';
 import { buildIdSlug } from '@/lib/id-slug';
@@ -10,7 +11,6 @@ import type {
   AlbumSummary,
   GalleryPhoto,
   GallerySection,
-  GallerySession,
 } from '@/lib/public-gallery/schemas';
 
 export type PhotoOrientation = KkPhotoOrientation;
@@ -98,14 +98,14 @@ export const buildAlbumHref = (album: { albumId: number; title: string }): strin
 export const buildPhotoSourceSet = (photo: GalleryPhoto): string =>
   toPictureSourceSet(photo, photo.aspect);
 
-export const buildSessionLabel = (session: GallerySession): string =>
+export const buildSessionLabel = (session: NumberedSession): string =>
   session.number === null
     ? `Session ${session.yearsLabel}`
     : `${session.number}. Session ${session.yearsLabel}`;
 
 interface AlbumMoment {
   entryStartsAt: string | null;
-  session: GallerySession;
+  session: NumberedSession;
 }
 
 export const buildAlbumMeta = (album: AlbumMoment): string =>
@@ -181,7 +181,7 @@ export const selectNextAlbum = (
 };
 
 export interface AlbumSessionGroup {
-  session: GallerySession;
+  session: NumberedSession;
   albums: AlbumSummary[];
 }
 

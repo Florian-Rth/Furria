@@ -44,9 +44,7 @@ public sealed partial class NewsService
             .Where(IsLive)
             .Select(PublicPostProjection)
             .ToListAsync(ct);
-        var sessionNumbers = await _dbContext
-            .Sessions.AsNoTracking()
-            .ToDictionaryAsync(session => session.StartYear, session => session.Number, ct);
+        var sessionNumbers = await _dbContext.SessionNumbersAsync(ct);
 
         return PublicSectionsOf(posts, sessionNumbers);
     }
@@ -219,23 +217,24 @@ public sealed partial class NewsService
     [Pure]
     private static IReadOnlyList<PublicNewsSection> PublicSectionsOf(
         IReadOnlyList<PublicPostRow> posts,
-        IReadOnlyDictionary<int, int?> sessionNumbers
+        SessionNumbers sessionNumbers
     ) =>
         [
-            .. posts
-                .GroupBy(post => ClubSession.YearOf(ClubClock.DayOf(post.PublishedAt)))
-                .OrderByDescending(section => section.Key)
-                .Select(section => new PublicNewsSection
-                {
-                    SessionStartYear = section.Key,
-                    SessionNumber = sessionNumbers.GetValueOrDefault(section.Key),
-                    Posts =
-                    [
-                        .. section
+            .. SessionSections
+                .DatedOf(
+                    posts,
+                    post => SessionDate.At(post.PublishedAt),
+                    sessionNumbers,
+                    section =>
+                        section
                             .OrderByDescending(post => post.PublishedAt)
                             .ThenByDescending(post => post.NewsPostId)
-                            .Select(PublicSummaryOf),
-                    ],
+                )
+                .Select(section => new PublicNewsSection
+                {
+                    SessionStartYear = section.SessionStartYear,
+                    SessionNumber = section.SessionNumber,
+                    Posts = [.. section.Items.Select(PublicSummaryOf)],
                 }),
         ];
 
