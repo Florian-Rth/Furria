@@ -5,6 +5,7 @@ using Furria.Application.News;
 using Furria.Core.Club;
 using Furria.Core.Media;
 using Furria.Core.News;
+using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Media;
 using Microsoft.EntityFrameworkCore;
 
@@ -112,9 +113,7 @@ public sealed partial class NewsService
     public async Task<IReadOnlyList<NewsSection>> GetHubAsync(CancellationToken ct)
     {
         var rows = await _dbContext.NewsPosts.AsNoTracking().Select(PostProjection).ToListAsync(ct);
-        var sessionNumbers = await _dbContext
-            .Sessions.AsNoTracking()
-            .ToDictionaryAsync(session => session.StartYear, session => session.Number, ct);
+        var sessionNumbers = await _dbContext.SessionNumbersAsync(ct);
 
         return SectionsOf([.. rows.Select(SummaryOf)], sessionNumbers);
     }
@@ -205,32 +204,28 @@ public sealed partial class NewsService
     [Pure]
     private static IReadOnlyList<NewsSection> SectionsOf(
         IReadOnlyList<NewsPostSummary> posts,
-        IReadOnlyDictionary<int, int?> sessionNumbers
+        SessionNumbers sessionNumbers
     ) =>
         [
-            .. posts
-                .GroupBy(post => SessionYearOf(post.PublishedAt))
-                .OrderBy(section => section.Key is not null)
-                .ThenByDescending(section => section.Key)
-                .Select(section => new NewsSection
-                {
-                    SessionStartYear = section.Key,
-                    SessionNumber = section.Key is { } year
-                        ? sessionNumbers.GetValueOrDefault(year)
-                        : null,
-                    Posts =
-                    [
-                        .. section
+            .. SessionSections
+                .Of(
+                    posts,
+                    post => SessionDate.At(post.PublishedAt),
+                    sessionNumbers,
+                    UndatedSection.First,
+                    section =>
+                        section
                             .OrderByDescending(post => post.PublishedAt)
                             .ThenByDescending(post => post.UpdatedAt)
-                            .ThenByDescending(post => post.NewsPostId),
-                    ],
+                            .ThenByDescending(post => post.NewsPostId)
+                )
+                .Select(section => new NewsSection
+                {
+                    SessionStartYear = section.SessionStartYear,
+                    SessionNumber = section.SessionNumber,
+                    Posts = section.Items,
                 }),
         ];
-
-    [Pure]
-    private static int? SessionYearOf(DateTimeOffset? publishedAt) =>
-        publishedAt is { } at ? ClubSession.YearOf(ClubClock.DayOf(at)) : null;
 
     private sealed record PostRow(
         int NewsPostId,

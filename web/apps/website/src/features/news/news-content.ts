@@ -1,6 +1,7 @@
 import type { KkNewsCategory, KkNewsStripPhoto, KkNewsTone } from '@furria/ui';
 import { newsReadingMinutesOf } from '@furria/ui/news-text';
 import type { LinkProps } from '@tanstack/react-router';
+import type { NumberedSession } from '@/lib/api/session-section';
 import { formatClockTime, formatLongDate, formatWeekdayAndFullDate } from '@/lib/date';
 import type {
   NewsAlbum,
@@ -9,7 +10,6 @@ import type {
   NewsEvent,
   NewsPost,
   NewsSection,
-  NewsSession,
 } from '@/lib/public-news/schemas';
 
 export const newsHeading = 'AKTUELLES';
@@ -127,7 +127,7 @@ const TEASER_POSTS_LIMIT = 3;
 export const selectTeaserPosts = (sections: NewsSection[]): NewsPost[] =>
   postsOf(sections).slice(0, TEASER_POSTS_LIMIT);
 
-export const buildSessionLabel = (session: NewsSession): string =>
+export const buildSessionLabel = (session: NumberedSession): string =>
   session.number === null
     ? `SESSION ${session.yearsLabel}`
     : `${session.number}. SESSION ${session.yearsLabel}`;

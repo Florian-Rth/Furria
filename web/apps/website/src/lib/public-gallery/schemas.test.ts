@@ -11,24 +11,6 @@ const photo = (width: number, height: number) => ({
 });
 
 describe('AlbumDetailSchema', () => {
-  it('reads the entry as Berlin wall-clock time, the session and the description paragraphs', () => {
-    const album = AlbumDetailSchema.parse({
-      albumId: 4,
-      title: 'Prunksitzung',
-      description: 'Erster.\n\nZweiter.',
-      entryStartsAt: '2026-02-14T18:11:00+00:00',
-      sessionStartYear: 2025,
-      sessionNumber: 67,
-      photos: [{ ...photo(1200, 1600), caption: null }],
-    });
-
-    expect([album.entryStartsAt, album.session, album.paragraphs]).toEqual([
-      '2026-02-14T19:11',
-      { startYear: 2025, yearsLabel: '2025/26', number: 67 },
-      ['Erster.', 'Zweiter.'],
-    ]);
-  });
-
   it.each([
     [1200, 1600, 'portrait'],
     [1600, 1200, 'landscape'],

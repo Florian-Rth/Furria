@@ -1,7 +1,9 @@
 using System.Diagnostics.Contracts;
 using Furria.Application.Gallery;
+using Furria.Core.Club;
 using Furria.Core.Gallery;
 using Furria.Core.Media;
+using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Public;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,7 +19,7 @@ public sealed partial class GalleryService
         var photos = (await PublicPhotoRowsOf(_publicFace.SelectedPhotos).ToListAsync(ct)).ToLookup(
             photo => photo.AlbumId
         );
-        var sessionNumbers = await SessionNumbersAsync(ct);
+        var sessionNumbers = await _dbContext.SessionNumbersAsync(ct);
 
         return PublicSectionsOf(
             [.. albums.Where(album => photos[album.AlbumId].Any())],
@@ -37,7 +39,7 @@ public sealed partial class GalleryService
         if (album is not { SessionStartYear: { } sessionStartYear } || photos.Count == 0)
             return null;
 
-        var sessionNumbers = await SessionNumbersAsync(ct);
+        var sessionNumbers = await _dbContext.SessionNumbersAsync(ct);
         return new PublicAlbumDetails
         {
             AlbumId = album.AlbumId,
@@ -45,7 +47,7 @@ public sealed partial class GalleryService
             Description = album.Description,
             EntryStartsAt = album.EntryStartsAt,
             SessionStartYear = sessionStartYear,
-            SessionNumber = sessionNumbers.GetValueOrDefault(sessionStartYear),
+            SessionNumber = sessionNumbers.Of(sessionStartYear),
             Photos = [.. photos.OrderBy(photo => photo.Position).Select(ToPublicPhoto)],
         };
     }
@@ -74,24 +76,29 @@ public sealed partial class GalleryService
     private static IReadOnlyList<PublicGallerySection> PublicSectionsOf(
         IReadOnlyList<PublicAlbumRow> albums,
         ILookup<int, PublicPhotoRow> photos,
-        IReadOnlyDictionary<int, int?> sessionNumbers
+        SessionNumbers sessionNumbers
     ) =>
         [
-            .. albums
-                .Where(album => album.SessionStartYear is not null)
-                .GroupBy(album => album.SessionStartYear!.Value)
-                .OrderByDescending(section => section.Key)
-                .Select(section => new PublicGallerySection
-                {
-                    SessionStartYear = section.Key,
-                    SessionNumber = sessionNumbers.GetValueOrDefault(section.Key),
-                    Albums =
-                    [
-                        .. section
+            .. SessionSections
+                .DatedOf(
+                    albums,
+                    album => SessionDate.In(album.SessionStartYear),
+                    sessionNumbers,
+                    section =>
+                        section
                             .OrderBy(album => album.EntryStartsAt is null)
                             .ThenByDescending(album => album.EntryStartsAt)
                             .ThenByDescending(album => album.AlbumId)
-                            .Select(album => PublicSummaryOf(album, [.. photos[album.AlbumId]])),
+                )
+                .Select(section => new PublicGallerySection
+                {
+                    SessionStartYear = section.SessionStartYear,
+                    SessionNumber = section.SessionNumber,
+                    Albums =
+                    [
+                        .. section.Items.Select(album =>
+                            PublicSummaryOf(album, [.. photos[album.AlbumId]])
+                        ),
                     ],
                 }),
         ];

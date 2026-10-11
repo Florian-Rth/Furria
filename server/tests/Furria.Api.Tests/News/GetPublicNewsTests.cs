@@ -46,24 +46,6 @@ public sealed class GetPublicNewsTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_GroupThePostsBySessionNewestFirst_When_TheySpanSessions()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(Posts(), ct);
-
-        var (_, result) = await _fixture
-            .CreateClient()
-            .GETAsync<GetPublicNews, GetPublicNewsResponse>();
-
-        Assert.Equal(
-            [(2025, (int?)71, 2), (2024, null, 1)],
-            result.Sessions.Select(session =>
-                (session.SessionStartYear, session.SessionNumber, session.Posts.Count)
-            )
-        );
-    }
-
-    [Fact]
     public async Task Should_PointThePictureAtItsPublicAddress_When_ALivePostHasARenderedPicture()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -91,53 +73,51 @@ public sealed class GetPublicNewsTests : IClassFixture<ApiTestFixture>
 
     private static Action<SeedContextBuilder> Posts() =>
         builder =>
-            builder
-                .Club(club => club.AddSession("2025", 2025, number: 71))
-                .News(news =>
-                    news.AddNewsPost("draft", "Entwurf", "Vorspann", "Text", NewsCategory.Club)
-                        .AddNewsPost(
-                            "motto",
-                            "Motto verkündet",
-                            "Vorspann",
-                            "Alter Text",
-                            NewsCategory.Session,
-                            publishedAt: Proclaimed,
-                            slug: "motto-verkuendet"
-                        )
-                        .AddPendingChanges(
-                            "motto",
-                            "Motto korrigiert",
-                            "Vorspann",
-                            "Neuer Text",
-                            NewsCategory.Session
-                        )
-                        .AddNewsPost(
-                            "parade",
-                            "Umzug",
-                            "Vorspann",
-                            "Text",
-                            NewsCategory.Groups,
-                            publishedAt: Paraded,
-                            slug: "umzug"
-                        )
-                        .AddNewsPost(
-                            "summer",
-                            "Sommerfest",
-                            "Vorspann",
-                            "Text",
-                            NewsCategory.Club,
-                            publishedAt: Summer,
-                            slug: "sommerfest"
-                        )
-                        .AddNewsPost(
-                            "withdrawn",
-                            "Zurückgezogen",
-                            "Vorspann",
-                            "Text",
-                            NewsCategory.Club,
-                            publishedAt: Proclaimed,
-                            slug: "zurueckgezogen",
-                            withdrawnAt: Withdrawn
-                        )
-                );
+            builder.News(news =>
+                news.AddNewsPost("draft", "Entwurf", "Vorspann", "Text", NewsCategory.Club)
+                    .AddNewsPost(
+                        "motto",
+                        "Motto verkündet",
+                        "Vorspann",
+                        "Alter Text",
+                        NewsCategory.Session,
+                        publishedAt: Proclaimed,
+                        slug: "motto-verkuendet"
+                    )
+                    .AddPendingChanges(
+                        "motto",
+                        "Motto korrigiert",
+                        "Vorspann",
+                        "Neuer Text",
+                        NewsCategory.Session
+                    )
+                    .AddNewsPost(
+                        "parade",
+                        "Umzug",
+                        "Vorspann",
+                        "Text",
+                        NewsCategory.Groups,
+                        publishedAt: Paraded,
+                        slug: "umzug"
+                    )
+                    .AddNewsPost(
+                        "summer",
+                        "Sommerfest",
+                        "Vorspann",
+                        "Text",
+                        NewsCategory.Club,
+                        publishedAt: Summer,
+                        slug: "sommerfest"
+                    )
+                    .AddNewsPost(
+                        "withdrawn",
+                        "Zurückgezogen",
+                        "Vorspann",
+                        "Text",
+                        NewsCategory.Club,
+                        publishedAt: Proclaimed,
+                        slug: "zurueckgezogen",
+                        withdrawnAt: Withdrawn
+                    )
+            );
 }

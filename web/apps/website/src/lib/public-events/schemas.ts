@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { toBerlinWallClock } from '@/lib/date';
+import { WallClockSchema } from '@/lib/api/wall-clock';
 import { toParagraphs } from '@/lib/paragraphs';
 
 export const SALES_STATUSES = [
@@ -14,8 +14,6 @@ export const SALES_STATUSES = [
 export const SalesStatusSchema = z.enum(SALES_STATUSES);
 
 export type SalesStatus = z.infer<typeof SalesStatusSchema>;
-
-const WallClockSchema = z.iso.datetime({ offset: true }).transform(toBerlinWallClock);
 
 export const EventVenueSchema = z.object({
   name: z.string().min(1),
