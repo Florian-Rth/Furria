@@ -1,3 +1,4 @@
+import { DEVELOPING_POLL_MS } from '@/lib/media/developing';
 import { isNotFoundError } from '@/lib/query-error';
 import {
   changedPartsOf,
@@ -29,7 +30,6 @@ import type {
 
 const SAVE_DELAY_MS = 700;
 const RETRY_DELAYS_MS = [3_000, 6_000, 12_000, 24_000, 48_000] as const;
-const DEVELOPING_POLL_MS = 3_000;
 
 export class SaveFailedError extends Error {}
 

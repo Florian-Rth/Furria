@@ -9,6 +9,7 @@ import {
 } from '@tanstack/react-query';
 import { START_QUERY_KEY } from '@/features/start';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
+import { pollWhileDeveloping } from '@/lib/media/developing';
 import type { AlbumFilter } from './requests';
 import {
   requestAlbum,
@@ -54,10 +55,8 @@ export const inboxQueryKey = (owner: InboxOwner): readonly [string, string, Inbo
   owner,
 ];
 
-const PROCESSING_POLL_MS = 4_000;
-
-const isProcessing = (items: readonly { state: string }[] | undefined): boolean =>
-  items?.some((item) => item.state === 'processing') ?? false;
+const isProcessing = (album: { items: readonly { state: string }[] } | undefined): boolean =>
+  album?.items.some((item) => item.state === 'processing') ?? false;
 
 export const refreshGallery = async (queryClient: QueryClient): Promise<void> => {
   await Promise.all([
@@ -76,16 +75,14 @@ const albumQueryOptions = (albumId: number, filter: AlbumFilter) =>
   queryOptions({
     queryKey: albumQueryKey(albumId, filter),
     queryFn: () => withFreshAccessToken((token) => requestAlbum(albumId, filter, token)),
-    refetchInterval: (query) =>
-      isProcessing(query.state.data?.items) ? PROCESSING_POLL_MS : false,
+    refetchInterval: pollWhileDeveloping(isProcessing),
   });
 
 const inboxQueryOptions = (owner: InboxOwner) =>
   queryOptions({
     queryKey: inboxQueryKey(owner),
     queryFn: () => withFreshAccessToken((token) => requestInbox(owner, token)),
-    refetchInterval: (query) =>
-      isProcessing(query.state.data?.items) ? PROCESSING_POLL_MS : false,
+    refetchInterval: pollWhileDeveloping(isProcessing),
   });
 
 export const useAlbumQuery = (

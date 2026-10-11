@@ -1,14 +1,11 @@
-import { DetailedError, Upload } from 'tus-js-client';
-import { buildApiUrl } from '@/lib/api/api-fetch';
-import { ensureFreshAccessToken } from '@/lib/api/session/session-store';
+import type { UploadHandle, UploadOutcome } from '@/lib/media/media-upload';
+import { startUpload } from '@/lib/media/start-upload';
 import { queryClient } from '@/lib/query-client';
-import { readApiBaseUrl } from '@/lib/runtime-config';
 import { refreshGallery } from '../api';
 import { captureTimeOf, localStampOf } from './exif-capture';
-import type { ThroughputSample, UploadEntry, UploadFailure } from './upload-queue';
+import type { ThroughputSample, UploadEntry } from './upload-queue';
 import {
   bytesPerSecondOf,
-  failureOfStatus,
   isPreviewable,
   keptSamples,
   nextToStart,
@@ -23,10 +20,6 @@ export interface UploadSnapshot {
   bytesPerSecond: number;
 }
 
-const UPLOADS_PATH = '/api/media/uploads';
-const MEDIA_ITEM_HEADER = 'Media-Item-Id';
-const CHUNK_BYTES = 16 * 1024 * 1024;
-const RETRY_DELAYS_MS = [0, 1_000, 3_000, 5_000, 10_000];
 const EXIF_PROBE_BYTES = 256 * 1024;
 const PREVIEW_EDGE = 320;
 const PREVIEW_QUALITY = 0.72;
@@ -36,7 +29,7 @@ const REFRESH_MS = 3_000;
 
 interface Live {
   file: File;
-  upload: Upload | null;
+  upload: UploadHandle | null;
 }
 
 const live = new Map<number, Live>();
@@ -87,14 +80,6 @@ const patch = (key: number, change: Partial<UploadEntry>): void => {
 const entryOf = (key: number): UploadEntry | undefined =>
   snapshot.entries.find((entry) => entry.key === key);
 
-const statusOf = (error: Error): number | null =>
-  error instanceof DetailedError ? (error.originalResponse?.getStatus() ?? null) : null;
-
-const metadataOf = (file: File, albumId: number | null): Record<string, string> =>
-  albumId === null
-    ? { owner: 'gallery', filename: file.name }
-    : { owner: 'gallery', filename: file.name, album: String(albumId) };
-
 const pump = (): void => {
   if (snapshot.paused) {
     return;
@@ -104,12 +89,23 @@ const pump = (): void => {
   }
 };
 
-const fail = (key: number, failure: UploadFailure): void => {
-  const held = live.get(key);
-  if (held !== undefined) {
-    held.upload = null;
+const settle = (key: number, held: Live, outcome: UploadOutcome): void => {
+  switch (outcome.kind) {
+    case 'sent':
+      patch(key, {
+        phase: 'sent',
+        sent: held.file.size,
+        failure: null,
+        mediaItemId: outcome.mediaItemId,
+      });
+      refreshSoon();
+      break;
+    case 'failed':
+      patch(key, { phase: 'failed', failure: outcome.failure });
+      break;
+    case 'stopped':
+      return;
   }
-  patch(key, { phase: 'failed', failure });
   pump();
 };
 
@@ -119,50 +115,21 @@ const start = (key: number): void => {
   if (held === undefined || entry === undefined) {
     return;
   }
-  const upload = new Upload(held.file, {
-    endpoint: buildApiUrl(readApiBaseUrl(), UPLOADS_PATH),
-    chunkSize: CHUNK_BYTES,
-    retryDelays: RETRY_DELAYS_MS,
-    metadata: metadataOf(held.file, entry.albumId),
-    removeFingerprintOnSuccess: true,
-    onBeforeRequest: async (request) => {
-      request.setHeader('Authorization', `Bearer ${await ensureFreshAccessToken()}`);
-    },
-    onAfterResponse: (_request, response) => {
-      const mediaItemId = Number(response.getHeader(MEDIA_ITEM_HEADER));
-      if (Number.isInteger(mediaItemId) && mediaItemId > 0) {
-        patch(key, { mediaItemId });
-      }
-    },
-    onProgress: (sent) => {
-      patch(key, { sent });
-    },
-    onSuccess: () => {
-      held.upload = null;
-      patch(key, { phase: 'sent', sent: held.file.size, failure: null });
-      refreshSoon();
-      pump();
-    },
-    onError: (error) => {
-      fail(key, failureOfStatus(statusOf(error)));
-    },
+  const upload = startUpload({
+    file: held.file,
+    owner: { kind: 'gallery', albumId: entry.albumId },
   });
   held.upload = upload;
   patch(key, { phase: 'uploading', failure: null });
-  void upload
-    .findPreviousUploads()
-    .then((previous) => {
-      const resumable = previous[0];
-      if (resumable !== undefined) {
-        upload.resumeFromPreviousUpload(resumable);
-      }
-      if (held.upload === upload) {
-        upload.start();
-      }
-    })
-    .catch(() => {
-      fail(key, 'interrupted');
-    });
+  upload.progress(({ sent }) => {
+    patch(key, { sent });
+  });
+  void upload.done.then((outcome) => {
+    if (held.upload === upload) {
+      held.upload = null;
+      settle(key, held, outcome);
+    }
+  });
 };
 
 const isBusy = (): boolean => tallyOf(snapshot.entries).active > 0;
@@ -177,7 +144,7 @@ const pause = (): void => {
   snapshot = { ...snapshot, paused: true };
   for (const [key, held] of live) {
     if (held.upload !== null) {
-      void held.upload.abort(false);
+      held.upload.pause();
       held.upload = null;
       patch(key, { phase: 'queued' });
     }
@@ -313,7 +280,7 @@ export const retryFailedUploads = (): void => {
 const release = (entry: UploadEntry): void => {
   const held = live.get(entry.key);
   if (held?.upload !== null && held?.upload !== undefined) {
-    void held.upload.abort(true);
+    held.upload.cancel();
   }
   live.delete(entry.key);
   if (entry.preview !== undefined) {

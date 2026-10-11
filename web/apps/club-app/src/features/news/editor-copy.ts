@@ -81,7 +81,6 @@ export const GALLERY_COPY_NOTE = 'Das Bild wird für die Meldung kopiert.';
 export const GALLERY_EMPTY = 'Kein veröffentlichtes Album mit Fotos.';
 export const galleryPhotoLabelOf = (albumTitle: string, index: number): string =>
   `${albumTitle}, Foto ${index + 1}`;
-export const PICTURE_UPLOAD_FAILED = 'Das Bild konnte nicht hochgeladen werden.';
 export const PICTURE_ACTION_FAILED = 'Das Bild konnte nicht geändert werden.';
 
 export const TIE_OFFER = 'Anheften';
