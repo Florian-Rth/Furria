@@ -1,23 +1,41 @@
 const SEPARATOR = ':';
+const CHANGED_PARAM = 'changed';
 
-export interface LandingTarget {
+export interface LandingMark {
   kind: string;
-  id: string;
+  id: string | number;
+}
+
+export type LandingSearch = Record<string, string | number>;
+
+export interface WriteLanding {
+  to: string;
+  params?: Record<string, string | number>;
+  search?: LandingSearch;
+  mark?: LandingMark;
+}
+
+export interface LandingNavigation {
+  to: string;
+  params: Record<string, string>;
+  search: LandingSearch | undefined;
 }
 
 export const toLandingKey = (kind: string, id: string | number): string =>
   `${kind}${SEPARATOR}${id}`;
 
-export const parseLandingKey = (key: string | undefined): LandingTarget | null => {
-  if (key === undefined) {
-    return null;
+const toLandingSearch = ({ search, mark }: WriteLanding): LandingSearch | undefined => {
+  if (mark === undefined) {
+    return search;
   }
 
-  const separatorIndex = key.indexOf(SEPARATOR);
-
-  if (separatorIndex <= 0 || separatorIndex === key.length - 1) {
-    return null;
-  }
-
-  return { kind: key.slice(0, separatorIndex), id: key.slice(separatorIndex + 1) };
+  return { ...search, [CHANGED_PARAM]: toLandingKey(mark.kind, mark.id) };
 };
+
+export const toLandingNavigation = (landing: WriteLanding): LandingNavigation => ({
+  to: landing.to,
+  params: Object.fromEntries(
+    Object.entries(landing.params ?? {}).map(([name, value]) => [name, String(value)]),
+  ),
+  search: toLandingSearch(landing),
+});

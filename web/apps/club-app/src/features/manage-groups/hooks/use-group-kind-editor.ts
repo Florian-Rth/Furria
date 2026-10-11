@@ -1,17 +1,11 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
-import { useForm } from 'react-hook-form';
-import { toLandingKey } from '@/features/write';
-import { toFormFailures } from '@/lib/api/api-failures';
-import { useGoBackTo } from '@/lib/use-go-back-to';
-import { toWriteErrorMessage } from '@/lib/write-error';
+import { useWriteForm } from '@/features/write';
 import { useCreateGroupKindMutation, useUpdateGroupKindMutation } from '../api';
 import type { GroupKindEntry } from '../manage-groups-labels';
 import type { GroupKindForm } from '../schemas';
 import { GroupKindFormSchema } from '../schemas';
 
-const FIELD_NAMES = ['name'] as const;
+const LANDING_KIND = 'group-kind';
 
 export interface GroupKindEditorControl {
   form: UseFormReturn<GroupKindForm>;
@@ -23,77 +17,25 @@ export interface GroupKindEditorControl {
 }
 
 export const useGroupKindEditor = (entry: GroupKindEntry | null): GroupKindEditorControl => {
-  const [rejection, setRejection] = useState<string | null>(null);
   const create = useCreateGroupKindMutation();
   const update = useUpdateGroupKindMutation();
-  const goBackTo = useGoBackTo();
 
-  const form = useForm<GroupKindForm>({
-    resolver: zodResolver(GroupKindFormSchema),
-    defaultValues: { name: entry?.name ?? '' },
-    mode: 'onTouched',
-  });
-  const { isDirty, isValid } = form.formState;
-
-  const showFailure = (error: Error): void => {
-    const failures = toFormFailures(error, FIELD_NAMES);
-
-    for (const failure of failures.fields) {
-      form.setError(failure.name, { message: failure.message });
-    }
-
-    setRejection(
-      failures.footer ?? (failures.fields.length === 0 ? toWriteErrorMessage(error) : null),
-    );
-  };
-
-  const handleSubmit = form.handleSubmit((values) => {
-    setRejection(null);
-
-    if (entry === null) {
-      create.mutate(values, {
-        onSuccess: (created) => {
-          void goBackTo({
-            to: '/manage/groups',
-            search: (previous) => ({
-              ...previous,
-              changed: toLandingKey('group-kind', created.groupKindId),
-            }),
-            ignoreBlocker: true,
-          });
-        },
-        onError: showFailure,
-      });
-      return;
-    }
-
-    update.mutate(
-      { groupKindId: entry.groupKindId, form: values },
-      {
-        onSuccess: () => {
-          void goBackTo({
+  return useWriteForm({
+    schema: GroupKindFormSchema,
+    defaults: { name: entry?.name ?? '' },
+    mutate: (values) =>
+      entry === null
+        ? create.mutateAsync(values).then((created) => created.groupKindId)
+        : update
+            .mutateAsync({ groupKindId: entry.groupKindId, form: values })
+            .then(() => entry.groupKindId),
+    landing: (groupKindId) =>
+      entry === null
+        ? { to: '/manage/groups', mark: { kind: LANDING_KIND, id: groupKindId } }
+        : {
             to: '/manage/groups/kinds/$groupKindId',
-            params: { groupKindId: String(entry.groupKindId) },
-            search: (previous) => ({
-              ...previous,
-              changed: toLandingKey('group-kind', entry.groupKindId),
-            }),
-            ignoreBlocker: true,
-          });
-        },
-        onError: showFailure,
-      },
-    );
+            params: { groupKindId },
+            mark: { kind: LANDING_KIND, id: groupKindId },
+          },
   });
-
-  return {
-    form,
-    isDirty,
-    canSubmit: isValid,
-    isSaving: create.isPending || update.isPending,
-    rejection,
-    submit: () => {
-      void handleSubmit();
-    },
-  };
 };

@@ -1,11 +1,8 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
-import { useController, useForm } from 'react-hook-form';
-import { toLandingKey } from '@/features/write';
+import { useController } from 'react-hook-form';
+import type { WriteLanding } from '@/features/write';
+import { useWriteForm } from '@/features/write';
 import type { PersonRef } from '@/lib/api/schemas';
 import { toIsoDay } from '@/lib/day';
-import { useGoBackTo } from '@/lib/use-go-back-to';
-import { toWriteErrorMessage } from '@/lib/write-error';
 import { useEndBoardSeatMutation, useOpenBoardSeatMutation } from '../api';
 import { toEndSeatConsequence, toPersonName, toSeatConsequence } from '../manage-board-labels';
 import type { BoardSeat } from '../schemas';
@@ -13,6 +10,11 @@ import { BoardSeatEndFormSchema, BoardSeatOpenFormSchema } from '../schemas';
 
 const END_LABEL = 'Vorstandssitz beenden';
 const ADD_LABEL = 'Vorstandssitz eintragen';
+
+const toBoardLanding = (boardSeatId: number): WriteLanding => ({
+  to: '/manage/board',
+  mark: { kind: 'board-seat', id: boardSeatId },
+});
 
 interface BoardSeatEditorInput {
   boardOfficeId: number;
@@ -47,82 +49,48 @@ export const useBoardSeatEditor = ({
   seat,
 }: BoardSeatEditorInput): BoardSeatEditorControl => {
   const today = toIsoDay(new Date());
-  const isEditing = seat !== null;
-  const [rejection, setRejection] = useState<string | null>(null);
-
   const openMutation = useOpenBoardSeatMutation(boardOfficeId, officeName);
   const endMutation = useEndBoardSeatMutation(boardOfficeId);
-  const goBackTo = useGoBackTo();
+  const seatPersonName = seat === null ? '' : toPersonName(seat);
 
-  const openForm = useForm({
-    resolver: zodResolver(BoardSeatOpenFormSchema),
-    defaultValues: { person: null, sinceOn: today },
-    mode: 'onTouched',
+  const opening = useWriteForm({
+    schema: BoardSeatOpenFormSchema,
+    defaults: { person: null, sinceOn: today },
+    mutate: (values) =>
+      openMutation
+        .mutateAsync({
+          personId: values.person.personId,
+          personName: toPersonName(values.person),
+          sinceOn: values.sinceOn,
+        })
+        .then((opened) => opened.boardSeatId),
+    landing: toBoardLanding,
   });
-  const endForm = useForm({
-    resolver: zodResolver(BoardSeatEndFormSchema),
-    defaultValues: { endedOn: today },
-    mode: 'onTouched',
+  const ending = useWriteForm({
+    schema: BoardSeatEndFormSchema,
+    defaults: { endedOn: today },
+    mutate: (values) =>
+      seat === null
+        ? null
+        : endMutation
+            .mutateAsync({
+              boardSeatId: seat.boardSeatId,
+              personName: seatPersonName,
+              endedOn: values.endedOn,
+            })
+            .then(() => seat.boardSeatId),
+    landing: toBoardLanding,
   });
-  const openState = openForm.formState;
-  const endState = endForm.formState;
-  const { isDirty: isOpenDirty, isValid: isOpenValid } = openState;
-  const { isDirty: isEndDirty, isValid: isEndValid } = endState;
-  const personField = useController({ control: openForm.control, name: 'person' });
-  const sinceOnField = useController({ control: openForm.control, name: 'sinceOn' });
-  const endedOnField = useController({ control: endForm.control, name: 'endedOn' });
+  const personField = useController({ control: opening.form.control, name: 'person' });
+  const sinceOnField = useController({ control: opening.form.control, name: 'sinceOn' });
+  const endedOnField = useController({ control: ending.form.control, name: 'endedOn' });
 
   const person = personField.field.value;
   const sinceOn = sinceOnField.field.value;
   const endedOn = endedOnField.field.value;
   const personName = person === null ? '' : toPersonName(person);
-  const seatPersonName = seat === null ? '' : toPersonName(seat);
-
-  const landBack = (boardSeatId: number): void => {
-    void goBackTo({
-      to: '/manage/board',
-      search: (previous) => ({ ...previous, changed: toLandingKey('board-seat', boardSeatId) }),
-      ignoreBlocker: true,
-    });
-  };
-
-  const fail = (error: Error): void => {
-    setRejection(toWriteErrorMessage(error));
-  };
-
-  const clearPerson = (): void => {
-    personField.field.onChange(null);
-    setRejection(null);
-  };
-
-  const select = (next: PersonRef): void => {
-    personField.field.onChange(next);
-    setRejection(null);
-  };
-
-  const submitOpen = openForm.handleSubmit((values) => {
-    setRejection(null);
-    openMutation.mutate(
-      {
-        personId: values.person.personId,
-        personName: toPersonName(values.person),
-        sinceOn: values.sinceOn,
-      },
-      { onSuccess: (opened) => landBack(opened.boardSeatId), onError: fail },
-    );
-  });
-
-  const submitEnd = endForm.handleSubmit((values) => {
-    if (seat === null) {
-      return;
-    }
-
-    setRejection(null);
-    endMutation.mutate(
-      { boardSeatId: seat.boardSeatId, personName: seatPersonName, endedOn: values.endedOn },
-      { onSuccess: () => landBack(seat.boardSeatId), onError: fail },
-    );
-  });
+  const isEditing = seat !== null;
+  const write = isEditing ? ending : opening;
 
   const consequence = isEditing
     ? endedOn === null
@@ -134,22 +102,22 @@ export const useBoardSeatEditor = ({
 
   return {
     person,
-    select,
-    clearPerson,
+    select: personField.field.onChange,
+    clearPerson: () => {
+      personField.field.onChange(null);
+    },
     sinceOn,
     setSinceOn: sinceOnField.field.onChange,
-    sinceOnError: openState.errors.sinceOn?.message,
+    sinceOnError: opening.form.formState.errors.sinceOn?.message,
     endedOn,
     setEndedOn: endedOnField.field.onChange,
-    endedOnError: endState.errors.endedOn?.message,
+    endedOnError: ending.form.formState.errors.endedOn?.message,
     consequence,
-    rejection,
-    isSaving: isEditing ? endMutation.isPending : openMutation.isPending,
-    isDirty: isEditing ? isEndDirty : isOpenDirty,
-    canSubmit: isEditing ? isEndValid : isOpenValid,
+    rejection: write.rejection,
+    isSaving: write.isSaving,
+    isDirty: write.isDirty,
+    canSubmit: write.canSubmit,
     actionLabel: isEditing ? END_LABEL : ADD_LABEL,
-    submit: () => {
-      void (isEditing ? submitEnd() : submitOpen());
-    },
+    submit: write.submit,
   };
 };

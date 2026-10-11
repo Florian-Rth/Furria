@@ -1,10 +1,7 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
-import { useController, useForm } from 'react-hook-form';
+import { useController } from 'react-hook-form';
 import type { Weekday } from '@/features/groups';
-import { toLandingKey } from '@/features/write';
-import { useGoBackTo } from '@/lib/use-go-back-to';
-import { toWriteErrorMessage } from '@/lib/write-error';
+import type { WriteLanding } from '@/features/write';
+import { useWriteForm } from '@/features/write';
 import { useSetTrainingSlotsMutation } from '../api';
 import { toSlotFormValues, toSlotPayload, toSlotPayloadOf } from '../rhythm-labels';
 import type { TrainingSlot } from '../schemas';
@@ -48,107 +45,70 @@ export const useGroupSlotEditor = ({
   slot,
   slots,
 }: GroupSlotEditorInput): GroupSlotEditorControl => {
-  const [rejection, setRejection] = useState<string | null>(null);
   const mutation = useSetTrainingSlotsMutation(groupId);
-  const goBackTo = useGoBackTo();
+  const groupLanding: WriteLanding = { to: '/groups/$groupId', params: { groupId } };
 
-  const form = useForm({
-    resolver: zodResolver(TrainingSlotFormSchema),
-    defaultValues: toSlotFormValues(slot),
-    mode: 'onTouched',
-  });
-  const { isDirty, isValid } = form.formState;
-  const weekday = useController({ control: form.control, name: 'weekday' });
-  const startsAt = useController({ control: form.control, name: 'startsAt' });
-  const durationMinutes = useController({ control: form.control, name: 'durationMinutes' });
-  const venueId = useController({ control: form.control, name: 'venueId' });
+  const write = useWriteForm({
+    schema: TrainingSlotFormSchema,
+    defaults: toSlotFormValues(slot),
+    mutate: (values) => {
+      const payload = toSlotPayload(values);
 
-  const setWeekday = (value: string): void => {
-    weekday.field.onChange(toWeekday(value, weekday.field.value));
-  };
-
-  const setDurationMinutes = (value: string): void => {
-    durationMinutes.field.onChange(Number(value));
-  };
-
-  const leave = (): void => {
-    void goBackTo({
-      to: '/groups/$groupId',
-      params: { groupId: String(groupId) },
-      ignoreBlocker: true,
-    });
-  };
-
-  const landOnEdited = (slotId: number): void => {
-    void goBackTo({
-      to: '/groups/$groupId',
-      params: { groupId: String(groupId) },
-      search: (previous) => ({ ...previous, changed: toLandingKey('training-slot', slotId) }),
-      ignoreBlocker: true,
-    });
-  };
-
-  const handleFormSubmit = form.handleSubmit((values) => {
-    setRejection(null);
-    const payload = toSlotPayload(values);
-    const next =
+      return mutation.mutateAsync(
+        slot === null
+          ? [...slots.map(toSlotPayloadOf), payload]
+          : slots.map((existing) =>
+              existing.groupTrainingSlotId === slot.groupTrainingSlotId
+                ? payload
+                : toSlotPayloadOf(existing),
+            ),
+      );
+    },
+    landing: () =>
       slot === null
-        ? [...slots.map(toSlotPayloadOf), payload]
-        : slots.map((existing) =>
-            existing.groupTrainingSlotId === slot.groupTrainingSlotId
-              ? payload
-              : toSlotPayloadOf(existing),
-          );
-
-    mutation.mutate(next, {
-      onSuccess: () => {
-        if (slot === null) {
-          leave();
-        } else {
-          landOnEdited(slot.groupTrainingSlotId);
-        }
-      },
-      onError: (error) => {
-        setRejection(toWriteErrorMessage(error));
-      },
-    });
+        ? groupLanding
+        : { ...groupLanding, mark: { kind: 'training-slot', id: slot.groupTrainingSlotId } },
   });
+  const weekday = useController({ control: write.form.control, name: 'weekday' });
+  const startsAt = useController({ control: write.form.control, name: 'startsAt' });
+  const durationMinutes = useController({ control: write.form.control, name: 'durationMinutes' });
+  const venueId = useController({ control: write.form.control, name: 'venueId' });
 
   const remove = (): void => {
     if (slot === null) {
       return;
     }
 
-    setRejection(null);
-    const next = slots
-      .filter((existing) => existing.groupTrainingSlotId !== slot.groupTrainingSlotId)
-      .map(toSlotPayloadOf);
-
-    mutation.mutate(next, {
-      onSuccess: leave,
-      onError: (error) => {
-        setRejection(toWriteErrorMessage(error));
-      },
-    });
+    write.run(
+      () =>
+        mutation.mutateAsync(
+          slots
+            .filter((existing) => existing.groupTrainingSlotId !== slot.groupTrainingSlotId)
+            .map(toSlotPayloadOf),
+        ),
+      () => groupLanding,
+    );
   };
 
   return {
     weekday: weekday.field.value,
-    setWeekday,
+    setWeekday: (value) => {
+      weekday.field.onChange(toWeekday(value, weekday.field.value));
+    },
     startsAt: startsAt.field.value,
     setStartsAt: startsAt.field.onChange,
     durationMinutes: String(durationMinutes.field.value),
-    setDurationMinutes,
+    setDurationMinutes: (value) => {
+      durationMinutes.field.onChange(Number(value));
+    },
     venueId: venueId.field.value,
     setVenueId: venueId.field.onChange,
-    isDirty,
-    canSubmit: isValid,
-    isSaving: mutation.isPending,
-    rejection,
+    isDirty: write.isDirty,
+    canSubmit: write.canSubmit,
+    isSaving: write.isSaving,
+    rejection: write.rejection,
     actionLabel: slot === null ? ADD_LABEL : SAVE_LABEL,
-    submit: () => {
-      void handleFormSubmit();
-    },
+    submit: write.submit,
     remove,
   };
 };

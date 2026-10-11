@@ -1,11 +1,7 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
 import type { UseFormRegisterReturn } from 'react-hook-form';
-import { useController, useForm } from 'react-hook-form';
-import { toLandingKey } from '@/features/write';
+import { useController } from 'react-hook-form';
+import { useWriteForm } from '@/features/write';
 import type { GroupTone } from '@/lib/group-tone';
-import { useGoBackTo } from '@/lib/use-go-back-to';
-import { toWriteErrorMessage } from '@/lib/write-error';
 import { useUpdateGroupInfoMutation } from '../api';
 import { toGroupInfoFormValues } from '../group-hub-labels';
 import type { GroupHub } from '../schemas';
@@ -30,58 +26,35 @@ export interface GroupInfoEditorControl {
 }
 
 export const useGroupInfoEditor = (hub: GroupHub): GroupInfoEditorControl => {
-  const [rejection, setRejection] = useState<string | null>(null);
   const mutation = useUpdateGroupInfoMutation(hub.groupId);
-  const goBackTo = useGoBackTo();
 
-  const form = useForm({
-    resolver: zodResolver(GroupInfoFormSchema),
-    defaultValues: toGroupInfoFormValues(hub),
-    mode: 'onTouched',
+  const write = useWriteForm({
+    schema: GroupInfoFormSchema,
+    defaults: toGroupInfoFormValues(hub),
+    mutate: (values) => mutation.mutateAsync({ ...values, isRecruiting: hub.isRecruiting }),
+    landing: () => ({
+      to: '/groups/$groupId',
+      params: { groupId: hub.groupId },
+      mark: { kind: 'group-info', id: hub.groupId },
+    }),
   });
-  const { isDirty, isValid, errors } = form.formState;
-  const description = useController({ control: form.control, name: 'description' });
-  const groupKindId = useController({ control: form.control, name: 'groupKindId' });
-  const tone = useController({ control: form.control, name: 'tone' });
-
-  const handleFormSubmit = form.handleSubmit((values) => {
-    setRejection(null);
-    mutation.mutate(
-      { ...values, isRecruiting: hub.isRecruiting },
-      {
-        onSuccess: () => {
-          void goBackTo({
-            to: '/groups/$groupId',
-            params: { groupId: String(hub.groupId) },
-            search: (previous) => ({
-              ...previous,
-              changed: toLandingKey('group-info', hub.groupId),
-            }),
-            ignoreBlocker: true,
-          });
-        },
-        onError: (error) => {
-          setRejection(toWriteErrorMessage(error));
-        },
-      },
-    );
-  });
+  const description = useController({ control: write.form.control, name: 'description' });
+  const groupKindId = useController({ control: write.form.control, name: 'groupKindId' });
+  const tone = useController({ control: write.form.control, name: 'tone' });
 
   return {
     description: description.field.value,
     setDescription: description.field.onChange,
     groupKindId: groupKindId.field.value,
     setGroupKindId: groupKindId.field.onChange,
-    foundedYear: form.register('foundedYear'),
+    foundedYear: write.form.register('foundedYear'),
     tone: tone.field.value,
     setTone: tone.field.onChange,
-    foundedYearError: errors.foundedYear?.message,
-    isDirty,
-    canSubmit: isValid,
-    isSaving: mutation.isPending,
-    rejection,
-    submit: () => {
-      void handleFormSubmit();
-    },
+    foundedYearError: write.form.formState.errors.foundedYear?.message,
+    isDirty: write.isDirty,
+    canSubmit: write.canSubmit,
+    isSaving: write.isSaving,
+    rejection: write.rejection,
+    submit: write.submit,
   };
 };

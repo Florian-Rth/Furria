@@ -1,17 +1,13 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
-import { useController, useForm } from 'react-hook-form';
-import { toLandingKey } from '@/features/write';
+import { useController } from 'react-hook-form';
+import { useWriteForm } from '@/features/write';
 import { sessionAt } from '@/lib/club';
-import { useGoBackTo } from '@/lib/use-go-back-to';
-import { toWriteErrorMessage } from '@/lib/write-error';
 import { useCreateFeeReductionMutation, useUpdateFeeReductionMutation } from '../api';
 import {
   ADD_FEE_REDUCTION_ACTION_LABEL,
   FEE_REDUCTION_CHANGE_LABEL,
   toFeeReductionConsequence,
 } from '../manage-persons-labels';
-import type { CreatedFeeReduction, FeeReductionBasis, PersonFeeReduction } from '../schemas';
+import type { FeeReductionBasis, PersonFeeReduction } from '../schemas';
 import { FeeReductionBasisSchema, FeeReductionFormSchema } from '../schemas';
 
 const DEFAULT_BASIS: FeeReductionBasis = 'minor';
@@ -45,40 +41,32 @@ export const usePersonFeeReductionEditor = ({
   reduction,
 }: PersonFeeReductionEditorInput): PersonFeeReductionEditorControl => {
   const currentSessionYearValue = sessionAt(new Date()).startYear;
-  const [rejection, setRejection] = useState<string | null>(null);
   const create = useCreateFeeReductionMutation(personId);
   const update = useUpdateFeeReductionMutation(personId);
-  const goBackTo = useGoBackTo();
 
-  const form = useForm({
-    resolver: zodResolver(FeeReductionFormSchema),
-    defaultValues: {
+  const write = useWriteForm({
+    schema: FeeReductionFormSchema,
+    defaults: {
       basis: reduction?.basis ?? DEFAULT_BASIS,
       firstSessionYear: reduction?.firstSessionYear ?? currentSessionYearValue,
       lastSessionYear: reduction?.lastSessionYear ?? currentSessionYearValue,
     },
-    mode: 'onTouched',
-  });
-  const { isDirty, isValid, errors } = form.formState;
-  const basis = useController({ control: form.control, name: 'basis' });
-  const firstSessionYear = useController({ control: form.control, name: 'firstSessionYear' });
-  const lastSessionYear = useController({ control: form.control, name: 'lastSessionYear' });
-
-  const fail = (error: Error): void => {
-    setRejection(toWriteErrorMessage(error));
-  };
-
-  const landBack = (feeReductionId: number): void => {
-    void goBackTo({
+    mutate: (submitted) =>
+      reduction === null
+        ? create.mutateAsync(submitted).then((created) => created.feeReductionId)
+        : update
+            .mutateAsync({ feeReductionId: reduction.feeReductionId, ...submitted })
+            .then(() => reduction.feeReductionId),
+    landing: (feeReductionId) => ({
       to: '/manage/persons/$personId',
-      params: { personId: String(personId) },
-      search: (previous) => ({
-        ...previous,
-        changed: toLandingKey('feeReduction', feeReductionId),
-      }),
-      ignoreBlocker: true,
-    });
-  };
+      params: { personId },
+      mark: { kind: 'feeReduction', id: feeReductionId },
+    }),
+  });
+  const { errors } = write.form.formState;
+  const basis = useController({ control: write.form.control, name: 'basis' });
+  const firstSessionYear = useController({ control: write.form.control, name: 'firstSessionYear' });
+  const lastSessionYear = useController({ control: write.form.control, name: 'lastSessionYear' });
 
   const selectBasis = (value: string): void => {
     const parsed = FeeReductionBasisSchema.safeParse(value);
@@ -87,24 +75,6 @@ export const usePersonFeeReductionEditor = ({
       basis.field.onChange(parsed.data);
     }
   };
-
-  const handleFormSubmit = form.handleSubmit((submitted) => {
-    setRejection(null);
-
-    if (reduction === null) {
-      create.mutate(submitted, {
-        onSuccess: (created: CreatedFeeReduction) => landBack(created.feeReductionId),
-        onError: fail,
-      });
-
-      return;
-    }
-
-    update.mutate(
-      { feeReductionId: reduction.feeReductionId, ...submitted },
-      { onSuccess: () => landBack(reduction.feeReductionId), onError: fail },
-    );
-  });
 
   const basisValue = basis.field.value;
   const firstValue = firstSessionYear.field.value;
@@ -124,13 +94,11 @@ export const usePersonFeeReductionEditor = ({
       firstValue === null || lastValue === null
         ? null
         : toFeeReductionConsequence(basisValue, firstValue, lastValue),
-    rejection,
-    isSaving: create.isPending || update.isPending,
-    isDirty,
-    canSubmit: isValid,
+    rejection: write.rejection,
+    isSaving: write.isSaving,
+    isDirty: write.isDirty,
+    canSubmit: write.canSubmit,
     actionLabel: reduction === null ? ADD_FEE_REDUCTION_ACTION_LABEL : FEE_REDUCTION_CHANGE_LABEL,
-    submit: () => {
-      void handleFormSubmit();
-    },
+    submit: write.submit,
   };
 };
