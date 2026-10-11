@@ -1,6 +1,7 @@
 import type { QueryClient, UseMutationResult, UseQueryResult } from '@tanstack/react-query';
 import { skipToken, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
+import { pollWhileDeveloping } from '@/lib/media/developing';
 import type {
   GalleryPickPayload,
   NewsContentPayload,
@@ -40,8 +41,6 @@ export const NEWS_HUB_QUERY_KEY = ['news', 'hub'] as const;
 const NEWS_MENTIONABLES_QUERY_KEY = ['news', 'mentionables'] as const;
 const NEWS_TIE_CANDIDATES_QUERY_KEY = ['news', 'tie-candidates'] as const;
 
-const PROCESSING_POLL_MS = 3_000;
-
 const galleryAlbumPhotosQueryKey = (albumId: number): readonly [string, string, number] => [
   'news',
   'gallery-album',
@@ -79,7 +78,7 @@ export const useNewsPostQuery = (
         ? skipToken
         : () => withFreshAccessToken((token) => requestNewsPost(newsPostId, token)),
     refetchOnWindowFocus: false,
-    refetchInterval: (query) => (isDeveloping(query.state.data) ? PROCESSING_POLL_MS : false),
+    refetchInterval: pollWhileDeveloping(isDeveloping),
   });
 
 export const useNewsMentionablesQuery = (): UseQueryResult<NewsMentionables, Error> =>

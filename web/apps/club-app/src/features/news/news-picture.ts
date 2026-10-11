@@ -1,5 +1,7 @@
 import type { KkCrop } from '@furria/ui';
+import type { PictureDeskState } from '@/lib/media/picture-desk';
 import type { GalleryPhoto } from './schemas';
+import type { NewsPicture } from './types';
 
 export const BANNER_ASPECT = 2;
 
@@ -21,4 +23,16 @@ export const centredBannerCropOf = (width: number | null, height: number | null)
 export const isPickablePhoto = (item: GalleryPhoto): boolean =>
   item.kind === 'photo' && item.state === 'ready';
 
-export const newsUploadOwnerOf = (newsPostId: number): string => `news:${newsPostId}`;
+const UPLOAD_KEY_PREFIX = 'upload:';
+
+export const uploadOverlayOf = (state: PictureDeskState): NewsPicture | null =>
+  state.kind === 'uploading' || state.kind === 'failed'
+    ? {
+        key: `${UPLOAD_KEY_PREFIX}${state.photo.file.name}:${state.photo.file.lastModified}`,
+        state: state.kind,
+        progress: state.kind === 'uploading' ? state.share : 0,
+        uncroppedSource: null,
+        source: null,
+        crop: null,
+      }
+    : null;

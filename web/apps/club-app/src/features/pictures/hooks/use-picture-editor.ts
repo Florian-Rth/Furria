@@ -1,21 +1,23 @@
 import type { KkCrop } from '@furria/ui';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useEffectEvent, useRef, useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { useState } from 'react';
 import type { PictureEditing } from '@/lib/api/schemas';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
+import type { PictureDeskState } from '@/lib/media/picture-desk';
+import { useDevelopingPicture } from '@/lib/media/use-developing-picture';
+import { usePictureDesk } from '@/lib/media/use-picture-desk';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { toUploadFailureMessage } from '../picture-labels';
+import { pictureShownIn } from '../picture-shown-in';
 import type { PictureTarget } from '../picture-target';
+import { toUploadOwner } from '../picture-target';
 import { requestPictureCrop, requestPictureRemoval } from '../requests';
-import { PictureUploadError, uploadPicture } from '../upload-picture';
-
-const PROCESSING_POLL_MS = 2_000;
 
 export type PicturePhase =
   | { kind: 'view' }
-  | { kind: 'choosing'; file: File; source: string }
+  | { kind: 'choosing'; source: string }
   | { kind: 'recropping'; source: string }
-  | { kind: 'uploading'; file: File; source: string; share: number; cropped: boolean };
+  | { kind: 'uploading'; share: number; cropped: boolean };
 
 interface PictureEditorOptions {
   target: PictureTarget;
@@ -48,19 +50,41 @@ export interface PictureEditorControl {
   removal: PictureRemovalControl;
 }
 
-const toUploadRejection = (error: Error): string =>
-  error instanceof PictureUploadError
-    ? toUploadFailureMessage(error.failure)
-    : (toWriteErrorMessage(error) ?? toUploadFailureMessage('interrupted'));
+const phaseOf = (state: PictureDeskState): PicturePhase => {
+  switch (state.kind) {
+    case 'resting':
+      return { kind: 'view' };
+    case 'cropping':
+      return { kind: state.photo === null ? 'recropping' : 'choosing', source: state.source };
+    case 'saving':
+      return { kind: 'recropping', source: state.source };
+    case 'failed':
+      return { kind: 'choosing', source: state.photo.source };
+    case 'uploading':
+      return { kind: 'uploading', share: state.share, cropped: state.crop !== null };
+  }
+};
+
+const initialCropOf = (state: PictureDeskState): KkCrop | null => {
+  switch (state.kind) {
+    case 'cropping':
+      return state.initialCrop;
+    case 'failed':
+      return state.crop;
+    default:
+      return null;
+  }
+};
+
+const canSubmitOf = (state: PictureDeskState): boolean =>
+  state.kind === 'failed' || (state.kind === 'cropping' && state.crop !== null);
 
 export const usePictureEditor = ({
   target,
   editing,
   refresh,
 }: PictureEditorOptions): PictureEditorControl => {
-  const [phase, setPhase] = useState<PicturePhase>({ kind: 'view' });
-  const [crop, setCrop] = useState<KkCrop | null>(null);
-  const [rejection, setRejection] = useState<string | null>(null);
+  const [saveRejection, setSaveRejection] = useState<string | null>(null);
   const [isRemoving, setIsRemoving] = useState(false);
   const [removalRejection, setRemovalRejection] = useState<string | null>(null);
 
@@ -73,106 +97,23 @@ export const usePictureEditor = ({
       withFreshAccessToken((accessToken) => requestPictureRemoval(target, accessToken)),
   });
 
-  const queryClient = useQueryClient();
-  const isProcessing = editing?.state === 'processing';
-  const wasProcessing = useRef(isProcessing);
-  const pollWhileProcessing = useEffectEvent((): void => {
-    refresh();
+  const announce = useDevelopingPicture({
+    isDeveloping: editing?.state === 'processing',
+    refresh,
+    shownIn: pictureShownIn(target.kind),
   });
-  const refreshEveryView = useEffectEvent((): void => {
-    void queryClient.invalidateQueries();
+
+  const desk = usePictureDesk({
+    cutsBeforeUpload: true,
+    send: (upload) => upload(toUploadOwner(target)).then(announce),
+    saveCrop: (crop) => cropMutation.mutateAsync(crop).then(announce),
+    onSaveFailed: (error) => {
+      setSaveRejection(toWriteErrorMessage(error));
+    },
   });
-  useEffect(() => {
-    const finishedProcessing = wasProcessing.current && !isProcessing;
-    wasProcessing.current = isProcessing;
-    if (finishedProcessing) {
-      refreshEveryView();
-    }
-    if (!isProcessing) {
-      return undefined;
-    }
-    const timer = window.setInterval(pollWhileProcessing, PROCESSING_POLL_MS);
-    return () => window.clearInterval(timer);
-  }, [isProcessing]);
+  const { state } = desk;
 
-  const localSource = phase.kind === 'choosing' || phase.kind === 'uploading' ? phase.source : null;
-  useEffect(
-    () => (localSource === null ? undefined : () => URL.revokeObjectURL(localSource)),
-    [localSource],
-  );
-
-  const finish = async (): Promise<void> => {
-    await queryClient.invalidateQueries();
-    setPhase({ kind: 'view' });
-    setCrop(null);
-  };
-
-  const upload = (file: File, source: string, chosen: KkCrop | null): void => {
-    setRejection(null);
-    setPhase({ kind: 'uploading', file, source, share: 0, cropped: chosen !== null });
-    uploadPicture({
-      file,
-      target,
-      crop: chosen,
-      onProgress: (share) => {
-        setPhase({ kind: 'uploading', file, source, share, cropped: chosen !== null });
-      },
-    }).then(finish, (error: Error) => {
-      setRejection(toUploadRejection(error));
-      setPhase({ kind: 'choosing', file, source });
-    });
-  };
-
-  const choose = (file: File | null): void => {
-    if (file === null) {
-      return;
-    }
-    setRejection(null);
-    setCrop(null);
-    setPhase({ kind: 'choosing', file, source: URL.createObjectURL(file) });
-  };
-
-  const recrop = (): void => {
-    if (editing?.uncroppedUrl == null) {
-      return;
-    }
-    setRejection(null);
-    setCrop(null);
-    setPhase({ kind: 'recropping', source: editing.uncroppedUrl });
-  };
-
-  const cancel = (): void => {
-    setRejection(null);
-    setCrop(null);
-    setPhase({ kind: 'view' });
-  };
-
-  const submit = (): void => {
-    if (crop === null) {
-      return;
-    }
-    if (phase.kind === 'choosing') {
-      upload(phase.file, phase.source, crop);
-      return;
-    }
-    if (phase.kind === 'recropping') {
-      setRejection(null);
-      cropMutation.mutate(crop, {
-        onSuccess: () => {
-          void finish();
-        },
-        onError: (error) => {
-          setRejection(toWriteErrorMessage(error));
-        },
-      });
-    }
-  };
-
-  const unreadable = (): void => {
-    if (phase.kind === 'choosing') {
-      upload(phase.file, phase.source, null);
-    }
-  };
+  const rejection = state.kind === 'failed' ? toUploadFailureMessage(state.failure) : saveRejection;
 
   const removal: PictureRemovalControl = {
     isOpen: isRemoving,
@@ -188,7 +129,7 @@ export const usePictureEditor = ({
       removalMutation.mutate(undefined, {
         onSuccess: () => {
           setIsRemoving(false);
-          void queryClient.invalidateQueries();
+          void announce();
         },
         onError: (error) => {
           setRemovalRejection(toWriteErrorMessage(error));
@@ -199,21 +140,37 @@ export const usePictureEditor = ({
     rejection: removalRejection,
   };
 
-  const isSaving = phase.kind === 'uploading' || cropMutation.isPending;
+  const isSaving = state.kind === 'uploading' || state.kind === 'saving';
 
   return {
-    phase,
+    phase: phaseOf(state),
     rejection,
-    initialCrop: phase.kind === 'recropping' ? (editing?.crop ?? null) : null,
+    initialCrop: initialCropOf(state),
     canRecrop: editing?.uncroppedUrl != null,
     isSaving,
-    canSubmit: crop !== null && !isSaving,
-    choose,
-    recrop,
-    cancel,
-    setCrop,
-    submit,
-    unreadable,
+    canSubmit: canSubmitOf(state),
+    choose: (file) => {
+      if (file !== null) {
+        setSaveRejection(null);
+        desk.choose(file);
+      }
+    },
+    recrop: () => {
+      if (editing?.uncroppedUrl != null) {
+        setSaveRejection(null);
+        desk.recrop(editing.uncroppedUrl, editing.crop);
+      }
+    },
+    cancel: () => {
+      setSaveRejection(null);
+      desk.dismiss();
+    },
+    setCrop: desk.changeCrop,
+    submit: () => {
+      setSaveRejection(null);
+      desk.submit();
+    },
+    unreadable: desk.unreadable,
     removal,
   };
 };

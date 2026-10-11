@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import type { FileVerdict, ThroughputSample, UploadEntry, UploadPhase } from './upload-queue';
 import {
   bytesPerSecondOf,
-  failureOfStatus,
   keptSamples,
   nextToStart,
   remainingMinutesOf,
@@ -46,19 +45,6 @@ describe('verdictOfFile', () => {
     ['notes.pdf', 'application/pdf', MB, { refused: 'notAccepted' }],
   ])('%s', (name, type, size, expected) => {
     expect(verdictOfFile(name, type, size)).toEqual(expected);
-  });
-});
-
-describe('failureOfStatus', () => {
-  it.each<[number | null, string]>([
-    [413, 'tooLarge'],
-    [415, 'notAccepted'],
-    [403, 'notAllowed'],
-    [404, 'albumGone'],
-    [500, 'interrupted'],
-    [null, 'interrupted'],
-  ])('%s', (status, expected) => {
-    expect(failureOfStatus(status)).toBe(expected);
   });
 });
 

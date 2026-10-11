@@ -1,15 +1,12 @@
 import type { KkCrop } from '@furria/ui';
 import { useKkNotice, useKkSheet } from '@furria/ui';
 import type { ChangeEvent } from 'react';
-import { useRef, useState } from 'react';
-import {
-  PictureUploadError,
-  toUploadFailureMessage,
-  uploadOwnedPicture,
-} from '@/features/pictures';
+import { useState } from 'react';
+import { toUploadFailureMessage } from '@/features/pictures';
+import { usePictureDesk } from '@/lib/media/use-picture-desk';
 import { useNewsPictureCrop, useNewsPictureFromGallery, useNewsPictureRemoval } from '../api';
-import { GALLERY_SHEET_ID, PICTURE_ACTION_FAILED, PICTURE_UPLOAD_FAILED } from '../editor-copy';
-import { centredBannerCropOf, newsUploadOwnerOf } from '../news-picture';
+import { GALLERY_SHEET_ID, PICTURE_ACTION_FAILED } from '../editor-copy';
+import { centredBannerCropOf, uploadOverlayOf } from '../news-picture';
 import type { GalleryPhoto } from '../schemas';
 import type { NewsPicture } from '../types';
 import type { NewsEditor } from './use-news-editor';
@@ -30,22 +27,6 @@ export interface NewsPictureDesk {
   retry: () => void;
 }
 
-const UPLOAD_KEY_PREFIX = 'upload:';
-
-const uploadingPicture = (file: File, progress: number, failed: boolean): NewsPicture => ({
-  key: `${UPLOAD_KEY_PREFIX}${file.name}:${file.lastModified}`,
-  state: failed ? 'failed' : 'uploading',
-  progress,
-  uncroppedSource: null,
-  source: null,
-  crop: null,
-});
-
-const uploadFailureOf = (error: Error): string =>
-  error instanceof PictureUploadError
-    ? toUploadFailureMessage(error.failure)
-    : PICTURE_UPLOAD_FAILED;
-
 export const useNewsPicture = (editor: NewsEditor): NewsPictureDesk => {
   const sheet = useKkSheet();
   const raiseNotice = useKkNotice();
@@ -53,63 +34,31 @@ export const useNewsPicture = (editor: NewsEditor): NewsPictureDesk => {
   const removal = useNewsPictureRemoval();
   const galleryPick = useNewsPictureFromGallery();
   const [input, setInput] = useState<HTMLInputElement | null>(null);
-  const [isCropping, setIsCropping] = useState(false);
-  const pendingCrop = useRef<KkCrop | null>(null);
-  const lastFile = useRef<File | null>(null);
-  const currentUpload = useRef<AbortController | null>(null);
   const picture = editor.version.picture;
 
   const failNotice = (): void => {
     raiseNotice({ tone: 'error', message: PICTURE_ACTION_FAILED });
   };
 
-  const cancelUpload = (): void => {
-    currentUpload.current?.abort();
-    currentUpload.current = null;
-  };
-
-  const startUpload = (file: File): void => {
-    cancelUpload();
-    const upload = new AbortController();
-    currentUpload.current = upload;
-    const isCurrent = (): boolean => currentUpload.current === upload;
-    lastFile.current = file;
-    setIsCropping(false);
-    editor.showUpload(uploadingPicture(file, 0, false));
-    editor
-      .settlePicture((newsPostId) =>
-        uploadOwnedPicture({
-          file,
-          owner: newsUploadOwnerOf(newsPostId),
-          crop: null,
-          signal: upload.signal,
-          onProgress: (share) => {
-            if (isCurrent()) {
-              editor.showUpload(uploadingPicture(file, share, false));
-            }
-          },
-        }),
-      )
-      .then(
-        () => {
-          if (isCurrent()) {
-            currentUpload.current = null;
-            editor.showUpload(null);
-          }
-        },
-        (error: Error) => {
-          if (isCurrent()) {
-            currentUpload.current = null;
-            editor.showUpload(uploadingPicture(file, 0, true));
-            raiseNotice({ tone: 'error', message: uploadFailureOf(error) });
-          }
-        },
-      );
-  };
+  const desk = usePictureDesk({
+    cutsBeforeUpload: false,
+    send: (upload) =>
+      editor.settlePicture((newsPostId) => upload({ kind: 'news', id: newsPostId })),
+    saveCrop: (crop) =>
+      editor.settlePicture((newsPostId) => cropping.mutateAsync({ newsPostId, crop })),
+    onChange: (state) => {
+      editor.showUpload(uploadOverlayOf(state));
+    },
+    onUploadFailed: (failure) => {
+      raiseNotice({ tone: 'error', message: toUploadFailureMessage(failure) });
+    },
+    onSaveFailed: failNotice,
+  });
+  const isLocalUpload = desk.state.kind === 'uploading' || desk.state.kind === 'failed';
 
   return {
     picture,
-    isCropping,
+    isCropping: desk.state.kind === 'cropping',
     fileInputRef: setInput,
     chooseFile: () => {
       input?.click();
@@ -118,7 +67,7 @@ export const useNewsPicture = (editor: NewsEditor): NewsPictureDesk => {
       const file = event.target.files?.[0];
       event.target.value = '';
       if (file !== undefined) {
-        startUpload(file);
+        desk.choose(file);
       }
     },
     openGallery: () => {
@@ -126,7 +75,7 @@ export const useNewsPicture = (editor: NewsEditor): NewsPictureDesk => {
     },
     pickPhoto: (photo) => {
       sheet.close();
-      setIsCropping(false);
+      desk.dismiss();
       editor
         .settlePicture((newsPostId) =>
           galleryPick.mutateAsync({
@@ -138,38 +87,20 @@ export const useNewsPicture = (editor: NewsEditor): NewsPictureDesk => {
         .catch(failNotice);
     },
     startCrop: () => {
-      pendingCrop.current = picture?.crop ?? null;
-      setIsCropping(true);
-    },
-    onCropChange: (crop) => {
-      pendingCrop.current = crop;
-    },
-    finishCrop: () => {
-      setIsCropping(false);
-      const crop = pendingCrop.current;
-      if (picture === null || crop === null) {
-        return;
+      const source = picture?.uncroppedSource ?? picture?.source ?? null;
+      if (source !== null) {
+        desk.recrop(source, picture?.crop ?? null);
       }
-      editor
-        .settlePicture((newsPostId) => cropping.mutateAsync({ newsPostId, crop }))
-        .catch(failNotice);
     },
-    cancelCrop: () => {
-      setIsCropping(false);
-    },
+    onCropChange: desk.changeCrop,
+    finishCrop: desk.submit,
+    cancelCrop: desk.dismiss,
     remove: () => {
-      setIsCropping(false);
-      if (picture?.key.startsWith(UPLOAD_KEY_PREFIX)) {
-        cancelUpload();
-        editor.showUpload(null);
-        return;
-      }
-      editor.settlePicture((newsPostId) => removal.mutateAsync(newsPostId)).catch(failNotice);
-    },
-    retry: () => {
-      if (lastFile.current !== null) {
-        startUpload(lastFile.current);
+      desk.dismiss();
+      if (!isLocalUpload) {
+        editor.settlePicture((newsPostId) => removal.mutateAsync(newsPostId)).catch(failNotice);
       }
     },
+    retry: desk.submit,
   };
 };

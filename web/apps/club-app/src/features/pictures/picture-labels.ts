@@ -1,7 +1,8 @@
 import type { KkCropFrameLabels, KkCropGuide } from '@furria/ui';
 import { kkTokens } from '@furria/ui';
 import type { MediaItemState } from '@/lib/api/schemas';
-import type { PictureKind, PictureUploadFailure } from './picture-target';
+import type { UploadFailure } from '@/lib/media/upload-failure';
+import type { PictureKind } from './picture-target';
 
 export interface PictureCopy {
   title: string;
@@ -65,15 +66,15 @@ export const PICTURE_STATE_NOTES: Record<MediaItemState, string | null> = {
   failed: 'Dieses Bild ließ sich nicht verarbeiten. Wähl bitte ein anderes Foto.',
 };
 
-const UPLOAD_FAILURE_MESSAGES: Record<PictureUploadFailure, string> = {
+const UPLOAD_FAILURE_MESSAGES: Record<UploadFailure, string> = {
   tooLarge: 'Das Foto ist zu groß. Erlaubt sind bis zu 100 MB.',
-  notAPhoto: 'Das ist kein unterstütztes Foto. Erlaubt sind JPEG, HEIC, PNG und WebP.',
+  notAccepted: 'Das ist kein unterstütztes Foto. Erlaubt sind JPEG, HEIC, PNG und WebP.',
   notAllowed: 'Dieses Bild darfst du nicht ändern.',
   gone: 'Diesen Eintrag gibt es nicht mehr.',
   interrupted: 'Das Hochladen wurde unterbrochen. Versuch es bitte noch einmal.',
 };
 
-export const toUploadFailureMessage = (failure: PictureUploadFailure): string =>
+export const toUploadFailureMessage = (failure: UploadFailure): string =>
   UPLOAD_FAILURE_MESSAGES[failure];
 
 export const toUploadProgressLine = (share: number): string =>
