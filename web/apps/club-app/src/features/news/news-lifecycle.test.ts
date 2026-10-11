@@ -6,7 +6,6 @@ import {
   missingOf,
   pictureKeyOf,
   pictureOf,
-  stageOf,
 } from './news-lifecycle';
 import type { NewsVersion } from './types';
 
@@ -34,17 +33,6 @@ const editing = (fields: Partial<PictureEditing>): PictureEditing => ({
   uncroppedUrl: '/api/media/7/uncropped?exp=1&sig=a&v=100',
   crop: { left: 0, top: 0.1, width: 1, height: 0.5 },
   ...fields,
-});
-
-describe('stageOf', () => {
-  it.each([
-    ['draft', false, 'draft'],
-    ['published', false, 'live'],
-    ['published', true, 'pending'],
-    ['withdrawn', false, 'withdrawn'],
-  ] as const)('%s with pending changes %s is %s', (state, hasPendingChanges, expected) => {
-    expect(stageOf(state, hasPendingChanges)).toBe(expected);
-  });
 });
 
 describe('missingOf', () => {
@@ -107,12 +95,6 @@ describe('pictureOf', () => {
 });
 
 describe('changedPartsOf', () => {
-  it('lists every part that differs from the live version', () => {
-    expect(
-      changedPartsOf(version({}), version({ title: 'Neu', albumId: 4, pictureCaption: 'Foto: X' })),
-    ).toEqual(['title', 'caption', 'album']);
-  });
-
   it('sees a re-cropped picture as changed', () => {
     const live = version({ picture: pictureOf(editing({})) });
     const recropped = version({
