@@ -1,6 +1,6 @@
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
-import type { KkPressPhase } from '../../press-beats';
+import type { KkPressPhase } from '../logic/press-beats';
 import { PLATES, plateTargetOf, STILL, WOBBLE } from '../logic/press-motion';
 import { KkPressPlate } from './KkPressPlate';
 

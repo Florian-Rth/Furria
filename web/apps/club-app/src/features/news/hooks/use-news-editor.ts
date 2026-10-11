@@ -1,15 +1,15 @@
 import { useKkNotice } from '@furria/ui';
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
-import { NEWS_PATH, useMeQuery } from '@/features/session';
+import { MANAGING_LOGIN_NAME, NEWS_PATH, useMeQuery } from '@/features/session';
 import { toQueryErrorMessage } from '@/lib/query-error';
 import { ACTION_FAILED, PUBLISH_FAILED } from '../editor-copy';
 import { HUB_ERROR_MESSAGES } from '../hub-copy';
-import { MANAGING_LOGIN_NAME, NEW_POST_ID, NEWS_EDITOR_ROUTE } from '../news-copy';
+import { NEW_POST_ID, NEWS_EDITOR_ROUTE } from '../news-copy';
 import { revealNewsField } from '../news-fields';
 import { missingOf } from '../news-lifecycle';
 import type { SaveState } from '../press-bar-facts';
-import { isPressBusy, pressKindOf } from '../press-run';
+import { pressKindOf } from '../press-kind';
 import type { NewsPostDetails } from '../schemas';
 import type {
   NewsFields,
@@ -21,8 +21,8 @@ import type {
   NewsVersionPart,
 } from '../types';
 import { useNewsDraft } from './use-news-draft';
-import type { PressRun } from './use-press-run';
-import { usePressRun } from './use-press-run';
+import type { NewsPress } from './use-news-press';
+import { useNewsPress } from './use-news-press';
 
 export type EditorDialog = 'withdraw' | 'discard' | 'delete';
 
@@ -56,7 +56,7 @@ export interface NewsEditor {
   liveKey: number;
   withdrawKey: number;
   dialog: EditorDialogState | null;
-  press: PressRun;
+  press: NewsPress;
   update: (patch: Partial<NewsFields>) => void;
   showUpload: (picture: NewsPicture | null) => void;
   settlePicture: (job: (newsPostId: number) => Promise<void>) => Promise<void>;
@@ -123,7 +123,10 @@ export const useNewsEditor = (routePostId: string): NewsEditor => {
     setShowsLive(false);
   };
 
-  const press = usePressRun({
+  const signerName = nameOf(me.data?.person ?? null) ?? MANAGING_LOGIN_NAME;
+
+  const press = useNewsPress({
+    signer: signerName,
     onPublished: () => {
       session.release();
       setLiveKey((key) => key + 1);
@@ -150,7 +153,7 @@ export const useNewsEditor = (routePostId: string): NewsEditor => {
       }
       return;
     }
-    if (postId === null || isSettling(version.picture) || isPressBusy(press.phase)) {
+    if (postId === null || isSettling(version.picture) || press.isBusy) {
       return;
     }
     showWorkingCopy();
@@ -181,7 +184,7 @@ export const useNewsEditor = (routePostId: string): NewsEditor => {
     runDialog(chosen.kind).catch(raiseActionFailure);
   };
 
-  const isPressing = isPressBusy(press.phase);
+  const isPressing = press.isBusy;
 
   return {
     sceneKey: `news-editor-${sessionKey}`,
@@ -199,7 +202,7 @@ export const useNewsEditor = (routePostId: string): NewsEditor => {
     isReadOnly: isGone || isPressing || (showsLive && live !== null),
     stage,
     authorName: nameOf(post?.author ?? null),
-    signerName: nameOf(me.data?.person ?? null) ?? MANAGING_LOGIN_NAME,
+    signerName,
     changedParts: showsLive ? [] : view.changedParts,
     liveText: live === null || showsLive ? null : live.text,
     missing,

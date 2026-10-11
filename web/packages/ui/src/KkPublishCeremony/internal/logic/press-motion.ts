@@ -1,8 +1,8 @@
 import type { Theme } from '@mui/material/styles';
 import type { TargetAndTransition, Transition } from 'motion/react';
 import type { KkConfettiColor } from '../../../confetti-pieces';
-import type { KkPressPhase } from '../../press-beats';
-import { KK_PRESS_BEATS_MS } from '../../press-beats';
+import type { KkPressPhase } from './press-beats';
+import { KK_PRESS_BEATS_MS } from './press-beats';
 
 const SECONDS = 1000;
 
@@ -123,5 +123,5 @@ export const STAMP_LEAVING: TargetAndTransition = {
   opacity: 0,
   y: -24,
   rotate: -5,
-  transition: { duration: 0.45, ease: 'easeIn' },
+  transition: { duration: KK_PRESS_BEATS_MS.stampLeave / SECONDS, ease: 'easeIn' },
 };

@@ -1,5 +1,6 @@
 import type { KkNewsProofFacts } from '@furria/ui';
-import { CATEGORY_LABELS, CATEGORY_TONES, WEBSITE_HOST } from '../../news-copy';
+import { WEBSITE_HOST } from '@/lib/publish-copy';
+import { CATEGORY_LABELS, CATEGORY_TONES } from '../../news-copy';
 import {
   clockLabelOf,
   isProofChanged,

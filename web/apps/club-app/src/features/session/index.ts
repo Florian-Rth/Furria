@@ -75,5 +75,6 @@ export { useScreenSearch } from './hooks/use-screen-search';
 export { useScreenTrail } from './hooks/use-screen-trail';
 export { useSearchQuery } from './hooks/use-search-query';
 export { useSessionSnapshot } from './hooks/use-session-snapshot';
+export { MANAGING_LOGIN_NAME, useSignerName } from './hooks/use-signer-name';
 export { deniedMessageOf } from './permission-denials';
 export { AppSearchSchema } from './schemas';

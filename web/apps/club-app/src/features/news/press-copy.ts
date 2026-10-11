@@ -1,18 +1,15 @@
-import type { PressKind } from './press-run';
+import type { PublishConfirmCopy } from '@/lib/publish-copy';
+import { PUBLISHED_STAMP } from '@/lib/publish-copy';
+import type { PressKind } from './press-kind';
 
 export const STAMP_TITLES: Record<PressKind, string> = {
-  first: 'Veröffentlicht',
+  first: PUBLISHED_STAMP,
   changes: 'Aktualisiert',
   republish: 'Wieder online',
 };
 export const WITHDRAWN_STAMP = 'Zurückgezogen';
-export const HOLD_HINT = 'Gedrückt halten zum Veröffentlichen';
 export const FIRST_PUBLICATION_NOTE = 'Adresse und Datum stehen danach fest';
 export const REPUBLISH_NOTE = 'Adresse und Datum bleiben';
-
-export const ANNOUNCE_RUNNING = 'Wird veröffentlicht …';
-export const ANNOUNCE_FAILED = 'Veröffentlichen fehlgeschlagen';
-export const ANNOUNCE_PUBLISHED = 'Veröffentlicht:';
 
 export const LINE_PUBLISHING = 'wird veröffentlicht …';
 export const LINE_VIEW_ONLY = 'nur ansehen, nicht bearbeitbar';
@@ -26,18 +23,7 @@ export const SHOW_LIVE_ITEM = 'Live-Fassung ansehen';
 export const SHOW_WORKING_ITEM = 'Zurück zu den Änderungen';
 export const PUBLISH_SHORT = 'Veröffentlichen';
 
-export const CONFIRM_CANCEL = 'Abbrechen';
-export const CONFIRM_CLOSE = 'Schließen';
-
-export interface PressConfirmCopy {
-  eyebrow: string;
-  question: string;
-  explanation: string;
-  consequence: string | null;
-  confirmLabel: string;
-}
-
-export const PRESS_CONFIRM_COPY: Record<PressKind, PressConfirmCopy> = {
+export const PRESS_CONFIRM_COPY: Record<PressKind, PublishConfirmCopy> = {
   first: {
     eyebrow: 'Aktuelles',
     question: 'Meldung jetzt veröffentlichen?',
@@ -49,7 +35,6 @@ export const PRESS_CONFIRM_COPY: Record<PressKind, PressConfirmCopy> = {
     eyebrow: 'Aktuelles',
     question: 'Änderungen jetzt veröffentlichen?',
     explanation: 'Die Website zeigt danach die neue Fassung.',
-    consequence: null,
     confirmLabel: 'Änderungen veröffentlichen',
   },
   republish: {

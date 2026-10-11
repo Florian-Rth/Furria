@@ -1,5 +1,7 @@
 import type { KeyboardEvent, MouseEvent, PointerEvent } from 'react';
 import { useEffect, useRef, useState } from 'react';
+import type { HoldPoint } from './internal/hold-drift';
+import { hasHoldDrifted } from './internal/hold-drift';
 
 const PRIMARY_BUTTON = 0;
 const ASSISTIVE_CLICK = 0;
@@ -8,6 +10,7 @@ export interface KkHoldGesture {
   holding: boolean;
   hintKey: number;
   onPointerDown: (event: PointerEvent<HTMLButtonElement>) => void;
+  onPointerMove: (event: PointerEvent<HTMLButtonElement>) => void;
   onPointerRelease: () => void;
   onClick: (event: MouseEvent<HTMLButtonElement>) => void;
   onKeyDown: (event: KeyboardEvent<HTMLButtonElement>) => void;
@@ -21,6 +24,11 @@ interface KkHoldGestureInput {
   onAssistiveActivate: () => void;
 }
 
+const pointOf = (event: PointerEvent<HTMLButtonElement>): HoldPoint => ({
+  x: event.clientX,
+  y: event.clientY,
+});
+
 export const useHoldGesture = ({
   holdMs,
   disabled,
@@ -30,6 +38,7 @@ export const useHoldGesture = ({
   const [holding, setHolding] = useState(false);
   const [hintKey, setHintKey] = useState(0);
   const timer = useRef<number | null>(null);
+  const origin = useRef<HoldPoint | null>(null);
   const latest = useRef({ disabled, onHold });
 
   useEffect(() => {
@@ -46,6 +55,7 @@ export const useHoldGesture = ({
   );
 
   const cancelHold = (): boolean => {
+    origin.current = null;
     if (timer.current === null) {
       return false;
     }
@@ -63,9 +73,12 @@ export const useHoldGesture = ({
     if (disabled || event.button !== PRIMARY_BUTTON || timer.current !== null) {
       return;
     }
+    event.currentTarget.setPointerCapture(event.pointerId);
+    origin.current = pointOf(event);
     setHolding(true);
     timer.current = window.setTimeout(() => {
       timer.current = null;
+      origin.current = null;
       setHolding(false);
       if (!latest.current.disabled) {
         latest.current.onHold();
@@ -76,6 +89,12 @@ export const useHoldGesture = ({
   const onPointerRelease = (): void => {
     if (cancelHold()) {
       setHintKey((key) => key + 1);
+    }
+  };
+
+  const onPointerMove = (event: PointerEvent<HTMLButtonElement>): void => {
+    if (origin.current !== null && hasHoldDrifted(origin.current, pointOf(event))) {
+      onPointerRelease();
     }
   };
 
@@ -99,6 +118,7 @@ export const useHoldGesture = ({
     holding,
     hintKey,
     onPointerDown,
+    onPointerMove,
     onPointerRelease,
     onClick,
     onKeyDown,

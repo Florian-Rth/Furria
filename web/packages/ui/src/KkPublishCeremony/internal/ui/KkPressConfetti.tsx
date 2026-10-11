@@ -1,8 +1,8 @@
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
 import { KkConfettiRain } from '../../../KkConfettiRain';
-import type { KkPressPhase } from '../../press-beats';
-import { hasKkPressCut } from '../../press-beats';
+import type { KkPressPhase } from '../logic/press-beats';
+import { hasKkPressCut } from '../logic/press-beats';
 import { PRESS_CONFETTI } from '../logic/press-motion';
 import { useRainWindow } from '../logic/use-rain-window';
 import { KkPressBurst } from './KkPressBurst';

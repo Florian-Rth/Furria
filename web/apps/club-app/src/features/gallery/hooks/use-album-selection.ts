@@ -1,5 +1,8 @@
-import { useKkNotice } from '@furria/ui';
+import type { KkPublishCeremonyRun, KkPublishStamp } from '@furria/ui';
+import { useKkNotice, useKkPublishCeremony } from '@furria/ui';
 import { useState } from 'react';
+import { useSignerName } from '@/features/session';
+import { PUBLISHED_STAMP, websiteAddressOf } from '@/lib/publish-copy';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { usePublication, useSelectionWrite, useUnpublication } from '../api';
 import type { AlbumDetails } from '../schemas';
@@ -16,8 +19,9 @@ import {
 } from '../selection-draft';
 
 const SAVED_MESSAGE = 'Auswahl gespeichert.';
-const PUBLISHED_MESSAGE = 'Das Album steht jetzt auf der Website.';
 const WITHDRAWN_MESSAGE = 'Das Album ist von der Website genommen.';
+const PUBLIC_GALLERY_PATH = '/gallery/';
+const PUBLISHING: PublicationState = { kind: 'ready' };
 
 export interface AlbumSelectionControl {
   draft: SelectionEntry[];
@@ -27,6 +31,7 @@ export interface AlbumSelectionControl {
   announcement: string;
   isSaving: boolean;
   isPublishing: boolean;
+  ceremony: KkPublishCeremonyRun<AlbumDetails>;
   rejection: string | null;
   move: (from: number, to: number) => void;
   remove: (pieceId: string) => void;
@@ -39,6 +44,7 @@ export interface AlbumSelectionControl {
 
 export const useAlbumSelection = (album: AlbumDetails): AlbumSelectionControl => {
   const raiseNotice = useKkNotice();
+  const signer = useSignerName();
   const saved = selectionDraftOf(album.items);
   const [edited, setEdited] = useState<SelectionEntry[] | null>(null);
   const [hangKey, setHangKey] = useState(0);
@@ -60,6 +66,21 @@ export const useAlbumSelection = (album: AlbumDetails): AlbumSelectionControl =>
     setRejection(toWriteErrorMessage(error));
   };
 
+  const stampOf = (published: AlbumDetails, stampedAt: string): KkPublishStamp => ({
+    title: PUBLISHED_STAMP,
+    signer,
+    at: stampedAt,
+    address: websiteAddressOf(`${PUBLIC_GALLERY_PATH}${published.albumId}`),
+  });
+
+  const ceremony = useKkPublishCeremony({
+    stampOf,
+    onPublished: () => {
+      setHangKey((current) => current + 1);
+    },
+    onFailed: fail,
+  });
+
   const save = (): void => {
     setRejection(null);
     selectionWrite.mutate(
@@ -76,13 +97,7 @@ export const useAlbumSelection = (album: AlbumDetails): AlbumSelectionControl =>
 
   const publish = (): void => {
     setRejection(null);
-    publication.mutate(album.albumId, {
-      onSuccess: () => {
-        setHangKey((current) => current + 1);
-        raiseNotice({ tone: 'success', message: PUBLISHED_MESSAGE });
-      },
-      onError: fail,
-    });
+    ceremony.start(() => publication.mutateAsync(album.albumId).then(() => album));
   };
 
   const withdraw = (): void => {
@@ -98,11 +113,12 @@ export const useAlbumSelection = (album: AlbumDetails): AlbumSelectionControl =>
   return {
     draft,
     isDirty,
-    publication: publicationStateOf(album, draft, isDirty),
+    publication: ceremony.isBusy ? PUBLISHING : publicationStateOf(album, draft, isDirty),
     hangKey,
     announcement,
     isSaving: selectionWrite.isPending,
-    isPublishing: publication.isPending || unpublication.isPending,
+    isPublishing: ceremony.isBusy || unpublication.isPending,
+    ceremony,
     rejection,
     move: (from, to) => {
       const target = Math.min(Math.max(to, 0), draft.length - 1);
