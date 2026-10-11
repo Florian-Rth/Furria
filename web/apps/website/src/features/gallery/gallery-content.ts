@@ -1,16 +1,16 @@
 import type { KkPhotoOrientation } from '@furria/ui';
 import { toPictureSourceSet } from '@furria/ui';
 import type { LinkProps } from '@tanstack/react-router';
+import type { NumberedSession } from '@/lib/api/session-section';
 import { sessionAt } from '@/lib/club';
 import { formatLongDate } from '@/lib/date';
-import { buildIdSlug } from '@/lib/id-slug';
+import { publicGallery } from '@/lib/public-gallery/api';
 import type {
   AlbumDetail,
   AlbumPhoto,
   AlbumSummary,
   GalleryPhoto,
   GallerySection,
-  GallerySession,
 } from '@/lib/public-gallery/schemas';
 
 export type PhotoOrientation = KkPhotoOrientation;
@@ -89,23 +89,20 @@ export const photoTileSizes = '(min-width: 900px) 50vw, 100vw';
 
 export const viewerPhotoSizes = '100vw';
 
-export const buildAlbumSlug = (album: { albumId: number; title: string }): string =>
-  buildIdSlug(album.albumId, album.title);
-
 export const buildAlbumHref = (album: { albumId: number; title: string }): string =>
-  `/gallery/${buildAlbumSlug(album)}`;
+  `/gallery/${publicGallery.slugOf(album)}`;
 
 export const buildPhotoSourceSet = (photo: GalleryPhoto): string =>
   toPictureSourceSet(photo, photo.aspect);
 
-export const buildSessionLabel = (session: GallerySession): string =>
+export const buildSessionLabel = (session: NumberedSession): string =>
   session.number === null
     ? `Session ${session.yearsLabel}`
     : `${session.number}. Session ${session.yearsLabel}`;
 
 interface AlbumMoment {
   entryStartsAt: string | null;
-  session: GallerySession;
+  session: NumberedSession;
 }
 
 export const buildAlbumMeta = (album: AlbumMoment): string =>
@@ -181,7 +178,7 @@ export const selectNextAlbum = (
 };
 
 export interface AlbumSessionGroup {
-  session: GallerySession;
+  session: NumberedSession;
   albums: AlbumSummary[];
 }
 

@@ -786,6 +786,19 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         await db.SaveChangesAsync(ct);
     }
 
+    public async Task UncategorizeNewsPostDirectlyAsync(
+        int newsPostId,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var post = await db.NewsPosts.SingleAsync(row => row.Id == newsPostId, ct);
+        post.Category = null;
+        await db.SaveChangesAsync(ct);
+    }
+
     public async Task DisableAccountDirectlyAsync(int accountId, CancellationToken ct = default)
     {
         await using var scope = Services.CreateAsyncScope();

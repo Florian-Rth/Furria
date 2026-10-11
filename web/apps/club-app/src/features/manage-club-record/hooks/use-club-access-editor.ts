@@ -1,12 +1,9 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
-import { useController, useForm } from 'react-hook-form';
-import { toWriteErrorMessage } from '@/lib/write-error';
+import { useController } from 'react-hook-form';
+import { useWriteForm } from '@/features/write';
 import { useUpdateClubAccessMutation } from '../api';
-import { toClubAccessForm } from '../club-record-labels';
+import { toClubAccessForm, toSectionLanding } from '../club-record-labels';
 import type { ClubRecord } from '../schemas';
 import { ClubAccessFormSchema } from '../schemas';
-import { useClubRecordLanding } from './use-club-record-landing';
 
 export interface ClubAccessEditorControl {
   ageOfConsent: string;
@@ -18,36 +15,22 @@ export interface ClubAccessEditorControl {
 }
 
 export const useClubAccessEditor = (record: ClubRecord): ClubAccessEditorControl => {
-  const [rejection, setRejection] = useState<string | null>(null);
   const mutation = useUpdateClubAccessMutation();
-  const landOn = useClubRecordLanding();
 
-  const form = useForm({
-    resolver: zodResolver(ClubAccessFormSchema),
-    defaultValues: toClubAccessForm(record),
+  const write = useWriteForm({
+    schema: ClubAccessFormSchema,
+    defaults: toClubAccessForm(record),
+    mutate: (values) => mutation.mutateAsync(Number(values.ageOfConsent)),
+    landing: () => toSectionLanding('access'),
   });
-  const ageOfConsent = useController({ control: form.control, name: 'ageOfConsent' });
-
-  const handleFormSubmit = form.handleSubmit((values) => {
-    setRejection(null);
-    mutation.mutate(Number(values.ageOfConsent), {
-      onSuccess: () => {
-        landOn('access');
-      },
-      onError: (error) => {
-        setRejection(toWriteErrorMessage(error));
-      },
-    });
-  });
+  const ageOfConsent = useController({ control: write.form.control, name: 'ageOfConsent' });
 
   return {
     ageOfConsent: ageOfConsent.field.value,
     setAgeOfConsent: ageOfConsent.field.onChange,
-    isDirty: form.formState.isDirty,
-    isSaving: mutation.isPending,
-    rejection,
-    submit: () => {
-      void handleFormSubmit();
-    },
+    isDirty: write.isDirty,
+    isSaving: write.isSaving,
+    rejection: write.rejection,
+    submit: write.submit,
   };
 };

@@ -4,8 +4,8 @@ using Furria.Core.Club;
 using Furria.Core.Gallery;
 using Furria.Core.Groups;
 using Furria.Infrastructure.Club;
-using Furria.Infrastructure.Groups;
 using Furria.Infrastructure.Persistence;
+using Furria.Infrastructure.Public;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.News;
@@ -14,10 +14,8 @@ public sealed partial class NewsService
 {
     public async Task<NewsMentionables> GetMentionablesAsync(CancellationToken ct)
     {
-        var groups = await _dbContext
-            .Groups.AsNoTracking()
-            .Where(PublicGroups.IsShown)
-            .OrderBy(group => EF.Functions.Collate(group.Name, GermanCollation.Name))
+        var groups = await _publicFace
+            .Groups.OrderBy(group => EF.Functions.Collate(group.Name, GermanCollation.Name))
             .ThenBy(group => group.Id)
             .Select(group => new GroupRow(
                 group.Id,
@@ -28,7 +26,7 @@ public sealed partial class NewsService
                 group.Picture == null ? null : group.Picture.RenderedAt
             ))
             .ToListAsync(ct);
-        var seats = await _runningBoardSeats.SeatsAsync(ClubClock.Today(_timeProvider), ct);
+        var seats = await RunningBoardSeats.InBoardOrder(_publicFace.BoardSeats).ToListAsync(ct);
 
         return new NewsMentionables
         {
@@ -52,10 +50,8 @@ public sealed partial class NewsService
                 row.CancelledAt != null
             ))
             .ToListAsync(ct);
-        var albums = await _dbContext
-            .Albums.AsNoTracking()
-            .Where(album => album.BinnedAt == null && album.PublishedAt != null)
-            .Select(album => new AlbumRow(
+        var albums = await _publicFace
+            .Albums.Select(album => new AlbumRow(
                 album.Id,
                 album.Title,
                 album.CalendarEntry == null ? null : album.CalendarEntry.StartsAt,
@@ -80,7 +76,6 @@ public sealed partial class NewsService
     private IReadOnlyList<MentionablePerson> PersonsOf(IReadOnlyList<RunningBoardSeat> seats) =>
         [
             .. seats
-                .Where(seat => seat.OfficeIsPublic)
                 .DistinctBy(seat => seat.PersonId)
                 .Select(seat => new MentionablePerson(
                     seat.PersonId,

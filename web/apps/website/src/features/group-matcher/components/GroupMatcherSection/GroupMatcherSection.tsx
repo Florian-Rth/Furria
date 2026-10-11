@@ -1,6 +1,7 @@
 import { KkLead, KkSection, kkTokens } from '@furria/ui';
 import type { FC } from 'react';
 import { MASTHEAD_HEIGHT_CSS_VAR } from '@/components/Masthead/masthead-height';
+import { groupMatcher } from '@/features/group-matcher/api';
 import {
   matcherIntro,
   matcherKicker,
@@ -8,11 +9,10 @@ import {
   matcherTitle,
 } from '@/features/group-matcher/matcher-content';
 import { MatcherPanel } from './internal/layout/MatcherPanel';
-import { useMatcherSource } from './internal/logic/use-matcher-source';
 import { MatcherBody } from './internal/ui/MatcherBody';
 
 export const GroupMatcherSection: FC = () => {
-  const source = useMatcherSource();
+  const source = groupMatcher.useSource();
 
   return (
     <KkSection

@@ -1,11 +1,8 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
-import { useController, useForm } from 'react-hook-form';
-import { toLandingKey } from '@/features/write';
+import { useController } from 'react-hook-form';
+import type { WriteLanding } from '@/features/write';
+import { useWriteForm } from '@/features/write';
 import type { PersonRef } from '@/lib/api/schemas';
 import { toIsoDay } from '@/lib/day';
-import { useGoBackTo } from '@/lib/use-go-back-to';
-import { toWriteErrorMessage } from '@/lib/write-error';
 import { useHandOutKeyMutation, useTakeBackKeyMutation } from '../api';
 import { toHandoutConsequence, toPersonName, toReturnConsequence } from '../manage-keys-labels';
 import type { KeyHolding } from '../schemas';
@@ -14,6 +11,11 @@ import { KeyHandoutFormSchema, KeyReturnFormSchema } from '../schemas';
 const HANDOUT_LABEL = 'Schlüssel ausgeben';
 const RETURN_LABEL = 'Schlüssel zurücknehmen';
 const KEYS_ROUTE = '/manage/keys';
+
+const toKeysLanding = (keyHoldingId: number): WriteLanding => ({
+  to: KEYS_ROUTE,
+  mark: { kind: 'keyHolding', id: keyHoldingId },
+});
 
 interface KeyHoldingEditorInput {
   venueId: number;
@@ -47,87 +49,48 @@ export const useKeyHoldingEditor = ({
   holding,
 }: KeyHoldingEditorInput): KeyHoldingEditorControl => {
   const today = toIsoDay(new Date());
-  const isEditing = holding !== null;
-  const [rejection, setRejection] = useState<string | null>(null);
-
   const handoutMutation = useHandOutKeyMutation();
   const returnMutation = useTakeBackKeyMutation();
-  const goBackTo = useGoBackTo();
 
-  const handoutForm = useForm({
-    resolver: zodResolver(KeyHandoutFormSchema),
-    defaultValues: { person: null, sinceOn: today },
-    mode: 'onTouched',
+  const handout = useWriteForm({
+    schema: KeyHandoutFormSchema,
+    defaults: { person: null, sinceOn: today },
+    mutate: (values) =>
+      handoutMutation
+        .mutateAsync({
+          venueId,
+          venueName,
+          personId: values.person.personId,
+          personName: toPersonName(values.person),
+          sinceOn: values.sinceOn,
+        })
+        .then((created) => created.keyHoldingId),
+    landing: toKeysLanding,
   });
-  const returnForm = useForm({
-    resolver: zodResolver(KeyReturnFormSchema),
-    defaultValues: { untilOn: holding?.untilOn ?? today },
-    mode: 'onTouched',
+  const takeBack = useWriteForm({
+    schema: KeyReturnFormSchema,
+    defaults: { untilOn: holding?.untilOn ?? today },
+    mutate: (values) =>
+      holding === null
+        ? null
+        : returnMutation
+            .mutateAsync({
+              keyHoldingId: holding.keyHoldingId,
+              personName: toPersonName(holding),
+              untilOn: values.untilOn,
+            })
+            .then(() => holding.keyHoldingId),
+    landing: toKeysLanding,
   });
-  const handoutState = handoutForm.formState;
-  const returnState = returnForm.formState;
-  const { isDirty: isHandoutDirty, isValid: isHandoutValid } = handoutState;
-  const { isDirty: isReturnDirty, isValid: isReturnValid } = returnState;
-  const personField = useController({ control: handoutForm.control, name: 'person' });
-  const sinceOnField = useController({ control: handoutForm.control, name: 'sinceOn' });
-  const untilOnField = useController({ control: returnForm.control, name: 'untilOn' });
+  const personField = useController({ control: handout.form.control, name: 'person' });
+  const sinceOnField = useController({ control: handout.form.control, name: 'sinceOn' });
+  const untilOnField = useController({ control: takeBack.form.control, name: 'untilOn' });
 
   const person = personField.field.value;
   const sinceOn = sinceOnField.field.value;
   const untilOn = untilOnField.field.value;
   const personName = person === null ? '' : toPersonName(person);
-
-  const landBack = (keyHoldingId: number): void => {
-    void goBackTo({
-      to: KEYS_ROUTE,
-      search: (previous) => ({ ...previous, changed: toLandingKey('keyHolding', keyHoldingId) }),
-      ignoreBlocker: true,
-    });
-  };
-
-  const fail = (error: Error): void => {
-    setRejection(toWriteErrorMessage(error));
-  };
-
-  const clearPerson = (): void => {
-    personField.field.onChange(null);
-    setRejection(null);
-  };
-
-  const select = (next: PersonRef): void => {
-    personField.field.onChange(next);
-    setRejection(null);
-  };
-
-  const submitHandout = handoutForm.handleSubmit((values) => {
-    setRejection(null);
-    handoutMutation.mutate(
-      {
-        venueId,
-        venueName,
-        personId: values.person.personId,
-        personName: toPersonName(values.person),
-        sinceOn: values.sinceOn,
-      },
-      { onSuccess: (created) => landBack(created.keyHoldingId), onError: fail },
-    );
-  });
-
-  const submitReturn = returnForm.handleSubmit((values) => {
-    if (holding === null) {
-      return;
-    }
-
-    setRejection(null);
-    returnMutation.mutate(
-      {
-        keyHoldingId: holding.keyHoldingId,
-        personName: toPersonName(holding),
-        untilOn: values.untilOn,
-      },
-      { onSuccess: () => landBack(holding.keyHoldingId), onError: fail },
-    );
-  });
+  const write = holding === null ? handout : takeBack;
 
   const consequence =
     holding !== null
@@ -139,24 +102,24 @@ export const useKeyHoldingEditor = ({
         : toHandoutConsequence(personName, venueName, sinceOn, today);
 
   return {
-    isEditing,
+    isEditing: holding !== null,
     person,
-    select,
-    clearPerson,
+    select: personField.field.onChange,
+    clearPerson: () => {
+      personField.field.onChange(null);
+    },
     sinceOn,
     setSinceOn: sinceOnField.field.onChange,
-    sinceOnError: handoutState.errors.sinceOn?.message,
+    sinceOnError: handout.form.formState.errors.sinceOn?.message,
     untilOn,
     setUntilOn: untilOnField.field.onChange,
-    untilOnError: returnState.errors.untilOn?.message,
+    untilOnError: takeBack.form.formState.errors.untilOn?.message,
     consequence,
-    rejection,
-    isSaving: isEditing ? returnMutation.isPending : handoutMutation.isPending,
-    isDirty: isEditing ? isReturnDirty : isHandoutDirty,
-    canSubmit: isEditing ? isReturnValid : isHandoutValid,
-    actionLabel: isEditing ? RETURN_LABEL : HANDOUT_LABEL,
-    submit: () => {
-      void (isEditing ? submitReturn() : submitHandout());
-    },
+    rejection: write.rejection,
+    isSaving: write.isSaving,
+    isDirty: write.isDirty,
+    canSubmit: write.canSubmit,
+    actionLabel: holding === null ? HANDOUT_LABEL : RETURN_LABEL,
+    submit: write.submit,
   };
 };

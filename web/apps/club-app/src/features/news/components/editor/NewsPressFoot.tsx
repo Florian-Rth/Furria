@@ -1,12 +1,12 @@
-import { KkButton, KkFormatRail, KkPressBar } from '@furria/ui';
+import { KkButton, KkFormatRail, KkHoldButton, KkPressBar } from '@furria/ui';
 import type { FC } from 'react';
+import { PUBLISH_HOLD_HINT } from '@/lib/publish-copy';
 import { RAIL_LABEL, READINESS_LABEL } from '../../editor-copy';
 import { useFormatItems } from '../../hooks/use-format-items';
 import type { NewsEditor } from '../../hooks/use-news-editor';
 import { usePressFoot } from '../../hooks/use-press-foot';
 import type { ProseText } from '../../hooks/use-prose-text';
 import { MORE_ACTIONS, VERSION_TOGGLE_LABEL } from '../../press-copy';
-import { NewsHoldButton } from '../press/NewsHoldButton';
 
 interface NewsPressFootProps {
   editor: NewsEditor;
@@ -56,12 +56,13 @@ export const NewsPressFoot: FC<NewsPressFootProps> = ({ editor, text }) => {
     );
   const publish =
     foot.publishLabel === null ? null : (
-      <NewsHoldButton
+      <KkHoldButton
         label={foot.publishLabel}
-        kind={foot.pressKind}
-        firstPublication={foot.pressKind === 'first'}
+        hint={PUBLISH_HOLD_HINT}
+        note={foot.publishNote}
+        confirm={foot.publishConfirm}
         disabled={foot.isBlocked}
-        onPress={editor.requestPublish}
+        onCommit={editor.requestPublish}
       />
     );
 

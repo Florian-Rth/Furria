@@ -2,13 +2,14 @@ import type { QueryClient, UseMutationResult, UseQueryResult } from '@tanstack/r
 import {
   keepPreviousData,
   queryOptions,
-  useMutation,
   useQueries,
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
 import { START_QUERY_KEY } from '@/features/start';
+import { useApiMutation } from '@/lib/api/api-mutation';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
+import { pollWhileDeveloping } from '@/lib/media/developing';
 import type { AlbumFilter } from './requests';
 import {
   requestAlbum,
@@ -54,16 +55,13 @@ export const inboxQueryKey = (owner: InboxOwner): readonly [string, string, Inbo
   owner,
 ];
 
-const PROCESSING_POLL_MS = 4_000;
+const isProcessing = (album: { items: readonly { state: string }[] } | undefined): boolean =>
+  album?.items.some((item) => item.state === 'processing') ?? false;
 
-const isProcessing = (items: readonly { state: string }[] | undefined): boolean =>
-  items?.some((item) => item.state === 'processing') ?? false;
+const GALLERY_SCOPE = [GALLERY_QUERY_KEY, START_QUERY_KEY] as const;
 
 export const refreshGallery = async (queryClient: QueryClient): Promise<void> => {
-  await Promise.all([
-    queryClient.invalidateQueries({ queryKey: GALLERY_QUERY_KEY }),
-    queryClient.invalidateQueries({ queryKey: START_QUERY_KEY }),
-  ]);
+  await Promise.all(GALLERY_SCOPE.map((queryKey) => queryClient.invalidateQueries({ queryKey })));
 };
 
 export const useGalleryHubQuery = (): UseQueryResult<GalleryHub, Error> =>
@@ -76,16 +74,14 @@ const albumQueryOptions = (albumId: number, filter: AlbumFilter) =>
   queryOptions({
     queryKey: albumQueryKey(albumId, filter),
     queryFn: () => withFreshAccessToken((token) => requestAlbum(albumId, filter, token)),
-    refetchInterval: (query) =>
-      isProcessing(query.state.data?.items) ? PROCESSING_POLL_MS : false,
+    refetchInterval: pollWhileDeveloping(isProcessing),
   });
 
 const inboxQueryOptions = (owner: InboxOwner) =>
   queryOptions({
     queryKey: inboxQueryKey(owner),
     queryFn: () => withFreshAccessToken((token) => requestInbox(owner, token)),
-    refetchInterval: (query) =>
-      isProcessing(query.state.data?.items) ? PROCESSING_POLL_MS : false,
+    refetchInterval: pollWhileDeveloping(isProcessing),
   });
 
 export const useAlbumQuery = (
@@ -136,14 +132,9 @@ export const useGalleryBinQuery = (): UseQueryResult<GalleryBin, Error> =>
   });
 
 const useGalleryMutation = <TInput, TResult>(
-  write: (input: TInput, accessToken: string) => Promise<TResult>,
-): UseMutationResult<TResult, Error, TInput> => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input: TInput) => withFreshAccessToken((token) => write(input, token)),
-    onSettled: () => refreshGallery(queryClient),
-  });
-};
+  request: (input: TInput, accessToken: string) => Promise<TResult>,
+): UseMutationResult<TResult, Error, TInput> =>
+  useApiMutation({ request, invalidates: GALLERY_SCOPE });
 
 export interface AlbumUpdateInput {
   albumId: number;

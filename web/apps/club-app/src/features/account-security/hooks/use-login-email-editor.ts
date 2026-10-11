@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import type { UseControllerReturn, UseFormReturn } from 'react-hook-form';
 import { useController, useForm } from 'react-hook-form';
-import { toLandingKey } from '@/features/write';
+import { toLandingKey, toWriteFailure } from '@/features/write';
 import { useGoBackTo } from '@/lib/use-go-back-to';
 import {
   SECURITY_LANDINGS,
@@ -11,7 +11,6 @@ import {
   toLoginEmailSavedMessage,
 } from '../account-security-labels';
 import { useLoginEmailChangeMutation, useLoginEmailConfirmationMutation } from '../api';
-import { refusesField, toFieldRefusals } from '../field-refusals';
 import type { LoginEmailStep, PendingLoginEmail } from '../login-email-step';
 import { isCurrentLoginEmail, toLoginEmailStep } from '../login-email-step';
 import type { LoginEmailCodeForm, LoginEmailForm } from '../schemas';
@@ -68,7 +67,7 @@ export const useLoginEmailEditor = (currentLoginEmail: string): LoginEmailEditor
   const step = toLoginEmailStep(pending, loginEmailRefused);
 
   const showAddressFailure = (error: Error): void => {
-    const failures = toFieldRefusals(error, LOGIN_EMAIL_FIELD_NAMES);
+    const failures = toWriteFailure(error, LOGIN_EMAIL_FIELD_NAMES);
 
     for (const failure of failures.fields) {
       addressForm.setError(failure.name, { message: failure.message });
@@ -78,7 +77,7 @@ export const useLoginEmailEditor = (currentLoginEmail: string): LoginEmailEditor
   };
 
   const showCodeFailure = (error: Error): void => {
-    const failures = toFieldRefusals(error, LOGIN_EMAIL_CODE_FIELD_NAMES);
+    const failures = toWriteFailure(error, LOGIN_EMAIL_CODE_FIELD_NAMES);
 
     for (const failure of failures.fields) {
       if (failure.name === 'code') {
@@ -88,7 +87,7 @@ export const useLoginEmailEditor = (currentLoginEmail: string): LoginEmailEditor
       }
     }
 
-    setLoginEmailRefused(refusesField(failures, 'loginEmail'));
+    setLoginEmailRefused(failures.fields.some((failure) => failure.name === 'loginEmail'));
     setRejection(failures.footer);
   };
 

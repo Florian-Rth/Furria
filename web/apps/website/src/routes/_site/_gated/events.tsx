@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { buildEventsJsonLd, EventsScreen } from '@/features/events';
-import { ensurePublicEvents } from '@/lib/public-events/api';
+import { publicEvents } from '@/lib/public-events/api';
 import type { Event } from '@/lib/public-events/schemas';
 import type { RouteHead } from '@/lib/seo';
 import { pageTitle } from '@/lib/seo';
@@ -21,7 +21,7 @@ const buildEventsScripts = (events: Event[] | null | undefined): RouteHead['scri
     : [{ type: 'application/ld+json', children: JSON.stringify(buildEventsJsonLd(events)) }];
 
 export const Route = createFileRoute('/_site/_gated/events')({
-  loader: (): Promise<Event[] | null> => ensurePublicEvents().catch((): null => null),
+  loader: (): Promise<Event[] | null> => publicEvents.ensure().catch((): null => null),
   head: ({ loaderData }): RouteHead => ({
     meta: [
       { title: pageTitle('Veranstaltungen') },

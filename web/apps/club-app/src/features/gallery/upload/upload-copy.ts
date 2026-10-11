@@ -1,5 +1,5 @@
+import type { UploadFailure } from '@/lib/media/upload-failure';
 import { countLabel } from '../gallery-view';
-import type { UploadFailure } from './upload-queue';
 import type { UploadStatus } from './upload-status';
 
 export const DROP_LEAD = 'Ordner hierher ziehen';
@@ -17,7 +17,7 @@ const FAILURE_LINES: Record<UploadFailure, string> = {
   tooLarge: 'zu groß',
   notAccepted: 'kein Foto oder Video',
   notAllowed: 'nicht erlaubt',
-  albumGone: 'Album gibt es nicht mehr',
+  gone: 'Album gibt es nicht mehr',
   interrupted: 'abgebrochen — antippen zum Wiederholen',
 };
 

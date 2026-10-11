@@ -3,9 +3,9 @@ import type { UseMutationResult } from '@tanstack/react-query';
 import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
+import { toWriteFailure } from '@/features/write';
 import { toPasskeyErrorMessage } from '@/lib/passkey/passkey-messages';
 import { usePasskeySupport } from '@/lib/passkey/use-passkey-support';
-import { toFieldRefusals } from '../field-refusals';
 import type { ReauthenticationForm } from '../schemas';
 import { REAUTHENTICATION_FIELD_NAMES, ReauthenticationFormSchema } from '../schemas';
 import type { ReauthenticationProof } from '../types';
@@ -39,7 +39,7 @@ export const useReauthentication = <TResult>(
   });
 
   const showFailure = (error: Error): void => {
-    const failures = toFieldRefusals(error, REAUTHENTICATION_FIELD_NAMES);
+    const failures = toWriteFailure(error, REAUTHENTICATION_FIELD_NAMES);
 
     for (const failure of failures.fields) {
       form.setError(failure.name, { message: failure.message });

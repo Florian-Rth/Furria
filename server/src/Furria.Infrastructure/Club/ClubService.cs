@@ -2,6 +2,7 @@ using Furria.Application.Club;
 using Furria.Core.Club;
 using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
+using Furria.Infrastructure.Public;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Club;
@@ -11,18 +12,21 @@ public sealed partial class ClubService
     private readonly AppDbContext _dbContext;
     private readonly RunningBoardSeats _runningBoardSeats;
     private readonly MediaPictures _pictures;
+    private readonly PublicFace _publicFace;
     private readonly TimeProvider _timeProvider;
 
     public ClubService(
         AppDbContext dbContext,
         RunningBoardSeats runningBoardSeats,
         MediaPictures pictures,
+        PublicFace publicFace,
         TimeProvider timeProvider
     )
     {
         _dbContext = dbContext;
         _runningBoardSeats = runningBoardSeats;
         _pictures = pictures;
+        _publicFace = publicFace;
         _timeProvider = timeProvider;
     }
 

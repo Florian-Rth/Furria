@@ -162,7 +162,6 @@ public sealed partial class GalleryService
         _dbContext
             .Albums.Where(album =>
                 albumIds.Contains(album.Id)
-                && album.PublishedAt != null
                 && !album.Items.Any(item => item.SelectionPosition != null)
             )
             .ExecuteUpdateAsync(

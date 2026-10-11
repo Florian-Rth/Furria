@@ -1,26 +1,14 @@
 import { GROUP_TONES } from '@furria/ui/group-tone';
 import { z } from 'zod';
 import { PictureSchema } from '@/lib/api/picture';
-import type { Session } from '@/lib/club';
-import { sessionStartingIn } from '@/lib/club';
-import { toBerlinWallClock } from '@/lib/date';
+import { SessionSectionSchema } from '@/lib/api/session-section';
+import { WallClockSchema } from '@/lib/api/wall-clock';
 
 export const NEWS_CATEGORIES = ['session', 'achievements', 'club', 'groups'] as const;
 
 export const NewsCategorySchema = z.enum(NEWS_CATEGORIES);
 
 export type NewsCategory = z.infer<typeof NewsCategorySchema>;
-
-export interface NewsSession extends Session {
-  number: number | null;
-}
-
-const toNewsSession = (startYear: number, number: number | null): NewsSession => ({
-  ...sessionStartingIn(startYear),
-  number,
-});
-
-const WallClockSchema = z.iso.datetime({ offset: true }).transform(toBerlinWallClock);
 
 const NewsPostFieldsSchema = z.object({
   slug: z.string().min(1),
@@ -34,16 +22,9 @@ const NewsPostFieldsSchema = z.object({
 
 export type NewsPost = z.infer<typeof NewsPostFieldsSchema>;
 
-export const NewsSectionSchema = z
-  .object({
-    sessionStartYear: z.number().int(),
-    sessionNumber: z.number().int().positive().nullable(),
-    posts: z.array(NewsPostFieldsSchema).min(1),
-  })
-  .transform(({ sessionStartYear, sessionNumber, posts }) => ({
-    session: toNewsSession(sessionStartYear, sessionNumber),
-    posts,
-  }));
+export const NewsSectionSchema = SessionSectionSchema({
+  posts: z.array(NewsPostFieldsSchema).min(1),
+});
 
 export type NewsSection = z.infer<typeof NewsSectionSchema>;
 

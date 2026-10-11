@@ -22,7 +22,7 @@ public sealed class GetNewsTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_LeadWithTheDraftsThenEachSessionNewestFirst_When_TheHubIsOpened()
+    public async Task Should_LeadWithTheDraftsThenListThePostsNewestFirst_When_TheHubIsOpened()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(Posts(), ct);
@@ -31,16 +31,8 @@ public sealed class GetNewsTests : IClassFixture<ApiTestFixture>
         var (_, result) = await client.GETAsync<GetNews, GetNewsResponse>();
 
         Assert.Equal(
-            [(null, null), (2025, 55), (2024, null)],
-            result.Sections.Select(section => (section.SessionStartYear, section.SessionNumber))
-        );
-        Assert.Equal(
-            [
-                ["Entwurf"],
-                ["Gala-Rückblick", "Zurückgezogen", "Das Motto steht fest"],
-                ["Altweiber"],
-            ],
-            result.Sections.Select(section => section.Posts.Select(post => post.Title))
+            ["Entwurf", "Gala-Rückblick", "Zurückgezogen", "Das Motto steht fest", "Altweiber"],
+            result.Sections.SelectMany(section => section.Posts).Select(post => post.Title)
         );
     }
 
@@ -133,7 +125,6 @@ public sealed class GetNewsTests : IClassFixture<ApiTestFixture>
         builder =>
             builder
                 .WithNewsEditor()
-                .Club(club => club.AddSession("2025", 2025, number: 55))
                 .News(news =>
                     news.AddNewsPost("draft", "Entwurf")
                         .AddNewsPost(

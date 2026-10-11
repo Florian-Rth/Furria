@@ -1,13 +1,10 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
-import { useController, useForm } from 'react-hook-form';
+import { useController } from 'react-hook-form';
 import type { GroupDetailAdmin } from '@/features/group-detail';
 import { useMeQuery } from '@/features/session';
-import { toLandingKey } from '@/features/write';
+import type { WriteLanding } from '@/features/write';
+import { useWriteForm } from '@/features/write';
 import type { PersonRef } from '@/lib/api/schemas';
 import { toIsoDay } from '@/lib/day';
-import { useGoBackTo } from '@/lib/use-go-back-to';
-import { toWriteErrorMessage } from '@/lib/write-error';
 import { useAddGroupAdminMutation, useEndGroupAdminMutation } from '../api';
 import {
   toAdminEndConsequence,
@@ -64,90 +61,58 @@ export const useGroupAdminEditor = ({
   const isEditing = admin !== null;
   const me = useMeQuery();
   const isSelf = admin !== null && admin.personId === me.data?.person?.id;
-  const [rejection, setRejection] = useState<string | null>(null);
+  const adminName = toPersonName(admin);
 
   const addMutation = useAddGroupAdminMutation(groupId);
   const endMutation = useEndGroupAdminMutation(groupId);
-  const goBackTo = useGoBackTo();
 
-  const appointForm = useForm({
-    resolver: zodResolver(GroupAdminAppointFormSchema),
-    defaultValues: { person: prefillPerson, functionLabel: '', sinceOn: today },
-    mode: 'onTouched',
+  const toGroupLanding = (adminId: number): WriteLanding => ({
+    to: '/groups/$groupId',
+    params: { groupId },
+    mark: { kind: 'admin', id: adminId },
   });
-  const endForm = useForm({
-    resolver: zodResolver(GroupAdminEndFormSchema),
-    defaultValues: { endedOn: today },
-    mode: 'onTouched',
+
+  const appointing = useWriteForm({
+    schema: GroupAdminAppointFormSchema,
+    defaults: { person: prefillPerson, functionLabel: '', sinceOn: today },
+    mutate: (values) =>
+      addMutation
+        .mutateAsync({
+          personId: values.person.personId,
+          personName: toPersonName(values.person),
+          function: toAdminFunction(values.functionLabel),
+          sinceOn: values.sinceOn,
+        })
+        .then((added) => added.groupAdminId),
+    landing: toGroupLanding,
   });
-  const appointState = appointForm.formState;
-  const endState = endForm.formState;
-  const { isDirty: isAppointDirty, isValid: isAppointValid } = appointState;
-  const { isDirty: isEndDirty, isValid: isEndValid } = endState;
-  const personField = useController({ control: appointForm.control, name: 'person' });
-  const functionField = useController({ control: appointForm.control, name: 'functionLabel' });
-  const sinceOnField = useController({ control: appointForm.control, name: 'sinceOn' });
-  const endedOnField = useController({ control: endForm.control, name: 'endedOn' });
+  const ending = useWriteForm({
+    schema: GroupAdminEndFormSchema,
+    defaults: { endedOn: today },
+    mutate: (values) =>
+      admin === null
+        ? null
+        : endMutation
+            .mutateAsync({
+              groupAdminId: admin.groupAdminId,
+              personName: adminName,
+              groupName,
+              isSelf,
+              endedOn: values.endedOn,
+            })
+            .then(() => admin.groupAdminId),
+    landing: toGroupLanding,
+  });
+  const personField = useController({ control: appointing.form.control, name: 'person' });
+  const functionField = useController({ control: appointing.form.control, name: 'functionLabel' });
+  const sinceOnField = useController({ control: appointing.form.control, name: 'sinceOn' });
+  const endedOnField = useController({ control: ending.form.control, name: 'endedOn' });
 
   const person = personField.field.value;
   const sinceOn = sinceOnField.field.value;
   const endedOn = endedOnField.field.value;
   const personName = toPersonName(person);
-  const adminName = toPersonName(admin);
-
-  const landBack = (adminId: number): void => {
-    void goBackTo({
-      to: '/groups/$groupId',
-      params: { groupId: String(groupId) },
-      search: (previous) => ({ ...previous, changed: toLandingKey('admin', adminId) }),
-      ignoreBlocker: true,
-    });
-  };
-
-  const fail = (error: Error): void => {
-    setRejection(toWriteErrorMessage(error));
-  };
-
-  const clearPerson = (): void => {
-    personField.field.onChange(null);
-    setRejection(null);
-  };
-
-  const select = (next: PersonRef): void => {
-    personField.field.onChange(next);
-    setRejection(null);
-  };
-
-  const submitAppoint = appointForm.handleSubmit((values) => {
-    setRejection(null);
-    addMutation.mutate(
-      {
-        personId: values.person.personId,
-        personName: toPersonName(values.person),
-        function: toAdminFunction(values.functionLabel),
-        sinceOn: values.sinceOn,
-      },
-      { onSuccess: (added) => landBack(added.groupAdminId), onError: fail },
-    );
-  });
-
-  const submitEnd = endForm.handleSubmit((values) => {
-    if (admin === null) {
-      return;
-    }
-
-    setRejection(null);
-    endMutation.mutate(
-      {
-        groupAdminId: admin.groupAdminId,
-        personName: adminName,
-        groupName,
-        isSelf,
-        endedOn: values.endedOn,
-      },
-      { onSuccess: () => landBack(admin.groupAdminId), onError: fail },
-    );
-  });
+  const write = isEditing ? ending : appointing;
 
   const appointConsequence =
     person === null || sinceOn === null ? null : toAppointConsequence(personName, sinceOn, today);
@@ -157,26 +122,26 @@ export const useGroupAdminEditor = ({
   return {
     isEditing,
     person,
-    select,
-    clearPerson,
+    select: personField.field.onChange,
+    clearPerson: () => {
+      personField.field.onChange(null);
+    },
     functionLabel: functionField.field.value,
     setFunctionLabel: functionField.field.onChange,
     sinceOn,
     setSinceOn: sinceOnField.field.onChange,
-    sinceOnError: appointState.errors.sinceOn?.message,
+    sinceOnError: appointing.form.formState.errors.sinceOn?.message,
     endedOn,
     setEndedOn: endedOnField.field.onChange,
-    endedOnError: endState.errors.endedOn?.message,
+    endedOnError: ending.form.formState.errors.endedOn?.message,
     consequence: isEditing
       ? toAdminEndParagraph(endConsequence, isSelf, runningAdmins)
       : appointConsequence,
-    rejection,
-    isSaving: isEditing ? endMutation.isPending : addMutation.isPending,
-    isDirty: isEditing ? isEndDirty : isAppointDirty,
-    canSubmit: isEditing ? isEndValid : isAppointValid,
+    rejection: write.rejection,
+    isSaving: write.isSaving,
+    isDirty: write.isDirty,
+    canSubmit: write.canSubmit,
     actionLabel: isEditing ? END_LABEL : APPOINT_LABEL,
-    submit: () => {
-      void (isEditing ? submitEnd() : submitAppoint());
-    },
+    submit: write.submit,
   };
 };

@@ -7,6 +7,20 @@ export interface SplitFlapPose {
   fallen: boolean;
 }
 
+export type FlapPoseAt = (clock: number) => SplitFlapPose;
+
+export interface FlapLeafFrame {
+  fall: number;
+  land: number;
+  fallOpacity: number;
+  landOpacity: number;
+  revealClip: string;
+  coverClip: string;
+  presence: number;
+  fallShade: number;
+  landShade: number;
+}
+
 const FALL_SHARE = 0.5;
 const LAND_SHARE = 0.78;
 const REBOUND_DEGREES = 14;
@@ -64,15 +78,41 @@ export const flapPoseAt = (progress: number): SplitFlapPose => {
   };
 };
 
-export const revealClipOf = (pose: SplitFlapPose): string =>
+const revealClipOf = (pose: SplitFlapPose): string =>
   pose.reveal <= 0
     ? UNREVEALED_CLIP
     : `inset(${SPILL} ${SPILL} ${HALF + HALF * (1 - pose.reveal)}% ${SPILL})`;
 
-export const coverClipOf = (pose: SplitFlapPose): string =>
+const coverClipOf = (pose: SplitFlapPose): string =>
   pose.cover >= 1 ? COVERED_CLIP : `inset(${HALF + HALF * pose.cover}% ${SPILL} ${SPILL} ${SPILL})`;
 
-export const leafShadeOf = (degrees: number): number => SHADE_DEPTH * (1 - cosineOf(degrees));
+const leafShadeOf = (degrees: number): number => SHADE_DEPTH * (1 - cosineOf(degrees));
+
+export const turnedPoseOf = (
+  fall: number,
+  land: number,
+  cover: number,
+  presence: number,
+): SplitFlapPose => ({
+  fall,
+  land,
+  reveal: 1 - cosineOf(fall),
+  cover,
+  presence,
+  fallen: fall <= -RIGHT_ANGLE,
+});
+
+export const flapLeafOf = (pose: SplitFlapPose): FlapLeafFrame => ({
+  fall: pose.fall,
+  land: pose.land,
+  fallOpacity: pose.fallen ? 0 : 1,
+  landOpacity: pose.fallen ? 1 : 0,
+  revealClip: revealClipOf(pose),
+  coverClip: coverClipOf(pose),
+  presence: pose.presence,
+  fallShade: leafShadeOf(pose.fall),
+  landShade: leafShadeOf(pose.land),
+});
 
 export const tileBandClipOf = (presence: number): string => {
   if (presence >= 1) {

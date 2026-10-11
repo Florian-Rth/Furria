@@ -1,10 +1,10 @@
-import { useKkNotice } from '@furria/ui';
-import type { QueryClient, UseMutationResult, UseQueryResult } from '@tanstack/react-query';
-import { skipToken, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
+import { skipToken, useQuery } from '@tanstack/react-query';
 import { CALENDAR_QUERY_KEY, toEntryWriteNotice } from '@/features/calendar';
 import { CLUB_HUB_QUERY_KEY } from '@/features/club';
 import { START_QUERY_KEY } from '@/features/start';
 import type { ToDoMarkSurface } from '@/features/to-dos';
+import { useApiMutation } from '@/lib/api/api-mutation';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { isNotFoundError } from '@/lib/query-error';
 import type { EventPayload } from './event-form';
@@ -63,14 +63,12 @@ export interface EventCancelledInput {
   isCancelled: boolean;
 }
 
-const refreshEvents = async (queryClient: QueryClient): Promise<void> => {
-  await Promise.all([
-    queryClient.invalidateQueries({ queryKey: EVENTS_QUERY_KEY }),
-    queryClient.invalidateQueries({ queryKey: CALENDAR_QUERY_KEY }),
-    queryClient.invalidateQueries({ queryKey: CLUB_HUB_QUERY_KEY }),
-    queryClient.invalidateQueries({ queryKey: START_QUERY_KEY }),
-  ]);
-};
+const EVENTS_SCOPE = [
+  EVENTS_QUERY_KEY,
+  CALENDAR_QUERY_KEY,
+  CLUB_HUB_QUERY_KEY,
+  START_QUERY_KEY,
+] as const;
 
 export const useEventsQuery = (): UseQueryResult<EventsResponse, Error> =>
   useQuery({
@@ -88,99 +86,64 @@ export const useEventQuery = (eventId: number | null): UseQueryResult<EventDetai
   return useQuery({ queryKey: eventQueryKey(eventId), queryFn: load });
 };
 
-export const useCreateEventMutation = (): UseMutationResult<WrittenEvent, Error, EventPayload> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: (payload: EventPayload) =>
-      withFreshAccessToken((accessToken) => requestEventCreation(payload, accessToken)),
-    onSuccess: (written, payload) => {
-      raiseNotice(
+export const useCreateEventMutation = (): UseMutationResult<WrittenEvent, Error, EventPayload> =>
+  useApiMutation({
+    request: requestEventCreation,
+    invalidates: EVENTS_SCOPE,
+    notice: {
+      success: (payload, written) =>
         toEntryWriteNotice(toEventCreatedMessage(payload.title), written.venueCollisions),
-      );
-      void refreshEvents(queryClient);
     },
   });
-};
 
 export const useUpdateEventMutation = (): UseMutationResult<
   WrittenEvent,
   Error,
   EventUpdateInput
-> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: ({ eventId, payload }: EventUpdateInput) =>
-      withFreshAccessToken((accessToken) => requestEventUpdate(eventId, payload, accessToken)),
-    onSuccess: (written, { payload }) => {
-      raiseNotice(toEntryWriteNotice(toEventSavedMessage(payload.title), written.venueCollisions));
-      void refreshEvents(queryClient);
+> =>
+  useApiMutation({
+    request: ({ eventId, payload }: EventUpdateInput, accessToken) =>
+      requestEventUpdate(eventId, payload, accessToken),
+    invalidates: EVENTS_SCOPE,
+    notice: {
+      success: ({ payload }, written) =>
+        toEntryWriteNotice(toEventSavedMessage(payload.title), written.venueCollisions),
     },
   });
-};
 
 export const useTicketAvailabilityMutation = (
   event: EventDetails,
-): UseMutationResult<void, Error, TicketAvailabilityInput> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: ({ ticketAvailability }: TicketAvailabilityInput) =>
-      withFreshAccessToken((accessToken) =>
-        requestTicketAvailability(event.eventId, ticketAvailability, accessToken),
-      ),
-    onSuccess: (_saved, { ticketAvailability }) => {
-      raiseNotice({
-        tone: 'success',
-        message: toTicketAvailabilityMessage(event.title, ticketAvailability),
-      });
+): UseMutationResult<void, Error, TicketAvailabilityInput> =>
+  useApiMutation({
+    request: ({ ticketAvailability }: TicketAvailabilityInput, accessToken) =>
+      requestTicketAvailability(event.eventId, ticketAvailability, accessToken),
+    invalidates: EVENTS_SCOPE,
+    notice: {
+      success: ({ ticketAvailability }) =>
+        toTicketAvailabilityMessage(event.title, ticketAvailability),
     },
-    onSettled: () => refreshEvents(queryClient),
   });
-};
 
 export const useEventCancelledMutation = (
   event: EventDetails,
-): UseMutationResult<void, Error, EventCancelledInput> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: ({ isCancelled }: EventCancelledInput) =>
-      withFreshAccessToken((accessToken) =>
-        requestEventCancelled(event.eventId, isCancelled, accessToken),
-      ),
-    onSuccess: (_saved, { isCancelled }) => {
-      const message = isCancelled
-        ? toEventCancelledMessage(event.title)
-        : toEventRestoredMessage(event.title);
-
-      raiseNotice({ tone: 'success', message });
-      void refreshEvents(queryClient);
+): UseMutationResult<void, Error, EventCancelledInput> =>
+  useApiMutation({
+    request: ({ isCancelled }: EventCancelledInput, accessToken) =>
+      requestEventCancelled(event.eventId, isCancelled, accessToken),
+    invalidates: EVENTS_SCOPE,
+    notice: {
+      success: ({ isCancelled }) =>
+        isCancelled ? toEventCancelledMessage(event.title) : toEventRestoredMessage(event.title),
     },
   });
-};
 
-export const useDeleteEventMutation = (
-  event: EventDetails,
-): UseMutationResult<void, Error, void> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: () =>
-      withFreshAccessToken((accessToken) => requestEventDeletion(event.eventId, accessToken)),
-    onSuccess: () => {
-      raiseNotice({ tone: 'success', message: toEventDeletedMessage(event.title) });
-      queryClient.removeQueries({ queryKey: eventQueryKey(event.eventId), exact: true });
-      void refreshEvents(queryClient);
-    },
+export const useDeleteEventMutation = (event: EventDetails): UseMutationResult<void, Error, void> =>
+  useApiMutation({
+    request: (_input, accessToken) => requestEventDeletion(event.eventId, accessToken),
+    invalidates: EVENTS_SCOPE,
+    forgets: [eventQueryKey(event.eventId)],
+    notice: { success: () => toEventDeletedMessage(event.title) },
   });
-};
 
 export const useTicketRequestsQuery = (
   isEnabled: boolean,
@@ -197,32 +160,16 @@ export const TICKET_REQUEST_TO_DO_SURFACE: ToDoMarkSurface<TicketRequestsRespons
   alsoRefresh: [START_QUERY_KEY],
 };
 
-const refreshTicketRequests = async (queryClient: QueryClient): Promise<void> => {
-  await Promise.all([
-    queryClient.invalidateQueries({ queryKey: TICKET_REQUESTS_QUERY_KEY }),
-    queryClient.invalidateQueries({ queryKey: START_QUERY_KEY }),
-  ]);
-};
-
 export const useTicketRequestHandledMutation = (
   request: TicketRequest,
-): UseMutationResult<void, Error, void> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: () =>
-      withFreshAccessToken((accessToken) =>
-        requestTicketRequestHandled(request.ticketRequestId, accessToken),
-      ),
-    onSuccess: () => {
-      raiseNotice({ tone: 'success', message: toRequestHandledMessage(request) });
+): UseMutationResult<void, Error, void> =>
+  useApiMutation({
+    request: (_input, accessToken) =>
+      requestTicketRequestHandled(request.ticketRequestId, accessToken),
+    invalidates: [TICKET_REQUESTS_QUERY_KEY, START_QUERY_KEY],
+    notice: {
+      success: () => toRequestHandledMessage(request),
+      failure: (error) =>
+        isNotFoundError(error) ? { tone: 'info', message: REQUEST_ALREADY_HANDLED_MESSAGE } : null,
     },
-    onError: (error) => {
-      if (isNotFoundError(error)) {
-        raiseNotice({ tone: 'info', message: REQUEST_ALREADY_HANDLED_MESSAGE });
-      }
-    },
-    onSettled: () => refreshTicketRequests(queryClient),
   });
-};

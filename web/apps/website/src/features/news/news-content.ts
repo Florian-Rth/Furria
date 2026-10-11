@@ -1,7 +1,9 @@
 import type { KkNewsCategory, KkNewsStripPhoto, KkNewsTone } from '@furria/ui';
 import { newsReadingMinutesOf } from '@furria/ui/news-text';
 import type { LinkProps } from '@tanstack/react-router';
+import type { NumberedSession } from '@/lib/api/session-section';
 import { formatClockTime, formatLongDate, formatWeekdayAndFullDate } from '@/lib/date';
+import { publicNews } from '@/lib/public-news/api';
 import type {
   NewsAlbum,
   NewsArticle,
@@ -9,8 +11,9 @@ import type {
   NewsEvent,
   NewsPost,
   NewsSection,
-  NewsSession,
 } from '@/lib/public-news/schemas';
+
+export type PostAddress = Pick<NewsPost, 'slug'>;
 
 export const newsHeading = 'AKTUELLES';
 
@@ -75,7 +78,7 @@ export const newsEventsBandContent: NewsEventsBandContent = {
   ctaTo: '/events',
 };
 
-export const buildPostHref = (slug: string): string => `/news/${slug}`;
+export const buildPostHref = (post: PostAddress): string => `/news/${publicNews.slugOf(post)}`;
 
 const CATEGORY_LABELS: Record<NewsCategory, string> = {
   session: 'Session',
@@ -127,7 +130,7 @@ const TEASER_POSTS_LIMIT = 3;
 export const selectTeaserPosts = (sections: NewsSection[]): NewsPost[] =>
   postsOf(sections).slice(0, TEASER_POSTS_LIMIT);
 
-export const buildSessionLabel = (session: NewsSession): string =>
+export const buildSessionLabel = (session: NumberedSession): string =>
   session.number === null
     ? `SESSION ${session.yearsLabel}`
     : `${session.number}. SESSION ${session.yearsLabel}`;

@@ -1,6 +1,7 @@
 import type { UseMutationResult } from '@tanstack/react-query';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ME_QUERY_KEY } from '@/features/session';
+import { useApiMutation } from '@/lib/api/api-mutation';
 import type { MePasskey } from '@/lib/api/schemas';
 import {
   endSessionWithFarewell,
@@ -25,23 +26,10 @@ export const useLoginEmailChangeMutation = (): UseMutationResult<
   LoginEmailChange,
   Error,
   LoginEmailForm
-> =>
-  useMutation({
-    mutationFn: (form: LoginEmailForm) =>
-      withFreshAccessToken((accessToken) => requestLoginEmailChange(form, accessToken)),
-  });
+> => useApiMutation({ request: requestLoginEmailChange, invalidates: [] });
 
-export const useLoginEmailConfirmationMutation = (): UseMutationResult<void, Error, string> => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (code: string) =>
-      withFreshAccessToken((accessToken) => requestLoginEmailConfirmation(code, accessToken)),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ME_QUERY_KEY });
-    },
-  });
-};
+export const useLoginEmailConfirmationMutation = (): UseMutationResult<void, Error, string> =>
+  useApiMutation({ request: requestLoginEmailConfirmation, invalidates: [ME_QUERY_KEY] });
 
 export const usePasswordChangeMutation = (): UseMutationResult<void, Error, PasswordForm> =>
   useMutation({
@@ -86,7 +74,4 @@ export const useAddPasskeyMutation = (): UseMutationResult<MePasskey, Error, voi
 };
 
 export const usePasskeyRemovalMutation = (): UseMutationResult<void, Error, string> =>
-  useMutation({
-    mutationFn: (passkeyId: string) =>
-      withFreshAccessToken((accessToken) => requestPasskeyRemoval(passkeyId, accessToken)),
-  });
+  useApiMutation({ request: requestPasskeyRemoval, invalidates: [] });

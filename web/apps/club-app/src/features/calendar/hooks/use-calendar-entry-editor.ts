@@ -1,11 +1,6 @@
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
-import { useForm } from 'react-hook-form';
-import { toLandingKey } from '@/features/write';
-import { toFormFailures } from '@/lib/api/api-failures';
-import { useGoBackTo } from '@/lib/use-go-back-to';
-import { toWriteErrorMessage } from '@/lib/write-error';
+import { useWriteForm } from '@/features/write';
 import { useCreateCalendarEntryMutation, useUpdateCalendarEntryMutation } from '../api';
 import type { CalendarDayTime, CalendarOwnerOption } from '../calendar-authoring';
 import {
@@ -21,7 +16,6 @@ import {
 import type { CalendarEntry, CalendarEntryForm } from '../schemas';
 import { CalendarEntryFormSchema } from '../schemas';
 
-const FIELD_NAMES = ['title', 'description'] as const;
 const LANDING_KIND = 'calendar-entry';
 const FIELD_EDIT = { shouldDirty: true, shouldValidate: true } as const;
 
@@ -57,60 +51,25 @@ export const useCalendarEntryEditor = ({
   ownerOptions,
 }: CalendarEntryEditorInput): CalendarEntryEditorControl => {
   const [today] = useState(() => new Date());
-  const [rejection, setRejection] = useState<string | null>(null);
   const createMutation = useCreateCalendarEntryMutation();
   const updateMutation = useUpdateCalendarEntryMutation();
-  const goBackTo = useGoBackTo();
 
-  const form = useForm<CalendarEntryForm>({
-    resolver: zodResolver(CalendarEntryFormSchema),
-    defaultValues: toEntryFormValues(entry, ownerOptions, today),
-    mode: 'onTouched',
-  });
-  const { isDirty, isValid } = form.formState;
+  const write = useWriteForm({
+    schema: CalendarEntryFormSchema,
+    defaults: toEntryFormValues(entry, ownerOptions, today),
+    mutate: (submitted) => {
+      const payload = toEntryPayload(submitted);
 
-  const values = form.watch();
-
-  const landOn = (calendarEntryId: number): void => {
-    void goBackTo({
+      return entry === null
+        ? createMutation.mutateAsync({ payload })
+        : updateMutation.mutateAsync({ calendarEntryId: entry.calendarEntryId, payload });
+    },
+    landing: ({ calendarEntryId }) => ({
       to: '/calendar',
-      search: (previous) => ({
-        ...previous,
-        changed: toLandingKey(LANDING_KIND, calendarEntryId),
-      }),
-      ignoreBlocker: true,
-    });
-  };
-
-  const showFailure = (error: Error): void => {
-    const failures = toFormFailures(error, FIELD_NAMES);
-
-    for (const failure of failures.fields) {
-      form.setError(failure.name, { message: failure.message });
-    }
-
-    const fallback = failures.fields.length === 0 ? toWriteErrorMessage(error) : null;
-
-    setRejection(failures.footer ?? fallback);
-  };
-
-  const handleSubmit = form.handleSubmit((submitted) => {
-    setRejection(null);
-    const payload = toEntryPayload(submitted);
-
-    if (entry === null) {
-      createMutation.mutate(
-        { payload },
-        { onSuccess: (written) => landOn(written.calendarEntryId), onError: showFailure },
-      );
-      return;
-    }
-
-    updateMutation.mutate(
-      { calendarEntryId: entry.calendarEntryId, payload },
-      { onSuccess: (written) => landOn(written.calendarEntryId), onError: showFailure },
-    );
+      mark: { kind: LANDING_KIND, id: calendarEntryId },
+    }),
   });
+  const { form, values } = write;
 
   const ownerGroupIdOf = (ownerId: string): number | null =>
     ownerOptions.find((option) => option.id === ownerId)?.ownerGroupId ?? null;
@@ -207,12 +166,10 @@ export const useCalendarEntryEditor = ({
       form.setValue('asksForResponse', value, FIELD_EDIT);
     },
     isEditing: entry !== null,
-    isDirty,
-    canSubmit: isValid,
-    isSaving: createMutation.isPending || updateMutation.isPending,
-    rejection,
-    submit: () => {
-      void handleSubmit();
-    },
+    isDirty: write.isDirty,
+    canSubmit: write.canSubmit,
+    isSaving: write.isSaving,
+    rejection: write.rejection,
+    submit: write.submit,
   };
 };

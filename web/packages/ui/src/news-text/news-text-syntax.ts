@@ -4,7 +4,6 @@ export const BOLD_MARKER = '**';
 
 const ESCAPABLE = /^[!-/:-@[-`{-~]$/;
 const TAG_OPENER = /^[A-Za-z/!?]$/;
-const MENTION_TARGET = /^(group|person):([0-9]+)$/;
 const WHITESPACE = /\s/;
 
 export const LINE_BREAK = /\r\n|[\n\r\f\v\u0085\u2028\u2029]/;
@@ -24,14 +23,3 @@ export const isWebAddress = (target: string): boolean => {
 };
 
 export const isMentionId = (id: number): boolean => Number.isSafeInteger(id) && id > 0;
-
-export const mentionTargetOf = (
-  target: string,
-): { kind: 'group' | 'person'; id: number } | null => {
-  const match = MENTION_TARGET.exec(target);
-  if (match === null) {
-    return null;
-  }
-  const id = Number(match[2]);
-  return isMentionId(id) ? { kind: match[1] === 'person' ? 'person' : 'group', id } : null;
-};

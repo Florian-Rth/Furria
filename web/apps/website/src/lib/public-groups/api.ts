@@ -1,20 +1,10 @@
-import type { UseQueryResult } from '@tanstack/react-query';
-import { useQuery } from '@tanstack/react-query';
-import { apiFetch } from '@/lib/api/api-fetch';
+import { definePublicResource } from '@/lib/public-resource/define-public-resource';
 import type { PublicGroup } from './schemas';
 import { PublicGroupsResponseSchema } from './schemas';
 
-export const publicGroupKeys = {
-  all: ['public-groups'] as const,
-};
-
-const fetchPublicGroups = async (): Promise<PublicGroup[]> => {
-  const response = await apiFetch('/api/public/groups', {
-    schema: PublicGroupsResponseSchema,
-  });
-
-  return response.groups;
-};
-
-export const usePublicGroupsQuery = (): UseQueryResult<PublicGroup[], Error> =>
-  useQuery({ queryKey: publicGroupKeys.all, queryFn: fetchPublicGroups });
+export const publicGroups = definePublicResource({
+  path: '/api/public/groups',
+  schema: PublicGroupsResponseSchema,
+  key: 'public-groups',
+  select: (response): PublicGroup[] => response.groups,
+});

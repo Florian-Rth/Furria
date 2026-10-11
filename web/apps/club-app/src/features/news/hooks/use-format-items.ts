@@ -1,10 +1,15 @@
 import type { KkFormatRailItem } from '@furria/ui';
 import { BLOCK_WORDS, BOLD_WORD, LINK_WORD, MENTION_WORD } from '../editor-copy';
-import { setParagraph, toggleBold, toggleHeading, toggleList } from '../text-commands';
+import type { NewsTextCommand } from '../news-text-editor';
 import type { ProseText } from './use-prose-text';
 
 export const useFormatItems = (text: ProseText, isReadOnly: boolean): KkFormatRailItem[] => {
   const { format } = text;
+  const runOf =
+    (command: NewsTextCommand): (() => void) =>
+    () => {
+      text.run(command);
+    };
 
   return [
     {
@@ -13,9 +18,7 @@ export const useFormatItems = (text: ProseText, isReadOnly: boolean): KkFormatRa
       label: BLOCK_WORDS.paragraph,
       pressed: format.block === 'paragraph',
       disabled: isReadOnly,
-      onSelect: () => {
-        text.run(setParagraph);
-      },
+      onSelect: runOf({ kind: 'paragraph' }),
     },
     {
       id: 'heading',
@@ -23,9 +26,7 @@ export const useFormatItems = (text: ProseText, isReadOnly: boolean): KkFormatRa
       label: BLOCK_WORDS.heading,
       pressed: format.block === 'heading',
       disabled: isReadOnly,
-      onSelect: () => {
-        text.run(toggleHeading);
-      },
+      onSelect: runOf({ kind: 'heading' }),
     },
     {
       id: 'list',
@@ -33,9 +34,7 @@ export const useFormatItems = (text: ProseText, isReadOnly: boolean): KkFormatRa
       label: BLOCK_WORDS.list,
       pressed: format.block === 'list',
       disabled: isReadOnly,
-      onSelect: () => {
-        text.run(toggleList);
-      },
+      onSelect: runOf({ kind: 'list' }),
     },
     {
       id: 'bold',
@@ -43,9 +42,7 @@ export const useFormatItems = (text: ProseText, isReadOnly: boolean): KkFormatRa
       label: BOLD_WORD,
       pressed: format.bold,
       disabled: isReadOnly,
-      onSelect: () => {
-        text.run(toggleBold);
-      },
+      onSelect: runOf({ kind: 'bold' }),
     },
     {
       id: 'link',
@@ -53,14 +50,14 @@ export const useFormatItems = (text: ProseText, isReadOnly: boolean): KkFormatRa
       label: LINK_WORD,
       pressed: format.link !== null,
       disabled: isReadOnly,
-      onSelect: text.requestLink,
+      onSelect: runOf({ kind: 'request-link' }),
     },
     {
       id: 'mention',
       icon: 'mention',
       label: MENTION_WORD,
       disabled: isReadOnly,
-      onSelect: text.startMention,
+      onSelect: runOf({ kind: 'start-mention' }),
     },
   ];
 };

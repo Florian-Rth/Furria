@@ -1,4 +1,4 @@
-import { createFileRoute, notFound, redirect, useRouter } from '@tanstack/react-router';
+import { createFileRoute, redirect } from '@tanstack/react-router';
 import type { FC } from 'react';
 import {
   AlbumPage,
@@ -6,26 +6,19 @@ import {
   buildAlbumDescription,
   buildAlbumDocumentTitle,
   buildAlbumHref,
-  buildAlbumSlug,
   GalleryUnavailable,
 } from '@/features/gallery';
-import { ApiError } from '@/lib/api/errors';
-import { readSlugId } from '@/lib/id-slug';
-import { ensurePublicAlbum, ensurePublicGallery } from '@/lib/public-gallery/api';
+import { publicGallery } from '@/lib/public-gallery/api';
 import type { AlbumDetail } from '@/lib/public-gallery/schemas';
+import { loadCanonicalDetail } from '@/lib/public-resource/canonical-detail';
+import { useRouteRetry } from '@/lib/public-resource/use-route-retry';
 import type { RouteHead } from '@/lib/seo';
 import { pageTitle } from '@/lib/seo';
-
-const NOT_FOUND_STATUS = 404;
 
 const AlbumComponent: FC = () => <AlbumPage album={Route.useLoaderData()} />;
 
 const AlbumErrorComponent: FC = () => {
-  const router = useRouter();
-
-  const retry = (): void => {
-    void router.invalidate();
-  };
+  const retry = useRouteRetry();
 
   return <GalleryUnavailable onRetry={retry} />;
 };
@@ -49,37 +42,19 @@ const buildAlbumHead = (album: AlbumDetail): RouteHead => {
   };
 };
 
-const loadAlbum = async (albumId: number): Promise<AlbumDetail> => {
-  try {
-    return await ensurePublicAlbum(albumId);
-  } catch (error) {
-    if (error instanceof ApiError && error.status === NOT_FOUND_STATUS) {
-      throw notFound();
-    }
-    throw error;
-  }
-};
-
 export const Route = createFileRoute('/_site/_gated/gallery_/$albumSlug')({
   validateSearch: AlbumSearchSchema,
-  loader: async ({ params }): Promise<AlbumDetail> => {
-    const albumId = readSlugId(params.albumSlug);
-    if (albumId === null) {
-      throw notFound();
-    }
+  loader: ({ params }): Promise<AlbumDetail> => {
+    void publicGallery.ensure().catch((): null => null);
 
-    void ensurePublicGallery().catch((): null => null);
-    const album = await loadAlbum(albumId);
-    const canonicalSlug = buildAlbumSlug(album);
-    if (params.albumSlug !== canonicalSlug) {
-      throw redirect({
+    return loadCanonicalDetail(publicGallery, params.albumSlug, (albumSlug) =>
+      redirect({
         to: '/gallery/$albumSlug',
-        params: { albumSlug: canonicalSlug },
+        params: { albumSlug },
         search: true,
         replace: true,
-      });
-    }
-    return album;
+      }),
+    );
   },
   head: ({ loaderData }): RouteHead =>
     loaderData === undefined ? { meta: [] } : buildAlbumHead(loaderData),

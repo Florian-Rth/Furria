@@ -1,13 +1,9 @@
 import type { KkSelectOption } from '@furria/ui';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
-import { useController, useForm } from 'react-hook-form';
+import { useController } from 'react-hook-form';
 import { usePermissions } from '@/features/session';
-import { toLandingKey } from '@/features/write';
+import { useWriteForm } from '@/features/write';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
-import { useGoBackTo } from '@/lib/use-go-back-to';
-import { toWriteErrorMessage } from '@/lib/write-error';
 import {
   useCreateBoardOfficeMutation,
   useImpliedRoleOptionsQuery,
@@ -59,8 +55,6 @@ export const useBoardOfficeEditor = (entry: BoardOfficeEntry | null): BoardOffic
   const { has } = usePermissions();
   const canChangeRole = entry !== null && has(PERMISSION_KEYS.rolesManage) && !entry.isArchived;
 
-  const [rejection, setRejection] = useState<string | null>(null);
-
   const roleOptions = useImpliedRoleOptionsQuery(canChangeRole);
   const roles = roleOptions.data?.roles ?? NO_ROLES;
   const impliedRoleChoices = toImpliedRoleChoices(
@@ -72,85 +66,46 @@ export const useBoardOfficeEditor = (entry: BoardOfficeEntry | null): BoardOffic
   const create = useCreateBoardOfficeMutation();
   const update = useUpdateBoardOfficeMutation(boardOfficeId ?? NO_BOARD_OFFICE);
   const setImpliedRole = useSetImpliedRoleMutation(boardOfficeId ?? NO_BOARD_OFFICE);
-  const goBackTo = useGoBackTo();
 
-  const form = useForm<BoardOfficeEditorForm>({
-    resolver: zodResolver(BoardOfficeEditorFormSchema),
-    defaultValues: initial,
-    mode: 'onTouched',
-  });
-  const { isDirty, isValid } = form.formState;
-  const impliedRole = useController({ control: form.control, name: 'impliedRoleValue' });
-  const impliedRoleValue = impliedRole.field.value;
+  const saveOffice = async (
+    officeId: number,
+    chosenValue: string,
+    values: Omit<BoardOfficeEditorForm, 'impliedRoleValue'>,
+  ): Promise<number> => {
+    await update.mutateAsync(values);
 
-  const landBack = (id: number): void => {
-    void goBackTo({
-      to: '/manage/board',
-      search: (previous) => ({ ...previous, changed: toLandingKey('board-office', id) }),
-      ignoreBlocker: true,
-    });
-  };
-
-  const handleFormSubmit = form.handleSubmit(({ impliedRoleValue: chosenValue, ...values }) => {
-    setRejection(null);
-
-    if (boardOfficeId === null) {
-      create.mutate(values, {
-        onSuccess: (created) => {
-          landBack(created.boardOfficeId);
-        },
-        onError: (error) => {
-          setRejection(toWriteErrorMessage(error));
-        },
-      });
-
-      return;
+    if (!canChangeRole) {
+      return officeId;
     }
 
     const chosen = impliedRoleChoices.find((option) => option.value === chosenValue);
     const impliedRoleId = toImpliedRoleId(chosenValue);
     const impliedRoleName = impliedRoleId === null ? null : (chosen?.label ?? null);
 
-    update.mutate(values, {
-      onSuccess: () => {
-        if (!canChangeRole) {
-          landBack(boardOfficeId);
-          return;
-        }
+    await setImpliedRole.mutateAsync({ officeName: values.name, impliedRoleId, impliedRoleName });
 
-        setImpliedRole.mutate(
-          { officeName: values.name, impliedRoleId, impliedRoleName },
-          {
-            onSuccess: () => {
-              landBack(boardOfficeId);
-            },
-            onError: (error) => {
-              setRejection(toWriteErrorMessage(error));
-            },
-          },
-        );
-      },
-      onError: (error) => {
-        setRejection(toWriteErrorMessage(error));
-      },
-    });
+    return officeId;
+  };
+
+  const write = useWriteForm({
+    schema: BoardOfficeEditorFormSchema,
+    defaults: initial,
+    mutate: ({ impliedRoleValue: chosenValue, ...values }) =>
+      boardOfficeId === null
+        ? create.mutateAsync(values).then((created) => created.boardOfficeId)
+        : saveOffice(boardOfficeId, chosenValue, values),
+    landing: (id) => ({ to: '/manage/board', mark: { kind: 'board-office', id } }),
   });
+  const impliedRole = useController({ control: write.form.control, name: 'impliedRoleValue' });
 
   return {
-    form,
+    ...write,
     canChangeRole,
-    impliedRoleValue,
+    impliedRoleValue: impliedRole.field.value,
     setImpliedRoleValue: impliedRole.field.onChange,
     impliedRoleChoices,
     impliedRoleChoicesPending: roleOptions.data === undefined,
     impliedRoleChoicesError: toImpliedRoleOptionsErrorMessage(roleOptions.error),
     impliedRoleStatement: toImpliedRoleStatement(entry?.impliedRoleName ?? null),
-    isDirty,
-    canSubmit: isValid,
-    isSaving: create.isPending || update.isPending || setImpliedRole.isPending,
-    rejection,
-    submit: () => {
-      void handleFormSubmit();
-    },
   };
 };

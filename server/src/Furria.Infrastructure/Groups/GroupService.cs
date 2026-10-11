@@ -8,6 +8,7 @@ using Furria.Core.Groups;
 using Furria.Core.Identity;
 using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
+using Furria.Infrastructure.Public;
 using Furria.Infrastructure.Registry;
 using Microsoft.EntityFrameworkCore;
 
@@ -122,18 +123,21 @@ public sealed class GroupService
     private readonly AppDbContext _dbContext;
     private readonly AffiliationLookup _affiliationLookup;
     private readonly PictureLookup _pictures;
+    private readonly PublicFace _publicFace;
     private readonly TimeProvider _timeProvider;
 
     public GroupService(
         AppDbContext dbContext,
         AffiliationLookup affiliationLookup,
         PictureLookup pictures,
+        PublicFace publicFace,
         TimeProvider timeProvider
     )
     {
         _dbContext = dbContext;
         _affiliationLookup = affiliationLookup;
         _pictures = pictures;
+        _publicFace = publicFace;
         _timeProvider = timeProvider;
     }
 
@@ -210,12 +214,11 @@ public sealed class GroupService
         return await WithPicturesAsync([.. rows.Select(ToSummary)], ct);
     }
 
-    public async Task<IReadOnlyList<PublicGroupSummary>> GetPublicGroupsAsync(CancellationToken ct)
-    {
-        var groups = await _dbContext
-            .Groups.AsNoTracking()
-            .Where(PublicGroups.IsShown)
-            .OrderBy(group => EF.Functions.Collate(group.Name, GermanCollation.Name))
+    public async Task<IReadOnlyList<PublicGroupSummary>> GetPublicGroupsAsync(
+        CancellationToken ct
+    ) =>
+        await _publicFace
+            .Groups.OrderBy(group => EF.Functions.Collate(group.Name, GermanCollation.Name))
             .ThenBy(group => group.Id)
             .Select(group => new PublicGroupSummary
             {
@@ -226,23 +229,13 @@ public sealed class GroupService
                 GroupKindName = group.GroupKind!.Name,
                 FoundedYear = group.FoundedYear,
                 Tone = group.Tone,
+                Picture = PublicPictures.Of(
+                    PublicPictureKind.GroupPicture,
+                    group.PictureId,
+                    group.Picture == null ? null : group.Picture.RenderedAt
+                ),
             })
             .ToListAsync(ct);
-        var pictures = await _pictures.PublicGroupPicturesOfAsync(
-            [.. groups.Select(group => group.GroupId)],
-            ct
-        );
-
-        return
-        [
-            .. groups.Select(group =>
-                group with
-                {
-                    Picture = pictures.GetValueOrDefault(group.GroupId),
-                }
-            ),
-        ];
-    }
 
     public async Task<IReadOnlyList<MyGroupSummary>> GetMyGroupsAsync(
         int personId,

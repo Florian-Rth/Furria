@@ -1,11 +1,6 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
-import { useController, useForm } from 'react-hook-form';
-import { toLandingKey } from '@/features/write';
-import { useGoBackTo } from '@/lib/use-go-back-to';
-import { toWriteErrorMessage } from '@/lib/write-error';
-import { toAnnouncementFieldErrors } from '../announcement-form-errors';
+import { useController } from 'react-hook-form';
+import { useWriteForm } from '@/features/write';
 import { useCreateAnnouncementMutation, useUpdateAnnouncementMutation } from '../api';
 import type { Announcement, AnnouncementForm } from '../schemas';
 import { AnnouncementFormSchema, toAnnouncementFormValues } from '../schemas';
@@ -35,64 +30,27 @@ export const useAnnouncementEditor = ({
   announcement,
 }: AnnouncementEditorInput): AnnouncementEditorControl => {
   const announcementId = announcement?.announcementId ?? null;
-  const [rejection, setRejection] = useState<string | null>(null);
   const create = useCreateAnnouncementMutation();
   const update = useUpdateAnnouncementMutation(announcementId ?? NO_ANNOUNCEMENT);
-  const goBackTo = useGoBackTo();
 
-  const form = useForm<AnnouncementForm>({
-    resolver: zodResolver(AnnouncementFormSchema),
-    defaultValues: toAnnouncementFormValues(announcement),
-    mode: 'onTouched',
+  const write = useWriteForm({
+    schema: AnnouncementFormSchema,
+    defaults: toAnnouncementFormValues(announcement),
+    mutate: (values) =>
+      announcementId === null
+        ? create.mutateAsync(values).then((created) => created.announcementId)
+        : update.mutateAsync(values).then(() => announcementId),
+    landing: (id) => ({ to: '/announcements', mark: { kind: LANDING_KIND, id } }),
   });
-  const { isDirty, isValid } = form.formState;
-  const body = useController({ control: form.control, name: 'body' });
-  const validUntil = useController({ control: form.control, name: 'validUntil' });
-
-  const landOn = (id: number): void => {
-    void goBackTo({
-      to: '/announcements',
-      search: (previous) => ({ ...previous, changed: toLandingKey(LANDING_KIND, id) }),
-      ignoreBlocker: true,
-    });
-  };
-
-  const reject = (error: Error): void => {
-    const fieldErrors = toAnnouncementFieldErrors(error);
-
-    for (const fieldError of fieldErrors) {
-      form.setError(fieldError.field, { message: fieldError.message });
-    }
-    setRejection(fieldErrors.length === 0 ? toWriteErrorMessage(error) : null);
-  };
-
-  const handleFormSubmit = form.handleSubmit((values) => {
-    setRejection(null);
-
-    if (announcementId === null) {
-      create.mutate(values, {
-        onSuccess: (created) => landOn(created.announcementId),
-        onError: reject,
-      });
-      return;
-    }
-
-    update.mutate(values, { onSuccess: () => landOn(announcementId), onError: reject });
-  });
+  const body = useController({ control: write.form.control, name: 'body' });
+  const validUntil = useController({ control: write.form.control, name: 'validUntil' });
 
   return {
-    form,
+    ...write,
     body: body.field.value,
     setBody: body.field.onChange,
     touchBody: body.field.onBlur,
     validUntil: validUntil.field.value,
     setValidUntil: validUntil.field.onChange,
-    submit: () => {
-      void handleFormSubmit();
-    },
-    isDirty,
-    canSubmit: isValid,
-    isSaving: create.isPending || update.isPending,
-    rejection,
   };
 };

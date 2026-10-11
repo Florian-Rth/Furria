@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { KkTone } from '../internal/tone';
+import type { KkHoldConfirm } from '../KkHoldButton/KkHoldButton';
 import type { KkIconName } from '../KkIcon';
 import type { KkLetterIndexEntry } from '../letter-index-cells';
 import type { KkLetterPace } from '../letter-pace';
@@ -48,6 +49,11 @@ export interface KkScreenActionContext {
 
 export type KkScreenDeedTone = 'danger';
 
+export interface KkScreenDeedHold {
+  hint: string;
+  confirm: KkHoldConfirm;
+}
+
 export interface KkScreenDeed {
   label: string;
   onSelect: () => void;
@@ -55,6 +61,7 @@ export interface KkScreenDeed {
   tone?: KkScreenDeedTone;
   loading?: boolean;
   disabled?: boolean;
+  hold?: KkScreenDeedHold;
 }
 
 export interface KkScreenActionBar {

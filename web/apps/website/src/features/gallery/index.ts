@@ -5,6 +5,5 @@ export {
   buildAlbumDescription,
   buildAlbumDocumentTitle,
   buildAlbumHref,
-  buildAlbumSlug,
 } from './gallery-content';
 export { AlbumSearchSchema } from './schemas';

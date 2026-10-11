@@ -1,4 +1,5 @@
 import type { KkScreenOrigin, KkSelectOption } from '@furria/ui';
+import type { WriteLanding } from '@/features/write/landing-target';
 import { toLandingKey } from '@/features/write/landing-target';
 import type {
   ClubAccessForm,
@@ -22,13 +23,20 @@ export const CLUB_RECORD_SECTION_TITLES: Record<ClubRecordSection, string> = {
   access: 'Zugang zur App',
 };
 
+const CLUB_RECORD_PATH = '/manage/club-record';
+
 export const MANAGE_ORIGIN: KkScreenOrigin = { label: 'Verein verwalten', to: '/manage' };
 export const CLUB_RECORD_ORIGIN: KkScreenOrigin = {
   label: CLUB_RECORD_TITLE,
-  to: '/manage/club-record',
+  to: CLUB_RECORD_PATH,
 };
 
 const LANDING_KIND = 'club-record';
+
+export const toSectionLanding = (section: ClubRecordSection): WriteLanding => ({
+  to: CLUB_RECORD_PATH,
+  mark: { kind: LANDING_KIND, id: section },
+});
 
 export const toSectionLandingKey = (section: ClubRecordSection): string =>
   toLandingKey(LANDING_KIND, section);

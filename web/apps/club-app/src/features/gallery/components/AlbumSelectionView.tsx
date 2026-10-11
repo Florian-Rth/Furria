@@ -1,7 +1,8 @@
 import type { KkScreenOrigin, KkShowcaseLabels } from '@furria/ui';
-import { KkAlert, KkMeta, KkScreen, KkShowcase } from '@furria/ui';
+import { KkAlert, KkMeta, KkPublishCeremony, KkScreen, KkShowcase } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
+import { PUBLISH_ANNOUNCEMENTS } from '@/lib/publish-copy';
 import { SELECTION_TITLE } from '../gallery-copy';
 import { countLabel } from '../gallery-view';
 import { useAlbumPhotoPicker } from '../hooks/use-album-photo-picker';
@@ -61,27 +62,29 @@ export const AlbumSelectionView: FC<AlbumSelectionViewProps> = ({ album }) => {
 
   return (
     <KkScreen kind="working" title={SELECTION_TITLE} origin={origin} action={bar}>
-      <Stack sx={{ rowGap: 2, pb: 4, minWidth: 0 }}>
-        <AlbumSelectionMarquee
-          isPublished={isPublished}
-          hangKey={selection.hangKey}
-          lead={lead}
-          meta={meta}
-        />
-        {rejection}
-        <KkShowcase
-          pieces={pieces}
-          labels={SHOWCASE_LABELS}
-          announcement={selection.announcement}
-          captionMaxLength={MEDIA_CAPTION_MAX_LENGTH}
-          addDisabled={nothingToAdd}
-          onMove={selection.move}
-          onCaption={selection.caption}
-          onRemove={selection.remove}
-          onAdd={picker.open}
-        />
-        <KkMeta>{HINT}</KkMeta>
-      </Stack>
+      <KkPublishCeremony stage={selection.ceremony} announcements={PUBLISH_ANNOUNCEMENTS}>
+        <Stack sx={{ rowGap: 2, pb: 4, minWidth: 0 }}>
+          <AlbumSelectionMarquee
+            isPublished={isPublished}
+            hangKey={selection.hangKey}
+            lead={lead}
+            meta={meta}
+          />
+          {rejection}
+          <KkShowcase
+            pieces={pieces}
+            labels={SHOWCASE_LABELS}
+            announcement={selection.announcement}
+            captionMaxLength={MEDIA_CAPTION_MAX_LENGTH}
+            addDisabled={nothingToAdd}
+            onMove={selection.move}
+            onCaption={selection.caption}
+            onRemove={selection.remove}
+            onAdd={picker.open}
+          />
+          <KkMeta>{HINT}</KkMeta>
+        </Stack>
+      </KkPublishCeremony>
       <AlbumPhotoPickerSheet picker={picker} items={pickable} />
     </KkScreen>
   );

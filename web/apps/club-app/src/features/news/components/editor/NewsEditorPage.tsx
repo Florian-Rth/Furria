@@ -1,9 +1,9 @@
-import { KkScreen } from '@furria/ui';
+import { KkPublishCeremony, KkScreen } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { NEWS_ORIGIN } from '@/features/session';
+import { PUBLISH_ANNOUNCEMENTS } from '@/lib/publish-copy';
 import { NEWS_PICKER_LIST_ID, useNewsEditorPage } from '../../hooks/use-news-editor-page';
-import { NewsPressStage } from '../press/NewsPressStage';
 import { NewsImposition } from '../proofs/NewsImposition';
 import { NewsProofPeek } from '../proofs/NewsProofPeek';
 import { NewsProofSheet } from '../proofs/NewsProofSheet';
@@ -41,7 +41,7 @@ export const NewsEditorPage: FC<NewsEditorPageProps> = ({ postId }) => {
   const main = (
     <Stack sx={{ gap: 2 }}>
       {gone}
-      <NewsPressStage run={editor.press} signer={editor.signerName}>
+      <KkPublishCeremony stage={editor.press.ceremony} announcements={PUBLISH_ANNOUNCEMENTS}>
         <NewsArticle
           editor={editor}
           text={text}
@@ -50,7 +50,7 @@ export const NewsEditorPage: FC<NewsEditorPageProps> = ({ postId }) => {
           ties={page.ties}
           mentionables={page.mentionables}
         />
-      </NewsPressStage>
+      </KkPublishCeremony>
       {peek}
     </Stack>
   );

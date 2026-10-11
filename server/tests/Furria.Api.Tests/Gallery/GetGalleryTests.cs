@@ -21,7 +21,7 @@ public sealed class GetGalleryTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ListSessionsNewestFirstAndTheirAlbumsByEntryDate_When_AMemberOpensIt()
+    public async Task Should_ListTheAlbumsNewestFirstAndFreeAlbumsLast_When_AMemberOpensIt()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -52,17 +52,14 @@ public sealed class GetGalleryTests : IClassFixture<ApiTestFixture>
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal(
-            [2025, 2024, 1985, null],
-            result.Sections.Select(section => section.SessionStartYear)
-        );
-        Assert.Equal(
             [
-                [ctx.Gallery.Albums.IdOf("parade-album"), ctx.Gallery.Albums.IdOf("gala-album")],
-                [ctx.Gallery.Albums.IdOf("last-gala-album")],
-                [ctx.Gallery.Albums.IdOf("archive")],
-                [ctx.Gallery.Albums.IdOf("renovation")],
+                ctx.Gallery.Albums.IdOf("parade-album"),
+                ctx.Gallery.Albums.IdOf("gala-album"),
+                ctx.Gallery.Albums.IdOf("last-gala-album"),
+                ctx.Gallery.Albums.IdOf("archive"),
+                ctx.Gallery.Albums.IdOf("renovation"),
             ],
-            result.Sections.Select(section => section.Albums.Select(album => album.AlbumId))
+            result.Sections.SelectMany(section => section.Albums).Select(album => album.AlbumId)
         );
     }
 

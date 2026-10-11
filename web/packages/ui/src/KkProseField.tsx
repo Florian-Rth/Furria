@@ -7,6 +7,7 @@ import { groupToneInkScheme } from './internal/group-tone';
 import { newsTextPaint } from './internal/news-text-paint';
 import { proofMarginRuleOf } from './internal/proof-margin-rule';
 import { applyScheme } from './internal/scheme-paint';
+import { NEWS_MENTION_KEY_ATTRIBUTE } from './news-text/news-mention-key';
 
 export type KkProseVariant = 'lead' | 'body';
 
@@ -81,7 +82,7 @@ const mentionStyles = (theme: Theme, tones: readonly KkProseMentionTone[]): CSSO
   const palette = (theme.vars ?? theme).palette;
   const perMention = Object.fromEntries(
     tones.map((mention) => [
-      `& [data-kk-mention-id="${mention.id}"]`,
+      `& [${NEWS_MENTION_KEY_ATTRIBUTE}="${mention.id}"]`,
       mention.isPublic
         ? mention.tone === null
           ? {}
@@ -94,7 +95,7 @@ const mentionStyles = (theme: Theme, tones: readonly KkProseMentionTone[]): CSSO
     ]),
   );
   return {
-    '& [data-kk-mention-id]': {
+    [`& [${NEWS_MENTION_KEY_ATTRIBUTE}]`]: {
       fontWeight: 700,
       paddingInline: '0.2em',
       borderRadius: theme.spacing(0.5),
@@ -102,7 +103,7 @@ const mentionStyles = (theme: Theme, tones: readonly KkProseMentionTone[]): CSSO
       boxDecorationBreak: 'clone',
       cursor: 'pointer',
     },
-    '& .ProseMirror-selectednode[data-kk-mention-id]': {
+    [`& .ProseMirror-selectednode[${NEWS_MENTION_KEY_ATTRIBUTE}]`]: {
       outline: `2px solid ${palette.primary.main}`,
       outlineOffset: 1,
     },

@@ -1,8 +1,7 @@
+import type { UploadFailure } from '@/lib/media/upload-failure';
 import type { MediaKind } from '../schemas';
 
 export type UploadPhase = 'queued' | 'uploading' | 'sent' | 'failed' | 'refused';
-
-export type UploadFailure = 'tooLarge' | 'notAccepted' | 'notAllowed' | 'albumGone' | 'interrupted';
 
 export interface UploadEntry {
   key: number;
@@ -41,13 +40,6 @@ const PHOTO_EXTENSIONS: ReadonlySet<string> = new Set([
 const VIDEO_EXTENSIONS: ReadonlySet<string> = new Set(['mp4', 'mov', 'm4v']);
 const PREVIEWABLE_EXTENSIONS: ReadonlySet<string> = new Set(['jpg', 'jpeg', 'png', 'webp']);
 
-const FAILURE_BY_STATUS: Record<number, UploadFailure> = {
-  403: 'notAllowed',
-  404: 'albumGone',
-  413: 'tooLarge',
-  415: 'notAccepted',
-};
-
 const extensionOf = (name: string): string => {
   const dot = name.lastIndexOf('.');
   return dot < 0 ? '' : name.slice(dot + 1).toLowerCase();
@@ -76,12 +68,6 @@ export const isPreviewable = (name: string): boolean =>
   PREVIEWABLE_EXTENSIONS.has(extensionOf(name));
 
 export const isHidden = (name: string): boolean => name.startsWith('.');
-
-export const failureOfStatus = (status: number | null): UploadFailure =>
-  (status === null ? undefined : FAILURE_BY_STATUS[status]) ?? 'interrupted';
-
-export const isRetryable = (failure: UploadFailure | null): boolean =>
-  failure === 'interrupted' || failure === null;
 
 const byTurn = (left: UploadEntry, right: UploadEntry): number => {
   if (left.kind !== right.kind) {

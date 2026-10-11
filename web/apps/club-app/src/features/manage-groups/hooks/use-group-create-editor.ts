@@ -1,16 +1,9 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
-import { useController, useForm } from 'react-hook-form';
-import { toLandingKey } from '@/features/write';
-import { toFormFailures } from '@/lib/api/api-failures';
-import { useGoBackTo } from '@/lib/use-go-back-to';
-import { toWriteErrorMessage } from '@/lib/write-error';
+import { useController } from 'react-hook-form';
+import { useWriteForm } from '@/features/write';
 import { useCreateGroupMutation } from '../api';
 import type { GroupForm } from '../schemas';
 import { GroupFormSchema } from '../schemas';
-
-const FIELD_NAMES = ['name', 'groupKindId'] as const;
 
 const EMPTY_VALUES: GroupForm = { name: '', groupKindId: '' };
 
@@ -26,55 +19,19 @@ export interface GroupCreateEditorControl {
 }
 
 export const useGroupCreateEditor = (): GroupCreateEditorControl => {
-  const [rejection, setRejection] = useState<string | null>(null);
   const mutation = useCreateGroupMutation();
-  const goBackTo = useGoBackTo();
 
-  const form = useForm<GroupForm>({
-    resolver: zodResolver(GroupFormSchema),
-    defaultValues: EMPTY_VALUES,
-    mode: 'onTouched',
+  const write = useWriteForm({
+    schema: GroupFormSchema,
+    defaults: EMPTY_VALUES,
+    mutate: (values) => mutation.mutateAsync(values).then((created) => created.groupId),
+    landing: (groupId) => ({ to: '/manage/groups', mark: { kind: 'group', id: groupId } }),
   });
-  const { isDirty, isValid } = form.formState;
-  const groupKindId = useController({ control: form.control, name: 'groupKindId' });
-
-  const handleSubmit = form.handleSubmit((values) => {
-    setRejection(null);
-    mutation.mutate(values, {
-      onSuccess: (created) => {
-        void goBackTo({
-          to: '/manage/groups',
-          search: (previous) => ({
-            ...previous,
-            changed: toLandingKey('group', created.groupId),
-          }),
-          ignoreBlocker: true,
-        });
-      },
-      onError: (error) => {
-        const failures = toFormFailures(error, FIELD_NAMES);
-
-        for (const failure of failures.fields) {
-          form.setError(failure.name, { message: failure.message });
-        }
-
-        setRejection(
-          failures.footer ?? (failures.fields.length === 0 ? toWriteErrorMessage(error) : null),
-        );
-      },
-    });
-  });
+  const groupKindId = useController({ control: write.form.control, name: 'groupKindId' });
 
   return {
-    form,
+    ...write,
     groupKindId: groupKindId.field.value,
     setGroupKindId: groupKindId.field.onChange,
-    isDirty,
-    canSubmit: isValid,
-    isSaving: mutation.isPending,
-    rejection,
-    submit: () => {
-      void handleSubmit();
-    },
   };
 };

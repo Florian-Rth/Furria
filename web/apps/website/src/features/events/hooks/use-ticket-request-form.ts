@@ -6,7 +6,7 @@ import type { UseFormReturn } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 import type { SiteFormFallback } from '@/components/SiteForm/site-form-types';
 import { useClubEmail } from '@/lib/public-club/use-club-email';
-import { publicEventKeys } from '@/lib/public-events/api';
+import { publicEvents } from '@/lib/public-events/api';
 import type { EventDetail } from '@/lib/public-events/schemas';
 import type { TicketRequestForm } from '../schemas';
 import { EMPTY_TICKET_REQUEST, TicketRequestFormSchema } from '../schemas';
@@ -92,7 +92,7 @@ export const useTicketRequestForm = (event: EventDetail): TicketRequestFormState
 
           if (failure?.closesWindow === true) {
             setIsClosedByClub(true);
-            queryClient.removeQueries({ queryKey: publicEventKeys.all });
+            queryClient.removeQueries({ queryKey: publicEvents.key });
           }
         },
       },

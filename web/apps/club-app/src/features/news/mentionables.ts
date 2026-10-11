@@ -1,7 +1,6 @@
 import type { KkProseMentionTone } from '@furria/ui';
 import type { NewsInline } from '@furria/ui/news-text';
-import { readNewsText } from '@furria/ui/news-text';
-import { newsMentionKeyOf } from '@/lib/news-prose';
+import { newsMentionKeyOf, readNewsText } from '@furria/ui/news-text';
 import type { NewsMentionables } from './schemas';
 import type { NewsMentionable } from './types';
 
@@ -20,7 +19,7 @@ export const mentionablesOf = (
   ...response.groups.map(
     (group): NewsMentionable => ({
       kind: 'group',
-      id: newsMentionKeyOf('group', group.groupId),
+      id: newsMentionKeyOf({ kind: 'group', id: group.groupId }),
       targetId: group.groupId,
       name: group.name,
       line: group.description.trim().length === 0 ? groupWord : group.description,
@@ -33,7 +32,7 @@ export const mentionablesOf = (
   ...response.persons.map(
     (person): NewsMentionable => ({
       kind: 'person',
-      id: newsMentionKeyOf('person', person.personId),
+      id: newsMentionKeyOf({ kind: 'person', id: person.personId }),
       targetId: person.personId,
       name: `${person.firstName} ${person.lastName}`,
       line: person.officeName,
@@ -47,7 +46,7 @@ export const mentionablesOf = (
 
 const mentionKeysIn = (inlines: readonly NewsInline[]): string[] =>
   inlines.flatMap((inline) =>
-    inline.kind === 'mention' ? [newsMentionKeyOf(inline.mention.kind, inline.mention.id)] : [],
+    inline.kind === 'mention' ? [newsMentionKeyOf(inline.mention)] : [],
   );
 
 export const mentionKeysOf = (text: string): string[] =>

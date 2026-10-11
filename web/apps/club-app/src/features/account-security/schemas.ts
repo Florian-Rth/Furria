@@ -45,5 +45,4 @@ export type ReauthenticationForm = z.infer<typeof ReauthenticationFormSchema>;
 
 export const LOGIN_EMAIL_FIELD_NAMES = ['loginEmail'] as const;
 export const LOGIN_EMAIL_CODE_FIELD_NAMES = ['code', 'loginEmail'] as const;
-export const PASSWORD_FIELD_NAMES = ['currentPassword', 'newPassword'] as const;
 export const REAUTHENTICATION_FIELD_NAMES = ['password'] as const;

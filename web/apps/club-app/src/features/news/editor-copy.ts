@@ -1,5 +1,5 @@
+import type { NewsTextBlockKind } from './news-text-editor';
 import type { TeaserSurface } from './teaser-cuts';
-import type { TextBlockKind } from './text-commands';
 import type { NewsMentionKind } from './types';
 
 export const NEW_POST_TITLE = 'Neue Meldung';
@@ -27,7 +27,7 @@ export const TEASER_CUT_WORDS: Record<TeaserSurface, string> = {
 };
 
 export const RAIL_LABEL = 'Format';
-export const BLOCK_WORDS: Record<TextBlockKind, string> = {
+export const BLOCK_WORDS: Record<NewsTextBlockKind, string> = {
   paragraph: 'Absatz',
   heading: 'Zwischenüberschrift',
   list: 'Liste',
@@ -81,7 +81,6 @@ export const GALLERY_COPY_NOTE = 'Das Bild wird für die Meldung kopiert.';
 export const GALLERY_EMPTY = 'Kein veröffentlichtes Album mit Fotos.';
 export const galleryPhotoLabelOf = (albumTitle: string, index: number): string =>
   `${albumTitle}, Foto ${index + 1}`;
-export const PICTURE_UPLOAD_FAILED = 'Das Bild konnte nicht hochgeladen werden.';
 export const PICTURE_ACTION_FAILED = 'Das Bild konnte nicht geändert werden.';
 
 export const TIE_OFFER = 'Anheften';

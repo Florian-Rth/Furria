@@ -23,7 +23,7 @@ export const NewsLead: FC<NewsLeadProps> = ({ post }) => {
   const photo = newsPhotoOf(post.picture, LEAD_PHOTO_SIZES);
   const posterWord = categoryLabelOf(post.category);
   const readingTime = deriveReadingTime(post.text);
-  const link = newsLinkOf(post.slug);
+  const link = newsLinkOf(post);
 
   return (
     <KkNewsLead

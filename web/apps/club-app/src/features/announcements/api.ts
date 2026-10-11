@@ -1,9 +1,10 @@
-import { useKkNotice } from '@furria/ui';
-import type { QueryClient, UseMutationResult, UseQueryResult } from '@tanstack/react-query';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { CLUB_HUB_QUERY_KEY } from '@/features/club';
 import { ME_QUERY_KEY } from '@/features/session';
 import { START_QUERY_KEY } from '@/features/start';
+import { useApiMutation } from '@/lib/api/api-mutation';
+import { optimisticPatch } from '@/lib/api/optimistic-patch';
 import type { Me } from '@/lib/api/schemas';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import {
@@ -23,14 +24,7 @@ import type { AnnouncementForm, AnnouncementsResponse, CreatedAnnouncement } fro
 
 export const ANNOUNCEMENTS_QUERY_KEY = ['announcements'] as const;
 
-interface LastSeenRollback {
-  previous: Me | undefined;
-}
-
-const refreshBoard = (queryClient: QueryClient): void => {
-  void queryClient.invalidateQueries({ queryKey: ANNOUNCEMENTS_QUERY_KEY });
-  void queryClient.invalidateQueries({ queryKey: CLUB_HUB_QUERY_KEY });
-};
+const ANNOUNCEMENTS_SCOPE = [ANNOUNCEMENTS_QUERY_KEY, CLUB_HUB_QUERY_KEY] as const;
 
 export interface LastSeenInput {
   seenUpTo: string | null;
@@ -58,88 +52,38 @@ export const useCreateAnnouncementMutation = (): UseMutationResult<
   CreatedAnnouncement,
   Error,
   AnnouncementForm
-> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: (form: AnnouncementForm) =>
-      withFreshAccessToken((accessToken) => requestCreateAnnouncement(form, accessToken)),
-    onSuccess: () => {
-      raiseNotice({ tone: 'success', message: ANNOUNCEMENT_POSTED_MESSAGE });
-    },
-    onSettled: () => {
-      refreshBoard(queryClient);
-    },
+> =>
+  useApiMutation({
+    request: requestCreateAnnouncement,
+    invalidates: ANNOUNCEMENTS_SCOPE,
+    notice: { success: () => ANNOUNCEMENT_POSTED_MESSAGE },
   });
-};
 
 export const useUpdateAnnouncementMutation = (
   announcementId: number,
-): UseMutationResult<void, Error, AnnouncementForm> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
+): UseMutationResult<void, Error, AnnouncementForm> =>
+  useApiMutation({
+    request: (form: AnnouncementForm, accessToken) =>
+      requestUpdateAnnouncement(announcementId, form, accessToken),
+    invalidates: ANNOUNCEMENTS_SCOPE,
+    notice: { success: () => ANNOUNCEMENT_CHANGED_MESSAGE },
+  });
 
-  return useMutation({
-    mutationFn: (form: AnnouncementForm) =>
-      withFreshAccessToken((accessToken) =>
-        requestUpdateAnnouncement(announcementId, form, accessToken),
+export const useWithdrawAnnouncementMutation = (): UseMutationResult<void, Error, number> =>
+  useApiMutation({
+    request: requestWithdrawAnnouncement,
+    invalidates: ANNOUNCEMENTS_SCOPE,
+    notice: { success: () => ANNOUNCEMENT_WITHDRAWN_MESSAGE },
+  });
+
+export const useLastSeenAnnouncementMutation = (): UseMutationResult<void, Error, LastSeenInput> =>
+  useApiMutation({
+    request: ({ seenUpTo }: LastSeenInput, accessToken) =>
+      requestLastSeenAnnouncement(seenUpTo, accessToken),
+    optimistic: [
+      optimisticPatch(ME_QUERY_KEY, (current: Me | undefined, { seenUpTo }: LastSeenInput) =>
+        applyLastSeen(current, seenUpTo, new Date()),
       ),
-    onSuccess: () => {
-      raiseNotice({ tone: 'success', message: ANNOUNCEMENT_CHANGED_MESSAGE });
-    },
-    onSettled: () => {
-      refreshBoard(queryClient);
-    },
+    ],
+    invalidates: [START_QUERY_KEY],
   });
-};
-
-export const useWithdrawAnnouncementMutation = (): UseMutationResult<void, Error, number> => {
-  const queryClient = useQueryClient();
-  const raiseNotice = useKkNotice();
-
-  return useMutation({
-    mutationFn: (announcementId: number) =>
-      withFreshAccessToken((accessToken) =>
-        requestWithdrawAnnouncement(announcementId, accessToken),
-      ),
-    onSuccess: () => {
-      raiseNotice({ tone: 'success', message: ANNOUNCEMENT_WITHDRAWN_MESSAGE });
-    },
-    onSettled: () => {
-      refreshBoard(queryClient);
-    },
-  });
-};
-
-export const useLastSeenAnnouncementMutation = (): UseMutationResult<
-  void,
-  Error,
-  LastSeenInput,
-  LastSeenRollback
-> => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ seenUpTo }: LastSeenInput) =>
-      withFreshAccessToken((accessToken) => requestLastSeenAnnouncement(seenUpTo, accessToken)),
-    onMutate: async ({ seenUpTo }: LastSeenInput) => {
-      await queryClient.cancelQueries({ queryKey: ME_QUERY_KEY });
-      const previous = queryClient.getQueryData<Me>(ME_QUERY_KEY);
-      const now = new Date();
-
-      queryClient.setQueryData<Me>(ME_QUERY_KEY, (current) =>
-        applyLastSeen(current, seenUpTo, now),
-      );
-
-      return { previous };
-    },
-    onError: (_error, _variables, context) => {
-      queryClient.setQueryData(ME_QUERY_KEY, context?.previous);
-    },
-    onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: ME_QUERY_KEY });
-      void queryClient.invalidateQueries({ queryKey: START_QUERY_KEY });
-    },
-  });
-};

@@ -1,11 +1,7 @@
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
-import { useForm } from 'react-hook-form';
-import { toLandingKey } from '@/features/write';
+import { useWriteForm } from '@/features/write';
 import { relevantSessionYear } from '@/lib/club';
-import { useGoBackTo } from '@/lib/use-go-back-to';
-import { toWriteErrorMessage } from '@/lib/write-error';
 import { useCreateSessionRecordMutation, useUpdateSessionRecordMutation } from '../api';
 import type { SessionRecordForm, SessionRecordSummary } from '../schemas';
 import { SessionRecordFormSchema } from '../schemas';
@@ -32,18 +28,29 @@ export const useSessionEditor = (
   record: SessionRecordSummary | null,
   draftYear: number | null,
 ): SessionEditorControl => {
-  const [rejection, setRejection] = useState<string | null>(null);
   const [logoRejection, setLogoRejection] = useState<string | null>(null);
   const createMutation = useCreateSessionRecordMutation();
   const updateMutation = useUpdateSessionRecordMutation();
-  const goBackTo = useGoBackTo();
 
-  const form = useForm<SessionRecordForm>({
-    resolver: zodResolver(SessionRecordFormSchema),
-    defaultValues: toSessionRecordForm(record, draftYear),
-    mode: 'onTouched',
+  const write = useWriteForm({
+    schema: SessionRecordFormSchema,
+    defaults: toSessionRecordForm(record, draftYear),
+    mutate: (values) => {
+      const payload = toSessionRecordPayload(values);
+
+      if (payload === null) {
+        return null;
+      }
+
+      return record === null
+        ? createMutation.mutateAsync(payload).then((created) => created.sessionId)
+        : updateMutation
+            .mutateAsync({ sessionId: record.sessionId, payload })
+            .then(() => record.sessionId);
+    },
+    landing: (sessionId) => ({ to: '/manage/sessions', mark: { kind: 'session', id: sessionId } }),
   });
-  const { isDirty, isValid } = form.formState;
+  const { form } = write;
 
   const setStartYear = (value: number | null): void => {
     form.setValue('startYear', value, { shouldValidate: true, shouldDirty: true });
@@ -84,52 +91,6 @@ export const useSessionEditor = (
     reader.readAsText(file);
   };
 
-  const fail = (error: Error): void => {
-    setRejection(toWriteErrorMessage(error));
-  };
-
-  const landOn = (sessionId: number): void => {
-    void goBackTo({
-      to: '/manage/sessions',
-      search: (previous) => ({ ...previous, changed: toLandingKey('session', sessionId) }),
-      ignoreBlocker: true,
-    });
-  };
-
-  const handleSubmit = form.handleSubmit((values) => {
-    const payload = toSessionRecordPayload(values);
-
-    if (payload === null) {
-      return;
-    }
-
-    setRejection(null);
-
-    if (record === null) {
-      createMutation.mutate(payload, {
-        onSuccess: (created) => {
-          landOn(created.sessionId);
-        },
-        onError: fail,
-      });
-      return;
-    }
-
-    updateMutation.mutate(
-      { sessionId: record.sessionId, payload },
-      {
-        onSuccess: () => {
-          landOn(record.sessionId);
-        },
-        onError: fail,
-      },
-    );
-  });
-
-  const submit = (): void => {
-    void handleSubmit();
-  };
-
   return {
     form,
     startYear: form.watch('startYear'),
@@ -139,10 +100,10 @@ export const useSessionEditor = (
     takeLogoFile,
     clearLogo,
     currentSessionYear: relevantSessionYear(new Date()),
-    isDirty,
-    canSubmit: isValid,
-    isSaving: createMutation.isPending || updateMutation.isPending,
-    rejection,
-    submit,
+    isDirty: write.isDirty,
+    canSubmit: write.canSubmit,
+    isSaving: write.isSaving,
+    rejection: write.rejection,
+    submit: write.submit,
   };
 };
